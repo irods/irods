@@ -30,6 +30,7 @@
 
 #include "finalize_utilities.hpp"
 #include "getRescQuota.h"
+#include "json_serialization.hpp"
 #include "modAVUMetadata.h"
 #include "modAccessControl.h"
 #include "rsGetRescQuota.hpp"
@@ -54,10 +55,14 @@
 #include "data_object_proxy.hpp"
 #include "replica_proxy.hpp"
 
+#include "replica_state_table.hpp"
+
 #include <chrono>
 
 namespace
 {
+    namespace rst = irods::replica_state_table;
+
     auto apply_static_peps(RsComm& _comm, l1desc& _l1desc, const int _operation_status) -> void
     {
         if (_l1desc.openType == CREATE_TYPE) {
@@ -174,39 +179,44 @@ namespace
             throw;
         }
 
-        auto [reg_param, lm] = irods::experimental::make_key_value_proxy({{OPEN_TYPE_KW, std::to_string(_l1desc.openType)}});
+        cond_input[OPEN_TYPE_KW] = std::to_string(_l1desc.openType);
 
-        //const auto vault_size = replica::get_replica_size_from_storage(_comm, replica.logical_path(), replica.replica_number());
-        reg_param[DATA_SIZE_KW] = std::to_string(replica.size());
+        auto& rst = irods::replica_state_table::instance();
 
+        // TODO: unlock in RST here (restore replica states)
+
+        // Set target replica to the state it should be
         if (OPEN_FOR_WRITE_TYPE == _l1desc.openType) {
             replica.replica_status(GOOD_REPLICA);
-            //replica.mtime(SET_TIME_TO_NOW_KW);
-            replica.mtime(std::to_string((int)time(nullptr)));
+            replica.mtime(SET_TIME_TO_NOW_KW);
 
-            reg_param[ALL_REPL_STATUS_KW] = "";
-            reg_param[DATA_MODIFY_KW] = std::to_string((int)time(nullptr));
+            // stale other replicas because the truth has moved
+            for (auto& rj : rst.at(replica.logical_path())) {
+                const auto replica_number = std::stoi(std::string{rj.at("after").at("data_repl_num")});
+
+                if (replica.replica_number() != replica_number) {
+                    const nlohmann::json update{{"data_is_dirty", std::to_string(STALE_REPLICA)}};
+
+                    rst.update(replica.logical_path(), replica_number,
+                        nlohmann::json{{"replicas", update}});
+                }
+            }
         }
         else {
             replica.replica_status(GOOD_REPLICA);
-            reg_param[REPL_STATUS_KW] = std::to_string(GOOD_REPLICA);
         }
 
         if (cond_input.contains(CHKSUM_KW)) {
             replica.checksum(cond_input.at(CHKSUM_KW).value());
-            reg_param[CHKSUM_KW] = cond_input.at(CHKSUM_KW);
         }
 
-        reg_param[SELECTED_HIERARCHY_KW] = cond_input.at(SELECTED_HIERARCHY_KW);
+        replica.cond_input()[FILE_MODIFIED_KW] = irods::to_json(cond_input.get()).dump();
 
-        modDataObjMeta_t mod_inp{};
-        mod_inp.dataObjInfo = &_info;
-        mod_inp.regParam = reg_param.get();
-        const int status = rsModDataObjMeta(&_comm, &mod_inp);
-        if (status < 0) {
-            THROW(status,
-                fmt::format("{}: rsModDataObjMeta failed with {}",
-                __FUNCTION__, status));
+        // Write it out to the catalog
+        rst.update(replica.logical_path(), replica);
+
+        if (const int ec = rst.publish_to_catalog(_comm, replica.logical_path(), rst::trigger_file_modified::yes); ec < 0) {
+            THROW(ec, fmt::format("failed to publish to catalog:[{}]", ec));
         }
 
         if (GOOD_REPLICA == replica.replica_status()) {
@@ -214,7 +224,7 @@ namespace
             updatequotaOverrun(replica.hierarchy().data(), replica.size(), ALL_QUOTA);
         }
 
-        return status;
+        return 0;
     } // finalize_replica
 
     int single_buffer_put(RsComm& _comm, DataObjInp& _inp, BytesBuf& _bbuf)
@@ -271,8 +281,8 @@ namespace
         l1desc.dataSize = _inp.dataSize;
 
         int status = 0;
-        if (getStructFileType(l1desc.dataObjInfo->specColl) >= 0) {
-            // special collections are not handled by replica_close
+        // special collections are special - just use the old close
+        if (l1desc.dataObjInfo->specColl) {
 			OpenedDataObjInp close_inp{};
 			close_inp.l1descInx = fd;
 			l1desc.oprStatus = bytes_written;
@@ -299,14 +309,7 @@ namespace
             const irods::at_scope_exit free_fd{[&l1desc_cache] { freeL1desc_struct(l1desc_cache); }};
 
             // close the replica, free L1 descriptor
-            nlohmann::json in_json;
-            in_json["fd"] = fd;
-            in_json["send_notifications"] = false;
-            in_json["update_size"] = false;
-            in_json["update_status"] = false;
-            const auto input = in_json.dump();
-
-            if (const int ec = rs_replica_close(&_comm, input.data()); ec < 0) {
+            if (const int ec = irods::close_replica_without_catalog_update(_comm, fd); ec < 0) {
                 irods::log(LOG_ERROR, fmt::format(
                     "[{}:{}] - error closing replica; ec:[{}]",
                     __FUNCTION__, __LINE__, ec));
@@ -329,15 +332,12 @@ namespace
                 try {
                     irods::log(LOG_DEBUG8, fmt::format("[{}:{}] - finalizing replica", __FUNCTION__, __LINE__));
 
-                    // TODO: temporary...
-                    if (!irods::experimental::data_object::find_replica(final_object, hier)->special_collection_info()) {
-                        if (const auto ec = finalize_replica(_comm, *final_object.get(), l1desc_cache); ec < 0) {
-                            irods::log(LOG_ERROR, fmt::format(
-                                "[{}] - error finalizing replica; ec:[{}]",
-                                __FUNCTION__, ec));
+                    if (const auto ec = finalize_replica(_comm, *final_object.get(), l1desc_cache); ec < 0) {
+                        irods::log(LOG_ERROR, fmt::format(
+                            "[{}] - error finalizing replica; ec:[{}]",
+                            __FUNCTION__, ec));
 
-                            status = ec;
-                        }
+                        status = ec;
                     }
                 }
                 catch (const irods::exception& e) {
@@ -348,8 +348,6 @@ namespace
                     status = e.code();
                 }
             }
-
-            // TODO: call finalize
 
             if (l1desc_cache.purgeCacheFlag) {
                 irods::purge_cache(_comm, *final_object.get());
@@ -454,7 +452,6 @@ namespace
     } // parallel_transfer_put
 
     void throw_if_force_put_to_new_resource(
-        rsComm_t* comm,
         dataObjInp_t& data_obj_inp,
         irods::file_object_ptr file_obj)
     {
@@ -555,34 +552,27 @@ namespace
             file_obj->logical_path(dataObjInp->objPath);
             irods::error fac_err = irods::file_object_factory(rsComm, dataObjInp, file_obj, &dataObjInfoHead);
 
-            throw_if_force_put_to_new_resource(rsComm, *dataObjInp, file_obj);
+            throw_if_force_put_to_new_resource(*dataObjInp, file_obj);
 
             std::string hier{};
-            const char* h{getValByKey(&dataObjInp->condInput, RESC_HIER_STR_KW)};
-            if (!h) {
+            auto cond_input = irods::experimental::make_key_value_proxy(dataObjInp->condInput);
+            if (!cond_input.contains(RESC_HIER_STR_KW)) {
                 auto fobj_tuple = std::make_tuple(file_obj, fac_err);
+
                 std::tie(file_obj, hier) = irods::resolve_resource_hierarchy(
-                    rsComm,
-                    irods::CREATE_OPERATION,
-                    *dataObjInp,
-                    fobj_tuple);
-                addKeyVal(&dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str());
+                    rsComm, irods::CREATE_OPERATION, *dataObjInp, fobj_tuple);
+
+                cond_input[RESC_HIER_STR_KW] = hier;
             }
             else {
                 if (!fac_err.ok() && CAT_NO_ROWS_FOUND != fac_err.code()) {
                     irods::log(fac_err);
                 }
-                hier = h;
+                hier = cond_input.at(RESC_HIER_STR_KW).value().data();
             }
 
-            const auto hier_has_replica{[&hier, &replicas = file_obj->replicas()]() {
-                return std::any_of(replicas.begin(), replicas.end(),
-                    [&](const irods::physical_object& replica) {
-                        return replica.resc_hier() == hier;
-                    });
-                }()};
-
-            if (hier_has_replica && !getValByKey(&dataObjInp->condInput, FORCE_FLAG_KW)) {
+            if (irods::hierarchy_has_replica(file_obj, cond_input.at(RESC_HIER_STR_KW).value()) &&
+                !cond_input.contains(FORCE_FLAG_KW)) {
                 return OVERWRITE_WITHOUT_FORCE_FLAG;
             }
         }
@@ -607,14 +597,15 @@ namespace
         }
         catch (const irods::exception& e) {
             irods::log(e);
+            //addRErrorMsg(&rsComm->rError, e.code(), e.what());
             return e.code();
         }
         catch (const std::exception& e) {
-            irods::log(LOG_ERROR, fmt::format("[{}] - [{}]", __FUNCTION__, e.what()));
-            return SYS_LIBRARY_ERROR;
+            irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, e.what()));
+            return SYS_INTERNAL_ERR;
         }
         catch (...) {
-            irods::log(LOG_ERROR, fmt::format("[{}] - unknown error occurred", __FUNCTION__));
+            irods::log(LOG_ERROR, fmt::format("[{}:{}] - unknown error occurred", __FUNCTION__, __LINE__));
             return SYS_UNKNOWN_ERROR;
         }
     } // rsDataObjPut_impl
