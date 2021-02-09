@@ -140,10 +140,6 @@ initCondForPhymv( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                        rodsArgs->resourceString );
         }
     }
-    else if ( myRodsEnv != NULL && strlen( myRodsEnv->rodsDefResource ) > 0 ) {
-        addKeyVal( &dataObjInp->condInput, DEST_RESC_NAME_KW,
-                   myRodsEnv->rodsDefResource );
-    }
 
     return 0;
 }

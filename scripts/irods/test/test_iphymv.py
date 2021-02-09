@@ -8,15 +8,17 @@ if sys.version_info < (2, 7):
 else:
     import unittest
 import shutil
+import time
 
-from .resource_suite import ResourceBase
+import replica_status_test
+from . import session
+from . import settings
 from .. import lib
 from .. import test
-from . import settings
 from ..configuration import IrodsConfig
+from .resource_suite import ResourceBase
 
 class Test_iPhymv(ResourceBase, unittest.TestCase):
-
     def setUp(self):
         super(Test_iPhymv, self).setUp()
         self.testing_tmp_dir = '/tmp/irods-test-iphymv'
@@ -126,7 +128,7 @@ class Test_iPhymv(ResourceBase, unittest.TestCase):
         try:
             self.admin.assert_icommand(['iput', filepath, filename])
             self.admin.assert_icommand(['ils', '-L'], 'STDOUT', [' 0 ', 'demoResc', ' & ', filename])
-            self.admin.assert_icommand(['iphymv', '-S', 'demoResc', '-R', 'demoResc', filename])
+            self.admin.assert_icommand(['iphymv', '-S', 'demoResc', '-R', 'demoResc', filename], 'STDERR', 'SYS_NOT_ALLOWED')
             self.admin.assert_icommand(['ils', '-L'], 'STDOUT', [' 0 ', 'demoResc', ' & ', filename])
 
         finally:
@@ -145,3 +147,487 @@ class Test_iPhymv(ResourceBase, unittest.TestCase):
         self.assertIn(error_string, out, msg='Missing error message')
         self.assertIn('USER__NULL_INPUT_ERR', err, msg='Missing USER__NULL_INPUT_ERR')
 
+    def test_iphymv_retains_system_metadata(self):
+        file_name = 'test_iphymv_retains_system_metadata'
+        filepath = os.path.join(self.admin.local_session_dir, file_name)
+        lib.make_file(filepath, 1)
+        dest_path = os.path.join(self.admin.session_collection, file_name)
+        source_resource = self.admin.default_resource
+        destination_resource = 'unix1Resc'
+
+        attributes = [
+            'DATA_CHECKSUM',
+            'DATA_CREATE_TIME',
+            'DATA_MODIFY_TIME',
+            'DATA_REPL_NUM',
+            'DATA_REPL_STATUS',
+            'DATA_SIZE'
+        ]
+
+        system_metadata_genquery = '''"select {0} where COLL_NAME = '{1}' and DATA_NAME = '{2}'"'''.format(
+            ','.join(attributes), os.path.dirname(dest_path), os.path.basename(dest_path))
+
+        try:
+            # put in a file and get the system metadata
+            self.admin.assert_icommand(['iput', '-K', '-R', source_resource, filepath, dest_path])
+            self.admin.assert_icommand(['ils', '-l', dest_path], 'STDOUT_SINGLELINE', source_resource)
+            source_system_metadata = self.admin.run_icommand(['iquest', '%s' * len(attributes), system_metadata_genquery])[0].strip().split()
+
+            # sleep to make sure the modify time would change (but doesn't!)
+            time.sleep(2)
+
+            # phymv the replica and get the system metadata
+            self.admin.assert_icommand(['iphymv', '-S', source_resource, '-R', destination_resource, dest_path])
+            self.admin.assert_icommand(['ils', '-l', dest_path], 'STDOUT_SINGLELINE', destination_resource)
+            destination_system_metadata = self.admin.run_icommand(['iquest', '%s' * len(attributes), system_metadata_genquery])[0].strip().split()
+
+            # assert that everything lines up
+            self.assertEqual(len(source_system_metadata), len(destination_system_metadata))
+            for i,_ in enumerate(source_system_metadata):
+                self.assertEqual(source_system_metadata[i], destination_system_metadata[i])
+
+        finally:
+            self.admin.assert_icommand(['irm', '-f', file_name])
+
+class test_invalid_parameters(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
+    def setUp(self):
+        super(test_invalid_parameters, self).setUp()
+
+        self.admin = self.admin_sessions[0]
+
+        self.leaf_rescs = {
+            'a' : {
+                'name': 'test_iphymv_repl_status_a',
+                'vault': os.path.join(self.admin.local_session_dir, 'a'),
+                'host': test.settings.HOSTNAME_1
+            },
+            'b' : {
+                'name': 'test_iphymv_repl_status_b',
+                'vault': os.path.join(self.admin.local_session_dir, 'b'),
+                'host': test.settings.HOSTNAME_2
+            },
+            'c' : {
+                'name': 'test_iphymv_repl_status_c',
+                'vault': os.path.join(self.admin.local_session_dir, 'c'),
+                'host': test.settings.HOSTNAME_3
+            },
+            'f' : {
+                'name': 'test_iphymv_repl_status_f',
+                'vault': os.path.join(self.admin.local_session_dir, 'f'),
+                'host': test.settings.HOSTNAME_1
+            }
+        }
+
+        for resc in self.leaf_rescs.values():
+            self.admin.assert_icommand(['iadmin', 'mkresc', resc['name'], 'unixfilesystem',
+                ':'.join([resc['host'], resc['vault']])],
+                'STDOUT', resc['name'])
+
+        self.parent_rescs = {
+            'd' : 'test_iphymv_repl_status_d',
+            'e' : 'test_iphymv_repl_status_e',
+        }
+
+        for resc in self.parent_rescs.values():
+            self.admin.assert_icommand(['iadmin', 'mkresc', resc, 'passthru'], 'STDOUT', resc)
+
+        self.admin.assert_icommand(['iadmin', 'addchildtoresc', self.parent_rescs['d'], self.parent_rescs['e']])
+        self.admin.assert_icommand(['iadmin', 'addchildtoresc', self.parent_rescs['e'], self.leaf_rescs['f']['name']])
+
+        self.admin.environment_file_contents.update({'irods_default_resource': self.leaf_rescs['a']['name']})
+
+        self.filename = 'foo'
+        self.local_path = os.path.join(self.admin.local_session_dir, self.filename)
+        self.logical_path = os.path.join(self.admin.session_collection, 'subdir', self.filename)
+
+    def tearDown(self):
+        self.admin.assert_icommand(['iadmin', 'rmchildfromresc', self.parent_rescs['d'], self.parent_rescs['e']])
+        self.admin.assert_icommand(['iadmin', 'rmchildfromresc', self.parent_rescs['e'], self.leaf_rescs['f']['name']])
+
+        for resc in self.parent_rescs.values():
+            self.admin.assert_icommand(['iadmin', 'rmresc', resc])
+
+        for resc in self.leaf_rescs.values():
+            self.admin.assert_icommand(['iadmin', 'rmresc', resc['name']])
+
+        super(test_invalid_parameters, self).tearDown()
+
+    def test_invalid_parameters(self):
+        nonexistent_resource_name = 'nope'
+
+        # does not exist
+        self.admin.assert_icommand(['iphymv', self.logical_path], 'STDERR', 'does not exist')
+
+        # put a file
+        if not os.path.exists(self.local_path):
+            lib.make_file(self.local_path, 1024)
+        self.admin.assert_icommand(['imkdir', os.path.dirname(self.logical_path)])
+        self.admin.assert_icommand(['iput', '-R', self.leaf_rescs['a']['name'], self.local_path, self.logical_path])
+
+        try:
+            # USER__NULL_INPUT_ERR
+            # iphymv foo
+            self.admin.assert_icommand(['iphymv', self.logical_path],
+                'STDERR', 'USER__NULL_INPUT_ERR')
+
+            # iphymv -S a foo
+            self.admin.assert_icommand(['iphymv', '-S', self.leaf_rescs['a']['name'], self.logical_path],
+                'STDERR', 'USER__NULL_INPUT_ERR')
+
+            # iphymv -R a foo
+            self.admin.assert_icommand(['iphymv', '-R', self.leaf_rescs['a']['name'], self.logical_path],
+                'STDERR', 'USER__NULL_INPUT_ERR')
+
+            # USER_INCOMPATIBLE_PARAMS
+            # iphymv -S a -n 0 foo
+            self.admin.assert_icommand(['iphymv', '-S', self.leaf_rescs['a']['name'], '-n0', self.logical_path],
+                'STDERR', 'USER_INCOMPATIBLE_PARAMS')
+
+            # USER_INVALID_RESC_INPUT
+            # iphymv -S d -R a foo
+            self.admin.assert_icommand(
+                ['iphymv', '-S', self.parent_rescs['d'], '-R', self.leaf_rescs['a']['name'], self.logical_path],
+                'STDERR', 'USER_INVALID_RESC_INPUT')
+
+            # iphymv -S a -R d foo
+            self.admin.assert_icommand(
+                ['iphymv', '-R', self.leaf_rescs['a']['name'], '-S', self.parent_rescs['d'], self.logical_path],
+                'STDERR', 'USER_INVALID_RESC_INPUT')
+
+            # iphymv -S e -R a foo
+            self.admin.assert_icommand(
+                ['iphymv', '-S', self.parent_rescs['e'], '-R', self.leaf_rescs['a']['name'], self.logical_path],
+                'STDERR', 'USER_INVALID_RESC_INPUT')
+
+            # iphymv -S a -R e foo
+            self.admin.assert_icommand(
+                ['iphymv', '-S', self.leaf_rescs['a']['name'], '-R', self.parent_rescs['e'], self.logical_path],
+                'STDERR', 'USER_INVALID_RESC_INPUT')
+
+            # iphymv -S 'd;e' -R a foo
+            hier = ';'.join([self.parent_rescs['d'], self.parent_rescs['e']])
+            self.admin.assert_icommand(
+                ['iphymv', '-S', hier, '-R', self.leaf_rescs['a']['name'], self.logical_path],
+                'STDERR', 'USER_INVALID_RESC_INPUT')
+
+            # iphymv -S a -R 'd;e' foo
+            self.admin.assert_icommand(
+                ['iphymv', '-S', self.leaf_rescs['a']['name'], '-R', hier, self.logical_path],
+                'STDERR', 'USER_INVALID_RESC_INPUT')
+
+            # iphymv -S 'e;f' -R a foo
+            hier = ';'.join([self.parent_rescs['e'], self.leaf_rescs['f']['name']])
+            self.admin.assert_icommand(
+                ['iphymv', '-S', hier, '-R', self.leaf_rescs['a']['name'], self.logical_path],
+                'STDERR', 'USER_INVALID_RESC_INPUT')
+
+            # iphymv -S a -R 'e;f' foo
+            self.admin.assert_icommand(
+                ['iphymv', '-S', self.leaf_rescs['a']['name'], '-R', hier, self.logical_path],
+                'STDERR', 'USER_INVALID_RESC_INPUT')
+
+            # SYS_RESC_DOES_NOT_EXIST
+            # iphymv -S nope -R b foo
+            self.admin.assert_icommand(['iphymv', '-S', nonexistent_resource_name, '-R', self.leaf_rescs['b']['name'], self.logical_path],
+                'STDERR', 'SYS_RESC_DOES_NOT_EXIST')
+
+            # iphymv -S a -R nope foo
+            self.admin.assert_icommand(['iphymv', '-S', self.leaf_rescs['a']['name'], '-R', nonexistent_resource_name, self.logical_path],
+                'STDERR', 'SYS_RESC_DOES_NOT_EXIST')
+
+            # ensure no replications took place
+            out, _, _ = self.admin.run_icommand(['ils', '-l', self.logical_path])
+            print(out)
+            for resc in self.leaf_rescs.values()[1:]:
+                self.assertNotIn(resc['name'], out, msg='found unwanted replica on [{}]'.format(resc['name']))
+            for resc in self.parent_rescs.values():
+                self.assertNotIn(resc, out, msg='found replica on coordinating resc [{}]'.format(resc))
+
+        finally:
+            self.admin.assert_icommand(['irm', '-rf', os.path.dirname(self.logical_path)])
+
+class test_iphymv_repl_status(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
+    def setUp(self):
+        super(test_iphymv_repl_status, self).setUp()
+
+        self.admin = self.admin_sessions[0]
+
+        self.leaf_rescs = {
+            'a' : {
+                'name': 'test_iphymv_repl_status_a',
+                'vault': os.path.join(self.admin.local_session_dir, 'a'),
+                'host': test.settings.HOSTNAME_1
+            },
+            'b' : {
+                'name': 'test_iphymv_repl_status_b',
+                'vault': os.path.join(self.admin.local_session_dir, 'b'),
+                'host': test.settings.HOSTNAME_2
+            },
+            'c' : {
+                'name': 'test_iphymv_repl_status_c',
+                'vault': os.path.join(self.admin.local_session_dir, 'c'),
+                'host': test.settings.HOSTNAME_3
+            },
+        }
+
+        for resc in self.leaf_rescs.values():
+            self.admin.assert_icommand(['iadmin', 'mkresc', resc['name'], 'unixfilesystem',
+                ':'.join([resc['host'], resc['vault']])],
+                'STDOUT', resc['name'])
+
+        self.admin.environment_file_contents.update({'irods_default_resource': self.leaf_rescs['a']['name']})
+
+        self.filename = 'foo'
+        self.local_path = os.path.join(self.admin.local_session_dir, self.filename)
+        self.logical_path = os.path.join(self.admin.session_collection, 'subdir', self.filename)
+
+    def tearDown(self):
+        for resc in self.leaf_rescs.values():
+            self.admin.assert_icommand(['iadmin', 'rmresc', resc['name']])
+
+        super(test_iphymv_repl_status, self).tearDown()
+
+    def test_iphymv_Sa_Rb_foo(self):
+        # iphymv -S a -R b foo (source default resource, destination non-default resource)
+        scenarios = [
+            {'start':{'a':'-', 'b':'-', 'c':'&'}, 'end':{'a':'-', 'b':'-', 'c':'&'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'-', 'b':'-', 'c':'X'}, 'end':{'a':'-', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'-'}, 'end':{'a':'-', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'X'}, 'end':{'a':'-', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'-'}, 'end':{'a':'-', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'&'}, 'end':{'a':'-', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'X'}, 'end':{'a':'-', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'-'}, 'end':{'a':'-', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'X'}, 'end':{'a':'-', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'-'}, 'end':{'a':'-', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'X'}, 'end':{'a':'-', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'-'}, 'end':{'a':'-', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'&'}, 'end':{'a':'-', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'X'}, 'end':{'a':'-', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'-'}, 'end':{'a':'X', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'&'}, 'end':{'a':'X', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'X'}, 'end':{'a':'X', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'-'}, 'end':{'a':'X', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'&'}, 'end':{'a':'X', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}}
+        ]
+
+        replica_status_test.run_command_against_scenarios(self,
+            ['iphymv', '-S', self.leaf_rescs['a']['name'], '-R', self.leaf_rescs['b']['name'], self.logical_path],
+            scenarios, 'iphymv -S a -R b foo')
+
+    def test_iphymv_Sc_Rb_foo(self):
+        # iphymv -S c -R b foo (source non-default resource, destination non-default resource)
+        scenarios = [
+            {'start':{'a':'-', 'b':'-', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'-', 'c':'X'}, 'end':{'a':'-', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'-'}, 'end':{'a':'-', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'X'}, 'end':{'a':'-', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'-'}, 'end':{'a':'-', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'X'}, 'end':{'a':'-', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'-'}, 'end':{'a':'&', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'X'}, 'end':{'a':'&', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'-'}, 'end':{'a':'&', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'X'}, 'end':{'a':'&', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'-'}, 'end':{'a':'X', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'&'}, 'end':{'a':'X', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'X'}, 'end':{'a':'X', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'-'}, 'end':{'a':'X', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'&'}, 'end':{'a':'X', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'X'}, 'end':{'a':'X', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'-'}, 'end':{'a':'X', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'&'}, 'end':{'a':'X', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}}
+        ]
+
+        replica_status_test.run_command_against_scenarios(self,
+            ['iphymv', '-S', self.leaf_rescs['c']['name'], '-R', self.leaf_rescs['b']['name'], self.logical_path],
+            scenarios, 'iphymv -S c -R b foo')
+
+    def test_iphymv_Sc_Ra_foo(self):
+        # iphymv -S c -R a foo (source non-default resource, destination default resource)
+        scenarios = [
+            {'start':{'a':'-', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'-', 'c':'X'}, 'end':{'a':'X', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'-'}, 'end':{'a':'-', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'X'}, 'end':{'a':'X', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'-'}, 'end':{'a':'-', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'&'}, 'end':{'a':'&', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'X'}, 'end':{'a':'X', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'-'}, 'end':{'a':'&', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'-', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'X'}, 'end':{'a':'&', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'-'}, 'end':{'a':'&', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'&'}, 'end':{'a':'&', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'X'}, 'end':{'a':'&', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'-'}, 'end':{'a':'X', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'X'}, 'end':{'a':'X', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'-'}, 'end':{'a':'X', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'X'}, 'end':{'a':'X', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'-'}, 'end':{'a':'X', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'&'}, 'end':{'a':'&', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}}
+        ]
+
+        replica_status_test.run_command_against_scenarios(self,
+            ['iphymv', '-S', self.leaf_rescs['c']['name'], '-R', self.leaf_rescs['a']['name'], self.logical_path],
+            scenarios, 'iphymv -S c -R a foo')
+
+    def test_iphymv_n0_Ra_foo(self):
+        # iphymv -n 0 -R a foo (source replica 0, destination default resource)
+        scenarios = [
+            {'start':{'a':'-', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'-', 'c':'X'}, 'end':{'a':'X', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'-', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'-'}, 'end':{'a':'X', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'&'}, 'end':{'a':'X', 'b':'-', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'X'}, 'end':{'a':'X', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'-'}, 'end':{'a':'&', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'-', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'X'}, 'end':{'a':'&', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'-'}, 'end':{'a':'&', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'&'}, 'end':{'a':'&', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'X'}, 'end':{'a':'&', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'-'}, 'end':{'a':'X', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'&'}, 'end':{'a':'X', 'b':'-', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'X'}, 'end':{'a':'X', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'-'}, 'end':{'a':'X', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'&'}, 'end':{'a':'X', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'X'}, 'end':{'a':'X', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'-'}, 'end':{'a':'X', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'&'}, 'end':{'a':'X', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}}
+        ]
+
+        replica_status_test.run_command_against_scenarios(self,
+            ['iphymv', '-n', '0', '-R', self.leaf_rescs['a']['name'], self.logical_path],
+            scenarios, 'iphymv -n 0 -R a foo')
+
+    def test_iphymv_n0_Rb_foo(self):
+        # iphymv -n 0 -R b foo (source replica 0, destination non-default resource)
+        scenarios = [
+            {'start':{'a':'-', 'b':'-', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'-', 'c':'X'}, 'end':{'a':'-', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'-'}, 'end':{'a':'-', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'X'}, 'end':{'a':'-', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'-'}, 'end':{'a':'-', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'&'}, 'end':{'a':'-', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'X'}, 'end':{'a':'-', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'-'}, 'end':{'a':'-', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'X'}, 'end':{'a':'-', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'-'}, 'end':{'a':'-', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'X'}, 'end':{'a':'-', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'-'}, 'end':{'a':'-', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'&'}, 'end':{'a':'-', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'X'}, 'end':{'a':'-', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'-'}, 'end':{'a':'X', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'&'}, 'end':{'a':'X', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'X'}, 'end':{'a':'X', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'-'}, 'end':{'a':'X', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'&'}, 'end':{'a':'X', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}}
+        ]
+
+        replica_status_test.run_command_against_scenarios(self,
+            ['iphymv', '-n', '0', '-R', self.leaf_rescs['b']['name'], self.logical_path],
+            scenarios, 'iphymv -n 0 -R b foo')
+
+    def test_iphymv_n1_Ra_foo(self):
+        # iphymv -n 1 -R a foo (source replica 1, destination default resource)
+        scenarios = [
+            {'start':{'a':'-', 'b':'-', 'c':'&'}, 'end':{'a':'-', 'b':'-', 'c':'&'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'-', 'b':'-', 'c':'X'}, 'end':{'a':'-', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'-'}, 'end':{'a':'-', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'X'}, 'end':{'a':'X', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'-'}, 'end':{'a':'-', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'&'}, 'end':{'a':'&', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'X'}, 'end':{'a':'X', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'-'}, 'end':{'a':'&', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'-', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'X'}, 'end':{'a':'&', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'-'}, 'end':{'a':'&', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'&'}, 'end':{'a':'&', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'X'}, 'end':{'a':'&', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'-'}, 'end':{'a':'X', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'X'}, 'end':{'a':'X', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'-', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'-'}, 'end':{'a':'X', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'&'}, 'end':{'a':'X', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}}
+        ]
+
+        replica_status_test.run_command_against_scenarios(self,
+            ['iphymv', '-n', '1', '-R', self.leaf_rescs['a']['name'], self.logical_path],
+            scenarios, 'iphymv -n 1 -R a foo')
+
+    def test_iphymv_n1_Rb_foo(self):
+        # iphymv -n 1 -R b foo (source replica 1, destination non-default resource)
+        scenarios = [
+            {'start':{'a':'-', 'b':'-', 'c':'&'}, 'end':{'a':'-', 'b':'-', 'c':'&'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'-', 'b':'-', 'c':'X'}, 'end':{'a':'-', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'-'}, 'end':{'a':'-', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'X'}, 'end':{'a':'-', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'-'}, 'end':{'a':'-', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'X'}, 'end':{'a':'-', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'-'}, 'end':{'a':'&', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'X'}, 'end':{'a':'&', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'-'}, 'end':{'a':'&', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'&'}, 'end':{'a':'&', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'X'}, 'end':{'a':'&', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'-'}, 'end':{'a':'X', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'&'}, 'end':{'a':'X', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'X'}, 'end':{'a':'X', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'-'}, 'end':{'a':'X', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'&'}, 'end':{'a':'X', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'X'}, 'end':{'a':'X', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'-'}, 'end':{'a':'X', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'&'}, 'end':{'a':'X', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}}
+        ]
+
+        replica_status_test.run_command_against_scenarios(self,
+            ['iphymv', '-n', '1', '-R', self.leaf_rescs['b']['name'], self.logical_path],
+            scenarios, 'iphymv -n 1 -R b foo')

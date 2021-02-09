@@ -840,6 +840,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/src/physPath.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/plugin_lifetime_manager.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/procLog.cpp
+  ${CMAKE_SOURCE_DIR}/server/core/src/replication_utilities.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/rodsAgent.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/rodsConnect.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/rsApiHandler.cpp
