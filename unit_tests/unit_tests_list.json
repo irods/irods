@@ -10,6 +10,7 @@
     "irods_filesystem",
     "irods_get_file_descriptor_info",
     "irods_hierarchy_parser",
+    "irods_hostname_cache",
     "irods_key_value_proxy",
     "irods_lifetime_manager",
     "irods_linked_list_iterator",

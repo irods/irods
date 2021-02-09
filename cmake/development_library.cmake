@@ -33,6 +33,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/getUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/group.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/guiProgressCallback.h
+  ${CMAKE_SOURCE_DIR}/lib/core/include/hostname_cache.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_assert.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_at_scope_exit.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_auth_constants.hpp
