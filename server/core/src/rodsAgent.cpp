@@ -558,6 +558,7 @@ runIrodsAgentFactory( sockaddr_un agent_addr ) {
     }
 
     new_net_obj->to_server( &rsComm );
+    // TODO: move this into an at_scope_exit
     cleanup();
     free( rsComm.thread_ctx );
     free( rsComm.auth_scheme );

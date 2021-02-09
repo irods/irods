@@ -1559,6 +1559,7 @@ class Test_Issue3862(resource_suite.ResourceBase, unittest.TestCase):
         # =-=-=-=-=-=-=-
         # STANDUP
         self.admin.assert_icommand("iadmin mkresc repl replication", 'STDOUT_SINGLELINE', "Creating")
+        self.admin.assert_icommand(['iadmin', 'modresc', 'repl', 'context', 'retry_attempts=0'])
 
         self.admin.assert_icommand("iadmin mkresc leaf_a unixfilesystem " + hostname +
                                    ":/tmp/irods/pydevtest_leaf_a", 'STDOUT_SINGLELINE', "Creating")  # unix
@@ -1567,18 +1568,18 @@ class Test_Issue3862(resource_suite.ResourceBase, unittest.TestCase):
 
         # =-=-=-=-=-=-=-
         # place data into the leaf_a
-        test_dir = 'issue3862'
+        self.test_dir = 'issue3862'
         num_files = 400
-        if not os.path.isdir(test_dir):
-            os.mkdir(test_dir)
+        if not os.path.isdir(self.test_dir):
+            os.mkdir(self.test_dir)
         for i in range(num_files):
-            filename = test_dir + '/file_' + str(i)
+            filename = self.test_dir + '/file_' + str(i)
             lib.create_local_testfile(filename)
 
         with session.make_session_for_existing_admin() as admin_session:
 
             # add files to leaf_a
-            admin_session.run_icommand(['iput', '-r', '-R', 'leaf_a', test_dir])
+            admin_session.run_icommand(['iput', '-r', '-R', 'leaf_a', self.test_dir])
 
             # now connect leaves to repl
             admin_session.run_icommand(['iadmin', 'addchildtoresc', 'repl', 'leaf_a'])
@@ -1588,11 +1589,9 @@ class Test_Issue3862(resource_suite.ResourceBase, unittest.TestCase):
 
         super(Test_Issue3862, self).tearDown()
 
-        test_dir = 'issue3862'
-
         with session.make_session_for_existing_admin() as admin_session:
 
-            admin_session.run_icommand(['irm', '-rf', test_dir])
+            admin_session.run_icommand(['irm', '-rf', self.test_dir])
 
             admin_session.run_icommand(['iadmin', 'rmchildfromresc', 'repl', 'leaf_a'])
             admin_session.run_icommand(['iadmin', 'rmchildfromresc', 'repl', 'leaf_b'])
@@ -1613,14 +1612,22 @@ class Test_Issue3862(resource_suite.ResourceBase, unittest.TestCase):
             else:
                 self.admin.assert_icommand("imeta rmw -R repl rebalance_operation % %") # b/c #3683
 
+        with session.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand(['ils', '-l', '-r', self.test_dir], 'STDOUT_SINGLELINE', self.test_dir)
+
         # =-=-=-=-=-=-=-
         # call two separate rebalances, the first in background
         # prior to the fix, the second would generate a CAT_STATEMENT_TABLE_FULL error
         subprocess.Popen(["iadmin", "modresc",  "repl", "rebalance"])
         # make sure rebalance visibility metadata has been populated before removing it
         check_and_remove_rebalance_visibility_metadata(10); # try 10 times
-        # fire parallel rebalance
-        self.admin.assert_icommand("iadmin modresc repl rebalance")
+        # fire parallel rebalance - this will encounter some errors due to self-inflicted race condition
+        out,err,_ = self.admin.run_icommand(['iadmin', 'modresc', 'repl', 'rebalance'])
+        self.assertNotIn('CAT_STATEMENT_TABLE_FULL', out)
+        self.assertNotIn('CAT_STATEMENT_TABLE_FULL', err)
+
+        with session.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand(['ils', '-l', '-r', self.test_dir], 'STDOUT_SINGLELINE', self.test_dir)
 
 class Test_Iadmin_modrepl(resource_suite.ResourceBase, unittest.TestCase):
 
