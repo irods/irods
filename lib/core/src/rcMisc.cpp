@@ -112,93 +112,6 @@ clearBBuf( bytesBuf_t *myBBuf ) {
     return 0;
 }
 
-/* addRErrorMsg - Add an error msg to the rError_t struct.
- *    rError_t *myError - the rError_t struct  for the error msg.
- *    int status - the input error status.
- *    char *msg - the error msg string. This string will be copied to myError.
- */
-
-int
-addRErrorMsg( rError_t *myError, int status, const char *msg ) {
-    rErrMsg_t **newErrMsg;
-    int newLen;
-    int i;
-
-    if ( myError == NULL ) {
-        return SYS_INTERNAL_NULL_INPUT_ERR;
-    }
-
-    if ( ( myError->len % PTR_ARRAY_MALLOC_LEN ) == 0 ) {
-        newLen = myError->len + PTR_ARRAY_MALLOC_LEN;
-        newErrMsg = ( rErrMsg_t ** ) malloc( newLen * sizeof( *newErrMsg ) );
-        memset( newErrMsg, 0, newLen * sizeof( *newErrMsg ) );
-        for ( i = 0; i < myError->len; i++ ) {
-            newErrMsg[i] = myError->errMsg[i];
-        }
-        if ( myError->errMsg != NULL ) {
-            free( myError->errMsg );
-        }
-        myError->errMsg = newErrMsg;
-    }
-
-    myError->errMsg[myError->len] = ( rErrMsg_t* )malloc( sizeof( rErrMsg_t ) );
-    strncpy( myError->errMsg[myError->len]->msg, msg, ERR_MSG_LEN - 1 );
-    myError->errMsg[myError->len]->status = status;
-    myError->len++;
-
-    return 0;
-}
-
-int
-replErrorStack( rError_t *srcRError, rError_t *destRError ) {
-    int i, len;
-    rErrMsg_t *errMsg;
-
-    if ( srcRError == NULL || destRError == NULL ) {
-        return USER__NULL_INPUT_ERR;
-    }
-
-    len = srcRError->len;
-
-    for ( i = 0; i < len; i++ ) {
-        errMsg = srcRError->errMsg[i];
-        addRErrorMsg( destRError, errMsg->status, errMsg->msg );
-    }
-    return 0;
-}
-
-int
-freeRError( rError_t *myError ) {
-
-    if ( myError == NULL ) {
-        return 0;
-    }
-
-    freeRErrorContent( myError );
-    free( myError );
-    return 0;
-}
-
-int
-freeRErrorContent( rError_t *myError ) {
-    int i;
-
-    if ( myError == NULL ) {
-        return 0;
-    }
-
-    if ( myError->len > 0 ) {
-        for ( i = 0; i < myError->len; i++ ) {
-            free( myError->errMsg[i] );
-        }
-        free( myError->errMsg );
-    }
-
-    memset( myError, 0, sizeof( rError_t ) );
-
-    return 0;
-}
-
 //Only split the username from the zone name, based on the first occurence of '#'
 //Further parsing of the username is the responsibility of the database plugin.
 int
@@ -2322,27 +2235,6 @@ checkDateFormat( char * s ) {
     else {
         return DATE_FORMAT_ERR;
     }
-}
-
-int
-printErrorStack( rError_t * rError ) {
-    int i, len;
-    rErrMsg_t *errMsg;
-
-    if ( rError == NULL ) {
-        return 0;
-    }
-
-    len = rError->len;
-
-    for ( i = 0; i < len; i++ ) {
-        errMsg = rError->errMsg[i];
-        if ( errMsg->status != STDOUT_STATUS ) {
-            printf( "Level %d: ", i );
-        }
-        printf( "%s\n", errMsg->msg );
-    }
-    return 0;
 }
 
 int
