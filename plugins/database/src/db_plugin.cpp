@@ -2604,7 +2604,6 @@ irods::error db_reg_data_obj_op(
     char dataReplNum[MAX_NAME_LEN];
     char dataSizeNum[MAX_NAME_LEN];
     char dataStatusNum[MAX_NAME_LEN];
-    char data_expiry_ts[] = { "00000000000" };
     int status;
     int inheritFlag;
 
@@ -2691,6 +2690,7 @@ irods::error db_reg_data_obj_op(
     if (0 == strcmp(_data_obj_info->dataCreate, "")) {
         strcpy(_data_obj_info->dataCreate, myTime);
     }
+    strcpy(_data_obj_info->dataExpiry, "00000000000");
 
     std::snprintf(_data_obj_info->dataOwnerName, sizeof(_data_obj_info->dataOwnerName), "%s", _ctx.comm()->clientUser.userName);
     std::snprintf(_data_obj_info->dataOwnerZone, sizeof(_data_obj_info->dataOwnerZone), "%s", _ctx.comm()->clientUser.rodsZone);
@@ -2713,7 +2713,7 @@ irods::error db_reg_data_obj_op(
     cllBindVars[13] = _data_obj_info->dataMode;
     cllBindVars[14] = _data_obj_info->dataCreate;
     cllBindVars[15] = _data_obj_info->dataModify;
-    cllBindVars[16] = data_expiry_ts;
+    cllBindVars[16] = _data_obj_info->dataExpiry;
     cllBindVars[17] = "EMPTY_RESC_NAME";
     cllBindVars[18] = "EMPTY_RESC_HIER";
     cllBindVars[19] = "EMPTY_RESC_GROUP_NAME";
