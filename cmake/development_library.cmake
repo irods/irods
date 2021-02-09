@@ -26,6 +26,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/client_connection.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/connection_pool.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/cpUtil.h
+  ${CMAKE_SOURCE_DIR}/lib/core/include/dns_cache.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/dstream.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/entity.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/fsckUtil.h
