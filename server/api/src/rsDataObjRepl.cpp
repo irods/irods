@@ -52,22 +52,32 @@
 #include "irods_server_properties.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_string_tokenize.hpp"
-#include "key_value_proxy.hpp"
+#include "json_serialization.hpp"
 #include "key_value_proxy.hpp"
 #include "replica_access_table.hpp"
+#include "replication_utilities.hpp"
 #include "voting.hpp"
 
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
 #include "data_object_proxy.hpp"
 #include "replica_proxy.hpp"
 
+#include "replica_state_table.hpp"
+
+#include <algorithm>
 #include <string_view>
 #include <vector>
 
 #include "fmt/format.h"
 
+#include <boost/make_shared.hpp>
+
 namespace
 {
+    namespace ir = irods::experimental::replica;
+    namespace irv = irods::experimental::resource::voting;
+    namespace rst = irods::replica_state_table;
+
     auto apply_static_peps(RsComm& _comm, l1desc& _l1desc, const int _operation_status) -> void
     {
         if (_l1desc.openType == CREATE_TYPE) {
@@ -82,16 +92,16 @@ namespace
         irods::apply_static_post_pep(_comm, _l1desc, _operation_status, "acPostProcForPut");
     } // apply_static_peps
 
-    auto finalize_source_replica(RsComm& _comm, l1desc& _l1desc, DataObjInfo& _info) -> int
+    auto finalize_source_replica(RsComm& _comm, l1desc& _l1desc, ir::replica_proxy_t& _info) -> int
     {
         if (_l1desc.purgeCacheFlag) {
-            irods::purge_cache(_comm, _info);
+            irods::purge_cache(_comm, *_info.get());
         }
 
         irods::apply_metadata_from_cond_input(_comm, *_l1desc.dataObjInp);
         irods::apply_acl_from_cond_input(_comm, *_l1desc.dataObjInp);
 
-        // TODO: set replica state...?
+        irods::replica_state_table::instance().erase(_info.logical_path());
 
         return 0;
     } // finalize_source_replica
@@ -99,56 +109,53 @@ namespace
     auto calculate_checksum(
         RsComm& _comm,
         l1desc& _l1desc,
-        DataObjInfo& _source_info,
-        DataObjInfo& _destination_info) -> std::string
+        ir::replica_proxy_t& _source_replica,
+        ir::replica_proxy_t& _destination_replica) -> std::string
     {
-        if (!std::string_view{_destination_info.chksum}.empty()) {
+        if (!_destination_replica.checksum().empty()) {
             _l1desc.chksumFlag = REG_CHKSUM;
         }
 
         char* checksum_string = nullptr;
         irods::at_scope_exit free_checksum_string{[&checksum_string] { free(checksum_string); }};
 
-        auto destination_replica = irods::experimental::replica::make_replica_proxy(_destination_info);
-        auto source_replica = irods::experimental::replica::make_replica_proxy(_source_info);
-
-        if (source_replica.checksum().length() > 0 && STALE_REPLICA != source_replica.replica_status()) {
-            destination_replica.cond_input()[ORIG_CHKSUM_KW] = source_replica.checksum();
+        if (_source_replica.checksum().length() > 0 && STALE_REPLICA != _source_replica.replica_status()) {
+            _destination_replica.cond_input()[ORIG_CHKSUM_KW] = _source_replica.checksum();
 
             irods::log(LOG_DEBUG, fmt::format(
                 "[{}:{}] - verifying checksum for [{}],source:[{}]",
-                __FUNCTION__, __LINE__, destination_replica.logical_path(), source_replica.checksum()));
+                __FUNCTION__, __LINE__, _destination_replica.logical_path(), _source_replica.checksum()));
 
-            if (const int ec = _dataObjChksum(&_comm, destination_replica.get(), &checksum_string); ec < 0) {
-                destination_replica.checksum("");
+            if (const int ec = _dataObjChksum(&_comm, _destination_replica.get(), &checksum_string); ec < 0) {
+                _destination_replica.checksum("");
 
                 if (DIRECT_ARCHIVE_ACCESS == ec) {
-                    destination_replica.checksum(source_replica.checksum());
-                    return source_replica.checksum().data();
+                    _destination_replica.checksum(_source_replica.checksum());
+                    return _source_replica.checksum().data();
                 }
 
                 THROW(ec, fmt::format(
                     "{}: _dataObjChksum error for {}, status = {}",
-                    __FUNCTION__, destination_replica.logical_path(), ec));
+                    __FUNCTION__, _destination_replica.logical_path(), ec));
             }
 
             if (!checksum_string) {
                 THROW(SYS_INTERNAL_NULL_INPUT_ERR, "checksum_string is NULL");
             }
 
-            destination_replica.checksum(checksum_string);
+            _destination_replica.checksum(checksum_string);
 
-            if (source_replica.checksum() != checksum_string) {
+            if (_source_replica.checksum() != checksum_string) {
                 THROW(USER_CHKSUM_MISMATCH, fmt::format(
                     "{}: chksum mismatch for {} src [{}] new [{}]",
-                    __FUNCTION__, destination_replica.logical_path(), source_replica.checksum(), checksum_string));
+                    __FUNCTION__, _destination_replica.logical_path(), _source_replica.checksum(), checksum_string));
             }
 
-            return destination_replica.checksum().data();
+            return _destination_replica.checksum().data();
         }
 
         if (!_l1desc.chksumFlag) {
-            if (destination_replica.checksum().empty()) {
+            if (_destination_replica.checksum().empty()) {
                 return {};
             }
             _l1desc.chksumFlag = VERIFY_CHKSUM;
@@ -156,14 +163,14 @@ namespace
 
         if (VERIFY_CHKSUM == _l1desc.chksumFlag) {
             if (!std::string_view{_l1desc.chksum}.empty()) {
-                return irods::verify_checksum(_comm, *destination_replica.get(), _l1desc.chksum);
+                return irods::verify_checksum(_comm, *_destination_replica.get(), _l1desc.chksum);
             }
 
-            if (!destination_replica.checksum().empty()) {
-                destination_replica.cond_input()[ORIG_CHKSUM_KW] = destination_replica.checksum();
+            if (!_destination_replica.checksum().empty()) {
+                _destination_replica.cond_input()[ORIG_CHKSUM_KW] = _destination_replica.checksum();
             }
 
-            if (const int ec = _dataObjChksum(&_comm, destination_replica.get(), &checksum_string); ec < 0) {
+            if (const int ec = _dataObjChksum(&_comm, _destination_replica.get(), &checksum_string); ec < 0) {
                 THROW(ec, "failed in _dataObjChksum");
             }
 
@@ -171,107 +178,94 @@ namespace
                 THROW(SYS_INTERNAL_NULL_INPUT_ERR, "checksum_string is NULL");
             }
 
-            if (!destination_replica.checksum().empty()) {
-                destination_replica.cond_input().erase(ORIG_CHKSUM_KW);
+            if (!_destination_replica.checksum().empty()) {
+                _destination_replica.cond_input().erase(ORIG_CHKSUM_KW);
 
                 /* for replication, the chksum in dataObjInfo was duplicated */
-                if (destination_replica.checksum() != checksum_string) {
+                if (_destination_replica.checksum() != checksum_string) {
                     THROW(USER_CHKSUM_MISMATCH, fmt::format(
                         "{}:mismach chksum for {}.Rcat={},comp {}",
-                        __FUNCTION__, destination_replica.logical_path(), destination_replica.checksum(), checksum_string));
+                        __FUNCTION__, _destination_replica.logical_path(), _destination_replica.checksum(), checksum_string));
                 }
             }
 
             return {checksum_string};
         }
 
-        return irods::register_new_checksum(_comm, *destination_replica.get(), _l1desc.chksum);
+        return irods::register_new_checksum(_comm, *_destination_replica.get(), _l1desc.chksum);
     } // calculate_checksum
 
     auto finalize_destination_replica(
         RsComm& _comm,
         l1desc& _l1desc,
-        DataObjInfo& _source_info,
-        DataObjInfo& _destination_info) -> int
+        ir::replica_proxy_t& _source_replica,
+        ir::replica_proxy_t& _destination_replica) -> int
     {
-        auto source_replica = irods::experimental::replica::make_replica_proxy(_source_info);
-        auto destination_replica = irods::experimental::replica::make_replica_proxy(_destination_info);
-
         auto cond_input = irods::experimental::make_key_value_proxy(_l1desc.dataObjInp->condInput);
         try {
-            const bool verify_size = !getValByKey(&_l1desc.dataObjInp->condInput, NO_CHK_COPY_LEN_KW);
-            const auto size_in_vault = irods::get_size_in_vault(_comm, _destination_info, verify_size, _l1desc.dataSize);
-            destination_replica.size(size_in_vault);
+            constexpr bool verify_size = true;
+            _destination_replica.size(irods::get_size_in_vault(_comm, *_destination_replica.get(), verify_size, _l1desc.dataSize));
 
-            if (const bool update_checksum = verify_size || !destination_replica.checksum().empty(); update_checksum) {
-                const auto checksum = calculate_checksum(_comm, _l1desc, _source_info, _destination_info);
+            if (!_destination_replica.checksum().empty()) {
+                const auto checksum = calculate_checksum(_comm, _l1desc, _source_replica, _destination_replica);
                 if (!checksum.empty()) {
                     cond_input[CHKSUM_KW] = checksum;
                 }
             }
         }
         catch (const irods::exception& e) {
-            if (const int ec = irods::stale_replica(_comm, _l1desc, _destination_info); ec < 0) {
+            if (const int ec = irods::stale_replica(_comm, _l1desc, *_destination_replica.get()); ec < 0) {
                 irods::log(LOG_ERROR, fmt::format(
-                    "{} - rsModDataObjMeta failed [{}]",
+                    "{} - failed to stale replica [{}]",
                     __FUNCTION__, ec));
             }
-
             throw;
         }
 
-        auto [reg_param, lm] = irods::experimental::make_key_value_proxy({{OPEN_TYPE_KW, std::to_string(_l1desc.openType)}});
-        reg_param[REPL_STATUS_KW] = std::to_string(source_replica.replica_status());
-        reg_param[DATA_SIZE_KW] = std::to_string(source_replica.size());
-        reg_param[DATA_MODIFY_KW] = std::to_string((int)time(nullptr));
-        reg_param[FILE_PATH_KW] = destination_replica.physical_path();
-        destination_replica.size(source_replica.size());
+        cond_input[OPEN_TYPE_KW] = std::to_string(_l1desc.openType);
 
-        if (cond_input.contains(ADMIN_KW)) {
-            reg_param[ADMIN_KW] = cond_input.at(ADMIN_KW);
-        }
-        if (cond_input.contains(IN_PDMO_KW)) {
-            reg_param[IN_PDMO_KW] = cond_input.at(IN_PDMO_KW);
-        }
-        if (cond_input.contains(SYNC_OBJ_KW)) {
-            reg_param[SYNC_OBJ_KW] = cond_input.at(SYNC_OBJ_KW);
-        }
-        if (cond_input.contains(CHKSUM_KW)) {
-            reg_param[CHKSUM_KW] = cond_input.at(CHKSUM_KW);
-        }
+        auto& rst = irods::replica_state_table::instance();
 
-        modDataObjMeta_t mod_inp{};
-        mod_inp.dataObjInfo = destination_replica.get();
-        mod_inp.regParam = reg_param.get();
-        const int status = rsModDataObjMeta(&_comm, &mod_inp);
+        _destination_replica.replica_status(_source_replica.replica_status());
+        _destination_replica.mtime(SET_TIME_TO_NOW_KW);
+
+        // This allows fileModified to trigger, but the resource plugins need to make sure the
+        // appropriate PDMO hierarchies are being checked to prevent infinite loops (e.g. replication
+        // resource triggering replication while performing a PDMO replication).
+        cond_input.erase(IN_REPL_KW);
+
+        _destination_replica.cond_input()[FILE_MODIFIED_KW] = irods::to_json(cond_input.get()).dump();
+
+        // Write it out to the catalog
+        rst.update(_destination_replica.logical_path(), _destination_replica);
+        const int ec = rst.publish_to_catalog(_comm, _destination_replica.logical_path(), rst::trigger_file_modified::yes);
 
         if (CREATE_TYPE == _l1desc.openType) {
-            updatequotaOverrun(destination_replica.hierarchy().data(), destination_replica.size(), ALL_QUOTA);
+            updatequotaOverrun(_destination_replica.hierarchy().data(), _destination_replica.size(), ALL_QUOTA);
         }
 
-        if (status < 0) {
-            _l1desc.oprStatus = status;
+        if (ec < 0) {
+            _l1desc.oprStatus = ec;
 
-            if (CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME != status) {
-                l3Unlink(&_comm, destination_replica.get());
+            if (CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME != ec) {
+                l3Unlink(&_comm, _destination_replica.get());
             }
 
             irods::log(LOG_NOTICE, fmt::format(
                 "{}: RegReplica/ModDataObjMeta {} err. stat = {}",
-                __FUNCTION__, destination_replica.logical_path(), status));
+                __FUNCTION__, _destination_replica.logical_path(), ec));
         }
 
-        return status;
+        if (rst.contains(_destination_replica.logical_path())) {
+            rst.erase(_destination_replica.logical_path());
+        }
+
+        return ec;
     } // finalize_destination_replica
 
-    auto finalize_destination_replica_on_failure(RsComm& _comm, l1desc& _l1desc, DataObjInfo& _info) -> int
+    auto finalize_destination_replica_on_failure(RsComm& _comm, l1desc& _l1desc, ir::replica_proxy_t& _destination_replica) -> int
     {
-        auto replica = irods::experimental::replica::make_replica_proxy(_info);
-
-        replica.replica_status(STALE_REPLICA);
-        replica.mtime(std::to_string((int)time(nullptr)));
-
-        const rodsLong_t vault_size = getSizeInVault(&_comm, replica.get());
+        const rodsLong_t vault_size = getSizeInVault(&_comm, _destination_replica.get());
         if (vault_size < 0) {
             irods::log(LOG_ERROR, fmt::format(
                 "{} - getSizeInVault failed [{}]",
@@ -279,50 +273,79 @@ namespace
             return vault_size;
         }
 
-        replica.size(vault_size);
+        auto& rst = irods::replica_state_table::instance();
 
-        auto cond_input = irods::experimental::make_key_value_proxy(_l1desc.dataObjInp->condInput);
-        auto [reg_param, lm] = irods::experimental::make_key_value_proxy();
-        reg_param[DATA_SIZE_KW] = std::to_string(replica.size());
-        reg_param[IN_PDMO_KW] = replica.hierarchy();
-        reg_param[REPL_STATUS_KW] = std::to_string(STALE_REPLICA);
-        reg_param[STALE_ALL_INTERMEDIATE_REPLICAS_KW] = "";
-        if (cond_input.contains(ADMIN_KW)) {
-            reg_param[ADMIN_KW] = "";
+        _destination_replica.replica_status(STALE_REPLICA);
+        _destination_replica.mtime(SET_TIME_TO_NOW_KW);
+        _destination_replica.size(vault_size);
+
+        // Write it out to the catalog
+        rst.update(_destination_replica.logical_path(), _destination_replica);
+
+        const int ec = rst.publish_to_catalog(_comm, _destination_replica.logical_path(), irods::replica_state_table::trigger_file_modified::no);
+
+        if (ec < 0) {
+            irods::log(LOG_ERROR, fmt::format("failed to publish to catalog:[{}]", ec));
         }
 
-        modDataObjMeta_t mod_inp{};
-        mod_inp.dataObjInfo = replica.get();
-        mod_inp.regParam = reg_param.get();
-        if (const int ec = rsModDataObjMeta(&_comm, &mod_inp); ec < 0) {
-            irods::log(LOG_NOTICE, fmt::format(
-                "{}: rsModDataObjMeta failed, dataSize [{}] status = {}",
-                __FUNCTION__, replica.size(), ec));
-            return ec;
-        }
-
-        return 0;
+        return ec;
     } // finalize_destination_replica_on_failure
 
-    int close_replica(RsComm& _comm, const int _fd)
+    auto get_replica_with_hierarchy(
+        RsComm& _comm,
+        irods::file_object_ptr _object,
+        const std::string_view _hierarchy,
+        const irods::replication::log_errors _log_errors) -> irods::physical_object&
     {
-        nlohmann::json in_json;
-        in_json["fd"] = _fd;
-        in_json["send_notifications"] = false;
-        in_json["update_size"] = false;
-        in_json["update_status"] = false;
-        const auto input = in_json.dump();
+        auto maybe_replica = _object->get_replica(_hierarchy);
 
-        if (const int ec = rs_replica_close(&_comm, input.data()); ec < 0) {
-            irods::log(LOG_ERROR, fmt::format(
-                "[{}] - error closing replica; ec:[{}]",
-                __FUNCTION__, ec));
+        if (!maybe_replica) {
+            const std::string msg = fmt::format("no replica found with hierarchy [{}]", _hierarchy);
 
-            return ec;
+            if (irods::replication::log_errors::yes == _log_errors) {
+                addRErrorMsg(&_comm.rError, SYS_REPLICA_DOES_NOT_EXIST, msg.data());
+            }
+
+            THROW(SYS_REPLICA_DOES_NOT_EXIST, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
         }
 
-        return 0;
-    } // close_replica
+        return maybe_replica->get();
+    } // get_replica_with_hierarchy
+
+    auto resolve_hierarchy_and_get_data_object_info(
+        RsComm& _comm,
+        DataObjInp& _inp,
+        const std::string_view _operation) -> irods::file_object_ptr
+    {
+        auto cond_input = irods::experimental::make_key_value_proxy(_inp.condInput);
+
+        // Open for read operation is for source replica, so use RESC_HIER_STR_KW
+        // if that is the passed-in operation.
+        const std::string_view keyword = irods::OPEN_OPERATION == _operation ? RESC_HIER_STR_KW : DEST_RESC_HIER_STR_KW;
+
+        if (irods::experimental::keyword_has_a_value(_inp.condInput, keyword)) {
+            irods::file_object_ptr obj{new irods::file_object()};
+
+            if (irods::error err = irods::file_object_factory(&_comm, &_inp, obj); !err.ok()) {
+                THROW(err.code(), err.result());
+            }
+
+            if (irods::OPEN_OPERATION != _operation) {
+                cond_input[RESC_HIER_STR_KW] = cond_input.at(DEST_RESC_HIER_STR_KW);
+            }
+
+            return obj;
+        }
+
+        auto [obj, hier] = irods::resolve_resource_hierarchy(_operation.data(), &_comm, _inp);
+
+        cond_input[RESC_HIER_STR_KW] = hier;
+        if (irods::OPEN_OPERATION != _operation) {
+            cond_input[DEST_RESC_HIER_STR_KW] = cond_input.at(RESC_HIER_STR_KW);
+        }
+
+        return obj;
+    } // resolve_hierarchy_and_get_data_object_info
 
     DataObjInp init_source_replica_input(RsComm& _comm, const DataObjInp& _inp)
     {
@@ -330,135 +353,64 @@ namespace
         replKeyVal(&_inp.condInput, &source_data_obj_inp.condInput);
         auto cond_input = irods::experimental::make_key_value_proxy(source_data_obj_inp.condInput);
 
-        // Remove existing keywords used for destination resource
+        // these keywords are used for destination resource, so remove them
         cond_input.erase(DEST_RESC_NAME_KW);
         cond_input.erase(DEST_RESC_HIER_STR_KW);
 
+        if (irods::experimental::keyword_has_a_value(_inp.condInput, RESC_NAME_KW) &&
+            irods::hierarchy_parser{cond_input.at(RESC_NAME_KW).value().data()}.num_levels() > 1) {
+            THROW(DIRECT_CHILD_ACCESS, fmt::format(
+                "specified resource [{}] is not a root resource",
+                cond_input.at(RESC_NAME_KW).value()));
+        }
+
         return source_data_obj_inp;
     } // init_source_replica_input
-
-    irods::file_object_ptr get_source_replica_info(RsComm& _comm, DataObjInp& _inp)
-    {
-        auto cond_input = irods::experimental::make_key_value_proxy(_inp.condInput);
-
-        if (cond_input.contains(RESC_HIER_STR_KW)) {
-            irods::file_object_ptr obj{new irods::file_object()};
-            irods::error err = irods::file_object_factory(&_comm, &_inp, obj);
-            if (!err.ok()) {
-                THROW(err.code(), err.result());
-            }
-            return obj;
-        }
-
-        auto [obj, hier] = irods::resolve_resource_hierarchy(irods::OPEN_OPERATION, &_comm, _inp);
-
-        cond_input[RESC_HIER_STR_KW] = hier;
-
-        return obj;
-    } // get_source_replica_info
-
-    DataObjInp init_destination_replica_input(RsComm& _comm, const DataObjInp& _inp)
-    {
-        DataObjInp destination_data_obj_inp = _inp;
-        replKeyVal(&_inp.condInput, &destination_data_obj_inp.condInput);
-        auto cond_input = irods::experimental::make_key_value_proxy(destination_data_obj_inp.condInput);
-
-        // Remove existing keywords used for source resource
-        cond_input.erase(RESC_NAME_KW);
-        cond_input.erase(RESC_HIER_STR_KW);
-
-        return destination_data_obj_inp;
-    } // init_destination_replica_input
-
-    irods::file_object_ptr get_destination_replica_info(RsComm& _comm, DataObjInp& _inp)
-    {
-        auto cond_input = irods::experimental::make_key_value_proxy(_inp.condInput);
-
-        if (cond_input.contains(DEST_RESC_HIER_STR_KW)) {
-            cond_input[RESC_HIER_STR_KW] = cond_input.at(DEST_RESC_HIER_STR_KW).value();
-            irods::file_object_ptr obj{new irods::file_object()};
-            irods::error err = irods::file_object_factory(&_comm, &_inp, obj);
-            if (!err.ok()) {
-                THROW(err.code(), err.result());
-            }
-            return obj;
-        }
-
-        std::string replica_number;
-        if (cond_input.contains(REPL_NUM_KW)) {
-            replica_number = cond_input[REPL_NUM_KW].value();
-
-            // This keyword must be removed temporarily so that the voting mechanism does
-            // not misinterpret it and change the operation from a CREATE to a WRITE.
-            // See server/core/src/irods_resource_redirect.cpp for details.
-            cond_input.erase(REPL_NUM_KW);
-        }
-
-        irods::at_scope_exit restore_replica_number_keyword{[&replica_number, &cond_input] {
-            if (!replica_number.empty()) {
-                cond_input[REPL_NUM_KW] = replica_number;
-            }
-        }};
-
-        // Get the destination resource that the client specified, or use the default resource
-        if (!cond_input.contains(DEST_RESC_HIER_STR_KW) &&
-            !cond_input.contains(DEST_RESC_NAME_KW) &&
-            cond_input.contains(DEF_RESC_NAME_KW)) {
-            cond_input[DEST_RESC_NAME_KW] = cond_input.at(DEF_RESC_NAME_KW).value();
-        }
-
-        auto [obj, hier] = irods::resolve_resource_hierarchy(
-            irods::CREATE_OPERATION, &_comm, _inp);
-
-        cond_input[RESC_HIER_STR_KW] = hier;
-        cond_input[DEST_RESC_HIER_STR_KW] = hier;
-
-        return obj;
-    } // get_destination_replica_info
 
     int open_source_replica(RsComm& _comm, DataObjInp& _inp)
     {
         _inp.oprType = REPLICATE_SRC;
         _inp.openFlags = O_RDONLY;
-        int source_l1descInx = rsDataObjOpen(&_comm, &_inp);
-        if (source_l1descInx < 0) {
-            return source_l1descInx;
-        }
 
-        const auto* info = L1desc[source_l1descInx].dataObjInfo;
-
-        irods::log(LOG_DEBUG, fmt::format(
-            "[{}:{}] - opened source replica [{}] on [{}] (repl [{}])",
-            __FUNCTION__, __LINE__, info->objPath, info->rescHier, info->replNum));
-
-        // TODO: Consider using force flag and making this part of the voting process
-        if (GOOD_REPLICA != L1desc[source_l1descInx].dataObjInfo->replStatus) {
-            close_replica(_comm, source_l1descInx);
-            // TODO: need to stale-ify?
-            return SYS_NO_GOOD_REPLICA;
-        }
-
-        return source_l1descInx;
+        return rsDataObjOpen(&_comm, &_inp);
     } // open_source_replica
 
-    int open_destination_replica(RsComm& _comm, DataObjInp& _inp, const int _fd)
+    DataObjInp init_destination_replica_input(RsComm& _comm, const DataObjInp& _inp)
     {
-        auto kvp = irods::experimental::make_key_value_proxy(_inp.condInput);
-        kvp[REG_REPL_KW] = "";
-        kvp[DATA_ID_KW] = std::to_string(L1desc[_fd].dataObjInfo->dataId);
-        kvp[SOURCE_L1_DESC_KW] = std::to_string(_fd);
-        kvp.erase(PURGE_CACHE_KW);
+        DataObjInp destination_inp = _inp;
+        replKeyVal(&_inp.condInput, &destination_inp.condInput);
+        auto cond_input = irods::experimental::make_key_value_proxy(destination_inp.condInput);
+
+        // these keywords are used for source resource, so remove them
+        cond_input.erase(RESC_NAME_KW);
+        cond_input.erase(RESC_HIER_STR_KW);
+        cond_input.erase(REPL_NUM_KW);
+
+        if (!irods::experimental::keyword_has_a_value(_inp.condInput, DEST_RESC_HIER_STR_KW) &&
+            !irods::experimental::keyword_has_a_value(_inp.condInput, DEST_RESC_NAME_KW) &&
+            irods::experimental::keyword_has_a_value(_inp.condInput, DEF_RESC_NAME_KW)) {
+            cond_input[DEST_RESC_NAME_KW] = cond_input.at(DEF_RESC_NAME_KW).value();
+        }
+
+        if (irods::experimental::keyword_has_a_value(_inp.condInput, DEST_RESC_NAME_KW) &&
+            irods::hierarchy_parser{cond_input.at(DEST_RESC_NAME_KW).value().data()}.num_levels() > 1) {
+            THROW(DIRECT_CHILD_ACCESS, fmt::format(
+                "specified resource [{}] is not a root resource",
+                cond_input.at(DEST_RESC_NAME_KW).value()));
+        }
+
+        return destination_inp;
+    } // init_destination_replica_input
+
+    int open_destination_replica(RsComm& _comm, DataObjInp& _inp, const int _source_fd)
+    {
+        auto cond_input = irods::experimental::make_key_value_proxy(_inp.condInput);
+        cond_input[REG_REPL_KW] = "";
+        cond_input[DATA_ID_KW] = std::to_string(L1desc[_source_fd].dataObjInfo->dataId);
+        cond_input.erase(PURGE_CACHE_KW);
 
         _inp.oprType = REPLICATE_DEST;
         _inp.openFlags = O_CREAT | O_WRONLY | O_TRUNC;
-
-        irods::log(LOG_DEBUG, fmt::format(
-            "[{}:{}] - opening destination replica for [{}] (id:[{}]) on [{}]",
-            __FUNCTION__,
-            __LINE__,
-            _inp.objPath,
-            kvp.at(DATA_ID_KW).value(),
-            kvp.at(RESC_HIER_STR_KW).value()));
 
         return rsDataObjOpen(&_comm, &_inp);
     } // open_destination_replica
@@ -468,29 +420,51 @@ namespace
         // Open source replica
         int source_l1descInx = open_source_replica(_comm, _source_inp);
         if (source_l1descInx < 0) {
-            THROW(source_l1descInx, "Failed opening source replica");
+            return source_l1descInx;
         }
+
+        auto& source_data_obj_info = *L1desc[source_l1descInx].dataObjInfo;
+
+        irods::log(LOG_DEBUG8, fmt::format(
+            "[{}:{}] - source:[{}]",
+            __FUNCTION__, __LINE__, source_data_obj_info.rescHier));
 
         // Open destination replica
         int destination_l1descInx = open_destination_replica(_comm, _destination_inp, source_l1descInx);
         if (destination_l1descInx < 0) {
-            close_replica(_comm, source_l1descInx);
-            // TODO: mark as stale?
-            THROW(destination_l1descInx, "Failed opening destination replica");
+            if (const int ec = irods::close_replica_without_catalog_update(_comm, source_l1descInx); ec < 0) {
+                irods::log(LOG_ERROR, fmt::format(
+                    "[{}:{}] - failed to close source replica:[{}]",
+                    __FUNCTION__, __LINE__, ec));
+            }
+            return destination_l1descInx;
         }
+
+        auto& destination_data_obj_info = *L1desc[destination_l1descInx].dataObjInfo;
+
+        irods::log(LOG_DEBUG8, fmt::format(
+            "[{}:{}] - destination:[{}]",
+            __FUNCTION__, __LINE__, destination_data_obj_info.rescHier));
+
         L1desc[destination_l1descInx].srcL1descInx = source_l1descInx;
-        L1desc[destination_l1descInx].dataSize = L1desc[source_l1descInx].dataObjInfo->dataSize;
+        L1desc[destination_l1descInx].dataSize = source_data_obj_info.dataSize;
 
         // Copy data from source to destination
         int status = dataObjCopy(&_comm, destination_l1descInx);
         if (status < 0) {
-            rodsLog(LOG_ERROR, "[%s] - dataObjCopy failed for [%s]", __FUNCTION__, _destination_inp.objPath);
+            irods::log(LOG_ERROR, fmt::format(
+                "[{}:{}] - dataObjCopy failed for [{}], src:[{}], dest:[{}]; ec:[{}]",
+                __FUNCTION__, __LINE__,
+                _destination_inp.objPath,
+                source_data_obj_info.rescHier,
+                destination_data_obj_info.rescHier,
+                status));
+
             L1desc[destination_l1descInx].bytesWritten = status;
         }
         else {
-            L1desc[destination_l1descInx].bytesWritten = L1desc[destination_l1descInx].dataObjInfo->dataSize;
+            L1desc[destination_l1descInx].bytesWritten = destination_data_obj_info.dataSize;
         }
-        const rodsLong_t bytes_written = L1desc[destination_l1descInx].bytesWritten;
 
         // Save the token for the replica access table so that it can be removed
         // in the event of a failure in close. On failure, the entry is restored,
@@ -507,11 +481,11 @@ namespace
             }
         };
 
-        auto [source_replica, source_replica_lm] = irods::experimental::replica::duplicate_replica(*L1desc[source_l1descInx].dataObjInfo);
-        auto [destination_replica, destination_replica_lm] = irods::experimental::replica::duplicate_replica(*L1desc[destination_l1descInx].dataObjInfo);
+        auto [source_replica, source_replica_lm] = ir::duplicate_replica(source_data_obj_info);
+        auto [destination_replica, destination_replica_lm] = ir::duplicate_replica(destination_data_obj_info);
 
         // Close source replica
-        if (const int ec = close_replica(_comm, source_l1descInx); ec < 0) {
+        if (const int ec = irods::close_replica_without_catalog_update(_comm, source_l1descInx); ec < 0) {
             irods::log(LOG_ERROR, fmt::format(
                 "[{}:{}] - closing source replica [{}] failed with [{}]",
                 __FUNCTION__, __LINE__, _source_inp.objPath, ec));
@@ -522,7 +496,7 @@ namespace
         }
 
         // Close destination replica
-        if (const int ec = close_replica(_comm, destination_l1descInx); ec < 0) {
+        if (const int ec = irods::close_replica_without_catalog_update(_comm, destination_l1descInx); ec < 0) {
             irods::log(LOG_ERROR, fmt::format(
                 "[{}:{}] - closing destination replica [{}] failed with [{}]",
                 __FUNCTION__, __LINE__, _destination_inp.objPath, ec));
@@ -536,7 +510,7 @@ namespace
 
         // finalize source replica
         try {
-            if (const int ec = finalize_source_replica(_comm, source_fd, *source_replica.get()); ec < 0) {
+            if (const int ec = finalize_source_replica(_comm, source_fd, source_replica); ec < 0) {
                 irods::log(LOG_ERROR, fmt::format(
                     "[{}:{}] - closing source replica [{}] failed with [{}]",
                     __FUNCTION__, __LINE__, source_replica.logical_path(), ec));
@@ -556,18 +530,18 @@ namespace
             }
         }
 
-        if (bytes_written < 0) {
-            if (const auto ec = finalize_destination_replica_on_failure(_comm, destination_fd, *destination_replica.get()); ec < 0) {
+        if (destination_fd.bytesWritten < 0) {
+            if (const auto ec = finalize_destination_replica_on_failure(_comm, destination_fd, destination_replica); ec < 0) {
                 irods::log(LOG_ERROR, fmt::format(
                     "[{}] - failed while finalizing object [{}]; ec:[{}]",
                     __FUNCTION__, destination_replica.logical_path(), ec));
             }
-            return bytes_written;
+            return destination_fd.bytesWritten;
         }
 
         // finalize destination replica
         try {
-            if (const int ec = finalize_destination_replica(_comm, destination_fd, *source_replica.get(), *destination_replica.get()); ec < 0) {
+            if (const int ec = finalize_destination_replica(_comm, destination_fd, source_replica, destination_replica); ec < 0) {
                 irods::log(LOG_ERROR, fmt::format(
                     "[{}:{}] - closing destination replica [{}] failed with [{}]",
                     __FUNCTION__, __LINE__, destination_replica.logical_path(), ec));
@@ -586,6 +560,7 @@ namespace
                 status = e.code();
             }
         }
+        // break here for lib
 
         if (destination_fd.purgeCacheFlag > 0) {
             irods::purge_cache(_comm, *destination_replica.get());
@@ -598,62 +573,167 @@ namespace
         return status;
     } // replicate_data
 
-    int repl_data_obj(RsComm& _comm, const dataObjInp_t& _inp)
+    int replicate_data_object(RsComm& _comm, const DataObjInp& _inp)
     {
-        namespace irv = irods::experimental::resource::voting;
+        const auto cond_input = irods::experimental::make_key_value_proxy(_inp.condInput);
 
-        // Make sure the requested source and destination resources are valid
-        dataObjInp_t destination_inp{};
-        dataObjInp_t source_inp{};
-        const irods::at_scope_exit free_cond_inputs{[&destination_inp, &source_inp]() {
-            clearKeyVal(&destination_inp.condInput);
-            clearKeyVal(&source_inp.condInput);
-        }};
+        // get information about source replica
+        auto source_inp = init_source_replica_input(_comm, _inp);
+        const irods::at_scope_exit free_source_cond_input{[&source_inp]() { clearKeyVal(&source_inp.condInput); }};
+        auto source_cond_input = irods::experimental::make_key_value_proxy(source_inp.condInput);
+        auto source_obj = resolve_hierarchy_and_get_data_object_info(_comm, source_inp, irods::OPEN_OPERATION);
+        auto& source_replica = get_replica_with_hierarchy(
+            _comm, source_obj, source_cond_input.at(RESC_HIER_STR_KW).value(),
+            irods::replication::log_errors::yes);
 
-        source_inp = init_source_replica_input(_comm, _inp);
-        //auto source_cond_input = irods::experimental::make_key_value_proxy(source_inp.condInput);
-        auto source_obj = get_source_replica_info(_comm, source_inp);
-
-        destination_inp = init_destination_replica_input(_comm, _inp);
-        //auto destination_cond_input = irods::experimental::make_key_value_proxy(destination_inp.condInput);
-        auto destination_obj = get_destination_replica_info(_comm, destination_inp);
-
-        if (getValByKey(&_inp.condInput, ALL_KW)) {
-            int status{};
-            for (const auto& r : destination_obj->replicas()) {
-                irods::log(LOG_DEBUG, fmt::format(
-                    "[{}:{}] - hier:[{}],status:[{}],vote:[{}]",
-                    __FUNCTION__, __LINE__,
-                    r.resc_hier(),
-                    r.replica_status(),
-                    r.vote()));
-                if (GOOD_REPLICA == (r.replica_status() & 0x0F)) {
-                    continue;
-                }
-                if (r.vote() > irv::vote::zero) {
-                    addKeyVal(&destination_inp.condInput, RESC_HIER_STR_KW, r.resc_hier().c_str());
-                    status = replicate_data(_comm, source_inp, destination_inp);
-                }
-            }
-            return status;
-        }
-
-        const char* dest_hier = getValByKey(&destination_inp.condInput, RESC_HIER_STR_KW);
-        for (const auto& r : destination_obj->replicas()) {
-            // TODO: #4010 - This short-circuits resource logic for handling good replicas
-            if (r.resc_hier() == dest_hier) {
-                if (GOOD_REPLICA == r.replica_status()) {
-                    const char* source_hier = getValByKey(&source_inp.condInput, RESC_HIER_STR_KW);
-                    irods::log(LOG_DEBUG, fmt::format(
-                        "[{}:{}] - hierarchy contains good replica already, source:[{}],dest:[{}]",
-                        __FUNCTION__, __LINE__, dest_hier, source_hier));
-                    return 0;
-                }
-                break;
+        // If the resolved resource hierarchy does not contain the specified
+        // resource name or replica number, that means the vote for that resource
+        // returned as 0.0. Either the replica is inaccessible or it does not exist.
+        if (irods::experimental::keyword_has_a_value(_inp.condInput, RESC_NAME_KW)) {
+            const auto resolved_hierarchy = source_cond_input.at(RESC_HIER_STR_KW).value();
+            const auto resource_name = source_cond_input.at(RESC_NAME_KW).value();
+            if (!irods::hierarchy_parser{resolved_hierarchy.data()}.resc_in_hier(resource_name.data())) {
+                THROW(SYS_REPLICA_INACCESSIBLE, fmt::format(
+                    "hierarchy descending from specified source resource name [{}] "
+                    "does not have a replica or the replica is inaccessible at this time",
+                    resource_name));
             }
         }
-        return replicate_data(_comm, source_inp, destination_inp);
-    } // repl_data_obj
+        else if (irods::experimental::keyword_has_a_value(_inp.condInput, REPL_NUM_KW)) {
+            if (const auto replica_number = std::stoi(source_cond_input.at(REPL_NUM_KW).value().data());
+                replica_number != source_replica.repl_num()) {
+                THROW(SYS_REPLICA_INACCESSIBLE, fmt::format(
+                    "specified source replica number [{}] does not exist "
+                    "or the replica is inaccessible at this time",
+                    replica_number));
+            }
+        }
+
+        // get information about destination replica
+        auto destination_inp = init_destination_replica_input(_comm, _inp);
+        const irods::at_scope_exit free_destination_cond_input{[&destination_inp]() { clearKeyVal(&destination_inp.condInput); }};
+        auto destination_cond_input = irods::experimental::make_key_value_proxy(destination_inp.condInput);
+        auto destination_obj = resolve_hierarchy_and_get_data_object_info(_comm, destination_inp, irods::CREATE_OPERATION);
+        try {
+            if (irods::experimental::keyword_has_a_value(destination_inp.condInput, DEST_RESC_NAME_KW)) {
+                const auto resolved_hierarchy = destination_cond_input.at(DEST_RESC_HIER_STR_KW).value();
+                const auto resource_name = destination_cond_input.at(DEST_RESC_NAME_KW).value();
+                if (!irods::hierarchy_parser{resolved_hierarchy.data()}.resc_in_hier(resource_name.data())) {
+                    THROW(SYS_REPLICA_INACCESSIBLE, fmt::format(
+                        "hierarchy descending from specified destination resource name [{}] "
+                        "does not have a replica or the replica is inaccessible at this time; "
+                        "resolved hierarchy:[{}]",
+                        resource_name, resolved_hierarchy.data()));
+                }
+            }
+
+            const auto& destination_replica = get_replica_with_hierarchy(
+                _comm, destination_obj, destination_cond_input.at(DEST_RESC_HIER_STR_KW).value(),
+                irods::replication::log_errors::no);
+
+            const auto log_errors = cond_input.contains(RECURSIVE_OPR__KW) ? irods::replication::log_errors::no : irods::replication::log_errors::yes;
+            if (!irods::replication::is_allowed(_comm, source_replica, destination_replica, log_errors)) {
+                return SYS_NOT_ALLOWED;
+            }
+        }
+        catch (const irods::exception& e) {
+            // If the destination replica doesn't exist, replication is always allowed.
+            if (SYS_REPLICA_DOES_NOT_EXIST != e.code()) {
+                throw;
+            }
+        }
+
+        irods::log(LOG_DEBUG8, fmt::format(
+            "[{}:{}] - source:[{}],destination:[{}]",
+            __FUNCTION__, __LINE__,
+            source_cond_input.at(RESC_HIER_STR_KW).value(),
+            destination_cond_input.at(RESC_HIER_STR_KW).value()));
+
+        // replicate!
+        const int ec = replicate_data(_comm, source_inp, destination_inp);
+
+        if (ec < 0) {
+            irods::log(LOG_ERROR, fmt::format(
+                "[{}:{}] - failed to replicate [{}]",
+                __FUNCTION__, __LINE__, _inp.objPath));
+        }
+
+        return ec;
+    } // replicate_data_object
+
+    int update_all_existing_replicas(RsComm& _comm, const dataObjInp_t& _inp)
+    {
+        // get information about source replica
+        auto source_inp = init_source_replica_input(_comm, _inp);
+        const irods::at_scope_exit free_source_cond_input{[&source_inp]() { clearKeyVal(&source_inp.condInput); }};
+        auto source_cond_input = irods::experimental::make_key_value_proxy(source_inp.condInput);
+        auto source_obj = resolve_hierarchy_and_get_data_object_info(_comm, source_inp, irods::OPEN_OPERATION);
+        auto& source_replica = get_replica_with_hierarchy(
+            _comm, source_obj, source_cond_input.at(RESC_HIER_STR_KW).value(),
+            irods::replication::log_errors::yes);
+
+        // If the resolved resource hierarchy does not contain the specified
+        // resource name or replica number, that means the vote for that resource
+        // returned as 0.0. Either the replica is inaccessible or it does not exist.
+        if (irods::experimental::keyword_has_a_value(_inp.condInput, RESC_NAME_KW)) {
+            const auto resolved_hierarchy = source_cond_input.at(RESC_HIER_STR_KW).value();
+            const auto resource_name = source_cond_input.at(RESC_NAME_KW).value();
+            if (!irods::hierarchy_parser{resolved_hierarchy.data()}.resc_in_hier(resource_name.data())) {
+                THROW(SYS_REPLICA_INACCESSIBLE, fmt::format(
+                    "hierarchy descending from specified source resource name [{}] "
+                    "does not have a replica or the replica is inaccessible at this time",
+                    resource_name));
+            }
+        }
+        else if (irods::experimental::keyword_has_a_value(_inp.condInput, REPL_NUM_KW)) {
+            if (const auto replica_number = std::stoi(source_cond_input.at(REPL_NUM_KW).value().data());
+                replica_number != source_replica.repl_num()) {
+                THROW(SYS_REPLICA_INACCESSIBLE, fmt::format(
+                    "specified source replica number [{}] does not exist "
+                    "or the replica is inaccessible at this time",
+                    replica_number));
+            }
+        }
+
+        // only good replica can be used as a source to update all other replicas
+        if (GOOD_REPLICA != source_replica.replica_status()) {
+            THROW(SYS_NOT_ALLOWED, fmt::format(
+                "source replica on [{}] has status [{}]; cannot be used to update other replicas.",
+                source_replica.resc_hier(), source_replica.replica_status()));
+        }
+
+        // get information about existing replicas (destination replicas)
+        auto destination_inp = init_destination_replica_input(_comm, _inp);
+        const irods::at_scope_exit free_destination_cond_input{[&destination_inp]() { clearKeyVal(&destination_inp.condInput); }};
+        auto destination_cond_input = irods::experimental::make_key_value_proxy(destination_inp.condInput);
+        auto destination_obj = resolve_hierarchy_and_get_data_object_info(_comm, destination_inp, irods::WRITE_OPERATION);
+
+        // replicate!
+        int status = 0;
+
+        for (const auto& destination_replica : destination_obj->replicas()) {
+            irods::log(LOG_DEBUG8, fmt::format(
+                "[{}:{}] - obj:[{}], source:[{}], destination:[{}], vote:[{}]",
+                __FUNCTION__, __LINE__,
+                destination_obj->logical_path(),
+                source_replica.resc_hier(),
+                destination_replica.resc_hier(),
+                destination_replica.vote()));
+
+            if (irods::replication::is_allowed(_comm, source_replica, destination_replica, irods::replication::log_errors::no) &&
+                destination_replica.vote() > irv::vote::zero) {
+                destination_cond_input[RESC_HIER_STR_KW] = destination_replica.resc_hier();
+                destination_cond_input[DEST_RESC_HIER_STR_KW] = destination_replica.resc_hier();
+
+                if (const int ec = replicate_data(_comm, source_inp, destination_inp);
+                    ec < 0 && status >= 0) {
+                    status = ec;
+                }
+            }
+        }
+
+        return status;
+    } // update_all_existing_replicas
 
     int singleL1Copy(rsComm_t *rsComm, dataCopyInp_t& dataCopyInp)
     {
@@ -714,34 +794,26 @@ namespace
     } // singleL1Copy
 } // anonymous namespace
 
-int rsDataObjRepl(
-    rsComm_t *rsComm,
-    dataObjInp_t *dataObjInp,
-    transferStat_t **transStat) {
-    if (!dataObjInp) {
+int rsDataObjRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp, transferStat_t **transStat)
+{
+    if (!rsComm || !dataObjInp) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
+    auto cond_input = irods::experimental::make_key_value_proxy(dataObjInp->condInput);
+
+    // -R and -a are not compatible
+    if (cond_input.contains(DEST_RESC_NAME_KW) && cond_input.contains(ALL_KW)) {
+        return USER_INCOMPATIBLE_PARAMS;
+    }
+
     // -S and -n are not compatible
-    if (getValByKey(&dataObjInp->condInput, RESC_NAME_KW) &&
-        getValByKey(&dataObjInp->condInput, REPL_NUM_KW)) {
-        return USER_INCOMPATIBLE_PARAMS;
-    }
-
-    // -S and -r are not compatible
-    if (getValByKey(&dataObjInp->condInput, RESC_NAME_KW) &&
-        getValByKey(&dataObjInp->condInput, RECURSIVE_OPR__KW)) {
-        return USER_INCOMPATIBLE_PARAMS;
-    }
-
-    // -a and -R are not compatible
-    if (getValByKey(&dataObjInp->condInput, ALL_KW) &&
-        getValByKey(&dataObjInp->condInput, DEST_RESC_NAME_KW)) {
+    if (cond_input.contains(RESC_NAME_KW) && cond_input.contains(REPL_NUM_KW)) {
         return USER_INCOMPATIBLE_PARAMS;
     }
 
     // Must be a privileged user to invoke SU
-    if (getValByKey(&dataObjInp->condInput, SU_CLIENT_USER_KW) &&
+    if (cond_input.contains(SU_CLIENT_USER_KW) &&
         rsComm->proxyUser.authInfo.authFlag < REMOTE_PRIV_USER_AUTH) {
         return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
     }
@@ -773,17 +845,25 @@ int rsDataObjRepl(
     }
 
     try {
-        addKeyVal(&dataObjInp->condInput, IN_REPL_KW, "");
-        status = repl_data_obj(*rsComm, *dataObjInp);
-        rmKeyVal(&dataObjInp->condInput, IN_REPL_KW);
+        cond_input[IN_REPL_KW] = "";
+
+        const irods::at_scope_exit remove_in_repl{[&cond_input] { cond_input.erase(IN_REPL_KW); }};
+
+        if (cond_input.contains(ALL_KW)) {
+            status = update_all_existing_replicas(*rsComm, *dataObjInp);
+        }
+        else {
+            status = replicate_data_object(*rsComm, *dataObjInp);
+        }
     }
     catch (const irods::exception& e) {
         irods::log(e);
+        addRErrorMsg(&rsComm->rError, e.code(), e.client_display_what());
         status = e.code();
     }
     catch (const std::exception& e) {
         irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, e.what()));
-        status = SYS_LIBRARY_ERROR;
+        status = SYS_INTERNAL_ERR;
     }
     catch (...) {
         irods::log(LOG_ERROR, fmt::format("[{}:{}] - unknown error occurred", __FUNCTION__, __LINE__));

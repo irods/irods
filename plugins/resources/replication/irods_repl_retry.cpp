@@ -17,8 +17,14 @@ int irods::data_obj_repl_with_retry(
     rmKeyVal(&dataObjInp.condInput, ALL_KW);
     auto status{ rsDataObjRepl( _ctx.comm(), &dataObjInp, &trans_stat ) };
     if ( 0 == status ) {
-        irods::log(LOG_DEBUG, fmt::format("[{}:{}] - replication succeeded", __FUNCTION__, __LINE__));
+        irods::log(LOG_DEBUG8, fmt::format("[{}:{}] - replication succeeded", __FUNCTION__, __LINE__));
         free( trans_stat );
+        return status;
+    }
+    else if (SYS_NOT_ALLOWED == status) {
+        const auto error = irods::pop_error_message(_ctx.comm()->rError);
+        irods::log(LOG_NOTICE, fmt::format("[{}:{}] - [{}]",
+            __FUNCTION__, __LINE__, error));
         return status;
     }
 
