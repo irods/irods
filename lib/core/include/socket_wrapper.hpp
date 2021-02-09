@@ -35,7 +35,7 @@ namespace irods {
             // members
             socket_wrapper_tcp();
             ~socket_wrapper_tcp();
-            virtual bool open( int, char* );
+            virtual bool open( int, const char* );
 
     }; // class socket_wrapper_tcp
 
@@ -52,7 +52,6 @@ namespace irods {
 
     }; // class socket_wrapper_udp
 
-}; // namespace irods
-
+} // namespace irods
 
 #endif //  SOCKET_WRAPPER_HPP__

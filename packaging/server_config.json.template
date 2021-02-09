@@ -11,7 +11,15 @@
         "maximum_temporary_password_lifetime_in_seconds": 1000,
         "transfer_buffer_size_for_parallel_transfer_in_megabytes": 4,
         "transfer_chunk_size_for_parallel_transfer_in_megabytes": 40,
-        "default_log_rotation_in_days" : 5
+        "default_log_rotation_in_days" : 5,
+        "dns_cache": {
+            "shared_memory_size_in_bytes": 5000000,
+            "eviction_age_in_seconds": 3600
+        },
+        "hostname_cache": {
+            "shared_memory_size_in_bytes": 2500000,
+            "eviction_age_in_seconds": 3600
+        }
     },
     "client_api_whitelist_policy": "enforce",
     "default_dir_mode": "0750",

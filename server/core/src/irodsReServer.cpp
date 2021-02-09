@@ -28,6 +28,7 @@
 #include "server_utilities.hpp"
 #include "json_serialization.hpp"
 #include "json_deserialization.hpp"
+#include "server_utilities.hpp"
 
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
@@ -551,6 +552,8 @@ int main(int, char* _argv[])
             rodsLog(LOG_DEBUG, "RE server is awake.");
 
             try {
+                irods::parse_and_store_hosts_configuration_file_as_json();
+
                 auto delay_queue_processor = make_delay_queue_query_processor(thread_pool, queue);
 
                 rodsLog(LOG_DEBUG, "Gathering rules for execution ...");

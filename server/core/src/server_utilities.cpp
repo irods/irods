@@ -21,7 +21,7 @@ namespace irods
 
     auto contains_session_variables(const std::string_view _rule_text) -> bool
     {
-        static const std::regex session_vars_pattern{ 
+        static const std::regex session_vars_pattern{
             "\\$\\b(?:pluginInstanceName|status|objPath|objPath|dataType|dataSize|dataSize|chksum|"
             "version|filePath|replNum|replStatus|writeFlag|dataOwner|dataOwnerZone|"
             "dataExpiry|dataComments|dataCreate|dataModify|dataAccess|dataAccessInx|"

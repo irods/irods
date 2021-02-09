@@ -1,11 +1,9 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
 #ifndef GET_RODS_ENV_H__
 #define GET_RODS_ENV_H__
 
 #include "rodsDef.h"
 
-typedef struct {
+typedef struct RodsEnvironment {
     char rodsUserName[NAME_LEN];
     char rodsHost[NAME_LEN];
     int  rodsPort;
@@ -60,7 +58,6 @@ typedef struct {
     // =-=-=-=-=-=-=-
     // override of plugin installation directory
     char irodsPluginHome[MAX_NAME_LEN];
-
 } rodsEnv;
 
 #ifdef __cplusplus
@@ -81,4 +78,4 @@ void _reloadRodsEnv( rodsEnv &myRodsEnv );
 
 }
 #endif
-#endif	// GET_RODS_ENV_H__
+#endif // GET_RODS_ENV_H__
