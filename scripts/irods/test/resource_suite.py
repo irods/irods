@@ -258,12 +258,6 @@ class ResourceSuite(ResourceBase):
     # iphymv
     ###################
 
-    def test_iphymv_to_nonexistent_resource(self):
-        self.admin.assert_icommand("ils -L", 'STDOUT_SINGLELINE', self.testfile)  # debug
-        self.admin.assert_icommand("iphymv -R nonexistentresc " + self.testfile,
-                                   'STDERR_SINGLELINE', "SYS_RESC_DOES_NOT_EXIST")  # should fail
-        self.admin.assert_icommand("ils -L", 'STDOUT_SINGLELINE', self.testfile)  # debug
-
     def test_iphymv_admin_mode(self):
         lib.touch("file.txt")
         for i in range(0, 100):
