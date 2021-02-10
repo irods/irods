@@ -52,7 +52,7 @@ inline IntValue IntEquals(int value) {
  * targPath - final new paths
  */
 
-TEST_CASE("resolveRodsTarget", "[!mayfail]")
+TEST_CASE("resolveRodsTarget")
 {
     auto& api_table = irods::get_client_api_table();
     auto& pck_table = irods::get_pack_table();
