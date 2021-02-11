@@ -148,14 +148,14 @@ namespace
         irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast<irods::first_class_object>(_file_obj);
         err = resc->call< const std::string*, const std::string*, irods::hierarchy_parser*, float* >(
                   _comm, irods::RESOURCE_OP_RESOLVE_RESC_HIER, ptr, &_oper, &host_name, &parser, &vote );
-        rodsLog(LOG_DEBUG,
-            "[%s:%d] - resolved hier for obj [%s] with vote:[%f],hier:[%s],err.code:[%d]",
-            __FUNCTION__,
-            __LINE__,
+
+        irods::log(LOG_DEBUG, fmt::format(
+            "[{}:{}] - resolved hier for obj [{}] with vote:[{}],hier:[{}],err.code:[{}]",
+            __FUNCTION__, __LINE__,
             _file_obj->logical_path().c_str(),
-            vote,
-            parser.str().c_str(),
-            err.code());
+            vote, parser.str().c_str(),
+            err.code()));
+
         if ( !err.ok() || irv::vote::zero == vote ) {
             std::stringstream msg;
             msg << "failed in call to redirect";
@@ -199,41 +199,50 @@ namespace
         for (const auto& root_resc : root_map) {
             float vote{};
             std::string voted_hier{};
-            rodsLog(LOG_DEBUG,
-                "[%s:%d] - requesting vote from root [%s] for [%s]",
-                __FUNCTION__,
-                __LINE__,
+            irods::log(LOG_DEBUG, fmt::format(
+                "[{}:{}] - requesting vote from root [{}] for [{}]; resc_hier set:[{}]",
+                __FUNCTION__, __LINE__,
                 root_resc.first.c_str(),
-                _file_obj->logical_path().c_str());
+                _file_obj->logical_path().c_str(),
+                _file_obj->resc_hier()));
+
             irods::error ret = request_vote_for_file_object(
                     _comm, _oper, root_resc.first, _file_obj, voted_hier, vote );
-            rodsLog(LOG_DEBUG,
-                "[%s:%d] - root:[%s],max_hier:[%s],max_vote:[%f],vote:[%f],hier:[%s]",
-                __FUNCTION__,
-                __LINE__,
+
+            irods::log(LOG_DEBUG, fmt::format(
+                "[{}:{}] - root:[{}],max_hier:[{}],max_vote:[{}],vote:[{}],hier:[{}],resc_hier:[{}]",
+                __FUNCTION__, __LINE__,
                 root_resc.first.c_str(),
                 max_hier.c_str(),
-                max_vote,
-                vote,
-                voted_hier.c_str());
-            if (ret.ok() && vote > max_vote) {
-                max_vote = vote;
-                max_hier = voted_hier;
+                max_vote, vote,
+                voted_hier.c_str(),
+                _file_obj->resc_hier()));
+
+            if (!ret.ok()) {
+                continue;
             }
 
-            if (ret.ok() && irv::vote::zero != vote && !kw_match_found && !_key_word.empty() && root_resc.first == _key_word) {
-                rodsLog(LOG_DEBUG,
-                    "[%s:%d] - with keyword... kw:[%s],root:[%s],max_hier:[%s],max_vote:[%f],vote:[%f],hier:[%s]",
-                    __FUNCTION__,
-                    __LINE__,
+            if (kw_match_found) {
+                continue;
+            }
+
+            if (irv::vote::zero != vote && !_key_word.empty() && root_resc.first == _key_word) {
+                irods::log(LOG_DEBUG, fmt::format(
+                    "[{}:{}] - with keyword... kw:[{}],root:[{}],max_hier:[{}],max_vote:[{}],vote:[{}],hier:[{}],resc_hier:[{}]",
+                    __FUNCTION__, __LINE__,
                     _key_word.c_str(),
                     root_resc.first.c_str(),
-                    max_hier.c_str(),
-                    max_vote,
-                    vote,
-                    voted_hier.c_str());
+                    max_hier.c_str(), max_vote,
+                    vote, voted_hier.c_str(),
+                    _file_obj->resc_hier()));
+
                 kw_match_found = true;
                 _file_obj->resc_hier(voted_hier);
+            }
+
+            if (vote > max_vote) {
+                max_vote = vote;
+                max_hier = voted_hier;
             }
         }
 
