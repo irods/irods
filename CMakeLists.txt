@@ -1,16 +1,18 @@
 cmake_minimum_required(VERSION 3.7.0 FATAL_ERROR) #CPACK_DEBIAN_<COMPONENT>_PACKAGE_NAME
-include(${CMAKE_SOURCE_DIR}/cmake/RequireOutOfSourceBuild.cmake)
 
 find_package(IRODS 4.3.0 EXACT REQUIRED CONFIG)
 
+include(RequireOutOfSourceBuild)
+
 set(CMAKE_C_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang)
 set(CMAKE_CXX_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang++)
-
-set(CMAKE_EXE_LINKER_FLAGS_INIT "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
+set(CMAKE_CXX_STANDARD 17)
 
 project(icommands
   VERSION "${IRODS_VERSION}"
   LANGUAGES C CXX)
+
+include(UseLibCXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
@@ -94,15 +96,7 @@ if (BUILD_DOCS)
 endif()
 
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-set(CMAKE_INSTALL_RPATH ${IRODS_EXTERNALS_FULLPATH_CLANG_RUNTIME}/lib)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
-set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -stdlib=libc++")
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++")
-add_compile_options(-nostdinc++ -Wall -Wextra -Werror -Wno-unused-parameter)
-link_libraries(c++abi)
-include_directories(${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1)
+add_compile_options(-Wall -Wextra -Werror -Wno-unused-parameter)
 
 set(
   IRODS_CLIENT_ICOMMANDS_EXECUTABLES
@@ -191,7 +185,6 @@ foreach(EXECUTABLE ${IRODS_CLIENT_ICOMMANDS_EXECUTABLES})
     )
   target_compile_definitions(${EXECUTABLE} PRIVATE ${IRODS_COMPILE_DEFINITIONS} BOOST_SYSTEM_NO_DEPRECATED)
   target_compile_options(${EXECUTABLE} PRIVATE -Wno-write-strings)
-  set_property(TARGET ${EXECUTABLE} PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
   install(
     TARGETS
     ${EXECUTABLE}
