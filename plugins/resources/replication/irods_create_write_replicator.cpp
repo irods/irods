@@ -4,6 +4,8 @@
 #include "irods_repl_retry.hpp"
 #include "irods_stacktrace.hpp"
 
+#include "fmt/format.h"
+
 namespace irods {
 
     create_write_replicator::create_write_replicator(

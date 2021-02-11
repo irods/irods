@@ -359,12 +359,23 @@ namespace irods {
         _file_obj->data_id(head_ptr->dataId);
         _file_obj->coll_id(head_ptr->collId);
 
+        // If the repl_requested value is less than 0, this means a REPL_NUM_KW was not
+        // provided and so finding a specific replica number is not of concern. If the
+        // REPL_NUM_KW was provided, we need to make sure that the replica exists before
+        // we return the information as it is an error if the requested replica number
+        // does not exist.
+        bool found_replica_number = _file_obj->repl_requested() < 0 ? true : false;
+
         // =-=-=-=-=-=-=-
         // iterate over the linked list and populate
         // the physical_object vector in the file_object
         dataObjInfo_t* info_ptr = head_ptr;
         std::vector< physical_object > objects;
         while ( info_ptr ) {
+            if (!found_replica_number && info_ptr->replNum == _file_obj->repl_requested()) {
+                found_replica_number = true;
+            }
+
             objects.push_back(irods::physical_object{*info_ptr});
 
             if (info_ptr->dataSize <= 0) {
@@ -374,6 +385,11 @@ namespace irods {
 
             info_ptr = info_ptr->next;
         } // while
+
+        if (!found_replica_number) {
+            freeAllDataObjInfo(head_ptr);
+            return ERROR(SYS_REPLICA_DOES_NOT_EXIST, "replica does not exist");
+        }
 
         _file_obj->replicas( objects );
 

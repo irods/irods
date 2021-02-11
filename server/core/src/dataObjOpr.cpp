@@ -757,14 +757,6 @@ initDataObjInfoQuery( dataObjInp_t *dataObjInp, genQueryInp_t *genQueryInp,
         addInxVal( &genQueryInp->sqlCondInp, COL_D_DATA_ID, condStr );
     }
 
-    if ( ignoreCondInput == 0 && ( tmpStr =
-                                       getValByKey( &dataObjInp->condInput, REPL_NUM_KW ) ) != NULL ) {
-        // Filters out all replicas except the requested one...
-        snprintf( condStr, NAME_LEN, "='%s'", tmpStr );
-        addInxVal( &genQueryInp->sqlCondInp, COL_DATA_REPL_NUM, condStr );
-        qcondCnt++;
-    }
-
     if ( const char * admin = getValByKey( &dataObjInp->condInput, ADMIN_KW ) ) {
         addKeyVal( &genQueryInp->condInput, ADMIN_KW, admin );
     }

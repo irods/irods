@@ -276,8 +276,8 @@ chkCollForBundleOpr( rsComm_t *rsComm,
                 transferStat_t* trans_stat{};
                 if (const int ec = rsDataObjRepl(rsComm, &data_obj_inp, &trans_stat); ec < 0) {
                     irods::log(ERROR(ec,
-                        fmt::format("[%s] does not have a good copy in [%s]",
-                        chkObjPermAndStatInp->objPath, resource)));
+                        fmt::format("[{}:{}] - [{}] does not have a good copy in [{}]",
+                        __FUNCTION__, __LINE__, chkObjPermAndStatInp->objPath, resource)));
                 }
             }
             freeCollEntForChkColl(curCollEnt);

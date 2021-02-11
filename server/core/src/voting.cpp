@@ -203,6 +203,11 @@ namespace detail {
     {
         return calculate_with_repl_status(ctx, STALE_REPLICA);
     } // calculate_for_unlink
+
+    float calculate_for_write(context& ctx)
+    {
+        return calculate_with_repl_status(ctx, STALE_REPLICA);
+    } // calculate_for_write
 } // namespace detail
 
 float calculate(
@@ -214,7 +219,7 @@ float calculate(
     static const std::map<std::string_view, detail::calculator_type> calculators{
         {irods::CREATE_OPERATION, detail::calculate_for_create},
         {irods::OPEN_OPERATION, detail::calculate_for_open},
-        {irods::WRITE_OPERATION, detail::calculate_for_open},
+        {irods::WRITE_OPERATION, detail::calculate_for_write},
         {irods::UNLINK_OPERATION, detail::calculate_for_unlink}
     };
 
