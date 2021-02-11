@@ -42,6 +42,8 @@
 #include <list>
 #include <boost/lexical_cast.hpp>
 
+#include "fmt/format.h"
+
 // =-=-=-=-=-=-=-
 // system includes
 #ifndef _WIN32
@@ -1430,9 +1432,9 @@ std::pair<redirect_map_t, irods::error> resolve_children(
         const auto ret{entry.second.second->call<const std::string*, const std::string*, irods::hierarchy_parser*, float*>(
                         ctx.comm(), irods::RESOURCE_OP_RESOLVE_RESC_HIER, ctx.fco(), &operation, &local_hostname, &parser, &out_vote)};
         if (!ret.ok() && CHILD_NOT_FOUND != ret.code()) {
-            rodsLog(LOG_WARNING,
-                "[%s] - failed resolving hierarchy for [%s]",
-                __FUNCTION__, entry.first.c_str());
+            irods::log(LOG_WARNING, fmt::format(
+                "[{}:{}] - failed resolving hierarchy for [{}]; msg:[{}],ec:[{}]",
+                __FUNCTION__, __LINE__, entry.first, ret.result(), ret.code()));
             last_err = ret;
         }
         else {
@@ -1511,7 +1513,7 @@ irods::error repl_file_resolve_hierarchy(
         return ERROR(SYS_INVALID_INPUT_PARAM,
                      (boost::format(
                       "[%s]: null parameters passed to redirect") %
-                      __FUNCTION__).str().c_str() ); 
+                      __FUNCTION__).str().c_str() );
     }
 
     // If child list property exists, use previously selected parser for the vote
