@@ -1225,7 +1225,6 @@ irods::error unix_file_stage_to_cache(
 
         ret = unix_file_copy( fco->mode(), fco->physical_path().c_str(), _cache_file_name );
         result = ASSERT_PASS( ret, "Failed" );
-        irods::log(result);
     }
     return result;
 } // unix_file_stagetocache
