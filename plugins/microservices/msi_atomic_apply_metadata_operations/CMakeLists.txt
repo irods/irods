@@ -7,8 +7,6 @@ target_compile_definitions(${IRODS_PLUGIN_TARGET} PRIVATE ENABLE_RE
                                                           IRODS_ENABLE_SYSLOG
                                                           BOOST_SYSTEM_NO_DEPRECATED)
 
-set_property(TARGET ${IRODS_PLUGIN_TARGET} PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
-
 target_include_directories(${IRODS_PLUGIN_TARGET} PRIVATE ${CMAKE_BINARY_DIR}/lib/core/include
                                                           ${CMAKE_SOURCE_DIR}/lib/core/include
                                                           ${CMAKE_SOURCE_DIR}/lib/api/include

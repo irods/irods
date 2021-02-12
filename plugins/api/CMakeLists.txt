@@ -347,7 +347,6 @@ foreach(PLUGIN ${IRODS_API_PLUGINS})
 
   target_compile_definitions(${PLUGIN} PRIVATE ${IRODS_API_PLUGIN_COMPILE_DEFINITIONS_${PLUGIN}} ${IRODS_COMPILE_DEFINITIONS})
   target_compile_options(${PLUGIN} PRIVATE -Wno-write-strings -Wno-ignored-qualifiers)
-  set_property(TARGET ${PLUGIN} PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
 endforeach()
 
 install(

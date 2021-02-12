@@ -109,7 +109,6 @@ foreach(PLUGIN ${IRODS_RESOURCE_PLUGINS})
 
   target_compile_definitions(${PLUGIN} PRIVATE ENABLE_RE ${IRODS_COMPILE_DEFINITIONS} BOOST_SYSTEM_NO_DEPRECATED)
   target_compile_options(${PLUGIN} PRIVATE -Wno-write-strings)
-  set_property(TARGET ${PLUGIN} PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
 endforeach()
 
 install(
