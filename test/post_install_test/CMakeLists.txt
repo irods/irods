@@ -6,8 +6,6 @@ set(IRODS_POST_INSTALL_TARGET irodsTestPutGet)
 
 add_executable(${IRODS_POST_INSTALL_TARGET} main.cpp)
 
-set_property(TARGET ${IRODS_POST_INSTALL_TARGET} PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
-
 target_include_directories(${IRODS_POST_INSTALL_TARGET} PRIVATE ${CMAKE_BINARY_DIR}/lib/core/include
                                                                 ${CMAKE_SOURCE_DIR}/lib/core/include
                                                                 ${CMAKE_SOURCE_DIR}/lib/api/include
