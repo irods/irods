@@ -1,4 +1,4 @@
-#[=======================================================================[.rst:
+#[======================================================================[.rst:
 FindLibCXX
 ----------
 
@@ -32,7 +32,7 @@ The following cache variables may also be set:
 ``LIBCXX_LIBCXXABI_LIBRARY``
   libc++abi library (if found)
 
-#]=======================================================================]
+#]======================================================================]
 
 get_filename_component(__find_libcxx_dir "${CMAKE_CURRENT_LIST_FILE}" PATH)
 
@@ -128,7 +128,7 @@ if (NOT LIBCXX_LIBRARY STREQUAL LIBCXX_LIBRARY-NOTFOUND)
         unset(LIBCXX_LIBCXXABI_LIBRARY)
     else()
         list(INSERT LIBCXX_LIBRARIES 0 "${LIBCXX_LIBCXXABI_LIBRARY}")
-        string(PREPEND LIBCXX_CMAKE_CXX_STANDARD_LIBRARIES "\"${LIBCXX_LIBCXXABI_LIBRARY}\" ")
+        set(LIBCXX_CMAKE_CXX_STANDARD_LIBRARIES "\"${LIBCXX_LIBCXXABI_LIBRARY}\" ${LIBCXX_CMAKE_CXX_STANDARD_LIBRARIES}")
     endif()
 
     # Get version number

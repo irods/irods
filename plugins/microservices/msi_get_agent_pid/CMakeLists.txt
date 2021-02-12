@@ -6,8 +6,6 @@ target_compile_definitions(${IRODS_PLUGIN_TARGET} PRIVATE ENABLE_RE
                                                           ${IRODS_COMPILE_DEFINITIONS}
                                                           IRODS_ENABLE_SYSLOG)
 
-set_property(TARGET ${IRODS_PLUGIN_TARGET} PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
-
 target_include_directories(${IRODS_PLUGIN_TARGET} PRIVATE ${CMAKE_BINARY_DIR}/lib/core/include
                                                           ${CMAKE_SOURCE_DIR}/lib/core/include
                                                           ${CMAKE_SOURCE_DIR}/lib/api/include

@@ -56,6 +56,9 @@ else()
   set(CMAKE_CXX_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/c++-analyzer)
 endif()
 
+set(CMAKE_CXX_STANDARD 17)
+set(IRODS_CXX_STANDARD "${CMAKE_CXX_STANDARD}")
+
 set(IRODS_VERSION_MAJOR "4")
 set(IRODS_VERSION_MINOR "2")
 set(IRODS_VERSION_PATCH "8")
@@ -65,36 +68,13 @@ project(irods
   VERSION ${IRODS_VERSION}
   LANGUAGES C CXX)
 
-find_package(LibCXX 6 REQUIRED)
-
-set(CMAKE_CXX_STANDARD_LIBRARIES "${LIBCXX_CMAKE_CXX_STANDARD_LIBRARIES}")
-set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES "${LIBCXX_INCLUDE_DIR}")
-add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>)
-if (CMAKE_VERSION VERSION_LESS "3.13.0")
-  string(PREPEND CMAKE_CXX_STANDARD_LIBRARIES "-stdlib=libc++ ")
-else()
-  add_link_options($<$<LINK_LANGUAGE:CXX>:-stdlib=libc++>)
-endif()
+include(UseLibCXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 include(${CMAKE_SOURCE_DIR}/cmake/InstallDirs.cmake)
 
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-# list(INSERT 0) is a non-op on empty lists, but we have to handle the case
-# in which the list is not empty.
-# If we were using CMake 15+, we could probably just use list(PREPEND)
-if (NOT CMAKE_INSTALL_RPATH)
-  set(CMAKE_INSTALL_RPATH "${LIBCXX_LIBRARY_DIR}")
-else()
-  list(INSERT 0 CMAKE_INSTALL_RPATH "${LIBCXX_LIBRARY_DIR}")
-endif()
-if (NOT CMAKE_BUILD_RPATH)
-  set(CMAKE_BUILD_RPATH "${LIBCXX_LIBRARY_DIR}")
-else()
-  list(INSERT 0 CMAKE_BUILD_RPATH "${LIBCXX_LIBRARY_DIR}")
-endif()
-
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--export-dynamic -pthread") # export-dynamic so stacktrace entries from executables have function names
 set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,-z,defs -pthread")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,defs -pthread")
@@ -104,7 +84,6 @@ if (IRODS_DISABLE_COMPILER_OPTIMIZATIONS)
     add_compile_options(-O0)
 endif()
 
-set(IRODS_CXX_STANDARD 17)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 9)
   # Do not error on definition of implicit copy constructor for classes with a
@@ -114,37 +93,6 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSIO
   # Do not error when overlapping comparisons always evaluate to false.
   # This is needed because the boost headers throw this warning.
   add_compile_options(-Wno-error=tautological-overlap-compare)
-endif()
-if (LIBCXX_VERSION VERSION_GREATER 10 AND IRODS_CXX_STANDARD EQUAL 17)
-  # C++17 deprecated the explicit template specialization std::allocator<void>
-  # and the two-argument version of std::allocator::allocate
-  # Starting with 11.0, libc++ enforces these deprecations, which causes
-  # warnings from the boost headers.
-  # Boost has removed references to the two-argument version of
-  # std::allocator::allocate in 1.75, which would solve the problem, but,
-  # while the template specification deprecation is not supposed to affect
-  # existing code, libc++ 11 causes warnings for references to
-  # std::allocator<void>. Maybe a future release of libc++ will fix this.
-  # Should we ever switch to C++20 (or newer), std::allocator<void> problem
-  # will go away, as the explicit template specialization is removed in C++20.
-  #
-  # In the meantime, we have a couple of options for dealing with this.
-  # 1. Define the preprocessor variable _LIBCPP_DISABLE_DEPRECATION_WARNINGS.
-  #    This will silence all deprecation warnings from libc++. References to
-  #    deprecated declarations from other sources will still cause a warning
-  #    and halt the build. This solution/workaround could potentially silence
-  #    valid warnings that would otherwise come from new code that *we*
-  #    introduce.
-  # 2. Pass the compiler option -Wno-error=deprecated-declarations.
-  #    This will prevent references to deprecated declarations from halting
-  #    the build. Warnings will not be silenced, but references to deprecated
-  #    declarations, even those outside of libc++, will not halt the build.
-  # Both of these options have their downsides, but given that option 2 is
-  # much greater in scope, affecting more than just libc++, option 1 will be
-  # chosen for the time being.
-  # For now, let's add the new define to IRODS_COMPILE_DEFINITIONS, so that
-  # projects down the chain pull it in as well.
-  set(IRODS_COMPILE_DEFINITIONS ${IRODS_COMPILE_DEFINITIONS} _LIBCPP_DISABLE_DEPRECATION_WARNINGS)
 endif()
 
 include_directories(${IRODS_EXTERNALS_FULLPATH_JSON}/include)
@@ -321,7 +269,6 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/lib/core/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   )
-set_target_properties(irods_filesystem_path PROPERTIES CXX_STANDARD ${IRODS_CXX_STANDARD})
 target_compile_options(irods_filesystem_path PRIVATE -fPIC -Wno-write-strings)
 target_compile_definitions(irods_filesystem_path PRIVATE ${IRODS_COMPILE_DEFINITIONS})
 
@@ -349,7 +296,6 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   ${OPENSSL_INCLUDE_DIR}
   )
-set_target_properties(irods_filesystem_client PROPERTIES CXX_STANDARD ${IRODS_CXX_STANDARD})
 target_compile_options(irods_filesystem_client PRIVATE -fPIC -Wno-write-strings)
 target_compile_definitions(irods_filesystem_client PRIVATE ${IRODS_COMPILE_DEFINITIONS})
 
@@ -378,7 +324,6 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   ${OPENSSL_INCLUDE_DIR}
   )
-set_target_properties(irods_filesystem_server PROPERTIES CXX_STANDARD ${IRODS_CXX_STANDARD})
 target_compile_options(irods_filesystem_server PRIVATE -fPIC -Wno-write-strings)
 target_compile_definitions(irods_filesystem_server PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API IRODS_IO_TRANSPORT_ENABLE_SERVER_SIDE_API)
 
@@ -396,7 +341,6 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/lib/api/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   )
-set_target_properties(irods_user_administration_client PROPERTIES CXX_STANDARD ${IRODS_CXX_STANDARD})
 target_compile_options(irods_user_administration_client PRIVATE -fPIC -Wno-write-strings)
 target_compile_definitions(irods_user_administration_client PRIVATE ${IRODS_COMPILE_DEFINITIONS})
 
@@ -415,7 +359,6 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/server/api/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   )
-set_target_properties(irods_user_administration_server PROPERTIES CXX_STANDARD ${IRODS_CXX_STANDARD})
 target_compile_options(irods_user_administration_server PRIVATE -fPIC -Wno-write-strings)
 target_compile_definitions(irods_user_administration_server PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_USER_ADMINISTRATION_ENABLE_SERVER_SIDE_API)
 
@@ -433,7 +376,6 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
-set_target_properties(irods_resource_administration_client PROPERTIES CXX_STANDARD ${IRODS_CXX_STANDARD})
 target_compile_options(irods_resource_administration_client PRIVATE -fPIC -Wno-write-strings)
 target_compile_definitions(irods_resource_administration_client PRIVATE ${IRODS_COMPILE_DEFINITIONS})
 
@@ -453,7 +395,6 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
-set_target_properties(irods_resource_administration_server PROPERTIES CXX_STANDARD ${IRODS_CXX_STANDARD})
 target_compile_options(irods_resource_administration_server PRIVATE -fPIC -Wno-write-strings)
 target_compile_definitions(irods_resource_administration_server PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_RESOURCE_ADMINISTRATION_ENABLE_SERVER_SIDE_API)
 
@@ -654,7 +595,6 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
-set_target_properties(irods_client_api_functions PROPERTIES CXX_STANDARD ${IRODS_CXX_STANDARD})
 target_compile_options(irods_client_api_functions PRIVATE -fPIC -Wno-write-strings)
 target_compile_definitions(irods_client_api_functions PRIVATE ${IRODS_COMPILE_DEFINITIONS})
 
@@ -707,7 +647,6 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   ${OPENSSL_INCLUDE_DIR}
   )
-set_property(TARGET irods_client PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
 set_property(TARGET irods_client PROPERTY VERSION ${IRODS_VERSION})
 set_property(TARGET irods_client PROPERTY SOVERSION ${IRODS_VERSION})
 target_compile_options(irods_client PRIVATE -Wno-write-strings)
@@ -994,7 +933,6 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_ZMQ}/include
   ${OPENSSL_INCLUDE_DIR}
   )
-set_property(TARGET irods_server PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
 set_property(TARGET irods_server PROPERTY VERSION ${IRODS_VERSION})
 set_property(TARGET irods_server PROPERTY SOVERSION ${IRODS_VERSION})
 target_compile_definitions(irods_server PRIVATE ENABLE_RE RODS_CLERVER ${IRODS_COMPILE_DEFINITIONS})
@@ -1088,7 +1026,6 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
-set_property(TARGET irods_common PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
 set_property(TARGET irods_common PROPERTY VERSION ${IRODS_VERSION})
 set_property(TARGET irods_common PROPERTY SOVERSION ${IRODS_VERSION})
 target_compile_definitions(irods_common PRIVATE ${IRODS_COMPILE_DEFINITIONS})
@@ -1127,7 +1064,6 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/server/drivers/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   )
-set_property(TARGET irods_plugin_dependencies_functions PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
 target_compile_options(irods_plugin_dependencies_functions PRIVATE -fPIC -Wno-write-strings)
 target_compile_definitions(irods_plugin_dependencies_functions PRIVATE ${IRODS_COMPILE_DEFINITIONS})
 
@@ -1159,7 +1095,6 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/server/drivers/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   )
-set_property(TARGET irods_plugin_dependencies PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
 set_property(TARGET irods_plugin_dependencies PROPERTY VERSION ${IRODS_VERSION})
 set_property(TARGET irods_plugin_dependencies PROPERTY SOVERSION ${IRODS_VERSION})
 target_compile_definitions(irods_plugin_dependencies PRIVATE ${IRODS_COMPILE_DEFINITIONS})
@@ -1279,7 +1214,6 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_JSON}/include
   ${OPENSSL_INCLUDE_DIR}
   )
-set_property(TARGET RodsAPIs PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
 target_compile_definitions(RodsAPIs PRIVATE ${IRODS_COMPILE_DEFINITIONS})
 target_compile_options(RodsAPIs PRIVATE -Wno-write-strings)
 
@@ -1352,7 +1286,6 @@ foreach(EXECUTABLE ${IRODS_MAIN_EXECUTABLES})
     ${IRODS_EXTERNALS_FULLPATH_ZMQ}/include
     ${OPENSSL_INCLUDE_DIR}
     )
-  set_property(TARGET ${EXECUTABLE} PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
   target_compile_definitions(
     ${EXECUTABLE}
     PRIVATE
@@ -1394,7 +1327,6 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
-set_property(TARGET irodsReServer PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
 target_compile_definitions(irodsReServer PRIVATE ${IRODS_COMPILE_DEFINITIONS})
 target_compile_options(irodsReServer PRIVATE -Wno-write-strings)
 
@@ -1407,7 +1339,6 @@ target_link_libraries(
   PRIVATE
   ${PAM_LIBRARY}
   )
-set_property(TARGET irodsPamAuthCheck PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
 
 add_executable(
   genOSAuth
@@ -1434,7 +1365,6 @@ target_link_libraries(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so
   ${IRODS_EXTERNALS_FULLPATH_ZMQ}/lib/libzmq.so
   )
-set_property(TARGET genOSAuth PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
 target_compile_definitions(genOSAuth PRIVATE ${IRODS_COMPILE_DEFINITIONS})
 target_compile_options(genOSAuth PRIVATE -Wno-write-strings)
 
@@ -1634,6 +1564,7 @@ install(
   ${CMAKE_SOURCE_DIR}/cmake/Modules/CheckCPPMacroDefinition.cmake
   ${CMAKE_SOURCE_DIR}/cmake/Modules/CheckCPPMacroDefinition.c.in
   ${CMAKE_SOURCE_DIR}/cmake/Modules/FindLibCXX.cmake
+  ${CMAKE_SOURCE_DIR}/cmake/Modules/UseLibCXX.cmake
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/irods/cmake/Modules
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
   )
