@@ -159,6 +159,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/trimUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/user.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/user_administration.hpp
+  ${CMAKE_SOURCE_DIR}/lib/core/include/version.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/with_durability.hpp
   )
 

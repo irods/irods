@@ -115,14 +115,13 @@ int rsApiHandler(rsComm_t*   rsComm,
     char *myInStruct = NULL;
 
     if ( inputStructBBuf->len > 0 ) {
-        status = unpackStruct( inputStructBBuf->buf, ( void ** )( static_cast< void * >( &myInStruct ) ),
-                               ( char* )RsApiTable[apiInx]->inPackInstruct, RodsPackTable, rsComm->irodsProt );
+        status = unpack_struct( inputStructBBuf->buf, ( void ** )( static_cast< void * >( &myInStruct ) ),
+                               ( char* )RsApiTable[apiInx]->inPackInstruct, RodsPackTable, rsComm->irodsProt,
+                               rsComm->cliVersion.relVersion);
         if ( status < 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "rsApiHandler: unpackStruct error for apiNumber %d, status = %d",
+            rodsLog( LOG_NOTICE, "rsApiHandler: unpackStruct error for apiNumber %d, status = %d",
                      apiNumber, status );
-            sendApiReply( rsComm, apiInx, status, myOutStruct,
-                          &myOutBsBBuf );
+            sendApiReply( rsComm, apiInx, status, myOutStruct, &myOutBsBBuf );
             return status;
         }
     }
@@ -274,9 +273,9 @@ sendApiReply( rsComm_t * rsComm, int apiInx, int retVal,
     irods::api_entry_table& RsApiTable = irods::get_server_api_table();
     if ( RsApiTable[apiInx]->outPackInstruct != NULL && myOutStruct != NULL ) {
 
-        status = packStruct( ( char * ) myOutStruct, &outStructBBuf,
+        status = pack_struct( ( char * ) myOutStruct, &outStructBBuf,
                              ( char* )RsApiTable[apiInx]->outPackInstruct, RodsPackTable, FREE_POINTER,
-                             rsComm->irodsProt );
+                             rsComm->irodsProt, rsComm->cliVersion.relVersion );
 
         if ( status < 0 ) {
             rodsLog( LOG_NOTICE,
@@ -298,8 +297,8 @@ sendApiReply( rsComm_t * rsComm, int apiInx, int retVal,
     }
 
     if ( rsComm->rError.len > 0 ) {
-        status = packStruct( ( char * ) &rsComm->rError, &rErrorBBuf,
-                             "RError_PI", RodsPackTable, 0, rsComm->irodsProt );
+        status = pack_struct( ( char * ) &rsComm->rError, &rErrorBBuf,
+                             "RError_PI", RodsPackTable, 0, rsComm->irodsProt, rsComm->cliVersion.relVersion );
 
         if ( status < 0 ) {
             rodsLog( LOG_NOTICE,

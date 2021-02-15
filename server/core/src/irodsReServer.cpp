@@ -337,11 +337,12 @@ namespace {
             // in iRODS v4.3.0. Rules should use the variables provided by dynamic PEPs.
             migrate_rule = !irods::contains_session_variables(_inp.ruleName);
 
-            const auto ec = unpackStruct(_inp.packedReiAndArgBBuf->buf,
+            const auto ec = unpack_struct(_inp.packedReiAndArgBBuf->buf,
                                          reinterpret_cast<void**>(&rei_and_arg),
                                          "ReiAndArg_PI",
                                          RodsPackTable,
-                                         NATIVE_PROT);
+                                         NATIVE_PROT,
+                                         nullptr);
 
             if (ec < 0) {
                 rodsLog(LOG_ERROR, "Could not unpack struct [error_code=%d].", ec);

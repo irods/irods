@@ -2720,8 +2720,8 @@ readStartupPack(
     }
 
     /* always use XML_PROT for the startup pack */
-    int status = unpackStruct( inputStructBBuf.buf, ( void ** ) startupPack,
-                           "StartupPack_PI", RodsPackTable, XML_PROT );
+    int status = unpack_struct( inputStructBBuf.buf, ( void ** ) startupPack,
+                           "StartupPack_PI", RodsPackTable, XML_PROT, nullptr);
 
     clearBBuf( &inputStructBBuf );
 

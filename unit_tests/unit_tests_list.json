@@ -17,6 +17,7 @@
     "irods_linked_list_iterator",
     "irods_logical_paths_and_special_characters",
     "irods_metadata",
+    "irods_packstruct",
     "irods_parallel_transfer_engine",
     "irods_query_builder",
     "irods_rc_data_obj",
@@ -29,6 +30,7 @@
     "irods_scoped_privileged_client",
     "irods_shared_memory_object",
     "irods_user_administration",
+    "irods_version",
     "irods_with_durability",
     "irods_zone_report"
 ]

@@ -410,11 +410,11 @@ namespace irods
         // =-=-=-=-=-=-=-
         // pack the negotiation message
         bytesBuf_t* cs_neg_buf = 0;
-        int status = packStruct( &_cs_neg_msg,
+        int status = pack_struct(&_cs_neg_msg,
                                  &cs_neg_buf,
                                  "CS_NEG_PI",
                                  RodsPackTable,
-                                 0, XML_PROT );
+                                 0, XML_PROT, nullptr);
         if ( status < 0 ) {
             return ERROR( status, "failed to pack client-server message" );
         }
@@ -478,12 +478,12 @@ namespace irods
                 // =-=-=-=-=-=-=-
                 // unpack the version struct to check the status
                 version_t* version = 0;
-                int status = unpackStruct(
+                int status = unpack_struct(
                                  struct_buf.buf,
                                  ( void ** )( static_cast<void *>( &version ) ),
                                  "Version_PI",
                                  RodsPackTable,
-                                 XML_PROT );
+                                 XML_PROT, nullptr);
 
                 if ( struct_buf.buf ) {
                     free( struct_buf.buf );
@@ -565,11 +565,11 @@ namespace irods
         // =-=-=-=-=-=-=-
         // do an unpack into our out variable using the xml protocol
         cs_neg_t* tmp_cs_neg = 0;
-        int status = unpackStruct( struct_buf.buf,
+        int status = unpack_struct( struct_buf.buf,
                                    ( void ** )( static_cast<void *>( &tmp_cs_neg ) ),
                                    "CS_NEG_PI",
                                    RodsPackTable,
-                                   XML_PROT );
+                                   XML_PROT, nullptr );
         free( struct_buf.buf );
         if ( status < 0 ) {
             rodsLog( LOG_ERROR, "read_client_server_negotiation_message :: unpackStruct FAILED" );
