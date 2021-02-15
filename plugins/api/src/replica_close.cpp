@@ -441,13 +441,13 @@ namespace
 
             // Remove the agent's PID from the replica access table.
             auto entry = is_write_operation
-                ? ix::replica_access_table::instance().erase_pid(l1desc.replica_token, getpid())
+                ? ix::replica_access_table::erase_pid(l1desc.replica_token, getpid())
                 : std::nullopt;
 
             // Close the underlying file object.
             if (const auto ec = close_physical_object(*_comm, l1desc.l3descInx); ec != 0) {
                 if (entry) {
-                    ix::replica_access_table::instance().restore(*entry);
+                    ix::replica_access_table::restore(*entry);
                 }
 
                 rodsLog(LOG_ERROR, "Failed to close file object [error_code=%d].", ec);
