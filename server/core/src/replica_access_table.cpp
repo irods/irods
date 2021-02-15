@@ -5,8 +5,10 @@
 #include <boost/interprocess/containers/map.hpp>
 #include <boost/interprocess/containers/vector.hpp>
 #include <boost/interprocess/containers/string.hpp>
-#include <boost/interprocess/sync/named_mutex.hpp>
+#include <boost/interprocess/sync/named_upgradable_mutex.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
+#include <boost/interprocess/sync/sharable_lock.hpp>
+#include <boost/interprocess/sync/upgradable_lock.hpp>
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -16,19 +18,13 @@
 #include <algorithm>
 #include <vector>
 
-namespace irods::experimental
+namespace irods::experimental::replica_access_table
 {
     namespace
     {
         namespace bi = boost::interprocess;
 
         // clang-format off
-        using replica_token_type      = replica_access_table::replica_token_type;
-        using replica_token_view_type = replica_access_table::replica_token_view_type;
-        using data_id_type            = replica_access_table::data_id_type;
-        using replica_number_type     = replica_access_table::replica_number_type;
-        using restorable_entry_type   = replica_access_table::restorable_entry;
-
         using segment_manager_type  = bi::managed_shared_memory::segment_manager;
         using void_allocator_type   = bi::allocator<void, segment_manager_type>;
         // clang-format on
@@ -61,12 +57,9 @@ namespace irods::experimental
         //
 
         // The following variables define the names of shared memory objects and other properties.
-        const char* g_mutex_name = "irods_replica_access_table_mutex";
-        const char* g_segment_name = "irods_replica_access_table";
-        const std::size_t g_segment_size = 1'000'000; // TODO This could be a knob.
-
-        // A flag used to indicate whether the replica access table has been initialized or not.
-        bool g_initialized = false;
+        std::string g_segment_name;
+        std::size_t g_segment_size;
+        std::string g_mutex_name;
 
         // On initialization, holds the PID of the process that initialized the replica access table.
         // This ensures that only the process that initialized the system can deinitialize it.
@@ -76,8 +69,8 @@ namespace irods::experimental
         // Allocating on the heap allows us to know when the replica access table is constructed/destructed.
         std::unique_ptr<bi::managed_shared_memory> g_segment;
         std::unique_ptr<void_allocator_type> g_allocator;
-        std::unique_ptr<bi::named_mutex> g_mutex;
-        map_type* g_fd_info_map;
+        std::unique_ptr<bi::named_upgradable_mutex> g_mutex;
+        map_type* g_map;
 
         // Returns a new replica token (i.e. UUID) allocated in shared memory.
         auto generate_replica_token() -> key_type
@@ -86,81 +79,94 @@ namespace irods::experimental
             uuid.reserve(36);
             uuid = to_string(boost::uuids::random_generator{}()).data();
 
-            while (g_fd_info_map->find(uuid) != g_fd_info_map->end()) {
+            while (g_map->find(uuid) != g_map->end()) {
                 uuid = to_string(boost::uuids::random_generator{}()).data();
             }
 
             return uuid;
-        }
+        } // generate_replica_token
     } // anonymous namespace
 
-    auto replica_access_table::init() noexcept -> void
+    auto init(const std::string_view _shm_name, std::size_t _shm_size) -> void
     {
-        if (g_initialized) {
+        if (getpid() == g_owner_pid) {
             return;
         }
 
-        g_initialized = true;
+        g_segment_name = _shm_name;
+        g_segment_size = _shm_size;
+        g_mutex_name = g_segment_name + "_mutex";
 
-        bi::named_mutex::remove(g_mutex_name);
-        bi::shared_memory_object::remove(g_segment_name);
+        bi::named_upgradable_mutex::remove(g_mutex_name.data());
+        bi::shared_memory_object::remove(g_segment_name.data());
 
         g_owner_pid = getpid();
-        g_segment = std::make_unique<bi::managed_shared_memory>(bi::create_only, g_segment_name, g_segment_size);
+        g_segment = std::make_unique<bi::managed_shared_memory>(bi::create_only, g_segment_name.data(), g_segment_size);
         g_allocator = std::make_unique<void_allocator_type>(g_segment->get_segment_manager());
-        g_mutex = std::make_unique<bi::named_mutex>(bi::create_only, g_mutex_name);
-        g_fd_info_map = g_segment->construct<map_type>("fd_info_map")(std::less<key_type>{}, *g_allocator);
-    }
+        g_mutex = std::make_unique<bi::named_upgradable_mutex>(bi::create_only, g_mutex_name.data());
+        g_map = g_segment->construct<map_type>(bi::anonymous_instance)(std::less<key_type>{}, *g_allocator);
+    } // init
 
-    auto replica_access_table::deinit() noexcept -> void
+    auto deinit() noexcept -> void
     {
         // Only allow the process that called init() to remove the shared memory.
-        if (g_initialized && getpid() == g_owner_pid) {
-            bi::named_mutex::remove(g_mutex_name);
-            bi::shared_memory_object::remove(g_segment_name);
+        if (getpid() != g_owner_pid) {
+            return;
         }
-    }
 
-    auto replica_access_table::instance() noexcept -> replica_access_table&
-    {
-        static replica_access_table instance;
-        return instance;
-    }
+        try {
+            g_owner_pid = 0;
 
-    auto replica_access_table::create_new_entry(data_id_type _data_id,
-                                                replica_number_type _replica_number,
-                                                pid_t _pid) -> replica_token_type
+            if (g_segment && g_map) {
+                g_segment->destroy_ptr(g_map);
+                g_map = nullptr;
+            }
+
+            // clang-format off
+            if (g_mutex)     { g_mutex.reset(); }
+            if (g_allocator) { g_allocator.reset(); }
+            if (g_segment)   { g_segment.reset(); }
+            // clang-format on
+
+            bi::named_upgradable_mutex::remove(g_mutex_name.data());
+            bi::shared_memory_object::remove(g_segment_name.data());
+        }
+        catch (...) {}
+    } // deinit
+
+    auto create_new_entry(data_id_type _data_id,
+                          replica_number_type _replica_number,
+                          pid_t _pid) -> replica_token_type
     {
         bi::scoped_lock lk{*g_mutex};
 
-        const auto end = g_fd_info_map->end();
+        const auto end = g_map->end();
         const auto exists = [_data_id, _replica_number](const value_type& v)
         {
             return v.second.data_id == _data_id && v.second.replica_number == _replica_number;
         };
 
-        if (auto iter = std::find_if(g_fd_info_map->begin(), end, exists); iter != end) {
+        if (auto iter = std::find_if(g_map->begin(), end, exists); iter != end) {
             throw replica_access_table_error{"replica_access_table: Entry already exists"};
         }
 
         auto uuid = generate_replica_token();
         mapped_type v{_data_id, _replica_number, access_entry::container_type{{_pid}, *g_allocator}};
-        g_fd_info_map->insert(value_type{uuid, v});
+        g_map->insert(value_type{uuid, v});
 
         return uuid.data();
-    }
+    } // create_new_entry
 
-    auto replica_access_table::append_pid(replica_token_view_type _token,
-                                          data_id_type _data_id,
-                                          replica_number_type _replica_number,
-                                          pid_t _pid) -> void
+    auto append_pid(replica_token_view_type _token,
+                    data_id_type _data_id,
+                    replica_number_type _replica_number,
+                    pid_t _pid) -> void
     {
         bi::scoped_lock lk{*g_mutex};
 
-        const key_type key{_token.data(), *g_allocator};
-        auto iter = g_fd_info_map->find(key);
+        auto iter = g_map->find(key_type{_token.data(), *g_allocator});
 
-        if (iter == g_fd_info_map->end()) {
+        if (iter == g_map->end()) {
             throw replica_access_table_error{"replica_access_table: Invalid token"};
         }
 
@@ -171,54 +177,55 @@ namespace irods::experimental
         }
 
         v.agent_pids.push_back(_pid);
-    }
+    } // append_pid
 
-    auto replica_access_table::contains(data_id_type _data_id, replica_number_type _replica_number) -> bool
+    auto contains(data_id_type _data_id, replica_number_type _replica_number) -> bool
     {
-        bi::scoped_lock lk{*g_mutex};
+        bi::sharable_lock lk{*g_mutex};
 
-        for (auto&& [k, v] : *g_fd_info_map) {
+        for (auto&& [k, v] : *g_map) {
             if (v.data_id == _data_id && v.replica_number == _replica_number) {
                 return true;
             }
         }
 
         return false;
-    }
+    } // contains
 
-    auto replica_access_table::contains(replica_token_view_type _token,
-                                        data_id_type _data_id,
-                                        replica_number_type _replica_number) -> bool
+    auto contains(replica_token_view_type _token,
+                      data_id_type _data_id,
+                      replica_number_type _replica_number) -> bool
     {
-        bi::scoped_lock lk{*g_mutex};
+        bi::sharable_lock lk{*g_mutex};
 
-        const key_type key{_token.data(), *g_allocator};
-
-        if (const auto iter = g_fd_info_map->find(key); iter != g_fd_info_map->end()) {
+        if (const auto iter = g_map->find(key_type{_token.data(), *g_allocator}); iter != g_map->end()) {
             return iter->second.data_id == _data_id &&
                    iter->second.replica_number == _replica_number;
         }
 
         return false;
-    }
+    } // contains
 
-    auto replica_access_table::erase_pid(replica_token_view_type _token, pid_t _pid)
-        -> std::optional<restorable_entry_type>
+    auto erase_pid(replica_token_view_type _token, pid_t _pid) -> std::optional<restorable_entry>
     {
-        bi::scoped_lock lk{*g_mutex};
+        // Acquiring the upgradable lock allows more readers to use the replica access table.
+        // This is required so that if the target entry to remove is found, the lock can be
+        // transistioned to an exclusive lock atomically.
+        bi::upgradable_lock lk{*g_mutex};
 
-        const key_type key{_token.data(), *g_allocator};
-
-        if (const auto iter = g_fd_info_map->find(key); iter != g_fd_info_map->end()) {
+        if (const auto iter = g_map->find(key_type{_token.data(), *g_allocator}); iter != g_map->end()) {
             auto& pids = iter->second.agent_pids;
 
             if (const auto pos = std::find(pids.begin(), pids.end(), _pid); pos != pids.end()) {
-                restorable_entry_type entry{_token, iter->second.data_id, iter->second.replica_number, *pos};
+                // We found the PID, acquire the exclusive lock atomically and remove the PID.
+                bi::scoped_lock<bi::named_upgradable_mutex> write_lk{std::move(lk)};
+
+                restorable_entry entry{_token, iter->second.data_id, iter->second.replica_number, *pos};
 
                 pids.erase(pos);
 
                 if (pids.empty()) {
-                    g_fd_info_map->erase(iter);
+                    g_map->erase(iter);
                 }
 
                 return entry;
@@ -226,15 +233,15 @@ namespace irods::experimental
         }
 
         return std::nullopt;
-    }
+    } // erase_pid
 
-    auto replica_access_table::erase_pid(pid_t _pid) -> void
+    auto erase_pid(pid_t _pid) -> void
     {
         bi::scoped_lock lk{*g_mutex};
 
         std::vector<const key_type*> keys_to_remove;
 
-        for (auto&& [k, v] : *g_fd_info_map) {
+        for (auto&& [k, v] : *g_map) {
             auto end = std::end(v.agent_pids);
             v.agent_pids.erase(std::remove(std::begin(v.agent_pids), end, _pid), end);
 
@@ -245,17 +252,17 @@ namespace irods::experimental
         }
 
         for (auto&& k : keys_to_remove) {
-            g_fd_info_map->erase(*k);
+            g_map->erase(*k);
         }
-    }
+    } // erase_pid
 
-    auto replica_access_table::restore(const restorable_entry_type& _entry) -> void
+    auto restore(const restorable_entry& _entry) -> void
     {
         bi::scoped_lock lk{*g_mutex};
 
         const key_type key{_entry.token.data(), *g_allocator};
 
-        if (auto iter = g_fd_info_map->find(key); iter != g_fd_info_map->end()) {
+        if (auto iter = g_map->find(key); iter != g_map->end()) {
             auto& [k, v] = *iter;
 
             if (v.data_id != _entry.data_id || v.replica_number != _entry.replica_number) {
@@ -269,8 +276,8 @@ namespace irods::experimental
                               _entry.replica_number,
                               access_entry::container_type{{_entry.pid}, *g_allocator}};
 
-            g_fd_info_map->insert(value_type{key, value});
+            g_map->insert(value_type{key, value});
         }
-    }
-} // namespace irods::experimental
+    } // restore
+} // namespace irods::experimental::replica_access_table
 

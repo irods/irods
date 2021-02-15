@@ -531,8 +531,7 @@ namespace
                 status = ec;
             }
 
-            auto& rat = irods::experimental::replica_access_table::instance();
-            rat.erase_pid(token, getpid());
+            irods::experimental::replica_access_table::erase_pid(token, getpid());
         }
 
         // finalize source replica
