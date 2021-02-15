@@ -268,12 +268,11 @@ packRei( ruleExecInfo_t *rei,
 
     /* pack the rei */
 
-    status = packStruct( ( void * ) rei, packedReiBBuf,
-                         "Rei_PI", RodsPackTable, 0, NATIVE_PROT );
+    status = pack_struct( ( void * ) rei, packedReiBBuf,
+                         "Rei_PI", RodsPackTable, 0, NATIVE_PROT, nullptr );
 
     if ( status < 0 ) {
-        rodsLog( LOG_ERROR,
-                 "packRei: packStruct error. status = %d", status );
+        rodsLog( LOG_ERROR, "packRei: packStruct error. status = %d", status );
         return status;
     }
 
