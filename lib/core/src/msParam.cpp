@@ -188,14 +188,14 @@ replInOutStruct( void *inStruct, void **outStruct, const char *type ) {
         return 0;
     }
     bytesBuf_t *packedResult;
-    int status = packStruct( inStruct, &packedResult, type,
-                            NULL, 0, NATIVE_PROT );
+    int status = pack_struct( inStruct, &packedResult, type,
+                            NULL, 0, NATIVE_PROT, nullptr);
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status, "replInOutStruct: packStruct error for type %s", type );
         return status;
     }
-    status = unpackStruct( packedResult->buf,
-                            outStruct, type, NULL, NATIVE_PROT );
+    status = unpack_struct( packedResult->buf,
+                            outStruct, type, NULL, NATIVE_PROT, nullptr);
     freeBBuf( packedResult );
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status, "replInOutStruct: unpackStruct error for type %s", type );

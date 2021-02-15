@@ -47,6 +47,7 @@ set(TEST_INCLUDE_LIST test_config/irods_atomic_apply_acl_operations
                       test_config/irods_linked_list_iterator
                       test_config/irods_logical_paths_and_special_characters
                       test_config/irods_metadata
+                      test_config/irods_packstruct
                       test_config/irods_parallel_transfer_engine
                       test_config/irods_query_builder
                       test_config/irods_rc_data_obj
@@ -59,6 +60,7 @@ set(TEST_INCLUDE_LIST test_config/irods_atomic_apply_acl_operations
                       test_config/irods_scoped_privileged_client
                       test_config/irods_shared_memory_object
                       test_config/irods_user_administration
+                      test_config/irods_version
                       test_config/irods_with_durability
                       test_config/irods_zone_report)
 

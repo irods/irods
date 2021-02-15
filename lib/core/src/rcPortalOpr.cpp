@@ -1436,8 +1436,8 @@ writeLfRestartFile( char *infoFile, fileRestartInfo_t *info ) {
     bytesBuf_t *packedBBuf = NULL;
     int status, fd;
 
-    status =  packStruct( ( void * ) info, &packedBBuf,
-                          "FileRestartInfo_PI", RodsPackTable, 0, XML_PROT );
+    status =  pack_struct( ( void * ) info, &packedBBuf,
+                          "FileRestartInfo_PI", RodsPackTable, 0, XML_PROT, nullptr);
     if ( status < 0 || packedBBuf == NULL ) {
         rodsLog( LOG_ERROR,
                  "writeLfRestartFile: packStruct error for %s, status = %d",
@@ -1519,7 +1519,7 @@ readLfRestartFile( char *infoFile, fileRestartInfo_t **info ) {
 
     close( fd );
 
-    status =  unpackStruct( buf, ( void ** ) info, "FileRestartInfo_PI", NULL, XML_PROT );
+    status = unpack_struct( buf, ( void ** ) info, "FileRestartInfo_PI", NULL, XML_PROT, nullptr);
 
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,

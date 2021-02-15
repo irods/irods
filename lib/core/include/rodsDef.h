@@ -265,7 +265,7 @@ typedef struct startupPack {
 
 /* The strct sent with RODS_VERSION type by server */
 
-typedef struct {
+typedef struct Version {
     int status;         /* if > 0, contains the reconnection port */
     char relVersion[NAME_LEN];
     char apiVersion[NAME_LEN];
@@ -275,7 +275,7 @@ typedef struct {
 } version_t;
 /* struct that defines a Host Addr */
 
-typedef struct {
+typedef struct RodsHostAddress {
     char hostAddr[LONG_NAME_LEN];
     char zoneName[NAME_LEN];
     int portNum;

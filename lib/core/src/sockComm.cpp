@@ -200,12 +200,12 @@ irods::error readMsgHeader(
     // =-=-=-=-=-=-=-
     // unpack the header message, always use XML_PROT for the header
     msgHeader_t* out_header = 0;
-    int status = unpackStruct(
+    int status = unpack_struct(
                      static_cast<void*>( tmp_buf ),
                      ( void ** )( static_cast< void * >( &out_header ) ),
                      "MsgHeader_PI",
                      RodsPackTable,
-                     XML_PROT );
+                     XML_PROT, nullptr);
     if ( status < 0 ) {
         return ERROR( status, "unpackStruct error" );
     }
@@ -466,14 +466,8 @@ irods::error writeMsgHeader(
     // =-=-=-=-=-=-=-
     // always use XML_PROT for the Header
     bytesBuf_t* header_buf = 0;
-    int status = packStruct(
-                     static_cast<const void *>( _header ),
-                     &header_buf,
-                     "MsgHeader_PI",
-                     RodsPackTable,
-                     0, XML_PROT );
-    if ( status < 0 ||
-            0 == header_buf ) {
+    int status = pack_struct(_header, &header_buf, "MsgHeader_PI", RodsPackTable, 0, XML_PROT, nullptr);
+    if ( status < 0 || 0 == header_buf ) {
         return ERROR( status, "packstruct error" );
     }
 
@@ -582,12 +576,12 @@ irods::error readVersion(
 
     // =-=-=-=-=-=-=-
     // unpack the message, always use XML for this message type
-    int status = unpackStruct(
+    int status = unpack_struct(
                      inputStructBBuf.buf,
                      ( void** )( _version ),
                      "Version_PI",
                      RodsPackTable,
-                     XML_PROT );
+                     XML_PROT, nullptr);
     free( inputStructBBuf.buf );
     if ( status < 0 ) {
         rodsLogError( LOG_NOTICE, status,
@@ -1160,8 +1154,8 @@ sendStartupPack( rcComm_t *conn, int connectCnt, int reconnFlag ) {
     }
 
     /* always use XML_PROT for the startupPack */
-    status = packStruct( ( void * ) &startupPack, &startupPackBBuf,
-                         "StartupPack_PI", RodsPackTable, 0, XML_PROT );
+    status = pack_struct( ( void * ) &startupPack, &startupPackBBuf,
+                         "StartupPack_PI", RodsPackTable, 0, XML_PROT, nullptr);
     if ( status < 0 ) {
         rodsLogError( LOG_NOTICE, status,
                       "sendStartupPack: packStruct error" );
@@ -1224,8 +1218,8 @@ irods::error sendVersion(
     }
 
     /* alway use XML for version */
-    status = packStruct( ( char * ) &myVersion, &versionBBuf,
-                         "Version_PI", RodsPackTable, 0, XML_PROT );
+    status = pack_struct( ( char * ) &myVersion, &versionBBuf,
+                         "Version_PI", RodsPackTable, 0, XML_PROT, nullptr);
     if ( status < 0 ) {
         return ERROR( status, "packStruct error" );
     }
@@ -1374,12 +1368,12 @@ irods::error readReconMsg(
     }
 
     /* always use XML_PROT for the startup pack */
-    status = unpackStruct(
+    status = unpack_struct(
                  inputStructBBuf.buf,
                  ( void** )( _msg ),
                  "ReconnMsg_PI",
                  RodsPackTable,
-                 XML_PROT );
+                 XML_PROT, nullptr);
     clearBBuf( &inputStructBBuf );
     if ( status < 0 ) {
         rodsLogError( LOG_NOTICE,  status,
@@ -1403,12 +1397,12 @@ irods::error sendReconnMsg(
     // =-=-=-=-=-=-=-
     // pack outgoing message - alway use XML for version
     bytesBuf_t* recon_buf = NULL;
-    int status = packStruct(
+    int status = pack_struct(
                      static_cast<void*>( _msg ),
                      &recon_buf,
                      "ReconnMsg_PI",
                      RodsPackTable,
-                     0, XML_PROT );
+                     0, XML_PROT, nullptr);
     if ( status < 0 ) {
         return ERROR( status, "failed to pack struct" );
     }

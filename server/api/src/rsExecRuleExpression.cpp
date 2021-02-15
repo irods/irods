@@ -19,11 +19,12 @@ int rsExecRuleExpression(RsComm* _comm, ExecRuleExpression* _exec_rule)
     }
 
     ruleExecInfoAndArg_t* rei_and_arg = nullptr;
-    const auto status = unpackStruct(_exec_rule->packed_rei_.buf,
+    const auto status = unpack_struct(_exec_rule->packed_rei_.buf,
                                      reinterpret_cast<void **>(&rei_and_arg),
                                      "ReiAndArg_PI",
                                      RodsPackTable,
-                                     NATIVE_PROT);
+                                     NATIVE_PROT,
+                                     nullptr);
     if (status < 0) {
         rodsLog(LOG_ERROR, "%s :: unpackStruct error. status = %d", __FUNCTION__, status);
         return status;

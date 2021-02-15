@@ -383,12 +383,11 @@ unpackRei( rsComm_t *rsComm, ruleExecInfo_t **rei,
     /* unpack the rei */
 
     /* alway use NATIVE_PROT for rei */
-    status = unpackStruct( packedReiBBuf->buf, ( void ** ) rei,
-                           "Rei_PI", RodsPackTable, NATIVE_PROT );
+    status = unpack_struct( packedReiBBuf->buf, ( void ** ) rei,
+                           "Rei_PI", RodsPackTable, NATIVE_PROT, nullptr );
 
     if ( status < 0 ) {
-        rodsLog( LOG_ERROR,
-                 "unpackRei: unpackStruct error. status = %d", status );
+        rodsLog( LOG_ERROR, "unpackRei: unpackStruct error. status = %d", status );
         return status;
     }
 
@@ -431,8 +430,8 @@ packReiAndArg( ruleExecInfo_t *rei, char *myArgv[],
 
     /* pack the reiAndArg */
 
-    int status = packStruct( ( void * ) &reiAndArg, packedReiAndArgBBuf,
-                         "ReiAndArg_PI", RodsPackTable, 0, NATIVE_PROT );
+    int status = pack_struct( ( void * ) &reiAndArg, packedReiAndArgBBuf,
+                         "ReiAndArg_PI", RodsPackTable, 0, NATIVE_PROT, nullptr );
 
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
@@ -455,8 +454,8 @@ unpackReiAndArg( rsComm_t *rsComm, ruleExecInfoAndArg_t **reiAndArg,
 
     /* unpack the reiAndArg */
 
-    status = unpackStruct( packedReiAndArgBBuf->buf, ( void ** ) reiAndArg,
-                           "ReiAndArg_PI", RodsPackTable, NATIVE_PROT );
+    status = unpack_struct( packedReiAndArgBBuf->buf, ( void ** ) reiAndArg,
+                           "ReiAndArg_PI", RodsPackTable, NATIVE_PROT, nullptr );
 
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
