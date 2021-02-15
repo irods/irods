@@ -272,7 +272,7 @@ runIrodsAgentFactory( sockaddr_un agent_addr ) {
             rmProcLog( reaped_pid );
 
             ix::log::agent_factory::trace("Removing agent PID [{}] from replica access table ...", reaped_pid);
-            ix::replica_access_table::instance().erase_pid(reaped_pid);
+            ix::replica_access_table::erase_pid(reaped_pid);
         }
 
         fd_set read_socket;
