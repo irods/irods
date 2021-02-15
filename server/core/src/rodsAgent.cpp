@@ -28,13 +28,16 @@
 #include "sockCommNetworkInterface.hpp"
 #include "sslSockComm.h"
 #include "server_utilities.hpp"
+#include "version.hpp"
 
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/wait.h>
 #include <syslog.h>
 
+#include <cstring>
 #include <memory>
+#include <sstream>
 
 namespace ix = irods::experimental;
 
@@ -419,7 +422,7 @@ runIrodsAgentFactory( sockaddr_un agent_addr ) {
     memset( &rsComm, 0, sizeof( rsComm ) );
     rsComm.thread_ctx = ( thread_context* )malloc( sizeof( thread_context ) );
 
-    status = initRsCommWithStartupPack( &rsComm, NULL );
+    status = initRsCommWithStartupPack( &rsComm, nullptr );
 
     // =-=-=-=-=-=-=-
     // manufacture a network object for comms
@@ -430,7 +433,7 @@ runIrodsAgentFactory( sockaddr_un agent_addr ) {
     }
 
     if ( status < 0 ) {
-        sendVersion( net_obj, status, 0, NULL, 0 );
+        sendVersion( net_obj, status, 0, nullptr, 0 );
         cleanupAndExit( status );
     }
 
@@ -441,7 +444,7 @@ runIrodsAgentFactory( sockaddr_un agent_addr ) {
 
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "agentMain :: getRodsEnv failed" );
-        sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0 );
+        sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, nullptr, 0 );
         cleanupAndExit( status );
     }
 

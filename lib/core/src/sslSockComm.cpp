@@ -1,9 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* sslSockComm.c - SSL socket communication routines
- */
-
-
 #include "rodsClient.h"
 #include "sslSockComm.h"
 #include "irods_client_server_negotiation.hpp"
@@ -275,8 +269,8 @@ sslReadMsgHeader( int sock, msgHeader_t *myHeader, struct timeval *tv, SSL *ssl 
     }
 
     /* always use XML_PROT for the startup pack */
-    status = unpackStruct( ( void * ) tmpBuf, ( void ** )( static_cast<void *>( &outHeader ) ),
-                           "MsgHeader_PI", RodsPackTable, XML_PROT );
+    status = unpack_struct( ( void * ) tmpBuf, ( void ** )( static_cast<void *>( &outHeader ) ),
+                           "MsgHeader_PI", RodsPackTable, XML_PROT, nullptr);
 
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR,  status,
@@ -397,8 +391,8 @@ sslWriteMsgHeader( msgHeader_t *myHeader, SSL *ssl ) {
     bytesBuf_t *headerBBuf = NULL;
 
     /* always use XML_PROT for the Header */
-    status = packStruct( ( void * ) myHeader, &headerBBuf,
-                         "MsgHeader_PI", RodsPackTable, 0, XML_PROT );
+    status = pack_struct( ( void * ) myHeader, &headerBBuf,
+                         "MsgHeader_PI", RodsPackTable, 0, XML_PROT, nullptr);
 
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status,

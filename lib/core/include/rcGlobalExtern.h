@@ -1,5 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
 /* rcGlobalExtern.h - Extern global declaration for client API */
 
 #ifndef RC_GLOBAL_EXTERN_H
@@ -38,10 +36,11 @@ extern struct timeval SysTimingVal;
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 extern guiProgressCallback gGuiProgressCB;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	// RC_GLOBAL_EXTERN_H__
+#endif // RC_GLOBAL_EXTERN_H
