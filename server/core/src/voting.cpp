@@ -66,7 +66,7 @@ namespace {
 
             auto token = kvp[REPLICA_TOKEN_KW].value();
 
-            if (!ix::replica_access_table::instance().contains(token.data(), r.id(), r.repl_num())) {
+            if (!ix::replica_access_table::contains(token.data(), r.id(), r.repl_num())) {
                 return vote::zero;
             }
         }

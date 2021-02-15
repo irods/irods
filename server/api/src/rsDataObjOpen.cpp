@@ -94,6 +94,8 @@ namespace
     namespace fs            = irods::experimental::filesystem;
     namespace data_object   = irods::experimental::data_object;
     namespace replica       = irods::experimental::replica;
+    namespace rat           = irods::experimental::replica_access_table;
+
     using replica_proxy     = irods::experimental::replica::replica_proxy<DataObjInfo>;
     using data_object_proxy = irods::experimental::data_object::data_object_proxy<DataObjInfo>;
     // clang-format on
@@ -111,11 +113,11 @@ namespace
                                      int _l1desc_index,
                                      const dataObjInp_t& _input)
     {
-        const irods::experimental::filesystem::path p = _input.objPath;
+        const ix::filesystem::path p = _input.objPath;
         const ix::key_value_proxy kvp{_input.condInput};
 
-        ix::replica_access_table::data_id_type data_id;
-        ix::replica_access_table::replica_number_type replica_number;
+        rat::data_id_type data_id;
+        rat::replica_number_type replica_number;
 
         try {
             const auto gql = fmt::format("select DATA_ID, DATA_REPL_NUM "
@@ -136,20 +138,19 @@ namespace
             THROW(SYS_INTERNAL_ERR, "Could not convert string to integer");
         }
 
-        auto& rat = irods::experimental::replica_access_table::instance();
         auto& l1desc = L1desc[_l1desc_index];
 
         try {
             if (update_operation::create == _op) {
-                l1desc.replica_token = rat.create_new_entry(data_id, replica_number, getpid());
+                l1desc.replica_token = rat::create_new_entry(data_id, replica_number, getpid());
             }
             else {
                 auto token = kvp.at(REPLICA_TOKEN_KW).value();
-                rat.append_pid(token.data(), data_id, replica_number, getpid());
+                rat::append_pid(token.data(), data_id, replica_number, getpid());
                 l1desc.replica_token = token;
             }
         }
-        catch (const ix::replica_access_table_error& e) {
+        catch (const rat::replica_access_table_error& e) {
             rodsLog(LOG_ERROR, e.what());
             THROW(SYS_INTERNAL_ERR, e.what());
         }
@@ -943,12 +944,11 @@ namespace
             try {
                 if (INTERMEDIATE_REPLICA == replica.replica_status()) {
                     // Replica tokens only apply to write operations against intermediate replicas.
-                    auto& rat = irods::experimental::replica_access_table::instance();
-
+                    //
                     // There is a case where the client wants to open an existing replica for writes
                     // but does not have a replica token because the client is the first one to open
                     // the replica. "update" should be used when the replica is in an intermediate state.
-                    if (rat.contains(replica.data_id(), replica.replica_number())) {
+                    if (rat::contains(replica.data_id(), replica.replica_number())) {
                         update_replica_access_table(*rsComm, update_operation::update, l1descInx, *dataObjInp);
                     }
                     else {

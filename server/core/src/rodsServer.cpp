@@ -363,8 +363,8 @@ int main(int argc, char** argv)
     dnsc::init("irods_dns_cache", irods::get_dns_cache_shared_memory_size());
     irods::at_scope_exit deinit_dns_cache{[] { dnsc::deinit(); }};
 
-    irods::experimental::replica_access_table::init();
-    irods::at_scope_exit deinit_fd_table{[] { irods::experimental::replica_access_table::deinit(); }};
+    ix::replica_access_table::init();
+    irods::at_scope_exit deinit_replica_access_table{[] { ix::replica_access_table::deinit(); }};
 
     remove_leftover_rulebase_pid_files();
 

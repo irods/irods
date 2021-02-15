@@ -733,11 +733,13 @@ int rsDataObjClose(rsComm_t* rsComm, openedDataObjInp_t* dataObjCloseInp)
     // Replica access tokens only apply to write operations.
     if ((l1desc.dataObjInp->openFlags & O_ACCMODE) != O_RDONLY) {
         if (!l1desc.replica_token.empty()) {
+            namespace rat = irods::experimental::replica_access_table;
+
             // Capture the replica token and erase the PID from the replica access table.
             // This must always happen before calling "irsDataObjClose" because other operations
             // may attempt to open this replica, but will fail because those operations do not
             // have the replica token.
-            if (auto entry = irods::experimental::replica_access_table::instance().erase_pid(l1desc.replica_token, getpid()); entry) {
+            if (auto entry = rat::erase_pid(l1desc.replica_token, getpid()); entry) {
                 // "entry" should always be populated in normal situations.
                 // Because closing a data object triggers a file modified notification, it is
                 // important to be able to restore the previously removed replica access table entry.
@@ -745,7 +747,7 @@ int rsDataObjClose(rsComm_t* rsComm, openedDataObjInp_t* dataObjCloseInp)
                 restore_entry.reset(new irods::at_scope_exit<std::function<void()>>{
                     [&ec, e = std::move(*entry)] {
                         if (ec != 0) {
-                        irods::experimental::replica_access_table::instance().restore(e);
+                            rat::restore(e);
                         }
                     }
                 });
@@ -753,16 +755,15 @@ int rsDataObjClose(rsComm_t* rsComm, openedDataObjInp_t* dataObjCloseInp)
         }
         else {
             irods::log(LOG_WARNING, fmt::format("No replica access token in L1 descriptor. Ignoring replica access table. "
-                               "[path={}, resource_hierarchy={}]",
-                               l1desc.dataObjInfo->objPath, l1desc.dataObjInfo->rescHier));
+                                                "[path={}, resource_hierarchy={}]",
+                                                l1desc.dataObjInfo->objPath, l1desc.dataObjInfo->rescHier));
         }
     }
     // Capture the error code so that the at_scope_exit handler can respond to it.
 
     // ensure that l1 descriptor is in use before closing
     if (l1desc.inuseFlag != FD_INUSE) {
-        rodsLog(LOG_ERROR,
-            "rsDataObjClose: l1descInx %d out of range", fd);
+        rodsLog(LOG_ERROR, "rsDataObjClose: l1descInx %d out of range", fd);
         return ec = BAD_INPUT_DESC_INDEX;
     }
 
