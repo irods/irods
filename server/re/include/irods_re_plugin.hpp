@@ -441,12 +441,18 @@ namespace irods {
 
     inline void log_error_code(const error& e)
     {
-        if (e.code() == RE_PARSER_ERROR || e.code() == RULE_ENGINE_ERROR || is_continuation_code(e.code())) {
+        // clang-format off
+        if (is_continuation_code(e.code()) ||
+            e.code() >= 0                  ||
+            e.code() == RE_PARSER_ERROR    ||
+            e.code() == RULE_ENGINE_ERROR)
+        {
             rodsLog(LOG_DEBUG, "Rule Engine Plugin returned [%i].", e.code());
         }
         else {
             rodsLog(LOG_ERROR, "Rule Engine Plugin returned [%i].", e.code());
         }
+        // clang-format on
     }
 
     template <typename ER, typename EM, typename T, typename ...As>
