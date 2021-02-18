@@ -69,6 +69,5 @@
     "test_rule_engine_plugin_passthrough",
     "test_rulebase",
     "test_ssl",
-    "test_symlink_operations",
-    "test_xmsg"
+    "test_symlink_operations"
 ]
