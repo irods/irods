@@ -362,69 +362,86 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("ireg -KCR " + self.testresc + " " + mysdir + " " + irodshome + "/icmdtesta")
 
         # mcoll test
-        self.admin.assert_icommand("imcoll -m link " + irodshome + "/icmdtesta " + irodshome + "/icmdtestb")
-        self.admin.assert_icommand("ils -lr " + irodshome + "/icmdtestb", 'STDOUT_SINGLELINE', "icmdtestb")
-        if os.path.exists(dir_w + "/testb"):
-            shutil.rmtree(dir_w + "/testb")
-        self.admin.assert_icommand("iget -fvrK " + irodshome + "/icmdtestb " + dir_w + "/testb", 'STDOUT_SINGLELINE', "testb")
-        compare_dirs = filecmp.dircmp(mysdir, os.path.join(dir_w, 'testb'))
-        assert (not compare_dirs.right_only and not compare_dirs.left_only and not compare_dirs.diff_files), "Directories differ"
-        self.admin.assert_icommand("imcoll -U " + irodshome + "/icmdtestb")
-        self.admin.assert_icommand("irm -rf " + irodshome + "/icmdtestb")
-        shutil.rmtree(dir_w + "/testb")
-        self.admin.assert_icommand("imkdir " + irodshome + "/icmdtestm")
-        self.admin.assert_icommand("imcoll -m filesystem -R " +
-                                   self.testresc + " " + mysdir + " " + irodshome + "/icmdtestm")
-        self.admin.assert_icommand("imkdir " + irodshome + "/icmdtestm/testmm")
-        self.admin.assert_icommand("iput " + test_file + " " + irodshome + "/icmdtestm/testmm/foo1")
-        self.admin.assert_icommand("iput " + test_file + " " + irodshome + "/icmdtestm/testmm/foo11")
-        self.admin.assert_icommand("imv " + irodshome +
-                                   "/icmdtestm/testmm/foo1 " + irodshome + "/icmdtestm/testmm/foo2")
-        self.admin.assert_icommand("imv " + irodshome + "/icmdtestm/testmm " + irodshome + "/icmdtestm/testmm1")
+        try:
+            self.admin.assert_icommand("imcoll -m link " + irodshome + "/icmdtesta " + irodshome + "/icmdtestb")
+            self.admin.assert_icommand("ils -lr " + irodshome + "/icmdtestb", 'STDOUT_SINGLELINE', "icmdtestb")
+            if os.path.exists(dir_w + "/testb"):
+                shutil.rmtree(dir_w + "/testb")
+            self.admin.assert_icommand("iget -fvrK " + irodshome + "/icmdtestb " + dir_w + "/testb", 'STDOUT_SINGLELINE', "testb")
+            compare_dirs = filecmp.dircmp(mysdir, os.path.join(dir_w, 'testb'))
+            assert (not compare_dirs.right_only and not compare_dirs.left_only and not compare_dirs.diff_files), "Directories differ"
 
-        # mv to normal collection
-        self.admin.assert_icommand("imv " + irodshome + "/icmdtestm/testmm1/foo2 " + irodshome + "/icmdtest/foo100")
-        self.admin.assert_icommand("ils -l " + irodshome + "/icmdtest/foo100", 'STDOUT_SINGLELINE', "foo100")
-        self.admin.assert_icommand("imv " + irodshome + "/icmdtestm/testmm1 " + irodshome + "/icmdtest/testmm1")
-        self.admin.assert_icommand("ils -lr " + irodshome + "/icmdtest/testmm1", 'STDOUT_SINGLELINE', "foo11")
-        self.admin.assert_icommand("irm -rf " + irodshome + "/icmdtest/testmm1 " + irodshome + "/icmdtest/foo100")
-        if os.path.exists(dir_w + "/testm"):
-            shutil.rmtree(dir_w + "/testm")
-        self.admin.assert_icommand("iget -fvrK " + irodshome + "/icmdtesta " + dir_w + "/testm", 'STDOUT_SINGLELINE', "testm")
-        compare_dirs = filecmp.dircmp(mysdir, os.path.join(dir_w, 'testm'))
-        assert (not compare_dirs.right_only and not compare_dirs.left_only and not compare_dirs.diff_files), "Directories differ"
-        self.admin.assert_icommand("imcoll -U " + irodshome + "/icmdtestm")
-        self.admin.assert_icommand("irm -rf " + irodshome + "/icmdtestm")
-        shutil.rmtree(dir_w + "/testm")
-        self.admin.assert_icommand("imkdir " + irodshome + "/icmdtestt_mcol")
-        # added so icmdtestx.tar exists
-        self.admin.assert_icommand("ibun -c " + irodshome + "/icmdtestx.tar " + irodshome + "/icmdtest")
-        self.admin.assert_icommand("imcoll -m tar " + irodshome + "/icmdtestx.tar " + irodshome + "/icmdtestt_mcol")
-        self.admin.assert_icommand("ils -lr " + irodshome + "/icmdtestt_mcol", 'STDOUT_SINGLELINE', ["foo2"])
-        self.admin.assert_icommand("ils -lr " + irodshome + "/icmdtestt_mcol", 'STDOUT_SINGLELINE', ["foo1"])
-        if os.path.exists(dir_w + "/testt"):
-            shutil.rmtree(dir_w + "/testt")
-        if os.path.exists(dir_w + "/testx"):
-            shutil.rmtree(dir_w + "/testx")
-        self.admin.assert_icommand("iget -vr " + irodshome + "/icmdtest  " + dir_w + "/testx", 'STDOUT_SINGLELINE', "testx")
-        self.admin.assert_icommand("iget -vr " + irodshome +
-                                   "/icmdtestt_mcol/icmdtest  " + dir_w + "/testt", 'STDOUT_SINGLELINE', "testt")
-        compare_dirs = filecmp.dircmp(os.path.join(dir_w, 'testx'), os.path.join(dir_w, 'testt'))
-        assert (not compare_dirs.right_only and not compare_dirs.left_only and not compare_dirs.diff_files), "Directories differ"
-        self.admin.assert_icommand("imkdir " + irodshome + "/icmdtestt_mcol/mydirtt")
-        self.admin.assert_icommand("iput " + test_file + " " + irodshome + "/icmdtestt_mcol/mydirtt/foo1mt")
-        self.admin.assert_icommand("imv " + irodshome + "/icmdtestt_mcol/mydirtt/foo1mt " +
-                                   irodshome + "/icmdtestt_mcol/mydirtt/foo1mtx")
+        finally:
+            self.admin.assert_icommand("imcoll -U " + irodshome + "/icmdtestb")
+            self.admin.assert_icommand("irm -rf " + irodshome + "/icmdtestb")
+            if os.path.exists(dir_w + "/testb"):
+                shutil.rmtree(dir_w + "/testb")
 
-        # unlink
-        self.admin.assert_icommand("imcoll -U " + irodshome + "/icmdtestt_mcol")
+        try:
+            self.admin.assert_icommand("imkdir " + irodshome + "/icmdtestm")
+            self.admin.assert_icommand("imcoll -m filesystem -R " +
+                                       self.testresc + " " + mysdir + " " + irodshome + "/icmdtestm")
+            self.admin.assert_icommand("imkdir " + irodshome + "/icmdtestm/testmm")
+            self.admin.assert_icommand("iput " + test_file + " " + irodshome + "/icmdtestm/testmm/foo1")
+            self.admin.assert_icommand("iput " + test_file + " " + irodshome + "/icmdtestm/testmm/foo11")
+            self.admin.assert_icommand("imv " + irodshome +
+                                       "/icmdtestm/testmm/foo1 " + irodshome + "/icmdtestm/testmm/foo2")
+            self.admin.assert_icommand("imv " + irodshome + "/icmdtestm/testmm " + irodshome + "/icmdtestm/testmm1")
 
-        # cleanup
-        os.unlink(sfile2)
-        shutil.rmtree(dir_w + "/testt")
-        shutil.rmtree(dir_w + "/testx")
-        if os.path.exists(mysdir):
-            shutil.rmtree(mysdir)
+            # mv to normal collection
+            self.admin.assert_icommand("imv " + irodshome + "/icmdtestm/testmm1/foo2 " + irodshome + "/icmdtest/foo100")
+            self.admin.assert_icommand("ils -l " + irodshome + "/icmdtest/foo100", 'STDOUT_SINGLELINE', "foo100")
+            self.admin.assert_icommand("imv " + irodshome + "/icmdtestm/testmm1 " + irodshome + "/icmdtest/testmm1")
+            self.admin.assert_icommand("ils -lr " + irodshome + "/icmdtest/testmm1", 'STDOUT_SINGLELINE', "foo11")
+            self.admin.assert_icommand("irm -rf " + irodshome + "/icmdtest/testmm1 " + irodshome + "/icmdtest/foo100")
+            if os.path.exists(dir_w + "/testm"):
+                shutil.rmtree(dir_w + "/testm")
+            self.admin.assert_icommand("iget -fvrK " + irodshome + "/icmdtesta " + dir_w + "/testm", 'STDOUT_SINGLELINE', "testm")
+            compare_dirs = filecmp.dircmp(mysdir, os.path.join(dir_w, 'testm'))
+            assert (not compare_dirs.right_only and not compare_dirs.left_only and not compare_dirs.diff_files), "Directories differ"
+
+        finally:
+            self.admin.assert_icommand("imcoll -U " + irodshome + "/icmdtestm")
+            self.admin.assert_icommand("irm -rf " + irodshome + "/icmdtestm")
+            if os.path.exists(dir_w + "/testm"):
+                shutil.rmtree(dir_w + "/testm")
+
+        try:
+            self.admin.assert_icommand("ils -lr " + irodshome + "/icmdtest", 'STDOUT_SINGLELINE', ["foo2"])
+            self.admin.assert_icommand("ils -lr " + irodshome + "/icmdtest", 'STDOUT_SINGLELINE', ["foo1"])
+
+            self.admin.assert_icommand("imkdir " + irodshome + "/icmdtestt_mcol")
+            # added so icmdtestx.tar exists
+            self.admin.assert_icommand("ibun -c " + irodshome + "/icmdtestx.tar " + irodshome + "/icmdtest")
+            self.admin.assert_icommand("imcoll -m tar " + irodshome + "/icmdtestx.tar " + irodshome + "/icmdtestt_mcol")
+            self.admin.assert_icommand("ils -lr " + irodshome + "/icmdtestt_mcol", 'STDOUT_SINGLELINE', ["foo2"])
+            self.admin.assert_icommand("ils -lr " + irodshome + "/icmdtestt_mcol", 'STDOUT_SINGLELINE', ["foo1"])
+            if os.path.exists(dir_w + "/testt"):
+                shutil.rmtree(dir_w + "/testt")
+            if os.path.exists(dir_w + "/testx"):
+                shutil.rmtree(dir_w + "/testx")
+            self.admin.assert_icommand("iget -vr " + irodshome + "/icmdtest  " + dir_w + "/testx", 'STDOUT_SINGLELINE', "testx")
+            self.admin.assert_icommand("iget -vr " + irodshome +
+                                       "/icmdtestt_mcol/icmdtest  " + dir_w + "/testt", 'STDOUT_SINGLELINE', "testt")
+            compare_dirs = filecmp.dircmp(os.path.join(dir_w, 'testx'), os.path.join(dir_w, 'testt'))
+            assert (not compare_dirs.right_only and not compare_dirs.left_only and not compare_dirs.diff_files), "Directories differ"
+            self.admin.assert_icommand("imkdir " + irodshome + "/icmdtestt_mcol/mydirtt")
+            self.admin.assert_icommand("iput " + test_file + " " + irodshome + "/icmdtestt_mcol/mydirtt/foo1mt")
+            self.admin.assert_icommand("imv " + irodshome + "/icmdtestt_mcol/mydirtt/foo1mt " +
+                                       irodshome + "/icmdtestt_mcol/mydirtt/foo1mtx")
+
+        finally:
+            # unlink
+            self.admin.assert_icommand("imcoll -U " + irodshome + "/icmdtestt_mcol")
+
+            # cleanup
+            os.unlink(sfile2)
+            if os.path.exists(dir_w + "/testt"):
+                shutil.rmtree(dir_w + "/testt")
+            if os.path.exists(dir_w + "/testx"):
+                shutil.rmtree(dir_w + "/testx")
+            if os.path.exists(mysdir):
+                shutil.rmtree(mysdir)
 
     def test_large_dir_and_mcoll_from_devtest(self):
         # build expected variables with similar devtest names
