@@ -47,6 +47,8 @@ class IrodsController(object):
         if self.get_binary_to_pids_dict():
             raise IrodsError('iRODS already running')
 
+        delete_s3_shmem()
+
         self.config.clear_cache()
         if not os.path.exists(self.config.server_executable):
             raise IrodsError(
@@ -184,6 +186,9 @@ class IrodsController(object):
                         except psutil.NoSuchProcess:
                             pass
                         delete_cache_files_by_pid(pid)
+
+            delete_s3_shmem()
+
         except IrodsError as e:
             l.info('Failure')
             six.reraise(IrodsError, e, sys.exc_info()[2])
@@ -253,3 +258,12 @@ def delete_cache_files_by_name(*filepaths):
             os.unlink(path)
         except (IOError, OSError):
             l.warning(lib.indent('Error deleting cache file: %s'), path)
+
+def delete_s3_shmem():
+    # delete s3 shared memory if any exist 
+    s3_plugin_shmem = glob.glob(os.path.join(
+        paths.root_directory(),
+        'dev',
+        'shm',
+        '*irods_s3-shm*'))
+    delete_cache_files_by_name(*s3_plugin_shmem)
