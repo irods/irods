@@ -11,7 +11,7 @@
 
 namespace irods {
 
-    const std::string ADLER32_NAME( "sha512" );
+    const std::string ADLER32_NAME( "adler32" );
 
     struct adler32_parts {
         uint32_t a;
