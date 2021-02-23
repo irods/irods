@@ -138,6 +138,10 @@ namespace irods::experimental {
             else if constexpr(std::is_same_v<T, rError_t>) {
                 freeRError(obj_);
             }
+            else if constexpr(std::is_same_v<T, openedDataObjInp_t>) {
+                clearKeyVal(&obj_->condInput);
+                free(obj_);
+            }
             else if (array_delete_) {
                 delete [] obj_;
             }
