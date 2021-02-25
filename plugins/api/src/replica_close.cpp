@@ -54,6 +54,7 @@ namespace
 {
     namespace ix = irods::experimental;
     namespace fs = irods::experimental::filesystem;
+    namespace rst = irods::replica_state_table;
 
     // clang-format off
     using json      = nlohmann::json;
@@ -233,8 +234,7 @@ namespace
         // If nothing has been written, the status is restored from the replica state table
         // so that the replica is not mistakenly marked as good when it is in fact stale.
         else {
-            auto& rst = irods::replica_state_table::instance();
-            const auto previous_status = std::stoi(rst.get_property(_l1desc.dataObjInfo->objPath, _l1desc.dataObjInfo->replNum, "data_is_dirty"));
+            const auto previous_status = std::stoi(rst::get_property(_l1desc.dataObjInfo->objPath, _l1desc.dataObjInfo->replNum, "data_is_dirty"));
 
             addKeyVal(&reg_params, REPL_STATUS_KW, std::to_string(previous_status).data());
             addKeyVal(&reg_params, DATA_MODIFY_KW, current_time_in_seconds().data());
@@ -358,7 +358,6 @@ namespace
             return BAD_INPUT_DESC_INDEX;
         }
 
-        auto& rst = irods::replica_state_table::instance();
         const auto& l1desc = L1desc[l1desc_index];
         const auto send_notifications = !json_input.contains("send_notifications") || json_input.at("send_notifications").get<bool>();
 
@@ -396,10 +395,10 @@ namespace
                 const auto compute_checksum = json_input.contains("compute_checksum") && json_input.at("compute_checksum").get<bool>();
                 const auto update_catalog = update_size || update_status || compute_checksum || send_notifications;
 
-                const irods::at_scope_exit remove_from_rst{[&logical_path, &rst, &update_catalog]
+                const irods::at_scope_exit remove_from_rst{[&logical_path, &update_catalog]
                     {
-                        if (update_catalog && rst.contains(logical_path)) {
-                            rst.erase(logical_path);
+                        if (update_catalog && rst::contains(logical_path)) {
+                            rst::erase(logical_path);
                         }
                     }
                 };
@@ -434,7 +433,7 @@ namespace
                              l1desc.bytesWritten <= 0 &&
                              CREATE_TYPE != l1desc.openType) {
                         // If nothing changed, the replica status should be restored to the original status.
-                        new_status = std::stoi(rst.get_property(l1desc.dataObjInfo->objPath, l1desc.dataObjInfo->replNum, "data_is_dirty"));
+                        new_status = std::stoi(rst::get_property(l1desc.dataObjInfo->objPath, l1desc.dataObjInfo->replNum, "data_is_dirty"));
                     }
 
                     if (const auto ec = update_replica_status(*_comm, l1desc, std::to_string(new_status), send_notifications); ec != 0) {

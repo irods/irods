@@ -301,7 +301,7 @@ namespace
         irods::apply_metadata_from_cond_input(_comm, *_l1desc.dataObjInp);
         irods::apply_acl_from_cond_input(_comm, *_l1desc.dataObjInp);
 
-        irods::replica_state_table::instance().erase(_info.logical_path());
+        rst::erase(_info.logical_path());
 
         const int trim_status = dataObjUnlinkS(&_comm, _l1desc.dataObjInp, _info.get());
 
@@ -374,16 +374,14 @@ namespace
             return vault_size;
         }
 
-        auto& rst = irods::replica_state_table::instance();
-
         _destination_replica.replica_status(STALE_REPLICA);
         _destination_replica.mtime(SET_TIME_TO_NOW_KW);
         _destination_replica.size(vault_size);
 
         // Write it out to the catalog
-        rst.update(_destination_replica.logical_path(), _destination_replica);
+        rst::update(_destination_replica.logical_path(), _destination_replica);
 
-        const int ec = rst.publish_to_catalog(_comm, _destination_replica.logical_path(), rst::trigger_file_modified::no);
+        const int ec = rst::publish_to_catalog(_comm, _destination_replica.logical_path(), rst::trigger_file_modified::no);
 
         if (ec < 0) {
             irods::log(LOG_ERROR, fmt::format("failed to publish to catalog:[{}]", ec));
@@ -420,20 +418,18 @@ namespace
             throw;
         }
 
-        auto& rst = irods::replica_state_table::instance();
-
         _destination_replica.replica_number(_source_replica.replica_number());
         _destination_replica.ctime(_source_replica.ctime());
         _destination_replica.mtime(_source_replica.mtime());
-        _destination_replica.replica_status(std::stoi(rst.get_property(
+        _destination_replica.replica_status(std::stoi(rst::get_property(
             _destination_replica.logical_path(),
             _source_replica.replica_number(),
             "data_is_dirty")));
 
         _destination_replica.cond_input()[FILE_MODIFIED_KW] = irods::to_json(cond_input.get()).dump();
 
-        rst.update(_destination_replica.logical_path(), _destination_replica);
-        const int ec = rst.publish_to_catalog(_comm, _destination_replica.logical_path(), rst::trigger_file_modified::yes);
+        rst::update(_destination_replica.logical_path(), _destination_replica);
+        const int ec = rst::publish_to_catalog(_comm, _destination_replica.logical_path(), rst::trigger_file_modified::yes);
 
         if (CREATE_TYPE == _l1desc.openType) {
             updatequotaOverrun(_destination_replica.hierarchy().data(), _destination_replica.size(), ALL_QUOTA);
@@ -451,8 +447,8 @@ namespace
                 __FUNCTION__, _destination_replica.logical_path(), ec));
         }
 
-        if (rst.contains(_destination_replica.logical_path())) {
-            rst.erase(_destination_replica.logical_path());
+        if (rst::contains(_destination_replica.logical_path())) {
+            rst::erase(_destination_replica.logical_path());
         }
 
         return ec;
