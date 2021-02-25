@@ -18,6 +18,11 @@
 
 #include "boost/format.hpp"
 
+namespace
+{
+    namespace rst = irods::replica_state_table;
+} // anonymous namespace
+
 int _call_file_modified_for_modification(
     rsComm_t*         rsComm,
     modDataObjMeta_t* modDataObjMetaInp );
@@ -224,9 +229,8 @@ int _call_file_modified_for_modification(
     }
 
     // The replica state table entry needs to be removed before triggering fileModified
-    auto& rst = irods::replica_state_table::instance();
-    if (rst.contains(dataObjInfo->objPath)) {
-        rst.erase(dataObjInfo->objPath);
+    if (rst::contains(dataObjInfo->objPath)) {
+        rst::erase(dataObjInfo->objPath);
     }
 
     if ( getValByKey( regParam, ALL_KW ) != NULL ) {

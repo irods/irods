@@ -12,7 +12,7 @@
 
 extern irods::resource_manager resc_mgr;
 
-namespace irods
+namespace irods::replica_state_table
 {
     namespace
     {
@@ -20,7 +20,6 @@ namespace irods
         namespace id     = irods::experimental::data_object;
         namespace ir     = irods::experimental::replica;
         using json       = nlohmann::json;
-        using state_type = replica_state_table::state_type;
         // clang-format on
 
         // Global Variables
@@ -35,9 +34,9 @@ namespace irods
             if (replica_state_json_map.contains(_logical_path.data())) {
                 int index = -1;
 
-                for (const auto& e : replica_state_json_map.at(_logical_path.data()).at(replica_state_table::REPLICAS_KW)) {
+                for (const auto& e : replica_state_json_map.at(_logical_path.data()).at(REPLICAS_KW)) {
                     ++index;
-                    if (_replica_number == std::stoi(e.at(replica_state_table::BEFORE_KW).at("data_repl_num").get<std::string>())) {
+                    if (_replica_number == std::stoi(e.at(BEFORE_KW).at("data_repl_num").get<std::string>())) {
                         return index;
                     }
                 }
@@ -57,9 +56,9 @@ namespace irods
             if (replica_state_json_map.contains(_logical_path.data())) {
                 int index = -1;
 
-                for (const auto& e : replica_state_json_map.at(_logical_path.data()).at(replica_state_table::REPLICAS_KW)) {
+                for (const auto& e : replica_state_json_map.at(_logical_path.data()).at(REPLICAS_KW)) {
                     ++index;
-                    if (_leaf_resource_id == std::stoi(e.at(replica_state_table::BEFORE_KW).at("resc_id").get<std::string>())) {
+                    if (_leaf_resource_id == std::stoi(e.at(BEFORE_KW).at("resc_id").get<std::string>())) {
                         return index;
                     }
                 }
@@ -81,9 +80,9 @@ namespace irods
 
                 const auto resc_id = resc_mgr.hier_to_leaf_id(resc_mgr.get_hier_to_root_for_resc(_leaf_resource_name));
 
-                for (const auto& e : replica_state_json_map.at(_logical_path.data()).at(replica_state_table::REPLICAS_KW)) {
+                for (const auto& e : replica_state_json_map.at(_logical_path.data()).at(REPLICAS_KW)) {
                     ++index;
-                    if (resc_id == std::stoi(e.at(replica_state_table::BEFORE_KW).at("resc_id").get<std::string>())) {
+                    if (resc_id == std::stoi(e.at(BEFORE_KW).at("resc_id").get<std::string>())) {
                         return index;
                     }
                 }
@@ -109,12 +108,12 @@ namespace irods
             try {
                 std::scoped_lock rst_lock{rst_mutex};
 
-                auto& target_replica = replica_state_json_map.at(_logical_path.data()).at(replica_state_table::REPLICAS_KW).at(_replica_index);
+                auto& target_replica = replica_state_json_map.at(_logical_path.data()).at(REPLICAS_KW).at(_replica_index);
 
                 irods::log(LOG_DEBUG9, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, target_replica.dump()));
 
-                if (_updates.contains(replica_state_table::REPLICAS_KW)) {
-                    target_replica.at(replica_state_table::AFTER_KW).update(_updates.at(replica_state_table::REPLICAS_KW));
+                if (_updates.contains(REPLICAS_KW)) {
+                    target_replica.at(AFTER_KW).update(_updates.at(REPLICAS_KW));
                 }
 
                 if (_updates.contains(FILE_MODIFIED_KW)) {
@@ -130,7 +129,7 @@ namespace irods
         } // update_impl
     } // anonymouse namespace
 
-    auto replica_state_table::init() -> void
+    auto init() -> void
     {
         std::scoped_lock rst_lock{rst_mutex};
 
@@ -139,7 +138,7 @@ namespace irods
         replica_state_json_map.clear();
     } // init
 
-    auto replica_state_table::deinit() -> void
+    auto deinit() -> void
     {
         std::scoped_lock rst_lock{rst_mutex};
 
@@ -148,16 +147,7 @@ namespace irods
         replica_state_json_map.clear();
     } // deinit
 
-    auto replica_state_table::instance() noexcept -> replica_state_table&
-    {
-        static replica_state_table instance;
-
-        irods::log(LOG_DEBUG9, fmt::format("[{}:{}] - retrieving instance of replica state table", __FUNCTION__, __LINE__));
-
-        return instance;
-    } // instance
-
-    auto replica_state_table::insert(const id::data_object_proxy_t& _obj) -> void
+    auto insert(const id::data_object_proxy_t& _obj) -> void
     {
         try {
             std::scoped_lock rst_lock{rst_mutex};
@@ -192,7 +182,7 @@ namespace irods
         }
     } // insert
 
-    auto replica_state_table::insert(
+    auto insert(
         const std::string_view _logical_path,
         const ir::replica_proxy_t& _replica) -> void
     {
@@ -201,7 +191,7 @@ namespace irods
 
             if (!replica_state_json_map.contains(_logical_path.data())) {
                 const auto obj = id::make_data_object_proxy(*_replica.get());
-                return instance().insert(obj);
+                return insert(obj);
             }
 
             const auto json_replica = ir::to_json(_replica);
@@ -220,9 +210,9 @@ namespace irods
         }
     } // insert
 
-    auto replica_state_table::erase(const std::string_view _logical_path) -> void
+    auto erase(const std::string_view _logical_path) -> void
     {
-        if (!instance().contains(_logical_path)) {
+        if (!contains(_logical_path)) {
             THROW(KEY_NOT_FOUND, fmt::format(
                 "[{}:{}] - no key found for [{}]",
                 __FUNCTION__, __LINE__, _logical_path));
@@ -238,18 +228,18 @@ namespace irods
         }
     } // erase
 
-    auto replica_state_table::contains(const std::string_view _logical_path) const -> bool
+    auto contains(const std::string_view _logical_path) -> bool
     {
         std::scoped_lock rst_lock{rst_mutex};
 
         return replica_state_json_map.contains(_logical_path.data());
     } // contains
 
-    auto replica_state_table::contains(
+    auto contains(
         const std::string_view _logical_path,
-        const std::string_view _leaf_resource_name) const -> bool
+        const std::string_view _leaf_resource_name) -> bool
     {
-        if (!instance().contains(_logical_path)) {
+        if (!contains(_logical_path)) {
             return false;
         }
 
@@ -266,11 +256,11 @@ namespace irods
         return false;
     } // contains
 
-    auto replica_state_table::contains(
+    auto contains(
         const std::string_view _logical_path,
-        const int _replica_number) const -> bool
+        const int _replica_number) -> bool
     {
-        if (!instance().contains(_logical_path)) {
+        if (!contains(_logical_path)) {
             return false;
         }
 
@@ -285,17 +275,17 @@ namespace irods
         return false;
     } // contains
 
-    auto replica_state_table::at(const std::string_view _logical_path) const -> json
+    auto at(const std::string_view _logical_path) -> json
     {
         std::scoped_lock rst_lock{rst_mutex};
 
         return replica_state_json_map.at(_logical_path.data()).at(REPLICAS_KW);
     } // at
 
-    auto replica_state_table::at(
+    auto at(
         const std::string_view _logical_path,
         const std::string_view _leaf_resource_name,
-        const state_type _state) const -> json
+        const state_type _state) -> json
     {
         std::scoped_lock rst_lock{rst_mutex};
 
@@ -328,10 +318,10 @@ namespace irods
         }
     } // at
 
-    auto replica_state_table::at(
+    auto at(
         const std::string_view _logical_path,
         const int _replica_number,
-        const state_type _state) const -> json
+        const state_type _state) -> json
     {
         std::scoped_lock rst_lock{rst_mutex};
 
@@ -362,7 +352,7 @@ namespace irods
         }
     } // at
 
-    auto replica_state_table::update(
+    auto update(
         const std::string_view _logical_path,
         const std::string_view _leaf_resource_name,
         const json& _updates) -> void
@@ -372,7 +362,7 @@ namespace irods
         return update_impl(_logical_path, replica_index, _updates);
     } // update
 
-    auto replica_state_table::update(
+    auto update(
         const std::string_view _logical_path,
         const int _replica_number,
         const json& _updates) -> void
@@ -382,7 +372,7 @@ namespace irods
         return update_impl(_logical_path, replica_index, _updates);
     } // update
 
-    auto replica_state_table::update(
+    auto update(
         const std::string_view _logical_path,
         const ir::replica_proxy_t& _replica) -> void
     {
@@ -398,41 +388,37 @@ namespace irods
         return update_impl(_logical_path, replica_index, updates);
     } // update
 
-    auto replica_state_table::get_property(
+    auto get_property(
         const std::string_view _logical_path,
         const int _replica_number,
         const std::string_view _property_name,
-        const state_type _state) const -> std::string
+        const state_type _state) -> std::string
     {
         if (state_type::both == _state) {
             THROW(SYS_INVALID_INPUT_PARAM, fmt::format("state type must be before or after"));
         }
 
-        auto& rst = irods::replica_state_table::instance();
-
-        const auto replica_json = rst.at(_logical_path, _replica_number, _state);
+        const auto replica_json = at(_logical_path, _replica_number, _state);
 
         return replica_json.at(_property_name.data());
     } // get_property
 
-    auto replica_state_table::get_property(
+    auto get_property(
         const std::string_view _logical_path,
         const std::string_view _leaf_resource_name,
         const std::string_view _property_name,
-        const state_type _state) const -> std::string
+        const state_type _state) -> std::string
     {
         if (state_type::both == _state) {
             THROW(SYS_INVALID_INPUT_PARAM, fmt::format("state type must be before or after"));
         }
 
-        auto& rst = irods::replica_state_table::instance();
-
-        const auto replica_json = rst.at(_logical_path, _leaf_resource_name, _state);
+        const auto replica_json = at(_logical_path, _leaf_resource_name, _state);
 
         return replica_json.at(_property_name.data());
     } // get_property
 
-    auto replica_state_table::publish_to_catalog(
+    auto publish_to_catalog(
         RsComm& _comm,
         const std::string_view _logical_path,
         const trigger_file_modified _trigger_file_modified) -> int

@@ -458,23 +458,21 @@ namespace
         auto registered_replica = irods::experimental::replica::make_replica_proxy(*l1desc.dataObjInfo);
 
         if (!l1desc.dataObjInfo->specColl) {
-            auto& rst = irods::replica_state_table::instance();
-
-            if (rst.contains(registered_replica.logical_path())) {
+            if (rst::contains(registered_replica.logical_path())) {
                 if (_existing_replica_list) {
                     auto obj = irods::experimental::data_object::make_data_object_proxy(*_existing_replica_list);
                     obj.add_replica(*registered_replica.get());
                 }
-                rst.insert(registered_replica.logical_path(), registered_replica);
-                //rst.insert(l1desc.dataObjInfo->objPath, *l1desc.dataObjInfo);
+                rst::insert(registered_replica.logical_path(), registered_replica);
+                //rst::insert(l1desc.dataObjInfo->objPath, *l1desc.dataObjInfo);
             }
             else {
                 auto obj = irods::experimental::data_object::make_data_object_proxy(*registered_replica.get());
-                rst.insert(obj);
-                //rst.insert(*l1desc.dataObjInfo);
+                rst::insert(obj);
+                //rst::insert(*l1desc.dataObjInfo);
             }
 
-            if (const int ec = rst.publish_to_catalog(_comm, registered_replica.logical_path(), rst::trigger_file_modified::no); ec < 0) {
+            if (const int ec = rst::publish_to_catalog(_comm, registered_replica.logical_path(), rst::trigger_file_modified::no); ec < 0) {
                 THROW(ec, fmt::format("[{}:{}] - failed to update replica statuses", __FUNCTION__, __LINE__));
             }
         }
@@ -996,25 +994,24 @@ namespace
             // Insert the data object information into the replica state table before the replica status is
             // updated because the "before" state is supposed to represent the state of the data object before
             // it is modified (in this particular case, before its replica status is modified).
-            auto& rst = irods::replica_state_table::instance();
-            rst.insert(obj);
+            rst::insert(obj);
 
             if (const auto open_for_write = getWriteFlag(dataObjInp->openFlags); open_for_write) {
                 replica.replica_status(INTERMEDIATE_REPLICA);
 
                 const nlohmann::json update{{"data_is_dirty", std::to_string(replica.replica_status())}};
 
-                rst.update(replica.logical_path(), replica.replica_number(),
+                rst::update(replica.logical_path(), replica.replica_number(),
                     nlohmann::json{{"replicas", update}});
 
-                if (const int ec = rst.publish_to_catalog(*rsComm, replica.logical_path(), rst::trigger_file_modified::no); ec < 0) {
-                    const irods::at_scope_exit erase_rst_entry{[&rst, &replica] { rst.erase(replica.logical_path()); }};
+                if (const int ec = rst::publish_to_catalog(*rsComm, replica.logical_path(), rst::trigger_file_modified::no); ec < 0) {
+                    const irods::at_scope_exit erase_rst_entry{[&replica] { rst::erase(replica.logical_path()); }};
 
                     irods::log(LOG_ERROR, fmt::format("failed to update replica status to intermediate"));
 
                     replica.replica_status(old_replica_status);
 
-                    if (const int ec = rst.publish_to_catalog(*rsComm, replica.logical_path(), rst::trigger_file_modified::no); ec < 0) {
+                    if (const int ec = rst::publish_to_catalog(*rsComm, replica.logical_path(), rst::trigger_file_modified::no); ec < 0) {
                         irods::log(LOG_ERROR, fmt::format(
                             "Failed to restore the replica's replica status "
                             "[error_code={}, path={}, hierarchy={}, original_replica_status={}]",
