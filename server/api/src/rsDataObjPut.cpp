@@ -181,8 +181,6 @@ namespace
 
         cond_input[OPEN_TYPE_KW] = std::to_string(_l1desc.openType);
 
-        auto& rst = irods::replica_state_table::instance();
-
         // TODO: unlock in RST here (restore replica states)
 
         // Set target replica to the state it should be
@@ -191,13 +189,13 @@ namespace
             replica.mtime(SET_TIME_TO_NOW_KW);
 
             // stale other replicas because the truth has moved
-            for (auto& rj : rst.at(replica.logical_path())) {
+            for (auto& rj : rst::at(replica.logical_path())) {
                 const auto replica_number = std::stoi(std::string{rj.at("after").at("data_repl_num")});
 
                 if (replica.replica_number() != replica_number) {
                     const nlohmann::json update{{"data_is_dirty", std::to_string(STALE_REPLICA)}};
 
-                    rst.update(replica.logical_path(), replica_number,
+                    rst::update(replica.logical_path(), replica_number,
                         nlohmann::json{{"replicas", update}});
                 }
             }
@@ -213,9 +211,9 @@ namespace
         replica.cond_input()[FILE_MODIFIED_KW] = irods::to_json(cond_input.get()).dump();
 
         // Write it out to the catalog
-        rst.update(replica.logical_path(), replica);
+        rst::update(replica.logical_path(), replica);
 
-        if (const int ec = rst.publish_to_catalog(_comm, replica.logical_path(), rst::trigger_file_modified::yes); ec < 0) {
+        if (const int ec = rst::publish_to_catalog(_comm, replica.logical_path(), rst::trigger_file_modified::yes); ec < 0) {
             THROW(ec, fmt::format("failed to publish to catalog:[{}]", ec));
         }
 
