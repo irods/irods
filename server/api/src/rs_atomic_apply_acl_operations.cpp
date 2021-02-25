@@ -20,7 +20,8 @@ auto rs_atomic_apply_acl_operations(RsComm* _comm, const char* _json_input, char
 
     bytesBuf_t* output{};
 
-    const auto ec = irods::server_api_call(ATOMIC_APPLY_ACL_OPERATIONS_APN, _comm, &input, &output);
+    const auto ec = irods::server_api_call_without_policy(ATOMIC_APPLY_ACL_OPERATIONS_APN,
+                                                          _comm, &input, &output);
 
     *_json_output = static_cast<char*>(output->buf);
     std::free(output);

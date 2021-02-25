@@ -21,7 +21,8 @@ auto rs_data_object_finalize(RsComm* _comm, const char* _json_input, char** _jso
 
     bytesBuf_t* output{};
 
-    const auto ec = irods::server_api_call(DATA_OBJECT_FINALIZE_APN, _comm, &input, &output);
+    const auto ec = irods::server_api_call_without_policy(DATA_OBJECT_FINALIZE_APN,
+                                                          _comm, &input, &output);
 
     *_json_output = static_cast<char*>(output->buf);
     std::free(output);
