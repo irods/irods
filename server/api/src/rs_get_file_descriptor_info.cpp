@@ -20,7 +20,8 @@ auto rs_get_file_descriptor_info(RsComm* _comm, const char* _json_input, char** 
 
     bytesBuf_t* output{};
 
-    const auto ec = irods::server_api_call(GET_FILE_DESCRIPTOR_INFO_APN, _comm, &input, &output);
+    const auto ec = irods::server_api_call_without_policy(GET_FILE_DESCRIPTOR_INFO_APN,
+                                                          _comm, &input, &output);
 
     if (ec == 0) {
         *_json_output = static_cast<char*>(output->buf);

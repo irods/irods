@@ -16,7 +16,7 @@ auto rs_replica_open(RsComm* _comm, DataObjInp* _input, char** _json_output) -> 
 
     bytesBuf_t* output{};
 
-    const int ec = irods::server_api_call(REPLICA_OPEN_APN, _comm, _input, &output);
+    const int ec = irods::server_api_call_without_policy(REPLICA_OPEN_APN, _comm, _input, &output);
 
     if (ec >= 3) {
         *_json_output = static_cast<char*>(output->buf);

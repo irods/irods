@@ -1,13 +1,5 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-/* apiHandler.h - header file for apiHandler.h */
-
 #ifndef API_HANDLER_HPP
 #define API_HANDLER_HPP
-
-// =-=-=-=-=-=-=-
-// boost includes
 
 #include "rods.h"
 #include "packStruct.h"
@@ -15,15 +7,16 @@
 #include "irods_plugin_base.hpp"
 #include "irods_re_ruleexistshelper.hpp"
 #include "irods_stacktrace.hpp"
-#include "boost/shared_ptr.hpp"
-#include "boost/any.hpp"
 #include "irods_pack_table.hpp"
 #include "irods_at_scope_exit.hpp"
-
 #include "irods_re_namespaceshelper.hpp"
 #include "irods_re_plugin.hpp"
 #include "irods_re_ruleexistshelper.hpp"
 
+#include <boost/shared_ptr.hpp>
+#include <boost/any.hpp>
+
+#include <typeinfo>
 #include <functional>
 #include <utility>
 #include <type_traits>
@@ -33,7 +26,7 @@
 
 namespace irods
 {
-// NOOP function for clearInStruct
+    // NOOP function for clearInStruct
     void clearInStruct_noop( void* );
 
     struct apidef_t {
@@ -248,6 +241,29 @@ namespace irods
 
             return 0;
         } // call_handler
+
+        template <typename ...Args>
+        int call_handler_without_policy(rsComm_t* _comm, Args... _args)
+        {
+            if (!operations_.has_entry(operation_name)) {
+                rodsLog(LOG_ERROR, "missing api operation [%s]", operation_name.c_str());
+                return SYS_INVALID_INPUT_PARAM;
+            }
+
+            try {
+                using fcn_t = std::function<int(rsComm_t*, Args...)>;
+                fcn_t fcn = boost::any_cast<fcn_t>(operations_[operation_name]);
+                return fcn(_comm, _args...);
+            }
+            catch (const boost::bad_any_cast&) {
+                std::string msg = "failed for call - ";
+                msg += operation_name;
+                irods::log(ERROR(INVALID_ANY_CAST, msg));
+                return INVALID_ANY_CAST;
+            }
+
+            return 0;
+        } // call_handler_without_policy
 
         // =-=-=-=-=-=-=-
         // ctors
