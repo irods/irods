@@ -68,7 +68,8 @@
 
 namespace
 {
-    using replica_proxy = irods::experimental::replica::replica_proxy<DataObjInfo>;
+    namespace ir = irods::experimental::replica;
+    namespace rst = irods::replica_state_table;
 
     auto apply_static_peps(RsComm& _comm, openedDataObjInp_t& _close_inp, const int _fd, const int _operation_status) -> void
     {
@@ -128,7 +129,7 @@ namespace
         char* checksum_string = nullptr;
         irods::at_scope_exit free_checksum_string{[&checksum_string] { free(checksum_string); }};
 
-        auto destination_replica = replica_proxy{*l1desc.dataObjInfo};
+        auto destination_replica = ir::replica_proxy_t{*l1desc.dataObjInfo};
         if (oprType == REPLICATE_DEST) {
             const int srcL1descInx = l1desc.srcL1descInx;
             if (srcL1descInx < 3) {
@@ -137,7 +138,7 @@ namespace
                     __FUNCTION__, srcL1descInx));
             }
 
-            auto source_replica = replica_proxy{*L1desc[srcL1descInx].dataObjInfo};
+            auto source_replica = ir::replica_proxy_t{*L1desc[srcL1descInx].dataObjInfo};
             if (source_replica.checksum().length() > 0 && STALE_REPLICA != source_replica.replica_status()) {
                 destination_replica.cond_input()[ORIG_CHKSUM_KW] = source_replica.checksum();
 
@@ -224,7 +225,7 @@ namespace
                     return {};
                 }
 
-                auto source_replica = replica_proxy{*L1desc[srcL1descInx].dataObjInfo};
+                auto source_replica = ir::replica_proxy_t{*L1desc[srcL1descInx].dataObjInfo};
 
                 if (source_replica.checksum().length() > 0) {
                     destination_replica.cond_input()[ORIG_CHKSUM_KW] = source_replica.checksum();
@@ -267,8 +268,8 @@ namespace
                 __FUNCTION__, srcL1descInx));
         }
 
-        const auto source_replica = replica_proxy{*L1desc[srcL1descInx].dataObjInfo};
-        auto destination_replica = replica_proxy{*l1desc.dataObjInfo};
+        const auto source_replica = ir::replica_proxy_t{*L1desc[srcL1descInx].dataObjInfo};
+        auto destination_replica = ir::replica_proxy_t{*l1desc.dataObjInfo};
 
         auto [reg_param, lm] = irods::experimental::make_key_value_proxy({{OPEN_TYPE_KW, std::to_string(l1desc.openType)}});
         reg_param[REPL_STATUS_KW] = std::to_string(source_replica.replica_status());
@@ -344,12 +345,10 @@ namespace
             throw;
         }
 
-        auto replica = replica_proxy{*l1desc.dataObjInfo};
+        auto replica = ir::replica_proxy_t{*l1desc.dataObjInfo};
 
         auto cond_input = irods::experimental::make_key_value_proxy(l1desc.dataObjInp->condInput);
         cond_input[OPEN_TYPE_KW] = std::to_string(l1desc.openType);
-
-        auto& rst = irods::replica_state_table::instance();
 
         // TODO: unlock in RST here (restore replica states)
 
@@ -359,13 +358,13 @@ namespace
             replica.mtime(SET_TIME_TO_NOW_KW);
 
             // stale other replicas because the truth has moved
-            for (auto& rj : rst.at(replica.logical_path())) {
+            for (auto& rj : rst::at(replica.logical_path())) {
                 const auto replica_number = std::stoi(std::string{rj.at("after").at("data_repl_num")});
 
                 if (replica.replica_number() != replica_number) {
                     const nlohmann::json update{{"data_is_dirty", std::to_string(STALE_REPLICA)}};
 
-                    rst.update(replica.logical_path(), replica_number,
+                    rst::update(replica.logical_path(), replica_number,
                         nlohmann::json{{"replicas", update}});
                 }
             }
@@ -381,9 +380,9 @@ namespace
         replica.cond_input()[FILE_MODIFIED_KW] = irods::to_json(cond_input.get()).dump();
 
         // Write it out to the catalog
-        rst.update(replica.logical_path(), replica);
+        rst::update(replica.logical_path(), replica);
 
-        if (const int ec = rst.publish_to_catalog(_comm, replica.logical_path(), rst::trigger_file_modified::yes); ec < 0) {
+        if (const int ec = rst::publish_to_catalog(_comm, replica.logical_path(), rst::trigger_file_modified::yes); ec < 0) {
             THROW(ec, fmt::format("failed to publish to catalog:[{}]", ec));
         }
 
@@ -418,7 +417,7 @@ namespace
             throw;
         }
 
-        const auto replica = replica_proxy{*l1desc.dataObjInfo};
+        const auto replica = ir::replica_proxy_t{*l1desc.dataObjInfo};
         auto [reg_param, lm] = irods::experimental::make_key_value_proxy({{OPEN_TYPE_KW, std::to_string(l1desc.openType)}});
 
         reg_param[DATA_SIZE_KW] = std::to_string(replica.size());
@@ -460,7 +459,7 @@ namespace
     {
         auto& l1desc = L1desc[_fd];
 
-        auto replica = replica_proxy{*l1desc.dataObjInfo};
+        auto replica = ir::replica_proxy_t{*l1desc.dataObjInfo};
 
         const auto accmode = l1desc.dataObjInp->openFlags & O_ACCMODE;
         if (O_RDONLY != accmode) {
@@ -525,7 +524,7 @@ namespace
             return;
         }
 
-        auto replica = replica_proxy{*l1desc.dataObjInfo};
+        auto replica = ir::replica_proxy_t{*l1desc.dataObjInfo};
 
         auto [reg_param, lm] = irods::experimental::make_key_value_proxy({{OPEN_TYPE_KW, std::to_string(l1desc.openType)}});
 
@@ -543,8 +542,7 @@ namespace
             reg_param[REPL_STATUS_KW] = std::to_string(replica.replica_status());
         }
         else if (l1desc.openType == OPEN_FOR_WRITE_TYPE) {
-            auto& rst = irods::replica_state_table::instance();
-            replica.replica_status(std::stoi(rst.get_property(replica.logical_path(), replica.replica_number(), "data_is_dirty")));
+            replica.replica_status(std::stoi(rst::get_property(replica.logical_path(), replica.replica_number(), "data_is_dirty")));
             reg_param[REPL_STATUS_KW] = std::to_string(replica.replica_status());
             reg_param[DATA_MODIFY_KW] = std::to_string((int)time(nullptr));
         }
@@ -611,7 +609,7 @@ namespace
     {
         auto& l1desc = L1desc[_fd];
 
-        auto opened_replica = replica_proxy{*l1desc.dataObjInfo};
+        auto opened_replica = ir::replica_proxy_t{*l1desc.dataObjInfo};
 
         if (l1desc.oprStatus < 0) {
             return finalize_replica_after_failed_operation(_comm, _fd);
@@ -691,7 +689,7 @@ auto l3Close(RsComm* _comm, const int _fd) -> int
 {
     auto& l1desc = L1desc[_fd];
 
-    auto replica = replica_proxy{*l1desc.dataObjInfo};
+    auto replica = ir::replica_proxy_t{*l1desc.dataObjInfo};
     if (getStructFileType(replica.special_collection_info()) >= 0) {
         std::string location{};
         if (irods::error ret = irods::get_loc_for_hier_string(replica.hierarchy().data(), location); !ret.ok()) {
@@ -812,9 +810,8 @@ int rsDataObjClose(rsComm_t* rsComm, openedDataObjInp_t* dataObjCloseInp)
 
             freeL1desc(fd);
 
-            auto& rst = irods::replica_state_table::instance();
-            if (rst.contains(logical_path)) {
-                rst.erase(logical_path);
+            if (rst::contains(logical_path)) {
+                rst::erase(logical_path);
             }
         }};
 
