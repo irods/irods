@@ -1014,20 +1014,12 @@ OUTPUT ruleExecOut
             self.admin.assert_icommand(['imeta', 'ls', '-d', data_object], 'STDOUT', ['atomic_pre_fired', 'atomic_post_fired'])
 
     def test_msi_touch__issue_4669(self):
-        def assert_msi(json_input):
-            rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
-            rule = "msi_touch('{0}')".format(json_input)
-            self.admin.assert_icommand(['irule', '-r', rep_name, rule, 'null', 'ruleExecOut'])
-
         data_object = os.path.join(self.admin.session_collection, 'issue_4669')
 
-        # Show that the JSON object is being forwarded to the API plugin.
-        json_input = {
-            'logical_path': data_object
-        }
-
-        # Show that the data object was just created.
-        assert_msi(json.dumps(json_input))
+        # Show that the data object was created by the microservice.
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        rule = "msi_touch('{0}')".format(json.dumps({'logical_path': data_object}))
+        self.admin.assert_icommand(['irule', '-r', rep_name, rule, 'null', 'ruleExecOut'])
         self.admin.assert_icommand(['ils', '-l', data_object], 'STDOUT', [os.path.basename(data_object)])
 
         # Verify that the PEPs for the API plugin are firing.
@@ -1049,10 +1041,8 @@ OUTPUT ruleExecOut
                     }}
                 '''.format(data_object))
 
-            # Show that the options are being forwarded and honored by the API plugin.
-            json_input['logical_path'] = os.path.join(self.admin.session_collection, 'bar')
-            json_input['options'] = {'no_create': True}
-            assert_msi(json.dumps(json_input))
+            # Trigger the PEPs.
+            self.admin.assert_icommand(['itouch', '-c', 'bar'])
 
             # Show that even though no data object was created, the PEPs fired correctly.
             self.admin.assert_icommand(['imeta', 'ls', '-d', data_object], 'STDOUT', ['touch_pre_fired', 'touch_post_fired'])

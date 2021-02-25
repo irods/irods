@@ -293,6 +293,34 @@ namespace irods
             }
         } // call
 
+        template <typename... Args>
+        error call_without_policy(
+            rsComm_t*                     _comm,
+            const std::string&            _operation_name,
+            irods::first_class_object_ptr _fco,
+            Args...                       _args)
+        {
+            try {
+                plugin_context ctx(_comm, properties_, _fco, "");
+
+                std::string out_param;
+                ctx.rule_results(out_param);
+
+                using func_type =  std::function<error(plugin_context&, Args...)>;
+                func_type& f = boost::any_cast<func_type&>(operations_[_operation_name]);
+                auto err = f(ctx, _args...);
+
+                out_param = ctx.rule_results();
+
+                return err;
+            }
+            catch (const boost::bad_any_cast&) {
+                std::string msg = "failed for call - ";
+                msg += _operation_name;
+                return ERROR(INVALID_ANY_CAST, msg);
+            }
+        } // call_without_policy
+
         /// @brief get a property from the map if it exists.
         template< typename T >
         error get_property( const std::string& _key, T& _val ) {

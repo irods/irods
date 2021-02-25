@@ -122,7 +122,7 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [])
                         }}'''.format(**locals())))
 
                 try:
-                    self.admin.assert_icommand(['itouch', logical_path])
+                    self.admin.assert_icommand(['istream', 'write', logical_path], input='test data')
 
                     expected_buf = r'{"fd":3}'
                     expected_len = len(expected_buf)
