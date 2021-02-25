@@ -20,7 +20,8 @@ auto rs_atomic_apply_metadata_operations(RsComm* _comm, const char* _json_input,
 
     bytesBuf_t* output{};
 
-    const auto ec = irods::server_api_call(ATOMIC_APPLY_METADATA_OPERATIONS_APN, _comm, &input, &output);
+    const auto ec = irods::server_api_call_without_policy(ATOMIC_APPLY_METADATA_OPERATIONS_APN,
+                                                          _comm, &input, &output);
 
     *_json_output = static_cast<char*>(output->buf);
     std::free(output);
