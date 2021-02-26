@@ -3,8 +3,6 @@
 
 /// \file
 
-const char* SET_TIME_TO_NOW_KW = "set time to now";
-
 struct RcComm;
 
 #ifdef __cplusplus

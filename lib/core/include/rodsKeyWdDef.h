@@ -302,6 +302,10 @@
 
 #define INSTANCE_NAME_KW                            "instance_name"
 
+// When the value of the "data_modify_ts" field is set to this keyword in the input
+// // to data_object_finalize, the mtime for that replica is set to the current time.
+#define SET_TIME_TO_NOW_KW                          "set time to now"
+
 // A keyword for the replication resource plugin which indicates the hierarchy selected
 // at the time of resolution. This information is lost if the l1 descriptor goes away.
 #define SELECTED_HIERARCHY_KW                       "selected_hierarchy"
