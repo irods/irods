@@ -1,30 +1,10 @@
 #include "fileRename.h"
-#include "procApiRequest.h"
+
 #include "apiNumber.h"
+#include "procApiRequest.h"
 
-/**
- * \fn rcFileRename( rcComm_t *conn, fileRenameInp_t *fileRenameInp, fileRenameOut_t** _out )
- *
- * \brief Renames a file.
- *
- * \ingroup server_filedriver
- *
- * \param[in] conn - A rcComm_t connection handle to the server.
- * \param[in] fileRenameInp
- * \param[out] _out - the output
- *
- * \return integer
- * \retval 0 on success
- * \sideeffect none
- * \pre none
- * \post none
- * \sa none
-**/
-int
-rcFileRename( rcComm_t *conn, fileRenameInp_t *fileRenameInp, fileRenameOut_t** _out ) {
-    int status;
-    status = procApiRequest( conn, FILE_RENAME_AN,  fileRenameInp, NULL,
-                             ( void ** ) _out, NULL );
-
-    return status;
+int rcFileRename(RcComm* conn, FileRenameInp* fileRenameInp, FileRenameOut** fileRenameOut)
+{
+    return procApiRequest(conn, FILE_RENAME_AN, fileRenameInp, nullptr, reinterpret_cast<void**>(fileRenameOut), nullptr);
 }
+
