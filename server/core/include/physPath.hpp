@@ -1,109 +1,114 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
+#ifndef IRODS_PHYS_PATH_HPP
+#define IRODS_PHYS_PATH_HPP
 
-/* physPath.h - header file for physPath.c
- */
+#include "rodsType.h"
 
+#define ORPHAN_DIR              "orphan"
+#define REPL_DIR                "replica"
+#define CHK_ORPHAN_CNT_LIMIT    20              // Number of failed check before stopping
 
+#define LOCK_FILE_DIR           "lockFileDir"
+#define LOCK_FILE_TRAILER       "LOCK_FILE"     // Added to end of lock file (JMC - backport 4604)
 
-#ifndef PHYS_PATH_HPP
-#define PHYS_PATH_HPP
+struct DataObjInfo;
+struct DataObjInp;
+struct FileRenameInp;
+struct KeyValPair;
+struct RsComm;
+struct StructFileExtAndRegInp;
+struct StructFileOprInp;
+struct VaultPathPolicy;
 
-#include "rods.h"
-#include "objInfo.h"
-#include "dataObjInpOut.h"
-#include "fileRename.h"
-#include "miscUtil.h"
-#include "structFileSync.h"
-#include "structFileExtAndReg.h"
-#include "dataObjOpenAndStat.h"
+int getFileMode(DataObjInp *dataObjInp);
 
-#define ORPHAN_DIR      "orphan"
-#define REPL_DIR        "replica"
-#define CHK_ORPHAN_CNT_LIMIT  20  /* number of failed check before stopping */
-// =-=-=-=-=-=-=-
-// JMC - backport 4598
-#define LOCK_FILE_DIR  "lockFileDir"
-#define LOCK_FILE_TRAILER      "LOCK_FILE"     /* added to end of lock file */ // JMC - backport 4604
-// =-=-=-=-=-=-=-
+int getFileFlags(int l1descInx);
 
+int getFilePathName(RsComm *rsComm,
+                    DataObjInfo *dataObjInfo,
+                    DataObjInp *dataObjInp);
 
-extern "C" {
+int getVaultPathPolicy(RsComm *rsComm,
+                       DataObjInfo *dataObjInfo,
+                       VaultPathPolicy *outVaultPathPolicy);
 
-    int
-    getFileMode( dataObjInp_t *dataObjInp );
+int setPathForGraftPathScheme(char *objPath,
+                              const char *vaultPath,
+                              int addUserName,
+                              char *userName,
+                              int trimDirCnt,
+                              char *outPath);
 
-    int
-    getFileFlags( int l1descInx );
-    int
-    getFilePathName( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
-                     dataObjInp_t *dataObjInp );
-    int
-    getVaultPathPolicy( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
-                        vaultPathPolicy_t *outVaultPathPolicy );
-    int
-    setPathForGraftPathScheme( char *objPath, const char *vaultPath, int addUserName,
-                               char *userName, int trimDirCnt, char *outPath );
-    int
-    setPathForRandomScheme( char *objPath, const char *vaultPath, char *userName,
-                            char *outPath );
-    int
-    resolveDupFilePath( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
-                        dataObjInp_t *dataObjInp );
-    int
-    getchkPathPerm( rsComm_t *rsComm, dataObjInp_t *dataObjInp, dataObjInfo_t *dataObjInfo );
-    int
-    getCopiesFromCond( keyValPair_t *condInput );
-    int
-    getWriteFlag( int openFlag );
-    int
-    dataObjChksum( rsComm_t *rsComm, int l1descInx, keyValPair_t *regParam );
-    int
-    _dataObjChksum( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char **chksumStr );
-    rodsLong_t
-    getSizeInVault( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo );
-    int
-    dataObjChksumAndReg( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
-                         char **chksumStr );
-    int
-    renameFilePathToNewDir( rsComm_t *rsComm, char *newDir,
-                            fileRenameInp_t *fileRenameInp, int renameFlag, char* );
-    int
-    syncDataObjPhyPath( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                        dataObjInfo_t *dataObjInfoHead, char *acLCollection );
-    int
-    syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                         dataObjInfo_t *dataObjInfo, char *acLCollection );
-    int
-    syncCollPhyPath( rsComm_t *rsComm, char *collection );
-    int
-    isInVault( dataObjInfo_t *dataObjInfo );
-    int
-    initStructFileOprInp( rsComm_t *rsComm, structFileOprInp_t *structFileOprInp,
-                          structFileExtAndRegInp_t *structFileExtAndRegInp,
-                          dataObjInfo_t *dataObjInfo );
-    int
-    getDefFileMode();
-    int
-    getDefDirMode();
-    int
-    getLogPathFromPhyPath( char *phyPath, const char *rescVaultPath, char *outLogPath );
-    int
-    rsMkOrphanPath( rsComm_t *rsComm, char *objPath, char *orphanPath );
-// =-=-=-=-=-=-=-
-// JMC - backport 4598
-    int
-    getDataObjLockPath( char *objPath, char **outLockPath );
-    int
-    executeFilesystemLockCommand( int cmd, int type, int fd, struct flock * lock );
-    int
-    fsDataObjLock( char *objPath, int cmd, int type );
-    int
-    fsDataObjUnlock( int cmd, int type, int fd );
-// =-=-=-=-=-=-=-
+int setPathForRandomScheme(char *objPath,
+                           const char *vaultPath,
+                           char *userName,
+                           char *outPath);
 
-    rodsLong_t
-    getFileMetadataFromVault( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo );
-}
+int resolveDupFilePath(RsComm *rsComm,
+                       DataObjInfo *dataObjInfo,
+                       DataObjInp *dataObjInp);
 
-#endif  /* PHYS_PATH_H */
+int getchkPathPerm(RsComm *rsComm,
+                   DataObjInp *dataObjInp,
+                   DataObjInfo *dataObjInfo);
+
+int getCopiesFromCond(KeyValPair *condInput);
+
+int getWriteFlag(int openFlag);
+
+int dataObjChksum(RsComm *rsComm, int l1descInx, KeyValPair *regParam);
+
+int _dataObjChksum(RsComm *rsComm, DataObjInfo *dataObjInfo, char **chksumStr);
+
+rodsLong_t getSizeInVault(RsComm *rsComm, DataObjInfo *dataObjInfo);
+
+int dataObjChksumAndReg(RsComm *rsComm,
+                        DataObjInfo *dataObjInfo,
+                        char **chksumStr);
+
+int renameFilePathToNewDir(RsComm *rsComm,
+                           char *newDir,
+                           FileRenameInp *fileRenameInp,
+                           int renameFlag,
+                           char* newFileName);
+
+int syncDataObjPhyPath(RsComm *rsComm,
+                       DataObjInp *dataObjInp,
+                       DataObjInfo *dataObjInfoHead,
+                       char *acLCollection);
+
+int syncDataObjPhyPathS(RsComm *rsComm,
+                        DataObjInp *dataObjInp,
+                        DataObjInfo *dataObjInfo,
+                        char *acLCollection);
+
+int syncCollPhyPath(RsComm *rsComm, char *collection);
+
+int isInVault(DataObjInfo *dataObjInfo);
+
+int initStructFileOprInp(RsComm *rsComm,
+                         StructFileOprInp *structFileOprInp,
+                         StructFileExtAndRegInp *structFileExtAndRegInp,
+                         DataObjInfo *dataObjInfo);
+
+int getDefFileMode();
+
+int getDefDirMode();
+
+int getLogPathFromPhyPath(char *phyPath,
+                          const char *rescVaultPath,
+                          char *outLogPath);
+
+int rsMkOrphanPath(RsComm *rsComm, char *objPath, char *orphanPath);
+
+int getDataObjLockPath(char *objPath, char **outLockPath);
+
+int executeFilesystemLockCommand(int cmd, int type, int fd, struct flock * lock);
+
+int fsDataObjLock(char *objPath, int cmd, int type);
+
+int fsDataObjUnlock(int cmd, int type, int fd);
+
+rodsLong_t getFileMetadataFromVault(RsComm *rsComm, DataObjInfo *dataObjInfo);
+
+#endif // IRODS_PHYS_PATH_HPP
+

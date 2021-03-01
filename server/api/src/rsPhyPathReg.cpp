@@ -1,3 +1,5 @@
+#include "rsPhyPathReg.hpp"
+
 #include "fileStat.h"
 #include "key_value_proxy.hpp"
 #include "phyPathReg.h"
@@ -12,7 +14,6 @@
 #include "physPath.hpp"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
-#include "rsPhyPathReg.hpp"
 #include "miscServerFunct.hpp"
 #include "apiHeaderAll.h"
 #include "rsRegReplica.hpp"
@@ -34,8 +35,6 @@
 #include "rsFileOpen.hpp"
 #include "rsFileRead.hpp"
 #include "rsFileClose.hpp"
-
-// =-=-=-=-=-=-=-
 #include "irods_at_scope_exit.hpp"
 #include "irods_get_l1desc.hpp"
 #include "irods_hierarchy_parser.hpp"
@@ -55,8 +54,6 @@
 #include "boost/lexical_cast.hpp"
 #include "fmt/format.h"
 
-// =-=-=-=-=-=-=-
-// stl includes
 #include <iostream>
 
 /* holds a struct that describes pathname match patterns
