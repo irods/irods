@@ -8,7 +8,11 @@ else:
 import os
 import shutil
 import re
+import hashlib
+import base64
 
+from . import session
+from . import settings
 from . import resource_suite
 from .. import lib
 from .. import test
@@ -60,19 +64,6 @@ class Test_Ichksum(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['imkdir', collname_1 + '/' + collname_2 + '/' + collname_3])
         self.admin.assert_icommand(['iput', filename_3, collname_1 + '/' + collname_2 + '/' + collname_3 + '/' + filename_3])
         self.admin.assert_icommand(['ichksum', collname_1], 'STDOUT_MULTILINE', [file_chksum_3, file_chksum_2, file_chksum_1])
-
-    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for topology testing: requires Vault")
-    def test_ichksum_force(self):
-        filename = 'test_ichksum_force'
-        lib.make_file(filename, 1024, 'arbitrary')
-        file_chksum = lib.file_digest(filename, 'sha256', encoding='base64')
-        self.admin.assert_icommand(['iput', filename])
-        self.admin.assert_icommand(['ichksum', filename], 'STDOUT_SINGLELINE', file_chksum)
-        # Mess with file in vault
-        full_path = os.path.join(self.admin.get_vault_session_path(), filename)
-        lib.cat(full_path, 'XXXXX')
-        new_chksum = lib.file_digest(full_path, 'sha256', encoding='base64')
-        self.admin.assert_icommand(['ichksum', '-f', filename], 'STDOUT_SINGLELINE', new_chksum)
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for topology testing")
     def test_ichksum_truncating_printed_filename__issue_3085(self):
@@ -375,4 +366,56 @@ C- {5}:
            col_2,
            data_object_3)
         self.assertTrue(re.match(pattern, out))
+
+    def test_ichksum_honors_the_size_in_the_catalog_when_computing_checksums__issue_5401(self):
+        data_object = os.path.join(self.admin.session_collection, 'foo')
+        contents = 'the data'
+        self.admin.assert_icommand(['istream', 'write', data_object], input=contents)
+
+        def do_test(size_in_catalog, checksum):
+            # Make the catalog report the wrong size of the replica on disk.
+            # This change will cause icommands such as iget and istream to print at most "size_in_catalog" bytes.
+            self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', data_object, 'replica_number', '0', 'DATA_SIZE', str(size_in_catalog)])
+            self.admin.assert_icommand(['istream', 'read', data_object], 'STDOUT', [contents[:size_in_catalog]])
+
+            # Show that ichksum reads at most "size_in_catalog" bytes when computing a checksum.
+            self.admin.assert_icommand(['ichksum', '-f', data_object], 'STDOUT', ['sha2:' + checksum])
+            self.assertEqual(checksum, base64.b64encode(hashlib.sha256(contents[:size_in_catalog]).digest()))
+
+            # Compute the SHA256 checksum of the replica using its actual size on disk.
+            gql = "select DATA_PATH where COLL_NAME = '{0}' and DATA_NAME = '{1}'".format(self.admin.session_collection, os.path.basename(data_object))
+            physical_path, err, ec = self.admin.run_icommand(['iquest', '%s', gql])
+            self.assertEqual(ec, 0)
+            self.assertEqual(len(err), 0)
+            self.assertGreater(len(physical_path), 0)
+
+            with open(physical_path.strip(), 'r') as f:
+                sha2 = hashlib.sha256(f.read())
+
+            # Show that the checksums are different (size in catalog vs size on disk).
+            self.assertNotEqual(checksum, base64.b64encode(sha2.digest()))
+
+        do_test(0, '47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=')
+        do_test(3, 'uXdtfd9FnJrVsOHWrGHie++16Z/WJEZndgDXys71RNA=')
+
+    def test_ichksum_detects_when_the_size_in_storage_is_less_than_the_size_in_catalog__issue_5401(self):
+        data_object = 'issue_5401.txt'
+
+        # Create a data object.
+        contents = 'A very very very very very very very long string!'
+        self.admin.assert_icommand(['istream', 'write', data_object], input=contents)
+
+        # Get the data object's physical path.
+        gql = "select DATA_PATH where COLL_NAME = '{0}' and DATA_NAME = '{1}'".format(self.admin.session_collection, data_object)
+        data_path, err, ec = self.admin.run_icommand(['iquest', '%s', gql])
+        self.assertEqual(ec, 0)
+        self.assertEqual(len(err), 0)
+        self.assertGreater(len(data_path), 0)
+
+        # Make the physical object's size less than the size recorded in the catalog.
+        with open(data_path.strip(), 'w') as f:
+            f.write(contents[:10])
+
+        # Show that ichksum detects the size inconsistency between the catalog and the object in storage.
+        self.admin.assert_icommand(['ichksum', '-f', data_object], 'STDERR', ['-512000 UNIX_FILE_READ_ERR'])
 

@@ -1,4 +1,5 @@
 #include "dataObjPut.h"
+
 #include "dataObjRepl.h"
 #include "dataObjUnlink.h"
 #include "dataPut.h"
@@ -27,7 +28,6 @@
 #include "rsUnregDataObj.hpp"
 #include "specColl.hpp"
 #include "subStructFilePut.h"
-
 #include "finalize_utilities.hpp"
 #include "getRescQuota.h"
 #include "json_serialization.hpp"
@@ -37,7 +37,6 @@
 #include "rsModAVUMetadata.hpp"
 #include "rsModAccessControl.hpp"
 #include "rs_replica_close.hpp"
-
 #include "irods_at_scope_exit.hpp"
 #include "irods_exception.hpp"
 #include "irods_hierarchy_parser.hpp"
@@ -279,24 +278,24 @@ namespace
         int status = 0;
         // special collections are special - just use the old close
         if (l1desc.dataObjInfo->specColl) {
-			OpenedDataObjInp close_inp{};
-			close_inp.l1descInx = fd;
-			l1desc.oprStatus = bytes_written;
-			l1desc.oprType = PUT_OPR;
-			const int status = rsDataObjClose(&_comm, &close_inp);
-			if (status < 0) {
+            OpenedDataObjInp close_inp{};
+            close_inp.l1descInx = fd;
+            l1desc.oprStatus = bytes_written;
+            l1desc.oprType = PUT_OPR;
+            const int status = rsDataObjClose(&_comm, &close_inp);
+            if (status < 0) {
                 irods::log(LOG_DEBUG, fmt::format(
-						"[{}:{}]: rsDataObjClose of [{}] error, status = [{}]",
-						__FUNCTION__, __LINE__, fd, status));
-			}
+                    "[{}:{}]: rsDataObjClose of [{}] error, status = [{}]",
+                    __FUNCTION__, __LINE__, fd, status));
+            }
 
-			if ( bytes_written < 0 ) {
-				return bytes_written;
-			}
+            if ( bytes_written < 0 ) {
+                return bytes_written;
+            }
 
-			if (status < 0) {
-				return status;
-			}
+            if (status < 0) {
+                return status;
+            }
         }
         else {
             auto [final_object, final_object_lm] = irods::experimental::data_object::duplicate_data_object(*l1desc.dataObjInfo);

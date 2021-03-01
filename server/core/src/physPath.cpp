@@ -1,15 +1,8 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
+#include "physPath.hpp"
 
-/* physPath.c - routines for physical path operations
- */
-
-#include <unistd.h> // JMC - backport 4598
-#include <fcntl.h> // JMC - backport 4598
 #include "rcMisc.h"
 #include "rodsDef.h"
 #include "rodsConnect.h"
-#include "physPath.hpp"
 #include "dataObjOpr.hpp"
 #include "rodsDef.h"
 #include "rodsPath.h"
@@ -31,10 +24,6 @@
 #include "rsGenQuery.hpp"
 #include "rsCollCreate.hpp"
 #include "rsObjStat.hpp"
-
-#include <iostream>
-#include <boost/lexical_cast.hpp>
-
 #include "irods_resource_backport.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_stacktrace.hpp"
@@ -42,6 +31,11 @@
 #include "irods_log.hpp"
 #include "irods_get_full_path_for_config_file.hpp"
 #include "irods_random.hpp"
+
+#include <fmt/format.h>
+
+#include <unistd.h> // JMC - backport 4598
+#include <fcntl.h> // JMC - backport 4598
 
 int getLeafRescPathName( const std::string& _resc_hier, std::string& _ret_string );
 
@@ -428,63 +422,39 @@ getSizeInVault( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
     }
 }
 
-int
-_dataObjChksum(
-    rsComm_t*      rsComm,
-    dataObjInfo_t* dataObjInfo,
-    char**         chksumStr ) { // JMC - backport 4527
-    fileChksumInp_t fileChksumInp;
-    int status = 0;
-
-    // =-=-=-=-=-=-=-
-    int category = FILE_CAT; // only supporting file resource, not DB right now
-    char* orig_chksum = getValByKey( &dataObjInfo->condInput, ORIG_CHKSUM_KW );
-
+int _dataObjChksum(rsComm_t* rsComm, dataObjInfo_t* dataObjInfo, char** chksumStr)
+{
     std::string location;
-    irods::error ret;
-    // JMC - legacy resource - switch ( RescTypeDef[rescTypeInx].rescCat) {
-    switch ( category ) {
-    case FILE_CAT:
-        // =-=-=-=-=-=-=-
-        // get the resource location for the hier string leaf
-        ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
-        if ( !ret.ok() ) {
-            irods::log( PASSMSG( "_dataObjChksum - failed in get_loc_for_hier_string", ret ) );
-            return -1;
-        }
-
-        memset( &fileChksumInp, 0, sizeof( fileChksumInp ) );
-        rstrcpy( fileChksumInp.addr.hostAddr, location.c_str(), NAME_LEN );
-        rstrcpy( fileChksumInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN );
-        rstrcpy( fileChksumInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN );
-        rstrcpy( fileChksumInp.objPath,  dataObjInfo->objPath, MAX_NAME_LEN );
-        rstrcpy( fileChksumInp.in_pdmo,  dataObjInfo->in_pdmo, MAX_NAME_LEN );
-
-        if ( orig_chksum ) {
-            rstrcpy( fileChksumInp.orig_chksum, orig_chksum, CHKSUM_LEN );
-        }
-
-        rodsLog( LOG_DEBUG, "[%s:%d] - performing checksum for [%s] on [%s] at location [%s]",
-            __FUNCTION__, __LINE__, dataObjInfo->objPath, dataObjInfo->rescHier, dataObjInfo->filePath);
-        status = rsFileChksum( rsComm, &fileChksumInp, chksumStr );
-
-        if ( status == DIRECT_ARCHIVE_ACCESS ) {
-            std::stringstream msg;
-            msg << "Data object: \"";
-            msg << dataObjInfo->filePath;
-            msg << "\" is located in an archive resource. Ignoring its checksum.";
-            irods::log( LOG_DEBUG, msg.str() );
-
-        }
-        break;
-    default:
-        rodsLog( LOG_NOTICE,
-                 "_dataObjChksum: rescCat type %d is not recognized", category );
-        status = SYS_INVALID_RESC_TYPE;
-        break;
+    if (const auto err = irods::get_loc_for_hier_string(dataObjInfo->rescHier, location); !err.ok()) {
+        irods::log(PASSMSG("_dataObjChksum - failed in get_loc_for_hier_string", err));
+        return -1;
     }
 
-    return status;
+    fileChksumInp_t fileChksumInp{};
+    rstrcpy(fileChksumInp.addr.hostAddr, location.c_str(), NAME_LEN);
+    rstrcpy(fileChksumInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
+    rstrcpy(fileChksumInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN);
+    rstrcpy(fileChksumInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN);
+    rstrcpy(fileChksumInp.in_pdmo, dataObjInfo->in_pdmo, MAX_NAME_LEN);
+    fileChksumInp.dataSize = dataObjInfo->dataSize;
+
+    if (const char* orig_chksum = getValByKey(&dataObjInfo->condInput, ORIG_CHKSUM_KW); orig_chksum) {
+        rstrcpy(fileChksumInp.orig_chksum, orig_chksum, CHKSUM_LEN);
+    }
+
+    rodsLog(LOG_DEBUG, "[%s:%d] - performing checksum for [%s] on [%s] at location [%s]",
+            __FUNCTION__, __LINE__, dataObjInfo->objPath, dataObjInfo->rescHier, dataObjInfo->filePath);
+
+    const auto ec = rsFileChksum(rsComm, &fileChksumInp, chksumStr);
+
+    if (ec == DIRECT_ARCHIVE_ACCESS) {
+        const auto msg = fmt::format(R"_(Data object is located in an archive resource. Ignoring its checksum.
+                                     [logical_path={}, physical_path={}, resource_hierarchy={}])_",
+                                     dataObjInfo->objPath, dataObjInfo->filePath, dataObjInfo->rescHier);
+        irods::log(LOG_DEBUG, msg);
+    }
+
+    return ec;
 }
 
 int
