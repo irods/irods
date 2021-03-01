@@ -91,10 +91,10 @@ class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unitte
         _,out,_ = self.admin.assert_icommand(['iquest', '''"select DATA_RESC_HIER where DATA_NAME = '{0}' and DATA_REPL_NUM = '0'"'''.format(filename)], 'STDOUT_SINGLELINE', 'DATA_RESC_HIER')
         replica_0_resc = out.splitlines()[0].split()[-1].split(';')[-1]
         phypath_for_data_obj = os.path.join(self.admin.get_vault_session_path(replica_0_resc), filename)
+        # write more bytes to the file than what is recorded in the catalog.
         with open(phypath_for_data_obj, 'w') as f:
-            f.write("corrupting the data")
-        with open(phypath_for_data_obj, 'r') as f:
-            new_checksum = hashlib.sha256(f.read()).digest().encode("base64").strip()
+            f.write("corrupting the data" * 30)
+        new_checksum = 'LfxR4fKm3dK119M8llWLlDHLKvnRGTGH2bsldD2Er1c='
 
         # forcibly re-calculate corrupted checksum and ensure that original checksum was not overwritten
         self.admin.assert_icommand(['ichksum', '-f', '-n0', filename], 'STDOUT_SINGLELINE', 'sha2:' + new_checksum)
@@ -3692,10 +3692,10 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
         _,out,_ = self.admin.assert_icommand(['iquest', '''"select DATA_RESC_HIER where DATA_NAME = '{0}' and DATA_REPL_NUM = '0'"'''.format(filename)], 'STDOUT_SINGLELINE', 'DATA_RESC_HIER')
         replica_0_resc = out.splitlines()[0].split()[-1].split(';')[-1]
         phypath_for_data_obj = os.path.join(self.admin.get_vault_session_path(replica_0_resc), filename)
+        # write more bytes to the file than what is recorded in the catalog.
         with open(phypath_for_data_obj, 'w') as f:
-            f.write("corrupting the data")
-        with open(phypath_for_data_obj, 'r') as f:
-            new_checksum = hashlib.sha256(f.read()).digest().encode("base64").strip()
+            f.write("corrupting the data" * 30)
+        new_checksum = 'LfxR4fKm3dK119M8llWLlDHLKvnRGTGH2bsldD2Er1c='
 
         # forcibly re-calculate corrupted checksum and ensure that original checksum was not overwritten
         self.admin.assert_icommand(['ichksum', '-f', '-n0', filename], 'STDOUT', filename + '    sha2:' + new_checksum)
@@ -3830,8 +3830,11 @@ OUTPUT ruleExecOut
 
         self.admin.assert_icommand('ils -L ' + filename, 'STDOUT_SINGLELINE', filename)
 
+        # Overwrite the contents of replica zero.
+        # The size of the file must be greater than or equal to the size recorded in
+        # the catalog so that the call to ichksum succeeds.
         with open(u1_path, 'wt') as f:
-            f.write('UNIX_1')
+            f.write('UNIX_1' * 20)
 
         u1_time = os.path.getmtime(u1_path)
         u2_time = os.path.getmtime(u2_path)

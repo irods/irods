@@ -1,3 +1,5 @@
+#include "rsRegReplica.hpp"
+
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
 #include "objMetaOpr.hpp"
@@ -5,8 +7,6 @@
 #include "rsFileChksum.hpp"
 #include "rsFileStat.hpp"
 #include "rsModDataObjMeta.hpp"
-#include "rsRegReplica.hpp"
-
 #include "irods_file_object.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_configuration_keywords.hpp"
@@ -46,9 +46,10 @@ namespace irods {
             rsComm_t*          _comm,
             const std::string& _logical_path,
             const std::string& _physical_path,
-            const std::string& _resc_hier ) {
-           
-            fileChksumInp_t chk_inp{}; 
+            const std::string& _resc_hier,
+            const rodsLong_t   _data_size)
+        {
+            fileChksumInp_t chk_inp{};
             rstrcpy(
                 chk_inp.objPath,
                 _logical_path.c_str(),
@@ -61,6 +62,7 @@ namespace irods {
                 chk_inp.rescHier,
                 _resc_hier.c_str(),
                 MAX_NAME_LEN);
+            chk_inp.dataSize = _data_size;
 
             char* chksum{};
             const auto chksum_err = rsFileChksum(
@@ -124,7 +126,8 @@ namespace irods {
                                    _comm,
                                    dst_info->objPath,
                                    dst_info->filePath,
-                                   dst_info->rescHier);
+                                   dst_info->rescHier,
+                                   dst_info->dataSize);
                 if(!dst_checksum.empty() &&
                     dst_checksum != src_info->chksum) {
                     rstrcpy(

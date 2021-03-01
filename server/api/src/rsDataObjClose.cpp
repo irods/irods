@@ -1,3 +1,5 @@
+#include "rsDataObjClose.hpp"
+
 #include "apiNumber.h"
 #include "dataObjClose.h"
 #include "dataObjLock.h"
@@ -15,14 +17,12 @@
 #include "modDataObjMeta.h"
 #include "objMetaOpr.hpp"
 #include "physPath.hpp"
-#include "physPath.hpp"
 #include "rcGlobalExtern.h"
 #include "regDataObj.h"
 #include "regReplica.h"
 #include "resource.hpp"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
-#include "rsDataObjClose.hpp"
 #include "rsDataObjTrim.hpp"
 #include "rsDataObjUnlink.hpp"
 #include "rsFileClose.hpp"
@@ -40,8 +40,6 @@
 #include "subStructFileClose.h"
 #include "subStructFileRead.h"
 #include "subStructFileStat.h"
-
-// =-=-=-=-=-=-=-
 #include "finalize_utilities.hpp"
 #include "irods_resource_backport.hpp"
 #include "irods_stacktrace.hpp"
@@ -771,7 +769,6 @@ int rsDataObjClose(rsComm_t* rsComm, openedDataObjInp_t* dataObjCloseInp)
                                                 l1desc.dataObjInfo->objPath, l1desc.dataObjInfo->rescHier));
         }
     }
-    // Capture the error code so that the at_scope_exit handler can respond to it.
 
     // ensure that l1 descriptor is in use before closing
     if (l1desc.inuseFlag != FD_INUSE) {
