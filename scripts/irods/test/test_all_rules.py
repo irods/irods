@@ -806,10 +806,12 @@ OUTPUT ruleExecOut
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_msiRenameCollection_does_rename_collections__issue_4597(self):
+        # Create a collection, "col.a".
         src = os.path.join(self.admin.session_collection, 'col.a')
         dst = os.path.join(self.admin.session_collection, 'col.a.renamed')
         self.admin.assert_icommand(['imkdir', src])
 
+        # The following is a rule template for invoking msiRenameCollection.
         rule_file = os.path.join(self.admin.local_session_dir, 'test_rule_file.r')
         rule_string = '''
 main {{
@@ -820,18 +822,58 @@ main {{
 INPUT null
 OUTPUT ruleExecOut'''
 
+        # Create a rule file, using the template, that renames "col.a" to "col.a.renamed".
         with open(rule_file, 'wt') as f:
-            print(rule_string.format(src, dst), file=f, end='')
+            contents = rule_string.format(src, dst)
+            print(contents, file=f, end='')
+            print(contents)
 
+        # Invoke the rule and verify that the rename was successful.
         rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
         self.admin.assert_icommand(['irule', '-r', rep_name, '-F', rule_file])
-        self.admin.assert_icommand(['ils', '-l', dst], 'STDOUT', [dst])
+        self.admin.assert_icommand(['ils', dst], 'STDOUT', [dst])
+        self.admin.assert_icommand(['ils', src], 'STDERR', [src + ' does not exist'])
 
+        # Overwrite the existing rule file that attempts to renames "col.a.renamed" back to "col.a".
+        # Notice the call to os.path.basename.
         with open(rule_file, 'wt') as f:
-            print(rule_string.format(dst, os.path.basename(src)), file=f, end='')
+            contents = rule_string.format(dst, os.path.basename(src))
+            print(contents, file=f, end='')
+            print(contents)
 
+        # Show that the rule will fail because a relative path was being passed as the destination.
         self.admin.assert_icommand(['irule', '-r', rep_name, '-F', rule_file], 'STDERR', ['-358000 OBJ_PATH_DOES_NOT_EXIST'])
-        self.admin.assert_icommand(['ils', '-l', dst], 'STDOUT', [dst])
+        self.admin.assert_icommand(['ils', dst], 'STDOUT', [dst])
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    def test_msiRenameCollection_does_not_support_renaming_data_objects__issue_5452(self):
+        # Create a new data object.
+        src = os.path.join(self.admin.session_collection, 'foo')
+        dst = os.path.join(self.admin.session_collection, 'bar')
+        self.admin.assert_icommand(['istream', 'write', src], input='foo')
+
+        # Show that msiRenameCollection fails when the source references a data object.
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        cmd = ['irule', '-r', rep_name, 'msiRenameCollection("{0}", "{1}")'.format(src, dst), 'null', 'ruleExecOut']
+        self.admin.assert_icommand(cmd, 'STDERR', ['-170000 NOT_A_COLLECTION'])
+
+        # Show that the 'src' data object still exists and that the 'dst' data object does not
+        # because the rename failed.
+        self.admin.assert_icommand(['ils', src], 'STDOUT', [src])
+        self.admin.assert_icommand(['ils', dst], 'STDERR', [dst + ' does not exist'])
+
+        # Create the destination data object.
+        self.admin.assert_icommand(['istream', 'write', dst], input='bar')
+
+        # Show that msiRenameCollection fails when the destination references a data object.
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        cmd = ['irule', '-r', rep_name, 'msiRenameCollection("{0}", "{1}")'.format(self.admin.session_collection, dst), 'null', 'ruleExecOut']
+        self.admin.assert_icommand(cmd, 'STDERR', ['-170000 NOT_A_COLLECTION'])
+
+        # Show that the source and destination still exist because the rename failed.
+        self.admin.assert_icommand(['ils', src], 'STDOUT', [src])
+        self.admin.assert_icommand(['ils', dst], 'STDOUT', [dst])
 
     def test_msiDataObjPhymv_to_resource_hierarchy__3234(self):
         source_resource = self.admin.default_resource
