@@ -373,10 +373,10 @@ irods::error acDeleteCollByAdmin( irods::callback _cb, std::list<boost::any>& _p
 }
 
 irods::error acRenameLocalZone( irods::callback _cb, std::list<boost::any>& ) {
-//  msiRenameCollection ::: msiRollback;
+//  msiRenameLocalZoneCollection ::: msiRollback;
 //  msiRenameLocalZone ::: msiRenameLocalZone;
 //  msiCommit;
-   irods::error ret = _cb(std::string("msiRenameCollection"));
+   irods::error ret = _cb(std::string("msiRenameLocalZoneCollection"));
     if( !ret.ok() ) {
         _cb(std::string("msiRollback"));
         return ret;

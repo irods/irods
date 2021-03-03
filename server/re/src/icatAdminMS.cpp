@@ -1,8 +1,3 @@
-/**
- * @file  icatAdminMS.cpp
- *
- */
-
 #include "icatHighLevelRoutines.hpp"
 #include "rcMisc.h"
 #include "generalAdmin.h"
@@ -463,15 +458,69 @@ msiRenameCollection(msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei)
             return e.code().value();
         }
     }
-    else if (irods::CFG_SERVICE_ROLE_CONSUMER == svc_role) {
+
+    if (irods::CFG_SERVICE_ROLE_CONSUMER == svc_role) {
         return SYS_NO_RCAT_SERVER_ERR;
     }
-    else {
-        rodsLog(LOG_ERROR, "role not supported [%s]", svc_role.c_str());
-        return SYS_SERVICE_ROLE_NOT_SUPPORTED;
+
+    rodsLog(LOG_ERROR, "role not supported [%s]", svc_role.c_str());
+    return SYS_SERVICE_ROLE_NOT_SUPPORTED;
+}
+
+/// Renames the local zone collection.
+///
+/// \param[in] _new_zone_name The new name for the zone collection. The new name must not
+///                           exist.
+/// \param[in] _rei           The ::RuleExecInfo managed by the system. This parameter
+///                           must be ignored.
+///
+/// \return An integer.
+/// \retval 0        On success.
+/// \retval Non-zero Otherwise.
+///
+/// \since 4.2.9
+int msiRenameLocalZoneCollection(msParam_t* _new_zone_name, ruleExecInfo_t* _rei)
+{
+    std::string svc_role;
+
+    if (irods::error ret = get_catalog_service_role(svc_role); !ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
     }
 
-    return 0;
+    if (irods::CFG_SERVICE_ROLE_PROVIDER == svc_role) {
+        namespace fs = irods::experimental::filesystem;
+
+        const fs::path root = "/";
+        const auto src_path = root / _rei->rsComm->myEnv.rodsZone;
+        const auto* new_zone_name = static_cast<const char*>(_new_zone_name->inOutStruct);
+
+        rodsLog(LOG_DEBUG, "%s :: src_path=%s, new_zone_name=%s", __func__, src_path.c_str(), new_zone_name);
+
+        try {
+            if (src_path == root / new_zone_name) {
+                return 0;
+            }
+
+            if (fs::server::exists(*_rei->rsComm, root / new_zone_name)) {
+                return CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME;
+            }
+
+            return chlRenameColl(_rei->rsComm, src_path.c_str(), new_zone_name);
+        }
+        catch (const fs::filesystem_error& e) {
+            rodsLog(LOG_ERROR, "%s :: Failed to rename local zone collection.", __func__);
+            return e.code().value();
+        }
+    }
+
+    if (irods::CFG_SERVICE_ROLE_CONSUMER == svc_role) {
+        return SYS_NO_RCAT_SERVER_ERR;
+    }
+
+    rodsLog(LOG_ERROR, "role not supported [%s]", svc_role.c_str());
+
+    return SYS_SERVICE_ROLE_NOT_SUPPORTED;
 }
 
 /**

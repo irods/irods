@@ -103,6 +103,7 @@
   - #msiDeleteCollByAdmin  - Deletes a collection by administrator
   - #msiRenameLocalZone  - Renames the local zone by updating various tables
   - #msiRenameCollection  - Renames a collection; used via a rule with the above #msiRenameLocalZone
+  - #msiRenameLocalZoneCollection  - Renames the local zone collection
   - #msiExecStrCondQuery - Creates an iCAT query, given a condition string, and executes it and returns the values
   - #msiExecGenQuery - Executes a given general query structure and returns results
   - #msiMakeQuery - Creates a psuedo-SQL query, given a select list and a condition list
