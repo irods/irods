@@ -434,8 +434,7 @@ msiRenameLocalZone( msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei 
  * \post none
  * \sa none
  **/
-int
-msiRenameCollection(msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei)
+int msiRenameCollection(msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei)
 {
     std::string svc_role;
 
@@ -450,8 +449,22 @@ msiRenameCollection(msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei)
         const fs::path src_path = static_cast<const char*>(oldName->inOutStruct);
         const fs::path dst_path = static_cast<const char*>(newName->inOutStruct);
 
+        rodsLog(LOG_DEBUG, "%s :: src_path=%s, dst_path=%s", __func__, src_path.c_str(), dst_path.c_str());
+
         try {
+            if (!fs::server::is_collection(*rei->rsComm, src_path)) {
+                return NOT_A_COLLECTION;
+            }
+
+            if (const auto s = fs::server::status(*rei->rsComm, dst_path);
+                fs::server::exists(s) && !fs::server::is_collection(s))
+            {
+                return NOT_A_COLLECTION;
+            }
+
             fs::server::rename(*rei->rsComm, src_path, dst_path);
+
+            return 0;
         }
         catch (const fs::filesystem_error& e) {
             rodsLog(LOG_ERROR, "msiRenameCollection failed: [%s]", e.what());
@@ -464,6 +477,7 @@ msiRenameCollection(msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei)
     }
 
     rodsLog(LOG_ERROR, "role not supported [%s]", svc_role.c_str());
+
     return SYS_SERVICE_ROLE_NOT_SUPPORTED;
 }
 
