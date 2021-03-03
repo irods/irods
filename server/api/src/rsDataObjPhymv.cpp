@@ -301,7 +301,7 @@ namespace
         irods::apply_metadata_from_cond_input(_comm, *_l1desc.dataObjInp);
         irods::apply_acl_from_cond_input(_comm, *_l1desc.dataObjInp);
 
-        rst::erase(_info.logical_path());
+        rst::erase(_info.data_id());
 
         const int trim_status = dataObjUnlinkS(&_comm, _l1desc.dataObjInp, _info.get());
 
@@ -379,9 +379,12 @@ namespace
         _destination_replica.size(vault_size);
 
         // Write it out to the catalog
-        rst::update(_destination_replica.logical_path(), _destination_replica);
+        rst::update(_destination_replica.data_id(), _destination_replica);
 
-        const int ec = rst::publish_to_catalog(_comm, _destination_replica.logical_path(), rst::trigger_file_modified::no);
+        const int ec = rst::publish_to_catalog(_comm,
+                                               _destination_replica.data_id(),
+                                               _destination_replica.replica_number(),
+                                               nlohmann::json{});
 
         if (ec < 0) {
             irods::log(LOG_ERROR, fmt::format("failed to publish to catalog:[{}]", ec));
@@ -422,14 +425,16 @@ namespace
         _destination_replica.ctime(_source_replica.ctime());
         _destination_replica.mtime(_source_replica.mtime());
         _destination_replica.replica_status(std::stoi(rst::get_property(
-            _destination_replica.logical_path(),
+            _destination_replica.data_id(),
             _source_replica.replica_number(),
             "data_is_dirty")));
 
-        _destination_replica.cond_input()[FILE_MODIFIED_KW] = irods::to_json(cond_input.get()).dump();
+        rst::update(_destination_replica.data_id(), _destination_replica);
 
-        rst::update(_destination_replica.logical_path(), _destination_replica);
-        const int ec = rst::publish_to_catalog(_comm, _destination_replica.logical_path(), rst::trigger_file_modified::yes);
+        const int ec = rst::publish_to_catalog(_comm,
+                                               _destination_replica.data_id(),
+                                               _destination_replica.resource(),
+                                               irods::to_json(cond_input.get()));
 
         if (CREATE_TYPE == _l1desc.openType) {
             updatequotaOverrun(_destination_replica.hierarchy().data(), _destination_replica.size(), ALL_QUOTA);
@@ -447,8 +452,8 @@ namespace
                 __FUNCTION__, _destination_replica.logical_path(), ec));
         }
 
-        if (rst::contains(_destination_replica.logical_path())) {
-            rst::erase(_destination_replica.logical_path());
+        if (rst::contains(_destination_replica.data_id())) {
+            rst::erase(_destination_replica.data_id());
         }
 
         return ec;
@@ -588,54 +593,63 @@ namespace
         const auto cond_input = irods::experimental::make_key_value_proxy(_inp.condInput);
         const auto log_errors = cond_input.contains(RECURSIVE_OPR__KW) ? irods::replication::log_errors::no : irods::replication::log_errors::yes;
 
-        // get information about source replica
-        auto source_inp = init_source_replica_input(_comm, _inp);
-        const irods::at_scope_exit free_source_cond_input{[&source_inp] { clearKeyVal(&source_inp.condInput); }};
-        auto [source_obj, source_replica] = get_source_replica_info(_comm, source_inp, log_errors);
-
-        // Need to make sure the physical data of the source replica can be unlinked before
-        // beginning the phymv operation as it will be unlinked after the data movement has
-        // taken place. Failing to do so may result in unintentionally unregistered data in
-        // the resource vault.
         try {
-            throw_if_no_write_permissions_on_source_replica(_comm, source_inp, source_replica);
+            // get information about source replica
+            auto source_inp = init_source_replica_input(_comm, _inp);
+            const irods::at_scope_exit free_source_cond_input{[&source_inp] { clearKeyVal(&source_inp.condInput); }};
+            auto [source_obj, source_replica] = get_source_replica_info(_comm, source_inp, log_errors);
+
+            // Need to make sure the physical data of the source replica can be unlinked before
+            // beginning the phymv operation as it will be unlinked after the data movement has
+            // taken place. Failing to do so may result in unintentionally unregistered data in
+            // the resource vault.
+            try {
+                throw_if_no_write_permissions_on_source_replica(_comm, source_inp, source_replica);
+            }
+            catch (const irods::exception& e) {
+                irods::log(LOG_NOTICE, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, e.what()));
+
+                if (irods::replication::log_errors::yes == log_errors) {
+                    addRErrorMsg(&_comm.rError, e.code(), e.client_display_what());
+                }
+
+                return e.code();
+            }
+
+            // get information about destination replica
+            auto destination_inp = init_destination_replica_input(_comm, _inp);
+            const irods::at_scope_exit free_destination_cond_input{[&destination_inp] { clearKeyVal(&destination_inp.condInput); }};
+            irods::file_object_ptr destination_obj{new irods::file_object()};
+            if (irods::error err = irods::file_object_factory(&_comm, &destination_inp, destination_obj); !err.ok()) {
+                irods::log(LOG_NOTICE, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, err.result()));
+
+                if (irods::replication::log_errors::yes == log_errors) {
+                    addRErrorMsg(&_comm.rError, err.code(), err.result().data());
+                }
+
+                return err.code();
+            }
+
+            // Verify that replication is allowed
+            const auto destination_hierarchy = irods::experimental::key_value_proxy{destination_inp.condInput}.at(RESC_HIER_STR_KW).value();
+            auto maybe_destination_replica = destination_obj->get_replica(destination_hierarchy);
+            if (maybe_destination_replica) {
+                const auto& destination_replica = *maybe_destination_replica;
+
+                if (!irods::replication::is_allowed(_comm, source_replica, destination_replica, log_errors)) {
+                    return SYS_NOT_ALLOWED;
+                }
+            }
+
+            return replicate_data(_comm, source_inp, destination_inp);
         }
         catch (const irods::exception& e) {
-            irods::log(LOG_NOTICE, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, e.what()));
-
-            if (irods::replication::log_errors::yes == log_errors) {
-                addRErrorMsg(&_comm.rError, e.code(), e.client_display_what());
+            if (irods::replication::log_errors::no == log_errors) {
+                return e.code();
             }
 
-            return e.code();
+            throw;
         }
-
-        // get information about destination replica
-        auto destination_inp = init_destination_replica_input(_comm, _inp);
-        const irods::at_scope_exit free_destination_cond_input{[&destination_inp] { clearKeyVal(&destination_inp.condInput); }};
-        irods::file_object_ptr destination_obj{new irods::file_object()};
-        if (irods::error err = irods::file_object_factory(&_comm, &destination_inp, destination_obj); !err.ok()) {
-            irods::log(LOG_NOTICE, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, err.result()));
-
-            if (irods::replication::log_errors::yes == log_errors) {
-                addRErrorMsg(&_comm.rError, err.code(), err.result().data());
-            }
-
-            return err.code();
-        }
-
-        // Verify that replication is allowed
-        const auto destination_hierarchy = irods::experimental::key_value_proxy{destination_inp.condInput}.at(RESC_HIER_STR_KW).value();
-        auto maybe_destination_replica = destination_obj->get_replica(destination_hierarchy);
-        if (maybe_destination_replica) {
-            const auto& destination_replica = *maybe_destination_replica;
-
-            if (!irods::replication::is_allowed(_comm, source_replica, destination_replica, log_errors)) {
-                return SYS_NOT_ALLOWED;
-            }
-        }
-
-        return replicate_data(_comm, source_inp, destination_inp);
     } // move_replica
 } // anonymous namespace
 

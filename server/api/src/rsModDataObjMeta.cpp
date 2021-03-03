@@ -229,8 +229,8 @@ int _call_file_modified_for_modification(
     }
 
     // The replica state table entry needs to be removed before triggering fileModified
-    if (rst::contains(dataObjInfo->objPath)) {
-        rst::erase(dataObjInfo->objPath);
+    if (rst::contains(dataObjInfo->dataId)) {
+        rst::erase(dataObjInfo->dataId);
     }
 
     if ( getValByKey( regParam, ALL_KW ) != NULL ) {

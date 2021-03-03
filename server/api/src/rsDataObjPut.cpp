@@ -189,14 +189,12 @@ namespace
             replica.mtime(SET_TIME_TO_NOW_KW);
 
             // stale other replicas because the truth has moved
-            for (auto& rj : rst::at(replica.logical_path())) {
+            for (auto& rj : rst::at(replica.data_id())) {
                 const auto replica_number = std::stoi(std::string{rj.at("after").at("data_repl_num")});
 
                 if (replica.replica_number() != replica_number) {
-                    const nlohmann::json update{{"data_is_dirty", std::to_string(STALE_REPLICA)}};
-
-                    rst::update(replica.logical_path(), replica_number,
-                        nlohmann::json{{"replicas", update}});
+                    rst::update(replica.data_id(), replica_number,
+                        nlohmann::json{{"data_is_dirty", std::to_string(STALE_REPLICA)}});
                 }
             }
         }
@@ -208,12 +206,12 @@ namespace
             replica.checksum(cond_input.at(CHKSUM_KW).value());
         }
 
-        replica.cond_input()[FILE_MODIFIED_KW] = irods::to_json(cond_input.get()).dump();
-
         // Write it out to the catalog
-        rst::update(replica.logical_path(), replica);
+        rst::update(replica.data_id(), replica);
 
-        if (const int ec = rst::publish_to_catalog(_comm, replica.logical_path(), rst::trigger_file_modified::yes); ec < 0) {
+        const auto update = irods::to_json(cond_input.get());
+
+        if (const int ec = rst::publish_to_catalog(_comm, replica.data_id(), replica.replica_number(), update); ec < 0) {
             THROW(ec, fmt::format("failed to publish to catalog:[{}]", ec));
         }
 
@@ -332,16 +330,16 @@ namespace
 
                     if (const auto ec = finalize_replica(_comm, *final_object.get(), l1desc_cache); ec < 0) {
                         irods::log(LOG_ERROR, fmt::format(
-                            "[{}] - error finalizing replica; ec:[{}]",
-                            __FUNCTION__, ec));
+                            "[{}:{}] - error finalizing replica; ec:[{}]",
+                            __FUNCTION__, __LINE__, ec));
 
                         status = ec;
                     }
                 }
                 catch (const irods::exception& e) {
                     irods::log(LOG_ERROR, fmt::format(
-                        "[{}] - error finalizing replica; ec:[{}]",
-                        __FUNCTION__, e.code()));
+                        "[{}:{}] - error finalizing replica; [{}]",
+                        __FUNCTION__, __LINE__, e.what()));
 
                     status = e.code();
                 }
