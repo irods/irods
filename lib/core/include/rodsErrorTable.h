@@ -1,16 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-/* rodsErrorTable.h - common header file for rods server and agents
- */
-
-/**
- * @file  rodsErrorTable.h
- *
- * @brief Defines ERRORS for iRODS server and agents
- */
-
-
 #ifndef RODS_ERROR_TABLE_H__
 #define RODS_ERROR_TABLE_H__
 
@@ -233,6 +220,8 @@ NEW_ERROR(SYS_NO_GOOD_REPLICA,                         -166000)
 NEW_ERROR(SYS_LIBRARY_ERROR,                           -167000)
 NEW_ERROR(SYS_REPLICA_INACCESSIBLE,                    -168000)
 NEW_ERROR(SYS_NOT_ALLOWED,                             -169000)
+NEW_ERROR(NOT_A_COLLECTION,                            -170000)
+NEW_ERROR(NOT_A_DATA_OBJECT,                           -171000)
 
 /** @} */
 
