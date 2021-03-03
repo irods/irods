@@ -434,8 +434,7 @@ msiRenameLocalZone( msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei 
  * \post none
  * \sa none
  **/
-int
-msiRenameCollection(msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei)
+int msiRenameCollection(msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei)
 {
     std::string svc_role;
 
@@ -444,7 +443,7 @@ msiRenameCollection(msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei)
         return ret.code();
     }
 
-    using logger = irods::experimental::log;
+    using log = irods::experimental::log;
 
     if (irods::CFG_SERVICE_ROLE_PROVIDER == svc_role) {
         namespace fs = irods::experimental::filesystem;
@@ -452,11 +451,25 @@ msiRenameCollection(msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei)
         const fs::path src_path = static_cast<const char*>(oldName->inOutStruct);
         const fs::path dst_path = static_cast<const char*>(newName->inOutStruct);
 
+        log::microservice::debug("{} :: src_path={}, dst_path={}", __func__, src_path.c_str(), dst_path.c_str());
+
         try {
+            if (!fs::server::is_collection(*rei->rsComm, src_path)) {
+                return NOT_A_COLLECTION;
+            }
+
+            if (const auto s = fs::server::status(*rei->rsComm, dst_path);
+                fs::server::exists(s) && !fs::server::is_collection(s))
+            {
+                return NOT_A_COLLECTION;
+            }
+
             fs::server::rename(*rei->rsComm, src_path, dst_path);
+
+            return 0;
         }
         catch (const fs::filesystem_error& e) {
-            logger::microservice::error("msiRenameCollection failed: [{}]", e.what());
+            log::microservice::error("msiRenameCollection failed: [{}]", e.what());
             return e.code().value();
         }
     }
@@ -465,7 +478,8 @@ msiRenameCollection(msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei)
         return SYS_NO_RCAT_SERVER_ERR;
     }
 
-    logger::microservice::error("role not supported [{}]", svc_role);
+    log::microservice::error("role not supported [{}]", svc_role);
+
     return SYS_SERVICE_ROLE_NOT_SUPPORTED;
 }
 
