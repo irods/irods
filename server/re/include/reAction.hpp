@@ -1,8 +1,7 @@
-/* reAction.hpp - header file for Actions that are 'called' when executing the rules by
- * the rule engine modules
- */
 #ifndef _RE_ACTION_HPP_
 #define _RE_ACTION_HPP_
+
+// reAction.hpp - header file for Actions that are 'called' when executing the rules by the rule engine modules
 
 #include "rodsUser.h"
 #include "rods.h"
@@ -12,6 +11,7 @@
 #include "reDataObjOpr.hpp"
 #include "reNaraMetaData.hpp"
 #include "reIn2p3SysRule.hpp"
+#include "irods_ms_plugin.hpp"
 
 int msiRollback( ruleExecInfo_t *rei );
 int msiSetACL( msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *userName,
@@ -120,6 +120,7 @@ int msiRenameLocalZone( msParam_t *oldName, msParam_t *newName,
                         ruleExecInfo_t *rei );
 int msiRenameCollection( msParam_t *oldName, msParam_t *newName,
                          ruleExecInfo_t *rei );
+int msiRenameLocalZoneCollection(msParam_t* _new_zone_name, ruleExecInfo_t* _rei);
 int msiAclPolicy( msParam_t *msParam, ruleExecInfo_t *rei );
 int msiSetQuota( msParam_t *type, msParam_t *name, msParam_t *resource,
                  msParam_t *value, ruleExecInfo_t *rei );
@@ -155,11 +156,8 @@ int msiString2StrArray( msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecI
 
 int msiTakeThreeArgumentsAndDoNothing(msParam_t *arg1, msParam_t *arg2, msParam_t *arg3, ruleExecInfo_t *rei);
 
-
-#include "irods_ms_plugin.hpp"
-
-namespace irods {
-
+namespace irods
+{
     // =-=-=-=-=-=-=-
     // implementation of the microservice table class, which initializes the table during the ctor
     // inserting the statically compiled microservices during construction providing RAII behavior
@@ -275,6 +273,7 @@ namespace irods {
         table_[ "msiAW1" ] = new irods::ms_table_entry( "msiAW1", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiAW1 ) );
         table_[ "msiRenameLocalZone" ] = new irods::ms_table_entry( "msiRenameLocalZone", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiRenameLocalZone ) );
         table_[ "msiRenameCollection" ] = new irods::ms_table_entry( "msiRenameCollection", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiRenameCollection ) );
+        table_[ "msiRenameLocalZoneCollection" ] = new irods::ms_table_entry( "msiRenameLocalZoneCollection", 1, std::function<int(msParam_t*, ruleExecInfo_t*)>( msiRenameLocalZoneCollection ) );
         table_[ "msiAclPolicy" ] = new irods::ms_table_entry( "msiAclPolicy", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>(msiAclPolicy ) );
         table_[ "msiSetQuota" ] = new irods::ms_table_entry( "msiSetQuota", 4, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>(msiSetQuota ) );
         table_[ "msiRemoveKeyValuePairsFromObj" ] = new irods::ms_table_entry( "msiRemoveKeyValuePairsFromObj", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiRemoveKeyValuePairsFromObj ) );
@@ -298,7 +297,6 @@ namespace irods {
         table_[ "msiDoSomething" ] = new irods::ms_table_entry( "msiDoSomething", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiDoSomething ) );
         table_[ "msiSysMetaModify" ] = new irods::ms_table_entry( "msiSysMetaModify", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiSysMetaModify ) );
         table_[ "msiTakeThreeArgumentsAndDoNothing" ] = new irods::ms_table_entry( "msiTakeThreeArgumentsAndDoNothing", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiTakeThreeArgumentsAndDoNothing ) );
-
     }; // ms_table::ms_table
 
     // =-=-=-=-=-=-=-
@@ -310,9 +308,8 @@ namespace irods {
             delete itr->second;
         }
     }
-
-}; // namespace irods
+} // namespace irods
 
 //irods::ms_table MicrosTable;
 
-#endif	/* _RE_ACTION_HPP_ */
+#endif // _RE_ACTION_HPP_
