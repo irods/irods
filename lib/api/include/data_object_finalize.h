@@ -16,8 +16,6 @@ extern "C" {
 /// desired modifications is required in the form of a JSON structure. Each replica can also
 /// have "file_modified" key which holds a set of key-value pairs for the file_modified plugin operation.
 ///
-/// The data_id is used to identify the data object being finalized.
-///
 /// The file_modified field is a boolean indicating whether the file_modified plugin operation
 /// should be called after the data object has been finalized.
 /// \endparblock
@@ -25,60 +23,58 @@ extern "C" {
 /// \p json_input must have the following JSON structure:
 /// \code{.js}
 /// {
-///   "data_id": string,
-///   "file_modified": bool,
-///   "replicas": [
-///     {
-///       "before": {
-///         "data_id": string,
-///         "coll_id": string
-///         "data_name": string
-///         "data_repl_num": string
-///         "data_version": string
-///         "data_type_name": string
-///         "data_size": string
-///         "data_path": string
-///         "data_owner_name": string
-///         "data_owner_zone": string
-///         "data_is_dirty": string
-///         "data_status": string
-///         "data_checksum": string
-///         "data_expiry_ts": string
-///         "data_map_id": string
-///         "data_mode": string
-///         "r_comment": string
-///         "create_ts": string
-///         "modify_ts": string
-///         "resc_id: string
-///       },
-///       "after": {
-///         "data_id": string,
-///         "coll_id": string
-///         "data_name": string
-///         "data_repl_num": string
-///         "data_version": string
-///         "data_type_name": string
-///         "data_size": string
-///         "data_path": string
-///         "data_owner_name": string
-///         "data_owner_zone": string
-///         "data_is_dirty": string
-///         "data_status": string
-///         "data_checksum": string
-///         "data_expiry_ts": string
-///         "data_map_id": string
-///         "data_mode": string
-///         "r_comment": string
-///         "create_ts": string
-///         "modify_ts": string
-///         "resc_id: string
-///       },
-///       "file_modified": {
-///          <string>: string,
-///          ...
-///       }
-///     }
-///   ]
+///     "replicas": [
+///         {
+///             "before": {
+///                 "data_id": <string>,
+///                 "coll_id": <string>,
+///                 "data_repl_num": <string>,
+///                 "data_version": <string>,
+///                 "data_type_name": <string>,
+///                 "data_size": <string>,
+///                 "data_path": <string>,
+///                 "data_owner_name": <string>,
+///                 "data_owner_zone": <string>,
+///                 "data_is_dirty": <string>,
+///                 "data_status": <string>,
+///                 "data_checksum": <string>,
+///                 "data_expiry_ts": <string>,
+///                 "data_map_id": <string>,
+///                 "data_mode": <string>,
+///                 "r_comment": <string>,
+///                 "create_ts": <string>,
+///                 "modify_ts": <string>,
+///                 "resc_id": <string>
+///             },
+///             "after": {
+///                 "data_id": <string>,
+///                 "coll_id": <string>,
+///                 "data_repl_num": <string>,
+///                 "data_version": <string>,
+///                 "data_type_name": <string>,
+///                 "data_size": <string>,
+///                 "data_path": <string>,
+///                 "data_owner_name": <string>,
+///                 "data_owner_zone": <string>,
+///                 "data_is_dirty": <string>,
+///                 "data_status": <string>,
+///                 "data_checksum": <string>,
+///                 "data_expiry_ts": <string>,
+///                 "data_map_id": <string>,
+///                 "data_mode": <string>,
+///                 "r_comment": <string>,
+///                 "create_ts": <string>,
+///                 "modify_ts": <string>,
+///                 "resc_id": <string>
+///             },
+///             "file_modified": {
+///                 <string>: <string>,
+///                 ...
+///             }
+///         },
+///         ...
+///     ],
+///     "trigger_file_modified": <bool>
 /// }
 /// \endcode
 ///

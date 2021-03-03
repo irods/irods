@@ -111,7 +111,6 @@ TEST_CASE("finalize", "[finalize]")
         {
             // Get data object info, modify some fields in each replica, and stamp the catalog
             json input;
-            input["data_id"] = std::to_string(og_op.data_id());
 
             for (auto& repl : og_op.replicas()) {
                 const auto before = replica::to_json(repl);
