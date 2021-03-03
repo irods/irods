@@ -11,7 +11,7 @@ struct RsComm;
 extern "C" {
 #endif
 
-/// Set the state of every replica for a data object in the catalog, atomically.
+/// \brief Set the state of every replica for a data object in the catalog, atomically.
 ///
 /// A complete set of the columns in their current state as well as the desired modifications
 /// is required in the form of a JSON structure.
@@ -19,55 +19,58 @@ extern "C" {
 /// \p json_input must have the following JSON structure:
 /// \code{.js}
 /// {
-///   "data_id": string,
-///   "replicas": [
-///     {
-///       "before": {
-///         "data_id": string,
-///         "coll_id": string
-///         "data_name": string
-///         "data_repl_num": string
-///         "data_version": string
-///         "data_type_name": string
-///         "data_size": string
-///         "data_path": string
-///         "data_owner_name": string
-///         "data_owner_zone": string
-///         "data_is_dirty": string
-///         "data_status": string
-///         "data_checksum": string
-///         "data_expiry_ts": string
-///         "data_map_id": string
-///         "data_mode": string
-///         "r_comment": string
-///         "create_ts": string
-///         "modify_ts": string
-///         "resc_id: string
-///       },
-///       "after": {
-///         "data_id": string,
-///         "coll_id": string
-///         "data_name": string
-///         "data_repl_num": string
-///         "data_version": string
-///         "data_type_name": string
-///         "data_size": string
-///         "data_path": string
-///         "data_owner_name": string
-///         "data_owner_zone": string
-///         "data_is_dirty": string
-///         "data_status": string
-///         "data_checksum": string
-///         "data_expiry_ts": string
-///         "data_map_id": string
-///         "data_mode": string
-///         "r_comment": string
-///         "create_ts": string
-///         "modify_ts": string
-///         "resc_id: string
-///       }
-///     }
-///   ]
+///     "replicas": [
+///         {
+///             "before": {
+///                 "data_id": <string>,
+///                 "coll_id": <string>,
+///                 "data_repl_num": <string>,
+///                 "data_version": <string>,
+///                 "data_type_name": <string>,
+///                 "data_size": <string>,
+///                 "data_path": <string>,
+///                 "data_owner_name": <string>,
+///                 "data_owner_zone": <string>,
+///                 "data_is_dirty": <string>,
+///                 "data_status": <string>,
+///                 "data_checksum": <string>,
+///                 "data_expiry_ts": <string>,
+///                 "data_map_id": <string>,
+///                 "data_mode": <string>,
+///                 "r_comment": <string>,
+///                 "create_ts": <string>,
+///                 "modify_ts": <string>,
+///                 "resc_id": <string>
+///             },
+///             "after": {
+///                 "data_id": <string>,
+///                 "coll_id": <string>,
+///                 "data_repl_num": <string>,
+///                 "data_version": <string>,
+///                 "data_type_name": <string>,
+///                 "data_size": <string>,
+///                 "data_path": <string>,
+///                 "data_owner_name": <string>,
+///                 "data_owner_zone": <string>,
+///                 "data_is_dirty": <string>,
+///                 "data_status": <string>,
+///                 "data_checksum": <string>,
+///                 "data_expiry_ts": <string>,
+///                 "data_map_id": <string>,
+///                 "data_mode": <string>,
+///                 "r_comment": <string>,
+///                 "create_ts": <string>,
+///                 "modify_ts": <string>,
+///                 "resc_id": <string>
+///             },
+///             "file_modified": {
+///                 <string>: <string>,
+///                 ...
+///             }
+///         },
+///         ...
+///     ],
+///     "trigger_file_modified": <bool>
 /// }
 /// \endcode
 ///

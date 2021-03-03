@@ -13,6 +13,15 @@ struct RsComm;
 /// \brief Library that maintains a globally accessible JSON structure describing the changes to opened data objects.
 ///
 /// \parblock
+/// The main use case for the replica state table (RST) is keeping track
+/// of the state of a data object from open to close. A list of replicas
+/// for each opened data object is maintained here with the attendant
+/// system metadata (representative of the catalog state).
+///
+/// The "before" state represents the state of the replica when the data
+/// object was opened. The "after" state represents changes to the
+/// replica since being opened.
+///
 /// The JSON structure has the following form:
 /// \code{.js}
 /// {
@@ -76,16 +85,20 @@ struct RsComm;
 ///     - "after" refers to the current state of the replica (may or may not be representative of the catalog state)
 ///     - "file_modified" (OPTIONAL) is a set of key-value pairs which are used in the fileModified plugin operation
 ///
-/// - "ref_count" refers to the number of open file descriptors which are currently referring to this entry
+/// - "ref_count" refers to the number of open file descriptors which are currently referring to this entry.
+///   As long as the ref_count is above 1, erase() will not remove the entry from the table but will only
+///   decrease the count. For this reason, opening multiple replicas of the same data object in the same
+///   agent is considered an advanced maneuver.
+///
+/// Each entry uses the data_id (std::uint64_t) for the represented data object as the key into the map.
 ///
 /// \endparblock
 ///
 /// \since 4.2.9
 namespace irods::replica_state_table
 {
-    inline static const std::string BEFORE_KW = "before";
-    inline static const std::string AFTER_KW = "after";
-    inline static const std::string REPLICAS_KW = "replicas";
+    // data_id serves as the key to entries
+    using key_type = std::uint64_t;
 
     /// \brief Specify which version of the data object information to fetch from the map entry
     ///
@@ -96,12 +109,6 @@ namespace irods::replica_state_table
         after,
         both
     }; // enum class state_type
-
-    enum class trigger_file_modified
-    {
-        no,
-        yes
-    };
 
     /// \brief Initialize the replica_state_table by making sure it is completely cleared out
     ///
@@ -115,7 +122,8 @@ namespace irods::replica_state_table
 
     /// \brief Create a new entry in the replica_state_table
     ///
-    /// If the specified object already exists in the replica state table, nothing happens.
+    /// If the specified object already exists in the replica state table, the ref_count is increased
+    /// by one.
     ///
     /// \param[in] _obj Initial data object state to serve as both "before" and "after" at the start
     ///
@@ -126,59 +134,58 @@ namespace irods::replica_state_table
     ///
     /// If the specified replica already exists for this entry in the replica state table, nothing happens.
     ///
-    /// \param[in] _obj Initial data object state to serve as both "before" and "after" at the start
+    /// \param[in] _replica Initial replica state to serve as both "before" and "after" at the start
     /// \throws irods::exception If entry does not exist
     ///
     /// \since 4.2.9
-    auto insert(const std::string_view _logical_path,
-                const irods::experimental::replica::replica_proxy_t& _obj) -> void;
+    auto insert(const irods::experimental::replica::replica_proxy_t& _replica) -> void;
 
-    /// \brief Erase replica_state_table entry indicated by _logical_path
+    /// \brief Erase replica_state_table entry indicated by _key
     ///
-    /// \param[in] _logical_path
+    /// \param[in] _key
     ///
-    /// \throws irods::exception If no key matches _logical_path
+    /// \throws irods::exception If no key matches _key
     ///
     /// \since 4.2.9
-    auto erase(const std::string_view _logical_path) -> void;
+    auto erase(const key_type& _key) -> void;
 
     /// \brief Returns whether or not an entry in the replica state table keys on the provided logical path
     ///
-    /// \param[in] _logical_path
+    /// \param[in] _key
     ///
-    /// \retval true if replica state table contains key _logical_path
-    /// \retval false if replica state table does not contain key _logical_path
+    /// \retval true if replica state table contains key _key
+    /// \retval false if replica state table does not contain key _key
     ///
     /// \since 4.2.9
-    auto contains(const std::string_view _logical_path) -> bool;
+    auto contains(const key_type& _key) -> bool;
 
     /// \brief Returns whether or not a replica exists for an existing entry replica state table
     ///
-    /// \param[in] _logical_path
+    /// \param[in] _key
     /// \param[in] _leaf_resource_name
     ///
-    /// \retval true if replica state table contains key _logical_path and a replica on the specified leaf resource
-    /// \retval false if replica state table does not contain key _logical_path or a replica on the specified leaf resource
+    /// \retval true if replica state table contains key _key and a replica on the specified leaf resource
+    /// \retval false if replica state table does not contain key _key or a replica on the specified leaf resource
     ///
     /// \since 4.2.9
-    auto contains(const std::string_view _logical_path,
+    auto contains(const key_type& _key,
                   const std::string_view _leaf_resource_name) -> bool;
 
     /// \brief Returns whether or not a replica exists for an existing entry replica state table
     ///
-    /// \param[in] _logical_path
+    /// \param[in] _key
     /// \param[in] _replica_number
     ///
-    /// \retval true if replica state table contains key _logical_path and a replica with the specified replica number
-    /// \retval false if replica state table does not contain key _logical_path or a replica with the specified replica number
+    /// \retval true if replica state table contains key _key and a replica with the specified replica number
+    /// \retval false if replica state table does not contain key _key or a replica with the specified replica number
     ///
     /// \since 4.2.9
-    auto contains(const std::string_view _logical_path,
+    auto contains(const key_type& _key,
                   const int _replica_number) -> bool;
 
     /// \brief return all information for all states of all replicas for a particular data object
     ///
-    /// \param[in] _logical_path
+    /// \param[in] _key
     ///
     /// \returns JSON object of the following form: \parblock
     /// \code{.js}
@@ -226,18 +233,22 @@ namespace irods::replica_state_table
     ///             "modify_ts": <string>,
     ///             "resc_id": <string>
     ///         }
-    ///   },
-    ///   ...
+    ///         "file_modified": {
+    ///             <string>: <string>,
+    ///             ...
+    ///         }
+    ///     },
+    ///     ...
     /// ]
     /// \endcode
     /// \endparblock
     ///
     /// \since 4.2.9
-    auto at(const std::string_view _logical_path) -> nlohmann::json;
+    auto at(const key_type& _key) -> nlohmann::json;
 
     /// \brief return a specific replica by replica number with optional before/after specification (defaults to both)
     ///
-    /// \param[in] _logical_path
+    /// \param[in] _key
     /// \param[in] _replica_number Replica number in the "before" entry
     /// \param[in] _state
     ///
@@ -317,13 +328,13 @@ namespace irods::replica_state_table
     /// \endparblock
     ///
     /// \since 4.2.9
-    auto at(const std::string_view _logical_path,
+    auto at(const key_type& _key,
             const std::string_view _leaf_resource_name,
             const state_type _state = state_type::both) -> nlohmann::json;
 
     /// \brief return a specific replica by replica number with optional before/after specification (defaults to both)
     ///
-    /// \param[in] _logical_path
+    /// \param[in] _key
     /// \param[in] _replica_number Replica number in the "before" entry
     /// \param[in] _state
     ///
@@ -403,86 +414,68 @@ namespace irods::replica_state_table
     /// \endparblock
     ///
     /// \since 4.2.9
-    auto at(const std::string_view _logical_path,
+    auto at(const key_type& _key,
             const int _replica_number,
             const state_type _state = state_type::both) -> nlohmann::json;
 
     /// \brief Updates the specified replica with the specified changes (after state only)
     ///
-    /// \param[in] _logical_path
+    /// \param[in] _key
     /// \param[in] _leaf_resource_name Leaf resource name in the "before" entry
     /// \param[in] _updates JSON input representing changes to be made. \parblock
     /// Must be of the following form (only fields which need updating need to be included):
     /// \code{.js}
     ///     {
-    ///         "replicas": {
-    ///             <r_data_main_column>: <string>,
-    ///             ...
-    ///         },
-    ///         "file_modified": {
-    ///             <string>: <string>,
-    ///             ...
-    ///         }
+    ///         <r_data_main_column>: <string>,
+    ///         ...
     ///     }
     /// \endcode
     /// \endparblock
     ///
     /// \since 4.2.9
     auto update(
-        const std::string_view _logical_path,
+        const key_type& _key,
         const std::string_view _leaf_resource_name,
         const nlohmann::json& _updates) -> void;
 
     /// \brief Updates the specified replica with the specified changes (after state only)
     ///
-    /// \param[in] _logical_path
+    /// \param[in] _key
     /// \param[in] _replica_number Replica number in the "before" entry
     /// \param[in] _updates JSON input representing changes to be made. \parblock
     /// Must be of the following form (only fields which need updating need to be included):
     /// \code{.js}
     ///     {
-    ///         "replicas": {
-    ///             <r_data_main_column>: <string>,
-    ///             ...
-    ///         },
-    ///         "file_modified": {
-    ///             <string>: <string>,
-    ///             ...
-    ///         }
+    ///         <r_data_main_column>: <string>,
+    ///         ...
     ///     }
     /// \endcode
     /// \endparblock
     ///
     /// \since 4.2.9
-    auto update(const std::string_view _logical_path,
+    auto update(const key_type& _key,
                 const int _replica_number,
                 const nlohmann::json& _updates) -> void;
 
     /// \brief Updates all columns of the specified replica
     ///
-    /// \param[in] _logical_path
+    /// \param[in] _key
     /// \param[in] _replica replica_proxy which is converted to JSON format: \parblock
     /// \code{.js}
     ///     {
-    ///         "replicas": {
-    ///             <r_data_main_column>: <string>,
-    ///             ...
-    ///         },
-    ///         "file_modified": {
-    ///             <string>: <string>,
-    ///             ...
-    ///         }
+    ///         <r_data_main_column>: <string>,
+    ///         ...
     ///     }
     /// \endcode
     /// \endparblock
     ///
     /// \since 4.2.9
-    auto update(const std::string_view _logical_path,
+    auto update(const key_type& _key,
                 const irods::experimental::replica::replica_proxy_t& _replica) -> void;
 
     /// \brief Returns the value of a given property of the given replica in the state table
     ///
-    /// \param[in] _logical_path
+    /// \param[in] _key
     /// \param[in] _replica_number Replica number in the "before" entry
     /// \param[in] _property_name
     /// \param[in] _state Must be state_type::before or state_type::after
@@ -491,7 +484,7 @@ namespace irods::replica_state_table
     ///
     /// \since 4.2.9
     auto get_property(
-        const std::string_view _logical_path,
+        const key_type& _key,
         const int _replica_number,
         const std::string_view _property_name,
         const state_type _state = state_type::before) -> std::string;
@@ -499,17 +492,56 @@ namespace irods::replica_state_table
     /// \brief Prepares the specified data object as input to data_object_finalize and updates the catalog
     ///
     /// \param[in/out] _comm
-    /// \param[in] _logical_path
-    /// \param[in] _trigger_file_modified
+    /// \param[in] _key
+    /// \param[in] _replica_number_for_file_modified
+    /// \param[in] _file_modified_parameters
     ///
     /// \returns error code returned by rs_data_object_finalize
     /// \retval 0 success
     ///
+    /// \throws irods::exception
+    ///
     /// \since 4.2.9
     auto publish_to_catalog(
         RsComm& _comm,
-        const std::string_view _logical_path,
-        const trigger_file_modified _trigger_file_modified) -> int;
-} // namespace irods
+        const key_type& _key,
+        const int _replica_number_for_file_modified,
+        const nlohmann::json& _file_modified_parameters) -> int;
+
+    /// \brief Prepares the specified data object as input to data_object_finalize and updates the catalog
+    ///
+    /// \param[in/out] _comm
+    /// \param[in] _key
+    /// \param[in] _leaf_resource_name_for_file_modified
+    /// \param[in] _file_modified_parameters
+    ///
+    /// \returns error code returned by rs_data_object_finalize
+    /// \retval 0 success
+    ///
+    /// \throws irods::exception
+    ///
+    /// \since 4.2.9
+    auto publish_to_catalog(
+        RsComm& _comm,
+        const key_type& _key,
+        const std::string_view _leaf_resource_name_for_file_modified,
+        const nlohmann::json& _file_modified_parameters) -> int;
+
+    /// \brief Prepares the data object indicated by _replica as input to data_object_finalize and updates the catalog
+    ///
+    /// \param[in/out] _comm
+    /// \param[in] _replica replica_proxy containing the key, replica number, and fileModified input
+    ///
+    /// \returns error code returned by rs_data_object_finalize
+    /// \retval 0 success
+    ///
+    /// \throws irods::exception
+    ///
+    /// \since 4.2.9
+    auto publish_to_catalog(
+        RsComm& _comm,
+        const irods::experimental::replica::replica_proxy_t& _replica) -> int;
+
+} // namespace irods::replica_state_table
 
 #endif // IRODS_REPLICA_STATE_TABLE_HPP

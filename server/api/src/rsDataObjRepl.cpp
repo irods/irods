@@ -101,7 +101,7 @@ namespace
         irods::apply_metadata_from_cond_input(_comm, *_l1desc.dataObjInp);
         irods::apply_acl_from_cond_input(_comm, *_l1desc.dataObjInp);
 
-        irods::replica_state_table::erase(_info.logical_path());
+        rst::erase(_info.data_id());
 
         return 0;
     } // finalize_source_replica
@@ -232,11 +232,13 @@ namespace
         // resource triggering replication while performing a PDMO replication).
         cond_input.erase(IN_REPL_KW);
 
-        _destination_replica.cond_input()[FILE_MODIFIED_KW] = irods::to_json(cond_input.get()).dump();
-
         // Write it out to the catalog
-        rst::update(_destination_replica.logical_path(), _destination_replica);
-        const int ec = rst::publish_to_catalog(_comm, _destination_replica.logical_path(), rst::trigger_file_modified::yes);
+        rst::update(_destination_replica.data_id(), _destination_replica);
+
+        const int ec = rst::publish_to_catalog(_comm,
+                                               _destination_replica.data_id(),
+                                               _destination_replica.replica_number(),
+                                               irods::to_json(cond_input.get()));
 
         if (CREATE_TYPE == _l1desc.openType) {
             updatequotaOverrun(_destination_replica.hierarchy().data(), _destination_replica.size(), ALL_QUOTA);
@@ -254,8 +256,8 @@ namespace
                 __FUNCTION__, _destination_replica.logical_path(), ec));
         }
 
-        if (rst::contains(_destination_replica.logical_path())) {
-            rst::erase(_destination_replica.logical_path());
+        if (rst::contains(_destination_replica.data_id())) {
+            rst::erase(_destination_replica.data_id());
         }
 
         return ec;
@@ -276,9 +278,12 @@ namespace
         _destination_replica.size(vault_size);
 
         // Write it out to the catalog
-        rst::update(_destination_replica.logical_path(), _destination_replica);
+        rst::update(_destination_replica.data_id(), _destination_replica);
 
-        const int ec = rst::publish_to_catalog(_comm, _destination_replica.logical_path(), irods::replica_state_table::trigger_file_modified::no);
+        const int ec = rst::publish_to_catalog(_comm,
+                                               _destination_replica.data_id(),
+                                               _destination_replica.replica_number(),
+                                               nlohmann::json{});
 
         if (ec < 0) {
             irods::log(LOG_ERROR, fmt::format("failed to publish to catalog:[{}]", ec));
