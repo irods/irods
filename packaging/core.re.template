@@ -54,8 +54,8 @@ acDeleteCollByAdminIfPresent(*parColl,*childColl) {
 acDeleteCollByAdmin(*parColl,*childColl) {
   msiDeleteCollByAdmin(*parColl,*childColl); }
 #
-acRenameLocalZone(*oldZone,*newZone) {
-  msiRenameCollection("/"++str(*oldZone)++"",*newZone) ::: msiRollback;
+acRenameLocalZone(*oldZone, *newZone) {
+  msiRenameLocalZoneCollection(*newZone) ::: msiRollback;
   msiRenameLocalZone(*oldZone,*newZone) ::: msiRollback;
   msiCommit; }
 #

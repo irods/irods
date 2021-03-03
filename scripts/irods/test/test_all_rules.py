@@ -1059,3 +1059,36 @@ OUTPUT ruleExecOut
         self.assertTrue(error_msg in stdout)
         self.assertTrue(error_code + ' CAT_NO_ROWS_FOUND' in stderr)
 
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
+    def test_non_admins_are_not_allowed_to_rename_zone_collection__issue_5445(self):
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        cmd = ['irule', '-r', rep_name, 'msiRenameLocalZoneCollection("otherZone")', 'null', 'ruleExecOut']
+        self.user0.assert_icommand(cmd, 'STDERR', ['-818000 CAT_NO_ACCESS_PERMISSION'])
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
+    def test_admins_are_allowed_to_rename_zone_collection__issue_5445(self):
+        with session.make_session_for_existing_admin() as admin:
+            rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+
+            # Rename the zone collection.
+            admin.assert_icommand(['irule', '-r', rep_name, 'msiRenameLocalZoneCollection("otherZone")', 'null', 'ruleExecOut'])
+
+            # Restore the zone collection's name to its original value.
+            admin.assert_icommand(['irule', '-r', rep_name, 'msiRenameLocalZoneCollection("{0}")'.format(admin.zone_name), 'null', 'ruleExecOut'])
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
+    def test_rename_to_current_zone_collection_is_a_no_op__issue_5445(self):
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        self.admin.assert_icommand(['irule', '-r', rep_name, 'msiRenameLocalZoneCollection("{0}")'.format(self.admin.zone_name), 'null', 'ruleExecOut'])
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
+    def test_rename_to_existing_collection_with_different_name_is_an_error__issue_5445(self):
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        existing_collection = os.path.join(self.admin.zone_name, 'home', self.admin.username)
+        cmd = ['irule', '-r', rep_name, 'msiRenameLocalZoneCollection("{0}")'.format(existing_collection), 'null', 'ruleExecOut']
+        self.admin.assert_icommand(cmd, 'STDERR', ['-809000 CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME'])
+
