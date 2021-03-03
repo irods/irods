@@ -91,7 +91,7 @@ namespace
 
         auto replica = ir::make_replica_proxy(_info);
 
-        if (!rst::contains(replica.logical_path())) {
+        if (!rst::contains(replica.data_id())) {
             irods::log(LOG_ERROR, fmt::format(
                 "[{}:{}] - no entry found in replica state table for [{}]",
                 __FUNCTION__, __LINE__, replica.logical_path()));
@@ -127,9 +127,9 @@ namespace
             replica.checksum(cond_input.at(CHKSUM_KW).value());
         }
 
-        rst::update(replica.logical_path(), replica);
+        rst::update(replica.data_id(), replica);
 
-        if (const int ec = rst::publish_to_catalog(_comm, replica.logical_path(), rst::trigger_file_modified::no); ec < 0) {
+        if (const int ec = rst::publish_to_catalog(_comm, replica.data_id(), replica.replica_number(), nlohmann::json{}); ec < 0) {
             irods::log(LOG_ERROR, fmt::format(
                 "[{}:{}] - failed to publish to catalog:[{}]",
                 __FUNCTION__, __LINE__, ec));

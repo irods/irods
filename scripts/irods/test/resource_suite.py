@@ -262,7 +262,26 @@ class ResourceSuite(ResourceBase):
         lib.touch("file.txt")
         for i in range(0, 100):
             self.user0.assert_icommand("iput file.txt " + str(i) + ".txt", "EMPTY")
-        self.admin.assert_icommand("iphymv -r -M -n0 -R " + self.testresc + " " + self.admin.session_collection)  # creates replica
+
+        listing1,_,_ = self.user0.run_icommand(['ils', '-l', self.user0.session_collection])
+        print(listing1)
+
+        # scan each line of the ils and ensure that nothing is on TestResc
+        for item in listing1.splitlines()[2:]:
+            self.assertNotIn(self.testresc, item,
+                'expected not to find [{0}] in line [{1}]'.format(self.testresc, item))
+
+        self.admin.assert_icommand("iphymv -r -M -n0 -R " + self.testresc + " " + self.user0.session_collection)  # creates replica
+
+        listing2,_,_ = self.user0.run_icommand(['ils', '-l', self.user0.session_collection])
+        print(listing2)
+
+        # scan each line of the ils and ensure that everything moved to TestResc
+        replica_0 = 'alice             0'
+        for item in listing2.splitlines():
+            if replica_0 in item:
+                self.assertIn(self.testresc, item,
+                    'expected to find [{0}] in line [{1}]'.format(self.testresc, item))
 
     ###################
     # iput

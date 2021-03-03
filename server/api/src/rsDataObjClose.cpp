@@ -358,13 +358,13 @@ namespace
             replica.mtime(SET_TIME_TO_NOW_KW);
 
             // stale other replicas because the truth has moved
-            for (auto& rj : rst::at(replica.logical_path())) {
+            for (auto& rj : rst::at(replica.data_id())) {
                 const auto replica_number = std::stoi(std::string{rj.at("after").at("data_repl_num")});
 
                 if (replica.replica_number() != replica_number) {
                     const nlohmann::json update{{"data_is_dirty", std::to_string(STALE_REPLICA)}};
 
-                    rst::update(replica.logical_path(), replica_number,
+                    rst::update(replica.data_id(), replica_number,
                         nlohmann::json{{"replicas", update}});
                 }
             }
@@ -377,12 +377,10 @@ namespace
             replica.checksum(cond_input.at(CHKSUM_KW).value());
         }
 
-        replica.cond_input()[FILE_MODIFIED_KW] = irods::to_json(cond_input.get()).dump();
-
         // Write it out to the catalog
-        rst::update(replica.logical_path(), replica);
+        rst::update(replica.data_id(), replica);
 
-        if (const int ec = rst::publish_to_catalog(_comm, replica.logical_path(), rst::trigger_file_modified::yes); ec < 0) {
+        if (const int ec = rst::publish_to_catalog(_comm, replica.data_id(), replica.replica_number(), irods::to_json(cond_input.get())); ec < 0) {
             THROW(ec, fmt::format("failed to publish to catalog:[{}]", ec));
         }
 
@@ -542,7 +540,7 @@ namespace
             reg_param[REPL_STATUS_KW] = std::to_string(replica.replica_status());
         }
         else if (l1desc.openType == OPEN_FOR_WRITE_TYPE) {
-            replica.replica_status(std::stoi(rst::get_property(replica.logical_path(), replica.replica_number(), "data_is_dirty")));
+            replica.replica_status(std::stoi(rst::get_property(replica.data_id(), replica.replica_number(), "data_is_dirty")));
             reg_param[REPL_STATUS_KW] = std::to_string(replica.replica_status());
             reg_param[DATA_MODIFY_KW] = std::to_string((int)time(nullptr));
         }
@@ -806,12 +804,13 @@ int rsDataObjClose(rsComm_t* rsComm, openedDataObjInp_t* dataObjCloseInp)
                 unlock_file_descriptor(rsComm, fd);
             }
 
-            const std::string logical_path = l1desc.dataObjInfo->objPath;
+            //const rst::key_type key = rst::get_key(*l1desc.dataObjInfo);
+            const rst::key_type key = l1desc.dataObjInfo->dataId;
 
             freeL1desc(fd);
 
-            if (rst::contains(logical_path)) {
-                rst::erase(logical_path);
+            if (rst::contains(key)) {
+                rst::erase(key);
             }
         }};
 

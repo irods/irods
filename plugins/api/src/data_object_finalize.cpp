@@ -119,7 +119,6 @@ namespace
 
     auto set_replica_state(
         nanodbc::connection& _db_conn,
-        std::string_view _data_id,
         const json& _before,
         const json& _after) -> void
     {
@@ -159,7 +158,7 @@ namespace
             index++;
         }
 
-        const auto data_id = std::stoul(_data_id.data());
+        const auto data_id = std::stoul(_before.at("data_id").get<std::string>());
         log::database::trace("binding data_id:[{}] at [{}]", data_id, index);
         statement.bind(index++, &data_id);
 
@@ -173,7 +172,6 @@ namespace
     auto set_data_object_state(
         nanodbc::connection& _db_conn,
         nanodbc::transaction& _trans,
-        std::string_view _data_id,
         json& _replicas) -> void
     {
         try {
@@ -181,7 +179,7 @@ namespace
                 auto& after = r.at("after");
                 validate_values(after);
 
-                set_replica_state(_db_conn, _data_id, r.at("before"), after);
+                set_replica_state(_db_conn, r.at("before"), after);
             }
 
             irods::log(LOG_DEBUG10, "committing transaction");
@@ -226,17 +224,15 @@ namespace
         }
     } // set_file_object_keywords
 
-    auto send_notifications(
-        RsComm& _comm,
-        std::string_view _data_id,
-        json& _replicas) -> int
+    auto invoke_file_modified(RsComm& _comm, json& _replicas) -> int
     {
         try {
             for (auto&& replica : _replicas) {
                 irods::log(LOG_DEBUG9, fmt::format("[{}:{}] - replica:[{}]", __FUNCTION__, __LINE__, replica.dump()));
 
                 if (replica.contains(FILE_MODIFIED_KW)) {
-                    auto obj = irods::file_object_factory(_comm, std::stoll(_data_id.data()));
+                    const auto data_id = std::stoll(replica.at("after").at("data_id").get<std::string>());
+                    auto obj = irods::file_object_factory(_comm, data_id);
 
                     const auto leaf_resource_id = std::stoll(replica.at("after").at("resc_id").get<std::string>());
                     obj->resc_hier(resc_mgr.leaf_id_to_hier(leaf_resource_id));
@@ -285,7 +281,7 @@ namespace
             irods::log(LOG_ERROR, fmt::format("[{}:{}] - unknown error occurred", __FUNCTION__, __LINE__));
             return SYS_UNKNOWN_ERROR;
         }
-    } // send_notifications
+    } // invoke_file_modified
 
     auto rs_data_object_finalize(
         RsComm* _comm,
@@ -333,14 +329,12 @@ namespace
             return INPUT_ARG_NOT_WELL_FORMED_ERR;
         }
 
-        std::string data_id;
         json replicas;
-        bool file_modified;
+        bool trigger_file_modified;
 
         try {
-            data_id = input.at("data_id").get<std::string>();
             replicas = input.at("replicas");
-            file_modified = input.contains("file_modified") && input.at("file_modified").get<bool>();
+            trigger_file_modified = input.contains("trigger_file_modified") && input.at("trigger_file_modified").get<bool>();
         }
         catch (const json::type_error& e) {
             *_output = to_bytes_buffer(make_error_object(e.what()).dump());
@@ -366,16 +360,16 @@ namespace
         try {
             const auto ec = ic::execute_transaction(db_conn, [&](auto& _trans) -> int
             {
-                set_data_object_state(db_conn, _trans, data_id, replicas);
+                set_data_object_state(db_conn, _trans, replicas);
                 *_output = to_bytes_buffer("{}");
                 return 0;
             });
 
-            if (ec < 0 || !file_modified) {
+            if (ec < 0 || !trigger_file_modified) {
                 return ec;
             }
 
-            return send_notifications(*_comm, data_id, replicas);
+            return invoke_file_modified(*_comm, replicas);
         }
         catch (const irods::exception& e) {
             log::database::error(e.what());
