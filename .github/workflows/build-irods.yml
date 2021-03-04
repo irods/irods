@@ -7,6 +7,9 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: recursive
+      - name: Get Public IP
+        run:  |
+              dig +short myip.opendns.com @resolver1.opendns.com
       - name: Install Dependencies
         run:  |
               sudo apt-get update -qq
