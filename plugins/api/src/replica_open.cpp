@@ -64,7 +64,7 @@ namespace
         rodsLog(LOG_DEBUG, "Opened L1 descriptor = %d", fd);
 
         if (fd < 3) {
-            rodsLog(LOG_ERROR, "Could not open replica [error_code=%d]", fd);
+            rodsLog(LOG_DEBUG, "Could not open replica [error_code=%d]", fd);
             return fd;
         }
 
