@@ -14,7 +14,8 @@ target_include_directories(${IRODS_PLUGIN_TARGET} PRIVATE ${CMAKE_BINARY_DIR}/li
                                                           ${CMAKE_SOURCE_DIR}/server/core/include
                                                           ${CMAKE_SOURCE_DIR}/server/icat/include
                                                           ${CMAKE_SOURCE_DIR}/server/re/include
-                                                          ${IRODS_EXTERNALS_FULLPATH_BOOST}/include)
+                                                          ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
+                                                          ${IRODS_EXTERNALS_FULLPATH_JSON}/include)
 
 target_link_libraries(${IRODS_PLUGIN_TARGET} PRIVATE irods_server
                                                      irods_common
