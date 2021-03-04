@@ -77,6 +77,7 @@
 
 #include <chrono>
 #include <stdexcept>
+
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -698,7 +699,8 @@ namespace
         return l1_index;
     } // open_replica
 
-    auto get_data_object_info_for_open(RsComm& _comm, DataObjInp& _inp) -> std::tuple<irods::file_object_ptr, DataObjInfo*, std::string>
+    auto get_data_object_info_for_open(RsComm& _comm, DataObjInp& _inp)
+        -> std::tuple<irods::error, irods::file_object_ptr, DataObjInfo*, std::string>
     {
         ix::key_value_proxy kvp{_inp.condInput};
 
@@ -735,9 +737,22 @@ namespace
         irods::file_object_ptr file_obj;
 
         if (hier.empty()) {
-            std::tie(file_obj, hier) = irods::resolve_resource_hierarchy(
-                (_inp.openFlags & O_CREAT) ? irods::CREATE_OPERATION : irods::OPEN_OPERATION,
-                &_comm, _inp, &info_head);
+            try {
+                std::tie(file_obj, hier) = irods::resolve_resource_hierarchy(
+                    (_inp.openFlags & O_CREAT) ? irods::CREATE_OPERATION : irods::OPEN_OPERATION,
+                    &_comm, _inp, &info_head);
+            }
+            catch (const irods::exception& e) {
+                // If the data object does not exist, then the exception will contain
+                // an error code of CAT_NO_ROWS_FOUND.
+                if (e.code() == CAT_NO_ROWS_FOUND) {
+                    rodsLog(LOG_DEBUG, "Data object or replica does not exist [error_code=%d, path=%s].", e.code(), _inp.objPath);
+                    return {ERROR(OBJ_PATH_DOES_NOT_EXIST, ""), nullptr, nullptr, {}};
+                }
+
+                irods::log(e);
+                return {irods::error{e}, nullptr, nullptr, {}};
+            }
         }
         else {
             irods::file_object_ptr tmp{new irods::file_object()};
@@ -748,7 +763,7 @@ namespace
             std::swap(tmp, file_obj);
         }
 
-        return {file_obj, info_head, hier};
+        return {SUCCESS(), file_obj, info_head, hier};
     } // get_data_object_info_for_open
 
     auto apply_static_pep_data_obj_open_pre(RsComm& _comm, DataObjInp& _inp, DataObjInfo** _info_head) -> void
@@ -827,7 +842,11 @@ namespace
         // end lock fd section
 
         try {
-            auto [file_obj, info_head, hierarchy] = get_data_object_info_for_open(*rsComm, *dataObjInp);
+            auto [error, file_obj, info_head, hierarchy] = get_data_object_info_for_open(*rsComm, *dataObjInp);
+
+            if (!error.ok()) {
+                return error.code();
+            }
 
             if (!cond_input.contains(RESC_HIER_STR_KW)) {
                 cond_input[RESC_HIER_STR_KW] = hierarchy;
