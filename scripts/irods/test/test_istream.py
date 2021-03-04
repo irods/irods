@@ -12,6 +12,8 @@ else:
 
 from . import session
 from .. import lib
+from .. import paths
+from .. import test
 
 class Test_istream(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
 
@@ -172,6 +174,23 @@ class Test_istream(session.make_sessions_mixin([('otherrods', 'rods')], [('alice
             self.user.run_icommand(['irm', '-f', data_object])
             self.admin.assert_icommand(['iadmin', 'rmresc', resc_name])
             self.user.environment_file_contents = old_env_config
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    def test_opening_a_non_existent_data_object_does_not_cause_a_stacktrace_to_be_logged__issue_5419(self):
+        # Capture the current log file size. This will serve as an offset for when we inspect
+        # the log file for messages.
+        log_offset = lib.get_file_size_by_path(paths.server_log_path())
+
+        # The following causes a stacktrace to be logged in iRODS v4.2.8 because the data object does not exist.
+        self.admin.assert_icommand(['istream', 'read', 'does_not_exist'], 'STDERR', ['Error: Cannot open data object.'])
+
+        # Show that the log file does not contain a stacktrace.
+        self.assertTrue(lib.log_message_occurrences_equals_count(msg='Dumping stack trace', count=0, start_index=log_offset))
+
+        # Show that the log file contains the expected error codes and messages.
+        self.assertTrue(lib.log_message_occurrences_greater_than_count(msg='Data object or replica does not exist [error_code=', count=0, start_index=log_offset))
+        self.assertTrue(lib.log_message_occurrences_greater_than_count(msg='error_code=-808000', count=0, start_index=log_offset)) # CAT_NO_ROWS_FOUND
+        self.assertTrue(lib.log_message_occurrences_greater_than_count(msg='error_code=-358000', count=0, start_index=log_offset)) # OBJ_PATH_DOES_NOT_EXIST
 
     def create_ufs_resource(self, resource_name):
         vault_name = resource_name + '_vault'
