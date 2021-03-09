@@ -15,15 +15,15 @@ from .. import lib
 from .. import paths
 from .. import test
 
-class Test_istream(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
+class Test_Istream(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
 
     def setUp(self):
-        super(Test_istream, self).setUp()
+        super(Test_Istream, self).setUp()
         self.admin = self.admin_sessions[0]
         self.user = self.user_sessions[0]
 
     def tearDown(self):
-        super(Test_istream, self).tearDown()
+        super(Test_Istream, self).tearDown()
 
     def test_istream_empty_file(self):
         filename = 'test_istream_empty_file.txt'
@@ -191,6 +191,29 @@ class Test_istream(session.make_sessions_mixin([('otherrods', 'rods')], [('alice
         self.assertTrue(lib.log_message_occurrences_greater_than_count(msg='Data object or replica does not exist [error_code=', count=0, start_index=log_offset))
         self.assertTrue(lib.log_message_occurrences_greater_than_count(msg='error_code=-808000', count=0, start_index=log_offset)) # CAT_NO_ROWS_FOUND
         self.assertTrue(lib.log_message_occurrences_greater_than_count(msg='error_code=-358000', count=0, start_index=log_offset)) # OBJ_PATH_DOES_NOT_EXIST
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    def test_istream_honors_data_size_in_the_catalog_on_reads__issue_5477(self):
+        # Put a data object into iRODS.
+        data_object = os.path.join(self.admin.session_collection, 'foo')
+        contents = 'some important data'
+        self.admin.assert_icommand(['istream', 'write', data_object], input=contents)
+
+        # Show that istream wrote the bytes to disk.
+        out, err, ec = self.admin.run_icommand(['istream', 'read', data_object])
+        self.assertEqual(ec, 0)
+        self.assertEqual(len(err), 0)
+        self.assertEqual(out, contents)
+
+        # Update the data object's size in the catalog.
+        size_in_catalog = 3
+        self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', data_object, 'replica_number', '0', 'DATA_SIZE', str(size_in_catalog)])
+
+        # Show that istream reads up to the number of bytes defined in the catalog for the data object.
+        out, err, ec = self.admin.run_icommand(['istream', 'read', data_object])
+        self.assertEqual(ec, 0)
+        self.assertEqual(len(err), 0)
+        self.assertEqual(out, contents[:size_in_catalog])
 
     def create_ufs_resource(self, resource_name):
         vault_name = resource_name + '_vault'
