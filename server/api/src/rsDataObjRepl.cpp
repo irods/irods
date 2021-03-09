@@ -418,7 +418,7 @@ namespace
         return rsDataObjOpen(&_comm, &_inp);
     } // open_destination_replica
 
-    int replicate_data(RsComm& _comm, DataObjInp& _source_inp, DataObjInp& _destination_inp)
+    int replicate_data(RsComm& _comm, DataObjInp& _source_inp, DataObjInp& _destination_inp, transferStat_t** _stat)
     {
         // Open source replica
         int source_l1descInx = open_source_replica(_comm, _source_inp);
@@ -452,6 +452,17 @@ namespace
         L1desc[destination_l1descInx].srcL1descInx = source_l1descInx;
         L1desc[destination_l1descInx].dataSize = source_data_obj_info.dataSize;
 
+        const int thread_count = getNumThreads(
+            &_comm,
+            L1desc[source_l1descInx].dataObjInfo->dataSize,
+            L1desc[destination_l1descInx].dataObjInp->numThreads,
+            NULL,
+            L1desc[destination_l1descInx].dataObjInfo->rescHier,
+            L1desc[source_l1descInx].dataObjInfo->rescHier,
+            0);
+
+        L1desc[destination_l1descInx].dataObjInp->numThreads = thread_count;
+
         // Copy data from source to destination
         int status = dataObjCopy(&_comm, destination_l1descInx);
         if (status < 0) {
@@ -468,6 +479,14 @@ namespace
         else {
             L1desc[destination_l1descInx].bytesWritten = destination_data_obj_info.dataSize;
         }
+
+        // The transferStat_t communicates information back to the client regarding
+        // the data transfer such as bytes written and how many threads were used.
+        // These must be saved before the L1 descriptor is free'd.
+        *_stat = (TransferStat*)malloc(sizeof(TransferStat));
+        memset(*_stat, 0, sizeof(TransferStat));
+        (*_stat)->bytesWritten = L1desc[destination_l1descInx].dataSize;
+        (*_stat)->numThreads = L1desc[destination_l1descInx].dataObjInp->numThreads;
 
         // Save the token for the replica access table so that it can be removed
         // in the event of a failure in close. On failure, the entry is restored,
@@ -576,7 +595,7 @@ namespace
         return status;
     } // replicate_data
 
-    int replicate_data_object(RsComm& _comm, const DataObjInp& _inp)
+    int replicate_data_object(RsComm& _comm, DataObjInp& _inp, transferStat_t** _stat)
     {
         const auto cond_input = irods::experimental::make_key_value_proxy(_inp.condInput);
 
@@ -653,7 +672,7 @@ namespace
             destination_cond_input.at(RESC_HIER_STR_KW).value()));
 
         // replicate!
-        const int ec = replicate_data(_comm, source_inp, destination_inp);
+        const int ec = replicate_data(_comm, source_inp, destination_inp, _stat);
 
         if (ec < 0) {
             irods::log(LOG_ERROR, fmt::format(
@@ -664,7 +683,7 @@ namespace
         return ec;
     } // replicate_data_object
 
-    int update_all_existing_replicas(RsComm& _comm, const dataObjInp_t& _inp)
+    int update_all_existing_replicas(RsComm& _comm, const dataObjInp_t& _inp, transferStat_t** _stat)
     {
         // get information about source replica
         auto source_inp = init_source_replica_input(_comm, _inp);
@@ -728,7 +747,7 @@ namespace
                 destination_cond_input[RESC_HIER_STR_KW] = destination_replica.resc_hier();
                 destination_cond_input[DEST_RESC_HIER_STR_KW] = destination_replica.resc_hier();
 
-                if (const int ec = replicate_data(_comm, source_inp, destination_inp);
+                if (const int ec = replicate_data(_comm, source_inp, destination_inp, _stat);
                     ec < 0 && status >= 0) {
                     status = ec;
                 }
@@ -853,10 +872,10 @@ int rsDataObjRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp, transferStat_t **
         const irods::at_scope_exit remove_in_repl{[&cond_input] { cond_input.erase(IN_REPL_KW); }};
 
         if (cond_input.contains(ALL_KW)) {
-            status = update_all_existing_replicas(*rsComm, *dataObjInp);
+            status = update_all_existing_replicas(*rsComm, *dataObjInp, transStat);
         }
         else {
-            status = replicate_data_object(*rsComm, *dataObjInp);
+            status = replicate_data_object(*rsComm, *dataObjInp, transStat);
         }
     }
     catch (const irods::exception& e) {
