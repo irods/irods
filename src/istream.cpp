@@ -5,6 +5,7 @@
 #include "rcMisc.h"
 #include "rodsPath.h"
 #include "irods_at_scope_exit.hpp"
+#include "replica.hpp"
 
 #include "utility.hpp"
 
@@ -18,8 +19,10 @@
 #include <array>
 #include <tuple>
 #include <optional>
+#include <algorithm>
 
 namespace io = irods::experimental::io;
+namespace ir = irods::experimental::replica;
 namespace po = boost::program_options;
 
 using int_type = std::int64_t;
@@ -30,10 +33,18 @@ constexpr auto all_bytes   = std::numeric_limits<int_type>::max();
 // clang-format on
 
 auto usage() -> void;
+
 auto check_input_arguments(const po::variables_map& vm) -> std::tuple<bool, int>;
+
 auto canonical(const std::string& path, rodsEnv& env) -> std::optional<std::string>;
+
 auto stream_bytes(std::istream& in, std::ostream& out, int_type count) -> int;
-auto read_data_object(rodsEnv& env, const po::variables_map& vm, io::client::default_transport& tp) -> int;
+
+auto read_data_object(rodsEnv& env,
+                      const po::variables_map& vm,
+                      irods::experimental::client_connection& conn,
+                      io::client::default_transport& tp) -> int;
+
 auto write_data_object(rodsEnv& env, const po::variables_map& vm, io::client::default_transport& tp) -> int;
 
 int main(int argc, char* argv[])
@@ -85,7 +96,7 @@ int main(int argc, char* argv[])
         const auto stream_operation = vm["stream_operation"].as<std::string>();
 
         if ("read" == stream_operation) {
-            return read_data_object(env, vm, tp);
+            return read_data_object(env, vm, conn, tp);
         }
 
         if ("write" == stream_operation) {
@@ -248,7 +259,10 @@ auto stream_bytes(std::istream& in, std::ostream& out, int_type count) -> int
     return 0;
 }
 
-auto read_data_object(rodsEnv& env, const po::variables_map& vm, io::client::default_transport& tp) -> int
+auto read_data_object(rodsEnv& env,
+                      const po::variables_map& vm,
+                      irods::experimental::client_connection& conn,
+                      io::client::default_transport& tp) -> int
 {
     if (vm["append"].as<bool>()) {
         std::cerr << "Error: Invalid option on read: --append\n";
@@ -303,7 +317,10 @@ auto read_data_object(rodsEnv& env, const po::variables_map& vm, io::client::def
         return 1;
     }
 
-    if (const auto ec = stream_bytes(in, std::cout, vm["count"].as<int_type>()); ec) {
+    const auto count = std::min<int_type>(ir::replica_size<RcComm>(conn, path, in.replica_number().value),
+                                          vm["count"].as<int_type>());
+
+    if (const auto ec = stream_bytes(in, std::cout, count); ec) {
         return ec;
     }
 
