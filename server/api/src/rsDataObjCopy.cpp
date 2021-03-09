@@ -244,6 +244,9 @@ int rsDataObjCopy_impl(
         int destL1descInx{};
         const irods::at_scope_exit close_objects{[&]() {
             if (destL1descInx > 3) {
+                // The transferStat_t communicates information back to the client regarding
+                // the data transfer such as bytes written and how many threads were used.
+                // These must be saved before the L1 descriptor is free'd.
                 *transStat = (transferStat_t*)malloc(sizeof(transferStat_t));
                 memset(*transStat, 0, sizeof(transferStat_t));
                 (*transStat)->bytesWritten = L1desc[destL1descInx].dataSize;
@@ -285,6 +288,7 @@ int rsDataObjCopy_impl(
             L1desc[destL1descInx].dataObjInfo->rescHier,
             L1desc[srcL1descInx].dataObjInfo->rescHier,
             0);
+        L1desc[destL1descInx].dataObjInp->numThreads = thread_count;
         L1desc[srcL1descInx].dataObjInp->numThreads = thread_count;
 
         const int status = dataObjCopy( rsComm, destL1descInx );

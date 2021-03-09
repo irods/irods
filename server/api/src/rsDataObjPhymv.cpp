@@ -459,7 +459,7 @@ namespace
         return ec;
     } // finalize_destination_replica
 
-    int replicate_data(RsComm& _comm, DataObjInp& source_inp, DataObjInp& destination_inp)
+    int replicate_data(RsComm& _comm, DataObjInp& source_inp, DataObjInp& destination_inp, TransferStat** _stat)
     {
         // Open source replica
         int source_l1descInx = open_source_replica(_comm, source_inp);
@@ -480,6 +480,17 @@ namespace
         L1desc[destination_l1descInx].srcL1descInx = source_l1descInx;
         L1desc[destination_l1descInx].dataSize = L1desc[source_l1descInx].dataObjInfo->dataSize;
 
+        const int thread_count = getNumThreads(
+            &_comm,
+            L1desc[source_l1descInx].dataObjInfo->dataSize,
+            L1desc[destination_l1descInx].dataObjInp->numThreads,
+            NULL,
+            L1desc[destination_l1descInx].dataObjInfo->rescHier,
+            L1desc[source_l1descInx].dataObjInfo->rescHier,
+            0);
+
+        L1desc[destination_l1descInx].dataObjInp->numThreads = thread_count;
+
         // Copy data from source to destination
         int status = dataObjCopy(&_comm, destination_l1descInx);
         if (status < 0) {
@@ -489,6 +500,14 @@ namespace
         else {
             L1desc[destination_l1descInx].bytesWritten = L1desc[destination_l1descInx].dataObjInfo->dataSize;
         }
+
+        // The transferStat_t communicates information back to the client regarding
+        // the data transfer such as bytes written and how many threads were used.
+        // These must be saved before the L1 descriptor is free'd.
+        *_stat = (TransferStat*)malloc(sizeof(TransferStat));
+        memset(*_stat, 0, sizeof(TransferStat));
+        (*_stat)->bytesWritten = L1desc[destination_l1descInx].dataSize;
+        (*_stat)->numThreads = L1desc[destination_l1descInx].dataObjInp->numThreads;
 
         // Save the token for the replica access table so that it can be removed
         // in the event of a failure in close. On failure, the entry is restored,
@@ -588,7 +607,7 @@ namespace
         return status;
     } // replicate_data
 
-    int move_replica(RsComm& _comm, DataObjInp& _inp)
+    int move_replica(RsComm& _comm, DataObjInp& _inp, TransferStat** _stat)
     {
         const auto cond_input = irods::experimental::make_key_value_proxy(_inp.condInput);
         const auto log_errors = cond_input.contains(RECURSIVE_OPR__KW) ? irods::replication::log_errors::no : irods::replication::log_errors::yes;
@@ -641,7 +660,7 @@ namespace
                 }
             }
 
-            return replicate_data(_comm, source_inp, destination_inp);
+            return replicate_data(_comm, source_inp, destination_inp, _stat);
         }
         catch (const irods::exception& e) {
             if (irods::replication::log_errors::no == log_errors) {
@@ -679,7 +698,7 @@ int rsDataObjPhymv(RsComm *rsComm, DataObjInp *dataObjInp, TransferStat **transS
     }
 
     try {
-        const int status = move_replica(*rsComm, *dataObjInp);
+        const int status = move_replica(*rsComm, *dataObjInp, transStat);
         if (status < 0) {
             rodsLog(LOG_NOTICE, "%s - Failed to physically move replica. status:[%d]",
                 __FUNCTION__, status);
