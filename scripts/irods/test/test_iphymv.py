@@ -155,17 +155,6 @@ class Test_iPhymv(ResourceBase, unittest.TestCase):
             if os.path.exists(filepath):
                 os.unlink(filepath)
 
-    def test_iphymv_no_source(self):
-        filename = 'test_iphymv_no_source'
-        filepath = os.path.join(self.admin.local_session_dir, filename)
-        lib.make_file(filepath, 1)
-        dest_path = os.path.join(self.admin.session_collection, filename)
-        self.admin.assert_icommand(['iput', filepath])
-        out, err, _ = self.admin.run_icommand(['iphymv', '-R', 'demoResc', dest_path])
-        error_string = 'Source hierarchy or leaf resource or replica number required'
-        self.assertIn(error_string, out, msg='Missing error message')
-        self.assertIn('USER__NULL_INPUT_ERR', err, msg='Missing USER__NULL_INPUT_ERR')
-
     def test_iphymv_retains_system_metadata(self):
         file_name = 'test_iphymv_retains_system_metadata'
         filepath = os.path.join(self.admin.local_session_dir, file_name)
