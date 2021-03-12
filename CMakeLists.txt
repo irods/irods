@@ -827,6 +827,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/api/src/rsUnregDataObj.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsUserAdmin.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsZoneReport.cpp
+  ${CMAKE_SOURCE_DIR}/server/core/src/atomic_apply_database_operations.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/client_api_whitelist.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/catalog.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/catalog_utilities.cpp
