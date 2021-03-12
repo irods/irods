@@ -47,6 +47,7 @@
 #include "irods_server_properties.hpp"
 #include "scoped_privileged_client.hpp"
 #include "server_utilities.hpp"
+#include "atomic_apply_database_operations.hpp"
 
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 #include "filesystem.hpp"
@@ -671,6 +672,63 @@ int rsDataObjPut(rsComm_t* rsComm,
 {
     namespace ix = irods::experimental;
     namespace fs = ix::filesystem;
+
+    try {
+        const auto ec = ix::atomic_apply_database_operations(*rsComm, {
+            {"operations", nlohmann::json::array({
+                {
+                    {"op_name", "insert"},
+                    {"table", "r_coll_main"},
+                    {"values", nlohmann::json::array({
+                        {
+                            {"coll_name", "/tempZone/home/kory/atomic_col_0.d"},
+                            {"parent_coll_name", "/tempZone/home/kory"},
+                            {"coll_owner_name", "kory"},
+                            {"coll_owner_zone", "tempZone"},
+                            {"create_ts", "00000000000"},
+                            {"modify_ts", "00000000000"}
+                        },
+                        {
+                            {"coll_name", "/tempZone/home/kory/atomic_col_1.d"},
+                            {"parent_coll_name", "/tempZone/home/kory"},
+                            {"coll_owner_name", "kory"},
+                            {"coll_owner_zone", "tempZone"},
+                            {"create_ts", "00000000000"},
+                            {"modify_ts", "00000000000"}
+                        },
+                        {
+                            {"coll_name", "/tempZone/home/kory/atomic_col_2.d"},
+                            {"parent_coll_name", "/tempZone/home/kory"},
+                            {"coll_owner_name", "kory"},
+                            {"coll_owner_zone", "tempZone"},
+                            {"create_ts", "00000000000"},
+                            {"modify_ts", "00000000000"}
+                        }
+                    })}
+                },
+                {
+                    {"op_name", "delete"},
+                    {"table", "r_coll_main"},
+                    {"conditions", nlohmann::json::array({
+                        {
+                            {"column", "coll_id"},
+                            {"operator", "="},
+                            {"value", "35000"}
+                        },
+                        {
+                            {"column", "create_ts"},
+                            {"operator", ">="},
+                            {"value", "10000000000"}
+                        }
+                    })}
+                }
+            })},
+        });
+        rodsLog(LOG_NOTICE, "db atomic ops insert error code = %d", ec);
+    }
+    catch (const std::exception& e) {
+        rodsLog(LOG_ERROR, "Atomic DB Operations Error: %s", e.what());
+    }
 
     const auto ec = rsDataObjPut_impl(rsComm, dataObjInp, dataObjInpBBuf, portalOprOut);
 
