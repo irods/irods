@@ -1,0 +1,45 @@
+name: build-irods-centos
+on: [push, pull_request]
+jobs:
+  build:
+    name: build-irods-on-${{ matrix.container }}
+    runs-on: ubuntu-latest
+    container: ${{ matrix.container }}
+    strategy:
+      matrix:
+        container: ['centos:7']
+    steps:
+      - name: Install git > v2.18 for Checkout
+        run:  |
+              yum install -y git
+              yum install -y \
+                https://repo.ius.io/ius-release-el7.rpm \
+                https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+              yum swap -y git git224-core
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Install Prerequisites
+        run:  |
+              yum install -y sudo bind-utils wget
+              yum -y install gcc g++ libstdc++-static make rpm-build bzip2-devel curl-devel fakeroot help2man openssl-devel pam-devel python-devel unixODBC unixODBC-devel zlib-devel
+      - name: Get Public IP
+        run:  |
+              dig +short myip.opendns.com @resolver1.opendns.com
+      - name: Install iRODS Externals
+        run:  |
+              sudo rpm --import https://unstable.irods.org/irods-unstable-signing-key.asc
+              wget -qO - https://unstable.irods.org/renci-irods-unstable.yum.repo | sudo tee /etc/yum.repos.d/renci-irods-unstable.yum.repo
+              sudo yum -y update
+              sudo yum -y install irods-externals-*
+      - name: Configure CMake
+        run:  |
+              export PATH=/opt/irods-externals/cmake3.11.4-0/bin:$PATH
+              mkdir build
+              cd build
+              cmake -DIRODS_DISABLE_COMPILER_OPTIMIZATIONS=ON ../
+      - name: Build and Package
+        run:  |
+              cd build
+              make package
