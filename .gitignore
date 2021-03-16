@@ -1,2 +1,8 @@
 tags
 .dir-locals.el
+__pycache__
+*.pyc
+CMakeLists.txt.user
+*.wpr
+*.wpu
+.spyproject

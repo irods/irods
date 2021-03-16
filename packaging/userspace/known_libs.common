@@ -1,0 +1,36 @@
+# This file helps our userspace tarball packager figure out what distro-provided libraries should
+# be bundled with our icommands.
+#
+# Each line lists the soname of a library.
+# Lines starting with + denote a library that may be included.
+# Lines starting with - denote a library that must be excluded.
+# Blank lines are ignored.
+# Lines starting with # are ignored.
+#
+# RATIONALE: There is a need for userspace packages for environments in which the user may not be
+# authorized to install packages on the system. Therefore, we provide the option to bundle any
+# distro-provided dependencies that are not installed by default.
+# Unfortunately, we cannot detect whether or not a given library is installed by default without
+# introducing unreasonable package-time requirements.
+#
+# This file contains directives that are more or less universal for all distros we might support
+
+# libc (glibc for all current cases)
+-libc.so.6
+-libdl.so.2
+-libm.so.6
+-libresolv.so.2
+-librt.so.1
+-libpthread.so.0
+
+# zlib
+-libz.so.1
+
+# libgcc
+-libgcc_s.so.1
+
+# libstdc++
+-libstdc++.so.6
+
+# libselinux
+-libselinux.so.1

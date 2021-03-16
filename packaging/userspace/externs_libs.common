@@ -1,0 +1,34 @@
+# This file helps our userspace tarball packager identify irods-provided libraries
+# (irods-externals) in library dependency chains.
+#
+# Each line lists the name of a library with no file extension or soversion.
+# Blank lines are ignored.
+# Lines starting with # are ignored.
+#
+# RATIONALE: In order to support building the userspace package when irods or the icommands are
+# built against irods-externals in nonstandard locations, a list of library names is provided
+# to assist in identifying irods-externals libraries during packaging. The data in this file will
+# only be used if the packager detects a dependency on a library outside of /opt/irods-externals
+# and not listed in a relevant known_libs file. If the library is not listed here either, the
+# packager will scream about it and exclude it from packaging.
+#
+# This file contains directives that are more or less universal for all distros we might support
+
+libarchive
+libavrocpp
+libboost_atomic
+libboost_chrono
+libboost_filesystem
+libboost_iostreams
+libboost_program_options
+libboost_random
+libboost_regex
+libboost_signals
+libboost_system
+libboost_thread
+libboost_timer
+libc++
+libc++abi
+libfmt
+libnanodbc
+libzmq
