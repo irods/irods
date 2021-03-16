@@ -2,7 +2,7 @@ name: build-irods-centos
 on: [push, pull_request]
 jobs:
   build:
-    name: build-irods-on-${{ matrix.container }}
+    name: ${{ matrix.container }}
     runs-on: ubuntu-latest
     container: ${{ matrix.container }}
     strategy:
