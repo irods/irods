@@ -28,7 +28,10 @@ namespace
     using handler_key_type   = std::tuple<std::string_view, std::string_view>;
     using handler_value_type = int (*)(RsComm&, nanodbc::connection&, const std::string_view, const json&);
 
+    //
     // JSON property keys
+    //
+
     const char* const jp_operations = "operations";
     const char* const jp_table      = "table";
     const char* const jp_op_name    = "op_name";
@@ -37,6 +40,75 @@ namespace
     const char* const jp_operator   = "operator";
     const char* const jp_column     = "column";
     const char* const jp_value      = "value";
+
+    //
+    // Supported Table Columns
+    //
+
+    template <typename ...Args>
+    constexpr auto make_array(Args&&... _args)
+    {
+        return std::array<std::tuple<std::string_view, std::string_view>, sizeof...(Args)>{std::forward<Args>(_args)...};
+    }
+
+    constexpr auto db_columns = make_array(
+        {"r_data_main", "data_id"},
+        {"r_data_main", "coll_id"},
+        {"r_data_main", "data_name"},
+        {"r_data_main", "data_repl_num"},
+        {"r_data_main", "data_version"},
+        {"r_data_main", "data_type_name"},
+        {"r_data_main", "data_size"},
+        {"r_data_main", "resc_group_name"},
+        {"r_data_main", "resc_name"},
+        {"r_data_main", "data_path"},
+        {"r_data_main", "data_owner_name"},
+        {"r_data_main", "data_owner_zone"},
+        {"r_data_main", "data_is_dirty"},
+        {"r_data_main", "data_status"},
+        {"r_data_main", "data_checksum"},
+        {"r_data_main", "data_expiry_ts"},
+        {"r_data_main", "data_map_id"},
+        {"r_data_main", "data_mode"},
+        {"r_data_main", "r_comment"},
+        {"r_data_main", "create_ts"},
+        {"r_data_main", "modify_ts"},
+        {"r_data_main", "resc_hier"},
+        {"r_data_main", "resc_id"},
+
+        {"r_coll_main", "coll_id"},
+        {"r_coll_main", "parent_coll_name"},
+        {"r_coll_main", "coll_name"},
+        {"r_coll_main", "coll_owner_name"},
+        {"r_coll_main", "coll_owner_zone"},
+        {"r_coll_main", "coll_map_id"},
+        {"r_coll_main", "coll_inheritance"},
+        {"r_coll_main", "coll_type"},
+        {"r_coll_main", "coll_info1"},
+        {"r_coll_main", "coll_info2"},
+        {"r_coll_main", "coll_expiry_ts"},
+        {"r_coll_main", "r_comment"},
+        {"r_coll_main", "create_ts"},
+        {"r_coll_main", "modify_ts"},
+
+        {"r_meta_main", "meta_id"},
+        {"r_meta_main", "meta_namespace"},
+        {"r_meta_main", "meta_attr_name"},
+        {"r_meta_main", "meta_attr_value"},
+        {"r_meta_main", "meta_attr_unit"},
+        {"r_meta_main", "r_comment"},
+        {"r_meta_main", "create_ts"},
+        {"r_meta_main", "modify_ts"},
+
+        {"r_objt_metamap", "object_id"},
+        {"r_objt_metamap", "meta_id"},
+        {"r_objt_metamap", "create_ts"},
+        {"r_objt_metamap", "modify_ts"}
+    }; // db_columns
+
+    //
+    // Function Prototypes
+    //
 
     auto insert_collection(RsComm& _comm,
                            nanodbc::connection& _db_conn,
@@ -67,6 +139,11 @@ namespace
                      nanodbc::connection& _db_conn,
                      const std::string_view _db_instance_name,
                      const json& _op) -> int;
+
+    constexpr auto throw_if_invalid_table_column(const std::string_view _column,
+                                                 const std::string_view _table_name) -> void;
+
+    constexpr auto throw_if_invalid_conditional_operator(const std::string_view _operator) -> void;
     // clang-format on
 
     // clang-format off
@@ -436,6 +513,8 @@ namespace
                 return SYS_INVALID_INPUT_PARAM;
             }
 
+            const auto table_name = _op.at(jp_table).get<std::string>();
+
             std::vector<std::string> condition_strings;
             condition_strings.reserve(conditions.size());
 
@@ -445,31 +524,27 @@ namespace
             // Build two lists of strings.
             // - One that holds the SQL condition syntax.
             // - One that holds the values for the prepared statement.
-            std::for_each(std::begin(conditions), std::end(conditions), [&condition_strings, &values](const json& _c) {
-                // TODO Verify that the column is supported.
-                const auto column = _c.at(jp_column).get<std::string>();
-
-                const auto op = _c.at(jp_operator).get<std::string>();
-
-                // Verify that the operator is supported.
-                if (const auto iter = std::find(std::begin(supported_operators), std::end(supported_operators), op);
-                    iter == std::end(supported_operators))
+            std::for_each(std::begin(conditions), std::end(conditions),
+                [&table_name, &condition_strings, &values](const json& _c)
                 {
-                    const auto msg = fmt::format("Unsupported conditional operator [{}].", op);
-                    rodsLog(LOG_ERROR, "%s :: %s", __func__, msg.data());
-                    THROW(SYS_INVALID_INPUT_PARAM, msg);
-                }
+                    const auto column = _c.at(jp_column).get<std::string>();
+                    throw_if_invalid_table_column(column, table_name);
 
-                condition_strings.push_back(fmt::format("{} {} ?", column, op));
-                values.push_back(_c.at(jp_value).get<std::string>());
-            });
+                    const auto op = _c.at(jp_operator).get<std::string>();
+                    throw_if_invalid_conditional_operator(op);
+
+                    condition_strings.push_back(fmt::format("{} {} ?", column, op));
+                    values.push_back(_c.at(jp_value).get<std::string>());
+                });
 
             // Join the conditions together.
             std::ostringstream ss;
-            std::copy(std::begin(condition_strings), std::end(condition_strings), std::experimental::make_ostream_joiner(ss, " and "));
+            std::copy(std::begin(condition_strings),
+                      std::end(condition_strings),
+                      std::experimental::make_ostream_joiner(ss, " and "));
 
             // Generate the final SQL.
-            const auto sql = fmt::format("delete from {} where {}", _op.at(jp_table).get<std::string>(), ss.str());
+            const auto sql = fmt::format("delete from {} where {}", table_name, ss.str());
             rodsLog(LOG_NOTICE, "%s :: Generated SQL = [%s]", __func__, sql.data());
 
 #ifdef ATOMIC_DB_OPS_RUN_SQL
@@ -499,6 +574,27 @@ namespace
         rodsLog(LOG_NOTICE, "%s :: Not implemented yet.", __func__);
         return 0;
     } // update_rows
+
+    constexpr auto throw_if_invalid_table_column(const std::string_view _column,
+                                                 const std::string_view _table_name) -> void
+    {
+        if (std::find(std::begin(columns), std::end(columns), {_table_name, _column}) == std::end(columns)) {
+            const auto msg = fmt::format("Unsupported table column [{1}.{0}].", _column, _table_name);
+            rodsLog(LOG_ERROR, "%s :: %s", __func__, msg.data());
+            THROW(SYS_INVALID_INPUT_PARAM, msg);
+        }
+    } // throw_if_invalid_table_column
+
+    constexpr auto throw_if_invalid_conditional_operator(const std::string_view _operator) -> void
+    {
+        if (const auto iter = std::find(std::begin(supported_operators), std::end(supported_operators), op);
+            iter == std::end(supported_operators))
+        {
+            const auto msg = fmt::format("Unsupported conditional operator [{}].", op);
+            rodsLog(LOG_ERROR, "%s :: %s", __func__, msg.data());
+            THROW(SYS_INVALID_INPUT_PARAM, msg);
+        }
+    } // throw_if_invalid_conditional_operator
 } // anonymous namespace
 
 namespace irods::experimental
