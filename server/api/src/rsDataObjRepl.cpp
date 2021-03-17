@@ -13,8 +13,6 @@
 #include "getRemoteZoneResc.h"
 #include "getRescQuota.h"
 #include "icatDefines.h"
-#include "l3FileGetSingleBuf.h"
-#include "l3FilePutSingleBuf.h"
 #include "miscServerFunct.hpp"
 #include "objMetaOpr.hpp"
 #include "physPath.hpp"
