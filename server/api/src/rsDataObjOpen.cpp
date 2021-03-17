@@ -632,20 +632,6 @@ namespace
             return l1_index;
         }
 
-        if (_replica.cond_input().contains(PHYOPEN_BY_SIZE_KW)) {
-            try {
-                const auto single_buffer_size = irods::get_advanced_setting<const int>(irods::CFG_MAX_SIZE_FOR_SINGLE_BUFFER) * 1024 * 1024;
-                if (_replica.size() <= single_buffer_size &&
-                    (UNKNOWN_FILE_SZ != _replica.size() || _replica.cond_input().contains(DATA_INCLUDED_KW))) {
-                    return l1_index;
-                }
-            }
-            catch (const irods::exception& e) {
-                freeL1desc(l1_index);
-                throw;
-            }
-        }
-
         const int l3_index = l3Open(&_comm, l1_index);
         if (l3_index <= 0) {
             freeL1desc(l1_index);

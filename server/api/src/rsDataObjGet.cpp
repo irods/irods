@@ -10,13 +10,13 @@
 #include "rodsLog.h"
 #include "rsApiHandler.hpp"
 #include "rsDataGet.hpp"
+#include "rsDataObjRead.hpp"
 #include "rsDataObjClose.hpp"
 #include "rsDataObjGet.hpp"
 #include "rsDataObjOpen.hpp"
 #include "rsFileGet.hpp"
 #include "rsFileLseek.hpp"
 #include "rsGlobalExtern.hpp"
-#include "rsSubStructFileGet.hpp"
 #include "specColl.hpp"
 #include "subStructFileGet.h"
 
@@ -25,40 +25,98 @@
 #include "irods_hierarchy_parser.hpp"
 #include "irods_resource_backport.hpp"
 #include "key_value_proxy.hpp"
+#include "replica_proxy.hpp"
 
 namespace
 {
-    int _rsDataObjGet(
-        rsComm_t *rsComm,
-        dataObjInp_t *dataObjInp,
-        portalOprOut_t **portalOprOut,
-        bytesBuf_t *dataObjOutBBuf)
+    namespace ir = irods::experimental::replica;
+
+    auto close_replica(RsComm& _comm, const int _fd) -> int
     {
-        char *chksumStr = NULL;
+        OpenedDataObjInp close_inp{};
+        close_inp.l1descInx = _fd;
+        return rsDataObjClose(&_comm, &close_inp);
+    } // close_replica
 
-        auto cond_input = irods::experimental::make_key_value_proxy(dataObjInp->condInput);
+    auto single_buffer_get(
+        RsComm& _comm,
+        const int _fd,
+        portalOprOut** _out_for_checksum,
+        BytesBuf* _bbuf) -> int
+    {
+        const auto replica = ir::make_replica_proxy(*L1desc[_fd].dataObjInfo);
 
-        /* PHYOPEN_BY_SIZE ask it to check whether "dataInclude" should be done */
-        cond_input[PHYOPEN_BY_SIZE_KW] = "";
+        std::string checksum{};
 
-        dataObjInp->openFlags = O_RDONLY;
-        int fd = rsDataObjOpen(rsComm, dataObjInp);
-        if (fd < 0) {
-            return fd;
+        if (replica.cond_input().contains(VERIFY_CHKSUM_KW)) {
+            if (!replica.checksum().empty()) {
+                checksum = replica.checksum().data();
+            }
+            else {
+                char* checksum_str = nullptr;
+                const auto free_checksum_str = irods::at_scope_exit{[checksum_str] { std::free(checksum_str); }};
+
+                if (const auto ec = dataObjChksumAndReg(&_comm, replica.get(), &checksum_str); ec < 0) {
+                    if (const auto close_ec = close_replica(_comm, _fd); close_ec < 0) {
+                        irods::log(LOG_ERROR, fmt::format(
+                            "[{}:{}] - failed to close replica [error_code=[{}]]",
+                            __FUNCTION__, __LINE__, close_ec));
+                    }
+                    return ec;
+                }
+
+                checksum = checksum_str;
+            }
         }
 
-        L1desc[fd].oprType = GET_OPR;
+        OpenedDataObjInp read_inp{};
+        read_inp.l1descInx = _fd;
+        read_inp.len = _bbuf->len;
 
-        dataObjInfo_t* dataObjInfo = L1desc[fd].dataObjInfo;
+        const int bytes_read = rsDataObjRead(&_comm, &read_inp, _bbuf);
+
+        if (bytes_read < 0) {
+            irods::log(LOG_ERROR, fmt::format(
+                "[{}:{}] - failed to read replica "
+                "[error_code=[{}], path=[{}], hierarchy=[{}]]",
+                __FUNCTION__, __LINE__, bytes_read,
+                replica.logical_path(), replica.hierarchy()));
+        }
+
+        L1desc[_fd].oprStatus = bytes_read;
+
+        if (bytes_read >= 0 && !checksum.empty()) {
+            rstrcpy((*_out_for_checksum)->chksum, checksum.data(), NAME_LEN);
+        }
+
+        const auto ec = close_replica(_comm, _fd);
+
+        if (ec < 0) {
+            irods::log(LOG_ERROR, fmt::format(
+                "[{}:{}] - failed to close replica [error_code=[{}]]",
+                __FUNCTION__, __LINE__, ec));
+        }
+
+        return bytes_read < 0 ? bytes_read : ec;
+    } // single_buffer_get
+
+    int parallel_transfer_get(
+        rsComm_t *rsComm,
+        dataObjInp_t *dataObjInp,
+        const int _fd,
+        portalOprOut_t **portalOprOut,
+        BytesBuf* dataObjOutBBuf)
+    {
+        char *chksumStr = NULL;
+        const auto free_checksum_str = irods::at_scope_exit{[chksumStr] { std::free(chksumStr); }};
+
+        dataObjInfo_t* dataObjInfo = L1desc[_fd].dataObjInfo;
         copyKeyVal( &dataObjInp->condInput, &dataObjInfo->condInput );
 
-        if ( getStructFileType( dataObjInfo->specColl ) >= 0 && // JMC - backport 4682
-                L1desc[fd].l3descInx > 0 ) {
+        if ( getStructFileType( dataObjInfo->specColl ) >= 0) {
             /* l3descInx == 0 if included */
-            *portalOprOut = ( portalOprOut_t * ) malloc( sizeof( portalOprOut_t ) );
-            bzero( *portalOprOut,  sizeof( portalOprOut_t ) );
-            ( *portalOprOut )->l1descInx = fd;
-            return fd;
+            ( *portalOprOut )->l1descInx = _fd;
+            return _fd;
         }
 
         if ( getValByKey( &dataObjInp->condInput, VERIFY_CHKSUM_KW ) != NULL ) {
@@ -69,49 +127,31 @@ namespace
             else {
                 int status = dataObjChksumAndReg( rsComm, dataObjInfo, &chksumStr );
                 if ( status < 0 ) {
+                    if (const auto ec = close_replica(*rsComm, _fd); ec < 0) {
+                        irods::log(LOG_ERROR, fmt::format(
+                            "[{}:{}] - failed to close replica [error_code=[{}]]",
+                            __FUNCTION__, __LINE__, ec));
+                    }
+
                     return status;
                 }
                 rstrcpy( dataObjInfo->chksum, chksumStr, NAME_LEN );
             }
         }
 
-        if ( L1desc[fd].l3descInx <= 2 ) {
-            /* no physical file was opened */
-            int status = l3DataGetSingleBuf( rsComm, fd, dataObjOutBBuf, portalOprOut );
-            if ( status >= 0 ) {
-                int status2;
-                status2 = applyRuleForPostProcForRead( rsComm, dataObjOutBBuf,
-                                                       dataObjInp->objPath );
-                if ( status2 >= 0 ) {
-                    status = 0;
-                }
-                else {
-                    status = status2;
-                }
-                if ( chksumStr != NULL ) {
-                    rstrcpy( ( *portalOprOut )->chksum, chksumStr, NAME_LEN );
-                }
-            }
-            free( chksumStr );
-            return status;
-        }
-
-
-        int status = preProcParaGet( rsComm, fd, portalOprOut );
+        int status = preProcParaGet( rsComm, _fd, portalOprOut );
 
         if ( status < 0 ) {
             openedDataObjInp_t dataObjCloseInp{};
-            dataObjCloseInp.l1descInx = fd;
+            dataObjCloseInp.l1descInx = _fd;
             rsDataObjClose( rsComm, &dataObjCloseInp );
-            free( chksumStr );
             return status;
         }
 
-        status = fd;         /* means file not included */
+        status = _fd;         /* means file not included */
         if ( chksumStr != NULL ) {
             rstrcpy( ( *portalOprOut )->chksum, chksumStr, NAME_LEN );
         }
-        free( chksumStr );
 
         /* return portalOprOut to the client and wait for the rcOprComplete
          * call. That is when the parallel I/O is done */
@@ -120,13 +160,13 @@ namespace
 
         if ( retval < 0 ) {
             openedDataObjInp_t dataObjCloseInp{};
-            dataObjCloseInp.l1descInx = fd;
+            dataObjCloseInp.l1descInx = _fd;
             rsDataObjClose( rsComm, &dataObjCloseInp );
         }
 
         /* already send the client the status */
         return SYS_NO_HANDLER_REPLY_MSG;
-    } // _rsDataObjGet
+    } // parallel_transfer_get
 } // anonymous namespace
 
 int rsDataObjGet(
@@ -198,7 +238,45 @@ int rsDataObjGet(
         }
     }
 
-    return _rsDataObjGet(rsComm, dataObjInp, portalOprOut, dataObjOutBBuf);
+    dataObjInp->openFlags = O_RDONLY;
+
+    const int fd = rsDataObjOpen(rsComm, dataObjInp);
+    if (fd < 0) {
+        return fd;
+    }
+
+    L1desc[fd].oprType = GET_OPR;
+
+    *portalOprOut = static_cast<portalOprOut_t*>(malloc(sizeof(portalOprOut_t)));
+    std::memset(*portalOprOut, 0, sizeof(portalOprOut_t));
+
+    try {
+        const auto replica_size = L1desc[fd].dataObjInfo->dataSize;
+        if (const auto single_buffer_size = irods::get_advanced_setting<const int>(irods::CFG_MAX_SIZE_FOR_SINGLE_BUFFER) * 1024 * 1024;
+            replica_size <= single_buffer_size && UNKNOWN_FILE_SZ != replica_size)
+        {
+            dataObjOutBBuf->buf = std::malloc(single_buffer_size);
+            std::memset(dataObjOutBBuf, 0, sizeof(single_buffer_size));
+            dataObjOutBBuf->len = single_buffer_size;
+
+            return single_buffer_get(*rsComm, fd, portalOprOut, dataObjOutBBuf);
+        }
+    }
+    catch (const irods::exception& e) {
+        // Any irods::exception thrown here is likely from single buffer max size not being
+        // set properly. In this case, close the opened data object and return error.
+        irods::log(e);
+
+        if (const auto ec = close_replica(*rsComm, fd); ec < 0) {
+            irods::log(LOG_ERROR, fmt::format(
+                "[{}:{}] - failed to close replica [error_code=[{}]]",
+                __FUNCTION__, __LINE__, ec));
+        }
+
+        return e.code();
+    }
+
+    return parallel_transfer_get(rsComm, dataObjInp, fd, portalOprOut, dataObjOutBBuf);
 } // rsDataObjGet
 
 
@@ -231,89 +309,4 @@ preProcParaGet( rsComm_t *rsComm, int l1descInx, portalOprOut_t **portalOprOut )
     }
     clearKeyVal( &dataOprInp.condInput );
     return status;
-}
-
-int
-l3DataGetSingleBuf( rsComm_t *rsComm, int l1descInx,
-                    bytesBuf_t *dataObjOutBBuf, portalOprOut_t **portalOprOut ) {
-    /* just malloc an empty portalOprOut */
-
-    *portalOprOut = ( portalOprOut_t* )malloc( sizeof( portalOprOut_t ) );
-    memset( *portalOprOut, 0, sizeof( portalOprOut_t ) );
-
-    dataObjInfo_t* dataObjInfo = L1desc[l1descInx].dataObjInfo;
-
-    dataObjOutBBuf->buf = malloc( dataObjInfo->dataSize );
-    int bytesRead = l3FileGetSingleBuf( rsComm, l1descInx, dataObjOutBBuf );
-
-    openedDataObjInp_t dataObjCloseInp{};
-    dataObjCloseInp.l1descInx = l1descInx;
-    int status = rsDataObjClose( rsComm, &dataObjCloseInp );
-    if ( status < 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "%s: rsDataObjClose of %d error, status = %d",
-                 __FUNCTION__, l1descInx, status );
-    }
-
-    if ( bytesRead < 0 ) {
-        return bytesRead;
-    }
-    else {
-        return status;
-    }
-}
-
-/* l3FileGetSingleBuf - Get the content of a small file into a single buffer
- * in dataObjOutBBuf->buf for an opened data obj in l1descInx.
- * Return value - int - number of bytes read.
- */
-
-int
-l3FileGetSingleBuf( rsComm_t *rsComm, int l1descInx,
-                    bytesBuf_t *dataObjOutBBuf ) {
-    // =-=-=-=-=-=-=-
-    // extract the host location from the resource hierarchy
-    dataObjInfo_t* dataObjInfo = L1desc[l1descInx].dataObjInfo;
-    std::string location{};
-    irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
-    if ( !ret.ok() ) {
-        irods::log( PASSMSG( "l3FileGetSingleBuf - failed in get_loc_for_hier_string", ret ) );
-        return -1;
-    }
-
-    if ( getStructFileType( dataObjInfo->specColl ) >= 0 ) {
-        subFile_t subFile;
-        memset( &subFile, 0, sizeof( subFile ) );
-        rstrcpy( subFile.subFilePath, dataObjInfo->subPath,
-                 MAX_NAME_LEN );
-        rstrcpy( subFile.addr.hostAddr, location.c_str(), NAME_LEN );
-
-        subFile.specColl = dataObjInfo->specColl;
-        subFile.mode = getFileMode( L1desc[l1descInx].dataObjInp );
-        subFile.flags = O_RDONLY;
-        subFile.offset = dataObjInfo->dataSize;
-        return rsSubStructFileGet( rsComm, &subFile, dataObjOutBBuf );
-    }
-
-    fileOpenInp_t fileGetInp{};
-    dataObjInp_t* dataObjInp = L1desc[l1descInx].dataObjInp;
-    rstrcpy( fileGetInp.addr.hostAddr,  location.c_str(), NAME_LEN );
-    rstrcpy( fileGetInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN );
-    rstrcpy( fileGetInp.resc_name_, dataObjInfo->rescName, MAX_NAME_LEN );
-    rstrcpy( fileGetInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
-    rstrcpy( fileGetInp.objPath,    dataObjInfo->objPath,  MAX_NAME_LEN );
-    fileGetInp.mode = getFileMode( dataObjInp );
-    fileGetInp.flags = O_RDONLY;
-    fileGetInp.dataSize = dataObjInfo->dataSize;
-
-    copyKeyVal(
-        &dataObjInfo->condInput,
-        &fileGetInp.condInput );
-
-    /* XXXXX need to be able to handle structured file */
-    int bytesRead = rsFileGet( rsComm, &fileGetInp, dataObjOutBBuf );
-
-    clearKeyVal( &fileGetInp.condInput );
-
-    return bytesRead;
 }
