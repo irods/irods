@@ -195,7 +195,7 @@ namespace
 
         // TODO Does the database schema protect the user from creating duplicates.
 
-        rodsLog(LOG_NOTICE, "input = %s", _op.dump(4).data());
+        rodsLog(LOG_NOTICE, "%s :: input = %s", __func__, _op.dump(4).data());
 
         try {
             nanodbc::statement stmt{_db_conn};
@@ -294,7 +294,7 @@ namespace
 
         // TODO Does the database schema protect the user from creating duplicates.
 
-        rodsLog(LOG_NOTICE, "input = %s", _op.dump(4).data());
+        rodsLog(LOG_NOTICE, "%s :: input = %s", __func__, _op.dump(4).data());
 
         try {
             nanodbc::statement stmt{_db_conn};
@@ -399,7 +399,7 @@ namespace
 
         // TODO Does the database schema protect the user from creating duplicates.
 
-        rodsLog(LOG_NOTICE, "input = %s", _op.dump(4).data());
+        rodsLog(LOG_NOTICE, "%s :: input = %s", __func__, _op.dump(4).data());
 
         try {
             nanodbc::statement stmt{_db_conn};
@@ -464,7 +464,7 @@ namespace
 
         // TODO Does the database schema protect the user from creating duplicates.
 
-        rodsLog(LOG_NOTICE, "input = %s", _op.dump(4).data());
+        rodsLog(LOG_NOTICE, "%s :: input = %s", __func__, _op.dump(4).data());
 
         try {
             nanodbc::statement stmt{_db_conn};
@@ -508,6 +508,8 @@ namespace
                      const std::string_view _db_instance_name,
                      const json& _op) -> int
     {
+        rodsLog(LOG_NOTICE, "%s :: input = %s", __func__, _op.dump(4).data());
+
         try {
             const auto& conditions = _op.at(jp_conditions);
 
@@ -573,6 +575,8 @@ namespace
                      const std::string_view _db_instance_name,
                      const json& _op) -> int
     {
+        rodsLog(LOG_NOTICE, "%s :: input = %s", __func__, _op.dump(4).data());
+
         try {
             const auto table_name = _op.at(jp_table).get<std::string>();
 
@@ -691,11 +695,15 @@ namespace irods::experimental
 {
     auto atomic_apply_database_operations(RsComm& _comm, const nlohmann::json& _ops) -> int
     {
-        auto [db_instance_name, db_conn] = ic::new_database_connection();
+        rodsLog(LOG_NOTICE, "%s :: input = %s", __func__, _ops.dump(4).data());
 
-        // The "&db_conn = db_conn" is required to avoid a bug with the C++ standard around structured bindings.
+        std::string db_instance_name;
+        nanodbc::connection db_conn;
+        std::tie(db_instance_name, db_conn) = ic::new_database_connection();
+
+        // The "&dbc = db_conn" is required to avoid a bug with the C++ standard around structured bindings.
         // See https://stackoverflow.com/a/46115028/5818611 for details.
-        return ic::execute_transaction(db_conn, [&, &dbc = db_conn, &dbi = db_instance_name](nanodbc::transaction& _trans) -> int
+        return ic::execute_transaction(db_conn, [&](nanodbc::transaction& _trans) -> int
         {
             try {
                 for (auto&& op : _ops.at(jp_operations)) {
@@ -703,7 +711,7 @@ namespace irods::experimental
                     const auto table = op.at(jp_table).get<std::string>();
 
                     if (auto iter = handlers.find({op_name, table}); iter != std::end(handlers)) {
-                        if (const auto ec = (*iter->second)(_comm, dbc, dbi, op); ec != 0) {
+                        if (const auto ec = (*iter->second)(_comm, db_conn, db_instance_name, op); ec != 0) {
                             return ec;
                         }
                     }
