@@ -721,6 +721,31 @@ int rsDataObjPut(rsComm_t* rsComm,
                             {"value", "10000000000"}
                         }
                     })}
+                },
+                {
+                    {"op_name", "update"},
+                    {"table", "r_coll_main"},
+                    {"updates", nlohmann::json::array({
+                        nlohmann::json::object({
+                            {"values", nlohmann::json::object_t{
+                                {"coll_name", "/tempZone/home/rods"},
+                                {"parent_coll_name", "/tempZone/home"},
+                                {"coll_owner_name", "rods"}
+                            }},
+                            {"conditions", nlohmann::json::array_t{
+                                {
+                                    {"column", "coll_id"},
+                                    {"operator", "="},
+                                    {"value", "35000"}
+                                },
+                                {
+                                    {"column", "create_ts"},
+                                    {"operator", ">="},
+                                    {"value", "10000000000"}
+                                }
+                            }}
+                        })
+                    })}
                 }
             })},
         });
