@@ -27,6 +27,7 @@ namespace
     using json               = nlohmann::json;
     using handler_key_type   = std::tuple<std::string_view, std::string_view>;
     using handler_value_type = int (*)(RsComm&, nanodbc::connection&, const std::string_view, const json&);
+    using db_column_type     = std::tuple<std::string_view, std::string_view>;
 
     //
     // JSON property keys
@@ -40,6 +41,7 @@ namespace
     const char* const jp_operator   = "operator";
     const char* const jp_column     = "column";
     const char* const jp_value      = "value";
+    const char* const jp_updates    = "updates";
 
     //
     // Supported Table Columns
@@ -48,63 +50,63 @@ namespace
     template <typename ...Args>
     constexpr auto make_array(Args&&... _args)
     {
-        return std::array<std::tuple<std::string_view, std::string_view>, sizeof...(Args)>{std::forward<Args>(_args)...};
-    }
+        return std::array<db_column_type, sizeof...(Args)>{std::forward<Args>(_args)...};
+    } // make_array
 
     constexpr auto db_columns = make_array(
-        {"r_data_main", "data_id"},
-        {"r_data_main", "coll_id"},
-        {"r_data_main", "data_name"},
-        {"r_data_main", "data_repl_num"},
-        {"r_data_main", "data_version"},
-        {"r_data_main", "data_type_name"},
-        {"r_data_main", "data_size"},
-        {"r_data_main", "resc_group_name"},
-        {"r_data_main", "resc_name"},
-        {"r_data_main", "data_path"},
-        {"r_data_main", "data_owner_name"},
-        {"r_data_main", "data_owner_zone"},
-        {"r_data_main", "data_is_dirty"},
-        {"r_data_main", "data_status"},
-        {"r_data_main", "data_checksum"},
-        {"r_data_main", "data_expiry_ts"},
-        {"r_data_main", "data_map_id"},
-        {"r_data_main", "data_mode"},
-        {"r_data_main", "r_comment"},
-        {"r_data_main", "create_ts"},
-        {"r_data_main", "modify_ts"},
-        {"r_data_main", "resc_hier"},
-        {"r_data_main", "resc_id"},
+        db_column_type{"r_data_main", "data_id"},
+        db_column_type{"r_data_main", "coll_id"},
+        db_column_type{"r_data_main", "data_name"},
+        db_column_type{"r_data_main", "data_repl_num"},
+        db_column_type{"r_data_main", "data_version"},
+        db_column_type{"r_data_main", "data_type_name"},
+        db_column_type{"r_data_main", "data_size"},
+        db_column_type{"r_data_main", "resc_group_name"},
+        db_column_type{"r_data_main", "resc_name"},
+        db_column_type{"r_data_main", "data_path"},
+        db_column_type{"r_data_main", "data_owner_name"},
+        db_column_type{"r_data_main", "data_owner_zone"},
+        db_column_type{"r_data_main", "data_is_dirty"},
+        db_column_type{"r_data_main", "data_status"},
+        db_column_type{"r_data_main", "data_checksum"},
+        db_column_type{"r_data_main", "data_expiry_ts"},
+        db_column_type{"r_data_main", "data_map_id"},
+        db_column_type{"r_data_main", "data_mode"},
+        db_column_type{"r_data_main", "r_comment"},
+        db_column_type{"r_data_main", "create_ts"},
+        db_column_type{"r_data_main", "modify_ts"},
+        db_column_type{"r_data_main", "resc_hier"},
+        db_column_type{"r_data_main", "resc_id"},
 
-        {"r_coll_main", "coll_id"},
-        {"r_coll_main", "parent_coll_name"},
-        {"r_coll_main", "coll_name"},
-        {"r_coll_main", "coll_owner_name"},
-        {"r_coll_main", "coll_owner_zone"},
-        {"r_coll_main", "coll_map_id"},
-        {"r_coll_main", "coll_inheritance"},
-        {"r_coll_main", "coll_type"},
-        {"r_coll_main", "coll_info1"},
-        {"r_coll_main", "coll_info2"},
-        {"r_coll_main", "coll_expiry_ts"},
-        {"r_coll_main", "r_comment"},
-        {"r_coll_main", "create_ts"},
-        {"r_coll_main", "modify_ts"},
+        db_column_type{"r_coll_main", "coll_id"},
+        db_column_type{"r_coll_main", "parent_coll_name"},
+        db_column_type{"r_coll_main", "coll_name"},
+        db_column_type{"r_coll_main", "coll_owner_name"},
+        db_column_type{"r_coll_main", "coll_owner_zone"},
+        db_column_type{"r_coll_main", "coll_map_id"},
+        db_column_type{"r_coll_main", "coll_inheritance"},
+        db_column_type{"r_coll_main", "coll_type"},
+        db_column_type{"r_coll_main", "coll_info1"},
+        db_column_type{"r_coll_main", "coll_info2"},
+        db_column_type{"r_coll_main", "coll_expiry_ts"},
+        db_column_type{"r_coll_main", "r_comment"},
+        db_column_type{"r_coll_main", "create_ts"},
+        db_column_type{"r_coll_main", "modify_ts"},
 
-        {"r_meta_main", "meta_id"},
-        {"r_meta_main", "meta_namespace"},
-        {"r_meta_main", "meta_attr_name"},
-        {"r_meta_main", "meta_attr_value"},
-        {"r_meta_main", "meta_attr_unit"},
-        {"r_meta_main", "r_comment"},
-        {"r_meta_main", "create_ts"},
-        {"r_meta_main", "modify_ts"},
+        db_column_type{"r_meta_main", "meta_id"},
+        db_column_type{"r_meta_main", "meta_namespace"},
+        db_column_type{"r_meta_main", "meta_attr_name"},
+        db_column_type{"r_meta_main", "meta_attr_value"},
+        db_column_type{"r_meta_main", "meta_attr_unit"},
+        db_column_type{"r_meta_main", "r_comment"},
+        db_column_type{"r_meta_main", "create_ts"},
+        db_column_type{"r_meta_main", "modify_ts"},
 
-        {"r_objt_metamap", "object_id"},
-        {"r_objt_metamap", "meta_id"},
-        {"r_objt_metamap", "create_ts"},
-        {"r_objt_metamap", "modify_ts"}
-    }; // db_columns
+        db_column_type{"r_objt_metamap", "object_id"},
+        db_column_type{"r_objt_metamap", "meta_id"},
+        db_column_type{"r_objt_metamap", "create_ts"},
+        db_column_type{"r_objt_metamap", "modify_ts"}
+    ); // db_columns
 
     //
     // Function Prototypes
@@ -140,10 +142,10 @@ namespace
                      const std::string_view _db_instance_name,
                      const json& _op) -> int;
 
-    constexpr auto throw_if_invalid_table_column(const std::string_view _column,
-                                                 const std::string_view _table_name) -> void;
+    auto throw_if_invalid_table_column(const std::string_view _column,
+                                       const std::string_view _table_name) -> void;
 
-    constexpr auto throw_if_invalid_conditional_operator(const std::string_view _operator) -> void;
+    auto throw_if_invalid_conditional_operator(const std::string_view _operator) -> void;
     // clang-format on
 
     // clang-format off
@@ -515,8 +517,8 @@ namespace
 
             const auto table_name = _op.at(jp_table).get<std::string>();
 
-            std::vector<std::string> condition_strings;
-            condition_strings.reserve(conditions.size());
+            std::vector<std::string> condition_clauses;
+            condition_clauses.reserve(conditions.size());
 
             std::vector<std::string> values;
             values.reserve(conditions.size());
@@ -525,7 +527,7 @@ namespace
             // - One that holds the SQL condition syntax.
             // - One that holds the values for the prepared statement.
             std::for_each(std::begin(conditions), std::end(conditions),
-                [&table_name, &condition_strings, &values](const json& _c)
+                [&table_name, &condition_clauses, &values](const json& _c)
                 {
                     const auto column = _c.at(jp_column).get<std::string>();
                     throw_if_invalid_table_column(column, table_name);
@@ -533,18 +535,18 @@ namespace
                     const auto op = _c.at(jp_operator).get<std::string>();
                     throw_if_invalid_conditional_operator(op);
 
-                    condition_strings.push_back(fmt::format("{} {} ?", column, op));
+                    condition_clauses.push_back(fmt::format("{} {} ?", column, op));
                     values.push_back(_c.at(jp_value).get<std::string>());
                 });
 
             // Join the conditions together.
-            std::ostringstream ss;
-            std::copy(std::begin(condition_strings),
-                      std::end(condition_strings),
-                      std::experimental::make_ostream_joiner(ss, " and "));
+            std::ostringstream conditions_stream;
+            std::copy(std::begin(condition_clauses),
+                      std::end(condition_clauses),
+                      std::experimental::make_ostream_joiner(conditions_stream, " and "));
 
             // Generate the final SQL.
-            const auto sql = fmt::format("delete from {} where {}", table_name, ss.str());
+            const auto sql = fmt::format("delete from {} where {}", table_name, conditions_stream.str());
             rodsLog(LOG_NOTICE, "%s :: Generated SQL = [%s]", __func__, sql.data());
 
 #ifdef ATOMIC_DB_OPS_RUN_SQL
@@ -571,26 +573,114 @@ namespace
                      const std::string_view _db_instance_name,
                      const json& _op) -> int
     {
-        rodsLog(LOG_NOTICE, "%s :: Not implemented yet.", __func__);
+        try {
+            const auto table_name = _op.at(jp_table).get<std::string>();
+
+            for (auto&& update : _op.at(jp_updates)) {
+                const auto& values = update.at(jp_values);
+
+                if (values.empty()) {
+                    return SYS_INVALID_INPUT_PARAM;
+                }
+
+                const auto& conditions = update.at(jp_conditions);
+
+                if (conditions.empty()) {
+                    return SYS_INVALID_INPUT_PARAM;
+                }
+
+                std::vector<std::string> set_clauses;
+                set_clauses.reserve(values.size());
+
+                std::vector<std::string> bind_args;
+                bind_args.reserve(values.size() + conditions.size());
+
+                // Build two lists of strings.
+                // - One that holds the SQL set syntax.
+                // - One that holds the values for the prepared statement.
+                for (auto&& [column, value] : values.items()) {
+                    throw_if_invalid_table_column(column, table_name);
+                    set_clauses.push_back(fmt::format("{} = ?", column));
+                    bind_args.push_back(value.get<std::string>());
+                }
+
+                // Join the set operations together.
+                std::ostringstream set_stream;
+                std::copy(std::begin(set_clauses),
+                          std::end(set_clauses),
+                          std::experimental::make_ostream_joiner(set_stream, ", "));
+
+                std::vector<std::string> condition_clauses;
+                condition_clauses.reserve(conditions.size());
+
+                // Build two lists of strings.
+                // - One that holds the SQL condition syntax.
+                // - One that holds the values for the prepared statement.
+                std::for_each(std::begin(conditions), std::end(conditions),
+                    [&table_name, &condition_clauses, &bind_args](const json& _c)
+                    {
+                        const auto column = _c.at(jp_column).get<std::string>();
+                        throw_if_invalid_table_column(column, table_name);
+
+                        const auto op = _c.at(jp_operator).get<std::string>();
+                        throw_if_invalid_conditional_operator(op);
+
+                        condition_clauses.push_back(fmt::format("{} {} ?", column, op));
+                        bind_args.push_back(_c.at(jp_value).get<std::string>());
+                    });
+
+                // Join the conditions together.
+                std::ostringstream conditions_stream;
+                std::copy(std::begin(condition_clauses),
+                          std::end(condition_clauses),
+                          std::experimental::make_ostream_joiner(conditions_stream, " and "));
+
+                // Generate the final SQL.
+                const auto sql = fmt::format("update {} set {} where {}", table_name, set_stream.str(), conditions_stream.str());
+                rodsLog(LOG_NOTICE, "%s :: Generated SQL = [%s]", __func__, sql.data());
+
+#ifdef ATOMIC_DB_OPS_RUN_SQL
+                nanodbc::statement stmt{_db_conn};
+                nanodbc::prepare(stmt, sql);
+
+                // Bind condition values to prepared statement parameter markers.
+                for (std::size_t i = 0; i < bind_args.size(); ++i) {
+                    stmt.bind(i, bind_args[i].data());
+                }
+
+                nanodbc::execute(stmt);
+#endif
+            }
+        }
+        catch (const std::exception& e) {
+            THROW(SYS_LIBRARY_ERROR, e.what());
+        }
+
         return 0;
     } // update_rows
 
-    constexpr auto throw_if_invalid_table_column(const std::string_view _column,
-                                                 const std::string_view _table_name) -> void
+    auto throw_if_invalid_table_column(const std::string_view _column,
+                                       const std::string_view _table_name) -> void
     {
-        if (std::find(std::begin(columns), std::end(columns), {_table_name, _column}) == std::end(columns)) {
+        const auto iter = std::find(std::begin(db_columns),
+                                    std::end(db_columns),
+                                    db_column_type{_table_name, _column});
+
+        if (iter == std::end(db_columns)) {
             const auto msg = fmt::format("Unsupported table column [{1}.{0}].", _column, _table_name);
             rodsLog(LOG_ERROR, "%s :: %s", __func__, msg.data());
             THROW(SYS_INVALID_INPUT_PARAM, msg);
         }
     } // throw_if_invalid_table_column
 
-    constexpr auto throw_if_invalid_conditional_operator(const std::string_view _operator) -> void
+    auto throw_if_invalid_conditional_operator(const std::string_view _operator) -> void
     {
-        if (const auto iter = std::find(std::begin(supported_operators), std::end(supported_operators), op);
-            iter == std::end(supported_operators))
-        {
-            const auto msg = fmt::format("Unsupported conditional operator [{}].", op);
+        const auto iter = std::find(std::begin(supported_operators),
+                                    std::end(supported_operators),
+                                    _operator);
+
+        if (iter == std::end(supported_operators)) {
+            const auto msg = fmt::format("Unsupported conditional operator [{}].", _operator);
             rodsLog(LOG_ERROR, "%s :: %s", __func__, msg.data());
             THROW(SYS_INVALID_INPUT_PARAM, msg);
         }
