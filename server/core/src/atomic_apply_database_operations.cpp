@@ -19,6 +19,36 @@
 #include <sstream>
 #include <experimental/iterator>
 
+// TEAM DISCUSSION:
+// - Keep it a library (APIs can invoke this and guard this call with permission checks, etc.).
+// - Automated Ingest, NFSRODS, Change Log Listener would use this library.
+// - IDEA: Any API Plugin that invokes this library needs to provide a [cryptographic] access token in order for things to work.
+//   - How do we provide protection around this?
+//     - Could have a special group that can execute this.
+//     - Do we narrow it even more and put the secret in each server_config.json?
+//       - Scoped to a particular server.
+//       - The plugin specific configuration can contain a list of blessed users and groups, etc.
+//         - Example: {"user_1": "token_1", "user_2": "token_2", "group_1": "token_3"}
+//     - You must be an admin. 
+// - Provide overloads that accept std::string, std::string_view, etc.
+//
+// ADD SUPPORT FOR R_RESC_MAIN:
+// iadmin modresc <resc> move <from_parent_resc_name> <to_parent_resc_name>
+// iadmin addchildtoresc <parent> <child>
+// iadmin moveresc <resc> <from> <to>
+// iadmin mvresc <resc> <from> <to>
+// iadmin mr <resc> <from> <to>
+// iadmin mkparentresc <resc> <parent>
+// iadmin makeparentresc <resc> <parent>
+// iadmin mkpr <resc> <parent>
+// iadmin newparent <resc> <parent>
+//
+// **iadmin setparentresc <resc> <parent>**
+// - This must log all of its thoughts.
+// - Check for cycles (ancestors and descendants).
+// - "iadmin addchildtoresc" can call "iadmin setparentresc".
+// - "iadmin setparentresc <resc> <empty_string>" is an error.
+
 namespace
 {
     // clang-format off
