@@ -11,6 +11,7 @@
 #include "physPath.hpp"
 #include "rcGlobalExtern.h"
 #include "regDataObj.h"
+#include "rodsErrorTable.h"
 #include "rodsLog.h"
 #include "rsApiHandler.hpp"
 #include "rsDataObjClose.hpp"
@@ -56,7 +57,12 @@
 
 #include "replica_state_table.hpp"
 
+#include <cstring>
 #include <chrono>
+#include <string>
+#include <tuple>
+#include <algorithm>
+#include <exception>
 
 namespace
 {
@@ -76,31 +82,19 @@ namespace
 
     auto calculate_checksum(RsComm& _comm, l1desc& _l1desc, DataObjInfo& _info) -> std::string
     {
-        if (!std::string_view{_info.chksum}.empty()) {
-            _l1desc.chksumFlag = REG_CHKSUM;
-        }
-
-        char* checksum_string = nullptr;
-        irods::at_scope_exit free_checksum_string{[&checksum_string] { free(checksum_string); }};
-
-        auto destination_replica = irods::experimental::replica::make_replica_proxy(_info);
-
-        if (!_l1desc.chksumFlag) {
-            if (destination_replica.checksum().empty()) {
-                return {};
-            }
-            _l1desc.chksumFlag = VERIFY_CHKSUM;
+        if (REG_CHKSUM == _l1desc.chksumFlag) {
+            return irods::register_new_checksum(_comm, _info, _l1desc.chksum);
         }
 
         if (VERIFY_CHKSUM == _l1desc.chksumFlag) {
-            if (!std::string_view{_l1desc.chksum}.empty()) {
-                return irods::verify_checksum(_comm, _info, _l1desc.chksum);
+            if (std::strlen(_l1desc.chksum) == 0) {
+                THROW(SYS_INVALID_INPUT_PARAM, "No checksum provided by the client.");
             }
 
-            return {};
+            return irods::verify_checksum(_comm, _info, _l1desc.chksum);
         }
 
-        return irods::register_new_checksum(_comm, _info, _l1desc.chksum);
+        return {};
     } // calculate_checksum
 
     auto finalize_on_failure(RsComm& _comm, DataObjInfo& _info, l1desc& _l1desc) -> int
