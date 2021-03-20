@@ -442,7 +442,7 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
                 print('blah_' + str(i) + '\n', file=f, end='')
 
             # force upload source
-            self.rods_session.run_icommand(['iput', '-f', src_file, test_coll])
+            self.rods_session.run_icommand(['iput', '-fK', src_file, test_coll])
 
             # sync test
             self.rods_session.assert_icommand("irule -F " + os.path.join(rulesdir, rulefile), 'STDOUT_SINGLELINE', "status = 99999992")

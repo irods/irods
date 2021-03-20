@@ -259,6 +259,9 @@ class test_irepl_with_two_basic_ufs_resources(session.make_sessions_mixin([('oth
             user0.assert_icommand(['ils', '-L', logical_path], 'STDOUT', ['0', '&'])
             user0.assert_icommand(['ils', '-L', logical_path], 'STDOUT', ['1', 'X'])
 
+            # Recalculate the checksum for replica zero to avoid a USER_CHKSUM_MISMATCH error.
+            user0.assert_icommand(['ichksum', '-R', self.resource_1, '-f', logical_path], 'STDOUT', [' sha2:'])
+
             # Replicate to the other resource and ensure it was successful
             user0.assert_icommand(['irepl', '-R', self.resource_2, logical_path])
             user0.assert_icommand(['ils', '-L', logical_path], 'STDOUT', ['0', '&'])
