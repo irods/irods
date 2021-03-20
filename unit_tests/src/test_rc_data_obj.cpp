@@ -3,56 +3,41 @@
 #include "client_connection.hpp"
 #include "dataObjChksum.h"
 #include "dataObjInpOut.h"
+#include "dataObjPut.h"
 #include "dstream.hpp"
 #include "filesystem.hpp"
 #include "get_file_descriptor_info.h"
 #include "irods_at_scope_exit.hpp"
 #include "irods_error_enum_matcher.hpp"
 #include "irods_exception.hpp"
+#include "objInfo.h"
+#include "rcMisc.h"
 #include "replica.hpp"
 #include "replica_proxy.hpp"
 #include "rodsClient.h"
 #include "rodsErrorTable.h"
 #include "transport/default_transport.hpp"
 
+#include "boost/filesystem.hpp"
 #include "fmt/format.h"
 
+#include <cstring>
 #include <iostream>
 #include <thread>
+#include <string>
+#include <string_view>
+#include <fstream>
 
-namespace
-{
-    using namespace std::chrono_literals;
-    namespace fs = irods::experimental::filesystem;
-    namespace replica = irods::experimental::replica;
+using namespace std::chrono_literals;
 
-    const std::string DEFAULT_RESOURCE_HIERARCHY = "demoResc";
+// clang-format off
+namespace fs      = irods::experimental::filesystem;
+namespace replica = irods::experimental::replica;
+// clang-format on
 
-    auto create_empty_replica(const fs::path& _path)
-    {
-        std::string_view path_str = _path.c_str();
+const std::string DEFAULT_RESOURCE_HIERARCHY = "demoResc";
 
-        irods::experimental::client_connection conn;
-        RcComm& comm = static_cast<RcComm&>(conn);
-
-        dataObjInp_t open_inp{};
-        std::snprintf(open_inp.objPath, sizeof(open_inp.objPath), "%s", path_str.data());
-        open_inp.openFlags = O_CREAT | O_TRUNC | O_WRONLY;
-        const auto fd = rcDataObjOpen(&comm, &open_inp);
-        REQUIRE(fd > 2);
-        CHECK(INTERMEDIATE_REPLICA == replica::replica_status(comm, _path, 0));
-
-        openedDataObjInp_t close_inp{};
-        close_inp.l1descInx = fd;
-        REQUIRE(rcDataObjClose(&comm, &close_inp) >= 0);
-
-        // ensure all system metadata were updated properly
-        const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, _path, 0);
-        CHECK(replica_info.mtime() == replica_info.ctime());
-        CHECK(0 == static_cast<unsigned long>(replica_info.size()));
-        REQUIRE(GOOD_REPLICA == replica::replica_status(comm, _path, 0));
-    } // create_empty_replica
-} // anonymous namespace
+auto create_empty_replica(const fs::path& _path) -> void;
 
 TEST_CASE("open,read,write,close")
 {
@@ -631,7 +616,7 @@ TEST_CASE("open,read,write,close")
     catch (const std::exception& e) {
         std::cout << e.what();
     }
-}
+} // open,read,write,close
 
 TEST_CASE("rxDataObjChksum")
 {
@@ -717,5 +702,109 @@ TEST_CASE("rxDataObjChksum")
             REQUIRE(rcDataObjChksum(static_cast<RcComm*>(conn), &input, &ignore_checksum) == USER_INCOMPATIBLE_PARAMS);
         }
     } // incompatible parameters
-}
+} // rxDataObjChksum
+
+TEST_CASE("rxDataObjPut")
+{
+    rodsEnv env;
+    _getRodsEnv(env);
+
+    irods::experimental::client_connection conn;
+    const auto sandbox = fs::path{env.rodsHome} / "unit_testing_sandbox";
+
+    if (!fs::client::exists(conn, sandbox)) {
+        REQUIRE(fs::client::create_collection(conn, sandbox));
+    }
+
+    irods::at_scope_exit remove_sandbox{[&conn, &sandbox] {
+        REQUIRE(fs::client::remove_all(conn, sandbox, fs::remove_options::no_trash));
+    }};
+
+    SECTION("#5400: VERIFY_CHKSUM_KW is always honored")
+    {
+        DataObjInp put_input{};
+        put_input.openFlags = O_WRONLY;
+        put_input.createMode = 0600;
+        addKeyVal(&put_input.condInput, DEF_RESC_NAME_KW, env.rodsDefResource);
+
+        const auto logical_path = sandbox / "eels.txt";
+        std::strcpy(put_input.objPath, logical_path.c_str());
+
+        // Set a bad checksum so that the "put" operation fails.
+        const char file_contents[] = "My hovercraft is full of eels";
+        addKeyVal(&put_input.condInput, VERIFY_CHKSUM_KW, file_contents);
+
+        // Put a file into iRODS and trigger an error.
+        const auto local_file = boost::filesystem::temp_directory_path() / "eels.txt";
+        { std::ofstream{local_file.c_str()} << file_contents; }
+        REQUIRE(rcDataObjPut(static_cast<RcComm*>(conn), &put_input, const_cast<char*>(local_file.c_str())) == USER_CHKSUM_MISMATCH);
+
+        CHECK(replica::replica_status<RcComm>(conn, logical_path, env.rodsDefResource) == STALE_REPLICA);
+        CHECK(replica::replica_size<RcComm>(conn, logical_path, env.rodsDefResource) == 0);
+
+        // Show that the computed checksum matches that of an empty string because the data size in the
+        // catalog is zero.
+        const std::string_view empty_string_checksum = "sha2:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=";
+        CHECK(replica::replica_checksum<RcComm>(conn, logical_path, env.rodsDefResource) == empty_string_checksum);
+
+        // Show that overwriting the replica still results in a checksum error and that all information
+        // about the replica remains unchanged.
+        addKeyVal(&put_input.condInput, FORCE_FLAG_KW, "");
+        REQUIRE(rcDataObjPut(static_cast<RcComm*>(conn), &put_input, const_cast<char*>(local_file.c_str())) == USER_CHKSUM_MISMATCH);
+
+        CHECK(replica::replica_status<RcComm>(conn, logical_path, env.rodsDefResource) == STALE_REPLICA);
+        CHECK(replica::replica_size<RcComm>(conn, logical_path, env.rodsDefResource) == 0);
+        CHECK(replica::replica_checksum<RcComm>(conn, logical_path, env.rodsDefResource) == empty_string_checksum);
+
+        // Overwrite the replica and include a good checksum.
+        // Show that the information about the replica is correct.
+        const std::string_view good_checksum = "sha2:XL7wWccBvgYxXqmzjM4SYIGoTiocxaycQ9uzweaphcQ=";
+        addKeyVal(&put_input.condInput, VERIFY_CHKSUM_KW, good_checksum.data());
+        REQUIRE(rcDataObjPut(static_cast<RcComm*>(conn), &put_input, const_cast<char*>(local_file.c_str())) == 0);
+
+        CHECK(replica::replica_status<RcComm>(conn, logical_path, env.rodsDefResource) == GOOD_REPLICA);
+        CHECK(replica::replica_size<RcComm>(conn, logical_path, env.rodsDefResource) == std::strlen(file_contents));
+        CHECK(replica::replica_checksum<RcComm>(conn, logical_path, env.rodsDefResource) == good_checksum);
+
+        // Overwrite the replica again, but trigger a checksum mismatch error.
+        addKeyVal(&put_input.condInput, VERIFY_CHKSUM_KW, file_contents);
+        REQUIRE(rcDataObjPut(static_cast<RcComm*>(conn), &put_input, const_cast<char*>(local_file.c_str())) == USER_CHKSUM_MISMATCH);
+
+        CHECK(replica::replica_status<RcComm>(conn, logical_path, env.rodsDefResource) == STALE_REPLICA);
+        CHECK(replica::replica_size<RcComm>(conn, logical_path, env.rodsDefResource) == 0);
+
+        // Show that the checksum in the catalog remains unchanged due to the checksum mismatch error.
+        CHECK(replica::replica_checksum<RcComm>(conn, logical_path, env.rodsDefResource) == good_checksum);
+
+        // Show that recalculating the checksum results in the empty string checksum because the checksum
+        // API honors the data size in the catalog and not the physical object's size in storage.
+        constexpr auto recalculate = replica::verification_calculation::always;
+        CHECK(replica::replica_checksum<RcComm>(conn, logical_path, env.rodsDefResource, recalculate) == empty_string_checksum);
+    }
+} // rxDataObjPut
+
+auto create_empty_replica(const fs::path& _path) -> void
+{
+    std::string_view path_str = _path.c_str();
+
+    irods::experimental::client_connection conn;
+    RcComm& comm = static_cast<RcComm&>(conn);
+
+    dataObjInp_t open_inp{};
+    std::snprintf(open_inp.objPath, sizeof(open_inp.objPath), "%s", path_str.data());
+    open_inp.openFlags = O_CREAT | O_TRUNC | O_WRONLY;
+    const auto fd = rcDataObjOpen(&comm, &open_inp);
+    REQUIRE(fd > 2);
+    CHECK(INTERMEDIATE_REPLICA == replica::replica_status(comm, _path, 0));
+
+    openedDataObjInp_t close_inp{};
+    close_inp.l1descInx = fd;
+    REQUIRE(rcDataObjClose(&comm, &close_inp) >= 0);
+
+    // ensure all system metadata were updated properly
+    const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, _path, 0);
+    CHECK(replica_info.mtime() == replica_info.ctime());
+    CHECK(0 == static_cast<unsigned long>(replica_info.size()));
+    REQUIRE(GOOD_REPLICA == replica::replica_status(comm, _path, 0));
+} // create_empty_replica
 
