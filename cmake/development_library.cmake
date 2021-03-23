@@ -289,6 +289,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/include/ruleExecSubmit.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/sendXmsg.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/server_report.h
+  ${CMAKE_SOURCE_DIR}/lib/api/include/server_unit_test.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/set_round_robin_context.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/simpleQuery.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/specificQuery.h
