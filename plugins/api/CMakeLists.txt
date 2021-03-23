@@ -31,6 +31,37 @@ set(
   irods_client
   )
 
+# unit_tests API
+set(
+  IRODS_API_PLUGIN_SOURCES_unit_tests_server
+  ${CMAKE_SOURCE_DIR}/plugins/api/src/unit_tests/main.cpp
+  )
+
+set(
+  IRODS_API_PLUGIN_SOURCES_unit_tests_client
+  ${CMAKE_SOURCE_DIR}/plugins/api/src/unit_tests/main.cpp
+  )
+
+set(
+  IRODS_API_PLUGIN_COMPILE_DEFINITIONS_unit_tests_server
+  RODS_SERVER
+  ENABLE_RE
+  )
+
+set(
+  IRODS_API_PLUGIN_COMPILE_DEFINITIONS_unit_tests_client
+  )
+
+set(
+  IRODS_API_PLUGIN_LINK_LIBRARIES_unit_tests_server
+  irods_server
+  )
+
+set(
+  IRODS_API_PLUGIN_LINK_LIBRARIES_unit_tests_client
+  irods_client
+  )
+
 # get_file_descriptor_info API
 set(
   IRODS_API_PLUGIN_SOURCES_irods_get_file_descriptor_info_server
@@ -287,6 +318,8 @@ set(
   IRODS_API_PLUGINS
   helloworld_client
   helloworld_server
+  unit_tests_client
+  unit_tests_server
   irods_atomic_apply_acl_operations_client
   irods_atomic_apply_acl_operations_server
   irods_atomic_apply_metadata_operations_client
