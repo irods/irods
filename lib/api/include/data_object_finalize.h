@@ -1,5 +1,5 @@
-#ifndef IRODS_DATA_OBJECT_FINALIZE_HPP
-#define IRODS_DATA_OBJECT_FINALIZE_HPP
+#ifndef IRODS_DATA_OBJECT_FINALIZE_H
+#define IRODS_DATA_OBJECT_FINALIZE_H
 
 /// \file
 
@@ -90,8 +90,6 @@ extern "C" {
 /// }
 /// \endcode
 ///
-/// \since 4.2.9
-///
 /// \param[in]  _comm        A pointer to a RcComm.
 /// \param[in]  _json_input  A JSON string containing the replicas with before and after states.
 /// \param[out] _json_output A JSON string containing the error information on failure.
@@ -99,10 +97,13 @@ extern "C" {
 /// \return An integer.
 /// \retval 0        On success.
 /// \retval non-zero On failure.
-int rc_data_object_finalize(RcComm* _comm, const char* _json_input, char** _json_output);
+///
+/// \since 4.2.9
+int rc_data_object_finalize(struct RcComm* _comm, const char* _json_input, char** _json_output);
 
 #ifdef __cplusplus
 } // extern "C"
 #endif
 
-#endif // IRODS_DATA_OBJECT_FINALIZE_HPP
+#endif // IRODS_DATA_OBJECT_FINALIZE_H
+

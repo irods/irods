@@ -1,27 +1,35 @@
 #ifndef MOD_DATA_OBJ_META_H__
 #define MOD_DATA_OBJ_META_H__
 
-#include "rcConnect.h"
-#include "objInfo.h"
+struct RcComm;
+struct DataObjInfo;
+struct KeyValPair;
 
-typedef struct {
-    dataObjInfo_t *dataObjInfo;
-    keyValPair_t *regParam;
+typedef struct ModDataObjMetaInp {
+    struct DataObjInfo* dataObjInfo;
+    struct KeyValPair* regParam;
 } modDataObjMeta_t;
 #define ModDataObjMeta_PI "struct *DataObjInfo_PI; struct *KeyValPair_PI;"
 
-
-/* rcModDataObjMeta - Modify the metadata of a iRODS dataObject.
- * Input -
- *   rcComm_t *conn - The client connection handle.
- *   dataObjInfo_t *dataObjInfo - the dataObjInfo to register
- *
- * OutPut -
- *   int status - status of the operation.
- */
 #ifdef __cplusplus
-extern "C"
+extern "C" {
 #endif
-int rcModDataObjMeta( rcComm_t *conn, modDataObjMeta_t *modDataObjMetaInp );
 
+/// Modify the metadata of a iRODS dataObject.
+///
+/// \param[in] _comm              The communication object.
+/// \param[in] _modDataObjMetaInp The input structure.
+/// 
+/// \return An integer.
+/// \retval >=0 On success.
+/// \retval  <0 On failure.
+/// 
+/// \since 3.0.0
+int rcModDataObjMeta(struct RcComm* _comm, struct ModDataObjMetaInp* _modDataObjMetaInp);
+
+#ifdef __cplusplus
+} // extern "C"
 #endif
+
+#endif // MOD_DATA_OBJ_META_H__
+
