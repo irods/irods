@@ -29,8 +29,6 @@ extern "C" {
 /// This function is best used in situations where multiple streams reference the same replica.
 /// \endparblock
 ///
-/// \since 4.2.9
-///
 /// \param[in] _comm       A pointer to a RcComm.
 /// \param[in] _json_input \parblock
 /// A JSON structure containing the iRODS file descriptor as well as instructions for computing checksums
@@ -51,7 +49,9 @@ extern "C" {
 /// \return An integer.
 /// \retval 0        On success.
 /// \retval non-zero On failure.
-int rc_replica_close(RcComm* _comm, const char* _json_input);
+///
+/// \since 4.2.9
+int rc_replica_close(struct RcComm* _comm, const char* _json_input);
 
 #ifdef __cplusplus
 } // extern "C"

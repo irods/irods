@@ -1,5 +1,5 @@
-#ifndef IRODS_ATOMIC_APPLY_METADATA_OPERATIONS_HPP
-#define IRODS_ATOMIC_APPLY_METADATA_OPERATIONS_HPP
+#ifndef IRODS_ATOMIC_APPLY_METADATA_OPERATIONS_H
+#define IRODS_ATOMIC_APPLY_METADATA_OPERATIONS_H
 
 /// \file
 
@@ -61,8 +61,6 @@ extern "C" {
 /// }
 /// \endcode
 ///
-/// \since 4.2.8
-///
 /// \param[in]  _comm        A pointer to a RcComm.
 /// \param[in]  _json_input  A JSON string containing the batch of metadata operations.
 /// \param[out] _json_output A JSON string containing the error information on failure.
@@ -70,11 +68,13 @@ extern "C" {
 /// \return An integer.
 /// \retval 0        On success.
 /// \retval non-zero On failure.
-int rc_atomic_apply_metadata_operations(RcComm* _comm, const char* _json_input, char** _json_output);
+///
+/// \since 4.2.8
+int rc_atomic_apply_metadata_operations(struct RcComm* _comm, const char* _json_input, char** _json_output);
 
 #ifdef __cplusplus
 } // extern "C"
 #endif
 
-#endif // IRODS_ATOMIC_APPLY_METADATA_OPERATIONS_HPP
+#endif // IRODS_ATOMIC_APPLY_METADATA_OPERATIONS_H
 
