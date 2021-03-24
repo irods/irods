@@ -13,8 +13,6 @@ extern "C" {
 ///
 /// The caller is expected to pass the same RcComm pointer used to open the replica.
 ///
-/// \since 4.2.8
-///
 /// \param[in]  _comm        A pointer to a RcComm.
 /// \param[in]  _json_input  \parblock
 /// A JSON string containing the file descriptor.
@@ -31,7 +29,9 @@ extern "C" {
 /// \return An integer.
 /// \retval 0        On success.
 /// \retval Non-zero On failure.
-int rc_get_file_descriptor_info(RcComm* _comm, const char* _json_input, char** _json_output);
+///
+/// \since 4.2.8
+int rc_get_file_descriptor_info(struct RcComm* _comm, const char* _json_input, char** _json_output);
 
 #ifdef __cplusplus
 } // extern "C"

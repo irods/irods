@@ -65,7 +65,7 @@ extern "C" {
 /// \retval Non-zero On failure.
 ///
 /// \since 4.2.9
-int rc_touch(RcComm* _comm, const char* _json_input);
+int rc_touch(struct RcComm* _comm, const char* _json_input);
 
 #ifdef __cplusplus
 } // extern "C"

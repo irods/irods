@@ -1,5 +1,5 @@
-#ifndef IRODS_ATOMIC_APPLY_ACL_OPERATIONS_HPP
-#define IRODS_ATOMIC_APPLY_ACL_OPERATIONS_HPP
+#ifndef IRODS_ATOMIC_APPLY_ACL_OPERATIONS_H
+#define IRODS_ATOMIC_APPLY_ACL_OPERATIONS_H
 
 /// \file
 
@@ -49,8 +49,6 @@ extern "C" {
 /// }
 /// \endcode
 ///
-/// \since 4.2.9
-///
 /// \param[in]  _comm        A pointer to a RcComm.
 /// \param[in]  _json_input  A JSON string containing the batch of ACL operations.
 /// \param[out] _json_output A JSON string containing the error information on failure.
@@ -58,11 +56,13 @@ extern "C" {
 /// \return An integer.
 /// \retval 0        On success.
 /// \retval non-zero On failure.
-int rc_atomic_apply_acl_operations(RcComm* _comm, const char* _json_input, char** _json_output);
+///
+/// \since 4.2.9
+int rc_atomic_apply_acl_operations(struct RcComm* _comm, const char* _json_input, char** _json_output);
 
 #ifdef __cplusplus
 } // extern "C"
 #endif
 
-#endif // IRODS_ATOMIC_APPLY_ACL_OPERATIONS_HPP
+#endif // IRODS_ATOMIC_APPLY_ACL_OPERATIONS_H
 
