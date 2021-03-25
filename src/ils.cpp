@@ -7,15 +7,12 @@
 #include "rodsPath.h"
 #include "lsUtil.h"
 
-
 #include "irods_buffer_encryption.hpp"
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
 
 #include <string>
 #include <iostream>
-
-
 
 void usage();
 
@@ -33,7 +30,7 @@ main( int argc, char **argv ) {
     rodsPathInp_t rodsPathInp;
 
     // -=-=-=-=-=- JMC - backport 4536 -=-=-=-=-=-
-    optStr = "hArlLvt:VZ";
+    optStr = "hAdrlLvt:VZ";
     status = parseCmdLineOpt( argc, argv, optStr, 1, &myRodsArgs );
     // -=-=-==-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
@@ -96,7 +93,6 @@ main( int argc, char **argv ) {
     else {
         exit( 0 );
     }
-
 }
 
 void
@@ -107,6 +103,7 @@ usage() {
         "Display data Objects and collections stored in irods.",
         "Options are:",
         " -A  ACL (access control list) and inheritance format",
+        " -d  List collections themselves, not their contents",
         " -l  long format",
         " -L  very long format",
         " -r  recursive - show subcollections",
