@@ -1,5 +1,8 @@
 from __future__ import print_function
+
 import sys
+import os
+
 if sys.version_info < (2, 7):
     import unittest2 as unittest
 else:
@@ -56,4 +59,62 @@ class Test_Ils(resource_suite.ResourceBase, unittest.TestCase):
                           " R_USER_MAIN.user_id = R_OBJT_ACCESS.user_id AND"
                           " R_OBJT_ACCESS.access_type_id = R_TOKN_MAIN.token_id")
         self.admin.assert_icommand(['iadmin', 'asq', specific_query, 'ShowCollAcls'])
+
+    def test_ils_lists_collections_without_listing_their_contents__issue_5506(self):
+        # Create some data objects.
+        self.admin.assert_icommand(['istream', 'write', 'foo'], input='foo')
+        self.admin.assert_icommand(['istream', 'write', 'bar'], input='bar')
+        self.admin.assert_icommand(['istream', 'write', 'baz'], input='baz')
+
+        # Show that the data objects exist.
+        # The leading whitespace and trailing newline help to guarantee we find
+        # the correct information.
+        self.admin.assert_icommand(['ils'], 'STDOUT', ['  foo\n', '  bar\n', '  baz\n'])
+
+        # Show that "ils -d" only prints the collection.
+        ec, out, err = self.admin.assert_icommand(['ils', '-d'], 'STDOUT_SINGLELINE', [self.admin.session_collection + ':'])
+        self.assertEqual(ec, 0)
+        self.assertEqual(out, self.admin.session_collection + ':\n')
+        self.assertEqual(len(err), 0)
+
+    def test_option_d_with_collections__issue_5506(self):
+        # Show that the -l option is ignored.
+        ec, out, err = self.admin.assert_icommand(['ils', '-d', '-l'], 'STDOUT', [self.admin.session_collection + ':'])
+        self.assertEqual(ec, 0)
+        self.assertEqual(out, self.admin.session_collection + ':\n')
+        self.assertEqual(len(err), 0)
+
+        # Show that the -L option is ignored.
+        ec, out, err = self.admin.assert_icommand(['ils', '-d', '-L'], 'STDOUT', [self.admin.session_collection + ':'])
+        self.assertEqual(ec, 0)
+        self.assertEqual(out, self.admin.session_collection + ':\n')
+        self.assertEqual(len(err), 0)
+
+        # Show that the -A option is honored.
+        expected_output = [self.admin.session_collection, ' ACL - ' + self.admin.username + '#' + self.admin.zone_name + ':own']
+        self.admin.assert_icommand(['ils', '-d', '-A'], 'STDOUT', expected_output)
+
+    def test_option_d_with_data_objects__issue_5506(self):
+        data_object = os.path.join(self.admin.session_collection, 'foo')
+        self.admin.assert_icommand(['istream', 'write', data_object], input='foo')
+
+        # Show that only the data object's path is printed.
+        ec, out, err = self.admin.assert_icommand(['ils', '-d', data_object], 'STDOUT', ['  ' + data_object])
+        self.assertEqual(ec, 0)
+        self.assertEqual(out, '  ' + data_object + '\n')
+        self.assertEqual(len(err), 0)
+
+        # Show that only the data object's path is printed.
+        ec, out, err = self.admin.assert_icommand(['ils', '-d', '-r', data_object], 'STDOUT', ['  ' + data_object])
+        self.assertEqual(ec, 0)
+        self.assertEqual(out, '  ' + data_object + '\n')
+        self.assertEqual(len(err), 0)
+
+        # Show that the -L option is honored.
+        expected_output = [os.path.basename(data_object), self.admin.username, ' & ', ' generic ']
+        self.admin.assert_icommand(['ils', '-d', '-L', data_object], 'STDOUT', expected_output)
+
+        # Show that the -A option is honored.
+        expected_output = ['  ' + data_object, ' ACL - ' + self.admin.username + '#' + self.admin.zone_name + ':own']
+        self.admin.assert_icommand(['ils', '-d', '-A', data_object], 'STDOUT', expected_output)
 

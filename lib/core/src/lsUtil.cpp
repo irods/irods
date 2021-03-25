@@ -392,8 +392,7 @@ lsCollUtil( rcComm_t *conn, rodsPath_t *srcPath, rodsEnv *myRodsEnv,
     collEnt_t collEnt;
 
     if ( srcPath == NULL ) {
-        rodsLog( LOG_ERROR,
-                 "lsCollUtil: NULL srcPath input" );
+        rodsLog( LOG_ERROR, "lsCollUtil: NULL srcPath input" );
         return USER__NULL_INPUT_ERR;
     }
 
@@ -405,6 +404,12 @@ lsCollUtil( rcComm_t *conn, rodsPath_t *srcPath, rodsEnv *myRodsEnv,
     if ( rodsArgs->accessControl == True ) {
         printCollAcl( conn, srcColl );
         printCollInheritance( conn, srcColl );
+    }
+
+    // Return immediately if the user passed the "-d" option.
+    // This option allows "ils" to mirror the behavior of "ls -d <directory>".
+    if (True == rodsArgs->dataObjects) {
+        return 0;
     }
 
     queryFlags = DATA_QUERY_FIRST_FG;
