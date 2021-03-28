@@ -146,7 +146,7 @@ int getLocalTimeFromRodsTime(const char* timeStrIn, char* timeStrOut);
 
 int getLocalTimeStr(struct tm* mytm, char* timeStr);
 
-void getOffsetTimeStr(char* timeStr, const char* offSet);
+int getOffsetTimeStr(char* timeStr, const char* offSet);
 
 void updateOffsetTimeStr(char* timeStr, int offset);
 
