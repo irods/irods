@@ -547,7 +547,8 @@ fillSubmitConditions( const char *action, const char *inDelayCondition,
 
     it = taggedValues->find("PLUSET");
     if ( it != taggedValues->end() ) {
-        getOffsetTimeStr( ruleSubmitInfo->exeTime, it->second.front().c_str() );
+        int status = getOffsetTimeStr( ruleSubmitInfo->exeTime, it->second.front().c_str() );
+        if (status < 0) { return status; }
         if ( int i = checkDateFormat( ruleSubmitInfo->exeTime ) ) {
             return i;
         }

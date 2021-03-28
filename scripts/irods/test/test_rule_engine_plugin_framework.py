@@ -14,6 +14,7 @@ import time  # remove once file hash fix is commited #2279
 import subprocess
 import mmap
 import shutil
+import re
 
 from .. import lib
 from .. import paths
@@ -474,6 +475,64 @@ class Test_Plugin_Instance_Delay(ResourceBase, unittest.TestCase):
 
     def tearDown(self):
         super(Test_Plugin_Instance_Delay, self).tearDown()
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Python REP and Topology Testing")
+    def test_delay_rule__4055(self):
+        server_config_filename = paths.server_config_path()
+        with open(server_config_filename) as f:
+            svr_cfg = json.load(f)
+        native_plugin_name = svr_cfg['plugin_configuration']['rule_engines'][0]['instance_name']
+        delay_rule = """
+do_it {
+    delay("<PLUSET>%s</PLUSET>") {
+        writeLine("serverLog", "4055_%s.")
+    }
+}
+INPUT null
+OUTPUT ruleExecOut
+        """
+        multiplier = {'':1, ' ':1, 's':1, 'm':60, 'h':3600, 'd':3600*24, 'y':3600*24*365}
+        for numstring,units in [ ('9',''), (' 9',' '), ('20','s'), ('5','m '), ('30','d'), ('1','y') ]:
+            with tempfile.NamedTemporaryFile(mode='wt', suffix='.r', dir='/tmp') as rule_file:
+                delay = numstring + units
+                rule_file.write(delay_rule%(delay,delay))  # delay used directly and as unique search string
+                rule_file.flush()
+                self.admin.assert_icommand(['irule', '-r', native_plugin_name, '-F', rule_file.name])
+                tm = int(time.time())
+                regex_time = '^\s*RULE_EXEC_TIME\s*=\s*([0-9]+)'
+                regex_id = '^\s*RULE_EXEC_ID\s*=\s*([0-9]+)'
+                dummy_rc, out, dummy_err = self.admin.assert_icommand(
+                    ['iquest', """SELECT RULE_EXEC_ID, RULE_EXEC_NAME, RULE_EXEC_TIME where RULE_EXEC_NAME like '%%4055_%s.%%'""" % delay],
+                    'STDOUT_MULTILINE', regex_time, use_regex=True)
+                exec_tm =  int(re.search(regex_time,out,flags=re.MULTILINE).groups(1)[0]) # get rule execution time (epoch secs) and ID
+                rule_id =  re.search(regex_id,out,flags=re.MULTILINE).groups(1)[0]
+                expected_delay = int(numstring) * multiplier[units[:1]]
+                self.assertTrue((tm + 0.6*expected_delay) < exec_tm < (tm + 1.4*expected_delay)) # assert rule execution time accurate
+                self.admin.assert_icommand(['iqdel', rule_id])
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Python REP and Topology Testing")
+    def test_delay_rule_with_invalid_time_format__4055(self):
+        server_config_filename = paths.server_config_path()
+        with open(server_config_filename) as f:
+            svr_cfg = json.load(f)
+        delay_rule = """
+do_it {
+    delay("<PLUSET>%s</PLUSET>") {
+        writeLine("serverLog", "4055_%s.")
+    }
+}
+INPUT null
+OUTPUT ruleExecOut
+        """
+        native_plugin_name = svr_cfg['plugin_configuration']['rule_engines'][0]['instance_name']
+        # test wrong units and non-integer values
+        for time_value in ('1x', '0.1d', '.9y', '', ' ', '-9s'):
+            with tempfile.NamedTemporaryFile(mode='wt', suffix='.r', dir='/tmp') as rule_file:
+                rule_file.write(delay_rule%(time_value,time_value))
+                rule_file.flush()
+                self.admin.assert_icommand(['irule', '-r', native_plugin_name, '-F', rule_file.name], 'STDERR', 'INPUT_ARG_NOT_WELL_FORMED_ERR')
+                self.admin.assert_icommand(['iquest', """SELECT RULE_EXEC_ID, RULE_EXEC_NAME, RULE_EXEC_TIME where RULE_EXEC_NAME like '%%4055_%s.%%'"""%time_value],
+                                           'STDOUT', 'CAT_NO_ROWS_FOUND')
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Python REP and Topology Testing")
     def test_delay_rule__3849(self):
