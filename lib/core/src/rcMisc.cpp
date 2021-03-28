@@ -1566,17 +1566,44 @@ getLocalTimeStr( struct tm *mytm, char *timeStr ) {
 }
 
 
-/* Get the current time + offset , in the  form: 2006-10-25-10.52.43 */
-/*  offset is a string of the same form  */
-/*                                               0123456789012345678 */
-void
-getOffsetTimeStr( char *timeStr, const char *offSet ) {
-    time_t myTime;
 
-    myTime = time( NULL );
-    myTime += atoi( offSet );
-
-    snprintf( timeStr, TIME_LEN, "%d", ( uint ) myTime );
+/* Get the current time + offset , and store to timeStr (understood max length TIME_LEN) in epoch seconds.
+    OffSet is a string of the form nnnn<Unit> with Unit in {'','s','m','h','d','y'}.
+    An empty Unit field implies seconds. */
+int
+getOffsetTimeStr( char *timeStr, const char *offSet )
+{
+    long seconds_multiplier = 1L;
+    static const std::map<char,long> multiplier {
+        {'\0',1}, {'s',1}, {'m',60}, {'h',3600}, {'d',24*3600}, {'y',24*3600*365}
+    };
+    time_t myTime = time( NULL );
+    if (offSet == nullptr) { return SYS_INTERNAL_NULL_INPUT_ERR; }
+    const char *lTrimOffSet = offSet;
+    while(isspace(*lTrimOffSet)) {++lTrimOffSet;}        // left-trim any whitespace
+    int nonNumberLoc = strspn(lTrimOffSet,"0123456789.");
+    char u = lTrimOffSet[nonNumberLoc];                  // u is value of first nondigit character (at or before end '\0')
+    const char* error_type = (nonNumberLoc == 0 ? "Empty or invalid number field" : "");
+    if (0 == *error_type) {  // There's a time specification, so determine the time unit
+        try {
+            seconds_multiplier = multiplier.at(u);
+        }
+        catch (const std::out_of_range&) {
+            // An unmapped, non-whitespace character as the unit field is an error.
+            if (!(isspace(u))) {
+               error_type = "Bad units (need s, h, m, d, or y)";
+            }
+            // deliberate fall through with seconds_multiplier = 1
+        }
+    }
+    if (NULL != strchr(lTrimOffSet,'.') && seconds_multiplier > 1) { error_type = "Fractions disallowed unless units are seconds"; }
+    if (*error_type) {
+        rodsLog(LOG_ERROR, "Incorrect delay interval '%s'.  Reason:  %s.", lTrimOffSet, error_type);
+        return INPUT_ARG_NOT_WELL_FORMED_ERR;
+    }
+    myTime += atol( lTrimOffSet ) * std::max(1L,seconds_multiplier);     // max function prevents zeroing or negation
+    snprintf( timeStr, TIME_LEN, "%ld", ( long ) myTime );
+    return 0;
 }
 
 /* Update the input time string to be offset minutes ahead of the
