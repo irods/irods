@@ -1709,7 +1709,7 @@ msiSysMetaModify( msParam_t *sysMetadata, msParam_t *value, ruleExecInfo_t *rei 
             if ( strncmp( theTime, "+", 1 ) == 0 ) {
                 rstrcpy( theTime, ( char * ) value->inOutStruct + 1, TIME_LEN ); /* skip the + */
                 status = checkDateFormat( theTime );    /* check and convert the time value */
-                getOffsetTimeStr( theTime, theTime );   /* convert delta format to now + this*/
+                (void)getOffsetTimeStr( theTime, theTime );   /* convert delta format to now + this*/
             }
             else {
                 status = checkDateFormat( theTime );    /* check and convert the time value */
