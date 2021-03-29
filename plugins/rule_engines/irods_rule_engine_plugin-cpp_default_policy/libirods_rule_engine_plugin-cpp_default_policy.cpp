@@ -45,6 +45,8 @@
 
 #define STATIC_PEP(NAME) static_policy_enforcement_points[#NAME] = NAME
 
+using json = nlohmann::json;
+
 typedef std::function< irods::error (irods::callback, std::list<boost::any>&) > pep_opr_t;
 
 static std::map< std::string, pep_opr_t > static_policy_enforcement_points;
@@ -109,6 +111,7 @@ static std::string get_string_array_from_array( const boost::any& _array ) {
             "failed to any_cast to vector" );
     }
 }
+
 // =-=-=-=-=-=-=-
 // implementations of static policy enforcement points from legacy core.re
 
@@ -892,56 +895,41 @@ irods::error start(irods::default_re_ctx& _u, const std::string& _instance_name)
 
     // Can just do it, since this rule engine is pre-compiled
     RuleExistsHelper::Instance()->registerRuleRegex( DEFAULT_RULE_REGEX );
-
+    RuleExistsHelper::Instance()->registerRuleRegex( "irods_policy_e.*" );
 
     return SUCCESS();
-}
+
+} // start
 
 irods::error stop(irods::default_re_ctx& _u, const std::string&) {
     (void) _u;
     return SUCCESS();
 }
-irods::error rule_exists(irods::default_re_ctx&, const std::string& _rn, bool& _ret) {
-    _ret = ( static_policy_enforcement_points.find(_rn) !=
-             static_policy_enforcement_points.end() );
-    return SUCCESS();
-}
 
-irods::error list_rules(irods::default_re_ctx&, std::vector<std::string>& rule_vec) {
-    for (auto& map_entry : static_policy_enforcement_points) {
-       rule_vec.push_back(map_entry.first);
+int _delayExec(const char* rule, const char* recov, const char* condition, ruleExecInfo_t*);
+
+namespace
+{
+    auto rule_is_irods_policy_enqueue_rule(const std::string& _rn) -> bool
+    {
+        auto b =  "irods_policy_enqueue_rule" == _rn;
+        return b;
     }
 
-    return SUCCESS();
-}
-
-irods::error exec_rule(
-    irods::default_re_ctx&,
-    const std::string&     _rn,
-    std::list<boost::any>& _ps,
-    irods::callback        _eff_hdlr) {
-    ruleExecInfo_t * rei;
-    irods::error err;
-
-    if(!(err = _eff_hdlr("unsafe_ms_ctx", &rei)).ok()) {
-        return err;
+    auto rule_is_irods_policy_execute_rule(const std::string& _rn) -> bool
+    {
+        return "irods_policy_execute_rule" == _rn;
     }
 
-    if(static_policy_enforcement_points.find(_rn) !=
-       static_policy_enforcement_points.end() ) {
-       return static_policy_enforcement_points[_rn](_eff_hdlr,_ps);
+    auto rule_is_irods_policy_rule(const std::string& _rn) -> bool
+    {
+        auto b = rule_is_irods_policy_enqueue_rule(_rn) ||
+                 rule_is_irods_policy_execute_rule(_rn);
+        return b;
     }
-    else {
-        rodsLog(
-            LOG_ERROR,
-            "[%s] not defined in default rule engine",
-            _rn.c_str() );
-        return SUCCESS();
-    }
-} // exec_rule
 
-namespace {
-    auto collapse_error_stack(rError_t& _error) -> std::string {
+    auto collapse_error_stack(rError_t& _error) -> std::string
+    {
         std::stringstream ss;
         for(int i = 0; i < _error.len; ++i) {
             rErrMsg_t* err_msg = _error.errMsg[i];
@@ -951,13 +939,16 @@ namespace {
 
             ss << err_msg->msg << " - ";
         }
+
         return ss.str();
+
     } // collapse_error_stack
 
     void invoke_policy(
         ruleExecInfo_t*        _rei,
         const std::string&     _action,
-        std::list<boost::any>& _args) {
+        std::list<boost::any>& _args)
+    {
         irods::rule_engine_context_manager<
             irods::unit,
             ruleExecInfo_t*,
@@ -973,30 +964,149 @@ namespace {
 
             THROW(err.code(), err.result());
         }
+
     } // invoke_policy
+
+    auto rule_is_not_already_enqueued(rsComm_t* comm, const std::string& md5)
+    {
+        auto qs = fmt::format("SELECT RULE_EXEC_NAME WHERE RULE_EXEC_NAME LIKE '%{}%'", md5);
+
+        irods::experimental::query_builder qb;
+        return qb.build(*comm, qs).size() == 0;
+
+    } // rule_is_not_already_enqueued
+
+    auto demangle(const char* name) -> std::string
+    {
+        int status{};
+        std::unique_ptr<char, void(*)(void*)> res {
+            abi::__cxa_demangle(name, NULL, NULL, &status),
+                std::free
+        };
+
+        return (status==0) ? res.get() : name;
+
+    } // demangle
+
+    auto enqueue_rule(ruleExecInfo_t* _rei, const json& _p) -> irods::error
+    {
+        auto params = _p;
+
+        irods::Hasher hasher;
+        irods::getHasher( irods::MD5_NAME, hasher );
+        hasher.update(params.dump().c_str());
+        std::string digest;
+        hasher.digest(digest);
+
+        if(rule_is_not_already_enqueued(_rei->rsComm, digest)) {
+            params["md5"] = digest;
+
+            const auto delay_cond = params.contains("delay_conditions")
+                                    ? params.at("delay_conditions").get<std::string>()
+                                    : std::string{};
+
+            const auto err = _delayExec(params.dump().c_str(), "",
+                                        delay_cond.c_str(), _rei);
+            if(err < 0) {
+                return ERROR(err, "delayExec failed");
+            }
+        }
+
+        return SUCCESS();
+
+    } // enqueue_rule
+
+    auto execute_rule(ruleExecInfo_t* _rei, json& _rule) -> irods::error
+    {
+        if(!_rule.contains("parameters")) {
+            return ERROR(
+                       SYS_NOT_SUPPORTED,
+                       "exec_rule_text : parameters is empty");
+        }
+
+        auto pm = _rule.at("parameters");
+
+        auto p2i = pm.at("policy_to_invoke").get<std::string>();
+
+        std::string ps = pm.contains("parameters")
+                         ? pm.at("parameters").dump()
+                         : _rule.dump();
+        std::string cs = pm.contains("configuration")
+                         ? pm.at("configuration").dump()
+                         : std::string{};
+        std::string ov{};
+
+        std::list<boost::any> arguments;
+        arguments.push_back(boost::any(&ps));
+        arguments.push_back(boost::any(&cs));
+        arguments.push_back(boost::any(&ov));
+        invoke_policy(_rei, p2i, arguments);
+
+        return SUCCESS();
+
+    } // execute_rule
+
 } // namespace
 
-int _delayExec(const char* rule, const char* recov, const char* condition, ruleExecInfo_t*);
-
-auto rule_is_not_already_enqueued(rsComm_t* comm, const std::string& md5)
+irods::error rule_exists(irods::default_re_ctx&, const std::string& _rn, bool& _ret)
 {
-    auto qs = fmt::format("SELECT RULE_EXEC_NAME WHERE RULE_EXEC_NAME LIKE '%{}%'", md5);
+    _ret = ( static_policy_enforcement_points.find(_rn) !=
+             static_policy_enforcement_points.end()     ||
+             rule_is_irods_policy_rule(_rn) );
+    return SUCCESS();
+}
 
-    irods::experimental::query_builder qb;
-    return qb.build(*comm, qs).size() == 0;
+irods::error list_rules(irods::default_re_ctx&, std::vector<std::string>& rule_vec)
+{
+    for (auto& map_entry : static_policy_enforcement_points) {
+       rule_vec.push_back(map_entry.first);
+    }
 
-} // rule_is_not_already_enqueued
+    rule_vec.push_back("irods_policy_enqueue_rule");
+    rule_vec.push_back("irods_policy_execute_rule");
+
+    return SUCCESS();
+}
+
+irods::error exec_rule(
+    irods::default_re_ctx&,
+    const std::string&     _rn,
+    std::list<boost::any>& _ps,
+    irods::callback        _eff_hdlr)
+{
+    ruleExecInfo_t * rei{};
+    irods::error err;
+
+    if(!(err = _eff_hdlr("unsafe_ms_ctx", &rei)).ok()) {
+        return err;
+    }
+
+    if(rule_is_irods_policy_enqueue_rule(_rn)) {
+        auto* p = boost::any_cast<std::string*>(*_ps.begin());
+        return enqueue_rule(rei, json::parse(*p));
+    }
+
+    if(static_policy_enforcement_points.find(_rn) !=
+       static_policy_enforcement_points.end() ) {
+       return static_policy_enforcement_points[_rn](_eff_hdlr,_ps);
+    }
+    else {
+        rodsLog(
+            LOG_ERROR,
+            "[%s] not defined in default rule engine",
+            _rn.c_str() );
+        return SUCCESS();
+    }
+} // exec_rule
 
 irods::error exec_rule_text(
     irods::default_re_ctx&,
     const std::string& _rule_text,
     msParamArray_t*    _ms_params,
     const std::string& _out_desc,
-    irods::callback    _eff_hdlr) {
-
-    using json = nlohmann::json;
-
-    ruleExecInfo_t* rei;
+    irods::callback    _eff_hdlr)
+{
+    ruleExecInfo_t* rei{};
     irods::error    err;
     if(!(err = _eff_hdlr("unsafe_ms_ctx", &rei)).ok()) {
         return err;
@@ -1009,54 +1119,21 @@ irods::error exec_rule_text(
             rule_text = _rule_text.substr(10);
         }
 
-        auto rule{json::parse(rule_text)};
-        std::string policy = rule["policy_to_invoke"];
-        if(policy.empty()) {
+        auto rule = json::parse(rule_text);
+
+        if(!rule.contains("policy_to_invoke")) {
             return ERROR(
                        SYS_NOT_SUPPORTED,
                        "exec_rule_text : policy to invoke is empty");
         }
 
-        auto parameters{rule.at("parameters")};
-        if(parameters.empty()) {
-            return ERROR(
-                       SYS_NOT_SUPPORTED,
-                       "exec_rule_text : parameters is empty");
+        auto p2i = rule.at("policy_to_invoke").get<std::string>();
+
+        if(rule_is_irods_policy_enqueue_rule(p2i)) {
+            return enqueue_rule(rei, rule.at("parameters"));
         }
-
-        if("irods_policy_enqueue_rule" == policy) {
-            irods::Hasher hasher;
-            irods::getHasher( irods::MD5_NAME, hasher );
-            hasher.update(parameters.dump().c_str());
-            std::string digest;
-            hasher.digest(digest);
-
-            if(rule_is_not_already_enqueued(rei->rsComm, digest)) {
-                parameters["md5"] = digest;
-
-                const auto delay_cond = parameters.contains("delay_conditions")
-                                        ? parameters.at("delay_conditions").get<std::string>()
-                                        : std::string{};
-
-                const auto err = _delayExec(parameters.dump().c_str(), "",
-                                            delay_cond.c_str(), rei);
-                if(err < 0) {
-                    return ERROR(err, "delayExec failed");
-                }
-            }
-        }
-        else {
-            std::string policy_to_invoke{parameters.at("policy_to_invoke")};
-            std::string parameter_string{parameters.at("parameters").dump()};
-            std::string configuration_string{parameters.at("configuration").dump()};
-            std::string out_variable{};
-
-            std::list<boost::any> arguments;
-            arguments.push_back(boost::any(&parameter_string));
-            arguments.push_back(boost::any(&configuration_string));
-            arguments.push_back(boost::any(&out_variable));
-
-            invoke_policy(rei, policy_to_invoke, arguments);
+        else if(rule_is_irods_policy_execute_rule(p2i)) {
+            return execute_rule(rei, rule);
         }
     }
     catch(const json::exception& e) {
@@ -1095,42 +1172,32 @@ irods::error exec_rule_expression(
     irods::default_re_ctx&,
     const std::string& _rule_text,
     msParamArray_t*    _ms_params,
-    irods::callback    _eff_hdlr) {
-
+    irods::callback    _eff_hdlr)
+{
     using json = nlohmann::json;
 
-    ruleExecInfo_t* rei;
+    ruleExecInfo_t* rei{};
     irods::error    err;
     if(!(err = _eff_hdlr("unsafe_ms_ctx", &rei)).ok()) {
         return err;
     }
 
     try {
-        json  rule{json::parse(_rule_text)};
-        std::string policy = rule.at("policy_to_invoke");
-        if(policy.empty() || "irods_policy_execute_rule" != policy) {
-            return ERROR(
-                       SYS_NOT_SUPPORTED,
-                       "exec_rule_text is not supported");
+        json r{json::parse(_rule_text)};
+
+        if(!r.contains("policy_to_invoke")) {
+            return ERROR(SYS_NOT_SUPPORTED,
+                         "exec_rule_expression is not supported");
         }
 
-        auto parameters{rule.at("parameters")};
-        if(parameters.empty()) {
-            return ERROR(
-                       SYS_NOT_SUPPORTED,
-                       "exec_rule_text is not supported");
+        std::string p2i = r.at("policy_to_invoke");
+
+        if(rule_is_irods_policy_execute_rule(p2i)) {
+            return execute_rule(rei, r);
         }
 
-        std::string policy_to_invoke{parameters.at("policy_to_invoke")};
-        std::string parameter_string{parameters.at("parameters").dump()};
-        std::string configuration_string{parameters.at("configuration").dump()};
-        std::string out_variable{};
-
-        std::list<boost::any> arguments;
-        arguments.push_back(boost::any(&parameter_string));
-        arguments.push_back(boost::any(&configuration_string));
-        arguments.push_back(boost::any(&out_variable));
-        invoke_policy(rei, policy_to_invoke, arguments);
+        return ERROR(SYS_NOT_SUPPORTED,
+                     "exec_rule_expression is not supported");
     }
     catch(const json::exception& e) {
         addRErrorMsg(
@@ -1159,7 +1226,8 @@ irods::error exec_rule_expression(
                    SYS_NOT_SUPPORTED,
                    e.what());
     }
-    return SUCCESS();//CODE(RULE_ENGINE_CONTINUE);
+
+    return SUCCESS();
 
 } // exec_rule_expression
 
