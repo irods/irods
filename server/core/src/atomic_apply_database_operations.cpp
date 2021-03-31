@@ -9,6 +9,7 @@
 #include <fmt/format.h>
 #include <nanodbc/nanodbc.h>
 
+#include <cctype>
 #include <string>
 #include <string_view>
 #include <iterator>
@@ -17,7 +18,8 @@
 #include <vector>
 #include <algorithm>
 #include <sstream>
-#include <experimental/iterator>
+#include <chrono>
+#include <experimental/iterator> // For make_ostream_joiner
 
 // TEAM DISCUSSION:
 // - Keep it a library (APIs can invoke this and guard this call with permission checks, etc.).
@@ -56,7 +58,7 @@ namespace
 
     using json               = nlohmann::json;
     using handler_key_type   = std::tuple<std::string_view, std::string_view>;
-    using handler_value_type = int (*)(RsComm&, nanodbc::connection&, const std::string_view, const json&);
+    using handler_value_type = int (*)(nanodbc::connection&, const std::string_view, const json&);
     using db_column_type     = std::tuple<std::string_view, std::string_view>;
 
     //
@@ -142,33 +144,31 @@ namespace
     // Function Prototypes
     //
 
-    auto insert_collection(RsComm& _comm,
-                           nanodbc::connection& _db_conn,
+    auto insert_collection(nanodbc::connection& _db_conn,
                            const std::string_view _db_instance_name,
                            const json& _op) -> int;
 
-    auto insert_replica(RsComm& _comm,
-                        nanodbc::connection& _db_conn,
+    auto insert_replica(nanodbc::connection& _db_conn,
                         const std::string_view _db_instance_name,
                         const json& _op) -> int;
 
-    auto insert_metadata(RsComm& _comm,
-                         nanodbc::connection& _db_conn,
+    auto insert_metadata(nanodbc::connection& _db_conn,
                          const std::string_view _db_instance_name,
                          const json& _op) -> int;
 
-    auto insert_metadata_link(RsComm& _comm,
-                              nanodbc::connection& _db_conn,
+    auto insert_metadata_link(nanodbc::connection& _db_conn,
                               const std::string_view _db_instance_name,
                               const json& _op) -> int;
 
-    auto delete_rows(RsComm& _comm,
-                     nanodbc::connection& _db_conn,
+    auto insert_resource(nanodbc::connection& _db_conn,
+                         const std::string_view _db_instance_name,
+                         const json& _op) -> int;
+
+    auto delete_rows(nanodbc::connection& _db_conn,
                      const std::string_view _db_instance_name,
                      const json& _op) -> int;
 
-    auto update_rows(RsComm& _comm,
-                     nanodbc::connection& _db_conn,
+    auto update_rows(nanodbc::connection& _db_conn,
                      const std::string_view _db_instance_name,
                      const json& _op) -> int;
 
@@ -176,6 +176,10 @@ namespace
                                        const std::string_view _table_name) -> void;
 
     auto throw_if_invalid_conditional_operator(const std::string_view _operator) -> void;
+
+    auto current_timestamp() -> std::string;
+
+    auto to_upper(std::string& _s) -> std::string&;
     // clang-format on
 
     // clang-format off
@@ -186,21 +190,23 @@ namespace
         {{"insert", "r_data_main"},    insert_replica},
         {{"insert", "r_meta_map"},     insert_metadata},
         {{"insert", "r_objt_metamap"}, insert_metadata_link},
+        {{"insert", "r_resc_main"},    insert_resource},
 
         {{"update", "r_coll_main"},    update_rows},
         {{"update", "r_data_main"},    update_rows},
         {{"update", "r_meta_map"},     update_rows},
         {{"update", "r_objt_metamap"}, update_rows},
+        {{"update", "r_resc_main"},    update_rows},
 
         {{"delete", "r_coll_main"},    delete_rows},
         {{"delete", "r_data_main"},    delete_rows},
         {{"delete", "r_meta_map"},     delete_rows},
-        {{"delete", "r_objt_metamap"}, delete_rows}
+        {{"delete", "r_objt_metamap"}, delete_rows},
+        {{"delete", "r_resc_main"},    delete_rows}
     };
     // clang-format on
 
-    auto insert_collection(RsComm& _comm,
-                           nanodbc::connection& _db_conn,
+    auto insert_collection(nanodbc::connection& _db_conn,
                            const std::string_view _db_instance_name,
                            const json& _op) -> int
     {
@@ -223,18 +229,37 @@ namespace
            modify_ts        | character varying(32)   |
          */
 
-        // TODO Does the database schema protect the user from creating duplicates.
-
         rodsLog(LOG_NOTICE, "%s :: input = %s", __func__, _op.dump(4).data());
 
         try {
+            const auto timestamp = current_timestamp();
+
             nanodbc::statement stmt{_db_conn};
 #if 0
-            nanodbc::prepare(stmt, "insert into R_COLL_MAIN ("
-                                   " coll_id, parent_coll_name, coll_name, coll_owner_name, coll_owner_zone, coll_map_id,"
-                                   " coll_inheritance, coll_type, coll_info1, coll_info2, coll_expiry_ts, r_comment,"
-                                   " create_ts, modify_ts) "
-                                   "values (nextval('R_OBJECTID'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            if (_db_instance_name == "postgres") {
+                nanodbc::prepare(stmt, "insert into R_COLL_MAIN ("
+                                       " coll_id, parent_coll_name, coll_name, coll_owner_name, coll_owner_zone, coll_map_id,"
+                                       " coll_inheritance, coll_type, coll_info1, coll_info2, coll_expiry_ts, r_comment,"
+                                       " create_ts, modify_ts) "
+                                       "values (nextval('R_OBJECTID'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            }
+            else if (_db_instance_name == "oracle") {
+                nanodbc::prepare(stmt, "insert into R_COLL_MAIN ("
+                                       " coll_id, parent_coll_name, coll_name, coll_owner_name, coll_owner_zone, coll_map_id,"
+                                       " coll_inheritance, coll_type, coll_info1, coll_info2, coll_expiry_ts, r_comment,"
+                                       " create_ts, modify_ts) "
+                                       "values (select R_OBJECTID.nextval from DUAL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            }
+            else if (_db_instance_name == "mysql") {
+                nanodbc::prepare(stmt, "insert into R_COLL_MAIN ("
+                                       " coll_id, parent_coll_name, coll_name, coll_owner_name, coll_owner_zone, coll_map_id,"
+                                       " coll_inheritance, coll_type, coll_info1, coll_info2, coll_expiry_ts, r_comment,"
+                                       " create_ts, modify_ts) "
+                                       "values (R_OBJECTID_nextval(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            }
+            else {
+                // TODO Handle error.
+            }
 
             // FIXME Until the unixODBC or Postgres driver is fixed, this "for" statement must
             // be placed above the nanodbc::prepare call. See the following issue for more information:
@@ -243,12 +268,35 @@ namespace
             //
             for (auto&& row : _op.at(jp_values)) {
 #else
+            std::string_view sql;
+
+            if (_db_instance_name == "postgres") {
+                sql = "insert into R_COLL_MAIN ("
+                      " coll_id, parent_coll_name, coll_name, coll_owner_name, coll_owner_zone, coll_map_id,"
+                      " coll_inheritance, coll_type, coll_info1, coll_info2, coll_expiry_ts, r_comment,"
+                      " create_ts, modify_ts) "
+                      "values (nextval('R_OBJECTID'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            }
+            else if (_db_instance_name == "oracle") {
+                sql = "insert into R_COLL_MAIN ("
+                      " coll_id, parent_coll_name, coll_name, coll_owner_name, coll_owner_zone, coll_map_id,"
+                      " coll_inheritance, coll_type, coll_info1, coll_info2, coll_expiry_ts, r_comment,"
+                      " create_ts, modify_ts) "
+                      "values (select R_OBJECTID.nextval from DUAL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            }
+            else if (_db_instance_name == "mysql") {
+                sql = "insert into R_COLL_MAIN ("
+                      " coll_id, parent_coll_name, coll_name, coll_owner_name, coll_owner_zone, coll_map_id,"
+                      " coll_inheritance, coll_type, coll_info1, coll_info2, coll_expiry_ts, r_comment,"
+                      " create_ts, modify_ts) "
+                      "values (R_OBJECTID_nextval(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            }
+            else {
+                // TODO Handle error.
+            }
+
             for (auto&& row : _op.at(jp_values)) {
-                nanodbc::prepare(stmt, "insert into R_COLL_MAIN ("
-                                       " coll_id, parent_coll_name, coll_name, coll_owner_name, coll_owner_zone, coll_map_id,"
-                                       " coll_inheritance, coll_type, coll_info1, coll_info2, coll_expiry_ts, r_comment,"
-                                       " create_ts, modify_ts) "
-                                       "values (nextval('R_OBJECTID'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                nanodbc::prepare(stmt, sql.data());
 #endif
                 const auto parent_coll_name = row.at("parent_coll_name").get<std::string>();    // Cannot be null
                 const auto coll_name = row.at("coll_name").get<std::string>();                  // Cannot be null
@@ -261,8 +309,8 @@ namespace
                 const auto coll_info_2 = row.value("coll_info2", "");
                 const auto coll_expiry_ts = row.value("coll_expiry_ts", "");
                 const auto r_comment = row.value("r_comment", "");
-                const auto create_ts = row.value("create_ts", "");
-                const auto modify_ts = row.value("modify_ts", "");
+                const auto create_ts = row.value("create_ts", timestamp);
+                const auto modify_ts = row.value("modify_ts", timestamp);
 
                 int i = 0;
                 stmt.bind(i, parent_coll_name.data());
@@ -289,8 +337,7 @@ namespace
         return 0;
     } // insert_collection
 
-    auto insert_replica(RsComm& _comm,
-                        nanodbc::connection& _db_conn,
+    auto insert_replica(nanodbc::connection& _db_conn,
                         const std::string_view _db_instance_name,
                         const json& _op) -> int
     {
@@ -322,19 +369,40 @@ namespace
            resc_id         | bigint                  | 
          */
 
-        // TODO Does the database schema protect the user from creating duplicates.
-
         rodsLog(LOG_NOTICE, "%s :: input = %s", __func__, _op.dump(4).data());
 
         try {
+            const auto timestamp = current_timestamp();
+
             nanodbc::statement stmt{_db_conn};
 #if 0
-            nanodbc::prepare(stmt, "insert into R_DATA_MAIN ("
-                                   " data_id, coll_id, data_name, data_repl_num, data_version, data_type_name," 
-                                   " data_size, resc_group_name, resc_name, data_path, data_owner_name,"
-                                   " data_owner_zone, data_is_dirty, data_status, data_checksum, data_expiry_ts,"
-                                   " data_map_id, data_mode, r_comment, create_ts, modify_ts, resc_hier, resc_id) "
-                                   "values (nextval('R_OBJECTID'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            if (_db_instance_name == "postgres") {
+                nanodbc::prepare(stmt, "insert into R_DATA_MAIN ("
+                                       " data_id, coll_id, data_name, data_repl_num, data_version, data_type_name," 
+                                       " data_size, resc_group_name, resc_name, data_path, data_owner_name,"
+                                       " data_owner_zone, data_is_dirty, data_status, data_checksum, data_expiry_ts,"
+                                       " data_map_id, data_mode, r_comment, create_ts, modify_ts, resc_hier, resc_id) "
+                                       "values (nextval('R_OBJECTID'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            }
+            else if (_db_instance_name == "oracle") {
+                nanodbc::prepare(stmt, "insert into R_DATA_MAIN ("
+                                       " data_id, coll_id, data_name, data_repl_num, data_version, data_type_name," 
+                                       " data_size, resc_group_name, resc_name, data_path, data_owner_name,"
+                                       " data_owner_zone, data_is_dirty, data_status, data_checksum, data_expiry_ts,"
+                                       " data_map_id, data_mode, r_comment, create_ts, modify_ts, resc_hier, resc_id) "
+                                       "values (select R_OBJECTID.nextval from DUAL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            }
+            else if (_db_instance_name == "mysql") {
+                nanodbc::prepare(stmt, "insert into R_DATA_MAIN ("
+                                       " data_id, coll_id, data_name, data_repl_num, data_version, data_type_name," 
+                                       " data_size, resc_group_name, resc_name, data_path, data_owner_name,"
+                                       " data_owner_zone, data_is_dirty, data_status, data_checksum, data_expiry_ts,"
+                                       " data_map_id, data_mode, r_comment, create_ts, modify_ts, resc_hier, resc_id) "
+                                       "values (R_OBJECTID_nextval(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            }
+            else {
+                // TODO Handle error.
+            }
 
             // FIXME Until the unixODBC or Postgres driver is fixed, this "for" statement must
             // be placed above the nanodbc::prepare call. See the following issue for more information:
@@ -343,14 +411,38 @@ namespace
             //
             for (auto&& row : _op.at(jp_values)) {
 #else
+            std::string_view sql;
+
+            if (_db_instance_name == "postgres") {
+                sql = "insert into R_DATA_MAIN ("
+                      " data_id, coll_id, data_name, data_repl_num, data_version, data_type_name," 
+                      " data_size, resc_group_name, resc_name, data_path, data_owner_name,"
+                      " data_owner_zone, data_is_dirty, data_status, data_checksum, data_expiry_ts,"
+                      " data_map_id, data_mode, r_comment, create_ts, modify_ts, resc_hier, resc_id) "
+                      "values (nextval('R_OBJECTID'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            }
+            else if (_db_instance_name == "oracle") {
+                sql = "insert into R_DATA_MAIN ("
+                      " data_id, coll_id, data_name, data_repl_num, data_version, data_type_name," 
+                      " data_size, resc_group_name, resc_name, data_path, data_owner_name,"
+                      " data_owner_zone, data_is_dirty, data_status, data_checksum, data_expiry_ts,"
+                      " data_map_id, data_mode, r_comment, create_ts, modify_ts, resc_hier, resc_id) "
+                      "values (select R_OBJECTID.nextval from DUAL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            }
+            else if (_db_instance_name == "mysql") {
+                sql = "insert into R_DATA_MAIN ("
+                      " data_id, coll_id, data_name, data_repl_num, data_version, data_type_name," 
+                      " data_size, resc_group_name, resc_name, data_path, data_owner_name,"
+                      " data_owner_zone, data_is_dirty, data_status, data_checksum, data_expiry_ts,"
+                      " data_map_id, data_mode, r_comment, create_ts, modify_ts, resc_hier, resc_id) "
+                      "values (R_OBJECTID_nextval(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            }
+            else {
+                // TODO Handle error.
+            }
 
             for (auto&& row : _op.at(jp_values)) {
-                nanodbc::prepare(stmt, "insert into R_DATA_MAIN ("
-                                       " data_id, coll_id, data_name, data_repl_num, data_version, data_type_name," 
-                                       " data_size, resc_group_name, resc_name, data_path, data_owner_name,"
-                                       " data_owner_zone, data_is_dirty, data_status, data_checksum, data_expiry_ts,"
-                                       " data_map_id, data_mode, r_comment, create_ts, modify_ts, resc_hier, resc_id) "
-                                       "values (nextval('R_OBJECTID'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                nanodbc::prepare(stmt, sql.data());
 #endif
                 const auto coll_id = row.at("coll_id").get<int>();                          // Cannot be null
                 const auto data_name = row.at("data_name").get<std::string>();              // Cannot be null
@@ -358,8 +450,8 @@ namespace
                 const auto data_version = row.value("data_version", "0");
                 const auto data_type_name = row.at("data_type_name").get<std::string>();    // Cannot be null
                 const auto data_size = row.value("data_size", 0);                           // Cannot be null
-                const auto resc_group_name = row.value("resc_group_name", "");
-                const auto resc_name = row.at("resc_name").get<std::string>();              // Cannot be null
+                const auto resc_group_name = row.value("resc_group_name", "EMPTY_RESC_GROUP_NAME");
+                const auto resc_name = row.value("resc_name", "EMPTY_RESC_NAME");           // Cannot be null
                 const auto data_path = row.at("data_path").get<std::string>();              // Cannot be null
                 const auto data_owner_name = row.at("data_owner_name").get<std::string>();  // Cannot be null
                 const auto data_owner_zone = row.at("data_owner_zone").get<std::string>();  // Cannot be null
@@ -370,10 +462,10 @@ namespace
                 const auto data_map_id = row.value("data_map_id", 0);
                 const auto data_mode = row.value("data_mode", "");
                 const auto r_comment = row.value("r_comment", "");
-                const auto create_ts = row.value("create_ts", "");
-                const auto modify_ts = row.value("modify_ts", "");
-                const auto resc_hier = row.value("resc_hier", "");                          // TODO Should this be required?
-                const auto resc_id = row.value("resc_id", 0);                               // TODO Should this be required?
+                const auto create_ts = row.value("create_ts", timestamp);
+                const auto modify_ts = row.value("modify_ts", timestamp);
+                const auto resc_hier = row.value("resc_hier", "EMPTY_RESC_HIER");
+                const auto resc_id = row.at("resc_id").get<int>();                          // This is required.
 
                 int i = 0;
                 stmt.bind(i, &coll_id);
@@ -409,8 +501,7 @@ namespace
         return 0;
     } // insert_replica
 
-    auto insert_metadata(RsComm& _comm,
-                         nanodbc::connection& _db_conn,
+    auto insert_metadata(nanodbc::connection& _db_conn,
                          const std::string_view _db_instance_name,
                          const json& _op) -> int
     {
@@ -427,17 +518,34 @@ namespace
            modify_ts       | character varying(32)   |
          */
 
-        // TODO Does the database schema protect the user from creating duplicates.
-
         rodsLog(LOG_NOTICE, "%s :: input = %s", __func__, _op.dump(4).data());
 
         try {
+            const auto timestamp = current_timestamp();
+
             nanodbc::statement stmt{_db_conn};
 #if 0
-            nanodbc::prepare(stmt, "insert into R_META_MAIN ("
-                                   " meta_id, meta_namespace, meta_attr_name, meta_attr_value,"
-                                   " meta_attr_unit, r_comment, create_ts, modify_ts) "
-                                   "values (nextval('R_OBJECTID'), ?, ?, ?, ?, ?, ?, ?)");
+            if (_db_instance_name == "postgres") {
+                nanodbc::prepare(stmt, "insert into R_META_MAIN ("
+                                       " meta_id, meta_namespace, meta_attr_name, meta_attr_value,"
+                                       " meta_attr_unit, r_comment, create_ts, modify_ts) "
+                                       "values (nextval('R_OBJECTID'), ?, ?, ?, ?, ?, ?, ?)");
+            }
+            else if (_db_instance_name == "oracle") {
+                nanodbc::prepare(stmt, "insert into R_META_MAIN ("
+                                       " meta_id, meta_namespace, meta_attr_name, meta_attr_value,"
+                                       " meta_attr_unit, r_comment, create_ts, modify_ts) "
+                                       "values (select R_OBJECTID.nextval from DUAL, ?, ?, ?, ?, ?, ?, ?)");
+            }
+            else if (_db_instance_name == "mysql") {
+                nanodbc::prepare(stmt, "insert into R_META_MAIN ("
+                                       " meta_id, meta_namespace, meta_attr_name, meta_attr_value,"
+                                       " meta_attr_unit, r_comment, create_ts, modify_ts) "
+                                       "values (R_OBJECTID_nextval(), ?, ?, ?, ?, ?, ?, ?)");
+            }
+            else {
+                // TODO Handle error.
+            }
 
             // FIXME Until the unixODBC or Postgres driver is fixed, this "for" statement must
             // be placed above the nanodbc::prepare call. See the following issue for more information:
@@ -446,19 +554,40 @@ namespace
             //
             for (auto&& row : _op.at(jp_values)) {
 #else
+            std::string_view sql;
+
+            if (_db_instance_name == "postgres") {
+                sql = "insert into R_META_MAIN ("
+                      " meta_id, meta_namespace, meta_attr_name, meta_attr_value,"
+                      " meta_attr_unit, r_comment, create_ts, modify_ts) "
+                      "values (nextval('R_OBJECTID'), ?, ?, ?, ?, ?, ?, ?)";
+            }
+            else if (_db_instance_name == "oracle") {
+                sql = "insert into R_META_MAIN ("
+                      " meta_id, meta_namespace, meta_attr_name, meta_attr_value,"
+                      " meta_attr_unit, r_comment, create_ts, modify_ts) "
+                      "values (select R_OBJECTID.nextval from DUAL, ?, ?, ?, ?, ?, ?, ?)";
+            }
+            else if (_db_instance_name == "mysql") {
+                sql = "insert into R_META_MAIN ("
+                      " meta_id, meta_namespace, meta_attr_name, meta_attr_value,"
+                      " meta_attr_unit, r_comment, create_ts, modify_ts) "
+                      "values (R_OBJECTID_nextval(), ?, ?, ?, ?, ?, ?, ?)";
+            }
+            else {
+                // TODO Handle error.
+            }
+
             for (auto&& row : _op.at(jp_values)) {
-                nanodbc::prepare(stmt, "insert into R_META_MAIN ("
-                                       " meta_id, meta_namespace, meta_attr_name, meta_attr_value,"
-                                       " meta_attr_unit, r_comment, create_ts, modify_ts) "
-                                       "values (nextval('R_OBJECTID'), ?, ?, ?, ?, ?, ?, ?)");
+                nanodbc::prepare(stmt, sql.data());
 #endif
                 const auto meta_namespace = row.value("meta_namespace", "");
                 const auto meta_attr_name = row.at("meta_attr_name").get<std::string>();        // Cannot be null
                 const auto meta_attr_value = row.at("meta_attr_value").get<std::string>();      // Cannot be null
                 const auto meta_attr_unit = row.value("meta_attr_unit", "");
                 const auto r_comment = row.value("r_comment", "");
-                const auto create_ts = row.value("create_ts", "");
-                const auto modify_ts = row.value("modify_ts", "");
+                const auto create_ts = row.value("create_ts", timestamp);
+                const auto modify_ts = row.value("modify_ts", timestamp);
 
                 int i = 0;
                 stmt.bind(i, meta_namespace.data());
@@ -478,8 +607,7 @@ namespace
         return 0;
     } // insert_metadata
 
-    auto insert_metadata_link(RsComm& _comm,
-                              nanodbc::connection& _db_conn,
+    auto insert_metadata_link(nanodbc::connection& _db_conn,
                               const std::string_view _db_instance_name,
                               const json& _op) -> int
     {
@@ -492,11 +620,11 @@ namespace
            modify_ts | character varying(32) |
          */
 
-        // TODO Does the database schema protect the user from creating duplicates.
-
         rodsLog(LOG_NOTICE, "%s :: input = %s", __func__, _op.dump(4).data());
 
         try {
+            const auto timestamp = current_timestamp();
+
             nanodbc::statement stmt{_db_conn};
 #if 0
             nanodbc::prepare(stmt, "insert into R_OBJT_METAMAP (object_id, meta_id, create_ts, modify_ts) "
@@ -515,8 +643,8 @@ namespace
 #endif
                 const auto object_id = row.at("object_id").get<int>();  // Cannot be null
                 const auto meta_id = row.at("meta_id").get<int>();      // Cannot be null
-                const auto create_ts = row.value("create_ts", "");
-                const auto modify_ts = row.value("modify_ts", "");
+                const auto create_ts = row.value("create_ts", timestamp);
+                const auto modify_ts = row.value("modify_ts", timestamp);
 
                 stmt.bind(0, &object_id);
                 stmt.bind(1, &meta_id);
@@ -533,8 +661,162 @@ namespace
         return 0;
     } // insert_metadata_link
 
-    auto delete_rows(RsComm& _comm,
-                     nanodbc::connection& _db_conn,
+    auto insert_resource(nanodbc::connection& _db_conn,
+                         const std::string_view _db_instance_name,
+                         const json& _op) -> int
+    {
+        /*
+                 Column        |          Type           | Modifiers 
+          ---------------------+-------------------------+-----------
+           resc_id             | bigint                  | not null
+           resc_name           | character varying(250)  | not null
+           zone_name           | character varying(250)  | not null
+           resc_type_name      | character varying(250)  | not null
+           resc_class_name     | character varying(250)  | not null
+           resc_net            | character varying(250)  | not null
+           resc_def_path       | character varying(1000) | not null
+           free_space          | character varying(250)  | 
+           free_space_ts       | character varying(32)   | 
+           resc_info           | character varying(1000) | 
+           r_comment           | character varying(1000) | 
+           resc_status         | character varying(32)   | 
+           create_ts           | character varying(32)   | 
+           modify_ts           | character varying(32)   | 
+           resc_children       | character varying(1000) | 
+           resc_context        | character varying(1000) | 
+           resc_parent         | character varying(1000) | 
+           resc_objcount       | bigint                  | default 0
+           resc_parent_context | character varying(4000) | 
+           Indexes:
+               "idx_resc_main2" UNIQUE, btree (zone_name, resc_name)
+               "idx_resc_main1" btree (resc_id)
+         */
+
+        rodsLog(LOG_NOTICE, "%s :: input = %s", __func__, _op.dump(4).data());
+
+        try {
+            const auto timestamp = current_timestamp();
+
+            nanodbc::statement stmt{_db_conn};
+#if 0
+            if (_db_instance_name == "postgres") {
+                nanodbc::prepare(stmt, "insert into R_RESC_MAIN ("
+                                       " resc_id, resc_name, zone_name, resc_type_name, resc_class_name,"
+                                       " resc_net, resc_def_path, free_space, free_space_ts, resc_info,"
+                                       " r_comment, resc_status, create_ts, modify_ts, resc_children,"
+                                       " resc_context, resc_parent, resc_objcount, resc_parent_context) "
+                                       "values (nextval('R_OBJECTID'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            }
+            else if (_db_instance_name == "oracle") {
+                nanodbc::prepare(stmt, "insert into R_RESC_MAIN ("
+                                       " resc_id, resc_name, zone_name, resc_type_name, resc_class_name,"
+                                       " resc_net, resc_def_path, free_space, free_space_ts, resc_info,"
+                                       " r_comment, resc_status, create_ts, modify_ts, resc_children,"
+                                       " resc_context, resc_parent, resc_objcount, resc_parent_context) "
+                                       "values (select R_OBJECTID.nextval from DUAL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            }
+            else if (_db_instance_name == "mysql") {
+                nanodbc::prepare(stmt, "insert into R_RESC_MAIN ("
+                                       " resc_id, resc_name, zone_name, resc_type_name, resc_class_name,"
+                                       " resc_net, resc_def_path, free_space, free_space_ts, resc_info,"
+                                       " r_comment, resc_status, create_ts, modify_ts, resc_children,"
+                                       " resc_context, resc_parent, resc_objcount, resc_parent_context) "
+                                       "values (R_OBJECTID_nextval(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            }
+            else {
+                // TODO Handle error.
+            }
+
+            // FIXME Until the unixODBC or Postgres driver is fixed, this "for" statement must
+            // be placed above the nanodbc::prepare call. See the following issue for more information:
+            //
+            //     https://github.com/nanodbc/nanodbc/issues/56
+            //
+            for (auto&& row : _op.at(jp_values)) {
+#else
+            std::string_view sql;
+
+            if (_db_instance_name == "postgres") {
+                sql = "insert into R_RESC_MAIN ("
+                      " resc_id, resc_name, zone_name, resc_type_name, resc_class_name,"
+                      " resc_net, resc_def_path, free_space, free_space_ts, resc_info,"
+                      " r_comment, resc_status, create_ts, modify_ts, resc_children,"
+                      " resc_context, resc_parent, resc_objcount, resc_parent_context) "
+                      "values (nextval('R_OBJECTID'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            }
+            else if (_db_instance_name == "oracle") {
+                sql = "insert into R_RESC_MAIN ("
+                      " resc_id, resc_name, zone_name, resc_type_name, resc_class_name,"
+                      " resc_net, resc_def_path, free_space, free_space_ts, resc_info,"
+                      " r_comment, resc_status, create_ts, modify_ts, resc_children,"
+                      " resc_context, resc_parent, resc_objcount, resc_parent_context) "
+                      "values (select R_OBJECTID.nextval from DUAL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            }
+            else if (_db_instance_name == "mysql") {
+                sql = "insert into R_RESC_MAIN ("
+                      " resc_id, resc_name, zone_name, resc_type_name, resc_class_name,"
+                      " resc_net, resc_def_path, free_space, free_space_ts, resc_info,"
+                      " r_comment, resc_status, create_ts, modify_ts, resc_children,"
+                      " resc_context, resc_parent, resc_objcount, resc_parent_context) "
+                      "values (R_OBJECTID_nextval(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            }
+            else {
+                // TODO Handle error.
+            }
+
+            for (auto&& row : _op.at(jp_values)) {
+                nanodbc::prepare(stmt, sql.data());
+#endif
+                const auto resc_name = row.at("resc_name").get<std::string>();              // Cannot be null
+                const auto zone_name = row.at("zone_name").get<std::string>();              // Cannot be null
+                const auto resc_type_name = row.at("resc_type_name").get<std::string>();    // Cannot be null
+                const auto resc_class_name = row.at("resc_class_name").get<std::string>();  // Cannot be null
+                const auto resc_net = row.at("resc_net").get<std::string>();                // Cannot be null
+                const auto resc_def_path = row.at("resc_def_path").get<std::string>();      // Cannot be null
+                const auto free_space = row.value("free_space", "");
+                const auto free_space_ts = row.value("free_space_ts", "");
+                const auto resc_info = row.value("resc_info", "");
+                const auto r_comment = row.value("r_comment", "");
+                const auto resc_status = row.value("resc_status", "");
+                const auto create_ts = row.value("create_ts", timestamp);
+                const auto modify_ts = row.value("modify_ts", timestamp);
+                const auto resc_children = row.value("resc_children", "");
+                const auto resc_context = row.value("resc_context", "");
+                const auto resc_parent = row.value("resc_parent", "");
+                const auto resc_objcount = row.value("resc_objcount", 0);
+                const auto resc_parent_context = row.value("resc_parent_context", "");
+
+                int i = 0;
+                stmt.bind(i, resc_name.data());
+                stmt.bind(++i, zone_name.data());
+                stmt.bind(++i, resc_type_name.data());
+                stmt.bind(++i, resc_class_name.data());
+                stmt.bind(++i, resc_net.data());
+                stmt.bind(++i, resc_def_path.data());
+                stmt.bind(++i, free_space.data());
+                stmt.bind(++i, free_space_ts.data());
+                stmt.bind(++i, resc_info.data());
+                stmt.bind(++i, r_comment.data());
+                stmt.bind(++i, resc_status.data());
+                stmt.bind(++i, create_ts.data());
+                stmt.bind(++i, modify_ts.data());
+                stmt.bind(++i, resc_children.data());
+                stmt.bind(++i, resc_context.data());
+                stmt.bind(++i, resc_parent.data());
+                stmt.bind(++i, &resc_objcount);
+                stmt.bind(++i, resc_parent_context.data());
+
+                nanodbc::execute(stmt);
+            }
+        }
+        catch (const std::exception& e) {
+            THROW(SYS_LIBRARY_ERROR, e.what());
+        }
+
+        return 0;
+    } // insert_metadata_link
+
+    auto delete_rows(nanodbc::connection& _db_conn,
                      const std::string_view _db_instance_name,
                      const json& _op) -> int
     {
@@ -547,7 +829,7 @@ namespace
                 return SYS_INVALID_INPUT_PARAM;
             }
 
-            const auto table_name = _op.at(jp_table).get<std::string>();
+            auto table_name = _op.at(jp_table).get<std::string>();
 
             std::vector<std::string> condition_clauses;
             condition_clauses.reserve(conditions.size());
@@ -578,7 +860,7 @@ namespace
                       std::experimental::make_ostream_joiner(conditions_stream, " and "));
 
             // Generate the final SQL.
-            const auto sql = fmt::format("delete from {} where {}", table_name, conditions_stream.str());
+            const auto sql = fmt::format("delete from {} where {}", to_upper(table_name), conditions_stream.str());
             rodsLog(LOG_NOTICE, "%s :: Generated SQL = [%s]", __func__, sql.data());
 
 #ifdef ATOMIC_DB_OPS_RUN_SQL
@@ -600,15 +882,14 @@ namespace
         return 0;
     } // delete_rows
 
-    auto update_rows(RsComm& _comm,
-                     nanodbc::connection& _db_conn,
+    auto update_rows(nanodbc::connection& _db_conn,
                      const std::string_view _db_instance_name,
                      const json& _op) -> int
     {
         rodsLog(LOG_NOTICE, "%s :: input = %s", __func__, _op.dump(4).data());
 
         try {
-            const auto table_name = _op.at(jp_table).get<std::string>();
+            auto table_name = _op.at(jp_table).get<std::string>();
 
             for (auto&& update : _op.at(jp_updates)) {
                 const auto& values = update.at(jp_values);
@@ -670,7 +951,7 @@ namespace
                           std::experimental::make_ostream_joiner(conditions_stream, " and "));
 
                 // Generate the final SQL.
-                const auto sql = fmt::format("update {} set {} where {}", table_name, set_stream.str(), conditions_stream.str());
+                const auto sql = fmt::format("update {} set {} where {}", to_upper(table_name), set_stream.str(), conditions_stream.str());
                 rodsLog(LOG_NOTICE, "%s :: Generated SQL = [%s]", __func__, sql.data());
 
 #ifdef ATOMIC_DB_OPS_RUN_SQL
@@ -696,11 +977,12 @@ namespace
     auto throw_if_invalid_table_column(const std::string_view _column,
                                        const std::string_view _table_name) -> void
     {
-        const auto iter = std::find(std::begin(db_columns),
-                                    std::end(db_columns),
-                                    db_column_type{_table_name, _column});
+        const auto pred = [target = db_column_type{_table_name, _column}](const db_column_type& _v) noexcept
+        {
+            return _v == target;
+        };
 
-        if (iter == std::end(db_columns)) {
+        if (std::none_of(std::begin(db_columns), std::end(db_columns), pred)) {
             const auto msg = fmt::format("Unsupported table column [{1}.{0}].", _column, _table_name);
             rodsLog(LOG_ERROR, "%s :: %s", __func__, msg.data());
             THROW(SYS_INVALID_INPUT_PARAM, msg);
@@ -709,30 +991,51 @@ namespace
 
     auto throw_if_invalid_conditional_operator(const std::string_view _operator) -> void
     {
-        const auto iter = std::find(std::begin(supported_operators),
-                                    std::end(supported_operators),
-                                    _operator);
+        const auto pred = [&_operator](const std::string_view _v) noexcept
+        {
+            return _v == _operator;
+        };
 
-        if (iter == std::end(supported_operators)) {
+        if (std::none_of(std::begin(supported_operators), std::end(supported_operators), pred)) {
             const auto msg = fmt::format("Unsupported conditional operator [{}].", _operator);
             rodsLog(LOG_ERROR, "%s :: %s", __func__, msg.data());
             THROW(SYS_INVALID_INPUT_PARAM, msg);
         }
     } // throw_if_invalid_conditional_operator
+
+    auto current_timestamp() -> std::string
+    {
+        using std::chrono::system_clock;
+        using std::chrono::duration_cast;
+        using std::chrono::seconds;
+
+        return fmt::format("{:011}", duration_cast<seconds>(system_clock::now().time_since_epoch()).count());
+    } // current_timestamp
+
+    auto to_upper(std::string& _s) -> std::string&
+    {
+        std::transform(std::begin(_s), std::end(_s), std::begin(_s), [](unsigned char _c) { return std::toupper(_c); });
+        return _s;
+    } // to_upper
 } // anonymous namespace
 
 namespace irods::experimental
 {
-    auto atomic_apply_database_operations(RsComm& _comm, const nlohmann::json& _ops) -> int
+    auto atomic_apply_database_operations(const nlohmann::json& _ops) -> int
     {
         rodsLog(LOG_NOTICE, "%s :: input = %s", __func__, _ops.dump(4).data());
 
         std::string db_instance_name;
         nanodbc::connection db_conn;
-        std::tie(db_instance_name, db_conn) = ic::new_database_connection();
 
-        // The "&dbc = db_conn" is required to avoid a bug with the C++ standard around structured bindings.
-        // See https://stackoverflow.com/a/46115028/5818611 for details.
+        try {
+            std::tie(db_instance_name, db_conn) = ic::new_database_connection();
+        }
+        catch (const std::exception& e) {
+            rodsLog(LOG_ERROR, e.what());
+            return CAT_CONNECT_ERR;
+        }
+
         return ic::execute_transaction(db_conn, [&](nanodbc::transaction& _trans) -> int
         {
             try {
@@ -741,7 +1044,7 @@ namespace irods::experimental
                     const auto table = op.at(jp_table).get<std::string>();
 
                     if (auto iter = handlers.find({op_name, table}); iter != std::end(handlers)) {
-                        if (const auto ec = (*iter->second)(_comm, db_conn, db_instance_name, op); ec != 0) {
+                        if (const auto ec = (*iter->second)(db_conn, db_instance_name, op); ec != 0) {
                             return ec;
                         }
                     }
@@ -768,12 +1071,12 @@ namespace irods::experimental
                 return SYS_INTERNAL_ERR;
             }
         });
-    }
+    } // atomic_apply_database_operations
 
-    auto atomic_apply_database_operations(RsComm& _comm, const nlohmann::json& _ops, std::error_code& _ec) -> void
+    auto atomic_apply_database_operations(const nlohmann::json& _ops, std::error_code& _ec) -> void
     {
         try {
-            const auto ec = atomic_apply_database_operations(_comm, _ops);
+            const auto ec = atomic_apply_database_operations(_ops);
             _ec.assign(ec, std::generic_category());
         }
         catch (const irods::exception& e) {
@@ -782,6 +1085,6 @@ namespace irods::experimental
         catch (...) {
             _ec.assign(SYS_UNKNOWN_ERROR, std::generic_category());
         }
-    }
+    } // atomic_apply_database_operations
 } // namespace irods::experimental
 

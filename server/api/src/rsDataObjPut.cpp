@@ -674,7 +674,7 @@ int rsDataObjPut(rsComm_t* rsComm,
     namespace fs = ix::filesystem;
 
     try {
-        const auto ec = ix::atomic_apply_database_operations(*rsComm, {
+        const auto ec = ix::atomic_apply_database_operations({
             {"operations", nlohmann::json::array({
                 {
                     {"op_name", "insert"},
