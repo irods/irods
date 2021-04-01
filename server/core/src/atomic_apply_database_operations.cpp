@@ -137,7 +137,27 @@ namespace
         db_column_type{"r_objt_metamap", "object_id"},
         db_column_type{"r_objt_metamap", "meta_id"},
         db_column_type{"r_objt_metamap", "create_ts"},
-        db_column_type{"r_objt_metamap", "modify_ts"}
+        db_column_type{"r_objt_metamap", "modify_ts"},
+
+        db_column_type{"r_resc_main", "resc_id"},
+        db_column_type{"r_resc_main", "resc_name"},
+        db_column_type{"r_resc_main", "zone_name"},
+        db_column_type{"r_resc_main", "resc_type_name"},
+        db_column_type{"r_resc_main", "resc_class_name"},
+        db_column_type{"r_resc_main", "resc_net"},
+        db_column_type{"r_resc_main", "resc_def_path"},
+        db_column_type{"r_resc_main", "free_space"},
+        db_column_type{"r_resc_main", "free_space_ts"},
+        db_column_type{"r_resc_main", "resc_info"},
+        db_column_type{"r_resc_main", "r_comment"},
+        db_column_type{"r_resc_main", "resc_status"},
+        db_column_type{"r_resc_main", "create_ts"},
+        db_column_type{"r_resc_main", "modify_ts"},
+        db_column_type{"r_resc_main", "resc_children"},
+        db_column_type{"r_resc_main", "resc_context"},
+        db_column_type{"r_resc_main", "resc_parent"},
+        db_column_type{"r_resc_main", "resc_objcount"},
+        db_column_type{"r_resc_main", "resc_parent_context"}
     ); // db_columns
 
     //
