@@ -3,8 +3,9 @@
 
 /// \file
 
+#include "generalAdmin.h"
+
 struct RsComm;
-struct GeneralAdminInp;
 
 int rsGeneralAdmin(RsComm* rsComm, GeneralAdminInp* generalAdminInp);
 
