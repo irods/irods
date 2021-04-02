@@ -1,25 +1,11 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code (for the most part).  */
-/* See generalAdmin.h for a description of this API call.*/
+#include "rsGeneralAdmin.hpp"
 
-// =-=-=-=-=-=-=-
-// irods includes
 #include "generalAdmin.h"
 #include "rodsConnect.h"
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
-#include "rsGeneralAdmin.hpp"
 #include "rsModAVUMetadata.hpp"
 #include "rsGenQuery.hpp"
-
-// =-=-=-=-=-=-=-
-// stl includes
-#include <iostream>
-#include <string>
-#include <tuple>
-
-// =-=-=-=-=-=-=-
 #include "irods_children_parser.hpp"
 #include "irods_string_tokenize.hpp"
 #include "irods_plugin_name_generator.hpp"
@@ -29,18 +15,22 @@
 #include "irods_load_plugin.hpp"
 #include "irods_at_scope_exit.hpp"
 #include "irods_hierarchy_parser.hpp"
+#include "atomic_apply_database_operations.hpp"
 
-// =-=-=-=-=-=-=-
-// boost includes
 #include <boost/date_time.hpp>
 #include <boost/optional.hpp>
+
+#include <sstream>
+#include <string>
+#include <string_view>
+#include <tuple>
 
 extern irods::resource_manager resc_mgr;
 
 int _check_rebalance_timestamp_avu_on_resource(
     rsComm_t* _rsComm,
-    const std::string& _resource_name) {
-
+    const std::string& _resource_name)
+{
     // build genquery to find active or stale "rebalance operation" entries for this resource
     genQueryOut_t* gen_out = nullptr;
     char tmp_str[MAX_NAME_LEN];
@@ -595,19 +585,44 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
     ruleExecInfo_t rei;
     const char *args[MAX_NUM_OF_ARGS_IN_ACTION];
     int i, argc;
-    ruleExecInfo_t rei2;
+    ruleExecInfo_t rei2{};
 
-    memset( ( char* )&rei2, 0, sizeof( ruleExecInfo_t ) );
     rei2.rsComm = rsComm;
-    if ( rsComm != NULL ) {
+    if (rsComm) {
         rei2.uoic = &rsComm->clientUser;
         rei2.uoip = &rsComm->proxyUser;
     }
 
+    rodsLog( LOG_DEBUG, "_rsGeneralAdmin arg0=%s", generalAdminInp->arg0 );
 
-    rodsLog( LOG_DEBUG,
-             "_rsGeneralAdmin arg0=%s",
-             generalAdminInp->arg0 );
+    if (strcmp(generalAdminInp->arg0, "setparentresc") == 0) {
+        // TODO Call atomic_apply_database_operations
+        // 1. Verify that the incoming arguments are indeed resources.
+        // 2. Verify that the resources are not special to the system (e.g. bundleResc).
+        // 3. Verify that the resources are not related to each other (one is an ancestor/descendant of the other).
+
+        namespace ix = irods::experimental;
+
+        const std::string_view child_resc = generalAdminInp->arg1;
+
+        if (!resc_mgr.exists(child_resc)) {
+
+        }
+
+        if (is_bundle_resource(child_resc)) {
+
+        }
+
+        const std::string_view parent_resc = generalAdminInp->arg2;
+
+        if (!resc_mgr.exists(parent_resc)) {
+
+        }
+
+        if (is_bundle_resource(parent_resc)) {
+
+        }
+    }
 
     if ( strcmp( generalAdminInp->arg0, "add" ) == 0 ) {
         if ( strcmp( generalAdminInp->arg1, "user" ) == 0 ) {

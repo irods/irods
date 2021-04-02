@@ -1,6 +1,6 @@
-// =-=-=-=-=-=-=-
-#include "rcMisc.h"
 #include "irods_resource_manager.hpp"
+
+#include "rcMisc.h"
 #include "irods_log.hpp"
 #include "irods_string_tokenize.hpp"
 #include "irods_stacktrace.hpp"
@@ -8,9 +8,6 @@
 #include "irods_load_plugin.hpp"
 #include "irods_lexical_cast.hpp"
 #include "rsGenQuery.hpp"
-
-// =-=-=-=-=-=-=-
-// irods includes
 #include "getRescQuota.h"
 #include "irods_children_parser.hpp"
 #include "irods_hierarchy_parser.hpp"
@@ -22,9 +19,7 @@
 
 #include "fmt/format.h"
 
-// =-=-=-=-=-=-=-
-// stl includes
-#include <iostream>
+//#include <iostream>
 #include <vector>
 #include <iterator>
 
@@ -1262,27 +1257,26 @@ namespace irods
 
     error resource_manager::resc_id_to_name(
         const rodsLong_t& _id,
-        std::string&      _name ) {
+        std::string&      _name ) const
+    {
         // parent name might be 'empty'
-        if(!_id) {
+        if (!_id) {
             return SUCCESS();
         }
 
-        if( !resource_id_map_.has_entry(_id) ) {
+        auto iter = resource_id_map_.find(_id);
+
+        if (std::end(resource_id_map_) == iter) {
             std::stringstream msg;
             msg << "invalid resource id: " << _id;
-            return ERROR(
-                       SYS_RESC_DOES_NOT_EXIST,
-                       msg.str() );
+            return ERROR( SYS_RESC_DOES_NOT_EXIST, msg.str() );
         }
 
-        resource_ptr resc = resource_id_map_[ _id ];
+        resource_ptr resc = iter->second;
 
         std::string hier;
-        error ret = resc->get_property<std::string>(
-                        RESOURCE_NAME,
-                        _name );
-        if( !ret.ok() ) {
+        error ret = resc->get_property<std::string>(RESOURCE_NAME, _name);
+        if (!ret.ok()) {
             return PASS(ret);
         }
 
@@ -1292,34 +1286,32 @@ namespace irods
 
     error resource_manager::resc_id_to_name(
         const std::string& _id_str,
-        std::string&       _name ) {
+        std::string&       _name ) const
+    {
         // parent name might be 'empty'
         if("0" == _id_str || _id_str.empty()) {
             return SUCCESS();
         }
 
         rodsLong_t resc_id = 0;
-        error ret = lexical_cast<rodsLong_t>(
-                       _id_str,
-                       resc_id );
+        error ret = lexical_cast<rodsLong_t>(_id_str, resc_id);
         if(!ret.ok()) {
             return PASS(ret);
         }
 
-        if( !resource_id_map_.has_entry(resc_id) ) {
+        auto iter = resource_id_map_.find(resc_id);
+
+        if(std::end(resource_id_map_) == iter) {
             std::stringstream msg;
             msg << "invalid resource id: " << _id_str;
-            return ERROR(
-                       SYS_RESC_DOES_NOT_EXIST,
-                       msg.str() );
+            return ERROR(SYS_RESC_DOES_NOT_EXIST, msg.str());
         }
-        resource_ptr resc = resource_id_map_[ resc_id ];
+
+        resource_ptr resc = iter->second;
 
         std::string hier;
-        ret = resc->get_property<std::string>(
-                        RESOURCE_NAME,
-                        _name );
-        if( !ret.ok() ) {
+        ret = resc->get_property<std::string>(RESOURCE_NAME, _name);
+        if(!ret.ok()) {
             return PASS(ret);
         }
 
@@ -1327,35 +1319,26 @@ namespace irods
 
     } // resc_id_to_name
 
-    std::string resource_manager::resc_id_to_name(const rodsLong_t& _id)
+    std::string resource_manager::resc_id_to_name(const rodsLong_t& _id) const
     {
-        if(!_id) {
-            return {};
+        std::string name;
+
+        if (const auto err = resc_id_to_name(_id, name); !err.ok()) {
+            THROW(err.code(), err.result());
         }
 
-        if(!resource_id_map_.has_entry(_id)) {
-            THROW(SYS_RESC_DOES_NOT_EXIST, fmt::format("invalid resource id: {}", _id));
-        }
-
-        std::string resource_name;
-        const resource_ptr resc = resource_id_map_[_id];
-        if (const error ret = resc->get_property<std::string>(RESOURCE_NAME, resource_name); !ret.ok()) {
-            THROW(ret.code(), ret.result());
-        }
-        return resource_name;
+        return name;
     } // resc_id_to_name
 
-    std::string resource_manager::resc_id_to_name(std::string_view _id)
+    std::string resource_manager::resc_id_to_name(std::string_view _id) const
     {
-        if(_id.empty()) {
-            return {};
+        std::string name;
+
+        if (const auto err = resc_id_to_name(_id.data(), name); !err.ok()) {
+            THROW(err.code(), err.result());
         }
 
-        rodsLong_t id = 0;
-        if (const error ret = lexical_cast<rodsLong_t>(_id, id); !ret.ok()) {
-            THROW(ret.code(), ret.result());
-        }
-        return resc_id_to_name(id);
+        return name;
     } // resc_id_to_name
 
     error resource_manager::is_coordinating_resource(
