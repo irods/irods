@@ -50,19 +50,19 @@ namespace irods {
             bool empty() const {
                 return table_.empty();
             }
-            iterator begin()  {
+            iterator begin() const {
                 return table_.begin();
             }
-            iterator end()    {
+            iterator end() const {
                 return table_.end();
             }
-            iterator cbegin() {
+            iterator cbegin() const {
                 return table_.cbegin();
             }
-            iterator cend()   {
+            iterator cend() const {
                 return table_.cend();
             }
-            iterator find( KeyType _k ) {
+            iterator find( KeyType _k ) const {
                 return table_.find( _k );
             }
 
@@ -105,10 +105,10 @@ namespace irods {
             boost::any& operator[]( KeyType _k ) {
                 return table_[ _k ];
             }
-            int size() {
+            int size() const {
                 return table_.size();
             }
-            bool has_entry( KeyType _k ) {
+            bool has_entry( KeyType _k ) const {
                 return !( table_.end() == table_.find( _k ) );
             }
             size_t erase( KeyType _k ) {
@@ -117,16 +117,16 @@ namespace irods {
             void clear() {
                 table_.clear();
             }
-            bool empty() {
+            bool empty() const {
                 return table_.empty();
             }
-            iterator begin() {
+            iterator begin() const {
                 return table_.begin();
             }
-            iterator end()   {
+            iterator end() const {
                 return table_.end();
             }
-            iterator find( KeyType _k ) {
+            iterator find( KeyType _k ) const {
                 return table_.find( _k );
             }
 
