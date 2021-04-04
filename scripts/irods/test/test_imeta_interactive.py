@@ -186,6 +186,26 @@ class Test_Imeta_Interactive(unittest.TestCase):
         while clock() - timestamp < self.default_timeout:
             self.assertIsNone(self.imeta_p.poll())
 
+    def test_imeta_quoted_arguments__5518(self):
+        self.get_output()
+        data_name = self.test_data_path_base + '1'
+        A = 'test 5518 quoted arguments with spaces'
+        V = 'c\td'
+        U = 'e \tf'
+        self.imeta_p.stdin.write('adda -d {data_name} "{A}" "{V}" "{U}"\n'.format(**locals()))
+        self.imeta_p.stdin.flush()
+        (out, _) = self.get_output()
+        self.assertEqual(out, 'imeta>')
+        self.admin.assert_icommand(['iquest','--no-page', '%s/%s/%s',
+                                    "select META_DATA_ATTR_NAME, META_DATA_ATTR_VALUE, META_DATA_ATTR_UNITS where DATA_NAME = '{0}' "
+                                    " and META_DATA_ATTR_NAME = '{1}'".format( data_name.split('/')[-1], A)
+                                   ],
+                                   'STDOUT_SINGLELINE', '^{A}/{V}/{U}$'.format(**locals()), use_regex=True)
+        # ensure imeta stays open
+        timestamp = clock()
+        while clock() - timestamp < self.default_timeout:
+            self.assertIsNone(self.imeta_p.poll())
+
     def test_ls_d(self):
         self.get_output()
         self.imeta_p.stdin.write('ls -d ' + self.test_data_path_base + '1\n')
