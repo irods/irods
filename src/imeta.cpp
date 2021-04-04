@@ -5,6 +5,8 @@
   This is an interface to the Attribute-Value-Units type of metadata.
 */
 
+#include <unistd.h>
+
 #include "rods.h"
 #include "rodsClient.h"
 #include "irods_client_api_table.hpp"
@@ -1178,7 +1180,13 @@ modAVUMetadata( char *arg0, char *arg1, char *arg2, char *arg3,
 }
 
 /*
- Prompt for input and parse into tokens
+ Prompt for input and parse into tokens.
+ This is a state machine based on the value of tokenFlag:
+    0: not currently processing a token
+    1: processing a whitespace delimited token
+    2: processing a double-quote delimited token
+    3: processing a single-quote delimited token
+ A carriage return ends the line unconditionally.
 */
 int
 getInput( char *cmdToken[], int maxTokens ) {
@@ -1188,11 +1196,14 @@ getInput( char *cmdToken[], int maxTokens ) {
     int tokenFlag; /* 1: start reg, 2: start ", 3: start ' */
     char *cpTokenStart;
     char *stat;
+    unsigned long nPrompts {};
 
     std::cerr << std::flush;
     memset( ttybuf, 0, BIG_STR );
-    fputs( "imeta>", stdout );
-    std::cout << std::flush;
+    if (isatty(0) || !nPrompts++) {
+        fputs( "imeta>", stdout );
+        std::cout << std::flush;
+    }
     stat = fgets( ttybuf, BIG_STR, stdin );
     if ( stat == 0 ) {
         printf( "\n" );
@@ -1212,7 +1223,8 @@ getInput( char *cmdToken[], int maxTokens ) {
     for ( i = 0; i < lenstr; i++ ) {
         if ( ttybuf[i] == '\n' ) {
             ttybuf[i] = '\0';
-            cmdToken[nTokens++] = cpTokenStart;
+            // finish a token if already started
+            if (tokenFlag != 0) { cmdToken[nTokens++] = cpTokenStart; }
             return nTokens;
         }
         if ( tokenFlag == 0 ) {
