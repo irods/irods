@@ -13,6 +13,7 @@
     "irods_hierarchy_parser",
     "irods_hostname_cache",
     "irods_key_value_proxy",
+    "irods_json_apis_from_client",
     "irods_lifetime_manager",
     "irods_linked_list_iterator",
     "irods_logical_paths_and_special_characters",

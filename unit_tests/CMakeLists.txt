@@ -64,6 +64,7 @@ set(TEST_INCLUDE_LIST test_config/irods_atomic_apply_acl_operations
                       test_config/irods_user_administration
                       test_config/irods_version
                       test_config/irods_with_durability
+                      test_config/irods_json_apis_from_client
                       test_config/irods_zone_report)
 
 foreach(IRODS_TEST_CONFIG ${TEST_INCLUDE_LIST})
