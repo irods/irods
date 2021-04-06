@@ -409,8 +409,8 @@ auto plugin_factory(const std::string& _instance_name,
                         RODS_API_VERSION,                           // API version
                         NO_USER_AUTH,                               // Client auth
                         NO_USER_AUTH,                               // Proxy auth
-                        "BytesBuf_PI", 0,                           // In PI / bs flag
-                        "BytesBuf_PI", 0,                           // Out PI / bs flag
+                        "BinBytesBuf_PI", 0,                        // In PI / bs flag
+                        "BinBytesBuf_PI", 0,                        // Out PI / bs flag
                         op,                                         // Operation
                         "data_object_finalize",                     // Operation name
                         nullptr,                                    // Null clear function
@@ -419,10 +419,10 @@ auto plugin_factory(const std::string& _instance_name,
 
     auto* api = new irods::api_entry{def};
 
-    api->in_pack_key = "BytesBuf_PI";
+    api->in_pack_key = "BinBytesBuf_PI";
     api->in_pack_value = BytesBuf_PI;
 
-    api->out_pack_key = "BytesBuf_PI";
+    api->out_pack_key = "BinBytesBuf_PI";
     api->out_pack_value = BytesBuf_PI;
 
     return api;
