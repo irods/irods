@@ -136,7 +136,7 @@ auto plugin_factory(const std::string& _instance_name,
                         NO_USER_AUTH,                    // Client auth
                         NO_USER_AUTH,                    // Proxy auth
                         "DataObjInp_PI", 0,              // In PI / bs flag
-                        "BytesBuf_PI", 0,                // Out PI / bs flag
+                        "BinBytesBuf_PI", 0,             // Out PI / bs flag
                         op,                              // Operation
                         "api_replica_open",              // Operation name
                         clearDataObjInp,                 // Clear function
@@ -148,7 +148,7 @@ auto plugin_factory(const std::string& _instance_name,
     api->in_pack_key = "DataObjInp_PI";
     api->in_pack_value = DataObjInp_PI;
 
-    api->out_pack_key = "BytesBuf_PI";
+    api->out_pack_key = "BinBytesBuf_PI";
     api->out_pack_value = BytesBuf_PI;
 
     return api;
