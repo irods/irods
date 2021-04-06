@@ -700,18 +700,18 @@ int set_parent_resource(RsComm& _comm, GeneralAdminInp& _gen_admin_inp)
 
     using json = nlohmann::json;
 
-    std::string child_resc_id;
+    rodsLong_t child_resc_id;
 
     if (const auto err = child_resc_ptr->get_property(irods::RESOURCE_ID, child_resc_id); !err.ok()) {
         rodsLog(LOG_ERROR, "%s :: Could not retrieve resource id for resource [%s].", __func__, child_resc.data());
-        return SYS_INTERNAL_ERR;
+        return err.code();
     }
 
-    std::string parent_resc_id;
+    rodsLong_t parent_resc_id;
 
     if (const auto err = parent_resc_ptr->get_property(irods::RESOURCE_ID, parent_resc_id); !err.ok()) {
         rodsLog(LOG_ERROR, "%s :: Could not retrieve resource id for resource [%s].", __func__, parent_resc.data());
-        return SYS_INTERNAL_ERR;
+        return err.code();
     }
 
     ec = irods::experimental::atomic_apply_database_operations(json::object_t{

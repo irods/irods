@@ -24,7 +24,7 @@ typedef struct GeneralAdminInp {
 extern "C" {
 #endif
 
-int rcGeneralAdmin(struct RcComm* conn, GeneralAdminInp* generalAdminInp);
+int rcGeneralAdmin(struct RcComm* conn, struct GeneralAdminInp* generalAdminInp);
 
 #ifdef __cplusplus
 } // extern "C"

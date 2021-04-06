@@ -6,6 +6,7 @@
 #include "irods_first_class_object.hpp"
 
 #include <functional>
+#include <iterator>
 
 namespace irods
 {
@@ -176,7 +177,7 @@ namespace irods
 
             bool exists(const std::string_view _resc_name) const 
             {
-                return resource_name_map_.find(_resc_name.data()) != std::end(resource_name_map_);
+                return resource_name_map_.find(_resc_name.data()) != resource_name_map_.cend();
             }
 
             bool exists(rodsLong_t _id) const 
@@ -251,9 +252,14 @@ namespace irods
 
             } // resolve_from_property
 
-            typedef lookup_table< resource_ptr >::iterator iterator;
+            using iterator       = lookup_table< resource_ptr >::iterator;
+            using const_iterator = lookup_table< resource_ptr >::const_iterator;
+
             iterator begin() { return resource_name_map_.begin(); }
-            iterator end()   { return resource_name_map_.end();   }
+            iterator end() { return resource_name_map_.end(); }
+
+            const_iterator cbegin() const { return resource_name_map_.cbegin(); }
+            const_iterator cend() const { return resource_name_map_.cend(); }
 
         private:
             // =-=-=-=-=-=-=-
