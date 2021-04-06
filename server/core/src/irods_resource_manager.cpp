@@ -1266,7 +1266,7 @@ namespace irods
 
         auto iter = resource_id_map_.find(_id);
 
-        if (std::end(resource_id_map_) == iter) {
+        if (resource_id_map_.cend() == iter) {
             std::stringstream msg;
             msg << "invalid resource id: " << _id;
             return ERROR( SYS_RESC_DOES_NOT_EXIST, msg.str() );
@@ -1301,7 +1301,7 @@ namespace irods
 
         auto iter = resource_id_map_.find(resc_id);
 
-        if(std::end(resource_id_map_) == iter) {
+        if(resource_id_map_.cend() == iter) {
             std::stringstream msg;
             msg << "invalid resource id: " << _id_str;
             return ERROR(SYS_RESC_DOES_NOT_EXIST, msg.str());

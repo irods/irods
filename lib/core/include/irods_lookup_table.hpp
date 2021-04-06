@@ -1,132 +1,165 @@
 #ifndef PLUGIN_TABLE_HPP
 #define PLUGIN_TABLE_HPP
 
-// =-=-=-=-=-=-=-
-// boost includes
-#include <boost/any.hpp>
-
-// =-=-=-=-=-=-=-
 #include "rodsErrorTable.h"
 #include "irods_hash.hpp"
 #include "irods_error.hpp"
 #include "irods_stacktrace.hpp"
-
 #include "rodsLog.h"
+
+#include <boost/unordered_map.hpp>
+#include <boost/any.hpp>
 
 namespace irods {
 
-// =-=-=-=-=-=-=-
-// class to manage tables of plugins.  employing a class in order to use
-// RAII for adding entries to the table now that it is not a static array
+    // =-=-=-=-=-=-=-
+    // class to manage tables of plugins.  employing a class in order to use
+    // RAII for adding entries to the table now that it is not a static array
     template < typename ValueType,
                typename KeyType = std::string,
                typename HashType = irods_string_hash >
     class lookup_table {
         protected:
-            typedef HASH_TYPE< KeyType, ValueType, HashType > irods_hash_map;
+            using irods_hash_map = boost::unordered_map<KeyType, ValueType, HashType>;
 
             irods_hash_map table_;
 
         public:
-            typedef typename irods_hash_map::iterator       iterator;
-            typedef typename irods_hash_map::const_iterator const_iterator;
+            using iterator       = typename irods_hash_map::iterator;
+            using const_iterator = typename irods_hash_map::const_iterator;
+
             lookup_table() {};
+
             virtual ~lookup_table() {}
-            ValueType& operator[]( KeyType _k ) {
+
+            ValueType& operator[](const KeyType& _k) {
                 return table_[ _k ];
             }
-            int size() const {
+
+            int size() const noexcept {
                 return table_.size();
             }
-            bool has_entry( KeyType _k ) const {
-                return !( table_.end() == table_.find( _k ) );
+
+            bool has_entry(const KeyType& _k) const {
+                return table_.end() != table_.find( _k );
             }
-            size_t erase( KeyType _k ) {
+
+            size_t erase(const KeyType& _k) {
                 return table_.erase( _k );
             }
+
             void clear() {
                 table_.clear();
             }
-            bool empty() const {
+
+            bool empty() const noexcept {
                 return table_.empty();
             }
-            iterator begin() const {
+
+            iterator begin() {
                 return table_.begin();
             }
-            iterator end() const {
+
+            iterator end() {
                 return table_.end();
             }
-            iterator cbegin() const {
+
+            const_iterator cbegin() const {
                 return table_.cbegin();
             }
-            iterator cend() const {
+
+            const_iterator cend() const {
                 return table_.cend();
             }
-            iterator find( KeyType _k ) const {
+
+            iterator find(const KeyType& _k) {
                 return table_.find( _k );
             }
 
-            // =-=-=-=-=-=-=-
-            // accessor function
-            error get( const std::string& _key, ValueType& _val ) {
-                if ( !has_entry( _key ) ) {
-                    return ERROR( KEY_NOT_FOUND, "key not found" );
-                }
-
-                _val = table_[ _key ];
-
-                return SUCCESS();
+            const_iterator find(const KeyType& _k) const {
+                return table_.find( _k );
             }
 
-            // =-=-=-=-=-=-=-
-            // mutator function
-            error set( const std::string& _key, const ValueType& _val ) {
-                table_[ _key ] = _val;
-                return SUCCESS();
-            } // set
+            error get(const std::string& _key, ValueType& _val) const
+            {
+                if (auto iter = table_.find(_key); iter != table_.end()) {
+                    _val = iter->second;
+                    return SUCCESS();
+                }
 
+                return ERROR(KEY_NOT_FOUND, "key not found");
+            }
+
+            error set(const std::string& _key, const ValueType& _val) {
+                table_[_key] = _val;
+                return SUCCESS();
+            }
     }; // class lookup_table
 
-
-// =-=-=-=-=-=-=-
-// partial specialization created to support templating the get/set
-// functions which need to manage exception handling etc from
-// a boost::any_cast
+    // =-=-=-=-=-=-=-
+    // partial specialization created to support templating the get/set
+    // functions which need to manage exception handling etc from
+    // a boost::any_cast
     template< typename KeyType, typename HashType >
-    class lookup_table < boost::any, KeyType, HashType > {
+    class lookup_table<boost::any, KeyType, HashType> {
         protected:
-            typedef HASH_TYPE< KeyType, boost::any, HashType > irods_hash_map;
+            using irods_hash_map = boost::unordered_map<KeyType, boost::any, HashType>;
+
             irods_hash_map table_;
 
         public:
-            typedef typename irods_hash_map::iterator iterator;
+            using iterator       = typename irods_hash_map::iterator;
+            using const_iterator = typename irods_hash_map::const_iterator;
+
             lookup_table() {};
+
             virtual ~lookup_table() {}
-            boost::any& operator[]( KeyType _k ) {
-                return table_[ _k ];
+
+            boost::any& operator[]( const KeyType& _k ) {
+                return table_[_k];
             }
-            int size() const {
+
+            int size() const noexcept {
                 return table_.size();
             }
-            bool has_entry( KeyType _k ) const {
-                return !( table_.end() == table_.find( _k ) );
+
+            bool has_entry(const KeyType& _k) const {
+                return table_.end() != table_.find( _k );
             }
-            size_t erase( KeyType _k ) {
+
+            size_t erase(const KeyType& _k) {
                 return table_.erase( _k );
             }
+
             void clear() {
                 table_.clear();
             }
-            bool empty() const {
+
+            bool empty() const noexcept {
                 return table_.empty();
             }
-            iterator begin() const {
+
+            iterator begin() {
                 return table_.begin();
             }
-            iterator end() const {
+
+            iterator end() {
                 return table_.end();
             }
-            iterator find( KeyType _k ) const {
+
+            const_iterator cbegin() const {
+                return table_.cbegin();
+            }
+
+            const_iterator cend() const {
+                return table_.cend();
+            }
+
+            iterator find(const KeyType& _k) {
+                return table_.find( _k );
+            }
+
+            const_iterator find(const KeyType& _k) const {
                 return table_.find( _k );
             }
 
@@ -134,10 +167,10 @@ namespace irods {
             // get a property from the table if it exists.  catch the exception in the case where
             // the template types may not match and return success/fail
             template< typename T >
-            error get( const std::string& _key, T& _val ) {
+            error get(const std::string& _key, T& _val) {
                 // =-=-=-=-=-=-=-
                 // check params
-                if ( _key.empty() ) {
+                if (_key.empty()) {
                     return ERROR( KEY_NOT_FOUND, "the key is empty" );
                 }
 
@@ -167,7 +200,6 @@ namespace irods {
                 // =-=-=-=-=-=-=-
                 // invalid location in the code
                 return ERROR( INVALID_LOCATION, "shouldn't get here." );
-
             } // get_property
 
             // =-=-=-=-=-=-=-
@@ -185,13 +217,10 @@ namespace irods {
                 table_[ _key ] = _val;
 
                 return SUCCESS() ;
-
             } // set_property
-
     }; // class lookup_table
     
-    typedef lookup_table<boost::any> plugin_property_map;
-
+    using plugin_property_map = lookup_table<boost::any>;
 }; // namespace irods
 
 #endif // PLUGIN_TABLE_HPP
