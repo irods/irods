@@ -298,15 +298,15 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // create a api def object
-        irods::apidef_t def{ADAPTER_APN,        // api number
-                            RODS_API_VERSION,   // api version
-                            NO_USER_AUTH,       // client auth
-                            NO_USER_AUTH,       // proxy auth
-                            "BytesBuf_PI", 0,   // in PI / bs flag
-                            "BytesBuf_PI", 0,   // out PI / bs flag
-                            std::function<int(rsComm_t*, bytesBuf_t*, bytesBuf_t**)>(adapter), // operation
+        irods::apidef_t def{ADAPTER_APN,                // api number
+                            RODS_API_VERSION,           // api version
+                            NO_USER_AUTH,               // client auth
+                            NO_USER_AUTH,               // proxy auth
+                            "BinBytesBuf_PI", 0,        // in PI / bs flag
+                            "BinBytesBuf_PI", 0,        // out PI / bs flag
+                            std::function<int(rsComm_t*, bytesBuf_t*, bytesBuf_t**)>(adapter),  // operation
                             "experimental_api_adaptor", // operation name
-                            nullptr,            // clear fcn
+                            nullptr,                    // clear fcn
                             (funcPtr)CALL_ADAPTOR};
         return new irods::api_entry(def);
     } // plugin_factory
