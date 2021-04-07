@@ -1,6 +1,8 @@
 from __future__ import print_function
 import os
 import sys
+import tempfile
+
 if sys.version_info < (2, 7):
     import unittest2 as unittest
 else:
@@ -10,7 +12,34 @@ from . import session
 from .. import test
 from .. import lib
 
-class test_iput_with_checksums(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
+rodsadmins = [('otherrods', 'rods')]
+rodsusers  = [('alice', 'apass')]
+
+class Test_Iput(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.TestCase):
+
+    def setUp(self):
+        super(Test_Iput, self).setUp()
+        self.admin = self.admin_sessions[0]
+        self.user = self.user_sessions[0]
+
+    def tearDown(self):
+        super(Test_Iput, self).tearDown()
+
+    def test_parallel_put_does_not_generate_SYS_COPY_LEN_ERR_when_overwriting_large_file_with_small_file__issue_5505(self):
+        file_40mb = os.path.join(tempfile.gettempdir(), '40mb.txt')
+        lib.make_file(file_40mb, 40000000, 'arbitrary')
+
+        file_50mb = os.path.join(tempfile.gettempdir(), '50mb.txt')
+        lib.make_file(file_50mb, 50000000, 'arbitrary')
+
+        data_object = 'foo'
+        self.admin.assert_icommand(['iput', file_50mb, data_object])
+
+        # The following command should not result in a SYS_COPY_LEN_ERR error.
+        self.admin.assert_icommand(['iput', '-f', file_40mb, data_object])
+
+class test_iput_with_checksums(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.TestCase):
+
     def setUp(self):
         super(test_iput_with_checksums, self).setUp()
         self.admin = self.admin_sessions[0]

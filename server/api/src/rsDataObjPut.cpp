@@ -373,7 +373,7 @@ namespace
     int parallel_transfer_put(RsComm *rsComm, DataObjInp *dataObjInp, portalOprOut **portalOprOut)
     {
         // Parallel transfer
-        dataObjInp->openFlags |= O_CREAT | O_RDWR;
+        dataObjInp->openFlags |= (O_CREAT | O_RDWR | O_TRUNC);
         int l1descInx = rsDataObjOpen(rsComm, dataObjInp);
         if ( l1descInx < 0 ) {
             return l1descInx;
