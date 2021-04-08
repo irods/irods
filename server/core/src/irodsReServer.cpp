@@ -209,6 +209,25 @@ namespace {
             ruleExecModInp_t rule_exec_mod_inp{};
             rstrcpy(rule_exec_mod_inp.ruleId, _inp.ruleExecId, NAME_LEN);
 
+            if (std::strlen(_inp.priority) > 0) {
+                // The priority string is not empty, but it could be invalid.
+                // If the priority cannot be parsed into a valid signed integer, set it
+                // to the default priority level of 5.
+                try {
+                    if (const auto p = std::stoi(_inp.priority); p < 1 || p > 9) {
+                        addKeyVal(&rule_exec_mod_inp.condInput, RULE_PRIORITY_KW, "5");
+                    }
+                }
+                catch (...) {
+                    addKeyVal(&rule_exec_mod_inp.condInput, RULE_PRIORITY_KW, "5");
+                }
+            }
+            else {
+                // An empty priority is an indicator that the rule existed prior to iRODS v4.2.9
+                // and that it needs to be set to the default priority level of 5.
+                addKeyVal(&rule_exec_mod_inp.condInput, RULE_PRIORITY_KW, "5");
+            }
+
             addKeyVal(&rule_exec_mod_inp.condInput, RULE_LAST_EXE_TIME_KW, current_time);
             addKeyVal(&rule_exec_mod_inp.condInput, RULE_EXE_TIME_KW, next_time);
             if(repeat_rule) {
@@ -493,7 +512,8 @@ namespace {
             });
         };
 
-        const auto qstr = fmt::format("SELECT RULE_EXEC_ID WHERE RULE_EXEC_TIME <= '{}'", std::time(nullptr));
+        const auto qstr = fmt::format("SELECT RULE_EXEC_ID, ORDER_DESC(RULE_EXEC_PRIORITY) "
+                                      "WHERE RULE_EXEC_TIME <= '{}'", std::time(nullptr));
 
         return {qstr, job};
     }

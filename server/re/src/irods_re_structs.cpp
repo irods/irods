@@ -8,6 +8,7 @@
 #include "dataObjClose.h"
 #include "dataObjLseek.h"
 #include "fileLseek.h"
+#include "rodsErrorTable.h"
 #include "ruleExecSubmit.h"
 #include "rsDataObjOpen.hpp"
 #include "rsDataObjLseek.hpp"
@@ -528,6 +529,12 @@ fillSubmitConditions( const char *action, const char *inDelayCondition,
     }
 
     it = taggedValues->find("PRI");
+    if ( it != taggedValues->end() ) {
+        rodsLog(LOG_ERROR, "Invalid delay rule tag: <PRI>. Use <PRIORITY>.");
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
+    it = taggedValues->find("PRIORITY");
     if ( it != taggedValues->end() ) {
         strncpy(ruleSubmitInfo->priority, it->second.front().c_str(), NAME_LEN);
         taggedValues->erase(it);

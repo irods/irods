@@ -23,6 +23,7 @@
     "test_iput",
     "test_iput_options",
     "test_ipwd",
+    "test_iqmod",
     "test_iquest",
     "test_ireg",
     "test_irepl",
