@@ -571,6 +571,36 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
         # Restore the server's configuration settings.
         IrodsController().restart(test_mode=True)
 
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for PREP and Topology Testing')
+    def test_delay_rule_priority_level_defaults_to_5_when_no_priority_level_is_specified__issue_2759(self):
+        # Schedule a delay rule without a <PRIORITY> tag.
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        delay_rule = 'delay("<INST_NAME>{0}</INST_NAME><EF>1s</EF>") {{ 1 + 1; }}'.format(rep_name)
+        self.admin.assert_icommand(['irule', '-r', rep_name, delay_rule, 'null', 'ruleExecOut'])
+
+        try:
+            # Show that the rule was stored in the catalog with a priority level of 5.
+            self.admin.assert_icommand(['iquest', 'select RULE_EXEC_PRIORITY'], 'STDOUT', ['RULE_EXEC_PRIORITY = 5'])
+        finally:
+            self.admin.run_icommand(['iqdel', '-a'])
+
+        self.admin.assert_icommand(['iquest', 'select RULE_EXEC_ID'], 'STDOUT', ['CAT_NO_ROWS_FOUND'])
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for PREP and Topology Testing')
+    def test_delay_rule_does_not_support_PRI_tag__issue_2759(self):
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        delay_rule = 'delay("<INST_NAME>{0}</INST_NAME><EF>1s</EF><PRI>5</PRI>") {{ 1 + 1; }}'.format(rep_name)
+        self.admin.assert_icommand(['irule', '-r', rep_name, delay_rule, 'null', 'ruleExecOut'], 'STDERR', ['-130000 SYS_INVALID_INPUT_PARAM'])
+        self.admin.assert_icommand(['iquest', 'select RULE_EXEC_ID'], 'STDOUT', ['CAT_NO_ROWS_FOUND']) # Show that no rules exist.
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for PREP and Topology Testing')
+    def test_delay_rule_does_not_accept_invalid_priority_levels__issue_2759(self):
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        delay_rule = 'delay("<INST_NAME>{0}</INST_NAME><EF>1s</EF><PRIORITY>{1}</PRIORITY>") {{ 1 + 1; }}'
+        expected_output = ['-130000 SYS_INVALID_INPUT_PARAM']
+        self.admin.assert_icommand(['irule', '-r', rep_name, delay_rule.format(rep_name, '0'), 'null', 'ruleExecOut'], 'STDERR', expected_output)
+        self.admin.assert_icommand(['irule', '-r', rep_name, delay_rule.format(rep_name, '10'), 'null', 'ruleExecOut'], 'STDERR', expected_output)
+        self.admin.assert_icommand(['iquest', 'select RULE_EXEC_ID'], 'STDOUT', ['CAT_NO_ROWS_FOUND']) # Show that no rules exist.
 
 @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads server log')
 class Test_Execution_Frequency(resource_suite.ResourceBase, unittest.TestCase):
