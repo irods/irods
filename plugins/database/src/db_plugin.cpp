@@ -39,9 +39,11 @@
 #include "rods.h"
 #include "rcMisc.h"
 #include "miscServerFunct.hpp"
+#include "rodsErrorTable.h"
 
 // =-=-=-=-=-=-=-
 // stl includes
+#include <cstring>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -3479,7 +3481,26 @@ irods::error db_mod_rule_exec_op(
 
     for ( i = 0, j = 0; strcmp( regParamNames[i], "END" ); i++ ) {
         theVal = getValByKey( _reg_param, regParamNames[i] );
-        if ( theVal != NULL ) {
+
+        if (theVal) {
+            if (std::string_view{regParamNames[i]} == RULE_PRIORITY_KW) {
+                if (std::strlen(theVal) == 0) {
+                    return ERROR(SYS_INVALID_INPUT_PARAM,
+                                 "Delay rule priority cannot be empty. Delay rule priority must "
+                                 "satisfy the following requirement: 1 <= P <= 9.");
+                }
+
+                try {
+                    if (const auto p = std::stoi(theVal); p < 1 || p > 9) {
+                        return ERROR(SYS_INVALID_INPUT_PARAM,
+                                     "Delay rule priority must satisfy the following requirement: 1 <= P <= 9.");
+                    }
+                }
+                catch (...) {
+                    return ERROR(SYS_INVALID_INPUT_PARAM, "Delay rule priority is not an integer.");
+                }
+            }
+
             if ( j > 0 ) {
                 rstrcat( tSQL, "," , MAX_SQL_SIZE );
             }

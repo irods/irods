@@ -18,6 +18,9 @@
 
 #include <json.hpp>
 
+#include <cstring>
+#include <string>
+
 namespace
 {
     using json = nlohmann::json;
@@ -51,6 +54,24 @@ namespace
 
         irods::experimental::key_value_proxy kvp{ruleExecSubmitInp->condInput};
         kvp[RULE_EXECUTION_CONTEXT_KW] = irods::to_json(rei_info->rei).dump().data();
+
+        // Verify that the priority is valid if the client provided one.
+        if (std::strlen(ruleExecSubmitInp->priority) > 0) {
+            try {
+                if (const auto p = std::stoi(ruleExecSubmitInp->priority); p < 1 || p > 9) {
+                    rodsLog(LOG_ERROR, "Delay rule priority must satisfy the following requirement: 1 <= P <= 9.");
+                    return SYS_INVALID_INPUT_PARAM;
+                }
+            }
+            catch (...) {
+                rodsLog(LOG_ERROR, "Delay rule priority is not an integer.");
+                return SYS_INVALID_INPUT_PARAM;
+            }
+        }
+        else {
+            // The client did not provide a priority, use the default value.
+            rstrcpy(ruleExecSubmitInp->priority, "5", sizeof(ruleExecSubmitInp_t::priority));
+        }
 
         // Register the request.
         std::string svc_role;
