@@ -201,10 +201,10 @@ int
 _makeQuery( char *sel, char *cond, char **sql ) {
     *sql = ( char * ) malloc( strlen( sel ) + strlen( cond ) + 20 );
     if ( strlen( cond ) >  0 ) {
-        sprintf( *sql, "SELECT %s WHERE %s", sel, cond );
+        sprintf( *sql, "select %s where %s", sel, cond );
     }
     else {
-        sprintf( *sql, "SELECT %s ", sel );
+        sprintf( *sql, "select %s ", sel );
     }
     return 0;
 }
