@@ -1134,3 +1134,13 @@ OUTPUT ruleExecOut
         cmd = ['irule', '-r', rep_name, 'msiRenameLocalZoneCollection("{0}")'.format(existing_collection), 'null', 'ruleExecOut']
         self.admin.assert_icommand(cmd, 'STDERR', ['-809000 CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME'])
 
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
+    def test_use_lowercase_select_in_genquery_conditions__issue_4697(self):
+        thecoll = os.path.join(self.admin.session_collection, 'selected')
+        thefile = os.path.join(thecoll, 'foo')
+        self.admin.assert_icommand(['imkdir', thecoll])
+        self.admin.assert_icommand(['istream', 'write', thefile], input='foo')
+
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        cmd = ['irule', '-r', rep_name, '-F', '/var/lib/irods/clients/icommands/test/rules/rulemsiMakeGenQuery.r', "*Coll='{0}%'".format(thecoll)]
+        self.admin.assert_icommand(cmd, 'STDOUT', ['Number of files in {0}% is 1 and total size is 3'.format(thecoll)])
