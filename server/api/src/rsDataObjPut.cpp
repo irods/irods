@@ -45,6 +45,7 @@
 #include "irods_resource_redirect.hpp"
 #include "irods_serialization.hpp"
 #include "irods_server_properties.hpp"
+#include "logical_locking.hpp"
 #include "scoped_privileged_client.hpp"
 #include "server_utilities.hpp"
 
@@ -66,6 +67,7 @@
 
 namespace
 {
+    namespace ill = irods::logical_locking;
     namespace rst = irods::replica_state_table;
 
     auto apply_static_peps(RsComm& _comm, l1desc& _l1desc, const int _operation_status) -> void
@@ -145,6 +147,13 @@ namespace
         try {
             const bool verify_size = !cond_input.contains(NO_CHK_COPY_LEN_KW);
             const auto size_in_vault = irods::get_size_in_vault(_comm, _info, verify_size, _l1desc.dataSize);
+            if (size_in_vault < 0) {
+                THROW(size_in_vault, fmt::format(
+                    "[{}:{}] - failed to get size in vault; "
+                    "[error_code=[{}], path=[{}] hierarchy=[{}]]",
+                    __FUNCTION__, __LINE__,
+                    size_in_vault, replica.logical_path(), replica.hierarchy()));
+            }
             replica.size(size_in_vault);
 
             if (verify_size || !replica.checksum().empty()) {
@@ -153,22 +162,16 @@ namespace
                     cond_input[CHKSUM_KW] = checksum;
                 }
             }
-        }
-        catch (const irods::exception& e) {
-            if (const int ec = irods::stale_replica(_comm, _l1desc, _info); ec < 0) {
-                irods::log(LOG_ERROR, fmt::format(
-                    "{} - rsModDataObjMeta failed [{}]",
-                    __FUNCTION__, ec));
-            }
-            throw;
-        }
 
-        try {
             irods::apply_metadata_from_cond_input(_comm, *_l1desc.dataObjInp);
             irods::apply_acl_from_cond_input(_comm, *_l1desc.dataObjInp);
         }
         catch (const irods::exception& e) {
-            rsDataObjUnlink(&_comm, _l1desc.dataObjInp);
+            if (const int ec = ill::unlock_and_publish(_comm, _info.dataId, _info.replNum, STALE_REPLICA, ill::restore_status); ec < 0) {
+                irods::log(LOG_ERROR, fmt::format(
+                    "{} - rsModDataObjMeta failed [{}]",
+                    __FUNCTION__, ec));
+            }
             throw;
         }
 
@@ -182,16 +185,12 @@ namespace
             replica.mtime(SET_TIME_TO_NOW_KW);
 
             // stale other replicas because the truth has moved
-            for (auto& rj : rst::at(replica.data_id())) {
-                const auto replica_number = std::stoi(std::string{rj.at("after").at("data_repl_num")});
-
-                if (replica.replica_number() != replica_number) {
-                    rst::update(replica.data_id(), replica_number,
-                        nlohmann::json{{"data_is_dirty", std::to_string(STALE_REPLICA)}});
-                }
-            }
+            ill::unlock(replica.data_id(), replica.replica_number(), GOOD_REPLICA, STALE_REPLICA);
         }
         else {
+            // No unlock is required here because a put that is not an overwrite implies a brand new
+            // data object as put'ing to a new resource for an existing data object is not allowed.
+            // Therefore, there should be no other replicas and so there should be nothing to unlock.
             replica.replica_status(GOOD_REPLICA);
         }
 
@@ -236,8 +235,6 @@ namespace
         auto& l1desc = L1desc[fd];
         auto opened_replica = irods::experimental::replica::make_replica_proxy(*l1desc.dataObjInfo);
         const std::string hier = opened_replica.hierarchy().data();
-
-        const auto [begin_object, begin_object_lm] = irods::experimental::data_object::duplicate_data_object(*l1desc.dataObjInfo);
 
         OpenedDataObjInp write_inp{};
         write_inp.len = _bbuf.len;
@@ -296,9 +293,10 @@ namespace
 
             struct l1desc l1desc_cache = irods::duplicate_l1_descriptor(l1desc);
             const irods::at_scope_exit free_fd{[&l1desc_cache] { freeL1desc_struct(l1desc_cache); }};
+            constexpr auto preserve_rst = true;
 
             // close the replica, free L1 descriptor
-            if (const int ec = irods::close_replica_without_catalog_update(_comm, fd); ec < 0) {
+            if (const int ec = irods::close_replica_without_catalog_update(_comm, fd, preserve_rst); ec < 0) {
                 irods::log(LOG_ERROR, fmt::format(
                     "[{}:{}] - error closing replica; ec:[{}]",
                     __FUNCTION__, __LINE__, ec));
@@ -313,7 +311,11 @@ namespace
                         "[{}] - failed while finalizing object [{}]; ec:[{}]",
                         __FUNCTION__, _inp.objPath, ec));
                 }
-                // TODO: continue to finalize
+
+                if (rst::contains(final_object.data_id())) {
+                    rst::erase(final_object.data_id());
+                }
+
                 return bytes_written;
             }
             else {
@@ -332,12 +334,15 @@ namespace
                 catch (const irods::exception& e) {
                     irods::log(LOG_ERROR, fmt::format(
                         "[{}:{}] - error finalizing replica; [{}]",
-                        __FUNCTION__, __LINE__, e.what()));
+                        __FUNCTION__, __LINE__, e.client_display_what()));
 
                     status = e.code();
                 }
             }
 
+            if (rst::contains(final_object.data_id())) {
+                rst::erase(final_object.data_id());
+            }
             if (l1desc_cache.purgeCacheFlag) {
                 irods::purge_cache(_comm, *final_object.get());
             }
@@ -498,7 +503,7 @@ namespace
                 irods::deserialize_acl(acl_string);
             }
             catch (const irods::exception& e) {
-                rodsLog(LOG_ERROR, "%s", e.what());
+                irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, e.client_display_what()));
                 return e.code();
             }
         }
@@ -507,7 +512,7 @@ namespace
                 irods::deserialize_metadata( metadata_string );
             }
             catch (const irods::exception& e) {
-                rodsLog(LOG_ERROR, "%s", e.what());
+                irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, e.client_display_what()));
                 return e.code();
             }
         }
@@ -566,7 +571,7 @@ namespace
             }
         }
         catch (const irods::exception& e) {
-            irods::log(LOG_ERROR, e.what());
+            irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, e.client_display_what()));
             return e.code();
         }
 
@@ -585,7 +590,7 @@ namespace
             return parallel_transfer_put( rsComm, dataObjInp, portalOprOut );
         }
         catch (const irods::exception& e) {
-            irods::log(e);
+            irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, e.client_display_what()));
             //addRErrorMsg(&rsComm->rError, e.code(), e.what());
             return e.code();
         }

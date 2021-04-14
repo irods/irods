@@ -869,8 +869,9 @@ namespace irods
             freeDataObjInfo(dataObjInfo);
 
             irods::log(LOG_ERROR, fmt::format(
-                "[{}:{}] - failed to create physical file [{}]; path:[{}],ec:[{}]",
-                __FUNCTION__, __LINE__, L1desc[l1_index].dataObjInfo->filePath, dataObjInp.objPath, l3_index));
+                "[{}:{}] - failed to create physical file "
+                "[error_code=[{}], logical path=[{}], physical file=[{}]]",
+                __FUNCTION__, __LINE__, l3_index, dataObjInp.objPath, L1desc[l1_index].dataObjInfo->filePath));
 
             freeL1desc(l1_index);
 

@@ -54,6 +54,7 @@
 #include "irods_string_tokenize.hpp"
 #include "json_serialization.hpp"
 #include "key_value_proxy.hpp"
+#include "logical_locking.hpp"
 #include "replica_access_table.hpp"
 #include "replication_utilities.hpp"
 #include "voting.hpp"
@@ -74,6 +75,7 @@
 
 namespace
 {
+    namespace ill = irods::logical_locking;
     namespace ir = irods::experimental::replica;
     namespace irv = irods::experimental::resource::voting;
     namespace rst = irods::replica_state_table;
@@ -204,7 +206,17 @@ namespace
         auto cond_input = irods::experimental::make_key_value_proxy(_l1desc.dataObjInp->condInput);
         try {
             constexpr bool verify_size = true;
-            _destination_replica.size(irods::get_size_in_vault(_comm, *_destination_replica.get(), verify_size, _l1desc.dataSize));
+            const auto size_in_vault = irods::get_size_in_vault(_comm, *_destination_replica.get(), verify_size, _l1desc.dataSize);
+            if (size_in_vault < 0) {
+                THROW(size_in_vault, fmt::format(
+                    "[{}:{}] - failed to get size in vault "
+                    "[error_code=[{}], path=[{}], hierarchy=[{}]]",
+                    __FUNCTION__, __LINE__, size_in_vault,
+                    _destination_replica.logical_path(),
+                    _destination_replica.hierarchy()));
+            }
+
+            _destination_replica.size(size_in_vault);
 
             if (!_destination_replica.checksum().empty()) {
                 const auto checksum = calculate_checksum(_comm, _l1desc, _source_replica, _destination_replica);
@@ -214,26 +226,49 @@ namespace
             }
         }
         catch (const irods::exception& e) {
-            if (const int ec = irods::stale_replica(_comm, _l1desc, *_destination_replica.get()); ec < 0) {
+            const int ec = ill::unlock_and_publish(_comm,
+                                                   _destination_replica.data_id(),
+                                                   _destination_replica.replica_number(),
+                                                   STALE_REPLICA,
+                                                   ill::restore_status);
+            if (ec < 0) {
                 irods::log(LOG_ERROR, fmt::format(
-                    "{} - failed to stale replica [{}]",
-                    __FUNCTION__, ec));
+                    "[{}:{}] - failed to unlock data object "
+                    "[error_code=[{}], path=[{}], hierarchy=[{}]]",
+                    __FUNCTION__, __LINE__, ec,
+                    _destination_replica.logical_path(),
+                    _destination_replica.hierarchy()));
             }
             throw;
         }
 
-        cond_input[OPEN_TYPE_KW] = std::to_string(_l1desc.openType);
-
-        _destination_replica.replica_status(_source_replica.replica_status());
+        const auto source_replica_original_status = ill::get_original_replica_status(_source_replica.data_id(), _source_replica.replica_number());
+        _destination_replica.replica_status(source_replica_original_status);
         _destination_replica.mtime(SET_TIME_TO_NOW_KW);
+
+        rst::update(_destination_replica.data_id(), _destination_replica);
+
+        const auto unlock_ec = ill::unlock(
+            _destination_replica.data_id(),
+            _destination_replica.replica_number(),
+            _destination_replica.replica_status(),
+            ill::restore_status);
+        if (unlock_ec < 0) {
+            irods::log(LOG_ERROR, fmt::format(
+                "[{}:{}] - failed to unlock data object "
+                "[error_code=[{}], path=[{}], hierarchy=[{}]]",
+                __FUNCTION__, __LINE__, unlock_ec,
+                _destination_replica.logical_path(),
+                _destination_replica.hierarchy()));
+
+            return unlock_ec;
+        }
 
         // This allows fileModified to trigger, but the resource plugins need to make sure the
         // appropriate PDMO hierarchies are being checked to prevent infinite loops (e.g. replication
         // resource triggering replication while performing a PDMO replication).
         cond_input.erase(IN_REPL_KW);
-
-        // Write it out to the catalog
-        rst::update(_destination_replica.data_id(), _destination_replica);
+        cond_input[OPEN_TYPE_KW] = std::to_string(_l1desc.openType);
 
         const int ec = rst::publish_to_catalog(_comm,
                                                _destination_replica.data_id(),
@@ -270,6 +305,21 @@ namespace
             irods::log(LOG_ERROR, fmt::format(
                 "{} - getSizeInVault failed [{}]",
                 __FUNCTION__, vault_size));
+
+            const int ec = ill::unlock_and_publish(_comm,
+                                                   _destination_replica.data_id(),
+                                                   _destination_replica.replica_number(),
+                                                   STALE_REPLICA,
+                                                   ill::restore_status);
+            if (ec < 0) {
+                irods::log(LOG_ERROR, fmt::format(
+                    "[{}:{}] - failed to unlock data object "
+                    "[error_code=[{}], path=[{}], hierarchy=[{}]]",
+                    __FUNCTION__, __LINE__, ec,
+                    _destination_replica.logical_path(),
+                    _destination_replica.hierarchy()));
+            }
+
             return vault_size;
         }
 
@@ -280,13 +330,18 @@ namespace
         // Write it out to the catalog
         rst::update(_destination_replica.data_id(), _destination_replica);
 
-        const int ec = rst::publish_to_catalog(_comm,
+        const int ec = ill::unlock_and_publish(_comm,
                                                _destination_replica.data_id(),
                                                _destination_replica.replica_number(),
-                                               nlohmann::json{});
-
+                                               STALE_REPLICA,
+                                               ill::restore_status);
         if (ec < 0) {
-            irods::log(LOG_ERROR, fmt::format("failed to publish to catalog:[{}]", ec));
+            irods::log(LOG_ERROR, fmt::format(
+                "[{}:{}] - failed to unlock data object "
+                "[error_code=[{}], path=[{}], hierarchy=[{}]]",
+                __FUNCTION__, __LINE__, ec,
+                _destination_replica.logical_path(),
+                _destination_replica.hierarchy()));
         }
 
         return ec;
@@ -433,7 +488,8 @@ namespace
         // Open destination replica
         int destination_l1descInx = open_destination_replica(_comm, _destination_inp, source_l1descInx);
         if (destination_l1descInx < 0) {
-            if (const int ec = irods::close_replica_without_catalog_update(_comm, source_l1descInx); ec < 0) {
+            constexpr auto preserve_rst = false;
+            if (const int ec = irods::close_replica_without_catalog_update(_comm, source_l1descInx, preserve_rst); ec < 0) {
                 irods::log(LOG_ERROR, fmt::format(
                     "[{}:{}] - failed to close source replica:[{}]",
                     __FUNCTION__, __LINE__, ec));
@@ -503,9 +559,10 @@ namespace
 
         auto [source_replica, source_replica_lm] = ir::duplicate_replica(source_data_obj_info);
         auto [destination_replica, destination_replica_lm] = ir::duplicate_replica(destination_data_obj_info);
+        constexpr auto preserve_rst = true;
 
         // Close source replica
-        if (const int ec = irods::close_replica_without_catalog_update(_comm, source_l1descInx); ec < 0) {
+        if (const int ec = irods::close_replica_without_catalog_update(_comm, source_l1descInx, preserve_rst); ec < 0) {
             irods::log(LOG_ERROR, fmt::format(
                 "[{}:{}] - closing source replica [{}] failed with [{}]",
                 __FUNCTION__, __LINE__, _source_inp.objPath, ec));
@@ -516,7 +573,7 @@ namespace
         }
 
         // Close destination replica
-        if (const int ec = irods::close_replica_without_catalog_update(_comm, destination_l1descInx); ec < 0) {
+        if (const int ec = irods::close_replica_without_catalog_update(_comm, destination_l1descInx, preserve_rst); ec < 0) {
             irods::log(LOG_ERROR, fmt::format(
                 "[{}:{}] - closing destination replica [{}] failed with [{}]",
                 __FUNCTION__, __LINE__, _destination_inp.objPath, ec));
@@ -543,7 +600,7 @@ namespace
         catch (const irods::exception& e) {
             irods::log(LOG_ERROR, fmt::format(
                 "[{}:{}] - error finalizing replica; [{}], ec:[{}]",
-                __FUNCTION__, __LINE__, e.what(), e.code()));
+                __FUNCTION__, __LINE__, e.client_display_what(), e.code()));
 
             if (status >= 0) {
                 status = e.code();
@@ -574,7 +631,7 @@ namespace
         catch (const irods::exception& e) {
             irods::log(LOG_ERROR, fmt::format(
                 "[{}:{}] - error finalizing replica; [{}], ec:[{}]",
-                __FUNCTION__, __LINE__, e.what(), e.code()));
+                __FUNCTION__, __LINE__, e.client_display_what(), e.code()));
 
             if (status >= 0) {
                 status = e.code();
