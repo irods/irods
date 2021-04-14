@@ -85,16 +85,8 @@ namespace
 
     auto calculate_checksum(RsComm& _comm, l1desc& _l1desc, DataObjInfo& _info) -> std::string
     {
-        if (REG_CHKSUM == _l1desc.chksumFlag) {
+        if (REG_CHKSUM == _l1desc.chksumFlag || VERIFY_CHKSUM == _l1desc.chksumFlag) {
             return irods::register_new_checksum(_comm, _info, _l1desc.chksum);
-        }
-
-        if (VERIFY_CHKSUM == _l1desc.chksumFlag) {
-            if (std::strlen(_l1desc.chksum) == 0) {
-                THROW(SYS_INVALID_INPUT_PARAM, "No checksum provided by the client.");
-            }
-
-            return irods::verify_checksum(_comm, _info, _l1desc.chksum);
         }
 
         return {};
@@ -157,21 +149,35 @@ namespace
             }
             replica.size(size_in_vault);
 
-            if (verify_size || !replica.checksum().empty()) {
-                const auto checksum = calculate_checksum(_comm, _l1desc, _info);
-                if (!checksum.empty()) {
-                    cond_input[CHKSUM_KW] = checksum;
+            // Update the replica proxy's checksum value so that if an exception is thrown,
+            // the checksum value will still be stored in the catalog.
+            replica.checksum(calculate_checksum(_comm, _l1desc, _info));
+
+            rodsLog(LOG_DEBUG,
+                    "[%s:%d] Verifying checksum [calculated_checksum=%s, checksum_from_client=%s, path=%s, replica_number=%d] ...",
+                    __func__, __LINE__, replica.checksum().data(), _l1desc.chksum,
+                    replica.logical_path().data(), replica.replica_number());
+
+            if (VERIFY_CHKSUM == _l1desc.chksumFlag) {
+                if (replica.checksum() != _l1desc.chksum) {
+                    THROW(USER_CHKSUM_MISMATCH, fmt::format("[{}:{}] Mismatch checksum for {}.inp={}, compute {}",
+                          __FUNCTION__, __LINE__, replica.logical_path(), _l1desc.chksum, replica.checksum()));
                 }
             }
+
+            // Copy the new checksum value into the conditional input so that file modified is triggered.
+            cond_input[CHKSUM_KW] = replica.checksum();
 
             irods::apply_metadata_from_cond_input(_comm, *_l1desc.dataObjInp);
             irods::apply_acl_from_cond_input(_comm, *_l1desc.dataObjInp);
         }
         catch (const irods::exception& e) {
+            // Commit the changes to the replica state table so that unlock_and_publish stores
+            // the size and checksum in the catalog.
+            rst::update(replica.data_id(), replica);
+
             if (const int ec = ill::unlock_and_publish(_comm, _info.dataId, _info.replNum, STALE_REPLICA, ill::restore_status); ec < 0) {
-                irods::log(LOG_ERROR, fmt::format(
-                    "{} - rsModDataObjMeta failed [{}]",
-                    __FUNCTION__, ec));
+                irods::log(LOG_ERROR, fmt::format("{} - unlock_and_publish failed [error_code={}]", __FUNCTION__, ec));
             }
             throw;
         }
@@ -193,10 +199,6 @@ namespace
             // data object as put'ing to a new resource for an existing data object is not allowed.
             // Therefore, there should be no other replicas and so there should be nothing to unlock.
             replica.replica_status(GOOD_REPLICA);
-        }
-
-        if (cond_input.contains(CHKSUM_KW)) {
-            replica.checksum(cond_input.at(CHKSUM_KW).value());
         }
 
         // Write it out to the catalog
@@ -324,31 +326,31 @@ namespace
 
                 return bytes_written;
             }
-            else {
-                // finalize object for successful transfer
-                try {
-                    irods::log(LOG_DEBUG8, fmt::format("[{}:{}] - finalizing replica", __FUNCTION__, __LINE__));
 
-                    if (const auto ec = finalize_replica(_comm, *final_object.get(), l1desc_cache); ec < 0) {
-                        irods::log(LOG_ERROR, fmt::format(
-                            "[{}:{}] - error finalizing replica; ec:[{}]",
-                            __FUNCTION__, __LINE__, ec));
+            // finalize object for successful transfer
+            try {
+                irods::log(LOG_DEBUG8, fmt::format("[{}:{}] - finalizing replica", __FUNCTION__, __LINE__));
 
-                        status = ec;
-                    }
-                }
-                catch (const irods::exception& e) {
+                if (const auto ec = finalize_replica(_comm, *final_object.get(), l1desc_cache); ec < 0) {
                     irods::log(LOG_ERROR, fmt::format(
-                        "[{}:{}] - error finalizing replica; [{}]",
-                        __FUNCTION__, __LINE__, e.client_display_what()));
+                        "[{}:{}] - error finalizing replica; ec:[{}]",
+                        __FUNCTION__, __LINE__, ec));
 
-                    status = e.code();
+                    status = ec;
                 }
+            }
+            catch (const irods::exception& e) {
+                irods::log(LOG_ERROR, fmt::format(
+                    "[{}:{}] - error finalizing replica; [{}]",
+                    __FUNCTION__, __LINE__, e.client_display_what()));
+
+                status = e.code();
             }
 
             if (rst::contains(final_object.data_id())) {
                 rst::erase(final_object.data_id());
             }
+
             if (l1desc_cache.purgeCacheFlag) {
                 irods::purge_cache(_comm, *final_object.get());
             }
@@ -356,9 +358,8 @@ namespace
             if (status < 0) {
                 return status;
             }
-            else {
-                apply_static_peps(_comm, l1desc_cache, status);
-            }
+
+            apply_static_peps(_comm, l1desc_cache, status);
         }
 
         if (getValByKey(&_inp.condInput, ALL_KW)) {
@@ -383,71 +384,73 @@ namespace
     int parallel_transfer_put(RsComm *rsComm, DataObjInp *dataObjInp, portalOprOut **portalOprOut)
     {
         // Parallel transfer
-        dataObjInp->openFlags |= (O_CREAT | O_RDWR | O_TRUNC);
-        int l1descInx = rsDataObjOpen(rsComm, dataObjInp);
-        if ( l1descInx < 0 ) {
+        dataObjInp->openFlags = O_CREAT | O_RDWR | O_TRUNC;
+        const int l1descInx = rsDataObjOpen(rsComm, dataObjInp);
+        if (l1descInx < 0) {
             return l1descInx;
         }
 
-        L1desc[l1descInx].oprType = PUT_OPR;
-        L1desc[l1descInx].dataSize = dataObjInp->dataSize;
+        auto& l1desc = L1desc[l1descInx];
+        l1desc.oprType = PUT_OPR;
+        l1desc.dataSize = dataObjInp->dataSize;
 
-        if ( getStructFileType( L1desc[l1descInx].dataObjInfo->specColl ) >= 0 ) { // JMC - backport 4682
-            *portalOprOut = ( portalOprOut_t * ) malloc( sizeof( portalOprOut_t ) );
-            bzero( *portalOprOut,  sizeof( portalOprOut_t ) );
-            ( *portalOprOut )->l1descInx = l1descInx;
+        if (getStructFileType(l1desc.dataObjInfo->specColl) >= 0) {
+            *portalOprOut = static_cast<portalOprOut_t*>(malloc(sizeof(portalOprOut_t)));
+            bzero(*portalOprOut, sizeof(portalOprOut_t));
+            (*portalOprOut)->l1descInx = l1descInx;
             return l1descInx;
         }
 
-        int status = preProcParaPut( rsComm, l1descInx, portalOprOut );
+        int ec = preProcParaPut(rsComm, l1descInx, portalOprOut);
 
-        if ( status < 0 ) {
+        if (ec < 0) {
             openedDataObjInp_t dataObjCloseInp{};
             dataObjCloseInp.l1descInx = l1descInx;
-            L1desc[l1descInx].oprStatus = status;
-            rsDataObjClose( rsComm, &dataObjCloseInp );
-            return status;
+            l1desc.oprStatus = ec;
+            rsDataObjClose(rsComm, &dataObjCloseInp);
+            return ec;
         }
 
-        int allFlag = 0;
-        if ( getValByKey( &dataObjInp->condInput, ALL_KW ) != NULL ) {
-            allFlag = 1;
-        }
-
+        const bool all_replicas = getValByKey(&dataObjInp->condInput, ALL_KW);
         dataObjInp_t replDataObjInp{};
-        if ( allFlag == 1 ) {
-            /* need to save dataObjInp. get freed in sendAndRecvBranchMsg */
-            rstrcpy( replDataObjInp.objPath, dataObjInp->objPath, MAX_NAME_LEN );
-            addKeyVal( &replDataObjInp.condInput, UPDATE_REPL_KW, "" );
-            addKeyVal( &replDataObjInp.condInput, ALL_KW, "" );
-        }
-        /* return portalOprOut to the client and wait for the rcOprComplete
-         * call. That is when the parallel I/O is done */
-        int retval = sendAndRecvBranchMsg( rsComm, rsComm->apiInx, status,
-                ( void * ) * portalOprOut, NULL );
 
-        if ( retval < 0 ) {
-            openedDataObjInp_t dataObjCloseInp{};
-            dataObjCloseInp.l1descInx = l1descInx;
-            L1desc[l1descInx].oprStatus = retval;
-            rsDataObjClose( rsComm, &dataObjCloseInp );
-            if ( allFlag == 1 ) {
-                clearKeyVal( &replDataObjInp.condInput );
+        if (all_replicas) {
+            // Save the dataObjInp. It gets freed in sendAndRecvBranchMsg.
+            rstrcpy(replDataObjInp.objPath, dataObjInp->objPath, MAX_NAME_LEN);
+            addKeyVal(&replDataObjInp.condInput, UPDATE_REPL_KW, "");
+            addKeyVal(&replDataObjInp.condInput, ALL_KW, "");
+        }
+
+        // Return portalOprOut to the client and wait for the rcOprComplete
+        // call. That is when the parallel I/O is done. rcOprComplete invokes
+        // rcDataObjClose.
+        ec = sendAndRecvBranchMsg(rsComm, rsComm->apiInx, ec, static_cast<void*>(*portalOprOut), nullptr);
+
+        if (ec < 0) {
+            if (FD_INUSE == l1desc.inuseFlag) {
+                openedDataObjInp_t dataObjCloseInp{};
+                dataObjCloseInp.l1descInx = l1descInx;
+                l1desc.oprStatus = ec;
+                rsDataObjClose(rsComm, &dataObjCloseInp);
+            }
+
+            if (all_replicas) {
+                clearKeyVal(&replDataObjInp.condInput);
             }
         }
-        else if (1 == allFlag) {
-            transferStat_t *transStat = NULL;
-            status = rsDataObjRepl(rsComm, &replDataObjInp, &transStat);
+        else if (all_replicas) {
+            transferStat_t *transStat = nullptr;
+            ec = rsDataObjRepl(rsComm, &replDataObjInp, &transStat);
             free(transStat);
             clearKeyVal(&replDataObjInp.condInput);
-            if (status < 0) {
-                const auto err{ERROR(status, "rsDataObjRepl failed")};
-                irods::log(err);
-                return err.code();
+
+            if (ec < 0) {
+                irods::log(ERROR(ec, "rsDataObjRepl failed"));
+                return ec;
             }
         }
 
-        /* already send the client the status */
+        // Already sent the client the status.
         return SYS_NO_HANDLER_REPLY_MSG;
     } // parallel_transfer_put
 

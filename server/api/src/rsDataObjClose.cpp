@@ -130,7 +130,7 @@ namespace
 
         auto destination_replica = ir::replica_proxy_t{*l1desc.dataObjInfo};
 
-        // This section only exists for the compound resource as replication handles its own finalizing logic
+        // This section only exists for the compound resource as replication handles its own finalizing logic.
         if (oprType == REPLICATE_DEST) {
             const int srcL1descInx = l1desc.srcL1descInx;
             if (srcL1descInx < 3) {
@@ -176,7 +176,7 @@ namespace
             }
         }
 
-        if (!l1desc.chksumFlag) {
+        if (0 == l1desc.chksumFlag) {
             if (destination_replica.checksum().empty()) {
                 return {};
             }
@@ -188,6 +188,7 @@ namespace
                 return irods::verify_checksum(_comm, *destination_replica.get(), l1desc.chksum);
             }
 
+            // Specifically for compound resources.
             if (REPLICATE_DEST == oprType) {
                 if (!destination_replica.checksum().empty()) {
                     destination_replica.cond_input()[ORIG_CHKSUM_KW] = destination_replica.checksum();
@@ -212,7 +213,7 @@ namespace
                     }
                 }
 
-                return {checksum_string};
+                return checksum_string;
             }
 
             // TODO come back to this case...
@@ -249,7 +250,7 @@ namespace
                     }
                 }
 
-                return {checksum_string};
+                return checksum_string;
             }
 
             return {};
@@ -417,7 +418,8 @@ namespace
         }
 
         if (const bool verify_size = !getValByKey(&l1desc.dataObjInp->condInput, NO_CHK_COPY_LEN_KW);
-            verify_size && l1desc.dataSize > 0 && size_in_vault != l1desc.dataSize) {
+            verify_size && l1desc.dataSize > 0 && size_in_vault != l1desc.dataSize)
+        {
             // The size in the vault does not match the expected size in the catalog.
             // Update the size in the RST and unlock the data object and throw.
             r.size(size_in_vault);
@@ -449,16 +451,34 @@ namespace
         auto r = ir::make_replica_proxy(*l1desc.dataObjInfo);
 
         try {
-            const auto size_should_be_verified    = !getValByKey(&l1desc.dataObjInp->condInput, NO_CHK_COPY_LEN_KW);
-            const auto replica_opened_for_write   = OPEN_FOR_WRITE_TYPE == l1desc.openType || CREATE_TYPE == l1desc.openType;
-            const auto replica_has_a_checksum     = !r.checksum().empty();
-            const auto checksum_should_be_updated = replica_opened_for_write && replica_has_a_checksum;
+            if (PUT_OPR == l1desc.oprType) {
+                if (REG_CHKSUM == l1desc.chksumFlag || VERIFY_CHKSUM == l1desc.chksumFlag) {
+                    // Update the replica proxy's checksum value so that if an exception is thrown,
+                    // the checksum value will still be stored in the catalog.
+                    r.checksum(irods::register_new_checksum(_comm, *r.get(), l1desc.chksum));
+                    rst::update(r.data_id(), r);
 
-            if (checksum_should_be_updated) {
-                l1desc.chksumFlag = REG_CHKSUM;
+                    if (VERIFY_CHKSUM == l1desc.chksumFlag) {
+                        rodsLog(LOG_DEBUG,
+                                "[%s:%d] Verifying checksum [calculated_checksum=%s, checksum_from_client=%s, path=%s, replica_number=%d] ...",
+                                __func__, __LINE__, r.checksum().data(), l1desc.chksum, r.logical_path().data(), r.replica_number());
+
+                        if (r.checksum() != l1desc.chksum) {
+                            THROW(USER_CHKSUM_MISMATCH, fmt::format("[{}:{}] Mismatch checksum for {}.inp={}, compute {}",
+                                  __FUNCTION__, __LINE__, r.logical_path(), l1desc.chksum, r.checksum()));
+                        }
+                    }
+
+                    // Copy the new checksum value into the conditional input so that file modified is triggered.
+                    cond_input[CHKSUM_KW] = r.checksum();
+                }
+
+                return;
             }
 
-            if (checksum_should_be_updated || size_should_be_verified) {
+            const auto size_should_be_verified = !getValByKey(&l1desc.dataObjInp->condInput, NO_CHK_COPY_LEN_KW);
+
+            if (size_should_be_verified) {
                 if (const std::string checksum = perform_checksum_operation_for_finalize(_comm, _fd); !checksum.empty()) {
                     cond_input[CHKSUM_KW] = checksum;
                 }
@@ -536,23 +556,30 @@ namespace
             l1desc.bytesWritten = _inp.bytesWritten;
         }
 
-        if (!bytes_written_in_operation(l1desc)) {
-            if (const auto accmode = l1desc.dataObjInp->openFlags & O_ACCMODE; O_RDONLY == accmode) {
-                irods::apply_metadata_from_cond_input(_comm, *l1desc.dataObjInp);
-                irods::apply_acl_from_cond_input(_comm, *l1desc.dataObjInp);
+        if (bytes_written_in_operation(l1desc)) {
+            if (O_RDONLY != (l1desc.dataObjInp->openFlags & O_ACCMODE)) {
+                auto rp = ir::replica_proxy_t{*l1desc.dataObjInfo};
+                rp.checksum("");
+                rst::update(rp.data_id(), rp);
 
-                apply_static_peps(_comm, _inp, _fd, l1desc.oprStatus);
-
-                if (L1desc[_fd].purgeCacheFlag) {
-                    irods::purge_cache(_comm, *l1desc.dataObjInfo);
-                }
-
-                return l1desc.oprStatus;
+                auto file_modified_input = irods::experimental::make_key_value_proxy(l1desc.dataObjInp->condInput);
+                file_modified_input[CHKSUM_KW] = rp.checksum();
             }
+        }
+        else if (O_RDONLY == (l1desc.dataObjInp->openFlags & O_ACCMODE)) {
+            irods::apply_metadata_from_cond_input(_comm, *l1desc.dataObjInp);
+            irods::apply_acl_from_cond_input(_comm, *l1desc.dataObjInp);
+
+            apply_static_peps(_comm, _inp, _fd, l1desc.oprStatus);
+
+            if (L1desc[_fd].purgeCacheFlag) {
+                irods::purge_cache(_comm, *l1desc.dataObjInfo);
+            }
+
+            return l1desc.oprStatus;
         }
 
         update_replica_size_and_throw_on_failure(_comm, _fd);
-
         update_replica_checksum_and_throw_on_failure(_comm, _fd);
 
         if (l1desc.oprStatus < 0) {
@@ -671,18 +698,20 @@ int rsDataObjClose(rsComm_t* rsComm, openedDataObjInp_t* dataObjCloseInp)
             namespace rat = irods::experimental::replica_access_table;
 
             // Capture the replica token and erase the PID from the replica access table.
-            // This must always happen before calling "irsDataObjClose" because other operations
-            // may attempt to open this replica, but will fail because those operations do not
-            // have the replica token.
+            // This must always happen before closing the replica because other operations
+            // may attempt to open this replica, but will fail because those operations do
+            // not have the replica token.
             if (auto entry = rat::erase_pid(l1desc.replica_token, getpid()); entry) {
                 // "entry" should always be populated in normal situations.
                 // Because closing a data object triggers a file modified notification, it is
                 // important to be able to restore the previously removed replica access table entry.
                 // This is required so that the iRODS state is maintained in relation to the client.
                 restore_entry.reset(new irods::at_scope_exit<std::function<void()>>{
-                    [&ec, e = std::move(*entry)] {
-                        if (ec < 0) {
+                    [&l1desc, e = std::move(*entry)] {
+                        if (FD_INUSE == l1desc.inuseFlag) {
                             rat::restore(e);
+                            rodsLog(LOG_DEBUG, "[%s:%d] Restored replica access table entry [path=%s, replica_number=%d]",
+                                    __func__, __LINE__, l1desc.dataObjInfo->objPath, l1desc.dataObjInfo->replNum);
                         }
                     }
                 });
@@ -702,9 +731,8 @@ int rsDataObjClose(rsComm_t* rsComm, openedDataObjInp_t* dataObjCloseInp)
     }
 
     // sanity check for in-flight l1 descriptor
-    if(!l1desc.dataObjInp) {
-        rodsLog(LOG_ERROR,
-            "rsDataObjClose: invalid dataObjInp for index %d", fd);
+    if (!l1desc.dataObjInp) {
+        rodsLog(LOG_ERROR, "rsDataObjClose: invalid dataObjInp for index %d", fd);
         return ec = SYS_INVALID_INPUT_PARAM;
     }
 

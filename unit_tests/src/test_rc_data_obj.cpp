@@ -69,6 +69,146 @@ TEST_CASE("open,read,write,close")
 
         std::string contents = "content!";
 
+        SECTION("#5496: partial overwrite erases checksum")
+        {
+            irods::experimental::client_connection conn;
+            REQUIRE(conn);
+
+            const std::string_view contents = "My hovercraft is full of eels";
+
+            // Create a new data object.
+            {
+                irods::experimental::io::client::native_transport tp{conn};
+                irods::experimental::io::odstream{tp, target_object} << contents;
+            }
+
+            // Show that the replica is in a good state.
+            CHECK(replica::replica_status<RcComm>(conn, target_object, 0) == GOOD_REPLICA);
+            CHECK(replica::replica_size<RcComm>(conn, target_object, 0) == contents.size());
+
+            // Checksum the replica.
+            std::string_view expected_checksum = "sha2:XL7wWccBvgYxXqmzjM4SYIGoTiocxaycQ9uzweaphcQ=";
+            CHECK(replica::replica_checksum<RcComm>(conn, target_object, 0) == expected_checksum);
+
+            // Open the replica again and overwrite part of it.
+            dataObjInp_t open_inp{};
+            std::strcpy(open_inp.objPath, target_object.c_str());
+            open_inp.openFlags = O_CREAT | O_WRONLY;
+            auto* conn_ptr = static_cast<RcComm*>(conn);
+            const auto fd = rcDataObjOpen(conn_ptr, &open_inp);
+            REQUIRE(fd > 2);
+
+            const std::string_view new_data = "ABC";
+            bytesBuf_t write_bbuf{};
+            write_bbuf.buf = const_cast<char*>(new_data.data());
+            write_bbuf.len = new_data.size() + 1;
+
+            openedDataObjInp_t write_inp{};
+            write_inp.l1descInx = fd;
+            write_inp.len = write_bbuf.len;
+            const auto bytes_written = rcDataObjWrite(conn_ptr, &write_inp, &write_bbuf);
+            CHECK(write_bbuf.len == bytes_written);
+
+            openedDataObjInp_t close_inp{};
+            close_inp.l1descInx = fd;
+            close_inp.bytesWritten = bytes_written;
+            REQUIRE(rcDataObjClose(conn_ptr, &close_inp) >= 0);
+
+            // Show that the replica is still in a good state and its checksum has been erased.
+            const auto [rp, lm] = replica::make_replica_proxy<RcComm>(conn, target_object, 0);
+            CHECK(rp.replica_status() == GOOD_REPLICA);
+            CHECK(rp.size() == contents.size());
+            REQUIRE(rp.checksum().empty());
+        }
+
+        SECTION("#5496: agent tear down and checksums")
+        {
+            irods::experimental::client_connection conn;
+            REQUIRE(conn);
+
+            const std::string_view contents = "My hovercraft is full of eels";
+
+            // Create a new data object.
+            {
+                irods::experimental::io::client::native_transport tp{conn};
+                irods::experimental::io::odstream{tp, target_object} << contents;
+            }
+
+            // Show that the replica is in a good state.
+            CHECK(replica::replica_status<RcComm>(conn, target_object, 0) == GOOD_REPLICA);
+            CHECK(replica::replica_size<RcComm>(conn, target_object, 0) == contents.size());
+
+            // Checksum the replica.
+            const std::string_view expected_checksum = "sha2:XL7wWccBvgYxXqmzjM4SYIGoTiocxaycQ9uzweaphcQ=";
+            CHECK(replica::replica_checksum<RcComm>(conn, target_object, 0) == expected_checksum);
+
+            // Spawn a new agent.
+            conn.disconnect();
+            conn.connect();
+            REQUIRE(conn);
+
+            // Overwrite part of the replica so that the agent can decide how to handle
+            // the checksum on tear down.
+            auto* conn_ptr = static_cast<RcComm*>(conn);
+            REQUIRE(conn_ptr);
+
+            dataObjInp_t open_inp{};
+            std::strcpy(open_inp.objPath, target_object.c_str());
+            open_inp.openFlags = O_CREAT | O_WRONLY;
+            const auto fd = rcDataObjOpen(conn_ptr, &open_inp);
+            REQUIRE(fd > 2);
+            CHECK(INTERMEDIATE_REPLICA == replica::replica_status<RcComm>(conn, target_object, 0));
+
+            SECTION("no bytes written, agent erases checksum")
+            {
+                // Disconnect without closing the replica so that the agent cleans up behind us.
+                conn.disconnect();
+                REQUIRE_FALSE(conn);
+
+                // Give the agent a few seconds to clean up and shutdown.
+                std::this_thread::sleep_for(3s);
+
+                conn.connect();
+                REQUIRE(conn);
+
+                // Show that the replica is still in a good state and its checksum has been erased.
+                const auto [rp, lm] = replica::make_replica_proxy<RcComm>(conn, target_object, 0);
+                CHECK(rp.replica_status() == STALE_REPLICA);
+                CHECK(rp.size() == contents.size());
+                REQUIRE(rp.checksum().empty());
+            }
+
+            SECTION("bytes are written, agent erases checksum")
+            {
+                const std::string_view new_data = "ABC";
+                bytesBuf_t write_bbuf{};
+                write_bbuf.buf = const_cast<char*>(new_data.data());
+                write_bbuf.len = new_data.size();
+
+                openedDataObjInp_t write_inp{};
+                write_inp.l1descInx = fd;
+                write_inp.len = write_bbuf.len;
+                const auto bytes_written = rcDataObjWrite(conn_ptr, &write_inp, &write_bbuf);
+                CHECK(write_bbuf.len == bytes_written);
+
+                // Disconnect without closing the replica so that the agent cleans up behind us.
+                conn.disconnect();
+                REQUIRE_FALSE(conn);
+
+                // Give the agent a few seconds to clean up and shutdown.
+                std::this_thread::sleep_for(3s);
+
+                conn.connect();
+                REQUIRE(conn);
+
+                // Show that the replica is still in a good state and its checksum has been erased.
+                const auto [rp, lm] = replica::make_replica_proxy<RcComm>(conn, target_object, 0);
+                CHECK(rp.replica_status() == STALE_REPLICA);
+                CHECK(rp.size() == contents.size());
+                REQUIRE(rp.checksum().empty());
+            }
+        }
+
         SECTION("create,no close")
         {
             {
@@ -467,66 +607,211 @@ TEST_CASE("rxDataObjPut")
         REQUIRE(fs::client::remove_all(conn, sandbox, fs::remove_options::no_trash));
     }};
 
-    SECTION("#5400: VERIFY_CHKSUM_KW is always honored")
+    const auto logical_path = sandbox / "eels.txt";
+
+    SECTION("#5496: custom put operations erase checksums")
+    {
+        auto* conn_ptr = static_cast<RcComm*>(conn);
+        const std::string_view expected_checksum = "sha2:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=";
+
+        const auto do_test = [&](const std::string_view _key,
+                                 const std::string_view _value,
+                                 bool _test_mismatch_checksums)
+        {
+            // Create an empty data object.
+            dataObjInp_t open_inp{};
+            std::strcpy(open_inp.objPath, logical_path.c_str());
+            open_inp.openFlags = O_CREAT | O_TRUNC | O_WRONLY;
+            open_inp.oprType = PUT_OPR;
+
+            addKeyVal(&open_inp.condInput, _key.data(), _value.data());
+            auto fd = rcDataObjOpen(conn_ptr, &open_inp);
+            REQUIRE(fd > 2);
+
+            openedDataObjInp_t close_inp{};
+            close_inp.l1descInx = fd;
+
+            if (_test_mismatch_checksums) {
+                REQUIRE(rcDataObjClose(conn_ptr, &close_inp) == USER_CHKSUM_MISMATCH);
+            }
+            else {
+                REQUIRE(rcDataObjClose(conn_ptr, &close_inp) >= 0);
+            }
+
+            // Verify the state of the replica.
+            const auto [rp, lm] = replica::make_replica_proxy<RcComm>(conn, logical_path, 0);
+            CHECK(rp.size() == 0);
+            CHECK(rp.checksum() == expected_checksum);
+
+            if (_test_mismatch_checksums) {
+                CHECK(rp.replica_status() == STALE_REPLICA);
+            }
+            else {
+                CHECK(rp.replica_status() == GOOD_REPLICA);
+            }
+
+            // Overwrite the replica.
+            rmKeyVal(&open_inp.condInput, _key.data());
+            fd = rcDataObjOpen(conn_ptr, &open_inp);
+            REQUIRE(fd > 2);
+
+            const std::string_view new_data = "ABC";
+            bytesBuf_t bbuf{};
+            bbuf.buf = const_cast<char*>(new_data.data());
+            bbuf.len = new_data.size() + 1;
+
+            openedDataObjInp_t write_inp{};
+            write_inp.l1descInx = fd;
+            write_inp.len = bbuf.len;
+            const auto bytes_written = rcDataObjWrite(conn_ptr, &write_inp, &bbuf);
+            CHECK(bbuf.len == bytes_written);
+
+            close_inp.l1descInx = fd;
+            REQUIRE(rcDataObjClose(conn_ptr, &close_inp) >= 0);
+
+            // Show that the checksum has been erased.
+            {
+                const auto [rp, lm] = replica::make_replica_proxy<RcComm>(conn, logical_path, 0);
+                CHECK(rp.size() == bytes_written);
+                REQUIRE(rp.replica_status() == GOOD_REPLICA);
+                REQUIRE(rp.checksum().empty());
+            }
+        };
+
+        SECTION("register new checksum")
+        {
+            do_test(REG_CHKSUM_KW, "", /* test_mismatch_checksums */ false);
+        }
+
+        SECTION("verify with expected checksum")
+        {
+            do_test(VERIFY_CHKSUM_KW, expected_checksum, /* test_mismatch_checksums */ false);
+        }
+
+        SECTION("verify with mismatch checksum")
+        {
+            do_test(VERIFY_CHKSUM_KW, "---=== USER CHECKSUM MISMATCH ===---", /* test_mismatch_checksums */ true);
+        }
+    }
+
+    SECTION("#5400: VERIFY_CHKSUM_KW is always honored on single buffer put")
     {
         DataObjInp put_input{};
-        put_input.openFlags = O_WRONLY;
         put_input.createMode = 0600;
         addKeyVal(&put_input.condInput, DEF_RESC_NAME_KW, env.rodsDefResource);
 
-        const auto logical_path = sandbox / "eels.txt";
         std::strcpy(put_input.objPath, logical_path.c_str());
 
-        // Set a bad checksum so that the "put" operation fails.
-        const char file_contents[] = "My hovercraft is full of eels";
-        addKeyVal(&put_input.condInput, VERIFY_CHKSUM_KW, file_contents);
+        // Set a bad checksum so that the PUT operation fails.
+        std::string_view file_contents = "My hovercraft is full of eels";
+        addKeyVal(&put_input.condInput, VERIFY_CHKSUM_KW, file_contents.data());
 
         // Put a file into iRODS and trigger an error.
         const auto local_file = boost::filesystem::temp_directory_path() / "eels.txt";
         { std::ofstream{local_file.c_str()} << file_contents; }
+        put_input.dataSize = file_contents.size();
         REQUIRE(rcDataObjPut(static_cast<RcComm*>(conn), &put_input, const_cast<char*>(local_file.c_str())) == USER_CHKSUM_MISMATCH);
 
+        // Show that even though the PUT resulted in a checksum mismatch error, the catalog captures the
+        // correct information for the replica.
         CHECK(replica::replica_status<RcComm>(conn, logical_path, env.rodsDefResource) == STALE_REPLICA);
-        CHECK(replica::replica_size<RcComm>(conn, logical_path, env.rodsDefResource) == 0);
+        CHECK(replica::replica_size<RcComm>(conn, logical_path, env.rodsDefResource) == file_contents.size());
 
-        // Show that the computed checksum matches that of an empty string because the data size in the
-        // catalog is zero.
-        const std::string_view empty_string_checksum = "sha2:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=";
-        CHECK(replica::replica_checksum<RcComm>(conn, logical_path, env.rodsDefResource) == empty_string_checksum);
+        std::string_view expected_checksum = "sha2:XL7wWccBvgYxXqmzjM4SYIGoTiocxaycQ9uzweaphcQ=";
+        CHECK(replica::replica_checksum<RcComm>(conn, logical_path, env.rodsDefResource) == expected_checksum);
 
-        // Show that overwriting the replica still results in a checksum error and that all information
-        // about the replica remains unchanged.
+        // Overwrite the local file's contents so that we can prove that VERIFY_CHKSUM_KW is honored.
+        file_contents = "My hovercraft has been taken over by sharks!";
+        { std::ofstream{local_file.c_str()} << file_contents; }
+        put_input.dataSize = file_contents.size();
+
+        // Show that the VERIFY_CHKSUM_KW is honored when overwriting the replica via the FORCE_FLAG_KW flag.
+        // The catalog will still reflect the correct information even though there was an error.
         addKeyVal(&put_input.condInput, FORCE_FLAG_KW, "");
         REQUIRE(rcDataObjPut(static_cast<RcComm*>(conn), &put_input, const_cast<char*>(local_file.c_str())) == USER_CHKSUM_MISMATCH);
 
         CHECK(replica::replica_status<RcComm>(conn, logical_path, env.rodsDefResource) == STALE_REPLICA);
-        CHECK(replica::replica_size<RcComm>(conn, logical_path, env.rodsDefResource) == 0);
-        CHECK(replica::replica_checksum<RcComm>(conn, logical_path, env.rodsDefResource) == empty_string_checksum);
+        CHECK(replica::replica_size<RcComm>(conn, logical_path, env.rodsDefResource) == file_contents.size());
 
-        // Overwrite the replica and include a good checksum.
-        // Show that the information about the replica is correct.
-        const std::string_view good_checksum = "sha2:XL7wWccBvgYxXqmzjM4SYIGoTiocxaycQ9uzweaphcQ=";
-        addKeyVal(&put_input.condInput, VERIFY_CHKSUM_KW, good_checksum.data());
+        expected_checksum = "sha2:U1GXHohbx5JiwKy3uqEI1lPyTfw/SZmKk5KhccdQ6iY=";
+        CHECK(replica::replica_checksum<RcComm>(conn, logical_path, env.rodsDefResource) == expected_checksum);
+
+        // Restore the local file's contents for verification.
+        file_contents = "My hovercraft is full of eels";
+        { std::ofstream{local_file.c_str()} << file_contents; }
+        put_input.dataSize = file_contents.size();
+
+        // Overwrite the replica again and include the correct checksum for verification.
+        expected_checksum = "sha2:XL7wWccBvgYxXqmzjM4SYIGoTiocxaycQ9uzweaphcQ=";
+        addKeyVal(&put_input.condInput, VERIFY_CHKSUM_KW, expected_checksum.data());
         REQUIRE(rcDataObjPut(static_cast<RcComm*>(conn), &put_input, const_cast<char*>(local_file.c_str())) == 0);
 
         CHECK(replica::replica_status<RcComm>(conn, logical_path, env.rodsDefResource) == GOOD_REPLICA);
-        CHECK(replica::replica_size<RcComm>(conn, logical_path, env.rodsDefResource) == std::strlen(file_contents));
-        CHECK(replica::replica_checksum<RcComm>(conn, logical_path, env.rodsDefResource) == good_checksum);
+        CHECK(replica::replica_size<RcComm>(conn, logical_path, env.rodsDefResource) == file_contents.size());
+        CHECK(replica::replica_checksum<RcComm>(conn, logical_path, env.rodsDefResource) == expected_checksum);
 
-        // Overwrite the replica again, but trigger a checksum mismatch error.
-        addKeyVal(&put_input.condInput, VERIFY_CHKSUM_KW, file_contents);
+        // Show that recalculating the checksum results in the same checksum because the checksum
+        // API honors the data size in the catalog and not the physical object's size in storage.
+        constexpr auto recalculate = replica::verification_calculation::always;
+        CHECK(replica::replica_checksum<RcComm>(conn, logical_path, env.rodsDefResource, recalculate) == expected_checksum);
+    }
+
+    SECTION("#5400: VERIFY_CHKSUM_KW is always honored on parallel transfer put")
+    {
+        DataObjInp put_input{};
+        put_input.createMode = 0600;
+        put_input.dataSize = 40'000'000;
+        addKeyVal(&put_input.condInput, DEF_RESC_NAME_KW, env.rodsDefResource);
+
+        std::strcpy(put_input.objPath, logical_path.c_str());
+
+        // Set a bad checksum so that the PUT operation fails.
+        std::string_view file_contents = "---=== USER CHECKSUM MISMATCH ===---";
+        addKeyVal(&put_input.condInput, VERIFY_CHKSUM_KW, file_contents.data());
+
+        // Put a file into iRODS and trigger an error.
+        const auto local_file = boost::filesystem::temp_directory_path() / "eels.txt";
+        REQUIRE(unit_test_utils::create_local_file(local_file.c_str(), put_input.dataSize, 'A'));
+        REQUIRE(rcDataObjPut(static_cast<RcComm*>(conn), &put_input, const_cast<char*>(local_file.c_str())) == USER_CHKSUM_MISMATCH);
+
+        // Show that even though the PUT resulted in a checksum mismatch error, the catalog captures the
+        // correct information for the replica.
+        CHECK(replica::replica_status<RcComm>(conn, logical_path, env.rodsDefResource) == STALE_REPLICA);
+        CHECK(replica::replica_size<RcComm>(conn, logical_path, env.rodsDefResource) == put_input.dataSize);
+
+        std::string_view expected_checksum = "sha2:oC4OD1/qnmXHaUV298S0PCsoAvvWPmwh7oIHHEhsi1U=";
+        CHECK(replica::replica_checksum<RcComm>(conn, logical_path, env.rodsDefResource) == expected_checksum);
+
+        // Overwrite the local file's contents so that we can prove that VERIFY_CHKSUM_KW is honored.
+        REQUIRE(unit_test_utils::create_local_file(local_file.c_str(), put_input.dataSize, 'B'));
+
+        // Show that the VERIFY_CHKSUM_KW is honored when overwriting the replica via the FORCE_FLAG_KW flag.
+        // The catalog will still reflect the correct information even though there was an error.
+        addKeyVal(&put_input.condInput, FORCE_FLAG_KW, "");
         REQUIRE(rcDataObjPut(static_cast<RcComm*>(conn), &put_input, const_cast<char*>(local_file.c_str())) == USER_CHKSUM_MISMATCH);
 
         CHECK(replica::replica_status<RcComm>(conn, logical_path, env.rodsDefResource) == STALE_REPLICA);
-        CHECK(replica::replica_size<RcComm>(conn, logical_path, env.rodsDefResource) == 0);
+        CHECK(replica::replica_size<RcComm>(conn, logical_path, env.rodsDefResource) == put_input.dataSize);
 
-        // Show that the checksum in the catalog remains unchanged due to the checksum mismatch error.
-        CHECK(replica::replica_checksum<RcComm>(conn, logical_path, env.rodsDefResource) == good_checksum);
+        expected_checksum = "sha2:Nje5rtNS8hXbdo639d9ux4gLptcm3sichw1PssbSnOg=";
+        CHECK(replica::replica_checksum<RcComm>(conn, logical_path, env.rodsDefResource) == expected_checksum);
 
-        // Show that recalculating the checksum results in the empty string checksum because the checksum
+        // Restore the local file's contents for verification.
+        REQUIRE(unit_test_utils::create_local_file(local_file.c_str(), put_input.dataSize, 'A'));
+
+        // Overwrite the replica again and include the correct checksum for verification.
+        expected_checksum = "sha2:oC4OD1/qnmXHaUV298S0PCsoAvvWPmwh7oIHHEhsi1U=";
+        addKeyVal(&put_input.condInput, VERIFY_CHKSUM_KW, expected_checksum.data());
+        REQUIRE(rcDataObjPut(static_cast<RcComm*>(conn), &put_input, const_cast<char*>(local_file.c_str())) == 0);
+
+        CHECK(replica::replica_status<RcComm>(conn, logical_path, env.rodsDefResource) == GOOD_REPLICA);
+        CHECK(replica::replica_size<RcComm>(conn, logical_path, env.rodsDefResource) == put_input.dataSize);
+        CHECK(replica::replica_checksum<RcComm>(conn, logical_path, env.rodsDefResource) == expected_checksum);
+
+        // Show that recalculating the checksum results in the same checksum because the checksum
         // API honors the data size in the catalog and not the physical object's size in storage.
         constexpr auto recalculate = replica::verification_calculation::always;
-        CHECK(replica::replica_checksum<RcComm>(conn, logical_path, env.rodsDefResource, recalculate) == empty_string_checksum);
+        CHECK(replica::replica_checksum<RcComm>(conn, logical_path, env.rodsDefResource, recalculate) == expected_checksum);
     }
 } // rxDataObjPut
 
