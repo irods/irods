@@ -66,6 +66,8 @@ namespace
 
 TEST_CASE("replica state table", "[basic]")
 {
+    rst::init();
+
     auto replicas = generate_data_object(DATA_ID_1, LOGICAL_PATH_1, SIZE_1);
     auto* head = replicas[0];
 
@@ -75,7 +77,7 @@ TEST_CASE("replica state table", "[basic]")
     const auto obj = irods::experimental::data_object::make_data_object_proxy(*head);
 
     // create before entry for the data object
-    REQUIRE_NOTHROW(rst::insert(obj));
+    REQUIRE(0 == rst::insert(obj));
     REQUIRE(rst::contains(DATA_ID_1));
     REQUIRE(REPLICA_COUNT == rst::at(DATA_ID_1).size());
 
@@ -237,7 +239,7 @@ TEST_CASE("replica state table", "[basic]")
 
         const auto obj_2 = irods::experimental::data_object::make_data_object_proxy(*head_2);
 
-        REQUIRE_NOTHROW(rst::insert(obj_2));
+        REQUIRE(0 == rst::insert(obj_2));
         REQUIRE(rst::contains(DATA_ID_2));
 
         for (int i = 0; i < REPLICA_COUNT; ++i) {
@@ -268,7 +270,7 @@ TEST_CASE("replica state table", "[basic]")
 
         CHECK_FALSE(rst::contains(proxy.data_id(), proxy.replica_number()));
 
-        REQUIRE_NOTHROW(rst::insert(proxy));
+        REQUIRE(0 == rst::insert(proxy));
 
         CHECK(rst::contains(proxy.data_id(), proxy.replica_number()));
         CHECK(REPLICA_COUNT + 1 == rst::at(proxy.data_id()).size());
@@ -281,7 +283,7 @@ TEST_CASE("replica state table", "[basic]")
     SECTION("test ref_count")
     {
         REQUIRE(rst::contains(DATA_ID_1));
-        REQUIRE_NOTHROW(rst::insert(obj));
+        REQUIRE(0 == rst::insert(obj));
         CHECK_NOTHROW(rst::erase(DATA_ID_1));
         CHECK(rst::contains(DATA_ID_1));
     }
@@ -291,7 +293,7 @@ TEST_CASE("replica state table", "[basic]")
     rst::deinit();
 }
 
-TEST_CASE("invalid_keys", "[basic]")
+TEST_CASE("invalid_keys", "[invalid]")
 {
     constexpr rst::key_type BOGUS_KEY = 42;
     CHECK_FALSE(rst::contains(BOGUS_KEY));
