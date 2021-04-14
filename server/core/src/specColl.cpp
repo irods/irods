@@ -1,28 +1,60 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* specColl.c - special collection (mounted and linked collections) routines */
-
-#include "rcMisc.h"
-#include "dataObjOpr.hpp"
-#include "specColl.hpp"
 #include "collection.hpp"
-#include "resource.hpp"
-#include "genQuery.h"
-#include "modColl.h"
-#include "icatDefines.h"
 #include "dataObjClose.h"
+#include "dataObjInpOut.h"
+#include "dataObjOpr.hpp"
+#include "genQuery.h"
+#include "icatDefines.h"
+#include "modColl.h"
+#include "objInfo.h"
 #include "objMetaOpr.hpp"
-#include "rsGenQuery.hpp"
-#include "rsModColl.hpp"
+#include "physPath.hpp"
+#include "rcGlobalExtern.h"
+#include "rcMisc.h"
+#include "resource.hpp"
+#include "rods.h"
 #include "rsDataObjClose.hpp"
+#include "rsFileCreate.hpp"
+#include "rsGenQuery.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rsModColl.hpp"
 #include "rsObjStat.hpp"
+#include "rsSubStructFileCreate.hpp"
+#include "ruleExecSubmit.h"
+#include "specColl.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
 #include "irods_stacktrace.hpp"
+#include "key_value_proxy.hpp"
+
+#include "fmt/format.h"
 
 static int HaveFailedSpecCollPath = 0;
 static char FailedSpecCollPath[MAX_NAME_LEN];
+
+namespace
+{
+    auto create_sub_struct_file(rsComm_t *rsComm, const int l1descInx) -> int
+    {
+        dataObjInfo_t *dataObjInfo = L1desc[l1descInx].dataObjInfo;
+        std::string location{};
+        irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+        if (!ret.ok()) {
+            irods::log(LOG_ERROR, fmt::format(
+                "{} - failed in get_loc_for_hier_string:[{}]; ec:[{}]",
+                __FUNCTION__, ret.result(), ret.code()));
+            return ret.code();
+        }
+
+        subFile_t subFile{};
+        rstrcpy( subFile.subFilePath, dataObjInfo->subPath, MAX_NAME_LEN );
+        rstrcpy( subFile.addr.hostAddr, location.c_str(), NAME_LEN );
+
+        subFile.specColl = dataObjInfo->specColl;
+        subFile.mode = getFileMode( L1desc[l1descInx].dataObjInp );
+        return rsSubStructFileCreate( rsComm, &subFile );
+    } // create_sub_struct_file
+} // anonymous namespace
 
 /* querySpecColl - The query can produce multiple answer and only one
  * is correct. e.g., objPath = /x/yabc can produce answers:
@@ -754,3 +786,99 @@ resolveLinkedPath( rsComm_t *rsComm, char *objPath,
     }
     return linkCnt;
 }
+
+namespace irods
+{
+    auto get_special_collection_type_for_data_object(RsComm& _comm, DataObjInp& _inp) -> int
+    {
+        rodsObjStat* stat = nullptr;
+        const irods::at_scope_exit free_obj_stat_out{[&stat] { freeRodsObjStat(stat); }};
+
+        irods::experimental::key_value_proxy{_inp.condInput}[SEL_OBJ_TYPE_KW] = "dataObj";
+        if (const int ec = rsObjStat(&_comm, &_inp, &stat); ec < 0) {
+            irods::log(LOG_DEBUG, fmt::format(
+                "[{}:{}] - rsObjStat failed with [{}]",
+                __FUNCTION__, __LINE__, ec));
+
+            return NO_SPEC_COLL;
+        }
+
+        if (stat) {
+            if (COLL_OBJ_T == stat->objType) {
+                return USER_INPUT_PATH_ERR;
+            }
+
+            if (stat->specColl) {
+                return stat->specColl->collClass;
+            }
+        }
+
+        return NO_SPEC_COLL;
+    } // get_special_collection_type_for_data_object
+
+    auto data_object_create_in_special_collection(RsComm* rsComm, DataObjInp& dataObjInp) -> int
+    {
+        dataObjInfo_t* dataObjInfo{};
+        const int status = resolvePathInSpecColl( rsComm, dataObjInp.objPath, WRITE_COLL_PERM, 0, &dataObjInfo );
+        if (!dataObjInfo) {
+            rodsLog(LOG_ERROR, "%s :: dataObjInfo is null", __FUNCTION__ );
+            return status;
+        }
+
+        if (status >= 0) {
+            irods::log(LOG_ERROR, fmt::format(
+                "{}: phyPath {} already exist",
+                __FUNCTION__, dataObjInfo->filePath));
+            freeDataObjInfo( dataObjInfo );
+            return SYS_COPY_ALREADY_IN_RESC;
+        }
+        else if (status != SYS_SPEC_COLL_OBJ_NOT_EXIST) {
+            freeDataObjInfo( dataObjInfo );
+            return status;
+        }
+
+        // Objects in special collections are exempt from intermediate replicas and logical
+        // locking, so make sure the replica is good from creation as it has been historically.
+        dataObjInfo->replStatus = GOOD_REPLICA;
+
+        const auto l1_index = irods::populate_L1desc_with_inp(dataObjInp, *dataObjInfo, dataObjInp.dataSize);
+        if (l1_index < 3) {
+            freeDataObjInfo(dataObjInfo);
+
+            if (l1_index < 0) {
+                irods::log(LOG_ERROR, fmt::format(
+                    "[{}:{}] - failed to generate L1 descriptor; path:[{}],ec:[{}]",
+                    __FUNCTION__, __LINE__, dataObjInp.objPath, l1_index));
+
+                return l1_index;
+            }
+
+
+            return SYS_FILE_DESC_OUT_OF_RANGE;
+        }
+
+        if (irods::experimental::key_value_proxy{dataObjInp.condInput}.contains(NO_OPEN_FLAG_KW)) {
+            return l1_index;
+        }
+
+        const auto l3_index = getStructFileType(dataObjInfo->specColl) >= 0
+            ? create_sub_struct_file(rsComm, l1_index)
+            : irods::create_physical_file_for_replica(*rsComm, dataObjInp, *dataObjInfo);
+
+        if (l3_index < 0) {
+            freeDataObjInfo(dataObjInfo);
+
+            irods::log(LOG_ERROR, fmt::format(
+                "[{}:{}] - failed to create physical file [{}]; path:[{}],ec:[{}]",
+                __FUNCTION__, __LINE__, L1desc[l1_index].dataObjInfo->filePath, dataObjInp.objPath, l3_index));
+
+            freeL1desc(l1_index);
+
+            return l3_index;
+        }
+
+        L1desc[l1_index].l3descInx = l3_index;
+
+        return l1_index;
+    } // data_object_create_in_special_collection
+} // namespace irods
