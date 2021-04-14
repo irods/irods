@@ -49,10 +49,11 @@ namespace irods::experimental::io
     /// \since 4.2.9
     struct on_close_success
     {
-        bool update_size = true;            ///< Instructs the server to update the replica size.
-        bool update_status = true;          ///< Instructs the server to update the replica status.
-        bool compute_checksum = false;      ///< Instructs the server to compute a checksum.
-        bool send_notifications = true;     ///< Instructs the server to notify other services.
+        bool update_size = true;                   ///< Instructs the server to update the replica size.
+        bool update_status = true;                 ///< Instructs the server to update the replica status.
+        bool compute_checksum = false;             ///< Instructs the server to compute a checksum.
+        bool send_notifications = true;            ///< Instructs the server to notify other services.
+        bool preserve_replica_state_table = false; ///< Instructs the server to update the replica state table.
     };
 
     /// \brief The base interface that serves as a way to extend and/or customize how bytes are

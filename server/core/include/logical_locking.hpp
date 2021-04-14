@@ -7,6 +7,7 @@ struct RsComm;
 
 namespace irods::logical_locking
 {
+    // TODO: future work...
     // data_status column will contain something like the following when an object is locked for every replica:
     //{
     //    "original_status": 1,
@@ -145,7 +146,7 @@ namespace irods::logical_locking
     /// \parblock
     /// Calls the lock implemenation as described in lock"("const std::uint64_t, const int,const lock_type")"
     /// by updating the replica_state_table, then publishes the entry to the catalog immediately. file_modified
-    /// will never be triggered by this operation
+    /// will never be triggered by this operation.
     /// \endparblock
     ///
     /// \param[in] _comm

@@ -34,8 +34,7 @@ namespace irods
     /// \param[in/out] _info Required for _dataObjChksum
     /// \param[in] _original_checksum
     ///
-    /// \returns std::string
-    /// \retval the computed checksum
+    /// \returns the computed checksum
     ///
     /// \throws irods::exception If checksum operation fails for any reason
     ///
@@ -48,9 +47,7 @@ namespace irods
     /// \param[in/out] _info Required for _dataObjChksum
     /// \param[in] _original_checksum
     ///
-    /// \returns std::string
-    /// \retval the computed checksum
-    /// \retval empty string if calculated checksum does not match the original
+    /// \returns empty string if calculated checksum does not match the original; else, the computed checksum
     ///
     /// \throws irods::exception If checksum operation fails for any reason
     ///
@@ -68,8 +65,7 @@ namespace irods
     /// \parma[in] _verify_size Verify the recorded size against the size in the vault
     /// \param[in] _recorded_size Size to verify against
     ///
-    /// \returns rodsLong_t
-    /// \retval If UNKNOWN_FILE_SZ is returned, _recorded_size; else, size in the vault
+    /// \returns If UNKNOWN_FILE_SZ is returned, _recorded_size; else, size in the vault
     ///
     /// \throws irods::exception If an error occurs getting the size or verification fails
     ///
@@ -78,8 +74,7 @@ namespace irods
 
     /// \param[in] _src
     ///
-    /// \returns l1desc
-    /// \retval Copy of _src L1 descriptor including DataObjInp and DataObjInfo
+    /// \returns Copy of _src L1 descriptor including DataObjInp and DataObjInfo
     ///
     /// \since 4.2.9
     auto duplicate_l1_descriptor(const l1desc& _src) -> l1desc;
@@ -90,8 +85,7 @@ namespace irods
     /// \param[in] _l1desc
     /// \param[in/out] _info Holds affected replica information
     ///
-    /// \returns int
-    /// \retval Status returned by rsModDataObjMeta
+    /// \returns Status returned by rsModDataObjMeta
     ///
     /// \since 4.2.9
     auto stale_replica(RsComm& _comm, const l1desc& _l1desc, DataObjInfo& _info) -> int;
@@ -103,8 +97,7 @@ namespace irods
     /// \param[in] _operation_status
     /// \param[in] _pep_name
     ///
-    /// \returns int
-    /// \retval REI status after calling applyRule
+    /// \returns REI status after calling applyRule
     ///
     /// \since 4.2.9
     auto apply_static_post_pep(RsComm& _comm, l1desc& _l1desc, const int _operation_status, std::string_view _pep_name) -> int;
@@ -116,12 +109,23 @@ namespace irods
     ///
     /// \param[in/out] _comm
     /// \param[in] _fd l1 descriptor index
+    /// \param[in] _preserve_replica_state_table Whether the RST entry should be preserved or erased
     ///
-    /// \returns int
-    /// \retval return code of rs_replica_close
+    /// \returns return code of rs_replica_close
     ///
     /// \since 4.2.9
-    auto close_replica_without_catalog_update(RsComm& _comm, const int _fd) -> int;
+    auto close_replica_without_catalog_update(RsComm& _comm, const int _fd, const bool _preserve_replica_state_table) -> int;
+
+    /// \brief Closes specified L1 descriptor and unlocks the data object (does not trigger file_modified)
+    ///
+    /// \param[in] _comm
+    /// \param[in] _fd L1 descriptor to close
+    /// \param[in] _status Desired status for the replica opened in _fd
+    ///
+    /// \returns return code of unlock_and_publish or close_replica_without_catalog_update
+    ///
+    /// \since 4.2.9
+    auto close_replica_and_unlock_data_object(RsComm& _comm, const int _fd, const int _status) -> int;
 } // namespace irods
 
 #endif // IRODS_FINALIZE_UTILITIES_HPP

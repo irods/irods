@@ -32,6 +32,7 @@
 #include "irods_server_properties.hpp"
 #include "irods_threads.hpp"
 #include "key_value_proxy.hpp"
+#include "logical_locking.hpp"
 #include "replica_state_table.hpp"
 
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
@@ -54,6 +55,7 @@ static int BrokenPipeCnt = 0;
 
 namespace
 {
+    namespace ill = irods::logical_locking;
     namespace rst = irods::replica_state_table;
 
     auto calculate_checksum(RsComm& _comm, l1desc& _l1desc, DataObjInfo& _info) -> std::string
@@ -89,12 +91,12 @@ namespace
     {
         namespace ir = irods::experimental::replica;
 
-        auto replica = ir::make_replica_proxy(_info);
+        auto r = ir::make_replica_proxy(_info);
 
-        if (!rst::contains(replica.data_id())) {
+        if (!rst::contains(r.data_id())) {
             irods::log(LOG_ERROR, fmt::format(
                 "[{}:{}] - no entry found in replica state table for [{}]",
-                __FUNCTION__, __LINE__, replica.logical_path()));
+                __FUNCTION__, __LINE__, r.logical_path()));
 
             return;
         }
@@ -104,35 +106,47 @@ namespace
         //  - Check size in vault
         try {
             constexpr bool verify_size = false;
-            replica.size(irods::get_size_in_vault(_comm, *replica.get(), verify_size, _l1desc.dataSize));
+            const auto size = irods::get_size_in_vault(_comm, *r.get(), verify_size, _l1desc.dataSize);
+            if (size < 0) {
+                THROW(size, fmt::format(
+                    "[{}:{}] - failed to get size from vault "
+                    "[ec=[{}], path=[{}], repl num=[{}]]",
+                    __FUNCTION__, __LINE__, size, r.logical_path(), r.replica_number()));
+            }
+
+            r.size(size);
 
             //  - Compute checksum if flag is present
-            if (!cond_input.contains(CHKSUM_KW) && !replica.checksum().empty()) {
-                if (const auto checksum = calculate_checksum(_comm, _l1desc, *replica.get()); !checksum.empty()) {
-                    replica.checksum(checksum);
+            if (!cond_input.contains(CHKSUM_KW) && !r.checksum().empty()) {
+                if (const auto checksum = calculate_checksum(_comm, _l1desc, *r.get()); !checksum.empty()) {
+                    r.checksum(checksum);
                 }
             }
         }
         catch (const irods::exception& e) {
-            irods::log(e);
+            irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", e.client_display_what()));
         }
 
-        //  TODO?
-        //  - Update modify time to now
-
-        //  - Update replica status to stale
-        replica.replica_status(STALE_REPLICA);
+        if (OPEN_FOR_WRITE_TYPE == _l1desc.openType) {
+            // If the replica was opened for write and failed to close, we set the mtime
+            // because the status is going to change to stale due to failure to finalize.
+            r.mtime(SET_TIME_TO_NOW_KW);
+        }
 
         if (cond_input.contains(CHKSUM_KW)) {
-            replica.checksum(cond_input.at(CHKSUM_KW).value());
+            r.checksum(cond_input.at(CHKSUM_KW).value());
         }
 
-        rst::update(replica.data_id(), replica);
+        r.replica_status(STALE_REPLICA);
 
-        if (const int ec = rst::publish_to_catalog(_comm, replica.data_id(), replica.replica_number(), nlohmann::json{}); ec < 0) {
-            irods::log(LOG_ERROR, fmt::format(
-                "[{}:{}] - failed to publish to catalog:[{}]",
-                __FUNCTION__, __LINE__, ec));
+        rst::update(r.data_id(), r);
+
+        //  - Update replica status to stale
+        if (const int ec = ill::unlock_and_publish(_comm, r.data_id(), r.replica_number(), STALE_REPLICA, ill::restore_status); ec < 0) {
+            irods::log(LOG_NOTICE, fmt::format(
+                "[{}:{}] - Failed to unlock data object "
+                "[error_code=[{}], path=[{}], hierarchy=[{}]]",
+                __FUNCTION__, __LINE__, ec, r.logical_path(), r.hierarchy()));
         }
     } // finalize_replica_opened_for_create_or_write
 
@@ -156,9 +170,10 @@ namespace
                 auto [replica, replica_lm] = irods::experimental::replica::duplicate_replica(*l1desc.dataObjInfo);
                 struct l1desc fd_cache = irods::duplicate_l1_descriptor(l1desc);
                 const irods::at_scope_exit free_fd{[&fd_cache] { freeL1desc_struct(fd_cache); }};
+                constexpr auto preserve_rst = true;
 
                 // close the replica, free L1 descriptor
-                if (const int ec = irods::close_replica_without_catalog_update(_comm, fd); ec < 0) {
+                if (const int ec = irods::close_replica_without_catalog_update(_comm, fd, preserve_rst); ec < 0) {
                     irods::log(LOG_ERROR, fmt::format(
                         "[{}:{}] - error closing replica; ec:[{}]",
                         __FUNCTION__, __LINE__, ec));

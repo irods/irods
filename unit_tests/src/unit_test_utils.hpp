@@ -6,13 +6,13 @@
 #include "dataObjRepl.h"
 #include "resource_administration.hpp"
 #include "irods_at_scope_exit.hpp"
-
-#include <unistd.h>
+#include "filesystem/path.hpp"
 
 #include <boost/filesystem.hpp>
 
 #include <string>
 #include <string_view>
+#include <unistd.h>
 
 namespace unit_test_utils
 {
@@ -72,6 +72,32 @@ namespace unit_test_utils
 
         return rcDataObjRepl(&_comm, &repl_input) == 0;
     }
+
+    inline auto create_empty_replica(
+        RcComm& _comm,
+        const irods::experimental::filesystem::path& _path,
+        const std::string_view _resource_hierarchy = "") -> bool
+    {
+        const auto path_str = _path.c_str();
+
+        dataObjInp_t open_inp{};
+        irods::at_scope_exit free_open_inp{[&open_inp] { clearKeyVal(&open_inp.condInput); }};
+        std::snprintf(open_inp.objPath, sizeof(open_inp.objPath), "%s", path_str);
+        open_inp.openFlags = O_CREAT | O_TRUNC | O_WRONLY;
+
+        if (!_resource_hierarchy.empty()) {
+            irods::experimental::key_value_proxy{open_inp.condInput}[RESC_HIER_STR_KW] = _resource_hierarchy;
+        }
+
+        if (const auto fd = rcDataObjOpen(&_comm, &open_inp); fd > 2) {
+            openedDataObjInp_t close_inp{};
+            irods::at_scope_exit free_close_inp{[&close_inp] { clearKeyVal(&close_inp.condInput); }};
+            close_inp.l1descInx = fd;
+            return rcDataObjClose(&_comm, &close_inp) == 0;
+        }
+
+        return false;
+    } // create_empty_replica
 } // namespace unit_test_utils
 
 #endif // IRODS_UNIT_TEST_UTILS_HPP
