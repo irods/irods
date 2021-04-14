@@ -13,8 +13,6 @@
 
 #include <string_view>
 
-struct DataObjInfo;
-
 namespace irods::experimental::replica
 {
     /// \brief Presents a replica-level interface to a DataObjInfo legacy iRODS struct.
@@ -99,6 +97,24 @@ namespace irods::experimental::replica
         ///
         /// \since 4.2.9
         auto get() const noexcept -> const doi_pointer_type { return doi_; }
+
+        /// \returns Whether the replica is considered at rest
+        /// \retval true If the passed replica status is considered at rest
+        /// \retval false If the passed replica status is not considered at rest
+        ///
+        /// \since 4.2.9
+        auto at_rest() const -> bool { return INTERMEDIATE_REPLICA != replica_status(); }
+
+        /// \returns Whether the replica is locked at the logical level
+        /// \retval true If the passed replica status is locked at the logical level
+        /// \retval false If the passed replica status is not locked at the logical level
+        ///
+        /// \since 4.2.9
+        auto locked() const -> bool
+        {
+            return READ_LOCKED  == replica_status() ||
+                   WRITE_LOCKED == replica_status();
+        }
 
         // mutators
 

@@ -114,9 +114,9 @@ namespace irods
 {
     /// \brief Attempts to create a unique physical file in the specified resource via rsFileCreate
     ///
-    /// \param[in/out] _comm
-    /// \param[in/out] _inp
-    /// \param[in/out] _replica_info \parblock
+    /// \param[in,out] _comm
+    /// \param[in,out] _inp
+    /// \param[in,out] _replica_info \parblock
     ///     The data object info used to determine where and how the file should be created.
     ///     The resolved physical path may change depending on how the storage resource handles unique paths.
     /// \endparblock

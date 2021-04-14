@@ -11,6 +11,8 @@
 #include "rsModAVUMetadata.hpp"
 #include "rsModAccessControl.hpp"
 #include "rs_replica_close.hpp"
+#include "logical_locking.hpp"
+#include "replica_state_table.hpp"
 
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
 #include "data_object_proxy.hpp"
@@ -20,6 +22,11 @@
 #include <vector>
 
 #include "json.hpp"
+
+namespace ill = irods::logical_locking;
+namespace ir = irods::experimental::replica;
+namespace rst = irods::replica_state_table;
+using json = nlohmann::json;
 
 namespace irods
 {
@@ -144,16 +151,23 @@ namespace irods
 
         // an error occurred when getting size from storage
         if (size_in_vault < 0 && UNKNOWN_FILE_SZ != size_in_vault) {
-            THROW(static_cast<int>(size_in_vault), fmt::format(
-                "{}: getSizeInVault error for {}, status = {}",
-                __FUNCTION__, _info.objPath, size_in_vault));
+            irods::log(LOG_ERROR, fmt::format(
+                "[{}:{}] - getSizeInVault error "
+                "[error_code=[{}], path=[{}], hierarchy=[{}]]",
+                __FUNCTION__, __LINE__, size_in_vault, _info.objPath, _info.rescHier));
+
+            return size_in_vault;
         }
 
         // check for consistency of the write operation
         if (_verify_size && size_in_vault != _recorded_size && _recorded_size > 0) {
-            THROW(SYS_COPY_LEN_ERR, fmt::format(
-                "{}: size in vault {} != target size {}",
-                __FUNCTION__, size_in_vault, _recorded_size));
+            irods::log(LOG_ERROR, fmt::format(
+                "[{}:{}] - size in vault does not equal target size"
+                "[target size=[{}], size in vault=[{}], path=[{}], hierarchy=[{}]]",
+                __FUNCTION__, __LINE__,
+                _recorded_size, size_in_vault, _info.objPath, _info.rescHier));
+
+            return SYS_COPY_LEN_ERR;
         }
 
         return size_in_vault;
@@ -197,39 +211,17 @@ namespace irods
             dest.dataObjInfo = obj_lm.release();
         }
 
+        // TODO: need duplication logic
         dest.remoteZoneHost = nullptr;
         dest.otherDataObjInfo = nullptr;
         dest.replDataObjInfo = nullptr;
-
-        // TODO: need duplication logic
-        //if (_src.remoteZoneHost) {
-            //rodsServerHost* rzh{};
-            //std::malloc(sizeof(rodsServerHost));
-        //}
 
         return dest;
     } // duplicate_l1_descriptor
 
     auto stale_replica(RsComm& _comm, const l1desc& _l1desc, DataObjInfo& _info) -> int
     {
-        _info.replStatus = STALE_REPLICA;
-
-        keyValPair_t regParam{};
-        auto kvp = irods::experimental::make_key_value_proxy(regParam);
-
-        kvp[IN_PDMO_KW] = _info.rescHier;
-        kvp[REPL_STATUS_KW] = std::to_string(_info.replStatus);
-
-        const auto cond_input = irods::experimental::make_key_value_proxy(_l1desc.dataObjInp->condInput);
-        if (cond_input.contains(ADMIN_KW)) {
-            kvp[ADMIN_KW] = "";
-        }
-
-        modDataObjMeta_t inp{};
-        inp.dataObjInfo = &_info;
-        inp.regParam = kvp.get();
-
-        return rsModDataObjMeta(&_comm, &inp);
+        return ill::unlock_and_publish(_comm, _info.dataId, _info.replNum, STALE_REPLICA, ill::restore_status);
     } // stale_replica
 
     auto apply_static_post_pep(RsComm& _comm, l1desc& _l1desc, const int _operation_status, std::string_view _pep_name) -> int
@@ -252,13 +244,14 @@ namespace irods
         return rei.status;
     } // apply_static_pep
 
-    auto close_replica_without_catalog_update(RsComm& _comm, const int _fd) -> int
+    auto close_replica_without_catalog_update(RsComm& _comm, const int _fd, const bool _preserve_replica_state_table) -> int
     {
         nlohmann::json in_json;
         in_json["fd"] = _fd;
         in_json["send_notifications"] = false;
         in_json["update_size"] = false;
         in_json["update_status"] = false;
+        in_json["preserve_replica_state_table"] = _preserve_replica_state_table;
 
         const int ec = rs_replica_close(&_comm, in_json.dump().data());
 
@@ -270,4 +263,32 @@ namespace irods
 
         return ec;
     } // close_replica_without_catalog_update
+
+    auto close_replica_and_unlock_data_object(RsComm& _comm, const int _fd, const int _status) -> int
+    {
+        const auto [replica, replica_lm] = ir::duplicate_replica(*L1desc[_fd].dataObjInfo);
+        const auto remove_rst_entry      = irods::at_scope_exit{[data_id = replica.data_id()] { rst::erase(data_id); }};
+
+        constexpr auto preserve_rst = true;
+        const auto close_ec = irods::close_replica_without_catalog_update(_comm, _fd, preserve_rst);
+        if (close_ec < 0) {
+            irods::log(LOG_ERROR, fmt::format(
+                "[{}:{}] - Failed to close replica "
+                "[error_code=[{}], path=[{}], hierarchy=[{}]]",
+                __FUNCTION__, __LINE__, close_ec,
+                replica.logical_path(), replica.hierarchy()));
+        }
+
+        if (const int ec = ill::unlock_and_publish(_comm, replica.data_id(), replica.replica_number(), _status, ill::restore_status); ec < 0) {
+            irods::log(LOG_ERROR, fmt::format(
+                "[{}:{}] - Failed to unlock data object "
+                "[error_code=[{}], path=[{}], hierarchy=[{}]]",
+                __FUNCTION__, __LINE__, ec,
+                replica.logical_path(), replica.hierarchy()));
+
+            return ec;
+        }
+
+        return close_ec;
+    } // close_replica_and_unlock_data_object
 } // namespace irods

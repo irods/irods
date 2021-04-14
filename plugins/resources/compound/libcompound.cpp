@@ -691,6 +691,12 @@ irods::error repl_object(
             source_l1descInx = open_source_replica(_ctx, obj, src_hier);
             destination_l1descInx = open_destination_replica(_ctx, obj, source_l1descInx, dst_hier);
             L1desc[destination_l1descInx].srcL1descInx = source_l1descInx;
+            // A note in rsDataObjOpen indicates that the dataSize is set to -1 on purpose
+            // and in the case of a replication or phymv, the caller is responsible for
+            // setting the dataSize to the appropriate value since the destination might
+            // be an archive which can't stat the file for the size. This is one of those
+            // cases and so the dataSize is set to the source dataSize here.
+            L1desc[destination_l1descInx].dataSize = L1desc[source_l1descInx].dataObjInfo->dataSize;
         }
         catch (const irods::exception& _e) {
             irods::log(_e);
