@@ -121,8 +121,11 @@ TEST_CASE("replica", "[replica]")
         REQUIRE(updated_object_content.length() == replica::replica_size(comm, target_object, second_replica));
         REQUIRE(updated_object_content.length() == replica::get_replica_size_from_storage(comm, target_object, second_replica));
 
-        // show that the checksum has not updated in the catalog, yet
-        REQUIRE(replica::replica_checksum(comm, target_object, second_replica) == expected_checksum);
+        // show that the checksum has been erased
+        {
+            const auto [rp, lm] = replica::make_replica_proxy<RcComm>(conn, target_object, second_replica);
+            REQUIRE(rp.checksum().empty());
+        }
 
         // now update the catalog using the force flag
         REQUIRE(replica::replica_checksum(comm, target_object, second_replica, replica::verification_calculation::always) == updated_checksum);
@@ -179,8 +182,11 @@ TEST_CASE("replica", "[replica]")
         REQUIRE(updated_object_content.length() == replica::replica_size(comm, target_object, resc_name));
         REQUIRE(updated_object_content.length() == replica::get_replica_size_from_storage(comm, target_object, resc_name));
 
-        // show that the checksum has not updated in the catalog, yet
-        REQUIRE(replica::replica_checksum(comm, target_object, resc_name) == expected_checksum);
+        // show that the checksum has been erased
+        {
+            const auto [rp, lm] = replica::make_replica_proxy<RcComm>(conn, target_object, resc_name);
+            REQUIRE(rp.checksum().empty());
+        }
 
         // now update the catalog using the force flag
         REQUIRE(replica::replica_checksum(comm, target_object, resc_name, replica::verification_calculation::always) == updated_checksum);

@@ -214,11 +214,13 @@ namespace
             repl.size(size_on_disk);
             repl.replica_status(GOOD_REPLICA);
             repl.mtime(SET_TIME_TO_NOW_KW);
+            repl.checksum("");
         }
         // If the contents of the replica has changed, then update the last modified timestamp.
         else if (_l1desc.bytesWritten > 0) {
             repl.replica_status(GOOD_REPLICA);
             repl.mtime(SET_TIME_TO_NOW_KW);
+            repl.checksum("");
         }
         // If nothing has been written, the status is restored from the replica state table
         // so that the replica is not mistakenly marked as good when it is in fact stale.
@@ -244,6 +246,8 @@ namespace
         }
 
         auto repl = ir::make_replica_proxy(*_l1desc.dataObjInfo);
+
+        repl.checksum("");
 
         // If the size of the replica has changed since opening it, then update the size.
         if (_l1desc.dataObjInfo->dataSize != size_on_disk) {
