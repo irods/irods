@@ -1,47 +1,153 @@
-#include "physPath.hpp"
-
-#include "rcMisc.h"
-#include "rodsDef.h"
-#include "rodsConnect.h"
+#include "collCreate.h"
+#include "collection.hpp"
+#include "dataObjClose.h"
 #include "dataObjOpr.hpp"
-#include "rodsDef.h"
-#include "rodsPath.h"
-#include "rsGlobalExtern.hpp"
 #include "fileChksum.h"
+#include "genQuery.h"
 #include "modDataObjMeta.h"
 #include "objMetaOpr.hpp"
-#include "collection.hpp"
-#include "resource.hpp"
-#include "dataObjClose.h"
-#include "rcGlobalExtern.h"
-#include "rsDataObjClose.hpp"
-#include "genQuery.h"
 #include "phyBundleColl.h"
-#include "collCreate.h"
+#include "physPath.hpp"
+#include "rcGlobalExtern.h"
+#include "rcMisc.h"
+#include "resource.hpp"
+#include "rodsConnect.h"
+#include "rodsDef.h"
+#include "rodsDef.h"
+#include "rodsPath.h"
+#include "rsCollCreate.hpp"
+#include "rsDataObjClose.hpp"
 #include "rsFileChksum.hpp"
-#include "rsModDataObjMeta.hpp"
+#include "rsFileCreate.hpp"
 #include "rsFileRename.hpp"
 #include "rsGenQuery.hpp"
-#include "rsCollCreate.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rsModDataObjMeta.hpp"
 #include "rsObjStat.hpp"
-#include "irods_resource_backport.hpp"
-#include "irods_hierarchy_parser.hpp"
-#include "irods_stacktrace.hpp"
-#include "irods_server_properties.hpp"
-#include "irods_log.hpp"
+
+#include "irods_at_scope_exit.hpp"
 #include "irods_get_full_path_for_config_file.hpp"
+#include "irods_hierarchy_parser.hpp"
+#include "irods_log.hpp"
 #include "irods_random.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_server_properties.hpp"
+#include "irods_stacktrace.hpp"
+#include "replica_proxy.hpp"
 
 #include <fmt/format.h>
 
 #include <unistd.h> // JMC - backport 4598
 #include <fcntl.h> // JMC - backport 4598
 
-int getLeafRescPathName( const std::string& _resc_hier, std::string& _ret_string );
+int getLeafRescPathName(const std::string& _resc_hier, std::string& _ret_string);
 
-int
-chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHIer, char *filePath,
-                        const char *_resc_name, int replStatus );
+int chkAndHandleOrphanFile(
+    rsComm_t *rsComm,
+    char* objPath,
+    char* rescHier,
+    char *filePath,
+    const char *_resc_name,
+    int replStatus);
+
+namespace
+{
+    namespace ir = irods::experimental::replica;
+} // anonymous namespace
+
+namespace irods
+{
+    auto create_physical_file_for_replica(
+        RsComm&      _comm,
+        DataObjInp&  _inp,
+        DataObjInfo& _replica_info) -> int
+    {
+        const int chkType = getchkPathPerm(&_comm, &_inp, &_replica_info);
+        if (DISALLOW_PATH_REG == chkType) {
+            return PATH_REG_NOT_ALLOWED;
+        }
+
+        auto r = ir::make_replica_proxy(_replica_info);
+
+        fileCreateInp_t fileCreateInp{};
+        rstrcpy(fileCreateInp.resc_name_,    r.resource().data(),       MAX_NAME_LEN);
+        rstrcpy(fileCreateInp.resc_hier_,    r.hierarchy().data(),      MAX_NAME_LEN);
+        rstrcpy(fileCreateInp.objPath,       r.logical_path().data(),   MAX_NAME_LEN);
+        rstrcpy(fileCreateInp.fileName,      r.physical_path().data(),  MAX_NAME_LEN);
+        rstrcpy(fileCreateInp.in_pdmo,       r.in_pdmo().data(),        MAX_NAME_LEN );
+        fileCreateInp.mode = getFileMode(&_inp);
+
+        const auto clear_cond_input = irods::at_scope_exit{[&fileCreateInp] { clearKeyVal(&fileCreateInp.condInput); }};
+        copyKeyVal(&_replica_info.condInput, &fileCreateInp.condInput);
+
+        if (NO_CHK_PATH_PERM == chkType) {
+            fileCreateInp.otherFlags |= NO_CHK_PERM_FLAG;
+        }
+
+        int fd = 0;
+        constexpr auto maximum_retries = 100;
+
+        for (int retries = 0; retries < maximum_retries; ++retries) {
+            fileCreateOut_t* create_out{};
+            const auto free_create_out = irods::at_scope_exit{[&create_out] { std::free(create_out); }};
+
+            fd = rsFileCreate(&_comm, &fileCreateInp, &create_out);
+
+            // If the returned file descriptor is valid, the create was successful. If the returned
+            // file descriptor is invalid, the create failed for one reason or another. The only
+            // acceptable error case is EEXIST because we will generate a new unique path and
+            // attempt to create that in the retry. Otherwise, log and return the error.
+            if (fd < 3) {
+                if (fd >= 0) {
+                    irods::log(LOG_NOTICE, fmt::format(
+                        "[{}:{}] - file descriptor for physical create invalid "
+                        "[fd=[{}], path=[{}], hierarchy=[{}], physical_path=[{}]]",
+                        __FUNCTION__, __LINE__,
+                        fd, r.logical_path(), r.hierarchy(), r.physical_path()));
+
+                    return SYS_FILE_DESC_OUT_OF_RANGE;
+                }
+                else if (EEXIST != getErrno(fd)) {
+                    irods::log(LOG_ERROR, fmt::format(
+                        "[{}:{}] - rsFileCreate failed "
+                        "[error_code=[{}], path=[{}], hierarchy=[{}]]",
+                        __FUNCTION__, __LINE__,
+                        fd, r.logical_path(), r.hierarchy()));
+
+                    return fd;
+                }
+            }
+            else {
+                return fd;
+            }
+
+            // The resource plugin may have updated the resolved physical path, so that should
+            // be reflected in the data object info for this replica. The resource plugin may also
+            // have changed the resolved resource hierarchy (e.g. compound resource swaps out
+            // resolved hierarchy to prevent directly invoking operations inside the archive resource).
+            if (create_out) {
+                r.physical_path(create_out->file_name);
+                r.hierarchy(fileCreateInp.resc_hier_);
+            }
+
+            // resolveDupFilePath returns a negative value if the physical path has not been changed.
+            // If the file descriptor is valid, we are done. Else, resolveDupFilePath has generated a
+            // new unique path and placed it in the dataObjInfo, so we should retry the create.
+            if (resolveDupFilePath(&_comm, &_replica_info, &_inp) < 0) {
+                return fd;
+            }
+
+            // A retry with the unique physical path generated by resolveDupFilePath will be attempted.
+            // Update the input to rsFileCreate with the new physical path so the attempted create will
+            // use the new unique path.
+            rstrcpy(fileCreateInp.fileName, r.physical_path().data(), MAX_NAME_LEN);
+        }
+
+        // This means that after maximum_retries attempts to create a unique file path, it still
+        // ran into duplicates. A filesystem error will be returned here with an error code of EEXIST.
+        return fd;
+    } // create_physical_file_for_replica
+} // namespace irods
 
 int
 getFileMode( dataObjInp_t *dataObjInp ) {
@@ -277,13 +383,11 @@ setPathForGraftPathScheme( char *objPath, const char *vaultPath, int addUserName
 int
 resolveDupFilePath( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
                     dataObjInp_t *dataObjInp ) {
-    char tmpStr[NAME_LEN];
-    char *filePath;
-
     if ( getSizeInVault( rsComm, dataObjInfo ) == SYS_PATH_IS_NOT_A_FILE ) {
         /* a dir */
         return SYS_PATH_IS_NOT_A_FILE;
     }
+
     if ( chkAndHandleOrphanFile( rsComm, dataObjInfo->objPath, dataObjInfo->rescHier, dataObjInfo->filePath,
                                  dataObjInfo->rescName, dataObjInfo->replStatus ) >= 0 ) {
         /* this is an orphan file or has been renamed */
@@ -293,7 +397,7 @@ resolveDupFilePath( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     }
 
     if ( dataObjInp != NULL ) {
-        filePath = getValByKey( &dataObjInp->condInput, FILE_PATH_KW );
+        const char* filePath = getValByKey( &dataObjInp->condInput, FILE_PATH_KW );
         if ( filePath != NULL && strlen( filePath ) > 0 ) {
             return -1;
         }
@@ -303,6 +407,7 @@ resolveDupFilePath( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         return -1;
     }
 
+    char tmpStr[NAME_LEN]{};
     snprintf( tmpStr, NAME_LEN, ".%d", dataObjInfo->replNum );
     strcat( dataObjInfo->filePath, tmpStr );
 
@@ -505,9 +610,14 @@ dataObjChksumAndReg( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
  *        < 0 - error
  */
 
-int
-chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHier, char *filePath, const char *_resc_name,
-                        int replStatus ) {
+int chkAndHandleOrphanFile(
+    rsComm_t *rsComm,
+    char* objPath,
+    char* rescHier,
+    char *filePath,
+    const char *_resc_name,
+    int replStatus)
+{
 
     fileRenameInp_t fileRenameInp;
     int status;

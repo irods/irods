@@ -128,9 +128,13 @@ namespace irods::replica_state_table
 
                 auto& target_replica = replica_state_json_map.at(_key).at(REPLICAS_KW).at(_replica_index);
 
-                irods::log(LOG_DEBUG9, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, target_replica.dump()));
+                irods::log(LOG_DEBUG8, fmt::format("[{}:{}] - replica[{}],update:[{}]",
+                    __FUNCTION__, __LINE__, target_replica.dump(), _updates.dump()));
 
                 target_replica.at(AFTER_KW).update(_updates);
+
+                irods::log(LOG_DEBUG8, fmt::format("[{}:{}] - [{}]",
+                    __FUNCTION__, __LINE__, target_replica.dump()));
             }
             catch (const json::exception& e) {
                 THROW(SYS_LIBRARY_ERROR, fmt::format("[{}:{}] - JSON error:[{}]", __FUNCTION__, __LINE__, e.what()));
@@ -199,7 +203,7 @@ namespace irods::replica_state_table
         replica_state_json_map.clear();
     } // deinit
 
-    auto insert(const id::data_object_proxy_t& _obj) -> void
+    auto insert(const id::data_object_proxy_t& _obj) -> int
     {
         const auto& key = get_key(_obj);
 
@@ -211,7 +215,7 @@ namespace irods::replica_state_table
 
                 replica_state_json_map.at(key)["ref_count"] = get_ref_count(key) + 1;
 
-                return;
+                return 0;
             }
 
             json replica_list;
@@ -225,18 +229,26 @@ namespace irods::replica_state_table
                 });
             }
 
-            const json entry{{REPLICAS_KW, replica_list}, {"ref_count", 1}};
+            const json entry{
+                {REPLICAS_KW, replica_list},
+                {"logical_path", _obj.logical_path()},
+                {"ref_count", 1}
+            };
 
             irods::log(LOG_DEBUG9, fmt::format("[{}:{}] - entry:[{}]", __FUNCTION__, __LINE__, entry.dump()));
 
             replica_state_json_map[key] = entry;
+
+            return 0;
         }
         catch (const json::exception& e) {
-            THROW(SYS_LIBRARY_ERROR, fmt::format("[{}:{}] - JSON error:[{}]", __FUNCTION__, __LINE__, e.what()));
+            irods::log(LOG_ERROR, fmt::format("[{}:{}] - JSON error:[{}]", __FUNCTION__, __LINE__, e.what()));
+
+            return SYS_LIBRARY_ERROR;
         }
     } // insert
 
-    auto insert(const ir::replica_proxy_t& _replica) -> void
+    auto insert(const ir::replica_proxy_t& _replica) -> int
     {
         try {
             if (!contains(_replica.data_id())) {
@@ -258,9 +270,13 @@ namespace irods::replica_state_table
                     {AFTER_KW, json_replica}
                 }
             );
+
+            return 0;
         }
         catch (const json::exception& e) {
-            THROW(SYS_LIBRARY_ERROR, fmt::format("[{}:{}] - JSON error:[{}]", __FUNCTION__, __LINE__, e.what()));
+            irods::log(LOG_ERROR, fmt::format("[{}:{}] - JSON error:[{}]", __FUNCTION__, __LINE__, e.what()));
+
+            return SYS_LIBRARY_ERROR;
         }
     } // insert
 
@@ -432,7 +448,6 @@ namespace irods::replica_state_table
         const key_type& _key,
         const ir::replica_proxy_t& _replica) -> void
     {
-
         const auto replica_index = index_of(_key, _replica.resource_id());
 
         return update_impl(_key, replica_index, ir::to_json(_replica));
@@ -467,6 +482,13 @@ namespace irods::replica_state_table
 
         return replica_json.at(_property_name.data());
     } // get_property
+
+    auto get_logical_path(const key_type& _key) -> std::string
+    {
+        std::scoped_lock rst_lock{rst_mutex};
+
+        return replica_state_json_map.at(_key).at("logical_path").get<std::string>();
+    } // get_logical_path
 
     auto publish_to_catalog(
         RsComm& _comm,

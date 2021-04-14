@@ -110,5 +110,26 @@ int fsDataObjUnlock(int cmd, int type, int fd);
 
 rodsLong_t getFileMetadataFromVault(RsComm *rsComm, DataObjInfo *dataObjInfo);
 
+namespace irods
+{
+    /// \brief Attempts to create a unique physical file in the specified resource via rsFileCreate
+    ///
+    /// \param[in/out] _comm
+    /// \param[in/out] _inp
+    /// \param[in/out] _replica_info \parblock
+    ///     The data object info used to determine where and how the file should be created.
+    ///     The resolved physical path may change depending on how the storage resource handles unique paths.
+    /// \endparblock
+    ///
+    /// \returns file descriptor for physical data or an error on failure
+    /// \retval PATH_REG_NOT_ALLOWED If the user does not have permission to register the physical path
+    ///
+    /// \since 4.2.9
+    auto create_physical_file_for_replica(
+        RsComm&      _comm,
+        DataObjInp&  _inp,
+        DataObjInfo& _replica_info) -> int;
+} // namespace irods
+
 #endif // IRODS_PHYS_PATH_HPP
 

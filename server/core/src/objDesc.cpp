@@ -29,6 +29,7 @@
 #include "irods_re_structs.hpp"
 #include "get_hier_from_leaf_id.h"
 #include "key_value_proxy.hpp"
+#include "replica_proxy.hpp"
 
 int
 initL1desc() {
@@ -667,3 +668,67 @@ allocAndSetL1descForZoneOpr( int remoteL1descInx, dataObjInp_t *dataObjInp,
 
     return l1descInx;
 }
+
+namespace irods
+{
+    auto populate_L1desc_with_inp(
+        DataObjInp& _inp,
+        DataObjInfo& _info,
+        const rodsLong_t dataSize) -> int
+    {
+        namespace ir = irods::experimental::replica;
+
+        int l1_index = allocL1desc();
+        if (l1_index < 0) {
+            THROW(l1_index, fmt::format("[{}] - failed to allocate l1 descriptor", __FUNCTION__));
+        }
+
+        auto& l1desc = L1desc[l1_index];
+
+        // Initialize the bytesWritten to -1 rather than 0.  If this is negative then we
+        // know no bytes have been written.  This is so that zero length files can be handled
+        // similarly to non-zero length files.
+        l1desc.bytesWritten = -1;
+
+        irods::experimental::key_value_proxy cond_input{_inp.condInput};
+
+        if (cond_input.contains(IN_PDMO_KW)) {
+            rstrcpy(l1desc.in_pdmo, cond_input.at(IN_PDMO_KW).value().data(), MAX_NAME_LEN );
+        }
+        else {
+            rstrcpy(l1desc.in_pdmo, "", MAX_NAME_LEN );
+        }
+
+        if (cond_input.contains(OPEN_TYPE_KW)) {
+            l1desc.openType = std::stoi(cond_input.at(OPEN_TYPE_KW).value().data());
+        }
+
+        auto replica = ir::make_replica_proxy(_info);
+
+        l1desc.dataObjInp = static_cast<DataObjInp*>(std::malloc(sizeof(DataObjInp)));
+        std::memset(l1desc.dataObjInp, 0, sizeof(DataObjInp));
+        replDataObjInp(&_inp, l1desc.dataObjInp);
+
+        l1desc.dataObjInpReplFlag = 1;
+        l1desc.dataObjInfo = replica.get();
+        l1desc.oprType = _inp.oprType;
+        l1desc.replStatus = replica.replica_status();
+        l1desc.dataSize = dataSize;
+        l1desc.purgeCacheFlag = static_cast<int>(cond_input.contains(PURGE_CACHE_KW));
+
+        if (cond_input.contains(REG_CHKSUM_KW)) {
+            l1desc.chksumFlag = REG_CHKSUM;
+            std::snprintf(l1desc.chksum, sizeof(l1desc.chksum), "%s", cond_input.at(REG_CHKSUM_KW).value().data());
+        }
+        else if (cond_input.contains(VERIFY_CHKSUM_KW)) {
+            l1desc.chksumFlag = VERIFY_CHKSUM;
+            std::snprintf(l1desc.chksum, sizeof(l1desc.chksum), "%s", cond_input.at(VERIFY_CHKSUM_KW).value().data());
+        }
+
+        if (cond_input.contains(KEY_VALUE_PASSTHROUGH_KW)) {
+            replica.cond_input()[KEY_VALUE_PASSTHROUGH_KW] = cond_input.at(KEY_VALUE_PASSTHROUGH_KW);
+        }
+
+        return l1_index;
+    } // populate_L1desc_with_inp
+} // namespace irods
