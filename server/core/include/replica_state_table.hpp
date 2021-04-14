@@ -127,18 +127,24 @@ namespace irods::replica_state_table
     ///
     /// \param[in] _obj Initial data object state to serve as both "before" and "after" at the start
     ///
+    /// \retval 0 on successful insertion
+    /// \retval SYS_LIBRARY_ERROR If an nlohmann::json exception occurs
+    ///
     /// \since 4.2.9
-    auto insert(const irods::experimental::data_object::data_object_proxy_t& _obj) -> void;
+    auto insert(const irods::experimental::data_object::data_object_proxy_t& _obj) -> int;
 
     /// \brief Create a new replica in an existing entry in the replica_state_table
     ///
-    /// If the specified replica already exists for this entry in the replica state table, nothing happens.
+    /// If the specified object already exists in the replica state table, the ref_count is increased
+    /// by one.
     ///
     /// \param[in] _replica Initial replica state to serve as both "before" and "after" at the start
-    /// \throws irods::exception If entry does not exist
+    ///
+    /// \retval 0 on successful insertion
+    /// \retval SYS_LIBRARY_ERROR If an nlohmann::json exception occurs
     ///
     /// \since 4.2.9
-    auto insert(const irods::experimental::replica::replica_proxy_t& _replica) -> void;
+    auto insert(const irods::experimental::replica::replica_proxy_t& _replica) -> int;
 
     /// \brief Erase replica_state_table entry indicated by _key
     ///
@@ -232,10 +238,6 @@ namespace irods::replica_state_table
     ///             "create_ts": <string>,
     ///             "modify_ts": <string>,
     ///             "resc_id": <string>
-    ///         }
-    ///         "file_modified": {
-    ///             <string>: <string>,
-    ///             ...
     ///         }
     ///     },
     ///     ...
@@ -542,6 +544,14 @@ namespace irods::replica_state_table
         RsComm& _comm,
         const irods::experimental::replica::replica_proxy_t& _replica) -> int;
 
+
+    /// \brief Get the logical path for the entry with key _key
+    ///
+    /// Because replica_state_table entries are keyed on data_id, this convenience function is a way
+    /// to easily retrieve the logical path for a given entry in the table.
+    ///
+    /// \since 4.2.9
+    auto get_logical_path(const key_type& _key) -> std::string;
 } // namespace irods::replica_state_table
 
 #endif // IRODS_REPLICA_STATE_TABLE_HPP

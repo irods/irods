@@ -113,4 +113,21 @@ isL1descInuse();
 
 }
 
+namespace irods
+{
+    /// \brief Allocates and populates an L1 descriptor based on the provided inputs.
+    ///
+    /// \param[in] _inp
+    /// \param[in] _info
+    /// \param[in] _data_size The expected size at close of the replica which is being opened.
+    ///
+    /// \returns Generated L1 descriptor index
+    ///
+    /// \since 4.2.9
+    auto populate_L1desc_with_inp(
+        DataObjInp& _inp,
+        DataObjInfo& _info,
+        const rodsLong_t _data_size) -> int;
+} // namespace irods
+
 #endif  /* OBJ_DESC_H */
