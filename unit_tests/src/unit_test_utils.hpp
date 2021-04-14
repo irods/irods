@@ -7,12 +7,16 @@
 #include "resource_administration.hpp"
 #include "irods_at_scope_exit.hpp"
 #include "filesystem/path.hpp"
+#include "key_value_proxy.hpp"
 
 #include <boost/filesystem.hpp>
 
+#include <unistd.h>
+
+#include <cstddef>
 #include <string>
 #include <string_view>
-#include <unistd.h>
+#include <fstream>
 
 namespace unit_test_utils
 {
@@ -98,6 +102,24 @@ namespace unit_test_utils
 
         return false;
     } // create_empty_replica
+
+    inline auto create_local_file(const std::string_view _path,
+                                  std::size_t _size_in_bytes,
+                                  char _ch) -> bool
+    {
+        std::ofstream out{_path.data()};
+
+        if (!out) {
+            return false; 
+        }
+
+        for (std::size_t i = 0; i < _size_in_bytes; ++i) {
+            out << _ch;
+        }
+
+        return true;
+    }
 } // namespace unit_test_utils
 
 #endif // IRODS_UNIT_TEST_UTILS_HPP
+

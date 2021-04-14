@@ -88,6 +88,40 @@ class Test_Iput(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.Tes
             assert_command(['fusermount', '-u', munge_mount])
             self.admin.assert_icommand(['iadmin', 'rmresc', munge_resc])
 
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    def test_checksum_is_erased_on_single_buffer_overwrite__issue_5496(self):
+        self.do_test_issue_5496_impl(500)
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    def test_checksum_is_erased_on_parallel_overwrite__issue_5496(self):
+        self.do_test_issue_5496_impl(40000000)
+
+    # A helper function for testing changes that resolve issue 5496.
+    def do_test_issue_5496_impl(self, file_size_in_bytes):
+        data_object = 'foo'
+
+        # Create a new data object.
+        self.admin.assert_icommand(['istream', 'write', '-k', data_object], input='small amount of data')
+
+        # Verify that the replica has a checksum.
+        gql = "select DATA_CHECKSUM where COLL_NAME = '{0}' and DATA_NAME = '{1}'"
+        checksum, err, ec = self.admin.run_icommand(['iquest', '%s', gql.format(self.admin.session_collection, data_object)])
+        self.assertEqual(ec, 0)
+        self.assertEqual(len(err), 0)
+        self.assertGreater(len(checksum.strip()), len('sha2:'))
+
+        # Overwrite the data object via a force-put.
+        local_file = os.path.join(tempfile.gettempdir(), 'issue_5496.txt')
+        lib.make_file(local_file, file_size_in_bytes, 'arbitrary')
+        self.admin.assert_icommand(['iput', '-f', local_file, data_object])
+
+        # Show that the replica no longer has a checksum.
+        gql = "select DATA_CHECKSUM where COLL_NAME = '{0}' and DATA_NAME = '{1}'"
+        checksum, err, ec = self.admin.run_icommand(['iquest', '%s', gql.format(self.admin.session_collection, data_object)])
+        self.assertEqual(ec, 0)
+        self.assertEqual(len(err), 0)
+        self.assertEqual(len(checksum.strip()), 0)
+
 class test_iput_with_checksums(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.TestCase):
 
     def setUp(self):

@@ -214,7 +214,10 @@ namespace
 
             _destination_replica.size(size_in_vault);
 
-            if (!_destination_replica.checksum().empty()) {
+            if (_source_replica.checksum().empty()) {
+                cond_input[CHKSUM_KW] = "";
+            }
+            else {
                 const auto checksum = calculate_checksum(_comm, _l1desc, _source_replica, _destination_replica);
                 if (!checksum.empty()) {
                     cond_input[CHKSUM_KW] = checksum;
