@@ -381,7 +381,25 @@ namespace irods::experimental::data_object
         -> std::optional<replica::replica_proxy<doi_type>>
     {
         auto itr = std::find_if(
-            std::cbegin(_obj.replicas()), std::cend(_obj.replicas()),
+            std::begin(_obj.replicas()), std::end(_obj.replicas()),
+            [&_hierarchy](const auto& _r)
+            {
+                return _r.hierarchy() == _hierarchy;
+            });
+
+        if (std::end(_obj.replicas()) != itr) {
+            return *itr;
+        }
+
+        return std::nullopt;
+    } // find_replica
+
+    template<typename doi_type>
+    static auto find_replica(const data_object_proxy<doi_type>& _obj, std::string_view _hierarchy)
+        -> std::optional<const replica::replica_proxy<doi_type>>
+    {
+        auto itr = std::find_if(
+            std::begin(_obj.replicas()), std::end(_obj.replicas()),
             [&_hierarchy](const auto& _r)
             {
                 return _r.hierarchy() == _hierarchy;

@@ -45,6 +45,7 @@ set(TEST_INCLUDE_LIST test_config/irods_atomic_apply_acl_operations
                       test_config/irods_key_value_proxy
                       test_config/irods_lifetime_manager
                       test_config/irods_linked_list_iterator
+                      test_config/irods_logical_locking
                       test_config/irods_logical_paths_and_special_characters
                       test_config/irods_metadata
                       test_config/irods_packstruct

@@ -171,6 +171,7 @@ namespace irods::experimental::io::NAMESPACE_IMPL
                 json_input["update_status"] = _on_close_success->update_status;
                 json_input["compute_checksum"] = _on_close_success->compute_checksum;
                 json_input["send_notifications"] = _on_close_success->send_notifications;
+                json_input["preserve_replica_state_table"] = _on_close_success->preserve_replica_state_table;
             }
 
             const auto json_string = json_input.dump();

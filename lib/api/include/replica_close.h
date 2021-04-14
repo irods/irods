@@ -38,12 +38,29 @@ extern "C" {
 /// \code{.js}
 /// {
 ///   "fd": integer,
-///   "update_size": boolean,        (default=true)
-///   "update_status": boolean,      (default=true)
-///   "compute_checksum": boolean,   (default=false)
-///   "send_notifications": boolean  (default=true)
+///   "update_size": boolean,                 (default=true)
+///   "update_status": boolean,               (default=true)
+///   "compute_checksum": boolean,            (default=false)
+///   "send_notifications": boolean,          (default=true)
+///   "preserve_replica_state_table": boolean (default=false)
 /// }
 /// \endcode
+///
+/// - \p fd: The iRODS file descriptor returned by \p rxDataObjOpen or \p rx_replica_close.
+///
+/// - \p update_size: Controls whether the size is updated in the catalog.
+///
+/// - \p update_status: Controls whether the replica's status is updated in the catalog.
+///
+/// - \p compute_checksum: Controls whether a checksum is computed and stored in the catalog. If a
+/// checksum already exists, it will be overwritten.
+///
+/// - \p send_notifications: Controls whether the file modified signal is triggered. This is necessary
+/// for things such as replication.
+///
+/// - \p preserve_replica_state_table: Controls whether the replica state table is updated following
+/// the closing of the replica. This must be set to true if \p rx_data_object_finalize will be
+/// invoked.
 /// \endparblock
 ///
 /// \return An integer.

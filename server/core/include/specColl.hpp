@@ -13,46 +13,43 @@ struct RsComm;
 struct SpecColl;
 struct SpecCollCache;
 
-extern "C"
-{
-    int modCollInfo2(RsComm* rsComm, SpecColl* specColl, int clearFlag);
+int modCollInfo2(RsComm* rsComm, SpecColl* specColl, int clearFlag);
 
-    int querySpecColl(RsComm* rsComm, char* objPath, GenQueryOut** genQueryOut);
+int querySpecColl(RsComm* rsComm, char* objPath, GenQueryOut** genQueryOut);
 
-    int queueSpecCollCache(RsComm* rsComm, GenQueryOut* genQueryOut, const char* objPath); // JMC - backport 4680
+int queueSpecCollCache(RsComm* rsComm, GenQueryOut* genQueryOut, const char* objPath); // JMC - backport 4680
 
-    int queueSpecCollCacheWithObjStat(rodsObjStat* rodsObjStatOut);
+int queueSpecCollCacheWithObjStat(rodsObjStat* rodsObjStatOut);
 
-    SpecCollCache* matchSpecCollCache(const char* objPath);
+SpecCollCache* matchSpecCollCache(const char* objPath);
 
-    int getSpecCollCache(RsComm* rsComm, char* objPath, int inCachOnly, SpecCollCache** specCollCache);
+int getSpecCollCache(RsComm* rsComm, char* objPath, int inCachOnly, SpecCollCache** specCollCache);
 
-    int statPathInSpecColl(RsComm* rsComm, char* objPath, int inCachOnly, rodsObjStat** rodsObjStatOut);
+int statPathInSpecColl(RsComm* rsComm, char* objPath, int inCachOnly, rodsObjStat** rodsObjStatOut);
 
-    int specCollSubStat(RsComm* rsComm,
-                        SpecColl* specColl,
-                        char* subPath,
-                        SpecialCollPerm specCollPerm,
-                        DataObjInfo** dataObjInfo);
+int specCollSubStat(RsComm* rsComm,
+                    SpecColl* specColl,
+                    char* subPath,
+                    SpecialCollPerm specCollPerm,
+                    DataObjInfo** dataObjInfo);
 
-    int resolvePathInSpecColl(RsComm* rsComm,
-                              char* objPath,
-                              SpecialCollPerm specCollPerm,
-                              int inCachOnly,
-                              dataObjInfo_t** dataObjInfo);
-
-    int resolveLinkedPath(RsComm* rsComm,
+int resolvePathInSpecColl(RsComm* rsComm,
                           char* objPath,
-                          SpecCollCache** specCollCache,
-                          KeyValPair* condInput);
-}
+                          SpecialCollPerm specCollPerm,
+                          int inCachOnly,
+                          dataObjInfo_t** dataObjInfo);
+
+int resolveLinkedPath(RsComm* rsComm,
+                      char* objPath,
+                      SpecCollCache** specCollCache,
+                      KeyValPair* condInput);
 
 namespace irods
 {
     /// \brief Get the special collection type for the data object indicated by the input
     ///
-    /// \param[in] _comm
-    /// \param[in] _inp Input which is passed to rsObjStat to get data object information
+    /// \param[in,out] _comm
+    /// \param[in,out] _inp Input which is passed to rsObjStat to get data object information
     ///
     /// \returns The SpecialCollClass stored in the returned stat information, or an error code
     /// \retval NO_SPEC_COLL If stat contains no special collection info or data object does not exist
@@ -63,8 +60,8 @@ namespace irods
 
     /// \brief Creates L1 descriptor and physical file for objects in special collections and bundleResc
     ///
-    /// \param[in] _comm
-    /// \param[in] _inp Input used to describe the object or replica to be created
+    /// \param[in,out] _comm
+    /// \param[in,out] _inp Input used to describe the object or replica to be created
     ///
     /// \returns The generated L1 descriptor index, or an error on failure
     /// \retval SYS_COPY_ALREADY_IN_RESC If a physical replica exists in a resolved special collection path

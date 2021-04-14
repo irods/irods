@@ -1,5 +1,6 @@
-#include "irods_log.hpp"
 #include "logical_locking.hpp"
+
+#include "irods_log.hpp"
 #include "replica_state_table.hpp"
 
 namespace
@@ -63,7 +64,7 @@ namespace
                 __FUNCTION__, __LINE__, json_replica.dump()));
 
             if (const auto original_status = get_original_replica_status_impl(json_replica); -1 != original_status) {
-                irods::log(LOG_NOTICE, fmt::format(
+                irods::log(LOG_DEBUG, fmt::format(
                     "[{}:{}] - existing data_status entry; "
                     "[data_id:[{}], repl_num:[{}], status:[{}]]",
                     __FUNCTION__, __LINE__, _data_id, replica_number, original_status));
@@ -113,7 +114,7 @@ namespace
                 irods::log(LOG_ERROR, fmt::format(
                     "[{}:{}] - failed to restore status for replica; "
                     "original status not found in data_status column "
-                    "[data_id=[{}], repl num=[{}]]",
+                    "[data_id=[{}], repl_num=[{}]]",
                     __FUNCTION__, __LINE__, _data_id, replica_number));
 
                 continue;
@@ -134,7 +135,7 @@ namespace
             const auto replica_number = std::stoi(json_replica.at("after").at("data_repl_num").get<std::string>());
 
             irods::log(LOG_DEBUG, fmt::format(
-                "[{}:{}] - data_id:[{}],repl num:[{}],status:[{}],target repl num:[{}]",
+                "[{}:{}] - data_id:[{}], repl_num:[{}], status:[{}], target repl_num:[{}]",
                 __FUNCTION__, __LINE__,
                 _data_id, replica_number,
                 rst::get_property(_data_id, replica_number, "data_status"),
@@ -202,10 +203,9 @@ namespace
                         "[{}:{}] - failed to restore status for replica "
                         "because no original status found in data_status column. "
                         "Setting replica status to stale. "
-                        "[data_id=[{}], repl num=[{}]]",
+                        "[data_id=[{}], repl_num=[{}]]",
                         __FUNCTION__, __LINE__, _data_id, _replica_number));
 
-                    // TODO: Should this be stale or keep it locked for posterity?
                     replica_status = STALE_REPLICA;
                 }
                 else {
