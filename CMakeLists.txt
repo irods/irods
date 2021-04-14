@@ -834,6 +834,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_structured_object.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/json_deserialization.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/json_serialization.cpp
+  ${CMAKE_SOURCE_DIR}/server/core/src/logical_locking.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/miscServerFunct.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/objDesc.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/objMetaOpr.cpp
