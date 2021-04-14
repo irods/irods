@@ -304,13 +304,13 @@ pep_api_data_obj_get_except(*INST, *COMM, *INP, *PORT, *BUF)
 }}
 '''
 rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Native_Rule_Engine_Plugin']['test_dynamic_policy_enforcement_point_exception_for_apis__4128_post_pep_fail'] = '''
-pep_resource_open_post(*INST, *CTX, *OUT)
+pep_api_data_obj_get_post(*INST, *COMM, *INP, *PORT, *BUF)
 {{
     msiAddKeyVal(*key_val_pair,"test_dynamic_policy_enforcement_point_exception_for_apis__4128_post_pep_fail","POST PEP FAIL");
     msiAssociateKeyValuePairsToObj(*key_val_pair,"{resource}","-R");
     failmsg(-1, "POST PEP FAIL")
 }}
-pep_resource_open_except(*INST, *CTX, *OUT)
+pep_api_data_obj_get_except(*INST, *COMM, *INP, *PORT, *BUF)
 {{
     msiAddKeyVal(*key_val_pair,"test_dynamic_policy_enforcement_point_exception_for_apis__4128_post_pep_fail","EXCEPT FOR POST PEP FAIL");
     msiAssociateKeyValuePairsToObj(*key_val_pair,"{resource}","-R");
