@@ -2,6 +2,7 @@
 
 #include "data_object_proxy.hpp"
 #include "irods_at_scope_exit.hpp"
+#include "logical_locking.hpp"
 #include "replica_state_table.hpp"
 
 #include <sys/types.h>
@@ -299,6 +300,119 @@ TEST_CASE("invalid_keys", "[invalid]")
     CHECK_FALSE(rst::contains(BOGUS_KEY));
     CHECK_THROWS(rst::at(BOGUS_KEY));
     CHECK_THROWS(rst::get_property(BOGUS_KEY, 0, "whatever", rst::state_type::both));
+    rst::deinit();
+}
+
+TEST_CASE("logical_locking", "[basic]")
+{
+    namespace ill = irods::logical_locking;
+    using json = nlohmann::json;
+
+    rst::init();
+
+    auto replicas = generate_data_object(DATA_ID_1, LOGICAL_PATH_1, SIZE_1);
+    auto* head = replicas[0];
+
+    // ensure that the linked list is valid and will be freed upon exit
+    REQUIRE(head);
+    const auto replica_list_lm = irods::experimental::lifetime_manager{*head};
+    const auto obj = irods::experimental::data_object::make_data_object_proxy(*head);
+
+    // create before entry for the data object
+    REQUIRE(0 == rst::insert(obj));
+    REQUIRE(rst::contains(DATA_ID_1));
+    REQUIRE(REPLICA_COUNT == rst::at(DATA_ID_1).size());
+
+    for (int i = 0; i < REPLICA_COUNT; ++i) {
+        const auto replica_status = std::stoi(rst::get_property(DATA_ID_1, i, "data_is_dirty", rst::state_type::after));
+        REQUIRE(GOOD_REPLICA == replica_status);
+    }
+
+    SECTION("write lock")
+    {
+        constexpr int locked_replica_number = 1;
+
+        ill::lock(DATA_ID_1, locked_replica_number, ill::lock_type::write);
+
+        for (int i = 0; i < REPLICA_COUNT; ++i) {
+            const auto replica_status = std::stoi(rst::get_property(DATA_ID_1, i, "data_is_dirty", rst::state_type::after));
+            if (locked_replica_number == i) {
+                CHECK(INTERMEDIATE_REPLICA == replica_status);
+            }
+            else {
+                CHECK(WRITE_LOCKED == replica_status);
+            }
+
+            // the data status column should contain an original_status key with the original replica status as its value
+            const auto data_status = json::parse(rst::get_property(DATA_ID_1, i, "data_status", rst::state_type::after));
+            REQUIRE(GOOD_REPLICA == std::stoi(data_status.at("original_status").get<std::string>()));
+        }
+
+        SECTION("restore status")
+        {
+            ill::unlock(DATA_ID_1, locked_replica_number, GOOD_REPLICA, ill::restore_status);
+
+            for (int i = 0; i < REPLICA_COUNT; ++i) {
+                const auto replica_status = std::stoi(rst::get_property(DATA_ID_1, i, "data_is_dirty", rst::state_type::after));
+                REQUIRE(GOOD_REPLICA == replica_status);
+
+                // the data_status column should be empty again
+                REQUIRE(rst::get_property(DATA_ID_1, i, "data_status", rst::state_type::after).empty());
+            }
+        }
+
+        SECTION("unlock as stale")
+        {
+            ill::unlock(DATA_ID_1, locked_replica_number, GOOD_REPLICA, STALE_REPLICA);
+
+            for (int i = 0; i < REPLICA_COUNT; ++i) {
+                const auto replica_status = std::stoi(rst::get_property(DATA_ID_1, i, "data_is_dirty", rst::state_type::after));
+                if (locked_replica_number == i) {
+                    // unlock() does not change the replica status of the target replica
+                    CHECK(GOOD_REPLICA == replica_status);
+                }
+                else {
+                    // all replicas other than the target replica should be the status passed to unlock() call
+                    CHECK(STALE_REPLICA == replica_status);
+                }
+
+                // the data_status column should be empty again
+                REQUIRE(rst::get_property(DATA_ID_1, i, "data_status", rst::state_type::after).empty());
+            }
+        }
+    }
+
+    SECTION("read lock")
+    {
+        constexpr int locked_replica_number = 1;
+
+        REQUIRE(0 == ill::lock(DATA_ID_1, locked_replica_number, ill::lock_type::read));
+
+        for (int i = 0; i < REPLICA_COUNT; ++i) {
+            // All replicas should be read-locked, including the target replica
+            const auto replica_status = std::stoi(rst::get_property(DATA_ID_1, i, "data_is_dirty", rst::state_type::after));
+            CHECK(READ_LOCKED == replica_status);
+
+            // the data status column should contain an original_status key with the original replica status as its value
+            const auto data_status = json::parse(rst::get_property(DATA_ID_1, i, "data_status", rst::state_type::after));
+            CHECK(GOOD_REPLICA == std::stoi(data_status.at("original_status").get<std::string>()));
+
+            // TODO: need to check for how many readers, who they are, etc.
+        }
+
+        REQUIRE(0 == ill::unlock(DATA_ID_1, locked_replica_number, GOOD_REPLICA, ill::restore_status));
+
+        for (int i = 0; i < REPLICA_COUNT; ++i) {
+            const auto replica_status = std::stoi(rst::get_property(DATA_ID_1, i, "data_is_dirty", rst::state_type::after));
+            CHECK(GOOD_REPLICA == replica_status);
+
+            // the data_status column should be empty again
+            REQUIRE(rst::get_property(DATA_ID_1, i, "data_status", rst::state_type::after).empty());
+        }
+    }
+
+    CHECK_NOTHROW(rst::erase(DATA_ID_1));
+    CHECK_FALSE(rst::contains(DATA_ID_1));
     rst::deinit();
 }
 
