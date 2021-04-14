@@ -216,6 +216,108 @@ class Test_Istream(session.make_sessions_mixin([('otherrods', 'rods')], [('alice
         self.assertEqual(len(err), 0)
         self.assertEqual(out, contents[:size_in_catalog])
 
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    def test_writing_zero_bytes_to_replica_does_not_result_in_checksum_being_erased__issue_5496(self):
+        data_object = 'foo'
+
+        # Create a data object and checksum it.
+        self.admin.assert_icommand(['istream', 'write', '-k', data_object], input='some data')
+
+        # Verify that the replica has a checksum.
+        gql = "select DATA_CHECKSUM where COLL_NAME = '{0}' and DATA_NAME = '{1}'"
+        original_checksum, err, ec = self.admin.run_icommand(['iquest', '%s', gql.format(self.admin.session_collection, data_object)])
+        self.assertEqual(ec, 0)
+        self.assertEqual(len(err), 0)
+        self.assertGreater(len(original_checksum.strip()), len('sha2:'))
+
+        # Write zero bytes to the replica (i.e. open and immediately close the replica).
+        self.admin.assert_icommand(['istream', 'write', '-a', data_object], input='')
+
+        # Show that the checksum still exists and matches the original.
+        gql = "select DATA_CHECKSUM where COLL_NAME = '{0}' and DATA_NAME = '{1}'"
+        checksum, err, ec = self.admin.run_icommand(['iquest', '%s', gql.format(self.admin.session_collection, data_object)])
+        self.assertEqual(ec, 0)
+        self.assertEqual(len(err), 0)
+        self.assertEqual(checksum.strip(), original_checksum.strip())
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    def test_overwriting_replica_erases_checksum__issue_5496(self):
+        data_object = 'foo'
+
+        #
+        # TEST #1: Checksum is erased when the replica is truncated.
+        #
+
+        # Create a data object and checksum it.
+        self.admin.assert_icommand(['istream', 'write', '-k', data_object], input='some data')
+
+        # Verify that the replica has a checksum.
+        gql = "select DATA_CHECKSUM where COLL_NAME = '{0}' and DATA_NAME = '{1}'"
+        checksum, err, ec = self.admin.run_icommand(['iquest', '%s', gql.format(self.admin.session_collection, data_object)])
+        self.assertEqual(ec, 0)
+        self.assertEqual(len(err), 0)
+        self.assertGreater(len(checksum.strip()), len('sha2:'))
+
+        # Show that truncation results in the checksum being erased.
+        # "istream write" truncates a replica's data by default.
+        self.admin.assert_icommand(['istream', 'write', data_object], input='new data')
+
+        # Show that the checksum has been erased.
+        gql = "select DATA_CHECKSUM where COLL_NAME = '{0}' and DATA_NAME = '{1}'"
+        checksum, err, ec = self.admin.run_icommand(['iquest', '%s', gql.format(self.admin.session_collection, data_object)])
+        self.assertEqual(ec, 0)
+        self.assertEqual(len(err), 0)
+        self.assertEqual(len(checksum.strip()), 0)
+
+        #
+        # TEST #2: Checksum is erased when the bytes in the middle of the replica
+        #          are overwritten.
+        #
+
+        # Checksum the replica and store it in the catalog.
+        self.admin.assert_icommand(['ichksum', data_object], 'STDOUT', ['sha2:'])
+
+        # Verify that the replica has a checksum.
+        gql = "select DATA_CHECKSUM where COLL_NAME = '{0}' and DATA_NAME = '{1}'"
+        checksum, err, ec = self.admin.run_icommand(['iquest', '%s', gql.format(self.admin.session_collection, data_object)])
+        self.assertEqual(ec, 0)
+        self.assertEqual(len(err), 0)
+        self.assertGreater(len(checksum.strip()), len('sha2:'))
+
+        # Overwrite the three bytes in the middle of the replica.
+        self.admin.assert_icommand(['istream', 'write', '-o', '3', '--no-trunc', data_object], input='XYZ')
+
+        # Show that the checksum has been erased.
+        gql = "select DATA_CHECKSUM where COLL_NAME = '{0}' and DATA_NAME = '{1}'"
+        checksum, err, ec = self.admin.run_icommand(['iquest', '%s', gql.format(self.admin.session_collection, data_object)])
+        self.assertEqual(ec, 0)
+        self.assertEqual(len(err), 0)
+        self.assertEqual(len(checksum.strip()), 0)
+
+        #
+        # TEST #3: Checksum is erased when bytes are appended to the replica.
+        #
+
+        # Checksum the replica and store it in the catalog.
+        self.admin.assert_icommand(['ichksum', data_object], 'STDOUT', ['sha2:'])
+
+        # Verify that the replica has a checksum.
+        gql = "select DATA_CHECKSUM where COLL_NAME = '{0}' and DATA_NAME = '{1}'"
+        checksum, err, ec = self.admin.run_icommand(['iquest', '%s', gql.format(self.admin.session_collection, data_object)])
+        self.assertEqual(ec, 0)
+        self.assertEqual(len(err), 0)
+        self.assertGreater(len(checksum.strip()), len('sha2:'))
+
+        # Overwrite the three bytes in the middle of the replica's data.
+        self.admin.assert_icommand(['istream', 'write', '-a', data_object], input='APPENDED DATA')
+
+        # Show that the checksum has been erased.
+        gql = "select DATA_CHECKSUM where COLL_NAME = '{0}' and DATA_NAME = '{1}'"
+        checksum, err, ec = self.admin.run_icommand(['iquest', '%s', gql.format(self.admin.session_collection, data_object)])
+        self.assertEqual(ec, 0)
+        self.assertEqual(len(err), 0)
+        self.assertEqual(len(checksum.strip()), 0)
+
     def create_ufs_resource(self, resource_name):
         vault_name = resource_name + '_vault'
         vault_directory = os.path.join(self.admin.local_session_dir, vault_name)

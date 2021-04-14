@@ -3664,6 +3664,55 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
         shutil.rmtree(irods_config.irods_directory + "/unix2RescVault", ignore_errors=True)
         shutil.rmtree(irods_config.irods_directory + "/unix3RescVault", ignore_errors=True)
 
+    def test_checksums_are_erased_or_replaced_on_overwrite__issue_5496(self):
+        def get_checksum(data_object):
+            gql = "select DATA_CHECKSUM where COLL_NAME = '{0}' and DATA_NAME = '{1}'"
+            checksum, err, ec = self.admin.run_icommand(['iquest', '%s', gql.format(self.admin.session_collection, data_object)])
+            self.assertEqual(ec, 0)
+            self.assertEqual(len(err), 0)
+            self.assertEqual(len(checksum.strip()), 49)
+            return checksum.strip()
+
+        def do_test(filename, file_size_in_bytes):
+            local_file = os.path.join(tempfile.gettempdir(), filename)
+            data_object = 'foo'
+
+            try:
+                # Create a new data object.
+                lib.make_file(local_file, file_size_in_bytes, 'arbitrary')
+                self.admin.assert_icommand(['iput', '-k', local_file, data_object])
+
+                # Show that three replicas exist with the same checksum.
+                checksum = get_checksum(data_object)
+                gql = "select DATA_REPL_NUM, DATA_CHECKSUM where COLL_NAME = '{0}' and DATA_NAME = '{1}'"
+                self.admin.assert_icommand(['iquest', ' %s:%s', gql.format(self.admin.session_collection, data_object)],
+                                           'STDOUT', [' 0:' + checksum, ' 1:' + checksum, ' 2:' + checksum])
+
+                # Overwrite the data object via a force-put.
+                # This will cause the checksums to be erased.
+                self.admin.assert_icommand(['iput', '-f', local_file, data_object])
+
+                # Show that the replicas no longer have a checksum.
+                gql = "select DATA_REPL_NUM, DATA_CHECKSUM where COLL_NAME = '{0}' and DATA_NAME = '{1}'"
+                self.admin.assert_icommand(['iquest', ' %s:%s- ', gql.format(self.admin.session_collection, data_object)],
+                                           'STDOUT', [' 0:- ', ' 1:- ', ' 2:- '])
+
+                # Overwrite the data object via a force-put and checksum the data object as well.
+                self.admin.assert_icommand(['iput', '-f', '-k', local_file, data_object])
+
+                # Show that the replicas now have the same checksum.
+                checksum = get_checksum(data_object)
+                gql = "select DATA_REPL_NUM, DATA_CHECKSUM where COLL_NAME = '{0}' and DATA_NAME = '{1}'"
+                self.admin.assert_icommand(['iquest', ' %s:%s', gql.format(self.admin.session_collection, data_object)],
+                                           'STDOUT', [' 0:' + checksum, ' 1:' + checksum, ' 2:' + checksum])
+            finally:
+                os.remove(local_file)
+                self.admin.assert_icommand(['irm', '-f', data_object])
+
+        do_test('100b_file.txt', 100)      # Single Buffer Put test.
+        do_test('40mb_file.txt', 40000000) # Parallel Transfer test.
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "local filesystem check")
     def test_ichksum_no_file_modified_under_replication__4099(self):
         filename = 'test_ichksum_no_file_modified_under_replication__4099'
         filepath = lib.create_local_testfile(filename)

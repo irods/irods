@@ -18,6 +18,7 @@
 #include "irods_get_l1desc.hpp"
 #include "irods_linked_list_iterator.hpp"
 #include "irods_resource_types.hpp"
+#include "objDesc.hpp"
 #include "objInfo.h"
 #include "objMetaOpr.hpp"
 #include "physPath.hpp"
@@ -670,9 +671,9 @@ namespace
         auto& l1desc = L1desc[l1_index];
         l1desc.l3descInx = l3_index;
 
-        // Set the size of the data object to zero in the catalog if the file was truncated.
-        // It is important that the catalog reflect truncation immediately because operations
-        // following the open may depend on the size of the data object.
+        // Update the catalog to reflect the truncation (i.e. set the data size to zero and erase
+        // the checksum). It is important that the catalog reflect truncation immediately because
+        // operations following the open may depend on the size and checksum of the replica.
         //
         // TODO: do not touch the catalog -- update the structure and use this in lock_data_object
         if (l1desc.dataObjInp->openFlags & O_TRUNC) {
@@ -680,11 +681,16 @@ namespace
                 access_mode == O_WRONLY || access_mode == O_RDWR)
             {
                 auto& info = *l1desc.dataObjInfo;
-                rst::update(info.dataId, info.replNum, {{"data_size", "0"}});
+                rst::update(info.dataId, info.replNum, {{"data_size", "0"}, {"data_checksum", ""}});
                 if (const int ec = rst::publish_to_catalog(_comm, info.dataId, info.replNum, nlohmann::json{}); ec < 0) {
                     return ec;
                 }
 
+                // Update the replica proxy information.
+                _replica.size(0);
+                _replica.checksum("");
+
+                // Update the L1 descriptor information.
                 l1desc.dataSize = 0;
 
                 if (l1desc.dataObjInfo) {

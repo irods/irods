@@ -4,6 +4,7 @@
 #include "initServer.hpp"
 #include "irods_stacktrace.hpp"
 #include "miscServerFunct.hpp"
+#include "objDesc.hpp"
 #include "physPath.hpp"
 #include "procLog.h"
 #include "rcGlobalExtern.h"
@@ -58,37 +59,11 @@ namespace
     namespace ill = irods::logical_locking;
     namespace rst = irods::replica_state_table;
 
-    auto calculate_checksum(RsComm& _comm, l1desc& _l1desc, DataObjInfo& _info) -> std::string
-    {
-        if (!std::string_view{_info.chksum}.empty()) {
-            _l1desc.chksumFlag = REG_CHKSUM;
-        }
-
-        char* checksum_string = nullptr;
-        irods::at_scope_exit free_checksum_string{[&checksum_string] { free(checksum_string); }};
-
-        auto destination_replica = irods::experimental::replica::make_replica_proxy(_info);
-
-        if (!_l1desc.chksumFlag) {
-            if (destination_replica.checksum().empty()) {
-                return {};
-            }
-            _l1desc.chksumFlag = VERIFY_CHKSUM;
-        }
-
-        if (VERIFY_CHKSUM == _l1desc.chksumFlag) {
-            if (!std::string_view{_l1desc.chksum}.empty()) {
-                return irods::verify_checksum(_comm, _info, _l1desc.chksum);
-            }
-
-            return {};
-        }
-
-        return irods::register_new_checksum(_comm, _info, _l1desc.chksum);
-    } // calculate_checksum
-
     auto finalize_replica_opened_for_create_or_write(RsComm& _comm, DataObjInfo& _info, l1desc& _l1desc) -> void
     {
+        rodsLog(LOG_DEBUG, "[%s:%d] Closing L1 descriptor [path=%s, replica_number=%d] ...",
+                __func__, __LINE__, _info.objPath, _info.replNum);
+
         namespace ir = irods::experimental::replica;
 
         auto r = ir::make_replica_proxy(_info);
@@ -101,9 +76,7 @@ namespace
             return;
         }
 
-        const auto cond_input = irods::experimental::make_key_value_proxy(_l1desc.dataObjInp->condInput);
-
-        //  - Check size in vault
+        // Check size in vault
         try {
             constexpr bool verify_size = false;
             const auto size = irods::get_size_in_vault(_comm, *r.get(), verify_size, _l1desc.dataSize);
@@ -115,13 +88,6 @@ namespace
             }
 
             r.size(size);
-
-            //  - Compute checksum if flag is present
-            if (!cond_input.contains(CHKSUM_KW) && !r.checksum().empty()) {
-                if (const auto checksum = calculate_checksum(_comm, _l1desc, *r.get()); !checksum.empty()) {
-                    r.checksum(checksum);
-                }
-            }
         }
         catch (const irods::exception& e) {
             irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, e.client_display_what()));
@@ -133,15 +99,12 @@ namespace
             r.mtime(SET_TIME_TO_NOW_KW);
         }
 
-        if (cond_input.contains(CHKSUM_KW)) {
-            r.checksum(cond_input.at(CHKSUM_KW).value());
-        }
-
+        r.checksum("");
         r.replica_status(STALE_REPLICA);
 
         rst::update(r.data_id(), r);
 
-        //  - Update replica status to stale
+        // Update replica status to stale
         if (const int ec = ill::unlock_and_publish(_comm, r.data_id(), r.replica_number(), STALE_REPLICA, ill::restore_status); ec < 0) {
             irods::log(LOG_NOTICE, fmt::format(
                 "[{}:{}] - Failed to unlock data object "
@@ -152,6 +115,8 @@ namespace
 
     void close_all_l1_descriptors(RsComm& _comm)
     {
+        rodsLog(LOG_DEBUG, "[%s:%d] Closing all L1 descriptors ...", __func__, __LINE__);
+
         for (int fd = 3; fd < NUM_L1_DESC; ++fd) {
             auto& l1desc = L1desc[fd];
             if (FD_INUSE != l1desc.inuseFlag || l1desc.l3descInx < 3) {
