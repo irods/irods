@@ -564,6 +564,12 @@ irods::error repl_file_modified(irods::plugin_context& _ctx) {
                     __FUNCTION__ % file_obj->logical_path()).str(), ret);
     }
 
+    // set object list property back to empty so leftover items are not considered in future plugin operations
+    ret = _ctx.prop_map().set<object_list_t>(OBJECT_LIST_PROP, {});
+    if (!ret.ok()) {
+        return PASS(ret);
+    }
+
     return SUCCESS();
 } // repl_file_modified
 
