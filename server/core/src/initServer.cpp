@@ -124,7 +124,7 @@ namespace
             }
         }
         catch (const irods::exception& e) {
-            irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", e.client_display_what()));
+            irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, e.client_display_what()));
         }
 
         if (OPEN_FOR_WRITE_TYPE == _l1desc.openType) {

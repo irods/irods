@@ -497,6 +497,14 @@ namespace irods::replica_state_table
         const json& _file_modified_parameters) -> int
     {
         try {
+            // Do not attempt to find the index of _replica_number_for_file_modified
+            // if no _file_modified parameter is provided. This is a valid use case for
+            // data objects for which a new replica is being created (but not yet).
+            // Just pass some value to satisfy the implementation interface.
+            if (_file_modified_parameters.empty()) {
+                return publish_to_catalog_impl(_comm, _key, -1, _file_modified_parameters);
+            }
+
             const auto replica_index = index_of(_key, _replica_number_for_file_modified);
 
             return publish_to_catalog_impl(_comm, _key, replica_index, _file_modified_parameters);
