@@ -10,6 +10,17 @@ namespace
     namespace rst = irods::replica_state_table;
     using json = nlohmann::json;
 
+    /// \brief Special value to indicate a replica which has not been assigned a number yet.
+    ///
+    /// \parblock
+    /// This is intended to be passed to the lock and unlock interface in lieu of a real replica number.
+    /// When the lock/unlock implementation sees this value, there is no "target" replica and so all
+    /// replicas are treated alike with the expectation that the new replica will be handled appropriately later.
+    /// \endparblock
+    ///
+    /// \since 4.2.9
+    static inline constexpr int new_replica = -1;
+
     static const std::map<ill::lock_type, repl_status_t> lock_type_to_repl_status_map
     {
         {ill::lock_type::read,  READ_LOCKED},
@@ -159,15 +170,17 @@ namespace
             const auto lock_status = lock_type_to_repl_status_map.at(_lock_type);
 
             // The target replica should have its state set as well, but in a special manner
-            if (ill::lock_type::write == _lock_type) {
-                // A replica opened for write should be set to intermediate
-                rst::update(_data_id, _replica_number,
-                    json{{"data_is_dirty", std::to_string(INTERMEDIATE_REPLICA)}});
-            }
-            else {
-                // Even the target replica enters read lock state, so set that here
-                rst::update(_data_id, _replica_number,
-                    json{{"data_is_dirty", std::to_string(lock_status)}});
+            if (new_replica != _replica_number) {
+                if (ill::lock_type::write == _lock_type) {
+                    // A replica opened for write should be set to intermediate
+                    rst::update(_data_id, _replica_number,
+                        json{{"data_is_dirty", std::to_string(INTERMEDIATE_REPLICA)}});
+                }
+                else {
+                    // Even the target replica enters read lock state, so set that here
+                    rst::update(_data_id, _replica_number,
+                        json{{"data_is_dirty", std::to_string(lock_status)}});
+                }
             }
 
             set_replica_statuses(_data_id, _replica_number, lock_status);
@@ -195,26 +208,28 @@ namespace
         const int           _other_replica_statuses) -> int
     {
         try {
-            auto replica_status = _replica_status;
+            if (new_replica != _replica_number) {
+                auto replica_status = _replica_status;
 
-            if (ill::restore_status == _replica_status) {
-                if (const auto original_status = ill::get_original_replica_status(_data_id, _replica_number); -1 == original_status) {
-                    irods::log(LOG_ERROR, fmt::format(
-                        "[{}:{}] - failed to restore status for replica "
-                        "because no original status found in data_status column. "
-                        "Setting replica status to stale. "
-                        "[data_id=[{}], repl_num=[{}]]",
-                        __FUNCTION__, __LINE__, _data_id, _replica_number));
+                if (ill::restore_status == _replica_status) {
+                    if (const auto original_status = ill::get_original_replica_status(_data_id, _replica_number); -1 == original_status) {
+                        irods::log(LOG_WARNING, fmt::format(
+                            "[{}:{}] - failed to restore status for replica "
+                            "because no original status found in data_status column. "
+                            "Setting replica status to stale. "
+                            "[data_id=[{}], repl_num=[{}]]",
+                            __FUNCTION__, __LINE__, _data_id, _replica_number));
 
-                    replica_status = STALE_REPLICA;
+                        replica_status = STALE_REPLICA;
+                    }
+                    else {
+                        replica_status = original_status;
+                    }
                 }
-                else {
-                    replica_status = original_status;
-                }
+
+                rst::update(_data_id, _replica_number,
+                    json{{"data_is_dirty", std::to_string(replica_status)}});
             }
-
-            rst::update(_data_id, _replica_number,
-                json{{"data_is_dirty", std::to_string(replica_status)}});
 
             if (ill::restore_status == _other_replica_statuses) {
                 restore_replica_statuses(_data_id, _replica_number);
@@ -285,6 +300,22 @@ namespace irods::logical_locking
         return 0;
     } // lock_and_publish
 
+    auto lock_before_create_and_publish(
+        RsComm&             _comm,
+        const std::uint64_t _data_id,
+        const lock_type     _lock_type) -> int
+    {
+        if (const int ec = lock_impl(_data_id, new_replica, _lock_type); ec < 0) {
+            return ec;
+        }
+
+        if (const int ec = rst::publish_to_catalog(_comm, _data_id, new_replica, nlohmann::json{}); ec < 0) {
+            return ec;
+        }
+
+        return 0;
+    } // lock_before_create_and_publish
+
     auto unlock_and_publish(
         RsComm&             _comm,
         const std::uint64_t _data_id,
@@ -302,4 +333,20 @@ namespace irods::logical_locking
 
         return 0;
     } // unlock_and_publish
+
+    auto unlock_before_create_and_publish(
+        RsComm&             _comm,
+        const std::uint64_t _data_id,
+        const int           _other_replica_statuses) -> int
+    {
+        if (const int ec = unlock_impl(_data_id, new_replica, new_replica, _other_replica_statuses); ec < 0) {
+            return ec;
+        }
+
+        if (const int ec = rst::publish_to_catalog(_comm, _data_id, new_replica, nlohmann::json{}); ec < 0) {
+            return ec;
+        }
+
+        return 0;
+    } // unlock_before_create_and_publish
 } // namespace irods::logical_locking

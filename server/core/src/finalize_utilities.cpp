@@ -257,8 +257,8 @@ namespace irods
 
         if (ec < 0) {
             irods::log(LOG_ERROR, fmt::format(
-                "[{}] - error closing replica; ec:[{}]",
-                __FUNCTION__, ec));
+                "[{}:{}] - error closing replica; ec:[{}]",
+                __FUNCTION__, __LINE__, ec));
         }
 
         return ec;

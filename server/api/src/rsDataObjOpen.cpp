@@ -173,62 +173,68 @@ namespace
 
     auto check_if_data_object_is_locked(
         const DataObjInp& _inp,
-        const ir::replica_proxy_t& _replica) -> int
+        const id::data_object_proxy_t& _obj,
+        const std::string_view _hierarchy) -> int
     {
         const auto cond_input = irods::experimental::make_key_value_proxy(_inp.condInput);
         const auto hierarchy = cond_input.at(RESC_HIER_STR_KW).value();
 
-        if (_replica.locked()) {
-            switch (_replica.replica_status()) {
-                case READ_LOCKED:
-                    if (const auto opening_for_read = !getWriteFlag(_inp.openFlags); opening_for_read) {
-                        break;
-                    }
-                    [[fallthrough]];
+        if (const auto r = id::find_replica(_obj, _hierarchy); r) {
+            // If the catalog information indicates that the selected replica is intermediate, check
+            // to see if the provided replica token will be accepted by the replica access table.
+            // If not, the open request is disallowed because multiple opens of the same replica are
+            // not allowed without a valid replica token.
+            const auto replica_access_granted = [&r, &cond_input]() -> bool
+            {
+                if (r->at_rest()) {
+                    return true;
+                }
 
-                case WRITE_LOCKED:
-                    irods::log(LOG_DEBUG, fmt::format(
-                        "[{}:{}] - open denied because data object is locked. "
-                        "[path=[{}], hierarchy=[{}]]",
-                        __FUNCTION__, __LINE__, _inp.objPath, hierarchy));
+                if (!cond_input.contains(REPLICA_TOKEN_KW)) {
+                    return false;
+                }
 
-                    return LOCKED_DATA_OBJECT_ACCESS;
+                auto token = cond_input.at(REPLICA_TOKEN_KW).value();
+                return rat::contains(token.data(), r->data_id(), r->replica_number());
+            }();
 
-                default:
-                    irods::log(LOG_ERROR, fmt::format(
-                        "[{}:{}] - replica status is not a lock. "
-                        "[replica_status=[{}], path=[{}], hierarchy=[{}]]",
-                        __FUNCTION__, __LINE__, _replica.replica_status(), _inp.objPath, hierarchy));
+            if (!replica_access_granted) {
+                irods::log(LOG_NOTICE, fmt::format(
+                    "[{}:{}] - open denied because selected replica is in intermediate state. "
+                    "[path=[{}], hierarchy=[{}]]",
+                    __FUNCTION__, __LINE__, r->logical_path(), r->hierarchy()));
 
-                    return SYS_INTERNAL_ERR;
+                return INTERMEDIATE_REPLICA_ACCESS;
             }
         }
 
-        // If the catalog information indicates that the selected replica is intermediate, check
-        // to see if the provided replica token will be accepted by the replica access table.
-        // If not, the open request is disallowed because multiple opens of the same replica are
-        // not allowed without a valid replica token.
-        const auto replica_access_granted = [&_replica, &cond_input]() -> bool
-        {
-            if (_replica.at_rest()) {
-                return true;
+        for (const auto& r : _obj.replicas()) {
+            // If any replica is locked, opening is not allowed.
+            if (r.locked()) {
+                switch (r.replica_status()) {
+                    case READ_LOCKED:
+                        if (const auto opening_for_read = !getWriteFlag(_inp.openFlags); opening_for_read) {
+                            break;
+                        }
+                        [[fallthrough]];
+
+                    case WRITE_LOCKED:
+                        irods::log(LOG_NOTICE, fmt::format(
+                            "[{}:{}] - open denied because data object is locked. "
+                            "[path=[{}], hierarchy=[{}]]",
+                            __FUNCTION__, __LINE__, _inp.objPath, hierarchy));
+
+                        return LOCKED_DATA_OBJECT_ACCESS;
+
+                    default:
+                        irods::log(LOG_ERROR, fmt::format(
+                            "[{}:{}] - replica status is not a lock. "
+                            "[replica_status=[{}], path=[{}], hierarchy=[{}]]",
+                            __FUNCTION__, __LINE__, r.replica_status(), _inp.objPath, hierarchy));
+
+                        return SYS_INTERNAL_ERR;
+                }
             }
-
-            if (!cond_input.contains(REPLICA_TOKEN_KW)) {
-                return false;
-            }
-
-            auto token = cond_input.at(REPLICA_TOKEN_KW).value();
-            return rat::contains(token.data(), _replica.data_id(), _replica.replica_number());
-        }();
-
-        if (!replica_access_granted) {
-            irods::log(LOG_DEBUG, fmt::format(
-                "[{}:{}] - open denied because selected replica is in intermediate state. "
-                "[path=[{}], hierarchy=[{}]]",
-                __FUNCTION__, __LINE__, _inp.objPath, hierarchy));
-
-            return INTERMEDIATE_REPLICA_ACCESS;
         }
 
         return 0;
@@ -338,20 +344,45 @@ namespace
             l1_cond_input[FILE_PATH_KW] = new_replica.physical_path();
             l1_cond_input[DATA_SIZE_KW] = std::to_string(0);
 
+            // We need to lock the data object before creating the new replica. Otherwise,
+            // multiple replicas can be created on the same data object simultaneously in an
+            // uncoordinated fashion. The following steps must happen:
+            //   1. Insert existing data object into RST
+            //   2. Write-lock data object
+            //   3. Create new replica (starts in intermediate status)
+            //   4. Insert new replica into RST
+            auto object_locked = false;
             if (!brand_new_data_object) {
-                // TODO: How should we lock the data object before creating?
-                // There is a gap between registering the replica in the catalog and locking the data object.
-                // We should lock the data object before creating the new replica. This would look something like this:
-                //   0. Create new lock interface which does not require a target replica (lock_for_create?)
-                //   1. Insert existing data object into RST
-                //   2. Write-lock data object
-                //   3. Create new replica (starts in intermediate status)
-                //   4. Insert new replica into RST
-                // Should anything go wrong with these steps, we would also require an unlock interface which
-                // does not require a target replica (in case something goes wrong with the registration itself.
-                if (const auto ret = check_if_data_object_is_locked(_inp, ir::make_replica_proxy(*_existing_replica_list)); ret < 0) {
+                if (const auto ret = check_if_data_object_is_locked(_inp, id::make_data_object_proxy(*_existing_replica_list), hierarchy); ret < 0) {
+                    freeL1desc(l1_index);
                     return ret;
                 }
+
+                const auto obj = id::make_data_object_proxy(*_existing_replica_list);
+                if (const auto insert_ec = rst::insert(obj); insert_ec < 0) {
+                    freeL1desc(l1_index);
+                    return insert_ec;
+                }
+
+                if (const int lock_ec = ill::lock_before_create_and_publish(_comm, obj.data_id(), ill::lock_type::write); lock_ec < 0) {
+                    irods::log(LOG_ERROR, fmt::format(
+                        "[{}:{}] - Failed to lock data object on create "
+                        "[error_code=[{}], path=[{}], hierarchy=[{}]",
+                        __FUNCTION__, __LINE__, lock_ec, _inp.objPath, hierarchy));
+
+                    if (const int unlock_ec = ill::unlock_before_create_and_publish(_comm, obj.data_id(), ill::restore_status); unlock_ec < 0) {
+                        irods::log(LOG_ERROR, fmt::format(
+                            "Failed to unlock data object "
+                            "[error_code=[{}], path=[{}], hierarchy=[{}]]",
+                            unlock_ec, _inp.objPath, hierarchy));
+                    }
+
+                    freeL1desc(l1_index);
+
+                    return lock_ec;
+                }
+
+                object_locked = true;
             }
 
             if (const int ec = rsPhyPathReg(&_comm, l1desc.dataObjInp); ec < 0) {
@@ -359,6 +390,15 @@ namespace
                     "[{}:{}] - failed in rsPhyPathReg "
                     "[error_code=[{}], path=[{}], hierarchy=[{}]",
                     __FUNCTION__, __LINE__, ec, _inp.objPath, hierarchy));
+
+                if (object_locked) {
+                    if (const int unlock_ec = ill::unlock_before_create_and_publish(_comm, _existing_replica_list->dataId, ill::restore_status); unlock_ec < 0) {
+                        irods::log(LOG_ERROR, fmt::format(
+                            "Failed to unlock data object "
+                            "[error_code=[{}], path=[{}], hierarchy=[{}]]",
+                            unlock_ec, _inp.objPath, hierarchy));
+                    }
+                }
 
                 freeL1desc(l1_index);
 
@@ -370,16 +410,26 @@ namespace
             auto registered_replica = ir::make_replica_proxy(*l1desc.dataObjInfo);
 
             // Once the replica is registered successfully, make sure the RST entry and L1 descriptor
-            // are cleaned up properly in the event of errors.
+            // are cleaned up properly in the event of errors. Each return statement should assign the
+            // return value to ec so that clean_up executes (or not) appropriately.
             int ec = 0;
             const auto clean_up = irods::at_scope_exit{[&]
                 {
                     if (ec < 0) {
                         auto& l1desc = L1desc[l1_index];
 
+                        if (object_locked) {
+                            if (const int unlock_ec = ill::unlock_and_publish(_comm, registered_replica.data_id(), registered_replica.replica_number(), ill::restore_status); unlock_ec < 0) {
+                                irods::log(LOG_ERROR, fmt::format(
+                                    "Failed to unlock data object "
+                                    "[error_code=[{}], path=[{}], hierarchy=[{}]]",
+                                    unlock_ec, registered_replica.logical_path(), registered_replica.hierarchy()));
+                            }
+                        }
+
                         // Unlink physical file if there is a valid L3 descriptor
                         if (l1desc.l3descInx > 2) {
-                            if (const auto unlink_ec = l3Unlink(&_comm, l1desc.dataObjInfo); unlink_ec < 0) {
+                            if (const auto unlink_ec = l3Unlink(&_comm, registered_replica.get()); unlink_ec < 0) {
                                 irods::log(LOG_ERROR, fmt::format(
                                     "[{}:{}] - failed to physically unlink replica "
                                     "[error_code=[{}], physical path=[{}]]",
@@ -389,7 +439,7 @@ namespace
 
                         // Unregister replica from catalog
                         unregDataObj_t unlink_inp{};
-                        unlink_inp.dataObjInfo = l1desc.dataObjInfo;
+                        unlink_inp.dataObjInfo = registered_replica.get();
                         if (const auto unreg_ec = rsUnregDataObj(&_comm, &unlink_inp); unreg_ec < 0) {
                             irods::log(LOG_ERROR, fmt::format(
                                 "[{}:{}] - failed to unregister replica "
@@ -408,52 +458,16 @@ namespace
                 }
             };
 
+            // Insert the newly registered replica into the RST with the other replicas which were inserted and locked before
+            if (const auto insert_ec = rst::insert(registered_replica); insert_ec < 0) {
+                return ec = insert_ec;
+            }
+
             // The condInput that cares about the KEY_VALUE_PASSTHROUGH_KW is held in the dataObjInfo of the
             // open L1 descriptor, not the dataObjInp. We copy it here so that it holds the needed value.
             if (cond_input.contains(KEY_VALUE_PASSTHROUGH_KW)) {
                 auto info_cond_input = irods::experimental::make_key_value_proxy(L1desc[l1_index].dataObjInfo->condInput);
                 info_cond_input[KEY_VALUE_PASSTHROUGH_KW] = cond_input.at(KEY_VALUE_PASSTHROUGH_KW).value();
-            }
-
-            // TODO: this is confusing - fix it
-            if (rst::contains(registered_replica.data_id())) {
-                // This agent has opened another replica for the same data object if an entry
-                // exists in the RST. If the data object exists already, the new replica should
-                // be added to the list of replicas fetched from the catalog and then inserted
-                // into the existing RST entry.
-                if (!brand_new_data_object) {
-                    auto obj = id::make_data_object_proxy(*_existing_replica_list);
-                    obj.add_replica(*registered_replica.get());
-                }
-                if (const auto insert_ec = rst::insert(registered_replica); insert_ec < 0) {
-                    return ec = insert_ec;
-                }
-            }
-            else {
-                // The newly registered replica is part of a linked list of replicas created
-                // by rsPhyPathReg, so we use this to create the RST entry. The existing replica
-                // list, L1 descriptor dataObjInfo, and the dataObjInfo proxy'd by registered_replica
-                // should all be the same due to the logic of rsPhyPathReg.
-                auto obj = id::make_data_object_proxy(*registered_replica.get());
-                if (const auto insert_ec = rst::insert(obj); insert_ec < 0) {
-                    return ec = insert_ec;
-                }
-            }
-
-            if (const int lock_ec = ill::lock_and_publish(_comm, registered_replica.data_id(), registered_replica.replica_number(), ill::lock_type::write); lock_ec < 0) {
-                irods::log(LOG_ERROR, fmt::format(
-                    "[{}:{}] - Failed to lock data object on create "
-                    "[error_code=[{}], path=[{}], hierarchy=[{}]",
-                    __FUNCTION__, __LINE__, lock_ec, _inp.objPath, hierarchy));
-
-                if (const int unlock_ec = ill::unlock_and_publish(_comm, registered_replica.data_id(), registered_replica.replica_number(), ill::restore_status); unlock_ec < 0) {
-                    irods::log(LOG_ERROR, fmt::format(
-                        "Failed to unlock data object "
-                        "[error_code={}, path={}, hierarchy={}]",
-                        unlock_ec, _inp.objPath, hierarchy));
-                }
-
-                return ec = lock_ec;
             }
 
             // Return if the caller has requested that no physical open occur.
@@ -974,7 +988,7 @@ namespace
 
         // If the selected replica is part of a locked data object or is in the intermediate state
         // (and no valid replica access token can be found), the open should be denied.
-        if (const auto ret = check_if_data_object_is_locked(*dataObjInp, replica); ret < 0) {
+        if (const auto ret = check_if_data_object_is_locked(*dataObjInp, obj, hierarchy); ret < 0) {
             return ret;
         }
 
