@@ -67,8 +67,6 @@ TEST_CASE("test atomic metadata with BinBytesBuf", "[xml]")
 
     load_client_api_plugins();
 
-    auto conn_pool = irods::make_connection_pool(2);
-
     rodsEnv env;
     _getRodsEnv(env);
 
