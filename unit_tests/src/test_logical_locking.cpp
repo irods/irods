@@ -35,17 +35,20 @@ TEST_CASE("basic write lock")
 
     load_client_api_plugins();
 
-    // create two resources onto which a data object can be written
-    const std::string resc_0 = "logical_locking_resc_0";
-    const std::string resc_1 = "logical_locking_resc_1";
+    static const std::string resc_0 = "logical_locking_resc_0";
+    static const std::string resc_1 = "logical_locking_resc_1";
+    static const std::string resc_2 = "logical_locking_resc_2";
 
-    irods::at_scope_exit remove_resources{[&resc_0, &resc_1] {
+    static const auto& resc_names = std::vector{resc_0, resc_1, resc_2};
+
+    irods::at_scope_exit remove_resources{[] {
         // reset connection to ensure resource manager is current
         irods::experimental::client_connection conn;
         RcComm& comm = static_cast<RcComm&>(conn);
 
-        adm::client::remove_resource(comm, resc_0);
-        adm::client::remove_resource(comm, resc_1);
+        for (const auto& r : resc_names) {
+            adm::client::remove_resource(comm, r);
+        }
     }};
 
     const auto mkresc = [](std::string_view _name)
@@ -60,8 +63,9 @@ TEST_CASE("basic write lock")
         REQUIRE(unit_test_utils::add_ufs_resource(comm, _name, "vault_for_"s + _name.data()));
     };
 
-    mkresc(resc_0);
-    mkresc(resc_1);
+    for (const auto& r : resc_names) {
+        mkresc(r);
+    }
 
     // reset connection so resources exist
     irods::experimental::client_connection conn;
@@ -96,44 +100,76 @@ TEST_CASE("basic write lock")
 
     REQUIRE(unit_test_utils::replicate_data_object(comm, target_object.c_str(), resc_1));
 
-    SECTION("attempt open")
+    SECTION("attempt opening locked data object")
     {
-        constexpr int opened_replica_number = 0;
-        constexpr int other_replica_number = 1;
+        const auto opened_replica_resc = resc_0;
+        const auto other_replica_resc = resc_1;
 
-        REQUIRE(GOOD_REPLICA == ir::replica_status(comm, target_object, opened_replica_number));
-        REQUIRE(GOOD_REPLICA == ir::replica_status(comm, target_object, other_replica_number));
+        REQUIRE(GOOD_REPLICA == ir::replica_status(comm, target_object, opened_replica_resc));
+        REQUIRE(GOOD_REPLICA == ir::replica_status(comm, target_object, other_replica_resc));
 
         dataObjInp_t open_inp{};
         auto cond_input = irods::experimental::make_key_value_proxy(open_inp.condInput);
         std::snprintf(open_inp.objPath, sizeof(open_inp.objPath), "%s", target_object.c_str());
-        cond_input[REPL_NUM_KW] = std::to_string(opened_replica_number);
+        cond_input[RESC_HIER_STR_KW] = opened_replica_resc;
         open_inp.openFlags = O_WRONLY;
 
         const auto fd = rcDataObjOpen(&comm, &open_inp);
         REQUIRE(fd > 2);
 
-        REQUIRE(INTERMEDIATE_REPLICA == ir::replica_status(comm, target_object, opened_replica_number));
-        REQUIRE(WRITE_LOCKED == ir::replica_status(comm, target_object, other_replica_number));
+        REQUIRE(INTERMEDIATE_REPLICA == ir::replica_status(comm, target_object, opened_replica_resc));
+        REQUIRE(WRITE_LOCKED == ir::replica_status(comm, target_object, other_replica_resc));
 
         {
             irods::experimental::client_connection new_conn;
             RcComm& new_comm = static_cast<RcComm&>(new_conn);
 
             dataObjInp_t fail_open_inp{};
+            auto fail_cond_input = irods::experimental::make_key_value_proxy(fail_open_inp.condInput);
             std::snprintf(fail_open_inp.objPath, sizeof(fail_open_inp.objPath), "%s", target_object.c_str());
 
-            fail_open_inp.openFlags = O_RDONLY;
-            cond_input[REPL_NUM_KW] = std::to_string(opened_replica_number);
-            REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcDataObjOpen(&new_comm, &fail_open_inp));
-            cond_input[REPL_NUM_KW] = std::to_string(other_replica_number);
-            REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcDataObjOpen(&new_comm, &fail_open_inp));
+            SECTION("attempt open for read")
+            {
+                fail_open_inp.openFlags = O_RDONLY;
 
-            fail_open_inp.openFlags = O_WRONLY;
-            cond_input[REPL_NUM_KW] = std::to_string(opened_replica_number);
-            REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcDataObjOpen(&new_comm, &fail_open_inp));
-            cond_input[REPL_NUM_KW] = std::to_string(other_replica_number);
-            REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcDataObjOpen(&new_comm, &fail_open_inp));
+                // open existing, currently opened replica
+                fail_cond_input[RESC_HIER_STR_KW] = opened_replica_resc;
+                REQUIRE(INTERMEDIATE_REPLICA_ACCESS == rcDataObjOpen(&new_comm, &fail_open_inp));
+
+                // open existing, currently locked replica
+                fail_cond_input[RESC_HIER_STR_KW] = other_replica_resc;
+                REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcDataObjOpen(&new_comm, &fail_open_inp));
+            }
+
+            SECTION("attempt open for write")
+            {
+                fail_open_inp.openFlags = O_WRONLY;
+
+                // open existing, currently opened replica
+                fail_cond_input[RESC_HIER_STR_KW] = opened_replica_resc;
+                REQUIRE(INTERMEDIATE_REPLICA_ACCESS == rcDataObjOpen(&new_comm, &fail_open_inp));
+
+                // open existing, currently locked replica
+                fail_cond_input[RESC_HIER_STR_KW] = other_replica_resc;
+                REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcDataObjOpen(&new_comm, &fail_open_inp));
+            }
+
+            SECTION("attempt creating new replica")
+            {
+                fail_open_inp.openFlags = O_CREAT | O_WRONLY | O_TRUNC;
+
+                // attempt overwriting existing, currently opened replica with new replica
+                fail_cond_input[RESC_HIER_STR_KW] = opened_replica_resc;
+                REQUIRE(INTERMEDIATE_REPLICA_ACCESS == rcDataObjOpen(&new_comm, &fail_open_inp));
+
+                // attempt overwriting existing, currently locked replica with new replica
+                fail_cond_input[RESC_HIER_STR_KW] = other_replica_resc;
+                REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcDataObjOpen(&new_comm, &fail_open_inp));
+
+                // Attempt opening a new replica on locked object
+                fail_cond_input[RESC_HIER_STR_KW] = resc_2;
+                REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcDataObjOpen(&new_comm, &fail_open_inp));
+            }
         }
 
         openedDataObjInp_t close_inp{};
@@ -141,8 +177,8 @@ TEST_CASE("basic write lock")
         REQUIRE(rcDataObjClose(&comm, &close_inp) >= 0);
 
         // Make sure everything unlocked properly
-        CHECK(GOOD_REPLICA == ir::replica_status(comm, target_object, opened_replica_number));
-        CHECK(GOOD_REPLICA == ir::replica_status(comm, target_object, other_replica_number));
+        CHECK(GOOD_REPLICA == ir::replica_status(comm, target_object, opened_replica_resc));
+        CHECK(GOOD_REPLICA == ir::replica_status(comm, target_object, other_replica_resc));
     }
 
 #if 0
