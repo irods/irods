@@ -205,7 +205,10 @@ namespace
         const auto update = irods::to_json(cond_input.get());
 
         if (const int ec = rst::publish_to_catalog(_comm, replica.data_id(), replica.replica_number(), update); ec < 0) {
-            THROW(ec, fmt::format("failed to publish to catalog:[{}]", ec));
+            THROW(ec, fmt::format(
+                "[{}:{}] - failed in finalize step "
+                "[error_code=[{}], path=[{}], hierarchy=[{}]]",
+                __LINE__, __FUNCTION__, ec, replica.logical_path(), replica.replica_number()));
         }
 
         if (GOOD_REPLICA == replica.replica_status()) {
@@ -227,9 +230,11 @@ namespace
                     __FUNCTION__, _inp.objPath, fd));
                 return SYS_FILE_DESC_OUT_OF_RANGE;
             }
+
             irods::log(LOG_ERROR, fmt::format(
-                "[{}] - failed to open data object [{}]; ec:[{}]",
-                __FUNCTION__, _inp.objPath, fd));
+                "[{}:{}] - failed to open data object "
+                "[error_code=[{}], path=[{}]]",
+                __FUNCTION__, __LINE__, fd, _inp.objPath));
             return fd;
         }
 

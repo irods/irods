@@ -354,7 +354,9 @@ namespace
         auto maybe_replica = _object->get_replica(_hierarchy);
 
         if (!maybe_replica) {
-            const std::string msg = fmt::format("no replica found with hierarchy [{}]", _hierarchy);
+            const std::string msg = fmt::format(
+                "no replica found for [{}] with hierarchy [{}]",
+                _object->logical_path(), _hierarchy);
 
             if (irods::replication::log_errors::yes == _log_errors) {
                 addRErrorMsg(&_comm.rError, SYS_REPLICA_DOES_NOT_EXIST, msg.data());
@@ -932,7 +934,7 @@ int rsDataObjRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp, transferStat_t **
         }
     }
     catch (const irods::exception& e) {
-        irods::log(e);
+        irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, e.client_display_what()));
         addRErrorMsg(&rsComm->rError, e.code(), e.client_display_what());
         status = e.code();
     }

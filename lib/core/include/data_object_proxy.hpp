@@ -88,6 +88,17 @@ namespace irods::experimental::data_object
         /// \since 4.2.9
         auto get() const noexcept -> const doi_pointer_type { return data_obj_info_; }
 
+        auto locked() const noexcept -> bool
+        {
+            for (const auto& r : replica_list_) {
+                if (r.locked()) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         // mutators
 
         /// \brief Set the data id for the data object
