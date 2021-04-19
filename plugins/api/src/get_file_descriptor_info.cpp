@@ -26,6 +26,7 @@
 #include <tuple>
 
 #include "json.hpp"
+#include "fmt/format.h"
 
 namespace
 {
@@ -123,7 +124,8 @@ namespace
             {"data_owner_name", _p->dataOwnerName},
             {"data_owner_zone", _p->dataOwnerZone},
             {"replica_number", _p->replNum},
-            {"is_replica_current", (_p->replStatus == 1)},
+            {"is_replica_current", (GOOD_REPLICA == _p->replStatus)},
+            {"replica_status", _p->replStatus},
             {"status_string", _p->statusString},
             {"data_id", _p->dataId},
             {"collection_id", _p->collId},
@@ -285,6 +287,31 @@ namespace
 
         try {
             fd = get_file_descriptor(*_input);
+
+            const auto& l1desc = irods::get_l1desc(fd);
+
+            // Redirect to the federated zone if the local L1 descriptor references a remote zone.
+            if (l1desc.oprType == REMOTE_ZONE_OPR && l1desc.remoteZoneHost) {
+                auto* conn = l1desc.remoteZoneHost->conn;
+                const auto j_in = json{{"fd", l1desc.remoteL1descInx}}.dump();
+                char* j_out{};
+
+                if (const auto ec = rc_get_file_descriptor_info(conn, j_in.data(), &j_out); ec != 0) {
+                    irods::log(LOG_ERROR, fmt::format(
+                        "[{}:{}] - Failed to retrieve remote L1 descriptor information "
+                        "[error_code={}, remote_l1_descriptor={}]",
+                        __FUNCTION__, __LINE__, ec, l1desc.remoteL1descInx));
+
+                    return ec;
+                }
+
+                irods::log(LOG_DEBUG8, fmt::format("Remote L1 descriptor info = {}", j_out));
+
+                *_output = to_bytes_buffer(j_out);
+            }
+            else {
+                *_output = to_bytes_buffer(to_json(l1desc).dump());
+            }
         }
         catch (const json::parse_error& e) {
             rodsLog(LOG_ERROR, "Failed to parse input into JSON [error=%s]", e.what());
@@ -301,28 +328,6 @@ namespace
         catch (...) {
             rodsLog(LOG_ERROR, "An unknown error occurred while processing the request");
             return SYS_INVALID_INPUT_PARAM;
-        }
-
-        const auto& l1desc = irods::get_l1desc(fd);
-
-        // Redirect to the federated zone if the local L1 descriptor references a remote zone.
-        if (l1desc.oprType == REMOTE_ZONE_OPR && l1desc.remoteZoneHost) {
-            auto* conn = l1desc.remoteZoneHost->conn;
-            const auto j_in = json{{"fd", l1desc.remoteL1descInx}}.dump();
-            char* j_out{};
-
-            if (const auto ec = rc_get_file_descriptor_info(conn, j_in.data(), &j_out); ec != 0) {
-                rodsLog(LOG_ERROR, "Failed to retrieve remote L1 descriptor information "
-                                   "[error_code=%d, remote_l1_descriptor=%d]", ec, l1desc.remoteL1descInx);
-                return ec;
-            }
-
-            rodsLog(LOG_DEBUG, "Remote L1 descriptor info = %s", j_out);
-
-            *_output = to_bytes_buffer(j_out);
-        }
-        else {
-            *_output = to_bytes_buffer(to_json(l1desc).dump());
         }
 
         return 0;
