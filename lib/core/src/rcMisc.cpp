@@ -4454,7 +4454,7 @@ int get_canonical_name(const char *_hostname, char* _buf, size_t _len)
         }
     }
 
-    rodsLog(LOG_NOTICE, "%s :: DNS cache miss for hostname [hostname=%s].", __func__, _hostname);
+    rodsLog(LOG_DEBUG, "%s :: DNS cache miss for hostname [hostname=%s].", __func__, _hostname);
 
     struct addrinfo hint;
     memset(&hint, 0, sizeof(hint));
@@ -4495,7 +4495,7 @@ int load_in_addr_from_hostname(const char* _hostname, struct in_addr* _out)
         }
     }
 
-    rodsLog(LOG_NOTICE, "%s :: DNS cache miss for hostname [hostname=%s].", __func__, _hostname);
+    rodsLog(LOG_DEBUG, "%s :: DNS cache miss for hostname [hostname=%s].", __func__, _hostname);
 
     struct addrinfo hint;
     memset(&hint, 0, sizeof(hint));
