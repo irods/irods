@@ -325,3 +325,164 @@ class Test_Istream(session.make_sessions_mixin([('otherrods', 'rods')], [('alice
         vault = socket.gethostname() + ':' + vault_directory
         self.admin.assert_icommand(['iadmin', 'mkresc', resource_name, 'unixfilesystem', vault], 'STDOUT', [resource_name])
 
+    def test_sibling_replicas_marked_stale_on_overwrite__issue_5187(self):
+        default_resc = self.user.default_resource
+        other_resc = 'other_resc'
+        local_file = os.path.join(self.user.local_session_dir, 'foo')
+        data_object = os.path.join(self.user.session_collection, 'foo')
+
+        try:
+            lib.create_local_testfile(local_file)
+
+            self.create_ufs_resource(other_resc)
+
+            # put a new data object and create a second replica
+            self.user.assert_icommand(['iput', '-R', default_resc, local_file, data_object])
+            self.user.assert_icommand(['irepl', '-R', other_resc, data_object])
+
+            # get information about the replicas from the catalog
+            question = '''"select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where COLL_NAME = '{0}' and DATA_NAME = '{1}'"'''.format(os.path.dirname(data_object), os.path.basename(data_object))
+
+            out, err, ec = self.user.run_icommand(['iquest', '%s %s %s', question])
+            self.assertEqual(ec, 0)
+            self.assertEqual(len(err), 0)
+
+            # there should only be 2 replicas to worry about
+            out_lines = out.splitlines()
+            self.assertEqual(len(out_lines), 2)
+
+            # ensure replica 0 information is correct in the catalog
+            repl_num_0, resc_name_0, repl_status_0 = out_lines[0].split()
+            self.assertEqual(int(repl_num_0),    0)             # DATA_REPL_NUM
+            self.assertEqual(str(resc_name_0),   default_resc)  # DATA_RESC_NAME
+            self.assertEqual(int(repl_status_0), 1)             # DATA_REPL_STATUS
+
+            # ensure replica 1 information is correct in the catalog
+            repl_num_1, resc_name_1, repl_status_1 = out_lines[1].split()
+            self.assertEqual(int(repl_num_1),    1)             # DATA_REPL_NUM
+            self.assertEqual(str(resc_name_1),   other_resc)    # DATA_RESC_NAME
+            self.assertEqual(int(repl_status_1), 1)             # DATA_REPL_STATUS
+
+            # overwrite existing replica with istream
+            contents = 'NEW DATA'
+            self.user.assert_icommand(['istream', '-R', default_resc, 'write', data_object], input=contents)
+
+            # get information about the replicas from the catalog again
+            out, err, ec = self.user.run_icommand(['iquest', '%s %s %s', question])
+            self.assertEqual(ec, 0)
+            self.assertEqual(len(err), 0)
+
+            # there should only be 2 replicas to worry about
+            out_lines = out.splitlines()
+            self.assertEqual(len(out_lines), 2)
+
+            # ensure replica 0 information is correct in the catalog
+            repl_num_0, resc_name_0, repl_status_0 = out_lines[0].split()
+            self.assertEqual(int(repl_num_0),    0)             # DATA_REPL_NUM
+            self.assertEqual(str(resc_name_0),   default_resc)  # DATA_RESC_NAME
+            self.assertEqual(int(repl_status_0), 1)             # DATA_REPL_STATUS
+
+            # ensure replica 1 information is correct in the catalog
+            repl_num_1, resc_name_1, repl_status_1 = out_lines[1].split()
+            self.assertEqual(int(repl_num_1),    1)             # DATA_REPL_NUM
+            self.assertEqual(str(resc_name_1),   other_resc)    # DATA_RESC_NAME
+            self.assertEqual(int(repl_status_1), 0)             # DATA_REPL_STATUS
+
+        finally:
+            self.user.run_icommand(['irm', '-f', data_object])
+            self.admin.assert_icommand(['iadmin', 'rmresc', other_resc])
+
+    def test_sibling_replicas_marked_stale_on_create__issue_5187(self):
+        default_resc = self.user.default_resource
+        other_resc = 'other_resc'
+        another_resc = 'another_resc'
+        local_file = os.path.join(self.user.local_session_dir, 'foo')
+        data_object = os.path.join(self.user.session_collection, 'foo')
+
+        try:
+            lib.create_local_testfile(local_file)
+
+            self.create_ufs_resource(other_resc)
+            self.create_ufs_resource(another_resc)
+
+            # put a new data object and create a second replica
+            self.user.assert_icommand(['iput', '-R', default_resc, local_file, data_object])
+
+            # get information about the replicas from the catalog
+            question = '''"select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where COLL_NAME = '{0}' and DATA_NAME = '{1}'"'''.format(os.path.dirname(data_object), os.path.basename(data_object))
+
+            out, err, ec = self.user.run_icommand(['iquest', '%s %s %s', question])
+            self.assertEqual(ec, 0)
+            self.assertEqual(len(err), 0)
+
+            # there should only be 2 replicas to worry about
+            out_lines = out.splitlines()
+            self.assertEqual(len(out_lines), 1)
+
+            # ensure replica 0 information is correct in the catalog
+            repl_num_0, resc_name_0, repl_status_0 = out_lines[0].split()
+            self.assertEqual(int(repl_num_0),    0)             # DATA_REPL_NUM
+            self.assertEqual(str(resc_name_0),   default_resc)  # DATA_RESC_NAME
+            self.assertEqual(int(repl_status_0), 1)             # DATA_REPL_STATUS
+
+            # overwrite existing replica with istream
+            contents = 'NEW DATA'
+            self.user.assert_icommand(['istream', '-R', other_resc, 'write', data_object], input=contents)
+
+            # get information about the replicas from the catalog again
+            out, err, ec = self.user.run_icommand(['iquest', '%s %s %s', question])
+            self.assertEqual(ec, 0)
+            self.assertEqual(len(err), 0)
+
+            # there should only be 2 replicas to worry about
+            out_lines = out.splitlines()
+            self.assertEqual(len(out_lines), 2)
+
+            # ensure replica 0 information is correct in the catalog
+            repl_num_0, resc_name_0, repl_status_0 = out_lines[0].split()
+            self.assertEqual(int(repl_num_0),    0)             # DATA_REPL_NUM
+            self.assertEqual(str(resc_name_0),   default_resc)  # DATA_RESC_NAME
+            self.assertEqual(int(repl_status_0), 0)             # DATA_REPL_STATUS
+
+            # ensure replica 1 information is correct in the catalog
+            repl_num_1, resc_name_1, repl_status_1 = out_lines[1].split()
+            self.assertEqual(int(repl_num_1),    1)             # DATA_REPL_NUM
+            self.assertEqual(str(resc_name_1),   other_resc)    # DATA_RESC_NAME
+            self.assertEqual(int(repl_status_1), 1)             # DATA_REPL_STATUS
+
+            # TODO: Try again when #5585 is resolved...
+            ## create new replica with istream
+            #contents = 'MOAR NEW DATA'
+            #self.user.assert_icommand(['istream', '-R', another_resc, 'write', data_object], input=contents)
+
+            ## get information about the replicas from the catalog again
+            #out, err, ec = self.user.run_icommand(['iquest', '%s %s %s', question])
+            #self.assertEqual(ec, 0)
+            #self.assertEqual(len(err), 0)
+
+            ## there should be 3 replicas
+            #out_lines = out.splitlines()
+            #self.assertEqual(len(out_lines), 3)
+
+            ## ensure replica 0 information is correct in the catalog
+            #repl_num_0, resc_name_0, repl_status_0 = out_lines[0].split()
+            #self.assertEqual(int(repl_num_0),    0)             # DATA_REPL_NUM
+            #self.assertEqual(str(resc_name_0),   default_resc)  # DATA_RESC_NAME
+            #self.assertEqual(int(repl_status_0), 0)             # DATA_REPL_STATUS
+
+            ## ensure replica 1 information is correct in the catalog
+            #repl_num_1, resc_name_1, repl_status_1 = out_lines[1].split()
+            #self.assertEqual(int(repl_num_1),    1)             # DATA_REPL_NUM
+            #self.assertEqual(str(resc_name_1),   other_resc)    # DATA_RESC_NAME
+            #self.assertEqual(int(repl_status_1), 0)             # DATA_REPL_STATUS
+
+            ## ensure replica 2 information is correct in the catalog
+            #repl_num_2, resc_name_2, repl_status_2 = out_lines[2].split()
+            #self.assertEqual(int(repl_num_2),    2)             # DATA_REPL_NUM
+            #self.assertEqual(str(resc_name_2),   another_resc)  # DATA_RESC_NAME
+            #self.assertEqual(int(repl_status_2), 1)             # DATA_REPL_STATUS
+
+        finally:
+            self.user.run_icommand(['irm', '-f', data_object])
+            self.admin.assert_icommand(['iadmin', 'rmresc', other_resc])
+            self.admin.assert_icommand(['iadmin', 'rmresc', another_resc])

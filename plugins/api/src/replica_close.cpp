@@ -163,9 +163,9 @@ namespace
         const l1desc& _l1desc,
         const bool _send_notifications) -> int
     {
-        // The status of the locked replicas should be restored in a create situation but stale in an overwrite
-        // because the source of truth has moved in that case.
-        constexpr auto unlock_statuses = ill::restore_status;
+        // The sibling replicas are always marked stale because replica_close considers itself to be the new
+        // truth when it is given permission to finalize the replica.
+        constexpr auto unlock_statuses = STALE_REPLICA;
 
         // Unlock the data object but do not publish to catalog because we may want to trigger file_modified.
         if (const int ec = ill::unlock(_replica.data_id(), _replica.replica_number(), _replica.replica_status(), unlock_statuses); ec < 0) {
