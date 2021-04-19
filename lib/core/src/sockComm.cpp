@@ -399,7 +399,7 @@ sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
             (*addr)[entry->size()] = 0;
         }
         else {
-            rodsLog(LOG_NOTICE, "%s :: Hostname cache miss for localhost.", __func__);
+            rodsLog(LOG_DEBUG, "%s :: Hostname cache miss for localhost.", __func__);
 
             constexpr auto size_in_bytes = sizeof(char) * LONG_NAME_LEN;
             *addr = static_cast<char*>(std::malloc(size_in_bytes));
