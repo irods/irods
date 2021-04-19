@@ -23,13 +23,19 @@
 #include "irods_re_serialization.hpp"
 #include "rsDataObjOpen.hpp"
 #include "rsDataObjClose.hpp"
+#include "rsDataObjUnlink.hpp"
 #include "rs_get_file_descriptor_info.hpp"
 #include "rs_replica_close.hpp"
 #include "rodsLog.h"
+#include "key_value_proxy.hpp"
+#include "finalize_utilities.hpp"
 
 #include <json.hpp>
+#include "fmt/format.h"
 
 #include <string>
+
+extern l1desc_t L1desc[NUM_L1_DESC];
 
 namespace
 {
@@ -80,10 +86,39 @@ namespace
             rodsLog(LOG_ERROR, "Could not get L1 descriptor information for replica [error_code=%d]", ec);
             rodsLog(LOG_DEBUG, "Closing replica ...");
 
-            // Although the JSON input does not include the "update_catalog" option, the
-            // catalog will be updated because the option defaults to "true".
-            if (const auto ec0 = rs_replica_close(_comm, json_input.data()); ec0 != 0) {
-                rodsLog(LOG_ERROR, "Could not close replica [error_code=%d]", ec0);
+            auto& l1desc = L1desc[fd];
+
+            if (OPEN_FOR_READ_TYPE == l1desc.openType) {
+                // Although the JSON input does not include the "update_catalog" option, the
+                // catalog will be updated because the option defaults to "true".
+                if (const auto ec0 = rs_replica_close(_comm, json_input.data()); ec0 != 0) {
+                    rodsLog(LOG_ERROR, "Could not close replica [error_code=%d]", ec0);
+                }
+            }
+            else {
+                const auto hierarchy = std::string{l1desc.dataObjInfo->rescHier};
+                const auto open_for_create = CREATE_TYPE == l1desc.openType;
+
+                if (const auto unlock_ec = irods::close_replica_and_unlock_data_object(*_comm, fd, STALE_REPLICA); unlock_ec < 0) {
+                    irods::log(LOG_ERROR, fmt::format(
+                        "[{}:{}] - failed to unlock data object "
+                        "[error_code=[{}], path=[{}]]",
+                        __FUNCTION__, __LINE__, unlock_ec, _input->objPath));
+                }
+
+                if (open_for_create) {
+                    DataObjInp unlink_inp{};
+                    std::snprintf(unlink_inp.objPath, MAX_NAME_LEN, "%s", _input->objPath);
+                    auto cond_input = irods::experimental::make_key_value_proxy(unlink_inp.condInput);
+                    cond_input[RESC_HIER_STR_KW] = hierarchy;
+
+                    if (const auto unlink_ec = rsDataObjUnlink(_comm, &unlink_inp); unlink_ec) {
+                        irods::log(LOG_ERROR, fmt::format(
+                            "[{}:{}] - failed to unlink replica "
+                            "[error_code=[{}], path=[{}], hierarchy=[{}]]",
+                            __FUNCTION__, __LINE__, unlink_ec, _input->objPath, cond_input.at(RESC_HIER_STR_KW).value()));
+                    }
+                }
             }
 
             return ec;
