@@ -69,30 +69,103 @@ class Test_iPhymv(ResourceBase, unittest.TestCase):
         return (source_resource, destination_resource)
 
     def test_iphymv_to_child_resource__2933(self):
-        filepath = os.path.join(self.admin.local_session_dir, 'file')
-        lib.make_file(filepath, 1)
         file_name = 'file'
-        dest_path = os.path.join(self.admin.session_collection, file_name)
-        self.admin.assert_icommand('iput -fR randResc ' + filepath + ' ' + dest_path)
+        filepath = os.path.join(self.user0.local_session_dir, file_name)
+        lib.make_file(filepath, 1)
+        dest_path = os.path.join(self.user0.session_collection, file_name)
 
-        self.admin.assert_icommand('ils -L ' + dest_path, 'STDOUT_SINGLELINE', 'randResc')
-        source_resc, dest_resc = self.get_source_and_destination_resources(dest_path)
-        self.admin.assert_icommand(['iphymv', '-S', source_resc, '-R', dest_resc, dest_path])
+        question = '''"select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where COLL_NAME = '{0}' and DATA_NAME = '{1}'"'''.format(os.path.dirname(dest_path), os.path.basename(dest_path))
 
-        self.admin.assert_icommand('irm -f ' + dest_path)
+        try:
+            # put a new data object
+            self.user0.assert_icommand(['iput', '-f', '-R', 'randResc', filepath, dest_path])
+            self.user0.assert_icommand(['ils', '-L', dest_path], 'STDOUT_SINGLELINE', 'randResc')
+            source_resc, dest_resc = self.get_source_and_destination_resources(dest_path)
+
+            # get information from catalog about the new object
+            out, err, ec = self.user0.run_icommand(['iquest', '%s %s %s', question])
+            self.assertEqual(ec, 0)
+            self.assertEqual(len(err), 0)
+
+            # there should only be 1 replica to worry about
+            out_lines = out.splitlines()
+            self.assertEqual(len(out_lines), 1)
+
+            # ensure replica information is correct in the catalog
+            repl_num, resc_name, repl_status = out_lines[0].split()
+            self.assertEqual(int(repl_num),    0)           # DATA_REPL_NUM
+            self.assertEqual(str(resc_name),   source_resc) # DATA_RESC_NAME
+            self.assertEqual(int(repl_status), 1)           # DATA_REPL_STATUS
+
+            # move the replica to the other resource, targeting child resources
+            self.user0.assert_icommand(['iphymv', '-S', source_resc, '-R', dest_resc, dest_path])
+
+            out, err, ec = self.user0.run_icommand(['iquest', '%s %s %s', question])
+            self.assertEqual(ec, 0)
+            self.assertEqual(len(err), 0)
+
+            # there should only be 1 replica to worry about
+            out_lines = out.splitlines()
+            self.assertEqual(len(out_lines), 1)
+
+            # ensure moved replica information is correct in the catalog
+            repl_num, resc_name, repl_status = out_lines[0].split()
+            self.assertEqual(int(repl_num),    0)           # DATA_REPL_NUM
+            self.assertEqual(str(resc_name),   dest_resc)   # DATA_RESC_NAME
+            self.assertEqual(int(repl_status), 1)           # DATA_REPL_STATUS
+
+        finally:
+            self.user0.assert_icommand(['irm', '-f', dest_path])
 
     def test_iphymv_to_resc_hier__2933(self):
-        filepath = os.path.join(self.admin.local_session_dir, 'file')
-        lib.make_file(filepath, 1)
         file_name = 'file'
-        dest_path = os.path.join(self.admin.session_collection, file_name)
-        self.admin.assert_icommand('iput -fR randResc ' + filepath + ' ' + dest_path)
+        root_resc = 'randResc'
+        filepath = os.path.join(self.user0.local_session_dir, file_name)
+        lib.make_file(filepath, 1)
+        dest_path = os.path.join(self.user0.session_collection, file_name)
 
-        self.admin.assert_icommand('ils -l ' + dest_path, 'STDOUT_SINGLELINE', 'randResc')
-        source_resc, dest_resc = self.get_source_and_destination_resources(dest_path)
-        self.admin.assert_icommand(['iphymv', '-S', 'randResc;{}'.format(source_resc), '-R', 'randResc;{}'.format(dest_resc), dest_path])
+        question = '''"select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where COLL_NAME = '{0}' and DATA_NAME = '{1}'"'''.format(os.path.dirname(dest_path), os.path.basename(dest_path))
 
-        self.admin.assert_icommand('irm -f ' + dest_path)
+        try:
+            # put a new data object
+            self.user0.assert_icommand(['iput', '-f', '-R', root_resc, filepath, dest_path])
+            self.user0.assert_icommand(['ils', '-L', dest_path], 'STDOUT_SINGLELINE', root_resc)
+            source_resc, dest_resc = self.get_source_and_destination_resources(dest_path)
+
+            # get information from catalog about the new object
+            out, err, ec = self.user0.run_icommand(['iquest', '%s %s %s', question])
+            self.assertEqual(ec, 0)
+            self.assertEqual(len(err), 0)
+
+            # there should only be 1 replica to worry about
+            out_lines = out.splitlines()
+            self.assertEqual(len(out_lines), 1)
+
+            # ensure replica 0 information is correct in the catalog
+            repl_num, resc_name, repl_status = out_lines[0].split()
+            self.assertEqual(int(repl_num),    0)           # DATA_REPL_NUM
+            self.assertEqual(str(resc_name),   source_resc) # DATA_RESC_NAME
+            self.assertEqual(int(repl_status), 1)           # DATA_REPL_STATUS
+
+            # move the replica to the other resource, targeting child resources
+            self.user0.assert_icommand(['iphymv', '-S', ';'.join([root_resc, source_resc]), '-R', ';'.join([root_resc, dest_resc]), dest_path])
+
+            out, err, ec = self.user0.run_icommand(['iquest', '%s %s %s', question])
+            self.assertEqual(ec, 0)
+            self.assertEqual(len(err), 0)
+
+            # there should only be 1 replica to worry about
+            out_lines = out.splitlines()
+            self.assertEqual(len(out_lines), 1)
+
+            # ensure replica 0 information is correct in the catalog
+            repl_num, resc_name, repl_status = out_lines[0].split()
+            self.assertEqual(int(repl_num),    0)           # DATA_REPL_NUM
+            self.assertEqual(str(resc_name),   dest_resc)   # DATA_RESC_NAME
+            self.assertEqual(int(repl_status), 1)           # DATA_REPL_STATUS
+
+        finally:
+            self.user0.assert_icommand(['irm', '-f', dest_path])
 
     def test_iphymv_invalid_resource__2821(self):
         filepath = os.path.join(self.admin.local_session_dir, 'file')
