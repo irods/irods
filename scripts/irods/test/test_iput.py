@@ -11,6 +11,7 @@ else:
 from . import session
 from .. import test
 from .. import lib
+from ..test.command import assert_command
 
 rodsadmins = [('otherrods', 'rods')]
 rodsusers  = [('alice', 'apass')]
@@ -37,6 +38,55 @@ class Test_Iput(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.Tes
 
         # The following command should not result in a SYS_COPY_LEN_ERR error.
         self.admin.assert_icommand(['iput', '-f', file_40mb, data_object])
+
+    @unittest.skipIf(False == test.settings.USE_MUNGEFS, "This test requires mungefs")
+    def test_failure_in_data_transfer(self):
+        munge_mount = os.path.join(self.admin.local_session_dir, 'munge_mount')
+        munge_target = os.path.join(self.admin.local_session_dir, 'munge_target')
+        munge_resc = 'munge_resc'
+        local_file = os.path.join(self.admin.local_session_dir, 'local_file')
+        logical_path = os.path.join(self.admin.session_collection, 'foo')
+        question = '''"select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'"'''.format(
+            os.path.basename(logical_path), os.path.dirname(logical_path))
+
+        try:
+            lib.make_dir_p(munge_mount)
+            lib.make_dir_p(munge_target)
+            assert_command(['mungefs', munge_mount, '-omodules=subdir,subdir={}'.format(munge_target)])
+
+            self.admin.assert_icommand(
+                ['iadmin', 'mkresc', munge_resc, 'unixfilesystem',
+                 ':'.join([test.settings.HOSTNAME_1, munge_mount])], 'STDOUT_SINGLELINE', 'unixfilesystem')
+
+            assert_command(['mungefsctl', '--operations', 'write', '--corrupt_data'])
+
+            if not os.path.exists(local_file):
+                lib.make_file(local_file, 1024)
+
+            self.admin.assert_icommand(
+                ['iput', '-K', '-R', munge_resc, local_file, logical_path],
+                'STDERR', 'USER_CHKSUM_MISMATCH')
+
+            # check on the replicas after the put...
+            out, err, ec = self.admin.run_icommand(['iquest', '%s %s %s', question])
+            self.assertEqual(0, ec)
+            self.assertEqual(len(err), 0)
+
+            # there should be 1 replica...
+            out_lines = out.splitlines()
+            self.assertEqual(len(out_lines), 1)
+
+            # ensure the new replica is marked stale
+            repl_num_0, resc_name_0, repl_status_0 = out_lines[0].split()
+            self.assertEqual(int(repl_num_0),    0)          # DATA_REPL_NUM
+            self.assertEqual(str(resc_name_0),   munge_resc) # DATA_RESC_NAME
+            self.assertEqual(int(repl_status_0), 0)          # DATA_REPL_STATUS
+
+        finally:
+            self.admin.run_icommand(['irm', '-f', logical_path])
+            assert_command(['mungefsctl', '--operations', 'write'])
+            assert_command(['fusermount', '-u', munge_mount])
+            self.admin.assert_icommand(['iadmin', 'rmresc', munge_resc])
 
 class test_iput_with_checksums(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.TestCase):
 

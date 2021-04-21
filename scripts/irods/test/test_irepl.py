@@ -12,6 +12,7 @@ from . import session
 from .. import lib
 from .. import test
 from ..configuration import IrodsConfig
+from ..test.command import assert_command
 
 class test_irepl_with_special_resource_configurations(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
     # In this suite:
@@ -170,6 +171,70 @@ class test_irepl_with_special_resource_configurations(session.make_sessions_mixi
                 self.admin.assert_icommand('iadmin rmresc {0}_resc'.format(name))
 
             self.admin.assert_icommand('iadmin rmresc comp_resc')
+
+    def assert_two_replicas_where_original_is_good_and_new_is_stale(self, logical_path, original_resc, munge_resc):
+        question = '''"select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'"'''.format(
+            os.path.basename(logical_path), os.path.dirname(logical_path))
+
+        # check on the replicas after the replication...
+        out, err, ec = self.admin.run_icommand(['iquest', '%s %s %s', question])
+        self.assertEqual(0, ec)
+        self.assertEqual(len(err), 0)
+
+        # there should be 2 replicas now...
+        out_lines = out.splitlines()
+        self.assertEqual(len(out_lines), 2)
+
+        # ensure the original replica remains in tact (important!)
+        repl_num_0, resc_name_0, repl_status_0 = out_lines[0].split()
+        self.assertEqual(int(repl_num_0),    0)             # DATA_REPL_NUM
+        self.assertEqual(str(resc_name_0),   original_resc) # DATA_RESC_NAME
+        self.assertEqual(int(repl_status_0), 1)             # DATA_REPL_STATUS
+
+        # ensure the new replica is marked stale
+        repl_num_1, resc_name_1, repl_status_1 = out_lines[1].split()
+        self.assertEqual(int(repl_num_1),    1)          # DATA_REPL_NUM
+        self.assertEqual(str(resc_name_1),   munge_resc) # DATA_RESC_NAME
+        self.assertEqual(int(repl_status_1), 0)          # DATA_REPL_STATUS
+
+    @unittest.skipIf(False == test.settings.USE_MUNGEFS, "This test requires mungefs")
+    def test_failure_in_data_transfer(self):
+        munge_mount = os.path.join(self.admin.local_session_dir, 'munge_mount')
+        munge_target = os.path.join(self.admin.local_session_dir, 'munge_target')
+        munge_resc = 'munge_resc'
+        local_file = os.path.join(self.admin.local_session_dir, 'local_file')
+        logical_path = os.path.join(self.admin.session_collection, 'foo')
+        question = '''"select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'"'''.format(
+            os.path.basename(logical_path), os.path.dirname(logical_path))
+
+        try:
+            lib.make_dir_p(munge_mount)
+            lib.make_dir_p(munge_target)
+            assert_command(['mungefs', munge_mount, '-omodules=subdir,subdir={}'.format(munge_target)])
+
+            self.admin.assert_icommand(
+                ['iadmin', 'mkresc', munge_resc, 'unixfilesystem',
+                 ':'.join([test.settings.HOSTNAME_1, munge_mount])], 'STDOUT_SINGLELINE', 'unixfilesystem')
+
+            assert_command(['mungefsctl', '--operations', 'write', '--corrupt_data'])
+
+            if not os.path.exists(local_file):
+                lib.make_file(local_file, 1024)
+
+            self.admin.assert_icommand(['iput', '-K', local_file, logical_path])
+            self.admin.assert_icommand(['ils', '-l', logical_path], 'STDOUT', self.admin.default_resource)
+
+            self.admin.assert_icommand(
+                ['irepl', '-S', self.admin.default_resource, '-R', munge_resc, logical_path],
+                'STDERR', 'USER_CHKSUM_MISMATCH')
+
+            self.assert_two_replicas_where_original_is_good_and_new_is_stale(logical_path, self.admin.default_resource, munge_resc)
+
+        finally:
+            self.admin.run_icommand(['irm', '-f', logical_path])
+            assert_command(['mungefsctl', '--operations', 'write'])
+            assert_command(['fusermount', '-u', munge_mount])
+            self.admin.assert_icommand(['iadmin', 'rmresc', munge_resc])
 
 class test_irepl_with_two_basic_ufs_resources(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
     # In this suite:
