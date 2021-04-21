@@ -9,6 +9,7 @@
 #include "irods_exception.hpp"
 
 #include <string>
+#include <string_view>
 
 namespace irods
 {
@@ -56,6 +57,10 @@ namespace irods
         /// @brief capture server_config.json
         void capture_json(const std::string& _filename);
 
+        bool contains(const std::string_view _key) const {
+            return config_props_.has_entry(_key);
+        }
+
         template< typename T >
         T& get_property( const std::string& _key ) {
             return config_props_.get< T >( _key );
@@ -92,6 +97,10 @@ namespace irods
         /// @brief properties lookup table
         configuration_parser config_props_;
     }; // class server_properties
+
+    inline bool server_property_exists(const std::string_view _prop) {
+        return irods::server_properties::instance().contains(_prop);
+    }
 
     template< typename T >
     T& get_server_property( const std::string& _prop ) {
