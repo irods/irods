@@ -12,15 +12,7 @@ namespace
 {
     auto is_client_to_agent_connection() -> bool
     {
-        try {
-            irods::get_server_property<std::string>(irods::AGENT_CONN_KW);
-            return false;
-        }
-        catch (const irods::exception&) {
-            rodsLog(LOG_DEBUG, "Connection is not an agent-to-agent connection");
-        }
-
-        return true;
+        return !irods::server_property_exists(irods::AGENT_CONN_KW);
     }
 } // anonymous namespace
 

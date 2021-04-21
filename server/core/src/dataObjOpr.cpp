@@ -1,7 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* dataObjOpr.c - data object operations */
-
 #include <sys/types.h>
 #include <sys/wait.h>
 #include "rcMisc.h"
@@ -830,21 +826,17 @@ chkOrphanFile(
     addKeyVal( &genQueryInp.condInput, DISABLE_STRICT_ACL_KW, "disable" );
 
     std::string svr_sid;
-    try {
-        irods::get_server_property<const std::string>(irods::AGENT_CONN_KW);
-        status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
-    } catch ( const irods::exception& e ) {
-        if ( e.code() == KEY_NOT_FOUND ) {
-            try {
-                irods::set_server_property<std::string>(irods::AGENT_CONN_KW, "StrictACLOverride");
-                status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
-                irods::delete_server_property( irods::AGENT_CONN_KW );
-            } catch (const irods::exception& e ) {
-                irods::log(e);
-                return e.code();
-            }
-        } else {
-            irods::log( irods::error(e) );
+    if (irods::server_property_exists(irods::AGENT_CONN_KW)) {
+        status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
+    }
+    else {
+        try {
+            irods::set_server_property<std::string>(irods::AGENT_CONN_KW, "StrictACLOverride");
+            status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
+            irods::delete_server_property(irods::AGENT_CONN_KW);
+        }
+        catch (const irods::exception& e) {
+            irods::log(e);
             return e.code();
         }
     }
