@@ -13,14 +13,17 @@ import ustrings
 from .. import lib
 from . import session
 from .. import core_file
+from .. import test
 from .rule_texts_for_tests import rule_texts
 from ..configuration import IrodsConfig
+from ..test.command import assert_command
 
 class Test_Icp(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
     class_name = 'Test_Icp'
     def setUp(self):
         super(Test_Icp, self).setUp()
+        self.admin = self.admin_sessions[0]
         self.alice = self.user_sessions[0]
 
     def tearDown(self):
@@ -84,4 +87,76 @@ class Test_Icp(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
 
         for case in cases:
             do_test(size=case['size'], threads=case['threads'])
+
+    @unittest.skipIf(False == test.settings.USE_MUNGEFS, "This test requires mungefs")
+    def test_failure_in_data_transfer_for_write(self):
+        munge_mount = os.path.join(self.admin.local_session_dir, 'munge_mount')
+        munge_target = os.path.join(self.admin.local_session_dir, 'munge_target')
+        munge_resc = 'munge_resc'
+        local_file = os.path.join(self.admin.local_session_dir, 'local_file')
+        source_logical_path = os.path.join(self.admin.session_collection, 'foo')
+        dest_logical_path = os.path.join(self.admin.session_collection, 'goo')
+
+        def get_question(logical_path):
+            return '''"select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'"'''.format(
+                os.path.basename(logical_path), os.path.dirname(logical_path))
+
+        try:
+            lib.make_dir_p(munge_mount)
+            lib.make_dir_p(munge_target)
+            assert_command(['mungefs', munge_mount, '-omodules=subdir,subdir={}'.format(munge_target)])
+
+            self.admin.assert_icommand(
+                ['iadmin', 'mkresc', munge_resc, 'unixfilesystem',
+                 ':'.join([test.settings.HOSTNAME_1, munge_mount])], 'STDOUT_SINGLELINE', 'unixfilesystem')
+
+            assert_command(['mungefsctl', '--operations', 'write', '--corrupt_data'])
+
+            if not os.path.exists(local_file):
+                lib.make_file(local_file, 1024)
+
+            self.admin.assert_icommand(['iput', '-K', local_file, source_logical_path])
+            self.admin.assert_icommand(['ils', '-l', source_logical_path], 'STDOUT', self.admin.default_resource)
+
+            self.admin.assert_icommand(
+                ['icp', '-K', '-R', munge_resc, source_logical_path, dest_logical_path],
+                'STDERR', 'USER_CHKSUM_MISMATCH')
+
+            # check on the source object after the copy...
+            out, err, ec = self.admin.run_icommand(['iquest', '%s %s %s', get_question(source_logical_path)])
+            self.assertEqual(0, ec)
+            self.assertEqual(len(err), 0)
+
+            # there should be 1 replica...
+            out_lines = out.splitlines()
+            self.assertEqual(len(out_lines), 1)
+
+            # ensure the original object is in tact
+            repl_num_0, resc_name_0, repl_status_0 = out_lines[0].split()
+            self.assertEqual(int(repl_num_0),    0)                             # DATA_REPL_NUM
+            self.assertEqual(str(resc_name_0),   self.admin.default_resource)   # DATA_RESC_NAME
+            self.assertEqual(int(repl_status_0), 1)                             # DATA_REPL_STATUS
+
+            # check on the destination object after the copy...
+            out, err, ec = self.admin.run_icommand(['iquest', '%s %s %s', get_question(dest_logical_path)])
+            self.assertEqual(0, ec)
+            self.assertEqual(len(err), 0)
+
+            # there should be 1 replica...
+            out_lines = out.splitlines()
+            self.assertEqual(len(out_lines), 1)
+
+            # ensure the new object is marked stale due to failure
+            repl_num_0, resc_name_0, repl_status_0 = out_lines[0].split()
+            self.assertEqual(int(repl_num_0),    0)             # DATA_REPL_NUM
+            self.assertEqual(str(resc_name_0),   munge_resc)    # DATA_RESC_NAME
+            self.assertEqual(int(repl_status_0), 0)             # DATA_REPL_STATUS
+
+        finally:
+            self.admin.assert_icommand(['ils', '-l', dest_logical_path], 'STDOUT', munge_resc)
+            self.admin.run_icommand(['irm', '-f', source_logical_path])
+            self.admin.run_icommand(['irm', '-f', dest_logical_path])
+            assert_command(['mungefsctl', '--operations', 'write'])
+            assert_command(['fusermount', '-u', munge_mount])
+            self.admin.assert_icommand(['iadmin', 'rmresc', munge_resc])
 
