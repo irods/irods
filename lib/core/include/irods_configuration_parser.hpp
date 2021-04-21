@@ -1,12 +1,15 @@
 #ifndef CONFIGURATION_PARSER_HPP
 #define CONFIGURATION_PARSER_HPP
 
+/// \file
+
 #include "irods_exception.hpp"
 #include "irods_error.hpp"
 #include "rodsErrorTable.h"
 
 #include <vector>
 #include <string>
+#include <string_view>
 
 #include <unordered_map>
 #include <boost/format.hpp>
@@ -31,8 +34,7 @@ namespace irods {
             error write( const std::string& );
             error write( );
 
-            bool has_entry(
-                const std::string& ); // key
+            bool has_entry(const std::string_view _key) const;
 
             template< typename T >
             T& set(

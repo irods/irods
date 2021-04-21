@@ -64,9 +64,8 @@ namespace irods {
 
     } // copy_and_swap
 
-    bool configuration_parser::has_entry( const std::string& _key ) {
-        return root_.count( _key ) != 0;
-
+    bool configuration_parser::has_entry(const std::string_view _key) const {
+        return root_.find(_key.data()) != std::end(root_);
     } // has_entry
 
     error configuration_parser::load( const std::string& _file ) {
