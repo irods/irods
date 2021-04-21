@@ -204,6 +204,9 @@ TEST_CASE("open,read,write,close")
                 // disconnect without close
             }
 
+            // Sleep here to ensure that the catalog has had enough time to update
+            std::this_thread::sleep_for(10s);
+
             REQUIRE(STALE_REPLICA == replica::replica_status(comm, target_object, 0));
 
             dataObjInp_t open_inp{};
@@ -335,10 +338,14 @@ TEST_CASE("open,read,write,close")
                 const auto bytes_written = rcDataObjWrite(&comm, &write_inp, &write_bbuf);
                 CHECK(write_bbuf.len == bytes_written);
 
+                // Sleep here to make sure that the mtime is not updated
                 std::this_thread::sleep_for(2s);
 
                 // disconnect without close
             }
+
+            // Sleep here to ensure that the catalog has had enough time to update
+            std::this_thread::sleep_for(2s);
 
             // ensure all system metadata were updated properly
             irods::experimental::client_connection conn;
