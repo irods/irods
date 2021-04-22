@@ -258,6 +258,7 @@ namespace
             // and the operation is supposed to turn into an overwrite of the existing data object.
             // Return a value of 0 here and the caller will continue with the open operation.
             if (!creating_new_replica) {
+                _inp.openFlags &= ~O_WRONLY;
                 _inp.openFlags |= O_RDWR;
                 cond_input[DEST_RESC_NAME_KW] = irods::hierarchy_parser{hierarchy.data()}.first_resc();
                 cond_input[OPEN_TYPE_KW] = std::to_string(OPEN_FOR_WRITE_TYPE);
