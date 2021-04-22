@@ -1,33 +1,30 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code (for the most part).  */
-/* See dataObjCopy.h for a description of this API call.*/
-
-#include "dataObjCopy.h"
-#include "rodsLog.h"
-#include "objMetaOpr.hpp"
 #include "collection.hpp"
-#include "specColl.hpp"
-#include "dataObjOpen.h"
 #include "dataObjClose.h"
+#include "dataObjCopy.h"
 #include "dataObjCreate.h"
+#include "dataObjOpen.h"
 #include "dataObjRepl.h"
-#include "regDataObj.h"
-#include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.h"
 #include "getRemoteZoneResc.h"
-#include "rsDataObjCopy.hpp"
-#include "rsDataObjOpen.hpp"
-#include "rsDataObjCreate.hpp"
-#include "rsDataObjRepl.hpp"
-#include "rsRegDataObj.hpp"
-#include "rsDataObjClose.hpp"
-#include "server_utilities.hpp"
 #include "irods_logger.hpp"
+#include "objMetaOpr.hpp"
+#include "rcGlobalExtern.h"
+#include "regDataObj.h"
+#include "rodsLog.h"
+#include "rsDataObjClose.hpp"
+#include "rsDataObjCopy.hpp"
+#include "rsDataObjCreate.hpp"
+#include "rsDataObjOpen.hpp"
+#include "rsDataObjRepl.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rsRegDataObj.hpp"
 #include "scoped_privileged_client.hpp"
+#include "server_utilities.hpp"
+#include "specColl.hpp"
 
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 #include "filesystem.hpp"
+
+#include "key_value_proxy.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_redirect.hpp"
@@ -89,26 +86,29 @@ int connect_to_remote_zone(
     return status;
 } // connect_to_remote_zone
 
-int open_source_data_obj(
-    rsComm_t *rsComm,
-    dataObjInp_t& inp) {
-    inp.oprType = COPY_SRC;
-    inp.openFlags = O_RDONLY;
-    const int srcL1descInx = rsDataObjOpen(rsComm, &inp);
-    if (srcL1descInx < 0) {
-        char* sys_error{};
-        const char* rods_error = rodsErrorName(srcL1descInx, &sys_error);
-        const std::string error_msg = (boost::format(
-            "%s -  - Failed to open source object: \"%s\" - %s %s") %
-            __FUNCTION__ % inp.objPath % rods_error % sys_error).str();
-        free(sys_error);
-        THROW(srcL1descInx, error_msg);
-    }
+int open_source_data_obj(rsComm_t *rsComm, dataObjInp_t& inp)
+    {
+        inp.oprType = COPY_SRC;
+        inp.openFlags = O_RDONLY;
+        const int srcL1descInx = rsDataObjOpen(rsComm, &inp);
+        if (srcL1descInx < 0) {
+            char* sys_error{};
+            const char* rods_error = rodsErrorName(srcL1descInx, &sys_error);
 
-    /* have to set L1desc[srcL1descInx].dataSize because open set this to -1 */
-    L1desc[srcL1descInx].dataSize = L1desc[srcL1descInx].dataObjInfo->dataSize;
-    return srcL1descInx;
-} // open_source_data_obj
+            irods::log(LOG_ERROR, fmt::format(
+                "[{}:{}] - failed to open source object "
+                "[irods error=[{}], system error=[{}], path=[{}]]",
+                __FUNCTION__, __LINE__, rods_error, sys_error, inp.objPath));
+
+            free(sys_error);
+
+            return srcL1descInx;
+        }
+
+        /* have to set L1desc[srcL1descInx].dataSize because open set this to -1 */
+        L1desc[srcL1descInx].dataSize = L1desc[srcL1descInx].dataObjInfo->dataSize;
+        return srcL1descInx;
+    } // open_source_data_obj
 
     auto close_source_data_obj(RsComm* rsComm, const int _inx) -> int
     {
@@ -120,65 +120,74 @@ int open_source_data_obj(
         return rsDataObjClose(rsComm, &dataObjCloseInp);
     } // close_source_data_obj
 
-int open_destination_data_obj(
-    rsComm_t *rsComm,
-    dataObjInp_t& inp)
-{
-    inp.oprType = COPY_DEST;
-    inp.openFlags = O_CREAT | O_WRONLY | O_TRUNC;
+    int open_destination_data_obj(rsComm_t *rsComm, dataObjInp_t& inp)
+    {
+        inp.oprType = COPY_DEST;
+        inp.openFlags = O_CREAT | O_WRONLY | O_TRUNC;
 
-    irods::file_object_ptr file_obj(new irods::file_object());
-    std::string hier{};
-    const char* h{getValByKey(&inp.condInput, RESC_HIER_STR_KW)};
-    if (!h) {
-        std::tie(file_obj, hier) = irods::resolve_resource_hierarchy(irods::CREATE_OPERATION, rsComm, inp);
-        addKeyVal(&inp.condInput, RESC_HIER_STR_KW, hier.c_str());
-    }
-    else {
-        hier = h;
-        irods::file_object_ptr obj(new irods::file_object());
-        dataObjInfo_t* dataObjInfoHead{};
-        irods::error fac_err = irods::file_object_factory(rsComm, &inp, obj, &dataObjInfoHead);
-        if (!fac_err.ok()) {
-            irods::log(fac_err);
+        irods::file_object_ptr file_obj(new irods::file_object());
+        std::string hier{};
+        auto cond_input = irods::experimental::make_key_value_proxy(inp.condInput);
+
+        try {
+            if (!cond_input.contains(RESC_HIER_STR_KW)) {
+                std::tie(file_obj, hier) = irods::resolve_resource_hierarchy(irods::CREATE_OPERATION, rsComm, inp);
+                cond_input[RESC_HIER_STR_KW] = hier;
+            }
+            else {
+                hier = cond_input.at(RESC_HIER_STR_KW).value().data();
+                dataObjInfo_t* dataObjInfoHead{};
+                irods::error fac_err = irods::file_object_factory(rsComm, &inp, file_obj, &dataObjInfoHead);
+                if (!fac_err.ok()) {
+                    irods::log(fac_err);
+                }
+            }
         }
-        file_obj.swap(obj);
-    }
+        catch (const irods::exception& e) {
+            irods::log(LOG_ERROR, fmt::format(
+                "[{}:{}] - [{}]",
+                __FUNCTION__, __LINE__, e.client_display_what()));
 
-    const auto hier_has_replica{[&hier, &replicas = file_obj->replicas()]() {
-        return std::any_of(replicas.begin(), replicas.end(),
-            [&](const irods::physical_object& replica) {
-                return replica.resc_hier() == hier;
-            });
-        }()};
+            return e.code();
+        }
 
-    if (hier_has_replica && !getValByKey(&inp.condInput, FORCE_FLAG_KW)) {
-        THROW(OVERWRITE_WITHOUT_FORCE_FLAG, "force flag required to overwrite data object for copy");
-    }
+        if (irods::hierarchy_has_replica(file_obj, hier) && !cond_input.contains(FORCE_FLAG_KW)) {
+            irods::log(LOG_ERROR, fmt::format(
+                "[{}:{}] - force flag required to overwrite data object for copy "
+                "[error_code=[{}], path=[{}], hierarchy=[{}]",
+                __FUNCTION__, __LINE__, inp.objPath, hier));
 
-    int destL1descInx = rsDataObjOpen(rsComm, &inp);
-    if ( destL1descInx == CAT_UNKNOWN_COLLECTION ) {
-        /* collection does not exist. make one */
-        char parColl[MAX_NAME_LEN], child[MAX_NAME_LEN];
-        splitPathByKey(inp.objPath, parColl, MAX_NAME_LEN, child, MAX_NAME_LEN, '/');
-        rsMkCollR( rsComm, "/", parColl );
-        destL1descInx = rsDataObjOpen(rsComm, &inp);
-    }
+            return OVERWRITE_WITHOUT_FORCE_FLAG;
+        }
 
-    if (destL1descInx < 0) {
-        clearKeyVal( &inp.condInput );
-        char* sys_error = NULL;
-        const char* rods_error = rodsErrorName( destL1descInx, &sys_error );
-        const std::string error_msg = (boost::format(
-            "%s -  - Failed to create destination object: \"%s\" - %s %s") %
-            __FUNCTION__ % inp.objPath % rods_error % sys_error).str();
-        free(sys_error);
-        THROW(destL1descInx, error_msg);
-    }
+        int destL1descInx = rsDataObjOpen(rsComm, &inp);
+        if ( destL1descInx == CAT_UNKNOWN_COLLECTION ) {
+            /* collection does not exist. make one */
+            char parColl[MAX_NAME_LEN], child[MAX_NAME_LEN];
+            splitPathByKey(inp.objPath, parColl, MAX_NAME_LEN, child, MAX_NAME_LEN, '/');
+            rsMkCollR( rsComm, "/", parColl );
+            destL1descInx = rsDataObjOpen(rsComm, &inp);
+        }
 
-    L1desc[destL1descInx].oprType = COPY_DEST;
-    return destL1descInx;
-} // open_destination_data_obj
+        if (destL1descInx < 0) {
+            clearKeyVal( &inp.condInput );
+
+            char* sys_error{};
+            const char* rods_error = rodsErrorName(destL1descInx, &sys_error);
+
+            irods::log(LOG_ERROR, fmt::format(
+                "[{}:{}] - failed to open destination object "
+                "[irods error=[{}], system error=[{}], path=[{}]]",
+                __FUNCTION__, __LINE__, rods_error, sys_error, inp.objPath));
+
+            free(sys_error);
+
+            return destL1descInx;
+        }
+
+        L1desc[destL1descInx].oprType = COPY_DEST;
+        return destL1descInx;
+    } // open_destination_data_obj
 
     auto close_destination_data_obj(RsComm* rsComm, const int _inx) -> int
     {
@@ -191,58 +200,59 @@ int open_destination_data_obj(
         return rsDataObjClose(rsComm, &dataObjCloseInp);
     } // close_destination_data_obj
 
-int rsDataObjCopy_impl(
-    rsComm_t *rsComm,
-    dataObjCopyInp_t *dataObjCopyInp,
-    transferStat_t **transStat)
-{
-    namespace fs = irods::experimental::filesystem;
+    int rsDataObjCopy_impl(
+        rsComm_t *rsComm,
+        dataObjCopyInp_t *dataObjCopyInp,
+        transferStat_t **transStat)
+    {
+        namespace fs = irods::experimental::filesystem;
 
-    if (!dataObjCopyInp) {
-        return SYS_INTERNAL_NULL_INPUT_ERR;
-    }
+        if (!dataObjCopyInp) {
+            return SYS_INTERNAL_NULL_INPUT_ERR;
+        }
 
-    dataObjInp_t* srcDataObjInp = &dataObjCopyInp->srcDataObjInp;
-    dataObjInp_t* destDataObjInp = &dataObjCopyInp->destDataObjInp;
-    try {
-        if (!fs::server::is_data_object(*rsComm, srcDataObjInp->objPath) ||
-            fs::path{destDataObjInp->objPath}.is_relative()) {
+        dataObjInp_t* srcDataObjInp = &dataObjCopyInp->srcDataObjInp;
+        dataObjInp_t* destDataObjInp = &dataObjCopyInp->destDataObjInp;
+        try {
+            if (!fs::server::is_data_object(*rsComm, srcDataObjInp->objPath) ||
+                fs::path{destDataObjInp->objPath}.is_relative()) {
+                return USER_INPUT_PATH_ERR;
+            }
+
+            if (irods::is_force_flag_required(*rsComm, *destDataObjInp)) {
+                return OVERWRITE_WITHOUT_FORCE_FLAG;
+            }
+        }
+        catch (const fs::filesystem_error& e) {
+            irods::experimental::log::api::error(e.what());
+            return e.code().value();
+        }
+
+        specCollCache_t *specCollCache{};
+        resolveLinkedPath(rsComm, srcDataObjInp->objPath, &specCollCache, &srcDataObjInp->condInput);
+        resolveLinkedPath(rsComm, destDataObjInp->objPath, &specCollCache, &destDataObjInp->condInput);
+
+        rodsServerHost_t *rodsServerHost;
+        int remoteFlag = connect_to_remote_zone( rsComm, dataObjCopyInp, &rodsServerHost );
+        if ( remoteFlag < 0 ) {
+            return remoteFlag;
+        }
+        else if ( remoteFlag == REMOTE_HOST ) {
+            return _rcDataObjCopy(rodsServerHost->conn, dataObjCopyInp, transStat);
+        }
+
+        if (strcmp(srcDataObjInp->objPath, destDataObjInp->objPath) == 0) {
+            rodsLog(LOG_ERROR,
+                    "%s: same src and dest objPath [%s] not allowed",
+                    __FUNCTION__, srcDataObjInp->objPath );
             return USER_INPUT_PATH_ERR;
         }
 
-        if (irods::is_force_flag_required(*rsComm, *destDataObjInp)) {
-            return OVERWRITE_WITHOUT_FORCE_FLAG;
-        }
-    }
-    catch (const fs::filesystem_error& e) {
-        irods::experimental::log::api::error(e.what());
-        return e.code().value();
-    }
-
-    specCollCache_t *specCollCache{};
-    resolveLinkedPath(rsComm, srcDataObjInp->objPath, &specCollCache, &srcDataObjInp->condInput);
-    resolveLinkedPath(rsComm, destDataObjInp->objPath, &specCollCache, &destDataObjInp->condInput);
-
-    rodsServerHost_t *rodsServerHost;
-    int remoteFlag = connect_to_remote_zone( rsComm, dataObjCopyInp, &rodsServerHost );
-    if ( remoteFlag < 0 ) {
-        return remoteFlag;
-    }
-    else if ( remoteFlag == REMOTE_HOST ) {
-        return _rcDataObjCopy(rodsServerHost->conn, dataObjCopyInp, transStat);
-    }
-
-    if (strcmp(srcDataObjInp->objPath, destDataObjInp->objPath) == 0) {
-        rodsLog(LOG_ERROR,
-                "%s: same src and dest objPath [%s] not allowed",
-                __FUNCTION__, srcDataObjInp->objPath );
-        return USER_INPUT_PATH_ERR;
-    }
-
-    try {
         int srcL1descInx{};
         int destL1descInx{};
-        const irods::at_scope_exit close_objects{[&]() {
+        const auto close_objects{[&]() -> int {
+            int result = 0;
+
             if (destL1descInx > 3) {
                 // The transferStat_t communicates information back to the client regarding
                 // the data transfer such as bytes written and how many threads were used.
@@ -256,6 +266,8 @@ int rsDataObjCopy_impl(
                     irods::log(LOG_ERROR, fmt::format(
                         "[{}:{}] - failed closing [{}] with status [{}]",
                         __FUNCTION__, __LINE__, destDataObjInp->objPath, ec));
+
+                    result = ec;
                 }
             }
 
@@ -264,17 +276,32 @@ int rsDataObjCopy_impl(
                     irods::log(LOG_ERROR, fmt::format(
                         "[{}:{}] - failed closing [{}] with status [{}]",
                         __FUNCTION__, __LINE__, srcDataObjInp->objPath, ec));
+
+                    if (!result) {
+                        result = ec;
+                    }
                 }
             }
+
+            return result;
         }};
 
         srcL1descInx = open_source_data_obj(rsComm, *srcDataObjInp);
+        if (srcL1descInx < 0) {
+            return srcL1descInx;
+        }
 
         const int createMode = std::atoi(L1desc[srcL1descInx].dataObjInfo->dataMode);
         if (createMode >= 0100) {
             destDataObjInp->createMode = createMode;
         }
+
         destL1descInx = open_destination_data_obj(rsComm, *destDataObjInp);
+        if (destL1descInx < 0) {
+            close_objects();
+
+            return destL1descInx;
+        }
 
         L1desc[destL1descInx].srcL1descInx = srcL1descInx;
         L1desc[destL1descInx].dataSize = L1desc[srcL1descInx].dataObjInfo->dataSize;
@@ -291,18 +318,15 @@ int rsDataObjCopy_impl(
         L1desc[destL1descInx].dataObjInp->numThreads = thread_count;
         L1desc[srcL1descInx].dataObjInp->numThreads = thread_count;
 
-        const int status = dataObjCopy( rsComm, destL1descInx );
-        if (status < 0) {
-            L1desc[destL1descInx].oprStatus = status;
+        const int copy_ec = dataObjCopy( rsComm, destL1descInx );
+        if (copy_ec < 0) {
+            L1desc[destL1descInx].oprStatus = copy_ec;
         }
-        return status;
-    }
-    catch (const irods::exception& e) {
-        irods::log(e);
-        return e.code();
-    }
-    return 0;
-} // rsDataObjCopy
+
+        const auto close_ec = close_objects();
+
+        return copy_ec < 0 ? copy_ec : close_ec;
+    } // rsDataObjCopy_impl
 
 } // anonymous namespace
 
