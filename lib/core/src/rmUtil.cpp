@@ -1,14 +1,11 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-#ifndef windows_platform
-#include <sys/time.h>
-#endif
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "miscUtil.h"
 #include "rodsLog.h"
 #include "rmUtil.h"
 #include "rcGlobalExtern.h"
+
+#include <sys/time.h>
 
 int
 rmUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs,
@@ -33,10 +30,12 @@ rmUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs,
         if ( rodsPathInp->srcPath[i].objType == UNKNOWN_OBJ_T ) {
             getRodsObjType( conn, &rodsPathInp->srcPath[i] );
             if ( rodsPathInp->srcPath[i].objState == NOT_EXIST_ST ) {
-                rodsLog( LOG_ERROR,
-                         "rmUtil: srcPath %s does not exist",
-                         rodsPathInp->srcPath[i].outPath );
-                savedStatus = USER_INPUT_PATH_ERR;
+                if (True != myRodsArgs->force) {
+                    rodsLog( LOG_ERROR,
+                             "rmUtil: srcPath %s does not exist",
+                             rodsPathInp->srcPath[i].outPath );
+                    savedStatus = USER_INPUT_PATH_ERR;
+                }
                 continue;
             }
         }
