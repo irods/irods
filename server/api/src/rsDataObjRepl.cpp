@@ -103,8 +103,6 @@ namespace
         irods::apply_metadata_from_cond_input(_comm, *_l1desc.dataObjInp);
         irods::apply_acl_from_cond_input(_comm, *_l1desc.dataObjInp);
 
-        rst::erase(_info.data_id());
-
         return 0;
     } // finalize_source_replica
 

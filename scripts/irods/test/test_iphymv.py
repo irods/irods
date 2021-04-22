@@ -20,6 +20,31 @@ from ..controller import IrodsController
 from .resource_suite import ResourceBase
 from ..test.command import assert_command
 
+def assert_two_replicas_where_original_is_good_and_new_is_stale(cls, logical_path, original_resc, munge_resc):
+    question = '''"select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'"'''.format(
+        os.path.basename(logical_path), os.path.dirname(logical_path))
+
+    # check on the replicas after the phymv...
+    out, err, ec = cls.admin.run_icommand(['iquest', '%s %s %s', question])
+    cls.assertEqual(0, ec)
+    cls.assertEqual(len(err), 0)
+
+    # there should be 2 replicas now...
+    out_lines = out.splitlines()
+    cls.assertEqual(len(out_lines), 2)
+
+    # ensure the original replica remains in tact (important!)
+    repl_num_0, resc_name_0, repl_status_0 = out_lines[0].split()
+    cls.assertEqual(int(repl_num_0),    0)             # DATA_REPL_NUM
+    cls.assertEqual(str(resc_name_0),   original_resc) # DATA_RESC_NAME
+    cls.assertEqual(int(repl_status_0), 1)             # DATA_REPL_STATUS
+
+    # ensure the new replica is marked stale
+    repl_num_1, resc_name_1, repl_status_1 = out_lines[1].split()
+    cls.assertEqual(int(repl_num_1),    1)          # DATA_REPL_NUM
+    cls.assertEqual(str(resc_name_1),   munge_resc) # DATA_RESC_NAME
+    cls.assertEqual(int(repl_status_1), 0)          # DATA_REPL_STATUS
+
 class Test_iPhymv(ResourceBase, unittest.TestCase):
     def setUp(self):
         super(Test_iPhymv, self).setUp()
@@ -306,6 +331,65 @@ class Test_iPhymv(ResourceBase, unittest.TestCase):
         for case in cases:
             do_test(size=case['size'], threads=case['threads'])
 
+    @unittest.skipIf(False == test.settings.USE_MUNGEFS, "This test requires mungefs")
+    def test_failure_to_unlink_source_replica(self):
+        munge_mount = os.path.join(self.admin.local_session_dir, 'munge_mount')
+        munge_target = os.path.join(self.admin.local_session_dir, 'munge_target')
+        munge_resc = 'munge_resc'
+        local_file = os.path.join(self.admin.local_session_dir, 'local_file')
+        logical_path = os.path.join(self.admin.session_collection, 'foo')
+        question = '''"select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'"'''.format(
+            os.path.basename(logical_path), os.path.dirname(logical_path))
+
+        try:
+            lib.make_dir_p(munge_mount)
+            lib.make_dir_p(munge_target)
+            assert_command(['mungefs', munge_mount, '-omodules=subdir,subdir={}'.format(munge_target)])
+
+            self.admin.assert_icommand(
+                ['iadmin', 'mkresc', munge_resc, 'unixfilesystem',
+                 ':'.join([test.settings.HOSTNAME_1, munge_mount])], 'STDOUT_SINGLELINE', 'unixfilesystem')
+
+            assert_command(['mungefsctl', '--operations', 'unlink', '--err_no=9'])
+
+            if not os.path.exists(local_file):
+                lib.make_file(local_file, 1024)
+
+            self.admin.assert_icommand(['iput', '-K', '-R', munge_resc, local_file, logical_path])
+            self.admin.assert_icommand(['ils', '-l', logical_path], 'STDOUT', munge_resc)
+
+            ec, _, _ = self.admin.assert_icommand(
+                ['iphymv', '-S', munge_resc, '-R', self.admin.default_resource, logical_path],
+                'STDERR', 'UNIX_FILE_UNLINK_ERR')
+
+            # check on the replicas after the phymv...
+            out, err, ec = self.admin.run_icommand(['iquest', '%s %s %s', question])
+            self.assertEqual(0, ec)
+            self.assertEqual(len(err), 0)
+
+            # there should be 2 replicas...
+            out_lines = out.splitlines()
+            self.assertEqual(len(out_lines), 2)
+
+            # ensure the new replica is marked good and has the original replica number...
+            repl_num_0, resc_name_0, repl_status_0 = out_lines[0].split()
+            self.assertEqual(int(repl_num_0),    0)                             # DATA_REPL_NUM
+            self.assertEqual(str(resc_name_0),   self.admin.default_resource)   # DATA_RESC_NAME
+            self.assertEqual(int(repl_status_0), 1)                             # DATA_REPL_STATUS
+
+            # ensure the original replica has moved to a new replica, and is stale
+            repl_num_1, resc_name_1, repl_status_1 = out_lines[1].split()
+            self.assertEqual(int(repl_num_1),    2)          # DATA_REPL_NUM
+            self.assertEqual(str(resc_name_1),   munge_resc) # DATA_RESC_NAME
+            self.assertEqual(int(repl_status_1), 0)          # DATA_REPL_STATUS
+
+        finally:
+            print(self.admin.run_icommand(['ils', '-l', logical_path])[0])
+            assert_command(['mungefsctl', '--operations', 'unlink'])
+            assert_command(['fusermount', '-u', munge_mount])
+            self.admin.run_icommand(['irm', '-f', logical_path])
+            self.admin.assert_icommand(['iadmin', 'rmresc', munge_resc])
+
 class test_iphymv_exit_codes(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
     def setUp(self):
         super(test_iphymv_exit_codes, self).setUp()
@@ -314,31 +398,6 @@ class test_iphymv_exit_codes(session.make_sessions_mixin([('otherrods', 'rods')]
 
     def tearDown(self):
         super(test_iphymv_exit_codes, self).tearDown()
-
-    def assert_two_replicas_where_original_is_good_and_new_is_stale(self, logical_path, original_resc, munge_resc):
-        question = '''"select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'"'''.format(
-            os.path.basename(logical_path), os.path.dirname(logical_path))
-
-        # check on the replicas after the phymv...
-        out, err, ec = self.admin.run_icommand(['iquest', '%s %s %s', question])
-        self.assertEqual(0, ec)
-        self.assertEqual(len(err), 0)
-
-        # there should be 2 replicas now...
-        out_lines = out.splitlines()
-        self.assertEqual(len(out_lines), 2)
-
-        # ensure the original replica remains in tact (important!)
-        repl_num_0, resc_name_0, repl_status_0 = out_lines[0].split()
-        self.assertEqual(int(repl_num_0),    0)             # DATA_REPL_NUM
-        self.assertEqual(str(resc_name_0),   original_resc) # DATA_RESC_NAME
-        self.assertEqual(int(repl_status_0), 1)             # DATA_REPL_STATUS
-
-        # ensure the new replica is marked stale
-        repl_num_1, resc_name_1, repl_status_1 = out_lines[1].split()
-        self.assertEqual(int(repl_num_1),    1)          # DATA_REPL_NUM
-        self.assertEqual(str(resc_name_1),   munge_resc) # DATA_RESC_NAME
-        self.assertEqual(int(repl_status_1), 0)          # DATA_REPL_STATUS
 
     def test_exit_code_with_no_input(self):
         rc, _, _ = self.admin.assert_icommand(['iphymv'], 'STDERR', 'no input')
@@ -400,7 +459,7 @@ class test_iphymv_exit_codes(session.make_sessions_mixin([('otherrods', 'rods')]
 
             self.assertEqual(4, ec)
 
-            self.assert_two_replicas_where_original_is_good_and_new_is_stale(logical_path, self.admin.default_resource, munge_resc)
+            assert_two_replicas_where_original_is_good_and_new_is_stale(self, logical_path, self.admin.default_resource, munge_resc)
 
         finally:
             self.admin.run_icommand(['irm', '-f', logical_path])
@@ -444,7 +503,7 @@ class test_iphymv_exit_codes(session.make_sessions_mixin([('otherrods', 'rods')]
 
             self.assertEqual(6, ec)
 
-            self.assert_two_replicas_where_original_is_good_and_new_is_stale(logical_path, self.admin.default_resource, munge_resc)
+            assert_two_replicas_where_original_is_good_and_new_is_stale(self, logical_path, self.admin.default_resource, munge_resc)
 
             # remove the new replica
             self.admin.assert_icommand(['itrim', '-N', '1', '-n', '1', logical_path], 'STDOUT', ['trimmed = 1'])
@@ -458,7 +517,7 @@ class test_iphymv_exit_codes(session.make_sessions_mixin([('otherrods', 'rods')]
 
             self.assertEqual(7, ec)
 
-            self.assert_two_replicas_where_original_is_good_and_new_is_stale(logical_path, self.admin.default_resource, munge_resc)
+            assert_two_replicas_where_original_is_good_and_new_is_stale(self, logical_path, self.admin.default_resource, munge_resc)
 
         finally:
             self.admin.run_icommand(['irm', '-f', logical_path])

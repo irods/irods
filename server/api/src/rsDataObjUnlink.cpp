@@ -454,6 +454,23 @@ int rsMvDataObjToTrash(
         freeAllDataObjInfo(dataObjInfoHead);
         return status;
     } // rsDataObjUnlink_impl
+
+    auto get_path_permissions_check_setting(RsComm& _comm, DataObjInp& _inp, DataObjInfo& _info) -> int
+    {
+        RuleExecInfo rei;
+        initReiWithDataObjInp(&rei, &_comm, &_inp);
+        rei.doi = &_info;
+        rei.status = DO_CHK_PATH_PERM;
+
+        // make resource properties available as rule session variables
+        irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
+
+        applyRule("acSetChkFilePathPerm", NULL, &rei, NO_SAVE_REI);
+        clearKeyVal(rei.condInputData);
+        free(rei.condInputData);
+
+        return rei.status;
+    } // get_path_permissions_check_setting
 } // anonymous namespace
 
 int rsDataObjUnlink(rsComm_t* rsComm, dataObjInp_t* dataObjUnlinkInp)
@@ -545,125 +562,95 @@ int dataObjUnlinkS(rsComm_t* rsComm,
         }
     }
 
-    int status = 0;
-    unregDataObj_t unregDataObjInp;
+    auto info = ir::make_replica_proxy(*dataObjInfo);
 
-    if ( dataObjInfo->specColl == NULL ) {
-        if (dataObjUnlinkInp->oprType == UNREG_OPR &&
-            rsComm->clientUser.authInfo.authFlag != LOCAL_PRIV_USER_AUTH)
-        {
-            ruleExecInfo_t rei;
-            initReiWithDataObjInp( &rei, rsComm, dataObjUnlinkInp );
-            rei.doi = dataObjInfo;
-            rei.status = DO_CHK_PATH_PERM;
+    // Ensure that the authenticated user has permission to perform a pure unregister on the replica.
+    // Non-admin users do not have permission to unregister replicas from the catalog without unlinking
+    // the data if the replica in question resides inside of an iRODS resource vault. Data objects in
+    // special collections do not apply to the unregistering piece of the operation.  If the operation
+    // is not configured to check the permissions on the path, skip this step.
+    if (!dataObjInfo->specColl &&
+        UNREG_OPR == dataObjUnlinkInp->oprType &&
+        LOCAL_PRIV_USER_AUTH != rsComm->clientUser.authInfo.authFlag &&
+        NO_CHK_PATH_PERM != get_path_permissions_check_setting(*rsComm, *dataObjUnlinkInp, *info.get()))
+    {
+        std::string location;
+        if (const auto ret = irods::get_loc_for_hier_string(info.hierarchy().data(), location); !ret.ok()) {
+            irods::log(LOG_ERROR, fmt::format(
+                "[{}:{}] - failed in get_loc_for_hier_string: [{}] "
+                "[error_code=[{}], path=[{}], hierarchy=[{}]",
+                __FUNCTION__, __LINE__, ret.result(),
+                ret.code(), info.logical_path(), info.hierarchy()));
 
-            // make resource properties available as rule session variables
-            irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
-
-            applyRule( "acSetChkFilePathPerm", NULL, &rei, NO_SAVE_REI );
-            clearKeyVal(rei.condInputData);
-            free(rei.condInputData);
-
-            if (rei.status != NO_CHK_PATH_PERM) {
-                // extract the host location from the resource hierarchy
-                std::string location;
-                irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
-                if ( !ret.ok() ) {
-                    irods::log( PASSMSG( "dataObjUnlinkS - failed in get_loc_for_hier_string", ret ) );
-                    return ret.code();
-                }
-
-                rodsHostAddr_t addr;
-                rodsServerHost_t *rodsServerHost = 0;
-
-                memset( &addr, 0, sizeof( addr ) );
-                rstrcpy( addr.hostAddr, location.c_str(), NAME_LEN );
-                int remoteFlag = resolveHost( &addr, &rodsServerHost );
-                if ( remoteFlag < 0 ) {
-                    // error condition?
-                }
-
-                /* unregistering but not an admin user */
-                std::string out_path;
-                ret = resc_mgr.validate_vault_path( dataObjInfo->filePath, rodsServerHost, out_path );
-                if ( ret.ok() ) {
-                    /* in the vault */
-                    std::stringstream msg;
-                    msg << "unregistering a data object which is in a vault [";
-                    msg << dataObjInfo->filePath << "]";
-                    irods::log( PASSMSG( msg.str(), ret ) );
-                    return CANT_UNREG_IN_VAULT_FILE;
-                }
-            }
+            return ret.code();
         }
 
-        unregDataObjInp.dataObjInfo = dataObjInfo;
-        unregDataObjInp.condInput = &dataObjUnlinkInp->condInput;
-        status = rsUnregDataObj( rsComm, &unregDataObjInp );
-        if ( status < 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "dataObjUnlinkS: rsUnregDataObj error for %s. status = %d",
-                     dataObjUnlinkInp->objPath, status );
-            return status;
+        RodsHostAddress addr{};
+        rodsServerHost* host = nullptr;
+        rstrcpy(addr.hostAddr, location.c_str(), NAME_LEN);
+        if (const auto remote_flag = resolveHost(&addr, &host); remote_flag < 0) {
+            irods::log(LOG_NOTICE, fmt::format(
+                "[{}:{}] - failed in resolveHost [error_code=[{}]]",
+                __FUNCTION__, __LINE__, remote_flag));
+
+            return remote_flag;
+        }
+
+        // If the vault path is validated (ret.ok() is true), that indicates that the replica
+        // resides in an iRODS resource vault. If the user is not a rodsadmin, unregistering
+        // a replica from inside an iRODS resource vault is not allowed.
+        std::string out_path;
+        if (const auto ret = resc_mgr.validate_vault_path(info.physical_path().data(), host, out_path); ret.ok()) {
+            irods::log(LOG_ERROR, fmt::format(
+                "[{}:{}] - non-admin users cannot unregister a replica in a vault [path=[{}], hierarchy=[{}]]",
+                __FUNCTION__, __LINE__, info.logical_path(), info.hierarchy()));
+
+            return CANT_UNREG_IN_VAULT_FILE;
         }
     }
 
-    if ( dataObjUnlinkInp->oprType != UNREG_OPR ) {
-        // Set the in_pdmo flag
-        char* in_pdmo = getValByKey( &dataObjUnlinkInp->condInput, IN_PDMO_KW );
-        if ( in_pdmo != NULL ) {
-            rstrcpy( dataObjInfo->in_pdmo, in_pdmo, MAX_NAME_LEN );
-        }
-        else {
-            dataObjInfo->in_pdmo[0] = '\0';
-        }
+    // The UNREG_OPR type is used to indicate that the replica should not be physically unlinked,
+    // but only unregistered. Therefore, only attempt physical unlink if this is not an UNREG_OPR.
+    if (UNREG_OPR != dataObjUnlinkInp->oprType) {
+        const auto cond_input = irods::experimental::make_key_value_proxy(dataObjUnlinkInp->condInput);
+        info.in_pdmo(cond_input.contains(IN_PDMO_KW) ? cond_input.at(IN_PDMO_KW).value() : "");
 
-        status = l3Unlink( rsComm, dataObjInfo );
-        if ( status < 0 ) {
-            int myError = getErrno( status );
-            rodsLog( LOG_NOTICE,
-                     "dataObjUnlinkS: l3Unlink error for %s. status = %d",
-                     dataObjUnlinkInp->objPath, status );
-            /* allow ENOENT to go on and unregister */
-            if ( myError != ENOENT && myError != EACCES ) {
-                char orphanPath[MAX_NAME_LEN];
-                int status1 = 0;
-                rodsLog( LOG_NOTICE,
-                         "dataObjUnlinkS: orphan file %s", dataObjInfo->filePath );
-                while ( 1 ) {
-                    if ( isOrphanPath( dataObjUnlinkInp->objPath ) ==
-                            NOT_ORPHAN_PATH ) {
-                        /* don't rename orphan path */
-                        status1 = rsMkOrphanPath( rsComm, dataObjInfo->objPath,
-                                                  orphanPath );
-                        if ( status1 < 0 ) {
-                            break;
-                        }
-                        /* reg the orphan path */
-                        rstrcpy( dataObjInfo->objPath, orphanPath, MAX_NAME_LEN );
-                    }
-                    status1 = svrRegDataObj( rsComm, dataObjInfo );
-                    if ( status1 == CAT_NAME_EXISTS_AS_DATAOBJ ||
-                            status1 == CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME ) {
-                        continue;
-                    }
-                    else if ( status1 < 0 ) {
-                        rodsLogError( LOG_ERROR, status1,
-                                      "dataObjUnlinkS: svrRegDataObj of orphan %s error",
-                                      dataObjInfo->objPath );
-                    }
-                    break;
-                }
-                return status;
-            }
-            else {
-                status = 0;
+        if (const auto ec = l3Unlink(rsComm, info.get()); ec < 0) {
+            irods::log(LOG_NOTICE, fmt::format(
+                "[{}:{}] - failed to physically unlink replica "
+                "[error_code=[{}], path=[{}], hierarchy=[{}]",
+                __FUNCTION__, __LINE__, ec, info.logical_path(), info.hierarchy()));
+
+            // TODO: why do we allow NOENT and EACCES to unregister?
+            if (const auto error_number = getErrno(ec);
+                ENOENT != error_number && EACCES != error_number) {
+                return ec;
             }
         }
     }
 
-    return status;
-}
+    // Special collections have their own logic regarding registration which is not handled
+    // in this implementation. Just return success.
+    if (dataObjInfo->specColl) {
+        return 0;
+    }
+
+    unregDataObj_t unreg_inp{};
+    unreg_inp.dataObjInfo = info.get();
+    unreg_inp.condInput = &dataObjUnlinkInp->condInput;
+    if (const auto ec = rsUnregDataObj(rsComm, &unreg_inp); ec < 0) {
+        irods::log(LOG_NOTICE, fmt::format(
+            "[{}:{}] - rsUnregDataObj failed "
+            "[error_code=[{}], path=[{}], hierarchy=[{}]",
+            __FUNCTION__, __LINE__, ec, info.logical_path(), info.hierarchy()));
+
+        // TODO: Should the replica be marked stale if the unregister itself fails?
+
+        return ec;
+    }
+
+    return 0;
+} // dataObjUnlinkS
 
 int l3Unlink(
     rsComm_t *rsComm,
