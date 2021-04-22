@@ -27,13 +27,12 @@
 // dlopen, etc
 #include <dlfcn.h>
 
-
-namespace irods {
-
-    static error resolve_plugin_path(
-        const std::string& _type,
-        std::string&       _path ) {
+namespace irods
+{
+    inline error resolve_plugin_path(const std::string& _type, std::string& _path)
+    {
         namespace fs = boost::filesystem;
+
         fs::path plugin_home;
 
         rodsEnv env;
@@ -123,11 +122,12 @@ namespace irods {
      * \retval non-null on success
      **/
     template< typename PluginType, typename ...Ts >
-    error load_plugin( PluginType*&       _plugin,
-                       const std::string& _plugin_name,
-                       const std::string& _interface,
-                       const std::string& _instance_name,
-                       const Ts&... _args ) {
+    error load_plugin(PluginType*&       _plugin,
+                      const std::string& _plugin_name,
+                      const std::string& _interface,
+                      const std::string& _instance_name,
+                      const Ts&...       _args)
+    {
         namespace fs = boost::filesystem;
 
         // resolve the plugin path
@@ -216,9 +216,6 @@ namespace irods {
         return SUCCESS();
 
     } // load_plugin
-
-}; // namespace irods
-
-
+} // namespace irods
 
 #endif // __IRODS_LOAD_PLUGIN_HPP__
