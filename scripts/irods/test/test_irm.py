@@ -72,3 +72,15 @@ class Test_Irm(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
         self.admin.assert_icommand(['irm', '-f', data_object])
         self.assertTrue(os.path.exists(filepath))
 
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    def test_irm_with_force_silently_ignores_non_existent_data_objects__issue_5438(self):
+        data_object = 'non_existent_data_object'
+
+        # Show that without the force flag, removing a non-existent data object
+        # results in an error.
+        self.user.assert_icommand(['irm', data_object], 'STDERR', ['does not exist'])
+
+        # Show that using the force flag does not result in an error when given a
+        # non-existent data object.
+        self.user.assert_icommand(['irm', '-f', data_object])
+
