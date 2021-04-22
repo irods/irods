@@ -68,7 +68,7 @@ namespace
         const auto logical_path = rst::get_logical_path(_data_id);
 
         for (auto& json_replica : entry) {
-            const auto replica_number = std::stoi(json_replica.at("after").at("data_repl_num").get<std::string>());
+            const auto replica_number = std::stoi(json_replica.at("before").at("data_repl_num").get<std::string>());
 
             irods::log(LOG_DEBUG, fmt::format(
                 "[{}:{}] - replica:[{}]",
@@ -99,7 +99,7 @@ namespace
     auto remove_data_status(const std::uint64_t _data_id) -> void
     {
         for (const auto& json_replica : rst::at(_data_id)) {
-            const auto replica_number = std::stoi(json_replica.at("after").at("data_repl_num").get<std::string>());
+            const auto replica_number = std::stoi(json_replica.at("before").at("data_repl_num").get<std::string>());
             rst::update(_data_id, replica_number, json{{"data_status", ""}});
         }
     } // remove_data_status
@@ -113,7 +113,7 @@ namespace
         const auto logical_path = rst::get_logical_path(_data_id);
 
         for (auto& json_replica : entry) {
-            const auto replica_number = std::stoi(json_replica.at("after").at("data_repl_num").get<std::string>());
+            const auto replica_number = std::stoi(json_replica.at("before").at("data_repl_num").get<std::string>());
 
             if (_replica_number == replica_number) {
                 continue;
@@ -143,7 +143,7 @@ namespace
         auto entry = rst::at(_data_id);
 
         for (auto& json_replica : entry) {
-            const auto replica_number = std::stoi(json_replica.at("after").at("data_repl_num").get<std::string>());
+            const auto replica_number = std::stoi(json_replica.at("before").at("data_repl_num").get<std::string>());
 
             irods::log(LOG_DEBUG, fmt::format(
                 "[{}:{}] - data_id:[{}], repl_num:[{}], status:[{}], target repl_num:[{}]",
@@ -188,7 +188,7 @@ namespace
             return 0;
         }
         catch (const irods::exception& e) {
-            irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, e.what()));
+            irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, e.client_display_what()));
             return e.code();
         }
         catch (const std::exception& e) {
@@ -243,7 +243,7 @@ namespace
             return 0;
         }
         catch (const irods::exception& e) {
-            irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, e.what()));
+            irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, e.client_display_what()));
             return e.code();
         }
         catch (const std::exception& e) {

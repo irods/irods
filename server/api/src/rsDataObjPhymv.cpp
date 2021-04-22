@@ -298,22 +298,6 @@ namespace
         return rsDataObjOpen(&_comm, &source_data_obj_inp);
     } // open_source_replica
 
-    auto finalize_source_replica(RsComm& _comm, l1desc& _l1desc, ir::replica_proxy_t& _info) -> int
-    {
-        irods::apply_metadata_from_cond_input(_comm, *_l1desc.dataObjInp);
-        irods::apply_acl_from_cond_input(_comm, *_l1desc.dataObjInp);
-
-        rst::erase(_info.data_id());
-
-        const int trim_status = dataObjUnlinkS(&_comm, _l1desc.dataObjInp, _info.get());
-
-        if ( trim_status < 0) {
-            irods::log(LOG_ERROR, fmt::format("[{}] - unlinking source replica failed with [{}]", __FUNCTION__, trim_status));
-        }
-
-        return trim_status;
-    } // finalize_source_replica
-
     DataObjInp init_destination_replica_input(RsComm& _comm, const DataObjInp& _inp)
     {
         DataObjInp destination_data_obj_inp = _inp;
@@ -415,14 +399,19 @@ namespace
 
     auto finalize_destination_replica(
         RsComm& _comm,
-        l1desc& _l1desc,
+        l1desc& _source_l1desc,
+        l1desc& _destination_l1desc,
         ir::replica_proxy_t& _source_replica,
         ir::replica_proxy_t& _destination_replica) -> int
     {
-        auto cond_input = irods::experimental::make_key_value_proxy(_l1desc.dataObjInp->condInput);
+        auto [source_replica, source_replica_lm] = ir::make_replica_proxy(
+            _source_replica.logical_path(),
+            rst::at(_source_replica.data_id(), _source_replica.replica_number(), rst::state_type::after));
+
+        auto cond_input = irods::experimental::make_key_value_proxy(_destination_l1desc.dataObjInp->condInput);
         try {
             constexpr bool verify_size = true;
-            const auto size_in_vault = irods::get_size_in_vault(_comm, *_destination_replica.get(), verify_size, _l1desc.dataSize);
+            const auto size_in_vault = irods::get_size_in_vault(_comm, *_destination_replica.get(), verify_size, _destination_l1desc.dataSize);
             if (size_in_vault < 0) {
                 THROW(size_in_vault, fmt::format(
                     "[{}:{}] - failed to get size in vault "
@@ -435,13 +424,15 @@ namespace
             _destination_replica.size(size_in_vault);
 
             if (!_destination_replica.checksum().empty()) {
-                const auto checksum = calculate_checksum(_comm, _l1desc, _source_replica, _destination_replica);
+                const auto checksum = calculate_checksum(_comm, _destination_l1desc, _source_replica, _destination_replica);
                 if (!checksum.empty()) {
                     cond_input[CHKSUM_KW] = checksum;
                 }
             }
         }
         catch (const irods::exception& e) {
+            rst::update(_destination_replica.data_id(), _destination_replica);
+
             const int ec = ill::unlock_and_publish(_comm,
                                                    _destination_replica.data_id(),
                                                    _destination_replica.replica_number(),
@@ -460,8 +451,49 @@ namespace
         }
 
         const auto source_replica_original_status = ill::get_original_replica_status(_source_replica.data_id(), _source_replica.replica_number());
+        const auto source_replica_number = _source_replica.replica_number();
+
+        const int trim_ec = dataObjUnlinkS(&_comm, _source_l1desc.dataObjInp, _source_replica.get());
+
+        if (trim_ec < 0) {
+            irods::log(LOG_WARNING, fmt::format(
+                "[{}:{}] - unlinking source replica failed "
+                "[error_code=[{}], path=[{}], hierarchy=[{}]]",
+                __FUNCTION__, __LINE__, trim_ec,
+                source_replica.logical_path(), source_replica.hierarchy()));
+
+            // If unlinking the source replica failed, move it to the next available replica number
+            // and mark it as a STALE_REPLICA when the object is unlocked.
+            const auto query_string = fmt::format(
+                "select max(DATA_REPL_NUM) where DATA_ID = '{}'", source_replica.data_id()
+            );
+
+            source_replica.replica_number(std::stoi(irods::query{&_comm, query_string}.front().at(0)) + 1);
+            source_replica.mtime(SET_TIME_TO_NOW_KW);
+            source_replica.status(nlohmann::json{{"original_status", std::to_string(STALE_REPLICA)}}.dump());
+
+            // The source replica information must be published to the catalog before unlocking because
+            // the destination replica is going to take on the replica number of the source replica.
+            // If the source replica has not been updated in the catalog at the point of publishing,
+            // a duplicate key constraint violation will occur. The last step of the unlinking
+            // process is unregistering from the catalog, so it is unlikely that the replica was
+            // successfully unregistered in the catalog. However, if the replica has been unregistered
+            // in the catalog, the replica_state_table (and subsequently the logical locking system)
+            // no longer reflects the state of the catalog and may lead to undesirable results when
+            // updating the catalog on unlock.
+            rst::update(source_replica.data_id(), source_replica);
+            rst::publish_to_catalog(_comm, source_replica.data_id(), -1, {});
+        }
+        else {
+            // The replica was unlinked and unregistered successfully, so remove the replica entry
+            // from the replica_state_table.
+            rst::erase(source_replica.data_id(), source_replica_number);
+        }
+
+        const auto original_destination_replica_number = _destination_replica.replica_number();
+
         _destination_replica.replica_status(source_replica_original_status);
-        _destination_replica.replica_number(_source_replica.replica_number());
+        _destination_replica.replica_number(source_replica_number);
         _destination_replica.ctime(_source_replica.ctime());
         _destination_replica.mtime(_source_replica.mtime());
 
@@ -469,7 +501,7 @@ namespace
 
         const auto unlock_ec = ill::unlock(
             _destination_replica.data_id(),
-            _destination_replica.replica_number(),
+            original_destination_replica_number,
             _destination_replica.replica_status(),
             ill::restore_status);
         if (unlock_ec < 0) {
@@ -488,27 +520,22 @@ namespace
                                                _destination_replica.resource(),
                                                irods::to_json(cond_input.get()));
 
-        if (CREATE_TYPE == _l1desc.openType) {
+        if (CREATE_TYPE == _destination_l1desc.openType) {
             updatequotaOverrun(_destination_replica.hierarchy().data(), _destination_replica.size(), ALL_QUOTA);
         }
 
         if (ec < 0) {
-            _l1desc.oprStatus = ec;
-
-            if (CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME != ec) {
-                l3Unlink(&_comm, _destination_replica.get());
-            }
-
-            irods::log(LOG_NOTICE, fmt::format(
-                "{}: RegReplica/ModDataObjMeta {} err. stat = {}",
-                __FUNCTION__, _destination_replica.logical_path(), ec));
+            irods::log(LOG_ERROR, fmt::format(
+                "[{}:{}] - failed to publish replica information to catalog "
+                "[error_code=[{}], path=[{}], hierarchy=[{}]]",
+                __FUNCTION__, __LINE__, ec, _destination_replica.logical_path(), _destination_replica.hierarchy()));
         }
 
         if (rst::contains(_destination_replica.data_id())) {
             rst::erase(_destination_replica.data_id());
         }
 
-        return ec;
+        return trim_ec < 0 ? trim_ec : ec;
     } // finalize_destination_replica
 
     int replicate_data(RsComm& _comm, DataObjInp& source_inp, DataObjInp& destination_inp, TransferStat** _stat)
@@ -547,8 +574,18 @@ namespace
         // Copy data from source to destination
         int status = dataObjCopy(&_comm, destination_l1descInx);
         if (status < 0) {
-            rodsLog(LOG_ERROR, "[%s] - dataObjCopy failed for [%s]", __FUNCTION__, destination_inp.objPath);
+            irods::log(LOG_ERROR, fmt::format(
+                "[{}:{}] - dataObjCopy failed "
+                "[error_code=[{}], path=[{}], source=[{}], destination=[{}]]",
+                __FUNCTION__, __LINE__, status,
+                destination_inp.objPath,
+                L1desc[source_l1descInx].dataObjInfo->rescHier,
+                L1desc[destination_l1descInx].dataObjInfo->rescHier));
+
+            L1desc[source_l1descInx].oprStatus = status;
+
             L1desc[destination_l1descInx].bytesWritten = status;
+            L1desc[destination_l1descInx].oprStatus = status;
         }
         else {
             L1desc[destination_l1descInx].bytesWritten = L1desc[destination_l1descInx].dataObjInfo->dataSize;
@@ -605,28 +642,6 @@ namespace
             rat::erase_pid(token, getpid());
         }
 
-        // finalize source replica
-        try {
-            if (const int ec = finalize_source_replica(_comm, source_fd, source_replica); ec < 0) {
-                irods::log(LOG_ERROR, fmt::format(
-                    "[{}:{}] - closing source replica [{}] failed with [{}]",
-                    __FUNCTION__, __LINE__, source_replica.logical_path(), ec));
-
-                if (status >= 0) {
-                    status = ec;
-                }
-            }
-        }
-        catch (const irods::exception& e) {
-            irods::log(LOG_ERROR, fmt::format(
-                "[{}:{}] - error finalizing replica; [{}], ec:[{}]",
-                __FUNCTION__, __LINE__, e.client_display_what(), e.code()));
-
-            if (status >= 0) {
-                status = e.code();
-            }
-        }
-
         if (destination_fd.bytesWritten < 0) {
             if (const auto ec = finalize_destination_replica_on_failure(_comm, destination_fd, destination_replica); ec < 0) {
                 irods::log(LOG_ERROR, fmt::format(
@@ -636,9 +651,12 @@ namespace
             return destination_fd.bytesWritten;
         }
 
-        // finalize destination replica
+        // Finalizing the destination replica is wrapped up in finalizing the source replica.
+        // If something goes wrong with finalizing the destination replica, the source replica
+        // will not be unlinked and if something goes wrong with unlinking the source replica
+        // this will affect how the data object is finalized.
         try {
-            if (const int ec = finalize_destination_replica(_comm, destination_fd, source_replica, destination_replica); ec < 0) {
+            if (const int ec = finalize_destination_replica(_comm, source_fd, destination_fd, source_replica, destination_replica); ec < 0) {
                 irods::log(LOG_ERROR, fmt::format(
                     "[{}:{}] - closing destination replica [{}] failed with [{}]",
                     __FUNCTION__, __LINE__, destination_replica.logical_path(), ec));
