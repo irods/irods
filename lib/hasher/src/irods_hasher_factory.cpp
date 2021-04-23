@@ -18,8 +18,7 @@ namespace irods {
         const MD5Strategy _md5;
         const SHA1Strategy _sha1;
 
-        boost::unordered_map<const std::string, const HashStrategy*>
-        make_map() {
+        auto make_map() {
             boost::unordered_map<const std::string, const HashStrategy*> map;
             map[ SHA256_NAME ] = &_sha256;
             map[ SHA512_NAME ] = &_sha512;
@@ -29,12 +28,14 @@ namespace irods {
             return map;
         }
 
-        const boost::unordered_map<const std::string, const HashStrategy*> _strategies( make_map() );
     };
 
     error
     getHasher( const std::string& _name, Hasher& _hasher ) {
-        boost::unordered_map<const std::string, const HashStrategy*>::const_iterator it = _strategies.find( _name );
+
+        const auto _strategies{ make_map() };
+
+        auto it = _strategies.find( _name );
         if ( _strategies.end() == it ) {
             std::stringstream msg;
             msg << "Unknown hashing scheme [" << _name << "]";
@@ -48,15 +49,17 @@ namespace irods {
     get_hash_scheme_from_checksum(
         const std::string& _chksum,
         std::string&       _scheme ) {
+
+        const auto _strategies{ make_map() };
+
         if ( _chksum.empty() ) {
             return ERROR(
                        SYS_INVALID_INPUT_PARAM,
                        "empty chksum string" );
         }
-        for ( boost::unordered_map<const std::string, const HashStrategy*>::const_iterator it = _strategies.begin();
-                _strategies.end() != it; ++it ) {
-            if ( it->second->isChecksum( _chksum ) ) {
-                _scheme = it->second->name();
+        for ( const auto& [key, strategy] : _strategies) {
+            if ( strategy->isChecksum( _chksum ) ) {
+                _scheme = strategy->name();
                 return SUCCESS();
             }
         }
