@@ -75,8 +75,7 @@ struct RsComm;
 ///             }
 ///         },
 ///         ...
-///     ],
-///     "ref_count": <int>
+///     ]
 /// }
 /// \endcode
 ///
@@ -84,11 +83,6 @@ struct RsComm;
 ///     - "before" refers to the replica as it appeared in the catalog on open
 ///     - "after" refers to the current state of the replica (may or may not be representative of the catalog state)
 ///     - "file_modified" (OPTIONAL) is a set of key-value pairs which are used in the fileModified plugin operation
-///
-/// - "ref_count" refers to the number of open file descriptors which are currently referring to this entry.
-///   As long as the ref_count is above 1, erase() will not remove the entry from the table but will only
-///   decrease the count. For this reason, opening multiple replicas of the same data object in the same
-///   agent is considered an advanced maneuver.
 ///
 /// Each entry uses the data_id (std::uint64_t) for the represented data object as the key into the map.
 ///
@@ -122,8 +116,7 @@ namespace irods::replica_state_table
 
     /// \brief Create a new entry in the replica_state_table
     ///
-    /// If the specified object already exists in the replica state table, the ref_count is increased
-    /// by one.
+    /// If the specified object already exists in the replica state table, nothing happens.
     ///
     /// \param[in] _obj Initial data object state to serve as both "before" and "after" at the start
     ///
@@ -135,8 +128,7 @@ namespace irods::replica_state_table
 
     /// \brief Create a new replica in an existing entry in the replica_state_table
     ///
-    /// If the specified object already exists in the replica state table, the ref_count is increased
-    /// by one.
+    /// If the specified object already exists in the replica state table, nothing happens.
     ///
     /// \param[in] _replica Initial replica state to serve as both "before" and "after" at the start
     ///
@@ -154,6 +146,26 @@ namespace irods::replica_state_table
     ///
     /// \since 4.2.9
     auto erase(const key_type& _key) -> void;
+
+    /// \brief Erase replica from the replica_state_table entry indicated by _key and _leaf_resource_name
+    ///
+    /// \param[in] _key
+    /// \param[in] _leaf_resource_name
+    ///
+    /// \throws irods::exception If no key matches _key
+    ///
+    /// \since 4.2.9
+    auto erase(const key_type& _key, const std::string_view _leaf_resource_name) -> void;
+
+    /// \brief Erase replica from the replica_state_table entry indicated by _key and _replica_number
+    ///
+    /// \param[in] _key
+    /// \param[in] _replica_number
+    ///
+    /// \throws irods::exception If no key matches _key
+    ///
+    /// \since 4.2.9
+    auto erase(const key_type& _key, const int _replica_number) -> void;
 
     /// \brief Returns whether or not an entry in the replica state table keys on the provided logical path
     ///

@@ -216,6 +216,9 @@ namespace {
         destination_replica.resource(_resc_name);
         destination_replica.hierarchy(phy_path_reg_cond_input.at(RESC_HIER_STR_KW).value());
 
+        // Set data_status to an empty string so that the replica status is not misleadingly labeled.
+        destination_replica.status("{}");
+
         rodsLong_t resc_id{};
         if (const auto ret = resc_mgr.hier_to_leaf_id(destination_replica.hierarchy().data(), resc_id); !ret.ok()) {
             irods::log(PASS(ret));
@@ -245,6 +248,7 @@ namespace {
 
         // Indicates whether data movement is expected
         if (phy_path_reg_cond_input.contains(REGISTER_AS_INTERMEDIATE_KW)) {
+            destination_replica.replica_status(INTERMEDIATE_REPLICA);
             reg_replica_cond_input[REGISTER_AS_INTERMEDIATE_KW] = "";
         }
 
