@@ -49,13 +49,6 @@ namespace irods::replica_state_table
             return _o.data_id();
         } // get_key
 
-        // convenience function for accessing the ref_count
-        // NOTE: no lock acquisition
-        auto get_ref_count(const key_type& _key) -> int
-        {
-            return replica_state_json_map.at(_key).at("ref_count");
-        } // get_ref_count
-
         auto index_of(const key_type& _key, const int _replica_number) -> int
         {
             std::scoped_lock rst_lock{rst_mutex};
@@ -83,9 +76,11 @@ namespace irods::replica_state_table
             if (std::end(replica_state_json_map) != replica_state_json_map.find(_key)) {
                 int index = -1;
 
+                irods::log(LOG_DEBUG9, fmt::format("[{}:{}] - entry:[{}]", __FUNCTION__, __LINE__, replica_state_json_map.at(_key).dump()));
+
                 for (const auto& e : replica_state_json_map.at(_key).at(REPLICAS_KW)) {
                     ++index;
-                    if (_leaf_resource_id == std::stoi(e.at(BEFORE_KW).at("resc_id").get<std::string>())) {
+                    if (_leaf_resource_id == std::stol(e.at(BEFORE_KW).at("resc_id").get<std::string>())) {
                         return index;
                     }
                 }
@@ -212,9 +207,6 @@ namespace irods::replica_state_table
 
             if (std::end(replica_state_json_map) != replica_state_json_map.find(key)) {
                 irods::log(LOG_DEBUG, fmt::format("[{}:{}] - entry exists;path:[{}]", __FUNCTION__, __LINE__, _obj.logical_path()));
-
-                replica_state_json_map.at(key)["ref_count"] = get_ref_count(key) + 1;
-
                 return 0;
             }
 
@@ -231,8 +223,7 @@ namespace irods::replica_state_table
 
             const json entry{
                 {REPLICAS_KW, replica_list},
-                {"logical_path", _obj.logical_path()},
-                {"ref_count", 1}
+                {"logical_path", _obj.logical_path()}
             };
 
             irods::log(LOG_DEBUG9, fmt::format("[{}:{}] - entry:[{}]", __FUNCTION__, __LINE__, entry.dump()));
@@ -263,13 +254,14 @@ namespace irods::replica_state_table
             const auto json_replica = ir::to_json(_replica);
 
             auto& entry = replica_state_json_map.at(key);
-            entry["ref_count"] = get_ref_count(key) + 1;
             entry.at(REPLICAS_KW).push_back(
                 {
                     {BEFORE_KW, json_replica},
                     {AFTER_KW, json_replica}
                 }
             );
+
+            irods::log(LOG_DEBUG9, fmt::format("[{}:{}] - entry:[{}]", __FUNCTION__, __LINE__, entry.dump()));
 
             return 0;
         }
@@ -282,20 +274,37 @@ namespace irods::replica_state_table
 
     auto erase(const key_type& _key) -> void
     {
-        std::scoped_lock rst_lock{rst_mutex};
-
-        if (std::end(replica_state_json_map) == replica_state_json_map.find(_key)) {
+        if (!contains(_key)) {
             THROW(KEY_NOT_FOUND, fmt::format(
                 "[{}:{}] - no key found for [{}]",
                 __FUNCTION__, __LINE__, _key));
         }
 
-        if (const auto ref_count = get_ref_count(_key); ref_count > 1) {
-            replica_state_json_map.at(_key)["ref_count"] = ref_count - 1;
-        }
-        else {
-            replica_state_json_map.erase(_key);
-        }
+        std::scoped_lock rst_lock{rst_mutex};
+
+        replica_state_json_map.erase(_key);
+    } // erase
+
+    auto erase(const key_type& _key, const std::string_view _leaf_resource_name) -> void
+    {
+        const auto replica_index = index_of(_key, _leaf_resource_name);
+
+        std::scoped_lock rst_lock{rst_mutex};
+
+        auto& entry = replica_state_json_map.at(_key).at(REPLICAS_KW);
+
+        return entry.erase(replica_index);
+    } // erase
+
+    auto erase(const key_type& _key, const int _replica_number) -> void
+    {
+        const auto replica_index = index_of(_key, _replica_number);
+
+        std::scoped_lock rst_lock{rst_mutex};
+
+        auto& entry = replica_state_json_map.at(_key).at(REPLICAS_KW);
+
+        return entry.erase(replica_index);
     } // erase
 
     auto contains(const key_type& _key) -> bool

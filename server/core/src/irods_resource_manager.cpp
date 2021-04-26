@@ -153,6 +153,10 @@ namespace irods
         // simple flag to state a resource matching the prop and value is found
         bool found = false;
 
+        if (!_svr_host) {
+            return ERROR(USER__NULL_INPUT_ERR, "empty server host");
+        }
+
         // =-=-=-=-=-=-=-
         // quick check on the resource table
         if ( resource_name_map_.empty() ) {

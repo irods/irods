@@ -2945,6 +2945,8 @@ irods::error db_reg_replica_op(
 //        int IX_RESC_GROUP_NAME = 7; /* index into theColls */
     const int IX_RESC_ID = 10;
     const int IX_DATA_PATH = 11;    /* index into theColls */
+    const int IX_REPLICA_STATUS = 14;
+    const int IX_DATA_STATUS = 15;
 
     const int IX_DATA_MODE = 19;
     const int IX_CREATE_TS = 21;
@@ -3045,6 +3047,20 @@ irods::error db_reg_replica_op(
     cVal[IX_RESC_ID]       = (char*)resc_id_str.c_str();
     cVal[IX_DATA_PATH]       = _dst_data_obj_info->filePath;
     cVal[IX_DATA_MODE]       = _dst_data_obj_info->dataMode;
+
+    // The caller has requested that the replica be registered as intermediate. This
+    // means that the replica will be written or changed at a future time. Otherwise,
+    // the replica will take the replica status of the source replica. The const must
+    // be cast away due to cVal being a char*[] and not a const char*[].
+    char* intermediate_replica_status = const_cast<char*>(std::to_string(INTERMEDIATE_REPLICA).data());
+    if (getValByKey(_cond_input, REGISTER_AS_INTERMEDIATE_KW)) {
+        cVal[IX_REPLICA_STATUS] = intermediate_replica_status;
+    }
+
+    // data_status tracks replica status for logical locking - this is a new replica,
+    // so make sure the data_status column is empty at registration time.
+    std::snprintf(_dst_data_obj_info->statusString, NAME_LEN, "");
+    cVal[IX_DATA_STATUS] = _dst_data_obj_info->statusString;
 
     getNowStr( myTime );
     cVal[IX_MODIFY_TS] = myTime;

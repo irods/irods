@@ -255,9 +255,6 @@ TEST_CASE("replica state table", "[basic]")
             CHECK(before.replica_number() == original_replica.replica_number());
             CHECK(before.size()           == original_replica.size());
         }
-
-        CHECK_NOTHROW(rst::erase(DATA_ID_2));
-        CHECK_FALSE(rst::contains(DATA_ID_2));
     }
 
     SECTION("insert replica for existing entry")
@@ -277,16 +274,14 @@ TEST_CASE("replica state table", "[basic]")
         CHECK(REPLICA_COUNT + 1 == rst::at(proxy.data_id()).size());
         CHECK(REPL_NUM == std::stoi(rst::get_property(proxy.data_id(), REPL_NUM, "data_repl_num")));
 
-        CHECK_NOTHROW(rst::erase(DATA_ID_1));
-        CHECK(rst::contains(DATA_ID_1));
-    }
+        SECTION("erase entry for existing entry")
+        {
+            REQUIRE_NOTHROW(rst::erase(DATA_ID_1, proxy.replica_number()));
 
-    SECTION("test ref_count")
-    {
-        REQUIRE(rst::contains(DATA_ID_1));
-        REQUIRE(0 == rst::insert(obj));
-        CHECK_NOTHROW(rst::erase(DATA_ID_1));
-        CHECK(rst::contains(DATA_ID_1));
+            REQUIRE(rst::contains(proxy.data_id()));
+            CHECK(REPLICA_COUNT == rst::at(proxy.data_id()).size());
+            CHECK(!rst::contains(proxy.data_id(), proxy.replica_number()));
+        }
     }
 
     CHECK_NOTHROW(rst::erase(DATA_ID_1));
