@@ -1065,7 +1065,7 @@ namespace
             auto& l1desc = L1desc[l1descInx];
             irods::log(LOG_DEBUG, fmt::format(
                 "[{}:{}] - opened replica "
-                "[fd=[{}], path=[{}], hierarchy=[{}], replica_status=[{}], replica_token=[{}]] ",
+                "[fd=[{}], path=[{}], hierarchy=[{}], replica_status=[{}], replica_token=[{}]] "
                 "[id=[{}], path=[{}], hierarchy=[{}], replica_status=[{}]]",
                 __FUNCTION__, __LINE__,
                 l1descInx,
