@@ -238,6 +238,12 @@ set_source_files_properties(
   )
 
 configure_file(
+  ${CMAKE_SOURCE_DIR}/lib/core/include/irods_default_paths.hpp.in
+  ${CMAKE_BINARY_DIR}/lib/core/include/irods_default_paths.hpp
+  @ONLY
+  )
+
+configure_file(
   ${CMAKE_SOURCE_DIR}/lib/core/include/rodsVersion.h.in
   ${CMAKE_BINARY_DIR}/lib/core/include/rodsVersion.h
   @ONLY
