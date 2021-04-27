@@ -40,6 +40,24 @@ INPUT *File="{logical_path_to_tar_file}", *Coll="{logical_path_to_untar_coll}", 
 OUTPUT ruleExecOut
 '''
 
+#===== Test_Dynamic_PEPs =====
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Dynamic_PEPs'] = {}
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Dynamic_PEPs']['test_data_obj_info_parameters_in_pep_database_reg_data_obj_post__issue_5554'] = '''
+pep_database_reg_data_obj_post(*INSTANCE, *CONTEXT, *OUT, *DATA_OBJ_INFO) {{
+    *logical_path = *DATA_OBJ_INFO.logical_path;
+    *create_time = *DATA_OBJ_INFO.data_create;
+    *owner_name = *DATA_OBJ_INFO.data_owner_name;
+    *owner_zone = *DATA_OBJ_INFO.data_owner_zone;
+
+    msiAddKeyVal(*key_val_pair,'{attribute}::{path_attr}',         '*logical_path');
+    msiAddKeyVal(*key_val_pair,'{attribute}::{create_time_attr}',  '*create_time');
+    msiAddKeyVal(*key_val_pair,'{attribute}::{owner_name_attr}',   '*owner_name');
+    msiAddKeyVal(*key_val_pair,'{attribute}::{owner_zone_attr}',   '*owner_zone');
+
+    msiAssociateKeyValuePairsToObj(*key_val_pair,'{resource}','-R');
+}}
+'''
+
 #===== Test_ICommands_File_Operations =====
 
 rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_ICommands_File_Operations'] = {}
