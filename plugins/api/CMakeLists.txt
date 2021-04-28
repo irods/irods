@@ -382,6 +382,7 @@ foreach(PLUGIN ${IRODS_API_PLUGINS})
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
     ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
     ${OPENSSL_CRYPTO_LIBRARY}
+    Threads::Threads
     )
 
   target_compile_definitions(${PLUGIN} PRIVATE ${IRODS_API_PLUGIN_COMPILE_DEFINITIONS_${PLUGIN}} ${IRODS_COMPILE_DEFINITIONS})
