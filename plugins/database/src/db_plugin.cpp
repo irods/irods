@@ -8954,7 +8954,7 @@ irods::error db_set_avu_metadata_op(
     }
 
     /* Only one metaId for this Attribute and Object has been found, and the metaID is not shared */
-    rodsLog( LOG_NOTICE, "chlSetAVUMetadata found metaId %s", metaIdStr );
+    rodsLog( LOG_DEBUG, "chlSetAVUMetadata found metaId %s", metaIdStr );
 
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "chlSetAVUMetadata SQL 4" );
