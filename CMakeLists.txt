@@ -58,6 +58,13 @@ endif()
 
 set(CMAKE_CXX_STANDARD 17)
 set(IRODS_CXX_STANDARD "${CMAKE_CXX_STANDARD}")
+# export-dynamic so stacktrace entries from executables have function names
+set(CMAKE_EXE_LINKER_FLAGS_INIT "-Wl,--export-dynamic -Wl,--enable-new-dtags -Wl,--as-needed -Wl,-z,defs")
+set(CMAKE_MODULE_LINKER_FLAGS_INIT "-Wl,--enable-new-dtags -Wl,--as-needed -Wl,-z,defs")
+set(CMAKE_SHARED_LINKER_FLAGS_INIT "-Wl,--enable-new-dtags -Wl,--as-needed -Wl,-z,defs")
+set(CMAKE_EXE_LINKER_FLAGS_RELEASE_INIT "-Wl,--gc-sections -Wl,-z,combreloc")
+set(CMAKE_MODULE_LINKER_FLAGS_RELEASE_INIT "-Wl,--gc-sections -Wl,-z,combreloc")
+set(CMAKE_SHARED_LINKER_FLAGS_RELEASE_INIT "-Wl,--gc-sections -Wl,-z,combreloc")
 
 set(IRODS_VERSION_MAJOR "4")
 set(IRODS_VERSION_MINOR "2")
@@ -74,10 +81,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 include(${CMAKE_SOURCE_DIR}/cmake/InstallDirs.cmake)
 
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+set(CMAKE_SKIP_INSTALL_RPATH FALSE)
+set(CMAKE_SKIP_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--export-dynamic -pthread") # export-dynamic so stacktrace entries from executables have function names
-set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,-z,defs -pthread")
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,defs -pthread")
 add_compile_options(-Wall -Wextra -Werror -Wno-unused-function -Wno-unused-parameter)
 
 if (IRODS_DISABLE_COMPILER_OPTIMIZATIONS)
@@ -97,7 +104,10 @@ endif()
 
 include_directories(${IRODS_EXTERNALS_FULLPATH_JSON}/include)
 
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package(Threads REQUIRED)
+
 find_package(OpenSSL REQUIRED)
 if (NOT PAM_LIBRARY)
   find_library(PAM_LIBRARY pam)
@@ -633,7 +643,7 @@ target_link_libraries(
   ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
   ${OPENSSL_SSL_LIBRARY}
   ${OPENSSL_CRYPTO_LIBRARY}
-  ${CMAKE_THREAD_LIBS_INIT}
+  Threads::Threads
   )
 target_include_directories(
   irods_client
@@ -916,7 +926,7 @@ target_link_libraries(
   ${OPENSSL_CRYPTO_LIBRARY}
   ${CMAKE_DL_LIBS}
   rt
-  ${CMAKE_THREAD_LIBS_INIT}
+  Threads::Threads
   )
 target_include_directories(
   irods_server
@@ -1024,6 +1034,7 @@ target_link_libraries(
   ${OPENSSL_SSL_LIBRARY}
   ${OPENSSL_CRYPTO_LIBRARY}
   ${CMAKE_DL_LIBS}
+  Threads::Threads
   rt
   )
 target_include_directories(
@@ -1286,7 +1297,7 @@ foreach(EXECUTABLE ${IRODS_MAIN_EXECUTABLES})
     ${OPENSSL_CRYPTO_LIBRARY}
     ${OPENSSL_SSL_LIBRARY}
     rt
-    ${CMAKE_THREAD_LIBS_INIT}
+    Threads::Threads
     ${CMAKE_DL_LIBS}
     m
     )
@@ -1333,7 +1344,7 @@ target_link_libraries(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so
   ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
   rt
-  ${CMAKE_THREAD_LIBS_INIT}
+  Threads::Threads
   ${CMAKE_DL_LIBS}
   m
   )
