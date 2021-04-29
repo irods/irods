@@ -1,7 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* See dataObjTrim.h for a description of this API call.*/
-
 #include "dataObjTrim.h"
 #include "dataObjUnlink.h"
 #include "dataObjOpr.hpp"
@@ -19,10 +15,16 @@
 #include "irods_hierarchy_parser.hpp"
 #include "irods_at_scope_exit.hpp"
 #include "irods_linked_list_iterator.hpp"
+#include "logical_locking.hpp"
+
+#include "fmt/format.h"
 
 #include <tuple>
 
-namespace {
+namespace
+{
+    namespace ill = irods::logical_locking;
+
     dataObjInfo_t convert_physical_object_to_dataObjInfo_t(const irods::physical_object obj) {
         dataObjInfo_t info{};
 
@@ -90,31 +92,36 @@ namespace {
         }
     }
 
-    std::vector<irods::physical_object> get_replica_list(
-        rsComm_t *rsComm,
-        dataObjInp_t& dataObjInp) {
+    auto get_data_object_info(rsComm_t *rsComm, dataObjInp_t& dataObjInp) -> std::tuple<irods::file_object_ptr, DataObjInfo*>
+    {
+        DataObjInfo* info{};
         if (!getValByKey(&dataObjInp.condInput, RESC_HIER_STR_KW)) {
-            auto result = irods::resolve_resource_hierarchy(irods::UNLINK_OPERATION, rsComm, dataObjInp);
+            auto result = irods::resolve_resource_hierarchy(irods::UNLINK_OPERATION, rsComm, dataObjInp, &info);
             auto file_obj = std::get<irods::file_object_ptr>(result);
-            return file_obj->replicas();
+            return {file_obj, info};
         }
         else {
             irods::file_object_ptr file_obj( new irods::file_object() );
-            irods::error fac_err = irods::file_object_factory(rsComm, &dataObjInp, file_obj);
+            irods::error fac_err = irods::file_object_factory(rsComm, &dataObjInp, file_obj, &info);
             if (!fac_err.ok()) {
                 THROW(fac_err.code(), "file_object_factory failed");
             }
-            return file_obj->replicas();
+            return {file_obj, info};
         }
-    }
+    } // get_data_object_info
 
-    std::vector<irods::physical_object> get_list_of_replicas_to_trim(
+    auto get_list_of_replicas_to_trim(
         dataObjInp_t& _inp,
-        const std::vector<irods::physical_object>& _list) {
+        const irods::file_object_ptr _obj,
+        const DataObjInfo& _info)
+    {
+        const auto& list = _obj->replicas();
+
         std::vector<irods::physical_object> trim_list;
-        const unsigned long good_replica_count = std::count_if(_list.begin(), _list.end(),
+
+        const unsigned long good_replica_count = std::count_if(list.begin(), list.end(),
             [](const auto& repl) {
-                return (repl.replica_status() & 0x0F) == GOOD_REPLICA;
+                return GOOD_REPLICA == repl.replica_status();
             });
 
         const auto minimum_replica_count = get_minimum_replica_count(getValByKey(&_inp.condInput, COPIES_KW));
@@ -128,19 +135,33 @@ namespace {
         if (repl_num) {
             try {
                 const auto num = std::stoi(repl_num);
-                const auto repl = std::find_if(_list.begin(), _list.end(),
+
+                const auto repl = std::find_if(list.begin(), list.end(),
                     [&num](const auto& repl) {
                         return num == repl.repl_num();
                     });
-                if (repl == _list.end()) {
+
+                if (repl == list.end()) {
                     THROW(SYS_REPLICA_DOES_NOT_EXIST, "target replica does not exist");
                 }
+
+                if (const auto ret = ill::try_lock(_info, ill::lock_type::write, num); ret < 0) {
+                    const auto msg = fmt::format(
+                        "trim not allowed because data object is locked "
+                        "[path=[{}], hierarchy=[{}]]",
+                        _obj->logical_path(), repl->resc_hier());
+
+                    THROW(ret, msg);
+                }
+
                 if (expired(*repl)) {
                     THROW(USER_INCOMPATIBLE_PARAMS, "target replica is not old enough for removal");
                 }
-                if (good_replica_count <= minimum_replica_count && (repl->replica_status() & 0x0F) == GOOD_REPLICA) {
+
+                if (good_replica_count <= minimum_replica_count && GOOD_REPLICA == repl->replica_status()) {
                     THROW(USER_INCOMPATIBLE_PARAMS, "cannot remove the last good replica");
                 }
+
                 trim_list.push_back(*repl);
                 return trim_list;
             }
@@ -154,13 +175,24 @@ namespace {
             }
         }
 
+        // Do not try the lock for a replica specified by RESC_NAME_KW because it could
+        // be referring to a root resource which would not be a particular replica but
+        // potentially a number of different replicas.
+        if (const auto ret = ill::try_lock(_info, ill::lock_type::write); ret < 0) {
+            const auto msg = fmt::format(
+                "trim not allowed because data object is locked [path=[{}]]",
+                _obj->logical_path());
+
+            THROW(ret, msg);
+        }
+
         const char* resc_name = getValByKey(&_inp.condInput, RESC_NAME_KW);
         const auto matches_target_resource = [&resc_name](const irods::physical_object& obj) {
             return resc_name && irods::hierarchy_parser{obj.resc_hier()}.first_resc() == resc_name;
         };
 
         // Walk list and add stale replicas to the list
-        for (const auto& obj : _list) {
+        for (const auto& obj : list) {
             if ((obj.replica_status() & 0x0F) == STALE_REPLICA) {
                 if (expired(obj) || (resc_name && !matches_target_resource(obj))) {
                     continue;
@@ -174,7 +206,7 @@ namespace {
 
         // If we have not reached the minimum count, walk list again and add good replicas
         unsigned long good_replicas_to_be_trimmed = 0;
-        for (const auto& obj : _list) {
+        for (const auto& obj : list) {
             if ((obj.replica_status() & 0x0F) == GOOD_REPLICA) {
                 if (expired(obj) || (resc_name && !matches_target_resource(obj))) {
                     continue;
@@ -238,11 +270,23 @@ int rsDataObjTrim(
             repl_num_str = repl_num;
             rmKeyVal(&dataObjInp->condInput, REPL_NUM_KW);
         }
-        const std::vector<irods::physical_object> repl_list = get_replica_list(rsComm, *dataObjInp);
+
+        const auto [file_obj, info] = get_data_object_info(rsComm, *dataObjInp);
+
+        if (!info) {
+            irods::log(LOG_ERROR, fmt::format(
+                "[{}:{}] - DataObjInfo is null without an error from API",
+                __FUNCTION__, __LINE__));
+
+            return SYS_INTERNAL_ERR;
+        }
+
         if (!repl_num_str.empty()) {
             addKeyVal(&dataObjInp->condInput, REPL_NUM_KW, repl_num_str.c_str());
         }
-        const auto trim_list = get_list_of_replicas_to_trim(*dataObjInp, repl_list);
+
+        const auto trim_list = get_list_of_replicas_to_trim(*dataObjInp, file_obj, *info);
+
         for (const auto& obj : trim_list) {
             if (getValByKey(&dataObjInp->condInput, DRYRUN_KW)) {
                 retVal = 1;
@@ -266,7 +310,7 @@ int rsDataObjTrim(
         return USER_INCOMPATIBLE_PARAMS;
     }
     catch (const irods::exception& e) {
-        irods::log(LOG_NOTICE, e.what());
+        irods::log(LOG_NOTICE, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, e.client_display_what()));
         return e.code();
     }
     return retVal;

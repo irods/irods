@@ -1,7 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* rsDataObjRename.c - rename a data object.
- */
 #include "dataObjRename.h"
 #include "objMetaOpr.hpp"
 #include "dataObjOpr.hpp"
@@ -38,15 +34,22 @@
 #include "irods_resource_redirect.hpp"
 #include "irods_configuration_keywords.hpp"
 #include "irods_re_structs.hpp"
+#include "key_value_proxy.hpp"
+#include "logical_locking.hpp"
 #include "scoped_privileged_client.hpp"
 
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 #include "filesystem.hpp"
 
+#include "fmt/format.h"
+
 #include <chrono>
 
 namespace
 {
+    namespace fs = irods::experimental::filesystem;
+    namespace ill = irods::logical_locking;
+
     int _rsDataObjRename(
             rsComm_t *rsComm,
             dataObjCopyInp_t *dataObjRenameInp) {
@@ -88,6 +91,8 @@ namespace
 
         srcDataObjInp = &dataObjRenameInp->srcDataObjInp;
         destDataObjInp = &dataObjRenameInp->destDataObjInp;
+        auto source_cond_input = irods::experimental::make_key_value_proxy(srcDataObjInp->condInput);
+        auto destination_cond_input = irods::experimental::make_key_value_proxy(destDataObjInp->condInput);
 
         // Separate source collection/object names and destination collection/object names
         if ( ( status = splitPathByKey(
@@ -126,19 +131,41 @@ namespace
         }
         else {
             if ( ( status = isData( rsComm, srcDataObjInp->objPath, &srcId ) ) >= 0 ) {
-                if ( isData( rsComm, destDataObjInp->objPath, &destId ) >= 0 &&
-                        getValByKey( &srcDataObjInp->condInput, FORCE_FLAG_KW ) != NULL ) {
-                    /* dest exist */
-                    rsDataObjUnlink( rsComm, destDataObjInp );
-                }
                 srcDataObjInp->oprType = destDataObjInp->oprType = RENAME_DATA_OBJ;
                 status = getDataObjInfo( rsComm, srcDataObjInp, &dataObjInfoHead, ACCESS_DELETE_OBJECT, 0 );
-
                 if ( status < 0 ) {
                     rodsLog( LOG_ERROR,
                             "%s: src data %s does not exist, status = %d",
                             __FUNCTION__, srcDataObjInp->objPath, status );
                     return status;
+                }
+
+                if (const auto ret = ill::try_lock(*dataObjInfoHead, ill::lock_type::write); ret < 0) {
+                    const auto msg = fmt::format(
+                        "rename not allowed because source data object is locked "
+                        "[error code=[{}], source path=[{}]",
+                        ret, srcDataObjInp->objPath);
+
+                    irods::log(LOG_NOTICE, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
+
+                    return ret;
+                }
+
+                const auto force_flag_provided = source_cond_input.contains(FORCE_FLAG_KW) || destination_cond_input.contains(FORCE_FLAG_KW);
+                if (isData(rsComm, destDataObjInp->objPath, &destId) >= 0 && force_flag_provided) {
+                    // The force flag ensures that unlink will not send the object to the trash.
+                    destination_cond_input[FORCE_FLAG_KW] = "";
+
+                    if (const auto ec = rsDataObjUnlink(rsComm, destDataObjInp); ec < 0) {
+                        const auto msg = fmt::format(
+                            "failed to unlink destination data object for overwrite via rename "
+                            "[error code=[{}], source path=[{}], destination path=[{}]]",
+                            ec, srcDataObjInp->objPath, destDataObjInp->objPath);
+
+                        irods::log(LOG_NOTICE, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
+
+                        return ec;
+                    }
                 }
             }
             else if ( ( status = isColl( rsComm, srcDataObjInp->objPath, &srcId ) ) >= 0 ) {
@@ -407,8 +434,6 @@ int rsDataObjRename(rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
 
     // Update the mtime of the parent collections.
     if (ec == 0) {
-        namespace fs = irods::experimental::filesystem;
-
         const auto src_parent_path = fs::path{dataObjRenameInp->srcDataObjInp.objPath}.parent_path();
         const auto dst_parent_path = fs::path{dataObjRenameInp->destDataObjInp.objPath}.parent_path();
 
