@@ -8,6 +8,8 @@
 #include "dataObjWrite.h"
 #include "irods_query.hpp"
 #include "irods_at_scope_exit.hpp"
+#include "key_value_proxy.hpp"
+#include "modDataObjMeta.h"
 
 #include <fmt/format.h>
 #include <json.hpp>
@@ -50,6 +52,24 @@ TEST_CASE("replica_open and replica_close")
 
     const auto fd = rc_replica_open(conn_ptr, &input, &json_output);
     REQUIRE(fd >= 3);
+
+    const auto unlock_replica = irods::at_scope_exit{[&]
+    {
+        ModDataObjMetaInp mod_meta_inp{};
+
+        DataObjInfo info{};
+        std::snprintf(info.objPath, MAX_NAME_LEN, "%s", path.c_str());
+        info.replNum = 0;
+
+        auto [kvp, lm] = irods::experimental::make_key_value_proxy();
+        kvp[REPL_STATUS_KW] = std::to_string(STALE_REPLICA);
+        kvp[ADMIN_KW] = "";
+
+        mod_meta_inp.regParam = kvp.get();
+        mod_meta_inp.dataObjInfo = &info;
+
+        REQUIRE(0 == rcModDataObjMeta(conn_ptr, &mod_meta_inp));
+    }};
 
     SECTION("replica size")
     {
