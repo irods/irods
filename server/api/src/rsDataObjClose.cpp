@@ -451,34 +451,34 @@ namespace
         auto r = ir::make_replica_proxy(*l1desc.dataObjInfo);
 
         try {
-            if (PUT_OPR == l1desc.oprType) {
-                if (REG_CHKSUM == l1desc.chksumFlag || VERIFY_CHKSUM == l1desc.chksumFlag) {
-                    // Update the replica proxy's checksum value so that if an exception is thrown,
-                    // the checksum value will still be stored in the catalog.
-                    r.checksum(irods::register_new_checksum(_comm, *r.get(), l1desc.chksum));
-                    rst::update(r.data_id(), r);
-
-                    if (VERIFY_CHKSUM == l1desc.chksumFlag) {
-                        rodsLog(LOG_DEBUG,
-                                "[%s:%d] Verifying checksum [calculated_checksum=%s, checksum_from_client=%s, path=%s, replica_number=%d] ...",
-                                __func__, __LINE__, r.checksum().data(), l1desc.chksum, r.logical_path().data(), r.replica_number());
-
-                        if (r.checksum() != l1desc.chksum) {
-                            THROW(USER_CHKSUM_MISMATCH, fmt::format("[{}:{}] Mismatch checksum for {}.inp={}, compute {}",
-                                  __FUNCTION__, __LINE__, r.logical_path(), l1desc.chksum, r.checksum()));
-                        }
-                    }
-
-                    // Copy the new checksum value into the conditional input so that file modified is triggered.
-                    cond_input[CHKSUM_KW] = r.checksum();
-                }
-
-                return;
-            }
-
             const auto size_should_be_verified = !getValByKey(&l1desc.dataObjInp->condInput, NO_CHK_COPY_LEN_KW);
 
             if (size_should_be_verified) {
+                if (PUT_OPR == l1desc.oprType) {
+                    if (REG_CHKSUM == l1desc.chksumFlag || VERIFY_CHKSUM == l1desc.chksumFlag) {
+                        // Update the replica proxy's checksum value so that if an exception is thrown,
+                        // the checksum value will still be stored in the catalog.
+                        r.checksum(irods::register_new_checksum(_comm, *r.get(), l1desc.chksum));
+                        rst::update(r.data_id(), r);
+
+                        if (VERIFY_CHKSUM == l1desc.chksumFlag) {
+                            rodsLog(LOG_DEBUG,
+                                    "[%s:%d] Verifying checksum [calculated_checksum=%s, checksum_from_client=%s, path=%s, replica_number=%d] ...",
+                                    __func__, __LINE__, r.checksum().data(), l1desc.chksum, r.logical_path().data(), r.replica_number());
+
+                            if (r.checksum() != l1desc.chksum) {
+                                THROW(USER_CHKSUM_MISMATCH, fmt::format("[{}:{}] Mismatch checksum for {}.inp={}, compute {}",
+                                      __FUNCTION__, __LINE__, r.logical_path(), l1desc.chksum, r.checksum()));
+                            }
+                        }
+
+                        // Copy the new checksum value into the conditional input so that file modified is triggered.
+                        cond_input[CHKSUM_KW] = r.checksum();
+                    }
+
+                    return;
+                }
+
                 if (const std::string checksum = perform_checksum_operation_for_finalize(_comm, _fd); !checksum.empty()) {
                     cond_input[CHKSUM_KW] = checksum;
                 }
