@@ -40,53 +40,400 @@ class Test_Iput(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.Tes
         self.admin.assert_icommand(['iput', '-f', file_40mb, data_object])
 
     @unittest.skipIf(False == test.settings.USE_MUNGEFS, "This test requires mungefs")
-    def test_failure_in_data_transfer(self):
-        munge_mount = os.path.join(self.admin.local_session_dir, 'munge_mount')
-        munge_target = os.path.join(self.admin.local_session_dir, 'munge_target')
-        munge_resc = 'munge_resc'
-        local_file = os.path.join(self.admin.local_session_dir, 'local_file')
-        logical_path = os.path.join(self.admin.session_collection, 'foo')
-        question = '''"select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'"'''.format(
-            os.path.basename(logical_path), os.path.dirname(logical_path))
+    def test_failure_in_data_transfer_for_overwrite(self):
+        def do_test_failure_in_data_transfer_for_overwrite(self, file_size_in_bytes):
+            target_resc_1 = 'otherresc'
+            target_resc_2 = 'anotherresc'
+            target_resc_vault_1 = os.path.join(self.user.local_session_dir, target_resc_1 + '_vault')
+            target_resc_vault_2 = os.path.join(self.user.local_session_dir, target_resc_2 + '_vault')
+            munge_mount = os.path.join(self.admin.local_session_dir, 'munge_mount')
+            munge_target = os.path.join(self.admin.local_session_dir, 'munge_target')
+            munge_resc = 'munge_resc'
+            local_file = os.path.join(self.admin.local_session_dir, 'local_file')
+            logical_path = os.path.join(self.admin.session_collection, 'foo')
+            question = '''"select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'"'''.format(
+                os.path.basename(logical_path), os.path.dirname(logical_path))
 
-        try:
-            lib.make_dir_p(munge_mount)
-            lib.make_dir_p(munge_target)
-            assert_command(['mungefs', munge_mount, '-omodules=subdir,subdir={}'.format(munge_target)])
+            try:
+                for resc, vault, host in [(target_resc_1, target_resc_vault_1, test.settings.HOSTNAME_1),
+                                          (target_resc_2, target_resc_vault_2, test.settings.HOSTNAME_2)]:
+                    self.admin.assert_icommand(
+                        ['iadmin', 'mkresc', resc, 'unixfilesystem',
+                         ':'.join([host, vault])], 'STDOUT_SINGLELINE', 'unixfilesystem')
 
-            self.admin.assert_icommand(
-                ['iadmin', 'mkresc', munge_resc, 'unixfilesystem',
-                 ':'.join([test.settings.HOSTNAME_1, munge_mount])], 'STDOUT_SINGLELINE', 'unixfilesystem')
+                lib.make_dir_p(munge_mount)
+                lib.make_dir_p(munge_target)
+                assert_command(['mungefs', munge_mount, '-omodules=subdir,subdir={}'.format(munge_target)])
 
-            assert_command(['mungefsctl', '--operations', 'write', '--corrupt_data'])
+                self.admin.assert_icommand(
+                    ['iadmin', 'mkresc', munge_resc, 'unixfilesystem',
+                     ':'.join([test.settings.HOSTNAME_1, munge_mount])], 'STDOUT_SINGLELINE', 'unixfilesystem')
 
-            if not os.path.exists(local_file):
-                lib.make_file(local_file, 1024)
+                if not os.path.exists(local_file):
+                    lib.make_file(local_file, file_size_in_bytes)
 
-            self.admin.assert_icommand(
-                ['iput', '-K', '-R', munge_resc, local_file, logical_path],
-                'STDERR', 'USER_CHKSUM_MISMATCH')
+                self.admin.assert_icommand(['iput', '-R', munge_resc, local_file, logical_path])
+                self.admin.assert_icommand(['irepl', '-R', target_resc_1, logical_path])
+                self.admin.assert_icommand(['irepl', '-R', target_resc_2, logical_path])
+                print(self.admin.run_icommand(['ils', '-l', logical_path])[0])
 
-            # check on the replicas after the put...
-            out, err, ec = self.admin.run_icommand(['iquest', '%s %s %s', question])
-            self.assertEqual(0, ec)
-            self.assertEqual(len(err), 0)
+                # check on the replicas after the put...
+                out, err, ec = self.admin.run_icommand(['iquest', '%s %s %s', question])
+                self.assertEqual(0, ec)
+                self.assertEqual(len(err), 0)
 
-            # there should be 1 replica...
-            out_lines = out.splitlines()
-            self.assertEqual(len(out_lines), 1)
+                # there should be 3 replicas...
+                out_lines = out.splitlines()
+                self.assertEqual(len(out_lines), 3)
 
-            # ensure the new replica is marked stale
-            repl_num_0, resc_name_0, repl_status_0 = out_lines[0].split()
-            self.assertEqual(int(repl_num_0),    0)          # DATA_REPL_NUM
-            self.assertEqual(str(resc_name_0),   munge_resc) # DATA_RESC_NAME
-            self.assertEqual(int(repl_status_0), 0)          # DATA_REPL_STATUS
+                # ensure the all replicas are good
+                repl_num_0, resc_name_0, repl_status_0 = out_lines[0].split()
+                self.assertEqual(int(repl_num_0),    0)          # DATA_REPL_NUM
+                self.assertEqual(str(resc_name_0),   munge_resc) # DATA_RESC_NAME
+                self.assertEqual(int(repl_status_0), 1)          # DATA_REPL_STATUS
 
-        finally:
-            self.admin.run_icommand(['irm', '-f', logical_path])
-            assert_command(['mungefsctl', '--operations', 'write'])
-            assert_command(['fusermount', '-u', munge_mount])
-            self.admin.assert_icommand(['iadmin', 'rmresc', munge_resc])
+                repl_num_1, resc_name_1, repl_status_1 = out_lines[1].split()
+                self.assertEqual(int(repl_num_1),    1)          # DATA_REPL_NUM
+                self.assertEqual(str(resc_name_1),   target_resc_1) # DATA_RESC_NAME
+                self.assertEqual(int(repl_status_1), 1)          # DATA_REPL_STATUS
+
+                repl_num_2, resc_name_2, repl_status_2 = out_lines[2].split()
+                self.assertEqual(int(repl_num_2),    2)          # DATA_REPL_NUM
+                self.assertEqual(str(resc_name_2),   target_resc_2) # DATA_RESC_NAME
+                self.assertEqual(int(repl_status_2), 1)          # DATA_REPL_STATUS
+
+                # make attempts to write to this resource return an error code
+                assert_command(['mungefsctl', '--operations', 'write', '--err_no=28'])
+
+                self.admin.assert_icommand(
+                    ['iput', '-f', '-R', munge_resc, local_file, logical_path],
+                    'STDERR', 'UNIX_FILE_WRITE_ERR')
+
+                # check on the replicas after the put...
+                out, err, ec = self.admin.run_icommand(['iquest', '%s %s %s', question])
+                self.assertEqual(0, ec)
+                self.assertEqual(len(err), 0)
+
+                # there should be 3 replicas...
+                out_lines = out.splitlines()
+                self.assertEqual(len(out_lines), 3)
+
+                # ensure the targeted replica is marked stale
+                repl_num_0, resc_name_0, repl_status_0 = out_lines[0].split()
+                self.assertEqual(int(repl_num_0),    0)          # DATA_REPL_NUM
+                self.assertEqual(str(resc_name_0),   munge_resc) # DATA_RESC_NAME
+                self.assertEqual(int(repl_status_0), 0)          # DATA_REPL_STATUS
+
+                # ensure the other replicas unlocked to their original statuses
+                repl_num_1, resc_name_1, repl_status_1 = out_lines[1].split()
+                self.assertEqual(int(repl_num_1),    1)          # DATA_REPL_NUM
+                self.assertEqual(str(resc_name_1),   target_resc_1) # DATA_RESC_NAME
+                self.assertEqual(int(repl_status_1), 1)          # DATA_REPL_STATUS
+
+                repl_num_2, resc_name_2, repl_status_2 = out_lines[2].split()
+                self.assertEqual(int(repl_num_2),    2)          # DATA_REPL_NUM
+                self.assertEqual(str(resc_name_2),   target_resc_2) # DATA_RESC_NAME
+                self.assertEqual(int(repl_status_2), 1)          # DATA_REPL_STATUS
+
+            finally:
+                print(self.admin.run_icommand(['ils', '-l', logical_path])[0])
+                self.admin.run_icommand(['irm', '-f', logical_path])
+                assert_command(['mungefsctl', '--operations', 'write'])
+                assert_command(['fusermount', '-u', munge_mount])
+                self.admin.assert_icommand(['iadmin', 'rmresc', munge_resc])
+                for resc in [target_resc_1, target_resc_2]:
+                    self.admin.assert_icommand(['iadmin', 'rmresc', resc])
+
+        # run the tests for different file sizes (0 is not a valid size because rsDataObjWrite will not trip the error provided by mungefs)
+        do_test_failure_in_data_transfer_for_overwrite(self, 1024)
+        do_test_failure_in_data_transfer_for_overwrite(self, 40000000)
+
+    @unittest.skipIf(False == test.settings.USE_MUNGEFS, "This test requires mungefs")
+    def test_failure_in_data_transfer_for_create(self):
+        def do_test_failure_in_data_transfer_for_create(self, file_size_in_bytes):
+            munge_mount = os.path.join(self.admin.local_session_dir, 'munge_mount')
+            munge_target = os.path.join(self.admin.local_session_dir, 'munge_target')
+            munge_resc = 'munge_resc'
+            local_file = os.path.join(self.admin.local_session_dir, 'local_file')
+            logical_path = os.path.join(self.admin.session_collection, 'foo')
+            question = '''"select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'"'''.format(
+                os.path.basename(logical_path), os.path.dirname(logical_path))
+
+            try:
+                lib.make_dir_p(munge_mount)
+                lib.make_dir_p(munge_target)
+                assert_command(['mungefs', munge_mount, '-omodules=subdir,subdir={}'.format(munge_target)])
+
+                self.admin.assert_icommand(
+                    ['iadmin', 'mkresc', munge_resc, 'unixfilesystem',
+                     ':'.join([test.settings.HOSTNAME_1, munge_mount])], 'STDOUT_SINGLELINE', 'unixfilesystem')
+
+                if not os.path.exists(local_file):
+                    lib.make_file(local_file, file_size_in_bytes)
+
+                # make attempts to write to this resource return an error code
+                assert_command(['mungefsctl', '--operations', 'write', '--err_no=28'])
+
+                self.admin.assert_icommand(
+                    ['iput', '-f', '-R', munge_resc, local_file, logical_path],
+                    'STDERR', 'UNIX_FILE_WRITE_ERR')
+
+                # check on the replicas after the put...
+                out, err, ec = self.admin.run_icommand(['iquest', '%s %s %s', question])
+                self.assertEqual(0, ec)
+                self.assertEqual(len(err), 0)
+                self.assertNotIn('CAT_NO_ROWS_FOUND', out)
+
+                # there should be 1 replica...
+                out_lines = out.splitlines()
+                self.assertEqual(len(out_lines), 1)
+
+                # ensure the targeted replica is marked stale
+                repl_num_0, resc_name_0, repl_status_0 = out_lines[0].split()
+                self.assertEqual(int(repl_num_0),    0)          # DATA_REPL_NUM
+                self.assertEqual(str(resc_name_0),   munge_resc) # DATA_RESC_NAME
+                self.assertEqual(int(repl_status_0), 0)          # DATA_REPL_STATUS
+
+            finally:
+                print(self.admin.run_icommand(['ils', '-l', logical_path])[0])
+                self.admin.run_icommand(['irm', '-f', logical_path])
+                assert_command(['mungefsctl', '--operations', 'write'])
+                assert_command(['fusermount', '-u', munge_mount])
+                self.admin.assert_icommand(['iadmin', 'rmresc', munge_resc])
+
+        # run the tests for different file sizes (0 is not a valid size because rsDataObjWrite will not trip the error provided by mungefs)
+        do_test_failure_in_data_transfer_for_create(self, 1024)
+        do_test_failure_in_data_transfer_for_create(self, 40000000)
+
+    @unittest.skipIf(False == test.settings.USE_MUNGEFS, "This test requires mungefs")
+    def test_failure_in_verification_for_overwrite(self):
+        def do_test_failure_in_verification_for_overwrite(self, file_size_in_bytes):
+            target_resc_1 = 'otherresc'
+            target_resc_2 = 'anotherresc'
+            target_resc_vault_1 = os.path.join(self.user.local_session_dir, target_resc_1 + '_vault')
+            target_resc_vault_2 = os.path.join(self.user.local_session_dir, target_resc_2 + '_vault')
+            munge_mount = os.path.join(self.admin.local_session_dir, 'munge_mount')
+            munge_target = os.path.join(self.admin.local_session_dir, 'munge_target')
+            munge_resc = 'munge_resc'
+            local_file = os.path.join(self.admin.local_session_dir, 'local_file')
+            logical_path = os.path.join(self.admin.session_collection, 'foo')
+            question = '''"select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'"'''.format(
+                os.path.basename(logical_path), os.path.dirname(logical_path))
+
+            try:
+                for resc, vault, host in [(target_resc_1, target_resc_vault_1, test.settings.HOSTNAME_1),
+                                          (target_resc_2, target_resc_vault_2, test.settings.HOSTNAME_2)]:
+                    self.admin.assert_icommand(
+                        ['iadmin', 'mkresc', resc, 'unixfilesystem',
+                         ':'.join([host, vault])], 'STDOUT_SINGLELINE', 'unixfilesystem')
+
+                lib.make_dir_p(munge_mount)
+                lib.make_dir_p(munge_target)
+                assert_command(['mungefs', munge_mount, '-omodules=subdir,subdir={}'.format(munge_target)])
+
+                self.admin.assert_icommand(
+                    ['iadmin', 'mkresc', munge_resc, 'unixfilesystem',
+                     ':'.join([test.settings.HOSTNAME_1, munge_mount])], 'STDOUT_SINGLELINE', 'unixfilesystem')
+
+                if not os.path.exists(local_file):
+                    lib.make_file(local_file, file_size_in_bytes)
+
+                self.admin.assert_icommand(['iput', '-K', '-R', munge_resc, local_file, logical_path])
+                self.admin.assert_icommand(['irepl', '-R', target_resc_1, logical_path])
+                self.admin.assert_icommand(['irepl', '-R', target_resc_2, logical_path])
+                print(self.admin.run_icommand(['ils', '-L', logical_path])[0])
+
+                # check on the replicas after the put...
+                out, err, ec = self.admin.run_icommand(['iquest', '%s %s %s', question])
+                self.assertEqual(0, ec)
+                self.assertEqual(len(err), 0)
+
+                # there should be 3 replicas...
+                out_lines = out.splitlines()
+                self.assertEqual(len(out_lines), 3)
+
+                # ensure the all replicas are good
+                repl_num_0, resc_name_0, repl_status_0 = out_lines[0].split()
+                self.assertEqual(int(repl_num_0),    0)          # DATA_REPL_NUM
+                self.assertEqual(str(resc_name_0),   munge_resc) # DATA_RESC_NAME
+                self.assertEqual(int(repl_status_0), 1)          # DATA_REPL_STATUS
+
+                repl_num_1, resc_name_1, repl_status_1 = out_lines[1].split()
+                self.assertEqual(int(repl_num_1),    1)          # DATA_REPL_NUM
+                self.assertEqual(str(resc_name_1),   target_resc_1) # DATA_RESC_NAME
+                self.assertEqual(int(repl_status_1), 1)          # DATA_REPL_STATUS
+
+                repl_num_2, resc_name_2, repl_status_2 = out_lines[2].split()
+                self.assertEqual(int(repl_num_2),    2)          # DATA_REPL_NUM
+                self.assertEqual(str(resc_name_2),   target_resc_2) # DATA_RESC_NAME
+                self.assertEqual(int(repl_status_2), 1)          # DATA_REPL_STATUS
+
+                # make attempts to write to this resource return an error code
+                assert_command(['mungefsctl', '--operations', 'write', '--corrupt_data'])
+
+                self.admin.assert_icommand(
+                    ['iput', '-f', '-K', '-R', munge_resc, local_file, logical_path],
+                    'STDERR', 'USER_CHKSUM_MISMATCH')
+
+                # check on the replicas after the put...
+                out, err, ec = self.admin.run_icommand(['iquest', '%s %s %s', question])
+                self.assertEqual(0, ec)
+                self.assertEqual(len(err), 0)
+
+                # there should be 3 replicas...
+                out_lines = out.splitlines()
+                self.assertEqual(len(out_lines), 3)
+
+                # ensure the targeted replica is marked stale
+                repl_num_0, resc_name_0, repl_status_0 = out_lines[0].split()
+                self.assertEqual(int(repl_num_0),    0)          # DATA_REPL_NUM
+                self.assertEqual(str(resc_name_0),   munge_resc) # DATA_RESC_NAME
+                self.assertEqual(int(repl_status_0), 0)          # DATA_REPL_STATUS
+
+                # ensure the other replicas unlocked to their original statuses
+                repl_num_1, resc_name_1, repl_status_1 = out_lines[1].split()
+                self.assertEqual(int(repl_num_1),    1)          # DATA_REPL_NUM
+                self.assertEqual(str(resc_name_1),   target_resc_1) # DATA_RESC_NAME
+                self.assertEqual(int(repl_status_1), 1)          # DATA_REPL_STATUS
+
+                repl_num_2, resc_name_2, repl_status_2 = out_lines[2].split()
+                self.assertEqual(int(repl_num_2),    2)          # DATA_REPL_NUM
+                self.assertEqual(str(resc_name_2),   target_resc_2) # DATA_RESC_NAME
+                self.assertEqual(int(repl_status_2), 1)          # DATA_REPL_STATUS
+
+            finally:
+                print(self.admin.run_icommand(['ils', '-L', logical_path])[0])
+                self.admin.run_icommand(['irm', '-f', logical_path])
+                assert_command(['mungefsctl', '--operations', 'write'])
+                assert_command(['fusermount', '-u', munge_mount])
+                self.admin.assert_icommand(['iadmin', 'rmresc', munge_resc])
+                for resc in [target_resc_1, target_resc_2]:
+                    self.admin.assert_icommand(['iadmin', 'rmresc', resc])
+
+        # run the tests for different file sizes (0 is not valid because mungefs cannot corrupt data which is not there)
+        do_test_failure_in_verification_for_overwrite(self, 1024)
+        do_test_failure_in_verification_for_overwrite(self, 40000000)
+
+    @unittest.skipIf(False == test.settings.USE_MUNGEFS, "This test requires mungefs")
+    def test_failure_in_verification_for_create(self):
+        def do_test_failure_in_verification_for_create(self, file_size_in_bytes):
+            munge_mount = os.path.join(self.admin.local_session_dir, 'munge_mount')
+            munge_target = os.path.join(self.admin.local_session_dir, 'munge_target')
+            munge_resc = 'munge_resc'
+            local_file = os.path.join(self.admin.local_session_dir, 'local_file')
+            logical_path = os.path.join(self.admin.session_collection, 'foo')
+            question = '''"select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'"'''.format(
+                os.path.basename(logical_path), os.path.dirname(logical_path))
+
+            try:
+                lib.make_dir_p(munge_mount)
+                lib.make_dir_p(munge_target)
+                assert_command(['mungefs', munge_mount, '-omodules=subdir,subdir={}'.format(munge_target)])
+
+                self.admin.assert_icommand(
+                    ['iadmin', 'mkresc', munge_resc, 'unixfilesystem',
+                     ':'.join([test.settings.HOSTNAME_1, munge_mount])], 'STDOUT_SINGLELINE', 'unixfilesystem')
+
+                assert_command(['mungefsctl', '--operations', 'read', '--corrupt_data'])
+
+                if not os.path.exists(local_file):
+                    lib.make_file(local_file, file_size_in_bytes)
+
+                self.admin.assert_icommand(
+                    ['iput', '-K', '-R', munge_resc, local_file, logical_path],
+                    'STDERR', 'USER_CHKSUM_MISMATCH')
+
+                # check on the replicas after the put...
+                out, err, ec = self.admin.run_icommand(['iquest', '%s %s %s', question])
+                self.assertEqual(0, ec)
+                self.assertEqual(len(err), 0)
+
+                # there should be 1 replica...
+                out_lines = out.splitlines()
+                self.assertEqual(len(out_lines), 1)
+
+                # ensure the new replica is marked stale
+                repl_num_0, resc_name_0, repl_status_0 = out_lines[0].split()
+                self.assertEqual(int(repl_num_0),    0)          # DATA_REPL_NUM
+                self.assertEqual(str(resc_name_0),   munge_resc) # DATA_RESC_NAME
+                self.assertEqual(int(repl_status_0), 0)          # DATA_REPL_STATUS
+
+            finally:
+                self.admin.run_icommand(['irm', '-f', logical_path])
+                assert_command(['mungefsctl', '--operations', 'write'])
+                assert_command(['fusermount', '-u', munge_mount])
+                self.admin.assert_icommand(['iadmin', 'rmresc', munge_resc])
+
+        # run the tests for different file sizes (0 is not valid because mungefs cannot corrupt data which is not there)
+        do_test_failure_in_verification_for_create(self, 1024)
+        do_test_failure_in_verification_for_create(self, 40000000)
+
+    def test_force_iput_to_new_resource_results_in_error__issue_5575(self):
+        def do_test_force_iput_to_new_resource_results_in_error__issue_5575(self, file_size_in_bytes):
+            target_resc_1 = 'otherresc'
+            target_resc_2 = 'anotherresc'
+            target_resc_3 = 'yetanotherresc'
+            target_resc_vault_1 = os.path.join(self.user.local_session_dir, target_resc_1 + '_vault')
+            target_resc_vault_2 = os.path.join(self.user.local_session_dir, target_resc_2 + '_vault')
+            target_resc_vault_3 = os.path.join(self.user.local_session_dir, target_resc_3 + '_vault')
+            logical_path = os.path.join(self.user.session_collection, 'foo')
+            local_file = os.path.join(self.user.local_session_dir, 'local_file')
+
+            try:
+                # create test resources
+                for resc, vault, host in [(target_resc_1, target_resc_vault_1, test.settings.HOSTNAME_1),
+                                          (target_resc_2, target_resc_vault_2, test.settings.HOSTNAME_2),
+                                          (target_resc_3, target_resc_vault_3, test.settings.HOSTNAME_3)]:
+                    self.admin.assert_icommand(
+                        ['iadmin', 'mkresc', resc, 'unixfilesystem',
+                         ':'.join([host, vault])], 'STDOUT_SINGLELINE', 'unixfilesystem')
+
+                # create some test data if it's not already there
+                if not os.path.exists(local_file):
+                    lib.make_file(local_file, file_size_in_bytes)
+
+                # put the test data into irods on a specific resource
+                self.user.assert_icommand(['iput', '-R', target_resc_1, local_file, logical_path])
+                self.user.assert_icommand(['irepl', '-R', target_resc_3, logical_path])
+
+                def assert_object_is_good():
+                    # make sure the object put at the beginning has its original replicas and they are good
+                    out, err, rc = self.user.run_icommand(['iquest', '%s %s',
+                        "select RESC_NAME, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'"
+                        .format(os.path.basename(logical_path), os.path.dirname(logical_path))])
+                    self.assertEqual(0, rc)
+                    self.assertEqual(0, len(err))
+
+                    results = out.splitlines()
+                    self.assertEqual(2, len(results))
+                    result_0 = results[0].split()
+                    result_1 = results[1].split()
+
+                    self.assertEqual(target_resc_1, result_0[0])
+                    self.assertEqual(1, int(result_0[1]))
+                    self.assertEqual(target_resc_3, result_1[0])
+                    self.assertEqual(1, int(result_1[1]))
+
+                assert_object_is_good()
+
+                # implictly target default resource, which has no replica
+                self.user.assert_icommand(['iput', '-f', local_file, logical_path], 'STDERR', 'HIERARCHY_ERROR')
+                assert_object_is_good()
+
+                # target a specific resource which has no replica
+                self.user.assert_icommand(['iput', '-R', target_resc_2, '-f', local_file, logical_path], 'STDERR', 'HIERARCHY_ERROR')
+                assert_object_is_good()
+
+            finally:
+                self.user.run_icommand(['irm', '-f', logical_path])
+                for resc in [target_resc_1, target_resc_2, target_resc_3]:
+                    self.admin.assert_icommand(['iadmin', 'rmresc', resc])
+
+        # run the tests for different file sizes
+        do_test_force_iput_to_new_resource_results_in_error__issue_5575(self, 0)
+        do_test_force_iput_to_new_resource_results_in_error__issue_5575(self, 1024)
+        do_test_force_iput_to_new_resource_results_in_error__issue_5575(self, 40000000)
+
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_checksum_is_erased_on_single_buffer_overwrite__issue_5496(self):
