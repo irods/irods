@@ -50,6 +50,12 @@ namespace {
         }
 
         const auto& r = repl->get();
+
+        // TODO: READ_LOCKED should consider the operation
+        if (WRITE_LOCKED == r.replica_status() || READ_LOCKED == r.replica_status()) {
+            return vote::zero;
+        }
+
         if (INTERMEDIATE_REPLICA == r.replica_status()) {
             // Because the replica is in an intermediate state, we must check if the client
             // provided a replica token. The replica token represents a piece of information that
