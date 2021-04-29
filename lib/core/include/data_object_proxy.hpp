@@ -449,6 +449,33 @@ namespace irods::experimental::data_object
 
         return std::nullopt;
     } // find_replica
+
+    /// \brief Finds a replica in the list based on replica number
+    ///
+    /// \param[in] _obj data_object_proxy to search in
+    /// \param[in] _replica_number
+    ///
+    /// \retval replica_proxy if found
+    /// \retval std::nullopt if no replica is found with the provided replica number
+    ///
+    /// \since 4.2.9
+    template<typename doi_type>
+    static auto find_replica(const data_object_proxy<doi_type>& _obj, const int _replica_number)
+        -> std::optional<replica::replica_proxy<doi_type>>
+    {
+        auto itr = std::find_if(
+            std::cbegin(_obj.replicas()), std::cend(_obj.replicas()),
+            [&_replica_number](const auto& _r)
+            {
+                return _r.replica_number() == _replica_number;
+            });
+
+        if (std::end(_obj.replicas()) != itr) {
+            return *itr;
+        }
+
+        return std::nullopt;
+    } // find_replica
 } // namespace irods::experimental::data_object
 
 #endif // #ifndef IRODS_DATA_OBJECT_PROXY_HPP

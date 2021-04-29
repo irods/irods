@@ -94,10 +94,6 @@ namespace
 
     auto finalize_source_replica(RsComm& _comm, l1desc& _l1desc, ir::replica_proxy_t& _info) -> int
     {
-        if (_l1desc.purgeCacheFlag) {
-            irods::purge_cache(_comm, *_info.get());
-        }
-
         irods::apply_metadata_from_cond_input(_comm, *_l1desc.dataObjInp);
         irods::apply_acl_from_cond_input(_comm, *_l1desc.dataObjInp);
 
@@ -614,6 +610,7 @@ namespace
                     "[{}] - failed while finalizing object [{}]; ec:[{}]",
                     __FUNCTION__, destination_replica.logical_path(), ec));
             }
+
             return destination_fd.bytesWritten;
         }
 
@@ -638,7 +635,10 @@ namespace
                 status = e.code();
             }
         }
-        // break here for lib
+
+        if (source_fd.purgeCacheFlag > 0) {
+            irods::purge_cache(_comm, *source_replica.get());
+        }
 
         if (destination_fd.purgeCacheFlag > 0) {
             irods::purge_cache(_comm, *destination_replica.get());
