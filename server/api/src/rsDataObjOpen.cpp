@@ -173,75 +173,6 @@ namespace
         irods::experimental::key_value_proxy{_comm.session_props}[REG_REPL_KW] = "";
     } // enable_creation_of_additional_replicas
 
-    auto check_if_data_object_is_locked(
-        const DataObjInp& _inp,
-        const id::data_object_proxy_t& _obj,
-        const std::string_view _hierarchy) -> int
-    {
-        const auto cond_input = irods::experimental::make_key_value_proxy(_inp.condInput);
-        const auto hierarchy = cond_input.at(RESC_HIER_STR_KW).value();
-
-        if (const auto r = id::find_replica(_obj, _hierarchy); r) {
-            // If the catalog information indicates that the selected replica is intermediate, check
-            // to see if the provided replica token will be accepted by the replica access table.
-            // If not, the open request is disallowed because multiple opens of the same replica are
-            // not allowed without a valid replica token.
-            const auto replica_access_granted = [&r, &cond_input]() -> bool
-            {
-                if (r->at_rest()) {
-                    return true;
-                }
-
-                if (!cond_input.contains(REPLICA_TOKEN_KW)) {
-                    return false;
-                }
-
-                auto token = cond_input.at(REPLICA_TOKEN_KW).value();
-                return rat::contains(token.data(), r->data_id(), r->replica_number());
-            }();
-
-            if (!replica_access_granted) {
-                irods::log(LOG_NOTICE, fmt::format(
-                    "[{}:{}] - open denied because selected replica is in intermediate state. "
-                    "[path=[{}], hierarchy=[{}]]",
-                    __FUNCTION__, __LINE__, r->logical_path(), r->hierarchy()));
-
-                return INTERMEDIATE_REPLICA_ACCESS;
-            }
-        }
-
-        for (const auto& r : _obj.replicas()) {
-            // If any replica is locked, opening is not allowed.
-            if (r.locked()) {
-                switch (r.replica_status()) {
-                    case READ_LOCKED:
-                        if (const auto opening_for_read = !getWriteFlag(_inp.openFlags); opening_for_read) {
-                            break;
-                        }
-                        [[fallthrough]];
-
-                    case WRITE_LOCKED:
-                        irods::log(LOG_NOTICE, fmt::format(
-                            "[{}:{}] - open denied because data object is locked. "
-                            "[path=[{}], hierarchy=[{}]]",
-                            __FUNCTION__, __LINE__, _inp.objPath, hierarchy));
-
-                        return LOCKED_DATA_OBJECT_ACCESS;
-
-                    default:
-                        irods::log(LOG_ERROR, fmt::format(
-                            "[{}:{}] - replica status is not a lock. "
-                            "[replica_status=[{}], path=[{}], hierarchy=[{}]]",
-                            __FUNCTION__, __LINE__, r.replica_status(), _inp.objPath, hierarchy));
-
-                        return SYS_INTERNAL_ERR;
-                }
-            }
-        }
-
-        return 0;
-    } // check_if_data_object_is_locked
-
     auto create_new_replica(rsComm_t& _comm, dataObjInp_t& _inp, DataObjInfo* _existing_replica_list) -> int
     {
         auto cond_input = irods::experimental::make_key_value_proxy(_inp.condInput);
@@ -356,7 +287,8 @@ namespace
             //   4. Insert new replica into RST
             auto object_locked = false;
             if (!brand_new_data_object) {
-                if (const auto ret = check_if_data_object_is_locked(_inp, id::make_data_object_proxy(*_existing_replica_list), hierarchy); ret < 0) {
+                const auto replica_token = cond_input.contains(REPLICA_TOKEN_KW) ? cond_input.at(REPLICA_TOKEN_KW).value().data() : "";
+                if (const auto ret = ill::try_lock(*_existing_replica_list, ill::lock_type::write, hierarchy, replica_token); ret < 0) {
                     freeL1desc(l1_index);
                     return ret;
                 }
@@ -990,9 +922,14 @@ namespace
             replica.replica_status(),
             replica.status()));
 
+        const auto open_for_write = getWriteFlag(dataObjInp->openFlags);
+
         // If the selected replica is part of a locked data object or is in the intermediate state
         // (and no valid replica access token can be found), the open should be denied.
-        if (const auto ret = check_if_data_object_is_locked(*dataObjInp, obj, hierarchy); ret < 0) {
+        const auto cond_input = irods::experimental::make_key_value_proxy(dataObjInp->condInput);
+        const auto replica_token = cond_input.contains(REPLICA_TOKEN_KW) ? cond_input.at(REPLICA_TOKEN_KW).value().data() : "";
+        const auto lock_type = open_for_write ? ill::lock_type::write : ill::lock_type::read;
+        if (const auto ret = ill::try_lock(*info_head, lock_type, hierarchy, replica_token); ret < 0) {
             return ret;
         }
 
@@ -1011,8 +948,7 @@ namespace
         // If the replica is in an intermediate state, check_if_data_object_is_locked determined that a
         // valid replica_token is present for this replica and so the open should be allowed to continue.
         // If the replica is at rest, this is the first open, so the data object needs to be locked.
-        if (const auto open_for_write = getWriteFlag(dataObjInp->openFlags);
-            open_for_write && replica.at_rest()) {
+        if (open_for_write && replica.at_rest()) {
             // Need to update the cached replica information so that the check below will update the
             // replica access table. This is needed for concurrent opens for write.
             replica.replica_status(INTERMEDIATE_REPLICA);
