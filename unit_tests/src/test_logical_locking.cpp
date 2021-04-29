@@ -151,7 +151,7 @@ TEST_CASE("open and close", "[write_lock]")
     auto fail_cond_input = irods::experimental::make_key_value_proxy(fail_open_inp.condInput);
     std::snprintf(fail_open_inp.objPath, sizeof(fail_open_inp.objPath), "%s", target_object.c_str());
 
-    //SECTION("open for read")
+    SECTION("open for read")
     {
         fail_open_inp.openFlags = O_RDONLY;
 
@@ -164,7 +164,7 @@ TEST_CASE("open and close", "[write_lock]")
         REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcDataObjOpen(&new_comm, &fail_open_inp));
     }
 
-    //SECTION("open for write")
+    SECTION("open for write")
     {
         fail_open_inp.openFlags = O_WRONLY;
 
@@ -177,7 +177,7 @@ TEST_CASE("open and close", "[write_lock]")
         REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcDataObjOpen(&new_comm, &fail_open_inp));
     }
 
-    //SECTION("open for create")
+    SECTION("open for create")
     {
         fail_open_inp.openFlags = O_CREAT | O_WRONLY | O_TRUNC;
 
@@ -288,13 +288,18 @@ TEST_CASE("unlink", "[write_lock]")
 
     // When no flags are passed to rcDataObjUnlink, the default behavior will move the object
     // to the trash. Moving to the trash is a logical operation, so don't provide a target replica.
+    SECTION("no flags")
     {
-        REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcDataObjUnlink(&new_comm, &unlink_inp));
+        REQUIRE(HIERARCHY_ERROR == rcDataObjUnlink(&new_comm, &unlink_inp));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), opened_replica_resc));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), other_replica_resc));
     }
 
     // Providing the force flag skips putting the object in the trash (different code path)
+    // Note: In this case, the force flag does not fail in hierarchy resolution but in the
+    // actual lock check because hierarchy resolution failure is allowed to continue when
+    // the force flag is active for unlinks.
+    SECTION("force flag")
     {
         unlink_cond_input[FORCE_FLAG_KW] = "";
 
@@ -306,18 +311,19 @@ TEST_CASE("unlink", "[write_lock]")
     }
 
     // Providing REPL_NUM_KW is deprecated in the API, but will act like rsDataObjTrim
+    SECTION("target replica number")
     {
         const auto opened_replica_number = ir::to_replica_number(new_comm, target_object.c_str(), opened_replica_resc);
         unlink_cond_input[REPL_NUM_KW] = std::to_string(*opened_replica_number);
 
-        REQUIRE(INTERMEDIATE_REPLICA_ACCESS == rcDataObjUnlink(&new_comm, &unlink_inp));
+        REQUIRE(HIERARCHY_ERROR == rcDataObjUnlink(&new_comm, &unlink_inp));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), opened_replica_resc));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), other_replica_resc));
 
         const auto other_replica_number = ir::to_replica_number(new_comm, target_object.c_str(), other_replica_resc);
         unlink_cond_input[REPL_NUM_KW] = std::to_string(*other_replica_number);
 
-        REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcDataObjUnlink(&new_comm, &unlink_inp));
+        REQUIRE(HIERARCHY_ERROR == rcDataObjUnlink(&new_comm, &unlink_inp));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), opened_replica_resc));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), other_replica_resc));
 
@@ -326,12 +332,35 @@ TEST_CASE("unlink", "[write_lock]")
 
     // The UNREG_OPR type means that the replica(s) should not be physically unlinked. This
     // will take the same code path as the force flag and replica number cases.
+    SECTION("unreg")
     {
         unlink_inp.oprType = UNREG_OPR;
 
+        REQUIRE(HIERARCHY_ERROR == rcDataObjUnlink(&new_comm, &unlink_inp));
+        REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), opened_replica_resc));
+        REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), other_replica_resc));
+    }
+
+    // When the full resource hierarchy is provided, voting does not occur so direct errors
+    // regarding logical locking are returned. However, the hierarchy keyword does not really
+    // impact the behavior of rcDataObjUnlink in any other way than bypassing voting. It
+    // operates at the logical level so all replicas will be considered for unlinking.
+    SECTION("target hierarchy")
+    {
+        unlink_cond_input[RESC_HIER_STR_KW] = opened_replica_resc;
+        // This API endpoint is a logical level operation - it only considers the locked state
+        // of the entire object when determining whether unlinking is allowed, not that of the
+        // individual replicas. Therefore, we do not expect INTERMEDIATE_REPLICA_ACCESS here.
         REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcDataObjUnlink(&new_comm, &unlink_inp));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), opened_replica_resc));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), other_replica_resc));
+
+        unlink_cond_input[RESC_HIER_STR_KW] = other_replica_resc;
+        REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcDataObjUnlink(&new_comm, &unlink_inp));
+        REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), opened_replica_resc));
+        REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), other_replica_resc));
+
+        unlink_cond_input.erase(RESC_HIER_STR_KW);
     }
 }
 
@@ -435,8 +464,9 @@ TEST_CASE("trim", "[write_lock]")
     // When no flags are passed to rsDataObjTrim, the default behavior will trim the number of replicas
     // down to the minimum number of good replicas (default: 2). In this case, no replicas should be
     // trimmed because it is locked, but it would also take us below the minimum number of good replicas.
+    SECTION("no flags")
     {
-        REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcDataObjTrim(&new_comm, &trim_inp));
+        REQUIRE(HIERARCHY_ERROR == rcDataObjTrim(&new_comm, &trim_inp));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), opened_replica_resc));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), other_replica_resc));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), another_replica_resc));
@@ -445,17 +475,18 @@ TEST_CASE("trim", "[write_lock]")
     // Providing the RESC_NAME_KW targets a resource hierarchy from which to trim replicas. Because it
     // could be pointed at the root of a hierarchy, specific errors for trimming intermediate replicas
     // should not be expected.
+    SECTION("target resource name")
     {
         // Target the currently open replica
         trim_cond_input[RESC_NAME_KW] = opened_replica_resc;
-        REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcDataObjTrim(&new_comm, &trim_inp));
+        REQUIRE(HIERARCHY_ERROR == rcDataObjTrim(&new_comm, &trim_inp));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), opened_replica_resc));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), other_replica_resc));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), another_replica_resc));
 
         // Target a sibling of the currently open replica
         trim_cond_input[RESC_NAME_KW] = other_replica_resc;
-        REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcDataObjTrim(&new_comm, &trim_inp));
+        REQUIRE(HIERARCHY_ERROR == rcDataObjTrim(&new_comm, &trim_inp));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), opened_replica_resc));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), other_replica_resc));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), another_replica_resc));
@@ -464,11 +495,12 @@ TEST_CASE("trim", "[write_lock]")
     }
 
     // Providing REPL_NUM_KW will target a particular replica number.
+    SECTION("target replica number")
     {
         // Target the currently open replica
         const auto opened_replica_number = ir::to_replica_number(new_comm, target_object.c_str(), opened_replica_resc);
         trim_cond_input[REPL_NUM_KW] = std::to_string(*opened_replica_number);
-        REQUIRE(INTERMEDIATE_REPLICA_ACCESS == rcDataObjTrim(&new_comm, &trim_inp));
+        REQUIRE(HIERARCHY_ERROR == rcDataObjTrim(&new_comm, &trim_inp));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), opened_replica_resc));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), other_replica_resc));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), another_replica_resc));
@@ -476,7 +508,7 @@ TEST_CASE("trim", "[write_lock]")
         // Target a sibling of the currently open replica
         const auto other_replica_number = ir::to_replica_number(new_comm, target_object.c_str(), other_replica_resc);
         trim_cond_input[REPL_NUM_KW] = std::to_string(*other_replica_number);
-        REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcDataObjTrim(&new_comm, &trim_inp));
+        REQUIRE(HIERARCHY_ERROR == rcDataObjTrim(&new_comm, &trim_inp));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), opened_replica_resc));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), other_replica_resc));
         REQUIRE(ir::replica_exists(new_comm, target_object.c_str(), another_replica_resc));

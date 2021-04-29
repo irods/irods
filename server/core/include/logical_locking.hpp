@@ -3,6 +3,8 @@
 
 #include <string_view>
 
+struct DataObjInfo;
+struct DataObjInp;
 struct RsComm;
 
 namespace irods::logical_locking
@@ -229,6 +231,75 @@ namespace irods::logical_locking
         RsComm&             _comm,
         const std::uint64_t _data_id,
         const int           _replica_statuses) -> int;
+
+    /// \brief Check to see if the data object will lock out some operation.
+    ///
+    /// \parblock
+    /// This overload does not target a specific replica and so if any replica of the
+    /// specified data object is locked or intermediate, the lock will be tripped.
+    /// \endparblock
+    ///
+    /// \param[in] _obj The data object on which we are checking for a lock
+    /// \param[in] _lock_type Type of lock to test for
+    ///
+    /// \returns An error code describing the access violation or 0 if no violation
+    /// \retval 0 The data object is not locked
+    /// \retval LOCKED_DATA_OBJECT_ACCESS Another replica for the data object is locked
+    ///
+    /// \since 4.2.9
+    auto try_lock(const DataObjInfo& _obj, const lock_type _lock_type) -> int;
+
+    /// \brief Check to see if the data object will lock out some operation.
+    ///
+    /// \parblock
+    /// This overload targets a specific replica based on resource hierarchy. If the
+    /// target replica is in the intermediate state and the replica token does not match,
+    /// the lock will be tripped with a specific error. If any replica is locked or any
+    /// sibling replica is intermediate, the lock will be tripped.
+    /// \endparblock
+    ///
+    /// \param[in] _obj The data object being tested for a lock
+    /// \param[in] _lock_type Type of lock to test for
+    /// \param[in] _target_replica_hierarchy Resource hierarchy for the target replica
+    /// \param[in] _target_replica_token Replica token for target replica (can be empty)
+    ///
+    /// \returns An error code describing the access violation or 0 if no violation
+    /// \retval 0 The data object is not locked
+    /// \retval INTERMEDIATE_REPLICA_ACCESS The targeted replica is intermediate
+    /// \retval LOCKED_DATA_OBJECT_ACCESS Another replica for the data object is locked
+    ///
+    /// \since 4.2.9
+    auto try_lock(
+        const DataObjInfo&     _obj,
+        const lock_type        _lock_type,
+        const std::string_view _target_replica_hierarchy,
+        const std::string_view _target_replica_token = "") -> int;
+
+    /// \brief Check to see if the data object will lock out some operation.
+    ///
+    /// \parblock
+    /// This overload targets a specific replica based on resource hierarchy. If the
+    /// target replica is in the intermediate state and the replica token does not match,
+    /// the lock will be tripped with a specific error. If any replica is locked or any
+    /// sibling replica is intermediate, the lock will be tripped.
+    /// \endparblock
+    ///
+    /// \param[in] _obj The data object being tested for a lock
+    /// \param[in] _lock_type Type of lock to test for
+    /// \param[in] _target_replica_number Replica number for the target replica
+    /// \param[in] _target_replica_token Replica token for target replica (can be empty)
+    ///
+    /// \returns An error code describing the access violation or 0 if no violation
+    /// \retval 0 The data object is not locked
+    /// \retval INTERMEDIATE_REPLICA_ACCESS The targeted replica is intermediate
+    /// \retval LOCKED_DATA_OBJECT_ACCESS Another replica for the data object is locked
+    ///
+    /// \since 4.2.9
+    auto try_lock(
+        const DataObjInfo&     _obj,
+        const lock_type        _lock_type,
+        const int              _target_replica_number,
+        const std::string_view _target_replica_token = "") -> int;
 } // namespace irods::logical_locking
 
 #endif // #ifndef IRODS_LOGICAL_LOCKING_HPP
