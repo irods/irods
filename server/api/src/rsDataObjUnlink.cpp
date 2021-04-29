@@ -36,6 +36,7 @@
 #include "irods_hierarchy_parser.hpp"
 #include "irods_at_scope_exit.hpp"
 #include "irods_logger.hpp"
+#include "logical_locking.hpp"
 #include "scoped_privileged_client.hpp"
 
 #define IRODS_QUERY_ENABLE_SERVER_SIDE_API
@@ -58,8 +59,9 @@ using logger = irods::experimental::log;
 
 namespace
 {
-    namespace ir = irods::experimental::replica;
     namespace id = irods::experimental::data_object;
+    namespace ir = irods::experimental::replica;
+    namespace ill = irods::logical_locking;
 
     int getNumSubfilesInBunfileObj(rsComm_t *rsComm, const char *objPath)
     {
@@ -178,6 +180,14 @@ int rsMvDataObjToTrash(
         return status;
     }
 
+    if (const auto ret = ill::try_lock(**dataObjInfoHead, ill::lock_type::write); ret < 0) {
+        irods::log(LOG_NOTICE, fmt::format(
+            "[{}:{}] - move to trash not allowed because data object is locked"
+            "[error code=[{}], logical path=[{}]",
+            __FUNCTION__, __LINE__, ret, (*dataObjInfoHead)->objPath));
+
+        return ret;
+    }
 
     char trashPath[MAX_NAME_LEN]{};
     status = rsMkTrashPath(rsComm, dataObjInp.objPath, trashPath);
@@ -291,10 +301,28 @@ int rsMvDataObjToTrash(
 
             auto replica = *id::find_replica(op, std::stoi(cond_input.at(REPL_NUM_KW).value().data()));
 
+            if (const auto ret = ill::try_lock(*op.get(), ill::lock_type::write, replica.replica_number()); ret < 0) {
+                irods::log(LOG_NOTICE, fmt::format(
+                    "[{}:{}] - unlink not allowed because data object is locked"
+                    "[error code=[{}], logical path=[{}], replica number=[{}]]",
+                    __FUNCTION__, __LINE__, ret, replica.logical_path(), replica.replica_number()));
+
+                return ret;
+            }
+
             return dataObjUnlinkS(&_comm, &_inp, replica.get());
         }
 
         auto op = id::make_data_object_proxy(**_head);
+
+        if (const auto ret = ill::try_lock(*op.get(), ill::lock_type::write); ret < 0) {
+            irods::log(LOG_NOTICE, fmt::format(
+                "[{}:{}] - unlink not allowed because data object is locked"
+                "[error code=[{}], logical path=[{}]]",
+                __FUNCTION__, __LINE__, ret, replica.logical_path()));
+
+            return ret;
+        }
 
         int retVal = 0;
 
@@ -356,11 +384,8 @@ int rsMvDataObjToTrash(
                 addKeyVal(&dataObjUnlinkInp->condInput, RESC_HIER_STR_KW, hier.c_str());
             }
             catch (const irods::exception& e) {
-                std::stringstream msg;
-                msg << "failed in irods::resolve_resource_hierarchy for [";
-                msg << dataObjUnlinkInp->objPath << "]";
                 irods::log(PASS(irods::error(e)));
-                // TODO: If the force flag is set, we just continue?
+                // Continuation is intentional. See irods/irods#3154.
                 if(!getValByKey(&dataObjUnlinkInp->condInput, FORCE_FLAG_KW)) {
                     return e.code();
                 }
@@ -504,7 +529,9 @@ int rsDataObjUnlink(rsComm_t* rsComm, dataObjInp_t* dataObjUnlinkInp)
         return ec;
     }
     catch (const irods::exception& e) {
-        irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, e.what()));
+        irods::log(LOG_ERROR, fmt::format(
+            "[{}:{}] - [{}]",
+            __FUNCTION__, __LINE__, e.client_display_what()));
         return e.code();
     }
     catch (const std::exception& e) {
@@ -522,6 +549,8 @@ int dataObjUnlinkS(rsComm_t* rsComm,
                    dataObjInp_t* dataObjUnlinkInp,
                    dataObjInfo_t* dataObjInfo)
 {
+    auto info = ir::make_replica_proxy(*dataObjInfo);
+
     // Because this function may change the "oprType", we must make sure that
     // the "oprType" is restored to it's original value before leaving. This is
     // necessary because other replicas may not require adjustments to the "oprType"
@@ -563,8 +592,6 @@ int dataObjUnlinkS(rsComm_t* rsComm,
             }
         }
     }
-
-    auto info = ir::make_replica_proxy(*dataObjInfo);
 
     // Ensure that the authenticated user has permission to perform a pure unregister on the replica.
     // Non-admin users do not have permission to unregister replicas from the catalog without unlinking

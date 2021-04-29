@@ -287,13 +287,16 @@ class Test_Ichksum(resource_suite.ResourceBase, unittest.TestCase):
         data_object = os.path.join(self.admin.session_collection, 'foo')
         self.admin.assert_icommand(['istream', 'write', data_object], input='some data')
 
-        # Set the replica's status to an unknown value, in this test, 3.
-        # If the replica's status was set to intermediate (2), ichksum would return HIERARCHY_ERROR.
-        self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', data_object, 'replica_number', '0', 'DATA_REPL_STATUS', '3'])
+        try:
+            # Set the replica's status to an unknown value, in this test, 7.
+            # If the replica's status was set to intermediate (2), write lock (3), or read lock (4), ichksum would return HIERARCHY_ERROR.
+            self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', data_object, 'replica_number', '0', 'DATA_REPL_STATUS', '7'])
 
-        self.admin.assert_icommand(['ichksum', data_object], 'STDERR', ['SYS_REPLICA_INACCESSIBLE'])
-        self.admin.assert_icommand(['ichksum', '-n0', data_object], 'STDERR', ['SYS_REPLICA_INACCESSIBLE'])
-        self.admin.assert_icommand(['ichksum', '-a', data_object], 'STDERR', ['SYS_NO_GOOD_REPLICA'])
+            self.admin.assert_icommand(['ichksum', data_object], 'STDERR', ['SYS_REPLICA_INACCESSIBLE'])
+            self.admin.assert_icommand(['ichksum', '-n0', data_object], 'STDERR', ['SYS_REPLICA_INACCESSIBLE'])
+            self.admin.assert_icommand(['ichksum', '-a', data_object], 'STDERR', ['SYS_NO_GOOD_REPLICA'])
+        finally:
+            self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', data_object, 'replica_number', '0', 'DATA_REPL_STATUS', '1'])
 
     def test_ichksum_returns_immediately_if_processing_replicas_in_the_bundle_resource__issue_5252(self):
         data_object = os.path.join(self.admin.session_collection, 'foo')
@@ -315,13 +318,22 @@ class Test_Ichksum(resource_suite.ResourceBase, unittest.TestCase):
         # Restore the replica's original resource id.
         self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', data_object, 'replica_number', '0', 'DATA_RESC_ID', original_resc_id.strip()])
 
-    def test_ichksum_is_not_allowed_access_to_intermediate_replicas__issue_5252(self):
+    def test_ichksum_is_not_allowed_access_to_locked_replicas__issue_5252(self):
         data_object = os.path.join(self.admin.session_collection, 'foo')
         self.admin.assert_icommand(['istream', 'write', data_object], input='some data')
-        self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', data_object, 'replica_number', '0', 'DATA_REPL_STATUS', '2'])
-        self.admin.assert_icommand(['ichksum', data_object], 'STDERR', ['HIERARCHY_ERROR'])
-        self.admin.assert_icommand(['ichksum', '-n0', data_object], 'STDERR', ['HIERARCHY_ERROR'])
-        self.admin.assert_icommand(['ichksum', '-a', data_object], 'STDERR', ['HIERARCHY_ERROR'])
+
+        try:
+            self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', data_object, 'replica_number', '0', 'DATA_REPL_STATUS', '2'])
+            self.admin.assert_icommand(['ichksum', data_object], 'STDERR', ['HIERARCHY_ERROR'])
+            self.admin.assert_icommand(['ichksum', '-n0', data_object], 'STDERR', ['HIERARCHY_ERROR'])
+            self.admin.assert_icommand(['ichksum', '-a', data_object], 'STDERR', ['HIERARCHY_ERROR'])
+
+            self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', data_object, 'replica_number', '0', 'DATA_REPL_STATUS', '3'])
+            self.admin.assert_icommand(['ichksum', data_object], 'STDERR', ['HIERARCHY_ERROR'])
+            self.admin.assert_icommand(['ichksum', '-n0', data_object], 'STDERR', ['HIERARCHY_ERROR'])
+            self.admin.assert_icommand(['ichksum', '-a', data_object], 'STDERR', ['HIERARCHY_ERROR'])
+        finally:
+            self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', data_object, 'replica_number', '0', 'DATA_REPL_STATUS', '1'])
 
     def test_ichksum_groups_objects_appropriately_when_the_recursive_flag_is_set__issue_5285(self):
         # Create a test collection. This avoids issues with data objects created by
