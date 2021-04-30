@@ -449,35 +449,33 @@ namespace
     } // parallel_transfer_put
 
     void throw_if_force_put_to_new_resource(
-        dataObjInp_t& data_obj_inp,
-        irods::file_object_ptr file_obj)
+        const DataObjInp& _inp,
+        const irods::file_object_ptr file_obj)
     {
-        char* dst_resc_kw   = getValByKey( &data_obj_inp.condInput, DEST_RESC_NAME_KW );
-        if (!dst_resc_kw) {
-            dst_resc_kw = getValByKey(&data_obj_inp.condInput, DEF_RESC_NAME_KW);
-        }
+        const auto cond_input = irods::experimental::make_key_value_proxy(_inp.condInput);
 
-        char* force_flag_kw = getValByKey( &data_obj_inp.condInput, FORCE_FLAG_KW );
-        if (file_obj->replicas().empty()  ||
-            !dst_resc_kw   ||
-            !force_flag_kw ||
-            strlen( dst_resc_kw ) == 0) {
+        const auto destination_resource = cond_input.contains(DEST_RESC_NAME_KW) ? cond_input.at(DEST_RESC_NAME_KW).value()
+                                        : cond_input.contains(DEF_RESC_NAME_KW)  ? cond_input.at(DEF_RESC_NAME_KW).value()
+                                        : std::string_view{};
+
+        if (file_obj->replicas().empty() || !cond_input.contains(FORCE_FLAG_KW) || destination_resource.empty()) {
             return;
         }
 
         const auto hier_match{
-            [&dst_resc_kw, &replicas = file_obj->replicas()]()
+            [&destination_resource, &replicas = file_obj->replicas()]()
             {
                 return std::any_of(replicas.cbegin(), replicas.cend(),
-                [&dst_resc_kw](const auto& r) {
-                    return irods::hierarchy_parser{r.resc_hier()}.first_resc() == dst_resc_kw;
+                [&destination_resource](const auto& r) {
+                    return irods::hierarchy_parser{r.resc_hier()}.first_resc() == destination_resource;
                 });
             }()
         };
+
         if (!hier_match) {
             THROW(HIERARCHY_ERROR, fmt::format(
                 "cannot force put [{}] to a different resource [{}]",
-                data_obj_inp.objPath, dst_resc_kw));
+                _inp.objPath, destination_resource));
         }
     } // throw_if_force_put_to_new_resource
 
