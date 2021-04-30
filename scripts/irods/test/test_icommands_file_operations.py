@@ -660,7 +660,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
                         msg="Files missing from vault:\n" + str(local_files - files_in_vault) + "\n\n" +
                             "Extra files in vault:\n" + str(files_in_vault - local_files))
 
-    def test_cancel_large_iput(self):
+    def test_cancel_large_iput_for_create(self):
         base_name = 'test_cancel_large_put'
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
         file_size = pow(2, 30)
@@ -682,6 +682,70 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         # wait for select() call to timeout, set to "SELECT_TIMEOUT_FOR_CONN", which is 60 seconds
         time.sleep(63)
         self.user0.assert_icommand('ils -l', 'STDOUT_SINGLELINE', [file_name, str(new_size)])
+
+    def test_cancel_large_iput_for_overwrite__issue_3091(self):
+        filename = 'test_cancel_large_iput_for_overwrite__issue_3091'
+        small_local_file = os.path.join(self.user0.local_session_dir, 'smol')
+        large_local_file = os.path.join(self.user0.local_session_dir, filename)
+        logical_path = os.path.join(self.user0.session_collection, filename)
+        file_size = pow(2, 30)
+
+        try:
+            if not os.path.exists(small_local_file):
+                lib.make_file(small_local_file, 1024)
+
+            self.user0.assert_icommand(['iput', '-K', small_local_file, logical_path])
+            out, err, ec = self.user0.run_icommand(
+                ['iquest', '%s %s',
+                 "select DATA_CHECKSUM, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'"
+                 .format(os.path.basename(logical_path), os.path.dirname(logical_path))])
+
+            self.assertEqual(0, ec)
+            self.assertEqual(0, len(err))
+            self.assertEqual(1, len(out.splitlines()))
+
+            result = out.split()
+            self.assertEqual(1, int(result[1]))
+            old_checksum = result[0]
+
+            if not os.path.exists(large_local_file):
+                lib.make_file(large_local_file, file_size)
+
+            iput_cmd = 'iput -f -K {0} {1}'.format(large_local_file, logical_path)
+            file_vault_full_path = os.path.join(self.user0.get_vault_session_path(), filename)
+            self.user0.interrupt_icommand(iput_cmd, file_vault_full_path, 2048)
+            self.user0.assert_icommand('ils -L', 'STDOUT_SINGLELINE', filename)
+
+            # multiple threads could still be writing on the server side, so we need to wait for
+            # the size in the vault to converge - then we're done.
+            old_size = None
+            new_size = os.path.getsize(file_vault_full_path)
+            while old_size != new_size:
+                time.sleep(1)
+                old_size = new_size
+                new_size = os.path.getsize(file_vault_full_path)
+
+            # wait for select() call to timeout, set to slightly above "SELECT_TIMEOUT_FOR_CONN", which is 60 seconds
+            time.sleep(63)
+            self.user0.assert_icommand('ils -L', 'STDOUT_SINGLELINE', [filename, str(new_size)])
+
+            out, err, ec = self.user0.run_icommand(
+                ['iquest', '%s...%s...%s',
+                 "select DATA_SIZE, DATA_CHECKSUM, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'"
+                 .format(os.path.basename(logical_path), os.path.dirname(logical_path))])
+
+            self.assertEqual(0, ec)
+            self.assertEqual(0, len(err))
+
+            self.assertEqual(1, len(out.splitlines()))
+            result = out.split('...')
+
+            self.assertEqual(new_size, int(result[0]))
+            self.assertNotEqual(old_checksum, result[1])
+            self.assertEqual(0, int(result[2]))
+
+        finally:
+            self.user0.assert_icommand(['irm', '-f', logical_path])
 
     def test_iphymv_root(self):
         self.admin.assert_icommand('iadmin mkresc test1 unixfilesystem ' + lib.get_hostname() + ':' + paths.irods_directory() + '/test1',
