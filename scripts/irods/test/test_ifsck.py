@@ -10,11 +10,12 @@ from . import session
 from .. import test
 from .. import lib
 
-class Test_Ifsck(session.make_sessions_mixin([('otherrods', 'rods')], []), unittest.TestCase):
+class Test_Ifsck(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
 
     def setUp(self):
         super(Test_Ifsck, self).setUp()
         self.admin = self.admin_sessions[0]
+        self.user = self.user_sessions[0]
 
     def tearDown(self):
         super(Test_Ifsck, self).tearDown()
@@ -42,4 +43,43 @@ class Test_Ifsck(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
 
         # TEST: This should not produce any messages.
         self.admin.assert_icommand(['ifsck', '-r', physical_path_to_col])
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    def test_ifsck_continues_when_user_cannot_access_subdirectory__issue_5358(self):
+        try:
+            #
+            # Create a directory tree with inaccessible subdirectories.
+            #
+
+            # 1. Create the root directory.
+            root_dir = os.path.join(self.user.local_session_dir, 'issue_5358')
+            os.mkdir(root_dir)
+
+            # 2. Create subdirectories and adjust their permissions so that an error
+            #    is generated when "ifsck" attempts to iterate over their contents.
+            dirs = [os.path.join(root_dir, 'dir_1'),
+                    os.path.join(root_dir, 'dir_2'),
+                    os.path.join(root_dir, 'dir_3')]
+            for d in dirs:
+                os.mkdir(d, 0o111)
+
+            # 3. Create one more subdirectory with normal permissions. This directory
+            #    will be used to verify that the user does not run into permission
+            #    issues and that "ifsck" continues without terminating.
+            dirs.append(os.path.join(root_dir, 'dir_4'))
+            os.mkdir(dirs[3])
+
+            #
+            # TEST
+            #
+            ec, _, err = self.admin.assert_icommand(['ifsck', '-r', root_dir], 'STDERR', [
+                'Permission denied: "' + dirs[0] + '"',
+                'Permission denied: "' + dirs[1] + '"',
+                'Permission denied: "' + dirs[2] + '"'
+            ])
+            self.assertEqual(ec, 3)
+            self.assertNotIn('Permission denied: "' + dirs[3] + '"', err)
+        finally:
+            for d in dirs:
+                os.chmod(d, 0o777)
 
