@@ -46,7 +46,6 @@
 #include "irods_resource_redirect.hpp"
 #include "irods_serialization.hpp"
 #include "irods_server_properties.hpp"
-#include "logical_locking.hpp"
 #include "scoped_privileged_client.hpp"
 #include "server_utilities.hpp"
 
@@ -55,9 +54,8 @@
 
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
 #include "data_object_proxy.hpp"
-#include "replica_proxy.hpp"
 
-#include "replica_state_table.hpp"
+#include "logical_locking.hpp"
 
 #include <cstring>
 #include <chrono>
@@ -95,33 +93,35 @@ namespace
 
     auto finalize_on_failure(RsComm& _comm, DataObjInfo& _info, l1desc& _l1desc) -> int
     {
-        auto replica = irods::experimental::replica::make_replica_proxy(_info);
+        auto r = ir::make_replica_proxy(_info);
 
-        replica.replica_status(STALE_REPLICA);
-        replica.mtime(SET_TIME_TO_NOW_KW);
+        r.replica_status(STALE_REPLICA);
+        r.mtime(SET_TIME_TO_NOW_KW);
 
-        const rodsLong_t vault_size = getSizeInVault(&_comm, replica.get());
+        const rodsLong_t vault_size = getSizeInVault(&_comm, r.get());
         if (vault_size < 0) {
             irods::log(LOG_ERROR, fmt::format(
                 "[{}:{}] - failed to get size in vault "
                 "[error code=[{}], path=[{}], hierarchy=[{}]]",
                 __FUNCTION__, __LINE__, vault_size,
-                replica.logical_path(), replica.hierarchy()));
+                r.logical_path(), r.hierarchy()));
 
             // Continue because the data object still needs to be unlocked.
         }
         else {
-            replica.size(vault_size);
+            r.size(vault_size);
         }
 
         // Write it out to the catalog
-        rst::update(replica.data_id(), replica);
+        rst::update(r.data_id(), r);
 
-        if (const int ec = ill::unlock_and_publish(_comm, replica.data_id(), replica.replica_number(), STALE_REPLICA, ill::restore_status); ec < 0) {
+        const auto admin_op = irods::experimental::make_key_value_proxy(_l1desc.dataObjInp->condInput).contains(ADMIN_KW);
+
+        if (const int ec = ill::unlock_and_publish(_comm, {r, admin_op}, STALE_REPLICA, ill::restore_status); ec < 0) {
             irods::log(LOG_ERROR, fmt::format(
                 "[{}:{}] - failed in finalize step "
                 "[error_code=[{}], path=[{}], hierarchy=[{}]]",
-                __LINE__, __FUNCTION__, ec, replica.logical_path(), replica.replica_number()));
+                __LINE__, __FUNCTION__, ec, r.logical_path(), r.replica_number()));
 
             return ec;
         }
@@ -131,9 +131,10 @@ namespace
 
     auto finalize_replica(RsComm& _comm, DataObjInfo& _info, l1desc& _l1desc) -> int
     {
-        auto replica = irods::experimental::replica::make_replica_proxy(_info);
+        auto replica = ir::make_replica_proxy(_info);
 
         auto cond_input = irods::experimental::make_key_value_proxy(_l1desc.dataObjInp->condInput);
+
         try {
             const bool verify_size = !cond_input.contains(NO_CHK_COPY_LEN_KW);
             const auto size_in_vault = irods::get_size_in_vault(_comm, _info, verify_size, _l1desc.dataSize);
@@ -173,7 +174,9 @@ namespace
             // the size and checksum in the catalog.
             rst::update(replica.data_id(), replica);
 
-            if (const int ec = ill::unlock_and_publish(_comm, _info.dataId, _info.replNum, STALE_REPLICA, ill::restore_status); ec < 0) {
+            const auto admin_op = cond_input.contains(ADMIN_KW);
+
+            if (const int ec = ill::unlock_and_publish(_comm, {replica, admin_op}, STALE_REPLICA, ill::restore_status); ec < 0) {
                 irods::log(LOG_ERROR, fmt::format("{} - unlock_and_publish failed [error_code={}]", __FUNCTION__, ec));
             }
             throw;
@@ -201,9 +204,7 @@ namespace
         // Write it out to the catalog
         rst::update(replica.data_id(), replica);
 
-        const auto update = irods::to_json(cond_input.get());
-
-        if (const int ec = rst::publish_to_catalog(_comm, replica.data_id(), replica.replica_number(), update); ec < 0) {
+        if (const int ec = rst::publish::to_catalog(_comm, {replica, *cond_input.get()}); ec < 0) {
             THROW(ec, fmt::format(
                 "[{}:{}] - failed in finalize step "
                 "[error_code=[{}], path=[{}], hierarchy=[{}]]",

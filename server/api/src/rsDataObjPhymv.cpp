@@ -29,7 +29,6 @@
 #include "irods_resource_redirect.hpp"
 #include "json_serialization.hpp"
 #include "key_value_proxy.hpp"
-#include "logical_locking.hpp"
 #include "replica_access_table.hpp"
 #include "replication_utilities.hpp"
 
@@ -39,7 +38,7 @@
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
 #include "data_object_proxy.hpp"
 
-#include "replica_state_table.hpp"
+#include "logical_locking.hpp"
 
 namespace
 {
@@ -348,19 +347,21 @@ namespace
         return rsDataObjOpen(&_comm, &_inp);
     } // open_destination_replica
 
-    auto finalize_destination_replica_on_failure(RsComm& _comm, l1desc& _l1desc, ir::replica_proxy_t& _destination_replica) -> int
+    auto finalize_destination_replica_on_failure(
+        RsComm& _comm,
+        l1desc& _l1desc,
+        ir::replica_proxy_t& _destination_replica) -> int
     {
+        const auto admin_op = irods::experimental::make_key_value_proxy(_l1desc.dataObjInp->condInput).contains(ADMIN_KW);
+
         const rodsLong_t vault_size = getSizeInVault(&_comm, _destination_replica.get());
+
         if (vault_size < 0) {
             irods::log(LOG_ERROR, fmt::format(
                 "{} - getSizeInVault failed [{}]",
                 __FUNCTION__, vault_size));
 
-            const int ec = ill::unlock_and_publish(_comm,
-                                                   _destination_replica.data_id(),
-                                                   _destination_replica.replica_number(),
-                                                   STALE_REPLICA,
-                                                   ill::restore_status);
+            const int ec = ill::unlock_and_publish(_comm, {_destination_replica, admin_op}, STALE_REPLICA, ill::restore_status);
             if (ec < 0) {
                 irods::log(LOG_ERROR, fmt::format(
                     "[{}:{}] - failed to unlock data object "
@@ -380,11 +381,7 @@ namespace
         // Write it out to the catalog
         rst::update(_destination_replica.data_id(), _destination_replica);
 
-        const int ec = ill::unlock_and_publish(_comm,
-                                               _destination_replica.data_id(),
-                                               _destination_replica.replica_number(),
-                                               STALE_REPLICA,
-                                               ill::restore_status);
+        const int ec = ill::unlock_and_publish(_comm, {_destination_replica, admin_op}, STALE_REPLICA, ill::restore_status);
         if (ec < 0) {
             irods::log(LOG_ERROR, fmt::format(
                 "[{}:{}] - failed to unlock data object "
@@ -409,6 +406,9 @@ namespace
             rst::at(_source_replica.data_id(), _source_replica.replica_number(), rst::state_type::after));
 
         auto cond_input = irods::experimental::make_key_value_proxy(_destination_l1desc.dataObjInp->condInput);
+
+        const auto admin_op = cond_input.contains(ADMIN_KW);
+
         try {
             constexpr bool verify_size = true;
             const auto size_in_vault = irods::get_size_in_vault(_comm, *_destination_replica.get(), verify_size, _destination_l1desc.dataSize);
@@ -433,11 +433,7 @@ namespace
         catch (const irods::exception& e) {
             rst::update(_destination_replica.data_id(), _destination_replica);
 
-            const int ec = ill::unlock_and_publish(_comm,
-                                                   _destination_replica.data_id(),
-                                                   _destination_replica.replica_number(),
-                                                   STALE_REPLICA,
-                                                   ill::restore_status);
+            const int ec = ill::unlock_and_publish(_comm, {_destination_replica, admin_op}, STALE_REPLICA, ill::restore_status);
             if (ec < 0) {
                 irods::log(LOG_ERROR, fmt::format(
                     "[{}:{}] - failed to unlock data object "
@@ -482,7 +478,7 @@ namespace
             // no longer reflects the state of the catalog and may lead to undesirable results when
             // updating the catalog on unlock.
             rst::update(source_replica.data_id(), source_replica);
-            rst::publish_to_catalog(_comm, source_replica.data_id(), -1, {});
+            rst::publish::to_catalog(_comm, {source_replica.data_id(), admin_op});
         }
         else {
             // The replica was unlinked and unregistered successfully, so remove the replica entry
@@ -515,10 +511,12 @@ namespace
             return unlock_ec;
         }
 
-        const int ec = rst::publish_to_catalog(_comm,
-                                               _destination_replica.data_id(),
-                                               _destination_replica.resource(),
-                                               irods::to_json(cond_input.get()));
+        const auto ctx = rst::publish::context{_destination_replica.data_id(),
+                                               original_destination_replica_number,
+                                               irods::to_json(cond_input.get()),
+                                               cond_input.contains(ADMIN_KW)};
+
+        const int ec = rst::publish::to_catalog(_comm, ctx);
 
         if (CREATE_TYPE == _destination_l1desc.openType) {
             updatequotaOverrun(_destination_replica.hierarchy().data(), _destination_replica.size(), ALL_QUOTA);

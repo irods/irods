@@ -25,7 +25,9 @@
 #include <thread>
 
 namespace fs = irods::experimental::filesystem;
+namespace id = irods::experimental::data_object;
 namespace io = irods::experimental::io;
+namespace ir = irods::experimental::replica;
 
 using json = nlohmann::json;
 
@@ -99,27 +101,24 @@ TEST_CASE("finalize", "[finalize]")
 
     std::this_thread::sleep_for(2s);
 
+    auto [og_op, og_lm] = id::make_data_object_proxy(comm, target_object);
+
     SECTION("basic operation")
     {
-        namespace replica = irods::experimental::replica;
-        namespace data_object = irods::experimental::data_object;
-
         const auto hash_replica_number = [](const int _rn) { return 2 * _rn + 2; };
-
-        auto [og_op, og_lm] = data_object::make_data_object_proxy(comm, target_object);
 
         {
             // Get data object info, modify some fields in each replica, and stamp the catalog
             json input;
 
             for (auto& repl : og_op.replicas()) {
-                const auto before = replica::to_json(repl);
+                const auto before = ir::to_json(repl);
 
                 repl.replica_number(hash_replica_number(repl.replica_number()));
                 repl.comments(fmt::format("replica is on {}", repl.resource().data()));
                 repl.mtime(SET_TIME_TO_NOW_KW);
 
-                const auto after = replica::to_json(repl);
+                const auto after = ir::to_json(repl);
 
                 input["replicas"].push_back(json{
                     {"before", before},
@@ -131,12 +130,12 @@ TEST_CASE("finalize", "[finalize]")
             irods::at_scope_exit free_memory{[&error_string] { std::free(error_string); }};
 
             REQUIRE(0 == rc_data_object_finalize(&comm, input.dump().c_str(), &error_string));
-            REQUIRE("{}"s == error_string);
+            REQUIRE(std::string_view{error_string} == "{}");
         }
 
         {
             // Ensure that the catalog was updated correctly for each replica
-            auto [op, lm] = data_object::make_data_object_proxy(comm, target_object);
+            auto [op, lm] = id::make_data_object_proxy(comm, target_object);
 
             REQUIRE(og_op.replica_count() == op.replica_count());
 
@@ -177,6 +176,51 @@ TEST_CASE("finalize", "[finalize]")
 
                 i++;
             }
+        }
+    }
+
+    SECTION("immutable columns")
+    {
+        constexpr auto new_data_id = 1;
+        constexpr auto new_collection_id = 2;
+        const auto new_logical_path = fs::path{og_op.logical_path().data()}.parent_path() / "new_data_name";
+
+        // Get data object info, modify some fields in each replica, and stamp the catalog
+        json input;
+
+        auto [op, op_lm] = id::duplicate_data_object(*og_op.get());
+
+        for (auto& repl : op.replicas()) {
+            const auto before = ir::to_json(repl);
+
+            repl.data_id(new_data_id);
+            repl.collection_id(new_collection_id);
+            repl.logical_path(new_logical_path.c_str());
+
+            const auto after = ir::to_json(repl);
+
+            input["replicas"].push_back(json{
+                {"before", before},
+                {"after", after}
+            });
+        }
+
+        char* error_string{};
+        irods::at_scope_exit free_memory{[&error_string] { std::free(error_string); }};
+
+        REQUIRE(0 == rc_data_object_finalize(&comm, input.dump().c_str(), &error_string));
+        REQUIRE(std::string_view{error_string} == "{}");
+
+        // Ensure that the catalog was updated correctly for each replica
+        const auto [new_op, lm] = id::make_data_object_proxy(comm, target_object);
+
+        REQUIRE(og_op.replica_count() == new_op.replica_count());
+
+        for (auto&& repl : new_op.replicas()) {
+            // check modified fields (that is, that the fields were NOT modified)
+            CHECK(og_op.data_id()       == repl.data_id());
+            CHECK(og_op.collection_id() == repl.collection_id());
+            CHECK(og_op.logical_path()  == repl.logical_path());
         }
     }
 }

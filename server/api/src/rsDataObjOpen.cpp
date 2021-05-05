@@ -61,7 +61,6 @@
 #include "irods_server_properties.hpp"
 #include "irods_stacktrace.hpp"
 #include "key_value_proxy.hpp"
-#include "logical_locking.hpp"
 #include "replica_access_table.hpp"
 #include "replica_state_table.hpp"
 #include "scoped_privileged_client.hpp"
@@ -74,6 +73,8 @@
 
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
 #include "data_object_proxy.hpp"
+
+#include "logical_locking.hpp"
 
 #include <fmt/format.h>
 
@@ -278,6 +279,8 @@ namespace
             l1_cond_input[FILE_PATH_KW] = new_replica.physical_path();
             l1_cond_input[DATA_SIZE_KW] = std::to_string(0);
 
+            const auto admin_op = l1_cond_input.contains(ADMIN_KW);
+
             // We need to lock the data object before creating the new replica. Otherwise,
             // multiple replicas can be created on the same data object simultaneously in an
             // uncoordinated fashion. The following steps must happen:
@@ -299,13 +302,13 @@ namespace
                     return insert_ec;
                 }
 
-                if (const int lock_ec = ill::lock_before_create_and_publish(_comm, obj.data_id(), ill::lock_type::write); lock_ec < 0) {
+                if (const int lock_ec = ill::lock_and_publish(_comm, {obj.data_id(), admin_op}, ill::lock_type::write); lock_ec < 0) {
                     irods::log(LOG_ERROR, fmt::format(
                         "[{}:{}] - Failed to lock data object on create "
                         "[error_code=[{}], path=[{}], hierarchy=[{}]",
                         __FUNCTION__, __LINE__, lock_ec, _inp.objPath, hierarchy));
 
-                    if (const int unlock_ec = ill::unlock_before_create_and_publish(_comm, obj.data_id(), ill::restore_status); unlock_ec < 0) {
+                    if (const int unlock_ec = ill::unlock_and_publish(_comm, {obj.data_id(), admin_op}, ill::restore_status); unlock_ec < 0) {
                         irods::log(LOG_ERROR, fmt::format(
                             "Failed to unlock data object "
                             "[error_code=[{}], path=[{}], hierarchy=[{}]]",
@@ -327,7 +330,7 @@ namespace
                     __FUNCTION__, __LINE__, ec, _inp.objPath, hierarchy));
 
                 if (object_locked) {
-                    if (const int unlock_ec = ill::unlock_before_create_and_publish(_comm, _existing_replica_list->dataId, ill::restore_status); unlock_ec < 0) {
+                    if (const int unlock_ec = ill::unlock_and_publish(_comm, {_existing_replica_list->dataId, admin_op}, ill::restore_status); unlock_ec < 0) {
                         irods::log(LOG_ERROR, fmt::format(
                             "Failed to unlock data object "
                             "[error_code=[{}], path=[{}], hierarchy=[{}]]",
@@ -351,10 +354,8 @@ namespace
             const auto clean_up = irods::at_scope_exit{[&]
                 {
                     if (ec < 0) {
-                        auto& l1desc = L1desc[l1_index];
-
                         if (object_locked) {
-                            if (const int unlock_ec = ill::unlock_and_publish(_comm, registered_replica.data_id(), registered_replica.replica_number(), ill::restore_status); unlock_ec < 0) {
+                            if (const int unlock_ec = ill::unlock_and_publish(_comm, {registered_replica, admin_op}, ill::restore_status); unlock_ec < 0) {
                                 irods::log(LOG_ERROR, fmt::format(
                                     "Failed to unlock data object "
                                     "[error_code=[{}], path=[{}], hierarchy=[{}]]",
@@ -418,7 +419,7 @@ namespace
                     __FUNCTION__, __LINE__,
                     l3_index, _inp.objPath, hierarchy, registered_replica.physical_path()));
 
-                if (const int unlock_ec = ill::unlock_and_publish(_comm, registered_replica.data_id(), registered_replica.replica_number(), STALE_REPLICA, ill::restore_status); unlock_ec < 0) {
+                if (const int unlock_ec = ill::unlock_and_publish(_comm, {registered_replica, admin_op}, STALE_REPLICA, ill::restore_status); unlock_ec < 0) {
                     irods::log(LOG_ERROR, fmt::format(
                         "Failed to unlock data object "
                         "[error_code={}, path={}, hierarchy={}]]",
@@ -613,9 +614,13 @@ namespace
             if (const auto access_mode = (l1desc.dataObjInp->openFlags & O_ACCMODE);
                 access_mode == O_WRONLY || access_mode == O_RDWR)
             {
-                auto& info = *l1desc.dataObjInfo;
-                rst::update(info.dataId, info.replNum, {{"data_size", "0"}, {"data_checksum", ""}});
-                if (const int ec = rst::publish_to_catalog(_comm, info.dataId, info.replNum, nlohmann::json{}); ec < 0) {
+                const auto admin_operation = _replica.cond_input().contains(ADMIN_KW);
+
+                const auto replica = ir::make_replica_proxy(*l1desc.dataObjInfo);
+
+                rst::update(replica.data_id(), replica.replica_number(), {{"data_size", "0"}, {"data_checksum", ""}});
+
+                if (const int ec = rst::publish::to_catalog(_comm, {replica, admin_operation}); ec < 0) {
                     return ec;
                 }
 
@@ -933,6 +938,8 @@ namespace
             return ret;
         }
 
+        const auto admin_op = irods::experimental::make_key_value_proxy(dataObjInp->condInput).contains(ADMIN_KW);
+
         // Insert the data object information into the replica state table before the replica status is
         // updated because the "before" state is supposed to represent the state of the data object before
         // it is modified (in this particular case, before its replica status is modified).
@@ -953,7 +960,7 @@ namespace
             // replica access table. This is needed for concurrent opens for write.
             replica.replica_status(INTERMEDIATE_REPLICA);
 
-            if (const int lock_ec = ill::lock_and_publish(*rsComm, replica.data_id(), replica.replica_number(), ill::lock_type::write); lock_ec < 0) {
+            if (const int lock_ec = ill::lock_and_publish(*rsComm, {replica, admin_op}, ill::lock_type::write); lock_ec < 0) {
                 if (rst::contains(replica.data_id())) {
                     rst::erase(replica.data_id());
                 }
@@ -975,7 +982,7 @@ namespace
                 }
             }};
 
-            if (const int ec = ill::unlock_and_publish(*rsComm, replica.data_id(), replica.replica_number(), ill::restore_status); ec < 0) {
+            if (const int ec = ill::unlock_and_publish(*rsComm, {replica, admin_op}, ill::restore_status); ec < 0) {
                 irods::log(LOG_ERROR, fmt::format(
                     "[{}:{}] - Failed to unlock data object "
                     "[error_code=[{}], path=[{}], hierarchy=[{}]",
@@ -993,7 +1000,7 @@ namespace
                 }
             }};
 
-            if (const int ec = ill::unlock_and_publish(*rsComm, replica.data_id(), replica.replica_number(), ill::restore_status); ec < 0) {
+            if (const int ec = ill::unlock_and_publish(*rsComm, {replica, admin_op}, ill::restore_status); ec < 0) {
                 irods::log(LOG_ERROR, fmt::format(
                     "[{}:{}] - Failed to unlock data object "
                     "[error_code=[{}], path=[{}], hierarchy=[{}]",

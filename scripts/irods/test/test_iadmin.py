@@ -983,71 +983,73 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin addchildtoresc repl leaf_a")
         self.admin.assert_icommand("iadmin addchildtoresc repl leaf_b")
 
-        # =-=-=-=-=-=-=-
-        # place data into the resource
-        test_file = "rebalance_test_file"
-        lib.make_file(test_file, 100)
-        num_children = 3
-        for i in range(num_children):
-            self.admin.assert_icommand("iput -R repl %s foo%d" % (test_file, i))
-            self.user0.assert_icommand("iput -R repl %s bar%d" % (test_file, i))
+        try:
+            # =-=-=-=-=-=-=-
+            # place data into the resource
+            test_file = "rebalance_test_file"
+            lib.make_file(test_file, 100)
+            num_children = 3
+            for i in range(num_children):
+                self.admin.assert_icommand("iput -R repl %s foo%d" % (test_file, i))
+                self.user0.assert_icommand("iput -R repl %s bar%d" % (test_file, i))
 
-        # =-=-=-=-=-=-=-
-        # surgically trim repls so we can rebalance
-        self.admin.assert_icommand("itrim -N1 -n 0 foo1", 'STDOUT_SINGLELINE', "files trimmed")
-        self.user0.assert_icommand("itrim -N1 -n 0 bar0", 'STDOUT_SINGLELINE', "files trimmed")
+            # =-=-=-=-=-=-=-
+            # surgically trim repls so we can rebalance
+            self.admin.assert_icommand("itrim -N1 -n 0 foo1", 'STDOUT_SINGLELINE', "files trimmed")
+            self.user0.assert_icommand("itrim -N1 -n 0 bar0", 'STDOUT_SINGLELINE', "files trimmed")
 
-        # =-=-=-=-=-=-=-
-        # dirty up a foo10 repl to ensure that code path is tested also
-        self.admin.assert_icommand("iadmin modresc leaf_a status down")
-        test1_path = os.path.join(self.admin.local_session_dir, 'test1')
-        lib.make_file(test1_path, 1500, 'arbitrary')
-        self.user0.assert_icommand("iput -fR repl %s bar2" % (test1_path))
-        self.admin.assert_icommand("iadmin modresc leaf_a status up")
+            # =-=-=-=-=-=-=-
+            # dirty up a foo10 repl to ensure that code path is tested also
+            self.admin.assert_icommand("iadmin modresc leaf_a status down")
+            test1_path = os.path.join(self.admin.local_session_dir, 'test1')
+            lib.make_file(test1_path, 1500, 'arbitrary')
+            self.user0.assert_icommand("iput -fR repl %s bar2" % (test1_path))
+            self.admin.assert_icommand("iadmin modresc leaf_a status up")
 
-        # =-=-=-=-=-=-=-
-        # visualize our pruning and dirtying
-        self.admin.assert_icommand("ils -ALr /", 'STDOUT_SINGLELINE', self.admin.username)
+            # =-=-=-=-=-=-=-
+            # visualize our pruning and dirtying
+            self.admin.assert_icommand("ils -ALr /", 'STDOUT_SINGLELINE', self.admin.username)
 
-        # =-=-=-=-=-=-=-
-        # call rebalance function - the thing were actually testing... finally.
-        self.admin.assert_icommand("iadmin modresc repl rebalance")
+            # =-=-=-=-=-=-=-
+            # call rebalance function - the thing were actually testing... finally.
+            self.admin.assert_icommand("iadmin modresc repl rebalance")
 
-        # =-=-=-=-=-=-=-
-        # visualize our rebalance
-        self.admin.assert_icommand("ils -ALr /", 'STDOUT_SINGLELINE', self.admin.username)
+            # =-=-=-=-=-=-=-
+            # visualize our rebalance
+            self.admin.assert_icommand("ils -ALr /", 'STDOUT_SINGLELINE', self.admin.username)
 
-        # =-=-=-=-=-=-=-
-        # assert that all the appropriate repl numbers exist for all the children
-        self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', [" 0 ", " foo0"])
-        self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', [" 1 ", " foo0"])
+            # =-=-=-=-=-=-=-
+            # assert that all the appropriate repl numbers exist for all the children
+            self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', [" 0 ", " foo0"])
+            self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', [" 1 ", " foo0"])
 
-        self.admin.assert_icommand("ils -AL foo1", 'STDOUT_SINGLELINE', [" 1 ", " foo1"])
-        self.admin.assert_icommand("ils -AL foo1", 'STDOUT_SINGLELINE', [" 2 ", " foo1"])
+            self.admin.assert_icommand("ils -AL foo1", 'STDOUT_SINGLELINE', [" 1 ", " foo1"])
+            self.admin.assert_icommand("ils -AL foo1", 'STDOUT_SINGLELINE', [" 2 ", " foo1"])
 
-        self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', [" 0 ", " foo2"])
-        self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', [" 1 ", " foo2"])
+            self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', [" 0 ", " foo2"])
+            self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', [" 1 ", " foo2"])
 
-        self.user0.assert_icommand("ils -AL bar0", 'STDOUT_SINGLELINE', [" 1 ", " bar0"])
-        self.user0.assert_icommand("ils -AL bar0", 'STDOUT_SINGLELINE', [" 2 ", " bar0"])
+            self.user0.assert_icommand("ils -AL bar0", 'STDOUT_SINGLELINE', [" 1 ", " bar0"])
+            self.user0.assert_icommand("ils -AL bar0", 'STDOUT_SINGLELINE', [" 2 ", " bar0"])
 
-        self.user0.assert_icommand("ils -AL bar1", 'STDOUT_SINGLELINE', [" 0 ", " bar1"])
-        self.user0.assert_icommand("ils -AL bar1", 'STDOUT_SINGLELINE', [" 1 ", " bar1"])
+            self.user0.assert_icommand("ils -AL bar1", 'STDOUT_SINGLELINE', [" 0 ", " bar1"])
+            self.user0.assert_icommand("ils -AL bar1", 'STDOUT_SINGLELINE', [" 1 ", " bar1"])
 
-        self.user0.assert_icommand("ils -AL bar2", 'STDOUT_SINGLELINE', [" 0 ", " bar2"])
-        self.user0.assert_icommand("ils -AL bar2", 'STDOUT_SINGLELINE', [" 1 ", " bar2"])
+            self.user0.assert_icommand("ils -AL bar2", 'STDOUT_SINGLELINE', [" 0 ", " bar2"])
+            self.user0.assert_icommand("ils -AL bar2", 'STDOUT_SINGLELINE', [" 1 ", " bar2"])
 
-        # =-=-=-=-=-=-=-
-        # TEARDOWN
-        for i in range(num_children):
-            self.admin.assert_icommand("irm -f foo%d" % i)
-            self.user0.assert_icommand("irm -f bar%d" % i)
+        finally:
+            # =-=-=-=-=-=-=-
+            # TEARDOWN
+            for i in range(num_children):
+                self.admin.run_icommand("irm -f foo%d" % i)
+                self.user0.run_icommand("irm -f bar%d" % i)
 
-        self.admin.assert_icommand("iadmin rmchildfromresc repl leaf_b")
-        self.admin.assert_icommand("iadmin rmchildfromresc repl leaf_a")
-        self.admin.assert_icommand("iadmin rmresc leaf_b")
-        self.admin.assert_icommand("iadmin rmresc leaf_a")
-        self.admin.assert_icommand("iadmin rmresc repl")
+            self.admin.run_icommand("iadmin rmchildfromresc repl leaf_b")
+            self.admin.run_icommand("iadmin rmchildfromresc repl leaf_a")
+            self.admin.run_icommand("iadmin rmresc leaf_b")
+            self.admin.run_icommand("iadmin rmresc leaf_a")
+            self.admin.run_icommand("iadmin rmresc repl")
 
     def test_rebalance_for_child_with_substring_in_name(self):
         hostname = lib.get_hostname()

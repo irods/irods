@@ -3,10 +3,14 @@
 
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
 #include "data_object_proxy.hpp"
+#include "json_serialization.hpp"
 
 #include "json.hpp"
 
 #include <string_view>
+#include <variant>
+
+/// \file
 
 struct RsComm;
 
@@ -92,7 +96,13 @@ struct RsComm;
 namespace irods::replica_state_table
 {
     // data_id serves as the key to entries
-    using key_type = std::uint64_t;
+    using key_type = long long;
+
+    // replica_id_type serves as a varying way of identifying a replica
+    using replica_id_type = std::variant<const int, const std::string_view>;
+
+    /// \var Used when a particular replica is unknown or unneeded
+    constexpr auto unknown_replica_id = -1;
 
     /// \brief Specify which version of the data object information to fetch from the map entry
     ///
@@ -503,67 +513,127 @@ namespace irods::replica_state_table
         const std::string_view _property_name,
         const state_type _state = state_type::before) -> std::string;
 
-    /// \brief Prepares the specified data object as input to data_object_finalize and updates the catalog
-    ///
-    /// \param[in/out] _comm
-    /// \param[in] _key
-    /// \param[in] _replica_number_for_file_modified
-    /// \param[in] _file_modified_parameters
-    ///
-    /// \returns error code returned by rs_data_object_finalize
-    /// \retval 0 success
-    ///
-    /// \throws irods::exception
-    ///
-    /// \since 4.2.9
-    auto publish_to_catalog(
-        RsComm& _comm,
-        const key_type& _key,
-        const int _replica_number_for_file_modified,
-        const nlohmann::json& _file_modified_parameters) -> int;
-
-    /// \brief Prepares the specified data object as input to data_object_finalize and updates the catalog
-    ///
-    /// \param[in/out] _comm
-    /// \param[in] _key
-    /// \param[in] _leaf_resource_name_for_file_modified
-    /// \param[in] _file_modified_parameters
-    ///
-    /// \returns error code returned by rs_data_object_finalize
-    /// \retval 0 success
-    ///
-    /// \throws irods::exception
-    ///
-    /// \since 4.2.9
-    auto publish_to_catalog(
-        RsComm& _comm,
-        const key_type& _key,
-        const std::string_view _leaf_resource_name_for_file_modified,
-        const nlohmann::json& _file_modified_parameters) -> int;
-
-    /// \brief Prepares the data object indicated by _replica as input to data_object_finalize and updates the catalog
-    ///
-    /// \param[in/out] _comm
-    /// \param[in] _replica replica_proxy containing the key, replica number, and fileModified input
-    ///
-    /// \returns error code returned by rs_data_object_finalize
-    /// \retval 0 success
-    ///
-    /// \throws irods::exception
-    ///
-    /// \since 4.2.9
-    auto publish_to_catalog(
-        RsComm& _comm,
-        const irods::experimental::replica::replica_proxy_t& _replica) -> int;
-
-
     /// \brief Get the logical path for the entry with key _key
     ///
+    /// \parblock
     /// Because replica_state_table entries are keyed on data_id, this convenience function is a way
     /// to easily retrieve the logical path for a given entry in the table.
+    /// \endparblock
     ///
     /// \since 4.2.9
     auto get_logical_path(const key_type& _key) -> std::string;
+
+    // Namespace having to do with publishing RST entries somewhere (for now, the catalog)
+    namespace publish
+    {
+        /// \brief Structure containing context for publishing an RST entry (to the catalog)
+        ///
+        /// \since 4.2.9
+        struct context
+        {
+            // Variables
+
+            /// \var Key into the RST
+            ///
+            /// \since 4.2.9
+            key_type key;
+
+            /// \var Identifier for a particular replica in an entry
+            ///
+            /// \p Default value: unknown_replica_id, indicates no replica is being targeted within the entry
+            ///
+            /// \since 4.2.9
+            replica_id_type replica_id = unknown_replica_id;
+
+            /// \var JSON structure of key-value pairs which fileModified interface cares about
+            ///
+            /// \p If present, fileModified will be invoked in data_object_finalize API
+            ///
+            /// \p Default value: Empty JSON structure
+            ///
+            /// \since 4.2.9
+            nlohmann::json file_modified_parameters = {};
+
+            /// \var Indicates that data_object_finalize will be run with elevated privileges
+            ///
+            /// \p Default value: false, no elevation of privileges to be used
+            ///
+            /// \since 4.2.9
+            bool privileged = false;
+
+            // Constructors
+
+            /// \brief Explicit constructor for all members
+            ///
+            /// \param[in] _k Key to RST entry
+            /// \param[in] _id ID for a particular replica in the RST
+            /// \param[in] _fmp JSON list of key-value pairs for fileModified input
+            /// \param[in] _p Elevate privileges when publishing
+            ///
+            /// \since 4.2.9
+            context(const key_type& _k,
+                    const replica_id_type& _id,
+                    const nlohmann::json& _fmp,
+                    const bool _p)
+                : key{_k}
+                , replica_id{_id}
+                , file_modified_parameters{_fmp}
+                , privileged{_p}
+            {}
+
+            /// \brief Constructs context with a key and specified privileged mode
+            ///
+            /// \p Useful for situations where no particular replica is being modified for a given entry
+            ///
+            /// \param[in] _k Key to RST entry
+            /// \param[in] _p Elevate privileges when publishing
+            ///
+            /// \since 4.2.9
+            context(const key_type _k, const bool _p) : key{_k}, privileged{_p} {}
+
+            /// \brief Constructs context with a replica_proxy and specified privileged mode
+            ///
+            /// \p Note: file_modified_parameters_ remains default value
+            ///
+            /// \param[in] _r replica_proxy used to divine a key and replica ID
+            /// \param[in] _fmp JSON list of key-value pairs for fileModified input
+            /// \param[in] _p Elevate privileges when publishing
+            ///
+            /// \since 4.2.9
+            context(const irods::experimental::replica::replica_proxy_t& _r, const bool _p)
+                : context{_r.data_id(), _r.replica_number(), {}, _p}
+            {}
+
+            // Constructors
+            /// \brief Constructs context with a replica_proxy and separate JSON structure for file_modified_parameters_
+            ///
+            /// \p privileged is determined by the presence of ADMIN_KW in the provided JSON structure
+            ///
+            /// \param[in] _r replica_proxy used to divine a key and replica ID
+            /// \param[in] _kvp Key-value pairs used both as input to fileModified and determining privilege elevation
+            ///
+            /// \since 4.2.9
+            context(const irods::experimental::replica::replica_proxy_t& _r, const KeyValPair& _kvp)
+                : context{_r.data_id(),
+                          _r.replica_number(),
+                          irods::to_json(&_kvp),
+                          irods::experimental::key_value_proxy{_kvp}.contains(ADMIN_KW)}
+            {}
+        };
+
+        /// \brief Prepares the specified data object as input to data_object_finalize and updates the catalog
+        ///
+        /// \param[in,out] _comm iRODS server comm struct
+        /// \param[in] _ctx Context for publishing an RST entry (see #context for details)
+        ///
+        /// \returns error code returned by rs_data_object_finalize
+        /// \retval 0 success
+        ///
+        /// \throws irods::exception
+        ///
+        /// \since 4.2.9
+        auto to_catalog(RsComm& _comm, const context& _ctx) -> int;
+    } // namespace publish
 } // namespace irods::replica_state_table
 
 #endif // IRODS_REPLICA_STATE_TABLE_HPP

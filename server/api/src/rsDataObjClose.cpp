@@ -52,12 +52,13 @@
 #include "irods_stacktrace.hpp"
 #include "json_serialization.hpp"
 #include "key_value_proxy.hpp"
-#include "logical_locking.hpp"
 #include "replica_access_table.hpp"
 #include "replica_state_table.hpp"
 
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
 #include "data_object_proxy.hpp"
+
+#include "logical_locking.hpp"
 
 #include <memory>
 #include <functional>
@@ -271,7 +272,9 @@ namespace
                 "[{}:{}] - source L1 descriptor out of range [fd=[{}], path=[{}]",
                 __FUNCTION__, __LINE__, source_fd, d.logical_path()));
 
-            if (const auto unlock_ec = ill::unlock_and_publish(_comm, d.data_id(), d.replica_number(), STALE_REPLICA); unlock_ec < 0) {
+            const auto admin_op = irods::experimental::make_key_value_proxy(l1desc.dataObjInp->condInput).contains(ADMIN_KW);
+
+            if (const auto unlock_ec = ill::unlock_and_publish(_comm, {d, admin_op}, STALE_REPLICA); unlock_ec < 0) {
                 irods::log(LOG_ERROR, fmt::format(
                     "[{}:{}] - failed to unlock data object "
                     "[error_code=[{}], path=[{}], hierarchy=[{}]",
@@ -302,8 +305,7 @@ namespace
             cond_input[IN_PDMO_KW] = input_keywords.at(IN_PDMO_KW).value();
         }
 
-        const auto file_modified_input = irods::to_json(cond_input.get());
-        const auto status = rst::publish_to_catalog(_comm, d.data_id(), d.replica_number(), file_modified_input);
+        const auto status = rst::publish::to_catalog(_comm, {d, *cond_input.get()});
 
         if (CREATE_TYPE == l1desc.openType) {
             updatequotaOverrun(d.hierarchy().data(), d.size(), ALL_QUOTA);
@@ -330,6 +332,8 @@ namespace
 
         auto r = ir::make_replica_proxy(*l1desc.dataObjInfo);
 
+        auto cond_input = irods::experimental::make_key_value_proxy(l1desc.dataObjInp->condInput);
+
         if (cross_zone_copy_operation(l1desc)) {
             if (const int ec = svrRegDataObj(&_comm, l1desc.dataObjInfo); ec < 0) {
                 irods::log(LOG_ERROR, fmt::format(
@@ -337,7 +341,9 @@ namespace
                     "[error_code=[{}], path=[{}], hierarchy=[{}]",
                     __FUNCTION__, __LINE__, ec, r.logical_path(), r.hierarchy()));
 
-                if (const auto unlock_ec = ill::unlock_and_publish(_comm, r.data_id(), r.replica_number(), STALE_REPLICA); unlock_ec < 0) {
+                const auto admin_op = cond_input.contains(ADMIN_KW);
+
+                if (const auto unlock_ec = ill::unlock_and_publish(_comm, {r, admin_op}, STALE_REPLICA); unlock_ec < 0) {
                     irods::log(LOG_ERROR, fmt::format(
                         "[{}:{}] - failed to unlock data object "
                         "[error_code=[{}], path=[{}], hierarchy=[{}]",
@@ -353,7 +359,6 @@ namespace
         irods::apply_metadata_from_cond_input(_comm, *l1desc.dataObjInp);
         irods::apply_acl_from_cond_input(_comm, *l1desc.dataObjInp);
 
-        auto cond_input = irods::experimental::make_key_value_proxy(l1desc.dataObjInp->condInput);
         cond_input[OPEN_TYPE_KW] = std::to_string(l1desc.openType);
 
         if (CREATE_TYPE == l1desc.openType) {
@@ -381,8 +386,7 @@ namespace
             return ec;
         }
 
-        const auto file_modified_input = irods::to_json(cond_input.get());
-        if (const auto ec = rst::publish_to_catalog(_comm, r.data_id(), r.replica_number(), file_modified_input); ec < 0) {
+        if (const auto ec = rst::publish::to_catalog(_comm, {r, *cond_input.get()}); ec < 0) {
             return ec;
         }
 
@@ -397,6 +401,7 @@ namespace
     {
         auto& l1desc = L1desc[_fd];
         auto r = ir::make_replica_proxy(*l1desc.dataObjInfo);
+        const auto admin_op = irods::experimental::make_key_value_proxy(l1desc.dataObjInp->condInput).contains(ADMIN_KW);
 
         // Simply get size from the vault without verifying with catalog
         // and determine how to proceed based on what is returned
@@ -404,7 +409,7 @@ namespace
         const auto size_in_vault = irods::get_size_in_vault(_comm, *l1desc.dataObjInfo, verify_size_in_vault, l1desc.dataSize);
         if (size_in_vault < 0) {
             // Failed to get the catalog size. Unlock data object and throw.
-            if (const int ec = ill::unlock_and_publish(_comm, r.data_id(), r.replica_number(), STALE_REPLICA, ill::restore_status); ec < 0) {
+            if (const int ec = ill::unlock_and_publish(_comm, {r, admin_op}, STALE_REPLICA, ill::restore_status); ec < 0) {
                 irods::log(LOG_ERROR, fmt::format(
                     "[{}:{}] - failed to unlock data object "
                     "[error_code=[{}], path=[{}], hierarchy=[{}]]",
@@ -428,7 +433,7 @@ namespace
 
             rst::update(r.data_id(), r);
 
-            if (const int ec = ill::unlock_and_publish(_comm, r.data_id(), r.replica_number(), STALE_REPLICA, ill::restore_status); ec < 0) {
+            if (const int ec = ill::unlock_and_publish(_comm, {r, admin_op}, STALE_REPLICA, ill::restore_status); ec < 0) {
                 irods::log(LOG_ERROR, fmt::format(
                     "[{}:{}] - failed to unlock data object "
                     "[error_code=[{}], path=[{}], hierarchy=[{}]]",
@@ -489,7 +494,8 @@ namespace
             }
         }
         catch (const irods::exception& e) {
-            if (const int ec = ill::unlock_and_publish(_comm, r.data_id(), r.replica_number(), STALE_REPLICA, ill::restore_status); ec < 0) {
+            const auto admin_op = cond_input.contains(ADMIN_KW);
+            if (const int ec = ill::unlock_and_publish(_comm, {r, admin_op}, STALE_REPLICA, ill::restore_status); ec < 0) {
                 irods::log(LOG_ERROR, fmt::format(
                     "[{}:{}] - failed to unlock data object "
                     "[error_code=[{}], path=[{}], hierarchy=[{}]]",
@@ -508,7 +514,9 @@ namespace
             if (const auto close_ec = l3Close(&_comm, _fd); close_ec < 0) {
                 auto r = ir::make_replica_proxy(*l1desc.dataObjInfo);
 
-                if (const int ec = ill::unlock_and_publish(_comm, r.data_id(), r.replica_number(), STALE_REPLICA, ill::restore_status); ec < 0) {
+                const auto admin_op = irods::experimental::make_key_value_proxy(l1desc.dataObjInp->condInput).contains(ADMIN_KW);
+
+                if (const int ec = ill::unlock_and_publish(_comm, {r, admin_op}, STALE_REPLICA, ill::restore_status); ec < 0) {
                     irods::log(LOG_ERROR, fmt::format(
                         "[{}:{}] - failed to unlock data object "
                         "[error_code=[{}], path=[{}], hierarchy=[{}]]",
@@ -534,7 +542,9 @@ namespace
 
         rst::update(r.data_id(), r);
 
-        if (const auto ec = ill::unlock_and_publish(_comm, r.data_id(), r.replica_number(), r.replica_status()); ec < 0) {
+        const auto admin_op = irods::experimental::make_key_value_proxy(l1desc.dataObjInp->condInput).contains(ADMIN_KW);
+
+        if (const auto ec = ill::unlock_and_publish(_comm, {r, admin_op}, r.replica_status()); ec < 0) {
             irods::log(LOG_ERROR, fmt::format(
                 "[{}:{}] - failed to unlock data object "
                 "[error_code=[{}], path=[{}], hierarchy=[{}]]",
