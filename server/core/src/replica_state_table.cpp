@@ -140,7 +140,8 @@ namespace irods::replica_state_table
             RsComm& _comm,
             const key_type& _key,
             const int _replica_index,
-            const json& _file_modified_parameters) -> int
+            const json& _file_modified_parameters,
+            const bool _privileged) -> int
         {
             const bool trigger_file_modified = !_file_modified_parameters.empty();
 
@@ -155,6 +156,7 @@ namespace irods::replica_state_table
                 }
 
                 return json{
+                    {"irods_admin", _privileged},
                     {REPLICAS_KW, target_entry.at(REPLICAS_KW)},
                     {"trigger_file_modified", trigger_file_modified}
                 };
@@ -499,76 +501,33 @@ namespace irods::replica_state_table
         return replica_state_json_map.at(_key).at("logical_path").get<std::string>();
     } // get_logical_path
 
-    auto publish_to_catalog(
-        RsComm& _comm,
-        const key_type& _key,
-        const int _replica_number_for_file_modified,
-        const json& _file_modified_parameters) -> int
+    namespace publish
     {
-        try {
-            // Do not attempt to find the index of _replica_number_for_file_modified
-            // if no _file_modified parameter is provided. This is a valid use case for
-            // data objects for which a new replica is being created (but not yet).
-            // Just pass some value to satisfy the implementation interface.
-            if (_file_modified_parameters.empty()) {
-                return publish_to_catalog_impl(_comm, _key, -1, _file_modified_parameters);
+        auto to_catalog(RsComm& _comm, const context& _ctx) -> int
+        {
+            try {
+                // Do not attempt to find the index of _replica_number_for_file_modified
+                // if no file_modified parameter is provided. This is a valid use case for
+                // data objects for which a new replica is being created (but not yet).
+                // Just pass some value to satisfy the implementation interface.
+                if (_ctx.file_modified_parameters.empty()) {
+                    return publish_to_catalog_impl(_comm, _ctx.key, -1, {}, _ctx.privileged);
+                }
+
+                const auto replica_index = std::visit([&_ctx](auto&& _replica_id) { return index_of(_ctx.key, _replica_id); }, _ctx.replica_id);
+
+                return publish_to_catalog_impl(_comm, _ctx.key, replica_index, _ctx.file_modified_parameters, _ctx.privileged);
             }
-
-            const auto replica_index = index_of(_key, _replica_number_for_file_modified);
-
-            return publish_to_catalog_impl(_comm, _key, replica_index, _file_modified_parameters);
-        }
-        catch (const json::exception& e) {
-            THROW(SYS_LIBRARY_ERROR, fmt::format("[{}:{}] - JSON error:[{}]", __FUNCTION__, __LINE__, e.what()));
-        }
-        catch (const std::exception& e) {
-            THROW(SYS_INTERNAL_ERR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, e.what()));
-        }
-        catch (...) {
-            THROW(SYS_UNKNOWN_ERROR, fmt::format("[{}:{}] - unknown error occurred", __FUNCTION__, __LINE__));
-        }
-    } // publish_to_catalog
-
-    auto publish_to_catalog(
-        RsComm& _comm,
-        const key_type& _key,
-        const std::string_view _leaf_resource_name_for_file_modified,
-        const json& _file_modified_parameters) -> int
-    {
-        try {
-            const auto replica_index = index_of(_key, _leaf_resource_name_for_file_modified);
-
-            return publish_to_catalog_impl(_comm, _key, replica_index, _file_modified_parameters);
-        }
-        catch (const json::exception& e) {
-            THROW(SYS_LIBRARY_ERROR, fmt::format("[{}:{}] - JSON error:[{}]", __FUNCTION__, __LINE__, e.what()));
-        }
-        catch (const std::exception& e) {
-            THROW(SYS_INTERNAL_ERR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, e.what()));
-        }
-        catch (...) {
-            THROW(SYS_UNKNOWN_ERROR, fmt::format("[{}:{}] - unknown error occurred", __FUNCTION__, __LINE__));
-        }
-    } // publish_to_catalog
-
-    auto publish_to_catalog(RsComm& _comm, const ir::replica_proxy_t& _replica) -> int
-    {
-        try {
-            const auto& key = get_key(_replica);
-
-            const auto replica_index = index_of(key, _replica.resource_id());
-
-            return publish_to_catalog_impl(_comm, key, replica_index, irods::to_json(_replica.cond_input().get()));
-        }
-        catch (const json::exception& e) {
-            THROW(SYS_LIBRARY_ERROR, fmt::format("[{}:{}] - JSON error:[{}]", __FUNCTION__, __LINE__, e.what()));
-        }
-        catch (const std::exception& e) {
-            THROW(SYS_INTERNAL_ERR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, e.what()));
-        }
-        catch (...) {
-            THROW(SYS_UNKNOWN_ERROR, fmt::format("[{}:{}] - unknown error occurred", __FUNCTION__, __LINE__));
-        }
-    } // publish_to_catalog
+            catch (const json::exception& e) {
+                THROW(SYS_LIBRARY_ERROR, fmt::format("[{}:{}] - JSON error:[{}]", __FUNCTION__, __LINE__, e.what()));
+            }
+            catch (const std::exception& e) {
+                THROW(SYS_INTERNAL_ERR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, e.what()));
+            }
+            catch (...) {
+                THROW(SYS_UNKNOWN_ERROR, fmt::format("[{}:{}] - unknown error occurred", __FUNCTION__, __LINE__));
+            }
+        } // to_catalog
+    } // namespace publish
 } // namespace irods
 

@@ -14,7 +14,7 @@ namespace irods
 {
     /// \brief Takes the ACLs included in the condInput and applies them to the objPath of _inp
     ///
-    /// \param[in/out] _comm
+    /// \param[in,out] _comm
     /// \param[in] _inp Supplies the objPath and condInput
     ///
     /// \since 4.2.9
@@ -22,7 +22,7 @@ namespace irods
 
     /// \brief Takes the metadata included in the condInput and applies them to the objPath of _inp
     ///
-    /// \param[in/out] _comm
+    /// \param[in,out] _comm
     /// \param[in] _inp Supplies the objPath and condInput
     ///
     /// \since 4.2.9
@@ -30,8 +30,8 @@ namespace irods
 
     /// \brief Calls _dataObjChksum with the REGISTER_CHKSUM_KW
     ///
-    /// \param[in/out] _comm
-    /// \param[in/out] _info Required for _dataObjChksum
+    /// \param[in,out] _comm
+    /// \param[in,out] _info Required for _dataObjChksum
     /// \param[in] _original_checksum
     ///
     /// \returns the computed checksum
@@ -43,8 +43,8 @@ namespace irods
 
     /// \brief Calls _dataObjChksum with the VERIFY_CHKSUM_KW
     ///
-    /// \param[in/out] _comm
-    /// \param[in/out] _info Required for _dataObjChksum
+    /// \param[in,out] _comm
+    /// \param[in,out] _info Required for _dataObjChksum
     /// \param[in] _original_checksum
     ///
     /// \returns empty string if calculated checksum does not match the original; else, the computed checksum
@@ -60,8 +60,8 @@ namespace irods
     /// the return value is likely the result of a resource which cannot stat its data in the
     /// expected manner. In this case, the result recorded by the plugin is "trusted".
     ///
-    /// \param[in/out] _comm
-    /// \param[in/out] _info
+    /// \param[in,out] _comm
+    /// \param[in,out] _info
     /// \parma[in] _verify_size Verify the recorded size against the size in the vault
     /// \param[in] _recorded_size Size to verify against
     ///
@@ -79,21 +79,10 @@ namespace irods
     /// \since 4.2.9
     auto duplicate_l1_descriptor(const l1desc& _src) -> l1desc;
 
-    /// \brief Marks the specified replica as stale in the catalog
-    ///
-    /// \param[in/out] _comm
-    /// \param[in] _l1desc
-    /// \param[in/out] _info Holds affected replica information
-    ///
-    /// \returns Status returned by rsModDataObjMeta
-    ///
-    /// \since 4.2.9
-    auto stale_replica(RsComm& _comm, const l1desc& _l1desc, DataObjInfo& _info) -> int;
-
     /// \brief Calls applyRule on the specified post-PEP name
     ///
-    /// \param[in/out] _comm
-    /// \param[in/out] _l1desc
+    /// \param[in,out] _comm
+    /// \param[in,out] _l1desc
     /// \param[in] _operation_status
     /// \param[in] _pep_name
     ///
@@ -107,7 +96,7 @@ namespace irods
 
     /// \brief Call rs_replica_close without touching the catalog
     ///
-    /// \param[in/out] _comm
+    /// \param[in,out] _comm
     /// \param[in] _fd l1 descriptor index
     /// \param[in] _preserve_replica_state_table Whether the RST entry should be preserved or erased
     ///

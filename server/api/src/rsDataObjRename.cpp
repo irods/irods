@@ -35,11 +35,12 @@
 #include "irods_configuration_keywords.hpp"
 #include "irods_re_structs.hpp"
 #include "key_value_proxy.hpp"
-#include "logical_locking.hpp"
 #include "scoped_privileged_client.hpp"
 
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 #include "filesystem.hpp"
+
+#include "logical_locking.hpp"
 
 #include "fmt/format.h"
 

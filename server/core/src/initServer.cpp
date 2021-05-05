@@ -33,11 +33,12 @@
 #include "irods_server_properties.hpp"
 #include "irods_threads.hpp"
 #include "key_value_proxy.hpp"
-#include "logical_locking.hpp"
 #include "replica_state_table.hpp"
 
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
 #include "replica_proxy.hpp"
+
+#include "logical_locking.hpp"
 
 #include <vector>
 #include <set>
@@ -105,7 +106,9 @@ namespace
         rst::update(r.data_id(), r);
 
         // Update replica status to stale
-        if (const int ec = ill::unlock_and_publish(_comm, r.data_id(), r.replica_number(), STALE_REPLICA, ill::restore_status); ec < 0) {
+        const auto admin_op = irods::experimental::make_key_value_proxy(_l1desc.dataObjInp->condInput).contains(ADMIN_KW);
+
+        if (const int ec = ill::unlock_and_publish(_comm, {r, admin_op}, STALE_REPLICA, ill::restore_status); ec < 0) {
             irods::log(LOG_NOTICE, fmt::format(
                 "[{}:{}] - Failed to unlock data object "
                 "[error_code=[{}], path=[{}], hierarchy=[{}]]",

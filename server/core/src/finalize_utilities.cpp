@@ -11,12 +11,13 @@
 #include "rsModAVUMetadata.hpp"
 #include "rsModAccessControl.hpp"
 #include "rs_replica_close.hpp"
-#include "logical_locking.hpp"
 #include "replica_state_table.hpp"
 
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
 #include "data_object_proxy.hpp"
 #include "replica_proxy.hpp"
+
+#include "logical_locking.hpp"
 
 #include <string>
 #include <vector>
@@ -219,11 +220,6 @@ namespace irods
         return dest;
     } // duplicate_l1_descriptor
 
-    auto stale_replica(RsComm& _comm, const l1desc& _l1desc, DataObjInfo& _info) -> int
-    {
-        return ill::unlock_and_publish(_comm, _info.dataId, _info.replNum, STALE_REPLICA, ill::restore_status);
-    } // stale_replica
-
     auto apply_static_post_pep(RsComm& _comm, l1desc& _l1desc, const int _operation_status, std::string_view _pep_name) -> int
     {
         RuleExecInfo rei{};
@@ -279,7 +275,9 @@ namespace irods
                 replica.logical_path(), replica.hierarchy()));
         }
 
-        if (const int ec = ill::unlock_and_publish(_comm, replica.data_id(), replica.replica_number(), _status, ill::restore_status); ec < 0) {
+        const auto admin_op = irods::experimental::key_value_proxy(L1desc[_fd].dataObjInp->condInput).contains(ADMIN_KW);
+
+        if (const int ec = ill::unlock_and_publish(_comm, {replica, admin_op}, _status, ill::restore_status); ec < 0) {
             irods::log(LOG_ERROR, fmt::format(
                 "[{}:{}] - Failed to unlock data object "
                 "[error_code=[{}], path=[{}], hierarchy=[{}]]",
