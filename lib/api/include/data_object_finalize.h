@@ -16,13 +16,18 @@ extern "C" {
 /// desired modifications is required in the form of a JSON structure. Each replica can also
 /// have "file_modified" key which holds a set of key-value pairs for the file_modified plugin operation.
 ///
-/// The file_modified field is a boolean indicating whether the file_modified plugin operation
+/// The trigger_file_modified field is a boolean indicating whether the file_modified plugin operation
 /// should be called after the data object has been finalized.
+///
+/// irodsAdmin is a special keyword in iRODS to indicate that the operation requires elevated
+/// privileges. When present and set to true, the API will honor elevated privileges. If the user
+/// is not authorized to use elevated privileges, an error will be returned.
 /// \endparblock
 ///
 /// \p json_input must have the following JSON structure:
 /// \code{.js}
 /// {
+///     "irods_admin": <bool>,
 ///     "replicas": [
 ///         {
 ///             "before": {

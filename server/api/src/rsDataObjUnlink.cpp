@@ -35,7 +35,6 @@
 #include "irods_resource_redirect.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_at_scope_exit.hpp"
-#include "logical_locking.hpp"
 #include "scoped_privileged_client.hpp"
 
 #define IRODS_QUERY_ENABLE_SERVER_SIDE_API
@@ -46,6 +45,8 @@
 
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
 #include "data_object_proxy.hpp"
+
+#include "logical_locking.hpp"
 
 #include "boost/filesystem/path.hpp"
 #include "fmt/format.h"
@@ -381,7 +382,8 @@ int rsMvDataObjToTrash(
                 addKeyVal(&dataObjUnlinkInp->condInput, RESC_HIER_STR_KW, hier.c_str());
             }
             catch (const irods::exception& e) {
-                irods::log(PASS(irods::error(e)));
+                irods::log(LOG_NOTICE, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, e.client_display_what()));
+
                 // Continuation is intentional. See irods/irods#3154.
                 if(!getValByKey(&dataObjUnlinkInp->condInput, FORCE_FLAG_KW)) {
                     return e.code();

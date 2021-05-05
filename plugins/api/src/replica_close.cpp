@@ -30,15 +30,15 @@
 #include "irods_resource_backport.hpp"
 #include "irods_server_api_call.hpp"
 #include "json_serialization.hpp"
-#include "logical_locking.hpp"
 #include "replica_access_table.hpp"
 
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 #include "filesystem.hpp"
+
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
 #include "replica.hpp"
 
-#include "replica_state_table.hpp"
+#include "logical_locking.hpp"
 
 #include "fmt/format.h"
 #include "json.hpp"
@@ -178,11 +178,14 @@ namespace
 
         // Send an empty JSON structure if we do not want to trigger file_modified
         // as this is the way the RST interface determines whether it should trigger.
-        const auto file_modified = _send_notifications ? irods::to_json(&_l1desc.dataObjInp->condInput) : json{{}};
+        const auto cond_input = irods::experimental::make_key_value_proxy(_l1desc.dataObjInp->condInput);
+
+        const auto ctx = _send_notifications ? rst::publish::context{_replica, *cond_input.get()}
+                                             : rst::publish::context{_replica, cond_input.contains(ADMIN_KW)};
 
         // Publish to catalog and trigger file_modified as appropriate. The updates
         // made above will be reflected in the RST and stamped out to the catalog here.
-        const int ec = rst::publish_to_catalog(_comm, _replica.data_id(), _replica.replica_number(), file_modified);
+        const int ec = rst::publish::to_catalog(_comm, ctx);
 
         if (ec < 0) {
             irods::log(LOG_ERROR, fmt::format(

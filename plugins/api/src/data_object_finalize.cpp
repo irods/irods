@@ -103,6 +103,24 @@ namespace
         return _api->call_handler<BytesBuf*, BytesBuf**>(_comm, _input, _output);
     } // call_data_object_finalize
 
+    auto column_is_mutable(const std::string_view _c)
+    {
+        using immutable_columns_list_t = std::vector<const std::string_view>;
+        static const immutable_columns_list_t immutable_columns =
+        {
+            "data_id",
+            "coll_id",
+            "data_name"
+        };
+
+        const auto itr = std::find(
+            std::cbegin(immutable_columns),
+            std::cend(immutable_columns),
+            _c);
+
+        return std::cend(immutable_columns) == itr;
+    } // column_is_mutable
+
     auto validate_values(json& _obj) -> void
     {
         // clang-format off
@@ -125,6 +143,10 @@ namespace
         std::string sql{"update R_DATA_MAIN set"};
 
         for (auto&& c : cmap) {
+            if (!column_is_mutable(c.first)) {
+                continue;
+            }
+
             sql += fmt::format(" {} = ?,", c.first);
         }
         sql.pop_back();
@@ -149,6 +171,10 @@ namespace
         std::size_t index = 0;
         for (auto&& c : cmap) {
             const auto& key = c.first;
+
+            if (!column_is_mutable(key)) {
+                continue;
+            }
 
             const auto& bind_fcn = c.second;
             ic::bind_parameters bp{statement, index, _after, key, bind_values};
@@ -231,7 +257,7 @@ namespace
                 irods::log(LOG_DEBUG9, fmt::format("[{}:{}] - replica:[{}]", __FUNCTION__, __LINE__, replica.dump()));
 
                 if (replica.contains(FILE_MODIFIED_KW)) {
-                    const auto data_id = std::stoll(replica.at("after").at("data_id").get<std::string>());
+                    const auto data_id = std::stoll(replica.at("before").at("data_id").get<std::string>());
                     auto obj = irods::file_object_factory(_comm, data_id);
 
                     const auto leaf_resource_id = std::stoll(replica.at("after").at("resc_id").get<std::string>());
@@ -306,8 +332,8 @@ namespace
             ic::throw_if_catalog_provider_service_role_is_invalid();
         }
         catch (const irods::exception& e) {
-            std::string_view msg = e.what();
-            irods::log(LOG_ERROR, msg.data());
+            std::string_view msg = e.client_display_what();
+            irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
             *_output = to_bytes_buffer(make_error_object(msg.data()).dump());
             return e.code();
         }
@@ -330,9 +356,25 @@ namespace
 
         json replicas;
         bool trigger_file_modified;
+        bool admin_operation = false;
 
         try {
+            if (input.contains("irods_admin") && input.at("irods_admin").get<bool>()) {
+                if (!irods::is_privileged_client(*_comm)) {
+                    const auto msg = "user is not authorized to use the admin keyword";
+
+                    *_output = to_bytes_buffer(make_error_object(msg).dump());
+
+                    irods::log(LOG_WARNING, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
+
+                    return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
+                }
+
+                admin_operation = true;
+            }
+
             replicas = input.at("replicas");
+
             trigger_file_modified = input.contains("trigger_file_modified") && input.at("trigger_file_modified").get<bool>();
         }
         catch (const json::type_error& e) {
@@ -344,8 +386,6 @@ namespace
             return SYS_INVALID_INPUT_PARAM;
         }
 
-        // TODO: check permissions on data object?
-
         nanodbc::connection db_conn;
 
         try {
@@ -354,6 +394,18 @@ namespace
         catch (const std::exception& e) {
             irods::log(LOG_ERROR, e.what());
             return SYS_CONFIG_FILE_ERR;
+        }
+
+        const auto data_id = std::stoll(replicas.front().at("before").at("data_id").get<std::string>());
+        const auto entity_type = ic::entity_type_map.at("data_object");
+        if (!admin_operation && !ic::user_has_permission_to_modify_entity(*_comm, db_conn, data_id, entity_type)) {
+            const auto msg = fmt::format("user not allowed to modify data object [data id=[{}]]", data_id);
+
+            irods::log(LOG_NOTICE, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
+
+            *_output = to_bytes_buffer(make_error_object(msg).dump());
+
+            return CAT_NO_ACCESS_PERMISSION;
         }
 
         try {
@@ -371,8 +423,8 @@ namespace
             return invoke_file_modified(*_comm, replicas);
         }
         catch (const irods::exception& e) {
-            irods::log(LOG_ERROR, e.what());
-            *_output = to_bytes_buffer(make_error_object(e.what()).dump());
+            irods::log(LOG_ERROR, e.client_display_what());
+            *_output = to_bytes_buffer(make_error_object(e.client_display_what()).dump());
             return e.code();
         }
     } // rs_data_object_finalize

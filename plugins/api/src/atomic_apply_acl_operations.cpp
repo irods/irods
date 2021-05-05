@@ -52,6 +52,7 @@ namespace
 {
     // clang-format off
     namespace fs    = irods::experimental::filesystem;
+    namespace ic    = irods::experimental::catalog;
 
     using json      = nlohmann::json;
     using operation = std::function<int(rsComm_t*, bytesBuf_t*, bytesBuf_t**)>;
@@ -231,8 +232,7 @@ namespace
                                        " a.object_id = '{}'", _comm.clientUser.userName, _object_id);
 
         if (auto row = execute(_db_conn, query); row.next()) {
-            constexpr int access_own = 1200;
-            return row.get<int>(0) == access_own;
+            return static_cast<ic::access_type>(row.get<int>(0)) == ic::access_type::own;
         }
 
         return false;
@@ -378,8 +378,6 @@ namespace
 
     auto rs_atomic_apply_acl_operations(rsComm_t* _comm, bytesBuf_t* _input, bytesBuf_t** _output) -> int
     {
-        namespace ic = irods::experimental::catalog;
-
         try {
             if (!ic::connected_to_catalog_provider(*_comm)) {
                 irods::log(LOG_DEBUG8, "Redirecting request to catalog service provider ...");

@@ -13,17 +13,6 @@ namespace
     namespace rst = irods::replica_state_table;
     using json = nlohmann::json;
 
-    /// \brief Special value to indicate a replica which has not been assigned a number yet.
-    ///
-    /// \parblock
-    /// This is intended to be passed to the lock and unlock interface in lieu of a real replica number.
-    /// When the lock/unlock implementation sees this value, there is no "target" replica and so all
-    /// replicas are treated alike with the expectation that the new replica will be handled appropriately later.
-    /// \endparblock
-    ///
-    /// \since 4.2.9
-    static inline constexpr int new_replica = -1;
-
     static const std::map<ill::lock_type, repl_status_t> lock_type_to_repl_status_map
     {
         {ill::lock_type::read,  READ_LOCKED},
@@ -173,7 +162,7 @@ namespace
             const auto lock_status = lock_type_to_repl_status_map.at(_lock_type);
 
             // The target replica should have its state set as well, but in a special manner
-            if (new_replica != _replica_number) {
+            if (rst::unknown_replica_id != _replica_number) {
                 if (ill::lock_type::write == _lock_type) {
                     // A replica opened for write should be set to intermediate
                     rst::update(_data_id, _replica_number,
@@ -211,7 +200,7 @@ namespace
         const int           _other_replica_statuses) -> int
     {
         try {
-            if (new_replica != _replica_number) {
+            if (rst::unknown_replica_id != _replica_number) {
                 auto replica_status = _replica_status;
 
                 if (ill::restore_status == _replica_status) {
@@ -351,71 +340,39 @@ namespace irods::logical_locking
     } // unlock
 
     auto lock_and_publish(
-        RsComm&             _comm,
-        const std::uint64_t _data_id,
-        const int           _replica_number,
-        const lock_type     _lock_type) -> int
+        RsComm&                _comm,
+        const rst::publish::context& _ctx,
+        const lock_type        _lock_type) -> int
     {
-        if (const int ec = lock(_data_id, _replica_number, _lock_type); ec < 0) {
+        // TODO: std::visit with overloaded impls
+        if (const int ec = lock_impl(_ctx.key, std::get<const int>(_ctx.replica_id), _lock_type); ec < 0) {
             return ec;
         }
 
-        if (const int ec = rst::publish_to_catalog(_comm, _data_id, _replica_number, nlohmann::json{}); ec < 0) {
+        if (const int ec = rst::publish::to_catalog(_comm, _ctx); ec < 0) {
             return ec;
         }
 
         return 0;
     } // lock_and_publish
 
-    auto lock_before_create_and_publish(
-        RsComm&             _comm,
-        const std::uint64_t _data_id,
-        const lock_type     _lock_type) -> int
-    {
-        if (const int ec = lock(_data_id, new_replica, _lock_type); ec < 0) {
-            return ec;
-        }
-
-        if (const int ec = rst::publish_to_catalog(_comm, _data_id, new_replica, nlohmann::json{}); ec < 0) {
-            return ec;
-        }
-
-        return 0;
-    } // lock_before_create_and_publish
-
     auto unlock_and_publish(
         RsComm&             _comm,
-        const std::uint64_t _data_id,
-        const int           _replica_number,
+        const rst::publish::context& _ctx,
         const int           _replica_status,
         const int           _other_replica_statuses) -> int
     {
-        if (const int ec = unlock_impl(_data_id, _replica_number, _replica_status, _other_replica_statuses); ec < 0) {
+        // TODO: std::visit with overloaded impls
+        if (const int ec = unlock_impl(_ctx.key, std::get<const int>(_ctx.replica_id), _replica_status, _other_replica_statuses); ec < 0) {
             return ec;
         }
 
-        if (const int ec = rst::publish_to_catalog(_comm, _data_id, _replica_number, nlohmann::json{}); ec < 0) {
+        if (const int ec = rst::publish::to_catalog(_comm, _ctx); ec < 0) {
             return ec;
         }
 
         return 0;
     } // unlock_and_publish
-
-    auto unlock_before_create_and_publish(
-        RsComm&             _comm,
-        const std::uint64_t _data_id,
-        const int           _other_replica_statuses) -> int
-    {
-        if (const int ec = unlock_impl(_data_id, new_replica, new_replica, _other_replica_statuses); ec < 0) {
-            return ec;
-        }
-
-        if (const int ec = rst::publish_to_catalog(_comm, _data_id, new_replica, nlohmann::json{}); ec < 0) {
-            return ec;
-        }
-
-        return 0;
-    } // unlock_before_create_and_publish
 
     auto try_lock(const DataObjInfo& _obj, const lock_type _lock_type) -> int
     {
