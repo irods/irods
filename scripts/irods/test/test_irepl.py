@@ -1,6 +1,7 @@
 from __future__ import print_function
 import os
 import sys
+
 if sys.version_info < (2, 7):
     import unittest2 as unittest
 else:
@@ -11,8 +12,138 @@ from . import command
 from . import session
 from .. import lib
 from .. import test
+from .. import paths
 from ..configuration import IrodsConfig
 from ..test.command import assert_command
+
+class Test_Irepl(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
+
+    def setUp(self):
+        super(Test_Irepl, self).setUp()
+        self.admin = self.admin_sessions[0]
+        self.user = self.user_sessions[0]
+
+    def tearDown(self):
+        super(Test_Irepl, self).tearDown()
+
+    def do_test_for_issue_5592(self, trigger_checksum_mismatch_error):
+        def get_physical_path(data_object, replica_number):
+            gql = "select DATA_PATH where COLL_NAME = '{0}' and DATA_NAME = '{1}' and DATA_REPL_NUM = '{2}'"
+            path, err, ec = self.admin.run_icommand(['iquest', '%s', gql.format(self.admin.session_collection, data_object, replica_number)])
+            self.assertEqual(ec, 0)
+            self.assertEqual(len(err), 0)
+            self.assertGreater(len(path.strip()), 0)
+            return path.strip()
+
+        def get_replica_status(data_object, replica_number):
+            gql = "select DATA_REPL_STATUS where COLL_NAME = '{0}' and DATA_NAME = '{1}' and DATA_REPL_NUM = '{2}'"
+            status, err, ec = self.admin.run_icommand(['iquest', '%s', gql.format(self.admin.session_collection, data_object, replica_number)])
+            self.assertEqual(ec, 0)
+            self.assertEqual(len(err), 0)
+            self.assertGreater(len(status.strip()), 0)
+            return status.strip()
+
+        def get_checksum(data_object, replica_number, expected_length_of_checksum=49):
+            gql = "select DATA_CHECKSUM where COLL_NAME = '{0}' and DATA_NAME = '{1}' and DATA_REPL_NUM = '{2}'"
+            checksum, err, ec = self.admin.run_icommand(['iquest', '%s', gql.format(self.admin.session_collection, data_object, replica_number)])
+            self.assertEqual(ec, 0)
+            self.assertEqual(len(err), 0)
+            self.assertEqual(len(checksum.strip()), expected_length_of_checksum)
+            return checksum.strip()
+
+        # Define our resource names for the "finally" block.
+        repl_resc = 'issue_5592_repl_resc'
+        ufs_resources = ['issue_5592_ufs1', 'issue_5592_ufs2', 'issue_5592_ufs3']
+
+        # Define the name of the data object for the "finally" block.
+        data_object = 'foo'
+
+        try:
+            # Create our resource hierarchy.
+            lib.create_replication_resource(repl_resc, self.admin)
+
+            for resc_name in ufs_resources:
+                lib.create_ufs_resource(resc_name, self.admin)
+                self.admin.assert_icommand(['iadmin', 'addchildtoresc', repl_resc, resc_name])
+
+            # Create a data object (this should result in three replicas).
+            self.admin.assert_icommand(['istream', 'write', '-R', repl_resc, data_object], input='bar')
+            self.admin.assert_icommand(['ils', '-l', data_object], 'STDOUT', [
+                ' {};{}            3 '.format(repl_resc, ufs_resources[0]),
+                ' {};{}            3 '.format(repl_resc, ufs_resources[1]),
+                ' {};{}            3 '.format(repl_resc, ufs_resources[2])
+            ])
+
+            # Checksum all replicas.
+            self.admin.assert_icommand(['ichksum', '-a', data_object], 'STDOUT', ['sha2:'])
+
+            # Capture the current size of the log file. This will be used as the starting
+            # point for searching the log file for a particular string.
+            log_offset = lib.get_file_size_by_path(paths.server_log_path())
+
+            if trigger_checksum_mismatch_error:
+                # Corrupt the replica by changing the first character inside of it.
+                # This will help trigger a checksum mismatch error.
+                physical_path = get_physical_path(data_object, 0)
+                with open(physical_path, 'w') as f:
+                    f.write('far')
+
+                # Trigger the checksum mismatch error.
+                self.admin.assert_icommand(['irepl', '-R', 'demoResc', data_object], 'STDERR', ['status = -314000 USER_CHKSUM_MISMATCH'])
+
+                # Show that the replicas under the replication resource are still marked as "good"
+                # and that the newest replica is marked as "stale" due to the error.
+                self.assertEqual(get_replica_status(data_object, '0'), '1')
+                self.assertEqual(get_replica_status(data_object, '1'), '1')
+                self.assertEqual(get_replica_status(data_object, '2'), '1')
+                self.assertEqual(get_replica_status(data_object, '3'), '0')
+
+                # Show that the newest replica has a different checksum than the first replica.
+                self.assertNotEqual(get_checksum(data_object, '0'), get_checksum(data_object, '3'))
+
+                # Show that the log file contains the expected error information.
+                msg = 'error finalizing replica; [USER_CHKSUM_MISMATCH:'
+                lib.delayAssert(lambda: lib.log_message_occurrences_greater_than_count(msg=msg, count=0, start_index=log_offset))
+            else:
+                # Append a character to the end of the replica.
+                physical_path = get_physical_path(data_object, 0)
+                with open(physical_path, 'w') as f:
+                    f.write('bars')
+
+                self.admin.assert_icommand(['irepl', '-R', 'demoResc', data_object])
+
+                # Show that all replicas are marked as "good".
+                self.assertEqual(get_replica_status(data_object, '0'), '1')
+                self.assertEqual(get_replica_status(data_object, '1'), '1')
+                self.assertEqual(get_replica_status(data_object, '2'), '1')
+                self.assertEqual(get_replica_status(data_object, '3'), '1')
+
+                # Show that the newest replica's checksum matches the first replica's checksum.
+                self.assertEqual(get_checksum(data_object, '0'), get_checksum(data_object, '3'))
+
+                # Show that the log file does not contain an error information.
+                msg = 'error finalizing replica; [USER_CHKSUM_MISMATCH:'
+                lib.delayAssert(lambda: lib.log_message_occurrences_equals_count(msg=msg, count=0, start_index=log_offset))
+        finally:
+            self.admin.run_icommand(['irm', '-f', data_object])
+
+            for resc_name in ufs_resources:
+                self.admin.run_icommand(['iadmin', 'rmchildfromresc', repl_resc, resc_name])
+                self.admin.run_icommand(['iadmin', 'rmresc', resc_name])
+
+            self.admin.run_icommand(['iadmin', 'rmresc', repl_resc])
+
+    def test_irepl_reports_checksum_mismatch_error_when_bytes_within_the_data_size_are_overwritten__issue_5592(self):
+        # Passing "True" causes the test to trigger a checksum mismatch by overwriting a character
+        # within a replica. The overwrite will not cause a mismatch in the size. Only the data within
+        # the replica will change.
+        self.do_test_for_issue_5592(trigger_checksum_mismatch_error=True)
+
+    def test_irepl_does_not_return_a_checksum_mismatch_error_after_appending_data_to_a_replica_out_of_band__issue_5592(self):
+        # Passing "False" causes the test to append a character to a replica. This will not trigger
+        # a checksum mismatch error because the API honors the data size in the catalog when calculating
+        # checksums and replicating replicas.
+        self.do_test_for_issue_5592(trigger_checksum_mismatch_error=False)
 
 class test_irepl_with_special_resource_configurations(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
     # In this suite:

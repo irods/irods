@@ -138,6 +138,7 @@ namespace
             }
 
             _destination_replica.checksum(checksum_string);
+            rst::update(_destination_replica.data_id(), _destination_replica);
 
             if (_source_replica.checksum() != checksum_string) {
                 THROW(USER_CHKSUM_MISMATCH, fmt::format(

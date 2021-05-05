@@ -581,3 +581,13 @@ def metadata_attr_with_value_exists(session, attr, value):
         '"select META_DATA_ATTR_VALUE where META_DATA_ATTR_NAME = \'{}\'"'.format(attr)])
     print(out)
     return value in out
+
+def create_ufs_resource(resource_name, user):
+    vault_name = resource_name + '_vault'
+    vault_directory = os.path.join(user.local_session_dir, vault_name)
+    vault = socket.gethostname() + ':' + vault_directory
+    user.assert_icommand(['iadmin', 'mkresc', resource_name, 'unixfilesystem', vault], 'STDOUT', [resource_name])
+
+def create_replication_resource(resource_name, user):
+    user.assert_icommand(['iadmin', 'mkresc', resource_name, 'replication'], 'STDOUT', [resource_name])
+
