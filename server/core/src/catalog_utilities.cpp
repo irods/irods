@@ -51,10 +51,10 @@ namespace irods::experimental::catalog
         _bp.statement.bind(_bp.index, &value);
     } // bind_integer_to_statement
 
-    auto user_has_permission_to_modify_metadata(RsComm& _comm,
-                                                nanodbc::connection& _db_conn,
-                                                int _object_id,
-                                                const entity_type _entity_type) -> bool
+    auto user_has_permission_to_modify_entity(RsComm& _comm,
+                                              nanodbc::connection& _db_conn,
+                                              int _object_id,
+                                              const entity_type _entity_type) -> bool
     {
         using log = irods::experimental::log;
 
@@ -70,8 +70,7 @@ namespace irods::experimental::catalog
                                                " a.object_id = '{}'", _comm.clientUser.userName, _object_id);
 
                 if (auto row = execute(_db_conn, query); row.next()) {
-                    constexpr int access_modify_object = 1120;
-                    return row.get<int>(0) >= access_modify_object;
+                    return static_cast<access_type>(row.get<int>(0)) >= access_type::modify_object;
                 }
                 break;
             }
@@ -86,7 +85,7 @@ namespace irods::experimental::catalog
                 break;
         }
         return false;
-    } // user_has_permission_to_modify_metadata
+    } // user_has_permission_to_modify_entity
 
     auto throw_if_catalog_provider_service_role_is_invalid() -> void
     {

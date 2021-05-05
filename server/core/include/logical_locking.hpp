@@ -1,7 +1,11 @@
 #ifndef IRODS_LOGICAL_LOCKING_HPP
 #define IRODS_LOGICAL_LOCKING_HPP
 
+#include "replica_state_table.hpp"
+
 #include <string_view>
+
+/// \file
 
 struct DataObjInfo;
 struct DataObjInp;
@@ -152,39 +156,16 @@ namespace irods::logical_locking
     /// \endparblock
     ///
     /// \param[in,out] _comm
-    /// \param[in] _data_id Data ID for object to lock
-    /// \param[in] _replica_number Target replica number
+    /// \param[in] _ctx Context for publishing an RST entry (see irods::replica_state_table::publish::context for details)
     /// \param[in] _lock_type Indicates the type of lock to set the replicas to, except the target replica
     ///
     /// \returns Error code on failure
     ///
     /// \since 4.2.9
     auto lock_and_publish(
-        RsComm&             _comm,
-        const std::uint64_t _data_id,
-        const int           _replica_number,
-        const lock_type     _lock_type) -> int;
-
-    /// \brief Lock data object using specified lock type, update RST, publish to catalog
-    ///
-    /// \parblock
-    /// Lock a data object which has no target replica. The main use of this function
-    /// would be to lock a data object on the creation of a new replica for said data object.
-    /// All replicas for the existing data object will be set to the appropriate status based
-    /// on the specified _lock_type.
-    /// \endparblock
-    ///
-    /// \param[in,out] _comm
-    /// \param[in] _data_id Data ID for object to lock
-    /// \param[in] _lock_type Indicates the type of lock to set the replicas to
-    ///
-    /// \returns Error code on failure
-    ///
-    /// \since 4.2.9
-    auto lock_before_create_and_publish(
-        RsComm&             _comm,
-        const std::uint64_t _data_id,
-        const lock_type     _lock_type) -> int;
+        RsComm&                      _comm,
+        const irods::replica_state_table::publish::context& _ctx,
+        const lock_type              _lock_type) -> int;
 
     /// \brief Unlock data object, update RST, publish to catalog
     ///
@@ -195,8 +176,7 @@ namespace irods::logical_locking
     /// \endparblock
     ///
     /// \param[in,out] _comm
-    /// \param[in] _data_id Data ID for object to unlock
-    /// \param[in] _replica_number Target replica number
+    /// \param[in] _ctx Context for publishing an RST entry (see irods::replica_state_table::publish::context for details)
     /// \param[in] _replica_status Desired replica status for the target replica
     /// \param[in] _other_replica_statuses The desired replica status for the sibling replicas
     ///
@@ -204,33 +184,10 @@ namespace irods::logical_locking
     ///
     /// \since 4.2.9
     auto unlock_and_publish(
-        RsComm&             _comm,
-        const std::uint64_t _data_id,
-        const int           _replica_number,
-        const int           _replica_status,
-        const int           _other_replica_statuses = restore_status) -> int;
-
-    /// \brief Unlock data object which has no target replica, update RST, publish to catalog
-    ///
-    /// \parblock
-    /// Unlock a data object which was locked without a target replica. The main use of this
-    /// function would be to recover from a failure in the creation of a new replica on an
-    /// existing data object which was locked for said creation of said replica. Due to the
-    /// failure, there would still not be a replica to target, so this is simply a counterpart
-    /// to the lock_before_create_and_publish interface.
-    /// \endparblock
-    ///
-    /// \param[in,out] _comm
-    /// \param[in] _data_id Data ID for object to unlock
-    /// \param[in] _replica_statuses The desired replica status for the sibling replicas
-    ///
-    /// \returns Error code on failure
-    ///
-    /// \since 4.2.9
-    auto unlock_before_create_and_publish(
-        RsComm&             _comm,
-        const std::uint64_t _data_id,
-        const int           _replica_statuses) -> int;
+        RsComm&                      _comm,
+        const irods::replica_state_table::publish::context& _ctx,
+        const int                    _replica_status,
+        const int                    _other_replica_statuses = restore_status) -> int;
 
     /// \brief Check to see if the data object will lock out some operation.
     ///

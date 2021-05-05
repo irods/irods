@@ -52,7 +52,6 @@
 #include "irods_string_tokenize.hpp"
 #include "json_serialization.hpp"
 #include "key_value_proxy.hpp"
-#include "logical_locking.hpp"
 #include "replica_access_table.hpp"
 #include "replication_utilities.hpp"
 #include "voting.hpp"
@@ -61,7 +60,7 @@
 #include "data_object_proxy.hpp"
 #include "replica_proxy.hpp"
 
-#include "replica_state_table.hpp"
+#include "logical_locking.hpp"
 
 #include <algorithm>
 #include <string_view>
@@ -197,6 +196,7 @@ namespace
         ir::replica_proxy_t& _destination_replica) -> int
     {
         auto cond_input = irods::experimental::make_key_value_proxy(_l1desc.dataObjInp->condInput);
+
         try {
             constexpr bool verify_size = true;
             const auto size_in_vault = irods::get_size_in_vault(_comm, *_destination_replica.get(), verify_size, _l1desc.dataSize);
@@ -222,11 +222,9 @@ namespace
             }
         }
         catch (const irods::exception& e) {
-            const int ec = ill::unlock_and_publish(_comm,
-                                                   _destination_replica.data_id(),
-                                                   _destination_replica.replica_number(),
-                                                   STALE_REPLICA,
-                                                   ill::restore_status);
+            const auto admin_op = cond_input.contains(ADMIN_KW);
+
+            const int ec = ill::unlock_and_publish(_comm, {_destination_replica, admin_op}, STALE_REPLICA, ill::restore_status);
             if (ec < 0) {
                 irods::log(LOG_ERROR, fmt::format(
                     "[{}:{}] - failed to unlock data object "
@@ -266,10 +264,7 @@ namespace
         cond_input.erase(IN_REPL_KW);
         cond_input[OPEN_TYPE_KW] = std::to_string(_l1desc.openType);
 
-        const int ec = rst::publish_to_catalog(_comm,
-                                               _destination_replica.data_id(),
-                                               _destination_replica.replica_number(),
-                                               irods::to_json(cond_input.get()));
+        const int ec = rst::publish::to_catalog(_comm, {_destination_replica, *cond_input.get()});
 
         if (CREATE_TYPE == _l1desc.openType) {
             updatequotaOverrun(_destination_replica.hierarchy().data(), _destination_replica.size(), ALL_QUOTA);
@@ -294,19 +289,19 @@ namespace
         return ec;
     } // finalize_destination_replica
 
-    auto finalize_destination_replica_on_failure(RsComm& _comm, l1desc& _l1desc, ir::replica_proxy_t& _destination_replica) -> int
+    auto finalize_destination_replica_on_failure(
+        RsComm& _comm,
+        l1desc& _l1desc,
+        ir::replica_proxy_t& _destination_replica) -> int
     {
+        const auto admin_op = irods::experimental::make_key_value_proxy(_l1desc.dataObjInp->condInput).contains(ADMIN_KW);
         const rodsLong_t vault_size = getSizeInVault(&_comm, _destination_replica.get());
         if (vault_size < 0) {
             irods::log(LOG_ERROR, fmt::format(
                 "{} - getSizeInVault failed [{}]",
                 __FUNCTION__, vault_size));
 
-            const int ec = ill::unlock_and_publish(_comm,
-                                                   _destination_replica.data_id(),
-                                                   _destination_replica.replica_number(),
-                                                   STALE_REPLICA,
-                                                   ill::restore_status);
+            const int ec = ill::unlock_and_publish(_comm, {_destination_replica, admin_op}, STALE_REPLICA, ill::restore_status);
             if (ec < 0) {
                 irods::log(LOG_ERROR, fmt::format(
                     "[{}:{}] - failed to unlock data object "
@@ -326,11 +321,7 @@ namespace
         // Write it out to the catalog
         rst::update(_destination_replica.data_id(), _destination_replica);
 
-        const int ec = ill::unlock_and_publish(_comm,
-                                               _destination_replica.data_id(),
-                                               _destination_replica.replica_number(),
-                                               STALE_REPLICA,
-                                               ill::restore_status);
+        const int ec = ill::unlock_and_publish(_comm, {_destination_replica, admin_op}, STALE_REPLICA, ill::restore_status);
         if (ec < 0) {
             irods::log(LOG_ERROR, fmt::format(
                 "[{}:{}] - failed to unlock data object "

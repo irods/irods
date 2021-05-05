@@ -116,21 +116,45 @@ namespace irods::experimental::catalog
         {"zone", entity_type::zone}
     };
 
-    /// \brief Determines whether the connected user can modify metadata on a given entity.
+    /// \brief Describes types of access in the iRODS permission model.
+    /// \since 4.2.9
+    enum class access_type
+    {
+        null                 = 1000,
+        execute              = 1010,
+        read_annotation      = 1020,
+        read_system_metadata = 1030,
+        read_metadata        = 1040,
+        read_object          = 1050,
+        write_annotation     = 1060,
+        create_metadata      = 1070,
+        modify_metadata      = 1080,
+        delete_metadata      = 1090,
+        administer_object    = 1100,
+        create_object        = 1110,
+        modify_object        = 1120,
+        delete_object        = 1130,
+        create_token         = 1140,
+        delete_token         = 1150,
+        curate               = 1160,
+        own                  = 1200
+    };
+
+    /// \brief Determines whether the connected user can modify a given entity.
     ///
     /// \param[in] _comm iRODS connection structure
     /// \param[in] _db_conn ODBC connection to the database
     /// \param[in] _object_id ID of the object in question in the catalog
     /// \param[in] _entity The type of entity that the object ID refers to
     ///
-    /// \retval true if user has permission to modify metadata
-    /// \retval false if user does not have permission to modify metadata
+    /// \retval true if user has permission to modify the entity
+    /// \retval false if user does not have permission to modify the entity
     ///
     /// \since 4.2.9
-    auto user_has_permission_to_modify_metadata(RsComm& _comm,
-                                                nanodbc::connection& _db_conn,
-                                                int _object_id,
-                                                const entity_type _entity) -> bool;
+    auto user_has_permission_to_modify_entity(RsComm& _comm,
+                                              nanodbc::connection& _db_conn,
+                                              int _object_id,
+                                              const entity_type _entity) -> bool;
 
     /// \throws irods::exception
     /// \since 4.2.9
