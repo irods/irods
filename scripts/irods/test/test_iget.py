@@ -10,7 +10,6 @@ else:
 from .. import lib
 from . import session
 from .. import test
-from ..configuration import IrodsConfig
 from ..test.command import assert_command
 
 class test_iget_general(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
