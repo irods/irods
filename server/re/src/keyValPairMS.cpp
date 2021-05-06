@@ -1,35 +1,24 @@
-/**
- * @file	keyValPairMS.cpp
- *
- */
-
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-//#include "reGlobalsExtern.hpp"
-//#include "reFuncDefs.hpp"
 #include "icatHighLevelRoutines.hpp"
+#include "msParam.h"
 #include "rcMisc.h"
-
 #include "irods_re_structs.hpp"
+#include "rodsErrorTable.h"
 
 /**
- * \fn msiGetValByKey(msParam_t* inKVPair, msParam_t* inKey, msParam_t* outVal, ruleExecInfo_t *rei)
- *
- * \brief  Given a list of KVPairs and a Key, this microservice gets the corresponding value.
+ * \brief Given a list of KVPairs and a Key, this microservice gets the corresponding value.
  *
  * \module core
  *
  * \since pre-2.1
  *
- *
  * \usage See clients/icommands/test/rules/
  *
- * \param[in] inKVPair - This msParam is of type KeyValPair_PI which is a KeyValPair List.
- * \param[in] inKey - This msParam is of type STR_MS_T which is a key.
- * \param[out] outVal - This msParam is of type STR_MS_T which is a value corresponding to key.
- * \param[in,out] rei - The RuleExecInfo structure that is automatically
- *    handled by the rule engine. The user does not include rei as a
- *    parameter in the rule invocation.
+ * \param[in] _kvp        This msParam is of type KeyValPair_PI which is a KeyValPair List.
+ * \param[in] _key        This msParam is of type STR_MS_T which is a key.
+ * \param[out] _out_value This msParam is of type STR_MS_T which is a value corresponding to key.
+ * \param[in,out] _rei    \parblock The RuleExecInfo structure that is automatically handled by the rule engine.
+ * The user does not include rei as a parameter in the rule invocation.
+ * \endparblock
  *
  * \DolVarDependence none
  * \DolVarModified none
@@ -43,23 +32,43 @@
  * \post none
  * \sa none
 **/
-int msiGetValByKey( msParam_t* inKVPair, msParam_t* inKey, msParam_t* outVal, ruleExecInfo_t *rei ) {
-    keyValPair_t *kvp;
-    char *s, *k;
+int msiGetValByKey(msParam_t* _kvp, msParam_t* _key, msParam_t* _out_value, ruleExecInfo_t* _rei)
+{
+    RE_TEST_MACRO("msiGetValByKey");
 
-    RE_TEST_MACRO( "msiGetValByKey" );
-
-    kvp = ( keyValPair_t* )inKVPair->inOutStruct;
-    k = ( char* )inKey->inOutStruct;
-    if ( k == NULL ) {
-        k = inKey->label;
+    if (!_kvp || !_key) {
+        rodsLog(LOG_ERROR, "Missing one or more input arguments.");
+        return SYS_INVALID_INPUT_PARAM;
     }
 
-    s = getValByKey( kvp, k );
-    if ( s == NULL ) {
+    if (std::strcmp(KeyValPair_MS_T, _kvp->type) != 0 ||
+        std::strcmp(STR_MS_T, _key->type) != 0)
+    {
+        rodsLog(LOG_ERROR, "Incorrect type for one or more input arguments.");
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
+    const auto* kvp = static_cast<KeyValPair*>(_kvp->inOutStruct);
+    const auto* key = static_cast<char*>(_key->inOutStruct);
+ 
+    if (!key) {
+        key = _key->label;
+
+        if (!key) {
+            rodsLog(LOG_ERROR, "Lookup key is null.");
+            return SYS_INVALID_INPUT_PARAM;
+        }
+    }
+
+    auto* value = getValByKey(kvp, key);
+
+    if (!value) {
+        rodsLog(LOG_ERROR, "Lookup key [%s] does not map to any value.", key);
         return UNMATCHED_KEY_OR_INDEX;
     }
-    fillStrInMsParam( outVal, s );
+
+    fillStrInMsParam(_out_value, value);
+
     return 0;
 }
 
