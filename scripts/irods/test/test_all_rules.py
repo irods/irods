@@ -1167,3 +1167,11 @@ OUTPUT ruleExecOut
         rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
         cmd = ['irule', '-r', rep_name, '-F', '/var/lib/irods/clients/icommands/test/rules/rulemsiMakeGenQuery.r', "*Coll='{0}%'".format(thecoll)]
         self.admin.assert_icommand(cmd, 'STDOUT', ['Number of files in {0}% is 1 and total size is 3'.format(thecoll)])
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
+    def test_msiGetValByKey_does_not_crash_the_agent_on_bad_input_arguments__issue_5420(self):
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        for msi_cmd in ['msiGetValByKey(1, *ignored, *out)', '*kvp."name" = "issue_5420"; msiGetValByKey(*kvp, 1, *out)']:
+            self.admin.assert_icommand(['irule', '-r', rep_name, msi_cmd, 'null', 'ruleExecOut'], 'STDERR', ['-130000 SYS_INVALID_INPUT_PARAM'])
+
