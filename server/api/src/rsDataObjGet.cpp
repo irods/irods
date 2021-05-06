@@ -184,6 +184,11 @@ int rsDataObjGet(
 
     auto cond_input = irods::experimental::make_key_value_proxy(dataObjInp->condInput);
 
+    // -R and -r are not compatible
+    if (cond_input.contains(RESC_NAME_KW) && cond_input.contains(RECURSIVE_OPR__KW)) {
+        return USER_INCOMPATIBLE_PARAMS;
+    }
+
     specCollCache_t *specCollCache = NULL;
     resolveLinkedPath( rsComm, dataObjInp->objPath, &specCollCache, cond_input.get());
 
@@ -233,9 +238,26 @@ int rsDataObjGet(
             cond_input[RESC_HIER_STR_KW] = std::get<std::string>(result);
         }
         catch (const irods::exception& e) {
-            irods::log(e);
+            irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, e.client_display_what()));
             return e.code();
         }
+    }
+
+    // Only accept the resolved hierarchy if it descends from the resource specified by the user.
+    const auto hier = irods::hierarchy_parser{cond_input.at(RESC_HIER_STR_KW).value().data()};
+    if (irods::experimental::keyword_has_a_value(*cond_input.get(), RESC_NAME_KW) &&
+        !hier.contains(cond_input.at(RESC_NAME_KW).value())) {
+        const auto msg = fmt::format(
+            "hierarchy descending from specified resource name does not "
+            "have a replica or the replica is inaccessible at this time "
+            "[path=[{}], resource name=[{}], resolved hierarchy=[{}]]",
+            dataObjInp->objPath, cond_input.at(RESC_NAME_KW).value(), hier.str());
+
+        addRErrorMsg(&rsComm->rError, SYS_REPLICA_INACCESSIBLE, msg.data());
+
+        irods::log(LOG_WARNING, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
+
+        return SYS_REPLICA_INACCESSIBLE;
     }
 
     dataObjInp->openFlags = O_RDONLY;
@@ -265,7 +287,7 @@ int rsDataObjGet(
     catch (const irods::exception& e) {
         // Any irods::exception thrown here is likely from single buffer max size not being
         // set properly. In this case, close the opened data object and return error.
-        irods::log(e);
+        irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, e.client_display_what()));
 
         if (const auto ec = close_replica(*rsComm, fd); ec < 0) {
             irods::log(LOG_ERROR, fmt::format(
