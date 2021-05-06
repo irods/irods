@@ -55,7 +55,7 @@ fi
 
 # =-=-=-=-=-=-=-
 # set upgrade perms and display helpful information
-# make sure the service acount owns everything
+# make sure the service account owns everything
 # careful not to stomp msiExecCmd_bin contents (perhaps managed by others)
 chown -R $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME /etc/irods
 chown -H -R $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME $IRODS_HOME/clients
