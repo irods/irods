@@ -14,13 +14,13 @@ else:
 
 from .. import lib
 from .. import test
+from .. import paths
 from ..configuration import IrodsConfig
 from ..controller import IrodsController
 from . import metaclass_unittest_test_case_generator
 from . import resource_suite
 from . import session
 from .rule_texts_for_tests import rule_texts
-
 
 class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
     __metaclass__ = metaclass_unittest_test_case_generator.MetaclassUnittestTestCaseGenerator
@@ -1174,4 +1174,27 @@ OUTPUT ruleExecOut
         rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
         for msi_cmd in ['msiGetValByKey(1, *ignored, *out)', '*kvp."name" = "issue_5420"; msiGetValByKey(*kvp, 1, *out)']:
             self.admin.assert_icommand(['irule', '-r', rep_name, msi_cmd, 'null', 'ruleExecOut'], 'STDERR', ['-130000 SYS_INVALID_INPUT_PARAM'])
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
+    def test_msiDataObjRead_does_not_generate_a_stacktrace_on_bad_input_arguments__issue_4550(self):
+        data_object = 'foo'
+        self.admin.assert_icommand(['istream', 'write', data_object], input='foo')
+
+        # Capture the current size of the log file. This will be used as the starting
+        # point for searching the log file for a particular string.
+        log_offset = lib.get_file_size_by_path(paths.server_log_path())
+
+        rule_text = '''
+            msiDataObjOpen("{0}", *fd);
+            msiDataObjRead(*fd, *len, *bytes_read);
+            msiDataObjClose(*fd, *ec);
+        '''.format(os.path.join(self.admin.session_collection, data_object))
+
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        self.admin.assert_icommand(['irule', '-r', rep_name, rule_text, 'null', 'ruleExecOut'], 'STDERR', ['-323000 USER_PARAM_TYPE_ERR'])
+
+        # Show that the log file does not contain a stacktrace.
+        for msg in ['Dumping stack trace', '<0>     Offset:']:
+            lib.delayAssert(lambda: lib.log_message_occurrences_equals_count(msg=msg, count=0, start_index=log_offset))
 

@@ -1,13 +1,9 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-/* msParam.cpp - function for handling msParam_t.
- */
-
 #include "msParam.h"
+
 #include "apiHeaderAll.h"
 #include "modDataObjMeta.h"
 #include "rcGlobalExtern.h"
+#include "rodsErrorTable.h"
 
 /* addMsParam - This is for backward compatibility only.
  *  addMsParamToArray should be used for all new functions
@@ -858,8 +854,16 @@ parseMspForPhyPathReg( msParam_t * inpParam, keyValPair_t * condInput ) {
 }
 
 int
-parseMspForPosInt( msParam_t * inpParam ) {
-    int myInt;
+parseMspForPosInt( msParam_t* inpParam ) {
+    if (!inpParam) {
+       return SYS_INVALID_INPUT_PARAM;
+    }
+    
+    if (!inpParam->type) {
+        return USER_PARAM_TYPE_ERR;
+    }
+
+    int myInt = -1;
 
     if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
         /* str input */
@@ -882,10 +886,12 @@ parseMspForPosInt( msParam_t * inpParam ) {
                  inpParam->type );
         return USER_PARAM_TYPE_ERR;
     }
+
     if ( myInt < 0 ) {
         rodsLog( LOG_DEBUG,
                  "parseMspForPosInt: parsed int %d is negative", myInt );
     }
+
     return myInt;
 }
 
