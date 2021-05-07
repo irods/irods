@@ -1,14 +1,20 @@
+#include "rsDataObjRead.hpp"
+
+#include "dataObjInpOut.h"
 #include "dataObjRead.h"
+#include "fileLseek.h"
 #include "rodsLog.h"
 #include "objMetaOpr.hpp"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
 #include "subStructFileRead.h"  /* XXXXX can be taken out when structFile api done */
-#include "rsDataObjRead.hpp"
 #include "rsSubStructFileRead.hpp"
 #include "rsFileRead.hpp"
 #include "irods_resource_backport.hpp"
 #include "irods_hierarchy_parser.hpp"
+#include "rsDataObjLseek.hpp"
+
+#include <algorithm>
 
 int
 applyRuleForPostProcForRead( rsComm_t *rsComm, bytesBuf_t *dataObjReadOutBBuf, char *objPath ) {
@@ -55,40 +61,72 @@ applyRuleForPostProcForRead( rsComm_t *rsComm, bytesBuf_t *dataObjReadOutBBuf, c
 }
 
 int
-rsDataObjRead( rsComm_t *rsComm, openedDataObjInp_t *dataObjReadInp,
-               bytesBuf_t *dataObjReadOutBBuf ) {
-    int bytesRead;
-    int l1descInx = dataObjReadInp->l1descInx;
+rsDataObjRead(rsComm_t* rsComm,
+              openedDataObjInp_t* dataObjReadInp,
+              bytesBuf_t* dataObjReadOutBBuf)
+{
+    const int l1descInx = dataObjReadInp->l1descInx;
 
-    if ( l1descInx < 2 || l1descInx >= NUM_L1_DESC ) {
-        rodsLog( LOG_NOTICE,
-                 "rsDataObjRead: l1descInx %d out of range",
-                 l1descInx );
+    if (l1descInx <= 2 || l1descInx >= NUM_L1_DESC) {
+        rodsLog(LOG_ERROR, "%s: l1descInx %d out of range", __func__, l1descInx);
         return SYS_FILE_DESC_OUT_OF_RANGE;
     }
-    if ( L1desc[l1descInx].inuseFlag != FD_INUSE ) {
+
+    auto& l1desc = L1desc[l1descInx];
+
+    if (l1desc.inuseFlag != FD_INUSE) {
         return BAD_INPUT_DESC_INDEX;
     }
 
-    if ( L1desc[l1descInx].remoteZoneHost != NULL ) {
-        /* cross zone operation */
-        dataObjReadInp->l1descInx = L1desc[l1descInx].remoteL1descInx;
-        bytesRead = rcDataObjRead( L1desc[l1descInx].remoteZoneHost->conn,
-                                   dataObjReadInp, dataObjReadOutBBuf );
+    if (l1desc.remoteZoneHost) {
+        // Cross zone operation.
+        dataObjReadInp->l1descInx = l1desc.remoteL1descInx;
+        const auto bytes_read = rcDataObjRead(l1desc.remoteZoneHost->conn, dataObjReadInp, dataObjReadOutBBuf);
         dataObjReadInp->l1descInx = l1descInx;
-    }
-    else {
-        int i;
-        bytesRead = l3Read( rsComm, l1descInx, dataObjReadInp->len,
-                            dataObjReadOutBBuf );
-        i = applyRuleForPostProcForRead( rsComm, dataObjReadOutBBuf,
-                                         L1desc[l1descInx].dataObjInfo->objPath );
-        if ( i < 0 ) {
-            return i;
-        }
+        return bytes_read;
     }
 
-    return bytesRead;
+    auto* dataObjInfo = l1desc.dataObjInfo;
+
+    // If the replica was opened in read-only mode, then don't allow the client
+    // to read past the data size in the catalog. This is necessary because the
+    // size of the replica in storage could be larger than the data size in the
+    // catalog.
+    //
+    // For all other modes, let the read operation do what it normally does.
+    //
+    // This code does not apply to objects that are related to special collections.
+    if (!dataObjInfo->specColl && O_RDONLY == (l1desc.dataObjInp->openFlags & O_ACCMODE)) {
+        OpenedDataObjInp input{};
+        input.l1descInx = l1descInx;
+        input.whence = SEEK_CUR;
+
+        FileLseekOut* output{};
+
+        if (const auto ec = rsDataObjLseek(rsComm, &input, &output); ec < 0) {
+            rodsLog(LOG_ERROR, "%s: Could not retrieve the current file read position.", __func__, ec);
+            return ec;
+        }
+
+        // If the file read position is greater than or equal to the data size,
+        // then return immediately.
+        if (output->offset >= dataObjInfo->dataSize) {
+            return 0;
+        }
+
+        // At this point, we know the file read position is less than the replica's
+        // recorded data size. We now have to adjust the requested number of bytes to
+        // read so that the client does not read past the recorded data size.
+        dataObjReadInp->len = std::min<int>(dataObjReadInp->len, dataObjInfo->dataSize - output->offset);
+    }
+
+    const auto bytes_read = l3Read(rsComm, l1descInx, dataObjReadInp->len, dataObjReadOutBBuf);
+    const auto i = applyRuleForPostProcForRead(rsComm, dataObjReadOutBBuf, dataObjInfo->objPath);
+    if (i < 0) {
+        return i;
+    }
+
+    return bytes_read;
 }
 
 int
@@ -132,16 +170,13 @@ int
 _l3Read( rsComm_t *rsComm, int l3descInx, void *buf, int len ) {
     fileReadInp_t fileReadInp;
     bytesBuf_t dataObjReadInpBBuf;
-    int bytesRead;
 
     dataObjReadInpBBuf.len = len;
     dataObjReadInpBBuf.buf = buf;
 
-
     memset( &fileReadInp, 0, sizeof( fileReadInp ) );
     fileReadInp.fileInx = l3descInx;
     fileReadInp.len = len;
-    bytesRead = rsFileRead( rsComm, &fileReadInp, &dataObjReadInpBBuf );
-
-    return bytesRead;
+    return rsFileRead( rsComm, &fileReadInp, &dataObjReadInpBBuf );
 }
+
