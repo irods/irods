@@ -1,14 +1,8 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-// =-=-=-=-=-=-=-
-// irods includes
 #include "rods.h"
 #include "parseCommandLine.h"
 #include "rcMisc.h"
 #include "rodsClient.h"
 #include "rcConnect.h"
-
-// =-=-=-=-=-=-=-
 #include "irods_native_auth_object.hpp"
 #include "irods_pam_auth_object.hpp"
 #include "irods_gsi_object.hpp"
@@ -389,14 +383,13 @@ int main( int argc, char **argv )
                 catch (const json::parse_error& e) {
                     obj_to_dump = json_env;
                     std::cerr << "Failed to parse environment file: " << e.what() << '\n'
-                              << "Falling back to original environment settings.;";
+                              << "Falling back to original environment settings.";
                 }
 
                 obj_to_dump.merge_patch(json_env);
             }
             else {
                 obj_to_dump = json_env;
-                std::cerr << "Failed to update [" << env_file << "]\n";
             }
 
             std::ofstream f( env_file.c_str(), std::ios::out );
