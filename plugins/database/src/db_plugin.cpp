@@ -109,6 +109,8 @@ char mySessionClientAddr[NAME_LEN];
 const std::string ICSS_PROP( "irods_icss_property" );
 const std::string ZONE_PROP( "irods_zone_property" );
 
+static const auto intermediate_replica_status_str = std::to_string(INTERMEDIATE_REPLICA);
+
 // =-=-=-=-=-=-=-
 // virtual path management
 #define PATH_SEPARATOR irods::get_virtual_path_separator().c_str()
@@ -2489,7 +2491,7 @@ irods::error db_mod_data_obj_meta_op(
             // Find all intermediate replicas
             j = numConditions;
             whereColsAndConds[j] = "data_is_dirty=";
-            whereValues[j] = std::to_string(INTERMEDIATE_REPLICA).c_str();
+            whereValues[j] = intermediate_replica_status_str.c_str();
             numConditions++;
 
             // And mark them stale
@@ -2545,7 +2547,7 @@ irods::error db_mod_data_obj_meta_op(
             // Intermediate replicas were never good, so they cannot be stale.
             j = numConditions;
             whereColsAndConds[j] = "data_is_dirty!=";
-            whereValues[j] = std::to_string(INTERMEDIATE_REPLICA).c_str();
+            whereValues[j] = intermediate_replica_status_str.c_str();
             numConditions++;
 
             updateCols[0] = "data_is_dirty";
@@ -3052,9 +3054,8 @@ irods::error db_reg_replica_op(
     // means that the replica will be written or changed at a future time. Otherwise,
     // the replica will take the replica status of the source replica. The const must
     // be cast away due to cVal being a char*[] and not a const char*[].
-    char* intermediate_replica_status = const_cast<char*>(std::to_string(INTERMEDIATE_REPLICA).data());
     if (getValByKey(_cond_input, REGISTER_AS_INTERMEDIATE_KW)) {
-        cVal[IX_REPLICA_STATUS] = intermediate_replica_status;
+        cVal[IX_REPLICA_STATUS] = const_cast<char*>(intermediate_replica_status_str.data());
     }
 
     // data_status tracks replica status for logical locking - this is a new replica,
