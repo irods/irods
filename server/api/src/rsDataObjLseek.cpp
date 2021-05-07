@@ -1,7 +1,4 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code (for the most part).  */
-/* See dataObjLseek.h for a description of this API call.*/
+#include "rsDataObjLseek.hpp"
 
 #include "dataObjLseek.h"
 #include "rodsLog.h"
@@ -10,112 +7,104 @@
 #include "subStructFileLseek.h"
 #include "objMetaOpr.hpp"
 #include "subStructFileUnlink.h"
-#include "rsDataObjLseek.hpp"
 #include "rsSubStructFileLseek.hpp"
 #include "rsFileLseek.hpp"
-
-// =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
 
-int
-rsDataObjLseek( rsComm_t *rsComm, openedDataObjInp_t *dataObjLseekInp,
-                fileLseekOut_t **dataObjLseekOut ) {
-    int status;
-    int l1descInx, l3descInx;
-    dataObjInfo_t *dataObjInfo;
+#include <cstring>
 
-    l1descInx = dataObjLseekInp->l1descInx;
+int rsDataObjLseek(rsComm_t* rsComm,
+                   openedDataObjInp_t* dataObjLseekInp,
+                   fileLseekOut_t** dataObjLseekOut)
+{
+    const int l1descInx = dataObjLseekInp->l1descInx;
 
-    if ( l1descInx <= 2 || l1descInx >= NUM_L1_DESC ) {
-        rodsLog( LOG_NOTICE,
-                 "rsDataObjLseek: l1descInx %d out of range",
-                 l1descInx );
+    if (l1descInx <= 2 || l1descInx >= NUM_L1_DESC) {
+        rodsLog(LOG_ERROR, "%s: l1descInx %d out of range", __func__, l1descInx);
         return SYS_FILE_DESC_OUT_OF_RANGE;
     }
-    if ( L1desc[l1descInx].inuseFlag != FD_INUSE ) {
+
+    auto& l1desc = L1desc[l1descInx];
+
+    if (l1desc.inuseFlag != FD_INUSE) {
         return BAD_INPUT_DESC_INDEX;
     }
-    if ( L1desc[l1descInx].remoteZoneHost != NULL ) {
-        /* cross zone operation */
-        dataObjLseekInp->l1descInx = L1desc[l1descInx].remoteL1descInx;
-        status = rcDataObjLseek( L1desc[l1descInx].remoteZoneHost->conn,
-                                 dataObjLseekInp, dataObjLseekOut );
+
+    if (l1desc.remoteZoneHost) {
+        // Cross zone operation.
+        dataObjLseekInp->l1descInx = l1desc.remoteL1descInx;
+        const auto ec = rcDataObjLseek(l1desc.remoteZoneHost->conn, dataObjLseekInp, dataObjLseekOut);
         dataObjLseekInp->l1descInx = l1descInx;
-        return status;
+        return ec;
     }
 
-    l3descInx = L1desc[l1descInx].l3descInx;
+    const int l3descInx = l1desc.l3descInx;
 
-    if ( l3descInx <= 2 ) {
-        rodsLog( LOG_NOTICE,
-                 "rsDataObjLseek: l3descInx %d out of range",
-                 l3descInx );
+    if (l3descInx <= 2) {
+        rodsLog(LOG_ERROR, "%s: l3descInx %d out of range", __func__, l3descInx);
         return SYS_FILE_DESC_OUT_OF_RANGE;
     }
 
-    dataObjInfo = L1desc[l1descInx].dataObjInfo;
+    auto* dataObjInfo = l1desc.dataObjInfo;
 
-    // =-=-=-=-=-=-=-
-    // extract the host location from the resource hierarchy
+    // Extract the host location from the resource hierarchy.
     std::string location;
-    irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
-    if ( !ret.ok() ) {
-        irods::log( PASSMSG( "rsDataObjLseek - failed in get_loc_for_hier_string", ret ) );
-        return -1;
+    if (const auto ret = irods::get_loc_for_hier_string(dataObjInfo->rescHier, location); !ret.ok()) {
+        irods::log(PASSMSG("rsDataObjLseek: failed in get_loc_for_hier_string", ret));
+        return ret.code();
     }
 
-
-    if ( getStructFileType( dataObjInfo->specColl ) >= 0 ) {
-        subStructFileLseekInp_t subStructFileLseekInp;
-        memset( &subStructFileLseekInp, 0, sizeof( subStructFileLseekInp ) );
+    if (getStructFileType(dataObjInfo->specColl) >= 0) {
+        subStructFileLseekInp_t subStructFileLseekInp{};
         subStructFileLseekInp.type = dataObjInfo->specColl->type;
-        subStructFileLseekInp.fd = L1desc[l1descInx].l3descInx;
+        subStructFileLseekInp.fd = l1desc.l3descInx;
         subStructFileLseekInp.offset = dataObjLseekInp->offset;
         subStructFileLseekInp.whence = dataObjLseekInp->whence;
-        rstrcpy( subStructFileLseekInp.addr.hostAddr,
-                 location.c_str(),
-                 NAME_LEN );
-        rstrcpy( subStructFileLseekInp.resc_hier,
-                 dataObjInfo->rescHier,
-                 NAME_LEN );
-        status = rsSubStructFileLseek( rsComm, &subStructFileLseekInp, dataObjLseekOut );
-    }
-    else {
-        *dataObjLseekOut = ( fileLseekOut_t* )malloc( sizeof( fileLseekOut_t ) );
-        memset( *dataObjLseekOut, 0, sizeof( fileLseekOut_t ) );
-
-        ( *dataObjLseekOut )->offset = _l3Lseek( rsComm, l3descInx,
-                                       dataObjLseekInp->offset, dataObjLseekInp->whence );
-
-        if ( ( *dataObjLseekOut )->offset >= 0 ) {
-            status = 0;
-        }
-        else {
-            status = ( *dataObjLseekOut )->offset;
-        }
+        rstrcpy(subStructFileLseekInp.addr.hostAddr, location.c_str(), NAME_LEN);
+        rstrcpy(subStructFileLseekInp.resc_hier, dataObjInfo->rescHier, NAME_LEN);
+        return rsSubStructFileLseek(rsComm, &subStructFileLseekInp, dataObjLseekOut);
     }
 
-    return status;
+    // If the replica was opened in read-only mode, then don't allow the client
+    // to seek past the data size in the catalog. This is necessary because the
+    // size of the replica in storage could be larger than the data size in the
+    // catalog.
+    //
+    // For all other modes, let the seek operation do what it normally does.
+    //
+    // This code does not apply to objects that are related to special collections.
+    const auto offset = (O_RDONLY == (l1desc.dataObjInp->openFlags & O_ACCMODE))
+        ? std::min(dataObjLseekInp->offset, dataObjInfo->dataSize)
+        : dataObjLseekInp->offset;
+
+    *dataObjLseekOut = static_cast<fileLseekOut_t*>(malloc(sizeof(fileLseekOut_t)));
+    std::memset(*dataObjLseekOut, 0, sizeof(fileLseekOut_t));
+
+    (*dataObjLseekOut)->offset = _l3Lseek(rsComm, l3descInx, offset, dataObjLseekInp->whence);
+
+    if ((*dataObjLseekOut)->offset >= 0) {
+        return 0;
+    }
+
+    return (*dataObjLseekOut)->offset;
 }
 
-rodsLong_t
-_l3Lseek( rsComm_t *rsComm, int l3descInx,
-          rodsLong_t offset, int whence ) {
-    fileLseekInp_t fileLseekInp;
-    fileLseekOut_t *fileLseekOut = NULL;
-    int status;
-
-    memset( &fileLseekInp, 0, sizeof( fileLseekInp ) );
+rodsLong_t _l3Lseek(rsComm_t* rsComm, int l3descInx, rodsLong_t offset, int whence)
+{
+    fileLseekInp_t fileLseekInp{};
     fileLseekInp.fileInx = l3descInx;
     fileLseekInp.offset = offset;
     fileLseekInp.whence = whence;
-    status = rsFileLseek( rsComm, &fileLseekInp, &fileLseekOut );
-    if ( status < 0 ) {
-        return status;
+
+    fileLseekOut_t* fileLseekOut = nullptr;
+
+    if (const auto ec = rsFileLseek(rsComm, &fileLseekInp, &fileLseekOut); ec < 0) {
+        return ec;
     }
-    else {
-        rodsLong_t off = fileLseekOut->offset;
-        free( fileLseekOut );
-        return off;
-    }
+
+    const auto off = fileLseekOut->offset;
+    std::free(fileLseekOut);
+
+    return off;
 }
+

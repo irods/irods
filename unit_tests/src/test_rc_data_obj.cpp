@@ -3,18 +3,23 @@
 #include "client_connection.hpp"
 #include "dataObjChksum.h"
 #include "dataObjInpOut.h"
+#include "dataObjLseek.h"
 #include "dataObjPut.h"
 #include "dstream.hpp"
+#include "fileLseek.h"
 #include "filesystem.hpp"
 #include "get_file_descriptor_info.h"
 #include "irods_at_scope_exit.hpp"
 #include "irods_error_enum_matcher.hpp"
 #include "irods_exception.hpp"
+#include "key_value_proxy.hpp"
+#include "modDataObjMeta.h"
 #include "objInfo.h"
 #include "rcMisc.h"
 #include "replica.hpp"
 #include "replica_proxy.hpp"
 #include "rodsClient.h"
+#include "rodsDef.h"
 #include "rodsErrorTable.h"
 #include "transport/default_transport.hpp"
 #include "unit_test_utils.hpp"
@@ -24,10 +29,12 @@
 
 #include <cstring>
 #include <iostream>
+#include <iterator>
 #include <thread>
 #include <string>
 #include <string_view>
 #include <fstream>
+#include <algorithm>
 
 using namespace std::chrono_literals;
 
@@ -504,6 +511,130 @@ TEST_CASE("open,read,write,close")
         std::cout << e.what();
     }
 } // open,read,write,close
+
+TEST_CASE("read-only streams")
+{
+    namespace ix = irods::experimental;
+    namespace io = irods::experimental::io;
+
+    load_client_api_plugins();
+
+    ix::client_connection conn;
+    REQUIRE(conn);
+
+    rodsEnv env;
+    _getRodsEnv(env);
+
+    const auto sandbox = fs::path{env.rodsHome} / "unit_testing_sandbox";
+
+    if (!fs::client::exists(conn, sandbox)) {
+        REQUIRE(fs::client::create_collection(conn, sandbox));
+    }
+
+    irods::at_scope_exit remove_sandbox{[&conn, &sandbox] {
+        REQUIRE(fs::client::remove_all(conn, sandbox, fs::remove_options::no_trash));
+    }};
+
+    const auto data_object = sandbox / "data_object.txt";
+
+    SECTION("#5352: read/seek operations honor the data size on read-only streams")
+    {
+        const std::string_view contents = "0123456789";
+
+        {
+            io::client::native_transport tp{conn};
+            io::odstream{tp, data_object} << contents;
+        }
+
+        auto* conn_ptr = static_cast<RcComm*>(conn);
+
+        // Change the data size of the replica stored in the catalog.
+        DataObjInfo obj_info{};
+        std::strcpy(obj_info.objPath, data_object.c_str());
+
+        const auto [kvp, lm] = ix::make_key_value_proxy({{DATA_SIZE_KW, "7"}});
+
+        ModDataObjMetaInp update_inp{};
+        update_inp.dataObjInfo = &obj_info;
+        update_inp.regParam = kvp.get();
+        REQUIRE(rcModDataObjMeta(conn_ptr, &update_inp) == 0);
+
+        // Open the replica in read-only mode.
+        dataObjInp_t open_inp{};
+        std::strcpy(open_inp.objPath, data_object.c_str());
+        open_inp.openFlags = O_RDONLY;
+        const auto fd = rcDataObjOpen(conn_ptr, &open_inp);
+        REQUIRE(fd > 2);
+
+        SECTION("rxDataObjSeek will not seek past the data size")
+        {
+            // Show that the offset is clamped to the size in the catalog because
+            // the lseek operation honors the data size in the catalog for read-only
+            // streams.
+            openedDataObjInp_t seek_inp{};
+            seek_inp.l1descInx = fd;
+            seek_inp.whence = SEEK_CUR;
+            seek_inp.offset = 1000;
+
+            fileLseekOut_t* seek_out{};
+
+            CHECK(rcDataObjLseek(conn_ptr, &seek_inp, &seek_out) == 0);
+            REQUIRE(seek_out->offset == 7);
+
+            // Show that reading from the replica returns zero.
+            openedDataObjInp_t read_inp{};
+            read_inp.l1descInx = fd;
+            read_inp.len = 100;
+
+            bytesBuf_t read_bbuf{};
+            read_bbuf.len = read_inp.len;
+            read_bbuf.buf = std::malloc(read_bbuf.len);
+            irods::at_scope_exit free_bbuf{[&read_bbuf] { std::free(read_bbuf.buf); }};
+
+            REQUIRE(rcDataObjRead(conn_ptr, &read_inp, &read_bbuf) == 0);
+
+            // Close the replica.
+            openedDataObjInp_t close_inp{};
+            close_inp.l1descInx = fd;
+            REQUIRE(rcDataObjClose(conn_ptr, &close_inp) >= 0);
+        }
+
+        SECTION("rxDataObjRead will not read past the data size")
+        {
+            // Move the file read position to the middle of the known data size.
+            openedDataObjInp_t seek_inp{};
+            seek_inp.l1descInx = fd;
+            seek_inp.whence = SEEK_CUR;
+            seek_inp.offset = 4;
+
+            fileLseekOut_t* seek_out{};
+
+            CHECK(rcDataObjLseek(conn_ptr, &seek_inp, &seek_out) == 0);
+            REQUIRE(seek_out->offset == 4);
+
+            // Show that the read operation will not read past the recorded data size.
+            openedDataObjInp_t read_inp{};
+            read_inp.l1descInx = fd;
+            read_inp.len = 100;
+
+            bytesBuf_t read_bbuf{};
+            read_bbuf.len = read_inp.len;
+            read_bbuf.buf = std::malloc(read_bbuf.len);
+
+            irods::at_scope_exit free_bbuf{[&read_bbuf] { std::free(read_bbuf.buf); }};
+
+            CHECK(rcDataObjRead(conn_ptr, &read_inp, &read_bbuf) == 3);
+
+            const auto* data = static_cast<const char*>(read_bbuf.buf);
+            REQUIRE(std::equal(data, data + 3, std::next(std::begin(contents), seek_inp.offset)));
+
+            // Close the replica.
+            openedDataObjInp_t close_inp{};
+            close_inp.l1descInx = fd;
+            REQUIRE(rcDataObjClose(conn_ptr, &close_inp) >= 0);
+        }
+    }
+}
 
 TEST_CASE("rxDataObjChksum")
 {

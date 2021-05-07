@@ -379,7 +379,7 @@ setAVUMetadataFromKVPairs( rsComm_t *rsComm, char *objName, char *inObjType,
     }
     return 0;
 }
-// =-=-=-=-=-=-=-
+
 int
 getStructFileType( specColl_t *specColl ) {
     if ( specColl == NULL ) {
@@ -389,9 +389,8 @@ getStructFileType( specColl_t *specColl ) {
     if ( specColl->collClass == STRUCT_FILE_COLL ) {
         return ( int ) specColl->type;
     }
-    else {
-        return -1;
-    }
+
+    return -1;
 }
 
 int
