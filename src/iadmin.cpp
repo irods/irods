@@ -2134,7 +2134,11 @@ usage( char *subOpt ) {
 
     char *rmrescMsgs[] = {
         " rmresc Name (remove resource)",
-        "Remove a storage resource.",
+        "Remove a composable resource.",
+        " ",
+        "The (coordinating or storage) resource to be removed must be both:",
+        " - empty (no data objects may be stored on it, including its trash)",
+        " - standalone (it cannot have a parent or a child resource)",
         ""
     };
 
