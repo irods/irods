@@ -126,6 +126,7 @@ int freeL1desc_struct(l1desc& _l1desc)
 {
     if (_l1desc.dataObjInfo) {
         freeDataObjInfo(_l1desc.dataObjInfo);
+        // TODO: potential leak - but crashes when 'all' version used... investigate this
         //freeAllDataObjInfo(_l1desc.dataObjInfo);
     }
 
@@ -703,17 +704,17 @@ namespace irods
             l1desc.openType = std::stoi(cond_input.at(OPEN_TYPE_KW).value().data());
         }
 
-        auto replica = ir::make_replica_proxy(_info);
-
         l1desc.dataObjInp = static_cast<DataObjInp*>(std::malloc(sizeof(DataObjInp)));
         std::memset(l1desc.dataObjInp, 0, sizeof(DataObjInp));
         replDataObjInp(&_inp, l1desc.dataObjInp);
         l1desc.dataObjInp->dataSize = dataSize;
 
+        auto [duplicate_replica, duplicate_replica_lm] = ir::duplicate_replica(_info);
+        l1desc.dataObjInfo = duplicate_replica_lm.release();
+
         l1desc.dataObjInpReplFlag = 1;
-        l1desc.dataObjInfo = replica.get();
         l1desc.oprType = _inp.oprType;
-        l1desc.replStatus = replica.replica_status();
+        l1desc.replStatus = duplicate_replica.replica_status();
         l1desc.dataSize = dataSize;
         l1desc.purgeCacheFlag = static_cast<int>(cond_input.contains(PURGE_CACHE_KW));
 
@@ -727,7 +728,7 @@ namespace irods
         }
 
         if (cond_input.contains(KEY_VALUE_PASSTHROUGH_KW)) {
-            replica.cond_input()[KEY_VALUE_PASSTHROUGH_KW] = cond_input.at(KEY_VALUE_PASSTHROUGH_KW);
+            duplicate_replica.cond_input()[KEY_VALUE_PASSTHROUGH_KW] = cond_input.at(KEY_VALUE_PASSTHROUGH_KW);
         }
 
         return l1_index;
