@@ -8,6 +8,7 @@
 #include "irods_at_scope_exit.hpp"
 #include "filesystem/path.hpp"
 #include "key_value_proxy.hpp"
+#include "irods_configuration_keywords.hpp"
 
 #include <boost/filesystem.hpp>
 
@@ -17,6 +18,7 @@
 #include <string>
 #include <string_view>
 #include <fstream>
+#include <iostream>
 
 namespace unit_test_utils
 {
@@ -119,6 +121,41 @@ namespace unit_test_utils
 
         return true;
     }
+
+    auto get_agent_pid(RcComm& _comm) -> int
+    {
+        ExecMyRuleInp inp{};
+        const auto free_cond_input = irods::at_scope_exit{[&inp] { clearKeyVal(&inp.condInput); }};
+        auto cond_input = irods::experimental::make_key_value_proxy(inp.condInput);
+
+        MsParamArray *out_array = nullptr;
+        const auto clear_ms_param_array = irods::at_scope_exit{[&out_array] { clearMsParamArray(out_array, true); }};
+
+        cond_input[irods::CFG_INSTANCE_NAME_KW] = "irods_rule_engine_plugin-irods_rule_language-instance";
+
+        const auto out_var = std::string{"*pid"};
+        const auto rule_text = fmt::format("msi_get_agent_pid({});", out_var);
+        std::snprintf(inp.myRule, META_STR_LEN, "@external rule { %s }", rule_text.data());
+        std::snprintf(inp.outParamDesc, LONG_NAME_LEN, "%s", out_var.data());
+
+        if (const auto ec = rcExecMyRule(&_comm, &inp, &out_array); ec < 0) {
+            return ec;
+        }
+
+        if (!out_array) {
+            return -1;
+        }
+
+        try {
+            return std::stoi(static_cast<char*>(out_array->msParam[0]->inOutStruct));
+        }
+        catch (const std::invalid_argument&) {
+            return -2;
+        }
+        catch (const std::out_of_range&) {
+            return -3;
+        }
+    } // get_agent_pid
 } // namespace unit_test_utils
 
 #endif // IRODS_UNIT_TEST_UTILS_HPP
