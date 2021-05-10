@@ -177,14 +177,14 @@ namespace
                 break;
 
             default:
-                throw std::runtime_error{fmt::format("Invalid entity type specified [entity_type => {}]", _entity_type)};
+                throw std::runtime_error{fmt::format("Invalid entity type specified [entity_type={}]", _entity_type)};
         }
 
         for (auto&& row : irods::query{&_comm, gql}) {
             return std::stoi(row[0]);
         }
 
-        throw std::runtime_error{fmt::format("Entity does not exist [entity_name => {}]", _entity_name)};
+        throw std::runtime_error{fmt::format("Entity does not exist [entity_name={}]", _entity_name)};
     }
 
     auto get_meta_id(nanodbc::connection& _db_conn, const fs::metadata& _metadata) -> int
@@ -306,6 +306,12 @@ namespace
             md.attribute = _op.at("attribute").get<std::string>();
             md.value = _op.at("value").get<std::string>();
 
+            if (md.attribute.empty() || md.value.empty()) {
+                const auto msg = fmt::format("Empty metadata attribute name or value [attribute={}, value={}]", md.attribute, md.value);
+                rodsLog(LOG_ERROR, msg.data());
+                return {SYS_INVALID_INPUT_PARAM, to_bytes_buffer(make_error_object(_op, _op_index, msg).dump())};
+            }
+
             // "units" are optional.
             if (_op.count("units")) {
                 md.units = _op.at("units").get<std::string>();
@@ -321,8 +327,9 @@ namespace
                     attach_metadata_to_object(_db_conn, _object_id, meta_id);
                 }
                 else {
-                    const auto msg = fmt::format("Failed to insert metadata [attribute => {}, value => {}, units => {}]",
+                    const auto msg = fmt::format("Failed to insert metadata [attribute={}, value={}, units={}]",
                                                  md.attribute, md.value, md.units);
+                    rodsLog(LOG_ERROR, msg.data());
                     return {SYS_INTERNAL_ERR, to_bytes_buffer(make_error_object(_op, _op_index, msg).dump())};
                 }
             }
@@ -343,35 +350,19 @@ namespace
             return {0, to_bytes_buffer("{}")};
         }
         catch (const fs::filesystem_error& e) {
-            // clang-format off
-            log::api::error({{"log_message", e.what()},
-                             {"metadata_operation", _op.dump()}});
-            // clang-format on
-
+            log::api::error({{"log_message", e.what()}, {"metadata_operation", _op.dump()}});
             return {e.code().value(), to_bytes_buffer(make_error_object(_op, _op_index, e.what()).dump())};
         }
         catch (const json::out_of_range& e) {
-            // clang-format off
-            log::api::error({{"log_message", e.what()},
-                             {"metadata_operation", _op.dump()}});
-            // clang-format on
-
-            return {SYS_INTERNAL_ERR, to_bytes_buffer(make_error_object(_op, _op_index, e.what()).dump())};
+            log::api::error({{"log_message", e.what()}, {"metadata_operation", _op.dump()}});
+            return {JSON_VALIDATION_ERROR, to_bytes_buffer(make_error_object(_op, _op_index, e.what()).dump())};
         }
         catch (const json::type_error& e) {
-            // clang-format off
-            log::api::error({{"log_message", e.what()},
-                             {"metadata_operation", _op.dump()}});
-            // clang-format on
-
-            return {SYS_INTERNAL_ERR, to_bytes_buffer(make_error_object(_op, _op_index, e.what()).dump())};
+            log::api::error({{"log_message", e.what()}, {"metadata_operation", _op.dump()}});
+            return {JSON_VALIDATION_ERROR, to_bytes_buffer(make_error_object(_op, _op_index, e.what()).dump())};
         }
         catch (const std::system_error& e) {
-            // clang-format off
-            log::api::error({{"log_message", e.what()},
-                             {"metadata_operation", _op.dump()}});
-            // clang-format on
-
+            log::api::error({{"log_message", e.what()}, {"metadata_operation", _op.dump()}});
             return {e.code().value(), to_bytes_buffer(make_error_object(_op, _op_index, e.what()).dump())};
         }
     }
@@ -416,10 +407,7 @@ namespace
             input = json::parse(std::string(static_cast<const char*>(_input->buf), _input->len));
         }
         catch (const json::parse_error& e) {
-            // clang-format off
-            log::api::error({{"log_message", "Failed to parse input into JSON"},
-                             {"error_message", e.what()}});
-            // clang-format on
+            log::api::error({{"log_message", "Failed to parse input into JSON"}, {"error_message", e.what()}});
 
             const auto err_info = make_error_object(json{}, 0, e.what());
             *_output = to_bytes_buffer(err_info.dump());
@@ -441,7 +429,7 @@ namespace
             return SYS_INVALID_INPUT_PARAM;
         }
 
-        std::string db_instance_name;;
+        std::string db_instance_name;
         nanodbc::connection db_conn;
 
         try {
@@ -453,8 +441,8 @@ namespace
         }
 
         if (!ic::user_has_permission_to_modify_metadata(*_comm, db_conn, object_id, entity_type)) {
-            log::api::error("User not allowed to modify metadata [entity_name => {}, entity_type => {}, object_id => {}]",
-                            entity_name, entity_type, object_id);
+            log::api::error("User not allowed to modify metadata [entity_name={}, entity_type={}, object_id={}]",
+                            entity_name, input.at("entity_type").get<std::string>(), object_id);
             *_output = to_bytes_buffer(make_error_object(json{}, 0, "User not allowed to modify metadata").dump());
             return CAT_NO_ACCESS_PERMISSION;
         }
