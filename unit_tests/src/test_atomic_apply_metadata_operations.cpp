@@ -1,49 +1,37 @@
 #include "catch.hpp"
 
-#include "rodsClient.h"
+#include "client_connection.hpp"
 #include "atomic_apply_metadata_operations.h"
-
-#include "irods_client_api_table.hpp"
-#include "irods_pack_table.hpp"
-#include "connection_pool.hpp"
 #include "filesystem/path.hpp"
 #include "irods_at_scope_exit.hpp"
+#include "rodsErrorTable.h"
+#include "getRodsEnv.h"
 
 #include "json.hpp"
 
 #include <cstdlib>
 #include <string>
 
-namespace fs = irods::experimental::filesystem;
-
 using json = nlohmann::json;
 
+namespace fs = irods::experimental::filesystem;
+
+extern "C" auto load_client_api_plugins() -> void;
+
 auto contains_error_information(const char* _json_error_info) -> bool;
-auto remove_all_metadata(rcComm_t& _conn, const rodsEnv& _env, const fs::path& _user_home) -> void;
+auto remove_all_metadata(RcComm& _conn, const rodsEnv& _env, const fs::path& _user_home) -> void;
 
 TEST_CASE("atomic_apply_metadata_operations")
 {
     using namespace std::string_literals;
 
-    auto& api_table = irods::get_client_api_table();
-    auto& pck_table = irods::get_pack_table();
-    init_api_table(api_table, pck_table);
-
-    const auto connection_count = 1;
-    const auto refresh_time = 600;
+    load_client_api_plugins();
 
     rodsEnv env;
-    REQUIRE(getRodsEnv(&env) >= 0);
+    _getRodsEnv(env);
 
-    irods::connection_pool conn_pool{connection_count,
-                                     env.rodsHost,
-                                     env.rodsPort,
-                                     env.rodsUserName,
-                                     env.rodsZone,
-                                     refresh_time};
-
-    auto conn = conn_pool.get_connection();
-    auto* conn_ptr = &static_cast<rcComm_t&>(conn);
+    irods::experimental::client_connection conn;
+    auto* conn_ptr = static_cast<RcComm*>(conn);
 
     const auto user_home = fs::path{env.rodsHome}.string();
 
@@ -167,7 +155,7 @@ TEST_CASE("atomic_apply_metadata_operations")
         char* json_error_string{};
         irods::at_scope_exit free_memory{[&json_error_string] { std::free(json_error_string); }};
 
-        REQUIRE(rc_atomic_apply_metadata_operations(conn_ptr, json_input.c_str(), &json_error_string) != 0);
+        REQUIRE(rc_atomic_apply_metadata_operations(conn_ptr, json_input.c_str(), &json_error_string) == JSON_VALIDATION_ERROR);
         REQUIRE(contains_error_information(json_error_string));
     }
 
@@ -188,7 +176,7 @@ TEST_CASE("atomic_apply_metadata_operations")
         char* json_error_string{};
         irods::at_scope_exit free_memory{[&json_error_string] { std::free(json_error_string); }};
 
-        REQUIRE(rc_atomic_apply_metadata_operations(conn_ptr, json_input.c_str(), &json_error_string) != 0);
+        REQUIRE(rc_atomic_apply_metadata_operations(conn_ptr, json_input.c_str(), &json_error_string) == JSON_VALIDATION_ERROR);
         REQUIRE(contains_error_information(json_error_string));
     }
 
@@ -210,7 +198,7 @@ TEST_CASE("atomic_apply_metadata_operations")
         char* json_error_string{};
         irods::at_scope_exit free_memory{[&json_error_string] { std::free(json_error_string); }};
 
-        REQUIRE(rc_atomic_apply_metadata_operations(conn_ptr, json_input.c_str(), &json_error_string) != 0);
+        REQUIRE(rc_atomic_apply_metadata_operations(conn_ptr, json_input.c_str(), &json_error_string) == INVALID_OPERATION);
         REQUIRE(contains_error_information(json_error_string));
     }
 
@@ -232,7 +220,7 @@ TEST_CASE("atomic_apply_metadata_operations")
         char* json_error_string{};
         irods::at_scope_exit free_memory{[&json_error_string] { std::free(json_error_string); }};
 
-        REQUIRE(rc_atomic_apply_metadata_operations(conn_ptr, json_input.c_str(), &json_error_string) != 0);
+        REQUIRE(rc_atomic_apply_metadata_operations(conn_ptr, json_input.c_str(), &json_error_string) == SYS_INVALID_INPUT_PARAM);
         REQUIRE(contains_error_information(json_error_string));
     }
 
@@ -322,6 +310,50 @@ TEST_CASE("atomic_apply_metadata_operations")
         REQUIRE(rc_atomic_apply_metadata_operations(conn_ptr, json_input.c_str(), &json_error_string) == 0);
         REQUIRE(json_error_string == "{}"s);
     }
+
+    SECTION("do not accept empty attribute names")
+    {
+        const auto json_input = json{
+            {"entity_name", user_home},
+            {"entity_type", "data_object"},
+            {"operations", json::array({
+                {
+                    {"operation", "add"},
+                    {"attribute", ""},
+                    {"value", "the_val"},
+                    {"units", "the_units"}
+                }
+            })}
+        }.dump();
+
+        char* json_error_string{};
+        irods::at_scope_exit free_memory{[&json_error_string] { std::free(json_error_string); }};
+
+        REQUIRE(rc_atomic_apply_metadata_operations(conn_ptr, json_input.c_str(), &json_error_string) == SYS_INVALID_INPUT_PARAM);
+        REQUIRE(contains_error_information(json_error_string));
+    }
+
+    SECTION("do not accept empty attribute values")
+    {
+        const auto json_input = json{
+            {"entity_name", user_home},
+            {"entity_type", "data_object"},
+            {"operations", json::array({
+                {
+                    {"operation", "add"},
+                    {"attribute", "the_attr"},
+                    {"value", ""},
+                    {"units", "the_units"}
+                }
+            })}
+        }.dump();
+
+        char* json_error_string{};
+        irods::at_scope_exit free_memory{[&json_error_string] { std::free(json_error_string); }};
+
+        REQUIRE(rc_atomic_apply_metadata_operations(conn_ptr, json_input.c_str(), &json_error_string) == SYS_INVALID_INPUT_PARAM);
+        REQUIRE(contains_error_information(json_error_string));
+    }
 }
 
 auto contains_error_information(const char* _json_string) -> bool
@@ -338,7 +370,7 @@ auto contains_error_information(const char* _json_string) -> bool
     }
 }
 
-auto remove_all_metadata(rcComm_t& _conn, const rodsEnv& _env, const fs::path& _user_home) -> void
+auto remove_all_metadata(RcComm& _conn, const rodsEnv& _env, const fs::path& _user_home) -> void
 {
     using namespace std::string_literals;
 

@@ -237,6 +237,7 @@ NEW_ERROR(SYS_REPLICA_INACCESSIBLE,                    -168000)
 NEW_ERROR(SYS_NOT_ALLOWED,                             -169000)
 NEW_ERROR(NOT_A_COLLECTION,                            -170000)
 NEW_ERROR(NOT_A_DATA_OBJECT,                           -171000)
+NEW_ERROR(JSON_VALIDATION_ERROR,                       -172000)
 
 /** @} */
 
