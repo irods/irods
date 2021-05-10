@@ -95,6 +95,9 @@ def main():
 
     irods_config = IrodsConfig()
 
+    if operation == 'status':
+        options.verbose += 1
+
     irods.log.register_file_handler(irods_config.control_log_path)
     if options.verbose > 0:
         llevel = logging.NOTSET
