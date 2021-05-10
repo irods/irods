@@ -69,7 +69,6 @@ rsStructFileExtAndReg(
     rsComm_t *rsComm,
     structFileExtAndRegInp_t *structFileExtAndRegInp ) {
     int status;
-    dataObjInp_t dataObjInp;
     int l1descInx;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
@@ -89,9 +88,9 @@ rsStructFileExtAndReg(
         return SYS_CROSS_ZONE_MV_NOT_SUPPORTED;
     }
 
-    memset( &dataObjInp, 0, sizeof( dataObjInp ) );
-    rstrcpy( dataObjInp.objPath, structFileExtAndRegInp->objPath,
-             MAX_NAME_LEN );
+    dataObjInp_t dataObjInp{};
+    const auto free_cond_input = irods::at_scope_exit{[&dataObjInp] { clearKeyVal(&dataObjInp.condInput); }};
+    rstrcpy( dataObjInp.objPath, structFileExtAndRegInp->objPath, MAX_NAME_LEN );
 
     /* replicate the condInput. may have resource input */
     replKeyVal( &structFileExtAndRegInp->condInput, &dataObjInp.condInput );
