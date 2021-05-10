@@ -242,6 +242,12 @@ namespace
         irods::log(LOG_DEBUG9, fmt::format("[{}:{}] - src:[{}]", __FUNCTION__, __LINE__, _src.dump()));
 
         const auto src = irods::experimental::make_key_value_proxy(*irods::to_key_value_pair(_src));
+        const auto free_src = irods::at_scope_exit{[&src]
+            {
+                clearKeyVal(src.get());
+                std::free(src.get());
+            }
+        };
 
         // Template argument deduction is ambiguous here because cond_input() is overloaded
         auto out = irods::experimental::make_key_value_proxy<KeyValPair>(_obj->cond_input());

@@ -266,6 +266,7 @@ int chkEmptyDir(
     char childPath[MAX_NAME_LEN];
     struct stat myFileStat;
     struct rodsDirent* myFileDirent = 0;
+    const auto free_dirent = irods::at_scope_exit{[&myFileDirent] { std::free(myFileDirent); }};
 
     // =-=-=-=-=-=-=-
     // call opendir via resource plugin

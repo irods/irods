@@ -231,6 +231,7 @@ namespace {
         reg_replica_input.destDataObjInfo = destination_replica.get();
 
         auto reg_replica_cond_input = irods::experimental::make_key_value_proxy(reg_replica_input.condInput);
+        const auto free_cond_input = irods::at_scope_exit{[&reg_replica_input] { clearKeyVal(&reg_replica_input.condInput); }};
 
         // Carry privileged access keywords forward
         if (phy_path_reg_cond_input.contains(SU_CLIENT_USER_KW )) {

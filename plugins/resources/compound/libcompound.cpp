@@ -428,6 +428,7 @@ namespace {
     {
         // Open source replica
         dataObjInp_t source_data_obj_inp{};
+        const auto free_cond_input = irods::at_scope_exit{[&source_data_obj_inp] { clearKeyVal(&source_data_obj_inp.condInput); }};
         rstrcpy( source_data_obj_inp.objPath, obj->logical_path().c_str(), MAX_NAME_LEN );
         copyKeyVal( ( keyValPair_t* )&obj->cond_input(), &source_data_obj_inp.condInput );
 
@@ -464,6 +465,7 @@ namespace {
         // create a data obj input struct to call rsDataObjRepl which given
         // the _stage_sync_kw will either stage or sync the data object
         dataObjInp_t destination_data_obj_inp{};
+        const auto free_cond_input = irods::at_scope_exit{[&destination_data_obj_inp] { clearKeyVal(&destination_data_obj_inp.condInput); }};
         rstrcpy( destination_data_obj_inp.objPath, obj->logical_path().c_str(), MAX_NAME_LEN );
         destination_data_obj_inp.createMode = obj->mode();
 
@@ -759,6 +761,7 @@ irods::error repl_object(
         }
 
         fileStageSyncInp_t inp{};
+        const auto free_cond_input = irods::at_scope_exit{[&inp] { clearKeyVal(&inp.condInput); }};
         inp.dataSize = srcDataObjInfo->dataSize;
 
         rstrcpy( inp.filename,      destDataObjInfo->filePath,  MAX_NAME_LEN );
@@ -771,7 +774,8 @@ irods::error repl_object(
         addKeyVal(&inp.condInput, DATA_ID_KW, object_id.c_str());
 
         inp.mode = getFileMode(L1desc[destination_l1descInx].dataObjInp);
-        fileSyncOut_t* sync_out = 0;
+        fileSyncOut_t* sync_out = nullptr;
+        const auto free_out = irods::at_scope_exit{[&sync_out] { if (sync_out) std::free(sync_out); }};
         int status = rsFileSyncToArch(_ctx.comm(), &inp, &sync_out );
 
         // Need to update the physical path with whatever the archive resource came up with
