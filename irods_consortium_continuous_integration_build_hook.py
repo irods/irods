@@ -33,7 +33,7 @@ def install_building_dependencies(externals_directory):
         'irods-externals-fmt6.1.2-1',
         'irods-externals-json3.7.3-0',
         'irods-externals-libarchive3.3.2-1',
-        'irods-externals-nanodbc2.13.0-0',
+        'irods-externals-nanodbc2.13.0-1',
         'irods-externals-spdlog1.5.0-1',
         'irods-externals-zeromq4-14.1.6-0'
         ]
