@@ -27,14 +27,15 @@
 #include "boost/filesystem.hpp"
 #include "fmt/format.h"
 
+#include <algorithm>
 #include <cstring>
+#include <fstream>
 #include <iostream>
 #include <iterator>
-#include <thread>
+#include <signal.h>
 #include <string>
 #include <string_view>
-#include <fstream>
-#include <algorithm>
+#include <thread>
 
 using namespace std::chrono_literals;
 
@@ -46,6 +47,22 @@ namespace replica = irods::experimental::replica;
 const std::string DEFAULT_RESOURCE_HIERARCHY = "demoResc";
 
 auto create_empty_replica(const fs::path& _path) -> void;
+
+namespace
+{
+    auto wait_for_agent_to_close(const pid_t _pid, const int _max_checks = 60) -> int
+    {
+        for (int i = 0; i < _max_checks; ++i) {
+            if (0 != kill(_pid, 0)) {
+                return 0;
+            }
+
+            std::this_thread::sleep_for(1s);
+        }
+
+        return -1;
+    } // wait_for_agent_to_close
+} // anonymous namespace
 
 TEST_CASE("open,read,write,close")
 {
@@ -218,6 +235,8 @@ TEST_CASE("open,read,write,close")
 
         SECTION("create,no close")
         {
+            pid_t unclosed_fd_pid{};
+
             {
                 irods::experimental::client_connection conn;
                 RcComm& comm = static_cast<RcComm&>(conn);
@@ -231,8 +250,13 @@ TEST_CASE("open,read,write,close")
 
                 std::this_thread::sleep_for(2s);
 
+                unclosed_fd_pid = unit_test_utils::get_agent_pid(comm);
+                REQUIRE(unclosed_fd_pid > 0);
+
                 // disconnect without close
             }
+
+            REQUIRE(0 == wait_for_agent_to_close(unclosed_fd_pid));
 
             irods::experimental::client_connection conn;
             RcComm& comm = static_cast<RcComm&>(conn);
@@ -337,6 +361,8 @@ TEST_CASE("open,read,write,close")
 
             std::this_thread::sleep_for(2s);
 
+            pid_t unclosed_fd_pid{};
+
             {
                 irods::experimental::client_connection conn2;
                 RcComm& comm2 = static_cast<RcComm&>(conn2);
@@ -348,11 +374,13 @@ TEST_CASE("open,read,write,close")
                 REQUIRE(fd > 2);
                 CHECK(INTERMEDIATE_REPLICA == replica::replica_status(comm2, target_object, 0));
 
+                unclosed_fd_pid = unit_test_utils::get_agent_pid(comm2);
+                REQUIRE(unclosed_fd_pid > 0);
+
                 // disconnect without close
             }
 
-            // Sleep here to ensure that the catalog has had enough time to update
-            std::this_thread::sleep_for(10s);
+            REQUIRE(0 == wait_for_agent_to_close(unclosed_fd_pid));
 
             REQUIRE(STALE_REPLICA == replica::replica_status(comm, target_object, 0));
 
@@ -376,6 +404,8 @@ TEST_CASE("open,read,write,close")
 
         SECTION("create,no close,open for write,close")
         {
+            pid_t unclosed_fd_pid{};
+
             // create,no close
             {
                 irods::experimental::client_connection conn;
@@ -388,10 +418,13 @@ TEST_CASE("open,read,write,close")
                 REQUIRE(fd > 2);
                 CHECK(INTERMEDIATE_REPLICA == replica::replica_status(comm, target_object, 0));
 
+                unclosed_fd_pid = unit_test_utils::get_agent_pid(comm);
+                REQUIRE(unclosed_fd_pid > 0);
+
                 // disconnect without close
             }
 
-            std::this_thread::sleep_for(2s);
+            REQUIRE(0 == wait_for_agent_to_close(unclosed_fd_pid));
 
             {
                 irods::experimental::client_connection conn;
@@ -464,6 +497,8 @@ TEST_CASE("open,read,write,close")
 
         SECTION("create,write,no close")
         {
+            pid_t unclosed_fd_pid{};
+
             {
                 irods::experimental::client_connection conn;
                 RcComm& comm = static_cast<RcComm&>(conn);
@@ -488,11 +523,13 @@ TEST_CASE("open,read,write,close")
                 // Sleep here to make sure that the mtime is not updated
                 std::this_thread::sleep_for(2s);
 
+                unclosed_fd_pid = unit_test_utils::get_agent_pid(comm);
+                REQUIRE(unclosed_fd_pid > 0);
+
                 // disconnect without close
             }
 
-            // Sleep here to ensure that the catalog has had enough time to update
-            std::this_thread::sleep_for(2s);
+            REQUIRE(0 == wait_for_agent_to_close(unclosed_fd_pid));
 
             // ensure all system metadata were updated properly
             irods::experimental::client_connection conn;
