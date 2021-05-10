@@ -226,11 +226,10 @@ namespace
                     return irods::data_object_create_in_special_collection(&_comm, _inp);
             }
 
-            // conjuring a brand new data object info - intentionally take ownership of allocated struct
+            // conjuring a brand new data object info
             // NOTE: all of this information is free'd and overwritten by the structure in the rsPhyPathReg
             // call, but is required to inform the database about the replica we are creating.
             auto [new_replica, lm] = ir::make_replica_proxy();
-            lm.release();
             new_replica.logical_path(_inp.objPath);
             new_replica.replica_status(INTERMEDIATE_REPLICA);
             new_replica.hierarchy(hierarchy);
@@ -270,7 +269,7 @@ namespace
 
             auto& l1desc = L1desc[l1_index];
 
-            if (const int ec = getFilePathName(&_comm, new_replica.get(), l1desc.dataObjInp); ec < 0) {
+            if (const int ec = getFilePathName(&_comm, l1desc.dataObjInfo, l1desc.dataObjInp); ec < 0) {
                 freeL1desc(l1_index);
 
                 irods::log(LOG_ERROR, fmt::format(
@@ -283,7 +282,7 @@ namespace
 
             auto l1_cond_input = irods::experimental::make_key_value_proxy(l1desc.dataObjInp->condInput);
             l1_cond_input[REGISTER_AS_INTERMEDIATE_KW] = "";
-            l1_cond_input[FILE_PATH_KW] = new_replica.physical_path();
+            l1_cond_input[FILE_PATH_KW] = l1desc.dataObjInfo->filePath;
             l1_cond_input[DATA_SIZE_KW] = std::to_string(0);
 
             const auto admin_op = l1_cond_input.contains(ADMIN_KW);
@@ -804,6 +803,9 @@ namespace
         }
 
         enable_creation_of_additional_replicas(*rsComm);
+        const auto remove_reg_repl_keyword_from_session_props = irods::at_scope_exit{[&rsComm] {
+            irods::experimental::key_value_proxy{rsComm->session_props}.erase(REG_REPL_KW);
+        }};
 
         DataObjInfo* info_head{};
         std::string hierarchy{};
@@ -838,7 +840,7 @@ namespace
             return SYS_UNKNOWN_ERROR;
         }
 
-        const auto data_object_exists = nullptr != info_head;
+        const auto free_info = irods::at_scope_exit{[&info_head] { if (info_head) freeAllDataObjInfo(info_head); }};
 
         try {
             if (dataObjInp->openFlags & O_CREAT) {
@@ -872,7 +874,7 @@ namespace
             return SYS_UNKNOWN_ERROR;
         }
 
-        if (!data_object_exists) {
+        if (!info_head) {
             irods::log(LOG_ERROR, fmt::format(
                 "[{}:{}] - requested data object does not exist "
                 "[path=[{}], hierarchy=[{}]]",
