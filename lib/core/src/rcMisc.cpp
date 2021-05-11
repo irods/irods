@@ -4380,7 +4380,7 @@ int getaddrinfo_with_retry(const char *_node,
     std::string hostname;
 
     if (CLIENT_PT != ::ProcessType) {
-        const auto& hosts_config = irods::get_server_property<nlohmann::json&>(irods::HOSTS_CONFIG_JSON_OBJECT_KW);
+        const auto hosts_config = irods::get_server_property<nlohmann::json>(irods::HOSTS_CONFIG_JSON_OBJECT_KW);
         auto alias = resolve_hostname(_node, hosts_config, hostname_resolution_scheme::match_preferred);
         hostname = alias ? std::move(*alias) : _node;
     }

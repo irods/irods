@@ -3065,7 +3065,7 @@ irods::error add_global_re_params_to_kvp_for_dynpep(
     }
 
     try {
-        addKeyVal(&_kvp, irods::PROXY_USER_ZONE_KW.c_str(), irods::get_server_property<const std::string&>(irods::PROXY_USER_ZONE_KW).c_str());
+        addKeyVal(&_kvp, irods::PROXY_USER_ZONE_KW.c_str(), irods::get_server_property<const std::string>(irods::PROXY_USER_ZONE_KW).c_str());
     } catch ( const irods::exception& e ) {
         addKeyVal(&_kvp, irods::PROXY_USER_ZONE_KW.c_str(), "");
     }
@@ -3088,10 +3088,11 @@ irods::error get_catalog_service_role(
     std::string& _role ) {
 
     try {
-        _role = irods::get_server_property<const std::string>(irods::CFG_CATALOG_SERVICE_ROLE);
+        _role = irods::get_server_property<std::string>(irods::CFG_CATALOG_SERVICE_ROLE);
     } catch ( const irods::exception& e ) {
         return irods::error(e);
     }
+
     return SUCCESS();
 
 } // get_catalog_service_role
@@ -3099,7 +3100,7 @@ irods::error get_catalog_service_role(
 irods::error get_default_rule_plugin_instance(
         std::string& _instance_name ) {
     try {
-        _instance_name = boost::any_cast<const std::string&>(boost::any_cast<const std::unordered_map<std::string, boost::any>&>(irods::get_server_property<const std::vector<boost::any>>(std::vector<std::string>{irods::CFG_PLUGIN_CONFIGURATION_KW, irods::PLUGIN_TYPE_RULE_ENGINE})[0]).at(irods::CFG_INSTANCE_NAME_KW));
+        _instance_name = irods::get_server_property<nlohmann::json>(std::vector<std::string>{irods::CFG_PLUGIN_CONFIGURATION_KW, irods::PLUGIN_TYPE_RULE_ENGINE})[0].at(irods::CFG_INSTANCE_NAME_KW).get<std::string>();
     } catch ( const irods::exception& e ) {
         return irods::error(e);
     } catch ( const boost::bad_any_cast& e ) {
@@ -3115,9 +3116,9 @@ irods::error get_default_rule_plugin_instance(
 irods::error list_rule_plugin_instances(
         std::vector< std::string > &_instance_names ) {
     try {
-        const auto& rule_engines = irods::get_server_property<const std::vector<boost::any>>(std::vector<std::string>{irods::CFG_PLUGIN_CONFIGURATION_KW, irods::PLUGIN_TYPE_RULE_ENGINE});
+        const auto rule_engines = irods::get_server_property<nlohmann::json>(std::vector<std::string>{irods::CFG_PLUGIN_CONFIGURATION_KW, irods::PLUGIN_TYPE_RULE_ENGINE});
         for ( const auto& el : rule_engines ) {
-            _instance_names.push_back( boost::any_cast< const std::string& >( boost::any_cast< const std::unordered_map<std::string, boost::any>&>( el ).at(irods::CFG_INSTANCE_NAME_KW) ) );
+            _instance_names.push_back( el.at(irods::CFG_INSTANCE_NAME_KW).get<std::string>() );
         }
     } catch ( const irods::exception& e ) {
         return irods::error(e);

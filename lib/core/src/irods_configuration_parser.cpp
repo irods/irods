@@ -15,11 +15,9 @@ using json = nlohmann::json;
 namespace irods {
 
     configuration_parser::configuration_parser() {
-
     } // ctor
 
     configuration_parser::~configuration_parser() {
-
     } // dtor
 
     configuration_parser::configuration_parser(
@@ -32,9 +30,8 @@ namespace irods {
 
     } // cctor
 
-    configuration_parser::configuration_parser(
-        const std::string& _file ) {
-
+    configuration_parser::configuration_parser(const std::string& _file )
+    {
         load( _file );
 
     } // ctor
@@ -107,6 +104,29 @@ namespace irods {
                 root_ = boost::any_cast<std::unordered_map<std::string, boost::any>>(convert_json(config));
             } else {
                 const auto json_object_any = convert_json(config);
+                const auto& json_object = boost::any_cast<const std::unordered_map<std::string, boost::any>&>(json_object_any);
+                for ( auto it = json_object.cbegin(); it != json_object.cend(); ++it ) {
+                    root_[it->first] = it->second;
+                }
+            }
+        } catch ( const irods::exception& e ) {
+            ret = irods::error(e);
+        } catch ( const boost::bad_any_cast& ) {
+            ret = ERROR(INVALID_ANY_CAST, "configuration file did not contain a json object.");
+        }
+
+        return ret;
+
+    } // load_json_object
+
+    error configuration_parser::load_json_object(const json& _config)
+    {
+        irods::error ret = SUCCESS();
+        try {
+            if ( root_.empty() ) {
+                root_ = boost::any_cast<std::unordered_map<std::string, boost::any>>(convert_json(_config));
+            } else {
+                const auto json_object_any = convert_json(_config);
                 const auto& json_object = boost::any_cast<const std::unordered_map<std::string, boost::any>&>(json_object_any);
                 for ( auto it = json_object.cbegin(); it != json_object.cend(); ++it ) {
                     root_[it->first] = it->second;

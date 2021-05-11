@@ -189,7 +189,7 @@ namespace irods
     {
         if (!irods::is_privileged_client(comm)) {
             try {
-                using T = const std::string&;
+                using T = const std::string;
                 const auto& keyword = irods::CFG_CLIENT_API_WHITELIST_POLICY_KW;
                 return "enforce" == irods::get_server_property<T>(keyword) && is_client_to_agent_connection();
             }

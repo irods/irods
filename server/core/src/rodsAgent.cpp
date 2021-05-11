@@ -381,7 +381,6 @@ runIrodsAgentFactory( sockaddr_un agent_addr ) {
                 }
 
                 irods::server_properties::instance().capture();
-                irods::parse_and_store_hosts_configuration_file_as_json();
 
                 using key_path_t = irods::configuration_parser::key_path_t;
 
@@ -499,6 +498,7 @@ runIrodsAgentFactory( sockaddr_un agent_addr ) {
         irods::log(PASS(ret));
         return ret.code();
     }
+
     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         if ( strstr( rsComm.myEnv.rodsDebug, "CAT" ) != NULL ) {
             chlDebug( rsComm.myEnv.rodsDebug );

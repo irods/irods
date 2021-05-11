@@ -318,7 +318,7 @@ initRcatServerHostByFile() {
         rodsHostAddr_t    addr;
         memset( &addr, 0, sizeof( addr ) );
         rodsServerHost_t* tmp_host = 0;
-        snprintf( addr.hostAddr, sizeof( addr.hostAddr ), "%s", boost::any_cast<const std::string&>(irods::get_server_property<const std::vector<boost::any>>(irods::CFG_CATALOG_PROVIDER_HOSTS_KW)[0]).c_str() );
+        snprintf( addr.hostAddr, sizeof( addr.hostAddr ), "%s", irods::get_server_property<std::vector<std::string>>(irods::CFG_CATALOG_PROVIDER_HOSTS_KW)[0].c_str());
         int rem_flg = resolveHost(
                           &addr,
                           &tmp_host );
@@ -351,13 +351,12 @@ initRcatServerHostByFile() {
 
     // try for new federation config
     try {
-        for ( const auto& el : irods::get_server_property< const std::vector<boost::any> > ( irods::CFG_FEDERATION_KW ) ) {
+        for ( const auto& federation : irods::get_server_property<const nlohmann::json&> ( irods::CFG_FEDERATION_KW ) ) {
             try {
-                const auto& federation = boost::any_cast<const std::unordered_map<std::string, boost::any>&>(el);
                 try {
-                    const auto& fed_zone_key = boost::any_cast< std::string >(federation.at(irods::CFG_ZONE_KEY_KW));
-                    const auto& fed_zone_name = boost::any_cast< std::string >(federation.at(irods::CFG_ZONE_NAME_KW));
-                    const auto& fed_zone_negotiation_key = boost::any_cast< std::string >(federation.at(irods::CFG_NEGOTIATION_KEY_KW));
+                    const auto fed_zone_key             = federation.at(irods::CFG_ZONE_KEY_KW).get<std::string>();
+                    const auto fed_zone_name            = federation.at(irods::CFG_ZONE_NAME_KW).get<std::string>();
+                    const auto fed_zone_negotiation_key = federation.at(irods::CFG_NEGOTIATION_KEY_KW).get<std::string>();
                     // store in remote_SID_key_map
                     remote_SID_key_map[fed_zone_name] = std::make_pair( fed_zone_key, fed_zone_negotiation_key );
                 }
@@ -428,9 +427,9 @@ initZone( rsComm_t *rsComm ) {
     sqlResult_t *zoneName, *zoneType, *zoneConn, *zoneComment;
     char *tmpZoneName, *tmpZoneType, *tmpZoneConn;//, *tmpZoneComment;
 
-    boost::optional<const std::string&> zone_name;
+    boost::optional<std::string> zone_name;
     try {
-        zone_name.reset(irods::get_server_property<const std::string>(irods::CFG_ZONE_NAME));
+        zone_name.reset(irods::get_server_property<std::string>(irods::CFG_ZONE_NAME));
     } catch ( const irods::exception& e ) {
         irods::log( irods::error(e) );
         return e.code();
@@ -736,7 +735,7 @@ rsPipeSignalHandler( int ) {
 int initHostConfigByFile()
 {
     try {
-        const auto& hosts_config = irods::get_server_property<nlohmann::json&>(irods::HOSTS_CONFIG_JSON_OBJECT_KW);
+        const auto& hosts_config = irods::get_server_property<const nlohmann::json&>(irods::HOSTS_CONFIG_JSON_OBJECT_KW);
 
         for (auto&& entry : hosts_config.at("host_entries")) {
             try {
@@ -1058,16 +1057,18 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
 }
 
 std::set<std::string>
-construct_controlled_user_set(const std::unordered_map<std::string, boost::any>& controlled_user_connection_list) {
+construct_controlled_user_set(const nlohmann::json& controlled_user_connection_list) {
     std::set<std::string> user_set;
     try {
-        for ( const auto& user : boost::any_cast<const std::vector<boost::any>&>(controlled_user_connection_list.at("users")) ) {
-            user_set.insert(boost::any_cast<const std::string&>(user));
+        for ( const auto& user : controlled_user_connection_list.at("users")) {
+            user_set.insert(user.get<std::string>());
         }
     } catch ( const boost::bad_any_cast& e ) {
-        THROW( INVALID_ANY_CAST, "controlled_user_connection_list must contain  a list of string values at key \"users\"" );
+        THROW( INVALID_ANY_CAST, "controlled_user_connection_list must contain a list of string values at key \"users\"" );
     } catch ( const std::out_of_range& e ) {
-        THROW( KEY_NOT_FOUND, "controlled_user_connection_list must contain  a list of string values at key \"users\"" );
+        THROW( KEY_NOT_FOUND, "controlled_user_connection_list must contain a list of string values at key \"users\"" );
+    } catch ( const nlohmann::json::exception& e ) {
+        THROW( KEY_NOT_FOUND, "controlled_user_connection_list must contain a list of string values at key \"users\"" );
     }
     return user_set;
 }
@@ -1083,9 +1084,10 @@ chkAllowedUser( const char *userName, const char *rodsZone ) {
         /* XXXXXXXXXX userName not yet defined. allow it for now */
         return 0;
     }
-    boost::optional<const std::unordered_map<std::string, boost::any>&> controlled_user_connection_list;
+    nlohmann::json  controlled_user_connection_list{};
     try {
-        controlled_user_connection_list.reset(irods::get_server_property<const std::unordered_map<std::string, boost::any> >("controlled_user_connection_list"));
+        controlled_user_connection_list = irods::get_server_property<nlohmann::json>("controlled_user_connection_list");
+
     } catch ( const irods::exception& e ) {
         if ( e.code() == KEY_NOT_FOUND ) {
             return 0;
@@ -1094,8 +1096,8 @@ chkAllowedUser( const char *userName, const char *rodsZone ) {
     }
     const auto user_and_zone = (boost::format("%s#%s") % userName % rodsZone).str();
     try {
-        const auto& control_type = boost::any_cast<const std::string&>(controlled_user_connection_list->at("control_type"));
-        static const auto controlled_user_set = construct_controlled_user_set(*controlled_user_connection_list);
+        const auto control_type = controlled_user_connection_list.at("control_type").get<std::string>();
+        static const auto controlled_user_set = construct_controlled_user_set(controlled_user_connection_list);
         if ( control_type == "whitelist" ) {
             if ( controlled_user_set.count( user_and_zone ) == 0 ) {
                 return SYS_USER_NOT_ALLOWED_TO_CONN;

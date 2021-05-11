@@ -69,12 +69,12 @@ static std::string local_instance_name;
 
 int initRuleEngine( const char*, rsComm_t*, const char*, const char*, const char *);
 
-static std::string get_string_array_from_array( const boost::any& _array ) {
+static std::string get_string_array_from_array( const nlohmann::json& _array ) {
     std::string str_array;
     try {
-        for( const auto& el : boost::any_cast<const std::vector<boost::any>&>( _array ) ) {
+        for(const auto& el : _array) {
             try {
-                str_array += boost::any_cast< const std::string& >(el);
+                str_array += el.get<std::string>();
             }
             catch ( const boost::bad_any_cast& ) {
                 rodsLog(LOG_ERROR, "%s - failed to cast rule base file name entry to string", __PRETTY_FUNCTION__);
@@ -140,14 +140,13 @@ irods::error start(irods::default_re_ctx&,const std::string& _instance_name ) {
     local_instance_name = _instance_name;
 
     try {
-        const auto& re_plugin_arr = boost::any_cast<const std::vector<boost::any>&>(irods::get_server_property<const std::unordered_map<std::string, boost::any>&>(irods::CFG_PLUGIN_CONFIGURATION_KW).at(irods::PLUGIN_TYPE_RULE_ENGINE));
-        for( const auto& el : re_plugin_arr ) {
-            const auto& plugin_config = boost::any_cast<const std::unordered_map<std::string, boost::any>&>(el);
-            const auto& inst_name = boost::any_cast<const std::string&>(plugin_config.at(irods::CFG_INSTANCE_NAME_KW));
+        const auto re_plugin_arr = irods::get_server_property<nlohmann::json>(irods::CFG_PLUGIN_CONFIGURATION_KW).at(irods::PLUGIN_TYPE_RULE_ENGINE);
+        for( const auto& plugin_config : re_plugin_arr ) {
+            const auto& inst_name = plugin_config.at(irods::CFG_INSTANCE_NAME_KW).get<std::string>();
             if( inst_name == _instance_name) {
-                const auto& shmem_value = boost::any_cast<const std::string&>( plugin_config.at(irods::CFG_SHARED_MEMORY_INSTANCE_KW) );
-                const auto& plugin_spec_cfg = boost::any_cast<const std::unordered_map<std::string, boost::any>&>( plugin_config.at(irods::CFG_PLUGIN_SPECIFIC_CONFIGURATION_KW) );
-                std::string core_re = get_string_array_from_array(plugin_spec_cfg.at(irods::CFG_RE_RULEBASE_SET_KW));
+                const auto shmem_value = plugin_config.at(irods::CFG_SHARED_MEMORY_INSTANCE_KW).get<std::string>();
+                const auto plugin_spec_cfg = plugin_config.at(irods::CFG_PLUGIN_SPECIFIC_CONFIGURATION_KW);
+                std::string core_re  = get_string_array_from_array(plugin_spec_cfg.at(irods::CFG_RE_RULEBASE_SET_KW));
                 std::string core_fnm = get_string_array_from_array(plugin_spec_cfg.at(irods::CFG_RE_FUNCTION_NAME_MAPPING_SET_KW));
                 std::string core_dvm = get_string_array_from_array(plugin_spec_cfg.at(irods::CFG_RE_DATA_VARIABLE_MAPPING_SET_KW));
                 int status = initRuleEngine(
