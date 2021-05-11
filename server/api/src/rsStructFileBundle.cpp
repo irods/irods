@@ -170,7 +170,8 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
         l1descInx = rsDataObjOpen( rsComm, &dataObjInp );
     }
     else {
-        if (fs::server::exists(*rsComm, structFileBundleInp->objPath)) {
+        if (fs::server::exists(*rsComm, structFileBundleInp->objPath) &&
+            !getValByKey(&structFileBundleInp->condInput, FORCE_FLAG_KW)) {
             return OVERWRITE_WITHOUT_FORCE_FLAG;
         }
 
