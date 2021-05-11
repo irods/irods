@@ -136,9 +136,11 @@ namespace
 
             try {
                 irods::set_server_property<std::string>( irods::CFG_RE_CACHE_SALT_KW, cache_salt.str() );
-            } catch ( const irods::exception& e ) {
+            } catch ( const nlohmann::json::exception& e ) {
                 rodsLog( LOG_ERROR, "createAndSetRECacheSalt: failed to set server_properties" );
-                return irods::error(e);
+                return ERROR(SYS_INVALID_INPUT_PARAM, e.what());
+            }
+            catch(const std::exception& e) {
             }
 
             int ret_int = setenv( SP_RE_CACHE_SALT, cache_salt.str().c_str(), 1 );
@@ -413,8 +415,6 @@ int main(int argc, char** argv)
 
     remove_leftover_rulebase_pid_files();
 
-    irods::parse_and_store_hosts_configuration_file_as_json();
-
     using key_path_t = irods::configuration_parser::key_path_t;
 
     // Set the default value for evicting DNS cache entries.
@@ -456,6 +456,7 @@ int main(int argc, char** argv)
         rodsLog(LOG_ERROR, "Error creating tmp directory for iRODS sockets, mkdtemp errno [%d]: [%s]", errno, strerror(errno));
         return SYS_INTERNAL_ERR;
     }
+
     snprintf(agent_factory_socket_dir, sizeof(agent_factory_socket_dir), "%s", mkdtemp_result);
     snprintf(agent_factory_socket_file, sizeof(agent_factory_socket_file), "%s/irods_factory_%s", agent_factory_socket_dir, random_suffix);
     snprintf(local_addr.sun_path, sizeof(local_addr.sun_path), "%s", agent_factory_socket_file);
@@ -519,39 +520,35 @@ int main(int argc, char** argv)
     return serverMain(enable_test_mode, write_to_stdout);
 }
 
-static bool instantiate_shared_memory_for_plugin( const std::unordered_map<std::string, boost::any>& _plugin_object ) {
-    try {
-        const auto& mem_name = boost::any_cast<const std::string&>(_plugin_object.at(irods::CFG_SHARED_MEMORY_INSTANCE_KW));
+static bool instantiate_shared_memory_for_plugin( const nlohmann::json& _plugin_object ) {
+    const auto itr = _plugin_object.find(irods::CFG_SHARED_MEMORY_INSTANCE_KW);
+    if(_plugin_object.end() != itr) {
+        const auto mem_name = itr->get<const std::string>();
         prepareServerSharedMemory(mem_name);
         detachSharedMemory(mem_name);
-    } catch ( const std::out_of_range& ) {
-        return false;
+        return true;
     }
-    return true;
+
+    return false;
 }
 
-static bool uninstantiate_shared_memory_for_plugin( const std::unordered_map<std::string, boost::any>& _plugin_object ) {
-    try {
-        const auto& mem_name = boost::any_cast<const std::string&>(_plugin_object.at(irods::CFG_SHARED_MEMORY_INSTANCE_KW));
+static bool uninstantiate_shared_memory_for_plugin( const nlohmann::json& _plugin_object ) {
+    const auto itr = _plugin_object.find(irods::CFG_SHARED_MEMORY_INSTANCE_KW);
+    if(_plugin_object.end() != itr) {
+        const auto mem_name = itr->get<const std::string>();
         removeSharedMemory(mem_name);
         resetMutex(mem_name.c_str());
-    } catch ( const std::out_of_range& ) {
-        return false;
+        return true;
     }
-    return true;
+
+    return false;
 }
 
 static irods::error instantiate_shared_memory( ) {
     try {
-        for ( const auto& item : irods::get_server_property<const std::unordered_map<std::string, boost::any>&>(irods::CFG_PLUGIN_CONFIGURATION_KW) ) {
-            if ( item.first == irods::PLUGIN_TYPE_RULE_ENGINE ) {
-                for ( const auto& plugin : boost::any_cast<const std::vector<boost::any>&>(item.second) ) {
-                    instantiate_shared_memory_for_plugin(boost::any_cast<const std::unordered_map<std::string, boost::any>&>(plugin));
-                }
-            } else {
-                for ( const auto& plugin : boost::any_cast<const std::unordered_map<std::string, boost::any>&>(item.second) ) {
-                    instantiate_shared_memory_for_plugin(boost::any_cast<const std::unordered_map<std::string, boost::any>&>(plugin.second));
-                }
+        for ( const auto& item : irods::get_server_property<const nlohmann::json&>(irods::CFG_PLUGIN_CONFIGURATION_KW).items() ) {
+            for ( const auto& plugin : item.value().items() ) {
+                instantiate_shared_memory_for_plugin(plugin.value());
             }
         }
     } catch ( const boost::bad_any_cast& e ) {
@@ -565,15 +562,9 @@ static irods::error instantiate_shared_memory( ) {
 
 static irods::error uninstantiate_shared_memory( ) {
     try {
-        for ( const auto& item : irods::get_server_property<const std::unordered_map<std::string, boost::any>&>(irods::CFG_PLUGIN_CONFIGURATION_KW) ) {
-            if ( item.first == irods::PLUGIN_TYPE_RULE_ENGINE ) {
-                for ( const auto& plugin : boost::any_cast<const std::vector<boost::any>&>(item.second) ) {
-                    uninstantiate_shared_memory_for_plugin(boost::any_cast<const std::unordered_map<std::string, boost::any>&>(plugin));
-                }
-            } else {
-                for ( const auto& plugin : boost::any_cast<const std::unordered_map<std::string, boost::any>&>(item.second) ) {
-                    uninstantiate_shared_memory_for_plugin(boost::any_cast<const std::unordered_map<std::string, boost::any>&>(plugin.second));
-                }
+        for ( const auto& item : irods::get_server_property<const nlohmann::json&>(irods::CFG_PLUGIN_CONFIGURATION_KW).items()) {
+            for ( const auto& plugin : item.value().items() ) {
+                uninstantiate_shared_memory_for_plugin(plugin.value());
             }
         }
     } catch ( const boost::bad_any_cast& e ) {
@@ -590,7 +581,6 @@ int serverMain(
     const bool write_to_stdout = false)
 {
     int acceptErrCnt = 0;
-
     // set re cache salt here
     irods::error ret = createAndSetRECacheSalt();
     if ( !ret.ok() ) {
@@ -1176,27 +1166,25 @@ int getAgentProcPIDs(
 
 int
 chkAgentProcCnt() {
-    int maximum_connections;
+    int maximum_connections = NO_MAX_CONNECTION_LIMIT;
     try {
-        maximum_connections = irods::get_server_property<const int>("maximum_connections");
-    } catch ( const irods::exception& e ) {
-        if ( e.code() == KEY_NOT_FOUND ) {
-            maximum_connections = NO_MAX_CONNECTION_LIMIT;
-        } else {
-            irods::log( irods::error(e) );
-            return e.code();
-        }
-    }
-    if ( maximum_connections != NO_MAX_CONNECTION_LIMIT ) {
-        int count = getAgentProcCnt();
-        if ( count >= maximum_connections ) {
-            chkConnectedAgentProcQue();
-            count = getAgentProcCnt();
+        if(irods::server_property_exists("maximum_connections")) {
+            maximum_connections = irods::get_server_property<const int>("maximum_connections");
+            int count = getAgentProcCnt();
             if ( count >= maximum_connections ) {
-                return SYS_MAX_CONNECT_COUNT_EXCEEDED;
+                chkConnectedAgentProcQue();
+                count = getAgentProcCnt();
+                if ( count >= maximum_connections ) {
+                    return SYS_MAX_CONNECT_COUNT_EXCEEDED;
+                }
             }
         }
+
+    } catch ( const nlohmann::json::exception& e ) {
+        rodsLog(LOG_ERROR, "%s failed with message [%s]", e.what());
+        return SYS_INTERNAL_ERR;
     }
+
     return 0;
 }
 

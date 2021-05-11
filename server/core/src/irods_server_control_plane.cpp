@@ -48,13 +48,13 @@ namespace irods {
         }
 
         int time_out, port, num_hash_rounds;
-        boost::optional<const std::string&> encryption_algorithm;
+        boost::optional<std::string> encryption_algorithm;
         buffer_crypt::array_t shared_secret;
         try {
             time_out = get_server_property<const int>(CFG_SERVER_CONTROL_PLANE_TIMEOUT);
             port = get_server_property<const int>(_port_keyword);
             num_hash_rounds = get_server_property<const int>(CFG_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS_KW);
-            encryption_algorithm.reset(get_server_property<const std::string>(CFG_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM_KW));
+            encryption_algorithm.reset(get_server_property<std::string>(CFG_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM_KW));
             const auto& key = get_server_property<const std::string>(CFG_SERVER_CONTROL_PLANE_KEY);
             shared_secret.assign(key.begin(), key.end());
         } catch ( const irods::exception& e ) {
@@ -529,7 +529,7 @@ namespace irods {
         my_host_name_ = my_env.rodsHost;
 
         // get the IES host for ordereing
-        icat_host_name_ = boost::any_cast<const std::string&>(get_server_property<const std::vector<boost::any>>(CFG_CATALOG_PROVIDER_HOSTS_KW)[0]);
+        icat_host_name_ = get_server_property<nlohmann::json>(CFG_CATALOG_PROVIDER_HOSTS_KW)[0].get<std::string>();
 
         // repave icat_host_name_ as we do not want to process 'localhost'
         if ( "localhost" == icat_host_name_ ) {
@@ -673,12 +673,12 @@ namespace irods {
     void server_control_executor::operator()() {
 
         int port, num_hash_rounds;
-        boost::optional<const std::string&> encryption_algorithm;
+        boost::optional<std::string> encryption_algorithm;
         buffer_crypt::array_t shared_secret;
         try {
             port = get_server_property<const int>(port_prop_);
             num_hash_rounds = get_server_property<const int>(CFG_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS_KW);
-            encryption_algorithm.reset(get_server_property<const std::string>(CFG_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM_KW));
+            encryption_algorithm.reset(get_server_property<std::string>(CFG_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM_KW));
             const auto& key = get_server_property<const std::string>(CFG_SERVER_CONTROL_PLANE_KEY);
             shared_secret.assign(key.begin(), key.end());
         } catch ( const irods::exception& e ) {
@@ -1085,11 +1085,11 @@ namespace irods {
         error final_ret = SUCCESS();
 
         int num_hash_rounds;
-        boost::optional<const std::string&> encryption_algorithm;
+        boost::optional<std::string> encryption_algorithm;
         buffer_crypt::array_t shared_secret;
         try {
             num_hash_rounds = get_server_property<const int>(CFG_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS_KW);
-            encryption_algorithm.reset(get_server_property<const std::string>(CFG_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM_KW));
+            encryption_algorithm.reset(get_server_property<std::string>(CFG_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM_KW));
             const auto& key = get_server_property<const std::string>(CFG_SERVER_CONTROL_PLANE_KEY);
             shared_secret.assign(key.begin(), key.end());
         } catch ( const irods::exception& e ) {

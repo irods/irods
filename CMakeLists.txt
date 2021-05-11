@@ -109,6 +109,7 @@ include_directories(${IRODS_EXTERNALS_FULLPATH_JSON}/include
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package(Threads REQUIRED)
+find_package(CURL REQUIRED)
 
 find_package(OpenSSL REQUIRED)
 if (NOT PAM_LIBRARY)
@@ -938,11 +939,13 @@ target_link_libraries(
   ${OPENSSL_CRYPTO_LIBRARY}
   ${CMAKE_DL_LIBS}
   rt
+  ${CURL_LIBRARIES}
   Threads::Threads
   )
 target_include_directories(
   irods_server
   PRIVATE
+  ${CURL_INCLUDE_DIRS}
   ${CMAKE_BINARY_DIR}/lib/core/include
   ${CMAKE_SOURCE_DIR}/lib/api/include
   ${CMAKE_SOURCE_DIR}/lib/core/include
@@ -1049,10 +1052,12 @@ target_link_libraries(
   ${CMAKE_DL_LIBS}
   Threads::Threads
   rt
+  ${CURL_LIBRARIES}
   )
 target_include_directories(
   irods_common
   PRIVATE
+  ${CURL_INCLUDE_DIRS}
   ${CMAKE_BINARY_DIR}/lib/core/include
   ${CMAKE_SOURCE_DIR}/lib/core/include
   ${CMAKE_SOURCE_DIR}/lib/api/include
@@ -1103,6 +1108,7 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/server/re/include
   ${CMAKE_SOURCE_DIR}/server/drivers/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
+  ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
 target_compile_options(irods_plugin_dependencies_functions PRIVATE -fPIC -Wno-write-strings)
 target_compile_definitions(irods_plugin_dependencies_functions PRIVATE ${IRODS_COMPILE_DEFINITIONS})
@@ -1246,6 +1252,7 @@ target_link_libraries(
   ${OPENSSL_CRYPTO_LIBRARY}
   ${CMAKE_DL_LIBS}
   rt
+  ${CURL_LIBRARIES}
   )
 target_include_directories(
   RodsAPIs
@@ -1411,6 +1418,42 @@ target_include_directories(
   )
 target_compile_definitions(irods_api_test_harness PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_ENABLE_SYSLOG)
 target_compile_options(irods_api_test_harness PRIVATE -Wno-write-strings)
+
+add_executable(
+  irods_configuration_test_harness
+  ${CMAKE_SOURCE_DIR}/server/core/src/irods_configuration_test_harness.cpp
+  )
+target_link_libraries(
+  irods_configuration_test_harness
+  PRIVATE
+  irods_server
+  irods_client
+  irods_plugin_dependencies
+  irods_common
+  ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
+  ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
+  ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so
+  ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
+  rt
+  Threads::Threads
+  ${CMAKE_DL_LIBS}
+  m
+  )
+target_include_directories(
+  irods_configuration_test_harness
+  PRIVATE
+  ${CMAKE_SOURCE_DIR}/server/re/include
+  ${CMAKE_SOURCE_DIR}/server/core/include
+  ${CMAKE_SOURCE_DIR}/server/drivers/include
+  ${CMAKE_SOURCE_DIR}/server/icat/include
+  ${CMAKE_BINARY_DIR}/lib/core/include
+  ${CMAKE_SOURCE_DIR}/lib/core/include
+  ${CMAKE_SOURCE_DIR}/lib/api/include
+  ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
+  ${IRODS_EXTERNALS_FULLPATH_FMT}/include
+  )
+target_compile_definitions(irods_configuration_test_harness PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_ENABLE_SYSLOG)
+target_compile_options(irods_configuration_test_harness PRIVATE -Wno-write-strings)
 
 add_executable(
   irodsPamAuthCheck
@@ -1666,7 +1709,7 @@ foreach(DATABASE_PLUGIN postgres oracle mysql)
     COMMAND
     "${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=${IRODS_PACKAGE_COMPONENT_${DATABASE_PLUGIN_UPPER}_NAME} -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
     DEPENDS
-    irodsServer irodsReServer irods_api_test_harness hostname_resolves_to_local_address irodsPamAuthCheck irods_client irods_server irods_common irods_plugin_dependencies RodsAPIs helloworld_server helloworld_client msisync_to_archive msi_update_unixfilesystem_resource_free_space compound deferred load_balanced mockarchive nonblocking passthru random replication structfile univmss unixfilesystem irods_rule_engine_plugin-irods_rule_language irods_rule_engine_plugin-cpp_default_policy irods_rule_engine_plugin-passthrough native_client native_server osauth_client osauth_server pam_client pam_server ssl_client ssl_server tcp_client tcp_server genOSAuth mytest
+    irodsServer irodsReServer irods_api_test_harness irods_configuration_test_harness hostname_resolves_to_local_address irodsPamAuthCheck irods_client irods_server irods_common irods_plugin_dependencies RodsAPIs helloworld_server helloworld_client msisync_to_archive msi_update_unixfilesystem_resource_free_space compound deferred load_balanced mockarchive nonblocking passthru random replication structfile univmss unixfilesystem irods_rule_engine_plugin-irods_rule_language irods_rule_engine_plugin-cpp_default_policy irods_rule_engine_plugin-passthrough native_client native_server osauth_client osauth_server pam_client pam_server ssl_client ssl_server tcp_client tcp_server genOSAuth mytest
     ${DATABASE_PLUGIN} IRODS_PHONY_TARGET_icatSysTables_${DATABASE_PLUGIN}.sql
     )
 endforeach()

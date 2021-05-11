@@ -135,15 +135,15 @@ namespace irods {
             }
 
         private:
-            error load_json_object(
-                const std::string& ); // file name
+            error load_json_object(const std::string&); // file name
+            error load_json_object(const nlohmann::json&);
 
             boost::any convert_json(const nlohmann::json&);
 
             error copy_and_swap(
-                const std::unordered_map<std::string, boost::any>& );    // object to swap in
+                const std::unordered_map<std::string, boost::any>& ); // object to swap in
 
-            std::string file_name_;   // full path to file
+            std::string                                 file_name_;   // full path to file
             std::unordered_map<std::string, boost::any> root_;        // root config object
 
     }; // class configuration_parser
