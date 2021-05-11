@@ -67,6 +67,7 @@
     "test_rule_engine_plugin_framework",
     "test_rule_engine_plugin_passthrough",
     "test_rulebase",
+    "test_special_collections",
     "test_ssl",
     "test_stacktrace",
     "test_symlink_operations"
