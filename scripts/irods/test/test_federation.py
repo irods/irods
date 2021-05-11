@@ -6,18 +6,20 @@ if sys.version_info >= (2, 7):
 else:
     import unittest2 as unittest
 import os
-import tempfile
-import time
 import shutil
 import socket
+import tempfile
+import time
 import ustrings
 
+from . import session
+from . import settings
+from .. import lib
 from .. import paths
 from .. import test
-from . import settings
-from . import session
-from .. import lib
 from ..configuration import IrodsConfig
+from ..core_file import temporary_core_file
+from .rule_texts_for_tests import rule_texts
 
 SessionsMixin = session.make_sessions_mixin(
     test.settings.FEDERATION.RODSADMIN_NAME_PASSWORD_LIST, test.settings.FEDERATION.RODSUSER_NAME_PASSWORD_LIST)
@@ -510,7 +512,6 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         filename = 'icp_test_file'
         filesize = self.config['test_file_size']
         filepath = os.path.join(self.local_test_dir_path, filename)
-        lib.make_file(filepath, filesize)
 
         # test specific parameters
         parameters = self.config.copy()
@@ -521,40 +522,46 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         parameters['remote_home_collection'] = "/{remote_zone}/home/{user_name}#{local_zone}".format(
             **parameters)
 
-        # checksum local file
-        orig_md5 = lib.file_digest(filepath, 'md5')
+        try:
+            lib.make_file(filepath, filesize)
 
-        # put file in local collection
-        test_session.assert_icommand(
-            "iput {filepath} {local_home_collection}/".format(**parameters))
+            # checksum local file
+            orig_md5 = lib.file_digest(filepath, 'md5')
 
-        # remove local file
-        os.remove(filepath)
+            # put file in local collection
+            test_session.assert_icommand(
+                "iput {filepath} {local_home_collection}/".format(**parameters))
 
-        # copy file to remote home collection
-        test_session.assert_icommand(
-            "icp {local_home_collection}/{filename} {remote_home_collection}/".format(**parameters))
+            # remove local file
+            os.remove(filepath)
 
-        # file should show up in remote zone
-        test_session.assert_icommand(
-            "ils -L {remote_home_collection}/{filename}".format(**parameters), 'STDOUT_SINGLELINE', filename)
-        test_session.assert_icommand(
-            "ils -L {remote_home_collection}/{filename}".format(**parameters), 'STDOUT_SINGLELINE', str(filesize))
+            # copy file to remote home collection
+            test_session.assert_icommand(
+                "icp {local_home_collection}/{filename} {remote_home_collection}/".format(**parameters))
 
-        # get file back from remote zone
-        test_session.assert_icommand(
-            "iget {remote_home_collection}/{filename} {filepath}".format(**parameters))
+            # file should show up in remote zone
+            test_session.assert_icommand(
+                "ils -L {remote_home_collection}/{filename}".format(**parameters), 'STDOUT_SINGLELINE', filename)
+            test_session.assert_icommand(
+                "ils -L {remote_home_collection}/{filename}".format(**parameters), 'STDOUT_SINGLELINE', str(filesize))
 
-        # compare checksums
-        new_md5 = lib.file_digest(filepath, 'md5')
-        self.assertEqual(orig_md5, new_md5)
+            # get file back from remote zone
+            test_session.assert_icommand(
+                "iget {remote_home_collection}/{filename} {filepath}".format(**parameters))
 
-        # cleanup
-        test_session.assert_icommand(
-            "irm -f {local_home_collection}/{filename}".format(**parameters))
-        test_session.assert_icommand(
-            "irm -f {remote_home_collection}/{filename}".format(**parameters))
-        os.remove(filepath)
+            # compare checksums
+            new_md5 = lib.file_digest(filepath, 'md5')
+            self.assertEqual(orig_md5, new_md5)
+
+        finally:
+            print(test_session.run_icommand("ils -L {remote_home_collection}")[0])
+
+            # cleanup
+            test_session.run_icommand(
+                "irm -f {local_home_collection}/{filename}".format(**parameters))
+            test_session.run_icommand(
+                "irm -f {remote_home_collection}/{filename}".format(**parameters))
+            os.remove(filepath)
 
     def test_icp_large(self):
         # test settings
@@ -760,13 +767,10 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         # pick session(s) for the test
         test_session = self.user_sessions[0]
 
-        # make test dir
+        # test specific parameters
         dir_name = 'irsync_test_dir'
         dir_path = os.path.join(self.local_test_dir_path, dir_name)
-        local_files = lib.make_large_local_tmp_dir(
-            dir_path, self.config['test_file_count'], self.config['test_file_size'])
 
-        # test specific parameters
         parameters = self.config.copy()
         parameters['dir_path'] = dir_path
         parameters['dir_name'] = dir_name
@@ -774,34 +778,37 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         parameters['remote_home_collection'] = "/{remote_zone}/home/{user_name}#{local_zone}".format(
             **parameters)
 
-        # sync dir with remote collection
-        test_session.assert_icommand(
-            "irsync -r {dir_path} i:{remote_home_collection}/{dir_name}".format(**parameters), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+        try:
+            # make test dir
+            local_files = lib.make_large_local_tmp_dir(
+                dir_path, self.config['test_file_count'], self.config['test_file_size'])
 
-        # new collection should be there
-        test_session.assert_icommand(
-            "ils -L {remote_home_collection}/{dir_name}".format(**parameters), 'STDOUT_SINGLELINE', dir_name)
+            # sync dir with remote collection
+            test_session.assert_icommand(
+                "irsync -r {dir_path} i:{remote_home_collection}/{dir_name}".format(**parameters), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
 
-        # files should be there
-        rods_files = set(test_session.get_entries_in_collection("{remote_home_collection}/{dir_name}".format(**parameters)))
-        self.assertTrue(set(local_files) == rods_files)
+            # new collection should be there
+            test_session.assert_icommand(
+                "ils -L {remote_home_collection}/{dir_name}".format(**parameters), 'STDOUT_SINGLELINE', dir_name)
 
-        # cleanup
-        test_session.assert_icommand(
-            "irm -rf {remote_home_collection}/{dir_name}".format(**parameters))
-        shutil.rmtree(dir_path)
+            # files should be there
+            rods_files = set(test_session.get_entries_in_collection("{remote_home_collection}/{dir_name}".format(**parameters)))
+            self.assertTrue(set(local_files) == rods_files)
+
+        finally:
+            # cleanup
+            test_session.run_icommand(
+                "irm -rf {remote_home_collection}/{dir_name}".format(**parameters))
+            shutil.rmtree(dir_path)
 
     def test_irsync_r_coll_to_coll(self):
         # pick session(s) for the test
         test_session = self.user_sessions[0]
 
-        # make test dir
+        # test specific parameters
         dir_name = 'irsync_test_dir'
         dir_path = os.path.join(self.local_test_dir_path, dir_name)
-        local_files = lib.make_large_local_tmp_dir(
-            dir_path, self.config['test_file_count'], self.config['test_file_size'])
 
-        # test specific parameters
         parameters = self.config.copy()
         parameters['dir_path'] = dir_path
         parameters['dir_name'] = dir_name
@@ -810,51 +817,54 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         parameters['remote_home_collection'] = "/{remote_zone}/home/{user_name}#{local_zone}".format(
             **parameters)
 
-        # put dir in local collection
-        test_session.assert_icommand(
-            "iput -r {dir_path} {local_home_collection}/".format(**parameters), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+        try:
+            # make test dir
+            local_files = lib.make_large_local_tmp_dir(
+                dir_path, self.config['test_file_count'], self.config['test_file_size'])
 
-        # remove local test dir
-        shutil.rmtree(dir_path)
+            # put dir in local collection
+            test_session.assert_icommand(
+                "iput -r {dir_path} {local_home_collection}/".format(**parameters), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
 
-        # sync local collection with remote collection
-        test_session.assert_icommand(
-            "irsync -r i:{local_home_collection}/{dir_name} i:{remote_home_collection}/{dir_name}".format(**parameters))
+            # remove local test dir
+            shutil.rmtree(dir_path)
 
-        # collection should be there
-        test_session.assert_icommand(
-            "ils -L {remote_home_collection}/{dir_name}".format(**parameters), 'STDOUT_SINGLELINE', dir_name)
+            # sync local collection with remote collection
+            test_session.assert_icommand(
+                "irsync -r i:{local_home_collection}/{dir_name} i:{remote_home_collection}/{dir_name}".format(**parameters))
 
-        # files should be there
-        rods_files = set(test_session.get_entries_in_collection("{remote_home_collection}/{dir_name}".format(**parameters)))
-        self.assertTrue(set(local_files) == rods_files)
+            # collection should be there
+            test_session.assert_icommand(
+                "ils -L {remote_home_collection}/{dir_name}".format(**parameters), 'STDOUT_SINGLELINE', dir_name)
 
-        # get collection back
-        test_session.assert_icommand(
-            "iget -r {remote_home_collection}/{dir_name} {dir_path}".format(**parameters))
+            # files should be there
+            rods_files = set(test_session.get_entries_in_collection("{remote_home_collection}/{dir_name}".format(**parameters)))
+            self.assertTrue(set(local_files) == rods_files)
 
-        # compare list of files
-        received_files = os.listdir(dir_path)
-        self.assertTrue(set(local_files) == set(received_files))
+            # get collection back
+            test_session.assert_icommand(
+                "iget -r {remote_home_collection}/{dir_name} {dir_path}".format(**parameters))
 
-        # cleanup
-        test_session.assert_icommand(
-            "irm -rf {local_home_collection}/{dir_name}".format(**parameters))
-        test_session.assert_icommand(
-            "irm -rf {remote_home_collection}/{dir_name}".format(**parameters))
-        shutil.rmtree(dir_path)
+            # compare list of files
+            received_files = os.listdir(dir_path)
+            self.assertTrue(set(local_files) == set(received_files))
+
+        finally:
+            # cleanup
+            test_session.run_icommand(
+                "irm -rf {local_home_collection}/{dir_name}".format(**parameters))
+            test_session.run_icommand(
+                "irm -rf {remote_home_collection}/{dir_name}".format(**parameters))
+            shutil.rmtree(dir_path)
 
     def test_irsync_r_coll_to_dir(self):
         # pick session(s) for the test
         test_session = self.user_sessions[0]
 
-        # make test dir
+        # test specific parameters
         dir_name = 'irsync_test_dir'
         dir_path = os.path.join(self.local_test_dir_path, dir_name)
-        local_files = lib.make_large_local_tmp_dir(
-            dir_path, self.config['test_file_count'], self.config['test_file_size'])
 
-        # test specific parameters
         parameters = self.config.copy()
         parameters['dir_path'] = dir_path
         parameters['dir_name'] = dir_name
@@ -862,38 +872,42 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         parameters['remote_home_collection'] = "/{remote_zone}/home/{user_name}#{local_zone}".format(
             **parameters)
 
-        # sync dir with remote collection
-        test_session.assert_icommand(
-            "irsync -r {dir_path} i:{remote_home_collection}/{dir_name}".format(**parameters), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+        try:
+            # make test dir
+            local_files = lib.make_large_local_tmp_dir(
+                dir_path, self.config['test_file_count'], self.config['test_file_size'])
 
-        # remove local test dir
-        shutil.rmtree(dir_path)
+            # sync dir with remote collection
+            test_session.assert_icommand(
+                "irsync -r {dir_path} i:{remote_home_collection}/{dir_name}".format(**parameters), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
 
-        # sync remote collection back with local dir
-        test_session.assert_icommand(
-            "irsync -r i:{remote_home_collection}/{dir_name} {dir_path}".format(**parameters))
+            # remove local test dir
+            shutil.rmtree(dir_path)
 
-        # compare list of files
-        received_files = os.listdir(dir_path)
-        self.assertTrue(set(local_files) == set(received_files))
+            # sync remote collection back with local dir
+            test_session.assert_icommand(
+                "irsync -r i:{remote_home_collection}/{dir_name} {dir_path}".format(**parameters))
 
-        # cleanup
-        test_session.assert_icommand(
-            "irm -rf {remote_home_collection}/{dir_name}".format(**parameters))
-        shutil.rmtree(dir_path)
+            # compare list of files
+            received_files = os.listdir(dir_path)
+            self.assertTrue(set(local_files) == set(received_files))
+
+        finally:
+            # cleanup
+            test_session.run_icommand(
+                "irm -rf {remote_home_collection}/{dir_name}".format(**parameters))
+            shutil.rmtree(dir_path)
 
     @unittest.skipIf(IrodsConfig().version_tuple < (4, 0, 0) or test.settings.FEDERATION.REMOTE_IRODS_VERSION < (4, 0, 0), 'No resource hierarchies before iRODS 4')
     def test_irsync_passthru_3016(self):
         # pick session(s) for the test
         test_session = self.user_sessions[0]
 
-        # make test file
+        # test specific parameters
         filename = 'irsync_test_file'
         filesize = self.config['test_file_size']
         filepath = os.path.join(self.local_test_dir_path, filename)
-        lib.make_file(filepath, filesize)
 
-        # test specific parameters
         parameters = self.config.copy()
         parameters['filepath'] = filepath
         parameters['filename'] = filename
@@ -908,60 +922,66 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         parameters['remote_pt_resc'] = parameters[
             'remote_pt_resc_hier'].split(';')[0]
 
-        # create local passthru hierarchy
         parameters['hostname'] = test.settings.ICAT_HOSTNAME
         parameters['local_leaf_resc_path'] = '/tmp/{local_leaf_resc}'.format(
             **parameters)
-        self.admin_sessions[0].run_icommand(
-            "iadmin mkresc {local_pt_resc} passthru".format(**parameters))
-        self.admin_sessions[0].run_icommand(
-            "iadmin mkresc {local_leaf_resc} unixfilesystem {hostname}:{local_leaf_resc_path}".format(**parameters))
-        self.admin_sessions[0].run_icommand(
-            "iadmin addchildtoresc {local_pt_resc} {local_leaf_resc}".format(**parameters))
 
-        # checksum local file
-        orig_md5 = lib.file_digest(filepath, 'md5')
-
-        # put file in local collection, using local passthru resource
-        test_session.assert_icommand(
-            "iput -R {local_pt_resc} {filepath} {local_home_collection}/".format(**parameters))
-
-        # remove local file
-        os.remove(filepath)
-
-        # rsync file into remote coll, using remote passthru resource
-        test_session.assert_icommand(
-            "irsync -R {remote_pt_resc} i:{local_home_collection}/{filename} i:{remote_home_collection}/{filename}".format(**parameters))
-
-        # check that file is on remote zone's resource hierarchy
-        test_session.assert_icommand(
-            "ils -L {remote_home_collection}/{filename}".format(**parameters),  'STDOUT_MULTILINE', [filename, parameters['remote_pt_resc_hier']])
-
-        # get file back and compare checksums
-        if test.settings.FEDERATION.REMOTE_IRODS_VERSION != (4, 0, 3):
-            test_session.assert_icommand(
-                "iget {remote_home_collection}/{filename} {filepath}".format(**parameters))
-            new_md5 = lib.file_digest(filepath, 'md5')
-            self.assertEqual(orig_md5, new_md5)
-        else:
-            test_session.assert_icommand(
-                "iget {remote_home_collection}/{filename} {filepath}".format(**parameters), 'STDERR_SINGLELINE', 'USER_RODS_HOSTNAME_ERR')
-
-        # cleanup
-        test_session.assert_icommand(
-            "irm -f {local_home_collection}/{filename}".format(**parameters))
-        test_session.assert_icommand(
-            "irm -f {remote_home_collection}/{filename}".format(**parameters))
         try:
+            # make test file
+            lib.make_file(filepath, filesize)
+
+            # create local passthru hierarchy
+            self.admin_sessions[0].run_icommand(
+                "iadmin mkresc {local_pt_resc} passthru".format(**parameters))
+            self.admin_sessions[0].run_icommand(
+                "iadmin mkresc {local_leaf_resc} unixfilesystem {hostname}:{local_leaf_resc_path}".format(**parameters))
+            self.admin_sessions[0].run_icommand(
+                "iadmin addchildtoresc {local_pt_resc} {local_leaf_resc}".format(**parameters))
+
+            # checksum local file
+            orig_md5 = lib.file_digest(filepath, 'md5')
+
+            # put file in local collection, using local passthru resource
+            test_session.assert_icommand(
+                "iput -R {local_pt_resc} {filepath} {local_home_collection}/".format(**parameters))
+
+            # remove local file
             os.remove(filepath)
-        except OSError:
-            pass
-        self.admin_sessions[0].run_icommand(
-            "iadmin rmchildfromresc {local_pt_resc} {local_leaf_resc}".format(**parameters))
-        self.admin_sessions[0].run_icommand(
-            "iadmin rmresc {local_pt_resc}".format(**parameters))
-        self.admin_sessions[0].run_icommand(
-            "iadmin rmresc {local_leaf_resc}".format(**parameters))
+
+            # rsync file into remote coll, using remote passthru resource
+            test_session.assert_icommand(
+                "irsync -R {remote_pt_resc} i:{local_home_collection}/{filename} i:{remote_home_collection}/{filename}".format(**parameters))
+
+            # check that file is on remote zone's resource hierarchy
+            test_session.assert_icommand(
+                "ils -L {remote_home_collection}/{filename}".format(**parameters),  'STDOUT_MULTILINE', [filename, parameters['remote_pt_resc_hier']])
+
+            # get file back and compare checksums
+            if test.settings.FEDERATION.REMOTE_IRODS_VERSION != (4, 0, 3):
+                test_session.assert_icommand(
+                    "iget {remote_home_collection}/{filename} {filepath}".format(**parameters))
+                new_md5 = lib.file_digest(filepath, 'md5')
+                self.assertEqual(orig_md5, new_md5)
+            else:
+                test_session.assert_icommand(
+                    "iget {remote_home_collection}/{filename} {filepath}".format(**parameters), 'STDERR_SINGLELINE', 'USER_RODS_HOSTNAME_ERR')
+
+        finally:
+            # cleanup
+            test_session.run_icommand(
+                "irm -f {local_home_collection}/{filename}".format(**parameters))
+            test_session.run_icommand(
+                "irm -f {remote_home_collection}/{filename}".format(**parameters))
+            try:
+                os.remove(filepath)
+            except OSError:
+                pass
+            self.admin_sessions[0].run_icommand(
+                "iadmin rmchildfromresc {local_pt_resc} {local_leaf_resc}".format(**parameters))
+            self.admin_sessions[0].run_icommand(
+                "iadmin rmresc {local_pt_resc}".format(**parameters))
+            self.admin_sessions[0].run_icommand(
+                "iadmin rmresc {local_leaf_resc}".format(**parameters))
 
     def test_ilsresc_z(self):
         # pick session(s) for the test
@@ -1061,19 +1081,24 @@ OUTPUT ruleExecOut
         # Create a file and put it into the remote zone.
         parameters['filename'] = 'foo'
         parameters['filepath'] = os.path.join(user.local_session_dir, parameters['filename'])
-        lib.make_file(parameters['filepath'], 1, 'arbitrary')
 
-        parameters['user_name'] = user.username
-        parameters['remote_home_collection'] = '/{remote_zone}/home/{user_name}#{local_zone}'.format(**parameters)
-        parameters['remote_data_object'] = '{remote_home_collection}/{filename}'.format(**parameters)
-        user.assert_icommand('iput {filepath} {remote_data_object}'.format(**parameters))
+        try:
+            lib.make_file(parameters['filepath'], 1, 'arbitrary')
 
-        # Add metadata to the new data object.
-        user.assert_icommand('imeta add -d {remote_data_object} n1 v1 u1'.format(**parameters))
-        user.assert_icommand('imeta ls -d {remote_data_object}'.format(**parameters), 'STDOUT', ['attribute: n1', 'value: v1', 'units: u1'])
+            parameters['user_name'] = user.username
+            parameters['remote_home_collection'] = '/{remote_zone}/home/{user_name}#{local_zone}'.format(**parameters)
+            parameters['remote_data_object'] = '{remote_home_collection}/{filename}'.format(**parameters)
+            user.assert_icommand('iput {filepath} {remote_data_object}'.format(**parameters))
 
-        # Show that the remote data object can be found via "imeta -z qu".
-        user.assert_icommand('imeta -z {remote_zone} qu -d n1 = v1'.format(**parameters), 'STDOUT', [parameters['filename']])
+            # Add metadata to the new data object.
+            user.assert_icommand('imeta add -d {remote_data_object} n1 v1 u1'.format(**parameters))
+            user.assert_icommand('imeta ls -d {remote_data_object}'.format(**parameters), 'STDOUT', ['attribute: n1', 'value: v1', 'units: u1'])
+
+            # Show that the remote data object can be found via "imeta -z qu".
+            user.assert_icommand('imeta -z {remote_zone} qu -d n1 = v1'.format(**parameters), 'STDOUT', [parameters['filename']])
+
+        finally:
+            user.run_icommand(['irm', '-f', parameters['remote_data_object']])
 
     @unittest.skipIf(IrodsConfig().version_tuple < (4, 2, 9) or test.settings.FEDERATION.REMOTE_IRODS_VERSION < (4, 2, 9), 'Only available in 4.2.9 and later')
     def test_federation_support_for_replica_open_close_and_get_file_descriptor_info(self):
@@ -1090,10 +1115,14 @@ OUTPUT ruleExecOut
         parameters['remote_home_collection'] = '/{remote_zone}/home/{user_name}#{local_zone}'.format(**parameters)
         parameters['remote_data_object'] = '{remote_home_collection}/{filename}'.format(**parameters)
         contents = 'Hello, iRODS!'
-        user.assert_icommand('istream write {remote_data_object}'.format(**parameters), input=contents)
+        try:
+            user.assert_icommand('istream write {remote_data_object}'.format(**parameters), input=contents)
 
-        # Show that the data object exists and contains the expected content.
-        user.assert_icommand('istream read {remote_data_object}'.format(**parameters), 'STDOUT', [contents])
+            # Show that the data object exists and contains the expected content.
+            user.assert_icommand('istream read {remote_data_object}'.format(**parameters), 'STDOUT', [contents])
+
+        finally:
+            user.run_icommand(['irm', '-f', parameters['remote_data_object']])
 
 class Test_Admin_Commands(unittest.TestCase):
 
@@ -1442,3 +1471,87 @@ class Test_Recursive_Icp(SessionsMixin, unittest.TestCase):
     def test_icp_tree_remotezone_in_target(self):
         self.cp_recursive_local_source_test(self.local_source_coll, flat_coll=False, remote_zone=True, in_target=True)
 
+class test_dynamic_peps(SessionsMixin, unittest.TestCase):
+    plugin_name = IrodsConfig().default_rule_engine_plugin
+    class_name = 'Test_Native_Rule_Engine_Plugin'
+
+    def setUp(self):
+        super(test_dynamic_peps, self).setUp()
+
+        # load federation settings in dictionary (all lower case)
+        self.config = {}
+        for key, val in test.settings.FEDERATION.__dict__.items():
+            if not key.startswith('__'):
+                self.config[key.lower()] = val
+
+        self.config['local_zone'] = self.user_sessions[0].zone_name
+        if test.settings.FEDERATION.REMOTE_IRODS_VERSION < (4, 0, 0):
+            test.settings.FEDERATION.REMOTE_VAULT = '/home/irods/irods-legacy/iRODS/Vault'
+
+        self.admin = session.make_session_for_existing_admin()
+
+    def tearDown(self):
+        self.admin.__exit__()
+        super(test_dynamic_peps, self).tearDown()
+
+    def test_peps_for_parallel_mode_transfers__issue_5017(self):
+        remote_home_collection = self.admin.remote_home_collection(test.settings.FEDERATION.REMOTE_ZONE)
+        filename = 'test_peps_for_parallel_mode_transfers__issue_5017'
+        local_file = os.path.join(self.admin.local_session_dir, filename)
+        logical_path = os.path.join(remote_home_collection, filename)
+        metadata_resource = 'test_peps_for_parallel_mode_transfers_resource'
+        file_size = 40 * 1024 * 1024 # 40MB
+        attr = 'test_peps_for_parallel_mode_transfers__4404_put'
+
+        try:
+            if not os.path.exists(local_file):
+                lib.make_file(local_file, file_size)
+
+            # PEPs will fire locally on connected server, so metadata will be applied to local resource
+            parameters = {}
+            parameters['resource'] = metadata_resource
+            put_peps = rule_texts[self.plugin_name][self.class_name][attr].format(**parameters)
+            print(put_peps)
+
+            def reset_resource(self):
+                self.admin.run_icommand(['iadmin', 'rmresc', metadata_resource])
+                self.admin.assert_icommand(['iadmin', 'rum'])
+                lib.create_passthru_resource(metadata_resource, self.admin)
+
+            with temporary_core_file() as core:
+                time.sleep(1)  # remove once file hash fix is committed #2279
+                core.add_rule(put_peps)
+                time.sleep(1)  # remove once file hash fix is committed #2279
+
+                reset_resource(self)
+
+                # put a new data object and ensure success
+                self.admin.assert_icommand(['iput', local_file, logical_path])
+
+                for pep in ['data-obj-put-pre', 'data-obj-put-post', 'data-obj-put-finally']:
+                    lib.delayAssert(
+                        lambda: lib.metadata_attr_with_value_exists(self.admin, attr, pep),
+                        interval=1,
+                        maxrep=10
+                    )
+
+                self.assertFalse(lib.metadata_attr_with_value_exists(self.admin, attr, 'pep-obj-put-except'))
+
+                reset_resource(self)
+
+                # put to same logical path without force flag, resulting in error and (hopefully) triggering except PEP
+                self.admin.assert_icommand(['iput', local_file, logical_path], 'STDERR', 'OVERWRITE_WITHOUT_FORCE_FLAG')
+
+                for pep in ['data-obj-put-pre', 'data-obj-put-except', 'data-obj-put-finally']:
+                    lib.delayAssert(
+                        lambda: lib.metadata_attr_with_value_exists(self.admin, attr, pep),
+                        interval=1,
+                        maxrep=10
+                    )
+
+                self.assertFalse(lib.metadata_attr_with_value_exists(self.admin, attr, 'pep-obj-put-post'))
+
+        finally:
+            self.admin.run_icommand(['irm', '-f', logical_path])
+            self.admin.run_icommand(['iadmin', 'rmresc', metadata_resource])
+            self.admin.assert_icommand(['iadmin', 'rum'])
