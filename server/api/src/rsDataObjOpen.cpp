@@ -172,6 +172,14 @@ namespace
         irods::experimental::key_value_proxy{_comm.session_props}[REG_REPL_KW] = "";
     } // enable_creation_of_additional_replicas
 
+    auto leaf_resource_is_bundleresc(const std::string_view _hierarchy)
+    {
+        std::string resc_class{};
+        const irods::error prop_err = irods::get_resource_property<std::string>(
+            resc_mgr.hier_to_leaf_id(_hierarchy), irods::RESOURCE_CLASS, resc_class);
+        return prop_err.ok() && irods::RESOURCE_CLASS_BUNDLE == resc_class;
+    } // leaf_resource_is_bundleresc
+
     auto create_new_replica(rsComm_t& _comm, dataObjInp_t& _inp, DataObjInfo* _existing_replica_list) -> int
     {
         auto cond_input = irods::experimental::make_key_value_proxy(_inp.condInput);
@@ -603,11 +611,18 @@ namespace
         auto& l1desc = L1desc[l1_index];
         l1desc.l3descInx = l3_index;
 
+        // Return before truncating the file in the catalog - the catalog may not even have a entry for
+        // the special collection items, so these are not being considered for updating at this point,
+        // especially because special collections are not supported by RST.
+        if (_replica.special_collection_info() || leaf_resource_is_bundleresc(_replica.hierarchy())) {
+            return l1_index;
+        }
+
         // Update the catalog to reflect the truncation (i.e. set the data size to zero and erase
         // the checksum). It is important that the catalog reflect truncation immediately because
         // operations following the open may depend on the size and checksum of the replica.
         //
-        // TODO: do not touch the catalog -- update the structure and use this in lock_data_object
+        // TODO: optimization... do not touch the catalog -- update the structure and use this in lock_data_object
         if (l1desc.dataObjInp->openFlags & O_TRUNC) {
             if (const auto access_mode = (l1desc.dataObjInp->openFlags & O_ACCMODE);
                 access_mode == O_WRONLY || access_mode == O_RDWR)
@@ -732,14 +747,6 @@ namespace
         *_info_head = rei.doi;
         return rei.status;
     } // apply_static_pep_data_obj_open_pre
-
-    auto leaf_resource_is_bundleresc(const std::string_view _hierarchy)
-    {
-        std::string resc_class{};
-        const irods::error prop_err = irods::get_resource_property<std::string>(
-            resc_mgr.hier_to_leaf_id(_hierarchy), irods::RESOURCE_CLASS, resc_class);
-        return prop_err.ok() && irods::RESOURCE_CLASS_BUNDLE == resc_class;
-    } // leaf_resource_is_bundleresc
 
     auto open_special_replica(RsComm& _comm, DataObjInp& _inp, DataObjInfo* _info) -> int
     {

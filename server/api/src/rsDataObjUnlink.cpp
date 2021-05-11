@@ -549,7 +549,7 @@ int dataObjUnlinkS(rsComm_t* rsComm,
     auto info = ir::make_replica_proxy(*dataObjInfo);
 
     // Because this function may change the "oprType", we must make sure that
-    // the "oprType" is restored to it's original value before leaving. This is
+    // the "oprType" is restored to its original value before leaving. This is
     // necessary because other replicas may not require adjustments to the "oprType"
     // (i.e. The registered vs non-registered replica case).
     irods::at_scope_exit restore_opr_type{[dataObjUnlinkInp, old_value = dataObjUnlinkInp->oprType] {
@@ -559,7 +559,7 @@ int dataObjUnlinkS(rsComm_t* rsComm,
     // Verify if the replica is in a vault or not. If the replica is not in a vault,
     // then the server must not delete the replica. Instead, the replica must be unregistered
     // to avoid loss of data.
-    {
+    if (!dataObjInfo->specColl) {
         bool skip_vault_path_check = false;
         irods::error err = irods::get_resource_property<bool>(dataObjInfo->rescId,
                                                               irods::RESOURCE_SKIP_VAULT_PATH_CHECK_ON_UNLINK,
