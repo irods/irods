@@ -11,10 +11,9 @@ import tempfile
 
 from . import resource_suite
 from .. import lib
+from .. import test
 
-@unittest.skip('Generation of large file causes I/O thrashing... skip for now')
 class Test_Ibun(resource_suite.ResourceBase, unittest.TestCase):
-
     def setUp(self):
         super(Test_Ibun, self).setUp()
         self.known_file_name = 'known_file'
@@ -22,6 +21,7 @@ class Test_Ibun(resource_suite.ResourceBase, unittest.TestCase):
     def tearDown(self):
         super(Test_Ibun, self).tearDown()
 
+    @unittest.skip('Generation of large file causes I/O thrashing... skip for now')
     def test_ibun_extraction_of_big_zip_file__issue_4495(self):
         try:
             root_name = tempfile.mkdtemp()
@@ -59,6 +59,7 @@ class Test_Ibun(resource_suite.ResourceBase, unittest.TestCase):
             if os.path.exists(zip_file_name):
                 os.unlink(zip_file_name)
 
+    @unittest.skip('Generation of large file causes I/O thrashing... skip for now')
     def test_ibun_extraction_of_big_tar_file__issue_4118(self):
         try:
             root_name = tempfile.mkdtemp()
@@ -100,3 +101,80 @@ class Test_Ibun(resource_suite.ResourceBase, unittest.TestCase):
             if os.path.exists(tar_file_name):
                 os.unlink(tar_file_name)
 
+    def test_ibun_atop_existing_archive_file_in_replication_hierarchy__issue_5426(self):
+        def do_test_ibun_atop_existing_archive_file_in_replication_hierarchy(self, filesize, compressed_size):
+            replication = 'repl0'
+            resource_0 = 'resc0'
+            resource_1 = 'resc1'
+            filename = 'thefile'
+            local_file = os.path.join(self.admin.local_session_dir, filename)
+            collection_name = 'thecoll'
+            collection_path = os.path.join(self.admin.session_collection, collection_name)
+            put_path = os.path.join(collection_path, filename)
+
+            archive_name = collection_name + '.bzip2'
+            archive_path = os.path.join(self.admin.session_collection, archive_name)
+
+            try:
+                # generate a replication hierarchy to two unixfilesystem resources
+                lib.create_replication_resource(replication, self.admin)
+                lib.create_ufs_resource(resource_0, self.admin, test.settings.HOSTNAME_2)
+                lib.create_ufs_resource(resource_1, self.admin, test.settings.HOSTNAME_3)
+                lib.add_child_resource(replication, resource_0, self.admin)
+                lib.add_child_resource(replication, resource_1, self.admin)
+
+                # generate (uncompressible) contents for the collection
+                lib.make_file(local_file, filesize, 'random')
+                out,_ = lib.execute_command(['ls', '-l', local_file])
+                print(out)
+
+                # generate the collection to bundle up
+                self.admin.assert_icommand(['imkdir', collection_path])
+                self.admin.assert_icommand(['iput', '-f', '-R', replication, local_file, put_path])
+
+                # bundle the collection to an archive file in the replication hierarchy
+                self.admin.assert_icommand(['ibun', '-c', '-Dbzip2', '-R', replication, archive_path, collection_path])
+                print(self.admin.run_icommand(['ils', '-l', archive_path])[0])
+
+                # ensure that the replicas were created and are good
+                query = 'select DATA_SIZE, DATA_REPL_STATUS, DATA_REPL_NUM where COLL_NAME = \'{}\' and DATA_NAME = \'{}\''.format(
+                    os.path.dirname(archive_path), os.path.basename(archive_path))
+
+                out, err, ec = self.admin.run_icommand(['iquest', '%s...%s...%s', query])
+
+                self.assertEqual(0, ec)
+                self.assertEqual(0, len(err))
+                self.assertEqual(2, len(out.splitlines()))
+
+                for result in out.splitlines():
+                    r = result.split('...')
+                    self.assertEqual(compressed_size, int(r[0]))
+                    self.assertEqual(1, int(r[1]))
+
+                # overwrite archive file via a forced ibun of the same collection to the same logical path
+                self.admin.assert_icommand(['ibun', '-c', '-Dbzip2', '-f', '-R', replication, archive_path, collection_path])
+                print(self.admin.run_icommand(['ils', '-l', archive_path])[0])
+
+                # ensure that the replicas were overwritten and are good
+                out, err, ec = self.admin.run_icommand(['iquest', '%s...%s...%s', query])
+
+                self.assertEqual(0, ec)
+                self.assertEqual(0, len(err))
+                self.assertEqual(2, len(out.splitlines()))
+
+                for result in out.splitlines():
+                    r = result.split('...')
+                    self.assertEqual(compressed_size, int(r[0]))
+                    self.assertEqual(1, int(r[1]))
+
+            finally:
+                self.admin.run_icommand(['irm', '-r', '-f', collection_path])
+                self.admin.run_icommand(['irm', '-f', archive_path])
+                lib.remove_child_resource(replication, resource_0, self.admin)
+                lib.remove_child_resource(replication, resource_1, self.admin)
+                lib.remove_resource(replication, self.admin)
+                lib.remove_resource(resource_0, self.admin)
+                lib.remove_resource(resource_1, self.admin)
+
+        do_test_ibun_atop_existing_archive_file_in_replication_hierarchy(self, 1038425, 1044480)
+        do_test_ibun_atop_existing_archive_file_in_replication_hierarchy(self, 1040425, 1054720)
