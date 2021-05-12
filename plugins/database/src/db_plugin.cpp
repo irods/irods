@@ -52,6 +52,8 @@
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include "fmt/format.h"
+
 #include "irods_lexical_cast.hpp"
 
 using leaf_bundle_t = irods::resource_manager::leaf_bundle_t;
@@ -15472,6 +15474,85 @@ irods::error db_general_update_op(
 
 } // db_general_update_op
 
+auto db_check_permission_to_modify_data_object_op(
+    irods::plugin_context& _ctx,
+    const rodsLong_t       _data_id) -> irods::error
+{
+    if (const auto ret = _ctx.valid(); !ret.ok()) {
+        return PASS(ret);
+    }
+
+    const auto ec = cmlCheckDataObjId(std::to_string(_data_id).data(),
+                                      _ctx.comm()->clientUser.userName,
+                                      _ctx.comm()->clientUser.rodsZone,
+                                      ACCESS_MODIFY_METADATA,
+                                      mySessionTicket,
+                                      mySessionClientAddr,
+                                      &icss);
+
+    if (ec != 0) {
+        _rollback("check_permission_to_modify_data_object");
+
+        const auto msg = fmt::format("user does not have permission to modify object with data id [{}]", _data_id);
+
+        irods::log(LOG_NOTICE, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
+
+        return ERROR(ec, msg);
+    }
+
+    if (const auto commit_ec = cmlExecuteNoAnswerSql("commit", &icss); 0 != commit_ec) {
+        irods::log(LOG_NOTICE, fmt::format(
+            "[{}:{}] - failure to commit changes "
+            "[error code=[{}], data_id=[{}]]",
+            __FUNCTION__, __LINE__, commit_ec, _data_id));
+
+        return ERROR(commit_ec, "commit failure");
+    }
+
+    return SUCCESS();
+} // db_check_permission_to_modify_data_object_op
+
+auto db_update_ticket_write_byte_count_op(
+    irods::plugin_context& _ctx,
+    const rodsLong_t       _data_id,
+    const rodsLong_t       _bytes_written) -> irods::error
+{
+    if (const auto ret = _ctx.valid(); !ret.ok()) {
+        return PASS(ret);
+    }
+
+    if (std::string_view{mySessionTicket}.empty()) {
+        // nothing to do
+        return SUCCESS();
+    }
+
+    const auto ec = cmlTicketUpdateWriteBytes(mySessionTicket, std::to_string(_bytes_written).data(), std::to_string(_data_id).data(), &icss);
+
+    if (ec != 0) {
+        _rollback("update_ticket_write_byte_count");
+
+        const auto msg = fmt::format(
+            "failed to update write_byte_count for ticket "
+            "[data_id=[{}], ticket=[{}], bytes_written=[{}]]",
+            _data_id, mySessionTicket, _bytes_written);
+
+        irods::log(LOG_NOTICE, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
+
+        return ERROR(ec, msg);
+    }
+
+    if (const auto commit_ec = cmlExecuteNoAnswerSql("commit", &icss); 0 != commit_ec) {
+        irods::log(LOG_NOTICE, fmt::format(
+            "[{}:{}] - failure to commit changes "
+            "[error code=[{}], data_id=[{}], bytes written=[{}]]",
+            __FUNCTION__, __LINE__, commit_ec, _data_id, _bytes_written));
+
+        return ERROR(commit_ec, "commit failure");
+    }
+
+    return SUCCESS();
+} // db_update_ticket_write_byte_count_op
+
 // =-=-=-=-=-=-=-
 //
 irods::error db_start_operation( irods::plugin_property_map& _props ) {
@@ -15858,6 +15939,14 @@ irods::database* plugin_factory(
         DATABASE_OP_GET_REPL_LIST_FOR_LEAF_BUNDLES,
         function<error(plugin_context&,rodsLong_t,size_t,const std::vector<leaf_bundle_t>*,const std::string*,dist_child_result_t*)>(
             db_get_repl_list_for_leaf_bundles_op));
+    pg->add_operation<const rodsLong_t>(
+        DATABASE_OP_CHECK_PERMISSION_TO_MODIFY_DATA_OBJECT,
+        function<error(plugin_context&,const rodsLong_t)>(
+            db_check_permission_to_modify_data_object_op));
+    pg->add_operation<const rodsLong_t,const rodsLong_t>(
+        DATABASE_OP_UPDATE_TICKET_WRITE_BYTE_COUNT,
+        function<error(plugin_context&,const rodsLong_t,const rodsLong_t)>(
+            db_update_ticket_write_byte_count_op));
     return pg;
 
 } // plugin_factory

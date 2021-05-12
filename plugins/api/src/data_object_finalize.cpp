@@ -36,6 +36,7 @@
 #include "miscServerFunct.hpp"
 #include "objDesc.hpp"
 #include "rodsConnect.h"
+#include "icatHighLevelRoutines.hpp"
 
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 #include "filesystem.hpp"
@@ -70,9 +71,12 @@ namespace
 
     const auto& cmap = ic::data_objects::column_mapping_operators;
 
-    auto make_error_object(const std::string& _error_msg) -> json
+    constexpr inline auto database_updated = true;
+
+    auto make_error_object(const std::string_view _error_msg = "", const bool _database_updated = false) -> json
     {
-        return json{{"error_message", _error_msg}};
+        return json{{"error_message", _error_msg},
+                    {"database_updated", _database_updated}};
     } // make_error_object
 
     auto to_bytes_buffer(const std::string& _s) -> BytesBuf*
@@ -211,11 +215,25 @@ namespace
             irods::log(LOG_DEBUG10, "committing transaction");
             _trans.commit();
         }
+        catch (const json::exception& e) {
+            THROW(SYS_LIBRARY_ERROR, fmt::format(
+                "[{}:{}] - json exception occurred [{}]",
+                __FUNCTION__, __LINE__, e.what()));
+        }
         catch (const nanodbc::database_error& e) {
-            THROW(SYS_LIBRARY_ERROR, e.what());
+            THROW(SYS_LIBRARY_ERROR, fmt::format(
+                "[{}:{}] - database error occurred [{}]",
+                __FUNCTION__, __LINE__, e.what()));
         }
         catch (const std::exception& e) {
-            THROW(SYS_INTERNAL_ERR, e.what());
+            THROW(SYS_INTERNAL_ERR, fmt::format(
+                "[{}:{}] - exception occurred [{}]",
+                __FUNCTION__, __LINE__, e.what()));
+        }
+        catch (...) {
+            THROW(SYS_UNKNOWN_ERROR, fmt::format(
+                "[{}:{}] - unkonwn error occurred",
+                __FUNCTION__, __LINE__));
         }
     } // set_data_object_state
 
@@ -314,6 +332,8 @@ namespace
         BytesBuf* _input,
         BytesBuf** _output) -> int
     {
+        // Connect to the catalog provider before proceeding as this API
+        // deals almost exclusively in database transactions.
         try {
             if (!ic::connected_to_catalog_provider(*_comm)) {
                 irods::log(LOG_DEBUG8, "Redirecting request to catalog service provider ...");
@@ -332,32 +352,39 @@ namespace
             ic::throw_if_catalog_provider_service_role_is_invalid();
         }
         catch (const irods::exception& e) {
-            std::string_view msg = e.client_display_what();
+            const std::string_view msg = e.client_display_what();
+
             irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
-            *_output = to_bytes_buffer(make_error_object(msg.data()).dump());
+
+            *_output = to_bytes_buffer(make_error_object(msg).dump());
+
             return e.code();
         }
 
         json input;
-
         try {
             input = json::parse(std::string(static_cast<const char*>(_input->buf), _input->len));
             irods::log(LOG_DEBUG9, fmt::format("json input:[{}]", input.dump()));
         }
         catch (const json::parse_error& e) {
-            std::string_view msg = e.what();
-            irods::log(LOG_ERROR, fmt::format("Failed to parse input into JSON:[{}]", msg.data()));
+            const std::string_view msg = e.what();
 
-            const auto err_info = make_error_object(msg.data());
-            *_output = to_bytes_buffer(err_info.dump());
+            irods::log(LOG_ERROR, fmt::format(
+                "[{}:{}] - Failed to parse input into JSON:[{}]",
+                __FUNCTION__, __LINE__, msg.data()));
+
+            *_output = to_bytes_buffer(make_error_object(msg).dump());
 
             return INPUT_ARG_NOT_WELL_FORMED_ERR;
         }
 
+        // The following section separates out the relevant pieces from the input.
+        // These include whether or not the operation should be run in privileged
+        // mode, the list of replicas for the data object being finalized, and
+        // whether or not file_modified should be triggered.
         json replicas;
         bool trigger_file_modified;
         bool admin_operation = false;
-
         try {
             if (input.contains("irods_admin") && input.at("irods_admin").get<bool>()) {
                 if (!irods::is_privileged_client(*_comm)) {
@@ -379,52 +406,138 @@ namespace
         }
         catch (const json::type_error& e) {
             *_output = to_bytes_buffer(make_error_object(e.what()).dump());
+
             return SYS_INVALID_INPUT_PARAM;
         }
         catch (const std::exception& e) {
             *_output = to_bytes_buffer(make_error_object(e.what()).dump());
+
             return SYS_INVALID_INPUT_PARAM;
         }
 
+        // Establish connection with the database for use with nanodbc.
+        // A connection with the database is already established via the
+        // RsComm, but this allows us to atomically update the database
+        // without the complicated machinery of the existing database plugin.
         nanodbc::connection db_conn;
-
         try {
             std::tie(std::ignore, db_conn) = ic::new_database_connection();
         }
         catch (const std::exception& e) {
-            irods::log(LOG_ERROR, e.what());
-            return SYS_CONFIG_FILE_ERR;
-        }
+            const auto msg = e.what();
 
-        const auto data_id = std::stoll(replicas.front().at("before").at("data_id").get<std::string>());
-        const auto entity_type = ic::entity_type_map.at("data_object");
-        if (!admin_operation && !ic::user_has_permission_to_modify_entity(*_comm, db_conn, data_id, entity_type)) {
-            const auto msg = fmt::format("user not allowed to modify data object [data id=[{}]]", data_id);
-
-            irods::log(LOG_NOTICE, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
+            irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
 
             *_output = to_bytes_buffer(make_error_object(msg).dump());
 
-            return CAT_NO_ACCESS_PERMISSION;
+            return SYS_CONFIG_FILE_ERR;
         }
 
+        try {
+            // This section perform permissions checks and update ticket information
+            // only if not running in privileged mode. This matches the behavior of
+            // the mod_data_obj_meta database operation.
+            const auto data_id = std::stoll(replicas.front().at("before").at("data_id").get<std::string>());
+
+            const auto bytes_written = input.contains("bytes_written") ? std::stoll(input.at("bytes_written").get<std::string>()) : 0;
+
+            if (!admin_operation) {
+                // If the caller indicates that bytes have been written (equivalent
+                // to updating the size), the information for any existing session
+                // ticket should be updated to reflect the new write byte count.
+                if (bytes_written) {
+                    if (const auto ec = chl_update_ticket_write_byte_count(*_comm, data_id, bytes_written); ec != 0) {
+                        const auto msg = fmt::format("failed to update write_bytes_count on ticket [data_id=[{}]]", data_id);
+
+                        irods::log(LOG_NOTICE, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
+
+                        *_output = to_bytes_buffer(make_error_object(msg).dump());
+
+                        return ec;
+                    }
+                }
+
+                // Make sure the user has permission to modify this data object
+                // before proceeding. This database operation also updates ticket
+                // information and checks to make sure the limit for write byte
+                // count has not been exceeded.
+                if (const auto ec = chl_check_permission_to_modify_data_object(*_comm, data_id); ec != 0) {
+                    const auto msg = fmt::format("user not allowed to modify data object [data id=[{}]]", data_id);
+
+                    irods::log(LOG_NOTICE, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
+
+                    *_output = to_bytes_buffer(make_error_object(msg).dump());
+
+                    return ec;
+                }
+            }
+        }
+        catch (const json::exception& e) {
+            const auto msg = fmt::format("json exception occurred [{}]", e.what());
+
+            irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
+
+            *_output = to_bytes_buffer(make_error_object(msg).dump());
+
+            return SYS_LIBRARY_ERROR;
+        }
+
+        // Actually update the catalog with the information passed in. This is done
+        // transactionally so that the update occurs atomically.
         try {
             const auto ec = ic::execute_transaction(db_conn, [&](auto& _trans) -> int
             {
                 set_data_object_state(db_conn, _trans, replicas);
-                *_output = to_bytes_buffer("{}");
                 return 0;
             });
 
-            if (ec < 0 || !trigger_file_modified) {
+            if (ec < 0) {
+                *_output = to_bytes_buffer(make_error_object("failed to update catalog").dump());
                 return ec;
             }
 
-            return invoke_file_modified(*_comm, replicas);
+            if (!trigger_file_modified) {
+                // If the update was successful and file modified is not supposed to be
+                // triggered, then we can return with success here.
+                *_output = to_bytes_buffer(make_error_object("", database_updated).dump());
+                return ec;
+            }
         }
         catch (const irods::exception& e) {
-            irods::log(LOG_ERROR, e.client_display_what());
-            *_output = to_bytes_buffer(make_error_object(e.client_display_what()).dump());
+            const auto msg = e.client_display_what();
+
+            irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
+
+            *_output = to_bytes_buffer(make_error_object(msg).dump());
+
+            return e.code();
+        }
+
+        // file_modified is handled separately so that the caller can differentiate
+        // between errors which occurred before and after the failure of the database
+        // transaction. In this case, the database transaction was successful, but some
+        // operation as a result of file_modified has failed.
+        try {
+            const auto ec = invoke_file_modified(*_comm, replicas);
+
+            if (ec < 0) {
+                const auto msg = "error occurred during file_modified operation";
+
+                *_output = to_bytes_buffer(make_error_object(msg, database_updated).dump());
+
+                return ec;
+            }
+
+            *_output = to_bytes_buffer(make_error_object("", database_updated).dump());
+            return ec;
+        }
+        catch (const irods::exception& e) {
+            irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, e.client_display_what()));
+
+            const auto err = make_error_object(e.client_display_what(), database_updated);
+
+            *_output = to_bytes_buffer(err.dump());
+
             return e.code();
         }
     } // rs_data_object_finalize

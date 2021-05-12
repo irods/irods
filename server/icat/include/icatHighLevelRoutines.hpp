@@ -227,4 +227,48 @@ int chlGetReplListForLeafBundles(
     const std::string*          _invocation_timestamp,
     dist_child_result_t*        _results );
 
+/// \brief High-level wrapper for database operation which calls cmlCheckDataObjId
+///
+/// \parblock
+/// Checks to see whether the specified data_id shows up when searching for the
+/// objects for which the given user has permissions to modify.
+///
+/// If a ticket is in use when this is called (that is, if mySessionTicket is set
+/// in the database plugin), the ticket information will be checked. If the ticket
+/// is expired, the bytes written with the ticket exceeds the write byte limit, or
+/// the ticket is invalid for any other reason, the appropriate error code will be
+/// returned. The usage count and the write file count will be updated as appropriate
+/// as well.
+/// \endparblock
+///
+/// \param[in,out] _comm iRODS comm structure
+/// \param[in] _data_id Data ID for the object to check
+///
+/// \returns Error code based on whether authenticated user has permission\p
+///          to modify the data object.
+/// \retval 0 User has sufficient permission to modify the data object
+/// \retval CAT_NO_ACCESS_PERMISSION User does not have sufficient permission\p
+///                                  to modify the data object
+///
+/// \since 4.2.9
+auto chl_check_permission_to_modify_data_object(RsComm& _comm, const rodsLong_t _data_id) -> int;
+
+/// \brief High-level wrapper for database operation which calls cmlTicketUpdateWriteBytes
+///
+/// \parblock
+/// Updates the write byte count for the ticket by the amount specified for
+/// the given data object. Historically, this is usually the full size of a
+/// replica for the data object being updated after some change (e.g. write).
+/// \endparblock
+///
+/// \param[in,out] _comm iRODS comm structure
+/// \param[in] _data_id Data ID for the object to check
+/// \param[in] _bytes_written Number of bytes to add to write byte count
+///
+/// \returns Error code based on whether updating the catalog was successful
+/// \retval 0 Success
+///
+/// \since 4.2.9
+auto chl_update_ticket_write_byte_count(RsComm& _comm, const rodsLong_t _data_id, const rodsLong_t _bytes_written) -> int;
+
 #endif /* ICAT_HIGHLEVEL_ROUTINES_H */

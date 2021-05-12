@@ -130,7 +130,10 @@ TEST_CASE("finalize", "[finalize]")
             irods::at_scope_exit free_memory{[&error_string] { std::free(error_string); }};
 
             REQUIRE(0 == rc_data_object_finalize(&comm, input.dump().c_str(), &error_string));
-            REQUIRE(std::string_view{error_string} == "{}");
+
+            const auto output = json::parse(error_string);
+            CHECK(output.at("database_updated").get<bool>());
+            CHECK(output.at("error_message").get<std::string>().empty());
         }
 
         {
@@ -209,7 +212,10 @@ TEST_CASE("finalize", "[finalize]")
         irods::at_scope_exit free_memory{[&error_string] { std::free(error_string); }};
 
         REQUIRE(0 == rc_data_object_finalize(&comm, input.dump().c_str(), &error_string));
-        REQUIRE(std::string_view{error_string} == "{}");
+
+        const auto output = json::parse(error_string);
+        CHECK(output.at("database_updated").get<bool>());
+        CHECK(output.at("error_message").get<std::string>().empty());
 
         // Ensure that the catalog was updated correctly for each replica
         const auto [new_op, lm] = id::make_data_object_proxy(comm, target_object);
@@ -237,6 +243,10 @@ TEST_CASE("invalid inputs", "[invalid]")
 
         REQUIRE_THAT(rc_data_object_finalize(static_cast<RcComm*>(comm), json{}.dump().c_str(), &error_string),
             equals_irods_error(SYS_INVALID_INPUT_PARAM));
+
+        const auto output = json::parse(error_string);
+        CHECK(!output.at("database_updated").get<bool>());
+        CHECK(!output.at("error_message").get<std::string>().empty());
     }
 
     {
@@ -245,5 +255,9 @@ TEST_CASE("invalid inputs", "[invalid]")
 
         REQUIRE_THAT(rc_data_object_finalize(static_cast<RcComm*>(comm), "nope", &error_string),
             equals_irods_error(INPUT_ARG_NOT_WELL_FORMED_ERR));
+
+        const auto output = json::parse(error_string);
+        CHECK(!output.at("database_updated").get<bool>());
+        CHECK(!output.at("error_message").get<std::string>().empty());
     }
 }
