@@ -12,6 +12,7 @@
 #include "rsModAccessControl.hpp"
 #include "rs_replica_close.hpp"
 #include "replica_state_table.hpp"
+#include "scoped_privileged_client.hpp"
 
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
 #include "data_object_proxy.hpp"
@@ -289,4 +290,36 @@ namespace irods
 
         return close_ec;
     } // close_replica_and_unlock_data_object
+
+    auto stale_target_replica_and_publish(
+        RsComm&          _comm,
+        const rodsLong_t _data_id,
+        const int        _replica_number) -> int
+    {
+        if (rst::unknown_replica_id == _replica_number) {
+            irods::log(LOG_ERROR, fmt::format(
+                "[{}:{}] - replica identifier is required for this operation",
+                __FUNCTION__, __LINE__));
+
+            return SYS_INVALID_INPUT_PARAM;
+        }
+
+        // Set the target replica to stale and keep the other replica statuses the
+        // same - they should be unlocked as specified by the previous unlock.
+        rst::update(_data_id, _replica_number, json{{"data_is_dirty", std::to_string(STALE_REPLICA)}});
+
+        // Elevate privileges to ensure that publishing goes through
+        {
+            irods::experimental::scoped_privileged_client spc{_comm};
+
+            constexpr auto admin_op = true;
+            auto ctx = rst::publish::context{_data_id, _replica_number, {}, admin_op, 0};
+
+            if (const auto [ret, ec] = rst::publish::to_catalog(_comm, ctx); ec < 0) {
+                return ec;
+            }
+        }
+
+        return 0;
+    } // stale_target_replica_and_publish
 } // namespace irods

@@ -8,6 +8,7 @@
 #include "json.hpp"
 
 #include <string_view>
+#include <tuple>
 #include <variant>
 
 /// \file
@@ -561,6 +562,13 @@ namespace irods::replica_state_table
             /// \since 4.2.9
             bool privileged = false;
 
+            /// \var Indicates to data_object_finalize how many bytes were written in this operation
+            ///
+            /// \p Default value: 0, no bytes written
+            ///
+            /// \since 4.2.9
+            rodsLong_t bytes_written = 0;
+
             // Constructors
 
             /// \brief Explicit constructor for all members
@@ -574,11 +582,13 @@ namespace irods::replica_state_table
             context(const key_type& _k,
                     const replica_id_type& _id,
                     const nlohmann::json& _fmp,
-                    const bool _p)
+                    const bool _p,
+                    const rodsLong_t _bw)
                 : key{_k}
                 , replica_id{_id}
                 , file_modified_parameters{_fmp}
                 , privileged{_p}
+                , bytes_written{_bw}
             {}
 
             /// \brief Constructs context with a key and specified privileged mode
@@ -593,19 +603,32 @@ namespace irods::replica_state_table
 
             /// \brief Constructs context with a replica_proxy and specified privileged mode
             ///
-            /// \p Note: file_modified_parameters_ remains default value
+            /// \p Note: file_modified_parameters remains default value
             ///
             /// \param[in] _r replica_proxy used to divine a key and replica ID
-            /// \param[in] _fmp JSON list of key-value pairs for fileModified input
             /// \param[in] _p Elevate privileges when publishing
             ///
             /// \since 4.2.9
             context(const irods::experimental::replica::replica_proxy_t& _r, const bool _p)
-                : context{_r.data_id(), _r.replica_number(), {}, _p}
+                : context{_r.data_id(), _r.replica_number(), {}, _p, _r.size()}
+            {}
+
+            /// \brief Constructs context with a replica_proxy, specified privileged mode, and bytes written
+            ///
+            /// \p Useful when the bytes written is unknown or differs from the replica size
+            /// \p Note: file_modified_parameters remains default value
+            ///
+            /// \param[in] _r replica_proxy used to divine a key and replica ID
+            /// \param[in] _p Elevate privileges when publishing
+            /// \param[in] _bw Number of bytes written in operation
+            ///
+            /// \since 4.2.9
+            context(const irods::experimental::replica::replica_proxy_t& _r, const bool _p, const rodsLong_t _bw)
+                : context{_r.data_id(), _r.replica_number(), {}, _p, _bw}
             {}
 
             // Constructors
-            /// \brief Constructs context with a replica_proxy and separate JSON structure for file_modified_parameters_
+            /// \brief Constructs context with a replica_proxy and separate JSON structure for file_modified_parameters
             ///
             /// \p privileged is determined by the presence of ADMIN_KW in the provided JSON structure
             ///
@@ -617,7 +640,8 @@ namespace irods::replica_state_table
                 : context{_r.data_id(),
                           _r.replica_number(),
                           irods::to_json(&_kvp),
-                          irods::experimental::key_value_proxy{_kvp}.contains(ADMIN_KW)}
+                          irods::experimental::key_value_proxy{_kvp}.contains(ADMIN_KW),
+                          _r.size()}
             {}
         };
 
@@ -626,13 +650,12 @@ namespace irods::replica_state_table
         /// \param[in,out] _comm iRODS server comm struct
         /// \param[in] _ctx Context for publishing an RST entry (see #context for details)
         ///
-        /// \returns error code returned by rs_data_object_finalize
-        /// \retval 0 success
+        /// \returns tuple with output string and error code returned by rs_data_object_finalize
         ///
         /// \throws irods::exception
         ///
         /// \since 4.2.9
-        auto to_catalog(RsComm& _comm, const context& _ctx) -> int;
+        auto to_catalog(RsComm& _comm, const context& _ctx) -> std::tuple<nlohmann::json, int>;
     } // namespace publish
 } // namespace irods::replica_state_table
 

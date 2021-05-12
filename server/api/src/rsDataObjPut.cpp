@@ -93,6 +93,8 @@ namespace
 
     auto finalize_on_failure(RsComm& _comm, DataObjInfo& _info, l1desc& _l1desc) -> int
     {
+        const auto admin_op = irods::experimental::make_key_value_proxy(_l1desc.dataObjInp->condInput).contains(ADMIN_KW);
+
         auto r = ir::make_replica_proxy(_info);
 
         r.replica_status(STALE_REPLICA);
@@ -106,22 +108,40 @@ namespace
                 __FUNCTION__, __LINE__, vault_size,
                 r.logical_path(), r.hierarchy()));
 
-            // Continue because the data object still needs to be unlocked.
+            if (const int unlock_ec = ill::unlock_and_publish(_comm, {r, admin_op, 0}, STALE_REPLICA, ill::restore_status); unlock_ec < 0) {
+                irods::log(LOG_ERROR, fmt::format("[{}:{}] - failed to unlock data object [error_code={}]", __FUNCTION__, __LINE__, unlock_ec));
+            }
+
+            return vault_size;
         }
-        else {
-            r.size(vault_size);
-        }
+
+        r.size(vault_size);
 
         // Write it out to the catalog
         rst::update(r.data_id(), r);
 
-        const auto admin_op = irods::experimental::make_key_value_proxy(_l1desc.dataObjInp->condInput).contains(ADMIN_KW);
+        if (const auto ec = ill::unlock(r.data_id(), r.replica_number(), r.replica_status(), ill::restore_status); ec < 0) {
+            irods::log(LOG_ERROR, fmt::format(
+                "[{}:{}] - failed to unlock data object "
+                "[error_code=[{}], path=[{}], hierarchy=[{}]",
+                __FUNCTION__, __LINE__, ec, r.logical_path(), r.hierarchy()));
 
-        if (const int ec = ill::unlock_and_publish(_comm, {r, admin_op}, STALE_REPLICA, ill::restore_status); ec < 0) {
+            return ec;
+        }
+
+        const auto ctx = rst::publish::context{r, admin_op};
+
+        if (const auto [ret, ec] = rst::publish::to_catalog(_comm, ctx); ec < 0) {
             irods::log(LOG_ERROR, fmt::format(
                 "[{}:{}] - failed in finalize step "
                 "[error_code=[{}], path=[{}], hierarchy=[{}]]",
-                __LINE__, __FUNCTION__, ec, r.logical_path(), r.replica_number()));
+                __FUNCTION__, __LINE__, ec, r.logical_path(), r.hierarchy()));
+
+            if (!ret.at("database_updated")) {
+                if (const int unlock_ec = irods::stale_target_replica_and_publish(_comm, r.data_id(), r.replica_number()); unlock_ec < 0) {
+                    irods::log(LOG_ERROR, fmt::format("[{}:{}] - failed to unlock data object [error_code={}]", __FUNCTION__, __LINE__, unlock_ec));
+                }
+            }
 
             return ec;
         }
@@ -131,9 +151,11 @@ namespace
 
     auto finalize_replica(RsComm& _comm, DataObjInfo& _info, l1desc& _l1desc) -> int
     {
-        auto replica = ir::make_replica_proxy(_info);
+        auto r = ir::make_replica_proxy(_info);
 
         auto cond_input = irods::experimental::make_key_value_proxy(_l1desc.dataObjInp->condInput);
+
+        const auto admin_op = cond_input.contains(ADMIN_KW);
 
         try {
             const bool verify_size = !cond_input.contains(NO_CHK_COPY_LEN_KW);
@@ -143,28 +165,28 @@ namespace
                     "[{}:{}] - failed to get size in vault; "
                     "[error_code=[{}], path=[{}] hierarchy=[{}]]",
                     __FUNCTION__, __LINE__,
-                    size_in_vault, replica.logical_path(), replica.hierarchy()));
+                    size_in_vault, r.logical_path(), r.hierarchy()));
             }
-            replica.size(size_in_vault);
+            r.size(size_in_vault);
 
             // Update the replica proxy's checksum value so that if an exception is thrown,
             // the checksum value will still be stored in the catalog.
-            replica.checksum(calculate_checksum(_comm, _l1desc, _info));
+            r.checksum(calculate_checksum(_comm, _l1desc, _info));
 
             rodsLog(LOG_DEBUG,
                     "[%s:%d] Verifying checksum [calculated_checksum=%s, checksum_from_client=%s, path=%s, replica_number=%d] ...",
-                    __func__, __LINE__, replica.checksum().data(), _l1desc.chksum,
-                    replica.logical_path().data(), replica.replica_number());
+                    __func__, __LINE__, r.checksum().data(), _l1desc.chksum,
+                    r.logical_path().data(), r.replica_number());
 
             if (VERIFY_CHKSUM == _l1desc.chksumFlag) {
-                if (replica.checksum() != _l1desc.chksum) {
+                if (r.checksum() != _l1desc.chksum) {
                     THROW(USER_CHKSUM_MISMATCH, fmt::format("[{}:{}] Mismatch checksum for {}.inp={}, compute {}",
-                          __FUNCTION__, __LINE__, replica.logical_path(), _l1desc.chksum, replica.checksum()));
+                          __FUNCTION__, __LINE__, r.logical_path(), _l1desc.chksum, r.checksum()));
                 }
             }
 
             // Copy the new checksum value into the conditional input so that file modified is triggered.
-            cond_input[CHKSUM_KW] = replica.checksum();
+            cond_input[CHKSUM_KW] = r.checksum();
 
             irods::apply_metadata_from_cond_input(_comm, *_l1desc.dataObjInp);
             irods::apply_acl_from_cond_input(_comm, *_l1desc.dataObjInp);
@@ -172,48 +194,51 @@ namespace
         catch (const irods::exception& e) {
             // Commit the changes to the replica state table so that unlock_and_publish stores
             // the size and checksum in the catalog.
-            rst::update(replica.data_id(), replica);
+            rst::update(r.data_id(), r);
 
-            const auto admin_op = cond_input.contains(ADMIN_KW);
-
-            if (const int ec = ill::unlock_and_publish(_comm, {replica, admin_op}, STALE_REPLICA, ill::restore_status); ec < 0) {
-                irods::log(LOG_ERROR, fmt::format("{} - unlock_and_publish failed [error_code={}]", __FUNCTION__, ec));
+            if (const int ec = ill::unlock_and_publish(_comm, {r, admin_op, 0}, STALE_REPLICA, ill::restore_status); ec < 0) {
+                irods::log(LOG_ERROR, fmt::format("[{}:{}] - failed to unlock data object [error_code={}]", __FUNCTION__, __LINE__, ec));
             }
+
             throw;
         }
 
         cond_input[OPEN_TYPE_KW] = std::to_string(_l1desc.openType);
 
-        // TODO: unlock in RST here (restore replica states)
-
         // Set target replica to the state it should be
         if (OPEN_FOR_WRITE_TYPE == _l1desc.openType) {
-            replica.replica_status(GOOD_REPLICA);
-            replica.mtime(SET_TIME_TO_NOW_KW);
+            r.replica_status(GOOD_REPLICA);
+            r.mtime(SET_TIME_TO_NOW_KW);
 
             // stale other replicas because the truth has moved
-            ill::unlock(replica.data_id(), replica.replica_number(), GOOD_REPLICA, STALE_REPLICA);
+            ill::unlock(r.data_id(), r.replica_number(), GOOD_REPLICA, STALE_REPLICA);
         }
         else {
             // No unlock is required here because a put that is not an overwrite implies a brand new
             // data object as put'ing to a new resource for an existing data object is not allowed.
             // Therefore, there should be no other replicas and so there should be nothing to unlock.
-            replica.replica_status(GOOD_REPLICA);
+            r.replica_status(GOOD_REPLICA);
         }
 
         // Write it out to the catalog
-        rst::update(replica.data_id(), replica);
+        rst::update(r.data_id(), r);
 
-        if (const int ec = rst::publish::to_catalog(_comm, {replica, *cond_input.get()}); ec < 0) {
+        if (const auto [ret, ec] = rst::publish::to_catalog(_comm, {r, *cond_input.get()}); ec < 0) {
+            if (!ret.at("database_updated")) {
+                if (const int unlock_ec = irods::stale_target_replica_and_publish(_comm, r.data_id(), r.replica_number()); unlock_ec < 0) {
+                    irods::log(LOG_ERROR, fmt::format("[{}:{}] - failed to unlock data object [error_code={}]", __FUNCTION__, __LINE__, unlock_ec));
+                }
+            }
+
             THROW(ec, fmt::format(
-                "[{}:{}] - failed in finalize step "
+                "[{}:{}] - failed to finalize replica "
                 "[error_code=[{}], path=[{}], hierarchy=[{}]]",
-                __LINE__, __FUNCTION__, ec, replica.logical_path(), replica.replica_number()));
+                __LINE__, __FUNCTION__, ec, r.logical_path(), r.hierarchy()));
         }
 
-        if (GOOD_REPLICA == replica.replica_status()) {
+        if (GOOD_REPLICA == r.replica_status()) {
             /* update quota overrun */
-            updatequotaOverrun(replica.hierarchy().data(), replica.size(), ALL_QUOTA);
+            updatequotaOverrun(r.hierarchy().data(), r.size(), ALL_QUOTA);
         }
 
         return 0;

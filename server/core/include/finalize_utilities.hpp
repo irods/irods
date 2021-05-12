@@ -115,6 +115,33 @@ namespace irods
     ///
     /// \since 4.2.9
     auto close_replica_and_unlock_data_object(RsComm& _comm, const int _fd, const int _status) -> int;
+
+    /// \brief Stales the specified replica status in the RST and publishes as-is
+    ///
+    /// \parblock
+    /// This function should only be used in error cases. The call to irods::replica_state_table::publish::to_catalog
+    /// is run with elevated privileges so that the unlock is guaranteed to work, barring issues with the database.
+    ///
+    /// In some instances, data_object_finalize may fail as business logic is attempting to unlock a data object. This presents
+    /// a failure mode in which the replica state table has been updated but publishing to the catalog failed for some reason,
+    /// which is of course an inconsistency. This function updates the specified replica's replica status in the RST to stale
+    /// and publishes the rest of the RST entry to the catalog as-is, with elevated privileges.
+    ///
+    /// This utility assumes that the replica state table has been updated as desired. The target replica, if specified, will
+    /// be marked stale and the other replica statuses will remain the same (again, this assumes that an unlock has already
+    /// occurred).
+    /// \endparblock
+    ///
+    /// \param[in,out] _comm
+    /// \param[in] _ctx Context for publishing an RST entry (see irods::replica_state_table::publish::context for details)
+    ///
+    /// \returns Error code on failure
+    ///
+    /// \since 4.2.9
+    auto stale_target_replica_and_publish(
+        RsComm&          _comm,
+        const rodsLong_t _data_id,
+        const int        _replica_number) -> int;
 } // namespace irods
 
 #endif // IRODS_FINALIZE_UTILITIES_HPP

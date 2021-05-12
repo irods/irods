@@ -3,6 +3,7 @@
 #include "irods_log.hpp"
 #include "replica_access_table.hpp"
 #include "replica_state_table.hpp"
+#include "scoped_privileged_client.hpp"
 
 namespace
 {
@@ -19,7 +20,7 @@ namespace
         {ill::lock_type::write, WRITE_LOCKED}
     };
 
-    auto get_original_replica_status_impl(const json& _json_replica) -> repl_status_t
+    auto get_original_replica_status_impl(const json& _json_replica) -> int
     {
         const auto data_status_str = _json_replica.at("after").at("data_status").get<std::string>();
 
@@ -317,7 +318,7 @@ namespace irods::logical_locking
 {
     auto get_original_replica_status(
         const std::uint64_t _data_id,
-        const int           _replica_number) -> repl_status_t
+        const int           _replica_number) -> int
     {
         return get_original_replica_status_impl(rst::at(_data_id, _replica_number));
     } // get_original_replica_status
@@ -349,7 +350,7 @@ namespace irods::logical_locking
             return ec;
         }
 
-        if (const int ec = rst::publish::to_catalog(_comm, _ctx); ec < 0) {
+        if (const auto [ret, ec] = rst::publish::to_catalog(_comm, _ctx); ec < 0) {
             return ec;
         }
 
@@ -367,7 +368,7 @@ namespace irods::logical_locking
             return ec;
         }
 
-        if (const int ec = rst::publish::to_catalog(_comm, _ctx); ec < 0) {
+        if (const auto [ret, ec] = rst::publish::to_catalog(_comm, _ctx); ec < 0) {
             return ec;
         }
 
