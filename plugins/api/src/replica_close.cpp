@@ -180,17 +180,24 @@ namespace
         // as this is the way the RST interface determines whether it should trigger.
         const auto cond_input = irods::experimental::make_key_value_proxy(_l1desc.dataObjInp->condInput);
 
+        const auto admin_op = cond_input.contains(ADMIN_KW);
         const auto ctx = _send_notifications ? rst::publish::context{_replica, *cond_input.get()}
-                                             : rst::publish::context{_replica, cond_input.contains(ADMIN_KW)};
+                                             : rst::publish::context{_replica, admin_op};
 
         // Publish to catalog and trigger file_modified as appropriate. The updates
         // made above will be reflected in the RST and stamped out to the catalog here.
-        const int ec = rst::publish::to_catalog(_comm, ctx);
-
+        const auto [ret, ec] = rst::publish::to_catalog(_comm, ctx);
         if (ec < 0) {
             irods::log(LOG_ERROR, fmt::format(
-                "[{}:{}] - failed to publish replica status for replica [{}] of [{}]:[{}]",
-                __FUNCTION__, __LINE__, _replica.replica_number(), _replica.logical_path(), ec));
+                "[{}:{}] - failed to finalize data object "
+                "[error_code=[{}], path=[{}], hierarchy=[{}]]",
+                __FUNCTION__, __LINE__, ec, _replica.logical_path(), _replica.hierarchy()));
+
+            if (!ret.at("database_updated")) {
+                if (const int unlock_ec = irods::stale_target_replica_and_publish(_comm, _replica.data_id(), _replica.replica_number()); unlock_ec < 0) {
+                    irods::log(LOG_ERROR, fmt::format("[{}:{}] - failed to unlock data object [error_code={}]", __FUNCTION__, __LINE__, unlock_ec));
+                }
+            }
         }
 
         return ec;

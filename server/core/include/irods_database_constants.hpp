@@ -110,6 +110,8 @@ namespace irods {
     const std::string DATABASE_OP_CHECK_AND_GET_OBJ_ID( "database_check_and_get_obj_id" );
     const std::string DATABASE_OP_GET_RCS( "database_get_rcs" );
     const std::string DATABASE_OP_GET_REPL_LIST_FOR_LEAF_BUNDLES( "database_get_repl_list_for_leaf_bundles" );
+    const std::string DATABASE_OP_CHECK_PERMISSION_TO_MODIFY_DATA_OBJECT{"database_check_permission_to_modify_data_object"};
+    const std::string DATABASE_OP_UPDATE_TICKET_WRITE_BYTE_COUNT{"database_update_ticket_write_byte_count"};
 }; // namespace irods
 
 #endif // __IRODS_DATABASE_CONSTANTS_HPP__

@@ -150,7 +150,7 @@ namespace irods::logical_locking
     /// \brief Lock data object using specified lock type, update RST, publish to catalog
     ///
     /// \parblock
-    /// Calls the lock implemenation as described in lock"("const std::uint64_t, const int,const lock_type")"
+    /// Calls the lock implementation as described in lock"("const std::uint64_t, const int,const lock_type")"
     /// by updating the replica_state_table, then publishes the entry to the catalog immediately. file_modified
     /// will never be triggered by this operation.
     /// \endparblock
@@ -170,7 +170,7 @@ namespace irods::logical_locking
     /// \brief Unlock data object, update RST, publish to catalog
     ///
     /// \parblock
-    /// Calls the unlock implemenation as described in unlock"("const std::uint64_t, const int, const int, const int")"
+    /// Calls the unlock implementation as described in unlock"("const std::uint64_t, const int, const int, const int")"
     /// by updating the replica_state_table, then publishes the entry to the catalog immediately. file_modified
     /// will never be triggered by this operation.
     /// \endparblock
