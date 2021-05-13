@@ -4206,7 +4206,7 @@ irods::error db_del_resc_op(
                   "resource '%s' has a parent or child",
                   _resc_name );
         addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
-        return ERROR( CAT_RESOURCE_NOT_EMPTY, "resource not empty" );
+        return ERROR( CHILD_EXISTS, "resource has a parent or child" );
     }
 
     cllBindVars[cllBindVarCount++] = _resc_name;
