@@ -60,6 +60,35 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
     # iadmin
     ###################
 
+    def test_iadmin_rmresc_failures__5545(self):
+        test_file = "foo"
+        lib.make_file(test_file, 50)
+
+        ptresc = "pt"
+        newresc = "newResc"
+        h = lib.get_hostname()
+
+        try:
+            # rmresc standalone resource, with data
+            self.admin.assert_icommand(['iadmin', 'mkresc', newresc, 'unixfilesystem', '{}:/tmp/{}Vault'.format(h,newresc)], 'STDOUT_SINGLELINE', 'Creating')
+            self.admin.assert_icommand(['iput', '-R', newresc, test_file])
+            self.admin.assert_icommand(['iadmin', 'rmresc', newresc], 'STDERR_SINGLELINE', 'CAT_RESOURCE_NOT_EMPTY')
+
+            # rmresc parent and child resource, without data
+            self.admin.assert_icommand(['iadmin', 'mkresc', ptresc, 'passthru'], 'STDOUT_SINGLELINE', 'Creating')
+            self.admin.assert_icommand(['iadmin', 'addchildtoresc', ptresc, newresc])
+            self.admin.assert_icommand(['irm', '-f', test_file])
+            self.admin.assert_icommand(['iadmin', 'rmresc', ptresc], 'STDERR_SINGLELINE', 'CHILD_EXISTS')
+            self.admin.assert_icommand(['iadmin', 'rmresc', newresc], 'STDERR_SINGLELINE', 'CHILD_EXISTS')
+
+        finally:
+            if (os.path.exists(test_file)):
+                os.unlink(test_file)
+
+            self.admin.assert_icommand(['iadmin', 'rmchildfromresc', ptresc, newresc])
+            self.admin.assert_icommand(['iadmin', 'rmresc', ptresc])
+            self.admin.assert_icommand(['iadmin', 'rmresc', newresc])
+
     def test_ibun__issue_3571(self):
         test_file = "ibun_test_file"
         lib.make_file(test_file, 1000)
