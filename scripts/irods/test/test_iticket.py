@@ -401,3 +401,56 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
             self.user.run_icommand(['irm', '-f', data_object])
             self.admin.run_icommand(['iadmin', 'rmresc', resc_name])
 
+    def test_write_byte_count_is_updated_when_data_size_does_not_change__issue_2719(self):
+        def do_test_write_byte_count_updated(self, filesize):
+            name = 'issue_2719'
+            ticket = 'ticket_' + name
+            local_file = os.path.join(self.admin.local_session_dir, name + '.txt')
+            logical_path = os.path.join(self.admin.session_collection, name)
+
+            try:
+                write_byte_limit = filesize * 2
+
+                if not os.path.exists(local_file):
+                    lib.make_file(local_file, filesize)
+
+                # Create a new data object.
+                self.admin.assert_icommand(['iput', local_file, logical_path])
+                self.admin.assert_icommand(['iquest', '%s', "select DATA_SIZE where COLL_NAME = '{0}' and DATA_NAME = '{1}'".format(
+                                           os.path.dirname(logical_path), os.path.basename(logical_path))],
+                                           'STDOUT', str(filesize))
+
+                # Create a ticket for writing to the data object.
+                self.admin.assert_icommand(['iticket', 'create', 'write', logical_path, ticket])
+                self.admin.assert_icommand(['iticket', 'mod', ticket, 'write-bytes', str(write_byte_limit)])
+
+                # verify ticket information in the catalog
+                out, err, ec = self.admin.run_icommand(['iquest', '%s...%s', "select TICKET_WRITE_BYTE_COUNT, TICKET_WRITE_BYTE_LIMIT where TICKET_STRING = '{}'".format(ticket)])
+                self.assertEqual(ec, 0)
+                self.assertEqual(len(err), 0)
+
+                write_byte_count = out.split('...')[0]
+                stored_write_byte_limit = out.split('...')[1]
+                self.assertEqual(int(write_byte_count), 0)
+                self.assertEqual(int(stored_write_byte_limit), write_byte_limit)
+
+                # overwrite with the same file and ensure that the write byte count updates
+                self.user.assert_icommand(['iput', '-f', '-t', ticket, local_file, logical_path])
+                out, err, ec = self.admin.run_icommand(['iquest', '%s...%s', "select TICKET_WRITE_FILE_COUNT, TICKET_WRITE_BYTE_COUNT where TICKET_STRING = '{}'".format(ticket)])
+                self.assertEqual(ec, 0)
+                self.assertEqual(len(err), 0)
+
+                write_file_count = out.split('...')[0]
+                write_byte_count = out.split('...')[1]
+                self.assertEqual(int(write_file_count), 1)
+                self.assertEqual(int(write_byte_count), filesize)
+
+            finally:
+                self.admin.run_icommand(['iticket', 'delete', ticket])
+                self.admin.run_icommand(['irm', '-f', logical_path])
+                if os.path.exists(local_file):
+                    os.unlink(local_file)
+
+        do_test_write_byte_count_updated(self, 1024) # 1 KiB
+        do_test_write_byte_count_updated(self, 40 * 1024 * 1024) #40 MiB
+
