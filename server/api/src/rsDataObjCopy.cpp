@@ -124,41 +124,6 @@ int open_source_data_obj(rsComm_t *rsComm, dataObjInp_t& inp)
         inp.oprType = COPY_DEST;
         inp.openFlags = O_CREAT | O_WRONLY | O_TRUNC;
 
-        irods::file_object_ptr file_obj(new irods::file_object());
-        std::string hier{};
-        auto cond_input = irods::experimental::make_key_value_proxy(inp.condInput);
-
-        try {
-            if (!cond_input.contains(RESC_HIER_STR_KW)) {
-                std::tie(file_obj, hier) = irods::resolve_resource_hierarchy(irods::CREATE_OPERATION, rsComm, inp);
-                cond_input[RESC_HIER_STR_KW] = hier;
-            }
-            else {
-                hier = cond_input.at(RESC_HIER_STR_KW).value().data();
-                dataObjInfo_t* dataObjInfoHead{};
-                irods::error fac_err = irods::file_object_factory(rsComm, &inp, file_obj, &dataObjInfoHead);
-                if (!fac_err.ok()) {
-                    irods::log(fac_err);
-                }
-            }
-        }
-        catch (const irods::exception& e) {
-            irods::log(LOG_ERROR, fmt::format(
-                "[{}:{}] - [{}]",
-                __FUNCTION__, __LINE__, e.client_display_what()));
-
-            return e.code();
-        }
-
-        if (irods::hierarchy_has_replica(file_obj, hier) && !cond_input.contains(FORCE_FLAG_KW)) {
-            irods::log(LOG_ERROR, fmt::format(
-                "[{}:{}] - force flag required to overwrite data object for copy "
-                "[error_code=[{}], path=[{}], hierarchy=[{}]",
-                __FUNCTION__, __LINE__, inp.objPath, hier));
-
-            return OVERWRITE_WITHOUT_FORCE_FLAG;
-        }
-
         int destL1descInx = rsDataObjOpen(rsComm, &inp);
         if ( destL1descInx == CAT_UNKNOWN_COLLECTION ) {
             /* collection does not exist. make one */
@@ -192,7 +157,7 @@ int open_source_data_obj(rsComm_t *rsComm, dataObjInp_t& inp)
     {
         openedDataObjInp_t dataObjCloseInp{};
         dataObjCloseInp.l1descInx = _inx;
-        dataObjCloseInp.bytesWritten = L1desc[_inx].dataSize;
+        dataObjCloseInp.bytesWritten = L1desc[L1desc[_inx].srcL1descInx].dataObjInfo->dataSize;
 
         rodsLog(LOG_DEBUG8, "[%s:%d] - closing [%s]", __FUNCTION__, __LINE__, L1desc[_inx].dataObjInp->objPath);
 
@@ -258,7 +223,7 @@ int open_source_data_obj(rsComm_t *rsComm, dataObjInp_t& inp)
                 // These must be saved before the L1 descriptor is free'd.
                 *transStat = (transferStat_t*)malloc(sizeof(transferStat_t));
                 memset(*transStat, 0, sizeof(transferStat_t));
-                (*transStat)->bytesWritten = L1desc[destL1descInx].dataSize;
+                (*transStat)->bytesWritten = L1desc[srcL1descInx].dataObjInfo->dataSize;
                 (*transStat)->numThreads = L1desc[destL1descInx].dataObjInp->numThreads;
 
                 if (const int ec = close_destination_data_obj(rsComm, destL1descInx); ec < 0) {
@@ -305,6 +270,11 @@ int open_source_data_obj(rsComm_t *rsComm, dataObjInp_t& inp)
         L1desc[destL1descInx].srcL1descInx = srcL1descInx;
         L1desc[destL1descInx].dataSize = L1desc[srcL1descInx].dataObjInfo->dataSize;
         rstrcpy(L1desc[destL1descInx].dataObjInfo->dataType, L1desc[srcL1descInx].dataObjInfo->dataType, NAME_LEN);
+
+        // The input dataSize is used by legacy parallel transfer operations to determine
+        // the number of threads. Set this to the size of the source object so that the transfer
+        // can be set up successfully.
+        L1desc[destL1descInx].dataObjInp->dataSize = L1desc[srcL1descInx].dataObjInfo->dataSize;
 
         const int thread_count = getNumThreads(
             rsComm,
