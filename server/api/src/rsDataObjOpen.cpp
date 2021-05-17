@@ -1137,6 +1137,17 @@ int rsDataObjOpen(rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     const auto data_object_exists = fs::server::exists(*rsComm, dataObjInp->objPath);
     const auto fd = rsDataObjOpen_impl(rsComm, dataObjInp);
 
+    // Do not update the collection mtime if the logical path refers to a remote
+    // zone. There is a known limitation in the iRODS protocol which does not allow
+    // for further communication over the server port with the remote server in
+    // parallel transfer situations once initiated. Further, if the remote zone
+    // cares about updating the mtime, the remote API endpoint called should have
+    // updated the collection mtime already, so it is unnecessary.
+    if (const auto zone_hint = fs::zone_name(fs::path{dataObjInp->objPath});
+        zone_hint && !isLocalZone(zone_hint->data())) {
+        return fd;
+    }
+
     // Update the parent collection's mtime.
     if (fd >= minimum_valid_file_descriptor && !data_object_exists) {
         const auto parent_path = fs::path{dataObjInp->objPath}.parent_path();
