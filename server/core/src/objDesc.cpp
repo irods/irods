@@ -708,6 +708,7 @@ namespace irods
         l1desc.dataObjInp = static_cast<DataObjInp*>(std::malloc(sizeof(DataObjInp)));
         std::memset(l1desc.dataObjInp, 0, sizeof(DataObjInp));
         replDataObjInp(&_inp, l1desc.dataObjInp);
+        l1desc.dataObjInp->dataSize = dataSize;
 
         l1desc.dataObjInpReplFlag = 1;
         l1desc.dataObjInfo = replica.get();
