@@ -153,7 +153,7 @@ int getRemoteZoneHost(rsComm_t *rsComm,
                       rodsServerHost_t **rodsServerHost,
                       char *remotZoneOpr);
 
-int isLocalZone(char *zoneHint);
+int isLocalZone(const char *zoneHint);
 
 int isSameZone(char *zoneHint1, char *zoneHint2);
 

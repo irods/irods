@@ -785,7 +785,7 @@ getAndConnRemoteZone( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 }
 
 int
-isLocalZone( char *zoneHint ) {
+isLocalZone(const char *zoneHint ) {
     int status;
     rodsServerHost_t *icatServerHost = NULL;
 
