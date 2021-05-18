@@ -26,7 +26,7 @@ namespace irods::experimental
         struct condition
         {
             std::string column;
-            std::string operator;
+            std::string op;
             std::vector<std::string> values;
         };
 
