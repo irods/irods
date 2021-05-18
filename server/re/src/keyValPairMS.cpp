@@ -1,3 +1,5 @@
+/// \file
+
 #include "icatHighLevelRoutines.hpp"
 #include "msParam.h"
 #include "rcMisc.h"

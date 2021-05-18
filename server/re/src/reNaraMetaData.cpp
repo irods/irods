@@ -1,7 +1,4 @@
-/**
- * @file reNaraMetaData.cpp
- *
- */
+/// \file
 
 #include "reNaraMetaData.hpp"
 #include "apiHeaderAll.h"
