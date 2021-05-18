@@ -1,21 +1,12 @@
-/**
- * @file  extractAvuMS.cpp
- *
- */
+/// \file
 
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-//#include "reGlobalsExtern.hpp"
 #include "rcMisc.h"
-//#include "reFuncDefs.hpp"
 #include "objMetaOpr.hpp"
 #include "miscServerFunct.hpp"
 
 #if defined(solaris_platform)
 #include <libgen.h>
 #endif
-
 
 #include <algorithm> // for std::find
 #include <vector>
@@ -26,7 +17,6 @@
 #include "rsModAVUMetadata.hpp"
 
 extern char *__loc1;
-
 
 /**
  * \fn msiReadMDTemplateIntoTagStruct(msParam_t* bufParam, msParam_t* tagParam, ruleExecInfo_t *rei)
@@ -533,7 +523,6 @@ msiSetKeyValuePairsToObj( msParam_t *metadataParam, msParam_t* objParam,
     return ret;
 
 }
-// =-=-=-=-=-=-=-
 
 /**
  * \fn msiGetObjType(msParam_t *objParam, msParam_t *typeParam, ruleExecInfo_t *rei)
@@ -719,7 +708,6 @@ msiRemoveKeyValuePairsFromObj( msParam_t *metadataParam, msParam_t* objParam,
  * \post none
  * \sa rsModAVUMetadata
 **/
-
 int
 msiModAVUMetadata(
     msParam_t* _item_type,

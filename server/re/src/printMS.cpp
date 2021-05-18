@@ -1,15 +1,8 @@
-/**
- * @file        printMS.cpp
- *
- */
+/// \file
 
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-//#include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "apiHeaderAll.h"
 #include "rsApiHandler.hpp"
-//#include "reFuncDefs.hpp"
 #include "irods_re_structs.hpp"
 
 #if defined(_LP64) || defined(__LP64__)
