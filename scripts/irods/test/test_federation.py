@@ -19,7 +19,6 @@ from .. import paths
 from .. import test
 from ..configuration import IrodsConfig
 from ..core_file import temporary_core_file
-from .rule_texts_for_tests import rule_texts
 
 SessionsMixin = session.make_sessions_mixin(
     test.settings.FEDERATION.RODSADMIN_NAME_PASSWORD_LIST, test.settings.FEDERATION.RODSUSER_NAME_PASSWORD_LIST)
@@ -1471,12 +1470,12 @@ class Test_Recursive_Icp(SessionsMixin, unittest.TestCase):
     def test_icp_tree_remotezone_in_target(self):
         self.cp_recursive_local_source_test(self.local_source_coll, flat_coll=False, remote_zone=True, in_target=True)
 
-class test_dynamic_peps(SessionsMixin, unittest.TestCase):
+class test_dynamic_peps_in_federation(SessionsMixin, unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
     class_name = 'Test_Native_Rule_Engine_Plugin'
 
     def setUp(self):
-        super(test_dynamic_peps, self).setUp()
+        super(test_dynamic_peps_in_federation, self).setUp()
 
         # load federation settings in dictionary (all lower case)
         self.config = {}
@@ -1492,66 +1491,96 @@ class test_dynamic_peps(SessionsMixin, unittest.TestCase):
 
     def tearDown(self):
         self.admin.__exit__()
-        super(test_dynamic_peps, self).tearDown()
+        super(test_dynamic_peps_in_federation, self).tearDown()
 
+    @unittest.skipIf(IrodsConfig().version_tuple < (4, 2, 9), 'Fixed in 4.2.9')
     def test_peps_for_parallel_mode_transfers__issue_5017(self):
-        remote_home_collection = self.admin.remote_home_collection(test.settings.FEDERATION.REMOTE_ZONE)
+        test_session = self.user_sessions[0]
+        remote_home_collection = test_session.remote_home_collection(test.settings.FEDERATION.REMOTE_ZONE)
         filename = 'test_peps_for_parallel_mode_transfers__issue_5017'
         local_file = os.path.join(self.admin.local_session_dir, filename)
         logical_path = os.path.join(remote_home_collection, filename)
-        metadata_resource = 'test_peps_for_parallel_mode_transfers_resource'
+        local_logical_path = os.path.join(test_session.home_collection, filename)
         file_size = 40 * 1024 * 1024 # 40MB
-        attr = 'test_peps_for_parallel_mode_transfers__4404_put'
+        attr = 'test_peps_for_parallel_mode_transfers__issue_5017'
 
         try:
             if not os.path.exists(local_file):
                 lib.make_file(local_file, file_size)
 
-            # PEPs will fire locally on connected server, so metadata will be applied to local resource
+            # PEPs will fire locally on connected server, so metadata will be applied to local data object
             parameters = {}
-            parameters['resource'] = metadata_resource
-            put_peps = rule_texts[self.plugin_name][self.class_name][attr].format(**parameters)
+            parameters['logical_path'] = local_logical_path
+            put_peps = '''
+pep_api_data_obj_put_pre (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
+{{
+    msiAddKeyVal(*key_val_pair,"test_peps_for_parallel_mode_transfers__issue_5017","data-obj-put-pre");
+    msiAssociateKeyValuePairsToObj(*key_val_pair,"{logical_path}","-d");
+}}
+pep_api_data_obj_put_post (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
+{{
+    msiAddKeyVal(*key_val_pair,"test_peps_for_parallel_mode_transfers__issue_5017","data-obj-put-post");
+    msiAssociateKeyValuePairsToObj(*key_val_pair,"{logical_path}","-d");
+}}
+pep_api_data_obj_put_except (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
+{{
+    msiAddKeyVal(*key_val_pair,"test_peps_for_parallel_mode_transfers__issue_5017","data-obj-put-except");
+    msiAssociateKeyValuePairsToObj(*key_val_pair,"{logical_path}","-d");
+}}
+pep_api_data_obj_put_finally (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
+{{
+    msiAddKeyVal(*key_val_pair,"test_peps_for_parallel_mode_transfers__issue_5017","data-obj-put-finally");
+    msiAssociateKeyValuePairsToObj(*key_val_pair,"{logical_path}","-d");
+}}
+'''.format(**parameters)
+
             print(put_peps)
 
-            def reset_resource(self):
-                self.admin.run_icommand(['iadmin', 'rmresc', metadata_resource])
-                self.admin.assert_icommand(['iadmin', 'rum'])
-                lib.create_passthru_resource(metadata_resource, self.admin)
+            # put a new data object so that the PEPs have an object to which metadata can be associated
+            test_session.assert_icommand(['iput', local_file, local_logical_path])
 
             with temporary_core_file() as core:
                 time.sleep(1)  # remove once file hash fix is committed #2279
                 core.add_rule(put_peps)
                 time.sleep(1)  # remove once file hash fix is committed #2279
 
-                reset_resource(self)
+                # peps to check for the first, successful put
+                peps = ['data-obj-put-pre', 'data-obj-put-post', 'data-obj-put-finally']
 
                 # put a new data object and ensure success
-                self.admin.assert_icommand(['iput', local_file, logical_path])
+                test_session.assert_icommand(['iput', local_file, logical_path])
 
-                for pep in ['data-obj-put-pre', 'data-obj-put-post', 'data-obj-put-finally']:
+                for pep in peps:
                     lib.delayAssert(
-                        lambda: lib.metadata_attr_with_value_exists(self.admin, attr, pep),
+                        lambda: lib.metadata_attr_with_value_exists(test_session, attr, pep),
                         interval=1,
                         maxrep=10
                     )
 
-                self.assertFalse(lib.metadata_attr_with_value_exists(self.admin, attr, 'pep-obj-put-except'))
+                self.assertFalse(lib.metadata_attr_with_value_exists(test_session, attr, 'pep-obj-put-except'))
 
-                reset_resource(self)
+                # clean up metadata for next test
+                for pep in peps:
+                    test_session.assert_icommand(['imeta', 'rm', '-d', local_logical_path, attr, pep])
+
+                test_session.assert_icommand(['imeta', 'ls', '-d', local_logical_path], 'STDOUT', 'None')
+
+                # peps to check for the second, unsuccessful put
+                peps = ['data-obj-put-pre', 'data-obj-put-except', 'data-obj-put-finally']
 
                 # put to same logical path without force flag, resulting in error and (hopefully) triggering except PEP
-                self.admin.assert_icommand(['iput', local_file, logical_path], 'STDERR', 'OVERWRITE_WITHOUT_FORCE_FLAG')
+                test_session.assert_icommand(['iput', local_file, logical_path], 'STDERR', 'OVERWRITE_WITHOUT_FORCE_FLAG')
 
-                for pep in ['data-obj-put-pre', 'data-obj-put-except', 'data-obj-put-finally']:
+                for pep in peps:
                     lib.delayAssert(
-                        lambda: lib.metadata_attr_with_value_exists(self.admin, attr, pep),
+                        lambda: lib.metadata_attr_with_value_exists(test_session, attr, pep),
                         interval=1,
                         maxrep=10
                     )
 
-                self.assertFalse(lib.metadata_attr_with_value_exists(self.admin, attr, 'pep-obj-put-post'))
+                self.assertFalse(lib.metadata_attr_with_value_exists(test_session, attr, 'pep-obj-put-post'))
 
         finally:
-            self.admin.run_icommand(['irm', '-f', logical_path])
-            self.admin.run_icommand(['iadmin', 'rmresc', metadata_resource])
+            test_session.run_icommand(['irm', '-f', local_logical_path])
+            test_session.run_icommand(['irm', '-f', logical_path])
             self.admin.assert_icommand(['iadmin', 'rum'])
