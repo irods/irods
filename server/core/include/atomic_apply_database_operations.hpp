@@ -12,26 +12,41 @@ namespace irods::experimental
 {
     namespace dml
     {
-        struct column_value
+        struct column
+        {
+            std::string name;
+            std::string value;
+        };
+
+        struct row
+        {
+            std::vector<column> columns;
+        };
+
+        struct condition
         {
             std::string column;
-            std::string value;
+            std::string operator;
+            std::vector<std::string> values;
         };
 
         struct insert_op
         {
             std::string table;
-            std::vector<column_value> values;
+            std::vector<row> rows;
         };
 
         struct update_op
         {
-
+            std::string table;
+            row row;
+            std::vector<condition> conditions;
         };
 
         struct delete_op
         {
-
+            std::string table;
+            std::vector<condition> conditions;
         };
 
         using operation_type = std::variant<insert_op, update_op, delete_op>;
