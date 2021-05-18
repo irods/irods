@@ -1,3 +1,5 @@
+/// \file
+
 #include "rsRuleExecSubmit.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "rcMisc.h"

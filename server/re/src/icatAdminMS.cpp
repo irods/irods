@@ -1,3 +1,5 @@
+/// \file
+
 #include "icatHighLevelRoutines.hpp"
 #include "rcMisc.h"
 #include "generalAdmin.h"

@@ -1,7 +1,4 @@
-/**
- * @file  miscMS.cpp
- *
- */
+/// \file
 
 #include "rsGlobalExtern.hpp"
 #include "dataObjCreate.h"

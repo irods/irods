@@ -1,7 +1,4 @@
-/**
- * @file  reDataObjOpr.cpp
- *
- */
+/// \file
 
 #include "reDataObjOpr.hpp"
 #include "apiHeaderAll.h"

@@ -1,12 +1,4 @@
-/**
- * @file reSysDataObjOpr.cpp
- *
- */
-
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-/* reSysDataObjOpr.c */
+/// \file
 
 #include "rcMisc.h"
 #include "reSysDataObjOpr.hpp"
@@ -19,9 +11,6 @@
 #include "rsModDataObjMeta.hpp"
 #include "rsDataObjRepl.hpp"
 #include "apiNumber.h"
-
-// =-=-=-=-=-=-=-
-//
 #include "irodsReServer.hpp"
 #include "irods_resource_backport.hpp"
 #include "irods_server_api_table.hpp"

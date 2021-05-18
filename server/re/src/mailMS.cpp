@@ -1,12 +1,5 @@
-/**
- * @file	mailMS.cpp
- *
- */
+/// \file
 
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-//#include "reGlobalsExtern.hpp"
-//#include "reFuncDefs.hpp"
 #include "icatHighLevelRoutines.hpp"
 
 #include "irods_log.hpp"
@@ -15,7 +8,6 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <pwd.h>
-
 
 /**
  * \fn msiSendMail(msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, ruleExecInfo_t *)

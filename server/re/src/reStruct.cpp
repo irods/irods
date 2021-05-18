@@ -1,14 +1,8 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
 #include "irods_re_structs.hpp"
 #include "rcMisc.h"
 #include "objMetaOpr.hpp"
 #include "resource.hpp"
-
-// =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
-
 
 void *mallocAndZero( int s ) {
     void *t;
