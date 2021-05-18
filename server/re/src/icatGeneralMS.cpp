@@ -1,7 +1,4 @@
-/**
- * @file  icatGeneralMS.cpp
- *
- */
+/// \file
 
 #include "rcMisc.h"
 #include "icatHighLevelRoutines.hpp"

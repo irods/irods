@@ -1,8 +1,4 @@
-/**
- * @file  genQueryMS.cpp
- *
- */
-
+/// \file
 
 #include "genQuery.h"
 #include "rsGenQuery.hpp"
