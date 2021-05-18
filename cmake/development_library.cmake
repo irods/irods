@@ -543,6 +543,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/include/rsIcatOpr.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/rsLog.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/scoped_client_identity.hpp
+  ${CMAKE_SOURCE_DIR}/server/core/include/scoped_permission.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/scoped_privileged_client.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/server_utilities.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/specColl.hpp
