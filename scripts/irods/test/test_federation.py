@@ -160,9 +160,9 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
             **parameters)
 
         if filesize >= self.config['large_file_size']:
-            # put file in remote collection, ask for 6 threads
+            # put file in remote collection, ask for 4 threads
             test_session.assert_icommand(
-                "iput -v -N 6 {filepath} {remote_home_collection}/".format(**parameters), 'STDOUT_SINGLELINE', '6 thr')
+                "iput -v -N 4 {filepath} {remote_home_collection}/".format(**parameters), 'STDOUT_SINGLELINE', '4 thr')
         else:
             # put file in remote collection
             test_session.assert_icommand(
@@ -322,7 +322,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
 
         # for the next transfer we expect the number of threads
         # to be capped at max_threads or max_threads+1,
-        # e.g: we will look for '16 thr' or '17 thr' in stdout
+        # e.g: we will look for '4 thr' or '5 thr' in stdout
         parameters['max_threads_plus_one'] = parameters['max_threads'] + 1
         expected_output_regex = '[{max_threads}|{max_threads_plus_one}] thr'.format(
             **parameters)
