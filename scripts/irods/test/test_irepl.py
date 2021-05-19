@@ -1,6 +1,7 @@
 from __future__ import print_function
 import os
 import sys
+import json
 
 if sys.version_info < (2, 7):
     import unittest2 as unittest
@@ -415,6 +416,11 @@ class test_irepl_with_two_basic_ufs_resources(session.make_sessions_mixin([('oth
             finally:
                 user0.assert_icommand(['irm', '-f', dest_path])
 
+        server_config_filename = paths.server_config_path()
+        with open(server_config_filename) as f:
+            svr_cfg = json.load(f)
+            default_max_threads = svr_cfg['advanced_settings']['default_number_of_transfer_threads']
+
         default_buffer_size_in_bytes = 4 * (1024 ** 2)
         cases = [
             {
@@ -423,7 +429,7 @@ class test_irepl_with_two_basic_ufs_resources(session.make_sessions_mixin([('oth
             },
             {
                 'size':     34603008,
-                'threads':  (34603008 / default_buffer_size_in_bytes) + 1
+                'threads':  min(default_max_threads, (34603008 / default_buffer_size_in_bytes) + 1)
             }
         ]
 

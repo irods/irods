@@ -268,7 +268,7 @@ acSetRescSchemeForRepl {msiSetDefaultResc("demoResc","null"); }
 # acSetNumThreads {msiSetNumThreads("16","4","default"); }
 # acSetNumThreads {msiSetNumThreads("default","16","default"); }
 # acSetNumThreads {ON($KVPairs.rescName == "macResc") {msiSetNumThreads("default","0","default"); } }
-acSetNumThreads {msiSetNumThreads("default","16","default"); }
+acSetNumThreads {msiSetNumThreads("default","default","default"); }
 # 10) acDataDeletePolicy - This rule set the policy for deleting data objects.
 #     This is the PreProcessing rule for delete.
 # Only one function can be called:

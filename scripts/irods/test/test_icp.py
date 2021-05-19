@@ -1,6 +1,7 @@
 from __future__ import print_function
 import inspect
 import os
+import json
 import shutil
 import sys
 
@@ -13,6 +14,7 @@ import ustrings
 from .. import lib
 from . import session
 from .. import core_file
+from .. import paths
 from .. import test
 from .rule_texts_for_tests import rule_texts
 from ..configuration import IrodsConfig
@@ -73,6 +75,11 @@ class Test_Icp(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
                 self.alice.assert_icommand(['irm', '-f', dest_path])
                 self.alice.assert_icommand(['irm', '-f', another_dest_path])
 
+        server_config_filename = paths.server_config_path()
+        with open(server_config_filename) as f:
+            svr_cfg = json.load(f)
+            default_max_threads = svr_cfg['advanced_settings']['default_number_of_transfer_threads']
+
         default_buffer_size_in_bytes = 4 * (1024 ** 2)
         cases = [
             {
@@ -81,7 +88,7 @@ class Test_Icp(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
             },
             {
                 'size':     34603008,
-                'threads':  (34603008 / default_buffer_size_in_bytes) + 1
+                'threads':  min(default_max_threads, (34603008 / default_buffer_size_in_bytes) + 1)
             }
         ]
 

@@ -7,6 +7,7 @@ if sys.version_info < (2, 7):
     import unittest2 as unittest
 else:
     import unittest
+import json
 import shutil
 import time
 
@@ -14,6 +15,7 @@ import replica_status_test
 from . import session
 from . import settings
 from .. import lib
+from .. import paths
 from .. import test
 from ..configuration import IrodsConfig
 from ..controller import IrodsController
@@ -316,6 +318,11 @@ class Test_iPhymv(ResourceBase, unittest.TestCase):
             finally:
                 self.user0.assert_icommand(['irm', '-f', dest_path])
 
+        server_config_filename = paths.server_config_path()
+        with open(server_config_filename) as f:
+            svr_cfg = json.load(f)
+            default_max_threads = svr_cfg['advanced_settings']['default_number_of_transfer_threads']
+
         default_buffer_size_in_bytes = 4 * (1024 ** 2)
         cases = [
             {
@@ -324,7 +331,7 @@ class Test_iPhymv(ResourceBase, unittest.TestCase):
             },
             {
                 'size':     34603008,
-                'threads':  (34603008 / default_buffer_size_in_bytes) + 1
+                'threads':  min(default_max_threads, (34603008 / default_buffer_size_in_bytes) + 1)
             }
         ]
 
