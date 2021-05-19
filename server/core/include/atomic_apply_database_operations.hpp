@@ -18,35 +18,48 @@ namespace irods::experimental
             std::string value;
         };
 
-        struct row
+        struct row_data
         {
             std::vector<column> columns;
         };
 
         struct condition
         {
-            std::string column;
-            std::string op;
-            std::vector<std::string> values;
+            const std::string column;
+            const std::string op;
+            const std::vector<std::string> values;
+
+            condition(const std::string& _column,
+                      const std::string& _operator,
+                      const std::vector<std::string>& _values);
         };
 
         struct insert_op
         {
-            std::string table;
-            std::vector<row> rows;
+            const std::string table;
+            const std::vector<row_data> rows;
+
+            insert_op(const std::string& _table, const std::vector<row_data>& _rows);
         };
 
         struct update_op
         {
-            std::string table;
-            row row;
-            std::vector<condition> conditions;
+            const std::string table;
+            const row_data row_data;
+            const std::vector<condition> conditions;
+
+            update_op(const std::string& _table,
+                      const struct row_data& _row,
+                      const std::vector<condition> _conditions);
         };
 
         struct delete_op
         {
-            std::string table;
-            std::vector<condition> conditions;
+            const std::string table;
+            const std::vector<condition> conditions;
+
+            delete_op(const std::string& _table,
+                      const std::vector<condition>& _conditions);
         };
 
         using operation_type = std::variant<insert_op, update_op, delete_op>;
