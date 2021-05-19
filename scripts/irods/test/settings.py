@@ -20,7 +20,7 @@ class FEDERATION(object):
     TEST_FILE_SIZE = 4*1024*1024
     LARGE_FILE_SIZE = 64*1024*1024
     TEST_FILE_COUNT = 300
-    MAX_THREADS = 16
+    MAX_THREADS = 4
 
     # resource hierarchies
     REMOTE_PT_RESC_HIER = 'federation_remote_passthrough;federation_remote_unixfilesystem_leaf'
