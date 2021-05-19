@@ -93,7 +93,7 @@ def run_update(irods_config, cursor):
         # as JSON for delay rules.
         if irods_config.catalog_database_type == 'oracle':
             # CLOB has a maximum size of 128 TB.
-            database_connect.execute_sql_statement(cursor, "alter table R_RULE_EXEC add column exe_context clob;")
+            database_connect.execute_sql_statement(cursor, "alter table R_RULE_EXEC add exe_context clob;")
         elif irods_config.catalog_database_type == 'mysql':
             # LONGTEXT has a maximum size of 2^32.
             database_connect.execute_sql_statement(cursor, "alter table R_RULE_EXEC add column exe_context longtext;")
