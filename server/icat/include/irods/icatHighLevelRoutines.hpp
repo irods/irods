@@ -297,4 +297,70 @@ auto chl_update_ticket_write_byte_count(RsComm& _comm, const rodsLong_t _data_id
 /// \since 4.2.12
 auto chl_get_delay_rule_info(RsComm& _comm, const char* _rule_id, std::vector<std::string>* _info) -> int;
 
+/// \brief High-level wrapper for atomically updating rows in R_DATA_MAIN for all replicas of a particular data object.
+//
+/// \parblock
+/// \p json_input must have the following JSON structure:
+/// \code{.js}
+/// {
+///     "replicas": [
+///         {
+///             "before": {
+///                 "data_id": <string>,
+///                 "coll_id": <string>,
+///                 "data_repl_num": <string>,
+///                 "data_version": <string>,
+///                 "data_type_name": <string>,
+///                 "data_size": <string>,
+///                 "data_path": <string>,
+///                 "data_owner_name": <string>,
+///                 "data_owner_zone": <string>,
+///                 "data_is_dirty": <string>,
+///                 "data_status": <string>,
+///                 "data_checksum": <string>,
+///                 "data_expiry_ts": <string>,
+///                 "data_map_id": <string>,
+///                 "data_mode": <string>,
+///                 "r_comment": <string>,
+///                 "create_ts": <string>,
+///                 "modify_ts": <string>,
+///                 "resc_id": <string>
+///             },
+///             "after": {
+///                 "data_id": <string>,
+///                 "coll_id": <string>,
+///                 "data_repl_num": <string>,
+///                 "data_version": <string>,
+///                 "data_type_name": <string>,
+///                 "data_size": <string>,
+///                 "data_path": <string>,
+///                 "data_owner_name": <string>,
+///                 "data_owner_zone": <string>,
+///                 "data_is_dirty": <string>,
+///                 "data_status": <string>,
+///                 "data_checksum": <string>,
+///                 "data_expiry_ts": <string>,
+///                 "data_map_id": <string>,
+///                 "data_mode": <string>,
+///                 "r_comment": <string>,
+///                 "create_ts": <string>,
+///                 "modify_ts": <string>,
+///                 "resc_id": <string>
+///             }
+///         },
+///         ...
+///     ]
+/// }
+/// \endcode
+/// \endparblock
+///
+/// \param[in] _comm iRODS comm structure
+/// \param[in] _json_input String holding a JSON object with an array of replicas at key "replicas"
+///
+/// \returns Error code based on whether updating the catalog was successful
+/// \retval 0 Success
+///
+/// \since 4.2.12
+auto chl_data_object_finalize(RsComm& _comm, const char* _json_input) -> int;
+
 #endif // IRODS_ICAT_HIGHLEVEL_ROUTINES_HPP

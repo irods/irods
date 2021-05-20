@@ -71,8 +71,6 @@ namespace
     using operation = std::function<int(RsComm*, BytesBuf*, BytesBuf**)>;
     // clang-format on
 
-    const auto& cmap = ic::data_objects::column_mapping_operators;
-
     constexpr inline auto database_updated = true;
 
     auto make_error_object(const std::string_view _error_msg = "", const bool _database_updated = false) -> json
@@ -104,165 +102,6 @@ namespace
 
         return {before, after};
     } // split_before_and_after_info
-
-    auto column_is_mutable(const std::string_view _c)
-    {
-        using immutable_columns_list_t = std::vector<std::string_view>;
-        static const immutable_columns_list_t immutable_columns =
-        {
-            "data_id",
-            "coll_id",
-            "data_name"
-        };
-
-        const auto itr = std::find(
-            std::cbegin(immutable_columns),
-            std::cend(immutable_columns),
-            _c);
-
-        return std::cend(immutable_columns) == itr;
-    } // column_is_mutable
-
-    auto validate_values(json& _obj) -> void
-    {
-        // clang-format off
-        using clock_type    = fs::object_time_type::clock;
-        using duration_type = fs::object_time_type::duration;
-        // clang-format on
-
-        if (std::string_view{SET_TIME_TO_NOW_KW} == _obj.at("modify_ts")) {
-            const auto now = std::chrono::time_point_cast<duration_type>(clock_type::now());
-
-            _obj["modify_ts"] = fmt::format("{:011}", now.time_since_epoch().count());
-        }
-    } // validate_values
-
-    auto generate_sql_update_query() -> std::string
-    {
-        std::string sql{"update R_DATA_MAIN set"};
-
-        for (auto&& c : cmap) {
-            if (!column_is_mutable(c.first)) {
-                continue;
-            }
-
-            sql += fmt::format(" {} = ?,", c.first);
-        }
-        sql.pop_back();
-
-        sql += " where data_id = ? and resc_id = ?";
-
-        return sql;
-    } // generate_sql_update_query
-
-    auto set_replica_state(
-        nanodbc::connection& _db_conn,
-        const std::string_view _db_instance_name,
-        const json& _before,
-        const json& _after) -> void
-    {
-        static const auto sql = generate_sql_update_query();
-
-        log::database::debug("statement:[{}]", sql);
-
-        nanodbc::statement statement{_db_conn};
-        prepare(statement, sql);
-
-        log::database::debug("before:{}", _before.dump());
-        log::database::debug("after:{}", _after.dump());
-
-        // Reserve the size ahead of time to prevent pointer invalidation.
-        // Need to store the bind values in a variable which will outlive
-        // the bind operation scope.
-        std::vector<ic::bind_type> bind_values;
-        bind_values.reserve(cmap.size());
-
-        // Bind values to the statement.
-        std::size_t index = 0;
-        for (auto&& c : cmap) {
-            const auto& key = c.first;
-
-            if (!column_is_mutable(key)) {
-                continue;
-            }
-
-            const auto& bind_fcn = c.second;
-            ic::bind_parameters bp{statement, index, _after, key, bind_values, _db_instance_name};
-
-            bind_fcn(bp);
-
-            index++;
-        }
-
-        // The Oracle ODBC driver will fail on execution of the prepared statement if
-        // a 64-bit integer is bound. To get around this limitation, Oracle allows the
-        // integer to be bound as a string. See the following thread for a little more
-        // information:
-        //
-        //   https://stackoverflow.com/questions/338609/binding-int64-sql-bigint-as-query-parameter-causes-error-during-execution-in-o
-        //
-        if ("oracle" == _db_instance_name) {
-            const auto data_id = _before.at("data_id").get<std::string>();
-            log::database::trace("binding data_id:[{}] at [{}]", data_id, index);
-            statement.bind(index++, data_id.c_str());
-
-            const auto resc_id = _before.at("resc_id").get<std::string>();
-            log::database::trace("binding resc_id:[{}] at [{}]", resc_id, index);
-            statement.bind(index, resc_id.c_str());
-
-            execute(statement);
-        }
-        else {
-            const auto data_id = std::stoull(_before.at("data_id").get<std::string>());
-            log::database::trace("binding data_id:[{}] at [{}]", data_id, index);
-            statement.bind(index++, &data_id);
-
-            const auto resc_id = std::stoull(_before.at("resc_id").get<std::string>());
-            log::database::trace("binding resc_id:[{}] at [{}]", resc_id, index);
-            statement.bind(index, &resc_id);
-
-            execute(statement);
-        }
-    } // set_replica_state
-
-    auto set_data_object_state(
-        nanodbc::connection& _db_conn,
-        const std::string_view _db_instance_name,
-        nanodbc::transaction& _trans,
-        json& _replicas) -> void
-    {
-        try {
-            for (auto& r : _replicas) {
-                auto& after = r.at("after");
-                validate_values(after);
-
-                set_replica_state(_db_conn, _db_instance_name, r.at("before"), after);
-            }
-
-            irods::log(LOG_DEBUG10, "committing transaction");
-            _trans.commit();
-        }
-        catch (const json::exception& e) {
-            THROW(SYS_LIBRARY_ERROR, fmt::format(
-                "[{}:{}] - json exception occurred [{}]",
-                __FUNCTION__, __LINE__, e.what()));
-        }
-        catch (const nanodbc::database_error& e) {
-            THROW(SYS_LIBRARY_ERROR, fmt::format(
-                "[{}:{}] - database error occurred [{}]",
-                __FUNCTION__, __LINE__, e.what()));
-        }
-        catch (const std::exception& e) {
-            THROW(SYS_INTERNAL_ERR, fmt::format(
-                "[{}:{}] - exception occurred [{}]",
-                __FUNCTION__, __LINE__, e.what()));
-        }
-        catch (...) {
-            THROW(SYS_UNKNOWN_ERROR, fmt::format(
-                "[{}:{}] - unknown error occurred",
-                __FUNCTION__, __LINE__));
-        }
-    } // set_data_object_state
 
     auto set_file_object_keywords(const json& _src, irods::file_object_ptr _obj) -> void
     {
@@ -451,30 +290,13 @@ namespace
             return SYS_LIBRARY_ERROR;
         }
 
-        // Actually update the catalog with the information passed in. This is done
-        // transactionally so that the update occurs atomically.
-        try {
-            const auto ec = ic::execute_transaction(db_conn, [&](auto& _trans) -> int
-            {
-                set_data_object_state(db_conn, db_instance_name, _trans, _replicas);
-                return 0;
-            });
+        const auto ec = chl_data_object_finalize(_comm, json{{"replicas", _replicas}}.dump().c_str());
 
-            if (ec < 0) {
-                *_output = irods::to_bytes_buffer(make_error_object("failed to update catalog").dump());
-            }
-
-            return ec;
+        if (ec < 0) {
+            *_output = irods::to_bytes_buffer(make_error_object("failed to update catalog").dump());
         }
-        catch (const irods::exception& e) {
-            const auto msg = e.client_display_what();
 
-            irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
-
-            *_output = irods::to_bytes_buffer(make_error_object(msg).dump());
-
-            return e.code();
-        }
+        return ec;
     } // finalize
 
     auto rs_data_object_finalize(
