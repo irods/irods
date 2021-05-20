@@ -39,25 +39,27 @@
 #include "irods/catalog_utilities.hpp"
 #include "irods/plugins/auth/pam_password.hpp"
 
-#include <boost/date_time.hpp>
-#include <boost/regex.hpp>
-#include <boost/lexical_cast.hpp>
-#include <fmt/format.h>
 #include <fmt/chrono.h>
+#include <fmt/format.h>
 #include <nanodbc/nanodbc.h>
+#include <nlohmann/json.hpp>
 
+#include <boost/date_time.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/regex.hpp>
+
+#include <algorithm>
+#include <charconv>
+#include <chrono>
 #include <cstring>
+#include <iomanip>
+#include <iostream>
+#include <locale>
 #include <sstream>
 #include <string>
 #include <string_view>
-#include <iostream>
 #include <type_traits>
 #include <vector>
-#include <algorithm>
-#include <chrono>
-#include <iomanip>
-#include <locale>
-#include <charconv>
 
 // clang-format off
 using log_db        = irods::experimental::log::database;
@@ -14920,6 +14922,165 @@ auto db_get_delay_rule_info_op(irods::plugin_context& _ctx, const char* _rule_id
     }
 } // db_get_delay_rule_info_op
 
+auto db_data_object_finalize_op(irods::plugin_context& _ctx, const char* _json_input) -> irods::error
+{
+    using json = nlohmann::json;
+
+    if (const auto ret = _ctx.valid(); !ret.ok()) {
+        return PASS(ret);
+    }
+
+    constexpr std::array<const char*, 17> column_names = {"data_repl_num",
+                                                          "data_version",
+                                                          "data_type_name",
+                                                          "data_size",
+                                                          "data_path",
+                                                          "data_owner_name",
+                                                          "data_owner_zone",
+                                                          "data_is_dirty",
+                                                          "data_status",
+                                                          "data_checksum",
+                                                          "data_expiry_ts",
+                                                          "data_map_id",
+                                                          "data_mode",
+                                                          "r_comment",
+                                                          "create_ts",
+                                                          "modify_ts",
+                                                          "resc_id"};
+
+    try {
+        auto input = json::parse(_json_input);
+
+        auto& replicas = input.at("replicas");
+        if (replicas.empty()) {
+            return ERROR(JSON_VALIDATION_ERROR, "JSON does not conform to the expected format");
+        }
+
+        const auto get_json_string_value = [](const json& _json, const char* _key) -> const char* {
+            return _json.at(_key).get_ref<const std::string&>().c_str();
+        };
+
+        // Loops over all the replicas and executes an update on that row in R_DATA_MAIN using the replica information
+        // found in the "after" entry for each replica.
+        for (auto& r : replicas) {
+            const auto& before = r.at("before");
+
+            auto& after = r.at("after");
+
+            // SET_TIME_TO_NOW_KW allows the database update to reflect the time of the modification as close as
+            // possible to the actual modification of the replica.
+            {
+                using object_time_type = std::chrono::time_point<std::chrono::system_clock, std::chrono::seconds>;
+                using clock_type = object_time_type::clock;
+                using duration_type = object_time_type::duration;
+
+                if (auto& modify_ts = after.at("modify_ts"); modify_ts.get_ref<std::string&>() == SET_TIME_TO_NOW_KW) {
+                    const auto now = std::chrono::time_point_cast<duration_type>(clock_type::now());
+
+                    modify_ts = fmt::format("{:011}", now.time_since_epoch().count());
+                }
+            }
+
+            std::string sql = "update R_DATA_MAIN set";
+
+            for (const auto& c : column_names) {
+                sql += fmt::format(" {} = ?,", c);
+            }
+            sql.pop_back();
+
+            sql += " where data_id = ? and resc_id = ?";
+
+            irods::log(LOG_DEBUG8, fmt::format("statement:[{}]", sql));
+            irods::log(LOG_DEBUG9, fmt::format("before:[{}]", before.dump()));
+            irods::log(LOG_DEBUG9, fmt::format("after:[{}]", after.dump()));
+
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[cllBindVarCount++] = get_json_string_value(after, "data_repl_num");
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[cllBindVarCount++] = get_json_string_value(after, "data_version");
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[cllBindVarCount++] = get_json_string_value(after, "data_type_name");
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[cllBindVarCount++] = get_json_string_value(after, "data_size");
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[cllBindVarCount++] = get_json_string_value(after, "data_path");
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[cllBindVarCount++] = get_json_string_value(after, "data_owner_name");
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[cllBindVarCount++] = get_json_string_value(after, "data_owner_zone");
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[cllBindVarCount++] = get_json_string_value(after, "data_is_dirty");
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[cllBindVarCount++] = get_json_string_value(after, "data_status");
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[cllBindVarCount++] = get_json_string_value(after, "data_checksum");
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[cllBindVarCount++] = get_json_string_value(after, "data_expiry_ts");
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[cllBindVarCount++] = get_json_string_value(after, "data_map_id");
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[cllBindVarCount++] = get_json_string_value(after, "data_mode");
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[cllBindVarCount++] = get_json_string_value(after, "r_comment");
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[cllBindVarCount++] = get_json_string_value(after, "create_ts");
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[cllBindVarCount++] = get_json_string_value(after, "modify_ts");
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[cllBindVarCount++] = get_json_string_value(after, "resc_id");
+
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[cllBindVarCount++] = get_json_string_value(before, "data_id");
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[cllBindVarCount++] = get_json_string_value(before, "resc_id");
+
+            // Execute update for this replica. If the update fails, we need to stop immediately because the data object
+            // will not reflect what the caller wanted. In that case, rollback and return an error.
+            if (const auto ec = cmlExecuteNoAnswerSql(sql.c_str(), &icss);
+                0 != ec && CAT_SUCCESS_BUT_WITH_NO_INFO != ec) {
+                _rollback("data_object_finalize");
+
+                std::string msg = fmt::format("cmlExecuteNoAnswerSql failed [ec=[{}]]", ec);
+
+                irods::log(LOG_NOTICE, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
+
+                return ERROR(ec, std::move(msg));
+            }
+        }
+
+        // If everything executed successfully above, we commit all of the changes here, which fulfills the atomicity of
+        // data_object_finalize.
+        if (const auto commit_ec = cmlExecuteNoAnswerSql("commit", &icss); 0 != commit_ec) {
+            const auto& data_id = replicas.front().at("before").at("data_id").get_ref<std::string&>();
+            irods::log(LOG_NOTICE,
+                       fmt::format("[{}:{}] - failure to commit changes [error code=[{}], data_id=[{}]]",
+                                   __func__,
+                                   __LINE__,
+                                   commit_ec,
+                                   data_id));
+
+            return ERROR(commit_ec, "commit failure");
+        }
+    }
+    catch (const json::exception& e) {
+        std::string msg = fmt::format("[{}:{}] - JSON error occurred [{}]", __func__, __LINE__, e.what());
+        irods::log(LOG_ERROR, msg);
+        return ERROR(SYS_LIBRARY_ERROR, std::move(msg));
+    }
+    catch (const std::exception& e) {
+        std::string msg = fmt::format("[{}:{}] - Exception occurred [{}]", __func__, __LINE__, e.what());
+        irods::log(LOG_ERROR, msg);
+        return ERROR(SYS_INTERNAL_ERR, std::move(msg));
+    }
+    catch (...) {
+        std::string msg = fmt::format("[{}:{}] - Unknown error occurred", __func__, __LINE__);
+        irods::log(LOG_ERROR, msg);
+        return ERROR(SYS_UNKNOWN_ERROR, std::move(msg));
+    }
+
+    return SUCCESS();
+} // db_data_object_finalize_op
+
 // =-=-=-=-=-=-=-
 //
 irods::error db_start_operation( irods::plugin_property_map& _props ) {
@@ -15324,6 +15485,8 @@ irods::database* plugin_factory(
     pg->add_operation<const char*, std::vector<std::string>*>(
         DATABASE_OP_GET_DELAY_RULE_INFO,
         function<error(plugin_context&, const char*, std::vector<std::string>*)>(db_get_delay_rule_info_op));
+    pg->add_operation<const char*>(
+        DATABASE_OP_DATA_OBJECT_FINALIZE, function<error(plugin_context&, const char*)>(db_data_object_finalize_op));
 
     return pg;
 
