@@ -51,6 +51,10 @@
 #include <vector>
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
+#include <chrono>
+
+#include "json.hpp"
+#include "fmt/format.h"
 
 #include "fmt/format.h"
 
@@ -15553,6 +15557,181 @@ auto db_update_ticket_write_byte_count_op(
     return SUCCESS();
 } // db_update_ticket_write_byte_count_op
 
+auto db_data_object_finalize_op(
+    irods::plugin_context& _ctx,
+    const std::string_view _replicas) -> irods::error
+{
+    if (const auto ret = _ctx.valid(); !ret.ok()) {
+        return PASS(ret);
+    }
+
+    static const std::vector<std::string> column_names = {
+        "data_repl_num",
+        "data_version",
+        "data_type_name",
+        "data_size",
+        "data_path",
+        "data_owner_name",
+        "data_owner_zone",
+        "data_is_dirty",
+        "data_status",
+        "data_checksum",
+        "data_expiry_ts",
+        "data_map_id",
+        "data_mode",
+        "r_comment",
+        "create_ts",
+        "modify_ts",
+        "resc_id"
+    };
+
+    try {
+        auto replicas = nlohmann::json::parse(_replicas);
+
+        if (replicas.empty()) {
+            return ERROR(JSON_VALIDATION_ERROR, "JSON does not conform to the expected format");
+        }
+
+        const auto data_id = replicas.front().at("before").at("data_id").get<std::string>();
+
+        // Need to declare strings which will survive long enough to bind to the SQL
+        // statement and execute (doesn't have to survive long enough to be committed).
+        std::string data_repl_num;
+        std::string data_version;
+        std::string data_type_name;
+        std::string data_size;
+        std::string data_path;
+        std::string data_owner_name;
+        std::string data_owner_zone;
+        std::string data_is_dirty;
+        std::string data_status;
+        std::string data_checksum;
+        std::string data_expiry_ts;
+        std::string data_map_id;
+        std::string data_mode;
+        std::string r_comment;
+        std::string create_ts;
+        std::string modify_ts;
+        std::string resc_id;
+
+        std::string where_data_id;
+        std::string where_resc_id;
+
+        // Loops over all the replicas and executes an update on that row in R_DATA_MAIN
+        // using the replica information found in the "after" entry for each replica.
+        for (auto& r : replicas) {
+            const auto& before = r.at("before");
+
+            auto& after = r.at("after");
+
+            // SET_TIME_TO_NOW_KW allows the database update to reflect the time of the
+            // modification as close as possible to the actual modification of the replica.
+            {
+                // clang-format off
+                using object_time_type = std::chrono::time_point<std::chrono::system_clock, std::chrono::seconds>;
+                using clock_type    = object_time_type::clock;
+                using duration_type = object_time_type::duration;
+                // clang-format on
+
+                if (std::string_view{SET_TIME_TO_NOW_KW} == after.at("modify_ts")) {
+                    const auto now = std::chrono::time_point_cast<duration_type>(clock_type::now());
+
+                    after["modify_ts"] = fmt::format("{:011}", now.time_since_epoch().count());
+                }
+            }
+
+            std::string sql = "update R_DATA_MAIN set";
+
+            for (const auto& c : column_names) {
+                sql += fmt::format(" {} = ?,", c);
+            }
+            sql.pop_back();
+
+            sql += " where data_id = ? and resc_id = ?";
+
+            irods::log(LOG_DEBUG8, fmt::format("statement:[{}]", sql));
+            irods::log(LOG_DEBUG9, fmt::format("before:[{}]", before.dump()));
+            irods::log(LOG_DEBUG9, fmt::format("after:[{}]", after.dump()));
+
+            // We have to capture the strings first so that binding to the cllBindVars does not
+            // rely on temporary variables.
+            data_repl_num = after.at("data_repl_num").get<std::string>();
+            data_version = after.at("data_version").get<std::string>();
+            data_type_name = after.at("data_type_name").get<std::string>();
+            data_size = after.at("data_size").get<std::string>();
+            data_path = after.at("data_path").get<std::string>();
+            data_owner_name = after.at("data_owner_name").get<std::string>();
+            data_owner_zone = after.at("data_owner_zone").get<std::string>();
+            data_is_dirty = after.at("data_is_dirty").get<std::string>();
+            data_status = after.at("data_status").get<std::string>();
+            data_checksum = after.at("data_checksum").get<std::string>();
+            data_expiry_ts = after.at("data_expiry_ts").get<std::string>();
+            data_map_id = after.at("data_map_id").get<std::string>();
+            data_mode = after.at("data_mode").get<std::string>();
+            r_comment = after.at("r_comment").get<std::string>();
+            create_ts = after.at("create_ts").get<std::string>();
+            modify_ts = after.at("modify_ts").get<std::string>();
+            resc_id = after.at("resc_id").get<std::string>();
+
+            where_data_id = before.at("data_id").get<std::string>();
+            where_resc_id = before.at("resc_id").get<std::string>();
+
+            // Assign bind variables for execution shortly...
+            cllBindVars[cllBindVarCount++] = data_repl_num.data();
+            cllBindVars[cllBindVarCount++] = data_version.data();
+            cllBindVars[cllBindVarCount++] = data_type_name.data();
+            cllBindVars[cllBindVarCount++] = data_size.data();
+            cllBindVars[cllBindVarCount++] = data_path.data();
+            cllBindVars[cllBindVarCount++] = data_owner_name.data();
+            cllBindVars[cllBindVarCount++] = data_owner_zone.data();
+            cllBindVars[cllBindVarCount++] = data_is_dirty.data();
+            cllBindVars[cllBindVarCount++] = data_status.data();
+            cllBindVars[cllBindVarCount++] = data_checksum.data();
+            cllBindVars[cllBindVarCount++] = data_expiry_ts.data();
+            cllBindVars[cllBindVarCount++] = data_map_id.data();
+            cllBindVars[cllBindVarCount++] = data_mode.data();
+            cllBindVars[cllBindVarCount++] = r_comment.data();
+            cllBindVars[cllBindVarCount++] = create_ts.data();
+            cllBindVars[cllBindVarCount++] = modify_ts.data();
+            cllBindVars[cllBindVarCount++] = resc_id.data();
+
+            cllBindVars[cllBindVarCount++] = where_data_id.data();
+            cllBindVars[cllBindVarCount++] = where_resc_id.data();
+
+            // Execute update for this replica. If the update fails, we need to stop
+            // immediately because the data object will not reflect what the caller
+            // wanted. In that case, rollback and return an error.
+            if (const auto ec = cmlExecuteNoAnswerSql(sql.data(), &icss);
+                0 != ec && CAT_SUCCESS_BUT_WITH_NO_INFO != ec) {
+                _rollback("set_data_object_state");
+
+                const auto msg = fmt::format("cmlExecuteNoAnswerSql failed [ec=[{}]]", ec);
+
+                irods::log(LOG_NOTICE, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
+
+                return ERROR(ec, msg);
+            }
+        }
+
+        // If everything executed successfully above, we commit all of the changes here,
+        // which fulfills the atomicity of data_object_finalize.
+        if (const auto commit_ec = cmlExecuteNoAnswerSql("commit", &icss); 0 != commit_ec) {
+            irods::log(LOG_NOTICE, fmt::format(
+                "[{}:{}] - failure to commit changes "
+                "[error code=[{}], data_id=[{}], bytes written=[{}]]",
+                __FUNCTION__, __LINE__, commit_ec, data_id));
+
+            return ERROR(commit_ec, "commit failure");
+        }
+    }
+    catch (const nlohmann::json::exception& e) {
+        irods::log(LOG_ERROR, fmt::format("[{}:{}] - JSON error [{}]", __FUNCTION__, __LINE__, e.what()));
+        return ERROR(SYS_LIBRARY_ERROR, "JSON error occurred");
+    }
+
+    return SUCCESS();
+} // db_data_object_finalize_op
+
 // =-=-=-=-=-=-=-
 //
 irods::error db_start_operation( irods::plugin_property_map& _props ) {
@@ -15947,6 +16126,12 @@ irods::database* plugin_factory(
         DATABASE_OP_UPDATE_TICKET_WRITE_BYTE_COUNT,
         function<error(plugin_context&,const rodsLong_t,const rodsLong_t)>(
             db_update_ticket_write_byte_count_op));
+    pg->add_operation<const std::string_view>(
+        DATABASE_OP_DATA_OBJECT_FINALIZE,
+        function<error(plugin_context&,const std::string_view)>(
+            db_data_object_finalize_op));
+
+
     return pg;
 
 } // plugin_factory
