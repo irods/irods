@@ -271,4 +271,20 @@ auto chl_check_permission_to_modify_data_object(RsComm& _comm, const rodsLong_t 
 /// \since 4.2.9
 auto chl_update_ticket_write_byte_count(RsComm& _comm, const rodsLong_t _data_id, const rodsLong_t _bytes_written) -> int;
 
+/// \brief High-level wrapper for database operation which emulates data_object_finalize in the database plugin
+///
+/// \parblock
+/// This is the high-level wrapper for the database operation used by data_object_finalize to atomically
+/// update rows in R_DATA_MAIN for all replicas of a particular data object.
+/// \endparblock
+///
+/// \param[in,out] _comm iRODS comm structure
+/// \param[in] _replicas String holding a JSON array of replicas (see rc_data_object_finalize for details)
+///
+/// \returns Error code based on whether updating the catalog was successful
+/// \retval 0 Success
+///
+/// \since 4.2.9
+auto chl_data_object_finalize(RsComm& _comm, const std::string_view _replicas) -> int;
+
 #endif /* ICAT_HIGHLEVEL_ROUTINES_H */

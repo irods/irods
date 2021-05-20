@@ -422,6 +422,7 @@ namespace
             return SYS_INVALID_INPUT_PARAM;
         }
 
+#if 0
         // Establish connection with the database for use with nanodbc.
         // A connection with the database is already established via the
         // RsComm, but this allows us to atomically update the database
@@ -439,6 +440,7 @@ namespace
 
             return SYS_CONFIG_FILE_ERR;
         }
+#endif
 
         try {
             // This section perform permissions checks and update ticket information
@@ -492,13 +494,14 @@ namespace
         // Actually update the catalog with the information passed in. This is done
         // transactionally so that the update occurs atomically.
         try {
+#if 0
             const auto ec = ic::execute_transaction(db_conn, [&](auto& _trans) -> int
             {
                 set_data_object_state(db_conn, _trans, replicas);
                 return 0;
             });
-
-            if (ec < 0) {
+#endif
+            if (const auto ec = chl_data_object_finalize(*_comm, replicas.dump()); ec < 0) {
                 *_output = to_bytes_buffer(make_error_object("failed to update catalog").dump());
                 return ec;
             }
@@ -507,7 +510,7 @@ namespace
                 // If the update was successful and file modified is not supposed to be
                 // triggered, then we can return with success here.
                 *_output = to_bytes_buffer(make_error_object("", database_updated).dump());
-                return ec;
+                return 0;
             }
         }
         catch (const irods::exception& e) {
