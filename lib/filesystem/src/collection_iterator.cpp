@@ -74,13 +74,22 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
                 ctx_ = nullptr;
                 return *this;
             }
-            
-            throw filesystem_error{"could not read collection entry [error code => " + std::to_string(ec) + ']',
-                                   detail::make_error_code(ec)};
+
+            throw filesystem_error{"could not read collection entry", detail::make_error_code(ec)};
         }
 
 #ifdef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
-        irods::at_scope_exit free_collection_entry{[&e] { freeCollEnt(e); }};
+        irods::at_scope_exit free_collection_entry{[&e] { 
+            if (e) {
+                // Do NOT free the contents of the collEnt_t. Its contents is managed
+                // by the rs* collection APIs.
+                std::free(e);
+            }
+        }};
+#else
+        // The rcl* collection functions manage memory for us. These functions
+        // will free any heap allocated memory for us. Attempting to free any memory
+        // returned from rclReadCollection will result in a crash.
 #endif
 
         auto& entry = ctx_->entry;
