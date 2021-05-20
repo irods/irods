@@ -114,6 +114,7 @@ namespace irods
     const std::string DATABASE_OP_CHECK_PERMISSION_TO_MODIFY_DATA_OBJECT{"database_check_permission_to_modify_data_object"};
     const std::string DATABASE_OP_UPDATE_TICKET_WRITE_BYTE_COUNT{"database_update_ticket_write_byte_count"};
     const std::string DATABASE_OP_GET_DELAY_RULE_INFO{"database_get_delay_rule_info"};
-} // namespace irods
+    const std::string DATABASE_OP_DATA_OBJECT_FINALIZE{"database_data_object_finalize"};
+}; // namespace irods
 
 #endif // IRODS_DATABASE_CONSTANTS_HPP
