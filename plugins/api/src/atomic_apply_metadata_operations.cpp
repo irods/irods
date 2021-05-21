@@ -74,11 +74,15 @@ namespace
 
     auto get_object_id(rsComm_t& _comm, const std::string& _entity_name, const ic::entity_type _entity_type) -> int;
 
-    auto get_meta_id(nanodbc::connection& _db_conn, const fs::metadata& _metadata) -> int;
+    auto get_meta_id(nanodbc::connection& _db_conn,
+                     std::string_view _db_instance_name,
+                     const fs::metadata& _metadata) -> int;
 
     auto is_metadata_attached_to_object(nanodbc::connection& _db_conn, int _object_id, int _meta_id) -> bool;
 
-    auto insert_metadata(nanodbc::connection& _db_conn, std::string_view _db_instance_name, const fs::metadata& _metadata) -> int;
+    auto insert_metadata(nanodbc::connection& _db_conn,
+                         std::string_view _db_instance_name,
+                         const fs::metadata& _metadata) -> int;
 
     auto attach_metadata_to_object(nanodbc::connection& _db_conn, int _object_id, int _meta_id) -> void;
 
@@ -185,19 +189,33 @@ namespace
         throw std::runtime_error{fmt::format("Entity does not exist [entity_name={}]", _entity_name)};
     }
 
-    auto get_meta_id(nanodbc::connection& _db_conn, const fs::metadata& _metadata) -> int
+    auto get_meta_id(nanodbc::connection& _db_conn,
+                     std::string_view _db_instance_name,
+                     const fs::metadata& _metadata) -> int
     {
         nanodbc::statement stmt{_db_conn};
 
-        prepare(stmt, "select meta_id from R_META_MAIN "
-                      "where"
-                      " meta_attr_name = ? and"
-                      " meta_attr_value = ? and"
-                      " meta_attr_unit = ?");
+        if (_db_instance_name == "oracle" && _metadata.units.empty()) {
+            prepare(stmt, "select meta_id from R_META_MAIN "
+                          "where"
+                          " meta_attr_name = ? and"
+                          " meta_attr_value = ? and"
+                          " meta_attr_unit is null");
 
-        stmt.bind(0, _metadata.attribute.c_str());
-        stmt.bind(1, _metadata.value.c_str());
-        stmt.bind(2, _metadata.units.c_str());
+            stmt.bind(0, _metadata.attribute.c_str());
+            stmt.bind(1, _metadata.value.c_str());
+        }
+        else {
+            prepare(stmt, "select meta_id from R_META_MAIN "
+                          "where"
+                          " meta_attr_name = ? and"
+                          " meta_attr_value = ? and"
+                          " meta_attr_unit = ?");
+
+            stmt.bind(0, _metadata.attribute.c_str());
+            stmt.bind(1, _metadata.value.c_str());
+            stmt.bind(2, _metadata.units.c_str());
+        }
 
         if (auto row = execute(stmt); row.next()) {
             return row.get<int>(0);
@@ -222,13 +240,15 @@ namespace
         return false;
     }
 
-    auto insert_metadata(nanodbc::connection& _db_conn, std::string_view _db_instance_name, const fs::metadata& _metadata) -> int
+    auto insert_metadata(nanodbc::connection& _db_conn,
+                         std::string_view _db_instance_name,
+                         const fs::metadata& _metadata) -> int
     {
         nanodbc::statement stmt{_db_conn};
 
         if (_db_instance_name == "oracle") {
             prepare(stmt, "insert into R_META_MAIN (meta_id, meta_attr_name, meta_attr_value, meta_attr_unit, create_ts, modify_ts) "
-                          "values (select R_OBJECTID.nextval from DUAL, ?, ?, ?, ?, ?)");
+                          "values (R_OBJECTID.nextval, ?, ?, ?, ?, ?)");
         }
         else if (_db_instance_name == "mysql") {
             prepare(stmt, "insert into R_META_MAIN (meta_id, meta_attr_name, meta_attr_value, meta_attr_unit, create_ts, modify_ts) "
@@ -256,7 +276,7 @@ namespace
 
         execute(stmt);
 
-        return get_meta_id(_db_conn, _metadata);
+        return get_meta_id(_db_conn, _db_instance_name, _metadata);
     }
 
     auto attach_metadata_to_object(nanodbc::connection& _db_conn, int _object_id, int _meta_id) -> void
@@ -316,7 +336,7 @@ namespace
             }
 
             if (const auto op_code = _op.at("operation").get<std::string>(); op_code == "add") {
-                if (auto meta_id = get_meta_id(_db_conn, md); meta_id > -1) {
+                if (auto meta_id = get_meta_id(_db_conn, _db_instance_name, md); meta_id > -1) {
                     if (!is_metadata_attached_to_object(_db_conn, _object_id, meta_id)) {
                         attach_metadata_to_object(_db_conn, _object_id, meta_id);
                     }
@@ -332,7 +352,7 @@ namespace
                 }
             }
             else if (op_code == "remove") {
-                if (const auto meta_id = get_meta_id(_db_conn, md); meta_id > -1) {
+                if (const auto meta_id = get_meta_id(_db_conn, _db_instance_name, md); meta_id > -1) {
                     detach_metadata_from_object(_db_conn, _object_id, meta_id);
                 }
             }
