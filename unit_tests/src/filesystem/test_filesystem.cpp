@@ -718,16 +718,19 @@ TEST_CASE("filesystem")
 
     SECTION("special collections")
     {
-        // Create a special collection.
-        const auto link_name = fs::path{env.rodsHome} / "col_alias.d";
-        const auto cmd = fmt::format("imcoll -m link {} {}", sandbox.c_str(), link_name.c_str());
-        REQUIRE(std::system(cmd.data()) == 0);
+        const auto target_collection = sandbox / "target.d";
+        REQUIRE(fs::client::create_collection(conn, target_collection));
 
-        irods::at_scope_exit remove_special_collection{[&conn, &link_name] {
+        // Create a special collection.
+        const auto link_name = sandbox / "alias.d";
+        const auto cmd = fmt::format("imcoll -m link {} {}", target_collection.c_str(), link_name.c_str());
+
+        irods::at_scope_exit remove_special_collection{[&link_name] {
             const auto cmd = fmt::format("imcoll -U {}", link_name.c_str());
             REQUIRE(std::system(cmd.data()) == 0);
-            REQUIRE(fs::client::remove_all(conn, link_name));
         }};
+
+        REQUIRE(std::system(cmd.data()) == 0);
 
         // Show that special collections are detected.
         REQUIRE(fs::client::is_special_collection(conn, link_name));
