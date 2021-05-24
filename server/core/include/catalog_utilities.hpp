@@ -10,6 +10,7 @@
 #include <functional>
 #include <map>
 #include <string>
+#include <string_view>
 #include <variant>
 
 struct RsComm;
@@ -42,6 +43,9 @@ namespace irods::experimental::catalog
         /// This exists in order to have a place for the values to survive until the statement
         /// can be executed. Otherwise, the values could go out of scope too soon.
         std::vector<bind_type>& bind_values;
+
+        /// \var The name of the configured database backend.
+        const std::string_view db_instance_name;
     };
 
     // alias for the mapping operator functions
