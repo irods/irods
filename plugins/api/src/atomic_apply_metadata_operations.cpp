@@ -56,6 +56,7 @@ namespace
 
     using json      = nlohmann::json;
     using operation = std::function<int(rsComm_t*, bytesBuf_t*, bytesBuf_t**)>;
+    using id_type   = std::int64_t;
     // clang-format on
 
     //
@@ -72,25 +73,36 @@ namespace
 
     auto make_error_object(const json& _op, int _op_index, const std::string& _error_msg) -> json;
 
-    auto get_object_id(rsComm_t& _comm, const std::string& _entity_name, const ic::entity_type _entity_type) -> int;
+    auto get_object_id(rsComm_t& _comm,
+                       const std::string& _entity_name,
+                       const ic::entity_type _entity_type) -> id_type;
 
     auto get_meta_id(nanodbc::connection& _db_conn,
-                     std::string_view _db_instance_name,
-                     const fs::metadata& _metadata) -> int;
+                     const std::string_view _db_instance_name,
+                     const fs::metadata& _metadata) -> id_type;
 
-    auto is_metadata_attached_to_object(nanodbc::connection& _db_conn, int _object_id, int _meta_id) -> bool;
+    auto is_metadata_attached_to_object(nanodbc::connection& _db_conn,
+                                        const std::string_view _db_instance_name,
+                                        id_type _object_id,
+                                        id_type _meta_id) -> bool;
 
     auto insert_metadata(nanodbc::connection& _db_conn,
-                         std::string_view _db_instance_name,
-                         const fs::metadata& _metadata) -> int;
+                         const std::string_view _db_instance_name,
+                         const fs::metadata& _metadata) -> id_type;
 
-    auto attach_metadata_to_object(nanodbc::connection& _db_conn, int _object_id, int _meta_id) -> void;
+    auto attach_metadata_to_object(nanodbc::connection& _db_conn,
+                                   const std::string_view _db_instance_name,
+                                   id_type _object_id,
+                                   id_type _meta_id) -> void;
 
-    auto detach_metadata_from_object(nanodbc::connection& _db_conn, int _object_id, int _meta_id) -> void;
+    auto detach_metadata_from_object(nanodbc::connection& _db_conn,
+                                     const std::string_view _db_instance_name,
+                                     id_type _object_id,
+                                     id_type _meta_id) -> void;
 
     auto execute_metadata_operation(nanodbc::connection& _db_conn,
                                     std::string_view _db_instance_name,
-                                    int _object_id,
+                                    id_type _object_id,
                                     const json& _operation,
                                     int _op_index) -> std::tuple<int, bytesBuf_t*>;
 
@@ -153,7 +165,9 @@ namespace
         };
     }
 
-    auto get_object_id(rsComm_t& _comm, const std::string& _entity_name, const ic::entity_type _entity_type) -> int
+    auto get_object_id(rsComm_t& _comm,
+                       const std::string& _entity_name,
+                       const ic::entity_type _entity_type) -> id_type
     {
         std::string gql;
         switch (_entity_type) {
@@ -183,15 +197,15 @@ namespace
         }
 
         for (auto&& row : irods::query{&_comm, gql}) {
-            return std::stoi(row[0]);
+            return std::stoll(row[0]);
         }
 
         throw std::runtime_error{fmt::format("Entity does not exist [entity_name={}]", _entity_name)};
     }
 
     auto get_meta_id(nanodbc::connection& _db_conn,
-                     std::string_view _db_instance_name,
-                     const fs::metadata& _metadata) -> int
+                     const std::string_view _db_instance_name,
+                     const fs::metadata& _metadata) -> id_type
     {
         nanodbc::statement stmt{_db_conn};
 
@@ -218,31 +232,47 @@ namespace
         }
 
         if (auto row = execute(stmt); row.next()) {
-            return row.get<int>(0);
+            return row.get<id_type>(0);
         }
 
         return -1;
     }
 
-    auto is_metadata_attached_to_object(nanodbc::connection& _db_conn, int _object_id, int _meta_id) -> bool
+    auto is_metadata_attached_to_object(nanodbc::connection& _db_conn,
+                                        const std::string_view _db_instance_name,
+                                        id_type _object_id,
+                                        id_type _meta_id) -> bool
     {
         nanodbc::statement stmt{_db_conn};
 
         prepare(stmt, "select count(*) from R_OBJT_METAMAP where object_id = ? and meta_id = ?");
 
-        stmt.bind(0, &_object_id);
-        stmt.bind(1, &_meta_id);
+        if ("oracle" == _db_instance_name) {
+            const auto object_id_string = std::to_string(_object_id);
+            const auto meta_id_string = std::to_string(_meta_id);
 
-        if (auto row = execute(stmt); row.next()) {
-            return row.get<int>(0) > 0;
+            stmt.bind(0, object_id_string.data());
+            stmt.bind(1, meta_id_string.data());
+
+            if (auto row = execute(stmt); row.next()) {
+                return row.get<std::int64_t>(0) > 0;
+            }
+        }
+        else {
+            stmt.bind(0, &_object_id);
+            stmt.bind(1, &_meta_id);
+
+            if (auto row = execute(stmt); row.next()) {
+                return row.get<std::int64_t>(0) > 0;
+            }
         }
 
         return false;
     }
 
     auto insert_metadata(nanodbc::connection& _db_conn,
-                         std::string_view _db_instance_name,
-                         const fs::metadata& _metadata) -> int
+                         const std::string_view _db_instance_name,
+                         const fs::metadata& _metadata) -> id_type
     {
         nanodbc::statement stmt{_db_conn};
 
@@ -279,7 +309,10 @@ namespace
         return get_meta_id(_db_conn, _db_instance_name, _metadata);
     }
 
-    auto attach_metadata_to_object(nanodbc::connection& _db_conn, int _object_id, int _meta_id) -> void
+    auto attach_metadata_to_object(nanodbc::connection& _db_conn,
+                                   const std::string_view _db_instance_name,
+                                   id_type _object_id,
+                                   id_type _meta_id) -> void
     {
         nanodbc::statement stmt{_db_conn};
 
@@ -292,29 +325,55 @@ namespace
 
         const auto timestamp = fmt::format("{:011}", duration_cast<seconds>(system_clock::now().time_since_epoch()).count());
 
-        stmt.bind(0, &_object_id);
-        stmt.bind(1, &_meta_id);
         stmt.bind(2, timestamp.c_str());
         stmt.bind(3, timestamp.c_str());
 
-        execute(stmt);
+        if ("oracle" == _db_instance_name) {
+            const auto object_id_string = std::to_string(_object_id);
+            const auto meta_id_string = std::to_string(_meta_id);
+
+            stmt.bind(0, object_id_string.data());
+            stmt.bind(1, meta_id_string.data());
+
+            execute(stmt);
+        }
+        else {
+            stmt.bind(0, &_object_id);
+            stmt.bind(1, &_meta_id);
+
+            execute(stmt);
+        }
     }
 
-    auto detach_metadata_from_object(nanodbc::connection& _db_conn, int _object_id, int _meta_id) -> void
+    auto detach_metadata_from_object(nanodbc::connection& _db_conn,
+                                     const std::string_view _db_instance_name,
+                                     id_type _object_id,
+                                     id_type _meta_id) -> void
     {
         nanodbc::statement stmt{_db_conn};
 
         prepare(stmt, "delete from R_OBJT_METAMAP where object_id = ? and meta_id = ?");
 
-        stmt.bind(0, &_object_id);
-        stmt.bind(1, &_meta_id);
+        if ("oracle" == _db_instance_name) {
+            const auto object_id_string = std::to_string(_object_id);
+            const auto meta_id_string = std::to_string(_meta_id);
 
-        execute(stmt);
+            stmt.bind(0, object_id_string.data());
+            stmt.bind(1, meta_id_string.data());
+
+            execute(stmt);
+        }
+        else {
+            stmt.bind(0, &_object_id);
+            stmt.bind(1, &_meta_id);
+
+            execute(stmt);
+        }
     }
 
     auto execute_metadata_operation(nanodbc::connection& _db_conn,
                                     std::string_view _db_instance_name,
-                                    int _object_id,
+                                    id_type _object_id,
                                     const json& _op,
                                     int _op_index) -> std::tuple<int, bytesBuf_t*>
     {
@@ -337,12 +396,12 @@ namespace
 
             if (const auto op_code = _op.at("operation").get<std::string>(); op_code == "add") {
                 if (auto meta_id = get_meta_id(_db_conn, _db_instance_name, md); meta_id > -1) {
-                    if (!is_metadata_attached_to_object(_db_conn, _object_id, meta_id)) {
-                        attach_metadata_to_object(_db_conn, _object_id, meta_id);
+                    if (!is_metadata_attached_to_object(_db_conn, _db_instance_name, _object_id, meta_id)) {
+                        attach_metadata_to_object(_db_conn, _db_instance_name, _object_id, meta_id);
                     }
                 }
                 else if (meta_id = insert_metadata(_db_conn, _db_instance_name, md); meta_id > -1) {
-                    attach_metadata_to_object(_db_conn, _object_id, meta_id);
+                    attach_metadata_to_object(_db_conn, _db_instance_name, _object_id, meta_id);
                 }
                 else {
                     const auto msg = fmt::format("Failed to insert metadata [attribute={}, value={}, units={}]",
@@ -353,7 +412,7 @@ namespace
             }
             else if (op_code == "remove") {
                 if (const auto meta_id = get_meta_id(_db_conn, _db_instance_name, md); meta_id > -1) {
-                    detach_metadata_from_object(_db_conn, _object_id, meta_id);
+                    detach_metadata_from_object(_db_conn, _db_instance_name, _object_id, meta_id);
                 }
             }
             else {
@@ -362,6 +421,10 @@ namespace
             }
 
             return {0, to_bytes_buffer("{}")};
+        }
+        catch (const nanodbc::database_error& e) {
+            rodsLog(LOG_ERROR, "%s [metadata_operation=%s]", e.what(), _op.dump().c_str());
+            return {SYS_LIBRARY_ERROR, to_bytes_buffer(make_error_object(_op, _op_index, e.what()).dump())};
         }
         catch (const fs::filesystem_error& e) {
             rodsLog(LOG_ERROR, "%s [metadata_operation=%s]", e.what(), _op.dump().c_str());
@@ -431,7 +494,7 @@ namespace
 
         std::string entity_name;
         ic::entity_type entity_type;
-        int object_id = -1;
+        id_type object_id = -1;
 
         try {
             entity_name = input.at("entity_name").get<std::string>();
@@ -454,7 +517,7 @@ namespace
             return SYS_CONFIG_FILE_ERR;
         }
 
-        if (!ic::user_has_permission_to_modify_entity(*_comm, db_conn, object_id, entity_type)) {
+        if (!ic::user_has_permission_to_modify_entity(*_comm, db_conn, db_instance_name, object_id, entity_type)) {
             rodsLog(LOG_ERROR, "User not allowed to modify metadata [entity_name=%s, entity_type=%s, object_id=%i",
                     entity_name.c_str(), input.at("entity_type").get<std::string>().c_str(), object_id);
             *_output = to_bytes_buffer(make_error_object(json{}, 0, "User not allowed to modify metadata").dump());
