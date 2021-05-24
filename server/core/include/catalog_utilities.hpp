@@ -148,6 +148,7 @@ namespace irods::experimental::catalog
     ///
     /// \param[in] _comm iRODS connection structure
     /// \param[in] _db_conn ODBC connection to the database
+    /// \param[in] _db_instance_name The database instance name defined in server_config.json
     /// \param[in] _object_id ID of the object in question in the catalog
     /// \param[in] _entity The type of entity that the object ID refers to
     ///
@@ -157,7 +158,8 @@ namespace irods::experimental::catalog
     /// \since 4.2.9
     auto user_has_permission_to_modify_entity(RsComm& _comm,
                                               nanodbc::connection& _db_conn,
-                                              int _object_id,
+                                              const std::string_view _db_instance_name,
+                                              std::int64_t _object_id,
                                               const entity_type _entity) -> bool;
 
     /// \throws irods::exception

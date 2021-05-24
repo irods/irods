@@ -71,7 +71,8 @@ namespace irods::experimental::catalog
 
     auto user_has_permission_to_modify_entity(RsComm& _comm,
                                               nanodbc::connection& _db_conn,
-                                              int _object_id,
+                                              const std::string_view _db_instance_name,
+                                              std::int64_t _object_id,
                                               const entity_type _entity_type) -> bool
     {
         using log = irods::experimental::log;
@@ -79,17 +80,34 @@ namespace irods::experimental::catalog
         switch (_entity_type) {
             case entity_type::data_object:
                 [[fallthrough]];
-            case entity_type::collection:
-            {
-                const auto query = fmt::format("select t.token_id from R_TOKN_MAIN t"
-                                               " inner join R_OBJT_ACCESS a on t.token_id = a.access_type_id "
-                                               "where"
-                                               " a.user_id = (select user_id from R_USER_MAIN where user_name = '{}') and"
-                                               " a.object_id = '{}'", _comm.clientUser.userName, _object_id);
+            case entity_type::collection: {
+                nanodbc::statement stmt{_db_conn};
 
-                if (auto row = execute(_db_conn, query); row.next()) {
-                    return static_cast<access_type>(row.get<int>(0)) >= access_type::modify_object;
+                prepare(stmt, "select t.token_id from R_TOKN_MAIN t"
+                              " inner join R_OBJT_ACCESS a on t.token_id = a.access_type_id "
+                              "where"
+                              " a.user_id = (select user_id from R_USER_MAIN where user_name = ?) and"
+                              " a.object_id = ?");
+                
+                if ("oracle" == _db_instance_name) {
+                    const auto object_id_string = std::to_string(_object_id);
+
+                    stmt.bind(0, _comm.clientUser.userName);
+                    stmt.bind(1, object_id_string.data());
+
+                    if (auto row = execute(stmt); row.next()) {
+                        return static_cast<access_type>(row.get<int>(0)) >= access_type::modify_object;
+                    }
                 }
+                else {
+                    stmt.bind(0, _comm.clientUser.userName);
+                    stmt.bind(1, &_object_id);
+
+                    if (auto row = execute(stmt); row.next()) {
+                        return static_cast<access_type>(row.get<int>(0)) >= access_type::modify_object;
+                    }
+                }
+
                 break;
             }
 
