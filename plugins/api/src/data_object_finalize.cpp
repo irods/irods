@@ -139,10 +139,7 @@ namespace
         }
     } // validate_values
 
-    auto set_replica_state(
-        nanodbc::connection& _db_conn,
-        const json& _before,
-        const json& _after) -> void
+    auto generate_sql_update_query() -> std::string
     {
         std::string sql{"update R_DATA_MAIN set"};
 
@@ -156,6 +153,17 @@ namespace
         sql.pop_back();
 
         sql += " where data_id = ? and resc_id = ?";
+
+        return sql;
+    } // generate_sql_update_query
+
+    auto set_replica_state(
+        nanodbc::connection& _db_conn,
+        const std::string_view _db_instance_name,
+        const json& _before,
+        const json& _after) -> void
+    {
+        static const auto sql = generate_sql_update_query();
 
         irods::log(LOG_DEBUG8, fmt::format("statement:[{}]", sql));
 
@@ -181,26 +189,47 @@ namespace
             }
 
             const auto& bind_fcn = c.second;
-            ic::bind_parameters bp{statement, index, _after, key, bind_values};
+            ic::bind_parameters bp{statement, index, _after, key, bind_values, _db_instance_name};
 
             bind_fcn(bp);
 
             index++;
         }
 
-        const auto data_id = std::stoul(_before.at("data_id").get<std::string>());
-        irods::log(LOG_DEBUG9, fmt::format("binding data_id:[{}] at [{}]", data_id, index));
-        statement.bind(index++, &data_id);
+        // The Oracle ODBC driver will fail on execution of the prepared statement if
+        // a 64-bit integer is bound. To get around this limitation, Oracle allows the
+        // integer to be bound as a string. See the following thread for a little more
+        // information:
+        //
+        //   https://stackoverflow.com/questions/338609/binding-int64-sql-bigint-as-query-parameter-causes-error-during-execution-in-o
+        //
+        if ("oracle" == _db_instance_name) {
+            const auto data_id = _before.at("data_id").get<std::string>();
+            irods::log(LOG_DEBUG9, fmt::format("binding data_id:[{}] at [{}]", data_id, index));
+            statement.bind(index++, data_id.c_str());
 
-        const auto resc_id = std::stoul(_before.at("resc_id").get<std::string>());
-        irods::log(LOG_DEBUG9, fmt::format("binding resc_id:[{}] at [{}]", resc_id, index));
-        statement.bind(index, &resc_id);
+            const auto resc_id = _before.at("resc_id").get<std::string>();
+            irods::log(LOG_DEBUG9, fmt::format("binding resc_id:[{}] at [{}]", resc_id, index));
+            statement.bind(index, resc_id.c_str());
 
-        execute(statement);
+            execute(statement);
+        }
+        else {
+            const auto data_id = std::stoull(_before.at("data_id").get<std::string>());
+            irods::log(LOG_DEBUG9, fmt::format("binding data_id:[{}] at [{}]", data_id, index));
+            statement.bind(index++, &data_id);
+
+            const auto resc_id = std::stoull(_before.at("resc_id").get<std::string>());
+            irods::log(LOG_DEBUG9, fmt::format("binding resc_id:[{}] at [{}]", resc_id, index));
+            statement.bind(index, &resc_id);
+
+            execute(statement);
+        }
     } // set_replica_state
 
     auto set_data_object_state(
         nanodbc::connection& _db_conn,
+        const std::string_view _db_instance_name,
         nanodbc::transaction& _trans,
         json& _replicas) -> void
     {
@@ -209,7 +238,7 @@ namespace
                 auto& after = r.at("after");
                 validate_values(after);
 
-                set_replica_state(_db_conn, r.at("before"), after);
+                set_replica_state(_db_conn, _db_instance_name, r.at("before"), after);
             }
 
             irods::log(LOG_DEBUG10, "committing transaction");
@@ -222,8 +251,8 @@ namespace
         }
         catch (const nanodbc::database_error& e) {
             THROW(SYS_LIBRARY_ERROR, fmt::format(
-                "[{}:{}] - database error occurred [{}]",
-                __FUNCTION__, __LINE__, e.what()));
+                "[{}:{}] - database error occurred [{}] [{}] [{}]",
+                __FUNCTION__, __LINE__, e.what(), e.state(), e.native()));
         }
         catch (const std::exception& e) {
             THROW(SYS_INTERNAL_ERR, fmt::format(
@@ -425,9 +454,10 @@ namespace
         // A connection with the database is already established via the
         // RsComm, but this allows us to atomically update the database
         // without the complicated machinery of the existing database plugin.
+        std::string db_instance_name;
         nanodbc::connection db_conn;
         try {
-            std::tie(std::ignore, db_conn) = ic::new_database_connection();
+            std::tie(db_instance_name, db_conn) = ic::new_database_connection();
         }
         catch (const std::exception& e) {
             const auto msg = e.what();
@@ -493,7 +523,7 @@ namespace
         try {
             const auto ec = ic::execute_transaction(db_conn, [&](auto& _trans) -> int
             {
-                set_data_object_state(db_conn, _trans, replicas);
+                set_data_object_state(db_conn, db_instance_name, _trans, replicas);
                 return 0;
             });
 

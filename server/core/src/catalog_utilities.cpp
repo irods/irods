@@ -20,8 +20,8 @@ namespace irods::experimental::catalog
 {
     auto bind_string_to_statement(bind_parameters& _bp) -> void
     {
-        const std::string& v = _bp.json_input.at(_bp.column_name.data()).get<std::string>();
-        _bp.bind_values.push_back(v);
+        std::string v = _bp.json_input.at(_bp.column_name.data()).get<std::string>();
+        _bp.bind_values.push_back(std::move(v));
 
         const std::string& value = std::get<std::string>(_bp.bind_values.back());
         irods::log(LOG_DEBUG8, fmt::format("[{}:{}] - binding [{}] to [{}] at [{}]",
@@ -32,14 +32,33 @@ namespace irods::experimental::catalog
 
     auto bind_bigint_to_statement(bind_parameters& _bp) -> void
     {
-        const std::uint64_t v = std::stoul(_bp.json_input.at(_bp.column_name.data()).get<std::string>());
-        _bp.bind_values.push_back(v);
+        // The Oracle ODBC driver will fail on execution of the prepared statement if
+        // a 64-bit integer is bound. To get around this limitation, Oracle allows the
+        // integer to be bound as a string. See the following thread for a little more
+        // information:
+        //
+        //   https://stackoverflow.com/questions/338609/binding-int64-sql-bigint-as-query-parameter-causes-error-during-execution-in-o
+        //
+        if ("oracle" == _bp.db_instance_name) {
+            std::string v = _bp.json_input.at(_bp.column_name.data()).get<std::string>();
+            _bp.bind_values.push_back(std::move(v));
 
-        const std::uint64_t& value = std::get<std::uint64_t>(_bp.bind_values.back());
-        irods::log(LOG_DEBUG8, fmt::format("[{}:{}] - binding [{}] to [{}] at [{}]",
-            __FUNCTION__, __LINE__, _bp.column_name, value, _bp.index));
+            const auto& value = std::get<std::string>(_bp.bind_values.back());
+            irods::log(LOG_DEBUG8, fmt::format("[{}:{}] - binding [{}] to [{}] at [{}]",
+                __FUNCTION__, __LINE__, _bp.column_name, value, _bp.index));
 
-        _bp.statement.bind(_bp.index, &value);
+            _bp.statement.bind(_bp.index, value.c_str());
+        }
+        else {
+            const std::uint64_t v = std::stoull(_bp.json_input.at(_bp.column_name.data()).get<std::string>());
+            _bp.bind_values.push_back(v);
+
+            const std::uint64_t& value = std::get<std::uint64_t>(_bp.bind_values.back());
+            irods::log(LOG_DEBUG8, fmt::format("[{}:{}] - binding [{}] to [{}] at [{}]",
+                __FUNCTION__, __LINE__, _bp.column_name, value, _bp.index));
+
+            _bp.statement.bind(_bp.index, &value);
+        }
     } // bind_bigint_to_statement
 
     auto bind_integer_to_statement(bind_parameters& _bp) -> void
