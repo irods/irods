@@ -57,6 +57,7 @@ namespace
     using log       = irods::experimental::log;
     using json      = nlohmann::json;
     using operation = std::function<int(rsComm_t*, bytesBuf_t*, bytesBuf_t**)>;
+    using id_type   = std::int64_t;
     // clang-format on
 
     //
@@ -73,30 +74,46 @@ namespace
 
     auto make_error_object(const json& _op, int _op_index, const std::string& _error_msg) -> json;
 
-    auto get_object_id(rsComm_t& _comm, std::string_view _logical_path) -> int;
+    auto get_object_id(rsComm_t& _comm, std::string_view _logical_path) -> id_type;
 
     auto user_has_permission_to_modify_acls(rsComm_t& _comm,
                                             nanodbc::connection& _db_conn,
-                                            int _object_id) -> bool;
+                                            const std::string_view _db_instance_name,
+                                            id_type _object_id) -> bool;
 
     auto throw_if_invalid_acl(std::string_view _acl) -> void;
 
-    auto throw_if_invalid_entity_id(int _entity_id) -> void;
+    auto throw_if_invalid_entity_id(id_type _entity_id) -> void;
 
     auto to_access_type_id(std::string_view _acl) -> int;
 
-    auto get_entity_id(nanodbc::connection& _db_conn, std::string_view _entity_name) -> int;
+    auto get_entity_id(nanodbc::connection& _db_conn, std::string_view _entity_name) -> id_type;
 
-    auto entity_has_acls_set_on_object(nanodbc::connection& _db_conn, int _object_id, int _entity_id) -> bool;
+    auto entity_has_acls_set_on_object(nanodbc::connection& _db_conn,
+                                       const std::string_view _db_instance_name,
+                                       id_type _object_id,
+                                       id_type _entity_id) -> bool;
 
-    auto insert_acl(nanodbc::connection& _db_conn, int _object_id, int _entity_id, std::string_view acl) -> void;
+    auto insert_acl(nanodbc::connection& _db_conn,
+                    const std::string_view _db_instance_name,
+                    id_type _object_id,
+                    id_type _entity_id,
+                    std::string_view acl) -> void;
 
-    auto update_acl(nanodbc::connection& _db_conn, int _object_id, int _entity_id, std::string_view new_acl) -> void;
+    auto update_acl(nanodbc::connection& _db_conn,
+                    const std::string_view _db_instance_name,
+                    id_type _object_id,
+                    id_type _entity_id,
+                    std::string_view new_acl) -> void;
 
-    auto remove_acl(nanodbc::connection& _db_conn, int _object_id, int _entity_id) -> void;
+    auto remove_acl(nanodbc::connection& _db_conn,
+                    const std::string_view _db_instance_name,
+                    id_type _object_id,
+                    id_type _entity_id) -> void;
 
     auto execute_acl_operation(nanodbc::connection& _db_conn,
-                               int _object_id,
+                               const std::string_view _db_instance_name,
+                               id_type _object_id,
                                const json& _operation,
                                int _op_index) -> std::tuple<int, bytesBuf_t*>;
 
@@ -159,7 +176,7 @@ namespace
         };
     }
 
-    auto get_object_id(rsComm_t& _comm, std::string_view _logical_path) -> int
+    auto get_object_id(rsComm_t& _comm, std::string_view _logical_path) -> id_type
     {
         fs::path p = _logical_path.data();
         std::string gql;
@@ -186,7 +203,7 @@ namespace
         }
 
         for (auto&& row : irods::query{&_comm, gql}) {
-            return std::stoi(row[0]);
+            return std::stoll(row[0]);
         }
 
         log::api::error("Failed to resolve path to an ID [path={}]", _logical_path);
@@ -203,7 +220,7 @@ namespace
         }
     }
 
-    auto throw_if_invalid_entity_id(int _entity_id) -> void
+    auto throw_if_invalid_entity_id(id_type _entity_id) -> void
     {
         if (-1 == _entity_id) {
             THROW(SYS_INVALID_INPUT_PARAM, "Invalid entity");
@@ -224,40 +241,75 @@ namespace
 
     auto user_has_permission_to_modify_acls(rsComm_t& _comm,
                                             nanodbc::connection& _db_conn,
-                                            int _object_id) -> bool
+                                            const std::string_view _db_instance_name,
+                                            id_type _object_id) -> bool
     {
-        const auto query = fmt::format("select t.token_id from R_TOKN_MAIN t"
-                                       " inner join R_OBJT_ACCESS a on t.token_id = a.access_type_id "
-                                       "where"
-                                       " a.user_id = (select user_id from R_USER_MAIN where user_name = '{}') and"
-                                       " a.object_id = '{}'", _comm.clientUser.userName, _object_id);
+        nanodbc::statement stmt{_db_conn};
 
-        if (auto row = execute(_db_conn, query); row.next()) {
-            return static_cast<ic::access_type>(row.get<int>(0)) == ic::access_type::own;
+        prepare(stmt, "select t.token_id from R_TOKN_MAIN t"
+                      " inner join R_OBJT_ACCESS a on t.token_id = a.access_type_id "
+                      "where"
+                      " a.user_id = (select user_id from R_USER_MAIN where user_name = ?) and"
+                      " a.object_id = ?");
+        
+        if ("oracle" == _db_instance_name) {
+            const auto object_id_string = std::to_string(_object_id);
+
+            stmt.bind(0, _comm.clientUser.userName);
+            stmt.bind(1, object_id_string.data());
+
+            if (auto row = execute(stmt); row.next()) {
+                return static_cast<ic::access_type>(row.get<int>(0)) == ic::access_type::own;
+            }
+        }
+        else {
+            stmt.bind(0, _comm.clientUser.userName);
+            stmt.bind(1, &_object_id);
+
+            if (auto row = execute(stmt); row.next()) {
+                return static_cast<ic::access_type>(row.get<int>(0)) == ic::access_type::own;
+            }
         }
 
         return false;
     }
 
-    auto entity_has_acls_set_on_object(nanodbc::connection& _db_conn, int _object_id, int _entity_id) -> bool
+    auto entity_has_acls_set_on_object(nanodbc::connection& _db_conn,
+                                       std::string_view _db_instance_name,
+                                       id_type _object_id,
+                                       id_type _entity_id) -> bool
     {
         nanodbc::statement stmt{_db_conn};
 
         prepare(stmt, "select count(*) from R_OBJT_ACCESS where object_id = ? and user_id = ?");
 
-        stmt.bind(0, &_object_id);
-        stmt.bind(1, &_entity_id);
+        if ("oracle" == _db_instance_name) {
+            const auto object_id_string = std::to_string(_object_id);
+            const auto entity_id_string = std::to_string(_entity_id);
 
-        if (auto row = execute(stmt); row.next()) {
-            return row.get<int>(0) > 0;
+            stmt.bind(0, object_id_string.data());
+            stmt.bind(1, entity_id_string.data());
+
+            if (auto row = execute(stmt); row.next()) {
+                return row.get<std::uint64_t>(0) > 0;
+            }
+        }
+        else {
+            stmt.bind(0, &_object_id);
+            stmt.bind(1, &_entity_id);
+
+            if (auto row = execute(stmt); row.next()) {
+                return row.get<std::uint64_t>(0) > 0;
+            }
         }
 
         return false;
     }
 
     auto insert_acl(nanodbc::connection& _db_conn,
-                    int _object_id,
-                    int _entity_id,
+                    const std::string_view _db_instance_name,
+                    id_type _object_id,
+                    id_type _entity_id,
                     std::string_view _new_acl) -> void
     {
         nanodbc::statement stmt{_db_conn};
@@ -272,18 +324,31 @@ namespace
         const auto timestamp = fmt::format("{:011}", duration_cast<seconds>(system_clock::now().time_since_epoch()).count());
         const auto access_type_id = to_access_type_id(_new_acl);
 
-        stmt.bind(0, &_object_id);
-        stmt.bind(1, &_entity_id);
         stmt.bind(2, &access_type_id);
         stmt.bind(3, timestamp.c_str());
         stmt.bind(4, timestamp.c_str());
 
-        execute(stmt);
+        if ("oracle" == _db_instance_name) {
+            const auto object_id_string = std::to_string(_object_id);
+            const auto entity_id_string = std::to_string(_entity_id);
+
+            stmt.bind(0, object_id_string.data());
+            stmt.bind(1, entity_id_string.data());
+
+            execute(stmt);
+        }
+        else {
+            stmt.bind(0, &_object_id);
+            stmt.bind(1, &_entity_id);
+
+            execute(stmt);
+        }
     }
 
     auto update_acl(nanodbc::connection& _db_conn,
-                    int _object_id,
-                    int _entity_id,
+                    const std::string_view _db_instance_name,
+                    id_type _object_id,
+                    id_type _entity_id,
                     std::string_view _new_acl) -> void
     {
         nanodbc::statement stmt{_db_conn};
@@ -299,26 +364,52 @@ namespace
 
         stmt.bind(0, &access_type_id);
         stmt.bind(1, timestamp.c_str());
-        stmt.bind(2, &_object_id);
-        stmt.bind(3, &_entity_id);
 
-        execute(stmt);
+        if ("oracle" == _db_instance_name) {
+            const auto object_id_string = std::to_string(_object_id);
+            const auto entity_id_string = std::to_string(_entity_id);
+
+            stmt.bind(2, object_id_string.data());
+            stmt.bind(3, entity_id_string.data());
+
+            execute(stmt);
+        }
+        else {
+            stmt.bind(2, &_object_id);
+            stmt.bind(3, &_entity_id);
+
+            execute(stmt);
+        }
     }
 
-    auto remove_acl(nanodbc::connection& _db_conn, int _object_id, int _entity_id) -> void
+    auto remove_acl(nanodbc::connection& _db_conn,
+                    const std::string_view _db_instance_name,
+                    id_type _object_id,
+                    id_type _entity_id) -> void
     {
         nanodbc::statement stmt{_db_conn};
 
         prepare(stmt, "delete from R_OBJT_ACCESS where object_id = ? and user_id = ?");
 
-        stmt.bind(0, &_object_id);
-        stmt.bind(1, &_entity_id);
+        if ("oracle" == _db_instance_name) {
+            const auto object_id_string = std::to_string(_object_id);
+            const auto entity_id_string = std::to_string(_entity_id);
 
-        execute(stmt);
+            stmt.bind(0, object_id_string.data());
+            stmt.bind(1, entity_id_string.data());
+
+            execute(stmt);
+        }
+        else {
+            stmt.bind(0, &_object_id);
+            stmt.bind(1, &_entity_id);
+
+            execute(stmt);
+        }
     }
 
     // TODO This function should probably deal with remote zones.
-    auto get_entity_id(nanodbc::connection& _db_conn, std::string_view _entity_name) -> int
+    auto get_entity_id(nanodbc::connection& _db_conn, std::string_view _entity_name) -> id_type
     {
         nanodbc::statement stmt{_db_conn};
 
@@ -327,14 +418,15 @@ namespace
         stmt.bind(0, _entity_name.data());
 
         if (auto row = execute(stmt); row.next()) {
-            return row.get<int>(0);
+            return row.get<id_type>(0);
         }
 
         return -1;
     }
 
     auto execute_acl_operation(nanodbc::connection& _db_conn,
-                               int _object_id,
+                               const std::string_view _db_instance_name,
+                               id_type _object_id,
                                const json& _op,
                                int _op_index) -> std::tuple<int, bytesBuf_t*>
     {
@@ -348,16 +440,20 @@ namespace
             throw_if_invalid_entity_id(entity_id);
 
             if (acl == "null") {
-                remove_acl(_db_conn, _object_id, entity_id);
+                remove_acl(_db_conn, _db_instance_name, _object_id, entity_id);
             }
-            else if (entity_has_acls_set_on_object(_db_conn, _object_id, entity_id)) {
-                update_acl(_db_conn, _object_id, entity_id, acl);
+            else if (entity_has_acls_set_on_object(_db_conn, _db_instance_name, _object_id, entity_id)) {
+                update_acl(_db_conn, _db_instance_name, _object_id, entity_id, acl);
             }
             else {
-                insert_acl(_db_conn, _object_id, entity_id, acl);
+                insert_acl(_db_conn, _db_instance_name, _object_id, entity_id, acl);
             }
 
             return {0, to_bytes_buffer("{}")};
+        }
+        catch (const nanodbc::database_error& e) {
+            rodsLog(LOG_ERROR, "%s [acl_operation=%s]", e.what(), _op.dump().data());
+            return {SYS_LIBRARY_ERROR, to_bytes_buffer(make_error_object(_op, _op_index, e.what()).dump())};
         }
         catch (const irods::exception& e) {
             log::api::error({{"log_message", e.what()}, {"acl_operation", _op.dump()}});
@@ -439,7 +535,7 @@ namespace
             return SYS_INVALID_INPUT_PARAM;
         }
 
-        const int object_id = get_object_id(*_comm, logical_path);
+        const id_type object_id = get_object_id(*_comm, logical_path);
 
         if (object_id < 0) {
             const auto msg = fmt::format("Failed to retrieve object id [error_code={}]", object_id);
@@ -447,11 +543,12 @@ namespace
             return object_id;
         }
 
+        std::string db_instance_name;
         nanodbc::connection db_conn;
 
         try {
             log::api::trace("Connecting to database ...");
-            std::tie(std::ignore, db_conn) = ic::new_database_connection();
+            std::tie(db_instance_name, db_conn) = ic::new_database_connection();
         }
         catch (const irods::exception& e) {
             *_output = to_bytes_buffer(make_error_object(json{}, 0, e.what()).dump());
@@ -464,7 +561,7 @@ namespace
 
         log::api::trace("Checking if user has permission to modify permissions ...");
 
-        if (!user_has_permission_to_modify_acls(*_comm, db_conn, object_id)) {
+        if (!user_has_permission_to_modify_acls(*_comm, db_conn, db_instance_name, object_id)) {
             log::api::error("User not allowed to modify ACLs [logical_path={}, object_id={}]", logical_path, object_id);
             *_output = to_bytes_buffer(make_error_object(json{}, 0, "User not allowed to modify ACLs").dump());
             return CAT_NO_ACCESS_PERMISSION;
@@ -479,6 +576,7 @@ namespace
 
                 for (json::size_type i = 0; i < operations.size(); ++i) {
                     const auto [ec, bbuf] = execute_acl_operation(_trans.connection(),
+                                                                  db_instance_name,
                                                                   object_id,
                                                                   operations[i],
                                                                   i);
