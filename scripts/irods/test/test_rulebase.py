@@ -85,19 +85,22 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin mkresc r2 unixfilesystem " + hostname + ":/tmp/irods/r2", 'STDOUT_SINGLELINE', "Creating")
         tfile = "rulebasetestfile"
         try:
-            with temporary_core_file() as core:
-                time.sleep(1)  # remove once file hash fix is committed #2279
-                core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
-                time.sleep(1)  # remove once file hash fix is committed #2279
+            coredvm = os.path.join(paths.core_re_directory(), 'core.dvm')
+            with lib.file_backed_up(coredvm):
+                lib.prepend_string_to_file('oprType||rei->doinp->oprType\n', coredvm)
+                with temporary_core_file() as core:
+                    time.sleep(1)  # remove once file hash fix is committed #2279
+                    core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+                    time.sleep(1)  # remove once file hash fix is committed #2279
 
-                # put data
-                lib.touch(tfile)
-                self.admin.assert_icommand(['iput', tfile])
+                    # put data
+                    lib.touch(tfile)
+                    self.admin.assert_icommand(['iput', tfile])
 
-                # check replicas
-                self.admin.assert_icommand(['ils', '-L', tfile], 'STDOUT_MULTILINE', [' demoResc ', ' r1 ', ' r2 '])
+                    # check replicas
+                    self.admin.assert_icommand(['ils', '-L', tfile], 'STDOUT_MULTILINE', [' demoResc ', ' r1 ', ' r2 '])
 
-            time.sleep(2)  # remove once file hash fix is commited #2279
+                time.sleep(2)  # remove once file hash fix is commited #2279
 
         finally:
             # clean up and remove new resources

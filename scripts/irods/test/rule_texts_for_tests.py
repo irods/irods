@@ -526,7 +526,10 @@ replicateMultiple(*destRgStr) {
     }
 }
 acPostProcForPut {
-    replicateMultiple( "r1,r2" )
+    # only replicate if the oprType is PUT
+    if ($oprType == 1) {
+        replicateMultiple( "r1,r2" )
+    }
 }
 '''
 rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Rulebase']['test_dynamic_pep_with_rscomm_usage'] = '''
@@ -1094,7 +1097,7 @@ def replicateMultiple(dest_list, callback, rei):
     callback.writeLine('serverLog', ' acPostProcForPut multiple replicate ' + obj_path + ' ' + filepath + ' -> ' + str(dest_list))
     for dest in dest_list:
         callback.writeLine('serverLog', 'acPostProcForPut replicate ' + obj_path + ' ' + filepath + ' -> ' + dest)
-        out_dict = callback.msiDataObjRepl(obj_path,"destRescName=' + dest '++++irodsAdmin='", 0);
+        out_dict = callback.msiDataObjRepl(obj_path,"destRescName=" + dest + "++++irodsAdmin=", 0);
         if not out_dict['code'] == 0:
             if out_dict['code'] == -808000:
                 callback.writeLine('serverLog', obj_path + ' cannot be found')
@@ -1103,7 +1106,11 @@ def replicateMultiple(dest_list, callback, rei):
                 callback.writeLine('serverLog', 'ERROR: ' + out_dict['code'])
                 return int(out_dict['code'])
 def acPostProcForPut(rule_args, callback, rei):
-    replicateMultiple(["r1","r2"], callback, rei)
+    # only replicate if the oprType is PUT
+    opr_type = rei.doinp.oprType if rei.doinp is not None else 1
+    if (opr_type == 1):
+        replicateMultiple(["r1","r2"], callback, rei)
+
 '''
 rule_texts['irods_rule_engine_plugin-python']['Test_Rulebase']['test_dynamic_pep_with_rscomm_usage'] = '''
 def pep_resource_open_pre(rule_args, callback, rei):
