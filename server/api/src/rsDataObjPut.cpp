@@ -412,6 +412,7 @@ namespace
         auto& l1desc = L1desc[l1descInx];
         l1desc.oprType = PUT_OPR;
         l1desc.dataSize = dataObjInp->dataSize;
+        l1desc.dataObjInp->dataSize = dataObjInp->dataSize;
 
         if (getStructFileType(l1desc.dataObjInfo->specColl) >= 0) {
             *portalOprOut = static_cast<portalOprOut_t*>(malloc(sizeof(portalOprOut_t)));
