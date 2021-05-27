@@ -1,4 +1,5 @@
 from __future__ import print_function
+import json
 import os
 import sys
 import tempfile
@@ -9,8 +10,9 @@ else:
     import unittest
 
 from . import session
-from .. import test
 from .. import lib
+from .. import paths
+from .. import test
 from ..test.command import assert_command
 
 rodsadmins = [('otherrods', 'rods')]
@@ -25,6 +27,47 @@ class Test_Iput(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.Tes
 
     def tearDown(self):
         super(Test_Iput, self).tearDown()
+
+    def test_multithreaded_iput__issue_5675(self):
+        user0 = self.user_sessions[0]
+
+        def do_test(size, threads):
+            file_name = 'test_multithreaded_iput__issue_5675'
+            local_file = os.path.join(user0.local_session_dir, file_name)
+            dest_path = os.path.join(user0.session_collection, file_name)
+
+            try:
+                lib.make_file(local_file, size)
+
+                put_thread_count = user0.run_icommand(['iput', '-v', local_file, dest_path])[0].split('|')[2].split()[0]
+                self.assertEqual(int(put_thread_count), threads)
+
+                put_overwrite_thread_count = user0.run_icommand(['iput', '-f', '-v', local_file, dest_path])[0].split('|')[2].split()[0]
+                self.assertEqual(int(put_overwrite_thread_count), threads)
+
+            finally:
+                user0.assert_icommand(['irm', '-f', dest_path])
+
+        server_config_filename = paths.server_config_path()
+        with open(server_config_filename) as f:
+            svr_cfg = json.load(f)
+            default_max_threads = svr_cfg['advanced_settings']['default_number_of_transfer_threads']
+
+        default_buffer_size_in_bytes = 4 * (1024 ** 2)
+        cases = [
+            {
+                'size':     0,
+                'threads':  0
+            },
+            {
+                'size':     34603008,
+                'threads':  min(default_max_threads, (34603008 / default_buffer_size_in_bytes) + 1)
+            }
+        ]
+
+        for case in cases:
+            do_test(size=case['size'], threads=case['threads'])
+
 
     def test_parallel_put_does_not_generate_SYS_COPY_LEN_ERR_when_overwriting_large_file_with_small_file__issue_5505(self):
         file_40mb = os.path.join(tempfile.gettempdir(), '40mb.txt')
