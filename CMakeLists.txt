@@ -417,9 +417,12 @@ target_include_directories(
 target_compile_options(irods_resource_administration_server PRIVATE -fPIC -Wno-write-strings)
 target_compile_definitions(irods_resource_administration_server PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_RESOURCE_ADMINISTRATION_ENABLE_SERVER_SIDE_API)
 
-add_library(
-  irods_client_api_functions
-  OBJECT
+# This list of source files exist because they must be compiled multiple times.
+# Once for the irods_client target and again for the irods_server target. The reason
+# for this is due to the use of macros such as ENABLE_RE and the irods::plugin_base class
+# being shared between client-side and server-side code.
+set(
+  IRODS_LIBIRODS_CLIENT_API_SOURCES
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcAuthCheck.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcAuthPluginRequest.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcAuthRequest.cpp
@@ -580,7 +583,9 @@ add_library(
   ${CMAKE_SOURCE_DIR}/lib/core/src/mvUtil.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/phybunUtil.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/phymvUtil.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/procApiRequest.cpp # relies on RODS_SERVER/CLERVER
   ${CMAKE_SOURCE_DIR}/lib/core/src/putUtil.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/rcConnect.cpp # relies on RODS_CLERVER
   ${CMAKE_SOURCE_DIR}/lib/core/src/rcPortalOpr.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/regUtil.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/replUtil.cpp
@@ -593,6 +598,14 @@ add_library(
   ${CMAKE_SOURCE_DIR}/lib/core/src/sslSockComm.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/trimUtil.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/user.cpp
+  )
+add_library(
+  # This object file exists to avoid recompiling the API functions multiple
+  # times. It is used by the irods_client and RodsAPIs target. These libraries
+  # use the same build arguments.
+  irods_client_api_functions
+  OBJECT
+  ${IRODS_LIBIRODS_CLIENT_API_SOURCES}
   )
 target_include_directories(
   irods_client_api_functions
@@ -616,8 +629,6 @@ target_compile_definitions(irods_client_api_functions PRIVATE ${IRODS_COMPILE_DE
 
 set(
   IRODS_LIBIRODS_CLIENT_SOURCES
-  ${CMAKE_SOURCE_DIR}/lib/core/src/procApiRequest.cpp # relies on RODS_SERVER/CLERVER
-  ${CMAKE_SOURCE_DIR}/lib/core/src/rcConnect.cpp # relies on RODS_CLERVER
   $<TARGET_OBJECTS:irods_client_api_functions>
   $<TARGET_OBJECTS:irods_filesystem_path>
   $<TARGET_OBJECTS:irods_filesystem_client>
@@ -900,7 +911,14 @@ add_library(
   irods_server
   SHARED
   ${IRODS_LIBIRODS_SERVER_SOURCES}
-  ${IRODS_LIBIRODS_CLIENT_SOURCES}
+
+  # The client-side APIs must be recompiled due to macros like ENABLE_RE.
+  # This allows the PEPs to fire when operations are invoked via irods::plugin_base::call.
+  ${IRODS_LIBIRODS_CLIENT_API_SOURCES}
+  $<TARGET_OBJECTS:irods_filesystem_path>
+  $<TARGET_OBJECTS:irods_filesystem_client>
+  $<TARGET_OBJECTS:irods_user_administration_client>
+  $<TARGET_OBJECTS:irods_resource_administration_client>
   )
 target_link_libraries(
   irods_server
@@ -1159,8 +1177,6 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/osauth.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/packStruct.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/parseCommandLine.cpp
-  ${CMAKE_SOURCE_DIR}/lib/core/src/procApiRequest.cpp
-  ${CMAKE_SOURCE_DIR}/lib/core/src/rcConnect.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/rcGlobal.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/rcMisc.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/rcPortalOpr.cpp
