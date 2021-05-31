@@ -20,6 +20,7 @@ else:
 from .. import test
 from . import settings
 from .. import lib
+from .. import paths
 from ..configuration import IrodsConfig
 from ..controller import IrodsController
 from . import session
@@ -288,43 +289,62 @@ class ResourceSuite(ResourceBase):
     ###################
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_ssl_iput_with_rods_env(self):
-        config = IrodsConfig()
         server_key_path = os.path.join(self.admin.local_session_dir, 'server.key')
-        #server_csr_path = os.path.join(self.admin.local_session_dir, 'server.csr')
         chain_pem_path = os.path.join(self.admin.local_session_dir, 'chain.pem')
         dhparams_pem_path = os.path.join(self.admin.local_session_dir, 'dhparams.pem')
 
         lib.execute_command(['openssl', 'genrsa', '-out', server_key_path, '1024'])
-        #lib.execute_command('openssl req -batch -new -key %s -out %s' % (server_key_path, server_csr_path))
         lib.execute_command('openssl req -batch -new -x509 -key %s -out %s -days 365' % (server_key_path, chain_pem_path))
         lib.execute_command('openssl dhparam -2 -out %s 1024' % (dhparams_pem_path))  # normally 2048, but smaller size here for speed
 
-        with lib.file_backed_up(config.client_environment_path):
-            server_update = {
-                'irods_ssl_certificate_chain_file': chain_pem_path,
-                'irods_ssl_certificate_key_file': server_key_path,
-                'irods_ssl_dh_params_file': dhparams_pem_path,
-            }
-            lib.update_json_file_from_dict(config.client_environment_path, server_update)
+        # make sure acPreConnect's definition matches that of a vanilla installation.
+        # this is accomplished by inserting a new rulebase before core.re in the NREP's
+        # plugin specific configuration.
+        connection_rulebase = 'acPreConnect_rulebase'
+        connection_rulebase_path = os.path.join(paths.core_re_directory(), connection_rulebase + '.re')
+        with open(connection_rulebase_path, 'w') as f:
+            f.write('acPreConnect(*OUT) { *OUT = "CS_NEG_DONT_CARE"; }\n')
 
-            client_update = {
-                'irods_client_server_policy': 'CS_NEG_REQUIRE',
-                'irods_ssl_verify_server': 'none',
-            }
+        config = IrodsConfig()
 
-            session_env_backup = copy.deepcopy(self.admin.environment_file_contents)
-            self.admin.environment_file_contents.update(client_update)
+        try:
+            with lib.file_backed_up(config.server_config_path):
+                # prepend the new rulebase to the NREP's rulebase list.
+                nrep = config.server_config['plugin_configuration']['rule_engines'][0]
+                nrep['plugin_specific_configuration']['re_rulebase_set'].insert(0, connection_rulebase)
+                lib.update_json_file_from_dict(config.server_config_path, config.server_config)
 
-            filename = 'encryptedfile.txt'
-            filepath = lib.create_local_testfile(filename)
+                with lib.file_backed_up(config.client_environment_path):
+                    server_update = {
+                        'irods_ssl_certificate_chain_file': chain_pem_path,
+                        'irods_ssl_certificate_key_file': server_key_path,
+                        'irods_ssl_dh_params_file': dhparams_pem_path
+                    }
+                    lib.update_json_file_from_dict(config.client_environment_path, server_update)
+
+                    client_update = {
+                        'irods_client_server_policy': 'CS_NEG_REQUIRE',
+                        'irods_ssl_verify_server': 'none'
+                    }
+                    session_env_backup = copy.deepcopy(self.admin.environment_file_contents)
+                    self.admin.environment_file_contents.update(client_update)
+
+                    filename = 'encryptedfile.txt'
+                    filepath = lib.create_local_testfile(filename)
+                    IrodsController().restart()
+
+                    self.admin.assert_icommand(['iinit', self.admin.password])
+                    self.admin.assert_icommand(['iput', filename])
+                    self.admin.assert_icommand(['ils', '-L', filename], 'STDOUT_SINGLELINE', filename)
+
+                    self.admin.environment_file_contents = session_env_backup
+        finally:
+            try:
+                os.remove(connection_rulebase_path)
+            except:
+                pass
+
             IrodsController().restart()
-            self.admin.assert_icommand(['iinit', self.admin.password])
-            self.admin.assert_icommand(['iput', filename])
-            self.admin.assert_icommand(['ils', '-L', filename], 'STDOUT_SINGLELINE', filename)
-
-            self.admin.environment_file_contents = session_env_backup
-
-        IrodsController().restart()
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_ssl_iput_small_and_large_files(self):
@@ -332,55 +352,80 @@ class ResourceSuite(ResourceBase):
 
         # server side certificate setup
         server_key_path = os.path.join(self.admin.local_session_dir, 'server.key')
-        #server_csr_path = os.path.join(self.admin.local_session_dir, 'server.csr')
         chain_pem_path = os.path.join(self.admin.local_session_dir, 'chain.pem')
         dhparams_pem_path = os.path.join(self.admin.local_session_dir, 'dhparams.pem')
 
         lib.execute_command(['openssl', 'genrsa', '-out', server_key_path, '1024'])
-        #lib.execute_command('openssl req -batch -new -key %s -out %s' % (server_key_path, server_csr_path))
         lib.execute_command('openssl req -batch -new -x509 -key %s -out %s -days 365' % (server_key_path, chain_pem_path))
         lib.execute_command('openssl dhparam -2 -out %s 1024' % (dhparams_pem_path))  # normally 2048, but smaller size here for speed
 
         # client side environment variables
         os.environ['irodsSSLVerifyServer'] = "none"
 
-        # add client irodsEnv settings
-        clientEnvFile = self.admin.local_session_dir + "/irods_environment.json"
-        with lib.file_backed_up(clientEnvFile):
-            env = {'irods_client_server_policy': 'CS_NEG_REQUIRE'}
-            lib.update_json_file_from_dict(clientEnvFile, env)
+        client_env_file = self.admin.local_session_dir + "/irods_environment.json"
 
-            # server reboot with new server side environment variables
-            IrodsController(IrodsConfig(
-                    injected_environment={
-                        'irodsSSLCertificateChainFile': chain_pem_path,
-                        'irodsSSLCertificateKeyFile': server_key_path,
-                        'irodsSSLDHParamsFile': dhparams_pem_path})
-                    ).restart()
+        try:
+            with lib.file_backed_up(client_env_file):
+                # update client environment settings.
+                client_env_update = {'irods_client_server_policy': 'CS_NEG_REQUIRE'}
+                lib.update_json_file_from_dict(client_env_file, client_env_update)
 
-            # do the encrypted put
-            filename = "encryptedfile.txt"
-            filepath = lib.create_local_testfile(filename)
-            self.admin.assert_icommand(['iinit', self.admin.password])  # reinitialize
-            # small file
-            self.admin.assert_icommand("iput " + filename)  # encrypted put - small file
-            self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', filename)  # should be listed
-            # large file
-            largefilename = "BIGencryptedfile.txt"
-            lib.make_file(largefilename, 60*(2**20))
-            #os.system("ls -al "+largefilename)
-            self.admin.assert_icommand("iput " + largefilename)  # encrypted put - large file
-            self.admin.assert_icommand("ils -L " + largefilename, 'STDOUT_SINGLELINE', largefilename)  # should be listed
+                # make sure acPreConnect's definition matches that of a vanilla installation.
+                # this is accomplished by inserting a new rulebase before core.re in the NREP's
+                # plugin specific configuration.
+                connection_rulebase = 'acPreConnect_rulebase'
+                connection_rulebase_path = os.path.join(paths.core_re_directory(), connection_rulebase + '.re')
+                with open(connection_rulebase_path, 'w') as f:
+                    f.write('acPreConnect(*OUT) { *OUT = "CS_NEG_DONT_CARE"; }\n')
 
-        # reset client environment
-        os.unsetenv('irodsSSLVerifyServer')
+                config = IrodsConfig()
 
-        # clean up
-        os.remove(filename)
-        os.remove(largefilename)
+                with lib.file_backed_up(config.server_config_path):
+                    # prepend the new rulebase to the NREP's rulebase list.
+                    nrep = config.server_config['plugin_configuration']['rule_engines'][0]
+                    nrep['plugin_specific_configuration']['re_rulebase_set'].insert(0, connection_rulebase)
+                    lib.update_json_file_from_dict(config.server_config_path, config.server_config)
 
-        # restart iRODS server without altered environment
-        IrodsController().restart()
+                    # server reboot with new server side environment variables
+                    IrodsController(IrodsConfig(
+                            injected_environment={
+                                'irodsSSLCertificateChainFile': chain_pem_path,
+                                'irodsSSLCertificateKeyFile': server_key_path,
+                                'irodsSSLDHParamsFile': dhparams_pem_path})
+                            ).restart()
+
+                    # reinitialize
+                    self.admin.assert_icommand(['iinit', self.admin.password])
+
+                    #
+                    # do the encrypted put
+                    #
+
+                    # small file
+                    filename = "encryptedfile.txt"
+                    filepath = lib.create_local_testfile(filename)
+                    self.admin.assert_icommand("iput " + filename)  # encrypted put - small file
+                    self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', filename)  # should be listed
+
+                    # large file
+                    largefilename = "BIGencryptedfile.txt"
+                    lib.make_file(largefilename, 60*(2**20))
+                    self.admin.assert_icommand("iput " + largefilename)  # encrypted put - large file
+                    self.admin.assert_icommand("ils -L " + largefilename, 'STDOUT_SINGLELINE', largefilename)  # should be listed
+        finally:
+            # reset client environment
+            os.unsetenv('irodsSSLVerifyServer')
+
+            try:
+                # clean up
+                os.remove(filename)
+                os.remove(largefilename)
+                os.remove(connection_rulebase_path)
+            except:
+                pass
+
+            # restart iRODS server without altered environment
+            IrodsController().restart()
 
     @unittest.skipIf(psutil.disk_usage('/').free < 20000000000, "not enough free space for 5 x 2.2GB file ( local + iput + 3 repl children )")
     def test_local_iput_with_really_big_file__ticket_1623(self):
