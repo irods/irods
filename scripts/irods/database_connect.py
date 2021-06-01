@@ -80,11 +80,12 @@ def get_odbc_entry(db_config, catalog_database_type):
     elif catalog_database_type == 'mysql':
         return {
             'Description': 'iRODS catalog',
-            'Option': '2',
             'Driver': db_config['db_odbc_driver'],
             'Server': db_config['db_host'],
             'Port': str(db_config['db_port']),
-            'Database': db_config['db_name']
+            'Database': db_config['db_name'],
+            'FOUND_ROWS': '1',
+            'BIG_PACKETS': '1'
         }
     elif catalog_database_type == 'oracle':
         return {
