@@ -10,7 +10,8 @@ const char * const icmds[] = {
     "imcoll", "imeta", "imiscsvrinfo", "imkdir", "imv", "ipasswd",
     "iphybun", "iphymv", "ips", "iput", "ipwd", "iqdel", "iqmod", "iqstat",
     "iquest", "iquota", "ireg", "irepl", "irm", "irmdir", "irmtrash", "irsync", "irule",
-    "iscan", "istream", "isysmeta", "iticket", "itrim", "iuserinfo", "izonereport"
+    "iscan", "istream", "isysmeta", "iticket", "itouch", "itrim", "iunreg", "iuserinfo",
+    "izonereport"
 };
 
 void usage();
@@ -64,7 +65,9 @@ printMainHelp() {
         "istream      - streams bytes to/from iRODS via stdin/stdout.",
         "isysmeta     - show or modify system metadata.",
         "iticket      - create, delete, modify & list tickets (alternative access strings).",
+        "itouch       - update the modification time of a logical path.",
         "itrim        - trim down the number of replicas of Data Objects.",
+        "iunreg       - unregister replica(s) of one or more Data Objects.",
         "iuserinfo    - show information about your iRODS user account.",
         "izonereport  - generates a full diagnostic/backup report of your Zone.",
         " ",
