@@ -21,6 +21,7 @@
 #include "objDesc.hpp"
 #include "objInfo.h"
 #include "objMetaOpr.hpp"
+#include "miscServerFunct.hpp"
 #include "physPath.hpp"
 #include "rcGlobalExtern.h"
 #include "rcMisc.h"
@@ -391,6 +392,42 @@ namespace
                     }
                 }
             };
+
+            // Get the service role for the server to determine whether the catalog-generated information for
+            // the newly created replica is available in the L1 descriptor.
+            std::string service_role;
+            if (const auto ret = get_catalog_service_role(service_role); !ret.ok()) {
+                irods::log(PASS(ret));
+            }
+
+            // Need to get information from the catalog which was populated in the database operation if
+            // this server is not a catalog provider. In that instance, the dataObjInfo in the L1 descriptor
+            // will not have the information.
+            if(service_role.empty() || irods::CFG_SERVICE_ROLE_PROVIDER != service_role) {
+                const auto p = fs::path{registered_replica.logical_path().data()};
+                const auto sql = fmt::format(
+                    "select DATA_OWNER_NAME, DATA_OWNER_ZONE, DATA_CREATE_TIME, DATA_MODIFY_TIME, DATA_EXPIRY, DATA_ID "
+                    "where COLL_NAME = '{}' and DATA_NAME = '{}' and DATA_RESC_HIER = '{}'",
+                    p.parent_path().c_str(), p.object_name().c_str(), hierarchy);
+
+                    irods::experimental::query_builder qb;
+                    const auto results = qb.build(_comm, sql);
+                    if (1 != results.size()) {
+                        irods::log(LOG_NOTICE, fmt::format(
+                            "[{}:{}] - no replica found [path=[{}], hier=[{}]]",
+                            __FUNCTION__, __LINE__, registered_replica.logical_path(), hierarchy));
+
+                        return ec = SYS_REPLICA_DOES_NOT_EXIST;
+                    }
+
+                    const auto& result = results.front();
+                    registered_replica.owner_user_name(result.at(0));
+                    registered_replica.owner_zone_name(result.at(1));
+                    registered_replica.ctime(result.at(2));
+                    registered_replica.mtime(result.at(3));
+                    registered_replica.data_expiry(result.at(4));
+                    registered_replica.data_id(std::stoll(result.at(5)));
+            }
 
             // Insert the newly registered replica into the RST with the other replicas which were inserted and locked before
             if (const auto insert_ec = rst::insert(registered_replica); insert_ec < 0) {
