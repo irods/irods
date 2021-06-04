@@ -316,6 +316,7 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
         self.admin.assert_icommand(['iticket', 'create', 'read', collname_1, ticket])
         self.admin.assert_icommand(['ils', '-r', self.admin.session_collection + '/' + collname_1], 'STDOUT_SINGLELINE', filename_3)
         self.user.assert_icommand(['ils', '-r', self.admin.session_collection + '/' + collname_1, '-t', ticket], 'STDOUT_SINGLELINE', filename_3)
+        self.admin.assert_icommand(['iticket', 'delete', ticket])
 
     def test_ticket_create_ticket_with_string_as_number__issue_3553(self):
         filename = '3553_test_file'
