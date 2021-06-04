@@ -134,12 +134,14 @@ class Test_Irepl(session.make_sessions_mixin([('otherrods', 'rods')], [('alice',
 
             self.admin.run_icommand(['iadmin', 'rmresc', repl_resc])
 
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for Topology Tests on Resource')
     def test_irepl_reports_checksum_mismatch_error_when_bytes_within_the_data_size_are_overwritten__issue_5592(self):
         # Passing "True" causes the test to trigger a checksum mismatch by overwriting a character
         # within a replica. The overwrite will not cause a mismatch in the size. Only the data within
         # the replica will change.
         self.do_test_for_issue_5592(trigger_checksum_mismatch_error=True)
 
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for Topology Tests on Resource')
     def test_irepl_does_not_return_a_checksum_mismatch_error_after_appending_data_to_a_replica_out_of_band__issue_5592(self):
         # Passing "False" causes the test to append a character to a replica. This will not trigger
         # a checksum mismatch error because the API honors the data size in the catalog when calculating
