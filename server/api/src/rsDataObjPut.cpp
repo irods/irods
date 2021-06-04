@@ -481,13 +481,11 @@ namespace
     {
         const auto cond_input = irods::experimental::make_key_value_proxy(_inp.condInput);
 
-        const auto destination_resource = cond_input.contains(DEST_RESC_NAME_KW) ? cond_input.at(DEST_RESC_NAME_KW).value()
-                                        : cond_input.contains(DEF_RESC_NAME_KW)  ? cond_input.at(DEF_RESC_NAME_KW).value()
-                                        : std::string_view{};
-
-        if (file_obj->replicas().empty() || !cond_input.contains(FORCE_FLAG_KW) || destination_resource.empty()) {
+        if (file_obj->replicas().empty() || !cond_input.contains(FORCE_FLAG_KW) || !cond_input.contains(DEST_RESC_NAME_KW)) {
             return;
         }
+
+        const auto destination_resource = cond_input.at(DEST_RESC_NAME_KW).value();
 
         const auto hier_match{
             [&destination_resource, &replicas = file_obj->replicas()]()
