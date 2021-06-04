@@ -354,8 +354,16 @@ namespace irods
 
             apply_policy_for_create_operation(_comm, _data_obj_inp, create_resc_name);
 
-            // If the replica exists on the target resource, use open/write
-            if (fac_err.ok() && hier_has_replica(create_resc_name, file_obj)) {
+            // If the data object exists, need to consider what operation is actually being done.
+            // In the case of a put or copy/rsync, which operates on the logical level, this should be
+            // treated as an overwrite because if any replica exists, we are considered to be
+            // overwriting the data object.. Otherwise, the operation is considering individual
+            // replicas and needs to see whether the hierarchy matching the provided keyword has a
+            // replica for this object.
+            const auto logical_operation = PUT_OPR == _data_obj_inp.oprType ||
+                                           COPY_DEST == _data_obj_inp.oprType ||
+                                           RSYNC_OPR == _data_obj_inp.oprType;
+            if (fac_err.ok() && (logical_operation || hier_has_replica(create_resc_name, file_obj))) {
                 oper = irods::WRITE_OPERATION;
             }
             else {
