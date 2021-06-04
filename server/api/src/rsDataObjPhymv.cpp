@@ -583,6 +583,7 @@ namespace
         }
         L1desc[destination_l1descInx].srcL1descInx = source_l1descInx;
         L1desc[destination_l1descInx].dataSize = L1desc[source_l1descInx].dataObjInfo->dataSize;
+        L1desc[destination_l1descInx].dataObjInp->dataSize = L1desc[source_l1descInx].dataObjInfo->dataSize;
 
         const int thread_count = getNumThreads(
             &_comm,
