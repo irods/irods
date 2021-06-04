@@ -210,6 +210,7 @@ class Test_Ichksum(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['ichksum', '-K', '--no-compute', data_object])
         self.admin.assert_icommand(['ichksum', '-K', '--no-compute', '-n0', data_object])
 
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
     def test_ichksum_reports_when_replicas_do_not_share_identical_checksums__issue_5252(self):
         data_object = 'foo'
         self.admin.assert_icommand(['istream', 'write', data_object], input='some data')
@@ -379,6 +380,7 @@ C- {5}:
            data_object_3)
         self.assertTrue(re.match(pattern, out))
 
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
     def test_ichksum_honors_the_size_in_the_catalog_when_computing_checksums__issue_5401(self):
         data_object = os.path.join(self.admin.session_collection, 'foo')
         contents = 'the data'
@@ -410,6 +412,7 @@ C- {5}:
         do_test(0, '47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=')
         do_test(3, 'uXdtfd9FnJrVsOHWrGHie++16Z/WJEZndgDXys71RNA=')
 
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
     def test_ichksum_detects_when_the_size_in_storage_is_less_than_the_size_in_catalog__issue_5401(self):
         data_object = 'issue_5401.txt'
 

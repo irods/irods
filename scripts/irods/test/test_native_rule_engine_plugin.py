@@ -143,6 +143,7 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
                                                                                                'RULE_ENGINE_CONTINUE = 5000000'])
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Native only test when not in a topology')
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Do not run in topology on resource server')
     def test_peps_for_parallel_mode_transfers__4404(self):
 
         (fd, largefile) = tempfile.mkstemp()
@@ -188,6 +189,7 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
             self.admin.assert_icommand(['iadmin', 'rum'])
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Native only test when not in a topology')
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Do not run in topology on resource server')
     def test_dynamic_policy_enforcement_point_exception_for_plugins__4128(self):
         try:
             path = self.admin.get_vault_session_path('demoResc')
@@ -222,6 +224,7 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
             self.admin.assert_icommand(['iadmin', 'rum'])
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Native only test when not in a topology')
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Do not run in topology on resource server')
     def test_dynamic_policy_enforcement_point_exception_for_apis__4128(self):
         try:
             path = self.admin.get_vault_session_path('demoResc')
