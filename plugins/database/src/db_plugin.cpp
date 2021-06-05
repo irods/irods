@@ -5684,7 +5684,7 @@ irods::error db_rename_coll_op(
 
     /* call chlRenameObject to rename */
     status = chlRenameObject( _ctx.comm(), status1, _new_coll );
-    if ( !status ) {
+    if (status != 0) {
         return ERROR( status, "chlRenameObject failed" );
     }
 
@@ -11611,7 +11611,6 @@ irods::error db_rename_object_op(
         }
 
         return CODE( status );
-
     }
 
 

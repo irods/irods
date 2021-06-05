@@ -522,7 +522,16 @@ int msiRenameLocalZoneCollection(msParam_t* _new_zone_name, ruleExecInfo_t* _rei
                 return CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME;
             }
 
-            return chlRenameColl(_rei->rsComm, src_path.c_str(), new_zone_name);
+            const auto ec = chlRenameColl(_rei->rsComm, src_path.c_str(), new_zone_name);
+
+            if (ec < 0) {
+                chlRollback(_rei->rsComm);
+            }
+            else {
+                chlCommit(_rei->rsComm);
+            }
+
+            return ec;
         }
         catch (const fs::filesystem_error& e) {
             rodsLog(LOG_ERROR, "%s :: Failed to rename local zone collection.", __func__);
