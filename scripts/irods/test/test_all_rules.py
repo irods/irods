@@ -1110,21 +1110,10 @@ OUTPUT ruleExecOut
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
-    def test_admins_are_allowed_to_rename_zone_collection__issue_5445(self):
-        with session.make_session_for_existing_admin() as admin:
-            rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
-
-            # Rename the zone collection.
-            admin.assert_icommand(['irule', '-r', rep_name, 'msiRenameLocalZoneCollection("otherZone")', 'null', 'ruleExecOut'])
-
-            # Restore the zone collection's name to its original value.
-            admin.assert_icommand(['irule', '-r', rep_name, 'msiRenameLocalZoneCollection("{0}")'.format(admin.zone_name), 'null', 'ruleExecOut'])
-
-    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
-    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_rename_to_current_zone_collection_is_a_no_op__issue_5445(self):
         rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
         self.admin.assert_icommand(['irule', '-r', rep_name, 'msiRenameLocalZoneCollection("{0}")'.format(self.admin.zone_name), 'null', 'ruleExecOut'])
+        self.admin.assert_icommand(['iquest', 'select COLL_NAME'], 'STDOUT', [os.path.join('/', self.admin.zone_name, 'home')])
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
@@ -1133,6 +1122,77 @@ OUTPUT ruleExecOut
         existing_collection = os.path.join(self.admin.zone_name, 'home', self.admin.username)
         cmd = ['irule', '-r', rep_name, 'msiRenameLocalZoneCollection("{0}")'.format(existing_collection), 'null', 'ruleExecOut']
         self.admin.assert_icommand(cmd, 'STDERR', ['-809000 CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME'])
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
+    def test_rename_local_zone__issue_5693(self):
+        old_zone_name = self.rods_session.zone_name
+        new_zone_name = 'issue_5693_zone'
+
+        # Rename the local zone.
+        self.rods_session.assert_icommand(['iadmin', 'modzone', old_zone_name, 'name', new_zone_name], 'STDOUT', input='y')
+
+        try:
+            config = IrodsConfig()
+
+            with lib.file_backed_up(config.client_environment_path):
+                # Update all references to the zone name in the client's irods_environment.json file.
+                new_home_collection = os.path.join('/', new_zone_name, 'home', self.rods_session.username)
+                lib.update_json_file_from_dict(config.client_environment_path, {
+                    'irods_cwd': os.path.join(new_home_collection, os.path.basename(self.rods_session.session_collection)),
+                    'irods_home': new_home_collection,
+                    'irods_zone_name': new_zone_name
+                })
+
+                with lib.file_backed_up(config.server_config_path):
+                    # Update the zone name in the server_config.json file.
+                    lib.update_json_file_from_dict(config.server_config_path, {'zone_name': new_zone_name})
+
+                    # Restart the server. This is done so that the delay server does not fill
+                    # the log with errors due having incorrect zone information.
+                    IrodsController().restart()
+
+                    # Update the rods session with the new zone information so that icommands succeed.
+                    with open(config.client_environment_path, 'r') as f:
+                        self.rods_session.environment_file_contents = json.load(f)
+
+                    # Show that the zone has been updated to reflect the new name.
+                    # These assertions prove that msiRenameLocalZoneCollection updated the catalog.
+                    self.rods_session.assert_icommand(['iquest', 'select ZONE_NAME'], 'STDOUT', ['ZONE_NAME = ' + new_zone_name])
+                    self.rods_session.assert_icommand(['iquest', 'select COLL_NAME'], 'STDOUT', [
+                        os.path.join('/', new_zone_name),
+                        os.path.join('/', new_zone_name, 'home'),
+                        os.path.join('/', new_zone_name, 'trash'),
+                        new_home_collection
+                    ])
+
+                    # Restore the zone name to its original value.
+                    self.rods_session.assert_icommand(['iadmin', 'modzone', new_zone_name, 'name', old_zone_name], 'STDOUT', input='y')
+        finally:
+            # Restart the server. This is done so that the delay server does not fille
+            # the log file with errors due having incorrect zone information.
+            IrodsController().restart()
+
+            # Update the rods session with the original zone information so that icommands succeed.
+            with open(config.client_environment_path, 'r') as f:
+                self.rods_session.environment_file_contents = json.load(f)
+
+            #
+            # Show that everything has been restored and is operating in a good state.
+            #
+
+            # Create a new data object.
+            data_object = 'foo_issue_5693'
+            self.rods_session.assert_icommand(['istream', 'write', data_object], input='data')
+
+            # Create a new collection.
+            collection = os.path.join(self.rods_session.home_collection, 'issue_5693.d')
+            self.rods_session.assert_icommand(['imkdir', collection])
+
+            # Verify the existence of the data object and collection and then remove them.
+            self.rods_session.assert_icommand(['ils'], 'STDOUT', [data_object, 'C- ' + collection])
+            self.rods_session.assert_icommand(['irm', '-r', '-f', data_object, collection])
+            self.rods_session.assert_icommand(['ils'], 'STDOUT', [self.rods_session.home_collection])
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_use_lowercase_select_in_genquery_conditions__issue_4697(self):
