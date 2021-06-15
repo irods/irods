@@ -1055,6 +1055,8 @@ OUTPUT ruleExecOut
             do_test(data_object, 'own')
             self.admin.assert_icommand(['imeta', 'ls', '-d', data_object], 'STDOUT', ['atomic_pre_fired', 'atomic_post_fired'])
 
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for PREP and Topology Testing')
     def test_msi_touch__issue_4669(self):
         data_object = os.path.join(self.admin.session_collection, 'issue_4669')
 
