@@ -209,7 +209,7 @@ namespace
                     /* for replication, the chksum in dataObjInfo was duplicated */
                     if (destination_replica.checksum() != checksum_string) {
                         THROW(USER_CHKSUM_MISMATCH, fmt::format(
-                            "{}:mismach chksum for {}.Rcat={},comp {}",
+                            "{}:mismatch chksum for {}.Rcat={},comp {}",
                             __FUNCTION__, destination_replica.logical_path(), destination_replica.checksum(), checksum_string));
                     }
                 }
@@ -246,7 +246,7 @@ namespace
                     destination_replica.cond_input().erase(ORIG_CHKSUM_KW);
                     if (source_replica.checksum() != checksum_string) {
                         THROW(USER_CHKSUM_MISMATCH, fmt::format(
-                            "{}:mismach chksum for {}.Rcat={},comp {}",
+                            "{}:mismatch chksum for {}.Rcat={},comp {}",
                             __FUNCTION__, destination_replica.logical_path(), source_replica.checksum(), checksum_string));
                     }
                 }

@@ -64,7 +64,7 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
                     self.admin.assert_icommand(cmd.split())
                     cmd = 'irm -rf {0}'.format(filename_2) # clean up
                     self.admin.assert_icommand(cmd.split())
-            time.sleep(2)  # remove once file hash fix is commited #2279
+            time.sleep(2)  # remove once file hash fix is committed #2279
  
     def test_iquota_empty__3048(self):
         cmd = 'iadmin suq' # no arguments

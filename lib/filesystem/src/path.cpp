@@ -329,7 +329,7 @@ namespace irods::experimental::filesystem
         const auto& fp = path_ptr_->value_; // Full path
         auto& e = element_.value_;          // Path element
 
-        // If we're just before the "end" iterator and the currrent value of
+        // If we're just before the "end" iterator and the current value of
         // the element is empty, then we know the path ended with a separator and
         // therefore, the iterator should now be set to the "end" iterator.
         if (fp.size() - 1 == pos_ && e.empty()) {

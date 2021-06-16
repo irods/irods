@@ -242,7 +242,7 @@ irods::error pam_auth_client_request(
     }
     else {
         // =-=-=-=-=-=-=-
-        // copy over the resulting irods pam pasword
+        // copy over the resulting irods pam password
         // and cache the result in our auth object
         ptr->request_result( req_out->result_ );
         status = obfSavePw( 0, 0, 0, req_out->result_ );

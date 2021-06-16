@@ -737,7 +737,7 @@ irods::error ssl_client_start(
                             msg_header.bsLen    = _env->rodsEncryptionNumHashRounds;
 
                             // =-=-=-=-=-=-=-
-                            // error check the encryption envrionment
+                            // error check the encryption environment
                             if ( ( result = ASSERT_ERROR( 0 != msg_header.msgLen && 0 != msg_header.errorLen && 0 != msg_header.bsLen,
                                                           -1, "irodsEncryption error. Key size, salt size or num hash rounds is 0." ) ).ok() ) {
 

@@ -103,7 +103,7 @@ remoteStructFileExtract( rsComm_t *rsComm,
 }
 
 // =-=-=-=-=-=-=-
-// implemenation for local rs call for extraction
+// implementation for local rs call for extraction
 int _rsStructFileExtract( rsComm_t*           _comm,
                           structFileOprInp_t* _struct_inp ) {
     // =-=-=-=-=-=-=-

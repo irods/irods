@@ -7,7 +7,7 @@
 
 #define DEF_EXPIRE_INT	(3600 * 4)	// default expire interval
 #define MAX_EXPIRE_INT  (3600 * 48)	// max expire interval
-#define INC_EXPIRE_INT  (3600 * 2)	// minimum inteval after new inteval was sent
+#define INC_EXPIRE_INT  (3600 * 2)	// minimum interval after new interval was sent
 // definition for msgNumber
 #define ANY_MSG_NUMBER	0 // get the msg with the smallest msgNumber
 

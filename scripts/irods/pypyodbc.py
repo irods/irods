@@ -67,7 +67,7 @@ lock = threading.Lock()
 shared_env_h = None
 SQLWCHAR_SIZE = ctypes.sizeof(ctypes.c_wchar)
 
-#determin the size of Py_UNICODE
+#determine the size of Py_UNICODE
 #sys.maxunicode > 65536 and 'UCS4' or 'UCS2'
 UNICODE_SIZE = sys.maxunicode > 65536 and 4 or 2 
 
@@ -114,7 +114,7 @@ SQL_CLOSE = 0
 
 
 
-# Below defines The constants for sqlgetinfo method, and their coresponding return types
+# Below defines The constants for sqlgetinfo method, and their corresponding return types
 SQL_QUALIFIER_LOCATION = 114
 SQL_QUALIFIER_NAME_SEPARATOR = 41
 SQL_QUALIFIER_TERM = 42
@@ -325,7 +325,7 @@ SQL_TXN_CAPABLE : 'GI_USMALLINT',SQL_TXN_ISOLATION_OPTION : 'GI_UINTEGER',
 SQL_UNION : 'GI_UINTEGER',SQL_USER_NAME : 'GI_STRING',SQL_XOPEN_CLI_YEAR : 'GI_STRING',
 }
 
-#Definations for types
+#Definitions for types
 BINARY = bytearray
 Binary = bytearray
 DATETIME = datetime.datetime
@@ -904,7 +904,7 @@ ODBC_API.SQLTablesW.argtypes = to_wchar(ODBC_API.SQLTables.argtypes)
 ODBC_API.SQLGetDiagRecW.argtypes = to_wchar(ODBC_API.SQLGetDiagRec.argtypes)
 ODBC_API.SQLGetInfoW.argtypes = to_wchar(ODBC_API.SQLGetInfo.argtypes)
 
-# Set the alias for the ctypes functions for beter code readbility or performance.
+# Set the alias for the ctypes functions for better code readbility or performance.
 ADDR = ctypes.byref
 c_short = ctypes.c_short
 c_ssize_t = ctypes.c_ssize_t
@@ -915,7 +915,7 @@ SQLGetData = ODBC_API.SQLGetData
 SQLRowCount = ODBC_API.SQLRowCount
 SQLNumResultCols = ODBC_API.SQLNumResultCols
 SQLEndTran = ODBC_API.SQLEndTran
-# Set alias for beter code readbility or performance.
+# Set alias for better code readbility or performance.
 NO_FREE_STATEMENT = 0
 FREE_STATEMENT = 1
 BLANK_BYTE = str_8b()
@@ -997,7 +997,7 @@ def AllocateEnv():
 
     ''' 
     Allocate an ODBC environment by initializing the handle shared_env_h
-    ODBC enviroment needed to be created, so connections can be created under it
+    ODBC environment needed to be created, so connections can be created under it
     connections pooling can be shared under one environment
     '''
     global shared_env_h 
@@ -1118,7 +1118,7 @@ def get_type(v):
         else:
             return  ('s',)
     elif isinstance(v, (int, long)):
-        #SQL_BIGINT defination: http://msdn.microsoft.com/en-us/library/ms187745.aspx
+        #SQL_BIGINT definition: http://msdn.microsoft.com/en-us/library/ms187745.aspx
         if v > 2147483647 or v < -2147483648:
             return  ('l',)
         else:
@@ -1441,7 +1441,7 @@ class Cursor:
     def execute(self, query_string, params=None, many_mode=False, call_mode=False):
         """ Execute the query string, with optional parameters.
         If parameters are provided, the query would first be prepared, then executed with parameters;
-        If parameters are not provided, only th query sting, it would be executed directly 
+        If parameters are not provided, only th query string, it would be executed directly 
         """
         if not self.connection:
             self.close()
@@ -2431,7 +2431,7 @@ class Connection:
         try:
             lock.acquire()
             if shared_env_h is None:
-                #Initialize an enviroment if it is not created.
+                #Initialize an environment if it is not created.
                 AllocateEnv()
         finally:
             lock.release()
@@ -2462,7 +2462,7 @@ class Connection:
         """ 
 
         # Before we establish the connection by the connection string
-        # Set the connection's attribute of "timeout" (Actully LOGIN_TIMEOUT)
+        # Set the connection's attribute of "timeout" (Actually LOGIN_TIMEOUT)
         if timeout != 0:
             ret = ODBC_API.SQLSetConnectAttr(self.dbc_h, SQL_ATTR_LOGIN_TIMEOUT, timeout, SQL_IS_UINTEGER);
             check_success(self, ret)
@@ -2790,7 +2790,7 @@ def win_compact_mdb(mdb_path, compacted_mdb_path, sort_order = "General\0\0"):
         
 
 def dataSources():
-    """Return a list with [name, descrition]"""
+    """Return a list with [name, description]"""
     dsn = create_buffer(1024)
     desc = create_buffer(1024)
     dsn_len = c_short()

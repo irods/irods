@@ -72,7 +72,7 @@ const int requireSIDs = 0;
 
 // =-=-=-=-=-=-=-
 // given the client connection and context string, set up the
-// native auth object with relevant informaiton: user, zone, etc
+// native auth object with relevant information: user, zone, etc
 irods::error native_auth_client_start(
     irods::plugin_context& _ctx,
     rcComm_t*                    _comm,
@@ -532,7 +532,7 @@ irods::error native_auth_agent_response(
         if ( ret.ok() ) {
             ret = check_proxy_user_privileges( _ctx.comm(), authCheckOut->privLevel );
             if ( !ret.ok() ) {
-                ret = PASSMSG( "Check proxy user priviledges failed.", ret );
+                ret = PASSMSG( "Check proxy user privileges failed.", ret );
             }
             else {
                 rodsLog( LOG_DEBUG,

@@ -108,7 +108,7 @@
 #define ACL_COLLECTION_KW                           "aclCollection"  /* the collection from which
 * the ACL should be used */
 #define NO_CHK_COPY_LEN_KW                          "noChkCopyLen"  /* Don't check the len
-* when transfering  */
+* when transferring  */
 #define TICKET_KW                                   "ticket"        /* for ticket-based-access */
 #define PURGE_CACHE_KW                              "purgeCache"    /* purge the cache copy right JMC - backport 4537
 * after the operation */

@@ -112,7 +112,7 @@ clearBBuf( bytesBuf_t *myBBuf ) {
     return 0;
 }
 
-//Only split the username from the zone name, based on the first occurence of '#'
+//Only split the username from the zone name, based on the first occurrence of '#'
 //Further parsing of the username is the responsibility of the database plugin.
 int
 parseUserName( const char * fullUserNameIn, char * userName, char * userZone ) {
@@ -1607,7 +1607,7 @@ getOffsetTimeStr( char *timeStr, const char *offSet )
 }
 
 /* Update the input time string to be offset minutes ahead of the
-   input value.  timeStr is input and ouput, in the form:
+   input value.  timeStr is input and output, in the form:
    2006-10-25-10.52.43
    0123456789012345678
    Offset the number of minutes to add.
@@ -2058,7 +2058,7 @@ convertDateFormat( char * s, char * currTime ) {
  *     nnnnd - an integer followed by 'd' ==> in days
  *     nnnny - an integer followed by 'y' ==> in years
  *     dd.hh:mm:ss - where dd, hh, mm and ss are 2 digits integers representing
- *       days, hours minutes and seconds, repectively. Truncation from the
+ *       days, hours minutes and seconds, respectively. Truncation from the
  *       end is allowed. e.g. 20:40 means mm:ss
  * The input can also be full calendar time in the form:
  *    YYYY-MM-DD.hh:mm:ss  - Truncation from the beginning is allowed.
@@ -3489,7 +3489,7 @@ parseHostAddrStr( char * hostAddr, rodsHostAddr_t * addr ) {
 
 /*
    Print some release information.
-   Used by the iCommands when printting the help text.
+   Used by the iCommands when printing the help text.
  */
 void
 printReleaseInfo( char * cmdName ) {

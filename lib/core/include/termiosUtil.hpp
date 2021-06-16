@@ -10,7 +10,7 @@
 namespace irods
 {
     // class termiosUtil - at this time, this class encapsulates the work
-    // which has to be done in order to turn echo on or off for a specifc
+    // which has to be done in order to turn echo on or off for a specific
     // file descriptor.  The call can be expanded to encapsulate other
     // functionality of termios(3).
 

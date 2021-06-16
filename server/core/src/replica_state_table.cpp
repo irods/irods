@@ -234,7 +234,7 @@ namespace irods::replica_state_table
 
             return std::make_tuple(ret, ec);
         } // publish_to_catalog_impl
-    } // anonymouse namespace
+    } // anonymous namespace
 
     auto init() -> void
     {

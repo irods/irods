@@ -113,7 +113,7 @@ namespace irods {
         }
 
         // =-=-=-=-=-=-=-
-        // check to see if a negoation was requested
+        // check to see if a negotiation was requested
         if ( !do_client_server_negotiation_for_server() ) {
             // =-=-=-=-=-=-=-
             // if it was not but we require SSL then error out

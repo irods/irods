@@ -46,7 +46,7 @@
  *    \li int \b numThreads - the number of threads to use. Valid values are:
  *      \n NO_THREADING (-1) - no multi-thread
  *      \n 0 - the server will decide the number of threads.
- *        (recommanded setting).
+ *        (recommended setting).
  *      \n A positive integer - specifies the number of threads.
  *    \li keyValPair_t \b condInput - keyword/value pair input. Valid keywords:
  *    \n REPL_NUM_KW - the replica number of the copy to phymv.

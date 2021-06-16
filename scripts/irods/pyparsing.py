@@ -1137,7 +1137,7 @@ class ParserElement(object):
               (see L{I{parseWithTabs}<parseWithTabs>})
             - define your parse action using the full C{(s,loc,toks)} signature, and
               reference the input string using the parse action's C{s} argument
-            - explictly expand the tabs in your input string before calling
+            - explicitly expand the tabs in your input string before calling
               C{parseString}
         """
         ParserElement.resetCache()
@@ -1943,7 +1943,7 @@ class QuotedString(Token):
         """
         super(QuotedString,self).__init__()
 
-        # remove white space from quote chars - wont work anyway
+        # remove white space from quote chars - won't work anyway
         quoteChar = quoteChar.strip()
         if not quoteChar:
             warnings.warn("quoteChar cannot be the empty string",SyntaxWarning,stacklevel=2)

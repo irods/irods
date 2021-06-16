@@ -48,7 +48,7 @@ namespace irods {
         plugin_ptr&        _ptr ) {
         // =-=-=-=-=-=-=-
         // check the interface type and error out if it
-        // isnt a database interface
+        // isn't a database interface
         if ( DATABASE_INTERFACE != _interface ) {
             std::stringstream msg;
             msg << "postgres_object does not support a [";

@@ -1194,7 +1194,7 @@ OUTPUT ruleExecOut
                     # Restore the zone name to its original value.
                     self.rods_session.assert_icommand(['iadmin', 'modzone', new_zone_name, 'name', old_zone_name], 'STDOUT', input='y')
         finally:
-            # Restart the server. This is done so that the delay server does not fille
+            # Restart the server. This is done so that the delay server does not fill
             # the log file with errors due having incorrect zone information.
             IrodsController().restart()
 

@@ -889,7 +889,7 @@ obfiDecode( const char *in, char *out, int extra ) {
                 printf( "timeVal=%d encodedTime=%d\n", timeVal, encodedTime );
             }
 
-            my_out = out;   /* start outputing for real */
+            my_out = out;   /* start outputting for real */
             if ( not_en == 1 ) {
                 while ( ( *out++ = *in++ ) != '\0' ) {
                     ;    /* return input string */

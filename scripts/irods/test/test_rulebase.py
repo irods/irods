@@ -10,7 +10,7 @@ import json
 import os
 import socket
 import tempfile
-import time  # remove once file hash fix is commited #2279
+import time  # remove once file hash fix is committed #2279
 import subprocess
 
 from .. import lib
@@ -100,7 +100,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
                     # check replicas
                     self.admin.assert_icommand(['ils', '-L', tfile], 'STDOUT_MULTILINE', [' demoResc ', ' r1 ', ' r2 '])
 
-                time.sleep(2)  # remove once file hash fix is commited #2279
+                time.sleep(2)  # remove once file hash fix is committed #2279
 
         finally:
             # clean up and remove new resources

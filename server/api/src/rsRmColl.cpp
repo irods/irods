@@ -287,7 +287,7 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
     if ( ( tmpValue = getValByKey( &rmCollInp->condInput, AGE_KW ) ) != NULL ) {
         if ( CollHandle[handleInx].rodsObjStat != NULL ) {
             /* when a collection is moved, the modfiyTime of the object in
-              * the collectin does not change. So, we'll depend on the
+              * the collection does not change. So, we'll depend on the
               * modfiyTime of the collection */
             int ageLimit = atoi( tmpValue ) * 60;
             int modifyTime =

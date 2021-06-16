@@ -321,7 +321,7 @@ cllCheckPending( const char *sql, int option, int dbType ) {
                      ( char * )&pBuffer[i * pendingRecordSize] );
         }
         if ( pendingAudits > 0 ) {
-            rodsLog( LOG_NOTICE, "Warning, SQL will be commited with audits" );
+            rodsLog( LOG_NOTICE, "Warning, SQL will be committed with audits" );
         }
     }
 

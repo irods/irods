@@ -1038,7 +1038,7 @@ namespace
             break;
 
         default:
-            rodsLog( LOG_ERROR, "packNonpointerItem: Unknow type %d - %s ", myTypeNum, myPackedItem.name );
+            rodsLog( LOG_ERROR, "packNonpointerItem: Unknown type %d - %s ", myTypeNum, myPackedItem.name );
             return SYS_PACK_INSTRUCT_FORMAT_ERR;
         }
 
@@ -1990,7 +1990,7 @@ namespace
             break;
         default:
             rodsLog( LOG_ERROR,
-                     "unpackNonpointerItem: Unknow type %d - %s ",
+                     "unpackNonpointerItem: Unknown type %d - %s ",
                      myTypeNum, myPackedItem.name );
             return SYS_PACK_INSTRUCT_FORMAT_ERR;
         }

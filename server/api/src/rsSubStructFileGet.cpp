@@ -98,7 +98,7 @@ int _rsSubStructFileGet( rsComm_t*   _comm,
     }
 
     // =-=-=-=-=-=-=-
-    // allocte outgoing buffer if necessary
+    // allocate outgoing buffer if necessary
     if ( _out_buf->buf == NULL ) {
         _out_buf->buf = new unsigned char[ _sub_file->offset ];
     }
