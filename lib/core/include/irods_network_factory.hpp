@@ -13,7 +13,7 @@
 namespace irods {
 /// =-=-=-=-=-=-=-
 /// @brief super basic free factory function to create either a tcp
-///        object or an ssl object based on wether ssl has been enabled
+///        object or an ssl object based on whether ssl has been enabled
     irods::error network_factory(
         rcComm_t*,                     // irods client comm ptr
         irods::network_object_ptr& ); // network object

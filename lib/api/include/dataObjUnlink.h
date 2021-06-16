@@ -5,7 +5,7 @@
 #include "dataObjInpOut.h"
 #include "objInfo.h"
 
-/* rcDataObjUnlink - Unlink a iRODS data object. By defult, the file will
+/* rcDataObjUnlink - Unlink a iRODS data object. By default, the file will
  * be moved to the trash, but the FORCE_FLAG_KW will force the removal.
  * Input -
  *   rcComm_t *conn - The client connection handle.

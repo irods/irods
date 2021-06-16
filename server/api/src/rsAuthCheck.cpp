@@ -54,7 +54,7 @@ int rsAuthCheck(
 
         // due to backward compatibility reasons, an unsanitized binary string is sent
         // as the 'response' portion of the KVP which may cause the parser to fail.  we
-        // evade the error and manually extract the reponse as necessary
+        // evade the error and manually extract the response as necessary
         std::string::size_type schem_key_pos = response.find( irods::AUTH_SCHEME_KEY );
         bool have_auth_scheme_key = schem_key_pos != std::string::npos;
         if ( have_auth_scheme_key ) {
@@ -142,7 +142,7 @@ int rsAuthCheck(
 
         if ( status < 0 ) {
             rodsLog( LOG_NOTICE,
-                     "rsAuthCheck:getAndConnRcatHostNoLogin() failed. erro=%d", status );
+                     "rsAuthCheck:getAndConnRcatHostNoLogin() failed. error=%d", status );
             return status;
         }
 

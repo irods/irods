@@ -37,7 +37,7 @@
 const std::string DEFER_POLICY_KEY( "defer_policy" );
 
 /// =-=-=-=-=-=-=-
-/// @brief string specifiying the prefer localhost deferral policy
+/// @brief string specifying the prefer localhost deferral policy
 const std::string DEFER_POLICY_LOCALHOST( "localhost_defer_policy" );
 
 /// =-=-=-=-=-=-=-
@@ -492,7 +492,7 @@ irods::error load_balanced_file_getfs_freespace(
 } // load_balanced_file_getfs_freespace
 
 /// =-=-=-=-=-=-=-
-/// @brief This routine copys data from the archive resource to the cache resource
+/// @brief This routine copies data from the archive resource to the cache resource
 ///        in a compound resource composition
 irods::error load_balanced_file_stage_to_cache(
     irods::plugin_context& _ctx,
@@ -1029,7 +1029,7 @@ class load_balanced_resource : public irods::resource {
                     DEFER_POLICY_LOCALHOST );
                 rodsLog(
                     LOG_DEBUG,
-                    "load_balanced_resource :: using localhost policy, none specificed" );
+                    "load_balanced_resource :: using localhost policy, none specified" );
             }
 
         }

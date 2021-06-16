@@ -21,7 +21,7 @@
 #include <boost/format.hpp>
 
 // Returns nothing, throws exception if file system loop is detected.
-// Each path cannonical path which is inserted into the map, also gets
+// Each path canonical path which is inserted into the map, also gets
 // a second string - the user path which led us here.  This serves us
 // for a descriptive error message if the same canonical path shows up
 // again - with a different user path.

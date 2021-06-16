@@ -307,11 +307,11 @@ namespace irods
                                  _ptr,
                                  send_cs_neg );
             if ( !send_err.ok() ) {
-                ret = PASSMSG( "failed to send CS_NEG_CLI1_MSG Failure Messsage", send_err );
+                ret = PASSMSG( "failed to send CS_NEG_CLI1_MSG Failure Message", send_err );
             }
 
             std::stringstream msg;
-            msg << "client-server negoations failed for server request [";
+            msg << "client-server negotiations failed for server request [";
             msg << svr_policy << "] and client request [" << cli_policy << "]";
             ret = ERROR(
                       CLIENT_NEGOTIATION_ERROR,
@@ -506,7 +506,7 @@ namespace irods
                 }
                 else {
                     // =-=-=-=-=-=-=-
-                    // if no negoation is allowed then provide a readable
+                    // if no negotiation is allowed then provide a readable
                     // error for the client
                     std::stringstream msg;
                     msg << "received [" << msg_header.type << "] ";

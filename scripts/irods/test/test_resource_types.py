@@ -2078,9 +2078,9 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
         # manipulate the core.re to add the new policy
         with temporary_core_file() as core:
-            time.sleep(2)  # remove once file hash fix is commited #2279
+            time.sleep(2)  # remove once file hash fix is committed #2279
             core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
-            time.sleep(2)  # remove once file hash fix is commited #2279
+            time.sleep(2)  # remove once file hash fix is committed #2279
 
             self.admin.assert_icommand("irm -f " + filename)
 
@@ -4015,21 +4015,21 @@ OUTPUT ruleExecOut
     def test_reliable_iput__ticket_2557(self):
         # local setup
         # break the second child resource
-        indicies = [1,2,3]
+        indices = [1,2,3]
         success = False
         test = 0
-        for i in indicies:
+        for i in indices:
             try:
-                c1 = i % len(indicies)
+                c1 = i % len(indices)
                 self.admin.assert_icommand("iadmin modresc unix%dResc path /nopes" % (c1), "STDOUT_SINGLELINE", "Previous resource path")
                 filename = "reliableputfile.txt"
                 filepath = lib.create_local_testfile(filename)
                 self.admin.assert_icommand(['ilsresc', '--ascii'], 'STDOUT_SINGLELINE', "demoResc:replication")
                 self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
                 self.admin.assert_icommand("iput " + filename, 'STDERR_SINGLELINE', "put error")  # put file
-                test = i+1 % len(indicies)
+                test = i+1 % len(indices)
                 self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', "unix%dResc"%(test))  # should be listed
-                test = i+2 % len(indicies)
+                test = i+2 % len(indices)
                 self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', "unix%dResc"%(test))  # should be listed
                 success = True
             except:

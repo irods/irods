@@ -34,7 +34,7 @@ Test_Resource_Random defines...
 def test_ireg_as_rodsuser_in_vault(self):
     pass
 
-The test_ireg_as_rodsuser_in_vault test as inherited from ResourceSuite needs to be overriden since it assumes a vault path exists, and coordinating resources do not have vault paths.
+The test_ireg_as_rodsuser_in_vault test as inherited from ResourceSuite needs to be overridden since it assumes a vault path exists, and coordinating resources do not have vault paths.
 
 
 Run the test suite as irods

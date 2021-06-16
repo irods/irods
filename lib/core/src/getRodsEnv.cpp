@@ -13,7 +13,7 @@
 
   The '#' character indicates a comment line.  Items may be enclosed in
   quotes, but do not need to be.  One or more spaces, or a '=', will
-  preceed the item values.
+  precede the item values.
 
   The items are defined in the rodsEnv struct.
 
@@ -775,7 +775,7 @@ extern "C" {
                     if ( *myPtr == '\'' ) {
                         nextPtr = myPtr + 1;
                         if ( *nextPtr == ' ' || *nextPtr == '\n'  || *nextPtr == '\0' ) {
-                            /* imbedded 's are OK */
+                            /* embedded 's are OK */
                             *myPtr = '\0';
                             return savePtr;
                         }

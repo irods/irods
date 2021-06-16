@@ -9,7 +9,7 @@ namespace irods {
 
 // =-=-=-=-=-=-=-
 // JMC :: simple wrapper for boost::asio sockets.  they did
-//     :: not provide a pure interface base class wich didnt
+//     :: not provide a pure interface base class which didn't
 //     :: have associated template parameters so one needed to
 //     :: be provided.  unfortunately the interface needs redefined.
     class socket_wrapper {

@@ -1871,7 +1871,7 @@ int chlDelColl(
 
 /* Check an authentication response.
 
-   Input is the challange, response, and username; the response is checked
+   Input is the challenge, response, and username; the response is checked
    and if OK the userPrivLevel is set.  Temporary-one-time passwords are
    also checked and possibly removed.
 
@@ -2160,7 +2160,7 @@ int chlModUser(
 // =-=-=-=-=-=-=-
 // Modify an existing group (membership).
 // Groups are also users in the schema, so chlModUser can also
-// modify other group attibutes. */
+// modify other group attributes. */
 int chlModGroup(
     rsComm_t*   _comm,
     const char* _group_name,
@@ -2335,7 +2335,7 @@ int chlModRescDataPaths(
 } // chlModRescDataPaths
 
 // =-=-=-=-=-=-=-
-// Add or substract to the resource free_space
+// Add or subtract to the resource free_space
 int chlModRescFreeSpace(
     rsComm_t*   _comm,
     const char* _resc_name,

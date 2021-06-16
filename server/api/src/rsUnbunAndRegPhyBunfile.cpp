@@ -179,7 +179,7 @@ regUnbunPhySubfiles( rsComm_t *rsComm, const char *_resc_name, char *phyBunDir,
             rodsLog( LOG_DEBUG,
                      "regUnbunphySubfiles: getDataObjInfo error for %s, status = %d",
                      subfilePath, status );
-            /* don't terminate beause the data Obj may be deleted */
+            /* don't terminate because the data Obj may be deleted */
             unlink( subfilePath );
             continue;
         }
@@ -190,7 +190,7 @@ regUnbunPhySubfiles( rsComm_t *rsComm, const char *_resc_name, char *phyBunDir,
             rodsLog( LOG_DEBUG,
                      "regUnbunphySubfiles: No copy in BUNDLE_RESC for %s",
                      dataObjInfoHead->objPath );
-            /* don't terminate beause the copy may be deleted */
+            /* don't terminate because the copy may be deleted */
             unlink( subfilePath );
             continue;
         }

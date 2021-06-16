@@ -43,7 +43,7 @@ int checkObjIdByTicket( const char *dataId, const char *accessLevel,
                         icatSessionStruct *icss );
 
 /*
-  Convert the intput arrays to a string and add bind variables
+  Convert the input arrays to a string and add bind variables
 */
 char *cmlArraysToStrWithBind( char*         str,
                               const char*   preStr,
@@ -266,7 +266,7 @@ int cmlGetOneRowFromSql( const char *sql,
 
 /* like cmlGetOneRowFromSql but cVal uses space from query
    and then caller frees it later (via cmlFreeStatement).
-   This is simplier for the caller, in some cases.   */
+   This is simpler for the caller, in some cases.   */
 int cmlGetOneRowFromSqlV2( const char *sql,
                            char *cVal[],
                            int maxCols,
@@ -766,7 +766,7 @@ cmlGetNextSeqStr( char *seqStr, int maxSeqStrLen, icatSessionStruct *icss ) {
     return status;
 }
 
-/* modifed for various tests */
+/* modified for various tests */
 int cmlTest( icatSessionStruct *icss ) {
     int i, cValSize;
     char *cVal[2];
@@ -1067,7 +1067,7 @@ cmlCheckDirOwn( const char *dirName, const char *userName, const char *userZone,
 
 /*
   Check that a dataObj (iRODS file) exists and user has specified permission
-  (but don't check the collection access, only its existance).
+  (but don't check the collection access, only its existence).
   Return code is either an iRODS error code (< 0) or the dataId.
 */
 rodsLong_t

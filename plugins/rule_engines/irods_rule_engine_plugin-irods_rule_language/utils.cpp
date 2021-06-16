@@ -677,7 +677,7 @@ ExprType *instantiate( ExprType *type, Hashtable *type_table, int replaceFreeVar
     }
 }
 
-/** debuggging functions **/
+/** debugging functions **/
 int writeToTmp( char *fileName, char *text ) {
     char buf[1024];
     snprintf( buf, sizeof( buf ), "/tmp/%s", fileName );
@@ -946,7 +946,7 @@ int isRuleGenSyntax( char *expr ) {
                 mode = 0;
             }
             break;
-        case 2: /* single qouted string */
+        case 2: /* single quoted string */
             if ( *p == '\\' ) {
                 p++;
                 if ( *p == '\0' ) {

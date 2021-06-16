@@ -346,7 +346,7 @@ irods::error repl_file_registered(
     irods::error result = SUCCESS();
     irods::error ret;
     ret = replCheckParams< irods::file_object >( _ctx );
-    if ( ( result = ASSERT_PASS( ret, "Error checking passed paramters." ) ).ok() ) {
+    if ( ( result = ASSERT_PASS( ret, "Error checking passed parameters." ) ).ok() ) {
 
         irods::file_object_ptr file_obj = boost::dynamic_pointer_cast<irods::file_object >( _ctx.fco() );
         irods::hierarchy_parser parser;

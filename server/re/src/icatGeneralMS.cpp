@@ -438,7 +438,7 @@ msiRollback( ruleExecInfo_t *rei ) {
  *
  * \note This microservice modifies the access rights on a given iRODS object or
  *    collection. For the collections, the modification can be recursive and the
- *    inheritence bit can be changed as well.
+ *    inheritance bit can be changed as well.
  *    For admin mode, add MOD_ADMIN_MODE_PREFIX to the access level string,
  *    e.g: msiSetACL("default", "admin:read", "rods", *path)
  *

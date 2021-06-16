@@ -150,7 +150,7 @@ svrToSvrConnect( rsComm_t *rsComm, rodsServerHost_t *rodsServerHost ) {
 /* setupSrvPortalForParaOpr - Setup the portal on this server for
  * parallel or RBUDP transfer. It call createSrvPortal to create
  * the portal socket, malloc the portalOprOut struct, put the
- * server address, portNumber, etc in this struct. Aslo malloc
+ * server address, portNumber, etc in this struct. Also malloc
  * the rsComm->portalOpr struct and fill in the struct. This struct
  * will be used later by the server after sending reply to the client.
  * If RBUDP_TRANSFER_KW is set in dataOprInp->condInput, RBUDP transfer

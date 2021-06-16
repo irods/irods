@@ -460,7 +460,7 @@ class Test_Iput(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.Tes
                 assert_object_is_good()
 
                 # TODO: This overwrites some existing replica but will not emit an error. Might change in future.
-                # implictly target default resource, which has no replica
+                # implicitly target default resource, which has no replica
                 #self.user.assert_icommand(['iput', '-f', local_file, logical_path], 'STDERR', 'HIERARCHY_ERROR')
                 #assert_object_is_good()
 

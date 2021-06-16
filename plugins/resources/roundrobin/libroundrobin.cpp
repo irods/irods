@@ -193,7 +193,7 @@ const std::string OPERATION_PROP( "round_robin_operation" );
 
 /// =-=-=-=-=-=-=-
 /// @brief build a sorted list of children based on hints in the context
-///        string for them and their positoin in the child map
+///        string for them and their position in the child map
 // NOTE :: this assumes the order in the icat dictates the order of the RR.
 //         the user can override that behavior with applying an index to the
 //         child.  should the resc id wrap, this should still work as it
@@ -213,8 +213,8 @@ irods::error build_sorted_child_vector(
     _child_vector.resize( list_size );
 
     // =-=-=-=-=-=-=-
-    // iterate over the children and look for indicies on the
-    // childrens context strings.  use those to build the initial
+    // iterate over the children and look for indices on the
+    // children context strings.  use those to build the initial
     // list.
     irods::resource_child_map::iterator itr;
     for ( itr  = cmap_ref->begin();
@@ -235,7 +235,7 @@ irods::error build_sorted_child_vector(
 
                 // =-=-=-=-=-=-=-
                 // make sure the map at this spot is already empty, could have
-                // duplicate indicies on children
+                // duplicate indices on children
                 if ( !_child_vector[ idx ].empty() ) {
                     std::stringstream msg;
                     msg << "build_sorted_child_vector - child map list is not empty ";

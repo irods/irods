@@ -53,7 +53,7 @@ namespace irods::experimental
                           const std::string_view _zone);
 
         /// Takes ownership of a raw iRODS connection and provides
-        /// all of the safety guarantees found in other instantations.
+        /// all of the safety guarantees found in other instantiations.
         ///
         /// \since 4.2.9
         explicit client_connection(RcComm& _conn);

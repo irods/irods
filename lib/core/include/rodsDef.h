@@ -321,7 +321,7 @@ typedef int( ( *funcPtr )( ) );
 #define RODS_FORK() vfork()
 #endif
 
-#define VAULT_PATH_POLICY       "VAULT_PATH_POLICY"     /* msParam lable */
+#define VAULT_PATH_POLICY       "VAULT_PATH_POLICY"     /* msParam label */
 /* definition for vault filePath scheme */
 typedef enum VaultPathScheme {
     GRAFT_PATH_S,

@@ -14,7 +14,7 @@ use Getopt::Long;
 $Getopt::Long::order=$PERMUTE;
 $Getopt::Long::autoabbrev=1;
 
-## This script collects the informations on the server activity:
+## This script collects the information on the server activity:
 ## cpu fraction used , runq load, swap mem fraction used, disk space occupancy,
 ## network input activity rate, network output activity rate, disk space available in MB.
 ## all the output numbers are between 0 (no activity) and 100 (full load) except the absolute space available
@@ -91,7 +91,7 @@ $Getopt::Long::autoabbrev=1;
 # Test of the arguments
 if( $optHelp )
 {
-	print_help(); # display help and close if -help option is mentionned
+	print_help(); # display help and close if -help option is mentioned
 	exit;
 }
 
@@ -197,7 +197,7 @@ else
 
 	# the format of netstat command is also different on
 	# the different platform...
-	# first, one need to determine for each platform the two usefull columns:
+	# first, one need to determine for each platform the two useful columns:
 	# input packets and output packets
 	@result = `netstat -i`;
 	if( $systype eq 'SunOS' )
@@ -309,7 +309,7 @@ while($cpt < $#result)
 }
 
 # if the conf file already exists,
-# we get the informations from there.
+# we get the information from there.
 if( $file != 0 )
 {
 	open(FIC,"$path") or die("open: $!");
@@ -554,7 +554,7 @@ if( $optVerb )
 		print "=Net= Network input activity (Mbits/s) => " . $iNetAct . "\n";
 		print "=Net= Network output activity (Mbits/s) => " . $oNetAct . "\n";
 		print "=Net= Network input activity rate (%) => " . $netInput . "\n";
-		print "=Net= Network ouput activity rate (%) => " . $netOutput . "\n";
+		print "=Net= Network output activity rate (%) => " . $netOutput . "\n";
 }
 
 #######################################
