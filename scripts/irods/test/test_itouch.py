@@ -142,7 +142,7 @@ class Test_Itouch(session.make_sessions_mixin([('otherrods', 'rods')], []), unit
             self.assertNotEqual(mtime, self.get_replica_mtime(data_object, 1))
 
             # Make the new replica have the same mtime as the original. This shows that
-            # leaf resources are truely supported by itouch.
+            # leaf resources are truly supported by itouch.
             self.admin.assert_icommand(['itouch', '-R', resc_0, '-s', str(mtime), data_object])
             self.assertEqual(mtime, self.get_replica_mtime(data_object, 1))
 

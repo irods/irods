@@ -225,7 +225,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
                 self.user0.assert_icommand("iput -r {local_dir}".format(**locals()), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
                 self.user0.assert_icommand('iquest "SELECT COUNT(DATA_ID) WHERE COLL_NAME LIKE \'%/{coll_name}%\'"'.format(**locals()), 'STDOUT', str(files_per_level * depth))
 
-                # look for occurences of debug sequences in the log
+                # look for occurrences of debug sequences in the log
                 rec_op_kw_string = 'recursiveOpr found in cond_input for file_obj'
                 lib.delayAssert(
                     lambda: lib.log_message_occurrences_equals_count(

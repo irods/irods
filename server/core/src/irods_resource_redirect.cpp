@@ -373,7 +373,7 @@ namespace irods
         }
 
         // =-=-=-=-=-=-=-
-        // perform an open operation if create is not specified ( thats all we have for now )
+        // perform an open operation if create is not specified ( that's all we have for now )
         if (irods::OPEN_OPERATION  == oper || irods::WRITE_OPERATION == oper || irods::UNLINK_OPERATION == oper ) {
             if (!fac_err.ok()) {
                 THROW(fac_err.code(), fmt::format(

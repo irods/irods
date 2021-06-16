@@ -656,7 +656,7 @@ requeDataObjInfoByResc( dataObjInfo_t **dataObjInfoHead,
 
 /* matchAndTrimRescGrp - check for matching rescName in dataObjInfoHead
  * and rescGrpInfoHead. If there is a match, unlink and free the
- * rescGrpInfo in rescGrpInfoHead so that they wont be replicated
+ * rescGrpInfo in rescGrpInfoHead so that they won't be replicated
  * If trimjFlag - set what to trim. Valid input are : TRIM_MATCHED_RESC_INFO,
  * TRIM_MATCHED_OBJ_INFO and TRIM_UNMATCHED_OBJ_INFO
  */

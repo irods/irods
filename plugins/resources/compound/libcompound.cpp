@@ -1785,7 +1785,7 @@ irods::error open_for_prefer_cache_policy(
     }
 
     // =-=-=-=-=-=-=-
-    // if the vote is 0 then the cache doesnt have it so it will need be staged
+    // if the vote is 0 then the cache doesn't have it so it will need be staged
     if ( 0.0 == cache_check_vote ) {
         // =-=-=-=-=-=-=-
         // repave the repl requested temporarily

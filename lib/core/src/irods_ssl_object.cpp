@@ -109,7 +109,7 @@ namespace irods {
         plugin_ptr&        _ptr ) {
         // =-=-=-=-=-=-=-
         // check the interface type and error out if it
-        // isnt a network interface
+        // isn't a network interface
         if ( NETWORK_INTERFACE != _interface ) {
             std::stringstream msg;
             msg << "ssl_object does not support a [";
@@ -213,7 +213,7 @@ namespace irods {
     } // to_client
 
 // =-=-=-=-=-=-=-
-// convertion to client comm ptr
+// conversion to client comm ptr
     error ssl_object::to_server( rsComm_t* _comm ) {
         if ( !_comm ) {
             return ERROR( SYS_INVALID_INPUT_PARAM, "null comm ptr" );

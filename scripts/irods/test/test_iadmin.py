@@ -1281,9 +1281,9 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         hostname = lib.get_hostname()
         testresc1 = 'TestResc'
         with temporary_core_file() as core:
-            time.sleep(2)  # remove once file hash fix is commited #2279
+            time.sleep(2)  # remove once file hash fix is committed #2279
             core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
-            time.sleep(2)  # remove once file hash fix is commited #2279
+            time.sleep(2)  # remove once file hash fix is committed #2279
 
             trigger_file = 'file_to_trigger_acSetRescSchemeForCreate'
             lib.make_file(trigger_file, 10)
@@ -1293,7 +1293,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
             os.unlink(trigger_file)
             self.user0.assert_icommand('irm -f ' + trigger_file)
-        time.sleep(2)  # remove once file hash fix is commited #2279
+        time.sleep(2)  # remove once file hash fix is committed #2279
 
     def test_storageadmin_role(self):
         self.admin.assert_icommand("iadmin mkuser nopes storageadmin", 'STDERR_SINGLELINE', "CAT_INVALID_USER_TYPE")

@@ -43,11 +43,11 @@ namespace irods {
                 plugin_ptr& ) = 0;  // resolved plugin
 
             // =-=-=-=-=-=-=-
-            // convertion to client comm ptr
+            // conversion to client comm ptr
             virtual error to_client( rcComm_t* );
 
             // =-=-=-=-=-=-=-
-            // convertion to client comm ptr
+            // conversion to client comm ptr
             virtual error to_server( rsComm_t* );
 
             // =-=-=-=-=-=-=-

@@ -22,8 +22,8 @@
  *          REPL_NUM_KW  - "value" = The replica number of the copy to
  *              upload.
  *          FILE_PATH_KW - "value" = the physical path of the
- *              destination file. Vaild only if O_CREAT is on.
- *          DEST_RESC_NAME_KW - "value" = The destination Resource. Vaild
+ *              destination file. Valid only if O_CREAT is on.
+ *          DEST_RESC_NAME_KW - "value" = The destination Resource. Valid
  *              only if O_CREAT is on.
  *   return value - The status of the operation.
  */

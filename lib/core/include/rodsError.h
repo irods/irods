@@ -8,7 +8,7 @@
 #define ERR_MSG_LEN             1024
 #define MAX_ERROR_MESSAGES      100
 
-// Special status that supresses reError header printing
+// Special status that suppresses reError header printing
 static const int STDOUT_STATUS = 1000000;
 
 #ifdef __cplusplus
@@ -101,7 +101,7 @@ namespace irods
     ///
     /// \parblock
     /// The memory for the ErrorMessage is not free'd here because
-    /// addRErrorMsg has a very specific memory managemenet model.
+    /// addRErrorMsg has a very specific memory management model.
     /// \endparblock
     ///
     /// \param[in/out] _stack The ErrorStack from which the last ErrorMessage will be popped

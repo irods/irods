@@ -178,7 +178,7 @@ namespace
                 /* for replication, the chksum in dataObjInfo was duplicated */
                 if (_destination_replica.checksum() != checksum_string) {
                     THROW(USER_CHKSUM_MISMATCH, fmt::format(
-                        "{}:mismach chksum for {}.Rcat={},comp {}",
+                        "{}:mismatch chksum for {}.Rcat={},comp {}",
                         __FUNCTION__, _destination_replica.logical_path(), _destination_replica.checksum(), checksum_string));
                 }
             }

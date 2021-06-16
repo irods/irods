@@ -67,7 +67,7 @@ namespace irods {
         plugin_ptr&        _ptr ) {
         // =-=-=-=-=-=-=-
         // check the interface type and error out if it
-        // isnt a network interface
+        // isn't a network interface
         if ( NETWORK_INTERFACE != _interface ) {
             std::stringstream msg;
             msg << "tcp_object does not support a [";

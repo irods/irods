@@ -38,7 +38,7 @@ rsProcStat( rsComm_t * rsComm, procStatInp_t * procStatInp,
                                   &rodsServerHost );
         if ( remoteFlag < 0 ) {
             rodsLog( LOG_ERROR,
-                     "rsProcStat: getRcatHost() failed. erro=%d", remoteFlag );
+                     "rsProcStat: getRcatHost() failed. error=%d", remoteFlag );
             return remoteFlag;
         }
         if ( rodsServerHost->localFlag == REMOTE_HOST ) {
@@ -121,7 +121,7 @@ _rsProcStat( rsComm_t *rsComm, procStatInp_t *procStatInp,
     }
     if ( remoteFlag < 0 ) {
         rodsLog( LOG_ERROR,
-                 "_rsProcStat: getRcatHost() failed. erro=%d", remoteFlag );
+                 "_rsProcStat: getRcatHost() failed. error=%d", remoteFlag );
         return remoteFlag;
     }
     else if ( remoteFlag == REMOTE_HOST ) {

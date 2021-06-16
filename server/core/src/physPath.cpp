@@ -628,7 +628,7 @@ int chkAndHandleOrphanFile(
         return -1;
     }
 
-    /* check if the input filePath is assocated with a dataObj */
+    /* check if the input filePath is associated with a dataObj */
 
     memset( &myDataObjInfo, 0, sizeof( myDataObjInfo ) );
     memset( &fileRenameInp, 0, sizeof( fileRenameInp ) );
@@ -829,7 +829,7 @@ renameFilePathToNewDir( rsComm_t *rsComm, char *newDir,
 }
 
 /* syncDataObjPhyPath - sync the path of the phy path with the path of
- * the data ovject. This is unsed by rename to sync the path of the
+ * the data ovject. This is used by rename to sync the path of the
  * phy path with the new path.
  */
 
@@ -996,7 +996,7 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 }
 
 /* syncCollPhyPath - sync the path of the phy path with the path of
- * the data ovject in the new collection. This is unsed by rename to sync
+ * the data ovject in the new collection. This is used by rename to sync
  * the path of the phy path with the new path.
  */
 

@@ -88,7 +88,7 @@ int _rsFileRmdir(
 
     if ( ( _rmdir_inp->flags & RMDIR_RECUR ) != 0 ) {
         // FIXME :: revisit this after moving to First class Objects
-        // recursive. This is a very dangerous operation. curently
+        // recursive. This is a very dangerous operation. currently
         // it is only used to remove cache directory of structured
         // files
         struct rodsDirent* myFileDirent = 0;

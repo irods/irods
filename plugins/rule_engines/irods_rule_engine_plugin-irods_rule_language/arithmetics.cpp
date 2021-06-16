@@ -1000,7 +1000,7 @@ Res* execAction3( char *actionName, Res** args, unsigned int nargs, int applyAll
 
         } else {
             // =-=-=-=-=-=-=-
-            // didnt find a rule, try a msvc
+            // didn't find a rule, try a msvc
             irods::ms_table_entry ms_entry;
             int actionInx = actionTableLookUp( ms_entry, action );
             if ( actionInx >= 0 ) { /* rule */
@@ -1411,7 +1411,7 @@ void copyFromEnv( Res **args, char **inParams, int inParamsCount, Hashtable *env
 }
 /*
  * execute a rule given by an AST node
- * create a new environment and intialize it with parameters
+ * create a new environment and initialize it with parameters
  */
 Res* execRuleNodeRes( Node *rule, Res** args, unsigned int argc, int applyAll, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r ) {
     int restoreGlobalREAuditFlag = 0;

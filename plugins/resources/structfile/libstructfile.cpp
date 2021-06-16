@@ -450,7 +450,7 @@ irods::error make_tar_cache_dir( int _index, std::string _host ) {
     snprintf( fileMkdirInp.rescHier, sizeof( fileMkdirInp.rescHier ), "%s", spec_coll->rescHier );
 
     // =-=-=-=-=-=-=-
-    // loop over a series of indicies for the directory suffix and
+    // loop over a series of indices for the directory suffix and
     // try to make the directory until it succeeds
     int dir_index = 0;
     while ( true ) {
@@ -742,7 +742,7 @@ irods::error compose_cache_dir_physical_path( char*       _phy_path,
         const char* _sub_file_path ) {
     // =-=-=-=-=-=-=-
     // subFilePath is composed by appending path to the objPath which is
-    // the logical path of the tar file. So we need to substitude the
+    // the logical path of the tar file. So we need to substitute the
     // objPath with cacheDir
     int len = strlen( _spec_coll->collection );
     if ( strncmp( _spec_coll->collection, _sub_file_path, len ) != 0 ) {
@@ -1999,7 +1999,7 @@ irods::error tar_file_extract(
     if ( !ext_err.ok() ) {
         // NOTE:: may need to remove the cacheDir too
         std::stringstream msg;
-        msg << "tar_file_extract_plugin - failed to extact structure file for [";
+        msg << "tar_file_extract_plugin - failed to extract structure file for [";
         msg << spec_coll->objPath;
         msg << "] in directory [";
         msg << spec_coll->cacheDir;
@@ -2086,7 +2086,7 @@ irods::error write_file_to_archive( const boost::filesystem::path _path,
     }
 
     // =-=-=-=-=-=-=-
-    // JMC :: i didnt use ifstream as readsome() garbled the file
+    // JMC :: i didn't use ifstream as readsome() garbled the file
     //     :: some reason.  revisit this for windows
     // =-=-=-=-=-=-=-
     // open the file in question
@@ -2505,7 +2505,7 @@ irods::error tar_file_sync(
     spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
 
     // =-=-=-=-=-=-=-
-    // we cant sync if the structured collection is currently in use
+    // we can't sync if the structured collection is currently in use
     if ( PluginStructFileDesc[ struct_file_index ].openCnt > 0 ) {
         return ERROR( SYS_STRUCT_FILE_BUSY_ERR, "tar_file_sync_plugin - spec coll in use" );
     }

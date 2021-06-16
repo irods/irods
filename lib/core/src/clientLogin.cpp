@@ -192,7 +192,7 @@ int clientLoginTTL( rcComm_t *Conn, int ttl ) {
         return status;
     }
 
-    /* calcuate the limited password, which is a hash of the user's main pw and
+    /* calculate the limited password, which is a hash of the user's main pw and
        the returned stringToHashWith. */
     char hashBuf[101];
     memset( hashBuf, 0, sizeof( hashBuf ) );

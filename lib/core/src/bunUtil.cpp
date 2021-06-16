@@ -137,7 +137,7 @@ initCondForBunOpr( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
             addKeyVal( &structFileExtAndRegInp->condInput,
                        DEST_RESC_NAME_KW, rodsArgs->resourceString );
             /* RESC_NAME_KW is need for unbundle. DEST_RESC_NAME_KW or
-             * DEF_RESC_NAME_KW are neede for bundle */
+             * DEF_RESC_NAME_KW are needed for bundle */
             addKeyVal( &structFileExtAndRegInp->condInput, RESC_NAME_KW,
                        rodsArgs->resourceString );
         }

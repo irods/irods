@@ -31,7 +31,7 @@ typedef struct RodsEnvironment {
     char rodsMatchHashPolicy[ NAME_LEN ];
 
     // =-=-=-=-=-=-=-
-    // leagcy ssl environment variables
+    // legacy ssl environment variables
     char irodsSSLCACertificatePath[MAX_NAME_LEN];
     char irodsSSLCACertificateFile[MAX_NAME_LEN];
     char irodsSSLVerifyServer[MAX_NAME_LEN];

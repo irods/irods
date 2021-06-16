@@ -43,7 +43,7 @@ def genquery_module_available():
     genquery_module_path = os.path.join( IRODS_CONFIG_DIR,  GENQUERY_MODULE_BASENAME)
     file_description = " module file '{}'".format (genquery_module_path)
 
-    useable = False
+    usable = False
 
     if not os.path.isfile( genquery_module_path ):
         print ("Not finding " + file_description ,file=sys.stderr)
@@ -59,7 +59,7 @@ def genquery_module_available():
         except Exception:
             print ("Unknown Error in accessing " + file_description ,file=sys.stderr)
         else:
-            useable = True
+            usable = True
             idx = -1
             #--> try import genquery module so that we can test optimally according to configuration
             try:
@@ -77,10 +77,10 @@ def genquery_module_available():
                     if cfg_dir != IRODS_CONFIG_DIR:
                         raise RuntimeError("Python module load path couldn't be restored")
 
-    if not useable:
+    if not usable:
         print (" --- Not running genquery iterator tests --- " ,file=sys.stderr)
 
-    return useable
+    return usable
 
 
 @contextmanager

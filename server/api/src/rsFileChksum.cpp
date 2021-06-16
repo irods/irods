@@ -191,7 +191,7 @@ int fileChksum(rsComm_t* rsComm,
     }
 
     // =-=-=-=-=-=-=-
-    // do an inital read of the file
+    // do an initial read of the file
     char buffer[SVR_MD5_BUF_SZ];
     irods::error read_err = fileRead(
                                 rsComm,

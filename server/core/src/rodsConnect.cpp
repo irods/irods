@@ -24,7 +24,7 @@
  * rodsServerHost) based on the rcatZoneHint.
  * rcatZoneHint is the hint for which zone to go it. It can be :
  *      a full path - e.g., /A/B/C. In this case, "A" will be taken as the zone
- *      a zone name - a string wth the first character that is no '/' is taken
+ *      a zone name - a string with the first character that is no '/' is taken
  *         as a zone name.
  *      NULL string - default to local zone
  * If the rcat host is remote, it will automatically connect to the rcat host.
@@ -40,7 +40,7 @@ int getAndConnRcatHost(
 
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE,
-                 "getAndConnRcatHost:getRcatHost() failed. erro=%d", status );
+                 "getAndConnRcatHost:getRcatHost() failed. error=%d", status );
         return status;
     }
 
@@ -920,7 +920,7 @@ getAndConnReHost( rsComm_t *rsComm, rodsServerHost_t **rodsServerHost ) {
 
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE,
-                 "getAndConnReHost:getReHost() failed. erro=%d", status );
+                 "getAndConnReHost:getReHost() failed. error=%d", status );
         return status;
     }
 

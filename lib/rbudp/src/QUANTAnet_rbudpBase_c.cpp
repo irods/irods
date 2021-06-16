@@ -153,7 +153,7 @@ int connectTCP( rbudpBase_t *rbudpBase, char * host ) {
 int connectUDP( rbudpBase_t *rbudpBase, char *host ) {
     static struct sockaddr_in udpClientAddr;
 
-    // Fill in the structure whith the address of the server that we want to send to
+    // Fill in the structure with the address of the server that we want to send to
     // udpServerAddr is class global variable, will be used to send data
     bzero( &rbudpBase->udpServerAddr, sizeof( rbudpBase->udpServerAddr ) );
     rbudpBase->udpServerAddr.sin_family = AF_INET;

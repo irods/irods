@@ -261,7 +261,7 @@ namespace
         }
         catch (...) {
             THROW(SYS_UNKNOWN_ERROR, fmt::format(
-                "[{}:{}] - unkonwn error occurred",
+                "[{}:{}] - unknown error occurred",
                 __FUNCTION__, __LINE__));
         }
     } // set_data_object_state

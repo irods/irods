@@ -426,7 +426,7 @@ msiCloseGenQuery( msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, ruleEx
     genQueryOut = ( genQueryOut_t* )genQueryOut_msp->inOutStruct;
     genQueryInp = ( genQueryInp_t* )genQueryInp_msp->inOutStruct;
 
-    /* set contiuation index so icat know which statement to free */
+    /* set continuation index so icat know which statement to free */
     genQueryInp->continueInx = genQueryOut->continueInx;
     genQueryInp->maxRows = -1;
 

@@ -51,7 +51,7 @@ namespace irods {
         else {
             char* home_dir = getenv( "HOME" );
             // if home env exists, prefer that for run in place
-            // or use of existing irods service accound
+            // or use of existing irods service account
             if ( home_dir ) {
                 json_file = home_dir;
             }

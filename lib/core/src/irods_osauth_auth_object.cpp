@@ -58,7 +58,7 @@ namespace irods {
         plugin_ptr&        _ptr ) {
         // =-=-=-=-=-=-=-
         // check the interface type and error out if it
-        // isnt a auth interface
+        // isn't a auth interface
         if ( AUTH_INTERFACE != _interface ) {
             std::stringstream msg;
             msg << "osauth_auth_object does not support a [";
