@@ -32,7 +32,7 @@
  * \usage
  * Trim the data object /myZone/home/john/myfile by deleting replica in
  * myResource and with age greater than 600 minutes (10 hours).
- * Also keep a minimium of 1 copy of the data after the trim :
+ * Also keep a minimum of 1 copy of the data after the trim :
  * \n dataObjInp_t dataObjInp;
  * \n bzero (&dataObjInp, sizeof (dataObjInp));
  * \n rstrcpy (dataObjInp.objPath, "/myZone/home/john/myfile", MAX_NAME_LEN);

@@ -383,7 +383,7 @@ unpackRei( rsComm_t *rsComm, ruleExecInfo_t **rei,
 
     /* unpack the rei */
 
-    /* alway use NATIVE_PROT for rei */
+    /* always use NATIVE_PROT for rei */
     status = unpack_struct( packedReiBBuf->buf, ( void ** ) rei,
                            "Rei_PI", RodsPackTable, NATIVE_PROT, nullptr );
 

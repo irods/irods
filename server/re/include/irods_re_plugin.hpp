@@ -148,8 +148,8 @@ namespace irods {
         boost::any callback_hdlr_;
     };
 
-    // serialize wraps a function so that it can be called at runtime wihtout prior knowledge of original parameter types
-    // only when the parameter type matches the oringal does the call succeed
+    // serialize wraps a function so that it can be called at runtime without prior knowledge of original parameter types
+    // only when the parameter type matches the original does the call succeed
     class serialize final {
     public:
         template<typename... As>

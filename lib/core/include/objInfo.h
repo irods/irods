@@ -218,13 +218,13 @@ typedef struct InxValPair {
 typedef struct StrArray {
     int len;
     int size;
-    char *value;        /* char aray of [len][size] */
+    char *value;        /* char array of [len][size] */
 } strArray_t;
 
 /* intArray_t - just a single array */
 typedef struct IntArray {
     int len;
-    int *value;        /* int aray of [len] */
+    int *value;        /* int array of [len] */
 } intArray_t;
 
 /* definition for RescTypeDef */

@@ -26,7 +26,7 @@ namespace irods
     inline const char CS_NEG_USE_SSL_KW[] = {"cs_neg_ssl_kw"};
 
     /// =-=-=-=-=-=-=-
-    /// @brief constants for sucess / failure status
+    /// @brief constants for success / failure status
     inline const int CS_NEG_STATUS_SUCCESS = 1;
     inline const int CS_NEG_STATUS_FAILURE = 0;
 

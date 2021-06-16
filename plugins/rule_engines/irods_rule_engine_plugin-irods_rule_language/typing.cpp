@@ -954,7 +954,7 @@ ExprType* typeFunction3( Node* node, int dynamictyping, Env* funcDesc, Hashtable
             setIOType( node->subtrees[1]->subtrees[i], getIOType( t->subtrees[i] ) );
         }
 
-        arg->coercionType = t; /* set coersion to parameter type */
+        arg->coercionType = t; /* set coercion to parameter type */
 
         /*
                 printTreeDeref(node, 0, var_type_table, r);

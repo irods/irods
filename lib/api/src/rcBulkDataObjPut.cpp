@@ -115,7 +115,7 @@
  *    \n COL_DATA_MODE - the createMode of each data object.
  *    \n OFFSET_INX - The accummulative size of the data objects. e.g.,
  *          suppose we are bulk loading 2 files with sizes s1 and s2
- *          repectively,. The 2 elements of this array are, s1 and s1+s2.
+ *          respectively,. The 2 elements of this array are, s1 and s1+s2.
  *    \n COL_D_DATA_CHECKSUM - The checksum values of each data object.
  *           This array is only needed if REG_CHKSUM_KW or VERIFY_CHKSUM_KW
  *           is specified in the condInput.

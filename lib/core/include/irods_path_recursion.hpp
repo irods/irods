@@ -23,7 +23,7 @@ namespace irods
     // Returns true if the user path is a directory which has not
     // yet been examined, or, throws an irods::exception if the path has
     // already been examined (it's in the set<> already).
-    // The bool paramter is true if the "--link" flag was specified
+    // The bool parameter is true if the "--link" flag was specified
     bool is_path_valid_for_recursion(boost::filesystem::path const &, recursion_map_t &, bool);
 
     // Called in from places where file system loop detection is not desired/needed,
@@ -44,7 +44,7 @@ namespace irods
     // This is what the icommand xxxxUtil() function uses to scan recursively
     // for directories/symlinks. The path is the user's non-canonical path, and
     // the recursion_map_t is statically defined by the caller as needed.
-    // The bool paramter is true if the "--link" flag was specified
+    // The bool parameter is true if the "--link" flag was specified
     int check_directories_for_loops( boost::filesystem::path const &, irods::recursion_map_t &, bool);
 
     // Issue 3988: For irsync and iput mostly, scan all source physical directories

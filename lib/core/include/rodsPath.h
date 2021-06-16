@@ -84,7 +84,7 @@ void remove_trailing_path_separators(char* path);
 /// \param[in] path   The path to search.
 /// \param[in] prefix The path to look for. Trailing slashes are ignored.
 ///
-/// \return An interger value.
+/// \return An integer value.
 /// \retval non-zero If \p path starts with \p prefix.
 /// \retval 0        If \p path does not start with \p prefix or \p prefix is an empty string.
 int has_prefix(const char* path, const char* prefix);

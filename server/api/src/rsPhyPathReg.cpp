@@ -1246,7 +1246,7 @@ int rsPhyPathReg(
     // =-=-=-=-=-=-=-
     // NOTE:: resource_redirect can wipe out the specColl due to a call to getDataObjIncSpecColl
     //        which nullifies the specColl in the case of certain special collections ( LINKED ).
-    //        this block of code needs to be called before redirect to handle that case as it doesnt
+    //        this block of code needs to be called before redirect to handle that case as it doesn't
     //        need the resource hierarchy anyway.  this is the sort of thing i'd like to avoid in
     //        the future
 

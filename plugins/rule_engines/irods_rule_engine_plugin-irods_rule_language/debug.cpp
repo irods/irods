@@ -229,7 +229,7 @@ getValByKey( keyValPair_t *condInput, char *keyWord ) {
  *
  * If outputToCache == 0 and inpParam is DataObjInp_MS_T, *outDataObjInp
  *    will be set to the pointer given by inpParam->inOutStruct.
- * If inpParam is STR_MS_T or KeyValPair_MS_T, regardles of the value of
+ * If inpParam is STR_MS_T or KeyValPair_MS_T, regardless of the value of
  *    outputToCache, the dataObjInpCache will be used to contain the output
  *    if it is not NULL. Otherwise, one will be malloc'ed (be sure to free
  *    it after your are done).

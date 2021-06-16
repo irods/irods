@@ -16,7 +16,7 @@ namespace irods {
             replicator( oper_replicator* _oper_replicator );
             virtual ~replicator( void );
 
-            /// @brief The function that replicates the specifed operations to the siblings
+            /// @brief The function that replicates the specified operations to the siblings
             error replicate( plugin_context& _ctx, const child_list_t& _siblings, object_list_t& _opers );
 
         private:

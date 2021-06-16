@@ -63,7 +63,7 @@ int _rsGetHierarchyForResc(
 // connect to the icat server and issue the
 // api call, if we are on the icat server run
 // the icat highlevel function to compute the
-// heirarchy of a resource in a composition (tree)
+// hierarchy of a resource in a composition (tree)
 // starting at the root to the given resource
 int rsGetHierarchyForResc(
     rsComm_t*                  _comm,

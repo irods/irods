@@ -1217,7 +1217,7 @@ irods::error sendVersion(
 
     }
 
-    /* alway use XML for version */
+    /* always use XML for version */
     status = pack_struct( ( char * ) &myVersion, &versionBBuf,
                          "Version_PI", RodsPackTable, 0, XML_PROT, nullptr);
     if ( status < 0 ) {
@@ -1395,7 +1395,7 @@ irods::error sendReconnMsg(
     }
 
     // =-=-=-=-=-=-=-
-    // pack outgoing message - alway use XML for version
+    // pack outgoing message - always use XML for version
     bytesBuf_t* recon_buf = NULL;
     int status = pack_struct(
                      static_cast<void*>( _msg ),
@@ -1408,7 +1408,7 @@ irods::error sendReconnMsg(
     }
 
     // =-=-=-=-=-=-=-
-    // pack outgoing message - alway use XML for version
+    // pack outgoing message - always use XML for version
     irods::error ret = sendRodsMsg(
                            _ptr,
                            RODS_RECONNECT_T,

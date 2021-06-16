@@ -71,19 +71,19 @@ function(__check_cpp_macro_def_impl macro var language)
       RESULT_VARIABLE run_result
       OUTPUT_VARIABLE ${var})
     if(NOT CMAKE_REQUIRED_QUIET)
-      message(STATUS "Check definition of ${langauge} preprocessor macro ${macro} - done")
+      message(STATUS "Check definition of ${language} preprocessor macro ${macro} - done")
     endif()
     file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
-      "Determining definition of ${langauge} preprocessor macro ${macro} passed with the following compile output:\n${output}\n\n")
+      "Determining definition of ${language} preprocessor macro ${macro} passed with the following compile output:\n${output}\n\n")
     set(${var} "${${var}}" CACHE INTERNAL "CHECK_CPP_MACRO_DEFINITION: CMAKE_TOSTRING(${macro})")
   else()
     # The check failed to compile.
     if(NOT CMAKE_REQUIRED_QUIET)
-      message(STATUS "Check definition of ${langauge} preprocessor macro ${macro} - failed")
+      message(STATUS "Check definition of ${language} preprocessor macro ${macro} - failed")
     endif()
     file(READ ${src} content)
     file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
-      "Determining definition of ${langauge} preprocessor macro ${macro} passed with the following compile output:\n${output}\n${src}:\n${content}\n\n")
+      "Determining definition of ${language} preprocessor macro ${macro} passed with the following compile output:\n${output}\n${src}:\n${content}\n\n")
     set(${var} "" CACHE INTERNAL "CHECK_CPP_MACRO_DEFINITION: ${macro} undefined")
   endif()
 endfunction()

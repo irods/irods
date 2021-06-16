@@ -421,7 +421,7 @@ collStatAllKinds( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     return status;
 }
 
-/* mk the collection resursively */
+/* mk the collection recursively */
 
 int
 rsMkCollR( rsComm_t *rsComm, const char *startColl, const char *destColl ) {

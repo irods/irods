@@ -46,7 +46,7 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
         local_anotherdir = os.path.join(self.testing_tmp_dir, 'anotherdir_4009_4013')
 
         ##################################
-        # Create the file system directory heirarchy
+        # Create the file system directory hierarchy
         ########
         lib.make_dir_p(local_dir)
         self.user0.run_icommand('imkdir {target_collection_path}'.format(**locals()))
@@ -132,7 +132,7 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
         local_anotherdir = os.path.join(self.testing_tmp_dir, 'anotherdir_4009_4013')
 
         ##################################
-        # Create the file system directory heirarchy
+        # Create the file system directory hierarchy
         ########
         lib.make_dir_p(local_dir)
         self.user0.run_icommand('imkdir {target_collection_path}'.format(**locals()))
@@ -228,7 +228,7 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
 
         try:
             ##################################
-            # Create the file system directory heirarchy
+            # Create the file system directory hierarchy
             ########
             lib.make_dir_p(local_dir)
             self.user0.run_icommand('imkdir {target_collection_path}'.format(**locals()))
@@ -299,7 +299,7 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
 
         try:
             ##################################
-            # Create the file system directory heirarchy
+            # Create the file system directory hierarchy
             ########
             lib.make_dir_p(local_dir)
             self.user0.run_icommand('imkdir {target_collection_path}'.format(**locals()))
@@ -371,7 +371,7 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
 
         try:
             ##################################
-            # Create the file system directory heirarchy
+            # Create the file system directory hierarchy
             ########
             lib.make_dir_p(local_dir)
             self.user0.run_icommand('imkdir {target_collection_path}'.format(**locals()))
@@ -578,7 +578,7 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
 
         try:
             ##################################
-            # Create the file system directory heirarchy
+            # Create the file system directory hierarchy
             ########
             lib.make_dir_p(local_dir)
             self.user0.run_icommand('imkdir {target_collection_path}'.format(**locals()))
@@ -754,7 +754,7 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
 
         try:
             ##################################
-            # Create the file system directory heirarchy
+            # Create the file system directory hierarchy
             ########
             dirname1 = os.path.join(local_dir, 'dir1')
             lib.make_dir_p(local_dir)
@@ -858,7 +858,7 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
 
         try:
             ##################################
-            # Create the file system directory heirarchy
+            # Create the file system directory hierarchy
             ########
             lib.make_dir_p(local_dir)
 
@@ -963,7 +963,7 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
 
         try:
             ##################################
-            # Create the file system directory heirarchy. Basically, two directories,
+            # Create the file system directory hierarchy. Basically, two directories,
             # one of which has no permissions. The other directly is valid, and a symbolic
             # link to the directory that has no permissions, as well as a regular file with
             # no permissions.

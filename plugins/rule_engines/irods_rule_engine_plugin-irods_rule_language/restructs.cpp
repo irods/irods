@@ -272,7 +272,7 @@ msParamArray_t *newMsParamArray() {
 }
 
 void deleteMsParamArray( msParamArray_t *msParamArray ) {
-    clearMsParamArray( msParamArray, 0 ); /* do not delete inOutStruct because global varaibles of iRODS type may share it */
+    clearMsParamArray( msParamArray, 0 ); /* do not delete inOutStruct because global variables of iRODS type may share it */
     /* to do write a function that delete inOutStruct of msParamArray if it is not shared */
     free( msParamArray );
 

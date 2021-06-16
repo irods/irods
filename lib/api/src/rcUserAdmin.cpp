@@ -26,7 +26,7 @@
  * \n This is similar to general-admin but is for the regular, non-admin, users.
  * \n The input is a set of text strings to be parsed on the server side.
  * \n This allows this same API to be easily extended with new functionality
- * \n and well managed backward compatability.  This is used, for example,
+ * \n and well managed backward compatibility.  This is used, for example,
  * \n to allow users to change their passwords (ipasswd).
  * \n Primary results are changes to rows in the ICAT database.
  *

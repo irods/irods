@@ -1495,8 +1495,8 @@ int setOverQuota( rsComm_t *rsComm ) {
     }
 
     /* Set the over_quota values for irods-total, if any, and only if
-       the this over_quota value is higher than the previous.  Do it in
-       two steps to keep it simplier (there may be a better way tho).
+       this over_quota value is higher than the previous.  Do it in
+       two steps to keep it simpler (there may be a better way though).
     */
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "setOverQuota SQL 3" );
@@ -4575,7 +4575,7 @@ irods::error db_reg_coll_by_admin_op(
             return ERROR( status2, "no group admin access" );
         }
         if ( creatingUserByGroupAdmin == 0 ) {
-            return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficent privilege" );
+            return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
         // =-=-=-=-=-=-=-
     }
@@ -4804,7 +4804,7 @@ irods::error db_reg_coll_op(
     }
 
     if ( status == 0 ) {
-        return ERROR( CAT_NAME_EXISTS_AS_DATAOBJ, "data obj alread exists" );
+        return ERROR( CAT_NAME_EXISTS_AS_DATAOBJ, "data obj already exists" );
     }
 
 
@@ -6886,7 +6886,7 @@ irods::error db_make_temp_pw_op(
     hashValue[j] = '\0';
     /*   printf("hashValue=%s\n", hashValue); */
 
-    /* calcuate the temp password (a hash of the user's main pw and
+    /* calculate the temp password (a hash of the user's main pw and
        the hashValue) */
     memset( md5Buf, 0, sizeof( md5Buf ) );
     snprintf( md5Buf, sizeof( md5Buf ), "%s%s", hashValue, password );
@@ -7045,7 +7045,7 @@ irods::error db_make_limited_pw_op(
     }
     hashValue[j] = '\0';
 
-    /* calcuate the limited password (a hash of the user's main pw and
+    /* calculate the limited password (a hash of the user's main pw and
        the hashValue) */
     memset( md5Buf, 0, sizeof( md5Buf ) );
     snprintf( md5Buf, sizeof( md5Buf ), "%s%s", hashValue, password );
@@ -9865,7 +9865,7 @@ irods::error db_del_avu_metadata_op(
             rodsLog( LOG_NOTICE,
                      "chlDeleteAVUMetadata cmlExecuteNoAnswerSql commit failure %d",
                      status );
-            return ERROR( status, "comit failure" );
+            return ERROR( status, "commit failure" );
         }
     }
 
@@ -10424,7 +10424,7 @@ irods::error db_mod_access_control_op(
             }
 
             status =  cmlExecuteNoAnswerSql( "commit", &icss );
-            return ERROR( status, "commit failiure" );
+            return ERROR( status, "commit failure" );
         }
 
         /* doing a collection, non-recursive */
@@ -11112,7 +11112,7 @@ irods::error db_move_object_op(
             return  ERROR( CAT_NO_ACCESS_PERMISSION, "permission error" );  /* does exist, must be
                                                    permission error */
         }
-        return ERROR( CAT_UNKNOWN_COLLECTION, "target isnt a collection" );      /* isn't a coll */
+        return ERROR( CAT_UNKNOWN_COLLECTION, "target is not a collection" );      /* isn't a coll */
     }
 
 

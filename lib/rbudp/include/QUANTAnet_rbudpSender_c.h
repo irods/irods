@@ -60,7 +60,7 @@ int initSendRudp( rbudpSender_t *rbudpSender, void* buffer,
 void
 QUANTAnet_rbudpSender_c( rbudpSender_t *rbudpSender, int port );
 
-/** Constructor when we want to reuse exising TCP socket.
+/** Constructor when we want to reuse existing TCP socket.
         @ param tcpsock the TCP socket we are going to use in RBUDP.
         @ param port UDP local and remote ports will be calculated based on it.
 */

@@ -459,7 +459,7 @@ rcPartialDataPut( rcPortalTransferInp_t *myInput ) {
 
                 // =-=-=-=-=-=-=-
                 // need to send the incoming size as encryption might change
-                // the size of the data from the writen values
+                // the size of the data from the written values
                 bytesWritten = myWrite(
                                    destFd,
                                    &new_size,
@@ -1203,7 +1203,7 @@ rcPartialDataGet( rcPortalTransferInp_t *myInput ) {
 }
 
 /* putFileToPortalRbudp - The client side of putting a file using
- * Rbudp. If locFilePath is NULL, the local file has already been opned
+ * Rbudp. If locFilePath is NULL, the local file has already been opened
  * and locFd should be used. If sendRate and packetSize are 0, it will
  * try to set it based on env and default.
  */
@@ -1274,7 +1274,7 @@ int putFileToPortalRbudp(
 }
 
 /* getFileToPortalRbudp - The client side of getting a file using
- * Rbudp. If locFilePath is NULL, the local file has already been opned
+ * Rbudp. If locFilePath is NULL, the local file has already been opened
  * and locFd should be used. If sendRate and packetSize are 0, it will
  * try to set it based on env and default.
  */

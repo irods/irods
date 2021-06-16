@@ -2,7 +2,7 @@
 from __future__ import print_function
 
 '''switchuser.py - A simple utility to switch irods user environment files, offsession (ie. after running iexit).
-Asssumes that such files are stored as irods_environment_username.json under ~/.irods
+Assumes that such files are stored as irods_environment_username.json under ~/.irods
 '''
 
 import os

@@ -74,7 +74,7 @@ namespace irods {
     } // get_re_vars
 
 // =-=-=-=-=-=-=-
-// convertion to client comm ptr
+// conversion to client comm ptr
     error network_object::to_client( rcComm_t* _comm ) {
         if ( !_comm ) {
             return ERROR( SYS_INVALID_INPUT_PARAM, "null comm ptr" );
@@ -87,7 +87,7 @@ namespace irods {
     } // to_client
 
 // =-=-=-=-=-=-=-
-// convertion to client comm ptr
+// conversion to client comm ptr
     error network_object::to_server( rsComm_t* _comm ) {
         if ( !_comm ) {
             return ERROR( SYS_INVALID_INPUT_PARAM, "null comm ptr" );

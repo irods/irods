@@ -58,7 +58,7 @@ namespace irods {
             /// =-=-=-=-=-=-=-
             /// @brief given a key, create a hashed key and IV
             irods::error initialization_vector(
-                array_t& );     // intialization vector
+                array_t& );     // initialization vector
 
             /// =-=-=-=-=-=-=-
             /// @brief generate a random byte key
