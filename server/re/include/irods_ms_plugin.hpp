@@ -22,7 +22,7 @@ namespace irods {
      * \brief  This is to be used by a microservice developer to provide a dynamic plugin
                to the microservice table found in server/re/include/reActions.header.
                Reference server/re/src/rules.cpp for loading and
-               server/re/src/arithemetic.cpp for invocation.
+               server/re/src/arithmetic.cpp for invocation.
      *
      **/
     class ms_table_entry : public plugin_base {
