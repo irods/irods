@@ -425,16 +425,16 @@ irods::error proc_child_list_for_create_policy(irods::plugin_context& _ctx) {
 
     if(num_repl < child_list.size()) {
         bool pick_done{};
-        std::vector<size_t> picked_indicies{};
+        std::vector<size_t> picked_indices{};
         while(!pick_done) {
              size_t rand_index{irods::getRandom<size_t>() % child_list.size()};
              if(std::find(
-                 picked_indicies.begin(),
-                 picked_indicies.end(),
-                 rand_index) == picked_indicies.end()) {
+                 picked_indices.begin(),
+                 picked_indices.end(),
+                 rand_index) == picked_indices.end()) {
                  new_list.push_back(child_list[rand_index]);
-                 picked_indicies.push_back(rand_index);
-                 if(picked_indicies.size() >= num_repl) {
+                 picked_indices.push_back(rand_index);
+                 if(picked_indices.size() >= num_repl) {
                      pick_done = true;
                  }
              }

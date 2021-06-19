@@ -17,7 +17,7 @@ namespace irods {
     const std::string AUTH_NATIVE_SCHEME( "native" );
 
 /// =-=-=-=-=-=-=-
-/// @brief object for a native irods authenticaion sceheme
+/// @brief object for a native irods authentication scheme
     class native_auth_object : public auth_object {
         public:
             /// =-=-=-=-=-=-=-

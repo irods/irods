@@ -205,7 +205,7 @@ icatGeneralQuerySetup() {
        the PHP client, that might be asking for the previous COL_USER_DN
        (column id 205).  In iRODS 2.2+ there can be multiple DNs so the
        client will need to change to handle those.  But to avoid an error
-       (altho returning invalid info), we just map the old 205 request to
+       (although returning invalid info), we just map the old 205 request to
        the comment field.
     */
     sColumn( COL_USER_DN_INVALID, "R_USER_MAIN", "r_comment" ); /* compatibility */
