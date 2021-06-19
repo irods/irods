@@ -204,7 +204,7 @@ int chl_general_update_impl(
         }
         /* Since the sql string is lower case, this is not checked for
            in ICAT test suite; removed since now this is only for
-           extented tables and so would be difficult to test */
+           extended tables and so would be difficult to test */
         if ( logSQLGenUpdate ) {
             rodsLog( LOG_SQL, "chlGeneralUpdate sql 1" );
         }

@@ -75,8 +75,8 @@ $Getopt::Long::autoabbrev=1;
 	my @line_iname; # lines for the network interfaces (netstat output: eth, ce...)
 	my $col_iname = 0; # column of the interface name
 	my $col_mtu = 0; # column of the mtu
-	my $col_iswap = 0; # pagging input swap activity
-	my $col_oswap = 0; # pagging outpout swap activity
+	my $col_iswap = 0; # paging input swap activity
+	my $col_oswap = 0; # paging output swap activity
 	my $col_idle = 0; # column where the idle time is found with 'vmstat'
 	my $col_free = 0; # column of the free memory 
 	my $col_swap = 0; # column of the swap memory

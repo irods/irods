@@ -175,7 +175,7 @@ irods::error pam_auth_client_request(
 
     // =-=-=-=-=-=-=-
     // expand the context string then append the auth scheme
-    // and user name, then reencode into a string
+    // and user name, then re-encode into a string
     irods::kvp_map_t ctx_map;
     irods::error ret = irods::parse_escaped_kvp_string(
                            context,

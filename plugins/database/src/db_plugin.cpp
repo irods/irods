@@ -5487,7 +5487,7 @@ irods::error db_mod_zone_op(
     }
 
     if ( *_zone_name == '\0' || *_option == '\0' || *_option_value == '\0' ) {
-        return  ERROR( CAT_INVALID_ARGUMENT, "invalid arument value" );
+        return  ERROR( CAT_INVALID_ARGUMENT, "invalid argument value" );
     }
 
     if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
@@ -13192,7 +13192,7 @@ irods::error db_ins_dvm_table_op(
     }
 
     if ( !icss.status ) {
-        return ERROR( CATALOG_NOT_CONNECTED, "catalog not conncted" );
+        return ERROR( CATALOG_NOT_CONNECTED, "catalog not connected" );
     }
 
     /* first check if the DVM already exists */
