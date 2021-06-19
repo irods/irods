@@ -13,11 +13,11 @@
 namespace irods {
 
 /// =-=-=-=-=-=-=-
-/// @brief constant defining the native auth scheme string
+/// @brief constant defining the osauth scheme string
     const std::string AUTH_OSAUTH_SCHEME( "osauth" );
 
 /// =-=-=-=-=-=-=-
-/// @brief object for a native irods authenticaion sceheme
+/// @brief object for an osauth irods authentication scheme
     class osauth_auth_object : public auth_object {
         public:
             /// =-=-=-=-=-=-=-

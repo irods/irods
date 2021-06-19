@@ -979,7 +979,7 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
 
             ##################################
             # Create the symlink in dir1 which points to dir1 (which will soon
-            # become unreadable/unwriteable.
+            # become unreadable/unwritable).
             ########
             validsymlinktodir2 = os.path.join(dirname1, 'validsymlinktodir2')
             lib.execute_command('ln -s {dirname2} {validsymlinktodir2}'.format(**locals()))

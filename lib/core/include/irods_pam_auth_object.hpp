@@ -13,11 +13,11 @@
 namespace irods {
 
 /// =-=-=-=-=-=-=-
-/// @brief constant defining the native auth scheme string
+/// @brief constant defining the PAM auth scheme string
     const std::string AUTH_PAM_SCHEME( "pam" );
 
 /// =-=-=-=-=-=-=-
-/// @brief object for a native irods authenticaion sceheme
+/// @brief object for a PAM irods authentication scheme
     class pam_auth_object : public auth_object {
         public:
             /// =-=-=-=-=-=-=-
