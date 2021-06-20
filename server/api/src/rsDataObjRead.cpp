@@ -15,6 +15,7 @@
 #include "rsDataObjLseek.hpp"
 
 #include <algorithm>
+#include <limits>
 
 int
 applyRuleForPostProcForRead( rsComm_t *rsComm, bytesBuf_t *dataObjReadOutBBuf, char *objPath ) {
@@ -117,7 +118,15 @@ rsDataObjRead(rsComm_t* rsComm,
         // At this point, we know the file read position is less than the replica's
         // recorded data size. We now have to adjust the requested number of bytes to
         // read so that the client does not read past the recorded data size.
-        dataObjReadInp->len = std::min<int>(dataObjReadInp->len, dataObjInfo->dataSize - output->offset);
+
+        // Perform:
+        //     Len = min(Len, min(DataSize-Offset,INT_MAX))
+        // in a way that doesn't lop off the upper bits to fit a rodsLong_t into the smaller 'int' type
+        // needed by a data object read operation.
+
+        const auto buffer_size = std::min<rodsLong_t>(dataObjReadInp->len, dataObjInfo->dataSize - output->offset);
+        using limits_type = std::numeric_limits<decltype(dataObjReadInp->len)>;
+        dataObjReadInp->len = (buffer_size > static_cast<rodsLong_t>(limits_type::max())) ? limits_type::max() : buffer_size;
     }
 
     const auto bytes_read = l3Read(rsComm, l1descInx, dataObjReadInp->len, dataObjReadOutBBuf);
