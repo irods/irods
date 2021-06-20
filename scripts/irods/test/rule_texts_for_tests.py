@@ -31,6 +31,12 @@ acAclPolicy {
 #===== Test_AllRules =====
 
 rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_AllRules'] = {}
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_AllRules']['test_data_obj_read_for_2100MB_file__5709'] = '''
+        msiDataObjOpen("objPath={0}", *fd);
+        *len = {1};
+        msiDataObjRead(*fd, *len, *buf);   # test of read from  data object >= 2GB in size, irods/irods#5709
+        writeLine("stdout", *buf);
+'''
 rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_AllRules']['test_msiTarFileExtract_big_file__issue_4118'] = '''
 myTestRule {{
     msiTarFileExtract(*File,*Coll,*Resc,*Status);

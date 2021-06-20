@@ -1239,6 +1239,28 @@ OUTPUT ruleExecOut
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
+    def test_data_obj_read_for_2100MB_file__5709(self):
+        test_name = "test_data_obj_read_for_2100MB_file__5709"
+        rule_string = rule_texts[plugin_name][self.class_name][test_name]
+        f = None
+        try:
+            N = 2100
+            read_len = 2048
+            s_1M = b'_'*1024*1024
+            with open('file_5709.dat','wb') as f:
+                for _ in range(N): f.write(s_1M)
+                f.flush()
+                self.admin.assert_icommand(['icd'])
+                self.admin.assert_icommand(['iput',f.name])
+                rule_arg = rule_string.format(self.admin.home_collection + "/" + f.name, read_len)
+                self.admin.assert_icommand( ['irule', rule_arg, 'null' , 'ruleExecOut'],
+                                             'STDOUT_SINGLELINE', "^"+str(read_len)+"$", use_regex = True)
+        finally:
+            if f and f.name: os.unlink(f.name)
+            self.admin.assert_icommand( ['irm','-f', f.name] )
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_msiDataObjRead_does_not_generate_a_stacktrace_on_bad_input_arguments__issue_4550(self):
         data_object = 'foo'
         self.admin.assert_icommand(['istream', 'write', data_object], input='foo')
