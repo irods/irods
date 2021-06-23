@@ -362,95 +362,13 @@ namespace
         }
     } // invoke_file_modified
 
-    auto rs_data_object_finalize(
-        RsComm* _comm,
-        BytesBuf* _input,
+    auto finalize(
+        RsComm& _comm,
+        json& _replicas,
+        const std::string_view _bytes_written,
+        const bool _admin_operation,
         BytesBuf** _output) -> int
     {
-        // Connect to the catalog provider before proceeding as this API
-        // deals almost exclusively in database transactions.
-        try {
-            if (!ic::connected_to_catalog_provider(*_comm)) {
-                log::api::trace("Redirecting request to catalog service provider ...");
-
-                auto host_info = ic::redirect_to_catalog_provider(*_comm);
-
-                std::string_view json_input(static_cast<const char*>(_input->buf), _input->len);
-                char* json_output = nullptr;
-
-                const auto ec = rc_data_object_finalize(host_info.conn, json_input.data(), &json_output);
-                *_output = to_bytes_buffer(json_output);
-
-                return ec;
-            }
-
-            ic::throw_if_catalog_provider_service_role_is_invalid();
-        }
-        catch (const irods::exception& e) {
-            const std::string_view msg = e.client_display_what();
-
-            irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
-
-            *_output = to_bytes_buffer(make_error_object(msg).dump());
-
-            return e.code();
-        }
-
-        json input;
-        try {
-            input = json::parse(std::string(static_cast<const char*>(_input->buf), _input->len));
-            log::database::debug("json input:[{}]", input.dump());
-        }
-        catch (const json::parse_error& e) {
-            const std::string_view msg = e.what();
-
-            log::api::error({{"log_message", fmt::format(
-                              "[{}:{}] - Failed to parse input into JSON",
-                              __FUNCTION__, __LINE__)},
-                             {"error_message", msg.data()}});
-
-            *_output = to_bytes_buffer(make_error_object(msg).dump());
-
-            return INPUT_ARG_NOT_WELL_FORMED_ERR;
-        }
-
-        // The following section separates out the relevant pieces from the input.
-        // These include whether or not the operation should be run in privileged
-        // mode, the list of replicas for the data object being finalized, and
-        // whether or not file_modified should be triggered.
-        json replicas;
-        bool trigger_file_modified;
-        bool admin_operation = false;
-        try {
-            if (input.contains("irods_admin") && input.at("irods_admin").get<bool>()) {
-                if (!irods::is_privileged_client(*_comm)) {
-                    const auto msg = "user is not authorized to use the admin keyword";
-
-                    *_output = to_bytes_buffer(make_error_object(msg).dump());
-
-                    irods::log(LOG_WARNING, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
-
-                    return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
-                }
-
-                admin_operation = true;
-            }
-
-            replicas = input.at("replicas");
-
-            trigger_file_modified = input.contains("trigger_file_modified") && input.at("trigger_file_modified").get<bool>();
-        }
-        catch (const json::type_error& e) {
-            *_output = to_bytes_buffer(make_error_object(e.what()).dump());
-
-            return SYS_INVALID_INPUT_PARAM;
-        }
-        catch (const std::exception& e) {
-            *_output = to_bytes_buffer(make_error_object(e.what()).dump());
-
-            return SYS_INVALID_INPUT_PARAM;
-        }
-
         // Establish connection with the database for use with nanodbc.
         // A connection with the database is already established via the
         // RsComm, but this allows us to atomically update the database
@@ -471,19 +389,19 @@ namespace
         }
 
         try {
-            // This section perform permissions checks and update ticket information
+            // This section will perform permissions checks and update ticket information
             // only if not running in privileged mode. This matches the behavior of
             // the mod_data_obj_meta database operation.
-            const auto data_id = std::stoll(replicas.front().at("before").at("data_id").get<std::string>());
+            const auto data_id = std::stoll(_replicas.front().at("before").at("data_id").get<std::string>());
 
-            const auto bytes_written = input.contains("bytes_written") ? std::stoll(input.at("bytes_written").get<std::string>()) : 0;
+            const auto bytes_written = !_bytes_written.empty() ? std::stoll(_bytes_written.data()) : 0;
 
-            if (!admin_operation) {
+            if (!_admin_operation) {
                 // If the caller indicates that bytes have been written (equivalent
                 // to updating the size), the information for any existing session
                 // ticket should be updated to reflect the new write byte count.
                 if (bytes_written) {
-                    if (const auto ec = chl_update_ticket_write_byte_count(*_comm, data_id, bytes_written); ec != 0) {
+                    if (const auto ec = chl_update_ticket_write_byte_count(_comm, data_id, bytes_written); ec != 0) {
                         const auto msg = fmt::format("failed to update write_bytes_count on ticket [data_id=[{}]]", data_id);
 
                         irods::log(LOG_NOTICE, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
@@ -498,7 +416,7 @@ namespace
                 // before proceeding. This database operation also updates ticket
                 // information and checks to make sure the limit for write byte
                 // count has not been exceeded.
-                if (const auto ec = chl_check_permission_to_modify_data_object(*_comm, data_id); ec != 0) {
+                if (const auto ec = chl_check_permission_to_modify_data_object(_comm, data_id); ec != 0) {
                     const auto msg = fmt::format("user not allowed to modify data object [data id=[{}]]", data_id);
 
                     irods::log(LOG_NOTICE, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
@@ -524,24 +442,125 @@ namespace
         try {
             const auto ec = ic::execute_transaction(db_conn, [&](auto& _trans) -> int
             {
-                set_data_object_state(db_conn, db_instance_name, _trans, replicas);
+                set_data_object_state(db_conn, db_instance_name, _trans, _replicas);
                 return 0;
             });
 
             if (ec < 0) {
                 *_output = to_bytes_buffer(make_error_object("failed to update catalog").dump());
-                return ec;
             }
 
-            if (!trigger_file_modified) {
-                // If the update was successful and file modified is not supposed to be
-                // triggered, then we can return with success here.
-                *_output = to_bytes_buffer(make_error_object("", database_updated).dump());
-                return ec;
-            }
+            return ec;
         }
         catch (const irods::exception& e) {
             const auto msg = e.client_display_what();
+
+            irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
+
+            *_output = to_bytes_buffer(make_error_object(msg).dump());
+
+            return e.code();
+        }
+    } // finalize
+
+    auto rs_data_object_finalize(
+        RsComm* _comm,
+        BytesBuf* _input,
+        BytesBuf** _output) -> int
+    {
+        // Parses out the JSON from the input
+        json input;
+        try {
+            input = json::parse(std::string(static_cast<const char*>(_input->buf), _input->len));
+            log::database::debug("json input:[{}]", input.dump());
+        }
+        catch (const json::parse_error& e) {
+            const std::string_view msg = e.what();
+
+            log::api::error({{"log_message", fmt::format(
+                              "[{}:{}] - Failed to parse input into JSON",
+                              __FUNCTION__, __LINE__)},
+                             {"error_message", msg.data()}});
+
+            *_output = to_bytes_buffer(make_error_object(msg).dump());
+
+            return INPUT_ARG_NOT_WELL_FORMED_ERR;
+        }
+
+        // The following section separates out the relevant pieces from the input.
+        // These include whether or not the operation should be run in privileged
+        // mode, the list of replicas for the data object being finalized, and
+        // whether or not file_modified should be triggered.
+        json replicas;
+        bool trigger_file_modified = false;
+        bool admin_operation = false;
+        try {
+            if (input.contains("irods_admin") && input.at("irods_admin").get<bool>()) {
+                if (!irods::is_privileged_client(*_comm)) {
+                    const auto msg = "user is not authorized to use the admin keyword";
+
+                    *_output = to_bytes_buffer(make_error_object(msg).dump());
+
+                    irods::log(LOG_WARNING, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
+
+                    return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
+                }
+
+                admin_operation = true;
+            }
+
+            trigger_file_modified = input.contains("trigger_file_modified") && input.at("trigger_file_modified").get<bool>();
+
+            replicas = input.at("replicas");
+        }
+        catch (const json::type_error& e) {
+            *_output = to_bytes_buffer(make_error_object(e.what()).dump());
+
+            return SYS_INVALID_INPUT_PARAM;
+        }
+        catch (const std::exception& e) {
+            *_output = to_bytes_buffer(make_error_object(e.what()).dump());
+
+            return SYS_INVALID_INPUT_PARAM;
+        }
+
+        // Update the database here, redirecting if necessary.
+        try {
+            if (!ic::connected_to_catalog_provider(*_comm)) {
+                // If not already connected to the catalog service provider, redirect and execute the
+                // database update for finalize. If no errors are returned, execution will continue on
+                // to perform the file_modified logic here.
+                irods::log(LOG_DEBUG8, "Redirecting request to catalog service provider ...");
+
+                auto host_info = ic::redirect_to_catalog_provider(*_comm);
+
+                // Explicitly set trigger_file_modified to false here. The file_modified logic should be
+                // executing on this machine, not the catalog service provider to which the connection is
+                // redirecting here.
+                input["trigger_file_modified"] = false;
+
+                char* json_output = nullptr;
+
+                const auto ec = rc_data_object_finalize(host_info.conn, input.dump().data(), &json_output);
+                *_output = to_bytes_buffer(json_output);
+                if (ec < 0) {
+                    return ec;
+                }
+            }
+            else {
+                ic::throw_if_catalog_provider_service_role_is_invalid();
+
+                const std::string bytes_written = input.contains("bytes_written") ? input.at("bytes_written").get<std::string>() : "";
+
+                // The finalize call here will set the appropriate errors in the output variable.
+                if (const auto ec = finalize(*_comm, replicas, bytes_written, admin_operation, _output); ec < 0) {
+                    return ec;
+                }
+            }
+        }
+        catch (const irods::exception& e) {
+            const std::string_view msg = e.client_display_what();
+
             irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
 
             *_output = to_bytes_buffer(make_error_object(msg).dump());
@@ -549,10 +568,13 @@ namespace
             return e.code();
         }
 
-        // file_modified is handled separately so that the caller can differentiate
-        // between errors which occurred before and after the failure of the database
-        // transaction. In this case, the database transaction was successful, but some
-        // operation as a result of file_modified has failed.
+        // If the update was successful and file modified is not supposed to be
+        // triggered, then we can return with success here.
+        if (!trigger_file_modified) {
+            *_output = to_bytes_buffer(make_error_object("", database_updated).dump());
+            return 0;
+        }
+
         try {
             const auto ec = invoke_file_modified(*_comm, replicas);
 
