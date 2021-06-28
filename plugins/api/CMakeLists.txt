@@ -401,7 +401,6 @@ foreach(PLUGIN ${IRODS_API_PLUGINS})
     ${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/include
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
     ${IRODS_EXTERNALS_FULLPATH_FMT}/include
-    ${IRODS_EXTERNALS_FULLPATH_JSON}/include
     ${IRODS_EXTERNALS_FULLPATH_NANODBC}/include
     )
 
@@ -417,6 +416,7 @@ foreach(PLUGIN ${IRODS_API_PLUGINS})
     ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
     ${OPENSSL_CRYPTO_LIBRARY}
     Threads::Threads
+    nlohmann_json::nlohmann_json
     )
 
   target_compile_definitions(${PLUGIN} PRIVATE ${IRODS_API_PLUGIN_COMPILE_DEFINITIONS_${PLUGIN}} ${IRODS_COMPILE_DEFINITIONS})
