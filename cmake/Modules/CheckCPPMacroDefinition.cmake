@@ -83,7 +83,7 @@ function(__check_cpp_macro_def_impl macro var language)
     endif()
     file(READ ${src} content)
     file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
-      "Determining definition of ${language} preprocessor macro ${macro} passed with the following compile output:\n${output}\n${src}:\n${content}\n\n")
+      "Determining definition of ${language} preprocessor macro ${macro} failed with the following compile output:\n${output}\n${src}:\n${content}\n\n")
     set(${var} "" CACHE INTERNAL "CHECK_CPP_MACRO_DEFINITION: ${macro} undefined")
   endif()
 endfunction()
