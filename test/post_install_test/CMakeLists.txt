@@ -14,8 +14,7 @@ target_include_directories(${IRODS_POST_INSTALL_TARGET} PRIVATE ${CMAKE_BINARY_D
                                                                 ${CMAKE_SOURCE_DIR}/server/core/include
                                                                 ${CMAKE_SOURCE_DIR}/server/icat/include
                                                                 ${CMAKE_SOURCE_DIR}/server/re/include
-                                                                ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
-                                                                ${IRODS_EXTERNALS_FULLPATH_JSON}/include)
+                                                                ${IRODS_EXTERNALS_FULLPATH_BOOST}/include)
 
 target_compile_options(${IRODS_POST_INSTALL_TARGET} PRIVATE -Wall -Wextra)
 
