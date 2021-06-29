@@ -82,6 +82,16 @@ namespace
                 __FUNCTION__, __LINE__, bytes_read,
                 replica.logical_path(), replica.hierarchy()));
         }
+        else if (0 == bytes_read) {
+            // Because clients may expect a buffer to always be returned, we set the
+            // length of the returned buffer to zero to indicate that it doesn't contain
+            // any valid data. A better solution is to not allocate anything and the clients
+            // use the bytes read as the indicator for how to move forward.
+            //
+            // This solution fixes this issue for clients that incorrectly use the buffer's
+            // size to determine if data was read.
+            _bbuf->len = 0;
+        }
 
         L1desc[_fd].oprStatus = bytes_read;
 
