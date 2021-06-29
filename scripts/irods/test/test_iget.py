@@ -71,3 +71,18 @@ class test_iget_general(session.make_sessions_mixin([('otherrods', 'rods')], [('
 
         do_test_iget_R_is_a_directive_not_a_preference__issue_4475(self, 1024)
         do_test_iget_R_is_a_directive_not_a_preference__issue_4475(self, 40 * 1024 * 1024)
+
+    def test_iget_correctly_handles_zero_length_file__issue_5723(self):
+        # Create a new empty data object.
+        data_object = 'foo'
+        self.user.assert_icommand(['itouch', data_object])
+        self.user.assert_icommand(['ils', '-l', data_object], 'STDOUT', [' 0 demoResc            0 '])
+
+        # Show that "iget" produces zero bytes.
+        self.user.assert_icommand(['iget', data_object, '-'])
+
+        # Show that "iget" produces a zero length file.
+        file_path = os.path.join(self.user.local_session_dir, 'foo')
+        self.user.assert_icommand(['iget', data_object, file_path])
+        self.assertEqual(0, os.path.getsize(file_path))
+
