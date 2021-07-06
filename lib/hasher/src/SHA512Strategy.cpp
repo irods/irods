@@ -1,5 +1,5 @@
 #include "SHA512Strategy.hpp"
-#include "checksum.hpp"
+#include "checksum.h"
 
 #include <sstream>
 #include <iostream>

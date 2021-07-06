@@ -1,5 +1,4 @@
-/* md5Checksum.c - checksumming routine on the client side
- */
+#include "checksum.h"
 
 #include "irods_stacktrace.hpp"
 #include "irods_hasher_factory.hpp"
@@ -9,8 +8,10 @@
 #include "SHA256Strategy.hpp"
 #include "rodsKeyWdDef.h"
 #include "rcMisc.h"
-#include "checksum.hpp"
 
+#include <cstdio>
+#include <ctime>
+#include <cstring>
 #include <fstream>
 
 #define HASH_BUF_SZ (1024*1024)
