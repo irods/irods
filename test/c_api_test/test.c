@@ -13,6 +13,7 @@
 #include "dataObjRead.h"
 #include "dataObjChksum.h"
 #include "dataObjClose.h"
+#include "checksum.h"
 
 #if IRODS_VERSION_INTEGER != 4003000
     #error "IRODS_VERSION_INTEGER needs attention"

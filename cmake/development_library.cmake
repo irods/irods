@@ -171,7 +171,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/hasher/include/Hasher.hpp
   ${CMAKE_SOURCE_DIR}/lib/hasher/include/MD5Strategy.hpp
   ${CMAKE_SOURCE_DIR}/lib/hasher/include/SHA256Strategy.hpp
-  ${CMAKE_SOURCE_DIR}/lib/hasher/include/checksum.hpp
+  ${CMAKE_SOURCE_DIR}/lib/hasher/include/checksum.h
   ${CMAKE_SOURCE_DIR}/lib/hasher/include/irods_hasher_factory.hpp
   )
 
