@@ -1,3 +1,5 @@
+#include "rsBulkDataObjPut.hpp"
+
 #include "apiHeaderAll.h"
 #include "objMetaOpr.hpp"
 #include "resource.hpp"
@@ -9,8 +11,7 @@
 #include "rcGlobalExtern.h"
 #include "rsApiHandler.hpp"
 #include "irods_stacktrace.hpp"
-#include "checksum.hpp"
-#include "rsBulkDataObjPut.hpp"
+#include "checksum.h"
 #include "rsDataObjPut.hpp"
 #include "rsStructFileExtAndReg.hpp"
 #include "rsBulkDataObjReg.hpp"

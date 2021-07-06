@@ -1,26 +1,23 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-#ifndef windows_platform
-#include <sys/time.h>
-#endif
+#include "rsyncUtil.h"
+
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
-#include "rsyncUtil.h"
 #include "miscUtil.h"
-#include "checksum.hpp"
+#include "checksum.h"
 #include "rcGlobalExtern.h"
-
-#include <sstream>
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/convenience.hpp>
-
-#include <stdlib.h>
-
 #include "irods_log.hpp"
 #include "irods_hasher_factory.hpp"
 #include "irods_path_recursion.hpp"
 #include "irods_exception.hpp"
+
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/convenience.hpp>
+
+#include <sys/time.h>
+
+#include <cstdlib>
+#include <sstream>
 
 static int CurrentTime = 0;
 int

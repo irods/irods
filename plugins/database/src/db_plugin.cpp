@@ -31,7 +31,7 @@
 #include "irods_virtual_path.hpp"
 #include "irods_rs_comm_query.hpp"
 #include "modAccessControl.h"
-#include "checksum.hpp"
+#include "checksum.h"
 #include "key_value_proxy.hpp"
 
 // =-=-=-=-=-=-=-

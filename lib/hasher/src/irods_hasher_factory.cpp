@@ -1,5 +1,5 @@
 #include "irods_hasher_factory.hpp"
-#include "checksum.hpp"
+#include "checksum.h"
 #include "MD5Strategy.hpp"
 #include "SHA256Strategy.hpp"
 #include "SHA512Strategy.hpp"

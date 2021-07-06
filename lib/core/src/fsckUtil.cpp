@@ -5,7 +5,7 @@
 #include "rodsLog.h"
 #include "miscUtil.h"
 #include "scanUtil.h"
-#include "checksum.hpp"
+#include "checksum.h"
 #include "rcGlobalExtern.h"
 
 #include <boost/filesystem/operations.hpp>
