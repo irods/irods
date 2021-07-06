@@ -1,11 +1,10 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
+#include "regUtil.h"
+
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
-#include "regUtil.h"
 #include "miscUtil.h"
-#include "checksum.hpp"
+#include "checksum.h"
 #include "rcGlobalExtern.h"
 
 int

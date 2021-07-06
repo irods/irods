@@ -8,6 +8,7 @@ target_include_directories(
   ${CMAKE_BINARY_DIR}/lib/core/include
   ${CMAKE_SOURCE_DIR}/lib/core/include
   ${CMAKE_SOURCE_DIR}/lib/api/include
+  ${CMAKE_SOURCE_DIR}/lib/hasher/include
   ${CMAKE_SOURCE_DIR}/server/core/include
   ${CMAKE_SOURCE_DIR}/server/icat/include
   )

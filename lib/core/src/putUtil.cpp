@@ -1,5 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
 #ifndef windows_platform
 #include <sys/time.h>
 #endif
@@ -9,7 +7,7 @@
 #include "putUtil.h"
 #include "miscUtil.h"
 #include "rcPortalOpr.h"
-#include "checksum.hpp"
+#include "checksum.h"
 #include "rcGlobalExtern.h"
 #include <string>
 #include <boost/filesystem.hpp>

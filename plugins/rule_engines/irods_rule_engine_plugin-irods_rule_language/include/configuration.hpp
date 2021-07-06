@@ -1,13 +1,11 @@
-/* For copyright information please refer to files in the COPYRIGHT directory
- */
-#ifndef _CONFIGURATION_HPP
-#define _CONFIGURATION_HPP
+#ifndef IRODS_NREP_CONFIGURATION_HPP
+#define IRODS_NREP_CONFIGURATION_HPP
 
 #include "rules.hpp"
 #include "irods_hashtable.h"
 #include "parser.hpp"
 #include "datetime.hpp"
-#include "checksum.hpp"
+#include "checksum.h"
 
 #define RESC_CORE_RULE_SET 0x1
 #define RESC_APP_RULE_SET 0x2
@@ -163,4 +161,4 @@ int writeICatUserLogging( char *userName, int logging, rsComm_t *rsComm );
 
 #define RE_LOGGING_ATTR "rulelogging"
 
-#endif /* _CONFIGURATION_H */
+#endif // IRODS_NREP_CONFIGURATION_HPP

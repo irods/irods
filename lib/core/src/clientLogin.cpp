@@ -1,18 +1,6 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* clientLogin.c - client login
- *
- * Perform a series of calls to complete a client login; to
- * authenticate.
- */
-
-// =-=-=-=-=-=-=-
-// irods includes
 #include "rcGlobalExtern.h"
 #include "rodsClient.h"
 #include "sslSockComm.h"
-
-// =-=-=-=-=-=-=-
 #include "irods_auth_object.hpp"
 #include "irods_auth_factory.hpp"
 #include "irods_auth_plugin.hpp"
@@ -23,20 +11,17 @@
 #include "authPluginRequest.h"
 #include "irods_configuration_parser.hpp"
 #include "irods_configuration_keywords.hpp"
-#include "checksum.hpp"
+#include "checksum.h"
 #include "termiosUtil.hpp"
-
-
 #include "irods_kvp_string_parser.hpp"
 #include "irods_environment_properties.hpp"
-
-
 
 #include <openssl/md5.h>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
 
-#include <errno.h>
+#include <cerrno>
+
 #include <termios.h>
 
 static char prevChallengeSignatureClient[200];
@@ -68,8 +53,6 @@ void setSessionSignatureClientside( char* _sig ) {
         ( unsigned char )_sig[15] );
 
 } // setSessionSignatureClientside
-
-
 
 int printError( rcComm_t *Conn, int status, char *routineName ) {
     rError_t *Err;

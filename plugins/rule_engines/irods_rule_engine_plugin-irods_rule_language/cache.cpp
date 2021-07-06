@@ -1,17 +1,15 @@
-/* For copyright information please refer to files in the COPYRIGHT directory
- */
-#include <limits.h>
 #include "cache.hpp"
+
 #include "rules.hpp"
 #include "functions.hpp"
 #include "locks.hpp"
 #include "sharedmemory.hpp"
 #include "datetime.hpp"
-
-
 #include "cache.instance.hpp"
 #include "traversal.instance.hpp"
 #include "restruct.templates.hpp"
+
+#include <climits>
 
 /* Copy the data stored in a Cache struct into a continuously allocated memory block in *p.
  * All sub structure status are either uninitialized or compressed, which meaning that they are not allocated separately and therefore should not be deallocated.
