@@ -84,6 +84,9 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
 
     def test_filter_out_groups_when_selecting_user__issue_3507(self):
         self.admin.assert_icommand(['igroupadmin', 'mkgroup', 'test_group_3507'])
-        # Attempt to set user quota passing in the name of a group; should fail
-        self.admin.assert_icommand(['iadmin', 'suq', 'test_group_3507', 'demoResc', '10000000'], 'STDERR_SINGLELINE', 'CAT_INVALID_USER')
 
+        try:
+            # Attempt to set user quota passing in the name of a group; should fail
+            self.admin.assert_icommand(['iadmin', 'suq', 'test_group_3507', 'demoResc', '10000000'], 'STDERR_SINGLELINE', 'CAT_INVALID_USER')
+        finally:
+            self.admin.assert_icommand(['iadmin', 'rmgroup', 'test_group_3507'])
