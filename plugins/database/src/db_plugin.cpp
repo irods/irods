@@ -15490,13 +15490,26 @@ auto db_check_permission_to_modify_data_object_op(
                                       &icss);
 
     if (ec != 0) {
-        _rollback("check_permission_to_modify_data_object");
+        // Although the presence of a ticket is not a guarantee of a database update, it is
+        // the only case where a database update occurs as a result of calling cmlCheckDataObjId.
+        // Therefore, only rollback if there is ticket information present.
+        if (!std::string_view{mySessionTicket}.empty()) {
+            _rollback("check_permission_to_modify_data_object");
+        }
 
         const auto msg = fmt::format("user does not have permission to modify object with data id [{}]", _data_id);
 
         irods::log(LOG_NOTICE, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
 
         return ERROR(ec, msg);
+    }
+
+    // Although the presence of a ticket is not a guarantee of a database update, it is
+    // the only case where a database update occurs as a result of calling cmlCheckDataObjId.
+    // Therefore, return success if the ticket information is empty. Else, a commit may need
+    // to occur.
+    if (std::string_view{mySessionTicket}.empty()) {
+        return SUCCESS();
     }
 
     if (const auto commit_ec = cmlExecuteNoAnswerSql("commit", &icss); 0 != commit_ec) {
