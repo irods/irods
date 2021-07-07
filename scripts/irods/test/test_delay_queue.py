@@ -721,30 +721,34 @@ class Test_Execution_Frequency(resource_suite.ResourceBase, unittest.TestCase):
         log_offset = 0
         delay_msg = 'Printed by test for issue 5257.'
 
-        with lib.file_backed_up(config.server_config_path):
-            # Lower the delay server's sleep time so that rules are executed quicker.
-            config.server_config['advanced_settings']['rule_engine_server_sleep_time_in_seconds'] = 1
-            lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+        try:
+            with lib.file_backed_up(config.server_config_path):
+                # Lower the delay server's sleep time so that rules are executed quicker.
+                config.server_config['advanced_settings']['rule_engine_server_sleep_time_in_seconds'] = 1
+                lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+                IrodsController().restart(test_mode=True)
+
+                rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+                rule_text = '''
+                    delay("<EF>1s</EF><INST_NAME>{0}</INST_NAME>") {{
+                        writeLine("serverLog", "{1}");
+                    }}
+                '''.format(rep_name, delay_msg)
+
+                # Capture the current log file size. This will serve as an offset for when we inspect
+                # the log file for messages.
+                log_offset = lib.get_file_size_by_path(paths.server_log_path())
+
+                # Schedule the delay rule.
+                self.user0.assert_icommand(['irule', '-r', rep_name, rule_text, 'null', 'ruleExecOut'])
+
             IrodsController().restart(test_mode=True)
 
-            rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
-            rule_text = '''
-                delay("<EF>1s</EF><INST_NAME>{0}</INST_NAME>") {{
-                    writeLine("serverLog", "{1}");
-                }}
-            '''.format(rep_name, delay_msg)
+            # Verify that the log file contains the correct results.
+            api_perm_msg = 'rsApiHandler: User has no permission for apiNumber 708'
+            lib.delayAssert(lambda: lib.log_message_occurrences_equals_count(msg=api_perm_msg, count=0, start_index=log_offset))
+            lib.delayAssert(lambda: lib.log_message_occurrences_greater_than_count(msg=delay_msg, count=0, start_index=log_offset))
 
-            # Capture the current log file size. This will serve as an offset for when we inspect
-            # the log file for messages.
-            log_offset = lib.get_file_size_by_path(paths.server_log_path())
-
-            # Schedule the delay rule.
-            self.user0.assert_icommand(['irule', '-r', rep_name, rule_text, 'null', 'ruleExecOut'])
-
-        IrodsController().restart(test_mode=True)
-
-        # Verify that the log file contains the correct results.
-        api_perm_msg = 'rsApiHandler: User has no permission for apiNumber 708'
-        lib.delayAssert(lambda: lib.log_message_occurrences_equals_count(msg=api_perm_msg, count=0, start_index=log_offset))
-        lib.delayAssert(lambda: lib.log_message_occurrences_greater_than_count(msg=delay_msg, count=0, start_index=log_offset))
+        finally:
+            self.user0.assert_icommand(['iqdel', '-a'])
 

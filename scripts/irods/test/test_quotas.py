@@ -65,7 +65,7 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
                     cmd = 'irm -rf {0}'.format(filename_2) # clean up
                     self.admin.assert_icommand(cmd.split())
             time.sleep(2)  # remove once file hash fix is committed #2279
- 
+
     def test_iquota_empty__3048(self):
         cmd = 'iadmin suq' # no arguments
         self.admin.assert_icommand(cmd.split(), 'STDERR_SINGLELINE', 'ERROR: missing username parameter') # usage information
@@ -84,6 +84,9 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
 
     def test_filter_out_groups_when_selecting_user__issue_3507(self):
         self.admin.assert_icommand(['igroupadmin', 'mkgroup', 'test_group_3507'])
-        # Attempt to set user quota passing in the name of a group; should fail
-        self.admin.assert_icommand(['iadmin', 'suq', 'test_group_3507', 'demoResc', '10000000'], 'STDERR_SINGLELINE', 'CAT_INVALID_USER')
 
+        try:
+            # Attempt to set user quota passing in the name of a group; should fail
+            self.admin.assert_icommand(['iadmin', 'suq', 'test_group_3507', 'demoResc', '10000000'], 'STDERR_SINGLELINE', 'CAT_INVALID_USER')
+        finally:
+            self.admin.assert_icommand(['iadmin', 'rmgroup', 'test_group_3507'])
