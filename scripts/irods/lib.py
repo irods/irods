@@ -144,19 +144,67 @@ def indent(*text, **kwargs):
         ''.join([indentation, '\n{0}'.format(indentation).join(lines.splitlines())])
             for lines in text])
 
+def get_server_pid():
+    try:
+        pid_file = os.path.join(tempfile.gettempdir(), 'irods.pid')
+
+        if os.path.exists(pid_file):
+            with open(pid_file, 'r') as f:
+                pid = int(f.readline().strip())
+                if psutil.pid_exists(pid):
+                    return pid
+    except:
+        pass
+
+    return -1
+
+def is_descendant_of_pid(_process, _server_pid, _server_ppid):
+    print('Checking if PID {0} is a descendant of server PID {1} or {2}'.format(_process.pid, _server_pid, _server_ppid))
+    ppid = _process.ppid()
+
+    while True:
+        if ppid == _server_pid:
+            print('PID {0} is a descendant of the server PID {1}'.format(_process.pid, _server_pid))
+            return True
+
+        if ppid == _server_ppid:
+            print("PID {0} is a descendant of the server's PPID {1}".format(_process.pid, _server_ppid))
+            break
+
+        if ppid == 1:
+            print('PID {0} is a descendant PID 1'.format(_process.pid))
+            break
+
+        ppid = psutil.Process(ppid).ppid()
+
+    return False
+
 def get_pids_executing_binary_file(binary_file_path):
     def get_exe(process):
         if psutil.version_info >= (2,0):
             return process.exe()
         return process.exe
-    abspath = os.path.abspath(binary_file_path)
+
+    server_pid = get_server_pid()
     pids = []
+
+    if server_pid == -1:
+        return pids
+
+    server_ppid = psutil.Process(server_pid).ppid()
+    abspath = os.path.abspath(binary_file_path)
+
+    print('server_pid  = ' + str(server_pid))
+    print('server_ppid = ' + str(server_ppid))
+
     for p in psutil.process_iter():
         try:
-            if abspath == get_exe(p):
+            if abspath == get_exe(p) and is_descendant_of_pid(p, server_pid, server_ppid):
                 pids.append(p.pid)
         except (psutil.NoSuchProcess, psutil.AccessDenied):
             pass
+
+    print('PIDS = ' + str(pids))
     return pids
 
 def kill_pid(pid):
