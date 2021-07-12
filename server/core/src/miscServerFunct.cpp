@@ -2671,8 +2671,7 @@ readStartupPack(
         return ERROR( SYS_HEADER_READ_LEN_ERR, msg.str() );
     }
 
-    bytesBuf_t inputStructBBuf, bsBBuf, errorBBuf;
-    memset( &bsBBuf, 0, sizeof( bytesBuf_t ) );
+    bytesBuf_t inputStructBBuf{}, bsBBuf{}, errorBBuf{};
     ret = readMsgBody(
               _ptr,
               &myHeader,
