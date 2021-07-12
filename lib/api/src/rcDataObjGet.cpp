@@ -112,7 +112,7 @@ rcDataObjGet( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
     }
 
     portalOprOut_t *portalOprOut = NULL;
-    bytesBuf_t dataObjOutBBuf;
+    bytesBuf_t dataObjOutBBuf{};
     int status = _rcDataObjGet( conn, dataObjInp, &portalOprOut, &dataObjOutBBuf );
 
     if ( status < 0 ) {

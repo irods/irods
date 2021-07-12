@@ -454,8 +454,7 @@ namespace irods
 
         // =-=-=-=-=-=-=-
         // read the message body
-        bytesBuf_t struct_buf, data_buf, error_buf;
-        memset( &data_buf, 0, sizeof( bytesBuf_t ) );
+        bytesBuf_t struct_buf{}, data_buf{}, error_buf{};
         ret = readMsgBody(
                   _ptr,
                   &msg_header,
