@@ -266,6 +266,8 @@ namespace irods
         const auto [replica, replica_lm] = ir::duplicate_replica(*L1desc[_fd].dataObjInfo);
         const auto remove_rst_entry      = irods::at_scope_exit{[data_id = replica.data_id()] { rst::erase(data_id); }};
 
+        const auto admin_op = irods::experimental::key_value_proxy(L1desc[_fd].dataObjInp->condInput).contains(ADMIN_KW);
+
         constexpr auto preserve_rst = true;
         const auto close_ec = irods::close_replica_without_catalog_update(_comm, _fd, preserve_rst);
         if (close_ec < 0) {
@@ -275,8 +277,6 @@ namespace irods
                 __FUNCTION__, __LINE__, close_ec,
                 replica.logical_path(), replica.hierarchy()));
         }
-
-        const auto admin_op = irods::experimental::key_value_proxy(L1desc[_fd].dataObjInp->condInput).contains(ADMIN_KW);
 
         if (const int ec = ill::unlock_and_publish(_comm, {replica, admin_op}, _status, ill::restore_status); ec < 0) {
             irods::log(LOG_ERROR, fmt::format(
