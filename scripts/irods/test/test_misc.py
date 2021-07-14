@@ -196,3 +196,44 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
             for fn in [pid_file_1, pid_file_2, pid_file_3]:
                 self.assertFalse(os.path.exists(fn))
 
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "skip for topology testing")
+    def test_server_respawns_processes__issue_4977(self):
+        import psutil
+        import time
+        from collections import defaultdict
+        main_server = None
+        sescoln = self.admin.session_collection
+        # Find the main server process
+        for proc in psutil.process_iter():
+            # It won't have any parents.
+            if proc.name() == 'irodsServer' \
+               and proc.parent().name() != 'irodsServer':
+                main_server = proc
+                # Kill the agent factory and the rule server
+                for child in proc.children(recursive=True):
+                    child.kill()
+                break
+        #It should run every 5 seconds but it's probably best to wait a lot longer just in case
+        time.sleep(15)
+        object_name = sescoln+"/hello"
+        self.assertTrue(len(main_server.children()) >= 2)
+        # If the API is up after this it seems it should be entirely working.
+        self.admin.assert_icommand(['itouch', object_name])
+        seen_process_names = defaultdict(int)
+        for i in main_server.children():
+            seen_process_names[i.name()] += 1
+        # There should only be a single delay server instance
+        self.assertTrue(seen_process_names['irodsReServer'] == 1)
+        self.assertTrue(seen_process_names['irodsServer'] == 1)
+        attribute = "a1"
+        # Test the delay server
+        self.admin.assert_icommand(['irule', '-r',
+                                    "irods_rule_engine_plugin-irods_rule_language-instance",
+                                    'delay("<INST_NAME>irods_rule_engine_plugin-irods_rule_language-instance</INST_NAME>") {{ msiModAVUMetadata("-d", "{0}", "add", "{1}", "v1", "u2") }}'.format(object_name, attribute),
+                                    'null',
+                                    'ruleExecOut'])
+
+        # Wait for the delay server to process the rule
+        time.sleep(45)
+        self.admin.assert_icommand('imeta ls -d %s' % (object_name), 'STDOUT_SINGLELINE', ['attribute: ' + attribute])
+        self.admin.assert_icommand(['irm', "-f", 'hello'])

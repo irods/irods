@@ -27,6 +27,7 @@
 #include "hostname_cache.hpp"
 #include "dns_cache.hpp"
 #include "server_utilities.hpp"
+#include "process_manager.hpp"
 
 #include <pthread.h>
 #include <sys/socket.h>
@@ -48,6 +49,7 @@
 #include <fstream>
 #include <regex>
 #include <algorithm>
+#include <optional>
 #include <iterator>
 
 // clang-format off
@@ -330,7 +332,7 @@ int main(int argc, char** argv)
     if (!write_to_stdout) {
         daemonize();
     }
-
+    
     init_logger(write_to_stdout, enable_test_mode);
 
     ix::log::server::info("Initializing server ...");
@@ -393,42 +395,60 @@ int main(int argc, char** argv)
     snprintf(agent_factory_socket_file, sizeof(agent_factory_socket_file), "%s/irods_factory_%s", agent_factory_socket_dir, random_suffix);
     snprintf(local_addr.sun_path, sizeof(local_addr.sun_path), "%s", agent_factory_socket_file);
 
-    ix::log::server::info("Forking agent factory ...");
+    ix::cron::cron_builder agent_watcher;
+    const auto start_agent_server = [&](std::any& _) {
+        int status;
+        int w = waitpid(agent_spawning_pid, &status, WNOHANG);
+        if( w != 0 ) {
+            ix::log::server::info("Starting agent factory");
+            auto new_pid = fork();
+            if( new_pid == 0 ) {
+                ProcessType = AGENT_PT;
 
-    agent_spawning_pid = fork();
+                // This appeared to be the best option at balancing cleanup and correct behavior,
+                // however this may not perform the full cleanup that would happen on a normal return from main.
+                // The other alternative considered here was throwing the code, however this was complicated
+                // by the usage of catch(...) blocks elsewhere.
+                exit(runIrodsAgentFactory(local_addr));
+            } else {
+                close(agent_conn_socket);
+                ix::log::server::info("Restarting agent factory");
+                agent_conn_socket = socket( AF_UNIX, SOCK_STREAM, 0 );
 
-    if (agent_spawning_pid == 0) {
-        // Agent factory process (child)
-        ProcessType = AGENT_PT;
-        return runIrodsAgentFactory( local_addr );
-    }
-    
-    // Main iRODS server (parent)
-    if (agent_spawning_pid < 0) {
-        rodsLog( LOG_ERROR, "fork() failed when attempting to create agent factory process" );
-        return SYS_FORK_ERROR;
-    }
+                time_t sock_connect_start_time = time( 0 );
+                while (true) {
+                    const unsigned int len = sizeof(local_addr);
+                    ssize_t status = connect( agent_conn_socket, (const struct sockaddr*) &local_addr, len );
+                    if ( status >= 0 ) {
+                        break;
+                    }
 
-    ix::log::server::info("Agent factory PID = [{}]", agent_spawning_pid);
+                    int saved_errno = errno;
+                    if ( ( time( 0 ) - sock_connect_start_time ) > 5 ) {
+                        rodsLog(LOG_ERROR, "Error connecting to agent factory socket, errno = [%d]: %s",
+                                saved_errno, strerror( saved_errno ) );
+                        exit(SYS_SOCK_CONNECT_ERR);
+                    }
 
-    // Create a UNIX domain socket and connect to the iRODS agent factory.
-    agent_conn_socket = socket( AF_UNIX, SOCK_STREAM, 0 );
+                }
+                agent_spawning_pid=new_pid;
+            }
 
-    time_t sock_connect_start_time = time( 0 );
-    while (true) {
-        const unsigned int len = sizeof(local_addr);
-        ssize_t status = connect( agent_conn_socket, (const struct sockaddr*) &local_addr, len );
-        if ( status >= 0 ) {
-            break;
         }
+    };
 
-        int saved_errno = errno;
-        if ( ( time( 0 ) - sock_connect_start_time ) > 5 ) {
-            rodsLog(LOG_ERROR, "Error connecting to agent factory socket, errno = [%d]: %s", saved_errno, strerror( saved_errno ) );
-            return SYS_SOCK_CONNECT_ERR;
-        }
-    }
+    std::any dummy;
+    start_agent_server(dummy);
+    agent_watcher.to_execute(start_agent_server).interval(5);
+    ix::cron::cron::get()->add_task(agent_watcher.build());
 
+    ix::cron::cron_builder cache_clearer;
+    cache_clearer.to_execute([](std::any& _){
+        ix::log::server::info("Expiring old cache entries");
+        irods::experimental::net::hostname_cache::erase_expired_entries();
+        irods::experimental::net::dns_cache::erase_expired_entries();
+    }).interval(600);
+    ix::cron::cron::get()->add_task(cache_clearer.build());
     return serverMain(enable_test_mode, write_to_stdout);
 }
 
@@ -589,6 +609,7 @@ int serverMain(
                 }
 
             }
+            ix::cron::cron::get()->run();
 
             FD_SET( svrComm.sock, &sockMask );
 
@@ -1301,39 +1322,58 @@ int initServerMain(
     /* Record port, pid, and cwd into a well-known file */
     recordServerProcess(svrComm);
 
-    rodsServerHost_t* reServerHost{};
-    getReHost(&reServerHost);
 
-    if (reServerHost && LOCAL_HOST == reServerHost->localFlag) {
-        rodsLog(LOG_NOTICE, "Forking Rule Execution Server (irodsReServer) ...");
-
-        const int pid = RODS_FORK();
-        
-        if (pid == 0) {
-            close(svrComm->sock);
-
-            std::vector<char*> argv;
-            argv.push_back("irodsReServer");
-
-            if (enable_test_mode) {
-                argv.push_back("-t");
-            }
-
-            if (write_to_stdout) {
-                argv.push_back("-u");
-            }
-
-            argv.push_back(nullptr);
-
-            // Launch the delay server!
-            execv(argv[0], &argv[0]);
-            exit(1);
+    ix::cron::cron_builder delay_server;
+    const auto start_delay_server = [&](std::any& _){
+        rodsServerHost_t* reServerHost{};
+        getReHost(&reServerHost);
+        std::optional<pid_t> delay_pid;
+        if(irods::server_properties::instance().contains(irods::RE_PID_KW)){
+            delay_pid = irods::get_server_property<int>(irods::RE_PID_KW);
         }
-        else {
-            irods::set_server_property<int>(irods::RE_PID_KW, pid);
-        }
-    }
+        if (reServerHost && LOCAL_HOST == reServerHost->localFlag) {
+            rodsLog(LOG_NOTICE, "Forking Rule Execution Server (irodsReServer) ...");
+            if(!delay_pid.has_value() || waitpid(delay_pid.value(), nullptr, WNOHANG) != 0){
+                ix::log::server::info("Restarting delay server");
+                const int pid = RODS_FORK();
+                if (pid == 0) {
+                    close(svrComm->sock);
 
+                    std::vector<char*> argv;
+                    argv.push_back("irodsReServer");
+
+                    if (enable_test_mode) {
+                        argv.push_back("-t");
+                    }
+
+                    if (write_to_stdout) {
+                        argv.push_back("-u");
+                    }
+
+                    argv.push_back(nullptr);
+
+                    // Launch the delay server!
+                    execv(argv[0], &argv[0]);
+                    exit(1);
+                }
+                else {
+                    irods::set_server_property<int>(irods::RE_PID_KW, pid);
+                }
+            }
+        }else if( reServerHost && delay_pid.has_value()
+                  && waitpid(delay_pid.value(), nullptr, WNOHANG) == 0 ) {
+            // If the delay server exists but we shouldn't have it on this instance, then kill it.
+            ix::log::server::info("We are no longer the delay server host. Ending process");
+            // Sending SIGTERM causes the delay server to finish all tasks and exit gracefully.
+            kill(delay_pid.value(), SIGTERM);
+            waitpid(delay_pid.value(), nullptr, WNOHANG);
+            irods::server_properties::instance().remove(irods::RE_PID_KW);
+        }
+    };
+    std::any dummy;
+    start_delay_server(dummy);
+    delay_server.to_execute(start_delay_server).interval(5);
+    ix::cron::cron::get()->add_task(delay_server.build());
     return 0;
 }
 
