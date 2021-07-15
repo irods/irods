@@ -97,6 +97,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
             long long ctime;
             long long mtime;
             std::vector<entity_permission> prms;
+            bool inheritance;
         };
 
         auto to_permission_enum(const std::string& _perm) -> perms
@@ -105,8 +106,6 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
             if      (_perm == "read object")   { return perms::read; }
             else if (_perm == "modify object") { return perms::write; }
             else if (_perm == "own")           { return perms::own; }
-            else if (_perm == "inherit")       { return perms::inherit; }
-            else if (_perm == "noinherit")     { return perms::noinherit; }
             // clang-format on
 
             return perms::null;
@@ -171,6 +170,29 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
             }
         }
 
+        auto get_inheritance(rxComm& _comm, const path& _p, int _object_type) -> bool
+        {
+            if (COLL_OBJ_T != _object_type) {
+                return false;
+            }
+
+            irods::experimental::query_builder qb;
+
+            if (const auto zone = zone_name(_p); zone) {
+                qb.zone_hint(*zone);
+            }
+
+            qb.type(irods::experimental::query_type::general);
+
+            const auto gql = fmt::format("select COLL_INHERITANCE where COLL_NAME = '{}'", _p.c_str());
+
+            for (const auto& row : qb.build(_comm, gql)) {
+                return std::atoi(row[0].data());
+            }
+
+            return false;
+        }
+
         auto stat(rxComm& _comm, const path& _p) -> stat
         {
             dataObjInp_t input{};
@@ -180,7 +202,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
             struct stat s{};
 
             if (s.error = rxObjStat(&_comm, &input, &output); s.error >= 0) {
-                irods::at_scope_exit<std::function<void()>> at_scope_exit{[output] {
+                irods::at_scope_exit at_scope_exit{[output] {
                     freeRodsObjStat(output);
                 }};
 
@@ -198,6 +220,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
                 s.mode = static_cast<int>(output->dataMode);
                 s.owner_name = output->ownerName;
                 s.owner_zone = output->ownerZone;
+                s.inheritance = get_inheritance(_comm, _p, s.type);
 
                 set_permissions(_comm, _p, s);
             }
@@ -261,6 +284,100 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
             }
 
             throw filesystem_error{"cannot remove: unknown object type", _p, make_error_code(CAT_NOT_A_DATAOBJ_AND_NOT_A_COLLECTION)};
+        }
+
+        auto set_permissions(bool _add_admin_flag,
+                             rxComm& _comm,
+                             const path& _p,
+                             const std::string& _user_or_group,
+                             perms _prms) -> void
+        {
+            detail::throw_if_path_length_exceeds_limit(_p);
+
+            char username[NAME_LEN]{};
+            char zone[NAME_LEN]{};
+
+            auto ec = parseUserName(_user_or_group.c_str(), username, zone);
+
+            if (ec != 0) {
+                throw filesystem_error{"cannot parse user/group name", _p, make_error_code(ec)};
+            }
+
+            modAccessControlInp_t input{};
+
+            input.userName = username;
+            input.zone = zone;
+
+            char path[MAX_NAME_LEN]{};
+            std::strncpy(path, _p.c_str(), std::strlen(_p.c_str()));
+            input.path = path;
+
+            char access[16]{};
+
+            if (_add_admin_flag) {
+                std::strcpy(access, "admin:");
+            }
+
+            switch (_prms) {
+                case perms::null:
+                    std::strncat(access, "null", 4);
+                    break;
+
+                case perms::read:
+                    std::strncat(access, "read", 4);
+                    break;
+
+                case perms::write:
+                    std::strncat(access, "write", 5);
+                    break;
+
+                case perms::own:
+                    std::strncat(access, "own", 3);
+                    break;
+            }
+
+            input.accessLevel = access;
+
+            ec = rxModAccessControl(&_comm, &input);
+
+            if (ec != 0) {
+                throw filesystem_error{"cannot set permissions", _p, make_error_code(ec)};
+            }
+        }
+
+        auto set_inheritance(bool _add_admin_flag, rxComm& _comm, const path& _p, bool _value) -> void
+        {
+            detail::throw_if_path_is_empty(_p);
+            detail::throw_if_path_length_exceeds_limit(_p);
+
+            if (!is_collection(_comm, _p)) {
+                throw filesystem_error{"existing path is not a collection", _p, make_error_code(NOT_A_COLLECTION)};
+            }
+
+            modAccessControlInp_t input{};
+
+            input.userName = "";
+            input.zone = "";
+
+            char path[MAX_NAME_LEN]{};
+            std::strncpy(path, _p.c_str(), std::strlen(_p.c_str()));
+            input.path = path;
+
+            char access[16]{};
+
+            if (_add_admin_flag) {
+                std::strcpy(access, "admin:");
+            }
+
+            std::strcat(access, _value ? "inherit" : "noinherit");
+
+            input.accessLevel = access;
+
+            const auto ec = rxModAccessControl(&_comm, &input);
+
+            if (ec != 0) {
+                throw filesystem_error{"cannot set inheritance", _p, make_error_code(ec)};
+            }
         }
 
         auto has_prefix(const path& _p, const path& _prefix) -> bool
@@ -828,57 +945,26 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
     auto permissions(rxComm& _comm, const path& _p, const std::string& _user_or_group, perms _prms) -> void
     {
-        detail::throw_if_path_length_exceeds_limit(_p);
+        constexpr auto add_admin_flag = false;
+        set_permissions(add_admin_flag, _comm, _p, _user_or_group, _prms);
+    }
 
-        char username[NAME_LEN]{};
-        char zone[NAME_LEN]{};
+    auto permissions(admin_tag, rxComm& _comm, const path& _p, const std::string& _user_or_group, perms _prms) -> void
+    {
+        constexpr auto add_admin_flag = true;
+        set_permissions(add_admin_flag, _comm, _p, _user_or_group, _prms);
+    }
 
-        if (const auto ec = parseUserName(_user_or_group.c_str(), username, zone); ec != 0) {
-            throw filesystem_error{"cannot parse user/group name", _p, make_error_code(ec)};
-        }
+    auto enable_inheritance(rxComm& _comm, const path& _p, bool _value) -> void
+    {
+        constexpr auto add_admin_flag = false;
+        set_inheritance(add_admin_flag, _comm, _p, _value);
+    }
 
-        modAccessControlInp_t input{};
-
-        input.userName = username;
-        input.zone = zone;
-
-        char path[MAX_NAME_LEN]{};
-        std::strncpy(path, _p.c_str(), std::strlen(_p.c_str()));
-        input.path = path;
-
-        char access[10]{};
-
-        switch (_prms) {
-            case perms::null:
-                std::strncpy(access, "null", 4);
-                break;
-
-            case perms::read:
-                std::strncpy(access, "read", 4);
-                break;
-
-            case perms::write:
-                std::strncpy(access, "write", 5);
-                break;
-
-            case perms::own:
-                std::strncpy(access, "own", 3);
-                break;
-
-            case perms::inherit:
-                std::strncpy(access, "inherit", 7);
-                break;
-
-            case perms::noinherit:
-                std::strncpy(access, "noinherit", 9);
-                break;
-        }
-
-        input.accessLevel = access;
-
-        if (const auto ec = rxModAccessControl(&_comm, &input); ec != 0) {
-            throw filesystem_error{"cannot set permissions", _p, make_error_code(ec)};
-        }
+    auto enable_inheritance(admin_tag, rxComm& _comm, const path& _p, bool _value) -> void
+    {
+        constexpr auto add_admin_flag = true;
+        set_inheritance(add_admin_flag, _comm, _p, _value);
     }
 
     auto rename(rxComm& _comm, const path& _old_p, const path& _new_p) -> void
@@ -1010,6 +1096,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         object_status status;
 
         status.permissions(s.prms);
+        status.inheritance(s.inheritance);
 
         // XXX This does not handle the case of object_type::unknown.
         // This type means a file exists, but the type is unknown.
