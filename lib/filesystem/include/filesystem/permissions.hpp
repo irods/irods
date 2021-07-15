@@ -10,9 +10,7 @@ namespace irods::experimental::filesystem
         null,
         read,
         write,
-        own,
-        inherit,
-        noinherit
+        own
     };
 
     struct entity_permission
