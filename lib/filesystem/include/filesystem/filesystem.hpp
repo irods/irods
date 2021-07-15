@@ -44,6 +44,9 @@ namespace irods::experimental::filesystem
         std::string units;
     };
 
+    /// A tag type used to instruct an operation to run in administrator mode.
+    inline struct admin_tag {} admin;
+
     namespace NAMESPACE_IMPL
     {
         // Operational functions
@@ -141,6 +144,47 @@ namespace irods::experimental::filesystem
         auto remove_all(rxComm& _comm, const path& _p, remove_options _opts = remove_options::none) -> std::uintmax_t;
 
         auto permissions(rxComm& _comm, const path& _p, const std::string& _user_or_group, perms _prms) -> void;
+
+        /// \brief Modifies the permissions of a collection or data object.
+        ///
+        /// \throws filesystem_error If the path is empty, exceeds the path limit, or does not
+        ///                          reference a collection or data object.
+        ///
+        /// \param[in] _admin         A tag which instructs the function to operate in administrator mode.
+        ///                           The client must be an administrator to use this function.
+        /// \param[in] _comm          The communication object.
+        /// \param[in] _p             The logical path to a collection or data object.
+        /// \param[in] _user_or_group The user or group for which the permission will apply to.
+        /// \param[in] _prms          The permission to set for \p _user_or_group.
+        ///
+        /// \since 4.2.11
+        auto permissions(admin_tag, rxComm& _comm, const path& _p, const std::string& _user_or_group, perms _prms) -> void;
+
+        /// \brief Modifies the inheritance option of a collection.
+        ///
+        /// \throws filesystem_error If the path is empty, exceeds the path limit, or does not
+        ///                          reference a collection.
+        ///
+        /// \param[in] _comm  The communication object.
+        /// \param[in] _p     The path to a collection.
+        /// \param[in] _value A boolean indicating whether inheritance should be enabled or not.
+        ///
+        /// \since 4.2.11
+        auto enable_inheritance(rxComm& _comm, const path& _p, bool _value) -> void;
+
+        /// \brief Modifies the inheritance option of a collection.
+        ///
+        /// \throws filesystem_error If the path is empty, exceeds the path limit, or does not
+        ///                          reference a collection.
+        ///
+        /// \param[in] _admin A tag which instructs the function to operate in administrator mode. The client
+        ///                   must be an administrator to use this function.
+        /// \param[in] _comm  The communication object.
+        /// \param[in] _p     The path to a collection.
+        /// \param[in] _value A boolean indicating whether inheritance should be enabled or not.
+        ///
+        /// \since 4.2.11
+        auto enable_inheritance(admin_tag _admin, rxComm& _comm, const path& _p, bool _value) -> void;
 
         auto rename(rxComm& _comm, const path& _from, const path& _to) -> void;
 

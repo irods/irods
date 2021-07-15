@@ -349,6 +349,20 @@ TEST_CASE("filesystem")
         REQUIRE(fs::client::remove(conn, p, fs::remove_options::no_trash));
     }
 
+    SECTION("read/modify inheritance on a collection")
+    {
+        auto status = fs::client::status(conn, sandbox);
+        REQUIRE_FALSE(status.is_inheritance_enabled());
+
+        fs::client::enable_inheritance(conn, sandbox, true);
+        status = fs::client::status(conn, sandbox);
+        REQUIRE(status.is_inheritance_enabled());
+
+        fs::client::enable_inheritance(conn, sandbox, false);
+        status = fs::client::status(conn, sandbox);
+        REQUIRE_FALSE(status.is_inheritance_enabled());
+    }
+
     SECTION("collection iterators")
     {
         // Creates three data objects under the path "_collection".

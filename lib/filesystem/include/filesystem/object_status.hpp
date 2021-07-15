@@ -33,6 +33,7 @@ namespace irods::experimental::filesystem
         explicit object_status(object_type _type, const std::vector<entity_permission>& _perms = {})
             : type_{_type}
             , perms_{_perms}
+            , inheritance_{}
         {
         }
 
@@ -48,17 +49,20 @@ namespace irods::experimental::filesystem
 
         auto type() const noexcept -> object_type { return type_; }
         auto permissions() const noexcept -> const std::vector<entity_permission>& { return perms_; }
+        auto is_inheritance_enabled() const noexcept -> bool { return inheritance_; }
 
         // Modifiers
 
-        auto type(object_type _ot) noexcept -> void    { type_ = _ot; }
+        auto type(object_type _ot) noexcept -> void { type_ = _ot; }
         auto permissions(const std::vector<entity_permission>& _perms) -> void { perms_ = _perms; }
+        auto inheritance(bool _value) noexcept -> void { inheritance_ = _value; }
 
         // clang-format on
 
     private:
         object_type type_;
         std::vector<entity_permission> perms_;
+        bool inheritance_;
     };
 } // namespace irods::experimental::filesystem
 
