@@ -289,6 +289,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/include/ruleExecSubmit.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/sendXmsg.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/server_report.h
+  ${CMAKE_SOURCE_DIR}/lib/api/include/server_unit_test.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/set_round_robin_context.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/simpleQuery.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/specificQuery.h
@@ -485,6 +486,7 @@ set(
 
 set(
   IRODS_SERVER_CORE_INCLUDE_HEADERS
+  ${CMAKE_SOURCE_DIR}/server/core/include/atomic_apply_database_operations.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/client_api_whitelist.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/collection.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/dataObjOpr.hpp

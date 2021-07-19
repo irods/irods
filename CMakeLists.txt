@@ -563,6 +563,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/src/rc_get_file_descriptor_info.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rc_replica_close.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rc_replica_open.cpp
+  ${CMAKE_SOURCE_DIR}/lib/api/src/rc_server_unit_test.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rc_touch.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/bunUtil.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/chksumUtil.cpp
@@ -826,6 +827,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/api/src/rsUnregDataObj.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsUserAdmin.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsZoneReport.cpp
+  ${CMAKE_SOURCE_DIR}/server/core/src/atomic_apply_database_operations.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/client_api_whitelist.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/catalog.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/catalog_utilities.cpp

@@ -1,25 +1,13 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code (for the most part).  */
-/* See generalAdmin.h for a description of this API call.*/
+#include "rsGeneralAdmin.hpp"
 
-// =-=-=-=-=-=-=-
-// irods includes
 #include "generalAdmin.h"
 #include "rodsConnect.h"
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
-#include "rsGeneralAdmin.hpp"
+#include "rodsErrorTable.h"
+#include "rodsType.h"
 #include "rsModAVUMetadata.hpp"
 #include "rsGenQuery.hpp"
-
-// =-=-=-=-=-=-=-
-// stl includes
-#include <iostream>
-#include <string>
-#include <tuple>
-
-// =-=-=-=-=-=-=-
 #include "irods_children_parser.hpp"
 #include "irods_string_tokenize.hpp"
 #include "irods_plugin_name_generator.hpp"
@@ -29,18 +17,25 @@
 #include "irods_load_plugin.hpp"
 #include "irods_at_scope_exit.hpp"
 #include "irods_hierarchy_parser.hpp"
+#include "atomic_apply_database_operations.hpp"
 
-// =-=-=-=-=-=-=-
-// boost includes
 #include <boost/date_time.hpp>
 #include <boost/optional.hpp>
+
+#include <fmt/format.h>
+#include <json.hpp>
+
+#include <sstream>
+#include <string>
+#include <string_view>
+#include <tuple>
 
 extern irods::resource_manager resc_mgr;
 
 int _check_rebalance_timestamp_avu_on_resource(
     rsComm_t* _rsComm,
-    const std::string& _resource_name) {
-
+    const std::string& _resource_name)
+{
     // build genquery to find active or stale "rebalance operation" entries for this resource
     genQueryOut_t* gen_out = nullptr;
     char tmp_str[MAX_NAME_LEN];
@@ -588,6 +583,159 @@ _listRescTypes( rsComm_t* _rsComm ) {
     return result;
 }
 
+std::tuple<int, bool> has_resource_class(const std::string_view _resc_name, const std::string_view _resc_class)
+{
+    irods::resource_ptr resc_ptr;
+    if (const auto err = resc_mgr.resolve(_resc_name.data(), resc_ptr); !err.ok()) {
+        return {SYS_INVALID_INPUT_PARAM, false};
+    }
+
+    std::string resc_class;
+    if (const auto err = resc_ptr->get_property(irods::RESOURCE_CLASS, resc_class); !err.ok()) {
+        return {SYS_INVALID_INPUT_PARAM, false};
+    }
+
+    return {0, _resc_class == resc_class};
+}
+
+int is_valid_resource(const std::string_view _resc_name)
+{
+    if (!resc_mgr.exists(_resc_name)) {
+        return SYS_RESC_DOES_NOT_EXIST;
+    }
+
+    if (const auto [ec, has_class] = has_resource_class(_resc_name, irods::RESOURCE_CLASS_BUNDLE);
+        ec != 0 || has_class)
+    {
+        if (ec != 0) {
+            return ec;
+        }
+
+        if (has_class) {
+            return SYS_INVALID_RESC_TYPE;
+        }
+    }
+
+    return 0;
+}
+
+std::tuple<int, bool> is_ancestor(const std::string_view _descendant, const std::string_view _ancestor)
+{
+    std::string hier;
+    if (const auto err = resc_mgr.get_hier_to_root_for_resc(_descendant.data(), hier); !err.ok()) {
+        return {err.code(), false};
+    }
+
+    irods::hierarchy_parser parser{hier};
+    const auto pred = [&_ancestor](const std::string_view _r) { return _r == _ancestor; };
+
+    return {0, std::any_of(std::begin(parser), std::end(parser), pred)};
+}
+
+int set_parent_resource(RsComm& _comm, GeneralAdminInp& _gen_admin_inp)
+{
+    // 1. Verify that the incoming arguments are indeed resources.
+    // 2. Verify that the resources are not special to the system (e.g. bundleResc).
+    // 3. Verify that the child-to-be resource is not an ancestor of the parent-to-be resource.
+
+    const std::string_view child_resc = _gen_admin_inp.arg1;
+    irods::resource_ptr child_resc_ptr;
+
+    if (const auto err = resc_mgr.resolve(child_resc.data(), child_resc_ptr); !err.ok()) {
+        rodsLog(LOG_ERROR, "%s :: Could not resolve resource name [%s].", __func__, child_resc.data());
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
+    const std::string_view parent_resc = _gen_admin_inp.arg2;
+    irods::resource_ptr parent_resc_ptr;
+
+    if (const auto err = resc_mgr.resolve(child_resc.data(), parent_resc_ptr); !err.ok()) {
+        rodsLog(LOG_ERROR, "%s :: Could not resolve resource name [%s].", __func__, parent_resc.data());
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
+    if (child_resc == parent_resc) {
+        const char* const msg = "%s :: Received identical input arguments [child_resc=%s, parent_resc=%s]."
+                                "Resource cannot be parent of itself.";
+        rodsLog(LOG_ERROR, msg, __func__, child_resc.data(), parent_resc.data());
+        return SYS_INVALID_RESC_INPUT;
+    }
+
+    std::string resc_class;
+
+    if (const auto err = child_resc_ptr->get_property(irods::RESOURCE_CLASS, resc_class); !err.ok()) {
+        rodsLog(LOG_ERROR, "%s :: %s", __func__, err.result().data());
+        return err.code();
+    }
+
+    if (irods::RESOURCE_CLASS_BUNDLE == resc_class) {
+        rodsLog(LOG_ERROR, "%s :: Resource [%s] has a class type of 'bundle'.", __func__, child_resc.data());
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
+    if (const auto err = parent_resc_ptr->get_property(irods::RESOURCE_CLASS, resc_class); !err.ok()) {
+        rodsLog(LOG_ERROR, "%s :: %s", __func__, err.result().data());
+        return err.code();
+    }
+
+    if (irods::RESOURCE_CLASS_BUNDLE == resc_class) {
+        rodsLog(LOG_ERROR, "%s :: Resource [%s] has a class type of 'bundle'.", __func__, parent_resc.data());
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
+    auto [ec, child_is_ancestor] = is_ancestor(parent_resc, child_resc);
+
+    if (ec != 0) {
+        const char* const msg = "%s :: Could not determine if relationship between resources "
+                                "[child_resc=%s, parent_resc=%s].";
+        rodsLog(LOG_ERROR, msg, __func__, child_resc.data(), parent_resc.data());
+        return ec;
+    }
+
+    if (child_is_ancestor) {
+        rodsLog(LOG_ERROR, "%s :: Ancestor resource [%s] cannot be child of descendant resource [%s].",
+                __func__, child_resc.data(), parent_resc.data());
+        return HIERARCHY_ERROR;
+    }
+
+    using json = nlohmann::json;
+
+    rodsLong_t child_resc_id;
+
+    if (const auto err = child_resc_ptr->get_property(irods::RESOURCE_ID, child_resc_id); !err.ok()) {
+        rodsLog(LOG_ERROR, "%s :: Could not retrieve resource id for resource [%s].", __func__, child_resc.data());
+        return err.code();
+    }
+
+    rodsLong_t parent_resc_id;
+
+    if (const auto err = parent_resc_ptr->get_property(irods::RESOURCE_ID, parent_resc_id); !err.ok()) {
+        rodsLog(LOG_ERROR, "%s :: Could not retrieve resource id for resource [%s].", __func__, parent_resc.data());
+        return err.code();
+    }
+
+    ec = irods::experimental::atomic_apply_database_operations(json::object_t{
+        {"op_name", "update"},
+        {"table", "r_resc_main"},
+        {"updates", json::object_t{
+            {"values", json::object_t{
+                {"resc_parent", parent_resc_id}
+            }},
+            {"conditions", json::array_t{
+                {
+                    {"column", "resc_id"},
+                    {"operator", "="},
+                    {"value", child_resc_id}
+                }
+            }}
+        }}
+    });
+
+    rodsLog(LOG_NOTICE, "%s :: database update error code = %d.", __func__, ec);
+
+    return ec;
+}
+
 int
 _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
     int status;
@@ -595,19 +743,19 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
     ruleExecInfo_t rei;
     const char *args[MAX_NUM_OF_ARGS_IN_ACTION];
     int i, argc;
-    ruleExecInfo_t rei2;
+    ruleExecInfo_t rei2{};
 
-    memset( ( char* )&rei2, 0, sizeof( ruleExecInfo_t ) );
     rei2.rsComm = rsComm;
-    if ( rsComm != NULL ) {
+    if (rsComm) {
         rei2.uoic = &rsComm->clientUser;
         rei2.uoip = &rsComm->proxyUser;
     }
 
+    rodsLog( LOG_DEBUG, "_rsGeneralAdmin arg0=%s", generalAdminInp->arg0 );
 
-    rodsLog( LOG_DEBUG,
-             "_rsGeneralAdmin arg0=%s",
-             generalAdminInp->arg0 );
+    if (strcmp(generalAdminInp->arg0, "setparentresc") == 0) {
+        return set_parent_resource(*rsComm, *generalAdminInp);
+    }
 
     if ( strcmp( generalAdminInp->arg0, "add" ) == 0 ) {
         if ( strcmp( generalAdminInp->arg1, "user" ) == 0 ) {

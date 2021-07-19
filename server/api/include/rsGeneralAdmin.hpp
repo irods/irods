@@ -1,10 +1,15 @@
 #ifndef RS_GENERAL_ADMIN_HPP
 #define RS_GENERAL_ADMIN_HPP
 
-#include "rcConnect.h"
+/// \file
+
 #include "generalAdmin.h"
 
-int rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp );
-int _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp );
+struct RsComm;
 
-#endif
+int rsGeneralAdmin(RsComm* rsComm, GeneralAdminInp* generalAdminInp);
+
+int _rsGeneralAdmin(RsComm* rsComm, GeneralAdminInp* generalAdminInp);
+
+#endif // RS_GENERAL_ADMIN_HPP
+

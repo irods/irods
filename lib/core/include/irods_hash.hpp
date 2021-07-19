@@ -1,14 +1,10 @@
 #ifndef __IRODS_HASH_HPP__
 #define __IRODS_HASH_HPP__
 
-// =-=-=-=-=-=-=-
-// hash_map include
-#include <boost/unordered_map.hpp>
-#define HASH_TYPE boost::unordered_map
-
-#include <string>
 #include "irods_stacktrace.hpp"
 #include "irods_log.hpp"
+
+#include <string>
 
 namespace irods {
 
@@ -17,20 +13,17 @@ namespace irods {
             // parameters for hash table
             bucket_size = 4, // 0 < bucket_size
             min_buckets = 8
-
         }; // min_buckets = 2 ^^ N, 0 < N
 
-        size_t operator()( const std::string& s1 ) const {
+        size_t operator()(const std::string& s1) const {
             if ( s1.empty() ) {
                 std::cerr << irods::stacktrace().dump();
-                rodsLog(
-                    LOG_NOTICE,
-                    "irods_string_hash - empty string value" );
+                rodsLog(LOG_NOTICE, "irods_string_hash - empty string value");
                 return 0;
             }
 
             // hash string s1 to size_t value
-            const unsigned char *p = ( const unsigned char * )s1.c_str();
+            const unsigned char *p = (const unsigned char*) s1.c_str();
             size_t hashval = 0;
 
             while ( *p != '\0' ) {
@@ -46,9 +39,8 @@ namespace irods {
 
         ~irods_string_hash() {
         }
-
     }; // struct irods_string_hash
 
-}; // namespace irods
+} // namespace irods
 
 #endif // __IRODS_HASH_HPP__

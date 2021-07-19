@@ -1,12 +1,12 @@
 #ifndef __IRODS_RESOURCE_MANAGER_HPP__
 #define __IRODS_RESOURCE_MANAGER_HPP__
 
-// =-=-=-=-=-=-=-
 #include "rods.h"
 #include "irods_resource_plugin.hpp"
 #include "irods_first_class_object.hpp"
 
 #include <functional>
+#include <iterator>
 
 namespace irods
 {
@@ -139,11 +139,11 @@ namespace irods
 
             // =-=-=-=-=-=-=-
             /// @brief get the resc name of the resource given an id
-            error resc_id_to_name( const rodsLong_t&, std::string& );
+            error resc_id_to_name( const rodsLong_t&, std::string& ) const;
 
             // =-=-=-=-=-=-=-
             /// @brief get the resc name of the resource given an id as a string
-            error resc_id_to_name( const std::string&, std::string& );
+            error resc_id_to_name( const std::string&, std::string& ) const;
 
             /// \brief get the resc name of the resource given an id
             ///
@@ -154,7 +154,7 @@ namespace irods
             /// \throws irods::exception
             ///
             /// \since 4.2.9
-            std::string resc_id_to_name(const rodsLong_t& _id);
+            std::string resc_id_to_name(const rodsLong_t& _id) const;
 
             /// \brief get the resc name of the resource given an id as a string
             ///
@@ -165,7 +165,7 @@ namespace irods
             /// \throws irods::exception
             ///
             /// \since 4.2.9
-            std::string resc_id_to_name(std::string_view _id);
+            std::string resc_id_to_name(std::string_view _id) const;
 
             // =-=-=-=-=-=-=-
             /// @brief check whether the specified resource name is a coordinating resource
@@ -174,6 +174,16 @@ namespace irods
             // =-=-=-=-=-=-=-
             /// @brief check whether the specified resource name is a coordinating resource
             bool is_coordinating_resource(const std::string& _resc_name);
+
+            bool exists(const std::string_view _resc_name) const 
+            {
+                return resource_name_map_.find(_resc_name.data()) != resource_name_map_.cend();
+            }
+
+            bool exists(rodsLong_t _id) const 
+            {
+                return exists(resc_id_to_name(_id));
+            }
 
             // =-=-=-=-=-=-=-
             /// @brief resolve a resource from a match with a given property
@@ -242,9 +252,14 @@ namespace irods
 
             } // resolve_from_property
 
-            typedef lookup_table< resource_ptr >::iterator iterator;
+            using iterator       = lookup_table< resource_ptr >::iterator;
+            using const_iterator = lookup_table< resource_ptr >::const_iterator;
+
             iterator begin() { return resource_name_map_.begin(); }
-            iterator end()   { return resource_name_map_.end();   }
+            iterator end() { return resource_name_map_.end(); }
+
+            const_iterator cbegin() const { return resource_name_map_.cbegin(); }
+            const_iterator cend() const { return resource_name_map_.cend(); }
 
         private:
             // =-=-=-=-=-=-=-
