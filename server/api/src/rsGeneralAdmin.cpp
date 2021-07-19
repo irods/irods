@@ -698,7 +698,7 @@ int set_parent_resource(RsComm& _comm, GeneralAdminInp& _gen_admin_inp)
         return HIERARCHY_ERROR;
     }
 
-    using json = nlohmann::json;
+    //using json = nlohmann::json;
 
     rodsLong_t child_resc_id;
 
@@ -714,6 +714,7 @@ int set_parent_resource(RsComm& _comm, GeneralAdminInp& _gen_admin_inp)
         return err.code();
     }
 
+#if 0
     ec = irods::experimental::atomic_apply_database_operations(json::object_t{
         {"op_name", "update"},
         {"table", "r_resc_main"},
@@ -730,6 +731,20 @@ int set_parent_resource(RsComm& _comm, GeneralAdminInp& _gen_admin_inp)
             }}
         }}
     });
+#else
+    ec = irods::experimental::atomic_apply_database_operations({
+        irods::experimental::dml::update_op{"r_resc_main",
+            // New values
+            {
+                {"resc_parent", std::to_string(parent_resc_id)}
+            },
+            // Conditions
+            {
+                {"resc_id", "=", {std::to_string(child_resc_id)}}
+            }
+        }
+    });
+#endif
 
     rodsLog(LOG_NOTICE, "%s :: database update error code = %d.", __func__, ec);
 
