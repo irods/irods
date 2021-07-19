@@ -674,7 +674,7 @@ int rsDataObjPut(rsComm_t* rsComm,
     namespace fs = ix::filesystem;
 
     try {
-        const auto ec = ix::atomic_apply_database_operations({
+        auto ec = ix::atomic_apply_database_operations({
             {"operations", nlohmann::json::array({
                 {
                     {"op_name", "insert"},
@@ -749,7 +749,82 @@ int rsDataObjPut(rsComm_t* rsComm,
                 }
             })},
         });
+
         rodsLog(LOG_NOTICE, "db atomic ops insert error code = %d", ec);
+    }
+    catch (const std::exception& e) {
+        rodsLog(LOG_ERROR, "Atomic DB Operations Error: %s", e.what());
+    }
+
+    try {
+        namespace ix = irods::experimental;
+
+        const auto ec = ix::atomic_apply_database_operations({
+            ix::dml::insert_op{"r_coll_main", {
+                ix::dml::row{{
+                    {"coll_name", "/tempZone/home/kory/atomic_col_0.d"},
+                    {"parent_coll_name", "/tempZone/home/kory"},
+                    {"coll_owner_name", "kory"},
+                    {"coll_owner_zone", "tempZone"},
+                    {"create_ts", "00000000000"},
+                    {"modify_ts", "00000000000"}
+                }},
+                ix::dml::row{{
+                    {"coll_name", "/tempZone/home/kory/atomic_col_1.d"},
+                    {"parent_coll_name", "/tempZone/home/kory"},
+                    {"coll_owner_name", "kory"},
+                    {"coll_owner_zone", "tempZone"},
+                    {"create_ts", "00000000000"},
+                    {"modify_ts", "00000000000"}
+                }},
+                ix::dml::row{{
+                    {"coll_name", "/tempZone/home/kory/atomic_col_2.d"},
+                    {"parent_coll_name", "/tempZone/home/kory"},
+                    {"coll_owner_name", "kory"},
+                    {"coll_owner_zone", "tempZone"},
+                    {"create_ts", "00000000000"},
+                    {"modify_ts", "00000000000"}
+                }}
+            }},
+           // ix::dml::update_op{"r_data_main", {
+           //     {
+           //         {{
+           //              {"coll_name", "/tempZone/home/rods"},
+           //              {"parent_coll_name", "/tempZone/home"},
+           //              {"coll_owner_name", "rods"}
+           //         }},
+           //         {
+           //             {
+           //                 {"column", "coll_id"},
+           //                 {"operator", "="},
+           //                 {"value", "35000"}
+           //             },
+           //             {
+           //                 {"column", "create_ts"},
+           //                 {"operator", ">="},
+           //                 {"value", "10000000000"}
+           //             }
+           //         }
+           //     }
+           // }},
+           // ix::dml::delete_op{"r_data_main", {
+           //     {
+           //         {"column", "coll_id"},
+           //         {"operator", "="},
+           //         {"value", "35000"}
+           //     },
+           //     {
+           //         {"column", "create_ts"},
+           //         {"operator", ">="},
+           //         {"value", "10000000000"}
+           //     }
+           // }}
+        });
+
+        rodsLog(LOG_NOTICE, "db atomic ops insert error code = %d", ec);
+    }
+    catch (const irods::exception& e) {
+        rodsLog(LOG_ERROR, "Atomic DB Operations Error: (%d, %s)", e.code(), e.what());
     }
     catch (const std::exception& e) {
         rodsLog(LOG_ERROR, "Atomic DB Operations Error: %s", e.what());
