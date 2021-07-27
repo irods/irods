@@ -184,7 +184,7 @@ usage() {
         "The -s option can be used to synchronize the tar file with the cache.",
         "For example:",
         " ",
-        "    imcoll -s /tZone/home/myUser/tardir"
+        "    imcoll -s /tZone/home/myUser/tardir",
         " ",
         "The -p option can be used to purge the cache.",
         " ",

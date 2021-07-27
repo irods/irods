@@ -102,7 +102,7 @@ usage() {
         "Usage: ils --bundle [-r] dataObj|collection ... ",
         "Display data objects and collections stored in iRODS.",
         " ",
-        "The following is typical output for ils with no arguments:"
+        "The following is typical output for ils with no arguments:",
         "    $ ils",
         "    /tempZone/public:",
         "      big",
