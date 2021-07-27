@@ -602,6 +602,34 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
         self.admin.assert_icommand(['irule', '-r', rep_name, delay_rule.format(rep_name, '10'), 'null', 'ruleExecOut'], 'STDERR', expected_output)
         self.admin.assert_icommand(['iquest', 'select RULE_EXEC_ID'], 'STDOUT', ['CAT_NO_ROWS_FOUND']) # Show that no rules exist.
 
+    @unittest.skipUnless(test.settings.RUN_IN_TOPOLOGY, 'Not running a topology test')
+    def test_delay_server_implicit_remote__issue_4429(self):
+        config = IrodsConfig()
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        hostnames_expected = ['resource1.example.org','resource2.example.org','resource3.example.org']
+        filename = 'hello'
+        object_name = self.admin.session_collection + "/" + filename
+        delay_rule = '''
+        delay("<INST_NAME>{0}</INST_NAME><PLUSET>1s</PLUSET>") {{
+            msi_get_hostname(*hostname);
+            msiModAVUMetadata("-d","{1}", "add","a%i",*hostname,"hostname")
+        }}
+        '''.format(rep_name, object_name)
+        with lib.file_backed_up(config.server_config_path):
+            self.admin.assert_icommand(['itouch', object_name])
+            # Use the consumers as rule executors
+            config.server_config['advanced_settings']['delay_rule_executors'] = hostnames_expected
+            config.server_config['advanced_settings']['rule_engine_server_sleep_time_in_seconds'] = 1
+            lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+            IrodsController().restart(test_mode=True)
+            for i in range(len(hostnames_expected)):
+                self.admin.assert_icommand(['irule', '-r', rep_name,
+                                            delay_rule % i,
+                                            '*hostname=','ruleExecOut'])
+            time.sleep(3)
+            self.admin.assert_icommand(['imeta', 'ls', '-d', filename], 'STDOUT', hostnames_expected)
+        IrodsController().restart(test_mode=True)
+
 @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads server log')
 class Test_Execution_Frequency(resource_suite.ResourceBase, unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin

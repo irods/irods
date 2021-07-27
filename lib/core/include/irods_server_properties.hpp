@@ -134,6 +134,15 @@ namespace irods
         return irods::get_server_property<T>(configuration_parser::key_path_t{CFG_ADVANCED_SETTINGS_KW, _prop});
     } // get_advanced_setting
 
+    /// \brief Returns if an entry in the advanced settings exists
+    /// \param[in] _prop The name of the property to check for existence
+    /// \return A boolean specifying if the given property exists.
+    inline bool advanced_setting_exists(const std::string& _prop) {
+        auto &inst = irods::server_properties::instance();
+        auto &adv = inst.get_property<std::unordered_map<std::string, boost::any>&>(CFG_ADVANCED_SETTINGS_KW);
+        return adv.find(_prop)!=adv.cend();
+    } // advanced_setting_exists
+
     /// Returns the amount of shared memory that should be allocated for the DNS cache.
     ///
     /// \return An integer representing the size in bytes.

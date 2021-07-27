@@ -1332,9 +1332,8 @@ int initServerMain(
             delay_pid = irods::get_server_property<int>(irods::RE_PID_KW);
         }
         if (reServerHost && LOCAL_HOST == reServerHost->localFlag) {
-            rodsLog(LOG_NOTICE, "Forking Rule Execution Server (irodsReServer) ...");
             if(!delay_pid.has_value() || waitpid(delay_pid.value(), nullptr, WNOHANG) != 0){
-                ix::log::server::info("Restarting delay server");
+                ix::log::server::info("Forking Rule Execution Server (irodsReServer) ...");
                 const int pid = RODS_FORK();
                 if (pid == 0) {
                     close(svrComm->sock);
