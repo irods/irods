@@ -2,6 +2,7 @@
     "schema_name": "server_config",
     "schema_version": "v3",
     "advanced_settings": {
+        "delay_rule_executors": [],
         "default_number_of_transfer_threads": 4,
         "default_temporary_password_lifetime_in_seconds": 120,
         "maximum_number_of_concurrent_rule_engine_server_processes": 4,

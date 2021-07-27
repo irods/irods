@@ -77,6 +77,30 @@ namespace {
         }
     }
 
+    /// Get the next connection to use for the next rule
+    ///
+    /// \param[in] user The name of the user to proxy into
+    ix::client_connection get_new_connection(const std::optional<std::string>& _user){
+        static std::atomic<int> host_index = 0;
+        static auto &delay_rule_executors = irods::get_advanced_setting<std::vector<boost::any>&>(irods::DELAY_RULE_EXECUTORS_KW);
+        if(_user.has_value() && !delay_rule_executors.empty() ){
+            rodsEnv env{};
+            _getRodsEnv(env);
+            const int cur = (host_index++) % delay_rule_executors.size();
+            const auto &host = boost::any_cast<std::string&>(delay_rule_executors[cur]);
+            logger::delay_server::debug("Sending rule to {}, Using proxy user {} for implicit remote (real user {})",  host, _user.value(), env.rodsUserName);
+            return ix::client_connection(host,
+                                         env.rodsPort,
+                                         _user.value(),
+                                         env.rodsZone,
+                                         env.rodsUserName,
+                                         env.rodsZone);
+        } else {
+            logger::delay_server::trace("Connecting to self");
+            return ix::client_connection();
+        }
+    }
+
     void set_ips_display_name(const std::string_view _display_name)
     {
         // Setting this environment variable is required so that "ips" can display
@@ -454,7 +478,7 @@ namespace {
             freeBBuf(rule_exec_submit_inp.packedReiAndArgBBuf);
         }};
 
-        ix::client_connection conn;
+        ix::client_connection conn = get_new_connection(std::nullopt);
 
         try {
             rule_exec_submit_inp = fill_rule_exec_submit_inp(conn, rule_id);
@@ -464,6 +488,7 @@ namespace {
             return;
         }
 
+        conn = get_new_connection(std::string(rule_exec_submit_inp.userName));
         try {
             if (const int status = run_rule_exec(conn, rule_exec_submit_inp); status < 0) {
                 logger::delay_server::error("Rule exec for [{}] failed. status = [{}]", rule_exec_submit_inp.ruleExecId, status);
