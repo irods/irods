@@ -15,6 +15,7 @@ else:
 from .resource_suite import ResourceBase
 from ..configuration import IrodsConfig
 from .. import lib
+from .. import test
 from . import session
 
 class Test_iPut_Options(ResourceBase, unittest.TestCase):
@@ -28,6 +29,7 @@ class Test_iPut_Options(ResourceBase, unittest.TestCase):
             shutil.rmtree(abs_path, ignore_errors = True)
         super(Test_iPut_Options, self).tearDown()
 
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'not working - see comment below')
     def test_iput_options(self):
         self.admin.assert_icommand('ichmod read ' + self.user0.username + ' ' + self.admin.session_collection)
         self.admin.assert_icommand('ichmod read ' + self.user1.username + ' ' + self.admin.session_collection)

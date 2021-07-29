@@ -107,14 +107,24 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Delete this line on resolution of #4094')
     def test_delay_queue_with_long_job(self):
+        """Test to ensure that a long-running delayed job does not block other jobs from executing.
+
+        Schedules a long-running job, a block of short-running jobs to be run as soon as possible, and a block
+        of short-running jobs to be run at a later time (but before the long-running job completes).
+
+        The delay server is limited to 2 concurrent threads of execution. One of the threads will be occupied
+        with the long-running job while the other will execute the short-running jobs. This demonstrates the
+        delay server's ability to execute multiple jobs per query as well as to pick up new jobs even as a
+        long-running job continues to execute.
+        """
         irodsctl = IrodsController()
         server_config_filename = paths.server_config_path()
 
         delay_job_batch_size = 5
         re_server_sleep_time = 3
-        sooner_delay = 0.1
+        sooner_delay = 0
         later_delay = re_server_sleep_time * 5
-        long_job_run_time = re_server_sleep_time * 10
+        long_job_run_time = later_delay * 10
 
         rule_text_key = 'test_delay_queue_with_long_job'
         parameters = {}
@@ -149,11 +159,22 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
 
                 # Fire off rule and ensure the delay queue is correctly populated
                 self.admin.assert_icommand(['irule', '-F', rule_file])
+
+                start = time.time()
+
+                # There should be one msiAssociateKeyValuePairsToObj per set of delay jobs + 2 in the long-running job
                 self.assertEqual(
                     delay_job_batch_size * 2 + 2,
                     self.count_strings_in_queue('msiAssociateKeyValuePairsToObj'))
 
-                # "Sooner" rules should execute
+                # Make sure the long-running job has started
+                lib.delayAssert(
+                    lambda: lib.metadata_attr_with_value_exists(
+                        self.admin,
+                        parameters['metadata_attr'], 'Sleeping...')
+                )
+
+                # "Sooner" rules should execute immediately - check for metadata attributes added by each rule.
                 expected_count = delay_job_batch_size
                 for i in range(parameters['delay_job_batch_size']):
                     lib.delayAssert(
@@ -162,10 +183,12 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
                             '_'.join([parameters['metadata_attr'], 'sooner']),
                             'sooner: ' + str(i))
                     )
-                self.assertEqual(0, self.count_strings_in_queue('sooner:'))
-                self.assertEqual(delay_job_batch_size, self.count_strings_in_queue('later:'))
-                self.assertEqual(1, self.count_strings_in_queue('Sleeping...'))
 
+                # All of the sooner rules should have executed, removing them from the queue.
+                lib.delayAssert(lambda: 0 == self.count_strings_in_queue('sooner:'))
+
+                # None of the later rules should have been executed yet, remaining in the queue.
+                self.assertEqual(delay_job_batch_size, self.count_strings_in_queue('later:'))
                 for i in range(parameters['delay_job_batch_size']):
                     self.assertFalse(lib.metadata_attr_with_value_exists(
                         self.admin,
@@ -173,7 +196,15 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
                         'later: ' + str(i))
                     )
 
-                # "Later" rules should execute... but long-running job should still be in queue
+                # The long-running rule should still be in the queue as it is currently executing.
+                self.assertEqual(1, self.count_strings_in_queue('Sleeping...'))
+                self.assertFalse(lib.metadata_attr_with_value_exists(
+                    self.admin,
+                    '_'.join([parameters['metadata_attr'], 'later']),
+                    'later: ' + str(i))
+                    )
+
+                # "Later" rules should execute... but long-running job should still be in queue.
                 for i in range(parameters['delay_job_batch_size']):
                     lib.delayAssert(
                         lambda: lib.metadata_attr_with_value_exists(
@@ -181,19 +212,30 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
                             '_'.join([parameters['metadata_attr'], 'later']),
                             'later: ' + str(i))
                     )
-                self.assertEqual(0, self.count_strings_in_queue('later:'))
+
+                # All of the later rules should have executed, removing them from the queue.
+                lib.delayAssert(lambda: 0 == self.count_strings_in_queue('later:'))
+
+                # The long-running rule should still be in the queue as it is currently executing.
                 self.assertEqual(1, self.count_strings_in_queue('Sleeping...'))
 
-                # Wait for long-running job to finish and make sure it has
+                end = time.time()
+                seconds_remaining = long_job_run_time - int(end - start)
+                print('seconds remaining til long job finishes:[{}]'.format(seconds_remaining))
+
+                # Wait for long-running job to finish and that it is removed from the queue.
+                # maxrep is set to the number of seconds remaining in the long-running job plus 30 to give the catalog time to update
                 lib.delayAssert(
                     lambda: lib.metadata_attr_with_value_exists(
                         self.admin,
-                        parameters['metadata_attr'], 'Waking!')
+                        parameters['metadata_attr'], 'Waking!'),
+                    maxrep=seconds_remaining + 30
                 )
                 lib.delayAssert(self.no_delayed_rules)
 
         finally:
             os.remove(rule_file)
+            self.admin.run_icommand(['iqdel', '-a'])
             irodsctl.restart(test_mode=True)
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Delete this line on resolution of #4094')
@@ -412,13 +454,15 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
                     self.admin,
                     parameters['metadata_attr'],
                     'You should never see this line.'))
+                lib.delayAssert(self.no_delayed_rules)
 
         finally:
             os.remove(rule_file)
-            self.admin.assert_icommand(['iqdel', '-a'])
+            self.admin.run_icommand(['iqdel', '-a'])
             irodsctl.restart(test_mode=True)
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Delete this line on resolution of #4094')
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'odbc.ini file does not exist on Catalog Service Consumer')
     def test_exception_in_delay_server(self):
         config = IrodsConfig()
         irodsctl = IrodsController()
@@ -778,5 +822,5 @@ class Test_Execution_Frequency(resource_suite.ResourceBase, unittest.TestCase):
             lib.delayAssert(lambda: lib.log_message_occurrences_greater_than_count(msg=delay_msg, count=0, start_index=log_offset))
 
         finally:
-            self.user0.assert_icommand(['iqdel', '-a'])
+            self.user0.run_icommand(['iqdel', '-a'])
 
