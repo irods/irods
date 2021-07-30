@@ -26,7 +26,7 @@ class Test_Icp(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
     def setUp(self):
         super(Test_Icp, self).setUp()
         self.admin = self.admin_sessions[0]
-        self.alice = self.user_sessions[0]
+        self.user = self.user_sessions[0]
 
     def tearDown(self):
         super(Test_Icp, self).tearDown()
@@ -36,8 +36,8 @@ class Test_Icp(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
         logical_put_path = 'iput_large_dir'
         logical_cp_path = 'icp_large_dir'
         try:
-            with lib.file_backed_up(self.alice._environment_file_path):
-                del self.alice.environment_file_contents['irods_default_resource']
+            with lib.file_backed_up(self.user._environment_file_path):
+                del self.user.environment_file_contents['irods_default_resource']
                 filepath = core_file.CoreFile(self.plugin_name).filepath
                 with lib.file_backed_up(filepath):
                     if 'python' not in self.plugin_name:
@@ -47,10 +47,10 @@ class Test_Icp(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
 
                     lib.make_large_local_tmp_dir(test_dir_path, 1024, 1024)
 
-                    self.alice.assert_icommand(['iput', os.path.join(test_dir_path, 'junk0001')], 'STDERR', 'SYS_INVALID_RESC_INPUT')
+                    self.user.assert_icommand(['iput', os.path.join(test_dir_path, 'junk0001')], 'STDERR', 'SYS_INVALID_RESC_INPUT')
 
-                    self.alice.assert_icommand(['iput', '-R', 'demoResc', '-r', test_dir_path, logical_put_path], 'STDOUT', ustrings.recurse_ok_string())
-                    _,_,err = self.alice.assert_icommand(['icp', '-r', logical_put_path, logical_cp_path], 'STDERR', 'SYS_INVALID_RESC_INPUT')
+                    self.user.assert_icommand(['iput', '-R', 'demoResc', '-r', test_dir_path, logical_put_path], 'STDOUT', ustrings.recurse_ok_string())
+                    _,_,err = self.user.assert_icommand(['icp', '-r', logical_put_path, logical_cp_path], 'STDERR', 'SYS_INVALID_RESC_INPUT')
                     self.assertNotIn('SYS_OUT_OF_FILE_DESC', err, 'SYS_OUT_OF_FILE_DESC found in output.')
         finally:
             shutil.rmtree(test_dir_path, ignore_errors=True)
@@ -58,22 +58,22 @@ class Test_Icp(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
     def test_multithreaded_icp__issue_5478(self):
         def do_test(size, threads):
             file_name = 'test_multithreaded_icp__issue_5478'
-            local_file = os.path.join(self.alice.local_session_dir, file_name)
-            dest_path = os.path.join(self.alice.session_collection, file_name)
-            another_dest_path = os.path.join(self.alice.session_collection, file_name + '_copy')
+            local_file = os.path.join(self.user.local_session_dir, file_name)
+            dest_path = os.path.join(self.user.session_collection, file_name)
+            another_dest_path = os.path.join(self.user.session_collection, file_name + '_copy')
 
             try:
                 lib.make_file(local_file, size)
 
-                self.alice.assert_icommand(['iput', local_file, dest_path])
+                self.user.assert_icommand(['iput', local_file, dest_path])
 
-                cp_thread_count = self.alice.run_icommand(['icp', '-v', dest_path, another_dest_path])[0].split('|')[2].split()[0]
+                cp_thread_count = self.user.run_icommand(['icp', '-v', dest_path, another_dest_path])[0].split('|')[2].split()[0]
 
                 self.assertEqual(int(cp_thread_count), threads)
 
             finally:
-                self.alice.assert_icommand(['irm', '-f', dest_path])
-                self.alice.assert_icommand(['irm', '-f', another_dest_path])
+                self.user.assert_icommand(['irm', '-f', dest_path])
+                self.user.assert_icommand(['irm', '-f', another_dest_path])
 
         server_config_filename = paths.server_config_path()
         with open(server_config_filename) as f:
@@ -166,4 +166,45 @@ class Test_Icp(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
             assert_command(['mungefsctl', '--operations', 'write'])
             assert_command(['fusermount', '-u', munge_mount])
             self.admin.assert_icommand(['iadmin', 'rmresc', munge_resc])
+
+    def test_icp_with_apostrophe_logical_path__issue_5759(self):
+        """Test icp with apostrophes in the logical path.
+
+        For each icp, the logical path of the source and destination data objects, will contain
+        an apostrophe in either the collection name, data object name, both, or neither.
+        """
+
+        local_file = os.path.join(self.user.local_session_dir, 'test_icp_with_apostrophe_logical_path__issue_5759')
+        lib.make_file(local_file, 1024, 'arbitrary')
+
+        collection_names = ["collection", "collect'ion"]
+
+        data_names = ["data_object", "data'_object"]
+
+        for source_coll in collection_names:
+            source_collection_path = os.path.join(self.user.session_collection, 'source', source_coll)
+            self.user.assert_icommand(['imkdir', '-p', source_collection_path])
+
+            for destination_coll in collection_names:
+                destination_collection_path = os.path.join(self.user.session_collection, 'destination', destination_coll)
+                self.user.assert_icommand(['imkdir', '-p', destination_collection_path])
+
+                for source_name in data_names:
+                    source_logical_path = os.path.join(source_collection_path, source_name)
+                    self.user.assert_icommand(['iput', local_file, source_logical_path])
+                    self.user.assert_icommand(['ils', '-l', source_collection_path], 'STDOUT', source_name)
+
+                    for destination_name in data_names:
+                        destination_logical_path = os.path.join(destination_collection_path, destination_name)
+                        print('source=[{0}], destination=[{1}]'.format(source_logical_path, destination_logical_path))
+                        self.user.assert_icommand(['icp', source_logical_path, destination_logical_path])
+                        self.user.assert_icommand(['ils', '-l', destination_collection_path], 'STDOUT', destination_name)
+
+                    self.user.assert_icommand(['irm', '-rf', destination_collection_path])
+                    self.user.assert_icommand(['imkdir', '-p', destination_collection_path])
+
+                self.user.assert_icommand(['irm', '-rf', destination_collection_path])
+
+                self.user.assert_icommand(['irm', '-rf', source_collection_path])
+                self.user.assert_icommand(['imkdir', '-p', source_collection_path])
 
