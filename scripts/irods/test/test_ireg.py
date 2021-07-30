@@ -29,6 +29,7 @@ class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand('iadmin mkresc m_resc passthru', 'STDOUT_SINGLELINE', "Creating")
         hostname = socket.gethostname()
         self.admin.assert_icommand('iadmin mkresc l_resc unixfilesystem ' + hostname + ':/tmp/l_resc', 'STDOUT_SINGLELINE', "Creating")
+        self.admin.assert_icommand(['iadmin', 'mkresc', 'another', 'unixfilesystem', hostname + ':/tmp/anothervault'], 'STDOUT_SINGLELINE', "Creating")
 
         self.admin.assert_icommand("iadmin addchildtoresc r_resc m_resc")
         self.admin.assert_icommand("iadmin addchildtoresc m_resc l_resc")
@@ -49,7 +50,7 @@ class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin rmresc r_resc")
         self.admin.assert_icommand("iadmin rmresc m_resc")
         self.admin.assert_icommand("iadmin rmresc l_resc")
-
+        self.admin.assert_icommand("iadmin rmresc another")
 
         super(Test_Ireg, self).tearDown()
 
@@ -225,3 +226,47 @@ class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
             self.admin.assert_icommand('iunreg {0}'.format(self.admin.session_collection+'/'+os.path.basename(filename)))
         else:
             print('ireg skipped, file not found [{0}]'.format(filename))
+
+    def test_ireg_with_apostrophe_logical_path__issue_5759(self):
+        """Test ireg with apostrophes in the logical path and physical path.
+
+        For each ireg, the logical path will contain an apostrophe in either the collection
+        name, data object name, both, or neither. Also tests for the physical path containing an
+        apostrophe, both for registering the data object and for registering a replica.
+        """
+
+        # There must be unique physical paths for the replicas because registering a replica
+        # with the same physical path is not what is being tested here.
+        physical_paths = [os.path.join(self.admin.local_session_dir, 'test_ireg_with_apostrophe_logical_path__issue_5759'),
+                          os.path.join(self.admin.local_session_dir, 'test_ireg_with_\'_logical_path__issue_5759')]
+        for p in physical_paths:
+            lib.make_file(p, 1024, 'arbitrary')
+
+        physical_paths_for_repl = [os.path.join(self.admin.local_session_dir, 'test_ireg_with_apostrophe_logical_path__issue_5759_repl'),
+                                   os.path.join(self.admin.local_session_dir, 'test_ireg_with_\'_logical_path__issue_5759_repl')]
+        for p in physical_paths_for_repl:
+            lib.make_file(p, 1024, 'arbitrary')
+
+        data_names = ["data_object", "data'_object"]
+        collection_names = ["collection", "collect'ion"]
+
+        for coll in collection_names:
+            collection_path = os.path.join(self.admin.session_collection, coll)
+
+            self.admin.assert_icommand(['imkdir', collection_path])
+
+            for name in data_names:
+                logical_path = os.path.join(collection_path, name)
+
+                for path in physical_paths:
+                    self.admin.assert_icommand(['ireg', path, logical_path])
+                    self.admin.assert_icommand(['ils', '-l', logical_path], 'STDOUT', name)
+
+                    for repl_path in physical_paths_for_repl:
+                        self.admin.assert_icommand(['ireg', '-R', 'another', '--repl', repl_path, logical_path])
+
+                        self.admin.assert_icommand(['ils', '-l', logical_path], 'STDOUT_MULTILINE', ['demoResc', 'another'])
+                        self.admin.assert_icommand(['itrim', '-N1', '-S', 'another', logical_path], 'STDOUT', 'files trimmed = 1')
+
+                    self.admin.assert_icommand(['irm', '-f', logical_path])
+
