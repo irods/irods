@@ -1,6 +1,5 @@
 import copy
 import os
-import re
 import sys
 
 if sys.version_info < (2, 7):
@@ -8,12 +7,10 @@ if sys.version_info < (2, 7):
 else:
     import unittest
 import json
-import shutil
 import time
 
 import replica_status_test
 from . import session
-from . import settings
 from .. import lib
 from .. import paths
 from .. import test
@@ -396,6 +393,74 @@ class Test_iPhymv(ResourceBase, unittest.TestCase):
             assert_command(['fusermount', '-u', munge_mount])
             self.admin.run_icommand(['irm', '-f', logical_path])
             self.admin.assert_icommand(['iadmin', 'rmresc', munge_resc])
+
+class test_iphymv_with_two_basic_ufs_resources(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
+    """Test suite which provides 2 basic unixfilesystem resources.
+
+    In this suite:
+       - rodsadmin otherrods
+       - rodsuser alice
+       - 2 unixfilesystem resources
+    """
+
+    def setUp(self):
+        super(test_iphymv_with_two_basic_ufs_resources, self).setUp()
+
+        self.admin = self.admin_sessions[0]
+
+        self.resource_1 = 'resource1'
+        resource_1_vault = os.path.join(self.admin.local_session_dir, self.resource_1 + 'vault')
+        self.resource_2 = 'resource2'
+        resource_2_vault = os.path.join(self.admin.local_session_dir, self.resource_2 + 'vault')
+
+        self.admin.assert_icommand(
+                ['iadmin', 'mkresc', self.resource_1, 'unixfilesystem', ':'.join([test.settings.HOSTNAME_1, resource_1_vault])],
+                'STDOUT_SINGLELINE', 'unixfilesystem')
+        self.admin.assert_icommand(
+                ['iadmin', 'mkresc', self.resource_2, 'unixfilesystem', ':'.join([test.settings.HOSTNAME_2, resource_2_vault])],
+                'STDOUT_SINGLELINE', 'unixfilesystem')
+
+        self.user = self.user_sessions[0]
+
+    def tearDown(self):
+        self.admin.assert_icommand(['iadmin', 'rmresc', self.resource_1])
+        self.admin.assert_icommand(['iadmin', 'rmresc', self.resource_2])
+        super(test_iphymv_with_two_basic_ufs_resources, self).tearDown()
+
+    def test_iphymv_with_apostrophe_logical_path__issue_5759(self):
+        """Test iphymv with apostrophes in the logical path.
+
+        For each iphymv, the logical path will contain an apostrophe in either the collection
+        name, data object name, both, or neither.
+        """
+
+        local_file = os.path.join(self.user.local_session_dir, 'test_iphymv_with_apostrophe_logical_path__issue_5759')
+        lib.make_file(local_file, 1024, 'arbitrary')
+
+        collection_names = ["collection", "collect'ion"]
+
+        data_names = ["data_object", "data'_object"]
+
+        for coll in collection_names:
+            collection_path = os.path.join(self.user.session_collection, coll)
+
+            self.user.assert_icommand(['imkdir', collection_path])
+
+            try:
+                for name in data_names:
+                    logical_path = os.path.join(collection_path, name)
+
+                    self.user.assert_icommand(['iput', '-R', self.resource_1, local_file, logical_path])
+                    self.user.assert_icommand(['ils', '-l', logical_path], 'STDOUT', self.resource_1)
+
+                    self.user.assert_icommand(['iphymv', '-S', self.resource_1, '-R', self.resource_2, logical_path])
+                    self.user.assert_icommand(['ils', '-l', logical_path], 'STDOUT', self.resource_2)
+
+                self.user.assert_icommand(['ils', '-l', collection_path], 'STDOUT', coll)
+
+            finally:
+                self.user.run_icommand(['irm', '-r', '-f', collection_path])
+
 
 class test_iphymv_exit_codes(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
     def setUp(self):
