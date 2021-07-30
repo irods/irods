@@ -393,6 +393,8 @@ class test_irepl_with_two_basic_ufs_resources(session.make_sessions_mixin([('oth
                 ['iadmin', 'mkresc', self.resource_2, 'unixfilesystem', ':'.join([test.settings.HOSTNAME_2, resource_2_vault])],
                 'STDOUT_SINGLELINE', 'unixfilesystem')
 
+        self.user = self.user_sessions[0]
+
     def tearDown(self):
         self.admin.assert_icommand(['iadmin', 'rmresc', self.resource_1])
         self.admin.assert_icommand(['iadmin', 'rmresc', self.resource_2])
@@ -510,6 +512,41 @@ class test_irepl_with_two_basic_ufs_resources(session.make_sessions_mixin([('oth
 
         finally:
             user0.run_icommand(['irm', '-f', logical_path])
+
+    def test_irepl_with_apostrophe_logical_path__issue_5759(self):
+        """Test irepl with apostrophes in the logical path.
+
+        For each irepl, the logical path will contain an apostrophe in either the collection
+        name, data object name, both, or neither.
+        """
+
+        local_file = os.path.join(self.user.local_session_dir, 'test_irepl_with_apostrophe_logical_path__issue_5759')
+        lib.make_file(local_file, 1024, 'arbitrary')
+
+        collection_names = ["collection", "collect'ion"]
+
+        data_names = ["data_object", "data'_object"]
+
+        for coll in collection_names:
+            collection_path = os.path.join(self.user.session_collection, coll)
+
+            self.user.assert_icommand(['imkdir', collection_path])
+
+            try:
+                for name in data_names:
+                    logical_path = os.path.join(collection_path, name)
+
+                    self.user.assert_icommand(['iput', '-R', self.resource_1, local_file, logical_path])
+
+                    self.user.assert_icommand(['irepl', '-R', self.resource_2, logical_path])
+
+                    self.user.assert_icommand(['ils', '-l', logical_path], 'STDOUT', name)
+
+                self.user.assert_icommand(['ils', '-l', collection_path], 'STDOUT', coll)
+
+            finally:
+                self.user.run_icommand(['irm', '-r', '-f', collection_path])
+
 
 class test_invalid_parameters(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
     def setUp(self):

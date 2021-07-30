@@ -68,8 +68,6 @@ namespace
         const DataObjInp& _source_inp,
         const irods::physical_object& _replica)
     {
-        auto [obj, obj_lm] = id::make_data_object_proxy(_comm, fs::path{_source_inp.objPath});
-
         std::string location;
         if (const irods::error ret = irods::get_loc_for_hier_string(_replica.resc_hier(), location); !ret.ok()) {
             THROW(ret.code(), ret.result());
