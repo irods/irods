@@ -1,8 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* regDataObj.c
- */
-
 #include "regDataObj.h"
 #include "icatHighLevelRoutines.hpp"
 #include "fileDriver.hpp"
@@ -11,6 +6,9 @@
 
 #include "irods_file_object.hpp"
 #include "irods_configuration_keywords.hpp"
+
+#define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
+#include "replica_proxy.hpp"
 
 /* rsRegDataObj - This call is strictly an API handler and should not be
  * called directly in the server. For server calls, use svrRegDataObj
@@ -159,7 +157,13 @@ svrRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
         status = rcRegDataObj( rodsServerHost->conn, dataObjInfo,
                                &outDataObjInfo );
         if ( status >= 0 && NULL != outDataObjInfo ) { // JMC cppcheck - nullptr
-            dataObjInfo->dataId = outDataObjInfo->dataId;
+            auto registered_replica = irods::experimental::replica::make_replica_proxy(*dataObjInfo);
+            registered_replica.owner_user_name(outDataObjInfo->dataOwnerName);
+            registered_replica.owner_zone_name(outDataObjInfo->dataOwnerZone);
+            registered_replica.ctime(outDataObjInfo->dataCreate);
+            registered_replica.mtime(outDataObjInfo->dataModify);
+            registered_replica.data_expiry(outDataObjInfo->dataExpiry);
+            registered_replica.data_id(outDataObjInfo->dataId);
             clearKeyVal( &outDataObjInfo->condInput );
             free( outDataObjInfo );
         }
