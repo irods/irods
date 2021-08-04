@@ -49,6 +49,43 @@ namespace irods::experimental
     /// A type that holds options used to control the behavior of \p with_durability.
     class durability_options
     {
+    private:
+        int retries_;
+        std::chrono::milliseconds delay_;
+        float delay_multiplier_;
+
+        template <typename T>
+        constexpr auto throw_if_less_than_zero(T v) -> void
+        {
+            if (v < 0) {
+                throw std::invalid_argument{"Value must be greater than or equal to zero."};
+            }
+        }
+
+        constexpr auto set(struct retries v) -> void
+        {
+            throw_if_less_than_zero(v.value);
+            retries_ = v.value;
+        }
+
+        constexpr auto set(struct delay v) -> void
+        {
+            throw_if_less_than_zero(v.value.count());
+            delay_ = v.value;
+        }
+
+        constexpr auto set(struct delay_multiplier v) -> void
+        {
+            throw_if_less_than_zero(v.value);
+            delay_multiplier_ = v.value;
+        }
+
+        // Fallback case. Ignores unknown arguments.
+        template <typename T>
+        constexpr auto set(T&&) const noexcept -> void
+        {
+        }
+
     public:
         constexpr durability_options() noexcept
             : retries_{1}
@@ -113,43 +150,6 @@ namespace irods::experimental
         {
             throw_if_less_than_zero(v);
             delay_multiplier_ = v;
-        }
-
-    private:
-        int retries_;
-        std::chrono::milliseconds delay_;
-        float delay_multiplier_;
-
-        constexpr auto set(struct retries v) -> void
-        {
-            throw_if_less_than_zero(v.value);
-            retries_ = v.value;
-        }
-
-        constexpr auto set(struct delay v) -> void
-        {
-            throw_if_less_than_zero(v.value.count());
-            delay_ = v.value;
-        }
-
-        constexpr auto set(struct delay_multiplier v) -> void
-        {
-            throw_if_less_than_zero(v.value);
-            delay_multiplier_ = v.value;
-        }
-
-        // Fallback case. Ignores unknown arguments.
-        template <typename T>
-        constexpr auto set(T&&) const noexcept -> void
-        {
-        }
-
-        template <typename T>
-        auto throw_if_less_than_zero(T v) -> void
-        {
-            if (v < 0) {
-                throw std::invalid_argument{"Value must be greater than or equal to zero."};
-            }
         }
     }; // class durability_options
 
