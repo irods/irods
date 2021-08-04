@@ -10,7 +10,7 @@
 #include <string_view>
 #include <vector>
 
-struct DataObjInfo;
+#include "json.hpp"
 
 namespace irods::experimental::data_object
 {
@@ -223,6 +223,11 @@ namespace irods::experimental::data_object
     /// \since 4.2.9
     using data_object_proxy_t = data_object_proxy<DataObjInfo>;
 
+    /// \brief Helper type for a JSON representation of a data object.
+    ///
+    /// \since 4.2.11
+    using json_repr_t = std::vector<const nlohmann::json*>;
+
     /// \brief Wraps an existing doi_type with a proxy object.
     /// \param[in] _doi - Pre-existing doi_type which will be wrapped by the returned proxy.
     /// \return data_object_proxy
@@ -280,7 +285,7 @@ namespace irods::experimental::data_object
         } // make_data_object_proxy_impl
     };
 
-    /// \brief Generates a new doi_type from the catalog and wraps with a proxy.
+    /// \brief Generates a new DataObjInfo from the catalog and wraps with a proxy.
     ///
     /// \param[in] _comm
     /// \param[in] _logical_path
@@ -301,6 +306,16 @@ namespace irods::experimental::data_object
         return detail::make_data_object_proxy_impl(_comm, data_obj_info);
     } // make_data_object_proxy
 
+    /// \brief Generates a new DataObjInfo from the catalog and wraps with a proxy.
+    ///
+    /// \param[in] _comm
+    /// \param[in] _data_id
+    ///
+    /// \throws irods::exception If no information is found for the data id or list is empty at the end
+    ///
+    /// \returns data_object_proxy and lifetime_manager for underlying struct
+    ///
+    /// \since 4.2.9
     template<typename rxComm>
     static auto make_data_object_proxy(rxComm& _comm, const rodsLong_t _data_id)
         -> std::pair<data_object_proxy_t, lifetime_manager<DataObjInfo>>
@@ -310,6 +325,54 @@ namespace irods::experimental::data_object
         const auto data_obj_info = replica::get_data_object_info(_comm, _data_id);
 
         return detail::make_data_object_proxy_impl(_comm, data_obj_info);
+    } // make_data_object_proxy
+
+    /// \brief Creates a data_object_proxy from a list of replicas described in JSON.
+    ///
+    /// \param[in] _logical_path Full logical path of the data object being described.
+    /// \param[in] _replicas JSON list of replicas which conform to irods::experimental::replica::to_json.
+    ///
+    /// \throws irods::exception If _replicas is empty or the head pointer is not populated for some reason
+    /// \throws json::exception If _replicas is not a JSON array
+    ///
+    /// \returns data_object_proxy and lifetime_manager for underlying struct
+    ///
+    /// \since 4.2.11
+    static auto make_data_object_proxy(const std::string_view _logical_path, const json_repr_t& _replicas)
+        -> std::pair<data_object_proxy_t, lifetime_manager<DataObjInfo>>
+    {
+        namespace ir = irods::experimental::replica;
+
+        if (_replicas.empty()) {
+            THROW(SYS_INVALID_INPUT_PARAM, "replica list is empty");
+        }
+
+        DataObjInfo* head{};
+        DataObjInfo* prev{};
+
+        for (const auto* replica_json : _replicas) {
+            if (!replica_json) {
+                THROW(SYS_INTERNAL_NULL_INPUT_ERR, "json pointer is null");
+            }
+
+            // Populate the new struct
+            auto [curr, curr_lm] = ir::make_replica_proxy(_logical_path.data(), *replica_json);
+
+            // Make sure the structure used for the head is populated
+            if (!head) {
+                head = curr.get();
+            }
+            else {
+                prev->next = curr.get();
+            }
+            prev = curr_lm.release();
+        }
+
+        if (!head) {
+            THROW(SYS_INTERNAL_ERR, "list remains unpopulated");
+        }
+
+        return {data_object_proxy{*head}, lifetime_manager{*head}};
     } // make_data_object_proxy
 
     /// \brief Takes an existing data_object_proxy and duplicates the underlying struct.

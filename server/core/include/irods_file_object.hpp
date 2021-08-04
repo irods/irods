@@ -18,6 +18,8 @@
 #include <tuple>
 #include <vector>
 
+#include "json.hpp"
+
 namespace irods {
 
     class file_object : public data_object {
@@ -196,6 +198,22 @@ namespace irods {
     ///
     /// \since 4.2.9
     auto file_object_factory(RsComm& _comm, const rodsLong_t _data_id) -> irods::file_object_ptr;
+
+    /// \brief Factory function which takes a JSON array and creates a file_object
+    ///
+    /// \parblock
+    /// Functions very similarly to file_object_factory(RsComm&, const rodsLong_t) after the
+    /// data_object_proxy_t has been generated.
+    /// \endparblock
+    ///
+    /// \param[in] _comm Handle to server connection structure.
+    /// \param[in] _logical_path Full logical path of the data object being described.
+    /// \param[in] _replicas A JSON array of replicas conforming to irods::experimental::replica::to_json.
+    ///
+    /// \since 4.2.11
+    auto file_object_factory(RsComm& _comm,
+                             const std::string_view _logical_path,
+                             const std::vector<const nlohmann::json*>& _replicas) -> irods::file_object_ptr;
 
     /// \param[in] _obj File object to search
     /// \param[in] _hierarchy

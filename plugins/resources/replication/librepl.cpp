@@ -514,8 +514,8 @@ irods::error create_replication_list(
                   _ctx.comm(), irods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), &operation, &host_name, &parser, &out_vote );
         if (!ret.ok() && CHILD_NOT_FOUND != ret.code()) {
             rodsLog(LOG_WARNING,
-                "[%s] - failed resolving hierarchy for [%s]",
-                __FUNCTION__, entry.first.c_str());
+                "[%s:%d] - failed resolving hierarchy for [%s]",
+                __FUNCTION__, __LINE__, entry.first.c_str());
         }
         else if (out_vote > 0.0) {
             repl_vector.push_back(parser);
