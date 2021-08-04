@@ -7,6 +7,7 @@
 
 struct RsComm;
 struct DataObjInp;
+struct BytesBuf;
 
 namespace irods
 {
@@ -35,6 +36,15 @@ namespace irods
     ///
     /// \since 4.2.9
     auto contains_session_variables(const std::string_view _rule_text) -> bool;
+
+    /// Converts provided string to a new BytesBuf structure (caller owns the memory).
+    ///
+    /// \param[in] _s The string to copy into the buffer.
+    ///
+    /// \return A pointer to the newly allocated BytesBuf structure.
+    ///
+    /// \since 4.2.11
+    auto to_bytes_buffer(const std::string_view _s) -> BytesBuf*;
 } // namespace irods
 
 #endif // IRODS_SERVER_UTILITIES_HPP

@@ -15,11 +15,12 @@
 
 #include "get_file_descriptor_info.h"
 
-#include "objDesc.hpp"
-#include "irods_stacktrace.hpp"
-#include "irods_server_api_call.hpp"
-#include "irods_re_serialization.hpp"
 #include "irods_get_l1desc.hpp"
+#include "irods_re_serialization.hpp"
+#include "irods_server_api_call.hpp"
+#include "irods_stacktrace.hpp"
+#include "objDesc.hpp"
+#include "server_utilities.hpp"
 
 #include <string>
 #include <string_view>
@@ -257,25 +258,6 @@ namespace
         return json::parse(std::string(static_cast<const char*>(_buf.buf), _buf.len)).at("fd").get<int>();
     }
 
-    auto to_bytes_buffer(std::string_view _s) -> bytesBuf_t*
-    {
-        constexpr auto allocate = [](const auto bytes) noexcept
-        {
-            return std::memset(std::malloc(bytes), 0, bytes);
-        };
-
-        const auto buf_size = _s.length() + 1;
-
-        auto* buf = static_cast<char*>(allocate(sizeof(char) * buf_size));
-        std::strncpy(buf, _s.data(), _s.length());
-
-        auto* bbp = static_cast<bytesBuf_t*>(allocate(sizeof(bytesBuf_t)));
-        bbp->len = buf_size;
-        bbp->buf = buf;
-
-        return bbp;
-    }
-
     auto rs_get_file_descriptor_info(rsComm_t* _comm, bytesBuf_t* _input, bytesBuf_t** _output) -> int
     {
         if (const auto [valid, msg] = is_input_valid(_input); !valid) {
@@ -307,10 +289,10 @@ namespace
 
                 irods::log(LOG_DEBUG8, fmt::format("Remote L1 descriptor info = {}", j_out));
 
-                *_output = to_bytes_buffer(j_out);
+                *_output = irods::to_bytes_buffer(j_out);
             }
             else {
-                *_output = to_bytes_buffer(to_json(l1desc).dump());
+                *_output = irods::to_bytes_buffer(to_json(l1desc).dump());
             }
         }
         catch (const json::parse_error& e) {

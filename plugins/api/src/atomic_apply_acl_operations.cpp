@@ -21,15 +21,16 @@
 
 #include "catalog.hpp"
 #include "catalog_utilities.hpp"
-#include "rodsConnect.h"
-#include "objDesc.hpp"
-#include "irods_stacktrace.hpp"
-#include "irods_server_api_call.hpp"
+#include "irods_get_full_path_for_config_file.hpp"
 #include "irods_re_serialization.hpp"
 #include "irods_rs_comm_query.hpp"
-#include "irods_get_full_path_for_config_file.hpp"
+#include "irods_server_api_call.hpp"
+#include "irods_stacktrace.hpp"
 #include "miscServerFunct.hpp"
+#include "objDesc.hpp"
+#include "rodsConnect.h"
 #include "rodsLog.h"
+#include "server_utilities.hpp"
 
 #define IRODS_QUERY_ENABLE_SERVER_SIDE_API
 #include "irods_query.hpp"
@@ -66,8 +67,6 @@ namespace
     auto call_atomic_apply_acl_operations(irods::api_entry*, rsComm_t*, bytesBuf_t*, bytesBuf_t**) -> int;
 
     auto is_input_valid(const bytesBuf_t*) -> std::tuple<bool, std::string>;
-
-    auto to_bytes_buffer(const std::string& _s) -> bytesBuf_t*;
 
     auto get_file_descriptor(const bytesBuf_t& _buf) -> int;
 
@@ -145,25 +144,6 @@ namespace
         }
 
         return {true, ""};
-    }
-
-    auto to_bytes_buffer(const std::string& _s) -> bytesBuf_t*
-    {
-        constexpr auto allocate = [](const auto bytes) noexcept
-        {
-            return std::memset(std::malloc(bytes), 0, bytes);
-        };
-
-        const auto buf_size = _s.length() + 1;
-
-        auto* buf = static_cast<char*>(allocate(sizeof(char) * buf_size));
-        std::strncpy(buf, _s.c_str(), _s.length());
-
-        auto* bbp = static_cast<bytesBuf_t*>(allocate(sizeof(bytesBuf_t)));
-        bbp->len = buf_size;
-        bbp->buf = buf;
-
-        return bbp;
     }
 
     auto make_error_object(const json& _op, int _op_index, const std::string& _error_msg) -> json
@@ -448,27 +428,27 @@ namespace
                 insert_acl(_db_conn, _db_instance_name, _object_id, entity_id, acl);
             }
 
-            return {0, to_bytes_buffer("{}")};
+            return {0, irods::to_bytes_buffer("{}")};
         }
         catch (const nanodbc::database_error& e) {
             rodsLog(LOG_ERROR, "%s [acl_operation=%s]", e.what(), _op.dump().data());
-            return {SYS_LIBRARY_ERROR, to_bytes_buffer(make_error_object(_op, _op_index, e.what()).dump())};
+            return {SYS_LIBRARY_ERROR, irods::to_bytes_buffer(make_error_object(_op, _op_index, e.what()).dump())};
         }
         catch (const irods::exception& e) {
             rodsLog(LOG_ERROR, "%s [acl_operation=%s]", e.what(), _op.dump().data());
-            return {e.code(), to_bytes_buffer(make_error_object(_op, _op_index, e.what()).dump())};
+            return {e.code(), irods::to_bytes_buffer(make_error_object(_op, _op_index, e.what()).dump())};
         }
         catch (const fs::filesystem_error& e) {
             rodsLog(LOG_ERROR, "%s [acl_operation=%s]", e.what(), _op.dump().data());
-            return {e.code().value(), to_bytes_buffer(make_error_object(_op, _op_index, e.what()).dump())};
+            return {e.code().value(), irods::to_bytes_buffer(make_error_object(_op, _op_index, e.what()).dump())};
         }
         catch (const json::exception& e) {
             rodsLog(LOG_ERROR, "%s [acl_operation=%s]", e.what(), _op.dump().data());
-            return {SYS_INTERNAL_ERR, to_bytes_buffer(make_error_object(_op, _op_index, e.what()).dump())};
+            return {SYS_INTERNAL_ERR, irods::to_bytes_buffer(make_error_object(_op, _op_index, e.what()).dump())};
         }
         catch (const std::system_error& e) {
             rodsLog(LOG_ERROR, "%s [acl_operation=%s]", e.what(), _op.dump().data());
-            return {e.code().value(), to_bytes_buffer(make_error_object(_op, _op_index, e.what()).dump())};
+            return {e.code().value(), irods::to_bytes_buffer(make_error_object(_op, _op_index, e.what()).dump())};
         }
     }
 
@@ -484,7 +464,7 @@ namespace
                 char* json_output = nullptr;
 
                 const auto ec = rc_atomic_apply_acl_operations(host_info.conn, json_input.data(), &json_output);
-                *_output = to_bytes_buffer(json_output);
+                *_output = irods::to_bytes_buffer(json_output);
 
                 return ec;
             }
@@ -494,7 +474,7 @@ namespace
         catch (const irods::exception& e) {
             std::string_view msg = e.what();
             irods::log(LOG_ERROR, msg.data());
-            *_output = to_bytes_buffer(make_error_object(json{}, 0, msg.data()).dump());
+            *_output = irods::to_bytes_buffer(make_error_object(json{}, 0, msg.data()).dump());
             return e.code();
         }
 
@@ -502,7 +482,7 @@ namespace
 
         if (const auto [valid, msg] = is_input_valid(_input); !valid) {
             rodsLog(LOG_ERROR, msg.data());
-            *_output = to_bytes_buffer(make_error_object(json{}, 0, "Invalid input").dump());
+            *_output = irods::to_bytes_buffer(make_error_object(json{}, 0, "Invalid input").dump());
             return INPUT_ARG_NOT_WELL_FORMED_ERR;
         }
 
@@ -515,7 +495,7 @@ namespace
         catch (const json::exception& e) {
             rodsLog(LOG_ERROR, "Failed to parse input into JSON [exception=%s]", e.what());
             const auto err_info = make_error_object(json{}, 0, e.what());
-            *_output = to_bytes_buffer(err_info.dump());
+            *_output = irods::to_bytes_buffer(err_info.dump());
 
             return INPUT_ARG_NOT_WELL_FORMED_ERR;
         }
@@ -526,7 +506,7 @@ namespace
             logical_path = input.at("logical_path").get<std::string>();
         }
         catch (const json::exception& e) {
-            *_output = to_bytes_buffer(make_error_object(json{}, 0, e.what()).dump());
+            *_output = irods::to_bytes_buffer(make_error_object(json{}, 0, e.what()).dump());
             return SYS_INVALID_INPUT_PARAM;
         }
 
@@ -534,7 +514,7 @@ namespace
 
         if (object_id < 0) {
             const auto msg = fmt::format("Failed to retrieve object id [error_code={}]", object_id);
-            *_output = to_bytes_buffer(make_error_object(json{}, 0, msg).dump());
+            *_output = irods::to_bytes_buffer(make_error_object(json{}, 0, msg).dump());
             return object_id;
         }
 
@@ -546,11 +526,11 @@ namespace
             std::tie(db_instance_name, db_conn) = ic::new_database_connection();
         }
         catch (const irods::exception& e) {
-            *_output = to_bytes_buffer(make_error_object(json{}, 0, e.what()).dump());
+            *_output = irods::to_bytes_buffer(make_error_object(json{}, 0, e.what()).dump());
             return e.code();
         }
         catch (const std::exception& e) {
-            *_output = to_bytes_buffer(make_error_object(json{}, 0, e.what()).dump());
+            *_output = irods::to_bytes_buffer(make_error_object(json{}, 0, e.what()).dump());
             return SYS_CONFIG_FILE_ERR;
         }
 
@@ -558,7 +538,7 @@ namespace
 
         if (!user_has_permission_to_modify_acls(*_comm, db_conn, db_instance_name, object_id)) {
             rodsLog(LOG_ERROR, "User not allowed to modify ACLs [logical_path=%s, object_id=%d]", logical_path.data(), object_id);
-            *_output = to_bytes_buffer(make_error_object(json{}, 0, "User not allowed to modify ACLs").dump());
+            *_output = irods::to_bytes_buffer(make_error_object(json{}, 0, "User not allowed to modify ACLs").dump());
             return CAT_NO_ACCESS_PERMISSION;
         }
 
@@ -584,12 +564,12 @@ namespace
 
                 _trans.commit();
 
-                *_output = to_bytes_buffer("{}");
+                *_output = irods::to_bytes_buffer("{}");
 
                 return 0;
             }
             catch (const json::exception& e) {
-                *_output = to_bytes_buffer(make_error_object(json{}, 0, e.what()).dump());
+                *_output = irods::to_bytes_buffer(make_error_object(json{}, 0, e.what()).dump());
                 return SYS_INTERNAL_ERR;
             }
         });

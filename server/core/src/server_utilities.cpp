@@ -39,5 +39,24 @@ namespace irods
 
         return std::regex_search(_rule_text.data(), session_vars_pattern);
     }
+
+    auto to_bytes_buffer(const std::string_view _s) -> BytesBuf*
+    {
+        constexpr auto allocate = [](const auto bytes) noexcept
+        {
+            return std::memset(std::malloc(bytes), 0, bytes);
+        };
+
+        const auto buf_size = _s.length() + 1;
+
+        auto* buf = static_cast<char*>(allocate(sizeof(char) * buf_size));
+        std::strncpy(buf, _s.data(), _s.length());
+
+        auto* bbp = static_cast<BytesBuf*>(allocate(sizeof(BytesBuf)));
+        bbp->len = buf_size;
+        bbp->buf = buf;
+
+        return bbp;
+    } // to_bytes_buffer
 } // namespace irods
 
