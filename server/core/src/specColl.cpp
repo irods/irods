@@ -63,7 +63,7 @@ namespace
  * check queueSpecCollCache () for screening.
  */
 int
-querySpecColl( rsComm_t *rsComm, char *objPath, genQueryOut_t **genQueryOut ) {
+querySpecColl( rsComm_t *rsComm, const char *objPath, genQueryOut_t **genQueryOut ) {
     genQueryInp_t genQueryInp;
     int status;
     char condStr[MAX_NAME_LEN];
@@ -284,7 +284,7 @@ matchSpecCollCache(const char *objPath ) {
 }
 
 int
-getSpecCollCache( rsComm_t *rsComm, char *objPath,
+getSpecCollCache( rsComm_t *rsComm, const char *objPath,
                   int inCachOnly, specCollCache_t **specCollCache ) {
     int status;
     genQueryOut_t *genQueryOut = NULL;
