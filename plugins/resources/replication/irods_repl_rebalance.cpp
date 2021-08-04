@@ -376,7 +376,7 @@ namespace {
 
             const std::string root_resc = parser.first_resc();
             const std::string dst_hier = parser.str();
-            rodsLog(LOG_NOTICE, "%s: creating new replica for data id [%lld] from [%s] on [%s]", __FUNCTION__, data_id_to_replicate, source_info.resource_hierarchy.c_str(), dst_hier.c_str());
+            rodsLog(LOG_NOTICE, "%s: creating new replica for data id [%lld] (%s) from [%s] on [%s]", __FUNCTION__, data_id_to_replicate, source_info.object_path.c_str(), source_info.resource_hierarchy.c_str(), dst_hier.c_str());
 
             const irods::error err_rebalance = repl_for_rebalance(
                 _ctx,
