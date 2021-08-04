@@ -554,6 +554,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/src/rc_data_object_finalize.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rc_data_object_modify_info.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rc_get_file_descriptor_info.cpp
+  ${CMAKE_SOURCE_DIR}/lib/api/src/rc_register_physical_path.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rc_replica_close.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rc_replica_open.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rc_touch.cpp
@@ -675,9 +676,11 @@ set(
   IRODS_LIBIRODS_SERVER_SOURCES
   ${CMAKE_SOURCE_DIR}/server/api/src/rs_atomic_apply_acl_operations.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rs_atomic_apply_metadata_operations.cpp
+  ${CMAKE_SOURCE_DIR}/server/api/src/rs_data_object_finalize.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rs_get_file_descriptor_info.cpp
-  ${CMAKE_SOURCE_DIR}/server/api/src/rs_replica_open.cpp
+  ${CMAKE_SOURCE_DIR}/server/api/src/rs_register_physical_path.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rs_replica_close.cpp
+  ${CMAKE_SOURCE_DIR}/server/api/src/rs_replica_open.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rs_touch.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsAuthCheck.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsAuthPluginRequest.cpp
@@ -807,7 +810,6 @@ set(
   ${CMAKE_SOURCE_DIR}/server/api/src/rsSubStructFileUnlink.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsSubStructFileWrite.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsSyncMountedColl.cpp
-  ${CMAKE_SOURCE_DIR}/server/api/src/rs_data_object_finalize.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsTicketAdmin.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsUnbunAndRegPhyBunfile.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsUnregDataObj.cpp

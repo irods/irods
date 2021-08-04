@@ -285,6 +285,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/include/regColl.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/regDataObj.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/regReplica.h
+  ${CMAKE_SOURCE_DIR}/lib/api/include/register_physical_path.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/rmColl.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/ruleExecDel.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/ruleExecMod.h
@@ -339,7 +340,9 @@ set(
   IRODS_SERVER_API_INCLUDE_HEADERS
   ${CMAKE_SOURCE_DIR}/server/api/include/rs_atomic_apply_acl_operations.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rs_atomic_apply_metadata_operations.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rs_data_object_finalize.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rs_get_file_descriptor_info.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rs_register_physical_path.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rs_replica_open.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rs_replica_close.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rs_touch.hpp

@@ -15,7 +15,7 @@ struct SpecCollCache;
 
 int modCollInfo2(RsComm* rsComm, SpecColl* specColl, int clearFlag);
 
-int querySpecColl(RsComm* rsComm, char* objPath, GenQueryOut** genQueryOut);
+int querySpecColl(RsComm* rsComm, const char* objPath, GenQueryOut** genQueryOut);
 
 int queueSpecCollCache(RsComm* rsComm, GenQueryOut* genQueryOut, const char* objPath); // JMC - backport 4680
 
@@ -23,7 +23,7 @@ int queueSpecCollCacheWithObjStat(rodsObjStat* rodsObjStatOut);
 
 SpecCollCache* matchSpecCollCache(const char* objPath);
 
-int getSpecCollCache(RsComm* rsComm, char* objPath, int inCachOnly, SpecCollCache** specCollCache);
+int getSpecCollCache(RsComm* rsComm, const char* objPath, int inCachOnly, SpecCollCache** specCollCache);
 
 int statPathInSpecColl(RsComm* rsComm, char* objPath, int inCachOnly, rodsObjStat** rodsObjStatOut);
 
