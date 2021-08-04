@@ -550,7 +550,7 @@ namespace irods::experimental::replica
     /// \returns replica_proxy and lifetime_manager for underlying struct
     ///
     /// \since 4.2.9
-    static auto make_replica_proxy(std::string_view _logical_path, const nlohmann::json& _input)
+    static auto make_replica_proxy(const std::string_view _logical_path, const nlohmann::json& _input)
         -> std::pair<replica_proxy_t, lifetime_manager<DataObjInfo>>
     {
         auto proxy_lm_pair = make_replica_proxy();
@@ -575,6 +575,8 @@ namespace irods::experimental::replica
         proxy.ctime(_input.at("create_ts").get<std::string>());
         proxy.mtime(_input.at("modify_ts").get<std::string>());
         proxy.resource_id(std::stoul(_input.at("resc_id").get<std::string>()));
+
+        // TODO: resource() and hierarchy() are not being populated
 
         // TODO: not part of r_data_main, only tracks data_name and coll_id
         proxy.logical_path(_logical_path);

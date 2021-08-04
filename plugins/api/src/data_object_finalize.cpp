@@ -60,10 +60,9 @@ extern irods::resource_manager resc_mgr;
 namespace
 {
     // clang-format off
-    namespace fs          = irods::experimental::filesystem;
-    namespace ic          = irods::experimental::catalog;
-    namespace replica     = irods::experimental::replica;
-    namespace data_object = irods::experimental::data_object;
+    namespace fs      = irods::experimental::filesystem;
+    namespace ic      = irods::experimental::catalog;
+    namespace id      = irods::experimental::data_object;
 
     using log       = irods::experimental::log;
     using json      = nlohmann::json;
@@ -88,6 +87,21 @@ namespace
     {
         return _api->call_handler<BytesBuf*, BytesBuf**>(_comm, _input, _output);
     } // call_data_object_finalize
+
+    auto split_before_and_after_info(const json& _json_list) -> std::tuple<id::json_repr_t, id::json_repr_t>
+    {
+        id::json_repr_t before;
+        id::json_repr_t after;
+
+        for (const auto& i : _json_list) {
+            const auto* b = &i.at("before");
+            const auto* a = &i.at("after");
+            before.push_back(b);
+            after.push_back(a);
+        }
+
+        return {before, after};
+    } // split_before_and_after_info
 
     auto column_is_mutable(const std::string_view _c)
     {
@@ -285,21 +299,37 @@ namespace
         }
     } // set_file_object_keywords
 
-    auto invoke_file_modified(RsComm& _comm, json& _replicas) -> int
+    auto invoke_file_modified(RsComm& _comm, const std::string_view _logical_path, json& _replicas) -> int
     {
         try {
             for (auto&& replica : _replicas) {
                 irods::log(LOG_DEBUG9, fmt::format("[{}:{}] - replica:[{}]", __FUNCTION__, __LINE__, replica.dump()));
 
                 if (replica.contains(FILE_MODIFIED_KW)) {
-                    const auto data_id = std::stoll(replica.at("before").at("data_id").get<std::string>());
-                    auto obj = irods::file_object_factory(_comm, data_id);
+                    // There are two ways to get the irods::file_object required for the fileModified interface:
+                    //   1. data_object_finalize takes a logical_path key which describes the full logical path.
+                    //      If the logical_path is not supplied, the information must be fetched from the catalog.
+                    //
+                    //   2. If the logical_path is supplied, the query mentioned above can be avoided. Combined
+                    //      with the information in R_DATA_MAIN, this information is sufficient to construct
+                    //      the file_object.
+                    irods::file_object_ptr obj;
+                    if (_logical_path.empty()) {
+                        obj = irods::file_object_factory(_comm, std::stoll(replica.at("before").at("data_id").get<std::string>()));
+                    }
+                    else {
+                        auto [before, after] = split_before_and_after_info(_replicas);
+                        obj = irods::file_object_factory(_comm, _logical_path, after);
+                    }
 
                     const auto leaf_resource_id = std::stoll(replica.at("after").at("resc_id").get<std::string>());
                     obj->resc_hier(resc_mgr.leaf_id_to_hier(leaf_resource_id));
 
                     set_file_object_keywords(replica.at(FILE_MODIFIED_KW), obj);
 
+                    // Even if fileModified is requested for this replica, do not trigger it if:
+                    //   - IN_REPL_KW is set - this means this is already a fileModified operation
+                    //   - The open type is read-only - read-only means nothing has been modified
                     const auto obj_cond_input = irods::experimental::make_key_value_proxy(obj->cond_input());
                     if (obj_cond_input.contains(IN_REPL_KW) ||
                         (obj_cond_input.contains(OPEN_TYPE_KW) &&
@@ -331,11 +361,11 @@ namespace
             return 0;
         }
         catch (const irods::exception& e) {
-            irods::log(e);
+            irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, e.client_display_what()));
             return e.code();
         }
         catch (const std::exception& e) {
-            irods::log(LOG_ERROR, fmt::format("[{}] - [{}]", __FUNCTION__, e.what()));
+            irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, e.what()));
             return SYS_INTERNAL_ERR;
         }
         catch (...) {
@@ -558,7 +588,8 @@ namespace
         }
 
         try {
-            const auto ec = invoke_file_modified(*_comm, replicas);
+            const std::string logical_path = input.contains("logical_path") ? input.at("logical_path").get<std::string>() : "";
+            const auto ec = invoke_file_modified(*_comm, logical_path, replicas);
 
             if (ec < 0) {
                 const auto msg = "error occurred during file_modified operation";
