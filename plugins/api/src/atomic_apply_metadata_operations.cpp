@@ -19,18 +19,19 @@
 
 #include "atomic_apply_metadata_operations.h"
 
-#include "rodsConnect.h"
-#include "objDesc.hpp"
-#include "irods_stacktrace.hpp"
-#include "irods_server_api_call.hpp"
-#include "irods_re_serialization.hpp"
-#include "irods_get_l1desc.hpp"
-#include "irods_rs_comm_query.hpp"
-#include "irods_get_full_path_for_config_file.hpp"
-#include "irods_logger.hpp"
-#include "miscServerFunct.hpp"
 #include "catalog.hpp"
 #include "catalog_utilities.hpp"
+#include "irods_get_full_path_for_config_file.hpp"
+#include "irods_get_l1desc.hpp"
+#include "irods_logger.hpp"
+#include "irods_re_serialization.hpp"
+#include "irods_rs_comm_query.hpp"
+#include "irods_server_api_call.hpp"
+#include "irods_stacktrace.hpp"
+#include "miscServerFunct.hpp"
+#include "objDesc.hpp"
+#include "rodsConnect.h"
+#include "server_utilities.hpp"
 
 #define IRODS_QUERY_ENABLE_SERVER_SIDE_API
 #include "irods_query.hpp"
@@ -68,8 +69,6 @@ namespace
     auto call_atomic_apply_metadata_operations(irods::api_entry*, rsComm_t*, bytesBuf_t*, bytesBuf_t**) -> int;
 
     auto is_input_valid(const bytesBuf_t*) -> std::tuple<bool, std::string>;
-
-    auto to_bytes_buffer(const std::string& _s) -> bytesBuf_t*;
 
     auto get_file_descriptor(const bytesBuf_t& _buf) -> int;
 
@@ -137,25 +136,6 @@ namespace
         }
 
         return {true, ""};
-    }
-
-    auto to_bytes_buffer(const std::string& _s) -> bytesBuf_t*
-    {
-        constexpr auto allocate = [](const auto bytes) noexcept
-        {
-            return std::memset(std::malloc(bytes), 0, bytes);
-        };
-
-        const auto buf_size = _s.length() + 1;
-
-        auto* buf = static_cast<char*>(allocate(sizeof(char) * buf_size));
-        std::strncpy(buf, _s.c_str(), _s.length());
-
-        auto* bbp = static_cast<bytesBuf_t*>(allocate(sizeof(bytesBuf_t)));
-        bbp->len = buf_size;
-        bbp->buf = buf;
-
-        return bbp;
     }
 
     auto make_error_object(const json& _op, int _op_index, const std::string& _error_msg) -> json
@@ -388,7 +368,7 @@ namespace
             if (md.attribute.empty() || md.value.empty()) {
                 const auto msg = fmt::format("Empty metadata attribute name or value [attribute={}, value={}]", md.attribute, md.value);
                 rodsLog(LOG_ERROR, msg.data());
-                return {SYS_INVALID_INPUT_PARAM, to_bytes_buffer(make_error_object(_op, _op_index, msg).dump())};
+                return {SYS_INVALID_INPUT_PARAM, irods::to_bytes_buffer(make_error_object(_op, _op_index, msg).dump())};
             }
 
             // "units" are optional.
@@ -409,7 +389,7 @@ namespace
                     const auto msg = fmt::format("Failed to insert metadata [attribute={}, value={}, units={}]",
                                                  md.attribute, md.value, md.units);
                     rodsLog(LOG_ERROR, msg.data());
-                    return {SYS_INTERNAL_ERR, to_bytes_buffer(make_error_object(_op, _op_index, msg).dump())};
+                    return {SYS_INTERNAL_ERR, irods::to_bytes_buffer(make_error_object(_op, _op_index, msg).dump())};
                 }
             }
             else if (op_code == "remove") {
@@ -423,30 +403,30 @@ namespace
                                  {"metadata_operation", _op.dump()}});
                 // clang-format on
 
-                return {INVALID_OPERATION, to_bytes_buffer(make_error_object(_op, _op_index, "Invalid metadata operation.").dump())};
+                return {INVALID_OPERATION, irods::to_bytes_buffer(make_error_object(_op, _op_index, "Invalid metadata operation.").dump())};
             }
 
-            return {0, to_bytes_buffer("{}")};
+            return {0, irods::to_bytes_buffer("{}")};
         }
         catch (const nanodbc::database_error& e) {
             rodsLog(LOG_ERROR, "%s [metadata_operation=%s]", e.what(), _op.dump().c_str());
-            return {SYS_LIBRARY_ERROR, to_bytes_buffer(make_error_object(_op, _op_index, e.what()).dump())};
+            return {SYS_LIBRARY_ERROR, irods::to_bytes_buffer(make_error_object(_op, _op_index, e.what()).dump())};
         }
         catch (const fs::filesystem_error& e) {
             log::api::error({{"log_message", e.what()}, {"metadata_operation", _op.dump()}});
-            return {e.code().value(), to_bytes_buffer(make_error_object(_op, _op_index, e.what()).dump())};
+            return {e.code().value(), irods::to_bytes_buffer(make_error_object(_op, _op_index, e.what()).dump())};
         }
         catch (const json::out_of_range& e) {
             log::api::error({{"log_message", e.what()}, {"metadata_operation", _op.dump()}});
-            return {JSON_VALIDATION_ERROR, to_bytes_buffer(make_error_object(_op, _op_index, e.what()).dump())};
+            return {JSON_VALIDATION_ERROR, irods::to_bytes_buffer(make_error_object(_op, _op_index, e.what()).dump())};
         }
         catch (const json::type_error& e) {
             log::api::error({{"log_message", e.what()}, {"metadata_operation", _op.dump()}});
-            return {JSON_VALIDATION_ERROR, to_bytes_buffer(make_error_object(_op, _op_index, e.what()).dump())};
+            return {JSON_VALIDATION_ERROR, irods::to_bytes_buffer(make_error_object(_op, _op_index, e.what()).dump())};
         }
         catch (const std::system_error& e) {
             log::api::error({{"log_message", e.what()}, {"metadata_operation", _op.dump()}});
-            return {e.code().value(), to_bytes_buffer(make_error_object(_op, _op_index, e.what()).dump())};
+            return {e.code().value(), irods::to_bytes_buffer(make_error_object(_op, _op_index, e.what()).dump())};
         }
     }
 
@@ -464,7 +444,7 @@ namespace
                 char* json_output = nullptr;
 
                 const auto ec = rc_atomic_apply_metadata_operations(host_info.conn, json_input.data(), &json_output);
-                *_output = to_bytes_buffer(json_output);
+                *_output = irods::to_bytes_buffer(json_output);
 
                 return ec;
             }
@@ -474,13 +454,13 @@ namespace
         catch (const irods::exception& e) {
             std::string_view msg = e.what();
             log::api::error(msg.data());
-            *_output = to_bytes_buffer(make_error_object(json{}, 0, msg.data()).dump());
+            *_output = irods::to_bytes_buffer(make_error_object(json{}, 0, msg.data()).dump());
             return e.code();
         }
 
         if (const auto [valid, msg] = is_input_valid(_input); !valid) {
             log::api::error(msg);
-            *_output = to_bytes_buffer(make_error_object(json{}, 0, "Invalid input").dump());
+            *_output = irods::to_bytes_buffer(make_error_object(json{}, 0, "Invalid input").dump());
             return INPUT_ARG_NOT_WELL_FORMED_ERR;
         }
 
@@ -493,7 +473,7 @@ namespace
             log::api::error({{"log_message", "Failed to parse input into JSON"}, {"error_message", e.what()}});
 
             const auto err_info = make_error_object(json{}, 0, e.what());
-            *_output = to_bytes_buffer(err_info.dump());
+            *_output = irods::to_bytes_buffer(err_info.dump());
 
             return INPUT_ARG_NOT_WELL_FORMED_ERR;
         }
@@ -508,7 +488,7 @@ namespace
             object_id = get_object_id(*_comm, entity_name, entity_type);
         }
         catch (const std::exception& e) {
-            *_output = to_bytes_buffer(make_error_object(json{}, 0, e.what()).dump());
+            *_output = irods::to_bytes_buffer(make_error_object(json{}, 0, e.what()).dump());
             return SYS_INVALID_INPUT_PARAM;
         }
 
@@ -519,14 +499,14 @@ namespace
             std::tie(db_instance_name, db_conn) = ic::new_database_connection();
         }
         catch (const std::exception& e) {
-            *_output = to_bytes_buffer(make_error_object(json{}, 0, e.what()).dump());
+            *_output = irods::to_bytes_buffer(make_error_object(json{}, 0, e.what()).dump());
             return SYS_CONFIG_FILE_ERR;
         }
 
         if (!ic::user_has_permission_to_modify_entity(*_comm, db_conn, db_instance_name, object_id, entity_type)) {
             log::api::error("User not allowed to modify metadata [entity_name={}, entity_type={}, object_id={}]",
                             entity_name, input.at("entity_type").get<std::string>(), object_id);
-            *_output = to_bytes_buffer(make_error_object(json{}, 0, "User not allowed to modify metadata").dump());
+            *_output = irods::to_bytes_buffer(make_error_object(json{}, 0, "User not allowed to modify metadata").dump());
             return CAT_NO_ACCESS_PERMISSION;
         }
 
@@ -550,12 +530,12 @@ namespace
 
                 _trans.commit();
 
-                *_output = to_bytes_buffer("{}");
+                *_output = irods::to_bytes_buffer("{}");
 
                 return 0;
             }
             catch (const json::type_error& e) {
-                *_output = to_bytes_buffer(make_error_object(json{}, 0, e.what()).dump());
+                *_output = irods::to_bytes_buffer(make_error_object(json{}, 0, e.what()).dump());
                 return SYS_INTERNAL_ERR;
             }
         });
