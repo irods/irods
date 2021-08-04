@@ -23,6 +23,7 @@
 
 #include "catalog.hpp"
 #include "catalog_utilities.hpp"
+#include "icatHighLevelRoutines.hpp"
 #include "irods_exception.hpp"
 #include "irods_get_full_path_for_config_file.hpp"
 #include "irods_get_l1desc.hpp"
@@ -35,7 +36,7 @@
 #include "miscServerFunct.hpp"
 #include "objDesc.hpp"
 #include "rodsConnect.h"
-#include "icatHighLevelRoutines.hpp"
+#include "server_utilities.hpp"
 
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 #include "filesystem.hpp"
@@ -78,25 +79,6 @@ namespace
         return json{{"error_message", _error_msg},
                     {"database_updated", _database_updated}};
     } // make_error_object
-
-    auto to_bytes_buffer(const std::string& _s) -> BytesBuf*
-    {
-        constexpr auto allocate = [](const auto bytes) noexcept
-        {
-            return std::memset(std::malloc(bytes), 0, bytes);
-        };
-
-        const auto buf_size = _s.length() + 1;
-
-        auto* buf = static_cast<char*>(allocate(sizeof(char) * buf_size));
-        std::strncpy(buf, _s.c_str(), _s.length());
-
-        auto* bbp = static_cast<BytesBuf*>(allocate(sizeof(BytesBuf)));
-        bbp->len = buf_size;
-        bbp->buf = buf;
-
-        return bbp;
-    } // to_bytes_buffer
 
     auto call_data_object_finalize(
         irods::api_entry* _api,
@@ -383,7 +365,7 @@ namespace
 
             irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
 
-            *_output = to_bytes_buffer(make_error_object(msg).dump());
+            *_output = irods::to_bytes_buffer(make_error_object(msg).dump());
 
             return SYS_CONFIG_FILE_ERR;
         }
@@ -406,7 +388,7 @@ namespace
 
                         irods::log(LOG_NOTICE, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
 
-                        *_output = to_bytes_buffer(make_error_object(msg).dump());
+                        *_output = irods::to_bytes_buffer(make_error_object(msg).dump());
 
                         return ec;
                     }
@@ -421,7 +403,7 @@ namespace
 
                     irods::log(LOG_NOTICE, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
 
-                    *_output = to_bytes_buffer(make_error_object(msg).dump());
+                    *_output = irods::to_bytes_buffer(make_error_object(msg).dump());
 
                     return ec;
                 }
@@ -432,7 +414,7 @@ namespace
 
             irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
 
-            *_output = to_bytes_buffer(make_error_object(msg).dump());
+            *_output = irods::to_bytes_buffer(make_error_object(msg).dump());
 
             return SYS_LIBRARY_ERROR;
         }
@@ -447,7 +429,7 @@ namespace
             });
 
             if (ec < 0) {
-                *_output = to_bytes_buffer(make_error_object("failed to update catalog").dump());
+                *_output = irods::to_bytes_buffer(make_error_object("failed to update catalog").dump());
             }
 
             return ec;
@@ -457,7 +439,7 @@ namespace
 
             irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
 
-            *_output = to_bytes_buffer(make_error_object(msg).dump());
+            *_output = irods::to_bytes_buffer(make_error_object(msg).dump());
 
             return e.code();
         }
@@ -482,7 +464,7 @@ namespace
                               __FUNCTION__, __LINE__)},
                              {"error_message", msg.data()}});
 
-            *_output = to_bytes_buffer(make_error_object(msg).dump());
+            *_output = irods::to_bytes_buffer(make_error_object(msg).dump());
 
             return INPUT_ARG_NOT_WELL_FORMED_ERR;
         }
@@ -499,7 +481,7 @@ namespace
                 if (!irods::is_privileged_client(*_comm)) {
                     const auto msg = "user is not authorized to use the admin keyword";
 
-                    *_output = to_bytes_buffer(make_error_object(msg).dump());
+                    *_output = irods::to_bytes_buffer(make_error_object(msg).dump());
 
                     irods::log(LOG_WARNING, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
 
@@ -514,12 +496,12 @@ namespace
             replicas = input.at("replicas");
         }
         catch (const json::type_error& e) {
-            *_output = to_bytes_buffer(make_error_object(e.what()).dump());
+            *_output = irods::to_bytes_buffer(make_error_object(e.what()).dump());
 
             return SYS_INVALID_INPUT_PARAM;
         }
         catch (const std::exception& e) {
-            *_output = to_bytes_buffer(make_error_object(e.what()).dump());
+            *_output = irods::to_bytes_buffer(make_error_object(e.what()).dump());
 
             return SYS_INVALID_INPUT_PARAM;
         }
@@ -542,7 +524,7 @@ namespace
                 char* json_output = nullptr;
 
                 const auto ec = rc_data_object_finalize(host_info.conn, input.dump().data(), &json_output);
-                *_output = to_bytes_buffer(json_output);
+                *_output = irods::to_bytes_buffer(json_output);
                 if (ec < 0) {
                     return ec;
                 }
@@ -563,7 +545,7 @@ namespace
 
             irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
 
-            *_output = to_bytes_buffer(make_error_object(msg).dump());
+            *_output = irods::to_bytes_buffer(make_error_object(msg).dump());
 
             return e.code();
         }
@@ -571,7 +553,7 @@ namespace
         // If the update was successful and file modified is not supposed to be
         // triggered, then we can return with success here.
         if (!trigger_file_modified) {
-            *_output = to_bytes_buffer(make_error_object("", database_updated).dump());
+            *_output = irods::to_bytes_buffer(make_error_object("", database_updated).dump());
             return 0;
         }
 
@@ -581,12 +563,12 @@ namespace
             if (ec < 0) {
                 const auto msg = "error occurred during file_modified operation";
 
-                *_output = to_bytes_buffer(make_error_object(msg, database_updated).dump());
+                *_output = irods::to_bytes_buffer(make_error_object(msg, database_updated).dump());
 
                 return ec;
             }
 
-            *_output = to_bytes_buffer(make_error_object("", database_updated).dump());
+            *_output = irods::to_bytes_buffer(make_error_object("", database_updated).dump());
             return ec;
         }
         catch (const irods::exception& e) {
@@ -594,7 +576,7 @@ namespace
 
             const auto err = make_error_object(e.client_display_what(), database_updated);
 
-            *_output = to_bytes_buffer(err.dump());
+            *_output = irods::to_bytes_buffer(err.dump());
 
             return e.code();
         }
