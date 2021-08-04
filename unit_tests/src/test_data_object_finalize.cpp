@@ -111,6 +111,8 @@ TEST_CASE("finalize", "[finalize]")
             // Get data object info, modify some fields in each replica, and stamp the catalog
             json input;
 
+            input["logical_path"] = og_op.logical_path();
+
             for (auto& repl : og_op.replicas()) {
                 const auto before = ir::to_json(repl);
 
@@ -191,6 +193,8 @@ TEST_CASE("finalize", "[finalize]")
         // Get data object info, modify some fields in each replica, and stamp the catalog
         json input;
 
+        input["logical_path"] = og_op.logical_path();
+
         auto [op, op_lm] = id::duplicate_data_object(*og_op.get());
 
         for (auto& repl : op.replicas()) {
@@ -229,6 +233,10 @@ TEST_CASE("finalize", "[finalize]")
             CHECK(og_op.logical_path()  == repl.logical_path());
         }
     }
+
+    // TODO: add test for inclusion/exclusion of logical_path
+    // TODO: add test for file_modified
+    // TODO: add test for bytes_written
 }
 
 TEST_CASE("invalid inputs", "[invalid]")

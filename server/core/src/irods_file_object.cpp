@@ -16,6 +16,12 @@
 #include "replica_proxy.hpp"
 #include "data_object_proxy.hpp"
 
+#include "fmt/format.h"
+
+namespace {
+    namespace id = irods::experimental::data_object;
+} // anonymous namespace
+
 namespace irods {
 // =-=-=-=-=-=-=-
 // public - ctor
@@ -405,8 +411,6 @@ namespace irods {
 
     auto file_object_factory(RsComm& _comm, const rodsLong_t _data_id) -> irods::file_object_ptr
     {
-        namespace id = irods::experimental::data_object;
-
         auto [data_obj, obj_lm] = id::make_data_object_proxy(_comm, _data_id);
 
         irods::file_object_ptr obj{new irods::file_object{&_comm, data_obj.get()}};
@@ -414,6 +418,30 @@ namespace irods {
         std::vector<physical_object> objects;
 
         for (const auto& r : data_obj.replicas()) {
+            objects.push_back(irods::physical_object{*r.get()});
+        }
+
+        obj->replicas( objects );
+
+        return obj;
+    } // file_object_factory
+
+    auto file_object_factory(
+        RsComm& _comm,
+        const std::string_view _logical_path,
+        const id::json_repr_t& _replicas) -> irods::file_object_ptr
+    {
+        auto [data_obj, obj_lm] = id::make_data_object_proxy(_logical_path, _replicas);
+
+        irods::file_object_ptr obj{new irods::file_object{&_comm, data_obj.get()}};
+
+        std::vector<physical_object> objects;
+
+        for (auto& r : data_obj.replicas()) {
+            // Hierarchy information is not stored in the catalog
+            r.hierarchy(resc_mgr.leaf_id_to_hier(r.resource_id()));
+            r.resource(irods::hierarchy_parser{r.hierarchy().data()}.last_resc());
+
             objects.push_back(irods::physical_object{*r.get()});
         }
 

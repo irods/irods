@@ -15,8 +15,10 @@ extern "C" {
 ///
 /// \parblock
 /// The replicas field is a complete set of the columns in their current state as well as the
-/// desired modifications is required in the form of a JSON structure. Each replica can also
-/// have "file_modified" key which holds a set of key-value pairs for the file_modified plugin operation.
+/// desired modifications in the form of a JSON structure. A replica can also have a
+/// "file_modified" key which holds a set of key-value pairs for the file_modified plugin operation.
+/// Note that only one file_modified key is recognized by the API plugin so only the replica which
+/// was modified should contain this key.
 ///
 /// The trigger_file_modified field is a boolean indicating whether the file_modified plugin operation
 /// should be called after the data object has been finalized.
@@ -27,6 +29,12 @@ extern "C" {
 ///
 /// bytes_written is used to indicate the number of bytes written in the operation so that some
 /// features can perform checks for bytes written limits (e.g. tickets).
+///
+/// logical_path is an optional parameter which holds the full logical path to the data object being
+/// finalized. The purpose for this parameter is to bypass a query required to make fileModified work.
+/// If the logical_path is not passed, the query will need to be run to collect the information. This
+/// is needed because the logical path is not actually stored in R_DATA_MAIN and the information cannot
+/// be derived from the inputs given to R_DATA_MAIN.
 /// \endparblock
 ///
 /// \p json_input must have the following JSON structure:
@@ -34,6 +42,7 @@ extern "C" {
 /// {
 ///     "bytes_written": <long long>,
 ///     "irods_admin": <bool>,
+///     "logical_path": <string>,
 ///     "replicas": [
 ///         {
 ///             "before": {
