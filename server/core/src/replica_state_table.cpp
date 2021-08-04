@@ -176,6 +176,9 @@ namespace irods::replica_state_table
 
             const auto input = [&]() -> json
             {
+                // get_logical_path acquires the lock, so do this first
+                const auto logical_path = get_logical_path(_key);
+
                 std::scoped_lock rst_lock{rst_mutex};
 
                 auto& target_entry = replica_state_json_map.at(_key);
@@ -185,8 +188,9 @@ namespace irods::replica_state_table
                 }
 
                 return json{
-                    {"irods_admin", _privileged},
                     {"bytes_written", std::to_string(_bytes_written)},
+                    {"irods_admin", _privileged},
+                    {"logical_path", logical_path},
                     {REPLICAS_KW, target_entry.at(REPLICAS_KW)},
                     {"trigger_file_modified", trigger_file_modified}
                 };

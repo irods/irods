@@ -232,7 +232,7 @@ namespace
             THROW(ec, fmt::format(
                 "[{}:{}] - failed to finalize replica "
                 "[error_code=[{}], path=[{}], hierarchy=[{}]]",
-                __LINE__, __FUNCTION__, ec, r.logical_path(), r.hierarchy()));
+                __FUNCTION__, __LINE__, ec, r.logical_path(), r.hierarchy()));
         }
 
         if (GOOD_REPLICA == r.replica_status()) {
@@ -335,8 +335,8 @@ namespace
                 // finalize object for failure case
                 if (const auto ec = finalize_on_failure(_comm, *final_replica.get(), l1desc_cache); ec < 0) {
                     irods::log(LOG_ERROR, fmt::format(
-                        "[{}] - failed while finalizing object [{}]; ec:[{}]",
-                        __FUNCTION__, _inp.objPath, ec));
+                        "[{}:{}] - failed while finalizing object [{}]; ec:[{}]",
+                        __FUNCTION__, __LINE__, _inp.objPath, ec));
                 }
 
                 if (rst::contains(final_replica.data_id())) {
