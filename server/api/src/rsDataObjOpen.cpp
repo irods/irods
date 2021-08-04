@@ -41,7 +41,7 @@
 #include "rsGlobalExtern.hpp"
 #include "rsModDataObjMeta.hpp"
 #include "rsObjStat.hpp"
-#include "rsPhyPathReg.hpp"
+#include "rs_register_physical_path.hpp"
 #include "rsRegDataObj.hpp"
 #include "rsRegReplica.hpp"
 #include "rsSubStructFileCreate.hpp"
@@ -188,8 +188,19 @@ namespace
         auto cond_input = irods::experimental::make_key_value_proxy(_inp.condInput);
         const auto hierarchy = cond_input.at(RESC_HIER_STR_KW).value();
 
+        const auto remove_reg_repl_keyword_from_session_props = irods::at_scope_exit{[&_comm] {
+            irods::experimental::key_value_proxy{_comm.session_props}.erase(REG_REPL_KW);
+        }};
+
         try {
             const auto brand_new_data_object = nullptr == _existing_replica_list;
+
+            // The creation of additional replicas should only be enabled if it is known that a new
+            // replica for an existing data object will be created. Otherwise, it does not need to
+            // be enabled and informs the registration API about how the registration should occur.
+            if (!brand_new_data_object) {
+                enable_creation_of_additional_replicas(_comm);
+            }
 
             const auto creating_new_replica = [&]() -> bool
             {
@@ -228,10 +239,10 @@ namespace
                     return irods::data_object_create_in_special_collection(&_comm, _inp);
             }
 
-            // conjuring a brand new data object info
-            // NOTE: all of this information is free'd and overwritten by the structure in the rsPhyPathReg
-            // call, but is required to inform the database about the replica we are creating.
-            auto [new_replica, lm] = ir::make_replica_proxy();
+            // This conjures a brand new replica using information from the input parameters. This is ultimately
+            // superceded by the structures used in the registration API and database operation, but is necessary
+            // here to inform the database about the replica we intend to create.
+            auto [new_replica, new_replica_lm] = ir::make_replica_proxy();
             new_replica.logical_path(_inp.objPath);
             new_replica.replica_status(INTERMEDIATE_REPLICA);
             new_replica.hierarchy(hierarchy);
@@ -328,15 +339,32 @@ namespace
                 object_locked = true;
             }
 
-            if (const int ec = rsPhyPathReg(&_comm, l1desc.dataObjInp); ec < 0) {
+            // Registers the physical path as a replica of the given data object information (which may or may not be
+            // a new data object). The returned information is then used as the data object information in the open
+            // L1 descriptor as some system metadata generated in the database operation were not available when the
+            // data object information was populated above.
+            char* info_json_str{};
+            const auto free_buf = irods::at_scope_exit{[&info_json_str] {
+                std::free(info_json_str);
+                info_json_str = nullptr;
+            }};
+
+            if (const int ec = rs_register_physical_path(&_comm, l1desc.dataObjInp, &info_json_str); ec < 0 || !info_json_str) {
                 irods::log(LOG_ERROR, fmt::format(
-                    "[{}:{}] - failed in rsPhyPathReg "
+                    "[{}:{}] - failed to register physical path "
                     "[error_code=[{}], path=[{}], hierarchy=[{}]",
                     __FUNCTION__, __LINE__, ec, _inp.objPath, hierarchy));
 
                 if (object_locked) {
                     if (const int unlock_ec = ill::unlock_and_publish(_comm, {_existing_replica_list->dataId, admin_op}, ill::restore_status); unlock_ec < 0) {
                         irods::log(LOG_ERROR, fmt::format("[{}:{}] - failed to unlock data object [error_code={}]", __FUNCTION__, __LINE__, unlock_ec));
+                    }
+
+                    // Remove the RST entry because the unlock interface does not automatically remove the RST entries.
+                    // This is important because the agent for this connection may be re-used for another open operation
+                    // which would expect the RST to be cleaned up.
+                    if (rst::contains(_existing_replica_list->dataId)) {
+                        rst::erase(_existing_replica_list->dataId);
                     }
                 }
 
@@ -345,9 +373,62 @@ namespace
                 return ec;
             }
 
-            // TODO: new_replica is free'd in rsPhyPathReg, making the proxy unusable
-            // Need to find a better way to populate the information going in or coming out so that the interface makes more sense
+            // Extract the JSON output from the registration API. If the output is not an expected value, a JSON
+            // parsing error could occur, so the usual teardown needs to occur here. This is done before the
+            // attendant data object info is constructed, so this is a limbo state!
+            nlohmann::json info_json;
+            try {
+                info_json = nlohmann::json::parse(info_json_str);
+            }
+            catch (const nlohmann::json::exception& e) {
+                irods::log(LOG_ERROR, fmt::format(
+                    "[{}:{}] - failed to parse JSON output from registration "
+                    "[error_code=[{}], path=[{}], hierarchy=[{}]",
+                    __FUNCTION__, __LINE__, e.what(), _inp.objPath, hierarchy));
+
+                if (object_locked) {
+                    if (const int unlock_ec = ill::unlock_and_publish(_comm, {_existing_replica_list->dataId, admin_op}, ill::restore_status); unlock_ec < 0) {
+                        irods::log(LOG_ERROR, fmt::format("[{}:{}] - failed to unlock data object [error_code={}]", __FUNCTION__, __LINE__, unlock_ec));
+                    }
+                }
+
+                // TODO: Need to get at the data ID somehow in order to unlock the object before unlinking in all cases
+                // Unregister replica from catalog
+                unregDataObj_t unlink_inp{};
+                unlink_inp.dataObjInfo = l1desc.dataObjInfo;
+                if (const auto unreg_ec = rsUnregDataObj(&_comm, &unlink_inp); unreg_ec < 0) {
+                    irods::log(LOG_ERROR, fmt::format(
+                        "[{}:{}] - failed to unregister replica "
+                        "[error_code=[{}], path=[{}], hierarchy=[{}]]",
+                        __FUNCTION__, __LINE__, unreg_ec,
+                        l1desc.dataObjInfo->objPath,
+                        l1desc.dataObjInfo->rescHier));
+                }
+
+                if (object_locked && rst::contains(_existing_replica_list->dataId)) {
+                    rst::erase(_existing_replica_list->dataId);
+                }
+
+                freeL1desc(l1_index);
+
+                return JSON_VALIDATION_ERROR;
+            }
+
+            // Replace the missing information from the registered replica in the data object information
+            // for the open L1 descriptor so that the open operation can refer to the data ID and other
+            // bits generated by the database operation. Ownership of the data object information is given
+            // to the open L1 descriptor.
+            auto [json_generated_replica, lm] = ir::make_replica_proxy(_inp.objPath, info_json);
+            freeDataObjInfo(l1desc.dataObjInfo);
+            l1desc.dataObjInfo = lm.release();
+
+            // TODO: There is a gap in the C++ standard where structured bindings cannot be captured
+            // see for more information: https://stackoverflow.com/questions/46114214/lambda-implicit-capture-fails-with-variable-declared-from-structured-binding
             auto registered_replica = ir::make_replica_proxy(*l1desc.dataObjInfo);
+
+            // Resource hierarchy information is not held in R_DATA_MAIN
+            registered_replica.hierarchy(hierarchy);
+            registered_replica.resource(irods::hierarchy_parser{registered_replica.hierarchy().data()}.last_resc());
 
             // Once the replica is registered successfully, make sure the RST entry and L1 descriptor
             // are cleaned up properly in the event of errors. Each return statement should assign the
@@ -392,42 +473,6 @@ namespace
                     }
                 }
             };
-
-            // Get the service role for the server to determine whether the catalog-generated information for
-            // the newly created replica is available in the L1 descriptor.
-            std::string service_role;
-            if (const auto ret = get_catalog_service_role(service_role); !ret.ok()) {
-                irods::log(PASS(ret));
-            }
-
-            // Need to get information from the catalog which was populated in the database operation if
-            // this server is not a catalog provider. In that instance, the dataObjInfo in the L1 descriptor
-            // will not have the information.
-            if(service_role.empty() || irods::CFG_SERVICE_ROLE_PROVIDER != service_role) {
-                const auto p = fs::path{registered_replica.logical_path().data()};
-                const auto sql = fmt::format(
-                    "select DATA_OWNER_NAME, DATA_OWNER_ZONE, DATA_CREATE_TIME, DATA_MODIFY_TIME, DATA_EXPIRY, DATA_ID "
-                    "where COLL_NAME = '{}' and DATA_NAME = '{}' and DATA_RESC_HIER = '{}'",
-                    p.parent_path().c_str(), p.object_name().c_str(), hierarchy);
-
-                    irods::experimental::query_builder qb;
-                    const auto results = qb.build(_comm, sql);
-                    if (1 != results.size()) {
-                        irods::log(LOG_NOTICE, fmt::format(
-                            "[{}:{}] - no replica found [path=[{}], hier=[{}]]",
-                            __FUNCTION__, __LINE__, registered_replica.logical_path(), hierarchy));
-
-                        return ec = SYS_REPLICA_DOES_NOT_EXIST;
-                    }
-
-                    const auto& result = results.front();
-                    registered_replica.owner_user_name(result.at(0));
-                    registered_replica.owner_zone_name(result.at(1));
-                    registered_replica.ctime(result.at(2));
-                    registered_replica.mtime(result.at(3));
-                    registered_replica.data_expiry(result.at(4));
-                    registered_replica.data_id(std::stoll(result.at(5)));
-            }
 
             // Insert the newly registered replica into the RST with the other replicas which were inserted and locked before
             if (const auto insert_ec = rst::insert(registered_replica); insert_ec < 0) {
@@ -840,11 +885,6 @@ namespace
             return remote_open(*rodsServerHost, *dataObjInp);
         }
 
-        enable_creation_of_additional_replicas(*rsComm);
-        const auto remove_reg_repl_keyword_from_session_props = irods::at_scope_exit{[&rsComm] {
-            irods::experimental::key_value_proxy{rsComm->session_props}.erase(REG_REPL_KW);
-        }};
-
         DataObjInfo* info_head{};
         std::string hierarchy{};
 
@@ -973,6 +1013,8 @@ namespace
 
         const auto admin_op = irods::experimental::make_key_value_proxy(dataObjInp->condInput).contains(ADMIN_KW);
 
+        auto locked = false;
+
         if (open_for_write) {
             // Insert the data object information into the replica state table before the replica status is
             // updated because the "before" state is supposed to represent the state of the data object before
@@ -1007,6 +1049,8 @@ namespace
                     return lock_ec;
                 }
             }
+
+            locked = true;
         }
 
         // The static pre-PEP for open is executed here. On failure, the data object is unlocked.
@@ -1017,8 +1061,12 @@ namespace
                 }
             }};
 
-            if (const int unlock_ec = ill::unlock_and_publish(*rsComm, {replica, admin_op, 0}, ill::restore_status); unlock_ec < 0) {
-                irods::log(LOG_ERROR, fmt::format("[{}:{}] - failed to unlock data object [error_code={}]", __FUNCTION__, __LINE__, unlock_ec));
+            if (locked) {
+                if (const int unlock_ec = ill::unlock_and_publish(*rsComm, {replica, admin_op, 0}, ill::restore_status); unlock_ec < 0) {
+                    irods::log(LOG_ERROR, fmt::format(
+                        "[{}:{}] - failed to unlock data object [ec=[{}], path=[{}]]",
+                        __FUNCTION__, __LINE__, unlock_ec, replica.logical_path()));
+                }
             }
 
             return ec;
@@ -1032,8 +1080,12 @@ namespace
                 }
             }};
 
-            if (const int unlock_ec = ill::unlock_and_publish(*rsComm, {replica, admin_op, 0}, ill::restore_status); unlock_ec < 0) {
-                irods::log(LOG_ERROR, fmt::format("[{}:{}] - failed to unlock data object [error_code={}]", __FUNCTION__, __LINE__, unlock_ec));
+            if (locked) {
+                if (const int unlock_ec = ill::unlock_and_publish(*rsComm, {replica, admin_op, 0}, ill::restore_status); unlock_ec < 0) {
+                    irods::log(LOG_ERROR, fmt::format(
+                        "[{}:{}] - failed to unlock data object [ec=[{}], path=[{}]]",
+                        __FUNCTION__, __LINE__, unlock_ec, replica.logical_path()));
+                }
             }
 
             return l1descInx;

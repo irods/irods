@@ -429,7 +429,7 @@ getchkPathPerm( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
 
 #if 1
-    // Possibly need to revisit this -- this is wrong
+    // TODO: this is wrong - see #5775
     if (getValByKey(&dataObjInp->condInput, REGISTER_AS_INTERMEDIATE_KW)) {
         return NO_CHK_PATH_PERM;
     }
