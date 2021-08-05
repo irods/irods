@@ -152,9 +152,7 @@ msi_update_unixfilesystem_resource_free_space(msParam_t *resource_name_msparam, 
 extern "C"
 irods::ms_table_entry* plugin_factory() {
     irods::ms_table_entry* msvc = new irods::ms_table_entry(1);
-    msvc->add_operation<
-        msParam_t*,
-        ruleExecInfo_t*>("msi_update_unixfilesystem_resource_free_space",
+    msvc->add_operation("msi_update_unixfilesystem_resource_free_space",
                          std::function<int(
                              msParam_t*,
                              ruleExecInfo_t*)>(msi_update_unixfilesystem_resource_free_space));

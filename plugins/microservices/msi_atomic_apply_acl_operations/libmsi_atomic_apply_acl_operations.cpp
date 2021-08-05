@@ -65,7 +65,7 @@ namespace
     auto make_msi(const std::string& _name, Function _func) -> irods::ms_table_entry*
     {
         auto* msi = new irods::ms_table_entry{sizeof...(Args)};
-        msi->add_operation<Args..., ruleExecInfo_t*>(_name, std::function<int(Args..., ruleExecInfo_t*)>(_func));
+        msi->add_operation(_name, std::function<int(Args..., ruleExecInfo_t*)>(_func));
         return msi;
     }
 } // anonymous namespace

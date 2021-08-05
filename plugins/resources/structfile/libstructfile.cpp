@@ -2688,13 +2688,13 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
         function<error(plugin_context&)>(
             tar_file_open ) );
 
-    resc->add_operation<void*,const int>(
+    resc->add_operation(
         irods::RESOURCE_OP_READ,
         std::function<
             error(irods::plugin_context&,void*,const int)>(
                 tar_file_read ) );
 
-    resc->add_operation<const void*,const int>(
+    resc->add_operation(
         irods::RESOURCE_OP_WRITE,
         function<error(plugin_context&,const void*,const int)>(
             tar_file_write ) );
@@ -2709,7 +2709,7 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
         function<error(plugin_context&)>(
             tar_file_unlink ) );
 
-    resc->add_operation<struct stat*>(
+    resc->add_operation(
         irods::RESOURCE_OP_STAT,
         function<error(plugin_context&, struct stat*)>(
             tar_file_stat ) );
@@ -2724,12 +2724,12 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
         function<error(plugin_context&)>(
             tar_file_opendir ) );
 
-    resc->add_operation<struct rodsDirent**>(
+    resc->add_operation(
         irods::RESOURCE_OP_READDIR,
         function<error(plugin_context&,struct rodsDirent**)>(
             tar_file_readdir ) );
 
-    resc->add_operation<const char*>(
+    resc->add_operation(
         irods::RESOURCE_OP_RENAME,
         function<error(plugin_context&, const char*)>(
             tar_file_rename ) );
@@ -2739,7 +2739,7 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
         function<error(plugin_context&)>(
             tar_file_getfs_freespace ) );
 
-    resc->add_operation<const long long, const int>(
+    resc->add_operation(
         irods::RESOURCE_OP_LSEEK,
         function<error(plugin_context&, const long long, const int)>(
             tar_file_lseek ) );
@@ -2769,7 +2769,7 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
         function<error(plugin_context&)>(
             tar_file_modified ) );
 
-    resc->add_operation<const std::string*>(
+    resc->add_operation(
         irods::RESOURCE_OP_NOTIFY,
         function<error(plugin_context&, const std::string*)>(
             tar_file_notify ) );

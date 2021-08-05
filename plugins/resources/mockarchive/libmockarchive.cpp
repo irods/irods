@@ -808,12 +808,12 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
         function<error(plugin_context&)>(
             mock_archive_file_unlink ) );
 
-    resc->add_operation<const char*>(
+    resc->add_operation(
         irods::RESOURCE_OP_STAGETOCACHE,
         function<error(plugin_context&, const char*)>(
             mock_archive_file_stage_to_cache ) );
 
-    resc->add_operation<const char*>(
+    resc->add_operation(
         irods::RESOURCE_OP_SYNCTOARCH,
         function<error(plugin_context&, const char*)>(
             mock_archive_file_sync_to_arch ) );
@@ -823,12 +823,12 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
         function<error(plugin_context&)>(
             mock_archive_file_mkdir ) );
 
-    resc->add_operation<const char*>(
+    resc->add_operation(
         irods::RESOURCE_OP_RENAME,
         function<error(plugin_context&, const char*)>(
             mock_archive_file_rename ) );
 
-    resc->add_operation<struct stat*>(
+    resc->add_operation(
         irods::RESOURCE_OP_STAT,
         function<error(plugin_context&, struct stat*)>(
             mock_archive_file_stat ) );
@@ -838,7 +838,7 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
         function<error(plugin_context&)>(
             mock_archive_file_truncate ) );
 
-    resc->add_operation<const std::string*, const std::string*, irods::hierarchy_parser*, float*>(
+    resc->add_operation(
         irods::RESOURCE_OP_RESOLVE_RESC_HIER,
         function<error(plugin_context&,const std::string*, const std::string*, irods::hierarchy_parser*, float*)>(
             mock_archive_file_resolve_hierarchy ) );

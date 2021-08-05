@@ -534,20 +534,20 @@ irods::auth* plugin_factory(
         AUTH_ESTABLISH_CONTEXT,
         function<error(plugin_context&)>(
             pam_auth_establish_context ) );
-    pam->add_operation<rcComm_t*,const char*>(
+    pam->add_operation(
         AUTH_CLIENT_START,
         function<error(plugin_context&,rcComm_t*,const char*)>(
             pam_auth_client_start ) );
-    pam->add_operation<rcComm_t*>(
+    pam->add_operation(
         AUTH_CLIENT_AUTH_REQUEST,
         function<error(plugin_context&,rcComm_t*)>(
             pam_auth_client_request ) );
-    pam->add_operation<rcComm_t*>(
+    pam->add_operation(
         AUTH_CLIENT_AUTH_RESPONSE,
         function<error(plugin_context&,rcComm_t*)>(
             pam_auth_client_response ) );
 #ifdef RODS_SERVER
-    pam->add_operation<const char*>(
+    pam->add_operation(
         AUTH_AGENT_START,
         function<error(plugin_context&,const char*)>(
             pam_auth_agent_start ) );
@@ -555,11 +555,11 @@ irods::auth* plugin_factory(
         AUTH_AGENT_AUTH_REQUEST,
         function<error(plugin_context&)>(
             pam_auth_agent_request )  );
-    pam->add_operation<authResponseInp_t*>(
+    pam->add_operation(
         AUTH_AGENT_AUTH_RESPONSE,
         function<error(plugin_context&,authResponseInp_t*)>(
             pam_auth_agent_response ) );
-    pam->add_operation<const char*,const char*,const char*>(
+    pam->add_operation(
         AUTH_AGENT_AUTH_VERIFY,
         function<error(plugin_context&,const char*,const char*,const char*)>(
             pam_auth_agent_verify ) );

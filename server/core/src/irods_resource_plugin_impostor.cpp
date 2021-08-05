@@ -179,13 +179,13 @@ namespace irods {
             function<error(plugin_context&)>(
                 impostor_file_open ) );
 
-        add_operation<void*,const int>(
+        add_operation(
             irods::RESOURCE_OP_READ,
             std::function<
                 error(irods::plugin_context&,void*,const int)>(
                     impostor_file_read ) );
 
-        add_operation<const void*,const int>(
+        add_operation(
             irods::RESOURCE_OP_WRITE,
             function<error(plugin_context&,const void*,const int)>(
                 impostor_file_write ) );
@@ -200,7 +200,7 @@ namespace irods {
             function<error(plugin_context&)>(
                 impostor_file_unlink ) );
 
-        add_operation<struct stat*>(
+        add_operation(
             irods::RESOURCE_OP_STAT,
             function<error(plugin_context&, struct stat*)>(
                 impostor_file_stat ) );
@@ -215,12 +215,12 @@ namespace irods {
             function<error(plugin_context&)>(
                 impostor_file_opendir ) );
 
-        add_operation<struct rodsDirent**>(
+        add_operation(
             irods::RESOURCE_OP_READDIR,
             function<error(plugin_context&,struct rodsDirent**)>(
                 impostor_file_readdir ) );
 
-        add_operation<const char*>(
+        add_operation(
             irods::RESOURCE_OP_RENAME,
             function<error(plugin_context&, const char*)>(
                 impostor_file_rename ) );
@@ -230,7 +230,7 @@ namespace irods {
             function<error(plugin_context&)>(
                 impostor_file_getfs_freespace ) );
 
-        add_operation<const long long, const int>(
+        add_operation(
             irods::RESOURCE_OP_LSEEK,
             function<error(plugin_context&, long long, int)>(
                 impostor_file_lseek ) );
@@ -245,12 +245,12 @@ namespace irods {
             function<error(plugin_context&)>(
                 impostor_file_closedir ) );
 
-        add_operation<const char*>(
+        add_operation(
             irods::RESOURCE_OP_STAGETOCACHE,
             function<error(plugin_context&, const char*)>(
                 impostor_file_stage_to_cache ) );
 
-        add_operation<const char*>(
+        add_operation(
             irods::RESOURCE_OP_SYNCTOARCH,
             function<error(plugin_context&, const char*)>(
                 impostor_file_sync_to_arch ) );
@@ -270,7 +270,7 @@ namespace irods {
             function<error(plugin_context&)>(
                 impostor_file_modified ) );
 
-        add_operation<const std::string*>(
+        add_operation(
             irods::RESOURCE_OP_NOTIFY,
             function<error(plugin_context&, const std::string*)>(
                 impostor_file_notify ) );
@@ -280,7 +280,7 @@ namespace irods {
             function<error(plugin_context&)>(
                 impostor_file_truncate ) );
 
-        add_operation<const std::string*, const std::string*, irods::hierarchy_parser*, float*>(
+        add_operation(
             irods::RESOURCE_OP_RESOLVE_RESC_HIER,
             function<error(plugin_context&,const std::string*, const std::string*, irods::hierarchy_parser*, float*)>(
                 impostor_file_resolve_hierarchy ) );
