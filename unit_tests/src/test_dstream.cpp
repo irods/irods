@@ -297,7 +297,7 @@ TEST_CASE("dstream", "[iostreams]")
         io::dstream ds{tp, sandbox / "data_object.txt", std::ios::in | std::ios::out | std::ios::trunc};
 
         ds.write("abcd", 4);
-        ds.seekp(-2, std::ios::seekdir::cur);
+        ds.seekp(-2, std::ios::cur);
 
         char buf[2]{};
         ds.read(buf, 2);
