@@ -86,3 +86,40 @@ class test_iget_general(session.make_sessions_mixin([('otherrods', 'rods')], [('
         self.user.assert_icommand(['iget', data_object, file_path])
         self.assertEqual(0, os.path.getsize(file_path))
 
+    def test_iget_does_not_change_replica_status__issue_5760(self):
+        # Create a new data object.
+        filename = 'foo'
+        local_file = os.path.join(self.admin.local_session_dir, filename)
+        logical_path = os.path.join(self.admin.session_collection, filename)
+        lib.create_local_testfile(local_file)
+        self.admin.assert_icommand(['iput', local_file, logical_path])
+
+        # Get the physical path for the replica
+        out, err, rc = self.admin.run_icommand(['iquest', '%s',
+            "select DATA_PATH where COLL_NAME = '{0}' and DATA_NAME = '{1}'".format(
+            os.path.dirname(logical_path), os.path.basename(logical_path))])
+
+        self.assertEqual(0, rc)
+        self.assertEqual('', err)
+
+        # Write down the physical path and make up a fake physical path
+        real_data_path = out
+        fake_data_path = os.path.join(self.admin.local_session_dir, 'jimbo')
+
+        try:
+            # Modify the data path to something wrong so that the get will fail
+            self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', logical_path, 'replica_number', '0', 'DATA_PATH', fake_data_path])
+
+            # Assert that the get fails as it should
+            self.admin.assert_icommand(['iget', logical_path, '-'], 'STDERR', 'UNIX_FILE_OPEN_ERR')
+
+            # Assert that the status of the replica has not changed
+            out, err, rc = self.admin.run_icommand(['iquest', '%s', "select DATA_REPL_STATUS where DATA_PATH = '{}'".format(fake_data_path)])
+            self.assertEqual(0, rc)
+            self.assertEqual('', err)
+            self.assertEqual(1, int(out))
+
+        finally:
+            # Make sure the data path is real so that it will get cleaned up
+            self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', logical_path, 'replica_number', '0', 'DATA_PATH', real_data_path])
+
