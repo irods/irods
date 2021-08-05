@@ -324,7 +324,7 @@ namespace irods
         if (collStat(_comm, &_data_obj_inp, &rodsObjStatOut) >= 0 && rodsObjStatOut->specColl) {
             std::string hier = rodsObjStatOut->specColl->rescHier;
             freeRodsObjStat( rodsObjStatOut );
-            return {{}, hier};
+            return {irods::file_object_ptr{}, hier};
         }
         freeRodsObjStat(rodsObjStatOut);
 

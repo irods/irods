@@ -98,7 +98,7 @@ namespace irods::experimental::administration::NAMESPACE_IMPL
     {
         try {
             const auto gql = fmt::format("select RESC_ID where RESC_NAME = '{}'", _name);
-            return {{}, query_builder{}.build(_comm, gql).size() > 0};
+            return {std::error_code{}, query_builder{}.build(_comm, gql).size() > 0};
         }
         catch (...) {
             return {std::error_code{SYS_UNKNOWN_ERROR, std::generic_category()}, false};
@@ -151,7 +151,7 @@ namespace irods::experimental::administration::NAMESPACE_IMPL
                 }
             }
 
-            return {{}, std::move(info)};
+            return {std::error_code{}, std::move(info)};
         }
         catch (...) {
             return {std::error_code{SYS_UNKNOWN_ERROR, std::generic_category()}, std::nullopt};
@@ -333,10 +333,10 @@ namespace irods::experimental::administration::NAMESPACE_IMPL
             const auto gql = fmt::format("select RESC_NAME where RESC_ID = '{}'", _id);
 
             for (auto&& row : query_builder{}.build(_comm, gql)) {
-                return {{}, row[0]};
+                return {std::error_code{}, row[0]};
             }
 
-            return {{}, std::nullopt};
+            return {std::error_code{}, std::nullopt};
         }
         catch (...) {
             return {std::error_code{SYS_UNKNOWN_ERROR, std::generic_category()}, std::nullopt};
