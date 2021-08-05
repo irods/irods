@@ -20,6 +20,7 @@
 #include <iostream>
 #include <termios.h>
 #include <unistd.h>
+#include <thread>
 
 #include "json.hpp"
 using json = nlohmann::json;
