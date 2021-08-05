@@ -1304,11 +1304,11 @@ irods::network* plugin_factory(
     // names to function names
     using namespace irods;
     using namespace std;
-    ssl->add_operation<rodsEnv*>(
+    ssl->add_operation(
         NETWORK_OP_CLIENT_START,
         function<error(plugin_context&,rodsEnv*)>(
             ssl_client_start ) );
-    ssl->add_operation<rodsEnv*>(
+    ssl->add_operation(
         NETWORK_OP_CLIENT_STOP,
         function<error(plugin_context&,rodsEnv*)>(
             ssl_client_stop ) );
@@ -1320,19 +1320,19 @@ irods::network* plugin_factory(
         NETWORK_OP_AGENT_STOP,
         function<error(plugin_context&)>(
             ssl_agent_stop ) );
-    ssl->add_operation<void*, struct timeval*>(
+    ssl->add_operation(
         NETWORK_OP_READ_HEADER,
         function<error(plugin_context&,void*, struct timeval*)>(
             ssl_read_msg_header ) );
-    ssl->add_operation<msgHeader_t*,bytesBuf_t*,bytesBuf_t*,bytesBuf_t*,irodsProt_t,struct timeval*>(
+    ssl->add_operation(
         NETWORK_OP_READ_BODY,
         function<error(plugin_context&,msgHeader_t*,bytesBuf_t*,bytesBuf_t*,bytesBuf_t*,irodsProt_t,struct timeval*)>(
             ssl_read_msg_body ) );
-    ssl->add_operation<const bytesBuf_t*>(
+    ssl->add_operation(
         NETWORK_OP_WRITE_HEADER,
         function<error(plugin_context&,const bytesBuf_t*)>(
             ssl_write_msg_header ) );
-    ssl->add_operation<const char*,const bytesBuf_t*,const bytesBuf_t*,const bytesBuf_t*,int,irodsProt_t>(
+    ssl->add_operation(
         NETWORK_OP_WRITE_BODY,
         function<error(plugin_context&,const char*,const bytesBuf_t*,const bytesBuf_t*,const bytesBuf_t*,int,irodsProt_t)>(
             ssl_send_rods_msg ) );

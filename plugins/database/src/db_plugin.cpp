@@ -14832,7 +14832,7 @@ irods::database* plugin_factory(
         DATABASE_OP_START,
         function<error(plugin_context&)>(
             db_start_op ) );
-    pg->add_operation<const char*>(
+    pg->add_operation(
         DATABASE_OP_DEBUG,
         function<error(plugin_context&, const char*)>(
             db_debug_op ) );
@@ -14844,55 +14844,55 @@ irods::database* plugin_factory(
         DATABASE_OP_CLOSE,
         function<error(plugin_context&)>(
             db_close_op ) );
-    pg->add_operation<std::string*>(
+    pg->add_operation(
         DATABASE_OP_GET_LOCAL_ZONE,
         function<error(plugin_context&,std::string*)>(
             db_get_local_zone_op ) );
-    pg->add_operation<const std::string*, int>(
+    pg->add_operation(
         DATABASE_OP_UPDATE_RESC_OBJ_COUNT,
         function<error(plugin_context&,const std::string*, int)>(
             db_update_resc_obj_count_op ) );
-    pg->add_operation<dataObjInfo_t*,keyValPair_t*>(
+    pg->add_operation(
         DATABASE_OP_MOD_DATA_OBJ_META,
         function<error(plugin_context&,dataObjInfo_t*,keyValPair_t*)>(
             db_mod_data_obj_meta_op ) );
-    pg->add_operation<dataObjInfo_t*>(
+    pg->add_operation(
         DATABASE_OP_REG_DATA_OBJ,
         function<error(plugin_context&,dataObjInfo_t*)>(
             db_reg_data_obj_op ) );
-    pg->add_operation<dataObjInfo_t*,dataObjInfo_t*,keyValPair_t*>(
+    pg->add_operation(
         DATABASE_OP_REG_REPLICA,
         function<error(plugin_context&,dataObjInfo_t*,dataObjInfo_t*,keyValPair_t*)>(
             db_reg_replica_op ) );
-    pg->add_operation<dataObjInfo_t*,keyValPair_t*>(
+    pg->add_operation(
         DATABASE_OP_UNREG_REPLICA,
         function<error(plugin_context&,dataObjInfo_t*,keyValPair_t*)>(
             db_unreg_replica_op ) );
-    pg->add_operation<ruleExecSubmitInp_t*>(
+    pg->add_operation(
         DATABASE_OP_REG_RULE_EXEC,
         function<error(plugin_context&,ruleExecSubmitInp_t*)>(
             db_reg_rule_exec_op ) );
-    pg->add_operation<const char*,keyValPair_t*>(
+    pg->add_operation(
         DATABASE_OP_MOD_RULE_EXEC,
         function<error(plugin_context&,const char*,keyValPair_t*)>(
             db_mod_rule_exec_op ) );
-    pg->add_operation<const char*>(
+    pg->add_operation(
         DATABASE_OP_DEL_RULE_EXEC,
         function<error(plugin_context&,const char*)>(
             db_del_rule_exec_op ) );
-    pg->add_operation<map<string, string>*>(
+    pg->add_operation(
         DATABASE_OP_ADD_CHILD_RESC,
         function<error(plugin_context&,map<string,string>*)>(
             db_add_child_resc_op ) );
-    pg->add_operation<map<string, string>*>(
+    pg->add_operation(
         DATABASE_OP_REG_RESC,
         function<error(plugin_context&,map<string, string>*)>(
             db_reg_resc_op ) );
-    pg->add_operation<map<string,string>*>(
+    pg->add_operation(
         DATABASE_OP_DEL_CHILD_RESC,
         function<error(plugin_context&,map<string,string>*)>(
             db_del_child_resc_op ) );
-    pg->add_operation<const char*,int>(
+    pg->add_operation(
         DATABASE_OP_DEL_RESC,
         function<error(plugin_context&,const char*,int)>(
             db_del_resc_op ) );
@@ -14904,159 +14904,159 @@ irods::database* plugin_factory(
         DATABASE_OP_COMMIT,
         function<error(plugin_context&)>(
             db_commit_op ) );
-    pg->add_operation<userInfo_t*>(
+    pg->add_operation(
         DATABASE_OP_DEL_USER_RE,
         function<error(plugin_context&,userInfo_t*)>(
             db_del_user_re_op ) );
-    pg->add_operation<collInfo_t*>(
+    pg->add_operation(
         DATABASE_OP_REG_COLL_BY_ADMIN,
         function<error(plugin_context&,collInfo_t*)>(
             db_reg_coll_by_admin_op ) );
-    pg->add_operation<collInfo_t*>(
+    pg->add_operation(
         DATABASE_OP_REG_COLL,
         function<error(plugin_context&,collInfo_t*)>(
             db_reg_coll_op ) );
-    pg->add_operation<collInfo_t*>(
+    pg->add_operation(
         DATABASE_OP_MOD_COLL,
         function<error(plugin_context&,collInfo_t*)>(
             db_mod_coll_op ) );
-    pg->add_operation<const char*,const char*,const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_REG_ZONE,
         function<error(plugin_context&,const char*,const char*,const char*,const char*)>(
             db_reg_zone_op ) );
-    pg->add_operation<const char*,const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_MOD_ZONE,
         function<error(plugin_context&,const char*,const char*,const char*)>(
             db_mod_zone_op ) );
-    pg->add_operation<const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_RENAME_COLL,
         function<error(plugin_context&,const char*,const char*)>(
             db_rename_coll_op ) );
-    pg->add_operation<const char*,const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_MOD_ZONE_COLL_ACL,
         function<error(plugin_context&,const char*,const char*,const char*)>(
             db_mod_zone_coll_acl_op ) );
-    pg->add_operation<const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_RENAME_LOCAL_ZONE,
         function<error(plugin_context&,const char*,const char*)>(
             db_rename_local_zone_op ) );
-    pg->add_operation<const char*>(
+    pg->add_operation(
         DATABASE_OP_DEL_ZONE,
         function<error(plugin_context&,const char*)>(
             db_del_zone_op ) );
-    pg->add_operation<const char*,const char*,const char*,const char*,const char*,int,int*,char*,int>(
+    pg->add_operation(
         DATABASE_OP_SIMPLE_QUERY,
         function<error(plugin_context&,const char*,const char*,const char*,const char*,const char*,int,int*,char*,int)>(
             db_simple_query_op ) );
-    pg->add_operation<collInfo_t*>(
+    pg->add_operation(
         DATABASE_OP_DEL_COLL_BY_ADMIN,
         function<error(plugin_context&,collInfo_t*)>(
             db_del_coll_by_admin_op ) );
-    pg->add_operation<collInfo_t*>(
+    pg->add_operation(
         DATABASE_OP_DEL_COLL,
         function<error(plugin_context&,collInfo_t*)>(
             db_del_coll_op ) );
-    pg->add_operation<const char*,const char*,const char*,const char*,int*,int*>(
+    pg->add_operation(
         DATABASE_OP_CHECK_AUTH,
         function<error(plugin_context&,const char*,const char*,const char*,const char*,int*,int*)>(
             db_check_auth_op ) );
-    pg->add_operation<char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_MAKE_TEMP_PW,
         function<error(plugin_context&,char*, const char*)>(
             db_make_temp_pw_op ) );
-    pg->add_operation<const char*,int,const char*,char**>(
+    pg->add_operation(
         DATABASE_OP_UPDATE_PAM_PASSWORD,
         function<error(plugin_context&,const char*,int,const char*,char**)>(
             db_update_pam_password_op ) );
-    pg->add_operation<const char*,const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_MOD_USER,
         function<error(plugin_context&,const char*,const char*,const char*)>(
             db_mod_user_op ) );
-    pg->add_operation<int,char*>(
+    pg->add_operation(
         DATABASE_OP_MAKE_LIMITED_PW,
         function<error(plugin_context&,int,char*)>(
             db_make_limited_pw_op ) );
-    pg->add_operation<const char*,const char*,const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_MOD_GROUP,
         function<error(plugin_context&,const char*,const char*,const char*,const char*)>(
             db_mod_group_op ) );
-    pg->add_operation<const char*,const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_MOD_RESC,
         function<error(plugin_context&,const char*,const char*,const char*)>(
             db_mod_resc_op ) );
-    pg->add_operation<const char*,const char*,const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_MOD_RESC_DATA_PATHS,
         function<error(plugin_context&,const char*,const char*,const char*,const char*)>(
             db_mod_resc_data_paths_op ) );
-    pg->add_operation<const char*,int>(
+    pg->add_operation(
         DATABASE_OP_MOD_RESC_FREESPACE,
         function<error(plugin_context&,const char*,int)>(
             db_mod_resc_freespace_op ) );
-    pg->add_operation<userInfo_t*>(
+    pg->add_operation(
         DATABASE_OP_REG_USER_RE,
         function<error(plugin_context&,userInfo_t*)>(
             db_reg_user_re_op ) );
-    pg->add_operation<const char*,const char*,const char*,const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_SET_AVU_METADATA,
         function<error(plugin_context&,const char*,const char*,const char*,const char*,const char*)>(
             db_set_avu_metadata_op ) );
-    pg->add_operation<int,const char*,const char*,const char*,const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_ADD_AVU_METADATA_WILD,
         function<error(plugin_context&,int,const char*,const char*,const char*,const char*,const char*)>(
             db_add_avu_metadata_wild_op ) );
-    pg->add_operation<int,const char*,const char*,const char*,const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_ADD_AVU_METADATA,
         function<error(plugin_context&,int,const char*,const char*,const char*,const char*,const char*)>(
             db_add_avu_metadata_op ) );
-    pg->add_operation<const char*,const char*,const char*,const char*,const char*,const char*,const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_MOD_AVU_METADATA,
         function<error(plugin_context&,const char*,const char*,const char*,const char*,const char*,const char*,const char*,const char*)>(
             db_mod_avu_metadata_op ) );
-    pg->add_operation<int,const char*,const char*,const char*,const char*,const char*,int>(
+    pg->add_operation(
         DATABASE_OP_DEL_AVU_METADATA,
         function<error(plugin_context&,int,const char*,const char*,const char*,const char*,const char*,int)>(
             db_del_avu_metadata_op ) );
-    pg->add_operation<const char*,const char*,const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_COPY_AVU_METADATA,
         function<error(plugin_context&,const char*,const char*,const char*,const char*)>(
             db_copy_avu_metadata_op ) );
-    pg->add_operation<int,const char*,const char*,const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_MOD_ACCESS_CONTROL_RESC,
         function<error(plugin_context&,int,const char*,const char*,const char*,const char*)>(
             db_mod_access_control_resc_op ) );
-    pg->add_operation<int,const char*,const char*,const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_MOD_ACCESS_CONTROL,
         function<error(plugin_context&,int,const char*,const char*,const char*,const char*)>(
             db_mod_access_control_op ) );
-    pg->add_operation<rodsLong_t,const char*>(
+    pg->add_operation(
         DATABASE_OP_RENAME_OBJECT,
         function<error(plugin_context&,rodsLong_t,const char*)>(
             db_rename_object_op ) );
-    pg->add_operation<rodsLong_t,rodsLong_t>(
+    pg->add_operation(
         DATABASE_OP_MOVE_OBJECT,
         function<error(plugin_context&,rodsLong_t,rodsLong_t)>(
             db_move_object_op ) );
-    pg->add_operation<const char*,const char*,const char*,const char*,const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_REG_TOKEN,
         function<error(plugin_context&,const char*,const char*,const char*,const char*,const char*,const char*)>(
             db_reg_token_op ) );
-    pg->add_operation<const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_DEL_TOKEN,
         function<error(plugin_context&,const char*,const char*)>(
             db_del_token_op ) );
-    pg->add_operation<const char*,const char*,const char*,const char*,const char*,const char*,const char*,const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_REG_SERVER_LOAD,
         function<error(plugin_context&,const char*,const char*,const char*,const char*,const char*,const char*,const char*,const char*,const char*)>(
             db_reg_server_load_op ) );
-    pg->add_operation<const char*>(
+    pg->add_operation(
         DATABASE_OP_PURGE_SERVER_LOAD,
         function<error(plugin_context&,const char*)>(
             db_purge_server_load_op ) );
-    pg->add_operation<const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_REG_SERVER_LOAD_DIGEST,
         function<error(plugin_context&,const char*,const char*)>(
             db_reg_server_load_digest_op ) );
-    pg->add_operation<const char*>(
+    pg->add_operation(
         DATABASE_OP_PURGE_SERVER_LOAD_DIGEST,
         function<error(plugin_context&,const char*)>(
             db_purge_server_load_digest_op ) );
@@ -15064,11 +15064,11 @@ irods::database* plugin_factory(
         DATABASE_OP_CALC_USAGE_AND_QUOTA,
         function<error(plugin_context&)>(
             db_calc_usage_and_quota_op ) );
-    pg->add_operation<const char*,const char*,const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_SET_QUOTA,
         function<error(plugin_context&,const char*,const char*,const char*,const char*)>(
             db_set_quota_op ) );
-    pg->add_operation<const char*,const char*,rodsLong_t*,int*>(
+    pg->add_operation(
         DATABASE_OP_CHECK_QUOTA,
         function<error(plugin_context&,const char*,const char*,rodsLong_t*,int*)>(
             db_check_quota_op ) );
@@ -15076,95 +15076,95 @@ irods::database* plugin_factory(
         DATABASE_OP_DEL_UNUSED_AVUS,
         function<error(plugin_context&)>(
             db_del_unused_avus_op ) );
-    pg->add_operation<const char*,const char*,const char*,const char*,const char*,const char*,const char*,const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_INS_RULE_TABLE,
         function<error(plugin_context&,const char*,const char*,const char*,const char*,const char*,const char*,const char*,const char*,const char*)>(
             db_ins_rule_table_op ) );
-    pg->add_operation<const char*,const char*,const char*,const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_INS_DVM_TABLE,
         function<error(plugin_context&,const char*,const char*,const char*,const char*,const char*)>(
             db_ins_dvm_table_op ) );
-    pg->add_operation<const char*,const char*,const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_INS_FNM_TABLE,
         function<error(plugin_context&,const char*,const char*,const char*,const char*)>(
             db_ins_fnm_table_op ) );
-    pg->add_operation<const char*,const char*,const char*,const char*,const char*,const char*,const char*,const char*,const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_INS_MSRVC_TABLE,
         function<error(plugin_context&,const char*,const char*,const char*,const char*,const char*,const char*,const char*,const char*,const char*,const char*)>(
             db_ins_msrvc_table_op ) );
-    pg->add_operation<const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_VERSION_RULE_BASE,
         function<error(plugin_context&,const char*,const char*)>(
             db_version_rule_base_op ) );
-    pg->add_operation<const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_VERSION_DVM_BASE,
         function<error(plugin_context&,const char*,const char*)>(
             db_version_dvm_base_op ) );
-    pg->add_operation<const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_VERSION_FNM_BASE,
         function<error(plugin_context&,const char*,const char*)>(
             db_version_fnm_base_op ) );
-    pg->add_operation<const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_ADD_SPECIFIC_QUERY,
         function<error(plugin_context&,const char*,const char*)>(
             db_add_specific_query_op ) );
-    pg->add_operation<const char*>(
+    pg->add_operation(
         DATABASE_OP_DEL_SPECIFIC_QUERY,
         function<error(plugin_context&,const char*)>(
             db_del_specific_query_op ) );
-    pg->add_operation<specificQueryInp_t*,genQueryOut_t*>(
+    pg->add_operation(
         DATABASE_OP_SPECIFIC_QUERY,
         function<error(plugin_context&,specificQueryInp_t*,genQueryOut_t*)>(
             db_specific_query_op ) );
-    pg->add_operation<const string*, const string*,std::string*>(
+    pg->add_operation(
         DATABASE_OP_GET_HIERARCHY_FOR_RESC,
         function<error(plugin_context&,const string*, const string*,std::string*)>(
             db_get_hierarchy_for_resc_op ) );
-    pg->add_operation<const char*,const char*,const char*,const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_MOD_TICKET,
         function<error(plugin_context&,const char*,const char*,const char*,const char*,const char*)>(
             db_mod_ticket_op ) );
-    pg->add_operation<const char*,const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_CHECK_AND_GET_OBJ_ID,
         function<error(plugin_context&,const char*,const char*,const char*)>(
             db_check_and_get_object_id_op ) );
-    pg->add_operation<icatSessionStruct**>(
+    pg->add_operation(
         DATABASE_OP_GET_RCS,
         function<error(plugin_context&,icatSessionStruct**)>(
             db_get_icss_op ) );
-    pg->add_operation<genQueryInp_t*,genQueryOut_t*>(
+    pg->add_operation(
         DATABASE_OP_GEN_QUERY,
         function<error(plugin_context&,genQueryInp_t*,genQueryOut_t*)>(
             db_gen_query_op ) );
-    pg->add_operation<generalUpdateInp_t*>(
+    pg->add_operation(
         DATABASE_OP_GENERAL_UPDATE,
         function<error(plugin_context&,generalUpdateInp_t*)>(
             db_general_update_op ) );
-    pg->add_operation<const char*,const char*,const char*,int,int>(
+    pg->add_operation(
         DATABASE_OP_GEN_QUERY_ACCESS_CONTROL_SETUP,
         function<error(plugin_context&,const char*,const char*,const char*,int,int)>(
             db_gen_query_access_control_setup_op ) );
-    pg->add_operation<const char*,const char*>(
+    pg->add_operation(
         DATABASE_OP_GEN_QUERY_TICKET_SETUP,
         function<error(plugin_context&,const char*,const char*)>(
             db_gen_query_ticket_setup_op ) );
-    pg->add_operation<const char*,long long*>(
+    pg->add_operation(
         DATABASE_OP_GET_DISTINCT_DATA_OBJ_COUNT_ON_RESOURCE,
         function<error(plugin_context&,const char*,long long*)>(
             db_get_distinct_data_obj_count_on_resource_op ) );
-    pg->add_operation<const string*, const string*, int, dist_child_result_t*>(
+    pg->add_operation(
         DATABASE_OP_GET_DISTINCT_DATA_OBJS_MISSING_FROM_CHILD_GIVEN_PARENT,
         function<error(plugin_context&,const string*, const string*, int, dist_child_result_t*)>(
             db_get_distinct_data_objs_missing_from_child_given_parent_op ) );
-    pg->add_operation<rodsLong_t,size_t,const std::vector<leaf_bundle_t>*,const std::string*,dist_child_result_t*>(
+    pg->add_operation(
         DATABASE_OP_GET_REPL_LIST_FOR_LEAF_BUNDLES,
         function<error(plugin_context&,rodsLong_t,size_t,const std::vector<leaf_bundle_t>*,const std::string*,dist_child_result_t*)>(
             db_get_repl_list_for_leaf_bundles_op));
-    pg->add_operation<const rodsLong_t>(
+    pg->add_operation(
         DATABASE_OP_CHECK_PERMISSION_TO_MODIFY_DATA_OBJECT,
         function<error(plugin_context&,const rodsLong_t)>(
             db_check_permission_to_modify_data_object_op));
-    pg->add_operation<const rodsLong_t,const rodsLong_t>(
+    pg->add_operation(
         DATABASE_OP_UPDATE_TICKET_WRITE_BYTE_COUNT,
         function<error(plugin_context&,const rodsLong_t,const rodsLong_t)>(
             db_update_ticket_write_byte_count_op));

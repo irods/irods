@@ -1413,13 +1413,13 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
         function<error(plugin_context&)>(
             unix_file_open ) );
 
-    resc->add_operation<void*,const int>(
+    resc->add_operation(
         irods::RESOURCE_OP_READ,
         std::function<
             error(irods::plugin_context&,void*,const int)>(
                 unix_file_read ) );
 
-    resc->add_operation<const void*,const int>(
+    resc->add_operation(
         irods::RESOURCE_OP_WRITE,
         function<error(plugin_context&,const void*,const int)>(
             unix_file_write ) );
@@ -1434,7 +1434,7 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
         function<error(plugin_context&)>(
             unix_file_unlink ) );
 
-    resc->add_operation<struct stat*>(
+    resc->add_operation(
         irods::RESOURCE_OP_STAT,
         function<error(plugin_context&, struct stat*)>(
             unix_file_stat ) );
@@ -1449,12 +1449,12 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
         function<error(plugin_context&)>(
             unix_file_opendir ) );
 
-    resc->add_operation<struct rodsDirent**>(
+    resc->add_operation(
         irods::RESOURCE_OP_READDIR,
         function<error(plugin_context&,struct rodsDirent**)>(
             unix_file_readdir ) );
 
-    resc->add_operation<const char*>(
+    resc->add_operation(
         irods::RESOURCE_OP_RENAME,
         function<error(plugin_context&, const char*)>(
             unix_file_rename ) );
@@ -1464,7 +1464,7 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
         function<error(plugin_context&)>(
             unix_file_getfs_freespace ) );
 
-    resc->add_operation<const long long, const int>(
+    resc->add_operation(
         irods::RESOURCE_OP_LSEEK,
         function<error(plugin_context&, const long long, const int)>(
             unix_file_lseek ) );
@@ -1479,12 +1479,12 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
         function<error(plugin_context&)>(
             unix_file_closedir ) );
 
-    resc->add_operation<const char*>(
+    resc->add_operation(
         irods::RESOURCE_OP_STAGETOCACHE,
         function<error(plugin_context&, const char*)>(
             unix_file_stage_to_cache ) );
 
-    resc->add_operation<const char*>(
+    resc->add_operation(
         irods::RESOURCE_OP_SYNCTOARCH,
         function<error(plugin_context&, const char*)>(
             unix_file_sync_to_arch ) );
@@ -1504,7 +1504,7 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
         function<error(plugin_context&)>(
             unix_file_modified ) );
 
-    resc->add_operation<const std::string*>(
+    resc->add_operation(
         irods::RESOURCE_OP_NOTIFY,
         function<error(plugin_context&, const std::string*)>(
             unix_file_notify ) );
@@ -1514,7 +1514,7 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
         function<error(plugin_context&)>(
             unix_file_truncate ) );
 
-    resc->add_operation<const std::string*, const std::string*, irods::hierarchy_parser*, float*>(
+    resc->add_operation(
         irods::RESOURCE_OP_RESOLVE_RESC_HIER,
         function<error(plugin_context&,const std::string*, const std::string*, irods::hierarchy_parser*, float*)>(
             unix_file_resolve_hierarchy ) );

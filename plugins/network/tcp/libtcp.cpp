@@ -659,11 +659,11 @@ irods::network* plugin_factory(
     // names to function names
     using namespace irods;
     using namespace std;
-    tcp->add_operation<rodsEnv*>(
+    tcp->add_operation(
         NETWORK_OP_CLIENT_START,
         function<error(plugin_context&,rodsEnv*)>(
             tcp_client_start ) );
-    tcp->add_operation<rodsEnv*>(
+    tcp->add_operation(
         NETWORK_OP_CLIENT_STOP,
         function<error(plugin_context&,rodsEnv*)>(
             tcp_client_stop ) );
@@ -675,19 +675,19 @@ irods::network* plugin_factory(
         NETWORK_OP_AGENT_STOP,
         function<error(plugin_context&)>(
             tcp_agent_stop ) );
-    tcp->add_operation<void*, struct timeval*>(
+    tcp->add_operation(
         NETWORK_OP_READ_HEADER,
         function<error(plugin_context&,void*, struct timeval*)>(
             tcp_read_msg_header ) );
-    tcp->add_operation<msgHeader_t*,bytesBuf_t*,bytesBuf_t*,bytesBuf_t*,irodsProt_t,struct timeval*>(
+    tcp->add_operation(
         NETWORK_OP_READ_BODY,
         function<error(plugin_context&,msgHeader_t*,bytesBuf_t*,bytesBuf_t*,bytesBuf_t*,irodsProt_t,struct timeval*)>(
             tcp_read_msg_body ) );
-    tcp->add_operation<const bytesBuf_t*>(
+    tcp->add_operation(
         NETWORK_OP_WRITE_HEADER,
         function<error(plugin_context&,const bytesBuf_t*)>(
             tcp_write_msg_header ) );
-    tcp->add_operation<const char*,const bytesBuf_t*,const bytesBuf_t*,const bytesBuf_t*,int,irodsProt_t>(
+    tcp->add_operation(
         NETWORK_OP_WRITE_BODY,
         function<error(plugin_context&,const char*,const bytesBuf_t*,const bytesBuf_t*,const bytesBuf_t*,int,irodsProt_t)>(
             tcp_send_rods_msg ) );
