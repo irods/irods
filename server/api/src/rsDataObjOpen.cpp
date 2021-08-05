@@ -625,7 +625,7 @@ namespace
         if (l3_index <= 0) {
             irods::log(LOG_ERROR, fmt::format(
                 "[{}:{}] - failed to physically open replica "
-                "[error_code=[{}], path=[{}], hierarchy=[{}]",
+                "[error_code=[{}], path=[{}], hierarchy=[{}]]",
                 __FUNCTION__, __LINE__, l3_index, _inp.objPath, _replica.hierarchy()));
 
             freeL1desc(l1_index);
@@ -976,37 +976,39 @@ namespace
 
         const auto admin_op = irods::experimental::make_key_value_proxy(dataObjInp->condInput).contains(ADMIN_KW);
 
-        // Insert the data object information into the replica state table before the replica status is
-        // updated because the "before" state is supposed to represent the state of the data object before
-        // it is modified (in this particular case, before its replica status is modified).
-        if (const auto ec = rst::insert(obj); ec < 0) {
-            if (rst::contains(replica.data_id())) {
-                rst::erase(replica.data_id());
-            }
-
-            return ec;
-        }
-
-        // If the replica is already locked, check_if_data_object_is_locked should have caught it above.
-        // If the replica is in an intermediate state, check_if_data_object_is_locked determined that a
-        // valid replica_token is present for this replica and so the open should be allowed to continue.
-        // If the replica is at rest, this is the first open, so the data object needs to be locked.
-        if (open_for_write && replica.at_rest()) {
-            // Need to update the cached replica information so that the check below will update the
-            // replica access table. This is needed for concurrent opens for write.
-            replica.replica_status(INTERMEDIATE_REPLICA);
-
-            if (const int lock_ec = ill::lock_and_publish(*rsComm, {replica, admin_op, 0}, ill::lock_type::write); lock_ec < 0) {
+        if (open_for_write) {
+            // Insert the data object information into the replica state table before the replica status is
+            // updated because the "before" state is supposed to represent the state of the data object before
+            // it is modified (in this particular case, before its replica status is modified).
+            if (const auto ec = rst::insert(obj); ec < 0) {
                 if (rst::contains(replica.data_id())) {
                     rst::erase(replica.data_id());
                 }
 
-                irods::log(LOG_ERROR, fmt::format(
-                    "[{}:{}] - Failed to lock data object on create "
-                    "[error_code=[{}], path=[{}], hierarchy=[{}]",
-                    __FUNCTION__, __LINE__, lock_ec, dataObjInp->objPath, hierarchy));
+                return ec;
+            }
 
-                return lock_ec;
+            // If the replica is already locked, check_if_data_object_is_locked should have caught it above.
+            // If the replica is in an intermediate state, check_if_data_object_is_locked determined that a
+            // valid replica_token is present for this replica and so the open should be allowed to continue.
+            // If the replica is at rest, this is the first open, so the data object needs to be locked.
+            if (replica.at_rest()) {
+                // Need to update the cached replica information so that the check below will update the
+                // replica access table. This is needed for concurrent opens for write.
+                replica.replica_status(INTERMEDIATE_REPLICA);
+
+                if (const int lock_ec = ill::lock_and_publish(*rsComm, {replica, admin_op, 0}, ill::lock_type::write); lock_ec < 0) {
+                    if (rst::contains(replica.data_id())) {
+                        rst::erase(replica.data_id());
+                    }
+
+                    irods::log(LOG_ERROR, fmt::format(
+                        "[{}:{}] - Failed to lock data object on create "
+                        "[error_code=[{}], path=[{}], hierarchy=[{}]",
+                        __FUNCTION__, __LINE__, lock_ec, dataObjInp->objPath, hierarchy));
+
+                    return lock_ec;
+                }
             }
         }
 
