@@ -75,3 +75,14 @@ class Test_IUserinfo(resource_suite.ResourceBase, unittest.TestCase):
 
     def test_iuserinfo_group(self):
         self.admin_session.assert_icommand(['iuserinfo', 'public'], 'STDOUT', 'member of group: public')
+
+    def test_iuserinfo_does_not_cause_an_error_when_the_username_includes_the_at_symbol__issue_5467(self):
+        username = 'yak@shaving.com'
+
+        try:
+            user = session.mkuser_and_return_session('rodsuser', username, 'rods', 'localhost')
+            user.assert_icommand(['iuserinfo'], 'STDOUT', 'name: ' + username)
+            user.assert_icommand(['iuserinfo', username], 'STDOUT', 'name: ' + username)
+        finally:
+            user.assert_icommand(['irm', '-rf', user.session_collection])
+            self.admin_session.assert_icommand(['iadmin', 'rmuser', username])
