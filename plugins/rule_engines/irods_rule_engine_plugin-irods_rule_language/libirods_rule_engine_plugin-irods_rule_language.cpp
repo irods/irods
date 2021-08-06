@@ -216,7 +216,7 @@ irods::error rule_exists(irods::default_re_ctx&, const std::string& _rn, bool& _
     }
     _ret = lookupFromEnv(ruleEngineConfig.extFuncDescIndex, const_cast<char*>(_rn.c_str())) != NULL;
     rodsLog(
-        LOG_DEBUG,
+        LOG_DEBUG9,
         "looking up rule name %s, found = %d",
         _rn.c_str(),
         _ret );
