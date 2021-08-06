@@ -148,7 +148,7 @@ extern "C" {
             return 0;
         } catch ( const irods::exception& e ) {
             if ( e.code() == KEY_NOT_FOUND ) {
-                rodsLog( LOG_DEBUG, "%s is not defined", _key.c_str() );
+                rodsLog( LOG_DEBUG10, "%s is not defined", _key.c_str() );
             } else {
                 irods::log(e);
             }
@@ -166,7 +166,7 @@ extern "C" {
             return 0;
         } catch ( const irods::exception& e ) {
             if ( e.code() == KEY_NOT_FOUND ) {
-                rodsLog( LOG_DEBUG, "%s is not defined", _key.c_str() );
+                rodsLog( LOG_DEBUG10, "%s is not defined", _key.c_str() );
             } else {
                 irods::log(e);
             }
