@@ -1,8 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-/* See genQuery.h for a description of this API call.*/
-
 #include "rcMisc.h"
 #include "getRescQuota.h"
 #include "miscUtil.h"
@@ -13,9 +8,9 @@
 #include "genQuery.h"
 #include "rsGenQuery.hpp"
 
-// =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
 
+#include <cstring>
 
 int
 rsGetRescQuota( rsComm_t *rsComm, getRescQuotaInp_t *getRescQuotaInp,
@@ -192,7 +187,7 @@ int fillRescQuotaStruct(
     char*        tmpQuotaRescId,
     char*        tmpQuotaUserId ) {
 
-    bzero( rescQuota, sizeof( rescQuota_t ) );
+    std::memset(rescQuota, 0, sizeof(rescQuota_t));
 
     rescQuota->quotaLimit = strtoll( tmpQuotaLimit, 0, 0 );
     rescQuota->quotaOverrun = strtoll( tmpQuotaOver, 0, 0 );
@@ -235,8 +230,7 @@ int setRescQuota(
 
     // fetch a global quota for the user if it exists
     getRescQuotaInp_t get_resc_quota_inp;
-    bzero(&get_resc_quota_inp,
-          sizeof( get_resc_quota_inp ) );
+    std::memset(&get_resc_quota_inp, 0, sizeof(get_resc_quota_inp));
     rstrcpy(
         get_resc_quota_inp.zoneHint,
         _obj_path,

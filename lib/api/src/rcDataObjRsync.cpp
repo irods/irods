@@ -1,11 +1,3 @@
-/**
- * @file  rcDataObjRsync.cpp
- *
- */
-
-/* This is script-generated code.  */
-/* See dataObjRsync.h for a description of this API call.*/
-
 #include "dataObjRsync.h"
 #include "dataObjPut.h"
 #include "dataObjGet.h"
@@ -13,6 +5,8 @@
 #include "apiNumber.h"
 #include "oprComplete.h"
 #include "rcMisc.h"
+
+#include <cstring>
 
 /**
  * \fn rcDataObjRsync (rcComm_t *conn, dataObjInp_t *dataObjInp)
@@ -36,7 +30,7 @@
  *    /myZone/home/john/myfileB and put the new data object in
  *    resource myRescource:
  * \n dataObjInp_t dataObjInp;
- * \n bzero (&dataObjInp, sizeof (dataObjInp));
+ * \n memset(&dataObjInp, 0, sizeof(dataObjInp));
  * \n rstrcpy (dataObjInp.objPath, "/myZone/home/john/myfileA", MAX_NAME_LEN);
  * \n addKeyVal (&dataObjInp.condInput, RSYNC_MODE_KW, IRODS_TO_IRODS);
  * \n addKeyVal (&dataObjInp.condInput, RSYNC_DEST_PATH_KW,

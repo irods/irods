@@ -19,6 +19,7 @@
 #include "putUtil.h"
 #include "sockComm.h"
 
+#include <cstring>
 #include <cstdlib>
 #include <iostream>
 #include <iomanip>
@@ -3542,61 +3543,61 @@ initBulkDataObjRegInp( genQueryOut_t * bulkDataObjRegInp ) {
     bulkDataObjRegInp->sqlResult[0].len = MAX_NAME_LEN;
     bulkDataObjRegInp->sqlResult[0].value =
         ( char * )malloc( MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-    bzero( bulkDataObjRegInp->sqlResult[0].value,
+    std::memset( bulkDataObjRegInp->sqlResult[0].value, 0,
            MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES );
     bulkDataObjRegInp->sqlResult[1].attriInx = COL_DATA_TYPE_NAME;
     bulkDataObjRegInp->sqlResult[1].len = NAME_LEN;
     bulkDataObjRegInp->sqlResult[1].value =
         ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-    bzero( bulkDataObjRegInp->sqlResult[1].value,
+    std::memset( bulkDataObjRegInp->sqlResult[1].value, 0,
            NAME_LEN * MAX_NUM_BULK_OPR_FILES );
     bulkDataObjRegInp->sqlResult[2].attriInx = COL_DATA_SIZE;
     bulkDataObjRegInp->sqlResult[2].len = NAME_LEN;
     bulkDataObjRegInp->sqlResult[2].value =
         ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-    bzero( bulkDataObjRegInp->sqlResult[2].value,
+    std::memset( bulkDataObjRegInp->sqlResult[2].value, 0,
            NAME_LEN * MAX_NUM_BULK_OPR_FILES );
     bulkDataObjRegInp->sqlResult[3].attriInx = COL_D_RESC_NAME;
     bulkDataObjRegInp->sqlResult[3].len = NAME_LEN;
     bulkDataObjRegInp->sqlResult[3].value =
         ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-    bzero( bulkDataObjRegInp->sqlResult[3].value,
+    std::memset( bulkDataObjRegInp->sqlResult[3].value, 0,
            NAME_LEN * MAX_NUM_BULK_OPR_FILES );
     bulkDataObjRegInp->sqlResult[4].attriInx = COL_D_DATA_PATH;
     bulkDataObjRegInp->sqlResult[4].len = MAX_NAME_LEN;
     bulkDataObjRegInp->sqlResult[4].value =
         ( char * )malloc( MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-    bzero( bulkDataObjRegInp->sqlResult[4].value,
+    std::memset( bulkDataObjRegInp->sqlResult[4].value, 0,
            MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES );
     bulkDataObjRegInp->sqlResult[5].attriInx = COL_DATA_MODE;
     bulkDataObjRegInp->sqlResult[5].len = NAME_LEN;
     bulkDataObjRegInp->sqlResult[5].value =
         ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-    bzero( bulkDataObjRegInp->sqlResult[5].value,
+    std::memset( bulkDataObjRegInp->sqlResult[5].value, 0,
            NAME_LEN * MAX_NUM_BULK_OPR_FILES );
     bulkDataObjRegInp->sqlResult[6].attriInx = OPR_TYPE_INX;
     bulkDataObjRegInp->sqlResult[6].len = NAME_LEN;
     bulkDataObjRegInp->sqlResult[6].value =
         ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-    bzero( bulkDataObjRegInp->sqlResult[6].value,
+    std::memset( bulkDataObjRegInp->sqlResult[6].value, 0,
            NAME_LEN * MAX_NUM_BULK_OPR_FILES );
     bulkDataObjRegInp->sqlResult[7].attriInx = COL_DATA_REPL_NUM;
     bulkDataObjRegInp->sqlResult[7].len = NAME_LEN;
     bulkDataObjRegInp->sqlResult[7].value =
         ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-    bzero( bulkDataObjRegInp->sqlResult[7].value,
+    std::memset( bulkDataObjRegInp->sqlResult[7].value, 0,
            NAME_LEN * MAX_NUM_BULK_OPR_FILES );
     bulkDataObjRegInp->sqlResult[8].attriInx = COL_D_DATA_CHECKSUM;
     bulkDataObjRegInp->sqlResult[8].len = NAME_LEN;
     bulkDataObjRegInp->sqlResult[8].value =
         ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-    bzero( bulkDataObjRegInp->sqlResult[8].value,
+    std::memset( bulkDataObjRegInp->sqlResult[8].value, 0,
            NAME_LEN * MAX_NUM_BULK_OPR_FILES );
     bulkDataObjRegInp->sqlResult[9].attriInx = COL_D_RESC_ID;
     bulkDataObjRegInp->sqlResult[9].len = MAX_NAME_LEN;
     bulkDataObjRegInp->sqlResult[9].value =
         ( char * )malloc( MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-    bzero( bulkDataObjRegInp->sqlResult[9].value,
+    std::memset( bulkDataObjRegInp->sqlResult[9].value, 0,
            MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES );
 
     bulkDataObjRegInp->continueInx = -1;
@@ -3625,7 +3626,7 @@ initBulkDataObjRegOut( genQueryOut_t **bulkDataObjRegOut ) {
     myBulkDataObjRegOut->sqlResult[0].len = NAME_LEN;
     myBulkDataObjRegOut->sqlResult[0].value =
         ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-    bzero( myBulkDataObjRegOut->sqlResult[0].value,
+    std::memset( myBulkDataObjRegOut->sqlResult[0].value, 0,
            NAME_LEN * MAX_NUM_BULK_OPR_FILES );
 
     myBulkDataObjRegOut->continueInx = -1;
@@ -3649,19 +3650,19 @@ initAttriArrayOfBulkOprInp( bulkOprInp_t * bulkOprInp ) {
     attriArray->sqlResult[0].len = MAX_NAME_LEN;
     attriArray->sqlResult[0].value =
         ( char * )malloc( MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-    bzero( attriArray->sqlResult[0].value,
+    std::memset( attriArray->sqlResult[0].value, 0,
            MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES );
     attriArray->sqlResult[1].attriInx = COL_DATA_MODE;
     attriArray->sqlResult[1].len = NAME_LEN;
     attriArray->sqlResult[1].value =
         ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-    bzero( attriArray->sqlResult[1].value,
+    std::memset( attriArray->sqlResult[1].value, 0,
            NAME_LEN * MAX_NUM_BULK_OPR_FILES );
     attriArray->sqlResult[2].attriInx = OFFSET_INX;
     attriArray->sqlResult[2].len = NAME_LEN;
     attriArray->sqlResult[2].value =
         ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-    bzero( attriArray->sqlResult[2].value,
+    std::memset( attriArray->sqlResult[2].value, 0,
            NAME_LEN * MAX_NUM_BULK_OPR_FILES );
 
     if ( getValByKey( &bulkOprInp->condInput, REG_CHKSUM_KW ) != NULL ||
@@ -3671,7 +3672,7 @@ initAttriArrayOfBulkOprInp( bulkOprInp_t * bulkOprInp ) {
         attriArray->sqlResult[i].len = NAME_LEN;
         attriArray->sqlResult[i].value =
             ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-        bzero( attriArray->sqlResult[i].value,
+        std::memset( attriArray->sqlResult[i].value, 0,
                NAME_LEN * MAX_NUM_BULK_OPR_FILES );
         attriArray->attriCnt++;
     }

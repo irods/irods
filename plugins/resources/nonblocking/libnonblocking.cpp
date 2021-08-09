@@ -34,23 +34,30 @@
 #include <sys/file.h>
 #include <sys/param.h>
 #endif
+
 #include <errno.h>
 #include <sys/stat.h>
 #include <string.h>
+
 #ifndef _WIN32
 #include <unistd.h>
 #endif
+
 #include <sys/types.h>
+
 #if defined(osx_platform)
-#include <sys/malloc.h>
+    #include <sys/malloc.h>
 #else
-#include <malloc.h>
+    #include <malloc.h>
 #endif
+
 #include <fcntl.h>
+
 #ifndef _WIN32
 #include <sys/file.h>
 #include <unistd.h>
 #endif
+
 #include <dirent.h>
 
 #if defined(solaris_platform)
@@ -67,7 +74,7 @@
 #endif
 #include <sys/stat.h>
 
-#include <string.h>
+#include <cstring>
 
 #define NB_READ_TOUT_SEC        60      /* 60 sec timeout */
 #define NB_WRITE_TOUT_SEC       60      /* 60 sec timeout */
@@ -516,7 +523,7 @@ irods::error non_blocking_file_read(
         fd_set set;
         int fd = fco->file_descriptor();
 
-        bzero( &tv, sizeof( tv ) );
+        std::memset(&tv, 0, sizeof(tv));
         tv.tv_sec = NB_READ_TOUT_SEC;
 
         /* Initialize the file descriptor set. */
@@ -609,7 +616,7 @@ irods::error non_blocking_file_write(
         char* tmpPtr = 0;
 
         struct timeval tv;
-        bzero( &tv, sizeof( tv ) );
+        std::memset(&tv, 0, sizeof(tv));
         tv.tv_sec = NB_WRITE_TOUT_SEC;
 
         /* Initialize the file descriptor set. */

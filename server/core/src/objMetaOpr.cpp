@@ -1,7 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* objMetaOpr.c - metadata operation at the object level */
-
 #include <sys/types.h>
 #include <sys/wait.h>
 #include "objMetaOpr.hpp"
@@ -15,12 +11,12 @@
 #include "rsIcatOpr.hpp"
 #include "rsGenQuery.hpp"
 #include "rsModAVUMetadata.hpp"
-
-// =-=-=-=-=-=-
 #include "irods_resource_redirect.hpp"
 #include "irods_hierarchy_parser.hpp"
 
 #include "boost/lexical_cast.hpp"
+
+#include <cstring>
 
 int
 svrCloseQueryOut( rsComm_t *rsComm, genQueryOut_t *genQueryOut ) {
@@ -186,7 +182,7 @@ isCollAllKinds( rsComm_t *rsComm, char *objName, rodsLong_t *collId ) {
     int status;
     rodsObjStat_t *rodsObjStatOut = NULL;
 
-    bzero( &dataObjInp, sizeof( dataObjInp ) );
+    std::memset(&dataObjInp, 0, sizeof(dataObjInp));
     rstrcpy( dataObjInp.objPath, objName, MAX_NAME_LEN );
     status = collStatAllKinds( rsComm, &dataObjInp, &rodsObjStatOut );
     if ( status >= 0 && collId != NULL && NULL != rodsObjStatOut ) { // JMC cppcheck - nullptr
@@ -716,7 +712,7 @@ checkDupReplica( rsComm_t *rsComm, rodsLong_t dataId, char *rescName,
         return USER__NULL_INPUT_ERR;
     }
 
-    bzero( &genQueryInp, sizeof( genQueryInp_t ) );
+    std::memset(&genQueryInp, 0, sizeof(genQueryInp_t));
 
     rodsLong_t resc_id;
     irods::error ret = resc_mgr.hier_to_leaf_id(rescName,resc_id);

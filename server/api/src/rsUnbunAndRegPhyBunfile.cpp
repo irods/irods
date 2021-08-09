@@ -1,8 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* rsStructFileExtAndReg.c. See unbunAndRegPhyBunfile.h for a description of
- * this API call.*/
-
 #include "unbunAndRegPhyBunfile.h"
 #include "apiHeaderAll.h"
 #include "miscServerFunct.hpp"
@@ -17,11 +12,13 @@
 #include "rsDataObjUnlink.hpp"
 #include "rsRegReplica.hpp"
 #include "rsStructFileExtract.hpp"
-
 #include "irods_resource_backport.hpp"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
+
+#include <cstring>
+
 using namespace boost::filesystem;
 
 int
@@ -146,9 +143,9 @@ regUnbunPhySubfiles( rsComm_t *rsComm, const char *_resc_name, char *phyBunDir,
                  phyBunDir, errno );
         return UNIX_FILE_OPENDIR_ERR - errno;
     }
-    bzero( &dataObjInp, sizeof( dataObjInp ) );
+    std::memset(&dataObjInp, 0, sizeof(dataObjInp));
     if ( rmBunCopyFlag > 0 ) {
-        bzero( &dataObjUnlinkInp, sizeof( dataObjUnlinkInp ) );
+        std::memset(&dataObjUnlinkInp, 0, sizeof(dataObjUnlinkInp));
         addKeyVal( &dataObjUnlinkInp.condInput, ADMIN_KW, "" );
     }
 
@@ -244,8 +241,8 @@ regPhySubFile( rsComm_t *rsComm, char *subfilePath,
     int status;
     regReplica_t regReplicaInp;
 
-    bzero( &dataObjInp, sizeof( dataObjInp ) );
-    bzero( &stageDataObjInfo, sizeof( stageDataObjInfo ) );
+    std::memset(&dataObjInp, 0, sizeof(dataObjInp));
+    std::memset(&stageDataObjInfo, 0, sizeof(stageDataObjInfo));
     rstrcpy( dataObjInp.objPath, bunDataObjInfo->objPath, MAX_NAME_LEN );
     rstrcpy( stageDataObjInfo.objPath, bunDataObjInfo->objPath, MAX_NAME_LEN );
     rstrcpy( stageDataObjInfo.rescName, _resc_name, NAME_LEN );
@@ -290,7 +287,7 @@ regPhySubFile( rsComm_t *rsComm, char *subfilePath,
         return UNIX_FILE_LINK_ERR - errno;
     }
 
-    bzero( &regReplicaInp, sizeof( regReplicaInp ) );
+    std::memset(&regReplicaInp, 0, sizeof(regReplicaInp));
     regReplicaInp.srcDataObjInfo = bunDataObjInfo;
     regReplicaInp.destDataObjInfo = &stageDataObjInfo;
     addKeyVal( &regReplicaInp.condInput, SU_CLIENT_USER_KW, "" );
@@ -361,7 +358,7 @@ int unbunPhyBunFile( rsComm_t *rsComm, char *objPath,
         if ( chkOrphanDir( rsComm, phyBunDir, _resc_name ) > 0 ) {
             /* it is a orphan dir */
             fileRenameInp_t fileRenameInp;
-            bzero( &fileRenameInp, sizeof( fileRenameInp ) );
+            std::memset(&fileRenameInp, 0, sizeof(fileRenameInp));
             rstrcpy( fileRenameInp.oldFileName, phyBunDir, MAX_NAME_LEN );
             char new_fn[ MAX_NAME_LEN ];
             status = renameFilePathToNewDir( rsComm, ORPHAN_DIR,

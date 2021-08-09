@@ -1,8 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-/* See genQuery.h for a description of this API call.*/
-
 #include "rcMisc.h"
 #include "genQuery.h"
 #include "icatHighLevelRoutines.hpp"
@@ -15,12 +10,12 @@
 #include "irods_lexical_cast.hpp"
 #include "rodsGenQueryNames.h"
 
-#include "boost/format.hpp"
+#include <boost/format.hpp>
 #include <boost/regex.hpp>
 #include <boost/tokenizer.hpp>
+
+#include <cstring>
 #include <string>
-
-
 
 namespace {
     std::string
@@ -203,7 +198,7 @@ irods::error strip_new_query_terms(
     // =-=-=-=-=-=-=-
     // zero out the selectInp to copy
     // fresh community indices and values
-    bzero( &_inp->selectInp, sizeof( _inp->selectInp ) );
+    std::memset(&_inp->selectInp, 0, sizeof(_inp->selectInp));
 
     // =-=-=-=-=-=-=-
     // iterate over the tmp and only copy community values
@@ -246,7 +241,7 @@ irods::error strip_resc_grp_name_from_query_inp( genQueryInp_t* _inp, int& _pos 
     // =-=-=-=-=-=-=-
     // zero out the selectInp to copy
     // fresh indices and values
-    bzero( &_inp->selectInp, sizeof( _inp->selectInp ) );
+    std::memset(&_inp->selectInp, 0, sizeof(_inp->selectInp));
 
     // =-=-=-=-=-=-=-
     // iterate over tmp and replace resource group with resource name
@@ -385,7 +380,7 @@ irods::error strip_resc_hier_name_from_query_inp( genQueryInp_t* _inp, int& _pos
     // =-=-=-=-=-=-=-
     // zero out the selectInp to copy
     // fresh indices and values
-    bzero( &_inp->selectInp, sizeof( _inp->selectInp ) );
+    std::memset(&_inp->selectInp, 0, sizeof(_inp->selectInp));
 
     // =-=-=-=-=-=-=-
     // iterate over tmp and replace resource group with resource name
@@ -414,7 +409,7 @@ irods::error strip_resc_hier_name_from_query_inp( genQueryInp_t* _inp, int& _pos
     // =-=-=-=-=-=-=-
     // zero out the selectInp to copy
     // fresh indices and values
-    bzero( &_inp->sqlCondInp, sizeof( _inp->selectInp ) );
+    std::memset(&_inp->sqlCondInp, 0, sizeof(_inp->selectInp));
 
     // =-=-=-=-=-=-=-
     // iterate over tmp and replace resource group with resource name

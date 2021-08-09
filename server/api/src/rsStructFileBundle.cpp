@@ -1,9 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* rsStructFileBundle.c. See structFileBundle.h for a description of
- * this API call.*/
-
-//#include "reFuncDefs.hpp"
 #include "apiHeaderAll.h"
 #include "objMetaOpr.hpp"
 #include "dataObjOpr.hpp"
@@ -21,8 +15,6 @@
 #include "rsCloseCollection.hpp"
 #include "rsUnbunAndRegPhyBunfile.hpp"
 #include "rsPhyBundleColl.hpp"
-
-// =-=-=-=-=-=-=-
 #include "irods_log.hpp"
 #include "irods_file_object.hpp"
 #include "irods_log.hpp"
@@ -35,6 +27,8 @@
 #include "fmt/format.h"
 
 #include "boost/lexical_cast.hpp"
+
+#include <cstring>
 
 namespace fs = irods::experimental::filesystem;
 
@@ -243,7 +237,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
     // =-=-=-=-=-=-=-
     // build a collection open input structure
     collInp_t collInp;
-    bzero( &collInp, sizeof( collInp ) );
+    std::memset(&collInp, 0, sizeof(collInp));
     collInp.flags = RECUR_QUERY_FG | VERY_LONG_METADATA_FG | NO_TRIM_REPL_FG | INCLUDE_CONDINPUT_IN_QUERY;
     rstrcpy( collInp.collName, structFileBundleInp->collection, MAX_NAME_LEN );
     addKeyVal( &collInp.condInput, RESC_ID_KW, resc_id_str.c_str() );

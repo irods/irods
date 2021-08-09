@@ -7,10 +7,11 @@
 #include "rsRegDataObj.hpp"
 #include "rsModDataObjMeta.hpp"
 #include "replica_proxy.hpp"
-
 #include "irods_stacktrace.hpp"
 #include "irods_file_object.hpp"
 #include "irods_configuration_keywords.hpp"
+
+#include <cstring>
 
 int
 rsBulkDataObjReg( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
@@ -271,8 +272,8 @@ modDataObjSizeMeta( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     char tmpStr[MAX_NAME_LEN];
     int status;
 
-    bzero( &modDataObjMetaInp, sizeof( modDataObjMetaInp ) );
-    bzero( &regParam, sizeof( regParam ) );
+    std::memset(&modDataObjMetaInp, 0, sizeof(modDataObjMetaInp));
+    std::memset(&regParam, 0, sizeof(regParam));
     addKeyVal( &regParam, DATA_SIZE_KW, strDataSize );
     addKeyVal( &regParam, ALL_REPL_STATUS_KW, "" );
     snprintf( tmpStr, MAX_NAME_LEN, "%d", ( int ) time( NULL ) );

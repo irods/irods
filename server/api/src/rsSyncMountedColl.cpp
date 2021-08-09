@@ -1,8 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code (for the most part).  */
-/* See syncMountedColl.h for a description of this API call.*/
-
 #include "syncMountedColl.h"
 #include "rodsLog.h"
 #include "icatDefines.h"
@@ -18,6 +13,8 @@
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
+
+#include <cstring>
 
 int
 rsSyncMountedColl( rsComm_t *rsComm, dataObjInp_t *syncMountedCollInp ) {
@@ -43,7 +40,7 @@ rsSyncMountedColl( rsComm_t *rsComm, dataObjInp_t *syncMountedCollInp ) {
         return SYS_COLL_NOT_MOUNTED_ERR;
     }
 
-    bzero( &myDataObjInp, sizeof( myDataObjInp ) );
+    std::memset(&myDataObjInp, 0, sizeof(myDataObjInp));
     rstrcpy( myDataObjInp.objPath, rodsObjStatOut->specColl->objPath,
              MAX_NAME_LEN );
     remoteFlag = getAndConnRemoteZone( rsComm, &myDataObjInp, &rodsServerHost,

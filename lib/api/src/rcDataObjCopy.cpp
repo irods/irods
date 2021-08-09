@@ -1,15 +1,8 @@
-/**
- * @file  rcDataObjCopy.cpp
- *
- */
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */
-/* See dataObjCopy.h for a description of this API call.*/
-
 #include "dataObjCopy.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
+
+#include <cstring>
 
 /**
  * \fn rcDataObjCopy (rcComm_t *conn, dataObjCopyInp_t *dataObjCopyInp)
@@ -31,7 +24,7 @@
  * Copy a data object /myZone/home/john/myfileA to /myZone/home/john/myfileB
  *     and store in myRescource:
  * \n dataObjCopyInp_t dataObjCopyInp;
- * \n bzero (&dataObjCopyInp, sizeof (dataObjCopyInp));
+ * \n memset(&dataObjCopyInp, 0, sizeof(dataObjCopyInp));
  * \n rstrcpy (dataObjCopyInp.destDataObjInp.objPath,
  *       "/myZone/home/john/myfileB", MAX_NAME_LEN);
  * \n rstrcpy (dataObjCopyInp.srcDataObjInp.objPath,

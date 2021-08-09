@@ -1,8 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* rsGetRemoteZoneResc.c
- */
-
 #include "getRemoteZoneResc.h"
 #include "rodsLog.h"
 #include "objMetaOpr.hpp"
@@ -13,9 +8,10 @@
 #include "rsGetRemoteZoneResc.hpp"
 #include "dataObjCreate.h"
 #include "dataObjOpen.h"
-
 #include "irods_resource_redirect.hpp"
 #include "irods_resource_backport.hpp"
+
+#include <cstring>
 
 int
 rsGetRemoteZoneResc( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
@@ -104,7 +100,7 @@ rsGetRemoteZoneResc( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // =-=-=-=-=-=-=-
     // set the out variable
     *rescAddr = ( rodsHostAddr_t* )malloc( sizeof( rodsHostAddr_t ) );
-    bzero( *rescAddr, sizeof( rodsHostAddr_t ) );
+    std::memset(*rescAddr, 0, sizeof(rodsHostAddr_t));
     rstrcpy( ( *rescAddr )->hostAddr, location.c_str(),       NAME_LEN );
     rstrcpy( ( *rescAddr )->zoneName, ZoneInfoHead->zoneName, NAME_LEN );
 

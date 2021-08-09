@@ -1,5 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
 #include "rcMisc.h"
 #include "rcPortalOpr.h"
 #include "dataObjClose.h"
@@ -12,8 +10,6 @@
 #include "rodsLog.h"
 #include "rcGlobalExtern.h"
 #include "sockComm.h"
-
-// =-=-=-=-=-=-=-
 #include "irods_stacktrace.hpp"
 #include "irods_buffer_encryption.hpp"
 #include "irods_client_server_negotiation.hpp"
@@ -24,13 +20,14 @@
 #include <boost/thread/scoped_thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
-#include <iomanip>
-#include <fstream>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
+
+#include <cstring>
+#include <iomanip>
+#include <fstream>
+
 using namespace boost::filesystem;
-
-
 
 int
 sendTranHeader( int sock, int oprType, int flags, rodsLong_t offset,
@@ -557,7 +554,7 @@ putFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
     }
     size_t trans_buff_sz = rods_env.irodsTransBufferSizeForParaTrans * 1024 * 1024;
 
-    bzero( &dataObjWriteInp, sizeof( dataObjWriteInp ) );
+    std::memset(&dataObjWriteInp, 0, sizeof(dataObjWriteInp));
     dataObjWriteInpBBuf.buf = malloc( trans_buff_sz + 1 );
     dataObjWriteInpBBuf.len = 0;
     dataObjWriteInp.l1descInx = l1descInx;
@@ -722,7 +719,7 @@ getFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
     }
     size_t trans_buff_sz = rods_env.irodsTransBufferSizeForParaTrans * 1024 * 1024;
 
-    bzero( &dataObjReadInp, sizeof( dataObjReadInp ) );
+    std::memset(&dataObjReadInp, 0, sizeof(dataObjReadInp));
     dataObjReadInpBBuf.buf = malloc( trans_buff_sz + 1 );
     dataObjReadInpBBuf.len = dataObjReadInp.len = trans_buff_sz;
     dataObjReadInp.l1descInx = l1descInx;
@@ -1229,7 +1226,7 @@ int putFileToPortalRbudp(
 
     myPortList = &portalOprOut->portList;
 
-    bzero( &rbudpSender, sizeof( rbudpSender ) );
+    std::memset(&rbudpSender, 0, sizeof(rbudpSender));
     status = initRbudpClient( &rbudpSender.rbudpBase, myPortList );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
@@ -1300,7 +1297,7 @@ int getFileToPortalRbudp(
 
     myPortList = &portalOprOut->portList;
 
-    bzero( &rbudpReceiver, sizeof( rbudpReceiver ) );
+    std::memset(&rbudpReceiver, 0, sizeof(rbudpReceiver));
     status = initRbudpClient( &rbudpReceiver.rbudpBase, myPortList );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
@@ -1427,7 +1424,7 @@ initFileRestart( rcComm_t *conn, char *fileName, char *objPath,
     info->fileSize = fileSize;
     rstrcpy( info->fileName, fileName, MAX_NAME_LEN );
     rstrcpy( info->objPath, objPath, MAX_NAME_LEN );
-    bzero( info->dataSeg, sizeof( dataSeg_t ) * MAX_NUM_CONFIG_TRAN_THR );
+    std::memset(info->dataSeg, 0, sizeof(dataSeg_t) * MAX_NUM_CONFIG_TRAN_THR);
     return 0;
 }
 
@@ -1534,8 +1531,7 @@ readLfRestartFile( char *infoFile, fileRestartInfo_t **info ) {
 int
 clearLfRestartFile( fileRestart_t *fileRestart ) {
     unlink( fileRestart->infoFile );
-    bzero( &fileRestart->info, sizeof( fileRestartInfo_t ) );
-
+    std::memset(&fileRestart->info, 0, sizeof(fileRestartInfo_t));
     return 0;
 }
 
@@ -1565,7 +1561,7 @@ lfRestartPutWithInfo( rcComm_t *conn, fileRestartInfo_t *info ) {
         return status;
     }
 
-    bzero( &dataObjOpenInp, sizeof( dataObjOpenInp ) );
+    std::memset(&dataObjOpenInp, 0, sizeof(dataObjOpenInp));
     rstrcpy( dataObjOpenInp.objPath, info->objPath, MAX_NAME_LEN );
     dataObjOpenInp.openFlags = O_WRONLY;
     addKeyVal( &dataObjOpenInp.condInput, FORCE_FLAG_KW, "" );
@@ -1585,7 +1581,7 @@ lfRestartPutWithInfo( rcComm_t *conn, fileRestartInfo_t *info ) {
     }
     size_t trans_buff_sz = rods_env.irodsTransBufferSizeForParaTrans * 1024 * 1024;
 
-    bzero( &dataObjWriteInp, sizeof( dataObjWriteInp ) );
+    std::memset(&dataObjWriteInp, 0, sizeof(dataObjWriteInp));
     dataObjWriteInpBBuf.buf = malloc( trans_buff_sz + 1 );
     dataObjWriteInpBBuf.len = 0;
     dataObjWriteInp.l1descInx = irodsFd;
@@ -1732,7 +1728,7 @@ lfRestartGetWithInfo( rcComm_t *conn, fileRestartInfo_t *info ) {
         return status;
     }
 
-    bzero( &dataObjOpenInp, sizeof( dataObjOpenInp ) );
+    std::memset(&dataObjOpenInp, 0, sizeof(dataObjOpenInp));
     rstrcpy( dataObjOpenInp.objPath, info->objPath, MAX_NAME_LEN );
     dataObjOpenInp.openFlags = O_RDONLY;
     irodsFd = rcDataObjOpen( conn, &dataObjOpenInp );
@@ -1750,7 +1746,7 @@ lfRestartGetWithInfo( rcComm_t *conn, fileRestartInfo_t *info ) {
     }
     size_t trans_buff_sz = rods_env.irodsTransBufferSizeForParaTrans * 1024 * 1024;
 
-    bzero( &dataObjReadInp, sizeof( dataObjReadInp ) );
+    std::memset(&dataObjReadInp, 0, sizeof(dataObjReadInp));
     dataObjReadInpBBuf.buf = malloc( trans_buff_sz );
     dataObjReadInpBBuf.len = 0;
     dataObjReadInp.l1descInx = irodsFd;
@@ -1909,7 +1905,7 @@ catDataObj( rcComm_t *conn, char *objPath ) {
         return status;
     }
     size_t trans_buff_sz = rods_env.irodsTransBufferSizeForParaTrans * 1024 * 1024;
-    bzero( &dataObjReadInp, sizeof( dataObjReadInp ) );
+    std::memset(&dataObjReadInp, 0, sizeof(dataObjReadInp));
     dataObjReadOutBBuf.buf = malloc( trans_buff_sz + 1 );
     dataObjReadOutBBuf.len = trans_buff_sz + 1;
     dataObjReadInp.l1descInx = l1descInx;

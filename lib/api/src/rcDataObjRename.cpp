@@ -1,16 +1,8 @@
-/**
- * @file  rcDataObjRename.cpp
- *
- */
-
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */
-/* See dataObjRename.h for a description of this API call.*/
-
 #include "dataObjRename.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
+
+#include <cstring>
 
 /**
  * \fn rcDataObjRename (rcComm_t *conn, dataObjCopyInp_t *dataObjRenameInp)
@@ -33,7 +25,7 @@
  * Rename an iRODS path /myZone/home/john/mypathA to /myZone/home/john/mypathB
  *     and store in myRescource:
  * \n dataObjCopyInp_t dataObjRenameInp;
- * \n bzero (&dataObjRenameInp, sizeof (dataObjRenameInp));
+ * \n memset(&dataObjRenameInp, 0, sizeof(dataObjRenameInp));
  * \n rstrcpy (dataObjRenameInp.destDataObjInp.objPath,
  *       "/myZone/home/john/mypathB", MAX_NAME_LEN);
  * \n rstrcpy (dataObjRenameInp.srcDataObjInp.objPath,

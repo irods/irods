@@ -1,13 +1,3 @@
-/**
- * @file  rcDataObjPut.cpp
- *
- */
-
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */
-/* See dataObjPut.h for a description of this API call.*/
-
 #include "dataObjPut.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
@@ -15,9 +5,9 @@
 #include "oprComplete.h"
 #include "sockComm.h"
 #include "rcMisc.h"
-
-// =-=-=-=-=-=-=-
 #include "irods_client_server_negotiation.hpp"
+
+#include <cstring>
 
 /**
  * \fn rcDataObjPut (rcComm_t *conn, dataObjInp_t *dataObjInp,
@@ -40,7 +30,7 @@
  * Put (upload) a data object /myZone/home/john/myfile in myRescource:
  * \n dataObjInp_t dataObjInp;
  * \n char locFilePath[MAX_NAME_LEN];
- * \n bzero (&dataObjInp, sizeof (dataObjInp));
+ * \n memset(&dataObjInp, 0, sizeof(dataObjInp));
  * \n rstrcpy (dataObjInp.objPath, "/myZone/home/john/myfile", MAX_NAME_LEN);
  * \n rstrcpy (locFilePath, "./mylocalfile", MAX_NAME_LEN);
  * \n dataObjInp.createMode = 0750;

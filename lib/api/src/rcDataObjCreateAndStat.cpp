@@ -1,14 +1,8 @@
-/**
- * @file  rcDataObjCreateAndStat.cpp
- *
- */
-
-/* This is script-generated code.  */
-/* See dataObjCreateAndStat.h for a description of this API call.*/
-
 #include "dataObjCreateAndStat.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
+
+#include <cstring>
 
 /**
  * \fn rcDataObjCreateAndStat (rcComm_t *conn, dataObjInp_t *dataObjInp,
@@ -33,7 +27,7 @@
  * Create a data object /myZone/home/john/myfile in myRescource:
  * \n dataObjInp_t dataObjInp;
  * \n openStat_t *openStat = NULL;
- * \n bzero (&dataObjInp, sizeof (dataObjInp));
+ * \n memset(&dataObjInp, 0, sizeof(dataObjInp));
  * \n rstrcpy (dataObjInp.objPath, "/myZone/home/john/myfile", MAX_NAME_LEN);
  * \n dataObjInp.createMode = 0750;
  * \n dataObjInp.dataSize = 12345;

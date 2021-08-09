@@ -1,6 +1,7 @@
 #ifndef windows_platform
 #include <sys/time.h>
 #endif
+
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
@@ -16,12 +17,13 @@
 #include "irods_exception.hpp"
 #include "irods_random.hpp"
 #include "irods_log.hpp"
-
 #include "sockComm.h"
+
 #include <boost/filesystem/operations.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem/convenience.hpp>
 
+#include <cstring>
 
 /* checkStateForResume - check the state for resume operation
  * return 0 - skip
@@ -220,7 +222,7 @@ putUtil( rcComm_t **myConn, rodsEnv *myRodsEnv,
 
     /* initialize the progress struct */
     if ( gGuiProgressCB != NULL ) {
-        bzero( &conn->operProgress, sizeof( conn->operProgress ) );
+        std::memset(&conn->operProgress, 0, sizeof(conn->operProgress));
         for ( i = 0; i < rodsPathInp->numSrc; i++ ) {
             targPath = &rodsPathInp->targPath[i];
             if ( targPath->objType == DATA_OBJ_T ) {
@@ -341,7 +343,7 @@ putUtil( rcComm_t **myConn, rodsEnv *myRodsEnv,
         }
         while ( myRodsArgs->retriesValue > 0 ) {
             rErrMsg_t errMsg;
-            bzero( &errMsg, sizeof( errMsg ) );
+            std::memset(&errMsg, 0, sizeof(errMsg));
             status = rcReconnect( myConn, myRodsEnv->rodsHost, myRodsEnv,
                                   reconnFlag );
             if ( status < 0 ) {
@@ -482,7 +484,7 @@ initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                      "initCondForPut: NULL bulkOprInp input" );
             return USER__NULL_INPUT_ERR;
         }
-        bzero( bulkOprInp, sizeof( bulkOprInp_t ) );
+        std::memset(bulkOprInp, 0, sizeof(bulkOprInp_t));
         if ( rodsArgs->checksum == True ) {
             addKeyVal( &bulkOprInp->condInput, REG_CHKSUM_KW, "" );
         }
@@ -930,7 +932,7 @@ bulkPutDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
     bulkOprInfo_t bulkOprInfo;
 
     /* do large files first */
-    bzero( &bulkOprInfo, sizeof( bulkOprInfo ) );
+    std::memset(&bulkOprInfo, 0, sizeof(bulkOprInfo));
     bulkOprInfo.flags = BULK_OPR_LARGE_FILES;
 
     status = putDirUtil( myConn, srcDir, targColl, myRodsEnv, rodsArgs,
@@ -943,7 +945,7 @@ bulkPutDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
     }
 
     /* now bulk put the small files */
-    bzero( &bulkOprInfo, sizeof( bulkOprInfo ) );
+    std::memset(&bulkOprInfo, 0, sizeof(bulkOprInfo));
     bulkOprInfo.flags = BULK_OPR_SMALL_FILES;
     rstrcpy( dataObjOprInp->objPath, targColl, MAX_NAME_LEN );
     rstrcpy( bulkOprInp->objPath, targColl, MAX_NAME_LEN );

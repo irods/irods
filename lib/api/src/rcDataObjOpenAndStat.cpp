@@ -1,14 +1,8 @@
-/**
- * @file  rcDataObjOpenAndStat.cpp
- *
- */
-
-/* This is script-generated code.  */
-/* See dataObjOpenAndStat.h for a description of this API call.*/
-
 #include "dataObjOpenAndStat.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
+
+#include <cstring>
 
 /**
  * \fn rcDataObjOpenAndStat (rcComm_t *conn, dataObjInp_t *dataObjInp,
@@ -33,7 +27,7 @@
  * Open a data object /myZone/home/john/myfile in myRescource for write:
  * \n dataObjInp_t dataObjInp;
  * \n openStat_t *openStat = NULL;
- * \n bzero (&dataObjInp, sizeof (dataObjInp));
+ * \n memset(&dataObjInp, 0, sizeof(dataObjInp));
  * \n rstrcpy (dataObjInp.objPath, "/myZone/home/john/myfile", MAX_NAME_LEN);
  * \n dataObjInp.openFlags = O_WRONLY;
  * \n addKeyVal (&dataObjInp.condInput, RESC_NAME_KW, "myRescource");

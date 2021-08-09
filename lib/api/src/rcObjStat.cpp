@@ -1,16 +1,8 @@
-/**
- * @file  rcObjStat.cpp
- *
- */
-
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */
-/* See objStat.h for a description of this API call.*/
-
 #include "objStat.h"
 #include "apiNumber.h"
 #include "procApiRequest.h"
+
+#include <cstring>
 
 /**
  * \fn rcObjStat (rcComm_t *conn, dataObjInp_t *dataObjInp,
@@ -35,7 +27,7 @@
  * Get information on an iRODS path /myZone/home/john/myfile:
  * \n dataObjInp_t dataObjInp;
  * \n rodsObjStat_t *rodsObjStatOut = NULL;
- * \n bzero (&dataObjInp, sizeof (dataObjInp));
+ * \n memset(&dataObjInp, 0, sizeof(dataObjInp));
  * \n rstrcpy (dataObjInp.objPath, "/myZone/home/john/myfile", MAX_NAME_LEN);
  * \n status = rcObjStat (conn, &dataObjInp, &rodsObjStatOut);
  * \n if (status < 0) {
