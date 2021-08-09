@@ -1,14 +1,6 @@
-/**
- * @file  rcDataObjLseek.cpp
- *
- */
-
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */
-/* See dataObjLseek.h for a description of this API call.*/
-
 #include "dataObjLseek.h"
+
+#include <cstring>
 
 /**
  * \fn rcDataObjLseek (rcComm_t *conn, openedDataObjInp_t *dataObjLseekInp,
@@ -36,8 +28,8 @@ fileLseekOut_t **dataObjLseekOut)
  * \n dataObjInp_t dataObjInp;
  * \n openedDataObjInp_t dataObjLseekInp;
  * \n fileLseekOut_t *dataObjLseekOut = NULL;
- * \n bzero (&dataObjInp, sizeof (dataObjInp));
- * \n bzero (&dataObjLseekInp, sizeof (dataObjLseekInp));
+ * \n memset(&dataObjInp, 0, sizeof (dataObjInp));
+ * \n memset(&dataObjLseekInp, 0, sizeof (dataObjLseekInp));
  * \n rstrcpy (dataObjInp.objPath, "/myZone/home/john/myfile", MAX_NAME_LEN);
  * \n dataObjInp.openFlags = O_RDONLY;
  * \n dataObjLseekInp.l1descInx = rcDataObjOpen (conn, &dataObjInp);

@@ -1,10 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-/* rcConnect.c - client connect call to server
- *
- */
-
 #include "rcConnect.h"
 #include "rcGlobalExtern.h"
 #include "rcMisc.h"
@@ -17,14 +10,15 @@
 #include <boost/thread.hpp>
 #include <boost/chrono.hpp>
 
-
 #include "irods_network_factory.hpp"
 
 #include "sockComm.h"
 #include "irods_threads.hpp"
 #include "sockCommNetworkInterface.hpp"
 #include "rodsError.h"
-#include <time.h>
+
+#include <ctime>
+#include <cstring>
 
 rcComm_t *
 rcConnect( const char *rodsHost, int rodsPort, const char *userName, const char *rodsZone,
@@ -431,7 +425,7 @@ cliReconnManager( rcComm_t *conn ) {
             continue;
         }
 
-        bzero( &reconnMsg, sizeof( reconnMsg_t ) );
+        std::memset(&reconnMsg, 0, sizeof(reconnMsg_t));
         reconnMsg.procState = conn->clientState;
         reconnMsg.cookie    = conn->svrVersion->cookie;
 

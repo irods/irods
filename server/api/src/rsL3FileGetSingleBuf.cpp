@@ -1,8 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code (for the most part).  */
-/* See l3FileGetSingleBuf.h for a description of this API call.*/
-
 #include "l3FileGetSingleBuf.h"
 #include "dataObjGet.h"
 #include "rodsLog.h"
@@ -20,6 +15,8 @@
 #include "rsSubStructFileGet.hpp"
 
 #include "irods_resource_backport.hpp"
+
+#include <cstring>
 
 /* l3FileGetSingleBuf - Get the content of a small file into a single buffer
  * in dataObjOutBBuf->buf for an opened data obj in l1descInx.
@@ -93,7 +90,7 @@ rsL3FileGetSingleBuf( rsComm_t *rsComm, int *l1descInx,
     }
     else {
         bytesRead = 0;
-        bzero( dataObjOutBBuf, sizeof( bytesBuf_t ) );
+        std::memset(dataObjOutBBuf, 0, sizeof(bytesBuf_t));
     }
     return bytesRead;
 }

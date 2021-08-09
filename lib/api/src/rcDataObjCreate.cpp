@@ -1,16 +1,8 @@
-/**
- * @file  rcDataObjCreate.cpp
- *
- */
-
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */
-/* See dataObjCreate.h for a description of this API call.*/
-
 #include "dataObjCreate.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
+
+#include <cstring>
 
 /**
  * \fn rcDataObjCreate (rcComm_t *conn, dataObjInp_t *dataObjInp)
@@ -31,7 +23,7 @@
  * \usage
  * Create a data object /myZone/home/john/myfile in myRescource:
  * \n dataObjInp_t dataObjInp;
- * \n bzero (&dataObjInp, sizeof (dataObjInp));
+ * \n memset(&dataObjInp, 0, sizeof(dataObjInp));
  * \n rstrcpy (dataObjInp.objPath, "/myZone/home/john/myfile", MAX_NAME_LEN);
  * \n dataObjInp.createMode = 0750;
  * \n dataObjInp.dataSize = 12345;

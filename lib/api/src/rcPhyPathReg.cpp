@@ -1,16 +1,8 @@
-/**
- * @file  rcPhyPathReg.cpp
- *
- */
-
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */
-/* See phyPathReg.h for a description of this API call.*/
-
 #include "phyPathReg.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
+
+#include <cstring>
 
 /**
  * \fn rcPhyPathReg (rcComm_t *conn, dataObjInp_t *phyPathRegInp)
@@ -34,7 +26,7 @@
  * /myZone/home/john/myfile. This file is located on the same server as
  * "myRescource" resource:
  * \n dataObjInp_t phyPathRegInp;
- * \n bzero (&phyPathRegInp, sizeof (phyPathRegInp));
+ * \n memset(&phyPathRegInp, 0, sizeof(phyPathRegInp));
  * \n rstrcpy (phyPathRegInp.objPath, "/myZone/home/john/myfile", MAX_NAME_LEN);
  * \n addKeyVal (&phyPathRegInp.condInput, FILE_PATH_KW, "/data/john/myfile");
  * \n addKeyVal (&phyPathRegInp.condInput, DEST_RESC_NAME_KW, "myRescource");

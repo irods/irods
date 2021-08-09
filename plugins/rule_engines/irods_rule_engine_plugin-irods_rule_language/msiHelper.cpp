@@ -1,15 +1,9 @@
-/**
- * @file  msiHelper.cpp
- *
- */
-
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* reHelper.c */
-
 #include "rcMisc.h"
 #include "msiHelper.hpp"
 #include "reFuncDefs.hpp"
+
+#include <cstring>
+
 /**
  * \fn msiGetStdoutInExecCmdOut (msParam_t *inpExecCmdOut, msParam_t *outStr, ruleExecInfo_t *rei)
  *
@@ -398,7 +392,7 @@ msiGetSessionVarValue( msParam_t *inpVar,  msParam_t *outputMode, ruleExecInfo_t
     if ( strcmp( inpVarStr, "all" ) == 0 ) {
         keyValPair_t varKeyVal;
         int i;
-        bzero( &varKeyVal, sizeof( varKeyVal ) );
+        std::memset(&varKeyVal, 0, sizeof(varKeyVal));
         rei->status = getAllSessionVarValue( rei, &varKeyVal );
         if ( rei->status >= 0 ) {
             if ( strcmp( outputModeStr, "server" ) == 0 ||

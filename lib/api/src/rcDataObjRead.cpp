@@ -1,16 +1,9 @@
-/**
- * @file  rcDataObjRead.cpp
- *
- */
-
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */
-/* See dataObjRead.h for a description of this API call.*/
-
 #include "dataObjRead.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
+
+#include <cstring>
+
 /**
  * \fn rcDataObjRead (rcComm_t *conn, openedDataObjInp_t *dataObjReadInp,
  * bytesBuf_t *dataObjReadOutBBuf)
@@ -35,15 +28,15 @@
  * \n openedDataObjInp_t dataObjReadInp;
  * \n bytesBuf_t dataObjReadOutBBuf;
  * \n int bytesRead;
- * \n bzero (&dataObjInp, sizeof (dataObjInp));
- * \n bzero (&dataObjReadInp, sizeof (dataObjReadInp));
+ * \n memset(&dataObjInp, 0, sizeof(dataObjInp));
+ * \n memset(&dataObjReadInp, 0, sizeof(dataObjReadInp));
  * \n rstrcpy (dataObjInp.objPath, "/myZone/home/john/myfile", MAX_NAME_LEN);
  * \n dataObjInp.openFlags = O_RDONLY;
  * \n dataObjReadInp.l1descInx = rcDataObjOpen (conn, &dataObjInp);
  * \n if (dataObjReadInp.l1descInx < 0) {
  * \n .... handle the error
  * \n }
- * \n bzero (&dataObjReadOutBBuf, sizeof (dataObjReadOutBBuf));
+ * \n memset(&dataObjReadOutBBuf, 0, sizeof(dataObjReadOutBBuf));
  * \n dataObjReadInp.len = 12345;
  * \n bytesRead = rcDataObjRead (conn, &dataObjReadInp, &dataObjReadInpBBuf);
  * \n if (bytesRead < 0) {

@@ -24,7 +24,6 @@
 #include "rsGlobalExtern.hpp"
 #include "rsModDataObjMeta.hpp"
 #include "rsObjStat.hpp"
-
 #include "irods_at_scope_exit.hpp"
 #include "irods_get_full_path_for_config_file.hpp"
 #include "irods_hierarchy_parser.hpp"
@@ -39,6 +38,8 @@
 
 #include <unistd.h> // JMC - backport 4598
 #include <fcntl.h> // JMC - backport 4598
+
+#include <cstring>
 
 int getLeafRescPathName(const std::string& _resc_hier, std::string& _ret_string);
 
@@ -1335,8 +1336,8 @@ getDataObjLockPath( char *objPath, char **outLockPath ) {
 
 
 int
-executeFilesystemLockCommand( int cmd, int type, int fd, struct flock * lock ) {
-    bzero( lock, sizeof( *lock ) );
+executeFilesystemLockCommand( int cmd, int type, int fd, struct flock* lock ) {
+    std::memset(lock, 0, sizeof(*lock));
     lock->l_type = type;
     lock->l_whence = SEEK_SET;
     int status = fcntl( fd, cmd, lock );

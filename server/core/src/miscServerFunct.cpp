@@ -1,9 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-/* miscServerFunct.c - misc server functions
- */
-
 #include <sys/wait.h>
 
 #include "miscServerFunct.hpp"
@@ -35,8 +29,6 @@
 #include "rsModAccessControl.hpp"
 #include "rsFileClose.hpp"
 
-#include <string>
-#include <vector>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/scoped_thread.hpp>
 #include <boost/lexical_cast.hpp>
@@ -49,8 +41,6 @@ char *__loc1;
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
 
-
-// =-=-=-=-=-=-=-
 #include "irods_stacktrace.hpp"
 #include "irods_network_factory.hpp"
 #include "irods_buffer_encryption.hpp"
@@ -65,12 +55,16 @@ char *__loc1;
 #include "irods_random.hpp"
 #include "irods_resource_manager.hpp"
 #include "irods_default_paths.hpp"
-using leaf_bundle_t = irods::resource_manager::leaf_bundle_t;
 
+#include <cstring>
 #include <iomanip>
 #include <fstream>
+#include <string>
+#include <vector>
 
 #include <boost/filesystem.hpp>
+
+using leaf_bundle_t = irods::resource_manager::leaf_bundle_t;
 
 namespace {
 
@@ -91,7 +85,7 @@ int _l3Close( rsComm_t *rsComm, int l3descInx ) {
     return rsFileClose( rsComm, &fileCloseInp );
 } // _l3Close
 
-}
+} // anonymous namespace
 
 int
 svrToSvrConnectNoLogin( rsComm_t *rsComm, rodsServerHost_t *rodsServerHost ) {
@@ -2091,7 +2085,7 @@ svrPortalPutGetRbudp( rsComm_t *rsComm ) {
     checkbuf( udpSockfd, UDPSOCKBUF, verbose );
     if ( myPortalOpr->oprType == PUT_OPR ) {
         rbudpReceiver_t rbudpReceiver;
-        bzero( &rbudpReceiver, sizeof( rbudpReceiver ) );
+        std::memset(&rbudpReceiver, 0, sizeof(rbudpReceiver));
         int destL3descInx = myPortalOpr->dataOprInp.destL3descInx;
 
         rbudpReceiver.rbudpBase.verbose = verbose;
@@ -2133,7 +2127,7 @@ svrPortalPutGetRbudp( rsComm_t *rsComm ) {
         rbudpSender_t rbudpSender;
         int srcL3descInx = myPortalOpr->dataOprInp.srcL3descInx;
 
-        bzero( &rbudpSender, sizeof( rbudpSender ) );
+        std::memset(&rbudpSender, 0, sizeof(rbudpSender));
         rbudpSender.rbudpBase.verbose = verbose;
         rbudpSender.rbudpBase.udpSockBufSize = UDPSOCKBUF;
         rbudpSender.rbudpBase.tcpPort = getTcpPortFromPortList( thisPortList );
@@ -2217,7 +2211,7 @@ reconnManager( rsComm_t *rsComm ) {
 
         /* don't lock it yet until we are done with establishing a connection */
         socklen_t len = sizeof( remoteAddr );
-        bzero( &remoteAddr, sizeof( remoteAddr ) );
+        std::memset(&remoteAddr, 0, sizeof(remoteAddr));
 
         const int saved_socket_flags = fcntl( rsComm->reconnSock, F_GETFL );
         fcntl( rsComm->reconnSock, F_SETFL, saved_socket_flags | O_NONBLOCK );
@@ -2281,7 +2275,7 @@ reconnManager( rsComm_t *rsComm ) {
         }
 
         rsComm->reconnThrState = PROCESSING_STATE;
-        bzero( reconnMsg, sizeof( reconnMsg_t ) );
+        std::memset(reconnMsg, 0, sizeof(reconnMsg_t));
         reconnMsg->procState = rsComm->agentState;
         ret = sendReconnMsg( net_obj, reconnMsg );
         free( reconnMsg );
@@ -2545,7 +2539,7 @@ singleRemToLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     destL3descInx = dataOprInp->destL3descInx;
     dataSize = dataOprInp->dataSize;
 
-    bzero( &dataObjReadInp, sizeof( dataObjReadInp ) );
+    std::memset(&dataObjReadInp, 0, sizeof(dataObjReadInp));
     dataObjReadInpBBuf.buf = malloc( trans_buff_size );
     dataObjReadInpBBuf.len = dataObjReadInp.len = trans_buff_size;
     dataObjReadInp.l1descInx = l1descInx;
@@ -2609,7 +2603,7 @@ singleLocToRemCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     srcL3descInx = dataOprInp->srcL3descInx;
     dataSize = dataOprInp->dataSize;
 
-    bzero( &dataObjWriteInp, sizeof( dataObjWriteInp ) );
+    std::memset(&dataObjWriteInp, 0, sizeof(dataObjWriteInp));
     dataObjWriteInpBBuf.buf = malloc( trans_buff_size );
     dataObjWriteInpBBuf.len = 0;
     dataObjWriteInp.l1descInx = l1descInx;

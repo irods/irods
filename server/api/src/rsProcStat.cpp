@@ -1,10 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* rsProcStat.c - server routine that handles the the ProcStat
- * API
- */
-
-/* script generated code */
 #include "rcMisc.h"
 #include "procStat.h"
 #include "objMetaOpr.hpp"
@@ -15,16 +8,14 @@
 #include "rcGlobalExtern.h"
 #include "procLog.h"
 #include "rsProcStat.hpp"
-
-// =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
+
+#include <cstring>
+
 using namespace boost::filesystem;
-
-
-
 
 int
 rsProcStat( rsComm_t * rsComm, procStatInp_t * procStatInp,
@@ -74,8 +65,8 @@ _rsProcStat( rsComm_t *rsComm, procStatInp_t *procStatInp,
         return status;
     }
 
-    bzero( &addr, sizeof( addr ) );
-    bzero( &myProcStatInp, sizeof( myProcStatInp ) );
+    std::memset(&addr, 0, sizeof(addr));
+    std::memset(&myProcStatInp, 0, sizeof(myProcStatInp));
     if ( *procStatInp->addr != '\0' ) {	/* given input addr */
         rstrcpy( addr.hostAddr, procStatInp->addr, LONG_NAME_LEN );
         remoteFlag = resolveHost( &addr, &rodsServerHost );
@@ -145,7 +136,7 @@ _rsProcStatAll( rsComm_t *rsComm,
     genQueryOut_t *singleProcStatOut = NULL;
     int savedStatus = 0;
 
-    bzero( &myProcStatInp, sizeof( myProcStatInp ) );
+    std::memset(&myProcStatInp, 0, sizeof(myProcStatInp));
     tmpRodsServerHost = ServerHostHead;
     while ( tmpRodsServerHost != NULL ) {
         irods::error err = irods::get_host_status_by_host_info( tmpRodsServerHost );
@@ -193,7 +184,7 @@ localProcStat( procStatInp_t *procStatInp,
 
     numProc = getNumFilesInDir( ProcLogDir ) + 2; /* add 2 to give some room */
 
-    bzero( &procLog, sizeof( procLog ) );
+    std::memset(&procLog, 0, sizeof(procLog));
     /* init serverAddr */
     if ( *procStatInp->addr != '\0' ) { /* given input addr */
         rstrcpy( procLog.serverAddr, procStatInp->addr, NAME_LEN );
@@ -280,9 +271,8 @@ remoteProcStat( rsComm_t *rsComm, procStatInp_t *procStatInp,
     if ( status < 0 && *procStatOut == NULL ) {
         /* add an empty entry */
         initProcStatOut( procStatOut, 1 );
-        bzero( &procLog, sizeof( procLog ) );
-        rstrcpy( procLog.serverAddr, rodsServerHost->hostName->name,
-                 NAME_LEN );
+        std::memset(&procLog, 0, sizeof(procLog));
+        rstrcpy( procLog.serverAddr, rodsServerHost->hostName->name, NAME_LEN );
         addProcToProcStatOut( &procLog, *procStatOut );
     }
     return status;
@@ -297,7 +287,7 @@ initProcStatOut( genQueryOut_t **procStatOut, int numProc ) {
     }
 
     myProcStatOut = *procStatOut = ( genQueryOut_t* )malloc( sizeof( genQueryOut_t ) );
-    bzero( myProcStatOut, sizeof( genQueryOut_t ) );
+    std::memset(myProcStatOut, 0, sizeof(genQueryOut_t));
 
     myProcStatOut->continueInx = -1;
 
@@ -305,58 +295,48 @@ initProcStatOut( genQueryOut_t **procStatOut, int numProc ) {
 
     myProcStatOut->sqlResult[0].attriInx = PID_INX;
     myProcStatOut->sqlResult[0].len = NAME_LEN;
-    myProcStatOut->sqlResult[0].value =
-        ( char* )malloc( NAME_LEN * numProc );
-    bzero( myProcStatOut->sqlResult[0].value, NAME_LEN * numProc );
+    myProcStatOut->sqlResult[0].value = ( char* )malloc( NAME_LEN * numProc );
+    std::memset(myProcStatOut->sqlResult[0].value, 0, NAME_LEN * numProc);
 
     myProcStatOut->sqlResult[1].attriInx = STARTTIME_INX;
     myProcStatOut->sqlResult[1].len = NAME_LEN;
-    myProcStatOut->sqlResult[1].value =
-        ( char* )malloc( NAME_LEN * numProc );
-    bzero( myProcStatOut->sqlResult[1].value, NAME_LEN * numProc );
+    myProcStatOut->sqlResult[1].value = ( char* )malloc( NAME_LEN * numProc );
+    std::memset(myProcStatOut->sqlResult[1].value, 0, NAME_LEN * numProc);
 
     myProcStatOut->sqlResult[2].attriInx = CLIENT_NAME_INX;
     myProcStatOut->sqlResult[2].len = NAME_LEN;
-    myProcStatOut->sqlResult[2].value =
-        ( char* )malloc( NAME_LEN * numProc );
-    bzero( myProcStatOut->sqlResult[2].value, NAME_LEN * numProc );
+    myProcStatOut->sqlResult[2].value = ( char* )malloc( NAME_LEN * numProc );
+    std::memset(myProcStatOut->sqlResult[2].value, 0, NAME_LEN * numProc);
 
     myProcStatOut->sqlResult[3].attriInx = CLIENT_ZONE_INX;
     myProcStatOut->sqlResult[3].len = NAME_LEN;
-    myProcStatOut->sqlResult[3].value =
-        ( char* )malloc( NAME_LEN * numProc );
-    bzero( myProcStatOut->sqlResult[3].value, NAME_LEN * numProc );
+    myProcStatOut->sqlResult[3].value = ( char* )malloc( NAME_LEN * numProc );
+    std::memset(myProcStatOut->sqlResult[3].value, 0, NAME_LEN * numProc);
 
     myProcStatOut->sqlResult[4].attriInx = PROXY_NAME_INX;
     myProcStatOut->sqlResult[4].len = NAME_LEN;
-    myProcStatOut->sqlResult[4].value =
-        ( char* )malloc( NAME_LEN * numProc );
-    bzero( myProcStatOut->sqlResult[4].value, NAME_LEN * numProc );
+    myProcStatOut->sqlResult[4].value = ( char* )malloc( NAME_LEN * numProc );
+    std::memset(myProcStatOut->sqlResult[4].value, 0, NAME_LEN * numProc);
 
     myProcStatOut->sqlResult[5].attriInx = PROXY_ZONE_INX;
     myProcStatOut->sqlResult[5].len = NAME_LEN;
-    myProcStatOut->sqlResult[5].value =
-        ( char* )malloc( NAME_LEN * numProc );
-    bzero( myProcStatOut->sqlResult[5].value, NAME_LEN * numProc );
+    myProcStatOut->sqlResult[5].value = ( char* )malloc( NAME_LEN * numProc );
+    std::memset(myProcStatOut->sqlResult[5].value, 0, NAME_LEN * numProc);
 
     myProcStatOut->sqlResult[6].attriInx = REMOTE_ADDR_INX;
     myProcStatOut->sqlResult[6].len = NAME_LEN;
-    myProcStatOut->sqlResult[6].value =
-        ( char* )malloc( NAME_LEN * numProc );
-    bzero( myProcStatOut->sqlResult[6].value, NAME_LEN * numProc );
+    myProcStatOut->sqlResult[6].value = ( char* )malloc( NAME_LEN * numProc );
+    std::memset( myProcStatOut->sqlResult[6].value, 0, NAME_LEN * numProc);
 
     myProcStatOut->sqlResult[7].attriInx = SERVER_ADDR_INX;
     myProcStatOut->sqlResult[7].len = NAME_LEN;
-    myProcStatOut->sqlResult[7].value =
-        ( char* )malloc( NAME_LEN * numProc );
-    bzero( myProcStatOut->sqlResult[7].value, NAME_LEN * numProc );
+    myProcStatOut->sqlResult[7].value = ( char* )malloc( NAME_LEN * numProc );
+    std::memset( myProcStatOut->sqlResult[7].value, 0, NAME_LEN * numProc);
 
     myProcStatOut->sqlResult[8].attriInx = PROG_NAME_INX;
     myProcStatOut->sqlResult[8].len = NAME_LEN;
-    myProcStatOut->sqlResult[8].value =
-        ( char* )malloc( NAME_LEN * numProc );
-    bzero( myProcStatOut->sqlResult[8].value, NAME_LEN * numProc );
-
+    myProcStatOut->sqlResult[8].value = ( char* )malloc( NAME_LEN * numProc );
+    std::memset( myProcStatOut->sqlResult[8].value, 0, NAME_LEN * numProc);
 
     return 0;
 }

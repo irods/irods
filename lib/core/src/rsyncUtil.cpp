@@ -17,12 +17,13 @@
 #include <sys/time.h>
 
 #include <cstdlib>
+#include <cstring>
 #include <sstream>
 
 static int CurrentTime = 0;
+
 int
-ageExceeded( int ageLimit, int myTime, char *objPath,
-             rodsLong_t fileSize );
+ageExceeded( int ageLimit, int myTime, char *objPath, rodsLong_t fileSize );
 
 int
 rsyncUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
@@ -200,7 +201,7 @@ rsyncDataToFileUtil( rcComm_t *conn, rodsPath_t *srcPath,
 
     if ( myRodsArgs->verbose == True ) {
         ( void ) gettimeofday( &startTime, ( struct timezone * )0 );
-        bzero( &conn->transStat, sizeof( transStat_t ) );
+        std::memset(&conn->transStat, 0, sizeof(transStat_t));
     }
 
     rodsEnv env;
@@ -365,7 +366,7 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
 
     if ( myRodsArgs->verbose == True ) {
         ( void ) gettimeofday( &startTime, ( struct timezone * )0 );
-        bzero( &conn->transStat, sizeof( transStat_t ) );
+        std::memset(&conn->transStat, 0, sizeof(transStat_t));
     }
 
     if ( targPath->objState == NOT_EXIST_ST ) {
@@ -538,7 +539,7 @@ rsyncDataToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
 
     if ( myRodsArgs->verbose == True ) {
         ( void ) gettimeofday( &startTime, ( struct timezone * )0 );
-        bzero( &conn->transStat, sizeof( transStat_t ) );
+        std::memset(&conn->transStat, 0, sizeof(transStat_t));
     }
 
     if ( targPath->objState == NOT_EXIST_ST ) {
@@ -845,7 +846,7 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
             continue;
         }
 
-        bzero( &myTargPath, sizeof( myTargPath ) );
+        std::memset(&myTargPath, 0, sizeof(myTargPath));
         fs::path childPath = p.filename();
         snprintf( myTargPath.outPath, MAX_NAME_LEN, "%s/%s",
                   targColl, childPath.c_str() );

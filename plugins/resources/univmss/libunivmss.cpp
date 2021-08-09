@@ -1,13 +1,9 @@
-// =-=-=-=-=-=-=-
-// irods includes
 #include "msParam.h"
 #include "generalAdmin.h"
 #include "physPath.hpp"
 #include "reIn2p3SysRule.hpp"
 #include "miscServerFunct.hpp"
 #include "rsExecCmd.hpp"
-
-// =-=-=-=-=-=-=-
 #include "irods_resource_plugin.hpp"
 #include "irods_file_object.hpp"
 #include "irods_physical_object.hpp"
@@ -19,19 +15,16 @@
 #include "irods_re_structs.hpp"
 #include "voting.hpp"
 
-// =-=-=-=-=-=-=-
-// stl includes
-#include <iostream>
-#include <sstream>
-#include <vector>
-#include <string>
-
-// =-=-=-=-=-=-=-
-// boost includes
 #include <boost/lexical_cast.hpp>
 #include <boost/function.hpp>
 #include <boost/any.hpp>
 #include <boost/algorithm/string.hpp>
+
+#include <cstring>
+#include <iostream>
+#include <sstream>
+#include <vector>
+#include <string>
 
 /// =-=-=-=-=-=-=-
 /// @brief Check the general parameters passed in to most plugin functions
@@ -193,7 +186,7 @@ irods::error univ_mss_file_stat(
     struct tm mytm;
     time_t myTime;
 
-    bzero( &execCmdInp, sizeof( execCmdInp ) );
+    std::memset(&execCmdInp, 0, sizeof(execCmdInp));
     rstrcpy( execCmdInp.cmd, script.c_str(), LONG_NAME_LEN );
     snprintf( cmdArgv, sizeof( cmdArgv ), "stat '%s' ", filename.c_str() );
     rstrcpy( execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN );
@@ -303,7 +296,7 @@ irods::error univ_mss_file_chmod(
         mode = getDefFileMode();
     }
 
-    bzero( &execCmdInp, sizeof( execCmdInp ) );
+    std::memset(&execCmdInp, 0, sizeof(execCmdInp));
     snprintf( execCmdInp.cmd, sizeof( execCmdInp.cmd ), "%s", script.c_str() );
     snprintf( execCmdInp.cmdArgv, sizeof( execCmdInp.cmdArgv ), "chmod '%s' %o", filename.c_str(), mode );
     snprintf( execCmdInp.execAddr, sizeof( execCmdInp.execAddr ), "%s", "localhost" );
@@ -356,7 +349,7 @@ irods::error univ_mss_file_mkdir(
     int status = 0;
     execCmd_t execCmdInp;
 
-    bzero( &execCmdInp, sizeof( execCmdInp ) );
+    std::memset(&execCmdInp, 0, sizeof(execCmdInp));
     snprintf( execCmdInp.cmd, sizeof( execCmdInp.cmd ), "%s", script.c_str() );
     snprintf( execCmdInp.cmdArgv, sizeof( execCmdInp.cmdArgv ), "mkdir '%s'", dirname.c_str() );
     snprintf( execCmdInp.execAddr, sizeof( execCmdInp.execAddr ), "%s", "localhost" );
@@ -467,7 +460,7 @@ irods::error univ_mss_file_rename(
 
     execCmd_t execCmdInp;
 
-    bzero( &execCmdInp, sizeof( execCmdInp ) );
+    std::memset(&execCmdInp, 0, sizeof(execCmdInp));
     snprintf( execCmdInp.cmd, sizeof( execCmdInp.cmd ), "%s", script.c_str() );
     snprintf( execCmdInp.cmdArgv, sizeof( execCmdInp.cmdArgv ), "mv '%s' '%s'", filename.c_str(), _new_file_name );
     snprintf( execCmdInp.execAddr, sizeof( execCmdInp.execAddr ), "%s", "localhost" );
@@ -545,7 +538,7 @@ irods::error univ_mss_file_stage_to_cache(
     cmdArgv << "stageToCache '" << filename << "' '" << _cache_file_name << "'";
 
     execCmd_t execCmdInp;
-    bzero( &execCmdInp, sizeof( execCmdInp ) );
+    std::memset(&execCmdInp, 0, sizeof(execCmdInp));
     snprintf( execCmdInp.cmd, sizeof( execCmdInp.cmd ), "%s",  script.c_str() );
     snprintf( execCmdInp.cmdArgv, sizeof( execCmdInp.cmdArgv ), "%s", cmdArgv.str().c_str() );
     snprintf( execCmdInp.execAddr, sizeof( execCmdInp.execAddr ), "%s", "localhost" );
@@ -626,7 +619,7 @@ irods::error univ_mss_file_sync_to_arch(
     }
 
     execCmd_t execCmdInp;
-    bzero( &execCmdInp, sizeof( execCmdInp ) );
+    std::memset(&execCmdInp, 0, sizeof(execCmdInp));
     rstrcpy( execCmdInp.cmd, script.c_str(), LONG_NAME_LEN );
     snprintf( execCmdInp.cmdArgv, sizeof( execCmdInp.cmdArgv ), "syncToArch %s %s", _cache_file_name, filename.c_str() );
     rstrcpy( execCmdInp.execAddr, "localhost", LONG_NAME_LEN );
@@ -656,7 +649,6 @@ irods::error univ_mss_file_sync_to_arch(
     }
 
     return CODE( status );
-
 } // univ_mss_file_sync_to_arch
 
 /// =-=-=-=-=-=-=-
