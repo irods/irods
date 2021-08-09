@@ -1,9 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* rsStructFileExtAndReg.c. See structFileExtAndReg.h for a description of
- * this API call.*/
-
-
 #include "apiHeaderAll.h"
 #include "objMetaOpr.hpp"
 #include "collection.hpp"
@@ -25,8 +19,6 @@
 #include "rsPhyBundleColl.hpp"
 #include "rsRegDataObj.hpp"
 #include "rsUnbunAndRegPhyBunfile.hpp"
-
-// =-=-=-=-=-=-=-
 #include "irods_resource_redirect.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_resource_backport.hpp"
@@ -35,6 +27,9 @@
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
+
+#include <cstring>
+
 using namespace boost::filesystem;
 
 int
@@ -264,7 +259,7 @@ chkCollForExtAndReg( rsComm_t *rsComm, char *collection,
     int status;
     rodsObjStat_t *myRodsObjStat = NULL;
 
-    bzero( &dataObjInp, sizeof( dataObjInp ) );
+    std::memset(&dataObjInp, 0, sizeof(dataObjInp));
     rstrcpy( dataObjInp.objPath, collection, MAX_NAME_LEN );
     status = collStatAllKinds( rsComm, &dataObjInp, &myRodsObjStat );
     if ( status < 0 ) {
@@ -342,7 +337,8 @@ regUnbunSubfiles( rsComm_t *rsComm, const dataObjInfo_t& _dataObjInfo,
                  phyBunDir, errno );
         return UNIX_FILE_OPENDIR_ERR - errno;
     }
-    bzero( &dataObjInp, sizeof( dataObjInp ) );
+
+    std::memset(&dataObjInp, 0, sizeof(dataObjInp));
     directory_iterator end_itr; // default construction yields past-the-end
     for ( directory_iterator itr( srcDirPath ); itr != end_itr; ++itr ) {
         path p = itr->path();
@@ -448,7 +444,7 @@ regSubfile( rsComm_t *rsComm, const dataObjInfo_t& _dataObjInfo,
                             &dataObjInfo ) > 0 ) {
             /* an orphan file. just rename it */
             fileRenameInp_t fileRenameInp;
-            bzero( &fileRenameInp, sizeof( fileRenameInp ) );
+            std::memset(&fileRenameInp, 0, sizeof(fileRenameInp));
             rstrcpy( fileRenameInp.oldFileName, dataObjInfo.filePath,
                      MAX_NAME_LEN );
             char new_fn[ MAX_NAME_LEN ];
@@ -530,8 +526,8 @@ regSubfile( rsComm_t *rsComm, const dataObjInfo_t& _dataObjInfo,
         modDataObjMeta_t modDataObjMetaInp;
         keyValPair_t regParam;
 
-        bzero( &modDataObjMetaInp, sizeof( modDataObjMetaInp ) );
-        bzero( &regParam, sizeof( regParam ) );
+        std::memset(&modDataObjMetaInp, 0, sizeof(modDataObjMetaInp));
+        std::memset(&regParam, 0, sizeof(regParam));
         snprintf( tmpStr, MAX_NAME_LEN, "%lld", dataSize );
         addKeyVal( &regParam, DATA_SIZE_KW, tmpStr );
         addKeyVal( &regParam, ALL_REPL_STATUS_KW, tmpStr );
@@ -557,7 +553,7 @@ regSubfile( rsComm_t *rsComm, const dataObjInfo_t& _dataObjInfo,
     else {
         ruleExecInfo_t rei;
         dataObjInp_t dataObjInp;
-        bzero( &dataObjInp, sizeof( dataObjInp ) );
+        std::memset(&dataObjInp, 0, sizeof(dataObjInp));
         rstrcpy( dataObjInp.objPath, dataObjInfo.objPath, MAX_NAME_LEN );
         initReiWithDataObjInp( &rei, rsComm, &dataObjInp );
         rei.doi = &dataObjInfo;

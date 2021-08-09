@@ -1,14 +1,15 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
 #ifndef windows_platform
 #include <sys/time.h>
 #endif
+
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
 #include "miscUtil.h"
 #include "replUtil.h"
 #include "rcGlobalExtern.h"
+
+#include <cstring>
 
 int
 replUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
@@ -39,7 +40,7 @@ replUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 
     /* initialize the progress struct */
     if ( gGuiProgressCB != NULL ) {
-        bzero( &conn->operProgress, sizeof( conn->operProgress ) );
+        std::memset(&conn->operProgress, 0, sizeof(conn->operProgress));
         for ( int i = 0; i < rodsPathInp->numSrc; i++ ) {
             if ( rodsPathInp->srcPath[i].objType == DATA_OBJ_T ) {
                 conn->operProgress.totalNumFiles++;
@@ -285,7 +286,7 @@ replCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
         fprintf( stdout, "C- %s:\n", srcColl );
     }
 
-    bzero( &collHandle, sizeof( collHandle ) );
+    std::memset(&collHandle, 0, sizeof(collHandle));
     replKeyVal( &dataObjInp->condInput, &collHandle.dataObjInp.condInput );
     status = rclOpenCollection( conn, srcColl, INCLUDE_CONDINPUT_IN_QUERY,
                                 &collHandle );

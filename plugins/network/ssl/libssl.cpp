@@ -15,6 +15,7 @@
 
 // =-=-=-=-=-=-=-
 // stl includes
+#include <cstring>
 #include <sstream>
 #include <string>
 #include <iostream>
@@ -851,7 +852,7 @@ irods::error ssl_agent_start(
 
                         // =-=-=-=-=-=-=-
                         // wait for a message header containing the encryption environment
-                        bzero( &msg_header, sizeof( msg_header ) );
+                        std::memset(&msg_header, 0, sizeof(msg_header));
                         ret = readMsgHeader( ssl_obj, &msg_header, &tv );
                         if ( ( result = ASSERT_PASS( ret, "Read message header failed." ) ).ok() ) {
 
@@ -864,7 +865,7 @@ irods::error ssl_agent_start(
 
                             // =-=-=-=-=-=-=-
                             // wait for a message header containing a shared secret
-                            bzero( &msg_header, sizeof( msg_header ) );
+                            std::memset(&msg_header, 0, sizeof(msg_header));
                             ret = readMsgHeader( ssl_obj, &msg_header, &tv );
                             if ( ( result = ASSERT_PASS( ret, "Read message header failed." ) ).ok() ) {
 

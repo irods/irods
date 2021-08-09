@@ -1,25 +1,22 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
 #include "rodsServer.hpp"
 #include "reGlobalsExtern.hpp"
 #include "reDefines.h"
+
 #include <sys/time.h>
 
+#include <cstring>
 
 #define MY_SERVER_CONFIG_DIR "/projects/misc/doct/dgtg/irods/RODS/server/config"
 
-
-
-
-#define LF 10
-#define CR 13
-#define MAX_TOKEN 500
-#define MAX_ENTRIES 5000
+#define LF                  10
+#define CR                  13
+#define MAX_TOKEN           500
+#define MAX_ENTRIES         5000
 #define MYSRBBUFSIZE        2000000
 #define QSIZE               MYSRBBUFSIZE
-#define HUGE_STRING 5000
+#define HUGE_STRING         5000
 
-typedef struct {
+typedef struct Entry {
     char name[100];
     int size;
     char *val;
@@ -29,7 +26,7 @@ typedef struct {
 char *fixstr1;
 int heading = 0;
 
-typedef struct {
+typedef struct ParamIn {
     entry entries[MAX_ENTRIES];
     char cookieStr[MAX_TOKEN];
     int op;
@@ -37,8 +34,10 @@ typedef struct {
 } paramIn;
 
 typedef paramIn *inStruct;
+
 int
 showRules( paramIn *Sentries );
+
 int
 performAction( paramIn *Sentries );
 
@@ -621,7 +620,7 @@ performAction( inStruct Sentries ) {
     char ruleSet[RULE_SET_DEF_LENGTH];
     hrtime_t ht1, ht2, ht3;
 
-    bzero( &rei, sizeof( ruleExecInfo_t ) ); /*  June 17. 2009 */
+    std::memset(&rei, 0, sizeof(ruleExecInfo_t)); /*  June 17. 2009 */
     /*
      sprintf(configDirEV,"irodsConfigDir=/scratch/s1/sekar/irods/RODS/server/config");
      sprintf(configDirEV,"irodsConfigDir=/misc/www/projects/srb-secure/cgi-bin");

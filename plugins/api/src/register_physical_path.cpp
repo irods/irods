@@ -879,8 +879,7 @@ namespace
                 return status;
             }
             else {
-                openedDataObjInp_t dataObjCloseInp;
-                bzero( &dataObjCloseInp, sizeof( dataObjCloseInp ) );
+                openedDataObjInp_t dataObjCloseInp{};
                 dataObjCloseInp.l1descInx = myStatus;
                 rsDataObjClose( _comm, &dataObjCloseInp );
             }

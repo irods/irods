@@ -1,14 +1,8 @@
-/**
- * @file  rcReadCollection.cpp
- *
- */
-
-/* This is script-generated code.  */
-/* See readCollection.h for a description of this API call.*/
-
 #include "readCollection.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
+
+#include <cstring>
 
 /**
  * \fn rcReadCollection (rcComm_t *conn, int handleInxInp, collEnt_t **collEnt)
@@ -34,7 +28,7 @@
  * \n int status, handleInx;
  * \n collInp_t collOpenInp;
  * \n collEnt_t *collEnt = NULL;
- * \n bzero (&collOpenInp, sizeof (collOpenInp));
+ * \n memset(&collOpenInp, 0, sizeof(collOpenInp));
  * \n rstrcpy (collOpenInp.collName, "/myZone/home/john/coll1/coll2",
  *     MAX_NAME_LEN);
  * \n collOpenInp.flags = RECUR_QUERY_FG | VERY_LONG_METADATA_FG;

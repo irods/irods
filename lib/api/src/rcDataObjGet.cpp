@@ -10,6 +10,8 @@
 #include "irods_stacktrace.hpp"
 #include "checksum.h"
 
+#include <cstring>
+
 /**
  * \fn rcDataObjGet (rcComm_t *conn, dataObjInp_t *dataObjInp,
  *   char *locFilePath)
@@ -31,7 +33,7 @@
  * Get (download) a data object /myZone/home/john/myfile:
  * \n dataObjInp_t dataObjInp;
  * \n char locFilePath[MAX_NAME_LEN];
- * \n bzero (&dataObjInp, sizeof (dataObjInp));
+ * \n memset(&dataObjInp, 0, sizeof(dataObjInp));
  * \n rstrcpy (dataObjInp.objPath, "/myZone/home/john/myfile", MAX_NAME_LEN);
  * \n rstrcpy (locFilePath, "./mylocalfile", MAX_NAME_LEN);
  * \n dataObjInp.dataSize = 0;

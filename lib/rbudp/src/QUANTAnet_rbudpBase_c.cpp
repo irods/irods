@@ -22,8 +22,10 @@
 
 #include "QUANTAnet_rbudpBase_c.h"
 #include "rodsLog.h"
-#include <stdarg.h>
 #include "rcMisc.h"
+
+#include <cstdarg>
+#include <cstring>
 
 // inline void TRACE_DEBUG( char *format, ...)
 void TRACE_DEBUG( char *format, ... ) {
@@ -86,8 +88,7 @@ int passiveUDP( rbudpBase_t *rbudpBase, char *host ) {
         return errno ? ( -1 * errno ) : -1;
     }
 
-    bzero( ( char * )&rbudpBase->udpServerAddr,
-           sizeof( rbudpBase->udpServerAddr ) );
+    std::memset((char*) &rbudpBase->udpServerAddr, 0, sizeof(rbudpBase->udpServerAddr));
     rbudpBase->udpServerAddr.sin_family = AF_INET;
     rbudpBase->udpServerAddr.sin_addr.s_addr = htonl( INADDR_ANY );
     rbudpBase->udpServerAddr.sin_port = htons( rbudpBase->udpLocalPort );
@@ -100,7 +101,7 @@ int passiveUDP( rbudpBase_t *rbudpBase, char *host ) {
     }
 
     // Use connected UDP to receive only from a specific host and port.
-    bzero( &cliaddr, sizeof( cliaddr ) );
+    std::memset(&cliaddr, 0, sizeof(cliaddr));
     const int status = load_in_addr_from_hostname(host, &cliaddr.sin_addr);
     if (status != 0 && (( int )( cliaddr.sin_addr.s_addr = inet_addr( host ) ) == -1 )) {
         perror( "can't get host entry" );
@@ -126,7 +127,7 @@ int connectTCP( rbudpBase_t *rbudpBase, char * host ) {
     struct timeval start, now;
 
     /*Create a TCP connection */
-    bzero( ( char * )&tcpServerAddr, sizeof( tcpServerAddr ) );
+    std::memset((char*) &tcpServerAddr, 0, sizeof(tcpServerAddr));
     tcpServerAddr.sin_family = AF_INET;
     const int status = load_in_addr_from_hostname(host, &tcpServerAddr.sin_addr);
     if (status != 0 && ( ( int )( tcpServerAddr.sin_addr.s_addr = inet_addr( host ) ) == -1 )) {
@@ -155,7 +156,7 @@ int connectUDP( rbudpBase_t *rbudpBase, char *host ) {
 
     // Fill in the structure with the address of the server that we want to send to
     // udpServerAddr is class global variable, will be used to send data
-    bzero( &rbudpBase->udpServerAddr, sizeof( rbudpBase->udpServerAddr ) );
+    std::memset(&rbudpBase->udpServerAddr, 0, sizeof(rbudpBase->udpServerAddr));
     rbudpBase->udpServerAddr.sin_family = AF_INET;
     const int status = load_in_addr_from_hostname(host, &rbudpBase->udpServerAddr.sin_addr);
     if (status != 0 && ( ( int )( rbudpBase->udpServerAddr.sin_addr.s_addr = inet_addr( host ) ) == -1 )) {
@@ -178,7 +179,7 @@ int connectUDP( rbudpBase_t *rbudpBase, char *host ) {
     }
 
     /* Bind any local address for us */
-    bzero( &udpClientAddr, sizeof( udpClientAddr ) );
+    std::memset(&udpClientAddr, 0, sizeof(udpClientAddr));
     udpClientAddr.sin_family = AF_INET;
     udpClientAddr.sin_addr.s_addr = htonl( INADDR_ANY );
     udpClientAddr.sin_port = htons( rbudpBase->udpLocalPort );
@@ -210,7 +211,7 @@ void initTCPServer( rbudpBase_t *rbudpBase ) {
     }
 
     /* Bind our local address so that the client can send to us */
-    bzero( &tcpServerAddr, sizeof( tcpServerAddr ) );
+    std::memset(&tcpServerAddr, 0, sizeof(tcpServerAddr));
     tcpServerAddr.sin_family = AF_INET;
     tcpServerAddr.sin_addr.s_addr = htonl( INADDR_ANY );
     tcpServerAddr.sin_port = htons( rbudpBase->tcpPort );

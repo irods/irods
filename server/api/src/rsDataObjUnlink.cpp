@@ -51,6 +51,7 @@
 #include "boost/filesystem/path.hpp"
 #include "fmt/format.h"
 
+#include <cstring>
 #include <string>
 #include <string_view>
 #include <chrono>
@@ -69,7 +70,7 @@ namespace
         int totalRowCount;
         char condStr[MAX_NAME_LEN];
 
-        bzero( &genQueryInp, sizeof( genQueryInp ) );
+        std::memset(&genQueryInp, 0, sizeof(genQueryInp));
         genQueryInp.maxRows = 1;
         genQueryInp.options = RETURN_TOTAL_ROW_COUNT;
 

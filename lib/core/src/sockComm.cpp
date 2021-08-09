@@ -39,6 +39,7 @@
 
 #include <json.hpp>
 
+#include <cstring>
 #include <exception>
 
 irods::error sockClientStart(irods::network_object_ptr _ptr, rodsEnv* _env)
@@ -1447,7 +1448,7 @@ int svrSwitchConnect(
     if ( rsComm->reconnectedSock > 0 ) {
         if ( rsComm->clientState == RECEIVING_STATE ) {
             reconnMsg_t reconnMsg;
-            bzero( &reconnMsg, sizeof( reconnMsg ) );
+            std::memset(&reconnMsg, 0, sizeof(reconnMsg));
             sendReconnMsg( net_obj, &reconnMsg );
             rsComm->clientState = PROCESSING_STATE;
         }
@@ -1476,7 +1477,7 @@ int cliSwitchConnect( rcComm_t *conn ) {
     if ( conn->reconnectedSock > 0 ) {
         if ( conn->agentState == RECEIVING_STATE ) {
             reconnMsg_t reconnMsg;
-            bzero( &reconnMsg, sizeof( reconnMsg ) );
+            std::memset(&reconnMsg, 0, sizeof(reconnMsg));
             sendReconnMsg( net_obj, &reconnMsg );
             conn->agentState = PROCESSING_STATE;
         }
@@ -1577,7 +1578,7 @@ rcReconnect( rcComm_t **conn, char *newHost, rodsEnv *myEnv, int reconnFlag ) {
     rcComm_t *newConn = NULL;
     rErrMsg_t errMsg;
 
-    bzero( &errMsg, sizeof( errMsg ) );
+    std::memset(&errMsg, 0, sizeof(errMsg));
 
     newConn =  rcConnect( newHost, myEnv->rodsPort, myEnv->rodsUserName,
                           myEnv->rodsZone, reconnFlag, &errMsg );

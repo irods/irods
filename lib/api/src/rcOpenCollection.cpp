@@ -1,14 +1,8 @@
-/**
- * @file  rcOpenCollection.cpp
- *
- */
-
-/* This is script-generated code.  */
-/* See openCollection.h for a description of this API call.*/
-
 #include "openCollection.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
+
+#include <cstring>
 
 /**
  * \fn rcOpenCollection (rcComm_t *conn, collInp_t *openCollInp)
@@ -33,7 +27,7 @@
  * \n int status, handleInx;
  * \n collInp_t collOpenInp;
  * \n collEnt_t *collEnt = NULL;
- * \n bzero (&collOpenInp, sizeof (collOpenInp));
+ * \n memset(&collOpenInp, 0, sizeof(collOpenInp));
  * \n rstrcpy (collOpenInp.collName, "/myZone/home/john/coll1/coll2",
  *     MAX_NAME_LEN);
  * \n collOpenInp.flags = RECUR_QUERY_FG | VERY_LONG_METADATA_FG;

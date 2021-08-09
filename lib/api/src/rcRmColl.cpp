@@ -1,14 +1,8 @@
-/**
- * @file  rcRmColl.cpp
- *
- */
-
-/* This is script-generated code.  */
-/* See rmColl.h for a description of this API call.*/
-
 #include "rmColl.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
+
+#include <cstring>
 
 int
 _rcRmColl( rcComm_t *conn, collInp_t *rmCollInp,
@@ -42,7 +36,7 @@ _rcRmColl( rcComm_t *conn, collInp_t *rmCollInp,
  * Recursively delete the collection /myZone/home/john/mydir
  * \n int status;
  * \n collInp_t rmCollInp;
- * \n bzero (&rmCollInp, sizeof (rmCollInp));
+ * \n memset(&rmCollInp, 0, sizeof(rmCollInp));
  * \n rstrcpy (rmCollInp.collName, "/myZone/home/john/mydir", MAX_NAME_LEN);
  * \n addKeyVal (&rmCollInp->condInput, FORCE_FLAG_KW, "");
  * \n addKeyVal (&rmCollInp->condInput, RECURSIVE_OPR__KW, "");

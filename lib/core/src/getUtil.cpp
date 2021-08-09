@@ -1,8 +1,7 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
 #ifndef windows_platform
 #include <sys/time.h>
 #endif
+
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
@@ -12,6 +11,8 @@
 #include "rcPortalOpr.h"
 #include "sockComm.h"
 #include "rcGlobalExtern.h"
+
+#include <cstring>
 
 int
 setSessionTicket( rcComm_t *myConn, char *ticket ) {
@@ -71,7 +72,7 @@ getUtil( rcComm_t **myConn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 
     /* initialize the progress struct */
     if ( gGuiProgressCB != NULL ) {
-        bzero( &conn->operProgress, sizeof( conn->operProgress ) );
+        std::memset(&conn->operProgress, 0, sizeof(conn->operProgress));
         for ( i = 0; i < rodsPathInp->numSrc; i++ ) {
             targPath = &rodsPathInp->targPath[i];
             if ( targPath->objType == LOCAL_FILE_T ) {
@@ -173,7 +174,7 @@ getUtil( rcComm_t **myConn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         }
         while ( myRodsArgs->retriesValue > 0 ) {
             rErrMsg_t errMsg;
-            bzero( &errMsg, sizeof( errMsg ) );
+            std::memset(&errMsg, 0, sizeof(errMsg));
             status = rcReconnect( myConn, myRodsEnv->rodsHost, myRodsEnv,
                                   reconnFlag );
             if ( status < 0 ) {

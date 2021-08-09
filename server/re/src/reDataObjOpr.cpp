@@ -32,10 +32,13 @@
 #include "rsModDataObjMeta.hpp"
 #include "rsStructFileBundle.hpp"
 #include "rsPhyBundleColl.hpp"
-#include <string>
-#include <vector>
+
 #include <boost/regex.hpp>
 #include <boost/algorithm/string/regex.hpp>
+
+#include <cstring>
+#include <string>
+#include <vector>
 
 /**
  * \fn msiDataObjCreate (msParam_t *inpParam1, msParam_t *msKeyValStr,
@@ -213,7 +216,7 @@ msiDataObjOpen( msParam_t *inpParam, msParam_t *outParam,
 
     /* parse inpParam */
     if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
-        bzero( &dataObjInp, sizeof( dataObjInp ) );
+        std::memset(&dataObjInp, 0, sizeof(dataObjInp));
         myDataObjInp = &dataObjInp;
         validKwFlags = OBJ_PATH_FLAG | RESC_NAME_FLAG | OPEN_FLAGS_FLAG |
                        REPL_NUM_FLAG;
@@ -820,7 +823,7 @@ msiDataObjUnlink( msParam_t *inpParam, msParam_t *outParam,
 
     /* parse inpParam */
     if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
-        bzero( &dataObjInp, sizeof( dataObjInp ) );
+        std::memset(&dataObjInp, 0, sizeof(dataObjInp));
         myDataObjInp = &dataObjInp;
         validKwFlags = OBJ_PATH_FLAG | FORCE_FLAG_FLAG | REPL_NUM_FLAG |
                        RMTRASH_FLAG | ADMIN_RMTRASH_FLAG | UNREG_FLAG;
@@ -2464,7 +2467,7 @@ msiCollRsync( msParam_t *inpParam1, msParam_t *inpParam2,
 
     rsComm = rei->rsComm;
 
-    bzero( &dataObjInp, sizeof( dataObjInp ) );
+    std::memset(&dataObjInp, 0, sizeof(dataObjInp));
 
     /* parse inpParam1 */
     srcColl = parseMspForStr( inpParam1 );
@@ -2925,7 +2928,7 @@ msiTarFileExtract( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
     }
 
     if ( strcmp( inpParam1->type, STR_MS_T ) == 0 ) {
-        bzero( &structFileExtAndRegInp, sizeof( structFileExtAndRegInp ) );
+        std::memset(&structFileExtAndRegInp, 0, sizeof(structFileExtAndRegInp));
         myStructFileExtAndRegInp = &structFileExtAndRegInp;
         snprintf( myStructFileExtAndRegInp->objPath, sizeof( myStructFileExtAndRegInp->objPath ),
                   "%s", ( char* )inpParam1->inOutStruct );
@@ -3064,7 +3067,7 @@ msiTarFileCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
     }
 
     if ( strcmp( inpParam1->type, STR_MS_T ) == 0 ) {
-        bzero( &structFileExtAndRegInp, sizeof( structFileExtAndRegInp ) );
+        std::memset(&structFileExtAndRegInp, 0, sizeof(structFileExtAndRegInp));
         myStructFileExtAndRegInp = &structFileExtAndRegInp;
         snprintf( myStructFileExtAndRegInp->objPath, sizeof( myStructFileExtAndRegInp->objPath ),
                   "%s", ( char* )inpParam1->inOutStruct );

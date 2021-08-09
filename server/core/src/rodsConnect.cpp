@@ -1,9 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-/* initServer.cpp - Server initialization routines
- */
-
 #include "rcMisc.h"
 #include "rodsConnect.h"
 #include "rsGlobalExtern.hpp"
@@ -12,6 +6,8 @@
 #include "getRemoteZoneResc.h"
 #include "irods_resource_backport.hpp"
 #include "rsLog.hpp"
+
+#include <cstring>
 
 /* getAndConnRcatHost - get the rcat enabled host (result given in
  * rodsServerHost) based on the rcatZoneHint.
@@ -902,15 +898,14 @@ isLocalHost( const char *hostAddr ) {
     rodsServerHost_t *rodsServerHost;
     rodsHostAddr_t addr;
 
-    bzero( &addr, sizeof( addr ) );
+    std::memset(&addr, 0, sizeof(addr));
     rstrcpy( addr.hostAddr, hostAddr, NAME_LEN );
     remoteFlag = resolveHost( &addr, &rodsServerHost );
     if ( remoteFlag == LOCAL_HOST ) {
         return 1;
     }
-    else {
-        return 0;
-    }
+
+    return 0;
 }
 
 int

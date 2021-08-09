@@ -1,14 +1,8 @@
-/**
- * @file  rcDataObjTruncate.cpp
- *
- */
-
-/* This is script-generated code.  */
-/* See dataObjTruncate.h for a description of this API call.*/
-
 #include "dataObjTruncate.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
+
+#include <cstring>
 
 /**
  * \fn rcDataObjTruncate (rcComm_t *conn, dataObjInp_t *dataObjInp)
@@ -31,7 +25,7 @@
  * \usage
  * Truncate size the data object /myZone/home/john/myfile to 12345.
  * \n dataObjInp_t dataObjInp;
- * \n bzero (&dataObjInp, sizeof (dataObjInp));
+ * \n memset(&dataObjInp, 0, sizeof(dataObjInp));
  * \n rstrcpy (dataObjInp.objPath, "/myZone/home/john/myfile", MAX_NAME_LEN);
  * \n dataObjInp.dataSize = 12345;
  * \n status = rcDataObjTruncate (conn, &dataObjInp);

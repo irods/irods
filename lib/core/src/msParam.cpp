@@ -5,6 +5,8 @@
 #include "rcGlobalExtern.h"
 #include "rodsErrorTable.h"
 
+#include <cstring>
+
 /* addMsParam - This is for backward compatibility only.
  *  addMsParamToArray should be used for all new functions
  */
@@ -1061,15 +1063,13 @@ getStderrInExecCmdOut( msParam_t * inpExecCmdOut, char **outStr ) {
 int
 initParsedMsKeyValStr( char * inpStr, parsedMsKeyValStr_t * parsedMsKeyValStr ) {
     if ( inpStr == NULL || parsedMsKeyValStr == NULL ) {
-        rodsLog( LOG_ERROR,
-                 "initParsedMsKeyValStr: input inpStr or parsedMsKeyValStr is NULL" );
+        rodsLog( LOG_ERROR, "initParsedMsKeyValStr: input inpStr or parsedMsKeyValStr is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    bzero( parsedMsKeyValStr, sizeof( parsedMsKeyValStr_t ) );
+    std::memset(parsedMsKeyValStr, 0, sizeof(parsedMsKeyValStr_t));
     parsedMsKeyValStr->inpStr = parsedMsKeyValStr->curPtr = strdup( inpStr );
-    parsedMsKeyValStr->endPtr = parsedMsKeyValStr->inpStr +
-                                strlen( parsedMsKeyValStr->inpStr );
+    parsedMsKeyValStr->endPtr = parsedMsKeyValStr->inpStr + strlen( parsedMsKeyValStr->inpStr );
 
     return 0;
 }
@@ -1085,7 +1085,7 @@ clearParsedMsKeyValStr( parsedMsKeyValStr_t * parsedMsKeyValStr ) {
         free( parsedMsKeyValStr->inpStr );
     }
 
-    bzero( parsedMsKeyValStr, sizeof( parsedMsKeyValStr_t ) );
+    std::memset(parsedMsKeyValStr, 0, sizeof(parsedMsKeyValStr_t));
 
     return 0;
 }

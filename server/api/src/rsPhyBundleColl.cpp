@@ -42,6 +42,8 @@
 
 #include "fmt/format.h"
 
+#include <cstring>
+
 static rodsLong_t OneGig = ( 1024 * 1024 * 1024 );
 
 int
@@ -73,7 +75,7 @@ rsPhyBundleColl( rsComm_t*                 rsComm,
     // we know that the redirection decision has already been made
     dataObjInp_t      data_inp{};
     rstrcpy( data_inp.objPath, phyBundleCollInp->objPath, MAX_NAME_LEN );
-    bzero( &data_inp.condInput, sizeof( data_inp.condInput ) );
+    std::memset(&data_inp.condInput, 0, sizeof(data_inp.condInput));
     addKeyVal( &data_inp.condInput, DEST_RESC_NAME_KW, destRescName );
 
     std::string hier{};
@@ -106,7 +108,7 @@ rsPhyBundleColl( rsComm_t*                 rsComm,
 
 
     rodsHostAddr_t rescAddr;
-    bzero( &rescAddr, sizeof( rescAddr ) );
+    std::memset(&rescAddr, 0, sizeof(rescAddr));
 
     rstrcpy( rescAddr.hostAddr, location.c_str(), NAME_LEN );
     rodsServerHost_t* rodsServerHost = 0;
@@ -399,15 +401,15 @@ bundleAndRegSubFiles( rsComm_t *rsComm, int l1descInx, char *phyBunDir,
 
     int savedStatus = 0;
 
-    bzero( &dataObjCloseInp, sizeof( dataObjCloseInp ) );
+    std::memset(&dataObjCloseInp, 0, sizeof(dataObjCloseInp));
     dataObjCloseInp.l1descInx = l1descInx;
     if ( bunReplCacheHeader->numSubFiles == 0 ) {
-        bzero( &dataObjUnlinkInp, sizeof( dataObjUnlinkInp ) );
+        std::memset(&dataObjUnlinkInp, 0, sizeof(dataObjUnlinkInp));
         rstrcpy( dataObjUnlinkInp.objPath, L1desc[l1descInx].dataObjInfo->objPath, MAX_NAME_LEN );
         dataObjUnlinkS( rsComm, &dataObjUnlinkInp, L1desc[l1descInx].dataObjInfo );
         L1desc[l1descInx].bytesWritten = 0;
         rsDataObjClose( rsComm, &dataObjCloseInp );
-        bzero( bunReplCacheHeader, sizeof( bunReplCacheHeader_t ) );
+        std::memset(bunReplCacheHeader, 0, sizeof(bunReplCacheHeader_t));
         return 0;
     }
 
@@ -426,7 +428,7 @@ bundleAndRegSubFiles( rsComm_t *rsComm, int l1descInx, char *phyBunDir,
             free( tmpBunReplCache );
             tmpBunReplCache = nextBunReplCache; // JMC - backport 4579
         }
-        bzero( bunReplCacheHeader, sizeof( bunReplCacheHeader_t ) );
+        std::memset(bunReplCacheHeader, 0, sizeof(bunReplCacheHeader_t));
         return status;
     }
     else {
@@ -439,20 +441,20 @@ bundleAndRegSubFiles( rsComm_t *rsComm, int l1descInx, char *phyBunDir,
 
     if ( tmpBunReplCache == NULL ) {
         rmdir( phyBunDir );
-        bzero( &dataObjUnlinkInp, sizeof( dataObjUnlinkInp ) );
+        std::memset(&dataObjUnlinkInp, 0, sizeof(dataObjUnlinkInp));
         rstrcpy( dataObjUnlinkInp.objPath, L1desc[l1descInx].dataObjInfo->objPath, MAX_NAME_LEN );
         dataObjUnlinkS( rsComm, &dataObjUnlinkInp, L1desc[l1descInx].dataObjInfo );
         L1desc[l1descInx].bytesWritten = 0;
         rsDataObjClose( rsComm, &dataObjCloseInp );
-        bzero( bunReplCacheHeader, sizeof( bunReplCacheHeader_t ) );
+        std::memset(bunReplCacheHeader, 0, sizeof(bunReplCacheHeader_t));
         return 0;
     }
 
-    bzero( &regReplicaInp, sizeof( regReplicaInp ) );
+    std::memset(&regReplicaInp, 0, sizeof(regReplicaInp));
     regReplicaInp.srcDataObjInfo = ( dataObjInfo_t* )malloc( sizeof( dataObjInfo_t ) );
     regReplicaInp.destDataObjInfo = ( dataObjInfo_t* )malloc( sizeof( dataObjInfo_t ) );
-    bzero( regReplicaInp.srcDataObjInfo, sizeof( dataObjInfo_t ) );
-    bzero( regReplicaInp.destDataObjInfo, sizeof( dataObjInfo_t ) );
+    std::memset(regReplicaInp.srcDataObjInfo, 0, sizeof(dataObjInfo_t));
+    std::memset(regReplicaInp.destDataObjInfo, 0, sizeof(dataObjInfo_t));
     addKeyVal( &regReplicaInp.condInput, ADMIN_KW, "" );
     rstrcpy( regReplicaInp.destDataObjInfo->rescName, BUNDLE_RESC, NAME_LEN );
     // XXXX - JMC :: filePath was copied into objPath??? #1111 by hcjiv
@@ -465,8 +467,8 @@ bundleAndRegSubFiles( rsComm_t *rsComm, int l1descInx, char *phyBunDir,
     // =-=-=-=-=-=-=-
     // JMC - backport 4528
     if ( chksumFlag != 0 ) {
-        bzero( &modDataObjMetaInp, sizeof( modDataObjMetaInp ) );
-        bzero( &regParam, sizeof( regParam ) );
+        std::memset(&modDataObjMetaInp, 0, sizeof(modDataObjMetaInp));
+        std::memset(&regParam, 0, sizeof(regParam));
         modDataObjMetaInp.dataObjInfo = regReplicaInp.destDataObjInfo;
         modDataObjMetaInp.regParam = &regParam;
     }
@@ -531,7 +533,7 @@ bundleAndRegSubFiles( rsComm_t *rsComm, int l1descInx, char *phyBunDir,
     clearKeyVal( &regReplicaInp.condInput );
     free( regReplicaInp.srcDataObjInfo );
     free( regReplicaInp.destDataObjInfo );
-    bzero( bunReplCacheHeader, sizeof( bunReplCacheHeader_t ) );
+    std::memset(bunReplCacheHeader, 0, sizeof(bunReplCacheHeader_t));
     rmdir( phyBunDir );
 
     if ( status >= 0 && savedStatus < 0 ) {
@@ -554,7 +556,7 @@ phyBundle( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *phyBunDir,
 
     dataType = dataObjInfo->dataType;
 
-    bzero( &structFileOprInp, sizeof( structFileOprInp ) );
+    std::memset(&structFileOprInp, 0, sizeof(structFileOprInp));
     addKeyVal( &structFileOprInp.condInput, RESC_HIER_STR_KW, dataObjInfo->rescHier );
 
     structFileOprInp.specColl = ( specColl_t* )malloc( sizeof( specColl_t ) );
@@ -607,7 +609,7 @@ addSubFileToDir( curSubFileCond_t *curSubFileCond,
     }
     bunReplCache_t *bunReplCache;
     bunReplCache = ( bunReplCache_t* )malloc( sizeof( bunReplCache_t ) );
-    bzero( bunReplCache, sizeof( bunReplCache_t ) );
+    std::memset(bunReplCache, 0, sizeof(bunReplCache_t));
     bunReplCache->dataId = curSubFileCond->dataId;
     snprintf( bunReplCache->objPath, MAX_NAME_LEN, "%s/%s",
               curSubFileCond->collName, curSubFileCond->dataName );
@@ -675,7 +677,7 @@ createPhyBundleDataObj( rsComm_t *rsComm, char *collection,
 
     do {
         int loopCnt = 0;
-        bzero( dataObjInp, sizeof( dataObjInp_t ) );
+        std::memset(dataObjInp, 0, sizeof(dataObjInp_t));
         while ( 1 ) {
             status = rsMkBundlePath( rsComm, collection, dataObjInp->objPath,
                                      irods::getRandom<unsigned int>() );

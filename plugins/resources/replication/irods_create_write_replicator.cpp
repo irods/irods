@@ -6,6 +6,8 @@
 
 #include "fmt/format.h"
 
+#include <cstring>
+
 namespace irods {
 
     create_write_replicator::create_write_replicator(
@@ -45,7 +47,7 @@ namespace irods {
                 error ret = sibling.str( hierarchy_string );
                 if ( ( result = ASSERT_PASS( ret, "Failed to get the hierarchy string from the sibling hierarchy parser." ) ).ok() ) {
                     dataObjInp_t dataObjInp;
-                    bzero( &dataObjInp, sizeof( dataObjInp ) );
+                    std::memset(&dataObjInp, 0, sizeof(dataObjInp));
                     rstrcpy( dataObjInp.objPath, object.logical_path().c_str(), MAX_NAME_LEN );
                     dataObjInp.createMode = object.mode();
 

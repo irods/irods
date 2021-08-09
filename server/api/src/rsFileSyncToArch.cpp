@@ -1,34 +1,27 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* rsFileSyncToArch.c - server routine that handles the fileSyncToArch
- * API
- */
-
-/* script generated code */
 #include "fileSyncToArch.h"
 #include "fileOpr.hpp"
 #include "miscServerFunct.hpp"
 #include "dataObjOpr.hpp"
 #include "physPath.hpp"
 #include "rsFileSyncToArch.hpp"
-
-// =-=-=-=-=-=-=-
 #include "irods_log.hpp"
 #include "irods_file_object.hpp"
 #include "irods_collection_object.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_resource_backport.hpp"
 
+#include <cstring>
+
 int rsFileSyncToArch(
     rsComm_t*           rsComm,
     fileStageSyncInp_t* fileSyncToArchInp,
-    fileSyncOut_t**     sync_out ) {
+    fileSyncOut_t**     sync_out )
+{
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
-    int status;
 
-    ( *sync_out ) = ( fileSyncOut_t* )malloc( sizeof( fileSyncOut_t ) );
-    bzero( ( *sync_out ), sizeof( fileSyncOut_t ) );
+    *sync_out = ( fileSyncOut_t* )malloc( sizeof( fileSyncOut_t ) );
+    std::memset(*sync_out, 0, sizeof(fileSyncOut_t));
 
 //    remoteFlag = resolveHost (&fileSyncToArchInp->addr, &rodsServerHost);
     irods::error ret = irods::get_host_for_hier_string( fileSyncToArchInp->rescHier, remoteFlag, rodsServerHost );
@@ -40,10 +33,8 @@ int rsFileSyncToArch(
     if ( remoteFlag < 0 ) {
         return remoteFlag;
     }
-    else {
-        status = rsFileSyncToArchByHost( rsComm, fileSyncToArchInp, sync_out, rodsServerHost );
-        return status;
-    }
+
+    return rsFileSyncToArchByHost( rsComm, fileSyncToArchInp, sync_out, rodsServerHost );
 }
 
 int

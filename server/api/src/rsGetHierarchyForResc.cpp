@@ -1,14 +1,12 @@
-/*** Copyright (c), The Unregents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* unregDataObj.c
- */
+#include "rsGetHierarchyForResc.hpp"
 
-#include "icatHighLevelRoutines.hpp"
 #include "getHierarchyForResc.h"
+#include "icatHighLevelRoutines.hpp"
 #include "irods_stacktrace.hpp"
 #include "miscServerFunct.hpp"
 #include "irods_configuration_keywords.hpp"
-#include "rsGetHierarchyForResc.hpp"
+
+#include <cstring>
 
 // =-=-=-=-=-=-=-
 // local implementation which makes the icat high level
@@ -30,7 +28,7 @@ int _rsGetHierarchyForResc(
         // =-=-=-=-=-=-=-
         // allocate the outgoing structure
         ( *_out ) = ( getHierarchyForRescOut_t* )malloc( sizeof( getHierarchyForRescOut_t ) );
-        bzero( ( *_out ), sizeof( getHierarchyForRescOut_t ) );
+        std::memset(*_out, 0, sizeof(getHierarchyForRescOut_t));
 
         // =-=-=-=-=-=-=-
         // get local zone
