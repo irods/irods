@@ -1,8 +1,7 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
 #ifndef windows_platform
 #include <sys/time.h>
 #endif
+
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
@@ -10,6 +9,8 @@
 #include "cpUtil.h"
 #include "rcGlobalExtern.h"
 #include "irods_virtual_path.hpp"
+
+#include <cstring>
 
 int
 cpUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
@@ -31,7 +32,7 @@ cpUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 
     /* initialize the progress struct */
     if ( gGuiProgressCB != NULL ) {
-        bzero( &conn->operProgress, sizeof( conn->operProgress ) );
+        std::memset(&conn->operProgress, 0, sizeof(conn->operProgress));
         for ( int i = 0; i < rodsPathInp->numSrc; i++ ) {
             rodsPath_t * targPath = &rodsPathInp->targPath[i];
             if ( targPath->objType == DATA_OBJ_T ) {

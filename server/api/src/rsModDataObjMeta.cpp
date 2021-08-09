@@ -1,15 +1,9 @@
-/*** Copyright (c), The Unregents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* unregDataObj.c
- */
-
 #include "rsModDataObjMeta.hpp"
 #include "modDataObjMeta.h"
 #include "icatHighLevelRoutines.hpp"
 #include "objMetaOpr.hpp"
 #include "dataObjOpr.hpp"
 #include "miscServerFunct.hpp"
-
 #include "irods_file_object.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_configuration_keywords.hpp"
@@ -17,6 +11,8 @@
 #include "replica_state_table.hpp"
 
 #include "boost/format.hpp"
+
+#include <cstring>
 
 namespace
 {
@@ -137,7 +133,7 @@ _rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp ) {
             dataObjInfo_t *tmpDataObjInfo;
             dataObjInp_t dataObjInp;
 
-            bzero( &dataObjInp, sizeof( dataObjInp ) );
+            std::memset(&dataObjInp, 0, sizeof(dataObjInp));
             rstrcpy( dataObjInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN );
             status = getDataObjInfoIncSpecColl( rsComm, &dataObjInp, &dataObjInfoHead );
 
@@ -239,7 +235,7 @@ int _call_file_modified_for_modification(
         dataObjInfo_t *tmpDataObjInfo;
         dataObjInp_t dataObjInp;
 
-        bzero( &dataObjInp, sizeof( dataObjInp ) );
+        std::memset(&dataObjInp, 0, sizeof(dataObjInp));
         rstrcpy( dataObjInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN );
         status = getDataObjInfoIncSpecColl( rsComm, &dataObjInp, &dataObjInfoHead );
 

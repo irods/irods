@@ -28,6 +28,8 @@
 
 #include <fmt/format.h>
 
+#include <cstring>
+
 namespace fs = boost::filesystem;
 
 int
@@ -305,7 +307,7 @@ createBunDirForBulkPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return USER__NULL_INPUT_ERR;
     }
 
-    bzero( &dataObjInfo, sizeof( dataObjInfo ) );
+    std::memset(&dataObjInfo, 0, sizeof( dataObjInfo));
     rstrcpy( dataObjInfo.objPath, dataObjInp->objPath, MAX_NAME_LEN );
     rstrcpy( dataObjInfo.rescName, _resc_name, NAME_LEN );
 
@@ -369,7 +371,7 @@ initDataObjInpFromBulkOpr( dataObjInp_t *dataObjInp, bulkOprInp_t *bulkOprInp ) 
         return USER__NULL_INPUT_ERR;
     }
 
-    bzero( dataObjInp, sizeof( dataObjInp_t ) );
+    std::memset(dataObjInp, 0, sizeof(dataObjInp_t));
     rstrcpy( dataObjInp->objPath, bulkOprInp->objPath, MAX_NAME_LEN );
     dataObjInp->condInput = bulkOprInp->condInput;
 
@@ -384,7 +386,7 @@ bulkRegUnbunSubfiles( rsComm_t *rsComm, const char *_resc_name, const std::strin
     renamedPhyFiles_t renamedPhyFiles;
     int status = 0;
 
-    bzero( &renamedPhyFiles, sizeof( renamedPhyFiles ) );
+    std::memset(&renamedPhyFiles, 0, sizeof(renamedPhyFiles));
     initBulkDataObjRegInp( &bulkDataObjRegInp );
     /* the continueInx is used for the matching of objPath */
     if ( attriArray != NULL ) {
@@ -434,7 +436,8 @@ _bulkRegUnbunSubfiles( rsComm_t *rsComm, const char *_resc_name, const std::stri
                  __FUNCTION__, phyBunDir, errno );
         return UNIX_FILE_OPENDIR_ERR - errno;
     }
-    bzero( &dataObjInp, sizeof( dataObjInp ) );
+
+    std::memset(&dataObjInp, 0, sizeof(dataObjInp));
     fs::directory_iterator end_itr; // default construction yields past-the-end
     for ( fs::directory_iterator itr( srcDirPath ); itr != end_itr; ++itr ) {
         fs::path p = itr->path();
@@ -506,8 +509,8 @@ bulkProcAndRegSubfile( rsComm_t *rsComm, const char *_resc_name, const std::stri
     char *myChksum = NULL;
     int myDataMode = dataMode;
 
-    bzero( &dataObjInp, sizeof( dataObjInp ) );
-    bzero( &dataObjInfo, sizeof( dataObjInfo ) );
+    std::memset(&dataObjInp, 0, sizeof(dataObjInp));
+    std::memset(&dataObjInfo, 0, sizeof(dataObjInfo));
     rstrcpy( dataObjInp.objPath, subObjPath, MAX_NAME_LEN );
     rstrcpy( dataObjInfo.objPath, subObjPath, MAX_NAME_LEN );
     rstrcpy( dataObjInfo.rescName, _resc_name, NAME_LEN );
@@ -551,7 +554,7 @@ bulkProcAndRegSubfile( rsComm_t *rsComm, const char *_resc_name, const std::stri
         }
         /* rename it to the orphan dir */
         fileRenameInp_t fileRenameInp;
-        bzero( &fileRenameInp, sizeof( fileRenameInp ) );
+        std::memset(&fileRenameInp, 0, sizeof(fileRenameInp));
         rstrcpy( fileRenameInp.oldFileName, dataObjInfo.filePath, MAX_NAME_LEN );
         rstrcpy( fileRenameInp.rescHier, dataObjInfo.rescHier, MAX_NAME_LEN );
         char new_fn[ MAX_NAME_LEN ];
@@ -796,7 +799,8 @@ postProcRenamedPhyFiles( renamedPhyFiles_t *renamedPhyFiles, int regStatus ) {
                      &renamedPhyFiles->origFilePath[i][0], savedStatus );
         }
     }
-    bzero( renamedPhyFiles, sizeof( renamedPhyFiles_t ) );
+
+    std::memset(renamedPhyFiles, 0, sizeof(renamedPhyFiles_t));
 
     return savedStatus;
 }
@@ -932,7 +936,7 @@ postProcBulkPut( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
     }
 
     /* create a template */
-    bzero( &dataObjInfo, sizeof( dataObjInfo_t ) );
+    std::memset(&dataObjInfo, 0, sizeof(dataObjInfo_t));
     rstrcpy( dataObjInfo.rescName, rescName->value, NAME_LEN );
     dataObjInfo.replStatus = INTERMEDIATE_REPLICA;
     /*status = resolveResc (rescName->value, &dataObjInfo.rescInfo);
@@ -942,7 +946,7 @@ postProcBulkPut( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
       return status;
       }*/
 
-    bzero( &dataObjInp, sizeof( dataObjInp_t ) );
+    std::memset(&dataObjInp, 0, sizeof(dataObjInp_t));
     dataObjInp.openFlags = O_WRONLY;
 
     for ( i = 0; i < bulkDataObjRegInp->rowCnt; i++ ) {

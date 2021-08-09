@@ -22,10 +22,12 @@
 
 #include "QUANTAnet_rbudpReceiver_c.h"
 #include "irods_log.hpp"
-#include <limits>
 
-#include <stdarg.h>
 #include <boost/format.hpp>
+
+#include <cstdarg>
+#include <cstring>
+#include <limits>
 
 // If you want to output debug info on terminals when running, put
 //  fprintf(stderr, __VA_ARGS__);
@@ -432,9 +434,8 @@ int  getfilelist( rbudpReceiver_t *rbudpReceiver, char * fileList,
     fclose( fp );
 
     // send all zero block to end the sender.
-    bzero( str, SIZEOFFILENAME );
-    if ( writen( rbudpReceiver->rbudpBase.tcpSockfd, str, SIZEOFFILENAME ) !=
-            SIZEOFFILENAME ) {
+    std::memset(str, 0, SIZEOFFILENAME);
+    if ( writen( rbudpReceiver->rbudpBase.tcpSockfd, str, SIZEOFFILENAME ) != SIZEOFFILENAME ) {
         perror( "Error Tcp Send" );
         return FAILED;
     }

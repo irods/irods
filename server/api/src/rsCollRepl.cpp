@@ -1,8 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code (for the most part).  */
-/* See dataObjRepl.h for a description of this API call.*/
-
 #include "collRepl.h"
 #include "dataObjOpr.hpp"
 #include "rodsLog.h"
@@ -18,6 +13,8 @@
 #include "rsCloseCollection.hpp"
 #include "rsReadCollection.hpp"
 #include "rsDataObjRepl.hpp"
+
+#include <cstring>
 
 /* rsCollRepl - The Api handler of the rcCollRepl call - Replicate
  * a data object.
@@ -41,7 +38,7 @@ rsCollRepl( rsComm_t *rsComm, collInp_t *collReplInp,
     rodsServerHost_t *rodsServerHost;
 
     /* try to connect to dest resc */
-    bzero( &dataObjInp, sizeof( dataObjInp ) );
+    std::memset(&dataObjInp, 0, sizeof(dataObjInp));
     rstrcpy( dataObjInp.objPath, collReplInp->collName, MAX_NAME_LEN );
     remoteFlag = getAndConnRemoteZone( rsComm, &dataObjInp, &rodsServerHost,
                                        REMOTE_CREATE );
@@ -92,7 +89,7 @@ rsCollRepl( rsComm_t *rsComm, collInp_t *collReplInp,
             if ( totalFileCnt == 0 ) totalFileCnt =
                     CollHandle[handleInx].dataObjSqlResult.totalRowCount;
 
-            bzero( &dataObjInp, sizeof( dataObjInp ) );
+            std::memset(&dataObjInp, 0, sizeof(dataObjInp));
             snprintf( dataObjInp.objPath, MAX_NAME_LEN, "%s/%s",
                       collEnt->collName, collEnt->dataName );
             dataObjInp.condInput = collReplInp->condInput;

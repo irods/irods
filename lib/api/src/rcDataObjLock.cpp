@@ -1,16 +1,8 @@
-/**
- * @file  rcDataObjLock.cpp
- *
- */
-
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */
-/* See dataObjLock.h for a description of this API call.*/
-
 #include "dataObjLock.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
+
+#include <cstring>
 
 /**
  * \fn rcDataObjLock (rcComm_t *conn, dataObjInp_t *dataObjInp)
@@ -33,7 +25,7 @@
  * \n dataObjInp_t dataObjInp;
  * \n int lockFd;
  * \n char tmpStr[NAME_LEN];
- * \n bzero (&dataObjInp, sizeof (dataObjInp));
+ * \n memset(&dataObjInp, 0, sizeof(dataObjInp));
  * \n rstrcpy (dataObjInp.objPath, "/myZone/home/john/myfile", MAX_NAME_LEN);
  * \n dataObjInp.openFlags = O_WRONLY;
  * \n addKeyVal (&dataObjInp.condInput, LOCK_TYPE_KW, WRITE_LOCK_TYPE);

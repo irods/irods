@@ -22,7 +22,6 @@
 #include "rs_replica_close.hpp"
 #include "sockComm.h"
 #include "objMetaOpr.hpp"
-
 #include "finalize_utilities.hpp"
 #include "irods_configuration_parser.hpp"
 #include "irods_exception.hpp"
@@ -40,17 +39,18 @@
 
 #include "logical_locking.hpp"
 
-#include <vector>
-#include <set>
-#include <string>
-#include <fstream>
-
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
 #include <boost/system/error_code.hpp>
 
 #include <json.hpp>
+
+#include <cstring>
+#include <vector>
+#include <set>
+#include <string>
+#include <fstream>
 
 static time_t LastBrokenPipeTime = 0;
 static int BrokenPipeCnt = 0;
@@ -1201,7 +1201,8 @@ purgeLockFileDir( int chkLockFlag ) {
                 lock_dir.c_str(), errno );
         return UNIX_FILE_OPENDIR_ERR - errno;
     }
-    bzero( &myflock, sizeof( myflock ) );
+
+    std::memset(&myflock, 0, sizeof(myflock));
     myflock.l_whence = SEEK_SET;
     purgeTime = time( 0 ) - LOCK_FILE_PURGE_TIME;
     while ( ( myDirent = readdir( dirPtr ) ) != NULL ) {

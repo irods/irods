@@ -1,16 +1,8 @@
-/**
- * @file  rcDataObjClose.cpp
- *
- */
-
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */
-/* See dataObjClose.h for a description of this API call.*/
-
 #include "dataObjClose.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
+
+#include <cstring>
 
 /**
  * \fn rcDataObjClose (rcComm_t *conn, openedDataObjInp_t *dataObjCloseInp)
@@ -33,8 +25,8 @@
  * \n dataObjInp_t dataObjInp;
  * \n openedDataObjInp_t dataObjCloseInp;
  * \n int status;
- * \n bzero (&dataObjInp, sizeof (dataObjInp));
- * \n bzero (&dataObjCloseInp, sizeof (dataObjCloseInp));
+ * \n memset(&dataObjInp, 0, sizeof(dataObjInp));
+ * \n memset(&dataObjCloseInp, 0, sizeof(dataObjCloseInp));
  * \n rstrcpy (dataObjInp.objPath, "/myZone/home/john/myfile", MAX_NAME_LEN);
  * \n dataObjInp.openFlags = O_WRONLY;
  * \n dataObjCloseInp.l1descInx = rcDataObjOpen (conn, &dataObjInp);
@@ -59,11 +51,7 @@
  * \sa none
 **/
 
-int
-rcDataObjClose( rcComm_t *conn, openedDataObjInp_t *dataObjCloseInp ) {
-    int status;
-    status = procApiRequest( conn, DATA_OBJ_CLOSE_AN,  dataObjCloseInp, NULL,
-                             ( void ** ) NULL, NULL );
-
-    return status;
+int rcDataObjClose(rcComm_t* conn, openedDataObjInp_t* dataObjCloseInp)
+{
+    return procApiRequest(conn, DATA_OBJ_CLOSE_AN,  dataObjCloseInp, NULL, (void **) NULL, NULL);
 }

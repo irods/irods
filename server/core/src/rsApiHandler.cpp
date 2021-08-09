@@ -35,6 +35,7 @@ jmp_buf Jenv;
 #include "rodsErrorTable.h"
 #undef MAKE_IRODS_ERROR_MAP
 
+#include <cstring>
 #include <iterator>
 #include <algorithm>
 
@@ -508,9 +509,9 @@ readAndProcClientMsg( rsComm_t * rsComm, int flags ) {
     msgHeader_t myHeader;
     bytesBuf_t inputStructBBuf, bsBBuf, errorBBuf;
 
-    bzero( &inputStructBBuf, sizeof( inputStructBBuf ) );
-    bzero( &bsBBuf, sizeof( bsBBuf ) );
-    bzero( &errorBBuf, sizeof( errorBBuf ) );
+    std::memset(&inputStructBBuf, 0, sizeof(inputStructBBuf));
+    std::memset(&bsBBuf, 0, sizeof(bsBBuf));
+    std::memset(&errorBBuf, 0, sizeof(errorBBuf));
 
     svrChkReconnAtReadStart( rsComm );
     /* everything else are set in readMsgBody */

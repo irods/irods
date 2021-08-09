@@ -1,9 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-/* objDesc.c - L1 type operation. Will call low level l1desc drivers
- */
-
 #include "rcMisc.h"
 #include "rodsDef.h"
 #include "objDesc.hpp"
@@ -22,7 +16,6 @@
 #include "rsGetHierFromLeafId.hpp"
 #include "rsQuerySpecColl.hpp"
 #include "rsDataObjClose.hpp"
-
 #include "irods_resource_backport.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_stacktrace.hpp"
@@ -30,6 +23,8 @@
 #include "get_hier_from_leaf_id.h"
 #include "key_value_proxy.hpp"
 #include "replica_proxy.hpp"
+
+#include <cstring>
 
 int
 initL1desc() {
@@ -656,7 +651,7 @@ allocAndSetL1descForZoneOpr( int remoteL1descInx, dataObjInp_t *dataObjInp,
     L1desc[l1descInx].dataObjInpReplFlag = 1;
     dataObjInfo = L1desc[l1descInx].dataObjInfo =
                       ( dataObjInfo_t* )malloc( sizeof( dataObjInfo_t ) );
-    bzero( dataObjInfo, sizeof( dataObjInfo_t ) );
+    std::memset(dataObjInfo, 0, sizeof(dataObjInfo_t));
     rstrcpy( dataObjInfo->objPath, dataObjInp->objPath, MAX_NAME_LEN );
 
     if ( openStat != NULL ) {

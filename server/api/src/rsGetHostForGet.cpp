@@ -1,8 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code (for the most part).  */
-/* See getHostForGet.h for a description of this API call.*/
-
 #include "getHostForGet.h"
 #include "getHostForPut.h"
 #include "rodsLog.h"
@@ -20,10 +15,10 @@
 #include "closeCollection.h"
 #include "dataObjOpr.hpp"
 #include "rsGetHostForGet.hpp"
-
-// =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
 #include "irods_resource_redirect.hpp"
+
+#include <cstring>
 
 int rsGetHostForGet(
     rsComm_t*     rsComm,
@@ -98,8 +93,8 @@ getBestRescForGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     *outRescInfo = NULL;
 
-    bzero( &hostSearchStat, sizeof( hostSearchStat ) );
-    bzero( &collInp, sizeof( collInp ) );
+    std::memset(&hostSearchStat, 0, sizeof(hostSearchStat));
+    std::memset(&collInp, 0, sizeof(collInp));
     rstrcpy( collInp.collName, dataObjInp->objPath, MAX_NAME_LEN );
     /* assume it is a collection */
     status = getRescForGetInColl( rsComm, &collInp, &hostSearchStat );
@@ -141,7 +136,7 @@ getRescForGetInColl( rsComm_t *rsComm, collInp_t *collInp,
     while ( ( status = rsReadCollection( rsComm, &handleInx, &collEnt ) ) >= 0 ) {
         if ( collEnt->objType == DATA_OBJ_T ) {
             dataObjInp_t dataObjInp;
-            bzero( &dataObjInp, sizeof( dataObjInp ) );
+            std::memset(&dataObjInp, 0, sizeof(dataObjInp));
             snprintf( dataObjInp.objPath, MAX_NAME_LEN, "%s/%s",
                       collEnt->collName, collEnt->dataName );
             status = getRescForGetInDataObj( rsComm, &dataObjInp,
@@ -154,7 +149,7 @@ getRescForGetInColl( rsComm_t *rsComm, collInp_t *collInp,
         }
         else if ( collEnt->objType == COLL_OBJ_T ) {
             collInp_t myCollInp;
-            bzero( &myCollInp, sizeof( myCollInp ) );
+            std::memset(&myCollInp, 0, sizeof(myCollInp));
             rstrcpy( myCollInp.collName, collEnt->collName, MAX_NAME_LEN );
             status = getRescForGetInColl( rsComm, &myCollInp, hostSearchStat );
             if ( status < 0 ) {

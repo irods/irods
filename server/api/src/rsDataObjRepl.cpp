@@ -62,6 +62,7 @@
 
 #include "logical_locking.hpp"
 
+#include <cstring>
 #include <algorithm>
 #include <string_view>
 #include <vector>
@@ -1133,7 +1134,7 @@ int _unbunAndStageBunfileObj(
     const int rmBunCopyFlag) {
 
     dataObjInp_t dataObjInp{};
-    bzero( &dataObjInp.condInput, sizeof( dataObjInp.condInput ) );
+    std::memset(&dataObjInp.condInput, 0, sizeof(dataObjInp.condInput));
     rstrcpy( dataObjInp.objPath, ( *bunfileObjInfoHead )->objPath, MAX_NAME_LEN );
     int status = sortObjInfoForOpen( bunfileObjInfoHead, condInput, 0 );
 

@@ -17,6 +17,8 @@
 #include "irods_resource_redirect.hpp"
 #include "irods_stacktrace.hpp"
 
+#include <cstring>
+
 int
 rsStructFileExtract( rsComm_t *rsComm, structFileOprInp_t *structFileOprInp ) {
     //rodsServerHost_t *rodsServerHost;
@@ -25,7 +27,7 @@ rsStructFileExtract( rsComm_t *rsComm, structFileOprInp_t *structFileOprInp ) {
 
     //remoteFlag = resolveHost (&structFileOprInp->addr, &rodsServerHost);
     dataObjInp_t dataObjInp;
-    bzero( &dataObjInp, sizeof( dataObjInp ) );
+    std::memset(&dataObjInp, 0, sizeof(dataObjInp));
     rstrcpy( dataObjInp.objPath, structFileOprInp->specColl->objPath, MAX_NAME_LEN );
 
     // =-=-=-=-=-=-=-

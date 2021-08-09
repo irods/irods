@@ -48,6 +48,7 @@
 #include <fmt/format.h>
 #include <json.hpp>
 
+#include <cstring>
 #include <fstream>
 #include <regex>
 #include <algorithm>
@@ -1538,8 +1539,8 @@ readWorkerTask() {
     // artificially create a conn object in order to
     // create a network object.  this is gratuitous
     // but necessary to maintain the consistent interface.
-    rcComm_t            tmp_comm;
-    bzero( &tmp_comm, sizeof( rcComm_t ) );
+    rcComm_t tmp_comm;
+    std::memset(&tmp_comm, 0, sizeof(rcComm_t));
 
     irods::network_object_ptr net_obj;
     irods::error ret = irods::network_factory( &tmp_comm, net_obj );
@@ -1691,8 +1692,8 @@ procSingleConnReq( agentProc_t *connReq ) {
     // artificially create a conn object in order to
     // create a network object.  this is gratuitous
     // but necessary to maintain the consistent interface.
-    rcComm_t            tmp_comm;
-    bzero( &tmp_comm, sizeof( rcComm_t ) );
+    rcComm_t tmp_comm;
+    std::memset(&tmp_comm, 0, sizeof(rcComm_t));
 
     irods::network_object_ptr net_obj;
     irods::error ret = irods::network_factory( &tmp_comm, net_obj );

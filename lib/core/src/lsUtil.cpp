@@ -10,6 +10,8 @@
 
 #include <boost/format.hpp>
 
+#include <cstring>
+
 char zoneHint[MAX_NAME_LEN];
 
 int
@@ -287,7 +289,7 @@ printLsLong( rcComm_t *conn, rodsArguments_t *rodsArgs,
     for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
         collEnt_t collEnt;
 
-        bzero( &collEnt, sizeof( collEnt ) );
+        std::memset(&collEnt, 0, sizeof(collEnt));
 
         collEnt.dataName = &dataName->value[dataName->len * i];
         collEnt.replNum = atoi( &replNum->value[replNum->len * i] );
@@ -568,7 +570,7 @@ printSpecLsLong( char *objPath, char *ownerName, char *objSize,
     collEnt_t collEnt;
     int queryFlags;
 
-    bzero( &collEnt, sizeof( collEnt ) );
+    std::memset(&collEnt, 0, sizeof(collEnt));
 
     collEnt.dataName = objPath;
     collEnt.ownerName = ownerName;
@@ -796,7 +798,7 @@ lsSubfilesInBundle( rcComm_t *conn, char *srcPath ) {
 
     fprintf( stdout, "Bundle file: %s\n", srcPath );
     fprintf( stdout, "Subfiles:\n" );
-    bzero( &genQueryInp, sizeof( genQueryInp ) );
+    std::memset(&genQueryInp, 0, sizeof(genQueryInp));
     genQueryInp.maxRows = MAX_SQL_ROWS;
 
     snprintf( condStr, MAX_NAME_LEN, "='%s'", srcPath );

@@ -1,16 +1,8 @@
-/**
- * @file  rcDataObjWrite.cpp
- *
- */
-
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */
-/* See dataObjWrite.h for a description of this API call.*/
-
 #include "dataObjWrite.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
+
+#include <cstring>
 
 /**
  * \fn rcDataObjWrite (rcComm_t *conn, openedDataObjInp_t *dataObjWriteInp,
@@ -36,8 +28,8 @@
  * \n openedDataObjInp_t dataObjWriteInp;
  * \n bytesBuf_t dataObjWriteInpBBuf;
  * \n int bytesWrite;
- * \n bzero (&dataObjInp, sizeof (dataObjInp));
- * \n bzero (&dataObjWriteInp, sizeof (dataObjWriteInp));
+ * \n memset(&dataObjInp, 0, sizeof(dataObjInp));
+ * \n memset (&dataObjWriteInp, 0, sizeof(dataObjWriteInp));
  * \n rstrcpy (dataObjInp.objPath, "/myZone/home/john/myfile", MAX_NAME_LEN);
  * \n dataObjInp.createMode = 0750;
  * \n dataObjInp.dataSize = 12345;
@@ -47,7 +39,7 @@
  * \n if (dataObjWriteInp.l1descInx < 0) {
  * \n .... handle the error
  * \n }
- * \n bzero (&dataObjWriteInpBBuf, sizeof (dataObjWriteInpBBuf));
+ * \n memset(&dataObjWriteInpBBuf, 0, sizeof(dataObjWriteInpBBuf));
  * \n dataObjWriteInp.len = 12345;
  * \n dataObjWriteInp.buf = malloc (12345);
  * \n if (dataObjWriteInp.buf == NULL) {

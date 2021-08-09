@@ -417,7 +417,7 @@ namespace
 
         if (getStructFileType(l1desc.dataObjInfo->specColl) >= 0) {
             *portalOprOut = static_cast<portalOprOut_t*>(malloc(sizeof(portalOprOut_t)));
-            bzero(*portalOprOut, sizeof(portalOprOut_t));
+            std::memset(*portalOprOut, 0, sizeof(portalOprOut_t));
             (*portalOprOut)->l1descInx = l1descInx;
             return l1descInx;
         }

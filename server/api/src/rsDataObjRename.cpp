@@ -43,6 +43,9 @@
 
 #include "logical_locking.hpp"
 
+#include "fmt/format.h"
+
+#include <cstring>
 #include <chrono>
 
 using logger = irods::experimental::log;
@@ -564,8 +567,8 @@ moveMountedCollDataObj( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
     if ( rsComm == NULL || srcDataObjInfo == NULL || destDataObjInp == NULL ) {
         return USER__NULL_INPUT_ERR;
     }
-    bzero( &destDataObjInfo, sizeof( destDataObjInfo ) );
-    bzero( &fileRenameInp, sizeof( fileRenameInp ) );
+    std::memset(&destDataObjInfo, 0, sizeof(destDataObjInfo));
+    std::memset(&fileRenameInp, 0, sizeof(fileRenameInp));
     rstrcpy( destDataObjInfo.objPath, destDataObjInp->objPath, MAX_NAME_LEN );
     rstrcpy( destDataObjInfo.dataType, srcDataObjInfo->dataType, NAME_LEN );
     destDataObjInfo.dataSize = srcDataObjInfo->dataSize;
@@ -645,7 +648,7 @@ moveMountedCollCollObj( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
     int savedStatus = 0;
 
     subSrcDataObjInfo = *srcDataObjInfo;
-    bzero( &subDestDataObjInp, sizeof( subDestDataObjInp ) );
+    std::memset(&subDestDataObjInp, 0, sizeof(subDestDataObjInp));
     l3descInx = l3Opendir( rsComm, srcDataObjInfo );
     fileReaddirInp.fileInx = l3descInx;
     rsMkCollR( rsComm, "/", destDataObjInp->objPath );

@@ -21,11 +21,13 @@
 #include "rsSubStructFileCreate.hpp"
 #include "ruleExecSubmit.h"
 #include "specColl.hpp"
-
-// =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
 #include "irods_stacktrace.hpp"
 #include "key_value_proxy.hpp"
+
+#include "fmt/format.h"
+
+#include <cstring>
 
 static int HaveFailedSpecCollPath = 0;
 static char FailedSpecCollPath[MAX_NAME_LEN];
@@ -512,7 +514,7 @@ specCollSubStat( rsComm_t *rsComm, specColl_t *specColl,
                                       newPath, specCollPerm, dataObjInfo );
             return status;
         }
-        bzero( &myDataObjInp, sizeof( myDataObjInp ) );
+        std::memset(&myDataObjInp, 0, sizeof(myDataObjInp));
         rstrcpy( myDataObjInp.objPath, newPath, MAX_NAME_LEN );
 
         status = collStat( rsComm, &myDataObjInp, &rodsObjStatOut );
@@ -562,12 +564,11 @@ specCollSubStat( rsComm_t *rsComm, specColl_t *specColl,
         }
     }
     else if ( getStructFileType( specColl ) >= 0 ) {
-
         /* bundle */
         dataObjInp_t myDataObjInp;
         dataObjInfo_t *tmpDataObjInfo;
 
-        bzero( &myDataObjInp, sizeof( myDataObjInp ) );
+        std::memset(&myDataObjInp, 0, sizeof(myDataObjInp));
         rstrcpy( myDataObjInp.objPath, specColl->objPath, MAX_NAME_LEN );
         // add the resource hierarchy to the condInput of the inp
         addKeyVal( &myDataObjInp.condInput, RESC_HIER_STR_KW, specColl->rescHier );

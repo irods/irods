@@ -1,16 +1,8 @@
-/**
- * @file  rcCollCreate.cpp
- *
- */
-
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */
-/* See collCreate.h for a description of this API call.*/
-
 #include "collCreate.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
+
+#include <cstring>
 
 /**
  * \fn rcCollCreate (rcComm_t *conn, collInp_t *collCreateInp)
@@ -33,7 +25,7 @@
  * needed:
  * \n int status;
  * \n collInp_t collCreateInp;
- * \n bzero (&collCreateInp, sizeof (collCreateInp));
+ * \n memset(&collCreateInp, 0, sizeof(collCreateInp));
  * \n rstrcpy (collCreateInp.collName, "/myZone/home/john/coll1/coll2", MAX_NAME_LEN);
  * \n addKeyVal (&collCreateInp.condInput, RECURSIVE_OPR__KW, "");
  * \n status = rcCollCreate (conn, &collCreateInp);
@@ -54,11 +46,7 @@
  * \sa none
 **/
 
-int
-rcCollCreate( rcComm_t *conn, collInp_t *collCreateInp ) {
-    int status;
-    status = procApiRequest( conn, COLL_CREATE_AN,  collCreateInp, NULL,
-                             ( void ** ) NULL, NULL );
-
-    return status;
+int rcCollCreate(rcComm_t* conn, collInp_t* collCreateInp)
+{
+    return procApiRequest(conn, COLL_CREATE_AN,  collCreateInp, NULL, (void**) NULL, NULL );
 }

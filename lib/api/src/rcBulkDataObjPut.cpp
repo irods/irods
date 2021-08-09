@@ -1,14 +1,8 @@
-/**
- * @file  rcBulkDataObjPut.cpp
- *
- */
-
-/* This is script-generated code.  */
-/* See bulkDataObjPut.h for a description of this API call.*/
-
 #include "bulkDataObjPut.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
+
+#include <cstring>
 
 /**
  * \fn rcBulkDataObjPut (rcComm_t *conn, bulkOprInp_t *bulkOprInp,
@@ -43,7 +37,7 @@
  * \n char *bufPtr;
  * \n int fd;
  * \n
- * \n bzero (bulkOprInp, sizeof (bulkOprInp_t));
+ * \n memset(bulkOprInp, 0, sizeof(bulkOprInp_t));
  * \n rstrcpy (bulkOprInp.objPath, "/myZone/home/john/mydir", MAX_NAME_LEN);
  * \n addKeyVal (&bulkOprInp.condInput, DEST_RESC_NAME_KW, "myRescource");
  * \n initAttriArrayOfBulkOprInp (bulkOprInp);
@@ -61,7 +55,7 @@
  * \n mode2 = statbuf.st_mode;
  * \n size2 = statbuf.st_size;
  * \n # allocate the buffer for read
- * \n bzero (&bulkOprInpBBuf, sizeof (bulkOprInpBBuf));
+ * \n memset(&bulkOprInpBBuf, 0, sizeof(bulkOprInpBBuf));
  * \n bufPtr = bulkOprInpBBuf.buf = malloc ((int) (size1 + size2));
  * \n # read myfile1
  * \n fd = open ("myfile1", O_RDONLY, 0);
