@@ -435,15 +435,10 @@ namespace irods::experimental::io
     template <typename T>
     inline static constexpr std::ios_base::openmode default_openmode<std::basic_iostream<T>> = std::ios_base::in | std::ios_base::out;
 
-    // A concrete stream class template that wraps a basic_data_object_buf object.
-    // The general stream used to instantiate this type must use "char" for the underlying
-    // character type. Using wchar_t or anything else to instantiate this template is undefined.
-    // This class is modeled after the C++ standard file stream classes.
-    template <typename GeneralStream>
-    class basic_dstream final
-        : public GeneralStream
-    {
-    private:
+    // mandatory_openmode used to be private members of basic_dstream, but due
+    // to a bug in GCC (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=90031),
+    // it was moved outside of the class.
+    namespace detail {
         template <typename>
         inline static constexpr std::ios_base::openmode mandatory_openmode{};
 
@@ -452,7 +447,16 @@ namespace irods::experimental::io
 
         template <typename T>
         inline static constexpr std::ios_base::openmode mandatory_openmode<std::basic_ostream<T>> = std::ios_base::out;
+    }
 
+    // A concrete stream class template that wraps a basic_data_object_buf object.
+    // The general stream used to instantiate this type must use "char" for the underlying
+    // character type. Using wchar_t or anything else to instantiate this template is undefined.
+    // This class is modeled after the C++ standard file stream classes.
+    template <typename GeneralStream>
+    class basic_dstream final
+        : public GeneralStream
+    {
     public:
         // clang-format off
         using char_type   = typename GeneralStream::char_type;
@@ -566,7 +570,7 @@ namespace irods::experimental::io
                   const filesystem::path& _path,
                   std::ios_base::openmode _mode = default_openmode<GeneralStream>)
         {
-            if (!buf_.open(_transport, _path, _mode | mandatory_openmode<GeneralStream>)) {
+            if (!buf_.open(_transport, _path, _mode | detail::mandatory_openmode<GeneralStream>)) {
                 this->setstate(std::ios_base::failbit);
             }
             else {
@@ -579,7 +583,7 @@ namespace irods::experimental::io
                   const replica_number& _replica_number,
                   std::ios_base::openmode _mode = default_openmode<GeneralStream>)
         {
-            if (!buf_.open(_transport, _path, _replica_number, _mode | mandatory_openmode<GeneralStream>)) {
+            if (!buf_.open(_transport, _path, _replica_number, _mode | detail::mandatory_openmode<GeneralStream>)) {
                 this->setstate(std::ios_base::failbit);
             }
             else {
@@ -592,7 +596,7 @@ namespace irods::experimental::io
                   const root_resource_name& _root_resource_name,
                   std::ios_base::openmode _mode = default_openmode<GeneralStream>)
         {
-            if (!buf_.open(_transport, _path, _root_resource_name, _mode | mandatory_openmode<GeneralStream>)) {
+            if (!buf_.open(_transport, _path, _root_resource_name, _mode | detail::mandatory_openmode<GeneralStream>)) {
                 this->setstate(std::ios_base::failbit);
             }
             else {
@@ -605,7 +609,7 @@ namespace irods::experimental::io
                   const leaf_resource_name& _leaf_resource_name,
                   std::ios_base::openmode _mode = default_openmode<GeneralStream>)
         {
-            if (!buf_.open(_transport, _path, _leaf_resource_name, _mode | mandatory_openmode<GeneralStream>)) {
+            if (!buf_.open(_transport, _path, _leaf_resource_name, _mode | detail::mandatory_openmode<GeneralStream>)) {
                 this->setstate(std::ios_base::failbit);
             }
             else {
@@ -619,7 +623,7 @@ namespace irods::experimental::io
                   const replica_number& _replica_number,
                   std::ios_base::openmode _mode = default_openmode<GeneralStream>)
         {
-            if (!buf_.open(_transport, _replica_token, _path, _replica_number, _mode | mandatory_openmode<GeneralStream>)) {
+            if (!buf_.open(_transport, _replica_token, _path, _replica_number, _mode | detail::mandatory_openmode<GeneralStream>)) {
                 this->setstate(std::ios_base::failbit);
             }
             else {
@@ -633,7 +637,7 @@ namespace irods::experimental::io
                   const leaf_resource_name& _leaf_resource_name,
                   std::ios_base::openmode _mode = default_openmode<GeneralStream>)
         {
-            if (!buf_.open(_transport, _replica_token, _path, _leaf_resource_name, _mode | mandatory_openmode<GeneralStream>)) {
+            if (!buf_.open(_transport, _replica_token, _path, _leaf_resource_name, _mode | detail::mandatory_openmode<GeneralStream>)) {
                 this->setstate(std::ios_base::failbit);
             }
             else {
