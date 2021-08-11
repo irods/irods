@@ -1,66 +1,86 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* getUtil.h - Header for for getUtil.c */
+#ifndef IRODS_LS_UTIL_H
+#define IRODS_LS_UTIL_H
 
-#ifndef LS_UTIL_H__
-#define LS_UTIL_H__
+#include "rodsType.h"
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
+struct RcComm;
+struct RodsEnvironment;
+struct RodsArguments;
+struct RodsPathInp;
+struct RodsPath;
+struct CollEnt;
+struct SpecColl;
+struct GenQueryInp;
+struct GenQueryOut;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-int
-lsUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
-        rodsPathInp_t *rodsPathInp );
-int
-lsDataObjUtil( rcComm_t *conn, rodsPath_t *srcPath,
-               rodsArguments_t *rodsArgs, genQueryInp_t *genQueryInp );
-int
-printLsStrShort( char *srcPath );
-int
-lsDataObjUtilLong( rcComm_t *conn, char *srcPath,
-                   rodsArguments_t *rodsArgs, genQueryInp_t *genQueryInp );
-int
-printLsLong( rcComm_t *conn, rodsArguments_t *rodsArgs,
-             genQueryOut_t *genQueryOut );
-int
-printLsShort( rcComm_t *conn, rodsArguments_t *rodsArgs,
-              genQueryOut_t *genQueryOut );
-int
-initCondForLs( genQueryInp_t *genQueryInp );
-int
-lsCollUtil( rcComm_t *conn, rodsPath_t *srcPath, rodsEnv *myRodsEnv,
-            rodsArguments_t *rodsArgs );
-int
-printDataAcl( rcComm_t *conn, char *dataId );
-int
-printCollAcl( rcComm_t *conn, char *collId );
-int
-printCollInheritance( rcComm_t *conn, char *collName );
-int
-lsSpecDataObjUtilLong( rodsPath_t *srcPath,
-                       rodsArguments_t *rodsArgs );
-int
-printSpecLsLong( char *objPath, char *ownerName, char *objSize,
-                 char *modifyTime, specColl_t *specColl, rodsArguments_t *rodsArgs );
-void
-printCollOrDir( char *myName, objType_t myType, rodsArguments_t *rodsArgs,
-                specColl_t *specColl );
-int
-printDataCollEnt( collEnt_t *collEnt, int flags );
-int
-printDataCollEntLong( collEnt_t *collEnt, int flags );
-int
-printCollCollEnt( collEnt_t *collEnt, int flags );
-int
-lsSubfilesInBundle( rcComm_t *conn, char *srcPath );
-int
-setSessionTicket( rcComm_t *myConn, char *ticket );
+
+int lsUtil(struct RcComm* conn,
+           struct RodsEnvironment* myRodsEnv,
+           struct RodsArguments* myRodsArgs,
+           struct RodsPathInp* rodsPathInp);
+
+int lsDataObjUtil(struct RcComm* conn,
+                  struct RodsPath* srcPath,
+                  struct RodsArguments* rodsArgs);
+
+int printLsStrShort(char* srcPath);
+
+int initCondForLs(struct GenQueryInp* genQueryInp);
+
+int lsDataObjUtilLong(struct RcComm* conn,
+                      char* srcPath,
+                      struct RodsArguments* rodsArgs,
+                      struct GenQueryInp* genQueryInp);
+
+int printLsLong(struct RcComm* conn,
+                struct RodsArguments* rodsArgs,
+                struct GenQueryOut* genQueryOut);
+
+int printLsShort(struct RcComm* conn,
+                 struct RodsArguments* rodsArgs,
+                 struct GenQueryOut* genQueryOut);
+
+int lsCollUtil(struct RcComm* conn,
+               struct RodsPath* srcPath,
+               struct RodsEnvironment* myRodsEnv,
+               struct RodsArguments* rodsArgs);
+
+int printDataAcl(struct RcComm* conn, char* dataId);
+
+int printCollAcl(struct RcComm* conn, char* collId);
+
+int printCollInheritance(struct RcComm* conn, char* collName);
+
+int lsSpecDataObjUtilLong(struct RodsPath* srcPath,
+                          struct RodsArguments* rodsArgs);
+
+int printSpecLsLong(char* objPath,
+                    char* ownerName,
+                    char* objSize,
+                    char* modifyTime,
+                    struct SpecColl* specColl,
+                    struct RodsArguments* rodsArgs);
+
+void printCollOrDir(char* myName,
+                    objType_t myType,
+                    struct RodsArguments* rodsArgs,
+                    struct SpecColl* specColl);
+
+int printDataCollEnt(struct CollEnt* collEnt, int flags);
+
+int printDataCollEntLong(struct CollEnt* collEnt, int flags);
+
+int printCollCollEnt(struct CollEnt* collEnt, int flags);
+
+int lsSubfilesInBundle(struct RcComm* conn, char* srcPath);
+
+int setSessionTicket(struct RcComm* myConn, char* ticket);
+
 #ifdef __cplusplus
-}
+} // extern "C"
 #endif
 
-#endif	// LS_UTIL_H__
+#endif	// IRODS_LS_UTIL_H
