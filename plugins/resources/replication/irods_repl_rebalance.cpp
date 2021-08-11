@@ -9,10 +9,13 @@
 #include "dataObjRepl.h"
 #include "genQuery.h"
 #include "rsGenQuery.hpp"
-#include "boost/format.hpp"
-#include "boost/lexical_cast.hpp"
 #include "rodsError.h"
 
+#include "boost/format.hpp"
+#include "boost/lexical_cast.hpp"
+
+#include <cstdlib>
+#include <cstring>
 
 namespace {
     irods::error repl_for_rebalance(
@@ -149,8 +152,10 @@ namespace {
         sqlResult_t *resc_id_result = extract_sql_result(genquery_inp_wrapped.get(), genquery_out_ptr_wrapped.get(), COL_D_RESC_ID);
         const rodsLong_t resc_id = cast_genquery_result(&resc_id_result->value[0]);
 
+        // It is possible that some catalogs may contain invalid data modes (e.g. empty string, non-integer value).
+        // In these cases, the system will interpret invalid strings as zero (0).
         sqlResult_t *data_mode_result = extract_sql_result(genquery_inp_wrapped.get(), genquery_out_ptr_wrapped.get(), COL_DATA_MODE);
-        const int data_mode = cast_genquery_result(&data_mode_result->value[0]);
+        const int data_mode = std::atoi(&data_mode_result->value[0]);
 
         ReplicationSourceInfo ret;
         ret.object_path = (boost::format("%s%s%s") % coll_name % irods::get_virtual_path_separator() % data_name).str();
@@ -409,7 +414,7 @@ namespace {
                   first_rebalance_error.result());
         }
     }
-}
+} // anonymous namespace
 
 namespace irods {
     // throws irods::exception
