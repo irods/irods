@@ -351,7 +351,7 @@ namespace irods
         template<typename... types_t>
         error invoke_policy_enforcement_point(
             rule_engine_context_manager_type _re_ctx_mgr,
-            plugin_context                   _ctx,
+            plugin_context&                  _ctx,
             const std::string&               _operation_name,
             const std::string&               _class,
             types_t...                       _t)
