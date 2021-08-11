@@ -1,10 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-/*
-  This is an interface to the Attribute-Value-Units type of metadata.
-*/
-
 #include <unistd.h>
 
 #include "rods.h"
@@ -12,6 +5,8 @@
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
 #include "rodsPath.h"
+
+#include "fmt/format.h"
 
 #include <sstream>
 #include <string>
@@ -86,7 +81,10 @@ std::tuple<int, std::string> prepare_name(std::string_view object_type, std::str
 }
 
 // print the results of a general query.
-void printGenQueryResults(rcComm_t *Conn, int status, genQueryOut_t *genQueryOut, char *descriptions[])
+void printGenQueryResults(rcComm_t *Conn,
+                          int status,
+                          genQueryOut_t *genQueryOut,
+                          char *descriptions[])
 {
     int i, j;
     char localTime[TIME_LEN];
@@ -95,6 +93,7 @@ void printGenQueryResults(rcComm_t *Conn, int status, genQueryOut_t *genQueryOut
     if ( status == CAT_NO_ROWS_FOUND ) {
         lastCommandStatus = 0;
     }
+
     if ( status != 0 && status != CAT_NO_ROWS_FOUND ) {
         printError( Conn, status, "rcGenQuery" );
     }
@@ -109,6 +108,7 @@ void printGenQueryResults(rcComm_t *Conn, int status, genQueryOut_t *genQueryOut
                 if ( i > 0 ) {
                     printf( "----\n" );
                 }
+
                 for ( j = 0; j < genQueryOut->attriCnt; j++ ) {
                     char *tResult;
                     tResult = genQueryOut->sqlResult[j].value;
@@ -116,8 +116,7 @@ void printGenQueryResults(rcComm_t *Conn, int status, genQueryOut_t *genQueryOut
                     if ( *descriptions[j] != '\0' ) {
                         if ( strstr( descriptions[j], "time" ) != 0 ) {
                             getLocalTimeFromRodsTime( tResult, localTime );
-                            printf( "%s: %s\n", descriptions[j],
-                                    localTime );
+                            printf( "%s: %s\n", descriptions[j], localTime );
                         }
                         else {
                             printf( "%s: %s\n", descriptions[j], tResult );
@@ -647,91 +646,109 @@ showUser( char *name, char *attrName, int wild ) {
     return 0;
 }
 
-/*
-Do a query on AVUs for dataobjs and show the results
-attribute op value [AND attribute op value] [REPEAT]
- */
-int queryDataObj( const char *cmdToken[] ) {
-    genQueryOut_t *genQueryOut;
-    int i1a[20];
-    int i1b[20];
-    int i2a[20];
-    char *condVal[20];
+enum class object_type
+{
+    data_object,
+    collection
+};
 
-    char *columnNames[] = {"collection", "dataObj"};
-    int cmdIx;
-    int condIx;
+int find_objects_by_metadata(const char* _cmd_tokens[], object_type _object_type)
+{
+    genQueryInp_t genQueryInp{};
 
-    genQueryInp_t genQueryInp;
-    memset( &genQueryInp, 0, sizeof( genQueryInp ) );
-    if ( upperCaseFlag ) {
+    if (upperCaseFlag) {
         genQueryInp.options = UPPER_CASE_WHERE;
     }
 
     printCount = 0;
-    i1a[0] = COL_COLL_NAME;
-    i1b[0] = 0; /* (unused) */
-    i1a[1] = COL_DATA_NAME;
-    i1b[1] = 0;
-    genQueryInp.selectInp.inx = i1a;
-    genQueryInp.selectInp.value = i1b;
-    genQueryInp.selectInp.len = 2;
 
-    i2a[0] = COL_META_DATA_ATTR_NAME;
-    std::string v1;
-    v1 =  "='";
-    v1 += cmdToken[2];
-    v1 += "'";
+    int column_ids[20];
+    int sort_options_per_column[20];
+    int condition_ids[20];
+    char *condVal[20];
 
-    i2a[1] = COL_META_DATA_ATTR_VALUE;
-    std::string v2;
-    v2 =  cmdToken[3];
-    v2 += " '";
-    v2 += cmdToken[4];
-    v2 += "'";
+    // The column_ids for the SELECT clause.
+    column_ids[0] = COL_COLL_NAME;
+    sort_options_per_column[0] = 0; // Unused
+    ++genQueryInp.selectInp.len;
 
-    genQueryInp.sqlCondInp.inx = i2a;
+    if (object_type::data_object == _object_type) {
+        column_ids[1] = COL_DATA_NAME;
+        sort_options_per_column[1] = 0;
+        ++genQueryInp.selectInp.len;
+    }
+
+    genQueryInp.selectInp.inx = column_ids;
+    genQueryInp.selectInp.value = sort_options_per_column;
+
+    std::vector<std::string> condition_values;
+    condition_values.reserve(MAX_CMD_TOKENS);
+
+    // The attribute name condition (e.g. META_COLL_ATTR_NAME = <value>).
+    condition_ids[0] = (object_type::data_object == _object_type)
+        ? COL_META_DATA_ATTR_NAME
+        : COL_META_COLL_ATTR_NAME;
+    condition_values.push_back(fmt::format("= '{}'", _cmd_tokens[2]));
+    condVal[0] = &condition_values.back()[0];
+
+    // The attribute value condition (e.g. META_COLL_ATTR_VALUE <op> <value>).
+    condition_ids[1] = (object_type::data_object == _object_type)
+        ? COL_META_DATA_ATTR_VALUE
+        : COL_META_COLL_ATTR_VALUE;
+    condition_values.push_back(fmt::format("{} '{}'", _cmd_tokens[3], _cmd_tokens[4]));
+    condVal[1] = &condition_values.back()[0];
+
+    genQueryInp.sqlCondInp.inx = condition_ids;
     genQueryInp.sqlCondInp.value = condVal;
-    genQueryInp.sqlCondInp.len = 2;
+    genQueryInp.sqlCondInp.len = condition_values.size();
 
-    if ( strcmp( cmdToken[5], "or" ) == 0 ) {
-        std::stringstream s;
-        s << "|| " << cmdToken[6] << " '" << cmdToken[7] << "'";
-        v2 += s.str();
+    int token_index = 5;
+    int condIx = 2;
+
+    while (true) {
+        if (std::strcmp(_cmd_tokens[token_index], "and") == 0) {
+            const auto* avu_name = _cmd_tokens[++token_index];
+            const auto* avu_op = _cmd_tokens[++token_index];
+            const auto* avu_value = _cmd_tokens[++token_index];
+
+            // Add a new condition: META_COLL_ATTR_NAME = <value>
+            condition_ids[condIx] = (object_type::data_object == _object_type)
+                ? COL_META_DATA_ATTR_NAME
+                : COL_META_COLL_ATTR_NAME;
+            condition_values.push_back(fmt::format("= '{}'", avu_name));
+            condVal[condIx++] = &condition_values.back()[0];
+            ++genQueryInp.sqlCondInp.len;
+
+            // Add a new condition: META_COLL_ATTR_VALUE <op> <value>
+            condition_ids[condIx] = (object_type::data_object == _object_type)
+                ? COL_META_DATA_ATTR_VALUE
+                : COL_META_COLL_ATTR_VALUE;
+            condition_values.push_back(fmt::format("{} '{}'", avu_op, avu_value));
+            condVal[condIx++] = &condition_values.back()[0];
+            ++genQueryInp.sqlCondInp.len;
+
+            ++token_index;
+        }
+        else if (std::strcmp(_cmd_tokens[token_index], "or") == 0) {
+            const auto* avu_op = _cmd_tokens[++token_index];
+            const auto* avu_value = _cmd_tokens[++token_index];
+
+            // Append the OR condition to the previous condition value.
+            auto*& prev_condition = condVal[condIx - 1];
+            condition_values.back() = fmt::format("{} || {} '{}'", prev_condition, avu_op, avu_value);
+            prev_condition = &condition_values.back()[0];
+
+            ++token_index;
+        }
+        else {
+            break;
+        }
     }
 
-    condVal[0] = const_cast<char*>( v1.c_str() );
-    condVal[1] = const_cast<char*>( v2.c_str() );
-
-    cmdIx = 5;
-    condIx = 2;
-
-    // issue 3594 - must preallocate the vector size large enough so that the strings are
-    // not moved as the vector grows.
-    std::vector<std::string> vstr( MAX_CMD_TOKENS );
-    while ( strcmp( cmdToken[cmdIx], "and" ) == 0 ) {
-        i2a[condIx] = COL_META_DATA_ATTR_NAME;
-        cmdIx++;
-        std::stringstream s1;
-        s1 << "='" << cmdToken[cmdIx] << "'";
-        vstr.push_back( s1.str() );
-        condVal[condIx] = const_cast<char*>( vstr.back().c_str() );
-        condIx++;
-
-        i2a[condIx] = COL_META_DATA_ATTR_VALUE;
-        std::stringstream s2;
-        s2 << cmdToken[cmdIx + 1] << " '" << cmdToken[cmdIx + 2] << "'";
-        vstr.push_back( s2.str() );
-        cmdIx += 3;
-        condVal[condIx] = const_cast<char*>( vstr.back().c_str() );
-        condIx++;
-        genQueryInp.sqlCondInp.len += 2;
-    }
-
-    if ( *cmdToken[cmdIx] != '\0' ) {
-        std::cerr << "Error: "
-                  << "Unrecognized input"
-                  << std::endl;
+    // If there is more unprocessed input, either something went wrong or the
+    // user provided bad input.
+    if (*_cmd_tokens[token_index] != '\0') {
+        std::cerr << "Error: Unrecognized input\n";
         return -2;
     }
 
@@ -739,137 +756,47 @@ int queryDataObj( const char *cmdToken[] ) {
     genQueryInp.continueInx = 0;
     genQueryInp.condInput.len = 0;
 
-    if ( zoneArgument[0] != '\0' ) {
-        addKeyVal( &genQueryInp.condInput, ZONE_KW, zoneArgument );
+    if (zoneArgument[0] != '\0') {
+        addKeyVal(&genQueryInp.condInput, ZONE_KW, zoneArgument);
     }
 
+    genQueryOut_t *genQueryOut{};
     int status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
 
-    printGenQueryResults( Conn, status, genQueryOut, columnNames );
+    std::vector<char*> column_names{"collection"};
 
-    while ( status == 0 && genQueryOut->continueInx > 0 ) {
+    if (object_type::data_object == _object_type) {
+        column_names.push_back("dataObj");
+    }
+
+    printGenQueryResults(Conn, status, genQueryOut, column_names.data());
+
+    while (status == 0 && genQueryOut->continueInx > 0) {
         genQueryInp.continueInx = genQueryOut->continueInx;
-        status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-        if ( genQueryOut->rowCnt > 0 ) {
-            printf( "----\n" );
+        status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+
+        if (genQueryOut->rowCnt > 0) {
+            printf("----\n");
         }
-        printGenQueryResults( Conn, status, genQueryOut,
-                              columnNames );
+
+        printGenQueryResults(Conn, status, genQueryOut, column_names.data());
     }
 
     return status == CAT_NO_ROWS_FOUND ? 0 : status;
 }
 
-/*
-Do a query on AVUs for collections and show the results
- */
-int queryCollection( const char *cmdToken[] ) {
-    genQueryOut_t *genQueryOut;
-    int i1a[20];
-    int i1b[20];
-    int i2a[20];
-    char *condVal[20];
-
-    char *columnNames[] = {"collection"};
-    int cmdIx;
-    int condIx;
-
-    genQueryInp_t genQueryInp;
-    memset( &genQueryInp, 0, sizeof( genQueryInp ) );
-    if ( upperCaseFlag ) {
-        genQueryInp.options = UPPER_CASE_WHERE;
-    }
-
-    printCount = 0;
-    i1a[0] = COL_COLL_NAME;
-    i1b[0] = 0; /* (unused) */
-    genQueryInp.selectInp.inx = i1a;
-    genQueryInp.selectInp.value = i1b;
-    genQueryInp.selectInp.len = 1;
-
-    i2a[0] = COL_META_COLL_ATTR_NAME;
-    std::string v1;
-    v1 =  "='";
-    v1 += cmdToken[2];
-    v1 += "'";
-
-    i2a[1] = COL_META_COLL_ATTR_VALUE;
-    std::string v2;
-    v2 =  cmdToken[3];
-    v2 += " '";
-    v2 += cmdToken[4];
-    v2 += "'";
-
-    genQueryInp.sqlCondInp.inx = i2a;
-    genQueryInp.sqlCondInp.value = condVal;
-    genQueryInp.sqlCondInp.len = 2;
-
-    if ( strcmp( cmdToken[5], "or" ) == 0 ) {
-        std::stringstream s;
-        s << "|| " << cmdToken[6] << " '" << cmdToken[7] << "'";
-        v2 += s.str();
-    }
-
-    condVal[0] = const_cast<char*>( v1.c_str() );
-    condVal[1] = const_cast<char*>( v2.c_str() );
-
-    cmdIx = 5;
-    condIx = 2;
-
-    // issue 3594 - must preallocate the vector size large enough so that the strings are
-    // not moved as the vector grows.
-    std::vector<std::string> vstr( MAX_CMD_TOKENS );
-    while ( strcmp( cmdToken[cmdIx], "and" ) == 0 ) {
-        i2a[condIx] = COL_META_COLL_ATTR_NAME;
-        cmdIx++;
-        std::stringstream s1;
-        s1 << "='" << cmdToken[cmdIx] << "'";
-        vstr.push_back( s1.str() );
-        condVal[condIx] = const_cast<char*>( vstr.back().c_str() );
-        condIx++;
-
-        i2a[condIx] = COL_META_COLL_ATTR_VALUE;
-        std::stringstream s2;
-        s2 << cmdToken[cmdIx + 1] << " '" << cmdToken[cmdIx + 2] << "'";
-        vstr.push_back( s2.str() );
-        cmdIx += 3;
-        condVal[condIx] = const_cast<char*>( vstr.back().c_str() );
-        condIx++;
-        genQueryInp.sqlCondInp.len += 2;
-    }
-
-    if ( *cmdToken[cmdIx] != '\0' ) {
-        std::cerr << "Error: "
-                  << "Unrecognized input"
-                  << std::endl;
-        return -2;
-    }
-
-    genQueryInp.maxRows = 10;
-    genQueryInp.continueInx = 0;
-    genQueryInp.condInput.len = 0;
-
-    if ( zoneArgument[0] != '\0' ) {
-        addKeyVal( &genQueryInp.condInput, ZONE_KW, zoneArgument );
-    }
-
-    int status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-
-    printGenQueryResults( Conn, status, genQueryOut, columnNames );
-
-    while ( status == 0 && genQueryOut->continueInx > 0 ) {
-        genQueryInp.continueInx = genQueryOut->continueInx;
-        status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-        if ( genQueryOut->rowCnt > 0 ) {
-            printf( "----\n" );
-        }
-        printGenQueryResults( Conn, status, genQueryOut,
-                              columnNames );
-    }
-
-    return status == CAT_NO_ROWS_FOUND ? 0 : status;
+// Do a query on AVUs for dataobjs and show the results
+// attribute op value [AND attribute op value] [REPEAT]
+int queryDataObj(const char *cmdToken[])
+{
+    return find_objects_by_metadata(cmdToken, object_type::data_object);
 }
 
+// Do a query on AVUs for collections and show the results
+int queryCollection(const char *cmdToken[])
+{
+    return find_objects_by_metadata(cmdToken, object_type::collection);
+}
 
 /*
 Do a query on AVUs for resources and show the results
