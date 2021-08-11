@@ -1,17 +1,12 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-/* definitions for parseCommandLine routine */
-
 #ifndef RODS_PARSE_COMMAND_LINE_H__
 #define RODS_PARSE_COMMAND_LINE_H__
 
 #include "rodsType.h"
 
-#define True 1
+#define True  1
 #define False 0
 
-typedef struct {
+typedef struct RodsArguments {
     int add; // JMC - backport 4643
     int age;
     int agevalue;
@@ -151,6 +146,7 @@ parseCmdLineOpt( int argc, char **argv, const char *optString, int includeLong,
                  rodsArguments_t *rodsArgs );
 
 #ifdef __cplusplus
-}
+} // extern "C"
 #endif
+
 #endif // RODS_PARSE_COMMAND_LINE_H__
