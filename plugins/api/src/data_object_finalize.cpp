@@ -109,7 +109,7 @@ namespace
 
     auto column_is_mutable(const std::string_view _c)
     {
-        using immutable_columns_list_t = std::vector<const std::string_view>;
+        using immutable_columns_list_t = std::vector<std::string_view>;
         static const immutable_columns_list_t immutable_columns =
         {
             "data_id",

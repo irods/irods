@@ -469,7 +469,7 @@ void warn_if_deprecated_context_string_set(
             __FUNCTION__);
     }
 
-    const std::vector<const std::string> deprecated_keys{HIGH_WATER_MARK, REQUIRED_FREE_INODES_FOR_CREATE};
+    const std::vector<std::string> deprecated_keys{HIGH_WATER_MARK, REQUIRED_FREE_INODES_FOR_CREATE};
 
     for (const auto& k : deprecated_keys) {
         std::string holder{};
