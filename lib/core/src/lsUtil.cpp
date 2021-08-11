@@ -1,12 +1,13 @@
+#include "lsUtil.h"
+
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
-#include "lsUtil.h"
 #include "miscUtil.h"
 #include "rcGlobalExtern.h"
-
 #include "filesystem.hpp"
 #include "irods_query.hpp"
+#include "phyBundleColl.h"
 
 #include <boost/format.hpp>
 
@@ -14,11 +15,12 @@
 
 char zoneHint[MAX_NAME_LEN];
 
-int
-lsUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
-        rodsPathInp_t *rodsPathInp ) {
-
-    if ( rodsPathInp == NULL ) {
+int lsUtil(rcComm_t *conn,
+           rodsEnv *myRodsEnv,
+           rodsArguments_t *myRodsArgs,
+           rodsPathInp_t *rodsPathInp)
+{
+    if (!rodsPathInp) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -30,9 +32,6 @@ lsUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 
         setSessionTicket( conn, myRodsArgs->ticketString );
     }
-
-    genQueryInp_t genQueryInp;
-    initCondForLs( &genQueryInp );
 
     int savedStatus = 0;
 
@@ -70,7 +69,7 @@ lsUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         }
 
         if (fs::client::is_data_object(object_status)) {
-            status = lsDataObjUtil( conn, &rodsPathInp->srcPath[i], myRodsArgs, &genQueryInp );
+            status = lsDataObjUtil(conn, &rodsPathInp->srcPath[i], myRodsArgs);
         }
         else if (fs::client::is_collection(object_status)) {
             status = lsCollUtil( conn, &rodsPathInp->srcPath[i], myRodsEnv, myRodsArgs );
@@ -91,25 +90,26 @@ lsUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     return savedStatus;
 }
 
-int
-lsDataObjUtil( rcComm_t *conn, rodsPath_t *srcPath,
-               rodsArguments_t *rodsArgs, genQueryInp_t *genQueryInp ) {
+int initCondForLs(GenQueryInp* genQueryInp)
+{
+    return 0;
+}
+
+int lsDataObjUtil(rcComm_t *conn, rodsPath_t *srcPath, rodsArguments_t *rodsArgs)
+{
     int status = 0;
 
-
-    if ( rodsArgs->longOption == True ) {
-        if ( srcPath->rodsObjStat != NULL &&
-                srcPath->rodsObjStat->specColl != NULL ) {
-            if ( srcPath->rodsObjStat->specColl->collClass == LINKED_COLL ) {
-                lsDataObjUtilLong( conn, srcPath->rodsObjStat->specColl->objPath,
-                                   rodsArgs, genQueryInp );
+    if (rodsArgs->longOption == True) {
+        if (srcPath->rodsObjStat && srcPath->rodsObjStat->specColl) {
+            if (srcPath->rodsObjStat->specColl->collClass == LINKED_COLL) {
+                lsDataObjUtilLong(conn, srcPath->rodsObjStat->specColl->objPath, rodsArgs, nullptr);
             }
             else {
-                lsSpecDataObjUtilLong( srcPath, rodsArgs );
+                lsSpecDataObjUtilLong(srcPath, rodsArgs);
             }
         }
         else {
-            lsDataObjUtilLong( conn, srcPath->outPath, rodsArgs, genQueryInp );
+            lsDataObjUtilLong(conn, srcPath->outPath, rodsArgs, nullptr);
         }
     }
     else if ( rodsArgs->bundle == True ) {
@@ -123,32 +123,30 @@ lsDataObjUtil( rcComm_t *conn, rodsPath_t *srcPath,
     }
 
     if ( srcPath == NULL ) {
-        rodsLog( LOG_ERROR,
-                 "lsDataObjUtil: NULL srcPath input" );
+        rodsLog( LOG_ERROR, "lsDataObjUtil: NULL srcPath input" );
         return USER__NULL_INPUT_ERR;
     }
 
     return status;
 }
 
-int
-printLsStrShort( char *srcPath ) {
+int printLsStrShort( char *srcPath ) {
     printf( "  %s\n", srcPath );
     return 0;
 }
 
-int
-lsDataObjUtilLong( rcComm_t *conn, char *srcPath,
-                   rodsArguments_t *rodsArgs, genQueryInp_t *genQueryInp ) {
+int lsDataObjUtilLong(RcComm* conn, char* srcPath, RodsArguments* rodsArgs, GenQueryInp*)
+{
     int status;
+    genQueryInp_t genQueryInp{};
     genQueryOut_t *genQueryOut = NULL;
     char myColl[MAX_NAME_LEN], myData[MAX_NAME_LEN];
     char condStr[MAX_NAME_LEN];
     int queryFlags;
 
     queryFlags = setQueryFlag( rodsArgs );
-    setQueryInpForData( queryFlags, genQueryInp );
-    genQueryInp->maxRows = MAX_SQL_ROWS;
+    setQueryInpForData( queryFlags, &genQueryInp );
+    genQueryInp.maxRows = MAX_SQL_ROWS;
 
     memset( myColl, 0, MAX_NAME_LEN );
     memset( myData, 0, MAX_NAME_LEN );
@@ -162,13 +160,13 @@ lsDataObjUtilLong( rcComm_t *conn, char *srcPath,
     }
 
     // Need to clear each time in case there are multiple inputs to ils -l
-    clearInxVal( &genQueryInp->sqlCondInp );
+    clearInxVal( &genQueryInp.sqlCondInp );
     snprintf( condStr, MAX_NAME_LEN, "='%s'", myColl );
-    addInxVal( &genQueryInp->sqlCondInp, COL_COLL_NAME, condStr );
+    addInxVal( &genQueryInp.sqlCondInp, COL_COLL_NAME, condStr );
     snprintf( condStr, MAX_NAME_LEN, "='%s'", myData );
-    addInxVal( &genQueryInp->sqlCondInp, COL_DATA_NAME, condStr );
+    addInxVal( &genQueryInp.sqlCondInp, COL_DATA_NAME, condStr );
 
-    status =  rcGenQuery( conn, genQueryInp, &genQueryOut );
+    status =  rcGenQuery( conn, &genQueryInp, &genQueryOut );
 
     if ( status < 0 ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
@@ -366,19 +364,6 @@ printLsShort( rcComm_t *conn,  rodsArguments_t *rodsArgs,
             printDataAcl( conn, tmpDataId );
         }
     }
-
-    return 0;
-}
-
-int
-initCondForLs( genQueryInp_t *genQueryInp ) {
-    if ( genQueryInp == NULL ) {
-        rodsLog( LOG_ERROR,
-                 "initCondForLs: NULL genQueryInp input" );
-        return USER__NULL_INPUT_ERR;
-    }
-
-    memset( genQueryInp, 0, sizeof( genQueryInp_t ) );
 
     return 0;
 }
@@ -796,7 +781,6 @@ lsSubfilesInBundle( rcComm_t *conn, char *srcPath ) {
     char *dataNameStr, *collectionStr, *dataSizeStr;
     int continueInx = 1;
 
-
     fprintf( stdout, "Bundle file: %s\n", srcPath );
     fprintf( stdout, "Subfiles:\n" );
     std::memset(&genQueryInp, 0, sizeof(genQueryInp));
@@ -859,7 +843,4 @@ lsSubfilesInBundle( rcComm_t *conn, char *srcPath ) {
     clearGenQueryInp( &genQueryInp );
     return status;
 }
-
-
-
 
