@@ -1456,6 +1456,99 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand('iadmin lu {0}'.format(username), 'STDOUT', 'user_name: {0}'.format(username))
         self.admin.assert_icommand('iadmin rmuser {0}'.format(username))
 
+    def test_empty_data_mode_does_not_cause_INVALID_LEXICAL_CAST_on_rebalance__issue_5227(self):
+        filename = os.path.join(self.admin.local_session_dir, 'issue_5227')
+        data_object = os.path.join(self.admin.session_collection, os.path.basename(filename))
+
+        try:
+            # Create resources.
+            self.admin.assert_icommand(['iadmin', 'mkresc', 'root_resc', 'passthru'], 'STDOUT', ['root_resc'])
+            self.admin.assert_icommand(['iadmin', 'mkresc', 'pt0', 'passthru'], 'STDOUT', ['pt0'])
+            self.admin.assert_icommand(['iadmin', 'mkresc', 'pt1', 'passthru'], 'STDOUT', ['pt1'])
+            self.admin.assert_icommand(['iadmin', 'mkresc', 'repl_resc', 'replication'], 'STDOUT', ['repl_resc'])
+            lib.create_ufs_resource('ufs0', self.admin)
+            lib.create_ufs_resource('ufs1', self.admin)
+
+            # Create resource hierarchy.
+            self.admin.assert_icommand(['iadmin', 'addchildtoresc', 'root_resc', 'repl_resc'])
+            self.admin.assert_icommand(['iadmin', 'addchildtoresc', 'repl_resc', 'pt0'])
+            self.admin.assert_icommand(['iadmin', 'addchildtoresc', 'repl_resc', 'pt1'])
+            self.admin.assert_icommand(['iadmin', 'addchildtoresc', 'pt0', 'ufs0'])
+            self.admin.assert_icommand(['iadmin', 'addchildtoresc', 'pt1', 'ufs1'])
+
+            # Create a new data object in the hierarchy.
+            lib.make_file(filename, 0)
+            self.admin.assert_icommand(['iput', '-R', 'root_resc', filename, data_object])
+            self.admin.assert_icommand(['ils', '-l', data_object], 'STDOUT', [' root_resc;repl_resc;pt0;ufs0 ', ' root_resc;repl_resc;pt1;ufs1 '])
+
+            # The GenQuery string used to verify that the replicas are marked as good.
+            gql = "select DATA_REPL_STATUS where DATA_NAME = '{0}'".format(os.path.basename(data_object))
+
+            #
+            # Test 1: The UPDATE Case
+            #
+
+            # While the issue was encountered via an empty string, we don't have any tools that
+            # allow us to create the empty string scenario. Instead, we know the empty string scenario
+            # is not any different then the data mode containing a non-integer value. Therefore, using
+            # an invalid string for the data mode satisfies the test.
+            for invalid_data_mode in [' ', '-', 'X']:
+                # Set the source replica's data mode to an invalid value.
+                self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', data_object, 'replica_number', '0', 'DATA_MODE', invalid_data_mode])
+
+                # Create work for the rebalance operation by setting the second replica's status to stale.
+                self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', data_object, 'replica_number', '1', 'DATA_REPL_STATUS', '0'])
+
+                # Show that doing a rebalance does not trigger an INVALID_LEXICAL_CAST error.
+                self.admin.assert_icommand(['iadmin', 'modresc', 'root_resc', 'rebalance'])
+
+                # Show that each replica is now marked as good.
+                _, out, _ = self.admin.assert_icommand(['iquest', '%s', gql], 'STDOUT', ['1'])
+                self.assertEqual(out.strip(), '1') # This guarantees the string is indeed '1'.
+
+            #
+            # Test 2: The CREATE Case
+            #
+
+            for invalid_data_mode in [' ', '-', 'X']:
+                # Set the source replica's data mode to an invalid value. At this point, replica zero should
+                # be marked as good, therefore it will be used as the source replica when creating the second replica.
+                self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', data_object, 'replica_number', '0', 'DATA_MODE', invalid_data_mode])
+
+                # Create work for the rebalance operation by trimming the second replica.
+                self.admin.assert_icommand(['itrim', '-n1', '-N1', data_object], 'STDOUT', ['trimmed = 1'])
+
+                # Show that doing a rebalance does not trigger an INVALID_LEXICAL_CAST error.
+                self.admin.assert_icommand(['iadmin', 'modresc', 'root_resc', 'rebalance'])
+
+                # Show that each replica is now marked as good.
+                _, out, _ = self.admin.assert_icommand(['iquest', '%s', gql], 'STDOUT', ['1'])
+                self.assertEqual(out.strip(), '1') # This guarantees the string is indeed '1'.
+
+        finally:
+            # Remove the data object in case one of the previous assertions failed.
+            # This is required so that the resources created for this test can be removed.
+            self.admin.run_icommand(['irm', '-f', data_object])
+
+            # Tear down resource hierarchy.
+            self.admin.run_icommand(['iadmin', 'rmchildfromresc', 'root_resc', 'repl_resc'])
+            self.admin.run_icommand(['iadmin', 'rmchildfromresc', 'repl_resc', 'pt0'])
+            self.admin.run_icommand(['iadmin', 'rmchildfromresc', 'repl_resc', 'pt1'])
+            self.admin.run_icommand(['iadmin', 'rmchildfromresc', 'pt0', 'ufs0'])
+            self.admin.run_icommand(['iadmin', 'rmchildfromresc', 'pt1', 'ufs1'])
+
+            # Remove resources.
+            self.admin.run_icommand(['iadmin', 'rmresc', 'root_resc'])
+            self.admin.run_icommand(['iadmin', 'rmresc', 'pt0'])
+            self.admin.run_icommand(['iadmin', 'rmresc', 'pt1'])
+            self.admin.run_icommand(['iadmin', 'rmresc', 'repl_resc'])
+            self.admin.run_icommand(['iadmin', 'rmresc', 'ufs0'])
+            self.admin.run_icommand(['iadmin', 'rmresc', 'ufs1'])
+
+            # Remove the test file.
+            if os.path.exists(filename):
+                os.remove(filename)
+
 class Test_Iadmin_Resources(resource_suite.ResourceBase, unittest.TestCase):
 
     def setUp(self):
