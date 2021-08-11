@@ -122,3 +122,9 @@ class Test_Ils(resource_suite.ResourceBase, unittest.TestCase):
         expected_output = ['  ' + data_object, ' ACL - ' + self.admin.username + '#' + self.admin.zone_name + ':own']
         self.admin.assert_icommand(['ils', '-d', '-A', data_object], 'STDOUT', expected_output)
 
+    def test_option_l_or_L_with_three_or_more_data_objects_does_not_cause_the_agent_to_crash__issue_5502(self):
+        data_object = 'issue_5502'
+        self.admin.assert_icommand(['itouch', data_object])
+        self.admin.assert_icommand(['ils', '-l', data_object, data_object, data_object], 'STDOUT', [data_object])
+        self.admin.assert_icommand(['ils', '-L', data_object, data_object, data_object], 'STDOUT', [data_object])
+
