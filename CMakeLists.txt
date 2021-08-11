@@ -10,33 +10,18 @@ if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 endif()
 
 include(IrodsExternals)
+include(IrodsCXXCompiler)
 
-IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH(CLANG clang6.0-0)
 IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH(CPPZMQ cppzmq4.2.3-0)
 IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(ARCHIVE libarchive3.3.2-1)
 IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(AVRO avro1.9.0-0)
 IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(BOOST boost1.67.0-0)
-IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(CLANG_RUNTIME clang-runtime6.0-0)
 IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(ZMQ zeromq4-14.1.6-0)
 IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(JSON json3.7.3-0)
 IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(SPDLOG spdlog1.5.0-1)
 IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(CATCH2 catch22.3.0-0)
 IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(NANODBC nanodbc2.13.0-1)
 IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(FMT fmt6.1.2-1)
-
-string(REPLACE ";" ", " IRODS_PACKAGE_DEPENDENCIES_STRING "${IRODS_PACKAGE_DEPENDENCIES_LIST}")
-
-if (NOT CLANG_STATIC_ANALYZER)
-  set(CLANG_STATIC_ANALYZER OFF CACHE BOOL "Choose whether to run Clang Static Analyzer." FORCE)
-  message(STATUS "Setting CLANG_STATIC_ANALYZER to 'OFF'.")
-  set(CMAKE_C_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang)
-  set(CMAKE_CXX_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang++)
-else()
-  set(CLANG_STATIC_ANALYZER ON CACHE BOOL "Choose whether to run Clang Static Analyzer." FORCE)
-  message(STATUS "Setting CLANG_STATIC_ANALYZER to 'ON'.")
-  set(CMAKE_C_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/ccc-analyzer)
-  set(CMAKE_CXX_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/c++-analyzer)
-endif()
 
 set(CMAKE_CXX_STANDARD 17)
 set(IRODS_CXX_STANDARD "${CMAKE_CXX_STANDARD}")
@@ -57,6 +42,18 @@ project(irods
   VERSION ${IRODS_VERSION}
   LANGUAGES C CXX)
 
+if (CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
+  set(IRODS_BUILD_WITH_WERROR_DEFAULT ON)
+else()
+  set(IRODS_BUILD_WITH_WERROR_DEFAULT OFF)
+endif()
+
+set(IRODS_BUILD_WITH_WERROR ${IRODS_BUILD_WITH_WERROR_DEFAULT} CACHE BOOL "Choose whether to compile with -Werror.")
+
+if (IRODS_BUILD_WITH_WERROR)
+  add_compile_options(-Werror)
+endif()
+
 include(UseLibCXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
@@ -67,28 +64,42 @@ set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_SKIP_INSTALL_RPATH FALSE)
 set(CMAKE_SKIP_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-add_compile_options(-Wall -Wextra -Werror -Wno-unused-function -Wno-unused-parameter)
 
 if (IRODS_DISABLE_COMPILER_OPTIMIZATIONS)
-    add_compile_options(-O0)
+  add_compile_options(-O0)
 endif()
 
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-fpermissive>)
+endif()
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 9)
-  # Do not error on definition of implicit copy constructor for classes with a
-  # user-declared copy assignment operator.
-  # This is needed because the boost headers throw this warning.
-  add_compile_options(-Wno-error=deprecated-copy)
-  # Do not error when overlapping comparisons always evaluate to false.
-  # This is needed because the boost headers throw this warning.
-  add_compile_options(-Wno-error=tautological-overlap-compare)
+add_compile_options(-Wall -Wextra -Wno-unused-function -Wno-unused-parameter)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  add_compile_options(-Wno-parentheses)
+endif()
+
+if (IRODS_BUILD_WITH_WERROR)
+  if (CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 9)
+    # Do not error on definition of implicit copy constructor for classes with a
+    # user-declared copy assignment operator.
+    # This is needed because the boost headers throw this warning.
+    add_compile_options(-Wno-error=deprecated-copy)
+    # Do not error when overlapping comparisons always evaluate to false.
+    # This is needed because the boost headers throw this warning.
+    add_compile_options(-Wno-error=tautological-overlap-compare)
+  elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    add_compile_options(-Wno-error=unused-variable)
+    add_compile_options(-Wno-error=unused-but-set-variable)
+  endif()
 endif()
 
 include_directories(${IRODS_EXTERNALS_FULLPATH_JSON}/include
                     ${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include)
 
-set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
-set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+if (NOT DEFINED THREADS_PREFER_PTHREAD_FLAG)
+  set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+endif()
 find_package(Threads REQUIRED)
 find_package(CURL REQUIRED)
 
@@ -1473,6 +1484,8 @@ target_link_libraries(
   )
 target_compile_definitions(genOSAuth PRIVATE ${IRODS_COMPILE_DEFINITIONS})
 target_compile_options(genOSAuth PRIVATE -Wno-write-strings)
+
+string(REPLACE ";" ", " IRODS_PACKAGE_DEPENDENCIES_STRING "${IRODS_PACKAGE_DEPENDENCIES_LIST}")
 
 add_subdirectory(plugins/api)
 add_subdirectory(plugins/auth)
