@@ -417,6 +417,33 @@ class Test_ImetaQu(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['imeta', 'qu', '-C', 'target', '=', '1', 'and', 'study_id', '=', '4616', 'and', 'type', '=', 'fastq'],
                 'STDOUT_MULTILINE', ['collection: .*%s$' % object_name],
                 use_regex=True)
+    
+    def test_imeta_qu_supports_OR_keyword__issue_4458(self):
+        try:
+            # Test 1: Data Objects
+            data_object = 'issue_4458'
+            self.admin.assert_icommand(['itouch', data_object])
+            self.admin.assert_icommand(['imeta', 'add', '-d', data_object, 'r', '5'])
+            self.admin.assert_icommand(['imeta', 'add', '-d', data_object, 'r', '6'])
+            self.admin.assert_icommand(['imeta', 'add', '-d', data_object, 'r', '7'])
+            expected_output = ['collection: ' + self.admin.session_collection, 'dataObj: ' + data_object]
+            self.admin.assert_icommand(['imeta', 'qu', '-d', 'r', '=', '5', 'or', '=', '6', 'or', '=', '7'], 'STDOUT', expected_output)
+
+            # Test 2: Collections
+            collection = self.admin.session_collection
+            self.admin.assert_icommand(['imeta', 'add', '-C', collection, 'r', '5'])
+            self.admin.assert_icommand(['imeta', 'add', '-C', collection, 'r', '6'])
+            self.admin.assert_icommand(['imeta', 'add', '-C', collection, 'r', '7'])
+            self.admin.assert_icommand(['imeta', 'qu', '-C', 'r', '=', '5', 'or', '=', '6', 'or', '=', '7'], 'STDOUT', ['collection: ' + collection])
+
+        finally:
+            self.admin.assert_icommand(['imeta', 'rm', '-d', data_object, 'r', '5'])
+            self.admin.assert_icommand(['imeta', 'rm', '-d', data_object, 'r', '6'])
+            self.admin.assert_icommand(['imeta', 'rm', '-d', data_object, 'r', '7'])
+
+            self.admin.assert_icommand(['imeta', 'rm', '-C', collection, 'r', '5'])
+            self.admin.assert_icommand(['imeta', 'rm', '-C', collection, 'r', '6'])
+            self.admin.assert_icommand(['imeta', 'rm', '-C', collection, 'r', '7'])
 
 # See issue #5111
 class Test_ImetaLsLongmode(session.make_sessions_mixin([('otherrods', 'rods')], []), unittest.TestCase):
