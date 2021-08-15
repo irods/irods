@@ -17,6 +17,7 @@
     "test_imeta_help",
     "test_imeta_interactive",
     "test_imeta_set",
+    "test_imkdir",
     "test_imv",
     "test_ipasswd",
     "test_iphymv",
