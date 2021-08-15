@@ -1,11 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-/* dataObjOpr.hpp - header file for dataObjOpr.c
- */
-
-
-
 #ifndef DATA_OBJ_OPR_HPP
 #define DATA_OBJ_OPR_HPP
 
@@ -18,6 +10,8 @@
 //#include "reIn2p3SysRule.hpp"
 #include "irods_file_object.hpp"
 #include "irods_linked_list_iterator.hpp"
+
+#include <string>
 
 /* definition for trimjFlag in matchAndTrimRescGrp */
 #define TRIM_MATCHED_RESC_INFO          0x1
