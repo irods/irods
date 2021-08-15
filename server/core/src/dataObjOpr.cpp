@@ -1,7 +1,6 @@
-#include <sys/types.h>
-#include <sys/wait.h>
-#include "rcMisc.h"
 #include "dataObjOpr.hpp"
+
+#include "rcMisc.h"
 #include "objMetaOpr.hpp"
 #include "resource.hpp"
 #include "collection.hpp"
@@ -19,8 +18,6 @@
 #include "rsGenQuery.hpp"
 #include "rsDataObjTrim.hpp"
 #include "rsModDataObjMeta.hpp"
-
-// =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_log.hpp"
@@ -28,55 +25,48 @@
 #include "irods_hierarchy_parser.hpp"
 #include "irods_random.hpp"
 #include "irods_file_object.hpp"
-
-#include <algorithm>
+#include "rodsPath.h"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 
+#include <fmt/format.h>
+
+#include <sys/types.h>
+#include <sys/wait.h>
+
+#include <algorithm>
+
 using namespace boost::filesystem;
 
-// =-=-=-=-=-=-=-
-/// @brief function which determines if a logical path is created at the root level
-irods::error validate_logical_path(
-    const std::string& _path ) {
-    // =-=-=-=-=-=-=-
-    // set up a default error structure
-    std::stringstream msg;
-    msg << "a valid zone name does not appear at the root of the object path [";
-    msg << _path;
-    msg << "]";
-    irods::error ret_val = ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
+/// @brief Function which determines if a logical path is created at the root level.
+irods::error validate_logical_path(const std::string& _path)
+{
+    std::string zone_name;
 
-    // =-=-=-=-=-=-=-
-    // loop over the ZoneInfo linked list and see if the path
-    // has a root object which matches any zone
-    zoneInfo_t* zone_info = ZoneInfoHead;
-    while ( zone_info ) {
-        // =-=-=-=-=-=-=-
-        // build a root zone name
-        std::string zone_name( "/" );
+    // Allocate enough bytes for the maximum size of a zone name.
+    // It is defined in R_ZONE_MAIN. We add one extra byte for the
+    // root collection "/".
+    zone_name.reserve(251);
+
+    // Loop over the ZoneInfo linked list and see if the path has a root
+    // object which matches any zone.
+    for (const zoneInfo_t* zone_info = ZoneInfoHead; zone_info; zone_info = zone_info->next) {
+        // Build a root zone name
+        zone_name.clear();
+        zone_name += '/';
         zone_name += zone_info->zoneName;
 
-        // =-=-=-=-=-=-=-
-        // if the zone name appears at the root
-        // then this is a good path
-        size_t pos = _path.find( zone_name );
-        if ( 0 == pos ) {
-            ret_val = SUCCESS();
-            zone_info = 0;
+        // If the zone name appears at the root then this is a good path.
+        if (has_prefix(_path.data(), zone_name.data())) {
+            return SUCCESS();
         }
-        else {
-            zone_info = zone_info->next;
+    }
 
-        }
-
-    } // while
-
-    return ret_val;
-
+    const char* const msg = "a valid zone name does not appear at the root of the object path [{}]";
+    return ERROR(SYS_INVALID_INPUT_PARAM, fmt::format(msg, _path));
 } // validate_logical_path
 
 int
