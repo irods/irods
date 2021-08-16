@@ -16,7 +16,7 @@ auto rs_get_file_descriptor_info(RsComm* _comm, const char* _json_input, char** 
 
     bytesBuf_t input{};
     input.buf = const_cast<char*>(_json_input);
-    input.len = static_cast<int>(std::strlen(_json_input));
+    input.len = static_cast<int>(std::strlen(_json_input)) + 1;
 
     bytesBuf_t* output{};
 

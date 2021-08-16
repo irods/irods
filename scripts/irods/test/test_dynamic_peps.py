@@ -125,9 +125,16 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [])
                 try:
                     self.admin.assert_icommand(['istream', 'write', logical_path], input='test data')
 
-                    expected_buf = r'{"fd":3}'
-                    expected_len = len(expected_buf)
+                    # We must hard-code the value of "expected_len" because null bytes are encoded as
+                    # hexidecimal in the bytes buffer. If we tried to use the len() function to capture
+                    # the length of "expected_buf", it would produce the wrong value. Because we are
+                    # using rc_replica_close for this test, we know that the JSON passed to the API will
+                    # have a length of 9 bytes. However, the metadata attribute value set on "logical_path"
+                    # will have a length of 13 due to serialization.
+                    expected_buf = r'{"fd":3}\x00'
+                    expected_len = 9
                     expected_value = 'the_len=[{0}],the_buf=[{1}]'.format(expected_len, expected_buf)
+
                     lib.delayAssert(
                         lambda: lib.metadata_attr_with_value_exists(self.admin, attribute, expected_value),
                         maxrep=10

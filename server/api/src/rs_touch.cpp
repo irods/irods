@@ -15,7 +15,7 @@ auto rs_touch(RsComm* _comm, const char* _json_input) -> int
 
     bytesBuf_t input{};
     input.buf = const_cast<char*>(_json_input);
-    input.len = static_cast<int>(std::strlen(_json_input));
+    input.len = static_cast<int>(std::strlen(_json_input)) + 1;
 
     return irods::server_api_call_without_policy(TOUCH_APN, _comm, &input);
 }
