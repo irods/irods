@@ -15,7 +15,7 @@ auto rc_get_file_descriptor_info(RcComm* _comm, const char* _json_input, char** 
 
     bytesBuf_t input_buf{};
     input_buf.buf = const_cast<char*>(_json_input);
-    input_buf.len = static_cast<int>(std::strlen(_json_input));
+    input_buf.len = static_cast<int>(std::strlen(_json_input)) + 1;
 
     bytesBuf_t* output_buf{};
 
