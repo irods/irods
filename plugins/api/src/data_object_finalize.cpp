@@ -24,6 +24,7 @@
 #include "catalog.hpp"
 #include "catalog_utilities.hpp"
 #include "icatHighLevelRoutines.hpp"
+#include "irods_at_scope_exit.hpp"
 #include "irods_exception.hpp"
 #include "irods_get_full_path_for_config_file.hpp"
 #include "irods_get_l1desc.hpp"
@@ -545,6 +546,7 @@ namespace
                 irods::log(LOG_DEBUG8, "Redirecting request to catalog service provider ...");
 
                 auto host_info = ic::redirect_to_catalog_provider(*_comm);
+                irods::at_scope_exit close_conn{[&host_info] { rcDisconnect(host_info.conn); }};
 
                 // Explicitly set trigger_file_modified to false here. The file_modified logic should be
                 // executing on this machine, not the catalog service provider to which the connection is
