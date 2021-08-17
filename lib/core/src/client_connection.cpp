@@ -26,15 +26,13 @@ namespace irods::experimental
 
     client_connection::client_connection(const std::string_view _host,
                                          const int _port,
-                                         const std::string_view _proxy_user,
+                                         const std::string_view _proxy_username,
                                          const std::string_view _proxy_zone,
                                          const std::string_view _username,
                                          const std::string_view _zone)
         : conn_{nullptr, rcDisconnect}
     {
-        connect_and_login(_host, _port, _proxy_user,
-                          _proxy_zone, _username,
-                          _zone);
+        connect_and_login(_host, _port, _proxy_username, _proxy_zone, _username, _zone);
     }
 
     client_connection::client_connection(RcComm& _conn)
@@ -63,13 +61,13 @@ namespace irods::experimental
         connect_and_login(_host, _port, _username, _zone);
     }
 
-    auto client_connection::connect(const std::string_view _proxy_user,
+    auto client_connection::connect(const std::string_view _proxy_username,
                                     const std::string_view _proxy_zone) -> void
     {
         rodsEnv env{};
         _getRodsEnv(env);
 
-        connect_and_login(env.rodsHost, env.rodsPort, _proxy_user, _proxy_zone,
+        connect_and_login(env.rodsHost, env.rodsPort, _proxy_username, _proxy_zone,
                           env.rodsUserName, env.rodsZone);
     }
 
@@ -121,7 +119,7 @@ namespace irods::experimental
 
     auto client_connection::connect_and_login(const std::string_view _host,
                                               const int _port,
-                                              const std::string_view _proxy_user,
+                                              const std::string_view _proxy_username,
                                               const std::string_view _proxy_zone,
                                               const std::string_view _username,
                                               const std::string_view _zone) -> void
@@ -129,7 +127,7 @@ namespace irods::experimental
         rErrMsg_t error{};
         conn_.reset(_rcConnect(_host.data(),
                                _port,
-                               _proxy_user.data(),
+                               _proxy_username.data(),
                                _proxy_zone.data(),
                                _username.data(),
                                _zone.data(),
