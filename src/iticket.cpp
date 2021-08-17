@@ -1,15 +1,18 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-/*
-  This is an interface to the Ticket management system.
-*/
-
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
 #include "rods.h"
 #include "rodsClient.h"
 #include "irods_random.hpp"
+
+#include "fmt/format.h"
+#include "fmt/chrono.h"
+
+#include <cstdlib>
+#include <ctime>
+#include <chrono>
+#include <string>
+#include <string_view>
+#include <iomanip>
 
 #define MAX_SQL 300
 #define BIG_STR 3000
@@ -34,6 +37,18 @@ int usage( char *subOpt );
 
 void showRestrictions( char *inColumn );
 
+std::string to_utc_timestamp(const std::string_view _seconds)
+{
+    // clang-format off
+    using clock_type      = std::chrono::system_clock;
+    using time_point_type = std::chrono::time_point<clock_type>;
+    // clang-format on
+
+    const auto secs = std::chrono::seconds{std::atoi(_seconds.data())};
+    const auto t = clock_type::to_time_t(time_point_type{secs});
+
+    return fmt::format("{:%F.%T}", *std::gmtime(&t));
+}
 
 /*
  print the results of a general query.
@@ -46,6 +61,7 @@ printResultsAndSubQuery( rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
     if ( status == CAT_NO_ROWS_FOUND ) {
         lastCommandStatus = 0;
     }
+
     if ( status != 0 && status != CAT_NO_ROWS_FOUND ) {
         printError( Conn, status, "rcGenQuery" );
     }
@@ -62,6 +78,7 @@ printResultsAndSubQuery( rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
                 if ( i > 0 && dashOpt > 0 ) {
                     printf( "----\n" );
                 }
+
                 for ( j = 0; j < genQueryOut->attriCnt; j++ ) {
                     char *tResult;
                     tResult = genQueryOut->sqlResult[j].value;
@@ -69,22 +86,28 @@ printResultsAndSubQuery( rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
                     if ( subColumn == j ) {
                         subCol = tResult;
                     }
-                    if ( *descriptions[j] != '\0' ) {
-                        if ( strstr( descriptions[j], "time" ) != 0 ) {
+
+                    if (*descriptions[j] != '\0') {
+                        if (strstr( descriptions[j], "time") != 0) {
                             char localTime[TIME_LEN];
-                            getLocalTimeFromRodsTime( tResult, localTime );
-                            if ( strcmp( tResult, "0" ) == 0 || *tResult == '\0' ) {
-                                strcpy( localTime, "none" );
+
+                            if (strcmp(tResult, "0") == 0 || *tResult == '\0') {
+                                strcpy(localTime, "none");
                             }
-                            printf( "%s: %s\n", descriptions[j],
-                                    localTime );
+                            else {
+                                const auto ts = to_utc_timestamp(tResult);
+                                strcpy(localTime, ts.data());
+                            }
+
+                            printf("%s: %s\n", descriptions[j], localTime);
                         }
                         else {
-                            printf( "%s: %s\n", descriptions[j], tResult );
+                            printf("%s: %s\n", descriptions[j], tResult);
                             printCount++;
                         }
                     }
                 }
+
                 if ( subColumn >= 0 ) {
                     showRestrictions( subCol );
                 }
