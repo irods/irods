@@ -52,23 +52,25 @@ namespace irods::experimental
                           const std::string_view _username,
                           const std::string_view _zone);
 
-        /// Connects to the iRODS server identified by the passed arguments
-        /// and authenticates the proxy user using the information and credentials
-        /// found in the user's irods_environment.json file
+        /// Establishes a proxy connection where \p _proxy_username executes
+        /// operations on behalf of the user identified by \p _username.
+        ///
+        /// Even though the connection was made using \p _proxy_username, the
+        /// permissions of \p _username are still honored on each operation.
         ///
         /// \throws irods::exception If an error occured.
         ///
-        /// \param[in] _host       The host name of the iRODS server.
-        /// \param[in] _port       The port to connect to.
-        /// \param[in] _proxy_user The name of the user to proxy
-        /// \param[in] _proxy_zone The name of the zone to proxy
-        /// \param[in] _username   The user to connect as.
-        /// \param[in] _zone       The zone managed by the iRODS server.
+        /// \param[in] _host           The host name of the iRODS server.
+        /// \param[in] _port           The port to connect to.
+        /// \param[in] _proxy_username The proxy user's username.
+        /// \param[in] _proxy_zone     The proxy user's zone.
+        /// \param[in] _username       The user to connect as.
+        /// \param[in] _zone           The zone managed by the iRODS server.
         ///
-        /// \since 4.3.0
+        /// \since 4.2.11
         client_connection(const std::string_view _host,
                           const int _port,
-                          const std::string_view _proxy_user,
+                          const std::string_view _proxy_username,
                           const std::string_view _proxy_zone,
                           const std::string_view _username,
                           const std::string_view _zone);
@@ -119,17 +121,20 @@ namespace irods::experimental
                      const std::string_view _username,
                      const std::string_view _zone) -> void;
 
-        /// Connects to the iRODS server with the specified proxy user and zone
-        /// authenticates the user using the information and credentials
-        /// found in the user's irods_environment.json file.
+        /// Establishes a proxy connection where \p _proxy_username executes
+        /// operations on behalf of the user defined in irods_environment.json.
+        ///
+        /// Even though the connection was made using \p _proxy_username, the
+        /// permissions of the user defined in irods_environment.json are still
+        /// honored on each operation.
         ///
         /// \throws irods::exception If an error occurred.
         ///
-        /// \param[in] _proxy_user The name of the user to proxy
-        /// \param[in] _proxy_zone The name of the zone to proxy
+        /// \param[in] _proxy_username The proxy user's username.
+        /// \param[in] _proxy_zone     The proxy user's zone.
         ///
-        /// \since 4.3.0
-        auto connect(const std::string_view _proxy_user,
+        /// \since 4.2.11
+        auto connect(const std::string_view _proxy_username,
                      const std::string_view _proxy_zone) -> void;
 
         /// Closes the underlying connection if active.
@@ -166,7 +171,7 @@ namespace irods::experimental
 
         auto connect_and_login(const std::string_view _host,
                                const int _port,
-                               const std::string_view _proxy_user,
+                               const std::string_view _proxy_username,
                                const std::string_view _proxy_zone,
                                const std::string_view _username,
                                const std::string_view _zone) -> void;
