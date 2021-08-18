@@ -388,6 +388,7 @@ NEW_ERROR(S3_FILE_COPY_ERR,                            -717000)
 NEW_ERROR(S3_FILE_OPEN_ERR,                            -718000)
 NEW_ERROR(S3_FILE_SEEK_ERR,                            -719000)
 NEW_ERROR(S3_FILE_RENAME_ERR,                          -720000)
+NEW_ERROR(REPLICA_IS_BEING_STAGED,                     -721000)
 
 /* DDN WOS error */
 NEW_ERROR(WOS_PUT_ERR,                                 -750000)
