@@ -92,7 +92,7 @@ namespace irods {
         error result = SUCCESS();
         if ( children_list_.begin() != children_list_.end() ) {
             irods::children_parser::const_iterator itr = children_list_.end();
-            itr--;
+            --itr;
             _child = itr->first;
         }
         else {

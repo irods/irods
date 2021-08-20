@@ -467,7 +467,6 @@ freeDataObjInfo( dataObjInfo_t *dataObjInfo ) {
     }
 
     free( dataObjInfo );
-    dataObjInfo = 0;
     return 0;
 }
 

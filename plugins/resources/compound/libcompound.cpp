@@ -354,7 +354,7 @@ irods::error compound_start_operation(
     // =-=-=-=-=-=-=-
     // get second name
     std::string second_child_name;
-    itr++;
+    ++itr;
     if ( itr == cmap_ref->end() ) {
         return ERROR( SYS_INVALID_INPUT_PARAM, "child map has only one entry" );
     }

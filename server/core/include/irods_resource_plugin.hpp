@@ -49,9 +49,9 @@ namespace irods {
             // =-=-=-=-=-=-=-
             /// @brief copy ctor
             resource( const resource& _rhs ) :
-                plugin_base( _rhs ) {
-                children_ = _rhs.children_;
-                parent_   = _rhs.parent_;
+              plugin_base{ _rhs },
+              children_{_rhs.children_},
+              parent_{_rhs.parent_} {
             } // cctor
 
             // =-=-=-=-=-=-=-

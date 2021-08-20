@@ -15,7 +15,7 @@ namespace irods {
 /// =-=-=-=-=-=-=-
 /// @brief check the incoming signed SID against all locals SIDs
     error check_sent_sid(
-        const std::string  _in_sid ) {
+        const std::string&  _in_sid ) {
         // =-=-=-=-=-=-=-
         // check incoming params
         if ( _in_sid.empty() ) {

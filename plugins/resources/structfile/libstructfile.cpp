@@ -2183,8 +2183,8 @@ irods::error build_directory_listing( const boost::filesystem::path&          _p
 
 // =-=-=-=-=-=-=-
 // create an archive from the cache directory
-irods::error bundle_cache_dir( int         _index,
-                               std::string _data_type ) {
+irods::error bundle_cache_dir( int                _index,
+                               const std::string& _data_type ) {
     // =-=-=-=-=-=-=-
     // namespace alias for brevity
     namespace fs = boost::filesystem;

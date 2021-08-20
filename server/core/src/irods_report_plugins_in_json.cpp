@@ -5,7 +5,7 @@ using json = nlohmann::json;
 namespace irods {
 
     error add_plugin_type_to_json_array(
-        const std::string _plugin_type,
+        const std::string& _plugin_type,
         const char* _type_name,
         json& _json_array)
     {
