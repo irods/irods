@@ -1,0 +1,17 @@
+{
+    "id": "file:///var/lib/irods/configuration_schemas/v4/client_environment.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+        "irods_host": {"type": "string"},
+        "irods_port": {"type": "integer"},
+        "irods_user_name": {"type": "string"},
+        "irods_zone_name": {"type": "string"}
+    },
+    "required": [
+        "irods_host",
+        "irods_port",
+        "irods_user_name",
+        "irods_zone_name"
+    ]
+}

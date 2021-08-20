@@ -31,21 +31,6 @@ from .. import lib
 from . import resource_suite
 from .rule_texts_for_tests import rule_texts
 
-def write_host_access_control(filename, username, group, address, mask):
-    add_ent = {
-        'user': username,
-        'group': group,
-        'address': address,
-        'mask': mask,
-    }
-
-    address_entries = [add_ent]
-    hac = {'access_entries': address_entries}
-
-    with open(filename, 'wt') as f:
-        json.dump(hac, f, sort_keys=True, indent=4, ensure_ascii=False)
-
-
 class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
     class_name = 'Test_Iadmin'
@@ -1133,61 +1118,43 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             self.admin.assert_icommand("iadmin rmresc rootrepl")
 
     def test_hosts_config(self):
-        addy1 = {}
-        addy1['address'] = socket.gethostname()
+        config = IrodsConfig()
 
-        addy2 = {}
-        addy2['address'] = 'jimbo'
+        with lib.file_backed_up(config.server_config_path):
+            config.server_config['host_resolution'] = {
+                'host_entries': [
+                    {
+                        'address_type': 'local',
+                        'addresses': [
+                            socket.gethostname(),
+                            'jimbo',
+                            'larry'
+                        ]
+                    }
+                ]
+            }
+            lib.update_json_file_from_dict(config.server_config_path, config.server_config)
 
-        addy3 = {}
-        addy3['address'] = 'larry'
+            try:
+                hostuser = getpass.getuser()
+                temp_file = 'file_to_test_hosts_config'
+                lib.make_file(temp_file, 10)
+                self.admin.assert_icommand("iadmin mkresc jimboResc unixfilesystem jimbo:/tmp/%s/jimboResc" %
+                                           hostuser, 'STDOUT_SINGLELINE', "jimbo")
+                self.admin.assert_icommand("iput -R jimboResc " + temp_file + " jimbofile")
+                self.admin.assert_icommand("irm -f jimbofile")
 
-        addresses = [addy1, addy2, addy3]
+                big_file = 'big_file_to_test_hosts_config'
+                lib.make_file(big_file, 35000000)
+                self.admin.assert_icommand("iadmin mkresc larryResc unixfilesystem larry:/tmp/%s/larryResc" %
+                                           hostuser, 'STDOUT_SINGLELINE', "larry")
+                self.admin.assert_icommand("iput -R larryResc " + big_file + " biglarryfile")
+                self.admin.assert_icommand("ils -L biglarryfile", 'STDOUT_SINGLELINE', 'biglarryfile')
+                self.admin.assert_icommand("irm -f biglarryfile")
 
-        remote = {}
-        remote['address_type'] = 'local'
-        remote['addresses'] = addresses
-
-        cfg = {}
-        cfg['host_entries'] = [remote]
-
-        hosts_config = ''
-        if os.path.isfile('/etc/irods/hosts_config.json'):
-            hosts_config = '/etc/irods/hosts_config.json'
-        else:
-            hosts_config = os.path.join(IrodsConfig().config_directory, 'hosts_config.json')
-
-        orig_file = hosts_config + '.orig'
-        os.system('cp %s %s' % (hosts_config, orig_file))
-        with open(hosts_config, 'wt') as f:
-            json.dump(
-                cfg,
-                f,
-                sort_keys=True,
-                indent=4,
-                ensure_ascii=False)
-
-        try:
-            hostuser = getpass.getuser()
-            temp_file = 'file_to_test_hosts_config'
-            lib.make_file(temp_file, 10)
-            self.admin.assert_icommand("iadmin mkresc jimboResc unixfilesystem jimbo:/tmp/%s/jimboResc" %
-                                       hostuser, 'STDOUT_SINGLELINE', "jimbo")
-            self.admin.assert_icommand("iput -R jimboResc " + temp_file + " jimbofile")
-            self.admin.assert_icommand("irm -f jimbofile")
-
-            big_file = 'big_file_to_test_hosts_config'
-            lib.make_file(big_file, 35000000)
-            self.admin.assert_icommand("iadmin mkresc larryResc unixfilesystem larry:/tmp/%s/larryResc" %
-                                       hostuser, 'STDOUT_SINGLELINE', "larry")
-            self.admin.assert_icommand("iput -R larryResc " + big_file + " biglarryfile")
-            self.admin.assert_icommand("ils -L biglarryfile", 'STDOUT_SINGLELINE', 'biglarryfile')
-            self.admin.assert_icommand("irm -f biglarryfile")
-        finally:
-            self.admin.assert_icommand("iadmin rmresc jimboResc")
-            self.admin.assert_icommand("iadmin rmresc larryResc")
-
-            os.system('mv %s %s' % (orig_file, hosts_config))
+            finally:
+                self.admin.assert_icommand("iadmin rmresc jimboResc")
+                self.admin.assert_icommand("iadmin rmresc larryResc")
 
     def test_host_access_control(self):
         my_ip = socket.gethostbyname(socket.gethostname())
@@ -1198,14 +1165,28 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             time.sleep(1)  # remove once file hash fix is committed #2279
 
             # restart the server to reread the new core.re
-            IrodsController().restart()
+            IrodsController().restart(test_mode=True)
 
-            host_access_control = os.path.join(paths.config_directory(), 'host_access_control_config.json')
+            config = IrodsConfig()
 
-            with lib.file_backed_up(host_access_control):
-                write_host_access_control(host_access_control, 'nope', 'nope', '', '')
+            def update_host_access_control_options(username, group, address, mask):
+                config.server_config['host_access_control'] = {
+                    'access_entries': [
+                        {
+                            'user': username,
+                            'group': group,
+                            'address': address,
+                            'mask': mask
+                        }
+                    ]
+                }
+                lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+
+            with lib.file_backed_up(config.server_config_path):
+                update_host_access_control_options('nope', 'nope', '', '')
                 self.admin.assert_icommand("ils", 'STDERR_SINGLELINE', "SYS_AGENT_INIT_ERR")
-                write_host_access_control(host_access_control, 'all', 'all', my_ip, '255.255.255.255')
+
+                update_host_access_control_options('all', 'all', my_ip, '255.255.255.255')
                 self.admin.assert_icommand("ils", 'STDOUT_SINGLELINE', self.admin.zone_name)
 
     def test_issue_2420(self):

@@ -663,6 +663,8 @@ int main(int argc, char** argv)
             logger::delay_server::trace("Rule execution server is awake.");
 
             try {
+                irods::server_properties::instance().capture();
+
                 auto delay_queue_processor = make_delay_queue_query_processor(thread_pool, queue);
 
                 logger::delay_server::trace("Gathering rules for execution ...");

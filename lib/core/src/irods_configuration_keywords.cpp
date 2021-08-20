@@ -52,6 +52,18 @@ namespace irods
 
     const std::string CFG_CLIENT_API_WHITELIST_POLICY_KW("client_api_whitelist_policy");
 
+    const std::string CFG_HOST_ACCESS_CONTROL_KW("host_access_control");
+    const std::string CFG_ACCESS_ENTRIES_KW("access_entries");
+    const std::string CFG_USER_KW("user");
+    const std::string CFG_GROUP_KW("group");
+    const std::string CFG_MASK_KW("mask");
+
+    const std::string CFG_HOST_RESOLUTION_KW("host_resolution");
+    const std::string CFG_HOST_ENTRIES_KW("host_entries");
+    const std::string CFG_ADDRESS_TYPE_KW("address_type");
+    const std::string CFG_ADDRESSES_KW("addresses");
+    const std::string CFG_ADDRESS_KW("address");
+
     // advanced settings
     const std::string CFG_MAX_SIZE_FOR_SINGLE_BUFFER( "maximum_size_for_single_buffer_in_megabytes" );
     const std::string CFG_DEF_NUMBER_TRANSFER_THREADS( "default_number_of_transfer_threads" );
@@ -165,7 +177,6 @@ namespace irods
     const std::string DEFAULT_RULE_ENGINE_INSTANCE_NAME_KW("default_rule_engine_instance");
 
     // misc. keywords
-    const std::string HOSTS_CONFIG_JSON_OBJECT_KW("hosts_config_json_object");
     const std::string DELAY_RULE_EXECUTORS_KW("delay_rule_executors");
 } // namespace irods
 

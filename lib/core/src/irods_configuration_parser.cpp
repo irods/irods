@@ -70,10 +70,7 @@ namespace irods {
             return ERROR( SYS_INVALID_INPUT_PARAM, "file is empty" );
         }
 
-        error ret = load_json_object( _file );
-
-        return ret;
-
+        return load_json_object( _file );
     } // load
 
     error configuration_parser::load_json_object(const std::string& _file)

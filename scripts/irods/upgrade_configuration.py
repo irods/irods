@@ -92,6 +92,66 @@ def upgrade(irods_config):
                                 'Please resolve this naming conflict manually and try again.' % (old_path, new_path, new_path))
                     shutil.move(old_path, new_path)
 
+    if old_version_tuple < (4, 3, 0):
+        # Load server_config.json.
+        with open(paths.server_config_path()) as f:
+            server_config = json.load(f)
+
+        #
+        # hosts_config.json
+        #
+
+        merged_hosts_config = False
+
+        # Merge the hosts_config.json file into server_config.json only if the
+        # server_config.json does not contain the host_resolution property.
+        if 'host_resolution' not in server_config:
+            merged_hosts_config = True
+
+            # Set default values for the host_resolution.
+            server_config['host_resolution'] = {'host_entries': []}
+
+            # Merge hosts_config.json into server_config.json if it is available.
+            if os.path.exists(paths.hosts_config_path()):
+                with open(paths.hosts_config_path()) as f:
+                    hosts_config = json.load(f)
+
+                if 'host_entries' in hosts_config and len(hosts_config['host_entries']) > 0:
+                    # Ignores the schema information in the JSON file.
+                    # Convert each addresses object into a list of address strings.
+                    for e in hosts_config['host_entries']:
+                        server_config['host_resolution']['host_entries'].append({
+                            'address_type': e['address_type'],
+                            'addresses': [o['address'] for o in e['addresses']]
+                        })
+
+        #
+        # host_access_control_config.json
+        #
+
+        merged_host_access_control_config = False
+
+        # Merge the host_access_control_config.json file into server_config.json only if the
+        # server_config.json does not contain the host_access_control property.
+        if 'host_access_control' not in server_config:
+            merged_host_access_control_config = True
+
+            # Set default values for the host_access_control.
+            server_config['host_access_control'] = {'access_entries': []}
+
+            # Merge host_access_control_config.json into server_config.json if it is available.
+            if os.path.exists(paths.host_access_control_config_path()):
+                with open(paths.host_access_control_config_path()) as f:
+                    host_access_control = json.load(f)
+
+                if 'access_entries' in host_access_control and len(host_access_control['access_entries']) > 0:
+                    # Ignores the schema information in the JSON file.
+                    server_config['host_access_control']['access_entries'] = host_access_control['access_entries']
+
+        # Write changes to disk.
+        if merged_hosts_config or merged_host_access_control_config:
+            irods_config.commit(server_config, paths.server_config_path(), make_backup=True)
+
     configuration_file_list = [
             paths.server_config_path(),
             paths.hosts_config_path(),
@@ -141,6 +201,7 @@ def upgrade_config_file(irods_config, path, new_version, schema_name=None):
 def run_schema_update(config_dict, schema_name, next_schema_version):
     l = logging.getLogger(__name__)
     l.debug('Upgrading %s to schema_version %d...', schema_name, next_schema_version)
+
     if next_schema_version == 3:
         config_dict['schema_name'] = schema_name
         if schema_name == 'server_config':

@@ -1,0 +1,27 @@
+{
+    "id": "file:///var/lib/irods/configuration_schemas/v4/host_resolution.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+        "host_entries": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "address_type": {"enum": ["local","remote"]},
+                    "addresses": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        "uniqueItems": true,
+                        "minItems": 2
+                    }
+                },
+                "required": ["address_type","addresses"]
+            }
+        }
+    },
+    "required": ["host_entries"]
+}

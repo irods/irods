@@ -1,12 +1,5 @@
 #include "rcMisc.h"
 
-#ifndef windows_platform
-    #include <sys/time.h>
-    #include <sys/wait.h>
-#else
-    #include "Unix2Nt.hpp"
-#endif
-
 #include "apiHeaderAll.h"
 #include "modDataObjMeta.h"
 #include "rcGlobalExtern.h"
@@ -14,23 +7,9 @@
 #include "rodsType.h"
 #include "dataObjPut.h"
 #include "rodsErrorTable.h"
-
 #include "bulkDataObjPut.h"
 #include "putUtil.h"
 #include "sockComm.h"
-
-#include <cstring>
-#include <cstdlib>
-#include <iostream>
-#include <iomanip>
-#include <algorithm>
-#include <string>
-#include <string_view>
-#include <map>
-#include <random>
-
-#include <openssl/md5.h>
-
 #include "irods_virtual_path.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_stacktrace.hpp"
@@ -52,6 +31,26 @@
 
 #include <fmt/format.h>
 #include <json.hpp>
+
+#include <openssl/md5.h>
+
+#ifndef windows_platform
+    #include <sys/time.h>
+    #include <sys/wait.h>
+#else
+    #include "Unix2Nt.hpp"
+#endif
+
+#include <cstring>
+#include <cstdlib>
+#include <iostream>
+#include <iomanip>
+#include <algorithm>
+#include <string>
+#include <string_view>
+#include <map>
+#include <random>
+#include <unordered_map>
 
 /* check with the input path is a valid path -
  * 1 - valid
@@ -4381,8 +4380,7 @@ int getaddrinfo_with_retry(const char *_node,
     std::string hostname;
 
     if (CLIENT_PT != ::ProcessType) {
-        const auto hosts_config = irods::get_server_property<nlohmann::json>(irods::HOSTS_CONFIG_JSON_OBJECT_KW);
-        auto alias = resolve_hostname(_node, hosts_config, hostname_resolution_scheme::match_preferred);
+        auto alias = resolve_hostname(_node, hostname_resolution_scheme::match_preferred);
         hostname = alias ? std::move(*alias) : _node;
     }
     else {
@@ -4637,21 +4635,21 @@ myRead( int sock, void *buf, int len,
     return len - toRead;
 }
 
-auto resolve_hostname(const std::string_view _hostname,
-                      const nlohmann::json& _hosts_config,
-                      hostname_resolution_scheme _scheme) -> std::optional<std::string>
+auto resolve_hostname(const std::string_view _hostname, hostname_resolution_scheme _scheme)
+    -> std::optional<std::string>
 {
     using json = nlohmann::json;
 
-    const auto host_entries = _hosts_config.at("host_entries");
+    const auto& host_resolution = irods::get_server_property<const json&>(irods::CFG_HOST_RESOLUTION_KW);
+    const auto& host_entries = host_resolution.at(irods::CFG_HOST_ENTRIES_KW);
     const auto end = std::end(host_entries);
 
     // Find the addresses object that contains the address, "_hostname".
     const auto iter = std::find_if(std::begin(host_entries), end, [_hostname](const json& _entry) {
-        auto&& addresses = _entry.at("addresses");
+        const auto& addresses = _entry.at(irods::CFG_ADDRESSES_KW);
         const auto end = std::end(addresses);
         return end != std::find_if(std::begin(addresses), end, [_hostname](const json& _address) {
-            return _hostname == _address.at("address").get<std::string>();
+            return _hostname == _address.get_ref<const std::string&>();
         });
     });
 
@@ -4659,20 +4657,29 @@ auto resolve_hostname(const std::string_view _hostname,
         return std::nullopt;
     }
 
+    //
+    // "iter" now points at an element in the list of "host_entries".
+    //
+
     switch (_scheme) {
-        case hostname_resolution_scheme::match_preferred:
-            return iter->at("addresses").front().at("address").get<std::string>();
+        case hostname_resolution_scheme::match_preferred: {
+            const auto& addresses = iter->at(irods::CFG_ADDRESSES_KW);
+            return addresses.front().get<std::string>();
+        }
 
         case hostname_resolution_scheme::match_longest: {
-            std::string longest;
+            const auto& addresses = iter->at(irods::CFG_ADDRESSES_KW);
+            const std::string* longest{};
 
-            for (auto&& address : iter->at("addresses")) {
-                if (auto tmp = address.at("address").get<std::string>(); tmp.size() > longest.size()) {
-                    longest = std::move(tmp);
+            for (auto&& address : addresses) {
+                const auto& value = address.get_ref<const std::string&>();
+
+                if (!longest || value.size() > longest->size()) {
+                    longest = &value;
                 }
             }
 
-            return longest;
+            return *longest;
         }
 
         default:
@@ -4682,5 +4689,5 @@ auto resolve_hostname(const std::string_view _hostname,
 
             return std::nullopt;
     }
-}
+} // resolve_hostname
 

@@ -93,7 +93,7 @@ int chlOpen() {
     // =-=-=-=-=-=-=-
     // cache the database type for subsequent calls
     try {
-        const auto database_plugin_map = irods::get_server_property<nlohmann::json>(std::vector<std::string>{irods::CFG_PLUGIN_CONFIGURATION_KW, irods::PLUGIN_TYPE_DATABASE});
+        const auto& database_plugin_map = irods::get_server_property<const nlohmann::json&>(std::vector<std::string>{irods::CFG_PLUGIN_CONFIGURATION_KW, irods::PLUGIN_TYPE_DATABASE});
         if ( database_plugin_map.size() != 1 ) {
             rodsLog( LOG_ERROR, "Database plugin map must contain exactly one plugin object" );
             return SYS_INVALID_INPUT_PARAM;

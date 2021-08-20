@@ -408,8 +408,7 @@ sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
             gethostname(*addr, LONG_NAME_LEN);
 
             try {
-                const auto hosts_config = irods::get_server_property<nlohmann::json>(irods::HOSTS_CONFIG_JSON_OBJECT_KW);
-                const auto alias = resolve_hostname(*addr, hosts_config, hostname_resolution_scheme::match_longest);
+                const auto alias = resolve_hostname(*addr, hostname_resolution_scheme::match_longest);
 
                 if (alias) {
                     std::strncpy(*addr, alias->data(), alias->size());

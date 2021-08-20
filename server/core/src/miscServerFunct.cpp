@@ -3091,35 +3091,40 @@ irods::error get_catalog_service_role(
 
 } // get_catalog_service_role
 
-irods::error get_default_rule_plugin_instance(
-        std::string& _instance_name ) {
+irods::error get_default_rule_plugin_instance(std::string& _instance_name)
+{
     try {
-        _instance_name = irods::get_server_property<nlohmann::json>(std::vector<std::string>{irods::CFG_PLUGIN_CONFIGURATION_KW, irods::PLUGIN_TYPE_RULE_ENGINE})[0].at(irods::CFG_INSTANCE_NAME_KW).get<std::string>();
-    } catch ( const irods::exception& e ) {
+        _instance_name = irods::get_server_property<const nlohmann::json&>(std::vector<std::string>{irods::CFG_PLUGIN_CONFIGURATION_KW, irods::PLUGIN_TYPE_RULE_ENGINE})[0].at(irods::CFG_INSTANCE_NAME_KW).get<std::string>();
+    }
+    catch (const irods::exception& e) {
         return irods::error(e);
-    } catch ( const boost::bad_any_cast& e ) {
-        return ERROR( INVALID_ANY_CAST, e.what() );
-    } catch ( const std::out_of_range& e ) {
-        return ERROR( KEY_NOT_FOUND, e.what() );
+    }
+    catch (const boost::bad_any_cast& e) {
+        return ERROR(INVALID_ANY_CAST, e.what());
+    }
+    catch (const std::out_of_range& e) {
+        return ERROR(KEY_NOT_FOUND, e.what());
     }
 
     return SUCCESS();
-
 } // get_default_rule_plugin_instance
 
-irods::error list_rule_plugin_instances(
-        std::vector< std::string > &_instance_names ) {
+irods::error list_rule_plugin_instances(std::vector<std::string>& _instance_names)
+{
     try {
-        const auto rule_engines = irods::get_server_property<nlohmann::json>(std::vector<std::string>{irods::CFG_PLUGIN_CONFIGURATION_KW, irods::PLUGIN_TYPE_RULE_ENGINE});
-        for ( const auto& el : rule_engines ) {
-            _instance_names.push_back( el.at(irods::CFG_INSTANCE_NAME_KW).get<std::string>() );
+        const auto& rule_engines = irods::get_server_property<const nlohmann::json&>(std::vector<std::string>{irods::CFG_PLUGIN_CONFIGURATION_KW, irods::PLUGIN_TYPE_RULE_ENGINE});
+        for (const auto& el : rule_engines) {
+            _instance_names.push_back(el.at(irods::CFG_INSTANCE_NAME_KW).get_ref<const std::string&>());
         }
-    } catch ( const irods::exception& e ) {
+    }
+    catch (const irods::exception& e) {
         return irods::error(e);
-    } catch ( const boost::bad_any_cast& e ) {
-        return ERROR( INVALID_ANY_CAST, e.what() );
-    } catch ( const std::out_of_range& e ) {
-        return ERROR( KEY_NOT_FOUND, e.what() );
+    }
+    catch (const boost::bad_any_cast& e) {
+        return ERROR(INVALID_ANY_CAST, e.what());
+    }
+    catch (const std::out_of_range& e) {
+        return ERROR(KEY_NOT_FOUND, e.what());
     }
 
     return SUCCESS();

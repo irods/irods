@@ -2,6 +2,7 @@
 #include "getRemoteZoneResc.h"
 #include "getRescQuota.h"
 #include "initServer.hpp"
+#include "irods_configuration_keywords.hpp"
 #include "irods_stacktrace.hpp"
 #include "miscServerFunct.hpp"
 #include "objDesc.hpp"
@@ -40,10 +41,10 @@
 #include "logical_locking.hpp"
 
 #include <boost/filesystem.hpp>
-#include <boost/format.hpp>
 #include <boost/optional.hpp>
 #include <boost/system/error_code.hpp>
 
+#include <fmt/format.h>
 #include <json.hpp>
 
 #include <cstring>
@@ -169,9 +170,8 @@ InformationRequiredToSafelyRenameProcess::InformationRequiredToSafelyRenameProce
     argv0_size = strlen(argv[0]);
 }
 
-int
-//initServerInfo( rsComm_t *rsComm ) {
-initServerInfo( int processType, rsComm_t * rsComm) {
+int initServerInfo(int processType, rsComm_t* rsComm)
+{
     int status = 0;
 
     try {
@@ -179,18 +179,14 @@ initServerInfo( int processType, rsComm_t * rsComm) {
         const auto zone_port = irods::get_server_property<const int>( irods::CFG_ZONE_PORT);
 
         /* queue the local zone */
-        status = queueZone(
-                zone_name.c_str(),
-                zone_port, NULL, NULL );
-        if ( status < 0 ) {
-            rodsLog(
-                    LOG_DEBUG,
-                    "initServerInfo - queueZone failed %d",
-                    status );
+        status = queueZone(zone_name.c_str(), zone_port, nullptr, nullptr);
+        if (status < 0) {
+            rodsLog(LOG_DEBUG, "initServerInfo - queueZone failed %d", status);
             // do not error out
         }
-    } catch ( const irods::exception& e ) {
-        irods::log( irods::error(e) );
+    }
+    catch (const irods::exception& e) {
+        irods::log(irods::error(e));
         return e.code();
     }
 
@@ -305,32 +301,33 @@ initLocalServerHost() {
     return status;
 }
 
-int
-initRcatServerHostByFile() {
+int initRcatServerHostByFile()
+{
     std::string prop_str;
     try {
         snprintf( KerberosName, sizeof( KerberosName ), "%s", irods::get_server_property<const std::string>(irods::CFG_KERBEROS_NAME_KW).c_str());
-    } catch ( const irods::exception& e ) {}
+    }
+    catch (const irods::exception& e) {}
 
     try {
-        rodsHostAddr_t    addr;
-        memset( &addr, 0, sizeof( addr ) );
-        rodsServerHost_t* tmp_host = 0;
-        snprintf( addr.hostAddr, sizeof( addr.hostAddr ), "%s", irods::get_server_property<std::vector<std::string>>(irods::CFG_CATALOG_PROVIDER_HOSTS_KW)[0].c_str());
-        int rem_flg = resolveHost(
-                          &addr,
-                          &tmp_host );
-        if ( rem_flg < 0 ) {
-            rodsLog( LOG_SYS_FATAL,
-                     "initRcatServerHostByFile: resolveHost error for %s, status = %d",
-                     addr.hostAddr,
-                     rem_flg );
+        rodsHostAddr_t addr{};
+        const auto& catalog_provider_hosts = irods::get_server_property<const nlohmann::json&>(irods::CFG_CATALOG_PROVIDER_HOSTS_KW);
+        snprintf(addr.hostAddr, sizeof(addr.hostAddr), "%s", catalog_provider_hosts[0].get_ref<const std::string&>().c_str());
+
+        rodsServerHost_t* tmp_host{};
+
+        if (const int rem_flg = resolveHost(&addr, &tmp_host); rem_flg < 0) {
+            rodsLog(LOG_SYS_FATAL,
+                    "initRcatServerHostByFile: resolveHost error for %s, status = %d",
+                    addr.hostAddr,
+                    rem_flg);
             return rem_flg;
         }
-        tmp_host->rcatEnabled = LOCAL_ICAT;
 
-    } catch ( const irods::exception& e ) {
-        irods::log( irods::error(e) );
+        tmp_host->rcatEnabled = LOCAL_ICAT;
+    }
+    catch (const irods::exception& e) {
+        irods::log(irods::error(e));
         return e.code();
     }
 
@@ -349,61 +346,56 @@ initRcatServerHostByFile() {
 
     // try for new federation config
     try {
-        for ( const auto& federation : irods::get_server_property<const nlohmann::json&> ( irods::CFG_FEDERATION_KW ) ) {
+        for (const auto& federation : irods::get_server_property<const nlohmann::json&>(irods::CFG_FEDERATION_KW)) {
             try {
                 try {
-                    const auto fed_zone_key             = federation.at(irods::CFG_ZONE_KEY_KW).get<std::string>();
-                    const auto fed_zone_name            = federation.at(irods::CFG_ZONE_NAME_KW).get<std::string>();
-                    const auto fed_zone_negotiation_key = federation.at(irods::CFG_NEGOTIATION_KEY_KW).get<std::string>();
+                    const auto& fed_zone_key             = federation.at(irods::CFG_ZONE_KEY_KW).get_ref<const std::string&>();
+                    const auto& fed_zone_name            = federation.at(irods::CFG_ZONE_NAME_KW).get_ref<const std::string&>();
+                    const auto& fed_zone_negotiation_key = federation.at(irods::CFG_NEGOTIATION_KEY_KW).get_ref<const std::string&>();
+
                     // store in remote_SID_key_map
-                    remote_SID_key_map[fed_zone_name] = std::make_pair( fed_zone_key, fed_zone_negotiation_key );
+                    remote_SID_key_map[fed_zone_name] = std::make_pair(fed_zone_key, fed_zone_negotiation_key);
                 }
-                catch ( boost::bad_any_cast& _e ) {
-                    rodsLog(
-                            LOG_ERROR,
-                            "initRcatServerHostByFile - failed to cast federation entry to string" );
-                    continue;
-                } catch ( const std::out_of_range& ) {
-                    rodsLog(
-                            LOG_ERROR,
-                            "%s - federation object did not contain required keys",
-                            __PRETTY_FUNCTION__);
+                catch (boost::bad_any_cast&) {
+                    rodsLog(LOG_ERROR, "initRcatServerHostByFile - failed to cast federation entry to string");
                     continue;
                 }
-            } catch ( const boost::bad_any_cast& ) {
-                rodsLog(
-                        LOG_ERROR,
-                        "%s - failed to cast array member to federation object",
-                        __PRETTY_FUNCTION__);
+                catch (const std::out_of_range&) {
+                    rodsLog(LOG_ERROR, "%s - federation object did not contain required keys", __PRETTY_FUNCTION__);
+                    continue;
+                }
+            }
+            catch (const boost::bad_any_cast&) {
+                rodsLog(LOG_ERROR, "%s - failed to cast array member to federation object", __PRETTY_FUNCTION__);
                 continue;
             }
-
         }
-    } catch ( const irods::exception& ) {
+    }
+    catch (const irods::exception&) {
         // try the old remote sid config
         try {
-            for ( const auto& rem_sid : irods::get_server_property< std::vector< std::string > > ( REMOTE_ZONE_SID_KW ) ) {
+            for (const auto& rem_sid : irods::get_server_property<std::vector<std::string>>(REMOTE_ZONE_SID_KW)) {
                 // legacy format should be zone_name-SID
-                size_t pos = rem_sid.find( "-" );
-                if ( pos == std::string::npos ) {
-                    rodsLog( LOG_ERROR, "initRcatServerHostByFile - Unable to parse remote SID %s", rem_sid.c_str() );
+                const size_t pos = rem_sid.find("-");
+                if (pos == std::string::npos) {
+                    rodsLog(LOG_ERROR, "initRcatServerHostByFile - Unable to parse remote SID %s", rem_sid.c_str());
                 }
                 else {
                     // store in remote_SID_key_map
-                    std::string fed_zone_name = rem_sid.substr( 0, pos );
-                    std::string fed_zone_key = rem_sid.substr( pos + 1 );
+                    std::string fed_zone_name = rem_sid.substr(0, pos);
+                    std::string fed_zone_key = rem_sid.substr(pos + 1);
                     // use our negotiation key for the old configuration
                     try {
                         const auto& neg_key = irods::get_server_property<const std::string>(irods::CFG_NEGOTIATION_KEY_KW);
-                        remote_SID_key_map[fed_zone_name] = std::make_pair( fed_zone_key, neg_key );
-                    } catch ( const irods::exception& e ) {
-                        irods::log( irods::error(e) );
+                        remote_SID_key_map[fed_zone_name] = std::make_pair(fed_zone_key, neg_key);
+                    }
+                    catch (const irods::exception& e) {
+                        irods::log(irods::error(e));
                         return e.code();
                     }
                 }
             }
-        } catch ( const irods::exception& ) {}
-
+        } catch (const irods::exception&) {}
     } // else
 
     return 0;
@@ -733,22 +725,25 @@ rsPipeSignalHandler( int ) {
 int initHostConfigByFile()
 {
     try {
-        const auto& hosts_config = irods::get_server_property<const nlohmann::json&>(irods::HOSTS_CONFIG_JSON_OBJECT_KW);
+        const auto& hosts_config = irods::get_server_property<const nlohmann::json&>(irods::CFG_HOST_RESOLUTION_KW);
+        const auto& host_entries = hosts_config.at(irods::CFG_HOST_ENTRIES_KW); // An array.
 
-        for (auto&& entry : hosts_config.at("host_entries")) {
+        for (auto&& entry : host_entries) {
             try {
                 auto* svr_host = static_cast<rodsServerHost_t*>(std::malloc(sizeof(rodsServerHost_t)));
                 std::memset(svr_host, 0, sizeof(rodsServerHost_t));
 
-                if (const auto type = entry.at("address_type").get<std::string>(); "remote" == type) {
+                const auto& address_type = entry.at(irods::CFG_ADDRESS_TYPE_KW).get_ref<const std::string&>();
+
+                if (address_type == "remote") {
                     svr_host->localFlag = REMOTE_HOST;
                 }
-                else if ("local" == type) {
+                else if (address_type == "local") {
                     svr_host->localFlag = LOCAL_HOST;
                 }
                 else {
                     std::free(svr_host);
-                    rodsLog(LOG_ERROR, "unsupported address type [%s]", type.data());
+                    rodsLog(LOG_ERROR, "unsupported address type [%s]", address_type.data());
                     continue;
                 }
 
@@ -758,20 +753,20 @@ int initHostConfigByFile()
                     rodsLog(LOG_ERROR, "queueRodsServerHost failed");
                 }
 
-                for (auto&& address : entry.at("addresses")) {
+                for (auto&& address : entry.at(irods::CFG_ADDRESSES_KW)) {
                     try {
-                        if (queueHostName(svr_host, address.at("address").get<std::string>().data(), 0) < 0) {
-                            rodsLog(LOG_ERROR, "queHostName failed");
+                        if (queueHostName(svr_host, address.get_ref<const std::string&>().data(), 0) < 0) {
+                            rodsLog(LOG_ERROR, "queueHostName failed");
                         }
                     }
                     catch (const nlohmann::json::exception& e) {
-                        rodsLog(LOG_ERROR, "Could not process hosts_config.json address [address=%s, error_message=%s]",
-                                address.dump().data(), e.what());
+                        rodsLog(LOG_ERROR, "Could not process host_resolution address [address_type=%s, address=%s, error_message=%s]",
+                                address_type.data(), address.dump().data(), e.what());
                     }
                 }
             }
             catch (const nlohmann::json::exception& e) {
-                rodsLog(LOG_ERROR, "Could not process hosts_config.json entry [entry=%s, error_message=%s].",
+                rodsLog(LOG_ERROR, "Could not process host_resolution entry [entry=%d, error_message=%s].",
                         entry.dump().data(), e.what());
             }
         }
@@ -1057,52 +1052,57 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
 std::set<std::string>
 construct_controlled_user_set(const nlohmann::json& controlled_user_connection_list) {
     std::set<std::string> user_set;
+
     try {
-        for ( const auto& user : controlled_user_connection_list.at("users")) {
-            user_set.insert(user.get<std::string>());
+        for (auto&& user : controlled_user_connection_list.at("users")) {
+            user_set.insert(user.get_ref<const std::string&>());
         }
-    } catch ( const boost::bad_any_cast& e ) {
-        THROW( INVALID_ANY_CAST, "controlled_user_connection_list must contain a list of string values at key \"users\"" );
-    } catch ( const std::out_of_range& e ) {
-        THROW( KEY_NOT_FOUND, "controlled_user_connection_list must contain a list of string values at key \"users\"" );
-    } catch ( const nlohmann::json::exception& e ) {
-        THROW( KEY_NOT_FOUND, "controlled_user_connection_list must contain a list of string values at key \"users\"" );
     }
+    catch (const nlohmann::json::exception& e) {
+        THROW(SYS_LIBRARY_ERROR, fmt::format("Encountered exception while processing [controlled_user_connection_list]. {}", e.what()));
+    }
+
     return user_set;
 }
 
 int
 chkAllowedUser( const char *userName, const char *rodsZone ) {
 
-    if ( userName == NULL || rodsZone == NULL ) {
+    if (!userName || !rodsZone) {
         return SYS_USER_NOT_ALLOWED_TO_CONN;
     }
 
-    if ( strlen( userName ) == 0 ) {
+    if (strlen(userName) == 0) {
         /* XXXXXXXXXX userName not yet defined. allow it for now */
         return 0;
     }
-    nlohmann::json  controlled_user_connection_list{};
-    try {
-        controlled_user_connection_list = irods::get_server_property<nlohmann::json>("controlled_user_connection_list");
 
-    } catch ( const irods::exception& e ) {
-        if ( e.code() == KEY_NOT_FOUND ) {
+    const nlohmann::json* controlled_user_connection_list;
+
+    try {
+        controlled_user_connection_list = &irods::get_server_property<const nlohmann::json&>("controlled_user_connection_list");
+    }
+    catch (const irods::exception& e) {
+        if (e.code() == KEY_NOT_FOUND) {
             return 0;
         }
+
         return e.code();
     }
-    const auto user_and_zone = (boost::format("%s#%s") % userName % rodsZone).str();
+
+    const auto user_and_zone = fmt::format("{}#{}", userName, rodsZone);
+
     try {
-        const auto control_type = controlled_user_connection_list.at("control_type").get<std::string>();
-        static const auto controlled_user_set = construct_controlled_user_set(controlled_user_connection_list);
-        if ( control_type == "whitelist" ) {
-            if ( controlled_user_set.count( user_and_zone ) == 0 ) {
+        static const auto controlled_user_set = construct_controlled_user_set(*controlled_user_connection_list);
+        const auto& control_type = controlled_user_connection_list->at("control_type").get_ref<const std::string&>();
+
+        if (control_type == "whitelist") {
+            if (controlled_user_set.count(user_and_zone) == 0) {
                 return SYS_USER_NOT_ALLOWED_TO_CONN;
             }
         }
-        else if ( control_type == "blacklist" ) {
-            if ( controlled_user_set.count( user_and_zone ) != 0 ) {
+        else if (control_type == "blacklist") {
+            if (controlled_user_set.count(user_and_zone) != 0) {
                 return SYS_USER_NOT_ALLOWED_TO_CONN;
             }
         }
@@ -1110,18 +1110,17 @@ chkAllowedUser( const char *userName, const char *rodsZone ) {
             rodsLog(LOG_ERROR, "controlled_user_connection_list must specify \"whitelist\" or \"blacklist\"");
             return -1;
         }
-    } catch ( const irods::exception& e ) {
+    }
+    catch (const irods::exception& e) {
         irods::log(e);
         return e.code();
-    } catch ( const std::out_of_range& e ) {
-        rodsLog( LOG_ERROR, "%s", e.what());
-        return KEY_NOT_FOUND;
-    } catch ( const boost::bad_any_cast& e ) {
-        rodsLog( LOG_ERROR, "%s", e.what());
-        return INVALID_ANY_CAST;
     }
-    return 0;
+    catch (const std::out_of_range& e) {
+        rodsLog(LOG_ERROR, "%s", e.what());
+        return KEY_NOT_FOUND;
+    }
 
+    return 0;
 }
 
 int

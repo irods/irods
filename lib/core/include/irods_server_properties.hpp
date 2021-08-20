@@ -237,7 +237,6 @@ namespace irods
     ///
     /// \since 4.2.9
     auto get_hostname_cache_eviction_age() noexcept -> int;
-
 } // namespace irods
 
 #endif // IRODS_SERVER_PROPERTIES_HPP

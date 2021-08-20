@@ -1602,10 +1602,7 @@ set(CPACK_RPM_${IRODS_PACKAGE_COMPONENT_ORACLE_NAME}_POST_INSTALL_SCRIPT_FILE "$
 set(CPACK_RPM_${IRODS_PACKAGE_COMPONENT_ORACLE_NAME}_POST_UNINSTALL_SCRIPT_FILE "${CMAKE_SOURCE_DIR}/plugins/database/packaging/postrm")
 
 # Install configuration schemas with updated id field
-set(
-  IRODS_CONFIGURATION_SCHEMA_VERSION
-  3
-  )
+set(IRODS_CONFIGURATION_SCHEMA_VERSION 4)
 set(
   IRODS_CONFIGURATION_SCHEMA_BUILD_DIRECTORY
   ${CMAKE_BINARY_DIR}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION}
@@ -1618,8 +1615,8 @@ set(
   configuration_directory.json
   database_config.json
   grid_status.json
-  host_access_control_config.json
-  hosts_config.json
+  host_access_control.json
+  host_resolution.json
   plugin.json
   resource.json
   rule_engine.json

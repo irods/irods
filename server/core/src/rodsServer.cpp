@@ -416,6 +416,8 @@ int main(int argc, char** argv)
 
     remove_leftover_rulebase_pid_files();
 
+    irods::server_properties::instance().capture();
+
     using key_path_t = irods::configuration_parser::key_path_t;
 
     // Set the default value for evicting DNS cache entries.
@@ -524,7 +526,7 @@ int main(int argc, char** argv)
 static bool instantiate_shared_memory_for_plugin( const nlohmann::json& _plugin_object ) {
     const auto itr = _plugin_object.find(irods::CFG_SHARED_MEMORY_INSTANCE_KW);
     if(_plugin_object.end() != itr) {
-        const auto mem_name = itr->get<const std::string>();
+        const auto& mem_name = itr->get_ref<const std::string&>();
         prepareServerSharedMemory(mem_name);
         detachSharedMemory(mem_name);
         return true;
@@ -536,7 +538,7 @@ static bool instantiate_shared_memory_for_plugin( const nlohmann::json& _plugin_
 static bool uninstantiate_shared_memory_for_plugin( const nlohmann::json& _plugin_object ) {
     const auto itr = _plugin_object.find(irods::CFG_SHARED_MEMORY_INSTANCE_KW);
     if(_plugin_object.end() != itr) {
-        const auto mem_name = itr->get<const std::string>();
+        const auto& mem_name = itr->get_ref<const std::string&>();
         removeSharedMemory(mem_name);
         resetMutex(mem_name.c_str());
         return true;

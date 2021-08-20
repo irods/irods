@@ -529,7 +529,7 @@ namespace irods {
         my_host_name_ = my_env.rodsHost;
 
         // get the IES host for ordereing
-        icat_host_name_ = get_server_property<nlohmann::json>(CFG_CATALOG_PROVIDER_HOSTS_KW)[0].get<std::string>();
+        icat_host_name_ = get_server_property<const nlohmann::json&>(CFG_CATALOG_PROVIDER_HOSTS_KW)[0].get_ref<const std::string&>();
 
         // repave icat_host_name_ as we do not want to process 'localhost'
         if ( "localhost" == icat_host_name_ ) {

@@ -3,6 +3,7 @@
  *
  */
 
+#include "irods_configuration_keywords.hpp"
 #include "rcMisc.h"
 #include "reIn2p3SysRule.hpp"
 #include "genQuery.h"
@@ -316,95 +317,57 @@ void *startMonScript( void *arg ) {
 #endif
 }
 
-int checkHostAccessControl(
-    const std::string& _user_name,
-    const std::string& _host_client,
-    const std::string& _groups_name ) {
+int checkHostAccessControl(const std::string& _user_name,
+                           const std::string& _host_client,
+                           const std::string& _groups_name)
+{
     namespace ip = boost::asio::ip;
 
-    std::string cfg_file;
-    irods::error ret = irods::get_full_path_for_config_file(
-                           HOST_ACCESS_CONTROL_FILE,
-                           cfg_file );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
-    }
+    std::vector<std::string> group_list;
+    boost::split(group_list, _groups_name, boost::is_any_of("\t "), boost::token_compress_on);
 
-    irods::configuration_parser cfg;
-    ret = cfg.load( cfg_file );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
-    }
-
-    std::vector< std::string > group_list;
-    boost::split(
-        group_list,
-        _groups_name,
-        boost::is_any_of( "\t " ),
-        boost::token_compress_on );
+    const auto& host_access_control = irods::get_server_property<const nlohmann::json&>(irods::CFG_HOST_ACCESS_CONTROL_KW);
+    const auto& access_entries = host_access_control.at(irods::CFG_ACCESS_ENTRIES_KW);
 
     try {
-        for ( const auto& el : cfg.get< const std::vector<boost::any> >("access_entries") ) {
+        for (const auto& access_entry : access_entries) {
             try {
-                const auto& access_entry = boost::any_cast<const std::unordered_map<std::string, boost::any>&>(el);
-                const auto& user = boost::any_cast<const std::string&>(access_entry.at("user"));
-                const auto& group = boost::any_cast<const std::string&>(access_entry.at("group"));
-                const auto& addy = boost::any_cast<const std::string&>(access_entry.at("address"));
-                const auto& mask = boost::any_cast<const std::string&>(access_entry.at("mask"));
+                const auto& user = access_entry.at(irods::CFG_USER_KW).get_ref<const std::string&>();
+                const auto& group = access_entry.at(irods::CFG_GROUP_KW).get_ref<const std::string&>();
+                const auto& addy = access_entry.at(irods::CFG_ADDRESS_KW).get_ref<const std::string&>();
+                const auto& mask = access_entry.at(irods::CFG_MASK_KW).get_ref<const std::string&>();
 
                 boost::system::error_code error_code;
-                ip::address_v4 address_entry(
-                    ip::address_v4::from_string(
-                        addy,
-                        error_code ) );
+                ip::address_v4 address_entry(ip::address_v4::from_string(addy, error_code));
                 if ( error_code.value() ) {
                     continue;
-
                 }
 
-                ip::address_v4 mask_entry(
-                    ip::address_v4::from_string(
-                        mask,
-                        error_code ) );
+                ip::address_v4 mask_entry(ip::address_v4::from_string(mask, error_code));
                 if ( error_code.value() ) {
                     continue;
-
                 }
 
-                ip::address_v4 host_client(
-                    ip::address_v4::from_string(
-                        _host_client,
-                        error_code ) );
+                ip::address_v4 host_client(ip::address_v4::from_string(_host_client, error_code));
                 if ( error_code.value() ) {
                     continue;
-
                 }
 
                 bool user_match = false;
-                if ( user == _user_name ||
-                        user == "all" ) {
+                if ( user == _user_name || user == "all" ) {
                     user_match = true;
-
                 }
 
                 bool group_match = false;
                 if ( "all" == group ) {
                     group_match = true;
-
                 }
                 else {
-                    for ( size_t i = 0;
-                            i < group_list.size();
-                            ++i ) {
+                    for ( size_t i = 0; i < group_list.size(); ++i ) {
                         if ( group == group_list[ i ] ) {
                             group_match = true;
-
                         }
-
-                    } // for i
-
+                    }
                 }
 
                 if ( group_match || user_match ) {
@@ -416,21 +379,22 @@ int checkHostAccessControl(
                         return 0;
                     }
                 }
-            } catch ( const boost::bad_any_cast& e ) {
+            }
+            catch ( const boost::bad_any_cast& e ) {
                 irods::log( ERROR( INVALID_ANY_CAST, e.what() ) );
                 continue;
-            } catch ( const std::out_of_range& e ) {
+            }
+            catch ( const std::out_of_range& e ) {
                 irods::log( ERROR( KEY_NOT_FOUND, e.what() ) );
             }
-
         }
-    } catch ( const irods::exception& e ) {
+    }
+    catch ( const irods::exception& e ) {
         irods::log( irods::error(e) );
         return e.code();
     }
 
     return UNMATCHED_KEY_OR_INDEX;
-
 } // checkHostAccessControl
 
 /**
@@ -447,8 +411,8 @@ int checkHostAccessControl(
  * \author Jean-Yves Nief
  *
  * \note  This microservice controls access to the iRODS service
- *  based on the information in the host based access configuration file:
- *  HOST_ACCESS_CONTROL_FILE
+ *  based on the information in the host_access_control information of
+ *  server_config.json.
  *
  * \usage See clients/icommands/test/rules/
  *
