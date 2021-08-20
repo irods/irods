@@ -58,7 +58,7 @@ namespace irods
 
             string = static_cast<string_t*>(stream);
 
-            new_len = string->len + size*nmeb;
+            new_len = string->len + size * nmeb;
 
             // Reallocate memory with space for new content.
             // Add an extra byte for terminating null char.
@@ -160,23 +160,11 @@ namespace irods
 
         auto process_remote_configuration(const json& cfg) -> json
         {
-            if (!cfg.contains("server_config.json")) {
+            if (!cfg.contains(SERVER_CONFIG_FILE)) {
                 THROW(SYS_INVALID_INPUT_PARAM, "remote configuration missing server_config.json contents");
             }
 
-            auto tmp = cfg.at("server_config.json");
-
-            if (cfg.contains("database_config.json")) {
-                for (auto&& [k, v] : cfg.items()) {
-                    tmp[k] = v;
-                }
-            }
-
-            if (cfg.contains("hosts_config.json")) {
-                tmp[irods::HOSTS_CONFIG_JSON_OBJECT_KW] = cfg.at("hosts_config.json");
-            }
-
-            return tmp;
+            return cfg.at(SERVER_CONFIG_FILE);
         } // process_remote_configuration
     } // anonymous namespace
 
@@ -233,35 +221,6 @@ namespace irods
         std::ifstream svr{svr_fn};
         if (svr.is_open()) {
             config_props_ = json::parse(svr);
-        }
-
-        std::string db_fn;
-        ret = irods::get_full_path_for_config_file("database_config.json", db_fn);
-        if (ret.ok()) {
-            std::ifstream db{db_fn};
-            if (db.is_open()) {
-                auto tmp = json::parse(db);
-                for (const auto& [k, v] : tmp.items()) {
-                    config_props_[k] = v;
-                }
-            }
-        }
-
-        try {
-            std::string path;
-
-            if (const auto error = get_full_path_for_config_file("hosts_config.json", path); !error.ok()) {
-                if (error.code() != SYS_INVALID_INPUT_PARAM) {
-                    rodsLog(LOG_ERROR, "Could not read file [%s].", path.data());
-                }
-
-                return;
-            }
-
-            config_props_[irods::HOSTS_CONFIG_JSON_OBJECT_KW] = nlohmann::json::parse(std::ifstream{path});
-        }
-        catch (...) {
-            rodsLog(LOG_ERROR, "An unexpected error occurred while processing the hosts_config.json file.");
         }
     } // capture
 
@@ -364,6 +323,5 @@ namespace irods
 
         return 3600;
     } // get_hostname_cache_eviction_age
-
 } // namespace irods
 

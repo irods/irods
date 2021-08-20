@@ -6,7 +6,6 @@
 #include "rodsDef.h"
 #include "rcConnect.h"
 
-#define HOST_CONFIG_FILE                "hosts_config.json"
 #define RE_RULES_FILE                   "reRules"
 
 // Keywords used in CONNECT_CONTROL_FILE

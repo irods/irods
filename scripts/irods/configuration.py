@@ -233,21 +233,19 @@ class IrodsConfig(object):
         l = logging.getLogger(__name__)
 
         configuration_schema_mapping = {
-                'server_config': {
-                    'dict': self.server_config,
-                    'path': paths.server_config_path()},
-                'VERSION': {
-                    'dict': self.version,
-                    'path': paths.version_path()},
-                'hosts_config': {
-                    'dict': self.hosts_config,
-                    'path': paths.hosts_config_path()},
-                'host_access_control_config': {
-                    'dict': self.host_access_control_config,
-                    'path': paths.host_access_control_config_path()},
-                'service_account_environment': {
-                    'dict': self.client_environment,
-                    'path': self.client_environment_path}}
+            'server_config': {
+                'dict': self.server_config,
+                'path': paths.server_config_path()
+            },
+            'VERSION': {
+                'dict': self.version,
+                'path': paths.version_path()
+            },
+            'service_account_environment': {
+                'dict': self.client_environment,
+                'path': self.client_environment_path
+            }
+        }
 
         skipped = []
 

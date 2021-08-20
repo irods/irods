@@ -39,6 +39,7 @@ namespace irods
     extern const std::string CFG_SERVER_PORT_RANGE_START_KW;
     extern const std::string CFG_SERVER_PORT_RANGE_END_KW;
 
+    // log_level
     extern const std::string CFG_LOG_LEVEL_KW;
     extern const std::string CFG_LOG_LEVEL_CATEGORY_LEGACY_KW;
     extern const std::string CFG_LOG_LEVEL_CATEGORY_SERVER_KW;
@@ -53,7 +54,22 @@ namespace irods
     extern const std::string CFG_LOG_LEVEL_CATEGORY_NETWORK_KW;
     extern const std::string CFG_LOG_LEVEL_CATEGORY_RULE_ENGINE_KW;
 
+    // client_allow_list_policy
     extern const std::string CFG_CLIENT_API_WHITELIST_POLICY_KW;
+
+    // host_access_control
+    extern const std::string CFG_HOST_ACCESS_CONTROL_KW;
+    extern const std::string CFG_ACCESS_ENTRIES_KW;
+    extern const std::string CFG_USER_KW;
+    extern const std::string CFG_GROUP_KW;
+    extern const std::string CFG_MASK_KW;
+
+    // host_resolution
+    extern const std::string CFG_HOST_RESOLUTION_KW;
+    extern const std::string CFG_HOST_ENTRIES_KW;
+    extern const std::string CFG_ADDRESS_TYPE_KW;
+    extern const std::string CFG_ADDRESSES_KW;
+    extern const std::string CFG_ADDRESS_KW;
 
     // advanced settings
     extern const std::string CFG_MAX_SIZE_FOR_SINGLE_BUFFER;
@@ -166,7 +182,6 @@ namespace irods
     extern const std::string DEFAULT_RULE_ENGINE_INSTANCE_NAME_KW;
 
     // misc. keywords
-    extern const std::string HOSTS_CONFIG_JSON_OBJECT_KW;
     extern const std::string DELAY_RULE_EXECUTORS_KW;
 } // namespace irods
 

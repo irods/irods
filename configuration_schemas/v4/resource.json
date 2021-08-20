@@ -1,0 +1,26 @@
+{
+    "id": "file:///var/lib/irods/configuration_schemas/v4/resource.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+        "context_string": {"type": "string"},
+        "host": {"type": "string"},
+        "free_space": {"type": "string"},
+        "name": {"type": "string"},
+        "object_count": {"type": "integer"},
+        "parent_resource": {"type": "string"},
+        "status": {"type": "string", "enum": ["up","down"]},
+        "type": {"type": "string"},
+        "vault_path": {"type": "string"}
+    },
+    "required": [
+        "context_string",
+        "host",
+        "free_space",
+        "name",
+        "parent_resource",
+        "status",
+        "type",
+        "vault_path"
+    ]
+}

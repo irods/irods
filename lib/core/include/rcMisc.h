@@ -1,5 +1,5 @@
-#ifndef RC_MISC_H__
-#define RC_MISC_H__
+#ifndef IRODS_RC_MISC_H
+#define IRODS_RC_MISC_H
 
 #include "rods.h"
 #include "rodsError.h"
@@ -351,7 +351,7 @@ int load_in_addr_from_hostname(const char* _hostname, struct in_addr* _out);
 } // extern "C"
 
 /// Defines the set of matching schemes used during hostname resolution against
-/// the hosts_config.json file.
+/// the host_resolution information defined in the server_config.json file.
 ///
 /// \since 4.2.9
 enum class hostname_resolution_scheme
@@ -360,22 +360,20 @@ enum class hostname_resolution_scheme
     match_longest       ///< Use the entry with the longest address.
 }; // enum class hostname_resolution_scheme
 
-/// Returns a hostname from the hosts_config.json object based on a matching scheme.
+/// Returns a hostname from the host_resolution information based on a matching scheme.
 ///
-/// \param[in] _hostname     The hostname to resolve. If the provided hostname does not
-///                          exist in the JSON object, std::nullopt is returned.
-/// \param[in] _hosts_config A JSON object matching the structure of hosts_config.json.
-/// \param[in] _scheme       The matching scheme that controls how a hostname is resolved.
+/// \param[in] _hostname The hostname to resolve. If the provided hostname does not
+///                      exist in the JSON object, std::nullopt is returned.
+/// \param[in] _scheme   The matching scheme that controls how a hostname is resolved.
 ///
 /// \return A std::optional<std::string> representing the hostname.
 /// \retval std::string  If \p _hosts_config contains a match.
 /// \retval std::nullopt Otherwise.
 ///
 /// \since 4.2.9
-auto resolve_hostname(const std::string_view _hostname,
-                      const nlohmann::json& _hosts_config,
-                      hostname_resolution_scheme _scheme) -> std::optional<std::string>;
+auto resolve_hostname(const std::string_view _hostname, hostname_resolution_scheme _scheme)
+    -> std::optional<std::string>;
 #endif // __cplusplus
 
-#endif // RC_MISC_H__
+#endif // IRODS_RC_MISC_H
 

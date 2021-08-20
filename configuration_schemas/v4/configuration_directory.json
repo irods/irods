@@ -1,0 +1,26 @@
+{
+    "id": "file:///var/lib/irods/configuration_schemas/v4/configuration_directory.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+        "path": {
+            "type": "string",
+            "pattern": "^(/[^/]+)+$"
+        },
+        "files": {
+            "type": "object",
+            "patternProperties": {
+                "^(/[^/]+)+$": {
+                    "type": "string",
+                    "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "required": [
+        "path",
+        "files"
+    ],
+    "additionalProperties": false
+}

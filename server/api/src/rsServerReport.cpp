@@ -138,28 +138,6 @@ irods::error convert_server_config( json& _svr_cfg )
     return sanitize_server_config_keys( _svr_cfg );
 } // convert_server_config
 
-irods::error convert_host_access_control( json& _host_ctrl )
-{
-    std::string cfg_file;
-    irods::error ret = irods::get_full_path_for_config_file( HOST_ACCESS_CONTROL_FILE, cfg_file );
-    if ( !ret.ok() ) {
-        return PASS( ret );
-    }
-
-    return load_json_file(cfg_file, _host_ctrl);
-} // convert_host_access_control
-
-irods::error convert_irods_host( json& _irods_host )
-{
-    std::string cfg_file;
-    irods::error ret = irods::get_full_path_for_config_file( HOST_CONFIG_FILE, cfg_file );
-    if ( !ret.ok() ) {
-        return PASS( ret );
-    }
-
-    return load_json_file(cfg_file, _irods_host);
-} // convert_irods_host
-
 irods::error convert_service_account( json& _svc_acct )
 {
     std::string env_file_path;
@@ -423,26 +401,23 @@ irods::error get_config_dir( json& _cfg_dir )
 
     _cfg_dir["path"] = config_dir;
 
-    for ( fs::directory_iterator itr( config_dir );
-          itr != fs::directory_iterator();
-          ++itr )
-    {
-        if ( fs::is_regular_file( itr->path() ) ) {
-            const fs::path& p = itr->path();
+    for (const auto& e : fs::directory_iterator{config_dir}) {
+        if (fs::is_regular_file(e.path())) {
+            const fs::path& p = e.path();
             const std::string name = p.string();
 
             if (std::string::npos != name.find(irods::SERVER_CONFIG_FILE) ||
-                std::string::npos != name.find(HOST_CONFIG_FILE) ||
-                std::string::npos != name.find(HOST_ACCESS_CONTROL_FILE))
+                std::string::npos != name.find("hosts_config.json") ||
+                std::string::npos != name.find("host_access_control_config.json"))
             {
                 continue;
             }
 
             std::string contents;
-            ret = get_file_contents( name, contents );
+            ret = get_file_contents(name, contents);
 
-            if ( !ret.ok() ) {
-                irods::log( PASS( ret ) );
+            if (!ret.ok()) {
+                irods::log(PASS(ret));
                 continue;
             }
 
@@ -510,20 +485,6 @@ int _rsServerReport( rsComm_t* _comm, bytesBuf_t** _bbuf )
         irods::log( PASS( ret ) );
     }
     resc_svr["server_config"] = svr_cfg;
-
-    json host_ctrl;
-    ret = convert_host_access_control( host_ctrl );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
-    resc_svr["host_access_control_config"] = host_ctrl;
-
-    json irods_host;
-    ret = convert_irods_host( irods_host );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
-    resc_svr["hosts_config"] = irods_host;
 
     json svc_acct;
     ret = convert_service_account( svc_acct );

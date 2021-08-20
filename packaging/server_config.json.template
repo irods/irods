@@ -1,6 +1,6 @@
 {
     "schema_name": "server_config",
-    "schema_version": "v3",
+    "schema_version": "v4",
     "advanced_settings": {
         "delay_rule_executors": [],
         "default_number_of_transfer_threads": 4,
@@ -28,6 +28,12 @@
     "default_hash_scheme": "SHA256",
     "environment_variables": {},
     "federation": [],
+    "host_access_control": {
+        "access_entries": []
+    },
+    "host_resolution": {
+        "host_entries": []
+    },
     "log_level": {
         "agent": "info",
         "agent_factory": "info",

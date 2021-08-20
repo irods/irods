@@ -9,7 +9,7 @@ NamespacesHelper* NamespacesHelper::Instance() {
 
         const auto& re_namespace_set = irods::get_server_property<const nlohmann::json&>(irods::CFG_RE_NAMESPACE_SET_KW);
         for ( const auto& el : re_namespace_set ) {
-            namespaces.push_back(el.get<std::string>());
+            namespaces.push_back(el.get_ref<const std::string&>());
         }
     }
 

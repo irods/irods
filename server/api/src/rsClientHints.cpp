@@ -29,8 +29,6 @@
 
 using json = nlohmann::json;
 
-const std::string HOST_ACCESS_CONTROL_FILE( "HostAccessControl" );
-
 int _rsClientHints( rsComm_t* _comm, bytesBuf_t** _bbuf );
 
 int rsClientHints( rsComm_t* _comm, bytesBuf_t** _bbuf )

@@ -1,0 +1,23 @@
+{
+    "id": "file:///var/lib/irods/configuration_schemas/v4/database_config.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+        "db_host": {"type": "string"},
+        "db_name": {"type": "string"},
+        "db_password": {"type": "string"},
+        "db_port": {"type": "integer"},
+        "db_username": {"type": "string"},
+        "db_sslmode": {"type": "string"},
+        "db_sslrootcert": {"type": "string"},
+        "db_sslcert": {"type": "string"},
+        "db_sslkey": {"type": "string"}
+    },
+    "required": [
+        "db_host",
+        "db_name",
+        "db_password",
+        "db_port",
+        "db_username"
+    ]
+}

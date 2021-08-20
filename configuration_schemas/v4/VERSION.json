@@ -1,0 +1,21 @@
+{
+    "id": "file:///var/lib/irods/configuration_schemas/v4/VERSION.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+        "catalog_schema_version": {"type": "integer" },
+        "commit_id": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "configuration_schema_version": {"type": "integer" },
+        "installation_time": {"type": "string", "format": "date-time"},
+        "irods_version": {"type": "string"},
+        "previous_version": {
+            "$ref": "VERSION.json"
+        }
+    },
+    "required": [
+        "catalog_schema_version",
+        "commit_id",
+        "configuration_schema_version",
+        "irods_version"
+    ]
+}

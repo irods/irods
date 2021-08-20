@@ -1,0 +1,146 @@
+{
+    "id": "file:///var/lib/irods/configuration_schemas/v4/server_config.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+        "catalog_provider_hosts": {
+            "type": "array",
+            "items": {"type": "string"},
+            "minItems": 1,
+            "uniqueItems": true
+        },
+        "catalog_service_role": {"enum": ["consumer","provider"]},
+        "controlled_user_connection_list": {
+            "control_type": {"enum": ["blacklist","whitelist"]},
+            "users": {
+                "type": "array",
+                "items": {"type": "string"},
+                "uniqueItems": true
+            }
+        },
+        "maximum_connections": {
+            "type": "integer",
+            "minimum": 1
+        },
+        "default_dir_mode": {"type": "string"},
+        "default_file_mode": {"type": "string"},
+        "default_hash_scheme": {"type": "string"},
+        "environment_variables": {
+            "type": "object",
+            "additionalProperties": {"type": "string"}
+        },
+        "federation": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "catalog_provider_hosts": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "minItems": 1,
+                        "uniqueItems": true
+                    },
+                    "negotiation_key": {"type": "string", "minLength": 32, "maxLength": 32},
+                    "zone_key": {"type": "string", "pattern": "^[A-Za-z0-9_]+$", "maxLength": 49},
+                    "zone_name": {"type": "string", "pattern": "^[A-Za-z0-9_\\.]+$", "maxLength": 63},
+                    "zone_port": {"type": "integer"}
+                },
+                "required": ["catalog_provider_hosts","negotiation_key","zone_key","zone_name"]
+            }
+        },
+        "host_access_control": {
+            "$ref": "host_access_control.json"
+        },
+        "host_resolution": {
+            "$ref": "host_resolution.json"
+        },
+        "log_level": {
+            "type": "object",
+            "items": {
+                "properties": {
+                    "agent": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
+                    "agent_factory": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
+                    "api": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
+                    "authentication": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
+                    "database": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
+                    "delay_server": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
+                    "legacy": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
+                    "microservice": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
+                    "network": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
+                    "resource": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
+                    "rule_engine": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
+                    "server": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1}
+                }
+            }
+        },
+        "match_hash_policy": {"type": "string"},
+        "negotiation_key": {"type": "string", "minLength": 32, "maxLength": 32},
+        "plugin_configuration": {
+            "type": "object",
+            "properties": {
+                "authentication": {
+                    "type": "object",
+                    "properties": {}
+                },
+                "database": {
+                    "type": "object",
+                    "additionalProperties": {"$ref": "database_config.json"},
+                    "maxProperties" : 1,
+                    "minProperties" : 1
+                },
+                "network": {
+                    "type": "object",
+                    "properties": {}
+                },
+                "resource": {
+                    "type": "object",
+                    "properties": {}
+                },
+                "rule_engines": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "rule_engine.json"
+                    },
+                    "minItems": 1
+                }
+            },
+            "required": ["authentication","network","resource","rule_engines"]
+        },
+        "schema_validation_base_uri": {"type": "string"},
+        "server_control_plane_encryption_algorithm": {"type": "string"},
+        "server_control_plane_encryption_num_hash_rounds": {"type": "integer"},
+        "server_control_plane_key": {"type": "string", "minLength": 32, "maxLength": 32},
+        "server_control_plane_port": {"type": "integer"},
+        "server_control_plane_timeout_milliseconds": {"type": "integer"},
+        "server_port_range_end": {"type": "integer"},
+        "server_port_range_start": {"type": "integer"},
+        "zone_auth_scheme" : {"type": "string"},
+        "zone_key": {"type": "string", "pattern": "^[A-Za-z0-9_]+$", "maxLength": 49},
+        "zone_name": {"type": "string", "pattern": "^[A-Za-z0-9_\\.]+$", "maxLength": 63},
+        "zone_port": {"type": "integer"},
+        "zone_user": {"type": "string"}
+    },
+    "required": [
+        "catalog_provider_hosts",
+        "catalog_service_role",
+        "default_hash_scheme",
+        "environment_variables",
+        "federation",
+        "match_hash_policy",
+        "negotiation_key",
+        "plugin_configuration",
+        "schema_validation_base_uri",
+        "server_control_plane_encryption_algorithm",
+        "server_control_plane_encryption_num_hash_rounds",
+        "server_control_plane_key",
+        "server_control_plane_port",
+        "server_control_plane_timeout_milliseconds",
+        "server_port_range_end",
+        "server_port_range_start",
+        "zone_auth_scheme",
+        "zone_key",
+        "zone_name",
+        "zone_port",
+        "zone_user"
+    ]
+}
