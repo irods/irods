@@ -130,7 +130,7 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // given the name of a microservice, try to load the shared object
 // and then register that ms with the table
-    error load_microservice_plugin( ms_table& _table, const std::string _ms );
+    error load_microservice_plugin( ms_table& _table, const std::string& _ms );
 
 
 }; // namespace irods

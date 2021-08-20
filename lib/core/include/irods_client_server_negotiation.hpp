@@ -88,14 +88,14 @@ namespace irods
     /// =-=-=-=-=-=-=-
     /// @brief given a buffer encrypt and hash it for negotiation
     error sign_server_sid(
-        const std::string,   // incoming SID
-        const std::string,   // encryption key
+        const std::string&,   // incoming SID
+        const std::string&,   // encryption key
         std::string& );      // signed buffer
 
     /// =-=-=-=-=-=-=-
     /// @brief check the incoming signed SID against all locals SIDs
     error check_sent_sid(
-        const std::string );  // incoming signed SID
+        const std::string& );  // incoming signed SID
 } // namespace irods
 
 #endif // __IRODS_CLIENT_SERVER_NEGOTIATION_HPP__

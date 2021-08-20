@@ -1148,7 +1148,7 @@ irods::error unix_file_rename(
             std::string new_path = new_full_path;
             std::size_t last_slash = new_path.find_last_of( '/' );
             new_path.erase( last_slash );
-            ret = unix_file_mkdir_r( new_path.c_str(), mode );
+            ret = unix_file_mkdir_r( new_path, mode );
             if ( ( result = ASSERT_PASS( ret, "Mkdir error for \"%s\".", new_path.c_str() ) ).ok() ) {
 
             }
@@ -1323,8 +1323,7 @@ class unixfilesystem_resource : public irods::resource {
                 maintenance_operation( const std::string& _n ) : name_( _n ) {
                 }
 
-                maintenance_operation( const maintenance_operation& _rhs ) {
-                    name_ = _rhs.name_;
+                maintenance_operation( const maintenance_operation& _rhs ): name_(_rhs.name_) {
                 }
 
                 maintenance_operation& operator=( const maintenance_operation& _rhs ) {

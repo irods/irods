@@ -112,7 +112,7 @@ auto insert_new_entry(access_info& info) -> void
     info.token = rat::create_new_entry(info.data_id, info.replica_number, info.pid);
 }
 
-auto append_to_entry(access_info& info, std::string token) -> void
+auto append_to_entry(access_info& info, const std::string& token) -> void
 {
     info.token = token;
     rat::append_pid(info.token, info.data_id, info.replica_number, info.pid);

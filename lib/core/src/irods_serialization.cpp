@@ -56,7 +56,7 @@ namespace irods {
     boost::regex character_set_regex(
         const std::string& character_set ) {
         std::set<char> set;
-        for ( std::string::const_iterator iter = character_set.begin(); iter != character_set.end(); iter++ ) {
+        for ( std::string::const_iterator iter = character_set.begin(); iter != character_set.end(); ++iter ) {
             set.insert( *iter );
         }
         return character_set_regex( set );

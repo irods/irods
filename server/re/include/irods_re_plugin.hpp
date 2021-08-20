@@ -153,7 +153,7 @@ namespace irods {
     class serialize final {
     public:
         template<typename... As>
-        serialize(std::function<error(As ...)> _op, std::string _op_name = "<unknown>") : op_(_op), op_name_(_op_name) { }
+        serialize(std::function<error(As ...)> _op, const std::string& _op_name = "<unknown>") : op_(_op), op_name_(_op_name) { }
 
         template<typename... Bs>
         error operator()(Bs&&... _ps) {
@@ -307,8 +307,8 @@ namespace irods {
 
         template<typename OP, typename... As >
         error call(
-            std::string _instance_name,
-            std::string _operation_name,
+            const std::string& _instance_name,
+            const std::string& _operation_name,
             OP _operation,
             As&& ... _ps) {
             // =-=-=-=-=-=-=-
@@ -347,7 +347,7 @@ namespace irods {
         std::string plugin_name_;
         T re_ctx_;
         pluggable_rule_engine<T> *re_;
-        re_pack_inp(std::string _instance_name, std::string _plugin_name, T _re_ctx) : instance_name_(_instance_name), plugin_name_(_plugin_name), re_ctx_(_re_ctx) { }
+        re_pack_inp(const std::string& _instance_name, const std::string& _plugin_name, T _re_ctx) : instance_name_(_instance_name), plugin_name_(_plugin_name), re_ctx_(_re_ctx) { }
     };
 
     // load rule engines from plugins DONE
@@ -355,7 +355,7 @@ namespace irods {
     class rule_engine_plugin_manager final {
     public:
         double interface_version() { return 1.0; }
-        rule_engine_plugin_manager(std::string _dir) : dir_(_dir) { }
+        rule_engine_plugin_manager(const std::string& _dir) : dir_(_dir) { }
 
         ~rule_engine_plugin_manager() {
             for (auto itr = begin(re_plugin_map_);itr != end(re_plugin_map_); ++itr) delete itr->second;

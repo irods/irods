@@ -424,7 +424,7 @@ int hash_rules(const std::vector<std::string> &irbs, const int pid, std::string 
 
 class make_copy {
 public:
-        make_copy(const std::vector<std::string> _irbs, const int _pid) : irbs_(_irbs), pid_(_pid) {
+        make_copy(const std::vector<std::string>& _irbs, const int _pid) : irbs_(_irbs), pid_(_pid) {
             for(auto const &irb : _irbs) {
                 boost::filesystem::copy_file(get_rule_base_path(irb), get_rule_base_path_copy(irb, _pid));
             }

@@ -373,7 +373,7 @@ irods::error get_resource_array( json& _resources )
     return SUCCESS();
 } // get_resource_array
 
-irods::error get_file_contents( const std::string _fn, std::string& _cont )
+irods::error get_file_contents( const std::string& _fn, std::string& _cont )
 {
     std::ifstream f( _fn.c_str() );
     std::stringstream ss;

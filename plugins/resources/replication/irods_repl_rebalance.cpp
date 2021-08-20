@@ -295,12 +295,12 @@ namespace {
 
     // throws irods::exception
     void proc_results_for_rebalance(
-        irods::plugin_context&           _ctx,
-        const std::string&               _parent_resc_name,
-        const std::string&               _child_resc_name,
-        const size_t                     _bun_idx,
-        const std::vector<leaf_bundle_t> _bundles,
-        const dist_child_result_t&       _data_ids_to_replicate) {
+        irods::plugin_context&            _ctx,
+        const std::string&                _parent_resc_name,
+        const std::string&                _child_resc_name,
+        const size_t                      _bun_idx,
+        const std::vector<leaf_bundle_t>& _bundles,
+        const dist_child_result_t&        _data_ids_to_replicate) {
         if (!_ctx.comm()) {
             THROW(SYS_INVALID_INPUT_PARAM,
                   boost::format("null comm pointer. resource [%s]. child resource [%s]. bundle index [%d]. bundles [%s]") %

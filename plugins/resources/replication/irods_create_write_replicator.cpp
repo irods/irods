@@ -9,10 +9,10 @@ namespace irods {
     create_write_replicator::create_write_replicator(
         const std::string& _root_resource,
         const std::string& _current_resource,
-        const std::string& _child ) {
-        root_resource_ = _root_resource;
-        current_resource_ = _current_resource;
-        child_ = _child;
+        const std::string& _child )
+      : root_resource_{_root_resource},
+        current_resource_{_current_resource},
+        child_{_child}{
     }
 
     create_write_replicator::~create_write_replicator( void ) {

@@ -73,8 +73,8 @@ namespace irods
     /// =-=-=-=-=-=-=-
     /// @brief given a buffer encrypt and hash it for negotiation
     error sign_server_sid(
-        const std::string _svr_sid,
-        const std::string _enc_key,
+        const std::string& _svr_sid,
+        const std::string& _enc_key,
         std::string&      _signed_sid )
     {
         // =-=-=-=-=-=-=-
@@ -341,7 +341,7 @@ namespace irods
             try {
                 try {
                     sid.reset(irods::get_server_property<const std::string>(irods::CFG_ZONE_KEY_KW));
-                } catch ( const irods::exception e ) {
+                } catch ( const irods::exception& e ) {
                     sid.reset(irods::get_server_property<const std::string>(LOCAL_ZONE_SID_KW));
                 }
                 try {
