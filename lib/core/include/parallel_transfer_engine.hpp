@@ -423,7 +423,7 @@ namespace irods::experimental::io
             // Triggering a restart means the caller has verified that the source object exists.
             // The parallel transfer engine makes no attempts to verify existence of any source.
             // That is the sole responsibility of the caller.
-            const auto mode = std::ios_base::out | (restart_file_exists_ ? std::ios_base::in : 0);
+            const auto mode = std::ios_base::out | static_cast<std::ios_base::openmode>(restart_file_exists_ ? std::ios_base::in : 0);
             const auto offset = offset_ + progress_[0].progress->sent;
             auto primary_in_stream = create_source_stream(offset);
             auto primary_out_stream = create_sink_stream(mode, offset);
