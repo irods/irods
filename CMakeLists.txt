@@ -179,6 +179,7 @@ set(
   isysmeta
   iticket
   itouch
+  itree
   itrim
   iunreg
   iuserinfo
