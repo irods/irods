@@ -20,7 +20,7 @@ struct access_info
 };
 
 auto insert_new_entry(access_info& info) -> void;
-auto append_to_entry(access_info& info, std::string token) -> void;
+auto append_to_entry(access_info& info, const std::string& token) -> void;
 
 TEST_CASE("replica_access_table")
 {
