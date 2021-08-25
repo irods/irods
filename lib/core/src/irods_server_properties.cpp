@@ -259,7 +259,7 @@ namespace irods
             std::ifstream db{db_fn};
             if(db.is_open()) {
                 auto tmp = json::parse(db);
-                for( const auto [k,v] : tmp.items()) {
+                for( const auto &[k,v] : tmp.items()) {
                     config_props_[k] = v;
                 }
             }
