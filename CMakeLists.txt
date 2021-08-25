@@ -1210,7 +1210,7 @@ set(
 
 set(
   IRODS_SERVER_CORE_SOURCES
-  ${CMAKE_SOURCE_DIR}/server/core/src/irods_logger.cpp 
+  ${CMAKE_SOURCE_DIR}/server/core/src/irods_logger.cpp
   )
 
 add_library(
