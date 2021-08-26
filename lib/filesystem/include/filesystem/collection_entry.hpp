@@ -36,6 +36,7 @@ namespace irods::experimental::filesystem
         auto checksum() const noexcept -> const std::string&      { return checksum_; }
         auto owner() const noexcept -> const std::string&         { return owner_; }
         auto data_type() const noexcept -> const std::string&     { return data_type_; }
+        auto data_size() const noexcept -> std::uintmax_t         { return data_size_; }
 
         // Comparisons
 
