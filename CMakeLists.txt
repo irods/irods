@@ -4,8 +4,8 @@ find_package(IRODS 4.3.0 EXACT REQUIRED CONFIG)
 set(IRODS_PACKAGE_PREFIX "${PACKAGE_PREFIX_DIR}")
 
 include(RequireOutOfSourceBuild)
+include(IrodsCXXCompiler)
 
-set(CMAKE_CXX_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang++)
 set(CMAKE_CXX_STANDARD 17)
 # export-dynamic so stacktrace entries from executables have function names
 set(CMAKE_EXE_LINKER_FLAGS_INIT "-rdynamic -Wl,--export-dynamic -Wl,--enable-new-dtags -Wl,--as-needed -Wl,-z,defs")
@@ -22,8 +22,6 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH OFF)
 set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
 
-include(UseLibCXX)
-
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 include(${IRODS_TARGETS_PATH})
@@ -33,6 +31,31 @@ include(GNUInstallDirs)
 if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build {Debug, Release}." FORCE)
   message(STATUS "Setting unspecified CMAKE_BUILD_TYPE to '${CMAKE_BUILD_TYPE}'. This is the correct setting for normal builds.")
+endif()
+
+if (CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
+  set(IRODS_BUILD_WITH_WERROR_DEFAULT ON)
+else()
+  set(IRODS_BUILD_WITH_WERROR_DEFAULT OFF)
+endif()
+
+set(IRODS_BUILD_WITH_WERROR ${IRODS_BUILD_WITH_WERROR_DEFAULT} CACHE BOOL "Choose whether to compile with -Werror.")
+
+include(UseLibCXX)
+
+if (IRODS_BUILD_WITH_WERROR)
+  add_compile_options(-Werror)
+endif()
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-fpermissive>)
+endif()
+
+add_compile_options(-Wall -Wextra -Wno-unused-parameter)
+
+if (IRODS_BUILD_WITH_WERROR AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  add_compile_options(-Wno-error=unused-variable)
+  add_compile_options(-Wno-error=unused-but-set-variable)
 endif()
 
 set(IRODS_BUILD_DOCS_DEFAULT ON)
@@ -104,9 +127,6 @@ if (BUILD_DOCS)
   file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/man")
   add_custom_target(docs ALL)
 endif()
-
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-add_compile_options(-Wall -Wextra -Werror -Wno-unused-parameter)
 
 add_custom_target(icommands)
 
