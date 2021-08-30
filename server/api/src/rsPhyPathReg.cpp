@@ -1,6 +1,6 @@
 #include "rs_register_physical_path.hpp"
 
-#include <memory>
+#include <cstdlib>
 
 auto rsPhyPathReg(RsComm* _comm, DataObjInp* _inp) -> int
 {
