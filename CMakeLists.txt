@@ -1689,6 +1689,7 @@ install(
   ${CMAKE_SOURCE_DIR}/cmake/Modules/FindLibCXX.cmake
   ${CMAKE_SOURCE_DIR}/cmake/Modules/UseLibCXX.cmake
   ${CMAKE_SOURCE_DIR}/cmake/Modules/IrodsExternals.cmake
+  ${CMAKE_SOURCE_DIR}/cmake/Modules/IrodsCXXCompiler.cmake
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/irods/cmake/Modules
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
   )
