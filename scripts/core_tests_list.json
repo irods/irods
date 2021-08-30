@@ -37,6 +37,7 @@
     "test_istream",
     "test_iticket",
     "test_itouch",
+    "test_itree",
     "test_itrim",
     "test_iunreg",
     "test_iuserinfo",
