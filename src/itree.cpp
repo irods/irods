@@ -1,14 +1,15 @@
 #include "rodsClient.h"
 #include "client_connection.hpp"
-#include <boost/program_options.hpp>
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
 #include "irods_parse_command_line_options.hpp"
-#include "irods/filesystem.hpp"
+#include "filesystem.hpp"
+#include "rcMisc.h"
 
 #include "fmt/core.h"
 #include "fmt/color.h"
 #include "json.hpp"
+#include "boost/program_options.hpp"
 
 #include <regex>
 
@@ -36,7 +37,6 @@ static std::uintmax_t total_size = 0;
 
 int main(int argc, char** argv){
     int status = getRodsEnv(&env);
-    irods::experimental::client_connection conn;
     po::options_description desc{""};
     po::positional_options_description pod;
     pod.add("dir",1);
@@ -69,7 +69,8 @@ int main(int argc, char** argv){
         po::notify(vm);
         if( vm.count("help") ) {
             print_usage();
-            std::cout << desc << "\n";
+            std::cout << desc;
+            printReleaseInfo("itree");
             return 0;
         }
 
@@ -80,6 +81,7 @@ int main(int argc, char** argv){
                                          std::regex::basic | std::regex::optimize);
         }
         auto path = correct_path(vm, env);
+        irods::experimental::client_connection conn;
         if( vm["json"].as<bool>() ){
             auto value = get_json(path, vm, conn, vm["depth"].as<int>() );
             json::json top;

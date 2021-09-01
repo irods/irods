@@ -10,7 +10,7 @@ const char * const icmds[] = {
     "imcoll", "imeta", "imiscsvrinfo", "imkdir", "imv", "ipasswd",
     "iphybun", "iphymv", "ips", "iput", "ipwd", "iqdel", "iqmod", "iqstat",
     "iquest", "iquota", "ireg", "irepl", "irm", "irmdir", "irmtrash", "irsync", "irule",
-    "iscan", "istream", "isysmeta", "iticket", "itouch", "itrim", "iunreg", "iuserinfo",
+    "iscan", "istream", "isysmeta", "iticket", "itouch", "itree", "itrim", "iunreg", "iuserinfo",
     "izonereport"
 };
 
@@ -66,6 +66,7 @@ printMainHelp() {
         "isysmeta     - show or modify system metadata.",
         "iticket      - create, delete, modify & list tickets (alternative access strings).",
         "itouch       - update the modification time of a logical path.",
+        "itree        - display a collection structure as a tree.",
         "itrim        - trim down the number of replicas of Data Objects.",
         "iunreg       - unregister replica(s) of one or more Data Objects.",
         "iuserinfo    - show information about your iRODS user account.",
