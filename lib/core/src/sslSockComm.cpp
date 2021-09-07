@@ -62,6 +62,16 @@ sslStart( rcComm_t *rcComm ) {
         return SSL_INIT_ERROR;
     }
 
+    status = SSL_set_tlsext_host_name( rcComm->ssl, rcComm->host );
+    if ( status != 1 ) {
+        sslLogError( "sslStart: error in SSL_set_tlsext_host_name" );
+        SSL_free( rcComm->ssl );
+        rcComm->ssl = NULL;
+        SSL_CTX_free( rcComm->ssl_ctx );
+        rcComm->ssl_ctx = NULL;
+        return SSL_INIT_ERROR;
+    }
+
     status = SSL_connect( rcComm->ssl );
     if ( status < 1 ) {
         sslLogError( "sslStart: error in SSL_connect" );
