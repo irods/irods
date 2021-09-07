@@ -1,12 +1,8 @@
-// =-=-=-=-=-=-=-
-// irods includes
 #include "msParam.h"
 #include "reGlobalsExtern.hpp"
 #include "generalAdmin.h"
 #include "miscServerFunct.hpp"
 #include "execMyRule.h"
-
-// =-=-=-=-=-=-=-
 #include "irods_resource_plugin.hpp"
 #include "irods_file_object.hpp"
 #include "irods_physical_object.hpp"
@@ -21,26 +17,26 @@
 #include "irods_configuration_parser.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_ms_plugin.hpp"
+#include "configuration.hpp"
+#include "rodsErrorTable.h"
+#include "rules.hpp"
+#include "reFuncDefs.hpp"
+#include "region.h"
+#include "msiHelper.hpp"
+#include "irods_logger.hpp"
 
-// =-=-=-=-=-=-=-
-// stl includes
+#include <boost/lexical_cast.hpp>
+#include <boost/function.hpp>
+#include <boost/any.hpp>
+#include <fmt/format.h>
+#include <json.hpp>
+
 #include <iostream>
 #include <sstream>
 #include <vector>
 #include <string>
 
-// =-=-=-=-=-=-=-
-// boost includes
-#include <boost/lexical_cast.hpp>
-#include <boost/function.hpp>
-#include <boost/any.hpp>
-
-#include "configuration.hpp"
-#include "rules.hpp"
-#include "reFuncDefs.hpp"
-#include "region.h"
-
-#include "msiHelper.hpp"
+using logger = irods::experimental::log;
 
 // =-=-=-=-=-=-=-
 // from reGlobals.hpp
@@ -63,60 +59,48 @@ int reDebugStackFullPtr = 0;
 int reDebugStackCurrPtr = 0;
 
 const std::string STATIC_PEP_RULE_REGEX = "ac[^ ]*";
-const std::string DYNAMIC_PEP_RULE_REGEX = "[^ ]*pep_[^ ]*_(pre|post)";
+const std::string DYNAMIC_PEP_RULE_REGEX = "[^ ]*pep_[^ ]*_(pre|post|except|finally)";
 const std::string MICROSERVICE_RULE_REGEX = "msi[^ ]*";
 static std::string local_instance_name;
 
-int initRuleEngine( const char*, rsComm_t*, const char*, const char*, const char *);
+int initRuleEngine(const char*, rsComm_t*, const char*, const char*, const char*);
 
-static std::string get_string_array_from_array( const nlohmann::json& _array ) {
+static std::string get_string_array_from_array(const nlohmann::json& _array)
+{
     std::string str_array;
-    try {
-        for(const auto& el : _array) {
-            try {
-                str_array += el.get<std::string>();
-            }
-            catch ( const boost::bad_any_cast& ) {
-                rodsLog(LOG_ERROR, "%s - failed to cast rule base file name entry to string", __PRETTY_FUNCTION__);
-                continue;
-            }
-            str_array += ",";
 
-        } // for itr
-        str_array = str_array.substr( 0, str_array.size() - 1 );
-        return str_array;
-    } catch( const boost::bad_any_cast& ) {
-        THROW(INVALID_ANY_CAST, "failed to any_cast to vector");
+    for (const auto& e : _array) {
+        try {
+            str_array += e.get_ref<const std::string&>();
+        }
+        catch (...) {
+            logger::rule_engine::error("{} - failed to append string to string array.", __func__);
+            continue;
+        }
+
+        str_array += ",";
     }
 
+    return str_array.substr(0, str_array.size() - 1);
 } // get_string_array_from_array
 
-void register_regexes_from_array(
-    const boost::any& _array,
-    const std::string& _instance_name ) {
-    try {
-        const auto& arr = boost::any_cast<const std::vector<boost::any>&>( _array );
-        for ( const auto& elem : arr ) {
-            try {
-                const auto& tmp = boost::any_cast<const std::string&>(elem);
-                RuleExistsHelper::Instance()->registerRuleRegex( tmp );
-            } catch ( boost::bad_any_cast& ) {
-                rodsLog(
-                        LOG_ERROR,
-                        "%s - failed to cast regex to string",
-                        __FUNCTION__);
-                continue;
-            }
+void register_regexes_from_array(const nlohmann::json& _array, const std::string& _instance_name)
+{
+    for (const auto& e : _array) {
+        try {
+            RuleExistsHelper::Instance()->registerRuleRegex(e.get_ref<const std::string&>());
         }
-    } catch ( const boost::bad_any_cast& ) {
-        std::stringstream msg;
-        msg << "[" << _instance_name << "] failed to any_cast a std::vector<boost::any>&";
-        THROW(INVALID_ANY_CAST, msg.str());
+        catch (...) {
+            logger::rule_engine::error("{} - failed to register regex string.", __func__);
+            continue;
+        }
     }
 } // register_regexes_from_array
 
 irods::ms_table& get_microservice_table();
-void initialize_microservice_table() {
+
+void initialize_microservice_table()
+{
     irods::ms_table& table = get_microservice_table();
 
     table[ "msiGetStdoutInExecCmdOut" ] = new irods::ms_table_entry( "msiGetStdoutInExecCmdOut", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiGetStdoutInExecCmdOut ) );
@@ -131,74 +115,70 @@ void initialize_microservice_table() {
     table[ "msiStrchop" ] = new irods::ms_table_entry( "msiStrchop", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiStrchop ) );
     table[ "msiSubstr" ] = new irods::ms_table_entry( "msiSubstr", 4, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiSubstr ) );
     table[ "msiExit" ] = new irods::ms_table_entry( "msiExit", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiExit ) );
-
-}
+} // initialize_microservice_table
 
 extern Cache ruleEngineConfig;
 
-irods::error start(irods::default_re_ctx&,const std::string& _instance_name ) {
+irods::error start(irods::default_re_ctx&, const std::string& _instance_name)
+{
     local_instance_name = _instance_name;
 
     try {
-        const auto re_plugin_arr = irods::get_server_property<nlohmann::json>(irods::CFG_PLUGIN_CONFIGURATION_KW).at(irods::PLUGIN_TYPE_RULE_ENGINE);
-        for( const auto& plugin_config : re_plugin_arr ) {
-            const auto& inst_name = plugin_config.at(irods::CFG_INSTANCE_NAME_KW).get<std::string>();
-            if( inst_name == _instance_name) {
-                const auto shmem_value = plugin_config.at(irods::CFG_SHARED_MEMORY_INSTANCE_KW).get<std::string>();
-                const auto plugin_spec_cfg = plugin_config.at(irods::CFG_PLUGIN_SPECIFIC_CONFIGURATION_KW);
-                std::string core_re  = get_string_array_from_array(plugin_spec_cfg.at(irods::CFG_RE_RULEBASE_SET_KW));
-                std::string core_fnm = get_string_array_from_array(plugin_spec_cfg.at(irods::CFG_RE_FUNCTION_NAME_MAPPING_SET_KW));
-                std::string core_dvm = get_string_array_from_array(plugin_spec_cfg.at(irods::CFG_RE_DATA_VARIABLE_MAPPING_SET_KW));
-                int status = initRuleEngine(
-                        shmem_value.c_str(),
-                        nullptr,
-                        core_re.c_str(),
-                        core_dvm.c_str(),
-                        core_fnm.c_str() );
-                if( status < 0 ) {
-                    return ERROR(
-                            status,
-                            "failed to initialize native rule engine" );
+        const auto& re_plugin_arr = irods::get_server_property<const nlohmann::json&>(irods::CFG_PLUGIN_CONFIGURATION_KW)
+            .at(irods::PLUGIN_TYPE_RULE_ENGINE);
+
+        for (const auto& plugin_config : re_plugin_arr) {
+            const auto& inst_name = plugin_config.at(irods::CFG_INSTANCE_NAME_KW).get_ref<const std::string&>();
+
+            if (inst_name == _instance_name) {
+                const auto& shmem_value = plugin_config.at(irods::CFG_SHARED_MEMORY_INSTANCE_KW).get_ref<const std::string&>();
+                const auto& plugin_spec_cfg = plugin_config.at(irods::CFG_PLUGIN_SPECIFIC_CONFIGURATION_KW);
+
+                const std::string core_re  = get_string_array_from_array(plugin_spec_cfg.at(irods::CFG_RE_RULEBASE_SET_KW));
+                const std::string core_fnm = get_string_array_from_array(plugin_spec_cfg.at(irods::CFG_RE_FUNCTION_NAME_MAPPING_SET_KW));
+                const std::string core_dvm = get_string_array_from_array(plugin_spec_cfg.at(irods::CFG_RE_DATA_VARIABLE_MAPPING_SET_KW));
+
+                if (const int ec = initRuleEngine(shmem_value.c_str(), nullptr, core_re.c_str(), core_dvm.c_str(), core_fnm.c_str()); ec < 0) {
+                    return ERROR(ec, "Failed to initialize native rule engine");
                 }
+
                 // index locally defined microservices
                 initialize_microservice_table();
 
                 if (plugin_spec_cfg.count(irods::CFG_RE_PEP_REGEX_SET_KW) > 0) {
-                    register_regexes_from_array(
-                            plugin_spec_cfg.at(irods::CFG_RE_PEP_REGEX_SET_KW),
-                            _instance_name );
-                } else {
-                    RuleExistsHelper::Instance()->registerRuleRegex( STATIC_PEP_RULE_REGEX );
-                    RuleExistsHelper::Instance()->registerRuleRegex( DYNAMIC_PEP_RULE_REGEX );
-                    RuleExistsHelper::Instance()->registerRuleRegex( MICROSERVICE_RULE_REGEX );
-                    rodsLog(
-                            LOG_DEBUG,
-                            "No regexes found in server config - using default regexes: [%s], [%s], [%s]",
-                            STATIC_PEP_RULE_REGEX.c_str(),
-                            DYNAMIC_PEP_RULE_REGEX.c_str(),
-                            MICROSERVICE_RULE_REGEX.c_str() );
+                    register_regexes_from_array(plugin_spec_cfg.at(irods::CFG_RE_PEP_REGEX_SET_KW), _instance_name);
+                }
+                else {
+                    RuleExistsHelper::Instance()->registerRuleRegex(STATIC_PEP_RULE_REGEX);
+                    RuleExistsHelper::Instance()->registerRuleRegex(DYNAMIC_PEP_RULE_REGEX);
+                    RuleExistsHelper::Instance()->registerRuleRegex(MICROSERVICE_RULE_REGEX);
+
+                    logger::rule_engine::debug("No regexes found in server config - using default regexes: [{}], [{}], [{}]",
+                                               STATIC_PEP_RULE_REGEX, DYNAMIC_PEP_RULE_REGEX, MICROSERVICE_RULE_REGEX);
                 }
 
                 return SUCCESS();
             }
         }
-    } catch (const irods::exception& e) {
+    }
+    catch (const irods::exception& e) {
         return irods::error(e);
-    } catch (const boost::bad_any_cast& e) {
+    }
+    catch (const nlohmann::json::exception& e) {
+        return ERROR(SYS_INVALID_INPUT_PARAM, e.what());
+    }
+    catch (const boost::bad_any_cast& e) {
         return ERROR(INVALID_ANY_CAST, e.what());
-    } catch (const std::out_of_range& e) {
+    }
+    catch (const std::out_of_range& e) {
         return ERROR(KEY_NOT_FOUND, e.what());
     }
 
-    std::stringstream msg;
-    msg << "failed to find configuration for re-irods plugin ["
-        << _instance_name << "]";
-    rodsLog( LOG_ERROR, "%s", msg.str().c_str() );
-    return ERROR(
-            SYS_INVALID_INPUT_PARAM,
-            msg.str() );
+    const auto msg = fmt::format("Failed to find configuration for re-irods plugin [{}]", _instance_name);
+    logger::rule_engine::error(msg);
 
-}
+    return ERROR(SYS_INVALID_INPUT_PARAM, msg);
+} // start
 
 irods::error stop(irods::default_re_ctx& _u, const std::string& _instance_name) {
     return SUCCESS();
