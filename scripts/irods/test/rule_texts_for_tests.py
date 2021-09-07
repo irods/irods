@@ -875,7 +875,7 @@ rule_texts['irods_rule_engine_plugin-python']['Test_Native_Rule_Engine_Plugin'] 
 rule_texts['irods_rule_engine_plugin-python']['Test_Native_Rule_Engine_Plugin']['test_remote_rule_execution'] = '''
 def main(rule_args, callback, rei):
     rule_code = "def main(rule_args, callback, rei):\\n    print('XXXX - PREP REMOTE EXEC TEST')"
-    callback.py_remote('icat.example.org', '', rule_code, '')
+    callback.py_remote('{}', '', rule_code, '')
 INPUT null
 OUTPUT ruleExecOut
 '''
