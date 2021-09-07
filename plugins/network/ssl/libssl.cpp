@@ -685,8 +685,17 @@ irods::error ssl_client_start(
                 SSL_CTX_free( ctx );
             }
             else {
-                int status = SSL_connect( ssl );
-                std::string err_str = "error in SSL_connect";
+                int status = SSL_set_tlsext_host_name( ssl, ssl_obj->host().c_str() );
+                std::string err_str = "error in SSL_set_tlsext_host_name";
+                ssl_build_error_string( err_str );
+                if ( !( result = ASSERT_ERROR( status == 1, SSL_INIT_ERROR, err_str.c_str() ) ).ok() ) {
+                    SSL_free( ssl );
+                    SSL_CTX_free( ctx );
+                    return result;
+                }
+
+                status = SSL_connect( ssl );
+                err_str = "error in SSL_connect";
                 ssl_build_error_string( err_str );
                 if ( !( result = ASSERT_ERROR( status >= 1, SSL_HANDSHAKE_ERROR, err_str.c_str() ) ).ok() ) {
                     SSL_free( ssl );
