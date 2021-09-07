@@ -25,7 +25,7 @@ from ..controller import IrodsController
 def exec_icat_command(command):
     import paramiko
 
-    hostname = 'icat.example.org'
+    hostname = test.settings.ICAT_HOSTNAME
     port = 22
     username = 'irods'
     password = ''
@@ -282,7 +282,7 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
 
         # =-=-=-=-=-=-=-=-
         # run the remote rule to write to the log
-        rule_code = rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name]
+        rule_code = rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name].format(test.settings.ICAT_HOSTNAME)
         print('Executing code:\n'+rule_code)
         rule_file = 'test_remote_rule_execution.r'
         with open(rule_file, 'wt') as f:
