@@ -71,8 +71,10 @@ class Test_Itouch(session.make_sessions_mixin([('otherrods', 'rods')], []), unit
 
             # Clean up.
             self.admin.assert_icommand(['irm', '-f', data_object])
+
         except Exception as e:
             print(e)
+
         finally:
             self.admin.assert_icommand(['iadmin', 'rmresc', resc_0])
             self.admin.assert_icommand(['iadmin', 'rmresc', resc_1])
@@ -101,8 +103,10 @@ class Test_Itouch(session.make_sessions_mixin([('otherrods', 'rods')], []), unit
 
             # Clean up.
             self.admin.assert_icommand(['irm', '-f', data_object])
+
         except Exception as e:
             print(e)
+
         finally:
             self.admin.assert_icommand(['iadmin', 'rmresc', resc_0])
 
@@ -149,8 +153,10 @@ class Test_Itouch(session.make_sessions_mixin([('otherrods', 'rods')], []), unit
             # Clean up.
             self.admin.assert_icommand(['irm', '-f', data_object])
             self.admin.assert_icommand(['iadmin', 'rmchildfromresc', pt, resc_0])
+
         except Exception as e:
             print(e)
+
         finally:
             self.admin.assert_icommand(['iadmin', 'rmresc', pt])
             self.admin.assert_icommand(['iadmin', 'rmresc', resc_0])
@@ -177,6 +183,7 @@ class Test_Itouch(session.make_sessions_mixin([('otherrods', 'rods')], []), unit
             # working collection.
             self.admin.assert_icommand(['itouch', '-r', data_object_2, data_object_1])
             self.assertEqual(self.get_replica_mtime(data_object_1, 0), mtime)
+
         except Exception as e:
             print(e)
 
@@ -195,6 +202,7 @@ class Test_Itouch(session.make_sessions_mixin([('otherrods', 'rods')], []), unit
             sleep(2)
             self.admin.assert_icommand(['itouch', self.admin.session_collection])
             self.assertNotEqual(old_mtime, self.get_collection_mtime(self.admin.session_collection))
+
         except Exception as e:
             print(e)
 
@@ -229,8 +237,29 @@ class Test_Itouch(session.make_sessions_mixin([('otherrods', 'rods')], []), unit
             # results in an error.
             error_msg = 'SYS_REPLICA_DOES_NOT_EXIST: Replica does not exist in resource.'
             self.admin.assert_icommand(['itouch', '-R', resc_0, data_object], 'STDOUT', [error_msg])
+
         finally:
             self.admin.assert_icommand(['iadmin', 'rmresc', resc_0])
+
+    def test_itouch_returns_better_error_message_when_given_a_coordinating_resource__issue_5771(self):
+        resc = 'resc_5771'
+        self.create_resource_ufs(resc)
+
+        pt = 'pt_5771'
+        self.create_resource_pt(pt)
+
+        try:
+            self.admin.assert_icommand(['iadmin', 'addchildtoresc', pt, resc])
+
+            # Show that passing a coordinating resource as a leaf resource results in an error.
+            data_object = os.path.join(self.admin.session_collection, 'foo')
+            error_msg = 'USER_INVALID_RESC_INPUT: [{0}] is not a leaf resource.'.format(pt)
+            self.admin.assert_icommand(['itouch', '-R', pt, data_object], 'STDOUT', [error_msg])
+
+        finally:
+            self.admin.run_icommand(['iadmin', 'rmchildfromresc', pt, resc])
+            self.admin.run_icommand(['iadmin', 'rmresc', resc])
+            self.admin.run_icommand(['iadmin', 'rmresc', pt])
 
     def get_replica_mtime(self, path, replica_number):
         collection = os.path.dirname(path)
