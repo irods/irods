@@ -21,6 +21,7 @@
 #include "irods_exception.hpp"
 #include "irods_server_api_call.hpp"
 #include "irods_re_serialization.hpp"
+#include "irods_resource_manager.hpp"
 #include "irods_logger.hpp"
 #include "irods_at_scope_exit.hpp"
 
@@ -81,6 +82,8 @@
      }
  }
 */
+
+extern irods::resource_manager resc_mgr;
 
 namespace
 {
@@ -168,7 +171,7 @@ namespace
             return;
         }
 
-        if (_object.at(_prop_name.data()).get<std::string>().empty()) {
+        if (_object.at(_prop_name.data()).get_ref<const std::string&>().empty()) {
             THROW(INPUT_ARG_NOT_WELL_FORMED_ERR, fmt::format("[{}] cannot be empty.", _prop_name));
         }
     } // throw_if_empty_string
@@ -254,7 +257,7 @@ namespace
             const auto& opts = _json_input.at(prop_options.data());
 
             if (opts.contains(prop_reference)) {
-                return fs::server::last_write_time(_comm, opts.at(prop_reference.data()).get<std::string>());
+                return fs::server::last_write_time(_comm, opts.at(prop_reference.data()).get_ref<const std::string&>());
             }
 
             if (opts.contains(prop_seconds_since_epoch)) {
@@ -292,9 +295,22 @@ namespace
 
             // Create the data object at the leaf resource if one is provided.
             if (opts.contains(prop_leaf_resource_name)) {
-                const auto resc_name = opts.at(prop_leaf_resource_name.data()).get<std::string>();
+                const auto& resc_name = opts.at(prop_leaf_resource_name.data()).get_ref<const std::string&>();
+                bool is_coord_resc = false;
+
+                if (const auto err = resc_mgr.is_coordinating_resource(resc_name.data(), is_coord_resc); !err.ok()) {
+                    THROW(err.code(), err.result());
+                }
+
+                // Leaf resources cannot be coordinating resources. This essentially checks
+                // if the resource has any child resources which is exactly what we're interested in.
+                if (is_coord_resc) {
+                    THROW(USER_INVALID_RESC_INPUT, fmt::format("[{}] is not a leaf resource.", resc_name));
+                }
+
                 io::server::default_transport tp{_comm};
                 io::odstream{tp, _path, io::leaf_resource_name{resc_name}};
+
                 return false;
             }
         }
@@ -330,7 +346,7 @@ namespace
 
             // Convert the passed resource to a replica number and return it.
             if (opts.contains(prop_leaf_resource_name)) {
-                const auto resc_name = opts.at(prop_leaf_resource_name.data()).get<std::string>();
+                const auto& resc_name = opts.at(prop_leaf_resource_name.data()).get_ref<const std::string&>();
                 const auto replica_number = ix::replica::to_replica_number<rsComm_t>(_comm, _path, resc_name);
 
                 if (!replica_number) {
@@ -401,7 +417,7 @@ namespace
             // The options should lead to a catalog update if the user has the
             // correct permissions.
 
-            const fs::path path = json_input.at(prop_logical_path.data()).get<std::string>();
+            const fs::path path = json_input.at(prop_logical_path.data()).get_ref<const std::string&>();
 
             // This function will return true if the target data object does not exist and "no_create" is
             // set to true in the JSON input.
