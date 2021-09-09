@@ -544,8 +544,7 @@ namespace
                 // to perform the file_modified logic here.
                 irods::log(LOG_DEBUG8, "Redirecting request to catalog service provider ...");
 
-                auto host_info = ic::redirect_to_catalog_provider(*_comm);
-                irods::at_scope_exit close_conn{[&host_info] { rcDisconnect(host_info.conn); }};
+                auto* host_info = ic::redirect_to_catalog_provider(*_comm);
 
                 // Explicitly set trigger_file_modified to false here. The file_modified logic should be
                 // executing on this machine, not the catalog service provider to which the connection is
@@ -554,7 +553,7 @@ namespace
 
                 char* json_output = nullptr;
 
-                const auto ec = rc_data_object_finalize(host_info.conn, input.dump().data(), &json_output);
+                const auto ec = rc_data_object_finalize(host_info->conn, input.dump().data(), &json_output);
                 *_output = irods::to_bytes_buffer(json_output);
                 if (ec < 0) {
                     return ec;
