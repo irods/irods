@@ -191,15 +191,17 @@ namespace irods::experimental::catalog
     ///
     /// If already connected to the catalog provider, simply returns the host information.
     ///
+    /// Note: The returned pointer is managed by a global list of servers to which this agent
+    /// is connected and so should not be free'd after use by the caller.
+    ///
     /// \param[in] _comm iRODS connection structure
     ///
     /// \throws irods::exception If fails to find or connect to the catalog provider host.
     ///
-    /// \retval true if catalog provider is remote
-    /// \retval false if catalog provider is local
+    /// \returns rodsServerHost* pointer to rodsServerHost which is managed by ServerHostHead
     ///
     /// \since 4.2.9
-    auto redirect_to_catalog_provider(RsComm& _comm) -> rodsServerHost;
+    auto redirect_to_catalog_provider(RsComm& _comm) -> rodsServerHost*;
 } // namespace irods::experimental::catalog
 
 #endif // #ifndef IRODS_CATALOG_UTILITIES_HPP

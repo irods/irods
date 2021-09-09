@@ -23,7 +23,6 @@
 #include "irods_re_serialization.hpp"
 #include "irods_resource_manager.hpp"
 #include "irods_logger.hpp"
-#include "irods_at_scope_exit.hpp"
 
 #define IRODS_IO_TRANSPORT_ENABLE_SERVER_SIDE_API
 #include "transport/default_transport.hpp"
@@ -403,10 +402,9 @@ namespace
 
             if (!ic::connected_to_catalog_provider(*_comm)) {
                 log::api::trace("Redirecting request to catalog service provider ...");
-                auto host_info = ic::redirect_to_catalog_provider(*_comm);
-                irods::at_scope_exit close_conn{[&host_info] { rcDisconnect(host_info.conn); }};
+                auto* host_info = ic::redirect_to_catalog_provider(*_comm);
                 const std::string json_input(static_cast<const char*>(_bbuf_input->buf), _bbuf_input->len);
-                return rc_touch(host_info.conn, json_input.data());
+                return rc_touch(host_info->conn, json_input.data());
             }
 
             const auto json_input = parse_json(_bbuf_input);

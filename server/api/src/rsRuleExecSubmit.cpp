@@ -123,9 +123,9 @@ int rsRuleExecSubmit(RsComm* rsComm,
 
         kvp[EXEC_LOCALLY_KW] = "";
 
-        auto host_info = ic::redirect_to_catalog_provider(*rsComm);
+        auto* host_info = ic::redirect_to_catalog_provider(*rsComm);
 
-        return rcRuleExecSubmit(host_info.conn, ruleExecSubmitInp, ruleExecId);
+        return rcRuleExecSubmit(host_info->conn, ruleExecSubmitInp, ruleExecId);
     }
 
     if (const auto ec = _rsRuleExecSubmit(rsComm, ruleExecSubmitInp); ec < 0) {
