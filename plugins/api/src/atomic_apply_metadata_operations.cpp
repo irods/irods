@@ -21,7 +21,6 @@
 
 #include "catalog.hpp"
 #include "catalog_utilities.hpp"
-#include "irods_at_scope_exit.hpp"
 #include "irods_get_full_path_for_config_file.hpp"
 #include "irods_get_l1desc.hpp"
 #include "irods_re_serialization.hpp"
@@ -433,13 +432,12 @@ namespace
             if (!ic::connected_to_catalog_provider(*_comm)) {
                 irods::log(LOG_DEBUG8, "Redirecting request to catalog service provider ...");
 
-                auto host_info = ic::redirect_to_catalog_provider(*_comm);
-                irods::at_scope_exit close_conn{[&host_info] { rcDisconnect(host_info.conn); }};
+                auto* host_info = ic::redirect_to_catalog_provider(*_comm);
 
                 const std::string json_input(static_cast<const char*>(_input->buf), _input->len);
                 char* json_output = nullptr;
 
-                const auto ec = rc_atomic_apply_metadata_operations(host_info.conn, json_input.data(), &json_output);
+                const auto ec = rc_atomic_apply_metadata_operations(host_info->conn, json_input.data(), &json_output);
                 *_output = irods::to_bytes_buffer(json_output);
 
                 return ec;

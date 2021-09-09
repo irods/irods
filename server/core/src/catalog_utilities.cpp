@@ -157,20 +157,16 @@ namespace irods::experimental::catalog
         return ::connected_to_catalog_provider(_comm, get_catalog_provider_host());
     } // connected_to_catalog_provider
 
-    auto redirect_to_catalog_provider(RsComm& _comm) -> rodsServerHost
+    auto redirect_to_catalog_provider(RsComm& _comm) -> rodsServerHost*
     {
-        rodsServerHost host = get_catalog_provider_host();
+        rodsServerHost* host = nullptr;
 
-        if (::connected_to_catalog_provider(_comm, host)) {
-            return host;
+        if (const int ec = getAndConnRcatHost(&_comm, MASTER_RCAT, nullptr, &host); ec < 0) {
+            THROW(ec, "failed to connect to catalog provider host");
         }
 
-        if (int ec = svrToSvrConnect(&_comm, &host); ec < 0) {
-            if (REMOTE_ICAT == host.rcatEnabled) {
-                ec = convZoneSockError(ec);
-            }
-
-            THROW(ec, fmt::format("svrToSvrConnect to {} failed", host.hostName->name));
+        if (!host) {
+            THROW(SYS_INVALID_SERVER_HOST, "failed to get catalog provider host");
         }
 
         return host;
