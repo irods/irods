@@ -1,6 +1,8 @@
 #ifndef RODS_CONNECT_H
 #define RODS_CONNECT_H
 
+/// \file
+
 #include "rodsDef.h"
 #include "rcConnect.h"
 
@@ -116,16 +118,45 @@ int getAndConnRcatHostNoLogin(rsComm_t *rsComm,
                               char *rcatZoneHint,
                               rodsServerHost_t **rodsServerHost);
 
+/// \brief Gets the Catalog Service Provider host information from `ZoneInfoHead`.
+///
+/// \parblock
+/// The information populated in `*rodsServerHost` will be a pointer to `masterServerHost` or
+/// `slaveServerHost` of the global `ZoneInfoHead` list. These linked lists are identical to the
+/// pointers in the global linked list of server information called `ServerHostHead`.
+///
+/// This function should be used for getting this pointer in particular because any connections
+/// made to the retrieved server will be reused from previous redirections, if applicable, and
+/// cleaned up automatically on agent teardown.
+/// \endparblock
 int getRcatHost(int rcatType,
                 const char *rcatZoneHint,
                 rodsServerHost_t **rodsServerHost);
 
 int disconnRcatHost(int rcatType, const char *rcatZoneHint);
 
+/// \brief Gets the Catalog Service Provider host from `ZoneInfoHead` and connects to it.
+///
+/// \parblock
+/// The information populated in `*rodsServerHost` will be a pointer to `masterServerHost` or
+/// `slaveServerHost` of the global `ZoneInfoHead` list. These linked lists are identical to the
+/// pointers in the global linked list of server information called `ServerHostHead`.
+///
+/// This function should be used for making any redirect connections to the Catalog Service
+/// Provider. Connections will be reused from previous redirections, if applicable, and cleaned
+/// up automatically on agent teardown.
+/// \endparblock
 int getAndDisconnRcatHost(int rcatType,
                           char *rcatZoneHint,
                           rodsServerHost_t **rodsServerHost);
 
+/// \brief Disconnects and cleans up all server-to-server connections made by this agent.
+///
+/// \parblock
+/// This function walks the list of connected iRODS servers in `ServerHostHead` and disconnects
+/// them. This is convenient at agent teardown to ensure that the agent is not leaving any open
+/// connections or leaking memory from the connection structures.
+/// \endparblock
 int disconnectAllSvrToSvrConn();
 
 int svrReconnect(rsComm_t *rsComm);
