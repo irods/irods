@@ -107,7 +107,7 @@
  *         are:
  *    \n COL_DATA_NAME - the full paths of each data object.
  *    \n COL_DATA_MODE - the createMode of each data object.
- *    \n OFFSET_INX - The accummulative size of the data objects. E.g.,
+ *    \n OFFSET_INX - The cumulative size of the data objects. E.g.,
  *          suppose we are bulk loading 2 files with sizes s1 and s2
  *          respectively. The 2 elements of this array are, s1 and s1+s2.
  *    \n COL_D_DATA_CHECKSUM - The checksum values of each data object.
