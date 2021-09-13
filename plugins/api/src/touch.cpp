@@ -399,13 +399,6 @@ namespace
         try {
             namespace ic = irods::experimental::catalog;
 
-            if (!ic::connected_to_catalog_provider(*_comm)) {
-                rodsLog(LOG_DEBUG, "Redirecting request to catalog service provider ...");
-                auto* host_info = ic::redirect_to_catalog_provider(*_comm);
-                const std::string json_input(static_cast<const char*>(_bbuf_input->buf), _bbuf_input->len);
-                return rc_touch(host_info->conn, json_input.data());
-            }
-
             const auto json_input = parse_json(_bbuf_input);
 
             throw_if_input_is_invalid(json_input);
@@ -452,15 +445,15 @@ namespace
                 }
 
                 fs::server::last_write_time(*_comm, path, new_mtime);
-	    }
-	    else if (is_data_object) {
-		if (!fs::server::is_data_object_registered(*_comm, path)) {
+            }
+            else if (is_data_object) {
+                if (!fs::server::is_data_object_registered(*_comm, path)) {
                     THROW(CAT_NO_ROWS_FOUND, "Cannot update mtime (no catalog entry exists for data object).");
                 }
 
                 const auto replica_number = get_replica_number(*_comm, json_input, path);
                 ix::replica::last_write_time<rsComm_t>(*_comm, path, replica_number, new_mtime);
-	    }
+            }
 
             return 0;
         }
