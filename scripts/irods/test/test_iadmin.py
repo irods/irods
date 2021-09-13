@@ -73,22 +73,6 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             self.admin.assert_icommand(['iadmin', 'rmresc', ptresc])
             self.admin.assert_icommand(['iadmin', 'rmresc', newresc])
 
-    def test_ibun__issue_3571(self):
-        test_file = "ibun_test_file"
-        lib.make_file(test_file, 1000)
-
-        tar_path = self.admin.session_collection + '/somefile.tar'
-        dir_path = self.admin.session_collection + '/somedir'
-
-        self.admin.assert_icommand("imkdir " + dir_path)
-        for i in range(257):
-            self.admin.assert_icommand("iput %s %s/foo%d" % (test_file, dir_path, i))
-
-        self.admin.assert_icommand("ibun -cD tar " + tar_path + " " + dir_path)
-
-        self.admin.assert_icommand("irm -rf " + dir_path)
-        self.admin.assert_icommand("irm -rf " + tar_path)
-
     def test_tokens(self):
         self.admin.assert_icommand(['iadmin', 'at', 'user_type', 'rodstest', self.admin.username])
         self.admin.assert_icommand(['iadmin', 'lt', 'user_type'], 'STDOUT_SINGLELINE', 'rodstest')

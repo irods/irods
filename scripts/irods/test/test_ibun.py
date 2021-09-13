@@ -13,13 +13,13 @@ from . import resource_suite
 from .. import lib
 from .. import test
 
-class Test_Ibun(resource_suite.ResourceBase, unittest.TestCase):
+class Test_ibun(resource_suite.ResourceBase, unittest.TestCase):
     def setUp(self):
-        super(Test_Ibun, self).setUp()
+        super(Test_ibun, self).setUp()
         self.known_file_name = 'known_file'
 
     def tearDown(self):
-        super(Test_Ibun, self).tearDown()
+        super(Test_ibun, self).tearDown()
 
     @unittest.skip('Generation of large file causes I/O thrashing... skip for now')
     def test_ibun_extraction_of_big_zip_file__issue_4495(self):
@@ -178,3 +178,39 @@ class Test_Ibun(resource_suite.ResourceBase, unittest.TestCase):
 
         do_test_ibun_atop_existing_archive_file_in_replication_hierarchy(self, 1038425, 1044480)
         do_test_ibun_atop_existing_archive_file_in_replication_hierarchy(self, 1040425, 1054720)
+
+    def test_ibun(self):
+        test_file = "ibun_test_file"
+        lib.make_file(test_file, 1000)
+        cmd = "tar cf somefile.tar " + test_file
+        lib.execute_command(['tar', 'cf', 'somefile.tar', test_file])
+
+        tar_path = self.admin.session_collection + '/somefile.tar'
+        dir_path = self.admin.session_collection + '/somedir'
+
+        self.admin.assert_icommand("iput somefile.tar")
+        self.admin.assert_icommand("imkdir " + dir_path)
+        self.admin.assert_icommand("iput %s %s/foo0" % (test_file, dir_path))
+        self.admin.assert_icommand("iput %s %s/foo1" % (test_file, dir_path))
+
+        self.admin.assert_icommand("ibun -cD tar " + tar_path + " " +
+                                   dir_path, 'STDERR_SINGLELINE', "OVERWRITE_WITHOUT_FORCE_FLAG")
+
+        self.admin.assert_icommand("irm -rf " + dir_path)
+        self.admin.assert_icommand("irm -rf " + tar_path)
+
+    def test_ibun__issue_3571(self):
+        test_file = "ibun_test_file"
+        lib.make_file(test_file, 1000)
+
+        tar_path = self.admin.session_collection + '/somefile.tar'
+        dir_path = self.admin.session_collection + '/somedir'
+
+        self.admin.assert_icommand("imkdir " + dir_path)
+        for i in range(257):
+            self.admin.assert_icommand("iput %s %s/foo%d" % (test_file, dir_path, i))
+
+        self.admin.assert_icommand("ibun -cD tar " + tar_path + " " + dir_path)
+
+        self.admin.assert_icommand("irm -rf " + dir_path)
+        self.admin.assert_icommand("irm -rf " + tar_path)
