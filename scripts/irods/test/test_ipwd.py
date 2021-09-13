@@ -6,7 +6,6 @@ else:
     import unittest
 
 from . import session
-from .. import test
 
 class Test_Ipwd(session.make_sessions_mixin([('otherrods', 'rods')], []), unittest.TestCase):
 
@@ -17,7 +16,6 @@ class Test_Ipwd(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
     def tearDown(self):
         super(Test_Ipwd, self).tearDown()
 
-    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_collection_with_backslash_in_name_does_not_cause_problems__issue_4060(self):
         col = 'issue_4060_test\\folder'
         self.admin.assert_icommand(['imkdir', col])
