@@ -217,7 +217,7 @@ namespace io {
 
         const root_resource_name& root_resource_name() const
         {
-            return transport_->resource_name();
+            return transport_->root_resource_name();
         }
 
         const leaf_resource_name& leaf_resource_name() const
@@ -664,7 +664,7 @@ namespace io {
 
         const root_resource_name& root_resource_name() const
         {
-            return buf_.resource_name();
+            return buf_.root_resource_name();
         }
 
         const leaf_resource_name& leaf_resource_name() const
