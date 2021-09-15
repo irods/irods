@@ -211,6 +211,9 @@ namespace
             // and the operation is supposed to turn into an overwrite of the existing data object.
             // Return a value of 0 here and the caller will continue with the open operation.
             if (!creating_new_replica) {
+                irods::log(LOG_DEBUG, fmt::format(
+                    "[{}:{}] - switching to overwrite an existing replica [path=[{}], hierarchy=[{}]]",
+                    __FUNCTION__, __LINE__, _inp.objPath, hierarchy));
                 _inp.openFlags &= ~O_WRONLY;
                 _inp.openFlags |= O_RDWR;
                 cond_input[DEST_RESC_NAME_KW] = irods::hierarchy_parser{hierarchy.data()}.first_resc();
@@ -218,6 +221,10 @@ namespace
 
                 return 0;
             }
+
+            irods::log(LOG_DEBUG, fmt::format(
+                "[{}:{}] - creating a new replica [path=[{}], hierarchy=[{}]]",
+                __FUNCTION__, __LINE__, _inp.objPath, hierarchy));
 
             const auto special_collection_type = irods::get_special_collection_type_for_data_object(_comm, _inp);
             if (special_collection_type < 0) {
@@ -980,6 +987,10 @@ namespace
         // wrong and we should bail immediately. We need to reference the winning replica whereas in
         // the past the linked list was sorted with the winning replica at the head.
         auto obj = id::make_data_object_proxy(*info_head);
+
+        irods::log(LOG_DEBUG, fmt::format(
+            "[{}:{}] - path=[{}], hierarchy=[{}], replica count=[{}]",
+            __FUNCTION__, __LINE__, obj.logical_path(), hierarchy, obj.replica_count()));
 
         auto maybe_replica = id::find_replica(obj, hierarchy);
         if (!maybe_replica) {
