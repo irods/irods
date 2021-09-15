@@ -18,6 +18,7 @@
 #include "rcMisc.h"
 #include "replica.hpp"
 #include "replica_proxy.hpp"
+#include "resource_administration.hpp"
 #include "rodsClient.h"
 #include "rodsDef.h"
 #include "rodsErrorTable.h"
@@ -40,13 +41,12 @@
 using namespace std::chrono_literals;
 
 // clang-format off
+namespace adm     = irods::experimental::administration;
 namespace fs      = irods::experimental::filesystem;
 namespace replica = irods::experimental::replica;
 // clang-format on
 
 const std::string DEFAULT_RESOURCE_HIERARCHY = "demoResc";
-
-auto create_empty_replica(const fs::path& _path) -> void;
 
 namespace
 {
@@ -64,7 +64,7 @@ namespace
     } // wait_for_agent_to_close
 } // anonymous namespace
 
-TEST_CASE("open,read,write,close")
+TEST_CASE("rc_data_obj_open")
 {
     try {
         load_client_api_plugins();
@@ -80,11 +80,23 @@ TEST_CASE("open,read,write,close")
             REQUIRE(fs::client::create_collection(setup_comm, sandbox));
         }
 
-        irods::at_scope_exit remove_sandbox{[&sandbox] {
+        const std::string test_resc = "test_resc";
+        const std::string vault_name = "test_resc_vault";
+
+        // Create a new resource
+        {
+            irods::experimental::client_connection conn;
+            RcComm& comm = static_cast<RcComm&>(conn);
+            unit_test_utils::add_ufs_resource(comm, test_resc, vault_name);
+        }
+
+        irods::at_scope_exit remove_sandbox{[&sandbox, &test_resc] {
             irods::experimental::client_connection conn;
             RcComm& comm = static_cast<RcComm&>(conn);
 
             REQUIRE(fs::client::remove_all(comm, sandbox, fs::remove_options::no_trash));
+
+            adm::client::remove_resource(comm, test_resc);
         }};
 
         const auto target_object = sandbox / "target_object";
@@ -233,7 +245,7 @@ TEST_CASE("open,read,write,close")
             }
         }
 
-        SECTION("create,no close")
+        SECTION("create_with_no_close")
         {
             pid_t unclosed_fd_pid{};
 
@@ -268,7 +280,7 @@ TEST_CASE("open,read,write,close")
             CHECK(STALE_REPLICA == replica_info.replica_status());
         }
 
-        SECTION("open for read,close")
+        SECTION("open_for_read_and_close")
         {
             irods::experimental::client_connection conn;
             RcComm& comm = static_cast<RcComm&>(conn);
@@ -295,7 +307,7 @@ TEST_CASE("open,read,write,close")
             CHECK(GOOD_REPLICA == replica_info.replica_status());
         }
 
-        SECTION("open for write,close")
+        SECTION("open_for_write_and_close")
         {
             irods::experimental::client_connection conn;
             RcComm& comm = static_cast<RcComm&>(conn);
@@ -322,7 +334,7 @@ TEST_CASE("open,read,write,close")
             CHECK(GOOD_REPLICA == replica_info.replica_status());
         }
 
-        SECTION("open for read,no close")
+        SECTION("open_for_read_no_close")
         {
             irods::experimental::client_connection conn;
             RcComm& comm = static_cast<RcComm&>(conn);
@@ -352,7 +364,7 @@ TEST_CASE("open,read,write,close")
             CHECK(GOOD_REPLICA == replica_info.replica_status());
         }
 
-        SECTION("open for write,no close")
+        SECTION("open_for_write_no_close")
         {
             irods::experimental::client_connection conn;
             RcComm& comm = static_cast<RcComm&>(conn);
@@ -402,7 +414,7 @@ TEST_CASE("open,read,write,close")
             CHECK(STALE_REPLICA == replica_info.replica_status());
         }
 
-        SECTION("create,no close,open for write,close")
+        SECTION("create_no_close_and_open_for_write_close")
         {
             pid_t unclosed_fd_pid{};
 
@@ -459,7 +471,7 @@ TEST_CASE("open,read,write,close")
             CHECK(STALE_REPLICA == replica_info.replica_status());
         }
 
-        SECTION("create,write,close")
+        SECTION("create_write_close")
         {
             irods::experimental::client_connection conn;
             RcComm& comm = static_cast<RcComm&>(conn);
@@ -495,7 +507,7 @@ TEST_CASE("open,read,write,close")
             CHECK(GOOD_REPLICA == replica_info.replica_status());
         }
 
-        SECTION("create,write,no close")
+        SECTION("create_write_and_no_close")
         {
             pid_t unclosed_fd_pid{};
 
@@ -540,6 +552,115 @@ TEST_CASE("open,read,write,close")
             CHECK(contents.size() + 1 == static_cast<unsigned long>(replica_info.size()));
             CHECK(STALE_REPLICA == replica_info.replica_status());
         }
+
+        SECTION("create_empty_replica_on_non_default_resource_and_write_in_separate_open__issue_5548")
+        {
+            irods::experimental::client_connection conn;
+            RcComm& comm = static_cast<RcComm&>(conn);
+
+            // Create the initial replica on non-default resource as an empty replica.
+            unit_test_utils::create_empty_replica(comm, target_object, test_resc);
+            REQUIRE(GOOD_REPLICA == replica::replica_status(comm, target_object, 0));
+            REQUIRE(!replica::replica_exists(comm, target_object, 1));
+
+            // Sleep to ensure that mtime updates when we write to it.
+            std::this_thread::sleep_for(2s);
+
+            // Open the replica again with O_CREAT and use DEST_RESC_NAME_KW to
+            // influence the vote. We expect a new replica to be created on the default
+            // resource.
+            dataObjInp_t open_inp{};
+            std::snprintf(open_inp.objPath, sizeof(open_inp.objPath), "%s", path_str.data());
+            open_inp.openFlags = O_CREAT | O_WRONLY;
+            addKeyVal(&open_inp.condInput, DEST_RESC_NAME_KW, test_resc.data());
+            const auto fd = rcDataObjOpen(&comm, &open_inp);
+            REQUIRE(fd > 2);
+            CHECK(INTERMEDIATE_REPLICA == replica::replica_status(comm, target_object, 0));
+            CHECK(!replica::replica_exists(comm, target_object, 1));
+
+            // Write data to the replica so that it is different from the initial replica.
+            bytesBuf_t write_bbuf{};
+            write_bbuf.buf = static_cast<void*>(contents.data());
+            write_bbuf.len = contents.size() + 1;
+
+            openedDataObjInp_t write_inp{};
+            write_inp.l1descInx = fd;
+            write_inp.len = write_bbuf.len;
+            const auto bytes_written = rcDataObjWrite(&comm, &write_inp, &write_bbuf);
+            CHECK(write_bbuf.len == bytes_written);
+
+            openedDataObjInp_t close_inp{};
+            close_inp.l1descInx = fd;
+            close_inp.bytesWritten = bytes_written;
+            REQUIRE(rcDataObjClose(&comm, &close_inp) >= 0);
+
+            // Ensure that no new replicas appeared and that the existing replica is good.
+            CHECK(GOOD_REPLICA == replica::replica_status(comm, target_object, 0));
+            CHECK(!replica::replica_exists(comm, target_object, 1));
+
+            // Ensure all system metadata were updated properly
+            const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, target_object, 0);
+            CHECK(replica_info.mtime() != replica_info.ctime());
+            CHECK(contents.size() + 1 == static_cast<unsigned long>(replica_info.size()));
+        }
+
+        SECTION("create_empty_replica_on_non_default_resource_and_create_with_no_keyword__issue_5548")
+        {
+            irods::experimental::client_connection conn;
+            RcComm& comm = static_cast<RcComm&>(conn);
+
+            // Create the initial replica on non-default resource as an empty replica.
+            unit_test_utils::create_empty_replica(comm, target_object, test_resc);
+            REQUIRE(GOOD_REPLICA == replica::replica_status(comm, target_object, 0));
+            REQUIRE(!replica::replica_exists(comm, target_object, 1));
+
+            // Sleep to ensure that mtime correctly does not update when we create
+            // the new replica.
+            std::this_thread::sleep_for(2s);
+
+            // Open the replica again with O_CREAT and without specifying a replica.
+            // We expect a new replica to be created on the default resource.
+            dataObjInp_t open_inp{};
+            std::snprintf(open_inp.objPath, sizeof(open_inp.objPath), "%s", path_str.data());
+            open_inp.openFlags = O_CREAT | O_WRONLY;
+            const auto fd = rcDataObjOpen(&comm, &open_inp);
+            REQUIRE(fd > 2);
+            CHECK(WRITE_LOCKED == replica::replica_status(comm, target_object, 0));
+            CHECK(INTERMEDIATE_REPLICA == replica::replica_status(comm, target_object, 1));
+
+            // Write data to the new replica so that it is different from the initial,
+            // empty replica.
+            bytesBuf_t write_bbuf{};
+            write_bbuf.buf = static_cast<void*>(contents.data());
+            write_bbuf.len = contents.size() + 1;
+
+            openedDataObjInp_t write_inp{};
+            write_inp.l1descInx = fd;
+            write_inp.len = write_bbuf.len;
+            const auto bytes_written = rcDataObjWrite(&comm, &write_inp, &write_bbuf);
+            CHECK(write_bbuf.len == bytes_written);
+
+            openedDataObjInp_t close_inp{};
+            close_inp.l1descInx = fd;
+            close_inp.bytesWritten = bytes_written;
+            REQUIRE(rcDataObjClose(&comm, &close_inp) >= 0);
+
+            // Ensure all system metadata were updated properly for the original replica.
+            {
+                const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, target_object, 0);
+                CHECK(replica_info.mtime() == replica_info.ctime());
+                CHECK(0 == static_cast<unsigned long>(replica_info.size()));
+                REQUIRE(STALE_REPLICA == replica::replica_status(comm, target_object, 0));
+            }
+
+            // Ensure all system metadata were updated properly for the new replica.
+            {
+                const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, target_object, 1);
+                CHECK(replica_info.mtime() == replica_info.ctime());
+                CHECK(contents.size() + 1 == static_cast<unsigned long>(replica_info.size()));
+                REQUIRE(GOOD_REPLICA == replica::replica_status(comm, target_object, 1));
+            }
+        }
     }
     catch (const irods::exception& e) {
         std::cout << e.client_display_what();
@@ -547,7 +668,7 @@ TEST_CASE("open,read,write,close")
     catch (const std::exception& e) {
         std::cout << e.what();
     }
-} // open,read,write,close
+} // rc_data_obj_open
 
 TEST_CASE("read-only streams")
 {
@@ -982,29 +1103,4 @@ TEST_CASE("rxDataObjPut")
         CHECK(replica::replica_checksum<RcComm>(conn, logical_path, env.rodsDefResource, recalculate) == expected_checksum);
     }
 } // rxDataObjPut
-
-auto create_empty_replica(const fs::path& _path) -> void
-{
-    std::string_view path_str = _path.c_str();
-
-    irods::experimental::client_connection conn;
-    RcComm& comm = static_cast<RcComm&>(conn);
-
-    dataObjInp_t open_inp{};
-    std::snprintf(open_inp.objPath, sizeof(open_inp.objPath), "%s", path_str.data());
-    open_inp.openFlags = O_CREAT | O_TRUNC | O_WRONLY;
-    const auto fd = rcDataObjOpen(&comm, &open_inp);
-    REQUIRE(fd > 2);
-    CHECK(INTERMEDIATE_REPLICA == replica::replica_status(comm, _path, 0));
-
-    openedDataObjInp_t close_inp{};
-    close_inp.l1descInx = fd;
-    REQUIRE(rcDataObjClose(&comm, &close_inp) >= 0);
-
-    // ensure all system metadata were updated properly
-    const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, _path, 0);
-    CHECK(replica_info.mtime() == replica_info.ctime());
-    CHECK(0 == static_cast<unsigned long>(replica_info.size()));
-    REQUIRE(GOOD_REPLICA == replica::replica_status(comm, _path, 0));
-} // create_empty_replica
 
