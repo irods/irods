@@ -59,9 +59,23 @@ namespace
 
         REQUIRE(unit_test_utils::add_ufs_resource(comm, _name, "vault_for_"s + _name.data()));
     } // mkresc
+
+    auto close_replica(RcComm& _comm, const int _fd)
+    {
+        const auto close_input = nlohmann::json{
+            {"fd", _fd},
+            {"update_size", false},
+            {"update_status", false},
+            {"compute_checksum", false},
+            {"send_notifications", false},
+            {"preserve_replica_state_table", true}
+        }.dump();
+
+        return rc_replica_close(&_comm, close_input.data());
+    } // close_replica
 } // anonymous namespace
 
-TEST_CASE("open and close", "[write_lock]")
+TEST_CASE("open_and_close", "[write_lock]")
 {
     load_client_api_plugins();
 
@@ -151,7 +165,15 @@ TEST_CASE("open and close", "[write_lock]")
     auto fail_cond_input = irods::experimental::make_key_value_proxy(fail_open_inp.condInput);
     std::snprintf(fail_open_inp.objPath, sizeof(fail_open_inp.objPath), "%s", target_object.c_str());
 
-    SECTION("open for read")
+    // Get the file descriptor info from the opened replica and extract the replica token.
+    char* out = nullptr;
+    const auto json_input = nlohmann::json{{"fd", fd}}.dump();
+    const auto l1_desc_info = rc_get_file_descriptor_info(&comm, json_input.data(), &out);
+    REQUIRE(l1_desc_info == 0);
+    const auto token = nlohmann::json::parse(out).at("replica_token").get<std::string>();
+    std::free(out);
+
+    SECTION("open_for_read")
     {
         fail_open_inp.openFlags = O_RDONLY;
 
@@ -162,9 +184,24 @@ TEST_CASE("open and close", "[write_lock]")
         // open existing, currently locked replica
         fail_cond_input[RESC_HIER_STR_KW] = other_replica_resc;
         REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcDataObjOpen(&new_comm, &fail_open_inp));
+
+        // ...and now, with a replica token
+        fail_cond_input[REPLICA_TOKEN_KW] = token;
+
+        // open existing, currently intermediate replica with a token... should not fail
+        {
+            fail_cond_input[RESC_HIER_STR_KW] = opened_replica_resc;
+            const auto fd2 = rcDataObjOpen(&new_comm, &fail_open_inp);
+            REQUIRE(fd2 > 2);
+            REQUIRE(close_replica(new_comm, fd2) >= 0);
+        }
+
+        // open existing, currently locked replica
+        fail_cond_input[RESC_HIER_STR_KW] = other_replica_resc;
+        REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcDataObjOpen(&new_comm, &fail_open_inp));
     }
 
-    SECTION("open for write")
+    SECTION("open_for_write")
     {
         fail_open_inp.openFlags = O_WRONLY;
 
@@ -175,15 +212,49 @@ TEST_CASE("open and close", "[write_lock]")
         // open existing, currently locked replica
         fail_cond_input[RESC_HIER_STR_KW] = other_replica_resc;
         REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcDataObjOpen(&new_comm, &fail_open_inp));
+
+        // ...and now, with a replica token
+        fail_cond_input[REPLICA_TOKEN_KW] = token;
+
+        // open existing, currently opened replica
+        {
+            fail_cond_input[RESC_HIER_STR_KW] = opened_replica_resc;
+            const auto fd2 = rcDataObjOpen(&new_comm, &fail_open_inp);
+            REQUIRE(fd2 > 2);
+            REQUIRE(close_replica(new_comm, fd2) >= 0);
+        }
+
+        // open existing, currently locked replica
+        fail_cond_input[RESC_HIER_STR_KW] = other_replica_resc;
+        REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcDataObjOpen(&new_comm, &fail_open_inp));
     }
 
-    SECTION("open for create")
+    SECTION("open_for_create")
     {
-        fail_open_inp.openFlags = O_CREAT | O_WRONLY | O_TRUNC;
+        fail_open_inp.openFlags = O_CREAT | O_WRONLY;
 
         // attempt overwriting existing, currently opened replica with new replica
         fail_cond_input[RESC_HIER_STR_KW] = opened_replica_resc;
         REQUIRE(INTERMEDIATE_REPLICA_ACCESS == rcDataObjOpen(&new_comm, &fail_open_inp));
+
+        // attempt overwriting existing, currently locked replica with new replica
+        fail_cond_input[RESC_HIER_STR_KW] = other_replica_resc;
+        REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcDataObjOpen(&new_comm, &fail_open_inp));
+
+        // Attempt opening a new replica on locked object
+        fail_cond_input[RESC_HIER_STR_KW] = resc_2;
+        REQUIRE(LOCKED_DATA_OBJECT_ACCESS == rcDataObjOpen(&new_comm, &fail_open_inp));
+
+        // ...and now, with a replica token
+        fail_cond_input[REPLICA_TOKEN_KW] = token;
+
+        // attempt overwriting existing, currently opened replica with new replica
+        {
+            fail_cond_input[RESC_HIER_STR_KW] = opened_replica_resc;
+            const auto fd2 = rcDataObjOpen(&new_comm, &fail_open_inp);
+            REQUIRE(fd2 > 2);
+            REQUIRE(close_replica(new_comm, fd2) >= 0);
+        }
 
         // attempt overwriting existing, currently locked replica with new replica
         fail_cond_input[RESC_HIER_STR_KW] = other_replica_resc;
