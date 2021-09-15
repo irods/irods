@@ -79,10 +79,9 @@ namespace unit_test_utils
         return rcDataObjRepl(&_comm, &repl_input) == 0;
     }
 
-    inline auto create_empty_replica(
-        RcComm& _comm,
-        const irods::experimental::filesystem::path& _path,
-        const std::string_view _resource_hierarchy = "") -> bool
+    inline auto create_empty_replica(RcComm& _comm,
+                                     const irods::experimental::filesystem::path& _path,
+                                     const std::string_view _resource_hierarchy = "") -> bool
     {
         const auto path_str = _path.c_str();
 
@@ -116,13 +115,13 @@ namespace unit_test_utils
         }
 
         for (std::size_t i = 0; i < _size_in_bytes; ++i) {
-            out << _ch;
+            out.write(&_ch, 1);
         }
 
         return true;
     }
 
-    auto get_agent_pid(RcComm& _comm) -> int
+    inline auto get_agent_pid(RcComm& _comm) -> int
     {
         ExecMyRuleInp inp{};
         const auto free_cond_input = irods::at_scope_exit{[&inp] { clearKeyVal(&inp.condInput); }};

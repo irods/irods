@@ -95,9 +95,7 @@ namespace irods::experimental::io
         io::dstream stream;
     }; // class managed_dstream
 
-    /// Creates a factory that produced managed_dstream objects.
-    ///
-    /// \since 4.2.9
+    /// Creates a factory that produces managed_dstream objects.
     ///
     /// \param[in] _conn_pool    \parblock
     ///                          The connection pool serving connections for each stream object created
@@ -107,9 +105,13 @@ namespace irods::experimental::io
     /// \param[in] _logical_path The full path to a data object. All streams will point to this data object.
     ///
     /// \return A new factory function.
+    ///
+    /// \since 4.2.9
     auto make_dstream_factory(irods::connection_pool& _conn_pool, std::string _logical_path)
     {
-        return [&_conn_pool, p = std::move(_logical_path)](std::ios_base::openmode _mode, managed_dstream* _base)
+        using openmode = std::ios_base::openmode;
+
+        return [&_conn_pool, p = std::move(_logical_path)](openmode _mode, managed_dstream* _base)
             -> managed_dstream
         {
             managed_dstream d{_conn_pool.get_connection()};
@@ -128,7 +130,62 @@ namespace irods::experimental::io
 
             return d;
         };
-    }
+    } // make_dstream_factory
+
+    /// Creates a factory that produces managed_dstream objects.
+    ///
+    /// \param[in] _conn_pool    \parblock
+    ///                          The connection pool serving connections for each stream object created
+    ///                          by the factory. The connection pool is not owned by the generated factory
+    ///                          and must out live any streams produced by the factory.
+    ///                          \endparblock
+    /// \param[in] _logical_path The full path to a data object. All streams will point to this data object.
+    /// \param[in] _replica_id   The replica number or resource name used to identify a specific replica.
+    ///
+    /// \tparam ReplicaIdentifier \parblock
+    /// The type of the information used to identify a specific replica. The following types are supported:
+    ///     - irods::experimental::io::replica_number
+    ///     - irods::experimental::io::leaf_resource_name
+    ///     - irods::experimental::io::root_resource_name
+    /// \endparblock
+    ///
+    /// \return A new factory function.
+    ///
+    /// \since 4.2.11
+    template <typename ReplicaIdentifier>
+    auto make_dstream_factory(irods::connection_pool& _conn_pool,
+                              std::string _logical_path,
+                              ReplicaIdentifier&& _replica_id)
+    {
+        using openmode = std::ios_base::openmode;
+
+        return [&_conn_pool, p = std::move(_logical_path), &_replica_id](openmode _mode, managed_dstream* _base)
+            -> managed_dstream
+        {
+            managed_dstream d{_conn_pool.get_connection()};
+
+            d.transport = std::make_unique<io::client::native_transport>(d.conn);
+
+            if (_base) {
+                auto& s = _base->stream;
+                d.stream.open(*d.transport, s.replica_token(), p, s.replica_number(), _mode);
+            }
+            else {
+                using unqualified_type = std::remove_reference_t<std::remove_cv_t<ReplicaIdentifier>>;
+
+                static_assert(std::is_same_v<unqualified_type, io::replica_number> ||
+                              std::is_same_v<unqualified_type, io::leaf_resource_name> ||
+                              std::is_same_v<unqualified_type, io::root_resource_name>,
+                              "Unsupported type for template parameter [ReplicaIdentifier].");
+
+                d.stream.open(*d.transport, p, _replica_id, _mode);
+            }
+
+            d.rdbuf(d.stream.rdbuf());
+
+            return d;
+        };
+    } // make_dstream_factory
 
     /// Create a factory that produces std::fstream objects.
     ///
@@ -143,7 +200,7 @@ namespace irods::experimental::io
         {
             return std::fstream{p, _mode};
         };
-    }
+    } // make_fstream_factory
 
     /// Closes a stream object.
     /// 
@@ -151,14 +208,14 @@ namespace irods::experimental::io
     /// will optimize the closing of streams supporting the on_close_success parameter. See
     /// dstream.hpp and transport.hpp for additional details.
     ///
-    /// \since 4.2.9
-    ///
     /// \tparam SinkStreamType The type of the sink stream. Provides compile-time information for
     ///                        controlling how the stream is handled.
     ///
     /// \param[in] _out         The stream to close.
     /// \param[in] _last_stream Indicates whether \p _out is the last open stream managed by the
     ///                         parallel_transfer_engine.
+    ///
+    /// \since 4.2.9
     template <typename SinkStreamType>
     auto close_stream(SinkStreamType& _out, bool _last_stream) -> void
     {
@@ -179,7 +236,7 @@ namespace irods::experimental::io
         else {
             _out.close();
         }
-    }
+    } // close_stream
 } // namespace irods::experimental::io
 
 #endif // IRODS_IO_STREAM_FACTORY_UTILITY_HPP
