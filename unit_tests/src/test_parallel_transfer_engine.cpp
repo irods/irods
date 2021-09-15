@@ -1,5 +1,6 @@
 #include "catch.hpp"
 
+#include "client_connection.hpp"
 #include "connection_pool.hpp"
 #include "dstream.hpp"
 #include "filesystem.hpp"
@@ -9,6 +10,8 @@
 #include "rodsClient.h"
 #include "stream_factory_utility.hpp"
 #include "transport/default_transport.hpp"
+#include "resource_administration.hpp"
+#include "unit_test_utils.hpp"
 
 #include <boost/filesystem.hpp>
 
@@ -20,8 +23,12 @@
 #include <memory>
 #include <algorithm>
 
-namespace ix = irods::experimental;
-namespace io = irods::experimental::io;
+// clang-format off
+namespace ix  = irods::experimental;
+namespace io  = irods::experimental::io;
+namespace ir  = irods::experimental::replica;
+namespace adm = irods::experimental::administration;
+// clang-format on
 
 template <typename Stream>
 using stream_factory_functor = std::function<Stream(std::ios_base::openmode, Stream*)>;
@@ -182,6 +189,117 @@ TEST_CASE("parallel transfer engine")
         // Verify the size of the sink file.
         auto conn = conn_pool->get_connection();
         REQUIRE(irods::experimental::replica::replica_size<rcComm_t>(conn, data_object.c_str(), 0) == local_file_size);
+    }
+}
+
+TEST_CASE("stream factory utilities")
+{
+    load_client_api_plugins();
+
+    SECTION("#5851: stream factory utilities support targeting a specific replica")
+    {
+        namespace fs = irods::experimental::filesystem;
+
+        const std::string_view resc_name = "5851_ufs_resc";
+
+        // Create a new UFS resource.
+        {
+            ix::client_connection conn;
+            unit_test_utils::add_ufs_resource(conn, resc_name, "5851_resc_vault");
+        }
+
+        ix::client_connection conn;
+
+        irods::at_scope_exit remove_resource{[&conn, resc_name] {
+            adm::client::remove_resource(conn, resc_name);
+        }};
+
+        // Verify that the resource exists.
+        auto [ec, exists] = adm::client::resource_exists(conn, resc_name);
+        REQUIRE(!ec);
+        REQUIRE(exists);
+
+        // Create the sandbox for testing.
+        rodsEnv env;
+        _getRodsEnv(env);
+
+        const auto sandbox = fs::path{env.rodsHome} / "unit_testing_sandbox";
+
+        if (!fs::client::exists(conn, sandbox)) {
+            REQUIRE(fs::client::create_collection(conn, sandbox));
+        }
+
+        irods::at_scope_exit remove_sandbox{[&conn, &sandbox] {
+            fs::client::remove_all(conn, sandbox, fs::remove_options::no_trash);
+        }};
+
+        const auto data_object = sandbox / "issue_5851.txt";
+        auto conn_pool = irods::make_connection_pool();
+
+        // Create a replica on demoResc.
+        {
+            const auto* demoResc = "demoResc";
+
+            const auto factory = io::make_dstream_factory(*conn_pool, data_object, io::leaf_resource_name{demoResc});
+            auto stream = factory(std::ios_base::out, nullptr);
+            REQUIRE(stream.stream.is_open());
+            CHECK(stream.stream.leaf_resource_name().value == demoResc);
+            CHECK(stream.stream.root_resource_name().value == demoResc);
+            CHECK(stream.stream.replica_number().value == 0);
+            stream.close();
+
+            CHECK(ir::replica_exists<RcComm>(conn, data_object, demoResc));
+            CHECK(ir::replica_exists<RcComm>(conn, data_object, 0));
+        }
+
+        // Create another replica on the other resource.
+        {
+            const auto factory = io::make_dstream_factory(*conn_pool, data_object, io::leaf_resource_name{resc_name.data()});
+            auto stream = factory(std::ios_base::out, nullptr);
+            REQUIRE(stream.stream.is_open());
+            CHECK(stream.stream.leaf_resource_name().value == resc_name);
+            CHECK(stream.stream.root_resource_name().value == resc_name);
+            CHECK(stream.stream.replica_number().value == 1);
+            stream.close();
+
+            CHECK(ir::replica_exists<RcComm>(conn, data_object, resc_name));
+            CHECK(ir::replica_exists<RcComm>(conn, data_object, 1));
+        }
+
+        //
+        // At this point, there are two replicas.
+        //
+        // Show that the stream factory utilities can target a specific replica using
+        // leaf resource names and replica numbers.
+        //
+
+        SECTION("target replica using leaf resource name")
+        {
+            const auto factory = io::make_dstream_factory(*conn_pool, data_object, io::leaf_resource_name{resc_name.data()});
+            auto stream = factory(std::ios_base::out, nullptr);
+            REQUIRE(stream.stream.is_open());
+            CHECK(stream.stream.leaf_resource_name().value == resc_name);
+            CHECK(stream.stream.root_resource_name().value == resc_name);
+            CHECK(stream.stream.replica_number().value == 1);
+            stream.close();
+
+            CHECK(ir::replica_exists<RcComm>(conn, data_object, resc_name));
+            CHECK(ir::replica_exists<RcComm>(conn, data_object, 1));
+        }
+
+        SECTION("target replica using replica number")
+        {
+            const auto factory = io::make_dstream_factory(*conn_pool, data_object, io::replica_number{1});
+            auto stream = factory(std::ios_base::out, nullptr);
+            REQUIRE(stream.stream.is_open());
+            CHECK(stream.stream.leaf_resource_name().value == resc_name);
+            CHECK(stream.stream.root_resource_name().value == resc_name);
+            CHECK(stream.stream.replica_number().value == 1);
+            stream.close();
+
+            CHECK(ir::replica_exists<RcComm>(conn, data_object, resc_name));
+            CHECK(ir::replica_exists<RcComm>(conn, data_object, 1));
+        }
     }
 }
 
