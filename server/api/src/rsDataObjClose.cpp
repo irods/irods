@@ -358,22 +358,46 @@ namespace
 
         cond_input[OPEN_TYPE_KW] = std::to_string(l1desc.openType);
 
+        // The default sibling replica status on finalize should be stale. This is because
+        // reaching this point necessarily means that a replica of the data object was opened
+        // with the ability to modify its contents. Therefore, we must assume that the truth
+        // has moved unless there is evidence that no bytes were written.
+        int sibling_status = STALE_REPLICA;
+
         if (CREATE_TYPE == l1desc.openType) {
+            // If no errors occurred, creating a new replica with no specified operation type
+            // should result in staling any sibling replicas. This is because it is not known
+            // whether the new replica is consistent with the siblings.
+            irods::log(LOG_DEBUG, fmt::format(
+                "[{}:{}] - created new replica, STALE sibling replicas [path=[{}], hier=[{}]]",
+                __FUNCTION__, __LINE__, r.logical_path(), r.hierarchy()));
             r.replica_status(GOOD_REPLICA);
         }
         else if (OPEN_FOR_WRITE_TYPE == l1desc.openType) {
             if (l1desc.bytesWritten > 0) {
+                // If no errors occurred, bytes being written to an existing replica should
+                // result in staling any sibling replicas. This is because it is not known
+                // whether the new replica is consistent with the siblings.
+                irods::log(LOG_DEBUG, fmt::format(
+                    "[{}:{}] - MORE THAN 0 bytes written to existing replica, STALE sibling replicas [path=[{}], hier=[{}]]",
+                    __FUNCTION__, __LINE__, r.logical_path(), r.hierarchy()));
                 r.replica_status(GOOD_REPLICA);
                 r.mtime(SET_TIME_TO_NOW_KW);
             }
             else {
+                // If no bytes were written to an existing replica after opening for write,
+                // the sibling replica statuses should be restored. This is because nothing
+                // changed about the "truth" of the data represented by the replicas.
+                irods::log(LOG_DEBUG, fmt::format(
+                    "[{}:{}] - NO bytes written to existing replica, RESTORE sibling replicas [path=[{}], hier=[{}]]",
+                    __FUNCTION__, __LINE__, r.logical_path(), r.hierarchy()));
                 r.replica_status(std::stoi(rst::get_property(r.data_id(), r.replica_number(), "data_is_dirty")));
+                sibling_status = ill::restore_status;
             }
         }
 
         rst::update(r.data_id(), r);
 
-        const int sibling_status = OPEN_FOR_WRITE_TYPE == l1desc.openType && l1desc.bytesWritten > 0 ? STALE_REPLICA : ill::restore_status;
         if (const auto ec = ill::unlock(r.data_id(), r.replica_number(), r.replica_status(), sibling_status); ec < 0) {
             irods::log(LOG_ERROR, fmt::format(
                 "[{}:{}] - failed to unlock data object "
