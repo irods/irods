@@ -661,6 +661,89 @@ TEST_CASE("rc_data_obj_open")
                 REQUIRE(GOOD_REPLICA == replica::replica_status(comm, target_object, 1));
             }
         }
+
+        SECTION("open_same_replica_on_non_default_resource_twice_with_other_replica_on_default_resource__issue_5848")
+        {
+            // Create a new connection so that newly created resources are known.
+            irods::experimental::client_connection conn;
+            RcComm& comm = static_cast<RcComm&>(conn);
+
+            // Create two replicas - one on the newly created resource and one on the default resource.
+            unit_test_utils::create_empty_replica(comm, target_object, test_resc);
+            unit_test_utils::replicate_data_object(comm, path_str, DEFAULT_RESOURCE_HIERARCHY);
+            REQUIRE(GOOD_REPLICA == replica::replica_status(comm, target_object, 0));
+            REQUIRE(GOOD_REPLICA == replica::replica_status(comm, target_object, 1));
+
+            // Sleep here so that the mtime on the replica we open will be updated.
+            std::this_thread::sleep_for(2s);
+
+            // Open the replica on the non-default resource with O_CREAT flag specified because this
+            // is how some clients are using open. Should target an existing replica for overwrite.
+            dataObjInp_t open_inp{};
+            std::snprintf(open_inp.objPath, sizeof(open_inp.objPath), "%s", path_str.data());
+            open_inp.openFlags = O_CREAT | O_WRONLY;
+            addKeyVal(&open_inp.condInput, DEST_RESC_NAME_KW, test_resc.data());
+
+            // Open the replica and ensure that the status is updated appropriately.
+            const auto fd = rcDataObjOpen(&comm, &open_inp);
+            REQUIRE(fd > 2);
+            CHECK(INTERMEDIATE_REPLICA == replica::replica_status(comm, target_object, 0));
+            CHECK(WRITE_LOCKED == replica::replica_status(comm, target_object, 1));
+
+            // Get the file descriptor info from the opened replica and extract the replica token.
+            // We are not dealing in hierarchies here so that piece is not required here.
+            char* out = nullptr;
+            const auto json_input = nlohmann::json{{"fd", fd}}.dump();
+            const auto l1_desc_info = rc_get_file_descriptor_info(&comm, json_input.data(), &out);
+            REQUIRE(l1_desc_info == 0);
+            const auto token = nlohmann::json::parse(out).at("replica_token").get<std::string>();
+            std::free(out);
+
+            // Open the same replica on a different connection using the replica token and replica
+            // resource hierarchy. Ensure that the open is successful. This would fail if the wrong
+            // replica is targeted because no agent can open a replica which is write-locked, as the
+            // sibling replica on the default resource should be in this case.
+            {
+                irods::experimental::client_connection conn2;
+                RcComm& comm2 = static_cast<RcComm&>(conn2);
+
+                dataObjInp_t open_inp2{};
+                std::snprintf(open_inp2.objPath, sizeof(open_inp2.objPath), "%s", path_str.data());
+                open_inp2.openFlags = O_CREAT | O_WRONLY;
+                addKeyVal(&open_inp2.condInput, RESC_HIER_STR_KW, test_resc.data());
+                addKeyVal(&open_inp2.condInput, REPLICA_TOKEN_KW, token.data());
+
+                const auto fd2 = rcDataObjOpen(&comm2, &open_inp2);
+                REQUIRE(fd2 > 2);
+                CHECK(INTERMEDIATE_REPLICA == replica::replica_status(comm2, target_object, 0));
+                CHECK(WRITE_LOCKED == replica::replica_status(comm2, target_object, 1));
+
+                openedDataObjInp_t close_inp{};
+                close_inp.l1descInx = fd2;
+                REQUIRE(rcDataObjClose(&comm2, &close_inp) >= 0);
+            }
+
+            openedDataObjInp_t close_inp{};
+            close_inp.l1descInx = fd;
+            REQUIRE(rcDataObjClose(&comm, &close_inp) >= 0);
+
+            // Ensure all system metadata were updated properly. That is, the system metadata
+            // should be unchanged except for the replica statuses which should be restored
+            // to what they were before opening.
+            {
+                const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, target_object, 0);
+                CHECK(replica_info.mtime() == replica_info.ctime());
+                CHECK(0 == static_cast<unsigned long>(replica_info.size()));
+                CHECK(GOOD_REPLICA == replica_info.replica_status());
+            }
+
+            {
+                const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, target_object, 1);
+                CHECK(replica_info.mtime() == replica_info.ctime());
+                CHECK(0 == static_cast<unsigned long>(replica_info.size()));
+                CHECK(GOOD_REPLICA == replica_info.replica_status());
+            }
+        }
     }
     catch (const irods::exception& e) {
         std::cout << e.client_display_what();
