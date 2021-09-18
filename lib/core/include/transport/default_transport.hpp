@@ -50,6 +50,7 @@
 #include "rcMisc.h"
 #include "transport/transport.hpp"
 #include "irods_at_scope_exit.hpp"
+#include "irods_hierarchy_parser.hpp"
 
 #include "json.hpp"
 
@@ -350,10 +351,14 @@ namespace irods::experimental::io::NAMESPACE_IMPL
 
             try {
                 const auto fd_info = nlohmann::json::parse(json_output);
-                root_resc_name_.value = fd_info.at("data_object_info").at("resource_name").template get<std::string>();
-                leaf_resc_name_.value = fd_info.at("data_object_info").at("destination_resource_name").template get<std::string>();
-                replica_number_.value = fd_info.at("data_object_info").at("replica_number").template get<int>();
-                replica_token_.value = fd_info.at("replica_token").template get<std::string>();
+
+                const auto& dobj_info = fd_info.at("data_object_info");
+                const hierarchy_parser hp{dobj_info.at("resource_hierarchy").get_ref<const std::string&>()};
+
+                root_resc_name_.value = hp.first_resc();
+                leaf_resc_name_.value = hp.last_resc();
+                replica_number_.value = dobj_info.at("replica_number").get<int>();
+                replica_token_.value = fd_info.at("replica_token").get_ref<const std::string&>();
             }
             catch (const nlohmann::json::parse_error& e) {
                 close();
