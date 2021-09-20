@@ -372,6 +372,7 @@ namespace
                 "[{}:{}] - created new replica, STALE sibling replicas [path=[{}], hier=[{}]]",
                 __FUNCTION__, __LINE__, r.logical_path(), r.hierarchy()));
             r.replica_status(GOOD_REPLICA);
+            r.mtime(SET_TIME_TO_NOW_KW);
         }
         else if (OPEN_FOR_WRITE_TYPE == l1desc.openType) {
             if (l1desc.bytesWritten > 0) {

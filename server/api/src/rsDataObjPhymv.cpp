@@ -506,6 +506,10 @@ namespace
         const auto original_destination_replica_number = _destination_replica.replica_number();
 
         _destination_replica.replica_status(source_replica_original_status);
+
+        // Do not update the replica number, create time, or modify time because phymv was
+        // designed for a very specific use case and these system metadata are expected to
+        // remain unchanged from the source replica.
         _destination_replica.replica_number(source_replica_number);
         _destination_replica.ctime(_source_replica.ctime());
         _destination_replica.mtime(_source_replica.mtime());
