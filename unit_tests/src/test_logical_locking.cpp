@@ -59,20 +59,6 @@ namespace
 
         REQUIRE(unit_test_utils::add_ufs_resource(comm, _name, "vault_for_"s + _name.data()));
     } // mkresc
-
-    auto close_replica(RcComm& _comm, const int _fd)
-    {
-        const auto close_input = nlohmann::json{
-            {"fd", _fd},
-            {"update_size", false},
-            {"update_status", false},
-            {"compute_checksum", false},
-            {"send_notifications", false},
-            {"preserve_replica_state_table", true}
-        }.dump();
-
-        return rc_replica_close(&_comm, close_input.data());
-    } // close_replica
 } // anonymous namespace
 
 TEST_CASE("open_and_close", "[write_lock]")
@@ -193,7 +179,7 @@ TEST_CASE("open_and_close", "[write_lock]")
             fail_cond_input[RESC_HIER_STR_KW] = opened_replica_resc;
             const auto fd2 = rcDataObjOpen(&new_comm, &fail_open_inp);
             REQUIRE(fd2 > 2);
-            REQUIRE(close_replica(new_comm, fd2) >= 0);
+            REQUIRE(unit_test_utils::close_replica(new_comm, fd2) >= 0);
         }
 
         // open existing, currently locked replica
@@ -221,7 +207,7 @@ TEST_CASE("open_and_close", "[write_lock]")
             fail_cond_input[RESC_HIER_STR_KW] = opened_replica_resc;
             const auto fd2 = rcDataObjOpen(&new_comm, &fail_open_inp);
             REQUIRE(fd2 > 2);
-            REQUIRE(close_replica(new_comm, fd2) >= 0);
+            REQUIRE(unit_test_utils::close_replica(new_comm, fd2) >= 0);
         }
 
         // open existing, currently locked replica
@@ -253,7 +239,7 @@ TEST_CASE("open_and_close", "[write_lock]")
             fail_cond_input[RESC_HIER_STR_KW] = opened_replica_resc;
             const auto fd2 = rcDataObjOpen(&new_comm, &fail_open_inp);
             REQUIRE(fd2 > 2);
-            REQUIRE(close_replica(new_comm, fd2) >= 0);
+            REQUIRE(unit_test_utils::close_replica(new_comm, fd2) >= 0);
         }
 
         // attempt overwriting existing, currently locked replica with new replica

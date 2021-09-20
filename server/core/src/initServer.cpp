@@ -94,11 +94,9 @@ namespace
             irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, e.client_display_what()));
         }
 
-        if (OPEN_FOR_WRITE_TYPE == _l1desc.openType) {
-            // If the replica was opened for write and failed to close, we set the mtime
-            // because the status is going to change to stale due to failure to finalize.
-            r.mtime(SET_TIME_TO_NOW_KW);
-        }
+        // If the replica was opened for write or create and failed to close, we set the
+        // mtime because the status is going to change to stale due to failure to finalize.
+        r.mtime(SET_TIME_TO_NOW_KW);
 
         r.checksum("");
         r.replica_status(STALE_REPLICA);
