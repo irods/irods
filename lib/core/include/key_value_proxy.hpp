@@ -236,6 +236,9 @@ namespace irods::experimental {
                 : index_{0}
                 , kvp_{&_kvp}
             {
+                if (!kvp_->keyWord || !kvp_->value) {
+                    throw std::invalid_argument{"cannot construct key_value_proxy::iterator"};
+                }
             }
 
             /// \see https://en.cppreference.com/w/cpp/iterator/iterator
