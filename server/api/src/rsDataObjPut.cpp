@@ -205,10 +205,14 @@ namespace
 
         cond_input[OPEN_TYPE_KW] = std::to_string(_l1desc.openType);
 
+        // Whether this put was an overwrite or a new data object, the mtime for the replica
+        // should be updated to reflect the time that it took to write the data and reflect
+        // the behavior seen in POSIX.
+        r.mtime(SET_TIME_TO_NOW_KW);
+
         // Set target replica to the state it should be
         if (OPEN_FOR_WRITE_TYPE == _l1desc.openType) {
             r.replica_status(GOOD_REPLICA);
-            r.mtime(SET_TIME_TO_NOW_KW);
 
             // stale other replicas because the truth has moved
             ill::unlock(r.data_id(), r.replica_number(), GOOD_REPLICA, STALE_REPLICA);

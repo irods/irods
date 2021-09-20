@@ -218,6 +218,7 @@ namespace
         if (CREATE_TYPE == _l1desc.openType) {
             repl.size(size_on_disk);
             repl.replica_status(GOOD_REPLICA);
+            repl.mtime(SET_TIME_TO_NOW_KW);
         }
         // If the size of the replica has changed since opening it, then update the size.
         else if (_l1desc.dataObjInfo->dataSize != size_on_disk) {
@@ -234,9 +235,9 @@ namespace
         }
         // If nothing has been written, the status is restored from the replica state table
         // so that the replica is not mistakenly marked as good when it is in fact stale.
+        // The mtime is also not updated so as to signal that nothing changed in the data.
         else {
             repl.replica_status(ill::get_original_replica_status(repl.data_id(), repl.replica_number()));
-            repl.mtime(SET_TIME_TO_NOW_KW);
         }
 
         // Update the RST with the changes made above to the replica.

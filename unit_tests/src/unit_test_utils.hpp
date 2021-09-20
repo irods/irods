@@ -22,6 +22,20 @@
 
 namespace unit_test_utils
 {
+    inline auto close_replica(RcComm& _comm, const int _fd) -> int
+    {
+        const auto close_input = nlohmann::json{
+            {"fd", _fd},
+            {"update_size", false},
+            {"update_status", false},
+            {"compute_checksum", false},
+            {"send_notifications", false},
+            {"preserve_replica_state_table", true}
+        }.dump();
+
+        return rc_replica_close(&_comm, close_input.data());
+    } // close_replica
+
     inline auto get_hostname() noexcept -> std::string
     {
         char hostname[256] {};
