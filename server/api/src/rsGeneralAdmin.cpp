@@ -1,25 +1,12 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code (for the most part).  */
-/* See generalAdmin.h for a description of this API call.*/
+#include "rsGeneralAdmin.hpp"
 
-// =-=-=-=-=-=-=-
-// irods includes
 #include "generalAdmin.h"
 #include "rodsConnect.h"
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
-#include "rsGeneralAdmin.hpp"
+#include "rodsErrorTable.h"
 #include "rsModAVUMetadata.hpp"
 #include "rsGenQuery.hpp"
-
-// =-=-=-=-=-=-=-
-// stl includes
-#include <iostream>
-#include <string>
-#include <tuple>
-
-// =-=-=-=-=-=-=-
 #include "irods_children_parser.hpp"
 #include "irods_string_tokenize.hpp"
 #include "irods_plugin_name_generator.hpp"
@@ -30,12 +17,30 @@
 #include "irods_at_scope_exit.hpp"
 #include "irods_hierarchy_parser.hpp"
 
-// =-=-=-=-=-=-=-
-// boost includes
 #include <boost/date_time.hpp>
-#include <boost/optional.hpp>
+#include <boost/algorithm/string/trim.hpp>
+
+#include <cctype>
+#include <iostream>
+#include <string>
+#include <tuple>
+#include <optional>
+#include <algorithm>
 
 extern irods::resource_manager resc_mgr;
+
+namespace
+{
+    auto contains_whitespace(std::string _value) -> bool
+    {
+        boost::algorithm::trim(_value);
+
+        const auto b = std::begin(_value);
+        const auto e = std::end(_value);
+
+        return std::find_if(b, e, [](unsigned char _ch) { return ::isspace(_ch); }) != e;
+    } // contains_whitespace
+} // anonymous namespace
 
 int _check_rebalance_timestamp_avu_on_resource(
     rsComm_t* _rsComm,
@@ -243,6 +248,16 @@ int _addChildToResource(generalAdminInp_t* _generalAdminInp, rsComm_t* _rsComm)
             return CAT_RESOURCE_NAME_LENGTH_EXCEEDED;
         }
 
+        if (contains_whitespace(_generalAdminInp->arg2)) {
+            rodsLog(LOG_ERROR, "Whitespace is not allowed in resource names [%s].", _generalAdminInp->arg2);
+            return CAT_INVALID_RESOURCE_NAME;
+        }
+
+        if (contains_whitespace(_generalAdminInp->arg3)) {
+            rodsLog(LOG_ERROR, "Whitespace is not allowed in resource names [%s].", _generalAdminInp->arg3);
+            return CAT_INVALID_RESOURCE_NAME;
+        }
+
         // If the resource names are the same, then return an error.
         if (std::strncmp(_generalAdminInp->arg2, _generalAdminInp->arg3, NAME_LEN) == 0) {
             std::string msg = "Cannot add resource [";
@@ -405,12 +420,24 @@ _removeChildFromResource(
     if ( strlen( _generalAdminInp->arg2 ) >= NAME_LEN ) {	// resource name
         return SYS_INVALID_INPUT_PARAM;
     }
-    resc_input[irods::RESOURCE_NAME] = _generalAdminInp->arg2;
+
+    if (contains_whitespace(_generalAdminInp->arg2)) {
+        rodsLog(LOG_ERROR, "Whitespace is not allowed in resource names [%s].", _generalAdminInp->arg2);
+        return CAT_INVALID_RESOURCE_NAME;
+    }
+
+    resc_input[irods::RESOURCE_NAME] = boost::algorithm::trim_copy(std::string{_generalAdminInp->arg2});
 
     if ( strlen( _generalAdminInp->arg3 ) >= MAX_PATH_ALLOWED ) {
         return SYS_INVALID_INPUT_PARAM;
     }
-    resc_input[irods::RESOURCE_CHILDREN] = _generalAdminInp->arg3;
+
+    if (contains_whitespace(_generalAdminInp->arg3)) {
+        rodsLog(LOG_ERROR, "Whitespace is not allowed in resource names [%s].", _generalAdminInp->arg3);
+        return CAT_INVALID_RESOURCE_NAME;
+    }
+
+    resc_input[irods::RESOURCE_CHILDREN] = boost::algorithm::trim_copy(std::string{_generalAdminInp->arg3});
 
     rodsLog( LOG_NOTICE, "rsGeneralAdmin remove child \"%s\" from resource \"%s\"", resc_input[irods::RESOURCE_CHILDREN].c_str(),
              resc_input[irods::RESOURCE_NAME].c_str() );
@@ -427,8 +454,8 @@ int
 _addResource(
     generalAdminInp_t* _generalAdminInp,
     ruleExecInfo_t&    _rei2,
-    rsComm_t*          _rsComm ) {
-
+    rsComm_t*          _rsComm )
+{
     int result = 0;
     static const unsigned int argc = 7;
     const char *args[argc];
@@ -436,25 +463,35 @@ _addResource(
 
     // =-=-=-=-=-=-=-
     // Legacy checks
-    if ( strlen( _generalAdminInp->arg2 ) >= NAME_LEN ) {	// resource name
+
+    // resource name
+    if ( strlen( _generalAdminInp->arg2 ) >= NAME_LEN ) {
         return SYS_INVALID_INPUT_PARAM;
     }
 
-    if ( strlen( _generalAdminInp->arg3 ) >= NAME_LEN ) {	// resource type
+    if (contains_whitespace(_generalAdminInp->arg2)) {
+        rodsLog(LOG_ERROR, "Whitespace is not allowed in resource names [%s].", _generalAdminInp->arg2);
+        return CAT_INVALID_RESOURCE_NAME;
+    }
+
+    // resource type
+    if ( strlen( _generalAdminInp->arg3 ) >= NAME_LEN ) {
         return SYS_INVALID_INPUT_PARAM;
     }
 
-    if ( strlen( _generalAdminInp->arg5 ) >= MAX_PATH_ALLOWED ) {	// resource context
+    // resource context
+    if ( strlen( _generalAdminInp->arg5 ) >= MAX_PATH_ALLOWED ) {
         return SYS_INVALID_INPUT_PARAM;
     }
 
-    if ( strlen( _generalAdminInp->arg6 ) >= NAME_LEN ) {	// resource zone
+    // resource zone
+    if ( strlen( _generalAdminInp->arg6 ) >= NAME_LEN ) {
         return SYS_INVALID_INPUT_PARAM;
     }
 
     // =-=-=-=-=-=-=-
     // capture all the parameters
-    resc_input[irods::RESOURCE_NAME] = _generalAdminInp->arg2;
+    resc_input[irods::RESOURCE_NAME] = boost::algorithm::trim_copy(std::string{_generalAdminInp->arg2});
     resc_input[irods::RESOURCE_TYPE] = _generalAdminInp->arg3;
     resc_input[irods::RESOURCE_PATH] = _generalAdminInp->arg4;
     resc_input[irods::RESOURCE_CONTEXT] = _generalAdminInp->arg5;
@@ -861,11 +898,32 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             return status;
         }
         if ( strcmp( generalAdminInp->arg1, "resource" ) == 0 ) {
-
-            args[0] = generalAdminInp->arg2; /* rescname */
-            args[1] = generalAdminInp->arg3; /* option */
-            args[2] = generalAdminInp->arg4; /* newvalue */
             argc = 3;
+            args[0] = generalAdminInp->arg2; // resource name
+            args[1] = generalAdminInp->arg3; // option
+
+            if (contains_whitespace(generalAdminInp->arg2)) {
+                rodsLog(LOG_ERROR, "Whitespace is not allowed in resource names [%s].", generalAdminInp->arg2);
+                return CAT_INVALID_RESOURCE_NAME;
+            }
+
+            // Creates storage for possibly renaming an existing resource.
+            // This is required so that the string out lives the C API calls.
+            std::string new_resc_name;
+
+            if (std::strcmp(generalAdminInp->arg3, "name") == 0) {
+                if (contains_whitespace(generalAdminInp->arg4)) {
+                    rodsLog(LOG_ERROR, "Whitespace is not allowed in resource names [%s].", generalAdminInp->arg4);
+                    return CAT_INVALID_RESOURCE_NAME;
+                }
+
+                new_resc_name = boost::algorithm::trim_copy(std::string{generalAdminInp->arg4});
+                args[2] = new_resc_name.c_str();
+            }
+            else {
+                args[2] = generalAdminInp->arg4; // new value
+            }
+
             i =  applyRuleArg( "acPreProcForModifyResource", args, argc, &rei2, NO_SAVE_REI );
             if ( i < 0 ) {
                 if ( rei2.status < 0 ) {
@@ -876,6 +934,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                          args[0], args[1], i );
                 return i;
             }
+
             // =-=-=-=-=-=-=-
             // addition of 'rebalance' as an option to iadmin modresc.  not in icat code
             // due to dependency on resc_mgr, etc.
@@ -908,17 +967,10 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     if (visibility_status < 0){
                         return visibility_status;
                     }
-
                 }
-
             }
             else {
-                status = chlModResc(
-                             rsComm,
-                             generalAdminInp->arg2,
-                             generalAdminInp->arg3,
-                             generalAdminInp->arg4 );
-
+                status = chlModResc(rsComm, generalAdminInp->arg2, generalAdminInp->arg3, generalAdminInp->arg4);
             }
 
             if ( status == 0 ) {
@@ -933,9 +985,11 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     return i;
                 }
             }
+
             if ( status != 0 ) {
                 chlRollback( rsComm );
             }
+
             return status;
         }
     }
@@ -1018,6 +1072,11 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
 
             if ( strlen( generalAdminInp->arg2 ) >= NAME_LEN ) {	// resource name
                 return SYS_INVALID_INPUT_PARAM;
+            }
+
+            if (contains_whitespace(generalAdminInp->arg2)) {
+                rodsLog(LOG_ERROR, "Whitespace is not allowed in resource names [%s].", generalAdminInp->arg2);
+                return CAT_INVALID_RESOURCE_NAME;
             }
 
             resc_name = generalAdminInp->arg2;
