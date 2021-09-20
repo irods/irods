@@ -275,7 +275,7 @@ TEST_CASE("rc_data_obj_open")
 
             // ensure all system metadata were updated properly
             const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, target_object, 0);
-            CHECK(replica_info.mtime() == replica_info.ctime());
+            CHECK(replica_info.mtime() != replica_info.ctime());
             CHECK(0 == static_cast<unsigned long>(replica_info.size()));
             CHECK(STALE_REPLICA == replica_info.replica_status());
         }
@@ -286,6 +286,12 @@ TEST_CASE("rc_data_obj_open")
             RcComm& comm = static_cast<RcComm&>(conn);
 
             unit_test_utils::create_empty_replica(comm, target_object);
+
+            std::string original_mtime_for_replica_0;
+            {
+                const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, target_object, 0);
+                original_mtime_for_replica_0 = replica_info.mtime();
+            }
 
             std::this_thread::sleep_for(2s);
 
@@ -302,7 +308,7 @@ TEST_CASE("rc_data_obj_open")
 
             // ensure all system metadata were restored properly
             const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, target_object, 0);
-            CHECK(replica_info.mtime() == replica_info.ctime());
+            CHECK(replica_info.mtime() == original_mtime_for_replica_0);
             CHECK(0 == static_cast<unsigned long>(replica_info.size()));
             CHECK(GOOD_REPLICA == replica_info.replica_status());
         }
@@ -313,6 +319,12 @@ TEST_CASE("rc_data_obj_open")
             RcComm& comm = static_cast<RcComm&>(conn);
 
             unit_test_utils::create_empty_replica(comm, target_object);
+
+            std::string original_mtime_for_replica_0;
+            {
+                const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, target_object, 0);
+                original_mtime_for_replica_0 = replica_info.mtime();
+            }
 
             std::this_thread::sleep_for(2s);
 
@@ -329,7 +341,7 @@ TEST_CASE("rc_data_obj_open")
 
             // ensure all system metadata were updated properly
             const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, target_object, 0);
-            CHECK(replica_info.mtime() == replica_info.ctime());
+            CHECK(replica_info.mtime() == original_mtime_for_replica_0);
             CHECK(0 == static_cast<unsigned long>(replica_info.size()));
             CHECK(GOOD_REPLICA == replica_info.replica_status());
         }
@@ -340,6 +352,12 @@ TEST_CASE("rc_data_obj_open")
             RcComm& comm = static_cast<RcComm&>(conn);
 
             unit_test_utils::create_empty_replica(comm, target_object);
+
+            std::string original_mtime_for_replica_0;
+            {
+                const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, target_object, 0);
+                original_mtime_for_replica_0 = replica_info.mtime();
+            }
 
             std::this_thread::sleep_for(2s);
 
@@ -359,7 +377,7 @@ TEST_CASE("rc_data_obj_open")
 
             // ensure all system metadata were updated properly
             const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, target_object, 0);
-            CHECK(replica_info.mtime() == replica_info.ctime());
+            CHECK(replica_info.mtime() == original_mtime_for_replica_0);
             CHECK(0 == static_cast<unsigned long>(replica_info.size()));
             CHECK(GOOD_REPLICA == replica_info.replica_status());
         }
@@ -370,6 +388,12 @@ TEST_CASE("rc_data_obj_open")
             RcComm& comm = static_cast<RcComm&>(conn);
 
             unit_test_utils::create_empty_replica(comm, target_object);
+
+            std::string original_mtime_for_replica_0;
+            {
+                const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, target_object, 0);
+                original_mtime_for_replica_0 = replica_info.mtime();
+            }
 
             std::this_thread::sleep_for(2s);
 
@@ -409,7 +433,7 @@ TEST_CASE("rc_data_obj_open")
 
             // ensure all system metadata were updated properly
             const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, target_object, 0);
-            CHECK(replica_info.mtime() != replica_info.ctime());
+            CHECK(replica_info.mtime() != original_mtime_for_replica_0);
             CHECK(0 == static_cast<unsigned long>(replica_info.size()));
             CHECK(STALE_REPLICA == replica_info.replica_status());
         }
@@ -433,6 +457,9 @@ TEST_CASE("rc_data_obj_open")
                 unclosed_fd_pid = unit_test_utils::get_agent_pid(comm);
                 REQUIRE(unclosed_fd_pid > 0);
 
+                // sleep here to ensure that the mtime is updated on auto-close
+                std::this_thread::sleep_for(2s);
+
                 // disconnect without close
             }
 
@@ -444,14 +471,23 @@ TEST_CASE("rc_data_obj_open")
 
                 // ensure all system metadata were updated properly
                 const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, target_object, 0);
-                CHECK(replica_info.mtime() == replica_info.ctime());
+                CHECK(replica_info.mtime() != replica_info.ctime());
                 CHECK(0 == static_cast<unsigned long>(replica_info.size()));
                 CHECK(STALE_REPLICA == replica_info.replica_status());
             }
 
+            // sleep here to test that the mtime is NOT updated on close
+            std::this_thread::sleep_for(2s);
+
             // open for write, close
             irods::experimental::client_connection conn;
             RcComm& comm = static_cast<RcComm&>(conn);
+
+            std::string original_mtime_for_replica_0;
+            {
+                const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, target_object, 0);
+                original_mtime_for_replica_0 = replica_info.mtime();
+            }
 
             dataObjInp_t open_inp{};
             std::snprintf(open_inp.objPath, sizeof(open_inp.objPath), "%s", path_str.data());
@@ -466,7 +502,7 @@ TEST_CASE("rc_data_obj_open")
 
             // ensure all system metadata were updated properly
             const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, target_object, 0);
-            CHECK(replica_info.mtime() == replica_info.ctime());
+            CHECK(replica_info.mtime() == original_mtime_for_replica_0);
             CHECK(0 == static_cast<unsigned long>(replica_info.size()));
             CHECK(STALE_REPLICA == replica_info.replica_status());
         }
@@ -502,7 +538,7 @@ TEST_CASE("rc_data_obj_open")
 
             // ensure all system metadata were updated properly
             const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, target_object, 0);
-            CHECK(replica_info.mtime() == replica_info.ctime());
+            CHECK(replica_info.mtime() != replica_info.ctime());
             CHECK(contents.size() + 1 == static_cast<unsigned long>(replica_info.size()));
             CHECK(GOOD_REPLICA == replica_info.replica_status());
         }
@@ -532,7 +568,7 @@ TEST_CASE("rc_data_obj_open")
                 const auto bytes_written = rcDataObjWrite(&comm, &write_inp, &write_bbuf);
                 CHECK(write_bbuf.len == bytes_written);
 
-                // Sleep here to make sure that the mtime is not updated
+                // Sleep here to make sure that the mtime is updated
                 std::this_thread::sleep_for(2s);
 
                 unclosed_fd_pid = unit_test_utils::get_agent_pid(comm);
@@ -548,7 +584,7 @@ TEST_CASE("rc_data_obj_open")
             RcComm& comm = static_cast<RcComm&>(conn);
 
             const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, target_object, 0);
-            CHECK(replica_info.mtime() == replica_info.ctime());
+            CHECK(replica_info.mtime() != replica_info.ctime());
             CHECK(contents.size() + 1 == static_cast<unsigned long>(replica_info.size()));
             CHECK(STALE_REPLICA == replica_info.replica_status());
         }
@@ -562,6 +598,12 @@ TEST_CASE("rc_data_obj_open")
             unit_test_utils::create_empty_replica(comm, target_object, test_resc);
             REQUIRE(GOOD_REPLICA == replica::replica_status(comm, target_object, 0));
             REQUIRE(!replica::replica_exists(comm, target_object, 1));
+
+            std::string original_mtime_for_replica_0;
+            {
+                const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, target_object, 0);
+                original_mtime_for_replica_0 = replica_info.mtime();
+            }
 
             // Sleep to ensure that mtime updates when we write to it.
             std::this_thread::sleep_for(2s);
@@ -600,7 +642,7 @@ TEST_CASE("rc_data_obj_open")
 
             // Ensure all system metadata were updated properly
             const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, target_object, 0);
-            CHECK(replica_info.mtime() != replica_info.ctime());
+            CHECK(replica_info.mtime() != original_mtime_for_replica_0);
             CHECK(contents.size() + 1 == static_cast<unsigned long>(replica_info.size()));
         }
 
@@ -614,7 +656,13 @@ TEST_CASE("rc_data_obj_open")
             REQUIRE(GOOD_REPLICA == replica::replica_status(comm, target_object, 0));
             REQUIRE(!replica::replica_exists(comm, target_object, 1));
 
-            // Sleep to ensure that mtime correctly does not update when we create
+            std::string original_mtime_for_replica_0;
+            {
+                const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, target_object, 0);
+                original_mtime_for_replica_0 = replica_info.mtime();
+            }
+
+            // Sleep to ensure that mtime does not update when we create
             // the new replica.
             std::this_thread::sleep_for(2s);
 
@@ -648,7 +696,7 @@ TEST_CASE("rc_data_obj_open")
             // Ensure all system metadata were updated properly for the original replica.
             {
                 const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, target_object, 0);
-                CHECK(replica_info.mtime() == replica_info.ctime());
+                CHECK(replica_info.mtime() == original_mtime_for_replica_0);
                 CHECK(0 == static_cast<unsigned long>(replica_info.size()));
                 REQUIRE(STALE_REPLICA == replica::replica_status(comm, target_object, 0));
             }
@@ -656,7 +704,7 @@ TEST_CASE("rc_data_obj_open")
             // Ensure all system metadata were updated properly for the new replica.
             {
                 const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, target_object, 1);
-                CHECK(replica_info.mtime() == replica_info.ctime());
+                CHECK(replica_info.mtime() != original_mtime_for_replica_0);
                 CHECK(contents.size() + 1 == static_cast<unsigned long>(replica_info.size()));
                 REQUIRE(GOOD_REPLICA == replica::replica_status(comm, target_object, 1));
             }
@@ -673,6 +721,18 @@ TEST_CASE("rc_data_obj_open")
             unit_test_utils::replicate_data_object(comm, path_str, DEFAULT_RESOURCE_HIERARCHY);
             REQUIRE(GOOD_REPLICA == replica::replica_status(comm, target_object, 0));
             REQUIRE(GOOD_REPLICA == replica::replica_status(comm, target_object, 1));
+
+            std::string original_mtime_for_replica_0;
+            {
+                const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, target_object, 0);
+                original_mtime_for_replica_0 = replica_info.mtime();
+            }
+
+            std::string original_mtime_for_replica_1;
+            {
+                const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, target_object, 1);
+                original_mtime_for_replica_1 = replica_info.mtime();
+            }
 
             // Sleep here so that the mtime on the replica we open will be updated.
             std::this_thread::sleep_for(2s);
@@ -718,9 +778,7 @@ TEST_CASE("rc_data_obj_open")
                 CHECK(INTERMEDIATE_REPLICA == replica::replica_status(comm2, target_object, 0));
                 CHECK(WRITE_LOCKED == replica::replica_status(comm2, target_object, 1));
 
-                openedDataObjInp_t close_inp{};
-                close_inp.l1descInx = fd2;
-                REQUIRE(rcDataObjClose(&comm2, &close_inp) >= 0);
+                REQUIRE(unit_test_utils::close_replica(comm2, fd2) >= 0);
             }
 
             openedDataObjInp_t close_inp{};
@@ -732,14 +790,14 @@ TEST_CASE("rc_data_obj_open")
             // to what they were before opening.
             {
                 const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, target_object, 0);
-                CHECK(replica_info.mtime() == replica_info.ctime());
+                CHECK(replica_info.mtime() == original_mtime_for_replica_0);
                 CHECK(0 == static_cast<unsigned long>(replica_info.size()));
                 CHECK(GOOD_REPLICA == replica_info.replica_status());
             }
 
             {
                 const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, target_object, 1);
-                CHECK(replica_info.mtime() == replica_info.ctime());
+                CHECK(replica_info.mtime() == original_mtime_for_replica_1);
                 CHECK(0 == static_cast<unsigned long>(replica_info.size()));
                 CHECK(GOOD_REPLICA == replica_info.replica_status());
             }
