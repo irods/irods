@@ -1610,6 +1610,66 @@ class Test_Iadmin_Resources(resource_suite.ResourceBase, unittest.TestCase):
         # Changing vault should have failed, so make sure it has not changed
         self.admin.assert_icommand(['ilsresc', '-l', self.resc_name], 'STDOUT_SINGLELINE', 'vault: ' + self.good_vault)
 
+    def generate_invalid_resource_names(self, prefix):
+        return [
+            '{0} Resc'.format(prefix),
+            '{0}\fResc'.format(prefix),
+            '{0}\nResc'.format(prefix),
+            '{0}\rResc'.format(prefix),
+            '{0}\tResc'.format(prefix),
+            '{0}\vResc'.format(prefix)
+        ]
+
+    def test_creating_a_resource_with_whitespace_is_not_allowed__issue_5861(self):
+        expected_output = [' -859000 CAT_INVALID_RESOURCE_NAME']
+        for resc_name in self.generate_invalid_resource_names(prefix='ufs_5861'):
+            self.admin.assert_icommand(['iadmin', 'mkresc', resc_name, 'compound'], 'STDERR', expected_output)
+
+    def test_adding_a_child_resource_with_whitespace_is_not_allowed__issue_5861(self):
+        expected_output = [' -859000 CAT_INVALID_RESOURCE_NAME']
+        for resc_name in self.generate_invalid_resource_names(prefix='ufs_5861'):
+            self.admin.assert_icommand(['iadmin', 'addchildtoresc', 'demoResc', resc_name], 'STDERR', expected_output)
+            self.admin.assert_icommand(['iadmin', 'addchildtoresc', resc_name, 'demoResc'], 'STDERR', expected_output)
+
+    def test_removing_a_child_resource_with_whitespace_is_not_allowed__issue_5861(self):
+        expected_output = [' -859000 CAT_INVALID_RESOURCE_NAME']
+        for resc_name in self.generate_invalid_resource_names(prefix='ufs_5861'):
+            self.admin.assert_icommand(['iadmin', 'rmchildfromresc', 'demoResc', resc_name], 'STDERR', expected_output)
+            self.admin.assert_icommand(['iadmin', 'rmchildfromresc', resc_name, 'demoResc'], 'STDERR', expected_output)
+
+    def test_removing_a_resource_with_whitespace_is_not_allowed__issue_5861(self):
+        expected_output = [' -859000 CAT_INVALID_RESOURCE_NAME']
+        for resc_name in self.generate_invalid_resource_names(prefix='ufs_5861'):
+            self.admin.assert_icommand(['iadmin', 'rmresc', resc_name], 'STDERR', expected_output)
+
+    def test_renaming_resource_to_name_containing_whitespace_is_not_allowed__issue_5861(self):
+        try:
+            resc_name = 'ufs_5861_Resc'
+            lib.create_ufs_resource(resc_name, self.admin)
+
+            expected_output = [' -859000 CAT_INVALID_RESOURCE_NAME']
+
+            # Show that the following BAD resource names are not allowed.
+            for new_name in self.generate_invalid_resource_names(prefix='ufs_5861'):
+                self.admin.assert_icommand(['iadmin', 'modresc', resc_name, 'name', new_name], 'STDERR', expected_output, input='yes')
+
+            # Show that leading/trailing whitespace does not cause any issues.
+            for new_name in ['  ufs_5861_Resc', 'ufs_5861_Resc  ', '  ufs_5861_Resc  ',
+                             '\fufs_5861_Resc', 'ufs_5861_Resc\f', '\fufs_5861_Resc\f',
+                             '\nufs_5861_Resc', 'ufs_5861_Resc\n', '\nufs_5861_Resc\n',
+                             '\rufs_5861_Resc', 'ufs_5861_Resc\r', '\rufs_5861_Resc\r',
+                             '\tufs_5861_Resc', 'ufs_5861_Resc\t', '\tufs_5861_Resc\t',
+                             '\vufs_5861_Resc', 'ufs_5861_Resc\v', '\vufs_5861_Resc\v']:
+                # Rename the resource.
+                self.admin.assert_icommand(['iadmin', 'modresc', resc_name, 'name', new_name], 'STDOUT', [' '], input='yes')
+
+                # Restore the resource's name for the next assertion.
+                old_name = 'ufs_5861_Resc'
+                self.admin.assert_icommand(['iadmin', 'modresc', new_name, 'name', old_name], 'STDOUT', [' '], input='yes')
+
+        finally:
+            self.admin.run_icommand(['iadmin', 'rmresc', resc_name])
+
 class Test_Iadmin_Queries(resource_suite.ResourceBase, unittest.TestCase):
 
     def setUp(self):
