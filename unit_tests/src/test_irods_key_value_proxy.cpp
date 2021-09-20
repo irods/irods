@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <iterator>
 
 const std::string KEY1 = "key1";
 const std::string KEY2 = "key2";
@@ -557,3 +558,13 @@ TEST_CASE("test_proxy_lifetime_manager_getters", "[lifetime_manager]")
         clearKeyVal(&str);
     }
 } // test_proxy_lifetime_manager_getters
+
+TEST_CASE("test_key_value_proxy_iterator_throws_on_invalid_KeyValPair__issue_5865")
+{
+    REQUIRE_THROWS([] {
+        KeyValPair kvp{};
+        irods::experimental::key_value_proxy proxy{kvp};
+        std::begin(proxy);
+    }(), "cannot construct key_value_proxy::iterator");
+} // test_key_value_proxy_iterator_throws_on_invalid_KeyValPair__issue_5865
+
