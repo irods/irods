@@ -308,7 +308,7 @@ class Packager(PackagerUtilBase[PackagerOptions]):
 			src_plugins = path.join(self.options.irods_package_prefix, self.options.irods_plugsdir)
 
 		# for now, assume all we need are auth and network plugins
-		plugsdnames = ['auth', 'network']
+		plugsdnames = ['auth', 'network', 'api']
 		plugsdirs = []
 
 		for plugsdname in plugsdnames:
