@@ -159,7 +159,7 @@ namespace irods::experimental::io
     {
         using openmode = std::ios_base::openmode;
 
-        return [&_conn_pool, p = std::move(_logical_path), &_replica_id](openmode _mode, managed_dstream* _base)
+        return [&_conn_pool, p = std::move(_logical_path), repl_id = std::forward<ReplicaIdentifier>(_replica_id)](openmode _mode, managed_dstream* _base)
             -> managed_dstream
         {
             managed_dstream d{_conn_pool.get_connection()};
@@ -178,7 +178,7 @@ namespace irods::experimental::io
                               std::is_same_v<unqualified_type, io::root_resource_name>,
                               "Unsupported type for template parameter [ReplicaIdentifier].");
 
-                d.stream.open(*d.transport, p, _replica_id, _mode);
+                d.stream.open(*d.transport, p, repl_id, _mode);
             }
 
             d.rdbuf(d.stream.rdbuf());
