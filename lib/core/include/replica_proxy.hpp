@@ -350,7 +350,7 @@ namespace irods::experimental::replica
             const std::vector<std::string>& _info) -> void
         {
             namespace fs = irods::experimental::filesystem;
-            using index = detail::genquery_column_index;
+            using index = genquery_column_index;
 
             try {
                 auto proxy = replica_proxy{_doi};
