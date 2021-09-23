@@ -59,38 +59,38 @@ namespace irods::experimental::replica
         always
     };
 
+    /// \brief GenQuery columns which represent a replica
+    ///
+    /// \since 4.2.9
+    enum genquery_column_index : std::size_t
+    {
+        DATA_ID,
+        DATA_COLL_ID,
+        DATA_NAME,
+        DATA_REPL_NUM,
+        DATA_VERSION,
+        DATA_TYPE_NAME,
+        DATA_SIZE,
+        DATA_RESC_NAME,
+        DATA_PATH,
+        DATA_OWNER_NAME,
+        DATA_OWNER_ZONE,
+        DATA_REPL_STATUS,
+        DATA_STATUS,
+        DATA_CHECKSUM,
+        DATA_EXPIRY,
+        DATA_MAP_ID,
+        DATA_COMMENTS,
+        DATA_CREATE_TIME,
+        DATA_MODIFY_TIME,
+        DATA_MODE,
+        DATA_RESC_HIER,
+        DATA_RESC_ID,
+        COLL_NAME
+    };
+
     namespace detail
     {
-        /// \brief GenQuery columns which represent a replica
-        ///
-        /// \since 4.2.9
-        enum genquery_column_index : std::size_t
-        {
-            DATA_ID,
-            DATA_COLL_ID,
-            DATA_NAME,
-            DATA_REPL_NUM,
-            DATA_VERSION,
-            DATA_TYPE_NAME,
-            DATA_SIZE,
-            DATA_RESC_NAME,
-            DATA_PATH,
-            DATA_OWNER_NAME,
-            DATA_OWNER_ZONE,
-            DATA_REPL_STATUS,
-            DATA_STATUS,
-            DATA_CHECKSUM,
-            DATA_EXPIRY,
-            DATA_MAP_ID,
-            DATA_COMMENTS,
-            DATA_CREATE_TIME,
-            DATA_MODIFY_TIME,
-            DATA_MODE,
-            DATA_RESC_HIER,
-            DATA_RESC_ID,
-            COLL_NAME
-        };
-
         /// \param[in] _comm connection object
         /// \param[in] _logical_path
         ///
@@ -487,7 +487,7 @@ namespace irods::experimental::replica
     {
         const auto result = get_data_object_info(_comm, _logical_path, _replica_number).front();
 
-        std::string_view size = result[detail::genquery_column_index::DATA_SIZE];
+        std::string_view size = result[genquery_column_index::DATA_SIZE];
 
         return static_cast<std::uintmax_t>(std::stoull(size.data()));
     } // replica_size
@@ -511,7 +511,7 @@ namespace irods::experimental::replica
     {
         const auto result = get_data_object_info(_comm, _logical_path, _leaf_resource_name).front();
 
-        std::string_view size = result[detail::genquery_column_index::DATA_SIZE];
+        std::string_view size = result[genquery_column_index::DATA_SIZE];
 
         return static_cast<std::uintmax_t>(std::stoull(size.data()));
     } // replica_size
@@ -624,7 +624,7 @@ namespace irods::experimental::replica
 
         const auto result = get_data_object_info(_comm, _logical_path, _replica_number).front();
 
-        std::string_view mtime = result[detail::genquery_column_index::DATA_MODIFY_TIME];
+        std::string_view mtime = result[genquery_column_index::DATA_MODIFY_TIME];
 
         return object_time_type{std::chrono::seconds{std::stoull(mtime.data())}};
     } // last_write_time
@@ -652,7 +652,7 @@ namespace irods::experimental::replica
 
         const auto result = get_data_object_info(_comm, _logical_path, _leaf_resource_name).front();
 
-        std::string_view mtime = result[detail::genquery_column_index::DATA_MODIFY_TIME];
+        std::string_view mtime = result[genquery_column_index::DATA_MODIFY_TIME];
 
         return object_time_type{std::chrono::seconds{std::stoull(mtime.data())}};
     } // last_write_time
@@ -677,7 +677,7 @@ namespace irods::experimental::replica
     {
         const auto replica_info = get_data_object_info(_comm, _logical_path, _replica_number).front();
 
-        std::string_view resource_hierarchy = replica_info[detail::genquery_column_index::DATA_RESC_HIER];
+        std::string_view resource_hierarchy = replica_info[genquery_column_index::DATA_RESC_HIER];
 
         return detail::last_write_time_impl(_comm, _logical_path, resource_hierarchy, _new_time);
     } // last_write_time
@@ -702,7 +702,7 @@ namespace irods::experimental::replica
     {
         const auto replica_info = get_data_object_info(_comm, _logical_path, _leaf_resource_name).front();
 
-        std::string_view resource_hierarchy = replica_info[detail::genquery_column_index::DATA_RESC_HIER];
+        std::string_view resource_hierarchy = replica_info[genquery_column_index::DATA_RESC_HIER];
 
         return detail::last_write_time_impl(_comm, _logical_path, resource_hierarchy, _new_time);
     } // last_write_time
@@ -728,7 +728,7 @@ namespace irods::experimental::replica
         try {
             const auto replica_info = get_data_object_info(_comm, _logical_path, _replica_number).front();
 
-            return replica_info[detail::genquery_column_index::DATA_RESC_NAME];
+            return replica_info[genquery_column_index::DATA_RESC_NAME];
         }
         catch (const irods::exception& e) {
             if (CAT_NO_ROWS_FOUND == e.code()) {
@@ -759,7 +759,7 @@ namespace irods::experimental::replica
         try {
             const auto replica_info = get_data_object_info(_comm, _logical_path, _leaf_resource_name).front();
 
-            return std::stoi(replica_info[detail::genquery_column_index::DATA_REPL_NUM]);
+            return std::stoi(replica_info[genquery_column_index::DATA_REPL_NUM]);
         }
         catch (const irods::exception& e) {
             if (CAT_NO_ROWS_FOUND == e.code()) {
@@ -852,7 +852,7 @@ namespace irods::experimental::replica
     {
         const auto result = get_data_object_info(_comm, _logical_path, _replica_number).front();
 
-        std::string_view status = result[detail::genquery_column_index::DATA_REPL_STATUS];
+        std::string_view status = result[genquery_column_index::DATA_REPL_STATUS];
 
         return static_cast<int>(std::stoi(status.data()));
     } // replica_status
@@ -876,7 +876,7 @@ namespace irods::experimental::replica
     {
         const auto result = get_data_object_info(_comm, _logical_path, _leaf_resource_name).front();
 
-        std::string_view status = result[detail::genquery_column_index::DATA_REPL_STATUS];
+        std::string_view status = result[genquery_column_index::DATA_REPL_STATUS];
 
         return static_cast<int>(std::stoi(status.data()));
     } // replica_status
@@ -900,8 +900,8 @@ namespace irods::experimental::replica
     {
         const auto result = get_data_object_info(_comm, _logical_path, _replica_number).front();
 
-        std::string_view hierarchy = result[detail::genquery_column_index::DATA_RESC_HIER];
-        std::string_view physical_path = result[detail::genquery_column_index::DATA_PATH];
+        std::string_view hierarchy = result[genquery_column_index::DATA_RESC_HIER];
+        std::string_view physical_path = result[genquery_column_index::DATA_PATH];
 
         return detail::get_replica_size_from_storage_impl(_comm, _logical_path, hierarchy, physical_path);
     } // get_replica_size_from_storage
@@ -925,8 +925,8 @@ namespace irods::experimental::replica
     {
         const auto result = get_data_object_info(_comm, _logical_path, _leaf_resource_name).front();
 
-        std::string_view hierarchy = result[detail::genquery_column_index::DATA_RESC_HIER];
-        std::string_view physical_path = result[detail::genquery_column_index::DATA_PATH];
+        std::string_view hierarchy = result[genquery_column_index::DATA_RESC_HIER];
+        std::string_view physical_path = result[genquery_column_index::DATA_PATH];
 
         return detail::get_replica_size_from_storage_impl(_comm, _logical_path, hierarchy, physical_path);
     } // get_replica_size_from_storage

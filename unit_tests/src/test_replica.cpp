@@ -220,7 +220,7 @@ TEST_CASE("replica", "[replica]")
         // get info from the catalog once
         auto result = replica::get_data_object_info(comm, target_object, resc_name).front();
 
-        std::string_view physical_path = result[replica::detail::genquery_column_index::DATA_PATH];
+        std::string_view physical_path = result[replica::genquery_column_index::DATA_PATH];
 
         // size in storage
         REQUIRE(object_content.length() == replica::get_replica_size_from_storage(comm, target_object, resc_name, physical_path));
