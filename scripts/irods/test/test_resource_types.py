@@ -12,6 +12,7 @@ import tempfile
 from threading import Timer
 import time
 import ustrings
+import socket
 
 if sys.version_info < (2, 7):
     import unittest2 as unittest
@@ -2406,6 +2407,45 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         if os.path.exists(filepath):
             os.unlink(filepath)
 
+    def test_archive_only_replica_does_not_result_in_SYS_REPLICA_DOES_NOT_EXIST__issue_5847(self):
+        data_object = 'data_object_issue_5847'
+        new_data_object = data_object + '.copied'
+
+        comp_resc = 'comp_resc_5847'
+        cache_resc = 'cache_resc_5847'
+        archive_resc = 'archive_resc_5847'
+
+        try:
+            # Create resources.
+            self.admin.assert_icommand(['iadmin', 'mkresc', comp_resc, 'compound'], 'STDOUT', [comp_resc])
+
+            vault = socket.gethostname() + ':/tmp/' + cache_resc + '_vault'
+            self.admin.assert_icommand(['iadmin', 'mkresc', cache_resc, 'unixfilesystem', vault], 'STDOUT', [cache_resc])
+
+            vault = socket.gethostname() + ':/tmp/' + archive_resc + '_vault'
+            self.admin.assert_icommand(['iadmin', 'mkresc', archive_resc, 'unixfilesystem', vault], 'STDOUT', [archive_resc])
+
+            # Create resource tree.
+            self.admin.assert_icommand(['iadmin', 'addchildtoresc', comp_resc, cache_resc, 'cache'])
+            self.admin.assert_icommand(['iadmin', 'addchildtoresc', comp_resc, archive_resc, 'archive'])
+
+            # Create a new data object on the compound resource and trim the replica on the cache resource.
+            # We expect replica zero to be on the cache resource.
+            self.admin.assert_icommand(['istream', 'write', '-R', comp_resc, data_object], input='testing issue 5847')
+            self.admin.assert_icommand(['itrim', '-N1', '-n0', data_object], 'STDOUT', ['files trimmed = 1'])
+
+            # Show that copying the data object does not result in an error.
+            self.admin.assert_icommand(['icp', data_object, new_data_object])
+            self.admin.assert_icommand(['ils', new_data_object], 'STDOUT', [os.path.join(self.admin.session_collection, new_data_object)])
+
+        finally:
+            self.admin.run_icommand(['irm', '-f', data_object])
+            self.admin.run_icommand(['irm', '-f', new_data_object])
+            self.admin.run_icommand(['iadmin', 'rmchildfromresc', comp_resc, cache_resc])
+            self.admin.run_icommand(['iadmin', 'rmchildfromresc', comp_resc, archive_resc])
+            self.admin.run_icommand(['iadmin', 'rmresc', archive_resc])
+            self.admin.run_icommand(['iadmin', 'rmresc', cache_resc])
+            self.admin.run_icommand(['iadmin', 'rmresc', comp_resc])
 
 class Test_Resource_ReplicationWithinReplication(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
@@ -3297,88 +3337,73 @@ class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDev
     ###################
 
     def test_irepl_update_replicas(self):
-        # local setup
+        # Local setup
         filename = "updatereplicasfile.txt"
         filepath = lib.create_local_testfile(filename)
-        hostname = lib.get_hostname()
-        hostuser = getpass.getuser()
         doublefile = "doublefile.txt"
-        os.system("cat %s %s > %s" % (filename, filename, doublefile))
-        doublesize = str(os.stat(doublefile).st_size)
+        os.system("cat {0} {1} > {2}".format(filename, filename, doublefile))
 
-        # assertions
-        self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create third resource
-        self.admin.assert_icommand("iadmin mkresc fourthresc unixfilesystem %s:/tmp/%s/fourthrescVault" %
-                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create fourth resource
-        self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")              # should not be listed
-        self.admin.assert_icommand("iput " + filename)                                         # put file
-        # replicate to test resource
-        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
-        # replicate to third resource
-        self.admin.assert_icommand("irepl -R thirdresc " + filename)
-        # replicate to fourth resource
-        self.admin.assert_icommand("irepl -R fourthresc " + filename)
-        # repave overtop test resource
-        self.admin.assert_icommand("iput -f -R " + self.testresc + " " + doublefile + " " + filename)
-        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', filename)                       # for debugging
+        try:
+            # Create third and fourth resources
+            lib.create_ufs_resource('thirdresc', self.admin)
+            lib.create_ufs_resource('fourthresc', self.admin)
 
-        # should have a dirty copy
-        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 0 ", " & " + filename])
-        # should have a dirty copy
-        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 1 ", " & " + filename])
-        # should have a dirty copy
-        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 2 ", " & " + filename])
-        # should have a dirty copy
-        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 3 ", " & " + filename])
-        # should have a clean copy
-        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 4 ", " & " + filename])
-        # should have a dirty copy
-        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 5 ", " & " + filename])
-        # should have a dirty copy
-        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 6 ", " & " + filename])
+            # Show that the target data object does not exist.
+            self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")
 
-        self.admin.assert_icommand(['irepl', '-R', 'fourthresc', filename])                # update last replica
+            # Create the test data object.
+            self.admin.assert_icommand("iput " + filename)
 
-        # should have a dirty copy
-        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 0 ", " & " + filename])
-        # should have a dirty copy
-        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 1 ", " & " + filename])
-        # should have a dirty copy
-        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 2 ", " & " + filename])
-        # should have a dirty copy
-        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 3 ", " & " + filename])
-        # should have a clean copy
-        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 4 ", " & " + filename])
-        # should have a dirty copy
-        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 5 ", " & " + filename])
-        # should have a clean copy
-        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 6 ", " & " + filename])
+            # Replicate to other resources.
+            self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
+            self.admin.assert_icommand("irepl -R thirdresc " + filename)
+            self.admin.assert_icommand("irepl -R fourthresc " + filename)
 
-        self.admin.assert_icommand("irepl -aU " + filename)                                # update all replicas
+            # Repave overtop the test resource's replica.
+            self.admin.assert_icommand("iput -f -R " + self.testresc + " " + doublefile + " " + filename)
+            self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', filename) # For debugging
 
-        # should have a clean copy
-        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 0 ", " & " + filename])
-        # should have a clean copy
-        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 1 ", " & " + filename])
-        # should have a clean copy
-        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 2 ", " & " + filename])
-        # should have a clean copy
-        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 3 ", " & " + filename])
-        # should have a clean copy
-        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 4 ", " & " + filename])
-        # should have a clean copy
-        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 5 ", " & " + filename])
-        # should have a clean copy
-        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 6 ", " & " + filename])
+            # All replicas should be marked as stale except for replica four.
+            self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 0 ", " & " + filename])
+            self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 1 ", " & " + filename])
+            self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 2 ", " & " + filename])
+            self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 3 ", " & " + filename])
+            self.admin.assert_icommand(     "ils -L " + filename, 'STDOUT_SINGLELINE', [" 4 ", " & " + filename])
+            self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 5 ", " & " + filename])
+            self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 6 ", " & " + filename])
 
-        self.admin.assert_icommand("irm -f " + filename)                                   # cleanup file
-        self.admin.assert_icommand("iadmin rmresc thirdresc")                            # remove third resource
-        self.admin.assert_icommand("iadmin rmresc fourthresc")                           # remove third resource
+            # Update the last replica.
+            self.admin.assert_icommand(['irepl', '-R', 'fourthresc', filename])
 
-        # local cleanup
-        os.remove(filepath)
-        os.remove(doublefile)
+            # All replicas should be marked as stale except for replicas four and six.
+            self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 0 ", " & " + filename])
+            self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 1 ", " & " + filename])
+            self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 2 ", " & " + filename])
+            self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 3 ", " & " + filename])
+            self.admin.assert_icommand(     "ils -L " + filename, 'STDOUT_SINGLELINE', [" 4 ", " & " + filename])
+            self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 5 ", " & " + filename])
+            self.admin.assert_icommand(     "ils -L " + filename, 'STDOUT_SINGLELINE', [" 6 ", " & " + filename])
+
+            # Update all replicas.
+            self.admin.assert_icommand("irepl -aU " + filename)
+
+            # All replicas should be marked as good.
+            self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 0 ", " & " + filename])
+            self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 1 ", " & " + filename])
+            self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 2 ", " & " + filename])
+            self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 3 ", " & " + filename])
+            self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 4 ", " & " + filename])
+            self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 5 ", " & " + filename])
+            self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 6 ", " & " + filename])
+
+        finally:
+            self.admin.run_icommand(['irm', '-f', filename])
+            self.admin.run_icommand(['iadmin', 'rmresc', 'thirdresc'])
+            self.admin.run_icommand(['iadmin', 'rmresc', 'fourthresc'])
+
+            # Local cleanup.
+            os.remove(filepath)
+            os.remove(doublefile)
 
     def test_irepl_over_existing_second_replica__ticket_1705(self):
         # local setup

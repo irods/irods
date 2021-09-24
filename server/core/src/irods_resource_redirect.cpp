@@ -1,5 +1,3 @@
-// =-=-=-=-=-=-=
-// irods includes
 #include "miscServerFunct.hpp"
 #include "objInfo.h"
 #include "dataObjCreate.h"
@@ -9,8 +7,6 @@
 #include "getRescQuota.h"
 #include "rsDataObjCreate.hpp"
 #include "rsGetRescQuota.hpp"
-
-// =-=-=-=-=-=-=
 #include "irods_resource_redirect.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_resource_backport.hpp"
@@ -302,7 +298,20 @@ namespace irods
         file_obj->logical_path(data_obj_inp.objPath);
         error fac_err = file_object_factory(comm, &data_obj_inp, file_obj, data_obj_info);
         auto fobj_tuple = std::make_tuple(file_obj, fac_err);
-        return resolve_resource_hierarchy(comm, oper, data_obj_inp, fobj_tuple);
+        auto result = resolve_resource_hierarchy(comm, oper, data_obj_inp, fobj_tuple);
+
+        if (data_obj_info && *data_obj_info) {
+            freeAllDataObjInfo(*data_obj_info);
+        }
+
+        // Resolving the resource hierarchy can result in the replica information previously
+        // captured in "data_obj_info" to be out-of-date. Refetch the replica information so
+        // that subsequent API calls have the latest information.
+        file_obj.reset(new file_object());
+        file_obj->logical_path(data_obj_inp.objPath);
+        file_object_factory(comm, &data_obj_inp, file_obj, data_obj_info);
+
+        return result;
     } // resolve_resource_hierarchy
 
     irods::resolve_hierarchy_result_type resolve_resource_hierarchy(
