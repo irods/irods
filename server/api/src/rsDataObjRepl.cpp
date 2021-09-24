@@ -448,12 +448,14 @@ namespace
 
         if (!irods::experimental::keyword_has_a_value(_inp.condInput, DEST_RESC_HIER_STR_KW) &&
             !irods::experimental::keyword_has_a_value(_inp.condInput, DEST_RESC_NAME_KW) &&
-            irods::experimental::keyword_has_a_value(_inp.condInput, DEF_RESC_NAME_KW)) {
+            irods::experimental::keyword_has_a_value(_inp.condInput, DEF_RESC_NAME_KW))
+        {
             cond_input[DEST_RESC_NAME_KW] = cond_input.at(DEF_RESC_NAME_KW).value();
         }
 
         if (irods::experimental::keyword_has_a_value(_inp.condInput, DEST_RESC_NAME_KW) &&
-            irods::hierarchy_parser{cond_input.at(DEST_RESC_NAME_KW).value().data()}.num_levels() > 1) {
+            irods::hierarchy_parser{cond_input.at(DEST_RESC_NAME_KW).value().data()}.num_levels() > 1)
+        {
             THROW(DIRECT_CHILD_ACCESS, fmt::format(
                 "specified resource [{}] is not a root resource",
                 cond_input.at(DEST_RESC_NAME_KW).value()));
@@ -807,12 +809,14 @@ namespace
                 destination_replica.vote()));
 
             if (irods::replication::is_allowed(_comm, source_replica, destination_replica, irods::replication::log_errors::no) &&
-                destination_replica.vote() > irv::vote::zero) {
+                destination_replica.vote() > irv::vote::zero)
+            {
                 destination_cond_input[RESC_HIER_STR_KW] = destination_replica.resc_hier();
                 destination_cond_input[DEST_RESC_HIER_STR_KW] = destination_replica.resc_hier();
 
                 if (const int ec = replicate_data(_comm, source_inp, destination_inp, _stat);
-                    ec < 0 && status >= 0) {
+                    ec < 0 && status >= 0)
+                {
                     status = ec;
                 }
             }

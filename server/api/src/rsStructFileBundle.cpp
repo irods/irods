@@ -70,8 +70,7 @@ int rsStructFileBundle(
     rstrcpy(data_inp.objPath, structFileBundleInp->objPath, MAX_NAME_LEN);
     copyKeyVal( &structFileBundleInp->condInput, &data_inp.condInput );
 
-    dataObjInfo_t info{};
-    dataObjInfo_t* ip{&info};
+    DataObjInfo* ip{};
     const char* h{getValByKey(&structFileBundleInp->condInput, RESC_HIER_STR_KW)};
     if (!h) {
         irods::error ret = irods::resource_redirect(irods::CREATE_OPERATION, rsComm, &data_inp, hier, host, local, &ip);
