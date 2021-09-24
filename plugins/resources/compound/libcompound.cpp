@@ -1,5 +1,3 @@
-// =-=-=-=-=-=-=-
-// irods includes
 #include "msParam.h"
 #include "generalAdmin.h"
 #include "physPath.hpp"
@@ -11,8 +9,6 @@
 #include "rsFileStageToCache.hpp"
 #include "rsFileSyncToArch.hpp"
 #include "dataObjOpr.hpp"
-
-// =-=-=-=-=-=-=-
 #include "irods_resource_plugin.hpp"
 #include "irods_file_object.hpp"
 #include "irods_physical_object.hpp"
@@ -27,21 +23,17 @@
 #include "irods_random.hpp"
 #include "irods_at_scope_exit.hpp"
 
-// =-=-=-=-=-=-=-
-// stl includes
-#include <iostream>
-#include <sstream>
-#include <vector>
-#include <string>
-#include <string_view>
-
-// =-=-=-=-=-=-=-
-// boost includes
 #include <boost/lexical_cast.hpp>
 #include <boost/function.hpp>
 #include <boost/any.hpp>
 
 #include <fmt/format.h>
+
+#include <iostream>
+#include <sstream>
+#include <vector>
+#include <string>
+#include <string_view>
 
 /// =-=-=-=-=-=-=-
 /// @brief constant to reference the operation type for
@@ -85,6 +77,37 @@ namespace
 
         return itr->repl_num();
     } // get_archive_replica_number
+
+    auto get_child_resource(const std::string_view _compound_resc_name,
+                            const std::string_view _compound_context_type) -> irods::resource_ptr
+    {
+        irods::resource_ptr resc;
+
+        // Resolve the resource name to a resource object.
+        if (const auto err = resc_mgr.resolve(_compound_resc_name.data(), resc); !err.ok()) {
+            return nullptr;
+        }
+
+        std::vector<std::string> children;
+        resc->children(children);
+
+        for (auto&& name : children) {
+            if (const auto err = resc_mgr.resolve(name, resc); !err.ok()) {
+                irods::log(err);
+                continue;
+            }
+
+            // Get the type of the child resource (i.e. cache or archive).
+            std::string context;
+            resc->get_property(irods::RESOURCE_PARENT_CONTEXT, context);
+
+            if (_compound_context_type == context) {
+                return resc;
+            }
+        }
+
+        return nullptr;
+    }
 } // anonymous namespace
 
 /// =-=-=-=-=-=-=-
@@ -166,9 +189,8 @@ irods::error get_next_child(
 
 /// =-=-=-=-=-=-=-
 /// @brief helper function to get the cache resource
-irods::error get_cache(
-    irods::plugin_context& _ctx,
-    irods::resource_ptr&            _resc ) {
+irods::error get_cache(irods::plugin_context& _ctx, irods::resource_ptr& _resc)
+{
     // =-=-=-=-=-=-=-
     // check the context for validity
     irods::error ret = compound_check_param< irods::file_object >( _ctx );
@@ -179,9 +201,26 @@ irods::error get_cache(
     // =-=-=-=-=-=-=-
     // get the cache name
     std::string resc_name;
-    ret = _ctx.prop_map().get< std::string >( CACHE_CONTEXT_TYPE, resc_name );
-    if ( !ret.ok() ) {
-        return PASS( ret );
+    ret = _ctx.prop_map().get<std::string>(CACHE_CONTEXT_TYPE, resc_name);
+    if (!ret.ok()) {
+        // Before returning the error, try finding the cache resource via the resource
+        // manager. There are cases where the compound resource will not have the context type
+        // for its children.
+
+        const auto comp_resc_name = get_resource_name(_ctx);
+
+        if (auto child_resc = get_child_resource(comp_resc_name, CACHE_CONTEXT_TYPE); child_resc) {
+            std::string name;
+
+            if (const auto err = child_resc->get_property(irods::RESOURCE_NAME, name); err.ok()) {
+                if (const auto err = _ctx.prop_map().set<std::string>(CACHE_CONTEXT_TYPE, name); err.ok()) {
+                    _resc = child_resc;
+                    return SUCCESS();
+                }
+            }
+        }
+
+        return PASS(ret);
     }
 
     // =-=-=-=-=-=-=-
@@ -250,41 +289,31 @@ irods::error get_archive(
 
 /// =-=-=-=-=-=-=-
 /// @brief Returns the cache resource making sure it corresponds to the fco resc hier
-template< typename DEST_TYPE >
-irods::error get_cache_resc(
-    irods::plugin_context& _ctx,
-    irods::resource_ptr&            _resc ) {
-    irods::error result = SUCCESS();
-    irods::error ret;
+template <typename DEST_TYPE>
+irods::error get_cache_resc(irods::plugin_context& _ctx, irods::resource_ptr& _resc)
+{
     irods::resource_ptr next_resc;
 
-    // =-=-=-=-=-=-=-
-    // get the cache resource
-    if ( !( ret = get_cache( _ctx, _resc ) ).ok() ) {
-        std::stringstream msg;
-        msg << "Failed to get cache resource.";
-        result = PASSMSG( msg.str(), ret );
+    // Get the cache resource.
+    if (const auto err = get_cache(_ctx, _resc); !err.ok()) {
+        return PASSMSG("Failed to get cache resource.", err);
     }
 
-    // get the next child resource in the hierarchy
-    else if ( !( ret = get_next_child< DEST_TYPE >( _ctx, next_resc ) ).ok() ) {
-        std::stringstream msg;
-        msg << "Failed to get next child resource.";
-        result = PASSMSG( msg.str(), ret );
+    // Get the next child resource in the hierarchy.
+    if (const auto err  = get_next_child<DEST_TYPE>(_ctx, next_resc); !err.ok()) {
+        return PASSMSG("Failed to get the next child resource.", err);
     }
 
-    // Make sure the file object came from the cache resource
-    else if ( _resc != next_resc ) {
-        boost::shared_ptr< DEST_TYPE > obj = boost::dynamic_pointer_cast< DEST_TYPE >( _ctx.fco() );
-        std::stringstream msg;
-        msg << "Cannot open data object: \"";
-        msg << obj->physical_path();
-        msg << "\" It is stored in an archive resource which is not directly accessible.";
-        result = ERROR( DIRECT_ARCHIVE_ACCESS, msg.str() );
+    // Make sure the file object came from the cache resource.
+    if (_resc != next_resc) {
+        boost::shared_ptr<DEST_TYPE> obj = boost::dynamic_pointer_cast<DEST_TYPE>(_ctx.fco());
+        auto msg = fmt::format("Cannot open data object [{}]. It is stored in an archive "
+                               "resource which is not directly accessible.",
+                               obj->physical_path());
+        return ERROR(DIRECT_ARCHIVE_ACCESS, std::move(msg));
     }
 
-    return result;
-
+    return SUCCESS();
 } // get_cache_resc
 
 // =-=-=-=-=-=-=-
@@ -826,8 +855,8 @@ irods::error compound_file_create(
 
 /// =-=-=-=-=-=-=-
 /// @brief interface for POSIX Open
-irods::error compound_file_open(
-    irods::plugin_context& _ctx ) {
+irods::error compound_file_open(irods::plugin_context& _ctx)
+{
     // =-=-=-=-=-=-=-
     // check the context for validity
     irods::error ret = compound_check_param< irods::file_object >( _ctx );
@@ -839,23 +868,18 @@ irods::error compound_file_open(
     // get the cache resource
     irods::resource_ptr cache_resc;
     if ( !( ret = get_cache_resc< irods::file_object >( _ctx, cache_resc ) ).ok() ) {
-        std::stringstream msg;
-        msg << "Failed to get cache resource.";
-        return PASSMSG( msg.str(), ret );
+        return PASSMSG( "Failed to get cache resource.", ret );
     }
 
     // =-=-=-=-=-=-=-
     // forward the call
     return cache_resc->call( _ctx.comm(), irods::RESOURCE_OP_OPEN, _ctx.fco() );
-
 } // compound_file_open
 
 /// =-=-=-=-=-=-=-
 /// @brief interface for POSIX Read
-irods::error compound_file_read(
-    irods::plugin_context& _ctx,
-    void*                  _buf,
-    const int              _len ) {
+irods::error compound_file_read(irods::plugin_context& _ctx, void* _buf, int _len)
+{
     // =-=-=-=-=-=-=-
     // check the context for validity
     irods::error ret = compound_check_param< irods::file_object >( _ctx );
@@ -873,8 +897,7 @@ irods::error compound_file_read(
 
     // =-=-=-=-=-=-=-
     // forward the call
-    return resc->call< void*, const int >( _ctx.comm(), irods::RESOURCE_OP_READ, _ctx.fco(), _buf, _len );
-
+    return resc->call< void*, int >( _ctx.comm(), irods::RESOURCE_OP_READ, _ctx.fco(), _buf, _len );
 } // compound_file_read
 
 /// =-=-=-=-=-=-=-
@@ -1402,11 +1425,12 @@ irods::error compound_file_notify(
 // =-=-=-=-=-=-=-
 /// @brief - code to determine redirection for create operation
 irods::error compound_file_redirect_create(
-    irods::plugin_context& _ctx,
-    const std::string&               _operation,
-    const std::string*               _curr_host,
-    irods::hierarchy_parser*        _out_parser,
-    float*                           _out_vote ) {
+    irods::plugin_context&   _ctx,
+    const std::string&       _operation,
+    const std::string*       _curr_host,
+    irods::hierarchy_parser* _out_parser,
+    float*                   _out_vote)
+{
     // =-=-=-=-=-=-=-
     // determine if the resource is down
     int resc_status = 0;
@@ -1418,7 +1442,7 @@ irods::error compound_file_redirect_create(
     // =-=-=-=-=-=-=-
     // if the status is down, vote no.
     if ( INT_RESC_STATUS_DOWN == resc_status ) {
-        ( *_out_vote ) = 0.0;
+        *_out_vote = 0.0f;
         return SUCCESS();
     }
 
@@ -1432,11 +1456,10 @@ irods::error compound_file_redirect_create(
 
     // =-=-=-=-=-=-=-
     // ask the cache if it is willing to accept a new file, politely
-    ret = resc->call < const std::string*, const std::string*,
-    irods::hierarchy_parser*, float* > (
+    ret = resc->call<const std::string*, const std::string*, irods::hierarchy_parser*, float*>(
         _ctx.comm(), irods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(),
         &_operation, _curr_host,
-        _out_parser, _out_vote );
+        _out_parser, _out_vote);
 
     // =-=-=-=-=-=-=-
     // set the operation type to signal that we need to do some work
@@ -1522,11 +1545,11 @@ irods::error compound_file_redirect_unlink(
 // =-=-=-=-=-=-=-
 /// @brief - handler for prefer archive policy
 irods::error open_for_prefer_archive_policy(
-    irods::plugin_context& _ctx,
-    const std::string&               _curr_host,
-    irods::hierarchy_parser&        _out_parser,
-    float&                           _out_vote ) {
-
+    irods::plugin_context&   _ctx,
+    const std::string&       _curr_host,
+    irods::hierarchy_parser& _out_parser,
+    float&                   _out_vote)
+{
     // =-=-=-=-=-=-=-
     // get the archive resource
     irods::resource_ptr arch_resc;
@@ -1536,7 +1559,7 @@ irods::error open_for_prefer_archive_policy(
     }
 
     // =-=-=-=-=-=-=-
-    // get the archive resource
+    // get the cache resource
     irods::resource_ptr cache_resc;
     ret = get_cache( _ctx, cache_resc );
     if ( !ret.ok() ) {
@@ -1555,7 +1578,7 @@ irods::error open_for_prefer_archive_policy(
     int repl_requested = f_ptr->repl_requested();
     const irods::at_scope_exit restore_repl_requested{[&] { f_ptr->repl_requested(repl_requested); }};
 
-    float                    arch_check_vote   = 0.0;
+    float arch_check_vote = 0.0f;
     irods::hierarchy_parser arch_check_parser = _out_parser;
 
     try {
@@ -1565,11 +1588,10 @@ irods::error open_for_prefer_archive_policy(
 
         // =-=-=-=-=-=-=-
         // ask the archive if it has the data object in question, politely
-        ret = arch_resc->call < const std::string*, const std::string*,
-        irods::hierarchy_parser*, float* > (
+        ret = arch_resc->call<const std::string*, const std::string*, irods::hierarchy_parser*, float*>(
             _ctx.comm(), irods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(),
             &operation, &_curr_host,
-            &arch_check_parser, &arch_check_vote );
+            &arch_check_parser, &arch_check_vote);
     }
     catch (const irods::exception& e) {
         // continue to the cache vote because failed vote isn't necessarily an error
@@ -1586,18 +1608,17 @@ irods::error open_for_prefer_archive_policy(
         // the archive query redirect failed, something terrible happened
         // or mounted collection hijinks are afoot.  ask the cache if it
         // has the data object in question, politely as a fallback
-        float                    cache_check_vote   = 0.0;
+        float cache_check_vote = 0.0;
         irods::hierarchy_parser cache_check_parser = _out_parser;
-        ret = cache_resc->call < const std::string*, const std::string*,
-        irods::hierarchy_parser*, float* > (
+        ret = cache_resc->call<const std::string*, const std::string*, irods::hierarchy_parser*, float*>(
             _ctx.comm(), irods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(),
             &operation, &_curr_host,
-            &cache_check_parser, &cache_check_vote );
+            &cache_check_parser, &cache_check_vote);
         if ( !ret.ok() ) {
             return PASS( ret );
         }
 
-        if( 0.0 == cache_check_vote ) {
+        if (0.0 == cache_check_vote ) {
             _out_vote = 0.0;
             return SUCCESS();
         }
@@ -1605,30 +1626,23 @@ irods::error open_for_prefer_archive_policy(
         // =-=-=-=-=-=-=-
         // set the vote and hier parser
         _out_parser = cache_check_parser;
-        _out_vote   = cache_check_vote;
+        _out_vote = cache_check_vote;
 
         return SUCCESS();
-
     }
 
-    irods::data_object_ptr d_ptr = boost::dynamic_pointer_cast <
-                                   irods::data_object > ( f_ptr );
-    add_key_val(
-        d_ptr,
-        NO_CHK_COPY_LEN_KW,
-        "prefer_archive_policy" );
+    irods::data_object_ptr d_ptr = boost::dynamic_pointer_cast<irods::data_object>(f_ptr);
+    add_key_val(d_ptr, NO_CHK_COPY_LEN_KW, "prefer_archive_policy");
 
     // =-=-=-=-=-=-=-
     // if the vote is 0 then we do a wholesale stage, not an update
-    // otherwise it is an update operation for the stage to cache
-    ret = repl_object( _ctx, _out_parser, STAGE_OBJ_KW );
+    // otherwise it is an update operation for the stage to cache.
+    ret = repl_object(_ctx, _out_parser, STAGE_OBJ_KW);
     if ( !ret.ok() ) {
         return PASS( ret );
     }
 
-    remove_key_val(
-        d_ptr,
-        NO_CHK_COPY_LEN_KW );
+    remove_key_val(d_ptr, NO_CHK_COPY_LEN_KW);
 
     // =-=-=-=-=-=-=-
     // get the parent name
@@ -1639,10 +1653,8 @@ irods::error open_for_prefer_archive_policy(
     }
 
     std::string parent_name;
-    ret = resc_mgr.resc_id_to_name(
-             parent_id_str,
-             parent_name );
-    if(!ret.ok()) {
+    ret = resc_mgr.resc_id_to_name(parent_id_str, parent_name);
+    if (!ret.ok()) {
         return PASS(ret);
     }
 
@@ -1662,7 +1674,6 @@ irods::error open_for_prefer_archive_policy(
         return PASS( ret );
     }
 
-
     // =-=-=-=-=-=-=-
     // get the current hier
     std::string inp_hier = _out_parser.str();
@@ -1671,10 +1682,8 @@ irods::error open_for_prefer_archive_policy(
     // find the parent in the hier
     // TODO: the input hierarchy is some other hierarchy
     size_t pos = inp_hier.find( parent_name );
-    if ( std::string::npos == pos ) {
-        return ERROR(
-                   SYS_INVALID_INPUT_PARAM,
-                   "parent resc not in fco resc hier" );
+    if (std::string::npos == pos) {
+        return ERROR(SYS_INVALID_INPUT_PARAM, "parent resc not in fco resc hier");
     }
 
     // =-=-=-=-=-=-=-
@@ -1696,7 +1705,6 @@ irods::error open_for_prefer_archive_policy(
     _out_vote = arch_check_vote;
 
     return SUCCESS();
-
 } // open_for_prefer_archive_policy
 
 // =-=-=-=-=-=-=-
@@ -1795,13 +1803,18 @@ irods::error open_for_prefer_cache_policy(
 
         // =-=-=-=-=-=-=-
         // ask the archive if it has the data object in question, politely
-        float                    arch_check_vote   = 0.0;
-        irods::hierarchy_parser arch_check_parser = ( *_out_parser );
-        ret = arch_resc->call < const std::string*, const std::string*,
-        irods::hierarchy_parser*, float* > (
-            _ctx.comm(), irods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(),
-            &operation, _curr_host,
-            &arch_check_parser, &arch_check_vote );
+        float arch_check_vote  = 0.0;
+        irods::hierarchy_parser arch_check_parser = *_out_parser;
+
+        ret = arch_resc->call<const std::string*, const std::string*, irods::hierarchy_parser*, float*>(
+            _ctx.comm(),
+            irods::RESOURCE_OP_RESOLVE_RESC_HIER,
+            _ctx.fco(),
+            &operation,
+            _curr_host,
+            &arch_check_parser,
+            &arch_check_vote);
+
         if ( !ret.ok() ) {
             irods::log(ret);
             return PASS( ret );
@@ -1818,6 +1831,8 @@ irods::error open_for_prefer_cache_policy(
             return SUCCESS();
         }
 
+        const auto old_resc_hier = f_ptr->resc_hier();
+
         // =-=-=-=-=-=-=-
         // repave the resc hier with the archive hier which guarantees that
         // we are in the hier for the repl to do its magic. this is a hack,
@@ -1825,6 +1840,11 @@ irods::error open_for_prefer_cache_policy(
         std::string arch_hier;
         arch_check_parser.str( arch_hier );
         f_ptr->resc_hier( arch_hier );
+
+        // Make sure the file object's resource hierarchy is restored on exit.
+        irods::at_scope_exit restore_resc_hier{[&old_resc_hier, f_ptr] {
+            f_ptr->resc_hier(old_resc_hier);
+        }};
 
         // =-=-=-=-=-=-=-
         // if the archive has it, then replicate
@@ -1837,15 +1857,8 @@ irods::error open_for_prefer_cache_policy(
         // restore repl requested
         f_ptr->repl_requested( repl_requested );
 
-        // =-=-=-=-=-=-=-
-        // now that the repl happened, we will assume that the
-        // object is in the cache as to not hit the DB again
-        // the first vote was zero so we must add the name to
-        // the resource hierarchy
         ( *_out_parser ) = cache_check_parser;
         ( *_out_vote ) = arch_check_vote;
-        std::string hier;
-        cache_check_parser.str(hier);
     }
     else {
         // =-=-=-=-=-=-=-
@@ -1855,7 +1868,6 @@ irods::error open_for_prefer_cache_policy(
     }
 
     return SUCCESS();
-
 } // open_for_prefer_cache_policy
 
 // =-=-=-=-=-=-=-
@@ -1863,11 +1875,11 @@ irods::error open_for_prefer_cache_policy(
 ///          determine the user set policy for staging to cache
 ///          otherwise the default is to compare checksum
 irods::error compound_file_redirect_open(
-    irods::plugin_context& _ctx,
-    const std::string*               _opr,
-    const std::string*               _curr_host,
-    irods::hierarchy_parser*        _out_parser,
-    float*                           _out_vote )
+    irods::plugin_context&   _ctx,
+    const std::string*       _opr,
+    const std::string*       _curr_host,
+    irods::hierarchy_parser* _out_parser,
+    float*                   _out_vote)
 {
     // =-=-=-=-=-=-=-
     // check incoming parameters
@@ -1909,20 +1921,15 @@ irods::error compound_file_redirect_open(
     }
 
     // =-=-=-=-=-=-=-
-    // if the policy is always, then if the archive has it
+    // if the policy is "always", then if the archive has it
     // stage from archive to cache and return an upvote
-    else if ( irods::RESOURCE_STAGE_PREFER_ARCHIVE == policy ) {
+    if ( irods::RESOURCE_STAGE_PREFER_ARCHIVE == policy ) {
         return open_for_prefer_archive_policy( _ctx, *_curr_host, *_out_parser, *_out_vote );
     }
-    else {
-        std::stringstream msg;
-        msg << "invalid stage policy [" << policy << "]";
-        irods::log(LOG_ERROR, msg.str());
-        return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
-    }
 
-    return SUCCESS();
-
+    auto msg = fmt::format("invalid stage policy [{}]", policy);
+    irods::log(LOG_ERROR, msg);
+    return ERROR(SYS_INVALID_INPUT_PARAM, std::move(msg));
 } // compound_file_redirect_open
 
 void replace_archive_for_replica(
@@ -1954,14 +1961,14 @@ void replace_archive_for_replica(
 /// @brief - used to allow the resource to determine which host
 ///          should provide the requested operation
 irods::error compound_file_resolve_hierarchy(
-    irods::plugin_context& _ctx,
-    const std::string*                  _opr,
-    const std::string*                  _curr_host,
-    irods::hierarchy_parser*           _out_parser,
-    float*                              _out_vote ) {
+    irods::plugin_context&   _ctx,
+    const std::string*       _opr,
+    const std::string*       _curr_host,
+    irods::hierarchy_parser* _out_parser,
+    float*                   _out_vote)
+{
     // =-=-=-=-=-=-=-
     // check the context validity
-
     irods::error ret = _ctx.valid< irods::file_object >();
     if ( !ret.ok() ) {
         std::stringstream msg;
@@ -2004,31 +2011,29 @@ irods::error compound_file_resolve_hierarchy(
     // test the operation to determine which choices to make
     if (irods::OPEN_OPERATION == *_opr || irods::WRITE_OPERATION == *_opr) {
         _ctx.prop_map().set< std::string >( OPERATION_TYPE, ( *_opr ) );
-        // If the hierarchy contains the archive, just vote 1.0 and return, don't get the cache
-        auto ret = compound_file_redirect_open( _ctx, _opr, _curr_host, _out_parser, _out_vote );
-        if (ret.ok()) {
+        // call redirect determination for 'open' / 'write' operation
+        const auto err = compound_file_redirect_open( _ctx, _opr, _curr_host, _out_parser, _out_vote );
+
+        if (err.ok()) {
             replace_archive_for_replica(_ctx, *_out_parser);
         }
-        return ret;
+
+        return err;
     }
-    else if ( irods::CREATE_OPERATION == ( *_opr )) {
-        // =-=-=-=-=-=-=-
+
+    if (irods::CREATE_OPERATION == ( *_opr )) {
         // call redirect determination for 'create' operation
         return compound_file_redirect_create( _ctx, ( *_opr ), _curr_host, _out_parser, _out_vote );
     }
-    else if ( irods::UNLINK_OPERATION == ( *_opr )) {
-        // =-=-=-=-=-=-=-
+
+    if (irods::UNLINK_OPERATION == ( *_opr )) {
         // call redirect determination for 'unlink' operation
         return compound_file_redirect_unlink( _ctx, ( *_opr ), _curr_host, _out_parser, _out_vote );
     }
 
     // =-=-=-=-=-=-=-
     // must have been passed a bad operation
-    std::stringstream msg;
-    msg << "operation not supported [";
-    msg << ( *_opr ) << "]";
-    return ERROR( -1, msg.str() );
-
+    return ERROR(-1, fmt::format("operation not supported [{}]", *_opr));
 } // compound_file_resolve_hierarchy
 
 /// =-=-=-=-=-=-=-
@@ -2068,39 +2073,27 @@ irods::error compound_file_rebalance(
 //    context string will hold the script to be called.
 class compound_resource : public irods::resource {
     public:
-        compound_resource( const std::string& _inst_name,
-                           const std::string& _context ) :
-            irods::resource( _inst_name, _context ) {
+        compound_resource(const std::string& _inst_name, const std::string& _context)
+            : irods::resource(_inst_name, _context)
+        {
             // =-=-=-=-=-=-=-
             // set the start operation to identify the cache and archive children
-            set_start_operation( compound_start_operation );
+            set_start_operation(compound_start_operation);
 
             // =-=-=-=-=-=-=-
             // parse context string into property pairs assuming a ; as a separator
-            std::vector< std::string > props;
+            std::vector<std::string> props;
             irods::kvp_map_t kvp;
-            irods::error ret = irods::parse_kvp_string(
-                                   _context,
-                                   kvp );
-            if(!ret.ok()) {
-                rodsLog(
-                    LOG_ERROR,
-                    "libcompound: invalid context [%s]",
-                    _context.c_str() );
+            irods::error ret = irods::parse_kvp_string(_context, kvp);
+            if (!ret.ok()) {
+                rodsLog(LOG_ERROR, "libcompound: invalid context [%s]", _context.c_str());
             }
 
             // =-=-=-=-=-=-=-
             // copy the properties from the context to the prop map
-            irods::kvp_map_t::iterator itr = kvp.begin();
-            for( ; itr != kvp.end(); ++itr ) {
-                properties_.set< std::string >(
-                    itr->first,
-                    itr->second );
-            } // for itr
-
-            std::string parent_id_str;
-            ret = properties_.get< std::string >( irods::RESOURCE_PARENT, parent_id_str );
-
+            for (auto itr = kvp.begin(); itr != kvp.end(); ++itr) {
+                properties_.set<std::string>(itr->first, itr->second);
+            }
         }
 
         // =-=-=-=-=-=-
@@ -2115,7 +2108,6 @@ class compound_resource : public irods::resource {
         irods::error post_disconnect_maintenance_operation( irods::pdmo_type& ) {
             return ERROR( -1, "nop" );
         }
-
 }; // class compound_resource
 
 // =-=-=-=-=-=-=-
@@ -2126,8 +2118,9 @@ class compound_resource : public irods::resource {
 //    as used by the irods facing interface defined in
 //    server/drivers/src/fileDriver.cpp
 extern "C"
-irods::resource* plugin_factory( const std::string& _inst_name,
-                                 const std::string& _context ) {
+irods::resource* plugin_factory(const std::string& _inst_name,
+                                const std::string& _context)
+{
     // =-=-=-=-=-=-=-
     // 4a. create compound_resource object
     compound_resource* resc = new compound_resource( _inst_name, _context );
