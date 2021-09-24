@@ -36,56 +36,56 @@ namespace ix = irods::experimental;
 
 namespace {
 
-int connect_to_remote_zone(
-    rsComm_t *rsComm,
-    dataObjCopyInp_t *dataObjCopyInp,
-    rodsServerHost_t **rodsServerHost ) {
+    int connect_to_remote_zone(
+        rsComm_t *rsComm,
+        dataObjCopyInp_t *dataObjCopyInp,
+        rodsServerHost_t **rodsServerHost ) {
 
-    dataObjInp_t* srcDataObjInp = &dataObjCopyInp->srcDataObjInp;
-    rodsServerHost_t* srcIcatServerHost{};
-    int status = getRcatHost( MASTER_RCAT, srcDataObjInp->objPath,
-                          &srcIcatServerHost );
+        dataObjInp_t* srcDataObjInp = &dataObjCopyInp->srcDataObjInp;
+        rodsServerHost_t* srcIcatServerHost{};
+        int status = getRcatHost( MASTER_RCAT, srcDataObjInp->objPath,
+                              &srcIcatServerHost );
 
-    if (status < 0 || !srcIcatServerHost) {
-        rodsLog( LOG_ERROR,
-                 "%s: getRcatHost error for %s",
-                 __FUNCTION__, srcDataObjInp->objPath );
+        if (status < 0 || !srcIcatServerHost) {
+            rodsLog( LOG_ERROR,
+                     "%s: getRcatHost error for %s",
+                     __FUNCTION__, srcDataObjInp->objPath );
+            return status;
+        }
+        if ( srcIcatServerHost->rcatEnabled != REMOTE_ICAT ) {
+            /* local zone. nothing to do */
+            return LOCAL_HOST;
+        }
+
+        dataObjInp_t* destDataObjInp = &dataObjCopyInp->destDataObjInp;
+        rodsServerHost_t *destIcatServerHost{};
+        status = getRcatHost( MASTER_RCAT, destDataObjInp->objPath,
+                              &destIcatServerHost );
+
+        if ( status < 0 || !destIcatServerHost ) {
+            rodsLog( LOG_ERROR,
+                     "%s: getRcatHost error for %s",
+                     __FUNCTION__, destDataObjInp->objPath );
+            return status;
+        }
+
+        if ( destIcatServerHost->rcatEnabled != REMOTE_ICAT ) {
+            /* local zone. nothing to do */
+            return LOCAL_HOST;
+        }
+
+        /* remote zone to different remote zone copy. Have to handle it
+         * locally because of proxy admin user privilege issue */
+        if ( srcIcatServerHost != destIcatServerHost ) {
+            return LOCAL_HOST;
+        }
+
+        /* from the same remote zone. do it in the remote zone */
+        status = getAndConnRemoteZone(rsComm, destDataObjInp, rodsServerHost, REMOTE_CREATE);
         return status;
-    }
-    if ( srcIcatServerHost->rcatEnabled != REMOTE_ICAT ) {
-        /* local zone. nothing to do */
-        return LOCAL_HOST;
-    }
+    } // connect_to_remote_zone
 
-    dataObjInp_t* destDataObjInp = &dataObjCopyInp->destDataObjInp;
-    rodsServerHost_t *destIcatServerHost{};
-    status = getRcatHost( MASTER_RCAT, destDataObjInp->objPath,
-                          &destIcatServerHost );
-
-    if ( status < 0 || !destIcatServerHost ) {
-        rodsLog( LOG_ERROR,
-                 "%s: getRcatHost error for %s",
-                 __FUNCTION__, destDataObjInp->objPath );
-        return status;
-    }
-
-    if ( destIcatServerHost->rcatEnabled != REMOTE_ICAT ) {
-        /* local zone. nothing to do */
-        return LOCAL_HOST;
-    }
-
-    /* remote zone to different remote zone copy. Have to handle it
-     * locally because of proxy admin user privilege issue */
-    if ( srcIcatServerHost != destIcatServerHost ) {
-        return LOCAL_HOST;
-    }
-
-    /* from the same remote zone. do it in the remote zone */
-    status = getAndConnRemoteZone(rsComm, destDataObjInp, rodsServerHost, REMOTE_CREATE);
-    return status;
-} // connect_to_remote_zone
-
-int open_source_data_obj(rsComm_t *rsComm, dataObjInp_t& inp)
+    int open_source_data_obj(rsComm_t *rsComm, dataObjInp_t& inp)
     {
         inp.oprType = COPY_SRC;
         inp.openFlags = O_RDONLY;

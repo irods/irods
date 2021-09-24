@@ -84,6 +84,7 @@ foreach(PLUGIN ${IRODS_RESOURCE_PLUGINS})
     ${CMAKE_BINARY_DIR}/lib/core/include
     ${CMAKE_SOURCE_DIR}/lib/api/include
     ${CMAKE_SOURCE_DIR}/lib/core/include
+    ${CMAKE_SOURCE_DIR}/lib/filesystem/include
     ${CMAKE_SOURCE_DIR}/server/api/include
     ${CMAKE_SOURCE_DIR}/server/core/include
     ${CMAKE_SOURCE_DIR}/server/drivers/include
