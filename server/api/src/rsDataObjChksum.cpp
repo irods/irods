@@ -26,6 +26,7 @@
 
 #include "boost/lexical_cast.hpp"
 #include "fmt/format.h"
+#include "json.hpp"
 
 #include <cstring>
 #include <optional>
@@ -33,10 +34,38 @@
 #include <vector>
 #include <iterator>
 #include <string>
+#include <string_view>
 
 namespace
 {
     namespace ix = irods::experimental;
+    
+    using json = nlohmann::json;
+
+    auto to_malloc_allocated_string(const json& _json) -> char*
+    {
+        const auto s = _json.dump();
+
+        // Allocate enough space for the string and the null-byte.
+        const auto size = s.size() + 1;
+
+        auto* t = static_cast<char*>(std::malloc(sizeof(char) * size));
+        std::memset(t, 0, size);
+
+        return std::strcpy(t, s.data());
+    } // to_malloc_allocated_string
+
+    auto add_verification_result(json& _vresults,
+                                 const std::string_view _severity,
+                                 int _error_code,
+                                 const std::string_view _message) -> void
+    {
+        _vresults.push_back(json{
+            {"severity", _severity},
+            {"error_code", _error_code},
+            {"message", _message}
+        });
+    }
 
     using log = irods::experimental::log;
 
@@ -135,18 +164,19 @@ namespace
 
     void report_number_of_replicas_skipped(const DataObjInfo& _replicas,
                                            std::size_t _good_replicas,
-                                           rError_t& _error_stack)
+                                           json& _verification_results)
     {
         // "_good_replicas" should always be less than or equal to the total number of replicas.
         const auto count = std::distance(begin(&_replicas), end(&_replicas)) - _good_replicas;
 
         if (count > 0) {
             const auto msg = fmt::format("INFO: Number of replicas skipped: {}", count);
-            addRErrorMsg(&_error_stack, 0, msg.data());
+            add_verification_result(_verification_results, "info", 0, msg);
         }
     } // report_number_of_replicas_skipped
 
-    bool report_replicas_without_checksums(const std::vector<DataObjInfo*>& _replicas, rError_t& _error_stack)
+    bool report_replicas_without_checksums(const std::vector<DataObjInfo*>& _replicas,
+                                           json& _verification_results)
     {
         bool found = false;
 
@@ -154,14 +184,16 @@ namespace
             if (std::strlen(r->chksum) == 0) {
                 found = true;
                 const auto msg = fmt::format("WARNING: No checksum available for replica [{}].", r->replNum);
-                addRErrorMsg(&_error_stack, CAT_NO_CHECKSUM_FOR_REPLICA, msg.data());
+                add_verification_result(_verification_results, "warning", CAT_NO_CHECKSUM_FOR_REPLICA, msg);
             }
         }
 
         return found;
     } // report_replicas_without_checksums
 
-    void report_replica_if_mismatch_size_info(RsComm& _comm, DataObjInfo& _replica)
+    void report_replica_if_mismatch_size_info(RsComm& _comm,
+                                              DataObjInfo& _replica,
+                                              json& _verification_results)
     {
         if (const auto ec = verifyVaultSizeEqualsDatabaseSize(_comm, _replica); ec < 0) {
             std::string msg;
@@ -173,18 +205,22 @@ namespace
                 msg = fmt::format("ERROR: Could not verify size for replica [{}].", _replica.replNum);
             }
 
-            addRErrorMsg(&_comm.rError, ec, msg.data());
+            add_verification_result(_verification_results, "error", ec, msg);
         }
     } // report_replica_if_mismatch_size_info
 
-    void report_replicas_with_mismatch_size_info(RsComm& _comm, const std::vector<DataObjInfo*>& _replicas)
+    void report_replicas_with_mismatch_size_info(RsComm& _comm,
+                                                 const std::vector<DataObjInfo*>& _replicas,
+                                                 json& _verification_results)
     {
         for (auto* r : _replicas) {
-            report_replica_if_mismatch_size_info(_comm, *r);
+            report_replica_if_mismatch_size_info(_comm, *r, _verification_results);
         }
     } // report_replicas_with_mismatch_size_info
 
-    void report_replica_if_mismatch_checksum_info(RsComm& _comm, DataObjInfo& _replica)
+    void report_replica_if_mismatch_checksum_info(RsComm& _comm,
+                                                  DataObjInfo& _replica,
+                                                  json& _verification_results)
     {
         char* ignore_checksum{};
 
@@ -198,7 +234,7 @@ namespace
                 msg = fmt::format("ERROR: Could not verify checksum for replica [{}].", _replica.replNum);
             }
 
-            addRErrorMsg(&_comm.rError, ec, msg.data());
+            add_verification_result(_verification_results, "error", ec, msg);
         }
     }
 
@@ -251,19 +287,22 @@ namespace
                 return ec;
             }
 
+            auto verification_results = json::array();
+
             if (client_set_admin_flag) {
                 ix::key_value_proxy{_replicas->condInput}[ADMIN_KW] = "";
             }
 
-            report_replica_if_mismatch_size_info(_comm, *_replicas);
+            report_replica_if_mismatch_size_info(_comm, *_replicas, verification_results);
 
             if (std::strlen(_replicas->chksum) == 0) {
                 const auto msg = fmt::format("WARNING: No checksum available for replica [{}].", _replicas->replNum);
-                addRErrorMsg(&_comm.rError, CAT_NO_CHECKSUM_FOR_REPLICA, msg.data());
+                add_verification_result(verification_results, "warning", CAT_NO_CHECKSUM_FOR_REPLICA, msg);
+                *_checksum = to_malloc_allocated_string(verification_results);
 
                 // Return immediately because this function requires that the replica
                 // have a checksum after this point.
-                return 0;
+                return CHECK_VERIFICATION_RESULTS;
             }
 
             //
@@ -271,7 +310,12 @@ namespace
             //
 
             if (!kvp.contains(NO_COMPUTE_KW)) {
-                report_replica_if_mismatch_checksum_info(_comm, *_replicas);
+                report_replica_if_mismatch_checksum_info(_comm, *_replicas, verification_results);
+            }
+
+            if (!verification_results.empty()) {
+                *_checksum = to_malloc_allocated_string(verification_results);
+                return CHECK_VERIFICATION_RESULTS;
             }
 
             return 0;
@@ -287,12 +331,20 @@ namespace
             return SYS_NO_GOOD_REPLICA;
         }
 
-        report_number_of_replicas_skipped(*_replicas, good_replicas.size(), _comm.rError);
-        report_replicas_with_mismatch_size_info(_comm, good_replicas);
+        auto verification_results = json::array();
 
-        if (report_replicas_without_checksums(good_replicas, _comm.rError)) {
+        report_number_of_replicas_skipped(*_replicas, good_replicas.size(), verification_results);
+        report_replicas_with_mismatch_size_info(_comm, good_replicas, verification_results);
+
+        if (report_replicas_without_checksums(good_replicas, verification_results)) {
             // Return immediately because this function requires that all replicas
             // have a checksum after this point.
+
+            if (!verification_results.empty()) {
+                *_checksum = to_malloc_allocated_string(verification_results);
+                return CHECK_VERIFICATION_RESULTS;
+            }
+
             return 0;
         }
 
@@ -309,7 +361,7 @@ namespace
                     ix::key_value_proxy{r->condInput}[ADMIN_KW] = "";
                 }
 
-                report_replica_if_mismatch_checksum_info(_comm, *r);
+                report_replica_if_mismatch_checksum_info(_comm, *r, verification_results);
             }
         }
 
@@ -319,7 +371,13 @@ namespace
         };
 
         if (std::any_of(std::next(begin(good_replicas)), end(good_replicas), mismatch_checksums)) {
-            addRErrorMsg(&_comm.rError, USER_CHKSUM_MISMATCH, "WARNING: Data object has replicas with different checksums.");
+            const std::string_view msg = "WARNING: Data object has replicas with different checksums.";
+            add_verification_result(verification_results, "warning", USER_CHKSUM_MISMATCH, msg);
+        }
+
+        if (!verification_results.empty()) {
+            *_checksum = to_malloc_allocated_string(verification_results);
+            return CHECK_VERIFICATION_RESULTS;
         }
 
         return 0;

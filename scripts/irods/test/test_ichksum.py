@@ -157,53 +157,65 @@ class Test_Ichksum(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['ichksum', '--verify', '--silent', data_object], 'STDERR', ["the 'verify' and 'silent' option cannot be used together"])
 
     def test_ichksum_reports_number_of_replicas_skipped__issue_5252(self):
+        other_resc = 'issue_5252_resc'
         data_object = os.path.join(self.admin.session_collection, 'foo')
-        self.admin.assert_icommand(['istream', 'write', data_object], input='some data')
-        self.admin.assert_icommand(['irepl', '-R', self.testresc, data_object])
 
-        # Show that ichksum reports about skipping replicas that are not good.
-        self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', data_object, 'replica_number', '0', 'DATA_REPL_STATUS', '0'])
-        self.admin.assert_icommand(['ichksum', '-K', data_object], 'STDOUT', ['INFO: Number of replicas skipped: 1'])
+        try:
+            lib.create_ufs_resource(other_resc, self.admin)
 
-        # Show that ichksum reports information about non-good replicas when they exist.
-        self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', data_object, 'replica_number', '0', 'DATA_REPL_STATUS', '1'])
-        out, _, ec = self.admin.run_icommand(['ichksum', '-K', data_object])
-        self.assertTrue(ec == 0 and 'INFO: Number of replicas' not in out)
+            self.admin.assert_icommand(['istream', 'write', data_object], input='some data')
+            self.admin.assert_icommand(['irepl', '-R', other_resc, data_object])
+
+            # Show that ichksum reports about skipping replicas that are not good.
+            self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', data_object, 'replica_number', '0', 'DATA_REPL_STATUS', '0'])
+            self.admin.assert_icommand_fail(['ichksum', '-K', data_object], 'STDOUT', ['INFO: Number of replicas skipped: 1'])
+
+            # Show that ichksum reports information about good replicas when they exist.
+            self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', data_object, 'replica_number', '0', 'DATA_REPL_STATUS', '1'])
+            out, _, ec = self.admin.run_icommand(['ichksum', '-K', data_object])
+            self.assertNotEqual(ec, 0)
+            self.assertNotIn('INFO: Number of replicas skipped:', out)
+            self.assertIn('WARNING: No checksum available for replica [0].', out)
+            self.assertIn('WARNING: No checksum available for replica [1].', out)
+
+        finally:
+            self.admin.run_icommand(['irm', '-f', data_object])
+            self.admin.run_icommand(['iadmin', 'rmresc', other_resc])
 
     def test_ichksum_reports_when_replicas_physical_size_does_not_match_size_in_catalog__issue_5252(self):
         data_object = os.path.join(self.admin.session_collection, 'foo')
         self.admin.assert_icommand(['istream', 'write', data_object], input='some data')
         self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', data_object, 'replica_number', '0', 'DATA_SIZE', '1'])
-        self.admin.assert_icommand(['ichksum', '-K', data_object], 'STDOUT', ['ERROR: Physical size does not match size in catalog for replica [0].'])
+        self.admin.assert_icommand_fail(['ichksum', '-K', data_object], 'STDOUT', ['ERROR: Physical size does not match size in catalog for replica [0].'])
 
         # Show that --verify is an alias for -K.
-        self.admin.assert_icommand(['ichksum', '--verify', data_object], 'STDOUT', ['ERROR: Physical size does not match size in catalog for replica [0].'])
+        self.admin.assert_icommand_fail(['ichksum', '--verify', data_object], 'STDOUT', ['ERROR: Physical size does not match size in catalog for replica [0].'])
 
         # Show that the error is printed when targeting a specific replica.
-        self.admin.assert_icommand(['ichksum', '-K', '-n0', data_object], 'STDOUT', ['ERROR: Physical size does not match size in catalog for replica [0].'])
+        self.admin.assert_icommand_fail(['ichksum', '-K', '-n0', data_object], 'STDOUT', ['ERROR: Physical size does not match size in catalog for replica [0].'])
 
     def test_ichksum_reports_when_replicas_are_missing_checksums__issue_5252(self):
         data_object = 'foo'
         self.admin.assert_icommand(['istream', 'write', data_object], input='some data')
         self.admin.assert_icommand(['irepl', '-R', self.testresc, data_object])
         self.admin.assert_icommand(['ichksum', '-n0', data_object], 'STDOUT', [data_object + '    sha2:'])
-        self.admin.assert_icommand(['ichksum', '-K', data_object], 'STDOUT', ['WARNING: No checksum available for replica [1].'])
+        self.admin.assert_icommand_fail(['ichksum', '-K', data_object], 'STDOUT', ['WARNING: No checksum available for replica [1].'])
 
         # Show that --verify is an alias for -K.
-        self.admin.assert_icommand(['ichksum', '--verify', data_object], 'STDOUT', ['WARNING: No checksum available for replica [1].'])
+        self.admin.assert_icommand_fail(['ichksum', '--verify', data_object], 'STDOUT', ['WARNING: No checksum available for replica [1].'])
 
         # Show that the warning is printed when targeting a specific replica.
-        self.admin.assert_icommand(['ichksum', '-K', '-n1', data_object], 'STDOUT', ['WARNING: No checksum available for replica [1].'])
+        self.admin.assert_icommand_fail(['ichksum', '-K', '-n1', data_object], 'STDOUT', ['WARNING: No checksum available for replica [1].'])
 
     def test_ichksum_reports_when_replicas_computed_checksum_does_not_match_checksum_in_catalog__issue_5252(self):
         data_object = os.path.join(self.admin.session_collection, 'foo')
         self.admin.assert_icommand(['istream', 'write', data_object], input='some data')
         self.admin.assert_icommand(['ichksum', data_object], 'STDOUT', [os.path.basename(data_object) + '    sha2:'])
         self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', data_object, 'replica_number', '0', 'DATA_CHECKSUM', 'sha2:BAD_CHECKSUM'])
-        self.admin.assert_icommand(['ichksum', '-K', data_object], 'STDOUT', ['ERROR: Computed checksum does not match what is in the catalog for replica [0].'])
+        self.admin.assert_icommand_fail(['ichksum', '-K', data_object], 'STDOUT', ['ERROR: Computed checksum does not match what is in the catalog for replica [0].'])
 
         # Show that the error is printed when targeting a specific replica.
-        self.admin.assert_icommand(['ichksum', '-K', '-n0', data_object], 'STDOUT', ['ERROR: Computed checksum does not match what is in the catalog for replica [0].'])
+        self.admin.assert_icommand_fail(['ichksum', '-K', '-n0', data_object], 'STDOUT', ['ERROR: Computed checksum does not match what is in the catalog for replica [0].'])
 
         # Show that when --no-compute is passed, verification mode will not verify if the checksum in the
         # catalog is correct or not, regardless of whether the client is targeting one or all replicas.
@@ -229,21 +241,30 @@ class Test_Ichksum(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['ichksum', '-a', data_object], 'STDOUT', ['WARNING: Data object has replicas with different checksums.'])
 
     def test_ichksum_computes_checksum_for_highest_voted_replica_when_no_options_are_present__issue_5252(self):
+        other_resc = 'issue_5252_resc'
         data_object = 'foo'
-        self.admin.assert_icommand(['istream', 'write', data_object], input='some data')
-        self.admin.assert_icommand(['irepl', '-R', self.testresc, data_object])
-        self.admin.assert_icommand(['ichksum', data_object], 'STDOUT', [data_object + '    sha2:'])
 
-        # Show that only one of the two replicas has a checksum.
-        out1, _, ec1 = self.admin.run_icommand(['ichksum', '-K', '-n0', data_object])
-        self.assertTrue(ec1 == 0, 'Unexpected error')
+        try:
+            lib.create_ufs_resource(other_resc, self.admin)
 
-        out2, _, ec2 = self.admin.run_icommand(['ichksum', '-K', '-n1', data_object])
-        self.assertTrue(ec2 == 0, 'Unexpected error')
+            self.admin.assert_icommand(['istream', 'write', data_object], input='some data')
+            self.admin.assert_icommand(['irepl', '-R', other_resc, data_object])
+            self.admin.assert_icommand(['ichksum', data_object], 'STDOUT', [data_object + '    sha2:'])
 
-        msg1 = 'WARNING: No checksum available for replica [0].'
-        msg2 = 'WARNING: No checksum available for replica [1].'
-        self.assertTrue((msg1 in out1 and msg2 not in out2) or (msg1 not in out1 and msg2 in out2))
+            # Show that only one of the two replicas has a checksum.
+            out, _, ec = self.admin.run_icommand(['ichksum', '-K', '-n0', data_object])
+            self.assertEqual(ec, 0)
+            self.assertEqual(len(out), 0)
+            self.assertNotIn('WARNING: No checksum available for replica [0].', out)
+
+            out, _, ec = self.admin.run_icommand(['ichksum', '-K', '-n1', data_object])
+            self.assertNotEqual(ec, 0)
+            self.assertGreater(len(out), 0)
+            self.assertIn('WARNING: No checksum available for replica [1].', out)
+
+        finally:
+            self.admin.run_icommand(['irm', '-f', data_object])
+            self.admin.run_icommand(['iadmin', 'rmresc', other_resc])
 
     def test_silent_option_is_supported__issue_5252(self):
         data_object = 'foo'
