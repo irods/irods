@@ -6,11 +6,12 @@
 #include "chksumUtil.h"
 #include "rcGlobalExtern.h"
 
-#ifndef windows_platform
-    #include <sys/time.h>
-#endif // windows_platform
+#include <sys/time.h>
+
+#include "json.hpp"
 
 #include <cstdio>
+#include <string>
 
 static int ChksumCnt = 0;
 static int FailedChksumCnt = 0;
@@ -93,6 +94,17 @@ int chksumDataObjUtil(rcComm_t* conn,
     ChksumCnt++;
 
     if (status < 0) {
+        if (CHECK_VERIFICATION_RESULTS == status) {
+            try {
+                for (auto&& vr : nlohmann::json::parse(chksumStr)) {
+                    std::printf("%s\n", vr.at("message").get_ref<const std::string&>().c_str());
+                }
+            }
+            catch (const std::exception& e) {
+                std::printf("ERROR: %s\n", e.what());
+            }
+        }
+
         FailedChksumCnt++;
         rodsLogError(LOG_ERROR, status, "chksumDataObjUtil: rcDataObjChksum error for %s", dataObjInp->objPath);
         printErrorStack(conn->rError);
