@@ -25,6 +25,7 @@
 -libpcre.so.1
 -libssl.so.10
 -libxml2.so.2
+-libcurl.so.4
 
 # libtool-ltdl package is not installed by default
 +libltdl.so.7
