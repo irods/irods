@@ -15,20 +15,94 @@
 
 -libbz2.so.1.0
 -liblzma.so.5
+-libidn2.so.0
+-libgnutls.so.30
+-libnettle.so.6
+-libgmp.so.10
+-libhogweed.so.4
+-libunistring.so.2
+-libcom_err.so.2
+-libcrypt.so.1
 
-# libssl package is not installed by default
+# libssl
 +libcrypto.so.1.1
 +libssl.so.1.1
 
-# libicu60 package is not installed by default
+# libicu60
 +libicudata.so.60
 +libicuuc.so.60
 
-# libxml2 package is not installed by default
+# libxml2
 +libxml2.so.2
 
-# libltdl7 package is not installed by default
+# libltdl7
 +libltdl.so.7
 
-# libodbc1 package is not installed by default
+# libodbc1
 +libodbc.so.2
+
+# Let's assume we're building against libcurl4-gnutls-dev
+
+# libcurl4-gnutls
++libcurl-gnutls.so.4
+
+# libgssapi-krb5-2
++libgssapi_krb5.so.2
+
+# libldap-2.4-2
++libldap_r-2.4.so.2
++liblber-2.4.so.2
+
+# libpsl5
++libpsl.so.5
+
+# libnghttp2-14
++libnghttp2.so.14
+
+# librtmp1
++librtmp.so.1
+
+# libgssapi3-heimdal
++libgssapi.so.3
+
+# libsasl2-2
++libsasl2.so.2
+
+# libk5crypto3
++libk5crypto.so.3
+
+# libkrb5-3
++libkrb5.so.3
+
+# libkrb5support0
++libkrb5support.so.0
+
+# libkeyutils1
++libkeyutils.so.1
+
+# libroken18-heimdal
++libroken.so.18
+
+# libasn1-8-heimdal
++libasn1.so.8
+
+# libhcrypto4-heimdal
++libhcrypto.so.4
+
+# libkrb5-26-heimdal
++libkrb5.so.26
+
+# libheimntlm0-heimdal
++libheimntlm.so.0
+
+# libheimbase1-heimdal
++libheimbase.so.1
+
+# libhx509-5-heimdal
++libhx509.so.5
+
+# libsqlite3-0
++libsqlite3.so.0
+
+# libwind0-heimdal
++libwind.so.0
