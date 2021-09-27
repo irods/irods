@@ -1,7 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* getUtil.h - Header for for getUtil.c */
-
 #ifndef CHKSUM_UTIL_H__
 #define CHKSUM_UTIL_H__
 

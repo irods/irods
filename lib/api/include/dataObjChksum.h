@@ -73,7 +73,9 @@ extern "C" {
 ///     - Must be set to an empty string.
 ///     - A modifier for \p VERIFY_CHKSUM_KW.
 /// \endparblock
-/// \param[out] outChksum        Holds the returned checksum if available.
+/// \param[out] outChksum        Holds the returned checksum if operating in lookup/update mode. Holds
+///                              the verification results as a JSON string when operating in verification
+///                              mode and CHECK_VERIFICATION_RESULTS is returned.
 ///
 /// \returns An integer.
 /// \retval 0        On success.
@@ -96,14 +98,17 @@ extern "C" {
 /// const int ec = rcDataObjChksum(comm, &input, &computed_checksum);
 ///
 /// if (ec < 0) {
-///     // Handle error.
+///     if (CHECK_VERIFICATION_RESULTS == ec) {
+///         //
+///         // Do something with JSON string contained in "computed_checksum".
+///         //
+///
+///         free(computed_checksum);
+///     }
+///     else {
+///         // Handle error.
+///     }
 /// }
-///
-/// //
-/// // Do something with "computed_checksum".
-/// //
-///
-/// free(computed_checksum);
 /// \endcode
 int rcDataObjChksum(struct RcComm* comm,
                     struct DataObjInp* dataObjChksumInp,
