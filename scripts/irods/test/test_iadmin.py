@@ -1942,7 +1942,7 @@ class Test_Iadmin_modrepl(resource_suite.ResourceBase, unittest.TestCase):
 
     def test_modifying_restricted_columns(self):
         dumb_string = 'garbage'
-        dumb_int = 16
+        dumb_int = 99999
         cols = {
             "COLL_ID" : dumb_int,
             #"DATA_CREATE_TIME" : dumb_string,
