@@ -4,8 +4,11 @@
 #include "modDataObjMeta.h"
 #include "rcGlobalExtern.h"
 #include "rodsErrorTable.h"
+#include "irods_logger.hpp"
 
 #include <cstring>
+
+using logger = irods::experimental::log;
 
 /* addMsParam - This is for backward compatibility only.
  *  addMsParamToArray should be used for all new functions
@@ -1004,60 +1007,59 @@ parseMspForExecCmdInp( msParam_t * inpParam,
     }
     return 0;
 }
-int
-getStdoutInExecCmdOut( msParam_t * inpExecCmdOut, char **outStr ) {
-    execCmdOut_t *execCmdOut;
 
-    if ( inpExecCmdOut == NULL ) {
-        rodsLog( LOG_ERROR,
-                 "getStdoutInExecCmdOut input inpParam is NULL" );
-        return SYS_INTERNAL_NULL_INPUT_ERR;
-    }
+namespace
+{
+    template <typename BytesBufFunc>
+    auto get_stdout_or_stderr_from_ExecCmdOut_impl(MsParam* _in, BytesBufFunc _func, char** _out) -> int
+    {
+        if (!_in || !_out) {
+            logger::microservice::error("{} :: Invalid input parameter.", __func__);
+            return SYS_INVALID_INPUT_PARAM;
+        }
 
-    if ( strcmp( inpExecCmdOut->type, ExecCmdOut_MS_T ) == 0 ) {
-        execCmdOut = ( execCmdOut_t * ) inpExecCmdOut->inOutStruct;
-        if ( execCmdOut == NULL ) {
+        if (!_in->type) {
+            logger::microservice::error("{} :: Missing type information.", __func__);
             return SYS_INTERNAL_NULL_INPUT_ERR;
         }
-        *outStr = ( char * ) malloc( execCmdOut->stdoutBuf.len + 1 );
-        memcpy( *outStr, ( char * )execCmdOut->stdoutBuf.buf, execCmdOut->stdoutBuf.len );
-        ( *outStr )[execCmdOut->stdoutBuf.len] = '\0';
+
+        if (std::strcmp(_in->type, ExecCmdOut_MS_T) != 0) {
+            logger::microservice::error("{} :: Unsupported type [{}].", __func__, _in->type);
+            return USER_PARAM_TYPE_ERR;
+        }
+
+        auto* execCmdOut = static_cast<ExecCmdOut*>(_in->inOutStruct);
+        if (!execCmdOut) {
+            logger::microservice::debug("{} :: ExecCmdOut is not available.", __func__);
+            return SYS_INTERNAL_NULL_INPUT_ERR;
+        }
+
+        const auto& bbuf = _func(*execCmdOut);
+
+        *_out = static_cast<char*>(std::malloc(bbuf.len + 1));
+        std::memcpy(*_out, static_cast<char*>(bbuf.buf), bbuf.len);
+        (*_out)[bbuf.len] = '\0';
+
         return 0;
     }
-    else {
-        rodsLog( LOG_ERROR,
-                 "getStdoutInExecCmdOut: Unsupported input Param type %s",
-                 inpExecCmdOut->type );
-        return USER_PARAM_TYPE_ERR;
-    }
+} // anonymous namespace
+
+int getStdoutInExecCmdOut(msParam_t* inpExecCmdOut, char** outStr)
+{
+    const auto func = [](const ExecCmdOut& _eco) noexcept -> const BytesBuf& {
+        return _eco.stdoutBuf;
+    };
+
+    return get_stdout_or_stderr_from_ExecCmdOut_impl(inpExecCmdOut, func, outStr);
 }
 
-int
-getStderrInExecCmdOut( msParam_t * inpExecCmdOut, char **outStr ) {
-    execCmdOut_t *execCmdOut;
+int getStderrInExecCmdOut(msParam_t* inpExecCmdOut, char** outStr)
+{
+    const auto func = [](const ExecCmdOut& _eco) noexcept -> const BytesBuf& {
+        return _eco.stderrBuf;
+    };
 
-    if ( inpExecCmdOut == NULL ) {
-        rodsLog( LOG_ERROR,
-                 "getStderrInExecCmdOut input inpParam is NULL" );
-        return SYS_INTERNAL_NULL_INPUT_ERR;
-    }
-
-    if ( strcmp( inpExecCmdOut->type, ExecCmdOut_MS_T ) == 0 ) {
-        execCmdOut = ( execCmdOut_t * ) inpExecCmdOut->inOutStruct;
-        if ( execCmdOut == NULL ) {
-            return SYS_INTERNAL_NULL_INPUT_ERR;
-        }
-        *outStr = ( char * ) malloc( execCmdOut->stderrBuf.len + 1 );
-        memcpy( *outStr, ( char * )execCmdOut->stderrBuf.buf, execCmdOut->stderrBuf.len );
-        ( *outStr )[execCmdOut->stderrBuf.len] = '\0';
-        return 0;
-    }
-    else {
-        rodsLog( LOG_ERROR,
-                 "getStderrInExecCmdOut: Unsupported input Param type %s",
-                 inpExecCmdOut->type );
-        return USER_PARAM_TYPE_ERR;
-    }
+    return get_stdout_or_stderr_from_ExecCmdOut_impl(inpExecCmdOut, func, outStr);
 }
 
 int
