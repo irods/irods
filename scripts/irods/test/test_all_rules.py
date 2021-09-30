@@ -1257,3 +1257,14 @@ OUTPUT ruleExecOut
         for msg in ['Dumping stack trace', '<0>     Offset:']:
             lib.delayAssert(lambda: lib.log_message_occurrences_equals_count(msg=msg, count=0, start_index=log_offset))
 
+    def test_msiGetStderrInExecCmdOut_does_not_segfault_when_using_failed_out_parameter_as_input__issue_5791(self):
+        # The following rule causes PLUGIN_ERROR_MISSING_SHARED_OBJECT due to "ipc_RE_HOST" being
+        # undefined. This is okay now that the pointers in msiGetStderrInExecCmdOut() are checked
+        # before being dereferenced.
+        rule_text = '''
+            *ec = errorcode(msiExecCmd('non_existent_file.py', *arg_str, ipc_RE_HOST, "null", "null", *out));
+            msiGetStderrInExecCmdOut(*out, *output_string);
+        '''
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        self.admin.assert_icommand(['irule', '-r', rep_name, rule_text, 'null', 'ruleExecOut'])
+
