@@ -1940,7 +1940,7 @@ class Test_Iadmin_modrepl(resource_suite.ResourceBase, unittest.TestCase):
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_modifying_restricted_columns(self):
         dumb_string = 'garbage'
-        dumb_int = 16
+        dumb_int = 99999
         cols = {
             "COLL_ID" : dumb_int,
             #"DATA_CREATE_TIME" : dumb_string,
