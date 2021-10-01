@@ -56,8 +56,9 @@ using logger = irods::experimental::log;
 using json   = nlohmann::json;
 // clang-format on
 
-namespace {
-    static std::atomic_bool re_server_terminated{};
+namespace
+{
+    std::atomic_bool re_server_terminated{};
 
     void init_logger(
         const bool write_to_stdout,
@@ -75,31 +76,58 @@ namespace {
         if (char hostname[HOST_NAME_MAX]{}; gethostname(hostname, sizeof(hostname)) == 0) {
             logger::set_server_host(hostname);
         }
+    } // init_logger
+
+    std::optional<std::string_view> next_executor()
+    {
+        const auto& config = irods::server_properties::instance().map();
+
+        const auto advanced_settings = config.find(irods::CFG_ADVANCED_SETTINGS_KW);
+        if (advanced_settings == std::end(config)) {
+            return std::nullopt;
+        }
+
+        const auto executors = advanced_settings->find(irods::DELAY_RULE_EXECUTORS_KW);
+        if (executors == std::end(*advanced_settings)) {
+            return std::nullopt;
+        }
+
+        if (executors->empty()) {
+            return std::nullopt;
+        }
+
+        static std::atomic<int> index = 0;
+
+        // The calculation of the index could be configurable and would give the admin
+        // options for how an executor is selected (e.g. round robin, random, etc.).
+        index = index++ % executors->size();
+
+        return executors->at(index).get_ref<const std::string&>();
     }
 
-    /// Get the next connection to use for the next rule
-    ///
-    /// \param[in] user The name of the user to proxy into
-    ix::client_connection get_new_connection(const std::optional<std::string>& _user){
-        static std::atomic<int> host_index = 0;
-        static auto delay_rule_executors = irods::get_advanced_setting<nlohmann::json>(irods::DELAY_RULE_EXECUTORS_KW);
-        if(_user.has_value() && !delay_rule_executors.empty() ){
-            rodsEnv env{};
-            _getRodsEnv(env);
-            const int cur = (host_index++) % delay_rule_executors.size();
-            const auto &host = delay_rule_executors[cur].get<std::string>();
-            logger::delay_server::debug("Sending rule to {}, Using proxy user {} for implicit remote (real user {})",  host, _user.value(), env.rodsUserName);
-            return ix::client_connection(host,
-                                         env.rodsPort,
-                                         _user.value(),
-                                         env.rodsZone,
-                                         env.rodsUserName,
-                                         env.rodsZone);
-        } else {
-            logger::delay_server::trace("Connecting to self");
-            return ix::client_connection();
+    ix::client_connection get_new_connection(const std::optional<std::string>& _client_user)
+    {
+        try {
+            if (_client_user) {
+                if (const auto executor = next_executor(); executor) {
+                    rodsEnv env{};
+                    _getRodsEnv(env);
+
+                    logger::delay_server::debug("Connecting to host [{}] as proxy user [{}] on behalf of user [{}] ...",
+                                                *executor, env.rodsUserName, *_client_user);
+
+                    return {*executor, env.rodsPort, env.rodsUserName, env.rodsZone, *_client_user, env.rodsZone};
+                }
+            }
         }
-    }
+        catch (...) {
+            logger::delay_server::error("Could not get the next delay rule executor.");
+        }
+
+        logger::delay_server::debug("Connecting to local server using server credentials.");
+
+        return {};
+    } // get_new_connection
 
     void set_ips_display_name(const std::string_view _display_name)
     {
@@ -108,7 +136,7 @@ namespace {
         if (setenv(SP_OPTION, _display_name.data(), /* overwrite */ 1)) {
             logger::delay_server::warn("Could not set environment variable [spOption] for ips.");
         }
-    }
+    } // set_ips_display_name
 
     ruleExecSubmitInp_t fill_rule_exec_submit_inp(rcComm_t& comm, const std::string_view rule_id)
     {
@@ -189,7 +217,7 @@ namespace {
         kvp[RULE_EXECUTION_CONTEXT_KW] = exec_info[11];
 
         return rule_exec_submit_inp;
-    }
+    } // fill_rule_exec_submit_inp
 
     int update_entry_for_repeat(
         rcComm_t& _comm,
@@ -212,9 +240,8 @@ namespace {
             rstrcpy(rule_exec_del_inp.ruleExecId, _inp.ruleExecId, NAME_LEN);
             const int status = rcRuleExecDel(&_comm, &rule_exec_del_inp);
             if (status < 0) {
-                const auto msg = fmt::format("{}:{} - rcRuleExecDel failed {} for id {}",
-                                             __FUNCTION__, __LINE__, status, rule_exec_del_inp.ruleExecId);
-                irods::log(LOG_ERROR, msg);
+                logger::delay_server::error("{}:{} - rcRuleExecDel failed {} for id {}",
+                    __FUNCTION__, __LINE__, status, rule_exec_del_inp.ruleExecId);
             }
             return status;
         }};
@@ -247,15 +274,17 @@ namespace {
             if(repeat_rule) {
                 addKeyVal(&rule_exec_mod_inp.condInput, RULE_EXE_FREQUENCY_KW, ef_string);
             }
+
             const int status = rcRuleExecMod(&_comm, &rule_exec_mod_inp);
             if (status < 0) {
-                const auto msg = fmt::format("{}:{} - rcRuleExecMod failed {} for id {}",
+                logger::delay_server::error("{}:{} - rcRuleExecMod failed {} for id {}",
                                              __FUNCTION__, __LINE__, status, rule_exec_mod_inp.ruleId);
-                irods::log(LOG_ERROR, msg);
             }
+
             if (rule_exec_mod_inp.condInput.len > 0) {
                 clearKeyVal(&rule_exec_mod_inp.condInput);
             }
+
             return status;
         };
 
@@ -283,7 +312,7 @@ namespace {
                                             __FUNCTION__, __LINE__, repeat_status, _inp.ruleExecId);
                 return repeat_status; 
         }
-    }
+    } // update_entry_for_repeat
 
     void migrate_rule_execution_context_into_catalog(rcComm_t& _comm,
                                                      const std::string_view _rule_id,
@@ -314,7 +343,7 @@ namespace {
         catch (...) {
             logger::delay_server::error("An unexpected error was encountered during REI file migration [rule_id={}].", _rule_id);
         }
-    }
+    } // migrate_rule_execution_context_into_catalog
 
     exec_rule_expression_t pack_exec_rule_expression(ruleExecSubmitInp_t& _inp)
     {
@@ -331,7 +360,7 @@ namespace {
         rstrcpy(static_cast<char*>(exec_rule.rule_text_.buf), _inp.ruleName, buffer_len);
 
         return exec_rule;
-    }
+    } // pack_exec_rule_expression
 
     int run_rule_exec(rcComm_t& _comm, ruleExecSubmitInp_t& _inp)
     {
@@ -464,7 +493,7 @@ namespace {
         logger::delay_server::trace("Rule processed [rule_id={}].", _inp.ruleExecId);
 
         return status;
-    }
+    } // run_rule_exec
 
     void execute_rule(irods::delay_queue& queue, const std::string_view rule_id)
     {
@@ -484,17 +513,17 @@ namespace {
             rule_exec_submit_inp = fill_rule_exec_submit_inp(conn, rule_id);
         }
         catch (const irods::exception& e) {
-            irods::log(e);
+            logger::delay_server::error(e.what());
             return;
         }
 
-        conn = get_new_connection(std::string(rule_exec_submit_inp.userName));
+        conn = get_new_connection(rule_exec_submit_inp.userName);
         try {
             if (const int status = run_rule_exec(conn, rule_exec_submit_inp); status < 0) {
                 logger::delay_server::error("Rule exec for [{}] failed. status = [{}]", rule_exec_submit_inp.ruleExecId, status);
             }
         }
-        catch(const std::exception& e) {
+        catch (const std::exception& e) {
             logger::delay_server::error("Exception caught during execution of rule [{}]: [{}]",
                                         rule_exec_submit_inp.ruleExecId, e.what());
         }
@@ -502,7 +531,7 @@ namespace {
         if (!re_server_terminated) {
             queue.dequeue_rule(std::string(rule_exec_submit_inp.ruleExecId));
         }
-    }
+    } // execute_rule
 
     auto make_delay_queue_query_processor(
         irods::thread_pool& thread_pool,
@@ -516,10 +545,23 @@ namespace {
             if (queue.contains_rule_id(rule_id)) {
                 return;
             }
+
             logger::delay_server::debug("Enqueueing rule [{}]", rule_id);
             queue.enqueue_rule(rule_id);
+
             irods::thread_pool::post(thread_pool, [&queue, result] {
-                execute_rule(queue, result[0]);
+                try {
+                    execute_rule(queue, result[0]);
+                }
+                catch (const irods::exception& e) {
+                    logger::delay_server::error(e.what());
+                }
+                catch (const std::exception& e) {
+                    logger::delay_server::error(e.what());
+                }
+                catch (...) {
+                    logger::delay_server::error("Caught an unknown error.");
+                }
             });
         };
 
@@ -527,10 +569,10 @@ namespace {
                                       "WHERE RULE_EXEC_TIME <= '{}'", std::time(nullptr));
 
         return {qstr, job};
-    }
+    } // make_delay_queue_query_processor
 } // anonymous namespace
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     bool enable_test_mode = false;
     bool write_to_stdout = false;
@@ -570,9 +612,11 @@ int main(int argc, char **argv)
     const auto sleep_time = [] {
         try {
             return irods::get_advanced_setting<const int>(irods::CFG_RE_SERVER_SLEEP_TIME);
-        } catch (const irods::exception& e) {
-            irods::log(e);
         }
+        catch (const irods::exception& e) {
+            logger::delay_server::error(e.what());
+        }
+
         return irods::default_re_server_sleep_time;
     }();
 
@@ -587,9 +631,11 @@ int main(int argc, char **argv)
     const auto thread_count = [] {
         try {
             return irods::get_advanced_setting<const int>(irods::CFG_MAX_NUMBER_OF_CONCURRENT_RE_PROCS);
-        } catch (const irods::exception& e) {
-            irods::log(e);
         }
+        catch (const irods::exception& e) {
+            logger::delay_server::error(e.what());
+        }
+
         return irods::default_max_number_of_concurrent_re_threads;
     }();
 
@@ -597,7 +643,7 @@ int main(int argc, char **argv)
     irods::delay_queue queue;
 
     try {
-        while(!re_server_terminated) {
+        while (!re_server_terminated) {
             logger::delay_server::trace("Rule execution server is awake.");
 
             try {
@@ -611,22 +657,25 @@ int main(int argc, char **argv)
                 auto errors = future.get();
 
                 logger::delay_server::trace("Rules have been processed. Checking for errors ...");
-                if(errors.size() > 0) {
-                    for(const auto& [code, msg] : errors) {
+                if (errors.size() > 0) {
+                    for (const auto& [code, msg] : errors) {
                         logger::delay_server::error("Executing delayed rule failed - [{}]::[{}]", code, msg);
                     }
                 }
-            } catch(const irods::exception& e) {
-                irods::log(e);
-            } catch(const std::exception& e) {
-                irods::log(LOG_ERROR, e.what());
+            }
+            catch (const irods::exception& e) {
+                logger::delay_server::error(e.what());
+            }
+            catch (const std::exception& e) {
+                logger::delay_server::error(e.what());
             }
 
             logger::delay_server::trace("Rule execution server is going to sleep.");
             go_to_sleep();
         }
-    } catch(const irods::exception& e) {
-        irods::log(e);
+    }
+    catch (const irods::exception& e) {
+        logger::delay_server::error(e.what());
     }
 
     logger::delay_server::info("Rule execution server exiting ...");
