@@ -3,6 +3,9 @@
 #include "objInfo.h"
 #include "msParam.h"
 #include "irods_re_structs.hpp"
+#include "irods_logger.hpp"
+
+using logger = irods::experimental::log;
 
 namespace
 {
@@ -151,17 +154,20 @@ namespace irods
                     param["in_out_struct"] = to_floating_point<float>(*_p);
                 }
                 else {
-                    rodsLog(LOG_WARNING, "Microservice parameter type is not supported. Ignoring parameter.");
+                    logger::microservice::warn(
+                        "Microservice parameter type [{}] is not supported. Ignoring parameter.",
+                        _p->type);
                 }
             }
             else {
-                rodsLog(LOG_WARNING, "Cannot store microservice parameter (MsParam::inOutStruct). "
-                                     "No type information available.");
+                logger::microservice::warn(
+                    "Cannot store microservice parameter (MsParam::inOutStruct). "
+                    "No type information available.");
             }
         }
 
         if (_p->inpOutBuf) {
-            rodsLog(LOG_WARNING, "Cannot store microservice parameter (MsParam::inpOutBuf).");
+            logger::microservice::warn("Cannot store microservice parameter (MsParam::inpOutBuf).");
         }
 
         return param;

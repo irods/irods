@@ -3,8 +3,10 @@
 #include "objInfo.h"
 #include "msParam.h"
 #include "irods_re_structs.hpp"
+#include "irods_logger.hpp"
 
-using json = nlohmann::json;
+using logger = irods::experimental::log;
+using json   = nlohmann::json;
 
 namespace irods
 {
@@ -70,12 +72,15 @@ namespace irods
                     p->inOutStruct = v;
                 }
                 else {
-                    rodsLog(LOG_WARNING, "Microservice parameter type is not supported. Ignoring parameter.");
+                    logger::microservice::warn(
+                        "Microservice parameter type [{}] is not supported. Ignoring parameter.",
+                        p->type);
                 }
             }
             else {
-                rodsLog(LOG_WARNING, "Cannot read microservice parameter (MsParam::inOutStruct). "
-                                     "No type information available.");
+                logger::microservice::warn(
+                    "Cannot read microservice parameter (MsParam::inOutStruct). "
+                    "No type information available.");
             }
         }
 
