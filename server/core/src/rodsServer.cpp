@@ -1378,57 +1378,70 @@ int initServerMain(
     /* Record port, pid, and cwd into a well-known file */
     recordServerProcess(svrComm);
 
-
-    ix::cron::cron_builder delay_server;
-    const auto start_delay_server = [&](std::any& _){
+    const auto start_delay_server = [&](std::any&)
+    {
         rodsServerHost_t* reServerHost{};
         getReHost(&reServerHost);
+
+        if (!reServerHost) {
+            return;
+        }
+
         std::optional<pid_t> delay_pid;
-        if(irods::server_properties::instance().contains(irods::RE_PID_KW)){
+        if (irods::server_properties::instance().contains(irods::RE_PID_KW)) {
             delay_pid = irods::get_server_property<int>(irods::RE_PID_KW);
         }
-        if (reServerHost && LOCAL_HOST == reServerHost->localFlag) {
-            if(!delay_pid.has_value() || waitpid(delay_pid.value(), nullptr, WNOHANG) != 0){
-                ix::log::server::info("Forking Rule Execution Server (irodsReServer) ...");
-                const int pid = RODS_FORK();
-                if (pid == 0) {
-                    close(svrComm->sock);
 
-                    std::vector<char*> argv;
-                    argv.push_back("irodsReServer");
-
-                    if (enable_test_mode) {
-                        argv.push_back("-t");
-                    }
-
-                    if (write_to_stdout) {
-                        argv.push_back("-u");
-                    }
-
-                    argv.push_back(nullptr);
-
-                    // Launch the delay server!
-                    execv(argv[0], &argv[0]);
-                    exit(1);
-                }
-                else {
-                    irods::set_server_property<int>(irods::RE_PID_KW, pid);
+        if (LOCAL_HOST == reServerHost->localFlag) {
+            if (delay_pid) {
+                if (const auto ec = waitpid(*delay_pid, nullptr, WNOHANG); ec != -1) {
+                    return;
                 }
             }
-        }else if( reServerHost && delay_pid.has_value()
-                  && waitpid(delay_pid.value(), nullptr, WNOHANG) == 0 ) {
+
+            ix::log::server::info("Forking Rule Execution Server (irodsReServer) ...");
+            const int pid = RODS_FORK();
+
+            if (pid == 0) {
+                close(svrComm->sock);
+
+                std::vector<char*> argv;
+                argv.push_back("irodsReServer");
+
+                if (enable_test_mode) {
+                    argv.push_back("-t");
+                }
+
+                if (write_to_stdout) {
+                    argv.push_back("-u");
+                }
+
+                argv.push_back(nullptr);
+
+                // Launch the delay server!
+                execv(argv[0], &argv[0]);
+                exit(1);
+            }
+            else {
+                irods::set_server_property<int>(irods::RE_PID_KW, pid);
+            }
+        }
+        else if (delay_pid && waitpid(*delay_pid, nullptr, WNOHANG) != -1) {
             // If the delay server exists but we shouldn't have it on this instance, then kill it.
-            ix::log::server::info("We are no longer the delay server host. Ending process");
+            ix::log::server::info("We are no longer the delay server host. Ending process ...");
             // Sending SIGTERM causes the delay server to finish all tasks and exit gracefully.
             kill(delay_pid.value(), SIGTERM);
-            waitpid(delay_pid.value(), nullptr, WNOHANG);
+            waitpid(*delay_pid, nullptr, WNOHANG);
             irods::server_properties::instance().remove(irods::RE_PID_KW);
         }
     };
+
     std::any dummy;
     start_delay_server(dummy);
+    ix::cron::cron_builder delay_server;
     delay_server.to_execute(start_delay_server).interval(5);
     ix::cron::cron::get()->add_task(delay_server.build());
+
     return 0;
 }
 
