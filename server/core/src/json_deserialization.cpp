@@ -70,7 +70,8 @@ namespace irods
                     p->inOutStruct = v;
                 }
                 else {
-                    rodsLog(LOG_WARNING, "Microservice parameter type is not supported. Ignoring parameter.");
+                    rodsLog(LOG_WARNING, "Microservice parameter type [%s] is not supported. Ignoring parameter.",
+                            p->type);
                 }
             }
             else {

@@ -151,7 +151,8 @@ namespace irods
                     param["in_out_struct"] = to_floating_point<float>(*_p);
                 }
                 else {
-                    rodsLog(LOG_WARNING, "Microservice parameter type is not supported. Ignoring parameter.");
+                    rodsLog(LOG_WARNING, "Microservice parameter type [%s] is not supported. Ignoring parameter.",
+                            _p->type);
                 }
             }
             else {
