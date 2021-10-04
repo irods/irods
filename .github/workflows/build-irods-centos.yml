@@ -22,6 +22,7 @@ jobs:
           submodules: recursive
       - name: Install Prerequisites
         run:  |
+              yum -y update ca-certificates
               yum install -y sudo bind-utils wget
               yum -y install gcc g++ libstdc++-static make rpm-build bzip2-devel curl-devel fakeroot help2man openssl-devel pam-devel python-devel unixODBC unixODBC-devel zlib-devel
       - name: Get Public IP
