@@ -113,14 +113,6 @@ namespace
         return inp.bytesWritten > 0 && l1desc.bytesWritten <= 0;
     } // cross_zone_write_operation
 
-    auto cross_zone_copy_operation(const l1desc_t& l1desc) -> bool
-    {
-        const auto cond_input = irods::experimental::make_key_value_proxy(l1desc.dataObjInp->condInput);
-        return l1desc.l3descInx < 3 &&
-               cond_input.contains(CROSS_ZONE_CREATE_KW) &&
-               INTERMEDIATE_REPLICA == l1desc.replStatus;
-    } // cross_zone_copy_operation
-
     auto perform_checksum_operation_for_finalize(RsComm& _comm, const int _fd) -> std::string
     {
         auto& l1desc = L1desc[_fd];
@@ -335,23 +327,6 @@ namespace
         auto r = ir::make_replica_proxy(*l1desc.dataObjInfo);
 
         auto cond_input = irods::experimental::make_key_value_proxy(l1desc.dataObjInp->condInput);
-
-        if (cross_zone_copy_operation(l1desc)) {
-            // TODO: unclear whether this can happen - I feel like it cannot
-            if (const int ec = svrRegDataObj(&_comm, r.get()); ec < 0) {
-                irods::log(LOG_ERROR, fmt::format(
-                    "[{}:{}] - failed to register object for cross-zone copy operation "
-                    "[error_code=[{}], path=[{}], hierarchy=[{}]",
-                    __FUNCTION__, __LINE__, ec, r.logical_path(), r.hierarchy()));
-
-                const auto admin_op = cond_input.contains(ADMIN_KW);
-                if (const auto unlock_ec = ill::unlock_and_publish(_comm, {r, admin_op}, STALE_REPLICA, ill::restore_status); unlock_ec < 0) {
-                    irods::log(LOG_ERROR, fmt::format("[{}:{}] - failed to unlock data object [error_code=[{}]]", __FUNCTION__, __LINE__, unlock_ec));
-                }
-
-                return ec;
-            }
-        }
 
         irods::apply_metadata_from_cond_input(_comm, *l1desc.dataObjInp);
         irods::apply_acl_from_cond_input(_comm, *l1desc.dataObjInp);
