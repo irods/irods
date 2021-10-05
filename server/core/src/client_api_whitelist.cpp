@@ -112,7 +112,7 @@ namespace irods
                        GET_REMOTE_ZONE_RESC_AN,
                        DATA_OBJ_OPEN_AND_STAT_AN,
                        //L3_FILE_GET_SINGLE_BUF_AN,
-                       //L3_FILE_PUT_SINGLE_BUF_AN,
+                       L3_FILE_PUT_SINGLE_BUF_AN,
                        DATA_OBJ_CREATE_AND_STAT_AN,
                        DATA_OBJ_CLOSE_AN,
                        DATA_OBJ_LSEEK_AN,
