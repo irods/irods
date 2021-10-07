@@ -14,18 +14,32 @@ namespace irods
             return nullptr;
         }
 
-        auto* p = static_cast<keyValPair_t*>(std::malloc(sizeof(keyValPair_t)));
+        auto* p = static_cast<KeyValPair*>(std::malloc(sizeof(KeyValPair)));
 
-        std::memset(p, 0, sizeof(keyValPair_t));
+        std::memset(p, 0, sizeof(KeyValPair));
 
         p->len = _json.size();
         p->keyWord = static_cast<char**>(std::malloc(sizeof(char*) * p->len));
         p->value = static_cast<char**>(std::malloc(sizeof(char*) * p->len));
 
-        for (int i = 0; i < p->len; ++i) {
-            const auto& object = _json.at(i);
-            p->keyWord[i] = strdup(object.at("key").get<std::string>().data());
-            p->value[i] = strdup(object.at("value").get<std::string>().data());
+        if (_json.is_object()) {
+            int i = 0;
+            for (auto&& [k, v] : _json.items()) {
+                p->keyWord[i] = strdup(k.data());
+                p->value[i] = strdup(v.is_null() ? "" : v.get_ref<const std::string&>().data());
+                ++i;
+            }
+        }
+        else {
+            // This block handles the case where the KeyValPair type was serialized
+            // into an array of objects holding a key and a value (e.g. [{key, value}, ...]).
+            // This block allows for a clean transition from the old wasteful format to a better,
+            // more memory efficient format.
+            for (int i = 0; i < p->len; ++i) {
+                const auto& object = _json.at(i);
+                p->keyWord[i] = strdup(object.at("key").get_ref<const std::string&>().data());
+                p->value[i] = strdup(object.at("value").get_ref<const std::string&>().data());
+            }
         }
 
         return p;
@@ -37,22 +51,22 @@ namespace irods
             return nullptr;
         }
 
-        auto* p = static_cast<msParam_t*>(std::malloc(sizeof(msParam_t)));
+        auto* p = static_cast<MsParam*>(std::malloc(sizeof(MsParam)));
 
-        std::memset(p, 0, sizeof(msParam_t));
+        std::memset(p, 0, sizeof(MsParam));
 
-        p->label = strdup(_json.at("label").get<std::string>().data());
+        p->label = strdup(_json.at("label").get_ref<const std::string&>().data());
 
         // Input variables will have a type associated with them.
         // Output variables will NOT have a type associated with them.
-        if (const auto type = _json.at("type"); type.is_string()) {
-            p->type = strdup(type.get<std::string>().data());
+        if (const auto& type = _json.at("type"); type.is_string()) {
+            p->type = strdup(type.get_ref<const std::string&>().data());
         }
 
-        if (const auto value = _json.at("in_out_struct"); !value.empty()) {
+        if (const auto& value = _json.at("in_out_struct"); !value.empty()) {
             if (p->type) {
                 if (std::string_view{STR_MS_T} == p->type) {
-                    p->inOutStruct = strdup(value.get<std::string>().data());
+                    p->inOutStruct = strdup(value.get_ref<const std::string&>().data());
                 }
                 else if (std::string_view{INT_MS_T} == p->type) {
                     auto* v = static_cast<int*>(std::malloc(sizeof(int)));
@@ -68,6 +82,9 @@ namespace irods
                     auto* v = static_cast<int*>(std::malloc(sizeof(float)));
                     *v = value.get<float>();
                     p->inOutStruct = v;
+                }
+                else if (std::string_view{KeyValPair_MS_T} == p->type) {
+                    p->inOutStruct = to_key_value_pair(value);
                 }
                 else {
                     rodsLog(LOG_WARNING, "Microservice parameter type [%s] is not supported. Ignoring parameter.",
@@ -89,13 +106,13 @@ namespace irods
             return nullptr;
         }
 
-        auto* p = static_cast<msParamArray_t*>(std::malloc(sizeof(msParamArray_t)));
+        auto* p = static_cast<MsParamArray*>(std::malloc(sizeof(MsParamArray)));
 
-        std::memset(p, 0, sizeof(msParamArray_t));
+        std::memset(p, 0, sizeof(MsParamArray));
 
         p->len = _json.at("ms_params").size();
         p->oprType = _json.at("operation_type").get<int>();
-        p->msParam = static_cast<msParam_t**>(std::malloc(sizeof(msParam_t*) * p->len));
+        p->msParam = static_cast<MsParam**>(std::malloc(sizeof(MsParam*) * p->len));
 
         const auto& params = _json.at("ms_params");
 
@@ -108,27 +125,27 @@ namespace irods
 
     auto to_auth_info(const nlohmann::json& _json) -> AuthInfo
     {
-        authInfo_t info{};
+        AuthInfo info{};
 
         info.authFlag = _json.at("auth_flag").get<int>();
         info.flag = _json.at("flag").get<int>();
         info.ppid = _json.at("ppid").get<int>();
 
-        rstrcpy(info.authScheme, _json.at("scheme").get<std::string>().data(), sizeof(authInfo_t::authScheme));
-        rstrcpy(info.host, _json.at("host").get<std::string>().data(), sizeof(authInfo_t::host));
-        rstrcpy(info.authStr, _json.at("auth_string").get<std::string>().data(), sizeof(authInfo_t::authStr));
+        rstrcpy(info.authScheme, _json.at("scheme").get_ref<const std::string&>().data(), sizeof(AuthInfo::authScheme));
+        rstrcpy(info.host, _json.at("host").get_ref<const std::string&>().data(), sizeof(AuthInfo::host));
+        rstrcpy(info.authStr, _json.at("auth_string").get_ref<const std::string&>().data(), sizeof(AuthInfo::authStr));
 
         return info;
     }
 
     auto to_user_other_info(const nlohmann::json& _json) -> UserOtherInfo
     {
-        userOtherInfo_t info{};
+        UserOtherInfo info{};
 
-        rstrcpy(info.userInfo, _json.at("info").get<std::string>().data(), sizeof(userOtherInfo_t::userInfo));
-        rstrcpy(info.userComments, _json.at("comments").get<std::string>().data(), sizeof(userOtherInfo_t::userComments));
-        rstrcpy(info.userCreate, _json.at("ctime").get<std::string>().data(), sizeof(userOtherInfo_t::userCreate));
-        rstrcpy(info.userModify, _json.at("mtime").get<std::string>().data(), sizeof(userOtherInfo_t::userModify));
+        rstrcpy(info.userInfo, _json.at("info").get_ref<const std::string&>().data(), sizeof(UserOtherInfo::userInfo));
+        rstrcpy(info.userComments, _json.at("comments").get_ref<const std::string&>().data(), sizeof(UserOtherInfo::userComments));
+        rstrcpy(info.userCreate, _json.at("ctime").get_ref<const std::string&>().data(), sizeof(UserOtherInfo::userCreate));
+        rstrcpy(info.userModify, _json.at("mtime").get_ref<const std::string&>().data(), sizeof(UserOtherInfo::userModify));
 
         return info;
     }
@@ -139,13 +156,13 @@ namespace irods
             return nullptr;
         }
 
-        auto* p = static_cast<userInfo_t*>(std::malloc(sizeof(userInfo_t)));
+        auto* p = static_cast<UserInfo*>(std::malloc(sizeof(UserInfo)));
 
-        std::memset(p, 0, sizeof(userInfo_t));
+        std::memset(p, 0, sizeof(UserInfo));
 
-        rstrcpy(p->userName, _json.at("name").get<std::string>().data(), sizeof(userInfo_t::userName));
-        rstrcpy(p->userType, _json.at("type").get<std::string>().data(), sizeof(userInfo_t::userType));
-        rstrcpy(p->rodsZone, _json.at("zone").get<std::string>().data(), sizeof(userInfo_t::rodsZone));
+        rstrcpy(p->userName, _json.at("name").get_ref<const std::string&>().data(), sizeof(UserInfo::userName));
+        rstrcpy(p->userType, _json.at("type").get_ref<const std::string&>().data(), sizeof(UserInfo::userType));
+        rstrcpy(p->rodsZone, _json.at("zone").get_ref<const std::string&>().data(), sizeof(UserInfo::rodsZone));
 
         p->sysUid = _json.at("system_uid").get<int>();
         p->authInfo = to_auth_info(_json.at("auth_info"));
@@ -159,11 +176,11 @@ namespace irods
         try {
             const auto json_data = json::parse(_json_string);
 
-            ruleExecInfo_t rei{};
+            RuleExecInfo rei{};
 
-            rstrcpy(rei.ruleName, json_data.at("rule_name").get<std::string>().data(), sizeof(rei.ruleName));
-            rstrcpy(rei.pluginInstanceName, json_data.at("plugin_instance_name").get<std::string>().data(), sizeof(rei.pluginInstanceName));
-            rstrcpy(rei.rescName, json_data.at("resource_name").get<std::string>().data(), sizeof(rei.rescName));
+            rstrcpy(rei.ruleName, json_data.at("rule_name").get_ref<const std::string&>().data(), sizeof(rei.ruleName));
+            rstrcpy(rei.pluginInstanceName, json_data.at("plugin_instance_name").get_ref<const std::string&>().data(), sizeof(rei.pluginInstanceName));
+            rstrcpy(rei.rescName, json_data.at("resource_name").get_ref<const std::string&>().data(), sizeof(rei.rescName));
 
             rei.msParamArray = to_ms_param_array(json_data.at("ms_param_array"));
             rei.uoic = to_user_info(json_data.at("user_info_client"));
