@@ -1,4 +1,3 @@
-
 #include <iostream>
 
 #include "irods_server_properties.hpp"

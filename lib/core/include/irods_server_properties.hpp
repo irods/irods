@@ -48,12 +48,9 @@ namespace irods
 
     extern const std::string SERVER_CONFIG_FILE;
 
-
     class server_properties
     {
-        using json = nlohmann::json;
-
-        public:
+    public:
         /// @brief The singleton
         static server_properties& instance();
 
@@ -69,24 +66,21 @@ namespace irods
         T get_property(const std::string& _key)
         {
             auto prop = config_props_.find(_key);
-            if(prop != config_props_.end()) {
+            if (prop != config_props_.end()) {
                 return !prop->empty() ? prop->get<T>() : T{};
             }
 
-            THROW(KEY_NOT_FOUND,
-                  fmt::format("server properties does not contain key {}",
-                  _key));
+            THROW(KEY_NOT_FOUND, fmt::format("server properties does not contain key {}", _key));
         }
 
         template<typename T>
         T get_property(const configuration_parser::key_path_t& _keys)
         {
-            json* tmp = &config_props_;
+            auto* tmp = &config_props_;
 
-            for(auto&& k : _keys) {
-                if(!tmp->contains(k)) {
-                    THROW(KEY_NOT_FOUND,
-                          "get_property :: path does not exist");
+            for (auto&& k : _keys) {
+                if (!tmp->contains(k)) {
+                    THROW(KEY_NOT_FOUND, "get_property :: path does not exist");
                 }
 
                 tmp = &tmp->at(k);
@@ -98,8 +92,8 @@ namespace irods
         template<typename T>
         T set_property(const std::string& _key, const T& _val)
         {
-            json tmp{};
-            if(config_props_.contains(_key)) {
+            nlohmann::json tmp;
+            if (config_props_.contains(_key)) {
                 tmp = config_props_.at(_key);
             }
 
@@ -111,11 +105,11 @@ namespace irods
         template<typename T>
         T set_property(const configuration_parser::key_path_t& _keys, const T& _val)
         {
-            json* tmp = &config_props_;
+            auto* tmp = &config_props_;
 
-            for(auto&& k : _keys) {
-                if(!tmp->contains(k)) {
-                    (*tmp)[k] = json{};
+            for (auto&& k : _keys) {
+                if (!tmp->contains(k)) {
+                    (*tmp)[k] = nlohmann::json{};
                     tmp = &(*tmp)[k];
                 }
                 else {
@@ -133,9 +127,9 @@ namespace irods
         template<typename T>
         T remove( const std::string& _key )
         {
-            json tmp{};
+            nlohmann::json tmp;
 
-            if(config_props_.contains(_key)) {
+            if (config_props_.contains(_key)) {
                 tmp = config_props_.at(_key);
                 config_props_.erase(_key);
             }
@@ -150,15 +144,13 @@ namespace irods
             return config_props_;
         }
 
-        private:
-
+    private:
         server_properties();
 
-        server_properties( server_properties const& ) = delete;
-        server_properties& operator=( server_properties const& ) = delete;
+        server_properties(const server_properties&) = delete;
+        server_properties& operator=(const server_properties&) = delete;
 
-        json config_props_;
-
+        nlohmann::json config_props_;
     }; // class server_properties
 
     template<>
