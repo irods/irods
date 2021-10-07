@@ -139,7 +139,7 @@ namespace irods
 
         void remove( const std::string& _key );
 
-        auto map() -> json
+        nlohmann::json& map() noexcept
         {
             return config_props_;
         }
