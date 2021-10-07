@@ -1,6 +1,7 @@
 #include "irods_server_properties.hpp"
 
 #include "irods_get_full_path_for_config_file.hpp"
+#include "irods_stacktrace.hpp"
 #include "rodsLog.h"
 
 #include <boost/any.hpp>
@@ -10,14 +11,12 @@
 #include <fstream>
 #include <unordered_map>
 
-#include "irods_stacktrace.hpp"
-
 #include <curl/curl.h>
 #include <curl/easy.h>
 
-/* types.h is not included in newer versions of libcurl */
+// types.h is not included in newer versions of libcurl.
 #if LIBCURL_VERSION_NUM < 0x071503
-#include <curl/types.h>
+    #include <curl/types.h>
 #endif
 
 namespace irods
@@ -36,69 +35,68 @@ namespace irods
     const std::string CONFIG_ENDPOINT_KW("IRODS_SERVER_CONFIGURATION_ENDPOINT");
     const std::string API_KEY_KW("IRODS_SERVER_CONFIGURATION_API_KEY");
 
-
-    namespace {
-
+    namespace
+    {
         using json = nlohmann::json;
 
-		struct string_t
+        struct string_t
         {
-            char*  ptr;
-            size_t len;	/* not counting terminating null char */
-		};
+            char* ptr;
+            size_t len;	// not counting terminating null char.
+        };
 
-		size_t curl_write_str(void *ptr, size_t size, size_t nmeb, void *stream)
-		{
-				size_t    new_len{};
-				string_t* string{};
-				void*     tmp_ptr{};
+        size_t curl_write_str(void *ptr, size_t size, size_t nmeb, void *stream)
+        {
+            size_t new_len{};
+            string_t* string{};
+            void* tmp_ptr{};
 
-				if (!stream) {
-						rodsLog (LOG_ERROR, "%s", "irodsCurl::write_string: NULL destination stream.");
-						return 0;
-				}
+            if (!stream) {
+                rodsLog (LOG_ERROR, "%s", "irodsCurl::write_string: NULL destination stream.");
+                return 0;
+            }
 
-				string = static_cast<string_t *>(stream);
+            string = static_cast<string_t*>(stream);
 
-				new_len = string->len + size*nmeb;
+            new_len = string->len + size*nmeb;
 
-				/* Reallocate memory with space for new content */
-				/* Add an extra byte for terminating null char */
-				tmp_ptr = realloc(string->ptr, new_len + 1);
-				if (!tmp_ptr) {
-						rodsLog(LOG_ERROR, "%s", "irodsCurl::write_string: realloc failed.");
-						return -1;
-				}
+            // Reallocate memory with space for new content.
+            // Add an extra byte for terminating null char.
+            tmp_ptr = realloc(string->ptr, new_len + 1);
+            if (!tmp_ptr) {
+                rodsLog(LOG_ERROR, "%s", "irodsCurl::write_string: realloc failed.");
+                return -1;
+            }
 
-				string->ptr = (char*)tmp_ptr;
+            string->ptr = (char*) tmp_ptr;
 
-				/* Append new content to string and terminating '\0' */
-				memcpy(string->ptr + string->len, ptr, size*nmeb);
-				string->ptr[new_len] = '\0';
-				string->len = new_len;
+            // Append new content to string and terminating '\0'.
+            memcpy(string->ptr + string->len, ptr, size*nmeb);
+            string->ptr[new_len] = '\0';
+            string->len = new_len;
 
-                                free(tmp_ptr);
-				return size*nmeb;
-		} // curl_write_str
+            free(tmp_ptr);
+            return size*nmeb;
+        } // curl_write_str
 
         auto fetch_endpoint_content(const std::string& _url, const std::string& _key) -> std::string
         {
             CURLcode res = CURLE_OK;
             string_t string;
 
-            // Destination string_t init
+            // Destination string_t init.
             string.ptr = strdup("");
             string.len = 0;
 
             CURL* curl = curl_easy_init();
 
-            // Set up easy handler
+            // Set up easy handler.
             curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
             curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_write_str);
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, &string);
             curl_easy_setopt(curl, CURLOPT_URL, _url.c_str());
 
-            // handle the auth header
+            // handle the auth header.
             auto hdr = std::string{fmt::format("X-API-KEY: {}", _key)};
 
             curl_slist* sl = nullptr;
@@ -106,19 +104,18 @@ namespace irods
 
             curl_easy_setopt(curl, CURLOPT_HTTPHEADER, sl);
 
-            // CURL call
+            // CURL call.
             res = curl_easy_perform(curl);
 
             curl_easy_cleanup(curl);
 
-            // Error logging
-            if ( res != CURLE_OK ) {
+            // Error logging.
+            if (res != CURLE_OK) {
                 free(string.ptr);
                 THROW(SYS_INTERNAL_ERR, curl_easy_strerror(res));
             }
 
             return std::string{string.ptr, string.ptr+string.len};
-
         } // fetch_endpoint_content
 
         auto use_remote_configuration() -> bool
@@ -130,25 +127,21 @@ namespace irods
         {
             auto* key = getenv(API_KEY_KW.c_str());
 
-            if(!key) {
-                THROW(SYS_INTERNAL_ERR,
-                      "configuration enpoint api key environment variable is not set");
+            if (!key) {
+                THROW(SYS_INTERNAL_ERR, "configuration endpoint api key environment variable is not set");
             }
 
             return key;
-
         } // capture_api_key
 
         auto capture_configuration_url() -> std::string
         {
             auto* url = getenv(CONFIG_ENDPOINT_KW.c_str());
-            if(!url) {
-                THROW(SYS_INTERNAL_ERR,
-                      "configuation endpoint url environment variable is not set");
+            if (!url) {
+                THROW(SYS_INTERNAL_ERR, "configuration endpoint url environment variable is not set");
             }
 
             return url;
-
         } // capture_configuration_url
 
         auto capture_remote_configuration() -> json
@@ -160,61 +153,51 @@ namespace irods
             try {
                 return json::parse(tmp);
             }
-            catch(const json::exception& e) {
-                THROW(SYS_INTERNAL_ERR,
-                      fmt::format("failed to parse [{}] with exception [{}]",
-                      tmp, e.what()));
+            catch (const json::exception& e) {
+                THROW(SYS_INTERNAL_ERR, fmt::format("failed to parse [{}] with exception [{}]", tmp, e.what()));
             }
-
         } // capture_remote_configuration
 
         auto process_remote_configuration(const json& cfg) -> json
         {
-            if(!cfg.contains("server_config.json")) {
-                THROW(SYS_INVALID_INPUT_PARAM,
-                      "remote configuration missing server_config.json contents");
+            if (!cfg.contains("server_config.json")) {
+                THROW(SYS_INVALID_INPUT_PARAM, "remote configuration missing server_config.json contents");
             }
 
             auto tmp = cfg.at("server_config.json");
 
-            if(cfg.contains("database_config.json")) {
-                for(auto [k, v] : cfg.items()) {
+            if (cfg.contains("database_config.json")) {
+                for (auto&& [k, v] : cfg.items()) {
                     tmp[k] = v;
                 }
             }
 
-            if(cfg.contains("hosts_config.json")) {
+            if (cfg.contains("hosts_config.json")) {
                 tmp[irods::HOSTS_CONFIG_JSON_OBJECT_KW] = cfg.at("hosts_config.json");
             }
 
             return tmp;
-
         } // process_remote_configuration
-
-    } // namespace
+    } // anonymous namespace
 
     template<>
     const nlohmann::json& server_properties::get_property<const nlohmann::json&>(const std::string& _key)
     {
-        auto prop = config_props_.find(_key);
-        if(prop != config_props_.end()) {
+        if (auto prop = config_props_.find(_key); prop != config_props_.end()) {
             return *prop;
         }
 
-        THROW(KEY_NOT_FOUND,
-              fmt::format("server properties does not contain key {}",
-              _key));
+        THROW(KEY_NOT_FOUND, fmt::format("server properties does not contain key [{}]", _key));
     }
 
     template<>
     const nlohmann::json& server_properties::get_property<const nlohmann::json&>(const configuration_parser::key_path_t& _keys)
     {
-        json* tmp = &config_props_;
+        const json* tmp = &config_props_;
 
-        for(auto&& k : _keys) {
-            if(!tmp->contains(k)) {
-                THROW(KEY_NOT_FOUND,
-                      "get_property :: path does not exist");
+        for (auto&& k : _keys) {
+            if (!tmp->contains(k)) {
+                THROW(KEY_NOT_FOUND, fmt::format("get_property :: path does not exist [{}]", k));
             }
 
             tmp = &tmp->at(k);
@@ -225,9 +208,8 @@ namespace irods
 
     server_properties& server_properties::instance()
     {
-        static server_properties singleton{};
+        static server_properties singleton;
         return singleton;
-
     } // instance
 
     server_properties::server_properties()
@@ -237,29 +219,29 @@ namespace irods
 
     void server_properties::capture()
     {
-        if(use_remote_configuration()) {
+        if (use_remote_configuration()) {
             config_props_ = process_remote_configuration(capture_remote_configuration());
             return;
         }
 
         std::string svr_fn;
         irods::error ret = irods::get_full_path_for_config_file(SERVER_CONFIG_FILE, svr_fn);
-        if(!ret.ok()) {
+        if (!ret.ok()) {
             return;
         }
 
         std::ifstream svr{svr_fn};
-        if(svr.is_open()) {
+        if (svr.is_open()) {
             config_props_ = json::parse(svr);
         }
 
         std::string db_fn;
         ret = irods::get_full_path_for_config_file("database_config.json", db_fn);
-        if(ret.ok()) {
+        if (ret.ok()) {
             std::ifstream db{db_fn};
-            if(db.is_open()) {
+            if (db.is_open()) {
                 auto tmp = json::parse(db);
-                for( const auto &[k,v] : tmp.items()) {
+                for (const auto& [k, v] : tmp.items()) {
                     config_props_[k] = v;
                 }
             }
@@ -281,19 +263,16 @@ namespace irods
         catch (...) {
             rodsLog(LOG_ERROR, "An unexpected error occurred while processing the hosts_config.json file.");
         }
-
     } // capture
 
-    void server_properties::remove( const std::string& _key )
+    void server_properties::remove(const std::string& _key)
     {
-        if(config_props_.contains(_key)) {
+        if (config_props_.contains(_key)) {
             config_props_.erase(_key);
         }
     } // remove
 
-/////////////////////////////////////////////////////
-
-    void delete_server_property( const std::string& _prop )
+    void delete_server_property(const std::string& _prop)
     {
         irods::server_properties::instance().remove(_prop);
     } // delete_server_property
