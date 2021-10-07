@@ -64,13 +64,13 @@ namespace irods
             return nullptr;
         }
 
-        auto json_array = json::array();
+        auto json_object = json::object();
 
         for (int i = 0; i < _p->len; ++i) {
-            json_array.push_back({{"key", _p->keyWord[i]}, {"value", _p->value[i]}});
+            json_object[_p->keyWord[i]] = _p->value[i];
         }
 
-        return json_array;
+        return json_object;
     }
 
     auto to_json(const AuthInfo* _p) -> nlohmann::json
@@ -143,7 +143,7 @@ namespace irods
                 }
                 else if (std::string_view{INT_MS_T} == _p->type) {
                     param["type"] = _p->type;
-                    param["in_out_struct"] = parseMspForPosInt(const_cast<msParam_t*>(_p));
+                    param["in_out_struct"] = parseMspForPosInt(const_cast<MsParam*>(_p));
                 }
                 else if (std::string_view{DOUBLE_MS_T} == _p->type) {
                     param["type"] = _p->type;
@@ -152,6 +152,10 @@ namespace irods
                 else if (std::string_view{FLOAT_MS_T} == _p->type) {
                     param["type"] = _p->type;
                     param["in_out_struct"] = to_floating_point<float>(*_p);
+                }
+                else if (std::string_view{KeyValPair_MS_T} == _p->type) {
+                    param["type"] = _p->type;
+                    param["in_out_struct"] = to_json(static_cast<KeyValPair*>(_p->inOutStruct));
                 }
                 else {
                     logger::microservice::warn(
