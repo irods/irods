@@ -1362,6 +1362,7 @@ target_link_libraries(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so
   ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
+  ${IRODS_EXTERNALS_FULLPATH_NANODBC}/lib/libnanodbc.so
   rt
   Threads::Threads
   ${CMAKE_DL_LIBS}
@@ -1379,6 +1380,7 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/lib/api/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
+  ${IRODS_EXTERNALS_FULLPATH_NANODBC}/include
   )
 target_compile_definitions(irodsReServer PRIVATE ${IRODS_COMPILE_DEFINITIONS})
 target_compile_options(irodsReServer PRIVATE -Wno-write-strings)
