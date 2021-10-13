@@ -13,6 +13,10 @@ namespace irods
     extern const std::string CFG_PAM_PASSWORD_MIN_TIME_KW;
     extern const std::string CFG_PAM_PASSWORD_MAX_TIME_KW;
 
+    extern const std::string CFG_DB_HOST_KW;
+    extern const std::string CFG_DB_PORT_KW;
+    extern const std::string CFG_DB_NAME_KW;
+    extern const std::string CFG_DB_ODBC_DRIVER_KW;
     extern const std::string CFG_DB_USERNAME_KW;
     extern const std::string CFG_DB_PASSWORD_KW;
     extern const std::string CFG_DB_SSLMODE_KW;

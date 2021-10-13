@@ -2,6 +2,7 @@
 #include "irods_configuration_keywords.hpp"
 #include "irods_get_full_path_for_config_file.hpp"
 #include "irods_log.hpp"
+#include "irods_server_properties.hpp"
 #include "irods_stacktrace.hpp"
 #include "objDesc.hpp"
 #include "rodsConnect.h"
@@ -16,10 +17,8 @@
 
 namespace irods::experimental::catalog {
 
-    auto new_database_connection() -> std::tuple<std::string, nanodbc::connection>
+    auto new_database_connection(bool _read_server_config) -> std::tuple<std::string, nanodbc::connection>
     {
-        using json      = nlohmann::json;
-
         const std::string dsn = [] {
             if (const char* dsn = std::getenv("irodsOdbcDSN"); dsn) {
                 return dsn;
@@ -28,34 +27,50 @@ namespace irods::experimental::catalog {
             return "iRODS Catalog";
         }();
 
-        std::string config_path;
+        std::string db_username;
+        std::string db_password;
+        std::string db_instance_name;
 
-        if (const auto error = irods::get_full_path_for_config_file("server_config.json", config_path); !error.ok()) {
-            rodsLog(LOG_ERROR, "Server configuration not found");
-            throw std::runtime_error{"Failed to connect to catalog"};
+        if (_read_server_config) {
+            std::string config_path;
+
+            if (const auto error = irods::get_full_path_for_config_file("server_config.json", config_path); !error.ok()) {
+                rodsLog(LOG_ERROR, "Server configuration not found");
+                throw std::runtime_error{"Failed to connect to catalog"};
+            }
+
+            rodsLog(LOG_DEBUG9, "Reading server configuration ...");
+
+            nlohmann::json config;
+
+            {
+                std::ifstream config_file{config_path};
+                config_file >> config;
+            }
+
+            const auto& db_plugin_config = config.at(irods::CFG_PLUGIN_CONFIGURATION_KW).at(irods::PLUGIN_TYPE_DATABASE);
+            const auto& db_instance = db_plugin_config.front();
+
+            db_instance_name = std::begin(db_plugin_config).key();
+            db_username = db_instance.at(irods::CFG_DB_USERNAME_KW).get<std::string>();
+            db_password = db_instance.at(irods::CFG_DB_PASSWORD_KW).get<std::string>();
         }
+        else {
+            // clang-format off
+            using map_type      = std::unordered_map<std::string, boost::any>;
+            using key_path_type = configuration_parser::key_path_t;
+            // clang-format on
 
-        rodsLog(LOG_DEBUG9, "Reading server configuration ...");
+            const auto& db_plugin_config = get_server_property<const map_type&>(key_path_type{CFG_PLUGIN_CONFIGURATION_KW, PLUGIN_TYPE_DATABASE});
+            const auto& [key, value] = *std::begin(db_plugin_config);
+            const auto& db_instance = boost::any_cast<const map_type&>(value);
 
-        json config;
-
-        {
-            std::ifstream config_file{config_path};
-            config_file >> config;
+            db_instance_name = key;
+            db_username = boost::any_cast<const std::string&>(db_instance.at(irods::CFG_DB_USERNAME_KW));
+            db_password = boost::any_cast<const std::string&>(db_instance.at(irods::CFG_DB_PASSWORD_KW));
         }
 
         try {
-            const auto& db_plugin_config = config.at(irods::CFG_PLUGIN_CONFIGURATION_KW).at(irods::PLUGIN_TYPE_DATABASE);
-            const auto& db_instance = db_plugin_config.front();
-            const auto db_username = db_instance.at(irods::CFG_DB_USERNAME_KW).get<std::string>();
-            const auto db_password = db_instance.at(irods::CFG_DB_PASSWORD_KW).get<std::string>();
-
-            // Capture the database instance name.
-            std::string db_instance_name;
-            for (auto& [k, v] : db_plugin_config.items()) {
-                db_instance_name = k;
-            }
-
             if (db_instance_name.empty()) {
                 throw std::runtime_error{"Database instance name cannot be empty"};
             }
