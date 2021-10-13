@@ -11,80 +11,58 @@
 
 #include <list>
 
-namespace irods {
-/// =-=-=-=-=-=-=-
-/// @brief check the incoming signed SID against all locals SIDs
-    error check_sent_sid(
-        const std::string  _in_sid ) {
-        // =-=-=-=-=-=-=-
-        // check incoming params
-        if ( _in_sid.empty() ) {
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       "incoming SID is empty" );
+#include "fmt/format.h"
+
+namespace irods
+{
+    error check_sent_sid(const std::string& _zone_key)
+    {
+        if (_zone_key.empty()) {
+            return ERROR(SYS_INVALID_INPUT_PARAM, "incoming zone_key is empty");
         }
 
+        // Check local zone keys for a match with the sent zone key.
         try {
-            // =-=-=-=-=-=-=-
-            // get the agent key
-            const auto& encr_key = irods::get_server_property<const std::string>(CFG_NEGOTIATION_KEY_KW);
-
-            // =-=-=-=-=-=-=-
-            // start with local SID
-            const auto& svr_sid = irods::get_server_property<const std::string>(CFG_ZONE_KEY_KW);
-
-            // =-=-=-=-=-=-=-
-            // sign SID
-            std::string signed_sid;
-            irods::error err = sign_server_sid(
-                    svr_sid,
-                    encr_key,
-                    signed_sid );
-            if ( !err.ok() ) {
-                return PASS( err );
+            const auto& neg_key = irods::get_server_property<const std::string>(CFG_NEGOTIATION_KEY_KW);
+            if (!negotiation_key_is_valid(neg_key)) {
+                irods::log(LOG_WARNING, fmt::format(
+                    "[{}:{}] - negotiation_key in server_config is invalid",
+                    __func__, __LINE__));
             }
 
-            // =-=-=-=-=-=-=-
-            // if it is a match, were good
-            if ( _in_sid == signed_sid ) {
+            const auto& zone_key = irods::get_server_property<const std::string>(CFG_ZONE_KEY_KW);
+
+            std::string signed_zone_key;
+            if (const auto err = sign_server_sid(zone_key, neg_key, signed_zone_key); !err.ok()) {
+                return PASS(err);
+            }
+
+            if (_zone_key == signed_zone_key) {
+                irods::log(LOG_DEBUG8, fmt::format(
+                    "[{}:{}] - signed zone_key matches input signed zone_key",
+                    __func__, __LINE__));
                 return SUCCESS();
             }
-        } catch ( const irods::exception& e ) {
+        } catch (const irods::exception& e) {
             return irods::error(e);
         }
 
-        // =-=-=-=-=-=-=-
-        // if not, check against all remote zone SIDs and keys
-        irods::lookup_table <
-        std::pair <
-        std::string,
-            std::string > >::iterator itr = remote_SID_key_map.begin();
-        for ( ; itr != remote_SID_key_map.end(); ++itr ) {
-            const std::pair<std::string, std::string>& entry = itr->second;
+        // Check zone and negotiation keys defined for remote zones (i.e. federation) for
+        // a match.
+        for (const auto& entry : remote_SID_key_map) {
+            const auto& [zone_key, neg_key] = entry.second;
 
-            // =-=-=-=-=-=-=-
-            // sign SID
-            std::string signed_sid;
-            irods::error err = sign_server_sid(
-                      entry.first,
-                      entry.second,
-                      signed_sid );
-            if ( !err.ok() ) {
-                return PASS( err );
+            std::string signed_zone_key;
+            if (const auto err = sign_server_sid(zone_key, neg_key, signed_zone_key); !err.ok()) {
+                return PASS(err);
             }
 
-            // =-=-=-=-=-=-=-
-            // basic string compare
-            if ( _in_sid == signed_sid ) {
+            if (_zone_key == signed_zone_key) {
                 return SUCCESS();
             }
+        }
 
-        } // for itr
-
-        return ERROR(
-                   SYS_SIGNED_SID_NOT_MATCHED,
-                   "signed SID was not matched" );
-
+        return ERROR(SYS_SIGNED_SID_NOT_MATCHED, "signed zone_keys do not match");
     } // check_sent_sid
 
 
@@ -125,7 +103,7 @@ namespace irods {
             }
             else {
                 // =-=-=-=-=-=-=-
-                // a negotiation was not requested, bail
+                // a negotiation was not requested and we do not require SSL - we good
                 return SUCCESS();
             }
 
@@ -155,64 +133,46 @@ namespace irods {
         // get the result from the key val pair
         if ( strlen( read_cs_neg->result_ ) != 0 ) {
             irods::kvp_map_t kvp;
-            err = irods::parse_kvp_string(
-                      read_cs_neg->result_,
-                      kvp );
-            if ( err.ok() ) {
+            err = irods::parse_kvp_string(read_cs_neg->result_, kvp);
+            if (err.ok()) {
+                if (kvp.find(CS_NEG_SID_KW) != kvp.end()) {
+                    // If the zone_key is empty, return immediately because the server sent the
+                    // appropriate keyword but did not send a value. This indicates that the
+                    // other server is able to perform the negotiation but did not send a value
+                    // which is bad.
+                    const std::string& zone_key = kvp.at(CS_NEG_SID_KW);
+                    if (zone_key.empty()) {
+                        return ERROR(REMOTE_SERVER_SID_NOT_DEFINED, fmt::format(
+                            "[{}:{}] - received empty zone_key", __func__, __LINE__));
+                    }
 
-                // =-=-=-=-=-=-=-
-                // extract the signed SID
-                if ( kvp.find( CS_NEG_SID_KW ) != kvp.end() ) {
-                    std::string svr_sid = kvp[ CS_NEG_SID_KW ];
-                    if ( !svr_sid.empty() ) {
-                        // =-=-=-=-=-=-=-
-                        // check SID against our SIDs
-                        err = check_sent_sid(
-                                  svr_sid );
-                        if ( !err.ok() ) {
-                            rodsLog(
-                                LOG_DEBUG,
-                                "CS_NEG\n%s",
-                                PASS( err ).result().c_str() );
-                        }
-                        else {
-                            // =-=-=-=-=-=-=-
-                            // store property that states this is an
-                            // Agent-Agent connection
-                            try {
-                                irods::set_server_property<std::string>(AGENT_CONN_KW, svr_sid);
-                            } catch ( const irods::exception& e ) {
-                                return irods::error(e);
-                            }
-                        }
+                    // Make sure that the zone_key was signed using the correct negotiation_key
+                    // and matches the signed zone_key for this zone. If it does not match, the
+                    // server should end communications.
+                    if (const auto err = check_sent_sid(zone_key); !err.ok()) {
+                        return err;
+                    }
 
-                    } // if sid is not empty
-                    else {
-                        rodsLog(
-                            LOG_WARNING,
-                            "CS_NEG :: %s - sent SID is empty",
-                            __FUNCTION__ );
+                    // Store property that states this is an Agent-Agent connection, as opposed
+                    // to a Client-Agent connection.
+                    try {
+                        irods::set_server_property<std::string>(AGENT_CONN_KW, zone_key);
+                    } catch (const irods::exception& e) {
+                        return irods::error(e);
                     }
                 }
 
-                // =-=-=-=-=-=-=-
                 // check to see if the result string has the SSL negotiation results
-                _result = kvp[ CS_NEG_RESULT_KW ];
+                _result = kvp.at(CS_NEG_RESULT_KW);
                 if ( _result.empty() ) {
-                    return ERROR(
-                               UNMATCHED_KEY_OR_INDEX,
-                               "SSL result string missing from response" );
+                    return ERROR(UNMATCHED_KEY_OR_INDEX,
+                                 "SSL result string missing from response");
                 }
-
             }
             else {
-                // =-=-=-=-=-=-=-
-                // support 4.0 client-server negotiation which did not
-                // use key-val pairs
+                // support 4.0 client-server negotiation which did not use key-val pairs
                 _result = read_cs_neg->result_;
-
             }
-
         } // if result strlen > 0
 
         if ( CS_NEG_REQUIRE == rule_result &&
