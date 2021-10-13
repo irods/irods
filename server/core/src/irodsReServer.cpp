@@ -29,13 +29,13 @@
 #include "json_serialization.hpp"
 #include "json_deserialization.hpp"
 #include "server_utilities.hpp"
+#include "catalog.hpp"
 
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
-
 #include <fmt/format.h>
-
 #include <json.hpp>
+#include <nanodbc/nanodbc.h>
 
 #include <cstdlib>
 #include <cstring>
@@ -66,7 +66,6 @@ namespace
     {
         logger::init(write_to_stdout, enable_test_mode);
 
-        irods::server_properties::instance().capture();
         logger::server::set_level(logger::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_SERVER_KW));
         logger::legacy::set_level(logger::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_LEGACY_KW));
         logger::delay_server::set_level(logger::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_DELAY_SERVER_KW));
@@ -138,29 +137,44 @@ namespace
         }
     } // set_ips_display_name
 
-    ruleExecSubmitInp_t fill_rule_exec_submit_inp(rcComm_t& comm, const std::string_view rule_id)
+    ruleExecSubmitInp_t fill_rule_exec_submit_inp(const std::string_view rule_id)
     {
-        const auto gql = fmt::format("SELECT RULE_EXEC_NAME, \
-                                             RULE_EXEC_REI_FILE_PATH, \
-                                             RULE_EXEC_USER_NAME, \
-                                             RULE_EXEC_ADDRESS, \
-                                             RULE_EXEC_TIME, \
-                                             RULE_EXEC_FREQUENCY, \
-                                             RULE_EXEC_PRIORITY, \
-                                             RULE_EXEC_LAST_EXE_TIME, \
-                                             RULE_EXEC_STATUS, \
-                                             RULE_EXEC_ESTIMATED_EXE_TIME, \
-                                             RULE_EXEC_NOTIFICATION_ADDR, \
-                                             RULE_EXEC_CONTEXT \
-                                      WHERE RULE_EXEC_ID = '{}'", rule_id);
+        std::vector<std::string> exec_info;
 
-        irods::query q{&comm, gql};
+        try {
+            // The database plugin implementation is not capable of fetching the r_rule_exec.exe_context
+            // column when it contains a large string. To get around this limitation, the delay server
+            // uses nanodbc directly. This solution assumes the delay server runs on an iRODS server that
+            // has access to the database credentials.
 
-        if (q.size() == 0) {
-            THROW(CAT_NO_ROWS_FOUND, fmt::format("Could not find row matching rule id [rule_id={}]", rule_id));
+            namespace ic = irods::experimental::catalog;
+
+            auto [db_instance_name, db_conn] = ic::new_database_connection(/* read_server_config */ false);
+
+            nanodbc::statement stmt{db_conn};
+            nanodbc::prepare(stmt, "select rule_name, rei_file_path, user_name, exe_address, exe_time,"
+                                   " exe_frequency, priority, last_exe_time, exe_status, estimated_exe_time,"
+                                   " notification_addr, exe_context "
+                                   "from R_RULE_EXEC where rule_exec_id = ?");
+
+            stmt.bind(0, rule_id.data());
+
+            auto row = nanodbc::execute(stmt);
+
+            if (!row.next()) {
+                THROW(CAT_NO_ROWS_FOUND, fmt::format("Could not find row matching rule id [rule_id={}]", rule_id));
+            }
+
+            constexpr auto number_of_columns = 12;
+            exec_info.reserve(number_of_columns); 
+
+            for (int i = 0; i < number_of_columns; ++i) {
+                exec_info.push_back(row.get<std::string>(i, ""));
+            }
         }
-
-        const auto exec_info = q.front();
+        catch (const std::exception& e) {
+            THROW(SYS_INTERNAL_ERR, e.what());
+        }
 
         namespace fs = boost::filesystem;
 
@@ -510,7 +524,7 @@ namespace
         ix::client_connection conn = get_new_connection(std::nullopt);
 
         try {
-            rule_exec_submit_inp = fill_rule_exec_submit_inp(conn, rule_id);
+            rule_exec_submit_inp = fill_rule_exec_submit_inp(rule_id);
         }
         catch (const irods::exception& e) {
             logger::delay_server::error(e.what());
@@ -590,6 +604,8 @@ int main(int argc, char** argv)
                 exit(1);
         }
     }
+
+    irods::server_properties::instance().capture();
 
     init_logger(write_to_stdout, enable_test_mode);
 
