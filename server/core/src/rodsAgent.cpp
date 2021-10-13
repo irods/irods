@@ -368,51 +368,58 @@ runIrodsAgentFactory( sockaddr_un agent_addr ) {
             log::agent_factory::trace("Spawning agent to handle request ...");
             pid_t child_pid = fork();
             if ( child_pid == 0 ) {
-                log::set_server_type("agent");
+                try {
+                    log::set_server_type("agent");
 
-                // Child process - reload properties and receive data from server process
-                irods::environment_properties::instance().capture();
+                    // Child process - reload properties and receive data from server process
+                    irods::environment_properties::instance().capture();
 
-                status = receiveDataFromServer(conn_tmp_socket);
-                if (status < 0) {
-                    const auto err{ERROR(status, "Error in receiveDataFromServer")};
-                    irods::log(err);
-                    //return err.code();
+                    // should we check this return code??
+                    status = receiveDataFromServer( conn_tmp_socket );
+                    if (status < 0) {
+                        const auto err{ERROR(status, "Error in receiveDataFromServer")};
+                        irods::log(err);
+                        //return err.code();
+                    }
+
+                    irods::server_properties::instance().capture();
+
+                    using key_path_t = irods::configuration_parser::key_path_t;
+
+                    // Update the eviction age for DNS cache entries.
+                    irods::set_server_property(
+                        key_path_t{irods::CFG_ADVANCED_SETTINGS_KW, irods::CFG_DNS_CACHE_KW, irods::CFG_EVICTION_AGE_IN_SECONDS_KW},
+                        irods::get_dns_cache_eviction_age());
+
+                    // Update the eviction age for hostname cache entries.
+                    irods::set_server_property(
+                        key_path_t{irods::CFG_ADVANCED_SETTINGS_KW, irods::CFG_HOSTNAME_CACHE_KW, irods::CFG_EVICTION_AGE_IN_SECONDS_KW},
+                        irods::get_hostname_cache_eviction_age());
+
+                    log::agent::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_AGENT_KW));
+                    log::legacy::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_LEGACY_KW));
+                    log::resource::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_RESOURCE_KW));
+                    log::database::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_DATABASE_KW));
+                    log::authentication::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_AUTHENTICATION_KW));
+                    log::api::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_API_KW));
+                    log::microservice::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_MICROSERVICE_KW));
+                    log::network::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_NETWORK_KW));
+                    log::rule_engine::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_RULE_ENGINE_KW));
+
+                    log::agent::trace("Agent started.");
+
+                    irods::error ret2 = setRECacheSaltFromEnv();
+                    if ( !ret2.ok() ) {
+                        rodsLog( LOG_ERROR, "rodsAgent::main: Failed to set RE cache mutex name\n%s", ret2.result().c_str() );
+                        return SYS_INTERNAL_ERR;
+                    }
+
+                    break;
                 }
-
-                irods::server_properties::instance().capture();
-
-                using key_path_t = irods::configuration_parser::key_path_t;
-
-                // Update the eviction age for DNS cache entries.
-                irods::set_server_property(
-                    key_path_t{irods::CFG_ADVANCED_SETTINGS_KW, irods::CFG_DNS_CACHE_KW, irods::CFG_EVICTION_AGE_IN_SECONDS_KW},
-                    irods::get_dns_cache_eviction_age());
-
-                // Update the eviction age for hostname cache entries.
-                irods::set_server_property(
-                    key_path_t{irods::CFG_ADVANCED_SETTINGS_KW, irods::CFG_HOSTNAME_CACHE_KW, irods::CFG_EVICTION_AGE_IN_SECONDS_KW},
-                    irods::get_hostname_cache_eviction_age());
-
-                log::agent::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_AGENT_KW));
-                log::legacy::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_LEGACY_KW));
-                log::resource::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_RESOURCE_KW));
-                log::database::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_DATABASE_KW));
-                log::authentication::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_AUTHENTICATION_KW));
-                log::api::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_API_KW));
-                log::microservice::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_MICROSERVICE_KW));
-                log::network::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_NETWORK_KW));
-                log::rule_engine::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_RULE_ENGINE_KW));
-
-                log::agent::trace("Agent started.");
-
-                irods::error ret2 = setRECacheSaltFromEnv();
-                if ( !ret2.ok() ) {
-                    rodsLog( LOG_ERROR, "rodsAgent::main: Failed to set RE cache mutex name\n%s", ret2.result().c_str() );
-                    return SYS_INTERNAL_ERR;
+                catch (const irods::exception& e) {
+                    irods::log(e);
+                    return e.code() == -1 ? SYS_UNKNOWN_ERROR : e.code();
                 }
-
-                break;
             } else if ( child_pid > 0 ) {
                 // Parent process - want to return to select() call
                 status = close( conn_tmp_socket );
@@ -529,7 +536,6 @@ runIrodsAgentFactory( sockaddr_un agent_addr ) {
         std::string neg_results;
         ret = irods::client_server_negotiation_for_server( net_obj, neg_results );
         if ( !ret.ok() || neg_results == irods::CS_NEG_FAILURE ) {
-            irods::log( PASS( ret ) );
             // =-=-=-=-=-=-=-
             // send a 'we failed to negotiate' message here??
             // or use the error stack rule engine thingie

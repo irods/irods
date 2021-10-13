@@ -24,12 +24,23 @@
 // stl includes
 #include <cstdlib>
 #include <map>
+#include <regex>
 #include <vector>
+
+#include "fmt/format.h"
 
 extern const packInstruct_t RodsPackTable[];
 
 namespace irods
 {
+    auto negotiation_key_is_valid(const std::string_view _key) -> bool
+    {
+        static const auto negotiation_key_regex = std::regex{R"_(^[A-Za-z0-9_]+$)_"};
+
+        return _key.length() == negotiation_key_length_in_bytes &&
+            std::regex_match(_key.data(), negotiation_key_regex);
+    } // negotiation_key_is_valid
+
     /// =-=-=-=-=-=-=-
     /// @brief given a property map and the target host name decide between a federated key and a local key
     const std::string determine_negotiation_key( const std::string& _host_name )
@@ -70,42 +81,34 @@ namespace irods
         return irods::get_server_property<std::string>(CFG_NEGOTIATION_KEY_KW);
     } // determine_negotiation_key
 
-    /// =-=-=-=-=-=-=-
-    /// @brief given a buffer encrypt and hash it for negotiation
-    error sign_server_sid(
-        const std::string& _svr_sid,
-        const std::string& _enc_key,
-        std::string&      _signed_sid )
+    error sign_server_sid(const std::string& _zone_key,
+                          const std::string& _encryption_key,
+                          std::string&       _signed_zone_key)
     {
-        // =-=-=-=-=-=-=-
+        if (_encryption_key.empty()) {
+            return ERROR(CLIENT_NEGOTIATION_ERROR, "encryption key for signing is empty");
+        }
+
+        irods::buffer_crypt::array_t key;
+        key.assign(_encryption_key.begin(), _encryption_key.end());
+
+        irods::buffer_crypt::array_t in_buf;
+        in_buf.assign(_zone_key.begin(), _zone_key.end());
+
         // create an encryption object
         // 32 byte key, 8 byte iv, 16 rounds encryption
         irods::buffer_crypt          crypt;
-        irods::buffer_crypt::array_t key;
-
-        // leverage iteration to copy from std::string to a std::vector<>
-        key.assign( _enc_key.begin(), _enc_key.end() );
-
-        irods::buffer_crypt::array_t in_buf;
-        // leverage iteration to copy from std::string to a std::vector<>
-        in_buf.assign( _svr_sid.begin(), _svr_sid.end() );
-
         irods::buffer_crypt::array_t out_buf;
-        irods::error err = crypt.encrypt(
-                               key,
-                               key, // reuse key as iv
-                               in_buf,
-                               out_buf );
-        if ( !err.ok() ) {
-            return PASS( err );
+        if (const auto err = crypt.encrypt(key, key, in_buf, out_buf); !err.ok()) {
+            return PASS(err);
         }
 
-        // =-=-=-=-=-=-=-
-        // hash the encrypted sid
         Hasher hasher;
-        err = getHasher( MD5_NAME, hasher );
+        if (const auto err = getHasher(MD5_NAME, hasher); !err.ok()) {
+            return PASS(err);
+        }
         hasher.update( std::string( reinterpret_cast<char*>( out_buf.data() ), out_buf.size() ) );
-        hasher.digest( _signed_sid );
+        hasher.digest( _signed_zone_key );
 
         return SUCCESS();
     } // sign_server_sid
@@ -228,7 +231,7 @@ namespace irods
 
         // =-=-=-=-=-=-=-
         // if it is set then check for our magic token which requests
-        // the negotiation, if its not there then return success
+        // the negotiation, if it is not the magic token, move on
         std::string opt_str( opt_ptr );
         if ( std::string::npos == opt_str.find( REQ_SVR_NEG ) ) {
             return false;
@@ -325,54 +328,55 @@ namespace irods
         // Agent and not an actual Client ( icommand, jargon connection etc )
         std::string cli_msg;
 
-        // =-=-=-=-=-=-=-
-        // if we cannot read a server config file, punt
-        // as this must be a client-side situation
-        bool client_side = false;
         try {
+            // If server_config cannot be read, this must be a "pure" client. An
+            // irods::exception will be thrown in that case.
             server_properties::instance();
-        } catch ( const irods::exception& e ) {
-            client_side = true;
-        }
-        if ( !client_side ) {
-            // =-=-=-=-=-=-=-
-            // get our local zone SID
-            boost::optional<std::string> sid;
+
             try {
+                boost::optional<std::string> zone_key;
                 try {
-                    sid.reset(irods::get_server_property<std::string>(irods::CFG_ZONE_KEY_KW));
-                } catch ( const irods::exception& e ) {
-                    sid.reset(irods::get_server_property<std::string>(LOCAL_ZONE_SID_KW));
+                    zone_key.reset(irods::get_server_property<std::string>(irods::CFG_ZONE_KEY_KW));
+                } catch (const irods::exception&) {
+                    zone_key.reset(irods::get_server_property<std::string>(LOCAL_ZONE_SID_KW));
                 }
-                try {
-                    const std::string neg_key = determine_negotiation_key(_host_name);
-                    // =-=-=-=-=-=-=-
-                    // sign the SID
-                    std::string signed_sid;
-                    err = sign_server_sid(
-                            *sid,
-                            neg_key,
-                            signed_sid );
-                    if ( err.ok() ) {
-                        // =-=-=-=-=-=-=-
-                        // add the SID to the returning client message
-                        cli_msg += CS_NEG_SID_KW             +
-                            irods::kvp_association()  +
-                            signed_sid                +
-                            irods::kvp_delimiter();
-                    }
-                    else {
-                        rodsLog(
-                                LOG_WARNING,
-                                "%s",
-                                PASS( err ).result().c_str() );
-                    }
-                } catch( const irods::exception& ) {
-                    rodsLog(LOG_WARNING, "failed to get agent key");
+
+                const std::string neg_key = determine_negotiation_key(_host_name);
+                if (!negotiation_key_is_valid(neg_key)) {
+                    // The communication with the remote server should be continued so that
+                    // it can be torn down cleanly, even if there is something wrong with
+                    // the negotiation_key. The remote server will detect this and shut
+                    // down the connection. Issue a warning in the log here as a hint to
+                    // the Zone administrator.
+                    irods::log(LOG_WARNING, fmt::format(
+                        "[{}:{}] - negotiation_key is invalid",
+                        __func__, __LINE__));
                 }
-            } catch ( const irods::exception e ) {
-                rodsLog(LOG_WARNING, "failed to get local zone SID");
+
+                std::string signed_zone_key;
+                if (const auto err = sign_server_sid(*zone_key, neg_key, signed_zone_key);
+                    !err.ok()) {
+                    // Even if the signing of the zone_key fails, we continue because the
+                    // other side of the connection will reject any further communications
+                    // due to the missing keyword. This will result in a clean disconnect.
+                    // That is why we do not return an error here.
+                    rodsLog(LOG_WARNING, "%s", PASS(err).result().c_str());
+                }
+
+                // Add the signed zone_key to the message to be sent to the server, even if the
+                // signing failed due to invalid negotiation_key.
+                cli_msg += CS_NEG_SID_KW +
+                    irods::kvp_association() +
+                    signed_zone_key +
+                    irods::kvp_delimiter();
+            } catch (const irods::exception& e) {
+                irods::log(LOG_WARNING, fmt::format(
+                    "[{}:{}] - failed to retrieve and sign local zone_key [{}]",
+                    __func__, __LINE__, e.client_display_what()));
+                return irods::error(e);
             }
+        } catch (const irods::exception& e) {
+            // This is a pure client, just continue.
         }
 
         // =-=-=-=-=-=-=-
