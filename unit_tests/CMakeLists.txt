@@ -32,6 +32,7 @@ endif()
 set(TEST_INCLUDE_LIST test_config/irods_atomic_apply_acl_operations
                       test_config/irods_atomic_apply_metadata_operations
                       test_config/irods_client_connection
+                      test_config/irods_client_server_negotiation
                       test_config/irods_connection_pool
                       test_config/irods_data_object_finalize
                       test_config/irods_data_object_modify_info
