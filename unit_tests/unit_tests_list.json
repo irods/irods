@@ -2,6 +2,7 @@
     "irods_atomic_apply_acl_operations",
     "irods_atomic_apply_metadata_operations",
     "irods_client_connection",
+    "irods_client_server_negotiation",
     "irods_connection_pool",
     "irods_data_object_finalize",
     "irods_data_object_modify_info",
