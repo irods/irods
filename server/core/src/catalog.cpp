@@ -26,14 +26,10 @@ namespace
     {
         const auto& db_plugin_config = _server_config.at(irods::CFG_PLUGIN_CONFIGURATION_KW).at(irods::PLUGIN_TYPE_DATABASE);
         const auto& db_instance = db_plugin_config.front();
+
+        _db_instance_name = std::begin(db_plugin_config).key();
         _db_username = db_instance.at(irods::CFG_DB_USERNAME_KW).get<std::string>();
         _db_password = db_instance.at(irods::CFG_DB_PASSWORD_KW).get<std::string>();
-
-        // Capture the database instance name.
-        for (auto&& [k, v] : db_plugin_config.items()) {
-            _db_instance_name = k;
-            break;
-        }
     }
 } // anonymous namespace
 
