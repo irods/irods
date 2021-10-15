@@ -40,7 +40,7 @@
                         "minItems": 1,
                         "uniqueItems": true
                     },
-                    "negotiation_key": {"type": "string", "minLength": 32, "maxLength": 32},
+                    "negotiation_key": {"type": "string", "pattern": "^[A-Za-z0-9_]+$", "minLength": 32, "maxLength": 32},
                     "zone_key": {"type": "string", "pattern": "^[A-Za-z0-9_]+$", "maxLength": 49},
                     "zone_name": {"type": "string", "pattern": "^[A-Za-z0-9_\\.]+$", "maxLength": 63},
                     "zone_port": {"type": "integer"}
@@ -74,7 +74,7 @@
             }
         },
         "match_hash_policy": {"type": "string"},
-        "negotiation_key": {"type": "string", "minLength": 32, "maxLength": 32},
+        "negotiation_key": {"type": "string", "pattern": "^[A-Za-z0-9_]+$", "minLength": 32, "maxLength": 32},
         "plugin_configuration": {
             "type": "object",
             "properties": {
