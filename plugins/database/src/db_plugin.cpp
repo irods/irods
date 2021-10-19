@@ -3740,21 +3740,6 @@ irods::error db_add_child_resc_op(
         return PASS(ret);
     }
 
-    // check parent name, it must be empty
-    if(!child_parent_name.empty()) {
-        std::stringstream msg;
-        msg << "Encountered an error adding '"
-            << child_name
-            << "' as a child resource.";
-        addRErrorMsg(
-            &_ctx.comm()->rError, 0,
-            msg.str().c_str());
-        return ERROR(
-                   CHILD_HAS_PARENT,
-                   msg.str() );
-    }
-
-
     std::string& parent_name = resc_input[irods::RESOURCE_NAME];
     std::string parent_resource_id;
     std::string parent_parent_name;

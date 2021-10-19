@@ -332,53 +332,33 @@ int _addChildToResource(generalAdminInp_t* _generalAdminInp, rsComm_t* _rsComm)
             return HIERARCHY_ERROR;
         }
 
-        // Case 1: Return CHILD_HAS_PARENT if the child has a parent resource.
-        // Case 2: Return HIERARCHY_ERROR if the child is a parent of the parent.
+        //
+        // Case 1: Return CHILD_NOT_FOUND if the child does not exist.
+        //
 
-        const auto is_root_resource = [](const auto& _resource_name) -> std::tuple<irods::error, std::optional<bool>>
         {
-            std::string hier;
-            if (const auto err = resc_mgr.get_hier_to_root_for_resc(_resource_name, hier); !err.ok()) {
-                return {err, std::nullopt};
-            }
+            irods::resource_ptr resc_ptr;
 
-            irods::hierarchy_parser hier_parser;
-            hier_parser.set_string(hier);
+            if (const auto err = resc_mgr.resolve(_generalAdminInp->arg3, resc_ptr); !err.ok()) {
+                // The resource manager returns a different error code when a resource doesn't exist.
+                // If "SYS_RESC_DOES_NOT_EXIST" is returned, make sure to translate it to the
+                // appropriate error code to maintain backwards compatibility.
+                if (err.code() == SYS_RESC_DOES_NOT_EXIST) {
+                    addRErrorMsg(&_rsComm->rError, CHILD_NOT_FOUND, err.user_result().c_str());
+                    logger::agent::error(err.result());
+                    return CHILD_NOT_FOUND;
+                }
 
-            int levels = 0;
-            if (const auto err = hier_parser.num_levels(levels); !err.ok()) {
-                return {err, std::nullopt};
-            }
+                addRErrorMsg(&_rsComm->rError, err.code(), err.user_result().c_str());
+                logger::agent::error(err.result());
 
-            return {SUCCESS(), 1 == levels};
-        };
-
-        // Return an error if the child resource already has a parent.
-        if (auto [err, result] = is_root_resource(_generalAdminInp->arg3); err.ok()) {
-            if (result && !*result) {
-                std::string msg = "Child resource [";
-                msg += _generalAdminInp->arg3;
-                msg += "] already has a parent resource.";
-
-                addRErrorMsg(&_rsComm->rError, CHILD_HAS_PARENT, msg.c_str());
-                logger::agent::error(msg);
-
-                return CHILD_HAS_PARENT;
+                return err.code();
             }
         }
-        // The resource manager returns a different error code when a resource doesn't exist.
-        // If "SYS_RESC_DOES_NOT_EXIST" is returned, make sure to translate it to the
-        // appropriate error code to maintain backwards compatibility.
-        else if (err.code() == SYS_RESC_DOES_NOT_EXIST) {
-            addRErrorMsg(&_rsComm->rError, CHILD_NOT_FOUND, err.user_result().c_str());
-            logger::agent::error(err.result());
-            return CHILD_NOT_FOUND;
-        }
-        else {
-            addRErrorMsg(&_rsComm->rError, err.code(), err.user_result().c_str());
-            logger::agent::error(err.result());
-            return err.code();
-        }
+
+        //
+        // Case 2: Return HIERARCHY_ERROR if the child is an ancestor of the parent.
+        //
 
         std::string hier;
         if (const auto err = resc_mgr.get_hier_to_root_for_resc(_generalAdminInp->arg2, hier); !err.ok()) {
@@ -446,8 +426,8 @@ int _addChildToResource(generalAdminInp_t* _generalAdminInp, rsComm_t* _rsComm)
 
     resc_input[irods::RESOURCE_CHILDREN] = rescChildren;
 
-    rodsLog( LOG_NOTICE, "rsGeneralAdmin add child \"%s\" to resource \"%s\"", rescChildren.c_str(),
-             resc_input[irods::RESOURCE_NAME].c_str() );
+    logger::api::info("rsGeneralAdmin add child \"{}\" to resource \"{}\"",
+                      _generalAdminInp->arg3, _generalAdminInp->arg2);
 
     if ( ( result = chlAddChildResc( _rsComm, resc_input ) ) != 0 ) {
         chlRollback( _rsComm );
