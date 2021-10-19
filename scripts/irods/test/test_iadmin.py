@@ -237,9 +237,8 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         # bad child
         self.admin.assert_icommand("iadmin addchildtoresc %s non_existent_resource" %
                                    ("pt"), 'STDERR_SINGLELINE', "CHILD_NOT_FOUND")
-        # duplicate parent
+        # create a working hierarchy
         self.admin.assert_icommand("iadmin addchildtoresc pt the_child")
-        self.admin.assert_icommand("iadmin addchildtoresc pt the_child", 'STDERR_SINGLELINE', "CHILD_HAS_PARENT")
         # parent and child are the same
         self.admin.assert_icommand("iadmin addchildtoresc pt pt", 'STDERR_SINGLELINE', "HIERARCHY_ERROR")
         # adding ancestor as a child to a descendant
@@ -1518,6 +1517,44 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             # Remove the test file.
             if os.path.exists(filename):
                 os.remove(filename)
+
+    def test_addchildtoresc_atomically_updates_the_parent_child_resource_relationship__issue_5934(self):
+        def assert_parent_resource(_parent_resc):
+            # Get the resource id of the parent resource.
+            gql = "select RESC_ID where RESC_NAME = '{0}'".format(_parent_resc)
+            resc_id, err, ec = self.admin.run_icommand(['iquest', '%s', gql])
+
+            # We should not see any errors.
+            resc_id = resc_id.strip()
+            self.assertEqual(ec, 0)
+            self.assertEqual(len(err.strip()), 0)
+            self.assertGreater(len(resc_id), 0)
+
+            # Show that the child resource has the expected parent resource.
+            self.admin.assert_icommand(['ilsresc', '-l', 'pt_5934_2'], 'STDOUT', ['parent: {0}\n'.format(resc_id)])
+
+        try:
+            # Create some passthru resources.
+            self.admin.assert_icommand(['iadmin', 'mkresc', 'pt_5934_0', 'passthru'], 'STDOUT', ['pt_5934_0'])
+            self.admin.assert_icommand(['iadmin', 'mkresc', 'pt_5934_1', 'passthru'], 'STDOUT', ['pt_5934_1'])
+            self.admin.assert_icommand(['iadmin', 'mkresc', 'pt_5934_2', 'passthru'], 'STDOUT', ['pt_5934_2'])
+
+            # Create a resource hierarchy.
+            self.admin.assert_icommand(['iadmin', 'addchildtoresc', 'pt_5934_0', 'pt_5934_2'])
+            assert_parent_resource('pt_5934_0')
+
+            # Show that changing the parent of a child resource no longer requires that
+            # the existing parent-child relationship be severed via a call to "rmchildfromresc".
+            self.admin.assert_icommand(['iadmin', 'addchildtoresc', 'pt_5934_1', 'pt_5934_2'])
+            assert_parent_resource('pt_5934_1')
+
+        finally:
+            self.admin.run_icommand(['iadmin', 'rmchildfromresc', 'pt_5934_0', 'pt_5934_2'])
+            self.admin.run_icommand(['iadmin', 'rmchildfromresc', 'pt_5934_1', 'pt_5934_2'])
+
+            self.admin.run_icommand(['iadmin', 'rmresc', 'pt_5934_0'])
+            self.admin.run_icommand(['iadmin', 'rmresc', 'pt_5934_1'])
+            self.admin.run_icommand(['iadmin', 'rmresc', 'pt_5934_2'])
 
 class Test_Iadmin_Resources(resource_suite.ResourceBase, unittest.TestCase):
 
