@@ -1,15 +1,9 @@
-/* This is script-generated code.  */
-/* See ticketAdmin.h for a description of this API call.*/
-
 #include "ticketAdmin.h"
-#include "procApiRequest.h"
+
 #include "apiNumber.h"
+#include "procApiRequest.h"
 
-int
-rcTicketAdmin( rcComm_t *conn, ticketAdminInp_t *ticketAdminInp ) {
-    int status;
-    status = procApiRequest( conn, TICKET_ADMIN_AN,  ticketAdminInp, NULL,
-                             ( void ** ) NULL, NULL );
-
-    return status;
+int rcTicketAdmin(RcComm* conn, TicketAdminInput* ticketAdminInp)
+{
+    return procApiRequest(conn, TICKET_ADMIN_AN, ticketAdminInp, nullptr, (void**) nullptr, nullptr);
 }
