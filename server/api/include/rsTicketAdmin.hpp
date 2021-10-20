@@ -1,10 +1,13 @@
-#ifndef RS_TICKET_ADMIN_HPP
-#define RS_TICKET_ADMIN_HPP
+#ifndef IRODS_RS_TICKET_ADMIN_HPP
+#define IRODS_RS_TICKET_ADMIN_HPP
 
-#include "rcConnect.h"
 #include "ticketAdmin.h"
 
-int rsTicketAdmin( rsComm_t *rsComm, ticketAdminInp_t *ticketAdminInp );
-int _rsTicketAdmin( rsComm_t *rsComm, ticketAdminInp_t *ticketAdminInp );
+struct RsComm;
+struct TicketAdminInput;
 
-#endif
+int rsTicketAdmin(RsComm* rsComm, TicketAdminInput* ticketAdminInp);
+
+int _rsTicketAdmin(RsComm* rsComm, TicketAdminInput* ticketAdminInp);
+
+#endif // IRODS_RS_TICKET_ADMIN_HPP
