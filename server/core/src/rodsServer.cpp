@@ -1620,7 +1620,7 @@ readWorkerTask() {
             free( startupPack );
         }
         else {
-            if ( startupPack->clientUser[0] == '\0' ) {
+            if ( startupPack->clientUser[0] != '\0' ) {
                 int status = chkAllowedUser( startupPack->clientUser,
                                              startupPack->clientRodsZone );
                 if ( status < 0 ) {
