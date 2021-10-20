@@ -3,16 +3,15 @@
 #include "rods.h"
 #include "rodsClient.h"
 #include "irods_random.hpp"
+#include "rcMisc.h"
 
-#include "fmt/format.h"
-#include "fmt/chrono.h"
+#include "boost/date_time.hpp"
 
-#include <cstdlib>
-#include <ctime>
-#include <chrono>
+#include <cstdio>
 #include <string>
 #include <string_view>
-#include <iomanip>
+#include <sstream>
+#include <locale>
 
 #define MAX_SQL 300
 #define BIG_STR 3000
@@ -32,6 +31,7 @@ rodsEnv myEnv;
 int lastCommandStatus = 0;
 int printCount = 0;
 int printedRows = 0;
+bool run_as_admin = false;
 
 int usage( char *subOpt );
 
@@ -39,15 +39,20 @@ void showRestrictions( char *inColumn );
 
 std::string to_utc_timestamp(const std::string_view _seconds)
 {
-    // clang-format off
-    using clock_type      = std::chrono::system_clock;
-    using time_point_type = std::chrono::time_point<clock_type>;
-    // clang-format on
+    try {
+        const auto tt = std::stoll(_seconds.data());
+        const auto pt = boost::posix_time::from_time_t(tt);
 
-    const auto secs = std::chrono::seconds{std::atoi(_seconds.data())};
-    const auto t = clock_type::to_time_t(time_point_type{secs});
+        std::ostringstream ss;
+        ss.imbue(std::locale(ss.getloc(), new boost::posix_time::time_facet{"%Y-%m-%d.%H:%M:%S"}));
+        ss << pt;
 
-    return fmt::format("{:%F.%T}", *std::gmtime(&t));
+        return ss.str();
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Timestamp conversion error: " << e.what() << '\n';
+        return "?";
+    }
 }
 
 /*
@@ -472,8 +477,7 @@ makeFullPath( const char *inName ) {
 int
 doTicketOp( const char *arg1, const char *arg2, const char *arg3,
             const char *arg4, const char *arg5 ) {
-    ticketAdminInp_t ticketAdminInp;
-    int status;
+    ticketAdminInp_t ticketAdminInp{};
 
     ticketAdminInp.arg1 = strdup( arg1 );
     ticketAdminInp.arg2 = strdup( arg2 );
@@ -482,7 +486,11 @@ doTicketOp( const char *arg1, const char *arg2, const char *arg3,
     ticketAdminInp.arg5 = strdup( arg5 );
     ticketAdminInp.arg6 = "";
 
-    status = rcTicketAdmin( Conn, &ticketAdminInp );
+    if (run_as_admin) {
+        addKeyVal(&ticketAdminInp.condInput, ADMIN_KW, "");
+    }
+
+    const int status = rcTicketAdmin( Conn, &ticketAdminInp );
     lastCommandStatus = status;
 
     free( ticketAdminInp.arg1 );
@@ -509,6 +517,7 @@ doTicketOp( const char *arg1, const char *arg2, const char *arg3,
                  status, myName, mySubName );
         free( mySubName );
     }
+
     return status;
 }
 
@@ -703,7 +712,7 @@ main( int argc, char **argv ) {
 
     rodsLogLevel( LOG_ERROR );
 
-    status = parseCmdLineOpt( argc, argv, "vVhgrcGRCdulz:", 0, &myRodsArgs );
+    status = parseCmdLineOpt( argc, argv, "vVMhgrcGRCdulz:", 0, &myRodsArgs );
     if ( status ) {
         printf( "Use -h for help.\n" );
         exit( 1 );
@@ -711,6 +720,10 @@ main( int argc, char **argv ) {
     if ( myRodsArgs.help == True ) {
         usage( "" );
         exit( 0 );
+    }
+
+    if (myRodsArgs.admin == True) {
+        run_as_admin = true;
     }
 
     if ( myRodsArgs.zone == True ) {
@@ -759,7 +772,10 @@ main( int argc, char **argv ) {
     }
     j = 0;
     for ( i = argOffset; i < argc; i++ ) {
-        cmdToken[j++] = argv[i];
+        // Skip the admin option.
+        if (std::strcmp(argv[i], "-M") != 0) {
+            cmdToken[j++] = argv[i];
+        }
     }
 
 #if defined(linux_platform)
@@ -879,8 +895,10 @@ Print the main usage/help information.
  */
 void usageMain() {
     char *msgs[] = {
-        "Usage: iticket [-h] [command]",
+        "Usage: iticket [-h] [-M] [command]",
         " -h This help",
+        " -M Run as administrator",
+        " ",
         "Commands are:",
         " create read/write Object-Name [string] (create a new ticket)",
         " mod Ticket_string-or-id uses/expire string-or-none  (modify restrictions)",
@@ -903,6 +921,8 @@ void usageMain() {
         "prompts and executes commands until 'quit' or 'q' is entered.",
         "Like other unix utilities, a series of commands can be piped into it:",
         "'cat file1 | iticket' (maintaining one connection for all commands).",
+        " ",
+        "Admin users can pass -M to modify/delete tickets created by other users.",
         " ",
         "Use 'help command' for more help on a specific command.",
         ""
