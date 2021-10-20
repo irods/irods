@@ -1,22 +1,25 @@
-#ifndef TICKET_ADMIN_H__
-#define TICKET_ADMIN_H__
+#ifndef IRODS_TICKET_ADMIN_H
+#define IRODS_TICKET_ADMIN_H
 
-#include "rcConnect.h"
+#include "objInfo.h"
 
-typedef struct {
+struct RcComm;
+
+typedef struct TicketAdminInput {
     char *arg1;
     char *arg2;
     char *arg3;
     char *arg4;
     char *arg5;
     char *arg6;
+    struct KeyValPair condInput;
 } ticketAdminInp_t;
-#define ticketAdminInp_PI "str *arg1; str *arg2; str *arg3; str *arg4; str *arg5; str *arg6;"
 
+#define ticketAdminInp_PI "str *arg1; str *arg2; str *arg3; str *arg4; str *arg5; str *arg6; struct KeyValPair_PI;"
 
 #ifdef __cplusplus
 extern "C"
 #endif
-int rcTicketAdmin( rcComm_t *conn, ticketAdminInp_t *ticketAdminInp );
+int rcTicketAdmin(struct RcComm* conn, struct TicketAdminInput* ticketAdminInp);
 
-#endif
+#endif // IRODS_TICKET_ADMIN_H

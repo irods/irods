@@ -4398,62 +4398,44 @@ int chlGetHierarchyForResc(
 ///        create, modify, and remove.
 ///        ticketString is either the ticket-string or ticket-id.
 int chlModTicket(
-    rsComm_t* _comm,
-    const char*     _op_name,
-    const char*     _ticket_string,
-    const char*     _arg3,
-    const char*     _arg4,
-    const char*     _arg5 ) {
+    rsComm_t*         _comm,
+    const char*       _op_name,
+    const char*       _ticket_string,
+    const char*       _arg3,
+    const char*       _arg4,
+    const char*       _arg5,
+    const KeyValPair* _cond_input)
+{
     // =-=-=-=-=-=-=-
     // call factory for database object
     irods::database_object_ptr db_obj_ptr;
-    irods::error ret = irods::database_factory(
-                           database_plugin_type,
-                           db_obj_ptr );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
+    irods::error ret = irods::database_factory(database_plugin_type, db_obj_ptr);
+    if (!ret.ok()) {
+        irods::log(PASS(ret));
         return ret.code();
     }
 
     // =-=-=-=-=-=-=-
     // resolve a plugin for that object
     irods::plugin_ptr db_plug_ptr;
-    ret = db_obj_ptr->resolve(
-              irods::DATABASE_INTERFACE,
-              db_plug_ptr );
-    if ( !ret.ok() ) {
-        irods::log(
-            PASSMSG(
-                "failed to resolve database interface",
-                ret ) );
+    ret = db_obj_ptr->resolve(irods::DATABASE_INTERFACE, db_plug_ptr);
+    if (!ret.ok()) {
+        irods::log(PASSMSG("failed to resolve database interface", ret));
         return ret.code();
     }
 
     // =-=-=-=-=-=-=-
     // cast plugin and object to db and fco for call
-    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
-                                        irods::first_class_object > ( db_obj_ptr );
-    irods::database_ptr           db = boost::dynamic_pointer_cast <
-                                       irods::database > ( db_plug_ptr );
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast<irods::first_class_object>(db_obj_ptr);
+    irods::database_ptr db = boost::dynamic_pointer_cast<irods::database>(db_plug_ptr);
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call <
-          const char*,
-          const char*,
-          const char*,
-          const char* > (
-              _comm,
-              irods::DATABASE_OP_MOD_TICKET,
-              ptr,
-              _op_name,
-              _ticket_string,
-              _arg3,
-              _arg4,
-              _arg5 );
+    ret = db->call<const char*, const char*, const char*, const char*, const char*, const KeyValPair*>(
+              _comm, irods::DATABASE_OP_MOD_TICKET, ptr, _op_name, _ticket_string,
+              _arg3, _arg4, _arg5, _cond_input);
 
     return ret.code();
-
 } // chlModTicket
 
 int chlGenQuery(

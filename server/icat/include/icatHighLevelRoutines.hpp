@@ -182,7 +182,8 @@ int chlInsMsrvcTable( rsComm_t *rsComm,
 int chlVersionFnmBase( rsComm_t *rsComm,
                        const char *baseName, const char *myTime );
 int chlModTicket( rsComm_t *rsComm, const char *opName, const char *ticket,
-                  const char *arg1, const char *arg2, const char *arg3 );
+                  const char *arg1, const char *arg2, const char *arg3,
+                  const KeyValPair *condInput);
 int chlUpdateIrodsPamPassword( rsComm_t *rsComm, const char *userName,
                                int timeToLive, const char *testTime,
                                char **irodsPassword );
