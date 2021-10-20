@@ -2,6 +2,7 @@ import os
 import sys
 import shutil
 import socket
+import re
 
 if sys.version_info < (2, 7):
     import unittest2 as unittest
@@ -114,4 +115,25 @@ class Test_Iquest(ResourceBase, unittest.TestCase):
         collection = os.path.join(self.admin.session_collection, "coll ect'ion")
         self.admin.assert_icommand(['imkdir', collection])
         self.admin.assert_icommand(['iquest', "select COLL_NAME where COLL_NAME = '{0}'".format(collection)], 'STDOUT', ['COLL_NAME = ' + collection])
+
+    def test_iquest_does_not_fail_when_querying_for_ticket_create_time_and_modify_time__issue_5929(self):
+        data_object = 'foo.issue_5929'
+        self.admin.assert_icommand(['itouch', data_object])
+        self.admin.assert_icommand(['iticket', 'create', 'read', data_object], 'STDOUT', ['ticket:'])
+
+        # Fetch the create time and modify time for the recently created ticket.
+        gql = "select TICKET_CREATE_TIME, TICKET_MODIFY_TIME where TICKET_DATA_NAME = '{0}'".format(data_object)
+        self.admin.assert_icommand(['iquest', gql], 'STDOUT', ['TICKET_CREATE_TIME = ', 'TICKET_MODIFY_TIME = '])
+
+        # Make sure the values represent iRODS timestamps.
+        ec, out, err = self.admin.assert_icommand(['iquest', '%s,%s', gql], 'STDOUT', [','])
+        self.assertEqual(ec, 0)
+
+        err = err.strip()
+        self.assertEqual(len(err), 0)
+
+        out = out.strip()
+        timestamps = out.split(',')
+        self.assertTrue(re.match('^\d{11,11}$', timestamps[0]))
+        self.assertTrue(re.match('^\d{11,11}$', timestamps[1]))
 
