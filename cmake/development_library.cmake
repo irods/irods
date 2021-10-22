@@ -32,6 +32,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/dstream.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/entity.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/experimental_plugin_framework.hpp
+  ${CMAKE_SOURCE_DIR}/lib/core/include/fixed_buffer_resource.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/fsckUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/future.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/getRodsEnv.h

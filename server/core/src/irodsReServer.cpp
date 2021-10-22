@@ -561,7 +561,14 @@ namespace
             }
 
             logger::delay_server::debug("Enqueueing rule [{}]", rule_id);
-            queue.enqueue_rule(rule_id);
+
+            try {
+                queue.enqueue_rule(rule_id);
+            }
+            catch (const std::bad_alloc& e) {
+                logger::delay_server::trace("Delay queue memory limit reached. Ignoring rule [{}] for now.", rule_id);
+                return;
+            }
 
             irods::thread_pool::post(thread_pool, [&queue, result] {
                 try {
@@ -656,7 +663,25 @@ int main(int argc, char** argv)
     }();
 
     irods::thread_pool thread_pool{thread_count};
-    irods::delay_queue queue;
+
+    const auto queue_size_in_bytes = []() -> int {
+        try {
+            const auto bytes = irods::get_advanced_setting<int>(irods::CFG_MAX_SIZE_OF_DELAY_QUEUE_IN_BYTES_KW);
+
+            if (bytes > 0) {
+                return bytes;
+            }
+        }
+        catch (const irods::exception& e) {
+            logger::delay_server::warn(e.what());
+            logger::delay_server::warn("Could not retrieve delay queue byte limit from configuration. "
+                                       "Delay server will use as much memory as necessary.");
+        }
+
+        return 0;
+    }();
+
+    irods::delay_queue queue{queue_size_in_bytes};
 
     try {
         while (!re_server_terminated) {

@@ -183,6 +183,7 @@ namespace irods
 
     // misc. keywords
     extern const std::string DELAY_RULE_EXECUTORS_KW;
+    extern const std::string CFG_MAX_SIZE_OF_DELAY_QUEUE_IN_BYTES_KW;
 } // namespace irods
 
 #endif // CONFIGURATION_KEYWORDS_HPP
