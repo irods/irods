@@ -156,5 +156,6 @@ namespace irods
 
     // misc. keywords
     const std::string HOSTS_CONFIG_JSON_OBJECT_KW("hosts_config_json_object");
+    const std::string CFG_MAX_SIZE_OF_DELAY_QUEUE_IN_BYTES_KW("maximum_size_of_delay_queue_in_bytes");
 } // namespace irods
 
