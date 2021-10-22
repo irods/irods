@@ -178,5 +178,6 @@ namespace irods
 
     // misc. keywords
     const std::string DELAY_RULE_EXECUTORS_KW("delay_rule_executors");
+    const std::string CFG_MAX_SIZE_OF_DELAY_QUEUE_IN_BYTES_KW("maximum_size_of_delay_queue_in_bytes");
 } // namespace irods
 

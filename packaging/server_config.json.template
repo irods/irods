@@ -9,6 +9,7 @@
         "rule_engine_server_sleep_time_in_seconds" : 30,
         "rule_engine_server_execution_time_in_seconds" : 120,
         "maximum_size_for_single_buffer_in_megabytes": 32,
+        "maximum_size_of_delay_queue_in_bytes": 0,
         "maximum_temporary_password_lifetime_in_seconds": 1000,
         "transfer_buffer_size_for_parallel_transfer_in_megabytes": 4,
         "transfer_chunk_size_for_parallel_transfer_in_megabytes": 40,
