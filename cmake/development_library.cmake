@@ -30,6 +30,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/dns_cache.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/dstream.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/entity.hpp
+  ${CMAKE_SOURCE_DIR}/lib/core/include/fixed_buffer_resource.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/fsckUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/getRodsEnv.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/getUtil.h
