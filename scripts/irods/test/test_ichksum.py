@@ -242,10 +242,19 @@ class Test_Ichksum(resource_suite.ResourceBase, unittest.TestCase):
 
     def test_ichksum_computes_checksum_for_highest_voted_replica_when_no_options_are_present__issue_5252(self):
         other_resc = 'issue_5252_resc'
+        other_ufs = other_resc + '_ufs'
         data_object = 'foo'
 
         try:
-            lib.create_ufs_resource(other_resc, self.admin)
+            # Construct a passthru hierarchy which will influence the vote such that the test
+            # always produces the same results. Replica 0 will always land on the default
+            # resource for the session, which is demoResc by default. Replica 1 will then
+            # land on the passthru hierarchy. The ichksum will vote higher on the passthru
+            # resource (high read weight) and so Replica 1 will receive the checksum.
+            lib.create_passthru_resource(other_resc, self.admin)
+            lib.create_ufs_resource(other_ufs, self.admin)
+            lib.add_child_resource(other_resc, other_ufs, self.admin)
+            self.admin.assert_icommand(['iadmin', 'modresc', other_resc, 'context', 'write=0.1;read=1.50'])
 
             self.admin.assert_icommand(['istream', 'write', data_object], input='some data')
             self.admin.assert_icommand(['irepl', '-R', other_resc, data_object])
@@ -253,18 +262,20 @@ class Test_Ichksum(resource_suite.ResourceBase, unittest.TestCase):
 
             # Show that only one of the two replicas has a checksum.
             out, _, ec = self.admin.run_icommand(['ichksum', '-K', '-n0', data_object])
-            self.assertEqual(ec, 0)
-            self.assertEqual(len(out), 0)
-            self.assertNotIn('WARNING: No checksum available for replica [0].', out)
-
-            out, _, ec = self.admin.run_icommand(['ichksum', '-K', '-n1', data_object])
             self.assertNotEqual(ec, 0)
             self.assertGreater(len(out), 0)
-            self.assertIn('WARNING: No checksum available for replica [1].', out)
+            self.assertIn('WARNING: No checksum available for replica [0].', out)
+
+            out, _, ec = self.admin.run_icommand(['ichksum', '-K', '-n1', data_object])
+            self.assertEqual(ec, 0)
+            self.assertEqual(len(out), 0)
+            self.assertNotIn('WARNING: No checksum available for replica [1].', out)
 
         finally:
             self.admin.run_icommand(['irm', '-f', data_object])
+            lib.remove_child_resource(other_resc, other_ufs, self.admin)
             self.admin.run_icommand(['iadmin', 'rmresc', other_resc])
+            self.admin.run_icommand(['iadmin', 'rmresc', other_ufs])
 
     def test_silent_option_is_supported__issue_5252(self):
         data_object = 'foo'
