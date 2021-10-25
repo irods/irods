@@ -444,8 +444,7 @@ msiRollback( ruleExecInfo_t *rei ) {
  *
  * \usage See clients/icommands/test/rules/
  *
- * \param[in] recursiveFlag - a STR_MS_T, either "default" or "recursive".  "recursive"
- *    is only relevant if set with accessLevel set to "inherit".
+ * \param[in] recursiveFlag - a STR_MS_T, either "default" or "recursive".
  * \param[in] accessLevel - a STR_MS_T containing one of the following:
  *    \li read
  *    \li write
