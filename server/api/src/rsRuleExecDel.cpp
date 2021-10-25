@@ -1,105 +1,67 @@
 #include "rsRuleExecDel.hpp"
 
-#include "rcMisc.h"
-#include "ruleExecSubmit.h"
-#include "objMetaOpr.hpp"
-#include "icatHighLevelRoutines.hpp"
-#include "miscServerFunct.hpp"
-#include "irods_configuration_keywords.hpp"
 #include "genQuery.h"
+#include "icatHighLevelRoutines.hpp"
+#include "irods_at_scope_exit.hpp"
+#include "irods_configuration_keywords.hpp"
+#include "miscServerFunct.hpp"
+#include "objMetaOpr.hpp"
+#include "rcMisc.h"
 #include "rsGenQuery.hpp"
+#include "ruleExecSubmit.h"
+
+#include "fmt/format.h"
 
 namespace
 {
-    int getReInfoById( rsComm_t *rsComm, char *ruleExecId, genQueryOut_t **genQueryOut )
+    int get_username_of_delay_rule( rsComm_t *rsComm, char *ruleExecId, genQueryOut_t **genQueryOut )
     {
-        genQueryInp_t genQueryInp;
-        char tmpStr[NAME_LEN];
-        int status;
+        genQueryInp_t genQueryInp{};
 
-        memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
-
-        addInxIval( &genQueryInp.selectInp, COL_RULE_EXEC_ID, 1 );
-        addInxIval( &genQueryInp.selectInp, COL_RULE_EXEC_NAME, 1 );
-        addInxIval( &genQueryInp.selectInp, COL_RULE_EXEC_REI_FILE_PATH, 1 );
         addInxIval( &genQueryInp.selectInp, COL_RULE_EXEC_USER_NAME, 1 );
-        addInxIval( &genQueryInp.selectInp, COL_RULE_EXEC_ADDRESS, 1 );
-        addInxIval( &genQueryInp.selectInp, COL_RULE_EXEC_TIME, 1 );
-        addInxIval( &genQueryInp.selectInp, COL_RULE_EXEC_FREQUENCY, 1 );
-        addInxIval( &genQueryInp.selectInp, COL_RULE_EXEC_PRIORITY, 1 );
-        addInxIval( &genQueryInp.selectInp, COL_RULE_EXEC_ESTIMATED_EXE_TIME, 1 );
-        addInxIval( &genQueryInp.selectInp, COL_RULE_EXEC_NOTIFICATION_ADDR, 1 );
-        addInxIval( &genQueryInp.selectInp, COL_RULE_EXEC_LAST_EXE_TIME, 1 );
-        addInxIval( &genQueryInp.selectInp, COL_RULE_EXEC_STATUS, 1 );
-        addInxIval( &genQueryInp.selectInp, COL_RULE_EXEC_CONTEXT, 1 );
 
+        char tmpStr[NAME_LEN];
         snprintf( tmpStr, NAME_LEN, "='%s'", ruleExecId );
         addInxVal( &genQueryInp.sqlCondInp, COL_RULE_EXEC_ID, tmpStr );
 
         genQueryInp.maxRows = MAX_SQL_ROWS;
 
-        status = rsGenQuery( rsComm, &genQueryInp, genQueryOut );
+        const auto status = rsGenQuery( rsComm, &genQueryInp, genQueryOut );
 
         clearGenQueryInp( &genQueryInp );
 
         return status;
-    } // getReInfoById
+    } // get_username_of_delay_rule
 
     int _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp )
     {
-        genQueryOut_t *genQueryOut = NULL;
-
         std::string svc_role;
         irods::error ret = get_catalog_service_role(svc_role);
-        if(!ret.ok()) {
+        if (!ret.ok()) {
             irods::log(PASS(ret));
             return ret.code();
         }
 
-        int status = getReInfoById( rsComm, ruleExecDelInp->ruleExecId, &genQueryOut );
+        // First check permission (now that API is allowed for non-admin users).
+        if (rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+            if (rsComm->proxyUser.authInfo.authFlag == LOCAL_USER_AUTH) {
+                genQueryOut_t *genQueryOut = nullptr;
+                irods::at_scope_exit free_gen_query_output{[&genQueryOut] { freeGenQueryOut(&genQueryOut); }};
 
-        if ( status < 0 ) {
-            rodsLog( LOG_ERROR, "_rsRuleExecDel: getReInfoById failed, status = %d", status );
-            /* unregister it anyway */
-
-
-            if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
-                status = chlDelRuleExec( rsComm, ruleExecDelInp->ruleExecId );
-                if ( status < 0 ) {
-                    rodsLog( LOG_ERROR,
-                             "_rsRuleExecDel: chlDelRuleExec for %s error, status = %d",
-                             ruleExecDelInp->ruleExecId, status );
+                // Get the username of the user who created the rule.
+                const int ec = get_username_of_delay_rule(rsComm, ruleExecDelInp->ruleExecId, &genQueryOut);
+                if (ec < 0) {
+                    rodsLog(LOG_ERROR, "_rsRuleExecDel: get_username_of_delay_rule failed, status = %d", ec);
+                    return ec;
                 }
-                return status;
-            }
-            else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
-                rodsLog( LOG_ERROR, "_rsRuleExecDel: chlDelRuleExec only in ICAT host" );
-                return SYS_NO_RCAT_SERVER_ERR;
-            }
-            else {
-                const auto err{ERROR(SYS_SERVICE_ROLE_NOT_SUPPORTED,
-                                     (boost::format("role not supported [%s]") %
-                                      svc_role.c_str()).str().c_str())};
-                irods::log(err);
-                return err.code();
-            }
-        }
 
-        sqlResult_t *reiFilePath;
-        if ( ( reiFilePath = getSqlResultByInx( genQueryOut, COL_RULE_EXEC_REI_FILE_PATH ) ) == NULL ) {
-            rodsLog( LOG_NOTICE, "_rsRuleExecDel: getSqlResultByInx for REI_FILE_PATH failed" );
-            return UNMATCHED_KEY_OR_INDEX;
-        }
-
-        /* First check permission (now that API is allowed for non-admin users) */
-        if ( rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-            if ( rsComm->proxyUser.authInfo.authFlag == LOCAL_USER_AUTH ) {
-                sqlResult_t *ruleUserName;
-                if ( ( ruleUserName = getSqlResultByInx( genQueryOut, COL_RULE_EXEC_USER_NAME ) ) == NULL ) {
-                    rodsLog( LOG_NOTICE, "_rsRuleExecDel: getSqlResultByInx for COL_RULE_EXEC_USER_NAME failed" );
+                auto* ruleUserName = getSqlResultByInx(genQueryOut, COL_RULE_EXEC_USER_NAME);
+                if (!ruleUserName) {
+                    rodsLog(LOG_ERROR, "_rsRuleExecDel: getSqlResultByInx for COL_RULE_EXEC_USER_NAME failed");
                     return UNMATCHED_KEY_OR_INDEX;
                 }
-                if ( strncmp( ruleUserName->value, rsComm->clientUser.userName, MAX_NAME_LEN ) != 0 ) {
+
+                if (strncmp(ruleUserName->value, rsComm->clientUser.userName, MAX_NAME_LEN)!= 0) {
                     return USER_ACCESS_DENIED;
                 }
             }
@@ -108,57 +70,28 @@ namespace
             }
         }
 
-        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
-            int unlinkStatus = status;
+        if (irods::CFG_SERVICE_ROLE_PROVIDER == svc_role) {
+            // Unregister rule (i.e. remove the entry from the catalog).
+            const auto ec = chlDelRuleExec(rsComm, ruleExecDelInp->ruleExecId);
 
-            /* unregister it */
-            status = chlDelRuleExec( rsComm, ruleExecDelInp->ruleExecId );
-
-            if ( status < 0 ) {
-                rodsLog( LOG_ERROR,
-                         "_rsRuleExecDel: chlDelRuleExec for %s error, status = %d",
-                         ruleExecDelInp->ruleExecId, status );
+            if (ec < 0) {
+                rodsLog(LOG_ERROR, "_rsRuleExecDel: chlDelRuleExec for %s error, status = %d",
+                        ruleExecDelInp->ruleExecId, ec);
             }
 
-            if ( unlinkStatus ) {
-                int i;
-                char errMsg[105];
-                /* Add a message to the error stack for the client user */
-                snprintf( errMsg, sizeof errMsg,
-                          "Rule was removed but unlink of rei file failed" );
-                i = addRErrorMsg( &rsComm->rError, 0, errMsg );
-                if ( i < 0 ) {
-                    irods::log( ERROR( i, "addRErrorMsg failed" ) );
-                }
-                snprintf( errMsg, sizeof errMsg,
-                          "rei file: %s",
-                          reiFilePath->value );
-                i = addRErrorMsg( &rsComm->rError, 1, errMsg );
-                if (i < 0) {
-                    irods::log(ERROR(i, "addRErrorMsg failed"));
-                }
-                if ( status == 0 ) {
-                    /* return this error if no other error occurred */
-                    status = unlinkStatus;
-                }
-
-            }
-            freeGenQueryOut( &genQueryOut );
-
-            return status;
+            return ec;
         }
-        else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
-            rodsLog( LOG_ERROR,
-                     "_rsRuleExecDel: chlDelRuleExec only in ICAT host" );
+
+        if (irods::CFG_SERVICE_ROLE_CONSUMER == svc_role) {
+            rodsLog(LOG_ERROR, "_rsRuleExecDel: chlDelRuleExec must be invoked on the catalog provider host");
             return SYS_NO_RCAT_SERVER_ERR;
         }
-        else {
-            const auto err{ERROR(SYS_SERVICE_ROLE_NOT_SUPPORTED,
-                                 (boost::format("role not supported [%s]") %
-                                  svc_role.c_str()).str().c_str())};
-            irods::log(err);
-            return err.code();
-        }
+        
+        const auto err = ERROR(SYS_SERVICE_ROLE_NOT_SUPPORTED,
+                               fmt::format("role not supported [{}]", svc_role));
+        irods::log(err);
+
+        return err.code();
     } // _rsRuleExecDel
 } // anonymous namespace
 
