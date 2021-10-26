@@ -353,6 +353,19 @@ main {
 }
 OUTPUT ruleExecOut
 '''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Native_Rule_Engine_Plugin']['test_re_serialization_for_RsComm_ptr__issue_5950'] = '''
+pep_api_auth_request_pre(*instance, *comm, *request) {
+    # TODO: probably want to include more members here
+    *err = msiGetValByKey(*comm, "option", *option);
+    if (*err != 0) {
+        fail(*err);
+    }
+
+    if (*option != 'ils') {
+        fail(error(USER_INPUT_OPTION_ERR));
+    }
+}
+'''
 
 
 #===== Test_Quotas =====
@@ -955,6 +968,13 @@ rule_texts['irods_rule_engine_plugin-python']['Test_Native_Rule_Engine_Plugin'][
 def acSetNumThreads(rule_args, callback, rei):
     opr_type = str(rei.doinp.oprType)
     callback.writeLine('serverLog', 'test_rule_engine_2309: get: acSetNumThreads oprType [' + str(opr_type) + ']')
+'''
+rule_texts['irods_rule_engine_plugin-python']['Test_Native_Rule_Engine_Plugin']['test_re_serialization_for_RsComm_ptr__issue_5950'] = '''
+def pep_api_auth_request_pre(rule_args, callback, rei):
+    option = rule_args[1].map()['option']
+    print(option)
+
+    return 0 if option == 'ils' else irods_errors.USER_INPUT_OPTION_ERR
 '''
 
 #===== Test_Quotas =====
