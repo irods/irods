@@ -271,6 +271,12 @@ namespace irods {
                     _out["user_user_other_info_user_comments"] = l->clientUser.userOtherInfo.userComments;
                     _out["user_user_other_info_user_create"] = l->clientUser.userOtherInfo.userCreate;
                     _out["user_user_other_info_user_modify"] = l->clientUser.userOtherInfo.userModify;
+
+                    _out["socket"] = std::to_string(l->sock);
+                    _out["connect_count"] = std::to_string(l->connectCnt);
+                    _out["status"] = std::to_string(l->status);
+                    _out["api_index"] = std::to_string(l->apiInx);
+                    _out["option"] = l->option;
                 } else {
                     _out["rsComm_ptr"] = "nullptr";
                 }
