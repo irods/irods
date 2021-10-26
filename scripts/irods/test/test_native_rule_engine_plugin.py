@@ -516,3 +516,13 @@ OUTPUT ruleExecOut
 
         finally:
             os.unlink(rule_file)
+
+    def test_re_serialization_for_RsComm_ptr__issue_5950(self):
+        rule_text = rule_texts[self.plugin_name][self.class_name]['test_re_serialization_for_RsComm_ptr__issue_5950']
+
+        with temporary_core_file() as core:
+            time.sleep(1)  # remove once file hash fix is committed #2279
+            core.add_rule(rule_text)
+            time.sleep(1)  # remove once file hash fix is committed #2279
+            self.user0.assert_icommand(['ils'], 'STDOUT', self.user0.session_collection)
+
