@@ -897,7 +897,8 @@ class passthru_resource : public irods::resource {
                 if ( !ret.ok() ) {
                     rodsLog(
                         LOG_ERROR,
-                        "invalid context [%s] : %d",
+                        "invalid context for [%s:passthru] : [%s] : %d",
+                        _inst_name.c_str(),
                         _context.c_str(),
                         _context.size() );
                     return;
