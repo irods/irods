@@ -70,7 +70,7 @@ namespace irods
                 return !prop->empty() ? prop->get<T>() : T{};
             }
 
-            THROW(KEY_NOT_FOUND, fmt::format("server properties does not contain key {}", _key));
+            THROW(KEY_NOT_FOUND, fmt::format("key does not exist [{}].", _key));
         }
 
         template<typename T>
@@ -80,7 +80,7 @@ namespace irods
 
             for (auto&& k : _keys) {
                 if (!tmp->contains(k)) {
-                    THROW(KEY_NOT_FOUND, "get_property :: path does not exist");
+                    THROW(KEY_NOT_FOUND, fmt::format("path does not exist [{}].", fmt::join(_keys, ".")));
                 }
 
                 tmp = &tmp->at(k);
