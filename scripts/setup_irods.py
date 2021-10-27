@@ -381,7 +381,7 @@ def setup_client_environment(irods_config):
     print('\n', end='')
 
     service_account_dict = {
-            'schema_name': 'irods_environment',
+            'schema_name': 'service_account_environment',
             'schema_version': 'v3',
             'irods_host': irods.lib.get_hostname(),
             'irods_port': irods_config.server_config['zone_port'],
