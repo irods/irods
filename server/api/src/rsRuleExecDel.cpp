@@ -43,8 +43,8 @@ namespace
         }
 
         // First check permission (now that API is allowed for non-admin users).
-        if (rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
-            if (rsComm->proxyUser.authInfo.authFlag == LOCAL_USER_AUTH) {
+        if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+            if (rsComm->clientUser.authInfo.authFlag == LOCAL_USER_AUTH) {
                 genQueryOut_t *genQueryOut = nullptr;
                 irods::at_scope_exit free_gen_query_output{[&genQueryOut] { freeGenQueryOut(&genQueryOut); }};
 
