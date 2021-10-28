@@ -182,3 +182,12 @@ class Test_Imeta_Error_Handling(unittest.TestCase):
         self.admin.assert_icommand(['imeta', 'cp', '-d', '-d'], 'STDERR_SINGLELINE', 'Not enough arguments provided', desired_rc=4)
     def test_imeta_cp_no_args(self):
         self.admin.assert_icommand(['imeta', 'cp'], 'STDERR_SINGLELINE', 'No first object type descriptor', desired_rc=4)
+
+    def test_imeta_returns_error_code_on_invalid_subcommand__issue_5316(self):
+        ec, _, _ = self.admin.assert_icommand(['imeta', 'ls'], 'STDERR_SINGLELINE', ['Error: No object type descriptor (-d/C/R/u) specified'])
+        self.assertEqual(ec, 4)
+
+        subcmd = 'non_existent_subcommand'
+        ec, _, _ = self.admin.assert_icommand(['imeta', subcmd], 'STDERR_SINGLELINE', ["Unrecognized subcommand '{0}', try 'imeta help'".format(subcmd)])
+        self.assertEqual(ec, 4)
+
