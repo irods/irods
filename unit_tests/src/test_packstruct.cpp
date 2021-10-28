@@ -1,7 +1,6 @@
 #include <catch.hpp>
 
 #include "packStruct.h"
-#include "irods_server_properties.hpp"
 #include "rcGlobalExtern.h"
 #include "irods_at_scope_exit.hpp"
 
