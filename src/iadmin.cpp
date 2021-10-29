@@ -1051,30 +1051,8 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         return 0;
     }
     if ( strcmp( cmdToken[0], "mkuser" ) == 0 ) {
-        int status;
-        char userName[NAME_LEN];
-        char zoneName[NAME_LEN];
-        status = parseUserName( cmdToken[1], userName, zoneName );
-        if ( status ) {
-            fprintf( stderr, "Invalid username format\n" );
-            return USER_INVALID_USERNAME_FORMAT;
-        }
-        status = getLocalZone();
-        if ( status ) {
-            return status;
-        }
-        if ( strcmp( zoneName, localZone ) == 0 ) {
-            /* User entered user#localZone but call generalAdmin
-               without #localZone as is needed to differentiate
-               local and remote user creation */
-            generalAdmin( 0, "add", "user", userName, cmdToken[2], "",
-                          cmdToken[3], cmdToken[4], cmdToken[5], "", "" );
-        }
-        else {
-            generalAdmin( 0, "add", "user", cmdToken[1], cmdToken[2], "",
-                          cmdToken[3], cmdToken[4], cmdToken[5], "", "" );  /* "" is unused
-                                                                              zoneName as that's part of the username now */
-        }
+        generalAdmin(0, "add", "user", cmdToken[1], cmdToken[2], "",
+                      cmdToken[3], cmdToken[4], cmdToken[5], "", "");
         return 0;
     }
     if ( strcmp( cmdToken[0], "moduser" ) == 0 ) {
@@ -1449,22 +1427,6 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         return 0;
     }
     if ( strcmp( cmdToken[0], "rmuser" ) == 0 ) {
-        int status;
-        char userName[NAME_LEN];
-        char zoneName[NAME_LEN];
-        status = parseUserName( cmdToken[1], userName, zoneName );
-        /* just check for format */
-        if ( status ) {
-            fprintf( stderr, "Invalid username format\n" );
-            return status;
-        }
-        /* also check for current user, should not be able to rm own account */
-        if ( strcmp( userName, myEnv.rodsUserName ) == 0 ) {
-            if ( ( strcmp( zoneName, "" ) == 0 ) || ( strcmp( zoneName, myEnv.rodsZone ) == 0 ) ) {
-                fprintf( stderr, "Cannot remove currently authenticated user (yourself)\n" );
-                return 0;
-            }
-        }
         generalAdmin( 0, "rm", "user", cmdToken[1],
                       cmdToken[2], cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], "", "" );
         return 0;
@@ -1801,7 +1763,7 @@ void usageMain() {
         " lg [name] (list group info (user member list))",
         " lgd name  (list group details)",
         " mkuser Name[#Zone] Type (make user)",
-        " moduser Name[#Zone] [ type | zone | comment | info | password ] newValue",
+        " moduser Name[#Zone] [ type | comment | info | password ] newValue",
         " aua Name[#Zone] Auth-Name (add user authentication-name (GSI/Kerberos)",
         " rua Name[#Zone] Auth-Name (remove user authentication name (GSI/Kerberos)",
         " rpp Name  (remove PAM-derived Password for user Name)",
@@ -1962,7 +1924,7 @@ usage( char *subOpt ) {
 
 
     char *moduserMsgs[] = {
-        " moduser Name[#Zone] [ type | zone | comment | info | password ] newValue",
+        " moduser Name[#Zone] [ type | comment | info | password ] newValue",
         "Modifies a field of an existing user definition.",
         "For password authentication, use moduser to set the password.",
         "(The password is transferred in a scrambled form to be more secure.)",
@@ -1970,9 +1932,9 @@ usage( char *subOpt ) {
         "user_name, user_type_name, zone_name, user_info, or ",
         "r_comment",
         "These are the names listed by 'lu' (and are the database table column names).",
-        "Modifying the user's name (user_name) is not allowed; instead remove the user",
-        "and create a new one.  rmuser/mkuser will remove (if empty) and create the",
-        "needed collections too.",
+        "Modifying the user's name or zone is not allowed; instead remove the user and",
+        "create a new one.  rmuser/mkuser will remove (if empty) and create the needed",
+        "collections, too.",
         "For GSI or Kerberos authentication, use 'aua' to add one or more",
         "user auth names (GSI Distinquished Name (DN) or Kerberos principal name).",
         ""
