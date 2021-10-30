@@ -1,12 +1,10 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-/*
-  This is a regular-user level utility to list the resources.
-*/
+//
+// This is a regular-user level utility to list the resources.
+//
 
 #include "rods.h"
 #include "rodsClient.h"
+#include "rodsErrorTable.h"
 #include "irods_children_parser.hpp"
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
@@ -18,67 +16,67 @@
 
 #define BIG_STR 200
 
-
 // tree drawing gfx
 enum DrawingStyle {
     DrawingStyle_ascii = 0,
     DrawingStyle_unicode
 };
 
-
 const std::string middle_child_connector[2] = {"|-- ", "\u251C\u2500\u2500 "};
 const std::string last_child_connector[2] = {"`-- ", "\u2514\u2500\u2500 "};
 const std::string vertical_pipe[2] = {"|   ", "\u2502   "};
 const std::string indent = "    ";
-
 
 void usage();
 
 int
 printGenQueryResults( rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
                       char *descriptions[], int doDashes ) {
-    int printCount;
-    int i, j;
-    char localTime[TIME_LEN];
-    printCount = 0;
-    if ( status != 0 ) {
-        printError( Conn, status, "rcGenQuery" );
+    int printCount = 0;
+
+    if (0 != status) {
+        // This check guards against the possibility of CAT_NO_ROWS_FOUND being printed
+        // to the terminal at page boundaries. This occurs on query resultsets that are
+        // a multiple of the page size (i.e. 50 rows).
+        if (CAT_NO_ROWS_FOUND != status) {
+            printError(Conn, status, "rcGenQuery");
+        }
     }
-    else {
-        if ( status != CAT_NO_ROWS_FOUND ) {
-            for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
-                if ( i > 0 && doDashes ) {
-                    printf( "----\n" );
-                }
-                for ( j = 0; j < genQueryOut->attriCnt; j++ ) {
-                    char *tResult;
-                    tResult = genQueryOut->sqlResult[j].value;
-                    tResult += i * genQueryOut->sqlResult[j].len;
-                    if ( *descriptions[j] != '\0' ) {
-                        if ( strstr( descriptions[j], "time" ) != 0 ) {
-                            getLocalTimeFromRodsTime( tResult, localTime );
-                            printf( "%s: %s: %s\n", descriptions[j], tResult,
-                                    localTime );
-                        }
-                        else {
-                            printf( "%s: %s\n", descriptions[j], tResult );
-                        }
+    else if (CAT_NO_ROWS_FOUND != status) {
+        char localTime[TIME_LEN];
+
+        for (int i = 0; i < genQueryOut->rowCnt; i++ ) {
+            if ( i > 0 && doDashes ) {
+                printf( "----\n" );
+            }
+
+            for (int j = 0; j < genQueryOut->attriCnt; j++ ) {
+                char *tResult = genQueryOut->sqlResult[j].value;
+                tResult += i * genQueryOut->sqlResult[j].len;
+
+                if ( *descriptions[j] != '\0' ) {
+                    if ( strstr( descriptions[j], "time" ) != 0 ) {
+                        getLocalTimeFromRodsTime( tResult, localTime );
+                        printf( "%s: %s: %s\n", descriptions[j], tResult, localTime );
                     }
                     else {
-                        printf( "%s\n", tResult );
+                        printf( "%s: %s\n", descriptions[j], tResult );
                     }
-                    printCount++;
                 }
+                else {
+                    printf( "%s\n", tResult );
+                }
+
+                printCount++;
             }
         }
     }
+
     return printCount;
 }
 
 
-/*
-Via a general query, show a resource
-*/
+// Via a general query, show a resource
 int
 showResc( char *name, int longOption, const char* zoneArgument, rcComm_t *Conn ) {
     genQueryInp_t genQueryInp;
@@ -129,66 +127,72 @@ showResc( char *name, int longOption, const char* zoneArgument, rcComm_t *Conn )
 
     genQueryInp.sqlCondInp.inx = i2a;
     genQueryInp.sqlCondInp.value = condVal;
-    if ( name != NULL && *name != '\0' ) {
-        // =-=-=-=-=-=-=-
-        // JMC - backport 4629
-        if ( strncmp( name, BUNDLE_RESC, sizeof( BUNDLE_RESC ) ) == 0 ) {
-            printf( "%s is a pseudo resource for system use only.\n",
-                    BUNDLE_RESC );
+
+    // The user targeted a specific resource.
+    if (name && *name != '\0') {
+        // Return immediately if the user targeted the bundle resource.
+        if (strncmp(name, BUNDLE_RESC, sizeof(BUNDLE_RESC)) == 0) {
+            printf( "%s is a pseudo resource for system use only.\n", BUNDLE_RESC );
             return 0;
         }
-        // =-=-=-=-=-=-=-
+
+        // Set the condition: RESC_NAME = '<param: name>'.
+        // The user is targeting a specific resource.
         i2a[0] = COL_R_RESC_NAME;
-        snprintf( v1, BIG_STR, "='%s'", name );
+        snprintf(v1, BIG_STR, "= '%s'", name);
         condVal[0] = v1;
         genQueryInp.sqlCondInp.len = 1;
     }
     else {
-        // =-=-=-=-=-=-=-
-        // JMC - backport 4629
+        // The user did not target a specific resource.
+        // Exclude the bundle resource.
         i2a[0] = COL_R_RESC_NAME;
-        sprintf( v1, "!='%s'", BUNDLE_RESC ); /* all but bundleResc */
+        sprintf(v1, "!= '%s'", BUNDLE_RESC);
         condVal[0] = v1;
         genQueryInp.sqlCondInp.len = 1;
-        // =-=-=-=-=-=-=-
     }
 
-    if ( zoneArgument && *zoneArgument ) {
-        addKeyVal( &genQueryInp.condInput, ZONE_KW, zoneArgument );
+    if (zoneArgument && *zoneArgument) {
+        addKeyVal(&genQueryInp.condInput, ZONE_KW, zoneArgument);
     }
 
     genQueryInp.maxRows = 50;
     genQueryInp.continueInx = 0;
     status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-    if ( status == CAT_NO_ROWS_FOUND ) {
+
+    if (CAT_NO_ROWS_FOUND == status) {
         i1a[0] = COL_R_RESC_INFO;
         genQueryInp.selectInp.len = 1;
-        status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-        if ( status == 0 ) {
-            printf( "None\n" );
+        status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+
+        if (0 == status) {
+            printf("None\n");
             return 0;
         }
-        if ( status == CAT_NO_ROWS_FOUND ) {
-            if ( name != NULL && name[0] != '\0' ) {
-                printf( "Resource %s does not exist.\n", name );
+
+        if (CAT_NO_ROWS_FOUND == status) {
+            if (name && name[0] != '\0') {
+                printf("Resource %s does not exist.\n", name);
             }
             else {
-                printf( "Resource does not exist.\n" );
+                printf("Resource does not exist.\n");
             }
+
             return 0;
         }
     }
 
-    printCount += printGenQueryResults( Conn, status, genQueryOut, columnNames,
-                                        longOption );
-    while ( status == 0 && genQueryOut->continueInx > 0 ) {
+    printCount += printGenQueryResults(Conn, status, genQueryOut, columnNames, longOption);
+
+    while (0 == status && genQueryOut->continueInx > 0) {
         genQueryInp.continueInx = genQueryOut->continueInx;
-        status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-        if ( genQueryOut->rowCnt > 0 && longOption ) {
-            printf( "----\n" );
+        status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+
+        if (genQueryOut->rowCnt > 0 && longOption) {
+            printf("----\n");
         }
-        printCount += printGenQueryResults( Conn, status, genQueryOut,
-                                            columnNames, longOption );
+
+        printCount += printGenQueryResults(Conn, status, genQueryOut, columnNames, longOption);
     }
 
     return 1;
@@ -495,12 +499,14 @@ main( int argc, char **argv ) {
                 drawing_style = DrawingStyle_ascii;
             }
             status = showRescTree( argv[myRodsArgs.optind], zoneArgument, Conn, drawing_style);
-        } else { // regular view
+        }
+        else { // regular view
             status = showResc( argv[myRodsArgs.optind], myRodsArgs.longOption, zoneArgument, Conn );
         }
-    } catch ( const irods::exception& e_ ) {
-        rodsLog( LOG_ERROR, "Caught irods::exception\n%s", e_.what() );
-        status = e_.code();
+    }
+    catch ( const irods::exception& e ) {
+        rodsLog( LOG_ERROR, "Caught irods::exception\n%s", e.what() );
+        status = e.code();
     }
 
     printErrorStack( Conn->rError );
@@ -509,9 +515,9 @@ main( int argc, char **argv ) {
     /* Exit 0 if one or more items were displayed */
     if ( status >= 0 ) {
         return 0;
-    } else {
-        return status;
     }
+
+    return status;
 }
 
 /*
