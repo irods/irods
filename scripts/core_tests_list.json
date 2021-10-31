@@ -13,6 +13,7 @@
     "test_icp",
     "test_ifsck",
     "test_ils",
+    "test_ilsresc",
     "test_imeta_error_handling",
     "test_imeta_help",
     "test_imeta_interactive",
