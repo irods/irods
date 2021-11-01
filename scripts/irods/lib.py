@@ -707,3 +707,30 @@ def add_child_resource(parent_resource_name, child_resource_name, user):
 
 def remove_child_resource(parent_resource_name, child_resource_name, user):
     user.assert_icommand(['iadmin', 'rmchildfromresc', parent_resource_name, child_resource_name])
+
+def get_user_type(session, user_name, zone_name=None):
+    """Get the type field of the user indicated by user_name and zone_name."""
+    gql = "select USER_TYPE where USER_NAME = '{}' and USER_ZONE = '{}'"
+    return session.assert_icommand(['iquest', '%s',
+        gql.format(user_name, zone_name or session.zone_name)], 'STDOUT')[1].strip()
+
+
+def get_user_zone(session, user_name, zone_name=None):
+    """Get the zone field of the user indicated by user_name and zone_name."""
+    gql = "select USER_ZONE where USER_NAME = '{}' and USER_ZONE = '{}'"
+    return session.assert_icommand(['iquest', '%s',
+        gql.format(user_name, zone_name or session.zone_name)], 'STDOUT')[1].strip()
+
+
+def get_user_comment(session, user_name, zone_name=None):
+    """Get the comment field of the user indicated by user_name and zone_name."""
+    gql = "select USER_COMMENT where USER_NAME = '{}' and USER_ZONE = '{}'"
+    return session.assert_icommand(['iquest', '%s',
+        gql.format(user_name, zone_name or session.zone_name)], 'STDOUT')[1].strip()
+
+
+def get_user_info(session, user_name, zone_name=None):
+    """Get the info field of the user indicated by user_name and zone_name."""
+    gql = "select USER_INFO where USER_NAME = '{}' and USER_ZONE = '{}'"
+    return session.assert_icommand(['iquest', '%s',
+        gql.format(user_name, zone_name or session.zone_name)], 'STDOUT')[1].strip()

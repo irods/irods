@@ -12,6 +12,7 @@
     "test_icommands_file_operations",
     "test_icp",
     "test_ifsck",
+    "test_igroupadmin",
     "test_ils",
     "test_imeta_error_handling",
     "test_imeta_help",
