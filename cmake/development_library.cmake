@@ -488,6 +488,7 @@ set(
 
 set(
   IRODS_SERVER_CORE_INCLUDE_HEADERS
+  ${CMAKE_SOURCE_DIR}/server/core/include/administration_utilities.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/client_api_whitelist.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/collection.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/dataObjOpr.hpp
@@ -550,6 +551,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/include/scoped_privileged_client.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/server_utilities.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/specColl.hpp
+  ${CMAKE_SOURCE_DIR}/server/core/include/user_validation_utilities.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/voting.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/xmsgLib.hpp
   )

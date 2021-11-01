@@ -838,6 +838,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/api/src/rsUnregDataObj.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsUserAdmin.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsZoneReport.cpp
+  ${CMAKE_SOURCE_DIR}/server/core/src/administration_utilities.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/client_api_whitelist.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/catalog.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/catalog_utilities.cpp
@@ -893,6 +894,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/src/server_utilities.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/specColl.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/xmsgLib.cpp
+  ${CMAKE_SOURCE_DIR}/server/core/src/user_validation_utilities.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/voting.cpp
   ${CMAKE_SOURCE_DIR}/server/drivers/src/fileDriver.cpp
   ${CMAKE_SOURCE_DIR}/server/icat/src/icatHighLevelRoutines.cpp
