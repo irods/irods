@@ -1,8 +1,4 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code (for the most part).  */
-/* See userAdmin.h for a description of this API call.*/
-
+#include "administration_utilities.hpp"
 #include "userAdmin.h"
 #include "rsUserAdmin.hpp"
 #include "icatHighLevelRoutines.hpp"
@@ -145,56 +141,15 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
     // =-=-=-=-=-=-=-
     // JMC - backport 4772
     if ( strcmp( userAdminInp->arg0, "mkuser" ) == 0 ) {
-        /* run the acCreateUser rule */
-        ruleExecInfo_t rei;
-        userInfo_t userInfo;
-        memset( ( char* )&rei, 0, sizeof( rei ) );
-        memset( ( char* )&userInfo, 0, sizeof( userInfo ) );
-        rei.rsComm = rsComm;
-        snprintf( userInfo.userName, sizeof( userInfo.userName ),
-                  "%s", userAdminInp->arg1 );
-        snprintf( userInfo.userType, sizeof( userInfo.userType ),
-                  "%s", "rodsuser" );
-        rei.uoio = &userInfo;
-        rei.uoic = &rsComm->clientUser;
-        rei.uoip = &rsComm->proxyUser;
-        status = applyRuleArg( "acCreateUser", NULL, 0, &rei, SAVE_REI );
-        if ( status != 0 ) {
-            chlRollback( rsComm );
-            return status;
-        }
-        /* And then the chlModUser function to set the initial password */
-        status = chlModUser( rsComm,
-                             userAdminInp->arg1,
-                             "password",
-                             userAdminInp->arg2 );
-        if ( status != 0 ) {
-            chlRollback( rsComm );
-        }
-        return status;
+        return irods::create_user(*rsComm,
+                                  userAdminInp->arg1 ? userAdminInp->arg1 : "",
+                                  "rodsuser", "");
     }
     if ( strcmp( userAdminInp->arg0, "mkgroup" ) == 0 ) {
-        /* run the acCreateUser rule */
-        ruleExecInfo_t rei;
-        userInfo_t userInfo;
-        memset( ( char* )&rei, 0, sizeof( rei ) );
-        rei.rsComm = rsComm;
-        snprintf( userInfo.userName, sizeof( userInfo.userName ),
-                  "%s", userAdminInp->arg1 );
-        snprintf( userInfo.userType, sizeof( userInfo.userType ),
-                  "%s", userAdminInp->arg2 );
-        snprintf( userInfo.rodsZone, sizeof( userInfo.rodsZone ),
-                  "%s", userAdminInp->arg3 );
-        snprintf( userInfo.authInfo.authStr, sizeof( userInfo.authInfo.authStr ),
-                  "%s", userAdminInp->arg4 );
-        rei.uoio = &userInfo;
-        rei.uoic = &rsComm->clientUser;
-        rei.uoip = &rsComm->proxyUser;
-        status = applyRuleArg( "acCreateUser", NULL, 0, &rei, SAVE_REI );
-        if ( status != 0 ) {
-            chlRollback( rsComm );
-        }
-        return status;
+        return irods::create_user(*rsComm,
+                                  userAdminInp->arg1 ? userAdminInp->arg1 : "",
+                                  userAdminInp->arg2 ? userAdminInp->arg2 : "",
+                                  "");
     }
 
     // =-=-=-=-=-=-=-
