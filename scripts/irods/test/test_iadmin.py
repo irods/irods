@@ -111,24 +111,6 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['iadmin', 'lt', 'user_type', 'rodstest'], 'STDOUT_SINGLELINE', 'token_name: rodstest')
         self.admin.assert_icommand(['iadmin', 'rt', 'user_type', 'rodstest'])
 
-    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
-    def test_moduser(self):
-        username = 'moduser_user'
-        self.admin.assert_icommand(['iadmin', 'mkuser', username, 'rodsuser'])
-        try :
-            self.admin.assert_icommand(['iadmin', 'moduser', username, 'type', 'invalid_user_type'], 'STDERR_SINGLELINE', 'CAT_INVALID_USER_TYPE')
-            self.admin.assert_icommand(['iadmin', 'moduser', username, 'type', 'rodsadmin'])
-            self.admin.assert_icommand(['iadmin', 'moduser', username, 'type', 'rodsuser'])
-            self.admin.assert_icommand(['iadmin', 'moduser', username, 'zone', 'tempZone'])
-            self.admin.assert_icommand(['iadmin', 'moduser', username, 'comment', 'this is a comment'])
-            self.admin.assert_icommand(['iadmin', 'moduser', username, 'comment', ''])
-            self.admin.assert_icommand(['iadmin', 'moduser', username, 'info', 'this is the info field'])
-            self.admin.assert_icommand(['iadmin', 'moduser', username, 'info', ''])
-            self.admin.assert_icommand(['iadmin', 'moduser', username, 'password', 'abc'])
-            self.admin.assert_icommand(['iadmin', 'moduser', username, 'password', '1234'])
-        finally :
-            self.admin.assert_icommand(['iadmin', 'rmuser', username])
-
     def test_authentication_name(self):
         username = 'moduser_user'
         authentication_name = 'asdfsadfsadf/dfadsf/dadf/d/'
@@ -2001,3 +1983,352 @@ class Test_Iadmin_modrepl(resource_suite.ResourceBase, unittest.TestCase):
         finally:
             if os.path.exists(original_file_path):
                 os.unlink(original_file_path)
+
+class test_moduser_user(unittest.TestCase):
+    """Test modifying a user."""
+    @classmethod
+    def setUpClass(self):
+        """Set up the test class."""
+        self.admin = session.mkuser_and_return_session('rodsadmin', 'otherrods', 'rods', lib.get_hostname())
+        self.username = 'moduser_user'
+        self.admin.assert_icommand(['iadmin', 'mkuser', self.username, 'rodsuser'])
+
+
+    @classmethod
+    def tearDownClass(self):
+        """Tear down the test class."""
+        self.admin.assert_icommand(['iadmin', 'rmuser', self.username])
+        with session.make_session_for_existing_admin() as admin_session:
+            self.admin.__exit__()
+            admin_session.assert_icommand(['iadmin', 'rmuser', self.admin.username])
+
+
+    def test_moduser_type_rodsadmin_rodsuser(self):
+        """Test modifying the user's type to and from supported types."""
+        # rodsuser -> rodsuser
+        self.assertEqual('rodsuser', lib.get_user_type(self.admin, self.username))
+        self.admin.assert_icommand(['iadmin', 'moduser', self.username, 'type', 'rodsuser'])
+        self.assertEqual('rodsuser', lib.get_user_type(self.admin, self.username))
+
+        # rodsuser -> rodsadmin
+        self.assertEqual('rodsuser', lib.get_user_type(self.admin, self.username))
+        self.admin.assert_icommand(['iadmin', 'moduser', self.username, 'type', 'rodsadmin'])
+        self.assertEqual('rodsadmin', lib.get_user_type(self.admin, self.username))
+
+        # rodsadmin -> rodsadmin
+        self.admin.assert_icommand(['iadmin', 'moduser', self.username, 'type', 'rodsadmin'])
+        self.assertEqual('rodsadmin', lib.get_user_type(self.admin, self.username))
+
+        # rodsadmin -> rodsuser
+        self.admin.assert_icommand(['iadmin', 'moduser', self.username, 'type', 'rodsuser'])
+        self.assertEqual('rodsuser', lib.get_user_type(self.admin, self.username))
+
+        # rodsuser -> groupadmin
+        self.admin.assert_icommand(['iadmin', 'moduser', self.username, 'type', 'groupadmin'])
+        self.assertEqual('groupadmin', lib.get_user_type(self.admin, self.username))
+
+        # groupadmin -> groupadmin
+        self.admin.assert_icommand(['iadmin', 'moduser', self.username, 'type', 'groupadmin'])
+        self.assertEqual('groupadmin', lib.get_user_type(self.admin, self.username))
+
+        # groupadmin -> rodsadmin
+        self.admin.assert_icommand(['iadmin', 'moduser', self.username, 'type', 'rodsadmin'])
+        self.assertEqual('rodsadmin', lib.get_user_type(self.admin, self.username))
+
+        # rodsadmin -> groupadmin
+        self.admin.assert_icommand(['iadmin', 'moduser', self.username, 'type', 'groupadmin'])
+        self.assertEqual('groupadmin', lib.get_user_type(self.admin, self.username))
+
+        # groupadmin -> rodsuser
+        self.admin.assert_icommand(['iadmin', 'moduser', self.username, 'type', 'rodsuser'])
+        self.assertEqual('rodsuser', lib.get_user_type(self.admin, self.username))
+
+
+    def test_moduser_type_rodsgroup(self):
+        """Test modifying the user's type to a group (not allowed)."""
+        self.assertEqual('rodsuser', lib.get_user_type(self.admin, self.username))
+        self.admin.assert_icommand(['iadmin', 'moduser', self.username, 'type', 'rodsgroup'],
+                                   'STDERR', 'SYS_NOT_ALLOWED')
+        self.assertEqual('rodsuser', lib.get_user_type(self.admin, self.username))
+
+
+    def test_moduser_type_invalid_type(self):
+        """Test modifying the user's type to something that is not supported."""
+        self.assertEqual('rodsuser', lib.get_user_type(self.admin, self.username))
+        self.admin.assert_icommand(['iadmin', 'moduser', self.username, 'type', 'invalid_user_type'],
+                                   'STDERR_SINGLELINE', 'CAT_INVALID_USER_TYPE')
+        self.assertEqual('rodsuser', lib.get_user_type(self.admin, self.username))
+
+
+    def test_moduser_zone(self):
+        """Test modifying the user's zone (not supported)."""
+        # Make sure local users cannot have the zone changed
+        self.assertEqual(self.admin.zone_name, lib.get_user_zone(self.admin, self.username))
+        self.admin.assert_icommand(['iadmin', 'moduser', self.username, 'zone', 'nopes'],
+                                   'STDERR', 'CAT_INVALID_ARGUMENT')
+        self.assertEqual(self.admin.zone_name, lib.get_user_zone(self.admin, self.username))
+
+        # Make sure remote users cannot have the zone changed
+        remote_zone = 'somezone'
+        user_and_zone = '#'.join([self.username, remote_zone])
+
+        try:
+            self.admin.assert_icommand(['iadmin', 'mkzone', remote_zone, 'remote', 'localhost:1247'])
+            self.admin.assert_icommand(['iadmin', 'mkuser', user_and_zone, 'rodsuser'])
+
+            self.assertEqual(remote_zone, lib.get_user_zone(self.admin, self.username, remote_zone))
+            self.admin.assert_icommand(['iadmin', 'moduser', user_and_zone, 'zone', 'nopes'],
+                                       'STDERR', 'CAT_INVALID_ARGUMENT')
+            self.assertEqual(remote_zone, lib.get_user_zone(self.admin, self.username, remote_zone))
+
+        finally:
+            self.admin.assert_icommand(['iadmin', 'rmuser', user_and_zone])
+            self.admin.assert_icommand(['iadmin', 'rmzone', remote_zone])
+
+
+    def test_moduser_comment(self):
+        """Test modifying the user's comment field."""
+        comment = 'this is a comment'
+        self.assertEqual('', lib.get_user_comment(self.admin, self.username))
+        self.admin.assert_icommand(['iadmin', 'moduser', self.username, 'comment', comment])
+        self.assertEqual(comment, lib.get_user_comment(self.admin, self.username))
+
+        self.admin.assert_icommand(['iadmin', 'moduser', self.username, 'comment', ''])
+        self.assertEqual('', lib.get_user_comment(self.admin, self.username))
+
+    def test_moduser_info(self):
+        """Test modifying the user's info field."""
+        info = 'this is the info field'
+        self.assertEqual('', lib.get_user_info(self.admin, self.username))
+        self.admin.assert_icommand(['iadmin', 'moduser', self.username, 'info', info])
+        self.assertEqual(info, lib.get_user_info(self.admin, self.username))
+
+        self.admin.assert_icommand(['iadmin', 'moduser', self.username, 'info', ''])
+        self.assertEqual('', lib.get_user_info(self.admin, self.username))
+
+    def test_moduser_password(self):
+        """Test modifying the user's password."""
+        host = socket.gethostname()
+
+        # Make sure no password is set
+        pw1 = 'abc'
+        with self.assertRaises(Exception):
+            with session.make_session_for_existing_user(self.username, pw1, host, self.admin.zone_name):
+                pass
+
+        # Add password
+        self.admin.assert_icommand(['iadmin', 'moduser', self.username, 'password', pw1])
+        with session.make_session_for_existing_user(self.username, pw1, host, self.admin.zone_name):
+            pass
+
+        # Change password
+        pw2 = '1234'
+        self.admin.assert_icommand(['iadmin', 'moduser', self.username, 'password', pw2])
+        with session.make_session_for_existing_user(self.username, pw2, host, self.admin.zone_name):
+            pass
+
+        # Make sure old password does not work
+        with self.assertRaises(Exception):
+            with session.make_session_for_existing_user(self.username, pw1, host, self.admin.zone_name):
+                pass
+
+
+class test_moduser_group(unittest.TestCase):
+    """Test modifying a group."""
+    @classmethod
+    def setUpClass(self):
+        """Set up the test class."""
+        self.admin = session.mkuser_and_return_session('rodsadmin', 'otherrods', 'rods', lib.get_hostname())
+        self.group = 'moduser_group'
+        self.admin.assert_icommand(['iadmin', 'mkgroup', self.group])
+
+
+    @classmethod
+    def tearDownClass(self):
+        """Tear down the test class."""
+        with session.make_session_for_existing_admin() as admin_session:
+            self.admin.__exit__()
+            admin_session.assert_icommand(['iadmin', 'rmgroup', self.group])
+            admin_session.assert_icommand(['iadmin', 'rmuser', self.admin.username])
+
+
+    def test_moduser_type(self):
+        """Test modifying the group's type (not allowed)."""
+        self.assertEqual('rodsgroup', lib.get_user_type(self.admin, self.group))
+        self.admin.assert_icommand(['iadmin', 'moduser', self.group, 'type', 'invalid_user_type'],
+                                   'STDERR', 'CAT_INVALID_USER_TYPE')
+        self.assertEqual('rodsgroup', lib.get_user_type(self.admin, self.group))
+
+        self.admin.assert_icommand(['iadmin', 'moduser', self.group, 'type', 'rodsadmin'],
+                                   'STDERR', 'SYS_NOT_ALLOWED')
+        self.assertEqual('rodsgroup', lib.get_user_type(self.admin, self.group))
+
+        self.admin.assert_icommand(['iadmin', 'moduser', self.group, 'type', 'rodsuser'],
+                                   'STDERR', 'SYS_NOT_ALLOWED')
+        self.assertEqual('rodsgroup', lib.get_user_type(self.admin, self.group))
+
+        self.admin.assert_icommand(['iadmin', 'moduser', self.group, 'type', 'rodsgroup'],
+                                   'STDERR', 'SYS_NOT_ALLOWED')
+        self.assertEqual('rodsgroup', lib.get_user_type(self.admin, self.group))
+
+        self.admin.assert_icommand(['iadmin', 'moduser', self.group, 'type', 'groupadmin'],
+                                   'STDERR', 'SYS_NOT_ALLOWED')
+        self.assertEqual('rodsgroup', lib.get_user_type(self.admin, self.group))
+
+
+    def test_moduser_zone(self):
+        """Test modifying the user's zone (not supported)."""
+        self.assertEqual(self.admin.zone_name, lib.get_user_zone(self.admin, self.group))
+        self.admin.assert_icommand(['iadmin', 'moduser', self.group, 'zone', 'nopes'],
+                                   'STDERR', 'CAT_INVALID_ARGUMENT')
+        self.assertEqual(self.admin.zone_name, lib.get_user_zone(self.admin, self.group))
+
+
+    def test_moduser_comment(self):
+        """Test modifying the group's comment field."""
+        comment = 'this is a comment'
+        self.assertEqual('', lib.get_user_comment(self.admin, self.group))
+        self.admin.assert_icommand(['iadmin', 'moduser', self.group, 'comment', comment])
+        self.assertEqual(comment, lib.get_user_comment(self.admin, self.group))
+
+        self.admin.assert_icommand(['iadmin', 'moduser', self.group, 'comment', ''])
+        self.assertEqual('', lib.get_user_comment(self.admin, self.group))
+
+    def test_moduser_info(self):
+        """Test modifying the group's info field."""
+        info = 'this is the info field'
+        self.assertEqual('', lib.get_user_info(self.admin, self.group))
+        self.admin.assert_icommand(['iadmin', 'moduser', self.group, 'info', info])
+        self.assertEqual(info, lib.get_user_info(self.admin, self.group))
+
+        self.admin.assert_icommand(['iadmin', 'moduser', self.group, 'info', ''])
+        self.assertEqual('', lib.get_user_info(self.admin, self.group))
+
+    def test_moduser_password(self):
+        """Test modifying the group's password."""
+        host = socket.gethostname()
+
+        # Make sure no password is set
+        pw = 'abc'
+        with self.assertRaises(Exception):
+            with session.make_session_for_existing_user(self.username, pw, host, self.admin.zone_name) as s:
+                pass
+
+        # Add password (and fail)
+        self.admin.assert_icommand(['iadmin', 'moduser', self.group, 'password', pw], 'STDERR')
+
+        # Make sure it didn't stick
+        with self.assertRaises(Exception):
+            with session.make_session_for_existing_user(self.username, pw, host, self.admin.zone_name) as s:
+                pass
+
+
+class test_mkuser_group(unittest.TestCase):
+    """Test making a group."""
+    @classmethod
+    def setUpClass(self):
+        """Set up the test class."""
+        self.admin = session.mkuser_and_return_session('rodsadmin', 'otherrods', 'rods', lib.get_hostname())
+        self.group = 'test_making_groups_group'
+
+
+    @classmethod
+    def tearDownClass(self):
+        """Tear down the test class."""
+        with session.make_session_for_existing_admin() as admin_session:
+            self.admin.__exit__()
+            admin_session.assert_icommand(['iadmin', 'rmuser', self.admin.username])
+
+
+    def test_mkuser_with_no_zone(self):
+        """Test mkuser (rodsgroup) with no zone name provided."""
+        try:
+            self.admin.assert_icommand(['iadmin', 'mkuser', self.group, 'rodsgroup'])
+            self.assertEqual('rodsgroup', lib.get_user_type(self.admin, self.group))
+            self.assertEqual(self.admin.zone_name, lib.get_user_zone(self.admin, self.group))
+
+        finally:
+            self.admin.run_icommand(['iadmin', 'rmgroup', self.group])
+
+
+    def test_mkuser_with_local_zone(self):
+        """Test mkuser (rodsgroup) with local zone name provided."""
+        try:
+            group_with_zone = '#'.join([self.group, self.admin.zone_name])
+
+            self.admin.assert_icommand(['iadmin', 'mkuser', group_with_zone, 'rodsgroup'])
+            self.assertEqual('rodsgroup', lib.get_user_type(self.admin, self.group))
+            self.assertEqual(self.admin.zone_name, lib.get_user_zone(self.admin, self.group))
+
+        finally:
+            self.admin.run_icommand(['iadmin', 'rmgroup', self.group])
+
+
+    def test_mkuser_with_remote_zone(self):
+        """Test mkuser (rodsgroup) with remote zone name provided."""
+        remote_zone = 'somezone'
+        try:
+            group_with_zone = '#'.join([self.group, remote_zone])
+
+            # remote zones for non-existent zones are not allowed
+            self.admin.assert_icommand(['iadmin', 'mkuser', group_with_zone, 'rodsgroup'],
+                                       'STDERR', 'SYS_NOT_ALLOWED')
+
+            self.assertIn('CAT_NO_ROWS_FOUND', lib.get_user_type(self.admin, self.group))
+
+            # remote zones for existing remote zones are not allowed
+            self.admin.assert_icommand(['iadmin', 'mkzone', remote_zone, 'remote', 'localhost:1247'])
+            self.admin.assert_icommand(['iadmin', 'mkgroup', group_with_zone, 'rodsgroup'],
+                                       'STDERR', 'SYS_NOT_ALLOWED')
+
+            self.assertIn('CAT_NO_ROWS_FOUND', lib.get_user_type(self.admin, self.group))
+
+        finally:
+            self.admin.run_icommand(['iadmin', 'rmgroup', self.group])
+            self.admin.run_icommand(['iadmin', 'rmzone', remote_zone])
+
+
+    def test_mkgroup_with_no_zone(self):
+        """Test mkgroup with no zone name provided."""
+        try:
+            self.admin.assert_icommand(['iadmin', 'mkgroup', self.group])
+            self.assertEqual('rodsgroup', lib.get_user_type(self.admin, self.group))
+            self.assertEqual(self.admin.zone_name, lib.get_user_zone(self.admin, self.group))
+
+        finally:
+            self.admin.run_icommand(['iadmin', 'rmgroup', self.group])
+
+
+    def test_mkgroup_with_local_zone(self):
+        """Test mkgroup with local zone name provided."""
+        try:
+            self.admin.assert_icommand(['iadmin', 'mkgroup', '#'.join([self.group, self.admin.zone_name])])
+            self.assertEqual('rodsgroup', lib.get_user_type(self.admin, self.group))
+            self.assertEqual(self.admin.zone_name, lib.get_user_zone(self.admin, self.group))
+
+        finally:
+            self.admin.run_icommand(['iadmin', 'rmgroup', self.group])
+
+
+    def test_mkgroup_with_remote_zone(self):
+        """Test mkgroup with remote zone name provided."""
+        remote_zone = 'somezone'
+        try:
+            group_with_zone = '#'.join([self.group, remote_zone])
+
+            # remote zones for non-existent zones are not allowed
+            self.admin.assert_icommand(['iadmin', 'mkgroup', group_with_zone],
+                                       'STDERR', 'SYS_NOT_ALLOWED')
+
+            self.assertIn('CAT_NO_ROWS_FOUND', lib.get_user_type(self.admin, self.group))
+
+            # remote zones for existing remote zones are not allowed
+            self.admin.assert_icommand(['iadmin', 'mkzone', remote_zone, 'remote', 'localhost:1247'])
+            self.admin.assert_icommand(['iadmin', 'mkgroup', group_with_zone],
+                                       'STDERR', 'SYS_NOT_ALLOWED')
+
+            self.assertIn('CAT_NO_ROWS_FOUND', lib.get_user_type(self.admin, self.group))
+
+        finally:
+            self.admin.run_icommand(['iadmin', 'rmgroup', self.group])
+            self.admin.run_icommand(['iadmin', 'rmzone', remote_zone])
