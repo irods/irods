@@ -194,6 +194,9 @@ namespace
             const auto nrep = std::find_if(std::begin(rule_engines), end, [](const nlohmann::json& _object) {
                 return _object.at(irods::CFG_PLUGIN_NAME_KW).get<std::string>() == "irods_rule_engine_plugin-irods_rule_language";
             });
+            if (nrep == end) {
+                return;
+            }
 
             // Get the rulebase set.
             const auto& plugin_specific_config = nrep->at(irods::CFG_PLUGIN_SPECIFIC_CONFIGURATION_KW);
