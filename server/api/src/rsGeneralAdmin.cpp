@@ -1,5 +1,6 @@
 #include "rsGeneralAdmin.hpp"
 
+#include "administration_utilities.hpp"
 #include "generalAdmin.h"
 #include "rodsConnect.h"
 #include "icatHighLevelRoutines.hpp"
@@ -16,16 +17,19 @@
 #include "irods_load_plugin.hpp"
 #include "irods_at_scope_exit.hpp"
 #include "irods_hierarchy_parser.hpp"
+#include "user_validation_utilities.hpp"
+
+#include "fmt/format.h"
 
 #include <boost/date_time.hpp>
 #include <boost/algorithm/string/trim.hpp>
 
+#include <algorithm>
 #include <cctype>
 #include <iostream>
+#include <optional>
 #include <string>
 #include <tuple>
-#include <optional>
-#include <algorithm>
 
 extern irods::resource_manager resc_mgr;
 
@@ -40,6 +44,58 @@ namespace
 
         return std::find_if(b, e, [](unsigned char _ch) { return ::isspace(_ch); }) != e;
     } // contains_whitespace
+
+    auto throw_if_group_is_changing_to_user_or_user_is_changing_to_group(
+        RsComm& _comm,
+        const std::string_view _option,
+        const std::string_view _current_user_type,
+        const std::string_view _new_user_type) -> void
+    {
+        // If the type of the user or group is not changing, then a group is not changing to a
+        // user and a user is not changing to a group by definition. Return immediately.
+        if (_option != "type") {
+            return;
+        }
+
+        if (!irods::user::type_is_valid(_current_user_type) ||
+            !irods::user::type_is_valid(_new_user_type)) {
+            THROW(CAT_INVALID_USER_TYPE, "user type is not recognized");
+        }
+
+        if (_current_user_type == "rodsgroup") {
+            constexpr auto err = SYS_NOT_ALLOWED;
+            const auto msg = "a group cannot have its type changed";
+            addRErrorMsg(&_comm.rError, err, msg);
+            THROW(err, msg);
+        }
+
+        if (_new_user_type == "rodsgroup") {
+            constexpr auto err = SYS_NOT_ALLOWED;
+            const auto msg = "a user cannot be changed to a group";
+            addRErrorMsg(&_comm.rError, err, msg);
+            THROW(err, msg);
+        }
+
+        // If this point is reached, this is a rodsuser or a rodsadmin having its type changed.
+        // There are checks later on which enforce the type to which the user is being chagned.
+    } // throw_if_group_is_changing_to_user_or_user_is_changing_to_group
+
+    auto throw_if_password_is_being_set_on_a_group(
+        RsComm& _comm,
+        const std::string_view _option,
+        const std::string_view _user_type) -> void
+    {
+        if (_option != "password") {
+            return;
+        }
+
+        if (_user_type == "rodsgroup") {
+            constexpr auto err = SYS_NOT_ALLOWED;
+            const auto msg = "a group cannot have a password";
+            addRErrorMsg(&_comm.rError, err, msg);
+            THROW(err, msg);
+        }
+    } // throw_if_password_is_being_set_on_a_group
 } // anonymous namespace
 
 int _check_rebalance_timestamp_avu_on_resource(
@@ -629,7 +685,6 @@ int
 _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
     int status;
     collInfo_t collInfo;
-    ruleExecInfo_t rei;
     const char *args[MAX_NUM_OF_ARGS_IN_ACTION];
     int i, argc;
     ruleExecInfo_t rei2;
@@ -648,23 +703,10 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
 
     if ( strcmp( generalAdminInp->arg0, "add" ) == 0 ) {
         if ( strcmp( generalAdminInp->arg1, "user" ) == 0 ) {
-            /* run the acCreateUser rule */
-            memset( ( char* )&rei, 0, sizeof( rei ) );
-            rei.rsComm = rsComm;
-            userInfo_t userInfo;
-            memset( &userInfo, 0, sizeof( userInfo ) );
-            snprintf( userInfo.userName, sizeof( userInfo.userName ), "%s", generalAdminInp->arg2 );
-            snprintf( userInfo.userType, sizeof( userInfo.userType ), "%s", generalAdminInp->arg3 );
-            snprintf( userInfo.rodsZone, sizeof( userInfo.rodsZone ), "%s", generalAdminInp->arg4 );
-            snprintf( userInfo.authInfo.authStr, sizeof( userInfo.authInfo.authStr ), "%s", generalAdminInp->arg5 );
-            rei.uoio = &userInfo;
-            rei.uoic = &rsComm->clientUser;
-            rei.uoip = &rsComm->proxyUser;
-            status = applyRuleArg( "acCreateUser", NULL, 0, &rei, SAVE_REI );
-            if ( status != 0 ) {
-                chlRollback( rsComm );
-            }
-            return status;
+            return irods::create_user(*rsComm,
+                                      generalAdminInp->arg2 ? generalAdminInp->arg2 : "",
+                                      generalAdminInp->arg3 ? generalAdminInp->arg3 : "",
+                                      generalAdminInp->arg5 ? generalAdminInp->arg5 : "");
         }
         if ( strcmp( generalAdminInp->arg1, "dir" ) == 0 ) {
             memset( ( char* )&collInfo, 0, sizeof( collInfo ) );
@@ -769,8 +811,33 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
 
     if ( strcmp( generalAdminInp->arg0, "modify" ) == 0 ) {
         if ( strcmp( generalAdminInp->arg1, "user" ) == 0 ) {
-            args[0] = generalAdminInp->arg2; /* username */
-            args[1] = generalAdminInp->arg3; /* option */
+            const auto user_name = std::string_view{generalAdminInp->arg2 ?
+                                                    generalAdminInp->arg2 : ""};
+
+            const auto option = std::string_view{generalAdminInp->arg3 ?
+                                                 generalAdminInp->arg3 : ""};
+
+            const auto new_value = std::string_view{generalAdminInp->arg4 ?
+                                                    generalAdminInp->arg4 : ""};
+
+            try {
+                // Store the user type here because we need to fetch it from the catalog and
+                // it will be used multiple times. Note: subject to TOCTOU problem.
+                const auto current_user_type = irods::user::get_type(*rsComm, user_name);
+
+                throw_if_group_is_changing_to_user_or_user_is_changing_to_group(
+                    *rsComm, option, current_user_type, new_value);
+
+                throw_if_password_is_being_set_on_a_group(*rsComm, option, current_user_type);
+            }
+            catch (const irods::exception& e) {
+                irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]",
+                    __func__, __LINE__, e.client_display_what()));
+                return e.code();
+            }
+
+            args[0] = user_name.data();
+            args[1] = option.data();
             /* Since the obfuscated password might contain commas, single or
                double quotes, etc, it's hard to escape for processing (often
                causing a seg fault), so for now just pass in a dummy string.
@@ -789,8 +856,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                 return i;
             }
 
-            status = chlModUser( rsComm, generalAdminInp->arg2,
-                                 generalAdminInp->arg3, generalAdminInp->arg4 );
+            status = chlModUser(rsComm, user_name.data(), option.data(), new_value.data());
 
             if ( status == 0 ) {
                 i =  applyRuleArg( "acPostProcForModifyUser", args, argc, &rei2, NO_SAVE_REI );
@@ -878,6 +944,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
         if ( strcmp( generalAdminInp->arg1, "localzonename" ) == 0 ) {
             /* run the acRenameLocalZone rule */
             const char *args[2];
+            ruleExecInfo_t rei;
             memset( ( char* )&rei, 0, sizeof( rei ) );
             rei.rsComm = rsComm;
             memset( ( char* )&rei, 0, sizeof( rei ) );
@@ -995,39 +1062,8 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
     }
     if ( strcmp( generalAdminInp->arg0, "rm" ) == 0 ) {
         if ( strcmp( generalAdminInp->arg1, "user" ) == 0 ) {
-            /* run the acDeleteUser rule */
-            const char *args[2];
-            memset( ( char* )&rei, 0, sizeof( rei ) );
-            rei.rsComm = rsComm;
-            userInfo_t userInfo;
-            memset( &userInfo, 0, sizeof( userInfo ) );
-            snprintf( userInfo.userName, sizeof( userInfo.userName ), "%s", generalAdminInp->arg2 );
-            snprintf( userInfo.rodsZone, sizeof( userInfo.rodsZone ), "%s", generalAdminInp->arg3 );
-            userInfo_t userInfoRei = userInfo;
-            char userName[NAME_LEN];
-            char zoneName[NAME_LEN];
-            status = parseUserName( userInfo.userName, userName, zoneName );
-            if ( status != 0 ) {
-                chlRollback( rsComm );
-                return status;
-            }
-            if ( strcmp( zoneName, "" ) != 0 ) {
-                snprintf( userInfoRei.rodsZone, sizeof( userInfoRei.rodsZone ), "%s", zoneName );
-                // =-=-=-=-=-=-=-
-                // JMC :: while correct, much of the code assumes that the user name
-                //        has the zone name appended.  this will need to be part of
-                //        a full audit of the use of userName and zoneName
-                // strncpy( userInfoRei.userName, userName, NAME_LEN );
-            }
-
-            rei.uoio = &userInfoRei;
-            rei.uoic = &rsComm->clientUser;
-            rei.uoip = &rsComm->proxyUser;
-            status = applyRuleArg( "acDeleteUser", args, 0, &rei, SAVE_REI );
-            if ( status != 0 ) {
-                chlRollback( rsComm );
-            }
-            return status;
+            return irods::remove_user(*rsComm,
+                                      generalAdminInp->arg2 ? generalAdminInp->arg2 : "");
         }
         if ( strcmp( generalAdminInp->arg1, "dir" ) == 0 ) {
             memset( ( char* )&collInfo, 0, sizeof( collInfo ) );
