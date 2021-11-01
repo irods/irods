@@ -33,6 +33,7 @@
 #include "modAccessControl.h"
 #include "checksum.h"
 #include "key_value_proxy.hpp"
+#include "user_validation_utilities.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -121,47 +122,35 @@ static const auto intermediate_replica_status_str = std::to_string(INTERMEDIATE_
    and check that the username is a valid format, meaning at most one
    '@' and at most one '#'.
    Full userNames are of the form user@department[#zone].
-   It is assumed the output strings are at least NAME_LEN characters long
-   and the input string is at most that long.
+   It is assumed the output strings are at least NAME_LEN characters long.
  */
 int
 validateAndParseUserName( const char *fullUserNameIn, char *userName, char *userZone ) {
-    const std::string input( fullUserNameIn );
-    boost::smatch matches;
-    // This regex matches usernames with no hashes and optionally one at symbol,
-    // and then optionally a hash followed by a zone name containing no hashes.
-    //
-    // Username must be between 1 and NAME_LEN-1 characters.
-    // Username may contain any combination of word characters, @ symbols, dashes, and dots.
-    // Username may not be . or .., as we create home directories for users
-    const boost::regex expression( "((\\w|[-.@])+)(#([^#]*))?" );
-    try {
-        const bool matched = boost::regex_match( input, matches, expression );
-        if ( !matched || matches.str( 1 ).size() >= NAME_LEN ||
-                matches.str( 1 ).size() < 1 ||
-                matches.str( 4 ).size() >= NAME_LEN ||
-                matches.str( 1 ) == "." ||
-                matches.str( 1 ) == ".." ) {
-            if ( userName != NULL ) {
-                userName[0] = '\0';
-            }
-            if ( userZone != NULL ) {
-                userZone[0] = '\0';
-            }
-            return USER_INVALID_USERNAME_FORMAT;
+    const auto user_and_zone_name = irods::user::validate_name(fullUserNameIn);
+    if (!user_and_zone_name) {
+        if (userName) {
+            userName[0] = '\0';
         }
-        if ( userName != NULL ) {
-            snprintf( userName, NAME_LEN, "%s", matches.str( 1 ).c_str() );
+
+        if (userZone) {
+            userZone[0] = '\0';
         }
-        if ( userZone != NULL ) {
-            snprintf( userZone, NAME_LEN, "%s", matches.str( 4 ).c_str() );
-        }
+
+        return USER_INVALID_USERNAME_FORMAT;
     }
-    catch ( const boost::exception& ) {
-        return SYS_INTERNAL_ERR;
+
+    const auto& [user_name, zone_name] = *user_and_zone_name;
+
+    if (userName) {
+        std::strncpy(userName, user_name.data(), NAME_LEN);
     }
+
+    if (userZone) {
+        std::strncpy(userZone, zone_name.data(), NAME_LEN);
+    }
+
     return 0;
-}
+} // validateAndParseUserName
 
 // =-=-=-=-=-=-=-
 // helper fcn to handle cast to pg object
@@ -7796,20 +7785,6 @@ irods::error db_mod_user_op(
         }
         auditId = AU_MOD_USER_TYPE;
         snprintf( auditComment, sizeof( auditComment ), "%s", _new_value );
-    }
-    if ( strcmp( _option, "zone" ) == 0 ||
-            strcmp( _option, "zone_name" ) == 0 ) {
-        snprintf( tSQL, MAX_SQL_SIZE, form1, "zone_name" );
-        cllBindVars[cllBindVarCount++] = _new_value;
-        cllBindVars[cllBindVarCount++] = myTime;
-        cllBindVars[cllBindVarCount++] = userName2;
-        cllBindVars[cllBindVarCount++] = zoneName;
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlModUser SQL 3" );
-        }
-        auditId = AU_MOD_USER_ZONE;
-        snprintf( auditComment, sizeof( auditComment ), "%s", _new_value );
-        snprintf( auditUserName, sizeof( auditUserName ), "%s", _user_name );
     }
     if ( strcmp( _option, "addAuth" ) == 0 ) {
         opType = 4;

@@ -493,6 +493,10 @@ namespace irods {
 
         size_t size() const { return query_impl_->size(); }
 
+        size_t empty() { return 0 == query_impl_->size(); }
+
+        size_t empty() const { return 0 == query_impl_->size(); }
+
     private:
         std::unique_ptr<iterator>        iter_;
         std::shared_ptr<query_impl_base> query_impl_;
