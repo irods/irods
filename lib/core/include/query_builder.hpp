@@ -42,6 +42,12 @@ namespace experimental {
             return *this;
         }
 
+        auto options(int _v) noexcept -> query_builder&
+        {
+            options_ = _v;
+            return *this;
+        }
+
         auto bind_arguments(const std::vector<std::string>& _args) -> query_builder&
         {
             args_ = &_args;
@@ -61,6 +67,7 @@ namespace experimental {
             limit_ = 0;
             offset_ = 0;
             type_ = query_type::general;
+            options_ = 0;
 
             return *this;
         }
@@ -80,7 +87,8 @@ namespace experimental {
                     zone_hint_,
                     limit_,
                     offset_,
-                    type_ == query_type::general ? T::GENERAL : T::SPECIFIC};
+                    type_ == query_type::general ? T::GENERAL : T::SPECIFIC,
+                    options_};
         }
 
     private:
@@ -89,6 +97,7 @@ namespace experimental {
         std::uintmax_t limit_ = 0;
         std::uintmax_t offset_ = 0;
         query_type type_ = query_type::general;
+        int options_ = 0;
     }; // class query_builder
 
 } // namespace experimental

@@ -2,12 +2,15 @@
 
 #include "getRodsEnv.h"
 #include "rcConnect.h"
-#include "connection_pool.hpp"
+#include "client_connection.hpp"
 #include "query_builder.hpp"
 #include "filesystem.hpp"
+#include "rodsGenQuery.h"
 
+#include <cctype>
 #include <vector>
 #include <string>
+#include <algorithm>
 
 namespace ix = irods::experimental;
 namespace fs = irods::experimental::filesystem;
@@ -15,27 +18,33 @@ namespace fs = irods::experimental::filesystem;
 TEST_CASE("query builder")
 {
     rodsEnv env;
-    REQUIRE(getRodsEnv(&env) == 0);
+    _getRodsEnv(env);
 
-    const int cp_size = 1;
-    const int cp_refresh_time = 600;
-
-    irods::connection_pool conn_pool{cp_size,
-                                     env.rodsHost,
-                                     env.rodsPort,
-                                     env.rodsUserName,
-                                     env.rodsZone,
-                                     cp_refresh_time};
+    ix::client_connection conn{env.rodsHost,
+                               env.rodsPort,
+                               env.rodsUserName,
+                               env.rodsZone};
 
     const fs::path user_home = env.rodsHome;
 
     SECTION("general query")
     {
-        auto conn = conn_pool.get_connection();
-
         auto query = ix::query_builder{}
             .zone_hint(env.rodsZone)
-            .build<rcComm_t>(conn, "select count(COLL_NAME) where COLL_NAME = '" + user_home.string() + "'");
+            .build<RcComm>(conn, "select count(COLL_NAME) where COLL_NAME = '" + user_home.string() + "'");
+
+        REQUIRE(query.size() > 0);
+    }
+
+    SECTION("general query supports additional options")
+    {
+        std::string path = env.rodsHome;
+        std::transform(std::begin(path), std::end(path), std::begin(path),
+                       [](unsigned char _ch) { return std::toupper(_ch); });
+
+        auto query = ix::query_builder{}
+            .options(UPPER_CASE_WHERE) // Case-insensitive search.
+            .build<RcComm>(conn, "select count(COLL_NAME) where COLL_NAME = '" + path + "'");
 
         REQUIRE(query.size() > 0);
     }
@@ -44,11 +53,7 @@ TEST_CASE("query builder")
     {
         using namespace std::string_literals;
 
-        auto conn = conn_pool.get_connection();
-
-        const std::vector<std::string> args{
-            user_home.string()
-        };
+        const std::vector args{user_home.string()};
 
         ix::query_builder qb;
         const std::string specific_query = "ShowCollAcls";
@@ -56,7 +61,7 @@ TEST_CASE("query builder")
         auto query = qb.type(ix::query_type::specific)
                        .zone_hint(env.rodsZone)
                        .bind_arguments(args)
-                       .build<rcComm_t>(conn, specific_query);
+                       .build<RcComm>(conn, specific_query);
 
         REQUIRE(query.size() > 0);
 
@@ -66,15 +71,14 @@ TEST_CASE("query builder")
 
             // This should throw an exception because the specific query arguments
             // vector is not set.
-            qb.build<rcComm_t>(conn, specific_query);
+            qb.build<RcComm>(conn, specific_query);
         }());
     }
 
     SECTION("throw exception on empty query string")
     {
-        REQUIRE_THROWS([&conn_pool] {
-            auto conn = conn_pool.get_connection();
-            ix::query_builder{}.build<rcComm_t>(conn, "");
+        REQUIRE_THROWS([&conn] {
+            ix::query_builder{}.build<RcComm>(conn, "");
         }(), "query string is empty");
     }
 }
