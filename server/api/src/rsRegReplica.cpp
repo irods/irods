@@ -1,337 +1,298 @@
 #include "rsRegReplica.hpp"
 
 #include "icatHighLevelRoutines.hpp"
+#include "irods_configuration_keywords.hpp"
+#include "irods_file_object.hpp"
+#include "irods_hierarchy_parser.hpp"
 #include "miscServerFunct.hpp"
 #include "objMetaOpr.hpp"
 #include "regReplica.h"
 #include "rsFileChksum.hpp"
 #include "rsFileStat.hpp"
 #include "rsModDataObjMeta.hpp"
-#include "irods_file_object.hpp"
-#include "irods_hierarchy_parser.hpp"
-#include "irods_configuration_keywords.hpp"
+#include "rsUnregDataObj.hpp"
 
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 #include "filesystem.hpp"
 
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
-#include "replica.hpp"
+#include "replica_proxy.hpp"
 
 #include "boost/lexical_cast.hpp"
 
-int _call_file_modified_for_replica(
-    rsComm_t*     rsComm,
-    regReplica_t* regReplicaInp );
+#include "fmt/format.h"
 
-namespace irods {
-    namespace reg_repl {
+namespace
+{
+    std::string compute_checksum_for_resc(
+        rsComm_t&              _comm,
+        const std::string_view _logical_path,
+        const std::string_view _physical_path,
+        const std::string_view _resc_hier,
+        const rodsLong_t&      _data_size)
+    {
+        fileChksumInp_t chk_inp{};
+        rstrcpy( chk_inp.objPath, _logical_path.data(), MAX_NAME_LEN);
+        rstrcpy( chk_inp.fileName, _physical_path.data(), MAX_NAME_LEN);
+        rstrcpy( chk_inp.rescHier, _resc_hier.data(), MAX_NAME_LEN);
+        chk_inp.dataSize = _data_size;
 
-        void get_object_and_collection_from_path(
-            const std::string& _object_path,
-            std::string&       _collection_name,
-            std::string&       _object_name ) {
-            namespace bfs = boost::filesystem;
+        char* chksum{};
+        const auto chksum_err = rsFileChksum(&_comm, &chk_inp, &chksum);
 
+        if(DIRECT_ARCHIVE_ACCESS == chksum_err) {
+            return "";
+        }
+
+        if(chksum_err < 0) {
+            THROW(chksum_err, fmt::format(
+                  "[{}:{}] - rsDataObjChksum failed for [{}] on [{}]",
+                  __func__, __LINE__, _logical_path, _resc_hier));
+        }
+
+        return chksum;
+    } // compute_checksum_for_resc
+
+    void verify_and_update_replica(RsComm& _comm, regReplica_t& _inp)
+    {
+        namespace ir = irods::experimental::replica;
+
+        auto source = ir::make_replica_proxy(*_inp.srcDataObjInfo);
+        auto dest = ir::make_replica_proxy(*_inp.destDataObjInfo);
+
+        const auto cond_input = irods::experimental::make_key_value_proxy(_inp.condInput);
+
+        keyValPair_t kvp{};
+        auto reg_param = irods::experimental::make_key_value_proxy(kvp);
+        if (cond_input.contains(DATA_SIZE_KW)) {
+            const auto data_size = cond_input.at(DATA_SIZE_KW).value();
             try {
-                bfs::path p(_object_path);
-                _collection_name = p.parent_path().string();
-                _object_name     = p.filename().string();
+                dest.size(boost::lexical_cast<decltype(dest.size())>(data_size));
+                reg_param[DATA_SIZE_KW] = data_size;
             }
-            catch(const bfs::filesystem_error& _e) {
-                THROW(SYS_INVALID_FILE_PATH, _e.what());
+            catch (const boost::bad_lexical_cast&) {
+                irods::log(LOG_ERROR, fmt::format(
+                           "[{}:{}] - bad_lexical_cast for dataSize [{}]; setting to 0",
+                           __func__, __LINE__, data_size));
+                dest.size(0);
+                reg_param.erase(DATA_SIZE_KW);
             }
-        } // get_object_and_collection_from_path
+        }
 
-        std::string compute_checksum_for_resc(
-            rsComm_t*          _comm,
-            const std::string& _logical_path,
-            const std::string& _physical_path,
-            const std::string& _resc_hier,
-            const rodsLong_t   _data_size)
-        {
-            fileChksumInp_t chk_inp{};
-            rstrcpy(
-                chk_inp.objPath,
-                _logical_path.c_str(),
-                MAX_NAME_LEN);
-            rstrcpy(
-                chk_inp.fileName,
-                _physical_path.c_str(),
-                MAX_NAME_LEN);
-            rstrcpy(
-                chk_inp.rescHier,
-                _resc_hier.c_str(),
-                MAX_NAME_LEN);
-            chk_inp.dataSize = _data_size;
+        if (!reg_param.contains(DATA_SIZE_KW)) {
+            namespace fs = irods::experimental::filesystem;
 
-            char* chksum{};
-            const auto chksum_err = rsFileChksum(
-                                        _comm,
-                                        &chk_inp,
-                                        &chksum);
-            if(DIRECT_ARCHIVE_ACCESS == chksum_err) {
-                return "";
+            const auto dst_size = ir::get_replica_size_from_storage(_comm,
+                                                                    fs::path{dest.logical_path().data()},
+                                                                    dest.hierarchy(),
+                                                                    dest.physical_path());
+
+            if (UNKNOWN_FILE_SZ != dst_size && dst_size != source.size()) {
+                dest.size(dst_size);
+                reg_param[DATA_SIZE_KW] = std::to_string(dst_size);
             }
+        }
 
-            if(chksum_err < 0) {
-                THROW(
-                    chksum_err,
-                    boost::format("rsDataObjChksum failed for [%s] on [%s]") %
-                    _logical_path %
-                    _resc_hier);
+        // optional checksum verification, should one exist on the source replica
+        std::string dst_checksum;
+        if (!source.checksum().empty()) {
+            dst_checksum = compute_checksum_for_resc(_comm,
+                                                     dest.logical_path(),
+                                                     dest.physical_path(),
+                                                     dest.hierarchy(),
+                                                     dest.size());
+            if (!dst_checksum.empty() && source.checksum() != dst_checksum) {
+                dest.checksum(dst_checksum);
+                reg_param[CHKSUM_KW] = dst_checksum;
             }
+        }
 
-            return chksum;
-        } // compute_checksum_for_resc
+        if (!reg_param.empty()) {
+            reg_param[ALL_REPL_STATUS_KW] = "TRUE";
 
-        void verify_and_update_replica(
-            rsComm_t*     _comm,
-            regReplica_t* _reg_inp) {
-            dataObjInfo_t* src_info = _reg_inp->srcDataObjInfo;
-            dataObjInfo_t* dst_info = _reg_inp->destDataObjInfo;
+            modDataObjMeta_t mod_inp{};
+            mod_inp.dataObjInfo = dest.get();
+            mod_inp.regParam    = reg_param.get();
 
-            // Check for data_size_kw
-            keyValPair_t reg_param{};
-            auto data_size_str{getValByKey(&_reg_inp->condInput, DATA_SIZE_KW)};
-            try {
-                if (data_size_str) {
-                    addKeyVal(&reg_param, DATA_SIZE_KW, data_size_str);
-                    dst_info->dataSize = boost::lexical_cast<decltype(dst_info->dataSize)>(data_size_str);
-                }
+            if (const auto ec = rsModDataObjMeta(&_comm, &mod_inp); ec < 0) {
+                THROW(ec, fmt::format(
+                    "[{}:{}] - rsModDataObjMeta failed for [{}] on resc [{}]",
+                    __func__, __LINE__, dest.logical_path(), dest.hierarchy()));
             }
-            catch (boost::bad_lexical_cast&) {
-                rodsLog(LOG_ERROR, "[%s] - bad_lexical_cast for dataSize [%s]; setting to 0", __FUNCTION__, data_size_str);
-                dst_info->dataSize = 0;
-                data_size_str = nullptr;
+        }
+    } // verify_and_update_replica
+
+    int _rsRegReplica(RsComm& _comm, regReplica_t& _inp)
+    {
+        int status;
+
+        auto cond_input = irods::experimental::make_key_value_proxy(_inp.condInput);
+        auto* source_doi = _inp.srcDataObjInfo;
+        auto* dest_doi = _inp.destDataObjInfo;
+        if (cond_input.contains(SU_CLIENT_USER_KW)) {
+            const int savedClientAuthFlag = _comm.clientUser.authInfo.authFlag;
+
+            _comm.clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
+
+            status = chlRegReplica(&_comm, source_doi, dest_doi, cond_input.get());
+
+            _comm.clientUser.authInfo.authFlag = savedClientAuthFlag;
+        }
+        else {
+            status = chlRegReplica(&_comm, source_doi, dest_doi, cond_input.get());
+
+            if ( status >= 0 ) {
+                status = dest_doi->replNum;
             }
+        }
 
-            if (nullptr == data_size_str) {
-                namespace fs = irods::experimental::filesystem;
-                namespace replica = irods::experimental::replica;
+        if (status != CAT_SUCCESS_BUT_WITH_NO_INFO && status != CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME) {
+            return status;
+        }
 
-                const auto dst_size = replica::get_replica_size_from_storage(
-                    *_comm, fs::path{dst_info->objPath}, dst_info->rescHier, dst_info->filePath);
-                if(UNKNOWN_FILE_SZ != dst_size && dst_size != src_info->dataSize) {
-                    dst_info->dataSize = dst_size;
-                    const auto dst_size_str = boost::lexical_cast<std::string>(dst_size);
-                    addKeyVal(&reg_param, DATA_SIZE_KW, dst_size_str.c_str());
-                }
-            }
+        // =-=-=-=-=-=-=-
+        // JMC - backport 4608
+        /* register a repl with a copy with the same resource and phyPaht.
+          * could be caused by 2 staging at the same time */
+        if (const auto ec = checkDupReplica(&_comm, source_doi->dataId, dest_doi->rescName, dest_doi->filePath);
+            ec >= 0) {
+            dest_doi->replNum = ec; // JMC - backport 4668
+            dest_doi->dataId = source_doi->dataId;
+            return ec;
+        }
 
-            // optional checksum verification, should one exist
-            // on the source replica
-            std::string dst_checksum;
-            if(strlen(src_info->chksum) > 0) {
-                dst_checksum = compute_checksum_for_resc(
-                                   _comm,
-                                   dst_info->objPath,
-                                   dst_info->filePath,
-                                   dst_info->rescHier,
-                                   dst_info->dataSize);
-                if(!dst_checksum.empty() &&
-                    dst_checksum != src_info->chksum) {
-                    rstrcpy(
-                       dst_info->chksum,
-                       dst_checksum.c_str(),
-                       sizeof(dst_info->chksum));
-                    addKeyVal(
-                       &reg_param,
-                       CHKSUM_KW,
-                       dst_checksum.c_str());
-                }
-            } // checksum
+        return status;
+    } // _rsRegReplica
 
-            if(reg_param.len > 0) {
-                addKeyVal(
-                    &reg_param,
-                    ALL_REPL_STATUS_KW,
-                    "TRUE" );
+    int _call_file_modified_for_replica(
+        rsComm_t*     rsComm,
+        regReplica_t* regReplicaInp )
+    {
+        int status = 0;
+        dataObjInfo_t* destDataObjInfo = regReplicaInp->destDataObjInfo;
 
-                modDataObjMeta_t mod_inp{};
-                mod_inp.dataObjInfo = dst_info;
-                mod_inp.regParam    = &reg_param;
-                const auto mod_err = rsModDataObjMeta(_comm, &mod_inp);
-                if(mod_err < 0) {
-                    THROW(
-                        mod_err,
-                        boost::format("rsModDataObjMeta failed for [%s] on resc [%s]") %
-                        dst_info->objPath %
-                        dst_info->rescHier);
-                }
-            } // if reg_params
-        } // verify_and_update_replica
-    } // namespace reg_repl
-} // namespace irods
+        irods::file_object_ptr file_obj(
+            new irods::file_object(
+                rsComm,
+                destDataObjInfo ) );
 
-int
-rsRegReplica( rsComm_t *rsComm, regReplica_t *regReplicaInp ) {
-    int status;
-    rodsServerHost_t *rodsServerHost = NULL;
-    dataObjInfo_t *srcDataObjInfo;
+        char* pdmo_kw = getValByKey( &regReplicaInp->condInput, IN_PDMO_KW );
+        if ( pdmo_kw != NULL ) {
+            file_obj->in_pdmo( pdmo_kw );
+        }
 
-    srcDataObjInfo = regReplicaInp->srcDataObjInfo;
+        char* admin_kw = getValByKey( &regReplicaInp->condInput, ADMIN_KW );
+        if ( admin_kw != NULL ) {
+            addKeyVal( (keyValPair_t*)&file_obj->cond_input(), ADMIN_KW, "" );;
+        }
+        const auto open_type{getValByKey(&regReplicaInp->condInput, OPEN_TYPE_KW)};
+        if (open_type) {
+            addKeyVal((keyValPair_t*)&file_obj->cond_input(), OPEN_TYPE_KW, open_type);
+        }
+        irods::error ret = fileModified( rsComm, file_obj );
+        if ( !ret.ok() ) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Failed to signal resource that the data object \"";
+            msg << destDataObjInfo->objPath;
+            msg << "\" was registered";
+            ret = PASSMSG( msg.str(), ret );
+            irods::log( ret );
+            status = ret.code();
+        }
 
-    status = getAndConnRcatHost(
-                 rsComm,
-                 MASTER_RCAT,
-                 ( const char* )srcDataObjInfo->objPath,
-                 &rodsServerHost );
-    if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
+        return status;
+
+    } // _call_file_modified_for_replica
+} // anonymous namespace
+
+int rsRegReplica(rsComm_t *rsComm, regReplica_t *regReplicaInp)
+{
+    rodsServerHost_t *rodsServerHost = nullptr;
+    const auto status = getAndConnRcatHost(rsComm,
+                                           MASTER_RCAT,
+                                           regReplicaInp->srcDataObjInfo->objPath,
+                                           &rodsServerHost);
+    if (status < 0 || !rodsServerHost) {
         return status;
     }
-    if ( rodsServerHost->localFlag == LOCAL_HOST ) {
-        std::string svc_role;
-        irods::error ret = get_catalog_service_role(svc_role);
-        if(!ret.ok()) {
-            irods::log(PASS(ret));
-            return ret.code();
-        }
 
-        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
-            status = _rsRegReplica( rsComm, regReplicaInp );
-        } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
-            status = SYS_NO_RCAT_SERVER_ERR;
-        } else {
-            rodsLog(
-                LOG_ERROR,
-                "role not supported [%s]",
-                svc_role.c_str() );
-            status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
-        }
-    }
-    else {
+    auto cond_input = irods::experimental::make_key_value_proxy(regReplicaInp->condInput);
+
+    if (rodsServerHost->localFlag != LOCAL_HOST) {
         // Add IN_REPL_KW to prevent replication on the redirected server (the provider)
-        bool in_repl = getValByKey(&regReplicaInp->condInput, IN_REPL_KW);
+        const auto in_repl = cond_input.contains(IN_REPL_KW);
+
         if (!in_repl) {
-            addKeyVal(&regReplicaInp->condInput, IN_REPL_KW, "" );
+            cond_input[IN_REPL_KW] = "";
         }
-        status = rcRegReplica( rodsServerHost->conn, regReplicaInp );
+
+        const auto ec = rcRegReplica(rodsServerHost->conn, regReplicaInp);
+        if (ec < 0) {
+            irods::log(LOG_ERROR, fmt::format("[{}:{}] - failed registering replica [{}] ec=[{}]",
+                        __func__, __LINE__, regReplicaInp->destDataObjInfo->objPath, ec));
+            cond_input.erase(IN_REPL_KW);
+            return ec;
+        }
+
+        if (in_repl) {
+            return ec;
+        }
+
         // Remove the keyword as we will want to replicate on this server (the consumer)
-        if (!in_repl) {
-            rmKeyVal(&regReplicaInp->condInput, IN_REPL_KW);
-            if ( status >= 0) {
-                regReplicaInp->destDataObjInfo->replNum = status;
-            }
-            if (!getValByKey(&regReplicaInp->condInput, REGISTER_AS_INTERMEDIATE_KW)) {
-                status = _call_file_modified_for_replica( rsComm, regReplicaInp );
-            }
+        cond_input.erase(IN_REPL_KW);
+        regReplicaInp->destDataObjInfo->replNum = ec;
+
+        if (cond_input.contains(REGISTER_AS_INTERMEDIATE_KW)) {
+            return ec;
         }
-        return status;
+
+        return _call_file_modified_for_replica( rsComm, regReplicaInp );
     }
 
-    if ( status >= 0 && !getValByKey(&regReplicaInp->condInput, REGISTER_AS_INTERMEDIATE_KW)) {
-        try {
-            irods::reg_repl::verify_and_update_replica(rsComm, regReplicaInp);
-        }
-        catch(const irods::exception& _e) {
-             irods::log(_e);
-             return _e.code();
-        }
-
-        if (!getValByKey(&regReplicaInp->condInput, IN_REPL_KW)) {
-            status = _call_file_modified_for_replica( rsComm, regReplicaInp );
-        }
-    }
-
-    return status;
-}
-
-int
-_rsRegReplica( rsComm_t *rsComm, regReplica_t *regReplicaInp ) {
     std::string svc_role;
-    irods::error ret = get_catalog_service_role(svc_role);
-    if(!ret.ok()) {
+    if (const auto ret = get_catalog_service_role(svc_role); !ret.ok()) {
         irods::log(PASS(ret));
         return ret.code();
     }
 
-    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
-        int status;
-        dataObjInfo_t *srcDataObjInfo;
-        dataObjInfo_t *destDataObjInfo;
-        int savedClientAuthFlag;
-
-        srcDataObjInfo = regReplicaInp->srcDataObjInfo;
-        destDataObjInfo = regReplicaInp->destDataObjInfo;
-        if ( getValByKey( &regReplicaInp->condInput, SU_CLIENT_USER_KW ) != NULL ) {
-            savedClientAuthFlag = rsComm->clientUser.authInfo.authFlag;
-            rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
-            status = chlRegReplica( rsComm, srcDataObjInfo, destDataObjInfo,
-                                    &regReplicaInp->condInput );
-            /* restore it */
-            rsComm->clientUser.authInfo.authFlag = savedClientAuthFlag;
-        }
-        else {
-            status = chlRegReplica( rsComm, srcDataObjInfo, destDataObjInfo, &regReplicaInp->condInput );
-            if ( status >= 0 ) {
-                status = destDataObjInfo->replNum;
-            }
-        }
-        // =-=-=-=-=-=-=-
-        // JMC - backport 4608
-        if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ||
-                status == CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME ) { // JMC - backport 4668, 4670
-            int status2;
-            /* register a repl with a copy with the same resource and phyPaht.
-              * could be caused by 2 staging at the same time */
-            status2 = checkDupReplica( rsComm, srcDataObjInfo->dataId,
-                                       destDataObjInfo->rescName,
-                                       destDataObjInfo->filePath );
-            if ( status2 >= 0 ) {
-                destDataObjInfo->replNum = status2; // JMC - backport 4668
-                destDataObjInfo->dataId = srcDataObjInfo->dataId;
-                return status2;
-            }
-        }
-        // =-=-=-=-=-=-=-
-        return status;
-    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+    if (irods::CFG_SERVICE_ROLE_CONSUMER == svc_role) {
         return SYS_NO_RCAT_SERVER_ERR;
-    } else {
-        rodsLog(
-            LOG_ERROR,
-            "role not supported [%s]",
-            svc_role.c_str() );
+    }
+
+    if (irods::CFG_SERVICE_ROLE_PROVIDER != svc_role) {
+        rodsLog(LOG_ERROR, "role not supported [%s]", svc_role.c_str());
         return SYS_SERVICE_ROLE_NOT_SUPPORTED;
     }
-}
 
-int _call_file_modified_for_replica(
-    rsComm_t*     rsComm,
-    regReplica_t* regReplicaInp ) {
-    int status = 0;
-    dataObjInfo_t* destDataObjInfo = regReplicaInp->destDataObjInfo;
-
-    irods::file_object_ptr file_obj(
-        new irods::file_object(
-            rsComm,
-            destDataObjInfo ) );
-
-    char* pdmo_kw = getValByKey( &regReplicaInp->condInput, IN_PDMO_KW );
-    if ( pdmo_kw != NULL ) {
-        file_obj->in_pdmo( pdmo_kw );
+    const int ec = _rsRegReplica(*rsComm, *regReplicaInp);
+    if (ec < 0 || cond_input.contains(REGISTER_AS_INTERMEDIATE_KW)) {
+        return ec;
     }
 
-    char* admin_kw = getValByKey( &regReplicaInp->condInput, ADMIN_KW );
-    if ( admin_kw != NULL ) {
-        addKeyVal( (keyValPair_t*)&file_obj->cond_input(), ADMIN_KW, "" );;
+    try {
+        verify_and_update_replica(*rsComm, *regReplicaInp);
     }
-    const auto open_type{getValByKey(&regReplicaInp->condInput, OPEN_TYPE_KW)};
-    if (open_type) {
-        addKeyVal((keyValPair_t*)&file_obj->cond_input(), OPEN_TYPE_KW, open_type);
-    }
-    irods::error ret = fileModified( rsComm, file_obj );
-    if ( !ret.ok() ) {
-        std::stringstream msg;
-        msg << __FUNCTION__;
-        msg << " - Failed to signal resource that the data object \"";
-        msg << destDataObjInfo->objPath;
-        msg << "\" was registered";
-        ret = PASSMSG( msg.str(), ret );
-        irods::log( ret );
-        status = ret.code();
+    catch (const irods::exception& e) {
+        irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]", __func__, __LINE__, e.client_display_what()));
+
+        unregDataObj_t unlink_inp{};
+        unlink_inp.dataObjInfo = regReplicaInp->destDataObjInfo;
+        if (const auto unreg_ec = rsUnregDataObj(rsComm, &unlink_inp); unreg_ec < 0) {
+            irods::log(LOG_ERROR, fmt::format(
+                "[{}:{}] - failed to unregister replica "
+                "[error_code=[{}], path=[{}], hierarchy=[{}]]",
+                __func__, __LINE__, unreg_ec,
+                regReplicaInp->destDataObjInfo->objPath,
+                regReplicaInp->destDataObjInfo->rescHier));
+        }
+
+        return e.code();
     }
 
-    return status;
+    if (!cond_input.contains(IN_REPL_KW)) {
+        return _call_file_modified_for_replica( rsComm, regReplicaInp );
+    }
 
-} // _call_file_modified_for_replica
+    return ec;
+} // rsRegReplica
