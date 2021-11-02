@@ -71,6 +71,8 @@ primary ordering column.
 #define ORDER_BY 0x400
 #define ORDER_BY_DESC 0x800
 
+// A bitwise set of options that will be applied to the entire resultset
+// (GenQueryInp::options).
 #define RETURN_TOTAL_ROW_COUNT 0x20
 #define NO_DISTINCT 0x40
 #define QUOTA_QUERY 0x80

@@ -13,14 +13,16 @@
 #include "irods_log.hpp"
 #include "rcMisc.h"
 
+#include "fmt/format.h"
+
 #include <algorithm>
 #include <string>
 #include <vector>
 
 char *getCondFromString( char * t );
 
-namespace irods {
-
+namespace irods
+{
     template <typename connection_type>
     class query {
     public:
@@ -150,7 +152,8 @@ namespace irods {
                            int                _query_limit,
                            int                _row_offset,
                            const std::string& _query_string,
-                           const std::string& _zone_hint)
+                           const std::string& _zone_hint,
+                           int                _options)
                 : query_impl_base(_comm, _query_limit, _row_offset, _query_string)
             {
                 memset(&gen_input_, 0, sizeof(gen_input_));
@@ -165,11 +168,10 @@ namespace irods {
                                          const_cast<char*>(_query_string.c_str()),
                                          &gen_input_);
                 if(fill_err < 0) {
-                    THROW(
-                        fill_err,
-                        boost::format("query fill failed for [%s]") %
-                        _query_string);
+                    THROW(fill_err, fmt::format("query fill failed for [{}]", _query_string));
                 }
+
+                gen_input_.options = _options;
             } // ctor
 
             virtual ~gen_query_impl() {
@@ -184,9 +186,8 @@ namespace irods {
                                    &gen_input_,
                                    &this->gen_output_);
                     if (CAT_NO_ROWS_FOUND != err && err < 0) {
-                        irods::log(ERROR(err, (boost::format(
-                                    "[%s] - Failed to close statement with continueInx [%d]") %
-                                    __FUNCTION__ % gen_input_.continueInx).str()));
+                        irods::log(ERROR(err, fmt::format("[{}] - Failed to close statement with continueInx [{}]",
+                                    __FUNCTION__, gen_input_.continueInx)));
                     }
                 }
 
@@ -261,10 +262,8 @@ namespace irods {
                                    &spec_input_,
                                    &this->gen_output_);
                     if (CAT_NO_ROWS_FOUND != err && err < 0) {
-                        irods::log(ERROR(
-                                    err, (boost::format(
-                                    "[%s] - Failed to close statement with continueInx [%d]") %
-                                    __FUNCTION__ % spec_input_.continueInx).str()));
+                        irods::log(ERROR(err, fmt::format("[{}] - Failed to close statement with continueInx [{}]",
+                                    __FUNCTION__, spec_input_.continueInx)));
                     }
                 }
 
@@ -400,11 +399,8 @@ namespace irods {
                 const int query_err = query_impl_->fetch_page();
                 if(query_err < 0) {
                     if(CAT_NO_ROWS_FOUND != query_err) {
-                        THROW(
-                            query_err,
-                            boost::format("gen query failed for [%s] on idx %d") %
-                            query_string_ %
-                            gen_input_->continueInx);
+                        THROW(query_err, fmt::format("gen query failed for [{}] on idx {}",
+                            query_string_, gen_input_->continueInx));
                     }
 
                    end_iteration_state_ = true;
@@ -424,7 +420,8 @@ namespace irods {
               const std::string&              _zone_hint,
               uintmax_t                       _query_limit,
               uintmax_t                       _row_offset,
-              query_type                      _query_type)
+              query_type                      _query_type,
+              int                             _options)
             : iter_{}
             , query_impl_{}
         {
@@ -434,7 +431,8 @@ namespace irods {
                                   _query_limit,
                                   _row_offset,
                                   _query_string,
-                                  _zone_hint);
+                                  _zone_hint,
+                                  _options);
             }
             else if(_query_type == SPECIFIC) {
                 query_impl_ = std::make_shared<spec_query_impl>(
@@ -452,11 +450,7 @@ namespace irods {
                     iter_ = std::make_unique<iterator>();
                 }
                 else {
-                    THROW(
-                        fetch_err,
-                        boost::format("query failed for [%s] type [%d]") %
-                        _query_string %
-                        _query_type);
+                    THROW(fetch_err, fmt::format("query failed for [{}] type [{}]", _query_string, _query_type));
                 }
             }
 
@@ -472,8 +466,9 @@ namespace irods {
               const std::string& _query_string,
               uintmax_t          _query_limit = 0,
               uintmax_t          _row_offset  = 0,
-              query_type         _query_type  = GENERAL)
-            : query{_comm, _query_string, nullptr, {}, _query_limit, _row_offset, _query_type}
+              query_type         _query_type  = GENERAL,
+              int                _options     = 0)
+            : query{_comm, _query_string, nullptr, {}, _query_limit, _row_offset, _query_type, _options}
         {
         } // ctor
 

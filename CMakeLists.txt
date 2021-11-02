@@ -349,6 +349,7 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/lib/core/include
   ${CMAKE_SOURCE_DIR}/lib/api/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
+  ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
 target_compile_options(irods_user_administration_client PRIVATE -fPIC -Wno-write-strings)
 target_compile_definitions(irods_user_administration_client PRIVATE ${IRODS_COMPILE_DEFINITIONS})
@@ -367,6 +368,7 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/server/core/include
   ${CMAKE_SOURCE_DIR}/server/api/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
+  ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
 target_compile_options(irods_user_administration_server PRIVATE -fPIC -Wno-write-strings)
 target_compile_definitions(irods_user_administration_server PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_USER_ADMINISTRATION_ENABLE_SERVER_SIDE_API)
