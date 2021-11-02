@@ -10,10 +10,11 @@ import os
 import datetime
 import socket
 
-from .. import test
+from . import resource_suite
+from . import session
 from . import settings
 from .. import lib
-from . import resource_suite
+from .. import test
 from ..configuration import IrodsConfig
 
 
@@ -270,3 +271,116 @@ class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
 
                     self.admin.assert_icommand(['irm', '-f', logical_path])
 
+
+class test_ireg_replica(unittest.TestCase):
+    """Test the --repl option of irepl."""
+    @classmethod
+    def setUpClass(self):
+        """Set up test class."""
+        self.admin = session.mkuser_and_return_session('rodsadmin', 'otherrods', 'rods', lib.get_hostname())
+
+
+    @classmethod
+    def tearDownClass(self):
+        """Tear down test class."""
+        with session.make_session_for_existing_admin() as admin_session:
+            self.admin.__exit__()
+            admin_session.assert_icommand(['iadmin', 'rmuser', self.admin.username])
+
+
+    def test_ireg_replica_which_does_not_exist__issue_4206(self):
+        """Test registering a non-existent file as a replica for an existing data object."""
+        resource = 'reghere'
+        local_file = 'test_ireg_replica_which_does_not_exist__issue_4206'
+        path_to_file = os.path.join(self.admin.local_session_dir, local_file)
+        logical_path = os.path.join(self.admin.session_collection, local_file)
+
+        try:
+            lib.create_ufs_resource(resource, self.admin, test.settings.HOSTNAME_2)
+
+            lib.make_file(path_to_file, 1)
+
+            self.admin.assert_icommand(['iput', path_to_file, logical_path])
+
+            self.admin.assert_icommand(['ireg', '--repl', '-R', resource, '/nah', logical_path],
+                                       'STDERR', 'UNIX_FILE_STAT_ERR')
+
+            self.admin.assert_icommand(['iquest', '%s',
+                                       "select DATA_REPL_STATUS where DATA_REPL_NUM = '0'"],
+                                       'STDOUT', '1')
+
+            self.admin.assert_icommand(['iquest', '%s',
+                                       "select DATA_REPL_STATUS where DATA_REPL_NUM = '1'"],
+                                       'STDOUT', 'CAT_NO_ROWS_FOUND')
+
+        finally:
+            print(self.admin.run_icommand(['ils', '-L', logical_path])[0])
+            self.admin.run_icommand(['irm', '-f', logical_path])
+            self.admin.run_icommand(['iadmin', 'rmresc', resource])
+
+
+    @unittest.skipUnless(test.settings.RUN_IN_TOPOLOGY, 'Depends on resource being somewhere else')
+    def test_ireg_replica_which_does_not_exist_on_connected_host__issue_4206(self):
+        """Test registering a file as a replica which does not exist on this host."""
+        resource = 'reghere'
+
+        old_path_to_file = os.path.join('/var', 'lib', 'irods', 'VERSION.json.dist')
+        new_path_to_file = os.path.join('/var', 'lib', 'irods', 'VERSION.json.dist.new')
+
+        logical_path = os.path.join(self.admin.session_collection,
+                                    os.path.basename(old_path_to_file))
+
+        try:
+            os.rename(old_path_to_file, new_path_to_file)
+
+            lib.create_ufs_resource(resource, self.admin, test.settings.HOSTNAME_2)
+
+            self.admin.assert_icommand(['iput', new_path_to_file, logical_path])
+
+            self.admin.assert_icommand(['ireg', '--repl', '-R', resource, old_path_to_file, logical_path])
+
+            self.admin.assert_icommand(['iquest', '%s',
+                                       "select DATA_REPL_STATUS where DATA_REPL_NUM = '0'"],
+                                       'STDOUT', '0')
+
+            self.admin.assert_icommand(['iquest', '%s',
+                                       "select DATA_REPL_STATUS where DATA_REPL_NUM = '1'"],
+                                       'STDOUT', '1')
+
+        finally:
+            print(self.admin.run_icommand(['ils', '-L', logical_path])[0])
+            self.admin.run_icommand(['irm', '-f', logical_path])
+            self.admin.run_icommand(['iadmin', 'rmresc', resource])
+            os.rename(new_path_to_file, old_path_to_file)
+
+
+    @unittest.skipUnless(test.settings.RUN_IN_TOPOLOGY, 'Depends on resource being somewhere else')
+    def test_ireg_replica_which_does_not_exist_on_target_resource_host__issue_4206(self):
+        """Test registering a file as a replica which does not exist on the resource host."""
+        resource = 'reghere'
+        local_file = 'test_ireg_replica_which_does_not_exist_on_target_resource_host__issue_4206'
+        path_to_file = os.path.join(self.admin.local_session_dir, local_file)
+        logical_path = os.path.join(self.admin.session_collection, local_file)
+
+        try:
+            lib.create_ufs_resource(resource, self.admin, test.settings.HOSTNAME_2)
+
+            lib.make_file(path_to_file, 1)
+
+            self.admin.assert_icommand(['iput', path_to_file, logical_path])
+
+            self.admin.assert_icommand(['ireg', '--repl', '-R', resource, path_to_file, logical_path],
+                                       'STDERR', 'UNIX_FILE_STAT_ERR')
+
+            self.admin.assert_icommand(['iquest', '%s',
+                                       "select DATA_REPL_STATUS where DATA_REPL_NUM = '0'"],
+                                       'STDOUT', '1')
+
+            self.admin.assert_icommand(['iquest', '%s',
+                                       "select DATA_REPL_STATUS where DATA_REPL_NUM = '1'"],
+                                       'STDOUT', 'CAT_NO_ROWS_FOUND')
+
+        finally:
+            print(self.admin.run_icommand(['ils', '-L', logical_path])[0])
+            self.admin.run_icommand(['irm', '-f', logical_path])
+            self.admin.run_icommand(['iadmin', 'rmresc', resource])
