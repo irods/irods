@@ -6,6 +6,5 @@
 
 
 int rsRegReplica( rsComm_t *rsComm, regReplica_t *regReplicaInp );
-int _rsRegReplica( rsComm_t *rsComm, regReplica_t *regReplicaInp );
 
 #endif
