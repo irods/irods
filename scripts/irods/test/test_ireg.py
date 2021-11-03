@@ -17,6 +17,23 @@ from .. import lib
 from .. import test
 from ..configuration import IrodsConfig
 
+def get_replica_checksum(session, data_name, replica_number):
+    return session.run_icommand(['iquest', '%s',
+        "select DATA_CHECKSUM where DATA_NAME = '{}' and DATA_REPL_NUM = '{}'"
+        .format(data_name, str(replica_number))])[0].strip()
+
+
+def get_replica_status(session, data_name, replica_number):
+    return session.run_icommand(['iquest', '%s',
+        "select DATA_REPL_STATUS where DATA_NAME = '{}' and DATA_REPL_NUM = '{}'"
+        .format(data_name, str(replica_number))])[0].strip()
+
+
+def get_replica_size(session, data_name, replica_number):
+    return session.run_icommand(['iquest', '%s',
+        "select DATA_SIZE where DATA_NAME = '{}' and DATA_REPL_NUM = '{}'"
+        .format(data_name, str(replica_number))])[0].strip()
+
 
 @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Registers files on remote resources')
 class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
@@ -305,13 +322,8 @@ class test_ireg_replica(unittest.TestCase):
             self.admin.assert_icommand(['ireg', '--repl', '-R', resource, '/nah', logical_path],
                                        'STDERR', 'UNIX_FILE_STAT_ERR')
 
-            self.admin.assert_icommand(['iquest', '%s',
-                                       "select DATA_REPL_STATUS where DATA_REPL_NUM = '0'"],
-                                       'STDOUT', '1')
-
-            self.admin.assert_icommand(['iquest', '%s',
-                                       "select DATA_REPL_STATUS where DATA_REPL_NUM = '1'"],
-                                       'STDOUT', 'CAT_NO_ROWS_FOUND')
+            self.assertEqual(str(1), get_replica_status(self.admin, local_file, 0))
+            self.assertIn('CAT_NO_ROWS_FOUND', get_replica_status(self.admin, local_file, 1))
 
         finally:
             print(self.admin.run_icommand(['ils', '-L', logical_path])[0])
@@ -339,16 +351,14 @@ class test_ireg_replica(unittest.TestCase):
 
             self.admin.assert_icommand(['ireg', '--repl', '-R', resource, old_path_to_file, logical_path])
 
-            self.admin.assert_icommand(['iquest', '%s',
-                                       "select DATA_REPL_STATUS where DATA_REPL_NUM = '0'"],
-                                       'STDOUT', '0')
-
-            self.admin.assert_icommand(['iquest', '%s',
-                                       "select DATA_REPL_STATUS where DATA_REPL_NUM = '1'"],
-                                       'STDOUT', '1')
+            # The expected replica status is 1 because the files should be identical in a
+            # properly configured testing environment.
+            self.assertEqual(str(1), get_replica_status(self.admin, os.path.basename(logical_path), 0))
+            self.assertEqual(str(1), get_replica_status(self.admin, os.path.basename(logical_path), 1))
 
         finally:
             print(self.admin.run_icommand(['ils', '-L', logical_path])[0])
+            self.admin.run_icommand(['iunreg', '-n1', '-N1', logical_path])
             self.admin.run_icommand(['irm', '-f', logical_path])
             self.admin.run_icommand(['iadmin', 'rmresc', resource])
             os.rename(new_path_to_file, old_path_to_file)
@@ -366,21 +376,176 @@ class test_ireg_replica(unittest.TestCase):
             lib.create_ufs_resource(resource, self.admin, test.settings.HOSTNAME_2)
 
             lib.make_file(path_to_file, 1)
-
             self.admin.assert_icommand(['iput', path_to_file, logical_path])
 
             self.admin.assert_icommand(['ireg', '--repl', '-R', resource, path_to_file, logical_path],
                                        'STDERR', 'UNIX_FILE_STAT_ERR')
 
-            self.admin.assert_icommand(['iquest', '%s',
-                                       "select DATA_REPL_STATUS where DATA_REPL_NUM = '0'"],
-                                       'STDOUT', '1')
-
-            self.admin.assert_icommand(['iquest', '%s',
-                                       "select DATA_REPL_STATUS where DATA_REPL_NUM = '1'"],
-                                       'STDOUT', 'CAT_NO_ROWS_FOUND')
+            self.assertEqual(str(1), get_replica_status(self.admin, local_file, 0))
+            self.assertIn('CAT_NO_ROWS_FOUND', get_replica_status(self.admin, local_file, 1))
 
         finally:
             print(self.admin.run_icommand(['ils', '-L', logical_path])[0])
             self.admin.run_icommand(['irm', '-f', logical_path])
             self.admin.run_icommand(['iadmin', 'rmresc', resource])
+
+
+    def test_ireg_replica_cannot_put_two_replicas_on_the_same_resource__issue_5265(self):
+        """Test registering a replica on a resource which already has a replica (not allowed)."""
+        local_file = 'test_ireg_replica_cannot_put_two_replicas_on_the_same_resource__issue_5265'
+        path_to_file = os.path.join(self.admin.local_session_dir, local_file)
+        logical_path = os.path.join(self.admin.session_collection, local_file)
+
+        try:
+            lib.make_file(path_to_file, 1)
+            self.admin.assert_icommand(['iput', '-K', path_to_file, logical_path])
+            checksum = get_replica_checksum(self.admin, local_file, 0)
+
+            self.admin.assert_icommand(['ireg', '--repl', path_to_file, logical_path],
+                                       'STDERR', 'SYS_COPY_ALREADY_IN_RESC')
+
+            self.assertEqual(str(1), get_replica_status(self.admin, local_file, 0))
+            self.assertIn('CAT_NO_ROWS_FOUND', get_replica_status(self.admin, local_file, 1))
+
+            new_checksum = get_replica_checksum(self.admin, local_file, 0)
+            self.assertEqual(checksum, new_checksum)
+
+        finally:
+            print(self.admin.run_icommand(['ils', '-L', logical_path])[0])
+            self.admin.run_icommand(['irm', '-f', logical_path])
+
+
+    def test_reg_replica_size_verification__issue_5265(self):
+        """Test registering a replica when the size of the original replica differs."""
+        remote_resource = 'puthere'
+        local_resource = 'reghere'
+        local_file = 'test_reg_replica_size_verification__issue_5265'
+        path_to_file = os.path.join(self.admin.local_session_dir, local_file)
+        path_to_bigger_file = os.path.join(self.admin.local_session_dir, local_file + '_big')
+        logical_path = os.path.join(self.admin.session_collection, local_file)
+
+        try:
+            lib.create_ufs_resource(remote_resource, self.admin, test.settings.HOSTNAME_2)
+            lib.create_ufs_resource(local_resource, self.admin)
+
+            lib.make_file(path_to_file, 1)
+            self.admin.assert_icommand(['iput', '-R', remote_resource, path_to_file, logical_path])
+            size = get_replica_size(self.admin, local_file, 0)
+
+            lib.make_file(path_to_bigger_file, 2)
+            self.admin.assert_icommand(['ireg', '-R', local_resource, '--repl', path_to_bigger_file, logical_path])
+            reg_size = get_replica_checksum(self.admin, local_file, 1)
+            self.assertNotEqual(size, reg_size)
+
+            self.assertEqual(str(0), get_replica_status(self.admin, local_file, 0))
+            self.assertEqual(str(1), get_replica_status(self.admin, local_file, 1))
+
+            new_size = get_replica_size(self.admin, local_file, 0)
+            self.assertEqual(size, new_size)
+
+        finally:
+            print(self.admin.run_icommand(['ils', '-L', logical_path])[0])
+            self.admin.run_icommand(['irm', '-f', logical_path])
+            self.admin.run_icommand(['iadmin', 'rmresc', remote_resource])
+            self.admin.run_icommand(['iadmin', 'rmresc', local_resource])
+
+
+    def test_reg_replica_size_verification_that_matches__issue_5265(self):
+        """Test registering a replica when the size of the original replica matches."""
+        remote_resource = 'puthere'
+        local_resource = 'reghere'
+        local_file = 'test_reg_replica_size_verification__issue_5265'
+        path_to_file = os.path.join(self.admin.local_session_dir, local_file)
+        logical_path = os.path.join(self.admin.session_collection, local_file)
+
+        try:
+            lib.create_ufs_resource(remote_resource, self.admin, test.settings.HOSTNAME_2)
+            lib.create_ufs_resource(local_resource, self.admin)
+
+            lib.make_file(path_to_file, 1)
+            self.admin.assert_icommand(['iput', '-R', remote_resource, path_to_file, logical_path])
+            size = get_replica_size(self.admin, local_file, 0)
+
+            self.admin.assert_icommand(['ireg', '-R', local_resource, '--repl', path_to_file, logical_path])
+            reg_size = get_replica_size(self.admin, local_file, 1)
+            self.assertEqual(size, reg_size)
+
+            self.assertEqual(str(1), get_replica_status(self.admin, local_file, 0))
+            self.assertEqual(str(1), get_replica_status(self.admin, local_file, 1))
+
+            new_size = get_replica_size(self.admin, local_file, 0)
+            self.assertEqual(size, new_size)
+
+        finally:
+            print(self.admin.run_icommand(['ils', '-L', logical_path])[0])
+            self.admin.run_icommand(['irm', '-f', logical_path])
+            self.admin.run_icommand(['iadmin', 'rmresc', remote_resource])
+            self.admin.run_icommand(['iadmin', 'rmresc', local_resource])
+
+
+    def test_reg_replica_checksum_verification__issue_5265(self):
+        """Test registering a replica when the original replica has a checksum and the new one does not match."""
+        remote_resource = 'puthere'
+        local_resource = 'reghere'
+        local_file = 'test_reg_replica_checksum_verification__issue_5265'
+        path_to_file = os.path.join(self.admin.local_session_dir, local_file)
+        path_to_arbitrary_file = os.path.join(self.admin.local_session_dir, local_file + '_arb')
+        logical_path = os.path.join(self.admin.session_collection, local_file)
+
+        try:
+            lib.create_ufs_resource(remote_resource, self.admin, test.settings.HOSTNAME_2)
+            lib.create_ufs_resource(local_resource, self.admin)
+
+            lib.make_file(path_to_file, 100)
+            self.admin.assert_icommand(['iput', '-K', '-R', remote_resource, path_to_file, logical_path])
+            checksum = get_replica_checksum(self.admin, local_file, 0)
+
+            lib.make_file(path_to_arbitrary_file, 100, 'random')
+            self.admin.assert_icommand(['ireg', '-R', local_resource, '--repl', path_to_arbitrary_file, logical_path])
+            reg_checksum = get_replica_checksum(self.admin, local_file, 1)
+            self.assertNotEqual(checksum, reg_checksum)
+
+            self.assertEqual(str(0), get_replica_status(self.admin, local_file, 0))
+            self.assertEqual(str(1), get_replica_status(self.admin, local_file, 1))
+
+            new_checksum = get_replica_checksum(self.admin, local_file, 0)
+            self.assertEqual(checksum, new_checksum)
+
+        finally:
+            print(self.admin.run_icommand(['ils', '-L', logical_path])[0])
+            self.admin.run_icommand(['irm', '-f', logical_path])
+            self.admin.run_icommand(['iadmin', 'rmresc', remote_resource])
+            self.admin.run_icommand(['iadmin', 'rmresc', local_resource])
+
+
+    def test_reg_replica_checksum_verification_that_matches__issue_5265(self):
+        """Test registering a replica when the original replica has a checksum and the new one matches."""
+        remote_resource = 'puthere'
+        local_resource = 'reghere'
+        local_file = 'test_reg_replica_checksum_verification_that_matches__issue_5265'
+        path_to_file = os.path.join(self.admin.local_session_dir, local_file)
+        logical_path = os.path.join(self.admin.session_collection, local_file)
+
+        try:
+            lib.create_ufs_resource(remote_resource, self.admin, test.settings.HOSTNAME_2)
+            lib.create_ufs_resource(local_resource, self.admin)
+
+            lib.make_file(path_to_file, 100)
+            self.admin.assert_icommand(['iput', '-K', '-R', remote_resource, path_to_file, logical_path])
+            checksum = get_replica_checksum(self.admin, local_file, 0)
+
+            self.admin.assert_icommand(['ireg', '-R', local_resource, '--repl', path_to_file, logical_path])
+            reg_checksum = get_replica_checksum(self.admin, local_file, 1)
+            self.assertEqual(checksum, reg_checksum)
+
+            self.assertEqual(str(1), get_replica_status(self.admin, local_file, 0))
+            self.assertEqual(str(1), get_replica_status(self.admin, local_file, 1))
+
+            new_checksum = get_replica_checksum(self.admin, local_file, 0)
+            self.assertEqual(checksum, new_checksum)
+
+        finally:
+            print(self.admin.run_icommand(['ils', '-L', logical_path])[0])
+            self.admin.run_icommand(['irm', '-f', logical_path])
+            self.admin.run_icommand(['iadmin', 'rmresc', remote_resource])
+            self.admin.run_icommand(['iadmin', 'rmresc', local_resource])
