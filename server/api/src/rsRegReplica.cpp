@@ -16,7 +16,7 @@
 #include "filesystem.hpp"
 
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
-#include "replica_proxy.hpp"
+#include "data_object_proxy.hpp"
 
 #include "boost/lexical_cast.hpp"
 
@@ -24,6 +24,9 @@
 
 namespace
 {
+    namespace ir = irods::experimental::replica;
+    namespace id = irods::experimental::data_object;
+
     std::string compute_checksum_for_resc(
         rsComm_t&              _comm,
         const std::string_view _logical_path,
@@ -55,8 +58,6 @@ namespace
 
     void verify_and_update_replica(RsComm& _comm, regReplica_t& _inp)
     {
-        namespace ir = irods::experimental::replica;
-
         auto source = ir::make_replica_proxy(*_inp.srcDataObjInfo);
         auto dest = ir::make_replica_proxy(*_inp.destDataObjInfo);
 
@@ -127,38 +128,33 @@ namespace
         int status;
 
         auto cond_input = irods::experimental::make_key_value_proxy(_inp.condInput);
-        auto* source_doi = _inp.srcDataObjInfo;
-        auto* dest_doi = _inp.destDataObjInfo;
+
+        // Create a data object proxy for the source dataObjInfo_t because this represents the
+        // data object, including all of the existing replicas. The replica information being
+        // copied for the destination replica is just the head of the list of replicas, but we
+        // need to make sure that no replica exists on the target resource to ensure that we
+        // are not registering multiple replicas on a single resource, which is not supported.
+        const auto source = id::make_data_object_proxy(*_inp.srcDataObjInfo);
+        const auto dest = ir::make_replica_proxy(*_inp.destDataObjInfo);
+        if (id::find_replica(source, dest.hierarchy())) {
+            return SYS_COPY_ALREADY_IN_RESC;
+        }
+
         if (cond_input.contains(SU_CLIENT_USER_KW)) {
             const int savedClientAuthFlag = _comm.clientUser.authInfo.authFlag;
 
             _comm.clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
 
-            status = chlRegReplica(&_comm, source_doi, dest_doi, cond_input.get());
+            status = chlRegReplica(&_comm, source.get(), dest.get(), cond_input.get());
 
             _comm.clientUser.authInfo.authFlag = savedClientAuthFlag;
         }
         else {
-            status = chlRegReplica(&_comm, source_doi, dest_doi, cond_input.get());
+            status = chlRegReplica(&_comm, source.get(), dest.get(), cond_input.get());
 
             if ( status >= 0 ) {
-                status = dest_doi->replNum;
+                status = dest.replica_number();
             }
-        }
-
-        if (status != CAT_SUCCESS_BUT_WITH_NO_INFO && status != CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME) {
-            return status;
-        }
-
-        // =-=-=-=-=-=-=-
-        // JMC - backport 4608
-        /* register a repl with a copy with the same resource and phyPaht.
-          * could be caused by 2 staging at the same time */
-        if (const auto ec = checkDupReplica(&_comm, source_doi->dataId, dest_doi->rescName, dest_doi->filePath);
-            ec >= 0) {
-            dest_doi->replNum = ec; // JMC - backport 4668
-            dest_doi->dataId = source_doi->dataId;
-            return ec;
         }
 
         return status;
