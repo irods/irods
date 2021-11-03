@@ -50,8 +50,6 @@ extern "C" {
     extern int
     checkPermissionByObjType( rsComm_t *rsComm, char *objName, char *objType, char *user, char *zone, char *oper );
     int
-    checkDupReplica( rsComm_t *rsComm, rodsLong_t dataId, char *rescName, char *filePath ); // JMC - backport 4497
-    int
     getPhyPath( rsComm_t *rsComm, char *objName,  char *resource, char *phyPath, char* rescHier ); // JMC - backport 4680
 }
 
