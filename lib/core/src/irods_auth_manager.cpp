@@ -1,5 +1,34 @@
 #include "irods/irods_auth_manager.hpp"
+
 #include "irods/irods_auth_plugin.hpp"
+
+#include <fmt/format.h>
+
+namespace
+{
+    // function to load and return an initialized auth plugin
+    auto load_auth_plugin(irods::auth_ptr& _plugin,
+                          const std::string& _name,
+                          const std::string& _instance,
+                          const std::string& _context) -> irods::error
+    {
+        irods::auth* auth = nullptr;
+
+        constexpr auto& type = irods::PLUGIN_TYPE_AUTHENTICATION;
+        if (const auto err = irods::load_plugin<irods::auth>(auth, _name, type, _instance, _context);
+            !err.ok()) {
+            return PASSMSG(fmt::format("Failed to load plugin: \"{}\".", _name), err);
+        }
+
+        if (!auth) {
+            return ERROR(SYS_INVALID_INPUT_PARAM, "Invalid auth plugin.");
+        }
+
+        _plugin.reset(auth);
+
+        return SUCCESS();
+    } // load_auth_plugin
+} // anonymous namespace
 
 namespace irods {
 // =-=-=-=-=-=-=-
@@ -19,75 +48,43 @@ namespace irods {
         // TODO - stub
     }
 
-    error auth_manager::resolve(
-        const std::string& _key,
-        auth_ptr& _value ) {
-        error result = SUCCESS();
-
-        if ( ( result = ASSERT_ERROR( !_key.empty(), SYS_INVALID_INPUT_PARAM, "Empty plugin name." ) ).ok() ) {
-
-            if ( ( result = ASSERT_ERROR( plugins_.has_entry( _key ), SYS_INVALID_INPUT_PARAM, "No auth plugin found for name: \"%s\".",
-                                          _key.c_str() ) ).ok() ) {
-                _value = plugins_[_key];
-            }
-        }
-        return result;
-    }
-
-    // =-=-=-=-=-=-=-
-    // function to load and return an initialized auth plugin
-    static error load_auth_plugin(
-            auth_ptr&       _plugin,
-            const std::string& _plugin_name,
-            const std::string& _inst_name,
-            const std::string& _context ) {
-        error result = SUCCESS();
-
-        // =-=-=-=-=-=-=-
-        // call generic plugin loader
-        auth* ath = 0;
-        error ret = load_plugin< auth >(
-                        ath,
-                        _plugin_name,
-                        PLUGIN_TYPE_AUTHENTICATION,
-                        _inst_name,
-                        _context );
-        if ( ( result = ASSERT_PASS( ret, "Failed to load plugin: \"%s\".", _plugin_name.c_str() ) ).ok() ) {
-            if ( ( result = ASSERT_ERROR( ath, SYS_INVALID_INPUT_PARAM, "Invalid auth plugin." ) ).ok() ) {
-                _plugin.reset( ath );
-            }
+    auto auth_manager::resolve(const std::string& _key, irods::auth_ptr& _value) -> irods::error
+    {
+        if (_key.empty()) {
+            return ERROR(SYS_INVALID_INPUT_PARAM, "Empty plugin name.");
         }
 
-        return result;
-
-    } // load_auth_plugin
-
-    error auth_manager::init_from_type(
-        const int&         _proc_type,
-        const std::string& _type,
-        const std::string& _key,
-        const std::string& _inst,
-        const std::string& _ctx,
-        auth_ptr& _rtn_auth ) {
-        error result = SUCCESS();
-        error ret;
-        auth_ptr auth;
-
-        std::string type = _type;
-        if( CLIENT_PT == _proc_type ) {        
-            type += "_client";
-        }
-        else {
-            type += "_server";
+        if (!plugins_.has_entry(_key)) {
+            return ERROR(SYS_INVALID_INPUT_PARAM, fmt::format(
+                "No auth plugin found for name: \"{}\".", _key));
         }
 
-        ret = load_auth_plugin( auth, type, _inst, _ctx );
-        if ( ( result = ASSERT_PASS( ret, "Failed to load auth plugin." ) ).ok() ) {
-            plugins_[_key] = auth;
-            _rtn_auth = plugins_[_key];
+        _value = plugins_[_key];
+
+        return SUCCESS();
+    } // resolve
+
+    auto auth_manager::init_from_type(const int&         _proc_type,
+                                      const std::string& _type,
+                                      const std::string& _key,
+                                      const std::string& _inst,
+                                      const std::string& _ctx,
+                                      irods::auth_ptr&   _rtn_auth) -> irods::error
+    {
+        if (_key.empty()) {
+            return ERROR(SYS_INVALID_INPUT_PARAM, "Empty plugin name.");
         }
 
-        return result;
-    }
+        const std::string type = _type + (CLIENT_PT == _proc_type ? "_client" : "_server");
 
-}; // namespace irods
+        irods::auth_ptr auth;
+        if (const auto err = load_auth_plugin(auth, type, _inst, _ctx); !err.ok()) {
+            return PASSMSG("Failed to load auth plugin.", err);
+        }
+
+        plugins_[_key] = auth;
+        _rtn_auth = plugins_[_key];
+
+        return SUCCESS();
+    } // init_from_type
+} // namespace irods
