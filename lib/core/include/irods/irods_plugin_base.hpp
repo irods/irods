@@ -324,15 +324,15 @@ namespace irods
         /// @brief get a property from the map if it exists.
         template< typename T >
         error get_property( const std::string& _key, T& _val ) {
-            error ret = properties_.get< T >( _key, _val );
-            return ASSERT_PASS( ret, "Failed to get property for auth plugin." );
+            const auto ret = properties_.get<T>(_key, _val);
+            return ret.ok() ? ret : PASSMSG("Failed to get property for plugin.", ret);
         } // get_property
 
         /// @brief set a property in the map
         template< typename T >
         error set_property( const std::string& _key, const T& _val ) {
-            error ret = properties_.set< T >( _key, _val );
-            return ASSERT_PASS( ret, "Failed to set property in the auth plugin." );
+            const auto ret = properties_.set<T>(_key, _val);
+            return ret.ok() ? ret : PASSMSG("Failed to set property for plugin.", ret);
         } // set_property
 
         void set_start_operation( maintenance_operation_t _op ) {

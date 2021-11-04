@@ -179,9 +179,8 @@ int _rsFileStageToCache(
                 irods::log( err );
             }
         }
-        else {
-            irods::error err = ASSERT_PASS( stage_err, "Failed for \"%s\".", _stage_inp->filename );
-            irods::log( err );
+        else if (!stage_err.ok()) {
+            irods::log(PASSMSG(fmt::format("Failed for \"{}\".", _stage_inp->filename), stage_err));
         }
 
         // =-=-=-=-=-=-=-
