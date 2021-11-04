@@ -620,75 +620,82 @@ int agentMain(rsComm_t *rsComm)
     // see header file for more details
     irods::dynamic_cast_hack();
 
-    irods::error result = SUCCESS();
-    while ( result.ok() && status >= 0 ) {
-
+    while (status >= 0) {
         // set default to the native auth scheme here.
         if ( rsComm->auth_scheme == NULL ) {
             rsComm->auth_scheme = strdup( "native" );
         }
         // construct an auth object based on the scheme specified in the comm
         irods::auth_object_ptr auth_obj;
-        irods::error ret = irods::auth_factory( rsComm->auth_scheme, &rsComm->rError, auth_obj );
-        if ( ( result = ASSERT_PASS( ret, "Failed to factory an auth object for scheme: \"%s\".", rsComm->auth_scheme ) ).ok() ) {
+        if (const auto err = irods::auth_factory(rsComm->auth_scheme, &rsComm->rError, auth_obj); !err.ok()) {
+            irods::experimental::api::plugin_lifetime_manager::destroy();
 
-            irods::plugin_ptr ptr;
-            ret = auth_obj->resolve( irods::AUTH_INTERFACE, ptr );
-            if ( ( result = ASSERT_PASS( ret, "Failed to resolve the auth plugin for scheme: \"%s\".",
-                                         rsComm->auth_scheme ) ).ok() ) {
+            irods::log(PASSMSG(fmt::format(
+                "Failed to factory an auth object for scheme: \"{}\".",
+                rsComm->auth_scheme), err));
 
-                irods::auth_ptr auth_plugin = boost::dynamic_pointer_cast< irods::auth >( ptr );
-
-                // Call agent start
-                char* foo = "";
-                ret = auth_plugin->call < const char* > ( rsComm, irods::AUTH_AGENT_START, auth_obj, foo );
-                result = ASSERT_PASS( ret, "Failed during auth plugin agent start for scheme: \"%s\".", rsComm->auth_scheme );
-            }
-
-            // =-=-=-=-=-=-=-
-            // add the user info to the server properties for
-            // reach by the operation wrapper for access by the
-            // dynamic policy enforcement points
-            try {
-                set_rule_engine_globals( rsComm );
-            } catch ( const irods::exception& e ) {
-                rodsLog( LOG_ERROR, "set_rule_engine_globals failed:\n%s", e.what());
-            }
+            return err.code();
         }
 
-        if ( result.ok() ) {
-            if ( rsComm->ssl_do_accept ) {
-                status = sslAccept( rsComm );
-                if ( status < 0 ) {
-                    rodsLog( LOG_ERROR, "sslAccept failed in agentMain with status %d", status );
-                }
-                rsComm->ssl_do_accept = 0;
-            }
-            if ( rsComm->ssl_do_shutdown ) {
-                status = sslShutdown( rsComm );
-                if ( status < 0 ) {
-                    rodsLog( LOG_ERROR, "sslShutdown failed in agentMain with status %d", status );
-                }
-                rsComm->ssl_do_shutdown = 0;
-            }
+        irods::plugin_ptr ptr;
+        if (const auto err = auth_obj->resolve(irods::AUTH_INTERFACE, ptr); !err.ok()) {
+            irods::experimental::api::plugin_lifetime_manager::destroy();
 
-            status = readAndProcClientMsg( rsComm, READ_HEADER_TIMEOUT );
+            irods::log(PASSMSG(fmt::format(
+                "Failed to resolve the auth plugin for scheme: \"{}\".",
+                rsComm->auth_scheme), err));
+
+            return err.code();
+        }
+
+        irods::auth_ptr auth_plugin = boost::dynamic_pointer_cast<irods::auth>(ptr);
+
+        // Call agent start
+        if (const auto err = auth_plugin->call<const char*>(rsComm, irods::AUTH_AGENT_START, auth_obj, ""); !err.ok()) {
+            irods::experimental::api::plugin_lifetime_manager::destroy();
+
+            irods::log(PASSMSG(fmt::format(
+                "Failed during auth plugin agent start for scheme: \"{}\".",
+                rsComm->auth_scheme), err));
+
+            return err.code();
+        }
+
+        // =-=-=-=-=-=-=-
+        // add the user info to the server properties for
+        // reach by the operation wrapper for access by the
+        // dynamic policy enforcement points
+        try {
+            set_rule_engine_globals(rsComm);
+        } catch (const irods::exception& e) {
+            rodsLog( LOG_ERROR, "set_rule_engine_globals failed:\n%s", e.what());
+        }
+
+        if ( rsComm->ssl_do_accept ) {
+            status = sslAccept( rsComm );
             if ( status < 0 ) {
-                if ( status == DISCONN_STATUS ) {
-                    status = 0;
-                    break;
-                }
+                rodsLog( LOG_ERROR, "sslAccept failed in agentMain with status %d", status );
+            }
+            rsComm->ssl_do_accept = 0;
+        }
+        if ( rsComm->ssl_do_shutdown ) {
+            status = sslShutdown( rsComm );
+            if ( status < 0 ) {
+                rodsLog( LOG_ERROR, "sslShutdown failed in agentMain with status %d", status );
+            }
+            rsComm->ssl_do_shutdown = 0;
+        }
+
+        status = readAndProcClientMsg( rsComm, READ_HEADER_TIMEOUT );
+        if ( status < 0 ) {
+            if ( status == DISCONN_STATUS ) {
+                status = 0;
+                break;
             }
         }
     }
 
     irods::experimental::api::plugin_lifetime_manager::destroy();
-
-    if ( !result.ok() ) {
-        irods::log( result );
-        status = result.code();
-        return status;
-    }
 
     // =-=-=-=-=-=-=-
     // determine if we even need to connect, break the
