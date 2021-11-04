@@ -1,57 +1,38 @@
-// =-=-=-=-=-=-=-
-// irods includes
-#include "irods/rodsDef.h"
-#include "irods/msParam.h"
-#include "irods/rcConnect.h"
+#include "irods/authCheck.h"
+#include "irods/authPluginRequest.h"
 #include "irods/authRequest.h"
 #include "irods/authResponse.h"
-#include "irods/authCheck.h"
-#include "irods/miscServerFunct.hpp"
-#include "irods/authPluginRequest.h"
 #include "irods/authenticate.h"
+#include "irods/irods_auth_constants.hpp"
+#include "irods/irods_auth_plugin.hpp"
+#include "irods/irods_kvp_string_parser.hpp"
+#include "irods/irods_native_auth_object.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/msParam.h"
+#include "irods/rcConnect.h"
+#include "irods/rodsDef.h"
 #include "irods/rsAuthCheck.hpp"
 #include "irods/rsAuthRequest.hpp"
 
-// =-=-=-=-=-=-=-
-#include "irods/irods_auth_plugin.hpp"
-#include "irods/irods_auth_constants.hpp"
-#include "irods/irods_native_auth_object.hpp"
-#include "irods/irods_stacktrace.hpp"
-#include "irods/irods_kvp_string_parser.hpp"
+#ifdef RODS_SERVER
+#include "irods/irods_rs_comm_query.hpp"
+#endif
 
-// =-=-=-=-=-=-=-
-// stl includes
+#include <iostream>
 #include <sstream>
 #include <string>
-#include <iostream>
+#include <string_view>
 #include <termios.h>
 #include <unistd.h>
 
 #include <openssl/md5.h>
 
+#include <fmt/format.h>
+
 int get64RandomBytes( char *buf );
 void setSessionSignatureClientside( char* _sig );
 void _rsSetAuthRequestGetChallenge( const char* _c );
-
-static irods::error check_proxy_user_privileges(
-    rsComm_t *rsComm,
-    int proxyUserPriv ) {
-    irods::error result = SUCCESS();
-
-    if ( strcmp( rsComm->proxyUser.userName, rsComm->clientUser.userName ) != 0 ) {
-
-        /* remote privileged user can only do things on behalf of users from
-         * the same zone */
-        result = ASSERT_ERROR( proxyUserPriv >= LOCAL_PRIV_USER_AUTH ||
-                               ( proxyUserPriv >= REMOTE_PRIV_USER_AUTH &&
-                                 strcmp( rsComm->proxyUser.rodsZone, rsComm->clientUser.rodsZone ) == 0 ),
-                               SYS_PROXYUSER_NO_PRIV,
-                               "Proxyuser: \"%s\" with %d no priv to auth clientUser: \"%s\".",
-                               rsComm->proxyUser.userName, proxyUserPriv, rsComm->clientUser.userName );
-    }
-
-    return result;
-}
 
 // =-=-=-=-=-=-=-
 // NOTE:: this needs to become a property
@@ -73,152 +54,119 @@ const int requireSIDs = 0;
 // =-=-=-=-=-=-=-
 // given the client connection and context string, set up the
 // native auth object with relevant information: user, zone, etc
-irods::error native_auth_client_start(
-    irods::plugin_context& _ctx,
-    rcComm_t*                    _comm,
-    const char* ) {
-    irods::error result = SUCCESS();
-    irods::error ret;
-
-    // =-=-=-=-=-=-=-
-    // validate incoming parameters
-    ret = _ctx.valid< irods::native_auth_object >();
-    if ( ( result = ASSERT_PASS( ret, "Invalid plugin context." ) ).ok() ) {
-
-        if ( ( result = ASSERT_ERROR( _comm, SYS_INVALID_INPUT_PARAM, "Null rcConn_t pointer." ) ).ok() ) {
-
-            // =-=-=-=-=-=-=-
-            // get the native auth object
-            irods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast<irods::native_auth_object >( _ctx.fco() );
-
-            // =-=-=-=-=-=-=-
-            // set the user name from the conn
-            ptr->user_name( _comm->proxyUser.userName );
-
-            // =-=-=-=-=-=-=-
-            // set the zone name from the conn
-            ptr->zone_name( _comm->proxyUser.rodsZone );
-        }
+irods::error native_auth_client_start(irods::plugin_context& _ctx,
+                                      rcComm_t*              _comm,
+                                      const char*)
+{
+    if (const auto err = _ctx.valid<irods::native_auth_object>(); !err.ok()) {
+        return PASSMSG("Invalid plugin context.", err);
     }
 
-    return result;
+    if (!_comm) {
+        return ERROR(SYS_INVALID_INPUT_PARAM, "Null rcConn_t pointer.");
+    }
 
+    irods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast<irods::native_auth_object>(_ctx.fco());
+    ptr->user_name(_comm->proxyUser.userName);
+    ptr->zone_name(_comm->proxyUser.rodsZone);
+
+    return SUCCESS();
 } // native_auth_client_start
 
 // =-=-=-=-=-=-=-
 // establish context - take the auth request results and massage them
 // for the auth response call
-irods::error native_auth_establish_context(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-    irods::error ret;
-
-    // =-=-=-=-=-=-=-
-    // validate incoming parameters
-    ret = _ctx.valid< irods::native_auth_object >();
-    if ( ( result = ASSERT_PASS( ret, "Invalid plugin context." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // build a buffer for the challenge hash
-        char md5_buf[ CHALLENGE_LEN + MAX_PASSWORD_LEN + 2 ];
-        memset( md5_buf, 0, sizeof( md5_buf ) );
-
-        // =-=-=-=-=-=-=-
-        // get the native auth object
-        irods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast<irods::native_auth_object >( _ctx.fco() );
-
-        // =-=-=-=-=-=-=-
-        // copy the challenge into the md5 buffer
-        strncpy( md5_buf, ptr->request_result().c_str(), CHALLENGE_LEN );
-
-        // =-=-=-=-=-=-=-
-        // Save a representation of some of the challenge string for use
-        // as a session signiture
-        setSessionSignatureClientside( md5_buf );
-
-        // =-=-=-=-=-=-=-
-        // determine if a password challenge is needed,
-        // are we anonymous or not?
-        int need_password = 0;
-        if ( strncmp( ANONYMOUS_USER, ptr->user_name().c_str(), NAME_LEN ) == 0 ) {
-
-            // =-=-=-=-=-=-=-
-            // its an anonymous user - set the flag
-            md5_buf[CHALLENGE_LEN + 1] = '\0';
-            need_password = 0;
-
-        }
-        else {
-            // =-=-=-=-=-=-=-
-            // determine if a password is already in place
-            need_password = obfGetPw( md5_buf + CHALLENGE_LEN );
-        }
-
-        // =-=-=-=-=-=-=-
-        // prompt for a password if necessary
-        if ( 0 != need_password ) {
-#ifdef WIN32
-            HANDLE hStdin = GetStdHandle( STD_INPUT_HANDLE );
-            DWORD mode;
-            GetConsoleMode( hStdin, &mode );
-            DWORD lastMode = mode;
-            mode &= ~ENABLE_ECHO_INPUT;
-            BOOL error = !SetConsoleMode( hStdin, mode );
-            int errsv = -1;
-#else
-            struct termios tty;
-            memset( &tty, 0, sizeof( tty ) );
-            tcgetattr( STDIN_FILENO, &tty );
-            tcflag_t oldflag = tty.c_lflag;
-            tty.c_lflag &= ~ECHO;
-            int error = tcsetattr( STDIN_FILENO, TCSANOW, &tty );
-            int errsv = errno;
-#endif
-            if ( error ) {
-                printf( "WARNING: Error %d disabling echo mode. Password will be displayed in plaintext.", errsv );
-            }
-            printf( "Enter your current iRODS password:" );
-            std::string password = "";
-            getline( std::cin, password );
-            strncpy( md5_buf + CHALLENGE_LEN, password.c_str(), MAX_PASSWORD_LEN );
-#ifdef WIN32
-            if ( !SetConsoleMode( hStdin, lastMode ) ) {
-                printf( "Error reinstating echo mode." );
-            }
-#else
-            tty.c_lflag = oldflag;
-            if ( tcsetattr( STDIN_FILENO, TCSANOW, &tty ) ) {
-                printf( "Error reinstating echo mode." );
-            }
-#endif
-        } // if need_password
-
-        // =-=-=-=-=-=-=-
-        // create a md5 hash of the challenge
-        MD5_CTX context;
-        MD5_Init( &context );
-        MD5_Update( &context, ( unsigned char* )md5_buf, CHALLENGE_LEN + MAX_PASSWORD_LEN );
-
-        char digest[ RESPONSE_LEN + 2 ];
-        MD5_Final( ( unsigned char* )digest, &context );
-
-        // =-=-=-=-=-=-=-
-        // make sure 'string' doesn't end early -
-        // scrub out any errant terminating chars
-        // by incrementing their value by one
-        for ( int i = 0; i < RESPONSE_LEN; ++i ) {
-            if ( digest[ i ] == '\0' ) {
-                digest[ i ]++;
-            }
-        }
-
-        // =-=-=-=-=-=-=-
-        // cache the digest for the response
-        ptr->digest( std::string( digest, RESPONSE_LEN ) );
+irods::error native_auth_establish_context(irods::plugin_context& _ctx)
+{
+    if (const auto err = _ctx.valid<irods::native_auth_object>(); !err.ok()) {
+        return PASSMSG("Invalid plugin context.", err);
     }
 
-    return result;
+    // build a buffer for the challenge hash
+    char md5_buf[ CHALLENGE_LEN + MAX_PASSWORD_LEN + 2 ];
+    memset( md5_buf, 0, sizeof( md5_buf ) );
 
+    // get the native auth object
+    irods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast<irods::native_auth_object >( _ctx.fco() );
+
+    // copy the challenge into the md5 buffer
+    strncpy( md5_buf, ptr->request_result().c_str(), CHALLENGE_LEN );
+
+    // Save a representation of some of the challenge string for use as a session signature
+    setSessionSignatureClientside( md5_buf );
+
+    // determine if a password challenge is needed, are we anonymous or not?
+    int need_password = 0;
+    if ( strncmp( ANONYMOUS_USER, ptr->user_name().c_str(), NAME_LEN ) == 0 ) {
+
+        // its an anonymous user - set the flag
+        md5_buf[CHALLENGE_LEN + 1] = '\0';
+        need_password = 0;
+    }
+    else {
+        // determine if a password is already in place
+        need_password = obfGetPw( md5_buf + CHALLENGE_LEN );
+    }
+
+    // prompt for a password if necessary
+    if ( 0 != need_password ) {
+#ifdef WIN32
+        HANDLE hStdin = GetStdHandle( STD_INPUT_HANDLE );
+        DWORD mode;
+        GetConsoleMode( hStdin, &mode );
+        DWORD lastMode = mode;
+        mode &= ~ENABLE_ECHO_INPUT;
+        BOOL error = !SetConsoleMode( hStdin, mode );
+        int errsv = -1;
+#else
+        struct termios tty;
+        memset( &tty, 0, sizeof( tty ) );
+        tcgetattr( STDIN_FILENO, &tty );
+        tcflag_t oldflag = tty.c_lflag;
+        tty.c_lflag &= ~ECHO;
+        int error = tcsetattr( STDIN_FILENO, TCSANOW, &tty );
+        int errsv = errno;
+#endif
+        if ( error ) {
+            printf( "WARNING: Error %d disabling echo mode. Password will be displayed in plaintext.", errsv );
+        }
+        printf( "Enter your current iRODS password:" );
+        std::string password = "";
+        getline( std::cin, password );
+        strncpy( md5_buf + CHALLENGE_LEN, password.c_str(), MAX_PASSWORD_LEN );
+#ifdef WIN32
+        if ( !SetConsoleMode( hStdin, lastMode ) ) {
+            printf( "Error reinstating echo mode." );
+        }
+#else
+        tty.c_lflag = oldflag;
+        if ( tcsetattr( STDIN_FILENO, TCSANOW, &tty ) ) {
+            printf( "Error reinstating echo mode." );
+        }
+#endif
+    } // if need_password
+
+    // create a md5 hash of the challenge
+    MD5_CTX context;
+    MD5_Init( &context );
+    MD5_Update( &context, ( unsigned char* )md5_buf, CHALLENGE_LEN + MAX_PASSWORD_LEN );
+
+    char digest[ RESPONSE_LEN + 2 ];
+    MD5_Final( ( unsigned char* )digest, &context );
+
+    // make sure 'string' doesn't end early -
+    // scrub out any errant terminating chars
+    // by incrementing their value by one
+    for ( int i = 0; i < RESPONSE_LEN; ++i ) {
+        if ( digest[ i ] == '\0' ) {
+            digest[ i ]++;
+        }
+    }
+
+    // cache the digest for the response
+    ptr->digest( std::string( digest, RESPONSE_LEN ) );
+
+    return SUCCESS();
 } // native_auth_establish_context
 
 // =-=-=-=-=-=-=-
@@ -262,87 +210,72 @@ irods::error native_auth_client_request(
 #ifdef RODS_SERVER
 // =-=-=-=-=-=-=-
 // handle an agent-side auth request call
-irods::error native_auth_agent_request(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-    irods::error ret;
-
-    // =-=-=-=-=-=-=-
-    // validate incoming parameters
-    ret = _ctx.valid< irods::native_auth_object >();
-    if ( ( result = ASSERT_PASS( ret, "Invalid plugin context." ) ).ok() ) {
-
-        if ( ( result = ASSERT_ERROR( _ctx.comm(), SYS_INVALID_INPUT_PARAM, "Null comm pointer." ) ).ok() ) {
-
-            // =-=-=-=-=-=-=-
-            // generate a random buffer and copy it to the challenge
-            char buf[ CHALLENGE_LEN + 2 ];
-            get64RandomBytes( buf );
-
-            // =-=-=-=-=-=-=-
-            // get the auth object
-            irods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast<irods::native_auth_object >( _ctx.fco() );
-
-            // =-=-=-=-=-=-=-
-            // cache the challenge
-            ptr->request_result( buf );
-
-            // =-=-=-=-=-=-=-
-            // cache the challenge in the server for later usage
-            _rsSetAuthRequestGetChallenge( buf );
-
-            if ( _ctx.comm()->auth_scheme != NULL ) {
-                free( _ctx.comm()->auth_scheme );
-            }
-            _ctx.comm()->auth_scheme = strdup( irods::AUTH_NATIVE_SCHEME.c_str() );
-        }
+irods::error native_auth_agent_request(irods::plugin_context& _ctx)
+{
+    if (const auto err = _ctx.valid<irods::native_auth_object>(); !err.ok()) {
+        return PASSMSG("Invalid plugin context.", err);
     }
 
-    // =-=-=-=-=-=-=-
-    // win!
-    return SUCCESS();
+    if (!_ctx.comm()) {
+        return ERROR(SYS_INVALID_INPUT_PARAM, "Null comm pointer.");
+    }
 
+    // generate a random buffer and copy it to the challenge
+    char buf[ CHALLENGE_LEN + 2 ];
+    get64RandomBytes( buf );
+
+    // get the auth object
+    irods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast<irods::native_auth_object >( _ctx.fco() );
+
+    // cache the challenge
+    ptr->request_result( buf );
+
+    // cache the challenge in the server for later usage
+    _rsSetAuthRequestGetChallenge( buf );
+
+    if ( _ctx.comm()->auth_scheme != NULL ) {
+        free( _ctx.comm()->auth_scheme );
+    }
+    _ctx.comm()->auth_scheme = strdup( irods::AUTH_NATIVE_SCHEME.c_str() );
+
+    return SUCCESS();
 } // native_auth_agent_request
 #endif
 
 
 // =-=-=-=-=-=-=-
 // handle a client-side auth request call
-irods::error native_auth_client_response(
-    irods::plugin_context& _ctx,
-    rcComm_t*                    _comm ) {
-    irods::error result = SUCCESS();
-    irods::error ret;
-
-    // =-=-=-=-=-=-=-
-    // validate incoming parameters
-    ret = _ctx.valid< irods::native_auth_object >();
-    if ( ( result = ASSERT_PASS( ret, "Invalid plugin context." ) ).ok() ) {
-        if ( ( result = ASSERT_ERROR( _comm, SYS_INVALID_INPUT_PARAM, "Null rcComm_t pointer." ) ).ok() ) {
-
-            // =-=-=-=-=-=-=-
-            // get the auth object
-            irods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast<irods::native_auth_object >( _ctx.fco() );
-
-            // =-=-=-=-=-=-=-
-            // build the response string
-            char response[ RESPONSE_LEN + 2 ];
-            snprintf( response, RESPONSE_LEN + 2, "%s", ptr->digest().c_str() );
-
-            // =-=-=-=-=-=-=-
-            // build the username#zonename string
-            std::string user_name = ptr->user_name() + "#"              + ptr->zone_name();
-            char username[ MAX_NAME_LEN ];
-            snprintf( username, MAX_NAME_LEN, "%s", user_name.c_str() );
-
-            authResponseInp_t auth_response;
-            auth_response.response = response;
-            auth_response.username = username;
-            int status = rcAuthResponse( _comm, &auth_response );
-            result = ASSERT_ERROR( status >= 0, status, "Call to rcAuthResponseFailed." );
-        }
+irods::error native_auth_client_response(irods::plugin_context& _ctx,
+                                         rcComm_t*              _comm )
+{
+    if (const auto err = _ctx.valid<irods::native_auth_object>(); !err.ok()) {
+        return PASSMSG("Invalid plugin context.", err);
     }
-    return result;
+
+    if (!_comm) {
+        return ERROR(SYS_INVALID_INPUT_PARAM, "Null comm pointer.");
+    }
+
+    // get the auth object
+    irods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast<irods::native_auth_object>(_ctx.fco());
+
+    // build the response string
+    char response[ RESPONSE_LEN + 2 ];
+    snprintf( response, RESPONSE_LEN + 2, "%s", ptr->digest().c_str() );
+
+    // build the username#zonename string
+    std::string user_name = ptr->user_name() + "#" + ptr->zone_name();
+    char username[ MAX_NAME_LEN ];
+    snprintf( username, MAX_NAME_LEN, "%s", user_name.c_str() );
+
+    authResponseInp_t auth_response;
+    auth_response.response = response;
+    auth_response.username = username;
+    if (const int ec = rcAuthResponse(_comm, &auth_response); ec < 0) {
+        return ERROR(ec, "Call to rcAuthResponseFailed.");
+    }
+
+    return SUCCESS();
 } // native_auth_client_response
 
 
@@ -530,27 +463,29 @@ irods::error native_auth_agent_response(
         }
 
         if ( ret.ok() ) {
-            ret = check_proxy_user_privileges( _ctx.comm(), authCheckOut->privLevel );
-            if ( !ret.ok() ) {
-                ret = PASSMSG( "Check proxy user privileges failed.", ret );
+            try {
+                irods::throw_on_insufficient_privilege_for_proxy_user(*_ctx.comm(), authCheckOut->privLevel);
+            }
+            catch (const irods::exception& e) {
+                ret = irods::error(e);
+            }
+
+            rodsLog( LOG_DEBUG,
+                     "rsAuthResponse set proxy authFlag to %d, client authFlag to %d, user:%s proxy:%s client:%s",
+                     authCheckOut->privLevel,
+                     authCheckOut->clientPrivLevel,
+                     authCheckInp.username,
+                     _ctx.comm()->proxyUser.userName,
+                     _ctx.comm()->clientUser.userName );
+
+            if ( strcmp( _ctx.comm()->proxyUser.userName,  _ctx.comm()->clientUser.userName ) != 0 ) {
+                _ctx.comm()->proxyUser.authInfo.authFlag = authCheckOut->privLevel;
+                _ctx.comm()->clientUser.authInfo.authFlag = authCheckOut->clientPrivLevel;
             }
             else {
-                rodsLog( LOG_DEBUG,
-                         "rsAuthResponse set proxy authFlag to %d, client authFlag to %d, user:%s proxy:%s client:%s",
-                         authCheckOut->privLevel,
-                         authCheckOut->clientPrivLevel,
-                         authCheckInp.username,
-                         _ctx.comm()->proxyUser.userName,
-                         _ctx.comm()->clientUser.userName );
-
-                if ( strcmp( _ctx.comm()->proxyUser.userName,  _ctx.comm()->clientUser.userName ) != 0 ) {
-                    _ctx.comm()->proxyUser.authInfo.authFlag = authCheckOut->privLevel;
-                    _ctx.comm()->clientUser.authInfo.authFlag = authCheckOut->clientPrivLevel;
-                }
-                else {          /* proxyUser and clientUser are the same */
-                    _ctx.comm()->proxyUser.authInfo.authFlag =
-                        _ctx.comm()->clientUser.authInfo.authFlag = authCheckOut->privLevel;
-                }
+                // proxy user and client user are the same.
+                _ctx.comm()->proxyUser.authInfo.authFlag =
+                    _ctx.comm()->clientUser.authInfo.authFlag = authCheckOut->privLevel;
             }
         }
     }

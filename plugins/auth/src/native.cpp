@@ -1,8 +1,11 @@
 #include "irods/authentication_plugin_framework.hpp"
 
+#include "irods/base64.h"
 #include "irods/irods_logger.hpp"
 
-#include "irods/base64.h"
+#ifdef RODS_SERVER
+#include "irods/irods_rs_comm_query.hpp"
+#endif
 
 int get64RandomBytes( char *buf );
 void setSessionSignatureClientside( char* _sig );
@@ -53,35 +56,6 @@ namespace
 
         return p.at(n).get<T>();
     } // get
-
-#ifdef RODS_SERVER
-    void throw_on_insufficient_privilege_for_proxy_user(const rsComm_t& _comm,
-                                                        int _proxy_priv)
-    {
-        // If the proxy user is a rodsadmin in the local zone, it can do whatever it wants.
-        if (_proxy_priv >= LOCAL_PRIV_USER_AUTH) {
-            return;
-        }
-
-        // A user is allowed to authenticate itself.
-        if (std::string_view{_comm.proxyUser.userName} == _comm.clientUser.userName) {
-            return;
-        }
-
-        // A proxy user with remote priviliged user authorization can only authenticate client
-        // users from the same zone.
-        if (_proxy_priv >= REMOTE_PRIV_USER_AUTH &&
-            std::string_view{_comm.proxyUser.rodsZone} == _comm.clientUser.rodsZone) {
-            return;
-        }
-
-        // This is a proxy user attempting to authenticate a client user with insufficient
-        // permissions to do so.
-        THROW(SYS_PROXYUSER_NO_PRIV, fmt::format(
-              "Proxy user [{}] is not allowed to authenticate client user [{}].",
-              _comm.proxyUser.userName, _comm.clientUser.userName));
-    } // throw_on_insufficient_privilege_for_proxy_user
-#endif
 } // anonymous namespace
 
 namespace irods
@@ -416,7 +390,7 @@ namespace irods
                 authCheckOut->clientPrivLevel = authCheckOut->privLevel;
             }
 
-            throw_on_insufficient_privilege_for_proxy_user(comm, authCheckOut->privLevel);
+            irods::throw_on_insufficient_privilege_for_proxy_user(comm, authCheckOut->privLevel);
 
             log_auth::debug(
                     "rsAuthResponse set proxy authFlag to {}, client authFlag to {}, user:{} proxy:{} client:{}",

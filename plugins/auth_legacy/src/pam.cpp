@@ -41,103 +41,89 @@
 
 int get64RandomBytes( char *buf );
 
-// =-=-=-=-=-=-=-
 // establish context - take the auth request results and massage them
 // for the auth response call
-irods::error pam_auth_client_start(
-    irods::plugin_context& _ctx,
-    rcComm_t*                    _comm,
-    const char*                  _context ) {
-    irods::error result = SUCCESS();
-    irods::error ret;
-
-    // =-=-=-=-=-=-=-
-    // validate incoming parameters
-    ret = _ctx.valid< irods::pam_auth_object >();
-    if ( ( result = ASSERT_PASS( ret, "Invalid plugin context." ) ).ok() ) {
-        if ( ( result = ASSERT_ERROR( _comm, SYS_INVALID_INPUT_PARAM, "Null comm pointer." ) ).ok() ) {
-            if ( ( result = ASSERT_ERROR( _context, SYS_INVALID_INPUT_PARAM, "Null context pointer." ) ).ok() ) {
-                // =-=-=-=-=-=-=-
-                // parse the kvp out of the _resp->username string
-                irods::kvp_map_t kvp;
-                irods::error ret = irods::parse_escaped_kvp_string( _context, kvp );
-                if ( ( result = ASSERT_PASS( ret, "Failed to parse the key-value pairs." ) ).ok() ) {
-                    // =-=-=-=-=-=-=-
-                    // simply cache the context string for a rainy day...
-                    // or to pass to the auth client call later.
-                    irods::pam_auth_object_ptr ptr = boost::dynamic_pointer_cast<
-                                                         irods::pam_auth_object>(
-                                                             _ctx.fco() );
-                    ptr->context(_context);
-
-                    std::string password = kvp[ irods::AUTH_PASSWORD_KEY ];
-                    std::string ttl_str  = kvp[ irods::AUTH_TTL_KEY ];
-
-                    // =-=-=-=-=-=-=-
-                    // prompt for a password if necessary
-                    char new_password[ MAX_PASSWORD_LEN + 2 ];
-                    if ( password.empty() ) {
-#ifdef WIN32
-                        HANDLE hStdin = GetStdHandle( STD_INPUT_HANDLE );
-                        DWORD mode;
-                        GetConsoleMode( hStdin, &mode );
-                        DWORD lastMode = mode;
-                        mode &= ~ENABLE_ECHO_INPUT;
-                        BOOL error = !SetConsoleMode( hStdin, mode );
-                        int errsv = -1;
-#else
-                        struct termios tty;
-                        tcgetattr( STDIN_FILENO, &tty );
-                        tcflag_t oldflag = tty.c_lflag;
-                        tty.c_lflag &= ~ECHO;
-                        int error = tcsetattr( STDIN_FILENO, TCSANOW, &tty );
-                        int errsv = errno;
-#endif
-                        if ( error ) {
-                            printf( "WARNING: Error %d disabling echo mode. Password will be displayed in plaintext.", errsv );
-                        }
-                        printf( "Enter your current PAM password:" );
-                        std::string password = "";
-                        getline( std::cin, password );
-                        strncpy( new_password, password.c_str(), MAX_PASSWORD_LEN );
-                        printf( "\n" );
-#ifdef WIN32
-                        if ( !SetConsoleMode( hStdin, lastMode ) ) {
-                            printf( "Error reinstating echo mode." );
-                        }
-#else
-                        tty.c_lflag = oldflag;
-                        if ( tcsetattr( STDIN_FILENO, TCSANOW, &tty ) ) {
-                            printf( "Error reinstating echo mode." );
-                        }
-#endif
-
-                        // =-=-=-=-=-=-=-
-                        // rebuilt and reset context string
-                        irods::kvp_map_t ctx_map;
-                        ctx_map[irods::AUTH_TTL_KEY] = ttl_str;
-                        ctx_map[irods::AUTH_PASSWORD_KEY] = new_password;
-                        std::string ctx_str = irods::escaped_kvp_string(
-                                                  ctx_map);
-                        ptr->context( ctx_str );
-
-                    }
-
-
-                    // =-=-=-=-=-=-=-
-                    // set the user name from the conn
-                    ptr->user_name( _comm->proxyUser.userName );
-
-                    // =-=-=-=-=-=-=-
-                    // set the zone name from the conn
-                    ptr->zone_name( _comm->proxyUser.rodsZone );
-                }
-            }
-        }
+irods::error pam_auth_client_start(irods::plugin_context& _ctx,
+                                   rcComm_t*              _comm,
+                                   const char*            _context)
+{
+    if (const auto err = _ctx.valid<irods::pam_auth_object>(); !err.ok()) {
+        return PASSMSG("Invalid plugin context.", err);
     }
 
-    return result;
+    if (!_comm) {
+        return ERROR(SYS_INVALID_INPUT_PARAM, "Null comm pointer.");
+    }
 
+    if (!_context) {
+        return ERROR(SYS_INVALID_INPUT_PARAM, "Null context pointer.");
+    }
+
+    // parse the kvp out of the _resp->username string
+    irods::kvp_map_t kvp;
+    if (const auto err = irods::parse_escaped_kvp_string(_context, kvp); !err.ok()) {
+        return PASSMSG("Failed to parse the key-value pairs.", err);
+    }
+
+    // simply cache the context string for a rainy day... or to pass to the auth client call later.
+    irods::pam_auth_object_ptr ptr = boost::dynamic_pointer_cast<irods::pam_auth_object>(_ctx.fco());
+    ptr->context(_context);
+
+    std::string password = kvp[ irods::AUTH_PASSWORD_KEY ];
+    std::string ttl_str  = kvp[ irods::AUTH_TTL_KEY ];
+
+    // prompt for a password if necessary
+    char new_password[ MAX_PASSWORD_LEN + 2 ];
+    if ( password.empty() ) {
+#ifdef WIN32
+        HANDLE hStdin = GetStdHandle( STD_INPUT_HANDLE );
+        DWORD mode;
+        GetConsoleMode( hStdin, &mode );
+        DWORD lastMode = mode;
+        mode &= ~ENABLE_ECHO_INPUT;
+        BOOL error = !SetConsoleMode( hStdin, mode );
+        int errsv = -1;
+#else
+        struct termios tty;
+        tcgetattr( STDIN_FILENO, &tty );
+        tcflag_t oldflag = tty.c_lflag;
+        tty.c_lflag &= ~ECHO;
+        int error = tcsetattr( STDIN_FILENO, TCSANOW, &tty );
+        int errsv = errno;
+#endif
+        if ( error ) {
+            printf( "WARNING: Error %d disabling echo mode. Password will be displayed in plaintext.", errsv );
+        }
+        printf( "Enter your current PAM password:" );
+        std::string password = "";
+        getline( std::cin, password );
+        strncpy( new_password, password.c_str(), MAX_PASSWORD_LEN );
+        printf( "\n" );
+#ifdef WIN32
+        if ( !SetConsoleMode( hStdin, lastMode ) ) {
+            printf( "Error reinstating echo mode." );
+        }
+#else
+        tty.c_lflag = oldflag;
+        if ( tcsetattr( STDIN_FILENO, TCSANOW, &tty ) ) {
+            printf( "Error reinstating echo mode." );
+        }
+#endif
+
+        // rebuilt and reset context string
+        irods::kvp_map_t ctx_map;
+        ctx_map[irods::AUTH_TTL_KEY] = ttl_str;
+        ctx_map[irods::AUTH_PASSWORD_KEY] = new_password;
+        std::string ctx_str = irods::escaped_kvp_string(
+                ctx_map);
+        ptr->context( ctx_str );
+
+    }
+
+    ptr->user_name( _comm->proxyUser.userName );
+    ptr->zone_name( _comm->proxyUser.rodsZone );
+
+    return SUCCESS();
 } // pam_auth_client_start
 
 // =-=-=-=-=-=-=-
