@@ -80,22 +80,6 @@ msiSetDefaultResc( msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecI
 }
 
 /**
- * \fn msiSetRescSortScheme (msParam_t *xsortScheme, ruleExecInfo_t *rei)
- *
- * \brief  This microservice sets the scheme for selecting the best resource to use when creating a data object.
- *
- * \deprecated Since 4.0, use a resource composition of a similar type.
- *
- **/
-[[deprecated("msiSetRescSortScheme is no longer supported, please use a resource composition of a similar type")]]
-int
-msiSetRescSortScheme( msParam_t*, ruleExecInfo_t* ) {
-    rodsLog( LOG_ERROR, "msiSetRescSortScheme is no longer supported, please use a resource composition of a similar type" );
-    return SYS_NOT_SUPPORTED;
-}
-
-
-/**
  * \fn msiSetNoDirectRescInp (msParam_t *xrescList, ruleExecInfo_t *rei)
  *
  * \brief  This microservice sets a list of resources that cannot be used by a normal

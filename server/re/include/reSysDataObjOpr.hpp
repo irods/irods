@@ -16,7 +16,6 @@
 
 
 /* the following are data object operation rule handler */
-int msiSetRescSortScheme( msParam_t *sortScheme, ruleExecInfo_t *rei );
 int
 msiSysReplDataObj( msParam_t *xcacheResc, msParam_t *xallFlag,
                    ruleExecInfo_t *rei );

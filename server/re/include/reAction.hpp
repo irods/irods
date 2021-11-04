@@ -151,7 +151,6 @@ namespace irods
         table_[ "msiDeleteUser" ] = new irods::ms_table_entry( "msiDeleteUser", 0, std::function<int(ruleExecInfo_t*)>( msiDeleteUser ) );
         table_[ "msiAddUserToGroup" ] = new irods::ms_table_entry( "msiAddUserToGroup", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiAddUserToGroup ) );
         table_[ "msiSetDefaultResc" ] = new irods::ms_table_entry( "msiSetDefaultResc", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiSetDefaultResc ) );
-        table_[ "msiSetRescSortScheme" ] = new irods::ms_table_entry( "msiSetRescSortScheme", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiSetRescSortScheme ) );
         table_[ "msiSysReplDataObj" ] = new irods::ms_table_entry( "msiSysReplDataObj", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiSysReplDataObj ) );
         table_[ "msiStageDataObj" ] = new irods::ms_table_entry( "msiStageDataObj", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiStageDataObj ) );
         table_[ "msiSetDataObjPreferredResc" ] = new irods::ms_table_entry( "msiSetDataObjPreferredResc", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiSetDataObjPreferredResc ) );
