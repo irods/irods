@@ -1,8 +1,10 @@
-#include "irods/rcMisc.h"
-
 #include "irods/irods_gsi_object.hpp"
+
 #include "irods/irods_auth_manager.hpp"
 #include "irods/irods_auth_plugin.hpp"
+#include "irods/rcMisc.h"
+
+#include <fmt/format.h>
 
 extern int ProcessType;
 
@@ -19,28 +21,29 @@ namespace irods {
         // TODO - stub
     }
 
-    error gsi_auth_object::resolve(
-        const std::string& _interface,
-        plugin_ptr& _ptr ) {
-        error result = SUCCESS();
-        if ( ( result = ASSERT_ERROR( _interface == AUTH_INTERFACE, SYS_INVALID_INPUT_PARAM,
-                                      "gsi_auth_object does not support a \"%s\" plugin interface.",
-                                      _interface.c_str() ) ).ok() ) {
-            auth_ptr ath;
-            error ret = auth_mgr.resolve( AUTH_GSI_SCHEME, ath );
-            if ( !( result = ASSERT_PASS( ret, "Failed to resolve the GSI auth plugin." ) ).ok() ) {
-
-                // Attempt to load the plugin.
-                std::string empty_context( "" );
-                ret = auth_mgr.init_from_type( ProcessType, AUTH_GSI_SCHEME, AUTH_GSI_SCHEME, AUTH_GSI_SCHEME, empty_context, ath );
-                result = ASSERT_PASS( ret, "Failed to load the GSI auth plugin." );
-            }
-
-            if ( result.ok() ) {
-                _ptr = boost::dynamic_pointer_cast<plugin_base>( ath );
-            }
+    error gsi_auth_object::resolve(const std::string& _interface, plugin_ptr& _ptr)
+    {
+        if (AUTH_INTERFACE != _interface) {
+            return ERROR(SYS_INVALID_INPUT_PARAM, fmt::format(
+                "gsi_auth_object does not support a \"{}\" plugin interface.",
+                _interface.c_str()));
         }
-        return result;
+
+        auth_ptr auth;
+        if (const auto err = auth_mgr.resolve(AUTH_GSI_SCHEME, auth); !err.ok()) {
+            return PASSMSG("Failed to resolve the GSI auth plugin.", err);
+        }
+
+        // Attempt to load the plugin.
+        std::string unused;
+        const auto& type = AUTH_GSI_SCHEME;
+        if (const auto err = auth_mgr.init_from_type(ProcessType, type, type, type, unused, auth); !err.ok()) {
+            return PASSMSG("Failed to load the GSI auth plugin.", err);
+        }
+
+        _ptr = boost::dynamic_pointer_cast<plugin_base>(auth);
+
+        return SUCCESS();
     }
 
     bool gsi_auth_object::operator==(
