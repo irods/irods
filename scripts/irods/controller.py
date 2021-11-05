@@ -13,6 +13,8 @@ import sys
 import tempfile
 import time
 
+from collections import OrderedDict
+
 import psutil
 from . import six
 
@@ -31,6 +33,13 @@ class IrodsController(object):
         # load the configuration to ensure it exists
         _ = self.config.server_config
         _ = self.config.version
+
+    @property
+    def server_binaries(self):
+        return [
+            self.config.server_executable,
+            self.config.rule_engine_executable
+        ]
 
     def define_log_levels(self, logger):
         config = self.config.server_config
@@ -65,7 +74,7 @@ class IrodsController(object):
         if server_pid >= 0:
             try:
                 server_proc = psutil.Process(server_pid)
-                if os.path.samefile(self.config.server_executable, server_proc.exe()):
+                if server_proc.exe() and os.path.samefile(self.config.server_executable, server_proc.exe()):
                     return server_proc
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 return None
@@ -86,7 +95,7 @@ class IrodsController(object):
         except IrodsWarning:
             l.warn('Warning encountered in validation:', exc_info=True)
 
-        if self.get_binary_to_pids_dict():
+        if self.get_server_proc():
             raise IrodsError('iRODS already running')
 
         delete_s3_shmem()
@@ -169,7 +178,7 @@ class IrodsController(object):
                             socket.AF_INET, socket.SOCK_STREAM)) as s:
                         if s.connect_ex(('127.0.0.1', irods_port)) == 0:
                             l.debug('Successfully connected to port %s.', irods_port)
-                            if len(lib.get_pids_executing_binary_file(self.config.server_executable)) == 0:
+                            if self.get_server_proc is None:
                                 raise IrodsError('iRODS port is bound, but server is not started.')
                             s.send(b'\x00\x00\x00\x33<MsgHeader_PI><type>HEARTBEAT</type></MsgHeader_PI>')
                             message = s.recv(256)
@@ -187,25 +196,21 @@ class IrodsController(object):
             l.info('Failure')
             six.reraise(IrodsError, e, sys.exc_info()[2])
 
-    def irods_grid_shutdown(self, timeout=20, **kwargs):
-        l = logging.getLogger(__name__)
-        args = ['irods-grid', 'shutdown', '--hosts={0}'.format(lib.get_hostname())]
-        if 'IRODS_ENVIRONMENT_FILE' in self.config.execution_environment:
-            kwargs['env'] = copy.copy(os.environ)
-            kwargs['env']['IRODS_ENVIRONMENT_FILE'] = self.config.execution_environment['IRODS_ENVIRONMENT_FILE']
+    def irods_graceful_shutdown(self, server_proc, server_descendants, timeout=20):
         start_time = time.time()
-        lib.execute_command_timeout(args, timeout=timeout, **kwargs)
-
-        # "irods-grid shutdown" is non-blocking
+        server_proc.terminate()
         while time.time() < start_time + timeout:
-            if self.get_binary_to_pids_dict([self.config.server_executable]):
+            if capture_process_tree(server_proc, server_descendants, self.server_binaries):
                 time.sleep(0.3)
             else:
                 break
         else:
-            raise IrodsError(
-                'The iRODS server did not stop within {0} seconds of '
-                'receiving the "shutdown" command.'.format(timeout))
+            capture_process_tree(server_proc, server_descendants, self.server_binaries)
+            if server_proc.is_running():
+                raise IrodsError('The iRODS server did not stop within {0} seconds of '
+                                 'receiving SIGTERM.'.format(timeout))
+            elif server_descendants:
+                raise IrodsError('iRODS server shut down but left behind child processes')
 
     def stop(self, timeout=20):
         l = logging.getLogger(__name__)
@@ -213,42 +218,31 @@ class IrodsController(object):
         l.debug('Calling stop on IrodsController')
         l.info('Stopping iRODS server...')
         try:
-            if self.get_binary_to_pids_dict([self.config.server_executable]):
+            server_proc = self.get_server_proc()
+            server_descendants = set()
+            if server_proc is None:
+                l.warning('Server pidfile missing or stale. No iRODS server running?')
+            else:
                 try:
-                    self.irods_grid_shutdown(timeout=timeout)
+                    self.irods_graceful_shutdown(server_proc, server_descendants, timeout=timeout)
                 except Exception as e:
                     l.error('Error encountered in graceful shutdown.')
                     l.debug('Exception:', exc_info=True)
-            else:
-                    l.warning('No iRODS servers running.')
 
-            # kill servers first to stop spawning of other processes
-            server_pids_dict = self.get_binary_to_pids_dict([self.config.server_executable])
-            if server_pids_dict:
-                l.warning('iRODS server processes remain after "irods-grid shutdown".')
-                l.warning(format_binary_to_pids_dict(server_pids_dict))
+            # deal with lingering processes
+            binary_to_procs_dict = self.get_binary_to_procs_dict(server_proc, server_descendants)
+            if binary_to_procs_dict:
+                l.warning('iRODS server processes remain after attempted graceful shutdown.')
+                l.warning(format_binary_to_procs_dict(binary_to_procs_dict))
                 l.warning('Killing forcefully...')
-                for pid in server_pids_dict[self.config.server_executable]:
-                    l.warning('Killing %s, pid %s', self.config.server_executable, pid)
-                    try:
-                        lib.kill_pid(pid)
-                    except (psutil.NoSuchProcess, psutil.AccessDenied):
-                        pass
-                    delete_cache_files_by_pid(pid)
-
-            binary_to_pids_dict = self.get_binary_to_pids_dict()
-            if binary_to_pids_dict:
-                l.warning('iRODS child processes remain after "irods-grid shutdown".')
-                l.warning(format_binary_to_pids_dict(binary_to_pids_dict))
-                l.warning('Killing forcefully...')
-                for binary, pids in binary_to_pids_dict.items():
-                    for pid in pids:
-                        l.warning('Killing %s, pid %s', binary, pid)
+                for binary, procs in binary_to_procs_dict.items():
+                    for proc in procs:
+                        l.warning('Killing %s, pid %s', binary, proc.pid)
                         try:
-                            lib.kill_pid(pid)
+                            proc.kill()
                         except psutil.NoSuchProcess:
                             pass
-                        delete_cache_files_by_pid(pid)
+                        delete_cache_files_by_pid(proc.pid)
 
             delete_s3_shmem()
 
@@ -268,31 +262,84 @@ class IrodsController(object):
         l = logging.getLogger(__name__)
         l.debug('Calling status on IrodsController')
         self.config.clear_cache()
-        binary_to_pids_dict = self.get_binary_to_pids_dict()
-        if not binary_to_pids_dict:
+        server_proc = self.get_server_proc()
+        if server_proc is None:
             l.info('No iRODS servers running.')
         else:
-            l.info(format_binary_to_pids_dict(binary_to_pids_dict))
-        return binary_to_pids_dict
+            l.info(format_binary_to_procs_dict(self.get_binary_to_procs_dict(server_proc)))
 
-    def get_binary_to_pids_dict(self, binaries=None):
+    def get_binary_to_procs_dict(self, server_proc, server_descendants=None, binaries=None):
+        if server_descendants is None and server_proc is not None and server_proc.is_running():
+            try:
+                server_descendants = server_proc.children(recursive=True)
+            except psutil.NoSuchProcess:
+                return None
+        if server_descendants is None:
+            server_descendants = []
+        server_descendants = sorted(server_descendants, key=lambda _p: _p.pid)
         if binaries is None:
-            binaries = [
-                self.config.server_executable,
-                self.config.rule_engine_executable]
-        d = {}
+            binaries = self.server_binaries
+        d = OrderedDict()
         for b in binaries:
-            pids = lib.get_pids_executing_binary_file(b)
-            if pids:
-                d[b] = pids
+            procs = list(filter(lambda _p: binary_matches(b, _p), server_descendants))
+            if server_proc is not None and binary_matches(b, server_proc):
+                procs.insert(0, server_proc)
+            if procs:
+                d[b] = procs
         return d
 
-def format_binary_to_pids_dict(d):
+def binary_matches(binary_path, proc):
+    if proc.is_running():
+        try:
+            if proc.exe():
+                return os.path.samefile(binary_path, proc.exe())
+            else:
+                return os.path.basename(binary_path) == proc.name()
+        except psutil.NoSuchProcess:
+            return False
+
+def capture_process_tree(server_proc, server_descendants, candidate_binaries=None):
+    # define func to filter to candidate binaries
+    if candidate_binaries:
+        def should_return_proc(_p):
+            for b in candidate_binaries:
+                if binary_matches(b, _p):
+                    return True
+            return False
+    else:
+        def should_return_proc(_p):
+            return True
+
+    if server_proc.is_running():
+        try:
+            cur_descendants = filter(should_return_proc, server_proc.children(recursive=True))
+            orphaned_descendants = server_descendants.difference(cur_descendants)
+            server_descendants.update(cur_descendants)
+        except (psutil.NoSuchProcess):
+            orphaned_descendants = server_descendants.copy()
+    else:
+        # if server isn't running any more, all previously known descendants are orphaned
+        orphaned_descendants = server_descendants.copy()
+
+    # get new descendants of orphans
+    for orphaned_descendant in orphaned_descendants:
+        if orphaned_descendant.is_running():
+            try:
+                server_descendants.update(filter(should_return_proc, orphaned_descendant.children(recursive=True)))
+            except (psutil.NoSuchProcess):
+                server_descendants.discard(orphaned_descendant)
+        else:
+            # remove descendants that are no longer running
+            server_descendants.discard(orphaned_descendant)
+
+    return server_proc.is_running() or server_descendants
+
+def format_binary_to_procs_dict(proc_dict):
     text_list = []
-    for binary, pids in d.items():
+    for binary, procs in proc_dict.items():
         text_list.append('{0} :\n{1}'.format(
             os.path.basename(binary),
-            lib.indent(*['Process {0}'.format(pid) for pid in pids])))
+            lib.indent(*['Process {0}'.format(proc.pid) for proc in procs])))
     return '\n'.join(text_list)
 
 def delete_cache_files_by_pid(pid):

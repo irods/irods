@@ -58,44 +58,6 @@ def get_server_pid():
 
     return -1
 
-def is_descendant_of_pid(_process, _server_pid, _server_ppid):
-    ppid = _process.ppid()
-
-    while True:
-        if ppid == _server_pid:
-            return True
-
-        if ppid == _server_ppid or ppid == 1:
-            break
-
-        ppid = psutil.Process(ppid).ppid()
-
-    return False
-
-def get_pids_executing_binary_file(binary_file_path):
-    def get_exe(process):
-        if psutil.version_info >= (2, 0):
-            return process.exe()
-        return process.exe
-
-    server_pid = get_server_pid()
-    pids = []
-
-    if server_pid == -1:
-        return pids
-
-    server_ppid = psutil.Process(server_pid).ppid()
-    abspath = os.path.abspath(binary_file_path)
-
-    for p in psutil.process_iter():
-        try:
-            if abspath == get_exe(p) and is_descendant_of_pid(p, server_pid, server_ppid):
-                pids.append(p.pid)
-        except (psutil.NoSuchProcess, psutil.AccessDenied):
-            pass
-
-    return pids
-
 def kill_pid(pid):
     p = psutil.Process(pid)
     p.suspend()
