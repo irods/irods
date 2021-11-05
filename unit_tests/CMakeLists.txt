@@ -37,6 +37,7 @@ set(TEST_INCLUDE_LIST test_config/irods_atomic_apply_acl_operations
                       test_config/irods_data_object_finalize
                       test_config/irods_data_object_modify_info
                       test_config/irods_data_object_proxy
+                      test_config/irods_delay_hints_parser
                       test_config/irods_dns_cache
                       test_config/irods_dstream
                       test_config/irods_filesystem
@@ -54,7 +55,6 @@ set(TEST_INCLUDE_LIST test_config/irods_atomic_apply_acl_operations
                       test_config/irods_parallel_transfer_engine
                       test_config/irods_query_builder
                       test_config/irods_rc_data_obj
-                      test_config/irods_rcMisc_functions
                       test_config/irods_re_serialization
                       test_config/irods_replica
                       test_config/irods_replica_access_table

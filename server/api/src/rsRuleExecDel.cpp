@@ -61,7 +61,7 @@ namespace
                     return UNMATCHED_KEY_OR_INDEX;
                 }
 
-                if (strncmp(ruleUserName->value, rsComm->clientUser.userName, MAX_NAME_LEN)!= 0) {
+                if (strncmp(ruleUserName->value, rsComm->clientUser.userName, MAX_NAME_LEN) != 0) {
                     return USER_ACCESS_DENIED;
                 }
             }

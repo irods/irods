@@ -1,7 +1,7 @@
-set(IRODS_TEST_TARGET irods_rcMisc_functions)
+set(IRODS_TEST_TARGET irods_delay_hints_parser)
 
 set(IRODS_TEST_SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
-                            ${CMAKE_CURRENT_SOURCE_DIR}/src/test_rcMisc_functions.cpp)
+                            ${CMAKE_CURRENT_SOURCE_DIR}/src/test_delay_hints_parser.cpp)
 
 set(IRODS_TEST_INCLUDE_PATH ${CMAKE_BINARY_DIR}/lib/core/include
                             ${CMAKE_SOURCE_DIR}/lib/core/include
