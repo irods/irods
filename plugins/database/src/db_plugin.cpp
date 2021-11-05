@@ -13838,7 +13838,7 @@ namespace
         return SUCCESS();
     } // execute_sql
 
-    irods::error process_ticket_operation_as_admin(irods::plugin_context& _ctx,
+    irods::error execute_ticket_operation_as_admin(irods::plugin_context& _ctx,
                                                    const char* _op_name,
                                                    const char* _ticket_string,
                                                    const char* _arg3,
@@ -13898,21 +13898,24 @@ namespace
             cllBindVarCount = 1;
             ec = cmlExecuteNoAnswerSql("delete from R_TICKET_ALLOWED_HOSTS where ticket_id = ?", &icss);
             if (0 != ec && CAT_SUCCESS_BUT_WITH_NO_INFO != ec) {
-                logger::database::warn("Failed to delete ticket information [error_code={}, table=R_TICKET_ALLOWED_HOSTS]", ec);
+                logger::database::warn("Failed to delete ticket information [error_code={}, ticket={}, table=R_TICKET_ALLOWED_HOSTS]",
+                                       ec, ticket_id_string);
             }
 
             cllBindVars[0] = ticket_id_string.c_str();
             cllBindVarCount = 1;
             ec = cmlExecuteNoAnswerSql("delete from R_TICKET_ALLOWED_USERS where ticket_id = ?", &icss);
             if (0 != ec && CAT_SUCCESS_BUT_WITH_NO_INFO != ec) {
-                logger::database::warn("Failed to delete ticket information [error_code={}, table=R_TICKET_ALLOWED_USERS]", ec);
+                logger::database::warn("Failed to delete ticket information [error_code={}, ticket={}, table=R_TICKET_ALLOWED_USERS]",
+                                       ec, ticket_id_string);
             }
 
             cllBindVars[0] = ticket_id_string.c_str();
             cllBindVarCount = 1;
             ec = cmlExecuteNoAnswerSql("delete from R_TICKET_ALLOWED_GROUPS where ticket_id = ?", &icss);
             if (0 != ec && CAT_SUCCESS_BUT_WITH_NO_INFO != ec) {
-                logger::database::warn("Failed to delete ticket information [error_code={}, table=R_TICKET_ALLOWED_GROUPS]", ec);
+                logger::database::warn("Failed to delete ticket information [error_code={}, ticket={}, table=R_TICKET_ALLOWED_GROUPS]",
+                                       ec, ticket_id_string);
             }
 
             ec = cmlExecuteNoAnswerSql("commit", &icss);
@@ -14080,7 +14083,7 @@ namespace
         } // modify ticket operation
 
         return ERROR(CAT_INVALID_ARGUMENT, "invalid op name");
-    } // process_ticket_operation_as_admin
+    } // execute_ticket_operation_as_admin
 } // anonymous namespace
 
 irods::error db_mod_ticket_op(
@@ -14159,7 +14162,7 @@ irods::error db_mod_ticket_op(
         const auto pred = [&_op_name](const std::string_view _s) { return _s == _op_name; };
 
         if (std::any_of(std::begin(ops), std::end(ops), pred)) {
-            return process_ticket_operation_as_admin(_ctx, _op_name, _ticket_string, _arg3, _arg4, _arg5, _cond_input);
+            return execute_ticket_operation_as_admin(_ctx, _op_name, _ticket_string, _arg3, _arg4, _arg5, _cond_input);
         }
 
         // The admin keyword is ignored for other operations.
