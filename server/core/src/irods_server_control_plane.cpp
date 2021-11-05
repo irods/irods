@@ -35,6 +35,13 @@ using logger = irods::experimental::log;
 
 namespace irods
 {
+    static int ctrl_plane_signal_ = 0;
+
+    static void ctrl_plane_handle_shutdown_signal(int sig)
+    {
+        ctrl_plane_signal_ = SIGTERM;
+    }
+
     static void ctrl_plane_sleep(int _s, int _ms)
     {
         useconds_t us = (_s * 1000000) + (_ms * 1000);
@@ -559,6 +566,10 @@ namespace irods
 
     void server_control_executor::operator()()
     {
+        signal( SIGINT, ctrl_plane_handle_shutdown_signal );
+        signal( SIGHUP, ctrl_plane_handle_shutdown_signal );
+        signal( SIGTERM, ctrl_plane_handle_shutdown_signal );
+
         int port, num_hash_rounds;
         boost::optional<std::string> encryption_algorithm;
         buffer_crypt::array_t shared_secret;
@@ -601,52 +612,97 @@ namespace irods
 
                 server_state& s = server_state::instance();
                 while (server_state::STOPPED != s() && server_state::EXITED != s()) {
-                    // Wait for a request.
-                    zmq::message_t req;
-                    zmq_skt.recv( &req );
-                    if ( 0 == req.size() ) {
-                        continue;
-                    }
-
-                    // process the message
                     std::string output;
-                    std::string rep_msg( SERVER_CONTROL_SUCCESS );
-                    error ret = process_operation( req, output );
 
-                    rep_msg = output;
-                    if ( !ret.ok() ) {
-                        log( PASS( ret ) );
+                    switch (ctrl_plane_signal_ ) {
+                        case 0: {
+                            // Wait for a request.
+                            zmq::message_t req;
+                            zmq_skt.recv( &req );
+                            if ( 0 == req.size() ) {
+                                continue;
+                            }
+
+                            // process the message
+                            std::string rep_msg( SERVER_CONTROL_SUCCESS );
+                            error ret = process_operation( req, output );
+
+                            rep_msg = output;
+                            if ( !ret.ok() ) {
+                                log( PASS( ret ) );
+                            }
+
+                            if ( !output.empty() ) {
+                                rep_msg = output;
+                            }
+
+                            buffer_crypt crypt(
+                                    shared_secret.size(), // key size
+                                    0,                    // salt size ( we dont send a salt )
+                                    num_hash_rounds,      // num hash rounds
+                                    encryption_algorithm->c_str() );
+
+                            buffer_crypt::array_t iv;
+                            buffer_crypt::array_t data_to_send;
+                            buffer_crypt::array_t data_to_encrypt(
+                                    rep_msg.begin(),
+                                    rep_msg.end() );
+                            ret = crypt.encrypt(
+                                    shared_secret,
+                                    iv,
+                                    data_to_encrypt,
+                                    data_to_send );
+                            if ( !ret.ok() ) {
+                                irods::log( PASS( ret ) );
+                            }
+
+                            zmq::message_t rep( data_to_send.size() );
+                            std::memcpy(rep.data(), data_to_send.data(), data_to_send.size());
+
+                            zmq_skt.send( rep );
+
+                            break;
+                        }
+                        case SIGINT:
+                        case SIGTERM:
+                        case SIGHUP: {
+#ifdef __GLIBC__
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 32)
+                            rodsLog(
+                                    LOG_NOTICE,
+                                    ">>> control plane :: received signal SIG%s, performing shutdown operation\n",
+                                    sigabbrev_np(ctrl_plane_signal_));
+#else
+                            rodsLog(
+                                    LOG_NOTICE,
+                                    ">>> control plane :: received signal %s, performing shutdown operation\n",
+                                    sys_siglist[ctrl_plane_signal_]);
+#endif
+#else
+                            rodsLog(
+                                    LOG_NOTICE,
+                                    ">>> control plane :: received signal (%s), performing shutdown operation\n",
+                                    strsignal(ctrl_plane_signal_));
+#endif
+                            host_list_t cmd_hosts;
+                            cmd_hosts.push_back(local_server_hostname_);
+                            error ret = perform_operation(
+                                    SERVER_CONTROL_SHUTDOWN,
+                                    SERVER_CONTROL_HOSTS_OPT,
+                                    "",
+                                    0,
+                                    cmd_hosts,
+                                    output );
+                            if ( !ret.ok() ) {
+                                log( PASS( ret ) );
+                            }
+
+                            break;
+                        }
+
                     }
 
-                    if ( !output.empty() ) {
-                        rep_msg = output;
-                    }
-
-                    buffer_crypt crypt(
-                            shared_secret.size(), // key size
-                            0,                    // salt size ( we dont send a salt )
-                            num_hash_rounds,      // num hash rounds
-                            encryption_algorithm->c_str() );
-
-                    buffer_crypt::array_t iv;
-                    buffer_crypt::array_t data_to_send;
-                    buffer_crypt::array_t data_to_encrypt(
-                            rep_msg.begin(),
-                            rep_msg.end() );
-                    ret = crypt.encrypt(
-                            shared_secret,
-                            iv,
-                            data_to_encrypt,
-                            data_to_send );
-                    if ( !ret.ok() ) {
-                        irods::log( PASS( ret ) );
-                    }
-
-                    zmq::message_t rep( data_to_send.size() );
-                    std::memcpy(rep.data(), data_to_send.data(), data_to_send.size());
-
-                    zmq_skt.send( rep );
-                }
+                } // while
                 // exited control loop normally, we're done
                 break;
             }
