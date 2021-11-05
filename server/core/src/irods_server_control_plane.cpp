@@ -871,11 +871,50 @@ namespace irods
 
     error server_control_executor::process_operation(const zmq::message_t& _msg, std::string& _output)
     {
+        control_plane_command cmd;
+
+        irods::error ret = decrypt_incoming_command(_msg, cmd);
+        if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            return PASS( ret );
+        }
+
+        std::string cmd_name, cmd_option, wait_option;
+        host_list_t cmd_hosts;
+        size_t wait_seconds = 0;
+        ret = extract_command_parameters(
+                  cmd,
+                  cmd_name,
+                  cmd_option,
+                  wait_option,
+                  wait_seconds,
+                  cmd_hosts );
+        if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            return PASS( ret );
+        }
+
+        ret = perform_operation(
+                    cmd_name,
+                    cmd_option,
+                    wait_option,
+                    wait_seconds,
+                    cmd_hosts,
+                    _output );
+        if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            return PASS( ret );
+        }
+
+        return SUCCESS();
+    } // process_operation
+
+    error server_control_executor::decrypt_incoming_command(
+        const zmq::message_t&         _msg,
+        irods::control_plane_command& _cmd ) {
         if ( _msg.size() <= 0 ) {
             return SUCCESS();
         }
-
-        error final_ret = SUCCESS();
 
         int num_hash_rounds;
         boost::optional<std::string> encryption_algorithm;
@@ -921,28 +960,25 @@ namespace irods
         avro::DecoderPtr dec = avro::binaryDecoder();
         dec->init( *in );
 
-        control_plane_command cmd;
-        avro::decode( *dec, cmd );
+        avro::decode( *dec, _cmd );
 
-        std::string cmd_name, cmd_option, wait_option;
-        host_list_t cmd_hosts;
-        size_t wait_seconds = 0;
-        ret = extract_command_parameters(
-                  cmd,
-                  cmd_name,
-                  cmd_option,
-                  wait_option,
-                  wait_seconds,
-                  cmd_hosts );
-        if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
-            return PASS( ret );
-        }
+        return SUCCESS();
+    } // decrypt_incoming_command
+
+    error server_control_executor::perform_operation(
+            const std::string& _cmd_name,
+            const std::string& _cmd_option,
+            const std::string& _wait_option,
+            const size_t&      _wait_seconds,
+            const host_list_t& _cmd_hosts,
+            std::string&       _output ) {
+        error final_ret = SUCCESS();
+        host_list_t cmd_hosts = _cmd_hosts;
 
         // add safeguards - if server is paused only allow a resume call
         server_state& s = server_state::instance();
         std::string the_server_state = s();
-        if ( server_state::PAUSED == the_server_state && SERVER_CONTROL_RESUME != cmd_name ) {
+        if ( server_state::PAUSED == the_server_state && SERVER_CONTROL_RESUME != _cmd_name ) {
             _output = SERVER_PAUSED_ERROR;
             return SUCCESS();
         }
@@ -952,11 +988,11 @@ namespace irods
         // the provider needs to be notified first in certain
         // cases such as RESUME where it is needed to capture
         // the host list for validation, etc
-        ret = notify_provider_and_local_servers_preop(
-                  cmd_name,
-                  cmd_option,
-                  wait_option,
-                  wait_seconds,
+        irods::error ret = notify_provider_and_local_servers_preop(
+                  _cmd_name,
+                  _cmd_option,
+                  _wait_option,
+                  _wait_seconds,
                   cmd_hosts,
                   _output );
         if ( !ret.ok() ) {
@@ -971,7 +1007,7 @@ namespace irods
             irods::log( final_ret );
         }
 
-        if ( SERVER_CONTROL_ALL_OPT == cmd_option ) {
+        if ( SERVER_CONTROL_ALL_OPT == _cmd_option ) {
             cmd_hosts = irods_hosts;
         }
 
@@ -983,9 +1019,9 @@ namespace irods
         }
 
         ret = process_host_list(
-                  cmd_name,
-                  wait_option,
-                  wait_seconds,
+                  _cmd_name,
+                  _wait_option,
+                  _wait_seconds,
                   valid_hosts,
                   _output );
         if ( !ret.ok() ) {
@@ -997,10 +1033,10 @@ namespace irods
         // cases such as SHUTDOWN or PAUSE  where it is
         // needed to capture the host list for validation
         ret = notify_provider_and_local_servers_postop(
-                  cmd_name,
-                  cmd_option,
-                  wait_option,
-                  wait_seconds,
+                  _cmd_name,
+                  _cmd_option,
+                  _wait_option,
+                  _wait_seconds,
                   cmd_hosts, // dont want sanitized
                   _output );
         if ( !ret.ok() ) {
@@ -1011,4 +1047,3 @@ namespace irods
         return final_ret;
     } // process_operation
 } // namespace irods
-
