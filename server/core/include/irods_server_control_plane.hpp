@@ -55,6 +55,10 @@ namespace irods
             const zmq::message_t&, // incoming msg
             std::string& );        // outgoing text
 
+        error decrypt_incoming_command(
+            const zmq::message_t&,           // incoming msg
+            irods::control_plane_command& ); // incoming command
+
         error extract_command_parameters(
             const irods::control_plane_command&, // incoming command
             std::string&,                        // command name
@@ -62,6 +66,14 @@ namespace irods
             std::string&,                        // wait option
             size_t&,                             // wait time in seconds
             host_list_t& );                      // hostnames
+
+        error perform_operation(
+            const std::string&, // command
+            const std::string&, // command option
+            const std::string&, // wait option
+            const size_t&,      // wait seconds
+            const host_list_t&, // irods hostnames
+            std::string& );     // output
 
         error process_host_list(
             const std::string&, // command
