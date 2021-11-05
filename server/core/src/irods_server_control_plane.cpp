@@ -26,6 +26,7 @@
 
 #include <unistd.h>
 
+#include <csignal>
 #include <cstdio>
 #include <ctime>
 #include <algorithm>
@@ -192,13 +193,15 @@ namespace irods
             return irods::error(e);
         }
 
-        std::vector<std::string> args{std::to_string(svr_pid)};
+        // Previously, we ran kill_pid.py here.
+        // This would send three signals to the process, one right after the other:
+        // SIGSTOP (suspend), SIGTERM (terminate), then SIGKILL (kill)
+        // SIGSTOP is omitted here as it would prevent any signal handlers from running.
+        // SIGKILL does as well, but we currently lack handling for cases in which
+        // a SIGTERM signal handler fails to end the process.
 
-        std::string output;
-        irods::error ret = get_script_output_single_line("python2", "kill_pid.py", args, output);
-        if (!ret.ok()) {
-            return PASS(ret);
-        }
+        kill( svr_pid, SIGTERM );
+        kill( svr_pid, SIGKILL );
 
         return SUCCESS();
     } // kill_server
