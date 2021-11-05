@@ -73,7 +73,7 @@ def setup_server(irods_config, json_configuration_file=None, test_mode=False):
     else:
         json_configuration_dict = None
 
-    if IrodsController().get_binary_to_pids_dict():
+    if IrodsController(irods_config).get_server_proc():
         l.info(irods.lib.get_header('Stopping iRODS...'))
         IrodsController(irods_config).stop()
 
