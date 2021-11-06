@@ -10,6 +10,10 @@ namespace irods
     const std::string CFG_PAM_PASSWORD_MIN_TIME_KW( "password_min_time" );
     const std::string CFG_PAM_PASSWORD_MAX_TIME_KW( "password_max_time" );
 
+    const std::string CFG_DB_HOST_KW("db_host");
+    const std::string CFG_DB_PORT_KW("db_port");
+    const std::string CFG_DB_NAME_KW("db_name");
+    const std::string CFG_DB_ODBC_DRIVER_KW("db_odbc_driver");
     const std::string CFG_DB_USERNAME_KW( "db_username" );
     const std::string CFG_DB_PASSWORD_KW( "db_password" );
     const std::string CFG_DB_SSLMODE_KW( "db_sslmode" );
