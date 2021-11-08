@@ -988,8 +988,7 @@ target_include_directories(
 set_property(TARGET irods_server PROPERTY VERSION ${IRODS_VERSION})
 set_property(TARGET irods_server PROPERTY SOVERSION ${IRODS_VERSION})
 target_compile_definitions(irods_server PRIVATE ENABLE_RE RODS_CLERVER ${IRODS_COMPILE_DEFINITIONS})
-# TODO: remove -Wno-ignored-qualifiers on resolution of https://github.com/nanodbc/nanodbc/pull/234
-target_compile_options(irods_server PRIVATE -Wno-write-strings -Wno-ignored-qualifiers)
+target_compile_options(irods_server PRIVATE -Wno-write-strings)
 
 
 set(
