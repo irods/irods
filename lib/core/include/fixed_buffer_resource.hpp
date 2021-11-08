@@ -4,8 +4,6 @@
 /// \file
 
 #include <boost/container/pmr/memory_resource.hpp>
-#include <boost/container/pmr/vector.hpp>
-#include <boost/container/pmr/string.hpp>
 
 #include <fmt/format.h>
 
@@ -160,7 +158,7 @@ namespace irods::experimental::pmr
         } // do_is_equal
 
     private:
-        // Metadata information associated with a single data segment within the
+        // Metadata associated with a single data segment within the
         // underlying memory buffer. All data segments will be preceded by a header.
         struct header
         {
@@ -170,7 +168,6 @@ namespace irods::experimental::pmr
         }; // struct header
 
         // The size of the header just before the data segment.
-        // represents the "used" flag in the metadata associated with the data segment.
         static constexpr std::size_t management_block_size = sizeof(header) + sizeof(bool);
 
         auto address_of_used_flag(header* _h) const noexcept -> bool*
@@ -214,11 +211,10 @@ namespace irods::experimental::pmr
                 // is needed before this can be addressed.
                 //
 
-                void* vdata = data;
-                auto* aligned_data = std::align(_alignment, _bytes, vdata, _h->size);
+                auto* aligned_data = std::align(_alignment, _bytes, data, _h->size);
                 
                 if (!aligned_data) {
-                    continue;
+                    return nullptr;
                 }
 #endif
 
