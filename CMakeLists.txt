@@ -348,7 +348,7 @@ set(ICOMMANDS_USERSPACE_TARBALL_ROOT_DIRNAME
 set(ICOMMANDS_USERSPACE_TARBALL_PATH "${CMAKE_CURRENT_BINARY_DIR}/${ICOMMANDS_USERSPACE_TARBALL_FILENAME}")
 
 # fetch the parts of irods-runtime currently exposed
-set(irods_runtime_components "irods_client;irods_common;irods_plugin_dependencies;irods_server")
+set(irods_runtime_components "irods_client;irods_common;irods_plugin_dependencies")
 foreach(irods_runtime_component ${irods_runtime_components})
   unset(iimported_location)
   get_target_property(iimported_location ${irods_runtime_component} LOCATION)
