@@ -16,6 +16,7 @@ from .resource_suite import ResourceBase
 from ..controller import IrodsController
 from ..configuration import IrodsConfig
 from .. import lib
+from .. import paths
 from . import session
 from ..test.command import assert_command
 
@@ -27,6 +28,7 @@ except ImportError:
 SessionsMixin = session.make_sessions_mixin([('otherrods','pass')], [])
 
 class TestControlPlane(SessionsMixin, unittest.TestCase):
+
     def test_pause_and_resume(self):
         with session.make_session_for_existing_admin() as admin_session:
             admin_session.environment_file_contents = IrodsConfig().client_environment
@@ -82,6 +84,91 @@ class TestControlPlane(SessionsMixin, unittest.TestCase):
             finally:
                 IrodsController().start()
 
+    def test_shutdown_local_server_using_hostname_alias_defined_in_hosts_config__issue_5700(self):
+        try:
+            with lib.file_backed_up(paths.hosts_config_path()):
+                hostname_alias = 'hostname-alias.issue-5700'
+
+                with open(paths.hosts_config_path(), 'r+') as f:
+                    hosts_config = json.load(f)
+                    hosts_config['host_entries'] = [{
+                        'address_type': 'local',
+                        'addresses': [
+                            {'address': lib.get_hostname()},
+                            {'address': hostname_alias}
+                        ]
+                    }]
+
+                    f.seek(0)
+                    f.truncate(0)
+                    f.write(json.dumps(hosts_config, indent=4))
+
+                # Restart the server so that the original process (parent of the agent factory)
+                # sees the updates to the hosts_config.json file.
+                IrodsController().restart()
+
+                with session.make_session_for_existing_admin() as admin_session:
+                    admin_session.environment_file_contents = IrodsConfig().client_environment
+                    initial_size_of_server_log = lib.get_file_size_by_path(IrodsConfig().server_parent_log_path)
+
+                    expected_output = [json.dumps({'hosts': [{'shutting down': lib.get_hostname()}]}, indent=4)]
+                    admin_session.assert_icommand(['irods-grid', 'shutdown', '--hosts', hostname_alias], 'STDOUT', expected_output)
+                    lib.delayAssert(
+                        lambda: lib.log_message_occurrences_equals_count(
+                            msg='iRODS Server is done',
+                            server_log_path=IrodsConfig().server_parent_log_path,
+                            start_index=initial_size_of_server_log))
+
+        finally:
+            # Restart the server so that the original process (parent of the agent factory)
+            # sees the restored hosts_config.json file.
+            IrodsController().restart()
+
+    def test_control_plane_uses_whole_string_matching_for_hostname_validation__issue_5700(self):
+        try:
+            with lib.file_backed_up(paths.hosts_config_path()):
+                hostname_alias = 'hostname-alias.issue-5700.' + lib.get_hostname()
+
+                with open(paths.hosts_config_path(), 'r+') as f:
+                    hosts_config = json.load(f)
+                    hosts_config['host_entries'] = [{
+                        'address_type': 'local',
+                        'addresses': [
+                            {'address': lib.get_hostname()},
+                            {'address': hostname_alias}
+                        ]
+                    }]
+
+                    f.seek(0)
+                    f.truncate(0)
+                    f.write(json.dumps(hosts_config, indent=4))
+
+                # Restart the server so that the original process (parent of the agent factory)
+                # sees the updates to the hosts_config.json file.
+                IrodsController().restart()
+
+                with session.make_session_for_existing_admin() as admin_session:
+                    admin_session.environment_file_contents = IrodsConfig().client_environment
+
+                    # Show that hostnames passed to the --hosts option must match a name
+                    # in hosts_config.json exactly. Hostnames containing dots and ending in
+                    # ".<server_hostname>" results in an error. See the following comment for
+                    # more information:
+                    # 
+                    #     https://github.com/irods/irods/issues/5700#issuecomment-963390725
+                    #
+                    invalid_hostname_alias = 'invalid.' + lib.get_hostname()
+                    expected_output = ['server responded with an error']
+                    admin_session.assert_icommand(['irods-grid', 'shutdown', '--hosts', invalid_hostname_alias], 'STDERR', expected_output)
+
+                    # Show that the server is still running.
+                    admin_session.assert_icommand(['irods-grid', 'status', '--hosts', hostname_alias], 'STDOUT_SINGLELINE', ['server_state_running'])
+
+        finally:
+            # Restart the server so that the original process (parent of the agent factory)
+            # sees the restored hosts_config.json file.
+            IrodsController().restart()
+
     def test_invalid_client_environment(self):
         env_backup = copy.deepcopy(self.admin_sessions[0].environment_file_contents)
 
@@ -126,7 +213,7 @@ class TestControlPlane(SessionsMixin, unittest.TestCase):
                 admin_session.assert_icommand('iadmin rmresc invalid_resc')
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, 'Skip for Topology Testing')
-    def test_icat_shutdown_with_no_resource(self):
+    def test_provider_shutdown_with_no_consumer(self):
         with session.make_session_for_existing_admin() as admin_session:
             admin_session.environment_file_contents = IrodsConfig().client_environment
             try:
