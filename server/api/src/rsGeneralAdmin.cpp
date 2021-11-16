@@ -677,7 +677,8 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             return irods::create_user(*rsComm,
                                       generalAdminInp->arg2 ? generalAdminInp->arg2 : "",
                                       generalAdminInp->arg3 ? generalAdminInp->arg3 : "",
-                                      generalAdminInp->arg5 ? generalAdminInp->arg5 : "");
+                                      generalAdminInp->arg5 ? generalAdminInp->arg5 : "",
+                                      generalAdminInp->arg4 ? generalAdminInp->arg4 : "");
         }
         if ( strcmp( generalAdminInp->arg1, "dir" ) == 0 ) {
             memset( ( char* )&collInfo, 0, sizeof( collInfo ) );
@@ -1034,7 +1035,8 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
     if ( strcmp( generalAdminInp->arg0, "rm" ) == 0 ) {
         if ( strcmp( generalAdminInp->arg1, "user" ) == 0 ) {
             return irods::remove_user(*rsComm,
-                                      generalAdminInp->arg2 ? generalAdminInp->arg2 : "");
+                                      generalAdminInp->arg2 ? generalAdminInp->arg2 : "",
+                                      generalAdminInp->arg3 ? generalAdminInp->arg3 : "");
         }
         if ( strcmp( generalAdminInp->arg1, "dir" ) == 0 ) {
             memset( ( char* )&collInfo, 0, sizeof( collInfo ) );
