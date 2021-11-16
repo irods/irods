@@ -9,6 +9,8 @@
 #include <boost/interprocess/sync/scoped_lock.hpp>
 #include <boost/interprocess/sync/sharable_lock.hpp>
 
+#include <fmt/format.h>
+
 #include <cstring>
 #include <utility>
 #include <algorithm>
@@ -89,7 +91,7 @@ namespace irods::experimental::net::hostname_cache
             return;
         }
 
-        g_segment_name = _shm_name.data();
+        g_segment_name = fmt::format("{}_{}_{}", _shm_name, getpid(), current_timestamp_in_seconds());
         g_segment_size = _shm_size;
         g_mutex_name = g_segment_name + "_mutex";
 

@@ -14,9 +14,12 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
+#include <fmt/format.h>
+
 #include <memory>
 #include <algorithm>
 #include <vector>
+#include <chrono>
 
 namespace irods::experimental::replica_access_table
 {
@@ -85,6 +88,15 @@ namespace irods::experimental::replica_access_table
 
             return uuid;
         } // generate_replica_token
+
+        auto current_timestamp_in_seconds() noexcept -> std::int64_t
+        {
+            using std::chrono::system_clock;
+            using std::chrono::seconds;
+            using std::chrono::duration_cast;
+
+            return duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
+        }
     } // anonymous namespace
 
     auto init(const std::string_view _shm_name, std::size_t _shm_size) -> void
@@ -93,7 +105,7 @@ namespace irods::experimental::replica_access_table
             return;
         }
 
-        g_segment_name = _shm_name;
+        g_segment_name = fmt::format("{}_{}_{}", _shm_name, getpid(), current_timestamp_in_seconds());
         g_segment_size = _shm_size;
         g_mutex_name = g_segment_name + "_mutex";
 
