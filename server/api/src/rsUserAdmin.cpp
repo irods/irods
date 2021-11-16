@@ -143,13 +143,15 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
     if ( strcmp( userAdminInp->arg0, "mkuser" ) == 0 ) {
         return irods::create_user(*rsComm,
                                   userAdminInp->arg1 ? userAdminInp->arg1 : "",
-                                  "rodsuser", "");
+                                  "rodsuser", "",
+                                  userAdminInp->arg3 ? userAdminInp->arg3 : "");
     }
     if ( strcmp( userAdminInp->arg0, "mkgroup" ) == 0 ) {
         return irods::create_user(*rsComm,
                                   userAdminInp->arg1 ? userAdminInp->arg1 : "",
                                   userAdminInp->arg2 ? userAdminInp->arg2 : "",
-                                  "");
+                                  "",
+                                  userAdminInp->arg3 ? userAdminInp->arg3 : "");
     }
 
     // =-=-=-=-=-=-=-
