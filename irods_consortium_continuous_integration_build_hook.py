@@ -103,8 +103,8 @@ def build_irods(debug_build):
 def install_irods_dev_and_runtime(irods_build_dir):
     irods_python_ci_utilities.install_os_packages_from_files(
         itertools.chain(
-            glob.glob(os.path.join(irods_build_dir, 'irods-dev*.{0}'.format(irods_python_ci_utilities.get_package_suffix()))),
-            glob.glob(os.path.join(irods_build_dir, 'irods-runtime*.{0}'.format(irods_python_ci_utilities.get_package_suffix())))))
+            glob.glob(os.path.join(irods_build_dir, 'irods-runtime*.{0}'.format(irods_python_ci_utilities.get_package_suffix()))),
+            glob.glob(os.path.join(irods_build_dir, 'irods-dev*.{0}'.format(irods_python_ci_utilities.get_package_suffix())))))
 
 def build_icommands(icommands_git_repository, icommands_git_commitish, debug_build):
     icommands_source_dir = irods_python_ci_utilities.git_clone(icommands_git_repository, icommands_git_commitish)
