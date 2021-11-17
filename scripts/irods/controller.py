@@ -55,6 +55,23 @@ class IrodsController(object):
                 }
             })
 
+    def get_server_proc(self):
+        server_pid = lib.get_server_pid()
+
+        # lib.get_server_pid() does not have access to self.config, so cannot
+        # check the pid from the pidfile against self.config.server_executable,
+        # only that a process with that pid exists. The possibility remains
+        # that the pid may have been recycled.
+        if server_pid >= 0:
+            try:
+                server_proc = psutil.Process(server_pid)
+                if os.path.samefile(self.config.server_executable, server_proc.exe()):
+                    return server_proc
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                return None
+
+        return None
+
     def start(self, write_to_stdout=False, test_mode=False):
         l = logging.getLogger(__name__)
         l.debug('Calling start on IrodsController')
