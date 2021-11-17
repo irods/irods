@@ -303,7 +303,7 @@ doCommand( char *cmdToken[] ) {
 
     if ( strcmp( cmdToken[0], "mkgroup" ) == 0 ) {
         userAdmin( "mkgroup", cmdToken[1], "rodsgroup",
-                   myZone, "", "", "", "" );
+                   "", "", "", "", "" );
 
         return 0;
     }

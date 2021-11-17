@@ -1380,7 +1380,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
 
     if ( strcmp( cmdToken[0], "mkgroup" ) == 0 ) {
         generalAdmin( 0, "add", "user", cmdToken[1], "rodsgroup",
-                      myEnv.rodsZone, "", "", "", "", "" );
+                      "", "", "", "", "", "" );
         return 0;
     }
     if ( strcmp( cmdToken[0], "rmgroup" ) == 0 ) {
