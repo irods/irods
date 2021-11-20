@@ -32,8 +32,7 @@ namespace irods
             if (_pool_size_in_bytes > 0) {
                 buffer_.resize(_pool_size_in_bytes);
 
-                const std::size_t initial_freelist_size = 250; 
-                upstream_allocator_.reset(new ipmr::fixed_buffer_resource(buffer_.data(), buffer_.size(), initial_freelist_size));
+                upstream_allocator_.reset(new ipmr::fixed_buffer_resource(buffer_.data(), buffer_.size()));
                 allocator_.reset(new bpmr::unsynchronized_pool_resource{upstream_allocator_.get()});
 
                 queued_rules_.reset(new bpmr::vector<boost::container::pmr::string>{allocator_.get()});
