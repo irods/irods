@@ -1,7 +1,13 @@
 #ifndef IRODS_DELAY_QUEUE_HPP
 #define IRODS_DELAY_QUEUE_HPP
 
-#include "fixed_buffer_resource.hpp"
+#include "boost/version.hpp"
+
+#if BOOST_VERSION < 107200
+    #include "capped_memory_resource.hpp"
+#else // BOOST_VERSION < 107200
+    #include "fixed_buffer_resource.hpp"
+#endif // BOOST_VERSION < 107200
 
 #include "boost/container/pmr/unsynchronized_pool_resource.hpp"
 #include "boost/container/pmr/global_resource.hpp"
@@ -21,7 +27,9 @@ namespace irods
     public:
         explicit delay_queue(std::int64_t _pool_size_in_bytes)
             : rules_mutex_{}
+#if BOOST_VERSION >= 107200
             , buffer_{}
+#endif // BOOST_VERSION >= 107200
             , upstream_allocator_{}
             , allocator_{}
             , queued_rules_{}
@@ -30,9 +38,12 @@ namespace irods
             namespace ipmr = experimental::pmr;
 
             if (_pool_size_in_bytes > 0) {
+#if BOOST_VERSION < 107200
+                upstream_allocator_.reset(new ipmr::capped_memory_resource(_pool_size_in_bytes));
+#else // BOOST_VERSION < 107200
                 buffer_.resize(_pool_size_in_bytes);
-
                 upstream_allocator_.reset(new ipmr::fixed_buffer_resource(buffer_.data(), buffer_.size()));
+#endif // BOOST_VERSION < 107200
                 allocator_.reset(new bpmr::unsynchronized_pool_resource{upstream_allocator_.get()});
 
                 queued_rules_.reset(new bpmr::vector<boost::container::pmr::string>{allocator_.get()});
@@ -71,7 +82,9 @@ namespace irods
 
     private:
         std::mutex rules_mutex_;
+#if BOOST_VERSION >= 107200
         std::vector<std::byte> buffer_;
+#endif // BOOST_VERSION >= 107200
         std::unique_ptr<boost::container::pmr::memory_resource> upstream_allocator_;
         std::unique_ptr<boost::container::pmr::memory_resource> allocator_;
         std::unique_ptr<boost::container::pmr::vector<boost::container::pmr::string>> queued_rules_;
