@@ -23,6 +23,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/apiHandler.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/base64.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/bunUtil.h
+  ${CMAKE_SOURCE_DIR}/lib/core/include/capped_memory_resource.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/chksumUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/client_connection.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/connection_pool.hpp
