@@ -195,7 +195,7 @@ namespace irods
         std::vector<std::string> args{std::to_string(svr_pid)};
 
         std::string output;
-        irods::error ret = get_script_output_single_line("python", "kill_pid.py", args, output);
+        irods::error ret = get_script_output_single_line("python2", "kill_pid.py", args, output);
         if (!ret.ok()) {
             return PASS(ret);
         }
@@ -332,7 +332,7 @@ namespace irods
         std::vector<std::string> args{std::to_string(_pid)};
 
         std::string pid_age;
-        irods::error ret = get_script_output_single_line("python", "pid_age.py", args, pid_age);
+        irods::error ret = get_script_output_single_line("python2", "pid_age.py", args, pid_age);
         if (!ret.ok()) {
             irods::log(PASS(ret));
             return 0;

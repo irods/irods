@@ -14,7 +14,7 @@ it can be started and used.
 If you wish it only to connect to a provider of catalog services,
 then run the following script and answer the prompts:
 
-  sudo python /var/lib/irods/scripts/setup_irods.py
+  sudo python2 /var/lib/irods/scripts/setup_irods.py
 
 which will result in a running server with a default resource
 named with your hostname concatenated with "Resource" and a

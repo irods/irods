@@ -10,5 +10,5 @@
 # This shell script runs the 'irods_control' Python script.
 #
 IRODS_HOME=$(dirname $0)
-python $IRODS_HOME/scripts/irods_control.py $*
+python2 $IRODS_HOME/scripts/irods_control.py $*
 exit $?

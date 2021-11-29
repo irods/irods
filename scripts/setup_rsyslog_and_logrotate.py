@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/python2
 
 from irods.logging_infrastructure import setup_rsyslog_and_logrotate
 

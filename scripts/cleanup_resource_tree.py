@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 from __future__ import print_function
 
 from irods.test.test_resource_tree import cleanup_resource_tree
