@@ -551,9 +551,9 @@ irods::error univ_mss_file_stage_to_cache(
         status = UNIV_MSS_STAGETOCACHE_ERR - errno;
         std::stringstream msg;
         msg << "univ_mss_file_stage_to_cache: staging from [";
-        msg << _cache_file_name;
-        msg << "] to [";
         msg << filename;
+        msg << "] to [";
+        msg << _cache_file_name;
         msg << "] failed.";
         return ERROR( status, msg.str() );
     }
