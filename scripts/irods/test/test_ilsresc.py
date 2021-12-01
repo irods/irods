@@ -45,3 +45,6 @@ class Test_Ilsresc(session.make_sessions_mixin(admins, users), unittest.TestCase
             for i in range(number_of_resources_to_add):
                 self.admin.run_icommand(['iadmin', 'rmresc', resc_name_prefix + str(i)])
 
+    def test_ilsresc_reports_an_error_on_unknown_zone__issue_6022(self):
+        self.admin.assert_icommand(['ilsresc', '-z', 'unknown_zone_issue_6022'], 'STDERR', ['-26000 SYS_INVALID_ZONE_NAME'])
+
