@@ -180,6 +180,15 @@ showResc( char *name, int longOption, const char* zoneArgument, rcComm_t *Conn )
 
             return 0;
         }
+
+        if (status < 0) {
+            printError(Conn, status, "rcGenQuery");
+            return status;
+        }
+    }
+    else if (status < 0) {
+        printError(Conn, status, "rcGenQuery");
+        return status;
     }
 
     printCount += printGenQueryResults(Conn, status, genQueryOut, columnNames, longOption);
@@ -192,6 +201,7 @@ showResc( char *name, int longOption, const char* zoneArgument, rcComm_t *Conn )
             printf("----\n");
         }
 
+        // Handles the error case.
         printCount += printGenQueryResults(Conn, status, genQueryOut, columnNames, longOption);
     }
 
@@ -403,6 +413,12 @@ int showRescTree( const char *name, const char *zoneArgument, rcComm_t *Conn , D
         genQueryInp.continueInx = genQueryOut->continueInx;
         offset += genQueryOut->rowCnt;
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
+
+        if (status < 0) {
+            printError(Conn, status, "rcGenQuery");
+            return status;
+        }
+
         status = parseGenQueryOut( offset, genQueryOut, resc_names, resc_indices, resc_types, resc_parents, resc_map, roots );
     }
 
@@ -512,12 +528,11 @@ main( int argc, char **argv ) {
     printErrorStack( Conn->rError );
     rcDisconnect( Conn );
 
-    /* Exit 0 if one or more items were displayed */
-    if ( status >= 0 ) {
-        return 0;
+    if (status < 0) {
+        return 1;
     }
 
-    return status;
+    return 0;
 }
 
 /*
