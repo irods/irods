@@ -2,6 +2,7 @@
 #include "genQuery.h"
 #include "icatHighLevelRoutines.hpp"
 #include "miscUtil.h"
+#include "rodsErrorTable.h"
 #include "rsGenQuery.hpp"
 #include "rsGlobalExtern.hpp"
 #include "miscServerFunct.hpp"
@@ -13,9 +14,11 @@
 #include <boost/format.hpp>
 #include <boost/regex.hpp>
 #include <boost/tokenizer.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 
 #include <cstring>
 #include <string>
+#include <string_view>
 
 namespace {
     std::string
@@ -506,43 +509,56 @@ irods::error add_resc_hier_name_to_query_out( genQueryOut_t *_out, int& _pos ) {
 
 } // add_resc_hier_name_to_query_out
 
+static bool is_zone_name_valid(const std::string& _zone_hint)
+{
+    // Extract zone name from zone hint.
+    boost::char_separator<char> sep("/");
+    boost::tokenizer<boost::char_separator<char>> tokens(_zone_hint, sep);
+
+    if (tokens.begin() == tokens.end()) {
+        return false;
+    }
+
+    const std::string_view zone_name = *tokens.begin();
+
+    for (const auto* tmp_zone = ZoneInfoHead; tmp_zone; tmp_zone = tmp_zone->next) {
+        if (boost::iequals(zone_name, tmp_zone->zoneName)) {
+            return true;
+        }
+    }
+
+    return false;
+} // is_zone_name_valid
 
 static
-irods::error proc_query_terms_for_community_server(
-        const std::string& _zone_hint,
-        genQueryInp_t*     _inp ){
-    std::string zone_name;
-    zoneInfo_t* tmp_zone = ZoneInfoHead;
-
-    // =-=-=-=-=-=-=-
+irods::error process_query_terms_for_pre_irods4_server(const std::string& _zone_hint,
+                                                       genQueryInp_t* _inp)
+{
     // extract zone name from zone hint
     boost::char_separator<char> sep("/");
-    boost::tokenizer<boost::char_separator<char> > tokens(_zone_hint, sep);
-    if (tokens.begin() != tokens.end()) {
-        zone_name = *tokens.begin();
-    } else {
+    boost::tokenizer<boost::char_separator<char>> tokens(_zone_hint, sep);
+    if (tokens.begin() == tokens.end()) {
         return ERROR(SYS_INVALID_ZONE_NAME, "No zone name parsed from zone hint");
     }
 
-    // =-=-=-=-=-=-=-
+    const std::string_view zone_name = *tokens.begin();
+    zoneInfo_t* tmp_zone = ZoneInfoHead;
+
     // grind through the zones and find the match to the kw
     while (tmp_zone) {
-        if ( zone_name == tmp_zone->zoneName               &&
-                tmp_zone->masterServerHost->conn              &&
-                tmp_zone->masterServerHost->conn->svrVersion &&
-                tmp_zone->masterServerHost->conn->svrVersion->cookie < 301 ) {
-            return strip_new_query_terms( _inp );
-
+        if (boost::iequals(zone_name, tmp_zone->zoneName) &&
+            tmp_zone->masterServerHost->conn &&
+            tmp_zone->masterServerHost->conn->svrVersion &&
+            tmp_zone->masterServerHost->conn->svrVersion->cookie < 301)
+        {
+            return strip_new_query_terms(_inp);
         }
-        else {
-            tmp_zone = tmp_zone->next;
 
-        }
+        tmp_zone = tmp_zone->next;
     }
 
     return SUCCESS();
-
-} // proc_query_terms_for_community_server
+} // process_query_terms_for_pre_irods4_server
 
 #if 0 // debug code
 int
@@ -633,12 +649,21 @@ rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
         return status;
     }
 
-    // =-=-=-=-=-=-=-
-    // handle connections with community iRODS
-    if ( !zone_hint_str.empty() ) {
-        irods::error ret = proc_query_terms_for_community_server( zone_hint_str, genQueryInp );
-        if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
+    if (!zone_hint_str.empty()) {
+        // If the ZONE_KW is set, that means the client targeted a specific zone.
+        // The zone name check only applies to this case. Checking the validity of
+        // the zone name must be skipped when getZoneHintForGenQuery() derives it.
+        if (getValByKey(&genQueryInp->condInput, ZONE_KW)) {
+            if (!is_zone_name_valid(zone_hint_str)) {
+                rodsLog(LOG_ERROR, "%s:%d :: Unknown zone name [%s].", __func__, __LINE__, zone_hint_str.data());
+                return SYS_INVALID_ZONE_NAME;
+            }
+        }
+
+        // Handle connections with iRODS 3 or earlier.
+        irods::error ret = process_query_terms_for_pre_irods4_server( zone_hint_str, genQueryInp );
+        if (!ret.ok()) {
+            irods::log(PASS(ret));
         }
     }
 

@@ -1,6 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
 #ifndef windows_platform
 #include <sys/time.h>
 #endif
@@ -25,6 +22,7 @@
 
 static uint Myumask = INIT_UMASK_VAL;
 
+// A GenQuery condition string (i.e. not equal to the root collection).
 const char NON_ROOT_COLL_CHECK_STR[] = "<>'/'";
 
 int
