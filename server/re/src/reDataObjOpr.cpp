@@ -32,6 +32,7 @@
 #include "rsModDataObjMeta.hpp"
 #include "rsStructFileBundle.hpp"
 #include "rsPhyBundleColl.hpp"
+#include "irods_at_scope_exit.hpp"
 
 #include <boost/regex.hpp>
 #include <boost/algorithm/string/regex.hpp>
@@ -86,8 +87,6 @@
 int
 msiDataObjCreate( msParam_t *inpParam1, msParam_t *msKeyValStr,
                   msParam_t *outParam, ruleExecInfo_t *rei ) {
-    rsComm_t *rsComm;
-    dataObjInp_t dataObjInp, *myDataObjInp;
     char *outBadKeyWd;
     int validKwFlags;
 
@@ -99,7 +98,15 @@ msiDataObjCreate( msParam_t *inpParam1, msParam_t *msKeyValStr,
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    rsComm = rei->rsComm;
+    rsComm_t* rsComm = rei->rsComm;
+
+    dataObjInp_t dataObjInp{};
+    dataObjInp_t* myDataObjInp = nullptr;
+    const auto clear_kvp = irods::at_scope_exit{[&dataObjInp]
+        {
+            clearKeyVal(&dataObjInp.condInput);
+        }
+    };
 
     /* parse inpParam1 */
     rei->status = parseMspForDataObjInp( inpParam1, &dataObjInp,
@@ -132,10 +139,6 @@ msiDataObjCreate( msParam_t *inpParam1, msParam_t *msKeyValStr,
     }
 
     rei->status = rsDataObjCreate( rsComm, myDataObjInp );
-
-    if ( myDataObjInp == &dataObjInp ) {
-        clearKeyVal( &myDataObjInp->condInput );
-    }
 
     if ( rei->status >= 0 ) {
         fillIntInMsParam( outParam, rei->status );
@@ -199,8 +202,6 @@ msiDataObjCreate( msParam_t *inpParam1, msParam_t *msKeyValStr,
 int
 msiDataObjOpen( msParam_t *inpParam, msParam_t *outParam,
                 ruleExecInfo_t *rei ) {
-    rsComm_t *rsComm;
-    dataObjInp_t dataObjInp, *myDataObjInp;
     char *outBadKeyWd = NULL;
     int validKwFlags;
 
@@ -212,11 +213,18 @@ msiDataObjOpen( msParam_t *inpParam, msParam_t *outParam,
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    rsComm = rei->rsComm;
+    rsComm_t* rsComm = rei->rsComm;
+
+    dataObjInp_t dataObjInp{};
+    dataObjInp_t* myDataObjInp = nullptr;
+    const auto clear_kvp = irods::at_scope_exit{[&dataObjInp]
+        {
+            clearKeyVal(&dataObjInp.condInput);
+        }
+    };
 
     /* parse inpParam */
     if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
-        std::memset(&dataObjInp, 0, sizeof(dataObjInp));
         myDataObjInp = &dataObjInp;
         validKwFlags = OBJ_PATH_FLAG | RESC_NAME_FLAG | OPEN_FLAGS_FLAG |
                        REPL_NUM_FLAG;
@@ -292,7 +300,6 @@ msiDataObjOpen( msParam_t *inpParam, msParam_t *outParam,
 int
 msiDataObjClose( msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei ) {
     rsComm_t *rsComm;
-    openedDataObjInp_t dataObjCloseInp, *myDataObjCloseInp;
 
     RE_TEST_MACRO( "    Calling msiDataObjClose" )
 
@@ -310,6 +317,14 @@ msiDataObjClose( msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei )
                             "msiDataObjClose: input inpParam is NULL" );
         return rei->status;
     }
+
+    openedDataObjInp_t dataObjCloseInp{};
+    openedDataObjInp_t* myDataObjCloseInp = nullptr;
+    const auto clear_kvp = irods::at_scope_exit{[&dataObjCloseInp]
+        {
+            clearKeyVal(&dataObjCloseInp.condInput);
+        }
+    };
 
     if ( strcmp( inpParam->type, DataObjCloseInp_MS_T ) == 0 ) {
         myDataObjCloseInp = ( openedDataObjInp_t* )inpParam->inOutStruct;
@@ -806,8 +821,6 @@ msiDataObjWrite( msParam_t *inpParam1, msParam_t *inpParam2,
 int
 msiDataObjUnlink( msParam_t *inpParam, msParam_t *outParam,
                   ruleExecInfo_t *rei ) {
-    rsComm_t *rsComm;
-    dataObjInp_t dataObjInp, *myDataObjInp;
     char *outBadKeyWd = NULL;
     int validKwFlags;
 
@@ -819,11 +832,18 @@ msiDataObjUnlink( msParam_t *inpParam, msParam_t *outParam,
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    rsComm = rei->rsComm;
+    rsComm_t* rsComm = rei->rsComm;
+
+    dataObjInp_t dataObjInp{};
+    dataObjInp_t* myDataObjInp = nullptr;
+    const auto clear_kvp = irods::at_scope_exit{[&dataObjInp]
+        {
+            clearKeyVal(&dataObjInp.condInput);
+        }
+    };
 
     /* parse inpParam */
     if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
-        std::memset(&dataObjInp, 0, sizeof(dataObjInp));
         myDataObjInp = &dataObjInp;
         validKwFlags = OBJ_PATH_FLAG | FORCE_FLAG_FLAG | REPL_NUM_FLAG |
                        RMTRASH_FLAG | ADMIN_RMTRASH_FLAG | UNREG_FLAG;
@@ -932,8 +952,6 @@ msiDataObjUnlink( msParam_t *inpParam, msParam_t *outParam,
 int
 msiDataObjRepl( msParam_t *inpParam1, msParam_t *msKeyValStr,
                 msParam_t *outParam, ruleExecInfo_t *rei ) {
-    rsComm_t *rsComm;
-    dataObjInp_t dataObjInp, *myDataObjInp;
     transferStat_t *transStat = NULL;
     char *outBadKeyWd;
     int validKwFlags;
@@ -946,7 +964,15 @@ msiDataObjRepl( msParam_t *inpParam1, msParam_t *msKeyValStr,
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    rsComm = rei->rsComm;
+    rsComm_t* rsComm = rei->rsComm;
+
+    dataObjInp_t dataObjInp{};
+    dataObjInp_t* myDataObjInp = nullptr;
+    const auto clear_kvp = irods::at_scope_exit{[&dataObjInp]
+        {
+            clearKeyVal(&dataObjInp.condInput);
+        }
+    };
 
     /* parse inpParam1 */
     rei->status = parseMspForDataObjInp( inpParam1, &dataObjInp,
@@ -981,10 +1007,6 @@ msiDataObjRepl( msParam_t *inpParam1, msParam_t *msKeyValStr,
     }
 
     rei->status = rsDataObjRepl( rsComm, myDataObjInp, &transStat );
-
-    if ( myDataObjInp == &dataObjInp ) {
-        clearKeyVal( &myDataObjInp->condInput );
-    }
 
     if ( transStat != NULL ) {
         free( transStat );
@@ -1059,9 +1081,6 @@ int
 msiDataObjCopy( msParam_t *inpParam1, msParam_t *inpParam2,
                 msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei ) {
     rsComm_t *rsComm;
-    dataObjCopyInp_t dataObjCopyInp, *myDataObjCopyInp;
-    dataObjInp_t *myDataObjInp;
-    transferStat_t *transStat = NULL;
     char *outBadKeyWd;
     int validKwFlags;
 
@@ -1074,6 +1093,16 @@ msiDataObjCopy( msParam_t *inpParam1, msParam_t *inpParam2,
     }
 
     rsComm = rei->rsComm;
+
+    dataObjCopyInp_t dataObjCopyInp{};
+    dataObjCopyInp_t* myDataObjCopyInp = nullptr;
+    const auto clear_kvp = irods::at_scope_exit{[&dataObjCopyInp]
+        {
+            clearKeyVal(&dataObjCopyInp.srcDataObjInp.condInput);
+            clearKeyVal(&dataObjCopyInp.destDataObjInp.condInput);
+        }
+    };
+
     /* parse inpParam1 */
     rei->status = parseMspForDataObjCopyInp( inpParam1, &dataObjCopyInp, &myDataObjCopyInp );
 
@@ -1085,6 +1114,7 @@ msiDataObjCopy( msParam_t *inpParam1, msParam_t *inpParam2,
     }
 
     /* parse inpParam2 */
+    dataObjInp_t* myDataObjInp = nullptr;
     rei->status = parseMspForDataObjInp( inpParam2, &myDataObjCopyInp->destDataObjInp, &myDataObjInp, 1 );
 
 
@@ -1121,13 +1151,10 @@ msiDataObjCopy( msParam_t *inpParam1, msParam_t *inpParam2,
         return rei->status;
     }
 
+    transferStat_t* transStat = nullptr;
     rei->status = rsDataObjCopy( rsComm, myDataObjCopyInp, &transStat );
     if ( transStat != NULL ) {
         free( transStat );
-    }
-
-    if ( myDataObjCopyInp == &dataObjCopyInp ) {
-        clearKeyVal( &myDataObjCopyInp->destDataObjInp.condInput );
     }
 
     if ( rei->status >= 0 ) {
@@ -1486,8 +1513,6 @@ msiDataObjGet( msParam_t *inpParam1, msParam_t *msKeyValStr,
 int
 msiDataObjChksum( msParam_t *inpParam1, msParam_t *msKeyValStr,
                   msParam_t *outParam, ruleExecInfo_t *rei ) {
-    rsComm_t *rsComm;
-    dataObjInp_t dataObjInp, *myDataObjInp = NULL;
     char *chksum = NULL;
     char *outBadKeyWd;
     int validKwFlags;
@@ -1500,7 +1525,15 @@ msiDataObjChksum( msParam_t *inpParam1, msParam_t *msKeyValStr,
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    rsComm = rei->rsComm;
+    rsComm_t* rsComm = rei->rsComm;
+
+    dataObjInp_t dataObjInp{};
+    dataObjInp_t* myDataObjInp = nullptr;
+    const auto clear_kvp = irods::at_scope_exit{[&dataObjInp]
+        {
+            clearKeyVal(&dataObjInp.condInput);
+        }
+    };
 
     /* parse inpParam1 */
     rei->status = parseMspForDataObjInp( inpParam1, &dataObjInp,
@@ -1591,10 +1624,6 @@ int
 msiDataObjPhymv( msParam_t *inpParam1, msParam_t *inpParam2,
                  msParam_t *inpParam3, msParam_t *inpParam4, msParam_t *inpParam5,
                  msParam_t *outParam, ruleExecInfo_t *rei ) {
-    rsComm_t *rsComm;
-    dataObjInp_t dataObjInp, *myDataObjInp = NULL;
-    transferStat_t *transStat = NULL;
-
     RE_TEST_MACRO( "    Calling msiDataObjPhymv" )
 
     if ( rei == NULL || rei->rsComm == NULL ) {
@@ -1603,7 +1632,15 @@ msiDataObjPhymv( msParam_t *inpParam1, msParam_t *inpParam2,
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    rsComm = rei->rsComm;
+    rsComm_t* rsComm = rei->rsComm;
+
+    dataObjInp_t dataObjInp{};
+    dataObjInp_t* myDataObjInp = nullptr;
+    const auto clear_kvp = irods::at_scope_exit{[&dataObjInp]
+        {
+            clearKeyVal(&dataObjInp.condInput);
+        }
+    };
 
     /* parse inpParam1 */
 
@@ -1642,14 +1679,11 @@ msiDataObjPhymv( msParam_t *inpParam1, msParam_t *inpParam2,
         return rei->status;
     }
 
+    transferStat_t *transStat = nullptr;
     rei->status = rsDataObjPhymv( rsComm, myDataObjInp, &transStat );
 
     if ( transStat != NULL ) {
         free( transStat );
-    }
-
-    if ( myDataObjInp == &dataObjInp ) {
-        clearKeyVal( &myDataObjInp->condInput );
     }
 
     if ( rei->status >= 0 ) {
@@ -1704,10 +1738,6 @@ msiDataObjPhymv( msParam_t *inpParam1, msParam_t *inpParam2,
 int
 msiDataObjRename( msParam_t *inpParam1, msParam_t *inpParam2,
                   msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei ) {
-    rsComm_t *rsComm;
-    dataObjCopyInp_t dataObjRenameInp, *myDataObjRenameInp;
-    dataObjInp_t *myDataObjInp = NULL;
-
     RE_TEST_MACRO( "    Calling msiDataObjRename" )
 
     if ( rei == NULL || rei->rsComm == NULL ) {
@@ -1716,7 +1746,16 @@ msiDataObjRename( msParam_t *inpParam1, msParam_t *inpParam2,
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    rsComm = rei->rsComm;
+    rsComm_t* rsComm = rei->rsComm;
+
+    dataObjCopyInp_t dataObjRenameInp{};
+    dataObjCopyInp_t* myDataObjRenameInp = nullptr;
+    const auto clear_kvp = irods::at_scope_exit{[&dataObjRenameInp]
+        {
+            clearKeyVal(&dataObjRenameInp.srcDataObjInp.condInput);
+            clearKeyVal(&dataObjRenameInp.destDataObjInp.condInput);
+        }
+    };
 
     /* parse inpParam1 */
     rei->status = parseMspForDataObjCopyInp( inpParam1, &dataObjRenameInp,
@@ -1729,6 +1768,7 @@ msiDataObjRename( msParam_t *inpParam1, msParam_t *inpParam2,
     }
 
     /* parse inpParam2 */
+    dataObjInp_t *myDataObjInp = nullptr;
     rei->status = parseMspForDataObjInp( inpParam2,
                                          &myDataObjRenameInp->destDataObjInp, &myDataObjInp, 1 );
 
@@ -1805,9 +1845,6 @@ int
 msiDataObjTrim( msParam_t *inpParam1, msParam_t *inpParam2,
                 msParam_t *inpParam3, msParam_t *inpParam4, msParam_t *inpParam5,
                 msParam_t *outParam, ruleExecInfo_t *rei ) {
-    rsComm_t *rsComm;
-    dataObjInp_t dataObjInp, *myDataObjInp = NULL;
-
     RE_TEST_MACRO( "    Calling msiDataObjTrim" )
 
     if ( rei == NULL || rei->rsComm == NULL ) {
@@ -1816,7 +1853,15 @@ msiDataObjTrim( msParam_t *inpParam1, msParam_t *inpParam2,
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    rsComm = rei->rsComm;
+    rsComm_t* rsComm = rei->rsComm;
+
+    dataObjInp_t dataObjInp{};
+    dataObjInp_t* myDataObjInp = nullptr;
+    const auto clear_kvp = irods::at_scope_exit{[&dataObjInp]
+        {
+            clearKeyVal(&dataObjInp.condInput);
+        }
+    };
 
     /* parse inpParam1 */
 
@@ -2113,9 +2158,6 @@ int
 msiPhyPathReg( msParam_t *inpParam1, msParam_t *inpParam2,
                msParam_t *inpParam3, msParam_t *inpParam4, msParam_t *outParam,
                ruleExecInfo_t *rei ) {
-    rsComm_t *rsComm;
-    dataObjInp_t dataObjInp, *myDataObjInp = NULL;
-
     RE_TEST_MACRO( "    Calling msiPhyPathReg" )
 
     if ( rei == NULL || rei->rsComm == NULL ) {
@@ -2124,7 +2166,15 @@ msiPhyPathReg( msParam_t *inpParam1, msParam_t *inpParam2,
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    rsComm = rei->rsComm;
+    rsComm_t* rsComm = rei->rsComm;
+
+    dataObjInp_t dataObjInp{};
+    dataObjInp_t* myDataObjInp = nullptr;
+    const auto clear_kvp = irods::at_scope_exit{[&dataObjInp]
+        {
+            clearKeyVal(&dataObjInp.condInput);
+        }
+    };
 
     /* parse inpParam1 */
     rei->status = parseMspForDataObjInp( inpParam1, &dataObjInp,
@@ -2209,9 +2259,6 @@ msiPhyPathReg( msParam_t *inpParam1, msParam_t *inpParam2,
 **/
 int
 msiObjStat( msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei ) {
-    rsComm_t *rsComm;
-    dataObjInp_t dataObjInp, *myDataObjInp = NULL;
-
     RE_TEST_MACRO( "    Calling msiObjStat" )
 
     if ( rei == NULL || rei->rsComm == NULL ) {
@@ -2220,7 +2267,15 @@ msiObjStat( msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    rsComm = rei->rsComm;
+    rsComm_t* rsComm = rei->rsComm;
+
+    dataObjInp_t dataObjInp{};
+    dataObjInp_t* myDataObjInp = nullptr;
+    const auto clear_kvp = irods::at_scope_exit{[&dataObjInp]
+        {
+            clearKeyVal(&dataObjInp.condInput);
+        }
+    };
 
     /* parse inpParam1 */
     rei->status = parseMspForDataObjInp( inpParam1, &dataObjInp,
@@ -2299,9 +2354,6 @@ int
 msiDataObjRsync( msParam_t *inpParam1, msParam_t *inpParam2,
                  msParam_t *inpParam3, msParam_t *inpParam4, msParam_t *outParam,
                  ruleExecInfo_t *rei ) {
-    rsComm_t *rsComm;
-    dataObjInp_t dataObjInp, *myDataObjInp = NULL;
-    msParamArray_t *outParamArray = NULL;
     char *rsyncMode;
     char *targCollection, *tmpPtr;
     char targPath[MAX_NAME_LEN];
@@ -2314,7 +2366,15 @@ msiDataObjRsync( msParam_t *inpParam1, msParam_t *inpParam2,
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    rsComm = rei->rsComm;
+    rsComm_t* rsComm = rei->rsComm;
+
+    dataObjInp_t dataObjInp{};
+    dataObjInp_t* myDataObjInp = nullptr;
+    const auto clear_kvp = irods::at_scope_exit{[&dataObjInp]
+        {
+            clearKeyVal(&dataObjInp.condInput);
+        }
+    };
 
     /* parse inpParam1 */
     rei->status = parseMspForDataObjInp( inpParam1, &dataObjInp,
@@ -2386,14 +2446,12 @@ msiDataObjRsync( msParam_t *inpParam1, msParam_t *inpParam2,
         addKeyVal( &myDataObjInp->condInput, RSYNC_DEST_PATH_KW, targPath );
     }
 
+    msParamArray_t *outParamArray = nullptr;
     rei->status = rsDataObjRsync( rsComm, myDataObjInp, &outParamArray );
 
     if ( outParamArray != NULL ) {
         clearMsParamArray( outParamArray, 1 );
         free( outParamArray );
-    }
-    if ( myDataObjInp == &dataObjInp ) {
-        clearKeyVal( &myDataObjInp->condInput );
     }
 
     if ( rei->status >= 0 ) {
