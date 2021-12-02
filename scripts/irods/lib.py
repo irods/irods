@@ -635,6 +635,9 @@ def create_replication_resource(resource_name, user):
 def create_passthru_resource(resource_name, user):
     user.assert_icommand(['iadmin', 'mkresc', resource_name, 'passthru'], 'STDOUT', [resource_name])
 
+def create_random_resource(resource_name, user):
+    user.assert_icommand(['iadmin', 'mkresc', resource_name, 'random'], 'STDOUT', [resource_name])
+
 def remove_resource(resource_name, user):
     user.assert_icommand(['iadmin', 'rmresc', resource_name])
 
