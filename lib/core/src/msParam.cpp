@@ -239,49 +239,98 @@ fillMsParam( msParam_t *msParam, const char *label,
     return 0;
 }
 
-void
-fillIntInMsParam( msParam_t *msParam, const int val ) {
-    if ( msParam != NULL ) {
-        msParam->inOutStruct = malloc( sizeof( int ) );
-        *(int*)(msParam->inOutStruct) = val;
-        msParam->type = strdup( INT_MS_T );
+void fillIntInMsParam(msParam_t* msParam, const int val)
+{
+    if (!msParam) {
+        return;
     }
-}
 
-void
-fillFloatInMsParam( msParam_t *msParam, const float val ) {
-    if ( msParam != NULL ) {
-        msParam->inOutStruct = malloc( sizeof( float ) );
-        *(float*)(msParam->inOutStruct) = val;
-        msParam->type = strdup( FLOAT_MS_T );
+    if (msParam->inOutStruct) {
+        free(msParam->inOutStruct);
     }
-}
+    msParam->inOutStruct = malloc(sizeof(int));
+    memset(msParam->inOutStruct, 0, sizeof(int));
+    *(int*)(msParam->inOutStruct) = val;
 
-void
-fillDoubleInMsParam( msParam_t *msParam, const rodsLong_t val ) {
-    if ( msParam != NULL ) {
-        msParam->inOutStruct = malloc( sizeof( rodsLong_t ) );
-        *(rodsLong_t*)(msParam->inOutStruct) = val;
-        msParam->type = strdup( DOUBLE_MS_T );
+    if (msParam->type) {
+        free(msParam->type);
     }
-}
+    msParam->type = strdup(INT_MS_T);
+} // fillIntInMsParam
 
-void
-fillCharInMsParam( msParam_t *msParam, const char val ) {
-    if ( msParam != NULL ) {
-        msParam->inOutStruct = malloc( sizeof( float ) );
-        *(float*)(msParam->inOutStruct) = val;
-        msParam->type = strdup( FLOAT_MS_T );
+void fillFloatInMsParam(msParam_t* msParam, const float val)
+{
+    if (!msParam) {
+        return;
     }
-}
 
-void
-fillStrInMsParam( msParam_t *msParam, const char *str ) {
-    if ( msParam != NULL ) {
-        msParam->inOutStruct = str ? strdup( str ) : NULL;
-        msParam->type = strdup( STR_MS_T );
+    if (msParam->inOutStruct) {
+        free(msParam->inOutStruct);
     }
-}
+    msParam->inOutStruct = malloc(sizeof(float));
+    memset(msParam->inOutStruct, 0, sizeof(float));
+    *(float*)(msParam->inOutStruct) = val;
+
+    if (msParam->type) {
+        free(msParam->type);
+    }
+    msParam->type = strdup(FLOAT_MS_T);
+} // fillFloatInMsParam
+
+void fillDoubleInMsParam(msParam_t* msParam, const rodsLong_t val)
+{
+    if (!msParam) {
+        return;
+    }
+
+    if (msParam->inOutStruct) {
+        free(msParam->inOutStruct);
+    }
+    msParam->inOutStruct = malloc(sizeof(rodsLong_t));
+    memset(msParam->inOutStruct, 0, sizeof(rodsLong_t));
+    *(rodsLong_t*)(msParam->inOutStruct) = val;
+
+    if (msParam->type) {
+        free(msParam->type);
+    }
+    msParam->type = strdup(DOUBLE_MS_T);
+} // fillDoubleInMsParam
+
+void fillCharInMsParam(msParam_t* msParam, const char val)
+{
+    if (!msParam) {
+        return;
+    }
+
+    if (msParam->inOutStruct) {
+        free(msParam->inOutStruct);
+    }
+    msParam->inOutStruct = malloc(sizeof(char));
+    memset(msParam->inOutStruct, 0, sizeof(char));
+    *(char*)(msParam->inOutStruct) = val;
+
+    if (msParam->type) {
+        free(msParam->type);
+    }
+    msParam->type = strdup(CHAR_MS_T);
+} // fillCharInMsParam
+
+void fillStrInMsParam(msParam_t* msParam, const char* str)
+{
+    if (!msParam) {
+        return;
+    }
+
+    if (msParam->inOutStruct) {
+        free(msParam->inOutStruct);
+    }
+    msParam->inOutStruct = str ? strdup(str) : NULL;
+
+    if (msParam->type) {
+        free(msParam->type);
+    }
+    msParam->type = strdup(STR_MS_T);
+} // fillStrInMsParam
 
 
 void
@@ -488,20 +537,25 @@ clearMsParam( msParam_t *msParam, int freeStruct ) {
 
 
 /* clears everything but the label */
-int
-resetMsParam( msParam_t * msParam ) {
-    if ( msParam == NULL ) {
+int resetMsParam(msParam_t* msParam)
+{
+    if (!msParam) {
         return 0;
     }
 
-    msParam->type = NULL;
-
-    if ( msParam->inOutStruct != NULL ) {
-        free( msParam->inOutStruct );
+    if (msParam->type) {
+        free(msParam->type);
+        msParam->type = nullptr;
     }
 
-    if ( msParam->inpOutBuf != NULL ) {
-        freeBBuf( msParam->inpOutBuf );
+    if (msParam->inOutStruct) {
+        free(msParam->inOutStruct);
+        msParam->inOutStruct = nullptr;
+    }
+
+    if (msParam->inpOutBuf) {
+        freeBBuf(msParam->inpOutBuf);
+        msParam->inpOutBuf = nullptr;
     }
 
     return 0;
