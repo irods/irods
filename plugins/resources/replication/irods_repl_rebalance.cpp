@@ -13,6 +13,7 @@
 
 #include "boost/format.hpp"
 #include "boost/lexical_cast.hpp"
+#include <fmt/format.h>
 
 #include <cstdlib>
 #include <cstring>
@@ -75,6 +76,17 @@ namespace {
             genquery_inp_to_iquest_string(&genquery_inp));
     };
 
+    std::string leaf_bundles_to_genquery_in_syntax(const std::vector<leaf_bundle_t>& _bundles)
+    {
+        fmt::memory_buffer out;
+        format_to(out, "IN (");
+        for (const auto& b : _bundles) {
+            format_to(out, "'{}',", fmt::join(b, "','"));
+        }
+        auto cond_str = to_string(out);
+        return cond_str.replace(out.size() - 1, 1, ")");
+    }
+
     struct ReplicationSourceInfo {
         std::string object_path;
         std::string resource_hierarchy;
@@ -95,13 +107,7 @@ namespace {
         genquery_inp_wrapped.get().maxRows = MAX_SQL_ROWS;
         addInxVal(&genquery_inp_wrapped.get().sqlCondInp, COL_D_DATA_ID, (boost::format("= '%lld'") % _data_id).str().c_str());
 
-        std::stringstream cond_ss;
-        for (auto& bun : _leaf_bundles) {
-            for (auto id : bun) {
-                cond_ss << "= '" << id << "' || ";
-            }
-        }
-        std::string cond_str = cond_ss.str().substr(0, cond_ss.str().size()-4);
+        const std::string cond_str = leaf_bundles_to_genquery_in_syntax(_leaf_bundles);
         addInxVal(&genquery_inp_wrapped.get().sqlCondInp, COL_D_RESC_ID, cond_str.c_str());
 
         addInxVal(&genquery_inp_wrapped.get().sqlCondInp, COL_D_REPL_STATUS, (boost::format("= '%d'") % GOOD_REPLICA).str().c_str());
@@ -198,13 +204,7 @@ namespace {
         irods::GenQueryInpWrapper genquery_inp_wrapped;
         genquery_inp_wrapped.get().maxRows = _batch_size;
 
-        std::stringstream cond_ss;
-        for (auto& bun : _bundles) {
-            for (auto id : bun) {
-                cond_ss << "= '" << id << "' || ";
-            }
-        }
-        const std::string cond_str = cond_ss.str().substr(0, cond_ss.str().size()-4);
+        const std::string cond_str = leaf_bundles_to_genquery_in_syntax(_bundles);
         addInxVal(&genquery_inp_wrapped.get().sqlCondInp, COL_D_RESC_ID, cond_str.c_str());
         addInxVal(&genquery_inp_wrapped.get().sqlCondInp, COL_D_REPL_STATUS, (boost::format("= '%d'") % STALE_REPLICA).str().c_str());
         const std::string timestamp_str = "<= '" + _invocation_timestamp + "'";

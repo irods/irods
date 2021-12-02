@@ -714,6 +714,48 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin rmresc repl")
         self.admin.assert_icommand("iadmin rmresc pt")
 
+    def test_rebalance_for_tree_with_many_resources__issue_5110(self):
+        hostname = lib.get_hostname()
+
+        try:
+            # =-=-=-=-=-=-=-
+            # STANDUP
+            lib.create_replication_resource('repl', self.admin)
+
+            lib.create_random_resource('red', self.admin)
+            lib.create_random_resource('green', self.admin)
+
+            for i in range(1,301):
+                lib.create_ufs_resource('ufs{0}'.format(i), self.admin)
+
+            lib.add_child_resource('repl', 'red', self.admin)
+            lib.add_child_resource('repl', 'green', self.admin)
+
+            for i in range(1,151):
+                lib.add_child_resource('red', 'ufs{0}'.format(i), self.admin)
+            for i in range(151,301):
+                lib.add_child_resource('green', 'ufs{0}'.format(i), self.admin)
+
+            # =-=-=-=-=-=-=-
+            # call rebalance function - confirm no error returned (USER_STRLEN_TOOLONG)
+            self.admin.assert_icommand("iadmin modresc repl rebalance")
+
+        finally:
+            # =-=-=-=-=-=-=-
+            # TEARDOWN
+            for i in range(1,151):
+                lib.remove_child_resource('red', 'ufs{0}'.format(i), self.admin)
+            for i in range(151,301):
+                lib.remove_child_resource('green', 'ufs{0}'.format(i), self.admin)
+            lib.remove_child_resource('repl', 'red', self.admin)
+            lib.remove_child_resource('repl', 'green', self.admin)
+
+            for i in range(1,301):
+                lib.remove_resource('ufs{0}'.format(i), self.admin)
+            lib.remove_resource('red', self.admin)
+            lib.remove_resource('green', self.admin)
+            lib.remove_resource('repl', self.admin)
+
     def test_rebalance_for_repl_in_repl_node(self):
         # =-=-=-=-=-=-=-
         # STANDUP
