@@ -236,15 +236,19 @@ runIrodsAgentFactory( sockaddr_un agent_addr ) {
     }
 
     // [#3563] reproduce serverize log behavior
-    char* logFile = NULL;
-    getLogfileName( &logFile, NULL, RODS_LOGFILE );
-    LogFd = open( logFile, O_CREAT | O_WRONLY | O_APPEND, 0644 );
-    if ( LogFd < 0 ) {
-        rodsLog( LOG_NOTICE, "runIrodsAgent: Unable to open %s. errno = %d",
-                 logFile, errno );
+    {
+        char* logFile = NULL;
+        getLogfileName( &logFile, NULL, RODS_LOGFILE );
+        LogFd = open( logFile, O_CREAT | O_WRONLY | O_APPEND, 0644 );
+        if ( LogFd < 0 ) {
+            rodsLog( LOG_NOTICE, "runIrodsAgent: Unable to open %s. errno = %d",
+                     logFile, errno );
+            free( logFile );
+            return -1;
+        }
         free( logFile );
-        return -1;
     }
+
     ( void ) dup2( LogFd, 0 );
     ( void ) dup2( LogFd, 1 );
     ( void ) dup2( LogFd, 2 );
