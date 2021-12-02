@@ -424,7 +424,7 @@ test_msiDataObjRepl {{
 INPUT *SourceFile="{logical_path}", *Resource="{dest_resc}"
 OUTPUT ruleExecOut
 '''
-rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Resource_Compound']['test_msisync_to_archive__2962'] = '''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Resource_Compound']['test_msisync_to_archive__2962_and_6029'] = '''
 test_msisync_to_archive {{
     *err = errormsg( msisync_to_archive(*RescHier,*PhysicalPath,*LogicalPath), *msg );
     if( 0 != *err ) {{
@@ -1023,7 +1023,7 @@ rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_ms
 INPUT *SourceFile="{logical_path}", *Resource="{dest_resc}"
 OUTPUT ruleExecOut
 '''
-rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_msisync_to_archive__2962'] = '''def main(rule_args, callback, rei):
+rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_msisync_to_archive__2962_and_6029'] = '''def main(rule_args, callback, rei):
     out_dict = callback.msisync_to_archive(global_vars['*RescHier'][1:-1], global_vars['*PhysicalPath'][1:-1], global_vars['*LogicalPath'][1:-1])
     if not out_dict['status']:
         callback.writeLine('stdout', 'ERROR: ' + str(out_dict['code']))

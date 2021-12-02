@@ -1984,12 +1984,12 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', 'cacheResc')
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', 'archiveResc')
 
-    def test_msisync_to_archive__2962(self):
+    def test_msisync_to_archive__2962_and_6029(self):
         self.admin.assert_icommand("iadmin modresc demoResc context \"auto_repl=off\"" )
 
-        filename = "test_msisync_to_archive__2962.txt"
+        filename = "test_msisync_to_archive__2962_and 6029 with spaces.txt"
         filepath = lib.create_local_testfile(filename)
-        self.admin.assert_icommand("iput " + filename)
+        self.admin.assert_icommand("iput '{}'".format(filename))
 
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', 'cacheResc')
 
@@ -2003,8 +2003,8 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         parameters['physical_path'] = physical_path
         parameters['resc_hier'] = 'demoResc;cacheResc'
 
-        rule_file_path = 'test_msisync_to_archive__2962.r'
-        rule_str = rule_texts[self.plugin_name][self.class_name]['test_msisync_to_archive__2962'].format(**parameters)
+        rule_file_path = 'test_msisync_to_archive__2962_and_6029.r'
+        rule_str = rule_texts[self.plugin_name][self.class_name]['test_msisync_to_archive__2962_and_6029'].format(**parameters)
 
         with open(rule_file_path, 'w') as rule_file:
             rule_file.write(rule_str)
