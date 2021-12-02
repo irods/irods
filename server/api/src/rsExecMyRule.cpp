@@ -62,6 +62,10 @@ int rsExecMyRule(
 
     ruleExecInfo_t rei;
     initReiWithDataObjInp( &rei, _comm, NULL );
+
+    // initReiWithDataObjInp allocates a KeyValPair struct. Free it now
+    // as it is immediately overwritten by the input KeyValPair.
+    free(rei.condInputData);
     rei.condInputData = &_exec_inp->condInput;
 
     /* need to have a non zero inpParamArray for execMyRule to work */
