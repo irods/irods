@@ -16,8 +16,8 @@ syncToArch () {
 	# <your command or script to copy from cache to MSS> $1 $2
 	# e.g: /usr/local/bin/rfcp $1 rfioServerFoo:$2
         op=`which template-cp`
-        `$op $1 $2`
-        echo "UNIVMSS $op $1 $2"
+        `$op "$1" "$2"`
+        echo "UNIVMSS $op \"$1\" \"$2\""
 	return
 }
 
@@ -26,8 +26,8 @@ stageToCache () {
 	# <your command to stage from MSS to cache> $1 $2
 	# e.g: /usr/local/bin/rfcp rfioServerFoo:$1 $2
         op=`which template-cp`
-        `$op $1 $2`
-        echo "UNIVMSS $op $1 $2"
+        `$op "$1" "$2"`
+        echo "UNIVMSS $op \"$1\" \"$2\""
 	return
 }
 
@@ -36,7 +36,7 @@ mkdir () {
 	# <your command to make a directory in the MSS> $1
 	# e.g.: /usr/local/bin/rfmkdir -p rfioServerFoo:$1
         op=`which template-mkdir`
-        `$op -p $1`
+        `$op -p "$1"`
 	return
 }
 
@@ -51,7 +51,7 @@ chmod () {
 	# $1 is directory
 	############
         op=`which template-chmod`
-        `$op $2 $1`
+        `$op "$2" "$1"`
 	return
 }
 
@@ -60,7 +60,7 @@ rm () {
 	# <your command to remove a file from the MSS> $1
 	# e.g: /usr/local/bin/rfrm rfioServerFoo:$1
    	op=`which template-rm`
-	`$op $1`
+	`$op "$1"`
 	return
 }
 
@@ -69,14 +69,14 @@ mv () {
     # <your command to rename a file in the MSS> $1 $2
     # e.g: /usr/local/bin/rfrename rfioServerFoo:$1 rfioServerFoo:$2
     op=`which template-mv`
-    `$op $1 $2`
+    `$op "$1" "$2"`
     return
 }
 
 # function to do a stat on a file $1 stored in the MSS
 stat () {
         op=`which template-stat`
-	output=`$op $1`
+	output=`$op "$1"`
 	# <your command to retrieve stats on the file> $1
 	# e.g: output=`/usr/local/bin/rfstat rfioServerFoo:$1`
 	error=$?
@@ -122,13 +122,13 @@ stat () {
 #############################################
 
 case "$1" in
-	syncToArch ) $1 $2 $3 ;;
-	stageToCache ) $1 $2 $3 ;;
-	mkdir ) $1 $2 ;;
-	chmod ) $1 $2 $3 ;;
-	rm ) $1 $2 ;;
-	mv ) $1 $2 $3 ;;
-	stat ) $1 $2 ;;
+	syncToArch ) "$1" "$2" "$3" ;;
+	stageToCache ) "$1" "$2" "$3" ;;
+	mkdir ) "$1" "$2" ;;
+	chmod ) "$1" "$2" "$3" ;;
+	rm ) "$1" "$2" ;;
+	mv ) "$1" "$2" "$3" ;;
+	stat ) "$1" "$2" ;;
 esac
 
 exit $?
