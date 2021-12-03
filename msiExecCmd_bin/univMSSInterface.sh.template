@@ -16,8 +16,8 @@ syncToArch () {
 	# <your command or script to copy from cache to MSS> $1 $2
 	# e.g: /usr/local/bin/rfcp $1 rfioServerFoo:$2
         op=`which template-cp`
-        `$op "$1" "$2"`
         echo "UNIVMSS $op \"$1\" \"$2\""
+        `$op "$1" "$2"`
 	return
 }
 
@@ -26,8 +26,8 @@ stageToCache () {
 	# <your command to stage from MSS to cache> $1 $2
 	# e.g: /usr/local/bin/rfcp rfioServerFoo:$1 $2
         op=`which template-cp`
-        `$op "$1" "$2"`
         echo "UNIVMSS $op \"$1\" \"$2\""
+        `$op "$1" "$2"`
 	return
 }
 
