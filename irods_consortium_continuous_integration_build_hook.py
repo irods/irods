@@ -81,7 +81,7 @@ def install_os_specific_dependencies_apt():
 def install_os_specific_dependencies_yum():
     packages_to_install = [
         'bzip2-devel', 'curl-devel', 'fakeroot', 'help2man', 'openssl-devel',
-        'pam-devel', 'python-devel', 'unixODBC', 'unixODBC-devel', 'zlib-devel', # TODO python2-devel for AlmaLinux 8.
+        'pam-devel', 'python-devel', 'unixODBC', 'unixODBC-devel', 'zlib-devel', # TODO python2-devel for AlmaLinux 8 (maybe Rocky Linux 8 too).
     ]
     if irods_python_ci_utilities.get_distribution_version_major() == '7':
         packages_to_install.append('mysql++-devel')
