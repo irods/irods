@@ -16,7 +16,7 @@ set(IRODS_BUILD_WITH_CLANG ON CACHE BOOL "Try to build with clang instead of gcc
 set(CLANG_STATIC_ANALYZER OFF CACHE BOOL "Choose whether to run Clang Static Analyzer.")
 
 if (IRODS_BUILD_WITH_CLANG)
-	IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH(CLANG clang6.0-0)
+	IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH(CLANG clang13.0.0-0)
 else()
 	set(CLANG_STATIC_ANALYZER OFF CACHE BOOL "Choose whether to run Clang Static Analyzer." FORCE)
 	message(STATUS "Setting CLANG_STATIC_ANALYZER to 'OFF'.")

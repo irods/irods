@@ -85,8 +85,9 @@ namespace irods::experimental::api {
                 THROW(err, "failed to perform the invocation");
             }
 
-            return json::parse({(char*)resp->buf, (char*)resp->buf+resp->len});
+            const auto* buf = static_cast<char*>(resp->buf);
 
+            return json::parse(buf, buf + resp->len);
         } // invoke
 
         template<typename T>
