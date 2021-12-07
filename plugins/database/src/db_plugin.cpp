@@ -429,29 +429,23 @@ irods::error determine_user_has_modify_metadata_access(
 } // user_has_modify_metadata_access
 
 
-/*
- * removeMetaMapAndAVU - remove AVU (user defined metadata) for an object,
- *   the metadata mapping information, if any.  Optionally, also remove
- *   any unused AVUs, if any, if some mapping information was removed.
- *
- */
-void removeMetaMapAndAVU( char *dataObjNumber ) {
-    char tSQL[MAX_SQL_SIZE];
-    cllBindVars[0] = dataObjNumber;
+// remove AVU (user defined metadata) for an object, the metadata mapping information, if any.
+int removeMetaMapAndAVU(const char* _id)
+{
+    char tSQL[MAX_SQL_SIZE]{};
+    cllBindVars[0] = _id;
     cllBindVarCount = 1;
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "removeMetaMapAndAVU SQL 1 " );
-    }
-    snprintf( tSQL, MAX_SQL_SIZE,
-              "delete from R_OBJT_METAMAP where object_id=?" );
-    cmlExecuteNoAnswerSql( tSQL, &icss );
-    /* Note, the status will be CAT_SUCCESS_BUT_WITH_NO_INFO (not 0) if
-       there were no rows deleted from R_OBJT_METAMAP, in which case there
-       is no need to do the SQL below.
-    */
 
-    return;
-}
+    if (logSQL) {
+        rodsLog(LOG_SQL, "removeMetaMapAndAVU SQL 1 ");
+    }
+
+    snprintf(tSQL, MAX_SQL_SIZE, "delete from R_OBJT_METAMAP where object_id=?");
+
+    const auto ec = cmlExecuteNoAnswerSql(tSQL, &icss);
+
+    return ec < 0 && CAT_SUCCESS_BUT_WITH_NO_INFO != ec ? ec : 0;
+} // removeMetaMapAndAVU
 
 /*
  * removeAVUs - remove unused AVUs (user defined metadata), if any.
@@ -799,7 +793,12 @@ static int _delColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
         return CATALOG_NOT_CONNECTED;
     }
 
-    splitPathByKey( collInfo->collName, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
+    if (const auto ec = splitPathByKey(collInfo->collName, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/'); ec < 0) {
+        irods::log(LOG_ERROR, fmt::format(
+                   "[{}:{}] - failed in splitPathByKey [path=[{}], ec=[{}]]",
+                   __func__, __LINE__, collInfo->collName, ec));
+        return ec;
+    }
 
     if ( strlen( logicalParentDirName ) == 0 ) {
         snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", PATH_SEPARATOR );
@@ -896,7 +895,11 @@ static int _delColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
     }
 
     /* Remove associated AVUs, if any */
-    removeMetaMapAndAVU( collIdNum );
+    if (const auto ec = removeMetaMapAndAVU(collIdNum); ec < 0) {
+        irods::log(LOG_WARNING, fmt::format(
+                   "[{}:{}] - failed to remove associated AVUs [ec=[{}]]",
+                   __func__, __LINE__, ec));
+    }
 
     return status;
 
@@ -1149,7 +1152,12 @@ rodsLong_t checkAndGetObjectId(
     }
 
     if ( itype == 1 ) {
-        splitPathByKey( name, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
+        if (const auto ec = splitPathByKey(name, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/'); ec < 0) {
+            irods::log(LOG_ERROR, fmt::format(
+                       "[{}:{}] - failed in splitPathByKey [path=[{}], ec=[{}]]",
+                       __func__, __LINE__, name, ec));
+            return ec;
+        }
         if ( strlen( logicalParentDirName ) == 0 ) {
             snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", PATH_SEPARATOR );
             snprintf( logicalEndName, sizeof( logicalEndName ), "%s", name );
@@ -2263,8 +2271,11 @@ irods::error db_mod_data_obj_meta_op(
     }
 
     if ( _data_obj_info->dataId <= 0 ) {
-
-        splitPathByKey( _data_obj_info->objPath, logicalDirName, MAX_NAME_LEN, logicalFileName, MAX_NAME_LEN, '/' );
+        if (const auto ec = splitPathByKey(_data_obj_info->objPath, logicalDirName, MAX_NAME_LEN, logicalFileName, MAX_NAME_LEN, '/'); ec < 0) {
+            return ERROR(ec, fmt::format(
+                         "[{}:{}] - failed in splitPathByKey [path=[{}], ec=[{}]]",
+                         __func__, __LINE__, _data_obj_info->objPath, ec));
+        }
 
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlModDataObjMeta SQL 1 " );
@@ -2622,7 +2633,11 @@ irods::error db_reg_data_obj_op(
     snprintf( dataIdNum, MAX_NAME_LEN, "%lld", seqNum );
     _data_obj_info->dataId = seqNum; /* store as output parameter */
 
-    splitPathByKey( _data_obj_info->objPath, logicalDirName, MAX_NAME_LEN, logicalFileName, MAX_NAME_LEN, '/' );
+    if (const auto ec = splitPathByKey(_data_obj_info->objPath, logicalDirName, MAX_NAME_LEN, logicalFileName, MAX_NAME_LEN, '/'); ec < 0) {
+        return ERROR(ec, fmt::format(
+                     "[{}:{}] - failed in splitPathByKey [path=[{}], ec=[{}]]",
+                     __func__, __LINE__, _data_obj_info->objPath, ec));
+    }
 
     /* Check that collection exists and user has write permission.
        At the same time, also get the inherit flag */
@@ -2917,7 +2932,11 @@ irods::error db_reg_replica_op(
         return ERROR( CATALOG_NOT_CONNECTED, "catalog not connected" );
     }
 
-    splitPathByKey( _src_data_obj_info->objPath, logicalDirName, MAX_NAME_LEN, logicalFileName, MAX_NAME_LEN, '/' );
+    if (const auto ec = splitPathByKey(_src_data_obj_info->objPath, logicalDirName, MAX_NAME_LEN, logicalFileName, MAX_NAME_LEN, '/'); ec < 0) {
+        return ERROR(ec, fmt::format(
+                     "[{}:{}] - failed in splitPathByKey [path=[{}], ec=[{}]]",
+                     __func__, __LINE__, _src_data_obj_info->objPath, ec));
+    }
 
     if ( adminMode ) {
         if ( _ctx.comm()->clientUser.authInfo.authFlag != LOCAL_PRIV_USER_AUTH ) {
@@ -3140,8 +3159,11 @@ irods::error db_unreg_replica_op(
         }
     }
 
-    splitPathByKey( _data_obj_info->objPath, logicalDirName, MAX_NAME_LEN, logicalFileName, MAX_NAME_LEN, '/' );
-
+    if (const auto ec = splitPathByKey(_data_obj_info->objPath, logicalDirName, MAX_NAME_LEN, logicalFileName, MAX_NAME_LEN, '/'); ec < 0) {
+        return ERROR(ec, fmt::format(
+                     "[{}:{}] - failed in splitPathByKey [path=[{}], ec=[{}]]",
+                     __func__, __LINE__, _data_obj_info->objPath, ec));
+    }
 
     if ( adminMode == 0 ) {
         /* Check the access to the dataObj */
@@ -3195,42 +3217,6 @@ irods::error db_unreg_replica_op(
         }
     }
 
-    // Get the resource name so we can update its data object count later
-    std::string resc_hier;
-    if ( strlen( _data_obj_info->rescHier ) == 0 ) {
-        rodsLong_t resc_id = 0;
-        if ( _data_obj_info->replNum >= 0 ) {
-            snprintf( replNumber, sizeof replNumber, "%d", _data_obj_info->replNum );
-            {
-                std::vector<std::string> bindVars;
-                bindVars.push_back( dataObjNumber );
-                bindVars.push_back( replNumber );
-                status = cmlGetIntegerValueFromSql(
-                             "select resc_id from R_DATA_MAIN where data_id=? and data_repl_num=?",
-                             &resc_id, bindVars, &icss );
-            }
-            if ( status != 0 ) {
-                return ERROR( status, "cmlGetStringValueFromSql failed" );
-            }
-        }
-        else {
-            {
-                std::vector<std::string> bindVars;
-                bindVars.push_back( dataObjNumber );
-                status = cmlGetIntegerValueFromSql(
-                             "select resc_id from R_DATA_MAIN where data_id=? and data_repl_num=?",
-                             &resc_id, bindVars, &icss );
-            }
-            if ( status != 0 ) {
-                return ERROR( status, "cmlGetStringValueFromSql failed" );
-            }
-        }
-        resc_mgr.leaf_id_to_hier( resc_id, resc_hier );
-    }
-    else {
-        resc_hier = std::string( _data_obj_info->rescHier );
-    }
-
     cllBindVars[0] = logicalDirName;
     cllBindVars[1] = logicalFileName;
     if ( _data_obj_info->replNum >= 0 ) {
@@ -3280,10 +3266,22 @@ irods::error db_unreg_replica_op(
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlUnregDataObj SQL 3" );
         }
+
         status = cmlExecuteNoAnswerSql(
                      "delete from R_OBJT_ACCESS where object_id=? and not exists (select * from R_DATA_MAIN where data_id=?)", &icss );
-        if ( status == 0 ) {
-            removeMetaMapAndAVU( dataObjNumber ); /* remove AVU metadata, if any */
+        if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
+            _rollback("chlUnregDataObj");
+            return ERROR(status, fmt::format(
+                         "[{}:{}] - failed to delete access rows [ec=[{}]]",
+                         __func__, __LINE__, status));
+        }
+
+        if (status == 0) {
+            if (const auto ec = removeMetaMapAndAVU(dataObjNumber); ec < 0) {
+                irods::log(LOG_WARNING, fmt::format(
+                           "[{}:{}] - failed to remove associated AVUs [ec=[{}]]",
+                           __func__, __LINE__, ec));
+            }
         }
     }
 
@@ -4206,8 +4204,11 @@ irods::error db_del_resc_op(
     }
 
     /* Remove associated AVUs, if any */
-    removeMetaMapAndAVU( rescId );
-
+    if (const auto ec = removeMetaMapAndAVU(rescId); ec < 0) {
+        irods::log(LOG_WARNING, fmt::format(
+                   "[{}:{}] - failed to remove associated AVUs [ec=[{}]]",
+                   __func__, __LINE__, ec));
+    }
 
     if ( _dry_run ) { // JMC
         _rollback( "chlDelResc" );
@@ -4477,7 +4478,11 @@ irods::error db_del_user_re_op(
     }
 
     /* Remove associated AVUs, if any */
-    removeMetaMapAndAVU( iValStr );
+    if (const auto ec = removeMetaMapAndAVU(iValStr); ec < 0) {
+        irods::log(LOG_WARNING, fmt::format(
+                   "[{}:{}] - failed to remove associated AVUs [ec=[{}]]",
+                   __func__, __LINE__, ec));
+    }
 
     return SUCCESS();
 
@@ -4556,7 +4561,11 @@ irods::error db_reg_coll_by_admin_op(
         // =-=-=-=-=-=-=-
     }
 
-    splitPathByKey( _coll_info->collName, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
+    if (const auto ec = splitPathByKey(_coll_info->collName, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/'); ec < 0) {
+        return ERROR(ec, fmt::format(
+                     "[{}:{}] - failed in splitPathByKey [path=[{}], ec=[{}]]",
+                     __func__, __LINE__, _coll_info->collName, ec));
+    }
 
     if ( strlen( logicalParentDirName ) == 0 ) {
         snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", PATH_SEPARATOR );
@@ -4735,7 +4744,11 @@ irods::error db_reg_coll_op(
         return ERROR( CATALOG_NOT_CONNECTED, "catalog not connected" );
     }
 
-    splitPathByKey( _coll_info->collName, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
+    if (const auto ec = splitPathByKey(_coll_info->collName, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/'); ec < 0) {
+        return ERROR(ec, fmt::format(
+                     "[{}:{}] - failed in splitPathByKey [path=[{}], ec=[{}]]",
+                     __func__, __LINE__, _coll_info->collName, ec));
+    }
 
     if ( strlen( logicalParentDirName ) == 0 ) {
         snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", PATH_SEPARATOR );
@@ -6120,7 +6133,11 @@ irods::error db_del_coll_by_admin_op(
         return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
     }
 
-    splitPathByKey( _coll_info->collName, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
+    if (const auto ec = splitPathByKey(_coll_info->collName, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/'); ec < 0) {
+        return ERROR(ec, fmt::format(
+                     "[{}:{}] - failed in splitPathByKey [path=[{}], ec=[{}]]",
+                     __func__, __LINE__, _coll_info->collName, ec));
+    }
 
     if ( strlen( logicalParentDirName ) == 0 ) {
         snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", PATH_SEPARATOR );
@@ -6192,7 +6209,11 @@ irods::error db_del_coll_by_admin_op(
     }
 
     snprintf( collIdNum, MAX_NAME_LEN, "%lld", iVal );
-    removeMetaMapAndAVU( collIdNum );
+    if (const auto ec = removeMetaMapAndAVU(collIdNum); ec < 0) {
+        irods::log(LOG_WARNING, fmt::format(
+                   "[{}:{}] - failed to remove associated AVUs [ec=[{}]]",
+                   __func__, __LINE__, ec));
+    }
 
     /* delete the row if it exists */
     cllBindVars[cllBindVarCount++] = _coll_info->collName;
@@ -7075,12 +7096,20 @@ irods::error db_make_limited_pw_op(
     cllBindVars[cllBindVarCount++] = irods_pam_password_max_time;
     cllBindVars[cllBindVarCount++] = myTime;
 #if MY_ICAT
-    cmlExecuteNoAnswerSql( "delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer)>=? and cast(pass_expiry_ts as signed integer)<=? and (cast(pass_expiry_ts as signed integer) + cast(modify_ts as signed integer) < ?)",
+    status = cmlExecuteNoAnswerSql( "delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer)>=? and cast(pass_expiry_ts as signed integer)<=? and (cast(pass_expiry_ts as signed integer) + cast(modify_ts as signed integer) < ?)",
                                      &icss );
 #else
-    cmlExecuteNoAnswerSql( "delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as integer)>=? and cast(pass_expiry_ts as integer)<=? and (cast(pass_expiry_ts as integer) + cast(modify_ts as integer) < ?)",
+    status = cmlExecuteNoAnswerSql( "delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as integer)>=? and cast(pass_expiry_ts as integer)<=? and (cast(pass_expiry_ts as integer) + cast(modify_ts as integer) < ?)",
                                      &icss );
 #endif
+    // CAT_SUCCESS_BUT_WITH_NO_INFO indicates that no expired passwords exist, which is okay.
+    if ( status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
+        rodsLog( LOG_NOTICE,
+                 "chlMakeLimitedPw cmlExecuteNoAnswerSql delete failure %d",
+                 status );
+        _rollback( "chlMakeLimitedPw" );
+        return ERROR( status, "delete failure" );
+    }
 
     status =  cmlExecuteNoAnswerSql( "commit", &icss );
     if ( status != 0 ) {
@@ -7200,11 +7229,20 @@ irods::error db_update_pam_password_op(
     cllBindVars[cllBindVarCount++] = irods_pam_password_max_time;
     cllBindVars[cllBindVarCount++] = myTime;
 #if MY_ICAT
-    cmlExecuteNoAnswerSql( "delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer)>=? and cast(pass_expiry_ts as signed integer)<=? and (cast(pass_expiry_ts as signed integer) + cast(modify_ts as signed integer) < ?)",
+    status = cmlExecuteNoAnswerSql( "delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer)>=? and cast(pass_expiry_ts as signed integer)<=? and (cast(pass_expiry_ts as signed integer) + cast(modify_ts as signed integer) < ?)",
 #else
-    cmlExecuteNoAnswerSql( "delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as integer)>=? and cast(pass_expiry_ts as integer)<=? and (cast(pass_expiry_ts as integer) + cast(modify_ts as integer) < ?)",
+    status = cmlExecuteNoAnswerSql( "delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as integer)>=? and cast(pass_expiry_ts as integer)<=? and (cast(pass_expiry_ts as integer) + cast(modify_ts as integer) < ?)",
 #endif
                                      & icss );
+    // CAT_SUCCESS_BUT_WITH_NO_INFO indicates that no expired passwords exist, which is okay.
+    if ( status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
+        rodsLog( LOG_NOTICE,
+                 "chlUpdateIrodsPamPassword cmlExecuteNoAnswerSql delete failure %d",
+                 status );
+        _rollback( "chlUpdateIrodsPamPassword" );
+        return ERROR( status, "delete failure" );
+    }
+
     if ( logSQL != 0 ) rodsLog( LOG_SQL, "chlUpdateIrodsPamPassword SQL 3" );
     cVal[0] = passwordInIcat;
     iVal[0] = MAX_PASSWORD_LEN;
@@ -9001,7 +9039,11 @@ irods::error db_add_avu_metadata_wild_op(
     char myTime[50];
     char seqNumStr[MAX_NAME_LEN];
 
-    splitPathByKey( _name, collection, MAX_NAME_LEN, objectName, MAX_NAME_LEN, '/' );
+    if (const auto ec = splitPathByKey(_name, collection, MAX_NAME_LEN, objectName, MAX_NAME_LEN, '/'); ec < 0) {
+        return ERROR(ec, fmt::format(
+                     "[{}:{}] - failed in splitPathByKey [path=[{}], ec=[{}]]",
+                     __func__, __LINE__, _name, ec));
+    }
 
     if ( strlen( collection ) == 0 ) {
         snprintf( collection, sizeof( collection ), "%s", PATH_SEPARATOR );
@@ -9156,7 +9198,12 @@ irods::error db_add_avu_metadata_op(
     }
 
     if ( itype == 1 ) {
-        splitPathByKey( _name, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
+        if (const auto ec = splitPathByKey(_name, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/'); ec < 0) {
+            return ERROR(ec, fmt::format(
+                         "[{}:{}] - failed in splitPathByKey [path=[{}], ec=[{}]]",
+                         __func__, __LINE__, _name, ec));
+        }
+
         if ( strlen( logicalParentDirName ) == 0 ) {
             snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", PATH_SEPARATOR );
             snprintf( logicalEndName, sizeof( logicalEndName ), "%s", _name );
@@ -9579,7 +9626,12 @@ irods::error db_del_avu_metadata_op(
     }
 
     if ( itype == 1 ) {
-        splitPathByKey( _name, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
+        if (const auto ec = splitPathByKey(_name, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/'); ec < 0) {
+            return ERROR(ec, fmt::format(
+                         "[{}:{}] - failed in splitPathByKey [path=[{}], ec=[{}]]",
+                         __func__, __LINE__, _name, ec));
+        }
+
         if ( strlen( logicalParentDirName ) == 0 ) {
             snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", PATH_SEPARATOR );
             snprintf( logicalEndName, sizeof( logicalEndName ), "%s", _name );
@@ -10222,12 +10274,18 @@ irods::error db_mod_access_control_op(
     if ( status1 < 0 ) {
         char logicalEndName[MAX_NAME_LEN];
         char logicalParentDirName[MAX_NAME_LEN];
-        int status2;
-        splitPathByKey( _path_name, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
+        if (const auto ec = splitPathByKey(_path_name, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/'); ec < 0) {
+            return ERROR(ec, fmt::format(
+                         "[{}:{}] - failed in splitPathByKey [path=[{}], ec=[{}]]",
+                         __func__, __LINE__, _path_name, ec));
+        }
+
         if ( strlen( logicalParentDirName ) == 0 ) {
             snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", PATH_SEPARATOR );
             snprintf( logicalEndName, sizeof( logicalEndName ), "%s", _path_name + 1 );
         }
+
+        int status2 = 0;
         if ( adminMode ) {
             if ( logSQL != 0 ) {
                 rodsLog( LOG_SQL, "chlModAccessControl SQL 15" );
@@ -14122,13 +14180,17 @@ irods::error db_mod_ticket_op(
     if ( strcmp( _op_name, "session" ) == 0 ) {
         if ( strlen( _arg3 ) > 0 ) {
             /* for 2 server hops, arg3 is the original client addr */
-            chlGenQueryTicketSetup( _ticket_string, _arg3 );
+            if (const auto ec = chlGenQueryTicketSetup(_ticket_string, _arg3); ec < 0) {
+                return ERROR(ec, "failed in chlGenQueryTicketSetup");
+            }
             snprintf( mySessionTicket, sizeof( mySessionTicket ), "%s", _ticket_string );
             snprintf( mySessionClientAddr, sizeof( mySessionClientAddr ), "%s", _arg3 );
         }
         else {
             /* for direct connections, rsComm has the original client addr */
-            chlGenQueryTicketSetup( _ticket_string, _ctx.comm()->clientAddr );
+            if (const auto ec = chlGenQueryTicketSetup(_ticket_string, _ctx.comm()->clientAddr); ec < 0) {
+                return ERROR(ec, "failed in chlGenQueryTicketSetup");
+            }
             snprintf( mySessionTicket, sizeof( mySessionTicket ), "%s", _ticket_string );
             snprintf( mySessionClientAddr, sizeof( mySessionClientAddr ), "%s", _ctx.comm()->clientAddr );
         }
@@ -14160,7 +14222,12 @@ irods::error db_mod_ticket_op(
             return ERROR( CAT_TICKET_INVALID, "ticket string cannot be a number" );
         }
 
-        splitPathByKey( _arg4, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
+        if (const auto ec = splitPathByKey(_arg4, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/'); ec < 0) {
+            return ERROR(ec, fmt::format(
+                         "[{}:{}] - failed in splitPathByKey [path=[{}], ec=[{}]]",
+                         __func__, __LINE__, _arg4, ec));
+        }
+
         if ( strlen( logicalParentDirName ) == 0 ) {
             snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", PATH_SEPARATOR );
             snprintf( logicalEndName, sizeof( logicalEndName ), "%s", _arg4 + 1 );
