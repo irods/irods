@@ -184,16 +184,22 @@ irods::error replUpdateObjectAndOperProperties(
             }
         }
 
-        result = ASSERT_ERROR( !mismatched, INVALID_OPERATION,
-                               "Existing object operation: \"%s\" does not match current operation: \"%s\".",
-                               oper.operation().c_str(), _oper.c_str() );
+        if (mismatched) {
+            const auto err = ERROR(INVALID_OPERATION, fmt::format(
+                                   "Existing object operation: \"{}\" does not match current operation: \"{}\".",
+                                   oper.operation(), _oper));
+            irods::log(err);
+            return err;
+        }
     }
     else {
         oper.object() = *( file_obj.get() );
         oper.operation() = _oper;
         object_list.push_back( oper );
         ret = _ctx.prop_map().set<object_list_t>( OBJECT_LIST_PROP, object_list );
-        result = ASSERT_PASS( ret, "Failed to set the object list property on the resource." );
+        if (!ret.ok()) {
+            return PASSMSG("Failed to set the object list property on the resource.", ret);
+        }
     }
 
     if ( !result.ok() ) {
@@ -338,25 +344,26 @@ irods::error replicate_create_write_operation(irods::plugin_context& _ctx) {
 // Actual operations
 
 // Called after a new file is registered with the ICAT
-irods::error repl_file_registered(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-    irods::error ret;
-    ret = replCheckParams< irods::file_object >( _ctx );
-    if ( ( result = ASSERT_PASS( ret, "Error checking passed parameters." ) ).ok() ) {
-
-        irods::file_object_ptr file_obj = boost::dynamic_pointer_cast<irods::file_object >( _ctx.fco() );
-        irods::hierarchy_parser parser;
-        parser.set_string( file_obj->resc_hier() );
-        irods::resource_ptr child;
-        ret = replGetNextRescInHier( parser, _ctx, child );
-        if ( ( result = ASSERT_PASS( ret, "Failed to get the next resource in hierarchy." ) ).ok() ) {
-            ret = child->call( _ctx.comm(), irods::RESOURCE_OP_REGISTERED, _ctx.fco() );
-            result = ASSERT_PASS( ret, "Failed while calling child operation." );
-        }
+irods::error repl_file_registered(irods::plugin_context& _ctx)
+{
+    if (const auto err = replCheckParams<irods::file_object>(_ctx); !err.ok()) {
+        return PASSMSG("Error checking passed parameters.", err);
     }
-    return result;
-}
+
+    irods::file_object_ptr file_obj = boost::dynamic_pointer_cast<irods::file_object >( _ctx.fco() );
+    irods::hierarchy_parser parser;
+    parser.set_string( file_obj->resc_hier() );
+    irods::resource_ptr child;
+    if (const auto err = replGetNextRescInHier(parser, _ctx, child); !err.ok()) {
+        return PASSMSG("Failed to get the next resource in hierarchy.", err);
+    }
+
+    if (const auto err = child->call(_ctx.comm(), irods::RESOURCE_OP_REGISTERED, _ctx.fco()); !err.ok()) {
+        return PASSMSG("Failed while calling child operation.", err);
+    }
+
+    return SUCCESS();
+} // repl_file_registered
 
 // Called when a file is unregistered from the ICAT
 irods::error repl_file_unregistered(
@@ -570,7 +577,7 @@ irods::error repl_file_modified(irods::plugin_context& _ctx) {
         return PASS(ret);
     }
 
-    return SUCCESS();
+    return ret;
 } // repl_file_modified
 
 // =-=-=-=-=-=-=-
@@ -579,10 +586,6 @@ irods::error repl_file_create(
     irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     irods::error ret;
-
-    // get the list of objects that need to be replicated
-    object_list_t object_list;
-    ret = _ctx.prop_map().get<object_list_t>( OBJECT_LIST_PROP, object_list );
 
     ret = replCheckParams< irods::file_object >( _ctx );
     if ( !ret.ok() ) {
@@ -705,9 +708,6 @@ irods::error repl_file_write(
     const int              _len ) {
     irods::error result = SUCCESS();
     irods::error ret;
-    // get the list of objects that need to be replicated
-    object_list_t object_list;
-    ret = _ctx.prop_map().get<object_list_t>( OBJECT_LIST_PROP, object_list );
 
     ret = replCheckParams< irods::file_object >( _ctx );
     if ( !ret.ok() ) {
@@ -745,32 +745,27 @@ irods::error repl_file_write(
     return result;
 } // repl_file_write
 
-// =-=-=-=-=-=-=-
 // interface for POSIX Close
-irods::error repl_file_close(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-    irods::error ret;
-    // get the list of objects that need to be replicated
-    object_list_t object_list;
-    ret = _ctx.prop_map().get<object_list_t>( OBJECT_LIST_PROP, object_list );
-
-    ret = replCheckParams< irods::file_object >( _ctx );
-    if ( ( result = ASSERT_PASS( ret, "Bad params." ) ).ok() ) {
-
-        irods::file_object_ptr file_obj = boost::dynamic_pointer_cast<irods::file_object >( _ctx.fco() );
-        irods::hierarchy_parser parser;
-        parser.set_string( file_obj->resc_hier() );
-        irods::resource_ptr child;
-        ret = replGetNextRescInHier( parser, _ctx, child );
-        if ( ( result = ASSERT_PASS( ret, "Failed to get the next resource in hierarchy." ) ).ok() ) {
-
-            ret = child->call( _ctx.comm(), irods::RESOURCE_OP_CLOSE, _ctx.fco() );
-            result = ASSERT_PASS( ret, "Failed while calling child operation." );
-        }
+irods::error repl_file_close(irods::plugin_context& _ctx)
+{
+    if (const auto err = replCheckParams<irods::file_object>(_ctx); !err.ok()) {
+        return PASSMSG("Bad params.", err);
     }
-    return result;
 
+    irods::file_object_ptr file_obj = boost::dynamic_pointer_cast<irods::file_object>(_ctx.fco());
+    irods::hierarchy_parser parser;
+    parser.set_string(file_obj->resc_hier());
+    irods::resource_ptr child;
+    if (const auto err = replGetNextRescInHier(parser, _ctx, child); !err.ok()) {
+        return PASSMSG("Failed to get the next resource in hierarchy.", err);
+    }
+
+    const auto ret = child->call(_ctx.comm(), irods::RESOURCE_OP_CLOSE, _ctx.fco());
+    if (!ret.ok()) {
+        return PASSMSG("Failed while calling child operation.", ret);
+    }
+
+    return ret;
 } // repl_file_close
 
 // =-=-=-=-=-=-=-
