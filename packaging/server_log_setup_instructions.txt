@@ -10,7 +10,7 @@ is missing configuration files for these dependencies.
 
 Run the following command to complete the upgrade.
 
-  sudo python2 /var/lib/irods/scripts/setup_rsyslog_and_logrotate.py
+  sudo python3 /var/lib/irods/scripts/setup_rsyslog_and_logrotate.py
 
 Once the script completes, you should have two new files at the
 following locations.

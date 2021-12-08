@@ -9,15 +9,12 @@ import sys
 import tempfile
 import time
 
-try:
-    from . import pypyodbc
-except ImportError:
-    pass
 from . import six
-
 from . import lib
 from . import password_obfuscation
 from .exceptions import IrodsError, IrodsWarning
+
+import pyodbc
 
 def load_odbc_ini(f):
     odbc_dict = {}
@@ -197,23 +194,41 @@ def get_database_connection(irods_config):
 
     try:
         if irods_config.catalog_database_type == 'cockroachdb':
-            return pypyodbc.connect(connection_string.encode('ascii'), ansi=True, autocommit = True)
-        else:
-            return pypyodbc.connect(connection_string.encode('ascii'), ansi=True)
-    except pypyodbc.Error as e:
+            return pyodbc.connect(connection_string, ansi=True, autocommit = True)
+
+        if irods_config.catalog_database_type == 'postgres': # TODO This may be required for MySQL.
+            conn = pyodbc.connect(connection_string, ansi=True)
+
+            # The following options must be set on the connection for PostgreSQL 12.
+            # TODO This needs to be tested against a PostgreSQL 10+ database.
+            # See the following for why these are needed:
+            #
+            #   - https://github.com/mkleehammer/pyodbc/issues/169#issuecomment-268665172
+            #   - https://github.com/mkleehammer/pyodbc/issues/169#issuecomment-591979062
+            #   - https://github.com/mkleehammer/pyodbc/issues/169#issuecomment-591994201
+            #
+            conn.setencoding(encoding='utf-8')
+            conn.setdecoding(pyodbc.SQL_CHAR,  encoding='utf-8')
+            conn.setdecoding(pyodbc.SQL_WCHAR, encoding='utf-8')
+
+            return conn
+
+        return pyodbc.connect(connection_string, ansi=True)
+
+    except pyodbc.Error as e:
         if 'file not found' in str(e):
             message = (
-                    'pypyodbc registered a \'file not found\' error when connecting to the database. '
+                    'pyodbc registered a \'file not found\' error when connecting to the database. '
                     'If your driver path exists, this is most commonly caused by a library required by the '
                     'driver being unable to be found by the linker. Try running ldd on the odbc driver '
                     'binary (or sudo ldd if you are running in sudo) to see which libraries are not '
                     'being found and add any necessary library paths to the LD_LIBRARY_PATH environment '
                     'variable. If you are running setup_irods.py, instead set the LD_LIBRARY_PATH with '
                     'the --ld_library_path command line option.\n'
-                    'The specific error pypyodbc reported was:'
+                    'The specific error pyodbc reported was:'
                 )
         else:
-            message = 'pypyodbc encountered an error connecting to the database:'
+            message = 'pyodbc encountered an error connecting to the database:'
         six.reraise(IrodsError,
                 IrodsError('%s\n%s' % (message, str(e))),
             sys.exc_info()[2])
@@ -226,9 +241,9 @@ def execute_sql_statement(cursor, statement, *params, **kwargs):
             pprint.pformat(params) if log_params else '<hidden>')
     try:
         return cursor.execute(statement, params)
-    except pypyodbc.Error as e:
+    except pyodbc.Error as e:
         six.reraise(IrodsError,
-                IrodsError('pypyodbc encountered an error executing the statement:\n\t%s\n%s' % (statement, str(e))),
+                IrodsError('pyodbc encountered an error executing the statement:\n\t%s\n%s' % (statement, str(e))),
             sys.exc_info()[2])
 
 def execute_sql_file(filepath, cursor, by_line=False):

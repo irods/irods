@@ -1,7 +1,8 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 from __future__ import print_function
 
 import inspect
+import distro
 import platform
 import sys
 
@@ -11,21 +12,10 @@ import sys
 # Invoke module functions directly from the command line by passing the
 #  desired function name minus the leading 'get_' as the first argument.
 
-
-def get_os_distribution_name():
-    system = platform.system()
-    if system == 'Linux':
-        return platform.linux_distribution()[0]
-    elif system == 'Darwin':
-        return 'MacOSX'
-
-
 def get_os_distribution_version():
     system = platform.system()
-    if system == 'Linux':
-        return platform.linux_distribution()[1]
-    elif system == 'Darwin':
-        return platform.mac_ver()[0]
+    if system == 'Linux' : return distro.version()
+    if system == 'Darwin': return platform.mac_ver()[0]
 
 if __name__ == '__main__':
     def print_error(*args, **kwargs):

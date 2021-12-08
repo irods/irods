@@ -8,7 +8,7 @@ Used by the iRODS server, on startup, to validate its configuration files.
 git clone https://github.com/irods/irods_schema_configuration
 cd irods_schema_configuration
 git checkout v3
-python2 deploy_schemas_locally.py --output_directory_base /tmp/irods_schemas
+python3 deploy_schemas_locally.py --output_directory_base /tmp/irods_schemas
 ```
 
 This will create, if necessary, `/tmp/irods_schemas` and `/tmp/irods_schemas/v3`, then populate the latter with copies of the schema files currently found in `./schemas`. The schema copies will have their `id` fields updated to reflect their new locations (e.g. `server_config.json` will have `id` field `file:///tmp/irods_schemas/v3/server_config.json#`.
@@ -24,7 +24,7 @@ To determine which version of the schemas is used by an iRODS installation, chec
 #### `deploy_schemas_locally.py` usage:
 
 ```
-python2 deploy_schemas_locally.py --output_directory_base <path to desired deployment directory> [options]
+python3 deploy_schemas_locally.py --output_directory_base <path to desired deployment directory> [options]
 
 Options:
   -h, --help            show this help message and exit

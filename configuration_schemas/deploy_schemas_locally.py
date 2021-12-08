@@ -39,7 +39,7 @@ def main(template_directory, output_directory_base, url_base):
 
 if __name__ == '__main__':
     usage = '''\
-Usage: python2 %prog --output_directory_base <path to desired deployment directory> [options]
+Usage: python3 %prog --output_directory_base <path to desired deployment directory> [options]
 
   Deploys packaged schemas to <output_directory_base>.
 
@@ -47,7 +47,7 @@ Usage: python2 %prog --output_directory_base <path to desired deployment directo
 
   Example usage:
 
-    python2 %prog --output_directory_base /tmp/irods_schemas
+    python3 %prog --output_directory_base /tmp/irods_schemas
 
     This will create, if necessary, /tmp/irods_schemas and /tmp/irods_schemas/v{SCHEMA_VERSION}, then populate the latter with copies of the schema files currently found in {SCHEMAS_DIR}. The schema copies will have their "id" fields updated to reflect their new locations (e.g. "server_config.json" will have "id" field "file:///tmp/irods_schemas/v{SCHEMA_VERSION}/server_config.json#".
 

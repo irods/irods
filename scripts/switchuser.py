@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 from __future__ import print_function
 
 '''switchuser.py - A simple utility to switch irods user environment files, offsession (ie. after running iexit).

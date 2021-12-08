@@ -135,7 +135,7 @@ set(IRODS_COMPILE_DEFINITIONS ${IRODS_COMPILE_DEFINITIONS}
 
 if (NOT IRODS_LINUX_DISTRIBUTION_NAME)
   execute_process(
-    COMMAND "python2" "-c" "from __future__ import print_function; import platform; print(platform.linux_distribution()[0].split()[0].strip().lower(), end='')"
+    COMMAND "python3" "-c" "from __future__ import print_function; import distro; print(distro.id(), end='')"
     RESULT_VARIABLE IRODS_EXECUTE_PROCESS_RESULT_LINUX_DISTRIBUTION_NAME
     OUTPUT_VARIABLE IRODS_LINUX_DISTRIBUTION_NAME
     )
@@ -148,7 +148,7 @@ endif()
 
 if (NOT IRODS_LINUX_DISTRIBUTION_VERSION_MAJOR)
   execute_process(
-    COMMAND "python2" "-c" "from __future__ import print_function; import platform; print(platform.linux_distribution()[1].strip().lower().split('.')[0], end='')"
+    COMMAND "python3" "-c" "from __future__ import print_function; import distro; print(distro.major_version(), end='')"
     RESULT_VARIABLE IRODS_EXECUTE_PROCESS_RESULT_LINUX_DISTRIBUTION_VERSION_MAJOR
     OUTPUT_VARIABLE IRODS_LINUX_DISTRIBUTION_VERSION_MAJOR
     )
@@ -1669,7 +1669,7 @@ install(
   CODE
   "execute_process(
     COMMAND
-    python2 \"${CMAKE_SOURCE_DIR}/configuration_schemas/update_schema_ids_for_cmake.py\" \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${IRODS_HOME_DIRECTORY}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION}\" \"\${CMAKE_INSTALL_PREFIX}/${IRODS_HOME_DIRECTORY}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION}\"
+    python3 \"${CMAKE_SOURCE_DIR}/configuration_schemas/update_schema_ids_for_cmake.py\" \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${IRODS_HOME_DIRECTORY}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION}\" \"\${CMAKE_INSTALL_PREFIX}/${IRODS_HOME_DIRECTORY}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION}\"
   )"
   COMPONENT
   ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
