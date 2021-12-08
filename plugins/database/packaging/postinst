@@ -1,4 +1,4 @@
-python2 /var/lib/irods/scripts/chown_directories_for_postinstall.py
+python3 /var/lib/irods/scripts/chown_directories_for_postinstall.py
 ldconfig
 
 # detect whether this is an upgrade
@@ -20,7 +20,7 @@ if [ "$UPGRADE_FLAG" = "false" ] ; then
     echo " - permissions for existing user on existing database"
     echo ""
     echo "Then run the following setup script:"
-    echo "  sudo python2 /var/lib/irods/scripts/setup_irods.py"
+    echo "  sudo python3 /var/lib/irods/scripts/setup_irods.py"
     echo ""
     echo "======================================================================="
     echo ""

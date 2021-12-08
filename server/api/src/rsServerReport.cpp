@@ -254,7 +254,7 @@ irods::error get_host_system_information(json& _host_system_information)
     std::vector<std::string> args;
     args.push_back( "os_distribution_name" );
     std::string os_distribution_name;
-    ret = get_script_output_single_line( "python2", "system_identification.py", args, os_distribution_name );
+    ret = get_script_output_single_line( "python3", "system_identification.py", args, os_distribution_name );
     if ( ret.ok() ) {
         _host_system_information["os_distribution_name"] = os_distribution_name;
     } else {
@@ -265,7 +265,7 @@ irods::error get_host_system_information(json& _host_system_information)
     args.clear();
     args.push_back( "os_distribution_version" );
     std::string os_distribution_version;
-    ret = get_script_output_single_line( "python2", "system_identification.py", args, os_distribution_version );
+    ret = get_script_output_single_line( "python3", "system_identification.py", args, os_distribution_version );
     if (ret.ok()) {
         _host_system_information["os_distribution_version"] = os_distribution_version;
     } else {

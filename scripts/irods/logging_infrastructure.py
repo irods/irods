@@ -1,10 +1,10 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 
 from __future__ import print_function
 
 import os
 import sys
-import platform
+import distro
 import subprocess
 import shutil
 import logging
@@ -33,7 +33,7 @@ def setup_rsyslog_and_logrotate(register_tty=True):
         l.info('done.')
 
         l.info('Restarting rsyslog ...')
-        if 'Ubuntu' == platform.linux_distribution()[0]:
+        if 'ubuntu' == distro.id():
             subprocess.call(['service', 'rsyslog', 'restart'])
         else:
             subprocess.call(['systemctl', 'restart', 'rsyslog'])

@@ -44,11 +44,11 @@ Run the test suite as irods
 
 The following command will run the entire test suite and take a few seconds for each test.  This could take a couple hours to run on a relatively modern machine:
 
-  python2 run_tests.py --run_python_suite --include_auth_tests --run_devtesty
+  python3 run_tests.py --run_python_suite --include_auth_tests --run_devtesty
 
 The following command will run specific tests
 
-  python2 run_tests.py --run_specific_test <module name [.class name [.method name]]>
+  python3 run_tests.py --run_specific_test <module name [.class name [.method name]]>
 
 
 The run_tests.py script is located in the top-level 'scripts' directory and requires Python 2.6 or above
@@ -60,7 +60,7 @@ For profiling... still a work in progress
 # http://amjith.blogspot.com/2012/05/python-profiling-part-1.html
 sudo apt-get install python-profiler
 sudo easy_install nose-cprof nose-progressive
-python2 -m pstats stats.dat
+python3 -m pstats stats.dat
 % sort time
 % stats 10
 

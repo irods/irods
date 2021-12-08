@@ -12,7 +12,7 @@ import json
 import logging
 import mmap
 import os
-import platform
+import distro
 import pprint
 import psutil
 import pwd
@@ -252,7 +252,7 @@ def files_in_dir(path):
 
 def get_user_env(user):
     out, _ = execute_command(['su', '-', user, '-c',
-        'python2 -c "from __future__ import print_function; import os; import json; print(json.dumps(dict(os.environ)))"'])
+        'python3 -c "from __future__ import print_function; import os; import json; print(json.dumps(dict(os.environ)))"'])
     return json.loads(out)
 
 def switch_user(user, group=None):
@@ -329,10 +329,10 @@ def make_environment_dict(username, hostname, zone_name, use_ssl=True):
     return environment
 
 def get_os_distribution():
-    return platform.linux_distribution()[0]
+    return distro.id()
 
 def get_os_distribution_version_major():
-    return platform.linux_distribution()[1].split('.')[0]
+    return distro.major_version()
 
 def get_object_names_from_entries(ils_out):
     if isinstance(ils_out, six.string_types):

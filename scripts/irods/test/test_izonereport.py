@@ -59,7 +59,7 @@ class Test_Izonereport(unittest.TestCase):
     @unittest.skip('FIXME: Remove this line once we figure out why the test fails in ci')
     def test_izonereport_and_validate(self):
         jsonschema_installed = True
-        if lib.get_os_distribution() == 'Ubuntu' and lib.get_os_distribution_version_major() == '12':
+        if lib.get_os_distribution() == 'ubuntu' and lib.get_os_distribution_version_major() == '12':
             jsonschema_installed = False
 
         validate_json_path = os.path.join(IrodsConfig().scripts_directory, 'validate_json.py')
@@ -67,10 +67,10 @@ class Test_Izonereport(unittest.TestCase):
         # bad URL
         self.admin.assert_icommand("izonereport > %s" % (zone_report), use_unsafe_shell=True)
         if jsonschema_installed:
-            assert_command('python2 %s %s https://irods.org/badurl' % (validate_json_path, zone_report), 'STDERR_MULTILINE',
+            assert_command('python3 %s %s https://irods.org/badurl' % (validate_json_path, zone_report), 'STDERR_MULTILINE',
                                ['WARNING: Validation Failed'], desired_rc=2)
         else:
-            assert_command('python2 %s %s https://irods.org/badurl' % (validate_json_path, zone_report),
+            assert_command('python3 %s %s https://irods.org/badurl' % (validate_json_path, zone_report),
                                'STDERR_SINGLELINE', 'jsonschema not installed', desired_rc=2)
 
         # good URL
