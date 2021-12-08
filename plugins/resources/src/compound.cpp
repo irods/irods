@@ -1385,41 +1385,35 @@ irods::error compound_file_modified(
 
 } // compound_file_modified
 
-/// =-=-=-=-=-=-=-
 /// @brief interface to notify of a file operation
-irods::error compound_file_notify(
-    irods::plugin_context& _ctx,
-    const std::string*               _opr ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+irods::error compound_file_notify(irods::plugin_context& _ctx, const std::string* _opr)
+{
     // Check the operation parameters and update the physical path
     irods::error ret = compound_check_param< irods::file_object >( _ctx );
-    if ( ( result = ASSERT_PASS( ret, "Invalid resource context." ) ).ok() ) {
-        std::string operation;
-        ret = _ctx.prop_map().get< std::string >( OPERATION_TYPE, operation );
-        if ( ret.ok() ) {
-            rodsLog(
-                LOG_DEBUG,
+    if (!ret.ok()) {
+        return PASSMSG("Invalid resource context.", ret);
+    }
+
+    std::string operation;
+    ret = _ctx.prop_map().get< std::string >( OPERATION_TYPE, operation );
+    if ( ret.ok() ) {
+        rodsLog(LOG_DEBUG,
                 "compound_file_notify - oper [%s] changed to [%s]",
                 _opr->c_str(),
                 operation.c_str() );
-        } // if ret ok
-        if ( irods::WRITE_OPERATION == ( *_opr ) ||
-                irods::CREATE_OPERATION == ( *_opr ) ) {
-            _ctx.prop_map().set< std::string >( OPERATION_TYPE, ( *_opr ) );
-        }
-        else {
-            rodsLog(
-                LOG_DEBUG,
+    } // if ret ok
+
+    if ( irods::WRITE_OPERATION == ( *_opr ) ||
+            irods::CREATE_OPERATION == ( *_opr ) ) {
+        _ctx.prop_map().set< std::string >( OPERATION_TYPE, ( *_opr ) );
+    }
+    else {
+        rodsLog(LOG_DEBUG,
                 "compound_file_notify - skipping [%s]",
                 _opr->c_str() );
-        }
+    }
 
-    } // if valid
-
-    return result;
-
+    return SUCCESS();
 } // compound_file_notify
 
 // =-=-=-=-=-=-=-
