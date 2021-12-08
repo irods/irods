@@ -23,83 +23,79 @@ namespace irods {
         // TODO - stub
     }
 
-    error create_write_replicator::replicate(
-        plugin_context& _ctx,
-        const child_list_t& _siblings,
-        const object_oper& _object_oper ) {
-
-        error result = SUCCESS();
+    error create_write_replicator::replicate(plugin_context& _ctx,
+                                             const child_list_t& _siblings,
+                                             const object_oper& _object_oper)
+    {
         error last_error = SUCCESS();
-        if ( ( result = ASSERT_ERROR( _object_oper.operation() == irods::CREATE_OPERATION || _object_oper.operation() == irods::WRITE_OPERATION,
-                                      INVALID_OPERATION, "Performing create/write replication but objects operation is: \"%s\".",
-                                      _object_oper.operation().c_str() ) ).ok() ) {
-            // Generate a resource hierarchy string up to and including this resource
-            hierarchy_parser child_parser;
-            child_parser.set_string( child_ );
-            std::string sub_hier;
-            child_parser.str( sub_hier, current_resource_ );
+        if (!(_object_oper.operation() == irods::CREATE_OPERATION || _object_oper.operation() == irods::WRITE_OPERATION)) {
+            return ERROR(INVALID_OPERATION, fmt::format(
+                        "Performing create/write replication but objects operation is: \"{}\".",
+                        _object_oper.operation()));
+        }
 
-            file_object object = _object_oper.object();
-            child_list_t::const_iterator it;
-            for ( it = _siblings.begin(); it != _siblings.end(); ++it ) {
-                hierarchy_parser sibling = *it;
-                std::string hierarchy_string;
-                error ret = sibling.str( hierarchy_string );
-                if ( ( result = ASSERT_PASS( ret, "Failed to get the hierarchy string from the sibling hierarchy parser." ) ).ok() ) {
-                    dataObjInp_t dataObjInp;
-                    std::memset(&dataObjInp, 0, sizeof(dataObjInp));
-                    rstrcpy( dataObjInp.objPath, object.logical_path().c_str(), MAX_NAME_LEN );
-                    dataObjInp.createMode = object.mode();
+        // Generate a resource hierarchy string up to and including this resource
+        hierarchy_parser child_parser;
+        child_parser.set_string( child_ );
+        std::string sub_hier;
+        child_parser.str( sub_hier, current_resource_ );
 
-                    copyKeyVal( ( keyValPair_t* )&object.cond_input(), &dataObjInp.condInput );
-                    addKeyVal( &dataObjInp.condInput, RESC_HIER_STR_KW, child_.c_str() );
-                    addKeyVal( &dataObjInp.condInput, DEST_RESC_HIER_STR_KW, hierarchy_string.c_str() );
-                    addKeyVal( &dataObjInp.condInput, RESC_NAME_KW, root_resource_.c_str() );
-                    addKeyVal( &dataObjInp.condInput, DEST_RESC_NAME_KW, root_resource_.c_str() );
-                    addKeyVal( &dataObjInp.condInput, IN_PDMO_KW, sub_hier.c_str() );
+        file_object object = _object_oper.object();
+        child_list_t::const_iterator it;
+        for ( it = _siblings.begin(); it != _siblings.end(); ++it ) {
+            hierarchy_parser sibling = *it;
+            std::string hierarchy_string;
+            if (const auto err = sibling.str(hierarchy_string); !err.ok()) {
+                irods::log(PASSMSG("Failed to get the hierarchy string from the sibling hierarchy parser.", err));
+                continue;
+            }
 
-                    try {
-                        const auto status = data_obj_repl_with_retry( _ctx, dataObjInp );
-                        if (status < 0) {
-                            // Replications which failed simply because they were not allowed need not be reported.
-                            // Such failures should be fixed with a rebalance or some tree surgery.
-                            if (SYS_NOT_ALLOWED == status) {
-                                continue;
-                            }
+            dataObjInp_t dataObjInp{};
+            rstrcpy( dataObjInp.objPath, object.logical_path().c_str(), MAX_NAME_LEN );
+            dataObjInp.createMode = object.mode();
 
-                            char* sys_error = NULL;
-                            auto rods_error = rodsErrorName( status, &sys_error );
-                            result = ERROR(status, fmt::format(
+            copyKeyVal( ( keyValPair_t* )&object.cond_input(), &dataObjInp.condInput );
+            addKeyVal( &dataObjInp.condInput, RESC_HIER_STR_KW, child_.c_str() );
+            addKeyVal( &dataObjInp.condInput, DEST_RESC_HIER_STR_KW, hierarchy_string.c_str() );
+            addKeyVal( &dataObjInp.condInput, RESC_NAME_KW, root_resource_.c_str() );
+            addKeyVal( &dataObjInp.condInput, DEST_RESC_NAME_KW, root_resource_.c_str() );
+            addKeyVal( &dataObjInp.condInput, IN_PDMO_KW, sub_hier.c_str() );
+
+            try {
+                const auto status = data_obj_repl_with_retry( _ctx, dataObjInp );
+                if (status < 0) {
+                    // Replications which failed simply because they were not allowed need not be reported.
+                    // Such failures should be fixed with a rebalance or some tree surgery.
+                    if (SYS_NOT_ALLOWED == status) {
+                        continue;
+                    }
+
+                    char* sys_error = nullptr;
+                    auto rods_error = rodsErrorName( status, &sys_error );
+                    auto result = ERROR(status, fmt::format(
                                 "Failed to replicate the data object: \"{}\" from resource: \"{}\" to sibling: \"{}\" - {} {}.",
                                 object.logical_path(), child_, hierarchy_string, rods_error, sys_error));
-                            free( sys_error );
+                    free( sys_error );
 
-                            // cache last error to return, log it and add it to the
-                            // client side error stack
-                            last_error = result;
-                            irods::log( result );
-                            addRErrorMsg(
-                                &_ctx.comm()->rError,
-                                result.code(),
-                                result.result().c_str() );
-                            result = SUCCESS();
-                        }
-                    }
-                    catch ( const irods::exception& e ) {
-                        irods::log( irods::error( e ) );
-                    }
-
-                } // if hier str
-
-            } // for it
-
-        } // if ok
+                    // cache last error to return, log it and add it to the
+                    // client side error stack
+                    last_error = result;
+                    irods::log( result );
+                    addRErrorMsg(
+                            &_ctx.comm()->rError,
+                            result.code(),
+                            result.result().c_str() );
+                }
+            }
+            catch ( const irods::exception& e ) {
+                irods::log( irods::error( e ) );
+            }
+        } // for it
 
         if ( !last_error.ok() ) {
             return last_error;
         }
 
         return SUCCESS();
-    }
-
+    } // create_write_replicator::replicate
 }; // namespace irods
