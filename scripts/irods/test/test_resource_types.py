@@ -1991,7 +1991,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         filepath = lib.create_local_testfile(filename)
         self.admin.assert_icommand("iput '{}'".format(filename))
 
-        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', 'cacheResc')
+        self.admin.assert_icommand("ils -L '{}'".format(filename), 'STDOUT_SINGLELINE', 'cacheResc')
 
         physical_path = os.path.join(IrodsConfig().irods_directory, 'cacheRescVault')
         physical_path = os.path.join(physical_path,os.path.basename(self.admin.session_collection))
@@ -2012,8 +2012,8 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         # invoke rule
         self.admin.assert_icommand('irule -F ' + rule_file_path)
 
-        self.admin.assert_icommand("ils -l " + logical_path, 'STDOUT_SINGLELINE', 'cacheResc')
-        self.admin.assert_icommand("ils -l " + logical_path, 'STDOUT_SINGLELINE', 'archiveResc')
+        self.admin.assert_icommand("ils -l '{}'".format(logical_path), 'STDOUT_SINGLELINE', 'cacheResc')
+        self.admin.assert_icommand("ils -l '{}'".format(logical_path), 'STDOUT_SINGLELINE', 'archiveResc')
 
     def test_stage_to_cache(self):
         self.admin.assert_icommand("iadmin modresc demoResc context \"auto_repl=on\"" )
