@@ -86,126 +86,99 @@
 // NOTE: All storage resources must do this on the physical path stored in the file object and then update
 //       the file object's physical path with the full path
 
-// =-=-=-=-=-=-=-
 /// @brief Generates a full path name from the partial physical path and the specified resource's vault path
-irods::error non_blocking_generate_full_path(
-    irods::plugin_property_map& _prop_map,
-    const std::string&           _phy_path,
-    std::string&                 _ret_string ) {
-    irods::error result = SUCCESS();
-    irods::error ret;
-    std::string vault_path;
+irods::error non_blocking_generate_full_path(irods::plugin_property_map& _prop_map,
+                                             const std::string&          _phy_path,
+                                             std::string&                _ret_string)
+{
     // TODO - getting vault path by property will not likely work for coordinating nodes
-    ret = _prop_map.get<std::string>( irods::RESOURCE_PATH, vault_path );
-    if ( ( result = ASSERT_ERROR( ret.ok(), SYS_INVALID_INPUT_PARAM, "resource has no vault path." ) ).ok() ) {
-        if ( _phy_path.compare( 0, 1, "/" ) != 0 &&
-                _phy_path.compare( 0, vault_path.size(), vault_path ) != 0 ) {
-            _ret_string  = vault_path;
-            _ret_string += "/";
-            _ret_string += _phy_path;
-        }
-        else {
-            // The physical path already contains the vault path
-            _ret_string = _phy_path;
-        }
+    std::string vault_path;
+    if (const auto err = _prop_map.get<std::string>(irods::RESOURCE_PATH, vault_path); !err.ok()) {
+        return ERROR(SYS_INVALID_INPUT_PARAM, "resource has no vault path.");
     }
 
-    return result;
+    if ( _phy_path.compare( 0, 1, "/" ) != 0 &&
+            _phy_path.compare( 0, vault_path.size(), vault_path ) != 0 ) {
+        _ret_string  = vault_path;
+        _ret_string += "/";
+        _ret_string += _phy_path;
+    }
+    else {
+        // The physical path already contains the vault path
+        _ret_string = _phy_path;
+    }
 
+    return SUCCESS();
 } // non_blocking_generate_full_path
 
-// =-=-=-=-=-=-=-
 /// @brief update the physical path in the file object
-irods::error non_blocking_check_path(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+irods::error non_blocking_check_path(irods::plugin_context& _ctx)
+{
     // try dynamic cast on ptr, throw error otherwise
-    irods::data_object_ptr data_obj = boost::dynamic_pointer_cast< irods::data_object >( _ctx.fco() );
-    if ( ( result = ASSERT_ERROR( data_obj.get(), SYS_INVALID_INPUT_PARAM, "Failed to cast fco to data_object." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // NOTE: Must do this for all storage resources
-        std::string full_path;
-        irods::error ret = non_blocking_generate_full_path( _ctx.prop_map(),
-                           data_obj->physical_path(),
-                           full_path );
-        if ( ( result = ASSERT_PASS( ret, "Failed generating full path for object." ) ).ok() ) {
-            data_obj->physical_path( full_path );
-        }
+    irods::data_object_ptr data_obj = boost::dynamic_pointer_cast<irods::data_object>(_ctx.fco());
+    if (!data_obj.get()) {
+        return ERROR(SYS_INVALID_INPUT_PARAM, "Failed to cast fco to data_object.");
     }
 
-    return result;
+    // NOTE: Must do this for all storage resources
+    std::string full_path;
+    if (const auto err = non_blocking_generate_full_path(_ctx.prop_map(), data_obj->physical_path(), full_path); !err.ok()) {
+        return PASSMSG("Failed generating full path for object.", err);
+    }
 
+    data_obj->physical_path( full_path );
+
+    return SUCCESS();
 } // non_blocking_check_path
 
-// =-=-=-=-=-=-=-
 /// @brief Checks the basic operation parameters and updates the physical path in the file object
-template< typename DEST_TYPE >
-irods::error non_blocking_check_params_and_path(
-    irods::plugin_context& _ctx ) {
-
-    irods::error result = SUCCESS();
-    irods::error ret;
-
-    // =-=-=-=-=-=-=-
+template<typename DEST_TYPE>
+irods::error non_blocking_check_params_and_path(irods::plugin_context& _ctx)
+{
     // verify that the resc context is valid
-    ret = _ctx.valid< DEST_TYPE >();
-    if ( ( result = ASSERT_PASS( ret, "resource context is invalid." ) ).ok() ) {
-        result = non_blocking_check_path( _ctx );
+    if (const auto err = _ctx.valid<DEST_TYPE>(); !err.ok()) {
+        return PASSMSG("resource context is invalid.", err);
     }
 
-    return result;
-
+    return non_blocking_check_path(_ctx);
 } // non_blocking_check_params_and_path
 
-// =-=-=-=-=-=-=-
 /// @brief Checks the basic operation parameters and updates the physical path in the file object
-irods::error non_blocking_check_params_and_path(
-    irods::plugin_context& _ctx ) {
-
-    irods::error result = SUCCESS();
-    irods::error ret;
-
-    // =-=-=-=-=-=-=-
+irods::error non_blocking_check_params_and_path(irods::plugin_context& _ctx)
+{
     // verify that the resc context is valid
-    ret = _ctx.valid();
-    if ( ( result = ASSERT_PASS( ret, "non_blocking_check_params_and_path - resource context is invalid" ) ).ok() ) {
-        result = non_blocking_check_path( _ctx );
+    if (const auto err = _ctx.valid(); !err.ok()) {
+        return PASSMSG("non_blocking_check_params_and_path - resource context is invalid", err);
     }
 
-    return result;
-
+    return non_blocking_check_path(_ctx);
 } // non_blocking_check_params_and_path
 
-// =-=-=-=-=-=-=-
 //@brief Recursively make all of the dirs in the path
-irods::error non_blocking_file_mkdir_r(
-    const std::string&      path,
-    mode_t mode ) {
-    irods::error result = SUCCESS();
+irods::error non_blocking_file_mkdir_r(const std::string& path, mode_t mode)
+{
     std::string subdir;
     std::size_t pos = 0;
     bool done = false;
-    while ( !done && result.ok() ) {
+    while (!done) {
         pos = path.find_first_of( '/', pos + 1 );
         if ( pos > 0 ) {
             subdir = path.substr( 0, pos );
             int status = mkdir( subdir.c_str(), mode );
 
-            // =-=-=-=-=-=-=-
             // handle error cases
-            result = ASSERT_ERROR( status >= 0 || errno == EEXIST, UNIX_FILE_RENAME_ERR - errno, "mkdir error for \"%s\", errno = \"%s\", status = %d.",
-                                   subdir.c_str(), strerror( errno ), status );
+            if (status < 0 && errno != EEXIST) {
+                return ERROR(UNIX_FILE_RENAME_ERR - errno, fmt::format(
+                             "mkdir error for \"{}\", errno = \"{}\", status = {}.",
+                             subdir, strerror(errno), status));
+            }
         }
         if ( pos == std::string::npos ) {
             done = true;
         }
     }
 
-    return result;
-
+    return SUCCESS();
 } // non_blocking_file_mkdir_r
 
 // =-=-=-=-=-=-=-
@@ -220,863 +193,711 @@ irods::error non_blocking_file_mkdir_r(
 //      :: irods::error ret = _prop_map.get< double >( "my_key", my_var );
 // =-=-=-=-=-=-=-
 
-/// =-=-=-=-=-=-=-
 /// @brief interface to notify of a file registration
-irods::error non_blocking_file_registered(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-
+irods::error non_blocking_file_registered(irods::plugin_context& _ctx)
+{
     // Check the operation parameters and update the physical path
-    irods::error ret = non_blocking_check_params_and_path( _ctx );
-    result = ASSERT_PASS( ret, "Invalid parameters or physical path." );
+    if (const auto err = non_blocking_check_params_and_path(_ctx); !err.ok()) {
+        return PASSMSG("Invalid parameters or physical path.", err);
+    }
 
     // NOOP
-    return result;
+    return SUCCESS();
 }
 
-/// =-=-=-=-=-=-=-
 /// @brief interface to notify of a file unregistration
-irods::error non_blocking_file_unregistered(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-
+irods::error non_blocking_file_unregistered(irods::plugin_context& _ctx)
+{
     // Check the operation parameters and update the physical path
-    irods::error ret = non_blocking_check_params_and_path( _ctx );
-    result = ASSERT_PASS( ret, "Invalid parameters or physical path." );
+    if (const auto err = non_blocking_check_params_and_path(_ctx); !err.ok()) {
+        return PASSMSG("Invalid parameters or physical path.", err);
+    }
 
     // NOOP
-    return result;
+    return SUCCESS();
 }
 
-/// =-=-=-=-=-=-=-
 /// @brief interface to notify of a file modification
-irods::error non_blocking_file_modified(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-
+irods::error non_blocking_file_modified(irods::plugin_context& _ctx)
+{
     // Check the operation parameters and update the physical path
-    irods::error ret = non_blocking_check_params_and_path( _ctx );
-    result = ASSERT_PASS( ret, "Invalid parameters or physical path." );
+    if (const auto err = non_blocking_check_params_and_path(_ctx); !err.ok()) {
+        return PASSMSG("Invalid parameters or physical path.", err);
+    }
 
     // NOOP
-    return result;
+    return SUCCESS();
 }
 
-/// =-=-=-=-=-=-=-
 /// @brief interface to notify of a file operation
-irods::error non_blocking_file_notify(
-    irods::plugin_context& _ctx,
-    const std::string* ) {
-    irods::error result = SUCCESS();
+irods::error non_blocking_file_notify(irods::plugin_context& _ctx, const std::string*)
+{
     // Check the operation parameters and update the physical path
-    irods::error ret = non_blocking_check_params_and_path( _ctx );
-    result = ASSERT_PASS( ret, "Invalid parameters or physical path." );
+    if (const auto err = non_blocking_check_params_and_path(_ctx); !err.ok()) {
+        return PASSMSG("Invalid parameters or physical path.", err);
+    }
 
     // NOOP
-    return result;
+    return SUCCESS();
 }
 
-// =-=-=-=-=-=-=-
 // interface to determine free space on a device given a path
-irods::error non_blocking_file_getfs_freespace(
-    irods::plugin_context& _ctx ) {
+irods::error non_blocking_file_getfs_freespace(irods::plugin_context& _ctx)
+{
+    // Check the operation parameters and update the physical path
+    if (const auto err = non_blocking_check_params_and_path(_ctx); !err.ok()) {
+        return PASSMSG("Invalid parameters or physical path.", err);
+    }
+
     irods::error result = SUCCESS();
 
-    // =-=-=-=-=-=-=-
-    // Check the operation parameters and update the physical path
-    irods::error ret = non_blocking_check_params_and_path( _ctx );
-    if ( ( result = ASSERT_PASS( ret, "Invalid parameters or physical path." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // cast down the hierarchy to the desired object
-        irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
-        size_t found = fco->physical_path().find_last_of( "/" );
-        std::string path = fco->physical_path().substr( 0, found + 1 );
-        int status = -1;
-        rodsLong_t fssize = USER_NO_SUPPORT_ERR;
+    // cast down the hierarchy to the desired object
+    irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
+    size_t found = fco->physical_path().find_last_of( "/" );
+    std::string path = fco->physical_path().substr( 0, found + 1 );
+    int status = -1;
+    rodsLong_t fssize = USER_NO_SUPPORT_ERR;
 #if defined(solaris_platform)
-        struct statvfs statbuf;
+    struct statvfs statbuf;
 #else
-        struct statfs statbuf;
+    struct statfs statbuf;
 #endif
 
 #if defined(solaris_platform) || defined(sgi_platform)   ||     \
-defined(aix_platform)     || defined(linux_platform) ||     \
-defined(osx_platform)
+    defined(aix_platform)     || defined(linux_platform) ||     \
+    defined(osx_platform)
 #if defined(solaris_platform)
-        status = statvfs( path.c_str(), &statbuf );
+    status = statvfs( path.c_str(), &statbuf );
 #else
 #if defined(sgi_platform)
-        status = statfs( path.c_str(), &statbuf, sizeof( struct statfs ), 0 );
+    status = statfs( path.c_str(), &statbuf, sizeof( struct statfs ), 0 );
 #else
-        status = statfs( path.c_str(), &statbuf );
+    status = statfs( path.c_str(), &statbuf );
 #endif
 #endif
 
-        // =-=-=-=-=-=-=-
-        // handle error, if any
-        int err_status = UNIX_FILE_GET_FS_FREESPACE_ERR - errno;
-        if ( ( result = ASSERT_ERROR( status >= 0, err_status, "Statfs error for \"%s\", status = %d.",
-                                      path.c_str(), err_status ) ).ok() ) {
+    // handle error, if any
+    if (status < 0) {
+        const int err_status = UNIX_FILE_GET_FS_FREESPACE_ERR - errno;
+        return ERROR(err_status, fmt::format(
+                    "Statfs error for \"{}\", status = {}.",
+                    path, err_status));
+    }
 
 #if defined(sgi_platform)
-            if ( statbuf.f_frsize > 0 ) {
-                fssize = statbuf.f_frsize;
-            }
-            else {
-                fssize = statbuf.f_bsize;
-            }
-            fssize *= statbuf.f_bavail;
+    if ( statbuf.f_frsize > 0 ) {
+        fssize = statbuf.f_frsize;
+    }
+    else {
+        fssize = statbuf.f_bsize;
+    }
+    fssize *= statbuf.f_bavail;
 #endif
 
 #if defined(aix_platform) || defined(osx_platform) ||   \
-defined(linux_platform)
-            fssize = statbuf.f_bavail * statbuf.f_bsize;
+    defined(linux_platform)
+    fssize = statbuf.f_bavail * statbuf.f_bsize;
 #endif
 
 #if defined(sgi_platform)
-            fssize = statbuf.f_bfree * statbuf.f_bsize;
+    fssize = statbuf.f_bfree * statbuf.f_bsize;
 #endif
-            result.code( fssize );
-        }
+    result.code( fssize );
 
 #endif /* solaris_platform, sgi_platform .... */
-    }
 
     return result;
-
 } // non_blocking_file_get_fsfreespace
 
-// =-=-=-=-=-=-=-
 // interface for POSIX create
-irods::error non_blocking_file_create(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+irods::error non_blocking_file_create(irods::plugin_context& _ctx)
+{
     // Check the operation parameters and update the physical path
-    irods::error ret = non_blocking_check_params_and_path( _ctx );
-    if ( ( result = ASSERT_PASS( ret, "Invalid parameters or physical path." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
-
-        ret = non_blocking_file_getfs_freespace( _ctx );
-        if ( ( result = ASSERT_PASS( ret, "Error determining freespace on system." ) ).ok() ) {
-            rodsLong_t file_size = fco->size();
-            if ( ( result = ASSERT_ERROR( file_size < 0 || ret.code() >= file_size, USER_FILE_TOO_LARGE, "File size: %ld is greater than space left on device: %ld",
-                                          file_size, ret.code() ) ).ok() ) {
-
-                // =-=-=-=-=-=-=-
-                // make call to umask & open for create
-                mode_t myMask = umask( ( mode_t ) 0000 );
-                int    fd     = open( fco->physical_path().c_str(), O_RDWR | O_CREAT | O_EXCL, fco->mode() );
-                int errsav = errno;
-
-                // =-=-=-=-=-=-=-
-                // reset the old mask
-                ( void ) umask( ( mode_t ) myMask );
-
-                // =-=-=-=-=-=-=-
-                // if we got a 0 descriptor, try again
-                if ( fd == 0 ) {
-
-                    close( fd );
-                    int null_fd = open( "/dev/null", O_RDWR, 0 );
-                    fd = open( fco->physical_path().c_str(), O_RDWR | O_CREAT | O_EXCL, fco->mode() );
-                    errsav = errno;
-                    if ( null_fd >= 0 ) {
-                        close( null_fd );
-                    }
-                    rodsLog( LOG_NOTICE, "non_blocking_file_create: 0 descriptor" );
-                }
-
-                // =-=-=-=-=-=-=-
-                // trap error case with bad fd
-                if ( fd < 0 ) {
-                    int status = UNIX_FILE_CREATE_ERR - errsav;
-                    std::stringstream msg;
-                    msg << "create error for \"";
-                    msg << fco->physical_path();
-                    msg << "\", errno = \"";
-                    msg << strerror( errsav );
-                    msg << "\".";
-                    // =-=-=-=-=-=-=-
-                    // WARNING :: Major Assumptions are made upstream and use the FD also as a
-                    //         :: Status, if this is not done EVERYTHING BREAKS!!!!111one
-                    fco->file_descriptor( status );
-                    result = ERROR( status, msg.str() );
-                }
-                else {
-                    // =-=-=-=-=-=-=-
-                    // cache file descriptor in out-variable
-                    fco->file_descriptor( fd );
-                    result.code( fd );
-                }
-            }
-        }
+    if (const auto err = non_blocking_check_params_and_path(_ctx); !err.ok()) {
+        return PASSMSG("Invalid parameters or physical path.", err);
     }
-    // =-=-=-=-=-=-=-
-    // declare victory!
-    return result;
 
+    // get ref to fco
+    irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
+
+    const auto freespace_err = non_blocking_file_getfs_freespace(_ctx);
+    if (!freespace_err.ok()) {
+        return PASSMSG("Error determining freespace on system.", freespace_err);
+    }
+
+    rodsLong_t file_size = fco->size();
+    if (file_size >= 0 && freespace_err.code() < file_size) {
+        return ERROR(USER_FILE_TOO_LARGE, fmt::format(
+                    "File size: {} is greater than space left on device: {}",
+                    file_size, freespace_err.code()));
+    }
+
+    // make call to umask & open for create
+    mode_t myMask = umask( ( mode_t ) 0000 );
+    int    fd     = open( fco->physical_path().c_str(), O_RDWR | O_CREAT | O_EXCL, fco->mode() );
+    int errsav = errno;
+
+    // reset the old mask
+    ( void ) umask( ( mode_t ) myMask );
+
+    // if we got a 0 descriptor, try again
+    if ( fd == 0 ) {
+
+        close( fd );
+        int null_fd = open( "/dev/null", O_RDWR, 0 );
+        fd = open( fco->physical_path().c_str(), O_RDWR | O_CREAT | O_EXCL, fco->mode() );
+        errsav = errno;
+        if ( null_fd >= 0 ) {
+            close( null_fd );
+        }
+        rodsLog( LOG_NOTICE, "non_blocking_file_create: 0 descriptor" );
+    }
+
+    // trap error case with bad fd
+    if ( fd < 0 ) {
+        int status = UNIX_FILE_CREATE_ERR - errsav;
+        std::stringstream msg;
+        msg << "create error for \"";
+        msg << fco->physical_path();
+        msg << "\", errno = \"";
+        msg << strerror( errsav );
+        msg << "\".";
+        // WARNING :: Major Assumptions are made upstream and use the FD also as a
+        //         :: Status, if this is not done EVERYTHING BREAKS!!!!111one
+        fco->file_descriptor( status );
+        return ERROR( status, msg.str() );
+    }
+
+    // cache file descriptor in out-variable
+    fco->file_descriptor( fd );
+
+    auto result = SUCCESS();
+    result.code( fd );
+    return result;
 } // non_blocking_file_create
 
-// =-=-=-=-=-=-=-
 // interface for POSIX Open
-irods::error non_blocking_file_open(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
+irods::error non_blocking_file_open(irods::plugin_context& _ctx)
+{
+    // Check the operation parameters and update the physical path
+    if (const auto err = non_blocking_check_params_and_path(_ctx); !err.ok()) {
+        return PASSMSG("Invalid parameters or physical path.", err);
+    }
+
+    // get ref to fco
+    irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
 
     // =-=-=-=-=-=-=-
-    // Check the operation parameters and update the physical path
-    irods::error ret = non_blocking_check_params_and_path( _ctx );
-    if ( ( result = ASSERT_PASS( ret, "Invalid parameters or physical path." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
-
-        // =-=-=-=-=-=-=-
-        // handle OSX weirdness...
-        int flags = fco->flags();
+    // handle OSX weirdness...
+    int flags = fco->flags();
 
 #if defined(osx_platform)
-        // For osx, O_TRUNC = 0x0400, O_TRUNC = 0x200 for other system
-        if ( flags & 0x200 ) {
-            flags = flags ^ 0x200;
-            flags = flags | O_TRUNC;
-        }
+    // For osx, O_TRUNC = 0x0400, O_TRUNC = 0x200 for other system
+    if ( flags & 0x200 ) {
+        flags = flags ^ 0x200;
+        flags = flags | O_TRUNC;
+    }
 #endif
-        // =-=-=-=-=-=-=-
-        // make call to open
-        errno = 0;
-        int fd = open( fco->physical_path().c_str(), flags, fco->mode() );
-        int errsav = errno;
+    // =-=-=-=-=-=-=-
+    // make call to open
+    errno = 0;
+    int fd = open( fco->physical_path().c_str(), flags, fco->mode() );
+    int errsav = errno;
 
-        // =-=-=-=-=-=-=-
-        // if we got a 0 descriptor, try again
-        if ( fd == 0 ) {
-            close( fd );
-            int null_fd = open( "/dev/null", O_RDWR, 0 );
-            fd = open( fco->physical_path().c_str(), flags, fco->mode() );
-            errsav = errno;
-            if ( null_fd >= 0 ) {
-                close( null_fd );
-            }
-            rodsLog( LOG_NOTICE, "non_blocking_file_open: 0 descriptor" );
+    // =-=-=-=-=-=-=-
+    // if we got a 0 descriptor, try again
+    if ( fd == 0 ) {
+        close( fd );
+        int null_fd = open( "/dev/null", O_RDWR, 0 );
+        fd = open( fco->physical_path().c_str(), flags, fco->mode() );
+        errsav = errno;
+        if ( null_fd >= 0 ) {
+            close( null_fd );
         }
-
-        // =-=-=-=-=-=-=-
-        // cache status in the file object
-        fco->file_descriptor( fd );
-
-        // =-=-=-=-=-=-=-
-        // did we still get an error?
-        int status = UNIX_FILE_OPEN_ERR - errsav;
-        if ( fd < 0 ) {
-            std::stringstream msg;
-            msg << "Open error for \"";
-            msg << fco->physical_path();
-            msg << "\", errno = \"";
-            msg << strerror( errsav );
-            msg << "\", status = ";
-            msg << status;
-            msg << ", flags = ";
-            msg << flags;
-            msg << ".";
-            result = ERROR( status, msg.str() );
-        }
-        else {
-            result.code( fd );
-        }
+        rodsLog( LOG_NOTICE, "non_blocking_file_open: 0 descriptor" );
     }
 
     // =-=-=-=-=-=-=-
-    // declare victory!
-    return result;
+    // cache status in the file object
+    fco->file_descriptor( fd );
 
+    // =-=-=-=-=-=-=-
+    // did we still get an error?
+    int status = UNIX_FILE_OPEN_ERR - errsav;
+    if ( fd < 0 ) {
+        std::stringstream msg;
+        msg << "Open error for \"";
+        msg << fco->physical_path();
+        msg << "\", errno = \"";
+        msg << strerror( errsav );
+        msg << "\", status = ";
+        msg << status;
+        msg << ", flags = ";
+        msg << flags;
+        msg << ".";
+        return ERROR( status, msg.str() );
+    }
+
+    // declare victory!
+    auto result = SUCCESS();
+    result.code( fd );
+    return result;
 } // non_blocking_file_open
 
-// =-=-=-=-=-=-=-
 // interface for POSIX Read
-irods::error non_blocking_file_read(
-    irods::plugin_context& _ctx,
-    void*                  _buf,
-    const int              _len ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+irods::error non_blocking_file_read(irods::plugin_context& _ctx,
+                                    void*                  _buf,
+                                    const int              _len)
+{
     // Check the operation parameters and update the physical path
-    irods::error ret = non_blocking_check_params_and_path( _ctx );
-    if ( ( result = ASSERT_PASS( ret, "Invalid parameters or physical path." ) ).ok() ) {
+    if (const auto err = non_blocking_check_params_and_path(_ctx); !err.ok()) {
+        return PASSMSG("Invalid parameters or physical path.", err);
+    }
 
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
-        int status;
-        struct timeval tv;
-        int nbytes;
-        int toRead;
-        char *tmpPtr;
-        fd_set set;
-        int fd = fco->file_descriptor();
+    // get ref to fco
+    irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
+    int status;
+    struct timeval tv;
+    int nbytes;
+    int toRead;
+    char *tmpPtr;
+    fd_set set;
+    int fd = fco->file_descriptor();
 
-        std::memset(&tv, 0, sizeof(tv));
-        tv.tv_sec = NB_READ_TOUT_SEC;
+    std::memset(&tv, 0, sizeof(tv));
+    tv.tv_sec = NB_READ_TOUT_SEC;
 
-        /* Initialize the file descriptor set. */
-        FD_ZERO( &set );
-        FD_SET( fd, &set );
+    /* Initialize the file descriptor set. */
+    FD_ZERO( &set );
+    FD_SET( fd, &set );
 
-        toRead = _len;
-        tmpPtr = ( char * ) _buf;
+    toRead = _len;
+    tmpPtr = ( char * ) _buf;
 
-        while ( toRead > 0 ) {
+    while ( toRead > 0 ) {
 #ifndef _WIN32
-            status = select( fd + 1, &set, NULL, NULL, &tv );
-            if ( status == 0 ) {
-                /* timedout */
-                if ( _len - toRead > 0 ) {
-                    return CODE( _len - toRead );
-                }
-                else {
-                    std::stringstream msg;
-                    msg << "timeout error.";
-                    return ERROR( UNIX_FILE_OPR_TIMEOUT_ERR - errno, msg.str() );
-                }
+        status = select( fd + 1, &set, NULL, NULL, &tv );
+        if ( status == 0 ) {
+            /* timedout */
+            if ( _len - toRead > 0 ) {
+                return CODE( _len - toRead );
             }
-            else if ( status < 0 ) {
-                if ( errno == EINTR ) {
-                    errno = 0;
-                    continue;
-                }
-                else {
-                    std::stringstream msg;
-                    msg << "file read error.";
-                    return ERROR( UNIX_FILE_READ_ERR - errno, msg.str() );
-                }
+            else {
+                std::stringstream msg;
+                msg << "timeout error.";
+                return ERROR( UNIX_FILE_OPR_TIMEOUT_ERR - errno, msg.str() );
             }
+        }
+        else if ( status < 0 ) {
+            if ( errno == EINTR ) {
+                errno = 0;
+                continue;
+            }
+            else {
+                std::stringstream msg;
+                msg << "file read error.";
+                return ERROR( UNIX_FILE_READ_ERR - errno, msg.str() );
+            }
+        }
 #endif
 
-            nbytes = read( fco->file_descriptor(), ( void * ) tmpPtr, toRead );
-            if ( nbytes < 0 ) {
-                if ( errno == EINTR ) {
-                    /* interrupted */
-                    errno = 0;
-                    nbytes = 0;
-                }
-                else if ( toRead == _len ) {
-                    return ERROR( UNIX_FILE_READ_ERR - errno, "file read error" );
-                }
-                else {
-                    break;
-                }
+        nbytes = read( fco->file_descriptor(), ( void * ) tmpPtr, toRead );
+        if ( nbytes < 0 ) {
+            if ( errno == EINTR ) {
+                /* interrupted */
+                errno = 0;
+                nbytes = 0;
             }
-            else if ( nbytes == 0 ) {
+            else if ( toRead == _len ) {
+                return ERROR( UNIX_FILE_READ_ERR - errno, "file read error" );
+            }
+            else {
                 break;
             }
+        }
+        else if ( nbytes == 0 ) {
+            break;
+        }
 
-            toRead -= nbytes;
-            tmpPtr += nbytes;
+        toRead -= nbytes;
+        tmpPtr += nbytes;
 
-        } // while
+    } // while
 
-        result.code( _len - toRead );
-    }
-
-    // =-=-=-=-=-=-=-
-    // win!
+    auto result = SUCCESS();
+    result.code( _len - toRead );
     return result;
-
 } // non_blocking_file_read
 
-// =-=-=-=-=-=-=-
 // interface for POSIX Write
-irods::error non_blocking_file_write(
-    irods::plugin_context& _ctx,
-    const void*            _buf,
-    const int              _len ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+irods::error non_blocking_file_write(irods::plugin_context& _ctx,
+                                     const void*            _buf,
+                                     const int              _len)
+{
     // Check the operation parameters and update the physical path
-    irods::error ret = non_blocking_check_params_and_path( _ctx );
-    if ( ( result = ASSERT_PASS( ret, "Invalid parameters or physical path." ) ).ok() ) {
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
+    if (const auto err = non_blocking_check_params_and_path(_ctx); !err.ok()) {
+        return PASSMSG("Invalid parameters or physical path.", err);
+    }
 
-        int fd = fco->file_descriptor();
-        int nbytes   = 0;
-        int toWrite  = 0;
-        int status   = 0;
-        char* tmpPtr = 0;
+    // get ref to fco
+    irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
 
-        struct timeval tv;
-        std::memset(&tv, 0, sizeof(tv));
-        tv.tv_sec = NB_WRITE_TOUT_SEC;
+    int fd = fco->file_descriptor();
+    int nbytes   = 0;
+    int toWrite  = 0;
+    int status   = 0;
+    char* tmpPtr = 0;
 
-        /* Initialize the file descriptor set. */
-        fd_set set;
-        FD_ZERO( &set );
-        FD_SET( fd, &set );
+    struct timeval tv;
+    std::memset(&tv, 0, sizeof(tv));
+    tv.tv_sec = NB_WRITE_TOUT_SEC;
 
-        toWrite = _len;
-        tmpPtr = ( char * ) _buf;
+    /* Initialize the file descriptor set. */
+    fd_set set;
+    FD_ZERO( &set );
+    FD_SET( fd, &set );
 
-        while ( toWrite > 0 ) {
+    toWrite = _len;
+    tmpPtr = ( char * ) _buf;
+
+    while ( toWrite > 0 ) {
 #ifndef _WIN32
-            status = select( fd + 1, NULL, &set, NULL, &tv );
-            if ( status == 0 ) {
-                /* timedout */
-                return ERROR( UNIX_FILE_OPR_TIMEOUT_ERR - errno, "time out error" );;
+        status = select( fd + 1, NULL, &set, NULL, &tv );
+        if ( status == 0 ) {
+            /* timedout */
+            return ERROR( UNIX_FILE_OPR_TIMEOUT_ERR - errno, "time out error" );;
+        }
+        else if ( status < 0 ) {
+            if ( errno == EINTR ) {
+                errno = 0;
+                continue;
             }
-            else if ( status < 0 ) {
-                if ( errno == EINTR ) {
-                    errno = 0;
-                    continue;
-                }
-                else {
-                    return ERROR( UNIX_FILE_WRITE_ERR - errno, "file write error" );
-                }
+            else {
+                return ERROR( UNIX_FILE_WRITE_ERR - errno, "file write error" );
             }
+        }
 #endif
 
-            nbytes = write( fco->file_descriptor(), ( void * ) tmpPtr, _len );
-            if ( nbytes < 0 ) {
-                if ( errno == EINTR ) {
-                    /* interrupted */
-                    errno = 0;
-                    nbytes = 0;
-                }
-                else  {
-                    return ERROR( UNIX_FILE_WRITE_ERR - errno, "file write error" );
-                }
+        nbytes = write( fco->file_descriptor(), ( void * ) tmpPtr, _len );
+        if ( nbytes < 0 ) {
+            if ( errno == EINTR ) {
+                /* interrupted */
+                errno = 0;
+                nbytes = 0;
             }
+            else  {
+                return ERROR( UNIX_FILE_WRITE_ERR - errno, "file write error" );
+            }
+        }
 
-            toWrite -= nbytes;
-            tmpPtr  += nbytes;
+        toWrite -= nbytes;
+        tmpPtr  += nbytes;
 
-        } // while
+    } // while
 
-        result.code( _len );
-
-    }
-
-    // =-=-=-=-=-=-=-
-    // win!
+    auto result = SUCCESS();
+    result.code( _len );
     return result;
-
 } // non_blocking_file_write
 
-// =-=-=-=-=-=-=-
 // interface for POSIX Close
-irods::error non_blocking_file_close(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+irods::error non_blocking_file_close(irods::plugin_context& _ctx)
+{
     // Check the operation parameters and update the physical path
-    irods::error ret = non_blocking_check_params_and_path( _ctx );
-    if ( ( result = ASSERT_PASS( ret, "Invalid parameters or physical path." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
-
-        // =-=-=-=-=-=-=-
-        // make the call to close
-        int status = close( fco->file_descriptor() );
-
-        // =-=-=-=-=-=-=-
-        // log any error
-        int err_status = UNIX_FILE_CLOSE_ERR - errno;
-        if ( !( result = ASSERT_ERROR( status >= 0, err_status, "Close error for file: \"%s\", errno = \"%s\", status = %d.",
-                                       fco->physical_path().c_str(), strerror( errno ), err_status ) ).ok() ) {
-            result.code( err_status );
-        }
-        else {
-            result.code( status );
-        }
+    if (const auto err = non_blocking_check_params_and_path(_ctx); !err.ok()) {
+        return PASSMSG("Invalid parameters or physical path.", err);
     }
 
-    return result;
+    // get ref to fco
+    irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
 
+    // make the call to close
+    int status = close( fco->file_descriptor() );
+
+    // log any error
+    if (status < 0) {
+        const int err_status = UNIX_FILE_CLOSE_ERR - errno;
+        return ERROR(err_status, fmt::format(
+                    "Close error for file: \"{}\", errno = \"{}\", status = {}.",
+                    fco->physical_path(), strerror(errno), err_status));
+    }
+
+    auto result = SUCCESS();
+    result.code( status );
+    return result;
 } // non_blocking_file_close
 
-// =-=-=-=-=-=-=-
 // interface for POSIX Unlink
-irods::error non_blocking_file_unlink(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+irods::error non_blocking_file_unlink(irods::plugin_context& _ctx)
+{
     // Check the operation parameters and update the physical path
-    irods::error ret = non_blocking_check_params_and_path( _ctx );
-    if ( ( result = ASSERT_PASS( ret, "Invalid parameters or physical path." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        irods::data_object_ptr fco = boost::dynamic_pointer_cast< irods::data_object >( _ctx.fco() );
-
-        // =-=-=-=-=-=-=-
-        // make the call to unlink
-        int status = unlink( fco->physical_path().c_str() );
-
-        // =-=-=-=-=-=-=-
-        // error handling
-        int err_status = UNIX_FILE_UNLINK_ERR - errno;
-        if ( !( result = ASSERT_ERROR( status >= 0, err_status, "Unlink error for \"%s\", errno = \"%s\", status = %d.",
-                                       fco->physical_path().c_str(), strerror( errno ), err_status ) ).ok() ) {
-
-            result.code( err_status );
-        }
-        else {
-            result.code( status );
-        }
+    if (const auto err = non_blocking_check_params_and_path(_ctx); !err.ok()) {
+        return PASSMSG("Invalid parameters or physical path.", err);
     }
 
-    return result;
+    // get ref to fco
+    irods::data_object_ptr fco = boost::dynamic_pointer_cast< irods::data_object >( _ctx.fco() );
 
+    // make the call to unlink
+    int status = unlink( fco->physical_path().c_str() );
+
+    // error handling
+    if (status < 0) {
+        const int err_status = UNIX_FILE_UNLINK_ERR - errno;
+        return ERROR(err_status, fmt::format(
+                    "Unlink error for \"{}\", errno = \"{}\", status = {}.",
+                    fco->physical_path(), strerror(errno), err_status));
+    }
+
+    auto result = SUCCESS();
+    result.code( status );
+    return result;
 } // non_blocking_file_unlink
 
-// =-=-=-=-=-=-=-
 // interface for POSIX Stat
-irods::error non_blocking_file_stat(
-    irods::plugin_context& _ctx,
-    struct stat*                        _statbuf ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+irods::error non_blocking_file_stat(irods::plugin_context& _ctx,
+                                    struct stat*           _statbuf)
+{
     // NOTE:: this function assumes the object's physical path is
     //        correct and should not have the vault path
     //        prepended - hcj
-
-    irods::error ret = _ctx.valid();
-    if ( ( result = ASSERT_PASS( ret, "resource context is invalid." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        irods::data_object_ptr fco = boost::dynamic_pointer_cast< irods::data_object >( _ctx.fco() );
-
-        // =-=-=-=-=-=-=-
-        // make the call to stat
-        int status = stat( fco->physical_path().c_str(), _statbuf );
-
-        // =-=-=-=-=-=-=-
-        // return an error if necessary
-        int err_status = UNIX_FILE_STAT_ERR - errno;
-        if ( ( result = ASSERT_ERROR( status >= 0, err_status, "Stat error for \"%s\", errno = \"%s\", status = %d.",
-                                      fco->physical_path().c_str(), strerror( errno ), err_status ) ).ok() ) {
-            result.code( status );
-        }
+    if (const auto err = _ctx.valid(); !err.ok()) {
+        return PASSMSG("resource context is invalid.", err);
     }
 
-    return result;
+    // get ref to fco
+    irods::data_object_ptr fco = boost::dynamic_pointer_cast< irods::data_object >( _ctx.fco() );
 
+    // make the call to stat
+    int status = stat( fco->physical_path().c_str(), _statbuf );
+
+    // return an error if necessary
+    if (status < 0) {
+        const int err_status = UNIX_FILE_STAT_ERR - errno;
+        return ERROR(err_status, fmt::format(
+                    "Stat error for \"{}\", errno = \"{}\", status = {}.",
+                    fco->physical_path(), strerror(errno), err_status));
+    }
+
+    auto result = SUCCESS();
+    result.code( status );
+    return result;
 } // non_blocking_file_stat
 
-// =-=-=-=-=-=-=-
 // interface for POSIX lseek
-irods::error non_blocking_file_lseek(
-    irods::plugin_context& _ctx,
-    const long long                           _offset,
-    const int                                 _whence ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+irods::error non_blocking_file_lseek(irods::plugin_context& _ctx,
+                                     const long long        _offset,
+                                     const int              _whence)
+{
     // Check the operation parameters and update the physical path
-    irods::error ret = non_blocking_check_params_and_path( _ctx );
-    if ( ( result = ASSERT_PASS( ret, "Invalid parameters or physical path." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
-
-        // =-=-=-=-=-=-=-
-        // make the call to lseek
-        long long status = lseek( fco->file_descriptor(),  _offset, _whence );
-
-        // =-=-=-=-=-=-=-
-        // return an error if necessary
-        long long err_status = UNIX_FILE_LSEEK_ERR - errno;
-        if ( ( result = ASSERT_ERROR( status >= 0, err_status, "Lseek error for \"%s\", errno = \"%s\", status = %ld.",
-                                      fco->physical_path().c_str(), strerror( errno ), err_status ) ).ok() ) {
-            result.code( status );
-        }
+    if (const auto err = non_blocking_check_params_and_path(_ctx); !err.ok()) {
+        return PASSMSG("Invalid parameters or physical path.", err);
     }
 
-    return result;
+    // get ref to fco
+    irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
 
+    // make the call to lseek
+    long long status = lseek( fco->file_descriptor(),  _offset, _whence );
+
+    // return an error if necessary
+    if (status < 0) {
+        const long long err_status = UNIX_FILE_LSEEK_ERR - errno;
+        return ERROR(err_status, fmt::format(
+                    "Lseek error for \"{}\", errno = \"{}\", status = {}.",
+                    fco->physical_path(), strerror(errno), err_status));
+    }
+
+    auto result = SUCCESS();
+    result.code( status );
+    return result;
 } // non_blocking_file_lseek
 
-// =-=-=-=-=-=-=-
 // interface for POSIX mkdir
-irods::error non_blocking_file_mkdir(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+irods::error non_blocking_file_mkdir(irods::plugin_context& _ctx)
+{
     // NOTE :: this function assumes the object's physical path is correct and
     //         should not have the vault path prepended - hcj
-
-    irods::error ret = _ctx.valid< irods::collection_object >();
-    if ( ( result = ASSERT_PASS( ret, "resource context is invalid." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // cast down the chain to our understood object type
-        irods::collection_object_ptr fco = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
-
-        // =-=-=-=-=-=-=-
-        // make the call to mkdir & umask
-        mode_t myMask = umask( ( mode_t ) 0000 );
-        int    status = mkdir( fco->physical_path().c_str(), fco->mode() );
-
-        // =-=-=-=-=-=-=-
-        // reset the old mask
-        umask( ( mode_t ) myMask );
-
-        // =-=-=-=-=-=-=-
-        // return an error if necessary
-        result.code( status );
-        int err_status = UNIX_FILE_MKDIR_ERR - errno;
-        if ( ( result = ASSERT_ERROR( status >= 0, err_status, "Mkdir error for \"%s\", errno = \"%s\", status = %d.",
-                                      fco->physical_path().c_str(), strerror( errno ), err_status ) ).ok() ) {
-            result.code( status );
-        }
+    if (const auto err = _ctx.valid<irods::collection_object>(); !err.ok()) {
+        return PASSMSG("resource context is invalid.", err);
     }
-    return result;
 
+    // cast down the chain to our understood object type
+    irods::collection_object_ptr fco = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
+
+    // make the call to mkdir & umask
+    mode_t myMask = umask( ( mode_t ) 0000 );
+    int    status = mkdir( fco->physical_path().c_str(), fco->mode() );
+
+    // reset the old mask
+    umask( ( mode_t ) myMask );
+
+    // return an error if necessary
+    if (status < 0) {
+        const int err_status = UNIX_FILE_MKDIR_ERR - errno;
+        return ERROR(err_status, fmt::format(
+                    "Mkdir error for \"{}\", errno = \"{}\", status = {}.",
+                    fco->physical_path(), strerror(errno), err_status));
+    }
+
+    auto result = SUCCESS();
+    result.code( status );
+    return result;
 } // non_blocking_file_mkdir
 
-// =-=-=-=-=-=-=-
 // interface for POSIX rmdir
-irods::error non_blocking_file_rmdir(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
-    // Check the operation parameters and update the physical path
-    irods::error ret = non_blocking_check_params_and_path( _ctx );
-    if ( ( result = ASSERT_PASS( ret, "Invalid parameters or physical path." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // cast down the chain to our understood object type
-        irods::collection_object_ptr fco = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
-
-        // =-=-=-=-=-=-=-
-        // make the call to chmod
-        int status = rmdir( fco->physical_path().c_str() );
-
-        // =-=-=-=-=-=-=-
-        // return an error if necessary
-        int err_status = UNIX_FILE_RMDIR_ERR - errno;
-        result = ASSERT_ERROR( status >= 0, err_status, "Rmdir error for \"%s\", errno = \"%s\", status = %d.",
-                               fco->physical_path().c_str(), strerror( errno ), err_status );
+irods::error non_blocking_file_rmdir(irods::plugin_context& _ctx)
+{
+    if (const auto err = non_blocking_check_params_and_path<irods::collection_object>(_ctx); !err.ok()) {
+        return PASSMSG("Invalid parameters or physical path.", err);
     }
 
-    return result;
+    // cast down the chain to our understood object type
+    irods::collection_object_ptr fco = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
 
+    if (const int status = rmdir(fco->physical_path().c_str()); status < 0) {
+        const int err_status = UNIX_FILE_RMDIR_ERR - errno;
+        return ERROR(err_status, fmt::format(
+                    "Rmdir error for \"{}\", errno = \"{}\", status = {}.",
+                    fco->physical_path(), strerror(errno), err_status));
+    }
+
+    return SUCCESS();
 } // non_blocking_file_rmdir
 
-// =-=-=-=-=-=-=-
 // interface for POSIX opendir
-irods::error non_blocking_file_opendir(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
-    // Check the operation parameters and update the physical path
-    irods::error ret = non_blocking_check_params_and_path< irods::collection_object >( _ctx );
-    if ( ( result = ASSERT_PASS( ret, "Invalid parameters or physical path." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // cast down the chain to our understood object type
-        irods::collection_object_ptr fco = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
-
-        // =-=-=-=-=-=-=-
-        // make the call to opendir
-        DIR* dir_ptr = opendir( fco->physical_path().c_str() );
-
-        // =-=-=-=-=-=-=-
-        // cache status in out variable
-        int err_status = UNIX_FILE_OPENDIR_ERR - errno;
-
-        // =-=-=-=-=-=-=-
-        // return an error if necessary
-        if ( NULL != dir_ptr ) {
-            // =-=-=-=-=-=-=-
-            // cache dir_ptr in out variables
-            fco->directory_pointer( dir_ptr );
-        }
-        else {
-            std::stringstream msg;
-            msg << "Opendir error for \"";
-            msg << fco->physical_path();
-            msg << "\", errno = \"";
-            msg << strerror( errno );
-            msg << "\", status = ";
-            msg << err_status;
-            msg << ".";
-            result = ERROR( err_status, msg.str() );
-        }
+irods::error non_blocking_file_opendir(irods::plugin_context& _ctx)
+{
+    if (const auto err = non_blocking_check_params_and_path(_ctx); !err.ok()) {
+        return PASSMSG("Invalid parameters or physical path.", err);
     }
 
-    return result;
+    // cast down the chain to our understood object type
+    irods::collection_object_ptr fco = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
 
+    // make the call to opendir
+    DIR* dir_ptr = opendir( fco->physical_path().c_str() );
+
+    // return an error if necessary
+    if (!dir_ptr) {
+        // cache status in out variable
+        const int err_status = UNIX_FILE_OPENDIR_ERR - errno;
+        return ERROR(err_status, fmt::format(
+                    "Opendir error for \"{}\", errno = \"{}\", status = {}.",
+                    fco->physical_path(), strerror(errno), err_status));
+    }
+
+    // cache dir_ptr in out variables
+    fco->directory_pointer( dir_ptr );
+
+    return SUCCESS();
 } // non_blocking_file_opendir
 
-// =-=-=-=-=-=-=-
 // interface for POSIX closedir
-irods::error non_blocking_file_closedir(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
-    // Check the operation parameters and update the physical path
-    irods::error ret = non_blocking_check_params_and_path< irods::collection_object >( _ctx );
-    if ( ( result = ASSERT_PASS( ret, "Invalid parameters or physical path." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // cast down the chain to our understood object type
-        irods::collection_object_ptr fco = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
-
-        // =-=-=-=-=-=-=-
-        // make the call to opendir
-        int status = closedir( fco->directory_pointer() );
-
-        // =-=-=-=-=-=-=-
-        // return an error if necessary
-        int err_status = UNIX_FILE_CLOSEDIR_ERR - errno;
-        result = ASSERT_ERROR( status >= 0, err_status, "Closedir error for \"%s\", errno = \"%s\", status = %d.",
-                               fco->physical_path().c_str(), strerror( errno ), err_status );
+irods::error non_blocking_file_closedir(irods::plugin_context& _ctx)
+{
+    if (const auto err = non_blocking_check_params_and_path<irods::collection_object>(_ctx); !err.ok()) {
+        return PASSMSG("Invalid parameters or physical path.", err);
     }
 
-    return result;
+    // cast down the chain to our understood object type
+    irods::collection_object_ptr fco = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
 
+    // return an error if necessary
+    if (const int status = closedir(fco->directory_pointer()); status < 0) {
+        const int err_status = UNIX_FILE_CLOSEDIR_ERR - errno;
+        return ERROR(err_status, fmt::format(
+                    "Closedir error for \"{}\", errno = \"{}\", status = {}.",
+                    fco->physical_path(), strerror(errno), err_status));
+    }
+
+    return SUCCESS();
 } // non_blocking_file_closedir
 
-// =-=-=-=-=-=-=-
 // interface for POSIX readdir
-irods::error non_blocking_file_readdir(
-    irods::plugin_context& _ctx,
-    struct rodsDirent**                 _dirent_ptr ) {
-    irods::error result = SUCCESS();
+irods::error non_blocking_file_readdir(irods::plugin_context& _ctx,
+                                       struct rodsDirent**    _dirent_ptr)
+{
+    if (const auto err = non_blocking_check_params_and_path<irods::collection_object>(_ctx); !err.ok()) {
+        return PASSMSG("Invalid parameters or physical path.", err);
+    }
 
-    // =-=-=-=-=-=-=-
-    // Check the operation parameters and update the physical path
-    irods::error ret = non_blocking_check_params_and_path< irods::collection_object >( _ctx );
-    if ( ( result = ASSERT_PASS( ret, "Invalid parameters or physical path." ) ).ok() ) {
+    // cast down the chain to our understood object type
+    irods::collection_object_ptr fco = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
 
-        // =-=-=-=-=-=-=-
-        // cast down the chain to our understood object type
-        irods::collection_object_ptr fco = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
+    // zero out errno?
+    errno = 0;
 
-        // =-=-=-=-=-=-=-
-        // zero out errno?
-        errno = 0;
+    // make the call to readdir
+    struct dirent* tmp_dirent = readdir( fco->directory_pointer() );
 
-        // =-=-=-=-=-=-=-
-        // make the call to readdir
-        struct dirent * tmp_dirent = readdir( fco->directory_pointer() );
+    // handle error cases
+    if (!tmp_dirent) {
+        // cache status in out variable
+        if (0 != errno) {
+            const int err_status = UNIX_FILE_READDIR_ERR - errno;
+            return ERROR(err_status, fmt::format(
+                        "Readdir error, errno = \"{}\", status = {}.",
+                        strerror(errno), err_status));
+        }
 
-        // =-=-=-=-=-=-=-
-        // handle error cases
-        if ( ( result = ASSERT_ERROR( tmp_dirent != NULL, -1, "End of directory list reached." ) ).ok() ) {
+        return ERROR(-1, "End of directory list reached.");
+    }
 
-            // =-=-=-=-=-=-=-
-            // alloc dirent as necessary
-            if ( !( *_dirent_ptr ) ) {
-                ( *_dirent_ptr ) = ( rodsDirent_t* )malloc( sizeof( rodsDirent_t ) );
-            }
+    // alloc dirent as necessary
+    if ( !( *_dirent_ptr ) ) {
+        ( *_dirent_ptr ) = ( rodsDirent_t* )malloc( sizeof( rodsDirent_t ) );
+    }
 
-            // =-=-=-=-=-=-=-
-            // convert standard dirent to rods dirent struct
-            int status = direntToRodsDirent( ( *_dirent_ptr ), tmp_dirent );
-            if ( status < 0 ) {
-                irods::log( ERROR( status, "direntToRodsDirent failed." ) );
-            }
+    // convert standard dirent to rods dirent struct
+    if (const int status = direntToRodsDirent(*_dirent_ptr, tmp_dirent); status < 0) {
+        irods::log(ERROR(status, "direntToRodsDirent failed."));
+    }
 
 #if defined(solaris_platform)
-            rstrcpy( ( *_dirent_ptr )->d_name, tmp_dirent->d_name, MAX_NAME_LEN );
+    rstrcpy( ( *_dirent_ptr )->d_name, tmp_dirent->d_name, MAX_NAME_LEN );
 #endif
-        }
-        else {
-            // =-=-=-=-=-=-=-
-            // cache status in out variable
-            int status = UNIX_FILE_READDIR_ERR - errno;
-            if ( ( result = ASSERT_ERROR( errno == 0, status, "Readdir error, status = %d, errno= \"%s\".",
-                                          status, strerror( errno ) ) ).ok() ) {
-                result.code( -1 );
-            }
-        }
-    }
 
-    return result;
-
+    return SUCCESS();
 } // non_blocking_file_readdir
 
-// =-=-=-=-=-=-=-
 // interface for POSIX readdir
-irods::error non_blocking_file_rename(
-    irods::plugin_context& _ctx,
-    const char*                         _new_file_name ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
-    // Check the operation parameters and update the physical path
-    irods::error ret = non_blocking_check_params_and_path( _ctx );
-    if ( ( result = ASSERT_PASS( ret, "Invalid parameters or physical path." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // manufacture a new path from the new file name
-        std::string new_full_path;
-        ret = non_blocking_generate_full_path( _ctx.prop_map(), _new_file_name, new_full_path );
-        if ( ( result = ASSERT_PASS( ret, "Unable to generate full path for destination file: \"%s\".",
-                                     _new_file_name ) ).ok() ) {
-
-            // =-=-=-=-=-=-=-
-            // cast down the hierarchy to the desired object
-            irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
-
-            // =-=-=-=-=-=-=-
-            // make the directories in the path to the new file
-            std::string new_path = new_full_path;
-            std::size_t last_slash = new_path.find_last_of( '/' );
-            new_path.erase( last_slash );
-            ret = non_blocking_file_mkdir_r( new_path.c_str(), 0750 );
-            if ( ( result = ASSERT_PASS( ret, "Mkdir error for \"%s\".", new_path.c_str() ) ).ok() ) {
-
-            }
-
-            // =-=-=-=-=-=-=-
-            // make the call to rename
-            int status = rename( fco->physical_path().c_str(), new_full_path.c_str() );
-
-            // =-=-=-=-=-=-=-
-            // handle error cases
-            if ( status < 0 ) {
-                status = UNIX_FILE_RENAME_ERR - errno;
-
-                std::stringstream msg;
-                msg << "non_blocking_file_rename: rename error for ";
-                msg <<  fco->physical_path();
-                msg << " to ";
-                msg << new_full_path;
-                msg << ", errno = ";
-                msg << strerror( errno );
-                msg << ", status = ";
-                msg << status;
-
-                return ERROR( status, msg.str() );
-            }
-        }
+irods::error non_blocking_file_rename(irods::plugin_context& _ctx,
+                                      const char*            _new_file_name)
+{
+    if (const auto err = non_blocking_check_params_and_path(_ctx); !err.ok()) {
+        return PASSMSG("Invalid parameters or physical path.", err);
     }
 
-    return result;
+    // manufacture a new path from the new file name
+    std::string new_full_path;
+    if (const auto err = non_blocking_generate_full_path(_ctx.prop_map(), _new_file_name, new_full_path); !err.ok()) {
+        return PASSMSG(fmt::format(
+                    "Unable to generate full path for destination file: \"{}\".",
+                    _new_file_name), err);
+    }
 
+    // cast down the hierarchy to the desired object
+    irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
+
+    // make the directories in the path to the new file
+    std::string new_path = new_full_path;
+    std::size_t last_slash = new_path.find_last_of( '/' );
+    new_path.erase( last_slash );
+    if (const auto err = non_blocking_file_mkdir_r(new_path.c_str(), 0750); !err.ok()) {
+        irods::log(LOG_DEBUG, err.result());
+    }
+
+    // make the call to rename
+    if (int status = rename(fco->physical_path().c_str(), new_full_path.c_str()); status < 0) {
+        status = UNIX_FILE_RENAME_ERR - errno;
+
+        return ERROR(status, fmt::format(
+                    "Rename error for \"{}\" to \"{}\", errno = \"{}\", status = {}.",
+                    fco->physical_path(), new_full_path, strerror(errno), status));
+    }
+
+    return SUCCESS();
 } // non_blocking_file_rename
 
 // =-=-=-=-=-=-=-
@@ -1184,9 +1005,13 @@ non_blockingFileCopyPlugin( int         mode,
             rodsLong_t bytesCopied = 0;
             while ( result.ok() && ( bytesRead = read( inFd, ( void * ) myBuf.data(), trans_buff_size ) ) > 0 ) {
                 int bytesWritten = write( outFd, ( void * ) myBuf.data(), bytesRead );
-                err_status = UNIX_FILE_WRITE_ERR - errno;
-                if ( ( result = ASSERT_ERROR( bytesWritten > 0, err_status, "Write error for srcFileName %s, status = %d",
-                                              destFileName, status ) ).ok() ) {
+                if (bytesWritten <= 0) {
+                    err_status = UNIX_FILE_WRITE_ERR - errno;
+                    result = ERROR(err_status, fmt::format(
+                                "Write error for srcFileName {}, status = {}",
+                                destFileName, status));
+                }
+                else {
                     bytesCopied += bytesWritten;
                 }
             }
@@ -1194,8 +1019,11 @@ non_blockingFileCopyPlugin( int         mode,
             close( outFd );
 
             if ( result.ok() ) {
-                result = ASSERT_ERROR( bytesCopied == statbuf.st_size, SYS_COPY_LEN_ERR, "Copied size %lld does not match source size %lld of %s",
-                                       bytesCopied, statbuf.st_size, srcFileName );
+                if (bytesCopied != statbuf.st_size) {
+                    result = ERROR(SYS_COPY_LEN_ERR, fmt::format(
+                                "Copied size {} does not match source size {} of {}",
+                                bytesCopied, statbuf.st_size, srcFileName));
+                }
             }
         }
         close( inFd );
@@ -1203,54 +1031,36 @@ non_blockingFileCopyPlugin( int         mode,
     return result;
 }
 
-// =-=-=-=-=-=-=-
 // non_blockingStageToCache - This routine is for testing the TEST_STAGE_FILE_TYPE.
 // Just copy the file from filename to cacheFilename. optionalInfo info
 // is not used.
-irods::error non_blocking_file_stage_to_cache(
-    irods::plugin_context& _ctx,
-    const char*                      _cache_file_name ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
-    // Check the operation parameters and update the physical path
-    irods::error ret = non_blocking_check_params_and_path( _ctx );
-    if ( ( result = ASSERT_PASS( ret, "Invalid parameters or physical path." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // cast down the hierarchy to the desired object
-        irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
-
-        ret = non_blockingFileCopyPlugin( fco->mode(), fco->physical_path().c_str(), _cache_file_name );
-        result = ASSERT_PASS( ret, "Failed" );
+irods::error non_blocking_file_stage_to_cache(irods::plugin_context& _ctx,
+                                              const char*            _cache_file_name)
+{
+    if (const auto err = non_blocking_check_params_and_path(_ctx); !err.ok()) {
+        return PASSMSG("Invalid parameters or physical path.", err);
     }
-    return result;
+
+    // cast down the hierarchy to the desired object
+    irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
+
+    return non_blockingFileCopyPlugin(fco->mode(), fco->physical_path().c_str(), _cache_file_name);
 } // non_blocking_file_stage_to_cache
 
-// =-=-=-=-=-=-=-
 // non_blockingSyncToArch - This routine is for testing the TEST_STAGE_FILE_TYPE.
 // Just copy the file from cacheFilename to filename. optionalInfo info
 // is not used.
-irods::error non_blocking_file_sync_to_arch(
-    irods::plugin_context& _ctx,
-    const char*                     _cache_file_name ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
-    // Check the operation parameters and update the physical path
-    irods::error ret = non_blocking_check_params_and_path( _ctx );
-    if ( ( result = ASSERT_PASS( ret, "Invalid parameters or physical path." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // cast down the hierarchy to the desired object
-        irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
-
-        ret = non_blockingFileCopyPlugin( fco->mode(), _cache_file_name, fco->physical_path().c_str() );
-        result = ASSERT_PASS( ret, "Failed" );
+irods::error non_blocking_file_sync_to_arch(irods::plugin_context& _ctx,
+                                            const char*            _cache_file_name)
+{
+    if (const auto err = non_blocking_check_params_and_path(_ctx); !err.ok()) {
+        return PASSMSG("Invalid parameters or physical path.", err);
     }
 
-    return result;
+    // cast down the hierarchy to the desired object
+    irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
 
+    return non_blockingFileCopyPlugin(fco->mode(), _cache_file_name, fco->physical_path().c_str());
 } // non_blocking_file_sync_to_arch
 
 // =-=-=-=-=-=-=-
