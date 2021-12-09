@@ -65,123 +65,98 @@
 // NOTE: All storage resources must do this on the physical path stored in the file object and then update
 //       the file object's physical path with the full path
 
-// =-=-=-=-=-=-=-
 /// @brief Generates a full path name from the partial physical path and the specified resource's vault path
 irods::error mock_archive_generate_full_path(
     irods::plugin_property_map& _prop_map,
-    const std::string&           _phy_path,
-    std::string&                 _ret_string ) {
-    irods::error result = SUCCESS();
-    irods::error ret;
-    std::string vault_path;
-
+    const std::string&          _phy_path,
+    std::string&                _ret_string)
+{
     // TODO - getting vault path by property will not likely work for coordinating nodes
-    ret = _prop_map.get<std::string>( irods::RESOURCE_PATH, vault_path );
-    if ( ( result = ASSERT_PASS( ret, "Resource has no vault path." ) ).ok() ) {
-
-        if ( _phy_path.compare( 0, 1, "/" ) != 0 &&
-                _phy_path.compare( 0, vault_path.size(), vault_path ) != 0 ) {
-            _ret_string  = vault_path;
-            _ret_string += "/";
-            _ret_string += _phy_path;
-        }
-        else {
-            // The physical path already contains the vault path
-            _ret_string = _phy_path;
-        }
+    std::string vault_path;
+    if (const auto err = _prop_map.get<std::string>(irods::RESOURCE_PATH, vault_path); !err.ok()) {
+        return PASSMSG("Resource has no vault path.", err);
     }
 
-    return result;
+    if ( _phy_path.compare( 0, 1, "/" ) != 0 &&
+            _phy_path.compare( 0, vault_path.size(), vault_path ) != 0 ) {
+        _ret_string  = vault_path;
+        _ret_string += "/";
+        _ret_string += _phy_path;
+    }
+    else {
+        // The physical path already contains the vault path
+        _ret_string = _phy_path;
+    }
 
+    return SUCCESS();
 } // mock_archive_generate_full_path
 
-// =-=-=-=-=-=-=-
 /// @brief update the physical path in the file object
-irods::error unix_check_path(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
+irods::error mock_archive_check_path(irods::plugin_context& _ctx)
+{
     try {
         irods::data_object_ptr data_obj = boost::dynamic_pointer_cast< irods::data_object >( _ctx.fco() );
 
-        // =-=-=-=-=-=-=-
         // NOTE: Must do this for all storage resources
         std::string full_path;
-        irods::error ret = mock_archive_generate_full_path( _ctx.prop_map(),
-                           data_obj->physical_path(),
-                           full_path );
-        if ( ( result = ASSERT_PASS( ret, "Failed generating full path for object." ) ).ok() ) {
-
-            data_obj->physical_path( full_path );
+        if (const auto err = mock_archive_generate_full_path(_ctx.prop_map(), data_obj->physical_path(), full_path); !err.ok()) {
+            return PASSMSG("Failed generating full path for object.", err);
         }
 
-        return result;
+        data_obj->physical_path( full_path );
 
+        return SUCCESS();
     }
-    catch ( const std::bad_cast& ) {
-        return ERROR( SYS_INVALID_INPUT_PARAM, "failed to cast fco to data_object" );
-
+    catch (const std::bad_cast&) {
+        return ERROR(SYS_INVALID_INPUT_PARAM, "failed to cast fco to data_object");
     }
+} // mock_archive_check_path
 
-} // unix_check_path
-
-// =-=-=-=-=-=-=-
 /// @brief Checks the basic operation parameters and updates the physical path in the file object
-template< typename DEST_TYPE >
-irods::error unix_check_params_and_path(
-    irods::plugin_context& _ctx ) {
-
-    irods::error result = SUCCESS();
-    irods::error ret;
-
-    // =-=-=-=-=-=-=-
+template<typename DEST_TYPE>
+irods::error mock_archive_check_params_and_path(irods::plugin_context& _ctx)
+{
     // verify that the resc context is valid
-    ret = _ctx.valid< DEST_TYPE >();
-    if ( ( result = ASSERT_PASS( ret, "Resource context is invalid." ) ).ok() ) {
-
-        result = unix_check_path( _ctx );
+    if (const auto err = _ctx.valid<DEST_TYPE>(); !err.ok()) {
+        return PASSMSG("Resource context is invalid.", err);
     }
 
-    return result;
+    return mock_archive_check_path(_ctx);
+} // mock_archive_check_params_and_path
 
-} // unix_check_params_and_path
-
-// =-=-=-=-=-=-=-
 //@brief Recursively make all of the dirs in the path
-irods::error mock_archive_mkdir_r(
-    const std::string& path,
-    mode_t mode ) {
-    irods::error result = SUCCESS();
+irods::error mock_archive_mkdir_r(const std::string& path, mode_t mode)
+{
     std::string subdir;
     std::size_t pos = 0;
     bool done = false;
-    while ( !done && result.ok() ) {
+    while ( !done ) {
         pos = path.find_first_of( '/', pos + 1 );
         if ( pos > 0 ) {
             subdir = path.substr( 0, pos );
             int status = mkdir( subdir.c_str(), mode );
 
-            // =-=-=-=-=-=-=-
             // handle error cases
-            result = ASSERT_ERROR( status >= 0 || errno == EEXIST, UNIX_FILE_RENAME_ERR - errno, "mkdir error for \"%s\", errno = \"%s\", status = %d.",
-                                   subdir.c_str(), strerror( errno ), status );
+            if (status < 0 && errno != EEXIST) {
+                return ERROR(UNIX_FILE_RENAME_ERR - errno, fmt::format(
+                            "mkdir error for \"{}\", errno = \"{}\", status = {}.",
+                            subdir, strerror(errno), status));
+            }
         }
         if ( pos == std::string::npos ) {
             done = true;
         }
     }
 
-    return result;
-
+    return SUCCESS();
 } // mock_archive_mkdir_r
 
 
 irods::error make_hashed_path(
     irods::plugin_property_map& _prop_map,
     const std::string&          _path,
-    std::string&                _hashed ) {
-    irods::error result;
-
-    // =-=-=-=-=-=-=-
+    std::string&                _hashed)
+{
     // hash the physical path to reflect object store behavior
     MD5_CTX context;
     char md5Buf[ MAX_NAME_LEN ];
@@ -197,21 +172,19 @@ irods::error make_hashed_path(
         ins << std::setfill( '0' ) << std::setw( 2 ) << std::hex << ( int )hash[i];
     }
 
-    // =-=-=-=-=-=-=-
     // get the vault path for the resource
     std::string path;
-    irods::error ret = _prop_map.get< std::string >( irods::RESOURCE_PATH, path );
-    if ( ( result = ASSERT_PASS( ret, "Failed to get vault path for resource." ) ).ok() ) {
-        // =-=-=-=-=-=-=-
-        // append the hash to the path as the new 'cache file name'
-        path += "/";
-        path += ins.str();
-
-        _hashed = path;
+    if (const auto err = _prop_map.get<std::string>(irods::RESOURCE_PATH, path); !err.ok()) {
+        return PASSMSG("Failed to get vault path for resource.", err);
     }
 
-    return result;
+    // append the hash to the path as the new 'cache file name'
+    path += "/";
+    path += ins.str();
 
+    _hashed = path;
+
+    return SUCCESS();
 } // make_hashed_path
 
 // =-=-=-=-=-=-=-
@@ -226,50 +199,40 @@ irods::error make_hashed_path(
 //      :: irods::error ret = _prop_map.get< double >( "my_key", my_var );
 // =-=-=-=-=-=-=-
 
-// =-=-=-=-=-=-=-
 // interface for POSIX mkdir
-irods::error mock_archive_file_mkdir(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+irods::error mock_archive_file_mkdir(irods::plugin_context& _ctx)
+{
     // NOTE :: this function assumes the object's physical path is correct and
     //         should not have the vault path prepended - hcj
-
-    irods::error ret = _ctx.valid< irods::collection_object >();
-    if ( ( result = ASSERT_PASS( ret, "resource context is invalid." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // cast down the chain to our understood object type
-        irods::collection_object_ptr fco = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
-
-        // =-=-=-=-=-=-=-
-        // make the call to mkdir & umask
-        mode_t myMask = umask( ( mode_t ) 0000 );
-        int    status = mkdir( fco->physical_path().c_str(), fco->mode() );
-
-        // =-=-=-=-=-=-=-
-        // reset the old mask
-        umask( ( mode_t ) myMask );
-
-        // =-=-=-=-=-=-=-
-        // return an error if necessary
-        result.code( status );
-        int err_status = UNIX_FILE_MKDIR_ERR - errno;
-        if ( ( result = ASSERT_ERROR( status >= 0, err_status, "mkdir error for [%s], errno = [%s], status = %d.",
-                                      fco->physical_path().c_str(), strerror( errno ), err_status ) ).ok() ) {
-            result.code( status );
-        }
+    if (const auto err = _ctx.valid<irods::collection_object>(); !err.ok()) {
+        return PASSMSG("resource context is invalid.", err);
     }
-    return result;
 
+    // cast down the chain to our understood object type
+    irods::collection_object_ptr fco = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
+
+    // make the call to mkdir & umask
+    mode_t myMask = umask( ( mode_t ) 0000 );
+    int    status = mkdir( fco->physical_path().c_str(), fco->mode() );
+
+    // reset the old mask
+    umask( ( mode_t ) myMask );
+
+    // return an error if necessary
+    if (status < 0) {
+        const int err_status = UNIX_FILE_MKDIR_ERR - errno;
+        return ERROR(err_status, fmt::format(
+                    "mkdir error for [{}], errno = [{}], status = {}.",
+                    fco->physical_path(), strerror(errno), err_status));
+    }
+
+    auto result = SUCCESS();
+    result.code( status );
+    return result;
 } // mock_archive_file_mkdir
 
-irods::error mock_archive_file_stat(
-    irods::plugin_context& ,
-    struct stat*                    _statbuf ) {
-    irods::error result = SUCCESS();
-    // =-=-=-=-=-=-=-
+irods::error mock_archive_file_stat(irods::plugin_context&, struct stat* _statbuf)
+{
     // manufacture a stat as we do not have a
     // microservice to perform this duty
     _statbuf->st_mode  = S_IFREG;
@@ -279,116 +242,95 @@ irods::error mock_archive_file_stat(
     _statbuf->st_atime = _statbuf->st_mtime = _statbuf->st_ctime = time( 0 );
     _statbuf->st_size  = UNKNOWN_FILE_SZ;
     return SUCCESS();
-
 } // mock_archive_file_stat
 
-// =-=-=-=-=-=-=-
-// interface for POSIX readdir
-irods::error mock_archive_file_rename(
-    irods::plugin_context& _ctx,
-    const char*                     _new_file_name ) {
-    // =-=-=-=-=-=-=-
+// interface for POSIX rename
+irods::error mock_archive_file_rename(irods::plugin_context& _ctx,
+                                      const char*            _new_file_name)
+{
     // Check the operation parameters and update the physical path
-    irods::error result = SUCCESS();
-    irods::error ret = unix_check_params_and_path< irods::data_object >( _ctx );
-    if ( ( result = ASSERT_PASS( ret, "Invalid parameters or physical path." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // manufacture a new path from the new file name
-        std::string new_full_path;
-        ret = mock_archive_generate_full_path( _ctx.prop_map(), _new_file_name, new_full_path );
-        if ( ( result = ASSERT_PASS( ret, "Unable to generate full path for destination file: \"%s\".",
-                                     _new_file_name ) ).ok() ) {
-            // =-=-=-=-=-=-=-
-            // cast down the hierarchy to the desired object
-            irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
-
-            // =-=-=-=-=-=-=-
-            // get hashed names for the old path
-            std::string new_hash{};
-            ret = make_hashed_path(
-                      _ctx.prop_map(),
-                      _new_file_name,
-                      new_hash );
-            rodsLog(LOG_DEBUG, "[%s:%d] - old path:[%s],new_path:[%s],new_hashed_path:[%s]",
-                __FUNCTION__, __LINE__, fco->physical_path().c_str(), new_full_path.c_str(), new_hash.c_str());
-            if ( ( result = ASSERT_PASS( ret, "Failed to gen hashed path" ) ).ok() ) {
-                // =-=-=-=-=-=-=-
-                // make the call to rename
-                int status = rename( fco->physical_path().c_str(), new_hash.c_str() );
-
-                // =-=-=-=-=-=-=-
-                // handle error cases
-                int err_status = UNIX_FILE_RENAME_ERR - errno;
-                if ( ( result = ASSERT_ERROR( status >= 0, err_status, "Rename error for \"%s\" to \"%s\", errno = \"%s\", status = %d.",
-                                              fco->physical_path().c_str(), new_hash.c_str(), strerror( errno ), err_status ) ).ok() ) {
-                    fco->physical_path( new_hash );
-                    result.code( status );
-                }
-            }
-        }
+    if (const auto err = mock_archive_check_params_and_path<irods::data_object>(_ctx); !err.ok()) {
+        return PASSMSG("Invalid parameters or physical path.", err);
     }
 
-    return result;
+    // manufacture a new path from the new file name
+    std::string new_full_path;
+    if (const auto err = mock_archive_generate_full_path(_ctx.prop_map(), _new_file_name, new_full_path); !err.ok()) {
+        return PASSMSG(fmt::format(
+                    "Unable to generate full path for destination file: \"{}\".",
+                    _new_file_name), err);
+    }
 
+    // cast down the hierarchy to the desired object
+    irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
+
+    // get hashed names for the old path
+    std::string new_hash{};
+    if (const auto err = make_hashed_path(_ctx.prop_map(), _new_file_name, new_hash); !err.ok()) {
+        return PASSMSG("Failed to gen hashed path", err);
+    }
+
+    rodsLog(LOG_DEBUG, "[%s:%d] - old path:[%s],new_path:[%s],new_hashed_path:[%s]",
+            __FUNCTION__, __LINE__, fco->physical_path().c_str(), new_full_path.c_str(), new_hash.c_str());
+
+    // make the call to rename
+    const int status = rename(fco->physical_path().c_str(), new_hash.c_str());
+
+    if (status < 0) {
+        const int err_status = UNIX_FILE_RENAME_ERR - errno;
+        return ERROR(err_status, fmt::format(
+                    "Rename error for \"{}\" to \"{}\", errno = \"{}\", status = {}.",
+                    fco->physical_path(), new_hash, strerror(errno), err_status));
+    }
+
+    fco->physical_path( new_hash );
+
+    auto result = SUCCESS();
+    result.code( status );
+    return SUCCESS();
 } // mock_archive_file_rename
 
-// =-=-=-=-=-=-=-
 // interface for POSIX Truncate
-irods::error mock_archive_file_truncate(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-    // =-=-=-=-=-=-=-
+irods::error mock_archive_file_truncate(irods::plugin_context& _ctx)
+{
     // Check the operation parameters and update the physical path
-    irods::error ret = unix_check_params_and_path< irods::file_object >( _ctx );
-    if ( ( result = ASSERT_PASS( ret, "Invalid plugin context." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
-
-        // =-=-=-=-=-=-=-
-        // make the call to unlink
-        int status = truncate( fco->physical_path().c_str(), fco->size() );
-
-        // =-=-=-=-=-=-=-
-        // error handling
-        int err_status = UNIX_FILE_UNLINK_ERR - errno;
-        result = ASSERT_ERROR( status >= 0, err_status, "Truncate error for: \"%s\", errno = \"%s\", status = %d.",
-                               fco->physical_path().c_str(), strerror( errno ), err_status );
+    if (const auto err = mock_archive_check_params_and_path<irods::file_object>(_ctx); !err.ok()) {
+        return PASSMSG("Invalid plugin context.", err);
     }
 
-    return result;
+    // get ref to fco
+    irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
 
+    // make the call to unlink
+    if (const int status = truncate(fco->physical_path().c_str(), fco->size()); status < 0) {
+        const int err_status = UNIX_FILE_UNLINK_ERR - errno;
+        return ERROR(err_status, fmt::format(
+                    "Truncate error for: \"{}\", errno = \"{}\", status = {}.",
+                    fco->physical_path(), strerror(errno), err_status));
+    }
+
+    return SUCCESS();
 } // mock_archive_file_truncate
 
-// =-=-=-=-=-=-=-
 // interface for POSIX Unlink
-irods::error mock_archive_file_unlink(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-    // =-=-=-=-=-=-=-
-    // Check the operation parameters and update the physical path
-    irods::error ret = unix_check_params_and_path< irods::file_object >( _ctx );
-    if ( ( result = ASSERT_PASS( ret, "Invalid plugin context." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
-
-        // =-=-=-=-=-=-=-
-        // make the call to unlink
-        int status = unlink( fco->physical_path().c_str() );
-
-        // =-=-=-=-=-=-=-
-        // error handling
-        int err_status = UNIX_FILE_UNLINK_ERR - errno;
-        result = ASSERT_ERROR( status >= 0, err_status, "Unlink error for: \"%s\", errno = \"%s\", status = %d.",
-                               fco->physical_path().c_str(), strerror( errno ), err_status );
+irods::error mock_archive_file_unlink(irods::plugin_context& _ctx)
+{
+    if (const auto err = mock_archive_check_params_and_path<irods::file_object>(_ctx); !err.ok()) {
+        return PASSMSG("Invalid plugin context.", err);
     }
 
-    return result;
+    // get ref to fco
+    irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
 
+    // make the call to unlink
+    if (const int status = unlink( fco->physical_path().c_str()); status < 0) {
+        const int err_status = UNIX_FILE_UNLINK_ERR - errno;
+        return ERROR(err_status, fmt::format(
+                    "Unlink error for: \"{}\", errno = \"{}\", status = {}.",
+                    fco->physical_path(), strerror(errno), err_status));
+    }
+
+    return SUCCESS();
 } // mock_archive_file_unlink
 
 int
@@ -479,186 +421,154 @@ mockArchiveCopyPlugin(
 
 } // mockArchiveCopyPlugin
 
-// =-=-=-=-=-=-=-
 // unixStageToCache - This routine is for testing the TEST_STAGE_FILE_TYPE.
 // Just copy the file from filename to cacheFilename. optionalInfo info
 // is not used.
-irods::error mock_archive_file_stage_to_cache(
-    irods::plugin_context& _ctx,
-    const char*                      _cache_file_name ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+irods::error mock_archive_file_stage_to_cache(irods::plugin_context& _ctx,
+                                              const char*            _cache_file_name)
+{
     // Check the operation parameters and update the physical path
-    irods::error ret = unix_check_params_and_path< irods::file_object >( _ctx );
-    if ( ( result = ASSERT_PASS( ret, "Invalid plugin context." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
-
-        // =-=-=-=-=-=-=-
-        // get the vault path for the resource
-        std::string path;
-        ret = _ctx.prop_map().get< std::string >( irods::RESOURCE_PATH, path );
-        if ( ( result = ASSERT_PASS( ret, "Failed to retrieve vault path for resource." ) ).ok() ) {
-
-            // =-=-=-=-=-=-=-
-            // append the hash to the path as the new 'cache file name'
-            path += "/";
-            path += fco->physical_path().c_str();
-
-            int status = mockArchiveCopyPlugin( fco->mode(), fco->physical_path().c_str(), _cache_file_name );
-            result = ASSERT_ERROR( status >= 0, status, "Failed copying archive file: \"%s\" to cache file: \"%s\".",
-                                   fco->physical_path().c_str(), _cache_file_name );
-        }
+    if (const auto err = mock_archive_check_params_and_path<irods::file_object>(_ctx); !err.ok()) {
+        return PASSMSG("Invalid plugin context.", err);
     }
 
-    return result;
+    // get ref to fco
+    irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
+
+    // get the vault path for the resource
+    std::string path;
+    if (const auto err = _ctx.prop_map().get<std::string>(irods::RESOURCE_PATH, path); !err.ok()) {
+        return PASSMSG("Failed to retrieve vault path for resource.", err);
+    }
+
+    // append the hash to the path as the new 'cache file name'
+    path += "/";
+    path += fco->physical_path().c_str();
+
+    if (const int status = mockArchiveCopyPlugin(fco->mode(), fco->physical_path().c_str(), _cache_file_name); status < 0) {
+        return ERROR(status, fmt::format(
+                    "Failed copying archive file: \"{}\" to cache file: \"{}\".",
+                    fco->physical_path(), _cache_file_name));
+    }
+
+    return SUCCESS();
 } // mock_archive_file_stage_to_cache
 
-// =-=-=-=-=-=-=-
 // unixSyncToArch - This routine is for testing the TEST_STAGE_FILE_TYPE.
 // Just copy the file from cacheFilename to filename. optionalInfo info
 // is not used.
-irods::error mock_archive_file_sync_to_arch(
-    irods::plugin_context& _ctx,
-    const char*                     _cache_file_name ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
-    // Check the operation parameters and update the physical path
-    irods::error ret = unix_check_params_and_path< irods::file_object >( _ctx );
-    if ( ( result = ASSERT_PASS( ret, "Invalid plugin context." ) ).ok() ) {
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
-
-        // =-=-=-=-=-=-=-
-        // get the vault path for the resource
-        std::string path;
-        ret = make_hashed_path(
-                  _ctx.prop_map(),
-                  fco->physical_path(),
-                  path );
-        if ( ( result = ASSERT_PASS( ret, "Failed to gen hashed path" ) ).ok() ) {
-            // =-=-=-=-=-=-=-
-            // append the hash to the path as the new 'cache file name'
-            rodsLog( LOG_NOTICE, "mock archive :: cache file name [%s]", _cache_file_name );
-
-            rodsLog( LOG_NOTICE, "mock archive :: new hashed file name for [%s] is [%s]",
-                     fco->physical_path().c_str(), path.c_str() );
-
-            // =-=-=-=-=-=-=-
-            // make the directories in the path to the new file
-            std::string new_path = path;
-            std::size_t last_slash = new_path.find_last_of( '/' );
-            new_path.erase( last_slash );
-            ret = mock_archive_mkdir_r( new_path, 0750 );
-            if ( ( result = ASSERT_PASS( ret, "Mkdir error for \"%s\".", new_path.c_str() ) ).ok() ) {
-
-            }
-            // =-=-=-=-=-=-=-
-            // make the copy to the 'archive'
-            int status = mockArchiveCopyPlugin( fco->mode(), _cache_file_name, path.c_str() );
-            if ( ( result = ASSERT_ERROR( status >= 0, status, "Sync to arch failed." ) ).ok() ) {
-                fco->physical_path( path );
-            }
-        }
+irods::error mock_archive_file_sync_to_arch(irods::plugin_context& _ctx,
+                                            const char*            _cache_file_name)
+{
+    if (const auto err = mock_archive_check_params_and_path<irods::file_object>(_ctx); !err.ok()) {
+        return PASSMSG("Invalid plugin context.", err);
     }
 
-    return result;
+    // get ref to fco
+    irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
 
+    // get the vault path for the resource
+    std::string path;
+    if (const auto err = make_hashed_path(_ctx.prop_map(), fco->physical_path(), path); !err.ok()) {
+        return PASSMSG("Failed to gen hashed path", err);
+    }
+
+    // append the hash to the path as the new 'cache file name'
+    rodsLog( LOG_NOTICE, "mock archive :: cache file name [%s]", _cache_file_name );
+
+    rodsLog( LOG_NOTICE, "mock archive :: new hashed file name for [%s] is [%s]",
+            fco->physical_path().c_str(), path.c_str() );
+
+    // make the directories in the path to the new file
+    std::string new_path = path;
+    std::size_t last_slash = new_path.find_last_of( '/' );
+    new_path.erase( last_slash );
+
+    if (const auto err = mock_archive_mkdir_r(new_path, 0750); !err.ok()) {
+        irods::log(LOG_DEBUG, err.result());
+    }
+
+    // make the copy to the 'archive'
+    if (const int status = mockArchiveCopyPlugin(fco->mode(), _cache_file_name, path.c_str()); status < 0) {
+        return ERROR(status, "Sync to arch failed.");
+    }
+
+    fco->physical_path( path );
+
+    return SUCCESS();
 } // mock_archive_file_sync_to_arch
 
 // =-=-=-=-=-=-=-
 // redirect_create - code to determine redirection for get operation
 // Create never gets called on an archive.
 
-// =-=-=-=-=-=-=-
 // redirect_get - code to determine redirection for get operation
 irods::error mock_archive_redirect_open(
     irods::plugin_property_map& _prop_map,
-    irods::file_object_ptr         _file_obj,
-    const std::string&           _resc_name,
-    const std::string&           _curr_host,
-    float&                       _out_vote ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+    irods::file_object_ptr      _file_obj,
+    const std::string&          _resc_name,
+    const std::string&          _curr_host,
+    float&                      _out_vote)
+{
     // initially set a good default
     _out_vote = 0.0;
 
-    // =-=-=-=-=-=-=-
     // determine if the resource is down
     int resc_status = 0;
-    irods::error get_ret = _prop_map.get< int >( irods::RESOURCE_STATUS, resc_status );
-    if ( ( result = ASSERT_PASS( get_ret, "Failed to get \"status\" property." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // if the status is down, vote no.
-        if ( INT_RESC_STATUS_DOWN != resc_status ) {
-
-            // =-=-=-=-=-=-=-
-            // get the resource host for comparison to curr host
-            std::string host_name;
-            get_ret = _prop_map.get< std::string >( irods::RESOURCE_LOCATION, host_name );
-            if ( ( result = ASSERT_PASS( get_ret, "Failed to get \"location\" property." ) ).ok() ) {
-
-                // =-=-=-=-=-=-=-
-                // set a flag to test if were at the curr host, if so we vote higher
-                bool curr_host = ( _curr_host == host_name );
-
-                // =-=-=-=-=-=-=-
-                // make some flags to clairify decision making
-                bool need_repl = ( _file_obj->repl_requested() > -1 );
-
-                // =-=-=-=-=-=-=-
-                // set up variables for iteration
-                bool          found     = false;
-                std::vector< irods::physical_object > objs = _file_obj->replicas();
-                std::vector< irods::physical_object >::iterator itr = objs.begin();
-
-                // =-=-=-=-=-=-=-
-                // check to see if the replica is in this resource, if one is requested
-                for ( ; !found && itr != objs.end(); ++itr ) {
-
-                    // =-=-=-=-=-=-=-
-                    // run the hier string through the parser and get the last
-                    // entry.
-                    std::string last_resc;
-                    irods::hierarchy_parser parser;
-                    parser.set_string( itr->resc_hier() );
-                    parser.last_resc( last_resc );
-
-                    // =-=-=-=-=-=-=-
-                    // more flags to simplify decision making
-                    bool repl_us = ( _file_obj->repl_requested() == itr->repl_num() );
-                    bool resc_us = ( _resc_name == last_resc );
-
-                    // =-=-=-=-=-=-=-
-                    // success - correct resource and dont need a specific
-                    //           replication, or the repl nums match
-                    if ( resc_us ) {
-                        if ( !need_repl || ( need_repl && repl_us ) ) {
-                            found = true;
-                            if ( curr_host ) {
-                                _out_vote = 1.0;
-                            }
-                            else {
-                                _out_vote = 0.5;
-                            }
-                        }
-
-                    } // if resc_us
-
-                } // for itr
-            }
-        }
+    if (const auto err = _prop_map.get<int>(irods::RESOURCE_STATUS, resc_status); !err.ok()) {
+        return PASSMSG("Failed to get \"status\" property.", err);
     }
 
-    return result;
+    // if the status is down, vote no.
+    if (INT_RESC_STATUS_DOWN != resc_status) {
+        return SUCCESS();
+    }
 
+    // get the resource host for comparison to curr host
+    std::string host_name;
+    if (const auto err = _prop_map.get<std::string>(irods::RESOURCE_LOCATION, host_name); !err.ok()) {
+        return PASSMSG("Failed to get \"location\" property.", err);
+    }
+
+    // set a flag to test if were at the curr host, if so we vote higher
+    bool curr_host = ( _curr_host == host_name );
+
+    // make some flags to clairify decision making
+    bool need_repl = ( _file_obj->repl_requested() > -1 );
+
+    // set up variables for iteration
+    bool          found     = false;
+    std::vector< irods::physical_object > objs = _file_obj->replicas();
+    std::vector< irods::physical_object >::iterator itr = objs.begin();
+
+    // check to see if the replica is in this resource, if one is requested
+    for ( ; !found && itr != objs.end(); ++itr ) {
+        // run the hier string through the parser and get the last entry.
+        std::string last_resc;
+        irods::hierarchy_parser parser;
+        parser.set_string( itr->resc_hier() );
+        parser.last_resc( last_resc );
+
+        // more flags to simplify decision making
+        bool repl_us = ( _file_obj->repl_requested() == itr->repl_num() );
+        bool resc_us = ( _resc_name == last_resc );
+
+        // success - correct resource and dont need a specific
+        //           replication, or the repl nums match
+        if ( resc_us ) {
+            if ( !need_repl || ( need_repl && repl_us ) ) {
+                found = true;
+                if ( curr_host ) {
+                    _out_vote = 1.0;
+                }
+                else {
+                    _out_vote = 0.5;
+                }
+            }
+        } // if resc_us
+    } // for itr
+
+    return SUCCESS();
 } // mock_archive_redirect_open
 
 // =-=-=-=-=-=-=-
