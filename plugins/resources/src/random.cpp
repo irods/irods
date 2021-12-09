@@ -29,62 +29,54 @@
 #include <boost/any.hpp>
 
 
-/// =-=-=-=-=-=-=-
 /// @brief Check the general parameters passed in to most plugin functions
-template< typename DEST_TYPE >
-inline irods::error random_check_params(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+template<typename DEST_TYPE>
+inline irods::error random_check_params(irods::plugin_context& _ctx)
+{
     // ask the context if it is valid
-    irods::error ret = _ctx.valid< DEST_TYPE >();
-    result = ASSERT_PASS( ret, "Resource context invalid." );
+    if (const auto err = _ctx.valid<DEST_TYPE>(); !err.ok()) {
+        return PASSMSG("Resource context invalid.", err);
+    }
 
-    return result;
-
+    return SUCCESS();
 } // random_check_params
 
-/// =-=-=-=-=-=-=-
 /// @brief get the next resource shared pointer given this resources name
 ///        as well as the object's hierarchy string
 irods::error get_next_child_in_hier(
     const std::string&          _name,
     const std::string&          _hier,
     irods::plugin_property_map& _props,
-    irods::resource_ptr&        _resc ) {
-    irods::error result = SUCCESS();
-
+    irods::resource_ptr&        _resc)
+{
     irods::resource_child_map* cmap_ref;
-    _props.get< irods::resource_child_map* >(
-            irods::RESC_CHILD_MAP_PROP,
-            cmap_ref );
-
-    // =-=-=-=-=-=-=-
-    // create a parser and parse the string
-    irods::hierarchy_parser parse;
-    irods::error err = parse.set_string( _hier );
-    if ( ( result = ASSERT_PASS( err, "Failed in set_string" ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // get the next resource in the series
-        std::string next;
-        err = parse.next( _name, next );
-        if ( ( result = ASSERT_PASS( err, "Failed in next." ) ).ok() ) {
-
-            // =-=-=-=-=-=-=-
-            // get the next resource from the child map
-            if ( ( result = ASSERT_ERROR( cmap_ref->has_entry( next ), CHILD_NOT_FOUND, "Child map missing entry: hier [%s] name [%s] next [%s]",
-                                          _hier.c_str(), _name.c_str(), next.c_str() ) ).ok() ) {
-                // =-=-=-=-=-=-=-
-                // assign resource
-                _resc = (*cmap_ref)[ next ].second;
-            }
-        }
+    if (const auto err = _props.get<irods::resource_child_map*>(irods::RESC_CHILD_MAP_PROP, cmap_ref); !err.ok()) {
+        return PASSMSG("Failed to get property.", err);
     }
 
-    return result;
+    // create a parser and parse the string
+    irods::hierarchy_parser parse;
+    if (const auto err = parse.set_string(_hier); !err.ok()) {
+        return PASSMSG("Failed in set_string", err);
+    }
 
+    // get the next resource in the series
+    std::string next;
+    if (const auto err = parse.next(_name, next); !err.ok()) {
+        return PASSMSG("Failed in next.", err);
+    }
+
+    // get the next resource from the child map
+    if (!cmap_ref->has_entry(next)) {
+        return ERROR(CHILD_NOT_FOUND, fmt::format(
+                    "Child map missing entry: hier [{}] name [{}] next [{}]",
+                    _hier, _name, next));
+    }
+
+    // assign resource
+    _resc = (*cmap_ref)[ next ].second;
+
+    return SUCCESS();
 } // get_next_child_in_hier
 
 /// =-=-=-=-=-=-=-
@@ -132,40 +124,33 @@ irods::error get_next_child_for_open_or_write(
 
 } // get_next_child_for_open_or_write
 
-// =-=-=-=-=-=-=-
 /// @brief get the resource for the child in the hierarchy
 ///        to pass on the call
-template< typename DEST_TYPE >
-irods::error random_get_resc_for_call(
-    irods::plugin_context& _ctx,
-    irods::resource_ptr&            _resc ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+template<typename DEST_TYPE>
+irods::error random_get_resc_for_call(irods::plugin_context& _ctx,
+                                      irods::resource_ptr&   _resc)
+{
     // check incoming parameters
-    irods::error err = random_check_params< DEST_TYPE >( _ctx );
-    if ( ( result = ASSERT_PASS( err, "Bad resource context." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // get the object's name
-        std::string name;
-        err = _ctx.prop_map().get< std::string >( irods::RESOURCE_NAME, name );
-        if ( ( result = ASSERT_PASS( err, "Failed to get property." ) ).ok() ) {
-
-            // =-=-=-=-=-=-=-
-            // get the object's hier string
-            boost::shared_ptr< DEST_TYPE > dst_obj = boost::dynamic_pointer_cast< DEST_TYPE >( _ctx.fco() );
-            std::string hier = dst_obj->resc_hier( );
-
-            // =-=-=-=-=-=-=-
-            // get the next child pointer given our name and the hier string
-            err = get_next_child_in_hier( name, hier, _ctx.prop_map(), _resc );
-            result = ASSERT_PASS( err, "Get next child failed." );
-        }
+    if (const auto err = random_check_params<DEST_TYPE>(_ctx); !err.ok()) {
+        return PASSMSG("Bad resource context.", err);
     }
 
-    return result;
+    // get the object's name
+    std::string name;
+    if (const auto err = _ctx.prop_map().get<std::string>(irods::RESOURCE_NAME, name); !err.ok()) {
+        return PASSMSG("Failed to get property.", err);
+    }
 
+    // get the object's hier string
+    boost::shared_ptr< DEST_TYPE > dst_obj = boost::dynamic_pointer_cast< DEST_TYPE >( _ctx.fco() );
+    std::string hier = dst_obj->resc_hier( );
+
+    // get the next child pointer given our name and the hier string
+    if (const auto err = get_next_child_in_hier(name, hier, _ctx.prop_map(), _resc); !err.ok()) {
+        return PASSMSG("Get next child failed.", err);
+    }
+
+    return SUCCESS();
 } // random_get_resc_for_call
 
 /// =-=-=-=-=-=-=-
@@ -212,483 +197,418 @@ irods::error random_get_next_child_resource(
 
 } // random_get_next_child_resource
 
-/// =-=-=-=-=-=-=-
 /// @brief interface for POSIX create
-irods::error random_file_create(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+irods::error random_file_create(irods::plugin_context& _ctx)
+{
     // get the child resc to call
     irods::resource_ptr resc;
-    irods::error err = random_get_resc_for_call< irods::file_object >( _ctx, resc );
-    if ( ( result = ASSERT_PASS( err, "Invalid resource context." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // call create on the child
-        err = resc->call( _ctx.comm(), irods::RESOURCE_OP_CREATE, _ctx.fco() );
-        result = ASSERT_PASS( err, "Failed calling create on child resource." );
+    if (const auto err = random_get_resc_for_call<irods::file_object>(_ctx, resc); !err.ok()) {
+        return PASSMSG("Failed to select random resource.", err);
     }
 
-    return result;
+    // call create on the child
+    const auto ret = resc->call(_ctx.comm(), irods::RESOURCE_OP_CREATE, _ctx.fco());
+    if (!ret.ok()) {
+        return PASSMSG("Failed calling create on child resource.", ret);
+    }
+
+    return ret;
 } // random_file_create
 
-// =-=-=-=-=-=-=-
 // interface for POSIX Open
-irods::error random_file_open(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+irods::error random_file_open(irods::plugin_context& _ctx)
+{
     // get the child resc to call
     irods::resource_ptr resc;
-    irods::error err = random_get_resc_for_call< irods::file_object >( _ctx, resc );
-    if ( ( result = ASSERT_PASS( err, "Failed in file open." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // call open operation on the child
-        err = resc->call( _ctx.comm(), irods::RESOURCE_OP_OPEN, _ctx.fco() );
-        result = ASSERT_PASS( err, "Failed calling open on the child." );
+    if (const auto err = random_get_resc_for_call<irods::file_object>(_ctx, resc); !err.ok()) {
+        return PASSMSG("Failed to select random resource.", err);
     }
 
-    return result;
+    // call open on the child
+    const auto ret = resc->call(_ctx.comm(), irods::RESOURCE_OP_OPEN, _ctx.fco());
+    if (!ret.ok()) {
+        return PASSMSG("Failed calling open on child resource.", ret);
+    }
+
+    return ret;
 } // random_file_open
 
-/// =-=-=-=-=-=-=-
 /// @brief interface for POSIX Read
 irods::error random_file_read(
     irods::plugin_context& _ctx,
     void*                  _buf,
-    const int              _len ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+    const int              _len)
+{
     // get the child resc to call
     irods::resource_ptr resc;
-    irods::error err = random_get_resc_for_call< irods::file_object >( _ctx, resc );
-    if ( ( result = ASSERT_PASS( err, "Failed finding resource." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // call read on the child
-        err = resc->call< void*, const int >( _ctx.comm(), irods::RESOURCE_OP_READ, _ctx.fco(), _buf, _len );
-        result = ASSERT_PASS( err, "Failed calling operation on child resource." );
+    if (const auto err = random_get_resc_for_call<irods::file_object>(_ctx, resc); !err.ok()) {
+        return PASSMSG("Failed to select random resource.", err);
     }
 
-    return result;
+    // call read on the child
+    const auto ret = resc->call<void*, const int>(_ctx.comm(), irods::RESOURCE_OP_READ, _ctx.fco(), _buf, _len);
+    if (!ret.ok()) {
+        return PASSMSG("Failed calling operation on child resource.", ret);
+    }
 
+    return ret;
 } // random_file_read
 
-/// =-=-=-=-=-=-=-
 /// @brief interface for POSIX Write
 irods::error random_file_write(
     irods::plugin_context& _ctx,
     const void*            _buf,
-    const int              _len ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+    const int              _len)
+{
     // get the child resc to call
     irods::resource_ptr resc;
-    irods::error err = random_get_resc_for_call< irods::file_object >( _ctx, resc );
-    if ( ( result = ASSERT_PASS( err, "Failed choosing child resource." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // call write on the child
-        err = resc->call< const void*, const int >( _ctx.comm(), irods::RESOURCE_OP_WRITE, _ctx.fco(), _buf, _len );
-        result = ASSERT_PASS( err, "Failed calling operation on child resource." );
+    if (const auto err = random_get_resc_for_call<irods::file_object>(_ctx, resc); !err.ok()) {
+        return PASSMSG("Failed to select random resource.", err);
     }
 
-    return result;
+    // call write on the child
+    const auto ret = resc->call<const void*, const int>(_ctx.comm(), irods::RESOURCE_OP_WRITE, _ctx.fco(), _buf, _len);
+    if (!ret.ok()) {
+        return PASSMSG("Failed calling operation on child resource.", ret);
+    }
+
+    return ret;
 } // random_file_write
 
-/// =-=-=-=-=-=-=-
 /// @brief interface for POSIX Close
-irods::error random_file_close(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+irods::error random_file_close(irods::plugin_context& _ctx)
+{
     // get the child resc to call
     irods::resource_ptr resc;
-    irods::error err = random_get_resc_for_call< irods::file_object >( _ctx, resc );
-    if ( ( result = ASSERT_PASS( err, "Failed to select random resource." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // call close on the child
-        err = resc->call( _ctx.comm(), irods::RESOURCE_OP_CLOSE, _ctx.fco() );
-        result = ASSERT_PASS( err, "Failed calling operation in child." );
+    if (const auto err = random_get_resc_for_call<irods::file_object>(_ctx, resc); !err.ok()) {
+        return PASSMSG("Failed to select random resource.", err);
     }
 
-    return result;
+    // call close on the child
+    const auto ret = resc->call(_ctx.comm(), irods::RESOURCE_OP_CLOSE, _ctx.fco());
+    if (!ret.ok()) {
+        return PASSMSG("Failed calling operation in child.", ret);
+    }
+
+    return ret;
 } // random_file_close
 
-/// =-=-=-=-=-=-=-
 /// @brief interface for POSIX Unlink
-irods::error random_file_unlink(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+irods::error random_file_unlink(irods::plugin_context& _ctx)
+{
     // get the child resc to call
     irods::resource_ptr resc;
-    irods::error err = random_get_resc_for_call< irods::data_object >( _ctx, resc );
-    if ( ( result = ASSERT_PASS( err, "Failed to select random resource." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // call unlink on the child
-        err = resc->call( _ctx.comm(), irods::RESOURCE_OP_UNLINK, _ctx.fco() );
-        result = ASSERT_PASS( err, "Failed during call to child operation." );
+    if (const auto err = random_get_resc_for_call<irods::data_object>(_ctx, resc); !err.ok()) {
+        return PASSMSG("Failed to select random resource.", err);
     }
 
-    return result;
+    // call unlink on the child
+    const auto ret = resc->call(_ctx.comm(), irods::RESOURCE_OP_UNLINK, _ctx.fco());
+    if (!ret.ok()) {
+        return PASSMSG("Failed during call to child operation.", ret);
+    }
+
+    return ret;
 } // random_file_unlink
 
-/// =-=-=-=-=-=-=-
 /// @brief interface for POSIX Stat
-irods::error random_file_stat(
-    irods::plugin_context& _ctx,
-    struct stat*                     _statbuf ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+irods::error random_file_stat(irods::plugin_context& _ctx, struct stat* _statbuf)
+{
     // get the child resc to call
     irods::resource_ptr resc;
-    irods::error err = random_get_resc_for_call< irods::data_object >( _ctx, resc );
-    if ( ( result = ASSERT_PASS( err, "Failed selecting random child resource." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // call stat on the child
-        err = resc->call< struct stat* >( _ctx.comm(), irods::RESOURCE_OP_STAT, _ctx.fco(), _statbuf );
-        result = ASSERT_PASS( err, "Failed in call to child operation." );
+    if (const auto err = random_get_resc_for_call<irods::data_object>(_ctx, resc); !err.ok()) {
+        return PASSMSG("Failed to select random resource.", err);
     }
 
-    return result;
+    // call stat on the child
+    const auto ret = resc->call<struct stat*>(_ctx.comm(), irods::RESOURCE_OP_STAT, _ctx.fco(), _statbuf);
+    if (!ret.ok()) {
+        return PASSMSG("Failed in call to child operation.", ret);
+    }
+
+    return ret;
 } // random_file_stat
 
-/// =-=-=-=-=-=-=-
 /// @brief interface for POSIX lseek
 irods::error random_file_lseek(
     irods::plugin_context& _ctx,
     const long long        _offset,
-    const int              _whence ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+    const int              _whence)
+{
     // get the child resc to call
     irods::resource_ptr resc;
-    irods::error err = random_get_resc_for_call< irods::file_object >( _ctx, resc );
-    if ( ( result = ASSERT_PASS( err, "Failed to select random child." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // call lseek on the child
-        err = resc->call< const long long, const int >( _ctx.comm(), irods::RESOURCE_OP_LSEEK, _ctx.fco(), _offset, _whence );
-        result = ASSERT_PASS( err, "Failed calling child operation." );
+    if (const auto err = random_get_resc_for_call<irods::file_object>(_ctx, resc); !err.ok()) {
+        return PASSMSG("Failed to select random resource.", err);
     }
 
-    return result;
+    // call lseek on the child
+    const auto ret = resc->call<const long long, const int>(_ctx.comm(), irods::RESOURCE_OP_LSEEK, _ctx.fco(), _offset, _whence);
+    if (!ret.ok()) {
+        return PASSMSG("Failed calling child operation.", ret);
+    }
+
+    return ret;
 } // random_file_lseek
 
-/// =-=-=-=-=-=-=-
 /// @brief interface for POSIX mkdir
-irods::error random_file_mkdir(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+irods::error random_file_mkdir(irods::plugin_context& _ctx)
+{
     // get the child resc to call
     irods::resource_ptr resc;
-    irods::error err = random_get_resc_for_call< irods::collection_object >( _ctx, resc );
-    if ( ( result = ASSERT_PASS( err, "Failed to select random child resource." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // call mkdir on the child
-        err = resc->call( _ctx.comm(), irods::RESOURCE_OP_MKDIR, _ctx.fco() );
-        result = ASSERT_PASS( err, "Failed calling child operation." );
+    if (const auto err = random_get_resc_for_call<irods::collection_object>(_ctx, resc); !err.ok()) {
+        return PASSMSG("Failed to select random resource.", err);
     }
 
-    return result;
+    // call mkdir on the child
+    const auto ret = resc->call(_ctx.comm(), irods::RESOURCE_OP_MKDIR, _ctx.fco());
+    if (!ret.ok()) {
+        return PASSMSG("Failed calling child operation.", ret);
+    }
+
+    return ret;
 } // random_file_mkdir
 
-/// =-=-=-=-=-=-=-
 /// @brief interface for POSIX rmdir
-irods::error random_file_rmdir(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+irods::error random_file_rmdir(irods::plugin_context& _ctx)
+{
     // get the child resc to call
     irods::resource_ptr resc;
-    irods::error err = random_get_resc_for_call< irods::collection_object >( _ctx, resc );
-    if ( ( result = ASSERT_PASS( err, "Failed to select random resource." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // call rmdir on the child
-        err = resc->call( _ctx.comm(), irods::RESOURCE_OP_RMDIR, _ctx.fco() );
-        result = ASSERT_PASS( err, "Failed calling child operation." );
+    if (const auto err = random_get_resc_for_call<irods::collection_object>(_ctx, resc); !err.ok()) {
+        return PASSMSG("Failed to select random resource.", err);
     }
 
-    return result;
+    // call rmdir on the child
+    const auto ret = resc->call(_ctx.comm(), irods::RESOURCE_OP_RMDIR, _ctx.fco());
+    if (!ret.ok()) {
+        return PASSMSG("Failed calling child operation.", ret);
+    }
+
+    return ret;
 } // random_file_rmdir
 
-/// =-=-=-=-=-=-=-
 /// @brief interface for POSIX opendir
-irods::error random_file_opendir(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+irods::error random_file_opendir(irods::plugin_context& _ctx)
+{
     // get the child resc to call
     irods::resource_ptr resc;
-    irods::error err = random_get_resc_for_call< irods::collection_object >( _ctx, resc );
-    if ( ( result = ASSERT_PASS( err, "Failed to select random resource." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // call opendir on the child
-        err = resc->call( _ctx.comm(), irods::RESOURCE_OP_OPENDIR, _ctx.fco() );
-        result = ASSERT_PASS( err, "Failed calling child operation." );
+    if (const auto err = random_get_resc_for_call<irods::collection_object>(_ctx, resc); !err.ok()) {
+        return PASSMSG("Failed to select random resource.", err);
     }
 
-    return result;
+    // call opendir on the child
+    const auto ret = resc->call(_ctx.comm(), irods::RESOURCE_OP_OPENDIR, _ctx.fco());
+    if (!ret.ok()) {
+        return PASSMSG("Failed calling child operation.", ret);
+    }
+
+    return ret;
 } // random_file_opendir
 
-// =-=-=-=-=-=-=-
 /// @brief interface for POSIX closedir
-irods::error random_file_closedir(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+irods::error random_file_closedir(irods::plugin_context& _ctx)
+{
     // get the child resc to call
     irods::resource_ptr resc;
-    irods::error err = random_get_resc_for_call< irods::collection_object >( _ctx, resc );
-    if ( ( result = ASSERT_PASS( err, "Failed to select random resource." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // call closedir on the child
-        err = resc->call( _ctx.comm(), irods::RESOURCE_OP_CLOSEDIR, _ctx.fco() );
-        result = ASSERT_PASS( err, "Failed calling child operation." );
+    if (const auto err = random_get_resc_for_call<irods::collection_object>(_ctx, resc); !err.ok()) {
+        return PASSMSG("Failed to select random resource.", err);
     }
 
-    return result;
+    // call closedir on the child
+    const auto ret = resc->call(_ctx.comm(), irods::RESOURCE_OP_CLOSEDIR, _ctx.fco());
+    if (!ret.ok()) {
+        return PASSMSG("Failed calling child operation.", ret);
+    }
+
+    return ret;
 } // random_file_closedir
 
-/// =-=-=-=-=-=-=-
 /// @brief interface for POSIX readdir
-irods::error random_file_readdir(
-    irods::plugin_context& _ctx,
-    struct rodsDirent**              _dirent_ptr ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+irods::error random_file_readdir(irods::plugin_context& _ctx,
+                                 struct rodsDirent**    _dirent_ptr)
+{
     // get the child resc to call
     irods::resource_ptr resc;
-    irods::error err = random_get_resc_for_call< irods::collection_object >( _ctx, resc );
-    if ( ( result = ASSERT_PASS( err, "Failed to select random resource." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // call readdir on the child
-        err = resc->call< struct rodsDirent** >( _ctx.comm(), irods::RESOURCE_OP_READDIR, _ctx.fco(), _dirent_ptr );
-        result = ASSERT_PASS( err, "Failed calling child operation." );
+    if (const auto err = random_get_resc_for_call<irods::collection_object>(_ctx, resc); !err.ok()) {
+        return PASSMSG("Failed to select random resource.", err);
     }
 
-    return result;
+    // call readdir on the child
+    const auto ret = resc->call<struct rodsDirent**>(_ctx.comm(), irods::RESOURCE_OP_READDIR, _ctx.fco(), _dirent_ptr);
+    if (!ret.ok()) {
+        return PASSMSG("Failed calling child operation.", ret);
+    }
+
+    return ret;
 } // random_file_readdir
 
-/// =-=-=-=-=-=-=-
 /// @brief interface for POSIX rename
-irods::error random_file_rename(
-    irods::plugin_context& _ctx,
-    const char*                         _new_file_name ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+irods::error random_file_rename(irods::plugin_context& _ctx,
+                                const char*            _new_file_name)
+{
     // get the child resc to call
     irods::resource_ptr resc;
-    irods::error err = random_get_resc_for_call< irods::file_object >( _ctx, resc );
-    if ( ( result = ASSERT_PASS( err, "Failed to select random resource." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // call rename on the child
-        err = resc->call< const char* >( _ctx.comm(), irods::RESOURCE_OP_RENAME, _ctx.fco(), _new_file_name );
-        result = ASSERT_PASS( err, "Failed calling child operation." );
+    if (const auto err = random_get_resc_for_call<irods::file_object>(_ctx, resc); !err.ok()) {
+        return PASSMSG("Failed to select random resource.", err);
     }
 
-    return result;
+    // call rename on the child
+    const auto ret = resc->call<const char*>(_ctx.comm(), irods::RESOURCE_OP_RENAME, _ctx.fco(), _new_file_name);
+    if (!ret.ok()) {
+        return PASSMSG("Failed calling child operation.", ret);
+    }
+
+    return ret;
 } // random_file_rename
 
-/// =-=-=-=-=-=-=-
 /// @brief interface to truncate a file
-irods::error random_file_truncate(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+irods::error random_file_truncate(irods::plugin_context& _ctx)
+{
     // get the child resc to call
     irods::resource_ptr resc;
-    irods::error err = random_get_resc_for_call< irods::file_object >( _ctx, resc );
-    if ( ( result = ASSERT_PASS( err, "Failed selecting random resource." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // call freespace on the child
-        err = resc->call( _ctx.comm(), irods::RESOURCE_OP_TRUNCATE, _ctx.fco() );
-        result = ASSERT_PASS( err, "Failed calling child operation." );
+    if (const auto err = random_get_resc_for_call<irods::file_object>(_ctx, resc); !err.ok()) {
+        return PASSMSG("Failed to select random resource.", err);
     }
 
-    return result;
+    // call truncate on the child
+    const auto ret = resc->call(_ctx.comm(), irods::RESOURCE_OP_TRUNCATE, _ctx.fco());
+    if (!ret.ok()) {
+        return PASSMSG("Failed calling child operation.", ret);
+    }
+
+    return ret;
 } // random_file_truncate
 
-/// =-=-=-=-=-=-=-
 /// @brief interface to determine free space on a device given a path
-irods::error random_file_getfs_freespace(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+irods::error random_file_getfs_freespace(irods::plugin_context& _ctx)
+{
     // get the child resc to call
     irods::resource_ptr resc;
-    irods::error err = random_get_resc_for_call< irods::file_object >( _ctx, resc );
-    if ( ( result = ASSERT_PASS( err, "Failed selecting random resource." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // call freespace on the child
-        err = resc->call( _ctx.comm(), irods::RESOURCE_OP_FREESPACE, _ctx.fco() );
-        result = ASSERT_PASS( err, "Failed calling child operation." );
+    if (const auto err = random_get_resc_for_call<irods::file_object>(_ctx, resc); !err.ok()) {
+        return PASSMSG("Failed to select random resource.", err);
     }
 
-    return result;
+    // call freespace on the child
+    const auto ret = resc->call(_ctx.comm(), irods::RESOURCE_OP_FREESPACE, _ctx.fco());
+    if (!ret.ok()) {
+        return PASSMSG("Failed calling child operation.", ret);
+    }
+
+    return ret;
 } // random_file_getfs_freespace
 
-/// =-=-=-=-=-=-=-
 /// @brief This routine is for testing the TEST_STAGE_FILE_TYPE.
 ///        Just copy the file from filename to cacheFilename. optionalInfo info
 ///        is not used.
-irods::error random_file_stage_to_cache(
-    irods::plugin_context& _ctx,
-    const char*                         _cache_file_name ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+irods::error random_file_stage_to_cache(irods::plugin_context& _ctx,
+                                        const char*            _cache_file_name)
+{
     // get the child resc to call
     irods::resource_ptr resc;
-    irods::error err = random_get_resc_for_call< irods::file_object >( _ctx, resc );
-    if ( ( result = ASSERT_PASS( err, "Failed to select random resource." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // call stage on the child
-        err = resc->call< const char* >( _ctx.comm(), irods::RESOURCE_OP_STAGETOCACHE, _ctx.fco(), _cache_file_name );
-        result = ASSERT_PASS( err, "Failed calling child operation." );
+    if (const auto err = random_get_resc_for_call<irods::file_object>(_ctx, resc); !err.ok()) {
+        return PASSMSG("Failed to select random resource.", err);
     }
 
-    return result;
+    // call stagetocache on the child
+    const auto ret = resc->call<const char*>(_ctx.comm(), irods::RESOURCE_OP_STAGETOCACHE, _ctx.fco(), _cache_file_name);
+    if (!ret.ok()) {
+        return PASSMSG("Failed calling child operation.", ret);
+    }
+
+    return ret;
 } // random_file_stage_to_cache
 
-/// =-=-=-=-=-=-=-
 /// @brief This routine is for testing the TEST_STAGE_FILE_TYPE.
 ///        Just copy the file from cacheFilename to filename. optionalInfo info
 ///        is not used.
-irods::error random_file_sync_to_arch(
-    irods::plugin_context& _ctx,
-    const char*                         _cache_file_name ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+irods::error random_file_sync_to_arch(irods::plugin_context& _ctx,
+                                      const char*            _cache_file_name)
+{
     // get the child resc to call
     irods::resource_ptr resc;
-    irods::error err = random_get_resc_for_call< irods::file_object >( _ctx, resc );
-    if ( ( result = ASSERT_PASS( err, "Failed selecting random resource." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // call synctoarch on the child
-        err = resc->call< const char* >( _ctx.comm(), irods::RESOURCE_OP_SYNCTOARCH, _ctx.fco(), _cache_file_name );
-        result = ASSERT_PASS( err, "Failed calling child operation." );
+    if (const auto err = random_get_resc_for_call<irods::file_object>(_ctx, resc); !err.ok()) {
+        return PASSMSG("Failed to select random resource.", err);
     }
 
-    return result;
+    // call synctoarch on the child
+    const auto ret = resc->call<const char*>(_ctx.comm(), irods::RESOURCE_OP_SYNCTOARCH, _ctx.fco(), _cache_file_name);
+    if (!ret.ok()) {
+        return PASSMSG("Failed calling child operation.", ret);
+    }
+
+    return ret;
 } // random_file_sync_to_arch
 
-/// =-=-=-=-=-=-=-
 /// @brief interface to notify of a file registration
-irods::error random_file_registered(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+irods::error random_file_registered(irods::plugin_context& _ctx)
+{
     // get the child resc to call
     irods::resource_ptr resc;
-    irods::error err = random_get_resc_for_call< irods::file_object >( _ctx, resc );
-    if ( ( result = ASSERT_PASS( err, "Failed selecting random resource." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // call rename on the child
-        err = resc->call( _ctx.comm(), irods::RESOURCE_OP_REGISTERED, _ctx.fco() );
-        result = ASSERT_PASS( err, "Failed calling child operation." );
+    if (const auto err = random_get_resc_for_call<irods::file_object>(_ctx, resc); !err.ok()) {
+        return PASSMSG("Failed to select random resource.", err);
     }
 
-    return result;
+    // call file registered on the child
+    const auto ret = resc->call(_ctx.comm(), irods::RESOURCE_OP_REGISTERED, _ctx.fco());
+    if (!ret.ok()) {
+        return PASSMSG("Failed calling child operation.", ret);
+    }
+
+    return ret;
 } // random_file_registered
 
-/// =-=-=-=-=-=-=-
 /// @brief interface to notify of a file unregistration
-irods::error random_file_unregistered(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+irods::error random_file_unregistered(irods::plugin_context& _ctx)
+{
     // get the child resc to call
     irods::resource_ptr resc;
-    irods::error err = random_get_resc_for_call< irods::file_object >( _ctx, resc );
-    if ( ( result = ASSERT_PASS( err, "Failed selecting random resource." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // call rename on the child
-        err = resc->call( _ctx.comm(), irods::RESOURCE_OP_UNREGISTERED, _ctx.fco() );
-        result = ASSERT_PASS( err, "Failed calling child operation." );
+    if (const auto err = random_get_resc_for_call<irods::file_object>(_ctx, resc); !err.ok()) {
+        return PASSMSG("Failed to select random resource.", err);
     }
 
-    return result;
+    // call file unregistered on the child
+    const auto ret = resc->call(_ctx.comm(), irods::RESOURCE_OP_UNREGISTERED, _ctx.fco());
+    if (!ret.ok()) {
+        return PASSMSG("Failed calling child operation.", ret);
+    }
+
+    return ret;
 } // random_file_unregistered
 
-/// =-=-=-=-=-=-=-
 /// @brief interface to notify of a file modification
-irods::error random_file_modified(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+irods::error random_file_modified(irods::plugin_context& _ctx)
+{
     // get the child resc to call
     irods::resource_ptr resc;
-    irods::error err = random_get_resc_for_call< irods::file_object >( _ctx, resc );
-    if ( ( result = ASSERT_PASS( err, "Failed selecting random resource." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // call rename on the child
-        err = resc->call( _ctx.comm(), irods::RESOURCE_OP_MODIFIED, _ctx.fco() );
-        result = ASSERT_PASS( err, "Failed calling child operation." );
+    if (const auto err = random_get_resc_for_call<irods::file_object>(_ctx, resc); !err.ok()) {
+        return PASSMSG("Failed to select random resource.", err);
     }
 
-    return result;
+    // call file modified on the child
+    const auto ret = resc->call(_ctx.comm(), irods::RESOURCE_OP_MODIFIED, _ctx.fco());
+    if (!ret.ok()) {
+        return PASSMSG("Failed calling child operation.", ret);
+    }
+
+    return ret;
 } // random_file_modified
 
-/// =-=-=-=-=-=-=-
 /// @brief interface to notify a resource of an operation
-irods::error random_file_notify(
-    irods::plugin_context& _ctx,
-    const std::string*               _opr ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
+irods::error random_file_notify(irods::plugin_context& _ctx,
+                                const std::string*     _opr)
+{
     // get the child resc to call
     irods::resource_ptr resc;
-    irods::error err = random_get_resc_for_call< irods::file_object >( _ctx, resc );
-    if ( ( result = ASSERT_PASS( err, "Failed selecting random resource." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // call rename on the child
-        err = resc->call( _ctx.comm(), irods::RESOURCE_OP_NOTIFY, _ctx.fco(), _opr );
-        result = ASSERT_PASS( err, "Failed calling child operation." );
+    if (const auto err = random_get_resc_for_call<irods::file_object>(_ctx, resc); !err.ok()) {
+        return PASSMSG("Failed to select random resource.", err);
     }
 
-    return result;
+    // call file notify on the child
+    const auto ret = resc->call(_ctx.comm(), irods::RESOURCE_OP_NOTIFY, _ctx.fco(), _opr);
+    if (!ret.ok()) {
+        return PASSMSG("Failed calling child operation.", ret);
+    }
+
+    return ret;
 } // random_file_notify
 
 /// =-=-=-=-=-=-=-
@@ -754,10 +674,8 @@ irods::error get_next_valid_child_resource(
         }
     } // while
 
-    // =-=-=-=-=-=-=-
-    // return appropriately
-    if ( result.ok() ) {
-        result = ASSERT_ERROR( child_found, NO_NEXT_RESC_FOUND, "No valid child found." );
+    if (result.ok() && !child_found) {
+        return ERROR(NO_NEXT_RESC_FOUND, "No valid child found.");
     }
 
     return result;
@@ -858,9 +776,9 @@ irods::error random_file_rebalance(
     irods::error result = SUCCESS();
     irods::resource_child_map::iterator itr = cmap_ref->begin();
     for ( ; itr != cmap_ref->end(); ++itr ) {
-        irods::error ret = itr->second.second->call( _ctx.comm(), irods::RESOURCE_OP_REBALANCE, _ctx.fco() );
-        if ( !( result = ASSERT_PASS( ret, "Failed calling child operation." ) ).ok() ) {
-            irods::log( PASS( result ) );
+        if (const auto err = itr->second.second->call(_ctx.comm(), irods::RESOURCE_OP_REBALANCE, _ctx.fco()); !err.ok()) {
+            result = PASSMSG("Failed calling child operation.", err);
+            irods::log(PASS(result));
         }
     }
 
