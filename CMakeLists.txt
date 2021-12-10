@@ -45,6 +45,8 @@ set(IRODS_BUILD_WITH_WERROR ${IRODS_BUILD_WITH_WERROR_DEFAULT} CACHE BOOL "Choos
 
 include(UseLibCXX)
 
+find_package(nlohmann_json "3.6.1" REQUIRED)
+
 if (IRODS_BUILD_WITH_WERROR)
   add_compile_options(-Werror)
 endif()
@@ -199,6 +201,7 @@ foreach(EXECUTABLE ${IRODS_CLIENT_ICOMMANDS_EXECUTABLES})
     irods_client
     irods_plugin_dependencies
     irods_common
+    nlohmann_json::nlohmann_json
     ${IRODS_EXTERNALS_FULLPATH_AVRO}/lib/libavrocpp.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_program_options.so
@@ -215,7 +218,6 @@ foreach(EXECUTABLE ${IRODS_CLIENT_ICOMMANDS_EXECUTABLES})
     ${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/include
     ${IRODS_EXTERNALS_FULLPATH_CPPZMQ}/include
     ${IRODS_EXTERNALS_FULLPATH_ZMQ}/include
-    ${IRODS_EXTERNALS_FULLPATH_JSON}/include
     ${IRODS_EXTERNALS_FULLPATH_FMT}/include
     )
   target_compile_definitions(${EXECUTABLE} PRIVATE ${IRODS_COMPILE_DEFINITIONS} BOOST_SYSTEM_NO_DEPRECATED)
