@@ -51,7 +51,7 @@ start)
 stop)
     su $SU_SHELL_OPTS $IRODS_SERVICE_ACCOUNT_NAME -c "$IRODS_CTL stop"
     if [ "$DETECTEDOS" = "RedHatCompatible" -o "$DETECTEDOS" = "SuSE" ] ; then
-        rm /var/lock/subsys/irods
+        rm -f /var/lock/subsys/irods
     fi
     ;;
 restart)
