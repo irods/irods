@@ -385,16 +385,6 @@ def setup_database_values(irods_config, cursor=None, default_resource_directory=
             timestamp)
 
     #groups
-    admin_group_id = get_next_object_id()
-    execute_sql_statement(cursor,
-            "insert into R_USER_MAIN values (?,?,?,?,'','',?,?);",
-            admin_group_id,
-            'rodsadmin',
-            'rodsgroup',
-            irods_config.server_config['zone_name'],
-            timestamp,
-            timestamp)
-
     public_group_id = get_next_object_id()
     execute_sql_statement(cursor,
             "insert into R_USER_MAIN values (?,?,?,?,'','',?,?);",
@@ -419,12 +409,6 @@ def setup_database_values(irods_config, cursor=None, default_resource_directory=
     #group membership
     execute_sql_statement(cursor,
             "insert into R_USER_GROUP values (?,?,?,?);",
-            admin_group_id,
-            admin_user_id,
-            timestamp,
-            timestamp)
-    execute_sql_statement(cursor,
-            "insert into R_USER_GROUP values (?,?,?,?);",
             admin_user_id,
             admin_user_id,
             timestamp,
@@ -433,12 +417,6 @@ def setup_database_values(irods_config, cursor=None, default_resource_directory=
             "insert into R_USER_GROUP values (?,?,?,?);",
             public_group_id,
             admin_user_id,
-            timestamp,
-            timestamp)
-    execute_sql_statement(cursor,
-            "insert into R_USER_GROUP values (?,?,?,?);",
-            admin_group_id,
-            admin_group_id,
             timestamp,
             timestamp)
     execute_sql_statement(cursor,

@@ -33,7 +33,7 @@ class Test_IUserinfo(resource_suite.ResourceBase, unittest.TestCase):
 
         # STDOUT_MULTILINE requires ordered output which is not guaranteed,
         # so capture output in a string and compare against expected output
-        expected_groups = ['member of group: rods', 'member of group: public', 'member of group: rodsadmin']
+        expected_groups = ['member of group: rods', 'member of group: public']
         _,out,_ = test_session.assert_icommand(['iuserinfo', '{self.local_user}#{self.local_zone}'.format(**locals())], 'STDOUT', ['zone: ' + self.local_zone])
         self.assertTrue(self.local_zone in out)
         self.assertTrue(self.remote_zone not in out)
