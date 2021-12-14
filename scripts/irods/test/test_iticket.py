@@ -531,10 +531,10 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
 
         # Add an allowed group to the ticket.
         self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['No group restrictions'])
-        self.admin.assert_icommand(['iticket', '-M', 'mod', ticket_string, 'add', 'group', 'rodsadmin'])
-        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['restricted-to group: rodsadmin'])
+        self.admin.assert_icommand(['iticket', '-M', 'mod', ticket_string, 'add', 'group', 'public'])
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['restricted-to group: public'])
 
         # Remove the allowed group from the ticket.
-        self.admin.assert_icommand(['iticket', '-M', 'mod', ticket_string, 'remove', 'group', 'rodsadmin'])
+        self.admin.assert_icommand(['iticket', '-M', 'mod', ticket_string, 'remove', 'group', 'public'])
         self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['No group restrictions'])
 

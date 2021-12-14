@@ -1384,9 +1384,9 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['iadmin', 'lr', 'demoResc'], 'STDOUT_SINGLELINE', 'resc_name: demoResc')
         self.admin.assert_icommand(['iadmin', 'lz'], 'STDOUT_SINGLELINE', self.admin.zone_name)
         self.admin.assert_icommand(['iadmin', 'lz', self.admin.zone_name], 'STDOUT_SINGLELINE', 'zone_type_name: local')
-        self.admin.assert_icommand(['iadmin', 'lg'], 'STDOUT_SINGLELINE', 'rodsadmin')
-        self.admin.assert_icommand(['iadmin', 'lg', 'rodsadmin'], 'STDOUT_SINGLELINE')
-        self.admin.assert_icommand(['iadmin', 'lgd', 'rodsadmin'], 'STDOUT_SINGLELINE', 'user_name: rodsadmin')
+        self.admin.assert_icommand(['iadmin', 'lg'], 'STDOUT_SINGLELINE', 'public')
+        self.admin.assert_icommand(['iadmin', 'lg', 'public'], 'STDOUT_SINGLELINE', ['rods#tempZone'])
+        self.admin.assert_icommand(['iadmin', 'lgd', 'public'], 'STDOUT_SINGLELINE', 'user_name: public')
         self.admin.assert_icommand(['iadmin', 'lrg'], 'STDERR_SINGLELINE', 'Resource groups are deprecated.')
 
     def test_group_membership(self):
