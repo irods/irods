@@ -36,7 +36,7 @@ jobs:
               sudo yum -y install irods-externals-*
       - name: Configure CMake
         run:  |
-              export PATH=/opt/irods-externals/cmake3.11.4-0/bin:$PATH
+              export PATH=/opt/irods-externals/cmake3.21.4-0/bin:$PATH
               mkdir build
               cd build
               cmake -DIRODS_DISABLE_COMPILER_OPTIMIZATIONS=ON ../
