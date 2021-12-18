@@ -7,7 +7,7 @@
 #include "objDesc.hpp"
 #include "rodsConnect.h"
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 #include "fmt/format.h"
 #include "nanodbc/nanodbc.h"
 

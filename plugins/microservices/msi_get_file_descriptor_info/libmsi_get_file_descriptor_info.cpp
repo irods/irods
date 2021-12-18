@@ -8,7 +8,7 @@
 #include "irods_log.hpp"
 #include "rs_get_file_descriptor_info.hpp"
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 #include <functional>
 #include <string>

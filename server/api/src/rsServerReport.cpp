@@ -24,7 +24,7 @@
 #include <boost/archive/iterators/transform_width.hpp>
 #include <boost/archive/iterators/ostream_iterator.hpp>
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 #include <sys/utsname.h>
 

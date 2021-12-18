@@ -2,7 +2,7 @@
 #include "api_plugin_number.h"
 #include "experimental_plugin_framework.hpp"
 #include "client_api_whitelist.hpp"
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 #include "irods_re_namespaceshelper.hpp"
 #include "irods_re_plugin.hpp"

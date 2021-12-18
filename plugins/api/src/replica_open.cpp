@@ -30,7 +30,7 @@
 #include "key_value_proxy.hpp"
 #include "finalize_utilities.hpp"
 
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 
 #include <string>
 

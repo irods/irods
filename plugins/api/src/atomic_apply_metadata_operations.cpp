@@ -39,7 +39,7 @@
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 #include "filesystem.hpp"
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 #include "fmt/format.h"
 #include "nanodbc/nanodbc.h"
 

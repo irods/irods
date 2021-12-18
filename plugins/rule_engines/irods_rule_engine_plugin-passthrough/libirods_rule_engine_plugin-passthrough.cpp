@@ -17,7 +17,7 @@
 #include <algorithm>
 #include <initializer_list>
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 namespace
 {

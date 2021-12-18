@@ -22,7 +22,7 @@
     #undef SPDLOG_ENABLE_SYSLOG
 #endif // IRODS_ENABLE_SYSLOG
 
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 
 #include <boost/range/iterator_range_core.hpp>
 

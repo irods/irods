@@ -23,7 +23,7 @@
 #include <string>
 #include <vector>
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 namespace ill = irods::logical_locking;
 namespace ir = irods::experimental::replica;

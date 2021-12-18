@@ -37,7 +37,7 @@
 #include "hostname_cache.hpp"
 #include "irods_configuration_keywords.hpp"
 
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 
 #include <cstring>
 #include <exception>

@@ -22,7 +22,7 @@
 #include <unistd.h>
 #include <cstdlib>
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 
 namespace ix = irods::experimental;

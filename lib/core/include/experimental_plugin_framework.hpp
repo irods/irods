@@ -22,7 +22,7 @@
 #include <unistd.h>
 #include <thread>
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
 namespace irods::experimental::api {
