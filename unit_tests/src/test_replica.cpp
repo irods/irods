@@ -104,7 +104,7 @@ TEST_CASE("replica", "[replica]")
         // size
         REQUIRE(!replica::is_replica_empty(comm, target_object, second_replica));
         REQUIRE(object_content.length() == replica::replica_size(comm, target_object, second_replica));
-        REQUIRE(object_content.length() == replica::get_replica_size_from_storage(comm, target_object, second_replica));
+        REQUIRE(static_cast<rodsLong_t>(object_content.length()) == replica::get_replica_size_from_storage(comm, target_object, second_replica));
 
         // checksum a specific replica
         REQUIRE(replica::replica_checksum(comm, target_object, second_replica) == expected_checksum);
@@ -119,7 +119,7 @@ TEST_CASE("replica", "[replica]")
 
         // show that the replica was updated
         REQUIRE(updated_object_content.length() == replica::replica_size(comm, target_object, second_replica));
-        REQUIRE(updated_object_content.length() == replica::get_replica_size_from_storage(comm, target_object, second_replica));
+        REQUIRE(static_cast<rodsLong_t>(updated_object_content.length()) == replica::get_replica_size_from_storage(comm, target_object, second_replica));
 
         // show that the checksum has been erased
         {
@@ -165,7 +165,7 @@ TEST_CASE("replica", "[replica]")
         // size
         REQUIRE(!replica::is_replica_empty(comm, target_object, resc_name));
         REQUIRE(object_content.length() == replica::replica_size(comm, target_object, resc_name));
-        REQUIRE(object_content.length() == replica::get_replica_size_from_storage(comm, target_object, resc_name));
+        REQUIRE(static_cast<rodsLong_t>(object_content.length()) == replica::get_replica_size_from_storage(comm, target_object, resc_name));
 
         // checksum a specific replica
         REQUIRE(replica::replica_checksum(comm, target_object, resc_name) == expected_checksum);
@@ -180,7 +180,7 @@ TEST_CASE("replica", "[replica]")
 
         // show that the replica was updated
         REQUIRE(updated_object_content.length() == replica::replica_size(comm, target_object, resc_name));
-        REQUIRE(updated_object_content.length() == replica::get_replica_size_from_storage(comm, target_object, resc_name));
+        REQUIRE(static_cast<rodsLong_t>(updated_object_content.length()) == replica::get_replica_size_from_storage(comm, target_object, resc_name));
 
         // show that the checksum has been erased
         {
@@ -223,7 +223,7 @@ TEST_CASE("replica", "[replica]")
         std::string_view physical_path = result[replica::genquery_column_index::DATA_PATH];
 
         // size in storage
-        REQUIRE(object_content.length() == replica::get_replica_size_from_storage(comm, target_object, resc_name, physical_path));
+        REQUIRE(static_cast<rodsLong_t>(object_content.length()) == replica::get_replica_size_from_storage(comm, target_object, resc_name, physical_path));
 
         // overwrite second replica with new contents
         {
@@ -233,7 +233,7 @@ TEST_CASE("replica", "[replica]")
         }
 
         // show that the replica was updated
-        REQUIRE(updated_object_content.length() == replica::get_replica_size_from_storage(comm, target_object, resc_name, physical_path));
+        REQUIRE(static_cast<rodsLong_t>(updated_object_content.length()) == replica::get_replica_size_from_storage(comm, target_object, resc_name, physical_path));
     }
 
     SECTION("data objects")

@@ -49,7 +49,6 @@ int myPID;
 
 int initializeReDebug( rsComm_t *svrComm ) {
     char condRead[NAME_LEN];
-    int s, m;
 
     if ( svrComm == NULL ) {
         return 0;
@@ -58,8 +57,6 @@ int initializeReDebug( rsComm_t *svrComm ) {
         return 0;
     }
 
-    s = 0;
-    m = 0;
     myPID = ( int ) getpid();
     myHostName[0] = '\0';
     gethostname( myHostName, MAX_NAME_LEN );
@@ -241,7 +238,7 @@ reDebug( RuleEngineEvent label, int flag, RuleEngineEventParam *param, Node *nod
     if ( ruleEngineConfig.logging == 0 ) {
         return 0;
     }
-    int sleepT, j;
+    int j;
     char hdr[HEADER_TYPE_LEN];
     static int curStat = 0;
     static int reDebugStackPtr = -1;
@@ -252,7 +249,6 @@ reDebug( RuleEngineEvent label, int flag, RuleEngineEventParam *param, Node *nod
     char seActionStr[10 * MAX_NAME_LEN + 100];
     char timestamp[TIME_LEN];
     rsComm_t *svrComm;
-    sleepT = 1;
     char buf[HEADER_TYPE_LEN - 1];
 
     svrComm = rei->rsComm;

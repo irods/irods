@@ -33,7 +33,7 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
-#include <signal.h>
+#include <csignal>
 #include <string>
 #include <string_view>
 #include <thread>
@@ -1207,7 +1207,7 @@ TEST_CASE("rxDataObjPut")
         // Show that even though the PUT resulted in a checksum mismatch error, the catalog captures the
         // correct information for the replica.
         CHECK(replica::replica_status<RcComm>(conn, logical_path, env.rodsDefResource) == STALE_REPLICA);
-        CHECK(replica::replica_size<RcComm>(conn, logical_path, env.rodsDefResource) == put_input.dataSize);
+        CHECK(static_cast<rodsLong_t>(replica::replica_size<RcComm>(conn, logical_path, env.rodsDefResource)) == put_input.dataSize);
 
         std::string_view expected_checksum = "sha2:oC4OD1/qnmXHaUV298S0PCsoAvvWPmwh7oIHHEhsi1U=";
         CHECK(replica::replica_checksum<RcComm>(conn, logical_path, env.rodsDefResource) == expected_checksum);
@@ -1221,7 +1221,7 @@ TEST_CASE("rxDataObjPut")
         REQUIRE(rcDataObjPut(static_cast<RcComm*>(conn), &put_input, const_cast<char*>(local_file.c_str())) == USER_CHKSUM_MISMATCH);
 
         CHECK(replica::replica_status<RcComm>(conn, logical_path, env.rodsDefResource) == STALE_REPLICA);
-        CHECK(replica::replica_size<RcComm>(conn, logical_path, env.rodsDefResource) == put_input.dataSize);
+        CHECK(static_cast<rodsLong_t>(replica::replica_size<RcComm>(conn, logical_path, env.rodsDefResource)) == put_input.dataSize);
 
         expected_checksum = "sha2:Nje5rtNS8hXbdo639d9ux4gLptcm3sichw1PssbSnOg=";
         CHECK(replica::replica_checksum<RcComm>(conn, logical_path, env.rodsDefResource) == expected_checksum);
@@ -1235,7 +1235,7 @@ TEST_CASE("rxDataObjPut")
         REQUIRE(rcDataObjPut(static_cast<RcComm*>(conn), &put_input, const_cast<char*>(local_file.c_str())) == 0);
 
         CHECK(replica::replica_status<RcComm>(conn, logical_path, env.rodsDefResource) == GOOD_REPLICA);
-        CHECK(replica::replica_size<RcComm>(conn, logical_path, env.rodsDefResource) == put_input.dataSize);
+        CHECK(static_cast<rodsLong_t>(replica::replica_size<RcComm>(conn, logical_path, env.rodsDefResource)) == put_input.dataSize);
         CHECK(replica::replica_checksum<RcComm>(conn, logical_path, env.rodsDefResource) == expected_checksum);
 
         // Show that recalculating the checksum results in the same checksum because the checksum
