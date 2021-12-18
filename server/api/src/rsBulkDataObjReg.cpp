@@ -176,6 +176,7 @@ int _rsBulkDataObjReg(
             tmpOprType = &oprType->value[oprType->len * i];
             tmpReplNum =  &replNum->value[replNum->len * i];
             tmpObjId = &objId->value[objId->len * i];
+            static_cast<void>(tmpObjId);
 
             dataObjInfo_t dataObjInfo{};
             dataObjInfo.flags = NO_COMMIT_FLAG;

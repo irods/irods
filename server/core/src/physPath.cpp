@@ -1125,8 +1125,6 @@ syncCollPhyPath( rsComm_t *rsComm, char *collection ) {
 
 int
 isInVault( dataObjInfo_t *dataObjInfo ) {
-    int len;
-
     if ( !dataObjInfo ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
@@ -1141,7 +1139,6 @@ isInVault( dataObjInfo_t *dataObjInfo ) {
         irods::log( ret );
         return ret.code();
     }
-    len = vault_path.size();
 
     return has_prefix(dataObjInfo->filePath, vault_path.c_str());
 }

@@ -54,11 +54,11 @@ namespace
             replicas[i] = curr;
 
             const auto& r = replicas[i];
-            REQUIRE(_logical_path == r->objPath);
-            REQUIRE(_data_id      == r->dataId);
-            REQUIRE(i             == r->replNum);
-            REQUIRE(_size         == r->dataSize);
-            REQUIRE(i             == r->rescId);
+            REQUIRE(_logical_path                     == r->objPath);
+            REQUIRE(static_cast<rodsLong_t>(_data_id) == r->dataId);
+            REQUIRE(i                                 == r->replNum);
+            REQUIRE(static_cast<rodsLong_t>(_size)    == r->dataSize);
+            REQUIRE(i                                 == r->rescId);
         }
 
         return replicas;

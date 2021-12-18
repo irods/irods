@@ -2288,7 +2288,10 @@ int chl_gen_query_access_control_setup_impl(
     int maxColSize;
     int currentMaxColSize;
     char *tResult, *tResult2;
+#if ORA_ICAT
+#else
     static int recursiveCall = 0;
+#endif
 
     if ( logSQLGenQuery ) {
         rodsLog( LOG_SQL, "chlGenQuery" );
@@ -2386,7 +2389,6 @@ int chl_gen_query_access_control_setup_impl(
         }
 
 #if ORA_ICAT
-        recursiveCall = 0; /* avoid warning */
 #else
         if ( genQueryInp.options & RETURN_TOTAL_ROW_COUNT ) {
             i = cllGetRowCount( icss, statementNum );
