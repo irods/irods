@@ -14,7 +14,7 @@
 #include "irods_configuration_keywords.hpp"
 #include "irods_report_plugins_in_json.hpp"
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 #include <boost/format.hpp>
 

@@ -16,7 +16,7 @@
 #include <boost/any.hpp>
 #include <boost/optional.hpp>
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 namespace irods
 {

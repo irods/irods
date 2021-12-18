@@ -16,7 +16,7 @@
 #include "transport/default_transport.hpp"
 #include "unit_test_utils.hpp"
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 #include "fmt/format.h"
 
 #include <cstdlib>

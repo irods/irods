@@ -18,7 +18,7 @@
 #include <tuple>
 #include <vector>
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 namespace irods {
 

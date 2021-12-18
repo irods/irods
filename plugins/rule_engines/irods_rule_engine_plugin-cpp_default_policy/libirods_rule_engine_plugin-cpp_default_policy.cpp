@@ -38,7 +38,7 @@
 
 #include "configuration.hpp"
 #include "irods_server_properties.hpp"
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 #define IRODS_QUERY_ENABLE_SERVER_SIDE_API
 #include "query_builder.hpp"

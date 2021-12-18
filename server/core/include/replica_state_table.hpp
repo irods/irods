@@ -5,7 +5,7 @@
 #include "data_object_proxy.hpp"
 #include "json_serialization.hpp"
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 #include <string_view>
 #include <tuple>

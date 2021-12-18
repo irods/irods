@@ -12,7 +12,7 @@
 #include "modDataObjMeta.h"
 
 #include <fmt/format.h>
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 
 #include <string_view>
 

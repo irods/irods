@@ -16,7 +16,7 @@
 #include "server_utilities.hpp"
 #include "json_serialization.hpp"
 
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 
 #include <cstring>
 #include <string>

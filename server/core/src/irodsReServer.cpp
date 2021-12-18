@@ -34,7 +34,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 #include <fmt/format.h>
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 #include <nanodbc/nanodbc.h>
 
 #include <cstdlib>

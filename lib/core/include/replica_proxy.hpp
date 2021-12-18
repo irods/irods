@@ -9,7 +9,7 @@
 #include "objInfo.h"
 #include "replica.hpp"
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 #include <string_view>
 

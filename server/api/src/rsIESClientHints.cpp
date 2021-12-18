@@ -14,7 +14,7 @@
 #include "irods_resource_backport.hpp"
 #include "irods_server_properties.hpp"
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
 

@@ -40,7 +40,7 @@
 #include "logical_locking.hpp"
 
 #include "fmt/format.h"
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 #include <cstring>
 #include <string>

@@ -6,7 +6,7 @@
 #include "rodsErrorTable.h"
 #include "irods_error.hpp"
 
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 
 struct MsParam;
 struct KeyValPair;

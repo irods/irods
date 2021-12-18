@@ -45,7 +45,7 @@
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
 #include "data_object_proxy.hpp"
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 #include "fmt/format.h"
 #include "nanodbc/nanodbc.h"
 

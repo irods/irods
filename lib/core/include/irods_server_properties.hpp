@@ -11,7 +11,7 @@
 #include <string>
 #include <string_view>
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 #include "fmt/format.h"
 
 namespace irods

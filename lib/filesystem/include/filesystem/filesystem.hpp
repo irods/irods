@@ -14,7 +14,7 @@
     #include "atomic_apply_metadata_operations.h"
 #endif // IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 #include <cstdint>
 #include <string>

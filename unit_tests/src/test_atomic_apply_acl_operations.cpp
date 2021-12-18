@@ -8,7 +8,7 @@
 #include "user_administration.hpp"
 #include "irods_at_scope_exit.hpp"
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 #include <cstdlib>
 #include <string>

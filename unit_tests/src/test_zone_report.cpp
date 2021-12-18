@@ -9,7 +9,7 @@
 
 #include <tuple>
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 TEST_CASE("json zone report")
 {

@@ -3,7 +3,7 @@
 #include "irods_server_properties.hpp"
 #include "irods_resource_manager.hpp"
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 namespace irods {
 
