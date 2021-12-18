@@ -15,7 +15,7 @@
 
 #include "boost/lexical_cast.hpp"
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 #include <iostream>
 #include <fstream>

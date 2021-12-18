@@ -205,6 +205,8 @@ showResc( char *name, int longOption, const char* zoneArgument, rcComm_t *Conn )
         printCount += printGenQueryResults(Conn, status, genQueryOut, columnNames, longOption);
     }
 
+    static_cast<void>(printCount);
+
     return 1;
 }
 

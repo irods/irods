@@ -19,7 +19,7 @@
 #include "irods_buffer_encryption.hpp"
 #include "irods_exception.hpp"
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 template <typename T>
 irods::error usage(T& ostream) {

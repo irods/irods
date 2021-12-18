@@ -8,7 +8,7 @@
 
 #include "fmt/core.h"
 #include "fmt/color.h"
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 #include "boost/program_options.hpp"
 
 #include <regex>

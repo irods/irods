@@ -185,6 +185,8 @@ showRuleExec( char *name, char *ruleName, int allFlag ) {
                                             columnNames, 0 );
     }
 
+    static_cast<void>(printCount);
+
     return 0;
 }
 
@@ -257,6 +259,9 @@ showRuleExecBrief( char *name, int allFlag ) {
         printCount += printGenQueryResults( Conn, status, genQueryOut,
                                             NULL, 1 );
     }
+
+    static_cast<void>(printCount);
+
     return 0;
 }
 
