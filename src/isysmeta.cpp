@@ -165,6 +165,8 @@ doLs( rcComm_t *Conn, char *objPath, int longOption ) {
                                             columnNames, longOption );
     }
 
+    static_cast<void>(printCount);
+
     return 1;
 }
 
@@ -216,6 +218,8 @@ doListDataTypes( rcComm_t *Conn ) {
         printCount += printGenQueryResults( Conn, status, genQueryOut,
                                             0, 0 );
     }
+
+    static_cast<void>(printCount);
 
     return 1;
 }

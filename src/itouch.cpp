@@ -9,7 +9,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <fmt/format.h>
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 
 #include <string>
 #include <string_view>
