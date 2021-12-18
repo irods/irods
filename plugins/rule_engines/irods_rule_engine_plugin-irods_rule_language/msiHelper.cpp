@@ -1,3 +1,8 @@
+/**
+ * @file  msiHelper.cpp
+ *
+**/
+
 #include "rcMisc.h"
 #include "msiHelper.hpp"
 #include "reFuncDefs.hpp"
