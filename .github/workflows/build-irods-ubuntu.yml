@@ -7,7 +7,7 @@ jobs:
     container: ${{ matrix.container }}
     strategy:
       matrix:
-        container: ['ubuntu:16.04', 'ubuntu:18.04']
+        container: ['ubuntu:18.04']
     steps:
       - name: Install git > v2.18 for Checkout
         run:  |
@@ -27,7 +27,7 @@ jobs:
       - name: Install Dependencies
         run:  |
               sudo apt-get update -qq
-              sudo apt-get install -qq wget curl g++ make python-dev help2man unixodbc libcurl4-gnutls-dev libbz2-dev zlib1g-dev libpam0g-dev libssl-dev libxml2-dev unixodbc-dev python-psutil super odbc-postgresql libkrb5-dev
+              sudo apt-get install -qq wget curl g++ make python-dev help2man unixodbc libcurl4-gnutls-dev libbz2-dev zlib1g-dev libpam0g-dev libssl-dev libxml2-dev unixodbc-dev python-psutil super odbc-postgresql libkrb5-dev python3-distro
       - name: Install libstdc++6
         run:  |
               sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
