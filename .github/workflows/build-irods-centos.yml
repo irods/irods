@@ -24,7 +24,7 @@ jobs:
         run:  |
               yum -y update ca-certificates
               yum install -y sudo bind-utils wget
-              yum -y install gcc g++ libstdc++-static make rpm-build bzip2-devel curl-devel fakeroot help2man openssl-devel pam-devel python-devel unixODBC unixODBC-devel zlib-devel
+              yum -y install gcc g++ libstdc++-static make rpm-build bzip2-devel curl-devel fakeroot help2man openssl-devel pam-devel python-devel unixODBC unixODBC-devel zlib-devel python36-distro
       - name: Get Public IP
         run:  |
               dig +short myip.opendns.com @resolver1.opendns.com
