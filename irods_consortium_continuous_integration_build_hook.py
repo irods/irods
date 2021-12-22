@@ -24,18 +24,18 @@ def build(icommands_git_repository, icommands_git_commitish, debug_build, output
 def install_building_dependencies(externals_directory):
     externals_list = [
         'irods-externals-cmake3.21.4-0',
-        'irods-externals-avro1.9.0-0',
-        'irods-externals-boost1.67.0-0',
-        'irods-externals-catch22.3.0-0',
-        'irods-externals-clang-runtime6.0-0',
-        'irods-externals-clang6.0-0',
-        'irods-externals-cppzmq4.2.3-0',
-        'irods-externals-fmt6.1.2-1',
+        'irods-externals-avro1.11.0-0',
+        'irods-externals-boost1.77.0-1',
+        'irods-externals-catch22.13.7-1',
+        'irods-externals-clang-runtime13.0.0-0',
+        'irods-externals-clang13.0.0-0',
+        'irods-externals-cppzmq4.8.1-1',
+        'irods-externals-fmt8.0.1-0',
         'irods-externals-json3.10.4-0',
-        'irods-externals-libarchive3.3.2-1',
+        'irods-externals-libarchive3.5.2-1',
         'irods-externals-nanodbc2.13.0-1',
-        'irods-externals-spdlog1.5.0-1',
-        'irods-externals-zeromq4-14.1.6-0'
+        'irods-externals-spdlog1.9.2-1',
+        'irods-externals-zeromq4-14.1.8-0'
         ]
     if externals_directory is None or externals_directory == 'None':
         irods_python_ci_utilities.install_irods_core_dev_repository()

@@ -40,17 +40,17 @@ jobs:
               sudo apt-get update -qq
               sudo apt-get install -qq \
                 irods-externals-avro1.11.0-0 \
-                irods-externals-boost1.77.0-0 \
-                irods-externals-catch22.13.7-0 \
+                irods-externals-boost1.77.0-1 \
+                irods-externals-catch22.13.7-1 \
                 irods-externals-clang-runtime13.0.0-0 \
                 irods-externals-clang13.0.0-0 \
                 irods-externals-cmake3.21.4-0 \
-                irods-externals-cppzmq4.8.1-0 \
+                irods-externals-cppzmq4.8.1-1 \
                 irods-externals-fmt8.0.1-0 \
                 irods-externals-json3.10.4-0 \
                 irods-externals-libarchive3.5.2-0 \
                 irods-externals-nanodbc2.13.0-1 \
-                irods-externals-spdlog1.9.2-0 \
+                irods-externals-spdlog1.9.2-1 \
                 irods-externals-zeromq4-14.1.8-0
       - name: Configure CMake
         run:  |
