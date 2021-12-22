@@ -12,7 +12,7 @@
 //   - https://en.cppreference.com/w/Cppreference:Copyright/GDFL
 //
 
-#include "catch.hpp"
+#include <catch2/catch.hpp>
 
 #include "rodsClient.h"
 #include "dataObjRepl.h"

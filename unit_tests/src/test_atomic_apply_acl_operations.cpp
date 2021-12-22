@@ -1,4 +1,4 @@
-#include "catch.hpp"
+#include <catch2/catch.hpp>
 
 #include "rodsClient.h"
 #include "atomic_apply_acl_operations.h"

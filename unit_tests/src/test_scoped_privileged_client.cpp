@@ -1,4 +1,4 @@
-#include "catch.hpp"
+#include <catch2/catch.hpp>
 
 #include "scoped_privileged_client.hpp"
 #include "irods_rs_comm_query.hpp"

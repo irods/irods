@@ -1,4 +1,4 @@
-#include "catch.hpp"
+#include <catch2/catch.hpp>
 
 #include "getRodsEnv.h"
 #include "irods_client_api_table.hpp"

@@ -1,4 +1,4 @@
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 
 #include "packStruct.h"
 #include "rcGlobalExtern.h"
