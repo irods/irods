@@ -1,4 +1,4 @@
-#include "catch.hpp"
+#include <catch2/catch.hpp>
 
 #include "atomic_apply_metadata_operations.h"
 #include "connection_pool.hpp"

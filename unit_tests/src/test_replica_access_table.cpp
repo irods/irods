@@ -1,4 +1,4 @@
-#include "catch.hpp"
+#include <catch2/catch.hpp>
 
 #include "replica_access_table.hpp"
 #include "irods_at_scope_exit.hpp"

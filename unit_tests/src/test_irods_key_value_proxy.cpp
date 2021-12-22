@@ -1,4 +1,4 @@
-#include "catch.hpp"
+#include <catch2/catch.hpp>
 
 #include "key_value_proxy.hpp"
 #include "lifetime_manager.hpp"
