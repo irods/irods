@@ -173,7 +173,6 @@ if (NOT TARGET nlohmann_json::nlohmann_json)
   unset(pre_def_nlohmann_json_CONSIDERED_VERSIONS)
 
   if (NOT TARGET nlohmann_json::nlohmann_json)
-  else()
     # handle missing configuration files
     find_path(
       nlohmann_json_include_dir
