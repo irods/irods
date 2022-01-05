@@ -58,6 +58,7 @@ set(TEST_INCLUDE_LIST test_config/irods_atomic_apply_acl_operations
                       test_config/irods_parallel_transfer_engine
                       test_config/irods_query_builder
                       test_config/irods_rc_data_obj
+                      test_config/irods_rc_data_obj_repl
                       test_config/irods_re_serialization
                       test_config/irods_replica
                       test_config/irods_replica_access_table
