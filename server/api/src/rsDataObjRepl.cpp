@@ -113,7 +113,7 @@ namespace
         char* checksum_string = nullptr;
         irods::at_scope_exit free_checksum_string{[&checksum_string] { free(checksum_string); }};
 
-        if (_source_replica.checksum().length() > 0 && STALE_REPLICA != _source_replica.replica_status()) {
+        if (!_source_replica.checksum().empty() && STALE_REPLICA != _source_replica.replica_status()) {
             _destination_replica.cond_input()[ORIG_CHKSUM_KW] = _source_replica.checksum();
 
             irods::log(LOG_DEBUG, fmt::format(
@@ -212,14 +212,15 @@ namespace
 
             _destination_replica.size(size_in_vault);
 
-            if (_source_replica.checksum().empty()) {
+            if ((_source_replica.checksum().empty() && !cond_input.contains(REG_CHKSUM_KW)) ||
+                cond_input.contains(NO_COMPUTE_KW)) {
+                _destination_replica.checksum("");
                 cond_input[CHKSUM_KW] = "";
             }
             else {
                 const auto checksum = calculate_checksum(_comm, _l1desc, _source_replica, _destination_replica);
-                if (!checksum.empty()) {
-                    cond_input[CHKSUM_KW] = checksum;
-                }
+                cond_input[CHKSUM_KW] = checksum;
+                _destination_replica.checksum(checksum);
             }
         }
         catch (const irods::exception& e) {
@@ -485,11 +486,43 @@ namespace
             return source_l1descInx;
         }
 
-        auto& source_data_obj_info = *L1desc[source_l1descInx].dataObjInfo;
+        auto [source_replica, source_replica_lm] = ir::duplicate_replica(*L1desc[source_l1descInx].dataObjInfo);
 
-        irods::log(LOG_DEBUG8, fmt::format(
-            "[{}:{}] - source:[{}]",
-            __FUNCTION__, __LINE__, source_data_obj_info.rescHier));
+        irods::log(LOG_DEBUG8, fmt::format("[{}:{}] - source:[{}]",
+            __FUNCTION__, __LINE__, source_replica.hierarchy()));
+
+        const auto cond_input = irods::experimental::make_key_value_proxy(_destination_inp.condInput);
+        if (source_replica.checksum().empty() && cond_input.contains(VERIFY_CHKSUM_KW)) {
+            const std::string msg = fmt::format(
+                "Requested to verify checksum, but source replica for [{}] on [{}] has no "
+                "checksum. Calculate a checksum for the source replica and try again. "
+                "Aborting replication.",
+                source_replica.logical_path(), source_replica.hierarchy());
+
+            const auto ec = CAT_NO_CHECKSUM_FOR_REPLICA;
+
+            addRErrorMsg(&_comm.rError, ec, msg.data());
+
+            irods::log(LOG_WARNING, fmt::format("[{}:{}] - {}", msg, __func__, __LINE__));
+
+            return ec;
+        }
+
+        if (!source_replica.checksum().empty() && cond_input.contains(REG_CHKSUM_KW)) {
+            const std::string msg = fmt::format(
+                "Requested to register checksum without verifying, but source replica for [{}] "
+                "on [{}] has a checksum. This can result in multiple replicas being marked good "
+                "with different checksums, which is an inconsistency. Aborting replication.",
+                source_replica.logical_path(), source_replica.hierarchy());
+
+            const auto ec = SYS_NOT_ALLOWED;
+
+            addRErrorMsg(&_comm.rError, ec, msg.data());
+
+            irods::log(LOG_WARNING, fmt::format("[{}:{}] - {}", msg, __func__, __LINE__));
+
+            return ec;
+        }
 
         // Open destination replica
         int destination_l1descInx = open_destination_replica(_comm, _destination_inp, source_l1descInx);
@@ -510,8 +543,8 @@ namespace
             __FUNCTION__, __LINE__, destination_data_obj_info.rescHier));
 
         L1desc[destination_l1descInx].srcL1descInx = source_l1descInx;
-        L1desc[destination_l1descInx].dataSize = source_data_obj_info.dataSize;
-        L1desc[destination_l1descInx].dataObjInp->dataSize = source_data_obj_info.dataSize;
+        L1desc[destination_l1descInx].dataSize = source_replica.size();
+        L1desc[destination_l1descInx].dataObjInp->dataSize = source_replica.size();
 
         const int thread_count = getNumThreads(
             &_comm,
@@ -531,7 +564,7 @@ namespace
                 "[{}:{}] - dataObjCopy failed for [{}], src:[{}], dest:[{}]; ec:[{}]",
                 __FUNCTION__, __LINE__,
                 _destination_inp.objPath,
-                source_data_obj_info.rescHier,
+                source_replica.hierarchy(),
                 destination_data_obj_info.rescHier,
                 status));
 
@@ -564,7 +597,6 @@ namespace
             }
         };
 
-        auto [source_replica, source_replica_lm] = ir::duplicate_replica(source_data_obj_info);
         auto [destination_replica, destination_replica_lm] = ir::duplicate_replica(destination_data_obj_info);
         constexpr auto preserve_rst = true;
 
@@ -899,6 +931,20 @@ int rsDataObjRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp, transferStat_t **
 
     // -S and -n are not compatible
     if (cond_input.contains(RESC_NAME_KW) && cond_input.contains(REPL_NUM_KW)) {
+        return USER_INCOMPATIBLE_PARAMS;
+    }
+
+    const auto compute_and_verify_checksum = cond_input.contains(VERIFY_CHKSUM_KW);
+    const auto compute_and_do_not_verify_checksum = cond_input.contains(REG_CHKSUM_KW);
+    const auto do_not_compute_checksum = cond_input.contains(NO_COMPUTE_KW);
+
+    const auto compute_checksum = compute_and_verify_checksum ||
+                                  compute_and_do_not_verify_checksum;
+    if (compute_checksum && do_not_compute_checksum) {
+        return USER_INCOMPATIBLE_PARAMS;
+    }
+
+    if (compute_and_verify_checksum && compute_and_do_not_verify_checksum) {
         return USER_INCOMPATIBLE_PARAMS;
     }
 
