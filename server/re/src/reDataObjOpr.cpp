@@ -33,6 +33,7 @@
 #include "rsStructFileBundle.hpp"
 #include "rsPhyBundleColl.hpp"
 #include "irods_at_scope_exit.hpp"
+#include "key_value_proxy.hpp"
 
 #include <boost/regex.hpp>
 #include <boost/algorithm/string/regex.hpp>
@@ -925,7 +926,15 @@ msiDataObjUnlink( msParam_t *inpParam, msParam_t *outParam,
  *          \li "irodsAdmin" - admin user replicate other users' files.
  *                This keyWd has no value.
  *          \li "verifyChksum" - verify the transfer using checksum.
- *                This keyWd has no value.
+ *                This keyword can be set to "0" to expressly forbid verifying the checksum of
+ *                the resultant replica. If the keyword is present with any other value
+ *                (including no value provided), checksum verification is expressly requested.
+ *                If the keyword is missing, checksum verification will occur if the source
+ *                replica has a checksum. Not compatible with forceChksum.
+ *          \li "forceChksum" - compute a checksum without verifying
+ *                This keyword has no value. If provided, the destination replica will have its
+ *                checksum computed and stored in the catalog, but the result will not be
+ *                compared to the source replica's checksum. Not compatible with verifyChksum.
  *          \li "rbudpTransfer" - use RBUDP (datagram) protocol for the
  *                data transfer. This keyWd has no value.
  *          \li "rbudpSendRate" - Valid only if "rbudpTransfer" is on. This
@@ -987,9 +996,47 @@ msiDataObjRepl( msParam_t *inpParam1, msParam_t *msKeyValStr,
     validKwFlags = OBJ_PATH_FLAG | DEST_RESC_NAME_FLAG | NUM_THREADS_FLAG |
                    BACKUP_RESC_NAME_FLAG | RESC_NAME_FLAG | UPDATE_REPL_FLAG |
                    REPL_NUM_FLAG | ALL_FLAG | ADMIN_FLAG | VERIFY_CHKSUM_FLAG |
-                   RBUDP_TRANSFER_FLAG | RBUDP_SEND_RATE_FLAG | RBUDP_PACK_SIZE_FLAG;
+                   RBUDP_TRANSFER_FLAG | RBUDP_SEND_RATE_FLAG | RBUDP_PACK_SIZE_FLAG |
+                   FORCE_CHKSUM_FLAG;
     rei->status = parseMsKeyValStrForDataObjInp( msKeyValStr, myDataObjInp,
                   DEST_RESC_NAME_KW, validKwFlags, &outBadKeyWd );
+
+    auto kvp = irods::experimental::make_key_value_proxy(myDataObjInp->condInput);
+
+    const auto compute_and_verify_checksum = kvp.contains(VERIFY_CHKSUM_KW) &&
+                                             kvp.at(VERIFY_CHKSUM_KW).value() != "0";
+    const auto compute_and_do_not_verify_checksum = kvp.contains(FORCE_CHKSUM_KW);
+    const auto do_not_compute_checksum = kvp.contains(VERIFY_CHKSUM_KW) &&
+                                         kvp.at(VERIFY_CHKSUM_KW).value() == "0";
+
+    const auto compute_checksum = compute_and_verify_checksum ||
+                                  compute_and_do_not_verify_checksum;
+    if (compute_checksum && do_not_compute_checksum) {
+        return USER_INCOMPATIBLE_PARAMS;
+    }
+
+    if (compute_and_verify_checksum && compute_and_do_not_verify_checksum) {
+        return USER_INCOMPATIBLE_PARAMS;
+    }
+
+    if (compute_and_verify_checksum) {
+        kvp[VERIFY_CHKSUM_KW] = "";
+        kvp.erase(NO_COMPUTE_KW);
+        kvp.erase(REG_CHKSUM_KW);
+    }
+    else if (compute_and_do_not_verify_checksum) {
+        kvp[REG_CHKSUM_KW] = "";
+        kvp.erase(NO_COMPUTE_KW);
+        kvp.erase(VERIFY_CHKSUM_KW);
+    }
+    else if (do_not_compute_checksum) {
+        kvp[NO_COMPUTE_KW] = "";
+        kvp.erase(REG_CHKSUM_KW);
+        kvp.erase(VERIFY_CHKSUM_KW);
+    }
+
+    // Erase the FORCE_CHKSUM_KW here because the API does not handle the keyword.
+    kvp.erase(FORCE_CHKSUM_KW);
 
     if ( rei->status < 0 ) {
         if ( outBadKeyWd != NULL ) {
@@ -2823,7 +2870,15 @@ msiExecCmd( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,
  *        \li "irodsAdmin" - admin user replicate other users' files.
  *              This keyWd has no value.
  *        \li "verifyChksum" - verify the transfer using checksum.
- *              This keyWd has no value.
+ *              This keyword can be set to "0" to expressly forbid verifying the checksum of
+ *              the resultant replica. If the keyword is present with any other value
+ *              (including no value provided), checksum verification is expressly requested.
+ *              If the keyword is missing, checksum verification will occur if the source
+ *              replica has a checksum. Not compatible with forceChksum.
+ *        \li "forceChksum" - compute a checksum without verifying
+ *              This keyword has no value. If provided, the destination replica will have its
+ *              checksum computed and stored in the catalog, but the result will not be
+ *              compared to the source replica's checksum. Not compatible with verifyChksum.
  * \param[out] status - a CollOprStat_t for detailed operation status.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -2882,9 +2937,47 @@ msiCollRepl( msParam_t *collection, msParam_t *msKeyValStr, msParam_t *status,
     /* Parse resource name and directly write to collReplInp */
     validKwFlags = COLL_NAME_FLAG | DEST_RESC_NAME_FLAG |
                    BACKUP_RESC_NAME_FLAG | RESC_NAME_FLAG | UPDATE_REPL_FLAG |
-                   REPL_NUM_FLAG | ALL_FLAG | ADMIN_FLAG | VERIFY_CHKSUM_FLAG;
+                   REPL_NUM_FLAG | ALL_FLAG | ADMIN_FLAG | VERIFY_CHKSUM_FLAG |
+                   FORCE_CHKSUM_FLAG;
     rei->status = parseMsKeyValStrForCollInp( msKeyValStr, collInp,
                   DEST_RESC_NAME_KW, validKwFlags, &outBadKeyWd );
+
+    auto kvp = irods::experimental::make_key_value_proxy(collInp->condInput);
+
+    const auto compute_and_verify_checksum = kvp.contains(VERIFY_CHKSUM_KW) &&
+                                             kvp.at(VERIFY_CHKSUM_KW).value() != "0";
+    const auto compute_and_do_not_verify_checksum = kvp.contains(FORCE_CHKSUM_KW);
+    const auto do_not_compute_checksum = kvp.contains(VERIFY_CHKSUM_KW) &&
+                                         kvp.at(VERIFY_CHKSUM_KW).value() == "0";
+
+    const auto compute_checksum = compute_and_verify_checksum ||
+                                  compute_and_do_not_verify_checksum;
+    if (compute_checksum && do_not_compute_checksum) {
+        return USER_INCOMPATIBLE_PARAMS;
+    }
+
+    if (compute_and_verify_checksum && compute_and_do_not_verify_checksum) {
+        return USER_INCOMPATIBLE_PARAMS;
+    }
+
+    if (compute_and_verify_checksum) {
+        kvp[VERIFY_CHKSUM_KW] = "";
+        kvp.erase(NO_COMPUTE_KW);
+        kvp.erase(REG_CHKSUM_KW);
+    }
+    else if (compute_and_do_not_verify_checksum) {
+        kvp[REG_CHKSUM_KW] = "";
+        kvp.erase(NO_COMPUTE_KW);
+        kvp.erase(VERIFY_CHKSUM_KW);
+    }
+    else if (do_not_compute_checksum) {
+        kvp[NO_COMPUTE_KW] = "";
+        kvp.erase(REG_CHKSUM_KW);
+        kvp.erase(VERIFY_CHKSUM_KW);
+    }
+
+    // Erase the FORCE_CHKSUM_KW here because the API does not handle the keyword.
+    kvp.erase(FORCE_CHKSUM_KW);
 
     if ( rei->status < 0 ) {
         if ( outBadKeyWd != NULL ) {
