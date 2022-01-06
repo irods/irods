@@ -584,6 +584,17 @@ namespace irods::experimental::replica
         return detail::replica_checksum_impl(_comm, input, _logical_path, _calculation);
     } // replica_checksum
 
+    /// \param[in] _comm connection object
+    /// \param[in] _logical_path
+    /// \param[in] _leaf_resource_name
+    ///
+    /// \throws filesystem_error if the path is empty or too long
+    /// \throws irods::exception if the path does not refer to a data object or resource is invalid
+    ///
+    /// \returns std::string
+    /// \retval value of calculated checksum
+    ///
+    /// \since 4.2.9
     template<typename rxComm>
     auto replica_checksum(
         rxComm& _comm,
