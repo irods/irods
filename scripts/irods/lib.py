@@ -635,3 +635,29 @@ def get_user_info(session, user_name, zone_name=None):
     gql = "select USER_INFO where USER_NAME = '{}' and USER_ZONE = '{}'"
     return session.assert_icommand(['iquest', '%s',
         gql.format(user_name, zone_name or session.zone_name)], 'STDOUT')[1].strip()
+
+
+def get_replica_checksum(session, data_name, replica_number):
+    return session.run_icommand(['iquest', '%s',
+        "select DATA_CHECKSUM where DATA_NAME = '{}' and DATA_REPL_NUM = '{}'"
+        .format(data_name, str(replica_number))])[0].strip()
+
+
+def get_replica_status(session, data_name, replica_number):
+    return session.run_icommand(['iquest', '%s',
+        "select DATA_REPL_STATUS where DATA_NAME = '{}' and DATA_REPL_NUM = '{}'"
+        .format(data_name, str(replica_number))])[0].strip()
+
+
+def get_replica_size(session, data_name, replica_number):
+    return session.run_icommand(['iquest', '%s',
+        "select DATA_SIZE where DATA_NAME = '{}' and DATA_REPL_NUM = '{}'"
+        .format(data_name, str(replica_number))])[0].strip()
+
+
+def replica_exists(session, data_name, replica_number):
+    out = session.run_icommand(['iquest',
+        "select DATA_ID where DATA_NAME = '{}' and DATA_REPL_NUM = '{}'"
+        .format(data_name, str(replica_number))])[0]
+
+    return 'CAT_NO_ROWS_FOUND' not in out
