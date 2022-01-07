@@ -17,24 +17,6 @@ from .. import lib
 from .. import test
 from ..configuration import IrodsConfig
 
-def get_replica_checksum(session, data_name, replica_number):
-    return session.run_icommand(['iquest', '%s',
-        "select DATA_CHECKSUM where DATA_NAME = '{}' and DATA_REPL_NUM = '{}'"
-        .format(data_name, str(replica_number))])[0].strip()
-
-
-def get_replica_status(session, data_name, replica_number):
-    return session.run_icommand(['iquest', '%s',
-        "select DATA_REPL_STATUS where DATA_NAME = '{}' and DATA_REPL_NUM = '{}'"
-        .format(data_name, str(replica_number))])[0].strip()
-
-
-def get_replica_size(session, data_name, replica_number):
-    return session.run_icommand(['iquest', '%s',
-        "select DATA_SIZE where DATA_NAME = '{}' and DATA_REPL_NUM = '{}'"
-        .format(data_name, str(replica_number))])[0].strip()
-
-
 @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Registers files on remote resources')
 class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
     def setUp(self):
@@ -322,8 +304,8 @@ class test_ireg_replica(unittest.TestCase):
             self.admin.assert_icommand(['ireg', '--repl', '-R', resource, '/nah', logical_path],
                                        'STDERR', 'UNIX_FILE_STAT_ERR')
 
-            self.assertEqual(str(1), get_replica_status(self.admin, local_file, 0))
-            self.assertIn('CAT_NO_ROWS_FOUND', get_replica_status(self.admin, local_file, 1))
+            self.assertEqual(str(1), lib.get_replica_status(self.admin, local_file, 0))
+            self.assertIn('CAT_NO_ROWS_FOUND', lib.get_replica_status(self.admin, local_file, 1))
 
         finally:
             print(self.admin.run_icommand(['ils', '-L', logical_path])[0])
@@ -353,8 +335,8 @@ class test_ireg_replica(unittest.TestCase):
 
             # The expected replica status is 1 because the files should be identical in a
             # properly configured testing environment.
-            self.assertEqual(str(1), get_replica_status(self.admin, os.path.basename(logical_path), 0))
-            self.assertEqual(str(1), get_replica_status(self.admin, os.path.basename(logical_path), 1))
+            self.assertEqual(str(1), lib.get_replica_status(self.admin, os.path.basename(logical_path), 0))
+            self.assertEqual(str(1), lib.get_replica_status(self.admin, os.path.basename(logical_path), 1))
 
         finally:
             print(self.admin.run_icommand(['ils', '-L', logical_path])[0])
@@ -381,8 +363,8 @@ class test_ireg_replica(unittest.TestCase):
             self.admin.assert_icommand(['ireg', '--repl', '-R', resource, path_to_file, logical_path],
                                        'STDERR', 'UNIX_FILE_STAT_ERR')
 
-            self.assertEqual(str(1), get_replica_status(self.admin, local_file, 0))
-            self.assertIn('CAT_NO_ROWS_FOUND', get_replica_status(self.admin, local_file, 1))
+            self.assertEqual(str(1), lib.get_replica_status(self.admin, local_file, 0))
+            self.assertIn('CAT_NO_ROWS_FOUND', lib.get_replica_status(self.admin, local_file, 1))
 
         finally:
             print(self.admin.run_icommand(['ils', '-L', logical_path])[0])
@@ -399,15 +381,15 @@ class test_ireg_replica(unittest.TestCase):
         try:
             lib.make_file(path_to_file, 1)
             self.admin.assert_icommand(['iput', '-K', path_to_file, logical_path])
-            checksum = get_replica_checksum(self.admin, local_file, 0)
+            checksum = lib.get_replica_checksum(self.admin, local_file, 0)
 
             self.admin.assert_icommand(['ireg', '--repl', path_to_file, logical_path],
                                        'STDERR', 'SYS_COPY_ALREADY_IN_RESC')
 
-            self.assertEqual(str(1), get_replica_status(self.admin, local_file, 0))
-            self.assertIn('CAT_NO_ROWS_FOUND', get_replica_status(self.admin, local_file, 1))
+            self.assertEqual(str(1), lib.get_replica_status(self.admin, local_file, 0))
+            self.assertIn('CAT_NO_ROWS_FOUND', lib.get_replica_status(self.admin, local_file, 1))
 
-            new_checksum = get_replica_checksum(self.admin, local_file, 0)
+            new_checksum = lib.get_replica_checksum(self.admin, local_file, 0)
             self.assertEqual(checksum, new_checksum)
 
         finally:
@@ -430,17 +412,17 @@ class test_ireg_replica(unittest.TestCase):
 
             lib.make_file(path_to_file, 1)
             self.admin.assert_icommand(['iput', '-R', remote_resource, path_to_file, logical_path])
-            size = get_replica_size(self.admin, local_file, 0)
+            size = lib.get_replica_size(self.admin, local_file, 0)
 
             lib.make_file(path_to_bigger_file, 2)
             self.admin.assert_icommand(['ireg', '-R', local_resource, '--repl', path_to_bigger_file, logical_path])
-            reg_size = get_replica_checksum(self.admin, local_file, 1)
+            reg_size = lib.get_replica_checksum(self.admin, local_file, 1)
             self.assertNotEqual(size, reg_size)
 
-            self.assertEqual(str(0), get_replica_status(self.admin, local_file, 0))
-            self.assertEqual(str(1), get_replica_status(self.admin, local_file, 1))
+            self.assertEqual(str(0), lib.get_replica_status(self.admin, local_file, 0))
+            self.assertEqual(str(1), lib.get_replica_status(self.admin, local_file, 1))
 
-            new_size = get_replica_size(self.admin, local_file, 0)
+            new_size = lib.get_replica_size(self.admin, local_file, 0)
             self.assertEqual(size, new_size)
 
         finally:
@@ -464,16 +446,16 @@ class test_ireg_replica(unittest.TestCase):
 
             lib.make_file(path_to_file, 1)
             self.admin.assert_icommand(['iput', '-R', remote_resource, path_to_file, logical_path])
-            size = get_replica_size(self.admin, local_file, 0)
+            size = lib.get_replica_size(self.admin, local_file, 0)
 
             self.admin.assert_icommand(['ireg', '-R', local_resource, '--repl', path_to_file, logical_path])
-            reg_size = get_replica_size(self.admin, local_file, 1)
+            reg_size = lib.get_replica_size(self.admin, local_file, 1)
             self.assertEqual(size, reg_size)
 
-            self.assertEqual(str(1), get_replica_status(self.admin, local_file, 0))
-            self.assertEqual(str(1), get_replica_status(self.admin, local_file, 1))
+            self.assertEqual(str(1), lib.get_replica_status(self.admin, local_file, 0))
+            self.assertEqual(str(1), lib.get_replica_status(self.admin, local_file, 1))
 
-            new_size = get_replica_size(self.admin, local_file, 0)
+            new_size = lib.get_replica_size(self.admin, local_file, 0)
             self.assertEqual(size, new_size)
 
         finally:
@@ -498,17 +480,17 @@ class test_ireg_replica(unittest.TestCase):
 
             lib.make_file(path_to_file, 100)
             self.admin.assert_icommand(['iput', '-K', '-R', remote_resource, path_to_file, logical_path])
-            checksum = get_replica_checksum(self.admin, local_file, 0)
+            checksum = lib.get_replica_checksum(self.admin, local_file, 0)
 
             lib.make_file(path_to_arbitrary_file, 100, 'random')
             self.admin.assert_icommand(['ireg', '-R', local_resource, '--repl', path_to_arbitrary_file, logical_path])
-            reg_checksum = get_replica_checksum(self.admin, local_file, 1)
+            reg_checksum = lib.get_replica_checksum(self.admin, local_file, 1)
             self.assertNotEqual(checksum, reg_checksum)
 
-            self.assertEqual(str(0), get_replica_status(self.admin, local_file, 0))
-            self.assertEqual(str(1), get_replica_status(self.admin, local_file, 1))
+            self.assertEqual(str(0), lib.get_replica_status(self.admin, local_file, 0))
+            self.assertEqual(str(1), lib.get_replica_status(self.admin, local_file, 1))
 
-            new_checksum = get_replica_checksum(self.admin, local_file, 0)
+            new_checksum = lib.get_replica_checksum(self.admin, local_file, 0)
             self.assertEqual(checksum, new_checksum)
 
         finally:
@@ -532,16 +514,16 @@ class test_ireg_replica(unittest.TestCase):
 
             lib.make_file(path_to_file, 100)
             self.admin.assert_icommand(['iput', '-K', '-R', remote_resource, path_to_file, logical_path])
-            checksum = get_replica_checksum(self.admin, local_file, 0)
+            checksum = lib.get_replica_checksum(self.admin, local_file, 0)
 
             self.admin.assert_icommand(['ireg', '-R', local_resource, '--repl', path_to_file, logical_path])
-            reg_checksum = get_replica_checksum(self.admin, local_file, 1)
+            reg_checksum = lib.get_replica_checksum(self.admin, local_file, 1)
             self.assertEqual(checksum, reg_checksum)
 
-            self.assertEqual(str(1), get_replica_status(self.admin, local_file, 0))
-            self.assertEqual(str(1), get_replica_status(self.admin, local_file, 1))
+            self.assertEqual(str(1), lib.get_replica_status(self.admin, local_file, 0))
+            self.assertEqual(str(1), lib.get_replica_status(self.admin, local_file, 1))
 
-            new_checksum = get_replica_checksum(self.admin, local_file, 0)
+            new_checksum = lib.get_replica_checksum(self.admin, local_file, 0)
             self.assertEqual(checksum, new_checksum)
 
         finally:
