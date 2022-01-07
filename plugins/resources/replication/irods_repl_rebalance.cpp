@@ -17,6 +17,8 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <iterator>
+#include <vector>
 
 namespace {
     irods::error repl_for_rebalance(
@@ -79,9 +81,9 @@ namespace {
     std::string leaf_bundles_to_genquery_in_syntax(const std::vector<leaf_bundle_t>& _bundles)
     {
         fmt::memory_buffer out;
-        format_to(out, "IN (");
+        auto it = fmt::format_to(std::back_inserter(out), "IN (");
         for (const auto& b : _bundles) {
-            format_to(out, "'{}',", fmt::join(b, "','"));
+            it = fmt::format_to(it, "'{}',", fmt::join(b, "','"));
         }
         auto cond_str = to_string(out);
         return cond_str.replace(out.size() - 1, 1, ")");

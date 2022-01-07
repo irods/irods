@@ -239,14 +239,14 @@ namespace irods::experimental::metadata {
             auto obj  = p.object_name().string();
             auto coll = p.parent_path().string();
 
-            where_fmt = fmt::format(where, coll, obj);
+            where_fmt = fmt::format(fmt::runtime(where), coll, obj);
         }
         else {
-            where_fmt = fmt::format(where, _tgt);
+            where_fmt = fmt::format(fmt::runtime(where), _tgt);
         }
 
         auto type_str  = type_to_string.at(_et);
-        auto query_str = fmt::format(temp, type_str, type_str, type_str, where_fmt);
+        auto query_str = fmt::format(fmt::runtime(temp), type_str, type_str, type_str, where_fmt);
 
         auto res = std::vector<avu>{};
 

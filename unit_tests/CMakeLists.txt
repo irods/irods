@@ -25,11 +25,12 @@ list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 include(utils)
 
 if (IRODS_UNIT_TESTS_ENABLE_ALL)
-    add_definitions(-DIRODS_ENABLE_ALL_UNIT_TESTS)
+    add_compile_definitions(IRODS_ENABLE_ALL_UNIT_TESTS)
 endif()
 
 add_compile_definitions(BOOST_ASIO_NO_DEPRECATED
-                        BOOST_SYSTEM_NO_DEPRECATED)
+                        BOOST_SYSTEM_NO_DEPRECATED
+                        BOOST_ASIO_HAS_STD_INVOKE_RESULT)
 
 # List of cmake files defined under ./cmake/test_config.
 # Each file in the ./cmake/test_config directory defines variables for a specific test.

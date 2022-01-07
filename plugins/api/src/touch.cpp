@@ -226,12 +226,12 @@ namespace
             const auto contains_secs_since_epoch = opts.contains(prop_seconds_since_epoch);
 
             if (contains_repl_num && contains_leaf_resc_name) {
-                const auto* msg_fmt = "[{}] and [{}] cannot be used together.";
+                constexpr const auto* msg_fmt = "[{}] and [{}] cannot be used together.";
                 THROW(USER_INCOMPATIBLE_PARAMS, fmt::format(msg_fmt, prop_replica_number, prop_leaf_resource_name));
             }
 
             if (contains_ref && contains_secs_since_epoch) {
-                const auto* msg_fmt = "[{}] and [{}] cannot be used together.";
+                constexpr const auto* msg_fmt = "[{}] and [{}] cannot be used together.";
                 THROW(USER_INCOMPATIBLE_PARAMS, fmt::format(msg_fmt, prop_reference, prop_seconds_since_epoch));
             }
 
@@ -436,7 +436,7 @@ namespace
 
                     // Return immediately if invalid options are present in regards to the target.
                     if (opts.contains(prop_replica_number) || opts.contains(prop_leaf_resource_name)) {
-                        const auto* msg_fmt = "[{}] and [{}] cannot be used for collections.";
+                        constexpr const auto* msg_fmt = "[{}] and [{}] cannot be used for collections.";
                         THROW(USER_INCOMPATIBLE_PARAMS, fmt::format(msg_fmt, prop_replica_number, prop_leaf_resource_name));
                     }
                 }

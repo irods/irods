@@ -125,21 +125,14 @@ template <log::level Level>
 class log::logger<Category>::impl
 {
 public:
+    friend class log::logger<Category>;
+
 #ifdef IRODS_ENABLE_SYSLOG
     template <typename T>
     using is_iterable = decltype(std::begin(std::declval<std::decay_t<T>>()));
 
     template <typename ...Args>
-    void operator()(const char* _format, Args&&... _args) const
-    {
-        if (should_log()) {
-            const auto msg = {log::key_value{tag::log::message, fmt::format(_format, std::forward<Args>(_args)...)}};
-            log_message(std::begin(msg), std::end(msg));
-        }
-    }
-
-    template <typename ...Args>
-    void operator()(const std::string& _format, Args&&... _args) const
+    void operator()(fmt::format_string<Args...> _format, Args&&... _args) const
     {
         if (should_log()) {
             const auto msg = {log::key_value{tag::log::message, fmt::format(_format, std::forward<Args>(_args)...)}};
