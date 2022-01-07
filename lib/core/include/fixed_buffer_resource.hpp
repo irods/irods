@@ -67,8 +67,8 @@ namespace irods::experimental::pmr
             , headers_{}
         {
             if (!_buffer || _buffer_size <= 0) {
-                const auto* msg_fmt = "fixed_buffer_resource: invalid constructor arguments "
-                                      "[buffer={}, size={}].";
+                constexpr const auto* msg_fmt = "fixed_buffer_resource: invalid constructor arguments "
+                                                "[buffer={}, size={}].";
                 throw std::invalid_argument{fmt::format(msg_fmt, fmt::ptr(_buffer), _buffer_size)};
             }
 

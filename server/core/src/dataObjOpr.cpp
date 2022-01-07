@@ -65,7 +65,7 @@ irods::error validate_logical_path(const std::string& _path)
         }
     }
 
-    const char* const msg = "a valid zone name does not appear at the root of the object path [{}]";
+    constexpr const char* const msg = "a valid zone name does not appear at the root of the object path [{}]";
     return ERROR(SYS_INVALID_INPUT_PARAM, fmt::format(msg, _path));
 } // validate_logical_path
 

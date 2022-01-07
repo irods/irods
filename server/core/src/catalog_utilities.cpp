@@ -6,6 +6,8 @@
 #include "irods_logger.hpp"
 #include "irods_rs_comm_query.hpp"
 
+#include <type_traits>
+
 namespace
 {
     using log = irods::experimental::log;
@@ -116,10 +118,21 @@ namespace irods::experimental::catalog
             case entity_type::resource:
                 return irods::is_privileged_client(_comm);
 
-            default:
-                log::database::error("Invalid entity type [entity_type => {}]", _entity_type);
+            default: {
+                for (auto&& [k, v] : entity_type_map) {
+                    if (_entity_type == v) {
+                        log::database::error("Invalid entity type [entity_type => {}]", k);
+                        break;
+                    }
+                }
+
+                const auto et = static_cast<std::underlying_type_t<entity_type>>(_entity_type);
+                log::database::error("Entity type not supported [entity_type => {}]", et);
+
                 break;
+            }
         }
+
         return false;
     } // user_has_permission_to_modify_entity
 

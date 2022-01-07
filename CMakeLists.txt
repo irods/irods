@@ -34,7 +34,7 @@ IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_DEVELOP_DEPENDENCIES_LIST
 string(REPLACE ";" ", " IRODS_PACKAGE_DEPENDENCIES_STRING "${IRODS_PACKAGE_DEPENDENCIES_LIST}")
 string(REPLACE ";" ", " IRODS_DEVELOP_DEPENDENCIES_STRING "${IRODS_DEVELOP_DEPENDENCIES_LIST}")
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(IRODS_CXX_STANDARD "${CMAKE_CXX_STANDARD}")
 # export-dynamic so stacktrace entries from executables have function names
@@ -138,6 +138,17 @@ set(IRODS_COMPILE_DEFINITIONS ${IRODS_COMPILE_DEFINITIONS}
                               BOOST_CHRONO_DONT_PROVIDES_DEPRECATED_IO_SINCE_V2_0_0
                               BOOST_STACKTRACE_USE_ADDR2LINE
                               BOOST_ASIO_NO_DEPRECATED
+                              # Manually defined because Boost cannot detect that std::result_of
+                              # has been removed in C++20. Verified that Boost 1.77 and Boost 1.78
+                              # do not handle this yet. Normally, defining BOOST_ASIO_HAS_ macros
+                              # should be avoided except when absolutely required as a workaround
+                              # for the latest version of a compiler or platform.
+                              #
+                              # See the following for more information:
+                              #
+                              #   https://www.boost.org/doc/libs/1_77_0/doc/html/boost_asio/using.html
+                              #
+                              BOOST_ASIO_HAS_STD_INVOKE_RESULT
                               SPDLOG_FMT_EXTERNAL
                               SPDLOG_NO_TLS)
 

@@ -8,4 +8,5 @@ set(IRODS_TEST_INCLUDE_PATH ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
                             nlohmann_json::nlohmann_json)
 
 set(IRODS_TEST_LINK_LIBRARIES irods_client
+                              nlohmann_json::nlohmann_json
                               ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so)

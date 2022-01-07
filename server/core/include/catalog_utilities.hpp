@@ -76,7 +76,7 @@ namespace irods::experimental::catalog
 
     namespace data_objects
     {
-        const column_mapping_operator_type column_mapping_operators{
+        inline const column_mapping_operator_type column_mapping_operators{
             {"data_id",         bind_bigint_to_statement},
             {"coll_id",         bind_bigint_to_statement},
             {"data_name",       bind_string_to_statement},
@@ -112,7 +112,7 @@ namespace irods::experimental::catalog
 
     /// \brief Maps the enum values to strings.
     /// \since 4.2.9
-    const std::map<std::string, entity_type> entity_type_map{
+    inline const std::map<std::string, entity_type> entity_type_map{
         {"data_object", entity_type::data_object},
         {"collection", entity_type::collection},
         {"user", entity_type::user},

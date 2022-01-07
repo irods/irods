@@ -10,6 +10,7 @@
 
 #include <functional>
 #include <stdexcept>
+#include <type_traits>
 
 #ifdef RODS_SERVER
 
@@ -174,8 +175,16 @@ namespace
                 gql = fmt::format("select RESC_ID where RESC_NAME = '{}'", _entity_name);
                 break;
 
-            default:
-                throw std::runtime_error{fmt::format("Invalid entity type specified [entity_type={}]", _entity_type)};
+            default: {
+                for (auto&& [k, v] : ic::entity_type_map) {
+                    if (_entity_type == v) {
+                        throw std::runtime_error{fmt::format("Invalid entity type specified [entity_type={}]", k)};
+                    }
+                }
+
+                const auto et = static_cast<std::underlying_type_t<ic::entity_type>>(_entity_type);
+                throw std::runtime_error{fmt::format("Entity type not supported [entity_type={}]", et)};
+            }
         }
 
         for (auto&& row : irods::query{&_comm, gql}) {
