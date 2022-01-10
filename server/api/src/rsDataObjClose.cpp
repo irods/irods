@@ -132,6 +132,15 @@ namespace
                     __FUNCTION__, srcL1descInx));
             }
 
+            // If the user has requested that no checksum be computed for the destination
+            // replica, the checksum is cleared here and the checksum returned as an empty
+            // string. This is only applicable to the compound resource because replication
+            // API finalizes its own replicas now.
+            if (destination_replica.cond_input().contains(NO_COMPUTE_KW)) {
+                destination_replica.checksum("");
+                return {};
+            }
+
             auto source_replica = ir::replica_proxy_t{*L1desc[srcL1descInx].dataObjInfo};
             if (!source_replica.checksum().empty() && STALE_REPLICA != source_replica.replica_status()) {
                 destination_replica.cond_input()[ORIG_CHKSUM_KW] = source_replica.checksum();

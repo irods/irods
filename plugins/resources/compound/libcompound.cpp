@@ -763,7 +763,7 @@ irods::error repl_object(
             file_obj->id(strtol(id_str, NULL, 10));
         }
 
-        //ret = resc->call<const char*>( _ctx.comm(), irods::RESOURCE_OP_SYNCTOARCH, file_obj, L1desc[source_l1descInx].dataObjInfo->filePath );
+        addKeyVal(&L1desc[destination_l1descInx].dataObjInfo->condInput, NO_COMPUTE_KW, "");
 
         // Sync to archive!
         int dst_create_path = 0;
