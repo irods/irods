@@ -1162,6 +1162,15 @@ class Test_Resource_CompoundWithMockarchive(ChunkyDevTest, ResourceSuite, unitte
         shutil.rmtree(irods_config.irods_directory + "/archiveRescVault", ignore_errors=True)
         shutil.rmtree(irods_config.irods_directory + "/cacheRescVault", ignore_errors=True)
 
+    def test_checksums_not_computed_for_archive__issue_6089(self):
+        filename = 'test_checksums_not_computed_for_archive__issue_6089'
+        filepath = lib.create_local_testfile(filename)
+        logical_path = os.path.join(self.admin.session_collection, filename)
+
+        self.admin.assert_icommand(['iput', '-K', filepath, logical_path])
+        self.assertNotEqual(0, len(lib.get_replica_checksum(self.admin, filename, 0)))
+        self.assertEqual(0, len(lib.get_replica_checksum(self.admin, filename, 1)))
+
     def test_irm_specific_replica(self):
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + self.testfile)  # creates replica
@@ -1478,6 +1487,15 @@ class Test_Resource_CompoundWithUnivmss(ChunkyDevTest, ResourceSuite, unittest.T
         irods_config = IrodsConfig()
         shutil.rmtree(irods_config.irods_directory + "/archiveRescVault", ignore_errors=True)
         shutil.rmtree(irods_config.irods_directory + "/cacheRescVault", ignore_errors=True)
+
+    def test_checksums_not_computed_for_archive__issue_6089(self):
+        filename = 'test_checksums_not_computed_for_archive__issue_6089'
+        filepath = lib.create_local_testfile(filename)
+        logical_path = os.path.join(self.admin.session_collection, filename)
+
+        self.admin.assert_icommand(['iput', '-K', filepath, logical_path])
+        self.assertNotEqual(0, len(lib.get_replica_checksum(self.admin, filename, 0)))
+        self.assertEqual(0, len(lib.get_replica_checksum(self.admin, filename, 1)))
 
     def test_irm_with_no_stage__2930(self):
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed
@@ -1808,6 +1826,15 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         irods_config = IrodsConfig()
         shutil.rmtree(irods_config.irods_directory + "/archiveRescVault", ignore_errors=True)
         shutil.rmtree("rm -rf " + irods_config.irods_directory + "/cacheRescVault", ignore_errors=True)
+
+    def test_checksums_not_computed_for_archive__issue_6089(self):
+        filename = 'test_checksums_not_computed_for_archive__issue_6089'
+        filepath = lib.create_local_testfile(filename)
+        logical_path = os.path.join(self.admin.session_collection, filename)
+
+        self.admin.assert_icommand(['iput', '-K', filepath, logical_path])
+        self.assertNotEqual(0, len(lib.get_replica_checksum(self.admin, filename, 0)))
+        self.assertEqual(0, len(lib.get_replica_checksum(self.admin, filename, 1)))
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "local filesystem check")
     def test_ichksum_no_file_modified_under_compound__4085(self):
@@ -2802,6 +2829,17 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
         shutil.rmtree(irods_config.irods_directory + "/archiveResc2Vault", ignore_errors=True)
         shutil.rmtree(irods_config.irods_directory + "/cacheResc2Vault", ignore_errors=True)
 
+    def test_checksums_not_computed_for_archive__issue_6089(self):
+        filename = 'test_checksums_not_computed_for_archive__issue_6089'
+        filepath = lib.create_local_testfile(filename)
+        logical_path = os.path.join(self.admin.session_collection, filename)
+
+        self.admin.assert_icommand(['iput', '-K', filepath, logical_path])
+        self.assertNotEqual(0, len(lib.get_replica_checksum(self.admin, filename, 0)))
+        self.assertNotEqual(0, len(lib.get_replica_checksum(self.admin, filename, 2)))
+        self.assertEqual(0, len(lib.get_replica_checksum(self.admin, filename, 1)))
+        self.assertEqual(0, len(lib.get_replica_checksum(self.admin, filename, 3)))
+
     def test_irm_specific_replica(self):
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + self.testfile)  # creates replica
@@ -3266,6 +3304,17 @@ class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDev
         backupcorefilepath = core.filepath + "--" + self._testMethodName
         shutil.copy(backupcorefilepath, core.filepath)
         os.remove(backupcorefilepath)
+
+    def test_checksums_not_computed_for_archive__issue_6089(self):
+        filename = 'test_checksums_not_computed_for_archive__issue_6089'
+        filepath = lib.create_local_testfile(filename)
+        logical_path = os.path.join(self.admin.session_collection, filename)
+
+        self.admin.assert_icommand(['iput', '-K', filepath, logical_path])
+        self.assertNotEqual(0, len(lib.get_replica_checksum(self.admin, filename, 0)))
+        self.assertNotEqual(0, len(lib.get_replica_checksum(self.admin, filename, 2)))
+        self.assertEqual(0, len(lib.get_replica_checksum(self.admin, filename, 1)))
+        self.assertEqual(0, len(lib.get_replica_checksum(self.admin, filename, 3)))
 
     def test_irm_specific_replica(self):
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed
