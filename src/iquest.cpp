@@ -279,8 +279,8 @@ execAndShowSpecificQuery( rcComm_t *conn, char *sql,
     }
     status = rcSpecificQuery( conn, &specificQueryInp, &genQueryOut );
     if ( status == CAT_NO_ROWS_FOUND ) {
-        printf( "No rows found\n" );
-        return 0;
+        printf( "CAT_NO_ROWS_FOUND: Nothing was found matching your query\n" );
+        return CAT_NO_ROWS_FOUND;
     }
     if ( status < 0 ) {
         printError( conn, status, "rcSpecificQuery" );
@@ -400,7 +400,10 @@ main( int argc, char **argv ) {
                                            myRodsArgs.noPage,
                                            myRodsArgs.zoneName );
         rcDisconnect( conn );
-        if ( status < 0 ) {
+        if ( status == CAT_NO_ROWS_FOUND ) {
+            exit( 1 );
+        }
+        else if ( status < 0 ) {
             rodsLogError( LOG_ERROR, status, "iquest Error: specificQuery (sql-query) failed" );
             exit( 4 );
         }
@@ -433,7 +436,7 @@ main( int argc, char **argv ) {
     if ( status < 0 ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
             printf( "CAT_NO_ROWS_FOUND: Nothing was found matching your query\n" );
-            exit( 0 );
+            exit( 1 );
         }
         else {
             rodsLogError( LOG_ERROR, status, "iquest Error: queryAndShowStrCond failed" );
