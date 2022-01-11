@@ -114,7 +114,7 @@ endif()
 find_package(Threads REQUIRED)
 find_package(CURL REQUIRED)
 
-find_package(OpenSSL REQUIRED)
+find_package(OpenSSL REQUIRED COMPONENTS Crypto SSL)
 if (NOT PAM_LIBRARY)
   find_library(PAM_LIBRARY pam)
   if (PAM_LIBRARY)
@@ -306,6 +306,8 @@ target_link_libraries(
   irods_filesystem_client
   PUBLIC
   nlohmann_json::nlohmann_json
+  OpenSSL::SSL
+  OpenSSL::Crypto
   )
 target_include_directories(
   irods_filesystem_client
@@ -322,7 +324,6 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/server/drivers/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
-  ${OPENSSL_INCLUDE_DIR}
   )
 target_compile_options(irods_filesystem_client PRIVATE -fPIC -Wno-write-strings)
 target_compile_definitions(irods_filesystem_client PRIVATE ${IRODS_COMPILE_DEFINITIONS})
@@ -338,6 +339,8 @@ target_link_libraries(
   irods_filesystem_server
   PUBLIC
   nlohmann_json::nlohmann_json
+  OpenSSL::SSL
+  OpenSSL::Crypto
   )
 target_include_directories(
   irods_filesystem_server
@@ -355,7 +358,6 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/server/drivers/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
-  ${OPENSSL_INCLUDE_DIR}
   )
 target_compile_options(irods_filesystem_server PRIVATE -fPIC -Wno-write-strings)
 target_compile_definitions(irods_filesystem_server PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API IRODS_TRANSPORT_ENABLE_SERVER_SIDE_API)
@@ -692,8 +694,8 @@ target_link_libraries(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so
   ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
-  ${OPENSSL_SSL_LIBRARY}
-  ${OPENSSL_CRYPTO_LIBRARY}
+  OpenSSL::SSL
+  OpenSSL::Crypto
   Threads::Threads
   )
 target_include_directories(
@@ -712,7 +714,6 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/server/drivers/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
-  ${OPENSSL_INCLUDE_DIR}
   )
 set_property(TARGET irods_client PROPERTY VERSION ${IRODS_VERSION})
 set_property(TARGET irods_client PROPERTY SOVERSION ${IRODS_VERSION})
@@ -981,8 +982,8 @@ target_link_libraries(
   ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
   ${IRODS_EXTERNALS_FULLPATH_NANODBC}/lib/libnanodbc.so
   ${IRODS_EXTERNALS_FULLPATH_ZMQ}/lib/libzmq.so
-  ${OPENSSL_SSL_LIBRARY}
-  ${OPENSSL_CRYPTO_LIBRARY}
+  OpenSSL::SSL
+  OpenSSL::Crypto
   ${CMAKE_DL_LIBS}
   rt
   ${CURL_LIBRARIES}
@@ -1010,7 +1011,6 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   ${IRODS_EXTERNALS_FULLPATH_NANODBC}/include
   ${IRODS_EXTERNALS_FULLPATH_ZMQ}/include
-  ${OPENSSL_INCLUDE_DIR}
   )
 set_property(TARGET irods_server PROPERTY VERSION ${IRODS_VERSION})
 set_property(TARGET irods_server PROPERTY SOVERSION ${IRODS_VERSION})
@@ -1094,8 +1094,8 @@ target_link_libraries(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
   ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
-  ${OPENSSL_SSL_LIBRARY}
-  ${OPENSSL_CRYPTO_LIBRARY}
+  OpenSSL::SSL
+  OpenSSL::Crypto
   ${CMAKE_DL_LIBS}
   Threads::Threads
   rt
@@ -1302,8 +1302,8 @@ target_link_libraries(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so
   ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
-  ${OPENSSL_SSL_LIBRARY}
-  ${OPENSSL_CRYPTO_LIBRARY}
+  OpenSSL::SSL
+  OpenSSL::Crypto
   ${CMAKE_DL_LIBS}
   rt
   ${CURL_LIBRARIES}
@@ -1323,7 +1323,6 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/server/drivers/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
-  ${OPENSSL_INCLUDE_DIR}
   )
 target_compile_definitions(RodsAPIs PRIVATE ${IRODS_COMPILE_DEFINITIONS})
 target_compile_options(RodsAPIs PRIVATE -Wno-write-strings)
@@ -1365,8 +1364,8 @@ foreach(EXECUTABLE ${IRODS_MAIN_EXECUTABLES})
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so
     ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
     ${IRODS_EXTERNALS_FULLPATH_ZMQ}/lib/libzmq.so
-    ${OPENSSL_CRYPTO_LIBRARY}
-    ${OPENSSL_SSL_LIBRARY}
+    OpenSSL::SSL
+    OpenSSL::Crypto
     rt
     Threads::Threads
     ${CMAKE_DL_LIBS}
@@ -1389,7 +1388,6 @@ foreach(EXECUTABLE ${IRODS_MAIN_EXECUTABLES})
     ${IRODS_EXTERNALS_FULLPATH_CPPZMQ}/include
     ${IRODS_EXTERNALS_FULLPATH_FMT}/include
     ${IRODS_EXTERNALS_FULLPATH_ZMQ}/include
-    ${OPENSSL_INCLUDE_DIR}
     )
   target_compile_definitions(
     ${EXECUTABLE}
