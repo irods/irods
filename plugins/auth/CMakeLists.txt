@@ -73,7 +73,6 @@ foreach(PLUGIN ${IRODS_AUTH_PLUGINS})
         ${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/include
         ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
         ${IRODS_EXTERNALS_FULLPATH_FMT}/include
-        ${OPENSSL_INCLUDE_DIR}
         )
 
       target_link_libraries(
@@ -84,7 +83,7 @@ foreach(PLUGIN ${IRODS_AUTH_PLUGINS})
         irods_plugin_dependencies
         ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
         ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
-        ${OPENSSL_CRYPTO_LIBRARY}
+        OpenSSL::Crypto
         )
 
     target_compile_definitions(${IRODS_CURRENT_PLUGIN_TARGET} PRIVATE ${IRODS_AUTH_PLUGIN_COMPILE_DEFINITIONS_${TYPE}} ${IRODS_COMPILE_DEFINITIONS} BOOST_SYSTEM_NO_DEPRECATED)
