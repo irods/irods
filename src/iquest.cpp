@@ -31,7 +31,7 @@ usage() {
         " ",
         "  -z zone_name      the zone to query (default or invalid uses the local zone)",
         "  --no-page         do not prompt to continue after printing a large number of",
-        "                    results (500)",
+        "                    results (256)",
         "  --sql             execute a pre-defined SQL query. The specified query must",
         "                    match one defined by the admin (see 'iadmin h asq' (add",
         "                    specific query)). A few of these may be defined at your",
