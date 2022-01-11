@@ -63,7 +63,7 @@ foreach(PLUGIN ${IRODS_EXPERIMENTAL_API_PLUGINS})
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
     ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
     OpenSSL::Crypto
-    dl
+    ${CMAKE_DL_LIBS}
     Threads::Threads
     )
 
