@@ -1,4 +1,6 @@
-cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR) # target_link_libraries for object targets
+cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
+# target_link_libraries for object targets
+# CURL::libcurl target
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/cmake/Modules")
 include(RequireOutOfSourceBuild)
 
@@ -986,13 +988,12 @@ target_link_libraries(
   OpenSSL::Crypto
   ${CMAKE_DL_LIBS}
   rt
-  ${CURL_LIBRARIES}
+  CURL::libcurl
   Threads::Threads
   )
 target_include_directories(
   irods_server
   PRIVATE
-  ${CURL_INCLUDE_DIRS}
   ${CMAKE_BINARY_DIR}/lib/core/include
   ${CMAKE_SOURCE_DIR}/lib/api/include
   ${CMAKE_SOURCE_DIR}/lib/core/include
@@ -1099,12 +1100,11 @@ target_link_libraries(
   ${CMAKE_DL_LIBS}
   Threads::Threads
   rt
-  ${CURL_LIBRARIES}
+  CURL::libcurl
   )
 target_include_directories(
   irods_common
   PRIVATE
-  ${CURL_INCLUDE_DIRS}
   ${CMAKE_BINARY_DIR}/lib/core/include
   ${CMAKE_SOURCE_DIR}/lib/core/include
   ${CMAKE_SOURCE_DIR}/lib/api/include
@@ -1306,7 +1306,7 @@ target_link_libraries(
   OpenSSL::Crypto
   ${CMAKE_DL_LIBS}
   rt
-  ${CURL_LIBRARIES}
+  CURL::libcurl
   )
 target_include_directories(
   RodsAPIs
