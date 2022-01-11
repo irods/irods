@@ -75,7 +75,7 @@ foreach(PLUGIN ${IRODS_RULE_ENGINE_PLUGINS})
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so
     ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
-    dl
+    ${CMAKE_DL_LIBS}
     )
 
   target_compile_definitions(${PLUGIN} PRIVATE ${IRODS_COMPILE_DEFINITIONS} BOOST_SYSTEM_NO_DEPRECATED IRODS_ENABLE_SYSLOG)

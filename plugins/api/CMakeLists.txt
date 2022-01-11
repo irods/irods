@@ -215,13 +215,13 @@ set(
 set(
   IRODS_API_PLUGIN_LINK_LIBRARIES_experimental_api_plugin_adaptor_server
   irods_server
-  dl
+  ${CMAKE_DL_LIBS}
   )
 
 set(
   IRODS_API_PLUGIN_LINK_LIBRARIES_experimental_api_plugin_adaptor_client
   irods_client
-  dl
+  ${CMAKE_DL_LIBS}
   )
 
 # replica_close API
