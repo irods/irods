@@ -687,9 +687,10 @@ add_library(
   )
 target_link_libraries(
   irods_client
-  PRIVATE
+  PUBLIC
   irods_plugin_dependencies
   irods_common
+  PRIVATE
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_chrono.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so
@@ -972,9 +973,9 @@ target_link_libraries(
   irods_server
   PUBLIC
   nlohmann_json::nlohmann_json
-  PRIVATE
   irods_common
   irods_plugin_dependencies
+  PRIVATE
   ${IRODS_EXTERNALS_FULLPATH_AVRO}/lib/libavrocpp.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_chrono.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
@@ -1172,8 +1173,9 @@ add_library(
   )
 target_link_libraries(
   irods_plugin_dependencies
-  PRIVATE
+  PUBLIC
   irods_common
+  PRIVATE
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_random.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
