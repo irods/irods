@@ -25,4 +25,4 @@ elseif (IRODS_LINUX_DISTRIBUTION_NAME STREQUAL "opensuse")
   set(CPACK_RPM_${IRODS_PACKAGE_COMPONENT_RUNTIME_NAME}_PACKAGE_REQUIRES "${IRODS_PACKAGE_DEPENDENCIES_STRING}, libopenssl1_0_0, python, openssl, python-psutil, python-requests, python-jsonschema")
 endif()
 
-set(CPACK_RPM_${IRODS_PACKAGE_COMPONENT_RUNTIME_NAME}_POST_INSTALL_SCRIPT_FILE "${CMAKE_SOURCE_DIR}/packaging/runtime_library_postinst.sh")
+set(CPACK_RPM_${IRODS_PACKAGE_COMPONENT_RUNTIME_NAME}_POST_INSTALL_SCRIPT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/packaging/runtime_library_postinst.sh")
