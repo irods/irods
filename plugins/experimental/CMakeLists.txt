@@ -2,22 +2,22 @@ find_package(OpenSSL REQUIRED)
 
 set(
   IRODS_EXPERIMENTAL_API_PLUGIN_REMOVE_SOURCES
-  ${CMAKE_SOURCE_DIR}/plugins/experimental/remove.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/remove.cpp
   )
 
 set(
   IRODS_EXPERIMENTAL_API_PLUGIN_REPLICATE_SOURCES
-  ${CMAKE_SOURCE_DIR}/plugins/experimental/replicate.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/replicate.cpp
   )
 
 set(
   IRODS_EXPERIMENTAL_API_PLUGIN_COPY_SOURCES
-  ${CMAKE_SOURCE_DIR}/plugins/experimental/copy.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/copy.cpp
   )
 
 set(
   IRODS_EXPERIMENTAL_API_PLUGIN_REPLICATE_SOURCES
-  ${CMAKE_SOURCE_DIR}/plugins/experimental/replicate.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/replicate.cpp
   )
 
 set(

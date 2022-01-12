@@ -46,15 +46,15 @@ function(__check_cpp_macro_def_impl macro var language)
   # Perform the check.
 
   if(language STREQUAL "C")
-    set(src ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CheckCPPMacroDefinition/${var}.c)
+    set(src ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CheckCPPMacroDefinition/${var}.c)
   elseif(language STREQUAL "CXX")
-    set(src ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CheckCPPMacroDefinition/${var}.cpp)
+    set(src ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CheckCPPMacroDefinition/${var}.cpp)
   else()
     message(FATAL_ERROR "Unknown language:\n  ${language}\nSupported languages: C, CXX.\n")
   endif()
-  set(bin ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CheckCPPMacroDefinition/${var}${CMAKE_EXECUTABLE_SUFFIX_${language}})
+  set(bin ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CheckCPPMacroDefinition/${var}${CMAKE_EXECUTABLE_SUFFIX_${language}})
   configure_file(${__check_cpp_macro_def_dir}/CheckCPPMacroDefinition.c.in ${src} @ONLY)
-  try_compile(HAVE_${var} ${CMAKE_BINARY_DIR} ${src}
+  try_compile(HAVE_${var} ${CMAKE_CURRENT_BINARY_DIR} ${src}
     COMPILE_DEFINITIONS ${CMAKE_REQUIRED_DEFINITIONS}
     LINK_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES}
     CMAKE_FLAGS
@@ -73,7 +73,7 @@ function(__check_cpp_macro_def_impl macro var language)
     if(NOT CMAKE_REQUIRED_QUIET)
       message(STATUS "Check definition of ${language} preprocessor macro ${macro} - done")
     endif()
-    file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
+    file(APPEND ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
       "Determining definition of ${language} preprocessor macro ${macro} passed with the following compile output:\n${output}\n\n")
     set(${var} "${${var}}" CACHE INTERNAL "CHECK_CPP_MACRO_DEFINITION: CMAKE_TOSTRING(${macro})")
   else()
@@ -82,7 +82,7 @@ function(__check_cpp_macro_def_impl macro var language)
       message(STATUS "Check definition of ${language} preprocessor macro ${macro} - failed")
     endif()
     file(READ ${src} content)
-    file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
+    file(APPEND ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
       "Determining definition of ${language} preprocessor macro ${macro} failed with the following compile output:\n${output}\n${src}:\n${content}\n\n")
     set(${var} "" CACHE INTERNAL "CHECK_CPP_MACRO_DEFINITION: ${macro} undefined")
   endif()

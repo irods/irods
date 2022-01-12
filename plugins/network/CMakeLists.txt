@@ -2,12 +2,12 @@ find_package(OpenSSL REQUIRED)
 
 set(
   IRODS_NETWORK_PLUGIN_ssl_SOURCES
-  ${CMAKE_SOURCE_DIR}/plugins/network/ssl/libssl.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/ssl/libssl.cpp
   )
 
 set(
   IRODS_NETWORK_PLUGIN_tcp_SOURCES
-  ${CMAKE_SOURCE_DIR}/plugins/network/tcp/libtcp.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/tcp/libtcp.cpp
   )
 
 set(

@@ -8,7 +8,7 @@ foreach(PLUGIN ${IRODS_MICROSERVICE_ADMINISTRATION_PLUGINS})
   add_library(
     ${PLUGIN}
     MODULE
-    ${CMAKE_SOURCE_DIR}/plugins/microservices/administration/${PLUGIN}/lib${PLUGIN}.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/${PLUGIN}/lib${PLUGIN}.cpp
     )
 
   target_include_directories(

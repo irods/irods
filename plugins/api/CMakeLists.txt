@@ -3,12 +3,12 @@ find_package(OpenSSL REQUIRED)
 # helloworld API
 set(
   IRODS_API_PLUGIN_SOURCES_helloworld_server
-  ${CMAKE_SOURCE_DIR}/plugins/api/src/helloworld.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/helloworld.cpp
   )
 
 set(
   IRODS_API_PLUGIN_SOURCES_helloworld_client
-  ${CMAKE_SOURCE_DIR}/plugins/api/src/helloworld.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/helloworld.cpp
   )
 
 set(
@@ -35,12 +35,12 @@ set(
 # get_file_descriptor_info API
 set(
   IRODS_API_PLUGIN_SOURCES_irods_get_file_descriptor_info_server
-  ${CMAKE_SOURCE_DIR}/plugins/api/src/get_file_descriptor_info.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/get_file_descriptor_info.cpp
   )
 
 set(
   IRODS_API_PLUGIN_SOURCES_irods_get_file_descriptor_info_client
-  ${CMAKE_SOURCE_DIR}/plugins/api/src/get_file_descriptor_info.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/get_file_descriptor_info.cpp
   )
 
 set(
@@ -67,12 +67,12 @@ set(
 # data_object_modify_info API
 set(
   IRODS_API_PLUGIN_SOURCES_irods_data_object_modify_info_server
-  ${CMAKE_SOURCE_DIR}/plugins/api/src/data_object_modify_info.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/data_object_modify_info.cpp
   )
 
 set(
   IRODS_API_PLUGIN_SOURCES_irods_data_object_modify_info_client
-  ${CMAKE_SOURCE_DIR}/plugins/api/src/data_object_modify_info.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/data_object_modify_info.cpp
   )
 
 set(
@@ -99,12 +99,12 @@ set(
 # atomic_apply_acl_operations API
 set(
   IRODS_API_PLUGIN_SOURCES_irods_atomic_apply_acl_operations_server
-  ${CMAKE_SOURCE_DIR}/plugins/api/src/atomic_apply_acl_operations.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/atomic_apply_acl_operations.cpp
   )
 
 set(
   IRODS_API_PLUGIN_SOURCES_irods_atomic_apply_acl_operations_client
-  ${CMAKE_SOURCE_DIR}/plugins/api/src/atomic_apply_acl_operations.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/atomic_apply_acl_operations.cpp
   )
 
 set(
@@ -132,12 +132,12 @@ set(
 # atomic_apply_metadata_operations API
 set(
   IRODS_API_PLUGIN_SOURCES_irods_atomic_apply_metadata_operations_server
-  ${CMAKE_SOURCE_DIR}/plugins/api/src/atomic_apply_metadata_operations.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/atomic_apply_metadata_operations.cpp
   )
 
 set(
   IRODS_API_PLUGIN_SOURCES_irods_atomic_apply_metadata_operations_client
-  ${CMAKE_SOURCE_DIR}/plugins/api/src/atomic_apply_metadata_operations.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/atomic_apply_metadata_operations.cpp
   )
 
 set(
@@ -165,12 +165,12 @@ set(
 # data_object_finalize API
 set(
   IRODS_API_PLUGIN_SOURCES_irods_data_object_finalize_server
-  ${CMAKE_SOURCE_DIR}/plugins/api/src/data_object_finalize.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/data_object_finalize.cpp
   )
 
 set(
   IRODS_API_PLUGIN_SOURCES_irods_data_object_finalize_client
-  ${CMAKE_SOURCE_DIR}/plugins/api/src/data_object_finalize.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/data_object_finalize.cpp
   )
 
 set(
@@ -193,12 +193,12 @@ set(
 # experimental_api_plugin_adaptor API
 set(
   IRODS_API_PLUGIN_SOURCES_experimental_api_plugin_adaptor_server
-  ${CMAKE_SOURCE_DIR}/plugins/api/src/experimental_api_plugin_adaptor.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/experimental_api_plugin_adaptor.cpp
   )
 
 set(
   IRODS_API_PLUGIN_SOURCES_experimental_api_plugin_adaptor_client
-  ${CMAKE_SOURCE_DIR}/plugins/api/src/experimental_api_plugin_adaptor.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/experimental_api_plugin_adaptor.cpp
   )
 
 set(
@@ -227,12 +227,12 @@ set(
 # replica_close API
 set(
   IRODS_API_PLUGIN_SOURCES_irods_replica_close_server
-  ${CMAKE_SOURCE_DIR}/plugins/api/src/replica_close.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/replica_close.cpp
   )
 
 set(
   IRODS_API_PLUGIN_SOURCES_irods_replica_close_client
-  ${CMAKE_SOURCE_DIR}/plugins/api/src/replica_close.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/replica_close.cpp
   )
 
 set(
@@ -259,12 +259,12 @@ set(
 # replica_open API
 set(
   IRODS_API_PLUGIN_SOURCES_irods_replica_open_server
-  ${CMAKE_SOURCE_DIR}/plugins/api/src/replica_open.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/replica_open.cpp
   )
 
 set(
   IRODS_API_PLUGIN_SOURCES_irods_replica_open_client
-  ${CMAKE_SOURCE_DIR}/plugins/api/src/replica_open.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/replica_open.cpp
   )
 
 set(
@@ -291,12 +291,12 @@ set(
 # touch API
 set(
   IRODS_API_PLUGIN_SOURCES_irods_touch_server
-  ${CMAKE_SOURCE_DIR}/plugins/api/src/touch.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/touch.cpp
   )
 
 set(
   IRODS_API_PLUGIN_SOURCES_irods_touch_client
-  ${CMAKE_SOURCE_DIR}/plugins/api/src/touch.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/touch.cpp
   )
 
 set(
@@ -323,12 +323,12 @@ set(
 # register_physical_path API
 set(
   IRODS_API_PLUGIN_SOURCES_irods_register_physical_path_server
-  ${CMAKE_SOURCE_DIR}/plugins/api/src/register_physical_path.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/register_physical_path.cpp
   )
 
 set(
   IRODS_API_PLUGIN_SOURCES_irods_register_physical_path_client
-  ${CMAKE_SOURCE_DIR}/plugins/api/src/register_physical_path.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/register_physical_path.cpp
   )
 
 set(
@@ -392,7 +392,7 @@ foreach(PLUGIN ${IRODS_API_PLUGINS})
     ${CMAKE_SOURCE_DIR}/lib/core/include
     ${CMAKE_SOURCE_DIR}/lib/api/include
     ${CMAKE_SOURCE_DIR}/lib/filesystem/include
-    ${CMAKE_SOURCE_DIR}/plugins/api/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/server/api/include
     ${CMAKE_SOURCE_DIR}/server/core/include
     ${CMAKE_SOURCE_DIR}/server/drivers/include

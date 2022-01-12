@@ -1,6 +1,6 @@
 add_executable(
   mytest
-  ${CMAKE_SOURCE_DIR}/test/c_api_test/test.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/test.c
   )
 target_include_directories(
   mytest

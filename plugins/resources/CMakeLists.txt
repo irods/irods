@@ -2,51 +2,51 @@ find_package(OpenSSL REQUIRED)
 
 set(
   IRODS_RESOURCE_PLUGIN_COMPOUND_SOURCES
-  ${CMAKE_SOURCE_DIR}/plugins/resources/compound/libcompound.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/compound/libcompound.cpp
   )
 set(
   IRODS_RESOURCE_PLUGIN_DEFERRED_SOURCES
-  ${CMAKE_SOURCE_DIR}/plugins/resources/deferred/libdeferred.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/deferred/libdeferred.cpp
   )
 set(
   IRODS_RESOURCE_PLUGIN_LOAD_BALANCED_SOURCES
-  ${CMAKE_SOURCE_DIR}/plugins/resources/load_balanced/libload_balanced.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/load_balanced/libload_balanced.cpp
   )
 set(
   IRODS_RESOURCE_PLUGIN_MOCKARCHIVE_SOURCES
-  ${CMAKE_SOURCE_DIR}/plugins/resources/mockarchive/libmockarchive.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/mockarchive/libmockarchive.cpp
   )
 set(
   IRODS_RESOURCE_PLUGIN_NONBLOCKING_SOURCES
-  ${CMAKE_SOURCE_DIR}/plugins/resources/nonblocking/libnonblocking.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/nonblocking/libnonblocking.cpp
   )
 set(
   IRODS_RESOURCE_PLUGIN_PASSTHRU_SOURCES
-  ${CMAKE_SOURCE_DIR}/plugins/resources/passthru/libpassthru.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/passthru/libpassthru.cpp
   )
 set(
   IRODS_RESOURCE_PLUGIN_RANDOM_SOURCES
-  ${CMAKE_SOURCE_DIR}/plugins/resources/random/librandom.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/random/librandom.cpp
   )
 set(IRODS_RESOURCE_PLUGIN_REPLICATION_SOURCES
-  ${CMAKE_SOURCE_DIR}/plugins/resources/replication/irods_create_write_replicator.cpp
-  ${CMAKE_SOURCE_DIR}/plugins/resources/replication/irods_object_oper.cpp
-  ${CMAKE_SOURCE_DIR}/plugins/resources/replication/irods_repl_rebalance.cpp
-  ${CMAKE_SOURCE_DIR}/plugins/resources/replication/irods_repl_retry.cpp
-  ${CMAKE_SOURCE_DIR}/plugins/resources/replication/irods_replicator.cpp
-  ${CMAKE_SOURCE_DIR}/plugins/resources/replication/librepl.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/replication/irods_create_write_replicator.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/replication/irods_object_oper.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/replication/irods_repl_rebalance.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/replication/irods_repl_retry.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/replication/irods_replicator.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/replication/librepl.cpp
   )
 set(
   IRODS_RESOURCE_PLUGIN_STRUCTFILE_SOURCES
-  ${CMAKE_SOURCE_DIR}/plugins/resources/structfile/libstructfile.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/structfile/libstructfile.cpp
   )
 set(
   IRODS_RESOURCE_PLUGIN_UNIVMSS_SOURCES
-  ${CMAKE_SOURCE_DIR}/plugins/resources/univmss/libunivmss.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/univmss/libunivmss.cpp
   )
 set(
   IRODS_RESOURCE_PLUGIN_UNIXFILESYSTEM_SOURCES
-  ${CMAKE_SOURCE_DIR}/plugins/resources/unixfilesystem/libunixfilesystem.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/unixfilesystem/libunixfilesystem.cpp
   )
 
 set(

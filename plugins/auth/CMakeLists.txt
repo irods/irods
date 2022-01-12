@@ -2,17 +2,17 @@ find_package(OpenSSL REQUIRED)
 
 set(
   IRODS_AUTH_PLUGIN_native_SOURCES
-  ${CMAKE_SOURCE_DIR}/plugins/auth/native/libnative.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/native/libnative.cpp
   )
 
 set(
   IRODS_AUTH_PLUGIN_osauth_SOURCES
-  ${CMAKE_SOURCE_DIR}/plugins/auth/osauth/libosauth.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/osauth/libosauth.cpp
   )
 
 set(
   IRODS_AUTH_PLUGIN_pam_SOURCES
-  ${CMAKE_SOURCE_DIR}/plugins/auth/pam/libpam.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/pam/libpam.cpp
   )
 
 set(
