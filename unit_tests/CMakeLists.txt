@@ -82,7 +82,9 @@ foreach(IRODS_TEST_CONFIG ${TEST_INCLUDE_LIST})
     include(${IRODS_TEST_CONFIG})
     add_executable(${IRODS_TEST_TARGET} ${IRODS_TEST_SOURCE_FILES})
     target_link_libraries(${IRODS_TEST_TARGET} PRIVATE Catch2::Catch2 ${IRODS_TEST_LINK_LIBRARIES})
-    target_include_directories(${IRODS_TEST_TARGET} PRIVATE ${IRODS_TEST_INCLUDE_PATH})
+    if (DEFINED IRODS_TEST_INCLUDE_PATH)
+        target_include_directories(${IRODS_TEST_TARGET} PRIVATE ${IRODS_TEST_INCLUDE_PATH})
+    endif()
 
     # Make the new test available to CTest.
     add_test(NAME ${IRODS_TEST_TARGET} COMMAND ${IRODS_TEST_TARGET} -r ${IRODS_UNIT_TESTS_REPORTING_STYLE} -o ${IRODS_UNIT_TESTS_REPORT_FILENAME})

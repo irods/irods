@@ -2,16 +2,6 @@ add_executable(
   mytest
   ${CMAKE_CURRENT_SOURCE_DIR}/test.c
   )
-target_include_directories(
-  mytest
-  PRIVATE
-  ${CMAKE_BINARY_DIR}/lib/core/include
-  ${CMAKE_SOURCE_DIR}/lib/core/include
-  ${CMAKE_SOURCE_DIR}/lib/api/include
-  ${CMAKE_SOURCE_DIR}/lib/hasher/include
-  ${CMAKE_SOURCE_DIR}/server/core/include
-  ${CMAKE_SOURCE_DIR}/server/icat/include
-  )
 target_link_libraries(
   mytest
   PRIVATE

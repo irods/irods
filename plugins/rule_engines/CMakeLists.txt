@@ -52,16 +52,7 @@ foreach(PLUGIN ${IRODS_RULE_ENGINE_PLUGINS})
   target_include_directories(
     ${PLUGIN}
     PRIVATE
-    ${CMAKE_BINARY_DIR}/lib/core/include
-    ${CMAKE_SOURCE_DIR}/lib/api/include
-    ${CMAKE_SOURCE_DIR}/lib/core/include
-    ${CMAKE_SOURCE_DIR}/lib/hasher/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/irods_rule_engine_plugin-irods_rule_language/include
-    ${CMAKE_SOURCE_DIR}/server/api/include
-    ${CMAKE_SOURCE_DIR}/server/core/include
-    ${CMAKE_SOURCE_DIR}/server/drivers/include
-    ${CMAKE_SOURCE_DIR}/server/icat/include
-    ${CMAKE_SOURCE_DIR}/server/re/include
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/irods_rule_engine_plugin-irods_rule_language/include>
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
     ${IRODS_EXTERNALS_FULLPATH_FMT}/include
     )
