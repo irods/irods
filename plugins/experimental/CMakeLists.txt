@@ -39,15 +39,6 @@ foreach(PLUGIN ${IRODS_EXPERIMENTAL_API_PLUGINS})
   target_include_directories(
     ${PLUGIN}
     PRIVATE
-    ${CMAKE_BINARY_DIR}/lib/core/include
-    ${CMAKE_SOURCE_DIR}/lib/filesystem/include
-    ${CMAKE_SOURCE_DIR}/lib/api/include
-    ${CMAKE_SOURCE_DIR}/lib/core/include
-    ${CMAKE_SOURCE_DIR}/server/api/include
-    ${CMAKE_SOURCE_DIR}/server/core/include
-    ${CMAKE_SOURCE_DIR}/server/drivers/include
-    ${CMAKE_SOURCE_DIR}/server/icat/include
-    ${CMAKE_SOURCE_DIR}/server/re/include
     ${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/include
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
     ${IRODS_EXTERNALS_FULLPATH_FMT}/include

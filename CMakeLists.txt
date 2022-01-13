@@ -289,9 +289,11 @@ add_library(
   )
 target_include_directories(
   irods_filesystem_path
+  PUBLIC
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/irods>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/filesystem/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include>
   PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/filesystem/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   )
 target_compile_options(irods_filesystem_path PRIVATE -fPIC -Wno-write-strings)
@@ -313,17 +315,19 @@ target_link_libraries(
   )
 target_include_directories(
   irods_filesystem_client
+  PUBLIC
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/irods>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/lib/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/hasher/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/rbudp/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/filesystem/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/icat/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/re/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/drivers/include>
   PRIVATE
-  ${CMAKE_CURRENT_BINARY_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/hasher/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/rbudp/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/filesystem/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/icat/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/re/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/drivers/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
@@ -346,18 +350,20 @@ target_link_libraries(
   )
 target_include_directories(
   irods_filesystem_server
+  PUBLIC
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/irods>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/lib/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/hasher/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/rbudp/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/filesystem/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/api/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/icat/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/re/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/drivers/include>
   PRIVATE
-  ${CMAKE_CURRENT_BINARY_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/hasher/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/rbudp/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/filesystem/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/api/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/icat/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/re/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/drivers/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
@@ -376,10 +382,12 @@ target_link_libraries(
   )
 target_include_directories(
   irods_user_administration_client
+  PUBLIC
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/irods>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/lib/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include>
   PRIVATE
-  ${CMAKE_CURRENT_BINARY_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
@@ -398,12 +406,14 @@ target_link_libraries(
   )
 target_include_directories(
   irods_user_administration_server
+  PUBLIC
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/irods>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/lib/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/api/include>
   PRIVATE
-  ${CMAKE_CURRENT_BINARY_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/api/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
@@ -422,10 +432,12 @@ target_link_libraries(
   )
 target_include_directories(
   irods_resource_administration_client
+  PUBLIC
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/irods>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/lib/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include>
   PRIVATE
-  ${CMAKE_CURRENT_BINARY_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
@@ -444,12 +456,14 @@ target_link_libraries(
   )
 target_include_directories(
   irods_resource_administration_server
+  PUBLIC
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/irods>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/lib/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/api/include>
   PRIVATE
-  ${CMAKE_CURRENT_BINARY_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/api/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
@@ -654,18 +668,20 @@ target_link_libraries(
   )
 target_include_directories(
   irods_client_api_functions
+  PUBLIC
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/irods>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/lib/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/hasher/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/rbudp/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/filesystem/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/plugins/api/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/icat/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/re/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/drivers/include>
   PRIVATE
-  ${CMAKE_CURRENT_BINARY_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/hasher/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/rbudp/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/filesystem/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/plugins/api/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/icat/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/re/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/drivers/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
@@ -703,18 +719,9 @@ target_link_libraries(
   )
 target_include_directories(
   irods_client
+  PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/plugins/api/include>
   PRIVATE
-  ${CMAKE_CURRENT_BINARY_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/hasher/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/rbudp/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/filesystem/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/plugins/api/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/icat/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/re/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/drivers/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
@@ -994,19 +1001,10 @@ target_link_libraries(
   )
 target_include_directories(
   irods_server
+  PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/plugins/api/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/api/include>
   PRIVATE
-  ${CMAKE_CURRENT_BINARY_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/hasher/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/rbudp/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/filesystem/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/plugins/api/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/api/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/drivers/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/icat/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/re/include
   ${IRODS_EXTERNALS_FULLPATH_AVRO}/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_CPPZMQ}/include
@@ -1105,17 +1103,19 @@ target_link_libraries(
   )
 target_include_directories(
   irods_common
+  PUBLIC
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/irods>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/lib/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/hasher/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/filesystem/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/rbudp/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/icat/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/re/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/drivers/include>
   PRIVATE
-  ${CMAKE_CURRENT_BINARY_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/hasher/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/filesystem/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/rbudp/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/icat/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/re/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/drivers/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
@@ -1150,16 +1150,18 @@ target_link_libraries(
   )
 target_include_directories(
   irods_plugin_dependencies_functions
+  PUBLIC
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/irods>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/lib/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/hasher/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/rbudp/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/icat/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/re/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/drivers/include>
   PRIVATE
-  ${CMAKE_CURRENT_BINARY_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/hasher/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/rbudp/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/icat/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/re/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/drivers/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
@@ -1184,15 +1186,6 @@ target_link_libraries(
 target_include_directories(
   irods_plugin_dependencies
   PRIVATE
-  ${CMAKE_CURRENT_BINARY_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/hasher/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/rbudp/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/icat/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/re/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/drivers/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   )
 set_property(TARGET irods_plugin_dependencies PROPERTY VERSION ${IRODS_VERSION})
@@ -1312,17 +1305,19 @@ target_link_libraries(
   )
 target_include_directories(
   RodsAPIs
+  PUBLIC
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/irods>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/lib/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/hasher/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/rbudp/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/filesystem/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/icat/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/re/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/drivers/include>
   PRIVATE
-  ${CMAKE_CURRENT_BINARY_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/hasher/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/rbudp/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/filesystem/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/icat/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/re/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/drivers/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
@@ -1376,15 +1371,6 @@ foreach(EXECUTABLE ${IRODS_MAIN_EXECUTABLES})
   target_include_directories(
     ${EXECUTABLE}
     PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/server/re/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/server/drivers/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/server/icat/include
-    ${CMAKE_CURRENT_BINARY_DIR}/lib/core/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/lib/hasher/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/lib/rbudp/include
     ${IRODS_EXTERNALS_FULLPATH_AVRO}/include
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
     ${IRODS_EXTERNALS_FULLPATH_CPPZMQ}/include
@@ -1425,13 +1411,6 @@ target_link_libraries(
 target_include_directories(
   irodsReServer
   PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/re/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/drivers/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/icat/include
-  ${CMAKE_CURRENT_BINARY_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   ${IRODS_EXTERNALS_FULLPATH_NANODBC}/include
@@ -1462,13 +1441,6 @@ target_link_libraries(
 target_include_directories(
   irods_api_test_harness
   PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/re/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/drivers/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/icat/include
-  ${CMAKE_CURRENT_BINARY_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
@@ -1498,13 +1470,6 @@ target_link_libraries(
 target_include_directories(
   irods_configuration_test_harness
   PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/re/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/drivers/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/icat/include
-  ${CMAKE_CURRENT_BINARY_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
@@ -1524,15 +1489,6 @@ target_link_libraries(
 add_executable(
   genOSAuth
   ${CMAKE_CURRENT_SOURCE_DIR}/server/auth/src/genOSAuth.cpp
-  )
-target_include_directories(
-  genOSAuth
-  PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/icat/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include
-  ${CMAKE_CURRENT_BINARY_DIR}/lib/core/include
   )
 target_link_libraries(
   genOSAuth
