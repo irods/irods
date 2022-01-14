@@ -99,24 +99,24 @@ def run_tests_from_names(names, buffer_test_output, xml_output, skipUntil):
                 print(marker[0], "-", marker[1])
 
     # simulate nonlocal in python 2.x
-    d = { "filtered_markers" : filter(lambda marker: marker[0] == "", markers) }
+    filtered_markers = [m for m in markers if m[0] == ""]
 
     suitelist = []
     def filter_testcase(suite, marker):
         return fnmatch.fnmatch(suite.id(), marker)
 
-    def filter_testsuite(suite):
+    def filter_testsuite(suite, filtered_markers):
         if isinstance(suite, unittest.TestCase):
-            if len(d["filtered_markers"]) == 0:
-                d["filtered_markers"] = filter(lambda marker: filter_testcase(suite, marker[0]), markers)
-            if len(d["filtered_markers"]) != 0:
+            if len(filtered_markers) == 0:
+                filtered_markers = [m for m in markers if filter_testcase(suite, m[0])]
+            if len(filtered_markers) != 0:
                 suitelist.append(suite)
-                d["filtered_markers"] = filter(lambda marker: marker[-1] == "" or not filter_testcase(suite, marker[-1]), d["filtered_markers"])
+                filtered_markers = [m for m in filtered_markers if m[-1] == "" or not filter_testcase(suite, m[-1])]
         else:
             for subsuite in suite:
-                filter_testsuite(subsuite)
+                filter_testsuite(subsuite, filtered_markers)
 
-    filter_testsuite(suites)
+    filter_testsuite(suites, filtered_markers)
     super_suite = unittest.TestSuite(suitelist)
 
     if xml_output:
