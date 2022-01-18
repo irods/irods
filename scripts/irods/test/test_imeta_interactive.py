@@ -31,42 +31,38 @@ stdout/stderr there is ahead of us, and trying to pull more than is available wi
 available to be lost, even if the exception is caught.
 '''
 
+def read_stream(stream, timeout):
+    '''Reads from a byte stream and returns an array of bytes after a timeout or end of stream.
+
+    Arguments:
+    stream -- a file-like object from which bytes can be read
+    timeout -- a float representing the amount of time to wait for the stream to start
+    '''
+    arr = array('b')
+    timestamp = None
+    while True:
+        char = stream.read(1)
+        # The output may not have started yet so we wait until it starts or times out.
+        if char is None:
+            if timestamp is None:
+                timestamp = clock()
+            elif clock() - timestamp > timeout:
+                break
+            continue
+        # The end of the stream is indicated by an empty string so break the loop here.
+        if char.decode() == '':
+            break
+        arr.frombytes(char)
+        timestamp = None
+    return arr
+
 class Test_Imeta_Interactive(unittest.TestCase):
 
     default_timeout = 0.5
 
     def get_output(self, timeout=default_timeout):
-        stdout_arr = array('c')
-        stdout_timestamp = None
-        while True:
-            try:
-                char = self.imeta_p.stdout.read(1)
-                if char == '':
-                    break
-                stdout_arr.fromstring(char)
-                stdout_timestamp = None
-            except IOError:
-                if stdout_timestamp is None:
-                    stdout_timestamp = clock()
-                elif clock() - stdout_timestamp > timeout:
-                    break
-
-        stderr_arr = array('c')
-        stderr_timestamp = None
-        while True:
-            try:
-                char = self.imeta_p.stderr.read(1)
-                if char == '':
-                    break
-                stderr_arr.fromstring(char)
-                stderr_timestamp = None
-            except IOError:
-                if stderr_timestamp is None:
-                    stderr_timestamp = clock()
-                elif clock() - stderr_timestamp > timeout:
-                    break
-
-        return (stdout_arr.tostring(), stderr_arr.tostring())
+        return (read_stream(self.imeta_p.stdout, timeout).tobytes().decode(),
+                read_stream(self.imeta_p.stderr, timeout).tobytes().decode())
 
     @classmethod
     def setUpClass(cls):
@@ -110,12 +106,12 @@ class Test_Imeta_Interactive(unittest.TestCase):
 
     def test_empty_cmd(self):
         self.get_output()
-        self.imeta_p.stdin.write('\n')
+        self.imeta_p.stdin.write(b'\n')
         self.imeta_p.stdin.flush()
         (out, err) = self.get_output()
         self.assertEqual(out, 'imeta>')
         self.assertEqual(err, '')
-        self.imeta_p.stdin.write('\n')
+        self.imeta_p.stdin.write(b'\n')
         self.imeta_p.stdin.flush()
         (out, err) = self.get_output()
         self.assertEqual(out, 'imeta>')
@@ -127,7 +123,7 @@ class Test_Imeta_Interactive(unittest.TestCase):
 
     def test_space_cmd(self):
         self.get_output()
-        self.imeta_p.stdin.write('         \n')
+        self.imeta_p.stdin.write(b'         \n')
         self.imeta_p.stdin.flush()
         (out, err) = self.get_output()
         self.assertEqual(out, 'imeta>')
@@ -139,7 +135,7 @@ class Test_Imeta_Interactive(unittest.TestCase):
 
     def test_quit(self):
         self.get_output()
-        self.imeta_p.stdin.write('quit\n')
+        self.imeta_p.stdin.write(b'quit\n')
         self.imeta_p.stdin.flush()
         (out, err) = self.get_output()
         self.assertEqual(out, '')
@@ -164,7 +160,7 @@ class Test_Imeta_Interactive(unittest.TestCase):
 
     def test_bad_cmd(self):
         self.get_output()
-        self.imeta_p.stdin.write('badcmd\n')
+        self.imeta_p.stdin.write(b'badcmd\n')
         self.imeta_p.stdin.flush()
         (out, err) = self.get_output()
         self.assertEqual(out, 'imeta>')
@@ -176,7 +172,7 @@ class Test_Imeta_Interactive(unittest.TestCase):
 
     def test_ls_no_args(self):
         self.get_output()
-        self.imeta_p.stdin.write('ls\n')
+        self.imeta_p.stdin.write(b'ls\n')
         self.imeta_p.stdin.flush()
         (out, err) = self.get_output()
         self.assertEqual(out, 'imeta>')
@@ -192,7 +188,7 @@ class Test_Imeta_Interactive(unittest.TestCase):
         A = 'test 5518 quoted arguments with spaces'
         V = 'c\td'
         U = 'e \tf'
-        self.imeta_p.stdin.write('adda -d {data_name} "{A}" "{V}" "{U}"\n'.format(**locals()))
+        self.imeta_p.stdin.write('adda -d {data_name} "{A}" "{V}" "{U}"\n'.format(**locals()).encode())
         self.imeta_p.stdin.flush()
         (out, _) = self.get_output()
         self.assertEqual(out, 'imeta>')
@@ -208,7 +204,7 @@ class Test_Imeta_Interactive(unittest.TestCase):
 
     def test_ls_d(self):
         self.get_output()
-        self.imeta_p.stdin.write('ls -d ' + self.test_data_path_base + '1\n')
+        self.imeta_p.stdin.write('ls -d {}1\n'.format(self.test_data_path_base).encode())
         self.imeta_p.stdin.flush()
         (out, err) = self.get_output()
         self.assertRegexpMatches(out, '.+\nimeta>$')

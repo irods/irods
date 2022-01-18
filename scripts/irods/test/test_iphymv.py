@@ -9,7 +9,7 @@ else:
 import json
 import time
 
-import replica_status_test
+from . import replica_status_test
 from . import session
 from .. import lib
 from .. import paths
@@ -215,7 +215,7 @@ class Test_iPhymv(ResourceBase, unittest.TestCase):
             # modify the permissions on the physical file in the vault to deny unlinking to the service account
             filepath = os.path.join(self.admin.get_vault_session_path(), filename)
             self.admin.assert_icommand(['ils', '-L', dest_path], 'STDOUT', filepath)
-            os.chmod(filepath, 0444)
+            os.chmod(filepath, 0o444)
 
             # attempt and fail to phymv the replica (due to no permissions for unlink)
             self.admin.assert_icommand(['iphymv', '-S', 'demoResc', '-R', 'TestResc', dest_path], 'STDERR_SINGLELINE', 'Permission denied')
@@ -225,7 +225,7 @@ class Test_iPhymv(ResourceBase, unittest.TestCase):
             self.assertTrue(os.path.exists(filepath))
 
             # set the permissions on the physical file back to allow unlinking to the service account
-            os.chmod(filepath, 0666)
+            os.chmod(filepath, 0o666)
 
             # attempt to phymv the replica (and succeed)
             self.admin.assert_icommand(['iphymv', '-S', 'demoResc', '-R', 'TestResc', dest_path])
@@ -744,7 +744,7 @@ class test_invalid_parameters(session.make_sessions_mixin([('otherrods', 'rods')
             # ensure no replications took place
             out, _, _ = self.admin.run_icommand(['ils', '-l', self.logical_path])
             print(out)
-            for resc in self.leaf_rescs.values()[1:]:
+            for resc in [self.leaf_rescs.values()][1:]:
                 self.assertNotIn(resc['name'], out, msg='found unwanted replica on [{}]'.format(resc['name']))
             for resc in self.parent_rescs.values():
                 self.assertNotIn(resc, out, msg='found replica on coordinating resc [{}]'.format(resc))

@@ -51,7 +51,7 @@ class Test_Izonereport(unittest.TestCase):
         icat_server_object = json.loads(stdout)['zones'][0]['icat_server']
         self.assertIn('coordinating_resources', icat_server_object.keys())
         coord_array = icat_server_object['coordinating_resources']
-        coord_names = map(lambda r : r['name'], coord_array)
+        coord_names = [n for n in map(lambda r : r['name'], coord_array)]
 
         for n in expected_names:
             self.assertIn(n, coord_names)

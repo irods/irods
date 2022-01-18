@@ -248,7 +248,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Python REP does not guarantee argument preservation')
     def test_argument_preservation__3236(self):
-        with tempfile.NamedTemporaryFile(suffix='.r') as f:
+        with tempfile.NamedTemporaryFile(suffix='.r', mode='w+t') as f:
 
             rule_string = rule_texts[self.plugin_name][self.class_name]['test_argument_preservation__3236']
             f.write(rule_string)

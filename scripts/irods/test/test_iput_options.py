@@ -3,8 +3,6 @@ import re
 import stat
 import sys
 import shutil
-import ustrings
-import commands
 import tempfile
 
 if sys.version_info < (2, 7):
@@ -17,6 +15,7 @@ from ..configuration import IrodsConfig
 from .. import lib
 from .. import test
 from . import session
+from . import ustrings
 
 class Test_iPut_Options(ResourceBase, unittest.TestCase):
 
@@ -279,9 +278,11 @@ class Test_iPut_Options(ResourceBase, unittest.TestCase):
 class Test_iPut_Options_Issue_3883(ResourceBase, unittest.TestCase):
 
     def setUp(self):
+        import subprocess
+
         super(Test_iPut_Options_Issue_3883, self).setUp()
 
-        output = commands.getstatusoutput("hostname")
+        output = subprocess.getstatusoutput("hostname")
         hostname = output[1]
 
         # create a compound resource tree

@@ -52,7 +52,6 @@ class Test_iScan(ResourceBase, unittest.TestCase):
 
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: Registers a collection')
     def test_iscan_4029(self):
-        identity_func = lambda x:x
         missing_file_regex = re.compile(r'Physical\s+file\b.*\bmissing\b.*corresponding.*\bobject\b',re.I)
         FILES_IN_DIR = 800
         DELETE_AT_ONCE = 20
@@ -75,8 +74,8 @@ class Test_iScan(ResourceBase, unittest.TestCase):
             files_deleted += delete_count
             out, _, _ = self.admin.run_icommand(["iscan","-rd",test_coll_path])
             printed_lines = out.split('\n')
-            number_of_matching_messages = len(filter(identity_func,
-              map(lambda line : missing_file_regex.match(line), printed_lines)))
+            number_of_matching_messages = len(
+                [m for m in map(lambda line : missing_file_regex.match(line), printed_lines) if m])
             self.assertEqual(number_of_matching_messages, files_deleted)
         finally:
           if os.path.isdir(test_dir_path):

@@ -3,7 +3,6 @@ import sys
 import shutil
 import os
 import socket
-import commands
 import datetime
 import imp
 if sys.version_info >= (2, 7):

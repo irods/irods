@@ -94,15 +94,6 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
         shutil.copy(self.conf_dir + "/core.re", self.conf_dir + "/core.re.bckp")           # back up core.re
         shutil.copy(self.conf_dir + "/core.re", self.conf_dir + "/" + new_core_file_name)   # copy core.re
 
-        # setup for test_msiCheckAccess_3309
-        self.rods_session.assert_icommand('icd')
-        lib.make_file('test_file_3309', 1)
-        self.rods_session.assert_icommand('iput test_file_3309')
-        self.rods_session.assert_icommand('imkdir test_collection_3309')
-        self.rods_session.assert_icommand('iadmin mkgroup group1_3309')  # group rods does not belong to 
-        self.rods_session.assert_icommand('iadmin mkgroup group2_3309')  # group rods belongs to 
-        self.rods_session.assert_icommand('iadmin atg group2_3309 rods')  
-
     def tearDown(self):
         self.rods_session.assert_icommand('icd')  # for home directory assumption
         self.rods_session.assert_icommand(['ichmod', '-r', 'own', self.rods_session.username, '.'])
@@ -116,12 +107,6 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
         # cleanup mods in iRODS config dir
         lib.execute_command('mv -f {0}/core.re.bckp {0}/core.re'.format(self.conf_dir))
         lib.execute_command('rm -f {0}/*.test.re'.format(self.conf_dir))
-
-        # cleanup for test_msiCheckAccess_3309
-        self.rods_session.assert_icommand('irm -f test_file_3309')
-        self.rods_session.assert_icommand('irm -rf test_collection_3309')
-        self.rods_session.assert_icommand('iadmin rmgroup group1_3309')
-        self.rods_session.assert_icommand('iadmin rmgroup group2_3309')
 
         self.rods_session.__exit__()
         super(Test_AllRules, self).tearDown()
@@ -631,9 +616,18 @@ OUTPUT ruleExecOut
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_msiCheckAccess_3309(self):
+        # setup for test_msiCheckAccess_3309
+        self.rods_session.assert_icommand('icd')
+        lib.make_file('test_file_3309', 1)
+        self.rods_session.assert_icommand('iput test_file_3309')
+        self.rods_session.assert_icommand('imkdir test_collection_3309')
+        self.rods_session.assert_icommand('iadmin mkgroup group1_3309')  # group rods does not belong to 
+        self.rods_session.assert_icommand('iadmin mkgroup group2_3309')  # group rods belongs to 
+        self.rods_session.assert_icommand('iadmin atg group2_3309 rods')  
 
-        data_obj_rule_file="test_msiCheckAccess_data_obj_3309.r"
-        rule_string= '''
+        try:
+            data_obj_rule_file="test_msiCheckAccess_data_obj_3309.r"
+            rule_string= '''
 testMsiCheckAccess {
      msiCheckAccess("/tempZone/home/rods/test_file_3309", "read object", *result);
      writeLine("stdout", "result=*result");
@@ -647,11 +641,11 @@ INPUT null
 OUTPUT ruleExecOut
 '''
 
-        with open(data_obj_rule_file, 'w') as f:
-            f.write(rule_string)
+            with open(data_obj_rule_file, 'w') as f:
+                f.write(rule_string)
 
-        collection_rule_file="test_msiCheckAccess_collection_3309.r"
-        rule_string= '''
+            collection_rule_file="test_msiCheckAccess_collection_3309.r"
+            rule_string= '''
 testMsiCheckAccess {
      msiCheckAccess("/tempZone/home/rods/test_collection_3309", "read object", *result);
      writeLine("stdout", "result=*result");
@@ -665,87 +659,95 @@ INPUT null
 OUTPUT ruleExecOut
 '''
 
-        with open(collection_rule_file, 'w') as f:
-            f.write(rule_string)
+            with open(collection_rule_file, 'w') as f:
+                f.write(rule_string)
 
 
 
-        self.rods_session.assert_icommand('ichmod own group1_3309 test_file_3309')  # just to make sure we don't pick up ownership 
+            self.rods_session.assert_icommand('ichmod own group1_3309 test_file_3309')  # just to make sure we don't pick up ownership 
 
-        # --------- check permissions on file -----------
+            # --------- check permissions on file -----------
 
-        # check permissions by user 
+            # check permissions by user 
 
-        self.rods_session.assert_icommand('ichmod null rods test_file_3309')
-        self.rods_session.assert_icommand("irule -F " + data_obj_rule_file, 'STDOUT_MULTILINE', ['result=0$', 'result=0$', 'result=0$'],
-            use_regex=True)
+            self.rods_session.assert_icommand('ichmod null rods test_file_3309')
+            self.rods_session.assert_icommand("irule -F " + data_obj_rule_file, 'STDOUT_MULTILINE', ['result=0$', 'result=0$', 'result=0$'],
+                use_regex=True)
 
-        self.rods_session.assert_icommand('ichmod read rods test_file_3309')
-        self.rods_session.assert_icommand("irule -F " + data_obj_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=0$', 'result=0$'],
-            use_regex=True)
+            self.rods_session.assert_icommand('ichmod read rods test_file_3309')
+            self.rods_session.assert_icommand("irule -F " + data_obj_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=0$', 'result=0$'],
+                use_regex=True)
 
-        self.rods_session.assert_icommand('ichmod write rods test_file_3309')
-        self.rods_session.assert_icommand("irule -F " + data_obj_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=1$', 'result=0$'],
-            use_regex=True)
+            self.rods_session.assert_icommand('ichmod write rods test_file_3309')
+            self.rods_session.assert_icommand("irule -F " + data_obj_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=1$', 'result=0$'],
+                use_regex=True)
 
-        self.rods_session.assert_icommand('ichmod own rods test_file_3309')
-        self.rods_session.assert_icommand("irule -F " + data_obj_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=1$', 'result=1$'],
-            use_regex=True)
-
-
-        # remove user permission and check permissions by group 
-
-        self.rods_session.assert_icommand('ichmod null rods test_file_3309')
-
-        self.rods_session.assert_icommand('ichmod read group2_3309 test_file_3309')
-        self.rods_session.assert_icommand("irule -F " + data_obj_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=0$', 'result=0$'],
-            use_regex=True)
-
-        self.rods_session.assert_icommand('ichmod write group2_3309 test_file_3309')
-        self.rods_session.assert_icommand("irule -F " + data_obj_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=1$', 'result=0$'],
-            use_regex=True)
-
-        self.rods_session.assert_icommand('ichmod own group2_3309 test_file_3309')
-        self.rods_session.assert_icommand("irule -F " + data_obj_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=1$', 'result=1$'],
-            use_regex=True)
+            self.rods_session.assert_icommand('ichmod own rods test_file_3309')
+            self.rods_session.assert_icommand("irule -F " + data_obj_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=1$', 'result=1$'],
+                use_regex=True)
 
 
-        # --------- check permissions on collection -----------
+            # remove user permission and check permissions by group 
 
-        # check permissions by user 
+            self.rods_session.assert_icommand('ichmod null rods test_file_3309')
 
-        self.rods_session.assert_icommand('ichmod null rods test_collection_3309')
-        self.rods_session.assert_icommand("irule -F " + collection_rule_file, 'STDOUT_MULTILINE', ['result=0$', 'result=0$', 'result=0$'],
-            use_regex=True)
+            self.rods_session.assert_icommand('ichmod read group2_3309 test_file_3309')
+            self.rods_session.assert_icommand("irule -F " + data_obj_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=0$', 'result=0$'],
+                use_regex=True)
 
-        self.rods_session.assert_icommand('ichmod read rods test_collection_3309')
-        self.rods_session.assert_icommand("irule -F " + collection_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=0$', 'result=0$'],
-            use_regex=True)
+            self.rods_session.assert_icommand('ichmod write group2_3309 test_file_3309')
+            self.rods_session.assert_icommand("irule -F " + data_obj_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=1$', 'result=0$'],
+                use_regex=True)
 
-        self.rods_session.assert_icommand('ichmod write rods test_collection_3309')
-        self.rods_session.assert_icommand("irule -F " + collection_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=1$', 'result=0$'],
-            use_regex=True)
-
-        self.rods_session.assert_icommand('ichmod own rods test_collection_3309')
-        self.rods_session.assert_icommand("irule -F " + collection_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=1$', 'result=1$'],
-            use_regex=True)
+            self.rods_session.assert_icommand('ichmod own group2_3309 test_file_3309')
+            self.rods_session.assert_icommand("irule -F " + data_obj_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=1$', 'result=1$'],
+                use_regex=True)
 
 
-        # remove user permission and check permissions by group 
+            # --------- check permissions on collection -----------
 
-        self.rods_session.assert_icommand('ichmod null rods test_collection_3309')
+            # check permissions by user 
 
-        self.rods_session.assert_icommand('ichmod read group2_3309 test_collection_3309')
-        self.rods_session.assert_icommand("irule -F " + collection_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=0$', 'result=0$'],
-            use_regex=True)
+            self.rods_session.assert_icommand('ichmod null rods test_collection_3309')
+            self.rods_session.assert_icommand("irule -F " + collection_rule_file, 'STDOUT_MULTILINE', ['result=0$', 'result=0$', 'result=0$'],
+                use_regex=True)
 
-        self.rods_session.assert_icommand('ichmod write group2_3309 test_collection_3309')
-        self.rods_session.assert_icommand("irule -F " + collection_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=1$', 'result=0$'],
-            use_regex=True)
+            self.rods_session.assert_icommand('ichmod read rods test_collection_3309')
+            self.rods_session.assert_icommand("irule -F " + collection_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=0$', 'result=0$'],
+                use_regex=True)
 
-        self.rods_session.assert_icommand('ichmod own group2_3309 test_collection_3309')
-        self.rods_session.assert_icommand("irule -F " + collection_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=1$', 'result=1$'],
-            use_regex=True)
+            self.rods_session.assert_icommand('ichmod write rods test_collection_3309')
+            self.rods_session.assert_icommand("irule -F " + collection_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=1$', 'result=0$'],
+                use_regex=True)
+
+            self.rods_session.assert_icommand('ichmod own rods test_collection_3309')
+            self.rods_session.assert_icommand("irule -F " + collection_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=1$', 'result=1$'],
+                use_regex=True)
+
+
+            # remove user permission and check permissions by group 
+
+            self.rods_session.assert_icommand('ichmod null rods test_collection_3309')
+
+            self.rods_session.assert_icommand('ichmod read group2_3309 test_collection_3309')
+            self.rods_session.assert_icommand("irule -F " + collection_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=0$', 'result=0$'],
+                use_regex=True)
+
+            self.rods_session.assert_icommand('ichmod write group2_3309 test_collection_3309')
+            self.rods_session.assert_icommand("irule -F " + collection_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=1$', 'result=0$'],
+                use_regex=True)
+
+            self.rods_session.assert_icommand('ichmod own group2_3309 test_collection_3309')
+            self.rods_session.assert_icommand("irule -F " + collection_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=1$', 'result=1$'],
+                use_regex=True)
+
+        finally:
+            # cleanup for test_msiCheckAccess_3309
+            self.rods_session.assert_icommand('irm -f test_file_3309')
+            self.rods_session.assert_icommand('irm -rf test_collection_3309')
+            self.rods_session.assert_icommand('iadmin rmgroup group1_3309')
+            self.rods_session.assert_icommand('iadmin rmgroup group2_3309')
+
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     @unittest.skip('Generation of large file causes I/O thrashing... skip for now')

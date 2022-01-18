@@ -1,6 +1,5 @@
 from __future__ import print_function
 import base64
-import commands
 import copy
 import datetime
 import filecmp
@@ -176,6 +175,8 @@ class ResourceSuite(ResourceBase):
             os.unlink(filepath)
 
     def test_iget_specify_resource_with_single_thread__issue_3140(self):
+        import subprocess
+
         # local setup
         filename = "test_file_3140.txt"
         filepath = lib.create_local_testfile(filename)
@@ -186,7 +187,7 @@ class ResourceSuite(ResourceBase):
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 0 ", filename])  # should be listed once
 
         # local cleanup
-        output = commands.getstatusoutput('rm ' + filepath)
+        output = subprocess.getstatusoutput('rm ' + filepath)
 
     ###################
     # imv

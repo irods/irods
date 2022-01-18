@@ -10,12 +10,12 @@ if sys.version_info < (2, 7):
 else:
     import unittest
 
-import ustrings
 from .. import lib
 from . import session
 from .. import core_file
 from .. import paths
 from .. import test
+from . import ustrings
 from .rule_texts_for_tests import rule_texts
 from ..configuration import IrodsConfig
 from ..test.command import assert_command

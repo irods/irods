@@ -8,7 +8,7 @@ if sys.version_info < (2, 7):
 else:
     import unittest
 
-import replica_status_test
+from . import replica_status_test
 from . import command
 from . import session
 from .. import lib
@@ -700,7 +700,7 @@ class test_invalid_parameters(session.make_sessions_mixin([('otherrods', 'rods')
             out, _, _ = self.admin.run_icommand(['ils', '-l', self.logical_path])
             print(out)
             # a replica should exist on leaf resource a
-            for resc in self.leaf_rescs.values()[1:]:
+            for resc in [self.leaf_rescs.values()][1:]:
                 self.assertNotIn(resc['name'], out, msg='found unwanted replica on [{}]'.format(resc['name']))
             for resc in self.parent_rescs.values():
                 self.assertNotIn(resc, out, msg='found replica on coordinating resc [{}]'.format(resc))

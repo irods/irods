@@ -199,7 +199,8 @@ def make_file(f_name, f_size, contents='zero', block_size_in_bytes=1000):
     source = {'zero': '/dev/zero',
               'random': '/dev/urandom'}[contents]
 
-    count = f_size / block_size_in_bytes
+    # Use integer division as dd's count argument must be an integer
+    count = f_size // block_size_in_bytes
     if count > 0:
         execute_command(['dd', 'if='+source, 'of='+f_name, 'count='+str(count), 'bs='+str(block_size_in_bytes)])
         leftover_size = f_size % block_size_in_bytes

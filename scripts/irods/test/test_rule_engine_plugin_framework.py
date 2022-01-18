@@ -124,9 +124,9 @@ class Test_Rule_Engine_Plugin_Framework(session.make_sessions_mixin([('otherrods
             # Look through the log file and try to find "PLUGIN_ERROR_MISSING_SHARED_OBJECT".
             with open(paths.server_log_path(), 'r') as log_file:
                 mm = mmap.mmap(log_file.fileno(), 0, access=mmap.ACCESS_READ)
-                index = mm.find("Returned '{0}' to REPF.".format(str(RULE_ENGINE_CONTINUE)), log_offset)
+                index = mm.find("Returned '{0}' to REPF.".format(str(RULE_ENGINE_CONTINUE)).encode(), log_offset)
                 self.assertTrue(index != -1)
-                self.assertTrue(mm.find("PLUGIN_ERROR_MISSING_SHARED_OBJECT", index) == -1)
+                self.assertTrue(mm.find(b"PLUGIN_ERROR_MISSING_SHARED_OBJECT", index) == -1)
                 mm.close()
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Python REP and Topology Testing")
@@ -247,9 +247,9 @@ class Test_Rule_Engine_Plugin_Framework(session.make_sessions_mixin([('otherrods
                 msg_1 = "Returned '{0}' to REPF.".format(str(RULE_ENGINE_CONTINUE))
                 msg_2 = "Returned '{0}' to REPF.".format(str(CAT_PASSWORD_EXPIRED))
                 mm = mmap.mmap(log_file.fileno(), 0, access=mmap.ACCESS_READ)
-                index = mm.find(msg_1, log_offset)
+                index = mm.find(msg_1.encode(), log_offset)
                 self.assertTrue(index != -1)
-                self.assertTrue(mm.find(msg_2, index) != -1)
+                self.assertTrue(mm.find(msg_2.encode(), index) != -1)
                 mm.close()
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Python REP and Topology Testing")
@@ -429,10 +429,10 @@ class Test_Rule_Engine_Plugin_Framework(session.make_sessions_mixin([('otherrods
                 # produced by the Passthrough REP.
                 with open(paths.server_log_path(), 'r') as log_file:
                     mm = mmap.mmap(log_file.fileno(), 0, access=mmap.ACCESS_READ)
-                    index = mm.find(first_msg)
+                    index = mm.find(first_msg.encode())
                     if index != -1:
                         found_msg_1 = True
-                        found_msg_2 = (mm.find("Returned '{0}' to REPF.".format(str(RULE_ENGINE_CONTINUE)), index) != -1)
+                        found_msg_2 = (mm.find("Returned '{0}' to REPF.".format(str(RULE_ENGINE_CONTINUE)).encode(), index) != -1)
                     mm.close()
 
                 self.assertTrue(found_msg_1)
