@@ -13,7 +13,6 @@ import os
 import tempfile
 import time
 import shutil
-import ustrings
 import re
 
 from ..configuration import IrodsConfig
@@ -23,6 +22,7 @@ from .. import paths
 from .. import test
 from .. import lib
 from . import resource_suite
+from . import ustrings
 from .rule_texts_for_tests import rule_texts
 
 

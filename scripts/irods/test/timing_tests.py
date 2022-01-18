@@ -5,7 +5,6 @@ import shutil
 import subprocess
 import sys
 from threading import Timer
-import ustrings
 
 if sys.version_info < (2, 7):
     import unittest2 as unittest
@@ -18,6 +17,7 @@ from .. import test
 from .. import lib
 from .resource_suite import ResourceBase
 from . import session
+from . import ustrings
 
 
 class Test_Resource_Replication_Timing(ResourceBase, unittest.TestCase):

@@ -2,7 +2,6 @@ import copy
 import os
 import re
 import sys
-import ustrings
 
 if sys.version_info < (2, 7):
     import unittest2 as unittest
@@ -12,6 +11,7 @@ import shutil
 
 from .resource_suite import ResourceBase
 from .. import lib
+from . import ustrings
 
 class Test_iRsync(ResourceBase, unittest.TestCase):
 

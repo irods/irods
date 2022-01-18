@@ -10,13 +10,13 @@ import shutil
 import socket
 import tempfile
 import time
-import ustrings
 
 from . import session
 from . import settings
 from .. import lib
 from .. import paths
 from .. import test
+from . import ustrings
 from ..configuration import IrodsConfig
 from ..core_file import temporary_core_file
 

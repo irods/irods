@@ -12,7 +12,6 @@ import sys
 import tempfile
 from threading import Timer
 import time
-import ustrings
 import socket
 
 if sys.version_info < (2, 7):
@@ -32,6 +31,7 @@ from .resource_suite import ResourceSuite, ResourceBase
 from .test_chunkydevtest import ChunkyDevTest
 from . import session
 from .rule_texts_for_tests import rule_texts
+from . import ustrings
 
 def assert_number_of_replicas(admin_session, logical_path, data_obj_name, replica_count):
     for i in range(0, replica_count):
@@ -1510,10 +1510,12 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "local filesystem check")
     def test_ichksum_no_file_modified_under_compound__4085(self):
+        import base64
+
         filename = 'test_ichksum_no_file_modified_in_compound__4085'
         filepath = lib.create_local_testfile(filename)
         with open(filepath, 'r') as f:
-            original_checksum = hashlib.sha256(f.read()).digest().encode("base64").strip()
+            original_checksum = base64.b64encode(hashlib.sha256(f.read().encode('utf-8')).digest()).decode().strip()
 
         self.admin.assert_icommand(['iput', '-K', filepath, filename])
         os.unlink(filename)
@@ -1801,7 +1803,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
         # manually update the replica in archive vault
         out, _, _ = self.admin.run_icommand('ils -L ' + filename)
-        archivereplicaphypath = filter(lambda x : "archiveRescVault" in x, out.split())[0]
+        archivereplicaphypath = [token for token in out.split() if "archiveRescVault" in token][0]
         with open(archivereplicaphypath, 'wt') as f:
             print('MANUALLY UPDATED ON ARCHIVE\n', file=f, end='')
         # get file
@@ -1823,7 +1825,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
             # manually update the replica in archive vault
             out, _, _ = self.admin.run_icommand('ils -L ' + filename)
-            archivereplicaphypath = filter(lambda x : "archiveRescVault" in x, out.split())[0]
+            archivereplicaphypath = [token for token in out.split() if "archiveRescVault" in token][0]
             with open(archivereplicaphypath, 'wt') as f:
                 print('UPDATED ARCHIVE AGAIN\n', file=f, end='')
 
@@ -2537,8 +2539,8 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
         # manually update the replicas in archive vaults
         out, _, _ = self.admin.run_icommand('ils -L ' + filename)
         print(out)
-        archive1replicaphypath = filter(lambda x : "archiveResc1Vault" in x, out.split())[0]
-        archive2replicaphypath = filter(lambda x : "archiveResc2Vault" in x, out.split())[0]
+        archive1replicaphypath = [token for token in out.split() if "archiveResc1Vault" in token][0]
+        archive2replicaphypath = [token for token in out.split() if "archiveResc2Vault" in token][0]
         print(archive1replicaphypath)
         print(archive2replicaphypath)
         with open(archive1replicaphypath, 'wt') as f:
@@ -2568,8 +2570,8 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
 
             # manually update the replicas in archive vaults
             out, _, _ = self.admin.run_icommand('ils -L ' + filename)
-            archivereplica1phypath = filter(lambda x : "archiveResc1Vault" in x, out.split())[0]
-            archivereplica2phypath = filter(lambda x : "archiveResc2Vault" in x, out.split())[0]
+            archivereplica1phypath = [token for token in out.split() if "archiveResc1Vault" in token][0]
+            archivereplica2phypath = [token for token in out.split() if "archiveResc2Vault" in token][0]
             print(archive1replicaphypath)
             print(archive2replicaphypath)
             with open(archivereplica1phypath, 'wt') as f:

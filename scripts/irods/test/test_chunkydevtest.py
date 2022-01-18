@@ -12,13 +12,13 @@ import time
 import shutil
 import random
 import subprocess
-import ustrings
 
 from . import session
 from .. import test
 from . import settings
 from .resource_suite import ResourceBase
 from .. import lib
+from . import ustrings
 
 
 class ChunkyDevTest(ResourceBase):

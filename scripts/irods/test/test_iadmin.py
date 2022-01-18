@@ -5,7 +5,6 @@ if sys.version_info < (2, 7):
 else:
     import unittest
 
-import commands
 import contextlib
 import copy
 import getpass
@@ -18,7 +17,6 @@ import stat
 import subprocess
 import time
 import tempfile
-import ustrings
 
 from ..configuration import IrodsConfig
 from ..controller import IrodsController
@@ -29,6 +27,7 @@ from . import session
 from . import settings
 from .. import lib
 from . import resource_suite
+from . import ustrings
 from .rule_texts_for_tests import rule_texts
 
 class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
@@ -453,7 +452,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
     # =-=-=-=-=-=-=-
     # REBALANCE
     def test_rebalance_for_invalid_data__ticket_3147(self):
-        output = commands.getstatusoutput("hostname")
+        output = subprocess.getstatusoutput("hostname")
         hostname = output[1]
 
         # =-=-=-=-=-=-=-
@@ -955,7 +954,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         #  sudo chmod 777 /tmp/irods/bad_fs/
 
 
-        output = commands.getstatusoutput("hostname")
+        output = subprocess.getstatusoutput("hostname")
         hostname = output[1]
 
         # =-=-=-=-=-=-=-
@@ -1786,7 +1785,7 @@ class Test_Issue3862(resource_suite.ResourceBase, unittest.TestCase):
     def setUp(self):
         super(Test_Issue3862, self).setUp()
 
-        output = commands.getstatusoutput("hostname")
+        output = subprocess.getstatusoutput("hostname")
         hostname = output[1]
 
         # =-=-=-=-=-=-=-

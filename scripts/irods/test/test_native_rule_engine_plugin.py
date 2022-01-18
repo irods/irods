@@ -122,7 +122,7 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
         with temporary_core_file() as core:
             rule_code = rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name]
             core.add_rule( rule_code )
-            with tempfile.NamedTemporaryFile(suffix='.r') as rule_file:
+            with tempfile.NamedTemporaryFile(mode='w+t', suffix='.r') as rule_file:
                 rule_file_text = rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name + "__rule_file"]
                 print (rule_file_text, file = rule_file)
                 rule_file.flush()
@@ -136,7 +136,7 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
             rule_code = rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name]
             core.add_rule( rule_code )
             rule_file_text = rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name + '__rule_file']
-            with tempfile.NamedTemporaryFile(suffix='.r') as rule_file:
+            with tempfile.NamedTemporaryFile(mode='w+t', suffix='.r') as rule_file:
                 print (rule_file_text, file = rule_file)
                 rule_file.flush()
                 self.admin.assert_icommand(['irule','-F',rule_file.name], 'STDOUT_MULTILINE', ['SYS_INTERNAL_ERR = -154000',
@@ -147,7 +147,7 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
     def test_peps_for_parallel_mode_transfers__4404(self):
 
         (fd, largefile) = tempfile.mkstemp()
-        os.write(fd,"123456789abcdef\n"*(6*1024**2))
+        os.write(fd, b"123456789abcdef\n"*(6*1024**2))
         os.close(fd)
         temp_base = os.path.basename(largefile)
         temp_dir  = os.path.dirname(largefile)

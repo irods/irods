@@ -4,13 +4,13 @@ if sys.version_info >= (2, 7):
 else:
     import unittest2 as unittest
 import shutil
-import ustrings
 import os
 
 from ..configuration import IrodsConfig
 from .. import test
 from .. import lib
 from . import resource_suite
+from . import ustrings
 
 
 @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")

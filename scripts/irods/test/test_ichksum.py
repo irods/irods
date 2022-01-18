@@ -418,7 +418,7 @@ C- {5}:
         contents = 'the data'
         self.admin.assert_icommand(['istream', 'write', data_object], input=contents)
 
-        def do_test(size_in_catalog, checksum):
+        def do_test(size_in_catalog, checksum, encoding='utf-8'):
             # Make the catalog report the wrong size of the replica on disk.
             # This change will cause icommands such as iget and istream to print at most "size_in_catalog" bytes.
             self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', data_object, 'replica_number', '0', 'DATA_SIZE', str(size_in_catalog)])
@@ -426,7 +426,7 @@ C- {5}:
 
             # Show that ichksum reads at most "size_in_catalog" bytes when computing a checksum.
             self.admin.assert_icommand(['ichksum', '-f', data_object], 'STDOUT', ['sha2:' + checksum])
-            self.assertEqual(checksum, base64.b64encode(hashlib.sha256(contents[:size_in_catalog]).digest()))
+            self.assertEqual(checksum, base64.b64encode(hashlib.sha256(contents[:size_in_catalog].encode(encoding)).digest()).decode())
 
             # Compute the SHA256 checksum of the replica using its actual size on disk.
             gql = "select DATA_PATH where COLL_NAME = '{0}' and DATA_NAME = '{1}'".format(self.admin.session_collection, os.path.basename(data_object))
@@ -436,10 +436,10 @@ C- {5}:
             self.assertGreater(len(physical_path), 0)
 
             with open(physical_path.strip(), 'r') as f:
-                sha2 = hashlib.sha256(f.read())
+                sha2 = hashlib.sha256(f.read().encode(encoding))
 
             # Show that the checksums are different (size in catalog vs size on disk).
-            self.assertNotEqual(checksum, base64.b64encode(sha2.digest()))
+            self.assertNotEqual(checksum, base64.b64encode(sha2.digest()).decode())
 
         do_test(0, '47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=')
         do_test(3, 'uXdtfd9FnJrVsOHWrGHie++16Z/WJEZndgDXys71RNA=')

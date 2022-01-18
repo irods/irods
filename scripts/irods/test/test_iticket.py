@@ -344,6 +344,8 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
         self.ticket_get_on(parent_collection, data_obj)
 
     def test_data_size_is_updated_after_overwriting_data_object_using_ticket__issue_4744(self):
+        import codecs
+
         ticket = 'ticket_issue_4744'
 
         try:
@@ -364,12 +366,12 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
             # contents matches the expected sequence of bytes.
             out, _, ec = self.user.run_icommand(['iget', '-t', ticket, data_object, '-'])
             self.assertEqual(ec, 0)
-            self.assertEqual('666f6f313233', out.encode('hex'))
+            self.assertEqual('666f6f313233', codecs.encode(out.encode(), encoding='hex').decode())
 
             def overwrite_and_verify(data, data_hex_encoding):
                 # Create a new file. This will be used to overwrite the data object.
                 f = tempfile.NamedTemporaryFile(delete=False)
-                f.write(data)
+                f.write(data.encode())
                 f.close()
 
                 # Overwrite the data object with new data and verify that the size is what we expect.
@@ -381,14 +383,14 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
                 # contents matches the expected sequence of bytes.
                 out, _, ec = self.user.run_icommand(['iget', '-t', ticket, data_object, '-'])
                 self.assertEqual(ec, 0)
-                self.assertEqual(data_hex_encoding, out.encode('hex'))
+                self.assertEqual(data_hex_encoding, codecs.encode(out.encode(), encoding='hex').decode())
 
                 # Get the physical path of the replica and compare its contents to the expected hex encoding.
                 gql = "select DATA_PATH where COLL_NAME = '{0}' and DATA_NAME = '{1}'".format(self.user.session_collection, data_object)
                 out, _, ec = self.user.run_icommand(['iquest', '%s', gql])
                 self.assertEqual(ec, 0)
                 with open(out.strip(), 'r') as f:
-                    self.assertEqual(data_hex_encoding, f.read().encode('hex'))
+                    self.assertEqual(data_hex_encoding, codecs.encode(f.read().encode(), encoding='hex').decode())
 
             # Overwrite the data object with a smaller file.
             temp_file_contents = 'bar'

@@ -69,8 +69,8 @@ class Test_Rule_Engine_Plugin_Passthrough(session.make_sessions_mixin([('otherro
                 # the message produced by the PEP in core.re.
                 with open(paths.server_log_path(), 'r') as log_file:
                     mm = mmap.mmap(log_file.fileno(), 0, access=mmap.ACCESS_READ)
-                    index = mm.find("Returned '{0}' to REPF.".format(str(RULE_ENGINE_CONTINUE)))
+                    index = mm.find("Returned '{0}' to REPF.".format(str(RULE_ENGINE_CONTINUE)).encode())
                     self.assertTrue(index != -1)
-                    self.assertTrue(mm.find(second_msg, index) != -1)
+                    self.assertTrue(mm.find(second_msg.encode(), index) != -1)
                     mm.close()
 
