@@ -713,7 +713,6 @@ target_link_libraries(
   ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
   OpenSSL::SSL
   OpenSSL::Crypto
-  Threads::Threads
   )
 target_include_directories(
   irods_client
@@ -994,7 +993,6 @@ target_link_libraries(
   OpenSSL::Crypto
   ${CMAKE_DL_LIBS}
   rt
-  Threads::Threads
   )
 target_include_directories(
   irods_server
@@ -1084,6 +1082,7 @@ target_link_libraries(
   irods_common
   PUBLIC
   nlohmann_json::nlohmann_json
+  Threads::Threads
   PRIVATE
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_program_options.so
@@ -1094,7 +1093,6 @@ target_link_libraries(
   OpenSSL::Crypto
   OpenSSL::SSL
   ${CMAKE_DL_LIBS}
-  Threads::Threads
   rt
   CURL::libcurl
   )
@@ -1290,6 +1288,7 @@ target_link_libraries(
   OpenSSL::Crypto
   OpenSSL::SSL
   CURL::libcurl
+  Threads::Threads
   PRIVATE
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_chrono.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
@@ -1359,7 +1358,6 @@ foreach(EXECUTABLE ${IRODS_MAIN_EXECUTABLES})
     ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
     ${IRODS_EXTERNALS_FULLPATH_ZMQ}/lib/libzmq.so
     rt
-    Threads::Threads
     ${CMAKE_DL_LIBS}
     m
     )
@@ -1399,7 +1397,6 @@ target_link_libraries(
   ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
   ${IRODS_EXTERNALS_FULLPATH_NANODBC}/lib/libnanodbc.so
   rt
-  Threads::Threads
   ${CMAKE_DL_LIBS}
   m
   )
@@ -1429,7 +1426,6 @@ target_link_libraries(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so
   ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
   rt
-  Threads::Threads
   ${CMAKE_DL_LIBS}
   m
   )
@@ -1458,7 +1454,6 @@ target_link_libraries(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so
   ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
   rt
-  Threads::Threads
   ${CMAKE_DL_LIBS}
   m
   )
