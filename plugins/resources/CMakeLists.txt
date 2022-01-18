@@ -1,5 +1,3 @@
-find_package(OpenSSL REQUIRED)
-
 set(
   IRODS_RESOURCE_PLUGIN_COMPOUND_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/compound/libcompound.cpp
