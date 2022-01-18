@@ -1,5 +1,3 @@
-find_package(OpenSSL REQUIRED)
-
 set(
   IRODS_NETWORK_PLUGIN_ssl_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/ssl/libssl.cpp

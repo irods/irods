@@ -1,5 +1,3 @@
-find_package(OpenSSL REQUIRED)
-
 set(
   IRODS_EXPERIMENTAL_API_PLUGIN_REMOVE_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/remove.cpp
@@ -53,7 +51,6 @@ foreach(PLUGIN ${IRODS_EXPERIMENTAL_API_PLUGINS})
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
     ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
-    OpenSSL::Crypto
     ${CMAKE_DL_LIBS}
     Threads::Threads
     )

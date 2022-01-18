@@ -1,5 +1,3 @@
-find_package(OpenSSL REQUIRED)
-
 set(
   IRODS_AUTH_PLUGIN_native_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/native/libnative.cpp

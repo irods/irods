@@ -310,8 +310,6 @@ target_link_libraries(
   irods_filesystem_client
   PUBLIC
   nlohmann_json::nlohmann_json
-  OpenSSL::SSL
-  OpenSSL::Crypto
   )
 target_include_directories(
   irods_filesystem_client
@@ -345,8 +343,6 @@ target_link_libraries(
   irods_filesystem_server
   PUBLIC
   nlohmann_json::nlohmann_json
-  OpenSSL::SSL
-  OpenSSL::Crypto
   )
 target_include_directories(
   irods_filesystem_server
@@ -665,6 +661,8 @@ target_link_libraries(
   irods_client_api_functions
   PUBLIC
   nlohmann_json::nlohmann_json
+  OpenSSL::Crypto
+  OpenSSL::SSL
   )
 target_include_directories(
   irods_client_api_functions
@@ -1094,8 +1092,8 @@ target_link_libraries(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
   ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
-  OpenSSL::SSL
   OpenSSL::Crypto
+  OpenSSL::SSL
   ${CMAKE_DL_LIBS}
   Threads::Threads
   rt
@@ -1290,6 +1288,8 @@ target_link_libraries(
   RodsAPIs
   PUBLIC
   nlohmann_json::nlohmann_json
+  OpenSSL::Crypto
+  OpenSSL::SSL
   PRIVATE
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_chrono.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
@@ -1297,8 +1297,6 @@ target_link_libraries(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so
   ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
-  OpenSSL::SSL
-  OpenSSL::Crypto
   ${CMAKE_DL_LIBS}
   rt
   CURL::libcurl
@@ -1361,8 +1359,6 @@ foreach(EXECUTABLE ${IRODS_MAIN_EXECUTABLES})
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so
     ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
     ${IRODS_EXTERNALS_FULLPATH_ZMQ}/lib/libzmq.so
-    OpenSSL::SSL
-    OpenSSL::Crypto
     rt
     Threads::Threads
     ${CMAKE_DL_LIBS}
