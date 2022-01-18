@@ -6,5 +6,4 @@ target_link_libraries(
   mytest
   PRIVATE
   RodsAPIs
-  ${CMAKE_THREAD_LIBS_INIT}
   )
