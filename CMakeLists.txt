@@ -994,7 +994,6 @@ target_link_libraries(
   OpenSSL::Crypto
   ${CMAKE_DL_LIBS}
   rt
-  CURL::libcurl
   Threads::Threads
   )
 target_include_directories(
@@ -1290,6 +1289,7 @@ target_link_libraries(
   nlohmann_json::nlohmann_json
   OpenSSL::Crypto
   OpenSSL::SSL
+  CURL::libcurl
   PRIVATE
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_chrono.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
@@ -1299,7 +1299,6 @@ target_link_libraries(
   ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
   ${CMAKE_DL_LIBS}
   rt
-  CURL::libcurl
   )
 target_include_directories(
   RodsAPIs
