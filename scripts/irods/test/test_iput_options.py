@@ -136,9 +136,9 @@ class Test_iPut_Options(ResourceBase, unittest.TestCase):
             # should therefore fail.
             cmd = 'iput -r ' + test_dir
             _,stderr,_ = self.admin.run_icommand( cmd )
-            self.assertIn( 'directory error: Permission denied',
+            self.assertIn( 'Permission denied',
                            stderr,
-                           "{0}: Expected stderr: \"...{1}...\", got: \"{2}\"".format(cmd, 'directory error: Permission denied', stderr))
+                           "{0}: Expected stderr: \"...{1}...\", got: \"{2}\"".format(cmd, 'Permission denied', stderr))
 
             self.admin.assert_icommand('ils test_dir', 'STDOUT_SINGLELINE', 'test_dir')
             self.admin.assert_icommand_fail('ils test_dir/good_sub_dir', 'STDOUT_SINGLELINE', 'a.txt')
