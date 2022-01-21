@@ -359,7 +359,7 @@ def create_database_tables(irods_config, cursor, default_resource_directory=None
                         IrodsError('Database setup failed while running %s:\n%s' % (sql_file, str(e))),
                         sys.exc_info()[2])
 
-def setup_database_values(irods_config, cursor=None, default_resource_directory=None):
+def setup_database_values(irods_config, cursor=None, default_resource_directory=None, default_resource_name=None):
     l = logging.getLogger(__name__)
     timestamp = '{0:011d}'.format(int(time.time()))
 
@@ -483,11 +483,12 @@ def setup_database_values(irods_config, cursor=None, default_resource_directory=
             timestamp)
 
     if default_resource_directory:
-        default_resc_id = get_next_object_id()
-        execute_sql_statement(cursor,
+        if default_resource_name:
+            default_resc_id = get_next_object_id()
+            execute_sql_statement(cursor,
                 "insert into R_RESC_MAIN (resc_id,resc_name,zone_name,resc_type_name,resc_class_name,resc_net,resc_def_path,free_space,free_space_ts,resc_info,r_comment,resc_status,create_ts,modify_ts) values (?,?,?,'unixfilesystem','cache',?,?,'','','','','',?,?);",
                 default_resc_id,
-                'demoResc',
+                default_resource_name,
                 irods_config.server_config['zone_name'],
                 lib.get_hostname(),
                 default_resource_directory,
