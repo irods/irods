@@ -340,7 +340,7 @@ def create_database_tables(irods_config, cursor, default_resource_directory=None
                         '='.join(['password', irods_config.database_config['db_password']]),
                         '='.join(['port', str(irods_config.database_config['db_port'])]),
                         '='.join(['host', irods_config.database_config['db_host']])
-                    ]))
+                    ]).encode())
                 f.flush()
                 with open(os.path.join(irods_config.irods_directory, 'packaging', 'sql', 'mysql_functions.sql'), 'r') as sql_file:
                     lib.execute_command(
