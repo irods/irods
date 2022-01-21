@@ -51,12 +51,22 @@ class IrodsConfig(object):
         return self._server_config
 
     @property
-    def is_catalog(self):
+    def is_provider(self):
         return self.server_config['catalog_service_role'] == 'provider'
 
     @property
-    def is_resource(self):
+    def is_catalog(self):
+        # compatible with 4.2.x
+        return self.is_provider
+
+    @property
+    def is_consumer(self):
         return self.server_config['catalog_service_role'] == 'consumer'
+
+    @property
+    def is_resource(self):
+        # compatible with 4.2.x
+        return self.is_consumer
 
     @property
     def default_rule_engine_instance(self):

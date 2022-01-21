@@ -9,6 +9,9 @@ irods
 y
 testpassword
 
+y
+demoResc
+
 tempZone
 1247
 20000
@@ -23,3 +26,4 @@ TEMPORARY_ZONE_KEY
 rods
 
 
+# todo (and oracle/mysql)
