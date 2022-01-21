@@ -325,7 +325,7 @@ class Test_ImetaSet(ResourceBase, unittest.TestCase):
             with open(rule_file, 'w') as f:
                 f.write(rule_string)
             dummy_rc,out,_ = self.user0.assert_icommand("irule -F " + rule_file,'STDOUT','')
-            output_list = filter(None,sorted(out.split("\n")))
+            output_list = [l for l in sorted(out.split('\n')) if l]
             self.assertTrue( output_list == expected_output )
         finally:
             os.unlink(rule_file)
