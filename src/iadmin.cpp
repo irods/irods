@@ -1521,6 +1521,11 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         return modify_replica(cmdToken);
     }
 
+    if (0 == strcmp(cmdToken[0], "set_delay_server")) {
+        return generalAdmin( 0, "set_delay_server", cmdToken[1],
+                               "", "", "", "", "", "", "", "" );
+    }
+
     /* test is only used for testing so is not included in the help */
     if ( strcmp( cmdToken[0], "test" ) == 0 ) {
         char* result;
@@ -1797,6 +1802,7 @@ void usageMain() {
         " asq 'SQL query' [Alias] (add specific query)",
         " rsq 'SQL query' or Alias (remove specific query)",
         " modrepl [logical_path <string>|data_id <int>] [replica_number <int>|resource_hierarchy <string>] ATTR_NAME VALUE",
+        " set_delay_server HOSTNAME",
         " help (or h) [command] (this help, or more details on a command)",
         "Also see 'irmtrash -M -u user' for the admin mode of removing trash and",
         "similar admin modes in irepl, iphymv, and itrim.",
@@ -2381,6 +2387,20 @@ usage( char *subOpt ) {
         ""
     };
 
+    char* set_delay_server_usage[] = {
+        "set_delay_server HOSTNAME",
+        " ",
+        "Set the delay server for the local zone in R_GRID_CONFIGURATION.",
+        " ",
+        "The hostname entered will be saved as the 'successor'.",
+        " ",
+        "Each iRODS server will periodically check the catalog to determine",
+        "if it should promote itself to be the delay server for the local zone.",
+        " ",
+        "This mechanism allows for graceful delay server migration without downtime.",
+        ""
+    };
+
     char *helpMsgs[] = {
         " help (or h) [command] (general help, or more details on a command)",
         " If you specify a command, a brief description of that command",
@@ -2401,6 +2421,7 @@ usage( char *subOpt ) {
                        "ctime",
                        "suq", "sgq", "lq", "cu",
                        "rum", "asq", "rsq", "modrepl",
+                       "set_delay_server",
                        "help", "h"
                       };
 
@@ -2417,6 +2438,7 @@ usage( char *subOpt ) {
                        ctimeMsgs,
                        suqMsgs, sgqMsgs, lqMsgs, cuMsgs,
                        rumMsgs, asqMsgs, rsqMsgs, modrepl_usage,
+                       set_delay_server_usage,
                        helpMsgs, helpMsgs
                      };
 
