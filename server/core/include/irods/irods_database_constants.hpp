@@ -83,6 +83,8 @@ namespace irods {
     const std::string DATABASE_OP_SET_QUOTA( "database_set_quota" );
     const std::string DATABASE_OP_CHECK_QUOTA( "database_check_quota" );
 
+    const std::string DATABASE_OP_SET_DELAY_SERVER( "database_set_delay_server" );
+
     const std::string DATABASE_OP_DEL_UNUSED_AVUS( "database_del_unused_avus" );
 
     const std::string DATABASE_OP_ADD_SPECIFIC_QUERY( "database_add_specific_query" );
