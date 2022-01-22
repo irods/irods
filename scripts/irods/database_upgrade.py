@@ -1,5 +1,6 @@
 from . import database_connect
 from .exceptions import IrodsError, IrodsWarning
+from . import lib
 
 import logging
 import re
@@ -100,6 +101,11 @@ def run_update(irods_config, cursor):
         else:
             # TEXT has no upper limit on the number of bytes it can hold.
             database_connect.execute_sql_statement(cursor, "alter table R_RULE_EXEC add column exe_context text;")
+
+    elif new_schema_version == 9:
+        # Add leader and successor entries to the R_GRID_CONFIGURATION table for delay_server migration protocol
+        database_connect.execute_sql_statement(cursor, "insert into R_GRID_CONFIGURATION values ('delay_server','leader',?);", lib.get_hostname())
+        database_connect.execute_sql_statement(cursor, "insert into R_GRID_CONFIGURATION values ('delay_server','successor','');")
 
     else:
         raise IrodsError('Upgrade to schema version %d is unsupported.' % (new_schema_version))

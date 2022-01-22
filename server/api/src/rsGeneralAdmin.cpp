@@ -1200,6 +1200,10 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
         return status;
     }
 
+    if ( strcmp( generalAdminInp->arg0, "set_delay_server" ) == 0 ) {
+        return chlSetDelayServer( rsComm, generalAdminInp->arg1 );
+    }
+
     if ( strcmp( generalAdminInp->arg0, "lt" ) == 0 ) {
         status = CAT_INVALID_ARGUMENT;
         if ( strcmp( generalAdminInp->arg1, "resc_type" ) == 0 ) {

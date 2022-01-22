@@ -1542,6 +1542,31 @@ int initServerMain(
     recordServerProcess(svrComm);
 
     const auto start_delay_server = [&] {
+
+
+/*  NEW 4.3.0 LEADER/SUCCESSOR ALGORITHM
+
+   - if self is leader
+     - if successor is defined
+        - if necessary, gracefully complete current jobs and exit
+     - else
+        - if necessary, start delay server
+        - grab and process delay rules, same as today
+   - else if self is successor
+     - run health check on the leader stats (utility function that calculates based on db stats)
+     - if leader is dead
+         - promote self to leader in db
+         - exit
+     - else
+         - check on the leader directly (ping?  grid-status?)
+         - populate stats in the db (JSON?)
+         - exit
+   - else
+     - self is not leader or successor
+     - if necessary, gracefully complete current jobs and exit
+*/
+
+
         rodsServerHost_t* reServerHost{};
         getReHost(&reServerHost);
 

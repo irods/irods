@@ -1,6 +1,6 @@
 {
     "irods_version": "@IRODS_VERSION@",
-    "catalog_schema_version": 8,
+    "catalog_schema_version": 9,
     "commit_id": "@IRODS_GIT_SHA1@",
     "configuration_schema_version": 4
 }

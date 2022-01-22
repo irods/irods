@@ -133,6 +133,7 @@ int chlRegServerLoadDigest( rsComm_t *rsComm, const char *rescName, const char *
 int chlPurgeServerLoadDigest( rsComm_t *rsComm, const char *secondsAgo );
 
 int chlCalcUsageAndQuota( rsComm_t *rsComm );
+int chlSetDelayServer( rsComm_t *rsComm, const char *hostname );
 int chlSetQuota( rsComm_t *rsComm, const char *type, const char *name, const char *rescName,
                  const char *limit );
 int chlCheckQuota( rsComm_t *rsComm, const char *userName, const char *rescName,
