@@ -134,6 +134,8 @@ set(IRODS_COMPILE_DEFINITIONS ${IRODS_COMPILE_DEFINITIONS}
                               _LARGE_FILES
                               _LARGEFILE64_SOURCE
                               BOOST_SYSTEM_NO_DEPRECATED
+                              BOOST_CHRONO_DONT_PROVIDES_DEPRECATED_IO_SINCE_V2_0_0
+                              BOOST_STACKTRACE_USE_ADDR2LINE
                               SPDLOG_FMT_EXTERNAL
                               SPDLOG_NO_TLS)
 

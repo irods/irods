@@ -1,14 +1,18 @@
-#include <iterator>
-#include <dlfcn.h>
-#include <boost/filesystem.hpp>
-#include "irods_exception.hpp"
 #include "irods_default_paths.hpp"
+
+#include "irods_exception.hpp"
 #include "rodsErrorTable.h"
+
+#include <boost/filesystem.hpp>
+
+#include <dlfcn.h>
+
+#include <iterator>
 
 namespace fs = boost::filesystem;
 
-namespace irods {
-
+namespace irods
+{
     fs::path
     get_irods_lib_directory() {
         Dl_info dl_info;
@@ -102,4 +106,4 @@ namespace irods {
         install_plugdir = install_plugdir.lexically_normal();
         return get_irods_directory_impl(install_plugdir);
     }
-}
+} // namespace irods

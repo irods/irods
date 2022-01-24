@@ -69,6 +69,7 @@ namespace irods
     const std::string CFG_ADDRESS_KW("address");
 
     // advanced settings
+    const std::string DELAY_RULE_EXECUTORS_KW("delay_rule_executors");
     const std::string CFG_MAX_SIZE_FOR_SINGLE_BUFFER( "maximum_size_for_single_buffer_in_megabytes" );
     const std::string CFG_DEF_NUMBER_TRANSFER_THREADS( "default_number_of_transfer_threads" );
     const std::string CFG_TRANS_CHUNK_SIZE_PARA_TRANS( "transfer_chunk_size_for_parallel_transfer_in_megabytes" );
@@ -77,6 +78,8 @@ namespace irods
     const std::string CFG_MAX_TEMP_PASSWORD_LIFETIME( "maximum_temporary_password_lifetime_in_seconds" );
     const std::string CFG_MAX_NUMBER_OF_CONCURRENT_RE_PROCS( "maximum_number_of_concurrent_rule_engine_server_processes" );
     const std::string DEFAULT_LOG_ROTATION_IN_DAYS("default_log_rotation_in_days");
+    const std::string CFG_MAX_SIZE_OF_DELAY_QUEUE_IN_BYTES_KW("maximum_size_of_delay_queue_in_bytes");
+    const std::string CFG_STACKTRACE_FILE_PROCESSOR_SLEEP_TIME_IN_SECONDS_KW("stacktrace_file_processor_sleep_time_in_seconds");
 
     const std::string CFG_RE_CACHE_SALT_KW("reCacheSalt");
     const std::string CFG_RE_SERVER_SLEEP_TIME( "rule_engine_server_sleep_time_in_seconds");
@@ -179,9 +182,5 @@ namespace irods
 
     const std::string DEFAULT_RULE_ENGINE_PLUGIN_NAME_KW("re-irods");
     const std::string DEFAULT_RULE_ENGINE_INSTANCE_NAME_KW("default_rule_engine_instance");
-
-    // misc. keywords
-    const std::string DELAY_RULE_EXECUTORS_KW("delay_rule_executors");
-    const std::string CFG_MAX_SIZE_OF_DELAY_QUEUE_IN_BYTES_KW("maximum_size_of_delay_queue_in_bytes");
 } // namespace irods
 

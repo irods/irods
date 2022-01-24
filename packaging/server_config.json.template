@@ -21,7 +21,8 @@
         "hostname_cache": {
             "shared_memory_size_in_bytes": 2500000,
             "eviction_age_in_seconds": 3600
-        }
+        },
+        "stacktrace_file_processor_sleep_time_in_seconds": 10
     },
     "client_api_whitelist_policy": "enforce",
     "default_dir_mode": "0750",

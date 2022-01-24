@@ -76,6 +76,7 @@ namespace irods
     extern const std::string CFG_ADDRESS_KW;
 
     // advanced settings
+    extern const std::string DELAY_RULE_EXECUTORS_KW;
     extern const std::string CFG_MAX_SIZE_FOR_SINGLE_BUFFER;
     extern const std::string CFG_DEF_NUMBER_TRANSFER_THREADS;
     extern const std::string CFG_TRANS_CHUNK_SIZE_PARA_TRANS;
@@ -84,6 +85,8 @@ namespace irods
     extern const std::string CFG_MAX_TEMP_PASSWORD_LIFETIME;
     extern const std::string CFG_MAX_NUMBER_OF_CONCURRENT_RE_PROCS;
     extern const std::string DEFAULT_LOG_ROTATION_IN_DAYS;
+    extern const std::string CFG_MAX_SIZE_OF_DELAY_QUEUE_IN_BYTES_KW;
+    extern const std::string CFG_STACKTRACE_FILE_PROCESSOR_SLEEP_TIME_IN_SECONDS_KW;
 
     extern const std::string CFG_RE_CACHE_SALT_KW;
     extern const std::string CFG_RE_SERVER_SLEEP_TIME;
@@ -184,10 +187,6 @@ namespace irods
 
     extern const std::string DEFAULT_RULE_ENGINE_PLUGIN_NAME_KW;
     extern const std::string DEFAULT_RULE_ENGINE_INSTANCE_NAME_KW;
-
-    // misc. keywords
-    extern const std::string DELAY_RULE_EXECUTORS_KW;
-    extern const std::string CFG_MAX_SIZE_OF_DELAY_QUEUE_IN_BYTES_KW;
 } // namespace irods
 
 #endif // CONFIGURATION_KEYWORDS_HPP
