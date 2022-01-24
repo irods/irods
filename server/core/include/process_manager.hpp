@@ -1,193 +1,227 @@
 #ifndef IRODS_PROCESS_MANAGER_HPP
 #define IRODS_PROCESS_MANAGER_HPP
 
-#include <unistd.h>
-#include <functional>
-#include <chrono>
-#include <any>
-#include <thread>
-#include <boost/lexical_cast.hpp>
-#include <memory>
-
-#include "irods_logger.hpp"
-
 /// \file
-/// \parblock
-/// The main use case of this facility is to provide a means of running tasks intermittently.
-/// that is, in an interval.
-/// \endparblock
-/// TODO add since information
 
-namespace irods::experimental::cron{
+#include <unistd.h>
 
-    /// \brief a cron task, that is, one run intermittently.
+#include <chrono>
+#include <functional>
+#include <utility>
+#include <vector>
+
+namespace irods::experimental::cron
+{
+    /// A cron task which runs once every "interval" seconds.
     ///
-    /// TODO add some /since information once it's known what release it's going to be in.
-    class cron_task{
-        using func = std::function<void(std::any&)>;
-        /// \brief the main function in the task
-        std::function<void(std::any&)> execute_;
-        /// \brief The function to be run before the main function of the task
-        /// run only once when #run_pre_once_only is true
-        std::function<void(std::any&)> pre_;
-        /// \brief The function to be run after the main function of the task
-        /// run only once when #run_post_once_only is true
-        std::function<void(std::any&)> post_;
-        /// \brief The length of time between runs, in seconds
-        std::chrono::seconds interval_ = std::chrono::seconds(0);
-        /// \brief The timestamp of the last time this task was run
-        std::chrono::time_point<std::chrono::system_clock> last_run_ =
-            std::chrono::time_point<std::chrono::system_clock>(std::chrono::seconds(0));
-        /// \brief Only run the pre function once.
-        bool run_pre_once_only_ = true;
-        /// \brief Run post only once.
-        bool run_post_once_only_  = true;
-        /// \brief User defined data to be handled by the task.
-        std::any data_;
-
-        /// \brief construct a cron_task
-        /// \param[in] e The function that will be called as the main execution phase
-        /// \param[in] pre The function to call before the main execution. May only be executed once if run_pre_once is set to true
-        /// \param[in] post The function to call after the main execution. May only be executed once if run_post_once is set to true
-        /// \param[in] interval The number of seconds between execution
-        /// \param[in] run_pre_once determines if the pre function is only called at the first invocation of the task's main function
-        /// \param[in] run_post_once determines if the post function is only called at the first invocation of the task's main function
-        /// \param[in] data user supplied data that may be manipulated by the task's function
-        cron_task(func e, func pre, func post, std::chrono::seconds interval, bool run_pre_once, bool run_post_once,
-                  std::any data):
-            execute_(e),
-            pre_(pre),
-            post_(post),
-            interval_(interval),
-            last_run_(std::chrono::seconds(0)),
-            run_pre_once_only_(run_pre_once),
-            run_post_once_only_(run_post_once),
-            data_(data)
-        {
-        }
+    /// \since 4.3.0
+    class cron_task
+    {
     public:
-
-        /// \brief Returns true if the task is ready to run
-        /// \retval true if sufficient time has elapsed
-        bool ready() const noexcept {
-            auto now = std::chrono::system_clock::now();
-            return (now - last_run_) > interval_;
+        /// Returns true if the task is ready to run.
+        ///
+        /// \since 4.3.0
+        bool is_ready() const noexcept
+        {
+            return std::chrono::system_clock::now() - last_run_ > interval_;
         }
-        /**
-         * \brief Returns true if the task has run before, as determined by the last run timestamp
-         *
-         * \retval true if the task has run before
-         */
-        bool has_run()const noexcept{
+
+        /// Returns true if the task has run before.
+        ///
+        /// \since 4.3.0
+        bool has_run()const noexcept
+        {
             return last_run_.time_since_epoch().count() != 0;
         }
-        /**
-         * \brief Run the task
-         */
-        void run(){
-            if( !ready() ){
+
+        /// Runs the task.
+        ///
+        /// \since 4.3.0
+        void operator()()
+        {
+            if (!is_ready()) {
                 return;
             }
-            if(pre_ && ((run_pre_once_only_ && !has_run()) || !run_pre_once_only_)){
-                pre_(data_);
+
+            if (pre_op_ && ((run_pre_op_once_ && !has_run()) || !run_pre_op_once_)) {
+                pre_op_();
             }
-            execute_(data_);
-            if(post_ && ((run_post_once_only_ && !has_run() ) || !run_post_once_only_) ){
-                post_(data_);
+
+            task_();
+
+            if (post_op_ && ((run_post_op_once_ && !has_run()) || !run_post_op_once_)) {
+                post_op_();
             }
+
             last_run_ = std::chrono::system_clock::now();
         }
-        friend struct cron_builder;
+
+    private:
+        using function_type = std::function<void()>;
+
+        cron_task(function_type _task,
+                  function_type _pre_op,
+                  function_type _post_op,
+                  std::chrono::seconds _interval,
+                  bool _run_pre_once,
+                  bool _run_post_once)
+            : task_{std::move(_task)}
+            , pre_op_{std::move(_pre_op)}
+            , post_op_{std::move(_post_op)}
+            , interval_{_interval}
+            , last_run_{}
+            , run_pre_op_once_{_run_pre_once}
+            , run_post_op_once_{_run_post_once}
+        {
+        }
+
+        std::function<void()> task_;
+        std::function<void()> pre_op_;
+        std::function<void()> post_op_;
+        std::chrono::seconds interval_;
+        std::chrono::time_point<std::chrono::system_clock> last_run_;
+        bool run_pre_op_once_;
+        bool run_post_op_once_;
+
+        friend class cron_builder;
     }; // class cron_task
 
-    /// \brief Builder for a CronTask.
-    struct cron_builder {
-        std::function<void(std::any&)> to_execute_;
-        std::function<void(std::any&)> pre_function_;
-        std::function<void(std::any&)> post_function_;
-        bool run_pre_once_ = true;
-        bool run_post_once_ = true;
-        std::chrono::seconds interval_ = std::chrono::seconds(0);
-        std::any data_;
-
-        /// \brief set the pre action to be run before the main function
+    /// Builder for a cron_task.
+    ///
+    /// \since 4.3.0
+    class cron_builder
+    {
+    public:
+        /// Set the pre-operation to be executed before the primary task.
         ///
-        /// \param[in] f The function to run before the main event, whatever that might be
-        cron_builder& pre(std::function<void(std::any&)> f){ pre_function_ = f; return *this; }
-
-        /// \brief set the post function, to be executed before the execution function
+        /// \param[in] _f The function to run before the primary task.
         ///
-        /// \param[in] f The function to be run after the primary function of the task. By default only run once
-        cron_builder& post(std::function<void(std::any&)> f){ post_function_ = f; return *this; }
+        /// \since 4.3.0
+        cron_builder& pre_task_operation(std::function<void()> _f)
+        {
+            pre_op_ = std::move(_f);
+            return *this;
+        }
 
-        /// \brief Set the execution function to be run.
+        /// Set the post-operation to be executed after the primary task.
         ///
-        /// \param[in] The main function to be executed
-        cron_builder& to_execute(std::function<void(std::any&)> f) noexcept { to_execute_ = f; return *this; }
+        /// \param[in] _f The function to be run after the primary task.
+        ///
+        /// \since 4.3.0
+        cron_builder& post_task_operation(std::function<void()> _f)
+        {
+            post_op_ = std::move(_f);
+            return *this;
+        }
 
-        /// \brief Set the interval in seconds between runs of this task. A value of Zero(the default), results
+        /// Set the task to be run.
+        ///
+        /// \param[in] _f The function to be executed.
+        ///
+        /// \since 4.3.0
+        cron_builder& task(std::function<void()> _f) noexcept
+        {
+            task_ = std::move(_f);
+            return *this;
+        }
+
+        /// Set the interval in seconds between runs of this task. A value of zero (the default), results
         /// in the task being run every time the cron manager loops.
         ///
-        /// \param[in] n The number of seconds between runs of the task
-        cron_builder& interval(int n) noexcept { interval_ = std::chrono::seconds(n); return *this; }
-
-        /// \brief Set the user defined data to be made available to the task in question
+        /// \param[in] _seconds The number of seconds between runs of the task
         ///
-        /// \param[in] a The user defined data to be made available.
-        cron_builder& data(std::any& a) noexcept { data_ = a; return *this; }
+        /// \since 4.3.0
+        cron_builder& interval(int _seconds) noexcept
+        {
+            interval_ = std::chrono::seconds{_seconds};
+            return *this;
+        }
 
-        /// \brief Sets whether or not post function should run more than once. Defaults to true.
+        /// Sets whether or not the pre-operation should run more than once. Defaults to true.
         ///
-        /// \param[in] a a bool indicating whether the post function should only run once.
-        cron_builder& run_post_op_once(bool a) noexcept { run_post_once_ = a; return *this; }
-
-        /// \brief Sets whether or not the pre function should be run every time the
-        /// main function is run. Defaults to true.
+        /// \param[in] _value A boolean indicating whether or not the pre-task operation should only run once.
         ///
-        /// \param[in] a a bool indicating whether or not the pre function should only run once.
-        cron_builder& run_pre_op_once(bool a) noexcept { run_pre_once_ = a; return *this; }
+        /// \since 4.3.0
+        cron_builder& run_pre_task_operation_once(bool _value) noexcept
+        {
+            run_pre_op_once_ = _value;
+            return *this;
+        }
 
-        /// \brief Convert the cron_builder into a cron_task instance.
+        /// Sets whether or not the post-operation should run more than once. Defaults to true.
         ///
-        /// \retval A cron_task object, ready to be inserted into the cron system.
-        cron_task build() const noexcept{
-            return cron_task(to_execute_,
-                             pre_function_,
-                             post_function_,
-                             interval_,
-                             run_pre_once_,
-                             run_post_once_,
-                             data_);
+        /// \param[in] _value A boolean indicating whether the post-operation should only run once.
+        ///
+        /// \since 4.3.0
+        cron_builder& run_post_op_once(bool _value) noexcept
+        {
+            run_post_op_once_ = _value;
+            return *this;
         }
-    }; // struct cron_builder
 
-    /// \brief Management struct for the facility. A singleton.
-    struct cron{
-        /// \brief Loop across all the tasks in the cron structure
-        void run(){
-            for(auto& task: tasks) {
-                task.run();
-            }
+        /// Constructs a new cron_task using the given state.
+        ///
+        /// \retval cron_task
+        ///
+        /// \since 4.3.0
+        cron_task build() const noexcept
+        {
+            return {task_, pre_op_, post_op_, interval_, run_pre_op_once_, run_post_op_once_};
+        }
 
-        }
-        /// \brief Get the single instance of the cron facility.
-        static cron* get() noexcept {
-            static cron singleton;
-            return &singleton;
-        }
-        /// \brief Add a task to the cron facility.
-        void add_task(cron_task&& ct){
-            tasks.emplace_back(std::move(ct));
-        }
     private:
-        std::vector<cron_task> tasks;
-        cron(){}
-        cron(cron&) = delete;
-        cron(const cron&) = delete;
-        cron(cron&&) = delete;
-        cron& operator=(const cron&)=delete;
+        std::function<void()> task_;
+        std::function<void()> pre_op_;
+        std::function<void()> post_op_;
+        bool run_pre_op_once_ = true;
+        bool run_post_op_once_ = true;
+        std::chrono::seconds interval_;
+    }; // class cron_builder
 
-    }; // struct cron
+    /// Management struct for the facility. A singleton.
+    ///
+    /// \since 4.3.0
+    class cron
+    {
+    public:
+        /// Get the single instance of the cron facility.
+        ///
+        /// \since 4.3.0
+        static cron& instance() noexcept
+        {
+            static cron singleton;
+            return singleton;
+        }
+
+        /// Loop across all the tasks in the cron structure
+        ///
+        /// \since 4.3.0
+        void run()
+        {
+            try {
+                for (auto&& task : tasks_) {
+                    task();
+                }
+            }
+            catch (...) {}
+        }
+
+        /// Add a task to the cron facility.
+        ///
+        /// \since 4.3.0
+        void add_task(cron_task _task)
+        {
+            tasks_.push_back(std::move(_task));
+        }
+
+    private:
+        cron() = default;
+
+        cron(const cron&) = delete;
+        cron& operator=(const cron&) = delete;
+
+        std::vector<cron_task> tasks_;
+    }; // class cron
 } // namespace irods::experimental::cron
 
 #endif // IRODS_PROCESS_MANAGER_HPP

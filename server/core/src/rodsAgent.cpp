@@ -223,8 +223,7 @@ runIrodsAgentFactory( sockaddr_un agent_addr ) {
     signal( SIGUSR1, irodsAgentSignalExit );
     signal( SIGPIPE, SIG_IGN );
 
-    // register irods signal handlers
-    register_handlers();
+    irods::set_unrecoverable_signal_handlers();
 
     initProcLog();
 

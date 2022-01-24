@@ -28,6 +28,8 @@
 #include "dns_cache.hpp"
 #include "server_utilities.hpp"
 #include "process_manager.hpp"
+#include "irods_default_paths.hpp"
+#include "irods_signal.hpp"
 
 #include <pthread.h>
 #include <sys/socket.h>
@@ -44,6 +46,9 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
+#include <boost/chrono.hpp>
+#include <boost/chrono/chrono_io.hpp>
+#include <boost/stacktrace.hpp>
 
 #include <fmt/format.h>
 #include <nlohmann/json.hpp>
@@ -54,6 +59,10 @@
 #include <algorithm>
 #include <optional>
 #include <iterator>
+#include <thread>
+#include <atomic>
+#include <chrono>
+#include <sstream>
 
 // clang-format off
 namespace ix   = irods::experimental;
@@ -181,7 +190,6 @@ namespace
         }
     }
 
-
     void remove_leftover_rulebase_pid_files() noexcept
     {
         namespace fs = boost::filesystem;
@@ -305,6 +313,125 @@ namespace
 
         return 0;
     } // create_pid_file
+
+    void create_stacktrace_directory()
+    {
+        namespace fs = boost::filesystem;
+        boost::system::error_code ec;
+        fs::create_directories("../.." / fs::path{IRODS_DEFAULT_PATH_HOMEDIR} / "stacktraces", ec);
+    } // create_stacktrace_directory
+
+    int get_stacktrace_file_processor_sleep_time()
+    {
+        try {
+            const auto adv_settings = irods::server_properties::instance().map()
+                .at(irods::CFG_ADVANCED_SETTINGS_KW);
+
+            const auto iter = adv_settings
+                .find(irods::CFG_STACKTRACE_FILE_PROCESSOR_SLEEP_TIME_IN_SECONDS_KW);
+
+            if (iter != std::end(adv_settings)) {
+                if (const auto seconds = iter->get<int>(); seconds > 0) {
+                    return seconds;
+                }
+            }
+        }
+        catch (...) {}
+
+        return 10; // The default sleep time.
+    } // get_stacktrace_file_processor_sleep_time
+
+    void log_stacktrace_files()
+    {
+        namespace fs = boost::filesystem;
+
+        // The leading "../.." enables support for non-package installations.
+        // In a packaged installation, this will produce "/var/lib/irods/stacktraces".
+        const auto stacktrace_directory = "../.." / fs::path{IRODS_DEFAULT_PATH_HOMEDIR} / "stacktraces";
+
+        using log = irods::experimental::log;
+
+        for (auto&& entry : fs::directory_iterator{stacktrace_directory}) {
+            // Expected filename format:
+            //
+            //     <epoch_seconds>.<epoch_milliseconds>.<agent_pid>
+            //
+            // 1. Extract the timestamp from the filename and convert it to ISO8601 format.
+            // 2. Extract the agent pid from the filename.
+            const auto p = entry.path().generic_string();
+
+            // TODO std::string::rfind can be replaced with std::string::ends_with in C++20.
+            if (p.rfind(irods::STACKTRACE_NOT_READY_FOR_LOGGING_SUFFIX) != std::string::npos) { 
+                log::server::trace("Skipping [{}] ...", p);
+                continue;
+            }
+
+            auto slash_pos = p.rfind("/");
+
+            if (slash_pos == std::string::npos) {
+                log::server::trace("Skipping [{}]. No forward slash separator found.", p);
+                continue;
+            }
+
+            ++slash_pos;
+            const auto first_dot_pos = p.find(".", slash_pos);
+
+            if (first_dot_pos == std::string::npos) {
+                log::server::trace("Skipping [{}]. No dot separator found.", p);
+                continue;
+            }
+
+            const auto last_dot_pos = p.rfind(".");
+
+            if (last_dot_pos == std::string::npos || last_dot_pos == first_dot_pos) {
+                log::server::trace("Skipping [{}]. No dot separator found.", p);
+                continue;
+            }
+
+            const auto epoch_seconds = p.substr(slash_pos, first_dot_pos - slash_pos);
+            const auto remaining_millis = p.substr(first_dot_pos + 1, last_dot_pos - (first_dot_pos + 1));
+            const auto pid = p.substr(last_dot_pos + 1);
+            log::server::trace("epoch seconds = [{}], remaining millis = [{}], agent pid = [{}]",
+                               epoch_seconds, remaining_millis, pid);
+
+            try {
+                // Convert the epoch value to ISO8601 format.
+                log::server::trace("Converting epoch seconds to UTC timestamp ...");
+                using boost::chrono::system_clock;
+                using boost::chrono::time_fmt;
+                const auto tp = system_clock::from_time_t(std::stoll(epoch_seconds));
+                std::ostringstream utc_ss;
+                utc_ss << time_fmt(boost::chrono::timezone::utc, "%FT%T") << tp;
+
+                // Read the contents of the file.
+                std::ifstream file{p};
+                const auto stacktrace = boost::stacktrace::stacktrace::from_dump(file);
+                file.close();
+
+                // 3. Write the contents of the stacktrace file to syslog.
+                irods::experimental::log::server::critical({
+                    {"log_message", boost::stacktrace::to_string(stacktrace)},
+                    {"stacktrace_agent_pid", pid},
+                    {"stacktrace_timestamp_utc", fmt::format("{}.{}", utc_ss.str(), remaining_millis)},
+                    {"stacktrace_timestamp_epoch_seconds", epoch_seconds},
+                    {"stacktrace_timestamp_epoch_milliseconds", remaining_millis}
+                });
+
+                // 4. Delete the stacktrace file.
+                //
+                // We don't want the stacktrace files to go away without making it into the log.
+                // We can't rely on the log invocation above because of syslog.
+                // We don't want these files to accumulate for long running servers.
+                log::server::trace("Removing stacktrace file from disk ...");
+                fs::remove(entry);
+            }
+            catch (...) {
+                // Something happened while logging the stacktrace file.
+                // Leaving the stacktrace file in-place for processing later.
+                log::server::trace("Caught exception while processing stacktrace file.");
+            }
+        }
+    } // log_stacktrace_files
 } // anonymous namespace
 
 static void set_agent_spawner_process_name(const InformationRequiredToSafelyRenameProcess& info) {
@@ -408,6 +535,8 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    create_stacktrace_directory();
+
     hnc::init("irods_hostname_cache", irods::get_hostname_cache_shared_memory_size());
     irods::at_scope_exit deinit_hostname_cache{[] { hnc::deinit(); }};
 
@@ -433,10 +562,10 @@ int main(int argc, char** argv)
         key_path_t{irods::CFG_ADVANCED_SETTINGS_KW, irods::CFG_HOSTNAME_CACHE_KW, irods::CFG_EVICTION_AGE_IN_SECONDS_KW},
         irods::get_hostname_cache_eviction_age());
 
-    /* start of irodsReServer has been moved to serverMain */
+    // Start of irodsReServer has been moved to serverMain.
     signal( SIGTTIN, SIG_IGN );
     signal( SIGTTOU, SIG_IGN );
-    signal( SIGCHLD, SIG_DFL ); /* SIG_IGN causes autoreap. wait get nothing */
+    signal( SIGCHLD, SIG_DFL ); // Setting SIGCHLD to SIG_IGN is not portable.
     signal( SIGPIPE, SIG_IGN );
 #ifdef osx_platform
     signal( SIGINT, ( sig_t ) serverExit );
@@ -468,7 +597,7 @@ int main(int argc, char** argv)
     snprintf(local_addr.sun_path, sizeof(local_addr.sun_path), "%s", agent_factory_socket_file);
 
     ix::cron::cron_builder agent_watcher;
-    const auto start_agent_server = [&](std::any& _) {
+    const auto start_agent_server = [&] {
         int status;
         int w = waitpid(agent_spawning_pid, &status, WNOHANG);
         if( w != 0 ) {
@@ -511,18 +640,20 @@ int main(int argc, char** argv)
         }
     };
 
-    std::any dummy;
-    start_agent_server(dummy);
-    agent_watcher.to_execute(start_agent_server).interval(5);
-    ix::cron::cron::get()->add_task(agent_watcher.build());
+    start_agent_server();
+    agent_watcher.interval(5).task(start_agent_server);
+    ix::cron::cron::instance().add_task(agent_watcher.build());
 
     ix::cron::cron_builder cache_clearer;
-    cache_clearer.to_execute([](std::any& _){
-        ix::log::server::info("Expiring old cache entries");
-        irods::experimental::net::hostname_cache::erase_expired_entries();
-        irods::experimental::net::dns_cache::erase_expired_entries();
-    }).interval(600);
-    ix::cron::cron::get()->add_task(cache_clearer.build());
+    cache_clearer
+        .interval(600)
+        .task([] {
+            ix::log::server::info("Expiring old cache entries");
+            irods::experimental::net::hostname_cache::erase_expired_entries();
+            irods::experimental::net::dns_cache::erase_expired_entries();
+        });
+    ix::cron::cron::instance().add_task(cache_clearer.build());
+
     return serverMain(enable_test_mode, write_to_stdout);
 }
 
@@ -616,6 +747,15 @@ int serverMain(
         return ret.code();
     }
 
+    // Add the stacktrace file processor task to the CRON manager.
+    {
+        ix::cron::cron_builder task_builder;
+        task_builder
+            .interval(get_stacktrace_file_processor_sleep_time())
+            .task(log_stacktrace_files);
+        ix::cron::cron::instance().add_task(task_builder.build());
+    }
+
     uint64_t return_code = 0;
     // =-=-=-=-=-=-=-
     // Launch the Control Plane
@@ -672,7 +812,8 @@ int serverMain(
                 }
 
             }
-            ix::cron::cron::get()->run();
+
+            ix::cron::cron::instance().run();
 
             FD_SET( svrComm.sock, &sockMask );
 
@@ -702,7 +843,6 @@ int serverMain(
 
             if ( 0 == numSock ) {
                 continue;
-
             }
 
             const int newSock = rsAcceptConn( &svrComm );
@@ -1383,8 +1523,7 @@ int initServerMain(
     /* Record port, pid, and cwd into a well-known file */
     recordServerProcess(svrComm);
 
-    const auto start_delay_server = [&](std::any&)
-    {
+    const auto start_delay_server = [&] {
         rodsServerHost_t* reServerHost{};
         getReHost(&reServerHost);
 
@@ -1441,11 +1580,10 @@ int initServerMain(
         }
     };
 
-    std::any dummy;
-    start_delay_server(dummy);
+    start_delay_server();
     ix::cron::cron_builder delay_server;
-    delay_server.to_execute(start_delay_server).interval(5);
-    ix::cron::cron::get()->add_task(delay_server.build());
+    delay_server.task(start_delay_server).interval(5);
+    ix::cron::cron::instance().add_task(delay_server.build());
 
     return 0;
 }
