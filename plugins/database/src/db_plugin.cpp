@@ -10212,7 +10212,12 @@ irods::error db_mod_access_control_op(
         adminMode = 1;
     }
 
-    char *myAccessLev = NULL;
+    static const std::vector<char const *> allowed_access_levels { ACCESS_EXECUTE, ACCESS_READ_ANNOTATION, 
+        ACCESS_READ_SYSTEM_METADATA, ACCESS_READ_METADATA, ACCESS_READ_OBJECT, ACCESS_WRITE_ANNOTATION, 
+        ACCESS_CREATE_METADATA, ACCESS_MODIFY_METADATA, ACCESS_DELETE_METADATA, ACCESS_ADMINISTER_OBJECT, 
+        ACCESS_CREATE_OBJECT, ACCESS_MODIFY_OBJECT, ACCESS_DELETE_OBJECT, ACCESS_CREATE_TOKEN, 
+        ACCESS_DELETE_TOKEN, ACCESS_CURATE, ACCESS_OWN };
+    const char *myAccessLev = NULL;
     int rmFlag = 0;
     int inheritFlag = 0;
     if ( strcmp( _access_level, AP_NULL ) == 0 ) {
@@ -10225,9 +10230,6 @@ irods::error db_mod_access_control_op(
     else if ( strcmp( _access_level, AP_WRITE ) == 0 ) {
         myAccessLev = ACCESS_MODIFY_OBJECT;
     }
-    else if ( strcmp( _access_level, AP_OWN ) == 0 ) {
-        myAccessLev = ACCESS_OWN;
-    }
     else if ( strcmp( _access_level, ACCESS_INHERIT ) == 0 ) {
         inheritFlag = 1;
     }
@@ -10235,11 +10237,19 @@ irods::error db_mod_access_control_op(
         inheritFlag = 2;
     }
     else {
-        char errMsg[105];
-        snprintf( errMsg, 100, "access level '%s' is invalid",
-                  _access_level );
-        addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
-        return ERROR( CAT_INVALID_ARGUMENT, errMsg );
+        for ( char const *level: allowed_access_levels ) {
+            if ( !strcmp( _access_level, level ) ) {
+                myAccessLev = level;
+                break;
+            }
+        }
+        if ( myAccessLev == NULL ) {
+            char errMsg[105];
+            snprintf( errMsg, 100, "access level '%s' is invalid",
+                    _access_level );
+            addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
+            return ERROR( CAT_INVALID_ARGUMENT, errMsg );
+        }       
     }
 
     if ( !icss.status ) {
