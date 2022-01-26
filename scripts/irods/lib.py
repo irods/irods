@@ -662,3 +662,20 @@ def replica_exists(session, data_name, replica_number):
         .format(data_name, str(replica_number))])[0]
 
     return 'CAT_NO_ROWS_FOUND' not in out
+
+def iterfy(iterable):
+    """Will return an iterable, even if input is a single item
+
+    Args:
+        iterable : any type
+
+    Returns:
+        [ iterable ] if iterable is not iterable, otherwise just iterable.
+    """    
+    if isinstance(iterable, str):
+        iterable = [iterable]
+    try:
+        iter(iterable)
+    except TypeError:
+        iterable = [iterable]
+    return iterable
