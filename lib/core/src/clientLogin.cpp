@@ -1,20 +1,23 @@
+#include "authPluginRequest.h"
+#include "authentication_plugin_framework.hpp"
+#include "checksum.h"
+#include "irods_auth_constants.hpp"
+#include "irods_auth_factory.hpp"
+#include "irods_auth_manager.hpp"
+#include "irods_auth_object.hpp"
+#include "irods_auth_plugin.hpp"
+#include "irods_configuration_keywords.hpp"
+#include "irods_configuration_parser.hpp"
+#include "irods_environment_properties.hpp"
+#include "irods_kvp_string_parser.hpp"
+#include "irods_logger.hpp"
+#include "irods_native_auth_object.hpp"
+#include "irods_pam_auth_object.hpp"
 #include "rcGlobalExtern.h"
 #include "rodsClient.h"
 #include "sslSockComm.h"
-#include "irods_auth_object.hpp"
-#include "irods_auth_factory.hpp"
-#include "irods_auth_plugin.hpp"
-#include "irods_auth_manager.hpp"
-#include "irods_auth_constants.hpp"
-#include "irods_native_auth_object.hpp"
-#include "irods_pam_auth_object.hpp"
-#include "authPluginRequest.h"
-#include "irods_configuration_parser.hpp"
-#include "irods_configuration_keywords.hpp"
-#include "checksum.h"
 #include "termiosUtil.hpp"
-#include "irods_kvp_string_parser.hpp"
-#include "irods_environment_properties.hpp"
+#include "version.hpp"
 
 #include <openssl/md5.h>
 #include <boost/filesystem/operations.hpp>
@@ -25,6 +28,71 @@
 #include <termios.h>
 
 static char prevChallengeSignatureClient[200];
+
+namespace
+{
+    using log_auth = irods::experimental::log::authentication;
+
+    auto authenticate_with_plugin_framework(RcComm& _comm,
+                                            const std::string_view _auth_scheme_override) -> int
+    {
+        try {
+            rodsEnv env{};
+            if (const int ec = getRodsEnv(&env); ec < 0) {
+                THROW(ec, fmt::format("getRodsEnv error. status = [{}]", ec));
+            }
+
+            if (_auth_scheme_override != env.rodsAuthScheme) {
+                std::strncpy(env.rodsAuthScheme, _auth_scheme_override.data(), NAME_LEN);
+            }
+
+            irods::experimental::authenticate_client(_comm, env);
+
+            log_auth::trace("Authenticated user [{}]", _comm.clientUser.userName);
+        }
+        catch (const irods::exception& e) {
+            const auto ec = e.code();
+
+            const std::string msg = fmt::format(
+                "Error occurred while authenticating user [{}] [{}] [ec={}]",
+                _comm.clientUser.userName, e.client_display_what(), ec);
+
+            log_auth::info(msg);
+
+            printError(&_comm, ec, const_cast<char*>(msg.data()));
+
+            return ec;
+        }
+        catch (const std::exception& e) {
+            constexpr auto ec = SYS_INTERNAL_ERR;
+
+            const std::string msg = fmt::format(
+                "Error occurred while authenticating user [{}] [{}]",
+                _comm.clientUser.userName, e.what());
+
+            log_auth::info(msg);
+
+            printError(&_comm, ec, const_cast<char*>(msg.data()));
+
+            return ec;
+        }
+        catch (...) {
+            constexpr auto ec = SYS_UNKNOWN_ERROR;
+
+            const std::string msg = fmt::format(
+                "Unknown error occurred while authenticating user [{}]",
+                _comm.clientUser.userName);
+
+            log_auth::info(msg);
+
+            printError(&_comm, ec, const_cast<char*>(msg.data()));
+
+            return ec;
+        }
+
+        return 0;
+    } // authenticate_with_plugin_framework
+} // anonymous namespace
 
 char *getSessionSignatureClientside() {
     return prevChallengeSignatureClient;
@@ -197,7 +265,6 @@ int clientLoginTTL( rcComm_t *Conn, int ttl ) {
     return obfSavePw( 0, 0, 0,  limitedPw );
 }
 
-
 /// =-=-=-=-=-=-=-
 /// @brief clientLogin provides the interface for authentication
 ///        plugins as well as defining the protocol or template
@@ -259,6 +326,27 @@ int clientLogin(
             }
         } // if _scheme_override
     } // if client side auth
+
+    static constexpr auto irods_430 = irods::version{4, 3, 0};
+    const auto server_version = irods::to_version(_comm->svrVersion->relVersion);
+    if (!server_version) {
+        static constexpr auto ec = VERSION_EMPTY_IN_STRUCT_ERR;
+
+        const std::string msg = fmt::format(
+            "Failed to get version from server [{}]\n",
+            _comm->svrVersion->relVersion);
+
+        log_auth::info(msg);
+
+        printError(_comm, ec, const_cast<char*>(msg.data()));
+
+        return ec;
+    }
+
+    // TODO: can remove scheme inspection as other authentication plugins are supported
+    if (auth_scheme == irods::AUTH_NATIVE_SCHEME && *server_version >= irods_430) {
+        return authenticate_with_plugin_framework(*_comm, auth_scheme);
+    }
 
     // =-=-=-=-=-=-=-
     // construct an auth object given the scheme

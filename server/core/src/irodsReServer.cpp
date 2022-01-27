@@ -1,22 +1,28 @@
-#include "connection_pool.hpp"
+#include "irodsReServer.hpp"
+
+#include "catalog.hpp"
 #include "client_connection.hpp"
+#include "connection_pool.hpp"
 #include "initServer.hpp"
 #include "irods_at_scope_exit.hpp"
+#include "irods_client_api_table.hpp"
 #include "irods_delay_queue.hpp"
 #include "irods_logger.hpp"
+#include "irods_pack_table.hpp"
 #include "irods_query.hpp"
 #include "irods_re_structs.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_server_state.hpp"
-#include "rcGlobalExtern.h"
-#include "rodsDef.h"
-#include "thread_pool.hpp"
-#include "irodsReServer.hpp"
+#include "json_deserialization.hpp"
+#include "json_serialization.hpp"
+#include "key_value_proxy.hpp"
 #include "miscServerFunct.hpp"
 #include "msParam.h"
 #include "objInfo.h"
 #include "query_processor.hpp"
+#include "rcGlobalExtern.h"
 #include "rodsClient.h"
+#include "rodsDef.h"
 #include "rodsErrorTable.h"
 #include "rodsPackTable.h"
 #include "rodsUser.h"
@@ -24,12 +30,8 @@
 #include "rsLog.hpp"
 #include "ruleExecDel.h"
 #include "ruleExecSubmit.h"
-#include "key_value_proxy.hpp"
 #include "server_utilities.hpp"
-#include "json_serialization.hpp"
-#include "json_deserialization.hpp"
-#include "server_utilities.hpp"
-#include "catalog.hpp"
+#include "thread_pool.hpp"
 
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
@@ -625,6 +627,10 @@ int main(int argc, char** argv)
     signal(SIGHUP, signal_exit_handler);
     signal(SIGTERM, signal_exit_handler);
     signal(SIGUSR1, signal_exit_handler);
+
+    irods::api_entry_table&  api_tbl = irods::get_client_api_table();
+    irods::pack_entry_table& pk_tbl = irods::get_pack_table();
+    init_api_table(api_tbl, pk_tbl);
 
     const auto sleep_time = [] {
         try {

@@ -929,6 +929,8 @@ irods::error verify_auth_response(
         return ERROR( SYS_INVALID_INPUT_PARAM, "null _response ptr" );
     }
 
+    // TODO: Is this an implicit dependence on the old auth plugins?
+
     // =-=-=-=-=-=-=-
     // construct an auth object given the scheme
     irods::auth_object_ptr auth_obj;

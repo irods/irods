@@ -21,6 +21,7 @@ set(
   IRODS_LIB_CORE_INCLUDE_HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/alignPointer.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/apiHandler.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/authentication_plugin_framework.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/base64.h
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/bunUtil.h
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/capped_memory_resource.hpp

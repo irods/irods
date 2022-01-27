@@ -160,6 +160,40 @@ set(
   irods_client
   )
 
+# authentication API
+set(
+  IRODS_API_PLUGIN_SOURCES_irods_authenticate_server
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/authenticate.cpp
+  )
+
+set(
+  IRODS_API_PLUGIN_SOURCES_irods_authenticate_client
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/authenticate.cpp
+  )
+
+set(
+  IRODS_API_PLUGIN_COMPILE_DEFINITIONS_irods_authenticate_server
+  RODS_SERVER
+  ENABLE_RE
+  IRODS_ENABLE_SYSLOG
+  )
+
+set(
+  IRODS_API_PLUGIN_COMPILE_DEFINITIONS_irods_authenticate_client
+  )
+
+set(
+  IRODS_API_PLUGIN_LINK_LIBRARIES_irods_authenticate_server
+  irods_server
+  ${CMAKE_DL_LIBS}
+  )
+
+set(
+  IRODS_API_PLUGIN_LINK_LIBRARIES_irods_authenticate_client
+  irods_client
+  ${CMAKE_DL_LIBS}
+  )
+
 # data_object_finalize API
 set(
   IRODS_API_PLUGIN_SOURCES_irods_data_object_finalize_server
@@ -360,6 +394,8 @@ set(
   irods_atomic_apply_acl_operations_server
   irods_atomic_apply_metadata_operations_client
   irods_atomic_apply_metadata_operations_server
+  irods_authenticate_client
+  irods_authenticate_server
   irods_data_object_finalize_client
   irods_data_object_finalize_server
   irods_data_object_modify_info_client
