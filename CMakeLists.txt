@@ -715,6 +715,7 @@ target_link_libraries(
   ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
   OpenSSL::SSL
   OpenSSL::Crypto
+  ${CMAKE_DL_LIBS}
   )
 target_include_directories(
   irods_client
@@ -1145,6 +1146,7 @@ target_link_libraries(
   irods_plugin_dependencies_functions
   PUBLIC
   nlohmann_json::nlohmann_json
+  ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
   )
 target_include_directories(
   irods_plugin_dependencies_functions

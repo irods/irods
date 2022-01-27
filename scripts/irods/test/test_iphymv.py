@@ -494,12 +494,14 @@ class test_iphymv_exit_codes(session.make_sessions_mixin([('otherrods', 'rods')]
 
         with lib.file_backed_up(config.client_environment_path):
             session_env_backup = copy.deepcopy(self.admin.environment_file_contents)
-            self.admin.environment_file_contents.update({'irods_user_name': 'test_exit_code_for_authentication_failure'})
+            try:
+                self.admin.environment_file_contents.update({'irods_user_name': 'test_exit_code_for_authentication_failure'})
 
-            rc, _, _ = self.admin.assert_icommand(['iphymv', 'whatever'], 'STDERR', 'CAT_INVALID_USER')
-            self.assertEqual(3, rc)
+                rc, _, _ = self.admin.assert_icommand(['iphymv', 'whatever'], 'STDERR', 'CAT_INVALID_USER')
+                self.assertEqual(3, rc)
 
-            self.admin.environment_file_contents = session_env_backup
+            finally:
+                self.admin.environment_file_contents = session_env_backup
 
     @unittest.skipIf(False == test.settings.USE_MUNGEFS, "This test requires mungefs")
     def test_exit_code_for_mismatched_checksum(self):

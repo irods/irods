@@ -221,7 +221,7 @@ class Test_Ipasswd(resource_suite.ResourceBase, unittest.TestCase):
 
         # and...
 
-        str1 = ":  status [CAT_INVALID_AUTHENTICATION]  errno [] -- message [Call to rcAuthResponseFailed.]"
+        str1 = "CAT_INVALID_AUTHENTICATION: failed to perform request"
         self.assertIn(str1, stderr, "ipasswd: Expected stderr: \"...{0}...\", got: \"{1}\"".format(str1, stderr))
 
         # and...
@@ -403,7 +403,7 @@ class Test_Ipasswd(resource_suite.ResourceBase, unittest.TestCase):
 
         # and...
 
-        str1 = ":  status [CAT_INVALID_AUTHENTICATION]  errno [] -- message [Call to rcAuthResponseFailed.]"
+        str1 = "CAT_INVALID_AUTHENTICATION: failed to perform request"
         self.assertIn(str1, stderr, "ipasswd: Expected stderr: \"...{0}...\", got: \"{1}\"".format(str1, stderr))
 
         # and...

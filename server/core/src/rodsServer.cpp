@@ -30,6 +30,8 @@
 #include "process_manager.hpp"
 #include "irods_default_paths.hpp"
 #include "irods_signal.hpp"
+#include "irods_server_api_table.hpp"
+#include "irods_client_api_table.hpp"
 
 #include <pthread.h>
 #include <sys/socket.h>
@@ -1490,13 +1492,29 @@ int initServerMain(
 
     setRsCommFromRodsEnv( svrComm );
 
-    status = initServer( svrComm );
+    // Load server API table so that API plugins which are needed to stand up the server are
+    // available for use.
+    irods::api_entry_table&  RsApiTable   = irods::get_server_api_table();
+    irods::pack_entry_table& ApiPackTable = irods::get_pack_table();
+    if (const auto err = irods::init_api_table(RsApiTable, ApiPackTable, false); !err.ok()) {
+        irods::log(PASS(err));
+        return err.code();
+    }
 
+    // If this is a catalog service consumer, the client API table should be loaded so that
+    // client calls can be made to the catalog service provider as part of the server
+    // initialization process.
+    irods::api_entry_table& RcApiTable = irods::get_client_api_table();
+    if (const auto err = irods::init_api_table(RcApiTable, ApiPackTable, false); !err.ok()) {
+        irods::log(PASS(err));
+        return err.code();
+    }
+
+    status = initServer( svrComm );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "initServerMain: initServer error. status = %d", status );
         exit( 1 );
     }
-
 
     int zone_port;
     try {

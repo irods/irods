@@ -22,7 +22,16 @@
 #define PUBLIC_USER_AUTH        1       /* not authenticated yet */
 #define REMOTE_USER_AUTH        2       /* authenticated as remote user */
 #define LOCAL_USER_AUTH         3       /* authenticated as local user */
+// Authenticated as a privileged remote user. This authentication level is reserved for iRODS
+// users from a remote zone which have been given administrative privileges in the local zone.
+// The authenticated privileged remote user can perform actions on behalf of a user from the
+// same remote zone in the local zone. Users with this level of authentication are not allowed
+// to perform actions on behalf of users from other zones and cannot perform certain privileged
+// actions in the local zone, which would require authentication level LOCAL_PRIV_USER_AUTH.
 #define REMOTE_PRIV_USER_AUTH   4       /* auth as a remote priv user */
+// Authenticated as a local privileged user. This authentication level is reserved for iRODS
+// administrators in the local zone. Users with this level of authentication are allowed to
+// perform almost any action within the system, including actions on behalf of other users.
 #define LOCAL_PRIV_USER_AUTH    5       /* auth as local priv user */
 
 typedef struct AuthInfo {

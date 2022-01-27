@@ -14,10 +14,18 @@ set(
   )
 
 set(
+  IRODS_AUTH_PLUGIN_irods_auth_plugin-native_SOURCES
+  ${CMAKE_CURRENT_SOURCE_DIR}/irods_auth_plugin-native/libirods_auth_plugin-native.cpp
+  )
+
+set(
   IRODS_AUTH_PLUGINS
+  # original auth plugins - these are required to exist to talk to older servers
   native
   osauth
   pam
+  # auth plugins using 4.3.0 framework
+  irods_auth_plugin-native
   )
 
 set(
@@ -51,31 +59,35 @@ set(
 foreach(PLUGIN ${IRODS_AUTH_PLUGINS})
   foreach(TYPE ${IRODS_AUTH_PLUGIN_TYPES})
     set(IRODS_CURRENT_PLUGIN_TARGET ${PLUGIN}_${TYPE})
-      add_library(
-        ${IRODS_CURRENT_PLUGIN_TARGET}
-        MODULE
-        ${IRODS_AUTH_PLUGIN_${PLUGIN}_SOURCES}
-        )
 
-      target_include_directories(
-        ${IRODS_CURRENT_PLUGIN_TARGET}
-        PRIVATE
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/server/api/include>
-        ${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/include
-        ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
-        ${IRODS_EXTERNALS_FULLPATH_FMT}/include
-        )
+    add_library(
+      ${IRODS_CURRENT_PLUGIN_TARGET}
+      MODULE
+      ${IRODS_AUTH_PLUGIN_${PLUGIN}_SOURCES}
+      )
 
-      target_link_libraries(
-        ${IRODS_CURRENT_PLUGIN_TARGET}
-        PRIVATE
-        ${IRODS_AUTH_PLUGIN_LINK_LIBRARIES_${TYPE}}
-        irods_common
-        irods_plugin_dependencies
-        ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
-        ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
-        OpenSSL::Crypto
-        )
+    target_include_directories(
+      ${IRODS_CURRENT_PLUGIN_TARGET}
+      PRIVATE
+      $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/server/api/include>
+      ${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/include
+      ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
+      ${IRODS_EXTERNALS_FULLPATH_FMT}/include
+      )
+
+    target_link_libraries(
+      ${IRODS_CURRENT_PLUGIN_TARGET}
+      PRIVATE
+      ${IRODS_AUTH_PLUGIN_LINK_LIBRARIES_${TYPE}}
+      irods_common
+      irods_plugin_dependencies
+      ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
+      ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
+      ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
+      ${CMAKE_DL_LIBS}
+      OpenSSL::Crypto
+      nlohmann_json::nlohmann_json
+      )
 
     target_compile_definitions(${IRODS_CURRENT_PLUGIN_TARGET} PRIVATE ${IRODS_AUTH_PLUGIN_COMPILE_DEFINITIONS_${TYPE}} ${IRODS_COMPILE_DEFINITIONS} BOOST_SYSTEM_NO_DEPRECATED)
     target_compile_options(${IRODS_CURRENT_PLUGIN_TARGET} PRIVATE -Wno-write-strings)
