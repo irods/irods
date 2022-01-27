@@ -1,8 +1,12 @@
 #ifndef IRODS_VERSION_HPP
 #define IRODS_VERSION_HPP
 
+/// \file
+
 #include <cstdint>
 #include <functional>
+#include <optional>
+#include <string>
 
 namespace irods
 {
@@ -80,6 +84,21 @@ namespace irods
             return *this == _other || *this < _other;
         }
     }; // struct version
+
+    /// \brief Converts a version string to an irods::version or std::nullopt on failure
+    ///
+    /// \param[in] _version \parblock
+    /// A string formatted like "rodsX.Y.Z" where X, Y, and Z can represent any
+    /// integer in the range of std::uint16_t. This is typical of the version string
+    /// stored in RcComm.svrVersion->relVersion.
+    /// \endparblock
+    ///
+    /// \retval std::nullopt If _version is empty or not formatted as described above
+    ///
+    /// \throws std::out_of_range See std::stoi documentation
+    ///
+    /// \since 4.3.0
+    auto to_version(const std::string& _version) -> std::optional<version>;
 } // namespace irods
 
 #endif // IRODS_VERSION_HPP
