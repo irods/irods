@@ -1,9 +1,28 @@
 #ifndef IRODS_LOGGER_HPP
 #define IRODS_LOGGER_HPP
 
+#ifdef IRODS_ENABLE_SYSLOG
+    #define SPDLOG_ENABLE_SYSLOG
+    #include <spdlog/spdlog.h>
+    #undef SPDLOG_ENABLE_SYSLOG
+#endif // IRODS_ENABLE_SYSLOG
+
+#include "apiNumberMap.h"
+#include "rodsError.h"
+#include "rcMisc.h"
+#include "rcConnect.h"
+
+#include <boost/range/iterator_range_core.hpp>
+
+#include <fmt/format.h>
+
+#include <nlohmann/json.hpp>
+
 #include <unistd.h>
 #include <sys/time.h>
 
+#include <ctime>
+#include <chrono>
 #include <memory>
 #include <string>
 #include <utility>
@@ -14,22 +33,6 @@
 #include <algorithm>
 #include <iomanip>
 #include <sstream>
-#include <chrono>
-
-#ifdef IRODS_ENABLE_SYSLOG
-    #define SPDLOG_ENABLE_SYSLOG
-    #include <spdlog/spdlog.h>
-    #undef SPDLOG_ENABLE_SYSLOG
-#endif // IRODS_ENABLE_SYSLOG
-
-#include <nlohmann/json.hpp>
-
-#include <boost/range/iterator_range_core.hpp>
-
-#include "apiNumberMap.h"
-#include "rodsError.h"
-#include "rcMisc.h"
-#include "rcConnect.h"
 
 namespace irods::experimental
 {
