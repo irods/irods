@@ -196,34 +196,34 @@ private:
         struct log
         {
             // clang-format off
-            inline static const char* category        = "log_category";
-            inline static const char* facility        = "log_facility";
-            inline static const char* message         = "log_message";
-            inline static const char* level           = "log_level";
+            inline static const char* const category        = "log_category";
+            inline static const char* const facility        = "log_facility";
+            inline static const char* const message         = "log_message";
+            inline static const char* const level           = "log_level";
             // clang-format on
         };
 
         struct request
         {
             // clang-format off
-            inline static const char* release_version = "request_release_version";
-            inline static const char* api_version     = "request_api_version";
-            inline static const char* host            = "request_host";
-            inline static const char* client_user     = "request_client_user";
-            inline static const char* proxy_user      = "request_proxy_user";
-            inline static const char* api_number      = "request_api_number";
-            inline static const char* api_name        = "request_api_name";
+            inline static const char* const release_version = "request_release_version";
+            inline static const char* const api_version     = "request_api_version";
+            inline static const char* const host            = "request_host";
+            inline static const char* const client_user     = "request_client_user";
+            inline static const char* const proxy_user      = "request_proxy_user";
+            inline static const char* const api_number      = "request_api_number";
+            inline static const char* const api_name        = "request_api_name";
             // clang-format on
         };
 
         struct server
         {
             // clang-format off
-            inline static const char* type            = "server_type";
-            inline static const char* host            = "server_host";
-            inline static const char* pid             = "server_pid";
-            inline static const char* name            = "server_name";
-            inline static const char* timestamp       = "server_timestamp";
+            inline static const char* const type            = "server_type";
+            inline static const char* const host            = "server_host";
+            inline static const char* const pid             = "server_pid";
+            inline static const char* const name            = "server_name";
+            inline static const char* const timestamp       = "server_timestamp";
             // clang-format on
         };
     };
@@ -241,29 +241,25 @@ private:
     std::string utc_timestamp() const
     {
         // clang-format off
-        using clock      = std::chrono::system_clock;
-        using time_point = std::chrono::time_point<clock>;
+        using clock_type      = std::chrono::system_clock;
+        using time_point_type = std::chrono::time_point<clock_type>;
         // clang-format on
 
-        timeval tv{};
+        timespec ts;
 
-        if (auto ec = gettimeofday(&tv, nullptr); ec != 0) {
-            auto now = clock::to_time_t(clock::now());
-
-            std::stringstream ss;
-            ss << std::put_time(std::gmtime(&now), "%FT%T.0");
-
-            return ss.str();
+        if (const auto ec = clock_gettime(CLOCK_REALTIME, &ts); ec != 0) {
+            const auto now = clock_type::to_time_t(clock_type::now());
+            std::stringstream utc_ss;
+            utc_ss << std::put_time(std::gmtime(&now), "%FT%T.000");
+            return utc_ss.str();
         }
 
-        auto now = clock::to_time_t(time_point{std::chrono::seconds{tv.tv_sec}});
+        const auto now = clock_type::to_time_t(time_point_type{std::chrono::seconds{ts.tv_sec}});
 
-        std::stringstream ss;
-        ss << std::put_time(std::gmtime(&now), "%FT%T.")
-           << std::setw(6) << std::setfill('0') << std::left
-           << tv.tv_usec;
-
-        return ss.str();
+        std::stringstream utc_ss;
+        utc_ss << std::put_time(std::gmtime(&now), "%FT%T");
+           
+        return fmt::format("{}.{:0>3}", utc_ss.str(), ts.tv_nsec / 1'000'000);
     }
 
     static constexpr const char* log_level_as_string() noexcept
