@@ -1,4 +1,5 @@
 #include "procLog.h"
+
 #include "miscUtil.h"
 #include "rsGlobalExtern.hpp"
 #include "rodsConnect.h"
@@ -6,8 +7,10 @@
 
 #include "arpa/inet.h"
 
-#include <fstream>
 #include <boost/lexical_cast.hpp>
+
+#include <charconv>
+#include <fstream>
 
 int
 initAndClearProcLog() {
@@ -96,12 +99,19 @@ logAgentProc( rsComm_t *rsComm ) {
     return 0;
 }
 
-int
-rmProcLog( int pid ) {
-    char procPath[MAX_NAME_LEN];
+int rmProcLog(int pid)
+{
+    char procPath[MAX_NAME_LEN]{};
 
-    snprintf( procPath, MAX_NAME_LEN, "%s/%-d", ProcLogDir, pid );
-    unlink( procPath );
+    std::strcpy(procPath, ProcLogDir);
+    std::strcat(procPath, "/");
+
+    auto* buf_end = procPath + std::strlen(procPath);
+
+    if (auto [ptr, ec] = std::to_chars(procPath, buf_end, pid); std::errc{} == ec) {
+        unlink(procPath);
+    }
+
     return 0;
 }
 
