@@ -32,8 +32,6 @@ initAgent( int processType, rsComm_t *rsComm );
 void cleanup();
 void cleanupAndExit( int status );
 void signalExit( int );
-void
-rsPipeSignalHandler( int );
 
 int
 initHostConfigByFile();

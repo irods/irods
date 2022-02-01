@@ -1,7 +1,8 @@
+#include "initServer.hpp"
+
 #include "genQuery.h"
 #include "getRemoteZoneResc.h"
 #include "getRescQuota.h"
-#include "initServer.hpp"
 #include "irods_configuration_keywords.hpp"
 #include "irods_stacktrace.hpp"
 #include "miscServerFunct.hpp"
@@ -52,9 +53,6 @@
 #include <set>
 #include <string>
 #include <fstream>
-
-static time_t LastBrokenPipeTime = 0;
-static int BrokenPipeCnt = 0;
 
 namespace
 {
@@ -665,12 +663,6 @@ cleanup() {
 
 void
 cleanupAndExit( int status ) {
-#if 0
-    // RTS - rodsLog calls in signal handlers are unsafe - #3326
-    rodsLog( LOG_NOTICE,
-             "Agent exiting with status = %d", status );
-#endif
-
     cleanup();
 
     if ( status >= 0 ) {
@@ -683,42 +675,7 @@ cleanupAndExit( int status ) {
 
 void
 signalExit( int ) {
-#if 0
-    // RTS - rodsLog calls in signal handlers are unsafe - #3326
-    rodsLog( LOG_NOTICE,
-             "caught a signal and exiting\n" );
-#endif
     cleanupAndExit( SYS_CAUGHT_SIGNAL );
-}
-
-void
-rsPipeSignalHandler( int ) {
-    time_t curTime;
-
-    if ( ThisComm == NULL || ThisComm->reconnSock <= 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "caught a broken pipe signal and exiting" );
-        cleanupAndExit( SYS_CAUGHT_SIGNAL );
-    }
-    else {
-        curTime = time( 0 );
-        if ( curTime - LastBrokenPipeTime < BROKEN_PIPE_INT ) {
-            BrokenPipeCnt ++;
-            if ( BrokenPipeCnt > MAX_BROKEN_PIPE_CNT ) {
-                rodsLog( LOG_NOTICE,
-                         "caught a broken pipe signal and exiting" );
-                cleanupAndExit( SYS_CAUGHT_SIGNAL );
-            }
-        }
-        else {
-            BrokenPipeCnt = 1;
-        }
-        LastBrokenPipeTime = curTime;
-        rodsLog( LOG_NOTICE,
-                 "caught a broken pipe signal. Attempt to reconnect" );
-        signal( SIGPIPE, ( void ( * )( int ) ) rsPipeSignalHandler );
-
-    }
 }
 
 /// @brief parse the irodsHost file, creating address
