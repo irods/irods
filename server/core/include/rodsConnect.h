@@ -18,10 +18,6 @@
 #define INITIAL_NOT_DONE                0
 #define INITIAL_DONE                    1
 
-// rsPipeSignalHandler parameters
-#define MAX_BROKEN_PIPE_CNT             50
-#define BROKEN_PIPE_INT                 300  // 5 minutes interval
-
 #define LOCK_FILE_PURGE_TIME            7200 // purge lock files every 2 hr.
 
 // Managing the spawned agents
