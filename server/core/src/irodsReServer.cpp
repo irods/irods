@@ -620,13 +620,7 @@ int main(int argc, char** argv)
 
     set_ips_display_name(boost::filesystem::path{argv[0]}.filename().c_str());
 
-    static std::condition_variable term_cv;
-    static std::mutex term_m;
-    const auto signal_exit_handler = [](int signal) {
-        logger::delay_server::error("Rule execution server received signal [{}]", signal);
-        re_server_terminated = true;
-        term_cv.notify_all();
-    };
+    const auto signal_exit_handler = [](int) { re_server_terminated.store(true); };
     signal(SIGINT, signal_exit_handler);
     signal(SIGHUP, signal_exit_handler);
     signal(SIGTERM, signal_exit_handler);
@@ -643,11 +637,24 @@ int main(int argc, char** argv)
         return irods::default_re_server_sleep_time;
     }();
 
-    const auto go_to_sleep = [&sleep_time]() {
-        std::unique_lock<std::mutex> sleep_lock{term_m};
-        const auto until = std::chrono::system_clock::now() + std::chrono::seconds(sleep_time);
-        if (std::cv_status::no_timeout == term_cv.wait_until(sleep_lock, until)) {
-            logger::delay_server::debug("Rule execution server awoken by a notification");
+    const auto go_to_sleep = [&sleep_time] {
+        const auto start_time = std::chrono::system_clock::now();
+        const auto allowed_sleep_time = std::chrono::seconds{sleep_time};
+
+        // Loop until the server is signaled to shutdown or the max amount of time
+        // to sleep has been reached.
+        while (true) {
+            if (re_server_terminated.load()) {
+                logger::delay_server::info("Rule execution server received shutdown signal.");
+                return;
+            }
+            
+            if (std::chrono::system_clock::now() - start_time >= allowed_sleep_time) {
+                logger::delay_server::debug("Rule execution server is awake.");
+                return;
+            }
+
+            std::this_thread::sleep_for(std::chrono::seconds{1});
         }
     };
 
@@ -685,8 +692,6 @@ int main(int argc, char** argv)
 
     try {
         while (!re_server_terminated) {
-            logger::delay_server::trace("Rule execution server is awake.");
-
             try {
                 irods::server_properties::instance().capture();
 
@@ -721,7 +726,7 @@ int main(int argc, char** argv)
         logger::delay_server::error(e.what());
     }
 
-    logger::delay_server::info("Rule execution server exiting ...");
+    logger::delay_server::info("Rule execution server exited normally.");
 
     return 0;
 }
