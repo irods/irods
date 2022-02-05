@@ -474,7 +474,7 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
         self.user.assert_icommand(['iticket', 'ls', ticket_string])
         self.user.assert_icommand(['iticket', 'ls'])
 
-    def test_iticket_allows_rodsadmins_to_modify_tickets_created_by_other_users__issue_5933(self):
+    def test_iticket_allows_rodsadmins_to_modify_tickets_created_by_other_users__issue_5933_6126(self):
         # Create a ticket for a data object.
         data_object = 'foo.issue_5933'
         self.user.assert_icommand(['itouch', data_object])
@@ -493,9 +493,17 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
         self.admin.assert_icommand(['iticket', '-M', 'mod', ticket_string, 'expire', '2100-01-01.23:00:00'])
         self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['expire time: 2100-01-01.23:00:00'])
 
+        # Remove the expiration timestamp using an empty string.
+        self.admin.assert_icommand(['iticket', '-M', 'mod', ticket_string, 'expire', ''])
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['expire time: none'])
+
         # Change the expiration timestamp using seconds since epoch.
         self.admin.assert_icommand(['iticket', '-M', 'mod', ticket_string, 'expire', '7258201200'])
         self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['expire time: 2200-01-01.23:00:00'])
+
+        # Remove the expiration timestamp using the value zero.
+        self.admin.assert_icommand(['iticket', '-M', 'mod', ticket_string, 'expire', '0'])
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['expire time: none'])
 
         # Change the write-file limit.
         self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['write file limit: 10'])
@@ -534,5 +542,75 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
 
         # Remove the allowed group from the ticket.
         self.admin.assert_icommand(['iticket', '-M', 'mod', ticket_string, 'remove', 'group', 'rodsadmin'])
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['No group restrictions'])
+
+    def test_iticket_allows_rodsusers_to_modify_properties_of_their_tickets__issue_6126(self):
+        # Create a ticket for a data object.
+        data_object = 'foo.issue_5933'
+        self.user.assert_icommand(['itouch', data_object])
+        _, out, _ = self.user.assert_icommand(['iticket', 'create', 'read', data_object], 'STDOUT', ['ticket:'])
+
+        # Capture the actual ticket value.
+        ticket_string = out.strip().split(':')[1]
+
+        # Change the use limit.
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['uses limit: 0'])
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'uses', '999'])
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['uses limit: 999'])
+
+        # Change the expiration timestamp.
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['expire time: none'])
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'expire', '2100-01-01.23:00:00'])
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['expire time: 2100-01-01.23:00:00'])
+
+        # Remove the expiration timestamp using an empty string.
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'expire', ''])
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['expire time: none'])
+
+        # Change the expiration timestamp using seconds since epoch.
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'expire', '7258201200'])
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['expire time: 2200-01-01.23:00:00'])
+
+        # Remove the expiration timestamp using the value zero.
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'expire', '0'])
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['expire time: none'])
+
+        # Change the write-file limit.
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['write file limit: 10'])
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'write-file', '999'])
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['write file limit: 999'])
+
+        # Change the write-bytes limit.
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['write byte limit: 0'])
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'write-bytes', '999'])
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['write byte limit: 999'])
+
+        # Add an allowed user to the ticket.
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['No user restrictions'])
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'add', 'user', self.admin.username])
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['restricted-to user: ' + self.admin.username])
+
+        # Remove the allowed user from the ticket.
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'remove', 'user', self.admin.username])
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['No user restrictions'])
+
+        # Add an allowed host to the ticket.
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['No host restrictions'])
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'add', 'host', 'irods.org'])
+        # We don't check the value associated with the host value because the server resolves the hostname
+        # to an IP address and IP addresses can change.
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['restricted-to host: '])
+
+        # Remove the allowed host from the ticket.
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'remove', 'host', 'irods.org'])
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['No host restrictions'])
+
+        # Add an allowed group to the ticket.
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['No group restrictions'])
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'add', 'group', 'public'])
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['restricted-to group: public'])
+
+        # Remove the allowed group from the ticket.
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'remove', 'group', 'public'])
         self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['No group restrictions'])
 
