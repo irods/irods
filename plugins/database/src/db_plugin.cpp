@@ -13998,39 +13998,49 @@ namespace
             } // write-bytes
 
             if (std::strcmp(_arg3, "expire") == 0) {
-                try {
-                    // Try to parse the timestamp argument as seconds since epoch.
-                    const auto seconds_since_epoch = boost::lexical_cast<std::int64_t>(_arg4);
-                    const auto seconds_string = fmt::format("{:011}", seconds_since_epoch);
+                std::string ticket_expiration_string;
 
-                    cllBindVars[0] = seconds_string.c_str();
-                    cllBindVars[1] = ticket_id_string.c_str();
-                    cllBindVarCount = 2;
-                }
-                catch (const boost::bad_lexical_cast&) {
-                    //
-                    // If an exception was thrown, the timestamp argument was not something that
-                    // represented seconds since epoch. For that reason, the client may have passed
-                    // an actual timestamp in which we attempt to process it here.
-                    //
-
-                    std::istringstream ss{_arg4};
-
-                    // The facet allocated via the "new" operator is managed by the std::locale.
-                    // The use of "new" here is correct and there are no memory leaks caused by this line.
-                    ss.imbue(std::locale(ss.getloc(), new boost::posix_time::time_input_facet{"%Y-%m-%d.%H:%M:%S"}));
-
-                    boost::posix_time::ptime t;
-                    if (!(ss >> t)) {
-                        return ERROR(SYS_INTERNAL_ERR, "Could not parse timestamp string into appropriate object.");
+                // Empty strings and zero (i.e. 0) are special in that they instruct the system
+                // to clear the expiration timestamp.
+                //
+                // Prior versions of iRODS would result in setting the expiration timestamp
+                // to the value passed, but it would be better to consolidate these values into
+                // one outcome. Admins should not rely on the value in the database directly.
+                // Admins should use the values returned by the APIs and tools.
+                //
+                // For this reason, if the server receives a zero or empty string, we don't have
+                // to modify "ticket_expiration_string" because it is already an empty string.
+                if (std::strcmp(_arg4, "") != 0 && std::strcmp(_arg4, "0") != 0) {
+                    try {
+                        // Try to parse the timestamp argument as seconds since epoch.
+                        const auto seconds_since_epoch = boost::lexical_cast<std::int64_t>(_arg4);
+                        ticket_expiration_string = fmt::format("{:011}", seconds_since_epoch);
                     }
+                    catch (const boost::bad_lexical_cast&) {
+                        //
+                        // If an exception was thrown, the timestamp argument was not something that
+                        // represented seconds since epoch. For that reason, the client may have passed
+                        // an actual timestamp, which we attempt to process here.
+                        //
 
-                    const auto seconds_string = fmt::format("{:011}", to_time_t(t));
+                        std::istringstream ss{_arg4};
 
-                    cllBindVars[0] = seconds_string.c_str();
-                    cllBindVars[1] = ticket_id_string.c_str();
-                    cllBindVarCount = 2;
+                        // The facet allocated via the "new" operator is managed by the std::locale.
+                        // The use of "new" here is correct and there are no memory leaks caused by this line.
+                        ss.imbue(std::locale(ss.getloc(), new boost::posix_time::time_input_facet{"%Y-%m-%d.%H:%M:%S"}));
+
+                        boost::posix_time::ptime t;
+                        if (!(ss >> t)) {
+                            return ERROR(SYS_INTERNAL_ERR, "Could not parse timestamp string into appropriate object.");
+                        }
+
+                        ticket_expiration_string = fmt::format("{:011}", to_time_t(t));
+                    }
                 }
+
+                cllBindVars[0] = ticket_expiration_string.c_str();
+                cllBindVars[1] = ticket_id_string.c_str();
+                cllBindVarCount = 2;
 
                 return execute_sql("update R_TICKET_MAIN set ticket_expiry_ts = ? where ticket_id = ?");
             } // expire
@@ -14492,46 +14502,54 @@ irods::error db_mod_ticket_op(
         } // write-bytes
 
         if (strcmp(_arg3, "expire") == 0 ) {
-            try {
-                // Try to parse the timestamp argument as seconds since epoch.
-                const auto seconds_since_epoch = boost::lexical_cast<std::int64_t>(_arg4);
-                const auto seconds_string = fmt::format("{:011}", seconds_since_epoch);
+            std::string ticket_expiration_string;
 
-                i = 0;
-                cllBindVars[i++] = seconds_string.c_str();
-                cllBindVars[i++] = ticketIdStr;
-                cllBindVars[i++] = userIdStr;
-                cllBindVarCount = i;
-            }
-            catch (const boost::bad_lexical_cast&) {
-                //
-                // If an exception was thrown, the timestamp argument was not something that
-                // represented seconds since epoch. For that reason, the client may have passed
-                // an actual timestamp in which we attempt to process it here.
-                //
-
-                std::istringstream ss{_arg4};
-
-                // The facet allocated via the "new" operator is managed by the std::locale.
-                // The use of "new" here is correct and there are no memory leaks caused by this line.
-                ss.imbue(std::locale(ss.getloc(), new boost::posix_time::time_input_facet{"%Y-%m-%d.%H:%M:%S"}));
-
-                boost::posix_time::ptime t;
-                if (!(ss >> t)) {
-                    return ERROR(SYS_INTERNAL_ERR, "Could not parse timestamp string into appropriate object.");
+            // Empty strings and zero (i.e. 0) are special in that they instruct the system
+            // to clear the expiration timestamp.
+            //
+            // Prior versions of iRODS would result in setting the expiration timestamp
+            // to the value passed, but it would be better to consolidate these values into
+            // one outcome. Admins should not rely on the value in the database directly.
+            // Admins should use the values returned by the APIs and tools.
+            //
+            // For this reason, if the server receives a zero or empty string, we don't have
+            // to modify "ticket_expiration_string" because it is already an empty string.
+            if (std::strcmp(_arg4, "") != 0 && std::strcmp(_arg4, "0") != 0) {
+                try {
+                    // Try to parse the timestamp argument as seconds since epoch.
+                    const auto seconds_since_epoch = boost::lexical_cast<std::int64_t>(_arg4);
+                    ticket_expiration_string = fmt::format("{:011}", seconds_since_epoch);
                 }
+                catch (const boost::bad_lexical_cast&) {
+                    //
+                    // If an exception was thrown, the timestamp argument was not something that
+                    // represented seconds since epoch. For that reason, the client may have passed
+                    // an actual timestamp, which we attempt to process here.
+                    //
 
-                const auto seconds_string = fmt::format("{:011}", to_time_t(t));
+                    std::istringstream ss{_arg4};
 
-                i = 0;
-                cllBindVars[i++] = seconds_string.c_str();
-                cllBindVars[i++] = ticketIdStr;
-                cllBindVars[i++] = userIdStr;
-                cllBindVarCount = i;
+                    // The facet allocated via the "new" operator is managed by the std::locale.
+                    // The use of "new" here is correct and there are no memory leaks caused by this line.
+                    ss.imbue(std::locale(ss.getloc(), new boost::posix_time::time_input_facet{"%Y-%m-%d.%H:%M:%S"}));
+
+                    boost::posix_time::ptime t;
+                    if (!(ss >> t)) {
+                        return ERROR(SYS_INTERNAL_ERR, "Could not parse timestamp string into appropriate object.");
+                    }
+
+                    ticket_expiration_string = fmt::format("{:011}", to_time_t(t));
+                }
             }
 
-            if ( logSQL != 0 ) {
-                rodsLog( LOG_SQL, "chlModTicket SQL 10" );
+            i = 0;
+            cllBindVars[i++] = ticket_expiration_string.c_str();
+            cllBindVars[i++] = ticketIdStr;
+            cllBindVars[i++] = userIdStr;
+            cllBindVarCount = i;
+
+            if (logSQL != 0) {
+                rodsLog(LOG_SQL, "chlModTicket SQL 10");
             }
 
             return execute_sql("update R_TICKET_MAIN set ticket_expiry_ts=? where ticket_id = ? and user_id = ?");
