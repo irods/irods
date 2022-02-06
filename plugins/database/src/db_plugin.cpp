@@ -29,25 +29,26 @@
 #include "checksum.h"
 #include "key_value_proxy.hpp"
 #include "user_validation_utilities.hpp"
-
 #include "rods.h"
 #include "rcMisc.h"
 #include "miscServerFunct.hpp"
 #include "rodsErrorTable.h"
 #include "irods_lexical_cast.hpp"
 #include "irods_logger.hpp"
+#include "catalog_utilities.hpp"
 
-#include "boost/date_time.hpp"
-#include "boost/regex.hpp"
-#include "boost/lexical_cast.hpp"
-#include "fmt/format.h"
-#include "fmt/chrono.h"
+#include <boost/date_time.hpp>
+#include <boost/regex.hpp>
+#include <boost/lexical_cast.hpp>
+#include <fmt/format.h>
+#include <fmt/chrono.h>
 
 #include <cstring>
 #include <sstream>
 #include <string>
 #include <string_view>
 #include <iostream>
+#include <type_traits>
 #include <vector>
 #include <algorithm>
 #include <chrono>
@@ -68,7 +69,7 @@ static char prevChalSig[200]; // A 'signature' of the previous challenge.
                               // This is used as a sessionSignature on the catalog provider server
                               // side. Also see getSessionSignatureClientside function. */
 
-// Legal values for accessLevel in  chlModAccessControl (Access Parameter).
+// Legal values for accessLevel in chlModAccessControl (Access Parameter).
 // Defined here since other code does not need them (except for help messages)
 #define AP_READ  "read"
 #define AP_WRITE "write"
@@ -291,8 +292,8 @@ irods::error determine_user_has_modify_metadata_access(
     const std::string& _data_name,
     const std::string& _collection,
     const std::string& _user_name,
-    const std::string& _zone ) {
-
+    const std::string& _zone)
+{
     int status = 0;
 
     rodsLog(
@@ -308,18 +309,19 @@ irods::error determine_user_has_modify_metadata_access(
     rodsLong_t num_data_objects = -1;
     {
         std::vector<std::string> bind_vars;
+        bind_vars.reserve(2);
         bind_vars.push_back( _data_name );
         bind_vars.push_back( _collection );
         status = cmlGetIntegerValueFromSql(
-                     "select count(DISTINCT DM.data_id) from R_DATA_MAIN DM, R_COLL_MAIN CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ?",
-                      &num_data_objects,
-                      bind_vars,
-                      &icss );
+             "select count(DISTINCT DM.data_id) "
+             "from R_DATA_MAIN DM, R_COLL_MAIN CM "
+             "where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ?",
+              &num_data_objects,
+              bind_vars,
+              &icss );
         if( 0 != status ) {
             _rollback( "chlAddAVUMetadataWild" );
-            return ERROR(
-                       status,
-                       "failed to get object count" );
+            return ERROR( status, "failed to get object count" );
         }
 
         if( 0 == num_data_objects ) {
@@ -328,105 +330,112 @@ irods::error determine_user_has_modify_metadata_access(
             msg += " and object name ";
             msg += _data_name;
             _rollback( "chlAddAVUMetadataWild" );
-            return ERROR(
-                       CAT_NO_ROWS_FOUND,
-                       msg );
+            return ERROR( CAT_NO_ROWS_FOUND, msg );
         }
     }
 
-    // get the baseline 'access needed' value from the token table
-    rodsLong_t access_needed = -1;
-    {
-        std::vector<std::string> bind_vars;
-        int status = cmlGetIntegerValueFromSql(
-                         "select token_id  from R_TOKN_MAIN where token_name = 'modify metadata' and token_namespace = 'access_type'",
-			 &access_needed,
-                         bind_vars,
-                         &icss );
-        if( status < 0 ) {
-            return ERROR(
-                       status,
-                       "query for modify metadata token_id failed" );
-        }
-    }
+    // This is the minimum permission level required of the user.
+    namespace ic = irods::experimental::catalog;
+    using integral_access_type = std::underlying_type_t<ic::access_type>;
+    const rodsLong_t access_needed = static_cast<integral_access_type>(ic::access_type::modify_metadata);
 
-    // reproduce the creation of access permission entries
-    // of "ACCESS_VIEW_ONE" and "ACCESS_VIEW_TWO"
+    // Get the minimum permission level across all data objects.
+    // The user is allowed to modify the metadata of all matched data objects if and only if
+    // the minimum permission level found among the list of data objects is greater than or
+    // equal to required permission level (i.e. "modify metadata").
     rodsLong_t access_permission = -1;
     {
+        const char* const query =
+            "select min(max_access_type_id) from ( "
+                "select max(access_type_id) max_access_type_id from ( "
+                    "select access_type_id, DM.data_id "
+                    "from R_DATA_MAIN DM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_COLL_MAIN CM "
+                    "where DM.data_name like ? and "
+                          "DM.coll_id = CM.coll_id and "
+                          "CM.coll_name like ? and "
+                          "UM.user_name = ? and "
+                          "UM.zone_name = ? and "
+                          "UM.user_type_name != 'rodsgroup' and "
+                          "UM.user_id = UG.user_id and "
+                          "OA.object_id = DM.data_id and "
+                          "UG.group_user_id = OA.user_id "
 #if ORA_ICAT
-        std::string query = "select min(max_access_type_id) from ( select max(access_type_id) max_access_type_id from ( select access_type_id, DM.data_id from R_DATA_MAIN DM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_COLL_MAIN CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ? and UM.user_name=? and UM.zone_name = ? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id ) group by data_id )";
+                ") "
+                "group by data_id "
+            ")";
 #else
-        std::string query = "select min(max_access_type_id) from ( select max(access_type_id) max_access_type_id from ( select access_type_id, DM.data_id from R_DATA_MAIN DM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_COLL_MAIN CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ? and UM.user_name=? and UM.zone_name = ? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id ) as foo group by data_id ) as bar";
+                ") as foo "
+                "group by data_id "
+            ") as bar";
 #endif
         std::vector<std::string> bind_vars;
+        bind_vars.reserve(4);
         bind_vars.push_back( _data_name.c_str() );
         bind_vars.push_back( _collection.c_str() );
         bind_vars.push_back( _user_name.c_str() );
         bind_vars.push_back( _zone.c_str() );
-        status = cmlGetIntegerValueFromSql(
-	             query.c_str(),
-	             &access_permission,
-                     bind_vars,
-                     &icss );
+        status = cmlGetIntegerValueFromSql( query, &access_permission, bind_vars, &icss );
         if ( status == CAT_NO_ROWS_FOUND ) {
             _rollback( "chlAddAVUMetadataWild" );
-            return ERROR(
-                       CAT_NO_ACCESS_PERMISSION,
-                       "access denied" );
+            return ERROR( CAT_NO_ACCESS_PERMISSION, "access denied" );
         }
 
         if ( access_permission < access_needed ) {
             _rollback( "chlAddAVUMetadataWild" );
-            return ERROR(
-                       CAT_NO_ACCESS_PERMISSION,
-                       "access denied" );
+            return ERROR( CAT_NO_ACCESS_PERMISSION, "access denied" );
         }
     }
 
     // reproduce the count of access permission entries in "ACCESS_VIEW_TWO"
     rodsLong_t access_permission_count = -1;
     {
+        const char* const query =
+            "select count(max) from ( "
+                "select max(access_type_id) max from ( "
+                    "select access_type_id, DM.data_id "
+                    "from R_DATA_MAIN DM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_COLL_MAIN CM "
+                    "where DM.data_name like ? and "
+                          "DM.coll_id = CM.coll_id and "
+                          "CM.coll_name like ? and "
+                          "UM.user_name = ? and "
+                          "UM.zone_name = ? and "
+                          "UM.user_type_name != 'rodsgroup' and "
+                          "UM.user_id = UG.user_id and "
+                          "OA.object_id = DM.data_id and "
+                          "UG.group_user_id = OA.user_id "
 #if ORA_ICAT
-        std::string query = "select count( max ) from ( select max(access_type_id) max from ( select access_type_id, DM.data_id from R_DATA_MAIN DM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_COLL_MAIN CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ? and UM.user_name=? and UM.zone_name = ? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id ) group by data_id )";
+                ") "
+                "group by data_id "
+            ")";
 #else
-        std::string query = "select count( max ) from ( select max(access_type_id) max from ( select access_type_id, DM.data_id from R_DATA_MAIN DM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_COLL_MAIN CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ? and UM.user_name=? and UM.zone_name = ? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id ) as foo group by data_id ) as baz";
+                ") as foo "
+                "group by data_id "
+            ") as baz";
 #endif
         std::vector<std::string> bind_vars;
+        bind_vars.reserve(4);
         bind_vars.push_back( _data_name.c_str() );
         bind_vars.push_back( _collection.c_str() );
         bind_vars.push_back( _user_name.c_str() );
         bind_vars.push_back( _zone.c_str() );
-        status = cmlGetIntegerValueFromSql(
-	             query.c_str(),
-	             &access_permission_count,
-                     bind_vars,
-                     &icss );
+        status = cmlGetIntegerValueFromSql( query, &access_permission_count, bind_vars, &icss );
         if( 0 != status ) {
             _rollback( "chlAddAVUMetadataWild" );
-            return ERROR(
-                       status,
-                       "query for access permission count failed" );
+            return ERROR( status, "query for access permission count failed" );
         }
 
         if( num_data_objects > access_permission_count ) {
-            std::stringstream msg;
-            msg << "access denined - num_data_objects "
-                << num_data_objects
-                << " > access_permission_count "
-                << access_permission_count;
-            _rollback( "chlAddAVUMetadataWild" );
-            return ERROR(
-                       CAT_NO_ACCESS_PERMISSION,
-                       msg.str() );
+            const auto msg = fmt::format("access denied - num_data_objects [{}] > access_permission_count [{}]",
+                                         num_data_objects, access_permission_count);
+            _rollback("chlAddAVUMetadataWild");
+            return ERROR(CAT_NO_ACCESS_PERMISSION, msg);
         }
     }
 
     // return number of data objects, keeping the semantics of the
-    // original imeta addw operation
+    // original imeta addw operation.
     return CODE( num_data_objects );
-
-} // user_has_modify_metadata_access
+} // determine_user_has_modify_metadata_access
 
 
 // remove AVU (user defined metadata) for an object, the metadata mapping information, if any.
@@ -1109,10 +1118,16 @@ convertTypeOption( const char *typeStr ) {
 */
 rodsLong_t checkAndGetObjectId(
     rsComm_t*                   rsComm,
-    irods::plugin_property_map& _prop_map,
+    irods::plugin_property_map& prop_map,
     const char*                 type,
     const char*                 name,
-    const char*                 access ) {
+    const char*                 access,
+    bool                        admin_mode = false)
+{
+    if (admin_mode && !irods::is_privileged_client(*rsComm)) {
+        return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
+    }
+
     int itype;
     char logicalEndName[MAX_NAME_LEN];
     char logicalParentDirName[MAX_NAME_LEN];
@@ -1120,7 +1135,6 @@ rodsLong_t checkAndGetObjectId(
     rodsLong_t objId;
     char userName[NAME_LEN];
     char userZone[NAME_LEN];
-
 
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "checkAndGetObjectId" );
@@ -1170,7 +1184,7 @@ rodsLong_t checkAndGetObjectId(
         status = cmlCheckDataObjOnly( logicalParentDirName, logicalEndName,
                                       rsComm->clientUser.userName,
                                       rsComm->clientUser.rodsZone,
-                                      access, &icss );
+                                      access, &icss, admin_mode );
         if ( status < 0 ) {
             _rollback( "checkAndGetObjectId" );
             return status;
@@ -1187,7 +1201,7 @@ rodsLong_t checkAndGetObjectId(
         status = cmlCheckDir( name,
                               rsComm->clientUser.userName,
                               rsComm->clientUser.rodsZone,
-                              access, &icss );
+                              access, &icss, admin_mode );
         if ( status < 0 ) {
             char errMsg[105];
             if ( status == CAT_UNKNOWN_COLLECTION ) {
@@ -1206,7 +1220,7 @@ rodsLong_t checkAndGetObjectId(
         }
 
         std::string zone;
-        irods::error ret = getLocalZone( _prop_map, &icss, zone );
+        irods::error ret = getLocalZone( prop_map, &icss, zone );
         if ( !ret.ok() ) {
             return PASS( ret ).code();
         }
@@ -1243,7 +1257,7 @@ rodsLong_t checkAndGetObjectId(
         }
         if ( userZone[0] == '\0' ) {
             std::string zone;
-            irods::error ret = getLocalZone( _prop_map, &icss, zone );
+            irods::error ret = getLocalZone( prop_map, &icss, zone );
             if ( !ret.ok() ) {
                 return PASS( ret ).code();
             }
@@ -8826,7 +8840,9 @@ irods::error db_set_avu_metadata_op(
     const char*            _name,
     const char*            _attribute,
     const char*            _new_value,
-    const char*            _new_unit ) {
+    const char*            _new_unit,
+    const KeyValPair*      _cond_input)
+{
     // =-=-=-=-=-=-=-
     // check the context
     irods::error ret = _ctx.valid();
@@ -8836,12 +8852,8 @@ irods::error db_set_avu_metadata_op(
 
     // =-=-=-=-=-=-=-
     // check the params
-    if (
-        !_type   ||
-        !_name   ||
-        !_attribute ) {
+    if (!_type || !_name || !_attribute) {
         return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-
     }
 
     // =-=-=-=-=-=-=-
@@ -8875,7 +8887,8 @@ irods::error db_set_avu_metadata_op(
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "chlSetAVUMetadata SQL 1 " );
     }
-    objId = checkAndGetObjectId( _ctx.comm(), _ctx.prop_map(), _type, _name, ACCESS_CREATE_METADATA );
+    objId = checkAndGetObjectId(_ctx.comm(), _ctx.prop_map(), _type, _name, ACCESS_CREATE_METADATA,
+                                getValByKey(_cond_input, ADMIN_KW));
     if ( objId < 0 ) {
         return ERROR( objId, "checkAndGetObjectId failed" );
     }
@@ -8909,9 +8922,9 @@ irods::error db_set_avu_metadata_op(
 
     if ( status <= 0 ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
-            /* Need to add the metadata */
-            status = chlAddAVUMetadata( _ctx.comm(), 0, _type, _name, _attribute,
-                                        _new_value, _new_unit );
+            // Need to add the metadata.
+            status = chlAddAVUMetadata( _ctx.comm(), _type, _name, _attribute,
+                                        _new_value, _new_unit, _cond_input );
         }
         else {
             rodsLog( LOG_NOTICE,
@@ -8924,7 +8937,7 @@ irods::error db_set_avu_metadata_op(
     if ( status > 1 ) {
         /* Cannot update AVU in-place, need to do a delete with wildcards then add */
         status = chlDeleteAVUMetadata( _ctx.comm(), 1, _type, _name, _attribute, "%",
-                                       "%", 1 );
+                                       "%", 1, _cond_input );
         if ( status != 0 ) {
             /* Give it a second chance
              * as per r5350:
@@ -8948,14 +8961,17 @@ irods::error db_set_avu_metadata_op(
              * alternative, but this is a definite TODO: Implement AVUMetadata locks.
              */
             status = chlDeleteAVUMetadata( _ctx.comm(), 1, _type, _name, _attribute, "%",
-                                           "%", 1 );
+                                           "%", 1, _cond_input );
         }
+
         if ( status != 0 ) {
             _rollback( "chlSetAVUMetadata" );
             return ERROR( status, "delete avu metadata failed" );
         }
-        status = chlAddAVUMetadata( _ctx.comm(), 0, _type, _name, _attribute,
-                                    _new_value, _new_unit );
+
+        status = chlAddAVUMetadata( _ctx.comm(), _type, _name, _attribute,
+                                    _new_value, _new_unit, _cond_input );
+
         return ERROR( status, "delete avu metadata failed" );
     }
 
@@ -8996,7 +9012,6 @@ irods::error db_set_avu_metadata_op(
     }
 
     return CODE( status );
-
 } // db_set_avu_metadata_op
 
 #define ACCESS_MAX 999999  /* A large access value (larger than the
@@ -9011,31 +9026,34 @@ maximum used (i.e. for fail safe)) and
 // to which the AVU was associated.
 irods::error db_add_avu_metadata_wild_op(
     irods::plugin_context& _ctx,
-    int                    _admin_mode,
     const char*            _type,
     const char*            _name,
     const char*            _attribute,
     const char*            _value,
-    const char*            _units ) {
+    const char*            _units,
+    const KeyValPair*      _cond_input)
+{
     // =-=-=-=-=-=-=-
     // check the context
-    irods::error ret = _ctx.valid();
-    if ( !ret.ok() ) {
-        return PASS( ret );
+    if (const auto ret = _ctx.valid(); !ret.ok()) {
+        return PASS(ret);
+    }
+
+    const bool admin_mode = _cond_input && getValByKey(_cond_input, ADMIN_KW);
+
+    if (admin_mode && !irods::is_privileged_client(*_ctx.comm())) {
+        return ERROR(CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "Insufficient privileges");
     }
 
     // =-=-=-=-=-=-=-
     // check the params
-    if (
-        !_type   ||
-        !_name   ||
-        !_attribute ) {
+    if (!_type || !_name || !_attribute) {
         return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-
     }
 
     rodsLong_t status;//, status2;
     rodsLong_t seqNum;
+    rodsLong_t object_count = -1;
     char collection[MAX_NAME_LEN];
     char objectName[MAX_NAME_LEN];
     char myTime[50];
@@ -9052,13 +9070,35 @@ irods::error db_add_avu_metadata_wild_op(
         snprintf( objectName, sizeof( objectName ), "%s", _name );
     }
 
-    ret = determine_user_has_modify_metadata_access(
-              objectName,
-              collection,
-              _ctx.comm()->clientUser.userName,
-              _ctx.comm()->clientUser.rodsZone );
-    if( !ret.ok() ) {
-        return PASS( ret );
+    if (admin_mode) {
+        // Skip the permission checks and get the number of matched data objects
+        // if operating in administrator mode.
+
+        std::vector<std::string> bind_vars{objectName, collection};
+
+        status = cmlGetIntegerValueFromSql(
+             "select count(distinct data_id) from R_DATA_MAIN d "
+             "inner join R_COLL_MAIN c on d.coll_id = c.coll_id "
+             "where d.data_name like ? and c.coll_name like ?",
+              &object_count, bind_vars, &icss);
+
+        if (0 != status) {
+            _rollback("chlAddAVUMetadataWild");
+            return ERROR(status, "failed to get object count");
+        }
+    }
+    else {
+        const auto ret = determine_user_has_modify_metadata_access(
+            objectName,
+            collection,
+            _ctx.comm()->clientUser.userName,
+            _ctx.comm()->clientUser.rodsZone);
+
+        if (!ret.ok()) {
+            return PASS(ret);
+        }
+
+        object_count = ret.code();
     }
 
     // user has write access, set up the AVU and associate it with the data-objects
@@ -9107,18 +9147,18 @@ irods::error db_add_avu_metadata_wild_op(
         return ERROR( status, "commit failure" );
     }
 
-    return CODE( ret.code() );
-
+    return CODE(object_count);
 } // db_add_avu_metadata_wild_op
 
 irods::error db_add_avu_metadata_op(
     irods::plugin_context& _ctx,
-    int                    _admin_mode,
     const char*            _type,
     const char*            _name,
     const char*            _attribute,
     const char*            _value,
-    const char*            _units ) {
+    const char*            _units,
+    const KeyValPair*      _cond_input)
+{
     // =-=-=-=-=-=-=-
     // check the context
     irods::error ret = _ctx.valid();
@@ -9128,12 +9168,8 @@ irods::error db_add_avu_metadata_op(
 
     // =-=-=-=-=-=-=-
     // check the params
-    if (
-        !_type   ||
-        !_name   ||
-        !_attribute ) {
+    if (!_type || !_name || !_attribute) {
         return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-
     }
 
     // =-=-=-=-=-=-=-
@@ -9153,7 +9189,7 @@ irods::error db_add_avu_metadata_op(
     char myTime[50];
     char logicalEndName[MAX_NAME_LEN];
     char logicalParentDirName[MAX_NAME_LEN];
-    rodsLong_t seqNum, iVal;
+    rodsLong_t seqNum;
     rodsLong_t objId, status;
     char objIdStr[MAX_NAME_LEN];
     char seqNumStr[MAX_NAME_LEN];
@@ -9184,10 +9220,10 @@ irods::error db_add_avu_metadata_op(
         return  ERROR( CAT_INVALID_ARGUMENT, "value null or empty" );
     }
 
-    if ( _admin_mode == 1 ) {
-        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-            return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
-        }
+    const bool admin_mode = _cond_input && getValByKey(_cond_input, ADMIN_KW);
+
+    if (admin_mode && !irods::is_privileged_client(*_ctx.comm())) {
+        return ERROR(CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "Insufficient privileges");
     }
 
     if ( _units == NULL ) {
@@ -9199,95 +9235,71 @@ irods::error db_add_avu_metadata_op(
         return ERROR( CAT_INVALID_ARGUMENT, "invalid type argument" );
     }
 
-    if ( itype == 1 ) {
-        if (const auto ec = splitPathByKey(_name, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/'); ec < 0) {
-            return ERROR(ec, fmt::format(
-                         "[{}:{}] - failed in splitPathByKey [path=[{}], ec=[{}]]",
-                         __func__, __LINE__, _name, ec));
+    // Data Objects
+    if (itype == 1) {
+        const auto ec = splitPathByKey(_name, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/'); 
+
+        if (ec < 0) {
+            return ERROR(ec, fmt::format("[{}:{}] - failed in splitPathByKey [path=[{}], ec=[{}]]",
+                                         __func__, __LINE__, _name, ec));
         }
 
-        if ( strlen( logicalParentDirName ) == 0 ) {
-            snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", PATH_SEPARATOR );
-            snprintf( logicalEndName, sizeof( logicalEndName ), "%s", _name );
+        if (std::strlen(logicalParentDirName ) == 0) {
+            snprintf(logicalParentDirName, sizeof(logicalParentDirName), "%s", PATH_SEPARATOR);
+            snprintf(logicalEndName, sizeof(logicalEndName), "%s", _name);
         }
-        if ( _admin_mode == 1 ) {
-            if ( logSQL != 0 ) {
-                rodsLog( LOG_SQL, "chlAddAVUMetadata SQL 1 " );
-            }
-            {
-                std::vector<std::string> bindVars;
-                bindVars.push_back( logicalEndName );
-                bindVars.push_back( logicalParentDirName );
-                status = cmlGetIntegerValueFromSql(
-                             "select data_id from R_DATA_MAIN DM, R_COLL_MAIN CM where "
-                             "DM.data_name=? and DM.coll_id=CM.coll_id and CM.coll_name=?",
-                             &iVal, bindVars, &icss );
-            }
-            if ( status == 0 ) {
-                status = iVal;    /*like cmlCheckDataObjOnly, status is objid */
-            }
+
+        if (logSQL != 0) {
+            rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 2");
         }
-        else {
-            if ( logSQL != 0 ) {
-                rodsLog( LOG_SQL, "chlAddAVUMetadata SQL 2" );
-            }
-            status = cmlCheckDataObjOnly( logicalParentDirName, logicalEndName,
-                                          _ctx.comm()->clientUser.userName,
-                                          _ctx.comm()->clientUser.rodsZone,
-                                          ACCESS_CREATE_METADATA, &icss );
+
+        status = cmlCheckDataObjOnly(logicalParentDirName, logicalEndName,
+                                     _ctx.comm()->clientUser.userName,
+                                     _ctx.comm()->clientUser.rodsZone,
+                                     ACCESS_CREATE_METADATA, &icss, admin_mode);
+
+        if (status < 0) {
+            _rollback("chlAddAVUMetadata");
+            return ERROR(status, "select data_id failed");
         }
-        if ( status < 0 ) {
-            _rollback( "chlAddAVUMetadata" );
-            return ERROR( status, "select data_id failed" );
-        }
+
         objId = status;
     }
 
-    if ( itype == 2 ) {
-        if ( _admin_mode == 1 ) {
-            if ( logSQL != 0 ) {
-                rodsLog( LOG_SQL, "chlAddAVUMetadata SQL 3" );
-            }
-            {
-                std::vector<std::string> bindVars;
-                bindVars.push_back( _name );
-                status = cmlGetIntegerValueFromSql(
-                             "select coll_id from R_COLL_MAIN where coll_name=?",
-                             &iVal, bindVars, &icss );
-            }
-            if ( status == 0 ) {
-                status = iVal;    /*like cmlCheckDir, status is objid*/
-            }
+    // Collections
+    if (itype == 2) {
+        // Check that the collection exists and user has create_metadata
+        // permission, and get the collectionID.
+        if ( logSQL != 0 ) {
+            rodsLog( LOG_SQL, "chlAddAVUMetadata SQL 4" );
         }
-        else {
-            /* Check that the collection exists and user has create_metadata
-               permission, and get the collectionID */
-            if ( logSQL != 0 ) {
-                rodsLog( LOG_SQL, "chlAddAVUMetadata SQL 4" );
-            }
-            status = cmlCheckDir( _name,
-                                  _ctx.comm()->clientUser.userName,
-                                  _ctx.comm()->clientUser.rodsZone,
-                                  ACCESS_CREATE_METADATA, &icss );
-        }
+
+        status = cmlCheckDir(_name,
+                             _ctx.comm()->clientUser.userName,
+                             _ctx.comm()->clientUser.rodsZone,
+                             ACCESS_CREATE_METADATA, &icss, admin_mode);
+
         if ( status < 0 ) {
             char errMsg[105];
-            _rollback( "chlAddAVUMetadata" );
+
+            _rollback( "chlAddAVUMetadata" ); // TODO We've rolled back here, so why the extra call below?
+
             if ( status == CAT_UNKNOWN_COLLECTION ) {
-                snprintf( errMsg, 100, "collection '%s' is unknown",
-                          _name );
+                snprintf( errMsg, 100, "collection '%s' is unknown", _name );
                 addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
             }
             else {
-                _rollback( "chlAddAVUMetadata" );
+                _rollback( "chlAddAVUMetadata" ); // TODO Why do we rollback again?
             }
+
             return ERROR( status, "cmlCheckDir failed" );
         }
+
         objId = status;
     }
 
     if ( itype == 3 ) {
-        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if (!irods::is_privileged_client(*_ctx.comm())) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
 
@@ -9319,7 +9331,7 @@ irods::error db_add_avu_metadata_op(
     }
 
     if ( itype == 4 ) {
-        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if (!irods::is_privileged_client(*_ctx.comm())) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
 
@@ -9358,7 +9370,7 @@ irods::error db_add_avu_metadata_op(
     }
 
     if ( itype == 5 ) {
-        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if (!irods::is_privileged_client(*_ctx.comm())) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL , "insufficient privilege" );
         }
 
@@ -9428,19 +9440,20 @@ irods::error db_add_avu_metadata_op(
     }
 
     return CODE( status );
-
 } // db_add_avu_metadata_op
 
 irods::error db_mod_avu_metadata_op(
     irods::plugin_context& _ctx,
-    const char*                  _type,
-    const char*                  _name,
-    const char*                  _attribute,
-    const char*                  _value,
-    const char*                  _unitsOrArg0,
-    const char*                  _arg1,
-    const char*                  _arg2,
-    const char*                  _arg3 ) {
+    const char*            _type,
+    const char*            _name,
+    const char*            _attribute,
+    const char*            _value,
+    const char*            _unitsOrArg0,
+    const char*            _arg1,
+    const char*            _arg2,
+    const char*            _arg3,
+    const KeyValPair*      _cond_input)
+{
     // =-=-=-=-=-=-=-
     // check the context
     irods::error ret = _ctx.valid();
@@ -9450,12 +9463,8 @@ irods::error db_mod_avu_metadata_op(
 
     // =-=-=-=-=-=-=-
     // check the params
-    if (
-        !_type   ||
-        !_name   ||
-        !_attribute ) {
+    if (!_type || !_name || !_attribute) {
         return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-
     }
 
     int status, atype;
@@ -9478,7 +9487,7 @@ irods::error db_mod_avu_metadata_op(
     }
 
     status = chlDeleteAVUMetadata( _ctx.comm(), 0, _type, _name, _attribute, _value,
-                                   myUnits, 1 );
+                                   myUnits, 1, _cond_input );
     if ( status != 0 ) {
         _rollback( "chlModAVUMetadata" );
         return ERROR( status, "delete avu metadata failed" );
@@ -9538,10 +9547,10 @@ irods::error db_mod_avu_metadata_op(
         addUnits = myUnits;
     }
 
-    status = chlAddAVUMetadata( _ctx.comm(), 0, _type, _name, addAttr, addValue,
-                                addUnits );
-    return CODE( status );
+    status = chlAddAVUMetadata( _ctx.comm(), _type, _name, addAttr, addValue,
+                                addUnits, _cond_input );
 
+    return CODE( status );
 } // db_mod_avu_metadata_op
 
 irods::error db_del_avu_metadata_op(
@@ -9552,7 +9561,15 @@ irods::error db_del_avu_metadata_op(
     const char*            _attribute,
     const char*            _value,
     const char*            _unit,
-    int                    _nocommit ) {
+    int                    _nocommit,
+    const KeyValPair*      _cond_input)
+{
+    const bool admin_mode = _cond_input && getValByKey(_cond_input, ADMIN_KW);
+
+    if (admin_mode && !irods::is_privileged_client(*_ctx.comm())) {
+        return ERROR(CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "Insufficient privileges");
+    }
+
     // =-=-=-=-=-=-=-
     // check the context
     irods::error ret = _ctx.valid();
@@ -9562,12 +9579,8 @@ irods::error db_del_avu_metadata_op(
 
     // =-=-=-=-=-=-=-
     // check the params
-    if (
-        !_type   ||
-        !_name   ||
-        !_attribute ) {
+    if (!_type || !_name || !_attribute) {
         return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-
     }
 
     // =-=-=-=-=-=-=-
@@ -9638,46 +9651,54 @@ irods::error db_del_avu_metadata_op(
             snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", PATH_SEPARATOR );
             snprintf( logicalEndName, sizeof( logicalEndName ), "%s", _name );
         }
+
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlDeleteAVUMetadata SQL 1 " );
         }
-        status = cmlCheckDataObjOnly( logicalParentDirName, logicalEndName,
-                                      _ctx.comm()->clientUser.userName,
-                                      _ctx.comm()->clientUser.rodsZone,
-                                      ACCESS_DELETE_METADATA, &icss );
+
+        status = cmlCheckDataObjOnly(logicalParentDirName, logicalEndName,
+                                     _ctx.comm()->clientUser.userName,
+                                     _ctx.comm()->clientUser.rodsZone,
+                                     ACCESS_DELETE_METADATA, &icss, admin_mode);
         if ( status < 0 ) {
             if ( _nocommit != 1 ) {
                 _rollback( "chlDeleteAVUMetadata" );
             }
+
             return ERROR( status, "delete avu failed" );
         }
+
         objId = status;
     }
 
     if ( itype == 2 ) {
-        /* Check that the collection exists and user has delete_metadata permission,
-           and get the collectionID */
+        // Check that the collection exists and user has delete_metadata permission,
+        // and get the collectionID.
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlDeleteAVUMetadata SQL 2" );
         }
-        status = cmlCheckDir( _name,
-                              _ctx.comm()->clientUser.userName,
-                              _ctx.comm()->clientUser.rodsZone,
-                              ACCESS_DELETE_METADATA, &icss );
+
+        status = cmlCheckDir(_name,
+                             _ctx.comm()->clientUser.userName,
+                             _ctx.comm()->clientUser.rodsZone,
+                             ACCESS_DELETE_METADATA, &icss, admin_mode);
+
         if ( status < 0 ) {
             char errMsg[105];
+
             if ( status == CAT_UNKNOWN_COLLECTION ) {
-                snprintf( errMsg, 100, "collection '%s' is unknown",
-                          _name );
+                snprintf( errMsg, 100, "collection '%s' is unknown", _name );
                 addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
             }
+
             return ERROR( status, "cmlCheckDir failed" );
         }
+
         objId = status;
     }
 
     if ( itype == 3 ) {
-        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if (!irods::is_privileged_client(*_ctx.comm())) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
 
@@ -9711,7 +9732,7 @@ irods::error db_del_avu_metadata_op(
     }
 
     if ( itype == 4 ) {
-        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if (!irods::is_privileged_client(*_ctx.comm())) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
 
@@ -9752,7 +9773,7 @@ irods::error db_del_avu_metadata_op(
     }
 
     if ( itype == 5 ) {
-        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if (!irods::is_privileged_client(*_ctx.comm())) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
 
@@ -9889,7 +9910,6 @@ irods::error db_del_avu_metadata_op(
     }
 
     return CODE( status );
-
 } // db_del_avu_metadata_op
 
 irods::error db_copy_avu_metadata_op(
@@ -9897,7 +9917,9 @@ irods::error db_copy_avu_metadata_op(
     const char*            _type1,
     const char*            _type2,
     const char*            _name1,
-    const char*            _name2 ) {
+    const char*            _name2,
+    const KeyValPair*      _cond_input)
+{
     // =-=-=-=-=-=-=-
     // check the context
     irods::error ret = _ctx.valid();
@@ -9907,13 +9929,8 @@ irods::error db_copy_avu_metadata_op(
 
     // =-=-=-=-=-=-=-
     // check the params
-    if (
-        !_type1  ||
-        !_type2  ||
-        !_name1  ||
-        !_name2 ) {
+    if (!_type1 || !_type2 || !_name1 || !_name2) {
         return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-
     }
 
     char myTime[50];
@@ -9930,10 +9947,16 @@ irods::error db_copy_avu_metadata_op(
         return ERROR( CATALOG_NOT_CONNECTED, "catalog not connected" );
     }
 
+    const bool admin_mode = _cond_input && getValByKey(_cond_input, ADMIN_KW);
+
+    if (admin_mode && !irods::is_privileged_client(*_ctx.comm())) {
+        return ERROR(CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "Insufficient privileges");
+    }
+
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "chlCopyAVUMetadata SQL 1 " );
     }
-    objId1 = checkAndGetObjectId( _ctx.comm(), _ctx.prop_map(), _type1, _name1, ACCESS_READ_METADATA );
+    objId1 = checkAndGetObjectId(_ctx.comm(), _ctx.prop_map(), _type1, _name1, ACCESS_READ_METADATA, admin_mode);
     if ( objId1 < 0 ) {
         return ERROR( objId1, "checkAndGetObjectId failure" );
     }
@@ -9941,8 +9964,7 @@ irods::error db_copy_avu_metadata_op(
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "chlCopyAVUMetadata SQL 2" );
     }
-    objId2 = checkAndGetObjectId( _ctx.comm(), _ctx.prop_map(), _type2, _name2, ACCESS_CREATE_METADATA );
-
+    objId2 = checkAndGetObjectId(_ctx.comm(), _ctx.prop_map(), _type2, _name2, ACCESS_CREATE_METADATA, admin_mode);
     if ( objId2 < 0 ) {
         return ERROR( objId2, "checkAndGetObjectId failure" );
     }
@@ -9958,8 +9980,9 @@ irods::error db_copy_avu_metadata_op(
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "chlCopyAVUMetadata SQL 3" );
     }
-    status =  cmlExecuteNoAnswerSql(
-                  "insert into R_OBJT_METAMAP (object_id, meta_id, create_ts, modify_ts) select ?, meta_id, ?, ? from R_OBJT_METAMAP where object_id=?",
+    status = cmlExecuteNoAnswerSql(
+                  "insert into R_OBJT_METAMAP (object_id, meta_id, create_ts, modify_ts) "
+                  "select ?, meta_id, ?, ? from R_OBJT_METAMAP where object_id=?",
                   &icss );
     if ( status != 0 ) {
         rodsLog( LOG_NOTICE,
@@ -9978,7 +10001,6 @@ irods::error db_copy_avu_metadata_op(
     }
 
     return CODE( status );
-
 } // db_copy_avu_metadata_op
 
 irods::error db_mod_access_control_resc_op(
@@ -15220,27 +15242,27 @@ irods::database* plugin_factory(
             db_reg_user_re_op ) );
     pg->add_operation(
         DATABASE_OP_SET_AVU_METADATA,
-        function<error(plugin_context&,const char*,const char*,const char*,const char*,const char*)>(
+        function<error(plugin_context&,const char*,const char*,const char*,const char*,const char*,const KeyValPair*)>(
             db_set_avu_metadata_op ) );
     pg->add_operation(
         DATABASE_OP_ADD_AVU_METADATA_WILD,
-        function<error(plugin_context&,int,const char*,const char*,const char*,const char*,const char*)>(
+        function<error(plugin_context&,const char*,const char*,const char*,const char*,const char*,const KeyValPair*)>(
             db_add_avu_metadata_wild_op ) );
     pg->add_operation(
         DATABASE_OP_ADD_AVU_METADATA,
-        function<error(plugin_context&,int,const char*,const char*,const char*,const char*,const char*)>(
+        function<error(plugin_context&,const char*,const char*,const char*,const char*,const char*,const KeyValPair*)>(
             db_add_avu_metadata_op ) );
     pg->add_operation(
         DATABASE_OP_MOD_AVU_METADATA,
-        function<error(plugin_context&,const char*,const char*,const char*,const char*,const char*,const char*,const char*,const char*)>(
+        function<error(plugin_context&,const char*,const char*,const char*,const char*,const char*,const char*,const char*,const char*,const KeyValPair*)>(
             db_mod_avu_metadata_op ) );
     pg->add_operation(
         DATABASE_OP_DEL_AVU_METADATA,
-        function<error(plugin_context&,int,const char*,const char*,const char*,const char*,const char*,int)>(
+        function<error(plugin_context&,int,const char*,const char*,const char*,const char*,const char*,int,const KeyValPair*)>(
             db_del_avu_metadata_op ) );
     pg->add_operation(
         DATABASE_OP_COPY_AVU_METADATA,
-        function<error(plugin_context&,const char*,const char*,const char*,const char*)>(
+        function<error(plugin_context&,const char*,const char*,const char*,const char*,const KeyValPair*)>(
             db_copy_avu_metadata_op ) );
     pg->add_operation(
         DATABASE_OP_MOD_ACCESS_CONTROL_RESC,

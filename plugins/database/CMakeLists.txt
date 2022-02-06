@@ -66,6 +66,7 @@ foreach(PLUGIN ${IRODS_DATABASE_PLUGINS})
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
     ${IRODS_EXTERNALS_FULLPATH_FMT}/include
+    ${IRODS_EXTERNALS_FULLPATH_NANODBC}/include
     )
 
   target_link_libraries(

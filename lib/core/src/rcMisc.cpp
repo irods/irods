@@ -3411,6 +3411,7 @@ clearModAVUMetadataInp( void* voidInp ) {
     free( modAVUMetadataInp->arg7 );
     free( modAVUMetadataInp->arg8 );
     free( modAVUMetadataInp->arg9 );
+    clearKeyVal(&modAVUMetadataInp->condInput);
     memset( modAVUMetadataInp, 0, sizeof( modAVUMetadataInp_t ) );
     return;
 }

@@ -1,13 +1,11 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code (for the most part).  */
-/* See modAVUMetadata.h for a description of this API call.*/
+#include "rsModAVUMetadata.hpp"
 
 #include "modAVUMetadata.h"
-#include "rsModAVUMetadata.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
 #include "irods_configuration_keywords.hpp"
+#include "rcConnect.h"
+#include "rcMisc.h"
 
 int
 rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp ) {
@@ -146,81 +144,106 @@ _rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp ) {
     }
 
     if ( strcmp( modAVUMetadataInp->arg0, "add" ) == 0 ) {
-        status = chlAddAVUMetadata( rsComm, 0,
-                                    modAVUMetadataInp->arg1,
-                                    modAVUMetadataInp->arg2,
-                                    modAVUMetadataInp->arg3,
-                                    modAVUMetadataInp->arg4,
-                                    modAVUMetadataInp->arg5 );
+        status = chlAddAVUMetadata(rsComm,
+                                   modAVUMetadataInp->arg1,
+                                   modAVUMetadataInp->arg2,
+                                   modAVUMetadataInp->arg3,
+                                   modAVUMetadataInp->arg4,
+                                   modAVUMetadataInp->arg5,
+                                   &modAVUMetadataInp->condInput);
     }
     else if ( strcmp( modAVUMetadataInp->arg0, "adda" ) == 0 ) {
-        status = chlAddAVUMetadata( rsComm, 1,
-                                    modAVUMetadataInp->arg1,
-                                    modAVUMetadataInp->arg2,
-                                    modAVUMetadataInp->arg3,
-                                    modAVUMetadataInp->arg4,
-                                    modAVUMetadataInp->arg5 );
+        // Determine if the client set the ADMIN_KW.
+        // If they haven't, set it and remember to remove it once the function returns.
+        // This keeps the key value pair's state clean.
+        //
+        // Setting the ADMIN_KW is required for proper operation of the "adda" subcommand.
+        const bool remove_admin_keyword = !getValByKey(&modAVUMetadataInp->condInput, ADMIN_KW);
+
+        if (remove_admin_keyword) {
+            addKeyVal(&modAVUMetadataInp->condInput, ADMIN_KW, "");
+        }
+
+        status = chlAddAVUMetadata(rsComm,
+                                   modAVUMetadataInp->arg1,
+                                   modAVUMetadataInp->arg2,
+                                   modAVUMetadataInp->arg3,
+                                   modAVUMetadataInp->arg4,
+                                   modAVUMetadataInp->arg5,
+                                   &modAVUMetadataInp->condInput);
+
+        if (remove_admin_keyword) {
+            // Restore the key value pair to its original state.
+            rmKeyVal(&modAVUMetadataInp->condInput, ADMIN_KW);
+        }
     }
     else if ( strcmp( modAVUMetadataInp->arg0, "addw" ) == 0 ) {
-        status = chlAddAVUMetadataWild( rsComm, 0,
-                                        modAVUMetadataInp->arg1,
-                                        modAVUMetadataInp->arg2,
-                                        modAVUMetadataInp->arg3,
-                                        modAVUMetadataInp->arg4,
-                                        modAVUMetadataInp->arg5 );
+        status = chlAddAVUMetadataWild(rsComm,
+                                       modAVUMetadataInp->arg1,
+                                       modAVUMetadataInp->arg2,
+                                       modAVUMetadataInp->arg3,
+                                       modAVUMetadataInp->arg4,
+                                       modAVUMetadataInp->arg5,
+                                       &modAVUMetadataInp->condInput);
     }
     else if ( strcmp( modAVUMetadataInp->arg0, "rmw" ) == 0 ) {
-        status = chlDeleteAVUMetadata( rsComm, 1,
-                                       modAVUMetadataInp->arg1,
-                                       modAVUMetadataInp->arg2,
-                                       modAVUMetadataInp->arg3,
-                                       modAVUMetadataInp->arg4,
-                                       modAVUMetadataInp->arg5,
-                                       0 );
+        status = chlDeleteAVUMetadata(rsComm, 1,
+                                      modAVUMetadataInp->arg1,
+                                      modAVUMetadataInp->arg2,
+                                      modAVUMetadataInp->arg3,
+                                      modAVUMetadataInp->arg4,
+                                      modAVUMetadataInp->arg5,
+                                      0,
+                                      &modAVUMetadataInp->condInput);
     }
     else if ( strcmp( modAVUMetadataInp->arg0, "rmi" ) == 0 ) {
-        status = chlDeleteAVUMetadata( rsComm, 2,
-                                       modAVUMetadataInp->arg1,
-                                       modAVUMetadataInp->arg2,
-                                       modAVUMetadataInp->arg3,
-                                       modAVUMetadataInp->arg4,
-                                       modAVUMetadataInp->arg5,
-                                       0 );
+        status = chlDeleteAVUMetadata(rsComm, 2,
+                                      modAVUMetadataInp->arg1,
+                                      modAVUMetadataInp->arg2,
+                                      modAVUMetadataInp->arg3,
+                                      modAVUMetadataInp->arg4,
+                                      modAVUMetadataInp->arg5,
+                                      0,
+                                      &modAVUMetadataInp->condInput);
     }
     else if ( strcmp( modAVUMetadataInp->arg0, "rm" ) == 0 ) {
-        status = chlDeleteAVUMetadata( rsComm, 0,
-                                       modAVUMetadataInp->arg1,
-                                       modAVUMetadataInp->arg2,
-                                       modAVUMetadataInp->arg3,
-                                       modAVUMetadataInp->arg4,
-                                       modAVUMetadataInp->arg5,
-                                       0 );
+        status = chlDeleteAVUMetadata(rsComm, 0,
+                                      modAVUMetadataInp->arg1,
+                                      modAVUMetadataInp->arg2,
+                                      modAVUMetadataInp->arg3,
+                                      modAVUMetadataInp->arg4,
+                                      modAVUMetadataInp->arg5,
+                                      0,
+                                      &modAVUMetadataInp->condInput);
     }
     else if ( strcmp( modAVUMetadataInp->arg0, "cp" ) == 0 ) {
-        status = chlCopyAVUMetadata( rsComm,
-                                     modAVUMetadataInp->arg1,
-                                     modAVUMetadataInp->arg2,
-                                     modAVUMetadataInp->arg3,
-                                     modAVUMetadataInp->arg4 );
+        status = chlCopyAVUMetadata(rsComm,
+                                    modAVUMetadataInp->arg1,
+                                    modAVUMetadataInp->arg2,
+                                    modAVUMetadataInp->arg3,
+                                    modAVUMetadataInp->arg4,
+                                    &modAVUMetadataInp->condInput);
     }
     else if ( strcmp( modAVUMetadataInp->arg0, "mod" ) == 0 ) {
-        status = chlModAVUMetadata( rsComm,
-                                    modAVUMetadataInp->arg1,
-                                    modAVUMetadataInp->arg2,
-                                    modAVUMetadataInp->arg3,
-                                    modAVUMetadataInp->arg4,
-                                    modAVUMetadataInp->arg5,
-                                    modAVUMetadataInp->arg6,
-                                    modAVUMetadataInp->arg7,
-                                    modAVUMetadataInp->arg8 );
+        status = chlModAVUMetadata(rsComm,
+                                   modAVUMetadataInp->arg1,
+                                   modAVUMetadataInp->arg2,
+                                   modAVUMetadataInp->arg3,
+                                   modAVUMetadataInp->arg4,
+                                   modAVUMetadataInp->arg5,
+                                   modAVUMetadataInp->arg6,
+                                   modAVUMetadataInp->arg7,
+                                   modAVUMetadataInp->arg8,
+                                   &modAVUMetadataInp->condInput);
     }
     else if ( strcmp( modAVUMetadataInp->arg0, "set" ) == 0 ) { // JMC - backport 4836
-        status = chlSetAVUMetadata( rsComm,
-                                    modAVUMetadataInp->arg1,
-                                    modAVUMetadataInp->arg2,
-                                    modAVUMetadataInp->arg3,
-                                    modAVUMetadataInp->arg4,
-                                    modAVUMetadataInp->arg5 );
+        status = chlSetAVUMetadata(rsComm,
+                                   modAVUMetadataInp->arg1,
+                                   modAVUMetadataInp->arg2,
+                                   modAVUMetadataInp->arg3,
+                                   modAVUMetadataInp->arg4,
+                                   modAVUMetadataInp->arg5,
+                                   &modAVUMetadataInp->condInput);
     }
     else {
         return CAT_INVALID_ARGUMENT;
