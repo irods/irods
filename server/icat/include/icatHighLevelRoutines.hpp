@@ -1,9 +1,5 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/*****************************************************************************/
-
-#ifndef ICAT_HIGHLEVEL_ROUTINES_HPP
-#define ICAT_HIGHLEVEL_ROUTINES_HPP
+#ifndef IRODS_ICAT_HIGHLEVEL_ROUTINES_HPP
+#define IRODS_ICAT_HIGHLEVEL_ROUTINES_HPP
 
 #include "objInfo.h"
 #include "ruleExecSubmit.h"
@@ -13,7 +9,6 @@
 #include "specificQuery.h"
 #include "phyBundleColl.h"
 #include "irods_resource_manager.hpp"
-using leaf_bundle_t = irods::resource_manager::leaf_bundle_t;
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -26,6 +21,8 @@ using leaf_bundle_t = irods::resource_manager::leaf_bundle_t;
 #include <boost/tuple/tuple.hpp>
 
 #include "irods_error.hpp"
+
+using leaf_bundle_t = irods::resource_manager::leaf_bundle_t;
 
 extern icatSessionStruct icss;
 
@@ -84,21 +81,25 @@ int chlModRescDataPaths( rsComm_t *rsComm, const char *rescName, const char *old
 int chlModRescFreeSpace( rsComm_t *rsComm, const char *rescName,
                          int updateValue );
 int chlRegUserRE( rsComm_t *rsComm, userInfo_t *userInfo );
-rodsLong_t checkAndGetObjectId( rsComm_t *rsComm, const char *type,
-                                const char *name, const char *access );
-int chlAddAVUMetadata( rsComm_t *rsComm, int adminMode, const char *type,
-                       const char *name, const char *attribute, const char *value, const char *units );
-int chlAddAVUMetadataWild( rsComm_t *rsComm, int adminMode, const char *type,
-                           const char *name, const char *attribute, const char *value, const char *units );
+int chlAddAVUMetadata( rsComm_t *rsComm, const char *type,
+                       const char *name, const char *attribute, const char *value, const char *units,
+                       const KeyValPair* condInput);
+int chlAddAVUMetadataWild( rsComm_t *rsComm, const char *type,
+                           const char *name, const char *attribute, const char *value, const char *units,
+                           const KeyValPair* condInput);
 int chlDeleteAVUMetadata( rsComm_t *rsComm, int option, const char *type,
-                          const char *name, const char *attribute, const char *value, const char *units, int noCommit );
+                          const char *name, const char *attribute, const char *value, const char *units, int noCommit,
+                          const KeyValPair* condInput);
 int chlSetAVUMetadata( rsComm_t *rsComm, const char *type, // JMC - backport 4836
-                       const char *name, const char *attribute, const char *newValue, const char *newUnit );
+                       const char *name, const char *attribute, const char *newValue, const char *newUnit,
+                       const KeyValPair* condInput);
 int chlCopyAVUMetadata( rsComm_t *rsComm, const char *type1,  const char *type2,
-                        const char *name1, const char *name2 );
+                        const char *name1, const char *name2,
+                        const KeyValPair* condInput);
 int chlModAVUMetadata( rsComm_t *rsComm, const char *type, const char *name,
                        const char *attribute, const char *value, const char *unitsOrChange0,
-                       const char *change1, const char *change2, const char *change3 );
+                       const char *change1, const char *change2, const char *change3,
+                       const KeyValPair *condInput );
 int chlModAccessControl( rsComm_t *rsComm, int recursiveFlag,
                          const char* accessLevel, const char *userName, const char *zone,
                          const char* pathName );
@@ -137,7 +138,7 @@ int chlSetQuota( rsComm_t *rsComm, const char *type, const char *name, const cha
                  const char *limit );
 int chlCheckQuota( rsComm_t *rsComm, const char *userName, const char *rescName,
                    rodsLong_t *userQuota, int *quotaStatus );
-int chlDelUnusedAVUs( rsComm_t *rsComm );
+int chlDelUnusedAVUs( rsComm_t *rsComm ); // TODO Does this need a condInput too?
 int chlAddSpecificQuery( rsComm_t *rsComm, const char *alias, const char *sql );
 int chlDelSpecificQuery( rsComm_t *rsComm, const char *sqlOrAlias );
 
@@ -272,4 +273,4 @@ auto chl_check_permission_to_modify_data_object(RsComm& _comm, const rodsLong_t 
 /// \since 4.2.9
 auto chl_update_ticket_write_byte_count(RsComm& _comm, const rodsLong_t _data_id, const rodsLong_t _bytes_written) -> int;
 
-#endif /* ICAT_HIGHLEVEL_ROUTINES_H */
+#endif // IRODS_ICAT_HIGHLEVEL_ROUTINES_HPP

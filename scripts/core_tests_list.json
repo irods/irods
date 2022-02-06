@@ -19,6 +19,7 @@
     "test_ilocate",
     "test_ils",
     "test_ilsresc",
+    "test_imeta_admin_mode",
     "test_imeta_error_handling",
     "test_imeta_help",
     "test_imeta_interactive",

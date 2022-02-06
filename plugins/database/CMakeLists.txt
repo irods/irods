@@ -74,6 +74,7 @@ foreach(PLUGIN ${IRODS_DATABASE_PLUGINS})
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
     ${IRODS_EXTERNALS_FULLPATH_FMT}/include
     ${IRODS_EXTERNALS_FULLPATH_JANSSON}/include
+    ${IRODS_EXTERNALS_FULLPATH_NANODBC}/include
     )
 
   target_link_libraries(

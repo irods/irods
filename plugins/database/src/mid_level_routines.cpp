@@ -1,5 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
 /**************************************************************************
 
   This file contains midLevel functions that can be used to get
@@ -13,13 +11,12 @@
 
 **************************************************************************/
 
-
 #include "mid_level.hpp"
 #include "low_level.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_log.hpp"
 #include "irods_virtual_path.hpp"
-
+#include "rodsErrorTable.h"
 #include "rcMisc.h"
 
 #include <vector>
@@ -854,13 +851,18 @@ cmlCheckResc( const char *rescName, const char *userName, const char *userZone, 
 }
 
 
-/*
-  Check that a collection exists and user has 'accessLevel' permission.
-  Return code is either an iRODS error code (< 0) or the collectionId.
-*/
+// Check that a collection exists and user has 'accessLevel' permission.
+// Return code is either an iRODS error code (< 0) or the collectionId.
+//
+// If admin_mode is true, only check that the collection exists.
 rodsLong_t
-cmlCheckDir( const char *dirName, const char *userName, const char *userZone, const char *accessLevel,
-             icatSessionStruct *icss ) {
+cmlCheckDir(const char *dirName,
+            const char *userName,
+            const char *userZone,
+            const char *accessLevel,
+            icatSessionStruct *icss,
+            bool admin_mode)
+{
     int status;
     rodsLong_t iVal{};
 
@@ -869,16 +871,38 @@ cmlCheckDir( const char *dirName, const char *userName, const char *userZone, co
     }
 
     std::vector<std::string> bindVars;
+
+    if (admin_mode) {
+        bindVars.push_back(dirName);
+        status = cmlGetIntegerValueFromSql("select coll_id from R_COLL_MAIN where coll_name = ?",
+                                           &iVal, bindVars, icss);
+
+        // No need to leave this code block. Either the collection exists or it doesn't.
+        return (status < 0) ? CAT_UNKNOWN_COLLECTION : iVal;
+    }
+
     bindVars.push_back( dirName );
     bindVars.push_back( userName );
     bindVars.push_back( userZone );
     bindVars.push_back( accessLevel );
     status = cmlGetIntegerValueFromSql(
-                 "select coll_id from R_COLL_MAIN CM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where CM.coll_name=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
-                 &iVal, bindVars, icss );
+         "select coll_id "
+         "from R_COLL_MAIN CM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM "
+         "where CM.coll_name = ? and "
+               "UM.user_name = ? and "
+               "UM.zone_name = ? and "
+               "UM.user_type_name != 'rodsgroup' and "
+               "UM.user_id = UG.user_id and "
+               "OA.object_id = CM.coll_id and "
+               "UG.group_user_id = OA.user_id and "
+               "OA.access_type_id >= TM.token_id and "
+               "TM.token_namespace ='access_type' and "
+               "TM.token_name = ?",
+         &iVal, bindVars, icss);
+
     if ( status ) {
-        /* There was an error, so do another sql to see which
-           of the two likely cases is problem. */
+        // There was an error, so do another sql to see which
+        // of the two likely cases is the problem.
 
         if ( logSQL_CML != 0 ) {
             rodsLog( LOG_SQL, "cmlCheckDir SQL 2 " );
@@ -889,14 +913,15 @@ cmlCheckDir( const char *dirName, const char *userName, const char *userZone, co
         status = cmlGetIntegerValueFromSql(
                      "select coll_id from R_COLL_MAIN where coll_name=?",
                      &iVal, bindVars, icss );
+
         if ( status ) {
             return CAT_UNKNOWN_COLLECTION;
         }
+
         return CAT_NO_ACCESS_PERMISSION;
     }
 
     return iVal;
-
 }
 
 
@@ -1065,15 +1090,17 @@ cmlCheckDirOwn( const char *dirName, const char *userName, const char *userZone,
 }
 
 
-/*
-  Check that a dataObj (iRODS file) exists and user has specified permission
-  (but don't check the collection access, only its existence).
-  Return code is either an iRODS error code (< 0) or the dataId.
-*/
+// Check that a dataObj (iRODS file) exists and user has specified permission
+// (but don't check the collection access, only its existence).
+// Return code is either an iRODS error code (< 0) or the dataId.
+//
+// If admin_mode is true, only check that the data object and collection exist.
 rodsLong_t
-cmlCheckDataObjOnly( const char *dirName, const char *dataName,
-                     const char *userName, const char *userZone,
-                     const char *accessLevel, icatSessionStruct *icss ) {
+cmlCheckDataObjOnly(const char *dirName, const char *dataName,
+                    const char *userName, const char *userZone,
+                    const char *accessLevel, icatSessionStruct *icss,
+                    bool admin_mode)
+{
     int status;
     rodsLong_t iVal{};
 
@@ -1082,14 +1109,43 @@ cmlCheckDataObjOnly( const char *dirName, const char *dataName,
     }
 
     std::vector<std::string> bindVars;
+
+    if (admin_mode) {
+        bindVars.push_back(dataName);
+        bindVars.push_back(dirName);
+
+        status = cmlGetIntegerValueFromSql(
+            "select data_id from R_DATA_MAIN DM "
+            "inner join R_COLL_MAIN CM on DM.coll_id = CM.coll_id "
+            "where DM.data_name = ? and CM.coll_name = ?",
+            &iVal, bindVars, icss);
+
+        // No need to leave this code block. Either the data object and collection
+        // exist or they don't.
+        return (status < 0) ? CAT_UNKNOWN_FILE : iVal;
+    }
+
     bindVars.push_back( dataName );
     bindVars.push_back( dirName );
     bindVars.push_back( userName );
     bindVars.push_back( userZone );
     bindVars.push_back( accessLevel );
     status = cmlGetIntegerValueFromSql(
-                 "select data_id from R_DATA_MAIN DM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM, R_COLL_MAIN CM where DM.data_name=? and DM.coll_id=CM.coll_id and CM.coll_name=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
-                 &iVal, bindVars, icss );
+        "select data_id "
+        "from R_DATA_MAIN DM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM, R_COLL_MAIN CM "
+        "where DM.data_name = ? and "
+              "DM.coll_id = CM.coll_id and "
+              "CM.coll_name = ? and "
+              "UM.user_name = ? and "
+              "UM.zone_name = ? and "
+              "UM.user_type_name != 'rodsgroup' and "
+              "UM.user_id = UG.user_id and "
+              "OA.object_id = DM.data_id and "
+              "UG.group_user_id = OA.user_id and "
+              "OA.access_type_id >= TM.token_id and "
+              "TM.token_namespace = 'access_type' and "
+              "TM.token_name = ?",
+        &iVal, bindVars, icss);
 
     if ( status ) {
         /* There was an error, so do another sql to see which
@@ -1102,16 +1158,18 @@ cmlCheckDataObjOnly( const char *dirName, const char *dataName,
         bindVars.push_back( dataName );
         bindVars.push_back( dirName );
         status = cmlGetIntegerValueFromSql(
-                     "select data_id from R_DATA_MAIN DM, R_COLL_MAIN CM where DM.data_name=? and DM.coll_id=CM.coll_id and CM.coll_name=?",
-                     &iVal, bindVars, icss );
+            "select data_id from R_DATA_MAIN DM, R_COLL_MAIN CM "
+            "where DM.data_name=? and DM.coll_id=CM.coll_id and CM.coll_name=?",
+            &iVal, bindVars, icss );
+
         if ( status ) {
             return CAT_UNKNOWN_FILE;
         }
+
         return CAT_NO_ACCESS_PERMISSION;
     }
 
     return iVal;
-
 }
 
 /*
