@@ -28,6 +28,8 @@ class Test_Stacktrace(session.make_sessions_mixin([('otherrods', 'rods')], []), 
             config.server_config['advanced_settings']['stacktrace_file_processor_sleep_time_in_seconds'] = 1
             lib.update_json_file_from_dict(config.server_config_path, config.server_config)
 
+            log_offset = lib.get_file_size_by_path(config.server_log_path)
             self.admin.assert_icommand_fail(['irule', 'msiSegFault()', 'null', 'ruleExecOut'])
-            for msg in ['0# stacktrace_signal_handler']:
-                lib.delayAssert(lambda: lib.log_message_occurrences_greater_than_count(msg=msg, count=0))
+            for msg in [' 0# stacktrace_signal_handler in ', '"stacktrace_agent_pid":']:
+                lib.delayAssert(lambda: lib.log_message_occurrences_greater_than_count(msg=msg, count=0, start_index=log_offset))
+
