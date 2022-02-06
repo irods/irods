@@ -88,22 +88,21 @@ namespace irods::experimental::metadata {
         /// \since 4.2.9
         auto mod_avu_meta(rxComm_t& _comm, const avu& _md, const avu& _dmd, entity_type _et, const std::string& _tgt, const std::string& _op)
         {
-
             modAVUMetadataInp_t inp{
-                const_cast<char*>(_op.c_str())
-              , const_cast<char*>(type_to_token.at(_et).c_str())
-              , const_cast<char*>(_tgt.c_str())
-              , const_cast<char*>(_md.attribute.c_str())
-              , const_cast<char*>(_md.value.c_str())
-              , const_cast<char*>(_md.units.c_str())
-              , const_cast<char*>(_dmd.attribute.c_str())
-              , const_cast<char*>(_dmd.value.c_str())
-              , const_cast<char*>(_dmd.units.c_str())
-              , nullptr // unused arg9
+                const_cast<char*>(_op.c_str()),
+                const_cast<char*>(type_to_token.at(_et).c_str()),
+                const_cast<char*>(_tgt.c_str()),
+                const_cast<char*>(_md.attribute.c_str()),
+                const_cast<char*>(_md.value.c_str()),
+                const_cast<char*>(_md.units.c_str()),
+                const_cast<char*>(_dmd.attribute.c_str()),
+                const_cast<char*>(_dmd.value.c_str()),
+                const_cast<char*>(_dmd.units.c_str()),
+                nullptr, // unused arg9
+                KeyValPair{}
             };
 
             return rxModAVUMetadata(&_comm, &inp);
-
         } // mod_avu_meta
 
         template<typename M_T, typename T_T>

@@ -1,6 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
 /**************************************************************************
 
   This file contains most of the ICAT (iRODS Catalog) high Level
@@ -14,9 +11,10 @@
 
 **************************************************************************/
 
+#include "icatHighLevelRoutines.hpp"
+
 // =-=-=-=-=-=-=-
 // irods includes
-#include "icatHighLevelRoutines.hpp"
 #include "icatStructs.hpp"
 #include "irods_error.hpp"
 #include "irods_database_object.hpp"
@@ -2441,18 +2439,18 @@ int chlRegUserRE(
 // JMC - backport 4836
 /* Add or modify an Attribute-Value pair metadata item of an object*/
 int chlSetAVUMetadata(
-    rsComm_t*   _comm,
-    const char* _type,
-    const char* _name,
-    const char* _attribute,
-    const char* _new_value,
-    const char* _new_unit ) {
+    rsComm_t*         _comm,
+    const char*       _type,
+    const char*       _name,
+    const char*       _attribute,
+    const char*       _new_value,
+    const char*       _new_unit,
+    const KeyValPair* _cond_input)
+{
     // =-=-=-=-=-=-=-
     // call factory for database object
     irods::database_object_ptr db_obj_ptr;
-    irods::error ret = irods::database_factory(
-                           database_plugin_type,
-                           db_obj_ptr );
+    irods::error ret = irods::database_factory( database_plugin_type, db_obj_ptr );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
@@ -2461,32 +2459,26 @@ int chlSetAVUMetadata(
     // =-=-=-=-=-=-=-
     // resolve a plugin for that object
     irods::plugin_ptr db_plug_ptr;
-    ret = db_obj_ptr->resolve(
-              irods::DATABASE_INTERFACE,
-              db_plug_ptr );
+    ret = db_obj_ptr->resolve( irods::DATABASE_INTERFACE, db_plug_ptr );
     if ( !ret.ok() ) {
-        irods::log(
-            PASSMSG(
-                "failed to resolve database interface",
-                ret ) );
+        irods::log( PASSMSG( "failed to resolve database interface", ret ) );
         return ret.code();
     }
 
     // =-=-=-=-=-=-=-
     // cast plugin and object to db and fco for call
-    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
-                                        irods::first_class_object > ( db_obj_ptr );
-    irods::database_ptr           db = boost::dynamic_pointer_cast <
-                                       irods::database > ( db_plug_ptr );
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast < irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr db = boost::dynamic_pointer_cast < irods::database > ( db_plug_ptr );
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call <
+    ret = db->call<
           const char*,
           const char*,
           const char*,
           const char*,
-          const char* > (
+          const char*,
+          const KeyValPair*>(
               _comm,
               irods::DATABASE_OP_SET_AVU_METADATA,
               ptr,
@@ -2494,7 +2486,8 @@ int chlSetAVUMetadata(
               _name,
               _attribute,
               _new_value,
-              _new_unit );
+              _new_unit,
+              _cond_input);
 
     return ret.code();
 
@@ -2508,19 +2501,18 @@ int chlSetAVUMetadata(
 // The return value is error code (negative) or the number of objects
 // to which the AVU was associated.
 int chlAddAVUMetadataWild(
-    rsComm_t*   _comm,
-    int         _admin_mode,
-    const char* _type,
-    const char* _name,
-    const char* _attribute,
-    const char* _value,
-    const char* _units ) {
+    rsComm_t*         _comm,
+    const char*       _type,
+    const char*       _name,
+    const char*       _attribute,
+    const char*       _value,
+    const char*       _units,
+    const KeyValPair* _cond_input)
+{
     // =-=-=-=-=-=-=-
     // call factory for database object
     irods::database_object_ptr db_obj_ptr;
-    irods::error ret = irods::database_factory(
-                           database_plugin_type,
-                           db_obj_ptr );
+    irods::error ret = irods::database_factory( database_plugin_type, db_obj_ptr );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
@@ -2529,63 +2521,54 @@ int chlAddAVUMetadataWild(
     // =-=-=-=-=-=-=-
     // resolve a plugin for that object
     irods::plugin_ptr db_plug_ptr;
-    ret = db_obj_ptr->resolve(
-              irods::DATABASE_INTERFACE,
-              db_plug_ptr );
+    ret = db_obj_ptr->resolve( irods::DATABASE_INTERFACE, db_plug_ptr );
     if ( !ret.ok() ) {
-        irods::log(
-            PASSMSG(
-                "failed to resolve database interface",
-                ret ) );
+        irods::log( PASSMSG( "failed to resolve database interface", ret ) );
         return ret.code();
     }
 
     // =-=-=-=-=-=-=-
     // cast plugin and object to db and fco for call
-    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
-                                        irods::first_class_object > ( db_obj_ptr );
-    irods::database_ptr           db = boost::dynamic_pointer_cast <
-                                       irods::database > ( db_plug_ptr );
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast < irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr db = boost::dynamic_pointer_cast < irods::database > ( db_plug_ptr );
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call <
-          int,
+    ret = db->call<
           const char*,
           const char*,
           const char*,
           const char*,
-          const char* > (
+          const char*,
+          const KeyValPair*> (
               _comm,
               irods::DATABASE_OP_ADD_AVU_METADATA_WILD,
               ptr,
-              _admin_mode,
               _type,
               _name,
               _attribute,
               _value,
-              _units );
+              _units,
+              _cond_input);
 
     return ret.code();
-
 } // chlAddAVUMetadataWild
 
 // =-=-=-=-=-=-=-
 // Add an Attribute-Value [Units] pair/triple metadata item to an object
 int chlAddAVUMetadata(
-    rsComm_t* _comm,
-    int         _admin_mode,
-    const char* _type,
-    const char* _name,
-    const char* _attribute,
-    const char* _value,
-    const char* _units ) {
+    rsComm_t*         _comm,
+    const char*       _type,
+    const char*       _name,
+    const char*       _attribute,
+    const char*       _value,
+    const char*       _units,
+    const KeyValPair* _cond_input)
+{
     // =-=-=-=-=-=-=-
     // call factory for database object
     irods::database_object_ptr db_obj_ptr;
-    irods::error ret = irods::database_factory(
-                           database_plugin_type,
-                           db_obj_ptr );
+    irods::error ret = irods::database_factory( database_plugin_type, db_obj_ptr );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
@@ -2594,45 +2577,37 @@ int chlAddAVUMetadata(
     // =-=-=-=-=-=-=-
     // resolve a plugin for that object
     irods::plugin_ptr db_plug_ptr;
-    ret = db_obj_ptr->resolve(
-              irods::DATABASE_INTERFACE,
-              db_plug_ptr );
+    ret = db_obj_ptr->resolve( irods::DATABASE_INTERFACE, db_plug_ptr );
     if ( !ret.ok() ) {
-        irods::log(
-            PASSMSG(
-                "failed to resolve database interface",
-                ret ) );
+        irods::log( PASSMSG( "failed to resolve database interface", ret ) );
         return ret.code();
     }
 
     // =-=-=-=-=-=-=-
     // cast plugin and object to db and fco for call
-    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
-                                        irods::first_class_object > ( db_obj_ptr );
-    irods::database_ptr           db = boost::dynamic_pointer_cast <
-                                       irods::database > ( db_plug_ptr );
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast<irods::first_class_object>(db_obj_ptr);
+    irods::database_ptr db = boost::dynamic_pointer_cast<irods::database>(db_plug_ptr);
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call <
-          int,
+    ret = db->call<
           const char*,
           const char*,
           const char*,
           const char*,
-          const char* > (
+          const char*,
+          const KeyValPair*>(
               _comm,
               irods::DATABASE_OP_ADD_AVU_METADATA,
               ptr,
-              _admin_mode,
               _type,
               _name,
               _attribute,
               _value,
-              _units );
+              _units,
+              _cond_input);
 
     return ret.code();
-
 } // chlAddAVUMetadata
 
 /* Modify an Attribute-Value [Units] pair/triple metadata item of an object*/
@@ -2645,42 +2620,35 @@ int chlModAVUMetadata(
     const char* _unitsOrArg0,
     const char* _arg1,
     const char* _arg2,
-    const char* _arg3 ) {
+    const char* _arg3,
+    const KeyValPair* _cond_input)
+{
     // =-=-=-=-=-=-=-
     // call factory for database object
     irods::database_object_ptr db_obj_ptr;
-    irods::error ret = irods::database_factory(
-                           database_plugin_type,
-                           db_obj_ptr );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
+    irods::error ret = irods::database_factory(database_plugin_type, db_obj_ptr);
+    if (!ret.ok()) {
+        irods::log(PASS(ret));
         return ret.code();
     }
 
     // =-=-=-=-=-=-=-
     // resolve a plugin for that object
     irods::plugin_ptr db_plug_ptr;
-    ret = db_obj_ptr->resolve(
-              irods::DATABASE_INTERFACE,
-              db_plug_ptr );
-    if ( !ret.ok() ) {
-        irods::log(
-            PASSMSG(
-                "failed to resolve database interface",
-                ret ) );
+    ret = db_obj_ptr->resolve(irods::DATABASE_INTERFACE, db_plug_ptr);
+    if (!ret.ok()) {
+        irods::log(PASSMSG("failed to resolve database interface", ret));
         return ret.code();
     }
 
     // =-=-=-=-=-=-=-
     // cast plugin and object to db and fco for call
-    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
-                                        irods::first_class_object > ( db_obj_ptr );
-    irods::database_ptr           db = boost::dynamic_pointer_cast <
-                                       irods::database > ( db_plug_ptr );
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast<irods::first_class_object>(db_obj_ptr);
+    irods::database_ptr db = boost::dynamic_pointer_cast<irods::database>(db_plug_ptr);
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call <
+    ret = db->call<
           const char*,
           const char*,
           const char*,
@@ -2688,7 +2656,8 @@ int chlModAVUMetadata(
           const char*,
           const char*,
           const char*,
-          const char* > (
+          const char*,
+          const KeyValPair*>(
               _comm,
               irods::DATABASE_OP_MOD_AVU_METADATA,
               ptr,
@@ -2699,66 +2668,60 @@ int chlModAVUMetadata(
               _unitsOrArg0,
               _arg1,
               _arg2,
-              _arg3 );
+              _arg3,
+              _cond_input);
 
     return ret.code();
-
 } // chlModAVUMetadata
 
 /* Delete an Attribute-Value [Units] pair/triple metadata item from an object*/
 /* option is 0: normal, 1: use wildcards, 2: input is id not type,name,units */
 /* noCommit: if 1: skip the commit (only used by chlModAVUMetadata) */
 int chlDeleteAVUMetadata(
-    rsComm_t*   _comm,
-    int         _option,
-    const char* _type,
-    const char* _name,
-    const char* _attribute,
-    const char* _value,
-    const char* _units,
-    int         _nocommit ) {
+    rsComm_t*         _comm,
+    int               _option,
+    const char*       _type,
+    const char*       _name,
+    const char*       _attribute,
+    const char*       _value,
+    const char*       _units,
+    int               _nocommit,
+    const KeyValPair* _cond_input)
+{
     // =-=-=-=-=-=-=-
     // call factory for database object
     irods::database_object_ptr db_obj_ptr;
-    irods::error ret = irods::database_factory(
-                           database_plugin_type,
-                           db_obj_ptr );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
+    irods::error ret = irods::database_factory(database_plugin_type, db_obj_ptr);
+    if (!ret.ok()) {
+        irods::log(PASS(ret));
         return ret.code();
     }
 
     // =-=-=-=-=-=-=-
     // resolve a plugin for that object
     irods::plugin_ptr db_plug_ptr;
-    ret = db_obj_ptr->resolve(
-              irods::DATABASE_INTERFACE,
-              db_plug_ptr );
-    if ( !ret.ok() ) {
-        irods::log(
-            PASSMSG(
-                "failed to resolve database interface",
-                ret ) );
+    ret = db_obj_ptr->resolve(irods::DATABASE_INTERFACE, db_plug_ptr);
+    if (!ret.ok()) {
+        irods::log(PASSMSG("failed to resolve database interface", ret));
         return ret.code();
     }
 
     // =-=-=-=-=-=-=-
     // cast plugin and object to db and fco for call
-    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
-                                        irods::first_class_object > ( db_obj_ptr );
-    irods::database_ptr           db = boost::dynamic_pointer_cast <
-                                       irods::database > ( db_plug_ptr );
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast<irods::first_class_object>(db_obj_ptr);
+    irods::database_ptr db = boost::dynamic_pointer_cast<irods::database>(db_plug_ptr);
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call <
+    ret = db->call<
           int,
           const char*,
           const char*,
           const char*,
           const char*,
           const char*,
-          int > (
+          int,
+          const KeyValPair*>(
               _comm,
               irods::DATABASE_OP_DEL_AVU_METADATA,
               ptr,
@@ -2768,26 +2731,26 @@ int chlDeleteAVUMetadata(
               _attribute,
               _value,
               _units,
-              _nocommit );
+              _nocommit,
+              _cond_input);
 
     return ret.code();
-
 } // chlDeleteAVUMetadata
 
 // =-=-=-=-=-=-=-
 // Copy an Attribute-Value [Units] pair/triple from one object to another
 int chlCopyAVUMetadata(
-    rsComm_t*   _comm,
-    const char* _type1,
-    const char* _type2,
-    const char* _name1,
-    const char* _name2 ) {
+    rsComm_t*         _comm,
+    const char*       _type1,
+    const char*       _type2,
+    const char*       _name1,
+    const char*       _name2,
+    const KeyValPair* _cond_input)
+{
     // =-=-=-=-=-=-=-
     // call factory for database object
     irods::database_object_ptr db_obj_ptr;
-    irods::error ret = irods::database_factory(
-                           database_plugin_type,
-                           db_obj_ptr );
+    irods::error ret = irods::database_factory( database_plugin_type, db_obj_ptr );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
@@ -2796,41 +2759,35 @@ int chlCopyAVUMetadata(
     // =-=-=-=-=-=-=-
     // resolve a plugin for that object
     irods::plugin_ptr db_plug_ptr;
-    ret = db_obj_ptr->resolve(
-              irods::DATABASE_INTERFACE,
-              db_plug_ptr );
+    ret = db_obj_ptr->resolve( irods::DATABASE_INTERFACE, db_plug_ptr );
     if ( !ret.ok() ) {
-        irods::log(
-            PASSMSG(
-                "failed to resolve database interface",
-                ret ) );
+        irods::log( PASSMSG( "failed to resolve database interface", ret ) );
         return ret.code();
     }
 
     // =-=-=-=-=-=-=-
     // cast plugin and object to db and fco for call
-    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
-                                        irods::first_class_object > ( db_obj_ptr );
-    irods::database_ptr           db = boost::dynamic_pointer_cast <
-                                       irods::database > ( db_plug_ptr );
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast < irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr db = boost::dynamic_pointer_cast < irods::database > ( db_plug_ptr );
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call <
+    ret = db->call<
           const char*,
           const char*,
           const char*,
-          const char* > (
+          const char*,
+          const KeyValPair*>(
               _comm,
               irods::DATABASE_OP_COPY_AVU_METADATA,
               ptr,
               _type1,
               _type2,
               _name1,
-              _name2 );
+              _name2,
+              _cond_input);
 
     return ret.code();
-
 } // chlCopyAVUMetadata
 
 int chlModAccessControlResc(

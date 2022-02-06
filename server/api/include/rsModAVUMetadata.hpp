@@ -1,9 +1,14 @@
-#ifndef RS_MOD_A_V_U_METADATA_HPP
-#define RS_MOD_A_V_U_METADATA_HPP
+#ifndef IRODS_RS_MOD_A_V_U_METADATA_HPP
+#define IRODS_RS_MOD_A_V_U_METADATA_HPP
+
+/// \file
 
 #include "modAVUMetadata.h"
 
-int rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp );
-int _rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp );
+struct RsComm;
+struct ModifyAVUMetadataInput;
 
-#endif
+int rsModAVUMetadata(RsComm* rsComm, ModifyAVUMetadataInput* modAVUMetadataInp);
+int _rsModAVUMetadata(RsComm* rsComm, ModifyAVUMetadataInput* modAVUMetadataInp);
+
+#endif // IRODS_RS_MOD_A_V_U_METADATA_HPP
