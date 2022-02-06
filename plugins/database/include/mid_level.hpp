@@ -148,7 +148,7 @@ rodsLong_t cmlGetCurrentSeqVal( icatSessionStruct *icss );
 int cmlGetNextSeqStr( char *seqStr, int maxSeqStrLen, icatSessionStruct *icss );
 
 rodsLong_t cmlCheckDir( const char *dirName, const char *userName, const char *userZone,
-                        const char *accessLevel, icatSessionStruct *icss );
+                        const char *accessLevel, icatSessionStruct *icss, bool admin_mode = false );
 
 rodsLong_t cmlCheckResc( const char *rescName, const char *userName, const char *userZone,
                          const char *accessLevel, icatSessionStruct *icss );
@@ -174,7 +174,8 @@ int cmlTicketUpdateWriteBytes( const char *ticketStr,
                                icatSessionStruct *icss );
 
 rodsLong_t cmlCheckDataObjOnly( const char *dirName, const char *dataName, const char *userName,
-                                const char *userZone, const char *accessLevel, icatSessionStruct *icss );
+                                const char *userZone, const char *accessLevel, icatSessionStruct *icss,
+                                bool admin_mode = false);
 
 rodsLong_t cmlCheckDataObjOwn( const char *dirName, const char *dataName, const char *userName,
                                const char *userZone, icatSessionStruct *icss );
