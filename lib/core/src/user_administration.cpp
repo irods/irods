@@ -15,6 +15,7 @@
 #include "authenticate.h"
 #include "irods_query.hpp"
 #include "query_builder.hpp"
+#include "rcConnect.h"
 
 #include <array>
 #include <iostream>
@@ -63,7 +64,7 @@ namespace irods::experimental::administration::NAMESPACE_IMPL
 #endif // IRODS_USER_ADMINISTRATION_ENABLE_SERVER_SIDE_API
             }
 
-            auto obfuscate_password(std::string_view new_password) -> std::string
+            auto obfuscate_password(const std::string_view new_password) -> std::string
             {
                 std::array<char, MAX_PASSWORD_LEN + 10> plain_text_password{};
                 std::strncpy(plain_text_password.data(), new_password.data(), MAX_PASSWORD_LEN);
@@ -74,18 +75,21 @@ namespace irods::experimental::administration::NAMESPACE_IMPL
                     std::strncat(plain_text_password.data(), "1gCBizHWbwIYyWLoysGzTe6SyzqFKMniZX05faZHWAwQKXf6Fs", lcopy);
                 }
 
-                std::array<char, MAX_PASSWORD_LEN + 10> key{};
+                std::array<char, MAX_PASSWORD_LEN + 10> admin_password{};
 
-                // Decode (or prompt for current password) and store the obfuscated password in key.
-                // "obfGetPw" decodes the obfuscated password stored in .irods/.irodsA.
-                if (obfGetPw(key.data()) != 0) {
-                    throw user_management_error{"password obfuscation failed"};
+                // Get the plain text password of the iRODS user.
+                // "obfGetPw" decodes the obfuscated password stored in .irods/irodsA.
+                if (obfGetPw(admin_password.data()) != 0) {
+                    throw user_management_error{"failed to unobfuscate password in .irodsA file."};
                 }
 
-                std::array<char, MAX_PASSWORD_LEN + 100> obfuscate_password{};
-                obfEncodeByKey(plain_text_password.data(), key.data(), obfuscate_password.data());
+                std::array<char, MAX_PASSWORD_LEN + 100> obfuscated_password{};
+                obfEncodeByKeyV2(plain_text_password.data(),
+                                 admin_password.data(),
+                                 getSessionSignatureClientside(),
+                                 obfuscated_password.data());
 
-                return obfuscate_password.data();
+                return obfuscated_password.data();
             }
         } // anonymous namespace
 
