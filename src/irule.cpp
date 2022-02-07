@@ -177,11 +177,15 @@ main( int argc, char **argv ) {
     if ( argsMap.count( "rule-engine-plugin-instance" ) ) {
         addKeyVal( &execMyRuleInp.condInput, irods::CFG_INSTANCE_NAME_KW.c_str(), argsMap["rule-engine-plugin-instance"].as<std::string>().c_str() );
     }
+
+    load_client_api_plugins();
+
     /* Don't need to parse parameters if just listing available rule_engine_instances */
     if ( argsMap.count( "available" ) ) {
         /* add key val for listing available rule engine instances */
         addKeyVal( &execMyRuleInp.condInput, "available", "true" );
-    } else {
+    }
+    else {
         /* read rules from the input file */
         if ( argsMap.count( "file" ) ) {
             FILE *fptr;
@@ -201,12 +205,6 @@ main( int argc, char **argv ) {
                 std::cerr << "Use -h or --help for help\n";
                 exit( 10 );
             }
-
-            // =-=-=-=-=-=-=-
-            // initialize pluggable api table
-            irods::api_entry_table&  api_tbl = irods::get_client_api_table();
-            irods::pack_entry_table& pk_tbl  = irods::get_pack_table();
-            init_api_table( api_tbl, pk_tbl );
 
             /* if the input file name starts with "i:", the get the file from iRODS server */
             if ( !strncmp( fileName, "i:", 2 ) ) {
