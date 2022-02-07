@@ -2107,7 +2107,7 @@ namespace
         int myStrlen = inPtr ? strlen( static_cast<const char*>(inPtr) ) : 0;
         int extLen = maxStrLen;
         void *outPtr;
-        if ( myStrlen + 1 >= maxStrLen ) {
+        if ( myStrlen >= maxStrLen ) {
             if ( maxStrLen >= 0 ) {
                 return USER_PACKSTRUCT_INPUT_ERR;
             }
