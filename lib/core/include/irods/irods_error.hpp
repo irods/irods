@@ -107,9 +107,22 @@ namespace irods {
 
     }; // class error
 
-    error assert_error( bool expr_, long long code_, const std::string& file_, const std::string& function_, const std::string& format_, int line_, ... );
-    error assert_pass( const error& _error, const std::string& _file, const std::string& _function, const std::string& _format, int line_, ... );
+    [[deprecated("Evaluate expr_ and use the ERROR macro instead.")]]
+    error assert_error(bool expr_,
+                       long long code_,
+                       const std::string& file_,
+                       const std::string& function_,
+                       const std::string& format_,
+                       int line_,
+                       ...);
 
+    [[deprecated("Evaluate _error.ok() and use the PASSMSG macro instead.")]]
+    error assert_pass(const error& _error,
+                      const std::string& _file,
+                      const std::string& _function,
+                      const std::string& _format,
+                      int line_,
+                      ...);
 }; // namespace irods
 
 
