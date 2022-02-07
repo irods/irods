@@ -23,6 +23,11 @@ class Test_Stacktrace(session.make_sessions_mixin([('otherrods', 'rods')], []), 
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_stacktraces_appear_in_log__issue_4382(self):
-        self.admin.assert_icommand_fail(['irule', 'msiSegFault()', 'null', 'ruleExecOut'])
-        for msg in ['Dumping stacktrace and exiting', '"stacktrace":', '<0>\\tOffset:']:
-            lib.delayAssert(lambda: lib.log_message_occurrences_greater_than_count(msg=msg, count=0))
+        config = IrodsConfig()
+        with lib.file_backed_up(config.server_config_path):
+            config.server_config['advanced_settings']['stacktrace_file_processor_sleep_time_in_seconds'] = 1
+            lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+
+            self.admin.assert_icommand_fail(['irule', 'msiSegFault()', 'null', 'ruleExecOut'])
+            for msg in ['0# stacktrace_signal_handler']:
+                lib.delayAssert(lambda: lib.log_message_occurrences_greater_than_count(msg=msg, count=0))
