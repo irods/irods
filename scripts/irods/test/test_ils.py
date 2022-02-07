@@ -124,3 +124,22 @@ class Test_Ils(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['ils', '-l', data_object, data_object, data_object], 'STDOUT', [data_object])
         self.admin.assert_icommand(['ils', '-L', data_object, data_object, data_object], 'STDOUT', [data_object])
 
+    def test_max_length_usernames_do_not_result_in_a_USER_PACKSTRUCT_INPUT_ERR_error__issue_6091(self):
+        long_username = 'new_user_' + ('x' * 54) # 63 byte username
+
+        # Make sure the username is 63 bytes long.
+        self.assertEqual(len(long_username), 63)
+
+        try:
+            # Create a new user with the maximum length allowed for the username.
+            # The max length of a username is 64 bytes.
+            self.admin.assert_icommand(['iadmin', 'mkuser', long_username, 'rodsuser'])
+
+            # Show that ils no longer results in an error when listing the new user's home collection.
+            new_user_home_collection = os.path.join('/', self.admin.zone_name, 'home', long_username)
+            self.admin.assert_icommand(['ils', new_user_home_collection], 'STDOUT_SINGLELINE', [new_user_home_collection + ':'])
+
+        finally:
+            # Remove the new user.
+            self.admin.assert_icommand(['iadmin', 'rmuser', long_username])
+
