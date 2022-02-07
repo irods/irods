@@ -5,23 +5,30 @@
 #include "irods_parse_command_line_options.hpp"
 #include "filesystem.hpp"
 #include "rcMisc.h"
+#include "rodsPath.h"
 
 #include "fmt/core.h"
 #include "fmt/color.h"
-#include <nlohmann/json.hpp>
+
 #include "boost/program_options.hpp"
+#include "nlohmann/json.hpp"
 
 #include <regex>
+#include <stdexcept>
+#include <string>
 
-namespace po = boost::program_options;
-namespace fs = irods::experimental::filesystem;
-namespace ix = irods::experimental;
+// clang-format off
+namespace po   = boost::program_options;
+namespace fs   = irods::experimental::filesystem;
+namespace ix   = irods::experimental;
 namespace json = nlohmann;
+
 auto print_dir(const fs::path&,
                const po::variables_map&,
                irods::experimental::client_connection&) -> void;
+// clang-format on
 
-auto correct_path(const po::variables_map&,const rodsEnv&)->fs::path;
+auto correct_path(const po::variables_map&, rodsEnv&) -> fs::path;
 auto print_usage() -> void;
 auto get_json(const fs::path&, const po::variables_map&, ix::client_connection&, unsigned int depth) -> json::json;
 
@@ -42,7 +49,7 @@ int main(int argc, char** argv){
     pod.add("dir",1);
     desc.add_options()
         ("help,h", "Display help")
-        ("dir", po::value<std::string>(), "The initial collection to render (defaults to the current working collection)")
+        ("dir", po::value<std::string>()->default_value("."), "The initial collection to render (defaults to the current working collection)")
         ("collections-only,c", po::bool_switch(), "Only list collections")
         ("fullpath,f", po::bool_switch(), "print the full path of each item listed")
         ("depth,L", po::value<int>()->default_value(1000), "Limit the depth of the listing.")
@@ -76,28 +83,37 @@ int main(int argc, char** argv){
 
         matcher = std::regex(vm["pattern"].as<std::string>(),
                              std::regex::basic | std::regex::optimize );
-        if( vm.count("ignore") ) {
+        if (vm.count("ignore")) {
             exclude_matcher = std::regex(vm["ignore"].as<std::string>(),
                                          std::regex::basic | std::regex::optimize);
         }
+
         auto path = correct_path(vm, env);
         irods::experimental::client_connection conn;
-        if( vm["json"].as<bool>() ){
+
+        if (vm["json"].as<bool>()) {
             auto value = get_json(path, vm, conn, vm["depth"].as<int>() );
             json::json top;
             top.push_back(value);
             json::json report = {{"type","report"}, {"collections",collections},{"data_objects",objects}};
-            if ( vm["size"].as<bool>() )
+
+            if (vm["size"].as<bool>()) {
                 report["size"] = total_size;
+            }
+
             top.push_back(report);
             std::cout << top.dump(2) << "\n";
-        }else {
+        }
+        else {
             print_dir(path, vm, conn);
         }
-    }catch(po::error& e) {
+    }
+    catch (const std::exception& e) {
         std::cerr << "Error:" << e.what() << "\n";
         std::cout << desc << "\n";
+        return 1;
     }
+
     return 0;
 
 }
@@ -239,21 +255,27 @@ auto print_dir(const fs::path& path,
     }
 }
 
-auto correct_path(const po::variables_map& pm, const rodsEnv& env) -> fs::path {
-    if( pm.count("dir") ){
-        fs::path p = pm["dir"].as<std::string>();
-        if(!p.is_absolute()){
-            p=static_cast<fs::path>(env.rodsCwd)/p;
-        }
-        return p;
-    } else {
-        return static_cast<fs::path>(env.rodsCwd);
+auto correct_path(const po::variables_map& pm, rodsEnv& env) -> fs::path {
+    const auto path = pm["dir"].as<std::string>();
+
+    RodsPath input{};
+    rstrcpy(input.inPath, path.data(), MAX_NAME_LEN);
+
+    if (parseRodsPath(&input, &env) != 0) {
+        throw std::invalid_argument{fmt::format("Invalid path [{}].", path)};
     }
+
+    auto* escaped_path = escape_path(input.outPath);
+    fs::path p = escaped_path;
+    std::free(escaped_path);
+
+    return p;
 }
 
 auto print_usage() -> void {
     std::cout << "Display a collection structure as a tree.\n";
 }
+
 auto contents_size(const json::json& value) -> std::uintmax_t {
     std::uintmax_t total = 0;
     for(const auto& child : value["contents"]) {
@@ -261,6 +283,7 @@ auto contents_size(const json::json& value) -> std::uintmax_t {
     }
     return total;
 }
+
 auto get_json(const fs::path& path, const po::variables_map& vm, ix::client_connection& conn, unsigned int depth ) -> json::json  {
     auto fsiter = fs::client::collection_iterator(conn, path);
     json::json value;
