@@ -477,27 +477,14 @@ namespace irods
 
         // =-=-=-=-=-=-=
         // iterate over the list of hostName_t* and see if any match our
-        // host name.  if we do, then were local
-        bool        match_flg = false;
-        hostName_t* tmp_host  = last_resc_host->hostName;
-        while ( tmp_host ) {
-            std::string name( tmp_host->name );
-            if ( name.find( host_name ) != std::string::npos ) {
-                match_flg = true;
-                break;
+        // host name. if we do, then we're local.
+        for (auto* h = last_resc_host->hostName; h; h = h->next) {
+            if (h->name == host_name) {
+                _out_hier = resc_hier;
+                _out_flag = LOCAL_HOST;
+                _out_host = 0;
+                return SUCCESS();
             }
-
-            tmp_host = tmp_host->next;
-
-        } // while tmp_host
-
-        // =-=-=-=-=-=-=-
-        // are we really, really local?
-        if ( match_flg ) {
-            _out_hier = resc_hier;
-            _out_flag = LOCAL_HOST;
-            _out_host = 0;
-            return SUCCESS();
         }
 
         // =-=-=-=-=-=-=-
