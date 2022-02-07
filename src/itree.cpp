@@ -89,6 +89,7 @@ int main(int argc, char** argv){
         }
 
         auto path = correct_path(vm, env);
+        load_client_api_plugins();
         irods::experimental::client_connection conn;
 
         if (vm["json"].as<bool>()) {
