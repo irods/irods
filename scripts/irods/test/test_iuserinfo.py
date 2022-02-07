@@ -41,10 +41,9 @@ class Test_IUserinfo(resource_suite.ResourceBase, unittest.TestCase):
             self.assertTrue(group in out)
 
         _,out,_ = test_session.assert_icommand(['iuserinfo', '{self.remote_user}#{self.remote_zone}'.format(**locals())], 'STDOUT', ['zone: ' + self.remote_zone])
-        self.assertTrue(expected_groups[-1] not in out)
         self.assertTrue(self.local_zone not in out)
         self.assertTrue(self.remote_zone in out)
-        for group in expected_groups[:-1]:
+        for group in expected_groups:
             self.assertTrue(group in out)
 
     def test_iuserinfo_no_zone(self):

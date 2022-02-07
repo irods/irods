@@ -186,7 +186,7 @@ class Test_iPut_Options(ResourceBase, unittest.TestCase):
             cmd = teststring.format(**locals())
             stdout,stderr,_ = self.user0.run_icommand(cmd)
 
-            estr = 'Too many levels of symbolic links:'
+            estr = 'Too many levels of symbolic links'
             self.assertIn(estr, stderr, '{cmd}: Expected stderr: "...{estr}...", got: "{stderr}"'.format(**locals()))
 
             # Make sure the usage message is not present in the output
@@ -312,6 +312,18 @@ class Test_iPut_Options_Issue_3883(ResourceBase, unittest.TestCase):
     def test_iput_zero_length_file_with_purge_and_checksum_3883(self):
         filename = 'test_iput_zero_length_file_with_purge_and_checksum_3883'
         lib.touch(filename)
-        self.user0.assert_icommand(['iput', '-R', 'compoundresc3883', '--purgec', '-k', filename])
-        self.user0.assert_icommand(['ils', '-L'], 'STDOUT_SINGLELINE', 'sha2:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=')
+        logical_path = os.path.join(self.user0.session_collection, filename)
+
+        # Replicas on archive resources do not have checksums applied as of #6089 because the
+        # operation might be expensive or unfeasible depending on the underlying storage
+        # technology. It is incorrect to assume that the checksum matches that of the source
+        # replica, which has been done historically in the event of a DIRECT_ARCHIVE_ACCESS
+        # error. So, it is enough to see that an error did not occur here and that the replica
+        # on the archive resource exists.
+        self.user0.assert_icommand(['iput', '-R', 'compoundresc3883', '--purgec', '-k',
+                                    filename, logical_path])
+        self.user0.assert_icommand_fail(['ils', '-L', logical_path],
+                                        'STDOUT_SINGLELINE', 'cacheresc3883')
+        self.user0.assert_icommand(['ils', '-L', logical_path],
+                                   'STDOUT_SINGLELINE', 'archiveresc3883')
         os.unlink(filename)

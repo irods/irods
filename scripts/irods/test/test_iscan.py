@@ -233,5 +233,5 @@ class Test_iScan(ResourceBase, unittest.TestCase):
     def test_iscan_does_not_core_dump_on_insufficient_permissions__issue_4613(self):
         # This test assumes /root has the following permissions: drwx------ N root root
         # "N" is just a placeholder in this example.
-        self.admin.assert_icommand(['iscan', '/root'], 'STDERR', ['Permission denied: "/root"'])
+        self.admin.assert_icommand(['iscan', '/root'], 'STDERR', ['Permission denied', '"/root"'])
 
