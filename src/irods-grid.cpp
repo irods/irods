@@ -411,7 +411,7 @@ int main(
             data_to_send.data(),
             data_to_send.size() );
         try {
-            if (!zmq_skt.send(req)) {
+            if (!zmq_skt.send(req, zmq::send_flags::none)) {
                 std::cerr << "ZeroMQ encountered an error sending a message.\n";
                 return errno;
             }
@@ -421,11 +421,10 @@ int main(
             return 1;
         }
 
-
         zmq::message_t rep;
         // wait for the server response
         try {
-            if (!zmq_skt.recv( &rep )) {
+            if (!zmq_skt.recv(rep)) {
                 std::cerr << "ZeroMQ encountered an error receiving a message.\n";
                 return errno;
             }
