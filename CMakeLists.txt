@@ -137,6 +137,7 @@ set(IRODS_COMPILE_DEFINITIONS ${IRODS_COMPILE_DEFINITIONS}
                               BOOST_SYSTEM_NO_DEPRECATED
                               BOOST_CHRONO_DONT_PROVIDES_DEPRECATED_IO_SINCE_V2_0_0
                               BOOST_STACKTRACE_USE_ADDR2LINE
+                              BOOST_ASIO_NO_DEPRECATED
                               SPDLOG_FMT_EXTERNAL
                               SPDLOG_NO_TLS)
 

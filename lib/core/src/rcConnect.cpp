@@ -595,11 +595,11 @@ cliChkReconnAtReadEnd( rcComm_t *conn ) {
 }
 
 int
-isLoopbackAddress( const char * ip_address ) {
+isLoopbackAddress(const char* ip_address) {
     try {
-        return boost::asio::ip::address_v4::from_string( ip_address ).is_loopback();
+        return boost::asio::ip::make_address_v4(ip_address).is_loopback();
     }
-    catch ( ... ) {
+    catch (...) {
         return false;
     }
 }
