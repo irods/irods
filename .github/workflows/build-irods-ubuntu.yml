@@ -46,7 +46,7 @@ jobs:
                 irods-externals-clang13.0.0-0 \
                 irods-externals-cmake3.21.4-0 \
                 irods-externals-cppzmq4.8.1-1 \
-                irods-externals-fmt8.0.1-0 \
+                irods-externals-fmt8.1.1-0 \
                 irods-externals-json3.10.4-0 \
                 irods-externals-libarchive3.5.2-0 \
                 irods-externals-nanodbc2.13.0-1 \
