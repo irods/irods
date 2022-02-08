@@ -35,6 +35,7 @@ string(REPLACE ";" ", " IRODS_PACKAGE_DEPENDENCIES_STRING "${IRODS_PACKAGE_DEPEN
 string(REPLACE ";" ", " IRODS_DEVELOP_DEPENDENCIES_STRING "${IRODS_DEVELOP_DEPENDENCIES_LIST}")
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_EXTENSIONS OFF)
 set(IRODS_CXX_STANDARD "${CMAKE_CXX_STANDARD}")
 # export-dynamic so stacktrace entries from executables have function names
 set(CMAKE_EXE_LINKER_FLAGS_INIT "-Wl,--export-dynamic -Wl,--enable-new-dtags -Wl,--as-needed -Wl,-z,defs")
