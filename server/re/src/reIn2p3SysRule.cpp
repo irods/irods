@@ -338,17 +338,17 @@ int checkHostAccessControl(const std::string& _user_name,
                 const auto& mask = access_entry.at(irods::CFG_MASK_KW).get_ref<const std::string&>();
 
                 boost::system::error_code error_code;
-                ip::address_v4 address_entry(ip::address_v4::from_string(addy, error_code));
+                const auto address_entry = ip::make_address_v4(addy, error_code);
                 if ( error_code.value() ) {
                     continue;
                 }
 
-                ip::address_v4 mask_entry(ip::address_v4::from_string(mask, error_code));
+                const auto mask_entry = ip::make_address_v4(mask, error_code);
                 if ( error_code.value() ) {
                     continue;
                 }
 
-                ip::address_v4 host_client(ip::address_v4::from_string(_host_client, error_code));
+                const auto host_client = ip::make_address_v4(_host_client, error_code);
                 if ( error_code.value() ) {
                     continue;
                 }
@@ -373,9 +373,7 @@ int checkHostAccessControl(const std::string& _user_name,
                 if ( group_match || user_match ) {
                     // check if <client, group, clientIP>
                     // match this entry of the control access file.
-                    if ( ( ( host_client.to_ulong() ^
-                            address_entry.to_ulong() ) &
-                            ~mask_entry.to_ulong() ) == 0 ) {
+                    if (((host_client.to_uint() ^ address_entry.to_uint()) & ~mask_entry.to_uint()) == 0) {
                         return 0;
                     }
                 }

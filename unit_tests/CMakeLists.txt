@@ -28,6 +28,9 @@ if (IRODS_UNIT_TESTS_ENABLE_ALL)
     add_definitions(-DIRODS_ENABLE_ALL_UNIT_TESTS)
 endif()
 
+add_compile_definitions(BOOST_ASIO_NO_DEPRECATED
+                        BOOST_SYSTEM_NO_DEPRECATED)
+
 # List of cmake files defined under ./cmake/test_config.
 # Each file in the ./cmake/test_config directory defines variables for a specific test.
 # New tests should be added to this list.
