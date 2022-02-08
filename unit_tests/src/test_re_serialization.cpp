@@ -6,6 +6,10 @@
 #include "lifetime_manager.hpp"
 #include "key_value_proxy.hpp"
 
+#include <map>
+#include <string>
+#include <string_view>
+
 namespace res = irods::re_serialization;
 
 const std::string null_out = "null_value";
@@ -290,3 +294,105 @@ TEST_CASE("serialize_rsComm_ptr", "[pointer][serialization]")
         CHECK(out.at("option")          == rscp->option);
     }
 }
+
+TEST_CASE("serialize_dataObjInfo_ptr", "[pointer][serialization]")
+{
+    SECTION("nullptr")
+    {
+        res::serialized_parameter_t out;
+        const auto e = res::serialize_parameter(static_cast<DataObjInfo*>(nullptr), out);
+        CHECK(e.status());
+        CHECK(out.size() == 1);
+        CHECK(out.at("dataObjInfo_ptr") == "nullptr");
+    }
+
+    SECTION("empty and basic_struct")
+    {
+        std::map<std::string_view, DataObjInfo> test_data{
+            {"empty", {}},
+            {"non_empty", {
+                .objPath            = "objPath",
+                .rescName           = "rescName",
+                .rescHier           = "rescHier",
+                .dataType           = "dataType",
+                .dataSize           = 100,
+                .chksum             = "chksum",
+                .version            = "version",
+                .filePath           = "filePath",
+                .dataOwnerName      = "dataOwnerName",
+                .dataOwnerZone      = "dataOwnerZone",
+                .replNum            = 200,
+                .replStatus         = 300,
+                .statusString       = "statusString",
+                .dataId             = 400,
+                .collId             = 500,
+                .dataMapId          = 600,
+                .flags              = 700,
+                .dataComments       = "dataComments",
+                .dataMode           = "dataMode",
+                .dataExpiry         = "dataExpiry",
+                .dataCreate         = "dataCreate",
+                .dataModify         = "dataModify",
+                .dataAccess         = "dataAccess",
+                .dataAccessInx      = 800,
+                .writeFlag          = 900,
+                .destRescName       = "destRescName",
+                .backupRescName     = "backupRescName",
+                .subPath            = "subPath",
+                .specColl           = nullptr,
+                .regUid             = 1000,
+                .otherFlags         = 1100,
+                .condInput          = {},
+                .in_pdmo            = "in_pdmo",
+                .next               = nullptr,
+                .rescId             = 1200
+            }}
+        };
+
+        for (auto&& [section_name, doi] : test_data) {
+            DYNAMIC_SECTION(section_name)
+            {
+                res::serialized_parameter_t out;
+                const auto e = res::serialize_parameter(&doi, out);
+                CHECK(e.status());
+
+                CHECK(out.at("logical_path")      == doi.objPath);
+                CHECK(out.at("resc_name")         == doi.rescName);
+                CHECK(out.at("resc_hier")         == doi.rescHier);
+                CHECK(out.at("data_type")         == doi.dataType);
+                CHECK(out.at("data_size")         == std::to_string(doi.dataSize));
+                CHECK(out.at("checksum")          == doi.chksum);
+                CHECK(out.at("version")           == doi.version);
+                CHECK(out.at("physical_path")     == doi.filePath);
+                CHECK(out.at("data_owner_name")   == doi.dataOwnerName);
+                CHECK(out.at("data_owner_zone")   == doi.dataOwnerZone);
+                CHECK(out.at("replica_number")    == std::to_string(doi.replNum));
+                CHECK(out.at("replica_status")    == std::to_string(doi.replStatus));
+                CHECK(out.at("status_string")     == doi.statusString);
+                CHECK(out.at("data_id")           == std::to_string(doi.dataId));
+                CHECK(out.at("coll_id")           == std::to_string(doi.collId));
+                CHECK(out.at("data_map_id")       == std::to_string(doi.dataMapId));
+                CHECK(out.at("flags")             == std::to_string(doi.flags));
+                CHECK(out.at("data_comments")     == doi.dataComments);
+                CHECK(out.at("data_mode")         == doi.dataMode);
+                CHECK(out.at("data_expiry")       == doi.dataExpiry);
+                CHECK(out.at("data_create")       == doi.dataCreate);
+                CHECK(out.at("data_modify")       == doi.dataModify);
+                CHECK(out.at("data_access")       == doi.dataAccess);
+                CHECK(out.at("data_access_index") == std::to_string(doi.dataAccessInx));
+                CHECK(out.at("write_flag")        == std::to_string(doi.writeFlag));
+                CHECK(out.at("dest_resc_name")    == doi.destRescName);
+                CHECK(out.at("backup_resc_name")  == doi.backupRescName);
+                CHECK(out.at("sub_path")          == doi.subPath);
+                CHECK(nullptr                     == doi.specColl);
+                CHECK(out.at("reg_uid")           == std::to_string(doi.regUid));
+                CHECK(out.at("other_flags")       == std::to_string(doi.otherFlags));
+                CHECK(out.at("keyValPair_t")      == "nullptr");
+                CHECK(out.at("in_pdmo")           == doi.in_pdmo);
+                CHECK(nullptr                     == doi.next);
+                CHECK(out.at("resc_id")           == std::to_string(doi.rescId));
+            }
+        }
+    }
+}
+
