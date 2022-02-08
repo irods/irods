@@ -86,9 +86,9 @@ namespace irods
         // standard zmq rep-req communication pattern
         zmq::context_t zmq_ctx( 1 );
         zmq::socket_t  zmq_skt( zmq_ctx, ZMQ_REQ );
-        zmq_skt.setsockopt( ZMQ_RCVTIMEO, &time_out, sizeof( time_out ) );
-        zmq_skt.setsockopt( ZMQ_SNDTIMEO, &time_out, sizeof( time_out ) );
-        zmq_skt.setsockopt( ZMQ_LINGER, 0 );
+        zmq_skt.set(zmq::sockopt::rcvtimeo, time_out);
+        zmq_skt.set(zmq::sockopt::sndtimeo, time_out);
+        zmq_skt.set(zmq::sockopt::linger, 0);
 
         // this is the client so we connect rather than bind
         const auto conn_str = fmt::format("tcp://{}:{}", _host, port);
@@ -139,11 +139,11 @@ namespace irods
         // copy binary encoding into a zmq message for transport
         zmq::message_t rep( data_to_send.size() );
         std::memcpy( rep.data(), data_to_send.data(), data_to_send.size() );
-        zmq_skt.send( rep );
+        zmq_skt.send(rep, zmq::send_flags::none);
 
         // wait for the server response
         zmq::message_t req;
-        zmq_skt.recv( &req );
+        { [[maybe_unused]] const auto ec = zmq_skt.recv(req); }
 
         if ( 0 == req.size() ) {
             _output += "{\n    \"response_message_is_empty_from\" : \"" + conn_str + "\"\n},\n";
@@ -601,9 +601,9 @@ namespace irods
                 zmq::socket_t  zmq_skt( zmq_ctx, ZMQ_REP );
 
                 int time_out = SERVER_CONTROL_POLLING_TIME_MILLI_SEC;
-                zmq_skt.setsockopt( ZMQ_RCVTIMEO, &time_out, sizeof( time_out ) );
-                zmq_skt.setsockopt( ZMQ_SNDTIMEO, &time_out, sizeof( time_out ) );
-                zmq_skt.setsockopt( ZMQ_LINGER, 0 );
+                zmq_skt.set(zmq::sockopt::rcvtimeo, time_out);
+                zmq_skt.set(zmq::sockopt::sndtimeo, time_out);
+                zmq_skt.set(zmq::sockopt::linger, 0);
 
                 const auto conn_str = fmt::format("tcp://*:{}", port);
                 zmq_skt.bind( conn_str.c_str() );
@@ -618,7 +618,7 @@ namespace irods
                         case 0: {
                             // Wait for a request.
                             zmq::message_t req;
-                            zmq_skt.recv( &req );
+                            { [[maybe_unused]] const auto ec = zmq_skt.recv(req); }
                             if ( 0 == req.size() ) {
                                 continue;
                             }
@@ -659,7 +659,7 @@ namespace irods
                             zmq::message_t rep( data_to_send.size() );
                             std::memcpy(rep.data(), data_to_send.data(), data_to_send.size());
 
-                            zmq_skt.send( rep );
+                            zmq_skt.send(rep, zmq::send_flags::none);
 
                             break;
                         }
