@@ -481,7 +481,7 @@ namespace irods::re_serialization
                 _out["backup_resc_name"] = l->backupRescName;
                 _out["sub_path"] = l->subPath;
                 _out["reg_uid"] = boost::lexical_cast<std::string>(l->regUid);
-                _out["resc_id"] = l->rescId;
+                _out["resc_id"] = boost::lexical_cast<std::string>(l->rescId);
 
                 if(l->specColl) {
                     serialize_spec_coll_info_ptr(
