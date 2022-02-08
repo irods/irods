@@ -31,10 +31,10 @@ namespace irods
     inline const std::string SERVER_PAUSED_ERROR( "The server is Paused, resume before issuing any other commands" );
 
     // this is a hand-chosen polling time for the control plane
-    static const size_t SERVER_CONTROL_POLLING_TIME_MILLI_SEC = 500;
+    inline const std::size_t SERVER_CONTROL_POLLING_TIME_MILLI_SEC = 500;
 
     // derived from above - used to wait for the server to shut down or resume
-    static const size_t SERVER_CONTROL_FWD_SLEEP_TIME_MILLI_SEC = SERVER_CONTROL_POLLING_TIME_MILLI_SEC / 4.0;
+    inline const std::size_t SERVER_CONTROL_FWD_SLEEP_TIME_MILLI_SEC = SERVER_CONTROL_POLLING_TIME_MILLI_SEC / 4.0;
 
     class server_control_executor
     {
