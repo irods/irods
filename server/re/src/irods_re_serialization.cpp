@@ -455,6 +455,7 @@ namespace irods::re_serialization
 
             if (l) {
                 _out["logical_path"] = l->objPath;
+                _out["resc_name"] = l->rescName;
                 _out["resc_hier"] = l->rescHier;
                 _out["data_type"] = l->dataType;
                 _out["data_size"] = boost::lexical_cast<std::string>(l->dataSize);
@@ -465,6 +466,7 @@ namespace irods::re_serialization
                 _out["data_owner_zone"] = l->dataOwnerZone;
                 _out["replica_number"] = boost::lexical_cast<std::string>(l->replNum);
                 _out["replica_status"] = boost::lexical_cast<std::string>(l->replStatus);
+                _out["status_string"] = l->statusString;
                 _out["data_id"] = boost::lexical_cast<std::string>(l->dataId);
                 _out["coll_id"] = boost::lexical_cast<std::string>(l->collId);
                 _out["data_map_id"] = boost::lexical_cast<std::string>(l->dataMapId);
@@ -481,24 +483,26 @@ namespace irods::re_serialization
                 _out["backup_resc_name"] = l->backupRescName;
                 _out["sub_path"] = l->subPath;
                 _out["reg_uid"] = boost::lexical_cast<std::string>(l->regUid);
+                _out["other_flags"] = boost::lexical_cast<std::string>(l->otherFlags);
+                _out["in_pdmo"] = l->in_pdmo;
                 _out["resc_id"] = boost::lexical_cast<std::string>(l->rescId);
 
-                if(l->specColl) {
-                    serialize_spec_coll_info_ptr(
-                            l->specColl,
-                            _out );
+                // TODO Serialize DataObjInfo objects referenced by the "DataObjInfo::next".
+                // To do that requires namespacing due to the flat structure of the serialized
+                // data format.
+
+                if (l->specColl) {
+                    serialize_spec_coll_info_ptr(l->specColl, _out);
                 }
 
                 serialize_keyValPair(l->condInput, _out);
-
-            } else {
+            }
+            else {
                 _out["dataObjInfo_ptr"] = "nullptr";
             }
         }
-        catch ( std::exception& ) {
-            return ERROR(
-                     INVALID_ANY_CAST,
-                     "failed to cast dataObjInfo ptr" );
+        catch (const std::exception&) {
+            return ERROR(INVALID_ANY_CAST, "failed to cast dataObjInfo ptr");
         }
 
         return SUCCESS();
