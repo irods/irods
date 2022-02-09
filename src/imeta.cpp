@@ -37,6 +37,8 @@ rodsEnv myEnv;
 int lastCommandStatus = 0;
 int printCount = 0;
 
+bool admin_mode = false;
+
 int usage( const char *subOpt );
 
 int do_interactive();
@@ -945,8 +947,9 @@ int queryUser( char *attribute, char *op, char *value ) {
  */
 int
 modCopyAVUMetadata( char *arg0, char *arg1, char *arg2, char *arg3,
-                    char *arg4, char *arg5, char *arg6, char *arg7 ) {
-    modAVUMetadataInp_t modAVUMetadataInp;
+                    char *arg4, char *arg5, char *arg6, char *arg7 )
+{
+    modAVUMetadataInp_t modAVUMetadataInp{};
     char fullName1[MAX_NAME_LEN];
     char fullName2[MAX_NAME_LEN];
 
@@ -992,6 +995,10 @@ modCopyAVUMetadata( char *arg0, char *arg1, char *arg2, char *arg3,
     modAVUMetadataInp.arg7 = arg7;
     modAVUMetadataInp.arg8 = "";
     modAVUMetadataInp.arg9 = "";
+
+    if (admin_mode) {
+        addKeyVal(&modAVUMetadataInp.condInput, ADMIN_KW, "");
+    }
 
     int status = rcModAVUMetadata( Conn, &modAVUMetadataInp );
     lastCommandStatus = status;
@@ -1049,9 +1056,10 @@ modCopyAVUMetadata( char *arg0, char *arg1, char *arg2, char *arg3,
  Modify (add or remove) AVUs
  */
 int
-modAVUMetadata( char *arg0, char *arg1, char *arg2, char *arg3,
-                char *arg4, char *arg5, char *arg6, char *arg7, char *arg8 ) {
-    modAVUMetadataInp_t modAVUMetadataInp;
+modAVUMetadata(char *arg0, char *arg1, char *arg2, char *arg3,
+               char *arg4, char *arg5, char *arg6, char *arg7, char *arg8)
+{
+    modAVUMetadataInp_t modAVUMetadataInp{};
     char fullName[MAX_NAME_LEN];
 
     if ( strcmp( arg1, "-R" ) == 0 || strcmp( arg1, "-r" ) == 0 ||
@@ -1081,7 +1089,11 @@ modAVUMetadata( char *arg0, char *arg1, char *arg2, char *arg3,
     modAVUMetadataInp.arg8 = arg8;
     modAVUMetadataInp.arg9 = "";
 
-    int status = rcModAVUMetadata( Conn, &modAVUMetadataInp );
+    if (admin_mode) {
+        addKeyVal(&modAVUMetadataInp.condInput, ADMIN_KW, "");
+    }
+
+    const int status = rcModAVUMetadata( Conn, &modAVUMetadataInp );
     lastCommandStatus = status;
 
     if ( status < 0 ) {
@@ -1214,6 +1226,7 @@ parse_program_options(int _argc,
         ("help,h",                                             "Show imeta help")
         ("verbose,v",                                          "Verbose output")
         ("very_verbose,V",                                     "Very verbose output")
+        ("admin_mode,M",                                       "Execute as administrator")
         ("zone_name,z", po::value< std::string >(),            "Work with the specified zone")
         ("command", po::value< std::string >(),                "Command to execute")
         ("subargs", po::value< std::vector< std::string > >(), "Arguments for command");
@@ -1248,6 +1261,10 @@ parse_program_options(int _argc,
             _rods_args.zone = 1;
             _rods_args.zoneName = (char*) vm["zone_name"].as<std::string>().c_str();
             rstrcpy(zoneArgument, _rods_args.zoneName, sizeof(zoneArgument));
+        }
+
+        if (vm.count("as_admin")) {
+            admin_mode = true;
         }
 
         if ( vm.count( "help" ) ) {
@@ -2150,11 +2167,13 @@ Print the main usage/help information.
  */
 void usageMain() {
     char *msgs[] = {
-        "Usage: imeta [-vVhz] [command]",
+        "Usage: imeta [-vVMhz] [command]",
         " -v verbose",
         " -V Very verbose",
+        " -M Admin mode",
         " -z Zonename  work with the specified Zone",
         " -h This help",
+        " ",
         "Commands are:",
         " add -d|C|R|u Name AttName AttValue [AttUnits] (Add new AVU triple)",
         " adda -d|C|R|u Name AttName AttValue [AttUnits] (Add as administrator)",
@@ -2207,6 +2226,10 @@ void usageMain() {
         " ",
         "The appropriate zone (local or remote) is determined from the path names",
         "or via -z Zonename (for 'qu' and when working with resources).",
+        " ",
+        "If you are an iRODS administrator, you can include the -M option to run",
+        "in administrator mode and add, remove, or set metadata on any collection",
+        "and/or data object as if you were the owner.",
         " ",
         "Try 'help command' for more help on a specific command.",
         "'help qu' will explain additional options on the query.",
