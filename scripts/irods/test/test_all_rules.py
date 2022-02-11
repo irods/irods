@@ -22,8 +22,9 @@ from . import resource_suite
 from . import session
 from .rule_texts_for_tests import rule_texts
 
-class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
-    __metaclass__ = metaclass_unittest_test_case_generator.MetaclassUnittestTestCaseGenerator
+class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase,
+                    metaclass = metaclass_unittest_test_case_generator.MetaclassUnittestTestCaseGenerator):
+
     class_name = 'Test_AllRules'
 
     global plugin_name
@@ -377,8 +378,8 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
             def make_test(rulefile):
                 def test(self):
                     self.rods_session.assert_icommand("icd")
-                    self.rods_session.assert_icommand("irule -vF " + os.path.join(rulesdir, rulefile),
-                                                      'STDOUT_SINGLELINE', "completed successfully")
+                    self.rods_session.assert_icommand("irule -vF " + os.path.join(rulesdir, rulefile) + " -r " + plugin_name + "-instance"
+                                                     ,'STDOUT_SINGLELINE', "completed successfully")
                 return test
 
             yield 'test_' + rulefile.replace('.', '_'), make_test(rulefile)
