@@ -2020,17 +2020,32 @@ int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_arg
             return SYS_INVALID_INPUT_PARAM;
         }
 
+        auto [status_1, name_1] = prepare_name(sub_vm["object_type_1"].as<std::string>(),
+                                               sub_vm["name_1"].as<std::string>());
+
+        if (status_1) {
+            return status_1;
+        }
+
+        auto [status_2, name_2] = prepare_name(sub_vm["object_type_2"].as<std::string>(),
+                                               sub_vm["name_2"].as<std::string>());
+
+        if (status_2) {
+            return status_2;
+        }
+
         int status = modCopyAVUMetadata( (char*) _cmd.c_str(),
                         (char*) sub_vm["object_type_1"].as<std::string>().c_str(),
                         (char*) sub_vm["object_type_2"].as<std::string>().c_str(),
-                        (char*) sub_vm["name_1"].as<std::string>().c_str(),
-                        (char*) sub_vm["name_2"].as<std::string>().c_str(),
+                        name_1.data(),
+                        name_2.data(),
                         "",
                         "",
                         "" );
 
         return status < 0 ? status : 0;
-    } else if ( _cmd == "upper" ) {
+    }
+    else if ( _cmd == "upper" ) {
         // Toggle between upper case mode for queries
         if ( upperCaseFlag ) {
             upperCaseFlag = 0;
