@@ -18,6 +18,7 @@ extern "C" {
 /// \p json_input must have the following JSON structure:
 /// \code{.js}
 /// {
+///   "admin_mode": boolean,
 ///   "entity_name": string,
 ///   "entity_type": string,
 ///   "operations": [
@@ -30,6 +31,9 @@ extern "C" {
 ///   ]
 /// }
 /// \endcode
+///
+/// \p admin_mode a boolean value instructing the server to execute the operations as an
+/// administrator (i.e. rodsadmin).
 ///
 /// \p entity_name must be one of the following:
 /// - A logical path pointing to a data object.
@@ -61,8 +65,6 @@ extern "C" {
 /// }
 /// \endcode
 ///
-/// \since 4.2.8
-///
 /// \param[in]  _comm        A pointer to a RsComm.
 /// \param[in]  _json_input  A JSON string containing the batch of metadata operations.
 /// \param[out] _json_output A JSON string containing the error information on failure.
@@ -70,6 +72,8 @@ extern "C" {
 /// \return An integer.
 /// \retval 0        On success.
 /// \retval non-zero On failure.
+///
+/// \since 4.2.8
 int rs_atomic_apply_metadata_operations(RsComm* _comm, const char* _json_input, char** _json_output);
 
 #ifdef __cplusplus
