@@ -63,7 +63,7 @@ TEST_CASE("fixed_buffer_resource throws on invalid arguments")
 
 TEST_CASE("fixed_buffer_resource works with pmr containers")
 {
-    char buffer[64];
+    char buffer[256];
     pmr::fixed_buffer_resource allocator{buffer, sizeof(buffer)};
 
     {
@@ -72,6 +72,8 @@ TEST_CASE("fixed_buffer_resource works with pmr containers")
         ints.push_back(1);
         ints.push_back(2);
         ints.push_back(3);
+
+        CHECK(allocator.allocated() == sizeof(int) * ints.size());
 
         // Show that the allocation table can be printed out.
         std::ostringstream os;
