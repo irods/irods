@@ -92,7 +92,17 @@ foreach(IRODS_TEST_CONFIG ${TEST_INCLUDE_LIST})
         target_include_directories(${IRODS_TEST_TARGET} PRIVATE ${IRODS_TEST_INCLUDE_PATH})
     endif()
 
+    install(TARGETS
+            ${IRODS_TEST_TARGET}
+            RUNTIME
+            DESTINATION ${IRODS_HOME_DIRECTORY}/unit_tests
+            COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME})
+
     # Make the new test available to CTest.
     add_test(NAME ${IRODS_TEST_TARGET} COMMAND ${IRODS_TEST_TARGET} -r ${IRODS_UNIT_TESTS_REPORTING_STYLE} -o ${IRODS_UNIT_TESTS_REPORT_FILENAME})
 endforeach()
 
+install(FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests_list.json
+        DESTINATION ${IRODS_HOME_DIRECTORY}/unit_tests
+        COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME})
