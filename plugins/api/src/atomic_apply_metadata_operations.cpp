@@ -512,11 +512,20 @@ namespace
             return SYS_CONFIG_FILE_ERR;
         }
 
-        if (!ic::user_has_permission_to_modify_entity(*_comm, db_conn, db_instance_name, object_id, entity_type)) {
-            log::api::error("User not allowed to modify metadata [entity_name={}, entity_type={}, object_id={}]",
-                            entity_name, input.at("entity_type").get<std::string>(), object_id);
-            *_output = irods::to_bytes_buffer(make_error_object(json{}, 0, "User not allowed to modify metadata").dump());
-            return CAT_NO_ACCESS_PERMISSION;
+        if (const auto iter = input.find("admin_mode"); iter != std::end(input) && iter->get<bool>()) {
+            if (!irods::is_privileged_client(*_comm)) {
+                log::api::error("User is not an administrator.");
+                *_output = irods::to_bytes_buffer(make_error_object(json{}, 0, "User is not an administrator").dump());
+                return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
+            }
+        }
+        else {
+            if (!ic::user_has_permission_to_modify_entity(*_comm, db_conn, db_instance_name, object_id, entity_type)) {
+                log::api::error("User not allowed to modify metadata [entity_name={}, entity_type={}, object_id={}]",
+                                entity_name, input.at("entity_type").get<std::string>(), object_id);
+                *_output = irods::to_bytes_buffer(make_error_object(json{}, 0, "User not allowed to modify metadata").dump());
+                return CAT_NO_ACCESS_PERMISSION;
+            }
         }
 
         return ic::execute_transaction(db_conn, [&](auto& _trans) -> int
