@@ -18,6 +18,7 @@ extern "C" {
 /// \p json_input must have the following JSON structure:
 /// \code{.js}
 /// {
+///   "admin_mode": boolean,
 ///   "entity_name": string,
 ///   "entity_type": string,
 ///   "operations": [
@@ -30,6 +31,9 @@ extern "C" {
 ///   ]
 /// }
 /// \endcode
+///
+/// \p admin_mode a boolean value instructing the server to execute the operations as an
+/// administrator (i.e. rodsadmin).
 ///
 /// \p entity_name must be one of the following:
 /// - A logical path pointing to a data object.
