@@ -1,14 +1,17 @@
 #include <catch2/catch.hpp>
 
-#include "getRodsEnv.h"
 #include "connection_pool.hpp"
 #include "filesystem.hpp"
+#include "getRodsEnv.h"
 #include "irods_at_scope_exit.hpp"
+#include "rodsClient.h"
 
 TEST_CASE("connection pool")
 {
     rodsEnv env;
     _getRodsEnv(env);
+
+    load_client_api_plugins();
 
     SECTION("connections are detachable")
     {
