@@ -1,10 +1,11 @@
 #include <catch2/catch.hpp>
 
-#include "getRodsEnv.h"
-#include "rcConnect.h"
 #include "client_connection.hpp"
-#include "query_builder.hpp"
 #include "filesystem.hpp"
+#include "getRodsEnv.h"
+#include "query_builder.hpp"
+#include "rcConnect.h"
+#include "rodsClient.h"
 #include "rodsGenQuery.h"
 
 #include <cctype>
@@ -19,6 +20,8 @@ TEST_CASE("query builder")
 {
     rodsEnv env;
     _getRodsEnv(env);
+
+    load_client_api_plugins();
 
     ix::client_connection conn{env.rodsHost,
                                env.rodsPort,

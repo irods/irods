@@ -1,8 +1,9 @@
 #include <catch2/catch.hpp>
 
 #include "connection_pool.hpp"
-#include "resource_administration.hpp"
 #include "irods_at_scope_exit.hpp"
+#include "resource_administration.hpp"
+#include "rodsClient.h"
 
 #include <unistd.h>
 
@@ -25,6 +26,8 @@ TEST_CASE("resource administration")
     ufs_info.resource_type = adm::resource_type::unixfilesystem.data();
     ufs_info.host_name = host_name;
     ufs_info.vault_path = "/tmp";
+
+    load_client_api_plugins();
 
     auto conn_pool = irods::make_connection_pool();
     auto conn = conn_pool->get_connection();

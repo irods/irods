@@ -1,14 +1,16 @@
 #include <catch2/catch.hpp>
 
-#include "getRodsEnv.h"
-#include "rcConnect.h"
 #include "client_connection.hpp"
 #include "filesystem.hpp"
+#include "getRodsEnv.h"
+#include "rcConnect.h"
+#include "rodsClient.h"
 
 namespace ix = irods::experimental;
 
 TEST_CASE("connect using default constructor", "client_connection")
 {
+    load_client_api_plugins();
     ix::client_connection conn;
     REQUIRE(conn);
 
@@ -21,6 +23,7 @@ TEST_CASE("connect using multi-argument constructor", "client_connection")
     rodsEnv env;
     _getRodsEnv(env);
 
+    load_client_api_plugins();
     ix::client_connection conn{env.rodsHost,
                                env.rodsPort,
                                env.rodsUserName,
@@ -37,6 +40,7 @@ TEST_CASE("take ownership of raw connection", "client_connection")
     rodsEnv env;
     _getRodsEnv(env);
 
+    load_client_api_plugins();
     rErrMsg_t error{};
     auto* raw_conn_ptr = rcConnect(env.rodsHost,
                                    env.rodsPort,
@@ -57,6 +61,7 @@ TEST_CASE("take ownership of raw connection", "client_connection")
 
 TEST_CASE("defer connection", "client_connection")
 {
+    load_client_api_plugins();
     ix::client_connection conn{ix::defer_connection};
     REQUIRE_FALSE(conn);
 
@@ -88,6 +93,7 @@ TEST_CASE("defer connection", "client_connection")
 
 TEST_CASE("supports move semantics", "client_connection")
 {
+    load_client_api_plugins();
     ix::client_connection conn;
     REQUIRE(conn);
 
@@ -101,6 +107,7 @@ TEST_CASE("supports move semantics", "client_connection")
 
 TEST_CASE("supports implicit and explicit casts to underlying type", "client_connection")
 {
+    load_client_api_plugins();
     ix::client_connection conn;
     REQUIRE(conn);
 

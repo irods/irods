@@ -1,8 +1,9 @@
 #include <catch2/catch.hpp>
 
 #include "connection_pool.hpp"
-#include "user_administration.hpp"
 #include "irods_at_scope_exit.hpp"
+#include "rodsClient.h"
+#include "user_administration.hpp"
 
 #include <algorithm>
 #include <iterator>
@@ -10,6 +11,8 @@
 TEST_CASE("user group administration")
 {
     namespace adm = irods::experimental::administration;
+
+    load_client_api_plugins();
 
     auto conn_pool = irods::make_connection_pool();
     auto conn = conn_pool->get_connection();
