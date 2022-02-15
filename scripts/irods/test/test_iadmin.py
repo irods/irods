@@ -47,6 +47,7 @@ def write_host_access_control(filename, username, group, address, mask):
 
 
 class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
+
     plugin_name = IrodsConfig().default_rule_engine_plugin
     class_name = 'Test_Iadmin'
 
@@ -59,6 +60,27 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
     ###################
     # iadmin
     ###################
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Applies to the NREP only')
+    def test_non_admins_are_not_allowed_to_delete_unused_metadata__issue_6183(self):
+        attr_name  = 'issue_6183_attr'
+        attr_value = 'issue_6183_value'
+
+        # As the administrator, generate unused metadata (i.e. add/remove metadata).
+        # Removing the metadata doesn't delete it from the catalog. It is detached from
+        # the collection and left in the r_meta_main table.
+        self.admin.assert_icommand(['imeta', 'add', '-C', '.', attr_name, attr_value])
+        self.admin.assert_icommand(['imeta', 'rm', '-C', '.', attr_name, attr_value])
+
+        # Show that non-admins are not allowed to remove unused metadata AVUs via the
+        # NREP and msiDeleteUnusedAVUs().
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        self.user0.assert_icommand(['irule', '-r', rep_name, 'msiDeleteUnusedAVUs()', 'null', 'ruleExecOut'],
+                                   'STDERR', ['CAT_INSUFFICIENT_PRIVILEGE_LEVEL'])
+
+        # Clean up.
+        self.admin.assert_icommand(['irule', '-r', rep_name, 'msiDeleteUnusedAVUs()', 'null', 'ruleExecOut'])
+        self.admin.assert_icommand(['imeta', 'ls', '-C', '.'], 'STDOUT', ['None\n'])
 
     def test_iadmin_rmresc_failures__5545(self):
         test_file = "foo"
