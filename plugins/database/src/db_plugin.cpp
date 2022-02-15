@@ -12338,37 +12338,33 @@ irods::error db_check_quota_op(
 
 } // db_check_quota_op
 
-irods::error db_del_unused_avus_op(
-    irods::plugin_context& _ctx ) {
-    irods::error ret = _ctx.valid();
-    if ( !ret.ok() ) {
-        return PASS( ret );
+irods::error db_del_unused_avus_op(irods::plugin_context& _ctx)
+{
+    if (irods::error ret = _ctx.valid(); !ret.ok()) {
+        return PASS(ret);
     }
 
-    /*
-       Remove any AVUs that are currently not associated with any object.
-       This is done as a separate operation for efficiency.  See
-       'iadmin h rum'.
-    */
+    if (!irods::is_privileged_client(*_ctx.comm())) {
+        return ERROR(CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "Insufficient privileges");
+    }
+
+    // Remove any AVUs that are currently not associated with any object.
+    // This is done as a separate operation for efficiency.  See 'iadmin h rum'.
     const int remove_status = removeAVUs();
     int commit_status = 0;
 
-    if ( remove_status == CAT_SUCCESS_BUT_WITH_NO_INFO
-            || remove_status == 0 ) {
+    if ( remove_status == CAT_SUCCESS_BUT_WITH_NO_INFO || remove_status == 0 ) {
         commit_status = cmlExecuteNoAnswerSql( "commit", &icss );
     }
     else {
         return ERROR( remove_status, "removeAVUs failed" );
     }
 
-    if ( commit_status == CAT_SUCCESS_BUT_WITH_NO_INFO
-            || commit_status == 0 ) {
+    if ( commit_status == CAT_SUCCESS_BUT_WITH_NO_INFO || commit_status == 0 ) {
         return SUCCESS();
     }
-    else {
-        return ERROR( commit_status, "commit failed" );
-    }
 
+    return ERROR( commit_status, "commit failed" );
 } // db_del_unused_avus_op
 
 irods::error db_ins_rule_table_op(
