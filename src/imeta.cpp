@@ -1263,7 +1263,7 @@ parse_program_options(int _argc,
             rstrcpy(zoneArgument, _rods_args.zoneName, sizeof(zoneArgument));
         }
 
-        if (vm.count("as_admin")) {
+        if (vm.count("admin_mode")) {
             admin_mode = true;
         }
 
