@@ -1711,7 +1711,7 @@ class Test_Iadmin_Queries(resource_suite.ResourceBase, unittest.TestCase):
         # Make specific query and run before it returns any results
         self.admin.assert_icommand(['iadmin', 'asq', specific_query, query_name])
         self.admin.assert_icommand(['iquest', '--sql', 'ls'], 'STDOUT', query_name)
-        self.admin.assert_icommand(['iquest', '--sql', query_name], 'STDOUT', 'No rows found')
+        self.admin.assert_icommand(['iquest', '--sql', query_name], 'STDOUT', 'CAT_NO_ROWS_FOUND: Nothing was found matching your query')
 
         # Run specific query after results can be found
         self.admin.assert_icommand(['iput', test_file])
