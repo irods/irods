@@ -213,29 +213,210 @@ namespace irods::experimental::filesystem
         /// \return A string representing the checksum.
         auto data_object_checksum(rxComm& _comm, const path& _p) -> std::string;
 
+        /// \brief Retrieves all metadata AVUs on a collection or data object.
+        ///
+        /// \throws filesystem_error If the path is empty, exceeds the path limit, does not reference
+        ///                          a collection or data object, or an error occurs.
+        ///
+        /// \param[in] _comm The communication object.
+        /// \param[in] _p    The path to a collection or data object.
+        ///
+        /// \return A list of metadata AVUs.
         auto get_metadata(rxComm& _comm, const path& _p) -> std::vector<metadata>;
 
+        /// \brief Sets a single metadata AVU on a collection or data object.
+        ///
+        /// Upon successful execution, \p _p will have, at most, one metadata AVU that uses the attribute name
+        /// defined by \p _metadata.
+        ///
+        /// \throws filesystem_error If the path is empty, exceeds the path limit, does not reference
+        ///                          a collection or data object, or an error occurs.
+        ///
+        /// \param[in] _comm     The communication object.
+        /// \param[in] _p        The path to a collection or data object.
+        /// \param[in] _metadata The metadata AVU to set.
         auto set_metadata(rxComm& _comm, const path& _p, const metadata& _metadata) -> void;
 
+        /// \brief Sets a single metadata AVU on a collection or data object.
+        ///
+        /// Upon successful execution, \p _p will have, at most, one metadata AVU that uses the attribute name
+        /// defined by \p _metadata.
+        ///
+        /// \throws filesystem_error If the path is empty, exceeds the path limit, does not reference
+        ///                          a collection or data object, or an error occurs.
+        ///
+        /// \param[in] _admin    A tag which instructs the function to operate in administrator mode. The client
+        ///                      must be an administrator to use this function.
+        /// \param[in] _comm     The communication object.
+        /// \param[in] _p        The path to a collection or data object.
+        /// \param[in] _metadata The metadata AVU to set.
+        ///
+        /// \since 4.2.12
+        auto set_metadata(admin_tag _admin, rxComm& _comm, const path& _p, const metadata& _metadata) -> void;
+
+        /// \brief Adds a single metadata AVU on a collection or data object.
+        ///
+        /// \throws filesystem_error If the path is empty, exceeds the path limit, does not reference
+        ///                          a collection or data object, or an error occurs.
+        ///
+        /// \param[in] _comm     The communication object.
+        /// \param[in] _p        The path to a collection or data object.
+        /// \param[in] _metadata The metadata AVU to add.
         auto add_metadata(rxComm& _comm, const path& _p, const metadata& _metadata) -> void;
 
-        template <typename Iterator>
-        auto add_metadata(rxComm& _comm, const path& _p, Iterator _first, Iterator _last) -> void;
+        /// \brief Adds a single metadata AVU on a collection or data object.
+        ///
+        /// \throws filesystem_error If the path is empty, exceeds the path limit, does not reference
+        ///                          a collection or data object, or an error occurs.
+        ///
+        /// \param[in] _admin    A tag which instructs the function to operate in administrator mode. The client
+        ///                      must be an administrator to use this function.
+        /// \param[in] _comm     The communication object.
+        /// \param[in] _p        The path to a collection or data object.
+        /// \param[in] _metadata The metadata AVU to add.
+        ///
+        /// \since 4.2.12
+        auto add_metadata(admin_tag _admin, rxComm& _comm, const path& _p, const metadata& _metadata) -> void;
 
+        /// \brief Atomically adds multiple metadata AVUs to a collection or data object.
+        ///
+        /// \throws filesystem_error If the path is empty, exceeds the path limit, does not reference
+        ///                          a collection or data object, or an error occurs.
+        ///
+        /// \param[in] _comm  The communication object.
+        /// \param[in] _p     The path to a collection or data object.
+        /// \param[in] _first An iterator pointing to the first element of a metadata AVU range.
+        /// \param[in] _last  An iterator pointing to the last element of a metadata AVU range (not inclusive).
+        template <typename Iterator>
+        auto add_metadata_atomic(rxComm& _comm, const path& _p, Iterator _first, Iterator _last) -> void;
+
+        /// \brief Atomically adds multiple metadata AVUs to a collection or data object.
+        ///
+        /// \throws filesystem_error If the path is empty, exceeds the path limit, does not reference
+        ///                          a collection or data object, or an error occurs.
+        ///
+        /// \param[in] _admin A tag which instructs the function to operate in administrator mode. The client
+        ///                   must be an administrator to use this function.
+        /// \param[in] _comm  The communication object.
+        /// \param[in] _p     The path to a collection or data object.
+        /// \param[in] _first An iterator pointing to the first element of a metadata AVU range.
+        /// \param[in] _last  An iterator pointing to the last element of a metadata AVU range (not inclusive).
+        ///
+        /// \since 4.2.12
+        template <typename Iterator>
+        auto add_metadata_atomic(admin_tag _admin, rxComm& _comm, const path& _p, Iterator _first, Iterator _last) -> void;
+
+        /// \brief Atomically adds multiple metadata AVUs to a collection or data object.
+        ///
+        /// \throws filesystem_error If the path is empty, exceeds the path limit, does not reference
+        ///                          a collection or data object, or an error occurs.
+        ///
+        /// \param[in] _comm      The communication object.
+        /// \param[in] _p         The path to a collection or data object.
+        /// \param[in] _container The list of metadata AVUs to add.
         template <typename Container,
                   typename = decltype(std::begin(std::declval<Container>())),
                   typename = std::enable_if_t<std::is_same_v<std::decay_t<typename Container::value_type>, metadata>>>
-        auto add_metadata(rxComm& _comm, const path& _p, const Container& _container) -> void;
+        auto add_metadata_atomic(rxComm& _comm, const path& _p, const Container& _container) -> void;
 
+        /// \brief Atomically adds multiple metadata AVUs to a collection or data object.
+        ///
+        /// \throws filesystem_error If the path is empty, exceeds the path limit, does not reference
+        ///                          a collection or data object, or an error occurs.
+        ///
+        /// \param[in] _admin     A tag which instructs the function to operate in administrator mode. The client
+        ///                       must be an administrator to use this function.
+        /// \param[in] _comm      The communication object.
+        /// \param[in] _p         The path to a collection or data object.
+        /// \param[in] _container The list of metadata AVUs to add.
+        ///
+        /// \since 4.2.12
+        template <typename Container,
+                  typename = decltype(std::begin(std::declval<Container>())),
+                  typename = std::enable_if_t<std::is_same_v<std::decay_t<typename Container::value_type>, metadata>>>
+        auto add_metadata_atomic(admin_tag _admin, rxComm& _comm, const path& _p, const Container& _container) -> void;
+
+        /// \brief Removes a single metadata AVU from a collection or data object.
+        ///
+        /// \throws filesystem_error If the path is empty, exceeds the path limit, does not reference
+        ///                          a collection or data object, or an error occurs.
+        ///
+        /// \param[in] _comm     The communication object.
+        /// \param[in] _p        The path to a collection or data object.
+        /// \param[in] _metadata The metadata AVU to remove.
         auto remove_metadata(rxComm& _comm, const path& _p, const metadata& _metadata) -> void;
 
-        template <typename Iterator>
-        auto remove_metadata(rxComm& _comm, const path& _p, Iterator _first, Iterator _last) -> void;
+        /// \brief Removes a single metadata AVU from a collection or data object.
+        ///
+        /// \throws filesystem_error If the path is empty, exceeds the path limit, does not reference
+        ///                          a collection or data object, or an error occurs.
+        ///
+        /// \param[in] _admin    A tag which instructs the function to operate in administrator mode. The client
+        ///                      must be an administrator to use this function.
+        /// \param[in] _comm     The communication object.
+        /// \param[in] _p        The path to a collection or data object.
+        /// \param[in] _metadata The metadata AVU to remove.
+        ///
+        /// \since 4.2.12
+        auto remove_metadata(admin_tag _admin, rxComm& _comm, const path& _p, const metadata& _metadata) -> void;
 
+        /// \brief Atomically removes multiple metadata AVUs from a collection or data object.
+        ///
+        /// \throws filesystem_error If the path is empty, exceeds the path limit, does not reference
+        ///                          a collection or data object, or an error occurs.
+        ///
+        /// \param[in] _comm  The communication object.
+        /// \param[in] _p     The path to a collection or data object.
+        /// \param[in] _first An iterator pointing to the first element of a metadata AVU range.
+        /// \param[in] _last  An iterator pointing to the last element of a metadata AVU range (not inclusive).
+        template <typename Iterator>
+        auto remove_metadata_atomic(rxComm& _comm, const path& _p, Iterator _first, Iterator _last) -> void;
+
+        /// \brief Atomically removes multiple metadata AVUs from a collection or data object.
+        ///
+        /// \throws filesystem_error If the path is empty, exceeds the path limit, does not reference
+        ///                          a collection or data object, or an error occurs.
+        ///
+        /// \param[in] _admin A tag which instructs the function to operate in administrator mode. The client
+        ///                   must be an administrator to use this function.
+        /// \param[in] _comm  The communication object.
+        /// \param[in] _p     The path to a collection or data object.
+        /// \param[in] _first An iterator pointing to the first element of a metadata AVU range.
+        /// \param[in] _last  An iterator pointing to the last element of a metadata AVU range (not inclusive).
+        ///
+        /// \since 4.2.12
+        template <typename Iterator>
+        auto remove_metadata_atomic(admin_tag _admin, rxComm& _comm, const path& _p, Iterator _first, Iterator _last) -> void;
+
+        /// \brief Atomically removes multiple metadata AVUs from a collection or data object.
+        ///
+        /// \throws filesystem_error If the path is empty, exceeds the path limit, does not reference
+        ///                          a collection or data object, or an error occurs.
+        ///
+        /// \param[in] _comm      The communication object.
+        /// \param[in] _p         The path to a collection or data object.
+        /// \param[in] _container The list of metadata AVUs to remove.
         template <typename Container,
                   typename = decltype(std::begin(std::declval<Container>())),
                   typename = std::enable_if_t<std::is_same_v<std::decay_t<typename Container::value_type>, metadata>>>
-        auto remove_metadata(rxComm& _comm, const path& _p, const Container& _container) -> void;
+        auto remove_metadata_atomic(rxComm& _comm, const path& _p, const Container& _container) -> void;
+
+        /// \brief Atomically removes multiple metadata AVUs from a collection or data object.
+        ///
+        /// \throws filesystem_error If the path is empty, exceeds the path limit, does not reference
+        ///                          a collection or data object, or an error occurs.
+        ///
+        /// \param[in] _admin     A tag which instructs the function to operate in administrator mode. The client
+        ///                       must be an administrator to use this function.
+        /// \param[in] _comm      The communication object.
+        /// \param[in] _p         The path to a collection or data object.
+        /// \param[in] _container The list of metadata AVUs to remove.
+        ///
+        /// \since 4.2.12
+        template <typename Container,
+                  typename = decltype(std::begin(std::declval<Container>())),
+                  typename = std::enable_if_t<std::is_same_v<std::decay_t<typename Container::value_type>, metadata>>>
+        auto remove_metadata_atomic(admin_tag _admin, rxComm& _comm, const path& _p, const Container& _container) -> void;
 
         #include "filesystem/filesystem.tpp"
     } // namespace NAMESPACE_IMPL

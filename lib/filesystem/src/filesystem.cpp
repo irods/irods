@@ -396,7 +396,11 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
             return (p_iter == p_last);
         }
 
-        auto do_metadata_op(rxComm& _comm, const path& _p, const metadata& _metadata, std::string_view op) -> void
+        auto do_metadata_op(bool _add_admin_flag,
+                            rxComm& _comm,
+                            const path& _p,
+                            const metadata& _metadata,
+                            std::string_view op) -> void
         {
             detail::throw_if_path_is_empty(_p);
             detail::throw_if_path_length_exceeds_limit(_p);
@@ -437,6 +441,12 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
             char units_buf[MAX_NAME_LEN]{};
             std::strncpy(units_buf, _metadata.units.c_str(), _metadata.units.size());
             input.arg5 = units_buf;
+
+            at_scope_exit free_memory{[&input] { clearKeyVal(&input.condInput); }};
+
+            if (_add_admin_flag) {
+                addKeyVal(&input.condInput, ADMIN_KW, "");
+            }
 
             if (const auto ec = rxModAVUMetadata(&_comm, &input); ec != 0) {
                 std::string_view op_full_name = (op == "rm") ? "remove" : op;
@@ -1175,17 +1185,38 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
     auto set_metadata(rxComm& _comm, const path& _p, const metadata& _metadata) -> void
     {
-        do_metadata_op(_comm, _p, _metadata, "set");
+        constexpr auto add_admin_flag = false;
+        do_metadata_op(add_admin_flag, _comm, _p, _metadata, "set");
+    }
+
+    auto set_metadata(admin_tag, rxComm& _comm, const path& _p, const metadata& _metadata) -> void
+    {
+        constexpr auto add_admin_flag = true;
+        do_metadata_op(add_admin_flag, _comm, _p, _metadata, "set");
     }
 
     auto add_metadata(rxComm& _comm, const path& _p, const metadata& _metadata) -> void
     {
-        do_metadata_op(_comm, _p, _metadata, "add");
+        constexpr auto add_admin_flag = false;
+        do_metadata_op(add_admin_flag, _comm, _p, _metadata, "add");
+    }
+
+    auto add_metadata(admin_tag, rxComm& _comm, const path& _p, const metadata& _metadata) -> void
+    {
+        constexpr auto add_admin_flag = true;
+        do_metadata_op(add_admin_flag, _comm, _p, _metadata, "add");
     }
 
     auto remove_metadata(rxComm& _comm, const path& _p, const metadata& _metadata) -> void
     {
-        do_metadata_op(_comm, _p, _metadata, "rm");
+        constexpr auto add_admin_flag = false;
+        do_metadata_op(add_admin_flag, _comm, _p, _metadata, "rm");
+    }
+
+    auto remove_metadata(admin_tag, rxComm& _comm, const path& _p, const metadata& _metadata) -> void
+    {
+        constexpr auto add_admin_flag = true;
+        do_metadata_op(add_admin_flag, _comm, _p, _metadata, "rm");
     }
 } // namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
