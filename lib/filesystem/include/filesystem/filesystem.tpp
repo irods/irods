@@ -1,7 +1,8 @@
 namespace
 {
     template <typename Iterator>
-    auto do_metadata_op(rxComm& _comm,
+    auto do_metadata_op(bool _add_admin_flag,
+                        rxComm& _comm,
                         const path& _path,
                         Iterator _first,
                         Iterator _last,
@@ -25,6 +26,7 @@ namespace
         using json = nlohmann::json;
 
         std::vector<json> operations;
+        operations.reserve(std::distance(_first, _last));
 
         std::for_each(_first, _last, [_op, &operations](const metadata& md) {
             operations.push_back({
@@ -36,6 +38,7 @@ namespace
         });
 
         const auto json_input = json{
+            {"admin_mode", _add_admin_flag},
             {"entity_name", _path.c_str()},
             {"entity_type", entity_type},
             {"operations", operations}
@@ -50,25 +53,53 @@ namespace
 } // anonymous namespace
 
 template <typename Iterator>
-auto add_metadata(rxComm& _comm, const path& _path, Iterator _first, Iterator _last) -> void
+auto add_metadata_atomic(rxComm& _comm, const path& _path, Iterator _first, Iterator _last) -> void
 {
-    do_metadata_op(_comm, _path, _first, _last, "add");
-}
-
-template <typename Container, typename, typename>
-auto add_metadata(rxComm& _comm, const path& _path, const Container& _container) -> void
-{
-    add_metadata(_comm, _path, std::begin(_container), std::end(_container));
+    constexpr auto add_admin_flag = false;
+    do_metadata_op(add_admin_flag, _comm, _path, _first, _last, "add");
 }
 
 template <typename Iterator>
-auto remove_metadata(rxComm& _comm, const path& _path, Iterator _first, Iterator _last) -> void
+auto add_metadata_atomic(admin_tag, rxComm& _comm, const path& _path, Iterator _first, Iterator _last) -> void
 {
-    do_metadata_op(_comm, _path, _first, _last, "remove");
+    constexpr auto add_admin_flag = true;
+    do_metadata_op(add_admin_flag, _comm, _path, _first, _last, "add");
 }
 
 template <typename Container, typename, typename>
-auto remove_metadata(rxComm& _comm, const path& _path, const Container& _container) -> void
+auto add_metadata_atomic(rxComm& _comm, const path& _path, const Container& _container) -> void
 {
-    remove_metadata(_comm, _path, std::begin(_container), std::end(_container));
+    add_metadata_atomic(_comm, _path, std::begin(_container), std::end(_container));
+}
+
+template <typename Container, typename, typename>
+auto add_metadata_atomic(admin_tag, rxComm& _comm, const path& _path, const Container& _container) -> void
+{
+    add_metadata_atomic(admin, _comm, _path, std::begin(_container), std::end(_container));
+}
+
+template <typename Iterator>
+auto remove_metadata_atomic(rxComm& _comm, const path& _path, Iterator _first, Iterator _last) -> void
+{
+    constexpr auto add_admin_flag = false;
+    do_metadata_op(add_admin_flag, _comm, _path, _first, _last, "remove");
+}
+
+template <typename Iterator>
+auto remove_metadata_atomic(admin_tag, rxComm& _comm, const path& _path, Iterator _first, Iterator _last) -> void
+{
+    constexpr auto add_admin_flag = true;
+    do_metadata_op(add_admin_flag, _comm, _path, _first, _last, "remove");
+}
+
+template <typename Container, typename, typename>
+auto remove_metadata_atomic(rxComm& _comm, const path& _path, const Container& _container) -> void
+{
+    remove_metadata_atomic(_comm, _path, std::begin(_container), std::end(_container));
+}
+
+template <typename Container, typename, typename>
+auto remove_metadata_atomic(admin_tag, rxComm& _comm, const path& _path, const Container& _container) -> void
+{
+    remove_metadata_atomic(admin, _comm, _path, std::begin(_container), std::end(_container));
 }
