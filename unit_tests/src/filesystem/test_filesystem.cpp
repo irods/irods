@@ -671,9 +671,16 @@ TEST_CASE("filesystem")
             REQUIRE_THROWS(fs::client::add_metadata(conn, "invalid_path", metadata[0]), "cannot add metadata: unknown object type");
             REQUIRE_THROWS(fs::client::remove_metadata(conn, "invalid_path", metadata[0]), "cannot remove metadata: unknown object type");
 
+            REQUIRE_THROWS(fs::client::set_metadata(fs::admin, conn, "invalid_path", metadata[0]), "cannot set metadata: unknown object type");
+            REQUIRE_THROWS(fs::client::add_metadata(fs::admin, conn, "invalid_path", metadata[0]), "cannot add metadata: unknown object type");
+            REQUIRE_THROWS(fs::client::remove_metadata(fs::admin, conn, "invalid_path", metadata[0]), "cannot remove metadata: unknown object type");
+
             // Atomic bulk operations.
-            REQUIRE_THROWS(fs::client::add_metadata(conn, "invalid_path", metadata), "cannot apply metadata operations: unknown object type");
-            REQUIRE_THROWS(fs::client::remove_metadata(conn, "invalid_path", metadata), "cannot apply metadata operations: unknown object type");
+            REQUIRE_THROWS(fs::client::add_metadata_atomic(conn, "invalid_path", metadata), "cannot apply metadata operations: unknown object type");
+            REQUIRE_THROWS(fs::client::remove_metadata_atomic(conn, "invalid_path", metadata), "cannot apply metadata operations: unknown object type");
+
+            REQUIRE_THROWS(fs::client::add_metadata_atomic(fs::admin, conn, "invalid_path", metadata), "cannot apply metadata operations: unknown object type");
+            REQUIRE_THROWS(fs::client::remove_metadata_atomic(fs::admin, conn, "invalid_path", metadata), "cannot apply metadata operations: unknown object type");
         }
 
 #ifdef IRODS_ENABLE_ALL_UNIT_TESTS
