@@ -616,3 +616,115 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
         self.user.assert_icommand(['iticket', 'mod', ticket_string, 'remove', 'group', 'public'])
         self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['No group restrictions'])
 
+    def test_iticket_does_not_allow_rodsusers_to_modify_tickets_created_by_other_users(self):
+        # Create a ticket for a data object.
+        data_object = 'foo'
+        self.admin.assert_icommand(['itouch', data_object])
+        _, out, _ = self.admin.assert_icommand(['iticket', 'create', 'read', data_object], 'STDOUT', ['ticket:'])
+
+        # Capture the actual ticket value.
+        ticket_string = out.strip().split(':')[1]
+
+        # Show that changing the use limit is not allowed.
+        self.admin.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['uses limit: 0'])
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'uses', '999'], 'STDERR', ['CAT_TICKET_INVALID'])
+        self.admin.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['uses limit: 0'])
+
+        # Show that changing the expiration timestamp is not allowed.
+        self.admin.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['expire time: none'])
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'expire', '2100-01-01.23:00:00'], 'STDERR', ['CAT_TICKET_INVALID'])
+        self.admin.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['expire time: none'])
+
+        # Show that changing the write-file limit is not allowed.
+        self.admin.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['write file limit: 10'])
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'write-file', '999'], 'STDERR', ['CAT_TICKET_INVALID'])
+        self.admin.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['write file limit: 10'])
+
+        # Show that changing the write-bytes limit is not allowed.
+        self.admin.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['write byte limit: 0'])
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'write-bytes', '999'], 'STDERR', ['CAT_TICKET_INVALID'])
+        self.admin.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['write byte limit: 0'])
+
+        # Show that adding an allowed user to the ticket is not allowed.
+        self.admin.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['No user restrictions'])
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'add', 'user', self.admin.username], 'STDERR', ['CAT_TICKET_INVALID'])
+        self.admin.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['No user restrictions'])
+
+        # Show that removing an allowed user from the ticket is not allowed.
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'remove', 'user', self.admin.username], 'STDERR', ['CAT_TICKET_INVALID'])
+        self.admin.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['No user restrictions'])
+
+        # Show that adding an allowed host to the ticket is not allowed.
+        self.admin.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['No host restrictions'])
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'add', 'host', 'irods.org'], 'STDERR', ['CAT_TICKET_INVALID'])
+        self.admin.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['No host restrictions'])
+
+        # Show that removing an allowed host from the ticket is not allowed.
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'remove', 'host', 'irods.org'], 'STDERR', ['CAT_TICKET_INVALID'])
+        self.admin.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['No host restrictions'])
+
+        # Show that adding an allowed group to the ticket is not allowed.
+        self.admin.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['No group restrictions'])
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'add', 'group', 'public'], 'STDERR', ['CAT_TICKET_INVALID'])
+        self.admin.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['No group restrictions'])
+
+        # Show that removing an allowed group from the ticket is not allowed.
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'remove', 'group', 'public'], 'STDERR', ['CAT_TICKET_INVALID'])
+        self.admin.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['No group restrictions'])
+
+    def test_iticket_does_not_allow_rodsusers_to_use_admin_option(self):
+        # Create a ticket for a data object.
+        data_object = 'foo'
+        self.user.assert_icommand(['itouch', data_object])
+        _, out, _ = self.user.assert_icommand(['iticket', 'create', 'read', data_object], 'STDOUT', ['ticket:'])
+
+        # Capture the actual ticket value.
+        ticket_string = out.strip().split(':')[1]
+
+        # Show that changing the use limit is not allowed.
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['uses limit: 0'])
+        self.user.assert_icommand(['iticket', '-M', 'mod', ticket_string, 'uses', '999'], 'STDERR', ['CAT_INSUFFICIENT_PRIVILEGE_LEVEL'])
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['uses limit: 0'])
+
+        # Show that changing the expiration timestamp is not allowed.
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['expire time: none'])
+        self.user.assert_icommand(['iticket', '-M', 'mod', ticket_string, 'expire', '2100-01-01.23:00:00'], 'STDERR', ['CAT_INSUFFICIENT_PRIVILEGE_LEVEL'])
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['expire time: none'])
+
+        # Show that changing the write-file limit is not allowed.
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['write file limit: 10'])
+        self.user.assert_icommand(['iticket', '-M', 'mod', ticket_string, 'write-file', '999'], 'STDERR', ['CAT_INSUFFICIENT_PRIVILEGE_LEVEL'])
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['write file limit: 10'])
+
+        # Show that changing the write-bytes limit is not allowed.
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['write byte limit: 0'])
+        self.user.assert_icommand(['iticket', '-M', 'mod', ticket_string, 'write-bytes', '999'], 'STDERR', ['CAT_INSUFFICIENT_PRIVILEGE_LEVEL'])
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['write byte limit: 0'])
+
+        # Show that adding an allowed user to the ticket is not allowed.
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['No user restrictions'])
+        self.user.assert_icommand(['iticket', '-M', 'mod', ticket_string, 'add', 'user', self.admin.username], 'STDERR', ['CAT_INSUFFICIENT_PRIVILEGE_LEVEL'])
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['No user restrictions'])
+
+        # Show that removing an allowed user from the ticket is not allowed.
+        self.user.assert_icommand(['iticket', '-M', 'mod', ticket_string, 'remove', 'user', self.admin.username], 'STDERR', ['CAT_INSUFFICIENT_PRIVILEGE_LEVEL'])
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['No user restrictions'])
+
+        # Show that adding an allowed host to the ticket is not allowed.
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['No host restrictions'])
+        self.user.assert_icommand(['iticket', '-M', 'mod', ticket_string, 'add', 'host', 'irods.org'], 'STDERR', ['CAT_INSUFFICIENT_PRIVILEGE_LEVEL'])
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['No host restrictions'])
+
+        # Show that removing an allowed host from the ticket is not allowed.
+        self.user.assert_icommand(['iticket', '-M', 'mod', ticket_string, 'remove', 'host', 'irods.org'], 'STDERR', ['CAT_INSUFFICIENT_PRIVILEGE_LEVEL'])
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['No host restrictions'])
+
+        # Show that adding an allowed group to the ticket is not allowed.
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['No group restrictions'])
+        self.user.assert_icommand(['iticket', '-M', 'mod', ticket_string, 'add', 'group', 'public'], 'STDERR', ['CAT_INSUFFICIENT_PRIVILEGE_LEVEL'])
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['No group restrictions'])
+
+        # Show that removing an allowed group from the ticket is not allowed.
+        self.user.assert_icommand(['iticket', '-M', 'mod', ticket_string, 'remove', 'group', 'public'], 'STDERR', ['CAT_INSUFFICIENT_PRIVILEGE_LEVEL'])
+        self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['No group restrictions'])
+
