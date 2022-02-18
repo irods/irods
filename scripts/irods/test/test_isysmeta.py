@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import datetime
 import os
 import time
@@ -6,6 +8,7 @@ import unittest
 from . import session
 
 class Test_isysmeta(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
+
     def setUp(self):
         super(Test_isysmeta, self).setUp()
         self.admin = self.admin_sessions[0]
