@@ -475,3 +475,64 @@ class Test_ImetaLsLongmode(session.make_sessions_mixin([('otherrods', 'rods')], 
     def test_imeta_ls_lu_mtime_present(self):
         self.admin.assert_icommand(['imeta', 'ls', '-lu', self.admin.username], 'STDOUT_SINGLELINE', 'time set:')
 
+class Test_ImetaCp(session.make_sessions_mixin([('otherrods', 'rods')], []), unittest.TestCase):
+
+    def setUp(self):
+        super(Test_ImetaCp, self).setUp()
+        self.admin = self.admin_sessions[0]
+
+    def tearDown(self):
+        super(Test_ImetaCp, self).tearDown()
+
+    def test_subcommand_cp_supports_relative_paths__issue_6174(self):
+        current_collection = os.path.basename(self.admin.session_collection)
+
+        # Here are our relative paths.
+        src_object = os.path.join('..', current_collection, '.', 'src_object')
+        dst_object = os.path.join('..', current_collection, '.', 'dst_object')
+
+        attr_name  = 'issue_6174_attr'
+        attr_value = 'issue_6174_value'
+
+        # True : indicates that the object is a data object.
+        # False: indicates that the object is a collection.
+        #
+        # The following table produces the following tests:
+        # - data object to data object
+        # - data object to collection
+        # - collection to collection
+        # - collection to data object
+        test_cases = [
+            {'src': True,  'dst': True},
+            {'src': True,  'dst': False},
+            {'src': False, 'dst': False},
+            {'src': False, 'dst': True}
+        ]
+
+        def create_object(_object_name, _is_data_object):
+            if _is_data_object:
+                self.admin.assert_icommand(['itouch', _object_name])
+                return '-d'
+
+            self.admin.assert_icommand(['imkdir', _object_name])
+            return '-C'
+
+        for tc in test_cases:
+            try:
+                # Create the source and destination objects and capture the object type.
+                src_object_type_flag = create_object(src_object, tc['src'])
+                dst_object_type_flag = create_object(dst_object, tc['dst'])
+
+                # Attach metadata to the source object.
+                self.admin.assert_icommand(['imeta', 'set', src_object_type_flag, src_object, attr_name, attr_value])
+                self.admin.assert_icommand(['imeta', 'ls', src_object_type_flag, src_object], 'STDOUT', ['attribute: ' + attr_name, 'value: ' + attr_value])
+
+                # Copy from source object's metadata to the destination object.
+                self.admin.assert_icommand(['imeta', 'cp', src_object_type_flag, dst_object_type_flag, src_object, dst_object])
+
+                # Verify that the metadata was copied from the source object to the destination object.
+                self.admin.assert_icommand(['imeta', 'ls', dst_object_type_flag, dst_object], 'STDOUT', ['attribute: ' + attr_name, 'value: ' + attr_value])
+
+            finally:
+                self.admin.run_icommand(['irm', '-rf', src_object, dst_object])
+
