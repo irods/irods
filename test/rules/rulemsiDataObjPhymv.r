@@ -12,5 +12,5 @@ myTestRule {
   msiDataObjPhymv(*SourceFile,*DestResource,*SourceResource,*ReplicaNumber,"null",*Status);
   writeLine("stdout","Replica number *ReplicaNumber of file *SourceFile is moved from resource *SourceResource to resource *DestResource");
 }
-INPUT *SourceFile="/tempZone/home/rods/forphymv/phymvfile", *DestResource="testallrulesResc", *SourceResource="demoResc", *ReplicaNumber="0"
+INPUT *SourceFile="/tempZone/home/rods/forphymv/phymvfile", *DestResource="testallrulesResc", *SourceResource="demoResc", *ReplicaNumber="null"
 OUTPUT ruleExecOut
