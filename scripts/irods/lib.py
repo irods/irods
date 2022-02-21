@@ -246,10 +246,18 @@ def make_deep_local_tmp_dir(root_name, depth=10, files_per_level=50, file_size=1
 
     return directories
 
+
 def files_in_dir(path):
     for file in os.listdir(path):
         if os.path.isfile(os.path.join(path, file)):
             yield file
+
+
+def dirs_in_dir(path):
+    for d in os.listdir(path):
+        if os.path.isdir(os.path.join(path, d)):
+            yield d
+
 
 def get_user_env(user):
     out, _ = execute_command(['su', '-', user, '-c',
