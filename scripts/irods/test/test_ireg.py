@@ -531,3 +531,70 @@ class test_ireg_replica(unittest.TestCase):
             self.admin.run_icommand(['irm', '-f', logical_path])
             self.admin.run_icommand(['iadmin', 'rmresc', remote_resource])
             self.admin.run_icommand(['iadmin', 'rmresc', local_resource])
+
+
+class test_ireg_options(session.make_sessions_mixin([('otherrods', 'rods')], []), unittest.TestCase):
+    def setUp(self):
+        super(test_ireg_options, self).setUp()
+        self.admin = self.admin_sessions[0]
+
+
+    def tearDown(self):
+        super(test_ireg_options, self).tearDown()
+
+
+    def test_ireg_directory_with_no_option(self):
+        reg_path = os.path.join(self.admin.local_session_dir, 'regme')
+        coll = os.path.join(self.admin.session_collection, 'reghere')
+
+        self.admin.assert_icommand_fail(['ils', '-l', coll], 'STDOUT', coll)
+
+        lib.make_deep_local_tmp_dir(reg_path)
+
+        out,err,rc = self.admin.run_icommand(['ireg', reg_path, coll])
+        self.assertNotEqual(rc, 0)
+        self.assertEqual(len(out), 0)
+        self.assertIn('SYS_PATH_IS_NOT_A_FILE', err)
+
+        self.admin.assert_icommand_fail(['ils', '-l', coll], 'STDOUT', coll)
+
+
+    def test_ireg_recursive_C__issue_2912(self):
+        reg_path = os.path.join(self.admin.local_session_dir, 'regme')
+        coll = os.path.join(self.admin.session_collection, 'reghere')
+
+        self.admin.assert_icommand_fail(['ils', '-l', coll], 'STDOUT', coll)
+
+        lib.make_deep_local_tmp_dir(reg_path)
+
+        out,err,rc = self.admin.run_icommand(['ireg', '-C', reg_path, coll])
+        self.assertEqual(rc, 0)
+        self.assertEqual(len(out), 0)
+        self.assertIn('-C option is deprecated. Use -r instead.', err)
+
+        _,out,_ = self.admin.assert_icommand(['ils', '-lr', coll], 'STDOUT', coll)
+
+        for f in lib.files_in_dir(reg_path):
+            self.assertIn(f, out)
+
+        for d in lib.dirs_in_dir(reg_path):
+            self.assertIn(d, out)
+
+
+    def test_ireg_recursive_r__issue_2912(self):
+        reg_path = os.path.join(self.admin.local_session_dir, 'regme')
+        coll = os.path.join(self.admin.session_collection, 'reghere')
+
+        self.admin.assert_icommand_fail(['ils', '-l', coll], 'STDOUT', coll)
+
+        lib.make_deep_local_tmp_dir(reg_path)
+
+        self.admin.assert_icommand(['ireg', '-r', reg_path, coll])
+
+        _,out,_ = self.admin.assert_icommand(['ils', '-lr', coll], 'STDOUT', coll)
+
+        for f in lib.files_in_dir(reg_path):
+            self.assertIn(f, out)
+
+        for d in lib.dirs_in_dir(reg_path):
+            self.assertIn(d, out)
