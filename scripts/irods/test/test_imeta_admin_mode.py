@@ -49,18 +49,20 @@ class Test_Imeta_Admin_Mode(session.make_sessions_mixin(rodsadmins, rodsusers), 
                     # Create a data object or collection based on the object type.
                     self.user.assert_icommand(['itouch' if object_type_option == '-d' else 'imkdir', object_name])
 
-                    # Show that without the admin option, the administrator cannot add/set metadata on
-                    # another user's collection or data object.
-                    #
-                    # Ignore this step when "op" is set to "adda" because the trailing "a" automatically
-                    # enables admin mode.
-                    if op != 'adda':
+                    if op == 'adda':
+                        # "adda" automatically enables admin mode, so the administrator is always allowed
+                        # to add metadata.
+                        self.admin.assert_icommand(['imeta', op, object_type_option, object_name, attr_name, attr_value],
+                                                   'STDERR', ['"adda" is deprecated. Please use "add" with admin mode enabled instead.'])
+                    else:
+                        # Show that without the admin option, the administrator cannot add/set metadata on
+                        # another user's collection or data object.
                         self.admin.assert_icommand(['imeta', op, object_type_option, object_name, attr_name, attr_value],
                                                    'STDERR', ['CAT_NO_ACCESS_PERMISSION'])
 
-                    # Show that using the admin option allows the administrator to add metadata to
-                    # collections and data objects they do not have permissions on.
-                    self.admin.assert_icommand(['imeta', '-M', op, object_type_option, object_name, attr_name, attr_value])
+                        # Show that using the admin option allows the administrator to add metadata to
+                        # collections and data objects they do not have permissions on.
+                        self.admin.assert_icommand(['imeta', '-M', op, object_type_option, object_name, attr_name, attr_value])
 
                     # As the owner of the collection or data object, verify that the metadata is attached
                     # to the target object.

@@ -6,6 +6,11 @@
 #include "irods_configuration_keywords.hpp"
 #include "rcConnect.h"
 #include "rcMisc.h"
+#include "rodsError.h"
+#include "rodsErrorTable.h"
+#include "irods_logger.hpp"
+
+using logger = irods::experimental::log;
 
 int
 rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp ) {
@@ -153,6 +158,10 @@ _rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp ) {
                                    &modAVUMetadataInp->condInput);
     }
     else if ( strcmp( modAVUMetadataInp->arg0, "adda" ) == 0 ) {
+        const char* const msg = R"_("adda" is deprecated. Please use "add" with admin mode enabled instead.)_";
+        logger::api::debug("{} - {}", __func__, msg);
+        addRErrorMsg(&rsComm->rError, DEPRECATED_PARAMETER, msg);
+
         // Determine if the client set the ADMIN_KW.
         // If they haven't, set it and remember to remove it once the function returns.
         // This keeps the key value pair's state clean.

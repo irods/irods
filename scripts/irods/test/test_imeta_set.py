@@ -536,3 +536,40 @@ class Test_ImetaCp(session.make_sessions_mixin([('otherrods', 'rods')], []), uni
             finally:
                 self.admin.run_icommand(['irm', '-rf', src_object, dst_object])
 
+class Test_ImetaAdda(session.make_sessions_mixin([('otherrods', 'rods')], []), unittest.TestCase):
+
+    def setUp(self):
+        super(Test_ImetaAdda, self).setUp()
+        self.admin = self.admin_sessions[0]
+
+    def tearDown(self):
+        super(Test_ImetaAdda, self).tearDown()
+
+    def test_use_of_adda_subcommand_produces_deprecation_message__issue_6187(self):
+        attr_name  = 'issue_6187_attr'
+        attr_value = 'issue_6187_value'
+        expected_avu_output = ['attribute: ' + attr_name, 'value: ' + attr_value]
+        expected_output = ['"adda" is deprecated. Please use "add" with admin mode enabled instead.']
+
+        # Show that the deprecation message appears for data objects.
+        self.admin.assert_icommand(['itouch', 'foo'])
+        self.admin.assert_icommand(['imeta', 'adda', '-d', 'foo', attr_name, attr_value], 'STDERR', expected_output)
+        self.admin.assert_icommand(['imeta', 'ls', '-d', 'foo'], 'STDOUT', expected_avu_output)
+
+        # Show that the deprecation message appears for collections.
+        self.admin.assert_icommand(['imeta', 'adda', '-C', '.', attr_name, attr_value], 'STDERR', expected_output)
+        self.admin.assert_icommand(['imeta', 'ls', '-C', '.'], 'STDOUT', expected_avu_output)
+
+        # Show that the deprecation message appears for users.
+        self.admin.assert_icommand(['imeta', 'adda', '-u', self.admin.username, attr_name, attr_value], 'STDERR', expected_output)
+        self.admin.assert_icommand(['imeta', 'ls', '-u', self.admin.username], 'STDOUT', expected_avu_output)
+
+        try:
+            # Show that the deprecation message appears for resources.
+            self.admin.assert_icommand(['imeta', 'adda', '-R', self.admin.default_resource, attr_name, attr_value], 'STDERR', expected_output)
+            self.admin.assert_icommand(['imeta', 'ls', '-R', self.admin.default_resource], 'STDOUT', expected_avu_output)
+
+        finally:
+            # Make sure the AVU is removed from the resource even if an assertion fails.
+            self.admin.run_icommand(['imeta', 'rm', '-R', self.admin.default_resource, attr_name, attr_value])
+
