@@ -8,6 +8,7 @@
 
 #include "fmt/format.h"
 
+#include <cstdio>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -1003,18 +1004,19 @@ modCopyAVUMetadata( char *arg0, char *arg1, char *arg2, char *arg3,
     int status = rcModAVUMetadata( Conn, &modAVUMetadataInp );
     lastCommandStatus = status;
 
-    if ( status < 0 ) {
-        if ( Conn->rError ) {
-            rError_t *Err;
-            rErrMsg_t *ErrMsg;
-            int i, len;
-            Err = Conn->rError;
-            len = Err->len;
-            for ( i = 0; i < len; i++ ) {
-                ErrMsg = Err->errMsg[i];
-                rodsLog( LOG_ERROR, "Level %d: %s", i, ErrMsg->msg );
-            }
+    if ( Conn->rError ) {
+        rError_t *Err;
+        rErrMsg_t *ErrMsg;
+        int i, len;
+        Err = Conn->rError;
+        len = Err->len;
+        for ( i = 0; i < len; i++ ) {
+            ErrMsg = Err->errMsg[i];
+            rodsLog( LOG_ERROR, "Level %d: %s", i, ErrMsg->msg );
         }
+    }
+
+    if (status < 0) {
         char *mySubName = NULL;
         const char *myName = rodsErrorName( status, &mySubName );
         rodsLog( LOG_ERROR, "rcModAVUMetadata failed with error %d %s %s",
@@ -1096,18 +1098,19 @@ modAVUMetadata(char *arg0, char *arg1, char *arg2, char *arg3,
     const int status = rcModAVUMetadata( Conn, &modAVUMetadataInp );
     lastCommandStatus = status;
 
-    if ( status < 0 ) {
-        if ( Conn->rError ) {
-            rError_t *Err;
-            rErrMsg_t *ErrMsg;
-            int i, len;
-            Err = Conn->rError;
-            len = Err->len;
-            for ( i = 0; i < len; i++ ) {
-                ErrMsg = Err->errMsg[i];
-                rodsLog( LOG_ERROR, "Level %d: %s", i, ErrMsg->msg );
-            }
+    if ( Conn->rError ) {
+        rError_t *Err;
+        rErrMsg_t *ErrMsg;
+        int i, len;
+        Err = Conn->rError;
+        len = Err->len;
+        for ( i = 0; i < len; i++ ) {
+            ErrMsg = Err->errMsg[i];
+            rodsLog( LOG_ERROR, "Level %d: %s", i, ErrMsg->msg );
         }
+    }
+
+    if (status < 0) {
         char *mySubName = NULL;
         const char *myName = rodsErrorName( status, &mySubName );
         rodsLog( LOG_ERROR, "rcModAVUMetadata failed with error %d %s %s",
@@ -2166,8 +2169,6 @@ int main( int argc, const char **argv )
         lastCommandStatus = do_command( command_to_be_parsed[0], { ++command_to_be_parsed.begin(), command_to_be_parsed.end() });
     }
 
-    printErrorStack( Conn->rError );
-
     rcDisconnect( Conn );
 
     if ( lastCommandStatus != 0 ) {
@@ -2190,21 +2191,19 @@ void usageMain() {
         " -h This help",
         " ",
         "Commands are:",
-        " add -d|C|R|u Name AttName AttValue [AttUnits] (Add new AVU triple)",
-        " adda -d|C|R|u Name AttName AttValue [AttUnits] (Add as administrator)",
-        "                                     (same as 'add' but bypasses ACLs)",
+        " add  -d|C|R|u Name AttName AttValue [AttUnits] (Add new AVU triple)",
         " addw -d Name AttName AttValue [AttUnits] (Add new AVU triple",
         "                                           using Wildcards in Name)",
-        " rm  -d|C|R|u Name AttName AttValue [AttUnits] (Remove AVU)",
-        " rmw -d|C|R|u Name AttName AttValue [AttUnits] (Remove AVU, use Wildcards)",
-        " rmi -d|C|R|u Name MetadataID (Remove AVU by MetadataID)",
-        " mod -d|C|R|u Name AttName AttValue [AttUnits] [n:Name] [v:Value] [u:Units]",
+        " rm   -d|C|R|u Name AttName AttValue [AttUnits] (Remove AVU)",
+        " rmw  -d|C|R|u Name AttName AttValue [AttUnits] (Remove AVU, use Wildcards)",
+        " rmi  -d|C|R|u Name MetadataID (Remove AVU by MetadataID)",
+        " mod  -d|C|R|u Name AttName AttValue [AttUnits] [n:Name] [v:Value] [u:Units]",
         "      (modify AVU; new name (n:), value(v:), and/or units(u:)",
-        " set -d|C|R|u Name AttName newValue [newUnits] (Assign a single value)",
-        " ls  -[l]d|C|R|u Name [AttName] (List existing AVUs for item Name)",
-        " lsw -[l]d|C|R|u Name [AttName] (List existing AVUs, use Wildcards)",
-        " qu -d|C|R|u AttName Op AttVal [...] (Query objects with matching AVUs)",
-        " cp -d|C|R|u -d|C|R|u Name1 Name2 (Copy AVUs from item Name1 to Name2)",
+        " set  -d|C|R|u Name AttName newValue [newUnits] (Assign a single value)",
+        " ls   -[l]d|C|R|u Name [AttName] (List existing AVUs for item Name)",
+        " lsw  -[l]d|C|R|u Name [AttName] (List existing AVUs, use Wildcards)",
+        " qu   -d|C|R|u AttName Op AttVal [...] (Query objects with matching AVUs)",
+        " cp   -d|C|R|u -d|C|R|u Name1 Name2 (Copy AVUs from item Name1 to Name2)",
         " upper (Toggle between upper case mode for queries (qu))",
         " ",
         "Metadata attribute-value-units triples (AVUs) consist of an Attribute-Name,",
@@ -2243,8 +2242,8 @@ void usageMain() {
         "or via -z Zonename (for 'qu' and when working with resources).",
         " ",
         "If you are an iRODS administrator, you can include the -M option to run",
-        "in administrator mode and add, remove, or set metadata on any collection",
-        "and/or data object as if you were the owner.",
+        "in administrator mode and add, remove, or set metadata on any collection,",
+        "data object, user, or resource.",
         " ",
         "Try 'help command' for more help on a specific command.",
         "'help qu' will explain additional options on the query.",
@@ -2277,27 +2276,6 @@ usage( const char *subOpt ) {
                 "Add an AVU to a dataobj (-d), collection(-C), resource(-R), ",
                 "or user(-u)",
                 "Example: add -d file1 distance 12 miles",
-                " ",
-                "Admins can also use the command 'adda' (add as admin) to add metadata",
-                "to any collection or dataobj; syntax is the same as 'add'.  Admins are",
-                "also allowed to add user and resource metadata.",
-                ""
-            };
-            for ( i = 0;; i++ ) {
-                if ( strlen( msgs[i] ) == 0 ) {
-                    return 0;
-                }
-                printf( "%s\n", msgs[i] );
-            }
-        }
-        if ( strcmp( subOpt, "adda" ) == 0 ) {
-            char *msgs[] = {
-                " adda -d|C|R|u Name AttName AttValue [AttUnits]  (Add as administrator)",
-                "                                     (same as 'add' but bypasses ACLs)",
-                " ",
-                "Administrators (rodsadmin users) may use this command to add AVUs",
-                "to any dataobj, collection, resource, or user.  The syntax is the same",
-                "as 'imeta add'.",
                 ""
             };
             for ( i = 0;; i++ ) {
