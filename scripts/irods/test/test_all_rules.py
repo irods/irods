@@ -236,6 +236,7 @@ class Test_AllRules(with_metaclass(metaclass_unittest_test_case_generator.Metacl
                 "rulemsiSysReplDataObj",
                 "rulemsiNoChkFilePathPerm",
                 "rulemsiNoTrashCan",
+                "rulemsiSetRescSortScheme",
             ]
             for n in names_to_skip:
                 if n in rulefile:
