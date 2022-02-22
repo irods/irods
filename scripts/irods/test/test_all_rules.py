@@ -30,7 +30,7 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
 
     global database_instance_name
-    database_instance_name = next(iter(IrodsConfig()['plugin_configuration']['database']))
+    database_instance_name = next(iter(IrodsConfig().server_config['plugin_configuration']['database']))
 
     global rulesdir
     currentdir = os.path.dirname(os.path.realpath(__file__))
@@ -1142,6 +1142,55 @@ OUTPUT ruleExecOut
             do_test(data_object, 'own')
             self.admin.assert_icommand(['imeta', 'ls', '-d', data_object], 'STDOUT', ['atomic_pre_fired', 'atomic_post_fired'])
 
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for PREP')
+    @unittest.skipIf(database_instance_name == 'mysql',
+                    ("Fails against databases with transaction isolation level set to REPEATABLE-READ (e.g. MySQL). "
+                     "For more details, see https://github.com/irods/irods/issues/4917"))
+    def test_msi_atomic_apply_acl_operations_considers_group_permissions__issue_6191(self):
+        def do_test(_entity_type):
+            logical_path = os.path.join(self.admin.session_collection, 'issue_6191')
+
+            json_input = json.dumps({
+                'logical_path': logical_path,
+                'operations': [
+                    {
+                        'entity_name': 'public',
+                        'acl': 'read'
+                    }
+                ]
+            })
+
+            rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+            rule = "msi_atomic_apply_acl_operations('{0}', *ignored)".format(json_input)
+
+            if   _entity_type == 'data_object': self.admin.assert_icommand(['itouch', logical_path])
+            elif _entity_type == 'collection' : self.admin.assert_icommand(['imkdir', logical_path])
+
+            try:
+                # Show that the non-admin user is not allowed to modify ACLs because they don't
+                # have the necessary permissions to do so.
+                self.user0.assert_icommand(['irule', '-r', rep_name, rule, 'null', 'ruleExecOut'], 'STDERR', ['OBJ_PATH_DOES_NOT_EXIST'])
+                self.user0.assert_icommand(['ils', '-A', logical_path], 'STDERR', ['does not exist or user lacks access permission'])
+
+                # Give the public group OWN permissions on the object owned by the administrator.
+                # This allows "self.user0" to modify ACLs on the object because all users are members
+                # of the public group.
+                self.admin.assert_icommand(['ichmod', 'own', 'public', logical_path])
+
+                # Give the public group READ permission on the parent collection so that "self.user0"
+                # can see the object.
+                self.admin.assert_icommand(['ichmod', 'read', 'public', os.path.dirname(logical_path)])
+
+                # Show that the non-admin user can now manipulate ACLs because they have permission
+                # to do so via the public group.
+                self.user0.assert_icommand(['irule', '-r', rep_name, rule, 'null', 'ruleExecOut'])
+                self.admin.assert_icommand(['ils', '-A', logical_path], 'STDOUT', [' g:public#{0}:read object'.format(self.admin.zone_name)])
+
+            finally:
+                self.admin.run_icommand(['irm', '-rf', logical_path])
+
+        do_test('data_object')
+        do_test('collection')
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for PREP and Topology Testing')
     def test_msi_touch__issue_4669(self):
