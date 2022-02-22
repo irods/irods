@@ -577,7 +577,7 @@ printDataAcl( rcComm_t *conn, char *dataId ) {
     genQueryOut_t *genQueryOut = NULL;
     int status;
     int i;
-    sqlResult_t *userName, *userZone, *dataAccess;
+    sqlResult_t *userName, *userZone, *userType, *dataAccess;
     char *userNameStr, *userZoneStr, *dataAccessStr;
 
     status = queryDataObjAcl( conn, dataId, zoneHint, &genQueryOut );
@@ -601,6 +601,12 @@ printDataAcl( rcComm_t *conn, char *dataId ) {
         return UNMATCHED_KEY_OR_INDEX;
     }
 
+    if ( ( userType = getSqlResultByInx( genQueryOut, COL_USER_TYPE ) ) == NULL ) {
+        rodsLog( LOG_ERROR,
+                 "printDataAcl: getSqlResultByInx for COL_USER_TYPE failed" );
+        return UNMATCHED_KEY_OR_INDEX;
+    }
+
     if ( ( dataAccess = getSqlResultByInx( genQueryOut, COL_DATA_ACCESS_NAME ) )
             == NULL ) {
         rodsLog( LOG_ERROR,
@@ -608,11 +614,16 @@ printDataAcl( rcComm_t *conn, char *dataId ) {
         return UNMATCHED_KEY_OR_INDEX;
     }
 
+    char group_prefix[3];
+
     for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
         userNameStr = &userName->value[userName->len * i];
         userZoneStr = &userZone->value[userZone->len * i];
         dataAccessStr = &dataAccess->value[dataAccess->len * i];
-        printf( "%s#%s:%s   ", userNameStr, userZoneStr, dataAccessStr );
+
+        const auto include_prefix = (std::strncmp(&userType->value[userType->len * i], "rodsgroup", 9) == 0);
+        std::strcpy(group_prefix, include_prefix ? "g:" : "");
+        printf( "%s%s#%s:%s   ", group_prefix, userNameStr, userZoneStr, dataAccessStr );
     }
 
     printf( "\n" );
