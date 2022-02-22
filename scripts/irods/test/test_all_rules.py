@@ -29,6 +29,9 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
     global plugin_name
     plugin_name = IrodsConfig().default_rule_engine_plugin
 
+    global database_instance_name
+    database_instance_name = next(iter(IrodsConfig()['plugin_configuration']['database']))
+
     global rulesdir
     currentdir = os.path.dirname(os.path.realpath(__file__))
     if plugin_name == 'irods_rule_engine_plugin-irods_rule_language':
@@ -991,6 +994,67 @@ OUTPUT ruleExecOut
                 '''.format(data_object))
 
             do_test(data_object, 'data_object', 'add', ['atomic_pre_fired', 'atomic_post_fired'])
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for PREP')
+    @unittest.skipIf(database_instance_name == 'mysql',
+                    ("Fails against databases with transaction isolation level set to REPEATABLE-READ (e.g. MySQL). "
+                     "For more details, see https://github.com/irods/irods/issues/4917"))
+    def test_msi_atomic_apply_metadata_operations_considers_group_permissions__issue_6190(self):
+        def do_test(_entity_type):
+            entity_name = os.path.join(self.admin.session_collection, 'issue_6190')
+
+            json_input = json.dumps({
+                'entity_name': entity_name,
+                'entity_type': _entity_type,
+                'operations': [
+                    {
+                        'operation': 'add',
+                        'attribute': 'issue_6190_name',
+                        'value': 'issue_6190_value',
+                        'units': 'issue_6190_units'
+                    }
+                ]
+            })
+
+            rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+            rule = "msi_atomic_apply_metadata_operations('{0}', *ignored)".format(json_input)
+
+            imeta_type = 'INVALID_ENTITY_TYPE'
+            if _entity_type == 'data_object':
+                imeta_type = '-d'
+                self.admin.assert_icommand(['itouch', entity_name])
+            elif _entity_type == 'collection':
+                imeta_type = '-C'
+                self.admin.assert_icommand(['imkdir', entity_name])
+
+            try:
+                # Give the public group READ permission on the parent collection so that "self.user0"
+                # can see the object.
+                self.admin.assert_icommand(['ichmod', 'read', 'public', os.path.dirname(entity_name)])
+
+                # Show that the non-admin user is not allowed to add metadata because they don't
+                # have the necessary permissions. In this particular case, the atomic API plugin will
+                # not be able to use GenQuery to retrieve information about the target object
+                # (i.e. DATA_ID / COLL_ID).
+                self.user0.assert_icommand(['irule', '-r', rep_name, rule, 'null', 'ruleExecOut'], 'STDERR', ['SYS_INVALID_INPUT_PARAM'])
+                self.admin.assert_icommand(['imeta', 'ls', imeta_type, entity_name], 'STDOUT', ['None'])
+
+                # Give the public group WRITE permissions on the object owned by the administrator.
+                # This allows "self.user0" to modify metadata on the object because all users are members
+                # of the public group.
+                self.admin.assert_icommand(['ichmod', 'write', 'public', entity_name])
+
+                # Show that the non-admin user can now manipulate metadata because they have permission
+                # to do so via the public group.
+                self.user0.assert_icommand(['irule', '-r', rep_name, rule, 'null', 'ruleExecOut'])
+                self.admin.assert_icommand(['imeta', 'ls', imeta_type, entity_name],
+                                           'STDOUT', ['issue_6190_name', 'issue_6190_value', 'issue_6190_units'])
+
+            finally:
+                self.admin.run_icommand(['irm', '-rf', entity_name])
+
+        do_test('data_object')
+        do_test('collection')
 
     @unittest.skip(("Fails against databases with transaction isolation level set to REPEATABLE-READ (e.g. MySQL). "
                     "For more details, see https://github.com/irods/irods/issues/4917"))
