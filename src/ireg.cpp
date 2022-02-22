@@ -1,15 +1,9 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/*
- * ireg - The irods reg utility
- */
-
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
-#include "regUtil.h"
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
+#include "parseCommandLine.h"
+#include "regUtil.h"
+#include "rodsClient.h"
+#include "rodsPath.h"
 
 void usage();
 
@@ -28,7 +22,7 @@ main( int argc, char **argv ) {
     int nArgv;
 
 
-    optStr = "D:fhkKCG:R:vVZ";
+    optStr = "D:fhkKCrR:vVZ";
 
     status = parseCmdLineOpt( argc, argv, optStr, 1, &myRodsArgs );
 
@@ -108,7 +102,7 @@ main( int argc, char **argv ) {
 void
 usage() {
     char *msgs[] = {
-        "Usage: ireg [-hfCkKvV] [--repl] [-D dataType] [-R resource]",
+        "Usage: ireg [-hfrkKvV] [--repl] [-D dataType] [-R resource]",
         "               physicalFilePath, irodsPath",
         " ",
         "Register a file or a directory of files and subdirectory into iRODS.",
@@ -116,11 +110,11 @@ usage() {
         "the resource is located.  The full path must be supplied for both the",
         "physicalFilePath and the irodsPath.",
         " ",
-        "With the -C option, the entire content beneath the physicalFilePath",
+        "With the -r option, the entire content beneath the physicalFilePath",
         "(files and subdirectories) will be recursively registered beneath the",
         "irodsPath. For example, the command:",
         " ",
-        "    ireg -C /tmp/src1 /tempZone/home/myUser/src1",
+        "    ireg -r /tmp/src1 /tempZone/home/myUser/src1",
         " ",
         "grafts all files and subdirectories beneath the directory /tmp/src1 to",
         "the collection /tempZone/home/myUser/src1",
@@ -138,7 +132,7 @@ usage() {
         "Options are:",
         " -R  resource - specifies the target storage resource. This can also be specified",
         "     in your environment or via a rule set up by the administrator.",
-        " -C  the specified path is a directory. The default assumes the path is a file.",
+        " -r  recursive - Recursively register all directories and files in physicalFilePath.",
         " -f  Force. If the target collection already exists, register the files and",
         "     subdirectories that have not already been registered in the directory.",
         " -k  calculate a checksum on the iRODS client and store with the file details.",
