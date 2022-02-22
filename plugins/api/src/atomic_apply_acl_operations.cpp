@@ -76,11 +76,6 @@ namespace
 
     auto get_object_id(rsComm_t& _comm, std::string_view _logical_path) -> id_type;
 
-    auto user_has_permission_to_modify_acls(rsComm_t& _comm,
-                                            nanodbc::connection& _db_conn,
-                                            const std::string_view _db_instance_name,
-                                            id_type _object_id) -> bool;
-
     auto throw_if_invalid_acl(std::string_view _acl) -> void;
 
     auto throw_if_invalid_entity_id(id_type _entity_id) -> void;
@@ -218,41 +213,6 @@ namespace
         // clang-format on
 
         THROW(SYS_INVALID_INPUT_PARAM, fmt::format("Invalid ACL [acl={}]", _acl));
-    }
-
-    auto user_has_permission_to_modify_acls(rsComm_t& _comm,
-                                            nanodbc::connection& _db_conn,
-                                            const std::string_view _db_instance_name,
-                                            id_type _object_id) -> bool
-    {
-        nanodbc::statement stmt{_db_conn};
-
-        prepare(stmt, "select t.token_id from R_TOKN_MAIN t"
-                      " inner join R_OBJT_ACCESS a on t.token_id = a.access_type_id "
-                      "where"
-                      " a.user_id = (select user_id from R_USER_MAIN where user_name = ?) and"
-                      " a.object_id = ?");
-        
-        if ("oracle" == _db_instance_name) {
-            const auto object_id_string = std::to_string(_object_id);
-
-            stmt.bind(0, _comm.clientUser.userName);
-            stmt.bind(1, object_id_string.data());
-
-            if (auto row = execute(stmt); row.next()) {
-                return static_cast<ic::access_type>(row.get<int>(0)) == ic::access_type::own;
-            }
-        }
-        else {
-            stmt.bind(0, _comm.clientUser.userName);
-            stmt.bind(1, &_object_id);
-
-            if (auto row = execute(stmt); row.next()) {
-                return static_cast<ic::access_type>(row.get<int>(0)) == ic::access_type::own;
-            }
-        }
-
-        return false;
     }
 
     auto entity_has_acls_set_on_object(nanodbc::connection& _db_conn,
@@ -542,7 +502,7 @@ namespace
 
         log::api::trace("Checking if user has permission to modify permissions ...");
 
-        if (!user_has_permission_to_modify_acls(*_comm, db_conn, db_instance_name, object_id)) {
+        if (!ic::user_has_permission_to_modify_acls(*_comm, db_conn, db_instance_name, object_id)) {
             log::api::error("User not allowed to modify ACLs [logical_path={}, object_id={}]", logical_path, object_id);
             *_output = irods::to_bytes_buffer(make_error_object(json{}, 0, "User not allowed to modify ACLs").dump());
             return CAT_NO_ACCESS_PERMISSION;

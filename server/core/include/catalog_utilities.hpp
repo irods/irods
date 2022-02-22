@@ -162,6 +162,24 @@ namespace irods::experimental::catalog
                                               std::int64_t _object_id,
                                               const entity_type _entity) -> bool;
 
+    /// \brief Determines whether the connected user can modify ACLs on a given entity.
+    ///
+    /// Modifying ACLs requires OWN permissions on the data object or collection.
+    ///
+    /// \param[in] _comm iRODS connection structure
+    /// \param[in] _db_conn ODBC connection to the database
+    /// \param[in] _db_instance_name The database instance name defined in server_config.json
+    /// \param[in] _object_id ID of the data object or collection
+    ///
+    /// \retval true if user has permission to modify ACLs
+    /// \retval false if user does not have permission to modify the entity
+    ///
+    /// \since 4.2.12
+    auto user_has_permission_to_modify_acls(RsComm& _comm,
+                                            nanodbc::connection& _db_conn,
+                                            const std::string_view _db_instance_name,
+                                            std::int64_t _object_id) -> bool;
+
     /// \throws irods::exception
     /// \since 4.2.9
     auto throw_if_catalog_provider_service_role_is_invalid() -> void;
