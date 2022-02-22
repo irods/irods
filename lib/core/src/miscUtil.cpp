@@ -512,7 +512,6 @@ printNoSync( char *objPath, rodsLong_t fileSize, char *reason ) {
 int
 queryDataObjAcl( rcComm_t *conn, char *dataId, char *zoneHint, genQueryOut_t **genQueryOut ) { // JMC - bacport 4516
     genQueryInp_t genQueryInp;
-    int status;
     char tmpStr[MAX_NAME_LEN];
 
     if ( dataId == NULL || genQueryOut == NULL ) {
@@ -527,6 +526,7 @@ queryDataObjAcl( rcComm_t *conn, char *dataId, char *zoneHint, genQueryOut_t **g
 
     addInxIval( &genQueryInp.selectInp, COL_USER_NAME, 1 );
     addInxIval( &genQueryInp.selectInp, COL_USER_ZONE, 1 );
+    addInxIval( &genQueryInp.selectInp, COL_USER_TYPE, 1 );
     addInxIval( &genQueryInp.selectInp, COL_DATA_ACCESS_NAME, 1 );
 
     snprintf( tmpStr, MAX_NAME_LEN, " = '%s'", dataId );
@@ -540,10 +540,7 @@ queryDataObjAcl( rcComm_t *conn, char *dataId, char *zoneHint, genQueryOut_t **g
 
     genQueryInp.maxRows = MAX_SQL_ROWS;
 
-    status =  rcGenQuery( conn, &genQueryInp, genQueryOut );
-
-    return status;
-
+    return rcGenQuery( conn, &genQueryInp, genQueryOut );
 }
 
 int
