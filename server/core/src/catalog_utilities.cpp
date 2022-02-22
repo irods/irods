@@ -140,6 +140,43 @@ namespace irods::experimental::catalog
         return false;
     } // user_has_permission_to_modify_entity
 
+    auto user_has_permission_to_modify_acls(RsComm& _comm,
+                                            nanodbc::connection& _db_conn,
+                                            const std::string_view _db_instance_name,
+                                            std::int64_t _object_id) -> bool
+    {
+        nanodbc::statement stmt{_db_conn};
+
+        using int_type = std::underlying_type_t<access_type>;
+
+        prepare(stmt, fmt::format(
+            "select distinct access_type_id from R_USER_GROUP ug "
+            "inner join R_USER_MAIN u on ug.user_id = u.user_id "
+            "inner join R_OBJT_ACCESS a on ug.group_user_id = a.user_id "
+            "where u.user_name = ? and "
+                  "a.object_id = ? and "
+                  "a.access_type_id = {}",
+            static_cast<int_type>(access_type::own)));
+        
+        if ("oracle" == _db_instance_name) {
+            const auto object_id_string = std::to_string(_object_id);
+
+            stmt.bind(0, _comm.clientUser.userName);
+            stmt.bind(1, object_id_string.data());
+
+            auto row = execute(stmt);
+            
+            return row.next();
+        }
+
+        stmt.bind(0, _comm.clientUser.userName);
+        stmt.bind(1, &_object_id);
+
+        auto row = execute(stmt);
+        
+        return row.next();
+    } // user_has_permission_to_modify_acls
+
     auto throw_if_catalog_provider_service_role_is_invalid() -> void
     {
         std::string role;
