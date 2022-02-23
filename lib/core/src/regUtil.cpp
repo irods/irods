@@ -94,8 +94,16 @@ initCondForReg( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, dataObjInp_t *dat
         addKeyVal( &dataObjOprInp->condInput, DATA_TYPE_KW, "generic" );
     }
 
-    if ( rodsArgs->collection == True ) {
-        addKeyVal( &dataObjOprInp->condInput, COLLECTION_KW, "" );
+    if (rodsArgs->collection == True) {
+        // The -r option has replaced -C, but we still support -C because we're nice.
+        printf("WARNING: -C option is deprecated. Use -r instead.\n");
+        rodsArgs->recursive = True;
+    }
+
+    if (rodsArgs->recursive == True) {
+        // Use the COLLECTION_KW here as this is used in the server for historical reasons.
+        // Typically, the recursive option is associated with RECURSIVE_OPR__KW.
+        addKeyVal(&dataObjOprInp->condInput, COLLECTION_KW, "");
     }
 
     if ( rodsArgs->force == True ) {

@@ -123,7 +123,7 @@ class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
 
         # register local dir
         target_collection = self.admin.session_collection + '/' + test_dir_name
-        self.admin.assert_icommand("ireg --exclude-from {exclude_file_path} -C {local_dir} {target_collection}".format(**locals()), "EMPTY")
+        self.admin.assert_icommand("ireg --exclude-from {exclude_file_path} -r {local_dir} {target_collection}".format(**locals()), "EMPTY")
 
         # compare files at each level
         for dir, files in local_dirs.items():
@@ -152,15 +152,15 @@ class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
         thedirname = 'ingestme'
         lib.create_directory_of_small_files(thedirname,3)
         # lowercase k
-        self.admin.assert_icommand('ireg -k -C {0} {1}'.format(os.path.abspath(thedirname), self.admin.session_collection+'/'+thedirname))
+        self.admin.assert_icommand('ireg -k -r {0} {1}'.format(os.path.abspath(thedirname), self.admin.session_collection+'/'+thedirname))
         self.admin.assert_icommand('ils -L {0}'.format(thedirname), 'STDOUT_SINGLELINE', ['sha2:XAs0B9+Xrk+wuByjAyCOXIyS7QzhM0KpZHwIJeWVOpw=', os.path.abspath(thedirname)])
         self.admin.assert_icommand('iunreg -r {0}'.format(thedirname))
         # uppercase K
-        self.admin.assert_icommand('ireg -K -C {0} {1}'.format(os.path.abspath(thedirname), self.admin.session_collection+'/'+thedirname))
+        self.admin.assert_icommand('ireg -K -r {0} {1}'.format(os.path.abspath(thedirname), self.admin.session_collection+'/'+thedirname))
         self.admin.assert_icommand('ils -L {0}'.format(thedirname), 'STDOUT_SINGLELINE', ['sha2:IMw+oWsNyQSCaoHslbpnvHCTWE1w3/1Vryz7kcStzKY=', os.path.abspath(thedirname)])
         self.admin.assert_icommand('iunreg -r {0}'.format(thedirname))
         # both
-        self.admin.assert_icommand('ireg -Kk -C {0} {1}'.format(os.path.abspath(thedirname), self.admin.session_collection+'/'+thedirname))
+        self.admin.assert_icommand('ireg -Kk -r {0} {1}'.format(os.path.abspath(thedirname), self.admin.session_collection+'/'+thedirname))
         self.admin.assert_icommand('ils -L {0}'.format(thedirname), 'STDOUT_SINGLELINE', ['sha2:k67r3aPVgq6JNOaM8nf/zMi0lBeVjb7g7Ei7cmtM10U=', os.path.abspath(thedirname)])
         self.admin.assert_icommand('iunreg -r {0}'.format(thedirname))
         # cleanup
@@ -174,7 +174,7 @@ class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
         dirname = 'dir_3658'
         lib.create_directory_of_small_files(dirname,2)
         # This introduces the trailing slash to the end of the physical directory path name
-        self.admin.assert_icommand('ireg -R {0} -C {1} {2}'.format(self.testresc, os.path.abspath(dirname)+"/", self.admin.session_collection+"/"+dirname))
+        self.admin.assert_icommand('ireg -R {0} -r {1} {2}'.format(self.testresc, os.path.abspath(dirname)+"/", self.admin.session_collection+"/"+dirname))
         # And this shows the problem (or not, if the bug is fixed)
         self.admin.assert_icommand('iscan {0}'.format(os.path.abspath(dirname)))
         shutil.rmtree(os.path.abspath(dirname), ignore_errors=True)
@@ -204,14 +204,14 @@ class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
 
         # We expect two lines of errors to be printed out.
         regex = '^.*Level [01]: dirPathReg: filePathReg failed for.*file_[{0}{1}].txt.*status = -510013$'.format(error_file_idx[0], error_file_idx[1])
-        self.admin.assert_icommand('ireg -CK {0} {1}'.format(src_dir, dst_dir), 'STDOUT_MULTILINE', use_regex=True, expected_results=regex)
+        self.admin.assert_icommand('ireg -rK {0} {1}'.format(src_dir, dst_dir), 'STDOUT_MULTILINE', use_regex=True, expected_results=regex)
 
         # Update permissions so that files can be processed by iRODS
         # and forcefully re-register the files. We should not receive any errors
         # from these commands.
         for i in error_file_idx:
             lib.execute_command('chmod 664 {0}'.format(files[i]))
-        self.admin.assert_icommand('ireg -fCK {0} {1}'.format(src_dir, dst_dir))
+        self.admin.assert_icommand('ireg -frK {0} {1}'.format(src_dir, dst_dir))
 
         # Remove the files from iRODS.
         self.admin.assert_icommand('irm -rf {0}'.format(dst_dir))

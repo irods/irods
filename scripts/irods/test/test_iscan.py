@@ -61,7 +61,7 @@ class Test_iScan(ResourceBase, unittest.TestCase):
         if not os.path.isdir(test_dir_path):
           lib.create_directory_of_small_files(test_dir_path,FILES_IN_DIR)
         try:
-          self.admin.assert_icommand( ['ireg', '-C', test_dir_path, test_coll_path])
+          self.admin.assert_icommand( ['ireg', '-r', test_dir_path, test_coll_path])
           sorted_files = sorted(os.listdir(test_dir_path),key=int) # sort numerically
           minfile,maxfile = map(int,(sorted_files[0], sorted_files[-1]))
           files_deleted = 0
@@ -161,10 +161,10 @@ class Test_iScan(ResourceBase, unittest.TestCase):
         # This is one of the two files created in each directory in the test setup above: make it 0 length.
         lib.execute_command(['truncate', '-s', '0', os.path.abspath(self.dirname1)+"/0"])
         lib.execute_command(['truncate', '-s', '0', os.path.abspath(self.dirname2)+"/0"])
-        self.admin.assert_icommand('ireg -R {0} -C {1} {2}/{3}'.format(self.testresc, os.path.abspath(self.dirname1),
+        self.admin.assert_icommand('ireg -R {0} -r {1} {2}/{3}'.format(self.testresc, os.path.abspath(self.dirname1),
                                                                 self.admin.session_collection,
                                                                 self.dirname1))
-        self.admin.assert_icommand('ireg -R {0} -C {1} {2}/{3}'.format(self.testresc, os.path.abspath(self.dirname2),
+        self.admin.assert_icommand('ireg -R {0} -r {1} {2}/{3}'.format(self.testresc, os.path.abspath(self.dirname2),
                                                                 self.admin.session_collection,
                                                                 self.dirname2))
 

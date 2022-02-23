@@ -303,7 +303,7 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("ireg -KkR " + self.anotherresc + " --repl /tmp/sfile2r  " + irodshome + "/foo5")
         self.admin.assert_icommand("iget -fK " + irodshome + "/foo5 " + dir_w + "/foo5")
         assert filecmp.cmp('/tmp/sfile2', os.path.join(dir_w, 'foo5')), "Files differed"
-        self.admin.assert_icommand("ireg -KCR " + self.testresc + " " + mysdir + " " + irodshome + "/icmdtesta")
+        self.admin.assert_icommand("ireg -KrR " + self.testresc + " " + mysdir + " " + irodshome + "/icmdtesta")
         if os.path.exists(dir_w + "/testa"):
             shutil.rmtree(dir_w + "/testa")
         self.admin.assert_icommand("iget -fvrK " + irodshome + "/icmdtesta " + dir_w + "/testa", 'STDOUT_SINGLELINE', "testa")
@@ -359,7 +359,7 @@ class ChunkyDevTest(ResourceBase):
                                    irodshome + "/icmdtest/foo1 " + irodshome + "/icmdtest/foo2")
 
         # prepare icmdtesta
-        self.admin.assert_icommand("ireg -KCR " + self.testresc + " " + mysdir + " " + irodshome + "/icmdtesta")
+        self.admin.assert_icommand("ireg -KrR " + self.testresc + " " + mysdir + " " + irodshome + "/icmdtesta")
 
         # mcoll test
         try:
