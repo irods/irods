@@ -604,69 +604,41 @@ install(
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
   )
 
-# Install the "contents" of the "include" directory into the "irods" directory.
-# This way of installing is required to maintain the directory structure. Without it,
-# the filesystem headers would be installed in a flat manner which would make it unusable.
-#
-# The "FILES_MATCHING" and "PATTERN" options instruct the build what files should be copied.
-# This scheme allows developers to see what headers will be installed. It also keeps files
-# that aren't meant to be installed out.
-#
-# NOTE: The trailing slash in the "DIRECTORY" argument is significant. DO NOT REMOVE IT!
 install(
-  DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib/filesystem/include/
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/irods
+  FILES
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/filesystem/include/filesystem.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/filesystem/include/filesystem/collection_entry.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/filesystem/include/filesystem/collection_iterator.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/filesystem/include/filesystem/config.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/filesystem/include/filesystem/copy_options.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/filesystem/include/filesystem/detail.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/filesystem/include/filesystem/filesystem.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/filesystem/include/filesystem/filesystem.tpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/filesystem/include/filesystem/filesystem_error.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/filesystem/include/filesystem/object_status.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/filesystem/include/filesystem/path.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/filesystem/include/filesystem/path_traits.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/filesystem/include/filesystem/permissions.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/filesystem/include/filesystem/recursive_collection_iterator.hpp
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/irods/filesystem
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
-  FILES_MATCHING
-    PATTERN */filesystem.hpp
-    PATTERN */filesystem/collection_entry.hpp
-    PATTERN */filesystem/collection_iterator.hpp
-    PATTERN */filesystem/config.hpp
-    PATTERN */filesystem/copy_options.hpp
-    PATTERN */filesystem/detail.hpp
-    PATTERN */filesystem/filesystem.hpp
-    PATTERN */filesystem/filesystem.tpp
-    PATTERN */filesystem/filesystem_error.hpp
-    PATTERN */filesystem/object_status.hpp
-    PATTERN */filesystem/path.hpp
-    PATTERN */filesystem/path_traits.hpp
-    PATTERN */filesystem/permissions.hpp
-    PATTERN */filesystem/recursive_collection_iterator.hpp
   )
 
-# Install the "contents" of the "include" directory into the "irods/plugins/api" directory.
-# API plugins are installed in a separate directory to signal to the user that the headers
-# inside this directory are for plugins only.
-#
-# For details about "FILES_MATCHING" and "PATTERN", search for "filesystem" in this file.
-#
-# NOTE: The trailing slash in the "DIRECTORY" argument is significant. DO NOT REMOVE IT!
 install(
-  DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/plugins/api/include/
+  FILES
+  ${CMAKE_CURRENT_SOURCE_DIR}/plugins/api/include/api_plugin_number.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/plugins/api/include/api_plugin_number_map.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/plugins/api/include/api_plugin_number_data.h
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/irods/plugins/api
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
-  FILES_MATCHING
-    PATTERN */api_plugin_number.h
-    PATTERN */api_plugin_number_map.hpp
-    PATTERN */api_plugin_number_data.h
   )
 
-# Install the "contents" of the "transport" directory into the "irods/transport" directory.
-# This way of installing is required to maintain the directory structure. Without it,
-# the filesystem headers would be installed in a flat manner which would make it unusable.
-#
-# The "FILES_MATCHING" and "PATTERN" options instruct the build what files should be copied.
-# This scheme allows developers to see what headers will be installed. It also keeps files
-# that aren't meant to be installed out.
-#
-# NOTE: The trailing slash in the "DIRECTORY" argument is significant. DO NOT REMOVE IT!
 install(
-  DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/transport/
+  FILES
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/transport/transport/transport.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/transport/transport/default_transport.hpp
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/irods/transport
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
-  FILES_MATCHING
-    PATTERN */transport/transport.hpp
-    PATTERN */transport/default_transport.hpp
   )
 
 install(
