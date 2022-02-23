@@ -22,7 +22,7 @@
 #include <vector>
 #include <string>
 
-#include "boost/filesystem.hpp"
+#include <boost/filesystem.hpp>
 
 /* Size of the R_OBJT_AUDIT comment field;must match table column definition */
 #define AUDIT_COMMENT_MAX_SIZE       1000

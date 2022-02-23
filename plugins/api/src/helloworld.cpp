@@ -5,7 +5,7 @@
 #include "irods_stacktrace.hpp"
 #include "irods_server_api_call.hpp"
 #include "irods_re_serialization.hpp"
-#include "boost/lexical_cast.hpp"
+#include <boost/lexical_cast.hpp>
 
 #include "objStat.h"
 #include "client_api_whitelist.hpp"

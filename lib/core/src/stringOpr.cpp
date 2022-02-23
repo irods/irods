@@ -4,7 +4,7 @@
 #include "irods_stacktrace.hpp"
 #include "rodsLog.h"
 
-#include "boost/regex.hpp"
+#include <boost/regex.hpp>
 
 #include <cstring>
 #include <string>

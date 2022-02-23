@@ -9,8 +9,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "boost/interprocess/sync/named_mutex.hpp"
-#include "boost/interprocess/sync/scoped_lock.hpp"
+#include <boost/interprocess/sync/named_mutex.hpp>
+#include <boost/interprocess/sync/scoped_lock.hpp>
 
 #ifdef IRODS_ENABLE_SYSLOG
     #include "spdlog/sinks/base_sink.h"

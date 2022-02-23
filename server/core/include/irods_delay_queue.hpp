@@ -1,7 +1,7 @@
 #ifndef IRODS_DELAY_QUEUE_HPP
 #define IRODS_DELAY_QUEUE_HPP
 
-#include "boost/version.hpp"
+#include <boost/version.hpp>
 
 #if BOOST_VERSION < 107200
     #include "capped_memory_resource.hpp"
@@ -9,10 +9,10 @@
     #include "fixed_buffer_resource.hpp"
 #endif // BOOST_VERSION < 107200
 
-#include "boost/container/pmr/unsynchronized_pool_resource.hpp"
-#include "boost/container/pmr/global_resource.hpp"
-#include "boost/container/pmr/string.hpp"
-#include "boost/container/pmr/vector.hpp"
+#include <boost/container/pmr/unsynchronized_pool_resource.hpp>
+#include <boost/container/pmr/global_resource.hpp>
+#include <boost/container/pmr/string.hpp>
+#include <boost/container/pmr/vector.hpp>
 
 #include <cstddef>
 #include <algorithm>

@@ -18,7 +18,7 @@
 #include "avro/Decoder.hh"
 #include "avro/Specific.hh"
 
-#include "boost/lexical_cast.hpp"
+#include <boost/lexical_cast.hpp>
 
 #include "fmt/format.h"
 
