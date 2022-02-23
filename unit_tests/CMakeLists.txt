@@ -7,7 +7,7 @@ set(IRODS_UNIT_TESTS_REPORT_FILENAME "report.xml" CACHE STRING "The filename of 
 set(IRODS_UNIT_TESTS_ENABLE_ALL NO CACHE BOOL "Enables all unit tests")
 
 if (NOT IRODS_UNIT_TESTS_BUILD)
-    return()
+  return()
 endif()
 
 find_package(Catch2 "2.3.0" REQUIRED)
@@ -25,7 +25,7 @@ list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 include(utils)
 
 if (IRODS_UNIT_TESTS_ENABLE_ALL)
-    add_compile_definitions(IRODS_ENABLE_ALL_UNIT_TESTS)
+  add_compile_definitions(IRODS_ENABLE_ALL_UNIT_TESTS)
 endif()
 
 add_compile_definitions(BOOST_ASIO_NO_DEPRECATED
@@ -82,27 +82,31 @@ set(TEST_INCLUDE_LIST test_config/irods_atomic_apply_acl_operations
                       test_config/irods_zone_report)
 
 foreach(IRODS_TEST_CONFIG ${TEST_INCLUDE_LIST})
-    unset_irods_test_variables()
+  unset_irods_test_variables()
 
-    include(${IRODS_TEST_CONFIG})
-    add_executable(${IRODS_TEST_TARGET} ${IRODS_TEST_SOURCE_FILES})
-    target_compile_definitions(${IRODS_TEST_TARGET} PRIVATE BOOST_CHRONO_DONT_PROVIDES_DEPRECATED_IO_SINCE_V2_0_0)
-    target_link_libraries(${IRODS_TEST_TARGET} PRIVATE Catch2::Catch2 ${IRODS_TEST_LINK_LIBRARIES})
-    if (DEFINED IRODS_TEST_INCLUDE_PATH)
-        target_include_directories(${IRODS_TEST_TARGET} PRIVATE ${IRODS_TEST_INCLUDE_PATH})
-    endif()
+  include(${IRODS_TEST_CONFIG})
+  add_executable(${IRODS_TEST_TARGET} ${IRODS_TEST_SOURCE_FILES})
+  target_compile_definitions(${IRODS_TEST_TARGET} PRIVATE BOOST_CHRONO_DONT_PROVIDES_DEPRECATED_IO_SINCE_V2_0_0)
+  target_link_libraries(${IRODS_TEST_TARGET} PRIVATE Catch2::Catch2 ${IRODS_TEST_LINK_LIBRARIES})
+  if (DEFINED IRODS_TEST_INCLUDE_PATH)
+    target_include_directories(${IRODS_TEST_TARGET} PRIVATE ${IRODS_TEST_INCLUDE_PATH})
+  endif()
 
-    install(TARGETS
-            ${IRODS_TEST_TARGET}
-            RUNTIME
-            DESTINATION ${IRODS_HOME_DIRECTORY}/unit_tests
-            COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME})
+    install(
+      TARGETS
+      ${IRODS_TEST_TARGET}
+      RUNTIME
+      DESTINATION ${IRODS_HOME_DIRECTORY}/unit_tests
+      COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
+    )
 
-    # Make the new test available to CTest.
-    add_test(NAME ${IRODS_TEST_TARGET} COMMAND ${IRODS_TEST_TARGET} -r ${IRODS_UNIT_TESTS_REPORTING_STYLE} -o ${IRODS_UNIT_TESTS_REPORT_FILENAME})
+  # Make the new test available to CTest.
+  add_test(NAME ${IRODS_TEST_TARGET} COMMAND ${IRODS_TEST_TARGET} -r ${IRODS_UNIT_TESTS_REPORTING_STYLE} -o ${IRODS_UNIT_TESTS_REPORT_FILENAME})
 endforeach()
 
-install(FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests_list.json
-        DESTINATION ${IRODS_HOME_DIRECTORY}/unit_tests
-        COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME})
+install(
+  FILES
+  ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests_list.json
+  DESTINATION ${IRODS_HOME_DIRECTORY}/unit_tests
+  COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
+)
