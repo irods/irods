@@ -3,7 +3,7 @@
 
 /// \file
 
-#include "boost/version.hpp"
+#include <boost/version.hpp>
 
 #if BOOST_VERSION < 107200
     // There is a known bug in Boost versions prior to v1.72.
@@ -12,7 +12,7 @@
     #error fixed_buffer_resource.hpp requires Boost v1.72!
 #endif // BOOST_VERSION < 107200
 
-#include "boost/container/pmr/memory_resource.hpp"
+#include <boost/container/pmr/memory_resource.hpp>
 
 #include "fmt/format.h"
 

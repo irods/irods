@@ -23,7 +23,7 @@
 
 // =-=-=-=-=-=-=-
 // boost includes
-#include "boost/lexical_cast.hpp"
+#include <boost/lexical_cast.hpp>
 
 // =-=-=-=-=-=-=-
 // stl includes

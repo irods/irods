@@ -6,7 +6,7 @@
 #include <vector>
 #include <string>
 
-#include "boost/regex.hpp"
+#include <boost/regex.hpp>
 
 class RuleExistsHelper {
 public:

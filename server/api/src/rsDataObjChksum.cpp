@@ -24,7 +24,7 @@
 #define IRODS_QUERY_ENABLE_SERVER_SIDE_API
 #include "irods_query.hpp"
 
-#include "boost/lexical_cast.hpp"
+#include <boost/lexical_cast.hpp>
 #include "fmt/format.h"
 #include <nlohmann/json.hpp>
 

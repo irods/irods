@@ -10,7 +10,7 @@
 #include "key_value_proxy.hpp"
 #include "replica_state_table.hpp"
 
-#include "boost/format.hpp"
+#include <boost/format.hpp>
 
 #include <cstring>
 
