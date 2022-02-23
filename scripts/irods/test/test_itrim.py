@@ -109,7 +109,7 @@ class Test_Itrim(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
             open(file_2, 'w').close()
 
             # Register the tree into iRODS.
-            self.admin.assert_icommand(['ireg', '-C', '-R', resc_name, vault_path, logical_path])
+            self.admin.assert_icommand(['ireg', '-r', '-R', resc_name, vault_path, logical_path])
 
             # Show that the tree has been registered.
             dir_1_logical_path = os.path.join(logical_path, 'dir_1')
