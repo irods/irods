@@ -77,6 +77,7 @@ set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_SKIP_INSTALL_RPATH FALSE)
 set(CMAKE_SKIP_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
 if (IRODS_DISABLE_COMPILER_OPTIMIZATIONS)
   add_compile_options(-O0)
@@ -311,8 +312,10 @@ target_include_directories(
   PRIVATE
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   )
-target_compile_options(irods_filesystem_path PRIVATE -fPIC -Wno-write-strings)
+target_compile_options(irods_filesystem_path PRIVATE -Wno-write-strings)
 target_compile_definitions(irods_filesystem_path PRIVATE ${IRODS_COMPILE_DEFINITIONS})
+set_target_properties(irods_filesystem_path PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE TRUE)
+set_target_properties(irods_filesystem_path PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
 add_library(
   irods_filesystem_client
@@ -344,8 +347,10 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
-target_compile_options(irods_filesystem_client PRIVATE -fPIC -Wno-write-strings)
+target_compile_options(irods_filesystem_client PRIVATE -Wno-write-strings)
 target_compile_definitions(irods_filesystem_client PRIVATE ${IRODS_COMPILE_DEFINITIONS})
+set_target_properties(irods_filesystem_client PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE TRUE)
+set_target_properties(irods_filesystem_client PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
 add_library(
   irods_filesystem_server
@@ -378,8 +383,10 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
-target_compile_options(irods_filesystem_server PRIVATE -fPIC -Wno-write-strings)
+target_compile_options(irods_filesystem_server PRIVATE -Wno-write-strings)
 target_compile_definitions(irods_filesystem_server PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API IRODS_TRANSPORT_ENABLE_SERVER_SIDE_API)
+set_target_properties(irods_filesystem_server PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE TRUE)
+set_target_properties(irods_filesystem_server PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
 add_library(
   irods_user_administration_client
@@ -402,8 +409,11 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
-target_compile_options(irods_user_administration_client PRIVATE -fPIC -Wno-write-strings)
+target_compile_options(irods_user_administration_client PRIVATE -Wno-write-strings)
 target_compile_definitions(irods_user_administration_client PRIVATE ${IRODS_COMPILE_DEFINITIONS})
+set_target_properties(irods_user_administration_client PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE TRUE)
+set_target_properties(irods_user_administration_client PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+
 
 add_library(
   irods_user_administration_server
@@ -428,8 +438,10 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
-target_compile_options(irods_user_administration_server PRIVATE -fPIC -Wno-write-strings)
+target_compile_options(irods_user_administration_server PRIVATE -Wno-write-strings)
 target_compile_definitions(irods_user_administration_server PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_USER_ADMINISTRATION_ENABLE_SERVER_SIDE_API)
+set_target_properties(irods_user_administration_server PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE TRUE)
+set_target_properties(irods_user_administration_server PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
 add_library(
   irods_resource_administration_client
@@ -452,8 +464,10 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
-target_compile_options(irods_resource_administration_client PRIVATE -fPIC -Wno-write-strings)
+target_compile_options(irods_resource_administration_client PRIVATE -Wno-write-strings)
 target_compile_definitions(irods_resource_administration_client PRIVATE ${IRODS_COMPILE_DEFINITIONS})
+set_target_properties(irods_resource_administration_client PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE TRUE)
+set_target_properties(irods_resource_administration_client PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
 add_library(
   irods_resource_administration_server
@@ -478,8 +492,10 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
-target_compile_options(irods_resource_administration_server PRIVATE -fPIC -Wno-write-strings)
+target_compile_options(irods_resource_administration_server PRIVATE -Wno-write-strings)
 target_compile_definitions(irods_resource_administration_server PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_RESOURCE_ADMINISTRATION_ENABLE_SERVER_SIDE_API)
+set_target_properties(irods_resource_administration_server PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE TRUE)
+set_target_properties(irods_resource_administration_server PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
 # This list of source files exist because they must be compiled multiple times.
 # Once for the irods_client target and again for the irods_server target. The reason
@@ -698,8 +714,10 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
-target_compile_options(irods_client_api_functions PRIVATE -fPIC -Wno-write-strings)
+target_compile_options(irods_client_api_functions PRIVATE -Wno-write-strings)
 target_compile_definitions(irods_client_api_functions PRIVATE ${IRODS_COMPILE_DEFINITIONS})
+set_target_properties(irods_client_api_functions PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE TRUE)
+set_target_properties(irods_client_api_functions PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
 set(
   IRODS_LIBIRODS_CLIENT_SOURCES
@@ -1177,8 +1195,10 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
-target_compile_options(irods_plugin_dependencies_functions PRIVATE -fPIC -Wno-write-strings)
+target_compile_options(irods_plugin_dependencies_functions PRIVATE -Wno-write-strings)
 target_compile_definitions(irods_plugin_dependencies_functions PRIVATE ${IRODS_COMPILE_DEFINITIONS})
+set_target_properties(irods_plugin_dependencies_functions PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE TRUE)
+set_target_properties(irods_plugin_dependencies_functions PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
 add_library(
   irods_plugin_dependencies
