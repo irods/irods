@@ -1,11 +1,11 @@
-#include "irods_hasher_factory.hpp"
-#include "checksum.h"
-#include "MD5Strategy.hpp"
-#include "SHA256Strategy.hpp"
-#include "SHA512Strategy.hpp"
-#include "ADLER32Strategy.hpp"
-#include "SHA1Strategy.hpp"
-#include "rodsErrorTable.h"
+#include "irods/irods_hasher_factory.hpp"
+#include "irods/checksum.h"
+#include "irods/MD5Strategy.hpp"
+#include "irods/SHA256Strategy.hpp"
+#include "irods/SHA512Strategy.hpp"
+#include "irods/ADLER32Strategy.hpp"
+#include "irods/SHA1Strategy.hpp"
+#include "irods/rodsErrorTable.h"
 #include <sstream>
 #include <boost/unordered_map.hpp>
 

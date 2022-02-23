@@ -1,9 +1,9 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-#include "dataGet.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/dataGet.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcDataGet( rcComm_t *conn, dataOprInp_t *dataGetInp, portalOprOut_t **portalOprOut )

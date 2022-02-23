@@ -2,9 +2,9 @@
  */
 
 #include <fcntl.h>
-#include "sharedmemory.hpp"
-#include "rodsConnect.h"
-#include "irods_server_properties.hpp"
+#include "irods/sharedmemory.hpp"
+#include "irods/rodsConnect.h"
+#include "irods/irods_server_properties.hpp"
 
 namespace bi = boost::interprocess;
 

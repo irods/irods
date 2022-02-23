@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "irods_server_properties.hpp"
+#include "irods/irods_server_properties.hpp"
 
 int main(int argc, char* argv[])
 {

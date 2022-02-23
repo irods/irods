@@ -1,11 +1,11 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more infomkdiration please refer to files in the COPYRIGHT directory ***/
-#include "rodsPath.h"
-#include "rodsErrorTable.h"
-#include "rodsLog.h"
-#include "mkdirUtil.h"
-#include "miscUtil.h"
-#include "rcGlobalExtern.h"
+#include "irods/rodsPath.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/rodsLog.h"
+#include "irods/mkdirUtil.h"
+#include "irods/miscUtil.h"
+#include "irods/rcGlobalExtern.h"
 
 int
 mkdirUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs,

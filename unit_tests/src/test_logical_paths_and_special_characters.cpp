@@ -1,10 +1,10 @@
 #include <catch2/catch.hpp>
 
-#include "getRodsEnv.h"
-#include "rodsPath.h"
-#include "miscUtil.h"
+#include "irods/getRodsEnv.h"
+#include "irods/rodsPath.h"
+#include "irods/miscUtil.h"
 
-#include "filesystem/path.hpp"
+#include "irods/filesystem/path.hpp"
 
 #include <cstring>
 #include <string>

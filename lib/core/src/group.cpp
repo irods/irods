@@ -1,4 +1,4 @@
-#include "group.hpp"
+#include "irods/group.hpp"
 
 #include <nlohmann/json.hpp>
 

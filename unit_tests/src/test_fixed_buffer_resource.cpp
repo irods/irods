@@ -4,7 +4,7 @@
 
 #include <catch2/catch.hpp>
 
-#include "fixed_buffer_resource.hpp"
+#include "irods/fixed_buffer_resource.hpp"
 
 #include <boost/container/pmr/vector.hpp>
 

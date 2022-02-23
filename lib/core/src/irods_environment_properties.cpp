@@ -1,10 +1,10 @@
-#include "irods_environment_properties.hpp"
-#include "irods_get_full_path_for_config_file.hpp"
-#include "irods_default_paths.hpp"
-#include "irods_exception.hpp"
+#include "irods/irods_environment_properties.hpp"
+#include "irods/irods_get_full_path_for_config_file.hpp"
+#include "irods/irods_default_paths.hpp"
+#include "irods/irods_exception.hpp"
 
-#include "rods.h"
-#include "irods_log.hpp"
+#include "irods/rods.h"
+#include "irods/irods_log.hpp"
 
 #include <string>
 #include <algorithm>

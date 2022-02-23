@@ -1,6 +1,6 @@
 #include <catch2/catch.hpp>
 
-#include "scoped_client_identity.hpp"
+#include "irods/scoped_client_identity.hpp"
 
 #include <cstring>
 #include <string_view>

@@ -1,9 +1,9 @@
 #include <catch2/catch.hpp>
 
-#include "key_value_proxy.hpp"
-#include "lifetime_manager.hpp"
-#include "objInfo.h"
-#include "rcMisc.h"
+#include "irods/key_value_proxy.hpp"
+#include "irods/lifetime_manager.hpp"
+#include "irods/objInfo.h"
+#include "irods/rcMisc.h"
 
 #include <algorithm>
 #include <iostream>

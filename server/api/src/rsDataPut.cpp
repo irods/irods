@@ -3,13 +3,13 @@
 /* This is script-generated code (for the most part).  */
 /* See dataPut.h for a description of this API call.*/
 
-#include "rcMisc.h"
-#include "dataPut.h"
-#include "rodsLog.h"
-#include "miscServerFunct.hpp"
-#include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.h"
-#include "rsDataPut.hpp"
+#include "irods/rcMisc.h"
+#include "irods/dataPut.h"
+#include "irods/rodsLog.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/rcGlobalExtern.h"
+#include "irods/rsDataPut.hpp"
 
 /* rsDataPut - this routine setup portalOprOut with the resource server
  * for parallel put operation.

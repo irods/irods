@@ -1,6 +1,6 @@
-#include "rmColl.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/rmColl.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 #include <cstring>
 

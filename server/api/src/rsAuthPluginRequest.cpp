@@ -1,13 +1,13 @@
 // =-=-=-=-=-=-=-
-#include "authPluginRequest.h"
-#include "irods_native_auth_object.hpp"
-#include "irods_auth_object.hpp"
-#include "irods_auth_factory.hpp"
-#include "irods_auth_plugin.hpp"
-#include "irods_auth_manager.hpp"
-#include "irods_auth_constants.hpp"
-#include "irods_pluggable_auth_scheme.hpp"
-#include "rsAuthPluginRequest.hpp"
+#include "irods/authPluginRequest.h"
+#include "irods/irods_native_auth_object.hpp"
+#include "irods/irods_auth_object.hpp"
+#include "irods/irods_auth_factory.hpp"
+#include "irods/irods_auth_plugin.hpp"
+#include "irods/irods_auth_manager.hpp"
+#include "irods/irods_auth_constants.hpp"
+#include "irods/irods_pluggable_auth_scheme.hpp"
+#include "irods/rsAuthPluginRequest.hpp"
 
 void _rsSetAuthRequestGetChallenge( const char* );
 

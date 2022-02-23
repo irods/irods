@@ -1,18 +1,18 @@
-#include "rcMisc.h"
-#include "rsGlobalExtern.hpp"
-#include "rodsErrorTable.h"
-#include "rsClientHints.hpp"
+#include "irods/rcMisc.h"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/rodsErrorTable.h"
+#include "irods/rsClientHints.hpp"
 
-#include "irods_server_properties.hpp"
-#include "irods_log.hpp"
-#include "irods_plugin_name_generator.hpp"
-#include "irods_resource_manager.hpp"
-#include "irods_get_full_path_for_config_file.hpp"
-#include "irods_report_plugins_in_json.hpp"
+#include "irods/irods_server_properties.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/irods_plugin_name_generator.hpp"
+#include "irods/irods_resource_manager.hpp"
+#include "irods/irods_get_full_path_for_config_file.hpp"
+#include "irods/irods_report_plugins_in_json.hpp"
 
-#include "client_hints.h"
-#include "ies_client_hints.h"
-#include "rsIESClientHints.hpp"
+#include "irods/client_hints.h"
+#include "irods/ies_client_hints.h"
+#include "irods/rsIESClientHints.hpp"
 
 #include <fstream>
 #include <boost/algorithm/string.hpp>

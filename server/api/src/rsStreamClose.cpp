@@ -4,11 +4,11 @@
  * API
  */
 
-#include "streamClose.h"
-#include "miscServerFunct.hpp"
-#include "rsGlobalExtern.hpp"
-#include "rsStreamClose.hpp"
-#include "rsFileClose.hpp"
+#include "irods/streamClose.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/rsStreamClose.hpp"
+#include "irods/rsFileClose.hpp"
 
 int
 rsStreamClose( rsComm_t *rsComm, fileCloseInp_t *streamCloseInp ) {

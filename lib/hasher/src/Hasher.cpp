@@ -1,11 +1,11 @@
-#include "Hasher.hpp"
+#include "irods/Hasher.hpp"
 
 #include <iostream>
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
 
-#include "rodsErrorTable.h"
-#include "irods_stacktrace.hpp"
+#include "irods/rodsErrorTable.h"
+#include "irods/irods_stacktrace.hpp"
 
 namespace irods {
 

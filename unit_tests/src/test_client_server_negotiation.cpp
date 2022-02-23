@@ -1,6 +1,6 @@
 #include <catch2/catch.hpp>
 
-#include "irods_client_server_negotiation.hpp"
+#include "irods/irods_client_server_negotiation.hpp"
 
 TEST_CASE("negotiation_key_is_valid")
 {

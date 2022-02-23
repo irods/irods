@@ -1,14 +1,14 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
-#include "subStructFileGet.h"
-#include "miscServerFunct.hpp"
-#include "dataObjOpr.hpp"
-#include "rsSubStructFileGet.hpp"
+#include "irods/subStructFileGet.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/dataObjOpr.hpp"
+#include "irods/rsSubStructFileGet.hpp"
 
 // =-=-=-=-=-=-=-
-#include "irods_structured_object.hpp"
-#include "irods_error.hpp"
-#include "irods_stacktrace.hpp"
+#include "irods/irods_structured_object.hpp"
+#include "irods/irods_error.hpp"
+#include "irods/irods_stacktrace.hpp"
 
 int
 rsSubStructFileGet( rsComm_t *rsComm, subFile_t *subFile,

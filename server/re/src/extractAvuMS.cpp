@@ -1,8 +1,8 @@
 /// \file
 
-#include "rcMisc.h"
-#include "objMetaOpr.hpp"
-#include "miscServerFunct.hpp"
+#include "irods/rcMisc.h"
+#include "irods/objMetaOpr.hpp"
+#include "irods/miscServerFunct.hpp"
 
 #if defined(solaris_platform)
 #include <libgen.h>
@@ -13,8 +13,8 @@
 #include <string>
 #include <regex.h>
 
-#include "irods_re_structs.hpp"
-#include "rsModAVUMetadata.hpp"
+#include "irods/irods_re_structs.hpp"
+#include "irods/rsModAVUMetadata.hpp"
 
 extern char *__loc1;
 

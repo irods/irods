@@ -1,9 +1,9 @@
-#include "rs_get_file_descriptor_info.hpp"
+#include "irods/rs_get_file_descriptor_info.hpp"
 
-#include "api_plugin_number.h"
-#include "rodsErrorTable.h"
+#include "irods/plugins/api/api_plugin_number.h"
+#include "irods/rodsErrorTable.h"
 
-#include "irods_server_api_call.hpp"
+#include "irods/irods_server_api_call.hpp"
 
 #include <cstdlib>
 #include <cstring>

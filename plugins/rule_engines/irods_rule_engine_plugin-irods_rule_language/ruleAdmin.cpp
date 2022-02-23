@@ -1,6 +1,6 @@
-#include "rodsServer.hpp"
+#include "irods/rodsServer.hpp"
 #include "reGlobalsExtern.hpp"
-#include "reDefines.h"
+#include "irods/reDefines.h"
 
 #include <sys/time.h>
 

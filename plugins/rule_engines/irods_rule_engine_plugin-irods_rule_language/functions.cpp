@@ -2,10 +2,10 @@
  */
 
 #define MAKE_IRODS_ERROR_MAP
-#include "rodsErrorTable.h"
+#include "irods/rodsErrorTable.h"
 
 #define MAKE_IRODS_STATE_MAP
-#include "irods_state_table.h"
+#include "irods/irods_state_table.h"
 
 #include "index.hpp"
 #include "functions.hpp"
@@ -13,15 +13,15 @@
 #include "datetime.hpp"
 #include "cache.hpp"
 #include "configuration.hpp"
-#include "rsExecMyRule.hpp"
-#include "rsDataObjOpen.hpp"
-#include "rsDataObjLseek.hpp"
-#include "rsDataObjWrite.hpp"
-#include "rsDataObjClose.hpp"
+#include "irods/rsExecMyRule.hpp"
+#include "irods/rsDataObjOpen.hpp"
+#include "irods/rsDataObjLseek.hpp"
+#include "irods/rsDataObjWrite.hpp"
+#include "irods/rsDataObjClose.hpp"
 #ifndef DEBUG
-#include "apiHeaderAll.h"
-#include "rsApiHandler.hpp"
-#include "dataObjOpr.hpp"
+#include "irods/apiHeaderAll.h"
+#include "irods/rsApiHandler.hpp"
+#include "irods/dataObjOpr.hpp"
 #else
 int
 getDataObjInfoIncSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
@@ -32,16 +32,16 @@ getDataObjInfoIncSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 #include <boost/regex.h>
 
 #ifndef DEBUG
-#include "execMyRule.h"
-#include "msParam.h"
+#include "irods/execMyRule.h"
+#include "irods/msParam.h"
 #include "reFuncDefs.hpp"
-#include "stringOpr.h"
-#include "miscServerFunct.hpp"
+#include "irods/stringOpr.h"
+#include "irods/miscServerFunct.hpp"
 #endif
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "irods_get_full_path_for_config_file.hpp"
+#include "irods/irods_get_full_path_for_config_file.hpp"
 
 #define GC_BEGIN Region *_rnew = make_region(0, NULL), *_rnew2 = NULL;
 #define GC_REGION _rnew

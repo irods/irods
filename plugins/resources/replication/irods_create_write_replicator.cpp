@@ -1,8 +1,8 @@
 #include "irods_create_write_replicator.hpp"
 
-#include "dataObjRepl.h"
+#include "irods/dataObjRepl.h"
 #include "irods_repl_retry.hpp"
-#include "irods_stacktrace.hpp"
+#include "irods/irods_stacktrace.hpp"
 
 #include "fmt/format.h"
 

@@ -1,6 +1,6 @@
-#include "irods_logger.hpp"
+#include "irods/irods_logger.hpp"
 
-#include "irods_server_properties.hpp"
+#include "irods/irods_server_properties.hpp"
 
 #include <fstream>
 #include <iomanip>

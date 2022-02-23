@@ -3,8 +3,8 @@
  *
 **/
 
-#include "rcMisc.h"
-#include "msiHelper.hpp"
+#include "irods/rcMisc.h"
+#include "irods/msiHelper.hpp"
 #include "reFuncDefs.hpp"
 
 #include <cstring>

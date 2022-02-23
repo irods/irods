@@ -11,9 +11,9 @@
 
 // =-=-=-=-=-=-=-
 
-#include "icatStructs.hpp"
-#include "irods_lookup_table.hpp"
-#include "rodsErrorTable.h"
+#include "irods/icatStructs.hpp"
+#include "irods/irods_lookup_table.hpp"
+#include "irods/rodsErrorTable.h"
 #include <unordered_map>
 #include <sstream>
 

@@ -1,7 +1,7 @@
-#include "irods_default_paths.hpp"
+#include "irods/irods_default_paths.hpp"
 
-#include "irods_exception.hpp"
-#include "rodsErrorTable.h"
+#include "irods/irods_exception.hpp"
+#include "irods/rodsErrorTable.h"
 
 #include <boost/filesystem.hpp>
 

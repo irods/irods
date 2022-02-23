@@ -3,8 +3,8 @@
 
 /* See sslEnd.h for a description of this API call.*/
 
-#include "sslEnd.h"
-#include "rsSslEnd.hpp"
+#include "irods/sslEnd.h"
+#include "irods/rsSslEnd.hpp"
 
 int
 rsSslEnd( rsComm_t *rsComm, sslEndInp_t* ) {

@@ -1,9 +1,9 @@
 #include <catch2/catch.hpp>
 
-#include "data_object_proxy.hpp"
-#include "irods_at_scope_exit.hpp"
-#include "logical_locking.hpp"
-#include "replica_state_table.hpp"
+#include "irods/data_object_proxy.hpp"
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/logical_locking.hpp"
+#include "irods/replica_state_table.hpp"
 
 #include <sys/types.h>
 #include <unistd.h>

@@ -1,7 +1,7 @@
 // =-=-=-=-=-=-=-
 // irods includes
-#include "irods_mysql_object.hpp"
-#include "irods_database_manager.hpp"
+#include "irods/irods_mysql_object.hpp"
+#include "irods/irods_database_manager.hpp"
 
 namespace irods {
 

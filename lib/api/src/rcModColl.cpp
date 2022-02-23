@@ -1,6 +1,6 @@
-#include "modColl.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/modColl.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcModColl( rcComm_t *conn, collInp_t *modCollInp )

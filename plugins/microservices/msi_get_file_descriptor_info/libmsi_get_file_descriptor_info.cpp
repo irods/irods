@@ -1,12 +1,12 @@
 /// \file
 
-#include "irods_ms_plugin.hpp"
-#include "irods_re_structs.hpp"
-#include "msParam.h"
-#include "rodsErrorTable.h"
-#include "irods_error.hpp"
-#include "irods_log.hpp"
-#include "rs_get_file_descriptor_info.hpp"
+#include "irods/irods_ms_plugin.hpp"
+#include "irods/irods_re_structs.hpp"
+#include "irods/msParam.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/irods_error.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/rs_get_file_descriptor_info.hpp"
 
 #include <nlohmann/json.hpp>
 

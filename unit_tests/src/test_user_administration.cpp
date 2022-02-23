@@ -1,9 +1,9 @@
 #include <catch2/catch.hpp>
 
-#include "connection_pool.hpp"
-#include "irods_at_scope_exit.hpp"
-#include "rodsClient.h"
-#include "user_administration.hpp"
+#include "irods/connection_pool.hpp"
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/rodsClient.h"
+#include "irods/user_administration.hpp"
 
 #include <algorithm>
 #include <iterator>

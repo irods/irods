@@ -1,6 +1,6 @@
-#include "chkObjPermAndStat.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/chkObjPermAndStat.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcChkObjPermAndStat( rcComm_t *conn, chkObjPermAndStat_t *chkObjPermAndStatInp )

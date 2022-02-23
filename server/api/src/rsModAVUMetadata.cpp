@@ -1,14 +1,14 @@
-#include "rsModAVUMetadata.hpp"
+#include "irods/rsModAVUMetadata.hpp"
 
-#include "modAVUMetadata.h"
-#include "icatHighLevelRoutines.hpp"
-#include "miscServerFunct.hpp"
-#include "irods_configuration_keywords.hpp"
-#include "rcConnect.h"
-#include "rcMisc.h"
-#include "rodsError.h"
-#include "rodsErrorTable.h"
-#include "irods_logger.hpp"
+#include "irods/modAVUMetadata.h"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/irods_configuration_keywords.hpp"
+#include "irods/rcConnect.h"
+#include "irods/rcMisc.h"
+#include "irods/rodsError.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/irods_logger.hpp"
 
 using logger = irods::experimental::log;
 

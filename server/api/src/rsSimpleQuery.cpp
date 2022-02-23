@@ -3,12 +3,12 @@
 /* This is script-generated code (for the most part).  */
 /* See simpleQuery.h for a description of this API call.*/
 
-#include "simpleQuery.h"
-#include "rodsConnect.h"
-#include "icatHighLevelRoutines.hpp"
-#include "miscServerFunct.hpp"
-#include "irods_configuration_keywords.hpp"
-#include "rsSimpleQuery.hpp"
+#include "irods/simpleQuery.h"
+#include "irods/rodsConnect.h"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/irods_configuration_keywords.hpp"
+#include "irods/rsSimpleQuery.hpp"
 
 int
 rsSimpleQuery( rsComm_t *rsComm, simpleQueryInp_t *simpleQueryInp,

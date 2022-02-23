@@ -1,6 +1,6 @@
-#include "structFileExtAndReg.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/structFileExtAndReg.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcStructFileExtAndReg( rcComm_t *conn, structFileExtAndRegInp_t *structFileExtAndRegInp )

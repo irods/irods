@@ -9,8 +9,8 @@
 #include "filesystem.hpp"
 #include "configuration.hpp"
 
-#include "rcMisc.h"
-#include "irods_log.hpp"
+#include "irods/rcMisc.h"
+#include "irods/irods_log.hpp"
 
 
 struct Breakpoint {

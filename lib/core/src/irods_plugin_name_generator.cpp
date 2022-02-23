@@ -1,7 +1,7 @@
-#include "irods_plugin_name_generator.hpp"
-#include "irods_log.hpp"
+#include "irods/irods_plugin_name_generator.hpp"
+#include "irods/irods_log.hpp"
 
-#include "rodsErrorTable.h"
+#include "irods/rodsErrorTable.h"
 #include <sstream>
 
 #include <boost/assert.hpp>

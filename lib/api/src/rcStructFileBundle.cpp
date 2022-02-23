@@ -1,6 +1,6 @@
-#include "structFileBundle.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/structFileBundle.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcStructFileBundle( rcComm_t *conn, structFileExtAndRegInp_t *structFileBundleInp )

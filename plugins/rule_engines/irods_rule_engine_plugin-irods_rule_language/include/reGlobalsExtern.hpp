@@ -19,18 +19,18 @@ extern void myfree(char* file, int line, void *x);
 #endif
 ***/
 
-#include "rodsUser.h"
-#include "rods.h"
-#include "rcGlobalExtern.h"
-#include "objInfo.h"
-#include "fileOpen.h"
+#include "irods/rodsUser.h"
+#include "irods/rods.h"
+#include "irods/rcGlobalExtern.h"
+#include "irods/objInfo.h"
+#include "irods/fileOpen.h"
 #include "regExpMatch.hpp"
-#include "reDefines.h"
-#include "ruleExecSubmit.h"
-#include "ruleExecDel.h"
-#include "dataObjInpOut.h"
-#include "msParam.h"
-#include "modAccessControl.h"
+#include "irods/reDefines.h"
+#include "irods/ruleExecSubmit.h"
+#include "irods/ruleExecDel.h"
+#include "irods/dataObjInpOut.h"
+#include "irods/msParam.h"
+#include "irods/modAccessControl.h"
 
 #if 0
 /***** IMPORTANT    IMPORTANT    IMPORTANT    *****/

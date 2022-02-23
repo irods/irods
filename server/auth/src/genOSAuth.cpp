@@ -8,8 +8,8 @@
 #include <sys/stat.h>
 #include <vector>
 
-#include "authenticate.h"
-#include "osauth.h"
+#include "irods/authenticate.h"
+#include "irods/osauth.h"
 
 
 int

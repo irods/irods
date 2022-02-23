@@ -1,7 +1,7 @@
-#include "dataObjChksum.h"
+#include "irods/dataObjChksum.h"
 
-#include "apiNumber.h"
-#include "procApiRequest.h"
+#include "irods/apiNumber.h"
+#include "irods/procApiRequest.h"
 
 int rcDataObjChksum(RcComm* comm, DataObjInp* dataObjChksumInp, char** outChksum)
 {

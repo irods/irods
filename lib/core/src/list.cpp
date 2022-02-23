@@ -1,6 +1,6 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
-#include "irods_list.h"
+#include "irods/irods_list.h"
 #include <cstdlib>
 
 List *newList( Region *r ) {

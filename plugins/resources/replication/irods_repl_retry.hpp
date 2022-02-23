@@ -1,8 +1,8 @@
 #ifndef _IRODS_REPL_RETRY_HPP_
 #define _IRODS_REPL_RETRY_HPP_
 
-#include "dataObjInpOut.h"
-#include "irods_plugin_context.hpp"
+#include "irods/dataObjInpOut.h"
+#include "irods/irods_plugin_context.hpp"
 #include <string>
 
 namespace irods {

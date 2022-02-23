@@ -10,13 +10,13 @@
 #include <time.h>
 #include "conversion.hpp"
 #include "parser.hpp"
-#include "irods_hashtable.h"
+#include "irods/irods_hashtable.h"
 #define POSIX_REGEXP
 
 #ifndef DEBUG
 
-#include "msParam.h"
-#include "rodsDef.h"
+#include "irods/msParam.h"
+#include "irods/rodsDef.h"
 
 #endif
 

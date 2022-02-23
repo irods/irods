@@ -24,14 +24,14 @@
   the env file, either creating it or appending to it.
 */
 
-#include "rods.h"
-#include "rodsErrorTable.h"
-#include "getRodsEnv.h"
-#include "rodsLog.h"
-#include "irods_log.hpp"
-#include "irods_version.h"
-#include "irods_environment_properties.hpp"
-#include "irods_configuration_keywords.hpp"
+#include "irods/rods.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/getRodsEnv.h"
+#include "irods/rodsLog.h"
+#include "irods/irods_log.hpp"
+#include "irods/irods_version.h"
+#include "irods/irods_environment_properties.hpp"
+#include "irods/irods_configuration_keywords.hpp"
 
 #define BUF_LEN 100
 #define LARGE_BUF_LEN MAX_NAME_LEN+20

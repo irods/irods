@@ -1,11 +1,11 @@
 /*** Copyright (c), The BunOprents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-#include "rodsPath.h"
-#include "rodsErrorTable.h"
-#include "rodsLog.h"
-#include "bunUtil.h"
-#include "miscUtil.h"
-#include "rcGlobalExtern.h"
+#include "irods/rodsPath.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/rodsLog.h"
+#include "irods/bunUtil.h"
+#include "irods/miscUtil.h"
+#include "irods/rcGlobalExtern.h"
 
 int
 bunUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,

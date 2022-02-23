@@ -1,12 +1,12 @@
-#include "packStruct.h"
+#include "irods/packStruct.h"
 
-#include "alignPointer.hpp"
-#include "rodsLog.h"
-#include "rcGlobalExtern.h"
-#include "base64.h"
-#include "rcMisc.h"
-#include "version.hpp"
-#include "irods_pack_table.hpp"
+#include "irods/alignPointer.hpp"
+#include "irods/rodsLog.h"
+#include "irods/rcGlobalExtern.h"
+#include "irods/base64.h"
+#include "irods/rcMisc.h"
+#include "irods/version.hpp"
+#include "irods/irods_pack_table.hpp"
 
 #include <iostream>
 #include <sstream>

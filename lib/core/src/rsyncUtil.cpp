@@ -1,15 +1,15 @@
-#include "rsyncUtil.h"
+#include "irods/rsyncUtil.h"
 
-#include "rodsPath.h"
-#include "rodsErrorTable.h"
-#include "rodsLog.h"
-#include "miscUtil.h"
-#include "checksum.h"
-#include "rcGlobalExtern.h"
-#include "irods_log.hpp"
-#include "irods_hasher_factory.hpp"
-#include "irods_path_recursion.hpp"
-#include "irods_exception.hpp"
+#include "irods/rodsPath.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/rodsLog.h"
+#include "irods/miscUtil.h"
+#include "irods/checksum.h"
+#include "irods/rcGlobalExtern.h"
+#include "irods/irods_log.hpp"
+#include "irods/irods_hasher_factory.hpp"
+#include "irods/irods_path_recursion.hpp"
+#include "irods/irods_exception.hpp"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>

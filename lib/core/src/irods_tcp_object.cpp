@@ -1,6 +1,6 @@
 // =-=-=-=-=-=-=-
-#include "irods_tcp_object.hpp"
-#include "irods_network_manager.hpp"
+#include "irods/irods_tcp_object.hpp"
+#include "irods/irods_network_manager.hpp"
 
 extern int ProcessType;
 

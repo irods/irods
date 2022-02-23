@@ -1,25 +1,25 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #define USE_SSL 1
-#include "sslSockComm.h"
+#include "irods/sslSockComm.h"
 
-#include "rodsDef.h"
-#include "msParam.h"
-#include "rcConnect.h"
-#include "authRequest.h"
-#include "authResponse.h"
-#include "authCheck.h"
-#include "miscServerFunct.hpp"
-#include "authPluginRequest.h"
-#include "icatHighLevelRoutines.hpp"
+#include "irods/rodsDef.h"
+#include "irods/msParam.h"
+#include "irods/rcConnect.h"
+#include "irods/authRequest.h"
+#include "irods/authResponse.h"
+#include "irods/authCheck.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/authPluginRequest.h"
+#include "irods/icatHighLevelRoutines.hpp"
 
 // =-=-=-=-=-=-=-
-#include "irods_auth_plugin.hpp"
-#include "irods_auth_constants.hpp"
-#include "irods_pam_auth_object.hpp"
-#include "irods_stacktrace.hpp"
-#include "irods_kvp_string_parser.hpp"
-#include "irods_client_server_negotiation.hpp"
+#include "irods/irods_auth_plugin.hpp"
+#include "irods/irods_auth_constants.hpp"
+#include "irods/irods_pam_auth_object.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/irods_kvp_string_parser.hpp"
+#include "irods/irods_client_server_negotiation.hpp"
 
 // =-=-=-=-=-=-=-
 // boost includes

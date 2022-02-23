@@ -1,14 +1,14 @@
-#include "rcMisc.h"
-#include "getRescQuota.h"
-#include "miscUtil.h"
+#include "irods/rcMisc.h"
+#include "irods/getRescQuota.h"
+#include "irods/miscUtil.h"
 
-#include "objMetaOpr.hpp"
-#include "resource.hpp"
-#include "rsGetRescQuota.hpp"
-#include "genQuery.h"
-#include "rsGenQuery.hpp"
+#include "irods/objMetaOpr.hpp"
+#include "irods/resource.hpp"
+#include "irods/rsGetRescQuota.hpp"
+#include "irods/genQuery.h"
+#include "irods/rsGenQuery.hpp"
 
-#include "irods_resource_backport.hpp"
+#include "irods/irods_resource_backport.hpp"
 
 #include <cstring>
 

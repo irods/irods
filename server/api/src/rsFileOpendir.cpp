@@ -5,16 +5,16 @@
  */
 
 /* script generated code */
-#include "fileOpendir.h"
-#include "miscServerFunct.hpp"
-#include "rsGlobalExtern.hpp"
-#include "rsFileOpendir.hpp"
+#include "irods/fileOpendir.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/rsFileOpendir.hpp"
 
 // =-=-=-=-=-=-=-
-#include "irods_log.hpp"
-#include "irods_collection_object.hpp"
-#include "irods_resource_backport.hpp"
-#include "irods_stacktrace.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/irods_collection_object.hpp"
+#include "irods/irods_resource_backport.hpp"
+#include "irods/irods_stacktrace.hpp"
 
 int
 rsFileOpendir( rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp ) {

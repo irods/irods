@@ -1,6 +1,6 @@
-#include "fileUnlink.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/fileUnlink.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcFileUnlink( rcComm_t *conn, fileUnlinkInp_t *fileUnlinkInp )

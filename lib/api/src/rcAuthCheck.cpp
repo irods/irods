@@ -1,9 +1,9 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-#include "authCheck.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/authCheck.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcAuthCheck( rcComm_t *conn, authCheckInp_t *authCheckInp, authCheckOut_t **authCheckOut )

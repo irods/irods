@@ -1,15 +1,15 @@
-#include "rsDataObjLseek.hpp"
+#include "irods/rsDataObjLseek.hpp"
 
-#include "dataObjLseek.h"
-#include "rodsLog.h"
-#include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.h"
-#include "subStructFileLseek.h"
-#include "objMetaOpr.hpp"
-#include "subStructFileUnlink.h"
-#include "rsSubStructFileLseek.hpp"
-#include "rsFileLseek.hpp"
-#include "irods_resource_backport.hpp"
+#include "irods/dataObjLseek.h"
+#include "irods/rodsLog.h"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/rcGlobalExtern.h"
+#include "irods/subStructFileLseek.h"
+#include "irods/objMetaOpr.hpp"
+#include "irods/subStructFileUnlink.h"
+#include "irods/rsSubStructFileLseek.hpp"
+#include "irods/rsFileLseek.hpp"
+#include "irods/irods_resource_backport.hpp"
 
 #include <cstring>
 

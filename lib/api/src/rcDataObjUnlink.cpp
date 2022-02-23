@@ -1,6 +1,6 @@
-#include "dataObjUnlink.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/dataObjUnlink.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 #include <cstring>
 

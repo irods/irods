@@ -1,19 +1,19 @@
-#include "rsApiHandler.hpp"
-#include "modDataObjMeta.h"
-#include "rcMisc.h"
-#include "miscServerFunct.hpp"
-#include "regReplica.h"
-#include "rodsErrorTable.h"
-#include "unregDataObj.h"
-#include "modAVUMetadata.h"
-#include "sockComm.h"
-#include "irods_re_structs.hpp"
-#include "sslSockComm.h"
-#include "irods_client_server_negotiation.hpp"
-#include "apiNumber.h"
-#include "api_plugin_number.h"
-#include "client_api_whitelist.hpp"
-#include "key_value_proxy.hpp"
+#include "irods/rsApiHandler.hpp"
+#include "irods/modDataObjMeta.h"
+#include "irods/rcMisc.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/regReplica.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/unregDataObj.h"
+#include "irods/modAVUMetadata.h"
+#include "irods/sockComm.h"
+#include "irods/irods_re_structs.hpp"
+#include "irods/sslSockComm.h"
+#include "irods/irods_client_server_negotiation.hpp"
+#include "irods/apiNumber.h"
+#include "irods/plugins/api/api_plugin_number.h"
+#include "irods/client_api_whitelist.hpp"
+#include "irods/key_value_proxy.hpp"
 
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
@@ -23,16 +23,16 @@ jmp_buf Jenv;
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "irods_network_factory.hpp"
-#include "irods_server_api_table.hpp"
-#include "irods_threads.hpp"
-#include "sockCommNetworkInterface.hpp"
-#include "irods_hierarchy_parser.hpp"
-#include "irods_api_number_validator.hpp"
-#include "irods_logger.hpp"
+#include "irods/irods_network_factory.hpp"
+#include "irods/irods_server_api_table.hpp"
+#include "irods/irods_threads.hpp"
+#include "irods/sockCommNetworkInterface.hpp"
+#include "irods/irods_hierarchy_parser.hpp"
+#include "irods/irods_api_number_validator.hpp"
+#include "irods/irods_logger.hpp"
 
 #define MAKE_IRODS_ERROR_MAP
-#include "rodsErrorTable.h"
+#include "irods/rodsErrorTable.h"
 #undef MAKE_IRODS_ERROR_MAP
 
 #include <cstring>

@@ -1,6 +1,6 @@
-#include "irods_signal.hpp"
+#include "irods/irods_signal.hpp"
 
-#include "irods_default_paths.hpp"
+#include "irods/irods_default_paths.hpp"
 
 #include <boost/stacktrace/safe_dump_to.hpp>
 

@@ -1,7 +1,7 @@
 #include <catch2/catch.hpp>
 
-#include "dns_cache.hpp"
-#include "irods_at_scope_exit.hpp"
+#include "irods/dns_cache.hpp"
+#include "irods/irods_at_scope_exit.hpp"
 
 #include <string_view>
 #include <chrono>

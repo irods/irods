@@ -1,6 +1,6 @@
-#include "fileStageToCache.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/fileStageToCache.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcFileStageToCache( rcComm_t *conn, fileStageSyncInp_t *fileStageToCacheInp )

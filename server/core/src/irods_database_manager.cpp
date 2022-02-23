@@ -1,7 +1,7 @@
 // =-=-=-=-=-=-=-
 // irods includes
-#include "irods_database_manager.hpp"
-#include "irods_load_plugin.hpp"
+#include "irods/irods_database_manager.hpp"
+#include "irods/irods_load_plugin.hpp"
 
 namespace irods {
 // =-=-=-=-=-=-=-

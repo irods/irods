@@ -1,4 +1,4 @@
-#include "rs_register_physical_path.hpp"
+#include "irods/rs_register_physical_path.hpp"
 
 #include <cstdlib>
 

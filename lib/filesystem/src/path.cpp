@@ -1,6 +1,6 @@
-#include "filesystem/path.hpp"
+#include "irods/filesystem/path.hpp"
 
-#include "filesystem/detail.hpp"
+#include "irods/filesystem/detail.hpp"
 
 #include <iostream>
 #include <iomanip>

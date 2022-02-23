@@ -3,12 +3,12 @@
 #ifndef windows_platform
 #include <sys/time.h>
 #endif
-#include "rodsPath.h"
-#include "rodsErrorTable.h"
-#include "rodsLog.h"
-#include "miscUtil.h"
-#include "phymvUtil.h"
-#include "rcGlobalExtern.h"
+#include "irods/rodsPath.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/rodsLog.h"
+#include "irods/miscUtil.h"
+#include "irods/phymvUtil.h"
+#include "irods/rcGlobalExtern.h"
 
 int
 phymvUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,

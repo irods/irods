@@ -1,13 +1,13 @@
 /// \file
 
-#include "rcMisc.h"
-#include "icatHighLevelRoutines.hpp"
-#include "objMetaOpr.hpp"
-#include "miscServerFunct.hpp"
-#include "modAccessControl.h"
-#include "irods_configuration_keywords.hpp"
-#include "rsModAccessControl.hpp"
-#include "irods_re_structs.hpp"
+#include "irods/rcMisc.h"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/objMetaOpr.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/modAccessControl.h"
+#include "irods/irods_configuration_keywords.hpp"
+#include "irods/rsModAccessControl.hpp"
+#include "irods/irods_re_structs.hpp"
 
 /**
  * \fn msiGetIcatTime (msParam_t *timeOutParam, msParam_t *typeInParam, ruleExecInfo_t *)

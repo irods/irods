@@ -1,7 +1,7 @@
 
-#include "modAccessControl.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/modAccessControl.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcModAccessControl( rcComm_t *conn, modAccessControlInp_t *modAccessControlInp )

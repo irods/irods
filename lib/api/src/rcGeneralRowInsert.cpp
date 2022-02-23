@@ -1,6 +1,6 @@
-#include "generalRowInsert.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/generalRowInsert.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcGeneralRowInsert( rcComm_t *conn, generalRowInsertInp_t *generalRowInsertInp )

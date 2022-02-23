@@ -1,8 +1,8 @@
-#include "oprComplete.h"
-#include "dataObjClose.h"
-#include "rsGlobalExtern.hpp"
-#include "rsOprComplete.hpp"
-#include "rsDataObjClose.hpp"
+#include "irods/oprComplete.h"
+#include "irods/dataObjClose.h"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/rsOprComplete.hpp"
+#include "irods/rsDataObjClose.hpp"
 
 int rsOprComplete( rsComm_t *rsComm, int *retval ) {
     openedDataObjInp_t dataObjCloseInp;

@@ -1,7 +1,7 @@
-#include "ruleExecMod.h"
+#include "irods/ruleExecMod.h"
 
-#include "apiNumber.h"
-#include "procApiRequest.h"
+#include "irods/apiNumber.h"
+#include "irods/procApiRequest.h"
 
 /**
  * \fn rcRuleExecMod( rcComm_t *conn, ruleExecModInp_t *ruleExecModInp )

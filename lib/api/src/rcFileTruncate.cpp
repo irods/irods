@@ -1,6 +1,6 @@
-#include "fileTruncate.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/fileTruncate.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcFileTruncate( rcComm_t *conn, fileOpenInp_t *fileTruncateInp )

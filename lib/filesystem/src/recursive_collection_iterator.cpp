@@ -1,4 +1,4 @@
-#include "filesystem/recursive_collection_iterator.hpp"
+#include "irods/filesystem/recursive_collection_iterator.hpp"
 
 namespace irods::experimental::filesystem::NAMESPACE_IMPL
 {

@@ -1,16 +1,16 @@
-#include "apiHandler.hpp"
-#include "api_plugin_number.h"
-#include "experimental_plugin_framework.hpp"
-#include "client_api_whitelist.hpp"
+#include "irods/apiHandler.hpp"
+#include "irods/plugins/api/api_plugin_number.h"
+#include "irods/experimental_plugin_framework.hpp"
+#include "irods/client_api_whitelist.hpp"
 #include <nlohmann/json.hpp>
 
-#include "irods_re_namespaceshelper.hpp"
-#include "irods_re_plugin.hpp"
-#include "irods_re_ruleexistshelper.hpp"
-#include "irods_at_scope_exit.hpp"
+#include "irods/irods_re_namespaceshelper.hpp"
+#include "irods/irods_re_plugin.hpp"
+#include "irods/irods_re_ruleexistshelper.hpp"
+#include "irods/irods_at_scope_exit.hpp"
 
 #ifdef RODS_SERVER
-#include "plugin_lifetime_manager.hpp"
+#include "irods/plugin_lifetime_manager.hpp"
 #endif
 
 namespace {

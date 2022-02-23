@@ -1,5 +1,5 @@
-#include "irods_log.hpp"
-#include "rodsLog.h"
+#include "irods/irods_log.hpp"
+#include "irods/rodsLog.h"
 
 namespace irods {
     void log(const int _level, const std::string& _msg) {

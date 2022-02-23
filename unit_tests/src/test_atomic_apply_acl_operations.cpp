@@ -1,12 +1,12 @@
 #include <catch2/catch.hpp>
 
-#include "rodsClient.h"
-#include "atomic_apply_acl_operations.h"
+#include "irods/rodsClient.h"
+#include "irods/atomic_apply_acl_operations.h"
 
-#include "connection_pool.hpp"
-#include "filesystem.hpp"
-#include "user_administration.hpp"
-#include "irods_at_scope_exit.hpp"
+#include "irods/connection_pool.hpp"
+#include "irods/filesystem.hpp"
+#include "irods/user_administration.hpp"
+#include "irods/irods_at_scope_exit.hpp"
 
 #include <nlohmann/json.hpp>
 

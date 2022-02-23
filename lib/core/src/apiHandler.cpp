@@ -1,10 +1,10 @@
 // =-=-=-=-=-=-=-
 // irods includes
-#include "apiHandler.hpp"
-#include "irods_load_plugin.hpp"
-#include "irods_plugin_name_generator.hpp"
-#include "irods_pack_table.hpp"
-#include "irods_client_api_table.hpp"
+#include "irods/apiHandler.hpp"
+#include "irods/irods_load_plugin.hpp"
+#include "irods/irods_plugin_name_generator.hpp"
+#include "irods/irods_pack_table.hpp"
+#include "irods/irods_client_api_table.hpp"
 
 #include <boost/filesystem.hpp>
 

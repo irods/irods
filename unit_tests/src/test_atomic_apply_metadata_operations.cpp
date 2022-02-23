@@ -1,11 +1,11 @@
 #include <catch2/catch.hpp>
 
-#include "client_connection.hpp"
-#include "atomic_apply_metadata_operations.h"
-#include "filesystem/path.hpp"
-#include "irods_at_scope_exit.hpp"
-#include "rodsErrorTable.h"
-#include "getRodsEnv.h"
+#include "irods/client_connection.hpp"
+#include "irods/atomic_apply_metadata_operations.h"
+#include "irods/filesystem/path.hpp"
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/rodsErrorTable.h"
+#include "irods/getRodsEnv.h"
 
 #include <nlohmann/json.hpp>
 

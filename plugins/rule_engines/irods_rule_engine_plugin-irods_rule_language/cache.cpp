@@ -2,8 +2,8 @@
 
 #include "rules.hpp"
 #include "functions.hpp"
-#include "locks.hpp"
-#include "sharedmemory.hpp"
+#include "irods/locks.hpp"
+#include "irods/sharedmemory.hpp"
 #include "datetime.hpp"
 #include "cache.instance.hpp"
 #include "traversal.instance.hpp"

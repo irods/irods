@@ -1,12 +1,12 @@
-#include "api_plugin_number.h"
-#include "irods_configuration_keywords.hpp"
-#include "rodsDef.h"
-#include "rcConnect.h"
-#include "rodsErrorTable.h"
-#include "rodsPackInstruct.h"
-#include "client_api_whitelist.hpp"
+#include "irods/plugins/api/api_plugin_number.h"
+#include "irods/irods_configuration_keywords.hpp"
+#include "irods/rodsDef.h"
+#include "irods/rcConnect.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/rodsPackInstruct.h"
+#include "irods/client_api_whitelist.hpp"
 
-#include "apiHandler.hpp"
+#include "irods/apiHandler.hpp"
 
 #include <functional>
 #include <stdexcept>
@@ -18,27 +18,27 @@
 // Server-side Implementation
 //
 
-#include "atomic_apply_metadata_operations.h"
+#include "irods/atomic_apply_metadata_operations.h"
 
-#include "catalog.hpp"
-#include "catalog_utilities.hpp"
-#include "irods_get_full_path_for_config_file.hpp"
-#include "irods_get_l1desc.hpp"
-#include "irods_logger.hpp"
-#include "irods_re_serialization.hpp"
-#include "irods_rs_comm_query.hpp"
-#include "irods_server_api_call.hpp"
-#include "irods_stacktrace.hpp"
-#include "miscServerFunct.hpp"
-#include "objDesc.hpp"
-#include "rodsConnect.h"
-#include "server_utilities.hpp"
+#include "irods/catalog.hpp"
+#include "irods/catalog_utilities.hpp"
+#include "irods/irods_get_full_path_for_config_file.hpp"
+#include "irods/irods_get_l1desc.hpp"
+#include "irods/irods_logger.hpp"
+#include "irods/irods_re_serialization.hpp"
+#include "irods/irods_rs_comm_query.hpp"
+#include "irods/irods_server_api_call.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/objDesc.hpp"
+#include "irods/rodsConnect.h"
+#include "irods/server_utilities.hpp"
 
 #define IRODS_QUERY_ENABLE_SERVER_SIDE_API
-#include "irods_query.hpp"
+#include "irods/irods_query.hpp"
 
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
-#include "filesystem.hpp"
+#include "irods/filesystem.hpp"
 
 #include <nlohmann/json.hpp>
 #include "fmt/format.h"

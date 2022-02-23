@@ -1,6 +1,6 @@
 // =-=-=-=-=-=-=-
-#include "irods_buffer_encryption.hpp"
-#include "irods_log.hpp"
+#include "irods/irods_buffer_encryption.hpp"
+#include "irods/irods_log.hpp"
 
 // =-=-=-=-=-=-=-
 // ssl includes

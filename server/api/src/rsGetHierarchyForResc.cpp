@@ -1,10 +1,10 @@
-#include "rsGetHierarchyForResc.hpp"
+#include "irods/rsGetHierarchyForResc.hpp"
 
-#include "getHierarchyForResc.h"
-#include "icatHighLevelRoutines.hpp"
-#include "irods_stacktrace.hpp"
-#include "miscServerFunct.hpp"
-#include "irods_configuration_keywords.hpp"
+#include "irods/getHierarchyForResc.h"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/irods_configuration_keywords.hpp"
 
 #include <cstring>
 

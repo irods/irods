@@ -14,7 +14,7 @@
 
 #include <catch2/catch.hpp>
 
-#include "filesystem/path.hpp"
+#include "irods/filesystem/path.hpp"
 
 #include <string>
 #include <string_view>

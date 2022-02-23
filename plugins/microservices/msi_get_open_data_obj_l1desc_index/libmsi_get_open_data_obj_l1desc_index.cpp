@@ -1,13 +1,13 @@
 /// \file
 
-#include "irods_ms_plugin.hpp"
-#include "irods_re_structs.hpp"
-#include "msParam.h"
-#include "rodsErrorTable.h"
-#include "irods_error.hpp"
-#include "irods_log.hpp"
-#include "objDesc.hpp"
-#include "fileOpr.hpp"
+#include "irods/irods_ms_plugin.hpp"
+#include "irods/irods_re_structs.hpp"
+#include "irods/msParam.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/irods_error.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/objDesc.hpp"
+#include "irods/fileOpr.hpp"
 
 #include <exception>
 #include <functional>

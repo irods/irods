@@ -1,6 +1,6 @@
-#include "ies_client_hints.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/ies_client_hints.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 int
 rcIESClientHints( rcComm_t *conn, bytesBuf_t** _bbuf ) {

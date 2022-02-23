@@ -1,9 +1,9 @@
-#include "rs_touch.hpp"
+#include "irods/rs_touch.hpp"
 
-#include "api_plugin_number.h"
-#include "rodsErrorTable.h"
+#include "irods/plugins/api/api_plugin_number.h"
+#include "irods/rodsErrorTable.h"
 
-#include "irods_server_api_call.hpp"
+#include "irods/irods_server_api_call.hpp"
 
 #include <cstring>
 

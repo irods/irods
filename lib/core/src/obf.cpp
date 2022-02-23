@@ -45,18 +45,18 @@
 #include <sys/stat.h>
 #include <string.h>
 #include <termios.h>
-#include "termiosUtil.hpp"
+#include "irods/termiosUtil.hpp"
 #endif
 #include <cstdlib>
 
-#include "rods.h"
-#include "rodsPath.h"
-#include "authenticate.h"
+#include "irods/rods.h"
+#include "irods/rodsPath.h"
+#include "irods/authenticate.h"
 
 #ifdef _WIN32
 #include "Unix2Nt.hpp"  /* May need something like this for Windows */
 #include "iRODSNtUtil.hpp"    /* May need something like this for Windows */
-#include "rcGlobalExtern.h"
+#include "irods/rcGlobalExtern.h"
 #endif
 
 #include <boost/filesystem.hpp>

@@ -1,6 +1,6 @@
-#include "streamClose.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/streamClose.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcStreamClose( rcComm_t *conn, fileCloseInp_t *fileCloseInp )

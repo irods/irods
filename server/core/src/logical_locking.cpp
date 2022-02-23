@@ -1,9 +1,9 @@
-#include "logical_locking.hpp"
+#include "irods/logical_locking.hpp"
 
-#include "irods_log.hpp"
-#include "replica_access_table.hpp"
-#include "replica_state_table.hpp"
-#include "scoped_privileged_client.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/replica_access_table.hpp"
+#include "irods/replica_state_table.hpp"
+#include "irods/scoped_privileged_client.hpp"
 
 namespace
 {

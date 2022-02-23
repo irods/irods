@@ -1,15 +1,15 @@
 /// \file
 
-#include "rsGlobalExtern.hpp"
-#include "dataObjCreate.h"
-#include "objMetaOpr.hpp"
-#include "regDataObj.h"
-#include "miscServerFunct.hpp"
-#include "apiHeaderAll.h"
-#include "miscUtil.h"
-#include "rsRegDataObj.hpp"
-#include "irods_re_structs.hpp"
-#include "rsModAVUMetadata.hpp"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/dataObjCreate.h"
+#include "irods/objMetaOpr.hpp"
+#include "irods/regDataObj.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/apiHeaderAll.h"
+#include "irods/miscUtil.h"
+#include "irods/rsRegDataObj.hpp"
+#include "irods/irods_re_structs.hpp"
+#include "irods/rsModAVUMetadata.hpp"
 
 /**
  * \fn msiRegisterData(ruleExecInfo_t *rei)

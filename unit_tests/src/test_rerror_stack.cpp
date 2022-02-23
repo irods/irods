@@ -1,7 +1,7 @@
 #include <catch2/catch.hpp>
 
 #include "irods_error_enum_matcher.hpp"
-#include "rodsError.h"
+#include "irods/rodsError.h"
 
 #include <cstring>
 #include "fmt/format.h"

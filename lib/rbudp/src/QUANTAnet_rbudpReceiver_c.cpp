@@ -20,8 +20,8 @@
  * Direct questions, comments etc about Quanta to cavern@evl.uic.edu
  *****************************************************************************/
 
-#include "QUANTAnet_rbudpReceiver_c.h"
-#include "irods_log.hpp"
+#include "irods/QUANTAnet_rbudpReceiver_c.h"
+#include "irods/irods_log.hpp"
 
 #include <boost/format.hpp>
 

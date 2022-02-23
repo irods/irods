@@ -2,10 +2,10 @@
 #define IRODS_NREP_CONFIGURATION_HPP
 
 #include "rules.hpp"
-#include "irods_hashtable.h"
+#include "irods/irods_hashtable.h"
 #include "parser.hpp"
 #include "datetime.hpp"
-#include "checksum.h"
+#include "irods/checksum.h"
 
 #define RESC_CORE_RULE_SET 0x1
 #define RESC_APP_RULE_SET 0x2

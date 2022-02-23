@@ -1,8 +1,8 @@
-#include "irods_server_properties.hpp"
+#include "irods/irods_server_properties.hpp"
 
-#include "irods_get_full_path_for_config_file.hpp"
-#include "irods_stacktrace.hpp"
-#include "rodsLog.h"
+#include "irods/irods_get_full_path_for_config_file.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/rodsLog.h"
 
 #include <boost/any.hpp>
 #include <nlohmann/json.hpp>

@@ -1,11 +1,11 @@
-#include "rsExecRuleExpression.hpp"
+#include "irods/rsExecRuleExpression.hpp"
 
-#include "irods_re_plugin.hpp"
-#include "irods_re_structs.hpp"
-#include "miscServerFunct.hpp"
-#include "rcMisc.h"
-#include "packStruct.h"
-#include "stringOpr.h"
+#include "irods/irods_re_plugin.hpp"
+#include "irods/irods_re_structs.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/rcMisc.h"
+#include "irods/packStruct.h"
+#include "irods/stringOpr.h"
 
 #include <cstring>
 #include <string>

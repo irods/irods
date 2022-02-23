@@ -1,6 +1,6 @@
-#include "phyBundleColl.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/phyBundleColl.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcPhyBundleColl( rcComm_t *conn, structFileExtAndRegInp_t *phyBundleCollInp )

@@ -1,10 +1,10 @@
 #include <catch2/catch.hpp>
 
 #include "irods_error_enum_matcher.hpp"
-#include "irods_exception.hpp"
-#include "irods_re_serialization.hpp"
-#include "lifetime_manager.hpp"
-#include "key_value_proxy.hpp"
+#include "irods/irods_exception.hpp"
+#include "irods/irods_re_serialization.hpp"
+#include "irods/lifetime_manager.hpp"
+#include "irods/key_value_proxy.hpp"
 
 #include <map>
 #include <string>

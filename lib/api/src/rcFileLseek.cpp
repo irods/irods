@@ -1,6 +1,6 @@
-#include "fileLseek.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/fileLseek.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcFileLseek( rcComm_t *conn, fileLseekInp_t *fileLseekInp, fileLseekOut_t **fileLseekOut )

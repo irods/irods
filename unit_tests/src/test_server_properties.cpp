@@ -1,8 +1,8 @@
 #include <catch2/catch.hpp>
 
-#include "irods_configuration_keywords.hpp"
-#include "irods_configuration_parser.hpp"
-#include "irods_server_properties.hpp"
+#include "irods/irods_configuration_keywords.hpp"
+#include "irods/irods_configuration_parser.hpp"
+#include "irods/irods_server_properties.hpp"
 
 #include "fmt/format.h"
 

@@ -13,11 +13,11 @@
 
 #include "mid_level.hpp"
 #include "low_level.hpp"
-#include "irods_stacktrace.hpp"
-#include "irods_log.hpp"
-#include "irods_virtual_path.hpp"
-#include "rodsErrorTable.h"
-#include "rcMisc.h"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/irods_virtual_path.hpp"
+#include "irods/rodsErrorTable.h"
+#include "irods/rcMisc.h"
 
 #include <vector>
 #include <string>

@@ -1,9 +1,9 @@
-#include "procLog.h"
+#include "irods/procLog.h"
 
-#include "miscUtil.h"
-#include "rsGlobalExtern.hpp"
-#include "rodsConnect.h"
-#include "rsLog.hpp"
+#include "irods/miscUtil.h"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/rodsConnect.h"
+#include "irods/rsLog.hpp"
 
 #include "arpa/inet.h"
 

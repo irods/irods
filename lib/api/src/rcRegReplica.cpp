@@ -1,6 +1,6 @@
-#include "regReplica.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/regReplica.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcRegReplica( rcComm_t *conn, regReplica_t *regReplicaInp )

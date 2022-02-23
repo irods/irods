@@ -3,11 +3,11 @@
 /* This is script-generated code (for the most part).  */
 /* See generalRowInsert.h for a description of this API call.*/
 
-#include "generalRowInsert.h"
-#include "rsGeneralRowInsert.hpp"
-#include "icatHighLevelRoutines.hpp"
-#include "miscServerFunct.hpp"
-#include "irods_configuration_keywords.hpp"
+#include "irods/generalRowInsert.h"
+#include "irods/rsGeneralRowInsert.hpp"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/irods_configuration_keywords.hpp"
 
 int
 rsGeneralRowInsert( rsComm_t *rsComm, generalRowInsertInp_t *generalRowInsertInp ) {

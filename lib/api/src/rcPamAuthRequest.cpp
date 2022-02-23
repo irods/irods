@@ -1,9 +1,9 @@
 /* This is script-generated code.  */
 /* See pamAuthRequest.h for a description of this API call.*/
 
-#include "pamAuthRequest.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/pamAuthRequest.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 int
 rcPamAuthRequest( rcComm_t *conn, pamAuthRequestInp_t *pamAuthRequestInp,

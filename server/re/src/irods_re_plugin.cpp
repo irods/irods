@@ -1,9 +1,9 @@
-#include "irods_re_plugin.hpp"
-#include "region.h"
-#include "irods_hashtable.h"
-#include "irods_server_properties.hpp"
-#include "irods_exception.hpp"
-#include "irods_ms_plugin.hpp"
+#include "irods/irods_re_plugin.hpp"
+#include "irods/region.h"
+#include "irods/irods_hashtable.h"
+#include "irods/irods_server_properties.hpp"
+#include "irods/irods_exception.hpp"
+#include "irods/irods_ms_plugin.hpp"
 
 #include <vector>
 

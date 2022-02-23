@@ -3,22 +3,22 @@
 /* This is script-generated code (for the most part).  */
 /* See getHostForPut.h for a description of this API call.*/
 
-#include "getHostForPut.h"
-#include "rodsLog.h"
-#include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.h"
-#include "getRemoteZoneResc.h"
-#include "dataObjCreate.h"
-#include "objMetaOpr.hpp"
-#include "resource.hpp"
-#include "collection.hpp"
-#include "specColl.hpp"
-#include "miscServerFunct.hpp"
-#include "rsGetHostForPut.hpp"
+#include "irods/getHostForPut.h"
+#include "irods/rodsLog.h"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/rcGlobalExtern.h"
+#include "irods/getRemoteZoneResc.h"
+#include "irods/dataObjCreate.h"
+#include "irods/objMetaOpr.hpp"
+#include "irods/resource.hpp"
+#include "irods/collection.hpp"
+#include "irods/specColl.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/rsGetHostForPut.hpp"
 
 // =-=-=-=-=-=-=-
-#include "irods_resource_backport.hpp"
-#include "irods_resource_redirect.hpp"
+#include "irods/irods_resource_backport.hpp"
+#include "irods/irods_resource_redirect.hpp"
 
 
 int rsGetHostForPut(

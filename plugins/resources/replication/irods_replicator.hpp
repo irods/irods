@@ -1,7 +1,7 @@
 #ifndef _IRODS_REPLICATOR_HPP_
 #define _IRODS_REPLICATOR_HPP_
 
-#include "irods_error.hpp"
+#include "irods/irods_error.hpp"
 #include "irods_oper_replicator.hpp"
 #include "irods_repl_types.hpp"
 

@@ -3,14 +3,14 @@
 /* This is script-generated code (for the most part).  */
 /* See fileClosedir.h for a description of this API call.*/
 
-#include "fileClosedir.h"
-#include "miscServerFunct.hpp"
-#include "rsGlobalExtern.hpp"
-#include "rsFileClosedir.hpp"
+#include "irods/fileClosedir.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/rsFileClosedir.hpp"
 
 // =-=-=-=-=-=-=-
-#include "irods_log.hpp"
-#include "irods_collection_object.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/irods_collection_object.hpp"
 
 int
 rsFileClosedir( rsComm_t *rsComm, fileClosedirInp_t *fileClosedirInp ) {

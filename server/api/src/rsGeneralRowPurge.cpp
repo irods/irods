@@ -3,11 +3,11 @@
 /* This is script-generated code (for the most part).  */
 /* See generalRowPurge.h for a description of this API call.*/
 
-#include "generalRowPurge.h"
-#include "icatHighLevelRoutines.hpp"
-#include "miscServerFunct.hpp"
-#include "irods_configuration_keywords.hpp"
-#include "rsGeneralRowPurge.hpp"
+#include "irods/generalRowPurge.h"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/irods_configuration_keywords.hpp"
+#include "irods/rsGeneralRowPurge.hpp"
 
 int
 rsGeneralRowPurge( rsComm_t *rsComm, generalRowPurgeInp_t *generalRowPurgeInp ) {

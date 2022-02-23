@@ -1,9 +1,9 @@
 /* This is script-generated code.  */
 /* See collRepl.h for a description of this API call.*/
 
-#include "collRepl.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/collRepl.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 int
 _rcCollRepl( rcComm_t *conn, collInp_t *collReplInp,

@@ -3,11 +3,11 @@
 
 /* See generalUpdate.h for a description of this API call.*/
 
-#include "generalUpdate.h"
-#include "rsGeneralUpdate.hpp"
-#include "icatHighLevelRoutines.hpp"
-#include "miscServerFunct.hpp"
-#include "irods_configuration_keywords.hpp"
+#include "irods/generalUpdate.h"
+#include "irods/rsGeneralUpdate.hpp"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/irods_configuration_keywords.hpp"
 
 int
 rsGeneralUpdate( rsComm_t *rsComm, generalUpdateInp_t *generalUpdateInp ) {

@@ -3,17 +3,17 @@
 /* This is script-generated code (for the most part).  */
 /* See chkNVPathPerm.h for a description of this API call.*/
 
-#include "chkNVPathPerm.h"
-#include "fileStat.h"
-#include "miscServerFunct.hpp"
-#include "dataObjOpr.hpp"
-#include "rsChkNVPathPerm.hpp"
+#include "irods/chkNVPathPerm.h"
+#include "irods/fileStat.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/dataObjOpr.hpp"
+#include "irods/rsChkNVPathPerm.hpp"
 
 // =-=-=-=-=-=-=-
-#include "irods_log.hpp"
-#include "irods_file_object.hpp"
-#include "irods_stacktrace.hpp"
-#include "irods_resource_backport.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/irods_file_object.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/irods_resource_backport.hpp"
 
 int
 rsChkNVPathPerm( rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp ) {

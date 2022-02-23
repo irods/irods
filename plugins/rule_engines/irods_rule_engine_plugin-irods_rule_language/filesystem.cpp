@@ -7,9 +7,9 @@
 #include "utils.hpp"
 #include "datetime.hpp"
 #include "filesystem.hpp"
-#include "irods_get_full_path_for_config_file.hpp"
-#include "irods_log.hpp"
-#include "rodsConnect.h"
+#include "irods/irods_get_full_path_for_config_file.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/rodsConnect.h"
 
 char *getRuleBasePath(const char *ruleBaseName, char rulesFileName[MAX_NAME_LEN] ) {
     std::string cfg_file, fn( ruleBaseName );

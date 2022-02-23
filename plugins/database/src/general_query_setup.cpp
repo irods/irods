@@ -28,8 +28,8 @@
   be related together via the sql text string.  This creates a tree
   structure describing the ICAT schema.
 */
-#include "rodsClient.h"
-#include "icatHighLevelRoutines.hpp"
+#include "irods/rodsClient.h"
+#include "irods/icatHighLevelRoutines.hpp"
 
 void
 icatGeneralQuerySetup() {

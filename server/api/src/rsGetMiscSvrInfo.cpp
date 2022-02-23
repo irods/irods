@@ -5,12 +5,12 @@
  */
 
 /* script generated code */
-#include "getMiscSvrInfo.h"
-#include "irods_server_properties.hpp"
-#include "irods_log.hpp"
-#include "rodsVersion.h"
-#include "miscServerFunct.hpp"
-#include "rsGetMiscSvrInfo.hpp"
+#include "irods/getMiscSvrInfo.h"
+#include "irods/irods_server_properties.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/rodsVersion.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/rsGetMiscSvrInfo.hpp"
 
 int
 rsGetMiscSvrInfo( rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo ) {

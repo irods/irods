@@ -4,22 +4,22 @@
 /* fileOpr.c - File type operation. Will call low level file drivers
  */
 
-#include "fileOpr.hpp"
-#include "fileStat.h"
-#include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.h"
-#include "collection.hpp"
-#include "rsChkNVPathPerm.hpp"
-#include "rsFileStat.hpp"
+#include "irods/fileOpr.hpp"
+#include "irods/fileStat.h"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/rcGlobalExtern.h"
+#include "irods/collection.hpp"
+#include "irods/rsChkNVPathPerm.hpp"
+#include "irods/rsFileStat.hpp"
 
 // =-=-=-=-=-=-=-
-#include "irods_log.hpp"
-#include "irods_file_object.hpp"
-#include "irods_collection_object.hpp"
-#include "irods_stacktrace.hpp"
-#include "irods_resource_backport.hpp"
-#include "irods_resource_manager.hpp"
-#include "irods_resource_plugin.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/irods_file_object.hpp"
+#include "irods/irods_collection_object.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/irods_resource_backport.hpp"
+#include "irods/irods_resource_manager.hpp"
+#include "irods/irods_resource_plugin.hpp"
 
 int
 initFileDesc() {

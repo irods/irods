@@ -3,12 +3,12 @@
 /* modColl.c
  */
 
-#include "rsModColl.hpp"
-#include "modColl.h"
-#include "rcMisc.h"
-#include "icatHighLevelRoutines.hpp"
-#include "miscServerFunct.hpp"
-#include "irods_configuration_keywords.hpp"
+#include "irods/rsModColl.hpp"
+#include "irods/modColl.h"
+#include "irods/rcMisc.h"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/irods_configuration_keywords.hpp"
 
 int
 rsModColl( rsComm_t *rsComm, collInp_t *modCollInp ) {

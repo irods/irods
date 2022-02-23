@@ -1,6 +1,6 @@
-#include "fileReaddir.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/fileReaddir.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcFileReaddir( rcComm_t *conn, fileReaddirInp_t *fileReaddirInp, rodsDirent_t **fileReaddirOut )

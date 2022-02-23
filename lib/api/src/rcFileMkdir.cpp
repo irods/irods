@@ -1,6 +1,6 @@
-#include "fileMkdir.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/fileMkdir.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcFileMkdir( rcComm_t *conn, fileMkdirInp_t *fileMkdirInp )

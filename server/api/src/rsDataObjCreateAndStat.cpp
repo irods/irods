@@ -3,12 +3,12 @@
 /* This is script-generated code (for the most part).  */
 /* See dataObjCreate.h for a description of this API call.*/
 
-#include "dataObjCreate.h"
-#include "dataObjCreateAndStat.h"
-#include "rodsLog.h"
-#include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.h"
-#include "rsDataObjCreate.hpp"
+#include "irods/dataObjCreate.h"
+#include "irods/dataObjCreateAndStat.h"
+#include "irods/rodsLog.h"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/rcGlobalExtern.h"
+#include "irods/rsDataObjCreate.hpp"
 
 int
 rsDataObjCreateAndStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,

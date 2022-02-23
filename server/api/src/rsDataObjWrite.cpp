@@ -3,23 +3,23 @@
 /* This is script-generated code (for the most part).  */
 /* See dataObjWrite.h for a description of this API call.*/
 
-#include "dataObjWrite.h"
-#include "rodsLog.h"
-#include "objMetaOpr.hpp"
-#include "subStructFileWrite.h"
-#include "fileWrite.h"
-#include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.h"
-#include "subStructFileRead.h"  /* XXXXX can be taken out when structFile api done */
-#include "rsDataObjWrite.hpp"
-#include "rsSubStructFileWrite.hpp"
-#include "rsFileWrite.hpp"
+#include "irods/dataObjWrite.h"
+#include "irods/rodsLog.h"
+#include "irods/objMetaOpr.hpp"
+#include "irods/subStructFileWrite.h"
+#include "irods/fileWrite.h"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/rcGlobalExtern.h"
+#include "irods/subStructFileRead.h"  /* XXXXX can be taken out when structFile api done */
+#include "irods/rsDataObjWrite.hpp"
+#include "irods/rsSubStructFileWrite.hpp"
+#include "irods/rsFileWrite.hpp"
 
 // =-=-=-=-=-=-=-
-#include "irods_resource_backport.hpp"
-#include "irods_hierarchy_parser.hpp"
-#include "irods_file_object.hpp"
-#include "irods_resource_redirect.hpp"
+#include "irods/irods_resource_backport.hpp"
+#include "irods/irods_hierarchy_parser.hpp"
+#include "irods/irods_file_object.hpp"
+#include "irods/irods_resource_redirect.hpp"
 
 
 int

@@ -3,14 +3,14 @@
 /* regColl.c
  */
 
-#include "rcMisc.h"
-#include "regColl.h"
-#include "icatHighLevelRoutines.hpp"
-#include "collection.hpp"
-#include "miscServerFunct.hpp"
-#include "irods_configuration_keywords.hpp"
-#include "rsRegColl.hpp"
-#include "rsObjStat.hpp"
+#include "irods/rcMisc.h"
+#include "irods/regColl.h"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/collection.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/irods_configuration_keywords.hpp"
+#include "irods/rsRegColl.hpp"
+#include "irods/rsObjStat.hpp"
 
 int
 rsRegColl( rsComm_t *rsComm, collInp_t *regCollInp ) {

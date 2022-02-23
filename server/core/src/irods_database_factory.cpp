@@ -1,7 +1,7 @@
 // =-=-=-=-=-=-=-
 // irods includes
-#include "irods_database_factory.hpp"
-#include "irods_client_server_negotiation.hpp"
+#include "irods/irods_database_factory.hpp"
+#include "irods/irods_client_server_negotiation.hpp"
 
 namespace irods {
 // =-=-=-=-=-=-=-

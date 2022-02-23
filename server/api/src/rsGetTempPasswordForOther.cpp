@@ -3,11 +3,11 @@
 
 /* See getTempPasswordForOther.h for a description of this API call.*/
 
-#include "getTempPasswordForOther.h"
-#include "icatHighLevelRoutines.hpp"
-#include "miscServerFunct.hpp"
-#include "irods_configuration_keywords.hpp"
-#include "rsGetTempPasswordForOther.hpp"
+#include "irods/getTempPasswordForOther.h"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/irods_configuration_keywords.hpp"
+#include "irods/rsGetTempPasswordForOther.hpp"
 
 int
 rsGetTempPasswordForOther( rsComm_t *rsComm,

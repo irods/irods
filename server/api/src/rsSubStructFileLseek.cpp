@@ -1,12 +1,12 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
-#include "subStructFileLseek.h"
-#include "miscServerFunct.hpp"
-#include "dataObjOpr.hpp"
-#include "rsSubStructFileLseek.hpp"
+#include "irods/subStructFileLseek.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/dataObjOpr.hpp"
+#include "irods/rsSubStructFileLseek.hpp"
 
 // =-=-=-=-=-=-=-
-#include "irods_structured_object.hpp"
+#include "irods/irods_structured_object.hpp"
 
 
 int

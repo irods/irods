@@ -1,5 +1,5 @@
-#include "ADLER32Strategy.hpp"
-#include "checksum.h"
+#include "irods/ADLER32Strategy.hpp"
+#include "irods/checksum.h"
 
 #include <sstream>
 #include <iostream>
@@ -7,7 +7,7 @@
 #include <cstring>
 #include <boost/algorithm/string/predicate.hpp>
 
-#include "base64.h"
+#include "irods/base64.h"
 
 namespace irods {
 

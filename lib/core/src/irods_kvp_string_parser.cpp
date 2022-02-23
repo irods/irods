@@ -1,12 +1,12 @@
-#include "irods_log.hpp"
+#include "irods/irods_log.hpp"
 
 // =-=-=-=-=-=-=-
-#include "irods_kvp_string_parser.hpp"
-#include "irods_stacktrace.hpp"
+#include "irods/irods_kvp_string_parser.hpp"
+#include "irods/irods_stacktrace.hpp"
 
 // =-=-=-=-=-=-=-
 // rods includes
-#include "rodsErrorTable.h"
+#include "irods/rodsErrorTable.h"
 #include <sstream>
 #include <set>
 #include <boost/algorithm/string/predicate.hpp>

@@ -1,10 +1,10 @@
-#include "rsTicketAdmin.hpp"
+#include "irods/rsTicketAdmin.hpp"
 
-#include "rcConnect.h"
-#include "ticketAdmin.h"
-#include "icatHighLevelRoutines.hpp"
-#include "miscServerFunct.hpp"
-#include "irods_configuration_keywords.hpp"
+#include "irods/rcConnect.h"
+#include "irods/ticketAdmin.h"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/irods_configuration_keywords.hpp"
 
 int rsTicketAdmin(rsComm_t* rsComm, ticketAdminInp_t* ticketAdminInp)
 {

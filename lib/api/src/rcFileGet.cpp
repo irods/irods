@@ -1,6 +1,6 @@
-#include "fileGet.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/fileGet.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcFileGet( rcComm_t *conn, fileOpenInp_t *fileGetInp, bytesBuf_t *fileGetOutBBuf )

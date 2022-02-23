@@ -1,9 +1,9 @@
 /* This is script-generated code.  */
 /* See syncMountedColl.h for a description of this API call.*/
 
-#include "syncMountedColl.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/syncMountedColl.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcSyncMountedColl( rcComm_t *conn, dataObjInp_t *syncMountedCollInp )

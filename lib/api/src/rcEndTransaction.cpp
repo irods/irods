@@ -1,6 +1,6 @@
-#include "endTransaction.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/endTransaction.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcEndTransaction( rcComm_t *conn, endTransactionInp_t *endTransactionInp )

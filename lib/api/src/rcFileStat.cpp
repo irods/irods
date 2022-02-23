@@ -1,6 +1,6 @@
-#include "fileStat.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/fileStat.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcFileStat( rcComm_t *conn, fileStatInp_t *fileStatInp, rodsStat_t **fileStatOut )

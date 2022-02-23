@@ -7,8 +7,8 @@
 #include <sys/socket.h>
 #include <vector>
 
-#include "rodsErrorTable.h"
-#include "irods_exception.hpp"
+#include "irods/rodsErrorTable.h"
+#include "irods/irods_exception.hpp"
 
 
 std::string socket_fd_to_remote_address(const int fd) {

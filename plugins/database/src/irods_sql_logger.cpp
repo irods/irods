@@ -1,8 +1,8 @@
 #include "irods_sql_logger.hpp"
-#include "irods_error.hpp"
-#include "irods_log.hpp"
+#include "irods/irods_error.hpp"
+#include "irods/irods_log.hpp"
 
-#include "rodsLog.h"
+#include "irods/rodsLog.h"
 
 #include <sstream>
 

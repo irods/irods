@@ -1,7 +1,7 @@
 #include <catch2/catch.hpp>
 
-#include "scoped_privileged_client.hpp"
-#include "irods_rs_comm_query.hpp"
+#include "irods/scoped_privileged_client.hpp"
+#include "irods/irods_rs_comm_query.hpp"
 
 TEST_CASE("scoped privileged client")
 {

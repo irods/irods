@@ -1,6 +1,6 @@
-#include "generalRowPurge.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/generalRowPurge.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcGeneralRowPurge( rcComm_t *conn, generalRowPurgeInp_t *generalRowPurgeInp )

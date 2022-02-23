@@ -1,16 +1,16 @@
-#include "rsFileChksum.hpp"
+#include "irods/rsFileChksum.hpp"
 
-#include "miscServerFunct.hpp"
-#include "rodsErrorTable.h"
-#include "irods_log.hpp"
-#include "irods_file_object.hpp"
-#include "irods_stacktrace.hpp"
-#include "irods_resource_backport.hpp"
-#include "irods_hasher_factory.hpp"
-#include "irods_server_properties.hpp"
-#include "irods_hierarchy_parser.hpp"
-#include "MD5Strategy.hpp"
-#include "irods_at_scope_exit.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/rodsErrorTable.h"
+#include "irods/irods_log.hpp"
+#include "irods/irods_file_object.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/irods_resource_backport.hpp"
+#include "irods/irods_hasher_factory.hpp"
+#include "irods/irods_server_properties.hpp"
+#include "irods/irods_hierarchy_parser.hpp"
+#include "irods/MD5Strategy.hpp"
+#include "irods/irods_at_scope_exit.hpp"
 
 #include <fmt/format.h>
 

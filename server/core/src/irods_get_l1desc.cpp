@@ -1,9 +1,9 @@
-#include "irods_get_l1desc.hpp"
-#include "key_value_proxy.hpp"
-#include "rsGlobalExtern.hpp"
+#include "irods/irods_get_l1desc.hpp"
+#include "irods/key_value_proxy.hpp"
+#include "irods/rsGlobalExtern.hpp"
 
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
-#include "replica_proxy.hpp"
+#include "irods/replica_proxy.hpp"
 
 namespace irods
 {

@@ -1,6 +1,6 @@
-#include "l3FilePutSingleBuf.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/l3FilePutSingleBuf.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcL3FilePutSingleBuf( rcComm_t *conn, int l1descInx, bytesBuf_t *dataObjInBBuf)

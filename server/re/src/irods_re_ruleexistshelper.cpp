@@ -1,5 +1,5 @@
-#include "irods_re_ruleexistshelper.hpp"
-#include "irods_log.hpp"
+#include "irods/irods_re_ruleexistshelper.hpp"
+#include "irods/irods_log.hpp"
 
 RuleExistsHelper* RuleExistsHelper::_instance = 0;
 

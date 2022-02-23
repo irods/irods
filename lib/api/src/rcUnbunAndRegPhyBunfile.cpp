@@ -1,6 +1,6 @@
-#include "unbunAndRegPhyBunfile.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/unbunAndRegPhyBunfile.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcUnbunAndRegPhyBunfile( rcComm_t *conn, dataObjInp_t *dataObjInp )

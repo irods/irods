@@ -1,8 +1,8 @@
-#include "execMyRule.h"
-#include "miscServerFunct.hpp"
-#include "rcMisc.h"
-#include "irods_re_plugin.hpp"
-#include "rsExecMyRule.hpp"
+#include "irods/execMyRule.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/rcMisc.h"
+#include "irods/irods_re_plugin.hpp"
+#include "irods/rsExecMyRule.hpp"
 
 extern std::unique_ptr<struct irods::global_re_plugin_mgr> irods::re_plugin_globals;
 

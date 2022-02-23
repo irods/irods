@@ -1,6 +1,6 @@
-#include "rcConnect.h"
-#include "rcGlobalExtern.h"
-#include "rcMisc.h"
+#include "irods/rcConnect.h"
+#include "irods/rcGlobalExtern.h"
+#include "irods/rcMisc.h"
 
 #ifdef windows_platform
 #include "startsock.hpp"
@@ -10,12 +10,12 @@
 #include <boost/thread.hpp>
 #include <boost/chrono.hpp>
 
-#include "irods_network_factory.hpp"
+#include "irods/irods_network_factory.hpp"
 
-#include "sockComm.h"
-#include "irods_threads.hpp"
-#include "sockCommNetworkInterface.hpp"
-#include "rodsError.h"
+#include "irods/sockComm.h"
+#include "irods/irods_threads.hpp"
+#include "irods/sockCommNetworkInterface.hpp"
+#include "irods/rodsError.h"
 
 #include <ctime>
 #include <cstring>

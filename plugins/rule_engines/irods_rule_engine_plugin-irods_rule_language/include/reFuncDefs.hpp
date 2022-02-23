@@ -6,7 +6,7 @@
 
 #include "restructs.hpp"
 #include "reGlobalsExtern.hpp"
-#include "irods_re_structs.hpp"
+#include "irods/irods_re_structs.hpp"
 int initRuleStruct( const char* inst_name, rsComm_t *svrComm, const char *ruleSet, const char *dvmSet, const char *fnmSet );
 
 int readRuleStructFromFile( const char* inst_name, const char *ruleBaseName );
@@ -37,7 +37,7 @@ int executeRuleRecovery( char *ruleRecovery, ruleExecInfo_t *rei, int reiSaveFla
 int parseAction( char *inAction, char *action, char *args[], int *argc );
 
 int executeRuleAction( char *inAction, ruleExecInfo_t *rei, int reiSaveFlag );
-#include "irods_ms_plugin.hpp"
+#include "irods/irods_ms_plugin.hpp"
 int actionTableLookUp( irods::ms_table_entry&, char *action );
 
 int applyRuleArgPA( const char *action, const char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,

@@ -3,7 +3,7 @@
 #ifndef INDEX_HPP
 #define INDEX_HPP
 //#include "debug.hpp"
-#include "irods_hashtable.h"
+#include "irods/irods_hashtable.h"
 #include "rules.hpp"
 #ifndef DEBUG
 #include "reGlobalsExtern.hpp"

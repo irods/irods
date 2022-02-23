@@ -1,10 +1,10 @@
-#include "dataObjOpenAndStat.h"
+#include "irods/dataObjOpenAndStat.h"
 
-#include "dataObjOpen.h"
-#include "rodsLog.h"
-#include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.h"
-#include "rsDataObjOpen.hpp"
+#include "irods/dataObjOpen.h"
+#include "irods/rodsLog.h"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/rcGlobalExtern.h"
+#include "irods/rsDataObjOpen.hpp"
 
 #include <cstring>
 

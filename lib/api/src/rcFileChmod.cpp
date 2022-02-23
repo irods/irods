@@ -1,6 +1,6 @@
-#include "fileChmod.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/fileChmod.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcFileChmod( rcComm_t *conn, fileChmodInp_t *fileChmodInp )

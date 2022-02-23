@@ -1,12 +1,12 @@
 /// \file
 
-#include "irods_ms_plugin.hpp"
-#include "irods_re_structs.hpp"
-#include "msParam.h"
-#include "rodsErrorTable.h"
-#include "rs_touch.hpp"
-#include "irods_error.hpp"
-#include "irods_logger.hpp"
+#include "irods/irods_ms_plugin.hpp"
+#include "irods/irods_re_structs.hpp"
+#include "irods/msParam.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/rs_touch.hpp"
+#include "irods/irods_error.hpp"
+#include "irods/irods_logger.hpp"
 
 #include <functional>
 #include <string>

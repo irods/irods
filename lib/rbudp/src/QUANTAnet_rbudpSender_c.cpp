@@ -20,9 +20,9 @@
  * Direct questions, comments etc about Quanta to cavern@evl.uic.edu
  *****************************************************************************/
 
-#include "QUANTAnet_rbudpSender_c.h"
-#include "rodsErrorTable.h"
-#include "rodsLog.h"
+#include "irods/QUANTAnet_rbudpSender_c.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/rodsLog.h"
 
 #include <cstdlib>
 #include <stdarg.h>

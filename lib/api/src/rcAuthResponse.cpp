@@ -1,9 +1,9 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-#include "authResponse.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/authResponse.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcAuthResponse( rcComm_t *conn, authResponseInp_t *authResponseInp )

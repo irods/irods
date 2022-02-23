@@ -1,6 +1,6 @@
-#include "rodsDef.h"
-#include "rodsLog.h"
-#include "version.hpp"
+#include "irods/rodsDef.h"
+#include "irods/rodsLog.h"
+#include "irods/version.hpp"
 
 #include <fmt/format.h>
 

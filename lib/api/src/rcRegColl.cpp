@@ -1,6 +1,6 @@
-#include "regColl.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/regColl.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcRegColl( rcComm_t *conn, collInp_t *regCollInp )

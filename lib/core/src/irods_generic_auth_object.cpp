@@ -1,6 +1,6 @@
-#include "irods_auth_manager.hpp"
-#include "irods_auth_plugin.hpp"
-#include "irods_generic_auth_object.hpp"
+#include "irods/irods_auth_manager.hpp"
+#include "irods/irods_auth_plugin.hpp"
+#include "irods/irods_generic_auth_object.hpp"
 
 extern int ProcessType;
 

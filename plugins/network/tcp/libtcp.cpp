@@ -1,16 +1,16 @@
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rodsDef.h"
-#include "msParam.h"
-#include "rcConnect.h"
-#include "sockComm.h"
+#include "irods/rodsDef.h"
+#include "irods/msParam.h"
+#include "irods/rcConnect.h"
+#include "irods/sockComm.h"
 
 // =-=-=-=-=-=-=-
-#include "irods_network_plugin.hpp"
-#include "irods_network_constants.hpp"
-#include "irods_tcp_object.hpp"
-#include "irods_stacktrace.hpp"
-#include "sockCommNetworkInterface.hpp"
+#include "irods/irods_network_plugin.hpp"
+#include "irods/irods_network_constants.hpp"
+#include "irods/irods_tcp_object.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/sockCommNetworkInterface.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes

@@ -1,6 +1,6 @@
-#include "procStat.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/procStat.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcProcStat( rcComm_t *conn, procStatInp_t *procStatInp, genQueryOut_t **procStatOut )

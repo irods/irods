@@ -1,14 +1,14 @@
 #include <catch2/catch.hpp>
 
-#include "client_connection.hpp"
-#include "data_object_proxy.hpp"
-#include "dstream.hpp"
-#include "irods_at_scope_exit.hpp"
-#include "replica.hpp"
-#include "replica_proxy.hpp"
-#include "resource_administration.hpp"
-#include "rodsClient.h"
-#include "transport/default_transport.hpp"
+#include "irods/client_connection.hpp"
+#include "irods/data_object_proxy.hpp"
+#include "irods/dstream.hpp"
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/replica.hpp"
+#include "irods/replica_proxy.hpp"
+#include "irods/resource_administration.hpp"
+#include "irods/rodsClient.h"
+#include "irods/transport/default_transport.hpp"
 #include "unit_test_utils.hpp"
 
 #include <chrono>

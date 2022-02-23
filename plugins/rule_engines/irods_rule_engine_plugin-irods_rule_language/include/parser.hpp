@@ -11,15 +11,15 @@
 
 
 #ifndef DEBUG
-#include "objInfo.h"
+#include "irods/objInfo.h"
 #include "reHelpers1.hpp"
 #endif
 
-#include "reconstants.hpp"
+#include "irods/reconstants.hpp"
 #include "restructs.hpp"
 #include "utils.hpp"
-#include "region.h"
-#include "irods_hashtable.h"
+#include "irods/region.h"
+#include "irods/irods_hashtable.h"
 
 
 typedef struct op {

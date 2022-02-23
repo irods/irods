@@ -1,7 +1,7 @@
-#include "rodsClient.h"
-#include "connection_pool.hpp"
-#include "experimental_plugin_framework.hpp"
-#include "irods_client_api_table.hpp"
+#include "irods/rodsClient.h"
+#include "irods/connection_pool.hpp"
+#include "irods/experimental_plugin_framework.hpp"
+#include "irods/irods_client_api_table.hpp"
 
 int main(int argc, char* argv[])
 {

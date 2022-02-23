@@ -1,14 +1,14 @@
 // =-=-=-=-=-=-=-
 // irods includes
-#include "apiHandler.hpp"
-#include "api_plugin_number.h"
-#include "irods_stacktrace.hpp"
-#include "irods_server_api_call.hpp"
-#include "irods_re_serialization.hpp"
+#include "irods/apiHandler.hpp"
+#include "irods/plugins/api/api_plugin_number.h"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/irods_server_api_call.hpp"
+#include "irods/irods_re_serialization.hpp"
 #include <boost/lexical_cast.hpp>
 
-#include "objStat.h"
-#include "client_api_whitelist.hpp"
+#include "irods/objStat.h"
+#include "irods/client_api_whitelist.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes

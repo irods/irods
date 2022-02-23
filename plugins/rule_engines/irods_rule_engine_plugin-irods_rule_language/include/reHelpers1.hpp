@@ -10,7 +10,7 @@
 #define RE_HELPERS1_HPP
 
 #include "reGlobalsExtern.hpp"
-#include "irods_re_structs.hpp"
+#include "irods/irods_re_structs.hpp"
 
 int
 checkRuleCondition( char *action, char *incond,

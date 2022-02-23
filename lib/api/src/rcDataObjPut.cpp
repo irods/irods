@@ -1,11 +1,11 @@
-#include "dataObjPut.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "rcPortalOpr.h"
-#include "oprComplete.h"
-#include "sockComm.h"
-#include "rcMisc.h"
-#include "irods_client_server_negotiation.hpp"
+#include "irods/dataObjPut.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
+#include "irods/rcPortalOpr.h"
+#include "irods/oprComplete.h"
+#include "irods/sockComm.h"
+#include "irods/rcMisc.h"
+#include "irods/irods_client_server_negotiation.hpp"
 
 #include <cstring>
 

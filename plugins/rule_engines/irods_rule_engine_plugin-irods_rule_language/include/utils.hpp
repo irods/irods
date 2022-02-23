@@ -8,13 +8,13 @@
 #include <stdio.h>
 #include <string.h>
 #ifndef DEBUG
-#include "objInfo.h"
+#include "irods/objInfo.h"
 #include "reHelpers1.hpp"
-#include "rodsType.h"
+#include "irods/rodsType.h"
 #endif
 #include "restructs.hpp"
-#include "region.h"
-#include "irods_hashtable.h"
+#include "irods/region.h"
+#include "irods/irods_hashtable.h"
 
 
 #define CASCASE_NON_ZERO(x) {int ret = x; if(ret != 0) { return ret;} }

@@ -5,9 +5,9 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-#include "generalAdmin.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/generalAdmin.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcGeneralAdmin (rcComm_t *conn, generalAdminInp_t *generalAdminInp)

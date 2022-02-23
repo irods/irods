@@ -1,6 +1,6 @@
 #include <catch2/catch.hpp>
 
-#include "shared_memory_object.hpp"
+#include "irods/shared_memory_object.hpp"
 
 #include <string_view>
 #include <thread>

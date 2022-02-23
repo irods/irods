@@ -5,17 +5,17 @@
  */
 
 /* script generated code */
-#include "fileOpen.h"
-#include "fileOpr.hpp"
-#include "miscServerFunct.hpp"
-#include "rsGlobalExtern.hpp"
-#include "rsFileOpen.hpp"
+#include "irods/fileOpen.h"
+#include "irods/fileOpr.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/rsFileOpen.hpp"
 
 // =-=-=-=-=-=-=-
-#include "irods_log.hpp"
-#include "irods_file_object.hpp"
-#include "irods_stacktrace.hpp"
-#include "irods_resource_backport.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/irods_file_object.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/irods_resource_backport.hpp"
 
 int
 rsFileOpen( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp ) {

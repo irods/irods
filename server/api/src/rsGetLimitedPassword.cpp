@@ -3,11 +3,11 @@
 
 /* See getLimitedPassword.h for a description of this API call.*/
 
-#include "getLimitedPassword.h"
-#include "icatHighLevelRoutines.hpp"
-#include "miscServerFunct.hpp"
-#include "irods_configuration_keywords.hpp"
-#include "rsGetLimitedPassword.hpp"
+#include "irods/getLimitedPassword.h"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/irods_configuration_keywords.hpp"
+#include "irods/rsGetLimitedPassword.hpp"
 
 
 

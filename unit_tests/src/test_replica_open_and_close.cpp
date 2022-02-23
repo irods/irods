@@ -1,15 +1,15 @@
 #include <catch2/catch.hpp>
 
-#include "rodsClient.h"
-#include "connection_pool.hpp"
-#include "filesystem.hpp"
-#include "replica_open.h"
-#include "replica_close.h"
-#include "dataObjWrite.h"
-#include "irods_query.hpp"
-#include "irods_at_scope_exit.hpp"
-#include "key_value_proxy.hpp"
-#include "modDataObjMeta.h"
+#include "irods/rodsClient.h"
+#include "irods/connection_pool.hpp"
+#include "irods/filesystem.hpp"
+#include "irods/replica_open.h"
+#include "irods/replica_close.h"
+#include "irods/dataObjWrite.h"
+#include "irods/irods_query.hpp"
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/key_value_proxy.hpp"
+#include "irods/modDataObjMeta.h"
 
 #include <fmt/format.h>
 #include <nlohmann/json.hpp>

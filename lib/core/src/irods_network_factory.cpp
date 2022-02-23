@@ -1,6 +1,6 @@
 // =-=-=-=-=-=-=-
-#include "irods_network_factory.hpp"
-#include "irods_client_server_negotiation.hpp"
+#include "irods/irods_network_factory.hpp"
+#include "irods/irods_client_server_negotiation.hpp"
 
 namespace irods {
 // super basic free factory function to create either a tcp

@@ -1,8 +1,8 @@
-#include "authentication_plugin_framework.hpp"
+#include "irods/authentication_plugin_framework.hpp"
 
-#include "irods_logger.hpp"
+#include "irods/irods_logger.hpp"
 
-#include "base64.h"
+#include "irods/base64.h"
 
 int get64RandomBytes( char *buf );
 void setSessionSignatureClientside( char* _sig );

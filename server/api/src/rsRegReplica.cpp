@@ -1,22 +1,22 @@
-#include "rsRegReplica.hpp"
+#include "irods/rsRegReplica.hpp"
 
-#include "icatHighLevelRoutines.hpp"
-#include "irods_configuration_keywords.hpp"
-#include "irods_file_object.hpp"
-#include "irods_hierarchy_parser.hpp"
-#include "miscServerFunct.hpp"
-#include "objMetaOpr.hpp"
-#include "regReplica.h"
-#include "rsFileChksum.hpp"
-#include "rsFileStat.hpp"
-#include "rsModDataObjMeta.hpp"
-#include "rsUnregDataObj.hpp"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/irods_configuration_keywords.hpp"
+#include "irods/irods_file_object.hpp"
+#include "irods/irods_hierarchy_parser.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/objMetaOpr.hpp"
+#include "irods/regReplica.h"
+#include "irods/rsFileChksum.hpp"
+#include "irods/rsFileStat.hpp"
+#include "irods/rsModDataObjMeta.hpp"
+#include "irods/rsUnregDataObj.hpp"
 
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
-#include "filesystem.hpp"
+#include "irods/filesystem.hpp"
 
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
-#include "data_object_proxy.hpp"
+#include "irods/data_object_proxy.hpp"
 
 #include <boost/lexical_cast.hpp>
 

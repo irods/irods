@@ -1,8 +1,8 @@
 #include <catch2/catch.hpp>
 
-#include "data_object_proxy.hpp"
-#include "lifetime_manager.hpp"
-#include "replica_proxy.hpp"
+#include "irods/data_object_proxy.hpp"
+#include "irods/lifetime_manager.hpp"
+#include "irods/replica_proxy.hpp"
 
 #include <string_view>
 

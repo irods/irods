@@ -1,7 +1,7 @@
-#include "connection_pool.hpp"
+#include "irods/connection_pool.hpp"
 
-#include "irods_query.hpp"
-#include "thread_pool.hpp"
+#include "irods/irods_query.hpp"
+#include "irods/thread_pool.hpp"
 
 #include <stdexcept>
 #include <thread>

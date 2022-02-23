@@ -1,9 +1,9 @@
-#include "api_plugin_number.h"
-#include "rodsDef.h"
-#include "rcConnect.h"
-#include "rodsPackInstruct.h"
-#include "apiHandler.hpp"
-#include "client_api_whitelist.hpp"
+#include "irods/plugins/api/api_plugin_number.h"
+#include "irods/rodsDef.h"
+#include "irods/rcConnect.h"
+#include "irods/rodsPackInstruct.h"
+#include "irods/apiHandler.hpp"
+#include "irods/client_api_whitelist.hpp"
 
 #include <functional>
 
@@ -13,15 +13,15 @@
 // Server-side Implementation
 //
 
-#include "get_file_descriptor_info.h"
+#include "irods/get_file_descriptor_info.h"
 
-#include "irods_get_l1desc.hpp"
-#include "irods_logger.hpp"
-#include "irods_re_serialization.hpp"
-#include "irods_server_api_call.hpp"
-#include "irods_stacktrace.hpp"
-#include "objDesc.hpp"
-#include "server_utilities.hpp"
+#include "irods/irods_get_l1desc.hpp"
+#include "irods/irods_logger.hpp"
+#include "irods/irods_re_serialization.hpp"
+#include "irods/irods_server_api_call.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/objDesc.hpp"
+#include "irods/server_utilities.hpp"
 
 #include <string>
 #include <string_view>

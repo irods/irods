@@ -1,7 +1,7 @@
 
 #include "parallel_filesystem_operation.hpp"
 
-#include "dataObjRepl.h"
+#include "irods/dataObjRepl.h"
 
 namespace irods::experimental::api {
     class replicate : parallel_filesystem_operation {

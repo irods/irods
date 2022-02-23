@@ -9,20 +9,20 @@
 #else
 #include "Unix2Nt.hpp"
 #endif
-#include "execCmd.h"
-#include "objMetaOpr.hpp"
-#include "dataObjOpr.hpp"
-#include "fileClose.h"
-#include "miscServerFunct.hpp"
-#include "rodsLog.h"
-#include "icatDefines.h"
-#include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.h"
-#include "rsExecCmd.hpp"
+#include "irods/execCmd.h"
+#include "irods/objMetaOpr.hpp"
+#include "irods/dataObjOpr.hpp"
+#include "irods/fileClose.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/rodsLog.h"
+#include "irods/icatDefines.h"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/rcGlobalExtern.h"
+#include "irods/rsExecCmd.hpp"
 
-#include "irods_resource_backport.hpp"
-#include "irods_resource_redirect.hpp"
-#include "irods_re_structs.hpp"
+#include "irods/irods_resource_backport.hpp"
+#include "irods/irods_resource_redirect.hpp"
+#include "irods/irods_re_structs.hpp"
 
 #include <boost/thread/mutex.hpp>
 boost::mutex ExecCmdMutex;

@@ -1,5 +1,5 @@
-#include "SHA1Strategy.hpp"
-#include "checksum.h"
+#include "irods/SHA1Strategy.hpp"
+#include "irods/checksum.h"
 
 #include <sstream>
 #include <iostream>
@@ -8,7 +8,7 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <openssl/sha.h>
 
-#include "base64.h"
+#include "irods/base64.h"
 
 namespace irods {
 

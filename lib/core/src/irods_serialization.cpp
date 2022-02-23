@@ -3,9 +3,9 @@
 #include <vector>
 #include <set>
 #include <boost/regex.hpp>
-#include "irods_serialization.hpp"
-#include "irods_exception.hpp"
-#include "rodsErrorTable.h"
+#include "irods/irods_serialization.hpp"
+#include "irods/irods_exception.hpp"
+#include "irods/rodsErrorTable.h"
 
 namespace irods {
     static const char default_escape_char = '\\';

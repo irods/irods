@@ -1,13 +1,13 @@
-#include "api_plugin_number.h"
-#include "dataObjInpOut.h"
-#include "rodsDef.h"
-#include "rcConnect.h"
-#include "rodsErrorTable.h"
-#include "rodsPackInstruct.h"
-#include "rcMisc.h"
-#include "client_api_whitelist.hpp"
+#include "irods/plugins/api/api_plugin_number.h"
+#include "irods/dataObjInpOut.h"
+#include "irods/rodsDef.h"
+#include "irods/rcConnect.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/rodsPackInstruct.h"
+#include "irods/rcMisc.h"
+#include "irods/client_api_whitelist.hpp"
 
-#include "apiHandler.hpp"
+#include "irods/apiHandler.hpp"
 
 #include <functional>
 
@@ -17,18 +17,18 @@
 // Server-side Implementation
 //
 
-#include "objDesc.hpp"
-#include "irods_stacktrace.hpp"
-#include "irods_server_api_call.hpp"
-#include "irods_re_serialization.hpp"
-#include "rsDataObjOpen.hpp"
-#include "rsDataObjClose.hpp"
-#include "rsDataObjUnlink.hpp"
-#include "rs_get_file_descriptor_info.hpp"
-#include "rs_replica_close.hpp"
-#include "irods_logger.hpp"
-#include "key_value_proxy.hpp"
-#include "finalize_utilities.hpp"
+#include "irods/objDesc.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/irods_server_api_call.hpp"
+#include "irods/irods_re_serialization.hpp"
+#include "irods/rsDataObjOpen.hpp"
+#include "irods/rsDataObjClose.hpp"
+#include "irods/rsDataObjUnlink.hpp"
+#include "irods/rs_get_file_descriptor_info.hpp"
+#include "irods/rs_replica_close.hpp"
+#include "irods/irods_logger.hpp"
+#include "irods/key_value_proxy.hpp"
+#include "irods/finalize_utilities.hpp"
 
 #include <nlohmann/json.hpp>
 

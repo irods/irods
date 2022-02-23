@@ -1,6 +1,6 @@
-#include "fileSyncToArch.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/fileSyncToArch.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcFileSyncToArch( rcComm_t *conn, fileStageSyncInp_t *fileSyncToArchInp, fileSyncOut_t** _fn )

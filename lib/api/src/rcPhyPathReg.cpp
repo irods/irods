@@ -1,6 +1,6 @@
-#include "phyPathReg.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/phyPathReg.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 #include <cstring>
 

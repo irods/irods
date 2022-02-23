@@ -1,9 +1,9 @@
 /// \file
 
-#include "icatHighLevelRoutines.hpp"
-#include "apiHeaderAll.h"
-#include "rsApiHandler.hpp"
-#include "irods_re_structs.hpp"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/apiHeaderAll.h"
+#include "irods/rsApiHandler.hpp"
+#include "irods/irods_re_structs.hpp"
 
 #if defined(_LP64) || defined(__LP64__)
 #define CAST_PTR_INT (long int)

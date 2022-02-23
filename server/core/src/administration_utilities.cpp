@@ -1,9 +1,9 @@
-#include "administration_utilities.hpp"
-#include "icatHighLevelRoutines.hpp"
-#include "irods_re_structs.hpp"
-#include "rodsConnect.h"
-#include "rodsUser.h"
-#include "user_validation_utilities.hpp"
+#include "irods/administration_utilities.hpp"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/irods_re_structs.hpp"
+#include "irods/rodsConnect.h"
+#include "irods/rodsUser.h"
+#include "irods/user_validation_utilities.hpp"
 
 namespace
 {

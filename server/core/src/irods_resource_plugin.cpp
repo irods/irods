@@ -1,8 +1,8 @@
 // =-=-=-=-=-=-=-
 // My Includes
-#include "irods_resource_plugin.hpp"
-#include "irods_resource_redirect.hpp"
-#include "irods_load_plugin.hpp"
+#include "irods/irods_resource_plugin.hpp"
+#include "irods/irods_resource_redirect.hpp"
+#include "irods/irods_load_plugin.hpp"
 
 // =-=-=-=-=-=-=-
 // STL Includes

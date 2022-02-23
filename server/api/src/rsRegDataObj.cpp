@@ -1,14 +1,14 @@
-#include "regDataObj.h"
-#include "icatHighLevelRoutines.hpp"
-#include "fileDriver.hpp"
-#include "miscServerFunct.hpp"
-#include "rsRegDataObj.hpp"
+#include "irods/regDataObj.h"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/fileDriver.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/rsRegDataObj.hpp"
 
-#include "irods_file_object.hpp"
-#include "irods_configuration_keywords.hpp"
+#include "irods/irods_file_object.hpp"
+#include "irods/irods_configuration_keywords.hpp"
 
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
-#include "replica_proxy.hpp"
+#include "irods/replica_proxy.hpp"
 
 /* rsRegDataObj - This call is strictly an API handler and should not be
  * called directly in the server. For server calls, use svrRegDataObj

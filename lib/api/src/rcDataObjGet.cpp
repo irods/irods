@@ -1,14 +1,14 @@
-#include "dataObjGet.h"
+#include "irods/dataObjGet.h"
 
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "rcPortalOpr.h"
-#include "apiHeaderAll.h"
-#include "sockComm.h"
-#include "irods_client_server_negotiation.hpp"
-#include "irods_server_properties.hpp"
-#include "irods_stacktrace.hpp"
-#include "checksum.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
+#include "irods/rcPortalOpr.h"
+#include "irods/apiHeaderAll.h"
+#include "irods/sockComm.h"
+#include "irods/irods_client_server_negotiation.hpp"
+#include "irods/irods_server_properties.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/checksum.h"
 
 #include <cstring>
 

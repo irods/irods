@@ -1,7 +1,7 @@
-#include "voting.hpp"
+#include "irods/voting.hpp"
 
-#include "replica_access_table.hpp"
-#include "key_value_proxy.hpp"
+#include "irods/replica_access_table.hpp"
+#include "irods/key_value_proxy.hpp"
 
 #include <boost/lexical_cast.hpp>
 

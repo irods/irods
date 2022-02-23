@@ -3,17 +3,17 @@
 /* This is script-generated code (for the most part).  */
 /* See fileRmdir.h for a description of this API call.*/
 
-#include "fileRmdir.h"
-#include "fileOpendir.h"
-#include "fileReaddir.h"
-#include "fileClosedir.h"
-#include "miscServerFunct.hpp"
-#include "fileDriver.hpp"
-#include "rsFileRmdir.hpp"
+#include "irods/fileRmdir.h"
+#include "irods/fileOpendir.h"
+#include "irods/fileReaddir.h"
+#include "irods/fileClosedir.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/fileDriver.hpp"
+#include "irods/rsFileRmdir.hpp"
 
 // =-=-=-=-=-=-=-
-#include "irods_log.hpp"
-#include "irods_collection_object.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/irods_collection_object.hpp"
 
 #define CACHE_DIR_STR "cacheDir" // FIXME JMC - need a better place for this.  also used in tar plugin
 

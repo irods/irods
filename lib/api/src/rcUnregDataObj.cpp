@@ -1,6 +1,6 @@
-#include "unregDataObj.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/unregDataObj.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcUnregDataObj( rcComm_t *conn, unregDataObj_t *unregDataObjInp )

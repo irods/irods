@@ -1,8 +1,8 @@
 #ifndef _IRODS_OBJECT_OPER_HPP_
 #define _IRODS_OBJECT_OPER_HPP_
 
-#include "irods_error.hpp"
-#include "irods_file_object.hpp"
+#include "irods/irods_error.hpp"
+#include "irods/irods_file_object.hpp"
 
 namespace irods {
 

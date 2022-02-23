@@ -1,18 +1,18 @@
-#include "rsDataObjRead.hpp"
+#include "irods/rsDataObjRead.hpp"
 
-#include "dataObjInpOut.h"
-#include "dataObjRead.h"
-#include "fileLseek.h"
-#include "rodsLog.h"
-#include "objMetaOpr.hpp"
-#include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.h"
-#include "subStructFileRead.h"  /* XXXXX can be taken out when structFile api done */
-#include "rsSubStructFileRead.hpp"
-#include "rsFileRead.hpp"
-#include "irods_resource_backport.hpp"
-#include "irods_hierarchy_parser.hpp"
-#include "rsDataObjLseek.hpp"
+#include "irods/dataObjInpOut.h"
+#include "irods/dataObjRead.h"
+#include "irods/fileLseek.h"
+#include "irods/rodsLog.h"
+#include "irods/objMetaOpr.hpp"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/rcGlobalExtern.h"
+#include "irods/subStructFileRead.h"  /* XXXXX can be taken out when structFile api done */
+#include "irods/rsSubStructFileRead.hpp"
+#include "irods/rsFileRead.hpp"
+#include "irods/irods_resource_backport.hpp"
+#include "irods/irods_hierarchy_parser.hpp"
+#include "irods/rsDataObjLseek.hpp"
 
 #include <algorithm>
 #include <limits>

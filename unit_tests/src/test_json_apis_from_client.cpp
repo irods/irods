@@ -1,15 +1,15 @@
 #include <catch2/catch.hpp>
 
-#include "atomic_apply_metadata_operations.h"
-#include "connection_pool.hpp"
-#include "dstream.hpp"
-#include "filesystem.hpp"
-#include "irods_at_scope_exit.hpp"
-#include "irods_query.hpp"
-#include "replica.hpp"
-#include "rodsClient.h"
-#include "client_connection.hpp"
-#include "transport/default_transport.hpp"
+#include "irods/atomic_apply_metadata_operations.h"
+#include "irods/connection_pool.hpp"
+#include "irods/dstream.hpp"
+#include "irods/filesystem.hpp"
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/irods_query.hpp"
+#include "irods/replica.hpp"
+#include "irods/rodsClient.h"
+#include "irods/client_connection.hpp"
+#include "irods/transport/default_transport.hpp"
 
 #include <boost/filesystem.hpp>
 #include <fmt/format.h>

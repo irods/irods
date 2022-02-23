@@ -1,10 +1,10 @@
-#include "rs_data_object_finalize.hpp"
+#include "irods/rs_data_object_finalize.hpp"
 
-#include "api_plugin_number.h"
-#include "rodsDef.h"
-#include "rodsErrorTable.h"
+#include "irods/plugins/api/api_plugin_number.h"
+#include "irods/rodsDef.h"
+#include "irods/rodsErrorTable.h"
 
-#include "irods_server_api_call.hpp"
+#include "irods/irods_server_api_call.hpp"
 
 #include <cstdlib>
 #include <cstring>

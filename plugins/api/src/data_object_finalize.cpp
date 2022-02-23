@@ -1,14 +1,14 @@
-#include "api_plugin_number.h"
-#include "client_api_whitelist.hpp"
-#include "fileDriver.hpp"
-#include "irods_configuration_keywords.hpp"
-#include "json_deserialization.hpp"
-#include "rcConnect.h"
-#include "rodsDef.h"
-#include "rodsErrorTable.h"
-#include "rodsPackInstruct.h"
+#include "irods/plugins/api/api_plugin_number.h"
+#include "irods/client_api_whitelist.hpp"
+#include "irods/fileDriver.hpp"
+#include "irods/irods_configuration_keywords.hpp"
+#include "irods/json_deserialization.hpp"
+#include "irods/rcConnect.h"
+#include "irods/rodsDef.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/rodsPackInstruct.h"
 
-#include "apiHandler.hpp"
+#include "irods/apiHandler.hpp"
 
 #include <functional>
 #include <stdexcept>
@@ -19,31 +19,31 @@
 // Server-side Implementation
 //
 
-#include "data_object_finalize.h"
+#include "irods/data_object_finalize.h"
 
-#include "catalog.hpp"
-#include "catalog_utilities.hpp"
-#include "icatHighLevelRoutines.hpp"
-#include "irods_at_scope_exit.hpp"
-#include "irods_exception.hpp"
-#include "irods_get_full_path_for_config_file.hpp"
-#include "irods_get_l1desc.hpp"
-#include "irods_logger.hpp"
-#include "irods_re_serialization.hpp"
-#include "irods_resource_manager.hpp"
-#include "irods_rs_comm_query.hpp"
-#include "irods_server_api_call.hpp"
-#include "irods_stacktrace.hpp"
-#include "miscServerFunct.hpp"
-#include "objDesc.hpp"
-#include "rodsConnect.h"
-#include "server_utilities.hpp"
+#include "irods/catalog.hpp"
+#include "irods/catalog_utilities.hpp"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/irods_exception.hpp"
+#include "irods/irods_get_full_path_for_config_file.hpp"
+#include "irods/irods_get_l1desc.hpp"
+#include "irods/irods_logger.hpp"
+#include "irods/irods_re_serialization.hpp"
+#include "irods/irods_resource_manager.hpp"
+#include "irods/irods_rs_comm_query.hpp"
+#include "irods/irods_server_api_call.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/objDesc.hpp"
+#include "irods/rodsConnect.h"
+#include "irods/server_utilities.hpp"
 
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
-#include "filesystem.hpp"
+#include "irods/filesystem.hpp"
 
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
-#include "data_object_proxy.hpp"
+#include "irods/data_object_proxy.hpp"
 
 #include <nlohmann/json.hpp>
 #include "fmt/format.h"

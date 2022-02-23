@@ -1,10 +1,10 @@
-#include "msParam.h"
+#include "irods/msParam.h"
 
-#include "apiHeaderAll.h"
-#include "modDataObjMeta.h"
-#include "rcGlobalExtern.h"
-#include "rodsErrorTable.h"
-#include "irods_logger.hpp"
+#include "irods/apiHeaderAll.h"
+#include "irods/modDataObjMeta.h"
+#include "irods/rcGlobalExtern.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/irods_logger.hpp"
 
 #include <cstring>
 

@@ -1,7 +1,7 @@
-#include "rcMisc.h"
-#include "get_hier_from_leaf_id.h"
-#include "irods_resource_manager.hpp"
-#include "rsGetHierFromLeafId.hpp"
+#include "irods/rcMisc.h"
+#include "irods/get_hier_from_leaf_id.h"
+#include "irods/irods_resource_manager.hpp"
+#include "irods/rsGetHierFromLeafId.hpp"
 
 extern irods::resource_manager resc_mgr;
 

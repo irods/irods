@@ -1,9 +1,9 @@
 /* This is script-generated code.  */
 /* See getLimitedPassword.h for a description of this API call.*/
 
-#include "getLimitedPassword.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/getLimitedPassword.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 int
 rcGetLimitedPassword( rcComm_t *conn,

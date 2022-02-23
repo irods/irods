@@ -1,6 +1,6 @@
-#include "irods_configuration_parser.hpp"
-#include "irods_log.hpp"
-#include "irods_exception.hpp"
+#include "irods/irods_configuration_parser.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/irods_exception.hpp"
 
 #include <fstream>
 #include <algorithm>

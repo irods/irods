@@ -2,7 +2,7 @@
  */
 
 #define MAKE_IRODS_ERROR_MAP
-#include "rodsErrorTable.h"
+#include "irods/rodsErrorTable.h"
 const static std::map<const std::string, const int> irods_error_name_map = irods_error_map_construction::irods_error_name_map;
 #include "reFuncDefs.hpp"
 #include "utils.hpp"
@@ -17,9 +17,9 @@ const static std::map<const std::string, const int> irods_error_name_map = irods
 #include "reVariableMap.gen.hpp"
 #include "reVariableMap.hpp"
 #include "debug.hpp"
-#include "irods_re_plugin.hpp"
+#include "irods/irods_re_plugin.hpp"
 
-//    #include "irods_ms_plugin.hpp"
+//    #include "irods/irods_ms_plugin.hpp"
 //    irods::ms_table MicrosTable;
 //    extern int NumOfAction;
 

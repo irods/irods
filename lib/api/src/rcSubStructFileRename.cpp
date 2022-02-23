@@ -1,6 +1,6 @@
-#include "subStructFileRename.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/subStructFileRename.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcSubStructFileRename( rcComm_t *conn, subStructFileRenameInp_t *subStructFileRenameInp )
