@@ -444,7 +444,7 @@ foreach(PLUGIN ${IRODS_API_PLUGINS})
     )
 
   target_compile_definitions(${PLUGIN} PRIVATE ${IRODS_API_PLUGIN_COMPILE_DEFINITIONS_${PLUGIN}} ${IRODS_COMPILE_DEFINITIONS})
-  target_compile_options(${PLUGIN} PRIVATE -Wno-write-strings -Wno-ignored-qualifiers)
+  target_compile_options(${PLUGIN} PRIVATE -Wno-ignored-qualifiers)
 endforeach()
 
 install(
