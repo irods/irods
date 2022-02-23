@@ -55,6 +55,9 @@ project(irods
   VERSION ${IRODS_VERSION}
   LANGUAGES C CXX)
 
+include(CheckCCompilerFlag)
+include(CheckCXXCompilerFlag)
+
 if (CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
   set(IRODS_BUILD_WITH_WERROR_DEFAULT ON)
 else()
@@ -87,24 +90,66 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-fpermissive>)
 endif()
 
-add_compile_options(-Wall -Wextra -Wno-unused-function -Wno-unused-parameter)
+add_compile_options(-Wall -Wextra)
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  add_compile_options(-Wno-parentheses)
+check_c_compiler_flag(-Wno-unused-function can_use_wunused_function_c)
+check_cxx_compiler_flag(-Wno-unused-function can_use_wunused_function_cxx)
+if (can_use_wunused_function_c)
+  add_compile_options($<$<COMPILE_LANGUAGE:C>:-Wno-unused-function>)
+endif()
+if (can_use_wunused_function_cxx)
+  add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-Wno-unused-function>)
+endif()
+check_c_compiler_flag(-Wno-unused-parameter can_use_wunused_parameter_c)
+check_cxx_compiler_flag(-Wno-unused-parameter can_use_wunused_parameter_cxx)
+if (can_use_wunused_parameter_c)
+  add_compile_options($<$<COMPILE_LANGUAGE:C>:-Wno-unused-parameter>)
+endif()
+if (can_use_wunused_parameter_cxx)
+  add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-Wno-unused-parameter>)
+endif()
+check_c_compiler_flag(-Wno-parentheses can_use_wparentheses_c)
+check_cxx_compiler_flag(-Wno-parentheses can_use_wparentheses_cxx)
+if (can_use_wparentheses_c)
+  add_compile_options($<$<COMPILE_LANGUAGE:C>:-Wno-parentheses>)
+endif()
+if (can_use_wparentheses_cxx)
+  add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-Wno-parentheses>)
 endif()
 
 if (IRODS_BUILD_WITH_WERROR)
-  if (CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 9)
-    # Do not error on definition of implicit copy constructor for classes with a
-    # user-declared copy assignment operator.
-    # This is needed because the boost headers throw this warning.
-    add_compile_options(-Wno-error=deprecated-copy)
-    # Do not error when overlapping comparisons always evaluate to false.
-    # This is needed because the boost headers throw this warning.
-    add_compile_options(-Wno-error=tautological-overlap-compare)
-  elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    add_compile_options(-Wno-error=unused-variable)
-    add_compile_options(-Wno-error=unused-but-set-variable)
+  check_c_compiler_flag(-Wno-error=unused-variable can_use_wunused_variable_c)
+  check_cxx_compiler_flag(-Wno-error=unused-variable can_use_wunused_variable_cxx)
+  if (can_use_wunused_variable_c)
+    add_compile_options($<$<COMPILE_LANGUAGE:C>:-Wno-error=unused-variable>)
+  endif()
+  if (can_use_wunused_variable_cxx)
+    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-Wno-error=unused-variable>)
+  endif()
+  check_c_compiler_flag(-Wno-error=unused-but-set-variable can_use_wunused_but_set_variable_c)
+  check_cxx_compiler_flag(-Wno-error=unused-but-set-variable can_use_wunused_but_set_variable_cxx)
+  if (can_use_wunused_but_set_variable_c)
+    add_compile_options($<$<COMPILE_LANGUAGE:C>:-Wno-error=unused-but-set-variable>)
+  endif()
+  if (can_use_wunused_but_set_variable_cxx)
+    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-Wno-error=unused-but-set-variable>)
+  endif()
+  # Do not error on definition of implicit copy constructor for classes with a
+  # user-declared copy assignment operator.
+  # This is needed because the boost headers throw this warning.
+  check_cxx_compiler_flag(-Wno-error=deprecated-copy can_use_wdeprecated_copy_cxx)
+  if (can_use_wdeprecated_copy_cxx)
+    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-Wno-error=deprecated-copy>)
+  endif()
+  # Do not error when overlapping comparisons always evaluate to false.
+  # This is needed because the boost headers throw this warning.
+  check_c_compiler_flag(-Wno-error=tautological-overlap-compare can_use_wtautological_overlap_compare_c)
+  check_cxx_compiler_flag(-Wno-error=tautological-overlap-compare can_use_wtautological_overlap_compare_cxx)
+  if (can_use_wtautological_overlap_compare_c)
+    add_compile_options($<$<COMPILE_LANGUAGE:C>:-Wno-error=tautological-overlap-compare>)
+  endif()
+  if (can_use_wtautological_overlap_compare_cxx)
+    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-Wno-error=tautological-overlap-compare>)
   endif()
 endif()
 
