@@ -92,6 +92,10 @@ endif()
 
 add_compile_options(-Wall -Wextra)
 
+check_cxx_compiler_flag(-Wno-write-strings can_use_wwrite_strings_cxx)
+if (can_use_wwrite_strings_cxx)
+  add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-Wno-write-strings>)
+endif()
 check_c_compiler_flag(-Wno-unused-function can_use_wunused_function_c)
 check_cxx_compiler_flag(-Wno-unused-function can_use_wunused_function_cxx)
 if (can_use_wunused_function_c)
@@ -357,7 +361,6 @@ target_include_directories(
   PRIVATE
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   )
-target_compile_options(irods_filesystem_path PRIVATE -Wno-write-strings)
 target_compile_definitions(irods_filesystem_path PRIVATE ${IRODS_COMPILE_DEFINITIONS})
 set_target_properties(irods_filesystem_path PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE TRUE)
 set_target_properties(irods_filesystem_path PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
@@ -392,7 +395,6 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
-target_compile_options(irods_filesystem_client PRIVATE -Wno-write-strings)
 target_compile_definitions(irods_filesystem_client PRIVATE ${IRODS_COMPILE_DEFINITIONS})
 set_target_properties(irods_filesystem_client PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE TRUE)
 set_target_properties(irods_filesystem_client PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
@@ -428,7 +430,6 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
-target_compile_options(irods_filesystem_server PRIVATE -Wno-write-strings)
 target_compile_definitions(irods_filesystem_server PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API IRODS_TRANSPORT_ENABLE_SERVER_SIDE_API)
 set_target_properties(irods_filesystem_server PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE TRUE)
 set_target_properties(irods_filesystem_server PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
@@ -454,7 +455,6 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
-target_compile_options(irods_user_administration_client PRIVATE -Wno-write-strings)
 target_compile_definitions(irods_user_administration_client PRIVATE ${IRODS_COMPILE_DEFINITIONS})
 set_target_properties(irods_user_administration_client PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE TRUE)
 set_target_properties(irods_user_administration_client PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
@@ -483,7 +483,6 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
-target_compile_options(irods_user_administration_server PRIVATE -Wno-write-strings)
 target_compile_definitions(irods_user_administration_server PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_USER_ADMINISTRATION_ENABLE_SERVER_SIDE_API)
 set_target_properties(irods_user_administration_server PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE TRUE)
 set_target_properties(irods_user_administration_server PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
@@ -509,7 +508,6 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
-target_compile_options(irods_resource_administration_client PRIVATE -Wno-write-strings)
 target_compile_definitions(irods_resource_administration_client PRIVATE ${IRODS_COMPILE_DEFINITIONS})
 set_target_properties(irods_resource_administration_client PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE TRUE)
 set_target_properties(irods_resource_administration_client PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
@@ -537,7 +535,6 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
-target_compile_options(irods_resource_administration_server PRIVATE -Wno-write-strings)
 target_compile_definitions(irods_resource_administration_server PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_RESOURCE_ADMINISTRATION_ENABLE_SERVER_SIDE_API)
 set_target_properties(irods_resource_administration_server PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE TRUE)
 set_target_properties(irods_resource_administration_server PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
@@ -759,7 +756,6 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
-target_compile_options(irods_client_api_functions PRIVATE -Wno-write-strings)
 target_compile_definitions(irods_client_api_functions PRIVATE ${IRODS_COMPILE_DEFINITIONS})
 set_target_properties(irods_client_api_functions PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE TRUE)
 set_target_properties(irods_client_api_functions PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
@@ -803,7 +799,6 @@ target_include_directories(
   )
 set_property(TARGET irods_client PROPERTY VERSION ${IRODS_VERSION})
 set_property(TARGET irods_client PROPERTY SOVERSION ${IRODS_VERSION})
-target_compile_options(irods_client PRIVATE -Wno-write-strings)
 target_compile_definitions(irods_client PRIVATE ${IRODS_COMPILE_DEFINITIONS})
 
 set(
@@ -1089,7 +1084,6 @@ target_include_directories(
 set_property(TARGET irods_server PROPERTY VERSION ${IRODS_VERSION})
 set_property(TARGET irods_server PROPERTY SOVERSION ${IRODS_VERSION})
 target_compile_definitions(irods_server PRIVATE ENABLE_RE RODS_CLERVER IRODS_ENABLE_SYSLOG ${IRODS_COMPILE_DEFINITIONS})
-target_compile_options(irods_server PRIVATE -Wno-write-strings)
 
 
 set(
@@ -1197,7 +1191,6 @@ target_include_directories(
 set_property(TARGET irods_common PROPERTY VERSION ${IRODS_VERSION})
 set_property(TARGET irods_common PROPERTY SOVERSION ${IRODS_VERSION})
 target_compile_definitions(irods_common PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_ENABLE_SYSLOG)
-target_compile_options(irods_common PRIVATE -Wno-write-strings)
 
 add_library(
   irods_plugin_dependencies_functions
@@ -1240,7 +1233,6 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
-target_compile_options(irods_plugin_dependencies_functions PRIVATE -Wno-write-strings)
 target_compile_definitions(irods_plugin_dependencies_functions PRIVATE ${IRODS_COMPILE_DEFINITIONS})
 set_target_properties(irods_plugin_dependencies_functions PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE TRUE)
 set_target_properties(irods_plugin_dependencies_functions PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
@@ -1269,7 +1261,6 @@ target_include_directories(
 set_property(TARGET irods_plugin_dependencies PROPERTY VERSION ${IRODS_VERSION})
 set_property(TARGET irods_plugin_dependencies PROPERTY SOVERSION ${IRODS_VERSION})
 target_compile_definitions(irods_plugin_dependencies PRIVATE ${IRODS_COMPILE_DEFINITIONS})
-target_compile_options(irods_plugin_dependencies PRIVATE -Wno-write-strings)
 
 set(
   IRODS_LIB_CORE_SOURCES
@@ -1402,7 +1393,6 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
 target_compile_definitions(RodsAPIs PRIVATE ${IRODS_COMPILE_DEFINITIONS})
-target_compile_options(RodsAPIs PRIVATE -Wno-write-strings)
 
 set(
   IRODS_MAIN_EXECUTABLE_IRODSSERVER_SOURCES
@@ -1461,7 +1451,6 @@ foreach(EXECUTABLE ${IRODS_MAIN_EXECUTABLES})
     ${IRODS_COMPILE_DEFINITIONS}
     IRODS_ENABLE_SYSLOG
     )
-  target_compile_options(${EXECUTABLE} PRIVATE -Wno-write-strings)
 endforeach()
 
 add_executable(
@@ -1492,7 +1481,6 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_NANODBC}/include
   )
 target_compile_definitions(irodsReServer PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_ENABLE_SYSLOG)
-target_compile_options(irodsReServer PRIVATE -Wno-write-strings)
 
 add_executable(
   irods_api_test_harness
@@ -1520,7 +1508,6 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
 target_compile_definitions(irods_api_test_harness PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_ENABLE_SYSLOG)
-target_compile_options(irods_api_test_harness PRIVATE -Wno-write-strings)
 
 add_executable(
   irods_configuration_test_harness
@@ -1548,7 +1535,6 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
 target_compile_definitions(irods_configuration_test_harness PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_ENABLE_SYSLOG)
-target_compile_options(irods_configuration_test_harness PRIVATE -Wno-write-strings)
 
 add_executable(
   irodsPamAuthCheck
@@ -1577,7 +1563,6 @@ target_link_libraries(
   ${IRODS_EXTERNALS_FULLPATH_ZMQ}/lib/libzmq.so
   )
 target_compile_definitions(genOSAuth PRIVATE ${IRODS_COMPILE_DEFINITIONS})
-target_compile_options(genOSAuth PRIVATE -Wno-write-strings)
 
 add_subdirectory(plugins/api)
 add_subdirectory(plugins/auth)
