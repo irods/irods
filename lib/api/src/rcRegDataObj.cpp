@@ -1,6 +1,6 @@
-#include "regDataObj.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/regDataObj.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcRegDataObj( rcComm_t *conn, dataObjInfo_t *dataObjInfo, dataObjInfo_t **outDataObjInfo )

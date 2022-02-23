@@ -1,6 +1,6 @@
-#include "subStructFileLseek.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/subStructFileLseek.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcSubStructFileLseek( rcComm_t *conn, subStructFileLseekInp_t *subStructFileLseekInp, fileLseekOut_t **subStructFileLseekOut )

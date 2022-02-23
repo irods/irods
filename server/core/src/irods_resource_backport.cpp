@@ -1,9 +1,9 @@
 // =-=-=-=-=-=-=-
-#include "rcMisc.h"
-#include "irods_resource_backport.hpp"
-#include "irods_string_tokenize.hpp"
-#include "irods_hierarchy_parser.hpp"
-#include "irods_stacktrace.hpp"
+#include "irods/rcMisc.h"
+#include "irods/irods_resource_backport.hpp"
+#include "irods/irods_string_tokenize.hpp"
+#include "irods/irods_hierarchy_parser.hpp"
+#include "irods/irods_stacktrace.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 

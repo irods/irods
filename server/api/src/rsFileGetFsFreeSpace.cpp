@@ -3,15 +3,15 @@
 /* This is script-generated code (for the most part).  */
 /* See fileGetFsFreeSpace.h for a description of this API call.*/
 
-#include "fileGetFsFreeSpace.h"
-#include "miscServerFunct.hpp"
-#include "rsFileGetFsFreeSpace.hpp"
+#include "irods/fileGetFsFreeSpace.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/rsFileGetFsFreeSpace.hpp"
 
 // =-=-=-=-=-=-=-
-#include "irods_log.hpp"
-#include "irods_file_object.hpp"
-#include "irods_stacktrace.hpp"
-#include "irods_resource_backport.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/irods_file_object.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/irods_resource_backport.hpp"
 
 int
 rsFileGetFsFreeSpace( rsComm_t *rsComm,

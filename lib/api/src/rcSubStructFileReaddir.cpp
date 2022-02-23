@@ -1,6 +1,6 @@
-#include "subStructFileReaddir.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/subStructFileReaddir.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcSubStructFileReaddir( rcComm_t *conn, subStructFileFdOprInp_t *subStructFileReaddirInp, rodsDirent_t **rodsDirent )

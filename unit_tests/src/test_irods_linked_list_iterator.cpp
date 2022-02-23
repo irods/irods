@@ -1,8 +1,8 @@
 #include <catch2/catch.hpp>
 
-#include "irods_linked_list_iterator.hpp"
-#include "objInfo.h"
-#include "dataObjOpr.hpp"
+#include "irods/irods_linked_list_iterator.hpp"
+#include "irods/objInfo.h"
+#include "irods/dataObjOpr.hpp"
 
 #include <memory>
 #include <iterator>

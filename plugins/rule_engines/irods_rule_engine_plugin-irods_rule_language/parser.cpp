@@ -8,7 +8,7 @@
 #include "functions.hpp"
 #include "configuration.hpp"
 #include "filesystem.hpp"
-#include "rcMisc.h"
+#include "irods/rcMisc.h"
 
 Op new_ops[num_ops] = {
     {"-", 1, 10},

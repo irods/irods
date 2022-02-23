@@ -1,6 +1,6 @@
-#include "rodsClient.h"
+#include "irods/rodsClient.h"
 
-#include "irods_client_api_table.hpp"
+#include "irods/irods_client_api_table.hpp"
 
 void init_client_api_table(void)
 {

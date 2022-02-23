@@ -1,13 +1,13 @@
-#include "sockComm.h"
+#include "irods/sockComm.h"
 
-#include "rcMisc.h"
-#include "rcGlobalExtern.h"
-#include "miscServerFunct.hpp"
-#include "getHostForPut.h"
-#include "getHostForGet.h"
-#include "QUANTAnet_rbudpBase_c.h"
-#include "rcConnect.h"
-#include "rodsConnect.h"
+#include "irods/rcMisc.h"
+#include "irods/rcGlobalExtern.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/getHostForPut.h"
+#include "irods/getHostForGet.h"
+#include "irods/QUANTAnet_rbudpBase_c.h"
+#include "irods/rcConnect.h"
+#include "irods/rodsConnect.h"
 
 #ifdef windows_platform
     #include "irodsntutil.hpp"
@@ -24,18 +24,18 @@
     jmp_buf Jcenv;
 #endif  /* _WIN32 */
 
-#include "irods_stacktrace.hpp"
-#include "irods_client_server_negotiation.hpp"
-#include "irods_network_plugin.hpp"
-#include "irods_network_manager.hpp"
-#include "irods_network_factory.hpp"
-#include "irods_network_constants.hpp"
-#include "irods_environment_properties.hpp"
-#include "irods_server_properties.hpp"
-#include "sockCommNetworkInterface.hpp"
-#include "irods_random.hpp"
-#include "hostname_cache.hpp"
-#include "irods_configuration_keywords.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/irods_client_server_negotiation.hpp"
+#include "irods/irods_network_plugin.hpp"
+#include "irods/irods_network_manager.hpp"
+#include "irods/irods_network_factory.hpp"
+#include "irods/irods_network_constants.hpp"
+#include "irods/irods_environment_properties.hpp"
+#include "irods/irods_server_properties.hpp"
+#include "irods/sockCommNetworkInterface.hpp"
+#include "irods/irods_random.hpp"
+#include "irods/hostname_cache.hpp"
+#include "irods/irods_configuration_keywords.hpp"
 
 #include <nlohmann/json.hpp>
 

@@ -1,6 +1,6 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
-#include "region.h"
+#include "irods/region.h"
 #include <cstdlib>
 #include <string.h>
 #ifdef REGION_MALLOC

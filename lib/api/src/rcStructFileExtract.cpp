@@ -1,6 +1,6 @@
-#include "structFileExtract.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/structFileExtract.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcStructFileExtract( rcComm_t *conn, structFileOprInp_t *structFileOprInp )

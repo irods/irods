@@ -1,4 +1,4 @@
-#include "irods_configuration_keywords.hpp"
+#include "irods/irods_configuration_keywords.hpp"
 
 namespace irods
 {

@@ -1,6 +1,6 @@
-#include "objStat.h"
-#include "apiNumber.h"
-#include "procApiRequest.h"
+#include "irods/objStat.h"
+#include "irods/apiNumber.h"
+#include "irods/procApiRequest.h"
 
 #include <cstring>
 

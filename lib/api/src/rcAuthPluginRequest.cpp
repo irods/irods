@@ -1,7 +1,7 @@
 // =-=-=-=-=-=-=-
-#include "authPluginRequest.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/authPluginRequest.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 int rcAuthPluginRequest(
     rcComm_t*             _comm,

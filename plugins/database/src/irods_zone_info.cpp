@@ -1,9 +1,9 @@
 #include "irods_zone_info.hpp"
 
-#include "rodsLog.h"
-#include "icatHighLevelRoutines.hpp"
+#include "irods/rodsLog.h"
+#include "irods/icatHighLevelRoutines.hpp"
 #include "mid_level.hpp"
-#include "rodsDef.h"
+#include "irods/rodsDef.h"
 
 namespace irods {
 

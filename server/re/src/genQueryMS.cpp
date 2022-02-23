@@ -1,9 +1,9 @@
 /// \file
 
-#include "genQuery.h"
-#include "rsGenQuery.hpp"
-#include "rcMisc.h"
-#include "irods_re_structs.hpp"
+#include "irods/genQuery.h"
+#include "irods/rsGenQuery.hpp"
+#include "irods/rcMisc.h"
+#include "irods/irods_re_structs.hpp"
 
 #include <unistd.h>
 #include <sys/types.h>

@@ -1,6 +1,6 @@
-#include "rodsDef.h"
-#include "rodsError.h"
-#include "rodsErrorTable.h"
+#include "irods/rodsDef.h"
+#include "irods/rodsError.h"
+#include "irods/rodsErrorTable.h"
 
 struct ErrorStack;
 

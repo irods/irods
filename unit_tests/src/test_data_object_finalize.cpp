@@ -1,19 +1,19 @@
 #include <catch2/catch.hpp>
 
 #include "irods_error_enum_matcher.hpp"
-#include "rodsClient.h"
+#include "irods/rodsClient.h"
 
-#include "client_connection.hpp"
-#include "data_object_finalize.h"
-#include "data_object_proxy.hpp"
-#include "dataObjRepl.h"
-#include "dstream.hpp"
-#include "filesystem.hpp"
-#include "irods_at_scope_exit.hpp"
-#include "replica.hpp"
-#include "replica_proxy.hpp"
-#include "resource_administration.hpp"
-#include "transport/default_transport.hpp"
+#include "irods/client_connection.hpp"
+#include "irods/data_object_finalize.h"
+#include "irods/data_object_proxy.hpp"
+#include "irods/dataObjRepl.h"
+#include "irods/dstream.hpp"
+#include "irods/filesystem.hpp"
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/replica.hpp"
+#include "irods/replica_proxy.hpp"
+#include "irods/resource_administration.hpp"
+#include "irods/transport/default_transport.hpp"
 #include "unit_test_utils.hpp"
 
 #include <nlohmann/json.hpp>

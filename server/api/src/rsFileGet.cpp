@@ -3,14 +3,14 @@
 /* This is script-generated code (for the most part).  */
 /* See fileGet.h for a description of this API call.*/
 
-#include "fileGet.h"
-#include "miscServerFunct.hpp"
-#include "rsFileGet.hpp"
-#include "rsFileOpen.hpp"
+#include "irods/fileGet.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/rsFileGet.hpp"
+#include "irods/rsFileOpen.hpp"
 
-#include "irods_log.hpp"
-#include "irods_file_object.hpp"
-#include "irods_resource_backport.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/irods_file_object.hpp"
+#include "irods/irods_resource_backport.hpp"
 
 
 /* rsFileGet - Get the content of a small file into a single buffer

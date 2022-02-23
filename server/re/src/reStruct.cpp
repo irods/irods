@@ -1,8 +1,8 @@
-#include "irods_re_structs.hpp"
-#include "rcMisc.h"
-#include "objMetaOpr.hpp"
-#include "resource.hpp"
-#include "irods_resource_backport.hpp"
+#include "irods/irods_re_structs.hpp"
+#include "irods/rcMisc.h"
+#include "irods/objMetaOpr.hpp"
+#include "irods/resource.hpp"
+#include "irods/irods_resource_backport.hpp"
 
 void *mallocAndZero( int s ) {
     void *t;

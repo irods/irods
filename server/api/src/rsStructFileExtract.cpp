@@ -1,21 +1,21 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
-#include "structFileExtract.h"
-#include "miscServerFunct.hpp"
-#include "syncMountedColl.h"
-#include "rsStructFileExtract.hpp"
+#include "irods/structFileExtract.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/syncMountedColl.h"
+#include "irods/rsStructFileExtract.hpp"
 
-#include "dataObjOpr.hpp"
-#include "rsGlobalExtern.hpp"
-#include "objMetaOpr.hpp"
-#include "resource.hpp"
-#include "physPath.hpp"
+#include "irods/dataObjOpr.hpp"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/objMetaOpr.hpp"
+#include "irods/resource.hpp"
+#include "irods/physPath.hpp"
 
 // =-=-=-=-=-=-=-
-#include "irods_structured_object.hpp"
-#include "irods_resource_backport.hpp"
-#include "irods_resource_redirect.hpp"
-#include "irods_stacktrace.hpp"
+#include "irods/irods_structured_object.hpp"
+#include "irods/irods_resource_backport.hpp"
+#include "irods/irods_resource_redirect.hpp"
+#include "irods/irods_stacktrace.hpp"
 
 #include <cstring>
 

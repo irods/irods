@@ -5,19 +5,19 @@
  */
 
 /* script generated code */
-#include "fileStageToCache.h"
-#include "fileOpr.hpp"
-#include "miscServerFunct.hpp"
-#include "dataObjOpr.hpp"
-#include "physPath.hpp"
-#include "rsFileStageToCache.hpp"
+#include "irods/fileStageToCache.h"
+#include "irods/fileOpr.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/dataObjOpr.hpp"
+#include "irods/physPath.hpp"
+#include "irods/rsFileStageToCache.hpp"
 
 // =-=-=-=-=-=-=-
-#include "irods_log.hpp"
-#include "irods_file_object.hpp"
-#include "irods_collection_object.hpp"
-#include "irods_stacktrace.hpp"
-#include "irods_resource_backport.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/irods_file_object.hpp"
+#include "irods/irods_collection_object.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/irods_resource_backport.hpp"
 
 int
 rsFileStageToCache( rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheInp ) {

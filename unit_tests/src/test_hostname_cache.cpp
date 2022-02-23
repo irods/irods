@@ -1,7 +1,7 @@
 #include <catch2/catch.hpp>
 
-#include "hostname_cache.hpp"
-#include "irods_at_scope_exit.hpp"
+#include "irods/hostname_cache.hpp"
+#include "irods/irods_at_scope_exit.hpp"
 
 #include <string_view>
 #include <chrono>

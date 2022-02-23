@@ -1,6 +1,6 @@
-#include "getRescQuota.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/getRescQuota.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcGetRescQuota( rcComm_t *conn, getRescQuotaInp_t *getRescQuotaInp, rescQuota_t **rescQuota )

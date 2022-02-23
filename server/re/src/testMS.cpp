@@ -1,4 +1,4 @@
-#include "icatHighLevelRoutines.hpp"
+#include "irods/icatHighLevelRoutines.hpp"
 
 int
 print_hello( ruleExecInfo_t *rei ) {

@@ -30,10 +30,10 @@
 
 #include "low_level_odbc.hpp"
 
-#include "irods_log.hpp"
-#include "irods_error.hpp"
-#include "irods_stacktrace.hpp"
-#include "irods_server_properties.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/irods_error.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/irods_server_properties.hpp"
 
 #include <cctype>
 #include <string>

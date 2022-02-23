@@ -1,6 +1,6 @@
-#include "fileWrite.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/fileWrite.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcFileWrite( rcComm_t *conn, fileWriteInp_t *fileWriteInp, bytesBuf_t *fileWriteInpBBuf )

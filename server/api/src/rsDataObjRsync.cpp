@@ -1,16 +1,16 @@
-#include "dataObjChksum.h"
-#include "dataObjRsync.h"
-#include "objMetaOpr.hpp"
-#include "specColl.hpp"
-#include "dataObjOpr.hpp"
-#include "rsApiHandler.hpp"
-#include "modDataObjMeta.h"
-#include "getRemoteZoneResc.h"
-#include "rsDataObjRsync.hpp"
-#include "rsDataObjChksum.hpp"
-#include "rsDataObjCopy.hpp"
+#include "irods/dataObjChksum.h"
+#include "irods/dataObjRsync.h"
+#include "irods/objMetaOpr.hpp"
+#include "irods/specColl.hpp"
+#include "irods/dataObjOpr.hpp"
+#include "irods/rsApiHandler.hpp"
+#include "irods/modDataObjMeta.h"
+#include "irods/getRemoteZoneResc.h"
+#include "irods/rsDataObjRsync.hpp"
+#include "irods/rsDataObjChksum.hpp"
+#include "irods/rsDataObjCopy.hpp"
 
-#include "irods_resource_redirect.hpp"
+#include "irods/irods_resource_redirect.hpp"
 
 int
 rsDataObjRsync( rsComm_t *rsComm, dataObjInp_t *dataObjInp,

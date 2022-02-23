@@ -9,9 +9,9 @@
 #ifndef RE_NETCDF_HPP
 #define RE_NETCDF_HPP
 
-#include "apiHeaderAll.h"
+#include "irods/apiHeaderAll.h"
 #include "reGlobalsExtern.hpp"
-#include "rsGlobalExtern.hpp"
+#include "irods/rsGlobalExtern.hpp"
 
 int
 msiNcOpen( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam,

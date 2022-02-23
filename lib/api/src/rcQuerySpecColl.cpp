@@ -1,6 +1,6 @@
-#include "querySpecColl.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/querySpecColl.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcQuerySpecColl( rcComm_t *conn, dataObjInp_t *querySpecCollInp, genQueryOut_t **genQueryOut )

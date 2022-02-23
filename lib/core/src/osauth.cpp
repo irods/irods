@@ -14,7 +14,7 @@
 #include <vector>
 #include <openssl/md5.h>
 #include <boost/filesystem.hpp>
-#include "irods_default_paths.hpp"
+#include "irods/irods_default_paths.hpp"
 #ifndef windows_platform
 #include <unistd.h>
 #include <sys/types.h>
@@ -23,10 +23,10 @@
 #include <spawn.h>
 #endif
 
-#include "rods.h"
-#include "osauth.h"
-#include "rcGlobalExtern.h"
-#include "authenticate.h"
+#include "irods/rods.h"
+#include "irods/osauth.h"
+#include "irods/rcGlobalExtern.h"
+#include "irods/authenticate.h"
 
 extern char **environ;
 

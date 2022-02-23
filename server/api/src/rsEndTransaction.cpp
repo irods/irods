@@ -3,11 +3,11 @@
 /* This is script-generated code (for the most part).  */
 /* See endTransaction.h for a description of this API call.*/
 
-#include "endTransaction.h"
-#include "icatHighLevelRoutines.hpp"
-#include "miscServerFunct.hpp"
-#include "irods_configuration_keywords.hpp"
-#include "rsEndTransaction.hpp"
+#include "irods/endTransaction.h"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/irods_configuration_keywords.hpp"
+#include "irods/rsEndTransaction.hpp"
 
 int
 rsEndTransaction( rsComm_t *rsComm, endTransactionInp_t *endTransactionInp ) {

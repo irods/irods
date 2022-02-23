@@ -1,17 +1,17 @@
-#include "authentication_plugin_framework.hpp"
+#include "irods/authentication_plugin_framework.hpp"
 
-#include "apiHandler.hpp"
-#include "api_plugin_number.h"
-#include "irods_logger.hpp"
-#include "rodsPackInstruct.h"
+#include "irods/apiHandler.hpp"
+#include "irods/plugins/api/api_plugin_number.h"
+#include "irods/irods_logger.hpp"
+#include "irods/rodsPackInstruct.h"
 
 #include <nlohmann/json.hpp>
 
 #ifdef RODS_SERVER
 
-#include "client_api_whitelist.hpp"
-#include "json_serialization.hpp"
-#include "server_utilities.hpp"
+#include "irods/client_api_whitelist.hpp"
+#include "irods/json_serialization.hpp"
+#include "irods/server_utilities.hpp"
 
 namespace
 {

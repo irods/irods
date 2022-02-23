@@ -1,13 +1,13 @@
 // =-=-=-=-=-=-=-
-#include "irods_osauth_auth_object.hpp"
-#include "irods_auth_manager.hpp"
-#include "irods_auth_plugin.hpp"
+#include "irods/irods_osauth_auth_object.hpp"
+#include "irods/irods_auth_manager.hpp"
+#include "irods/irods_auth_plugin.hpp"
 
 extern int ProcessType;
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rcMisc.h"
+#include "irods/rcMisc.h"
 
 namespace irods {
 

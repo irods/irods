@@ -3,15 +3,15 @@
 /* This is script-generated code (for the most part).  */
 /* See fileClose.h for a description of this API call.*/
 
-#include "fileClose.h"
-#include "miscServerFunct.hpp"
-#include "rsGlobalExtern.hpp"
-#include "rsFileClose.hpp"
+#include "irods/fileClose.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/rsFileClose.hpp"
 
 // =-=-=-=-=-=-=-
-#include "irods_log.hpp"
-#include "irods_file_object.hpp"
-#include "irods_stacktrace.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/irods_file_object.hpp"
+#include "irods/irods_stacktrace.hpp"
 
 
 int

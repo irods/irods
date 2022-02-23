@@ -1,5 +1,5 @@
-#include "irods_pack_table.hpp"
-#include "apiPackTable.h"
+#include "irods/irods_pack_table.hpp"
+#include "irods/apiPackTable.h"
 
 namespace irods {
     pack_entry_table::pack_entry_table(

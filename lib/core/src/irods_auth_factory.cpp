@@ -1,12 +1,12 @@
 // =-=-=-=-=-=-=-
-#include "irods_auth_factory.hpp"
-#include "irods_native_auth_object.hpp"
-#include "irods_pam_auth_object.hpp"
-#include "irods_osauth_auth_object.hpp"
-#include "irods_gsi_object.hpp"
-#include "irods_krb_object.hpp"
-#include "irods_generic_auth_object.hpp"
-#include "rodsErrorTable.h"
+#include "irods/irods_auth_factory.hpp"
+#include "irods/irods_native_auth_object.hpp"
+#include "irods/irods_pam_auth_object.hpp"
+#include "irods/irods_osauth_auth_object.hpp"
+#include "irods/irods_gsi_object.hpp"
+#include "irods/irods_krb_object.hpp"
+#include "irods/irods_generic_auth_object.hpp"
+#include "irods/rodsErrorTable.h"
 #include <boost/algorithm/string.hpp>
 
 namespace irods {

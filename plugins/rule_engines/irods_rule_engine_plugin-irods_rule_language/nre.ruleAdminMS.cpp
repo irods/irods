@@ -8,13 +8,13 @@
 
 //#include "reFuncDefs.hpp"
 //#include "reGlobalsExtern.hpp"
-//#include "rsGlobalExtern.hpp"
-#include "dataObjCreate.h"
-#include "objMetaOpr.hpp"
-#include "regDataObj.h"
-#include "miscServerFunct.hpp"
+//#include "irods/rsGlobalExtern.hpp"
+#include "irods/dataObjCreate.h"
+#include "irods/objMetaOpr.hpp"
+#include "irods/regDataObj.h"
+#include "irods/miscServerFunct.hpp"
 
-#include "irods_re_structs.hpp"
+#include "irods/irods_re_structs.hpp"
 
 
 /**

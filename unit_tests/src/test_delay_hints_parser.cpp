@@ -1,6 +1,6 @@
 #include <catch2/catch.hpp>
 
-#include "rcMisc.h"
+#include "irods/rcMisc.h"
 
 #include "fmt/format.h"
 #include "fmt/chrono.h"

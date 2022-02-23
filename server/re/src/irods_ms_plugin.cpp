@@ -1,8 +1,8 @@
 // =-=-=-=-=-=-=-
 // My Includes
-#include "irods_ms_plugin.hpp"
-#include "irods_load_plugin.hpp"
-#include "irods_log.hpp"
+#include "irods/irods_ms_plugin.hpp"
+#include "irods/irods_load_plugin.hpp"
+#include "irods/irods_log.hpp"
 
 // =-=-=-=-=-=-=-
 // STL Includes

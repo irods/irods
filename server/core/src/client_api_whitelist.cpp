@@ -1,10 +1,10 @@
-#include "client_api_whitelist.hpp"
+#include "irods/client_api_whitelist.hpp"
 
-#include "apiNumber.h"
-#include "rodsErrorTable.h"
-#include "irods_server_properties.hpp"
-#include "irods_rs_comm_query.hpp"
-#include "irods_logger.hpp"
+#include "irods/apiNumber.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/irods_server_properties.hpp"
+#include "irods/irods_rs_comm_query.hpp"
+#include "irods/irods_logger.hpp"
 
 #include <exception>
 

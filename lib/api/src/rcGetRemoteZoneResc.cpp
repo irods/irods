@@ -1,6 +1,6 @@
-#include "getRemoteZoneResc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/getRemoteZoneResc.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcGetRemoteZoneResc( rcComm_t *conn, dataObjInp_t *dataObjInp, rodsHostAddr_t **rescAddr )

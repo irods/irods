@@ -1,11 +1,11 @@
 #ifndef _IRODS_REPL_TYPES_HPP_
 #define _IRODS_REPL_TYPES_HPP_
 
-#include "irods_resource_constants.hpp"
+#include "irods/irods_resource_constants.hpp"
 #include "irods_object_oper.hpp"
-#include "irods_hierarchy_parser.hpp"
-#include "irods_plugin_context.hpp"
-#include "irods_resource_redirect.hpp"
+#include "irods/irods_hierarchy_parser.hpp"
+#include "irods/irods_plugin_context.hpp"
+#include "irods/irods_resource_redirect.hpp"
 
 #include <vector>
 #include <list>

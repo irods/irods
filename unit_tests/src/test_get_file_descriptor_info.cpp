@@ -1,12 +1,12 @@
 #include <catch2/catch.hpp>
 
-#include "rodsClient.h"
-#include "connection_pool.hpp"
-#include "dstream.hpp"
-#include "transport/default_transport.hpp"
-#include "filesystem.hpp"
-#include "get_file_descriptor_info.h"
-#include "irods_at_scope_exit.hpp"
+#include "irods/rodsClient.h"
+#include "irods/connection_pool.hpp"
+#include "irods/dstream.hpp"
+#include "irods/transport/default_transport.hpp"
+#include "irods/filesystem.hpp"
+#include "irods/get_file_descriptor_info.h"
+#include "irods/irods_at_scope_exit.hpp"
 
 #include <nlohmann/json.hpp>
 

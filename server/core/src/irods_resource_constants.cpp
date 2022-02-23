@@ -1,4 +1,4 @@
-#include "irods_resource_constants.hpp"
+#include "irods/irods_resource_constants.hpp"
 
 namespace irods
 {

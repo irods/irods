@@ -5,15 +5,15 @@
  */
 
 /* script generated code */
-#include "fileRead.h"
-#include "miscServerFunct.hpp"
-#include "rsGlobalExtern.hpp"
-#include "rsFileRead.hpp"
+#include "irods/fileRead.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/rsFileRead.hpp"
 
 // =-=-=-=-=-=-=-
-#include "irods_log.hpp"
-#include "irods_file_object.hpp"
-#include "irods_stacktrace.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/irods_file_object.hpp"
+#include "irods/irods_stacktrace.hpp"
 
 int
 rsFileRead( rsComm_t *rsComm, fileReadInp_t *fileReadInp,

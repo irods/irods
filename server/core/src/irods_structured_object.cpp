@@ -1,7 +1,7 @@
 // =-=-=-=-=-=-=-
-#include "irods_structured_object.hpp"
-#include "irods_resource_manager.hpp"
-#include "irods_stacktrace.hpp"
+#include "irods/irods_structured_object.hpp"
+#include "irods/irods_resource_manager.hpp"
+#include "irods/irods_stacktrace.hpp"
 
 extern irods::resource_manager resc_mgr;
 

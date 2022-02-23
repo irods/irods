@@ -3,25 +3,25 @@
 /* This is script-generated code (for the most part).  */
 /* See l3FilePutSingleBuf.h for a description of this API call.*/
 
-#include "dataObjOpen.h"
-#include "dataObjPut.h"
-#include "dataPut.h"
-#include "filePut.h"
-#include "getRemoteZoneResc.h"
-#include "l3FilePutSingleBuf.h"
-#include "objMetaOpr.hpp"
-#include "physPath.hpp"
-#include "rodsLog.h"
-#include "specColl.hpp"
-#include "subStructFilePut.h"
-#include "rcGlobalExtern.h"
-#include "rsApiHandler.hpp"
-#include "rsFilePut.hpp"
-#include "rsGlobalExtern.hpp"
-#include "rsL3FilePutSingleBuf.hpp"
-#include "rsSubStructFilePut.hpp"
+#include "irods/dataObjOpen.h"
+#include "irods/dataObjPut.h"
+#include "irods/dataPut.h"
+#include "irods/filePut.h"
+#include "irods/getRemoteZoneResc.h"
+#include "irods/l3FilePutSingleBuf.h"
+#include "irods/objMetaOpr.hpp"
+#include "irods/physPath.hpp"
+#include "irods/rodsLog.h"
+#include "irods/specColl.hpp"
+#include "irods/subStructFilePut.h"
+#include "irods/rcGlobalExtern.h"
+#include "irods/rsApiHandler.hpp"
+#include "irods/rsFilePut.hpp"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/rsL3FilePutSingleBuf.hpp"
+#include "irods/rsSubStructFilePut.hpp"
 
-#include "irods_resource_backport.hpp"
+#include "irods/irods_resource_backport.hpp"
 
 int
 rsL3FilePutSingleBuf( rsComm_t *rsComm, int *l1descInx,

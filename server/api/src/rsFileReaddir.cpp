@@ -3,14 +3,14 @@
 /* This is script-generated code (for the most part).  */
 /* See fileReaddir.h for a description of this API call.*/
 
-#include "fileReaddir.h"
-#include "miscServerFunct.hpp"
-#include "rsGlobalExtern.hpp"
-#include "rsFileReaddir.hpp"
+#include "irods/fileReaddir.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/rsFileReaddir.hpp"
 
 // =-=-=-=-=-=-=-
-#include "irods_log.hpp"
-#include "irods_collection_object.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/irods_collection_object.hpp"
 
 int
 rsFileReaddir( rsComm_t *rsComm, fileReaddirInp_t *fileReaddirInp,

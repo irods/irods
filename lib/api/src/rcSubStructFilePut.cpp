@@ -1,6 +1,6 @@
-#include "subStructFilePut.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/subStructFilePut.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcSubStructFilePut( rcComm_t *conn, subFile_t *subFile, bytesBuf_t *subFilePutOutBBuf )

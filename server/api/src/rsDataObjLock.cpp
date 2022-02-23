@@ -3,19 +3,19 @@
 /* This is script-generated code (for the most part).  */
 /* See dataObjLock.h for a description of this API call.*/
 
-#include "rcMisc.h"
-#include "dataObjLock.h"
-#include "rodsLog.h"
-#include "objMetaOpr.hpp"
-#include "dataObjOpr.hpp"
-#include "physPath.hpp"
-#include "specColl.hpp"
-#include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.h"
-#include "getRemoteZoneResc.h"
-#include "miscServerFunct.hpp"
-#include "irods_configuration_keywords.hpp"
-#include "rsDataObjLock.hpp"
+#include "irods/rcMisc.h"
+#include "irods/dataObjLock.h"
+#include "irods/rodsLog.h"
+#include "irods/objMetaOpr.hpp"
+#include "irods/dataObjOpr.hpp"
+#include "irods/physPath.hpp"
+#include "irods/specColl.hpp"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/rcGlobalExtern.h"
+#include "irods/getRemoteZoneResc.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/irods_configuration_keywords.hpp"
+#include "irods/rsDataObjLock.hpp"
 
 namespace {
 

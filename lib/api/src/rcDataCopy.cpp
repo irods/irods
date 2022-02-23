@@ -1,9 +1,9 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-#include "dataCopy.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/dataCopy.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcDataCopy( rcComm_t *conn, dataCopyInp_t *dataCopyInp )

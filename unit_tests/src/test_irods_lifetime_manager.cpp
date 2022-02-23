@@ -1,8 +1,8 @@
 #include <catch2/catch.hpp>
 
-#include "lifetime_manager.hpp"
-#include "objInfo.h"
-#include "rcMisc.h"
+#include "irods/lifetime_manager.hpp"
+#include "irods/objInfo.h"
+#include "irods/rcMisc.h"
 
 namespace {
     template<typename T>

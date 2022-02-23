@@ -3,14 +3,14 @@
 
 /* See specificQuery.h for a description of this API call.*/
 
-#include "specificQuery.h"
-#include "icatHighLevelRoutines.hpp"
-#include "miscUtil.h"
-#include "rcMisc.h"
-#include "irods_log.hpp"
-#include "miscServerFunct.hpp"
-#include "irods_configuration_keywords.hpp"
-#include "rsSpecificQuery.hpp"
+#include "irods/specificQuery.h"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/miscUtil.h"
+#include "irods/rcMisc.h"
+#include "irods/irods_log.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/irods_configuration_keywords.hpp"
+#include "irods/rsSpecificQuery.hpp"
 
 int
 rsSpecificQuery( rsComm_t *rsComm, specificQueryInp_t *specificQueryInp,

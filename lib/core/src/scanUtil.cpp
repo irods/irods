@@ -1,11 +1,11 @@
-#include "scanUtil.h"
+#include "irods/scanUtil.h"
 
-#include "rodsPath.h"
-#include "rodsErrorTable.h"
-#include "rodsLog.h"
-#include "miscUtil.h"
-#include "rcGlobalExtern.h"
-#include "rcMisc.h"
+#include "irods/rodsPath.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/rodsLog.h"
+#include "irods/miscUtil.h"
+#include "irods/rcGlobalExtern.h"
+#include "irods/rcMisc.h"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>

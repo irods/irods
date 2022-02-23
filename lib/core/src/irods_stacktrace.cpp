@@ -1,4 +1,4 @@
-#include "irods_stacktrace.hpp"
+#include "irods/irods_stacktrace.hpp"
 
 #include <boost/stacktrace.hpp>
 

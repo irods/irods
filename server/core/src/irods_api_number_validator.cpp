@@ -1,8 +1,8 @@
-#include "irods_api_number_validator.hpp"
+#include "irods/irods_api_number_validator.hpp"
 
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "rodsErrorTable.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
+#include "irods/rodsErrorTable.h"
 
 #include <tuple>
 #include <vector>

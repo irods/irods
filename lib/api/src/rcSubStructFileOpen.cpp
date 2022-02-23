@@ -1,6 +1,6 @@
-#include "subStructFileOpen.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/subStructFileOpen.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcSubStructFileOpen( rcComm_t *conn, subFile_t *subFile )

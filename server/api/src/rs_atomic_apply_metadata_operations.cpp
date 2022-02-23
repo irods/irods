@@ -1,9 +1,9 @@
-#include "rs_atomic_apply_metadata_operations.hpp"
+#include "irods/rs_atomic_apply_metadata_operations.hpp"
 
-#include "api_plugin_number.h"
-#include "rodsErrorTable.h"
+#include "irods/plugins/api/api_plugin_number.h"
+#include "irods/rodsErrorTable.h"
 
-#include "irods_server_api_call.hpp"
+#include "irods/irods_server_api_call.hpp"
 
 #include <cstdlib>
 #include <cstring>

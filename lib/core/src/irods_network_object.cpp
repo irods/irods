@@ -1,9 +1,9 @@
 // =-=-=-=-=-=-=-
-#include "irods_network_object.hpp"
-#include "irods_network_manager.hpp"
+#include "irods/irods_network_object.hpp"
+#include "irods/irods_network_manager.hpp"
 
-#include "rodsKeyWdDef.h"
-#include "rcMisc.h"
+#include "irods/rodsKeyWdDef.h"
+#include "irods/rcMisc.h"
 
 namespace irods {
 

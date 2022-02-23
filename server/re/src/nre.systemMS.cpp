@@ -1,21 +1,21 @@
 /// \file
 
-#include "rsRuleExecSubmit.hpp"
-#include "icatHighLevelRoutines.hpp"
-#include "rcMisc.h"
-#include "execMyRule.h"
-#include "region.h"
-#include "irods_plugin_name_generator.hpp"
-#include "irods_load_plugin.hpp"
-#include "sockComm.h"
-#include "rsRuleExecDel.hpp"
-#include "ruleExecDel.h"
-#include "rsExecMyRule.hpp"
+#include "irods/rsRuleExecSubmit.hpp"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/rcMisc.h"
+#include "irods/execMyRule.h"
+#include "irods/region.h"
+#include "irods/irods_plugin_name_generator.hpp"
+#include "irods/irods_load_plugin.hpp"
+#include "irods/sockComm.h"
+#include "irods/rsRuleExecDel.hpp"
+#include "irods/ruleExecDel.h"
+#include "irods/rsExecMyRule.hpp"
 
-#include "irods_server_properties.hpp"
-#include "irods_log.hpp"
-#include "irods_re_structs.hpp"
-#include "irods_ms_plugin.hpp"
+#include "irods/irods_server_properties.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/irods_re_structs.hpp"
+#include "irods/irods_ms_plugin.hpp"
 
 #include <cstring>
 #include <ctime>

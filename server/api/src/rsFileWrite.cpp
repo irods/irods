@@ -5,16 +5,16 @@
  */
 
 /* script generated code */
-#include "fileWrite.h"
-#include "miscServerFunct.hpp"
-#include "rsGlobalExtern.hpp"
-#include "rsFileWrite.hpp"
+#include "irods/fileWrite.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/rsFileWrite.hpp"
 #include <sstream>
 
 // =-=-=-=-=-=-=-
-#include "irods_log.hpp"
-#include "irods_file_object.hpp"
-#include "irods_stacktrace.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/irods_file_object.hpp"
+#include "irods/irods_stacktrace.hpp"
 
 int
 rsFileWrite( rsComm_t *rsComm, const fileWriteInp_t *fileWriteInp,

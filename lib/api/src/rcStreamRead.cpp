@@ -1,6 +1,6 @@
-#include "streamRead.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/streamRead.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcStreamRead( rcComm_t *conn, fileReadInp_t *streamReadInp, bytesBuf_t *streamReadOutBBuf )

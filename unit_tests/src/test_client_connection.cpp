@@ -1,10 +1,10 @@
 #include <catch2/catch.hpp>
 
-#include "client_connection.hpp"
-#include "filesystem.hpp"
-#include "getRodsEnv.h"
-#include "rcConnect.h"
-#include "rodsClient.h"
+#include "irods/client_connection.hpp"
+#include "irods/filesystem.hpp"
+#include "irods/getRodsEnv.h"
+#include "irods/rcConnect.h"
+#include "irods/rodsClient.h"
 
 namespace ix = irods::experimental;
 

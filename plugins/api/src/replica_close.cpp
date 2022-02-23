@@ -1,10 +1,10 @@
-#include "api_plugin_number.h"
-#include "rodsDef.h"
-#include "rcConnect.h"
-#include "rodsPackInstruct.h"
-#include "client_api_whitelist.hpp"
+#include "irods/plugins/api/api_plugin_number.h"
+#include "irods/rodsDef.h"
+#include "irods/rcConnect.h"
+#include "irods/rodsPackInstruct.h"
+#include "irods/client_api_whitelist.hpp"
 
-#include "apiHandler.hpp"
+#include "irods/apiHandler.hpp"
 
 #include <functional>
 
@@ -14,30 +14,30 @@
 // Server-side Implementation
 //
 
-#include "replica_close.h"
+#include "irods/replica_close.h"
 
-#include "objDesc.hpp"
-#include "rsFileClose.hpp"
-#include "rsFileStat.hpp"
-#include "rsModDataObjMeta.hpp"
-#include "finalize_utilities.hpp"
-#include "irods_configuration_keywords.hpp"
-#include "irods_exception.hpp"
-#include "irods_logger.hpp"
-#include "irods_query.hpp"
-#include "irods_re_serialization.hpp"
-#include "irods_resource_backport.hpp"
-#include "irods_server_api_call.hpp"
-#include "json_serialization.hpp"
-#include "replica_access_table.hpp"
+#include "irods/objDesc.hpp"
+#include "irods/rsFileClose.hpp"
+#include "irods/rsFileStat.hpp"
+#include "irods/rsModDataObjMeta.hpp"
+#include "irods/finalize_utilities.hpp"
+#include "irods/irods_configuration_keywords.hpp"
+#include "irods/irods_exception.hpp"
+#include "irods/irods_logger.hpp"
+#include "irods/irods_query.hpp"
+#include "irods/irods_re_serialization.hpp"
+#include "irods/irods_resource_backport.hpp"
+#include "irods/irods_server_api_call.hpp"
+#include "irods/json_serialization.hpp"
+#include "irods/replica_access_table.hpp"
 
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
-#include "filesystem.hpp"
+#include "irods/filesystem.hpp"
 
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
-#include "replica.hpp"
+#include "irods/replica.hpp"
 
-#include "logical_locking.hpp"
+#include "irods/logical_locking.hpp"
 
 #include "fmt/format.h"
 #include <nlohmann/json.hpp>

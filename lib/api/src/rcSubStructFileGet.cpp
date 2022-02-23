@@ -1,6 +1,6 @@
-#include "subStructFileGet.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/subStructFileGet.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcSubStructFileGet( rcComm_t *conn, subFile_t *subFile, bytesBuf_t *subFileGetOutBBuf )

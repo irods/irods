@@ -1,6 +1,6 @@
-#include "filePut.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/filePut.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcFilePut( rcComm_t *conn, fileOpenInp_t *filePutInp, bytesBuf_t *filePutInpBBuf, filePutOut_t** put_out )

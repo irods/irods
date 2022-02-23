@@ -1,15 +1,15 @@
 #include <catch2/catch.hpp>
 
-#include "getRodsEnv.h"
-#include "rodsClient.h"
-#include "rcConnect.h"
-#include "connection_pool.hpp"
-#include "filesystem.hpp"
-#include "metadata.hpp"
+#include "irods/getRodsEnv.h"
+#include "irods/rodsClient.h"
+#include "irods/rcConnect.h"
+#include "irods/connection_pool.hpp"
+#include "irods/filesystem.hpp"
+#include "irods/metadata.hpp"
 
-#include "irods_at_scope_exit.hpp"
-#include "dstream.hpp"
-#include "transport/default_transport.hpp"
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/dstream.hpp"
+#include "irods/transport/default_transport.hpp"
 
 #include <vector>
 #include <string>

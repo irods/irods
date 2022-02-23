@@ -4,8 +4,8 @@
 #include "rules.hpp"
 #include "index.hpp"
 #include "configuration.hpp"
-#include "region.h"
-#include "checksum.h"
+#include "irods/region.h"
+#include "irods/checksum.h"
 
 #include "cache.proto.hpp"
 #include "proto.hpp"

@@ -1,9 +1,9 @@
 /* This is script-generated code.  */
 /* See generalUpdate.h for a description of this API call.*/
 
-#include "generalUpdate.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/generalUpdate.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcGeneralUpdate( rcComm_t *conn, generalUpdateInp_t *generalUpdateInp )

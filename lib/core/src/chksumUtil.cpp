@@ -1,10 +1,10 @@
-#include "rcMisc.h"
-#include "rodsPath.h"
-#include "rodsErrorTable.h"
-#include "miscUtil.h"
-#include "rodsLog.h"
-#include "chksumUtil.h"
-#include "rcGlobalExtern.h"
+#include "irods/rcMisc.h"
+#include "irods/rodsPath.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/miscUtil.h"
+#include "irods/rodsLog.h"
+#include "irods/chksumUtil.h"
+#include "irods/rcGlobalExtern.h"
 
 #include <sys/time.h>
 

@@ -3,15 +3,15 @@
 /* unregDataObj.c
  */
 
-#include "unregDataObj.h"
-#include "icatHighLevelRoutines.hpp"
-#include "fileDriver.hpp"
-#include "miscServerFunct.hpp"
-#include "rsUnregDataObj.hpp"
+#include "irods/unregDataObj.h"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/fileDriver.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/rsUnregDataObj.hpp"
 
-#include "irods_file_object.hpp"
-#include "irods_stacktrace.hpp"
-#include "irods_configuration_keywords.hpp"
+#include "irods/irods_file_object.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/irods_configuration_keywords.hpp"
 
 int
 rsUnregDataObj( rsComm_t *rsComm, unregDataObj_t *unregDataObjInp ) {

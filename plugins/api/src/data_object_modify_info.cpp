@@ -1,11 +1,11 @@
-#include "api_plugin_number.h"
-#include "rodsDef.h"
-#include "rcConnect.h"
-#include "rodsPackInstruct.h"
-#include "rcMisc.h"
-#include "client_api_whitelist.hpp"
+#include "irods/plugins/api/api_plugin_number.h"
+#include "irods/rodsDef.h"
+#include "irods/rcConnect.h"
+#include "irods/rodsPackInstruct.h"
+#include "irods/rcMisc.h"
+#include "irods/client_api_whitelist.hpp"
 
-#include "apiHandler.hpp"
+#include "irods/apiHandler.hpp"
 
 #include <functional>
 
@@ -15,13 +15,13 @@
 // Server-side Implementation
 //
 
-#include "objDesc.hpp"
-#include "irods_stacktrace.hpp"
-#include "irods_server_api_call.hpp"
-#include "irods_re_serialization.hpp"
-#include "rsModDataObjMeta.hpp"
-#include "scoped_privileged_client.hpp"
-#include "key_value_proxy.hpp"
+#include "irods/objDesc.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/irods_server_api_call.hpp"
+#include "irods/irods_re_serialization.hpp"
+#include "irods/rsModDataObjMeta.hpp"
+#include "irods/scoped_privileged_client.hpp"
+#include "irods/key_value_proxy.hpp"
 
 #include <string>
 #include <tuple>
@@ -113,7 +113,7 @@ namespace
 // Client-side Implementation
 //
 
-#include "modDataObjMeta.h"
+#include "irods/modDataObjMeta.h"
 
 namespace
 {

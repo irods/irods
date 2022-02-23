@@ -1,6 +1,6 @@
-#include "specificQuery.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/specificQuery.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcSpecificQuery (rcComm_t *conn, specificQueryInp_t *specificQueryInp, genQueryOut_t **genQueryOut)

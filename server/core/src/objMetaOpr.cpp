@@ -1,18 +1,18 @@
 #include <sys/types.h>
 #include <sys/wait.h>
-#include "objMetaOpr.hpp"
-#include "resource.hpp"
-#include "collection.hpp"
-#include "specColl.hpp"
-#include "genQuery.h"
-#include "icatHighLevelRoutines.hpp"
-#include "miscUtil.h"
-#include "modAVUMetadata.h"
-#include "rsIcatOpr.hpp"
-#include "rsGenQuery.hpp"
-#include "rsModAVUMetadata.hpp"
-#include "irods_resource_redirect.hpp"
-#include "irods_hierarchy_parser.hpp"
+#include "irods/objMetaOpr.hpp"
+#include "irods/resource.hpp"
+#include "irods/collection.hpp"
+#include "irods/specColl.hpp"
+#include "irods/genQuery.h"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/miscUtil.h"
+#include "irods/modAVUMetadata.h"
+#include "irods/rsIcatOpr.hpp"
+#include "irods/rsGenQuery.hpp"
+#include "irods/rsModAVUMetadata.hpp"
+#include "irods/irods_resource_redirect.hpp"
+#include "irods/irods_hierarchy_parser.hpp"
 
 #include <boost/lexical_cast.hpp>
 

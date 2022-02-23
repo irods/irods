@@ -1,4 +1,4 @@
-#include "irods_report_plugins_in_json.hpp"
+#include "irods/irods_report_plugins_in_json.hpp"
 
 using json = nlohmann::json;
 

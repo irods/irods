@@ -1,9 +1,9 @@
-#include "api_plugin_number.h"
-#include "rodsDef.h"
-#include "rcConnect.h"
-#include "rodsPackInstruct.h"
-#include "apiHandler.hpp"
-#include "client_api_whitelist.hpp"
+#include "irods/plugins/api/api_plugin_number.h"
+#include "irods/rodsDef.h"
+#include "irods/rcConnect.h"
+#include "irods/rodsPackInstruct.h"
+#include "irods/apiHandler.hpp"
+#include "irods/client_api_whitelist.hpp"
 
 #include <functional>
 
@@ -13,29 +13,29 @@
 // Server-side Implementation
 //
 
-#include "touch.h"
+#include "irods/touch.h"
 
-#include "rcMisc.h"
-#include "rodsErrorTable.h"
-#include "catalog_utilities.hpp"
-#include "irods_exception.hpp"
-#include "irods_server_api_call.hpp"
-#include "irods_re_serialization.hpp"
-#include "irods_resource_manager.hpp"
-#include "irods_logger.hpp"
+#include "irods/rcMisc.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/catalog_utilities.hpp"
+#include "irods/irods_exception.hpp"
+#include "irods/irods_server_api_call.hpp"
+#include "irods/irods_re_serialization.hpp"
+#include "irods/irods_resource_manager.hpp"
+#include "irods/irods_logger.hpp"
 
 #define IRODS_IO_TRANSPORT_ENABLE_SERVER_SIDE_API
-#include "transport/default_transport.hpp"
-#include "dstream.hpp"
+#include "irods/transport/default_transport.hpp"
+#include "irods/dstream.hpp"
 
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
-#include "filesystem.hpp"
+#include "irods/filesystem.hpp"
 
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
-#include "replica.hpp"
+#include "irods/replica.hpp"
 
 #define IRODS_QUERY_ENABLE_SERVER_SIDE_API
-#include "query_builder.hpp"
+#include "irods/query_builder.hpp"
 
 #include "fmt/format.h"
 #include <nlohmann/json.hpp>

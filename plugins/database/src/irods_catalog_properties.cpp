@@ -6,13 +6,13 @@
  */
 
 // =-=-=-=-=-=-=-
-#include "irods_error.hpp"
-#include "irods_exception.hpp"
+#include "irods/irods_error.hpp"
+#include "irods/irods_exception.hpp"
 #include "irods_catalog_properties.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "icatHighLevelRoutines.hpp"
+#include "irods/icatHighLevelRoutines.hpp"
 #include "mid_level.hpp"
 
 namespace irods {

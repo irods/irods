@@ -23,11 +23,11 @@
  be called when the tables change to make sure there are no cycles.
 
  */
-#include "rodsClient.h"
-#include "icatHighLevelRoutines.hpp"
+#include "irods/rodsClient.h"
+#include "irods/icatHighLevelRoutines.hpp"
 #include "mid_level.hpp"
 #include "low_level.hpp"
-#include "irods_virtual_path.hpp"
+#include "irods/irods_virtual_path.hpp"
 
 #include <boost/algorithm/string.hpp>
 

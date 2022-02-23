@@ -1,10 +1,10 @@
 /// \file
 
-#include "icatHighLevelRoutines.hpp"
-#include "msParam.h"
-#include "rcMisc.h"
-#include "irods_re_structs.hpp"
-#include "rodsErrorTable.h"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/msParam.h"
+#include "irods/rcMisc.h"
+#include "irods/irods_re_structs.hpp"
+#include "irods/rodsErrorTable.h"
 
 /**
  * \brief Given a list of KVPairs and a Key, this microservice gets the corresponding value.

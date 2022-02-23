@@ -1,8 +1,8 @@
-#include "client_connection.hpp"
+#include "irods/client_connection.hpp"
 
-#include "rcConnect.h"
-#include "rodsErrorTable.h"
-#include "irods_exception.hpp"
+#include "irods/rcConnect.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/irods_exception.hpp"
 
 namespace irods::experimental
 {

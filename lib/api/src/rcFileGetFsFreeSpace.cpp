@@ -1,6 +1,6 @@
-#include "fileGetFsFreeSpace.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/fileGetFsFreeSpace.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcFileGetFsFreeSpace( rcComm_t *conn, fileGetFsFreeSpaceInp_t *fileGetFsFreeSpaceInp, fileGetFsFreeSpaceOut_t **fileGetFsFreeSpaceOut )

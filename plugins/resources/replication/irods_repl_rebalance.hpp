@@ -1,9 +1,9 @@
 #ifndef _IRODS_REPL_REBALANCE_HPP_
 #define _IRODS_REPL_REBALANCE_HPP_
 
-#include "irods_error.hpp"
-#include "irods_resource_manager.hpp"
-#include "icatHighLevelRoutines.hpp"
+#include "irods/irods_error.hpp"
+#include "irods/irods_resource_manager.hpp"
+#include "irods/icatHighLevelRoutines.hpp"
 
 #include <vector>
 #include <string>

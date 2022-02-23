@@ -1,6 +1,6 @@
-#include "server_report.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/server_report.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 int
 rcServerReport( rcComm_t *conn, bytesBuf_t** _bbuf ) {

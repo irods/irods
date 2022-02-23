@@ -1,12 +1,12 @@
 #include <catch2/catch.hpp>
 
-#include "client_connection.hpp"
-#include "filesystem.hpp"
-#include "getRodsEnv.h"
-#include "query_builder.hpp"
-#include "rcConnect.h"
-#include "rodsClient.h"
-#include "rodsGenQuery.h"
+#include "irods/client_connection.hpp"
+#include "irods/filesystem.hpp"
+#include "irods/getRodsEnv.h"
+#include "irods/query_builder.hpp"
+#include "irods/rcConnect.h"
+#include "irods/rodsClient.h"
+#include "irods/rodsGenQuery.h"
 
 #include <cctype>
 #include <vector>

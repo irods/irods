@@ -1,9 +1,9 @@
-#include "irods_path_recursion.hpp"
+#include "irods/irods_path_recursion.hpp"
 
-#include "rodsPath.h"
-#include "rodsErrorTable.h"
-#include "irods_exception.hpp"
-#include "rodsLog.h"
+#include "irods/rodsPath.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/irods_exception.hpp"
+#include "irods/rodsLog.h"
 
 #include <stdlib.h>
 #include <cstdlib>

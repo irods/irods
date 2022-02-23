@@ -1,9 +1,9 @@
-#include "rodsPath.h"
-#include "rodsErrorTable.h"
-#include "miscUtil.h"
-#include "rodsLog.h"
-#include "rmUtil.h"
-#include "rcGlobalExtern.h"
+#include "irods/rodsPath.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/miscUtil.h"
+#include "irods/rodsLog.h"
+#include "irods/rmUtil.h"
+#include "irods/rcGlobalExtern.h"
 
 #include <sys/time.h>
 

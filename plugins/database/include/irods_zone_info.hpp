@@ -1,9 +1,9 @@
 #ifndef _IRODS_ZONE_INFO_HPP_
 #define _IRODS_ZONE_INFO_HPP_
 
-#include "irods_error.hpp"
+#include "irods/irods_error.hpp"
 
-#include "icatStructs.hpp"
+#include "irods/icatStructs.hpp"
 
 #include <string>
 

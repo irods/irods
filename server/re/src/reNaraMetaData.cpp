@@ -1,13 +1,13 @@
 /// \file
 
-#include "reNaraMetaData.hpp"
-#include "apiHeaderAll.h"
-#include "irods_stacktrace.hpp"
-#include "rodsConnect.h"
-#include "rsModAVUMetadata.hpp"
+#include "irods/reNaraMetaData.hpp"
+#include "irods/apiHeaderAll.h"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/rodsConnect.h"
+#include "irods/rsModAVUMetadata.hpp"
 
-#include "irods_log.hpp"
-#include "irods_get_full_path_for_config_file.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/irods_get_full_path_for_config_file.hpp"
 
 /**
  * \fn msiExtractNaraMetadata (ruleExecInfo_t *rei)

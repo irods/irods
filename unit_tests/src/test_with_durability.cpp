@@ -1,6 +1,6 @@
 #include <catch2/catch.hpp>
 
-#include "with_durability.hpp"
+#include "irods/with_durability.hpp"
 
 #include <chrono>
 

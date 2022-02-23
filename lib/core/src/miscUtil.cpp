@@ -2,16 +2,16 @@
 #include <sys/time.h>
 #endif
 #include <fnmatch.h>
-#include "rodsClient.h"
-#include "rodsLog.h"
-#include "miscUtil.h"
-#include "rcGlobalExtern.h"
+#include "irods/rodsClient.h"
+#include "irods/rodsLog.h"
+#include "irods/miscUtil.h"
+#include "irods/rcGlobalExtern.h"
 
-#include "irods_stacktrace.hpp"
-#include "irods_path_recursion.hpp"
-#include "irods_exception.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/irods_path_recursion.hpp"
+#include "irods/irods_exception.hpp"
 
-#include "get_hier_from_leaf_id.h"
+#include "irods/get_hier_from_leaf_id.h"
 
 #include <fstream>
 #include <boost/filesystem/operations.hpp>

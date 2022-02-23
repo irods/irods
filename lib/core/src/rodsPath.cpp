@@ -1,13 +1,13 @@
-#include "rodsPath.h"
-#include "miscUtil.h"
-#include "rcMisc.h"
-#include "rodsErrorTable.h"
-#include "rodsLog.h"
+#include "irods/rodsPath.h"
+#include "irods/miscUtil.h"
+#include "irods/rcMisc.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/rodsLog.h"
 #ifdef windows_platform
 #include "irodsntutil.hpp"
 #endif
 
-#include "filesystem/path.hpp"
+#include "irods/filesystem/path.hpp"
 
 #include <string>
 #include <string_view>

@@ -1,24 +1,24 @@
-#include "procApiRequest.h"
+#include "irods/procApiRequest.h"
 
-#include "irods_network_factory.hpp"
-#include "irods_client_api_table.hpp"
+#include "irods/irods_network_factory.hpp"
+#include "irods/irods_client_api_table.hpp"
 
 #if defined(RODS_SERVER) || defined(RODS_CLERVER)
-    #include "irods_server_api_table.hpp"
+    #include "irods/irods_server_api_table.hpp"
 #endif // RODS_SERVER || RODS_CLERVER
 
-#include "rcGlobalExtern.h"
-#include "rcMisc.h"
-#include "sockComm.h"
-#include "sockCommNetworkInterface.hpp"
-#include "sslSockComm.h"
-#include "irods_client_server_negotiation.hpp"
+#include "irods/rcGlobalExtern.h"
+#include "irods/rcMisc.h"
+#include "irods/sockComm.h"
+#include "irods/sockCommNetworkInterface.hpp"
+#include "irods/sslSockComm.h"
+#include "irods/irods_client_server_negotiation.hpp"
 
 #include <iostream>
 
 #include <boost/shared_ptr.hpp>
 
-#include "irods_threads.hpp"
+#include "irods/irods_threads.hpp"
 
 /* procApiRequest - This is the main function used by the client API
  * function to issue API requests and receive output returned from

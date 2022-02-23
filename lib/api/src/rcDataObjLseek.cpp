@@ -1,4 +1,4 @@
-#include "dataObjLseek.h"
+#include "irods/dataObjLseek.h"
 
 #include <cstring>
 

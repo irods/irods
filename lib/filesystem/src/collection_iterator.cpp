@@ -1,15 +1,15 @@
-#include "filesystem/collection_iterator.hpp"
+#include "irods/filesystem/collection_iterator.hpp"
 
-#include "filesystem/detail.hpp"
-#include "filesystem/filesystem_error.hpp"
+#include "irods/filesystem/detail.hpp"
+#include "irods/filesystem/filesystem_error.hpp"
 
 #ifdef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
-    #include "rsOpenCollection.hpp"
-    #include "rsReadCollection.hpp"
-    #include "rsCloseCollection.hpp"
+    #include "irods/rsOpenCollection.hpp"
+    #include "irods/rsReadCollection.hpp"
+    #include "irods/rsCloseCollection.hpp"
 #endif // IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 
-#include "irods_at_scope_exit.hpp"
+#include "irods/irods_at_scope_exit.hpp"
 
 #include <functional>
 #include <string>

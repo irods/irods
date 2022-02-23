@@ -1,13 +1,13 @@
 // =-=-=-=-=-=-=-
-#include "irods_client_server_negotiation.hpp"
-#include "irods_configuration_keywords.hpp"
-#include "irods_kvp_string_parser.hpp"
-#include "irods_server_properties.hpp"
+#include "irods/irods_client_server_negotiation.hpp"
+#include "irods/irods_configuration_keywords.hpp"
+#include "irods/irods_kvp_string_parser.hpp"
+#include "irods/irods_server_properties.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rodsDef.h"
-#include "rsGlobalExtern.hpp"
+#include "irods/rodsDef.h"
+#include "irods/rsGlobalExtern.hpp"
 
 #include <list>
 

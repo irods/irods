@@ -1,11 +1,11 @@
-#include "irods_plugin_context.hpp"
-#include "irods_re_plugin.hpp"
-#include "irods_configuration_keywords.hpp"
-#include "irods_get_full_path_for_config_file.hpp"
-#include "irods_logger.hpp"
-#include "irods_state_table.h"
-#include "rodsError.h"
-#include "rodsErrorTable.h"
+#include "irods/irods_plugin_context.hpp"
+#include "irods/irods_re_plugin.hpp"
+#include "irods/irods_configuration_keywords.hpp"
+#include "irods/irods_get_full_path_for_config_file.hpp"
+#include "irods/irods_logger.hpp"
+#include "irods/irods_state_table.h"
+#include "irods/rodsError.h"
+#include "irods/rodsErrorTable.h"
 
 #include <string>
 #include <functional>

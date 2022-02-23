@@ -1,8 +1,8 @@
-#include "rcMisc.h"
+#include "irods/rcMisc.h"
 
-#include "irods_gsi_object.hpp"
-#include "irods_auth_manager.hpp"
-#include "irods_auth_plugin.hpp"
+#include "irods/irods_gsi_object.hpp"
+#include "irods/irods_auth_manager.hpp"
+#include "irods/irods_auth_plugin.hpp"
 
 extern int ProcessType;
 

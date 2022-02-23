@@ -1,11 +1,11 @@
-#include "rods.h"
-#include "fileOpr.hpp"
-#include "dataObjOpr.hpp"
-#include "miscUtil.h"
-#include "openCollection.h"
+#include "irods/rods.h"
+#include "irods/fileOpr.hpp"
+#include "irods/dataObjOpr.hpp"
+#include "irods/miscUtil.h"
+#include "irods/openCollection.h"
 
 // =-=-=-=-=-=-=-
-#include "irods_resource_manager.hpp"
+#include "irods/irods_resource_manager.hpp"
 
 // =-=-=-=-=-=-=-
 // externs to singleton plugin managers

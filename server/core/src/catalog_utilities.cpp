@@ -1,10 +1,10 @@
-#include "catalog_utilities.hpp"
+#include "irods/catalog_utilities.hpp"
 
-#include "rcConnect.h"
-#include "rodsConnect.h"
-#include "miscServerFunct.hpp"
-#include "irods_logger.hpp"
-#include "irods_rs_comm_query.hpp"
+#include "irods/rcConnect.h"
+#include "irods/rodsConnect.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/irods_logger.hpp"
+#include "irods/irods_rs_comm_query.hpp"
 
 #include <fmt/format.h>
 

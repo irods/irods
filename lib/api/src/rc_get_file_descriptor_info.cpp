@@ -1,8 +1,8 @@
-#include "get_file_descriptor_info.h"
+#include "irods/get_file_descriptor_info.h"
 
-#include "api_plugin_number.h"
-#include "procApiRequest.h"
-#include "rodsErrorTable.h"
+#include "irods/plugins/api/api_plugin_number.h"
+#include "irods/procApiRequest.h"
+#include "irods/rodsErrorTable.h"
 
 #include <cstdlib>
 #include <cstring>

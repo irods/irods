@@ -1,6 +1,6 @@
-#include "readCollection.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/readCollection.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 #include <cstring>
 

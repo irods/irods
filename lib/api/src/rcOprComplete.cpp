@@ -1,6 +1,6 @@
-#include "oprComplete.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/oprComplete.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcOprComplete( rcComm_t *conn, int retval )

@@ -1,6 +1,6 @@
-#include "fileClosedir.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/fileClosedir.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcFileClosedir( rcComm_t *conn, fileClosedirInp_t *fileClosedirInp )

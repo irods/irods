@@ -4,13 +4,13 @@
 /* rsRe.c - Routines for Server interfacing to the Rule Engine
  */
 
-#include "rsGlobalExtern.hpp"
+#include "irods/rsGlobalExtern.hpp"
 #include "reGlobalsExtern.hpp"
-#include "reconstants.hpp"
+#include "irods/reconstants.hpp"
 #include "configuration.hpp"
 #include "reFuncDefs.hpp"
-#include "irods_re_plugin.hpp"
-#include "irods_re_structs.hpp"
+#include "irods/irods_re_plugin.hpp"
+#include "irods/irods_re_structs.hpp"
 
 /* initialize the Rule Engine if it hasn't been done yet */
 int

@@ -1,9 +1,9 @@
-#include "json_deserialization.hpp"
+#include "irods/json_deserialization.hpp"
 
-#include "objInfo.h"
-#include "msParam.h"
-#include "irods_re_structs.hpp"
-#include "irods_logger.hpp"
+#include "irods/objInfo.h"
+#include "irods/msParam.h"
+#include "irods/irods_re_structs.hpp"
+#include "irods/irods_logger.hpp"
 
 using logger = irods::experimental::log;
 using json   = nlohmann::json;

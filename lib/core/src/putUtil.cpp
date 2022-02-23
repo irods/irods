@@ -2,22 +2,22 @@
 #include <sys/time.h>
 #endif
 
-#include "rodsPath.h"
-#include "rodsErrorTable.h"
-#include "rodsLog.h"
-#include "putUtil.h"
-#include "miscUtil.h"
-#include "rcPortalOpr.h"
-#include "checksum.h"
-#include "rcGlobalExtern.h"
+#include "irods/rodsPath.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/rodsLog.h"
+#include "irods/putUtil.h"
+#include "irods/miscUtil.h"
+#include "irods/rcPortalOpr.h"
+#include "irods/checksum.h"
+#include "irods/rcGlobalExtern.h"
 #include <string>
 #include <boost/filesystem.hpp>
-#include "irods_server_properties.hpp"
-#include "irods_path_recursion.hpp"
-#include "irods_exception.hpp"
-#include "irods_random.hpp"
-#include "irods_log.hpp"
-#include "sockComm.h"
+#include "irods/irods_server_properties.hpp"
+#include "irods/irods_path_recursion.hpp"
+#include "irods/irods_exception.hpp"
+#include "irods/irods_random.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/sockComm.h"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/lexical_cast.hpp>

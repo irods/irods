@@ -1,7 +1,7 @@
 
-#include "get_hier_from_leaf_id.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/get_hier_from_leaf_id.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 int rcGetHierFromLeafId(
     rcComm_t*        _comm,

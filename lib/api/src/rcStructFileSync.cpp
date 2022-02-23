@@ -1,6 +1,6 @@
-#include "structFileSync.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/structFileSync.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcStructFileSync( rcComm_t *conn, structFileOprInp_t *structFileOprInp )

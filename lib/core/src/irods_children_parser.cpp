@@ -1,6 +1,6 @@
-#include "irods_children_parser.hpp"
-#include "irods_log.hpp"
-#include "rodsErrorTable.h"
+#include "irods/irods_children_parser.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/rodsErrorTable.h"
 
 #include <sstream>
 #include <iostream>

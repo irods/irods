@@ -1,7 +1,7 @@
 #include <catch2/catch.hpp>
 
-#include "replica_access_table.hpp"
-#include "irods_at_scope_exit.hpp"
+#include "irods/replica_access_table.hpp"
+#include "irods/irods_at_scope_exit.hpp"
 
 #include <sys/types.h>
 #include <unistd.h>

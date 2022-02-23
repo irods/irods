@@ -14,9 +14,9 @@
 #include <thread>
 #include <chrono>
 
-#include "irods_exception.hpp"
-#include "rodsErrorTable.h"
-#include "rodsLog.h"
+#include "irods/irods_exception.hpp"
+#include "irods/rodsErrorTable.h"
+#include "irods/rodsLog.h"
 
 bool
 operator==(const struct in_addr& lhs, const struct in_addr& rhs) {

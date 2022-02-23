@@ -6,11 +6,11 @@
 #ifndef RE_VARIABLES_HPP
 #define RE_VARIABLES_HPP
 
-#include "rodsUser.h"
-#include "rods.h"
-#include "rcGlobalExtern.h"
-#include "reDefines.h"
-#include "objInfo.h"
+#include "irods/rodsUser.h"
+#include "irods/rods.h"
+#include "irods/rcGlobalExtern.h"
+#include "irods/reDefines.h"
+#include "irods/objInfo.h"
 #include "regExpMatch.hpp"
 
 /*************

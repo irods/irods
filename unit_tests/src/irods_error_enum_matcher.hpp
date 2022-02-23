@@ -1,4 +1,4 @@
-#include "rodsErrorTable.h"
+#include "irods/rodsErrorTable.h"
 #include <boost/format.hpp>
 #include <iostream>
 

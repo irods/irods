@@ -6,11 +6,11 @@
 
 
 
-#include "rsIcatOpr.hpp"
-#include "rodsConnect.h"
-#include "rsGlobalExtern.hpp"
-#include "icatHighLevelRoutines.hpp"
-#include "miscServerFunct.hpp"
+#include "irods/rsIcatOpr.hpp"
+#include "irods/rodsConnect.h"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/miscServerFunct.hpp"
 
 int
 connectRcat() {

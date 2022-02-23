@@ -4,13 +4,13 @@
  * API
  */
 
-#include "fileRead.h"
-#include "fileClose.h"
-#include "streamRead.h"
-#include "miscServerFunct.hpp"
-#include "rsGlobalExtern.hpp"
-#include "rsStreamRead.hpp"
-#include "rsFileRead.hpp"
+#include "irods/fileRead.h"
+#include "irods/fileClose.h"
+#include "irods/streamRead.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/rsStreamRead.hpp"
+#include "irods/rsFileRead.hpp"
 
 int
 rsStreamRead( rsComm_t *rsComm, fileReadInp_t *streamReadInp,

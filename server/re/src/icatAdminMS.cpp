@@ -1,17 +1,17 @@
 /// \file
 
-#include "icatHighLevelRoutines.hpp"
-#include "rcMisc.h"
-#include "generalAdmin.h"
-#include "miscServerFunct.hpp"
-#include "irods_server_properties.hpp"
-#include "rodsErrorTable.h"
-#include "rsGeneralAdmin.hpp"
-#include "irods_re_structs.hpp"
-#include "irods_logger.hpp"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/rcMisc.h"
+#include "irods/generalAdmin.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/irods_server_properties.hpp"
+#include "irods/rodsErrorTable.h"
+#include "irods/rsGeneralAdmin.hpp"
+#include "irods/irods_re_structs.hpp"
+#include "irods/irods_logger.hpp"
 
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
-#include "filesystem.hpp"
+#include "irods/filesystem.hpp"
 
 /**
  * \fn msiCreateUser (ruleExecInfo_t *rei)

@@ -7,9 +7,9 @@
 
 /* See genQuery.h for a description of this API call.*/
 
-#include "genQuery.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/genQuery.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /* this is a debug routine; it just prints the genQueryInp
    structure */

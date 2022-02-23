@@ -1,6 +1,6 @@
 #include "irods_repl_retry.hpp"
 #include "irods_repl_types.hpp"
-#include "rsDataObjRepl.hpp"
+#include "irods/rsDataObjRepl.hpp"
 
 #include <boost/numeric/conversion/cast.hpp>
 #include <chrono>

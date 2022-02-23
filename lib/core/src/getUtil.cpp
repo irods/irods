@@ -2,15 +2,15 @@
 #include <sys/time.h>
 #endif
 
-#include "rodsPath.h"
-#include "rodsErrorTable.h"
-#include "rodsLog.h"
-#include "lsUtil.h"
-#include "getUtil.h"
-#include "miscUtil.h"
-#include "rcPortalOpr.h"
-#include "sockComm.h"
-#include "rcGlobalExtern.h"
+#include "irods/rodsPath.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/rodsLog.h"
+#include "irods/lsUtil.h"
+#include "irods/getUtil.h"
+#include "irods/miscUtil.h"
+#include "irods/rcPortalOpr.h"
+#include "irods/sockComm.h"
+#include "irods/rcGlobalExtern.h"
 
 #include <cstring>
 

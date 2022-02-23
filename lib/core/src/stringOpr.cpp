@@ -1,8 +1,8 @@
-#include "stringOpr.h"
+#include "irods/stringOpr.h"
 
-#include "rodsErrorTable.h"
-#include "irods_stacktrace.hpp"
-#include "rodsLog.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/rodsLog.h"
 
 #include <boost/regex.hpp>
 

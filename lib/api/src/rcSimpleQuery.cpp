@@ -7,9 +7,9 @@
 /* This is script-generated code.  */
 /* See simpleQuery.h for a description of this API call.*/
 
-#include "simpleQuery.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/simpleQuery.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 /**
 * \fn rcSimpleQuery (rcComm_t *conn, simpleQueryInp_t *simpleQueryInp, simpleQueryOut_t **simpleQueryOut)
 *

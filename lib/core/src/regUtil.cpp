@@ -1,11 +1,11 @@
-#include "regUtil.h"
+#include "irods/regUtil.h"
 
-#include "rodsPath.h"
-#include "rodsErrorTable.h"
-#include "rodsLog.h"
-#include "miscUtil.h"
-#include "checksum.h"
-#include "rcGlobalExtern.h"
+#include "irods/rodsPath.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/rodsLog.h"
+#include "irods/miscUtil.h"
+#include "irods/checksum.h"
+#include "irods/rcGlobalExtern.h"
 
 int
 regUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,

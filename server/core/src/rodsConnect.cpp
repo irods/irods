@@ -1,12 +1,12 @@
-#include "rcMisc.h"
-#include "rodsConnect.h"
-#include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.h"
-#include "miscServerFunct.hpp"
-#include "getRemoteZoneResc.h"
-#include "irods_resource_backport.hpp"
-#include "rsLog.hpp"
-#include "irods_logger.hpp"
+#include "irods/rcMisc.h"
+#include "irods/rodsConnect.h"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/rcGlobalExtern.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/getRemoteZoneResc.h"
+#include "irods/irods_resource_backport.hpp"
+#include "irods/rsLog.hpp"
+#include "irods/irods_logger.hpp"
 
 #include <cstring>
 #include <vector>

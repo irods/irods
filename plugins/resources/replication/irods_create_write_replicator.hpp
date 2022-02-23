@@ -1,7 +1,7 @@
 #ifndef _IRODS_CREATE_WRITE_REPLICATOR_HPP_
 #define _IRODS_CREATE_WRITE_REPLICATOR_HPP_
 
-#include "irods_error.hpp"
+#include "irods/irods_error.hpp"
 #include "irods_oper_replicator.hpp"
 
 namespace irods {

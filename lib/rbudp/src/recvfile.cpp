@@ -20,7 +20,7 @@
  * Direct questions, comments etc about Quanta to cavern@evl.uic.edu
  *****************************************************************************/
 
-#include "QUANTAnet_rbudpReceiver_c.h"
+#include "irods/QUANTAnet_rbudpReceiver_c.h"
 
 int
 main( int argc, char **argv ) {

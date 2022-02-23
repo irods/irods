@@ -1,4 +1,4 @@
-#include "replica_access_table.hpp"
+#include "irods/replica_access_table.hpp"
 
 #include <boost/interprocess/managed_shared_memory.hpp>
 #include <boost/interprocess/allocators/allocator.hpp>

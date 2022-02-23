@@ -1,23 +1,23 @@
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rodsDef.h"
-#include "msParam.h"
-#include "rcConnect.h"
-#include "authRequest.h"
-#include "authResponse.h"
-#include "authCheck.h"
-#include "miscServerFunct.hpp"
-#include "authPluginRequest.h"
-#include "authenticate.h"
-#include "rsAuthCheck.hpp"
-#include "rsAuthRequest.hpp"
+#include "irods/rodsDef.h"
+#include "irods/msParam.h"
+#include "irods/rcConnect.h"
+#include "irods/authRequest.h"
+#include "irods/authResponse.h"
+#include "irods/authCheck.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/authPluginRequest.h"
+#include "irods/authenticate.h"
+#include "irods/rsAuthCheck.hpp"
+#include "irods/rsAuthRequest.hpp"
 
 // =-=-=-=-=-=-=-
-#include "irods_auth_plugin.hpp"
-#include "irods_auth_constants.hpp"
-#include "irods_native_auth_object.hpp"
-#include "irods_stacktrace.hpp"
-#include "irods_kvp_string_parser.hpp"
+#include "irods/irods_auth_plugin.hpp"
+#include "irods/irods_auth_constants.hpp"
+#include "irods/irods_native_auth_object.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/irods_kvp_string_parser.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes

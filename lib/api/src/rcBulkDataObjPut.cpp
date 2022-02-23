@@ -1,6 +1,6 @@
-#include "bulkDataObjPut.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/bulkDataObjPut.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 #include <cstring>
 

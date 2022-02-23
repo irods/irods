@@ -1,6 +1,6 @@
-#include "fileRead.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/fileRead.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcFileRead( rcComm_t *conn, fileReadInp_t *fileReadInp, bytesBuf_t *fileReadOutBBuf )

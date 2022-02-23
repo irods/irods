@@ -1,7 +1,7 @@
-#include "ticketAdmin.h"
+#include "irods/ticketAdmin.h"
 
-#include "apiNumber.h"
-#include "procApiRequest.h"
+#include "irods/apiNumber.h"
+#include "irods/procApiRequest.h"
 
 int rcTicketAdmin(RcComm* conn, TicketAdminInput* ticketAdminInp)
 {

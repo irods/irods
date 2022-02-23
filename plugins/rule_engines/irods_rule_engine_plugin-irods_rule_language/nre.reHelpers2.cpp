@@ -2,8 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
 #include "reGlobalsExtern.hpp"
-#include "resource.hpp"
-#include "dataObjOpr.hpp"
+#include "irods/resource.hpp"
+#include "irods/dataObjOpr.hpp"
 
 extern char *rmemmove( void *dest, void *src, int strLen, int maxLen );
 

@@ -1,19 +1,19 @@
 // =-=-=-=-=-=-=-
 // irods includes
-#include "msParam.h"
-#include "rcConnect.h"
-#include "miscServerFunct.hpp"
+#include "irods/msParam.h"
+#include "irods/rcConnect.h"
+#include "irods/miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-
-#include "irods_resource_plugin.hpp"
-#include "irods_file_object.hpp"
-#include "irods_physical_object.hpp"
-#include "irods_collection_object.hpp"
-#include "irods_string_tokenize.hpp"
-#include "irods_hierarchy_parser.hpp"
-#include "irods_resource_redirect.hpp"
-#include "irods_stacktrace.hpp"
-#include "irods_server_properties.hpp"
+#include "irods/irods_resource_plugin.hpp"
+#include "irods/irods_file_object.hpp"
+#include "irods/irods_physical_object.hpp"
+#include "irods/irods_collection_object.hpp"
+#include "irods/irods_string_tokenize.hpp"
+#include "irods/irods_hierarchy_parser.hpp"
+#include "irods/irods_resource_redirect.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/irods_server_properties.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes

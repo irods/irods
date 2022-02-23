@@ -1,10 +1,10 @@
 #include <catch2/catch.hpp>
 
-#include "connection_pool.hpp"
-#include "filesystem.hpp"
-#include "getRodsEnv.h"
-#include "irods_at_scope_exit.hpp"
-#include "rodsClient.h"
+#include "irods/connection_pool.hpp"
+#include "irods/filesystem.hpp"
+#include "irods/getRodsEnv.h"
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/rodsClient.h"
 
 TEST_CASE("connection pool")
 {

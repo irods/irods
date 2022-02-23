@@ -9,11 +9,11 @@ If you need additional options, please update this routine and the
 CommandLineOptions document so we can keep it all consistent.
 */
 
-#include "rods.h"
-#include "parseCommandLine.h"
-#include "getRodsEnv.h"
-#include "rodsLog.h"
-#include "rcMisc.h"
+#include "irods/rods.h"
+#include "irods/parseCommandLine.h"
+#include "irods/getRodsEnv.h"
+#include "irods/rodsLog.h"
+#include "irods/rcMisc.h"
 #ifdef windows_platform
 #include "irodsntutil.hpp"
 #endif

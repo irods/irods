@@ -1,10 +1,10 @@
-#include "dataObjRsync.h"
-#include "dataObjPut.h"
-#include "dataObjGet.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "oprComplete.h"
-#include "rcMisc.h"
+#include "irods/dataObjRsync.h"
+#include "irods/dataObjPut.h"
+#include "irods/dataObjGet.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
+#include "irods/oprComplete.h"
+#include "irods/rcMisc.h"
 
 #include <cstring>
 

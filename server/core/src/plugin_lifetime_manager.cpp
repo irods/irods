@@ -1,5 +1,5 @@
 
-#include "plugin_lifetime_manager.hpp"
+#include "irods/plugin_lifetime_manager.hpp"
 
 namespace irods::experimental::api {
 

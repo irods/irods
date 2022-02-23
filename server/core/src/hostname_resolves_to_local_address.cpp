@@ -1,7 +1,7 @@
 #include <iostream>
 
-#include "irods_exception.hpp"
-#include "irods_hostname.hpp"
+#include "irods/irods_exception.hpp"
+#include "irods/irods_hostname.hpp"
 
 int main(int argc, char** argv) {
     if (argc != 2) {

@@ -1,24 +1,24 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 #define HAS_MICROSDEF_T
-#include "rodsConnect.h"
+#include "irods/rodsConnect.h"
 #include "reGlobals.hpp"
 #include "reFuncDefs.hpp"
 #include "reHelpers1.hpp"
-#include "apiHeaderAll.h"
+#include "irods/apiHeaderAll.h"
 #include "parser.hpp"
 #include "index.hpp"
 #include "rules.hpp"
 #include "cache.hpp"
-#include "locks.hpp"
+#include "irods/locks.hpp"
 #include "functions.hpp"
 #include "configuration.hpp"
-#include "rsGenQuery.hpp"
-#include "irods_log.hpp"
-#include "irods_get_full_path_for_config_file.hpp"
-#include "irods_re_plugin.hpp"
-#include "rsGeneralRowInsert.hpp"
-#include "rsEndTransaction.hpp"
+#include "irods/rsGenQuery.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/irods_get_full_path_for_config_file.hpp"
+#include "irods/irods_re_plugin.hpp"
+#include "irods/rsGeneralRowInsert.hpp"
+#include "irods/rsEndTransaction.hpp"
 
 
 #ifdef MYMALLOC

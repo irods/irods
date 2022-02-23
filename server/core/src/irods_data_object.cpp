@@ -1,6 +1,6 @@
 // =-=-=-=-=-=-=-
-#include "irods_data_object.hpp"
-#include "irods_resource_manager.hpp"
+#include "irods/irods_data_object.hpp"
+#include "irods/irods_resource_manager.hpp"
 
 extern irods::resource_manager resc_mgr;
 

@@ -3,29 +3,29 @@
  *
  */
 
-#include "irods_configuration_keywords.hpp"
-#include "rcMisc.h"
-#include "reIn2p3SysRule.hpp"
-#include "genQuery.h"
-#include "phyBundleColl.h"
-#include "reDataObjOpr.hpp"
-#include "rsGenQuery.hpp"
-#include "rsGeneralRowInsert.hpp"
-#include "rsGeneralAdmin.hpp"
-#include "rsGeneralRowPurge.hpp"
+#include "irods/irods_configuration_keywords.hpp"
+#include "irods/rcMisc.h"
+#include "irods/reIn2p3SysRule.hpp"
+#include "irods/genQuery.h"
+#include "irods/phyBundleColl.h"
+#include "irods/reDataObjOpr.hpp"
+#include "irods/rsGenQuery.hpp"
+#include "irods/rsGeneralRowInsert.hpp"
+#include "irods/rsGeneralAdmin.hpp"
+#include "irods/rsGeneralRowPurge.hpp"
 
 #ifndef windows_platform
 #include <sys/socket.h>
 #include <pthread.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include "irods_stacktrace.hpp"
+#include "irods/irods_stacktrace.hpp"
 static pthread_mutex_t my_mutex;
 #endif
 
-#include "irods_get_full_path_for_config_file.hpp"
-#include "irods_configuration_parser.hpp"
-#include "rodsErrorTable.h"
+#include "irods/irods_get_full_path_for_config_file.hpp"
+#include "irods/irods_configuration_parser.hpp"
+#include "irods/rodsErrorTable.h"
 #include <boost/system/error_code.hpp>
 #include <boost/asio.hpp>
 #include <boost/algorithm/string.hpp>

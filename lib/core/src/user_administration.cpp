@@ -1,21 +1,21 @@
-#include "user_administration.hpp"
+#include "irods/user_administration.hpp"
 
 #undef rxGeneralAdmin
 
 #ifdef IRODS_USER_ADMINISTRATION_ENABLE_SERVER_SIDE_API
-    #include "rsGeneralAdmin.hpp"
+    #include "irods/rsGeneralAdmin.hpp"
     #define rxGeneralAdmin rsGeneralAdmin
     #define IRODS_QUERY_ENABLE_SERVER_SIDE_API // For irods::query<rsComm_t>
 #else
-    #include "generalAdmin.h"
+    #include "irods/generalAdmin.h"
     #define rxGeneralAdmin rcGeneralAdmin
 #endif // IRODS_USER_ADMINISTRATION_ENABLE_SERVER_SIDE_API
 
-#include "obf.h"
-#include "authenticate.h"
-#include "irods_query.hpp"
-#include "query_builder.hpp"
-#include "rcConnect.h"
+#include "irods/obf.h"
+#include "irods/authenticate.h"
+#include "irods/irods_query.hpp"
+#include "irods/query_builder.hpp"
+#include "irods/rcConnect.h"
 
 #include <array>
 #include <iostream>

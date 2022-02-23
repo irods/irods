@@ -1,6 +1,6 @@
 #include <catch2/catch.hpp>
 
-#include "capped_memory_resource.hpp"
+#include "irods/capped_memory_resource.hpp"
 
 #include <boost/container/pmr/vector.hpp>
 

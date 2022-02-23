@@ -9,10 +9,10 @@
 #include "arithmetics.hpp"
 #include "configuration.hpp"
 #include "filesystem.hpp"
-#include "rcMisc.h"
-#include "irods_log.hpp"
-#include "irods_re_plugin.hpp"
-#include "irods_error.hpp"
+#include "irods/rcMisc.h"
+#include "irods/irods_log.hpp"
+#include "irods/irods_re_plugin.hpp"
+#include "irods/irods_error.hpp"
 
 #define RE_ERROR(cond) if(cond) { goto error; }
 

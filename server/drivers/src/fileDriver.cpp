@@ -3,14 +3,14 @@
 
 /* fileDriver.c - The general driver for all file types. */
 
-#include "fileDriver.hpp"
-#include "irods_log.hpp"
-#include "irods_resource_plugin.hpp"
-#include "irods_data_object.hpp"
-#include "irods_stacktrace.hpp"
+#include "irods/fileDriver.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/irods_resource_plugin.hpp"
+#include "irods/irods_data_object.hpp"
+#include "irods/irods_stacktrace.hpp"
 
-#include "irods_resource_constants.hpp"
-#include "irods_resource_manager.hpp"
+#include "irods/irods_resource_constants.hpp"
+#include "irods/irods_resource_manager.hpp"
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX create

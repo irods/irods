@@ -1,8 +1,8 @@
 #include <catch2/catch.hpp>
 
-#include "packStruct.h"
-#include "rcGlobalExtern.h"
-#include "irods_at_scope_exit.hpp"
+#include "irods/packStruct.h"
+#include "irods/rcGlobalExtern.h"
+#include "irods/irods_at_scope_exit.hpp"
 
 #include <cstring>
 #include <string_view>

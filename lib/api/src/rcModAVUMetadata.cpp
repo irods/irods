@@ -1,7 +1,7 @@
 
-#include "modAVUMetadata.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/modAVUMetadata.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcModAVUMetadata( rcComm_t *conn, modAVUMetadataInp_t *modAVUMetadataInp )

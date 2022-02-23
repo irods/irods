@@ -1,6 +1,6 @@
-#include "fileOpen.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/fileOpen.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcFileOpen( rcComm_t *conn, fileOpenInp_t *fileOpenInp )

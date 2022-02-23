@@ -1,8 +1,8 @@
-#include "rodsClient.h"
-#include "connection_pool.hpp"
-#include "dstream.hpp"
-#include "transport/default_transport.hpp"
-#include "filesystem.hpp"
+#include "irods/rodsClient.h"
+#include "irods/connection_pool.hpp"
+#include "irods/dstream.hpp"
+#include "irods/transport/default_transport.hpp"
+#include "irods/filesystem.hpp"
 
 #include <iostream>
 #include <string>

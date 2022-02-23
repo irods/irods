@@ -1,11 +1,11 @@
-#include "json_serialization.hpp"
-#include "irods_at_scope_exit.hpp"
-#include "irods_resource_manager.hpp"
-#include "replica_state_table.hpp"
-#include "rs_data_object_finalize.hpp"
+#include "irods/json_serialization.hpp"
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/irods_resource_manager.hpp"
+#include "irods/replica_state_table.hpp"
+#include "irods/rs_data_object_finalize.hpp"
 
 //#define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
-//#include "data_object_proxy.hpp"
+//#include "irods/data_object_proxy.hpp"
 
 #include "fmt/format.h"
 

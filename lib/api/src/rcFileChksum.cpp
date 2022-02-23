@@ -1,7 +1,7 @@
-#include "fileChksum.h"
+#include "irods/fileChksum.h"
 
-#include "apiNumber.h"
-#include "procApiRequest.h"
+#include "irods/apiNumber.h"
+#include "irods/procApiRequest.h"
 
 int rcFileChksum(RcComm* conn, FileChksumInp* fileChksumInp, char** chksumStr)
 {

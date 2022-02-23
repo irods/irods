@@ -1,6 +1,6 @@
-#include "subStructFileWrite.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/subStructFileWrite.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcSubStructFileWrite( rcComm_t *conn, subStructFileFdOprInp_t *subStructFileWriteInp, bytesBuf_t *subStructFileWriteOutBBuf )

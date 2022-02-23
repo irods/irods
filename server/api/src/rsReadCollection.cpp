@@ -3,13 +3,13 @@
 /* rsReadCollection.c
  */
 
-#include "openCollection.h"
-#include "readCollection.h"
-#include "objMetaOpr.hpp"
-#include "rcGlobalExtern.h"
-#include "rsGlobalExtern.hpp"
-#include "irods_stacktrace.hpp"
-#include "rsReadCollection.hpp"
+#include "irods/openCollection.h"
+#include "irods/readCollection.h"
+#include "irods/objMetaOpr.hpp"
+#include "irods/rcGlobalExtern.h"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/rsReadCollection.hpp"
 
 int
 rsReadCollection( rsComm_t*, int *handleInxInp,

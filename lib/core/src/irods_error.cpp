@@ -1,9 +1,9 @@
 // =-=-=-=-=-=-=-
-#include "irods_error.hpp"
+#include "irods/irods_error.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rodsLog.h"
+#include "irods/rodsLog.h"
 
 // =-=-=-=-=-=-=-
 // boost includes

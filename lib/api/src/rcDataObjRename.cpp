@@ -1,6 +1,6 @@
-#include "dataObjRename.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/dataObjRename.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 #include <cstring>
 

@@ -3,20 +3,20 @@
 
 /* See authCheck.h for a description of this API call.*/
 
-#include "authRequest.h"
-#include "authCheck.h"
-#include "icatHighLevelRoutines.hpp"
-#include "miscServerFunct.hpp"
-#include "irods_configuration_keywords.hpp"
-#include "rsAuthCheck.hpp"
+#include "irods/authRequest.h"
+#include "irods/authCheck.h"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/irods_configuration_keywords.hpp"
+#include "irods/rsAuthCheck.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
 #include <string>
 
 // =-=-=-=-=-=-=-
-#include "irods_kvp_string_parser.hpp"
-#include "irods_auth_constants.hpp"
+#include "irods/irods_kvp_string_parser.hpp"
+#include "irods/irods_auth_constants.hpp"
 
 int rsAuthCheck(
         rsComm_t *rsComm,

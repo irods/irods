@@ -1,18 +1,18 @@
-#include "resource_administration.hpp"
+#include "irods/resource_administration.hpp"
 
 #undef rxGeneralAdmin
 
 #ifdef IRODS_RESOURCE_ADMINISTRATION_ENABLE_SERVER_SIDE_API
-    #include "rsGeneralAdmin.hpp"
+    #include "irods/rsGeneralAdmin.hpp"
     #define rxGeneralAdmin  rsGeneralAdmin
     #define IRODS_QUERY_ENABLE_SERVER_SIDE_API
 #else
-    #include "generalAdmin.h"
+    #include "irods/generalAdmin.h"
     #define rxGeneralAdmin  rcGeneralAdmin
 #endif // IRODS_RESOURCE_ADMINISTRATION_ENABLE_SERVER_SIDE_API
 
-#include "rodsErrorTable.h"
-#include "query_builder.hpp"
+#include "irods/rodsErrorTable.h"
+#include "irods/query_builder.hpp"
 
 #include "fmt/format.h"
 

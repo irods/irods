@@ -1,9 +1,9 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-#include "ruleExecSubmit.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/ruleExecSubmit.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcRuleExecSubmit( rcComm_t *conn, ruleExecSubmitInp_t *ruleExecSubmitInp, char **ruleExecId )

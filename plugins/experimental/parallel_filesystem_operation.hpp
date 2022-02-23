@@ -1,12 +1,12 @@
 #ifndef PARALLEL_FILESYSTEM_OPERATION_HPP
 #define PARALLEL_FILESYSTEM_OPERATION_HPP
 
-#include "experimental_plugin_framework.hpp"
-#include "irods_get_full_path_for_config_file.hpp"
-#include "irods_logger.hpp"
-#include "filesystem.hpp"
-#include "thread_pool.hpp"
-#include "connection_pool.hpp"
+#include "irods/experimental_plugin_framework.hpp"
+#include "irods/irods_get_full_path_for_config_file.hpp"
+#include "irods/irods_logger.hpp"
+#include "irods/filesystem.hpp"
+#include "irods/thread_pool.hpp"
+#include "irods/connection_pool.hpp"
 
 #include "fmt/format.h"
 

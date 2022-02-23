@@ -1,6 +1,6 @@
-#include "dataObjRead.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/dataObjRead.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 #include <cstring>
 

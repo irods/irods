@@ -3,13 +3,13 @@
 /* This is script-generated code (for the most part).  */
 /* See filePut.h for a description of this API call.*/
 
-#include "filePut.h"
-#include "miscServerFunct.hpp"
-#include "fileCreate.h"
-#include "dataObjOpr.hpp"
-#include "rsFilePut.hpp"
-#include "rsFileOpen.hpp"
-#include "rsFileCreate.hpp"
+#include "irods/filePut.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/fileCreate.h"
+#include "irods/dataObjOpr.hpp"
+#include "irods/rsFilePut.hpp"
+#include "irods/rsFileOpen.hpp"
+#include "irods/rsFileCreate.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -17,10 +17,10 @@
 #include <sstream>
 
 // =-=-=-=-=-=-=-
-#include "irods_log.hpp"
-#include "irods_file_object.hpp"
-#include "irods_stacktrace.hpp"
-#include "irods_resource_backport.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/irods_file_object.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/irods_resource_backport.hpp"
 
 
 /* rsFilePut - Put the content of a small file from a single buffer

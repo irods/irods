@@ -1,7 +1,7 @@
 // =-=-=-=-=-=-=-
-#include "getHierarchyForResc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/getHierarchyForResc.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 int rcGetHierarchyForResc(
     rcComm_t*                   _comm,

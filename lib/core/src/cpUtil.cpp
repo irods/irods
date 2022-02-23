@@ -2,13 +2,13 @@
 #include <sys/time.h>
 #endif
 
-#include "rodsPath.h"
-#include "rodsErrorTable.h"
-#include "rodsLog.h"
-#include "miscUtil.h"
-#include "cpUtil.h"
-#include "rcGlobalExtern.h"
-#include "irods_virtual_path.hpp"
+#include "irods/rodsPath.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/rodsLog.h"
+#include "irods/miscUtil.h"
+#include "irods/cpUtil.h"
+#include "irods/rcGlobalExtern.h"
+#include "irods/irods_virtual_path.hpp"
 
 #include <cstring>
 

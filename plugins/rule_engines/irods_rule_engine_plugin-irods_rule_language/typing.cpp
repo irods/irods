@@ -3,7 +3,7 @@
 
 #include "typing.hpp"
 #include "functions.hpp"
-#include "rcMisc.h"
+#include "irods/rcMisc.h"
 #define RE_ERROR(x); if(x) {goto error;}
 #define RE_ERROR2(x,y); if(x) {localErrorMsg=(y);goto error;}
 #define N_BASE_TYPES 7

@@ -1,6 +1,6 @@
-#include "subStructFileClose.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/subStructFileClose.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcSubStructFileClose( rcComm_t *conn, subStructFileFdOprInp_t *subStructFileCloseInp )

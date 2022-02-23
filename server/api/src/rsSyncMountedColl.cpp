@@ -1,18 +1,18 @@
-#include "syncMountedColl.h"
-#include "rodsLog.h"
-#include "icatDefines.h"
-#include "objMetaOpr.hpp"
-#include "collection.hpp"
-#include "resource.hpp"
-#include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.h"
-#include "rsSyncMountedColl.hpp"
-#include "miscServerFunct.hpp"
-#include "apiHeaderAll.h"
-#include "rsStructFileSync.hpp"
+#include "irods/syncMountedColl.h"
+#include "irods/rodsLog.h"
+#include "irods/icatDefines.h"
+#include "irods/objMetaOpr.hpp"
+#include "irods/collection.hpp"
+#include "irods/resource.hpp"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/rcGlobalExtern.h"
+#include "irods/rsSyncMountedColl.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/apiHeaderAll.h"
+#include "irods/rsStructFileSync.hpp"
 
 // =-=-=-=-=-=-=-
-#include "irods_resource_backport.hpp"
+#include "irods/irods_resource_backport.hpp"
 
 #include <cstring>
 

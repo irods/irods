@@ -1,7 +1,7 @@
 #include <catch2/catch.hpp>
 
 #include "irods_error_enum_matcher.hpp"
-#include "user_validation_utilities.hpp"
+#include "irods/user_validation_utilities.hpp"
 
 TEST_CASE("irods_user_get_type", "[user_validation][requires_connection]")
 {

@@ -5,12 +5,12 @@
 
 
 // =-=-=-=-=-=-=-
-#include "apiHeaderAll.h"
-#include "msParam.h"
-#include "irods_ms_plugin.hpp"
-#include "irods_file_object.hpp"
-#include "irods_resource_redirect.hpp"
-#include "irods_hierarchy_parser.hpp"
+#include "irods/apiHeaderAll.h"
+#include "irods/msParam.h"
+#include "irods/irods_ms_plugin.hpp"
+#include "irods/irods_file_object.hpp"
+#include "irods/irods_resource_redirect.hpp"
+#include "irods/irods_hierarchy_parser.hpp"
 
 // =-=-=-=-=-=-=-
 #include <string>

@@ -2,18 +2,18 @@
 // This test keeps C++ out
 // Or it breaks the build
 
-#include "rods.h"
-#include "rodsErrorTable.h"
-#include "rodsType.h"
-#include "rodsClient.h"
-#include "miscUtil.h"
-#include "rodsPath.h"
-#include "rcConnect.h"
-#include "dataObjOpen.h"
-#include "dataObjRead.h"
-#include "dataObjChksum.h"
-#include "dataObjClose.h"
-#include "checksum.h"
+#include "irods/rods.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/rodsType.h"
+#include "irods/rodsClient.h"
+#include "irods/miscUtil.h"
+#include "irods/rodsPath.h"
+#include "irods/rcConnect.h"
+#include "irods/dataObjOpen.h"
+#include "irods/dataObjRead.h"
+#include "irods/dataObjChksum.h"
+#include "irods/dataObjClose.h"
+#include "irods/checksum.h"
 
 #if IRODS_VERSION_INTEGER != 4003000
     #error "IRODS_VERSION_INTEGER needs attention"

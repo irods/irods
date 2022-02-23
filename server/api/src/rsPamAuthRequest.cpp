@@ -5,15 +5,15 @@
 
 #include <sys/wait.h>
 
-#include "pamAuthRequest.h"
-#include "genQuery.h"
-#include "rsPamAuthRequest.hpp"
-#include "icatHighLevelRoutines.hpp"
-#include "miscServerFunct.hpp"
-#include "irods_server_properties.hpp"
-#include "irods_log.hpp"
-#include "sslSockComm.h"
-#include "miscServerFunct.hpp"
+#include "irods/pamAuthRequest.h"
+#include "irods/genQuery.h"
+#include "irods/rsPamAuthRequest.hpp"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/irods_server_properties.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/sslSockComm.h"
+#include "irods/miscServerFunct.hpp"
 
 
 int

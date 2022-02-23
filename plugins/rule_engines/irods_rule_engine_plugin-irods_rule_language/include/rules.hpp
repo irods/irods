@@ -7,7 +7,7 @@
 #include "arithmetics.hpp"
 #include "typing.hpp"
 
-#include "irods_ms_plugin.hpp"
+#include "irods/irods_ms_plugin.hpp"
 
 //extern irods::ms_table MicrosTable;
 

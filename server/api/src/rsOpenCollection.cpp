@@ -4,14 +4,14 @@
 /* rsOpenCollection.c - server handling routine for rcOpenCollection
  */
 
-#include "rsOpenCollection.hpp"
-#include "rcMisc.h"
-#include "openCollection.h"
-#include "closeCollection.h"
-#include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.h"
-#include "rsObjStat.hpp"
-#include "rsCloseCollection.hpp"
+#include "irods/rsOpenCollection.hpp"
+#include "irods/rcMisc.h"
+#include "irods/openCollection.h"
+#include "irods/closeCollection.h"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/rcGlobalExtern.h"
+#include "irods/rsObjStat.hpp"
+#include "irods/rsCloseCollection.hpp"
 
 int rsOpenCollection(rsComm_t* rsComm, collInp_t* openCollInp)
 {

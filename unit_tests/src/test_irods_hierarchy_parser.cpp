@@ -1,8 +1,8 @@
 #include <catch2/catch.hpp>
 
 #include "irods_error_enum_matcher.hpp"
-#include "irods_exception.hpp"
-#include "irods_hierarchy_parser.hpp"
+#include "irods/irods_exception.hpp"
+#include "irods/irods_hierarchy_parser.hpp"
 
 using parser = irods::hierarchy_parser;
 

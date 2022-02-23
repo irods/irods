@@ -1,6 +1,6 @@
 // =-=-=-=-=-=-=-
 // irods includes
-#include "irods_virtual_path.hpp"
+#include "irods/irods_virtual_path.hpp"
 
 // =-=-=-=-=-=-=-
 // NOTE :: eventually move all knowledge of path management

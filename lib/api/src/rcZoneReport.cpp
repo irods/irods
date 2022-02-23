@@ -1,6 +1,6 @@
-#include "zone_report.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/zone_report.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 int
 rcZoneReport( rcComm_t *conn, bytesBuf_t** _bbuf ) {

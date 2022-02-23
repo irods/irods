@@ -1,4 +1,4 @@
-#include "irods_rs_comm_query.hpp"
+#include "irods/irods_rs_comm_query.hpp"
 
 namespace irods {
 

@@ -3,11 +3,11 @@
 
 //Creates irods_error_map
 #define MAKE_IRODS_ERROR_MAP
-#include "rodsErrorTable.h"
+#include "irods/rodsErrorTable.h"
 const static std::map<const int, const std::string> irods_error_map = irods_error_map_construction::irods_error_map;
 
-#include "rods.h"
-#include "irods_socket_information.hpp"
+#include "irods/rods.h"
+#include "irods/irods_socket_information.hpp"
 
 #ifdef SYSLOG
     #ifndef windows_platform
@@ -15,9 +15,9 @@ const static std::map<const int, const std::string> irods_error_map = irods_erro
     #endif
 #endif
 
-#include "rodsLog.h"
-#include "rcGlobalExtern.h"
-#include "rcMisc.h"
+#include "irods/rodsLog.h"
+#include "irods/rcGlobalExtern.h"
+#include "irods/rcMisc.h"
 #include <ctime>
 #include <map>
 #include <string>
@@ -26,8 +26,8 @@ const static std::map<const int, const std::string> irods_error_map = irods_erro
 #include <functional>
 #include <unordered_map>
 #include <sys/time.h>
-#include "irods_exception.hpp"
-#include "irods_logger.hpp"
+#include "irods/irods_exception.hpp"
+#include "irods/irods_logger.hpp"
 
 #ifndef windows_platform
     #include <unistd.h>

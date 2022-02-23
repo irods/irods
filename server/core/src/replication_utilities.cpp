@@ -1,7 +1,7 @@
-#include "irods_file_object.hpp"
-#include "irods_log.hpp"
-#include "replication_utilities.hpp"
-#include "rodsError.h"
+#include "irods/irods_file_object.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/replication_utilities.hpp"
+#include "irods/rodsError.h"
 
 #include "fmt/format.h"
 

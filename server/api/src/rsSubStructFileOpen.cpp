@@ -1,11 +1,11 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
-#include "subStructFileOpen.h"
-#include "miscServerFunct.hpp"
-#include "dataObjOpr.hpp"
-#include "rsSubStructFileOpen.hpp"
+#include "irods/subStructFileOpen.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/dataObjOpr.hpp"
+#include "irods/rsSubStructFileOpen.hpp"
 
-#include "irods_structured_object.hpp"
+#include "irods/irods_structured_object.hpp"
 
 
 

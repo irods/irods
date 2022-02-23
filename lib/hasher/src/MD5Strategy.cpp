@@ -1,4 +1,4 @@
-#include "MD5Strategy.hpp"
+#include "irods/MD5Strategy.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -6,7 +6,7 @@
 
 #include <cstring>
 #include <openssl/md5.h>
-#include "irods_stacktrace.hpp"
+#include "irods/irods_stacktrace.hpp"
 
 namespace irods {
 

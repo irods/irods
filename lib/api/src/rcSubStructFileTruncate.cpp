@@ -1,6 +1,6 @@
-#include "subStructFileTruncate.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/subStructFileTruncate.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcSubStructFileTruncate( rcComm_t *conn, subFile_t *bunSubTruncateInp )

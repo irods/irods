@@ -1,7 +1,7 @@
-#include "irods_re_serialization.hpp"
+#include "irods/irods_re_serialization.hpp"
 
-#include "irods_plugin_context.hpp"
-#include "rodsErrorTable.h"
+#include "irods/irods_plugin_context.hpp"
+#include "irods/rodsErrorTable.h"
 
 #include <boost/lexical_cast.hpp>
 #include <fmt/format.h>

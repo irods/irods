@@ -1,6 +1,6 @@
-#include "collCreate.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/collCreate.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 #include <cstring>
 

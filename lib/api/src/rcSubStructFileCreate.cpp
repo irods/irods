@@ -1,6 +1,6 @@
-#include "subStructFileCreate.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/subStructFileCreate.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcSubStructFileCreate( rcComm_t *conn, subFile_t *subFile )

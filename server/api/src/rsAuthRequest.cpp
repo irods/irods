@@ -4,18 +4,18 @@
 /* See authRequest.h for a description of this API call.*/
 
 // =-=-=-=-=-=-=-
-#include "irods_native_auth_object.hpp"
-#include "irods_auth_object.hpp"
-#include "irods_auth_factory.hpp"
-#include "irods_auth_plugin.hpp"
-#include "irods_auth_manager.hpp"
-#include "irods_auth_constants.hpp"
-#include "rsAuthRequest.hpp"
+#include "irods/irods_native_auth_object.hpp"
+#include "irods/irods_auth_object.hpp"
+#include "irods/irods_auth_factory.hpp"
+#include "irods/irods_auth_plugin.hpp"
+#include "irods/irods_auth_manager.hpp"
+#include "irods/irods_auth_constants.hpp"
+#include "irods/rsAuthRequest.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "authRequest.h"
-#include "authenticate.h"
+#include "irods/authRequest.h"
+#include "irods/authenticate.h"
 
 int get64RandomBytes( char *buf );
 static char buf[CHALLENGE_LEN + MAX_PASSWORD_LEN + 1];

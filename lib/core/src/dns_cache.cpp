@@ -1,4 +1,4 @@
-#include "dns_cache.hpp"
+#include "irods/dns_cache.hpp"
 
 #include <boost/interprocess/managed_shared_memory.hpp>
 #include <boost/interprocess/shared_memory_object.hpp>

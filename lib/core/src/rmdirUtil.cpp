@@ -1,13 +1,13 @@
-#include "rmdirUtil.h"
-#include "rmUtil.h"
-#include "rodsPath.h"
-#include "rodsErrorTable.h"
-#include "rodsLog.h"
-#include "rcGlobalExtern.h"
-#include "rodsPath.h"
-#include "rcMisc.h"
+#include "irods/rmdirUtil.h"
+#include "irods/rmUtil.h"
+#include "irods/rodsPath.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/rodsLog.h"
+#include "irods/rcGlobalExtern.h"
+#include "irods/rodsPath.h"
+#include "irods/rcMisc.h"
 
-#include "filesystem.hpp"
+#include "irods/filesystem.hpp"
 
 #include <boost/filesystem.hpp>
 

@@ -1,6 +1,6 @@
-#include "modDataObjMeta.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/modDataObjMeta.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcModDataObjMeta( rcComm_t *conn, modDataObjMeta_t *modDataObjMetaInp )

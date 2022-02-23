@@ -1,15 +1,15 @@
 #include <catch2/catch.hpp>
 
-#include "getRodsEnv.h"
-#include "irods_client_api_table.hpp"
-#include "irods_pack_table.hpp"
-#include "connection_pool.hpp"
-#include "filesystem.hpp"
-#include "dstream.hpp"
-#include "transport/default_transport.hpp"
-#include "rodsErrorTable.h"
-#include "irods_at_scope_exit.hpp"
-#include "data_object_modify_info.h"
+#include "irods/getRodsEnv.h"
+#include "irods/irods_client_api_table.hpp"
+#include "irods/irods_pack_table.hpp"
+#include "irods/connection_pool.hpp"
+#include "irods/filesystem.hpp"
+#include "irods/dstream.hpp"
+#include "irods/transport/default_transport.hpp"
+#include "irods/rodsErrorTable.h"
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/data_object_modify_info.h"
 
 TEST_CASE("data_object_modify_info")
 {

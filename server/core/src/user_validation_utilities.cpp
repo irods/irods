@@ -1,8 +1,8 @@
-#include "rodsConnect.h"
-#include "user_validation_utilities.hpp"
+#include "irods/rodsConnect.h"
+#include "irods/user_validation_utilities.hpp"
 
 #define IRODS_QUERY_ENABLE_SERVER_SIDE_API
-#include "query_builder.hpp"
+#include "irods/query_builder.hpp"
 
 #include "fmt/format.h"
 

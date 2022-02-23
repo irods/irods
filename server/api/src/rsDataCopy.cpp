@@ -3,16 +3,16 @@
 /* This is script-generated code (for the most part).  */
 /* See dataCopy.h for a description of this API call.*/
 
-#include "rcMisc.h"
-#include "dataCopy.h"
-#include "rcPortalOpr.h"
-#include "miscServerFunct.hpp"
-#include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.h"
-#include "rsDataCopy.hpp"
-#include "rodsConnect.h"
-#include "irods_hierarchy_parser.hpp"
-#include "irods_re_structs.hpp"
+#include "irods/rcMisc.h"
+#include "irods/dataCopy.h"
+#include "irods/rcPortalOpr.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/rcGlobalExtern.h"
+#include "irods/rsDataCopy.hpp"
+#include "irods/rodsConnect.h"
+#include "irods/irods_hierarchy_parser.hpp"
+#include "irods/irods_re_structs.hpp"
 
 /* rsDataCopy - Do the copy data transfer.
  * Input -

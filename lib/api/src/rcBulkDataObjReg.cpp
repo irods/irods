@@ -1,6 +1,6 @@
-#include "bulkDataObjReg.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/bulkDataObjReg.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcBulkDataObjReg( rcComm_t *conn, genQueryOut_t *bulkDataObjRegInp, genQueryOut_t **bulkDataObjRegOut )

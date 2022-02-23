@@ -1,4 +1,4 @@
-#include "irods_physical_object.hpp"
+#include "irods/irods_physical_object.hpp"
 
 namespace irods
 {

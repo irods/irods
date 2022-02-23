@@ -1,10 +1,10 @@
 #include <catch2/catch.hpp>
 
-#include "connection_pool.hpp"
-#include "irods_at_scope_exit.hpp"
-#include "resource_administration.hpp"
-#include "rodsClient.h"
-#include "server_report.h"
+#include "irods/connection_pool.hpp"
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/resource_administration.hpp"
+#include "irods/rodsClient.h"
+#include "irods/server_report.h"
 
 #include <unistd.h>
 

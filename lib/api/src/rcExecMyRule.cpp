@@ -1,9 +1,9 @@
-#include "execMyRule.h"
-#include "oprComplete.h"
-#include "dataObjPut.h"
-#include "dataObjGet.h"
-#include "rcMisc.h"
-#include "apiNumber.h"
+#include "irods/execMyRule.h"
+#include "irods/oprComplete.h"
+#include "irods/dataObjPut.h"
+#include "irods/dataObjGet.h"
+#include "irods/rcMisc.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcExecMyRule( rcComm_t *conn, execMyRuleInp_t *execMyRuleInp, msParamArray_t **outParamArray )

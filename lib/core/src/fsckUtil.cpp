@@ -1,12 +1,12 @@
-#include "fsckUtil.h"
+#include "irods/fsckUtil.h"
 
-#include "rodsPath.h"
-#include "rodsErrorTable.h"
-#include "rodsLog.h"
-#include "miscUtil.h"
-#include "scanUtil.h"
-#include "checksum.h"
-#include "rcGlobalExtern.h"
+#include "irods/rodsPath.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/rodsLog.h"
+#include "irods/miscUtil.h"
+#include "irods/scanUtil.h"
+#include "irods/checksum.h"
+#include "irods/rcGlobalExtern.h"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>

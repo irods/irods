@@ -1,9 +1,9 @@
-#include "atomic_apply_database_operations.hpp"
+#include "irods/atomic_apply_database_operations.hpp"
 
-#include "rodsErrorTable.h"
-#include "irods_exception.hpp"
-#include "catalog.hpp"
-#include "irods_logger.hpp"
+#include "irods/rodsErrorTable.h"
+#include "irods/irods_exception.hpp"
+#include "irods/catalog.hpp"
+#include "irods/irods_logger.hpp"
 
 #include <boost/iterator/function_input_iterator.hpp>
 #include <fmt/format.h>

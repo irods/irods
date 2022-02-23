@@ -3,15 +3,15 @@
 /* This is script-generated code (for the most part).  */
 /* See fileMkdir.h for a description of this API call.*/
 
-#include "fileMkdir.h"
-#include "miscServerFunct.hpp"
-#include "rsFileMkdir.hpp"
+#include "irods/fileMkdir.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/rsFileMkdir.hpp"
 
 // =-=-=-=-=-=-=-
-#include "irods_log.hpp"
-#include "irods_collection_object.hpp"
-#include "irods_stacktrace.hpp"
-#include "fileDriver.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/irods_collection_object.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/fileDriver.hpp"
 
 int
 rsFileMkdir( rsComm_t *rsComm, fileMkdirInp_t *fileMkdirInp ) {

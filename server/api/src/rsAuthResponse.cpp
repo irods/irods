@@ -4,22 +4,22 @@
 /* See authResponse.h for a description of this API call.*/
 
 // =-=-=-=-=-=-=-
-#include "irods_native_auth_object.hpp"
-#include "irods_auth_object.hpp"
-#include "irods_auth_factory.hpp"
-#include "irods_auth_plugin.hpp"
-#include "irods_auth_manager.hpp"
-#include "irods_auth_constants.hpp"
-#include "irods_kvp_string_parser.hpp"
-#include "irods_pluggable_auth_scheme.hpp"
-#include "rsAuthResponse.hpp"
+#include "irods/irods_native_auth_object.hpp"
+#include "irods/irods_auth_object.hpp"
+#include "irods/irods_auth_factory.hpp"
+#include "irods/irods_auth_plugin.hpp"
+#include "irods/irods_auth_manager.hpp"
+#include "irods/irods_auth_constants.hpp"
+#include "irods/irods_kvp_string_parser.hpp"
+#include "irods/irods_pluggable_auth_scheme.hpp"
+#include "irods/rsAuthResponse.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "authRequest.h"
-#include "authResponse.h"
-#include "authCheck.h"
-#include "miscServerFunct.hpp"
+#include "irods/authRequest.h"
+#include "irods/authResponse.h"
+#include "irods/authCheck.h"
+#include "irods/miscServerFunct.hpp"
 
 int rsAuthResponse(
     rsComm_t*          _comm,

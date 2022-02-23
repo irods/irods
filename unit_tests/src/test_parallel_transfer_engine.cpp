@@ -1,16 +1,16 @@
 #include <catch2/catch.hpp>
 
-#include "client_connection.hpp"
-#include "connection_pool.hpp"
-#include "dstream.hpp"
-#include "filesystem.hpp"
-#include "irods_at_scope_exit.hpp"
-#include "parallel_transfer_engine.hpp"
-#include "replica.hpp"
-#include "rodsClient.h"
-#include "stream_factory_utility.hpp"
-#include "transport/default_transport.hpp"
-#include "resource_administration.hpp"
+#include "irods/client_connection.hpp"
+#include "irods/connection_pool.hpp"
+#include "irods/dstream.hpp"
+#include "irods/filesystem.hpp"
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/parallel_transfer_engine.hpp"
+#include "irods/replica.hpp"
+#include "irods/rodsClient.h"
+#include "irods/stream_factory_utility.hpp"
+#include "irods/transport/default_transport.hpp"
+#include "irods/resource_administration.hpp"
 #include "unit_test_utils.hpp"
 
 #include <boost/filesystem.hpp>

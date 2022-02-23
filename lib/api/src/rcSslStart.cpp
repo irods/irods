@@ -1,9 +1,9 @@
 /* This is script-generated code.  */
 /* See sslStart.h for a description of this API call.*/
 
-#include "sslStart.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/sslStart.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 int
 rcSslStart( rcComm_t *conn, sslStartInp_t *sslStartInp ) {

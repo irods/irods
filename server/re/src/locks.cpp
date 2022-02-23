@@ -1,11 +1,11 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
-#include "locks.hpp"
-#include "rodsConnect.h"
-//#include "filesystem.hpp"
+#include "irods/locks.hpp"
+#include "irods/rodsConnect.h"
+//#include "irods/filesystem.hpp"
 //#include "utils.hpp"
-#include "irods_log.hpp"
-#include "irods_server_properties.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/irods_server_properties.hpp"
 
 int lockWriteMutex( const char* _inst_name, mutex_type **mutex ) {
     std::string mutex_name;

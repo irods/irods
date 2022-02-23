@@ -1,25 +1,25 @@
 // =-=-=-=-=-=-=-
 // irods includes
-#include "msParam.h"
+#include "irods/msParam.h"
 #include "reGlobalsExtern.hpp"
-#include "generalAdmin.h"
-#include "miscServerFunct.hpp"
+#include "irods/generalAdmin.h"
+#include "irods/miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-
-#include "irods_resource_plugin.hpp"
-#include "irods_file_object.hpp"
-#include "irods_physical_object.hpp"
-#include "irods_collection_object.hpp"
-#include "irods_string_tokenize.hpp"
-#include "irods_hierarchy_parser.hpp"
-#include "irods_resource_redirect.hpp"
-#include "irods_stacktrace.hpp"
-#include "irods_re_plugin.hpp"
-#include "irods_re_ruleexistshelper.hpp"
-#include "irods_re_structs.hpp"
+#include "irods/irods_resource_plugin.hpp"
+#include "irods/irods_file_object.hpp"
+#include "irods/irods_physical_object.hpp"
+#include "irods/irods_collection_object.hpp"
+#include "irods/irods_string_tokenize.hpp"
+#include "irods/irods_hierarchy_parser.hpp"
+#include "irods/irods_resource_redirect.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/irods_re_plugin.hpp"
+#include "irods/irods_re_ruleexistshelper.hpp"
+#include "irods/irods_re_structs.hpp"
 
-#include "irods_hasher_factory.hpp"
-#include "MD5Strategy.hpp"
+#include "irods/irods_hasher_factory.hpp"
+#include "irods/MD5Strategy.hpp"
 
 #include "fmt/format.h"
 
@@ -37,11 +37,11 @@
 #include <boost/any.hpp>
 
 #include "configuration.hpp"
-#include "irods_server_properties.hpp"
+#include "irods/irods_server_properties.hpp"
 #include <nlohmann/json.hpp>
 
 #define IRODS_QUERY_ENABLE_SERVER_SIDE_API
-#include "query_builder.hpp"
+#include "irods/query_builder.hpp"
 
 #define STATIC_PEP(NAME) static_policy_enforcement_points[#NAME] = NAME
 

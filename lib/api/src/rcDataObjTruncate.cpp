@@ -1,6 +1,6 @@
-#include "dataObjTruncate.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/dataObjTruncate.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 #include <cstring>
 

@@ -10,11 +10,11 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rodsErrorTable.h"
-#include "irods_log.hpp"
-#include "irods_get_full_path_for_config_file.hpp"
-#include "irods_default_paths.hpp"
-#include "irods_exception.hpp"
+#include "irods/rodsErrorTable.h"
+#include "irods/irods_log.hpp"
+#include "irods/irods_get_full_path_for_config_file.hpp"
+#include "irods/irods_default_paths.hpp"
+#include "irods/irods_exception.hpp"
 
 namespace irods {
     error get_full_path_for_config_file(

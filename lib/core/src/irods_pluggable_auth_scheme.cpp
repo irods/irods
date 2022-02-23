@@ -1,5 +1,5 @@
 // =-=-=-=-=-=-=-
-#include "irods_pluggable_auth_scheme.hpp"
+#include "irods/irods_pluggable_auth_scheme.hpp"
 
 namespace irods {
     pluggable_auth_scheme& pluggable_auth_scheme::get_instance() {

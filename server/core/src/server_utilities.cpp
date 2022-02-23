@@ -1,10 +1,10 @@
-#include "server_utilities.hpp"
+#include "irods/server_utilities.hpp"
 
-#include "dataObjInpOut.h"
-#include "key_value_proxy.hpp"
+#include "irods/dataObjInpOut.h"
+#include "irods/key_value_proxy.hpp"
 
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
-#include "filesystem.hpp"
+#include "irods/filesystem.hpp"
 
 #include <regex>
 

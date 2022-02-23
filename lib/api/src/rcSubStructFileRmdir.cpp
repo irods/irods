@@ -1,6 +1,6 @@
-#include "subStructFileRmdir.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/subStructFileRmdir.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcSubStructFileRmdir( rcComm_t *conn, subFile_t *subFile )

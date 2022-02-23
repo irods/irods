@@ -1,6 +1,6 @@
 #include <boost/random.hpp>
 #include <openssl/rand.h>
-#include "irods_random.hpp"
+#include "irods/irods_random.hpp"
 #include <ctime>
 
 void irods::getRandomBytes( void * buf, int bytes ) {

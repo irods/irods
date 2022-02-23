@@ -1,6 +1,6 @@
 #include <catch2/catch.hpp>
 
-#include "version.hpp"
+#include "irods/version.hpp"
 
 static constexpr irods::version v4290{4, 2, 9};
 static constexpr irods::version v4300{4, 3};

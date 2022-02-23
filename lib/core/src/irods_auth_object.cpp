@@ -1,4 +1,4 @@
-#include "irods_auth_object.hpp"
+#include "irods/irods_auth_object.hpp"
 
 namespace irods {
 

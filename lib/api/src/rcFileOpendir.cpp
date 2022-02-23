@@ -1,6 +1,6 @@
-#include "fileOpendir.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "irods/fileOpendir.h"
+#include "irods/procApiRequest.h"
+#include "irods/apiNumber.h"
 
 /**
  * \fn rcFileOpendir( rcComm_t *conn, fileOpendirInp_t *fileOpendirInp )

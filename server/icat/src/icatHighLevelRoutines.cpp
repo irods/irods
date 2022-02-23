@@ -11,17 +11,17 @@
 
 **************************************************************************/
 
-#include "icatHighLevelRoutines.hpp"
+#include "irods/icatHighLevelRoutines.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "icatStructs.hpp"
-#include "irods_error.hpp"
-#include "irods_database_object.hpp"
-#include "irods_database_factory.hpp"
-#include "irods_database_manager.hpp"
-#include "irods_database_constants.hpp"
-#include "irods_server_properties.hpp"
+#include "irods/icatStructs.hpp"
+#include "irods/irods_error.hpp"
+#include "irods/irods_database_object.hpp"
+#include "irods/irods_database_factory.hpp"
+#include "irods/irods_database_manager.hpp"
+#include "irods/irods_database_constants.hpp"
+#include "irods/irods_server_properties.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes

@@ -1,11 +1,11 @@
 // =-=-=-=-=-=-=-
-#include "irods_native_auth_object.hpp"
-#include "irods_auth_manager.hpp"
-#include "irods_auth_plugin.hpp"
+#include "irods/irods_native_auth_object.hpp"
+#include "irods/irods_auth_manager.hpp"
+#include "irods/irods_auth_plugin.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rcMisc.h"
+#include "irods/rcMisc.h"
 
 extern int ProcessType;
 

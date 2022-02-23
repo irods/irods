@@ -1,9 +1,9 @@
-#include "administration_utilities.hpp"
-#include "userAdmin.h"
-#include "rsUserAdmin.hpp"
-#include "icatHighLevelRoutines.hpp"
-#include "miscServerFunct.hpp"
-#include "irods_configuration_keywords.hpp"
+#include "irods/administration_utilities.hpp"
+#include "irods/userAdmin.h"
+#include "irods/rsUserAdmin.hpp"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/irods_configuration_keywords.hpp"
 
 int
 rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {

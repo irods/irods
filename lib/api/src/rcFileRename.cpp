@@ -1,7 +1,7 @@
-#include "fileRename.h"
+#include "irods/fileRename.h"
 
-#include "apiNumber.h"
-#include "procApiRequest.h"
+#include "irods/apiNumber.h"
+#include "irods/procApiRequest.h"
 
 int rcFileRename(RcComm* conn, FileRenameInp* fileRenameInp, FileRenameOut** fileRenameOut)
 {

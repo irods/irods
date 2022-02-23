@@ -3,15 +3,15 @@
 /* This is script-generated code (for the most part).  */
 /* See fileLseek.h for a description of this API call.*/
 
-#include "fileLseek.h"
-#include "miscServerFunct.hpp"
-#include "rsGlobalExtern.hpp"
-#include "rsFileLseek.hpp"
+#include "irods/fileLseek.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/rsFileLseek.hpp"
 
 // =-=-=-=-=-=-=-
-#include "irods_log.hpp"
-#include "irods_file_object.hpp"
-#include "irods_stacktrace.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/irods_file_object.hpp"
+#include "irods/irods_stacktrace.hpp"
 
 int
 rsFileLseek( rsComm_t *rsComm, fileLseekInp_t *fileLseekInp,

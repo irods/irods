@@ -1,9 +1,9 @@
-#include "rsRuleExecMod.hpp"
+#include "irods/rsRuleExecMod.hpp"
 
-#include "irods_configuration_keywords.hpp"
-#include "icatHighLevelRoutines.hpp"
-#include "miscServerFunct.hpp"
-#include "irods_log.hpp"
+#include "irods/irods_configuration_keywords.hpp"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/irods_log.hpp"
 
 int rsRuleExecMod(RsComm* _rsComm, RuleExecModifyInput* _ruleExecModInp)
 {

@@ -1,7 +1,7 @@
-#include "exec_rule_expression.h"
+#include "irods/exec_rule_expression.h"
 
-#include "apiNumber.h"
-#include "procApiRequest.h"
+#include "irods/apiNumber.h"
+#include "irods/procApiRequest.h"
 
 int rcExecRuleExpression(RcComm* _comm, ExecRuleExpression* _inp)
 {

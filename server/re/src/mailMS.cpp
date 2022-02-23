@@ -1,9 +1,9 @@
 /// \file
 
-#include "icatHighLevelRoutines.hpp"
+#include "irods/icatHighLevelRoutines.hpp"
 
-#include "irods_log.hpp"
-#include "irods_re_structs.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/irods_re_structs.hpp"
 
 #include <unistd.h>
 #include <sys/types.h>

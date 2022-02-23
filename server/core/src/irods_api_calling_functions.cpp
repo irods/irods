@@ -1,6 +1,6 @@
-#include "rcConnect.h"
-#include "apiHeaderAll.h"
-#include "apiHandler.hpp"
+#include "irods/rcConnect.h"
+#include "irods/apiHeaderAll.h"
+#include "irods/apiHandler.hpp"
 #include <boost/any.hpp>
 #include <functional>
 

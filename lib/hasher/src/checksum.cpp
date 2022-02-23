@@ -1,13 +1,13 @@
-#include "checksum.h"
+#include "irods/checksum.h"
 
-#include "irods_stacktrace.hpp"
-#include "irods_hasher_factory.hpp"
-#include "getRodsEnv.h"
-#include "irods_log.hpp"
-#include "objInfo.h"
-#include "SHA256Strategy.hpp"
-#include "rodsKeyWdDef.h"
-#include "rcMisc.h"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/irods_hasher_factory.hpp"
+#include "irods/getRodsEnv.h"
+#include "irods/irods_log.hpp"
+#include "irods/objInfo.h"
+#include "irods/SHA256Strategy.hpp"
+#include "irods/rodsKeyWdDef.h"
+#include "irods/rcMisc.h"
 
 #include <cstdio>
 #include <ctime>

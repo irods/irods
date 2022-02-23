@@ -3,12 +3,12 @@
 #ifndef windows_platform
 #include <sys/time.h>
 #endif
-#include "rodsPath.h"
-#include "rodsErrorTable.h"
-#include "miscUtil.h"
-#include "rodsLog.h"
-#include "rmtrashUtil.h"
-#include "rcGlobalExtern.h"
+#include "irods/rodsPath.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/miscUtil.h"
+#include "irods/rodsLog.h"
+#include "irods/rmtrashUtil.h"
+#include "irods/rcGlobalExtern.h"
 
 int
 rmtrashUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs,

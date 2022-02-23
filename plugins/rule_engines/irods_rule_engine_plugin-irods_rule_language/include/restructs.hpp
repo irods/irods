@@ -8,17 +8,17 @@
 #include <stdio.h>
 #include <string.h>
 //#include "reGlobalsExtern.hpp"
-#include "irods_re_structs.hpp"
+#include "irods/irods_re_structs.hpp"
 
 #ifndef DEBUG
-#include "rodsType.h"
-#include "msParam.h"
+#include "irods/rodsType.h"
+#include "irods/msParam.h"
 #endif
 
-//#include "reconstants.hpp"
-#include "region.h"
-#include "irods_hashtable.h"
-#include "irods_list.h"
+//#include "irods/reconstants.hpp"
+#include "irods/region.h"
+#include "irods/irods_hashtable.h"
+#include "irods/irods_list.h"
 
 #define TYPE(x) ((x)->exprType->nodeType)
 

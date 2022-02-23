@@ -5,13 +5,13 @@
 #ifndef RC_GLOBAL_H__
 #define RC_GLOBAL_H__
 
-#include "rods.h"
-#include "msParam.h"
-#include "rodsPackTable.h"		/* globally declare RodsPackTable */
-#include "objInfo.h"
-#include "rodsGenQuery.h"
-#include "rodsGeneralUpdate.h"
-#include "guiProgressCallback.h"
+#include "irods/rods.h"
+#include "irods/msParam.h"
+#include "irods/rodsPackTable.h"		/* globally declare RodsPackTable */
+#include "irods/objInfo.h"
+#include "irods/rodsGenQuery.h"
+#include "irods/rodsGeneralUpdate.h"
+#include "irods/guiProgressCallback.h"
 
 int ProcessType = CLIENT_PT;
 
