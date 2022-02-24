@@ -499,7 +499,6 @@ set(
   ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include/irods/fileOpr.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include/irods/finalize_utilities.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include/irods/initServer.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include/irods/irodsReServer.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include/irods/irods_api_calling_functions.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include/irods/irods_collection_object.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include/irods/irods_data_object.hpp
@@ -592,6 +591,11 @@ set(
   ${CMAKE_CURRENT_SOURCE_DIR}/server/main_server/include/irods/rodsServer.hpp
   )
 
+set(
+  IRODS_SERVER_DELAY_SERVER_INCLUDE_HEADERS
+  ${CMAKE_CURRENT_SOURCE_DIR}/server/delay_server/include/irods/irodsReServer.hpp
+  )
+
 install(
   FILES
   ${IRODS_GENERATED_HEADERS}
@@ -605,6 +609,7 @@ install(
   ${IRODS_SERVER_RE_INCLUDE_HEADERS}
   ${IRODS_SERVER_DRIVERS_INCLUDE_HEADERS}
   ${IRODS_SERVER_MAIN_SERVER_INCLUDE_HEADERS}
+  ${IRODS_SERVER_DELAY_SERVER_INCLUDE_HEADERS}
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/irods
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
   )
