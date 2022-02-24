@@ -1064,6 +1064,7 @@ add_library(
 target_link_libraries(
   irods_server
   PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/server/delay_server/include>
   nlohmann_json::nlohmann_json
   irods_common
   irods_plugin_dependencies
@@ -1471,7 +1472,7 @@ endforeach()
 
 add_executable(
   irodsReServer
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/core/src/irodsReServer.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/server/delay_server/src/irodsReServer.cpp
   )
 target_link_libraries(
   irodsReServer
@@ -1492,6 +1493,7 @@ target_link_libraries(
 target_include_directories(
   irodsReServer
   PRIVATE
+  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/server/delay_server/include>
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   ${IRODS_EXTERNALS_FULLPATH_NANODBC}/include
