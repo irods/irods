@@ -8,7 +8,7 @@
 #include <vector>
 #include <boost/format.hpp>
 
-#include <irods/irods_stacktrace.hpp>
+#include "irods/irods_stacktrace.hpp"
 
 namespace irods {
 
