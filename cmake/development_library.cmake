@@ -72,6 +72,8 @@ set(
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/irods/irods_list.h
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/irods/irods_load_plugin.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/irods/irods_log.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/irods/irods_logger.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/irods/irods_logger.tpp
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/irods/irods_lookup_table.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/irods/irods_native_auth_object.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/irods/irods_network_constants.hpp
@@ -512,8 +514,6 @@ set(
   ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include/irods/irods_generic_database_object.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include/irods/irods_get_l1desc.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include/irods/irods_linked_list_iterator.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include/irods/irods_logger.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include/irods/irods_logger.tpp
   ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include/irods/irods_mysql_object.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include/irods/irods_oracle_object.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include/irods/irods_physical_object.hpp

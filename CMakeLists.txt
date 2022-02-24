@@ -1120,6 +1120,7 @@ set(
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/src/irods_hostname.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/src/irods_kvp_string_parser.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/src/irods_log.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/src/irods_logger.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/src/irods_pack_table.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/src/irods_parse_command_line_options.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/src/irods_path_recursion.cpp
@@ -1158,7 +1159,6 @@ set(
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/rbudp/src/QUANTAnet_rbudpBase_c.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/rbudp/src/QUANTAnet_rbudpReceiver_c.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/rbudp/src/QUANTAnet_rbudpSender_c.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/core/src/irods_logger.cpp
   )
 add_library(
   irods_common
