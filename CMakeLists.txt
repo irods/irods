@@ -330,7 +330,7 @@ add_custom_command(
 )
 
 set_source_files_properties(
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/core/src/irods_server_control_plane.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/server/main_server/src/irods_server_control_plane.cpp
   PROPERTIES
   OBJECT_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/server/core/include/irods/server_control_plane_command.hpp
   )
@@ -1410,8 +1410,8 @@ target_compile_definitions(RodsAPIs PRIVATE ${IRODS_COMPILE_DEFINITIONS})
 
 set(
   IRODS_MAIN_EXECUTABLE_IRODSSERVER_SOURCES
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/core/src/rodsServer.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/core/src/irods_server_control_plane.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/server/main_server/src/rodsServer.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/server/main_server/src/irods_server_control_plane.cpp
   )
 
 set(
@@ -1453,6 +1453,7 @@ foreach(EXECUTABLE ${IRODS_MAIN_EXECUTABLES})
     ${EXECUTABLE}
     PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}/server/core/include
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/main_server/include>
     ${IRODS_EXTERNALS_FULLPATH_AVRO}/include
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
     ${IRODS_EXTERNALS_FULLPATH_CPPZMQ}/include
