@@ -542,7 +542,6 @@ set(
   ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include/irods/resource.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include/irods/rodsAgent.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include/irods/rodsConnect.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include/irods/rodsServer.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include/irods/rsApiHandler.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include/irods/rsGlobalExtern.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/server/core/include/irods/rsIcatOpr.hpp
@@ -588,6 +587,11 @@ set(
   ${CMAKE_CURRENT_SOURCE_DIR}/server/drivers/include/fileDriver.hpp
   )
 
+set(
+  IRODS_SERVER_MAIN_SERVER_INCLUDE_HEADERS
+  ${CMAKE_CURRENT_SOURCE_DIR}/server/main_server/include/irods/rodsServer.hpp
+  )
+
 install(
   FILES
   ${IRODS_GENERATED_HEADERS}
@@ -600,6 +604,7 @@ install(
   ${IRODS_SERVER_ICAT_INCLUDE_HEADERS}
   ${IRODS_SERVER_RE_INCLUDE_HEADERS}
   ${IRODS_SERVER_DRIVERS_INCLUDE_HEADERS}
+  ${IRODS_SERVER_MAIN_SERVER_INCLUDE_HEADERS}
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/irods
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
   )

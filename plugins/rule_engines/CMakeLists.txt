@@ -53,6 +53,7 @@ foreach(PLUGIN ${IRODS_RULE_ENGINE_PLUGINS})
     ${PLUGIN}
     PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/irods_rule_engine_plugin-irods_rule_language/include>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/server/main_server/include>
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
     ${IRODS_EXTERNALS_FULLPATH_FMT}/include
     )
