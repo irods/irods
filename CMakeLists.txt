@@ -318,21 +318,21 @@ git submodule update --init")
 endif()
 
 add_custom_command(
-  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/lib/core/include/irods/"
-  COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/lib/core/include/irods/"
+  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/server/core/include/irods/"
+  COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/server/core/include/irods/"
 )
 
 add_custom_command(
-  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/lib/core/include/irods/server_control_plane_command.hpp"
-  COMMAND "${CMAKE_COMMAND}" -E env LD_LIBRARY_PATH="${IRODS_EXTERNALS_FULLPATH_BOOST}/lib" "${IRODS_EXTERNALS_FULLPATH_AVRO}/bin/avrogencpp" -n irods -o "${CMAKE_CURRENT_BINARY_DIR}/lib/core/include/irods/server_control_plane_command.hpp" -i "${CMAKE_CURRENT_SOURCE_DIR}/irods_schema_messaging/v1/server_control_plane_command.json"
+  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/server/core/include/irods/server_control_plane_command.hpp"
+  COMMAND "${CMAKE_COMMAND}" -E env LD_LIBRARY_PATH="${IRODS_EXTERNALS_FULLPATH_BOOST}/lib" "${IRODS_EXTERNALS_FULLPATH_AVRO}/bin/avrogencpp" -n irods -o "${CMAKE_CURRENT_BINARY_DIR}/server/core/include/irods/server_control_plane_command.hpp" -i "${CMAKE_CURRENT_SOURCE_DIR}/irods_schema_messaging/v1/server_control_plane_command.json"
   MAIN_DEPENDENCY "${CMAKE_CURRENT_SOURCE_DIR}/irods_schema_messaging/v1/server_control_plane_command.json"
-  DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/lib/core/include/irods/"
+  DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/server/core/include/irods/"
 )
 
 set_source_files_properties(
   ${CMAKE_CURRENT_SOURCE_DIR}/server/core/src/irods_server_control_plane.cpp
   PROPERTIES
-  OBJECT_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/lib/core/include/irods/server_control_plane_command.hpp
+  OBJECT_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/server/core/include/irods/server_control_plane_command.hpp
   )
 
 configure_file(
@@ -1452,6 +1452,7 @@ foreach(EXECUTABLE ${IRODS_MAIN_EXECUTABLES})
   target_include_directories(
     ${EXECUTABLE}
     PRIVATE
+    ${CMAKE_CURRENT_BINARY_DIR}/server/core/include
     ${IRODS_EXTERNALS_FULLPATH_AVRO}/include
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
     ${IRODS_EXTERNALS_FULLPATH_CPPZMQ}/include
