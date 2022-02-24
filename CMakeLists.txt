@@ -1502,7 +1502,7 @@ target_compile_definitions(irodsReServer PRIVATE ${IRODS_COMPILE_DEFINITIONS} IR
 
 add_executable(
   irods_api_test_harness
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/core/src/irods_api_test_harness.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/server/harness/src/irods_api_test_harness.cpp
   )
 target_link_libraries(
   irods_api_test_harness
@@ -1529,7 +1529,7 @@ target_compile_definitions(irods_api_test_harness PRIVATE ${IRODS_COMPILE_DEFINI
 
 add_executable(
   irods_configuration_test_harness
-  ${CMAKE_CURRENT_SOURCE_DIR}/server/core/src/irods_configuration_test_harness.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/server/harness/src/irods_configuration_test_harness.cpp
   )
 target_link_libraries(
   irods_configuration_test_harness
