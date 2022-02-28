@@ -451,7 +451,9 @@ set_target_properties(irods_filesystem_server PROPERTIES POSITION_INDEPENDENT_CO
 add_library(
   irods_user_administration_client
   OBJECT
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/src/user_administration.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/administration/user/src/group.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/administration/user/src/user.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/administration/user/src/user_administration.cpp
   )
 target_link_libraries(
   irods_user_administration_client
@@ -464,6 +466,7 @@ target_include_directories(
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/irods>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/lib/core/include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/administration/user/include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include>
   PRIVATE
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
@@ -477,7 +480,9 @@ set_target_properties(irods_user_administration_client PROPERTIES POSITION_INDEP
 add_library(
   irods_user_administration_server
   OBJECT
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/src/user_administration.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/administration/user/src/group.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/administration/user/src/user.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/administration/user/src/user_administration.cpp
   )
 target_link_libraries(
   irods_user_administration_server
@@ -490,6 +495,7 @@ target_include_directories(
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/irods>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/lib/core/include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/administration/user/include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/core/include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/api/include>
@@ -504,7 +510,7 @@ set_target_properties(irods_user_administration_server PROPERTIES POSITION_INDEP
 add_library(
   irods_resource_administration_client
   OBJECT
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/src/resource_administration.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/administration/resource/src/resource_administration.cpp
   )
 target_link_libraries(
   irods_resource_administration_client
@@ -517,6 +523,7 @@ target_include_directories(
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/irods>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/lib/core/include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/administration/resource/include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include>
   PRIVATE
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
@@ -529,7 +536,7 @@ set_target_properties(irods_resource_administration_client PROPERTIES POSITION_I
 add_library(
   irods_resource_administration_server
   OBJECT
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/src/resource_administration.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/administration/resource/src/resource_administration.cpp
   )
 target_link_libraries(
   irods_resource_administration_server
@@ -542,6 +549,7 @@ target_include_directories(
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/irods>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/lib/core/include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/administration/resource/include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/api/include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/core/include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/server/api/include>
@@ -709,7 +717,6 @@ set(
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/src/cpUtil.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/src/fsckUtil.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/src/getUtil.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/src/group.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/src/irods_c_api.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/src/irods_client_api_table.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/src/irods_client_negotiation.cpp
@@ -734,7 +741,6 @@ set(
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/src/sockComm.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/src/sslSockComm.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/src/trimUtil.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/src/user.cpp
   )
 add_library(
   # This object file exists to avoid recompiling the API functions multiple
