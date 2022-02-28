@@ -1,82 +1,62 @@
-set(
-  IRODS_RULE_ENGINE_PLUGIN-IRODS_RULE_LANGUAGE_SOURCES
-  ${CMAKE_CURRENT_SOURCE_DIR}/irods_rule_engine_plugin-irods_rule_language/arithmetics.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/irods_rule_engine_plugin-irods_rule_language/cache.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/irods_rule_engine_plugin-irods_rule_language/configuration.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/irods_rule_engine_plugin-irods_rule_language/conversion.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/irods_rule_engine_plugin-irods_rule_language/datetime.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/irods_rule_engine_plugin-irods_rule_language/filesystem.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/irods_rule_engine_plugin-irods_rule_language/msiHelper.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/irods_rule_engine_plugin-irods_rule_language/index.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/irods_rule_engine_plugin-irods_rule_language/nre.reHelpers1.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/irods_rule_engine_plugin-irods_rule_language/nre.reHelpers2.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/irods_rule_engine_plugin-irods_rule_language/nre.reLib1.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/irods_rule_engine_plugin-irods_rule_language/parser.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/irods_rule_engine_plugin-irods_rule_language/reVariableMap.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/irods_rule_engine_plugin-irods_rule_language/reVariableMap.gen.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/irods_rule_engine_plugin-irods_rule_language/restructs.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/irods_rule_engine_plugin-irods_rule_language/rules.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/irods_rule_engine_plugin-irods_rule_language/typing.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/irods_rule_engine_plugin-irods_rule_language/utils.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/irods_rule_engine_plugin-irods_rule_language/rsRe.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/irods_rule_engine_plugin-irods_rule_language/functions.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/irods_rule_engine_plugin-irods_rule_language/libirods_rule_engine_plugin-irods_rule_language.cpp
-  )
+cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
+# target_link_libraries for object targets
 
-set(
-  IRODS_RULE_ENGINE_PLUGIN-CPP_DEFAULT_POLICY_SOURCES
-  ${CMAKE_CURRENT_SOURCE_DIR}/irods_rule_engine_plugin-cpp_default_policy/libirods_rule_engine_plugin-cpp_default_policy.cpp
-  )
-
-set(
-  IRODS_RULE_ENGINE_PLUGIN-PASSTHROUGH_SOURCES
-  ${CMAKE_CURRENT_SOURCE_DIR}/irods_rule_engine_plugin-passthrough/libirods_rule_engine_plugin-passthrough.cpp
-  )
+add_subdirectory(irods_rule_language)
 
 set(
   IRODS_RULE_ENGINE_PLUGINS
-  irods_rule_engine_plugin-irods_rule_language
-  irods_rule_engine_plugin-cpp_default_policy
-  irods_rule_engine_plugin-passthrough
-  )
+  irods_rule_language
+  cpp_default_policy
+  passthrough
+)
 
-foreach(PLUGIN ${IRODS_RULE_ENGINE_PLUGINS})
-  string(TOUPPER ${PLUGIN} PLUGIN_UPPERCASE)
+foreach(plugin IN LISTS IRODS_RULE_ENGINE_PLUGINS)
+  set(plugin_target "irods_rule_engine_plugin-${plugin}")
+  set(plugin_name "${plugin_target}")
+
+  if (TARGET ${plugin_target})
+    continue()
+  endif()
 
   add_library(
-    ${PLUGIN}
+    ${plugin_target}
     MODULE
-    ${${PLUGIN_UPPERCASE}_SOURCES}
-    )
-
-  target_include_directories(
-    ${PLUGIN}
-    PRIVATE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/irods_rule_engine_plugin-irods_rule_language/include>
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/server/main_server/include>
-    ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
-    ${IRODS_EXTERNALS_FULLPATH_FMT}/include
-    )
-
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/${plugin}.cpp"
+  )
+  #set_property(TARGET ${plugin_target} PROPERTY LIBRARY_OUTPUT_NAME ${plugin_name})
   target_link_libraries(
-    ${PLUGIN}
+    ${plugin_target}
     PRIVATE
     irods_server
     irods_common
-    ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
-    ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
-    ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so
-    ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
+    "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
+    "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
+    "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so"
+    "${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so"
     ${CMAKE_DL_LIBS}
-    )
+  )
+  target_include_directories(
+    ${plugin_target}
+    PRIVATE
+    #"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/irods_rule_language/include>"
+    "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
+    "${IRODS_EXTERNALS_FULLPATH_FMT}/include"
+    "${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include"
+  )
+  target_compile_definitions(
+    ${plugin_target}
+    PRIVATE
+    ${IRODS_COMPILE_DEFINITIONS_PRIVATE}
+    ENABLE_RE
+    IRODS_ENABLE_SYSLOG
+  )
 
-  target_compile_definitions(${PLUGIN} PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_ENABLE_SYSLOG)
-endforeach()
-
-install(
-  TARGETS
-    ${IRODS_RULE_ENGINE_PLUGINS}
-  LIBRARY
-    DESTINATION ${IRODS_PLUGINS_DIRECTORY}/rule_engines
+  install(
+    TARGETS
+    ${plugin_target}
+    LIBRARY
+    DESTINATION "${IRODS_PLUGINS_DIRECTORY}/rule_engines"
     COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
   )
+endforeach()

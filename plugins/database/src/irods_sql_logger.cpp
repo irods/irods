@@ -1,4 +1,4 @@
-#include "irods_sql_logger.hpp"
+#include "irods/private/irods_sql_logger.hpp"
 #include "irods/irods_error.hpp"
 #include "irods/irods_log.hpp"
 

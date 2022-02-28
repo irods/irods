@@ -1,0 +1,103 @@
+cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
+# target_link_libraries for object targets
+
+add_library(
+  irods_server_re
+  OBJECT
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/extractAvuMS.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/genQueryMS.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/icatAdminMS.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/icatGeneralMS.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_ms_plugin.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_re_plugin.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_re_structs.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/reAction.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/nre.systemMS.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_re_namespaceshelper.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_re_ruleexistshelper.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_re_serialization.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/keyValPairMS.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/locks.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/mailMS.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/miscMS.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/printMS.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/reDataObjOpr.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/reIn2p3SysRule.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/reNaraMetaData.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/reStruct.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/reSysDataObjOpr.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/sharedmemory.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/testMS.cpp"
+)
+target_link_libraries(
+  irods_server_re
+  PUBLIC
+  nlohmann_json::nlohmann_json
+  irods_common
+  irods_plugin_dependencies
+  PRIVATE
+  "${IRODS_EXTERNALS_FULLPATH_AVRO}/lib/libavrocpp.so"
+  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_chrono.so"
+  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
+  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so"
+  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so"
+  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
+  "${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so"
+  "${IRODS_EXTERNALS_FULLPATH_NANODBC}/lib/libnanodbc.so"
+  "${IRODS_EXTERNALS_FULLPATH_ZMQ}/lib/libzmq.so"
+  OpenSSL::SSL
+  OpenSSL::Crypto
+  ${CMAKE_DL_LIBS}
+  rt
+)
+target_include_directories(
+  irods_server_re
+  PUBLIC
+  "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/plugins/api/include>"
+  "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/api/include>"
+  "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/core/include>"
+  "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/delay_server/include>"
+  PRIVATE
+  "${IRODS_EXTERNALS_FULLPATH_AVRO}/include"
+  "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
+  "${IRODS_EXTERNALS_FULLPATH_CPPZMQ}/include"
+  "${IRODS_EXTERNALS_FULLPATH_FMT}/include"
+  "${IRODS_EXTERNALS_FULLPATH_NANODBC}/include"
+  "${IRODS_EXTERNALS_FULLPATH_ZMQ}/include"
+  "${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include"
+)
+target_compile_definitions(
+  irods_server_re
+  PUBLIC
+  ${IRODS_COMPILE_DEFINITIONS_PUBLIC}
+  PRIVATE
+  ${IRODS_COMPILE_DEFINITIONS_PRIVATE}
+  ENABLE_RE
+  RODS_CLERVER
+  IRODS_ENABLE_SYSLOG
+)
+set_target_properties(irods_server_re PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE TRUE)
+set_target_properties(irods_server_re PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+
+install(
+  FILES
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_ms_plugin.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_re_plugin.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_re_namespaceshelper.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_re_structs.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_re_ruleexistshelper.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_re_serialization.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/locks.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/msiHelper.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/reAction.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/reDataObjOpr.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/reDefines.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/reIn2p3SysRule.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/reNaraMetaData.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/reSysDataObjOpr.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/reconstants.hpp"
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/irods"
+  COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
+)

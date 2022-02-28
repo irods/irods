@@ -1,93 +1,67 @@
-set(
-  IRODS_AUTH_LEGACY_PLUGIN_native_SOURCES
-  ${CMAKE_CURRENT_SOURCE_DIR}/native/libnative.cpp
-  )
-
-set(
-  IRODS_AUTH_LEGACY_PLUGIN_osauth_SOURCES
-  ${CMAKE_CURRENT_SOURCE_DIR}/osauth/libosauth.cpp
-  )
-
-set(
-  IRODS_AUTH_LEGACY_PLUGIN_pam_SOURCES
-  ${CMAKE_CURRENT_SOURCE_DIR}/pam/libpam.cpp
-  )
+# original auth plugins - these are required to exist to talk to older servers
+cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
+# target_link_libraries for object targets
 
 set(
   IRODS_AUTH_LEGACY_PLUGINS
   native
   osauth
   pam
-  )
+)
 
-set(
-  IRODS_AUTH_LEGACY_PLUGIN_COMPILE_DEFINITIONS_client
-  )
-
-set(
-  IRODS_AUTH_LEGACY_PLUGIN_COMPILE_DEFINITIONS_server
-  RODS_SERVER
-  ENABLE_RE
-  IRODS_ENABLE_SYSLOG
-  )
-
-set(
-  IRODS_AUTH_LEGACY_PLUGIN_LINK_LIBRARIES_client
-  irods_client
-  )
-
-set(
-  IRODS_AUTH_LEGACY_PLUGIN_LINK_LIBRARIES_server
-  irods_server
-  ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
-  )
-
-set(
-  IRODS_AUTH_LEGACY_PLUGIN_TYPES
-  client
-  server
-  )
-
-foreach(PLUGIN ${IRODS_AUTH_LEGACY_PLUGINS})
-  foreach(TYPE ${IRODS_AUTH_LEGACY_PLUGIN_TYPES})
-    set(IRODS_CURRENT_PLUGIN_TARGET ${PLUGIN}_${TYPE})
+foreach(plugin IN LISTS IRODS_AUTH_LEGACY_PLUGINS)
+  set(plugin_target_part "irods_auth_legacy_plugin-${plugin}")
+  foreach(variant IN ITEMS client server)
+    set(plugin_target "${plugin_target_part}_${variant}")
+    set(plugin_name "${plugin}_${variant}")
 
     add_library(
-      ${IRODS_CURRENT_PLUGIN_TARGET}
+      ${plugin_target}
       MODULE
-      ${IRODS_AUTH_LEGACY_PLUGIN_${PLUGIN}_SOURCES}
-      )
-
-    target_include_directories(
-      ${IRODS_CURRENT_PLUGIN_TARGET}
-      PRIVATE
-      $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/server/api/include>
-      ${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/include
-      ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
-      ${IRODS_EXTERNALS_FULLPATH_FMT}/include
-      )
-
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/${plugin}.cpp"
+    )
+    set_property(TARGET ${plugin_target} PROPERTY LIBRARY_OUTPUT_NAME ${plugin_name})
     target_link_libraries(
-      ${IRODS_CURRENT_PLUGIN_TARGET}
+      ${plugin_target}
       PRIVATE
-      ${IRODS_AUTH_LEGACY_PLUGIN_LINK_LIBRARIES_${TYPE}}
       irods_common
       irods_plugin_dependencies
-      ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
-      ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
-      ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
-      ${CMAKE_DL_LIBS}
-      OpenSSL::Crypto
+      irods_${variant}
+      "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
+      "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
+      "${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so"
       nlohmann_json::nlohmann_json
-      )
+      OpenSSL::Crypto
+      ${CMAKE_DL_LIBS}
+    )
+    target_include_directories(
+      ${plugin_target}
+      PRIVATE
+      "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+      "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/server/api/include>"
+      "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
+      "${IRODS_EXTERNALS_FULLPATH_FMT}/include"
+      "${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include"
+    )
+    target_compile_definitions(
+      ${plugin_target}
+      PRIVATE
+      ${IRODS_COMPILE_DEFINITIONS_PRIVATE}
+    )
 
-    target_compile_definitions(${IRODS_CURRENT_PLUGIN_TARGET} PRIVATE ${IRODS_AUTH_LEGACY_PLUGIN_COMPILE_DEFINITIONS_${TYPE}} ${IRODS_COMPILE_DEFINITIONS})
     install(
       TARGETS
-      ${IRODS_CURRENT_PLUGIN_TARGET}
+      ${plugin_target}
       LIBRARY
-      DESTINATION ${IRODS_PLUGINS_DIRECTORY}/auth
+      DESTINATION "${IRODS_PLUGINS_DIRECTORY}/auth"
       COMPONENT ${IRODS_PACKAGE_COMPONENT_RUNTIME_NAME}
-      )
-    endforeach()
+    )
+  endforeach()
+  target_compile_definitions(
+    ${plugin_target_part}_server
+    PRIVATE
+    RODS_SERVER
+    ENABLE_RE
+    IRODS_ENABLE_SYSLOG
+  )
 endforeach()

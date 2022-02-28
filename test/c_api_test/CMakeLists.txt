@@ -1,9 +1,9 @@
 add_executable(
   mytest
-  ${CMAKE_CURRENT_SOURCE_DIR}/test.c
-  )
+  "${CMAKE_CURRENT_SOURCE_DIR}/test.c"
+)
 target_link_libraries(
   mytest
   PRIVATE
   RodsAPIs
-  )
+)

@@ -78,7 +78,7 @@ foreach(test IN LISTS IRODS_UNIT_TESTS)
 
   include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/test_config/irods_${test}.cmake")
   add_executable(${IRODS_TEST_TARGET} ${IRODS_TEST_SOURCE_FILES})
-  target_compile_definitions(${IRODS_TEST_TARGET} PRIVATE ${IRODS_COMPILE_DEFINITIONS})
+  target_compile_definitions(${IRODS_TEST_TARGET} PRIVATE ${IRODS_COMPILE_DEFINITIONS_PRIVATE})
   target_link_libraries(${IRODS_TEST_TARGET} PRIVATE Catch2::Catch2 ${IRODS_TEST_LINK_LIBRARIES})
   if (DEFINED IRODS_TEST_INCLUDE_PATH)
     target_include_directories(${IRODS_TEST_TARGET} PRIVATE ${IRODS_TEST_INCLUDE_PATH})
@@ -92,7 +92,7 @@ foreach(test IN LISTS IRODS_UNIT_TESTS)
       TARGETS
       ${IRODS_TEST_TARGET}
       RUNTIME
-      DESTINATION ${IRODS_HOME_DIRECTORY}/unit_tests
+      DESTINATION "${IRODS_HOME_DIRECTORY}/unit_tests"
       COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
     )
 
@@ -102,7 +102,7 @@ endforeach()
 
 install(
   FILES
-  ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests_list.json
-  DESTINATION ${IRODS_HOME_DIRECTORY}/unit_tests
+  "${CMAKE_CURRENT_SOURCE_DIR}/unit_tests_list.json"
+  DESTINATION "${IRODS_HOME_DIRECTORY}/unit_tests"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
 )

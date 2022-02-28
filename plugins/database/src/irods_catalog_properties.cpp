@@ -8,12 +8,12 @@
 // =-=-=-=-=-=-=-
 #include "irods/irods_error.hpp"
 #include "irods/irods_exception.hpp"
-#include "irods_catalog_properties.hpp"
+#include "irods/private/irods_catalog_properties.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
 #include "irods/icatHighLevelRoutines.hpp"
-#include "mid_level.hpp"
+#include "irods/private/mid_level.hpp"
 
 namespace irods {
 

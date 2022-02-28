@@ -1,0 +1,68 @@
+# platform detection for CPack.
+
+
+if (NOT IRODS_LINUX_DISTRIBUTION_NAME)
+  execute_process(
+    COMMAND "python3" "-c" "from __future__ import print_function; import distro; print(distro.id(), end='')"
+    RESULT_VARIABLE IRODS_EXECUTE_PROCESS_RESULT_LINUX_DISTRIBUTION_NAME
+    OUTPUT_VARIABLE IRODS_LINUX_DISTRIBUTION_NAME
+    )
+  if (NOT ${IRODS_EXECUTE_PROCESS_RESULT_LINUX_DISTRIBUTION_NAME} STREQUAL "0")
+    message(FATAL_ERROR "Linux platform name detection failed\n${IRODS_EXECUTE_PROCESS_RESULT_LINUX_DISTRIBUTION_NAME}")
+  endif()
+  set(IRODS_LINUX_DISTRIBUTION_NAME ${IRODS_LINUX_DISTRIBUTION_NAME} CACHE STRING "Linux distribution name, e.g. {ubuntu, centos, ...}." FORCE)
+  message(STATUS "Setting unspecified IRODS_LINUX_DISTRIBUTION_NAME to '${IRODS_LINUX_DISTRIBUTION_NAME}'")
+endif()
+
+if (NOT IRODS_LINUX_DISTRIBUTION_VERSION_MAJOR)
+  execute_process(
+    COMMAND "python3" "-c" "from __future__ import print_function; import distro; print(distro.major_version(), end='')"
+    RESULT_VARIABLE IRODS_EXECUTE_PROCESS_RESULT_LINUX_DISTRIBUTION_VERSION_MAJOR
+    OUTPUT_VARIABLE IRODS_LINUX_DISTRIBUTION_VERSION_MAJOR
+    )
+  if (NOT ${IRODS_EXECUTE_PROCESS_RESULT_LINUX_DISTRIBUTION_VERSION_MAJOR} STREQUAL "0")
+    message(FATAL_ERROR "Linux platform name detection failed\n${IRODS_EXECUTE_PROCESS_RESULT_LINUX_DISTRIBUTION_VERSION_MAJOR}")
+  endif()
+  set(IRODS_LINUX_DISTRIBUTION_VERSION_MAJOR ${IRODS_LINUX_DISTRIBUTION_VERSION_MAJOR} CACHE STRING "Linux distribution name, e.g. {ubuntu, centos, ...}." FORCE)
+  message(STATUS "Setting unspecified IRODS_LINUX_DISTRIBUTION_VERSION_MAJOR to '${IRODS_LINUX_DISTRIBUTION_VERSION_MAJOR}'")
+endif()
+
+if (NOT IRODS_LINUX_DISTRIBUTION_VERSION_CODENAME)
+  if(IRODS_LINUX_DISTRIBUTION_NAME STREQUAL "ubuntu" OR IRODS_LINUX_DISTRIBUTION_NAME STREQUAL "debian")
+    execute_process(
+      COMMAND "lsb_release" "-s" "-c"
+      RESULT_VARIABLE IRODS_EXECUTE_PROCESS_RESULT_LINUX_DISTRIBUTION_VERSION_CODENAME
+      OUTPUT_VARIABLE IRODS_LINUX_DISTRIBUTION_VERSION_CODENAME
+      )
+    string(STRIP ${IRODS_LINUX_DISTRIBUTION_VERSION_CODENAME} IRODS_LINUX_DISTRIBUTION_VERSION_CODENAME)
+    if (NOT ${IRODS_EXECUTE_PROCESS_RESULT_LINUX_DISTRIBUTION_VERSION_CODENAME} STREQUAL "0")
+      message(FATAL_ERROR "Linux lsb_release shortname detection failed\n${IRODS_EXECUTE_PROCESS_RESULT_LINUX_DISTRIBUTION_VERSION_CODENAME}")
+    endif()
+    set(IRODS_LINUX_DISTRIBUTION_VERSION_CODENAME ${IRODS_LINUX_DISTRIBUTION_VERSION_CODENAME} CACHE STRING "Linux distribution version codename, e.g. {precise, wheezy, trusty, jessie, ...}." FORCE)
+    message(STATUS "Setting unspecified IRODS_LINUX_DISTRIBUTION_VERSION_CODENAME to '${IRODS_LINUX_DISTRIBUTION_VERSION_CODENAME}'")
+  endif()
+endif()
+
+if (IRODS_LINUX_DISTRIBUTION_NAME STREQUAL "centos" AND NOT IRODS_LINUX_DISTRIBUTION_VERSION_MAJOR STREQUAL "7")
+  message(WARNING "Unsupported CentOS major version: ${IRODS_LINUX_DISTRIBUTION_VERSION_MAJOR}. Caveat emptor.")
+endif()
+
+if (NOT CPACK_GENERATOR)
+  if (IRODS_LINUX_DISTRIBUTION_NAME STREQUAL "arch")
+    set(CPACK_GENERATOR TGZ CACHE STRING "CPack generator to use, e.g. {DEB, RPM, TGZ}." FORCE)
+    message(STATUS "Setting unspecified CPACK_GENERATOR to ${CPACK_GENERATOR}. This is the correct setting for normal builds.")
+  elseif(IRODS_LINUX_DISTRIBUTION_NAME STREQUAL "ubuntu" OR IRODS_LINUX_DISTRIBUTION_NAME STREQUAL "debian")
+    set(CPACK_GENERATOR DEB CACHE STRING "CPack generator to use, e.g. {DEB, RPM, TGZ}." FORCE)
+    message(STATUS "Setting unspecified CPACK_GENERATOR to ${CPACK_GENERATOR}. This is the correct setting for normal builds.")
+  else()
+    set(IRODS_SUPPORTED_RPM_BASED_LINUX_DISTRIBUTION_NAMES "centos" "opensuse" "fedora" "almalinux" "rocky")
+    if(IRODS_LINUX_DISTRIBUTION_NAME IN_LIST IRODS_SUPPORTED_RPM_BASED_LINUX_DISTRIBUTION_NAMES)
+      set(CPACK_GENERATOR RPM CACHE STRING "CPack generator to use, e.g. {DEB, RPM, TGZ}." FORCE)
+      message(STATUS "Setting unspecified CPACK_GENERATOR to ${CPACK_GENERATOR}. This is the correct setting for normal builds.")
+    else()
+      message(FATAL_ERROR "Failed to set CPACK_GENERATOR for unknown Linux Distribution: ${IRODS_LINUX_DISTRIBUTION_NAME}")
+    endif()
+  endif()
+endif()
+
+set(IRODS_CPACK_GENERATOR ${CPACK_GENERATOR})
