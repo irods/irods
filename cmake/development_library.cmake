@@ -39,7 +39,6 @@ set(
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/irods/future.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/irods/getRodsEnv.h
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/irods/getUtil.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/irods/group.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/irods/guiProgressCallback.h
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/irods/hostname_cache.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/irods/irods_assert.hpp
@@ -133,7 +132,6 @@ set(
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/irods/replUtil.h
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/irods/replica.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/irods/replica_proxy.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/irods/resource_administration.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/irods/rmdirUtil.h
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/irods/rmUtil.h
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/irods/rmtrashUtil.h
@@ -164,10 +162,20 @@ set(
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/irods/termiosUtil.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/irods/thread_pool.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/irods/trimUtil.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/irods/user.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/irods/user_administration.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/irods/version.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/core/include/irods/with_durability.hpp
+  )
+
+set(
+  IRODS_LIB_ADMINISTRATION_USER_INCLUDE_HEADERS
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/administration/user/include/irods/group.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/administration/user/include/irods/user.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/administration/user/include/irods/user_administration.hpp
+  )
+
+set(
+  IRODS_LIB_ADMINISTRATION_RESOURCE_INCLUDE_HEADERS
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/administration/resource/include/irods/resource_administration.hpp
   )
 
 set(
@@ -600,6 +608,8 @@ install(
   FILES
   ${IRODS_GENERATED_HEADERS}
   ${IRODS_LIB_CORE_INCLUDE_HEADERS}
+  ${IRODS_LIB_ADMINISTRATION_USER_INCLUDE_HEADERS}
+  ${IRODS_LIB_ADMINISTRATION_RESOURCE_INCLUDE_HEADERS}
   ${IRODS_LIB_HASHER_INCLUDE_HEADERS}
   ${IRODS_LIB_API_INCLUDE_HEADERS}
   ${IRODS_LIB_RBUDP_INLUDE_HEADERS}
