@@ -1,82 +1,62 @@
-set(
-  IRODS_NETWORK_PLUGIN_ssl_SOURCES
-  ${CMAKE_CURRENT_SOURCE_DIR}/ssl/libssl.cpp
-  )
-
-set(
-  IRODS_NETWORK_PLUGIN_tcp_SOURCES
-  ${CMAKE_CURRENT_SOURCE_DIR}/tcp/libtcp.cpp
-  )
+cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
+# target_link_libraries for object targets
 
 set(
   IRODS_NETWORK_PLUGINS
   ssl
   tcp
-  )
+)
 
-set(
-  IRODS_NETWORK_COMPILE_DEFINITIONS_client
-  )
-
-set(
-  IRODS_NETWORK_COMPILE_DEFINITIONS_server
-  ENABLE_RE
-  IRODS_ENABLE_SYSLOG
-  )
-
-set(
-  IRODS_NETWORK_LINK_LIBRARIES_client
-  irods_client
-  )
-
-set(
-  IRODS_NETWORK_LINK_LIBRARIES_server
-  irods_server
-  )
-
-set(
-  IRODS_NETWORK_PLUGIN_TYPES
-  client
-  server
-  )
-
-foreach(PLUGIN ${IRODS_NETWORK_PLUGINS})
-  foreach(TYPE ${IRODS_NETWORK_PLUGIN_TYPES})
-    set(IRODS_CURRENT_PLUGIN_TARGET ${PLUGIN}_${TYPE})
+foreach(plugin IN LISTS IRODS_NETWORK_PLUGINS)
+  set(plugin_target_part "irods_network_plugin-${plugin}")
+  foreach(variant IN ITEMS client server)
+    set(plugin_target "${plugin_target_part}_${variant}")
+    set(plugin_name "${plugin}_${variant}")
 
     add_library(
-      ${IRODS_CURRENT_PLUGIN_TARGET}
+      ${plugin_target}
       MODULE
-      ${IRODS_NETWORK_PLUGIN_${PLUGIN}_SOURCES}
-      )
-
-    target_include_directories(
-      ${IRODS_CURRENT_PLUGIN_TARGET}
-      PRIVATE
-      ${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/include
-      ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
-      ${IRODS_EXTERNALS_FULLPATH_FMT}/include
-      )
-
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/${plugin}.cpp"
+    )
+    set_property(TARGET ${plugin_target} PROPERTY LIBRARY_OUTPUT_NAME ${plugin_name})
     target_link_libraries(
-      ${IRODS_CURRENT_PLUGIN_TARGET}
+      ${plugin_target}
       PRIVATE
-      ${IRODS_NETWORK_LINK_LIBRARIES_${TYPE}}
-      irods_plugin_dependencies
       irods_common
-      ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
-      ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
+      irods_plugin_dependencies
+      irods_${variant}
+      "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
+      "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
+      "${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so"
       OpenSSL::SSL
       OpenSSL::Crypto
-      )
+    )
+    target_include_directories(
+      ${plugin_target}
+      PRIVATE
+      "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
+      "${IRODS_EXTERNALS_FULLPATH_FMT}/include"
+      "${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include"
+    )
+    target_compile_definitions(
+      ${plugin_target}
+      PRIVATE
+      ${IRODS_COMPILE_DEFINITIONS_PRIVATE}
+    )
 
-    target_compile_definitions(${IRODS_CURRENT_PLUGIN_TARGET} PRIVATE ${IRODS_NETWORK_COMPILE_DEFINTIONS_${TYPE}} ${IRODS_COMPILE_DEFINITIONS})
     install(
       TARGETS
-      ${IRODS_CURRENT_PLUGIN_TARGET}
+      ${plugin_target}
       LIBRARY
-      DESTINATION ${IRODS_PLUGINS_DIRECTORY}/network
+      DESTINATION "${IRODS_PLUGINS_DIRECTORY}/network"
       COMPONENT ${IRODS_PACKAGE_COMPONENT_RUNTIME_NAME}
-      )
+    )
   endforeach()
+
+  target_compile_definitions(
+    ${plugin_target_part}_server
+    PRIVATE
+    ENABLE_RE
+    IRODS_ENABLE_SYSLOG
+  )
 endforeach()

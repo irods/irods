@@ -16,8 +16,8 @@
 
 #include "irods/rodsClient.h"
 #include "irods/icatHighLevelRoutines.hpp"
-#include "mid_level.hpp"
-#include "low_level.hpp"
+#include "irods/private/mid_level.hpp"
+#include "irods/private/low_level.hpp"
 
 extern int sGetColumnInfo( int defineVal, char **tableName, char **columnName );
 

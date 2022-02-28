@@ -11,8 +11,8 @@
 
 **************************************************************************/
 
-#include "mid_level.hpp"
-#include "low_level.hpp"
+#include "irods/private/mid_level.hpp"
+#include "irods/private/low_level.hpp"
 #include "irods/irods_stacktrace.hpp"
 #include "irods/irods_log.hpp"
 #include "irods/irods_virtual_path.hpp"

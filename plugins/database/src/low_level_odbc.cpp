@@ -28,7 +28,7 @@
 
 */
 
-#include "low_level_odbc.hpp"
+#include "irods/private/low_level_odbc.hpp"
 
 #include "irods/irods_log.hpp"
 #include "irods/irods_error.hpp"

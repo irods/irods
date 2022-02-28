@@ -1,66 +1,57 @@
-set(
-  IRODS_EXPERIMENTAL_API_PLUGIN_REMOVE_SOURCES
-  ${CMAKE_CURRENT_SOURCE_DIR}/remove.cpp
-  )
-
-set(
-  IRODS_EXPERIMENTAL_API_PLUGIN_REPLICATE_SOURCES
-  ${CMAKE_CURRENT_SOURCE_DIR}/replicate.cpp
-  )
-
-set(
-  IRODS_EXPERIMENTAL_API_PLUGIN_COPY_SOURCES
-  ${CMAKE_CURRENT_SOURCE_DIR}/copy.cpp
-  )
-
-set(
-  IRODS_EXPERIMENTAL_API_PLUGIN_REPLICATE_SOURCES
-  ${CMAKE_CURRENT_SOURCE_DIR}/replicate.cpp
-  )
+cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
+# target_link_libraries for object targets
 
 set(
   IRODS_EXPERIMENTAL_API_PLUGINS
   copy
   remove
   replicate
-  )
+)
 
-foreach(PLUGIN ${IRODS_EXPERIMENTAL_API_PLUGINS})
-  string(TOUPPER ${PLUGIN} PLUGIN_UPPERCASE)
+foreach(plugin IN LISTS IRODS_EXPERIMENTAL_API_PLUGINS)
+  string(TOUPPER ${plugin} PLUGIN_UPPERCASE)
+  set(plugin_target "irods_experimental_plugin-${plugin}")
+  set(plugin_name "${plugin}")
 
   add_library(
-    ${PLUGIN}
+    ${plugin_target}
     MODULE
-    ${IRODS_EXPERIMENTAL_API_PLUGIN_${PLUGIN_UPPERCASE}_SOURCES}
-    )
-
-  target_include_directories(
-    ${PLUGIN}
-    PRIVATE
-    ${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/include
-    ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
-    ${IRODS_EXTERNALS_FULLPATH_FMT}/include
-    )
-
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/${plugin}.cpp"
+  )
+  set_property(TARGET ${plugin_target} PROPERTY LIBRARY_OUTPUT_NAME ${plugin_name})
   target_link_libraries(
-    ${PLUGIN}
+    ${plugin_target}
     PRIVATE
     irods_server
     irods_common
-    ${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/lib/libarchive.so
-    ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
-    ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
-    ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
+    "${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/lib/libarchive.so"
+    "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
+    "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
+    "${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so"
     ${CMAKE_DL_LIBS}
-    )
-
-  target_compile_definitions(${PLUGIN} PRIVATE ENABLE_RE ${IRODS_COMPILE_DEFINITIONS} IRODS_ENABLE_SYSLOG)
-endforeach()
-
-install(
-  TARGETS
-  ${IRODS_EXPERIMENTAL_API_PLUGINS}
-  LIBRARY
-  DESTINATION ${IRODS_PLUGINS_DIRECTORY}/experimental
-  COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
   )
+  target_include_directories(
+    ${plugin_target}
+    PRIVATE
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/include"
+    "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
+    "${IRODS_EXTERNALS_FULLPATH_FMT}/include"
+    "${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include"
+  )
+  target_compile_definitions(
+    ${plugin_target}
+    PRIVATE
+    ${IRODS_COMPILE_DEFINITIONS_PRIVATE}
+    ENABLE_RE
+    IRODS_ENABLE_SYSLOG
+  )
+
+  install(
+    TARGETS
+    ${plugin_target}
+    LIBRARY
+    DESTINATION "${IRODS_PLUGINS_DIRECTORY}/experimental"
+    COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
+  )
+endforeach()

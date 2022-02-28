@@ -1,17 +1,25 @@
-set(IRODS_POST_INSTALL_TARGET irodsTestPutGet)
+add_executable(
+  irodsTestPutGet
+  "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp"
+)
+target_link_libraries(
+  irodsTestPutGet
+  PRIVATE
+  irods_common
+  irods_client
+  irods_plugin_dependencies
+)
+target_include_directories(
+  irodsTestPutGet
+  PRIVATE
+  "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
+)
 
-add_executable(${IRODS_POST_INSTALL_TARGET} main.cpp)
-
-target_include_directories(${IRODS_POST_INSTALL_TARGET} PRIVATE ${CMAKE_BINARY_DIR}/lib/core/include
-                                                                ${CMAKE_SOURCE_DIR}/lib/core/include
-                                                                ${CMAKE_SOURCE_DIR}/lib/api/include
-                                                                ${CMAKE_SOURCE_DIR}/lib/filesystem/include
-                                                                ${CMAKE_SOURCE_DIR}/plugins/api/include
-                                                                ${CMAKE_SOURCE_DIR}/server/core/include
-                                                                ${CMAKE_SOURCE_DIR}/server/icat/include
-                                                                ${CMAKE_SOURCE_DIR}/server/re/include
-                                                                ${IRODS_EXTERNALS_FULLPATH_BOOST}/include)
-
-target_link_libraries(${IRODS_POST_INSTALL_TARGET} PRIVATE irods_common
-                                                           irods_client
-                                                           irods_plugin_dependencies)
+install(
+  TARGETS
+  irodsTestPutGet
+  RUNTIME
+  DESTINATION "${CMAKE_INSTALL_SBINDIR}"
+  COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
+  PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+)
