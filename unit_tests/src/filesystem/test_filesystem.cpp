@@ -700,7 +700,7 @@ TEST_CASE("filesystem")
                 {"n3", "v3", "u3"}
             }};
 
-            REQUIRE_NOTHROW(fs::client::add_metadata(conn, sandbox, metadata));
+            REQUIRE_NOTHROW(fs::client::add_metadata_atomic(conn, sandbox, metadata));
 
             auto results = fs::client::get_metadata(conn, sandbox);
             REQUIRE(results.size() == 3);
@@ -712,7 +712,7 @@ TEST_CASE("filesystem")
                                                    _lhs.units == _rhs.units;
                                         }));
 
-            REQUIRE_NOTHROW(fs::client::remove_metadata(conn, sandbox, metadata));
+            REQUIRE_NOTHROW(fs::client::remove_metadata_atomic(conn, sandbox, metadata));
             REQUIRE(fs::client::get_metadata(conn, sandbox).empty());
         }
 #endif // IRODS_ENABLE_ALL_UNIT_TESTS
