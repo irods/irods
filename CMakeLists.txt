@@ -1159,7 +1159,6 @@ target_link_libraries(
   irods_plugin_dependencies_functions
   PUBLIC
   nlohmann_json::nlohmann_json
-  ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
   )
 target_include_directories(
   irods_plugin_dependencies_functions
@@ -1194,6 +1193,7 @@ target_link_libraries(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_random.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
+  ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
   ${CMAKE_DL_LIBS}
   )
 target_include_directories(
