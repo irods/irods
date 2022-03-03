@@ -17,13 +17,13 @@
 #include "irods/rodsClient.h"
 #include "irods/sslSockComm.h"
 #include "irods/termiosUtil.hpp"
-#include "irods/version.hpp"
 
 #include <openssl/md5.h>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
 
 #include <cerrno>
+#include <string_view>
 
 #include <termios.h>
 
@@ -31,22 +31,18 @@ static char prevChallengeSignatureClient[200];
 
 namespace
 {
+    using json = nlohmann::json;
     using log_auth = irods::experimental::log::authentication;
 
-    auto authenticate_with_plugin_framework(RcComm& _comm,
-                                            const std::string_view _auth_scheme_override) -> int
+    auto authenticate_with_plugin_framework(RcComm& _comm, rodsEnv& _env, const json& _ctx) -> int
     {
+        // If _comm already claims to be authenticated, there is nothing to do.
+        if (1 == _comm.loggedIn) {
+            return 0;
+        }
+
         try {
-            rodsEnv env{};
-            if (const int ec = getRodsEnv(&env); ec < 0) {
-                THROW(ec, fmt::format("getRodsEnv error. status = [{}]", ec));
-            }
-
-            if (_auth_scheme_override != env.rodsAuthScheme) {
-                std::strncpy(env.rodsAuthScheme, _auth_scheme_override.data(), NAME_LEN);
-            }
-
-            irods::experimental::authenticate_client(_comm, env);
+            irods::experimental::auth::authenticate_client(_comm, _env, _ctx);
 
             log_auth::trace("Authenticated user [{}]", _comm.clientUser.userName);
         }
@@ -56,6 +52,19 @@ namespace
             const std::string msg = fmt::format(
                 "Error occurred while authenticating user [{}] [{}] [ec={}]",
                 _comm.clientUser.userName, e.client_display_what(), ec);
+
+            log_auth::info(msg);
+
+            printError(&_comm, ec, const_cast<char*>(msg.data()));
+
+            return ec;
+        }
+        catch (const nlohmann::json::exception& e) {
+            constexpr auto ec = SYS_LIBRARY_ERROR;
+
+            const std::string msg = fmt::format(
+                "JSON error occurred while authenticating user [{}] [{}]",
+                _comm.clientUser.userName, e.what());
 
             log_auth::info(msg);
 
@@ -269,18 +278,30 @@ int clientLoginTTL( rcComm_t *Conn, int ttl ) {
 /// @brief clientLogin provides the interface for authentication
 ///        plugins as well as defining the protocol or template
 ///        Authentication will follow
-int clientLogin(
-    rcComm_t*   _comm,
-    const char* _context,
-    const char* _scheme_override ) {
-    // =-=-=-=-=-=-=-
-    // check out conn pointer
-    if ( !_comm ) {
+int clientLogin(rcComm_t* _comm, const char* _context, const char* _scheme_override)
+{
+    if (!_comm) {
         return SYS_INVALID_INPUT_PARAM;
     }
 
-    if ( 1 == _comm->loggedIn ) {
+    // If _comm already claims to be authenticated, there is nothing to do.
+    if (1 == _comm->loggedIn) {
         return 0;
+    }
+
+    bool use_legacy_authentication;
+    try {
+        use_legacy_authentication = irods::experimental::auth::use_legacy_authentication(*_comm);
+    }
+    catch (const irods::exception& e) {
+        const auto ec = e.code();
+        const std::string msg = e.client_display_what();
+
+        log_auth::info(msg);
+
+        printError(_comm, ec, const_cast<char*>(msg.data()));
+
+        return ec;
     }
 
     // =-=-=-=-=-=-=-
@@ -321,31 +342,37 @@ int clientLogin(
             // filter out the pam auth as it is an extra special
             // case and only sent in as an override.
             // everyone other scheme behaves as normal
-            if ( irods::AUTH_PAM_SCHEME == auth_scheme ) {
+            if (use_legacy_authentication && irods::AUTH_PAM_SCHEME == auth_scheme) {
                 auth_scheme = irods::AUTH_NATIVE_SCHEME;
             }
         } // if _scheme_override
     } // if client side auth
 
-    static constexpr auto irods_430 = irods::version{4, 3, 0};
-    const auto server_version = irods::to_version(_comm->svrVersion->relVersion);
-    if (!server_version) {
-        static constexpr auto ec = VERSION_EMPTY_IN_STRUCT_ERR;
+    if (!use_legacy_authentication) {
+        try {
+            // Use the authentication scheme string derived above in the client environment as
+            // it may have been overridden or incorrectly formatted (i.e. not all lowercase).
+            rodsEnv env{};
+            if (const int ec = getRodsEnv(&env); ec < 0) {
+                THROW(ec, fmt::format("getRodsEnv error. status = [{}]", ec));
+            }
 
-        const std::string msg = fmt::format(
-            "Failed to get version from server [{}]\n",
-            _comm->svrVersion->relVersion);
+            if (auth_scheme != env.rodsAuthScheme) {
+                std::strncpy(env.rodsAuthScheme, auth_scheme.data(), NAME_LEN);
+            }
 
-        log_auth::info(msg);
+            return authenticate_with_plugin_framework(*_comm, env, _context ? json{_context} : json{});
+        }
+        catch (const irods::exception& e) {
+            const auto ec = e.code();
+            const std::string msg = e.client_display_what();
 
-        printError(_comm, ec, const_cast<char*>(msg.data()));
+            log_auth::info(msg);
 
-        return ec;
-    }
+            printError(_comm, ec, const_cast<char*>(msg.data()));
 
-    // TODO: can remove scheme inspection as other authentication plugins are supported
-    if (auth_scheme == irods::AUTH_NATIVE_SCHEME && *server_version >= irods_430) {
-        return authenticate_with_plugin_framework(*_comm, auth_scheme);
+            return ec;
+        }
     }
 
     // =-=-=-=-=-=-=-

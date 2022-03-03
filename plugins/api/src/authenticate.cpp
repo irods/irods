@@ -15,6 +15,8 @@
 
 namespace
 {
+    using json = nlohmann::json;
+
     template<typename T>
     auto get(const std::string& n, const json& p)
     {
@@ -38,18 +40,19 @@ namespace
 
     int authenticate(rsComm_t* comm, bytesBuf_t* bb_req, bytesBuf_t** bb_resp)
     {
-        namespace ie = irods::experimental;
+        namespace auth = irods::experimental::auth;
+        using api_log = irods::experimental::log::api;
 
         if (!comm || !bb_req || bb_req->len == 0) {
-            ie::log::api::info("one or more null parameters");
+            api_log::info("one or more null parameters");
             return SYS_INVALID_INPUT_PARAM;
         }
 
         try {
             auto req  = to_json(bb_req);
-            auto auth = ie::resolve_authentication_plugin(
+            auto auth = auth::resolve_authentication_plugin(
                                 get<std::string>("scheme", req), "server");
-            auto opr  = get<std::string>("next_operation", req);
+            auto opr  = get<std::string>(auth::next_operation, req);
             auto resp = auth->call(*comm, opr, req);
 
             *bb_resp = irods::to_bytes_buffer(resp.dump());
@@ -59,8 +62,8 @@ namespace
                 "Error occurred invoking auth plugin operation [{}] [ec={}]",
                 e.client_display_what(), e.code());
 
-            ie::log::api::info(msg);
-            ie::log::api::debug(e.what());
+            api_log::info(msg);
+            api_log::debug(e.what());
 
             return e.code();
         }
@@ -69,14 +72,14 @@ namespace
                 "Error occurred invoking auth plugin operation [{}]",
                 e.what());
 
-            ie::log::api::info(msg);
+            api_log::info(msg);
 
             return SYS_INTERNAL_ERR;
         }
         catch (...) {
             const std::string msg = "Unknown error occurred invoking auth plugin operation.";
 
-            ie::log::api::info(msg);
+            api_log::info(msg);
 
             return SYS_UNKNOWN_ERROR;
         }

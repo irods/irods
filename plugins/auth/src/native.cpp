@@ -1,66 +1,44 @@
 #include "irods/authentication_plugin_framework.hpp"
 
+#include "irods/authCheck.h"
+#include "irods/authPluginRequest.h"
+#include "irods/authRequest.h"
+#include "irods/authResponse.h"
+#include "irods/authenticate.h"
 #include "irods/base64.h"
+#include "irods/irods_auth_constants.hpp"
+#include "irods/irods_auth_plugin.hpp"
 #include "irods/irods_logger.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/msParam.h"
+#include "irods/rcConnect.h"
+#include "irods/rodsDef.h"
 
 #ifdef RODS_SERVER
 #include "irods/irods_rs_comm_query.hpp"
-#endif
+#include "irods/rsAuthCheck.hpp"
+#include "irods/rsAuthRequest.hpp"
+#endif // RODS_SERVER
+
+#include <openssl/md5.h>
+
+#include <termios.h>
+#include <unistd.h>
+#include <iostream>
+#include <sstream>
 
 int get64RandomBytes( char *buf );
 void setSessionSignatureClientside( char* _sig );
 void _rsSetAuthRequestGetChallenge( const char* _c );
 
-namespace
-{
-    using json = nlohmann::json;
-    using log_auth = irods::experimental::log::authentication;
-
-    auto request(rcComm_t& comm, const json& msg)
-    {
-        auto str = msg.dump();
-
-        bytesBuf_t inp;
-        inp.buf = static_cast<void*>(const_cast<char*>(str.c_str()));
-        inp.len = str.size();
-
-        bytesBuf_t* resp{};
-        auto ec = procApiRequest(&comm, 110000, static_cast<void*>(&inp), nullptr, reinterpret_cast<void**>(&resp), nullptr);
-
-        if (ec < 0) {
-            THROW(ec, "failed to perform request");
-        }
-
-        return json::parse(static_cast<char*>(resp->buf), static_cast<char*>(resp->buf) + resp->len);
-    } // request
-
-    // TODO: std::vector could be a const ref
-    auto verify(const json& p, std::vector<std::string> n)
-    {
-        for(auto&& x : n) {
-            if(!p.contains(x)) {
-                return std::make_tuple(false, x);
-            }
-        }
-
-        return std::make_tuple(true, std::string{});
-    } // verify
-
-    template<typename T>
-    auto get(const std::string& n, const json& p)
-    {
-        if(!p.contains(n)) {
-            THROW(SYS_INVALID_INPUT_PARAM, fmt::format(
-                  "authentication request missing [{}] parameter", n));
-        }
-
-        return p.at(n).get<T>();
-    } // get
-} // anonymous namespace
+using json = nlohmann::json;
+using log_auth = irods::experimental::log::authentication;
+namespace irods_auth = irods::experimental::auth;
 
 namespace irods
 {
-    class native_authentication : public irods::experimental::authentication_base {
+    class native_authentication : public irods_auth::authentication_base {
     public:
         native_authentication()
         {
@@ -79,7 +57,7 @@ namespace irods
         json auth_client_start(rcComm_t& comm, const json& req)
         {
             json resp{req};
-            resp["next_operation"] = AUTH_CLIENT_AUTH_REQUEST;
+            resp[irods_auth::next_operation] = AUTH_CLIENT_AUTH_REQUEST;
             resp["user_name"] = comm.proxyUser.userName;
             resp["zone_name"] = comm.proxyUser.rodsZone;
 
@@ -90,10 +68,9 @@ namespace irods
         {
             json resp{req};
 
-            if(auto [e, n] = verify(req, {"user_name","zone_name","request_result"}); !e) {
-                THROW(SYS_INVALID_INPUT_PARAM,
-                      fmt::format("[{}:{}] missing [{}] in request", __func__, __LINE__, n));
-            }
+            irods_auth::throw_if_request_message_is_missing_key(
+                req, {"user_name", "zone_name", "request_result"}
+            );
 
             auto request_result = req.at("request_result").get<std::string>();
             request_result.resize(CHALLENGE_LEN);
@@ -165,7 +142,7 @@ namespace irods
             }
 
             resp["digest"] = std::string{reinterpret_cast<char*>(out), out_len};
-            resp["next_operation"] = AUTH_CLIENT_AUTH_RESPONSE;
+            resp[irods_auth::next_operation] = AUTH_CLIENT_AUTH_RESPONSE;
 
             return resp;
         } // native_auth_establish_context
@@ -173,30 +150,27 @@ namespace irods
         json native_auth_client_request(rcComm_t& comm, const json& req)
         {
             json svr_req{req};
-            svr_req["next_operation"] = AUTH_AGENT_AUTH_REQUEST;
-            auto resp = request(comm, svr_req);
+            svr_req[irods_auth::next_operation] = AUTH_AGENT_AUTH_REQUEST;
+            auto resp = irods_auth::request(comm, svr_req);
 
-            resp["next_operation"] = AUTH_ESTABLISH_CONTEXT;
+            resp[irods_auth::next_operation] = AUTH_ESTABLISH_CONTEXT;
 
             return resp;
         } // native_auth_client_request
 
         json native_auth_client_response(rcComm_t& comm, const json& req)
         {
-            namespace ie = irods::experimental;
-
-            if(auto [e, n] = verify(req, {"digest","user_name","zone_name"}); !e) {
-                THROW(SYS_INVALID_INPUT_PARAM,
-                      fmt::format("[{}:{}] missing [{}] in request", __func__, __LINE__, n));
-            }
+            irods_auth::throw_if_request_message_is_missing_key(
+                req, {"digest", "user_name", "zone_name"}
+            );
 
             json svr_req{req};
-            svr_req["next_operation"] = AUTH_AGENT_AUTH_RESPONSE;
-            auto resp = request(comm, svr_req);
+            svr_req[irods_auth::next_operation] = AUTH_AGENT_AUTH_RESPONSE;
+            auto resp = irods_auth::request(comm, svr_req);
 
             comm.loggedIn = 1;
 
-            resp["next_operation"] = ie::auth::flow_complete;
+            resp[irods_auth::next_operation] = irods_auth::flow_complete;
 
             return resp;
         } // native_auth_client_response
@@ -213,27 +187,25 @@ namespace irods
 
             _rsSetAuthRequestGetChallenge(buf);
 
-            log_auth::debug("[{}:{}] - challenge [{}]", __func__, __LINE__, buf);
-
             if (comm.auth_scheme) {
                 free(comm.auth_scheme);
             }
 
-            comm.auth_scheme = strdup(AUTH_NATIVE_SCHEME.c_str());
+            constexpr char* scheme = "native";
+            comm.auth_scheme = strdup(scheme);
 
             return resp;
         } // native_auth_agent_request
 
         json native_auth_agent_response(rsComm_t& comm, const json& req)
         {
-            if (auto [e, n] = verify(req, {"digest", "zone_name", "user_name"}); !e) {
-                THROW(SYS_INVALID_INPUT_PARAM,
-                      fmt::format("[{}:{}] missing [{}] in request", __func__, __LINE__, n));
-            }
+            irods_auth::throw_if_request_message_is_missing_key(
+                req, {"digest", "zone_name", "user_name"}
+            );
 
             // need to do NoLogin because it could get into inf loop for cross zone auth
             rodsServerHost_t *rodsServerHost;
-            auto zone_name{get<std::string>("zone_name", req)};
+            auto zone_name = req.at("zone_name").get<std::string>();
             int status = getAndConnRcatHostNoLogin(&comm, MASTER_RCAT, const_cast<char*>(zone_name.c_str()), &rodsServerHost);
             if ( status < 0 ) {
                 THROW(status, "Connecting to rcat host failed.");
@@ -246,7 +218,7 @@ namespace irods
             response[RESPONSE_LEN] = 0;
 
             unsigned long out_len = RESPONSE_LEN;
-            auto to_decode{get<std::string>("digest", req)};
+            auto to_decode = req.at("digest").get<std::string>();
             auto err = base64_decode(reinterpret_cast<unsigned char*>(const_cast<char*>(to_decode.c_str())),
                                      to_decode.size(),
                                      reinterpret_cast<unsigned char*>(response),
@@ -259,7 +231,8 @@ namespace irods
             authCheckInp.challenge = _rsAuthRequestGetChallenge();
             authCheckInp.response = response;
 
-            const std::string username = fmt::format("{}#{}", req.at("user_name").get<std::string>(), zone_name);
+            const std::string username = fmt::format(
+                    "{}#{}", req.at("user_name").get_ref<const std::string&>(), zone_name);
             authCheckInp.username = const_cast<char*>(username.data());
 
             authCheckOut_t* authCheckOut = nullptr;
@@ -295,7 +268,7 @@ namespace irods
                 strncpy(md5Buf, authCheckInp.challenge, CHALLENGE_LEN);
 
                 char userZone[NAME_LEN + 2]{};
-                strncpy(userZone, req.at("zone_name").get<std::string>().data(), NAME_LEN + 1);
+                strncpy(userZone, zone_name.data(), NAME_LEN + 1);
 
                 char serverId[MAX_PASSWORD_LEN + 2]{};
                 getZoneServerId(userZone, serverId);

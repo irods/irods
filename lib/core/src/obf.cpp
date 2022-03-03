@@ -165,7 +165,9 @@ obfGetPw( char *pw ) {
     int i;
     int envVal;
 
-    strcpy( pw, "" );
+    if (pw) {
+        strcpy( pw, "" );
+    }
 
     envVal = obfiGetEnvKey();
 
@@ -199,7 +201,10 @@ obfGetPw( char *pw ) {
     if ( obfDebug ) {
         printf( "out:%s\n", myPwD );
     }
-    strcpy( pw, myPwD );
+
+    if (pw) {
+        strcpy( pw, myPwD );
+    }
 
     return 0;
 }
