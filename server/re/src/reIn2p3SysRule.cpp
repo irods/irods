@@ -7,7 +7,6 @@
 #include "irods/rcMisc.h"
 #include "irods/reIn2p3SysRule.hpp"
 #include "irods/genQuery.h"
-#include "irods/phyBundleColl.h"
 #include "irods/reDataObjOpr.hpp"
 #include "irods/rsGenQuery.hpp"
 #include "irods/rsGeneralRowInsert.hpp"

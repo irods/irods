@@ -104,7 +104,6 @@
 #include "irods/rsOpenCollection.hpp"
 #include "irods/rsOprComplete.hpp"
 #include "irods/rsPamAuthRequest.hpp"
-#include "irods/rsPhyBundleColl.hpp"
 #include "irods/rsPhyPathReg.hpp"
 #include "irods/rsProcStat.hpp"
 #include "irods/rsQuerySpecColl.hpp"
@@ -246,7 +245,6 @@
 #define RS_OPEN_COLLECTION NULLPTR_FOR_CLIENT_TABLE(rsOpenCollection)
 #define RS_OPR_COMPLETE NULLPTR_FOR_CLIENT_TABLE(rsOprComplete)
 #define RS_PAM_AUTH_REQUEST NULLPTR_FOR_CLIENT_TABLE(rsPamAuthRequest)
-#define RS_PHY_BUNDLE_COLL NULLPTR_FOR_CLIENT_TABLE(rsPhyBundleColl)
 #define RS_PHY_PATH_REG NULLPTR_FOR_CLIENT_TABLE(rsPhyPathReg)
 #define RS_PROC_STAT NULLPTR_FOR_CLIENT_TABLE(rsProcStat)
 #define RS_QUERY_SPEC_COLL NULLPTR_FOR_CLIENT_TABLE(rsQuerySpecColl)
@@ -1093,13 +1091,6 @@ static irods::apidef_t client_api_table_inp[] = {
         boost::any(std::function<int(rsComm_t*,dataObjInp_t*,openStat_t**)>(RS_DATA_OBJ_CREATE_AND_STAT)),
         "api_data_obj_create_and_stat", clearDataObjInp,
         (funcPtr)CALL_DATAOBJINP_OPENSTATOUT
-    },
-    {
-        PHY_BUNDLE_COLL_AN, RODS_API_VERSION, LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH,
-        "StructFileExtAndRegInp_PI", 0, NULL, 0,
-        boost::any(std::function<int(rsComm_t*,structFileExtAndRegInp_t*)>(RS_PHY_BUNDLE_COLL)),
-        "api_phy_bundle_coll", irods::clearInStruct_noop,
-        (funcPtr)CALL_STRUCTFILEEXTANDREGINP
     },
     {
         UNBUN_AND_REG_PHY_BUNFILE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,

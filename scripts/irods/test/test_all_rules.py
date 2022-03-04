@@ -422,32 +422,6 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase,
         self.rods_session.run_icommand(['irm', '-rf', test_coll])
         os.remove(src_file)
 
-    def test_rulemsiPhyBundleColl(self):
-        rulefile = 'rulemsiPhyBundleColl.r'
-
-        # rule test
-        self.rods_session.assert_icommand("irule -F " + os.path.join(rulesdir, rulefile), 'STDOUT_SINGLELINE',
-                                          "Create tar file of collection /tempZone/home/rods/test on resource testallrulesResc")
-
-        # look for the bundle
-        bundle_path = '/tempZone/bundle/home/' + self.rods_session.username
-        out, _, _ = self.rods_session.run_icommand(['ils', '-L', bundle_path])
-
-        # last token in stdout should be the bundle file's full physical path
-        bundlefile = out.split()[-1]
-
-        # check on the bundle file's name
-        assert bundlefile.find('test.') >= 0
-
-        # check physical path on resource
-        assert os.path.isfile(bundlefile)
-
-        # now try as a normal user (expect err msg)
-        self.user0.assert_icommand("irule -r irods_rule_engine_plugin-irods_rule_language-instance -F " + os.path.join(rulesdir, rulefile), 'STDERR_SINGLELINE', "SYS_NO_API_PRIV")
-
-        # cleanup
-        self.rods_session.run_icommand(['irm', '-rf', bundle_path])
-
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_str_2528(self):
         self.rods_session.assert_icommand('''irule "*a.a = 'A'; *a.b = 'B'; writeLine('stdout', str(*a))" null ruleExecOut''', 'STDOUT_SINGLELINE', "a=A++++b=B")

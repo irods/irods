@@ -314,6 +314,11 @@
 // fileModified notification should be sent to the resource plugins.
 #define FILE_MODIFIED_KW "file_modified"
 
+// Residual keywords from the now-removed phyBundleColl header file
+#define BUNDLE_RESC       "bundleResc"
+#define BUNDLE_STR        "bundle"
+#define BUNDLE_RESC_CLASS "bundle"
+
 // clang-format on
 
 #endif  // RODS_KEYWD_DEF_H__

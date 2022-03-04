@@ -31,7 +31,6 @@
 #include "irods/rsStructFileExtAndReg.hpp"
 #include "irods/rsModDataObjMeta.hpp"
 #include "irods/rsStructFileBundle.hpp"
-#include "irods/rsPhyBundleColl.hpp"
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/key_value_proxy.hpp"
 
@@ -41,6 +40,8 @@
 #include <cstring>
 #include <string>
 #include <vector>
+
+using msi_log = irods::experimental::log::microservice;
 
 /**
  * \fn msiDataObjCreate (msParam_t *inpParam1, msParam_t *msKeyValStr,
@@ -3262,137 +3263,4 @@ msiTarFileCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
 
     return rei->status;
 
-}
-
-
-
-/**
- * \fn msiPhyBundleColl (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
- *
- * \brief Bundles a collection into a number of tar files, similar to the iphybun command
- *
- * \module core
- *
- * \since 2.3
- *
- *
- * \note  This microservice calls rsPhyBundleColl to bundle files in a
- *        collection into a number of tar files to make it more efficient to
- *        store these files on tape. This microservice has the same functionality
- *        as the iphybun command.
- *
- * \usage See clients/icommands/test/rules/
- *
- * \param[in] inpParam1 - A StructFileExtAndRegInp_MS_T or a STR_MS_T which would be taken as the collection for the phybun.
- * \param[in] inpParam2 - optional - a STR_MS_T which specifies the target resource. If one wants to modify
- *                       the value of the maximum number of subfiles contained in the tar file (default=5120), the input should be like this:
- *                       "<target resource name>++++N=10000++++s=1". In this example, it will allow to merge up to 10000 files or up to
- *                        1 GB in volume, whatever occurs first, in a single tar file.
- *                        Note that if these numbers are too high (especially "N"), it can cause some significant overhead for
- *                        operations like retrieving a single file within a tar file (stage, untar and register in iRODS lots of files).
- *                        If the syntax after "++++" is invalid, it will be ignored.
- * \param[out] outParam - An INT_MS_T containing the status.
- * \param[in,out] rei - The RuleExecInfo structure that is automatically
- *    handled by the rule engine. The user does not include rei as a
- *    parameter in the rule invocation.
- *
- * \DolVarDependence none
- * \DolVarModified none
- * \iCatAttrDependence none
- * \iCatAttrModified none
- * \sideeffect none
- *
- * \return integer
- * \retval 0 upon success
- * \pre N/A
- * \post N/A
- * \sa N/A
-**/
-int
-msiPhyBundleColl( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei ) {
-
-    RE_TEST_MACRO( " Calling msiPhyBundleColl" )
-
-    if (!rei || !rei->rsComm) {
-        rodsLog( LOG_ERROR,
-                 "%s: input rei or rsComm is NULL", __FUNCTION__ );
-        if ( rei ) {
-            rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
-        }
-        return SYS_INTERNAL_NULL_INPUT_ERR;
-    }
-
-    /* start building the structFileExtAndRegInp instance.
-    extract from inpParam1 the tar file object path: tarFilePath
-    and from inpParam2 the target collection: colTarget */
-    rsComm_t *rsComm = rei->rsComm;
-    if ( inpParam1 == NULL ) {
-        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                            "%s: input Param1 is NULL", __FUNCTION__ );
-        rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
-        return rei->status;
-    }
-
-    // For consistency with iphybun
-    if ( rei->uoic->authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        rei->status = SYS_NO_API_PRIV;
-        rodsLog( LOG_ERROR, "%s: User %s does not have sufficient privilege, status = %d",
-                 __FUNCTION__, rei->uoic->userName, rei->status );
-        return rei->status;
-    }
-
-    structFileExtAndRegInp_t* myStructFileExtAndRegInp{};
-    structFileExtAndRegInp_t structFileExtAndRegInp{};
-    if ( strcmp( inpParam1->type, STR_MS_T ) == 0 ) {
-        myStructFileExtAndRegInp = &structFileExtAndRegInp;
-        snprintf( myStructFileExtAndRegInp->collection, sizeof( myStructFileExtAndRegInp->collection ),
-                  "%s", ( char* )inpParam1->inOutStruct );
-    }
-    else if ( strcmp( inpParam1->type, StructFileExtAndRegInp_MS_T ) == 0 ) {
-        myStructFileExtAndRegInp =
-            ( structFileExtAndRegInp_t * ) inpParam1->inOutStruct;
-    }
-    else {
-        rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
-        return rei->status;
-    }
-
-    if ( inpParam2 != NULL && strcmp( inpParam2->type, STR_MS_T ) == 0 &&
-            strcmp( ( char * ) inpParam2->inOutStruct, "null" ) != 0 ) {
-        /* parse the input parameter which is: <string> or <string>++++N=<int>.... */
-        std::vector<std::string> tokens;
-        boost::algorithm::split_regex( tokens, ( char * ) inpParam2->inOutStruct, boost::regex( "\\+\\+\\+\\+" ) );
-        if ( !tokens[0].empty() ) {
-            addKeyVal( &myStructFileExtAndRegInp->condInput, DEST_RESC_NAME_KW, tokens[0].c_str() );
-        }
-        for ( size_t i = 1; i < tokens.size(); i++ ) {
-            if ( tokens[i].empty() ) {
-                continue;
-            }
-            std::vector<std::string> current_arg;
-            boost::algorithm::split_regex( current_arg, tokens[i], boost::regex( "=" ) );
-            if ( current_arg.size() != 2 || current_arg[0].size() != 1 ) {
-                rodsLog( LOG_ERROR, "%s called with improperly formatted arguments", __FUNCTION__ );
-                continue;
-            }
-            switch ( current_arg[0].c_str()[0] ) {
-            case 'N':
-                addKeyVal( &myStructFileExtAndRegInp->condInput, MAX_SUB_FILE_KW, current_arg[1].c_str() );
-                break;
-            case 'S':
-                addKeyVal( &myStructFileExtAndRegInp->condInput, RESC_NAME_KW, current_arg[1].c_str() );
-                break;
-            case 's':
-                addKeyVal( &myStructFileExtAndRegInp->condInput, MAX_BUNDLE_SIZE_KW, current_arg[1].c_str() );
-                break;
-            default:
-                rodsLog( LOG_ERROR, "%s called with improperly formatted arguments", __FUNCTION__ );
-            }
-        }
-    }
-
-    /* tar file extraction */
-    rei->status = rsPhyBundleColl( rsComm, myStructFileExtAndRegInp );
-    fillIntInMsParam( outParam, rei->status );
-    return rei->status;
 }

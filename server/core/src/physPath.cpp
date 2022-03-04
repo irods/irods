@@ -6,7 +6,6 @@
 #include "irods/genQuery.h"
 #include "irods/modDataObjMeta.h"
 #include "irods/objMetaOpr.hpp"
-#include "irods/phyBundleColl.h"
 #include "irods/physPath.hpp"
 #include "irods/rcGlobalExtern.h"
 #include "irods/rcMisc.h"

@@ -209,7 +209,6 @@ foreach(variant IN ITEMS client server)
     "${CMAKE_CURRENT_SOURCE_DIR}/src/miscUtil.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/mkdirUtil.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/mvUtil.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/phybunUtil.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/phymvUtil.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/procApiRequest.cpp" # relies on RODS_SERVER/CLERVER
     "${CMAKE_CURRENT_SOURCE_DIR}/src/putUtil.cpp"
@@ -380,7 +379,6 @@ install(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/packStruct.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/parallel_transfer_engine.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/parseCommandLine.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/phybunUtil.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/phymvUtil.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/procApiRequest.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/putUtil.h"

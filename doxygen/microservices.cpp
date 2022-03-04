@@ -74,7 +74,6 @@
   - #msiRmColl - Delete a collection
   - #msiTarFileExtract - Extracts a tar object file into a target collection
   - #msiTarFileCreate - Creates a tar object file from a target collection
-  - #msiPhyBundleColl - Bundles a collection into a number of tar files, similar to the iphybun command
 
  \subsection msiproxy Proxy Command Microservices
   - #msiExecCmd - Remotely execute a command

@@ -16,7 +16,6 @@
 #include "irods/irods_hierarchy_parser.hpp"
 #include "irods/rsGlobalExtern.hpp"
 #include "irods/generalAdmin.h"
-#include "irods/phyBundleColl.h"
 #include "irods/miscServerFunct.hpp"
 #include "irods/genQuery.h"
 

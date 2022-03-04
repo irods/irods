@@ -378,53 +378,6 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
             "irm -rf {remote_home_collection}/{dir_name}".format(**parameters))
         shutil.rmtree(dir_path)
 
-    @unittest.skipIf(IrodsConfig().version_tuple < (4, 0, 3) or test.settings.FEDERATION.REMOTE_IRODS_VERSION < (4, 0, 3), 'Fixed in 4.0.3')
-    def test_iget_from_bundle(self):
-        '''
-        WIP
-        '''
-
-        # make test dir
-        dir_name = 'iphybun_test_dir'
-        file_count = 20
-        file_size = 4
-        dir_path = os.path.join(self.local_test_dir_path, dir_name)
-        local_files = lib.make_large_local_tmp_dir(
-            dir_path, file_count, file_size)
-
-        # make session for existing *remote* user
-        user, password = 'rods', 'rods'
-        remote_session = session.make_session_for_existing_user(
-            user, password, test.settings.FEDERATION.REMOTE_HOST, test.settings.FEDERATION.REMOTE_ZONE)
-
-        # test specific parameters
-        parameters = self.config.copy()
-        parameters['dir_path'] = dir_path
-        parameters['dir_name'] = dir_name
-        parameters['user_name'] = remote_session.username
-        parameters['remote_home_collection'] = "/{remote_zone}/home/{user_name}".format(
-            **parameters)
-
-        # put dir in remote collection
-        remote_session.assert_icommand(
-            "iput -fr {dir_path} {remote_home_collection}/".format(**parameters), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
-
-        # new collection should be there
-        remote_session.assert_icommand(
-            "ils -L {remote_home_collection}/{dir_name}".format(**parameters), 'STDOUT_SINGLELINE', dir_name)
-
-        # list remote home collection
-        remote_session.assert_icommand(
-            "ils -L {remote_home_collection}".format(**parameters), 'STDOUT_SINGLELINE', parameters['remote_home_collection'])
-
-        # cleanup
-        remote_session.assert_icommand(
-            "irm -rf {remote_home_collection}/{dir_name}".format(**parameters))
-        shutil.rmtree(dir_path)
-
-        # close remote session
-        remote_session.__exit__()
-
     def test_irm_f(self):
         # pick session(s) for the test
         test_session = self.user_sessions[0]

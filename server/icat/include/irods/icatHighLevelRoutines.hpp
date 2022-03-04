@@ -7,7 +7,6 @@
 #include "irods/icatStructs.hpp"
 #include "irods/rodsGeneralUpdate.h"
 #include "irods/specificQuery.h"
-#include "irods/phyBundleColl.h"
 #include "irods/irods_resource_manager.hpp"
 
 #include <sys/socket.h>
