@@ -8,7 +8,7 @@ const char * const icmds[] = {
     "ierror", "iexit", "ifsck", "iget", "igroupadmin",
     "ihelp", "iinit", "ilocate", "ils", "ilsresc",
     "imcoll", "imeta", "imiscsvrinfo", "imkdir", "imv", "ipasswd",
-    "iphybun", "iphymv", "ips", "iput", "ipwd", "iqdel", "iqmod", "iqstat",
+    "iphymv", "ips", "iput", "ipwd", "iqdel", "iqmod", "iqstat",
     "iquest", "iquota", "ireg", "irepl", "irm", "irmdir", "irmtrash", "irsync", "irule",
     "iscan", "istream", "isysmeta", "iticket", "itouch", "itree", "itrim", "iunreg", "iuserinfo",
     "izonereport"
@@ -44,7 +44,6 @@ printMainHelp() {
         "imkdir       - make an iRODS directory (Collection).",
         "imv          - move/rename an iRODS Data Object (file) or Collection (directory).",
         "ipasswd      - change your iRODS password.",
-        "iphybun      - DEPRECATED - physically bundle files (admin only).",
         "iphymv       - physically move a Data Object to another storage Resource.",
         "ips          - display iRODS agent (server) connection information.",
         "iput         - put (store) a file into iRODS.",

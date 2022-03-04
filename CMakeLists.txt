@@ -162,7 +162,6 @@ set(
   imkdir
   imv
   ipasswd
-  iphybun
   iphymv
   ips
   iput
