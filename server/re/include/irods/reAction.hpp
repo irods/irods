@@ -242,7 +242,6 @@ namespace irods
         table_[ "msiPrintGenQueryInp" ] = new irods::ms_table_entry( "msiPrintGenQueryInp", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiPrintGenQueryInp ) );
         table_[ "msiTarFileExtract" ] = new irods::ms_table_entry( "msiTarFileExtract", 4, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiTarFileExtract ) );
         table_[ "msiTarFileCreate" ] = new irods::ms_table_entry( "msiTarFileCreate", 4, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiTarFileCreate ) );
-        table_[ "msiPhyBundleColl" ] = new irods::ms_table_entry( "msiPhyBundleColl", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiPhyBundleColl ) );
         table_[ "msiServerMonPerf" ] = new irods::ms_table_entry( "msiServerMonPerf", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiServerMonPerf ) );
         table_[ "msiFlushMonStat" ] = new irods::ms_table_entry( "msiFlushMonStat", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiFlushMonStat ) );
         table_[ "msiDigestMonStat" ] = new irods::ms_table_entry( "msiDigestMonStat", 7, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiDigestMonStat ) );

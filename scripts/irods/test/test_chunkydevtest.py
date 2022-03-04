@@ -242,20 +242,6 @@ class ChunkyDevTest(ResourceBase):
         shutil.rmtree(dir_w + "/icmdtestbz2")
         self.admin.assert_icommand("irm -rf " + irodshome + "/icmdtestx1.tar.bz2")
 
-        # Issue 3835 - implement a phybun test suite
-        #self.admin.assert_icommand("iphybun -R " + self.anotherresc + " -Dbzip2 " + irodshome + "/icmdtestbz2")
-        #self.admin.assert_icommand("itrim -N1 -S " + self.testresc + " -r " + irodshome + "/icmdtestbz2", 'STDOUT_SINGLELINE', "Total size trimmed")
-        #self.admin.assert_icommand("itrim -N1 -S " + irodsdefresource + " -r " + irodshome + "/icmdtestbz2", 'STDOUT_SINGLELINE', "Total size trimmed")
-
-        # get the name of bundle file
-        #path, test_collection = os.path.split(irodshome)
-        #out, _ = lib.execute_command(['ils', '-L', os.path.join(irodshome, 'icmdtestbz2', 'icmdtestx', 'foo1')])
-        #out, _ = self.admin.assert_icommand_fail(['ils', os.path.join('/tempZone', 'bundle', 'home', username, test_collection)], 'STDOUT_SINGLELINE', 'bundle')
-        #print(out)
-        #bunfile = out.split()[-1]
-        #print(bunfile)
-        #self.admin.assert_icommand("ils --bundle " + bunfile, 'STDOUT_SINGLELINE', "Subfiles")
-        #self.admin.assert_icommand("irm -f --empty " + bunfile)
         self.admin.assert_icommand("irm -rf " + irodshome + "/icmdtestbz2")
 
         # cleanup
@@ -505,71 +491,6 @@ class ChunkyDevTest(ResourceBase):
         os.unlink(sfile2)
         if os.path.exists(myldir):
             shutil.rmtree(myldir)
-
-    @unittest.skip('FIXME')
-    def test_phybun_from_devtest(self):
-        with session.make_session_for_existing_admin() as rods_admin:
-            rods_admin.run_icommand(['ichmod', 'own', '-r', self.admin.username, '/' + self.admin.zone_name])
-
-        # build expected variables with similar devtest names
-        test_file = os.path.join(self.admin.local_session_dir, 'test_file')
-        lib.make_file(test_file, 4000, contents='arbitrary')
-        myssize = str(os.stat(test_file).st_size)
-        username = self.admin.username
-        irodszone = self.admin.zone_name
-        testuser1 = self.user0.username
-        irodshome = self.admin.session_collection
-        irodsdefresource = self.admin.default_resource
-        dir_w = "."
-        sfile2 = dir_w + "/sfile2"
-        cat_file_into_file_n_times(test_file, sfile2, 2)
-        mysdir = "/tmp/irodssdir"
-        myldir = dir_w + "/ldir"
-        if os.path.exists(myldir):
-            shutil.rmtree(myldir)
-        self.admin.assert_icommand("imkdir icmdtest")
-
-        # make a directory containing 20 small files
-        if not os.path.isdir(mysdir):
-            os.mkdir(mysdir)
-        for i in range(20):
-            mysfile = mysdir + "/sfile" + str(i)
-            shutil.copyfile(test_file, mysfile)
-
-        # make a directory containing 20 small files
-        if not os.path.isdir(mysdir):
-            os.mkdir(mysdir)
-        for i in range(20):
-            mysfile = mysdir + "/sfile" + str(i)
-            shutil.copyfile(progname, mysfile)
-
-        # iphybun test
-        self.admin.assert_icommand("iput -rR " + self.testresc + " " + mysdir + " " + irodshome + "/icmdtestp", "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
-        self.admin.assert_icommand("iphybun -KR " + self.anotherresc + " " + irodshome + "/icmdtestp")
-        self.admin.assert_icommand("itrim -rS " + self.testresc + " -N1 " +
-                                   irodshome + "/icmdtestp", 'STDOUT_SINGLELINE', "files trimmed")
-        out, _ = lib.execute_command(['ils', '-L', os.path.join(irodshome, 'icmdtestp', 'sfile1')])
-        bunfile = out.split()[-1]
-        print(bunfile)
-        self.admin.assert_icommand("irepl --purgec -R " + self.anotherresc + " " + bunfile)
-        self.admin.assert_icommand("itrim -rS " + self.testresc + " -N1 " +
-                                   irodshome + "/icmdtestp", 'STDOUT_SINGLELINE', "files trimmed")
-        # get the name of bundle file
-        self.admin.assert_icommand("irm -f --empty " + bunfile)
-        # should not be able to remove it because it is not empty
-        self.admin.assert_icommand("ils " + bunfile, 'STDOUT_SINGLELINE', bunfile)
-        self.admin.assert_icommand("irm -rvf " + irodshome + "/icmdtestp", 'STDOUT_SINGLELINE', "num files done")
-        self.admin.assert_icommand("irm -f --empty " + bunfile)
-        if os.path.exists(dir_w + "/testp"):
-            shutil.rmtree(dir_w + "/testp")
-        shutil.rmtree(mysdir)
-
-        # cleanup
-        os.unlink(sfile2)
-        if os.path.exists(myldir):
-            shutil.rmtree(myldir)
-        if os.path.exists(mysdir):
-            shutil.rmtree(mysdir)
 
     def test_irsync_from_devtest(self):
         # build expected variables with similar devtest names

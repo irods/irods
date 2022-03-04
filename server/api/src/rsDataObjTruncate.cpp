@@ -18,7 +18,6 @@
 #include "irods/modDataObjMeta.h"
 #include "irods/subStructFileTruncate.h"
 #include "irods/getRemoteZoneResc.h"
-#include "irods/phyBundleColl.h"
 #include "irods/rsModDataObjMeta.hpp"
 #include "irods/rsSubStructFileTruncate.hpp"
 #include "irods/rsFileTruncate.hpp"

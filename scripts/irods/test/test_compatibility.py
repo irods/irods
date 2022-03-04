@@ -29,20 +29,3 @@ class Test_Compatibility(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand('imeta set -u ' + self.user0.username + ' att verynewval')
         self.admin.assert_icommand('imeta ls -u ' + self.user0.username + ' att', 'STDOUT_SINGLELINE', 'value: verynewval')
         self.admin.assert_icommand('imeta ls -u ' + self.user0.username + ' att', 'STDOUT_SINGLELINE', 'units: someunit')
-
-    def test_iphybun_n(self):
-        self.admin.assert_icommand('imkdir testColl')
-        self.admin.assert_icommand('icd testColl')
-        for i in range(8):
-            f = 'empty{0}.txt'.format(i)
-            lib.cat(f, str(i))
-            self.admin.assert_icommand(['iput', f])
-            os.unlink(f)
-        self.admin.assert_icommand('icd ..')
-        self.admin.assert_icommand('iphybun -N3 -SdemoResc -RdemoResc testColl')
-        out, _, _ = self.admin.run_icommand('ils /' + self.admin.zone_name + '/bundle/home/' + self.admin.username)
-        coll_dir = out.split('\n')[-2].lstrip(string.printable.translate(None, '/'))
-        out, _, _ = self.admin.run_icommand(['ils', coll_dir])
-        after = out.split('\n')
-        assert len(after) == 2 + 3
-        self.admin.assert_icommand('irm -rf testColl')

@@ -1,13 +1,13 @@
+#include "irods/rsChkObjPermAndStat.hpp"
+
 #include "irods/apiHeaderAll.h"
 #include "irods/chkObjPermAndStat.h"
 #include "irods/icatHighLevelRoutines.hpp"
 #include "irods/irods_configuration_keywords.hpp"
 #include "irods/miscServerFunct.hpp"
-#include "irods/rsChkObjPermAndStat.hpp"
 #include "irods/rsCloseCollection.hpp"
 #include "irods/rsDataObjRepl.hpp"
 #include "irods/rsOpenCollection.hpp"
-#include "irods/rsPhyBundleColl.hpp"
 #include "irods/rsReadCollection.hpp"
 
 #include "irods/irods_at_scope_exit.hpp"

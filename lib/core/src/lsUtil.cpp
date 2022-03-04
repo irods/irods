@@ -7,7 +7,6 @@
 #include "irods/rcGlobalExtern.h"
 #include "irods/filesystem.hpp"
 #include "irods/irods_query.hpp"
-#include "irods/phyBundleColl.h"
 
 #include <boost/format.hpp>
 

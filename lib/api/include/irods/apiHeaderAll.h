@@ -113,7 +113,6 @@
 #include "irods/fileSyncToArch.h"
 #include "irods/generalRowInsert.h"
 #include "irods/generalRowPurge.h"
-#include "irods/phyBundleColl.h"
 #include "irods/unbunAndRegPhyBunfile.h"
 #include "irods/getHostForPut.h"
 #include "irods/getRescQuota.h"

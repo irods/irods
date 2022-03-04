@@ -91,9 +91,6 @@ int
 msiTarFileCreate( msParam_t *inpParam1, msParam_t *inpParam2,
                   msParam_t *inpParam3,  msParam_t *outParam, ruleExecInfo_t *rei );
 int
-msiPhyBundleColl( msParam_t *inpParam1, msParam_t *inpParam2,
-                  msParam_t *outParam, ruleExecInfo_t *rei );
-int
 msiCollRsync( msParam_t *inpParam1, msParam_t *inpParam2,
               msParam_t *inpParam3, msParam_t *inpParam4, msParam_t *outParam,
               ruleExecInfo_t *rei );

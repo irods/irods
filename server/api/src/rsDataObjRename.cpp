@@ -11,7 +11,6 @@
 #include "irods/icatHighLevelRoutines.hpp"
 #include "irods/dataObjUnlink.h"
 #include "irods/dataObjClose.h"
-#include "irods/phyBundleColl.h"
 #include "irods/regDataObj.h"
 #include "irods/fileOpendir.h"
 #include "irods/fileReaddir.h"

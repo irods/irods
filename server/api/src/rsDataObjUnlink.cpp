@@ -15,7 +15,6 @@
 #include "irods/dataObjRename.h"
 #include "irods/subStructFileUnlink.h"
 #include "irods/modDataObjMeta.h"
-#include "irods/phyBundleColl.h"
 #include "irods/dataObjRepl.h"
 #include "irods/regDataObj.h"
 #include "irods/physPath.hpp"

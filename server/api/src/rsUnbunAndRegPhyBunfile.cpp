@@ -1,18 +1,19 @@
-#include "irods/unbunAndRegPhyBunfile.h"
+#include "irods/rsUnbunAndRegPhyBunfile.hpp"
+
 #include "irods/apiHeaderAll.h"
+#include "irods/dataObjOpr.hpp"
+#include "irods/irods_resource_backport.hpp"
+#include "irods/irods_stacktrace.hpp"
 #include "irods/miscServerFunct.hpp"
 #include "irods/objMetaOpr.hpp"
-#include "irods/resource.hpp"
-#include "irods/dataObjOpr.hpp"
 #include "irods/physPath.hpp"
 #include "irods/rcGlobalExtern.h"
-#include "irods/rsUnbunAndRegPhyBunfile.hpp"
-#include "irods/irods_stacktrace.hpp"
-#include "irods/rsPhyBundleColl.hpp"
+#include "irods/resource.hpp"
 #include "irods/rsDataObjUnlink.hpp"
 #include "irods/rsRegReplica.hpp"
+#include "irods/rsStructFileBundle.hpp"
 #include "irods/rsStructFileExtract.hpp"
-#include "irods/irods_resource_backport.hpp"
+#include "irods/unbunAndRegPhyBunfile.h"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
