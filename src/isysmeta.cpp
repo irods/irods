@@ -1,10 +1,10 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-#include "rodsClient.h"
-#include "irods_client_api_table.hpp"
-#include "irods_pack_table.hpp"
-#include "data_object_modify_info.h"
+#include <irods/rodsClient.h>
+#include <irods/irods_client_api_table.hpp>
+#include <irods/irods_pack_table.hpp>
+#include <irods/data_object_modify_info.h>
 
 void usage();
 

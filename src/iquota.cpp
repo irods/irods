@@ -5,10 +5,10 @@
   User interface to display quota information.
 */
 
-#include "rods.h"
-#include "rodsClient.h"
-#include "irods_client_api_table.hpp"
-#include "irods_pack_table.hpp"
+#include <irods/rods.h>
+#include <irods/rodsClient.h>
+#include <irods/irods_client_api_table.hpp>
+#include <irods/irods_pack_table.hpp>
 
 #define BIG_STR 200
 #define QUOTA_APPROACH_WARNING_SIZE -10000000000LL

@@ -2,15 +2,15 @@
  * iquest - The irods iquest (question (query)) utility
 */
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
-#include "rcMisc.h"
-#include "lsUtil.h"
+#include <irods/rodsClient.h>
+#include <irods/parseCommandLine.h>
+#include <irods/rodsPath.h>
+#include <irods/rcMisc.h>
+#include <irods/lsUtil.h>
 #include <iostream>
 #include <string>
-#include "irods_client_api_table.hpp"
-#include "irods_pack_table.hpp"
+#include <irods/irods_client_api_table.hpp>
+#include <irods/irods_pack_table.hpp>
 
 #include <boost/format.hpp>
 

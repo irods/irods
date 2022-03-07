@@ -1,11 +1,11 @@
-#include "rodsClient.h"
-#include "client_connection.hpp"
-#include "dstream.hpp"
-#include "transport/default_transport.hpp"
-#include "rcMisc.h"
-#include "rodsPath.h"
-#include "irods_at_scope_exit.hpp"
-#include "replica.hpp"
+#include <irods/rodsClient.h>
+#include <irods/client_connection.hpp>
+#include <irods/dstream.hpp>
+#include <irods/transport/default_transport.hpp>
+#include <irods/rcMisc.h>
+#include <irods/rodsPath.h>
+#include <irods/irods_at_scope_exit.hpp>
+#include <irods/replica.hpp>
 
 #include "utility.hpp"
 

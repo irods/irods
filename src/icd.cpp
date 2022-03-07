@@ -1,15 +1,15 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 #include <fcntl.h>
-#include "rods.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
-#include "miscUtil.h"
-#include "rcMisc.h"
-#include "genQuery.h"
-#include "rodsClient.h"
-#include "irods_client_api_table.hpp"
-#include "irods_pack_table.hpp"
+#include <irods/rods.h>
+#include <irods/parseCommandLine.h>
+#include <irods/rodsPath.h>
+#include <irods/miscUtil.h>
+#include <irods/rcMisc.h>
+#include <irods/genQuery.h>
+#include <irods/rodsClient.h>
+#include <irods/irods_client_api_table.hpp>
+#include <irods/irods_pack_table.hpp>
 
 void usage( char *prog );
 

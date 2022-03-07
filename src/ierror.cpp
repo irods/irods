@@ -1,8 +1,8 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-#include "rods.h"
-#include "parseCommandLine.h"
-#include "rcMisc.h"
+#include <irods/rods.h>
+#include <irods/parseCommandLine.h>
+#include <irods/rcMisc.h>
 
 void usage( char *prog );
 

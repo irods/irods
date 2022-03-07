@@ -1,13 +1,13 @@
 /*
  * iapitest - test pluggable apis
 */
-#include "irods_client_api_table.hpp"
-#include "irods_pack_table.hpp"
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
-#include "lsUtil.h"
-#include "irods_buffer_encryption.hpp"
+#include <irods/irods_client_api_table.hpp>
+#include <irods/irods_pack_table.hpp>
+#include <irods/rodsClient.h>
+#include <irods/parseCommandLine.h>
+#include <irods/rodsPath.h>
+#include <irods/lsUtil.h>
+#include <irods/irods_buffer_encryption.hpp>
 #include <string>
 #include <iostream>
 

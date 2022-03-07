@@ -5,12 +5,12 @@
   This is an interface to the user information (metadata).
 */
 
-#include "rods.h"
-#include "rodsClient.h"
-#include "irods_client_api_table.hpp"
-#include "irods_pack_table.hpp"
+#include <irods/rods.h>
+#include <irods/rodsClient.h>
+#include <irods/irods_client_api_table.hpp>
+#include <irods/irods_pack_table.hpp>
 
-#include "irods_query.hpp"
+#include <irods/irods_query.hpp>
 #include <boost/format.hpp>
 
 int debug = 0;

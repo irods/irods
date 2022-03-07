@@ -5,12 +5,12 @@
  * mounting/unmounting and the management of mounted structured files.
 */
 
-#include "irods_client_api_table.hpp"
-#include "irods_pack_table.hpp"
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
-#include "mcollUtil.h"
+#include <irods/irods_client_api_table.hpp>
+#include <irods/irods_pack_table.hpp>
+#include <irods/rodsClient.h>
+#include <irods/parseCommandLine.h>
+#include <irods/rodsPath.h>
+#include <irods/mcollUtil.h>
 void usage();
 
 int
