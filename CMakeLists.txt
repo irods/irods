@@ -47,6 +47,7 @@ include(UseLibCXX)
 
 find_package(nlohmann_json "3.6.1" REQUIRED)
 find_package(Threads REQUIRED)
+find_package(OpenSSL REQUIRED COMPONENTS Crypto SSL)
 
 if (IRODS_BUILD_WITH_WERROR)
   add_compile_options(-Werror)
