@@ -1584,6 +1584,7 @@ target_compile_definitions(genOSAuth PRIVATE ${IRODS_COMPILE_DEFINITIONS})
 
 add_subdirectory(plugins/api)
 add_subdirectory(plugins/auth)
+add_subdirectory(plugins/auth_legacy)
 add_subdirectory(plugins/database)
 add_subdirectory(plugins/microservices)
 add_subdirectory(plugins/network)
