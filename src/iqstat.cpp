@@ -5,10 +5,10 @@
   This is an interface to the Attribute-Value-Units type of metadata.
 */
 
-#include "rods.h"
-#include "rodsClient.h"
-#include "irods_client_api_table.hpp"
-#include "irods_pack_table.hpp"
+#include <irods/rods.h>
+#include <irods/rodsClient.h>
+#include <irods/irods_client_api_table.hpp>
+#include <irods/irods_pack_table.hpp>
 
 #define MAX_SQL 300
 #define BIG_STR 200

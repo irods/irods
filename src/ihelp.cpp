@@ -1,5 +1,5 @@
-#include "rodsClient.h"
-#include "parseCommandLine.h"
+#include <irods/rodsClient.h>
+#include <irods/parseCommandLine.h>
 
 #include <string>
 

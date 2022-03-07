@@ -1,7 +1,7 @@
 #ifndef IRODS_ICOMMANDS_UTILITY_HPP
 #define IRODS_ICOMMANDS_UTILITY_HPP
 
-#include "rodsDef.h"
+#include <irods/rodsDef.h>
 
 #include <cstdlib>
 #include <string_view>

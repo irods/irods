@@ -2,13 +2,13 @@
  * irule - The irods utility to execute user composed rules.
 */
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
-#include "getUtil.h"
-#include "irods_client_api_table.hpp"
-#include "irods_pack_table.hpp"
-#include "irods_configuration_keywords.hpp"
+#include <irods/rodsClient.h>
+#include <irods/parseCommandLine.h>
+#include <irods/rodsPath.h>
+#include <irods/getUtil.h>
+#include <irods/irods_client_api_table.hpp>
+#include <irods/irods_pack_table.hpp>
+#include <irods/irods_configuration_keywords.hpp>
 
 #include "boost/program_options.hpp"
 

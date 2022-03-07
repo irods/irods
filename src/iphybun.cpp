@@ -3,12 +3,12 @@
 /*
  * iphybun - The irods phybun utility
 */
-#include "irods_client_api_table.hpp"
-#include "irods_pack_table.hpp"
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
-#include "phybunUtil.h"
+#include <irods/irods_client_api_table.hpp>
+#include <irods/irods_pack_table.hpp>
+#include <irods/rodsClient.h>
+#include <irods/parseCommandLine.h>
+#include <irods/rodsPath.h>
+#include <irods/phybunUtil.h>
 void usage();
 
 int

@@ -12,12 +12,12 @@
 #include "boost/algorithm/string.hpp"
 #include "boost/lexical_cast.hpp"
 
-#include "rodsClient.h"
-#include "irods_server_control_plane.hpp"
-#include "irods_buffer_encryption.hpp"
-#include "server_control_plane_command.hpp"
-#include "irods_buffer_encryption.hpp"
-#include "irods_exception.hpp"
+#include <irods/rodsClient.h>
+#include <irods/irods_server_control_plane.hpp>
+#include <irods/irods_buffer_encryption.hpp>
+#include <irods/server_control_plane_command.hpp>
+#include <irods/irods_buffer_encryption.hpp>
+#include <irods/irods_exception.hpp>
 
 #include <nlohmann/json.hpp>
 

@@ -1,11 +1,11 @@
-#include "rodsClient.h"
-#include "client_connection.hpp"
-#include "irods_client_api_table.hpp"
-#include "irods_pack_table.hpp"
-#include "irods_parse_command_line_options.hpp"
-#include "filesystem.hpp"
-#include "rcMisc.h"
-#include "rodsPath.h"
+#include <irods/rodsClient.h>
+#include <irods/client_connection.hpp>
+#include <irods/irods_client_api_table.hpp>
+#include <irods/irods_pack_table.hpp>
+#include <irods/irods_parse_command_line_options.hpp>
+#include <irods/filesystem.hpp>
+#include <irods/rcMisc.h>
+#include <irods/rodsPath.h>
 
 #include "fmt/core.h"
 #include "fmt/color.h"

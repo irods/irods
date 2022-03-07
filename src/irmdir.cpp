@@ -1,11 +1,11 @@
 #include <fcntl.h>
-#include "rods.h"
-#include "rodsPath.h"
-#include "rmdirUtil.h"
-#include "rcMisc.h"
-#include "rodsClient.h"
-#include "irods_client_api_table.hpp"
-#include "irods_pack_table.hpp"
+#include <irods/rods.h>
+#include <irods/rodsPath.h>
+#include <irods/rmdirUtil.h>
+#include <irods/rcMisc.h>
+#include <irods/rodsClient.h>
+#include <irods/irods_client_api_table.hpp>
+#include <irods/irods_pack_table.hpp>
 
 #include "boost/program_options.hpp"
 

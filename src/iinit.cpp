@@ -1,17 +1,17 @@
-#include "rods.h"
-#include "parseCommandLine.h"
-#include "rcMisc.h"
-#include "rodsClient.h"
-#include "rcConnect.h"
-#include "irods_native_auth_object.hpp"
-#include "irods_pam_auth_object.hpp"
-#include "irods_gsi_object.hpp"
-#include "irods_kvp_string_parser.hpp"
-#include "irods_auth_constants.hpp"
-#include "irods_client_api_table.hpp"
-#include "irods_pack_table.hpp"
-#include "irods_environment_properties.hpp"
-#include "irods_kvp_string_parser.hpp"
+#include <irods/rods.h>
+#include <irods/parseCommandLine.h>
+#include <irods/rcMisc.h>
+#include <irods/rodsClient.h>
+#include <irods/rcConnect.h>
+#include <irods/irods_native_auth_object.hpp>
+#include <irods/irods_pam_auth_object.hpp>
+#include <irods/irods_gsi_object.hpp>
+#include <irods/irods_kvp_string_parser.hpp>
+#include <irods/irods_auth_constants.hpp>
+#include <irods/irods_client_api_table.hpp>
+#include <irods/irods_pack_table.hpp>
+#include <irods/irods_environment_properties.hpp>
+#include <irods/irods_kvp_string_parser.hpp>
 
 #include "boost/lexical_cast.hpp"
 

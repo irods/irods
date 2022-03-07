@@ -1,9 +1,9 @@
-#include "irods_client_api_table.hpp"
-#include "irods_pack_table.hpp"
-#include "parseCommandLine.h"
-#include "regUtil.h"
-#include "rodsClient.h"
-#include "rodsPath.h"
+#include <irods/irods_client_api_table.hpp>
+#include <irods/irods_pack_table.hpp>
+#include <irods/parseCommandLine.h>
+#include <irods/regUtil.h>
+#include <irods/rodsClient.h>
+#include <irods/rodsPath.h>
 
 void usage();
 

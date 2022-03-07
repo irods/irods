@@ -2,13 +2,13 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
 /* User command to change their password. */
-#include "rods.h"
-#include "rodsClient.h"
+#include <irods/rods.h>
+#include <irods/rodsClient.h>
 #include <unistd.h>
 #include <termios.h>
-#include "termiosUtil.hpp"
-#include "irods_client_api_table.hpp"
-#include "irods_pack_table.hpp"
+#include <irods/termiosUtil.hpp>
+#include <irods/irods_client_api_table.hpp>
+#include <irods/irods_pack_table.hpp>
 
 #include <iostream>
 #include <string>

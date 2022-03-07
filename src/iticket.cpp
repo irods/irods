@@ -1,9 +1,9 @@
-#include "irods_client_api_table.hpp"
-#include "irods_pack_table.hpp"
-#include "rods.h"
-#include "rodsClient.h"
-#include "irods_random.hpp"
-#include "rcMisc.h"
+#include <irods/irods_client_api_table.hpp>
+#include <irods/irods_pack_table.hpp>
+#include <irods/rods.h>
+#include <irods/rodsClient.h>
+#include <irods/irods_random.hpp>
+#include <irods/rcMisc.h>
 
 #include "boost/date_time.hpp"
 

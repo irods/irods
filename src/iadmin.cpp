@@ -1,11 +1,11 @@
-#include "filesystem.hpp"
-#include "irods_client_api_table.hpp"
-#include "irods_pack_table.hpp"
-#include "irods_string_tokenize.hpp"
-#include "key_value_proxy.hpp"
-#include "parseCommandLine.h"
-#include "query_builder.hpp"
-#include "rodsClient.h"
+#include <irods/filesystem.hpp>
+#include <irods/irods_client_api_table.hpp>
+#include <irods/irods_pack_table.hpp>
+#include <irods/irods_string_tokenize.hpp>
+#include <irods/key_value_proxy.hpp>
+#include <irods/parseCommandLine.h>
+#include <irods/query_builder.hpp>
+#include <irods/rodsClient.h>
 
 #include <algorithm>
 #include <iostream>

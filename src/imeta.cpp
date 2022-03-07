@@ -1,10 +1,10 @@
 #include <unistd.h>
 
-#include "rods.h"
-#include "rodsClient.h"
-#include "irods_client_api_table.hpp"
-#include "irods_pack_table.hpp"
-#include "rodsPath.h"
+#include <irods/rods.h>
+#include <irods/rodsClient.h>
+#include <irods/irods_client_api_table.hpp>
+#include <irods/irods_pack_table.hpp>
+#include <irods/rodsPath.h>
 
 #include "fmt/format.h"
 

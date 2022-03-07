@@ -4,14 +4,14 @@
  * iput - The irods put utility
 */
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
-#include "putUtil.h"
-#include "rcGlobalExtern.h"
-#include "irods_client_api_table.hpp"
-#include "irods_pack_table.hpp"
-#include "irods_parse_command_line_options.hpp"
+#include <irods/rodsClient.h>
+#include <irods/parseCommandLine.h>
+#include <irods/rodsPath.h>
+#include <irods/putUtil.h>
+#include <irods/rcGlobalExtern.h>
+#include <irods/irods_client_api_table.hpp>
+#include <irods/irods_pack_table.hpp>
+#include <irods/irods_parse_command_line_options.hpp>
 
 void usage( FILE* );
 
