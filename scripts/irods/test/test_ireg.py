@@ -569,8 +569,8 @@ class test_ireg_options(session.make_sessions_mixin([('otherrods', 'rods')], [])
 
         out,err,rc = self.admin.run_icommand(['ireg', '-C', reg_path, coll])
         self.assertEqual(rc, 0)
-        self.assertEqual(len(out), 0)
-        self.assertIn('-C option is deprecated. Use -r instead.', err)
+        self.assertEqual(len(err), 0)
+        self.assertIn('-C option is deprecated. Use -r instead.', out)
 
         _,out,_ = self.admin.assert_icommand(['ils', '-lr', coll], 'STDOUT', coll)
 
