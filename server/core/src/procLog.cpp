@@ -106,9 +106,10 @@ int rmProcLog(int pid)
     std::strcpy(procPath, ProcLogDir);
     std::strcat(procPath, "/");
 
-    auto* buf_end = procPath + std::strlen(procPath);
+    auto* buf_start = procPath + std::strlen(procPath);
+    auto* buf_end = procPath + sizeof(procPath);
 
-    if (auto [ptr, ec] = std::to_chars(procPath, buf_end, pid); std::errc{} == ec) {
+    if (auto [ptr, ec] = std::to_chars(buf_start, buf_end, pid); std::errc{} == ec) {
         unlink(procPath);
     }
 
