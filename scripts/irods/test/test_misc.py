@@ -238,3 +238,13 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
         time.sleep(45)
         self.admin.assert_icommand('imeta ls -d %s' % (object_name), 'STDOUT_SINGLELINE', ['attribute: ' + attribute])
         self.admin.assert_icommand(['irm', "-f", 'hello'])
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "skip for topology testing")
+    def test_server_correctly_cleans_up_proc_files__issue_6231(self):
+        # Generate some proc files.
+        for i in range(10):
+            self.admin.assert_icommand(['ils'], 'STDOUT', [self.admin.session_collection])
+
+        # Show that the proc directory will eventually become empty.
+        lib.delayAssert(lambda: len(os.listdir(paths.proc_directory())) == 0)
+

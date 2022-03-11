@@ -70,6 +70,9 @@ def log_directory():
         irods_directory(),
         'log')
 
+def proc_directory():
+    return os.path.join(log_directory(), 'proc')
+
 def control_log_path():
     return os.path.join(
         log_directory(),
