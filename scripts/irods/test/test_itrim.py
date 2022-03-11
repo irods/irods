@@ -148,3 +148,73 @@ class Test_Itrim(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
             self.admin.run_icommand(['iadmin', 'rmresc', resc_name])
             shutil.rmtree(vault_path)
 
+    def test_itrim_returns_on_negative_status__issue_3531(self):
+        resc1 = 'issue_3531_1'
+        resc2 = 'issue_3531_2'
+        filename = 'test_itrim_returns_on_negative_status__ticket_3531'
+        logical_path = os.path.join(self.admin.session_collection, filename)
+
+        try:
+            lib.create_ufs_resource(resc1, self.admin, test.settings.HOSTNAME_2)
+            lib.create_ufs_resource(resc2, self.admin, test.settings.HOSTNAME_3)
+
+            # Create a data object
+            self.admin.assert_icommand(['itouch', '-R', resc1, logical_path])
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc1))
+
+            # Replicate to another resource so that we have something to trim
+            self.admin.assert_icommand(['irepl', '-R', resc2, logical_path])
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc2))
+
+            # Use incompatible parameters -n and -S
+            rc,_,_ = self.admin.assert_icommand(['itrim', '-n0', '-S', resc2, logical_path],
+                                                'STDERR', 'USER_INCOMPATIBLE_PARAMS')
+            self.assertNotEqual(rc, 0, 'itrim should have non-zero error code on trim failure')
+
+            # Ensure that both replicas still exist and that neither was trimmed
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc1))
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc2))
+
+        finally:
+            self.admin.run_icommand(['irm', '-f', logical_path])
+            lib.remove_resource(resc1, self.admin)
+            lib.remove_resource(resc2, self.admin)
+
+
+    def test_itrim_displays_incorrect_count__issue_3531(self):
+        resc1 = 'issue_3531_1'
+        resc2 = 'issue_3531_2'
+
+        filename = 'test_itrim_displays_incorrect_count__issue_3531'
+        filepath = os.path.join(self.admin.local_session_dir, filename)
+        filesize = int(pow(2, 20) + pow(10,5))
+        filesizeMB = round(float(filesize)/1048576, 3)
+        lib.make_file(filepath, filesize)
+
+        logical_path = os.path.join(self.admin.session_collection, filename)
+
+        try:
+            lib.create_ufs_resource(resc1, self.admin, test.settings.HOSTNAME_2)
+            lib.create_ufs_resource(resc2, self.admin, test.settings.HOSTNAME_3)
+
+            # Create the data object.
+            self.admin.assert_icommand(['iput', '-R', resc1, filepath, logical_path])
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc1))
+
+            # Replicate to another resource so that we have something to trim.
+            self.admin.assert_icommand(['irepl', '-R', resc2, logical_path])
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc2))
+
+            # Trim down to 1 replica, targeting the replica on resc1 and ensure the correct
+            # size is displayed in the resulting output.
+            self.admin.assert_icommand(['itrim', '-N1', '-S', resc1, logical_path], 'STDOUT',
+                                       'Total size trimmed = {} MB. Number of files trimmed = 1.'.format(str(filesizeMB)))
+
+            # Ensure that the replica on resc1 was trimmed and the replica on resc2 remains.
+            self.assertFalse(lib.replica_exists_on_resource(self.admin, logical_path, resc1))
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc2))
+
+        finally:
+            self.admin.run_icommand(['irm', '-f', logical_path])
+            lib.remove_resource(resc1, self.admin)
+            lib.remove_resource(resc2, self.admin)
