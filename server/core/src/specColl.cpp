@@ -25,7 +25,7 @@
 #include "irods/irods_stacktrace.hpp"
 #include "irods/key_value_proxy.hpp"
 
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 #include <cstring>
 

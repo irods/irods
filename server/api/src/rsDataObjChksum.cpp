@@ -25,7 +25,7 @@
 #include "irods/irods_query.hpp"
 
 #include <boost/lexical_cast.hpp>
-#include "fmt/format.h"
+#include <fmt/format.h>
 #include <nlohmann/json.hpp>
 
 #include <cstring>

@@ -13,7 +13,7 @@
 #include "irods/irods_log.hpp"
 #include "irods/rcMisc.h"
 
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 #include <algorithm>
 #include <string>

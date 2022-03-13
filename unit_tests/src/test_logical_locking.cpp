@@ -17,7 +17,7 @@
 #include "irods/transport/default_transport.hpp"
 #include "unit_test_utils.hpp"
 
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 #include <iostream>
 #include <thread>

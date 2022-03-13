@@ -5,7 +5,7 @@
 #include "irods/rodsConnect.h"
 #include "irods/rsLog.hpp"
 
-#include "arpa/inet.h"
+#include <arpa/inet.h>
 
 #include <boost/lexical_cast.hpp>
 

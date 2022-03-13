@@ -62,7 +62,7 @@
 #include "irods/replica_proxy.hpp"
 
 #include <boost/lexical_cast.hpp>
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 #include <iostream>
 

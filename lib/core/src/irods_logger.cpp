@@ -13,8 +13,8 @@
 #include <boost/interprocess/sync/scoped_lock.hpp>
 
 #ifdef IRODS_ENABLE_SYSLOG
-    #include "spdlog/sinks/base_sink.h"
-    #include "spdlog/sinks/syslog_sink.h"
+    #include <spdlog/sinks/base_sink.h>
+    #include <spdlog/sinks/syslog_sink.h>
 #endif // IRODS_ENABLE_SYSLOG
 
 #include <sys/types.h>

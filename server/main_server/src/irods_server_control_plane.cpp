@@ -14,13 +14,13 @@
 #include "irods/irods_stacktrace.hpp"
 #include "irods/irods_logger.hpp"
 
-#include "avro/Encoder.hh"
-#include "avro/Decoder.hh"
-#include "avro/Specific.hh"
+#include <avro/Encoder.hh>
+#include <avro/Decoder.hh>
+#include <avro/Specific.hh>
 
 #include <boost/lexical_cast.hpp>
 
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 #include <nlohmann/json.hpp>
 

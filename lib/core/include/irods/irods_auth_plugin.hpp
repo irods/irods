@@ -4,7 +4,7 @@
 #include "irods/irods_error.hpp"
 #include "irods/irods_auth_types.hpp"
 #include "irods/irods_load_plugin.hpp"
-#include "dlfcn.h"
+#include <dlfcn.h>
 
 #include <utility>
 #include <boost/any.hpp>

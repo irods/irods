@@ -3,7 +3,7 @@
 #include "irods/replication_utilities.hpp"
 #include "irods/rodsError.h"
 
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 #include <string>
 

@@ -4,7 +4,7 @@
 #include "irods/irods_exception.hpp"
 
 #include <nlohmann/json.hpp>
-#include "nanodbc/nanodbc.h"
+#include <nanodbc/nanodbc.h>
 #include "irods/rodsConnect.h"
 
 #include <functional>

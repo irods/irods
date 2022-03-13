@@ -8,8 +8,8 @@
 #ifndef CLL_ODBC_HPP
 #define CLL_ODBC_HPP
 
-#include "sql.h"
-#include "sqlext.h"
+#include <sql.h>
+#include <sqlext.h>
 
 #include "irods/rods.h"
 #include "irods/private/mid_level.hpp"

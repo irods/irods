@@ -21,7 +21,7 @@
 
 #include "irods/irods_query.hpp"
 #include "irods/filesystem.hpp"
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 namespace irods::experimental::metadata {
     /// \brief This library provides an interface for metadata interaction

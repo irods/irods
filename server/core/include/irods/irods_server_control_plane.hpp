@@ -9,7 +9,7 @@
 #include <boost/thread.hpp>
 #include <boost/atomic.hpp>
 #include <boost/unordered_map.hpp>
-#include "zmq.hpp"
+#include <zmq.hpp>
 
 namespace irods
 {

@@ -17,7 +17,7 @@
 #include "unit_test_utils.hpp"
 
 #include <nlohmann/json.hpp>
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 #include <cstdlib>
 #include <chrono>

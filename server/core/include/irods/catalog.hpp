@@ -1,7 +1,7 @@
 #ifndef IRODS_CATALOG_HPP
 #define IRODS_CATALOG_HPP
 
-#include "nanodbc/nanodbc.h"
+#include <nanodbc/nanodbc.h>
 
 #include <string>
 #include <tuple>

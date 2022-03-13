@@ -19,7 +19,7 @@
 #include "irods/miscServerFunct.hpp"
 #include "irods/genQuery.h"
 
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 // =-=-=-=-=-=-=-
 // stl includes

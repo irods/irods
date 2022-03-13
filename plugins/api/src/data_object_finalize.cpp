@@ -46,8 +46,8 @@
 #include "irods/data_object_proxy.hpp"
 
 #include <nlohmann/json.hpp>
-#include "fmt/format.h"
-#include "nanodbc/nanodbc.h"
+#include <fmt/format.h>
+#include <nanodbc/nanodbc.h>
 
 #include <cstdlib>
 #include <string>

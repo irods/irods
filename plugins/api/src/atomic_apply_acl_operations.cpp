@@ -40,8 +40,8 @@
 #include "irods/filesystem.hpp"
 
 #include <nlohmann/json.hpp>
-#include "fmt/format.h"
-#include "nanodbc/nanodbc.h"
+#include <fmt/format.h>
+#include <nanodbc/nanodbc.h>
 
 #include <cstdlib>
 #include <string>

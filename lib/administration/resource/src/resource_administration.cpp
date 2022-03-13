@@ -14,7 +14,7 @@
 #include "irods/rodsErrorTable.h"
 #include "irods/query_builder.hpp"
 
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 namespace irods::experimental::administration::NAMESPACE_IMPL
 {

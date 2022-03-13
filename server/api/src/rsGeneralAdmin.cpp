@@ -20,7 +20,7 @@
 #include "irods/irods_logger.hpp"
 #include "irods/user_validation_utilities.hpp"
 
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 #include <boost/date_time.hpp>
 #include <boost/algorithm/string/trim.hpp>
