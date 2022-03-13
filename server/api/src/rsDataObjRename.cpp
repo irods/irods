@@ -42,7 +42,7 @@
 
 #include "irods/logical_locking.hpp"
 
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 #include <cstring>
 #include <chrono>

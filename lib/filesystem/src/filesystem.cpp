@@ -47,7 +47,7 @@
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/query_builder.hpp"
 
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 #include <cctype>
 #include <cstring>

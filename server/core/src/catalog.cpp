@@ -8,8 +8,8 @@
 #include "irods/rodsConnect.h"
 
 #include <nlohmann/json.hpp>
-#include "fmt/format.h"
-#include "nanodbc/nanodbc.h"
+#include <fmt/format.h>
+#include <nanodbc/nanodbc.h>
 
 #include <fstream>
 #include <functional>

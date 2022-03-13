@@ -12,7 +12,7 @@
 #include <string_view>
 
 #include <nlohmann/json.hpp>
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 namespace irods
 {

@@ -4,7 +4,7 @@
 #include "irods/rodsError.h"
 
 #include <cstring>
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 TEST_CASE("test_ErrorStack", "[ErrorStack][add][free][print]")
 {

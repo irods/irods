@@ -4,7 +4,7 @@
 #include "irods/private/irods_repl_retry.hpp"
 #include "irods/irods_stacktrace.hpp"
 
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 #include <cstring>
 

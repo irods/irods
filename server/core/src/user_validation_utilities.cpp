@@ -4,7 +4,7 @@
 #define IRODS_QUERY_ENABLE_SERVER_SIDE_API
 #include "irods/query_builder.hpp"
 
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 #include <regex>
 

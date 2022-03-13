@@ -32,7 +32,7 @@
 #include "irods/rcConnect.h"
 #include "irods/rcMisc.h"
 
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 #include <chrono>
 #include <iomanip>

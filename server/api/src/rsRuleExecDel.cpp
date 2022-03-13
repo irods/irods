@@ -10,7 +10,7 @@
 #include "irods/rsGenQuery.hpp"
 #include "irods/ruleExecSubmit.h"
 
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 namespace
 {

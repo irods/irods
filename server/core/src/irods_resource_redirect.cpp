@@ -12,7 +12,7 @@
 #include "irods/irods_resource_backport.hpp"
 #include "irods/voting.hpp"
 
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 namespace
 {

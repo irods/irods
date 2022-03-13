@@ -49,7 +49,7 @@
 #include "irods/logical_locking.hpp"
 
 #include <boost/filesystem/path.hpp>
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 #include <cstring>
 #include <string>

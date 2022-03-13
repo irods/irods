@@ -8,7 +8,7 @@
 #include "irods/thread_pool.hpp"
 #include "irods/connection_pool.hpp"
 
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 namespace irods::experimental::api {
 

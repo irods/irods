@@ -16,7 +16,7 @@
 #include "irods/replica_proxy.hpp"
 #include "irods/data_object_proxy.hpp"
 
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 namespace {
     namespace id = irods::experimental::data_object;

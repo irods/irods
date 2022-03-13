@@ -39,7 +39,7 @@
 
 #include "irods/logical_locking.hpp"
 
-#include "fmt/format.h"
+#include <fmt/format.h>
 #include <nlohmann/json.hpp>
 
 #include <cstring>

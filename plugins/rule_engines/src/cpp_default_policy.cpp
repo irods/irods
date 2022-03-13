@@ -21,7 +21,7 @@
 #include "irods/irods_hasher_factory.hpp"
 #include "irods/MD5Strategy.hpp"
 
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 // =-=-=-=-=-=-=-
 // stl includes

@@ -4,7 +4,7 @@
 #include "irods/irods_configuration_parser.hpp"
 #include "irods/irods_server_properties.hpp"
 
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 TEST_CASE("server_properties", "[exceptions]")
 {
