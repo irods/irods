@@ -104,38 +104,38 @@ int isRuleGenSyntax( char *expr );
 #define CONCAT(a,b) CONCAT2(a,b)
 
 #define KEY_PROTO
-#include "key.proto.hpp"
-#include "proto.hpp"
-#include "restruct.templates.hpp"
-#include "end.instance.hpp"
+#include "irods/private/re/key.proto.hpp"
+#include "irods/private/re/proto.hpp"
+#include "irods/private/re/restruct.templates.hpp"
+#include "irods/private/re/end.instance.hpp"
 
 void keyBuf( unsigned char *buf, int size, char *keyBuf );
 
 #undef KEY_PROTO
 
-#include "region.to.region.proto.hpp"
-#include "proto.hpp"
-#include "restruct.templates.hpp"
-#include "end.instance.hpp"
+#include "irods/private/re/region.to.region.proto.hpp"
+#include "irods/private/re/proto.hpp"
+#include "irods/private/re/restruct.templates.hpp"
+#include "irods/private/re/end.instance.hpp"
 
-#include "to.region.proto.hpp"
-#include "proto.hpp"
-#include "restruct.templates.hpp"
-#include "end.instance.hpp"
+#include "irods/private/re/to.region.proto.hpp"
+#include "irods/private/re/proto.hpp"
+#include "irods/private/re/restruct.templates.hpp"
+#include "irods/private/re/end.instance.hpp"
 
-#include "to.memory.proto.hpp"
-#include "proto.hpp"
-#include "restruct.templates.hpp"
-#include "end.instance.hpp"
+#include "irods/private/re/to.memory.proto.hpp"
+#include "irods/private/re/proto.hpp"
+#include "irods/private/re/restruct.templates.hpp"
+#include "irods/private/re/end.instance.hpp"
 
-#include "region.to.region2.proto.hpp"
-#include "proto.hpp"
-#include "restruct.templates.hpp"
-#include "end.instance.hpp"
+#include "irods/private/re/region.to.region2.proto.hpp"
+#include "irods/private/re/proto.hpp"
+#include "irods/private/re/restruct.templates.hpp"
+#include "irods/private/re/end.instance.hpp"
 
-/*#include "region.check.proto.hpp"
-#include "restruct.templates.hpp"
-#include "end.instance.hpp"*/
+/*#include "irods/private/re/region.check.proto.hpp"
+#include "irods/private/re/restruct.templates.hpp"
+#include "irods/private/re/end.instance.hpp"*/
 
 /** debugging functions */
 int writeToTmp( char *fileName, char *text );

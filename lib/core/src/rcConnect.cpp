@@ -3,7 +3,7 @@
 #include "irods/rcMisc.h"
 
 #ifdef windows_platform
-#include "startsock.hpp"
+#include "irods/startsock.hpp"
 #endif
 
 #include <boost/asio.hpp>

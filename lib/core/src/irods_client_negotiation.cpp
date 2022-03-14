@@ -17,8 +17,6 @@
 #include "irods/rodsDef.h"
 #include "irods/rodsConnect.h"
 #include "irods/rcMisc.h"
-//#include "index.hpp"
-//#include "reFuncDefs.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes

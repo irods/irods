@@ -54,8 +54,8 @@
 #include "irods/authenticate.h"
 
 #ifdef _WIN32
-#include "Unix2Nt.hpp"  /* May need something like this for Windows */
-#include "iRODSNtUtil.hpp"    /* May need something like this for Windows */
+#include "irods/Unix2Nt.hpp"  /* May need something like this for Windows */
+#include "irods/iRODSNtUtil.hpp"    /* May need something like this for Windows */
 #include "irods/rcGlobalExtern.h"
 #endif
 

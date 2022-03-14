@@ -2,7 +2,6 @@
  */
 #include "irods/irods_hashtable.h"
 #include <cstdlib>
-//#include "utils.hpp"
 /**
  * Allocated dynamically
  * returns NULL if out of memory
@@ -310,9 +309,6 @@ unsigned long sdbm_hash( char* str ) { /* sdbm */
 }
 
 /*
-#include "utils.hpp"
-#include "index.hpp"
-
 void dumpHashtableKeys( Hashtable *t ) {
     int i;
     for ( i = 0; i < t->size; i++ ) {
