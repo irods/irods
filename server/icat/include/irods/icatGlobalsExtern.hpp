@@ -9,6 +9,8 @@
 #ifndef ICAT_GLOBALS_EXTERN_HPP
 #define ICAT_GLOBALS_EXTERN_HPP
 
+#warning "icatGlobalsExtern.hpp is obsolete and will be removed in a future iRODS release."
+
 #include "irods/icatStructs.hpp"
 
 
