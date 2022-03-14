@@ -9,7 +9,7 @@
 #ifndef ICAT_GLOBALS_EXTERN_HPP
 #define ICAT_GLOBALS_EXTERN_HPP
 
-#include "irods/icatStruct.hpp"
+#include "irods/icatStructs.hpp"
 
 
 extern icatSessionStruct  icatSess;
