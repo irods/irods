@@ -3,7 +3,6 @@
 #include "irods/locks.hpp"
 #include "irods/rodsConnect.h"
 //#include "irods/filesystem.hpp"
-//#include "utils.hpp"
 #include "irods/irods_log.hpp"
 #include "irods/irods_server_properties.hpp"
 

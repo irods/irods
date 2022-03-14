@@ -7,7 +7,6 @@
 #include "irods/rods.h"
 #include "irods/objMetaOpr.hpp"
 #include "irods/dataObjRepl.h"
-//#include "reGlobalsExtern.hpp"
 #include "irods/rsGlobalExtern.hpp"
 #include "irods/rcGlobalExtern.h"
 

@@ -7,7 +7,7 @@
 #ifndef windows_platform
 #include <sys/wait.h>
 #else
-#include "Unix2Nt.hpp"
+#include "irods/Unix2Nt.hpp"
 #endif
 #include "irods/execCmd.h"
 #include "irods/objMetaOpr.hpp"

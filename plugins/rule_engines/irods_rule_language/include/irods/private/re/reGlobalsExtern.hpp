@@ -149,6 +149,6 @@ extern struct reDebugStack reDebugStackCurr[REDEBUG_STACK_SIZE_CURR];
 extern int reDebugStackFullPtr;
 extern int reDebugStackCurrPtr;
 
-//#include "reFuncDefs.hpp"
-#include "reHelpers1.hpp"
+//#include "irods/private/re/reFuncDefs.hpp"
+#include "irods/private/re/reHelpers1.hpp"
 #endif  /* RE_GLOBALS_EXTERN_H */

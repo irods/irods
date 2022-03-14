@@ -38,7 +38,7 @@
     #include <sys/time.h>
     #include <sys/wait.h>
 #else
-    #include "Unix2Nt.hpp"
+    #include "irods/Unix2Nt.hpp"
 #endif
 
 #include <cstring>
