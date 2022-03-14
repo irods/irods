@@ -10,7 +10,7 @@
 #include <irods/irods_pack_table.hpp>
 #include <irods/irods_configuration_keywords.hpp>
 
-#include "boost/program_options.hpp"
+#include <boost/program_options.hpp>
 
 void usage();
 

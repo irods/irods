@@ -7,7 +7,7 @@
 #include <irods/irods_client_api_table.hpp>
 #include <irods/irods_pack_table.hpp>
 
-#include "boost/program_options.hpp"
+#include <boost/program_options.hpp>
 
 void usage( char *prog );
 

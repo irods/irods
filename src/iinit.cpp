@@ -13,7 +13,7 @@
 #include <irods/irods_environment_properties.hpp>
 #include <irods/irods_kvp_string_parser.hpp>
 
-#include "boost/lexical_cast.hpp"
+#include <boost/lexical_cast.hpp>
 
 #include <nlohmann/json.hpp>
 
