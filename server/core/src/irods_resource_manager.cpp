@@ -1,28 +1,26 @@
-// =-=-=-=-=-=-=-
-#include "irods/rcMisc.h"
 #include "irods/irods_resource_manager.hpp"
-#include "irods/irods_log.hpp"
-#include "irods/irods_string_tokenize.hpp"
-#include "irods/irods_stacktrace.hpp"
-#include "irods/irods_resource_plugin_impostor.hpp"
-#include "irods/irods_load_plugin.hpp"
-#include "irods/irods_lexical_cast.hpp"
-#include "irods/rsGenQuery.hpp"
 
-// =-=-=-=-=-=-=-
-// irods includes
+#include "irods/genQuery.h"
+#include "irods/generalAdmin.h"
 #include "irods/getRescQuota.h"
 #include "irods/irods_children_parser.hpp"
 #include "irods/irods_hierarchy_parser.hpp"
-#include "irods/rsGlobalExtern.hpp"
-#include "irods/generalAdmin.h"
+#include "irods/irods_lexical_cast.hpp"
+#include "irods/irods_load_plugin.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/irods_resource_plugin_impostor.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/irods_string_tokenize.hpp"
 #include "irods/miscServerFunct.hpp"
-#include "irods/genQuery.h"
+#include "irods/rcMisc.h"
+#include "irods/rsGenQuery.hpp"
+#include "irods/rsGlobalExtern.hpp"
+
+#define IRODS_QUERY_ENABLE_SERVER_SIDE_API
+#include "irods/query_builder.hpp"
 
 #include <fmt/format.h>
 
-// =-=-=-=-=-=-=-
-// stl includes
 #include <iostream>
 #include <vector>
 #include <iterator>
@@ -233,105 +231,92 @@ namespace irods
 // =-=-=-=-=-=-=-
 // public - connect to the catalog and query for all the
 //          attached resources and instantiate them
-    error resource_manager::init_from_catalog( rsComm_t* _comm ) {
-        // =-=-=-=-=-=-=-
-        // clear existing resource map and initialize
+    error resource_manager::init_from_catalog(rsComm_t& _comm)
+    {
         resource_name_map_.clear();
 
-        // =-=-=-=-=-=-=-
-        // set up data structures for a gen query
-        genQueryInp_t  genQueryInp;
-        genQueryOut_t* genQueryOut = NULL;
+        constexpr char* query_str = "select "
+                                    "RESC_ID, "             // 0
+                                    "RESC_NAME, "           // 1
+                                    "RESC_ZONE_NAME, "      // 2
+                                    "RESC_TYPE_NAME, "      // 3
+                                    "RESC_CLASS_NAME, "     // 4
+                                    "RESC_LOC, "            // 5
+                                    "RESC_VAULT_PATH, "     // 6
+                                    "RESC_FREE_SPACE, "     // 7
+                                    "RESC_INFO, "           // 8
+                                    "RESC_COMMENT, "        // 9
+                                    "RESC_CREATE_TIME, "    // 10
+                                    "RESC_MODIFY_TIME, "    // 11
+                                    "RESC_STATUS, "         // 12
+                                    "RESC_CHILDREN, "       // 13
+                                    "RESC_CONTEXT, "        // 14
+                                    "RESC_PARENT, "         // 15
+                                    "RESC_PARENT_CONTEXT";  // 16
 
-        error proc_ret;
+        for (auto&& row : irods::experimental::query_builder{}.build(_comm, query_str)) {
+            const auto& name = row.at(1);
+            const auto& type = row.at(3);
+            const auto& context = row.at(14);
 
-        memset( &genQueryInp, 0, sizeof( genQueryInp ) );
+            resource_ptr resc;
+            if (const auto ret = load_resource_plugin(resc, type, name, context); !ret.ok()) {
+                irods::log(PASS(ret));
+                continue;
+            }
 
-        addInxIval( &genQueryInp.selectInp, COL_R_RESC_ID,             1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_RESC_NAME,           1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_ZONE_NAME,           1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_TYPE_NAME,           1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_CLASS_NAME,          1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_LOC,                 1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_VAULT_PATH,          1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_FREE_SPACE,          1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_RESC_INFO,           1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_RESC_COMMENT,        1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_CREATE_TIME,         1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_MODIFY_TIME,         1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_RESC_STATUS,         1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_RESC_CHILDREN,       1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_RESC_CONTEXT,        1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_RESC_PARENT,         1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_RESC_PARENT_CONTEXT, 1 );
+            const auto& location = row.at(5);
+            if (irods::EMPTY_RESC_HOST != location) {
+                const auto& zone_name = row.at(2);
+                rodsHostAddr_t addr{};
+                std::strncpy(addr.hostAddr, location.c_str(), LONG_NAME_LEN);
+                std::strncpy(addr.zoneName, zone_name.c_str(), NAME_LEN);
 
-        genQueryInp.maxRows = MAX_SQL_ROWS;
-
-        // =-=-=-=-=-=-=-
-        // init continueInx to pass for first loop
-        int continueInx = 1;
-
-        // =-=-=-=-=-=-=-
-        // loop until continuation is not requested
-        while ( continueInx > 0 ) {
-            // =-=-=-=-=-=-=-
-            // perform the general query
-            int status = rsGenQuery( _comm, &genQueryInp, &genQueryOut );
-
-            // =-=-=-=-=-=-=-
-            // perform the general query
-            if ( status < 0 ) {
-                freeGenQueryOut( &genQueryOut );
-                clearGenQueryInp( &genQueryInp );
-                if ( status != CAT_NO_ROWS_FOUND ) {
-                    // actually an error
-                    rodsLog( LOG_NOTICE, "initResc: rsGenQuery error, status = %d",
-                             status );
-                    return ERROR( status, "genQuery failed." );
+                rodsServerHost_t* host = nullptr;
+                if (resolveHost(&addr, &host) < 0) {
+                    irods::log(LOG_NOTICE, fmt::format(
+                        fmt::runtime("[{}:{}] - resolveHost error for [{}]"),
+                        __func__, __LINE__, addr.hostAddr));
                 }
 
-                break; // CAT_NO_ROWS_FOUND expected at the end of a query
-
-            } // if
-
-            // =-=-=-=-=-=-=-
-            // given a series of rows, each being a resource, create a resource and add it to the table
-            proc_ret = process_init_results( genQueryOut );
-
-            // =-=-=-=-=-=-=-
-            // if error is not valid, clear query and bail
-            if ( !proc_ret.ok() ) {
-                irods::error log_err = PASSMSG( "init_from_catalog - process_init_results failed", proc_ret );
-                irods::log( log_err );
-                freeGenQueryOut( &genQueryOut );
-                break;
+                resc->set_property<rodsServerHost_t*>(RESOURCE_HOST, host);
             }
             else {
-                if ( genQueryOut != NULL ) {
-                    continueInx = genQueryInp.continueInx = genQueryOut->continueInx;
-                    freeGenQueryOut( &genQueryOut );
-                }
-                else {
-                    continueInx = 0;
-                }
+                resc->set_property<rodsServerHost_t*>(RESOURCE_HOST, nullptr);
+            }
 
-            } // else
+            const rodsLong_t id = std::strtoll(row.at(0).c_str(), 0, 0);
+            resc->set_property<rodsLong_t>(RESOURCE_ID, id);
+            resc->set_property<long>(RESOURCE_QUOTA, RESC_QUOTA_UNINIT);
 
-        } // while
+            const auto& status = row.at(12);
+            resc->set_property(RESOURCE_STATUS, status == RESC_DOWN
+                                                ? INT_RESC_STATUS_DOWN
+                                                : INT_RESC_STATUS_UP);
 
-        freeGenQueryOut( &genQueryOut );
-        clearGenQueryInp( &genQueryInp );
+            resc->set_property<std::string>(RESOURCE_FREESPACE,      row.at(7));
+            resc->set_property<std::string>(RESOURCE_ZONE,           row.at(2));
+            resc->set_property<std::string>(RESOURCE_NAME,           name);
+            resc->set_property<std::string>(RESOURCE_LOCATION,       location);
+            resc->set_property<std::string>(RESOURCE_TYPE,           type);
+            resc->set_property<std::string>(RESOURCE_CLASS,          row.at(4));
+            resc->set_property<std::string>(RESOURCE_PATH,           row.at(6));
+            resc->set_property<std::string>(RESOURCE_INFO,           row.at(8));
+            resc->set_property<std::string>(RESOURCE_COMMENTS,       row.at(9));
+            resc->set_property<std::string>(RESOURCE_CREATE_TS,      row.at(10));
+            resc->set_property<std::string>(RESOURCE_MODIFY_TS,      row.at(11));
+            resc->set_property<std::string>(RESOURCE_CHILDREN,       row.at(13));
+            resc->set_property<std::string>(RESOURCE_CONTEXT,        context);
+            resc->set_property<std::string>(RESOURCE_PARENT,         row.at(15));
+            resc->set_property<std::string>(RESOURCE_PARENT_CONTEXT, row.at(16));
 
-        // =-=-=-=-=-=-=-
-        // pass along the error if we are in an error state
-        if ( !proc_ret.ok() ) {
-            return PASSMSG( "process_init_results failed.", proc_ret );
+            resource_name_map_[name] = resc;
+            resource_id_map_[id] = resc;
         }
 
         // =-=-=-=-=-=-=-
         // Update child resource maps
-        proc_ret = init_child_map();
-        if ( !proc_ret.ok() ) {
+        if (const auto proc_ret = init_child_map(); !proc_ret.ok()) {
             return PASSMSG( "init_child_map failed.", proc_ret );
         }
 
@@ -352,7 +337,6 @@ namespace irods
         // =-=-=-=-=-=-=-
         // win!
         return SUCCESS();
-
     } // init_from_catalog
 
 // =-=-=-=-=-=-=-
@@ -586,182 +570,6 @@ namespace irods
         }
         return ret;
     }
-
-// =-=-=-=-=-=-=-
-// public - take results from genQuery, extract values and create resources
-    error resource_manager::process_init_results( genQueryOut_t* _result ) {
-        // =-=-=-=-=-=-=-
-        // extract results from query
-        if ( !_result ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "_result parameter is null" );
-        }
-
-        // =-=-=-=-=-=-=-
-        // values to extract from query
-        sqlResult_t *rescId       = 0, *rescName      = 0, *zoneName   = 0, *rescType   = 0, *rescClass = 0;
-        sqlResult_t *rescLoc      = 0, *rescVaultPath = 0, *freeSpace  = 0, *rescInfo   = 0;
-        sqlResult_t *rescComments = 0, *rescCreate    = 0, *rescModify = 0, *rescStatus = 0;
-        sqlResult_t *rescChildren = 0, *rescContext   = 0, *rescParent = 0, *rescParentContext = 0;
-
-        // =-=-=-=-=-=-=-
-        // extract results from query
-        if ( ( rescId = getSqlResultByInx( _result, COL_R_RESC_ID ) ) == NULL ) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_RESC_ID failed" );
-        }
-
-        if ( ( rescName = getSqlResultByInx( _result, COL_R_RESC_NAME ) ) == NULL ) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_RESC_NAME failed" );
-        }
-
-        if ( ( zoneName = getSqlResultByInx( _result, COL_R_ZONE_NAME ) ) == NULL ) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_ZONE_NAME failed" );
-        }
-
-        if ( ( rescType = getSqlResultByInx( _result, COL_R_TYPE_NAME ) ) == NULL ) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_TYPE_NAME failed" );
-        }
-
-        if ( ( rescClass = getSqlResultByInx( _result, COL_R_CLASS_NAME ) ) == NULL ) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_CLASS_NAME failed" );
-        }
-
-        if ( ( rescLoc = getSqlResultByInx( _result, COL_R_LOC ) ) == NULL ) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_LOC failed" );
-        }
-
-        if ( ( rescVaultPath = getSqlResultByInx( _result, COL_R_VAULT_PATH ) ) == NULL ) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_VAULT_PATH failed" );
-        }
-
-        if ( ( freeSpace = getSqlResultByInx( _result, COL_R_FREE_SPACE ) ) == NULL ) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_FREE_SPACE failed" );
-        }
-
-        if ( ( rescInfo = getSqlResultByInx( _result, COL_R_RESC_INFO ) ) == NULL ) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_RESC_INFO failed" );
-        }
-
-        if ( ( rescComments = getSqlResultByInx( _result, COL_R_RESC_COMMENT ) ) == NULL ) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_RESC_COMMENT failed" );
-        }
-
-        if ( ( rescCreate = getSqlResultByInx( _result, COL_R_CREATE_TIME ) ) == NULL ) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_CREATE_TIME failed" );
-        }
-
-        if ( ( rescModify = getSqlResultByInx( _result, COL_R_MODIFY_TIME ) ) == NULL ) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_MODIFY_TIME failed" );
-        }
-
-        if ( ( rescStatus = getSqlResultByInx( _result, COL_R_RESC_STATUS ) ) == NULL ) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_RESC_STATUS failed" );
-        }
-
-        if ( ( rescChildren = getSqlResultByInx( _result, COL_R_RESC_CHILDREN ) ) == NULL ) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_RESC_CHILDREN failed" );
-        }
-
-        if ( ( rescContext = getSqlResultByInx( _result, COL_R_RESC_CONTEXT ) ) == NULL ) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_RESC_CONTEXT failed" );
-        }
-
-        if ( ( rescParent = getSqlResultByInx( _result, COL_R_RESC_PARENT ) ) == NULL ) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_RESC_PARENT failed" );
-        }
-
-        if ( ( rescParentContext = getSqlResultByInx( _result, COL_R_RESC_PARENT_CONTEXT ) ) == NULL ) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_RESC_PARENT_CONTEXT failed" );
-        }
-
-        // =-=-=-=-=-=-=-
-        // iterate through the rows, initialize a resource for each entry
-        for ( int i = 0; i < _result->rowCnt; ++i ) {
-            // =-=-=-=-=-=-=-
-            // extract row values
-            std::string tmpRescId        = &rescId->value[ rescId->len * i ];
-            std::string tmpRescLoc       = &rescLoc->value[ rescLoc->len * i ];
-            std::string tmpRescName      = &rescName->value[ rescName->len * i ];
-            std::string tmpZoneName      = &zoneName->value[ zoneName->len * i ];
-            std::string tmpRescType      = &rescType->value[ rescType->len * i ];
-            std::string tmpRescInfo      = &rescInfo->value[ rescInfo->len * i ];
-            std::string tmpFreeSpace     = &freeSpace->value[ freeSpace->len * i ];
-            std::string tmpRescClass     = &rescClass->value[ rescClass->len * i ];
-            std::string tmpRescCreate    = &rescCreate->value[ rescCreate->len * i ];
-            std::string tmpRescModify    = &rescModify->value[ rescModify->len * i ];
-            std::string tmpRescStatus    = &rescStatus->value[ rescStatus->len * i ];
-            std::string tmpRescComments  = &rescComments->value[ rescComments->len * i ];
-            std::string tmpRescVaultPath = &rescVaultPath->value[ rescVaultPath->len * i ];
-            std::string tmpRescChildren  = &rescChildren->value[ rescChildren->len * i ];
-            std::string tmpRescContext   = &rescContext->value[ rescContext->len * i ];
-            std::string tmpRescParent    = &rescParent->value[ rescParent->len * i ];
-            std::string tmpRescParentCtx = &rescParentContext->value[ rescParent->len * i ];
-
-            // =-=-=-=-=-=-=-
-            // create the resource and add properties for column values
-            resource_ptr resc;
-            error ret = load_resource_plugin( resc, tmpRescType, tmpRescName, tmpRescContext );
-            if ( !ret.ok() ) {
-                irods::log(PASS(ret));
-                continue;
-            }
-
-            // =-=-=-=-=-=-=-
-            // resolve the host name into a rods server host structure
-            if ( tmpRescLoc != irods::EMPTY_RESC_HOST ) {
-                rodsHostAddr_t addr;
-                rstrcpy( addr.hostAddr, const_cast<char*>( tmpRescLoc.c_str() ), LONG_NAME_LEN );
-                rstrcpy( addr.zoneName, const_cast<char*>( tmpZoneName.c_str() ), NAME_LEN );
-
-                rodsServerHost_t* tmpRodsServerHost = 0;
-                if ( resolveHost( &addr, &tmpRodsServerHost ) < 0 ) {
-                    rodsLog( LOG_NOTICE, "procAndQueRescResult: resolveHost error for %s",
-                             addr.hostAddr );
-                }
-
-                resc->set_property< rodsServerHost_t* >( RESOURCE_HOST, tmpRodsServerHost );
-
-            }
-            else {
-                resc->set_property< rodsServerHost_t* >( RESOURCE_HOST, 0 );
-            }
-
-            rodsLong_t resource_id = strtoll( tmpRescId.c_str(), 0, 0 );
-            resc->set_property<rodsLong_t>( RESOURCE_ID, resource_id );
-            resc->set_property<long>( RESOURCE_QUOTA, RESC_QUOTA_UNINIT );
-
-            resc->set_property<std::string>( RESOURCE_FREESPACE,      tmpFreeSpace );
-            resc->set_property<std::string>( RESOURCE_ZONE,           tmpZoneName );
-            resc->set_property<std::string>( RESOURCE_NAME,           tmpRescName );
-            resc->set_property<std::string>( RESOURCE_LOCATION,       tmpRescLoc );
-            resc->set_property<std::string>( RESOURCE_TYPE,           tmpRescType );
-            resc->set_property<std::string>( RESOURCE_CLASS,          tmpRescClass );
-            resc->set_property<std::string>( RESOURCE_PATH,           tmpRescVaultPath );
-            resc->set_property<std::string>( RESOURCE_INFO,           tmpRescInfo );
-            resc->set_property<std::string>( RESOURCE_COMMENTS,       tmpRescComments );
-            resc->set_property<std::string>( RESOURCE_CREATE_TS,      tmpRescCreate );
-            resc->set_property<std::string>( RESOURCE_MODIFY_TS,      tmpRescModify );
-            resc->set_property<std::string>( RESOURCE_CHILDREN,       tmpRescChildren );
-            resc->set_property<std::string>( RESOURCE_CONTEXT,        tmpRescContext );
-            resc->set_property<std::string>( RESOURCE_PARENT,         tmpRescParent );
-            resc->set_property<std::string>( RESOURCE_PARENT_CONTEXT, tmpRescParentCtx );
-
-            if ( tmpRescStatus == std::string( RESC_DOWN ) ) {
-                resc->set_property<int>( RESOURCE_STATUS, INT_RESC_STATUS_DOWN );
-            }
-            else {
-                resc->set_property<int>( RESOURCE_STATUS, INT_RESC_STATUS_UP );
-            }
-
-            // =-=-=-=-=-=-=-
-            // add new resource to the map
-            resource_name_map_[ tmpRescName ] = resc;
-            resource_id_map_[ resource_id ] = resc;
-
-        } // for i
-
-        return SUCCESS();
-
-    } // process_init_results
 
 // =-=-=-=-=-=-=-
 // public - given a type, load up a resource plugin

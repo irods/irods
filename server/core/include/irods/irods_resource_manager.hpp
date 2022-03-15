@@ -52,7 +52,7 @@ namespace irods
 
             // =-=-=-=-=-=-=-
             /// @brief  populate resource table from icat database
-            error init_from_catalog( rsComm_t* );
+            error init_from_catalog(rsComm_t&);
 
             // =-=-=-=-=-=-=-
             /// @brief call shutdown on resources before destruction
@@ -254,10 +254,6 @@ namespace irods
                 const std::string,
                 const std::string,
                 const std::string);
-
-            // =-=-=-=-=-=-=-
-            /// @brief take results from genQuery, extract values and create resources
-            error process_init_results( genQueryOut_t* );
 
             // =-=-=-=-=-=-=-
             /// @brief Initialize the child map from the resources lookup table

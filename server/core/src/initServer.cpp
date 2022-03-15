@@ -240,11 +240,15 @@ int initServerInfo(int processType, rsComm_t* rsComm)
     }
 
     if (processType) {
-        ret = resc_mgr.init_from_catalog( rsComm );
-        if ( !ret.ok() ) {
-            irods::error log_err = PASSMSG( "init_from_catalog failed", ret );
-            irods::log( log_err );
-            return ret.code();
+        try {
+            if (const auto ret = resc_mgr.init_from_catalog(*rsComm); !ret.ok()) {
+                irods::log(PASSMSG("init_from_catalog failed", ret));
+                return ret.code();
+            }
+        }
+        catch (const irods::exception& e) {
+            irods::log(e);
+            return e.code();
         }
     }
 
