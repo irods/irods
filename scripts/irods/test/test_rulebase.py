@@ -16,6 +16,7 @@ import subprocess
 from .. import lib
 from .. import paths
 from .. import test
+from . import session
 from . import settings
 from .resource_suite import ResourceBase
 from ..configuration import IrodsConfig
@@ -644,12 +645,13 @@ OUTPUT ruleExecOut
         self.admin.assert_icommand(['irule', '-F', rule_file])
         os.unlink(rule_file)
 
-class Test_Remote_Exec(ResourceBase, unittest.TestCase):
+class Test_Remote_Exec(session.make_sessions_mixin([('otherrods', 'rods')], []), unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
     class_name = 'Test_Remote_Exec'
 
     def setUp(self):
         super(Test_Remote_Exec, self).setUp()
+        self.admin = self.admin_sessions[0]
 
     def tearDown(self):
         super(Test_Remote_Exec, self).tearDown()
@@ -717,3 +719,37 @@ class Test_Remote_Exec(ResourceBase, unittest.TestCase):
             if os.path.exists(rule_file_path):
                 os.unlink(rule_file_path)
 
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for Python REP')
+    def test_remote_returns_appropriate_error_on_bad_hostname__issue_4260(self):
+        rule_text_key = 'test_remote_returns_appropriate_error_on_bad_hostname__issue_4260'
+        rule_file_path = os.path.join(self.admin.local_session_dir, rule_text_key + '.r')
+        parameters = {}
+        parameters['hostname'] = 'badhostname'
+        parameters['zone'] = 'tempZone'
+        parameters['username'] = self.admin.username
+        parameters['metadata_attr'] = rule_text_key
+        parameters['metadata_value_true'] = 'this executed!'
+        parameters['metadata_value_false'] = 'this will never execute!'
+        rule_str = rule_texts[self.plugin_name][self.class_name][rule_text_key].format(**parameters)
+        with open(rule_file_path, 'w') as rule_file:
+            rule_file.write(rule_str)
+
+        out, err, rc = self.admin.run_icommand(['irule', '-r', self.plugin_name + '-instance', '-F', rule_file_path])
+        self.assertNotEqual(0, rc)
+        self.assertTrue('Failed to resolve hostname: [{}]'.format(parameters['hostname']) in out)
+        self.assertTrue('SYS_INVALID_SERVER_HOST' in err)
+
+        lib.delayAssert(
+            lambda: lib.metadata_attr_with_value_exists(
+                self.admin,
+                parameters['metadata_attr'],
+                parameters['metadata_value_true'])
+        )
+
+        self.assertFalse(
+            lib.metadata_attr_with_value_exists(
+                self.admin,
+                parameters['metadata_attr'],
+                parameters['metadata_value_false'])
+        )
