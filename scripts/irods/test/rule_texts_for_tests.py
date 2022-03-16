@@ -664,6 +664,21 @@ test_remote_writeLine {{
 INPUT null
 OUTPUT ruleExecOut
 '''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Remote_Exec']['test_remote_returns_appropriate_error_on_bad_hostname__issue_4260'] = '''
+test_remote_with_bad_hostname {{
+    # this will execute
+    msiAddKeyVal(*key_val_pair,"{metadata_attr}","{metadata_value_true}");
+    msiAssociateKeyValuePairsToObj(*key_val_pair,"{username}","-u");
+
+    # this block definitely should not execute
+    remote("{hostname}", "<ZONE>{zone}</ZONE>") {{
+        msiAddKeyVal(*key_val_pair,"{metadata_attr}","{metadata_value_false}");
+        msiAssociateKeyValuePairsToObj(*key_val_pair,"{username}","-u");
+    }}
+}}
+INPUT null
+OUTPUT ruleExecOut
+'''
 
 #===== Test_Delay_Queue =====
 rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Delay_Queue'] = {}
