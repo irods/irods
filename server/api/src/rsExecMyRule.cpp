@@ -1,8 +1,10 @@
+#include "irods/rsExecMyRule.hpp"
+
 #include "irods/execMyRule.h"
+#include "irods/irods_logger.hpp"
+#include "irods/irods_re_plugin.hpp"
 #include "irods/miscServerFunct.hpp"
 #include "irods/rcMisc.h"
-#include "irods/irods_re_plugin.hpp"
-#include "irods/rsExecMyRule.hpp"
 
 extern std::unique_ptr<struct irods::global_re_plugin_mgr> irods::re_plugin_globals;
 
@@ -46,6 +48,14 @@ int rsExecMyRule(
 
     rodsServerHost_t* rods_svr_host = nullptr;
     int remoteFlag = resolveHost( &_exec_inp->addr, &rods_svr_host );
+    if (remoteFlag < 0) {
+        const auto msg = fmt::format(
+            fmt::runtime("Failed to resolve hostname: [{}]"),
+            _exec_inp->addr.hostAddr);
+        irods::experimental::log::api::error(msg);
+        addRErrorMsg(&_comm->rError, remoteFlag, msg.data());
+        return remoteFlag;
+    }
 
     if ( remoteFlag == REMOTE_HOST ) {
         return remoteExecMyRule( _comm, _exec_inp,
