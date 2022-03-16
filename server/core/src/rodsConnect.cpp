@@ -120,8 +120,18 @@ mkServerHost( char *myHostAddr, char *zoneName ) {
     tmpRodsServerHost->localFlag = UNKNOWN_HOST_LOC;
 
     status = queAddr( tmpRodsServerHost, myHostAddr );
+    if (status < 0) {
+        irods::log(ERROR(status, "queueAddr failed"));
+        free(tmpRodsServerHost);
+        return NULL;
+    }
 
     status = matchHostConfig( tmpRodsServerHost );
+    if (status < 0) {
+        irods::log(ERROR(status, "matchHostConfig failed"));
+        free(tmpRodsServerHost);
+        return NULL;
+    }
 
     status = getZoneInfo( zoneName,
                           ( zoneInfo_t ** )( static_cast< void * >( &tmpRodsServerHost->zoneInfo ) ) );
