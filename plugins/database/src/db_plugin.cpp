@@ -12030,6 +12030,41 @@ irods::error db_set_delay_server_op(
 
 } // db_set_delay_server_op
 
+irods::error db_get_grid_configuration_value_op(
+    irods::plugin_context& _ctx,
+    const char*            _namespace,
+    const char*            _option_name,
+    char*                  _option_value,
+    std::size_t            _option_value_buffer_size)
+{
+    // =-=-=-=-=-=-=-
+    // check the context
+    if (const irods::error ret = _ctx.valid(); !ret.ok()) {
+        return PASS(ret);
+    }
+
+    if (logSQL != 0) {
+        rodsLog(LOG_SQL, "chlGetGridConfigurationValue");
+    }
+
+    if (!icss.status) {
+        return ERROR(CATALOG_NOT_CONNECTED, "catalog not connected");
+    }
+
+    std::vector<std::string> bindVars{_namespace, _option_name};
+
+    const int status = cmlGetStringValueFromSql(
+         "select option_value from R_GRID_CONFIGURATION where namespace = ? and option_name = ?",
+         _option_value, _option_value_buffer_size, bindVars, &icss);
+
+    if (status < 0) {
+        rodsLog(LOG_NOTICE, "chlGetGridConfigurationValue cmlGetStringValueFromSql failure %d", status);
+        return ERROR(status, "Get Grid Configuration Value select failure");
+    }
+
+    return SUCCESS();
+} // db_get_grid_configuration_value_op
+
 irods::error db_calc_usage_and_quota_op(
     irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
@@ -15351,6 +15386,10 @@ irods::database* plugin_factory(
         DATABASE_OP_SET_DELAY_SERVER,
         function<error(plugin_context&,const char*)>(
             db_set_delay_server_op ) );
+    pg->add_operation(
+        DATABASE_OP_GET_GRID_CONFIGURATION_VALUE,
+        function<error(plugin_context&, const char*, const char*, char*, std::size_t)>(
+            db_get_grid_configuration_value_op));
     pg->add_operation(
         DATABASE_OP_CALC_USAGE_AND_QUOTA,
         function<error(plugin_context&)>(

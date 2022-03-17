@@ -134,6 +134,11 @@ int chlPurgeServerLoadDigest( rsComm_t *rsComm, const char *secondsAgo );
 
 int chlCalcUsageAndQuota( rsComm_t *rsComm );
 int chlSetDelayServer( rsComm_t *rsComm, const char *hostname );
+int chlGetGridConfigurationValue(rsComm_t*   _rsComm,
+                                 const char* _namespace,
+                                 const char* _optionName,
+                                 char*       _optionValue,
+                                 std::size_t _optionValueBufferSize);
 int chlSetQuota( rsComm_t *rsComm, const char *type, const char *name, const char *rescName,
                  const char *limit );
 int chlCheckQuota( rsComm_t *rsComm, const char *userName, const char *rescName,
