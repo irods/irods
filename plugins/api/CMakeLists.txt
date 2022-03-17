@@ -15,6 +15,7 @@ set(
   data_object_finalize
   data_object_modify_info
   get_file_descriptor_info
+  get_grid_configuration_value
   register_physical_path
   replica_close
   replica_open
@@ -154,6 +155,7 @@ install(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/plugins/api/api_plugin_number.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/plugins/api/api_plugin_number_map.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/plugins/api/api_plugin_number_data.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/plugins/api/grid_configuration_types.h"
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/irods/plugins/api"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
 )
