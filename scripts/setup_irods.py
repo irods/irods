@@ -207,7 +207,11 @@ def setup_service_account(irods_config, irods_user, irods_group):
 
     if irods_group not in [g.gr_name for g in grp.getgrall()]:
         l.info('Creating Service Group: %s', irods_group)
-        irods.lib.execute_command(['groupadd', '-r', irods_group])
+        createGroup = irods.lib.execute_command_permissive(['groupadd', '-r', irods_group])
+        if createGroup[2] == 9:
+            l.info('Existing non-local Group Detected: %s', irods_group)
+        elif createGroup[2] != 0:
+            raise IrodsError(createGroup[1])
     else:
         l.info('Existing Group Detected: %s', irods_group)
 
