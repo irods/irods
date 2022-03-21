@@ -631,13 +631,6 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
         self.admin.assert_icommand(['iquest', 'select RULE_EXEC_ID'], 'STDOUT', ['CAT_NO_ROWS_FOUND'])
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for PREP and Topology Testing')
-    def test_delay_rule_does_not_support_PRI_tag__issue_2759(self):
-        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
-        delay_rule = 'delay("<INST_NAME>{0}</INST_NAME><EF>1s</EF><PRI>5</PRI>") {{ 1 + 1; }}'.format(rep_name)
-        self.admin.assert_icommand(['irule', '-r', rep_name, delay_rule, 'null', 'ruleExecOut'], 'STDERR', ['-130000 SYS_INVALID_INPUT_PARAM'])
-        self.admin.assert_icommand(['iquest', 'select RULE_EXEC_ID'], 'STDOUT', ['CAT_NO_ROWS_FOUND']) # Show that no rules exist.
-
-    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for PREP and Topology Testing')
     def test_delay_rule_does_not_accept_invalid_priority_levels__issue_2759(self):
         rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
         delay_rule = 'delay("<INST_NAME>{0}</INST_NAME><EF>1s</EF><PRIORITY>{1}</PRIORITY>") {{ 1 + 1; }}'

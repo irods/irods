@@ -56,7 +56,6 @@ int fillSubmitConditions(const char* action,
  *
  * \param[in] mPA - mPA is a msParam of type STR_MS_T which is a delayCondition about when to execute the body.
  *  		   These are tagged with the following tags:
- * 			\li EA - execAddress - host where the delayed execution needs to be performed
  *			\li ET - execTime - absolute time when it needs to be performed.
  * 			\li PLUSET - relExeTime - relative to current time when it needs to execute
  * 			\li EF - execFreq - frequency (in time widths) it needs to be performed.

@@ -520,12 +520,6 @@ fillSubmitConditions( const char *action, const char *inDelayCondition,
         taggedValues->erase(it);
     }
 
-    it = taggedValues->find("EA");
-    if ( it != taggedValues->end() ) {
-        strncpy(ruleSubmitInfo->exeAddress, it->second.front().c_str(), NAME_LEN);
-        taggedValues->erase(it);
-    }
-
     it = taggedValues->find("ET");
     if ( it != taggedValues->end() ) {
         strncpy(ruleSubmitInfo->exeTime, it->second.front().c_str(), TIME_LEN);
@@ -541,27 +535,9 @@ fillSubmitConditions( const char *action, const char *inDelayCondition,
         taggedValues->erase(it);
     }
 
-    it = taggedValues->find("PRI");
-    if ( it != taggedValues->end() ) {
-        rodsLog(LOG_ERROR, "Invalid delay rule tag: <PRI>. Use <PRIORITY>.");
-        return SYS_INVALID_INPUT_PARAM;
-    }
-
     it = taggedValues->find("PRIORITY");
     if ( it != taggedValues->end() ) {
         strncpy(ruleSubmitInfo->priority, it->second.front().c_str(), NAME_LEN);
-        taggedValues->erase(it);
-    }
-
-    it = taggedValues->find("EET");
-    if ( it != taggedValues->end() ) {
-        strncpy(ruleSubmitInfo->estimateExeTime, it->second.front().c_str(), NAME_LEN);
-        taggedValues->erase(it);
-    }
-
-    it = taggedValues->find("NA");
-    if ( it != taggedValues->end() ) {
-        strncpy(ruleSubmitInfo->notificationAddr, it->second.front().c_str(), NAME_LEN);
         taggedValues->erase(it);
     }
 
@@ -575,36 +551,7 @@ fillSubmitConditions( const char *action, const char *inDelayCondition,
         taggedValues->erase(it);
     }
 
-    it = taggedValues->find("KVALPR");
-    std::size_t i = 0;
-    if ( it != taggedValues->end() ) {
-        for ( const auto& kvp : it->second ) {
-            std::size_t equals_index = kvp.find('=');
-            if ( equals_index == std::string::npos ) {
-                return INPUT_ARG_NOT_WELL_FORMED_ERR;
-            }
-
-            std::size_t end_key_index = equals_index;
-            do {
-                if ( end_key_index == 0 ) {
-                    return INPUT_ARG_NOT_WELL_FORMED_ERR;
-                }
-            } while ( kvp[--end_key_index] == ' '  );
-            ruleSubmitInfo->condInput.keyWord[i] = strndup( kvp.c_str(), end_key_index + 1 );
-
-            std::size_t start_val_index = equals_index;
-            do {
-                if ( start_val_index == kvp.size() - 1 ) {
-                    return INPUT_ARG_NOT_WELL_FORMED_ERR;
-                }
-            } while ( kvp[++start_val_index] == ' ' );
-
-            ruleSubmitInfo->condInput.value[i] = strdup(kvp.c_str() + start_val_index);
-            ++i;
-        }
-    }
-
-    ruleSubmitInfo->condInput.len = i;
+    ruleSubmitInfo->condInput.len = 0;
     ruleSubmitInfo->packedReiAndArgBBuf = packedReiAndArgBBuf;
     if ( strlen( ruleSubmitInfo->userName ) == 0 ) {
         if ( strlen( rei->uoic->userName ) != 0 ) {
