@@ -282,6 +282,7 @@ install(
   "${CMAKE_IRODS_SOURCE_DIR}/cmake/Modules/IrodsCXXCompiler.cmake"
   "${CMAKE_IRODS_SOURCE_DIR}/cmake/Modules/ObjectTargetHelpers.cmake"
   "${CMAKE_IRODS_SOURCE_DIR}/cmake/Modules/IrodsCPackPlatform.cmake"
+  "${CMAKE_IRODS_SOURCE_DIR}/cmake/Modules/IrodsCPackCommon.cmake"
   DESTINATION "${CMAKE_INSTALL_LIBDIR}/irods/cmake/Modules"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
 )

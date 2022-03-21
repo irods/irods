@@ -1,5 +1,6 @@
 # platform detection for CPack.
 
+include_guard(GLOBAL)
 
 if (NOT IRODS_LINUX_DISTRIBUTION_NAME)
   execute_process(
