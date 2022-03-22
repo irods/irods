@@ -468,6 +468,7 @@ set(CPACK_ARCHIVE_COMPONENT_INSTALL OFF)
 
 set(CPACK_DEBIAN_PACKAGE_NAME "irods-icommands")
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "${IRODS_PACKAGE_DEPENDENCIES_STRING}, irods-runtime (= ${IRODS_VERSION}), libc6, libssl1.1")
+set(CPACK_DEBIAN_PACKAGE_PROVIDES "irods-icommands (= ${IRODS_VERSION})")
 set(CPACK_DEBIAN_PACKAGE_REPLACES "irods-icat, irods-resource")
 
 set(CPACK_RPM_PACKAGE_NAME "irods-icommands")
