@@ -11983,53 +11983,6 @@ irods::error db_purge_server_load_digest_op(
 
 } // db_purge_server_load_digest_op
 
-irods::error db_set_delay_server_op(
-    irods::plugin_context& _ctx,
-    const char*            _hostname ) {
-    // =-=-=-=-=-=-=-
-    // check the context
-    irods::error ret = _ctx.valid();
-    if ( !ret.ok() ) {
-        return PASS( ret );
-    }
-
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlSetDelayServer" );
-    }
-
-    if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege level" );
-    }
-
-    if ( !icss.status ) {
-        return ERROR( CATALOG_NOT_CONNECTED, "catalog not connected" );
-    }
-
-    int i = 0;
-    cllBindVars[i++] = _hostname;
-    cllBindVarCount = i;
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlSetDelayServer SQL 1" );
-    }
-
-    int status = cmlExecuteNoAnswerSql(
-                  "update R_GRID_CONFIGURATION set option_value = ? where namespace = 'delay_server' and option_name = 'successor'", &icss );
-    if ( status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-        _rollback( "chlSetDelayServer" );
-        rodsLog( LOG_NOTICE,
-                 "chlSetDelayServer cmlExecuteNoAnswerSql failure %d" , status );
-        return ERROR( status, "Set Delay Server SQL update failure" );
-    }
-
-    status =  cmlExecuteNoAnswerSql( "commit", &icss );
-    if ( status < 0 ) {
-        return ERROR( status, "commit failed" );
-    }
-
-    return SUCCESS();
-
-} // db_set_delay_server_op
-
 irods::error db_get_grid_configuration_value_op(
     irods::plugin_context& _ctx,
     const char*            _namespace,
@@ -15429,10 +15382,6 @@ irods::database* plugin_factory(
         DATABASE_OP_PURGE_SERVER_LOAD_DIGEST,
         function<error(plugin_context&,const char*)>(
             db_purge_server_load_digest_op ) );
-    pg->add_operation(
-        DATABASE_OP_SET_DELAY_SERVER,
-        function<error(plugin_context&,const char*)>(
-            db_set_delay_server_op ) );
     pg->add_operation(
         DATABASE_OP_GET_GRID_CONFIGURATION_VALUE,
         function<error(plugin_context&, const char*, const char*, char*, std::size_t)>(

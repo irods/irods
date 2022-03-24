@@ -133,7 +133,6 @@ int chlRegServerLoadDigest( rsComm_t *rsComm, const char *rescName, const char *
 int chlPurgeServerLoadDigest( rsComm_t *rsComm, const char *secondsAgo );
 
 int chlCalcUsageAndQuota( rsComm_t *rsComm );
-int chlSetDelayServer( rsComm_t *rsComm, const char *hostname );
 int chlGetGridConfigurationValue(rsComm_t*   _rsComm,
                                  const char* _namespace,
                                  const char* _optionName,
