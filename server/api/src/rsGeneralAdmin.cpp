@@ -19,6 +19,7 @@
 #include "irods/irods_hierarchy_parser.hpp"
 #include "irods/irods_logger.hpp"
 #include "irods/user_validation_utilities.hpp"
+#include "irods/rs_set_delay_server_migration_info.hpp"
 
 #include <fmt/format.h>
 
@@ -32,7 +33,10 @@
 #include <string>
 #include <tuple>
 
-using logger = irods::experimental::log;
+// clang-format off
+using logger  = irods::experimental::log;
+using log_api = irods::experimental::log::api;
+// clang-format on
 
 extern irods::resource_manager resc_mgr;
 
@@ -1200,8 +1204,22 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
         return status;
     }
 
-    if ( strcmp( generalAdminInp->arg0, "set_delay_server" ) == 0 ) {
-        return chlSetDelayServer( rsComm, generalAdminInp->arg1 );
+    if (std::strcmp(generalAdminInp->arg0, "set_delay_server") == 0) {
+        if (!generalAdminInp->arg1) {
+            log_api::error("Invalid input argument: null pointer");
+            return SYS_INVALID_INPUT_PARAM;
+        }
+
+        if (std::strlen(generalAdminInp->arg1) == 0) {
+            log_api::error("Invalid input argument: empty string");
+            return SYS_INVALID_INPUT_PARAM;
+        }
+
+        DelayServerMigrationInput input{};
+        std::strcpy(input.leader, KW_DELAY_SERVER_MIGRATION_IGNORE);
+        std::strcpy(input.successor, generalAdminInp->arg1);
+
+        return rs_set_delay_server_migration_info(rsComm, &input);
     }
 
     if ( strcmp( generalAdminInp->arg0, "lt" ) == 0 ) {
