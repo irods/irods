@@ -85,6 +85,7 @@ namespace irods {
 
     const std::string DATABASE_OP_SET_DELAY_SERVER( "database_set_delay_server" );
     const std::string DATABASE_OP_GET_GRID_CONFIGURATION_VALUE( "database_get_grid_configuration_value" );
+    const std::string DATABASE_OP_SET_GRID_CONFIGURATION_VALUE( "database_set_grid_configuration_value" );
 
     const std::string DATABASE_OP_DEL_UNUSED_AVUS( "database_del_unused_avus" );
 

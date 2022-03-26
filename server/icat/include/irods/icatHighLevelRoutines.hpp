@@ -139,6 +139,10 @@ int chlGetGridConfigurationValue(rsComm_t*   _rsComm,
                                  const char* _optionName,
                                  char*       _optionValue,
                                  std::size_t _optionValueBufferSize);
+int chlSetGridConfigurationValue(rsComm_t*   _rsComm,
+                                 const char* _namespace,
+                                 const char* _optionName,
+                                 const char* _optionValue);
 int chlSetQuota( rsComm_t *rsComm, const char *type, const char *name, const char *rescName,
                  const char *limit );
 int chlCheckQuota( rsComm_t *rsComm, const char *userName, const char *rescName,

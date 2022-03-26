@@ -16,6 +16,7 @@ set(
   data_object_modify_info
   get_file_descriptor_info
   get_grid_configuration_value
+  set_grid_configuration_value
   register_physical_path
   replica_close
   replica_open
