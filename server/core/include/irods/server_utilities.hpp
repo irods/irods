@@ -45,6 +45,17 @@ namespace irods
     ///
     /// \since 4.2.11
     auto to_bytes_buffer(const std::string_view _s) -> BytesBuf*;
+
+    /// Creates a PID file that allows only one instance of a process to run at a time.
+    ///
+    /// \param[in] _pid_filename The name of the PID file (e.g. "irods.pid").
+    ///
+    /// \return An integer representing success or failure.
+    /// \retval  0 On success.
+    /// \retval -1 On failure.
+    ///
+    /// \since 4.3.0
+    auto create_pid_file(const std::string_view _pid_filename) -> int;
 } // namespace irods
 
 #endif // IRODS_SERVER_UTILITIES_HPP
