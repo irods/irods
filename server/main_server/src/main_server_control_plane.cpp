@@ -12,6 +12,7 @@
 #include "irods/irods_server_state.hpp"
 #include "irods/irods_exception.hpp"
 #include "irods/irods_stacktrace.hpp"
+#include "irods/server_utilities.hpp"
 #include "irods/irods_logger.hpp"
 
 #include <avro/Encoder.hh>
@@ -25,6 +26,7 @@
 #include <nlohmann/json.hpp>
 
 #include <unistd.h>
+#include <sys/types.h>
 
 #include <csignal>
 #include <cstdio>
@@ -183,35 +185,22 @@ namespace irods
         return SUCCESS();
     } // forward_server_control_command
 
-    static error kill_server(const std::string& _pid_prop)
+    static void kill_delay_server()
     {
-        int svr_pid;
-        // no error case, resource servers have no re server
-        try {
-            svr_pid = get_server_property<int>(_pid_prop);
+        if (const auto pid = irods::get_pid_from_file(irods::PID_FILENAME_DELAY_SERVER); pid) {
+            rodsLog(LOG_DEBUG, "[%s:%d] - sending kill signal to delay server", __FUNCTION__, __LINE__);
+
+            // Previously, we ran kill_pid.py here.
+            // This would send three signals to the process, one right after the other:
+            // SIGSTOP (suspend), SIGTERM (terminate), then SIGKILL (kill)
+            // SIGSTOP is omitted here as it would prevent any signal handlers from running.
+            // SIGKILL does as well, but we currently lack handling for cases in which
+            // a SIGTERM signal handler fails to end the process.
+
+            kill(*pid, SIGTERM);
+            kill(*pid, SIGKILL);
         }
-        catch (const irods::exception& e) {
-            if (e.code() == KEY_NOT_FOUND) {
-                // if the property does not exist then the server
-                // in question is not running
-                return SUCCESS();
-            }
-
-            return irods::error(e);
-        }
-
-        // Previously, we ran kill_pid.py here.
-        // This would send three signals to the process, one right after the other:
-        // SIGSTOP (suspend), SIGTERM (terminate), then SIGKILL (kill)
-        // SIGSTOP is omitted here as it would prevent any signal handlers from running.
-        // SIGKILL does as well, but we currently lack handling for cases in which
-        // a SIGTERM signal handler fails to end the process.
-
-        kill( svr_pid, SIGTERM );
-        kill( svr_pid, SIGKILL );
-
-        return SUCCESS();
-    } // kill_server
+    } // kill_delay_server
 
     static error server_operation_shutdown(
         const std::string& _wait_option,
@@ -246,12 +235,7 @@ namespace irods
         bool timeout_flg = false;
         int proc_cnt = getAgentProcCnt();
 
-        // kill the delay server
-        rodsLog(LOG_DEBUG, "[%s:%d] - sending kill to delay server", __FUNCTION__, __LINE__);
-        error ret = kill_server(irods::RE_PID_KW);
-        if (!ret.ok()) {
-            irods::log(PASS(ret));
-        }
+        kill_delay_server();
 
         while (proc_cnt > 0 && !timeout_flg) {
             // takes sec, millisec
@@ -367,19 +351,12 @@ namespace irods
         rodsEnv my_env;
         _reloadRodsEnv( my_env );
 
-        int delay_server_pid = 0;
-        try {
-            delay_server_pid = get_server_property<int>(irods::RE_PID_KW);
-        } catch ( const irods::exception& ) {}
-
-        int server_pid = getpid();
-
         using json = nlohmann::json;
 
         json obj{
             {"hostname", my_env.rodsHost},
-            {"irods_server_pid", server_pid},       // Should be int
-            {"delay_server_pid", delay_server_pid}, // Should be int
+            {"irods_server_pid", getpid()},
+            {"delay_server_pid", irods::get_pid_from_file(irods::PID_FILENAME_DELAY_SERVER).value_or(0)}
         };
 
         server_state& s = server_state::instance();
@@ -430,8 +407,9 @@ namespace irods
         });
     } // is_host_in_list
 
-    server_control_plane::server_control_plane(const std::string& _prop)
-        : control_executor_(_prop)
+    server_control_plane::server_control_plane(const std::string& _prop,
+                                               std::atomic<bool>& _is_accepting_requests)
+        : control_executor_(_prop, _is_accepting_requests)
         , control_thread_(boost::ref(control_executor_))
     {
     } // ctor
@@ -446,12 +424,19 @@ namespace irods
         }
     } // dtor
 
-    server_control_executor::server_control_executor(const std::string& _prop)
+    server_control_executor::server_control_executor(const std::string& _prop,
+                                                     std::atomic<bool>& _is_accepting_requests)
         : port_prop_(_prop)
+        , op_map_{}
+        , local_server_hostname_{}
+        , provider_hostname_{}
+        , is_accepting_requests_{_is_accepting_requests}
     {
         if (port_prop_.empty()) {
             THROW(SYS_INVALID_INPUT_PARAM, "control_plane_port key is empty");
         }
+
+        is_accepting_requests_.store(false);
 
         op_map_[SERVER_CONTROL_PAUSE]  = operation_pause;
         op_map_[SERVER_CONTROL_RESUME] = operation_resume;
@@ -609,6 +594,10 @@ namespace irods
 
                 rodsLog(LOG_NOTICE, ">>> control plane :: listening on port %d\n", port);
 
+                // Let external components know that the control plane is ready
+                // to accept requests.
+                is_accepting_requests_.store(true);
+
                 server_state& s = server_state::instance();
                 while (server_state::STOPPED != s() && server_state::EXITED != s()) {
                     std::string output;
@@ -707,8 +696,12 @@ namespace irods
             }
             catch (const zmq::error_t& e) {
                 rodsLog(LOG_ERROR, "ZMQ encountered an error in the control plane loop: [%s] Restarting control thread...", e.what());
-                continue;
             }
+            catch (const std::exception& e) {
+                rodsLog(LOG_ERROR, "Encountered an error in the control plane loop: [%s] Restarting control thread...", e.what());
+            }
+
+            is_accepting_requests_.store(false);
         }
     } // control operation
 

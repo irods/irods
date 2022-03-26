@@ -11,6 +11,8 @@
 #include <boost/unordered_map.hpp>
 #include <zmq.hpp>
 
+#include <atomic>
+
 namespace irods
 {
     inline const std::string SERVER_CONTROL_OPTION_KW( "server_control_option" );
@@ -39,7 +41,7 @@ namespace irods
     class server_control_executor
     {
     public:
-        server_control_executor(const std::string&); // port property
+        server_control_executor(const std::string&, std::atomic<bool>&); // port property, accepting requests flag
 
         server_control_executor(const server_control_executor&) = delete;
         server_control_executor& operator=(const server_control_executor&) = delete;
@@ -122,13 +124,16 @@ namespace irods
         boost::unordered_map<std::string, ctrl_func_t> op_map_;
         std::string local_server_hostname_;
         std::string provider_hostname_;
+        std::atomic<bool>& is_accepting_requests_;
     }; // class server_control_executor
 
     class server_control_plane
     {
     public:
-        // @brief default constructor taking the port property
-        server_control_plane(const std::string&);
+        // @brief default constructor taking the port property and a flag that signals
+        // whether the control plane is accepting requests. The boolean is set by the
+        // control plane.
+        server_control_plane(const std::string&, std::atomic<bool>&);
 
         server_control_plane(const server_control_plane&) = delete;
         server_control_plane& operator=(const server_control_plane&) = delete;
