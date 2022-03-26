@@ -1,4 +1,7 @@
+#include "irods/client_connection.hpp"
+#include "irods/getRodsEnv.h"
 #include "irods/irods_at_scope_exit.hpp"
+#include "irods/irods_buffer_encryption.hpp"
 #include "irods/irods_configuration_keywords.hpp"
 #include "irods/irods_configuration_parser.hpp"
 #include "irods/irods_get_full_path_for_config_file.hpp"
@@ -32,6 +35,10 @@
 #include "irods/irods_signal.hpp"
 #include "irods/irods_server_api_table.hpp"
 #include "irods/irods_client_api_table.hpp"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/plugins/api/grid_configuration_types.h"
+#include "irods/get_grid_configuration_value.h"
+#include "irods/set_delay_server_migration_info.h"
 
 #include <pthread.h>
 #include <sys/socket.h>
@@ -40,6 +47,11 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+
+#include <zmq.hpp>
+#include <avro/Encoder.hh>
+#include <avro/Decoder.hh>
+#include <avro/Specific.hh>
 
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/operations.hpp>
@@ -83,6 +95,9 @@ char agent_factory_socket_file[sizeof(local_addr.sun_path)]{};
 
 uint ServerBootTime;
 int SvrSock;
+
+std::atomic<bool> is_control_plane_accepting_requests = false;
+int failed_delay_server_migration_communication_attempts = 0;
 
 agentProc_t* ConnectedAgentHead{};
 agentProc_t* ConnReqHead{};
@@ -468,6 +483,336 @@ namespace
         }
     } // set_agent_spawner_process_name
 
+    std::optional<std::string> get_grid_configuration_option_value(RcComm& _comm,
+                                                                   const std::string_view _namespace,
+                                                                   const std::string_view _option_name)
+    {
+        using log = irods::experimental::log::server;
+
+        GridConfigurationInput input{};
+        std::strcpy(input.name_space, _namespace.data());
+        std::strcpy(input.option_name, _option_name.data());
+
+        GridConfigurationOutput* output{};
+        irods::at_scope_exit free_output{[&output] { std::free(output); }};
+
+        if (const auto ec = rc_get_grid_configuration_value(&_comm, &input, &output); ec != 0) {
+            log::error("Failed to get option value from r_grid_configuration "
+                       "[error_code={}, namespace={}, option_name={}].",
+                       ec, _namespace, _option_name);
+            return std::nullopt;
+        }
+
+        return output->option_value;
+    } // get_grid_configuration_option_value
+
+    void set_delay_server_migration_info(RcComm& _comm,
+                                         const std::string_view _leader,
+                                         const std::string_view _successor)
+    {
+        using log = irods::experimental::log::server;
+
+        DelayServerMigrationInput input{};
+        std::strcpy(input.leader, _leader.data());
+        std::strcpy(input.successor, _successor.data());
+
+        if (const auto ec = rc_set_delay_server_migration_info(&_comm, &input); ec != 0) {
+            log::error("Failed to set delay server migration info in r_grid_configuration "
+                       "[error_code={}, leader={}, successor={}].",
+                       ec, _leader, _successor);
+        }
+    } // set_delay_server_migration_info
+
+    std::optional<bool> is_delay_server_running_on_remote_host(const std::string_view _hostname)
+    {
+        using log = irods::experimental::log::server;
+
+        try {
+            irods::control_plane_command cpc_cmd;
+            cpc_cmd.command = irods::SERVER_CONTROL_STATUS;
+            cpc_cmd.options[irods::SERVER_CONTROL_OPTION_KW] = irods::SERVER_CONTROL_HOSTS_OPT;
+            cpc_cmd.options[irods::SERVER_CONTROL_HOST_KW + "0"] = _hostname;
+            log::trace("Configured control plane command.");
+
+            rodsEnv env;
+            _getRodsEnv(env);
+            log::trace("Captured local environment information.");
+
+            // Build an encryption context.
+            std::string_view encryption_key = env.irodsCtrlPlaneKey;
+            irods::buffer_crypt crypt(encryption_key.size(),
+                                      0,
+                                      env.irodsCtrlPlaneEncryptionNumHashRounds,
+                                      env.irodsCtrlPlaneEncryptionAlgorithm);
+            log::trace("Constructed irods::buffer_crypt instance.");
+
+            // Serialize using the generated avro class.
+            auto out = avro::memoryOutputStream();
+            avro::EncoderPtr e = avro::binaryEncoder();
+            e->init(*out);
+            avro::encode(*e, cpc_cmd);
+            std::shared_ptr<std::vector<std::uint8_t>> data = avro::snapshot(*out);
+            log::trace("Serialized control plane command using Avro encoder.");
+
+            // Encrypt outgoing request.
+            std::vector<std::uint8_t> enc_data(std::begin(*data), std::end(*data));
+            irods::buffer_crypt::array_t iv;
+            irods::buffer_crypt::array_t in_buf(std::begin(enc_data), std::end(enc_data));
+            irods::buffer_crypt::array_t shared_secret(std::begin(encryption_key), std::end(encryption_key));
+
+            irods::buffer_crypt::array_t data_to_send;
+
+            if (const auto err = crypt.encrypt(shared_secret, iv, in_buf, data_to_send); !err.ok()) {
+                THROW(SYS_INTERNAL_ERR, err.result());
+            }
+
+            log::trace("Encrypted request.");
+
+            const auto zmq_server_target = fmt::format("tcp://localhost:{}", env.irodsCtrlPlanePort);
+            log::trace("Connecting to local control plane [{}] ...", zmq_server_target);
+
+            zmq::context_t zmq_ctx;
+            zmq::socket_t zmq_socket{zmq_ctx, zmq::socket_type::req};
+            zmq_socket.set(zmq::sockopt::sndtimeo, 500);
+            zmq_socket.set(zmq::sockopt::rcvtimeo, 5000);
+            zmq_socket.set(zmq::sockopt::linger, 0);
+            zmq_socket.connect(zmq_server_target);
+            log::trace("Connection established.");
+
+            log::trace("Sending request ...");
+            zmq::message_t request(data_to_send.size());
+            std::memcpy(request.data(), data_to_send.data(), data_to_send.size());
+
+            if (const auto res = zmq_socket.send(request, zmq::send_flags::none); !res || *res == 0) {
+                THROW(SYS_LIBRARY_ERROR, "zmq::socket_t::send");
+            }
+
+            log::trace("Sent request. Waiting for response ...");
+
+            zmq::message_t response;
+
+            if (const auto res = zmq_socket.recv(response); !res || *res == 0) {
+                THROW(SYS_LIBRARY_ERROR, "zmq::socket_t::recv");
+            }
+
+            log::trace("Response received. Processing response ...");
+
+            // Decrypt the response.
+            const auto* data_ptr = static_cast<const std::uint8_t*>(response.data());
+            in_buf.clear();
+            in_buf.assign(data_ptr, data_ptr + response.size());
+
+            irods::buffer_crypt::array_t dec_data;
+
+            if (const auto err = crypt.decrypt(shared_secret, iv, in_buf, dec_data); !err.ok()) {
+                THROW(SYS_INTERNAL_ERR, err.result());
+            }
+
+            log::trace("Decrypted response.");
+
+            std::string response_string(dec_data.data(), dec_data.data() + dec_data.size());
+            log::trace("Control plane response ==> [{}]", response_string);
+
+            if (const auto pos = response_string.find_last_of(","); pos != std::string::npos) {
+                response_string[pos] = ' ';
+            }
+
+            const auto grid_status = nlohmann::json::parse(response_string);
+            log::trace("Control plane response ==> [{}]", grid_status.dump());
+
+            return grid_status.at("delay_server_pid").get<int>() > 0;
+        }
+        catch (const zmq::error_t& e) {
+            log::error("ZMQ error: {}", e.what());
+        }
+        catch (const std::exception& e) {
+            log::error("General exception: {}", e.what());
+        }
+
+        return std::nullopt;
+    } // is_delay_server_running_on_remote_host
+
+    void launch_delay_server(bool _enable_test_mode, bool _write_to_stdout)
+    {
+        using log = irods::experimental::log::server;
+
+        log::info("Forking Delay Server (irodsDelayServer) ...");
+
+        // If we're planning on calling one of the functions from the exec-family,
+        // then we're only allowed to use async-signal-safe functions following the call
+        // to fork(). To avoid potential issues, we build up the argument list before
+        // doing the fork-exec.
+
+        std::vector<char*> args{"irodsDelayServer"};
+
+        if (_enable_test_mode) {
+            args.push_back("-t");
+        }
+
+        if (_write_to_stdout) {
+            args.push_back("-u");
+        }
+
+        args.push_back(nullptr);
+
+        const auto pid = RODS_FORK();
+
+        if (pid == 0) {
+            execv(args[0], args.data());
+
+            // If execv() fails, the POSIX standard recommends using _exit() instead of
+            // exit() to keep the child from corrupting the parent's memory.
+            _exit(1);
+        }
+    } // launch_delay_server
+
+    void migrate_delay_server(bool _enable_test_mode, bool _write_to_stdout)
+    {
+        using log = irods::experimental::log::server;
+
+        try {
+            if (!is_control_plane_accepting_requests.load()) {
+                return;
+            }
+
+            //
+            // At this point, we don't have a database connection because grandpa never needed
+            // one. initServer() calls initServerInfo() which attempts to establish a database connection.
+            // initServer() immediately tears down the database connection. We can only guess that this is
+            // done because grandpa never accesses the database.
+            //
+            // The lines that follow temporarily re-establish a database connection only if the local
+            // server is a catalog provider. This is necessary because none of the APIs invoked after this
+            // database code results in the creation of a database connection.
+            //
+
+            std::string service_role;
+            if (const auto err = get_catalog_service_role(service_role); !err.ok()) {
+                log::error("Could not retrieve server role [error_code={}].", err.code());
+                return;
+            }
+
+            const auto is_provider = (irods::CFG_SERVICE_ROLE_PROVIDER == service_role);
+
+            irods::at_scope_exit disconnect_from_database{[is_provider] {
+                if (is_provider) {
+                    if (const auto ec = chlClose(); ec != 0) {
+                        log::error("Could not disconnect from database [error_code={}].", ec);
+                    }
+                }
+            }};
+
+            if (is_provider) {
+                // Assume this server has database credentials and attempt to connect to the database.
+                if (const auto ec = chlOpen(); ec != 0) {
+                    log::error("Could not connect to database [error_code={}].", ec);
+                    return;
+                }
+            }
+
+            char hostname[HOST_NAME_MAX]{};
+            if (gethostname(hostname, sizeof(hostname)) != 0) {
+                log::error("Failed to retrieve local server's hostname for delay server migration.");
+                return;
+            }
+            log::trace("Local server's hostname = [{}]", hostname);
+
+            std::string leader;
+            std::string successor;
+
+            {
+                ix::client_connection comm;
+
+                auto result = get_grid_configuration_option_value(comm, "delay_server", "leader");
+                if (!result) {
+                    return;
+                }
+
+                leader = std::move(*result);
+                log::trace("Leader's hostname = [{}]", leader);
+
+                result = get_grid_configuration_option_value(comm, "delay_server", "successor");
+                if (!result) {
+                    return;
+                }
+
+                successor = std::move(*result);
+                log::trace("Successor's hostname = [{}]", successor);
+            }
+
+            if (hostname == leader) {
+                log::trace("Local server [{}] is the leader.", hostname);
+
+                if (!successor.empty() && hostname != successor) {
+                    log::trace("New successor detected!");
+
+                    const auto pid = irods::get_pid_from_file(irods::PID_FILENAME_DELAY_SERVER);
+
+                    if (!pid) {
+                        log::trace("Could not get delay server PID.");
+                        return;
+                    }
+
+                    log::trace("Delay server PID = [{}]", *pid);
+                    log::info("Sending shutdown signal to delay server.");
+
+                    // If the delay server is running locally, send SIGTERM to it and wait
+                    // for graceful shutdown. The call to waitpid() will cause the CRON manager
+                    // to stop making progress until it returns because it is single threaded.
+                    kill(*pid, SIGTERM);
+
+                    int child_status = 0;
+                    waitpid(*pid, &child_status, 0);
+                    log::info("Delay server has completed shutdown [exit_code={}].", WEXITSTATUS(child_status));
+                }
+                else {
+                    log::trace("No successor detected. Checking if delay server needs to be launched ...");
+
+                    // If the delay server is not running, launch it!
+                    if (const auto pid = irods::get_pid_from_file(irods::PID_FILENAME_DELAY_SERVER); !pid) {
+                        launch_delay_server(_enable_test_mode, _write_to_stdout);
+                    }
+                }
+            }
+            else if (hostname == successor) {
+                log::trace("Local server [{}] is the successor.", hostname);
+
+                const auto promote_to_leader_and_launch_delay_server = [_enable_test_mode, _write_to_stdout, &hostname] {
+                    failed_delay_server_migration_communication_attempts = 0;
+
+                    {
+                        ix::client_connection comm;
+                        set_delay_server_migration_info(comm, hostname, "");
+                    }
+
+                    launch_delay_server(_enable_test_mode, _write_to_stdout);
+                };
+
+                // Wait for the leader (remote host) to shutdown its delay server.
+                //
+                // Because we're relying on the network to determine when it is safe to launch our own
+                // delay server, we have to consider the case where network communication fails.
+                //
+                // For this situation, we keep a count of the number of failed communication attempts.
+                // When the threshold for failed attempts is reached, the local server will be promoted
+                // to the leader.
+                if (const auto res = is_delay_server_running_on_remote_host(leader); res && !*res) {
+                    promote_to_leader_and_launch_delay_server();
+                }
+                // Automatically promote this server to the leader after three failed communication attempts.
+                else if (++failed_delay_server_migration_communication_attempts == 3) {
+                    promote_to_leader_and_launch_delay_server();
+                }
+            }
+        }
+        catch (const std::exception& e) {
+            log::error("Caught exception in migrate_delay_server(): {}", e.what());
+        }
+        catch (...) {
+            log::error("Caught unknown exception in migrate_delay_server()");
+        }
+    } // migrate_delay_server
+
     void daemonize()
     {
         if (fork()) {
@@ -724,12 +1069,30 @@ int serverMain(const bool enable_test_mode = false, const bool write_to_stdout =
         ix::cron::cron::instance().add_task(task_builder.build());
     }
 
-    uint64_t return_code = 0;
-    // =-=-=-=-=-=-=-
-    // Launch the Control Plane
+    std::thread cron_manager_thread{[] {
+        irods::server_state& server_state = irods::server_state::instance();
+
+        while (true) {
+            const auto& state = server_state();
+
+            if (irods::server_state::STOPPED == state || irods::server_state::EXITED == state) {
+                break;
+            }
+
+            using namespace std::chrono_literals;
+            std::this_thread::sleep_for(100ms);
+
+            ix::cron::cron::instance().run();
+        }
+    }};
+
+    irods::at_scope_exit join_cron_manager_thread{[&] { cron_manager_thread.join(); }};
+
+    std::uint64_t return_code = 0;
+
     try {
-        irods::server_control_plane ctrl_plane(
-            irods::CFG_SERVER_CONTROL_PLANE_PORT );
+        // Launch the control plane.
+        irods::server_control_plane ctrl_plane(irods::CFG_SERVER_CONTROL_PLANE_PORT, is_control_plane_accepting_requests);
 
         status = startProcConnReqThreads();
         if (status < 0) {
@@ -773,9 +1136,7 @@ int serverMain(const bool enable_test_mode = false, const bool write_to_stdout =
                 rodsLog(LOG_NOTICE, "invalid iRODS server state [%s]", the_server_state.c_str());
             }
 
-            ix::cron::cron::instance().run();
-
-            FD_SET( svrComm.sock, &sockMask );
+            FD_SET(svrComm.sock, &sockMask);
 
             int numSock = 0;
             struct timeval time_out;
@@ -1501,91 +1862,12 @@ int initServerMain(rsComm_t *svrComm,
     // Record port, PID, and CWD into a well-known file.
     recordServerProcess(svrComm);
 
-    const auto start_delay_server = [&] {
-
-
-/*  NEW 4.3.0 LEADER/SUCCESSOR ALGORITHM
-
-   - if self is leader
-     - if successor is defined
-        - if necessary, gracefully complete current jobs and exit
-     - else
-        - if necessary, start delay server
-        - grab and process delay rules, same as today
-   - else if self is successor
-     - run health check on the leader stats (utility function that calculates based on db stats)
-     - if leader is dead
-         - promote self to leader in db
-         - exit
-     - else
-         - check on the leader directly (ping?  grid-status?)
-         - populate stats in the db (JSON?)
-         - exit
-   - else
-     - self is not leader or successor
-     - if necessary, gracefully complete current jobs and exit
-*/
-
-
-        rodsServerHost_t* reServerHost{};
-        getReHost(&reServerHost);
-
-        if (!reServerHost) {
-            return;
-        }
-
-        std::optional<pid_t> delay_pid;
-        if (irods::server_properties::instance().contains(irods::RE_PID_KW)) {
-            delay_pid = irods::get_server_property<int>(irods::RE_PID_KW);
-        }
-
-        if (LOCAL_HOST == reServerHost->localFlag) {
-            if (delay_pid) {
-                if (const auto ec = waitpid(*delay_pid, nullptr, WNOHANG); ec != -1) {
-                    return;
-                }
-            }
-
-            ix::log::server::info("Forking delay server (irodsDelayServer) ...");
-            const int pid = RODS_FORK();
-
-            if (pid == 0) {
-                close(svrComm->sock);
-
-                std::vector<char*> argv;
-                argv.push_back("irodsDelayServer");
-
-                if (enable_test_mode) {
-                    argv.push_back("-t");
-                }
-
-                if (write_to_stdout) {
-                    argv.push_back("-u");
-                }
-
-                argv.push_back(nullptr);
-
-                // Launch the delay server!
-                execv(argv[0], &argv[0]);
-                exit(1);
-            }
-            else {
-                irods::set_server_property<int>(irods::RE_PID_KW, pid);
-            }
-        }
-        else if (delay_pid && waitpid(*delay_pid, nullptr, WNOHANG) != -1) {
-            // If the delay server exists but we shouldn't have it on this instance, then kill it.
-            ix::log::server::info("We are no longer the delay server host. Ending process ...");
-            // Sending SIGTERM causes the delay server to finish all tasks and exit gracefully.
-            kill(delay_pid.value(), SIGTERM);
-            waitpid(*delay_pid, nullptr, WNOHANG);
-            irods::server_properties::instance().remove(irods::RE_PID_KW);
-        }
-    };
-
-    start_delay_server();
     ix::cron::cron_builder delay_server;
-    delay_server.task(start_delay_server).interval(5);
+    delay_server
+        .interval(5)
+        .task([enable_test_mode, write_to_stdout] {
+            migrate_delay_server(enable_test_mode, write_to_stdout);
+        });
     ix::cron::cron::instance().add_task(delay_server.build());
 
     return 0;
