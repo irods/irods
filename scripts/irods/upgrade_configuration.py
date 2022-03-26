@@ -251,11 +251,19 @@ def run_schema_update(config_dict, schema_name, next_schema_version):
             if 'kerberos_name' in config_dict:
                 config_dict['plugin_configuration']['authentication']['krb']['name'] = config_dict.pop('kerberos_name')
             config_dict.setdefault('advanced_settings', {})['rule_engine_server_sleep_time_in_seconds'] = 30
-            config_dict['advanced_settings']['rule_engine_server_execution_time_in_seconds'] = 120
             if config_dict['catalog_service_role'] == 'provider':
                 with open(paths.database_config_path()) as f:
                     database_config = json.load(f)
                 config_dict['plugin_configuration'].setdefault('database', {})[database_config.pop('catalog_database_type')] = database_config
+
+    if next_schema_version == 4:
+        advanced_settings = config_dict['advanced_settings']
+
+        if 'rule_engine_server_sleep_time_in_seconds' in advanced_settings:
+            advanced_settings['delay_server_sleep_time_in_seconds'] = advanced_settings.pop('rule_engine_server_sleep_time_in_seconds')
+
+        if 'maximum_number_of_concurrent_rule_engine_server_processes' in advanced_settings:
+            advanced_settings['number_of_concurrent_delay_rule_executors'] = advanced_settings.pop('maximum_number_of_concurrent_rule_engine_server_processes')
 
     config_dict['schema_version'] = 'v%d' % (next_schema_version)
     return config_dict

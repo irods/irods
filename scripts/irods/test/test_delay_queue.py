@@ -75,8 +75,8 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
             # load server_config.json to inject new settings
             with open(server_config_filename) as f:
                 svr_cfg = json.load(f)
-            re_server_sleep_time = 2
-            svr_cfg['advanced_settings']['rule_engine_server_sleep_time_in_seconds'] = re_server_sleep_time
+            delay_server_sleep_time = 2
+            svr_cfg['advanced_settings']['delay_server_sleep_time_in_seconds'] = delay_server_sleep_time
 
             # dump to a string to repave the existing server_config.json
             new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
@@ -121,9 +121,9 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
         server_config_filename = paths.server_config_path()
 
         delay_job_batch_size = 5
-        re_server_sleep_time = 3
+        delay_server_sleep_time = 3
         sooner_delay = 0
-        later_delay = re_server_sleep_time * 5
+        later_delay = delay_server_sleep_time * 5
         long_job_run_time = later_delay * 10
 
         rule_text_key = 'test_delay_queue_with_long_job'
@@ -144,8 +144,8 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
             # load server_config.json to inject new settings
             with open(server_config_filename) as f:
                 svr_cfg = json.load(f)
-            svr_cfg['advanced_settings']['maximum_number_of_concurrent_rule_engine_server_processes'] = 2
-            svr_cfg['advanced_settings']['rule_engine_server_sleep_time_in_seconds'] = re_server_sleep_time
+            svr_cfg['advanced_settings']['number_of_concurrent_delay_rule_executors'] = 2
+            svr_cfg['advanced_settings']['delay_server_sleep_time_in_seconds'] = delay_server_sleep_time
 
             # dump to a string to repave the existing server_config.json
             new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
@@ -258,9 +258,9 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
         # load server_config.json to inject new settings
         with open(server_config_filename) as f:
             svr_cfg = json.load(f)
-        re_server_sleep_time = 5
-        svr_cfg['advanced_settings']['maximum_number_of_concurrent_rule_engine_server_processes'] = 2
-        svr_cfg['advanced_settings']['rule_engine_server_sleep_time_in_seconds'] = re_server_sleep_time
+        delay_server_sleep_time = 5
+        svr_cfg['advanced_settings']['number_of_concurrent_delay_rule_executors'] = 2
+        svr_cfg['advanced_settings']['delay_server_sleep_time_in_seconds'] = delay_server_sleep_time
 
         # dump to a string to repave the existing server_config.json
         new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
@@ -308,8 +308,8 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
         # load server_config.json to inject new settings
         with open(server_config_filename) as f:
             svr_cfg = json.load(f)
-        re_server_sleep_time = 2
-        svr_cfg['advanced_settings']['rule_engine_server_sleep_time_in_seconds'] = re_server_sleep_time
+        delay_server_sleep_time = 2
+        svr_cfg['advanced_settings']['delay_server_sleep_time_in_seconds'] = delay_server_sleep_time
 
         # dump to a string to repave the existing server_config.json
         new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
@@ -355,8 +355,8 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
             server_config_filename = paths.server_config_path()
             with open(server_config_filename) as f:
                 svr_cfg = json.load(f)
-            svr_cfg['advanced_settings']['maximum_number_of_concurrent_rule_engine_server_processes'] = 1
-            svr_cfg['advanced_settings']['rule_engine_server_sleep_time_in_seconds'] = 1
+            svr_cfg['advanced_settings']['number_of_concurrent_delay_rule_executors'] = 1
+            svr_cfg['advanced_settings']['delay_server_sleep_time_in_seconds'] = 1
 
             # dump to a string to repave the existing server_config.json
             new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
@@ -406,8 +406,8 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
     def test_sigpipe_in_delay_server(self):
         irodsctl = IrodsController()
 
-        re_server_sleep_time = 2
-        longer_delay_time = re_server_sleep_time * 2
+        delay_server_sleep_time = 2
+        longer_delay_time = delay_server_sleep_time * 2
         rule_text_key = 'test_sigpipe_in_delay_server'
         parameters = {}
         parameters['longer_delay_time'] = str(longer_delay_time)
@@ -423,7 +423,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
             server_config_filename = paths.server_config_path()
             with open(server_config_filename) as f:
                 svr_cfg = json.load(f)
-            svr_cfg['advanced_settings']['rule_engine_server_sleep_time_in_seconds'] = re_server_sleep_time
+            svr_cfg['advanced_settings']['delay_server_sleep_time_in_seconds'] = delay_server_sleep_time
 
             # dump to a string to repave the existing server_config.json
             new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
@@ -486,7 +486,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
             server_config_filename = paths.server_config_path()
             with open(server_config_filename) as f:
                 svr_cfg = json.load(f)
-            svr_cfg['advanced_settings']['rule_engine_server_sleep_time_in_seconds'] = 1
+            svr_cfg['advanced_settings']['delay_server_sleep_time_in_seconds'] = 1
 
             # dump to a string to repave the existing server_config.json
             new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
@@ -534,7 +534,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
 
         with lib.file_backed_up(config.server_config_path):
             # Lower the delay server's sleep time so that rules are executed quicker.
-            config.server_config['advanced_settings']['rule_engine_server_sleep_time_in_seconds'] = 1
+            config.server_config['advanced_settings']['delay_server_sleep_time_in_seconds'] = 1
             lib.update_json_file_from_dict(config.server_config_path, config.server_config)
             IrodsController().restart(test_mode=True)
 
@@ -576,7 +576,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
 
         with lib.file_backed_up(config.server_config_path):
             # Lower the delay server's sleep time so that rules are executed quicker.
-            config.server_config['advanced_settings']['rule_engine_server_sleep_time_in_seconds'] = 1
+            config.server_config['advanced_settings']['delay_server_sleep_time_in_seconds'] = 1
             lib.update_json_file_from_dict(config.server_config_path, config.server_config)
             IrodsController().restart(test_mode=True)
 
@@ -663,7 +663,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
             self.admin.assert_icommand(['itouch', object_name])
             # Use the consumers as rule executors
             config.server_config['advanced_settings']['delay_rule_executors'] = hostnames_expected
-            config.server_config['advanced_settings']['rule_engine_server_sleep_time_in_seconds'] = 1
+            config.server_config['advanced_settings']['delay_server_sleep_time_in_seconds'] = 1
             lib.update_json_file_from_dict(config.server_config_path, config.server_config)
             IrodsController().restart(test_mode=True)
             for i in range(len(hostnames_expected)):
@@ -687,8 +687,8 @@ class Test_Execution_Frequency(resource_suite.ResourceBase, unittest.TestCase):
         # load server_config.json to inject new settings
         with open(self.server_config_filename) as f:
             svr_cfg = json.load(f)
-        self.re_server_sleep_time = 2
-        svr_cfg['advanced_settings']['rule_engine_server_sleep_time_in_seconds'] = self.re_server_sleep_time
+        self.delay_server_sleep_time = 2
+        svr_cfg['advanced_settings']['delay_server_sleep_time_in_seconds'] = self.delay_server_sleep_time
 
         self.new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
 
@@ -708,7 +708,7 @@ class Test_Execution_Frequency(resource_suite.ResourceBase, unittest.TestCase):
     def test_repeat_n_times(self):
         irodsctl = IrodsController()
 
-        repeat_delay = self.re_server_sleep_time * 3
+        repeat_delay = self.delay_server_sleep_time * 3
         repeat_n = 3
         repeat_string = 'repeating {repeat_n} times every {repeat_delay} seconds'.format(**locals())
         parameters = {}
@@ -750,7 +750,7 @@ class Test_Execution_Frequency(resource_suite.ResourceBase, unittest.TestCase):
     def test_double_n_times(self):
         irodsctl = IrodsController()
 
-        repeat_delay = self.re_server_sleep_time * 3
+        repeat_delay = self.delay_server_sleep_time * 3
         repeat_n = 3
         repeat_string = 'doubling {repeat_n} times every {repeat_delay} seconds'.format(**locals())
         parameters = {}
@@ -796,7 +796,7 @@ class Test_Execution_Frequency(resource_suite.ResourceBase, unittest.TestCase):
         try:
             with lib.file_backed_up(config.server_config_path):
                 # Lower the delay server's sleep time so that rules are executed quicker.
-                config.server_config['advanced_settings']['rule_engine_server_sleep_time_in_seconds'] = 1
+                config.server_config['advanced_settings']['delay_server_sleep_time_in_seconds'] = 1
                 lib.update_json_file_from_dict(config.server_config_path, config.server_config)
                 IrodsController().restart(test_mode=True)
 

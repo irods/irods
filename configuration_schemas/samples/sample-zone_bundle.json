@@ -226,7 +226,7 @@
                     "advanced_settings": {
                         "default_number_of_transfer_threads": 4,
                         "default_temporary_password_lifetime_in_seconds": 120,
-                        "maximum_number_of_concurrent_rule_engine_server_processes": 4,
+                        "number_of_concurrent_delay_rule_executors": 4,
                         "maximum_size_for_single_buffer_in_megabytes": 32,
                         "maximum_temporary_password_lifetime_in_seconds": 1000,
                         "transfer_buffer_size_for_parallel_transfer_in_megabytes": 4,

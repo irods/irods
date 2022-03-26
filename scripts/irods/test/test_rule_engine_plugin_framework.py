@@ -265,7 +265,7 @@ class Test_Rule_Engine_Plugin_Framework(session.make_sessions_mixin([('otherrods
             RULE_ENGINE_CONTINUE = 5000000
 
             # Lower the delay server's sleep time so that rules are executed quicker.
-            config.server_config['advanced_settings']['rule_engine_server_sleep_time_in_seconds'] = 1
+            config.server_config['advanced_settings']['delay_server_sleep_time_in_seconds'] = 1
 
             # Enable the Passthrough REP (make it the first REP in the list).
             # Configure the Passthrough REP to return 'RULE_ENGINE_CONTINUE' to the REPF.
@@ -629,7 +629,7 @@ msiDataObjCreate("{0}", "forceFlag=", *out)
 
             config = IrodsConfig()
             with lib.file_backed_up(config.server_config_path):
-                config.server_config['advanced_settings']['rule_engine_server_sleep_time_in_seconds'] = 1
+                config.server_config['advanced_settings']['delay_server_sleep_time_in_seconds'] = 1
                 lib.update_json_file_from_dict(config.server_config_path, config.server_config)
                 IrodsController().restart()
 
@@ -675,7 +675,7 @@ msiSleep("60", "0")
 
             config = IrodsConfig()
             with lib.file_backed_up(config.server_config_path):
-                config.server_config['advanced_settings']['rule_engine_server_sleep_time_in_seconds'] = 1
+                config.server_config['advanced_settings']['delay_server_sleep_time_in_seconds'] = 1
                 lib.update_json_file_from_dict(config.server_config_path, config.server_config)
                 IrodsController().restart()
 
