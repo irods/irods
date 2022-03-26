@@ -1,38 +1,33 @@
-
-
-
 #ifndef IRODS_SERVER_STATE_HPP
 #define IRODS_SERVER_STATE_HPP
 
 #include "irods/irods_error.hpp"
 
-#include <boost/thread/mutex.hpp>
-namespace irods {
-    class server_state {
-        public:
-            static server_state& instance();
-            error operator()( const std::string& _s );
-            std::string operator()();
+#include <cstddef>
+#include <string_view>
 
-            static const std::string RUNNING;
-            static const std::string PAUSED;
-            static const std::string STOPPED;
-            static const std::string EXITED;
+namespace irods::server_state
+{
+    using int_type = std::int8_t;
 
-        private:
-            server_state();
-            server_state( server_state& ) {}
-            server_state( const server_state& ) {}
+    enum class server_state
+    {
+        running = 0,
+        paused,
+        stopped,
+        exited
+    };
 
-            boost::mutex mutex_;
-            std::string state_;
+    auto init() -> void;
 
-    }; // class server_state
+    auto deinit() -> void;
 
-}; // namespace irods
+    auto get_state() -> server_state;
 
+    auto set_state(server_state _new_state) -> irods::error;
 
+    auto to_string(server_state _state) -> std::string_view;
+} // namespace irods::server_state
 
 #endif // IRODS_SERVER_STATE_HPP
-
 
