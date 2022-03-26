@@ -12065,6 +12065,53 @@ irods::error db_get_grid_configuration_value_op(
     return SUCCESS();
 } // db_get_grid_configuration_value_op
 
+irods::error db_set_grid_configuration_value_op(
+    irods::plugin_context& _ctx,
+    const char*            _namespace,
+    const char*            _option_name,
+    const char*            _option_value)
+{
+    if (!irods::is_privileged_client(*_ctx.comm())) {
+        return ERROR(CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege level");
+    }
+
+    if (const auto ret = _ctx.valid(); !ret.ok()) {
+        return PASS(ret);
+    }
+
+    if (logSQL != 0) {
+        rodsLog(LOG_SQL, "chlSetGridConfigurationValue");
+    }
+
+    if (!icss.status) {
+        return ERROR(CATALOG_NOT_CONNECTED, "catalog not connected");
+    }
+
+    int i = 0;
+    cllBindVars[i++] = _option_value;
+    cllBindVars[i++] = _namespace;
+    cllBindVars[i++] = _option_name;
+    cllBindVarCount = i;
+    if (logSQL != 0) {
+        rodsLog(LOG_SQL, "chlSetGridConfigurationValue  SQL 1");
+    }
+
+    int status = cmlExecuteNoAnswerSql(
+          "update R_GRID_CONFIGURATION set option_value = ? where namespace = ? and option_name = ?", &icss);
+    if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
+        _rollback("chlSetGridConfigurationValue");
+        rodsLog(LOG_NOTICE, "chlSetGridConfigurationValue cmlExecuteNoAnswerSql failure %d" , status);
+        return ERROR(status, "Set Grid Configuration Value SQL update failure");
+    }
+
+    status = cmlExecuteNoAnswerSql("commit", &icss);
+    if (status < 0) {
+        return ERROR(status, "commit failed");
+    }
+
+    return SUCCESS();
+} // db_set_grid_configuration_value_op
+
 irods::error db_calc_usage_and_quota_op(
     irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
@@ -15390,6 +15437,10 @@ irods::database* plugin_factory(
         DATABASE_OP_GET_GRID_CONFIGURATION_VALUE,
         function<error(plugin_context&, const char*, const char*, char*, std::size_t)>(
             db_get_grid_configuration_value_op));
+    pg->add_operation(
+        DATABASE_OP_SET_GRID_CONFIGURATION_VALUE,
+        function<error(plugin_context&, const char*, const char*, const char*)>(
+            db_set_grid_configuration_value_op));
     pg->add_operation(
         DATABASE_OP_CALC_USAGE_AND_QUOTA,
         function<error(plugin_context&)>(
