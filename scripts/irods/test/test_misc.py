@@ -224,7 +224,7 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
         for i in main_server.children():
             seen_process_names[i.name()] += 1
         # There should only be a single delay server instance
-        self.assertTrue(seen_process_names['irodsReServer'] == 1)
+        self.assertTrue(seen_process_names['irodsDelayServer'] == 1)
         self.assertTrue(seen_process_names['irodsServer'] == 1)
         attribute = "a1"
         # Test the delay server

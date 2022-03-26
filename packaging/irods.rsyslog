@@ -2,7 +2,7 @@ $FileCreateMode 0644
 $DirCreateMode 0755
 $Umask 0000
 $template irods_format,"%msg%\n"
-:programname,startswith,"irodsServer"     /var/log/irods/irods.log;irods_format
+:programname,startswith,"irodsServer" /var/log/irods/irods.log;irods_format
 & stop
-:programname,startswith,"irodsReServer"   /var/log/irods/irods.log;irods_format
+:programname,startswith,"irodsDelayServer" /var/log/irods/irods.log;irods_format
 & stop

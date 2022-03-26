@@ -564,7 +564,7 @@ int main(int argc, char** argv)
         key_path_t{irods::CFG_ADVANCED_SETTINGS_KW, irods::CFG_HOSTNAME_CACHE_KW, irods::CFG_EVICTION_AGE_IN_SECONDS_KW},
         irods::get_hostname_cache_eviction_age());
 
-    // Start of irodsReServer has been moved to serverMain.
+    // Start of irodsDelayServer has been moved to serverMain.
     signal( SIGTTIN, SIG_IGN );
     signal( SIGTTOU, SIG_IGN );
     signal( SIGCHLD, SIG_DFL ); // Setting SIGCHLD to SIG_IGN is not portable.
@@ -1561,14 +1561,14 @@ int initServerMain(
                 }
             }
 
-            ix::log::server::info("Forking Rule Execution Server (irodsReServer) ...");
+            ix::log::server::info("Forking Rule Execution Server (irodsDelayServer) ...");
             const int pid = RODS_FORK();
 
             if (pid == 0) {
                 close(svrComm->sock);
 
                 std::vector<char*> argv;
-                argv.push_back("irodsReServer");
+                argv.push_back("irodsDelayServer");
 
                 if (enable_test_mode) {
                     argv.push_back("-t");
