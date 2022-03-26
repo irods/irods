@@ -11,7 +11,7 @@
 #include "irods/rsModDataObjMeta.hpp"
 #include "irods/rsDataObjRepl.hpp"
 #include "irods/apiNumber.h"
-#include "irods/irodsReServer.hpp"
+#include "irods/irodsDelayServer.hpp"
 #include "irods/irods_resource_backport.hpp"
 #include "irods/irods_server_api_table.hpp"
 #include "irods/irods_server_properties.hpp"

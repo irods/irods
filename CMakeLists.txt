@@ -308,7 +308,7 @@ foreach(DATABASE_PLUGIN postgres oracle mysql)
     "${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=${IRODS_PACKAGE_COMPONENT_${DATABASE_PLUGIN_UPPER}_NAME} -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_install.cmake"
     DEPENDS
     irodsServer
-    irodsReServer
+    irodsDelayServer
     irods_api_test_harness
     irods_configuration_test_harness
     hostname_resolves_to_local_address

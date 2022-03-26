@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
 # target_link_libraries for object targets
 
 add_executable(
-  irodsReServer
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/irodsReServer.cpp"
+  irodsDelayServer
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/irodsDelayServer.cpp"
 )
 target_link_libraries(
-  irodsReServer
+  irodsDelayServer
   PRIVATE
   irods_server
   irods_client
@@ -22,7 +22,7 @@ target_link_libraries(
   m
 )
 target_include_directories(
-  irodsReServer
+  irodsDelayServer
   PRIVATE
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
@@ -31,7 +31,7 @@ target_include_directories(
   "${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include"
 )
 target_compile_definitions(
-  irodsReServer
+  irodsDelayServer
   PRIVATE
   ${IRODS_COMPILE_DEFINITIONS_PRIVATE}
   IRODS_ENABLE_SYSLOG
@@ -39,7 +39,7 @@ target_compile_definitions(
 
 install(
   TARGETS
-  irodsReServer
+  irodsDelayServer
   RUNTIME
   DESTINATION "${CMAKE_INSTALL_SBINDIR}"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
@@ -47,7 +47,7 @@ install(
 
 install(
   FILES
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irodsReServer.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irodsDelayServer.hpp"
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/irods"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
 )

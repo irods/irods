@@ -124,7 +124,7 @@ def server_executable():
 def rule_engine_executable():
     return os.path.join(
         server_bin_directory(),
-        'irodsReServer')
+        'irodsDelayServer')
 
 def test_put_get_executable():
     return os.path.join(server_bin_directory(), 'irodsTestPutGet')

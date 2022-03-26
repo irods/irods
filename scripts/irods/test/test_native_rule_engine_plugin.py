@@ -327,7 +327,7 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
             svr_cfg = json.load(f)
 
         # Occasionally, the expected message is printed twice due to the rule engine waking up, causing the test to fail
-        # Make irodsReServer sleep for a long time so it won't wake up while the test is running
+        # Make irodsDelayServer sleep for a long time so it won't wake up while the test is running
         svr_cfg['advanced_settings']['rule_engine_server_sleep_time_in_seconds'] = 1000
 
         # dump to a string to repave the existing server_config.json

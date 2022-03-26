@@ -899,10 +899,10 @@ getReHost( rodsServerHost_t **rodsServerHost ) {
     return status;
 }
 
-/* getAndConnReHost - Get the irodsReServer host (result given in
+/* getAndConnReHost - Get the irodsDelayServer host (result given in
  * rodsServerHost).
  * If the is remote, it will automatically connect to the server where
- * irodsReServer is run.
+ * irodsDelayServer is run.
  */
 
 int
