@@ -258,64 +258,6 @@ namespace
         catch (...) {}
     } // remove_leftover_rulebase_pid_files
 
-    int create_pid_file()
-    {
-        const auto pid_file = boost::filesystem::temp_directory_path() / "irods.pid";
-
-        // Open the PID file. If it does not exist, create it and give the owner
-        // permission to read and write to it.
-        const auto fd = open(pid_file.c_str(), O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
-        if (fd == -1) {
-            ix::log::server::error("Could not open PID file.");
-            return -1;
-        }
-
-        // Get the current open flags for the open file descriptor.
-        const auto flags = fcntl(fd, F_GETFD);
-        if (flags == -1) {
-            ix::log::server::error("Could not retrieve open flags for PID file.");
-            return -1;
-        }
-
-        // Enable the FD_CLOEXEC option for the open file descriptor.
-        // This option will cause successful calls to exec() to close the file descriptor.
-        // Keep in mind that record locks are NOT inherited by forked child processes.
-        if (fcntl(fd, F_SETFD, flags | FD_CLOEXEC) == -1) {
-            ix::log::server::error("Could not set FD_CLOEXEC on PID file.");
-            return -1;
-        }
-
-        struct flock input;
-        input.l_type = F_WRLCK;
-        input.l_whence = SEEK_SET;
-        input.l_start = 0;
-        input.l_len = 0;
-
-        // Try to acquire the write lock on the PID file. If we cannot get the lock,
-        // another instance of the application must already be running or something
-        // weird is going on.
-        if (fcntl(fd, F_SETLK, &input) == -1) {
-            if (EAGAIN == errno || EACCES == errno) {
-                ix::log::server::error("Could not acquire write lock for PID file. Another instance "
-                                       "could be running already.");
-                return -1;
-            }
-        }
-        
-        if (ftruncate(fd, 0) == -1) {
-            ix::log::server::error("Could not truncate PID file's contents.");
-            return -1;
-        }
-
-        const auto contents = fmt::format("{}\n", getpid());
-        if (write(fd, contents.data(), contents.size()) != static_cast<long>(contents.size())) {
-            ix::log::server::error("Could not write PID to PID file.");
-            return -1;
-        }
-
-        return 0;
-    } // create_pid_file
-
     void create_stacktrace_directory()
     {
         namespace fs = boost::filesystem;
@@ -532,7 +474,7 @@ int main(int argc, char** argv)
 
     ix::log::server::info("Initializing server ...");
 
-    const auto pid_file_fd = create_pid_file();
+    const auto pid_file_fd = irods::create_pid_file("irods.pid");
     if (pid_file_fd == -1) {
         return 1;
     }
