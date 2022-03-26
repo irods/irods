@@ -1309,30 +1309,34 @@ msiSetRandomScheme( ruleExecInfo_t *rei ) {
  * \sa none
  **/
 int
-msiSetReServerNumProc( msParam_t *xnumProc, ruleExecInfo_t *rei ) {
-    int numProc{irods::default_max_number_of_concurrent_re_threads};
-    char* numProcStr = ( char* )xnumProc->inOutStruct;
+msiSetReServerNumProc(msParam_t* xnumProc, ruleExecInfo_t* rei)
+{
+    int executors = irods::default_number_of_concurrent_delay_executors;
+    char* requested_number_of_executors = static_cast<char*>(xnumProc->inOutStruct);
 
-    if (0 != strcmp(numProcStr, "default")) {
-        numProc = atoi( numProcStr );
-        int max_re_procs{irods::default_max_number_of_concurrent_re_threads};
+    if (0 != std::strcmp(requested_number_of_executors, "default")) {
+        executors = std::atoi(requested_number_of_executors);
+        int number_of_concurrent_executors = irods::default_number_of_concurrent_delay_executors;
+
         try {
-            max_re_procs = irods::get_advanced_setting<const int>(irods::CFG_MAX_NUMBER_OF_CONCURRENT_RE_PROCS);
-        } catch ( const irods::exception& e ) {
+            number_of_concurrent_executors = irods::get_advanced_setting<const int>(irods::CFG_NUMBER_OF_CONCURRENT_DELAY_RULE_EXECUTORS);
+        }
+        catch (const irods::exception& e) {
             irods::log(e);
             return e.code();
         }
 
-        if ( numProc > max_re_procs ) {
-            numProc = max_re_procs;
+        if (executors > number_of_concurrent_executors) {
+            executors = number_of_concurrent_executors;
         }
-        else if ( numProc < 0 ) {
-            numProc = irods::default_max_number_of_concurrent_re_threads;
+        else if (executors < 0) {
+            executors = irods::default_number_of_concurrent_delay_executors;
         }
     }
-    rei->status = numProc;
 
-    return numProc;
+    rei->status = executors;
+
+    return executors;
 }
 
 /**

@@ -634,7 +634,7 @@ int main(int argc, char** argv)
 
     const auto sleep_time = [] {
         try {
-            return irods::get_advanced_setting<const int>(irods::CFG_RE_SERVER_SLEEP_TIME);
+            return irods::get_advanced_setting<const int>(irods::CFG_DELAY_SERVER_SLEEP_TIME_IN_SECONDS);
         }
         catch (const irods::exception& e) {
             logger::delay_server::error(e.what());
@@ -666,7 +666,7 @@ int main(int argc, char** argv)
 
     const auto thread_count = [] {
         try {
-            return irods::get_advanced_setting<const int>(irods::CFG_MAX_NUMBER_OF_CONCURRENT_RE_PROCS);
+            return irods::get_advanced_setting<const int>(irods::CFG_NUMBER_OF_CONCURRENT_DELAY_RULE_EXECUTORS);
         }
         catch (const irods::exception& e) {
             logger::delay_server::error(e.what());

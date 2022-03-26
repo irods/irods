@@ -83,14 +83,13 @@ namespace irods
     extern const std::string CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS;
     extern const std::string CFG_DEF_TEMP_PASSWORD_LIFETIME;
     extern const std::string CFG_MAX_TEMP_PASSWORD_LIFETIME;
-    extern const std::string CFG_MAX_NUMBER_OF_CONCURRENT_RE_PROCS;
+    extern const std::string CFG_NUMBER_OF_CONCURRENT_DELAY_RULE_EXECUTORS;
     extern const std::string DEFAULT_LOG_ROTATION_IN_DAYS;
     extern const std::string CFG_MAX_SIZE_OF_DELAY_QUEUE_IN_BYTES_KW;
     extern const std::string CFG_STACKTRACE_FILE_PROCESSOR_SLEEP_TIME_IN_SECONDS_KW;
 
     extern const std::string CFG_RE_CACHE_SALT_KW;
-    extern const std::string CFG_RE_SERVER_SLEEP_TIME;
-    extern const std::string CFG_RE_SERVER_EXEC_TIME;
+    extern const std::string CFG_DELAY_SERVER_SLEEP_TIME_IN_SECONDS;
 
     extern const std::string CFG_DNS_CACHE_KW;
     extern const std::string CFG_HOSTNAME_CACHE_KW;
