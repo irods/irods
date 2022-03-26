@@ -32,9 +32,7 @@
 #include "irods/server_utilities.hpp"
 #include "irods/thread_pool.hpp"
 
-#include <boost/asio.hpp>
 #include <boost/filesystem.hpp>
-//#include <boost/format.hpp> // TODO Torch!
 #include <fmt/format.h>
 #include <nlohmann/json.hpp>
 #include <nanodbc/nanodbc.h>
@@ -640,7 +638,7 @@ int main(int argc, char** argv)
 
     logger::delay_server::info("Initializing delay server ...");
 
-    const auto pid_file_fd = irods::create_pid_file("irods_delay_server.pid");
+    const auto pid_file_fd = irods::create_pid_file(irods::PID_FILENAME_DELAY_SERVER);
     if (pid_file_fd == -1) {
         return 1;
     }

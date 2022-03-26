@@ -474,7 +474,7 @@ int main(int argc, char** argv)
 
     ix::log::server::info("Initializing server ...");
 
-    const auto pid_file_fd = irods::create_pid_file("irods.pid");
+    const auto pid_file_fd = irods::create_pid_file(irods::PID_FILENAME_MAIN_SERVER);
     if (pid_file_fd == -1) {
         return 1;
     }

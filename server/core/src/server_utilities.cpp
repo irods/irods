@@ -9,13 +9,20 @@
 
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 
 #include <boost/filesystem.hpp>
 
 #include <regex>
+#include <fstream>
 
 namespace irods
 {
+    // clang-format off
+    const std::string_view PID_FILENAME_MAIN_SERVER  = "irods.pid";
+    const std::string_view PID_FILENAME_DELAY_SERVER = "irods_delay_server.pid";
+    // clang-format on
+
     auto is_force_flag_required(RsComm& _comm, const DataObjInp& _input) -> bool
     {
         namespace ix = irods::experimental;
@@ -124,5 +131,43 @@ namespace irods
 
         return 0;
     } // create_pid_file
+
+    std::optional<pid_t> get_pid_from_file(const std::string_view _pid_filename) noexcept
+    {
+        using log = irods::experimental::log::server;
+
+        try {
+            const auto pid_file = boost::filesystem::temp_directory_path() / _pid_filename.data();
+
+            if (!boost::filesystem::exists(pid_file)) {
+                log::trace("PID file does not exist [path={}].", pid_file.c_str());
+                return std::nullopt;
+            }
+
+            pid_t pid;
+
+            if (!(std::ifstream{pid_file.c_str()} >> pid)) {
+                log::trace("Could not retrieve PID from file [path={}].", pid_file.c_str());
+                return std::nullopt;
+            }
+
+            // The process is running if waitpid() returns a value other than -1. If -1
+            // is returned and errno is set to ECHILD, that means the process specified
+            // by "pid" does not exist or is not a child of the calling process.
+            if (waitpid(pid, nullptr, WNOHANG) != -1) {
+                return pid;
+            }
+        }
+        catch (const std::exception& e) {
+            log::error("Caught exception in get_pid_from_file() [_pid_filename={}]: {}",
+                       _pid_filename, e.what());
+        }
+        catch (...) {
+            log::error("Caught unknown exception in get_pid_from_file() [_pid_filename={}].",
+                       _pid_filename);
+        }
+
+        return std::nullopt;
+    } // get_pid_from_file
 } // namespace irods
 
