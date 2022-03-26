@@ -3,7 +3,10 @@
 
 /// \file
 
+#include <sys/types.h>
+
 #include <string_view>
+#include <optional>
 
 struct RsComm;
 struct DataObjInp;
@@ -11,6 +14,16 @@ struct BytesBuf;
 
 namespace irods
 {
+    /// The name of the PID file used for the main server.
+    ///
+    /// \since 4.3.0
+    extern const std::string_view PID_FILENAME_MAIN_SERVER;
+
+    /// The name of the PID file used for the delay server.
+    ///
+    /// \since 4.3.0
+    extern const std::string_view PID_FILENAME_DELAY_SERVER;
+
     /// A utility function primarily meant to be used with ::rsDataObjPut and ::rsDataObjCopy.
     ///
     /// \param[in] _comm  A reference to the communication object.
@@ -56,6 +69,19 @@ namespace irods
     ///
     /// \since 4.3.0
     auto create_pid_file(const std::string_view _pid_filename) -> int;
+
+    /// Returns the PID stored in the file if available.
+    ///
+    /// This function will return a \p std::nullopt if the filename does not refer to a file
+    /// under the temp directory or the PID is not a child of the calling process.
+    ///
+    /// \param[in] _pid_filename The name of the file to which contains a PID value (just the
+    ///                          filename, not the absolute path).
+    ///
+    /// \return The PID stored in the file.
+    ///
+    /// \since 4.3.0
+    auto get_pid_from_file(const std::string_view _pid_filename) noexcept -> std::optional<pid_t>;
 } // namespace irods
 
 #endif // IRODS_SERVER_UTILITIES_HPP
