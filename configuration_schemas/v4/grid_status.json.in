@@ -1,5 +1,5 @@
 {
-    "id": "file:///var/lib/irods/configuration_schemas/v4/grid_status.json",
+    "$id": "file:///@IRODS_HOME_DIRECTORY@/configuration_schemas/v4/grid_status.json",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "type": "object",
     "properties": {

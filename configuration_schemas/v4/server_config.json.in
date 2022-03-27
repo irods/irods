@@ -1,6 +1,6 @@
 {
-    "id": "file:///var/lib/irods/configuration_schemas/v3/server_config.json",
-    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$id": "file:///@IRODS_HOME_DIRECTORY@/configuration_schemas/v4/server_config.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "type": "object",
     "properties": {
         "catalog_provider_hosts": {
@@ -40,7 +40,7 @@
                         "minItems": 1,
                         "uniqueItems": true
                     },
-                    "negotiation_key": {"type": "string", "minLength": 32, "maxLength": 32},
+                    "negotiation_key": {"type": "string", "pattern": "^[A-Za-z0-9_]+$", "minLength": 32, "maxLength": 32},
                     "zone_key": {"type": "string", "pattern": "^[A-Za-z0-9_]+$", "maxLength": 49},
                     "zone_name": {"type": "string", "pattern": "^[A-Za-z0-9_\\.]+$", "maxLength": 63},
                     "zone_port": {"type": "integer"}
@@ -48,8 +48,33 @@
                 "required": ["catalog_provider_hosts","negotiation_key","zone_key","zone_name"]
             }
         },
+        "host_access_control": {
+            "$ref": "host_access_control.json"
+        },
+        "host_resolution": {
+            "$ref": "host_resolution.json"
+        },
+        "log_level": {
+            "type": "object",
+            "items": {
+                "properties": {
+                    "agent": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
+                    "agent_factory": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
+                    "api": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
+                    "authentication": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
+                    "database": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
+                    "delay_server": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
+                    "legacy": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
+                    "microservice": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
+                    "network": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
+                    "resource": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
+                    "rule_engine": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
+                    "server": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1}
+                }
+            }
+        },
         "match_hash_policy": {"type": "string"},
-        "negotiation_key": {"type": "string", "minLength": 32, "maxLength": 32},
+        "negotiation_key": {"type": "string", "pattern": "^[A-Za-z0-9_]+$", "minLength": 32, "maxLength": 32},
         "plugin_configuration": {
             "type": "object",
             "properties": {

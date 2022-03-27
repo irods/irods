@@ -96,13 +96,14 @@ set(
   server_config.json
   server_status.json
   service_account_environment.json
+  unattended_installation.json
   zone_bundle.json
 )
 foreach(SCHEMA_FILE IN LISTS IRODS_CONFIGURATION_SCHEMA_FILES)
   configure_file(
-    "${CMAKE_IRODS_SOURCE_DIR}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION}/${SCHEMA_FILE}"
+    "${CMAKE_IRODS_SOURCE_DIR}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION}/${SCHEMA_FILE}.in"
     "${CMAKE_IRODS_BINARY_DIR}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION}/${SCHEMA_FILE}"
-    COPYONLY
+    @ONLY
   )
   install(
     FILES
@@ -111,15 +112,6 @@ foreach(SCHEMA_FILE IN LISTS IRODS_CONFIGURATION_SCHEMA_FILES)
     COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
   )
 endforeach()
-install(
-  CODE
-  "execute_process(
-    COMMAND
-    python3 \"${CMAKE_IRODS_SOURCE_DIR}/configuration_schemas/update_schema_ids_for_cmake.py\" \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${IRODS_HOME_DIRECTORY}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION}\" \"\${CMAKE_INSTALL_PREFIX}/${IRODS_HOME_DIRECTORY}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION}\"
-  )"
-  COMPONENT
-  ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
-)
 
 install(
   FILES

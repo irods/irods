@@ -1,6 +1,6 @@
 {
-    "id": "file:///var/lib/irods/configuration_schemas/v3/server_status.json",
-    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$id": "file:///@IRODS_HOME_DIRECTORY@/configuration_schemas/v4/server_status.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "type": "object",
     "properties": {
         "agents": {
@@ -16,8 +16,8 @@
         },
         "hostname": {"type": "string"},
         "irods_server_pid": {"type": "integer"},
-        "re_server_pid": {"type": "integer"},
+        "delay_server_pid": {"type": "integer"},
         "status": {"type": "string"}
     },
-    "required": ["agents","hostname","irods_server_pid","re_server_pid","status"]
+    "required": ["agents","hostname","irods_server_pid","delay_server_pid","status"]
 }

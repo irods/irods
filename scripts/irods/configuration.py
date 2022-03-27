@@ -252,6 +252,9 @@ class IrodsConfig(object):
         if self.server_config['schema_validation_base_uri'] == 'off':
             l.warn('Schema validation is disabled; json files will not be validated against schemas. To re-enable schema validation, supply a URL to a set of iRODS schemas in the field "schema_validation_base_uri" and a valid version in the field "schema_version" in the server configuration file (located in %s).', paths.server_config_path())
             return
+
+        # schema_uri_suffix is the key of a single element within configuration_schema_mapping (e.g. 'server_config').
+        # config_file is the dict mapped to the key (e.g. configuration_schema_mapping['server_config']).
         for schema_uri_suffix, config_file in configuration_schema_mapping.items():
             try:
                 schema_uri = '%s/%s.json' % (
@@ -269,7 +272,7 @@ class IrodsConfig(object):
                 json_validation.validate_dict(
                         config_file['dict'],
                         schema_uri,
-                        name=config_file['path'])
+                        config_file['path'])
             except IrodsWarning as e:
                 l.warning(e)
                 l.warning('Warning encountered in json_validation for %s, skipping validation...',

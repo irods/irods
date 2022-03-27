@@ -36,8 +36,10 @@ def load_and_validate(config_file, schema_uri):
 
 def validate_dict(config_dict, schema_uri, name=None):
     l = logging.getLogger(__name__)
+
     if name is None:
         name = schema_uri.rpartition('/')[2]
+
     try:
         e = jsonschema.exceptions
     except AttributeError:
@@ -52,10 +54,10 @@ def validate_dict(config_dict, schema_uri, name=None):
             sys.exc_info()[2])
 
     try:
-        schema = get_initial_schema(schema_uri)
+        schema = load_json_schema(schema_uri)
         l.debug('Validating %s against json schema:', name)
         l.debug(pprint.pformat(schema))
-        jsonschema.validate(config_dict, schema)
+        jsonschema.validate(config_dict, schema, resolver=jsonschema.RefResolver(schema_uri, schema))
 
     except (jsonschema.exceptions.RefResolutionError,   # could not resolve recursive schema $ref
             ValueError,                                 # 404s and bad JSON
@@ -78,15 +80,15 @@ def validate_dict(config_dict, schema_uri, name=None):
 
     l.info("Validating [%s]... Success", name)
 
-def get_initial_schema(schema_uri):
+def load_json_schema(schema_uri):
     l = logging.getLogger(__name__)
     l.debug('Loading schema from %s', schema_uri)
     url_scheme = six.moves.urllib.parse.urlparse(schema_uri).scheme
     l.debug('Parsed URL: %s', schema_uri)
     scheme_dispatch = {
-        'file': get_initial_schema_from_file,
-        'http': get_initial_schema_from_web,
-        'https': get_initial_schema_from_web,
+        'file': load_json_schema_from_file,
+        'http': load_json_schema_from_web,
+        'https': load_json_schema_from_web,
     }
 
     try:
@@ -94,14 +96,13 @@ def get_initial_schema(schema_uri):
     except KeyError:
         raise IrodsError('ERROR: Invalid schema url: {}'.format(schema_uri))
 
-def get_initial_schema_from_web(schema_uri):
+def load_json_schema_from_web(schema_uri):
     try:
         response = requests.get(schema_uri, timeout=5)
     except NameError:
-        six.reraise(IrodsError, IrodsError(
-            'WARNING: Validation failed for {0} -- requests not installed'.format(
-                name)),
-                          sys.exc_info()[2])
+        six.reraise(IrodsError,
+                    IrodsError('WARNING: Validation failed for {0} -- requests not installed'.format(name)),
+                    sys.exc_info()[2])
 
     # check response values
     try:
@@ -113,10 +114,11 @@ def get_initial_schema_from_web(schema_uri):
         schema = json.loads(response.content)
     return schema
 
-def get_initial_schema_from_file(schema_uri):
-    with open(schema_uri[7:], 'rt') as f:
-        schema = json.load(f)
-    return schema
+def load_json_schema_from_file(schema_uri):
+    # Skipping the first six characters (i.e. the "file://" prefix) results
+    # in either a relative path or an absolute path. 
+    with open(schema_uri.strip()[6:], 'rt') as f:
+        return json.load(f)
 
 logging.getLogger('requests.packages.urllib3.connectionpool').addFilter(irods_log.DeferInfoToDebugFilter())
 logging.getLogger('urllib3.connectionpool').addFilter(irods_log.DeferInfoToDebugFilter())
