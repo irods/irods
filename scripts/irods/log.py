@@ -55,9 +55,8 @@ def register_tty_handler(stream, minlevel, maxlevel):
     logging.getLogger().addHandler(logging_handler)
 
 def register_file_handler(log_file_path, level=logging.DEBUG):
-    logging.Formatter.converter = time.gmtime
-
     logging_handler = logging.FileHandler(log_file_path)
-    logging_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)7s - %(filename)30s:%(lineno)4d - %(message)s'))
+    logging_handler.setFormatter(logging.Formatter('%(asctime)s.%(msecs)03dZ - %(levelname)7s - %(filename)30s:%(lineno)4d - %(message)s', '%Y-%m-%dT%H:%M:%S'))
+    logging_handler.formatter.converter = time.gmtime
     logging_handler.setLevel(logging.DEBUG)
     logging.getLogger().addHandler(logging_handler)
