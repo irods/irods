@@ -16,8 +16,8 @@
         },
         "hostname": {"type": "string"},
         "irods_server_pid": {"type": "integer"},
-        "re_server_pid": {"type": "integer"},
+        "delay_server_pid": {"type": "integer"},
         "status": {"type": "string"}
     },
-    "required": ["agents","hostname","irods_server_pid","re_server_pid","status"]
+    "required": ["agents","hostname","irods_server_pid","delay_server_pid","status"]
 }

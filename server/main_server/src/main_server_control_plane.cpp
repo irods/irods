@@ -367,20 +367,19 @@ namespace irods
         rodsEnv my_env;
         _reloadRodsEnv( my_env );
 
-        int re_pid = 0;
-        // no error case, resource servers have no re server
+        int delay_server_pid = 0;
         try {
-            re_pid = get_server_property<int>(irods::RE_PID_KW);
+            delay_server_pid = get_server_property<int>(irods::RE_PID_KW);
         } catch ( const irods::exception& ) {}
 
-        int my_pid = getpid();
+        int server_pid = getpid();
 
         using json = nlohmann::json;
 
         json obj{
             {"hostname", my_env.rodsHost},
-            {"irods_server_pid", my_pid}, // Should be int
-            {"re_server_pid", re_pid},    // Should be int
+            {"irods_server_pid", server_pid},       // Should be int
+            {"delay_server_pid", delay_server_pid}, // Should be int
         };
 
         server_state& s = server_state::instance();
