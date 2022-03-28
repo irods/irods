@@ -43,6 +43,7 @@ execute_command_nonblocking = execute.execute_command_nonblocking
 execute_command_timeout = execute.execute_command_timeout
 execute_command_permissive = execute.execute_command_permissive
 execute_command = execute.execute_command
+check_command_return = execute.check_command_return
 
 def get_server_pid():
     try:
