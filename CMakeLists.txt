@@ -176,7 +176,6 @@ set(
   irm
   irmdir
   irmtrash
-  irods-grid
   irsync
   irule
   iscan
