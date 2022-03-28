@@ -686,7 +686,6 @@ int main(int argc, char** argv)
             }
         }
         catch (const irods::exception& e) {
-            logger::delay_server::warn(e.what());
             logger::delay_server::warn("Could not retrieve delay queue byte limit from configuration. "
                                        "Delay server will use as much memory as necessary.");
         }
