@@ -1561,7 +1561,7 @@ int initServerMain(
                 }
             }
 
-            ix::log::server::info("Forking Rule Execution Server (irodsDelayServer) ...");
+            ix::log::server::info("Forking delay server (irodsDelayServer) ...");
             const int pid = RODS_FORK();
 
             if (pid == 0) {

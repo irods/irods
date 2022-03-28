@@ -189,7 +189,6 @@ namespace
         return {
             {"host_name", to_json(_p->hostName)},
             {"rcat_enabled", _p->rcatEnabled},
-            {"re_host_flag", _p->reHostFlag},
             {"local_flag", _p->localFlag},
             {"status", _p->status},
             {"status", to_json(static_cast<zoneInfo_t*>(_p->zoneInfo))},
