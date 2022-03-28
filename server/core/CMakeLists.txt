@@ -156,7 +156,6 @@ install(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_rs_comm_query.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_server_api_call.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_server_api_table.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_server_control_plane.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_server_state.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_structured_object.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/json_deserialization.hpp"
