@@ -243,7 +243,7 @@ private:
         if (const auto ec = clock_gettime(CLOCK_REALTIME, &ts); ec != 0) {
             const auto now = clock_type::to_time_t(clock_type::now());
             std::stringstream utc_ss;
-            utc_ss << std::put_time(std::gmtime(&now), "%FT%T.000");
+            utc_ss << std::put_time(std::gmtime(&now), "%FT%T.000Z");
             return utc_ss.str();
         }
 
@@ -252,7 +252,7 @@ private:
         std::stringstream utc_ss;
         utc_ss << std::put_time(std::gmtime(&now), "%FT%T");
            
-        return fmt::format("{}.{:0>3}", utc_ss.str(), ts.tv_nsec / 1'000'000);
+        return fmt::format("{}.{:0>3}Z", utc_ss.str(), ts.tv_nsec / 1'000'000);
     }
 
     static constexpr const char* log_level_as_string() noexcept
