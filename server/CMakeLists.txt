@@ -17,6 +17,7 @@ add_subdirectory(control_plane)
 add_subdirectory(main_server)
 add_subdirectory(hostname_resolves_to_local_address)
 add_subdirectory(delay_server)
+add_subdirectory(irods_grid)
 add_subdirectory(harness)
 
 target_link_objects(
