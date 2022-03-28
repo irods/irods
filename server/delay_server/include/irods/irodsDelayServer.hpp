@@ -1,9 +1,12 @@
-#ifndef IRODS_RE_SERVER_HPP
-#define IRODS_RE_SERVER_HPP
+#ifndef IRODS_DELAY_SERVER_HPP
+#define IRODS_DELAY_SERVER_HPP
 
-namespace irods {
-    constexpr int default_re_server_sleep_time{30};
-    constexpr int default_max_number_of_concurrent_re_threads{4};
-};
+namespace irods
+{
+    // clang-format off
+    constexpr int default_delay_server_sleep_time_in_seconds   = 30;
+    constexpr int default_number_of_concurrent_delay_executors = 4;
+    // clang-format on
+} // namespace irods
 
-#endif // IRODS_RE_SERVER_HPP 
+#endif // IRODS_DELAY_SERVER_HPP 

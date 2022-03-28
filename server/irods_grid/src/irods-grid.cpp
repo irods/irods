@@ -37,8 +37,7 @@ irods::error usage(T& ostream) {
     ostream << " " << std::endl;
     ostream << "Status - returns a status of the server (or servers) requested in a validated" << std::endl;
     ostream << "json document which includes iRODS Server PID, iRODS Server hostname," << std::endl;
-    ostream << "Rule Execution server PID, Agent PIDs and their age," << std::endl;
-    ostream << "XMessage server PID, Server status" << std::endl;
+    ostream << "Delay Server PID, Agent PIDs and their age, Server status" << std::endl;
     ostream << " irods-grid status --all" << std::endl;
     ostream << " " << std::endl;
     ostream << "Ping - attempt a connection to a server or servers" << std::endl;

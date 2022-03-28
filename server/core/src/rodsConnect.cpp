@@ -556,14 +556,6 @@ printZoneInfo() {
         tmpZoneInfo = tmpZoneInfo->next;
     }
 
-    /* print the reHost */
-    if ( getReHost( &tmpRodsServerHost ) >= 0 ) {
-        log::server::info({{"re_host", tmpRodsServerHost->hostName->name}});
-    }
-    else {
-        log::server::info({{"re_host", "error"}});
-    }
-
     return 0;
 }
 

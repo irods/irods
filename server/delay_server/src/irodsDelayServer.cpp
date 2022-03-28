@@ -60,7 +60,7 @@ using json   = nlohmann::json;
 
 namespace
 {
-    std::atomic_bool re_server_terminated{};
+    std::atomic_bool delay_server_terminated{};
 
     void init_logger(
         const bool write_to_stdout,
@@ -463,8 +463,8 @@ namespace
         // Execute rule.
         logger::delay_server::trace("Executing rule [rule_id={}].", _inp.ruleExecId);
         auto status = rcExecRuleExpression(&_comm, &exec_rule);
-        if (re_server_terminated) {
-            logger::delay_server::info("Rule [{}] completed with status [{}] but rule execution server was terminated.",
+        if (delay_server_terminated) {
+            logger::delay_server::info("Rule [{}] completed with status [{}] but delay server was terminated.",
                                        _inp.ruleExecId, status);
         }
 
@@ -513,7 +513,7 @@ namespace
 
     void execute_rule(irods::delay_queue& queue, const std::string_view rule_id)
     {
-        if (re_server_terminated) {
+        if (delay_server_terminated) {
             return;
         }
 
@@ -544,7 +544,7 @@ namespace
                                         rule_exec_submit_inp.ruleExecId, e.what());
         }
 
-        if (!re_server_terminated) {
+        if (!delay_server_terminated) {
             queue.dequeue_rule(std::string(rule_exec_submit_inp.ruleExecId));
         }
     } // execute_rule
@@ -618,11 +618,11 @@ int main(int argc, char** argv)
 
     init_logger(write_to_stdout, enable_test_mode);
 
-    logger::delay_server::info("Initializing rule execution server ...");
+    logger::delay_server::info("Initializing delay server ...");
 
     set_ips_display_name(boost::filesystem::path{argv[0]}.filename().c_str());
 
-    const auto signal_exit_handler = [](int) { re_server_terminated.store(true); };
+    const auto signal_exit_handler = [](int) { delay_server_terminated.store(true); };
     signal(SIGINT, signal_exit_handler);
     signal(SIGHUP, signal_exit_handler);
     signal(SIGTERM, signal_exit_handler);
@@ -640,7 +640,7 @@ int main(int argc, char** argv)
             logger::delay_server::error(e.what());
         }
 
-        return irods::default_re_server_sleep_time;
+        return irods::default_delay_server_sleep_time_in_seconds;
     }();
 
     const auto go_to_sleep = [&sleep_time] {
@@ -650,13 +650,13 @@ int main(int argc, char** argv)
         // Loop until the server is signaled to shutdown or the max amount of time
         // to sleep has been reached.
         while (true) {
-            if (re_server_terminated.load()) {
-                logger::delay_server::info("Rule execution server received shutdown signal.");
+            if (delay_server_terminated.load()) {
+                logger::delay_server::info("Delay server received shutdown signal.");
                 return;
             }
             
             if (std::chrono::system_clock::now() - start_time >= allowed_sleep_time) {
-                logger::delay_server::debug("Rule execution server is awake.");
+                logger::delay_server::debug("Delay server is awake.");
                 return;
             }
 
@@ -664,7 +664,7 @@ int main(int argc, char** argv)
         }
     };
 
-    const auto thread_count = [] {
+    const auto number_of_concurrent_executors = [] {
         try {
             return irods::get_advanced_setting<const int>(irods::CFG_NUMBER_OF_CONCURRENT_DELAY_RULE_EXECUTORS);
         }
@@ -672,10 +672,10 @@ int main(int argc, char** argv)
             logger::delay_server::error(e.what());
         }
 
-        return irods::default_max_number_of_concurrent_re_threads;
+        return irods::default_number_of_concurrent_delay_executors;
     }();
 
-    irods::thread_pool thread_pool{thread_count};
+    irods::thread_pool thread_pool{number_of_concurrent_executors};
 
     const auto queue_size_in_bytes = []() -> int {
         try {
@@ -697,7 +697,7 @@ int main(int argc, char** argv)
     irods::delay_queue queue{queue_size_in_bytes};
 
     try {
-        while (!re_server_terminated) {
+        while (!delay_server_terminated) {
             try {
                 irods::server_properties::instance().capture();
 
@@ -724,7 +724,7 @@ int main(int argc, char** argv)
                 logger::delay_server::error(e.what());
             }
 
-            logger::delay_server::trace("Rule execution server is going to sleep.");
+            logger::delay_server::trace("Delay server is going to sleep.");
             go_to_sleep();
         }
     }
@@ -732,7 +732,7 @@ int main(int argc, char** argv)
         logger::delay_server::error(e.what());
     }
 
-    logger::delay_server::info("Rule execution server exited normally.");
+    logger::delay_server::info("Delay server exited normally.");
 
     return 0;
 }
