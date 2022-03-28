@@ -61,7 +61,7 @@
 #define CLIENT_PT                       0       /* client process type */
 #define SERVER_PT                       1       /* server process type */
 #define AGENT_PT                        2       /* agent process type */
-#define RE_SERVER_PT                    3       /* reServer type */
+#define DELAY_SERVER_PT                 3       /* delay server process type */
 
 /* definition for rcat type */
 

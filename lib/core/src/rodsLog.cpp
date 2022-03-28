@@ -216,8 +216,7 @@ rodsLogAndErrorMsg( int level, rError_t *myError, int status,
 
     extraInfo[0] = '\0';
     errOrOut = stdout;
-    if ( ProcessType == SERVER_PT || ProcessType == AGENT_PT ||
-            ProcessType == RE_SERVER_PT ) {
+    if ( ProcessType == SERVER_PT || ProcessType == AGENT_PT || ProcessType == DELAY_SERVER_PT ) {
         char timeBuf[100];
         time( &timeValue );
         rstrcpy( timeBuf, ctime( &timeValue ), 90 );
