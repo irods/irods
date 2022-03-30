@@ -6,6 +6,7 @@ import logging
 import os
 import shutil
 import stat
+import collections.abc
 
 from . import six
 from . import pyparsing
@@ -27,27 +28,33 @@ def schema_name_from_path(path):
 def requires_upgrade(irods_config):
     if not os.path.exists(paths.version_path()):
         return True
+
     with open('.'.join([paths.version_path(), 'dist']), 'r') as f:
         new_version = json.load(f)
+
     new_version_tuple = lib.version_string_to_tuple(new_version['irods_version'])
     old_version_tuple = lib.version_string_to_tuple(irods_config.version['irods_version'])
+
     return old_version_tuple != new_version_tuple
 
 def upgrade(irods_config):
     l = logging.getLogger(__name__)
+
     if not os.path.exists('.'.join([paths.version_path(), 'previous'])) and os.path.exists(os.path.join(paths.irods_directory(), 'VERSION.previous')):
         convert_legacy_configuration_to_json(irods_config)
 
     with open('.'.join([paths.version_path(), 'dist']), 'r') as f:
         new_version = json.load(f)
+
     new_version['installation_time'] = datetime.datetime.now().isoformat()
     new_version_tuple = lib.version_string_to_tuple(new_version['irods_version'])
+
     if os.path.exists(paths.version_path()):
         old_version = irods_config.version
         old_version_tuple = lib.version_string_to_tuple(old_version['irods_version'])
-
     else:
         version_previous_path = '.'.join([paths.version_path(), 'previous'])
+
         if os.path.exists(version_previous_path):
             with open(version_previous_path, 'r') as f:
                 old_version = json.load(f)
@@ -58,6 +65,7 @@ def upgrade(irods_config):
                     'commit_id': '0000000000000000000000000000000000000000',
                     'catalog_schema_version': 1,
                     'configuration_schema_version': 2}
+
         old_version_tuple = lib.version_string_to_tuple(old_version['irods_version'])
         if new_version_tuple == old_version_tuple:
             new_version['previous_version'] = old_version
@@ -66,8 +74,10 @@ def upgrade(irods_config):
     if new_version_tuple == old_version_tuple:
         l.debug('Version numbers are the same, no upgrade performed.')
         return
-    elif new_version_tuple < old_version_tuple:
+
+    if new_version_tuple < old_version_tuple:
         raise IrodsError("Downgrade detected. Downgrading is unsupported, please reinstall iRODS version %s or newer." % (old_version['irods_version']))
+
     new_version['previous_version'] = old_version
     l.debug('Upgrading from version %s to version %s.', old_version['irods_version'], new_version['irods_version'])
 
@@ -78,10 +88,10 @@ def upgrade(irods_config):
                 print('IRODS_SERVICE_GROUP_NAME=%s' % (irods_config.irods_group), file=f)
 
         old_dir_to_new_dir_map = {
-                os.path.join(paths.irods_directory(), 'iRODS', 'server', 'bin', 'cmd'): os.path.join(paths.irods_directory(), 'msiExecCmd_bin'),
-                os.path.join(paths.irods_directory(), 'iRODS', 'server', 'config', 'packedRei'): os.path.join(paths.irods_directory(), 'config', 'packedRei'),
-                os.path.join(paths.irods_directory(), 'iRODS', 'server', 'config', 'lockFileDir'): os.path.join(paths.irods_directory(), 'config', 'lockFileDir')
-            }
+            os.path.join(paths.irods_directory(), 'iRODS', 'server', 'bin', 'cmd'): os.path.join(paths.irods_directory(), 'msiExecCmd_bin'),
+            os.path.join(paths.irods_directory(), 'iRODS', 'server', 'config', 'packedRei'): os.path.join(paths.irods_directory(), 'config', 'packedRei'),
+            os.path.join(paths.irods_directory(), 'iRODS', 'server', 'config', 'lockFileDir'): os.path.join(paths.irods_directory(), 'config', 'lockFileDir')
+        }
         for old_dir, new_dir in old_dir_to_new_dir_map.items():
             if os.path.isdir(old_dir):
                 for entry in os.listdir(old_dir):
@@ -92,73 +102,18 @@ def upgrade(irods_config):
                                 'Please resolve this naming conflict manually and try again.' % (old_path, new_path, new_path))
                     shutil.move(old_path, new_path)
 
-    if old_version_tuple < (4, 3, 0):
-        # Load server_config.json.
-        with open(paths.server_config_path()) as f:
-            server_config = json.load(f)
-
-        #
-        # hosts_config.json
-        #
-
-        merged_hosts_config = False
-
-        # Merge the hosts_config.json file into server_config.json only if the
-        # server_config.json does not contain the host_resolution property.
-        if 'host_resolution' not in server_config:
-            merged_hosts_config = True
-
-            # Set default values for the host_resolution.
-            server_config['host_resolution'] = {'host_entries': []}
-
-            # Merge hosts_config.json into server_config.json if it is available.
-            if os.path.exists(paths.hosts_config_path()):
-                with open(paths.hosts_config_path()) as f:
-                    hosts_config = json.load(f)
-
-                if 'host_entries' in hosts_config and len(hosts_config['host_entries']) > 0:
-                    # Ignores the schema information in the JSON file.
-                    # Convert each addresses object into a list of address strings.
-                    for e in hosts_config['host_entries']:
-                        server_config['host_resolution']['host_entries'].append({
-                            'address_type': e['address_type'],
-                            'addresses': [o['address'] for o in e['addresses']]
-                        })
-
-        #
-        # host_access_control_config.json
-        #
-
-        merged_host_access_control_config = False
-
-        # Merge the host_access_control_config.json file into server_config.json only if the
-        # server_config.json does not contain the host_access_control property.
-        if 'host_access_control' not in server_config:
-            merged_host_access_control_config = True
-
-            # Set default values for the host_access_control.
-            server_config['host_access_control'] = {'access_entries': []}
-
-            # Merge host_access_control_config.json into server_config.json if it is available.
-            if os.path.exists(paths.host_access_control_config_path()):
-                with open(paths.host_access_control_config_path()) as f:
-                    host_access_control = json.load(f)
-
-                if 'access_entries' in host_access_control and len(host_access_control['access_entries']) > 0:
-                    # Ignores the schema information in the JSON file.
-                    server_config['host_access_control']['access_entries'] = host_access_control['access_entries']
-
-        # Write changes to disk.
-        if merged_hosts_config or merged_host_access_control_config:
-            irods_config.commit(server_config, paths.server_config_path(), make_backup=True)
-
     configuration_file_list = [
-            paths.server_config_path(),
-            paths.hosts_config_path(),
-            paths.host_access_control_config_path()]
+        paths.server_config_path(),
+        paths.hosts_config_path(),
+        paths.host_access_control_config_path()
+    ]
 
     for path in configuration_file_list:
-        upgrade_config_file(irods_config, path, new_version)
+        # Because upgrading to 4.3.0 results in configuration files being renamed, we must
+        # check that "path" exists before calling "upgrade_config_file()". Otherwise, the
+        # upgrade will fail.
+        if os.path.exists(path):
+            upgrade_config_file(irods_config, path, new_version)
 
     irods_config.clear_cache()
 
@@ -175,10 +130,82 @@ def upgrade(irods_config):
              | stat.S_IROTH
              | stat.S_IXOTH)
 
+def merge_hosts_config_into_server_config(server_config):
+    config_path = paths.hosts_config_path()
+
+    if not os.path.exists(config_path):
+        return
+
+    with open(config_path) as f:
+        hosts_config = json.load(f)
+
+    if 'host_entries' in hosts_config and len(hosts_config['host_entries']) > 0:
+        # Ignores the schema information in the JSON file.
+        # Convert each addresses object into a list of address strings.
+        for e in hosts_config['host_entries']:
+            server_config['host_resolution']['host_entries'].append({
+                'address_type': e['address_type'],
+                'addresses': [o['address'] for o in e['addresses']]
+            })
+
+    # Append a new extension to the file so that the admin knows it has been processed.
+    # The extension also acts as a way to hide the file from being processed by future upgrades.
+    os.rename(config_path, config_path + '.absorbed_by_4.3.0_server_config')
+
+def merge_host_access_control_config_into_server_config(server_config):
+    config_path = paths.host_access_control_config_path()
+
+    if not os.path.exists(config_path):
+        return
+
+    with open(config_path) as f:
+        host_access_control = json.load(f)
+
+    if 'access_entries' in host_access_control and len(host_access_control['access_entries']) > 0:
+        # Ignores the schema information in the JSON file.
+        server_config['host_access_control']['access_entries'] = host_access_control['access_entries']
+
+    # Append a new extension to the file so that the admin knows it has been processed.
+    # The extension also acts as a way to hide the file from being processed by future upgrades.
+    os.rename(config_path, config_path + '.absorbed_by_4.3.0_server_config')
+
+def replace_server_config_option_name(config, old_name, new_name):
+    if old_name in config:
+        config[new_name] = config.pop(old_name)
+
+def convert_to_v4_schema_and_add_missing_properties(server_config):
+    def update_base(base, updates):
+        for k, v in updates.items():
+            if isinstance(v, collections.abc.Mapping):
+                base[k] = update_base(base.get(k, {}), v)
+            else:
+                base[k] = v
+        return base
+
+    # Load server_config.json.template as our base.
+    with open(paths.get_template_filepath(paths.server_config_path())) as f:
+        base = json.load(f)
+
+    new_server_config = update_base(base, server_config)
+
+    # Replace old key names with new key names.
+    advanced_settings = new_server_config['advanced_settings']
+    replace_server_config_option_name(advanced_settings, 'rule_engine_server_sleep_time_in_seconds', 'delay_server_sleep_time_in_seconds')
+    replace_server_config_option_name(advanced_settings, 'maximum_number_of_concurrent_rule_engine_server_processes', 'number_of_concurrent_delay_rule_executors')
+
+    # Remove keys that are no longer needed by the server.
+    # Keys listed here are ones that used to be recognized by the server.
+    new_server_config.pop('xmsg_port', None)
+    advanced_settings.pop('rule_engine_server_execution_time_in_seconds', None)
+
+    return new_server_config
+
 def upgrade_config_file(irods_config, path, new_version, schema_name=None):
     l = logging.getLogger(__name__)
+
     with open(path, 'r') as f:
         config_dict = json.load(f)
+
     if schema_name is None:
         schema_name = config_dict.get('schema_name', schema_name_from_path(path))
 
@@ -186,17 +213,20 @@ def upgrade_config_file(irods_config, path, new_version, schema_name=None):
         schema_version = schema_version_as_int(config_dict['schema_version'])
     else:
         schema_version = schema_version_as_int(new_version['previous_version']['configuration_schema_version'])
+
     target_schema_version = schema_version_as_int(new_version['configuration_schema_version'])
+
     if schema_version > target_schema_version:
         raise IrodsError('Schema version (%d) in %s exceeds the schema version (%d) specified by the new version file %s.'
                 'Downgrade of configuration schemas is unsupported.' %
                 (schema_version, path, target_schema_version, '.'.join([irods_config.version_path, 'dist'])))
+
     if schema_version < target_schema_version:
         while schema_version < target_schema_version:
             config_dict = run_schema_update(config_dict, schema_name, schema_version + 1)
             schema_version = schema_version_as_int(config_dict['schema_version'])
-        irods_config.commit(config_dict, path, make_backup=True)
 
+        irods_config.commit(config_dict, path, make_backup=True)
 
 def run_schema_update(config_dict, schema_name, next_schema_version):
     l = logging.getLogger(__name__)
@@ -257,15 +287,17 @@ def run_schema_update(config_dict, schema_name, next_schema_version):
                 config_dict['plugin_configuration'].setdefault('database', {})[database_config.pop('catalog_database_type')] = database_config
 
     if next_schema_version == 4:
-        advanced_settings = config_dict['advanced_settings']
+        if schema_name == 'server_config':
+            # Build a new server_config.json file using server_config.json.template as a base.
+            # Overwrite all configuration properties in the template with the properties from
+            # "config_dict" (i.e. the local server's server_config.json).
+            config_dict = convert_to_v4_schema_and_add_missing_properties(config_dict)
 
-        if 'rule_engine_server_sleep_time_in_seconds' in advanced_settings:
-            advanced_settings['delay_server_sleep_time_in_seconds'] = advanced_settings.pop('rule_engine_server_sleep_time_in_seconds')
-
-        if 'maximum_number_of_concurrent_rule_engine_server_processes' in advanced_settings:
-            advanced_settings['number_of_concurrent_delay_rule_executors'] = advanced_settings.pop('maximum_number_of_concurrent_rule_engine_server_processes')
+            merge_hosts_config_into_server_config(config_dict)
+            merge_host_access_control_config_into_server_config(config_dict)
 
     config_dict['schema_version'] = 'v%d' % (next_schema_version)
+
     return config_dict
 
 def load_legacy_file(filepath, load_as='dict', token=' '):
