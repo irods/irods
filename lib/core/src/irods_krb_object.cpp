@@ -29,22 +29,20 @@ namespace irods {
                 _interface.c_str()));
         }
 
-        auth_ptr auth;
-        if (const auto err = auth_mgr.resolve(irods::AUTH_KRB_SCHEME, auth); !err.ok()) {
-            return PASSMSG("Failed to resolve the KRB auth plugin.", err);
-        }
-
-        // Attempt to load the plugin.
-        std::string unused;
         const auto& type = irods::AUTH_KRB_SCHEME;
-        if (const auto err = auth_mgr.init_from_type(ProcessType, type, type, type, unused, auth); !err.ok()) {
-            return PASSMSG("Failed to load the KRB auth plugin.", err);
+
+        auth_ptr ap;
+        if (auto err = auth_mgr.resolve(type, ap); !err.ok()) {
+            // Attempt to load the plugin.
+            if (err = auth_mgr.init_from_type(ProcessType, type, type, type, std::string{}, ap); !err.ok()) {
+                return PASSMSG("Failed to load the KRB auth plugin.", err);
+            }
         }
 
-        _ptr = boost::dynamic_pointer_cast<plugin_base>(auth);
+        _ptr = boost::dynamic_pointer_cast<plugin_base>(ap);
 
         return SUCCESS();
-    }
+    } // krb_auth_object::resolve
 
     bool krb_auth_object::operator==(
         const krb_auth_object& _rhs ) const {
