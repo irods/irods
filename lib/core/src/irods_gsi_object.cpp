@@ -29,22 +29,20 @@ namespace irods {
                 _interface.c_str()));
         }
 
-        auth_ptr auth;
-        if (const auto err = auth_mgr.resolve(AUTH_GSI_SCHEME, auth); !err.ok()) {
-            return PASSMSG("Failed to resolve the GSI auth plugin.", err);
+        const auto& type = irods::AUTH_GSI_SCHEME;
+
+        auth_ptr ap;
+        if (auto err = auth_mgr.resolve(type, ap); !err.ok()) {
+            // Attempt to load the plugin.
+            if (err = auth_mgr.init_from_type(ProcessType, type, type, type, std::string{}, ap); !err.ok()) {
+                return PASSMSG("Failed to load the GSI auth plugin.", err);
+            }
         }
 
-        // Attempt to load the plugin.
-        std::string unused;
-        const auto& type = AUTH_GSI_SCHEME;
-        if (const auto err = auth_mgr.init_from_type(ProcessType, type, type, type, unused, auth); !err.ok()) {
-            return PASSMSG("Failed to load the GSI auth plugin.", err);
-        }
-
-        _ptr = boost::dynamic_pointer_cast<plugin_base>(auth);
+        _ptr = boost::dynamic_pointer_cast<plugin_base>(ap);
 
         return SUCCESS();
-    }
+    } // gsi_auth_object::resolve
 
     bool gsi_auth_object::operator==(
         const gsi_auth_object& _rhs ) const {
