@@ -25,9 +25,6 @@ namespace irods
     /// @brief kw for server property map for encryption key
     extern const std::string AGENT_KEY_KW;
 
-    /// @brief kw for storing the process id of the rule engine server
-    extern const std::string RE_PID_KW;
-
     /// @brief kw for storing client user name
     extern const std::string CLIENT_USER_NAME_KW;
 

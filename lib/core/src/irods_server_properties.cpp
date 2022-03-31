@@ -24,7 +24,6 @@ namespace irods
     const std::string STRICT_ACL_KW( "strict_acls" );
     const std::string AGENT_CONN_KW( "agent_conn" );
     const std::string AGENT_KEY_KW( "agent_key" );
-    const std::string RE_PID_KW( "rule_engine_process_id" );
     const std::string CLIENT_USER_NAME_KW( "client_user_name" );
     const std::string CLIENT_USER_ZONE_KW( "client_user_zone" );
     const std::string CLIENT_USER_PRIV_KW( "client_user_priv" );
