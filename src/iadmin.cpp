@@ -1,4 +1,5 @@
 #include <irods/filesystem.hpp>
+#include <irods/irods_at_scope_exit.hpp>
 #include <irods/irods_client_api_table.hpp>
 #include <irods/irods_pack_table.hpp>
 #include <irods/irods_string_tokenize.hpp>
@@ -6,6 +7,11 @@
 #include <irods/parseCommandLine.h>
 #include <irods/query_builder.hpp>
 #include <irods/rodsClient.h>
+#include <irods/rodsErrorTable.h>
+#include <irods/rodsLog.h>
+#include <irods/user_administration.hpp>
+#include <irods/user.hpp>
+#include <irods/get_grid_configuration_value.h>
 
 #include <algorithm>
 #include <iostream>
@@ -17,6 +23,7 @@
 #include <vector>
 
 #include <boost/lexical_cast.hpp>
+#include <nlohmann/json.hpp>
 
 #define MAX_SQL 300
 #define BIG_STR 3000
@@ -142,6 +149,76 @@ auto get_replica_value(
     }
     return v;
 } // get_replica_value
+
+auto print_delay_server_info() -> int
+{
+    try {
+        namespace adm = irods::experimental::administration;
+
+        const auto user_type = adm::client::type(*Conn, adm::user{Conn->clientUser.userName, Conn->clientUser.rodsZone});
+
+        if (!user_type) {
+            rodsLogError(LOG_ERROR, CAT_INVALID_USER_TYPE, "Could not determine if user has permission to view information.");
+            return 1;
+        }
+
+        if (*user_type != adm::user_type::rodsadmin) {
+            rodsLogError(LOG_ERROR, CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "Operation requires rodsadmin level privileges.");
+            return 1;
+        }
+    }
+    catch (const irods::exception& e) {
+        rodsLogError(LOG_ERROR, e.code(), e.client_display_what());
+        return 1;
+    }
+    catch (const std::exception& e) {
+        rodsLogError(LOG_ERROR, SYS_UNKNOWN_ERROR, e.what());
+        return 1;
+    }
+
+    //
+    // At this point, we know the user is a rodsadmin.
+    //
+
+    nlohmann::json delay_server_info;
+
+    GridConfigurationInput input{};
+    std::strcpy(input.name_space, "delay_server");
+    std::strcpy(input.option_name, "leader");
+
+    GridConfigurationOutput* output{};
+
+    {
+        irods::at_scope_exit free_output{[&output] {
+            std::free(output);
+        }};
+
+        if (const auto ec = rc_get_grid_configuration_value(Conn, &input, &output); ec != 0) {
+            rodsLogError(LOG_ERROR, ec, "Failed to get delay server information.");
+            return 1;
+        }
+
+        delay_server_info["leader"] = output->option_value;
+    }
+
+    std::strcpy(input.option_name, "successor");
+    output = nullptr;
+
+    irods::at_scope_exit free_output{[&output] {
+        std::free(output);
+    }};
+
+    if (const auto ec = rc_get_grid_configuration_value(Conn, &input, &output); ec != 0) {
+        rodsLogError(LOG_ERROR, ec, "Failed to get delay server information.");
+        return 1;
+    }
+
+    delay_server_info["successor"] = output->option_value;
+
+    std::cout << delay_server_info.dump(4) << '\n';
+
+    return 0;
+} // print_delay_server_info
 
 auto modify_replica(
     char** tokens) -> int
@@ -1521,6 +1598,10 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         return modify_replica(cmdToken);
     }
 
+    if (0 == strcmp(cmdToken[0], "get_delay_server_info")) {
+        return print_delay_server_info();
+    }
+
     if (0 == strcmp(cmdToken[0], "set_delay_server")) {
         return generalAdmin( 0, "set_delay_server", cmdToken[1],
                                "", "", "", "", "", "", "", "" );
@@ -1802,6 +1883,7 @@ void usageMain() {
         " asq 'SQL query' [Alias] (add specific query)",
         " rsq 'SQL query' or Alias (remove specific query)",
         " modrepl [logical_path <string>|data_id <int>] [replica_number <int>|resource_hierarchy <string>] ATTR_NAME VALUE",
+        " get_delay_server_info",
         " set_delay_server HOSTNAME",
         " help (or h) [command] (this help, or more details on a command)",
         "Also see 'irmtrash -M -u user' for the admin mode of removing trash and",
@@ -2387,6 +2469,25 @@ usage( char *subOpt ) {
         ""
     };
 
+    char* get_delay_server_info_usage[] = {
+        "get_delay_server_info",
+        " ",
+        "Prints information about the delay server as JSON.",
+        " ",
+        "This command allows administrators to identify which server is running the",
+        "delay server and if the delay server is being migrated.",
+        " ",
+        "This information is retrieved from the R_GRID_CONFIGURATION database table.",
+        " ",
+        R"_(Example Output:
+
+    {
+        "leader": "consumer-1.irods.org",
+        "successor": ""
+    })_",
+        ""
+    };
+
     char* set_delay_server_usage[] = {
         "set_delay_server HOSTNAME",
         " ",
@@ -2421,6 +2522,7 @@ usage( char *subOpt ) {
                        "ctime",
                        "suq", "sgq", "lq", "cu",
                        "rum", "asq", "rsq", "modrepl",
+                       "get_delay_server_info",
                        "set_delay_server",
                        "help", "h"
                       };
@@ -2438,6 +2540,7 @@ usage( char *subOpt ) {
                        ctimeMsgs,
                        suqMsgs, sgqMsgs, lqMsgs, cuMsgs,
                        rumMsgs, asqMsgs, rsqMsgs, modrepl_usage,
+                       get_delay_server_info_usage,
                        set_delay_server_usage,
                        helpMsgs, helpMsgs
                      };
