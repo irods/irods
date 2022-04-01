@@ -136,15 +136,15 @@ namespace irods {
             case json::value_t::number_integer:
             case json::value_t::number_unsigned:
             {
-                auto i = _json.get<uint64_t>();
-                auto max_ { static_cast<uint64_t>(std::numeric_limits<int>::max()) }, 
-                     min_ { static_cast<uint64_t>(std::numeric_limits<int>::min()) };
+                auto i = _json.get<int64_t>();
+                auto max_ { static_cast<int64_t>(std::numeric_limits<int>::max()) }, 
+                     min_ { static_cast<int64_t>(std::numeric_limits<int>::min()) };
                 if (i < min_ || i > max_) {
                     int j = std::min(max_,std::max(min_,i));  // prevent wrapping
                     irods::log(LOG_WARNING, fmt::format("Configuration value of {} hard limited to {}", i, j));
                     return j;
                 }
-                return i;
+                return static_cast<int>(i);
             }
 
             case json::value_t::boolean:
