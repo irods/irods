@@ -4,6 +4,8 @@
 
 #include <fstream>
 #include <algorithm>
+#include <limits>
+#include <fmt/format.h>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
@@ -133,7 +135,17 @@ namespace irods {
 
             case json::value_t::number_integer:
             case json::value_t::number_unsigned:
-                return _json.get<int>();
+            {
+                auto i = _json.get<uint64_t>();
+                auto max_ { static_cast<uint64_t>(std::numeric_limits<int>::max()) }, 
+                     min_ { static_cast<uint64_t>(std::numeric_limits<int>::min()) };
+                if (i < min_ || i > max_) {
+                    int j = std::min(max_,std::max(min_,i));  // prevent wrapping
+                    irods::log(LOG_WARNING, fmt::format("Configuration value of {} hard limited to {}", i, j));
+                    return j;
+                }
+                return i;
+            }
 
             case json::value_t::boolean:
                 return _json.get<bool>();
