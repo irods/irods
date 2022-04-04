@@ -212,10 +212,13 @@ class RunpathUtil(PackagerUtilBase[RunpathUtilOptionsBase]):
 				ent_runpath = lib.get(lief.ELF.DYNAMIC_TAGS.RUNPATH)
 				ent_runpath.paths = [runpath]
 			elif lib.has(lief.ELF.DYNAMIC_TAGS.RPATH):
-				# Changing the tag here causes a segfault when writing
 				ent_runpath = lib.get(lief.ELF.DYNAMIC_TAGS.RPATH)
 				ent_runpath.paths = [runpath]
-				runpath_is_rpath = True
+				if self.lief_info.fragile_builder:
+					# Changing the tag here causes a segfault when writing
+					runpath_is_rpath = True
+				else:
+					ent_runpath.tag = lief.ELF.DYNAMIC_TAGS.RUNPATH
 			else:
 				ent_runpath = lief.ELF.DynamicEntryRunPath(runpath)
 				lib.add(ent_runpath)
@@ -299,7 +302,7 @@ class RunpathUtil(PackagerUtilBase[RunpathUtilOptionsBase]):
 				os.unlink(tmp_out)
 			op_state.chrpath.tool_tried = True
 
-	# FIXME: runpath setting with cmake is broken on centos
+	# FIXME: runpath setting with cmake fails silently on centos 7
 	def _set_rpath_cmake(
 		self,
 		bin_path: str,
@@ -364,7 +367,7 @@ class RunpathUtil(PackagerUtilBase[RunpathUtilOptionsBase]):
 
 		# TODO: isolate lief so that segfaults can be handled gracefully.
 		# lief tends to segfault with libc++. mark it as already tried
-		if fname.startswith('libc++.') or fname.startswith('libc++abi.'):
+		if self.lief_info.fragile_builder and (fname.startswith('libc++.') or fname.startswith('libc++abi.')):
 			op_state.lief.tool_tried = True
 
 		done = False

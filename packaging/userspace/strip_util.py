@@ -204,7 +204,7 @@ class StripUtil(PackagerUtilBase[StripUtilOptionsBase]):
 		lief = self.lief
 
 		# lief tends to segfault with libc++
-		if fname.startswith('libc++.') or fname.startswith('libc++abi.'):
+		if self.lief_info.fragile_builder and (fname.startswith('libc++.') or fname.startswith('libc++abi.')):
 			unneeded_libs = []
 		else:
 			unneeded_libs = self.libinfo_util.get_unused_dependencies(bin_path)
