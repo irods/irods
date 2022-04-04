@@ -123,6 +123,7 @@ class lief_ver_info():
 		self._rebuild_is_slow = None
 		self._old_logger_api = None
 		self._not_threadsafe = None
+		self._fragile_builder = None
 
 		if lief:
 			self._lief_imported = True
@@ -137,6 +138,7 @@ class lief_ver_info():
 				older_than_0_11_0 = self._lief_version < PkgVersion('0.11.0')
 				older_than_0_12_0 = self._lief_version < PkgVersion('0.12.0')
 
+				self._fragile_builder = older_than_0_12_0
 				self._rebuild_is_slow = older_than_0_12_0
 				self._rebuild_is_reallyslow = older_than_0_11_0
 				self._old_logger_api = older_than_0_11_0
@@ -153,6 +155,10 @@ class lief_ver_info():
 	@property
 	def lief_usable(self) -> bool:
 		return self._lief_usable
+
+	@property
+	def fragile_builder(self) -> bool:
+		return self._fragile_builder
 
 	@property
 	def rebuild_is_slow(self) -> bool:
