@@ -16,8 +16,8 @@ from types import ModuleType
 from typing import Generic, Optional, TypeVar
 
 from compat_shims import Callable, Iterable, Mapping, MutableMapping, NoReturn
-from context import OptionsT, PackagerContext, lief_ver_info
-from lief_instrumentation import LiefModuleT
+from context import OptionsT, PackagerContext
+from lief_instrumentation import LiefModuleT, lief_ver_info
 
 __all__ = [
 	'DummyExecutor',
