@@ -71,7 +71,7 @@ chkAgentProcCnt();
 int
 getAgentProcPIDs( std::vector<int>& _pids );
 int
-chkConnectedAgentProcQue();
+chkConnectedAgentProcQueue();
 int
 recordServerProcess( rsComm_t *svrComm );
 int initServerMain(
@@ -79,11 +79,11 @@ int initServerMain(
     const bool enable_test_mode,
     const bool write_to_stdout);
 int
-addConnReqToQue( rsComm_t *rsComm, int sock );
+addConnReqToQueue( rsComm_t *rsComm, int sock );
 int
 initConnThreadEnv();
 agentProc_t *
-getConnReqFromQue();
+getConnReqFromQueue();
 void
 readWorkerTask();
 int

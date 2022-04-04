@@ -1200,7 +1200,7 @@ int serverMain(const bool enable_test_mode = false, const bool write_to_stdout =
                 continue;
             }
 
-            addConnReqToQue(&svrComm, newSock);
+            addConnReqToQueue(&svrComm, newSock);
         }
 
         if (irods::CFG_SERVICE_ROLE_PROVIDER == svc_role) {
@@ -1651,7 +1651,7 @@ int chkAgentProcCnt()
             int count = getAgentProcCnt();
 
             if (count >= maximum_connections) {
-                chkConnectedAgentProcQue();
+                chkConnectedAgentProcQueue();
                 count = getAgentProcCnt();
 
                 if (count >= maximum_connections) {
@@ -1669,7 +1669,7 @@ int chkAgentProcCnt()
     return 0;
 }
 
-int chkConnectedAgentProcQue()
+int chkConnectedAgentProcQueue()
 {
     boost::unique_lock<boost::mutex> con_agent_lock(ConnectedAgentMutex);
     agentProc_t* tmpAgentProc = ConnectedAgentHead;
@@ -1874,7 +1874,7 @@ int initServerMain(rsComm_t *svrComm,
 }
 
 // Add incoming connection request to the bottom of the link list.
-int addConnReqToQue(rsComm_t* rsComm, int sock)
+int addConnReqToQueue(rsComm_t* rsComm, int sock)
 {
     boost::unique_lock<boost::mutex> read_req_lock(ReadReqCondMutex);
     auto* myConnReq = (agentProc_t*) std::calloc(1, sizeof(agentProc_t));
@@ -1889,7 +1889,7 @@ int addConnReqToQue(rsComm_t* rsComm, int sock)
     return 0;
 }
 
-agentProc_t* getConnReqFromQue()
+agentProc_t* getConnReqFromQueue()
 {
     agentProc_t* myConnReq{};
 
@@ -1987,7 +1987,7 @@ void readWorkerTask()
     while (irods::server_state::STOPPED != server_state() &&
            irods::server_state::EXITED != server_state())
     {
-        agentProc_t* myConnReq = getConnReqFromQue();
+        agentProc_t* myConnReq = getConnReqFromQueue();
         if (!myConnReq) {
             // Someone else took care of it.
             continue;
