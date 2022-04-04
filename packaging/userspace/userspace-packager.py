@@ -136,7 +136,7 @@ class Packager(PackagerUtilBase[PackagerOptions]):
 		if self.options.set_origin_flag is None and (
 			self.options.target_platform == 'centos' and self.options.target_platform_variant == '7'
 		):
-			self.options.set_origin_flag = False
+			self.options.set_origin_flag = not self.lief_info.fragile_builder
 
 		context.lief_info.check_and_whine()
 		self.elfinfo_util = ElfInfoUtil(context, executor=executor, raise_if_ldd_not_found=True)
