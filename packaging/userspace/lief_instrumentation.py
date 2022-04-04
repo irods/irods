@@ -67,10 +67,11 @@ LiefModuleT = Union[lief_module_proto, ModuleType]
 
 class lief_ver_info():
 	_min_req_ver = PkgVersion('0.10.0')
-	_min_rec_ver = PkgVersion('0.11.0')
+	_min_rec_ver = PkgVersion('0.12.0')
 
-	_std_rebuild_size_warn_threshold = (36 * 1024 * 1024)
-	_slow_rebuild_size_warn_threshold = (16 * 1024 * 1024)
+	_std_rebuild_size_warn_threshold = (48 * 1024 * 1024)
+	_slow_rebuild_size_warn_threshold = (36 * 1024 * 1024)
+	_reallyslow_rebuild_size_warn_threshold = (16 * 1024 * 1024)
 
 	#@classmethod
 	@property
@@ -118,6 +119,7 @@ class lief_ver_info():
 		self._lief_imported = False
 		self._lief_version = None
 		self._lief_usable = False
+		self._rebuild_is_reallyslow = None
 		self._rebuild_is_slow = None
 		self._old_logger_api = None
 		self._not_threadsafe = None
@@ -129,16 +131,16 @@ class lief_ver_info():
 				self._lief_usable = True
 			elif self._lief_version < self.minimum_required_version:
 				self._lief_usable = False
-			elif self._lief_version < self.minimum_recommended_version:
-				self._lief_usable = True
-				self._rebuild_is_slow = True
-				self._old_logger_api = True
-				self._not_threadsafe = True
 			else:
 				self._lief_usable = True
-				self._rebuild_is_slow = False
-				self._old_logger_api = False
-				self._not_threadsafe = False
+
+				older_than_0_11_0 = self._lief_version < PkgVersion('0.11.0')
+				older_than_0_12_0 = self._lief_version < PkgVersion('0.12.0')
+
+				self._rebuild_is_slow = older_than_0_12_0
+				self._rebuild_is_reallyslow = older_than_0_11_0
+				self._old_logger_api = older_than_0_11_0
+				self._not_threadsafe = older_than_0_11_0
 
 	@property
 	def lief_imported(self) -> bool:
@@ -155,6 +157,10 @@ class lief_ver_info():
 	@property
 	def rebuild_is_slow(self) -> bool:
 		return self._rebuild_is_slow
+
+	@property
+	def rebuild_is_reallyslow(self) -> bool:
+		return self._rebuild_is_reallyslow
 
 	@property
 	def old_logger_api(self) -> bool:
@@ -182,9 +188,20 @@ class lief_ver_info():
 	def slow_rebuild_size_warn_threshold(self, value: int) -> NoReturn:
 		self._slow_rebuild_size_warn_threshold = value
 
+	# Settable instance property because we might want to allow the value to be
+	# tweaked for specific operations
+	@property
+	def reallyslow_rebuild_size_warn_threshold(self) -> int:
+		return self._reallyslow_rebuild_size_warn_threshold
+	@slow_rebuild_size_warn_threshold.setter  # noqa: E301
+	def reallyslow_rebuild_size_warn_threshold(self, value: int) -> NoReturn:
+		self._reallyslow_rebuild_size_warn_threshold = value
+
 	@property
 	def rebuild_size_warn_threshold(self) -> int:
-		if self.rebuild_is_slow:
+		if self.rebuild_is_reallyslow:
+			return self.reallyslow_rebuild_size_warn_threshold
+		elif self.rebuild_is_slow:
 			return self.slow_rebuild_size_warn_threshold
 		return self.std_rebuild_size_warn_threshold
 
