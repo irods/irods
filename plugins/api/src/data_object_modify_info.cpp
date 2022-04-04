@@ -3,7 +3,7 @@
 #include "irods/rcConnect.h"
 #include "irods/rodsPackInstruct.h"
 #include "irods/rcMisc.h"
-#include "irods/client_api_whitelist.hpp"
+#include "irods/client_api_allowlist.hpp"
 
 #include "irods/apiHandler.hpp"
 
@@ -130,7 +130,7 @@ auto plugin_factory(const std::string& _instance_name,
                     const std::string& _context) -> irods::api_entry*
 {
 #ifdef RODS_SERVER
-    irods::client_api_whitelist::instance().add(DATA_OBJECT_MODIFY_INFO_APN);
+    irods::client_api_allowlist::instance().add(DATA_OBJECT_MODIFY_INFO_APN);
 #endif // RODS_SERVER
 
     // clang-format off

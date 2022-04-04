@@ -9,7 +9,7 @@
 
 #ifdef RODS_SERVER
 
-#include "irods/client_api_whitelist.hpp"
+#include "irods/client_api_allowlist.hpp"
 #include "irods/json_serialization.hpp"
 #include "irods/server_utilities.hpp"
 
@@ -116,7 +116,7 @@ extern "C" {
     irods::api_entry* plugin_factory(const std::string&, const std::string&)
     {
 #ifdef RODS_SERVER
-        irods::client_api_whitelist::instance().add(AUTHENTICATION_APN);
+        irods::client_api_allowlist::instance().add(AUTHENTICATION_APN);
 #endif
 
         // =-=-=-=-=-=-=-

@@ -59,7 +59,7 @@ namespace irods
     extern const std::string CFG_LOG_LEVEL_CATEGORY_RULE_ENGINE_KW;
 
     // client_allow_list_policy
-    extern const std::string CFG_CLIENT_API_WHITELIST_POLICY_KW;
+    extern const std::string CFG_CLIENT_API_ALLOWLIST_POLICY_KW;
 
     // host_access_control
     extern const std::string CFG_HOST_ACCESS_CONTROL_KW;

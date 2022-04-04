@@ -1,4 +1,4 @@
-#include "irods/client_api_whitelist.hpp"
+#include "irods/client_api_allowlist.hpp"
 
 #include "irods/apiNumber.h"
 #include "irods/rodsErrorTable.h"
@@ -20,13 +20,13 @@ namespace
 
 namespace irods
 {
-    auto client_api_whitelist::instance() -> client_api_whitelist&
+    auto client_api_allowlist::instance() -> client_api_allowlist&
     {
-        static client_api_whitelist instance;
+        static client_api_allowlist instance;
         return instance;
     }
 
-    client_api_whitelist::client_api_whitelist()
+    client_api_allowlist::client_api_allowlist()
         : api_numbers_{// 500 - 599 - Internal File I/O API calls
                        //FILE_CREATE_AN,
                        //FILE_OPEN_AN,
@@ -185,45 +185,45 @@ namespace irods
     {
     }
 
-    auto client_api_whitelist::enforce(const rsComm_t& comm) const noexcept -> bool
+    auto client_api_allowlist::enforce(const rsComm_t& comm) const noexcept -> bool
     {
         if (!irods::is_privileged_client(comm)) {
             try {
                 using T = const std::string;
-                const auto& keyword = irods::CFG_CLIENT_API_WHITELIST_POLICY_KW;
+                const auto& keyword = irods::CFG_CLIENT_API_ALLOWLIST_POLICY_KW;
                 return "enforce" == irods::get_server_property<T>(keyword) && is_client_to_agent_connection();
             }
             catch (const irods::exception&) {
-                logger::api::debug("Skipping client API whitelist. Server is not configured to enforce the API "
+                logger::api::debug("Skipping client API allowlist. Server is not configured to enforce the API "
                                    "or the connection is not a client-to-agent connection.");
             }
         }
         else {
-            logger::api::debug("Skipping client API whitelist. Client has administrative privileges.");
+            logger::api::debug("Skipping client API allowlist. Client has administrative privileges.");
         }
 
         return false;
     }
 
-    auto client_api_whitelist::contains(int api_number) const noexcept -> bool
+    auto client_api_allowlist::contains(int api_number) const noexcept -> bool
     {
         const auto end = std::cend(api_numbers_);
         return std::find(std::cbegin(api_numbers_), end, api_number) != end;
     }
 
-    auto client_api_whitelist::add(int api_number) -> void
+    auto client_api_allowlist::add(int api_number) -> void
     {
         if (contains(api_number)) {
-            logger::api::debug("API number [{}] has already been added to the client API whitelist", api_number);
+            logger::api::debug("API number [{}] has already been added to the client API allowlist", api_number);
             return;
         }
 
         try {
             api_numbers_.push_back(api_number);
-            logger::api::debug("Added API number [{}] to the client API whitelist.", api_number);
+            logger::api::debug("Added API number [{}] to the client API allowlist.", api_number);
         }
         catch (const std::exception& e) {
-            logger::api::error("Could not add API number [{}] to whitelist [error_code => %d, exception => %s]",
+            logger::api::error("Could not add API number [{}] to allowlist [error_code => %d, exception => %s]",
                                api_number, SYS_INTERNAL_ERR, e.what());
         }
     }

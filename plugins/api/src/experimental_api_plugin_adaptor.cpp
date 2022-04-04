@@ -1,7 +1,7 @@
 #include "irods/apiHandler.hpp"
 #include "irods/plugins/api/api_plugin_number.h"
 #include "irods/experimental_plugin_framework.hpp"
-#include "irods/client_api_whitelist.hpp"
+#include "irods/client_api_allowlist.hpp"
 #include <nlohmann/json.hpp>
 
 #include "irods/irods_re_namespaceshelper.hpp"
@@ -293,7 +293,7 @@ extern "C" {
     irods::api_entry* plugin_factory(const std::string&, const std::string&)
     {
         #ifdef RODS_SERVER
-        irods::client_api_whitelist::instance().add(ADAPTER_APN);
+        irods::client_api_allowlist::instance().add(ADAPTER_APN);
         #endif
 
         // =-=-=-=-=-=-=-

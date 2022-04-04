@@ -2,7 +2,7 @@
 #include "irods/rodsDef.h"
 #include "irods/rcConnect.h"
 #include "irods/rodsPackInstruct.h"
-#include "irods/client_api_whitelist.hpp"
+#include "irods/client_api_allowlist.hpp"
 
 #include "irods/apiHandler.hpp"
 
@@ -495,7 +495,7 @@ auto plugin_factory(const std::string& _instance_name,
                     const std::string& _context) -> irods::api_entry*
 {
 #ifdef RODS_SERVER
-    irods::client_api_whitelist::instance().add(REPLICA_CLOSE_APN);
+    irods::client_api_allowlist::instance().add(REPLICA_CLOSE_APN);
 #endif // RODS_SERVER
 
     // clang-format off
