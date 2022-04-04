@@ -290,7 +290,7 @@ ignore = [
 	'D107',
 ]
 
-[tool.flakehell]
+[tool.flakeheaven]
 min-python-version = '3.6.0'
 mypy-init-return = true
 max_line_length = 100
@@ -314,7 +314,7 @@ application-import-names = [
 	'utilbase',
 ]
 
-[tool.flakehell.plugins]
+[tool.flakeheaven.plugins]
 pylint = [ '+*' ]
 pyflakes = [ '+*' ]
 pycodestyle = [
@@ -387,8 +387,8 @@ flake8-commas = [ '-*' ]
 flake8-fixme = [ '-*' ]
 flake8-isort = [ '-*' ]
 
-[tool.flakehell.exceptions."log_instrumentation.py"]
+[tool.flakeheaven.exceptions."log_instrumentation.py"]
 pycodestyle = [ '-E221' ]  # multiple spaces before operator
 
-[tool.flakehell.exceptions."compat_shims.py"]
+[tool.flakeheaven.exceptions."compat_shims.py"]
 pycodestyle = [ '-E301' ]  # expected x blank lines, found y
