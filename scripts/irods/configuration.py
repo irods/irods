@@ -10,6 +10,7 @@ import shutil
 import sys
 import tempfile
 import time
+import datetime
 
 from . import six
 
@@ -293,7 +294,8 @@ class IrodsConfig(object):
             if filecmp.cmp(f.name, path):
                 return
             if make_backup:
-                shutil.copyfile(path, '.'.join([path, 'prev', str(time.time())]))
+                time_suffix = datetime.datetime.utcnow().strftime('%Y%m%dT%H%M%SZ')
+                shutil.copyfile(path, '.'.join([path, 'prev', time_suffix]))
         shutil.move(f.name, path)
         if clear_cache:
             self.clear_cache()
