@@ -614,8 +614,32 @@ printGenQueryResultsForGroup( genQueryOut_t *genQueryOut ) {
     }
 }
 
-int
-showGroup( char *groupName ) { // JMC - backport 4742
+int showGroup(char* groupName)
+{
+    try {
+        namespace adm = irods::experimental::administration;
+
+        const auto user_type = adm::client::type(*Conn, adm::user{Conn->clientUser.userName, Conn->clientUser.rodsZone});
+
+        if (!user_type) {
+            rodsLogError(LOG_ERROR, CAT_INVALID_USER_TYPE, "Could not determine if user has permission to view information.");
+            return 1;
+        }
+
+        if (*user_type != adm::user_type::rodsadmin) {
+            rodsLogError(LOG_ERROR, CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "Operation requires rodsadmin level privileges.");
+            return 1;
+        }
+    }
+    catch (const irods::exception& e) {
+        rodsLogError(LOG_ERROR, e.code(), e.client_display_what());
+        return 1;
+    }
+    catch (const std::exception& e) {
+        rodsLogError(LOG_ERROR, SYS_UNKNOWN_ERROR, e.what());
+        return 1;
+    }
+
     // =-=-=-=-=-=-=-
     // JMC - backport 4742
     genQueryInp_t  genQueryInp;
