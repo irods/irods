@@ -1,5 +1,5 @@
 #include "irods/plugins/api/api_plugin_number.h"
-#include "irods/client_api_whitelist.hpp"
+#include "irods/client_api_allowlist.hpp"
 #include "irods/fileDriver.hpp"
 #include "irods/irods_configuration_keywords.hpp"
 #include "irods/json_deserialization.hpp"
@@ -1381,7 +1381,7 @@ auto plugin_factory(const std::string& _instance_name,
                     const std::string& _context) -> irods::api_entry*
 {
 #ifdef RODS_SERVER
-    irods::client_api_whitelist::instance().add(REGISTER_PHYSICAL_PATH_APN);
+    irods::client_api_allowlist::instance().add(REGISTER_PHYSICAL_PATH_APN);
 #endif // RODS_SERVER
 
     // clang-format off

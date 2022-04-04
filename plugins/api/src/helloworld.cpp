@@ -8,7 +8,7 @@
 #include <boost/lexical_cast.hpp>
 
 #include "irods/objStat.h"
-#include "irods/client_api_whitelist.hpp"
+#include "irods/client_api_allowlist.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -126,7 +126,7 @@ extern "C" {
                                      const std::string&)     // _context
     {
 #ifdef RODS_SERVER
-        irods::client_api_whitelist::instance().add(HELLO_WORLD_APN);
+        irods::client_api_allowlist::instance().add(HELLO_WORLD_APN);
 #endif // RODS_SERVER
 
         // =-=-=-=-=-=-=-

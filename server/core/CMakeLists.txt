@@ -6,7 +6,7 @@ add_library(
   OBJECT
   "${CMAKE_CURRENT_SOURCE_DIR}/src/administration_utilities.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/atomic_apply_database_operations.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/client_api_whitelist.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/client_api_allowlist.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/catalog.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/catalog_utilities.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/collection.cpp"
@@ -120,7 +120,7 @@ install(
   FILES
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/administration_utilities.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/atomic_apply_database_operations.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/client_api_whitelist.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/client_api_allowlist.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/collection.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/dataObjOpr.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/replica_access_table.hpp"

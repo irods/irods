@@ -189,6 +189,8 @@ def convert_to_v4_schema_and_add_missing_properties(server_config):
     new_server_config = update_base(base, server_config)
 
     # Replace old key names with new key names.
+    replace_server_config_option_name(new_server_config, 'client_api_whitelist_policy', 'client_api_allowlist_policy')
+
     advanced_settings = new_server_config['advanced_settings']
     replace_server_config_option_name(advanced_settings, 'rule_engine_server_sleep_time_in_seconds', 'delay_server_sleep_time_in_seconds')
     replace_server_config_option_name(advanced_settings, 'maximum_number_of_concurrent_rule_engine_server_processes', 'number_of_concurrent_delay_rule_executors')

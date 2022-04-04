@@ -12,7 +12,7 @@
 #include "irods/irods_client_server_negotiation.hpp"
 #include "irods/apiNumber.h"
 #include "irods/plugins/api/api_plugin_number.h"
-#include "irods/client_api_whitelist.hpp"
+#include "irods/client_api_allowlist.hpp"
 #include "irods/key_value_proxy.hpp"
 
 #include <boost/thread.hpp>
@@ -420,9 +420,9 @@ int chkApiPermission(rsComm_t* rsComm, int apiInx)
         return SYS_NO_API_PRIV;
     }
 
-    auto& whitelist = irods::client_api_whitelist::instance();
+    auto& allowlist = irods::client_api_allowlist::instance();
 
-    if (whitelist.enforce(*rsComm) && !whitelist.contains(api_entry->apiNumber)) {
+    if (allowlist.enforce(*rsComm) && !allowlist.contains(api_entry->apiNumber)) {
         return SYS_NO_API_PRIV;
     }
 

@@ -54,7 +54,7 @@ namespace irods
     const std::string CFG_LOG_LEVEL_CATEGORY_NETWORK_KW{"network"};
     const std::string CFG_LOG_LEVEL_CATEGORY_RULE_ENGINE_KW{"rule_engine"};
 
-    const std::string CFG_CLIENT_API_WHITELIST_POLICY_KW("client_api_whitelist_policy");
+    const std::string CFG_CLIENT_API_ALLOWLIST_POLICY_KW("client_api_allowlist_policy");
 
     const std::string CFG_HOST_ACCESS_CONTROL_KW("host_access_control");
     const std::string CFG_ACCESS_ENTRIES_KW("access_entries");
