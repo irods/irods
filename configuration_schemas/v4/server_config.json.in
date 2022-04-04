@@ -11,7 +11,7 @@
         },
         "catalog_service_role": {"enum": ["consumer","provider"]},
         "controlled_user_connection_list": {
-            "control_type": {"enum": ["blacklist","whitelist"]},
+            "control_type": {"enum": ["denylist", "allowlist"]},
             "users": {
                 "type": "array",
                 "items": {"type": "string"},

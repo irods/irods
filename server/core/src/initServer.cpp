@@ -1057,18 +1057,18 @@ chkAllowedUser( const char *userName, const char *rodsZone ) {
         static const auto controlled_user_set = construct_controlled_user_set(*controlled_user_connection_list);
         const auto& control_type = controlled_user_connection_list->at("control_type").get_ref<const std::string&>();
 
-        if (control_type == "whitelist") {
+        if (control_type == "allowlist") {
             if (controlled_user_set.count(user_and_zone) == 0) {
                 return SYS_USER_NOT_ALLOWED_TO_CONN;
             }
         }
-        else if (control_type == "blacklist") {
+        else if (control_type == "denylist") {
             if (controlled_user_set.count(user_and_zone) != 0) {
                 return SYS_USER_NOT_ALLOWED_TO_CONN;
             }
         }
         else {
-            rodsLog(LOG_ERROR, "controlled_user_connection_list must specify \"whitelist\" or \"blacklist\"");
+            rodsLog(LOG_ERROR, "controlled_user_connection_list must specify \"allowlist\" or \"denylist\"");
             return -1;
         }
     }
