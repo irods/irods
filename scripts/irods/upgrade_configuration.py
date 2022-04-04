@@ -173,6 +173,17 @@ def replace_server_config_option_name(config, old_name, new_name):
     if old_name in config:
         config[new_name] = config.pop(old_name)
 
+def convert_values_for_control_type_to_v4_schema_values(server_config):
+    controlled_user_connection_list = server_config['controlled_user_connection_list']
+
+    if 'control_type' not in controlled_user_connection_list:
+        return
+
+    control_type = controlled_user_connection_list['control_type']
+
+    if   control_type == 'whitelist': controlled_user_connection_list['control_type'] = 'allowlist'
+    elif control_type == 'blacklist': controlled_user_connection_list['control_type'] = 'denylist'
+
 def convert_to_v4_schema_and_add_missing_properties(server_config):
     def update_base(base, updates):
         for k, v in updates.items():
@@ -199,6 +210,8 @@ def convert_to_v4_schema_and_add_missing_properties(server_config):
     # Keys listed here are ones that used to be recognized by the server.
     new_server_config.pop('xmsg_port', None)
     advanced_settings.pop('rule_engine_server_execution_time_in_seconds', None)
+
+    convert_values_for_control_type_to_v4_schema_values(new_server_config)
 
     return new_server_config
 

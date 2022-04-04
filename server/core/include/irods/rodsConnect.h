@@ -9,8 +9,8 @@
 #define RE_RULES_FILE                   "reRules"
 
 // Keywords used in CONNECT_CONTROL_FILE
-#define USER_WHITELIST_KW               "whitelist"
-#define USER_BLACKLIST_KW               "blacklist"
+#define USER_ALLOWLIST_KW               "allowlist"
+#define USER_DENYLIST_KW                "denylist"
 #define NO_MAX_CONNECTION_LIMIT         -1
 #define DEF_MAX_CONNECTION              NO_MAX_CONNECTION_LIMIT
 
