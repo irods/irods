@@ -2,17 +2,11 @@
     "schema_name": "server_config",
     "schema_version": "v4",
     "advanced_settings": {
-        "delay_rule_executors": [],
+        "default_log_rotation_in_days" : 5,
         "default_number_of_transfer_threads": 4,
         "default_temporary_password_lifetime_in_seconds": 120,
-        "number_of_concurrent_delay_rule_executors": 4,
+        "delay_rule_executors": [],
         "delay_server_sleep_time_in_seconds" : 30,
-        "maximum_size_for_single_buffer_in_megabytes": 32,
-        "maximum_size_of_delay_queue_in_bytes": 0,
-        "maximum_temporary_password_lifetime_in_seconds": 1000,
-        "transfer_buffer_size_for_parallel_transfer_in_megabytes": 4,
-        "transfer_chunk_size_for_parallel_transfer_in_megabytes": 40,
-        "default_log_rotation_in_days" : 5,
         "dns_cache": {
             "shared_memory_size_in_bytes": 5000000,
             "eviction_age_in_seconds": 3600
@@ -21,9 +15,19 @@
             "shared_memory_size_in_bytes": 2500000,
             "eviction_age_in_seconds": 3600
         },
-        "stacktrace_file_processor_sleep_time_in_seconds": 10
+        "maximum_size_for_single_buffer_in_megabytes": 32,
+        "maximum_size_of_delay_queue_in_bytes": 0,
+        "maximum_temporary_password_lifetime_in_seconds": 1000,
+        "number_of_concurrent_delay_rule_executors": 4,
+        "stacktrace_file_processor_sleep_time_in_seconds": 10,
+        "transfer_buffer_size_for_parallel_transfer_in_megabytes": 4,
+        "transfer_chunk_size_for_parallel_transfer_in_megabytes": 40
     },
     "client_api_allowlist_policy": "enforce",
+    "controlled_user_connection_list": {
+        "control_type": "denylist",
+        "users": []
+    },
     "default_dir_mode": "0750",
     "default_file_mode": "0600",
     "default_hash_scheme": "SHA256",
