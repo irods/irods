@@ -40,8 +40,6 @@ initRsComm( rsComm_t *rsComm );
 void
 daemonize( int runMode, int logFd );
 int
-logFileOpen( int runMode, const char *logDir, const char *logFileName );
-int
 initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack );
 int
 chkAllowedUser( const char *userName, const char *rodsZone );

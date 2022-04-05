@@ -27,7 +27,6 @@
 #include "irods/rodsPackTable.h"
 #include "irods/rodsUser.h"
 #include "irods/rsGlobalExtern.hpp"
-#include "irods/rsLog.hpp"
 #include "irods/ruleExecDel.h"
 #include "irods/ruleExecSubmit.h"
 #include "irods/server_utilities.hpp"

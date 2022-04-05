@@ -5,7 +5,6 @@
 #include "irods/rods.h"
 #include "irods/rsGlobalExtern.hpp"   // server global
 #include "irods/rcGlobalExtern.h"     // client global
-#include "irods/rsLog.hpp"
 #include "irods/rodsLog.h"
 #include "irods/sockComm.h"
 #include "irods/getRodsEnv.h"

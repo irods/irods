@@ -19,7 +19,6 @@
 #include "irods/rsGenQuery.hpp"
 #include "irods/rsGlobalExtern.hpp"
 #include "irods/rsIcatOpr.hpp"
-#include "irods/rsLog.hpp"
 #include "irods/rsModDataObjMeta.hpp"
 #include "irods/rs_replica_close.hpp"
 #include "irods/sockComm.h"
@@ -805,50 +804,6 @@ daemonize( int runMode, int logFd ) {
     ( void ) dup2( logFd, 1 );
     ( void ) dup2( logFd, 2 );
     close( logFd );
-}
-
-/* logFileOpen - Open the logFile for the reServer.
- *
- * Input - None
- * OutPut - the log file descriptor
- */
-
-int
-logFileOpen( int runMode, const char *logDir, const char *logFileName ) {
-    char *logFile = NULL;
-#ifdef SYSLOG
-    int logFd = 0;
-#else
-    int logFd;
-#endif
-
-    if ( runMode == SINGLE_PASS && logDir == NULL ) {
-        return 1;
-    }
-
-    if ( logFileName == NULL ) {
-        fprintf( stderr, "logFileOpen: NULL input logFileName\n" );
-        return SYS_INTERNAL_NULL_INPUT_ERR;
-    }
-
-    getLogfileName( &logFile, logDir, logFileName );
-    if ( NULL == logFile ) { // JMC cppcheck - nullptr
-        fprintf( stderr, "logFileOpen: unable to open log file" );
-        return -1;
-    }
-
-#ifndef SYSLOG
-    logFd = open( logFile, O_CREAT | O_WRONLY | O_APPEND, 0666 );
-#endif
-    if ( logFd < 0 ) {
-        fprintf( stderr, "logFileOpen: Unable to open %s. errno = %d\n",
-                logFile, errno );
-        free( logFile );
-        return -1 * errno;
-    }
-
-    free( logFile );
-    return logFd;
 }
 
 int

@@ -3,7 +3,6 @@
 #include "irods/miscUtil.h"
 #include "irods/rsGlobalExtern.hpp"
 #include "irods/rodsConnect.h"
-#include "irods/rsLog.hpp"
 
 #include <arpa/inet.h>
 
@@ -27,8 +26,7 @@ initAndClearProcLog() {
 
 int
 initProcLog() {
-    snprintf( ProcLogDir, MAX_NAME_LEN, "%s/%s",
-              getLogDir(), PROC_LOG_DIR_NAME );
+    std::snprintf(ProcLogDir, MAX_NAME_LEN, "../../var/lib/irods/log/proc");
     return 0;
 }
 
