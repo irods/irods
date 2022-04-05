@@ -5,7 +5,6 @@
 #include "irods/miscServerFunct.hpp"
 #include "irods/getRemoteZoneResc.h"
 #include "irods/irods_resource_backport.hpp"
-#include "irods/rsLog.hpp"
 #include "irods/irods_logger.hpp"
 
 #include <cstring>
