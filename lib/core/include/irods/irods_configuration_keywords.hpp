@@ -84,7 +84,6 @@ namespace irods
     extern const std::string CFG_DEF_TEMP_PASSWORD_LIFETIME;
     extern const std::string CFG_MAX_TEMP_PASSWORD_LIFETIME;
     extern const std::string CFG_NUMBER_OF_CONCURRENT_DELAY_RULE_EXECUTORS;
-    extern const std::string DEFAULT_LOG_ROTATION_IN_DAYS;
     extern const std::string CFG_MAX_SIZE_OF_DELAY_QUEUE_IN_BYTES_KW;
     extern const std::string CFG_STACKTRACE_FILE_PROCESSOR_SLEEP_TIME_IN_SECONDS_KW;
 

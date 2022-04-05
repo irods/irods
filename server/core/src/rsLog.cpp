@@ -26,19 +26,17 @@ int get_log_file_rotation_time() {
             return rotation_time;
         }
     }
-
+#if 0
     try {
         const int rotation_time = irods::get_advanced_setting<const int>(irods::DEFAULT_LOG_ROTATION_IN_DAYS);
         if(rotation_time >= 1) {
             return rotation_time;
         }
-
     }
     catch( irods::exception& _e ) {
     }
-
+#endif
     return DEF_LOGFILE_INT;
-
 } // get_log_file_rotation_time
 
 void

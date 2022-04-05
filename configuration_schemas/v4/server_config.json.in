@@ -6,7 +6,6 @@
         "advanced_settings": {
             "type": "object",
             "properties": {
-                "default_log_rotation_in_days": {"type": "integer"},
                 "default_number_of_transfer_threads": {"type": "integer"},
                 "default_temporary_password_lifetime_in_seconds": {"type": "integer"},
                 "delay_rule_executors": {

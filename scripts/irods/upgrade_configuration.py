@@ -209,6 +209,7 @@ def convert_to_v4_schema_and_add_missing_properties(server_config):
     # Remove keys that are no longer needed by the server.
     # Keys listed here are ones that used to be recognized by the server.
     new_server_config.pop('xmsg_port', None)
+    advanced_settings.pop('default_log_rotation_in_days', None)
     advanced_settings.pop('rule_engine_server_execution_time_in_seconds', None)
 
     convert_values_for_control_type_to_v4_schema_values(new_server_config)
