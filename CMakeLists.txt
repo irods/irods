@@ -306,50 +306,22 @@ foreach(DATABASE_PLUGIN postgres oracle mysql)
     "${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=${IRODS_PACKAGE_COMPONENT_RUNTIME_NAME} -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_install.cmake"
     COMMAND
     "${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=${IRODS_PACKAGE_COMPONENT_${DATABASE_PLUGIN_UPPER}_NAME} -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_install.cmake"
-    DEPENDS
-    irodsServer
-    irodsDelayServer
-    irods_api_test_harness
-    irods_configuration_test_harness
-    hostname_resolves_to_local_address
-    irodsPamAuthCheck
-    genOSAuth
-    irods_client
-    irods_server
-    irods_common
-    irods_plugin_dependencies
-    RodsAPIs
-    irods_api_plugin-helloworld_client
-    irods_api_plugin-helloworld_server
-    irods_microservice_plugin-sync_to_archive
-    irods_microservice_plugin-update_unixfilesystem_resource_free_space
-    irods_resource_plugin-compound
-    irods_resource_plugin-deferred
-    irods_resource_plugin-load_balanced
-    irods_resource_plugin-mockarchive
-    irods_resource_plugin-nonblocking
-    irods_resource_plugin-passthru
-    irods_resource_plugin-random
-    irods_resource_plugin-replication
-    irods_resource_plugin-structfile
-    irods_resource_plugin-univmss
-    irods_resource_plugin-unixfilesystem
-    irods_rule_engine_plugin-irods_rule_language
-    irods_rule_engine_plugin-cpp_default_policy
-    irods_rule_engine_plugin-passthrough
-    irods_auth_legacy_plugin-native_client
-    irods_auth_legacy_plugin-native_server
-    irods_auth_legacy_plugin-osauth_client
-    irods_auth_legacy_plugin-osauth_server
-    irods_auth_legacy_plugin-pam_client
-    irods_auth_legacy_plugin-pam_server
-    irods_network_plugin-ssl_client
-    irods_network_plugin-ssl_server
-    irods_network_plugin-tcp_client
-    irods_network_plugin-tcp_server
+  )
+  add_dependencies(
+    non-package-install-${DATABASE_PLUGIN}
+    all-lib
+    all-server
+    all-plugins_no_database
     irods_database_plugin-${DATABASE_PLUGIN}
     IRODS_PHONY_TARGET_icatSysTables_${DATABASE_PLUGIN}.sql
+    irodsTestPutGet
   )
+  if (IRODS_UNIT_TESTS_BUILD)
+    add_dependencies(
+      non-package-install-${DATABASE_PLUGIN}
+      all-unit_tests
+    )
+  endif()
 endforeach()
 
 include(CPack)
