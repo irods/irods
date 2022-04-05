@@ -2,6 +2,10 @@
 cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
 # target_link_libraries for object targets
 
+# create phony target to build everything in plugins/auth_legacy folder
+add_custom_target(all-plugins-auth_legacy)
+add_dependencies(all-plugins_no_database all-plugins-auth_legacy)
+
 set(
   IRODS_AUTH_LEGACY_PLUGINS
   native
@@ -49,6 +53,7 @@ foreach(plugin IN LISTS IRODS_AUTH_LEGACY_PLUGINS)
       ${IRODS_COMPILE_DEFINITIONS_PRIVATE}
     )
 
+    add_dependencies(all-plugins-auth_legacy ${plugin_target})
     install(
       TARGETS
       ${plugin_target}

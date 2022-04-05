@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
 # target_link_libraries for object targets
 
+# create phony target to build everything in plugins/rule_engines folder
+add_custom_target(all-plugins-rule_engines)
+add_dependencies(all-plugins_no_database all-plugins-rule_engines)
+
 add_subdirectory(irods_rule_language)
 
 set(
@@ -52,6 +56,7 @@ foreach(plugin IN LISTS IRODS_RULE_ENGINE_PLUGINS)
     IRODS_ENABLE_SYSLOG
   )
 
+  add_dependencies(all-plugins-rule_engines ${plugin_target})
   install(
     TARGETS
     ${plugin_target}

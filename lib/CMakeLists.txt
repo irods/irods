@@ -7,6 +7,9 @@ add_library(
   SHARED
 )
 
+# create phony target to build everything in lib folder
+add_custom_target(all-lib)
+
 add_subdirectory(core)
 add_subdirectory(api)
 add_subdirectory(filesystem)
@@ -39,6 +42,7 @@ target_link_libraries(
 set_property(TARGET irods_common PROPERTY VERSION ${IRODS_VERSION})
 set_property(TARGET irods_common PROPERTY SOVERSION ${IRODS_VERSION})
 
+add_dependencies(all-lib irods_common)
 install(
   TARGETS
   irods_common
@@ -81,6 +85,7 @@ target_link_libraries(
 set_property(TARGET irods_client PROPERTY VERSION ${IRODS_VERSION})
 set_property(TARGET irods_client PROPERTY SOVERSION ${IRODS_VERSION})
 
+add_dependencies(all-lib irods_client)
 install(
   TARGETS
   irods_client
@@ -137,6 +142,7 @@ target_include_directories(
 )
 target_compile_definitions(RodsAPIs PRIVATE ${IRODS_COMPILE_DEFINITIONS_PRIVATE})
 
+add_dependencies(all-lib RodsAPIs)
 install(
   TARGETS
   RodsAPIs

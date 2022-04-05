@@ -45,6 +45,7 @@ target_compile_definitions(
   IRODS_ENABLE_SYSLOG
 )
 
+add_dependencies(all-server irodsServer)
 install(
   TARGETS
   irodsServer

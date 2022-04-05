@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
 # target_link_libraries for object targets
 
+# create phony target to build everything in plugins/database folder
+add_custom_target(all-plugins-database)
+add_dependencies(all-plugins all-plugins-database)
+
 if (NOT ODBC_LIBRARY)
   find_library(ODBC_LIBRARY odbc)
   if (ODBC_LIBRARY)
@@ -41,6 +45,7 @@ foreach(plugin IN LISTS IRODS_DATABASE_PLUGINS)
   )
   # TODO: perhaps we should make the custom command output part of the dependency chain
   add_custom_target(IRODS_PHONY_TARGET_icatSysTables_${plugin}.sql ALL DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/icatSysTables_${plugin}.sql") # Forces execution of custom_command
+  add_dependencies(all-plugins-database IRODS_PHONY_TARGET_icatSysTables_${plugin}.sql)
 
   add_library(
     ${plugin_target}
@@ -84,6 +89,7 @@ foreach(plugin IN LISTS IRODS_DATABASE_PLUGINS)
     IRODS_ENABLE_SYSLOG
   )
 
+  add_dependencies(all-plugins-database ${plugin_target})
   install(
     TARGETS
     ${plugin_target}

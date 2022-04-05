@@ -40,6 +40,7 @@ target_compile_definitions(
   IRODS_ENABLE_SYSLOG
 )
 
+add_dependencies(all-server hostname_resolves_to_local_address)
 install(
   TARGETS
   hostname_resolves_to_local_address

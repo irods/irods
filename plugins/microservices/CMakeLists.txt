@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
 # target_link_libraries for object targets
 
+# create phony target to build everything in plugins/microservices folder
+add_custom_target(all-plugins-microservices)
+add_dependencies(all-plugins_no_database all-plugins-microservices)
+
 set(
   IRODS_MICROSERVICE_PLUGINS
   sync_to_archive
@@ -49,6 +53,7 @@ foreach(plugin IN LISTS IRODS_MICROSERVICE_PLUGINS)
     IRODS_ENABLE_SYSLOG
   )
 
+  add_dependencies(all-plugins-microservices ${plugin_target})
   install(
     TARGETS
     ${plugin_target}

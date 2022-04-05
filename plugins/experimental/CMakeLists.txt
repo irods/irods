@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
 # target_link_libraries for object targets
 
+# create phony target to build everything in plugins/experimental folder
+add_custom_target(all-plugins-experimental)
+add_dependencies(all-plugins_no_database all-plugins-experimental)
+
 set(
   IRODS_EXPERIMENTAL_API_PLUGINS
   copy
@@ -47,6 +51,7 @@ foreach(plugin IN LISTS IRODS_EXPERIMENTAL_API_PLUGINS)
     IRODS_ENABLE_SYSLOG
   )
 
+  add_dependencies(all-plugins-experimental ${plugin_target})
   install(
     TARGETS
     ${plugin_target}

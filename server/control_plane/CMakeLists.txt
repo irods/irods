@@ -19,6 +19,7 @@ add_custom_target(
   DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/include/irods/server_control_plane_command.hpp"
 )
 
+add_dependencies(all-server irods_server_control_plane_command_hpp)
 install(
   FILES
   "${CMAKE_CURRENT_BINARY_DIR}/include/irods/server_control_plane_command.hpp"

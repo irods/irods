@@ -40,6 +40,7 @@ target_compile_definitions(
   IRODS_ENABLE_SYSLOG
 )
 
+add_dependencies(all-plugins-resources irods_resource_plugin-replication)
 install(
   TARGETS
   irods_resource_plugin-replication
