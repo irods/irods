@@ -3,6 +3,41 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "type": "object",
     "properties": {
+        "advanced_settings": {
+            "type": "object",
+            "properties": {
+                "default_log_rotation_in_days": {"type": "integer"},
+                "default_number_of_transfer_threads": {"type": "integer"},
+                "default_temporary_password_lifetime_in_seconds": {"type": "integer"},
+                "delay_rule_executors": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "uniqueItems": true
+                },
+                "delay_server_sleep_time_in_seconds": {"type": "integer"},
+                "dns_cache": {
+                    "type": "object",
+                    "properties": {
+                        "shared_memory_size_in_bytes": {"type": "integer"},
+                        "eviction_age_in_seconds": {"type": "integer"}
+                    }
+                },
+                "hostname_cache": {
+                    "type": "object",
+                    "properties": {
+                        "shared_memory_size_in_bytes": {"type": "integer"},
+                        "eviction_age_in_seconds": {"type": "integer"}
+                    }
+                },
+                "maximum_size_for_single_buffer_in_megabytes": {"type": "integer"},
+                "maximum_size_of_delay_queue_in_bytes": {"type": "integer"},
+                "maximum_temporary_password_lifetime_in_seconds": {"type": "integer"},
+                "number_of_concurrent_delay_rule_executors": {"type": "integer"},
+                "stacktrace_file_processor_sleep_time_in_seconds": {"type": "integer"},
+                "transfer_buffer_size_for_parallel_transfer_in_megabytes": {"type": "integer"},
+                "transfer_chunk_size_for_parallel_transfer_in_megabytes": {"type": "integer"}
+            }
+        },
         "catalog_provider_hosts": {
             "type": "array",
             "items": {"type": "string"},
@@ -10,6 +45,7 @@
             "uniqueItems": true
         },
         "catalog_service_role": {"enum": ["consumer","provider"]},
+        "client_api_allowlist_policy": {"enum": ["disabled", "enforce"]},
         "controlled_user_connection_list": {
             "control_type": {"enum": ["denylist", "allowlist"]},
             "users": {
