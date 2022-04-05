@@ -16,6 +16,9 @@ endif()
 
 find_package(Catch2 "2.3.0" REQUIRED)
 
+# create phony target to build all unit tests
+add_custom_target(all-unit_tests)
+
 # Enable CTest support.
 enable_testing()
 
@@ -88,6 +91,7 @@ foreach(test IN LISTS IRODS_UNIT_TESTS)
     target_compile_definitions(${IRODS_TEST_TARGET} PRIVATE IRODS_ENABLE_ALL_UNIT_TESTS)
   endif()
 
+  add_dependencies(all-unit_tests ${IRODS_TEST_TARGET})
   install(
     TARGETS
     ${IRODS_TEST_TARGET}

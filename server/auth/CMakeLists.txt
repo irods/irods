@@ -20,6 +20,7 @@ target_link_libraries(
   "${PAM_LIBRARY}"
 )
 
+add_dependencies(all-server irodsPamAuthCheck)
 install(
   TARGETS
   irodsPamAuthCheck
@@ -51,6 +52,7 @@ target_compile_definitions(
   ${IRODS_COMPILE_DEFINITIONS_PRIVATE}
 )
 
+add_dependencies(all-server genOSAuth)
 install(
   TARGETS
   genOSAuth

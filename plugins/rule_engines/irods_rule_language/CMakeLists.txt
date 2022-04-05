@@ -55,6 +55,7 @@ target_compile_definitions(
   IRODS_ENABLE_SYSLOG
 )
 
+add_dependencies(all-plugins-rule_engines irods_rule_engine_plugin-irods_rule_language)
 install(
   TARGETS
   irods_rule_engine_plugin-irods_rule_language

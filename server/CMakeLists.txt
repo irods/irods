@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
 # target_link_libraries for object targets
 
+# create phony target to build everything in server folder
+add_custom_target(all-server)
+
 # create irods_server target first, as it's needed in executables
 add_library(
   irods_server

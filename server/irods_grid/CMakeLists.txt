@@ -41,6 +41,7 @@ target_compile_definitions(
   ${IRODS_COMPILE_DEFINITIONS_PRIVATE}
 )
 
+add_dependencies(all-server irods-grid)
 install(
   TARGETS
   irods-grid

@@ -35,6 +35,7 @@ foreach(harness IN ITEMS api configuration)
     IRODS_ENABLE_SYSLOG
   )
 
+  add_dependencies(all-server irods_${harness}_test_harness)
   install(
     TARGETS
     irods_${harness}_test_harness
