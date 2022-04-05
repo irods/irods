@@ -77,7 +77,6 @@ namespace irods
     const std::string CFG_DEF_TEMP_PASSWORD_LIFETIME( "default_temporary_password_lifetime_in_seconds" );
     const std::string CFG_MAX_TEMP_PASSWORD_LIFETIME( "maximum_temporary_password_lifetime_in_seconds" );
     const std::string CFG_NUMBER_OF_CONCURRENT_DELAY_RULE_EXECUTORS( "number_of_concurrent_delay_rule_executors" );
-    const std::string DEFAULT_LOG_ROTATION_IN_DAYS("default_log_rotation_in_days");
     const std::string CFG_MAX_SIZE_OF_DELAY_QUEUE_IN_BYTES_KW("maximum_size_of_delay_queue_in_bytes");
     const std::string CFG_STACKTRACE_FILE_PROCESSOR_SLEEP_TIME_IN_SECONDS_KW("stacktrace_file_processor_sleep_time_in_seconds");
 
