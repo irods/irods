@@ -35,6 +35,11 @@ if [ -f "/var/lib/irods/VERSION" ] ; then
     mv /var/lib/irods/VERSION /var/lib/irods/VERSION.previous
 fi
 
+if [ -f "/var/lib/irods/version.json" ] ; then
+    mv /var/lib/irods/version.json /var/lib/irods/version.json.previous
+fi
+
 if [ -f "/var/lib/irods/VERSION.json" ] ; then
-    mv /var/lib/irods/VERSION.json /var/lib/irods/VERSION.json.previous
+    cp /var/lib/irods/VERSION.json /var/lib/irods/VERSION.json.previous
+    mv /var/lib/irods/VERSION.json /var/lib/irods/version.json.previous
 fi

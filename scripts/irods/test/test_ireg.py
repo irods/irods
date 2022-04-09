@@ -318,8 +318,8 @@ class test_ireg_replica(unittest.TestCase):
         """Test registering a file as a replica which does not exist on this host."""
         resource = 'reghere'
 
-        old_path_to_file = os.path.join('/var', 'lib', 'irods', 'VERSION.json.dist')
-        new_path_to_file = os.path.join('/var', 'lib', 'irods', 'VERSION.json.dist.new')
+        old_path_to_file = os.path.join('/var', 'lib', 'irods', 'version.json.dist')
+        new_path_to_file = os.path.join('/var', 'lib', 'irods', 'version.json.dist.new')
 
         logical_path = os.path.join(self.admin.session_collection,
                                     os.path.basename(old_path_to_file))

@@ -21,7 +21,7 @@ operations['major'] = lambda x: int(x.split('.')[0])
 operations['minor'] = lambda x: int(x.split('.')[1])
 operations['patchlevel'] = lambda x: int(x.split('.')[2])
 
-# read version from VERSION.json
+# read version from version.json
 version_string = IrodsConfig().version['irods_version']
 try :
     value = operations[sys.argv[1]](version_string)

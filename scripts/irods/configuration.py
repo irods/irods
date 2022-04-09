@@ -248,7 +248,7 @@ class IrodsConfig(object):
                 'dict': self.server_config,
                 'path': paths.server_config_path()
             },
-            'VERSION': {
+            'version': {
                 'dict': self.version,
                 'path': paths.version_path()
             },

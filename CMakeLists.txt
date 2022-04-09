@@ -225,8 +225,8 @@ set(CMAKE_IRODS_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 include(GetGitRevisionDescription)
 get_git_head_revision(IRODS_GIT_REFSPEC IRODS_GIT_SHA1)
 configure_file(
-  "${CMAKE_IRODS_SOURCE_DIR}/VERSION.json.dist.in"
-  "${CMAKE_IRODS_BINARY_DIR}/VERSION.json.dist"
+  "${CMAKE_IRODS_SOURCE_DIR}/version.json.dist.in"
+  "${CMAKE_IRODS_BINARY_DIR}/version.json.dist"
   @ONLY
 )
 

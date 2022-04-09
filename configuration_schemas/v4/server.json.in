@@ -44,7 +44,7 @@
             "$ref": "service_account_environment.json"
         },
         "version": {
-            "$ref": "VERSION.json"
+            "$ref": "version.json"
         }
     },
     "required": [
