@@ -1,5 +1,5 @@
 {
-    "$id": "file:///@IRODS_HOME_DIRECTORY@/configuration_schemas/v4/VERSION.json",
+    "$id": "file:///@IRODS_HOME_DIRECTORY@/configuration_schemas/v4/version.json",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "type": "object",
     "properties": {
@@ -9,7 +9,7 @@
         "installation_time": {"type": "string", "format": "date-time"},
         "irods_version": {"type": "string"},
         "previous_version": {
-            "$ref": "VERSION.json"
+            "$ref": "version.json"
         }
     },
     "required": [

@@ -38,7 +38,7 @@ class Test_Irodsctl(unittest.TestCase):
             if lib.is_jsonschema_installed():
                 expected_lines = ['Validating [{0}/.irods/irods_environment.json]... Success'.format(IrodsConfig().home_directory),
                                   'Validating [{0}/server_config.json]... Success'.format(IrodsConfig().config_directory),
-                                  'Validating [{0}/VERSION.json]... Success'.format(IrodsConfig().irods_directory)]
+                                  'Validating [{0}/version.json]... Success'.format(IrodsConfig().irods_directory)]
                 assert_command([irodsctl_fullpath, 'restart', '-v'], 'STDOUT_MULTILINE', expected_lines)
             else:
                 assert_command([irodsctl_fullpath, 'restart', '-v'], 'STDERR_SINGLELINE', 'jsonschema not installed', desired_rc=0)

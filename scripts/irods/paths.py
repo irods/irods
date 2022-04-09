@@ -41,7 +41,7 @@ def database_config_path():
 def version_path():
     return os.path.join(
         irods_directory(),
-        'VERSION.json')
+        'version.json')
 
 def hosts_config_path():
     return os.path.join(

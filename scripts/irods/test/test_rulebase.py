@@ -416,7 +416,7 @@ class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
 
     def test_acSetChkFilePathPerm(self):
         # regular user will try to register a system file
-        # e.g: /var/lib/irods/VERSION.json
+        # e.g: /var/lib/irods/version.json
         path_to_register = paths.version_path()
         commands = [('ireg {path_to_register} {{target_obj}}'.format(**locals()), 'STDERR_SINGLELINE', 'PATH_REG_NOT_ALLOWED')]
         self.pep_test_helper(commands=commands, target_name=os.path.basename(path_to_register))

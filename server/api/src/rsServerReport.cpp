@@ -441,7 +441,7 @@ irods::error load_version_file( json& _version )
         irods::log(e);
         return ERROR(-1, "failed to get irods home directory");
     }
-    version_file.append("VERSION.json");
+    version_file.append("version.json");
 
     if ( fs::exists( version_file ) ) {
         return load_json_file(version_file.generic_string(), _version);

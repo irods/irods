@@ -84,7 +84,7 @@ install(
 set(IRODS_CONFIGURATION_SCHEMA_VERSION 4)
 set(
   IRODS_CONFIGURATION_SCHEMA_FILES
-  VERSION.json
+  version.json
   client_environment.json
   client_hints.json
   configuration_directory.json
@@ -137,7 +137,7 @@ install(
 )
 
 install(
-  FILES "${CMAKE_IRODS_BINARY_DIR}/VERSION.json.dist"
+  FILES "${CMAKE_IRODS_BINARY_DIR}/version.json.dist"
   DESTINATION "${IRODS_HOME_DIRECTORY}"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
 )
