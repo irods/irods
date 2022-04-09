@@ -5,17 +5,42 @@
     "properties": {
         "catalog_schema_version": {"type": "integer" },
         "commit_id": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
-        "configuration_schema_version": {"type": "integer" },
         "installation_time": {"type": "string", "format": "date-time"},
         "irods_version": {"type": "string"},
         "previous_version": {
-            "$ref": "version.json"
-        }
+            "oneOf": [
+                {
+                    "$ref": "#"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "catalog_schema_version": {"type": "integer" },
+                        "commit_id": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+                        "configuration_schema_version": {"type": "integer" },
+                        "installation_time": {"type": "string", "format": "date-time"},
+                        "irods_version": {"type": "string"},
+                        "previous_version": {
+                            "$ref": "#/properties/previous_version/oneOf/1"
+                        }
+                    },
+                    "required": [
+                        "catalog_schema_version",
+                        "commit_id",
+                        "configuration_schema_version",
+                        "irods_version"
+                    ]
+                }
+            ]
+        },
+        "schema_name": {"type": "string"},
+        "schema_version": {"type": "string" }
     },
     "required": [
         "catalog_schema_version",
         "commit_id",
-        "configuration_schema_version",
-        "irods_version"
+        "irods_version",
+        "schema_name",
+        "schema_version"
     ]
 }
