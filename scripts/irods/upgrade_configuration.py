@@ -230,7 +230,12 @@ def upgrade_config_file(irods_config, path, new_version, schema_name=None):
     else:
         schema_version = schema_version_as_int(new_version['previous_version']['configuration_schema_version'])
 
-    target_schema_version = schema_version_as_int(new_version['configuration_schema_version'])
+    if 'schema_version' in new_version:
+        # Given that the schema version can be greater than 9, we have to extract
+        # all bytes following the "v" prefix in "schema_version".
+        target_schema_version = schema_version_as_int(new_version['schema_version'][1:])
+    else:
+        target_schema_version = schema_version_as_int(new_version['configuration_schema_version'])
 
     if schema_version > target_schema_version:
         raise IrodsError('Schema version (%d) in %s exceeds the schema version (%d) specified by the new version file %s.'
