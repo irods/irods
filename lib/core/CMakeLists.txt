@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
 # target_link_libraries for object targets
+# install() NAMELINK_COMPONENT argument
 
 configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_default_paths.hpp.in"
@@ -187,6 +188,7 @@ install(
   LIBRARY
   DESTINATION "${CMAKE_INSTALL_LIBDIR}"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_RUNTIME_NAME}
+  NAMELINK_COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
 )
 
 foreach(variant IN ITEMS client server)

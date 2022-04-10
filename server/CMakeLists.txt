@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
 # target_link_libraries for object targets
+# install() NAMELINK_COMPONENT argument
 
 # create phony target to build everything in server folder
 add_custom_target(all-server)
@@ -78,6 +79,7 @@ install(
   LIBRARY
   DESTINATION "${CMAKE_INSTALL_LIBDIR}"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_RUNTIME_NAME}
+  NAMELINK_COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
 )
 
 # Install configuration schemas with updated id field
