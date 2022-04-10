@@ -98,6 +98,7 @@ install(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/reNaraMetaData.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/reSysDataObjOpr.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/reconstants.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/sharedmemory.hpp"
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/irods"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
 )

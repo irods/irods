@@ -45,10 +45,13 @@ install(
   FILES
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/HashStrategy.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/Hasher.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/MD5Strategy.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/SHA256Strategy.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/checksum.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_hasher_factory.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/ADLER32Strategy.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/MD5Strategy.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/SHA1Strategy.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/SHA256Strategy.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/SHA512Strategy.hpp"
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/irods"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
 )
