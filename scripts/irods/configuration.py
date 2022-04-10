@@ -207,7 +207,7 @@ class IrodsConfig(object):
                         '%s did not contain \'%s\'' %
                         (paths.server_config_path(), key))
 
-            key = 'configuration_schema_version'
+            key = 'schema_version'
             try:
                 uri_version = self.version[key]
             except KeyError:
@@ -216,9 +216,7 @@ class IrodsConfig(object):
                         '%s did not contain \'%s\'' %
                         (paths.version_path(), key))
 
-            self._schema_uri_prefix = '/'.join([
-                    base_uri,
-                    'v%s' % (uri_version)])
+            self._schema_uri_prefix = '/'.join([base_uri, uri_version])
             l.debug('Successfully constructed schema URI.')
         return self._schema_uri_prefix
 
