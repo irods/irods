@@ -347,6 +347,16 @@ int get_canonical_name(const char* _hostname, char* _buf, size_t _len);
 
 int load_in_addr_from_hostname(const char* _hostname, struct in_addr* _out);
 
+/// Sets the display name for a single connection in the output of "ips".
+///
+/// This function should be called before making any connections to the server.
+///
+/// \param[in] _display_name The name that identifies the connection. This is normally
+///                          the name of the client application.
+///
+/// \since 4.3.0
+void set_ips_display_name(const char* _display_name);
+
 #ifdef __cplusplus
 } // extern "C"
 
@@ -373,6 +383,7 @@ enum class hostname_resolution_scheme
 /// \since 4.2.9
 auto resolve_hostname(const std::string_view _hostname, hostname_resolution_scheme _scheme)
     -> std::optional<std::string>;
+
 #endif // __cplusplus
 
 #endif // IRODS_RC_MISC_H
