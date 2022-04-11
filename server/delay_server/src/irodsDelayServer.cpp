@@ -128,15 +128,6 @@ namespace
         return {};
     } // get_new_connection
 
-    void set_ips_display_name(const std::string_view _display_name)
-    {
-        // Setting this environment variable is required so that "ips" can display
-        // the command name alongside the connection information.
-        if (setenv(SP_OPTION, _display_name.data(), /* overwrite */ 1)) {
-            logger::delay_server::warn("Could not set environment variable [spOption] for ips.");
-        }
-    } // set_ips_display_name
-
     ruleExecSubmitInp_t fill_rule_exec_submit_inp(const std::string_view rule_id)
     {
         std::vector<std::string> exec_info;
