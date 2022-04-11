@@ -1,19 +1,18 @@
 #include "irods/irods_server_control_plane.hpp"
 
 #include "irods/genQuery.h"
-#include "irods/rcMisc.h"
-#include "irods/sockComm.h"
-#include "irods/miscServerFunct.hpp"
-#include "irods/rodsServer.hpp"
-#include "irods/irods_log.hpp"
-#include "irods/irods_server_properties.hpp"
 #include "irods/irods_buffer_encryption.hpp"
-#include "irods/irods_resource_manager.hpp"
-#include "irods/irods_server_state.hpp"
 #include "irods/irods_exception.hpp"
-#include "irods/irods_stacktrace.hpp"
-#include "irods/server_utilities.hpp"
 #include "irods/irods_logger.hpp"
+#include "irods/irods_resource_manager.hpp"
+#include "irods/irods_server_properties.hpp"
+#include "irods/irods_server_state.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/rcMisc.h"
+#include "irods/rodsServer.hpp"
+#include "irods/server_utilities.hpp"
+#include "irods/sockComm.h"
 
 #include <avro/Encoder.hh>
 #include <avro/Decoder.hh>
@@ -228,8 +227,7 @@ namespace irods
 
         int wait_milliseconds = SERVER_CONTROL_POLLING_TIME_MILLI_SEC;
 
-        server_state& svr_state = server_state::instance();
-        svr_state(server_state::PAUSED);
+        server_state::set_state(server_state::server_state::paused);
 
         int sleep_time = 0;
         bool timeout_flg = false;
@@ -252,7 +250,7 @@ namespace irods
         }
 
         // actually shut down the server
-        svr_state(server_state::STOPPED);
+        server_state::set_state(server_state::server_state::stopped);
 
         // block until server exits to return
         while (!timeout_flg) {
@@ -264,8 +262,7 @@ namespace irods
                 timeout_flg = true;
             }
 
-            std::string the_server_state = svr_state();
-            if (irods::server_state::EXITED == the_server_state) {
+            if (server_state::get_state() == server_state::server_state::exited) {
                 break;
             }
         }
@@ -284,8 +281,8 @@ namespace irods
         _output += my_env.rodsHost;
         _output += "\"\n},\n";
 
-        server_state& s = server_state::instance();
-        s(server_state::STOPPED);
+        server_state::set_state(server_state::server_state::stopped);
+
         return SUCCESS();
     } // rule_engine_server_operation_shutdown
 
@@ -299,8 +296,8 @@ namespace irods
         _output += "{\n    \"pausing\": \"";
         _output += my_env.rodsHost;
         _output += "\"\n},\n";
-        server_state& s = server_state::instance();
-        s( server_state::PAUSED );
+
+        server_state::set_state(server_state::server_state::paused);
 
         return SUCCESS();
     } // operation_pause
@@ -316,8 +313,8 @@ namespace irods
         _output += my_env.rodsHost;
         _output += "\"\n},\n";
 
-        server_state& s = server_state::instance();
-        s( server_state::RUNNING );
+        server_state::set_state(server_state::server_state::running);
+
         return SUCCESS();
     } // operation_resume
 
@@ -359,8 +356,7 @@ namespace irods
             {"delay_server_pid", irods::get_pid_from_file(irods::PID_FILENAME_DELAY_SERVER).value_or(0)}
         };
 
-        server_state& s = server_state::instance();
-        obj["status"] = s();
+        obj["status"] = to_string(server_state::get_state());
 
         auto arr = json::array();
 
@@ -598,8 +594,15 @@ namespace irods
                 // to accept requests.
                 is_accepting_requests_.store(true);
 
-                server_state& s = server_state::instance();
-                while (server_state::STOPPED != s() && server_state::EXITED != s()) {
+                while (true) {
+                    const auto state = server_state::get_state();
+
+                    if (state == server_state::server_state::stopped ||
+                        state == server_state::server_state::exited)
+                    {
+                        break;
+                    }
+
                     std::string output;
 
                     switch (ctrl_plane_signal_ ) {
@@ -656,19 +659,16 @@ namespace irods
                         case SIGHUP: {
 #ifdef __GLIBC__
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 32)
-                            rodsLog(
-                                    LOG_NOTICE,
+                            rodsLog(LOG_NOTICE,
                                     ">>> control plane :: received signal SIG%s, performing shutdown operation\n",
                                     sigabbrev_np(ctrl_plane_signal_));
 #else
-                            rodsLog(
-                                    LOG_NOTICE,
+                            rodsLog(LOG_NOTICE,
                                     ">>> control plane :: received signal %s, performing shutdown operation\n",
                                     sys_siglist[ctrl_plane_signal_]);
 #endif
 #else
-                            rodsLog(
-                                    LOG_NOTICE,
+                            rodsLog(LOG_NOTICE,
                                     ">>> control plane :: received signal (%s), performing shutdown operation\n",
                                     strsignal(ctrl_plane_signal_));
 #endif
@@ -687,10 +687,9 @@ namespace irods
 
                             break;
                         }
-
                     }
+                }
 
-                } // while
                 // exited control loop normally, we're done
                 break;
             }
@@ -1024,9 +1023,9 @@ namespace irods
         host_list_t cmd_hosts = _cmd_hosts;
 
         // add safeguards - if server is paused only allow a resume call
-        server_state& s = server_state::instance();
-        std::string the_server_state = s();
-        if ( server_state::PAUSED == the_server_state && SERVER_CONTROL_RESUME != _cmd_name ) {
+        if (server_state::get_state() == server_state::server_state::paused &&
+            SERVER_CONTROL_RESUME != _cmd_name)
+        {
             _output = SERVER_PAUSED_ERROR;
             return SUCCESS();
         }
