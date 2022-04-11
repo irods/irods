@@ -35,7 +35,15 @@
                 "stacktrace_file_processor_sleep_time_in_seconds": {"type": "integer"},
                 "transfer_buffer_size_for_parallel_transfer_in_megabytes": {"type": "integer"},
                 "transfer_chunk_size_for_parallel_transfer_in_megabytes": {"type": "integer"}
-            }
+            },
+            "required": [
+                "default_number_of_transfer_threads",
+                "default_temporary_password_lifetime_in_seconds",
+                "maximum_size_for_single_buffer_in_megabytes",
+                "maximum_temporary_password_lifetime_in_seconds",
+                "transfer_buffer_size_for_parallel_transfer_in_megabytes",
+                "transfer_chunk_size_for_parallel_transfer_in_megabytes"
+            ]
         },
         "catalog_provider_hosts": {
             "type": "array",
