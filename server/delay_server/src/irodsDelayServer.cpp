@@ -635,8 +635,11 @@ int main(int argc, char** argv)
         try {
             return irods::get_advanced_setting<const int>(irods::CFG_DELAY_SERVER_SLEEP_TIME_IN_SECONDS);
         }
-        catch (const irods::exception& e) {
-            logger::delay_server::error(e.what());
+        catch (...) {
+            logger::delay_server::warn("Could not retrieve [{}] from advanced settings configuration. "
+                                       "Using default value of {}.",
+                                       irods::CFG_DELAY_SERVER_SLEEP_TIME_IN_SECONDS,
+                                       irods::default_delay_server_sleep_time_in_seconds);
         }
 
         return irods::default_delay_server_sleep_time_in_seconds;
@@ -667,8 +670,11 @@ int main(int argc, char** argv)
         try {
             return irods::get_advanced_setting<const int>(irods::CFG_NUMBER_OF_CONCURRENT_DELAY_RULE_EXECUTORS);
         }
-        catch (const irods::exception& e) {
-            logger::delay_server::error(e.what());
+        catch (...) {
+            logger::delay_server::warn("Could not retrieve [{}] from advanced settings configuration. "
+                                       "Using default value of {}.",
+                                       irods::CFG_NUMBER_OF_CONCURRENT_DELAY_RULE_EXECUTORS,
+                                       irods::default_number_of_concurrent_delay_executors);
         }
 
         return irods::default_number_of_concurrent_delay_executors;
@@ -684,9 +690,10 @@ int main(int argc, char** argv)
                 return bytes;
             }
         }
-        catch (const irods::exception& e) {
-            logger::delay_server::warn("Could not retrieve delay queue byte limit from configuration. "
-                                       "Delay server will use as much memory as necessary.");
+        catch (...) {
+            logger::delay_server::warn("Could not retrieve [{}] from advanced settings configuration. "
+                                       "Delay server will use as much memory as necessary.",
+                                       irods::CFG_MAX_SIZE_OF_DELAY_QUEUE_IN_BYTES_KW);
         }
 
         return 0;

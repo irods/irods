@@ -15,6 +15,7 @@
 #include "irods/irods_resource_backport.hpp"
 #include "irods/irods_server_api_table.hpp"
 #include "irods/irods_server_properties.hpp"
+#include "irods/irods_logger.hpp"
 
 /**
  * \fn msiSetDefaultResc (msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecInfo_t *rei)
@@ -1280,7 +1281,7 @@ msiSetRandomScheme( ruleExecInfo_t *rei ) {
 /**
  * \fn msiSetReServerNumProc (msParam_t *xnumProc, ruleExecInfo_t *rei)
  *
- * \brief  Sets number of processes for the rule engine server
+ * \brief  Sets number of executors for the delay server.
  *
  * \module core
  *
@@ -1290,8 +1291,10 @@ msiSetRandomScheme( ruleExecInfo_t *rei ) {
  *
  * \usage See clients/icommands/test/rules/
  *
- * \param[in] xnumProc - a STR_MS_T representing number of processes
+ * \param[in] xnumProc - a STR_MS_T representing number of executors
  *     - this value can be "default" or an integer
+ *     - this value will be clamped to "number_of_concurrent_delay_rule_executors" if defined in server_config.json.
+ *     - if "number_of_concurrent_delay_rule_executors" is not defined, the number of executors will be clamped to 4.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
@@ -1316,14 +1319,18 @@ msiSetReServerNumProc(msParam_t* xnumProc, ruleExecInfo_t* rei)
 
     if (0 != std::strcmp(requested_number_of_executors, "default")) {
         executors = std::atoi(requested_number_of_executors);
-        int number_of_concurrent_executors = irods::default_number_of_concurrent_delay_executors;
+        int number_of_concurrent_executors = -1;
 
         try {
             number_of_concurrent_executors = irods::get_advanced_setting<const int>(irods::CFG_NUMBER_OF_CONCURRENT_DELAY_RULE_EXECUTORS);
         }
-        catch (const irods::exception& e) {
-            irods::log(e);
-            return e.code();
+        catch (...) {
+            number_of_concurrent_executors = irods::default_number_of_concurrent_delay_executors;
+
+            using log = irods::experimental::log::server;
+            log::warn("Could not retrieve [{}] from advanced settings configuration. Using default value of {}.",
+                      irods::CFG_NUMBER_OF_CONCURRENT_DELAY_RULE_EXECUTORS,
+                      number_of_concurrent_executors);
         }
 
         if (executors > number_of_concurrent_executors) {
