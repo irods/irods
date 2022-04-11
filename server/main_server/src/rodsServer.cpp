@@ -918,6 +918,10 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    irods::at_scope_exit deinit_server_state{[] { irods::server_state::deinit(); }};
+    irods::server_state::init();
+    irods::server_state::set_state(irods::server_state::server_state::running);
+
     create_stacktrace_directory();
 
     hnc::init("irods_hostname_cache", irods::get_hostname_cache_shared_memory_size());
@@ -1070,19 +1074,22 @@ int serverMain(const bool enable_test_mode = false, const bool write_to_stdout =
     }
 
     std::thread cron_manager_thread{[] {
-        irods::server_state& server_state = irods::server_state::instance();
-
         while (true) {
-            const auto& state = server_state();
+            try {
+                const auto state = irods::server_state::get_state();
 
-            if (irods::server_state::STOPPED == state || irods::server_state::EXITED == state) {
-                break;
+                if (irods::server_state::server_state::stopped == state ||
+                    irods::server_state::server_state::exited == state)
+                {
+                    break;
+                }
+
+                using namespace std::chrono_literals;
+                std::this_thread::sleep_for(100ms);
+
+                ix::cron::cron::instance().run();
             }
-
-            using namespace std::chrono_literals;
-            std::this_thread::sleep_for(100ms);
-
-            ix::cron::cron::instance().run();
+            catch (...) {}
         }
     }};
 
@@ -1113,27 +1120,25 @@ int serverMain(const bool enable_test_mode = false, const bool write_to_stdout =
         FD_ZERO(&sockMask);
         SvrSock = svrComm.sock;
 
-        irods::server_state& server_state = irods::server_state::instance();
-
         while (true) {
-            std::string the_server_state = server_state();
+            const auto state = irods::server_state::get_state();
 
-            if (irods::server_state::STOPPED == the_server_state) {
+            if (irods::server_state::server_state::stopped == state) {
                 procChildren(&ConnectedAgentHead);
                 // Wake up the agent factory process so it can clean up and exit
                 kill(agent_spawning_pid, SIGTERM);
-                rodsLog(LOG_NOTICE, "iRODS Server is exiting with state [%s].", the_server_state.c_str());
+                ix::log::server::info("iRODS Server is exiting with state [{}].", to_string(state));
                 break;
             }
 
-            if (irods::server_state::PAUSED == the_server_state) {
+            if (irods::server_state::server_state::paused == state) {
                 procChildren(&ConnectedAgentHead);
                 rodsSleep(0, irods::SERVER_CONTROL_FWD_SLEEP_TIME_MILLI_SEC * 1000);
                 continue;
             }
 
-            if (irods::server_state::RUNNING != the_server_state) {
-                rodsLog(LOG_NOTICE, "invalid iRODS server state [%s]", the_server_state.c_str());
+            if (irods::server_state::server_state::running != state) {
+                ix::log::server::info("Invalid iRODS server state [{}].", to_string(state));
             }
 
             FD_SET(svrComm.sock, &sockMask);
@@ -1215,7 +1220,7 @@ int serverMain(const bool enable_test_mode = false, const bool write_to_stdout =
         procChildren(&ConnectedAgentHead);
         stopProcConnReqThreads();
 
-        server_state(irods::server_state::EXITED);
+        irods::server_state::set_state(irods::server_state::server_state::exited);
     }
     catch (const irods::exception& e) {
         rodsLog(LOG_ERROR, "Exception caught in server loop\n%s", e.what());
@@ -1893,12 +1898,16 @@ agentProc_t* getConnReqFromQueue()
 {
     agentProc_t* myConnReq{};
 
-    irods::server_state& server_state = irods::server_state::instance();
+    while (true) {
+        const auto state = irods::server_state::get_state();
 
-    while (irods::server_state::STOPPED != server_state() &&
-           irods::server_state::EXITED != server_state() &&
-           !myConnReq)
-    {
+        if (irods::server_state::server_state::stopped == state ||
+            irods::server_state::server_state::exited == state ||
+            myConnReq)
+        {
+            break;
+        }
+
         boost::unique_lock<boost::mutex> read_req_lock(ReadReqCondMutex);
         if (ConnReqHead) {
             myConnReq = ConnReqHead;
@@ -1982,11 +1991,15 @@ void readWorkerTask()
         return;
     }
 
-    irods::server_state& server_state = irods::server_state::instance();
+    while (true) {
+        const auto state = irods::server_state::get_state();
 
-    while (irods::server_state::STOPPED != server_state() &&
-           irods::server_state::EXITED != server_state())
-    {
+        if (irods::server_state::server_state::stopped == state ||
+            irods::server_state::server_state::exited == state)
+        {
+            break;
+        }
+
         agentProc_t* myConnReq = getConnReqFromQueue();
         if (!myConnReq) {
             // Someone else took care of it.
@@ -2064,11 +2077,15 @@ void spawnManagerTask()
 {
     uint agentQueChkTime = 0;
 
-    irods::server_state& server_state = irods::server_state::instance();
+    while (true) {
+        const auto state = irods::server_state::get_state();
 
-    while (irods::server_state::STOPPED != server_state() &&
-           irods::server_state::EXITED != server_state())
-    {
+        if (irods::server_state::server_state::stopped == state ||
+            irods::server_state::server_state::exited == state)
+        {
+            break;
+        }
+
         boost::unique_lock<boost::mutex> spwn_req_lock(SpawnReqCondMutex);
         SpawnReqCond.wait(spwn_req_lock);
 
@@ -2204,11 +2221,15 @@ void purgeLockFileWorkerTask()
     std::size_t wait_time_ms = 0;
     const std::size_t purge_time_ms = LOCK_FILE_PURGE_TIME * 1000; // s to ms
 
-    irods::server_state& server_state = irods::server_state::instance();
+    while (true) {
+        const auto state = irods::server_state::get_state();
 
-    while (irods::server_state::STOPPED != server_state() &&
-           irods::server_state::EXITED != server_state())
-    {
+        if (irods::server_state::server_state::stopped == state ||
+            irods::server_state::server_state::exited == state)
+        {
+            break;
+        }
+
         rodsSleep(0, irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC * 1000); // second, microseconds
         wait_time_ms += irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC;
 
