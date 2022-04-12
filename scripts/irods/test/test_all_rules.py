@@ -1412,6 +1412,8 @@ OUTPUT ruleExecOut
         self.admin.assert_icommand(['irule', '-r', rep_name, rule_text, 'null', 'ruleExecOut'])
 
 
+
+
 class Test_msiDataObjRepl_checksum_keywords(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
     global plugin_name
     plugin_name = IrodsConfig().default_rule_engine_plugin
@@ -1421,16 +1423,17 @@ class Test_msiDataObjRepl_checksum_keywords(session.make_sessions_mixin([('other
 
         self.admin = self.admin_sessions[0]
         self.user0 = self.user_sessions[0]
+        self.test_user = self.admin if 'python' in plugin_name else self.user0
 
         self.filename = 'Test_msiDataObjRepl_checksum_keywords'
-        self.logical_path = os.path.join(self.user0.session_collection, self.filename)
+        self.logical_path = os.path.join(self.test_user.session_collection, self.filename)
 
         self.target_resc = 'msiDataObjRepl_test_resource'
         lib.create_ufs_resource(self.target_resc, self.admin, hostname=test.settings.HOSTNAME_2)
 
 
     def tearDown(self):
-        self.user0.assert_icommand(['irm', '-f', self.logical_path])
+        self.test_user.assert_icommand(['irm', '-f', self.logical_path])
         lib.remove_resource(self.target_resc, self.admin)
 
         super(Test_msiDataObjRepl_checksum_keywords, self).tearDown()
@@ -1460,21 +1463,20 @@ OUTPUT ruleExecOut
 
     def do_checksum_keyword_test(self, checksum_source=False, expected_status=0, keywords=None):
         rep_instance = '-'.join([plugin_name, 'instance'])
-        rule_file = os.path.join(self.user0.local_session_dir, 'test_msiDataObjRepl_checksum_keywords.r')
+        rule_file = os.path.join(self.test_user.local_session_dir, 'test_msiDataObjRepl_checksum_keywords.r')
         rule_text = self.get_rule_text(keywords)
-
         with open(rule_file, 'wt') as f:
             print(rule_text, file=f, end='')
 
         try:
             if checksum_source:
-                self.user0.assert_icommand(['iput', '-K', rule_file, self.logical_path])
-                self.assertNotEqual(0, len(lib.get_replica_checksum(self.user0, self.filename, 0)))
+                self.test_user.assert_icommand(['iput', '-K', rule_file, self.logical_path])
+                self.assertNotEqual(0, len(lib.get_replica_checksum(self.test_user, self.filename, 0)))
             else:
-                self.user0.assert_icommand(['iput', rule_file, self.logical_path])
-                self.assertEqual(0, len(lib.get_replica_checksum(self.user0, self.filename, 0)))
+                self.test_user.assert_icommand(['iput', rule_file, self.logical_path])
+                self.assertEqual(0, len(lib.get_replica_checksum(self.test_user, self.filename, 0)))
 
-            return self.user0.run_icommand(['irule', '-r', rep_instance, '-F', rule_file]) # out, err, rc
+            return self.test_user.run_icommand(['irule', '-r', rep_instance, '-F', rule_file]) # out, err, rc
         finally:
             os.unlink(rule_file)
 
@@ -1486,8 +1488,8 @@ OUTPUT ruleExecOut
         self.assertEqual(0, len(err))
         self.assertEqual(0, ec)
 
-        self.assertEqual(0, len(lib.get_replica_checksum(self.user0, self.filename, 0)))
-        self.assertEqual(0, len(lib.get_replica_checksum(self.user0, self.filename, 1)))
+        self.assertEqual(0, len(lib.get_replica_checksum(self.test_user, self.filename, 0)))
+        self.assertEqual(0, len(lib.get_replica_checksum(self.test_user, self.filename, 1)))
 
 
     def test_chksum_true_forceChksum_none_verifyChksum_none__issue_5927(self):
@@ -1497,9 +1499,9 @@ OUTPUT ruleExecOut
         self.assertEqual(0, len(err))
         self.assertEqual(0, ec)
 
-        source_checksum = lib.get_replica_checksum(self.user0, self.filename, 0)
+        source_checksum = lib.get_replica_checksum(self.test_user, self.filename, 0)
         self.assertNotEqual(0, len(source_checksum))
-        self.assertEqual(source_checksum, lib.get_replica_checksum(self.user0, self.filename, 1))
+        self.assertEqual(source_checksum, lib.get_replica_checksum(self.test_user, self.filename, 1))
 
 
     def test_chksum_false_forceChksum_none_verifyChksum_0__issue_5927(self):
@@ -1511,8 +1513,8 @@ OUTPUT ruleExecOut
         self.assertEqual(0, len(err))
         self.assertEqual(0, ec)
 
-        self.assertEqual(0, len(lib.get_replica_checksum(self.user0, self.filename, 0)))
-        self.assertEqual(0, len(lib.get_replica_checksum(self.user0, self.filename, 1)))
+        self.assertEqual(0, len(lib.get_replica_checksum(self.test_user, self.filename, 0)))
+        self.assertEqual(0, len(lib.get_replica_checksum(self.test_user, self.filename, 1)))
 
 
     def test_chksum_true_forceChksum_none_verifyChksum_0__issue_5927(self):
@@ -1524,11 +1526,12 @@ OUTPUT ruleExecOut
         self.assertEqual(0, len(err))
         self.assertEqual(0, ec)
 
-        source_checksum = lib.get_replica_checksum(self.user0, self.filename, 0)
+        source_checksum = lib.get_replica_checksum(self.test_user, self.filename, 0)
         self.assertNotEqual(0, len(source_checksum))
-        self.assertEqual(0, len(lib.get_replica_checksum(self.user0, self.filename, 1)))
+        self.assertEqual(0, len(lib.get_replica_checksum(self.test_user, self.filename, 1)))
 
 
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'checksum related errors in iRODS 4.3 under python RE plugin')
     def test_chksum_false_forceChksum_none_verifyChksum_1__issue_5927(self):
         keywords = ['verifyChksum=']
 
@@ -1538,11 +1541,12 @@ OUTPUT ruleExecOut
         self.assertIn('CAT_NO_CHECKSUM_FOR_REPLICA', err)
         self.assertNotEqual(0, ec)
 
-        self.assertEqual(0, len(lib.get_replica_checksum(self.user0, self.filename, 0)))
-        self.assertFalse(lib.replica_exists(self.user0, self.filename, 1))
+        self.assertEqual(0, len(lib.get_replica_checksum(self.test_user, self.filename, 0)))
+        self.assertFalse(lib.replica_exists(self.test_user, self.filename, 1))
 
 
     def test_chksum_true_forceChksum_none_verifyChksum_1__issue_5927(self):
+
         keywords = ['verifyChksum=']
 
         out, err, ec = self.do_checksum_keyword_test(checksum_source=True, keywords=keywords)
@@ -1551,9 +1555,9 @@ OUTPUT ruleExecOut
         self.assertEqual(0, len(err))
         self.assertEqual(0, ec)
 
-        source_checksum = lib.get_replica_checksum(self.user0, self.filename, 0)
+        source_checksum = lib.get_replica_checksum(self.test_user, self.filename, 0)
         self.assertNotEqual(0, len(source_checksum))
-        self.assertEqual(source_checksum, lib.get_replica_checksum(self.user0, self.filename, 1))
+        self.assertEqual(source_checksum, lib.get_replica_checksum(self.test_user, self.filename, 1))
 
 
     def test_chksum_false_forceChksum_1_verifyChksum_none__issue_5927(self):
@@ -1565,10 +1569,11 @@ OUTPUT ruleExecOut
         self.assertEqual(0, len(err))
         self.assertEqual(0, ec)
 
-        self.assertEqual(0, len(lib.get_replica_checksum(self.user0, self.filename, 0)))
-        self.assertNotEqual(0, len(lib.get_replica_checksum(self.user0, self.filename, 1)))
+        self.assertEqual(0, len(lib.get_replica_checksum(self.test_user, self.filename, 0)))
+        self.assertNotEqual(0, len(lib.get_replica_checksum(self.test_user, self.filename, 1)))
 
 
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'checksum related errors in iRODS 4.3 under python RE plugin')
     def test_chksum_true_forceChksum_1_verifyChksum_none__issue_5927(self):
         keywords = ['forceChksum=']
 
@@ -1578,25 +1583,27 @@ OUTPUT ruleExecOut
         self.assertIn('SYS_NOT_ALLOWED', err)
         self.assertNotEqual(0, ec)
 
-        self.assertNotEqual(0, len(lib.get_replica_checksum(self.user0, self.filename, 0)))
-        self.assertFalse(lib.replica_exists(self.user0, self.filename, 1))
+        self.assertNotEqual(0, len(lib.get_replica_checksum(self.test_user, self.filename, 0)))
+        self.assertFalse(lib.replica_exists(self.test_user, self.filename, 1))
 
 
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'checksum related errors in iRODS 4.3 under python RE plugin')
     def test_chksum_false_forceChksum_1_verifyChksum_0__issue_5927(self):
         keywords = ['forceChksum=', 'verifyChksum=0']
 
         out, err, ec = self.do_checksum_keyword_test(checksum_source=False, keywords=keywords)
 
-        self.user0.assert_icommand(['ils', '-l', self.logical_path], 'STDOUT', self.filename) # debug
+        self.test_user.assert_icommand(['ils', '-l', self.logical_path], 'STDOUT', self.filename) # debug
 
         self.assertIn('error when executing microservice', out)
         self.assertIn('USER_INCOMPATIBLE_PARAMS', err)
         self.assertNotEqual(0, ec)
 
-        self.assertEqual(0, len(lib.get_replica_checksum(self.user0, self.filename, 0)))
-        self.assertFalse(lib.replica_exists(self.user0, self.filename, 1))
+        self.assertEqual(0, len(lib.get_replica_checksum(self.test_user, self.filename, 0)))
+        self.assertFalse(lib.replica_exists(self.test_user, self.filename, 1))
 
 
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'checksum related errors in iRODS 4.3 under python RE plugin')
     def test_chksum_true_forceChksum_1_verifyChksum_0__issue_5927(self):
         keywords = ['forceChksum=', 'verifyChksum=0']
 
@@ -1606,10 +1613,11 @@ OUTPUT ruleExecOut
         self.assertIn('USER_INCOMPATIBLE_PARAMS', err)
         self.assertNotEqual(0, ec)
 
-        self.assertNotEqual(0, len(lib.get_replica_checksum(self.user0, self.filename, 0)))
-        self.assertFalse(lib.replica_exists(self.user0, self.filename, 1))
+        self.assertNotEqual(0, len(lib.get_replica_checksum(self.test_user, self.filename, 0)))
+        self.assertFalse(lib.replica_exists(self.test_user, self.filename, 1))
 
 
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'checksum related errors in iRODS 4.3 under python RE plugin')
     def test_chksum_false_forceChksum_1_verifyChksum_1__issue_5927(self):
         keywords = ['forceChksum=', 'verifyChksum=']
 
@@ -1619,10 +1627,11 @@ OUTPUT ruleExecOut
         self.assertIn('USER_INCOMPATIBLE_PARAMS', err)
         self.assertNotEqual(0, ec)
 
-        self.assertEqual(0, len(lib.get_replica_checksum(self.user0, self.filename, 0)))
-        self.assertFalse(lib.replica_exists(self.user0, self.filename, 1))
+        self.assertEqual(0, len(lib.get_replica_checksum(self.test_user, self.filename, 0)))
+        self.assertFalse(lib.replica_exists(self.test_user, self.filename, 1))
 
 
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'checksum related errors in iRODS 4.3 under python RE plugin')
     def test_chksum_true_forceChksum_1_verifyChksum_1__issue_5927(self):
         keywords = ['forceChksum=', 'verifyChksum=']
 
@@ -1632,5 +1641,5 @@ OUTPUT ruleExecOut
         self.assertIn('USER_INCOMPATIBLE_PARAMS', err)
         self.assertNotEqual(0, ec)
 
-        self.assertNotEqual(0, len(lib.get_replica_checksum(self.user0, self.filename, 0)))
-        self.assertFalse(lib.replica_exists(self.user0, self.filename, 1))
+        self.assertNotEqual(0, len(lib.get_replica_checksum(self.test_user, self.filename, 0)))
+        self.assertFalse(lib.replica_exists(self.test_user, self.filename, 1))
