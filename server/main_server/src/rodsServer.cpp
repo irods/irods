@@ -67,6 +67,7 @@
 #include <fmt/format.h>
 #include <nlohmann/json.hpp>
 
+#include <cstdlib>
 #include <cstring>
 #include <fstream>
 #include <regex>
@@ -89,9 +90,8 @@ int agent_conn_socket{};
 bool connected_to_agent{};
 
 pid_t agent_spawning_pid{};
-const char socket_dir_template[]{"/tmp/irods_sockets_XXXXXX"};
-char agent_factory_socket_dir[sizeof(socket_dir_template)]{};
-char agent_factory_socket_file[sizeof(local_addr.sun_path)]{};
+char unix_domain_socket_directory[] = "/tmp/irods_sockets_XXXXXX";
+char agent_factory_socket_file[sizeof(sockaddr_un::sun_path)]{};
 
 uint ServerBootTime;
 int SvrSock;
@@ -655,9 +655,7 @@ namespace
 
         args.push_back(nullptr);
 
-        const auto pid = RODS_FORK();
-
-        if (pid == 0) {
+        if (fork() == 0) {
             execv(args[0], args.data());
 
             // If execv() fails, the POSIX standard recommends using _exit() instead of
@@ -675,7 +673,6 @@ namespace
                 return;
             }
 
-            //
             // At this point, we don't have a database connection because grandpa never needed
             // one. initServer() calls initServerInfo() which attempts to establish a database connection.
             // initServer() immediately tears down the database connection. We can only guess that this is
@@ -684,7 +681,6 @@ namespace
             // The lines that follow temporarily re-establish a database connection only if the local
             // server is a catalog provider. This is necessary because none of the APIs invoked after this
             // database code results in the creation of a database connection.
-            //
 
             std::string service_role;
             if (const auto err = get_catalog_service_role(service_role); !err.ok()) {
@@ -951,79 +947,96 @@ int main(int argc, char** argv)
 
     setup_signal_handlers();
 
-    // Set up local_addr for socket communication.
-    std::memset(&local_addr, 0, sizeof(local_addr));
-    local_addr.sun_family = AF_UNIX;
-    char random_suffix[65];
-    get64RandomBytes(random_suffix);
-
-    char mkdtemp_template[sizeof(socket_dir_template)]{};
-    std::snprintf(mkdtemp_template, sizeof(mkdtemp_template), "%s", socket_dir_template);
-
-    const char* mkdtemp_result = mkdtemp(mkdtemp_template);
-    if (!mkdtemp_result) {
-        rodsLog(LOG_ERROR, "Error creating tmp directory for iRODS sockets, mkdtemp errno [%d]: [%s]", errno, strerror(errno));
+    // Create a directory for IPC related sockets. This directory protects IPC sockets from
+    // external applications.
+    if (!mkdtemp(unix_domain_socket_directory)) {
+        ix::log::server::error("Error creating temporary directory for iRODS sockets, mkdtemp errno [{}]: [{}].", errno, strerror(errno));
         return SYS_INTERNAL_ERR;
     }
 
-    std::snprintf(agent_factory_socket_dir, sizeof(agent_factory_socket_dir), "%s", mkdtemp_result);
-    std::snprintf(agent_factory_socket_file, sizeof(agent_factory_socket_file), "%s/irods_factory_%s", agent_factory_socket_dir, random_suffix);
+    ix::log::server::info("Setting up UNIX domain socket for agent factory ...");
+    char random_suffix[65];
+    get64RandomBytes(random_suffix);
+    std::snprintf(agent_factory_socket_file, sizeof(agent_factory_socket_file), "%s/irods_factory_%s", unix_domain_socket_directory, random_suffix);
+
+    // Set up local_addr for socket communication.
+    local_addr.sun_family = AF_UNIX;
     std::snprintf(local_addr.sun_path, sizeof(local_addr.sun_path), "%s", agent_factory_socket_file);
 
-    ix::cron::cron_builder agent_watcher;
-    const auto start_agent_server = [&] {
-        int status;
-        int w = waitpid(agent_spawning_pid, &status, WNOHANG);
-        if (w != 0) {
-            ix::log::server::info("Starting agent factory");
-            auto new_pid = fork();
-            if (0 == new_pid) {
+    const auto launch_agent_factory = [&] {
+        try {
+            // Return immediately if the agent factory exists.
+            // When the server is starting up, agent_spawning_pid will be zero. Therefore,
+            // we skip checking for the agent factory on startup.
+            if (agent_spawning_pid > 0 && waitpid(agent_spawning_pid, nullptr, WNOHANG) != -1) {
+                return;
+            }
+
+            ix::log::server::info("Forking agent factory ...");
+
+            const auto pid = fork();
+
+            if (pid == 0) {
                 close(pid_file_fd);
 
                 ProcessType = AGENT_PT;
 
-                // This appeared to be the best option at balancing cleanup and correct behavior,
-                // however this may not perform the full cleanup that would happen on a normal return from main.
-                // The other alternative considered here was throwing the code, however this was complicated
-                // by the usage of catch(...) blocks elsewhere.
-                exit(runIrodsAgentFactory(local_addr));
+                try {
+                    // Collapse non-zero error codes into one.
+                    _exit(runIrodsAgentFactory(local_addr) == 0 ? 0 : 1);
+                }
+                catch (...) {
+                    // If an exception is thrown for any reason, terminate the agent factory.
+                    _exit(1);
+                }
             }
-            else {
+            else if (pid > 0) {
+                // If the agent factory is no longer available (e.g. it crashed or something), close the
+                // socket associated with the crashed agent factory.
                 close(agent_conn_socket);
-                ix::log::server::info("Restarting agent factory");
+
+                ix::log::server::info("Connecting to agent factory [agent_factory_pid={}] ...", pid);
+
                 agent_conn_socket = socket(AF_UNIX, SOCK_STREAM, 0);
 
-                std::time_t sock_connect_start_time = time(nullptr);
+                const auto start_time = std::time(nullptr);
+
+                // Loop until grandpa establishes a connection to the new agent factory.
+                // If more than five seconds have elapsed, perhaps something bad has happened.
+                // In this case, just terminate the program.
                 while (true) {
-                    const auto len = sizeof(local_addr);
-                    ssize_t status = connect(agent_conn_socket, (const struct sockaddr*) &local_addr, len);
-                    if (status >= 0) {
+                    if (connect(agent_conn_socket, (const struct sockaddr*) &local_addr, sizeof(local_addr)) >= 0) {
                         break;
                     }
 
-                    int saved_errno = errno;
-                    if ((std::time(nullptr) - sock_connect_start_time) > 5) {
-                        rodsLog(LOG_ERROR, "Error connecting to agent factory socket, errno = [%d]: %s",
-                                saved_errno, strerror(saved_errno));
+                    const auto saved_errno = errno;
+
+                    if ((std::time(nullptr) - start_time) > 5) {
+                        ix::log::server::error("Error connecting to agent factory socket, errno = [{}]: {}",
+                                               saved_errno, strerror(saved_errno));
                         exit(SYS_SOCK_CONNECT_ERR);
                     }
-
                 }
 
-                agent_spawning_pid = new_pid;
+                agent_spawning_pid = pid;
             }
         }
-    };
+        catch (...) {
+            // Do not allow exceptions to escape the CRON task!
+            // Failing to do so can cause the CRON manager thread to crash the server.
+        }
+    }; // launch_agent_factory
 
-    start_agent_server();
-    agent_watcher.interval(5).task(start_agent_server);
+    launch_agent_factory();
+    ix::cron::cron_builder agent_watcher;
+    agent_watcher.interval(5).task(launch_agent_factory);
     ix::cron::cron::instance().add_task(agent_watcher.build());
 
     ix::cron::cron_builder cache_clearer;
     cache_clearer
         .interval(600)
         .task([] {
-            ix::log::server::info("Expiring old cache entries");
+            ix::log::server::trace("Expiring old cache entries");
             irods::experimental::net::hostname_cache::erase_expired_entries();
             irods::experimental::net::dns_cache::erase_expired_entries();
         });
@@ -1231,7 +1244,7 @@ int serverMain(const bool enable_test_mode = false, const bool write_to_stdout =
 
     close(agent_conn_socket);
     unlink(agent_factory_socket_file);
-    rmdir(agent_factory_socket_dir);
+    rmdir(unix_domain_socket_directory);
 
     ix::log::server::info("iRODS Server is done.");
 
@@ -1249,7 +1262,7 @@ serverExit()
 
     close(agent_conn_socket);
     unlink(agent_factory_socket_file);
-    rmdir(agent_factory_socket_dir);
+    rmdir(unix_domain_socket_directory);
 
     // Wake and terminate agent spawning process
     kill(agent_spawning_pid, SIGTERM);
@@ -1418,7 +1431,7 @@ int execAgent(int newSock, startupPack_t* startupPack)
 
     sockaddr_un tmp_socket_addr{};
     char tmp_socket_file[sizeof(tmp_socket_addr.sun_path)]{};
-    std::snprintf(tmp_socket_file, sizeof(tmp_socket_file), "%s/irods_agent_%s", agent_factory_socket_dir, random_suffix);
+    std::snprintf(tmp_socket_file, sizeof(tmp_socket_file), "%s/irods_agent_%s", unix_domain_socket_directory, random_suffix);
 
     ssize_t status = send(agent_conn_socket, tmp_socket_file, strlen(tmp_socket_file), 0);
     if (status < 0) {
@@ -1867,6 +1880,8 @@ int initServerMain(rsComm_t *svrComm,
     // Record port, PID, and CWD into a well-known file.
     recordServerProcess(svrComm);
 
+    // Setup the delay server CRON task.
+    // The delay server will launch just before we enter the server's main loop.
     ix::cron::cron_builder delay_server;
     delay_server
         .interval(5)
