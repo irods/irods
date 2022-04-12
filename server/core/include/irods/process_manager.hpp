@@ -3,6 +3,9 @@
 
 /// \file
 
+#include "irods/irods_exception.hpp"
+#include "irods/irods_logger.hpp"
+
 #include <unistd.h>
 
 #include <chrono>
@@ -198,12 +201,22 @@ namespace irods::experimental::cron
         /// \since 4.3.0
         void run()
         {
-            try {
-                for (auto&& task : tasks_) {
+            using log = irods::experimental::log::server;
+
+            for (auto&& task : tasks_) {
+                try {
                     task();
                 }
+                catch (const irods::exception& e) {
+                    log::error("[CRON Task] Caught iRODS exception: {}", e.what());
+                }
+                catch (const std::exception& e) {
+                    log::error("[CRON Task] Caught exception: {}", e.what());
+                }
+                catch (...) {
+                    log::error("[CRON Task] Caught unknown exception.");
+                }
             }
-            catch (...) {}
         }
 
         /// Add a task to the cron facility.
