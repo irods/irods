@@ -25,6 +25,7 @@ from ..configuration import IrodsConfig
 from ..controller import IrodsController
 from . import session
 
+plugin_name = IrodsConfig().default_rule_engine_plugin
 
 class ResourceBase(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass'), ('bobby', 'bpass')])):
 
@@ -287,6 +288,8 @@ class ResourceSuite(ResourceBase):
     ###################
     # iput
     ###################
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only run for native rule language')
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_ssl_iput_with_rods_env(self):
         server_key_path = os.path.join(self.admin.local_session_dir, 'server.key')
@@ -346,6 +349,7 @@ class ResourceSuite(ResourceBase):
 
             IrodsController().restart()
 
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only run for native rule language')
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_ssl_iput_small_and_large_files(self):
         # set up client and server side for ssl handshake
