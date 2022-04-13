@@ -228,14 +228,14 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
                 res_1=[row_format(r) for r in q]
                 row_count = q.total_rows()
                 res_2=[row_format(r) for r in q.copy(offset=row_count-1)]
-                callback.writeLine('stdout',repr( [len(x) for x in res_1,res_2] +\
+                callback.writeLine('stdout',repr( [len(x) for x in (res_1,res_2)] +\
                                                   [
                                                    (res_1 + res_2 ==
-                                                    [TestCollection+"/"+x for x in ["%04o"%y for y in 0,{max_count}]])
+                                                    [TestCollection+"/"+x for x in ["%04o"%y for y in (0,{max_count})]])
                                                   ] ))
                 '''),
             "offset_limit_",
-            lambda: True # lambda : output.replace(" ","").strip() == "[1,1,True]"
+            lambda : output.replace(" ","").strip() == "[1,1,True]"
         ), ( #----------------
             frame_rule('''\
                 q = Query(callback,
