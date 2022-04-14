@@ -1196,6 +1196,7 @@ OUTPUT ruleExecOut
         do_test('data_object')
         do_test('collection')
 
+    # Note topology tests are not typically run with PREP for release
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for PREP and Topology Testing')
     def test_msi_touch__issue_4669(self):
         data_object = os.path.join(self.admin.session_collection, 'issue_4669')
