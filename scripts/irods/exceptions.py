@@ -3,3 +3,6 @@ class IrodsError(Exception):
 
 class IrodsWarning(IrodsError):
     pass
+
+class IrodsSchemaError(Exception):
+    pass
