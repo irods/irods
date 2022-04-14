@@ -54,13 +54,14 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
                 with tempfile.NamedTemporaryFile(prefix='test_re_serialization__prep_13') as f:
                     lib.make_file(f.name, 80, contents='arbitrary')
                     self.admin.assert_icommand(['iput', f.name])
+            time.sleep(5)
             occur = lib.count_occurrences_of_regexp_in_log( paths.server_log_path(),
-                                                            (r'^.*writeLine: inString =\s*(\S+)=(\S*).*$',re.M),
+                                                            (r'writeLine: inString =\s*(\S+)=(\S*)',re.M),
                                                             start_index=initial_size_of_server_log)
             self.assertTrue(3 == len(occur))
-            self.assertTrue(occur[0].group(1) == 'physical_path'   and occur[0].group(2).startswith(os.path.sep))
-            self.assertTrue(occur[1].group(1) == 'logical_path'    and occur[1].group(2).startswith('/'))
-            self.assertTrue(occur[2].group(1) == 'proxy_user_name' and occur[2].group(2) == self.admin.username)
+            self.assertTrue(occur[0].group(1) == b'physical_path'   and occur[0].group(2).decode('utf-8').startswith(os.path.sep))
+            self.assertTrue(occur[1].group(1) == b'logical_path'    and occur[1].group(2).startswith(b'/'))
+            self.assertTrue(occur[2].group(1) == b'proxy_user_name' and occur[2].group(2).decode('utf-8') == self.admin.username)
         finally:
             IrodsController().restart()
 
@@ -75,11 +76,12 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
                 with tempfile.NamedTemporaryFile(prefix='test_re_serialization__prep_55') as f:
                     lib.make_file(f.name, 80, contents='arbitrary')
                     self.admin.assert_icommand(['iput', f.name])
+            time.sleep(5)
             occur = lib.count_occurrences_of_regexp_in_log( paths.server_log_path(),
-                                                            (r'^.*writeLine: inString =\s*(\S+)=(\S*).*$',re.M),
+                                                            (r'writeLine: inString =\s*(\S+)=(\S*)',re.M),
                                                             start_index=initial_size_of_server_log)
             self.assertTrue(1 == len(occur))
-            self.assertTrue(occur[0].group(1) == 'user_rods_zone' and occur[0].group(2) == self.admin.zone_name)
+            self.assertTrue(occur[0].group(1) == b'user_rods_zone' and occur[0].group(2).decode('utf-8') == self.admin.zone_name)
         finally:
             IrodsController().restart()
 
