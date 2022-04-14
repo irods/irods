@@ -137,6 +137,7 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
         rule = 'msiCollCreate("{0}", 0, *ignored)'.format(collection + '/')
         self.admin.assert_icommand(['irule', '-r', rep, rule, 'null', 'ruleExecOut'], 'STDERR', ['-809000 CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME'])
 
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only run for native rule language')
     def test_trailing_slashes_generate_an_error_when_opening_data_objects__issue_3892(self):
         data_object = os.path.join(self.admin.session_collection, 'dobj_3892')
 

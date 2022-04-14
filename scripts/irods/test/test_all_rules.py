@@ -784,6 +784,7 @@ OUTPUT ruleExecOut
             if os.path.exists(tar_file_name):
                 os.unlink(tar_file_name)
 
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only run for native rule language')
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_msiRenameCollection_does_rename_collections__issue_4597(self):
         # Create a collection, "col.a".
@@ -855,6 +856,7 @@ OUTPUT ruleExecOut'''
         self.admin.assert_icommand(['ils', src], 'STDOUT', [src])
         self.admin.assert_icommand(['ils', dst], 'STDOUT', [dst])
 
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only run for native rule language')
     def test_msiDataObjPhymv_to_resource_hierarchy__3234(self):
         source_resource = self.admin.default_resource
         passthrough_resource = 'phymv_pt'
@@ -1146,6 +1148,7 @@ OUTPUT ruleExecOut
         do_test('data_object')
         do_test('collection')
 
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only run for native rule language')
     def test_msi_touch__issue_4669(self):
         data_object = os.path.join(self.admin.session_collection, 'issue_4669')
 
