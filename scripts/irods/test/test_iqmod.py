@@ -8,6 +8,9 @@ else:
 
 from . import session
 from .. import test
+from ..configuration import IrodsConfig
+
+plugin_name = IrodsConfig().default_rule_engine_plugin
 
 class Test_Iqmod(session.make_sessions_mixin([('otherrods', 'rods')], []), unittest.TestCase):
 
@@ -18,6 +21,7 @@ class Test_Iqmod(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
     def tearDown(self):
         super(Test_Iqmod, self).tearDown()
 
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only run for native rule language')
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_iqmod_does_not_accept_invalid_priority_levels__issue_2759(self):
         # Schedule a delay rule.
