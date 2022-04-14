@@ -14,7 +14,7 @@ import datetime
 
 from . import six
 
-from .exceptions import IrodsError, IrodsWarning
+from .exceptions import IrodsError, IrodsWarning, IrodsSchemaError
 from . import lib
 from . import json_validation
 from .password_obfuscation import encode, decode
@@ -199,25 +199,16 @@ class IrodsConfig(object):
             l.debug('Attempting to construct schema URI...')
 
             key = 'schema_validation_base_uri'
-            try:
-                base_uri = self.server_config[key]
-            except KeyError:
-                base_uri = None
-                raise IrodsWarning(
-                        '%s did not contain \'%s\'' %
-                        (paths.server_config_path(), key))
+            self.throw_if_property_is_not_defined_in_server_config(key)
+            base_uri = self.server_config[key]
 
             key = 'schema_version'
-            try:
-                uri_version = self.version[key]
-            except KeyError:
-                uri_version = None
-                raise IrodsWarning(
-                        '%s did not contain \'%s\'' %
-                        (paths.version_path(), key))
+            self.throw_if_property_is_not_defined_in_server_config(key)
+            schema_version = self.server_config[key]
 
-            self._schema_uri_prefix = '/'.join([base_uri, uri_version])
+            self._schema_uri_prefix = '/'.join([base_uri, schema_version])
             l.debug('Successfully constructed schema URI.')
+
         return self._schema_uri_prefix
 
     @property
@@ -238,8 +229,23 @@ class IrodsConfig(object):
             print(encode(value, mtime=mtime), end='', file=f)
         os.utime(paths.password_file_path(), (mtime, mtime))
 
+    def throw_if_property_is_not_defined_in_server_config(self, property_name):
+        if property_name not in self.server_config:
+            raise IrodsSchemaError('Cannot validate configuration files. [{}] is missing a required property: [{}].'
+                    .format(paths.server_config_path(), property_name))
+
     def validate_configuration(self):
         l = logging.getLogger(__name__)
+
+        key = 'schema_validation_base_uri'
+        self.throw_if_property_is_not_defined_in_server_config(key)
+
+        if self.server_config[key] == 'off':
+            l.warn(('Schema validation is disabled; json files will not be validated against schemas. '
+                    'To re-enable schema validation, supply a URI to a set of iRODS schemas in the field '
+                    '"schema_validation_base_uri" and a valid version in the field "schema_version" in the '
+                    'server configuration file (located in %s).'), paths.server_config_path())
+            return
 
         configuration_schema_mapping = {
             'server_config': {
@@ -257,10 +263,6 @@ class IrodsConfig(object):
         }
 
         skipped = []
-
-        if self.server_config['schema_validation_base_uri'] == 'off':
-            l.warn('Schema validation is disabled; json files will not be validated against schemas. To re-enable schema validation, supply a URL to a set of iRODS schemas in the field "schema_validation_base_uri" and a valid version in the field "schema_version" in the server configuration file (located in %s).', paths.server_config_path())
-            return
 
         # schema_uri_suffix is the key of a single element within configuration_schema_mapping (e.g. 'server_config').
         # config_file is the dict mapped to the key (e.g. configuration_schema_mapping['server_config']).
