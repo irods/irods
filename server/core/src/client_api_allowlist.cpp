@@ -1,10 +1,11 @@
 #include "irods/client_api_allowlist.hpp"
 
 #include "irods/apiNumber.h"
-#include "irods/rodsErrorTable.h"
-#include "irods/irods_server_properties.hpp"
-#include "irods/irods_rs_comm_query.hpp"
+#include "irods/irods_configuration_keywords.hpp"
 #include "irods/irods_logger.hpp"
+#include "irods/irods_rs_comm_query.hpp"
+#include "irods/irods_server_properties.hpp"
+#include "irods/rodsErrorTable.h"
 
 #include <exception>
 
@@ -187,22 +188,26 @@ namespace irods
 
     auto client_api_allowlist::enforce(const rsComm_t& comm) const noexcept -> bool
     {
-        if (!irods::is_privileged_client(comm)) {
-            try {
-                using T = const std::string;
-                const auto& keyword = irods::CFG_CLIENT_API_ALLOWLIST_POLICY_KW;
-                return "enforce" == irods::get_server_property<T>(keyword) && is_client_to_agent_connection();
-            }
-            catch (const irods::exception&) {
-                logger::api::debug("Skipping client API allowlist. Server is not configured to enforce the API "
-                                   "or the connection is not a client-to-agent connection.");
-            }
-        }
-        else {
-            logger::api::debug("Skipping client API allowlist. Client has administrative privileges.");
+        if (irods::is_privileged_client(comm)) {
+            logger::api::trace("Client has administrative privileges. Skipping client API allowlist.");
+            return false;
         }
 
-        return false;
+        if (!is_client_to_agent_connection()) {
+            logger::api::trace("Connection is a server-to-server connection. Skipping client API allowlist.");
+            return false;
+        }
+
+        const auto& config = irods::server_properties::instance().map();
+
+        if (const auto iter = config.find(irods::CFG_CLIENT_API_ALLOWLIST_POLICY_KW); iter != std::end(config)) {
+            return iter->get_ref<const std::string&>() == "enforce";
+        }
+
+        logger::api::trace("Could not retrieve [{}] from configuration. Using default value of \"enforce\".",
+                           irods::CFG_CLIENT_API_ALLOWLIST_POLICY_KW);
+
+        return true;
     }
 
     auto client_api_allowlist::contains(int api_number) const noexcept -> bool
@@ -214,16 +219,17 @@ namespace irods
     auto client_api_allowlist::add(int api_number) -> void
     {
         if (contains(api_number)) {
-            logger::api::debug("API number [{}] has already been added to the client API allowlist", api_number);
+            logger::api::trace("API number [{}] has already been added to the client API allowlist", api_number);
             return;
         }
 
         try {
             api_numbers_.push_back(api_number);
-            logger::api::debug("Added API number [{}] to the client API allowlist.", api_number);
+            logger::api::trace("Added API number [{}] to the client API allowlist.", api_number);
         }
         catch (const std::exception& e) {
-            logger::api::error("Could not add API number [{}] to allowlist [error_code => %d, exception => %s]",
+            logger::api::error("Could not add API number [{}] to client API allowlist "
+                               "[error_code={}, exception={}]",
                                api_number, SYS_INTERNAL_ERR, e.what());
         }
     }
