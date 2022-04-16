@@ -31,9 +31,9 @@ rsModColl( rsComm_t *rsComm, collInp_t *modCollInp ) {
             return ret.code();
         }
 
-        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             status = _rsModColl( rsComm, modCollInp );
-        } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+        } else if( irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
             status = SYS_NO_RCAT_SERVER_ERR;
         } else {
             rodsLog(
@@ -59,7 +59,7 @@ _rsModColl( rsComm_t *rsComm, collInp_t *modCollInp ) {
         return ret.code();
     }
 
-    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+    if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         int status;
         collInfo_t collInfo;
         char *tmpStr;
@@ -134,7 +134,7 @@ _rsModColl( rsComm_t *rsComm, collInp_t *modCollInp ) {
         }
 
         return status;
-    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+    } else if( irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
         return SYS_NO_RCAT_SERVER_ERR;
     } else {
         rodsLog(

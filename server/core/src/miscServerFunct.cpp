@@ -189,8 +189,8 @@ setupSrvPortalForParaOpr( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
     else {
         int port_range_count;
         try {
-            const auto svr_port_range_start = irods::get_server_property<const int>(irods::CFG_SERVER_PORT_RANGE_START_KW);
-            const auto svr_port_range_end = irods::get_server_property<const int>(irods::CFG_SERVER_PORT_RANGE_END_KW);
+            const auto svr_port_range_start = irods::get_server_property<const int>(irods::KW_CFG_SERVER_PORT_RANGE_START);
+            const auto svr_port_range_end = irods::get_server_property<const int>(irods::KW_CFG_SERVER_PORT_RANGE_END);
             port_range_count = svr_port_range_end - svr_port_range_start + 1;
         } catch ( irods::exception& e ) {
             return e.code();
@@ -680,7 +680,7 @@ partialDataPut( portalTransferInp_t *myInput ) {
 
     int chunk_size;
     try {
-        chunk_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_CHUNK_SIZE_PARA_TRANS) * 1024 * 1024;
+        chunk_size = irods::get_advanced_setting<const int>(irods::KW_CFG_TRANS_CHUNK_SIZE_PARA_TRANS) * 1024 * 1024;
     } catch ( const irods::exception& e ) {
         irods::log(e);
         return;
@@ -688,7 +688,7 @@ partialDataPut( portalTransferInp_t *myInput ) {
 
     int trans_buff_size = 0;
     try {
-        trans_buff_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
+        trans_buff_size = irods::get_advanced_setting<const int>(irods::KW_CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
     } catch ( const irods::exception& e ) {
         irods::log(e);
         return;
@@ -906,7 +906,7 @@ void partialDataGet(
 
     int trans_buff_size = 0;
     try {
-        trans_buff_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
+        trans_buff_size = irods::get_advanced_setting<const int>(irods::KW_CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
     } catch ( const irods::exception& e ) {
         irods::log(e);
         return;
@@ -919,7 +919,7 @@ void partialDataGet(
 
     int chunk_size;
     try {
-        chunk_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_CHUNK_SIZE_PARA_TRANS) * 1024 * 1024;
+        chunk_size = irods::get_advanced_setting<const int>(irods::KW_CFG_TRANS_CHUNK_SIZE_PARA_TRANS) * 1024 * 1024;
     } catch ( const irods::exception& e ) {
         irods::log(e);
         return;
@@ -1134,7 +1134,7 @@ remToLocPartialCopy( portalTransferInp_t *myInput ) {
 
     int trans_buff_size;
     try {
-        trans_buff_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
+        trans_buff_size = irods::get_advanced_setting<const int>(irods::KW_CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
     } catch ( const irods::exception& e ) {
         irods::log(e);
         return;
@@ -1671,7 +1671,7 @@ sameHostPartialCopy( portalTransferInp_t *myInput ) {
 
     int trans_buff_size;
     try {
-        trans_buff_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
+        trans_buff_size = irods::get_advanced_setting<const int>(irods::KW_CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
     } catch ( const irods::exception& e ) {
         irods::log(e);
         return;
@@ -1787,7 +1787,7 @@ void locToRemPartialCopy(portalTransferInp_t *myInput)
 
     int trans_buff_size;
     try {
-        trans_buff_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
+        trans_buff_size = irods::get_advanced_setting<const int>(irods::KW_CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
     } catch ( const irods::exception& e ) {
         irods::log(e);
         return;
@@ -2528,7 +2528,7 @@ singleRemToLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
 
     int trans_buff_size;
     try {
-        trans_buff_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
+        trans_buff_size = irods::get_advanced_setting<const int>(irods::KW_CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
     } catch ( const irods::exception& e ) {
         irods::log(e);
         return e.code();
@@ -2592,7 +2592,7 @@ singleLocToRemCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
 
     int trans_buff_size;
     try {
-        trans_buff_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
+        trans_buff_size = irods::get_advanced_setting<const int>(irods::KW_CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
     } catch ( const irods::exception& e ) {
         irods::log(e);
         return e.code();
@@ -2949,7 +2949,7 @@ checkModArgType( const char *arg ) {
 irods::error setRECacheSaltFromEnv() {
     // Should only ever set the cache salt once
     try {
-        const auto& existing_name = irods::get_server_property<const std::string>( irods::CFG_RE_CACHE_SALT_KW);
+        const auto& existing_name = irods::get_server_property<const std::string>( irods::KW_CFG_RE_CACHE_SALT);
         rodsLog( LOG_NOTICE, "setRECacheSaltFromEnv: mutex name already set [%s]", existing_name.c_str() );
         return SUCCESS();
     } catch ( const irods::exception& ) {
@@ -2960,7 +2960,7 @@ irods::error setRECacheSaltFromEnv() {
         }
 
         try {
-            irods::set_server_property<std::string>( irods::CFG_RE_CACHE_SALT_KW, p_mutex_salt );
+            irods::set_server_property<std::string>( irods::KW_CFG_RE_CACHE_SALT, p_mutex_salt );
         } catch ( const irods::exception& e ) {
             rodsLog( LOG_ERROR, "setRECacheSaltFromEnv: failed to set server_properties" );
             return irods::error(e);
@@ -3082,7 +3082,7 @@ irods::error get_catalog_service_role(
     std::string& _role ) {
 
     try {
-        _role = irods::get_server_property<std::string>(irods::CFG_CATALOG_SERVICE_ROLE);
+        _role = irods::get_server_property<std::string>(irods::KW_CFG_CATALOG_SERVICE_ROLE);
     } catch ( const irods::exception& e ) {
         return irods::error(e);
     }
@@ -3094,7 +3094,7 @@ irods::error get_catalog_service_role(
 irods::error get_default_rule_plugin_instance(std::string& _instance_name)
 {
     try {
-        _instance_name = irods::get_server_property<const nlohmann::json&>(std::vector<std::string>{irods::CFG_PLUGIN_CONFIGURATION_KW, irods::PLUGIN_TYPE_RULE_ENGINE})[0].at(irods::CFG_INSTANCE_NAME_KW).get<std::string>();
+        _instance_name = irods::get_server_property<const nlohmann::json&>(std::vector<std::string>{irods::KW_CFG_PLUGIN_CONFIGURATION, irods::KW_CFG_PLUGIN_TYPE_RULE_ENGINE})[0].at(irods::KW_CFG_INSTANCE_NAME).get<std::string>();
     }
     catch (const irods::exception& e) {
         return irods::error(e);
@@ -3112,9 +3112,9 @@ irods::error get_default_rule_plugin_instance(std::string& _instance_name)
 irods::error list_rule_plugin_instances(std::vector<std::string>& _instance_names)
 {
     try {
-        const auto& rule_engines = irods::get_server_property<const nlohmann::json&>(std::vector<std::string>{irods::CFG_PLUGIN_CONFIGURATION_KW, irods::PLUGIN_TYPE_RULE_ENGINE});
+        const auto& rule_engines = irods::get_server_property<const nlohmann::json&>(std::vector<std::string>{irods::KW_CFG_PLUGIN_CONFIGURATION, irods::KW_CFG_PLUGIN_TYPE_RULE_ENGINE});
         for (const auto& el : rule_engines) {
-            _instance_names.push_back(el.at(irods::CFG_INSTANCE_NAME_KW).get_ref<const std::string&>());
+            _instance_names.push_back(el.at(irods::KW_CFG_INSTANCE_NAME).get_ref<const std::string&>());
         }
     }
     catch (const irods::exception& e) {

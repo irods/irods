@@ -172,8 +172,8 @@ int initServerInfo(int processType, rsComm_t* rsComm)
     int status = 0;
 
     try {
-        const auto& zone_name = irods::get_server_property<const std::string>(irods::CFG_ZONE_NAME);
-        const auto zone_port = irods::get_server_property<const int>( irods::CFG_ZONE_PORT);
+        const auto& zone_name = irods::get_server_property<const std::string>(irods::KW_CFG_ZONE_NAME);
+        const auto zone_port = irods::get_server_property<const int>( irods::KW_CFG_ZONE_PORT);
 
         /* queue the local zone */
         status = queueZone(zone_name.c_str(), zone_port, nullptr, nullptr);
@@ -218,7 +218,7 @@ int initServerInfo(int processType, rsComm_t* rsComm)
         return ret.code();
     }
 
-    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+    if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         status = connectRcat();
         if ( status < 0 ) {
             rodsLog(
@@ -306,13 +306,13 @@ int initRcatServerHostByFile()
 {
     std::string prop_str;
     try {
-        snprintf( KerberosName, sizeof( KerberosName ), "%s", irods::get_server_property<const std::string>(irods::CFG_KERBEROS_NAME_KW).c_str());
+        snprintf( KerberosName, sizeof( KerberosName ), "%s", irods::get_server_property<const std::string>(irods::KW_CFG_KERBEROS_NAME).c_str());
     }
     catch (const irods::exception& e) {}
 
     try {
         rodsHostAddr_t addr{};
-        const auto& catalog_provider_hosts = irods::get_server_property<const nlohmann::json&>(irods::CFG_CATALOG_PROVIDER_HOSTS_KW);
+        const auto& catalog_provider_hosts = irods::get_server_property<const nlohmann::json&>(irods::KW_CFG_CATALOG_PROVIDER_HOSTS);
         snprintf(addr.hostAddr, sizeof(addr.hostAddr), "%s", catalog_provider_hosts[0].get_ref<const std::string&>().c_str());
 
         rodsServerHost_t* tmp_host{};
@@ -335,7 +335,7 @@ int initRcatServerHostByFile()
     // slave icat host
 
     try {
-        snprintf( localSID, sizeof( localSID ), "%s", irods::get_server_property<const std::string>(irods::CFG_ZONE_KEY_KW).c_str() );
+        snprintf( localSID, sizeof( localSID ), "%s", irods::get_server_property<const std::string>(irods::KW_CFG_ZONE_KEY).c_str() );
     } catch ( const irods::exception& e ) {
         try {
             snprintf( localSID, sizeof( localSID ), "%s", irods::get_server_property<const std::string>(LOCAL_ZONE_SID_KW).c_str() );
@@ -347,12 +347,12 @@ int initRcatServerHostByFile()
 
     // try for new federation config
     try {
-        for (const auto& federation : irods::get_server_property<const nlohmann::json&>(irods::CFG_FEDERATION_KW)) {
+        for (const auto& federation : irods::get_server_property<const nlohmann::json&>(irods::KW_CFG_FEDERATION)) {
             try {
                 try {
-                    const auto& fed_zone_key             = federation.at(irods::CFG_ZONE_KEY_KW).get_ref<const std::string&>();
-                    const auto& fed_zone_name            = federation.at(irods::CFG_ZONE_NAME_KW).get_ref<const std::string&>();
-                    const auto& fed_zone_negotiation_key = federation.at(irods::CFG_NEGOTIATION_KEY_KW).get_ref<const std::string&>();
+                    const auto& fed_zone_key             = federation.at(irods::KW_CFG_ZONE_KEY).get_ref<const std::string&>();
+                    const auto& fed_zone_name            = federation.at(irods::KW_CFG_ZONE_NAME).get_ref<const std::string&>();
+                    const auto& fed_zone_negotiation_key = federation.at(irods::KW_CFG_NEGOTIATION_KEY).get_ref<const std::string&>();
 
                     // store in remote_SID_key_map
                     remote_SID_key_map[fed_zone_name] = std::make_pair(fed_zone_key, fed_zone_negotiation_key);
@@ -387,7 +387,7 @@ int initRcatServerHostByFile()
                     std::string fed_zone_key = rem_sid.substr(pos + 1);
                     // use our negotiation key for the old configuration
                     try {
-                        const auto& neg_key = irods::get_server_property<const std::string>(irods::CFG_NEGOTIATION_KEY_KW);
+                        const auto& neg_key = irods::get_server_property<const std::string>(irods::KW_CFG_NEGOTIATION_KEY);
                         remote_SID_key_map[fed_zone_name] = std::make_pair(fed_zone_key, neg_key);
                     }
                     catch (const irods::exception& e) {
@@ -420,7 +420,7 @@ initZone( rsComm_t *rsComm ) {
 
     boost::optional<std::string> zone_name;
     try {
-        zone_name.reset(irods::get_server_property<std::string>(irods::CFG_ZONE_NAME));
+        zone_name.reset(irods::get_server_property<std::string>(irods::KW_CFG_ZONE_NAME));
     } catch ( const irods::exception& e ) {
         irods::log( irods::error(e) );
         return e.code();
@@ -657,7 +657,7 @@ cleanup() {
         disconnectAllSvrToSvrConn();
     }
 
-    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+    if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         disconnectRcat();
     }
 
@@ -685,15 +685,15 @@ signalExit( int ) {
 int initHostConfigByFile()
 {
     try {
-        const auto& hosts_config = irods::get_server_property<const nlohmann::json&>(irods::CFG_HOST_RESOLUTION_KW);
-        const auto& host_entries = hosts_config.at(irods::CFG_HOST_ENTRIES_KW); // An array.
+        const auto& hosts_config = irods::get_server_property<const nlohmann::json&>(irods::KW_CFG_HOST_RESOLUTION);
+        const auto& host_entries = hosts_config.at(irods::KW_CFG_HOST_ENTRIES); // An array.
 
         for (auto&& entry : host_entries) {
             try {
                 auto* svr_host = static_cast<rodsServerHost_t*>(std::malloc(sizeof(rodsServerHost_t)));
                 std::memset(svr_host, 0, sizeof(rodsServerHost_t));
 
-                const auto& address_type = entry.at(irods::CFG_ADDRESS_TYPE_KW).get_ref<const std::string&>();
+                const auto& address_type = entry.at(irods::KW_CFG_ADDRESS_TYPE).get_ref<const std::string&>();
 
                 if (address_type == "remote") {
                     svr_host->localFlag = REMOTE_HOST;
@@ -713,7 +713,7 @@ int initHostConfigByFile()
                     rodsLog(LOG_ERROR, "queueRodsServerHost failed");
                 }
 
-                for (auto&& address : entry.at(irods::CFG_ADDRESSES_KW)) {
+                for (auto&& address : entry.at(irods::KW_CFG_ADDRESSES)) {
                     try {
                         if (queueHostName(svr_host, address.get_ref<const std::string&>().data(), 0) < 0) {
                             rodsLog(LOG_ERROR, "queueHostName failed");
@@ -753,9 +753,9 @@ initRsComm( rsComm_t *rsComm ) {
     }
 
     try {
-        const auto& zone_name = irods::get_server_property<const std::string>(irods::CFG_ZONE_NAME);
-        const auto& zone_user = irods::get_server_property<const std::string>(irods::CFG_ZONE_USER);
-        const auto& zone_auth_scheme = irods::get_server_property<const std::string>(irods::CFG_ZONE_AUTH_SCHEME);
+        const auto& zone_name = irods::get_server_property<const std::string>(irods::KW_CFG_ZONE_NAME);
+        const auto& zone_user = irods::get_server_property<const std::string>(irods::KW_CFG_ZONE_USER);
+        const auto& zone_auth_scheme = irods::get_server_property<const std::string>(irods::KW_CFG_ZONE_AUTH_SCHEME);
 
         /* fill in the proxyUser info from server_config. clientUser
          * has to come from the rei */
@@ -1042,8 +1042,8 @@ chkAllowedUser( const char *userName, const char *rodsZone ) {
 int
 setRsCommFromRodsEnv( rsComm_t *rsComm ) {
     try {
-        const auto& zone_name = irods::get_server_property<const std::string>(irods::CFG_ZONE_NAME);
-        const auto& zone_user = irods::get_server_property<const std::string>(irods::CFG_ZONE_USER);
+        const auto& zone_name = irods::get_server_property<const std::string>(irods::KW_CFG_ZONE_NAME);
+        const auto& zone_user = irods::get_server_property<const std::string>(irods::KW_CFG_ZONE_USER);
 
         rstrcpy( rsComm->proxyUser.userName,  zone_user.c_str(), NAME_LEN );
         rstrcpy( rsComm->clientUser.userName, zone_user.c_str(), NAME_LEN );

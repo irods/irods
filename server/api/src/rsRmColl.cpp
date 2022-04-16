@@ -501,7 +501,7 @@ svrUnregColl( rsComm_t *rsComm, collInp_t *rmCollInp ) {
             return ret.code();
         }
 
-        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             collInfo_t collInfo{};
             rstrcpy( collInfo.collName, rmCollInp->collName, MAX_NAME_LEN );
             if (getValByKey(&rmCollInp->condInput, ADMIN_RMTRASH_KW) ||
@@ -514,7 +514,7 @@ svrUnregColl( rsComm_t *rsComm, collInp_t *rmCollInp ) {
             else {
                 status = chlDelColl( rsComm, &collInfo );
             }
-        } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+        } else if( irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
             status = SYS_NO_RCAT_SERVER_ERR;
         } else {
             rodsLog(

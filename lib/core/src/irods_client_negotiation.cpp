@@ -45,11 +45,11 @@ namespace irods
     {
         // search the federation map for the host name
         try {
-            for ( const auto& federation : irods::get_server_property<const nlohmann::json&>(irods::CFG_FEDERATION_KW) ) {
+            for ( const auto& federation : irods::get_server_property<const nlohmann::json&>(irods::KW_CFG_FEDERATION) ) {
                 try {
                     try {
-                        if (_host_name == federation.at(irods::CFG_CATALOG_PROVIDER_HOSTS_KW)[0].get<std::string>()) {
-                            return federation.at(irods::CFG_NEGOTIATION_KEY_KW).get<std::string>();
+                        if (_host_name == federation.at(irods::KW_CFG_CATALOG_PROVIDER_HOSTS)[0].get<std::string>()) {
+                            return federation.at(irods::KW_CFG_NEGOTIATION_KEY).get<std::string>();
                         }
                     } catch ( const nlohmann::json::exception& e) {
                         rodsLog(
@@ -76,7 +76,7 @@ namespace irods
         } catch ( const irods::exception& ) {}
 
         // if not, it must be in our zone
-        return irods::get_server_property<std::string>(CFG_NEGOTIATION_KEY_KW);
+        return irods::get_server_property<std::string>(KW_CFG_NEGOTIATION_KEY);
     } // determine_negotiation_key
 
     error sign_server_sid(const std::string& _zone_key,
@@ -334,7 +334,7 @@ namespace irods
             try {
                 boost::optional<std::string> zone_key;
                 try {
-                    zone_key.reset(irods::get_server_property<std::string>(irods::CFG_ZONE_KEY_KW));
+                    zone_key.reset(irods::get_server_property<std::string>(irods::KW_CFG_ZONE_KEY));
                 } catch (const irods::exception&) {
                     zone_key.reset(irods::get_server_property<std::string>(LOCAL_ZONE_SID_KW));
                 }

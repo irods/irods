@@ -43,7 +43,7 @@ namespace irods {
     {
         _plugins = json::array();
 
-        error ret = add_plugin_type_to_json_array( PLUGIN_TYPE_RESOURCE, "resource", _plugins );
+        error ret = add_plugin_type_to_json_array( KW_CFG_PLUGIN_TYPE_RESOURCE, "resource", _plugins );
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -55,29 +55,29 @@ namespace irods {
             return PASS( ret );
         }
 
-        if( CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
-            ret = add_plugin_type_to_json_array( PLUGIN_TYPE_DATABASE, "database", _plugins );
+        if( KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+            ret = add_plugin_type_to_json_array( KW_CFG_PLUGIN_TYPE_DATABASE, "database", _plugins );
             if ( !ret.ok() ) {
                 return PASS( ret );
             }
         }
 
-        ret = add_plugin_type_to_json_array( PLUGIN_TYPE_AUTHENTICATION, "authentication", _plugins );
+        ret = add_plugin_type_to_json_array( KW_CFG_PLUGIN_TYPE_AUTHENTICATION, "authentication", _plugins );
         if ( !ret.ok() ) {
             return PASS( ret );
         }
 
-        ret = add_plugin_type_to_json_array( PLUGIN_TYPE_NETWORK, "network", _plugins );
+        ret = add_plugin_type_to_json_array( KW_CFG_PLUGIN_TYPE_NETWORK, "network", _plugins );
         if ( !ret.ok() ) {
             return PASS( ret );
         }
 
-        ret = add_plugin_type_to_json_array( PLUGIN_TYPE_API, "api", _plugins );
+        ret = add_plugin_type_to_json_array( KW_CFG_PLUGIN_TYPE_API, "api", _plugins );
         if ( !ret.ok() ) {
             return PASS( ret );
         }
 
-        ret = add_plugin_type_to_json_array( PLUGIN_TYPE_MICROSERVICE, "microservice", _plugins );
+        ret = add_plugin_type_to_json_array( KW_CFG_PLUGIN_TYPE_MICROSERVICE, "microservice", _plugins );
         if ( !ret.ok() ) {
             return PASS( ret );
         }

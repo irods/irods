@@ -325,16 +325,16 @@ int checkHostAccessControl(const std::string& _user_name,
     std::vector<std::string> group_list;
     boost::split(group_list, _groups_name, boost::is_any_of("\t "), boost::token_compress_on);
 
-    const auto& host_access_control = irods::get_server_property<const nlohmann::json&>(irods::CFG_HOST_ACCESS_CONTROL_KW);
-    const auto& access_entries = host_access_control.at(irods::CFG_ACCESS_ENTRIES_KW);
+    const auto& host_access_control = irods::get_server_property<const nlohmann::json&>(irods::KW_CFG_HOST_ACCESS_CONTROL);
+    const auto& access_entries = host_access_control.at(irods::KW_CFG_ACCESS_ENTRIES);
 
     try {
         for (const auto& access_entry : access_entries) {
             try {
-                const auto& user = access_entry.at(irods::CFG_USER_KW).get_ref<const std::string&>();
-                const auto& group = access_entry.at(irods::CFG_GROUP_KW).get_ref<const std::string&>();
-                const auto& addy = access_entry.at(irods::CFG_ADDRESS_KW).get_ref<const std::string&>();
-                const auto& mask = access_entry.at(irods::CFG_MASK_KW).get_ref<const std::string&>();
+                const auto& user = access_entry.at(irods::KW_CFG_USER).get_ref<const std::string&>();
+                const auto& group = access_entry.at(irods::KW_CFG_GROUP).get_ref<const std::string&>();
+                const auto& addy = access_entry.at(irods::KW_CFG_ADDRESS).get_ref<const std::string&>();
+                const auto& mask = access_entry.at(irods::KW_CFG_MASK).get_ref<const std::string&>();
 
                 boost::system::error_code error_code;
                 const auto address_entry = ip::make_address_v4(addy, error_code);

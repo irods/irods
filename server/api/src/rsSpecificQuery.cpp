@@ -36,9 +36,9 @@ rsSpecificQuery( rsComm_t *rsComm, specificQueryInp_t *specificQueryInp,
             return ret.code();
         }
 
-        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             status = _rsSpecificQuery( rsComm, specificQueryInp, genQueryOut );
-        } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+        } else if( irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
             rodsLog( LOG_NOTICE,
                      "rsSpecificQuery error. RCAT is not configured on this host" );
             return SYS_NO_RCAT_SERVER_ERR;

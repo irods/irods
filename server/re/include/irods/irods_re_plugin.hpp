@@ -853,7 +853,7 @@ namespace irods {
     struct global_re_plugin_mgr {
         microservice_manager<default_ms_ctx> global_ms_mgr;
         std::vector<re_pack_inp<default_re_ctx> > global_re_packs = init_global_re_packs();
-        rule_engine_plugin_manager<default_re_ctx> global_re_plugin_mgr = rule_engine_plugin_manager<default_re_ctx>(PLUGIN_TYPE_RULE_ENGINE);
+        rule_engine_plugin_manager<default_re_ctx> global_re_plugin_mgr = rule_engine_plugin_manager<default_re_ctx>(KW_CFG_PLUGIN_TYPE_RULE_ENGINE);
         rule_engine_manager<default_re_ctx, default_ms_ctx> global_re_mgr = rule_engine_manager<default_re_ctx, default_ms_ctx>(global_re_plugin_mgr, global_re_packs, global_ms_mgr);
     };
 

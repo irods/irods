@@ -194,80 +194,80 @@ extern "C" {
             "native" );
 
         capture_string_property(
-            irods::CFG_IRODS_SESSION_ENVIRONMENT_FILE_KW,
+            irods::KW_CFG_IRODS_SESSION_ENVIRONMENT_FILE,
             configFileName );
 
         capture_string_property(
-            irods::CFG_IRODS_USER_NAME_KW,
+            irods::KW_CFG_IRODS_USER_NAME,
             _env->rodsUserName );
 
         capture_string_property(
-            irods::CFG_IRODS_HOST_KW,
+            irods::KW_CFG_IRODS_HOST,
             _env->rodsHost );
 
         capture_string_property(
-            irods::CFG_IRODS_HOME_KW,
+            irods::KW_CFG_IRODS_HOME,
             _env->rodsHome );
 
         capture_string_property(
-            irods::CFG_IRODS_CWD_KW,
+            irods::KW_CFG_IRODS_CWD,
             _env->rodsCwd );
 
         capture_string_property(
-            irods::CFG_IRODS_AUTHENTICATION_SCHEME_KW,
+            irods::KW_CFG_IRODS_AUTHENTICATION_SCHEME,
             _env->rodsAuthScheme );
 
         capture_integer_property(
-            irods::CFG_IRODS_PORT_KW,
+            irods::KW_CFG_IRODS_PORT,
             _env->rodsPort );
 
         capture_string_property(
-            irods::CFG_IRODS_DEFAULT_RESOURCE_KW,
+            irods::KW_CFG_IRODS_DEFAULT_RESOURCE,
             _env->rodsDefResource );
 
         capture_string_property(
-            irods::CFG_IRODS_ZONE_KW,
+            irods::KW_CFG_IRODS_ZONE,
             _env->rodsZone );
 
         capture_string_property(
-            irods::CFG_IRODS_CLIENT_SERVER_POLICY_KW,
+            irods::KW_CFG_IRODS_CLIENT_SERVER_POLICY,
             _env->rodsClientServerPolicy );
 
         capture_string_property(
-            irods::CFG_IRODS_CLIENT_SERVER_NEGOTIATION_KW,
+            irods::KW_CFG_IRODS_CLIENT_SERVER_NEGOTIATION,
             _env->rodsClientServerNegotiation );
 
         capture_integer_property(
-            irods::CFG_IRODS_ENCRYPTION_KEY_SIZE_KW,
+            irods::KW_CFG_IRODS_ENCRYPTION_KEY_SIZE,
             _env->rodsEncryptionKeySize );
 
         capture_integer_property(
-            irods::CFG_IRODS_ENCRYPTION_SALT_SIZE_KW,
+            irods::KW_CFG_IRODS_ENCRYPTION_SALT_SIZE,
             _env->rodsEncryptionSaltSize );
 
         capture_integer_property(
-            irods::CFG_IRODS_ENCRYPTION_NUM_HASH_ROUNDS_KW,
+            irods::KW_CFG_IRODS_ENCRYPTION_NUM_HASH_ROUNDS,
             _env->rodsEncryptionNumHashRounds );
 
         capture_string_property(
-            irods::CFG_IRODS_ENCRYPTION_ALGORITHM_KW,
+            irods::KW_CFG_IRODS_ENCRYPTION_ALGORITHM,
             _env->rodsEncryptionAlgorithm );
 
         capture_string_property(
-            irods::CFG_IRODS_DEFAULT_HASH_SCHEME_KW,
+            irods::KW_CFG_IRODS_DEFAULT_HASH_SCHEME,
             _env->rodsDefaultHashScheme );
 
         capture_string_property(
-            irods::CFG_IRODS_MATCH_HASH_POLICY_KW,
+            irods::KW_CFG_IRODS_MATCH_HASH_POLICY,
             _env->rodsMatchHashPolicy );
 
         capture_string_property(
-            irods::CFG_IRODS_DEBUG_KW,
+            irods::KW_CFG_IRODS_DEBUG,
             _env->rodsDebug );
 
         _env->rodsLogLevel = 0;
         int status = capture_integer_property(
-                         irods::CFG_IRODS_LOG_LEVEL_KW,
+                         irods::KW_CFG_IRODS_LOG_LEVEL,
                          _env->rodsLogLevel );
         if ( status == 0 && _env->rodsLogLevel > 0 ) {
             if( _env->rodsLogLevel < LOG_SYS_FATAL ) {
@@ -278,7 +278,7 @@ extern "C" {
 
         memset( _env->rodsAuthFile, 0, sizeof( _env->rodsAuthFile ) );
         status = capture_string_property(
-                     irods::CFG_IRODS_AUTHENTICATION_FILE_KW,
+                     irods::KW_CFG_IRODS_AUTHENTICATION_FILE,
                      _env->rodsAuthFile );
         if ( status == 0 ) {
             rstrcpy(
@@ -289,64 +289,64 @@ extern "C" {
 
         // legacy ssl environment variables
         capture_string_property(
-            irods::CFG_IRODS_SSL_CA_CERTIFICATE_PATH,
+            irods::KW_CFG_IRODS_SSL_CA_CERTIFICATE_PATH,
             _env->irodsSSLCACertificatePath );
 
         capture_string_property(
-            irods::CFG_IRODS_SSL_CA_CERTIFICATE_FILE,
+            irods::KW_CFG_IRODS_SSL_CA_CERTIFICATE_FILE,
             _env->irodsSSLCACertificateFile );
 
         capture_string_property(
-            irods::CFG_IRODS_SSL_VERIFY_SERVER,
+            irods::KW_CFG_IRODS_SSL_VERIFY_SERVER,
             _env->irodsSSLVerifyServer );
 
         capture_string_property(
-            irods::CFG_IRODS_SSL_CERTIFICATE_CHAIN_FILE,
+            irods::KW_CFG_IRODS_SSL_CERTIFICATE_CHAIN_FILE,
             _env->irodsSSLCertificateChainFile );
 
         capture_string_property(
-            irods::CFG_IRODS_SSL_CERTIFICATE_KEY_FILE,
+            irods::KW_CFG_IRODS_SSL_CERTIFICATE_KEY_FILE,
             _env->irodsSSLCertificateKeyFile );
 
         capture_string_property(
-            irods::CFG_IRODS_SSL_DH_PARAMS_FILE,
+            irods::KW_CFG_IRODS_SSL_DH_PARAMS_FILE,
             _env->irodsSSLDHParamsFile );
 
         // control plane variables
         capture_string_property(
-            irods::CFG_IRODS_SERVER_CONTROL_PLANE_KEY,
+            irods::KW_CFG_IRODS_SERVER_CONTROL_PLANE_KEY,
             _env->irodsCtrlPlaneKey );
 
         capture_integer_property(
-            irods::CFG_IRODS_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS_KW,
+            irods::KW_CFG_IRODS_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS,
             _env->irodsCtrlPlaneEncryptionNumHashRounds );
 
         capture_string_property(
-            irods::CFG_IRODS_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM_KW,
+            irods::KW_CFG_IRODS_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM,
             _env->irodsCtrlPlaneEncryptionAlgorithm );
 
         capture_integer_property(
-            irods::CFG_IRODS_SERVER_CONTROL_PLANE_PORT,
+            irods::KW_CFG_IRODS_SERVER_CONTROL_PLANE_PORT,
             _env->irodsCtrlPlanePort );
 
         capture_integer_property(
-            irods::CFG_IRODS_MAX_SIZE_FOR_SINGLE_BUFFER,
+            irods::KW_CFG_IRODS_MAX_SIZE_FOR_SINGLE_BUFFER,
             _env->irodsMaxSizeForSingleBuffer );
 
         capture_integer_property(
-            irods::CFG_IRODS_DEF_NUMBER_TRANSFER_THREADS,
+            irods::KW_CFG_IRODS_DEF_NUMBER_TRANSFER_THREADS,
             _env->irodsDefaultNumberTransferThreads );
 
         capture_integer_property(
-            irods::CFG_IRODS_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
+            irods::KW_CFG_IRODS_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
             _env->irodsTransBufferSizeForParaTrans );
 
         capture_integer_property(
-            irods::CFG_IRODS_CONNECTION_POOL_REFRESH_TIME,
+            irods::KW_CFG_IRODS_CONNECTION_POOL_REFRESH_TIME,
             _env->irodsConnectionPoolRefreshTime );
 
         capture_string_property(
-            irods::CFG_IRODS_PLUGINS_HOME_KW,
+            irods::KW_CFG_IRODS_PLUGINS_HOME,
             _env->irodsPluginHome );
 
         return 0;
@@ -468,88 +468,88 @@ extern "C" {
 
         }
 
-        std::string env_var = irods::CFG_IRODS_USER_NAME_KW;
+        std::string env_var = irods::KW_CFG_IRODS_USER_NAME;
         capture_string_env_var(
             env_var,
             _env->rodsUserName );
 
-        env_var = irods::CFG_IRODS_HOST_KW;
+        env_var = irods::KW_CFG_IRODS_HOST;
         capture_string_env_var(
             env_var,
             _env->rodsHost );
 
-        env_var = irods::CFG_IRODS_PORT_KW;
+        env_var = irods::KW_CFG_IRODS_PORT;
         capture_integer_env_var(
             env_var,
             _env->rodsPort );
 
-        env_var = irods::CFG_IRODS_HOME_KW;
+        env_var = irods::KW_CFG_IRODS_HOME;
         capture_string_env_var(
             env_var,
             _env->rodsHome );
 
-        env_var = irods::CFG_IRODS_CWD_KW;
+        env_var = irods::KW_CFG_IRODS_CWD;
         capture_string_env_var(
             env_var,
             _env->rodsCwd );
 
-        env_var = irods::CFG_IRODS_AUTHENTICATION_SCHEME_KW;
+        env_var = irods::KW_CFG_IRODS_AUTHENTICATION_SCHEME;
         capture_string_env_var(
             env_var,
             _env->rodsAuthScheme );
 
-        env_var = irods::CFG_IRODS_DEFAULT_RESOURCE_KW;
+        env_var = irods::KW_CFG_IRODS_DEFAULT_RESOURCE;
         capture_string_env_var(
             env_var,
             _env->rodsDefResource );
 
-        env_var = irods::CFG_IRODS_ZONE_KW;
+        env_var = irods::KW_CFG_IRODS_ZONE;
         capture_string_env_var(
             env_var,
             _env->rodsZone );
 
-        env_var = irods::CFG_IRODS_CLIENT_SERVER_POLICY_KW;
+        env_var = irods::KW_CFG_IRODS_CLIENT_SERVER_POLICY;
         capture_string_env_var(
             env_var,
             _env->rodsClientServerPolicy );
 
-        env_var = irods::CFG_IRODS_CLIENT_SERVER_NEGOTIATION_KW;
+        env_var = irods::KW_CFG_IRODS_CLIENT_SERVER_NEGOTIATION;
         capture_string_env_var(
             env_var,
             _env->rodsClientServerNegotiation );
 
-        env_var = irods::CFG_IRODS_ENCRYPTION_KEY_SIZE_KW;
+        env_var = irods::KW_CFG_IRODS_ENCRYPTION_KEY_SIZE;
         capture_integer_env_var(
             env_var,
             _env->rodsEncryptionKeySize );
 
-        env_var = irods::CFG_IRODS_ENCRYPTION_SALT_SIZE_KW;
+        env_var = irods::KW_CFG_IRODS_ENCRYPTION_SALT_SIZE;
         capture_integer_env_var(
             env_var,
             _env->rodsEncryptionSaltSize );
 
-        env_var = irods::CFG_IRODS_ENCRYPTION_NUM_HASH_ROUNDS_KW;
+        env_var = irods::KW_CFG_IRODS_ENCRYPTION_NUM_HASH_ROUNDS;
         capture_integer_env_var(
             env_var,
             _env->rodsEncryptionNumHashRounds );
 
-        env_var = irods::CFG_IRODS_ENCRYPTION_ALGORITHM_KW;
+        env_var = irods::KW_CFG_IRODS_ENCRYPTION_ALGORITHM;
         capture_string_env_var(
             env_var,
             _env->rodsEncryptionAlgorithm );
 
-        env_var = irods::CFG_IRODS_DEFAULT_HASH_SCHEME_KW;
+        env_var = irods::KW_CFG_IRODS_DEFAULT_HASH_SCHEME;
         capture_string_env_var(
             env_var,
             _env->rodsDefaultHashScheme );
 
-        env_var = irods::CFG_IRODS_MATCH_HASH_POLICY_KW;
+        env_var = irods::KW_CFG_IRODS_MATCH_HASH_POLICY;
         capture_string_env_var(
             env_var,
             _env->rodsMatchHashPolicy );
 
         _env->rodsLogLevel = 0;
-        env_var = irods::CFG_IRODS_LOG_LEVEL_KW;
+        env_var = irods::KW_CFG_IRODS_LOG_LEVEL;
         capture_integer_env_var(
             env_var,
             _env->rodsLogLevel );
@@ -562,7 +562,7 @@ extern "C" {
         }
 
         memset( _env->rodsAuthFile, 0, sizeof( _env->rodsAuthFile ) );
-        env_var = irods::CFG_IRODS_AUTHENTICATION_FILE_KW;
+        env_var = irods::KW_CFG_IRODS_AUTHENTICATION_FILE;
         capture_string_env_var(
             env_var,
             _env->rodsAuthFile );
@@ -571,57 +571,57 @@ extern "C" {
 
         }
 
-        env_var = irods::CFG_IRODS_DEBUG_KW;
+        env_var = irods::KW_CFG_IRODS_DEBUG;
         capture_string_env_var(
             env_var,
             _env->rodsDebug );
 
         // legacy ssl environment variables
-        env_var = irods::CFG_IRODS_SSL_CA_CERTIFICATE_PATH;
+        env_var = irods::KW_CFG_IRODS_SSL_CA_CERTIFICATE_PATH;
         capture_string_env_var(
             env_var,
             _env->irodsSSLCACertificatePath );
-        env_var = irods::CFG_IRODS_SSL_CA_CERTIFICATE_FILE;
+        env_var = irods::KW_CFG_IRODS_SSL_CA_CERTIFICATE_FILE;
         capture_string_env_var(
             env_var,
             _env->irodsSSLCACertificateFile );
-        env_var = irods::CFG_IRODS_SSL_VERIFY_SERVER;
+        env_var = irods::KW_CFG_IRODS_SSL_VERIFY_SERVER;
         capture_string_env_var(
             env_var,
             _env->irodsSSLVerifyServer );
-        env_var = irods::CFG_IRODS_SSL_VERIFY_SERVER;
+        env_var = irods::KW_CFG_IRODS_SSL_VERIFY_SERVER;
         capture_string_env_var(
             env_var,
             _env->irodsSSLVerifyServer );
-        env_var = irods::CFG_IRODS_SSL_CERTIFICATE_CHAIN_FILE;
+        env_var = irods::KW_CFG_IRODS_SSL_CERTIFICATE_CHAIN_FILE;
         capture_string_env_var(
             env_var,
             _env->irodsSSLCertificateChainFile );
-        env_var = irods::CFG_IRODS_SSL_CERTIFICATE_KEY_FILE;
+        env_var = irods::KW_CFG_IRODS_SSL_CERTIFICATE_KEY_FILE;
         capture_string_env_var(
             env_var,
             _env->irodsSSLCertificateKeyFile );
-        env_var = irods::CFG_IRODS_SSL_DH_PARAMS_FILE;
+        env_var = irods::KW_CFG_IRODS_SSL_DH_PARAMS_FILE;
         capture_string_env_var(
             env_var,
             _env->irodsSSLDHParamsFile );
 
-        env_var = irods::CFG_IRODS_MAX_SIZE_FOR_SINGLE_BUFFER;
+        env_var = irods::KW_CFG_IRODS_MAX_SIZE_FOR_SINGLE_BUFFER;
         capture_integer_env_var(
             env_var,
             _env->irodsMaxSizeForSingleBuffer );
 
-        env_var = irods::CFG_IRODS_DEF_NUMBER_TRANSFER_THREADS;
+        env_var = irods::KW_CFG_IRODS_DEF_NUMBER_TRANSFER_THREADS;
         capture_integer_env_var(
             env_var,
             _env->irodsDefaultNumberTransferThreads );
 
-        env_var = irods::CFG_IRODS_TRANS_BUFFER_SIZE_FOR_PARA_TRANS;
+        env_var = irods::KW_CFG_IRODS_TRANS_BUFFER_SIZE_FOR_PARA_TRANS;
         capture_integer_env_var(
             env_var,
             _env->irodsTransBufferSizeForParaTrans );
 
-        env_var = irods::CFG_IRODS_PLUGINS_HOME_KW;
+        env_var = irods::KW_CFG_IRODS_PLUGINS_HOME;
         capture_string_env_var(
             env_var,
             _env->irodsPluginHome );

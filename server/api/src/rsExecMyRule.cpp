@@ -64,7 +64,7 @@ int rsExecMyRule(
 
     char* inst_name_str = getValByKey(
                               &_exec_inp->condInput,
-                              irods::CFG_INSTANCE_NAME_KW.c_str() );
+                              irods::KW_CFG_INSTANCE_NAME);
     std::string inst_name;
     if( inst_name_str ) {
         inst_name = inst_name_str;

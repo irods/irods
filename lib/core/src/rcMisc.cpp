@@ -4641,13 +4641,13 @@ auto resolve_hostname(const std::string_view _hostname, hostname_resolution_sche
 {
     using json = nlohmann::json;
 
-    const auto& host_resolution = irods::get_server_property<const json&>(irods::CFG_HOST_RESOLUTION_KW);
-    const auto& host_entries = host_resolution.at(irods::CFG_HOST_ENTRIES_KW);
+    const auto& host_resolution = irods::get_server_property<const json&>(irods::KW_CFG_HOST_RESOLUTION);
+    const auto& host_entries = host_resolution.at(irods::KW_CFG_HOST_ENTRIES);
     const auto end = std::end(host_entries);
 
     // Find the addresses object that contains the address, "_hostname".
     const auto iter = std::find_if(std::begin(host_entries), end, [_hostname](const json& _entry) {
-        const auto& addresses = _entry.at(irods::CFG_ADDRESSES_KW);
+        const auto& addresses = _entry.at(irods::KW_CFG_ADDRESSES);
         const auto end = std::end(addresses);
         return end != std::find_if(std::begin(addresses), end, [_hostname](const json& _address) {
             return _hostname == _address.get_ref<const std::string&>();
@@ -4664,12 +4664,12 @@ auto resolve_hostname(const std::string_view _hostname, hostname_resolution_sche
 
     switch (_scheme) {
         case hostname_resolution_scheme::match_preferred: {
-            const auto& addresses = iter->at(irods::CFG_ADDRESSES_KW);
+            const auto& addresses = iter->at(irods::KW_CFG_ADDRESSES);
             return addresses.front().get<std::string>();
         }
 
         case hostname_resolution_scheme::match_longest: {
-            const auto& addresses = iter->at(irods::CFG_ADDRESSES_KW);
+            const auto& addresses = iter->at(irods::KW_CFG_ADDRESSES);
             const std::string* longest{};
 
             for (auto&& address : addresses) {

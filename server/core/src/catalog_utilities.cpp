@@ -185,11 +185,11 @@ namespace irods::experimental::catalog
             THROW(err.code(), "Failed to retrieve service role");
         }
 
-        if (irods::CFG_SERVICE_ROLE_CONSUMER == role) {
+        if (irods::KW_CFG_SERVICE_ROLE_CONSUMER == role) {
             THROW(SYS_NO_ICAT_SERVER_ERR, "Remote catalog provider not found");
         }
 
-        if (irods::CFG_SERVICE_ROLE_PROVIDER != role) {
+        if (irods::KW_CFG_SERVICE_ROLE_PROVIDER != role) {
             THROW(SYS_SERVICE_ROLE_NOT_SUPPORTED, fmt::format("Role not supported [role => {}]", role));
         }
     } // throw_if_service_role_is_invalid

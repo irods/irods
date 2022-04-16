@@ -102,7 +102,7 @@ namespace irods::experimental
         auto err = irods::load_plugin<plugin_type>(
                         plugin,
                         name,
-                        irods::PLUGIN_TYPE_AUTHENTICATION,
+                        irods::KW_CFG_PLUGIN_TYPE_AUTHENTICATION,
                         name,
                         "empty_context");
         if(!err.ok()) {

@@ -37,10 +37,10 @@ int rsZoneReport( rsComm_t* _comm, bytesBuf_t** _bbuf ) {
             return ret.code();
         }
 
-        if ( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        if ( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             status = _rsZoneReport( _comm, _bbuf );
         }
-        else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+        else if( irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
             status = SYS_NO_RCAT_SERVER_ERR;
         }
         else {

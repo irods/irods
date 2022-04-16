@@ -60,9 +60,9 @@ int msiCreateUser( ruleExecInfo_t *rei ) {
         return ret.code();
     }
 
-    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+    if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         i =  chlRegUserRE( rei->rsComm, rei->uoio );
-    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+    } else if( irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
         i =  SYS_NO_ICAT_SERVER_ERR;
     } else {
         rodsLog(
@@ -130,9 +130,9 @@ int msiCreateCollByAdmin( msParam_t* xparColl, msParam_t* xchildName, ruleExecIn
         return ret.code();
     }
 
-    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+    if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         i =  chlRegCollByAdmin( rei->rsComm, &collInfo );
-    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+    } else if( irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
         i =  SYS_NO_RCAT_SERVER_ERR;
     } else {
         rodsLog(
@@ -201,9 +201,9 @@ int msiDeleteCollByAdmin( msParam_t* xparColl, msParam_t* xchildName, ruleExecIn
         return ret.code();
     }
 
-    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+    if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         i = chlDelCollByAdmin( rei->rsComm, &collInfo );
-    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+    } else if( irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
         i = SYS_NO_RCAT_SERVER_ERR;
     } else {
         rodsLog(
@@ -264,9 +264,9 @@ msiDeleteUser( ruleExecInfo_t *rei ) {
         return ret.code();
     }
 
-    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+    if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         i =  chlDelUserRE( rei->rsComm, rei->uoio );
-    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+    } else if( irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
         i = SYS_NO_RCAT_SERVER_ERR;
     } else {
         rodsLog(
@@ -321,14 +321,14 @@ msiAddUserToGroup( msParam_t *msParam, ruleExecInfo_t *rei ) {
         return ret.code();
     }
 
-    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+    if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         if ( strncmp( rei->uoio->userType, "rodsgroup", 9 ) == 0 ) {
             return 0;
         }
         groupName = ( char * ) msParam->inOutStruct;
         i =  chlModGroup( rei->rsComm, groupName, "add", rei->uoio->userName,
                           rei->uoio->rodsZone );
-    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+    } else if( irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
         i = SYS_NO_RCAT_SERVER_ERR;
     } else {
         rodsLog(
@@ -384,14 +384,14 @@ msiRenameLocalZone( msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei 
         return ret.code();
     }
 
-    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+    if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         char *oldNameStr;
         char *newNameStr;
 
         oldNameStr = ( char * ) oldName->inOutStruct;
         newNameStr = ( char * ) newName->inOutStruct;
         status = chlRenameLocalZone( rei->rsComm, oldNameStr, newNameStr );
-    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+    } else if( irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
         status = SYS_NO_RCAT_SERVER_ERR;
     } else {
         rodsLog(
@@ -447,7 +447,7 @@ int msiRenameCollection(msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *
 
     using log = irods::experimental::log;
 
-    if (irods::CFG_SERVICE_ROLE_PROVIDER == svc_role) {
+    if (irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role) {
         namespace fs = irods::experimental::filesystem;
 
         const fs::path src_path = static_cast<const char*>(oldName->inOutStruct);
@@ -476,7 +476,7 @@ int msiRenameCollection(msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *
         }
     }
 
-    if (irods::CFG_SERVICE_ROLE_CONSUMER == svc_role) {
+    if (irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role) {
         return SYS_NO_RCAT_SERVER_ERR;
     }
 
@@ -508,7 +508,7 @@ int msiRenameLocalZoneCollection(msParam_t* _new_zone_name, ruleExecInfo_t* _rei
         return ret.code();
     }
 
-    if (irods::CFG_SERVICE_ROLE_PROVIDER == svc_role) {
+    if (irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role) {
         namespace fs = irods::experimental::filesystem;
 
         const fs::path root = "/";
@@ -543,7 +543,7 @@ int msiRenameLocalZoneCollection(msParam_t* _new_zone_name, ruleExecInfo_t* _rei
         }
     }
 
-    if (irods::CFG_SERVICE_ROLE_CONSUMER == svc_role) {
+    if (irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role) {
         return SYS_NO_RCAT_SERVER_ERR;
     }
 
@@ -603,14 +603,14 @@ msiAclPolicy( msParam_t* msParam, ruleExecInfo_t* ) {
     inputArg = ( char * ) msParam->inOutStruct;
     if ( inputArg != NULL ) {
         if ( strncmp( inputArg, "STRICT", 6 ) == 0 ) {
-            if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+            if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
                 chlGenQueryAccessControlSetup( NULL, NULL, NULL, 0, 2 );
                 strict = "on";
             }
         }
     }
     else {
-        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             chlGenQueryAccessControlSetup( NULL, NULL, NULL, 0, 0 );
         }
     }

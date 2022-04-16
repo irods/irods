@@ -107,7 +107,7 @@ namespace irods
         // =-=-=-=-=-=-=-
         // resolve plugin directory
         std::string plugin_home;
-        error ret = resolve_plugin_path( irods::PLUGIN_TYPE_API, plugin_home );
+        error ret = resolve_plugin_path( irods::KW_CFG_PLUGIN_TYPE_API, plugin_home );
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -150,7 +150,7 @@ namespace irods
                 error ret = load_plugin<api_entry>(
                                 entry,
                                 name,
-                                PLUGIN_TYPE_API,
+                                KW_CFG_PLUGIN_TYPE_API,
                                 "api_instance",
                                 "api_context");
                 if (ret.ok() && entry) {

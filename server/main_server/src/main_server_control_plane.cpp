@@ -73,11 +73,11 @@ namespace irods
         buffer_crypt::array_t shared_secret;
         try {
             const auto& config = server_properties::instance().map();
-            time_out = config.at(CFG_SERVER_CONTROL_PLANE_TIMEOUT).get<int>();
+            time_out = config.at(KW_CFG_SERVER_CONTROL_PLANE_TIMEOUT).get<int>();
             port = config.at(_port_keyword).get<int>();
-            num_hash_rounds = config.at(CFG_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS_KW).get<int>();
-            encryption_algorithm.reset(config.at(CFG_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM_KW).get_ref<const std::string&>());
-            const auto& key = config.at(CFG_SERVER_CONTROL_PLANE_KEY).get_ref<const std::string&>();
+            num_hash_rounds = config.at(KW_CFG_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS).get<int>();
+            encryption_algorithm.reset(config.at(KW_CFG_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM).get_ref<const std::string&>());
+            const auto& key = config.at(KW_CFG_SERVER_CONTROL_PLANE_KEY).get_ref<const std::string&>();
             shared_secret.assign(key.begin(), key.end());
         }
         catch (const nlohmann::json::exception& e) {
@@ -214,7 +214,7 @@ namespace irods
 
         int sleep_time_out_milli_sec = 0;
         try {
-            sleep_time_out_milli_sec = get_server_property<int>(CFG_SERVER_CONTROL_PLANE_TIMEOUT);
+            sleep_time_out_milli_sec = get_server_property<int>(KW_CFG_SERVER_CONTROL_PLANE_TIMEOUT);
         }
         catch (const irods::exception& e) {
             return irods::error(e);
@@ -438,7 +438,7 @@ namespace irods
         op_map_[SERVER_CONTROL_RESUME] = operation_resume;
         op_map_[SERVER_CONTROL_STATUS] = operation_status;
         op_map_[SERVER_CONTROL_PING]   = operation_ping;
-        if (_prop == CFG_RULE_ENGINE_CONTROL_PLANE_PORT) {
+        if (_prop == KW_CFG_RULE_ENGINE_CONTROL_PLANE_PORT) {
             op_map_[SERVER_CONTROL_SHUTDOWN] = rule_engine_operation_shutdown;
         }
         else {
@@ -451,7 +451,7 @@ namespace irods
         local_server_hostname_ = my_env.rodsHost;
 
         // get the provider's hostname host for ordering
-        provider_hostname_ = server_properties::instance().map().at(CFG_CATALOG_PROVIDER_HOSTS_KW)[0].get_ref<const std::string&>();
+        provider_hostname_ = server_properties::instance().map().at(KW_CFG_CATALOG_PROVIDER_HOSTS)[0].get_ref<const std::string&>();
 
         // repave provider_hostname_ as we do not want to process 'localhost'
         if ("localhost" == provider_hostname_) {
@@ -556,9 +556,9 @@ namespace irods
         try {
             const auto& config = server_properties::instance().map();
             port = config.at(port_prop_).get<int>();
-            num_hash_rounds = config.at(CFG_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS_KW).get<int>();
-            encryption_algorithm.reset(config.at(CFG_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM_KW).get_ref<const std::string&>());
-            const auto& key = config.at(CFG_SERVER_CONTROL_PLANE_KEY).get_ref<const std::string&>();
+            num_hash_rounds = config.at(KW_CFG_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS).get<int>();
+            encryption_algorithm.reset(config.at(KW_CFG_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM).get_ref<const std::string&>());
+            const auto& key = config.at(KW_CFG_SERVER_CONTROL_PLANE_KEY).get_ref<const std::string&>();
             shared_secret.assign(key.begin(), key.end());
         }
         catch (const nlohmann::json::exception& e) {
@@ -729,7 +729,7 @@ namespace irods
             ret = forward_command(
                       _cmd_name,
                       provider_hostname_,
-                      CFG_SERVER_CONTROL_PLANE_PORT,
+                      KW_CFG_SERVER_CONTROL_PLANE_PORT,
                       _wait_option,
                       _wait_seconds,
                       _output);
@@ -743,7 +743,7 @@ namespace irods
             ret = forward_command(
                       _cmd_name,
                       local_server_hostname_,
-                      CFG_SERVER_CONTROL_PLANE_PORT,
+                      KW_CFG_SERVER_CONTROL_PLANE_PORT,
                       _wait_option,
                       _wait_seconds,
                       _output );
@@ -776,7 +776,7 @@ namespace irods
             ret = forward_command(
                       _cmd_name,
                       local_server_hostname_,
-                      CFG_SERVER_CONTROL_PLANE_PORT,
+                      KW_CFG_SERVER_CONTROL_PLANE_PORT,
                       _wait_option,
                       _wait_seconds,
                       _output );
@@ -787,7 +787,7 @@ namespace irods
             ret = forward_command(
                       _cmd_name,
                       provider_hostname_,
-                      CFG_SERVER_CONTROL_PLANE_PORT,
+                      KW_CFG_SERVER_CONTROL_PLANE_PORT,
                       _wait_option,
                       _wait_seconds,
                       _output );
@@ -968,9 +968,9 @@ namespace irods
         buffer_crypt::array_t shared_secret;
         try {
             const auto& config = server_properties::instance().map();
-            num_hash_rounds = config.at(CFG_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS_KW).get<int>();
-            encryption_algorithm.reset(config.at(CFG_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM_KW).get_ref<const std::string&>());
-            const auto& key = config.at(CFG_SERVER_CONTROL_PLANE_KEY).get_ref<const std::string&>();
+            num_hash_rounds = config.at(KW_CFG_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS).get<int>();
+            encryption_algorithm.reset(config.at(KW_CFG_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM).get_ref<const std::string&>());
+            const auto& key = config.at(KW_CFG_SERVER_CONTROL_PLANE_KEY).get_ref<const std::string&>();
             shared_secret.assign(key.begin(), key.end());
         }
         catch (const nlohmann::json::exception& e) {

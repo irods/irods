@@ -25,10 +25,10 @@ int rsRuleExecMod(RsComm* _rsComm, RuleExecModifyInput* _ruleExecModInp)
             return ret.code();
         }
 
-        if (irods::CFG_SERVICE_ROLE_PROVIDER == svc_role) {
+        if (irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role) {
             status = _rsRuleExecMod(_rsComm, _ruleExecModInp);
         }
-        else if (irods::CFG_SERVICE_ROLE_CONSUMER == svc_role) {
+        else if (irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role) {
             status = SYS_NO_RCAT_SERVER_ERR;
         }
         else {

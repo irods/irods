@@ -244,7 +244,7 @@ namespace irods {
         error load_err = load_plugin< ms_table_entry >(
                              entry,
                              _ms,
-                             PLUGIN_TYPE_MICROSERVICE,
+                             KW_CFG_PLUGIN_TYPE_MICROSERVICE,
                              "msvc", "ctx" );
         if ( load_err.ok() && entry ) {
             _table[ _ms ] = entry;

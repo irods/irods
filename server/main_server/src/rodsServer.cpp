@@ -133,7 +133,7 @@ namespace
     {
         // Should only ever set the cache salt once.
         try {
-            const auto& existing_salt = irods::get_server_property<const std::string>(irods::CFG_RE_CACHE_SALT_KW);
+            const auto& existing_salt = irods::get_server_property<const std::string>(irods::KW_CFG_RE_CACHE_SALT);
             rodsLog(LOG_ERROR, "createAndSetRECacheSalt: salt already set [%s]", existing_salt.c_str());
             return ERROR(SYS_ALREADY_INITIALIZED, "createAndSetRECacheSalt: cache salt already set");
         }
@@ -155,7 +155,7 @@ namespace
             const auto cache_salt = fmt::format("pid{}_{}", static_cast<std::intmax_t>(getpid()), cache_salt_random);
 
             try {
-                irods::set_server_property<std::string>(irods::CFG_RE_CACHE_SALT_KW, cache_salt);
+                irods::set_server_property<std::string>(irods::KW_CFG_RE_CACHE_SALT, cache_salt);
             }
             catch (const nlohmann::json::exception& e) {
                 rodsLog(LOG_ERROR, "createAndSetRECacheSalt: failed to set server_properties");
@@ -191,7 +191,7 @@ namespace
 
     bool instantiate_shared_memory_for_plugin(const nlohmann::json& _plugin_object)
     {
-        const auto itr = _plugin_object.find(irods::CFG_SHARED_MEMORY_INSTANCE_KW);
+        const auto itr = _plugin_object.find(irods::KW_CFG_SHARED_MEMORY_INSTANCE);
 
         if (_plugin_object.end() != itr) {
             const auto& mem_name = itr->get_ref<const std::string&>();
@@ -208,7 +208,7 @@ namespace
         try {
             const auto& config = irods::server_properties::instance().map();
 
-            for (const auto& item : config.at(irods::CFG_PLUGIN_CONFIGURATION_KW).items()) {
+            for (const auto& item : config.at(irods::KW_CFG_PLUGIN_CONFIGURATION).items()) {
                 for (const auto& plugin : item.value().items()) {
                     instantiate_shared_memory_for_plugin(plugin.value());
                 }
@@ -226,7 +226,7 @@ namespace
 
     bool uninstantiate_shared_memory_for_plugin(const nlohmann::json& _plugin_object)
     {
-        const auto itr = _plugin_object.find(irods::CFG_SHARED_MEMORY_INSTANCE_KW);
+        const auto itr = _plugin_object.find(irods::KW_CFG_SHARED_MEMORY_INSTANCE);
 
         if (_plugin_object.end() != itr) {
             const auto& mem_name = itr->get_ref<const std::string&>();
@@ -243,7 +243,7 @@ namespace
         try {
             const auto& config = irods::server_properties::instance().map();
 
-            for (const auto& item : config.at(irods::CFG_PLUGIN_CONFIGURATION_KW).items()) {
+            for (const auto& item : config.at(irods::KW_CFG_PLUGIN_CONFIGURATION).items()) {
                 for (const auto& plugin : item.value().items()) {
                     uninstantiate_shared_memory_for_plugin(plugin.value());
                 }
@@ -263,7 +263,7 @@ namespace
     {
         ix::log::init(_write_to_stdout, _enable_test_mode);
         irods::server_properties::instance().capture();
-        ix::log::server::set_level(ix::log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_SERVER_KW));
+        ix::log::server::set_level(ix::log::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_SERVER));
         ix::log::set_server_type("server");
 
         if (char hostname[HOST_NAME_MAX]{}; gethostname(hostname, sizeof(hostname)) == 0) {
@@ -296,20 +296,20 @@ namespace
             }
 
             // Find the NREP.
-            const auto& plugin_config = config.at(irods::CFG_PLUGIN_CONFIGURATION_KW);
-            const auto& rule_engines = plugin_config.at(irods::PLUGIN_TYPE_RULE_ENGINE);
+            const auto& plugin_config = config.at(irods::KW_CFG_PLUGIN_CONFIGURATION);
+            const auto& rule_engines = plugin_config.at(irods::KW_CFG_PLUGIN_TYPE_RULE_ENGINE);
 
             const auto end = std::end(rule_engines);
             const auto nrep = std::find_if(std::begin(rule_engines), end, [](const nlohmann::json& _object) {
-                return _object.at(irods::CFG_PLUGIN_NAME_KW).get<std::string>() == "irods_rule_engine_plugin-irods_rule_language";
+                return _object.at(irods::KW_CFG_PLUGIN_NAME).get<std::string>() == "irods_rule_engine_plugin-irods_rule_language";
             });
             if (nrep == end) {
                 return;
             }
 
             // Get the rulebase set.
-            const auto& plugin_specific_config = nrep->at(irods::CFG_PLUGIN_SPECIFIC_CONFIGURATION_KW);
-            const auto& rulebase_set = plugin_specific_config.at(irods::CFG_RE_RULEBASE_SET_KW);
+            const auto& plugin_specific_config = nrep->at(irods::KW_CFG_PLUGIN_SPECIFIC_CONFIGURATION);
+            const auto& rulebase_set = plugin_specific_config.at(irods::KW_CFG_RE_RULEBASE_SET);
 
             // Iterate over the list of rulebases and remove the leftover PID files.
             for (const auto& rb : rulebase_set) {
@@ -348,10 +348,10 @@ namespace
     {
         try {
             const auto adv_settings = irods::server_properties::instance().map()
-                .at(irods::CFG_ADVANCED_SETTINGS_KW);
+                .at(irods::KW_CFG_ADVANCED_SETTINGS);
 
             const auto iter = adv_settings
-                .find(irods::CFG_STACKTRACE_FILE_PROCESSOR_SLEEP_TIME_IN_SECONDS_KW);
+                .find(irods::KW_CFG_STACKTRACE_FILE_PROCESSOR_SLEEP_TIME_IN_SECONDS);
 
             if (iter != std::end(adv_settings)) {
                 if (const auto seconds = iter->get<int>(); seconds > 0) {
@@ -688,7 +688,7 @@ namespace
                 return;
             }
 
-            const auto is_provider = (irods::CFG_SERVICE_ROLE_PROVIDER == service_role);
+            const auto is_provider = (irods::KW_CFG_SERVICE_ROLE_PROVIDER == service_role);
 
             irods::at_scope_exit disconnect_from_database{[is_provider] {
                 if (is_provider) {
@@ -937,12 +937,12 @@ int main(int argc, char** argv)
 
     // Set the default value for evicting DNS cache entries.
     irods::set_server_property(
-        key_path_t{irods::CFG_ADVANCED_SETTINGS_KW, irods::CFG_DNS_CACHE_KW, irods::CFG_EVICTION_AGE_IN_SECONDS_KW},
+        key_path_t{irods::KW_CFG_ADVANCED_SETTINGS, irods::KW_CFG_DNS_CACHE, irods::KW_CFG_EVICTION_AGE_IN_SECONDS},
         irods::get_dns_cache_eviction_age());
 
     // Set the default value for evicting hostname cache entries.
     irods::set_server_property(
-        key_path_t{irods::CFG_ADVANCED_SETTINGS_KW, irods::CFG_HOSTNAME_CACHE_KW, irods::CFG_EVICTION_AGE_IN_SECONDS_KW},
+        key_path_t{irods::KW_CFG_ADVANCED_SETTINGS, irods::KW_CFG_HOSTNAME_CACHE, irods::KW_CFG_EVICTION_AGE_IN_SECONDS},
         irods::get_hostname_cache_eviction_age());
 
     setup_signal_handlers();
@@ -1112,7 +1112,7 @@ int serverMain(const bool enable_test_mode = false, const bool write_to_stdout =
 
     try {
         // Launch the control plane.
-        irods::server_control_plane ctrl_plane(irods::CFG_SERVER_CONTROL_PLANE_PORT, is_control_plane_accepting_requests);
+        irods::server_control_plane ctrl_plane(irods::KW_CFG_SERVER_CONTROL_PLANE_PORT, is_control_plane_accepting_requests);
 
         status = startProcConnReqThreads();
         if (status < 0) {
@@ -1120,7 +1120,7 @@ int serverMain(const bool enable_test_mode = false, const bool write_to_stdout =
             return status;
         }
 
-        if (irods::CFG_SERVICE_ROLE_PROVIDER == svc_role) {
+        if (irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role) {
             try {
                 PurgeLockFileThread = new boost::thread(purgeLockFileWorkerTask);
             }
@@ -1221,7 +1221,7 @@ int serverMain(const bool enable_test_mode = false, const bool write_to_stdout =
             addConnReqToQueue(&svrComm, newSock);
         }
 
-        if (irods::CFG_SERVICE_ROLE_PROVIDER == svc_role) {
+        if (irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role) {
             try {
                 PurgeLockFileThread->join();
             }
@@ -1493,7 +1493,7 @@ int execAgent(int newSock, startupPack_t* startupPack)
     }
 
     status = sendEnvironmentVarStrToSocket(SP_RE_CACHE_SALT,
-                                           irods::get_server_property<const std::string>(irods::CFG_RE_CACHE_SALT_KW).c_str(),
+                                           irods::get_server_property<const std::string>(irods::KW_CFG_RE_CACHE_SALT).c_str(),
                                            tmp_socket);
     if (status < 0) {
         rodsLog(LOG_ERROR, "Failed to send SP_RE_CACHE_SALT to agent");
@@ -1752,7 +1752,7 @@ int initServer(rsComm_t* svrComm)
 
 
     if (LOCAL_HOST == rodsServerHost->localFlag) {
-        if (irods::CFG_SERVICE_ROLE_PROVIDER == svc_role) {
+        if (irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role) {
             disconnectRcat();
         }
     }
@@ -1761,7 +1761,7 @@ int initServer(rsComm_t* svrComm)
         rodsServerHost->conn = nullptr;
     }
 
-    if (irods::CFG_SERVICE_ROLE_PROVIDER == svc_role) {
+    if (irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role) {
         purgeLockFileDir(0);
     }
 
@@ -1857,7 +1857,7 @@ int initServerMain(rsComm_t *svrComm,
 
     int zone_port;
     try {
-        zone_port = irods::get_server_property<const int>(irods::CFG_ZONE_PORT);
+        zone_port = irods::get_server_property<const int>(irods::KW_CFG_ZONE_PORT);
     }
     catch (const irods::exception& e) {
         irods::log(irods::error(e));

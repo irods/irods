@@ -1895,11 +1895,11 @@ irods::error db_open_op(
     // =-=-=-=-=-=-=-
     // cache db creds
     try {
-        const auto db_plugin_map = irods::get_server_property<nlohmann::json>(std::vector<std::string>{irods::CFG_PLUGIN_CONFIGURATION_KW, irods::PLUGIN_TYPE_DATABASE});
+        const auto db_plugin_map = irods::get_server_property<nlohmann::json>(std::vector<std::string>{irods::KW_CFG_PLUGIN_CONFIGURATION, irods::KW_CFG_PLUGIN_TYPE_DATABASE});
         const auto db_type   = db_plugin_map.items().begin().key();
         const auto db_plugin = db_plugin_map.items().begin().value();
-        snprintf(icss.databaseUsername, DB_USERNAME_LEN, "%s", db_plugin.at(irods::CFG_DB_USERNAME_KW).get<std::string>().c_str());
-        snprintf(icss.databasePassword, DB_PASSWORD_LEN, "%s", db_plugin.at(irods::CFG_DB_PASSWORD_KW).get<std::string>().c_str());
+        snprintf(icss.databaseUsername, DB_USERNAME_LEN, "%s", db_plugin.at(irods::KW_CFG_DB_USERNAME).get<std::string>().c_str());
+        snprintf(icss.databasePassword, DB_PASSWORD_LEN, "%s", db_plugin.at(irods::KW_CFG_DB_PASSWORD).get<std::string>().c_str());
         snprintf(icss.database_plugin_type, DB_TYPENAME_LEN, "%s", db_type.c_str());
     } catch ( const irods::exception& e ) {
         return irods::error(e);
@@ -1931,10 +1931,10 @@ irods::error db_open_op(
     // =-=-=-=-=-=-=-
     // set pam properties
     try {
-        irods_pam_auth_no_extend = irods::get_server_property<const bool>(std::vector<std::string>{irods::PLUGIN_TYPE_AUTHENTICATION, irods::AUTH_PAM_SCHEME, irods::CFG_PAM_NO_EXTEND_KW});
-        irods_pam_password_len = irods::get_server_property<const size_t>(std::vector<std::string>{irods::PLUGIN_TYPE_AUTHENTICATION, irods::AUTH_PAM_SCHEME, irods::CFG_PAM_PASSWORD_LENGTH_KW});
-        snprintf(irods_pam_password_min_time, NAME_LEN, "%s", irods::get_server_property<const std::string>(std::vector<std::string>{irods::PLUGIN_TYPE_AUTHENTICATION, irods::AUTH_PAM_SCHEME, irods::CFG_PAM_PASSWORD_MIN_TIME_KW}).c_str());
-        snprintf(irods_pam_password_max_time, NAME_LEN, "%s", irods::get_server_property<const std::string>(std::vector<std::string>{irods::PLUGIN_TYPE_AUTHENTICATION, irods::AUTH_PAM_SCHEME, irods::CFG_PAM_PASSWORD_MAX_TIME_KW}).c_str());
+        irods_pam_auth_no_extend = irods::get_server_property<const bool>(std::vector<std::string>{irods::KW_CFG_PLUGIN_TYPE_AUTHENTICATION, irods::AUTH_PAM_SCHEME, irods::KW_CFG_PAM_NO_EXTEND});
+        irods_pam_password_len = irods::get_server_property<const size_t>(std::vector<std::string>{irods::KW_CFG_PLUGIN_TYPE_AUTHENTICATION, irods::AUTH_PAM_SCHEME, irods::KW_CFG_PAM_PASSWORD_LENGTH});
+        snprintf(irods_pam_password_min_time, NAME_LEN, "%s", irods::get_server_property<const std::string>(std::vector<std::string>{irods::KW_CFG_PLUGIN_TYPE_AUTHENTICATION, irods::AUTH_PAM_SCHEME, irods::KW_CFG_PAM_PASSWORD_MIN_TIME}).c_str());
+        snprintf(irods_pam_password_max_time, NAME_LEN, "%s", irods::get_server_property<const std::string>(std::vector<std::string>{irods::KW_CFG_PLUGIN_TYPE_AUTHENTICATION, irods::AUTH_PAM_SCHEME, irods::KW_CFG_PAM_PASSWORD_MAX_TIME}).c_str());
     } catch ( const irods::exception& e ) {
         rodsLog(LOG_DEBUG, "[%s:%d] PAM property not found", __FUNCTION__, __LINE__);
         return CODE( status );
@@ -6607,7 +6607,7 @@ irods::error db_check_auth_op(
 
     int temp_password_max_time;
     try {
-        temp_password_max_time = irods::get_advanced_setting<const int>(irods::CFG_MAX_TEMP_PASSWORD_LIFETIME);
+        temp_password_max_time = irods::get_advanced_setting<const int>(irods::KW_CFG_MAX_TEMP_PASSWORD_LIFETIME);
     } catch ( const irods::exception& e ) {
         return irods::error(e);
     }
@@ -6615,7 +6615,7 @@ irods::error db_check_auth_op(
     if ( expireTime < temp_password_max_time ) {
         int temp_password_time;
         try {
-            temp_password_time = irods::get_advanced_setting<const int>(irods::CFG_DEF_TEMP_PASSWORD_LIFETIME);
+            temp_password_time = irods::get_advanced_setting<const int>(irods::KW_CFG_DEF_TEMP_PASSWORD_LIFETIME);
         } catch ( const irods::exception& e ) {
             return irods::error(e);
         }
@@ -6810,7 +6810,7 @@ irods::error db_make_temp_pw_op(
 
     int temp_password_time;
     try {
-        temp_password_time = irods::get_advanced_setting<const int>(irods::CFG_DEF_TEMP_PASSWORD_LIFETIME);
+        temp_password_time = irods::get_advanced_setting<const int>(irods::KW_CFG_DEF_TEMP_PASSWORD_LIFETIME);
     } catch ( const irods::exception& e ) {
         return irods::error(e);
     }
@@ -6979,7 +6979,7 @@ irods::error db_make_limited_pw_op(
 
     int temp_password_time;
     try {
-        temp_password_time = irods::get_advanced_setting<const int>(irods::CFG_DEF_TEMP_PASSWORD_LIFETIME);
+        temp_password_time = irods::get_advanced_setting<const int>(irods::KW_CFG_DEF_TEMP_PASSWORD_LIFETIME);
     } catch ( const irods::exception& e ) {
         return irods::error(e);
     }

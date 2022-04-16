@@ -299,7 +299,7 @@ int clientLogin(
         else {
             // =-=-=-=-=-=-=-
             // check the environment variable first
-            char* auth_env_var = getenv( irods::to_env( irods::CFG_IRODS_AUTHENTICATION_SCHEME_KW ).c_str() );
+            char* auth_env_var = getenv( irods::to_env( irods::KW_CFG_IRODS_AUTHENTICATION_SCHEME ).c_str() );
             if ( !auth_env_var ) {
                 rodsEnv rods_env;
                 if ( getRodsEnv( &rods_env ) >= 0 ) {

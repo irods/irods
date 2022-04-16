@@ -64,10 +64,10 @@ namespace
             return ret.code();
         }
 
-        if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+        if( irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
             return SYS_NO_ICAT_SERVER_ERR;
         }
-        else if( irods::CFG_SERVICE_ROLE_PROVIDER != svc_role ) {
+        else if( irods::KW_CFG_SERVICE_ROLE_PROVIDER != svc_role ) {
             rodsLog(LOG_ERROR, "%s: role not supported [%s]",
                     __FUNCTION__, svc_role.c_str() );
             return SYS_SERVICE_ROLE_NOT_SUPPORTED;
@@ -412,9 +412,9 @@ namespace
                 return ret.code();
             }
 
-            if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+            if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
                 status = _rsDataObjRename( rsComm, dataObjRenameInp );
-            } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+            } else if( irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
                 status = SYS_NO_RCAT_SERVER_ERR;
             } else {
                 rodsLog(

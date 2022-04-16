@@ -63,7 +63,7 @@ namespace irods {
         error ret = load_plugin< network >(
                         net,
                         _plugin_name,
-                        PLUGIN_TYPE_NETWORK,
+                        KW_CFG_PLUGIN_TYPE_NETWORK,
                         _inst_name,
                         _context );
         if ( ret.ok() && net ) {

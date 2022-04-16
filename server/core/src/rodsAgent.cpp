@@ -202,7 +202,7 @@ runIrodsAgentFactory( sockaddr_un agent_addr ) {
     using log = irods::experimental::log;
 
     irods::server_properties::instance().capture();
-    log::agent_factory::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_AGENT_FACTORY_KW));
+    log::agent_factory::set_level(log::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_AGENT_FACTORY));
 
     // Attach the error stack object to the logger and release it once this function returns.
     log::set_server_type("agent_factory");
@@ -387,23 +387,23 @@ runIrodsAgentFactory( sockaddr_un agent_addr ) {
 
                     // Update the eviction age for DNS cache entries.
                     irods::set_server_property(
-                        key_path_t{irods::CFG_ADVANCED_SETTINGS_KW, irods::CFG_DNS_CACHE_KW, irods::CFG_EVICTION_AGE_IN_SECONDS_KW},
+                        key_path_t{irods::KW_CFG_ADVANCED_SETTINGS, irods::KW_CFG_DNS_CACHE, irods::KW_CFG_EVICTION_AGE_IN_SECONDS},
                         irods::get_dns_cache_eviction_age());
 
                     // Update the eviction age for hostname cache entries.
                     irods::set_server_property(
-                        key_path_t{irods::CFG_ADVANCED_SETTINGS_KW, irods::CFG_HOSTNAME_CACHE_KW, irods::CFG_EVICTION_AGE_IN_SECONDS_KW},
+                        key_path_t{irods::KW_CFG_ADVANCED_SETTINGS, irods::KW_CFG_HOSTNAME_CACHE, irods::KW_CFG_EVICTION_AGE_IN_SECONDS},
                         irods::get_hostname_cache_eviction_age());
 
-                    log::agent::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_AGENT_KW));
-                    log::legacy::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_LEGACY_KW));
-                    log::resource::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_RESOURCE_KW));
-                    log::database::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_DATABASE_KW));
-                    log::authentication::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_AUTHENTICATION_KW));
-                    log::api::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_API_KW));
-                    log::microservice::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_MICROSERVICE_KW));
-                    log::network::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_NETWORK_KW));
-                    log::rule_engine::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_RULE_ENGINE_KW));
+                    log::agent::set_level(log::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_AGENT));
+                    log::legacy::set_level(log::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_LEGACY));
+                    log::resource::set_level(log::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_RESOURCE));
+                    log::database::set_level(log::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_DATABASE));
+                    log::authentication::set_level(log::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_AUTHENTICATION));
+                    log::api::set_level(log::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_API));
+                    log::microservice::set_level(log::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_MICROSERVICE));
+                    log::network::set_level(log::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_NETWORK));
+                    log::rule_engine::set_level(log::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_RULE_ENGINE));
 
                     log::agent::trace("Agent started.");
 
@@ -505,7 +505,7 @@ runIrodsAgentFactory( sockaddr_un agent_addr ) {
         return ret.code();
     }
 
-    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+    if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         if ( strstr( rsComm.myEnv.rodsDebug, "CAT" ) != NULL ) {
             chlDebug( rsComm.myEnv.rodsDebug );
         }

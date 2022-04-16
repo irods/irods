@@ -57,13 +57,13 @@ irods::error get_hash_and_policy(
     }
 
     try {
-        _hash = irods::get_server_property<const std::string>(irods::CFG_DEFAULT_HASH_SCHEME_KW);
+        _hash = irods::get_server_property<const std::string>(irods::KW_CFG_DEFAULT_HASH_SCHEME);
     } catch ( const irods::exception& ) {
         _hash = "SHA256";
     }
 
     try {
-        _policy = irods::get_server_property<const std::string>(irods::CFG_MATCH_HASH_POLICY_KW);
+        _policy = irods::get_server_property<const std::string>(irods::KW_CFG_MATCH_HASH_POLICY);
     } catch ( const irods::exception& ) {
         _policy = "compatible";
     }

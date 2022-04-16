@@ -90,7 +90,7 @@ void resetMutex(const char* _inst_name) {
 
 irods::error getMutexName( const char* _inst_name, std::string &mutex_name ) {
     try {
-        const auto& mutex_name_salt = irods::get_server_property<const std::string>(irods::CFG_RE_CACHE_SALT_KW);
+        const auto& mutex_name_salt = irods::get_server_property<const std::string>(irods::KW_CFG_RE_CACHE_SALT);
         mutex_name = "irods_re_cache_mutex_";
         mutex_name += _inst_name;
         mutex_name += "_";

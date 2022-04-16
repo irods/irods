@@ -74,12 +74,12 @@ namespace
 
         try {
             // Iterate over the list of rule engine plugins until the Passthrough REP is found.
-            for (const auto& re : config.at(irods::CFG_PLUGIN_CONFIGURATION_KW).at(irods::PLUGIN_TYPE_RULE_ENGINE)) {
-                if (_instance_name == re.at(irods::CFG_INSTANCE_NAME_KW).get<std::string>()) {
+            for (const auto& re : config.at(irods::KW_CFG_PLUGIN_CONFIGURATION).at(irods::KW_CFG_PLUGIN_TYPE_RULE_ENGINE)) {
+                if (_instance_name == re.at(irods::KW_CFG_INSTANCE_NAME).get<std::string>()) {
                     // Fill the "pep_configs" plugin variable with objects containing the values
                     // defined in the "return_codes_for_peps" configuration. Each object in the list
                     // will contain a regular expression and a code.
-                    for (const auto& e : re.at(irods::CFG_PLUGIN_SPECIFIC_CONFIGURATION_KW).at("return_codes_for_peps")) {
+                    for (const auto& e : re.at(irods::KW_CFG_PLUGIN_SPECIFIC_CONFIGURATION).at("return_codes_for_peps")) {
                         pep_configs[_instance_name].push_back({std::regex{e.at("regex").get<std::string>()}, e.at("code").get<int>()});
                     }
 

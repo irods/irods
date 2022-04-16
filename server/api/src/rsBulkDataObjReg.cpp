@@ -45,10 +45,10 @@ rsBulkDataObjReg( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
             return ret.code();
         }
 
-        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             status = _rsBulkDataObjReg( rsComm, bulkDataObjRegInp,
                                         bulkDataObjRegOut );
-        } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+        } else if( irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
             status = SYS_NO_RCAT_SERVER_ERR;
         } else {
             rodsLog(
@@ -79,7 +79,7 @@ int _rsBulkDataObjReg(
         return ret.code();
     }
 
-    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+    if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         sqlResult_t *objPath, *dataType, *dataSize, *rescName, *rescID, *filePath,
                     *dataMode, *oprType, *replNum, *chksum;
         char *tmpObjPath, *tmpDataType, *tmpDataSize, *tmpRescName, *tmpRescID, *tmpFilePath,
@@ -254,7 +254,7 @@ int _rsBulkDataObjReg(
         }
 
         return status;
-    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+    } else if( irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
         return SYS_NO_RCAT_SERVER_ERR;
     } else {
         rodsLog(

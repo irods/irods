@@ -170,7 +170,7 @@ namespace irods::experimental
     auto log::get_level_from_config(const std::string& _category) -> log::level
     {
         try {
-            const auto& log_level = irods::get_server_property<const nlohmann::json&>(irods::CFG_LOG_LEVEL_KW);
+            const auto& log_level = irods::get_server_property<const nlohmann::json&>(irods::KW_CFG_LOG_LEVEL);
             return to_level(log_level.at(_category).get_ref<const std::string&>());
         }
         catch (const std::exception&) {
