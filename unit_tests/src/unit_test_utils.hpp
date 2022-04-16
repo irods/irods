@@ -144,7 +144,7 @@ namespace unit_test_utils
         MsParamArray *out_array = nullptr;
         const auto clear_ms_param_array = irods::at_scope_exit{[&out_array] { clearMsParamArray(out_array, true); }};
 
-        cond_input[irods::CFG_INSTANCE_NAME_KW] = "irods_rule_engine_plugin-irods_rule_language-instance";
+        cond_input[irods::KW_CFG_INSTANCE_NAME] = "irods_rule_engine_plugin-irods_rule_language-instance";
 
         const auto out_var = std::string{"*pid"};
         const auto rule_text = fmt::format("msi_get_agent_pid({});", out_var);

@@ -30,7 +30,7 @@ namespace irods{
     unpack::unpack(std::list<boost::any> &_l) : l_(_l) {};
 
     std::vector<re_pack_inp<default_re_ctx>> init_global_re_packs() {
-        const auto& re_plugin_configs = irods::get_server_property<const nlohmann::json&>(std::vector<std::string>{irods::CFG_PLUGIN_CONFIGURATION_KW, irods::PLUGIN_TYPE_RULE_ENGINE});
+        const auto& re_plugin_configs = irods::get_server_property<const nlohmann::json&>(std::vector<std::string>{irods::KW_CFG_PLUGIN_CONFIGURATION, irods::KW_CFG_PLUGIN_TYPE_RULE_ENGINE});
         std::vector<re_pack_inp<default_re_ctx>> ret;
 
         for (const auto& map : re_plugin_configs) {

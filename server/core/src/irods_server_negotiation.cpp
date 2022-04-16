@@ -23,14 +23,14 @@ namespace irods
 
         // Check local zone keys for a match with the sent zone key.
         try {
-            const auto& neg_key = irods::get_server_property<const std::string>(CFG_NEGOTIATION_KEY_KW);
+            const auto& neg_key = irods::get_server_property<const std::string>(KW_CFG_NEGOTIATION_KEY);
             if (!negotiation_key_is_valid(neg_key)) {
                 irods::log(LOG_WARNING, fmt::format(
                     "[{}:{}] - negotiation_key in server_config is invalid",
                     __func__, __LINE__));
             }
 
-            const auto& zone_key = irods::get_server_property<const std::string>(CFG_ZONE_KEY_KW);
+            const auto& zone_key = irods::get_server_property<const std::string>(KW_CFG_ZONE_KEY);
 
             std::string signed_zone_key;
             if (const auto err = sign_server_sid(zone_key, neg_key, signed_zone_key); !err.ok()) {

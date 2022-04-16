@@ -29,7 +29,7 @@ int rsAuthCheck(
         return ret.code();
     }
 
-    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+    if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         int status;
         int privLevel;
         int clientPrivLevel;
@@ -132,7 +132,7 @@ int rsAuthCheck(
         }
 
         return status;
-    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+    } else if( irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
         /* this may be a gateway to the rcat host */
         rodsServerHost_t *rodsServerHost;
         int status;

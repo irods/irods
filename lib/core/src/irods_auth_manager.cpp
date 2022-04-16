@@ -14,7 +14,7 @@ namespace
     {
         irods::auth* auth = nullptr;
 
-        constexpr auto& type = irods::PLUGIN_TYPE_AUTHENTICATION;
+        constexpr auto& type = irods::KW_CFG_PLUGIN_TYPE_AUTHENTICATION;
         if (const auto err = irods::load_plugin<irods::auth>(auth, _name, type, _instance, _context);
             !err.ok()) {
             return PASSMSG(fmt::format("Failed to load plugin: \"{}\".", _name), err);

@@ -284,7 +284,7 @@ int rsDataObjGet(
 
     try {
         const auto replica_size = L1desc[fd].dataObjInfo->dataSize;
-        if (const auto single_buffer_size = irods::get_advanced_setting<const int>(irods::CFG_MAX_SIZE_FOR_SINGLE_BUFFER) * 1024 * 1024;
+        if (const auto single_buffer_size = irods::get_advanced_setting<const int>(irods::KW_CFG_MAX_SIZE_FOR_SINGLE_BUFFER) * 1024 * 1024;
             replica_size <= single_buffer_size && UNKNOWN_FILE_SZ != replica_size)
         {
             dataObjOutBBuf->buf = std::malloc(single_buffer_size);

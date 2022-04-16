@@ -38,7 +38,7 @@ namespace irods::experimental::api {
 
                     { std::ifstream f{path}; f >> cfg; }
 
-                    auto psc = cfg.at(irods::CFG_PLUGIN_CONFIGURATION_KW);
+                    auto psc = cfg.at(irods::KW_CFG_PLUGIN_CONFIGURATION);
 
                     if(psc.contains("api") && psc.at("api").contains(instance_name_)) {
                         auto in = psc.at("api").at(instance_name_);

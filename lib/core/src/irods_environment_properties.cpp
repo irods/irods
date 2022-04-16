@@ -22,7 +22,7 @@ namespace irods {
         // capture parent process id for use in creation of 'session'
         // file which contains the cwd for a given session.  this cwd
         // is only updated by the icd command which writes a new irods
-        // CFG_IRODS_CWD_KW to the session dir which repaves the existing
+        // KW_CFG_IRODS_CWD to the session dir which repaves the existing
         // one in the original irodsEnv file.
         std::stringstream ppid_str; ppid_str << getppid();
 
@@ -36,7 +36,7 @@ namespace irods {
             return ERROR(-1, "failed to get irods home directory");
         }
         std::string json_session_file = json_file;
-        std::string env_var = to_env( CFG_IRODS_ENVIRONMENT_FILE_KW );
+        std::string env_var = to_env( KW_CFG_IRODS_ENVIRONMENT_FILE );
         char* irods_env = getenv(env_var.c_str());
         if ( irods_env && strlen( irods_env ) > 0 ) {
             json_file = irods_env;
@@ -93,13 +93,13 @@ namespace irods {
 
         try {
             capture_json( json_file );
-            config_props_.set< std::string >( CFG_IRODS_ENVIRONMENT_FILE_KW, json_file );
+            config_props_.set< std::string >( KW_CFG_IRODS_ENVIRONMENT_FILE, json_file );
             try {
                 capture_json( json_session_file );
             } catch ( const irods::exception& e ) {
                 // debug - irods::log( PASS( ret ) );
             }
-            config_props_.set< std::string >( CFG_IRODS_SESSION_ENVIRONMENT_FILE_KW, json_session_file );
+            config_props_.set< std::string >( KW_CFG_IRODS_SESSION_ENVIRONMENT_FILE, json_session_file );
             return;
         } catch ( const irods::exception& e ) {
             irods::log(e);

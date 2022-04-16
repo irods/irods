@@ -992,7 +992,7 @@ non_blockingFileCopyPlugin( int         mode,
         else {
             size_t trans_buff_size;
             try {
-                trans_buff_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
+                trans_buff_size = irods::get_advanced_setting<const int>(irods::KW_CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
             } catch ( const irods::exception& e ) {
                 close( outFd );
                 close( inFd );

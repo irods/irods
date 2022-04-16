@@ -1,190 +1,185 @@
-#ifndef CONFIGURATION_KEYWORDS_HPP
-#define CONFIGURATION_KEYWORDS_HPP
-
-#include <string>
+#ifndef IRODS_CONFIGURATION_KEYWORDS_HPP
+#define IRODS_CONFIGURATION_KEYWORDS_HPP
 
 namespace irods
 {
     // server_config.json keywords
-    extern const std::string CFG_KERBEROS_NAME_KW;
-    extern const std::string CFG_KERBEROS_KEYTAB_KW;
-    extern const std::string CFG_PAM_PASSWORD_LENGTH_KW;
-    extern const std::string CFG_PAM_NO_EXTEND_KW;
-    extern const std::string CFG_PAM_PASSWORD_MIN_TIME_KW;
-    extern const std::string CFG_PAM_PASSWORD_MAX_TIME_KW;
+    extern const char* const KW_CFG_KERBEROS_NAME;
+    extern const char* const KW_CFG_KERBEROS_KEYTAB;
+    extern const char* const KW_CFG_PAM_PASSWORD_LENGTH;
+    extern const char* const KW_CFG_PAM_NO_EXTEND;
+    extern const char* const KW_CFG_PAM_PASSWORD_MIN_TIME;
+    extern const char* const KW_CFG_PAM_PASSWORD_MAX_TIME;
 
-    extern const std::string CFG_DB_HOST_KW;
-    extern const std::string CFG_DB_PORT_KW;
-    extern const std::string CFG_DB_NAME_KW;
-    extern const std::string CFG_DB_ODBC_DRIVER_KW;
-    extern const std::string CFG_DB_USERNAME_KW;
-    extern const std::string CFG_DB_PASSWORD_KW;
-    extern const std::string CFG_DB_SSLMODE_KW;
-    extern const std::string CFG_DB_SSLROOTCERT_KW;
-    extern const std::string CFG_DB_SSLCERT_KW;
-    extern const std::string CFG_DB_SSLKEY_KW;
-    extern const std::string CFG_ZONE_NAME_KW;
-    extern const std::string CFG_ZONE_KEY_KW;
-    extern const std::string CFG_NEGOTIATION_KEY_KW;
-    extern const std::string CFG_RE_RULEBASE_SET_KW;
-    extern const std::string CFG_RE_NAMESPACE_SET_KW;
-    extern const std::string CFG_NAMESPACE_KW;
-    extern const std::string CFG_RE_FUNCTION_NAME_MAPPING_SET_KW;
-    extern const std::string CFG_RE_DATA_VARIABLE_MAPPING_SET_KW;
-    extern const std::string CFG_RE_PEP_REGEX_SET_KW;
-    extern const std::string CFG_DEFAULT_DIR_MODE_KW;
-    extern const std::string CFG_DEFAULT_FILE_MODE_KW;
-    extern const std::string CFG_DEFAULT_HASH_SCHEME_KW;
-    extern const std::string CFG_MATCH_HASH_POLICY_KW;
-    extern const std::string CFG_FEDERATION_KW;
-    extern const std::string CFG_ENVIRONMENT_VARIABLES_KW;
-    extern const std::string CFG_ADVANCED_SETTINGS_KW;
+    extern const char* const KW_CFG_DB_HOST;
+    extern const char* const KW_CFG_DB_PORT;
+    extern const char* const KW_CFG_DB_NAME;
+    extern const char* const KW_CFG_DB_ODBC_DRIVER;
+    extern const char* const KW_CFG_DB_USERNAME;
+    extern const char* const KW_CFG_DB_PASSWORD;
+    extern const char* const KW_CFG_DB_SSLMODE;
+    extern const char* const KW_CFG_DB_SSLROOTCERT;
+    extern const char* const KW_CFG_DB_SSLCERT;
+    extern const char* const KW_CFG_DB_SSLKEY;
+    extern const char* const KW_CFG_ZONE_NAME;
+    extern const char* const KW_CFG_ZONE_KEY;
+    extern const char* const KW_CFG_NEGOTIATION_KEY;
+    extern const char* const KW_CFG_RE_RULEBASE_SET;
+    extern const char* const KW_CFG_RE_NAMESPACE_SET;
+    extern const char* const KW_CFG_NAMESPACE;
+    extern const char* const KW_CFG_RE_FUNCTION_NAME_MAPPING_SET;
+    extern const char* const KW_CFG_RE_DATA_VARIABLE_MAPPING_SET;
+    extern const char* const KW_CFG_RE_PEP_REGEX_SET;
+    extern const char* const KW_CFG_DEFAULT_DIR_MODE;
+    extern const char* const KW_CFG_DEFAULT_FILE_MODE;
+    extern const char* const KW_CFG_DEFAULT_HASH_SCHEME;
+    extern const char* const KW_CFG_MATCH_HASH_POLICY;
+    extern const char* const KW_CFG_FEDERATION;
+    extern const char* const KW_CFG_ENVIRONMENT_VARIABLES;
+    extern const char* const KW_CFG_ADVANCED_SETTINGS;
 
-    extern const std::string CFG_SERVER_PORT_RANGE_START_KW;
-    extern const std::string CFG_SERVER_PORT_RANGE_END_KW;
+    extern const char* const KW_CFG_SERVER_PORT_RANGE_START;
+    extern const char* const KW_CFG_SERVER_PORT_RANGE_END;
 
     // log_level
-    extern const std::string CFG_LOG_LEVEL_KW;
-    extern const std::string CFG_LOG_LEVEL_CATEGORY_LEGACY_KW;
-    extern const std::string CFG_LOG_LEVEL_CATEGORY_SERVER_KW;
-    extern const std::string CFG_LOG_LEVEL_CATEGORY_AGENT_FACTORY_KW;
-    extern const std::string CFG_LOG_LEVEL_CATEGORY_AGENT_KW;
-    extern const std::string CFG_LOG_LEVEL_CATEGORY_DELAY_SERVER_KW;
-    extern const std::string CFG_LOG_LEVEL_CATEGORY_RESOURCE_KW;
-    extern const std::string CFG_LOG_LEVEL_CATEGORY_DATABASE_KW;
-    extern const std::string CFG_LOG_LEVEL_CATEGORY_AUTHENTICATION_KW;
-    extern const std::string CFG_LOG_LEVEL_CATEGORY_API_KW;
-    extern const std::string CFG_LOG_LEVEL_CATEGORY_MICROSERVICE_KW;
-    extern const std::string CFG_LOG_LEVEL_CATEGORY_NETWORK_KW;
-    extern const std::string CFG_LOG_LEVEL_CATEGORY_RULE_ENGINE_KW;
+    extern const char* const KW_CFG_LOG_LEVEL;
+    extern const char* const KW_CFG_LOG_LEVEL_CATEGORY_LEGACY;
+    extern const char* const KW_CFG_LOG_LEVEL_CATEGORY_SERVER;
+    extern const char* const KW_CFG_LOG_LEVEL_CATEGORY_AGENT_FACTORY;
+    extern const char* const KW_CFG_LOG_LEVEL_CATEGORY_AGENT;
+    extern const char* const KW_CFG_LOG_LEVEL_CATEGORY_DELAY_SERVER;
+    extern const char* const KW_CFG_LOG_LEVEL_CATEGORY_RESOURCE;
+    extern const char* const KW_CFG_LOG_LEVEL_CATEGORY_DATABASE;
+    extern const char* const KW_CFG_LOG_LEVEL_CATEGORY_AUTHENTICATION;
+    extern const char* const KW_CFG_LOG_LEVEL_CATEGORY_API;
+    extern const char* const KW_CFG_LOG_LEVEL_CATEGORY_MICROSERVICE;
+    extern const char* const KW_CFG_LOG_LEVEL_CATEGORY_NETWORK;
+    extern const char* const KW_CFG_LOG_LEVEL_CATEGORY_RULE_ENGINE;
 
     // client_allow_list_policy
-    extern const std::string CFG_CLIENT_API_ALLOWLIST_POLICY_KW;
+    extern const char* const KW_CFG_CLIENT_API_ALLOWLIST_POLICY;
 
     // host_access_control
-    extern const std::string CFG_HOST_ACCESS_CONTROL_KW;
-    extern const std::string CFG_ACCESS_ENTRIES_KW;
-    extern const std::string CFG_USER_KW;
-    extern const std::string CFG_GROUP_KW;
-    extern const std::string CFG_MASK_KW;
+    extern const char* const KW_CFG_HOST_ACCESS_CONTROL;
+    extern const char* const KW_CFG_ACCESS_ENTRIES;
+    extern const char* const KW_CFG_USER;
+    extern const char* const KW_CFG_GROUP;
+    extern const char* const KW_CFG_MASK;
 
     // host_resolution
-    extern const std::string CFG_HOST_RESOLUTION_KW;
-    extern const std::string CFG_HOST_ENTRIES_KW;
-    extern const std::string CFG_ADDRESS_TYPE_KW;
-    extern const std::string CFG_ADDRESSES_KW;
-    extern const std::string CFG_ADDRESS_KW;
+    extern const char* const KW_CFG_HOST_RESOLUTION;
+    extern const char* const KW_CFG_HOST_ENTRIES;
+    extern const char* const KW_CFG_ADDRESS_TYPE;
+    extern const char* const KW_CFG_ADDRESSES;
+    extern const char* const KW_CFG_ADDRESS;
 
     // advanced settings
-    extern const std::string DELAY_RULE_EXECUTORS_KW;
-    extern const std::string CFG_MAX_SIZE_FOR_SINGLE_BUFFER;
-    extern const std::string CFG_DEF_NUMBER_TRANSFER_THREADS;
-    extern const std::string CFG_TRANS_CHUNK_SIZE_PARA_TRANS;
-    extern const std::string CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS;
-    extern const std::string CFG_DEF_TEMP_PASSWORD_LIFETIME;
-    extern const std::string CFG_MAX_TEMP_PASSWORD_LIFETIME;
-    extern const std::string CFG_NUMBER_OF_CONCURRENT_DELAY_RULE_EXECUTORS;
-    extern const std::string CFG_MAX_SIZE_OF_DELAY_QUEUE_IN_BYTES_KW;
-    extern const std::string CFG_STACKTRACE_FILE_PROCESSOR_SLEEP_TIME_IN_SECONDS_KW;
+    extern const char* const KW_CFG_DELAY_RULE_EXECUTORS;
+    extern const char* const KW_CFG_MAX_SIZE_FOR_SINGLE_BUFFER;
+    extern const char* const KW_CFG_DEF_NUMBER_TRANSFER_THREADS;
+    extern const char* const KW_CFG_TRANS_CHUNK_SIZE_PARA_TRANS;
+    extern const char* const KW_CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS;
+    extern const char* const KW_CFG_DEF_TEMP_PASSWORD_LIFETIME;
+    extern const char* const KW_CFG_MAX_TEMP_PASSWORD_LIFETIME;
+    extern const char* const KW_CFG_NUMBER_OF_CONCURRENT_DELAY_RULE_EXECUTORS;
+    extern const char* const KW_CFG_MAX_SIZE_OF_DELAY_QUEUE_IN_BYTES;
+    extern const char* const KW_CFG_STACKTRACE_FILE_PROCESSOR_SLEEP_TIME_IN_SECONDS;
 
-    extern const std::string CFG_RE_CACHE_SALT_KW;
-    extern const std::string CFG_DELAY_SERVER_SLEEP_TIME_IN_SECONDS;
+    extern const char* const KW_CFG_RE_CACHE_SALT;
+    extern const char* const KW_CFG_DELAY_SERVER_SLEEP_TIME_IN_SECONDS;
 
-    extern const std::string CFG_DNS_CACHE_KW;
-    extern const std::string CFG_HOSTNAME_CACHE_KW;
+    extern const char* const KW_CFG_DNS_CACHE;
+    extern const char* const KW_CFG_HOSTNAME_CACHE;
 
-    extern const std::string CFG_SHARED_MEMORY_SIZE_IN_BYTES_KW;
-    extern const std::string CFG_EVICTION_AGE_IN_SECONDS_KW;
+    extern const char* const KW_CFG_SHARED_MEMORY_SIZE_IN_BYTES;
+    extern const char* const KW_CFG_EVICTION_AGE_IN_SECONDS;
 
     // service_account_environment.json keywords
-    extern const std::string CFG_IRODS_USER_NAME_KW;
-    extern const std::string CFG_IRODS_HOST_KW;
-    extern const std::string CFG_IRODS_PORT_KW;
-    extern const std::string CFG_IRODS_XMSG_HOST_KW;
-    extern const std::string CFG_IRODS_XMSG_PORT_KW;
-    extern const std::string CFG_IRODS_HOME_KW;
-    extern const std::string CFG_IRODS_CWD_KW;
-    extern const std::string CFG_IRODS_AUTHENTICATION_SCHEME_KW;
-    extern const std::string CFG_IRODS_DEFAULT_RESOURCE_KW;
-    extern const std::string CFG_IRODS_ZONE_KW;
-    extern const std::string CFG_IRODS_GSI_SERVER_DN_KW;
-    extern const std::string CFG_IRODS_LOG_LEVEL_KW;
-    extern const std::string CFG_IRODS_AUTHENTICATION_FILE_KW;
-    extern const std::string CFG_IRODS_DEBUG_KW;
-    extern const std::string CFG_IRODS_CLIENT_SERVER_POLICY_KW;
-    extern const std::string CFG_IRODS_CLIENT_SERVER_NEGOTIATION_KW;
-    extern const std::string CFG_IRODS_ENCRYPTION_KEY_SIZE_KW;
-    extern const std::string CFG_IRODS_ENCRYPTION_SALT_SIZE_KW;
-    extern const std::string CFG_IRODS_ENCRYPTION_NUM_HASH_ROUNDS_KW;
-    extern const std::string CFG_IRODS_ENCRYPTION_ALGORITHM_KW;
-    extern const std::string CFG_IRODS_DEFAULT_HASH_SCHEME_KW;
-    extern const std::string CFG_IRODS_MATCH_HASH_POLICY_KW;
+    extern const char* const KW_CFG_IRODS_USER_NAME;
+    extern const char* const KW_CFG_IRODS_HOST;
+    extern const char* const KW_CFG_IRODS_PORT;
+    extern const char* const KW_CFG_IRODS_HOME;
+    extern const char* const KW_CFG_IRODS_CWD;
+    extern const char* const KW_CFG_IRODS_AUTHENTICATION_SCHEME;
+    extern const char* const KW_CFG_IRODS_DEFAULT_RESOURCE;
+    extern const char* const KW_CFG_IRODS_ZONE;
+    extern const char* const KW_CFG_IRODS_GSI_SERVER_DN;
+    extern const char* const KW_CFG_IRODS_LOG_LEVEL;
+    extern const char* const KW_CFG_IRODS_AUTHENTICATION_FILE;
+    extern const char* const KW_CFG_IRODS_DEBUG;
+    extern const char* const KW_CFG_IRODS_CLIENT_SERVER_POLICY;
+    extern const char* const KW_CFG_IRODS_CLIENT_SERVER_NEGOTIATION;
+    extern const char* const KW_CFG_IRODS_ENCRYPTION_KEY_SIZE;
+    extern const char* const KW_CFG_IRODS_ENCRYPTION_SALT_SIZE;
+    extern const char* const KW_CFG_IRODS_ENCRYPTION_NUM_HASH_ROUNDS;
+    extern const char* const KW_CFG_IRODS_ENCRYPTION_ALGORITHM;
+    extern const char* const KW_CFG_IRODS_DEFAULT_HASH_SCHEME;
+    extern const char* const KW_CFG_IRODS_MATCH_HASH_POLICY;
 
-    extern const std::string CFG_IRODS_ENVIRONMENT_FILE_KW;
-    extern const std::string CFG_IRODS_SESSION_ENVIRONMENT_FILE_KW;
-    extern const std::string CFG_IRODS_SERVER_CONTROL_PLANE_PORT;
+    extern const char* const KW_CFG_IRODS_ENVIRONMENT_FILE;
+    extern const char* const KW_CFG_IRODS_SESSION_ENVIRONMENT_FILE;
+    extern const char* const KW_CFG_IRODS_SERVER_CONTROL_PLANE_PORT;
 
-    extern const std::string CFG_IRODS_SERVER_CONTROL_PLANE_KEY;
-    extern const std::string CFG_IRODS_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS_KW;
-    extern const std::string CFG_IRODS_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM_KW;
+    extern const char* const KW_CFG_IRODS_SERVER_CONTROL_PLANE_KEY;
+    extern const char* const KW_CFG_IRODS_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS;
+    extern const char* const KW_CFG_IRODS_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM;
 
     // irods environment advanced settings
-    extern const std::string CFG_IRODS_MAX_SIZE_FOR_SINGLE_BUFFER;
-    extern const std::string CFG_IRODS_DEF_NUMBER_TRANSFER_THREADS;
-    extern const std::string CFG_IRODS_MAX_NUMBER_TRANSFER_THREADS;
-    extern const std::string CFG_IRODS_TRANS_BUFFER_SIZE_FOR_PARA_TRANS;
-    extern const std::string CFG_IRODS_CONNECTION_POOL_REFRESH_TIME;
+    extern const char* const KW_CFG_IRODS_MAX_SIZE_FOR_SINGLE_BUFFER;
+    extern const char* const KW_CFG_IRODS_DEF_NUMBER_TRANSFER_THREADS;
+    extern const char* const KW_CFG_IRODS_MAX_NUMBER_TRANSFER_THREADS;
+    extern const char* const KW_CFG_IRODS_TRANS_BUFFER_SIZE_FOR_PARA_TRANS;
+    extern const char* const KW_CFG_IRODS_CONNECTION_POOL_REFRESH_TIME;
 
     // legacy ssl environment variables
-    extern const std::string CFG_IRODS_SSL_CA_CERTIFICATE_PATH;
-    extern const std::string CFG_IRODS_SSL_CA_CERTIFICATE_FILE;
-    extern const std::string CFG_IRODS_SSL_VERIFY_SERVER;
-    extern const std::string CFG_IRODS_SSL_CERTIFICATE_CHAIN_FILE;
-    extern const std::string CFG_IRODS_SSL_CERTIFICATE_KEY_FILE;
-    extern const std::string CFG_IRODS_SSL_DH_PARAMS_FILE;
+    extern const char* const KW_CFG_IRODS_SSL_CA_CERTIFICATE_PATH;
+    extern const char* const KW_CFG_IRODS_SSL_CA_CERTIFICATE_FILE;
+    extern const char* const KW_CFG_IRODS_SSL_VERIFY_SERVER;
+    extern const char* const KW_CFG_IRODS_SSL_CERTIFICATE_CHAIN_FILE;
+    extern const char* const KW_CFG_IRODS_SSL_CERTIFICATE_KEY_FILE;
+    extern const char* const KW_CFG_IRODS_SSL_DH_PARAMS_FILE;
 
     // irods environment values now included in server_config
-    extern const std::string CFG_ZONE_NAME;
-    extern const std::string CFG_ZONE_USER;
-    extern const std::string CFG_ZONE_PORT;
-    extern const std::string CFG_ZONE_AUTH_SCHEME;
+    extern const char* const KW_CFG_ZONE_USER;
+    extern const char* const KW_CFG_ZONE_PORT;
+    extern const char* const KW_CFG_ZONE_AUTH_SCHEME;
 
     // irods control plane values
-    extern const std::string CFG_SERVER_CONTROL_PLANE_PORT;
-    extern const std::string CFG_RULE_ENGINE_CONTROL_PLANE_PORT;
-    extern const std::string CFG_SERVER_CONTROL_PLANE_TIMEOUT;
-    extern const std::string CFG_SERVER_CONTROL_PLANE_KEY;
-    extern const std::string CFG_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS_KW;
-    extern const std::string CFG_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM_KW;
+    extern const char* const KW_CFG_SERVER_CONTROL_PLANE_PORT;
+    extern const char* const KW_CFG_RULE_ENGINE_CONTROL_PLANE_PORT;
+    extern const char* const KW_CFG_SERVER_CONTROL_PLANE_TIMEOUT;
+    extern const char* const KW_CFG_SERVER_CONTROL_PLANE_KEY;
+    extern const char* const KW_CFG_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS;
+    extern const char* const KW_CFG_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM;
 
-    extern const std::string CFG_CATALOG_PROVIDER_HOSTS_KW;
-    extern const std::string CFG_CATALOG_SERVICE_ROLE;
-    extern const std::string CFG_SERVICE_ROLE_PROVIDER;
-    extern const std::string CFG_SERVICE_ROLE_CONSUMER;
-    extern const std::string CFG_SERVICE_ROLE_PROXY;
+    extern const char* const KW_CFG_CATALOG_PROVIDER_HOSTS;
+    extern const char* const KW_CFG_CATALOG_SERVICE_ROLE;
+    extern const char* const KW_CFG_SERVICE_ROLE_PROVIDER;
+    extern const char* const KW_CFG_SERVICE_ROLE_CONSUMER;
+    extern const char* const KW_CFG_SERVICE_ROLE_PROXY;
 
-    extern const std::string CFG_IRODS_PLUGINS_HOME_KW;
+    extern const char* const KW_CFG_IRODS_PLUGINS_HOME;
 
-    extern const std::string CFG_PLUGIN_CONFIGURATION_KW;
+    extern const char* const KW_CFG_PLUGIN_CONFIGURATION;
 
     // plugin types
-    extern const std::string PLUGIN_TYPE_API;
-    extern const std::string PLUGIN_TYPE_RULE_ENGINE;
-    extern const std::string PLUGIN_TYPE_AUTHENTICATION;
-    extern const std::string PLUGIN_TYPE_NETWORK;
-    extern const std::string PLUGIN_TYPE_DATABASE;
-    extern const std::string PLUGIN_TYPE_RESOURCE;
-    extern const std::string PLUGIN_TYPE_MICROSERVICE;
+    extern const char* const KW_CFG_PLUGIN_TYPE_API;
+    extern const char* const KW_CFG_PLUGIN_TYPE_RULE_ENGINE;
+    extern const char* const KW_CFG_PLUGIN_TYPE_AUTHENTICATION;
+    extern const char* const KW_CFG_PLUGIN_TYPE_NETWORK;
+    extern const char* const KW_CFG_PLUGIN_TYPE_DATABASE;
+    extern const char* const KW_CFG_PLUGIN_TYPE_RESOURCE;
+    extern const char* const KW_CFG_PLUGIN_TYPE_MICROSERVICE;
 
-    extern const std::string CFG_PLUGIN_SPECIFIC_CONFIGURATION_KW;
-    extern const std::string CFG_INSTANCE_NAME_KW;
-    extern const std::string CFG_PLUGIN_NAME_KW;
+    extern const char* const KW_CFG_PLUGIN_SPECIFIC_CONFIGURATION;
+    extern const char* const KW_CFG_INSTANCE_NAME;
+    extern const char* const KW_CFG_PLUGIN_NAME;
 
-    extern const std::string CFG_SHARED_MEMORY_INSTANCE_KW;
-    extern const std::string CFG_SHARED_MEMORY_MUTEX_KW;
+    extern const char* const KW_CFG_SHARED_MEMORY_INSTANCE;
+    extern const char* const KW_CFG_SHARED_MEMORY_MUTEX;
 
-    extern const std::string DEFAULT_RULE_ENGINE_PLUGIN_NAME_KW;
-    extern const std::string DEFAULT_RULE_ENGINE_INSTANCE_NAME_KW;
+    extern const char* const KW_CFG_DEFAULT_RULE_ENGINE_PLUGIN_NAME;
+    extern const char* const KW_CFG_DEFAULT_RULE_ENGINE_INSTANCE_NAME;
 } // namespace irods
 
-#endif // CONFIGURATION_KEYWORDS_HPP
+#endif // IRODS_CONFIGURATION_KEYWORDS_HPP

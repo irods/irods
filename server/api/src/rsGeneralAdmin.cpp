@@ -267,9 +267,9 @@ rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             return ret.code();
         }
 
-        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             status = _rsGeneralAdmin( rsComm, generalAdminInp );
-        } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+        } else if( irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
             status = SYS_NO_RCAT_SERVER_ERR;
         } else {
             rodsLog(
@@ -577,7 +577,7 @@ _addResource(
     // =-=-=-=-=-=-=-
     // resolve plugin directory
     std::string plugin_home;
-    irods::error ret = irods::resolve_plugin_path( irods::PLUGIN_TYPE_RESOURCE, plugin_home );
+    irods::error ret = irods::resolve_plugin_path( irods::KW_CFG_PLUGIN_TYPE_RESOURCE, plugin_home );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
@@ -625,7 +625,7 @@ _listRescTypes( rsComm_t* _rsComm ) {
     // =-=-=-=-=-=-=-
     // resolve plugin directory
     std::string plugin_home;
-    irods::error ret = irods::resolve_plugin_path( irods::PLUGIN_TYPE_RESOURCE, plugin_home );
+    irods::error ret = irods::resolve_plugin_path( irods::KW_CFG_PLUGIN_TYPE_RESOURCE, plugin_home );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();

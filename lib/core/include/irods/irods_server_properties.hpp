@@ -196,7 +196,7 @@ namespace irods
     template< typename T >
     T get_advanced_setting( const std::string& _prop )
     {
-        return irods::get_server_property<T>(configuration_parser::key_path_t{CFG_ADVANCED_SETTINGS_KW, _prop});
+        return irods::get_server_property<T>(configuration_parser::key_path_t{KW_CFG_ADVANCED_SETTINGS, _prop});
     } // get_advanced_setting
 
     /// Returns the amount of shared memory that should be allocated for the DNS cache.

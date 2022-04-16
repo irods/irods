@@ -80,7 +80,7 @@ namespace
             return err.code();
         }
 
-        if (irods::CFG_SERVICE_ROLE_PROVIDER == svc_role) {
+        if (irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role) {
             const auto status = chlRegRuleExec(rsComm, ruleExecSubmitInp);
 
             if (status < 0) {
@@ -90,7 +90,7 @@ namespace
             return status;
         }
 
-        if (irods::CFG_SERVICE_ROLE_CONSUMER == svc_role) {
+        if (irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role) {
             rodsLog(LOG_ERROR, "_rsRuleExecSubmit error. ICAT is not configured on this host");
             return SYS_NO_ICAT_SERVER_ERR;
         }

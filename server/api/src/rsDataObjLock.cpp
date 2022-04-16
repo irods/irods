@@ -102,7 +102,7 @@ rsDataObjLock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         return ret.code();
     }
 
-    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+    if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         int cmd, type;
         if (const int status = getLockCmdAndType(dataObjInp->condInput, &cmd, &type);
             status < 0) {
@@ -110,7 +110,7 @@ rsDataObjLock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         }
         return fsDataObjLock( dataObjInp->objPath, cmd, type );
     }
-    else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+    else if( irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
         return SYS_NO_RCAT_SERVER_ERR;
     }
     else {
@@ -157,7 +157,7 @@ rsDataObjUnlock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         return ret.code();
     }
 
-    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+    if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         char * fd_string = getValByKey( &dataObjInp->condInput, LOCK_FD_KW );
         if (!fd_string) {
             int status = SYS_LOCK_TYPE_INP_ERR;
@@ -167,7 +167,7 @@ rsDataObjUnlock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         }
         return fsDataObjUnlock( F_SETLK, F_UNLCK, atoi( fd_string ) );
     }
-    else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+    else if( irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
         return SYS_NO_RCAT_SERVER_ERR;
     }
     else {

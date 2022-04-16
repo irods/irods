@@ -113,7 +113,7 @@ namespace irods
         error ret = load_plugin< resource >(
                         resc,
                         _plugin_name,
-                        PLUGIN_TYPE_RESOURCE,
+                        KW_CFG_PLUGIN_TYPE_RESOURCE,
                         _inst_name,
                         _context );
         if ( ret.ok() && resc ) {

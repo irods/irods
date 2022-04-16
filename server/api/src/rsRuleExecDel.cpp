@@ -70,7 +70,7 @@ namespace
             }
         }
 
-        if (irods::CFG_SERVICE_ROLE_PROVIDER == svc_role) {
+        if (irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role) {
             // Unregister rule (i.e. remove the entry from the catalog).
             const auto ec = chlDelRuleExec(rsComm, ruleExecDelInp->ruleExecId);
 
@@ -82,7 +82,7 @@ namespace
             return ec;
         }
 
-        if (irods::CFG_SERVICE_ROLE_CONSUMER == svc_role) {
+        if (irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role) {
             rodsLog(LOG_ERROR, "_rsRuleExecDel: chlDelRuleExec must be invoked on the catalog provider host");
             return SYS_NO_RCAT_SERVER_ERR;
         }
@@ -117,10 +117,10 @@ int rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp )
             return ret.code();
         }
 
-        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             status = _rsRuleExecDel( rsComm, ruleExecDelInp );
         }
-        else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+        else if( irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
             rodsLog( LOG_NOTICE, "rsRuleExecDel error. ICAT is not configured on this host" );
             return SYS_NO_RCAT_SERVER_ERR;
         }

@@ -24,7 +24,7 @@ int _rsGetHierarchyForResc(
         return ret.code();
     }
 
-    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+    if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         // =-=-=-=-=-=-=-
         // allocate the outgoing structure
         ( *_out ) = ( getHierarchyForRescOut_t* )malloc( sizeof( getHierarchyForRescOut_t ) );
@@ -44,7 +44,7 @@ int _rsGetHierarchyForResc(
         snprintf( ( *_out )->resc_hier_, MAX_NAME_LEN, "%s", hier.c_str() );
 
         return status;
-    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+    } else if( irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
         return SYS_NO_RCAT_SERVER_ERR;
     } else {
         rodsLog(
@@ -93,9 +93,9 @@ int rsGetHierarchyForResc(
             irods::log(PASS(ret));
             return ret.code();
         }
-        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             status = _rsGetHierarchyForResc( _inp, _out );
-        } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+        } else if( irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
             status = SYS_NO_RCAT_SERVER_ERR;
         } else {
             rodsLog(

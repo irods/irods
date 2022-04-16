@@ -252,11 +252,11 @@ int rsRegReplica(rsComm_t *rsComm, regReplica_t *regReplicaInp)
         return ret.code();
     }
 
-    if (irods::CFG_SERVICE_ROLE_CONSUMER == svc_role) {
+    if (irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role) {
         return SYS_NO_RCAT_SERVER_ERR;
     }
 
-    if (irods::CFG_SERVICE_ROLE_PROVIDER != svc_role) {
+    if (irods::KW_CFG_SERVICE_ROLE_PROVIDER != svc_role) {
         rodsLog(LOG_ERROR, "role not supported [%s]", svc_role.c_str());
         return SYS_SERVICE_ROLE_NOT_SUPPORTED;
     }

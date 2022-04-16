@@ -106,7 +106,7 @@ int fileChksum(rsComm_t* rsComm,
     // capture server hashing settings
     std::string hash_scheme( irods::MD5_NAME );
     try {
-        hash_scheme = irods::get_server_property<const std::string>(irods::CFG_DEFAULT_HASH_SCHEME_KW);
+        hash_scheme = irods::get_server_property<const std::string>(irods::KW_CFG_DEFAULT_HASH_SCHEME);
     } catch ( const irods::exception& ) {}
 
     // make sure the read parameter is lowercased
@@ -118,7 +118,7 @@ int fileChksum(rsComm_t* rsComm,
 
     std::string hash_policy;
     try {
-        hash_policy = irods::get_server_property<const std::string>(irods::CFG_MATCH_HASH_POLICY_KW);
+        hash_policy = irods::get_server_property<const std::string>(irods::KW_CFG_MATCH_HASH_POLICY);
     } catch ( const irods::exception& ) {}
 
     // =-=-=-=-=-=-=-
@@ -271,7 +271,7 @@ int file_checksum(RsComm* _comm,
     // Capture server hashing settings.
     std::string hash_scheme = irods::MD5_NAME;
     try {
-        hash_scheme = irods::get_server_property<const std::string>(irods::CFG_DEFAULT_HASH_SCHEME_KW);
+        hash_scheme = irods::get_server_property<const std::string>(irods::KW_CFG_DEFAULT_HASH_SCHEME);
     }
     catch (const irods::exception&) {}
 
@@ -280,7 +280,7 @@ int file_checksum(RsComm* _comm,
 
     std::string_view hash_policy;
     try {
-        hash_policy = irods::get_server_property<const std::string>(irods::CFG_MATCH_HASH_POLICY_KW);
+        hash_policy = irods::get_server_property<const std::string>(irods::KW_CFG_MATCH_HASH_POLICY);
     }
     catch (const irods::exception&) {}
 

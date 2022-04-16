@@ -66,9 +66,9 @@ namespace
     {
         logger::init(write_to_stdout, enable_test_mode);
 
-        logger::server::set_level(logger::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_SERVER_KW));
-        logger::legacy::set_level(logger::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_LEGACY_KW));
-        logger::delay_server::set_level(logger::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_DELAY_SERVER_KW));
+        logger::server::set_level(logger::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_SERVER));
+        logger::legacy::set_level(logger::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_LEGACY));
+        logger::delay_server::set_level(logger::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_DELAY_SERVER));
 
         logger::set_server_type("delay_server");
 
@@ -81,12 +81,12 @@ namespace
     {
         const auto& config = irods::server_properties::instance().map();
 
-        const auto advanced_settings = config.find(irods::CFG_ADVANCED_SETTINGS_KW);
+        const auto advanced_settings = config.find(irods::KW_CFG_ADVANCED_SETTINGS);
         if (advanced_settings == std::end(config)) {
             return std::nullopt;
         }
 
-        const auto executors = advanced_settings->find(irods::DELAY_RULE_EXECUTORS_KW);
+        const auto executors = advanced_settings->find(irods::KW_CFG_DELAY_RULE_EXECUTORS);
         if (executors == std::end(*advanced_settings)) {
             return std::nullopt;
         }
@@ -665,12 +665,12 @@ int main(int argc, char** argv)
 
     const auto sleep_time = [] {
         try {
-            return irods::get_advanced_setting<const int>(irods::CFG_DELAY_SERVER_SLEEP_TIME_IN_SECONDS);
+            return irods::get_advanced_setting<const int>(irods::KW_CFG_DELAY_SERVER_SLEEP_TIME_IN_SECONDS);
         }
         catch (...) {
             logger::delay_server::warn("Could not retrieve [{}] from advanced settings configuration. "
                                        "Using default value of {}.",
-                                       irods::CFG_DELAY_SERVER_SLEEP_TIME_IN_SECONDS,
+                                       irods::KW_CFG_DELAY_SERVER_SLEEP_TIME_IN_SECONDS,
                                        irods::default_delay_server_sleep_time_in_seconds);
         }
 
@@ -700,12 +700,12 @@ int main(int argc, char** argv)
 
     const auto number_of_concurrent_executors = [] {
         try {
-            return irods::get_advanced_setting<const int>(irods::CFG_NUMBER_OF_CONCURRENT_DELAY_RULE_EXECUTORS);
+            return irods::get_advanced_setting<const int>(irods::KW_CFG_NUMBER_OF_CONCURRENT_DELAY_RULE_EXECUTORS);
         }
         catch (...) {
             logger::delay_server::warn("Could not retrieve [{}] from advanced settings configuration. "
                                        "Using default value of {}.",
-                                       irods::CFG_NUMBER_OF_CONCURRENT_DELAY_RULE_EXECUTORS,
+                                       irods::KW_CFG_NUMBER_OF_CONCURRENT_DELAY_RULE_EXECUTORS,
                                        irods::default_number_of_concurrent_delay_executors);
         }
 
@@ -716,7 +716,7 @@ int main(int argc, char** argv)
 
     const auto queue_size_in_bytes = []() -> int {
         try {
-            const auto bytes = irods::get_advanced_setting<int>(irods::CFG_MAX_SIZE_OF_DELAY_QUEUE_IN_BYTES_KW);
+            const auto bytes = irods::get_advanced_setting<int>(irods::KW_CFG_MAX_SIZE_OF_DELAY_QUEUE_IN_BYTES);
 
             if (bytes > 0) {
                 return bytes;
@@ -725,7 +725,7 @@ int main(int argc, char** argv)
         catch (...) {
             logger::delay_server::warn("Could not retrieve [{}] from advanced settings configuration. "
                                        "Delay server will use as much memory as necessary.",
-                                       irods::CFG_MAX_SIZE_OF_DELAY_QUEUE_IN_BYTES_KW);
+                                       irods::KW_CFG_MAX_SIZE_OF_DELAY_QUEUE_IN_BYTES);
         }
 
         return 0;

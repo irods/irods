@@ -1146,7 +1146,7 @@ int
 getDefFileMode() {
     std::stringstream ss;
     try {
-        ss << std::oct << irods::get_server_property<const std::string>(irods::CFG_DEFAULT_FILE_MODE_KW);
+        ss << std::oct << irods::get_server_property<const std::string>(irods::KW_CFG_DEFAULT_FILE_MODE);
     } catch ( const irods::exception& e ) {
         return DEFAULT_FILE_MODE;
     }
@@ -1159,7 +1159,7 @@ int
 getDefDirMode() {
     std::stringstream ss;
     try {
-        ss << std::oct << irods::get_server_property<const std::string>(irods::CFG_DEFAULT_DIR_MODE_KW);
+        ss << std::oct << irods::get_server_property<const std::string>(irods::KW_CFG_DEFAULT_DIR_MODE);
     } catch ( const irods::exception& e ) {
         return DEFAULT_DIR_MODE;
     }

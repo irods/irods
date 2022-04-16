@@ -99,7 +99,7 @@ msiQuota( ruleExecInfo_t *rei ) {
         return ret.code();
     }
 
-    if (irods::CFG_SERVICE_ROLE_PROVIDER != svc_role) {
+    if (irods::KW_CFG_SERVICE_ROLE_PROVIDER != svc_role) {
         return SYS_NO_RCAT_SERVER_ERR;
     }
     rodsLog( LOG_NOTICE, "msiQuota/chlCalcUsageAndQuota called\n" );
@@ -355,9 +355,9 @@ msiCommit( ruleExecInfo_t *rei ) {
         return ret.code();
     }
 
-    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+    if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         status = chlCommit( rei->rsComm );
-    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+    } else if( irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
         status =  SYS_NO_RCAT_SERVER_ERR;
     } else {
         rodsLog(
@@ -411,9 +411,9 @@ msiRollback( ruleExecInfo_t *rei ) {
         return ret.code();
     }
 
-    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+    if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         status = chlRollback( rei->rsComm );
-    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+    } else if( irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
         status =  SYS_NO_RCAT_SERVER_ERR;
     } else {
         rodsLog(
@@ -594,10 +594,10 @@ msiDeleteUnusedAVUs( ruleExecInfo_t *rei ) {
         return ret.code();
     }
 
-    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+    if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         rodsLog( LOG_NOTICE, "msiDeleteUnusedAVUs/chlDelUnusedAVUs called\n" );
         status = chlDelUnusedAVUs( rei->rsComm );
-    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+    } else if( irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
         status =  SYS_NO_RCAT_SERVER_ERR;
     } else {
         rodsLog(

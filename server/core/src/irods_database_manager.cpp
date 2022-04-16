@@ -65,7 +65,7 @@ namespace irods {
         error ret = load_plugin< database >(
                         db,
                         _plugin_name,
-                        PLUGIN_TYPE_DATABASE,
+                        KW_CFG_PLUGIN_TYPE_DATABASE,
                         _inst_name,
                         _context );
         if ( ret.ok() && db ) {

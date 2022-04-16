@@ -124,19 +124,19 @@ irods::error start(irods::default_re_ctx&, const std::string& _instance_name)
     local_instance_name = _instance_name;
 
     try {
-        const auto& re_plugin_arr = irods::get_server_property<const nlohmann::json&>(irods::CFG_PLUGIN_CONFIGURATION_KW)
-            .at(irods::PLUGIN_TYPE_RULE_ENGINE);
+        const auto& re_plugin_arr = irods::get_server_property<const nlohmann::json&>(irods::KW_CFG_PLUGIN_CONFIGURATION)
+            .at(irods::KW_CFG_PLUGIN_TYPE_RULE_ENGINE);
 
         for (const auto& plugin_config : re_plugin_arr) {
-            const auto& inst_name = plugin_config.at(irods::CFG_INSTANCE_NAME_KW).get_ref<const std::string&>();
+            const auto& inst_name = plugin_config.at(irods::KW_CFG_INSTANCE_NAME).get_ref<const std::string&>();
 
             if (inst_name == _instance_name) {
-                const auto& shmem_value = plugin_config.at(irods::CFG_SHARED_MEMORY_INSTANCE_KW).get_ref<const std::string&>();
-                const auto& plugin_spec_cfg = plugin_config.at(irods::CFG_PLUGIN_SPECIFIC_CONFIGURATION_KW);
+                const auto& shmem_value = plugin_config.at(irods::KW_CFG_SHARED_MEMORY_INSTANCE).get_ref<const std::string&>();
+                const auto& plugin_spec_cfg = plugin_config.at(irods::KW_CFG_PLUGIN_SPECIFIC_CONFIGURATION);
 
-                const std::string core_re  = get_string_array_from_array(plugin_spec_cfg.at(irods::CFG_RE_RULEBASE_SET_KW));
-                const std::string core_fnm = get_string_array_from_array(plugin_spec_cfg.at(irods::CFG_RE_FUNCTION_NAME_MAPPING_SET_KW));
-                const std::string core_dvm = get_string_array_from_array(plugin_spec_cfg.at(irods::CFG_RE_DATA_VARIABLE_MAPPING_SET_KW));
+                const std::string core_re  = get_string_array_from_array(plugin_spec_cfg.at(irods::KW_CFG_RE_RULEBASE_SET));
+                const std::string core_fnm = get_string_array_from_array(plugin_spec_cfg.at(irods::KW_CFG_RE_FUNCTION_NAME_MAPPING_SET));
+                const std::string core_dvm = get_string_array_from_array(plugin_spec_cfg.at(irods::KW_CFG_RE_DATA_VARIABLE_MAPPING_SET));
 
                 if (const int ec = initRuleEngine(shmem_value.c_str(), nullptr, core_re.c_str(), core_dvm.c_str(), core_fnm.c_str()); ec < 0) {
                     return ERROR(ec, "Failed to initialize native rule engine");
@@ -145,8 +145,8 @@ irods::error start(irods::default_re_ctx&, const std::string& _instance_name)
                 // index locally defined microservices
                 initialize_microservice_table();
 
-                if (plugin_spec_cfg.count(irods::CFG_RE_PEP_REGEX_SET_KW) > 0) {
-                    register_regexes_from_array(plugin_spec_cfg.at(irods::CFG_RE_PEP_REGEX_SET_KW), _instance_name);
+                if (plugin_spec_cfg.count(irods::KW_CFG_RE_PEP_REGEX_SET) > 0) {
+                    register_regexes_from_array(plugin_spec_cfg.at(irods::KW_CFG_RE_PEP_REGEX_SET), _instance_name);
                 }
                 else {
                     RuleExistsHelper::Instance()->registerRuleRegex(STATIC_PEP_RULE_REGEX);

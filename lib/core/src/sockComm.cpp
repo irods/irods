@@ -318,7 +318,7 @@ sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
 
     boost::optional<int> svr_port_range_start_wrapper;
     try {
-        svr_port_range_start_wrapper.reset(irods::get_server_property<const int>(irods::CFG_SERVER_PORT_RANGE_START_KW));
+        svr_port_range_start_wrapper.reset(irods::get_server_property<const int>(irods::KW_CFG_SERVER_PORT_RANGE_START));
     } catch ( const irods::exception& ) {}
     if ( *portNum <= 0 && svr_port_range_start_wrapper ) {
         int svr_port_range_start = *svr_port_range_start_wrapper;
@@ -330,7 +330,7 @@ sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
 
         int svr_port_range_end;
         try {
-            svr_port_range_end = irods::get_server_property<const int>(irods::CFG_SERVER_PORT_RANGE_END_KW);
+            svr_port_range_end = irods::get_server_property<const int>(irods::KW_CFG_SERVER_PORT_RANGE_END);
             if ( svr_port_range_end < svr_port_range_start ) {
                 rodsLog( LOG_ERROR,
                          "sockOpenForInConn: PortRangeStart %d > PortRangeEnd %d",

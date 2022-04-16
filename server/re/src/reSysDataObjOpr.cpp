@@ -666,7 +666,7 @@ msiSetNumThreads( msParam_t *xsizePerThrInMbStr, msParam_t *xmaxNumThrStr,
 
     int def_num_thr = 0;
     try {
-        def_num_thr = irods::get_advanced_setting<const int>(irods::CFG_DEF_NUMBER_TRANSFER_THREADS);
+        def_num_thr = irods::get_advanced_setting<const int>(irods::KW_CFG_DEF_NUMBER_TRANSFER_THREADS);
     } catch ( const irods::exception& e ) {
         irods::log(e);
         return e.code();
@@ -684,7 +684,7 @@ msiSetNumThreads( msParam_t *xsizePerThrInMbStr, msParam_t *xmaxNumThrStr,
 
     int size_per_tran_thr = 0;
     try {
-        size_per_tran_thr = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS);
+        size_per_tran_thr = irods::get_advanced_setting<const int>(irods::KW_CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS);
     } catch ( const irods::exception& e ) {
         irods::log(e);
         return e.code();
@@ -742,7 +742,7 @@ msiSetNumThreads( msParam_t *xsizePerThrInMbStr, msParam_t *xmaxNumThrStr,
 
         int trans_buff_size = 0;
         try {
-            trans_buff_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS);
+            trans_buff_size = irods::get_advanced_setting<const int>(irods::KW_CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS);
         } catch ( const irods::exception& e ) {
             irods::log(e);
             return e.code();
@@ -1322,14 +1322,14 @@ msiSetReServerNumProc(msParam_t* xnumProc, ruleExecInfo_t* rei)
         int number_of_concurrent_executors = -1;
 
         try {
-            number_of_concurrent_executors = irods::get_advanced_setting<const int>(irods::CFG_NUMBER_OF_CONCURRENT_DELAY_RULE_EXECUTORS);
+            number_of_concurrent_executors = irods::get_advanced_setting<const int>(irods::KW_CFG_NUMBER_OF_CONCURRENT_DELAY_RULE_EXECUTORS);
         }
         catch (...) {
             number_of_concurrent_executors = irods::default_number_of_concurrent_delay_executors;
 
             using log = irods::experimental::log::server;
             log::warn("Could not retrieve [{}] from advanced settings configuration. Using default value of {}.",
-                      irods::CFG_NUMBER_OF_CONCURRENT_DELAY_RULE_EXECUTORS,
+                      irods::KW_CFG_NUMBER_OF_CONCURRENT_DELAY_RULE_EXECUTORS,
                       number_of_concurrent_executors);
         }
 

@@ -238,7 +238,7 @@ namespace irods
     auto get_dns_cache_shared_memory_size() noexcept -> int
     {
         try {
-            const auto wrapped = get_advanced_setting<nlohmann::json>(CFG_DNS_CACHE_KW).at(CFG_SHARED_MEMORY_SIZE_IN_BYTES_KW);
+            const auto wrapped = get_advanced_setting<nlohmann::json>(KW_CFG_DNS_CACHE).at(KW_CFG_SHARED_MEMORY_SIZE_IN_BYTES);
             const auto bytes   = wrapped.get<int>();
 
             if (bytes > 0) {
@@ -249,7 +249,7 @@ namespace irods
         }
         catch (...) {
             rodsLog(LOG_DEBUG, "Could not read server configuration property [%s.%s.%s].",
-                    CFG_ADVANCED_SETTINGS_KW.data(), CFG_DNS_CACHE_KW.data(), CFG_SHARED_MEMORY_SIZE_IN_BYTES_KW.data());
+                    KW_CFG_ADVANCED_SETTINGS, KW_CFG_DNS_CACHE, KW_CFG_SHARED_MEMORY_SIZE_IN_BYTES);
         }
 
         rodsLog(LOG_DEBUG, "Returning default shared memory size for DNS cache [default=5000000].");
@@ -260,7 +260,7 @@ namespace irods
     int get_dns_cache_eviction_age() noexcept
     {
         try {
-            const auto wrapped = get_advanced_setting<nlohmann::json>(CFG_DNS_CACHE_KW).at(CFG_EVICTION_AGE_IN_SECONDS_KW);
+            const auto wrapped = get_advanced_setting<nlohmann::json>(KW_CFG_DNS_CACHE).at(KW_CFG_EVICTION_AGE_IN_SECONDS);
             const auto seconds = wrapped.get<int>();
 
             if (seconds >= 0) {
@@ -271,7 +271,7 @@ namespace irods
         }
         catch (...) {
             rodsLog(LOG_DEBUG, "Could not read server configuration property [%s.%s.%s].",
-                    CFG_ADVANCED_SETTINGS_KW.data(), CFG_DNS_CACHE_KW.data(), CFG_EVICTION_AGE_IN_SECONDS_KW.data());
+                    KW_CFG_ADVANCED_SETTINGS, KW_CFG_DNS_CACHE, KW_CFG_EVICTION_AGE_IN_SECONDS);
         }
 
         rodsLog(LOG_DEBUG, "Returning default eviction age for DNS cache [default=3600].");
@@ -282,7 +282,7 @@ namespace irods
     auto get_hostname_cache_shared_memory_size() noexcept -> int
     {
         try {
-            const auto wrapped = get_advanced_setting<nlohmann::json>(CFG_HOSTNAME_CACHE_KW).at(CFG_SHARED_MEMORY_SIZE_IN_BYTES_KW);
+            const auto wrapped = get_advanced_setting<nlohmann::json>(KW_CFG_HOSTNAME_CACHE).at(KW_CFG_SHARED_MEMORY_SIZE_IN_BYTES);
             const auto bytes   = wrapped.get<int>();
 
             if (bytes > 0) {
@@ -293,7 +293,7 @@ namespace irods
         }
         catch (...) {
             rodsLog(LOG_DEBUG, "Could not read server configuration property [%s.%s.%s].",
-                    CFG_ADVANCED_SETTINGS_KW.data(), CFG_HOSTNAME_CACHE_KW.data(), CFG_SHARED_MEMORY_SIZE_IN_BYTES_KW.data());
+                    KW_CFG_ADVANCED_SETTINGS, KW_CFG_HOSTNAME_CACHE, KW_CFG_SHARED_MEMORY_SIZE_IN_BYTES);
         }
 
         rodsLog(LOG_DEBUG, "Returning default shared memory size for Hostname cache [default=2500000].");
@@ -304,7 +304,7 @@ namespace irods
     int get_hostname_cache_eviction_age() noexcept
     {
         try {
-            const auto wrapped = get_advanced_setting<nlohmann::json>(CFG_HOSTNAME_CACHE_KW).at(CFG_EVICTION_AGE_IN_SECONDS_KW);
+            const auto wrapped = get_advanced_setting<nlohmann::json>(KW_CFG_HOSTNAME_CACHE).at(KW_CFG_EVICTION_AGE_IN_SECONDS);
             const auto seconds = wrapped.get<int>();
 
             if (seconds >= 0) {
@@ -315,7 +315,7 @@ namespace irods
         }
         catch (...) {
             rodsLog(LOG_DEBUG, "Could not read server configuration property [%s.%s.%s].",
-                    CFG_ADVANCED_SETTINGS_KW.data(), CFG_HOSTNAME_CACHE_KW.data(), CFG_EVICTION_AGE_IN_SECONDS_KW.data());
+                    KW_CFG_ADVANCED_SETTINGS, KW_CFG_HOSTNAME_CACHE, KW_CFG_EVICTION_AGE_IN_SECONDS);
         }
 
         rodsLog(LOG_DEBUG, "Returning default eviction age for Hostname cache [default=3600].");
