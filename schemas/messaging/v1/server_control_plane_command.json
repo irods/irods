@@ -1,0 +1,8 @@
+{
+    "type": "record",
+    "name": "control_plane_command",
+    "fields" : [
+        {"name": "command", "type": "string"},
+        {"name": "options", "type": { "type":  "map", "values": "string" } }
+    ]
+}

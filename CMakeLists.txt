@@ -51,12 +51,6 @@ set(IRODS_VERSION_PATCH "0")
 set(IRODS_VERSION "${IRODS_VERSION_MAJOR}.${IRODS_VERSION_MINOR}.${IRODS_VERSION_PATCH}")
 set(IRODS_PACKAGE_REVISION "1")
 
-if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/irods_schema_messaging/v1/server_control_plane_command.json")
-  message(FATAL_ERROR "Missing file: ${CMAKE_CURRENT_SOURCE_DIR}/irods_schema_messaging/v1/server_control_plane_command.json
-Are your git submodules initialized? If not, try running the following in the source directory:
-git submodule update --init")
-endif()
-
 project(irods
   VERSION ${IRODS_VERSION}
   LANGUAGES C CXX)
