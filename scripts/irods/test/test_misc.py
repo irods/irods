@@ -198,7 +198,6 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
                 self.assertFalse(os.path.exists(fn))
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "skip for topology testing")
-    @unittest.skip('delete this line on resolution of #6116 and #6117 - kills grandpa and cannot come back')
     def test_server_respawns_processes__issue_4977(self):
         import psutil
         import time
