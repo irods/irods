@@ -2,10 +2,10 @@
 #define IRODS_CATALOG_UTILITIES_HPP
 
 #include "irods/irods_exception.hpp"
+#include "irods/rodsConnect.h"
 
 #include <nlohmann/json.hpp>
 #include <nanodbc/nanodbc.h>
-#include "irods/rodsConnect.h"
 
 #include <functional>
 #include <map>
