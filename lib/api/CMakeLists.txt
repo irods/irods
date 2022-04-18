@@ -146,6 +146,7 @@ foreach(variant IN ITEMS client server)
     "${CMAKE_CURRENT_SOURCE_DIR}/src/rc_register_physical_path.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/rc_replica_close.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/rc_replica_open.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/rc_set_delay_server_migration_info.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/rc_set_grid_configuration_value.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/rc_touch.cpp"
   )
@@ -309,6 +310,7 @@ install(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/ruleExecMod.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/ruleExecSubmit.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/server_report.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/set_delay_server_migration_info.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/set_grid_configuration_value.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/simpleQuery.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/specificQuery.h"
