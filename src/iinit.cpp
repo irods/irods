@@ -1,17 +1,18 @@
-#include <irods/rods.h>
-#include <irods/parseCommandLine.h>
-#include <irods/rcMisc.h>
-#include <irods/rodsClient.h>
-#include <irods/rcConnect.h>
-#include <irods/irods_native_auth_object.hpp>
-#include <irods/irods_pam_auth_object.hpp>
-#include <irods/irods_gsi_object.hpp>
-#include <irods/irods_kvp_string_parser.hpp>
+#include <irods/authentication_plugin_framework.hpp>
 #include <irods/irods_auth_constants.hpp>
 #include <irods/irods_client_api_table.hpp>
-#include <irods/irods_pack_table.hpp>
 #include <irods/irods_environment_properties.hpp>
+#include <irods/irods_gsi_object.hpp>
 #include <irods/irods_kvp_string_parser.hpp>
+#include <irods/irods_kvp_string_parser.hpp>
+#include <irods/irods_native_auth_object.hpp>
+#include <irods/irods_pack_table.hpp>
+#include <irods/irods_pam_auth_object.hpp>
+#include <irods/parseCommandLine.h>
+#include <irods/rcConnect.h>
+#include <irods/rcMisc.h>
+#include <irods/rods.h>
+#include <irods/rodsClient.h>
 
 #include <boost/lexical_cast.hpp>
 
@@ -280,7 +281,8 @@ int main( int argc, char **argv )
     // PAM auth gets special consideration, and also includes an
     // auth by the usual convention
     bool pam_flg = false;
-    if ( irods::AUTH_PAM_SCHEME == lower_scheme ) {
+    const auto use_legacy_authentication = irods::experimental::auth::use_legacy_authentication(*Conn);
+    if (use_legacy_authentication && irods::AUTH_PAM_SCHEME == lower_scheme) {
         // =-=-=-=-=-=-=-
         // set a flag stating that we have done pam and the auth
         // scheme needs overridden
@@ -337,31 +339,47 @@ int main( int argc, char **argv )
         }
     }
     else {
-        // =-=-=-=-=-=-=-
-        // since we might be using PAM
-        // and check that the user/password is OK
-        const char* auth_scheme = ( pam_flg ) ?
-                              irods::AUTH_NATIVE_SCHEME.c_str() :
-                              my_env.rodsAuthScheme;
-        status = clientLogin( Conn, 0, auth_scheme );
-        if ( status != 0 ) {
-            rcDisconnect( Conn );
-            return 7;
-        }
-
-        printErrorStack( Conn->rError );
-        if ( ttl > 0 && !pam_flg ) {
-            /* if doing non-PAM TTL, now get the
-            short-term password (after initial login) */
-            status = clientLoginTTL( Conn, ttl );
+        if (use_legacy_authentication) {
+            // =-=-=-=-=-=-=-
+            // since we might be using PAM
+            // and check that the user/password is OK
+            const char* auth_scheme = ( pam_flg ) ?
+                                  irods::AUTH_NATIVE_SCHEME.c_str() :
+                                  my_env.rodsAuthScheme;
+            status = clientLogin( Conn, 0, auth_scheme );
             if ( status != 0 ) {
                 rcDisconnect( Conn );
-                return 8;
+                return 7;
             }
-            /* And check that it works */
-            status = clientLogin( Conn );
-            if ( status != 0 ) {
-                rcDisconnect( Conn );
+
+            printErrorStack( Conn->rError );
+            if ( ttl > 0 && !pam_flg ) {
+                /* if doing non-PAM TTL, now get the
+                short-term password (after initial login) */
+                status = clientLoginTTL( Conn, ttl );
+                if ( status != 0 ) {
+                    rcDisconnect( Conn );
+                    return 8;
+                }
+                /* And check that it works */
+                status = clientLogin( Conn );
+                if ( status != 0 ) {
+                    rcDisconnect( Conn );
+                    return 7;
+                }
+            }
+        }
+        else {
+            nlohmann::json ctx;
+            if (irods::AUTH_PAM_SCHEME == lower_scheme) {
+                ctx = nlohmann::json{
+                    {irods::AUTH_TTL_KEY, std::to_string(ttl)},
+                    {irods::AUTH_PASSWORD_KEY, password}
+                };
+            }
+
+            if (const int ec = clientLogin(Conn, ctx.dump().data()); ec != 0) {
+                rcDisconnect(Conn);
                 return 7;
             }
         }
