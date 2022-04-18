@@ -6,6 +6,7 @@ import sys
 import getpass
 import tempfile
 import json
+import six
 
 if sys.version_info >= (2, 7):
     import unittest
@@ -22,8 +23,8 @@ from . import resource_suite
 from . import session
 from .rule_texts_for_tests import rule_texts
 
-class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase,
-                    metaclass = metaclass_unittest_test_case_generator.MetaclassUnittestTestCaseGenerator):
+@six.add_metaclass(metaclass_unittest_test_case_generator.MetaclassUnittestTestCaseGenerator)
+class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
 
     class_name = 'Test_AllRules'
 
