@@ -27,7 +27,7 @@ main( int argc, char **argv ) {
     rodsPathInp_t rodsPathInp;
 
 
-    optStr = "hfruUvVfn:Z"; // JMC - backport 4552
+    optStr = "hfruvVfn:Z"; // JMC - backport 4552
 
     status = parseCmdLineOpt( argc, argv, optStr, 1, &myRodsArgs ); // JMC - backport 4552
     if ( status < 0 ) {
@@ -37,12 +37,6 @@ main( int argc, char **argv ) {
     if ( myRodsArgs.help == True ) {
         usage();
         exit( 0 );
-    }
-    // Since 4.2.8
-    // This deprecation message is specific to irm, not to general unlinking
-    if (True == myRodsArgs.unmount) {
-        printf("-U is deprecated.  Please use iunreg instead.\n");
-        exit(1);
     }
 
     if ( argc - optind <= 0 ) {
@@ -115,20 +109,15 @@ usage() {
         "Registered non-vault replicas are never deleted from the filesystem. They ",
         "are unregistered and left on disk as-is.",
         " ",
-        "The -U option allows the unregistering of the data object or collection",
-        "without deleting the physical file. Normally, a normal user cannot",
-        "unregister a data object if the physical file is located in a resource",
-        "vault. The acNoChkFilePathPerm rule allows this check to be bypassed.",
-        " ",
         "There is no -R option (remove replica from a named resource) at this time.",
         "Please use itrim (with the -S option) instead.",
+        " ",
+        "To unregister a data object without removing the physical data, use iunreg.",
         " ",
         "The irmtrash command should be used to delete data-objects in the trash",
         "collection.",
         " ",
         "Note that -n has been deprecated.  Please use itrim instead.",
-        " ",
-        "Note that -U has been deprecated.  Please use iunreg instead.",
         " ",
         "Options are:",
         " -f  force - Immediate removal of data-objects without putting them in trash .",
@@ -138,7 +127,6 @@ usage() {
         " -r  recursive - remove the whole subtree; the collection, all data-objects",
         "     in the collection, and any subcollections and sub-data-objects in the",
         "     collection.",
-        " -U  [Deprecated] unregister the file or collection",
         " -v  verbose",
         " -V  Very verbose",
         " --empty  If the file to be removed is a bundle file (generated with iphybun)", // JMC - backport 4552
