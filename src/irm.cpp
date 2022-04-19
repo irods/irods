@@ -27,7 +27,7 @@ main( int argc, char **argv ) {
     rodsPathInp_t rodsPathInp;
 
 
-    optStr = "hfruvVfn:Z"; // JMC - backport 4552
+    optStr = "hfruvVf:Z"; // JMC - backport 4552
 
     status = parseCmdLineOpt( argc, argv, optStr, 1, &myRodsArgs ); // JMC - backport 4552
     if ( status < 0 ) {
@@ -102,31 +102,24 @@ usage() {
     char *msgs[] = {
         "Usage: irm [-rUfvVh] [-n replNum] [--empty] dataObj|collection ... ", // JMC - backport 4552
         " ",
-        "Remove one or more data-object or collection from iRODS space. By default, ",
-        "the data-objects are moved to the trash collection (/myZone/trash) unless",
-        "either the -f option or the -n option is used.",
+        "Remove one or more data objects and/or collections from the iRODS namespace. ",
+        "By default, the data objects are moved to the trash collection (/myZone/trash) unless",
+        "the -f option is used.",
         " ",
         "Registered non-vault replicas are never deleted from the filesystem. They ",
         "are unregistered and left on disk as-is.",
         " ",
-        "There is no -R option (remove replica from a named resource) at this time.",
-        "Please use itrim (with the -S option) instead.",
+        "To remove a specific replica, use itrim.",
         " ",
         "To unregister a data object without removing the physical data, use iunreg.",
         " ",
-        "The irmtrash command should be used to delete data-objects in the trash",
+        "The irmtrash command should be used to delete data objects in the trash",
         "collection.",
         " ",
-        "Note that -n has been deprecated.  Please use itrim instead.",
-        " ",
         "Options are:",
-        " -f  force - Immediate removal of data-objects without putting them in trash .",
-        " -n  replNum - [Deprecated] the replica to remove; if not specified remove all replicas.",
-        "     This option is applicable only to the removal of data object and",
-        "     will be ignored for collection removal.",
-        " -r  recursive - remove the whole subtree; the collection, all data-objects",
-        "     in the collection, and any subcollections and sub-data-objects in the",
-        "     collection.",
+        " -f  force - Immediate removal of data objects without putting them in trash.",
+        " -r  recursive - Recursively remove the target collection, all data objects in the ",
+        "                 collection, and all subcollections.",
         " -v  verbose",
         " -V  Very verbose",
         " --empty  If the file to be removed is a bundle file (generated with iphybun)", // JMC - backport 4552
