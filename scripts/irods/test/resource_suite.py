@@ -1048,7 +1048,7 @@ class ResourceSuite(ResourceBase):
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + self.testfile)  # creates replica
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed twice
-        self.admin.assert_icommand("irm -n 0 " + self.testfile, 'STDOUT', 'deprecated')  # remove original from grid
+        self.admin.assert_icommand("itrim -N 1 -n 0 " + self.testfile, 'STDOUT')  # remove original from grid
         # replica 1 should be there
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', ["1 " + self.testresc, self.testfile])
         self.admin.assert_icommand_fail("ils -L " + self.testfile, 'STDOUT_SINGLELINE',

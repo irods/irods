@@ -795,7 +795,6 @@ msiDataObjWrite( msParam_t *inpParam1, msParam_t *inpParam2,
  *    compatibility.
  *    Valid keyWds are:
  *        \li "objPath" - the path of the data object to remove.
- *        \li "replNum" - the replica number of the copy to remove.
  *        \li "forceFlag" - Remove the data object instead putting
  *            it in trash. This keyWd has no value. But the
  *            '=' character is still needed
@@ -847,7 +846,7 @@ msiDataObjUnlink( msParam_t *inpParam, msParam_t *outParam,
     /* parse inpParam */
     if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
         myDataObjInp = &dataObjInp;
-        validKwFlags = OBJ_PATH_FLAG | FORCE_FLAG_FLAG | REPL_NUM_FLAG |
+        validKwFlags = OBJ_PATH_FLAG | FORCE_FLAG_FLAG |
                        RMTRASH_FLAG | ADMIN_RMTRASH_FLAG | UNREG_FLAG;
         rei->status = parseMsKeyValStrForDataObjInp( inpParam, myDataObjInp,
                       OBJ_PATH_KW, validKwFlags, &outBadKeyWd );
