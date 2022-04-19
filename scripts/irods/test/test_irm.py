@@ -22,17 +22,14 @@ class Test_Irm(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
         super(Test_Irm, self).tearDown()
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
-    def test_irm_option_U_is_deprecated(self):
+    def test_irm_option_U_is_invalid__issue_4681(self):
         filename = 'test_irm_option_U_is_deprecated.txt'
-        lib.make_file(filename, 1024)
-        try:
-            self.admin.assert_icommand('iput {0}'.format(filename))
-            self.admin.assert_icommand('irm -U {0}'.format(filename), 'STDOUT', '-U is deprecated.')
-            self.admin.assert_icommand("ils -l '{0}'".format(filename), 'STDOUT', filename)
-            self.assertTrue(os.path.exists(filename), msg='Data was removed from disk!')
-        finally:
-            if os.path.exists(filename):
-                os.unlink(filename)
+        logical_path = os.path.join(self.admin.session_collection, filename)
+        self.admin.assert_icommand(['itouch', logical_path])
+        self.admin.assert_icommand(['irm', '-U', logical_path], 'STDERR', 'USER_INPUT_OPTION_ERR')
+        # Make sure the data object was not removed
+        lib.replica_exists(self.admin, logical_path, 0)
+        self.assertTrue(os.path.exists(filename), msg='Data was removed from disk!')
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_irm_option_n_is_deprecated__issue_3451(self):
