@@ -582,6 +582,23 @@ namespace
             }
 
             irods::thread_pool::post(thread_pool, [&queue, result] {
+                // Remove the rule from the delay queue no matter what.
+                //
+                // This is necessary due to exceptions. If an exception is thrown from execute_rule(),
+                // the rule won't be removed. This is bad because it would result in the queued rule never
+                // being handled until the delay server process is restarted.
+                //
+                // This at_scope_exit object protects the delay server from this situation. It also allows
+                // the rule to be rescheduled for execution.
+                irods::at_scope_exit remove_rule_from_queue{[&] {
+                    try {
+                        logger::delay_server::trace("Dequeuing rule ID [{}] ...", result[0]);
+                        queue.dequeue_rule(result[0]);
+                        logger::delay_server::trace("Rule ID [{}] dequeued successfully.", result[0]);
+                    }
+                    catch (...) {}
+                }};
+
                 try {
                     execute_rule(queue, result[0]);
                 }
