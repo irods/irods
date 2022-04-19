@@ -435,7 +435,7 @@ namespace
                 irods::experimental::log::server::critical({
                     {"log_message", boost::stacktrace::to_string(stacktrace)},
                     {"stacktrace_agent_pid", pid},
-                    {"stacktrace_timestamp_utc", fmt::format("{}.{}", utc_ss.str(), remaining_millis)},
+                    {"stacktrace_timestamp_utc", fmt::format("{}.{}Z", utc_ss.str(), remaining_millis)},
                     {"stacktrace_timestamp_epoch_seconds", epoch_seconds},
                     {"stacktrace_timestamp_epoch_milliseconds", remaining_millis}
                 });
