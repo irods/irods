@@ -233,23 +233,6 @@ int rsMvDataObjToTrash(
 
         DataObjInfo* replica_ptr = *_head;
 
-        // If a replica number was specified, a specific replica is being unlinked - find it.
-        if (cond_input.contains(REPL_NUM_KW)) {
-            auto obj = id::make_data_object_proxy(**_head);
-
-            const auto repl_num = std::stoi(cond_input.at(REPL_NUM_KW).value().data());
-
-            const auto& replica = id::find_replica(obj, repl_num);
-
-            if (!replica) {
-                THROW(SYS_REPLICA_DOES_NOT_EXIST, fmt::format(
-                    "replica does not exist; path:[{}],repl_num:[{}]",
-                    _inp.objPath, repl_num));
-            }
-
-            replica_ptr = replica->get();
-        }
-
         auto replica = ir::make_replica_proxy(*replica_ptr);
 
         // Determine the policy for data deletion
@@ -262,10 +245,6 @@ int rsMvDataObjToTrash(
         if (replica.type() == BUNDLE_STR) {
             if (_comm.proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
                 return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
-            }
-
-            if (cond_input.contains(REPL_NUM_KW)) {
-                return SYS_CANT_MV_BUNDLE_DATA_BY_COPY;
             }
 
             if (const int numSubfiles = getNumSubfilesInBunfileObj(&_comm, replica.logical_path().data()); numSubfiles > 0) {
@@ -295,23 +274,6 @@ int rsMvDataObjToTrash(
                     return status;
                 }
             }
-        }
-
-        if (cond_input.contains(REPL_NUM_KW)) {
-            auto op = id::make_data_object_proxy(**_head);
-
-            auto replica = *id::find_replica(op, std::stoi(cond_input.at(REPL_NUM_KW).value().data()));
-
-            if (const auto ret = ill::try_lock(*op.get(), ill::lock_type::write, replica.replica_number()); ret < 0) {
-                irods::log(LOG_NOTICE, fmt::format(
-                    "[{}:{}] - unlink not allowed because data object is locked"
-                    "[error code=[{}], logical path=[{}], replica number=[{}]]",
-                    __FUNCTION__, __LINE__, ret, replica.logical_path(), replica.replica_number()));
-
-                return ret;
-            }
-
-            return dataObjUnlinkS(&_comm, &_inp, replica.get());
         }
 
         auto op = id::make_data_object_proxy(**_head);
@@ -345,22 +307,6 @@ int rsMvDataObjToTrash(
     {
         if (!dataObjUnlinkInp) {
             return SYS_INTERNAL_NULL_INPUT_ERR;
-        }
-
-        // Deprecation messages must be handled by doing the following.
-        // The native rule engine may erase all messages in the rError array.
-        // The only way to guarantee that messages are received by the client
-        // is to add them to the rError array when the function returns.
-        irods::at_scope_exit<std::function<void()>> at_scope_exit{[&] {
-            if (getValByKey(&dataObjUnlinkInp->condInput, REPL_NUM_KW)) {
-                addRErrorMsg(&rsComm->rError, DEPRECATED_PARAMETER, "-n is deprecated.  Please use itrim instead.");
-            }
-        }};
-
-        auto* recurse = getValByKey(&dataObjUnlinkInp->condInput, RECURSIVE_OPR__KW);
-        auto* replica_number = getValByKey(&dataObjUnlinkInp->condInput, REPL_NUM_KW);
-        if (recurse && replica_number) {
-            return USER_INCOMPATIBLE_PARAMS;
         }
 
         ruleExecInfo_t rei;
@@ -435,7 +381,6 @@ int rsMvDataObjToTrash(
 
         if (dataObjUnlinkInp->oprType == UNREG_OPR ||
             getValByKey(&dataObjUnlinkInp->condInput, FORCE_FLAG_KW) ||
-            getValByKey(&dataObjUnlinkInp->condInput, REPL_NUM_KW) ||
             getValByKey(&dataObjUnlinkInp->condInput, EMPTY_BUNDLE_ONLY_KW) ||
             dataObjInfoHead->specColl || rmTrashFlag == 1) {
             status = _rsDataObjUnlink(*rsComm, *dataObjUnlinkInp, &dataObjInfoHead);

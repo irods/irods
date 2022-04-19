@@ -132,15 +132,6 @@ initCondForRm( rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp,
         addKeyVal( &dataObjInp->condInput, EMPTY_BUNDLE_ONLY_KW, "" );
         addKeyVal( &collInp->condInput, EMPTY_BUNDLE_ONLY_KW, "" );
     }
-    // =-=-=-=-=-=-=-
-    if ( rodsArgs->replNum == True ) {
-        addKeyVal( &dataObjInp->condInput, REPL_NUM_KW,
-                   rodsArgs->replNumValue );
-        if ( rodsArgs->recursive == True ) {
-            rodsLog( LOG_NOTICE,
-                     "initCondForRm: -n option is only for dataObj removal. It will be ignored for collection removal" );
-        }
-    }
 
     if ( rodsArgs->recursive == True ) {
         addKeyVal( &dataObjInp->condInput, RECURSIVE_OPR__KW, "" );

@@ -31,21 +31,13 @@ class Test_Irm(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
         lib.replica_exists(self.admin, logical_path, 0)
         self.assertTrue(os.path.exists(filename), msg='Data was removed from disk!')
 
-    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
-    def test_irm_option_n_is_deprecated__issue_3451(self):
+    def test_irm_option_n_is_invalid__issue_3451_6340(self):
         filename = 'test_file_issue_3451.txt'
-        lib.make_file(filename, 1024)
-        self.admin.assert_icommand('iput {0}'.format(filename))
-        self.admin.assert_icommand('irm -n0 {0}'.format(filename), 'STDOUT', '-n is deprecated.')
-
-    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
-    def test_disallow_simultaneous_usage_of_options_r_and_n__issue_3661(self):
-        filename = 'test_file_issue_3661.txt'
-        filename_path = os.path.join(self.admin.local_session_dir, filename)
-        lib.make_file(filename_path, 1024)
-
-        self.admin.assert_icommand('iput {0}'.format(filename_path))
-        self.admin.assert_icommand('irm -rn0 {0}'.format(filename), 'STDERR', 'USER_INCOMPATIBLE_PARAMS')
+        logical_path = os.path.join(self.admin.session_collection, filename)
+        self.admin.assert_icommand(['itouch', logical_path])
+        self.admin.assert_icommand(['irm', '-n0', logical_path], 'STDERR', 'USER_INPUT_OPTION_ERR')
+        # Make sure the data object was not removed
+        lib.replica_exists(self.admin, logical_path, 0)
 
     def test_irm_delete_collection_with_ampersand_in_name_causes_error__issue_3398(self):
         collection = 'testDeleteACollectionWithAmpInTheNameBug170 && hail hail rock & roll  &'

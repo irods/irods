@@ -104,6 +104,7 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase,
         self.rods_session.run_icommand(['imcoll', '-U', self.rods_session.home_collection + '/test/phypathreg'])
         self.rods_session.run_icommand('irm -rf test ruletest forphymv sub1 sub2 sub3 bagit rules bagit.tar /' +
                                        self.rods_session.zone_name + '/bundle/home/' + self.rods_session.username)
+        self.rods_session.assert_icommand(['irmtrash', '-M'])
         self.rods_session.assert_icommand('iadmin rmresc testallrulesResc')
         self.rods_session.assert_icommand('iadmin rmuser devtestuser')
         self.rods_session.assert_icommand('iqdel -a')  # remove all/any queued rules
