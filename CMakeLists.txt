@@ -1488,6 +1488,8 @@ set(CPACK_RPM_FILE_NAME RPM-DEFAULT)
 
 set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
 
+set(CPACK_RPM_SPEC_MORE_DEFINE "%global _python_bytecompile_errors_terminate_build 0")
+
 ### TODO better place for these
 ## database plugins
 # postgres
