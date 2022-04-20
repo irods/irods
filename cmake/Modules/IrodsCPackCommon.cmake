@@ -18,3 +18,5 @@ endif()
 # TODO: set CMAKE_PROJECT_HOMEPAGE_URL instead
 set(CPACK_RPM_PACKAGE_URL "https://irods.org")
 set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://irods.org")
+
+set(CPACK_RPM_SPEC_MORE_DEFINE "%global __python %{__python3}")
