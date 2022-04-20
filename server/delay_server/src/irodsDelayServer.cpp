@@ -152,7 +152,7 @@ namespace
         auto row = nanodbc::execute(stmt);
 
         if (!row.next()) {
-            THROW(CAT_NO_ROWS_FOUND, fmt::format("Could not find row matching rule id [rule_id={}]", rule_id));
+            THROW(CAT_NO_ROWS_FOUND, fmt::format("Could not find row matching rule ID [{}]", rule_id));
         }
 
         constexpr auto number_of_columns = 12;
@@ -240,7 +240,7 @@ namespace
             rstrcpy(rule_exec_del_inp.ruleExecId, _inp.ruleExecId, NAME_LEN);
             const int status = rcRuleExecDel(&_comm, &rule_exec_del_inp);
             if (status < 0) {
-                logger::delay_server::error("{}:{} - rcRuleExecDel failed {} for id {}",
+                logger::delay_server::error("{}:{} - rcRuleExecDel failed {} for ID {}",
                     __FUNCTION__, __LINE__, status, rule_exec_del_inp.ruleExecId);
             }
             return status;
@@ -277,7 +277,7 @@ namespace
 
             const int status = rcRuleExecMod(&_comm, &rule_exec_mod_inp);
             if (status < 0) {
-                logger::delay_server::error("{}:{} - rcRuleExecMod failed {} for id {}",
+                logger::delay_server::error("{}:{} - rcRuleExecMod failed {} for rule ID {}",
                                              __FUNCTION__, __LINE__, status, rule_exec_mod_inp.ruleId);
             }
 
@@ -308,7 +308,7 @@ namespace
                 // Delete if successful, otherwise update with new exec time and frequency
                 return !_exec_status ? delete_rule_exec_info() : update_rule_exec_info(true);
             default:
-                logger::delay_server::error("{}:{} - getNextRepeatTime returned unknown value {} for id {}",
+                logger::delay_server::error("{}:{} - getNextRepeatTime returned unknown value {} for rule ID {}",
                                             __FUNCTION__, __LINE__, repeat_status, _inp.ruleExecId);
                 return repeat_status; 
         }
@@ -571,13 +571,13 @@ namespace
                 return;
             }
 
-            logger::delay_server::debug("Enqueueing rule [{}]", rule_id);
+            logger::delay_server::debug("Enqueueing rule ID [{}]", rule_id);
 
             try {
                 queue.enqueue_rule(rule_id);
             }
             catch (const std::bad_alloc& e) {
-                logger::delay_server::trace("Delay queue memory limit reached. Ignoring rule [{}] for now.", rule_id);
+                logger::delay_server::trace("Delay queue memory limit reached. Ignoring rule ID [{}] for now.", rule_id);
                 return;
             }
 
