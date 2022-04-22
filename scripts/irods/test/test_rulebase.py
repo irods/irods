@@ -93,7 +93,25 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
 
                 # put data
                 lib.touch(tfile)
-                self.admin.assert_icommand(['iput', tfile])
+
+                # Note that this test was failing on PREP in iRODS 4.3.0, due to an inconsistency in how the iput client outputs diagnostics.
+                # The failing was due to this message being output on STDOUT during the iput:
+                #
+                #    Level 0: selected destination hierarchy [r1] is not stale; replication is not allowed.
+                #    Level 1: DEBUG: msiDataObjRepl: rsDataObjRepl failed /tempZone/home/otherrods/bbbbbb, status = -169000
+                #
+                #    Level 2: selected destination hierarchy [r1] is not stale; replication is not allowed.
+                #    Level 3: DEBUG: msiDataObjRepl: rsDataObjRepl failed /tempZone/home/otherrods/bbbbbb, status = -169000
+                #
+                # Presumed Explanation: acPostProcForPut fires twice during the iput, once on the PUT itself and once on the msiDataObjRepl invocation,
+                # the 2nd repl attempt causes a SYS_NOT_ALLOWED (as we can no longer repl to a non-stale hierarchy.) So it failed under PREP, due to
+                # the outputted diagnostic's and its stated reasons. NREP passed because no such STDOUT eruptions occur, though the error itself does.
+
+                iput_command = ['iput', tfile]
+                if self.plugin_name == 'irods_rule_engine_plugin-irods_rule_language':
+                    self.admin.assert_icommand(iput_command)
+                else:
+                    self.admin.run_icommand(iput_command) # prepend "stdout, stderr, rc = " to see the stdout message for PREP testing on 4.3.0
 
                 # check replicas
                 self.admin.assert_icommand(['ils', '-L', tfile], 'STDOUT_MULTILINE', [' demoResc ', ' r1 ', ' r2 '])
