@@ -1135,7 +1135,7 @@ def replicateMultiple(dest_list, callback, rei):
     callback.writeLine('serverLog', ' acPostProcForPut multiple replicate ' + obj_path + ' ' + filepath + ' -> ' + str(dest_list))
     for dest in dest_list:
         callback.writeLine('serverLog', 'acPostProcForPut replicate ' + obj_path + ' ' + filepath + ' -> ' + dest)
-        out_dict = callback.msiDataObjRepl(obj_path,"destRescName=' + dest '++++irodsAdmin='", 0);
+        out_dict = callback.msiDataObjRepl(obj_path,"destRescName=" + dest + "++++irodsAdmin=", 0);
         if not out_dict['code'] == 0:
             if out_dict['code'] == -808000:
                 callback.writeLine('serverLog', obj_path + ' cannot be found')
