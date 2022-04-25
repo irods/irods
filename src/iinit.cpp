@@ -206,7 +206,7 @@ int main( int argc, char **argv )
         std::string response;
         getline( std::cin, response );
         snprintf( my_env.rodsAuthScheme, NAME_LEN, "%s", response.c_str() );
-        json_env[irods::CFG_IRODS_AUTHENTICATION_SCHEME_KW] = my_env.rodsAuthScheme;
+        json_env[irods::KW_CFG_IRODS_AUTHENTICATION_SCHEME] = my_env.rodsAuthScheme;
     }
 
     if ( doingEnvFileUpdate ) {

@@ -175,7 +175,7 @@ main( int argc, char **argv ) {
     }
     /* add key val for specifying instance on which to run rule */
     if ( argsMap.count( "rule-engine-plugin-instance" ) ) {
-        addKeyVal( &execMyRuleInp.condInput, irods::CFG_INSTANCE_NAME_KW.c_str(), argsMap["rule-engine-plugin-instance"].as<std::string>().c_str() );
+        addKeyVal( &execMyRuleInp.condInput, irods::KW_CFG_INSTANCE_NAME, argsMap["rule-engine-plugin-instance"].as<std::string>().c_str() );
     }
 
     load_client_api_plugins();
