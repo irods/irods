@@ -208,7 +208,10 @@ class TestControlPlane(SessionsMixin, unittest.TestCase):
                     self.assertTrue(({'failed_to_connect': 'tcp://invalid_host:1248'} in host_responses) or ({'response_message_is_empty_from': 'tcp://invalid_host:1248'} in host_responses))
                     self.admin_sessions[0].assert_icommand('ils','STDERR_SINGLELINE','connectToRhost error')
                 finally:
-                    IrodsController().start()
+                    # TODO: Restart here in case the main server isn't finished tearing down yet.
+                    # We should only need to perform a start() here, though.
+                    #IrodsController().start()
+                    IrodsController().restart()
             finally:
                 admin_session.assert_icommand('iadmin rmresc invalid_resc')
 
