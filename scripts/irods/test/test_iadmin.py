@@ -1607,6 +1607,9 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             if os.path.exists(filename):
                 os.remove(filename)
 
+    def test_non_admins_are_not_allowed_to_invoke_iadmin_lg__issue_6188(self):
+        self.user0.assert_icommand(['iadmin', 'lg'], 'STDERR', ['-830000 CAT_INSUFFICIENT_PRIVILEGE_LEVEL'])
+
 class Test_Iadmin_Resources(resource_suite.ResourceBase, unittest.TestCase):
 
     def setUp(self):
