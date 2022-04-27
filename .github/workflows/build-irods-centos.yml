@@ -9,21 +9,12 @@ jobs:
       matrix:
         container: ['centos:7']
     steps:
-      - name: Install git > v2.18 for Checkout
-        run:  |
-              yum install -y git
-              yum install -y \
-                https://repo.ius.io/ius-release-el7.rpm \
-                https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-              yum swap -y git git224-core
       - name: Checkout Repository
         uses: actions/checkout@v2
-        with:
-          submodules: recursive
       - name: Install Prerequisites
         run:  |
               yum -y update ca-certificates
-              yum install -y sudo bind-utils wget
+              yum install -y sudo bind-utils wget epel-release
               yum -y install gcc g++ libstdc++-static make rpm-build bzip2-devel curl-devel fakeroot help2man openssl-devel pam-devel python-devel unixODBC unixODBC-devel zlib-devel python36-distro
       - name: Get Public IP
         run:  |
