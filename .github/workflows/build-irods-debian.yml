@@ -11,25 +11,16 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
-      - name: Get Public IP
+      - name: Install Prerequisites
         run:  |
               apt-get update -qq
-              apt-get install -qq sudo dnsutils apt-transport-https ca-certificates gnupg
-              dig +short myip.opendns.com @resolver1.opendns.com
-      - name: Install Dependencies
-        run:  |
-              sudo apt-get update -qq
-              sudo apt-get install -qq wget curl g++ make python-dev help2man unixodbc libcurl4-gnutls-dev libbz2-dev zlib1g-dev libpam0g-dev libssl-dev libxml2-dev unixodbc-dev python3-psutil super odbc-postgresql libkrb5-dev python3-distro
-      - name: Install libstdc++6
-        run:  |
-              sudo apt-get update -qq
-              sudo apt-get install -qq libstdc++6
+              apt-get install -qq apt-transport-https ca-certificates gnupg wget curl g++ make python-dev unixodbc libcurl4-gnutls-dev libbz2-dev zlib1g-dev libpam0g-dev libssl-dev libxml2-dev unixodbc-dev python3-psutil super odbc-postgresql libkrb5-dev python3-distro
       - name: Install iRODS Externals
         run:  |
-              wget -qO - https://unstable.irods.org/irods-unstable-signing-key.asc | sudo apt-key add -
-              echo "deb [arch=amd64] https://unstable.irods.org/apt/ $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/renci-irods-unstable.list
-              sudo apt-get update -qq
-              sudo apt-get install -qq \
+              wget -qO - https://unstable.irods.org/irods-unstable-signing-key.asc | apt-key add -
+              echo "deb [arch=amd64] https://unstable.irods.org/apt/ $(lsb_release -sc) main" | tee /etc/apt/sources.list.d/renci-irods-unstable.list
+              apt-get update -qq
+              apt-get install -qq \
                 irods-externals-avro1.11.0-1 \
                 irods-externals-boost1.78.0-0 \
                 irods-externals-catch22.13.8-0 \
