@@ -7,7 +7,7 @@ jobs:
     container: ${{ matrix.container }}
     strategy:
       matrix:
-        container: ['almalinux:8']
+        container: ['almalinux:8','rockylinux:8']
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
