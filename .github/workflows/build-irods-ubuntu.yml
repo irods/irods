@@ -9,19 +9,11 @@ jobs:
       matrix:
         container: ['ubuntu:18.04','ubuntu:20.04']
     steps:
-      - name: Install git > v2.18 for Checkout
-        run:  |
-              apt-get update
-              apt-get install -qq software-properties-common
-              add-apt-repository ppa:git-core/ppa
-              apt-get update
-              apt-get install -qq git
       - name: Checkout Repository
         uses: actions/checkout@v2
-        with:
-          submodules: recursive
       - name: Get Public IP
         run:  |
+              apt-get update -qq
               apt-get install -qq sudo dnsutils apt-transport-https ca-certificates
               dig +short myip.opendns.com @resolver1.opendns.com
       - name: Install Dependencies
@@ -30,6 +22,7 @@ jobs:
               sudo apt-get install -qq wget curl g++ make python-dev help2man unixodbc libcurl4-gnutls-dev libbz2-dev zlib1g-dev libpam0g-dev libssl-dev libxml2-dev unixodbc-dev python-psutil super odbc-postgresql libkrb5-dev python3-distro
       - name: Install libstdc++6
         run:  |
+              sudo apt-get install -qq software-properties-common
               sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
               sudo apt-get update -qq
               sudo apt-get install -qq libstdc++6
