@@ -7,7 +7,7 @@ jobs:
     container: ${{ matrix.container }}
     strategy:
       matrix:
-        container: ['ubuntu:18.04']
+        container: ['ubuntu:18.04','ubuntu:20.04']
     steps:
       - name: Install git > v2.18 for Checkout
         run:  |
