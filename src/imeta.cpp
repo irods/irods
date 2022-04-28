@@ -2202,7 +2202,7 @@ void usageMain() {
         " set  -d|C|R|u Name AttName newValue [newUnits] (Assign a single value)",
         " ls   -[l]d|C|R|u Name [AttName] (List existing AVUs for item Name)",
         " lsw  -[l]d|C|R|u Name [AttName] (List existing AVUs, use Wildcards)",
-        " qu   -d|C|R|u AttName Op AttVal [...] (Query objects with matching AVUs)",
+        " qu   -d|C|R|u AttName Operator AttVal [...] (Query objects with matching AVUs)",
         " cp   -d|C|R|u -d|C|R|u Name1 Name2 (Copy AVUs from item Name1 to Name2)",
         " upper (Toggle between upper case mode for queries (qu))",
         " ",
@@ -2452,12 +2452,15 @@ usage( const char *subOpt ) {
         }
         if ( strcmp( subOpt, "qu" ) == 0 ) {
             char *msgs[] = {
-                " qu -d|C|R|u AttName Op AttVal [...] (Query objects with matching AVUs)",
+                " qu -d|C|R|u AttName Operator AttVal [...] (Query objects with matching AVUs)",
                 "Query across AVUs for the specified type of item",
                 "Example: qu -d distance '<=' 12",
                 " ",
+                "The Operator can be any of the following:",
+                " <, >, <=, >=, <>, =, !=, like, not like",
+                " ",
                 "When querying dataObjects (-d) or collections (-C) additional conditions",
-                "(AttName Op AttVal) may be given separated by 'and', for example:",
+                "(AttName Operator AttVal) may be given separated by 'and', for example:",
                 " qu -d a = b and c '<' 10",
                 "Or a single 'or' can be given for the same AttName, for example",
                 " qu -d r '<' 5 or '>' 7",
