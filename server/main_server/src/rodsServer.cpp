@@ -568,8 +568,18 @@ namespace
 
             log::trace("Encrypted request.");
 
-            const auto zmq_server_target = fmt::format("tcp://localhost:{}", env.irodsCtrlPlanePort);
+            const auto zmq_server_target = fmt::format("tcp://{}:{}", env.rodsHost, env.irodsCtrlPlanePort);
             log::trace("Connecting to local control plane [{}] ...", zmq_server_target);
+
+            if (!is_control_plane_accepting_requests.load()) {
+                log::info("Cannot determine if delay server on remote host [{}] is running at this time. "
+                          "Control plane is not accepting requests.", _hostname);
+
+                // The following only applies to delay server migration.
+                // Return true so that the successor does not attempt to launch the delay server.
+                // Returning std::nullopt or false can possibly lead to the delay server being launched.
+                return true;
+            }
 
             zmq::context_t zmq_ctx;
             zmq::socket_t zmq_socket{zmq_ctx, zmq::socket_type::req};
@@ -717,6 +727,19 @@ namespace
             std::string successor;
 
             {
+                namespace ss = irods::server_state;
+
+                // Make sure the server is accepting requests before attempting to establish a connection.
+                // The delay server migration logic runs in a separate thread. When the server is instructed
+                // to shutdown, it's possible for the delay server migration logic to run during that time.
+                // This can lead to errors appearing in the log file. The errors aren't harmful to the system,
+                // but we want to avoid there if possible. This check helps this situation by shrinking the window.
+                if (const auto state = ss::get_state(); state != ss::server_state::running) {
+                    log::trace("Cannot establish client connection to local server at this time. "
+                               "Server is either shutting down or is paused.");
+                    return;
+                }
+
                 ix::client_connection comm;
 
                 auto result = get_grid_configuration_option_value(comm, "delay_server", "leader");
@@ -777,6 +800,16 @@ namespace
                     failed_delay_server_migration_communication_attempts = 0;
 
                     {
+                        namespace ss = irods::server_state;
+
+                        // Check the server's state before attempting to establish a client connection.
+                        // See identical check above for more information on why this is necessary.
+                        if (const auto state = ss::get_state(); state != ss::server_state::running) {
+                            log::trace("Cannot establish client connection to local server at this time. "
+                                       "Server is either shutting down or is paused.");
+                            return;
+                        }
+
                         ix::client_connection comm;
                         set_delay_server_migration_info(comm, hostname, "");
                     }
