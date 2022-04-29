@@ -21,15 +21,15 @@ class Test_Irm(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
     def tearDown(self):
         super(Test_Irm, self).tearDown()
 
-    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_irm_option_U_is_invalid__issue_4681(self):
         filename = 'test_irm_option_U_is_deprecated.txt'
         logical_path = os.path.join(self.admin.session_collection, filename)
-        self.admin.assert_icommand(['itouch', logical_path])
+        contents = '4681'
+        self.admin.assert_icommand(['istream', 'write', logical_path], input=contents)
         self.admin.assert_icommand(['irm', '-U', logical_path], 'STDERR', 'USER_INPUT_OPTION_ERR')
         # Make sure the data object was not removed
         lib.replica_exists(self.admin, logical_path, 0)
-        self.assertTrue(os.path.exists(filename), msg='Data was removed from disk!')
+        self.admin.assert_icommand(['istream', 'read', logical_path], 'STDOUT', [contents])
 
     def test_irm_option_n_is_invalid__issue_3451_6340(self):
         filename = 'test_file_issue_3451.txt'
