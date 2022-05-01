@@ -189,7 +189,7 @@ namespace
         return 0;
     } // get64RandomBytes
 
-    bool instantiate_shared_memory_for_plugin(const nlohmann::json& _plugin_object)
+    bool init_shared_memory_for_plugin(const nlohmann::json& _plugin_object)
     {
         const auto itr = _plugin_object.find(irods::KW_CFG_SHARED_MEMORY_INSTANCE);
 
@@ -201,30 +201,30 @@ namespace
         }
 
         return false;
-    } // instantiate_shared_memory_for_plugin
+    } // init_shared_memory_for_plugin
 
-    irods::error instantiate_shared_memory()
+    irods::error init_shared_memory_for_plugins()
     {
         try {
             const auto& config = irods::server_properties::instance().map();
 
             for (const auto& item : config.at(irods::KW_CFG_PLUGIN_CONFIGURATION).items()) {
                 for (const auto& plugin : item.value().items()) {
-                    instantiate_shared_memory_for_plugin(plugin.value());
+                    init_shared_memory_for_plugin(plugin.value());
                 }
             }
-        }
-        catch (const boost::bad_any_cast& e) {
-            return ERROR(INVALID_ANY_CAST, e.what());
         }
         catch (const irods::exception& e) {
             return irods::error(e);
         }
+        catch (const std::exception& e) {
+            return ERROR(SYS_INTERNAL_ERR, e.what());
+        }
 
         return SUCCESS();
-    } // instantiate_shared_memory
+    } // init_shared_memory_for_plugins
 
-    bool uninstantiate_shared_memory_for_plugin(const nlohmann::json& _plugin_object)
+    bool deinit_shared_memory_for_plugin(const nlohmann::json& _plugin_object)
     {
         const auto itr = _plugin_object.find(irods::KW_CFG_SHARED_MEMORY_INSTANCE);
 
@@ -236,28 +236,28 @@ namespace
         }
 
         return false;
-    } // uninstantiate_shared_memory_for_plugin
+    } // deinit_shared_memory_for_plugin
 
-    irods::error uninstantiate_shared_memory()
+    irods::error deinit_shared_memory_for_plugins()
     {
         try {
             const auto& config = irods::server_properties::instance().map();
 
             for (const auto& item : config.at(irods::KW_CFG_PLUGIN_CONFIGURATION).items()) {
                 for (const auto& plugin : item.value().items()) {
-                    uninstantiate_shared_memory_for_plugin(plugin.value());
+                    deinit_shared_memory_for_plugin(plugin.value());
                 }
             }
-        }
-        catch (const boost::bad_any_cast& e) {
-            return ERROR(INVALID_ANY_CAST, e.what());
         }
         catch (const irods::exception& e) {
             return irods::error(e);
         }
+        catch (const std::exception& e) {
+            return ERROR(SYS_INTERNAL_ERR, e.what());
+        }
 
         return SUCCESS();
-    } // uninstantiate_shared_memory
+    } // deinit_shared_memory_for_plugins
 
     void init_logger(bool _write_to_stdout = false, bool _enable_test_mode = false)
     {
@@ -1089,10 +1089,12 @@ int serverMain(const bool enable_test_mode = false, const bool write_to_stdout =
         exit(1);
     }
 
-    ret = instantiate_shared_memory();
+    ret = init_shared_memory_for_plugins();
     if (!ret.ok()) {
         irods::log(PASS(ret));
     }
+
+    irods::at_scope_exit remove_shared_memory{[] { deinit_shared_memory_for_plugins(); }};
 
     irods::re_plugin_globals.reset(new irods::global_re_plugin_mgr);
 
@@ -1272,8 +1274,6 @@ int serverMain(const bool enable_test_mode = false, const bool write_to_stdout =
         rodsLog(LOG_ERROR, "Exception caught in server loop\n%s", e.what());
         return_code = e.code();
     }
-
-    uninstantiate_shared_memory();
 
     close(agent_conn_socket);
     unlink(agent_factory_socket_file);
