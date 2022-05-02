@@ -30,4 +30,4 @@ jobs:
         run:  |
               diff_results=$(git clang-format HEAD^ --diff)
               echo CLANG-FORMAT RESULTS = $diff_results
-              echo ${{ contains(['no modified files to format\n', 'clang-format did not modify any files\n'], diff_results) }}
+              #echo ${{ contains(['no modified files to format\n', 'clang-format did not modify any files\n'], diff_results) }}
