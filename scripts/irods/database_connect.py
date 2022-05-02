@@ -14,7 +14,12 @@ from . import lib
 from . import password_obfuscation
 from .exceptions import IrodsError, IrodsWarning
 
-import pyodbc
+try:
+    import pyodbc
+except ImportError as e:
+    print('Fatal error! pyodbc module could not be imported. Perhaps it is missing?', file=sys.stderr)
+    print('Try installing python3-pyodbc using your package manager or pyodbc using pip3.', file=sys.stderr)
+    raise e
 
 def load_odbc_ini(f):
     odbc_dict = {}
