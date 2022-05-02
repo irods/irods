@@ -11,3 +11,6 @@ packaging/unattended_setup.json
 .ycm_extra_conf.py
 compile_commands.json
 CMakeLists.txt.user
+
+# old submodule
+/irods_schema_messaging
