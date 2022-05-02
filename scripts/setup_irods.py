@@ -63,6 +63,12 @@ import irods.log
 from irods.password_obfuscation import maximum_password_length
 from irods.logging_infrastructure import setup_rsyslog_and_logrotate, rsyslog_config_path, logrotate_config_path
 
+try:
+    import pyodbc
+except:
+    print('WARNING: pyodbc module could not be imported.', file=sys.stderr)
+    print('The pyodbc module is required for setup of catalog service providers.', file=sys.stderr)
+
 def setup_server(irods_config, json_configuration_file=None, test_mode=False):
     l = logging.getLogger(__name__)
 
