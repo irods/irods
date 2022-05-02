@@ -13,12 +13,12 @@ jobs:
               apt-get update -qq
               apt-get install -qq apt-transport-https ca-certificates
               apt-get install -qq python3
-#     - name: Install libstdc++6
-#       run:  |
-#             apt-get install -qq software-properties-common
-#             add-apt-repository -y ppa:ubuntu-toolchain-r/test
-#             apt-get update -qq
-#             apt-get install -qq libstdc++6
+      - name: Install libstdc++6
+        run:  |
+              apt-get install -qq software-properties-common
+              add-apt-repository -y ppa:ubuntu-toolchain-r/test
+              apt-get update -qq
+              apt-get install -qq libstdc++6
       - name: Install Clang Compiler
         run:  |
               wget -qO - https://unstable.irods.org/irods-unstable-signing-key.asc | apt-key add -
