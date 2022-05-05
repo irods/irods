@@ -8,9 +8,9 @@ myTestRule {
 #Output parameter is:
 #  Status
 #Output from running the example is:
-#  Data object /tempZone/home/rods/sub1/objunlink2 is moved to trash
+#  Data object /tempZone/home/rods/sub1/objunlink2 is forcibly removed
   msiDataObjUnlink("objPath=*SourceFile++++forceFlag=",*Status);
-  writeLine("stdout","Data object *SourceFile is now in the trash");
+  writeLine("stdout","Data object *SourceFile is now removed");
 }
 INPUT *SourceFile="/tempZone/home/rods/sub1/objunlink2"
 OUTPUT ruleExecOut
