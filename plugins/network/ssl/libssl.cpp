@@ -4,6 +4,7 @@
 #include "msParam.h"
 #include "rcConnect.h"
 #include "sockComm.h"
+#include "rcMisc.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_network_plugin.hpp"
@@ -15,6 +16,7 @@
 
 // =-=-=-=-=-=-=-
 // stl includes
+#include <cstdio>
 #include <cstring>
 #include <sstream>
 #include <string>
@@ -1067,11 +1069,13 @@ irods::error ssl_send_rods_msg(
                 // =-=-=-=-=-=-=-
                 // send the message buffer
                 int bytes_written = 0;
-                if ( NULL != _msg_buf &&
-                        msg_header.msgLen > 0 ) {
-                    if ( XML_PROT == _protocol &&
-                            getRodsLogLevel() >= LOG_DEBUG8 ) {
-                        printf( "sending msg: \n%s\n", ( char* ) _msg_buf->buf );
+                if (_msg_buf && msg_header.msgLen > 0) {
+                    if (XML_PROT == _protocol && getRodsLogLevel() >= LOG_DEBUG8) {
+                        const auto* buf = static_cast<char*>(_msg_buf->buf);
+
+                        if (!may_contain_sensitive_data(buf, _msg_buf->len)) {
+                            std::printf("sending msg: \n%s\n", buf);
+                        }
                     }
                     ret = ssl_socket_write( _msg_buf->buf, _msg_buf->len, bytes_written, ssl_obj->ssl() );
                     result = ASSERT_PASS( ret, "Failed writing SSL message to socket." );
@@ -1081,12 +1085,13 @@ irods::error ssl_send_rods_msg(
 
                     // =-=-=-=-=-=-=-
                     // send the error buffer
-                    if ( NULL != _error_buf &&
-                            msg_header.errorLen > 0 ) {
-                        if ( XML_PROT == _protocol &&
-                                getRodsLogLevel() >= LOG_DEBUG8 ) {
-                            printf( "sending msg: \n%s\n", ( char* ) _error_buf->buf );
+                    if (_error_buf && msg_header.errorLen > 0) {
+                        if (XML_PROT == _protocol && getRodsLogLevel() >= LOG_DEBUG8) {
+                            const auto* buf = static_cast<char*>(_error_buf->buf);
 
+                            if (!may_contain_sensitive_data(buf, _error_buf->len)) {
+                                std::printf("sending msg: \n%s\n", buf);
+                            }
                         }
 
                         ret = ssl_socket_write( _error_buf->buf, _error_buf->len, bytes_written, ssl_obj->ssl() );
@@ -1097,16 +1102,17 @@ irods::error ssl_send_rods_msg(
 
                         // =-=-=-=-=-=-=-
                         // send the stream buffer
-                        if ( NULL != _stream_bbuf &&
-                                msg_header.bsLen > 0 ) {
-                            if ( XML_PROT == _protocol &&
-                                    getRodsLogLevel() >= LOG_DEBUG8 ) {
-                                printf( "sending msg: \n%s\n", ( char* ) _stream_bbuf->buf );
+                        if (_stream_bbuf && msg_header.bsLen > 0) {
+                            if (XML_PROT == _protocol && getRodsLogLevel() >= LOG_DEBUG8) {
+                                const auto* buf = static_cast<char*>(_stream_bbuf->buf);
+
+                                if (!may_contain_sensitive_data(buf, _stream_bbuf->len)) {
+                                    std::printf("sending msg: \n%s\n", buf);
+                                }
                             }
 
                             ret = ssl_socket_write( _stream_bbuf->buf, _stream_bbuf->len, bytes_written, ssl_obj->ssl() );
                             result = ASSERT_PASS( ret, "Failed writing SSL message to socket." );
-
                         } // if bsLen > 0
                     }
                 }
@@ -1141,10 +1147,12 @@ irods::error read_bytes_buf(
 
         // =-=-=-=-=-=-=-
         // log transaction if requested
-        if ( _protocol == XML_PROT &&
-                getRodsLogLevel() >= LOG_DEBUG8 ) {
-            printf( "received msg: \n%s\n",
-                    ( char* ) _buffer->buf );
+        if (_protocol == XML_PROT && getRodsLogLevel() >= LOG_DEBUG8) {
+            const auto* buf = static_cast<char*>(_buffer->buf);
+
+            if (!may_contain_sensitive_data(buf, _buffer->len)) {
+                std::printf("received msg: \n%s\n", buf);
+            }
         }
 
         // =-=-=-=-=-=-=-

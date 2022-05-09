@@ -28,6 +28,7 @@
 #include <string_view>
 #include <map>
 #include <random>
+#include <iterator>
 
 #include <openssl/md5.h>
 
@@ -4672,6 +4673,15 @@ myRead( int sock, void *buf, int len,
     }
     return len - toRead;
 }
+
+int may_contain_sensitive_data(const char* _buffer, size_t _buffer_size)
+{
+    const char* const strings[] = {"<authPlugReqInp_PI>"};
+    return std::any_of(std::begin(strings), std::end(strings), [_buffer, _buffer_size](const std::string_view _s) {
+        const auto* end = _buffer + _buffer_size;
+        return std::search(_buffer, end, std::begin(_s), std::end(_s)) != end;
+    });
+} // may_contain_sensitive_data
 
 auto resolve_hostname(const std::string_view _hostname,
                       const nlohmann::json& _hosts_config,

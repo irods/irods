@@ -7,7 +7,9 @@
 #include "rcMisc.h"
 #include "version.hpp"
 #include "irods_pack_table.hpp"
+#include "rcMisc.h"
 
+#include <cstdio>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -3391,8 +3393,12 @@ int packStruct(const void *inStruct,
 
         /* add a NULL termination */
         *static_cast<char*>(outPtr) = '\0';
-        if ( getRodsLogLevel() >= LOG_DEBUG9 ) {
-            printf( "packed XML: \n%s\n", ( char * ) packedOutput.bBuf.buf );
+        if (getRodsLogLevel() >= LOG_DEBUG9) {
+            const auto* buf = static_cast<char*>(packedOutput.bBuf.buf);
+
+            if (!may_contain_sensitive_data(buf, packedOutput.bBuf.len)) {
+                std::printf("packed XML: \n%s\n", buf);
+            }
         }
     }
 
@@ -3474,7 +3480,11 @@ int pack_struct(const void *inStruct,
         // Add a null byte. 
         *static_cast<char*>(outPtr) = '\0';
         if (getRodsLogLevel() >= LOG_DEBUG9) {
-            printf("packed XML: \n%s\n", static_cast<char*>(packedOutput.bBuf.buf));
+            const auto* buf = static_cast<char*>(packedOutput.bBuf.buf);
+
+            if (!may_contain_sensitive_data(buf, packedOutput.bBuf.len)) {
+                std::printf("packed XML: \n%s\n", buf);
+            }
         }
     }
 
