@@ -3,6 +3,9 @@
 #include "irods/irods_client_server_negotiation.hpp"
 #include "irods/rcGlobalExtern.h"
 #include "irods/packStruct.h"
+#include "irods/rcMisc.h"
+
+#include <cstdio>
 
 // =-=-=-=-=-=-=-
 // work around for SSL Macro version issues
@@ -13,8 +16,6 @@
     dh_->q = q_; \
     dh_->g = g_;
 #endif
-
-
 
 /* module internal functions */
 static SSL_CTX *sslInit( char *certfile, char *keyfile );
@@ -326,8 +327,12 @@ sslReadMsgBody( int sock, msgHeader_t *myHeader, bytesBuf_t *inputStructBBuf,
         nbytes = sslRead( sock, inputStructBBuf->buf, myHeader->msgLen,
                           NULL, tv, ssl );
 
-        if ( irodsProt == XML_PROT && getRodsLogLevel() >= LOG_DEBUG8 ) {
-            printf( "received msg: \n%s\n", ( char * ) inputStructBBuf->buf );
+        if (irodsProt == XML_PROT && getRodsLogLevel() >= LOG_DEBUG8) {
+            const auto* buf = static_cast<char*>(inputStructBBuf->buf);
+
+            if (!may_contain_sensitive_data(buf, inputStructBBuf->len)) {
+                std::printf("received msg: \n%s\n", buf);
+            }
         }
 
         if ( nbytes != myHeader->msgLen ) {
@@ -350,8 +355,12 @@ sslReadMsgBody( int sock, msgHeader_t *myHeader, bytesBuf_t *inputStructBBuf,
         nbytes = sslRead( sock, errorBBuf->buf, myHeader->errorLen,
                           NULL, tv, ssl );
 
-        if ( irodsProt == XML_PROT && getRodsLogLevel() >= LOG_DEBUG8 ) {
-            printf( "received error msg: \n%s\n", ( char * ) errorBBuf->buf );
+        if (irodsProt == XML_PROT && getRodsLogLevel() >= LOG_DEBUG8) {
+            const auto* buf = static_cast<char*>(errorBBuf->buf);
+
+            if (!may_contain_sensitive_data(buf, errorBBuf->len)) {
+                std::printf("received error msg: \n%s\n", buf);
+            }
         }
 
         if ( nbytes != myHeader->errorLen ) {
@@ -470,9 +479,13 @@ sslSendRodsMsg( char *msgType, bytesBuf_t *msgBBuf,
 
     /* send the rest */
 
-    if ( msgBBuf && msgBBuf->len > 0 ) {
-        if ( irodsProt == XML_PROT && getRodsLogLevel() >= LOG_DEBUG8 ) {
-            printf( "sending msg: \n%s\n", ( char * ) msgBBuf->buf );
+    if (msgBBuf && msgBBuf->len > 0) {
+        if (irodsProt == XML_PROT && getRodsLogLevel() >= LOG_DEBUG8) {
+            const auto* buf = static_cast<char*>(msgBBuf->buf);
+
+            if (!may_contain_sensitive_data(buf, msgBBuf->len)) {
+                std::printf("sending msg: \n%s\n", buf);
+            }
         }
         status = sslWrite( msgBBuf->buf, msgBBuf->len, NULL, ssl );
         if ( status < 0 ) {
@@ -480,9 +493,13 @@ sslSendRodsMsg( char *msgType, bytesBuf_t *msgBBuf,
         }
     }
 
-    if ( errorBBuf && errorBBuf->len > 0 ) {
-        if ( irodsProt == XML_PROT && getRodsLogLevel() >= LOG_DEBUG8 ) {
-            printf( "sending error msg: \n%s\n", ( char * ) errorBBuf->buf );
+    if (errorBBuf && errorBBuf->len > 0) {
+        if (irodsProt == XML_PROT && getRodsLogLevel() >= LOG_DEBUG8) {
+            const auto* buf = static_cast<char*>(errorBBuf->buf);
+
+            if (!may_contain_sensitive_data(buf, errorBBuf->len)) {
+                std::printf("sending error msg: \n%s\n", buf);
+            }
         }
         status = sslWrite( errorBBuf->buf, errorBBuf->len,
                            NULL, ssl );

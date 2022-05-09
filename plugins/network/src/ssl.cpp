@@ -1,27 +1,21 @@
-// =-=-=-=-=-=-=-
-// irods includes
 #include "irods/rodsDef.h"
 #include "irods/msParam.h"
 #include "irods/rcConnect.h"
 #include "irods/sockComm.h"
-
-// =-=-=-=-=-=-=-
 #include "irods/irods_network_plugin.hpp"
 #include "irods/irods_network_constants.hpp"
 #include "irods/irods_ssl_object.hpp"
 #include "irods/irods_stacktrace.hpp"
 #include "irods/irods_buffer_encryption.hpp"
 #include "irods/sockCommNetworkInterface.hpp"
+#include "irods/rcMisc.h"
 
-// =-=-=-=-=-=-=-
-// stl includes
+#include <cstdio>
 #include <cstring>
 #include <sstream>
 #include <string>
 #include <iostream>
 
-// =-=-=-=-=-=-=-
-// ssl includes
 #include <openssl/ssl.h>
 #include <openssl/x509v3.h>
 #include <openssl/err.h>
@@ -38,16 +32,12 @@
     dh_->g = g_;
 #endif
 
-// =-=-=-=-=-=-=-
-//
 #define SSL_CIPHER_LIST "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH"
 
 // =-=-=-=-=-=-=-
 // key for ssl shared secret property
 const std::string SHARED_KEY( "ssl_network_plugin_shared_key" );
 
-// =-=-=-=-=-=-=-
-//
 static void ssl_log_error(
     const char *msg ) {
     unsigned long err;
@@ -60,8 +50,6 @@ static void ssl_log_error(
 
 } // ssl_log_error
 
-// =-=-=-=-=-=-=-
-//
 static void ssl_build_error_string(
     std::string& _str ) {
     unsigned long err;
@@ -959,9 +947,13 @@ irods::error ssl_send_rods_msg(
 
     // send the message buffer
     int bytes_written = 0;
-    if (NULL != _msg_buf && msg_header.msgLen > 0) {
+    if (_msg_buf && msg_header.msgLen > 0) {
         if (XML_PROT == _protocol && getRodsLogLevel() >= LOG_DEBUG8) {
-            printf( "sending msg: \n%s\n", ( const char* ) _msg_buf->buf );
+            const auto* buf = static_cast<char*>(_msg_buf->buf);
+
+            if (!may_contain_sensitive_data(buf, _msg_buf->len)) {
+                std::printf("sending msg: \n%s\n", buf);
+            }
         }
 
         if (const auto err = ssl_socket_write(_msg_buf->buf, _msg_buf->len, bytes_written, ssl_obj->ssl()); !err.ok()) {
@@ -970,9 +962,13 @@ irods::error ssl_send_rods_msg(
     } // if msgLen > 0
 
     // send the error buffer
-    if (NULL != _error_buf && msg_header.errorLen > 0) {
+    if (_error_buf && msg_header.errorLen > 0) {
         if (XML_PROT == _protocol && getRodsLogLevel() >= LOG_DEBUG8) {
-            printf( "sending msg: \n%s\n", ( const char* ) _error_buf->buf );
+            const auto* buf = static_cast<char*>(_error_buf->buf);
+
+            if (!may_contain_sensitive_data(buf, _msg_buf->len)) {
+                std::printf("sending msg: \n%s\n", buf);
+            }
         }
 
         if (const auto err = ssl_socket_write(_error_buf->buf, _error_buf->len, bytes_written, ssl_obj->ssl()); !err.ok()) {
@@ -981,9 +977,13 @@ irods::error ssl_send_rods_msg(
     } // if errorLen > 0
 
     // send the stream buffer
-    if (NULL != _stream_bbuf && msg_header.bsLen > 0) {
+    if (_stream_bbuf && msg_header.bsLen > 0) {
         if (XML_PROT == _protocol && getRodsLogLevel() >= LOG_DEBUG8) {
-            printf( "sending msg: \n%s\n", ( const char* ) _stream_bbuf->buf );
+            const auto* buf = static_cast<char*>(_stream_bbuf->buf);
+
+            if (!may_contain_sensitive_data(buf, _msg_buf->len)) {
+                std::printf("sending msg: \n%s\n", buf);
+            }
         }
 
         if (const auto err = ssl_socket_write(_stream_bbuf->buf, _stream_bbuf->len, bytes_written, ssl_obj->ssl()); !err.ok()) {
@@ -1015,7 +1015,11 @@ irods::error read_bytes_buf(
 
     // log transaction if requested
     if (_protocol == XML_PROT && getRodsLogLevel() >= LOG_DEBUG8) {
-        printf( "received msg: \n%s\n", ( char* ) _buffer->buf );
+        const auto* buf = static_cast<char*>(_buffer->buf);
+
+        if (!may_contain_sensitive_data(buf, _buffer->len)) {
+            std::printf("received msg: \n%s\n", buf);
+        }
     }
 
     // trap failed read

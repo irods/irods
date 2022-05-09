@@ -357,6 +357,22 @@ int load_in_addr_from_hostname(const char* _hostname, struct in_addr* _out);
 /// \since 4.3.0
 void set_ips_display_name(const char* _display_name);
 
+/// Determines whether the given buffer could contain sensitive data.
+///
+/// The contents of the buffer is considered sensitive if it contains any of the following
+/// byte sequences:
+/// - <authPlugReqInp_PI>
+///
+/// \param[in] _buffer      The buffer.
+/// \param[in] _buffer_size The size of the buffer.
+///
+/// \return An integer value.
+/// \retval 1 If true.
+/// \retval 0 Otherwise.
+///
+/// \since 4.2.12
+int may_contain_sensitive_data(const char* _buffer, size_t _buffer_size);
+
 #ifdef __cplusplus
 } // extern "C"
 
