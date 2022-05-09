@@ -51,6 +51,7 @@
 #include <map>
 #include <random>
 #include <unordered_map>
+#include <iterator>
 
 /* check with the input path is a valid path -
  * 1 - valid
@@ -4701,3 +4702,11 @@ void set_ips_display_name(const char* _display_name)
     }
 } // set_ips_display_name
 
+int may_contain_sensitive_data(const char* _buffer, size_t _buffer_size)
+{
+    const char* const strings[] = {"<authPlugReqInp_PI>"};
+    return std::any_of(std::begin(strings), std::end(strings), [_buffer, _buffer_size](const std::string_view _s) {
+        const auto* end = _buffer + _buffer_size;
+        return std::search(_buffer, end, std::begin(_s), std::end(_s)) != end;
+    });
+} // may_contain_sensitive_data
