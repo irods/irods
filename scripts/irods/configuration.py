@@ -321,10 +321,6 @@ class IrodsConfig(object):
 
     #provide accessors for all the paths
     @property
-    def root_directory(self):
-        return paths.root_directory()
-
-    @property
     def irods_directory(self):
         return paths.irods_directory()
 
