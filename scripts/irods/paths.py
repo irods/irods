@@ -2,17 +2,17 @@ import grp
 import os
 import pwd
 
-def root_directory():
+def _root_directory():
     return os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(scripts_directory()))))
 
 def irods_directory():
-    return os.path.join(root_directory(), 'var', 'lib', 'irods')
+    return os.path.join(_root_directory(), 'var', 'lib', 'irods')
 
 def config_directory():
-    return os.path.join(root_directory(), 'etc', 'irods')
+    return os.path.join(_root_directory(), 'etc', 'irods')
 
 def plugins_directory():
-    return os.path.join(root_directory(), 'usr', 'lib', 'irods', 'plugins')
+    return os.path.join(_root_directory(), 'usr', 'lib', 'irods', 'plugins')
 
 def home_directory():
     return irods_user_and_group_entries()[0][5]
@@ -110,7 +110,7 @@ def server_log_path():
 
 def server_bin_directory():
     return os.path.join(
-        root_directory(),
+        _root_directory(),
         'usr',
         'sbin')
 
