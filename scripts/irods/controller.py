@@ -346,14 +346,14 @@ def delete_cache_files_by_pid(pid):
     l = logging.getLogger(__name__)
     l.debug('Deleting cache files for pid %s...', pid)
     ubuntu_cache = glob.glob(os.path.join(
-        paths.root_directory(),
+        os.sep,
         'var',
         'run',
         'shm',
         '*irods_re_cache*pid{0}_*'.format(pid)))
     delete_cache_files_by_name(*ubuntu_cache)
     other_linux_cache = glob.glob(os.path.join(
-        paths.root_directory(),
+        os.sep,
         'dev',
         'shm',
         '*irods_re_cache*pid{0}_*'.format(pid)))
@@ -371,7 +371,7 @@ def delete_cache_files_by_name(*filepaths):
 def delete_s3_shmem():
     # delete s3 shared memory if any exist 
     s3_plugin_shmem = glob.glob(os.path.join(
-        paths.root_directory(),
+        os.sep,
         'dev',
         'shm',
         '*irods_s3-shm*'))
