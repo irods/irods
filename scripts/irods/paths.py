@@ -1,5 +1,4 @@
 import grp
-import inspect
 import os
 import pwd
 
@@ -22,8 +21,7 @@ def core_re_directory():
     return config_directory()
 
 def scripts_directory():
-    return os.path.dirname(os.path.dirname(os.path.abspath(
-        inspect.stack()[0][1])))
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def test_directory():
     return os.path.join(scripts_directory(), 'irods', 'test')
