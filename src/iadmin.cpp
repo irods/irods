@@ -223,7 +223,7 @@ auto print_delay_server_info() -> int
 auto modify_replica(
     char** tokens) -> int
 {
-    const std::vector<std::string_view> genquery_attrs_blacklist = {
+    const std::vector<std::string_view> genquery_attrs_denylist = {
         "COLL_ID",
         "DATA_ID",
         "DATA_MAP_ID",
@@ -233,7 +233,7 @@ auto modify_replica(
     };
 
     const auto get_attribute_to_modify_from_input{
-        [&genquery_attrs_blacklist](const std::string_view attr) -> std::string_view
+        [&genquery_attrs_denylist](const std::string_view attr) -> std::string_view
         {
             const auto attr_pair = std::find_if(
                 std::cbegin(genquery_attrs),
@@ -241,16 +241,16 @@ auto modify_replica(
                 [&attr](const auto& a) {
                     return 0 == attr.compare(a.first);
                 });
-            const auto attr_in_genquery_attrs_and_not_blacklisted{
+            const auto attr_in_genquery_attrs_and_not_in_denylist{
                 std::cend(genquery_attrs) != attr_pair && 
                 std::none_of(
-                    std::cbegin(genquery_attrs_blacklist),
-                    std::cend(genquery_attrs_blacklist),
+                    std::cbegin(genquery_attrs_denylist),
+                    std::cend(genquery_attrs_denylist),
                     [&attr](const auto& a) {
                         return 0 == attr.compare(a);
                     })
             };
-            if (!attr_in_genquery_attrs_and_not_blacklisted) {
+            if (!attr_in_genquery_attrs_and_not_in_denylist) {
                 throw std::invalid_argument("Invalid attribute specified.");
             }
             return attr_pair->second;
