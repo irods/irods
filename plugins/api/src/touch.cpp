@@ -317,7 +317,7 @@ namespace
         // Create a data object at the default resource (defined by the server). See the following for
         // more information.
         //
-        //    https://docs.irods.org/master/system_overview/configuration/#default-resource-configuration
+        //    https://docs.irods.org/main/system_overview/configuration/#default-resource-configuration
         //
         io::server::default_transport tp{_comm};
         io::odstream{tp, _path};

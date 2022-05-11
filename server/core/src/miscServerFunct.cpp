@@ -1964,7 +1964,7 @@ getZoneServerId( char *zoneName, char *zoneSID ) {
     /* get our local zoneName */
     tmpZoneInfo = ZoneInfoHead;
     while ( tmpZoneInfo != NULL ) {
-        tmpRodsServerHost = ( rodsServerHost_t * ) tmpZoneInfo->masterServerHost;
+        tmpRodsServerHost = ( rodsServerHost_t * ) tmpZoneInfo->primaryServerHost;
         if ( tmpRodsServerHost->rcatEnabled == LOCAL_ICAT ) {
             localZoneName = tmpZoneInfo->zoneName;
         }
