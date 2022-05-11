@@ -31,7 +31,7 @@ rsBulkDataObjReg( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
         return UNMATCHED_KEY_OR_INDEX;
     }
 
-    status = getAndConnRcatHost( rsComm, MASTER_RCAT, ( const char* )objPath->value,
+    status = getAndConnRcatHost( rsComm, PRIMARY_RCAT, ( const char* )objPath->value,
                                  &rodsServerHost );
     if ( status < 0 || rodsServerHost == NULL ) { // JMC cppcheck
         return status;

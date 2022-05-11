@@ -38,7 +38,7 @@ rsRegColl( rsComm_t *rsComm, collInp_t *regCollInp ) {
     }
     freeRodsObjStat( rodsObjStatOut );
 
-    status = getAndConnRcatHost( rsComm, MASTER_RCAT, ( const char* )regCollInp->collName,
+    status = getAndConnRcatHost( rsComm, PRIMARY_RCAT, ( const char* )regCollInp->collName,
                                  &rodsServerHost );
     if ( status < 0 ) {
         return status;

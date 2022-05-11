@@ -24,7 +24,7 @@ rsPamAuthRequest( rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
 
     status = getAndConnRcatHost(
                  rsComm,
-                 MASTER_RCAT,
+                 PRIMARY_RCAT,
                  ( const char* )rsComm->clientUser.rodsZone,
                  &rodsServerHost );
     if ( status < 0 ) {

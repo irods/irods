@@ -50,7 +50,7 @@ rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp ) {
         myHint = NULL;
     }
 
-    status = getAndConnRcatHost( rsComm, MASTER_RCAT, ( const char* )myHint, &rodsServerHost );
+    status = getAndConnRcatHost( rsComm, PRIMARY_RCAT, ( const char* )myHint, &rodsServerHost );
     if ( status < 0 ) {
         return status;
     }

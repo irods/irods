@@ -25,7 +25,7 @@ rsProcStat( rsComm_t * rsComm, procStatInp_t * procStatInp,
     rodsServerHost_t *rodsServerHost;
 
     if ( *procStatInp->rodsZone != '\0' ) {
-        remoteFlag = getRcatHost( MASTER_RCAT, procStatInp->rodsZone,
+        remoteFlag = getRcatHost( PRIMARY_RCAT, procStatInp->rodsZone,
                                   &rodsServerHost );
         if ( remoteFlag < 0 ) {
             rodsLog( LOG_ERROR,
@@ -108,7 +108,7 @@ _rsProcStat( rsComm_t *rsComm, procStatInp_t *procStatInp,
     }
     else {
         /* do the IES server */
-        remoteFlag = getRcatHost( MASTER_RCAT, NULL, &rodsServerHost );
+        remoteFlag = getRcatHost( PRIMARY_RCAT, NULL, &rodsServerHost );
     }
     if ( remoteFlag < 0 ) {
         rodsLog( LOG_ERROR,

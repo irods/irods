@@ -324,7 +324,7 @@ namespace
         /* connect to rcat for cross zone */
         status = getAndConnRcatHost(
                      rsComm,
-                     MASTER_RCAT,
+                     PRIMARY_RCAT,
                      ( const char* )srcDataObjInp->objPath,
                      &rodsServerHost );
         if ( status < 0 || NULL == rodsServerHost ) {
@@ -398,7 +398,7 @@ namespace
 
         status = getAndConnRcatHost(
                      rsComm,
-                     MASTER_RCAT,
+                     PRIMARY_RCAT,
                      ( const char* )dataObjRenameInp->srcDataObjInp.objPath,
                      &rodsServerHost );
         if ( status < 0 ) {

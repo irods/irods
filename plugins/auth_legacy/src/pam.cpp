@@ -309,7 +309,7 @@ irods::error pam_auth_agent_request(
     rodsServerHost_t* server_host = 0;
     int status = getAndConnRcatHost(
                      _ctx.comm(),
-                     MASTER_RCAT,
+                     PRIMARY_RCAT,
                      ( const char* )_ctx.comm()->clientUser.rodsZone,
                      &server_host );
     if ( status < 0 ) {

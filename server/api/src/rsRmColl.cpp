@@ -63,7 +63,7 @@ namespace
                            &rmCollInp->condInput );
         status = getAndConnRcatHost(
                      rsComm,
-                     MASTER_RCAT,
+                     PRIMARY_RCAT,
                      ( const char* )rmCollInp->collName,
                      &rodsServerHost );
 
@@ -486,7 +486,7 @@ svrUnregColl( rsComm_t *rsComm, collInp_t *rmCollInp ) {
 
     status = getAndConnRcatHost(
                  rsComm,
-                 MASTER_RCAT,
+                 PRIMARY_RCAT,
                  ( const char* )rmCollInp->collName,
                  &rodsServerHost );
     if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr

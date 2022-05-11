@@ -1770,7 +1770,7 @@ int initServer(rsComm_t* svrComm)
     printZoneInfo();
 
     rodsServerHost_t* rodsServerHost{};
-    status = getRcatHost(MASTER_RCAT, nullptr, &rodsServerHost);
+    status = getRcatHost(PRIMARY_RCAT, nullptr, &rodsServerHost);
 
     if (status < 0 || !rodsServerHost) {
         return status;

@@ -23,7 +23,7 @@ int _rsIESClientHints( rsComm_t* _comm, bytesBuf_t** _bbuf );
 int rsIESClientHints( rsComm_t* _comm, bytesBuf_t** _bbuf )
 {
     rodsServerHost_t* rods_host;
-    int status = getAndConnRcatHost( _comm, MASTER_RCAT, nullptr, &rods_host );
+    int status = getAndConnRcatHost( _comm, PRIMARY_RCAT, nullptr, &rods_host );
     if ( status < 0 ) {
         return status;
     }

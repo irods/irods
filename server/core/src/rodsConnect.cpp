@@ -95,7 +95,7 @@ getRcatHost( int rcatType, const char *rcatZoneHint,
         return status;
     }
 
-    if ( rcatType == MASTER_RCAT ||
+    if ( rcatType == PRIMARY_RCAT ||
             myZoneInfo->slaveServerHost == NULL ) {
         *rodsServerHost = myZoneInfo->primaryServerHost;
         return myZoneInfo->primaryServerHost->localFlag;
@@ -774,7 +774,7 @@ isLocalZone(const char *zoneHint ) {
     int status;
     rodsServerHost_t *icatServerHost = NULL;
 
-    status = getRcatHost( MASTER_RCAT, zoneHint, &icatServerHost );
+    status = getRcatHost( PRIMARY_RCAT, zoneHint, &icatServerHost );
 
     if ( status < 0 || NULL == icatServerHost ) { // JMC cppcheck - nullptr
         return 0;
@@ -817,7 +817,7 @@ getRemoteZoneHost( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     rodsServerHost_t *icatServerHost = NULL;
     rodsHostAddr_t *rescAddr = NULL;
 
-    status = getRcatHost( MASTER_RCAT, dataObjInp->objPath, &icatServerHost );
+    status = getRcatHost( PRIMARY_RCAT, dataObjInp->objPath, &icatServerHost );
 
     if ( status < 0 || NULL == icatServerHost ) { // JMC cppcheck - nullptr
         return status;
@@ -885,7 +885,7 @@ getReHost( rodsServerHost_t **rodsServerHost ) {
         }
         tmpRodsServerHost = tmpRodsServerHost->next;
     }
-    status = getRcatHost( MASTER_RCAT, ( const char* )NULL, rodsServerHost );
+    status = getRcatHost( PRIMARY_RCAT, ( const char* )NULL, rodsServerHost );
 
     return status;
 }
