@@ -405,12 +405,12 @@ int initRcatServerHostByFile()
 int
 initZone( rsComm_t *rsComm ) {
     if (ZoneInfoHead && (strlen(ZoneInfoHead->zoneName) > 0)
-                     && ZoneInfoHead->masterServerHost) {
+                     && ZoneInfoHead->primaryServerHost) {
         return 0;
     }
 
     rodsServerHost_t *tmpRodsServerHost;
-    rodsServerHost_t *masterServerHost = NULL;
+    rodsServerHost_t *primaryServerHost = NULL;
     rodsServerHost_t *slaveServerHost = NULL;
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
@@ -432,7 +432,7 @@ initZone( rsComm_t *rsComm ) {
     while ( tmpRodsServerHost != NULL ) {
         if ( tmpRodsServerHost->rcatEnabled == LOCAL_ICAT ) {
             tmpRodsServerHost->zoneInfo = ZoneInfoHead;
-            masterServerHost = tmpRodsServerHost;
+            primaryServerHost = tmpRodsServerHost;
         }
         else if ( tmpRodsServerHost->rcatEnabled == LOCAL_SLAVE_ICAT ) {
             tmpRodsServerHost->zoneInfo = ZoneInfoHead;
@@ -440,7 +440,7 @@ initZone( rsComm_t *rsComm ) {
         }
         tmpRodsServerHost = tmpRodsServerHost->next;
     }
-    ZoneInfoHead->masterServerHost = masterServerHost;
+    ZoneInfoHead->primaryServerHost = primaryServerHost;
     ZoneInfoHead->slaveServerHost = slaveServerHost;
 
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );

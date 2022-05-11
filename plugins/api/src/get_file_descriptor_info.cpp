@@ -162,7 +162,7 @@ namespace
         return {
             {"zone_name", _p->zoneName},
             {"port", _p->portNum},
-            {"master_server_host", to_json(_p->masterServerHost)},
+            {"primary_server_host", to_json(_p->primaryServerHost)},
             {"slave_server_host", to_json(_p->slaveServerHost)},
             {"next", to_json(_p->next)}
         };

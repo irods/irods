@@ -120,7 +120,7 @@ typedef struct RodsArguments {
 
     int parallel;
     int serial;
-    int masterIcat;
+    int primaryIcat;
     int silent;
     int sql;
     int optind;  /* index into argv where non-recognized options begin */

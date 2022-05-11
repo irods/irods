@@ -97,8 +97,8 @@ getRcatHost( int rcatType, const char *rcatZoneHint,
 
     if ( rcatType == MASTER_RCAT ||
             myZoneInfo->slaveServerHost == NULL ) {
-        *rodsServerHost = myZoneInfo->masterServerHost;
-        return myZoneInfo->masterServerHost->localFlag;
+        *rodsServerHost = myZoneInfo->primaryServerHost;
+        return myZoneInfo->primaryServerHost->localFlag;
     }
     else {
         *rodsServerHost = myZoneInfo->slaveServerHost;
@@ -241,7 +241,7 @@ queueRodsServerHost( rodsServerHost_t **rodsServerHostHead,
 int queueZone(
     const char*       zoneName,
     int               portNum,
-    rodsServerHost_t* masterServerHost,
+    rodsServerHost_t* primaryServerHost,
     rodsServerHost_t* slaveServerHost ) {
 
     bool zoneAlreadyInList = false;
@@ -254,9 +254,9 @@ int queueZone(
     memset( myZoneInfo, 0, sizeof( zoneInfo_t ) );
 
     rstrcpy( myZoneInfo->zoneName, zoneName, NAME_LEN );
-    if ( masterServerHost != NULL ) {
-        myZoneInfo->masterServerHost = masterServerHost;
-        masterServerHost->zoneInfo = myZoneInfo;
+    if ( primaryServerHost != NULL ) {
+        myZoneInfo->primaryServerHost = primaryServerHost;
+        primaryServerHost->zoneInfo = myZoneInfo;
     }
     if ( slaveServerHost != NULL ) {
         myZoneInfo->slaveServerHost = slaveServerHost;
@@ -296,9 +296,9 @@ int queueZone(
     }
     myZoneInfo->next = NULL;
 
-    if ( masterServerHost == NULL ) {
+    if ( primaryServerHost == NULL ) {
         rodsLog( LOG_DEBUG,
-                 "queueZone:  masterServerHost for %s is NULL", zoneName );
+                 "queueZone:  primaryServerHost for %s is NULL", zoneName );
         return SYS_INVALID_SERVER_HOST;
     }
     else {
@@ -525,8 +525,8 @@ printZoneInfo() {
     std::vector<log::key_value> zone_info;
 
     while ( tmpZoneInfo != NULL ) {
-        /* print the master */
-        tmpRodsServerHost = ( rodsServerHost_t * ) tmpZoneInfo->masterServerHost;
+        /* print the primary */
+        tmpRodsServerHost = ( rodsServerHost_t * ) tmpZoneInfo->primaryServerHost;
     
         zone_info.push_back({"zone_info.name", tmpZoneInfo->zoneName});
 
@@ -588,7 +588,7 @@ getZoneInfo( const char *rcatZoneHint, zoneInfo_t **myZoneInfo ) {
     tmpZoneInfo = ZoneInfoHead;
     while ( tmpZoneInfo != NULL ) {
         if ( zoneInput == 0 ) { /* assume local */
-            if ( tmpZoneInfo->masterServerHost->rcatEnabled == LOCAL_ICAT ) {
+            if ( tmpZoneInfo->primaryServerHost->rcatEnabled == LOCAL_ICAT ) {
                 *myZoneInfo = tmpZoneInfo;
             }
         }
@@ -627,7 +627,7 @@ getLocalZoneInfo( zoneInfo_t **outZoneInfo ) {
 
     tmpZoneInfo = ZoneInfoHead;
     while ( tmpZoneInfo != NULL ) {
-        if ( tmpZoneInfo->masterServerHost->rcatEnabled == LOCAL_ICAT ) {
+        if ( tmpZoneInfo->primaryServerHost->rcatEnabled == LOCAL_ICAT ) {
             *outZoneInfo = tmpZoneInfo;
             return 0;
         }
