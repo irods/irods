@@ -184,14 +184,10 @@ acSetRescSchemeForRepl {msiSetDefaultResc("demoResc","null"); }
 #      msiSortDataObj(random); msiSortDataObj(byRescClass) means that
 #      the data objects will be sorted randomly first and then separated
 #      by class.
-#    msiStageDataObj(cacheResc) - stage a copy of the data object in the
-#      cacheResc before opening the data object.
 #    The $writeFlag session variable has been created to be used as a condition
 #    for differentiating between open for read ($writeFlag == "0") and
 #    write ($writeFlag == "1"). e.g. :
-# acPreprocForDataObjOpen {ON($writeFlag == "0") {msiStageDataObj("demoResc8"); } }
 # acPreprocForDataObjOpen {ON($writeFlag == "1") { } }
-# acPreprocForDataObjOpen {msiSortDataObj("random"); msiSetDataObjPreferredResc("xyz%demoResc8%abc"); msiStageDataObj("demoResc8"); }
 # acPreprocForDataObjOpen {msiSetDataObjPreferredResc("demoResc7%demoResc8"); }
 # acPreprocForDataObjOpen {msiGetSessionVarValue("all","all"); }
 # acPreprocForDataObjOpen {ON($writeFlag == "0") {writeLine("serverLog",$objPath);} }
@@ -216,27 +212,9 @@ acSetRescSchemeForRepl {msiSetDefaultResc("demoResc","null"); }
 # in sequence by these rules.
 #    msiExtractNaraMetadata - extract and register metadata from the just
 #     upload NARA files.
-#    msiSysReplDataObj(replResc, flag) - can be used to replicate a copy of
-#    the file just uploaded or copied data object to the specified replResc
-#    Valid values for the "flag" input are "all", "updateRepl" and
-#    "rbudpTransfer". More than one flag values can be set using the
-#    "%" character as separator. e.g., "all%updateRepl". "updateRepl" means
-#    update an existing stale copy to the latest copy. The "all" flag means
-#    update all stale
-#    copies if the "updateRepl" flag is also set. "rbudpTransfer" means
-#    the RBUDP protocol will be used for the transfer.
-#
-#    msiSysChksumDataObj - checksum the just uploaded or copied data object.
-# acPostProcForPut {msiSysChksumDataObj; msiSysReplDataObj("demoResc8","all"); }
-# acPostProcForPut {msiSysReplDataObj("demoResc8","all"); }
-# acPostProcForPut {msiSysChksumDataObj; }
-# acPostProcForPut {delay("<A></A>") {msiSysReplDataObj('demoResc8','all'); } }
 # acWriteLine(*A,*B) {writeLine(*A,*B); }
 # acPostProcForPut {delay("<PLUSET>1m</PLUSET>") {acWriteLine('serverLog','delayed by a minute message1'); acWriteLine('serverLog','delayed by a minute message2'); } }
-# acPostProcForPut {ON($objPath like "/tempZone/home/rods/nvo/*") {delay("<PLUSET>1m</PLUSET>") {msiSysReplDataObj('nvoReplResc','null'); } } }
-# acPostProcForPut {msiSysReplDataObj("demoResc8","all"); }
 #acPostProcForPut {msiSetDataTypeFromExt; }
-#acPostProcForPut {ON($objPath like "/tempZone/home/rods/tg/*") {msiSysReplDataObj("nvoReplResc","null"); } }
 #acPostProcForPut {ON($objPath like "/tempZone/home/rods/mytest/*") {writeLine("serverLog","File Path is "++$filePath); } }
 #acPostProcForPut {ON($objPath like "/tempZone/home/rods/mytest/*") {writeLine("serverLog","File Path is "++$filePath); msiSplitPath($filePath,*fileDir,*fileName); msiExecCmd("send.sh", "*fileDir *fileName", "null", "null","null",*Junk); writeLine("serverLog","After File Path is *fileDir *fileName"); } }
 # acPostProcForPut { ON($objPath like "\*txt") {writeLine("serverLog","File $objPath"); } }
