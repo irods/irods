@@ -6,7 +6,7 @@ def _root_directory():
     return os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(scripts_directory()))))
 
 def irods_directory():
-    return os.path.join(_root_directory(), 'var', 'lib', 'irods')
+    return os.path.dirname(scripts_directory())
 
 def config_directory():
     return os.path.join(_root_directory(), 'etc', 'irods')
