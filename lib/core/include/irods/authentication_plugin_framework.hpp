@@ -28,6 +28,7 @@ namespace irods::experimental::auth
 {
     static const char* const flow_complete{"authentication_flow_complete"};
     static const char* const next_operation{"next_operation"};
+    static const char* const force_password_prompt{"force_password_prompt"};
 
     /// \brief Base class for authentication plugin implementations.
     ///
