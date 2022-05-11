@@ -66,11 +66,11 @@ namespace irods
 
         json native_auth_establish_context(rcComm_t&, const json& req)
         {
-            json resp{req};
-
             irods_auth::throw_if_request_message_is_missing_key(
                 req, {"user_name", "zone_name", "request_result"}
             );
+
+            json resp{req};
 
             auto request_result = req.at("request_result").get<std::string>();
             request_result.resize(CHALLENGE_LEN);
@@ -112,6 +112,7 @@ namespace irods
                 std::string password{};
                 getline(std::cin, password);
                 strncpy(md5_buf + CHALLENGE_LEN, password.c_str(), MAX_PASSWORD_LEN);
+                fmt::print("\n");
                 tty.c_lflag = oldflag;
                 if (tcsetattr(STDIN_FILENO, TCSANOW, &tty)) {
                     fmt::print("Error reinstating echo mode.");
