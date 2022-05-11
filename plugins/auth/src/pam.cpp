@@ -37,7 +37,7 @@ namespace
         int errsv = errno;
 
         if (error) {
-            printf("WARNING: Error %d disabling echo mode. Password will be displayed in plaintext.", errsv);
+            printf("WARNING: Error %d disabling echo mode. Password will be displayed in plaintext.\n", errsv);
         }
         printf("Enter your current PAM password:");
         std::string password;
@@ -47,7 +47,7 @@ namespace
         printf("\n");
         tty.c_lflag = oldflag;
         if (tcsetattr(STDIN_FILENO, TCSANOW, &tty)) {
-            printf( "Error reinstating echo mode." );
+            printf("Error reinstating echo mode.\n");
         }
 
         return new_password;
@@ -143,24 +143,26 @@ namespace irods
             resp["user_name"] = comm.proxyUser.userName;
             resp["zone_name"] = comm.proxyUser.rodsZone;
 
-            // This is used for CLI argument-passed passwords, which is a very, very bad idea.
-            const auto v = req.find(irods::AUTH_PASSWORD_KEY);
-            const bool password_provided_in_request = req.end() != v;
-            const bool provided_password_is_empty = password_provided_in_request &&
-                                                    v->get_ref<const std::string&>().empty();
-
-            if (!password_provided_in_request || provided_password_is_empty) {
-                // obfGetPw returns 0 if the password is retrieved successfully. Therefore, we
-                // do NOT need a password in this case. This being the case, we conclude that
-                // the user has already been authenticated via PAM with the server. We proceed
-                // with steps for native authentication which will use the stored password. This
-                // is the legacy behavior for the PAM authentication plugin.
+            // The force_password_prompt keyword does not check for an existing password but
+            // instead forcibly prompts the user for their password. This is useful when a
+            // client like iinit wants to "reset" the user's authentication "session" but in
+            // general other clients want to use the already-authenticated "session."
+            const auto force_prompt = req.find(irods_auth::force_password_prompt);
+            if (req.end() != force_prompt && force_prompt->get<bool>()) {
+                resp[irods::AUTH_PASSWORD_KEY] = get_password_from_client_stdin();
+            }
+            else {
+                // obfGetPw returns 0 if the password is retrieved successfully. Therefore,
+                // we do NOT need a password in this case. This being the case, we conclude
+                // that the user has already been authenticated via PAM with the server. We
+                // proceed with steps for native authentication which will use the stored
+                // password. This is the legacy behavior for the PAM authentication plugin.
                 if (const bool need_password = obfGetPw(nullptr); !need_password) {
                     resp[irods_auth::next_operation] = perform_native_auth;
                     return resp;
                 }
 
-                // There's no password stored, so we need to prompt the client for one.
+                // There's no password stored, so we need to prompt the client for it.
                 resp[irods::AUTH_PASSWORD_KEY] = get_password_from_client_stdin();
             }
 
@@ -201,12 +203,6 @@ namespace irods
 
             // Save the PAM password-based generated password so that the client remains
             // authenticated with the server while the password is still valid.
-            //
-            // TODO: we should only perform this step if running iinit. The auth plugins
-            // should support an option which instruct it to save the password (doesn't save
-            // it by default). The result is that running ils and entering the password will
-            // save the password. Maybe this a good thing, but does not reflect the historic
-            // behavior.
             const auto& pw = resp.at("request_result").get_ref<const std::string&>();
             if (const int ec = obfSavePw(0, 0, 0, pw.data()); ec < 0) {
                 THROW(ec, "failed to save obfuscated password");
@@ -227,6 +223,10 @@ namespace irods
             // is done in order to minimize communications with the PAM server as iRODS does
             // not use proper "sessions".
             json resp{req};
+
+            // The authentication password needs to be removed from the request message as it
+            // will send the password over the network without SSL being necessarily enabled.
+            resp.erase(irods::AUTH_PASSWORD_KEY);
 
             static constexpr char* auth_scheme_native = "native";
             rodsEnv env{};

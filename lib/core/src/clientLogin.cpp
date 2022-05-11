@@ -373,6 +373,16 @@ int clientLogin(rcComm_t* _comm, const char* _context, const char* _scheme_overr
 
             return ec;
         }
+        catch (const json::exception& e) {
+            const auto ec = SYS_LIBRARY_ERROR;
+            const std::string msg = fmt::format("JSON error occurred: [{}]", e.what());
+
+            log_auth::info(msg);
+
+            printError(_comm, ec, const_cast<char*>(msg.data()));
+
+            return ec;
+        }
     }
 
     // =-=-=-=-=-=-=-
