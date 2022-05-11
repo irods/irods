@@ -158,3 +158,10 @@ def irods_gid():
 
 def get_template_filepath(filepath):
     return os.path.join(irods_directory(), 'packaging', '.'.join([os.path.basename(filepath), 'template']))
+
+def possible_shm_locations():
+    return {
+        os.path.join(os.sep, 'dev', 'shm'),
+        os.path.join(os.sep, 'var', 'run', 'shm'),
+        os.path.join(os.sep, 'run', 'shm'),
+    }

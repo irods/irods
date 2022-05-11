@@ -345,19 +345,11 @@ def format_binary_to_procs_dict(proc_dict):
 def delete_cache_files_by_pid(pid):
     l = logging.getLogger(__name__)
     l.debug('Deleting cache files for pid %s...', pid)
-    ubuntu_cache = glob.glob(os.path.join(
-        os.sep,
-        'var',
-        'run',
-        'shm',
-        '*irods_re_cache*pid{0}_*'.format(pid)))
-    delete_cache_files_by_name(*ubuntu_cache)
-    other_linux_cache = glob.glob(os.path.join(
-        os.sep,
-        'dev',
-        'shm',
-        '*irods_re_cache*pid{0}_*'.format(pid)))
-    delete_cache_files_by_name(*other_linux_cache)
+    for shm_dir in paths.possible_shm_locations():
+        cache_shms = glob.glob(os.path.join(
+            shm_dir,
+            '*irods_re_cache*pid{0}_*'.format(pid)))
+        delete_cache_files_by_name(*cache_shms)
 
 def delete_cache_files_by_name(*filepaths):
     l = logging.getLogger(__name__)
@@ -370,9 +362,8 @@ def delete_cache_files_by_name(*filepaths):
 
 def delete_s3_shmem():
     # delete s3 shared memory if any exist 
-    s3_plugin_shmem = glob.glob(os.path.join(
-        os.sep,
-        'dev',
-        'shm',
-        '*irods_s3-shm*'))
-    delete_cache_files_by_name(*s3_plugin_shmem)
+    for shm_dir in paths.possible_shm_locations():
+        s3_plugin_shms = glob.glob(os.path.join(
+            shm_dir,
+            '*irods_s3-shm*'))
+        delete_cache_files_by_name(*s3_plugin_shms)
