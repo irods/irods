@@ -213,10 +213,6 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
                 "rulemsiSetReServerNumProc",
                 "rulemsiSetResource",
                 "rulemsiSortDataObj",
-                "rulemsiStageDataObj",
-                "rulemsiSysChksumDataObj",
-                "rulemsiSysMetaModify",
-                "rulemsiSysReplDataObj",
                 "rulemsiNoChkFilePathPerm",
                 "rulemsiNoTrashCan",
             ]

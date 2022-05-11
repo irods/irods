@@ -17,18 +17,11 @@
 
 /* the following are data object operation rule handler */
 int
-msiSysReplDataObj( msParam_t *xcacheResc, msParam_t *xallFlag,
-                   ruleExecInfo_t *rei );
-int
-msiStageDataObj( msParam_t *cacheResc, ruleExecInfo_t *rei );
-int
 msiSetDataObjPreferredResc( msParam_t *preferredResc, ruleExecInfo_t *rei );
 int
 msiSetDataObjAvoidResc( msParam_t *preferredResc, ruleExecInfo_t *rei );
 int
 msiSortDataObj( msParam_t *sortScheme, ruleExecInfo_t *rei );
-int
-msiSysChksumDataObj( ruleExecInfo_t *rei );
 int
 msiSetDataTypeFromExt( ruleExecInfo_t *rei );
 int
@@ -61,6 +54,4 @@ int
 msiSetReServerNumProc( msParam_t *xnumProc, ruleExecInfo_t *rei );
 int
 msiSetRescQuotaPolicy( msParam_t *xflag, ruleExecInfo_t *rei );
-int
-msiSysMetaModify( msParam_t *sysMetadata, msParam_t *value, ruleExecInfo_t *rei );
 #endif	/* RE_SYS_DATA_OBJ_OPR_H */

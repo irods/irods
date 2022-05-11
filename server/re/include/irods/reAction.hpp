@@ -151,12 +151,9 @@ namespace irods
         table_[ "msiDeleteUser" ] = new irods::ms_table_entry( "msiDeleteUser", 0, std::function<int(ruleExecInfo_t*)>( msiDeleteUser ) );
         table_[ "msiAddUserToGroup" ] = new irods::ms_table_entry( "msiAddUserToGroup", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiAddUserToGroup ) );
         table_[ "msiSetDefaultResc" ] = new irods::ms_table_entry( "msiSetDefaultResc", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiSetDefaultResc ) );
-        table_[ "msiSysReplDataObj" ] = new irods::ms_table_entry( "msiSysReplDataObj", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiSysReplDataObj ) );
-        table_[ "msiStageDataObj" ] = new irods::ms_table_entry( "msiStageDataObj", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiStageDataObj ) );
         table_[ "msiSetDataObjPreferredResc" ] = new irods::ms_table_entry( "msiSetDataObjPreferredResc", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiSetDataObjPreferredResc ) );
         table_[ "msiSetDataObjAvoidResc" ] = new irods::ms_table_entry( "msiSetDataObjAvoidResc", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiSetDataObjAvoidResc ) );
         table_[ "msiSortDataObj" ] = new irods::ms_table_entry( "msiSortDataObj", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiSortDataObj ) );
-        table_[ "msiSysChksumDataObj" ] = new irods::ms_table_entry( "msiSysChksumDataObj", 0, std::function<int(ruleExecInfo_t*)>( msiSysChksumDataObj ) );
         table_[ "msiSetDataTypeFromExt" ] = new irods::ms_table_entry( "msiSetDataTypeFromExt", 0, std::function<int(ruleExecInfo_t*)>( msiSetDataTypeFromExt ) );
         table_[ "msiSetNoDirectRescInp" ] = new irods::ms_table_entry( "msiSetNoDirectRescInp", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiSetNoDirectRescInp ) );
         table_[ "msiSetNumThreads" ] = new irods::ms_table_entry( "msiSetNumThreads", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiSetNumThreads ) );
@@ -252,7 +249,6 @@ namespace irods
         table_[ "msiSetBulkPutPostProcPolicy" ] = new irods::ms_table_entry( "msiSetBulkPutPostProcPolicy", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiSetBulkPutPostProcPolicy ) );
         table_[ "msiCutBufferInHalf" ] = new irods::ms_table_entry( "msiCutBufferInHalf", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiCutBufferInHalf ) );
         table_[ "msiDoSomething" ] = new irods::ms_table_entry( "msiDoSomething", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiDoSomething ) );
-        table_[ "msiSysMetaModify" ] = new irods::ms_table_entry( "msiSysMetaModify", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiSysMetaModify ) );
         table_[ "msiTakeThreeArgumentsAndDoNothing" ] = new irods::ms_table_entry( "msiTakeThreeArgumentsAndDoNothing", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiTakeThreeArgumentsAndDoNothing ) );
     }; // ms_table::ms_table
 
