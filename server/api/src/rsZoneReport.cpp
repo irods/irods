@@ -24,7 +24,7 @@ int _rsZoneReport( rsComm_t* _comm, bytesBuf_t** _bbuf );
 
 int rsZoneReport( rsComm_t* _comm, bytesBuf_t** _bbuf ) {
     rodsServerHost_t* rods_host;
-    int status = getAndConnRcatHost(_comm, MASTER_RCAT, nullptr, &rods_host);
+    int status = getAndConnRcatHost(_comm, PRIMARY_RCAT, nullptr, &rods_host);
     if ( status < 0 ) {
         return status;
     }
@@ -87,7 +87,7 @@ irods::error get_server_reports(rsComm_t* _comm, json& _resc_arr)
     std::map< rodsServerHost_t*, int > svr_reported;
     rodsServerHost_t* icat_host = 0;
     char* zone_name = getLocalZoneName();
-    int status = getRcatHost( MASTER_RCAT, zone_name, &icat_host );
+    int status = getRcatHost( PRIMARY_RCAT, zone_name, &icat_host );
     if ( status < 0 ) {
         return ERROR(status, "getRcatHost failed");
     }

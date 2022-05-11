@@ -65,7 +65,7 @@
 
 /* definition for rcat type */
 
-#define MASTER_RCAT                     0
+#define PRIMARY_RCAT                    0
 #define SLAVE_RCAT                      1
 #define INIT_SZ_FOR_EXECMD_BUF          (16*1024)
 #define MAX_SZ_FOR_EXECMD_BUF           (1*1024*1024)

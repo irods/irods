@@ -17,7 +17,7 @@ rsModColl( rsComm_t *rsComm, collInp_t *modCollInp ) {
 
     status = getAndConnRcatHost(
                  rsComm,
-                 MASTER_RCAT,
+                 PRIMARY_RCAT,
                  ( const char* )modCollInp->collName,
                  &rodsServerHost );
     if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr

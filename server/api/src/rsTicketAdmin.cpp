@@ -11,7 +11,7 @@ int rsTicketAdmin(rsComm_t* rsComm, ticketAdminInp_t* ticketAdminInp)
     rodsLog(LOG_DEBUG, "ticketAdmin");
 
     rodsServerHost_t* rodsServerHost{};
-    int status = getAndConnRcatHost(rsComm, MASTER_RCAT, nullptr, &rodsServerHost);
+    int status = getAndConnRcatHost(rsComm, PRIMARY_RCAT, nullptr, &rodsServerHost);
     if (status < 0) {
         return status;
     }

@@ -198,7 +198,7 @@ namespace irods::experimental::catalog
     {
         rodsServerHost* host{};
 
-        if (const int status = getRcatHost(MASTER_RCAT, nullptr, &host); status < 0 || !host) {
+        if (const int status = getRcatHost(PRIMARY_RCAT, nullptr, &host); status < 0 || !host) {
             THROW(status, "failed getting catalog provider host");
         }
 
@@ -214,7 +214,7 @@ namespace irods::experimental::catalog
     {
         rodsServerHost* host = nullptr;
 
-        if (const int ec = getAndConnRcatHost(&_comm, MASTER_RCAT, nullptr, &host); ec < 0) {
+        if (const int ec = getAndConnRcatHost(&_comm, PRIMARY_RCAT, nullptr, &host); ec < 0) {
             THROW(ec, "failed to connect to catalog provider host");
         }
 

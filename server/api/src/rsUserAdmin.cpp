@@ -12,7 +12,7 @@ rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
 
     rodsLog( LOG_DEBUG, "userAdmin" );
 
-    status = getAndConnRcatHost( rsComm, MASTER_RCAT, ( const char* )NULL, &rodsServerHost );
+    status = getAndConnRcatHost( rsComm, PRIMARY_RCAT, ( const char* )NULL, &rodsServerHost );
     if ( status < 0 ) {
         return status;
     }

@@ -88,7 +88,7 @@ namespace
         }
         status = getAndConnRcatHost(
                      rsComm,
-                     MASTER_RCAT,
+                     PRIMARY_RCAT,
                      ( const char* )collCreateInp->collName,
                      &rodsServerHost );
 

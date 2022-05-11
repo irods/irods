@@ -428,7 +428,7 @@ irods::error osauth_auth_agent_response(
     // zone auth
     status = getAndConnRcatHostNoLogin(
                  _ctx.comm(),
-                 MASTER_RCAT,
+                 PRIMARY_RCAT,
                  _ctx.comm()->proxyUser.rodsZone,
                  &rodsServerHost );
     if ( status < 0 ) {

@@ -10,7 +10,7 @@ int rsRuleExecMod(RsComm* _rsComm, RuleExecModifyInput* _ruleExecModInp)
     rodsServerHost_t* rodsServerHost{};
 
     int status = getAndConnRcatHost(_rsComm,
-                                    MASTER_RCAT,
+                                    PRIMARY_RCAT,
                                     static_cast<const char*>(nullptr),
                                     &rodsServerHost);
     if (status < 0) {

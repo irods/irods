@@ -44,7 +44,7 @@ namespace {
 
         dataObjInp_t* srcDataObjInp = &dataObjCopyInp->srcDataObjInp;
         rodsServerHost_t* srcIcatServerHost{};
-        int status = getRcatHost( MASTER_RCAT, srcDataObjInp->objPath,
+        int status = getRcatHost( PRIMARY_RCAT, srcDataObjInp->objPath,
                               &srcIcatServerHost );
 
         if (status < 0 || !srcIcatServerHost) {
@@ -60,7 +60,7 @@ namespace {
 
         dataObjInp_t* destDataObjInp = &dataObjCopyInp->destDataObjInp;
         rodsServerHost_t *destIcatServerHost{};
-        status = getRcatHost( MASTER_RCAT, destDataObjInp->objPath,
+        status = getRcatHost( PRIMARY_RCAT, destDataObjInp->objPath,
                               &destIcatServerHost );
 
         if ( status < 0 || !destIcatServerHost ) {

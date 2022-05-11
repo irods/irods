@@ -206,7 +206,7 @@ namespace irods
             // need to do NoLogin because it could get into inf loop for cross zone auth
             rodsServerHost_t *rodsServerHost;
             auto zone_name = req.at("zone_name").get<std::string>();
-            int status = getAndConnRcatHostNoLogin(&comm, MASTER_RCAT, const_cast<char*>(zone_name.c_str()), &rodsServerHost);
+            int status = getAndConnRcatHostNoLogin(&comm, PRIMARY_RCAT, const_cast<char*>(zone_name.c_str()), &rodsServerHost);
             if ( status < 0 ) {
                 THROW(status, "Connecting to rcat host failed.");
             }

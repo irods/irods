@@ -81,7 +81,7 @@ rsDataObjLock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     rodsServerHost_t *rodsServerHost = NULL;
     int remoteFlag = getAndConnRcatHost(
                          rsComm,
-                         MASTER_RCAT,
+                         PRIMARY_RCAT,
                          ( const char* )dataObjInp->objPath,
                          &rodsServerHost );
     if ( remoteFlag < 0 ) {
@@ -136,7 +136,7 @@ rsDataObjUnlock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     rodsServerHost_t *rodsServerHost = NULL;
     int remoteFlag = getAndConnRcatHost(
                          rsComm,
-                         MASTER_RCAT,
+                         PRIMARY_RCAT,
                          ( const char* )dataObjInp->objPath,
                          &rodsServerHost );
     if ( remoteFlag < 0 ) {

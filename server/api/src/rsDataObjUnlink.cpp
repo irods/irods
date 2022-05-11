@@ -315,7 +315,7 @@ int rsMvDataObjToTrash(
         specCollCache_t *specCollCache{};
         resolveLinkedPath(rsComm, dataObjUnlinkInp->objPath, &specCollCache, &dataObjUnlinkInp->condInput);
         rodsServerHost_t* rodsServerHost{};
-        int status = getAndConnRcatHost(rsComm, MASTER_RCAT, dataObjUnlinkInp->objPath, &rodsServerHost);
+        int status = getAndConnRcatHost(rsComm, PRIMARY_RCAT, dataObjUnlinkInp->objPath, &rodsServerHost);
         if (status < 0 || !rodsServerHost) { // JMC cppcheck - nullptr
             return status;
         }

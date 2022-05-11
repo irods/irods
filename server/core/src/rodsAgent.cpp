@@ -707,7 +707,7 @@ int agentMain(rsComm_t *rsComm)
     // =-=-=-=-=-=-=-
     // find the icat host
     rodsServerHost_t *rodsServerHost = 0;
-    status = getRcatHost( MASTER_RCAT, 0, &rodsServerHost );
+    status = getRcatHost( PRIMARY_RCAT, 0, &rodsServerHost );
     if ( status < 0 ) {
         irods::log( ERROR( status, "getRcatHost failed." ) );
         return status;

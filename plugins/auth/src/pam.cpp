@@ -259,7 +259,7 @@ namespace irods
 
             log_auth::trace("connecting to catalog provider");
 
-            if (const int ec = getAndConnRcatHost(&comm, MASTER_RCAT, comm.clientUser.rodsZone, &host); ec < 0) {
+            if (const int ec = getAndConnRcatHost(&comm, PRIMARY_RCAT, comm.clientUser.rodsZone, &host); ec < 0) {
                 THROW(ec, "getAndConnRcatHost failed.");
             }
 

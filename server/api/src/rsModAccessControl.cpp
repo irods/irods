@@ -26,7 +26,7 @@ rsModAccessControl( rsComm_t *rsComm, modAccessControlInp_t *modAccessControlInp
 
     status = getAndConnRcatHost(
                  rsComm,
-                 MASTER_RCAT,
+                 PRIMARY_RCAT,
                  ( const char* )newModAccessControlInp.path,
                  &rodsServerHost );
     if ( status < 0 ) {
