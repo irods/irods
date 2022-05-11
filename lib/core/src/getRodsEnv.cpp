@@ -699,12 +699,10 @@ extern "C" {
                 strlen( rodsEnvArg->rodsZone ) > 0 ) {
             snprintf( rodsEnvArg->rodsHome,  MAX_NAME_LEN, "/%s/home/%s",
                         rodsEnvArg->rodsZone, rodsEnvArg->rodsUserName );
-            rodsLog( LOG_NOTICE, "created irodsHome=%s", rodsEnvArg->rodsHome );
         }
         if ( strlen( rodsEnvArg->rodsCwd ) == 0 &&
                 strlen( rodsEnvArg->rodsHome ) > 0 ) {
             rstrcpy( rodsEnvArg->rodsCwd, rodsEnvArg->rodsHome, MAX_NAME_LEN );
-            rodsLog( LOG_NOTICE, "created irodsCwd=%s", rodsEnvArg->rodsCwd );
         }
 
         return 0;

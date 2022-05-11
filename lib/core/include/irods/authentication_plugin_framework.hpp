@@ -163,14 +163,10 @@ namespace irods::experimental::auth
 
         const std::string* next_operation = &irods::AUTH_CLIENT_START;
 
-        json req{}, resp{};
+        json req{_ctx}, resp{};
 
         req["scheme"] = scheme;
         req[auth::next_operation] = *next_operation;
-
-        for (const auto& [k, v] : _ctx.items()) {
-            req[k] = v;
-        }
 
         while (true) {
             resp = auth->call(_comm, *next_operation, req);

@@ -361,7 +361,7 @@ int clientLogin(rcComm_t* _comm, const char* _context, const char* _scheme_overr
                 std::strncpy(env.rodsAuthScheme, auth_scheme.data(), NAME_LEN);
             }
 
-            return authenticate_with_plugin_framework(*_comm, env, _context ? json{_context} : json{});
+            return authenticate_with_plugin_framework(*_comm, env, _context ? json::parse(_context) : json{});
         }
         catch (const irods::exception& e) {
             const auto ec = e.code();
