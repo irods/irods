@@ -382,6 +382,21 @@ int main( int argc, char **argv )
                 rcDisconnect(Conn);
                 return 7;
             }
+
+            printErrorStack( Conn->rError );
+            if (ttl > 0 && irods::AUTH_PAM_SCHEME != lower_scheme) {
+                status = clientLoginTTL(Conn, ttl);
+                if (status) {
+                    rcDisconnect(Conn);
+                    return 8;
+                }
+                /* And check that it works */
+                status = clientLogin(Conn);
+                if (status) {
+                    rcDisconnect(Conn);
+                    return 7;
+                }
+            }
         }
     }
 
