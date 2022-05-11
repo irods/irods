@@ -126,8 +126,7 @@ def file_digest(filename, hash_type, encoding='hex'):
 
 
 def re_shm_exists():
-    possible_shm_locations = ['/var/run/shm', '/dev/shm']
-    for l in possible_shm_locations:
+    for l in paths.possible_shm_locations():
         try:
             files = os.listdir(l)
             for f in files:
