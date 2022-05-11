@@ -21,47 +21,7 @@ from . import resource_suite
 from . import session
 
 
-# Requires OS account 'irods' to have password 'temporarypasswordforci'
-class Test_OSAuth_Only(resource_suite.ResourceBase, unittest.TestCase):
-
-    def setUp(self):
-        super(Test_OSAuth_Only, self).setUp()
-        self.auth_session = session.mkuser_and_return_session('rodsuser', 'irods', 'temporarypasswordforci',
-                                                          lib.get_hostname())
-
-    def tearDown(self):
-        self.auth_session.__exit__()
-        self.admin.assert_icommand(['iadmin', 'rmuser', self.auth_session.username])
-        super(Test_OSAuth_Only, self).tearDown()
-
-    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
-    def test_authentication_OSAuth(self):
-        self.auth_session.environment_file_contents['irods_authentication_scheme'] = 'OSAuth'
-
-        # setup the irods.key file necessary for OSAuth
-        keyfile_path = os.path.join(IrodsConfig().config_directory, 'irods.key')
-        with open(keyfile_path, 'wt') as f:
-            f.write('gibberish\n')
-
-        # do the reauth
-        self.auth_session.assert_icommand('iexit')
-        self.auth_session.assert_icommand(['iinit', self.auth_session.password])
-        # connect and list some files
-        self.auth_session.assert_icommand('icd')
-        self.auth_session.assert_icommand('ils -L', 'STDOUT_SINGLELINE', 'home')
-
-        # reset client environment to original
-        del self.auth_session.environment_file_contents['irods_authentication_scheme']
-        # do the reauth
-        self.auth_session.assert_icommand('iexit')
-        self.auth_session.assert_icommand(['iinit', self.auth_session.password])
-
-        # clean up keyfile
-        os.unlink(keyfile_path)
-
 # Requires existence of OS account 'irodsauthuser' with password 'iamnotasecret'
-
-
 class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
     def setUp(self):
         super(Test_Auth, self).setUp()
