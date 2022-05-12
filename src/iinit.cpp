@@ -370,12 +370,13 @@ int main( int argc, char **argv )
             }
         }
         else {
-            nlohmann::json ctx;
-            if (irods::AUTH_PAM_SCHEME == lower_scheme) {
-                ctx = nlohmann::json{
-                    {irods::AUTH_TTL_KEY, std::to_string(ttl)},
-                    {irods::AUTH_PASSWORD_KEY, password}
-                };
+            auto ctx = nlohmann::json{
+                {irods::AUTH_TTL_KEY, std::to_string(ttl)},
+                {irods::experimental::auth::force_password_prompt, true}
+            };
+
+            if (password && *password) {
+                ctx[irods::AUTH_PASSWORD_KEY] = password;
             }
 
             if (const int ec = clientLogin(Conn, ctx.dump().data()); ec != 0) {
