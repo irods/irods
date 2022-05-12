@@ -20,7 +20,7 @@ rsGetRescQuota( rsComm_t *rsComm, getRescQuotaInp_t *getRescQuotaInp,
 
     status = getAndConnRcatHost(
                  rsComm,
-                 SLAVE_RCAT,
+                 SECONDARY_RCAT,
                  ( const char* )getRescQuotaInp->zoneHint,
                  &rodsServerHost );
 

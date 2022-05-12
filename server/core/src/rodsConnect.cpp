@@ -544,7 +544,7 @@ printZoneInfo() {
         tmpRodsServerHost = ( rodsServerHost_t * ) tmpZoneInfo->secondaryServerHost;
         if ( tmpRodsServerHost != NULL ) {
             zone_info.push_back({"zone_info.secondary_zone_name", tmpZoneInfo->zoneName});
-            zone_info.push_back({"zone_info.secondary_type", "LOCAL_SLAVE_ICAT"});
+            zone_info.push_back({"zone_info.secondary_type", "LOCAL_SECONDARY_ICAT"});
             zone_info.push_back({"zone_info.secondary_host", tmpRodsServerHost->hostName->name});
             zone_info.push_back({"zone_info.secondary_port", std::to_string(tmpZoneInfo->portNum)});
         }

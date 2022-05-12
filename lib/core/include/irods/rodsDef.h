@@ -66,7 +66,7 @@
 /* definition for rcat type */
 
 #define PRIMARY_RCAT                    0
-#define SLAVE_RCAT                      1
+#define SECONDARY_RCAT                  1
 #define INIT_SZ_FOR_EXECMD_BUF          (16*1024)
 #define MAX_SZ_FOR_EXECMD_BUF           (1*1024*1024)
 #define MIN_SZ_FOR_PARA_TRAN            (1*1024*1024)

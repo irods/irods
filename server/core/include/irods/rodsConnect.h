@@ -44,7 +44,7 @@ typedef struct hostName {
 // definition for rcatEnabled
 #define NOT_RCAT_ENABLED                0
 #define LOCAL_ICAT                      1
-#define LOCAL_SLAVE_ICAT                2
+#define LOCAL_SECONDARY_ICAT            2
 #define REMOTE_ICAT                     3
 
 // definition for runMode

@@ -641,7 +641,7 @@ rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
 
     status = getAndConnRcatHost(
                  rsComm,
-                 SLAVE_RCAT,
+                 SECONDARY_RCAT,
                  zone_hint_str.c_str(),
                  &rodsServerHost );
 
