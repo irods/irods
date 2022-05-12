@@ -45,7 +45,7 @@ rsQuerySpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     rodsServerHost_t *rodsServerHost;
     remoteFlag = getAndConnRcatHost(
                      rsComm,
-                     SLAVE_RCAT,
+                     SECONDARY_RCAT,
                      ( const char* )dataObjInp->objPath,
                      &rodsServerHost );
 

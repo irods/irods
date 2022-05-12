@@ -434,7 +434,7 @@ initZone( rsComm_t *rsComm ) {
             tmpRodsServerHost->zoneInfo = ZoneInfoHead;
             primaryServerHost = tmpRodsServerHost;
         }
-        else if ( tmpRodsServerHost->rcatEnabled == LOCAL_SLAVE_ICAT ) {
+        else if ( tmpRodsServerHost->rcatEnabled == LOCAL_SECONDARY_ICAT ) {
             tmpRodsServerHost->zoneInfo = ZoneInfoHead;
             secondaryServerHost = tmpRodsServerHost;
         }
