@@ -1,0 +1,11 @@
+cmake_dir_irodshome = r'''@IRODS_HOME_DIRECTORY@'''
+
+cmake_dir_sysconf = r'''@CMAKE_INSTALL_SYSCONFDIR@'''
+
+cmake_dir_plugins = r'''@IRODS_PLUGINS_DIRECTORY@'''
+
+cmake_dir_sbin = r'''@CMAKE_INSTALL_SBINDIR@'''
+
+cmake_dir_localstate = r'''@CMAKE_INSTALL_LOCALSTATEDIR@'''
+
+cmake_dir_runstate = r'''@CMAKE_INSTALL_RUNSTATEDIR@'''
