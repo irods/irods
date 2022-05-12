@@ -332,7 +332,7 @@ int initRcatServerHostByFile()
         return e.code();
     }
 
-    // slave icat host
+    // secondary icat host
 
     try {
         snprintf( localSID, sizeof( localSID ), "%s", irods::get_server_property<const std::string>(irods::KW_CFG_ZONE_KEY).c_str() );
@@ -411,7 +411,7 @@ initZone( rsComm_t *rsComm ) {
 
     rodsServerHost_t *tmpRodsServerHost;
     rodsServerHost_t *primaryServerHost = NULL;
-    rodsServerHost_t *slaveServerHost = NULL;
+    rodsServerHost_t *secondaryServerHost = NULL;
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
     int status, i;
@@ -436,12 +436,12 @@ initZone( rsComm_t *rsComm ) {
         }
         else if ( tmpRodsServerHost->rcatEnabled == LOCAL_SLAVE_ICAT ) {
             tmpRodsServerHost->zoneInfo = ZoneInfoHead;
-            slaveServerHost = tmpRodsServerHost;
+            secondaryServerHost = tmpRodsServerHost;
         }
         tmpRodsServerHost = tmpRodsServerHost->next;
     }
     ZoneInfoHead->primaryServerHost = primaryServerHost;
-    ZoneInfoHead->slaveServerHost = slaveServerHost;
+    ZoneInfoHead->secondaryServerHost = secondaryServerHost;
 
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
     addInxIval( &genQueryInp.selectInp, COL_ZONE_NAME, 1 );

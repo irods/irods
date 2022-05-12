@@ -96,13 +96,13 @@ getRcatHost( int rcatType, const char *rcatZoneHint,
     }
 
     if ( rcatType == PRIMARY_RCAT ||
-            myZoneInfo->slaveServerHost == NULL ) {
+            myZoneInfo->secondaryServerHost == NULL ) {
         *rodsServerHost = myZoneInfo->primaryServerHost;
         return myZoneInfo->primaryServerHost->localFlag;
     }
     else {
-        *rodsServerHost = myZoneInfo->slaveServerHost;
-        return myZoneInfo->slaveServerHost->localFlag;
+        *rodsServerHost = myZoneInfo->secondaryServerHost;
+        return myZoneInfo->secondaryServerHost->localFlag;
     }
 }
 
@@ -242,7 +242,7 @@ int queueZone(
     const char*       zoneName,
     int               portNum,
     rodsServerHost_t* primaryServerHost,
-    rodsServerHost_t* slaveServerHost ) {
+    rodsServerHost_t* secondaryServerHost ) {
 
     bool zoneAlreadyInList = false;
 
@@ -258,9 +258,9 @@ int queueZone(
         myZoneInfo->primaryServerHost = primaryServerHost;
         primaryServerHost->zoneInfo = myZoneInfo;
     }
-    if ( slaveServerHost != NULL ) {
-        myZoneInfo->slaveServerHost = slaveServerHost;
-        slaveServerHost->zoneInfo = myZoneInfo;
+    if ( secondaryServerHost != NULL ) {
+        myZoneInfo->secondaryServerHost = secondaryServerHost;
+        secondaryServerHost->zoneInfo = myZoneInfo;
     }
 
     if ( portNum <= 0 ) {
@@ -540,13 +540,13 @@ printZoneInfo() {
         zone_info.push_back({"zone_info.host", tmpRodsServerHost->hostName->name});
         zone_info.push_back({"zone_info.port", std::to_string(tmpZoneInfo->portNum)});
 
-        /* print the slave */
-        tmpRodsServerHost = ( rodsServerHost_t * ) tmpZoneInfo->slaveServerHost;
+        /* print the secondary */
+        tmpRodsServerHost = ( rodsServerHost_t * ) tmpZoneInfo->secondaryServerHost;
         if ( tmpRodsServerHost != NULL ) {
-            zone_info.push_back({"zone_info.slave_zone_name", tmpZoneInfo->zoneName});
-            zone_info.push_back({"zone_info.slave_type", "LOCAL_SLAVE_ICAT"});
-            zone_info.push_back({"zone_info.slave_host", tmpRodsServerHost->hostName->name});
-            zone_info.push_back({"zone_info.slave_port", std::to_string(tmpZoneInfo->portNum)});
+            zone_info.push_back({"zone_info.secondary_zone_name", tmpZoneInfo->zoneName});
+            zone_info.push_back({"zone_info.secondary_type", "LOCAL_SLAVE_ICAT"});
+            zone_info.push_back({"zone_info.secondary_host", tmpRodsServerHost->hostName->name});
+            zone_info.push_back({"zone_info.secondary_port", std::to_string(tmpZoneInfo->portNum)});
         }
 
         log::server::info(zone_info);

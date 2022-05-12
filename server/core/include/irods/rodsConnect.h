@@ -67,7 +67,7 @@ typedef struct zoneInfo {
     char zoneName[NAME_LEN];
     int portNum;
     rodsServerHost_t *primaryServerHost;
-    rodsServerHost_t *slaveServerHost;
+    rodsServerHost_t *secondaryServerHost;
     struct zoneInfo *next;
 } zoneInfo_t;
 
@@ -95,7 +95,7 @@ rodsServerHost_t* mkServerHost(char *myHostAddr, char *zoneName);
 int queueZone(const char *zoneName,
               int portNum,
               rodsServerHost_t *primaryServerHost,
-              rodsServerHost_t *slaveServerHost);
+              rodsServerHost_t *secondaryServerHost);
 
 int matchHostConfig(rodsServerHost_t *myRodsServerHost);
 
@@ -116,7 +116,7 @@ int getAndConnRcatHostNoLogin(rsComm_t *rsComm,
 ///
 /// \parblock
 /// The information populated in `*rodsServerHost` will be a pointer to `primaryServerHost` or
-/// `slaveServerHost` of the global `ZoneInfoHead` list. These linked lists are identical to the
+/// `secondaryServerHost` of the global `ZoneInfoHead` list. These linked lists are identical to the
 /// pointers in the global linked list of server information called `ServerHostHead`.
 ///
 /// This function should be used for getting this pointer in particular because any connections
@@ -133,7 +133,7 @@ int disconnRcatHost(int rcatType, const char *rcatZoneHint);
 ///
 /// \parblock
 /// The information populated in `*rodsServerHost` will be a pointer to `primaryServerHost` or
-/// `slaveServerHost` of the global `ZoneInfoHead` list. These linked lists are identical to the
+/// `secondaryServerHost` of the global `ZoneInfoHead` list. These linked lists are identical to the
 /// pointers in the global linked list of server information called `ServerHostHead`.
 ///
 /// This function should be used for making any redirect connections to the Catalog Service
