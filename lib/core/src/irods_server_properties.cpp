@@ -214,13 +214,17 @@ namespace irods
         std::string svr_fn;
         irods::error ret = irods::get_full_path_for_config_file(SERVER_CONFIG_FILE, svr_fn);
         if (!ret.ok()) {
-            return;
+            THROW(ret.code(),
+                  fmt::format("[{}:{}] - Failed to find server config file [{}]", __func__, __LINE__, ret.result()));
         }
 
         std::ifstream svr{svr_fn};
-        if (svr.is_open()) {
-            config_props_ = json::parse(svr);
+
+        if (!svr) {
+            THROW(FILE_OPEN_ERR, fmt::format("[{}:{}] - Failed to open server config file", __func__, __LINE__));
         }
+
+        config_props_ = json::parse(svr);
     } // capture
 
     void server_properties::remove(const std::string& _key)
