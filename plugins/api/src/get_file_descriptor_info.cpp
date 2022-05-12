@@ -163,7 +163,7 @@ namespace
             {"zone_name", _p->zoneName},
             {"port", _p->portNum},
             {"primary_server_host", to_json(_p->primaryServerHost)},
-            {"slave_server_host", to_json(_p->slaveServerHost)},
+            {"secondary_server_host", to_json(_p->secondaryServerHost)},
             {"next", to_json(_p->next)}
         };
     }
