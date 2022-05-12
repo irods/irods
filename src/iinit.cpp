@@ -22,7 +22,6 @@
 #include <fstream>
 
 void usage( char *prog );
-void usageTTL();
 
 /* Uncomment the line below if you want TTL to be required for all
    users; i.e. all credentials will be time-limited.  This is only
@@ -76,8 +75,7 @@ int main( int argc, char **argv )
 {
     signal( SIGPIPE, SIG_IGN );
 
-    int i = 0, ix = 0, status = 0;
-    int echoFlag = 0;
+    int i = 0, status = 0;
     rodsEnv my_env;
     rcComm_t *Conn = 0;
     rErrMsg_t errMsg;
@@ -85,19 +83,10 @@ int main( int argc, char **argv )
     int doPassword = 0;
     bool doingEnvFileUpdate = false;
 
-    status = parseCmdLineOpt( argc, argv, "ehvVlZ", 1, &myRodsArgs );
+    status = parseCmdLineOpt( argc, argv, "hvVlZ", 1, &myRodsArgs );
     if ( status != 0 ) {
         printf( "Use -h for help.\n" );
         return 1;
-    }
-
-    if ( myRodsArgs.echo == True ) {
-        echoFlag = 1;
-    }
-
-    if ( myRodsArgs.help == True && myRodsArgs.ttl == True ) {
-        usageTTL();
-        return 0;
     }
 
     if ( myRodsArgs.help == True ) {
@@ -123,13 +112,6 @@ int main( int argc, char **argv )
             printf( "Time To Live value needs to be a positive integer\n" );
             return 1;
         }
-    }
-
-    ix = myRodsArgs.optind;
-
-    const char *password = "";
-    if ( ix < argc ) {
-        password = argv[ix];
     }
 
     if ( myRodsArgs.longOption == True ) {
@@ -249,10 +231,10 @@ int main( int argc, char **argv )
     }
     if ( doPassword == 1 ) {
         if ( myRodsArgs.verbose == True ) {
-            i = obfSavePw( echoFlag, 1, 1, password );
+            i = obfSavePw( 0, 1, 1, nullptr );
         }
         else {
-            i = obfSavePw( echoFlag, 0, 0, password );
+            i = obfSavePw( 0, 0, 0, nullptr );
         }
 
         if ( i != 0 ) {
@@ -293,7 +275,7 @@ int main( int argc, char **argv )
         std::stringstream ttl_str;  ttl_str << ttl;
 		irods::kvp_map_t ctx_map;
 		ctx_map[ irods::AUTH_TTL_KEY ] = ttl_str.str();
-		ctx_map[ irods::AUTH_PASSWORD_KEY ] = password;
+		ctx_map[ irods::AUTH_PASSWORD_KEY ] = "";
 		std::string ctx_str = irods::escaped_kvp_string(
 		                          ctx_map);
         // =-=-=-=-=-=-=-
@@ -326,10 +308,6 @@ int main( int argc, char **argv )
         }
         ctx_map["nobuildctx"] = "1";
         ctx_map["reprompt"] = "1";
-        if ( password && *password ) {
-            // for openid, if password not empty send as initialization value
-            ctx_map["iinit_arg"] = password;
-        }
 
         std::string ctx_str = irods::escaped_kvp_string( ctx_map );
         status = clientLogin( Conn, ctx_str.c_str(), AUTH_OPENID_SCHEME );
@@ -375,16 +353,12 @@ int main( int argc, char **argv )
                 {irods::experimental::auth::force_password_prompt, true}
             };
 
-            if (password && *password) {
-                ctx[irods::AUTH_PASSWORD_KEY] = password;
-            }
-
             if (const int ec = clientLogin(Conn, ctx.dump().data()); ec != 0) {
                 rcDisconnect(Conn);
                 return 7;
             }
 
-            printErrorStack( Conn->rError );
+            printErrorStack(Conn->rError);
             if (ttl > 0 && irods::AUTH_PAM_SCHEME != lower_scheme) {
                 status = clientLoginTTL(Conn, ttl);
                 if (status) {
@@ -447,22 +421,9 @@ int main( int argc, char **argv )
 void usage( char *prog ) {
     printf( "Creates a file containing your iRODS password in a scrambled form,\n" );
     printf( "to be used automatically by the icommands.\n" );
-    printf( "Usage: %s [-ehvVl] [--ttl TimeToLive] [password]\n", prog );
-    printf( " -e  echo the password as you enter it (normally there is no echo)\n" );
-    printf( " -l  list the iRODS environment variables (only)\n" );
-    printf( " -v  verbose\n" );
-    printf( " -V  Very verbose\n" );
-    printf( "--ttl ttl  set the password Time To Live (specified in hours)\n" );
-    printf( "           Run 'iinit -h --ttl' for more\n" );
-    printf( " -h  this help\n" );
     printf( "\n" );
-    printf( "Note that the password will be in clear-text if provided via the\n" );
-    printf( "command line.  Providing the password this way will bypass the\n" );
-    printf( "password prompt.\n" );
-    printReleaseInfo( "iinit" );
-}
-
-void usageTTL() {
+    printf( "Usage: %s [-hvVl] [--ttl TTL]\n", prog );
+    printf( "\n" );
     printf( "When using regular iRODS passwords you can use --ttl (Time To Live)\n" );
     printf( "to request a credential (a temporary password) that will be valid\n" );
     printf( "for only the number of hours you specify (up to a limit set by the\n" );
@@ -475,4 +436,13 @@ void usageTTL() {
     printf( "administrator (usually a few days).  With the --ttl option, you can\n" );
     printf( "specify how long this derived password will be valid, within the\n" );
     printf( "limits set by the administrator.\n" );
+    printf( "\n" );
+    printf( "Options:\n" );
+    printf( " -l  list the iRODS environment variables (only)\n" );
+    printf( " -v  verbose\n" );
+    printf( " -V  Very verbose\n" );
+    printf( " --ttl TTL\n" );
+    printf( "     set the password Time To Live (specified in hours)\n" );
+    printf( " -h  this help\n" );
+    printReleaseInfo( "iinit" );
 }
