@@ -15,7 +15,7 @@ def plugins_directory():
     return os.path.join(_root_directory(), 'usr', 'lib', 'irods', 'plugins')
 
 def home_directory():
-    return irods_user_and_group_entries()[0][5]
+    return irods_user_and_group_entries()[0].pw_dir
 
 def core_re_directory():
     return config_directory()
@@ -147,16 +147,16 @@ def irods_user_and_group_entries():
     return (user, group)
 
 def irods_user():
-    return irods_user_and_group_entries()[0][0]
+    return irods_user_and_group_entries()[0].pw_name
 
 def irods_uid():
-    return irods_user_and_group_entries()[0][2]
+    return irods_user_and_group_entries()[0].pw_uid
 
 def irods_group():
-    return irods_user_and_group_entries()[1][0]
+    return irods_user_and_group_entries()[1].gr_name
 
 def irods_gid():
-    return irods_user_and_group_entries()[1][2]
+    return irods_user_and_group_entries()[1].gr_gid
 
 def get_template_filepath(filepath):
     return os.path.join(irods_directory(), 'packaging', '.'.join([os.path.basename(filepath), 'template']))
