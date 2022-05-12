@@ -79,11 +79,7 @@ rsDataObjLock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
                        &dataObjInp->condInput );
 
     rodsServerHost_t *rodsServerHost = NULL;
-    int remoteFlag = getAndConnRcatHost(
-                         rsComm,
-                         PRIMARY_RCAT,
-                         ( const char* )dataObjInp->objPath,
-                         &rodsServerHost );
+    int remoteFlag = getAndConnRcatHost(rsComm, PRIMARY_RCAT, (const char*) dataObjInp->objPath, &rodsServerHost);
     if ( remoteFlag < 0 ) {
         return remoteFlag;
     }
@@ -134,11 +130,7 @@ rsDataObjUnlock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
                        &dataObjInp->condInput );
 
     rodsServerHost_t *rodsServerHost = NULL;
-    int remoteFlag = getAndConnRcatHost(
-                         rsComm,
-                         PRIMARY_RCAT,
-                         ( const char* )dataObjInp->objPath,
-                         &rodsServerHost );
+    int remoteFlag = getAndConnRcatHost(rsComm, PRIMARY_RCAT, (const char*) dataObjInp->objPath, &rodsServerHost);
     if ( remoteFlag < 0 ) {
         return remoteFlag;
     }

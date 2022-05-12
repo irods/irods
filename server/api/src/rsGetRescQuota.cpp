@@ -18,11 +18,7 @@ rsGetRescQuota( rsComm_t *rsComm, getRescQuotaInp_t *getRescQuotaInp,
     rodsServerHost_t *rodsServerHost;
     int status = 0;
 
-    status = getAndConnRcatHost(
-                 rsComm,
-                 SECONDARY_RCAT,
-                 ( const char* )getRescQuotaInp->zoneHint,
-                 &rodsServerHost );
+    status = getAndConnRcatHost(rsComm, SECONDARY_RCAT, (const char*) getRescQuotaInp->zoneHint, &rodsServerHost);
 
     if ( status < 0 ) {
         return status;

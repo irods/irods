@@ -546,8 +546,7 @@ irods::error process_query_terms_for_pre_irods4_server(const std::string& _zone_
 
     // grind through the zones and find the match to the kw
     while (tmp_zone) {
-        if (boost::iequals(zone_name, tmp_zone->zoneName) &&
-            tmp_zone->primaryServerHost->conn &&
+        if (boost::iequals(zone_name, tmp_zone->zoneName) && tmp_zone->primaryServerHost->conn &&
             tmp_zone->primaryServerHost->conn->svrVersion &&
             tmp_zone->primaryServerHost->conn->svrVersion->cookie < 301)
         {
@@ -639,11 +638,7 @@ rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
 
     }
 
-    status = getAndConnRcatHost(
-                 rsComm,
-                 SECONDARY_RCAT,
-                 zone_hint_str.c_str(),
-                 &rodsServerHost );
+    status = getAndConnRcatHost(rsComm, SECONDARY_RCAT, zone_hint_str.c_str(), &rodsServerHost);
 
     if ( status < 0 ) {
         return status;

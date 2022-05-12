@@ -17,9 +17,7 @@ int connectRcat()
     rodsServerHost_t* tmpRodsServerHost = ServerHostHead;
 
     while (tmpRodsServerHost) {
-        if (tmpRodsServerHost->rcatEnabled == LOCAL_ICAT ||
-            tmpRodsServerHost->rcatEnabled == LOCAL_SECONDARY_ICAT)
-        {
+        if (tmpRodsServerHost->rcatEnabled == LOCAL_ICAT || tmpRodsServerHost->rcatEnabled == LOCAL_SECONDARY_ICAT) {
             if (tmpRodsServerHost->localFlag == LOCAL_HOST) {
                 status = chlOpen();
 

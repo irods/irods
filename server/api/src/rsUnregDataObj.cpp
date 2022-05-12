@@ -21,8 +21,7 @@ rsUnregDataObj( rsComm_t *rsComm, unregDataObj_t *unregDataObjInp ) {
 
     dataObjInfo = unregDataObjInp->dataObjInfo;
 
-    status = getAndConnRcatHost( rsComm, PRIMARY_RCAT, ( const char* )dataObjInfo->objPath,
-                                 &rodsServerHost );
+    status = getAndConnRcatHost(rsComm, PRIMARY_RCAT, (const char*) dataObjInfo->objPath, &rodsServerHost);
     if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
         return status;
     }

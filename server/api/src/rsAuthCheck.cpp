@@ -137,8 +137,7 @@ int rsAuthCheck(
         rodsServerHost_t *rodsServerHost;
         int status;
 
-        status = getAndConnRcatHostNoLogin( rsComm, PRIMARY_RCAT,
-                                            rsComm->proxyUser.rodsZone, &rodsServerHost );
+        status = getAndConnRcatHostNoLogin(rsComm, PRIMARY_RCAT, rsComm->proxyUser.rodsZone, &rodsServerHost);
 
         if ( status < 0 ) {
             rodsLog( LOG_NOTICE,

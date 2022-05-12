@@ -64,7 +64,7 @@ parseCmdLineOpt( int argc, char **argv, const char *optString, int includeLong,
                 rodsArgs->serial = True;
                 argv[i] = "-Z";
             }
-            if ( strcmp( "--primary-icat", argv[i] ) == 0 ) {
+            if (strcmp("--primary-icat", argv[i]) == 0) {
                 rodsArgs->primaryIcat = True;
                 argv[i] = "-Z";
             }

@@ -322,11 +322,7 @@ namespace
         }
 
         /* connect to rcat for cross zone */
-        status = getAndConnRcatHost(
-                     rsComm,
-                     PRIMARY_RCAT,
-                     ( const char* )srcDataObjInp->objPath,
-                     &rodsServerHost );
+        status = getAndConnRcatHost(rsComm, PRIMARY_RCAT, (const char*) srcDataObjInp->objPath, &rodsServerHost);
         if ( status < 0 || NULL == rodsServerHost ) {
             return status;
         }
@@ -396,11 +392,10 @@ namespace
             return SYS_SRC_DEST_SPEC_COLL_CONFLICT;
         }
 
-        status = getAndConnRcatHost(
-                     rsComm,
-                     PRIMARY_RCAT,
-                     ( const char* )dataObjRenameInp->srcDataObjInp.objPath,
-                     &rodsServerHost );
+        status = getAndConnRcatHost(rsComm,
+                                    PRIMARY_RCAT,
+                                    (const char*) dataObjRenameInp->srcDataObjInp.objPath,
+                                    &rodsServerHost);
         if ( status < 0 ) {
             return status;
         }

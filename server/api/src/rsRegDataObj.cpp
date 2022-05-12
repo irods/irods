@@ -21,8 +21,7 @@ rsRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 
     *outDataObjInfo = NULL;
 
-    status = getAndConnRcatHost( rsComm, PRIMARY_RCAT, ( const char* )dataObjInfo->objPath,
-                                 &rodsServerHost );
+    status = getAndConnRcatHost(rsComm, PRIMARY_RCAT, (const char*) dataObjInfo->objPath, &rodsServerHost);
     if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
         return status;
     }
@@ -126,8 +125,7 @@ svrRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
         return SYS_REG_OBJ_IN_SPEC_COLL;
     }
 
-    status = getAndConnRcatHost( rsComm, PRIMARY_RCAT, ( const char* )dataObjInfo->objPath,
-                                 &rodsServerHost );
+    status = getAndConnRcatHost(rsComm, PRIMARY_RCAT, (const char*) dataObjInfo->objPath, &rodsServerHost);
     if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
         return status;
     }

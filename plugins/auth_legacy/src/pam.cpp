@@ -307,11 +307,8 @@ irods::error pam_auth_agent_request(
     // =-=-=-=-=-=-=-
     // get the server host handle
     rodsServerHost_t* server_host = 0;
-    int status = getAndConnRcatHost(
-                     _ctx.comm(),
-                     PRIMARY_RCAT,
-                     ( const char* )_ctx.comm()->clientUser.rodsZone,
-                     &server_host );
+    int status =
+        getAndConnRcatHost(_ctx.comm(), PRIMARY_RCAT, (const char*) _ctx.comm()->clientUser.rodsZone, &server_host);
     if ( status < 0 ) {
         return ERROR( status, "getAndConnRcatHost failed." );
     }
