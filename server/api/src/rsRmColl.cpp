@@ -61,11 +61,7 @@ namespace
 
         resolveLinkedPath( rsComm, rmCollInp->collName, &specCollCache,
                            &rmCollInp->condInput );
-        status = getAndConnRcatHost(
-                     rsComm,
-                     PRIMARY_RCAT,
-                     ( const char* )rmCollInp->collName,
-                     &rodsServerHost );
+        status = getAndConnRcatHost(rsComm, PRIMARY_RCAT, (const char*) rmCollInp->collName, &rodsServerHost);
 
         if ( status < 0 || NULL == rodsServerHost )  { // JMC cppcheck - nullptr
             return status;
@@ -484,11 +480,7 @@ svrUnregColl( rsComm_t *rsComm, collInp_t *rmCollInp ) {
 
     rodsServerHost_t *rodsServerHost = NULL;
 
-    status = getAndConnRcatHost(
-                 rsComm,
-                 PRIMARY_RCAT,
-                 ( const char* )rmCollInp->collName,
-                 &rodsServerHost );
+    status = getAndConnRcatHost(rsComm, PRIMARY_RCAT, (const char*) rmCollInp->collName, &rodsServerHost);
     if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
         return status;
     }

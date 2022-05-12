@@ -426,11 +426,7 @@ irods::error osauth_auth_agent_response(
     // =-=-=-=-=-=-=-
     // need to do NoLogin because it could get into inf loop for cross
     // zone auth
-    status = getAndConnRcatHostNoLogin(
-                 _ctx.comm(),
-                 PRIMARY_RCAT,
-                 _ctx.comm()->proxyUser.rodsZone,
-                 &rodsServerHost );
+    status = getAndConnRcatHostNoLogin(_ctx.comm(), PRIMARY_RCAT, _ctx.comm()->proxyUser.rodsZone, &rodsServerHost);
     if ( status < 0 ) {
         return ERROR(
                    status,

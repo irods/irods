@@ -15,7 +15,7 @@ rsGetTempPassword( rsComm_t *rsComm,
     rodsServerHost_t *rodsServerHost;
     int status;
 
-    status = getAndConnRcatHost( rsComm, PRIMARY_RCAT, ( const char* )NULL, &rodsServerHost );
+    status = getAndConnRcatHost(rsComm, PRIMARY_RCAT, (const char*) NULL, &rodsServerHost);
 
     if ( status < 0 ) {
         return status;

@@ -86,11 +86,7 @@ namespace
         if (status == USER_STRLEN_TOOLONG) {
             return USER_STRLEN_TOOLONG;
         }
-        status = getAndConnRcatHost(
-                     rsComm,
-                     PRIMARY_RCAT,
-                     ( const char* )collCreateInp->collName,
-                     &rodsServerHost );
+        status = getAndConnRcatHost(rsComm, PRIMARY_RCAT, (const char*) collCreateInp->collName, &rodsServerHost);
 
         if ( status < 0 || rodsServerHost == NULL ) { // JMC cppcheck
             return status;

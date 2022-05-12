@@ -95,8 +95,7 @@ getRcatHost( int rcatType, const char *rcatZoneHint,
         return status;
     }
 
-    if ( rcatType == PRIMARY_RCAT ||
-            myZoneInfo->secondaryServerHost == NULL ) {
+    if (rcatType == PRIMARY_RCAT || myZoneInfo->secondaryServerHost == NULL) {
         *rodsServerHost = myZoneInfo->primaryServerHost;
         return myZoneInfo->primaryServerHost->localFlag;
     }
@@ -238,12 +237,11 @@ queueRodsServerHost( rodsServerHost_t **rodsServerHostHead,
     return 0;
 }
 
-int queueZone(
-    const char*       zoneName,
-    int               portNum,
-    rodsServerHost_t* primaryServerHost,
-    rodsServerHost_t* secondaryServerHost ) {
-
+int queueZone(const char* zoneName,
+              int portNum,
+              rodsServerHost_t* primaryServerHost,
+              rodsServerHost_t* secondaryServerHost)
+{
     bool zoneAlreadyInList = false;
 
     zoneInfo_t *tmpZoneInfo, *lastZoneInfo;
@@ -254,11 +252,11 @@ int queueZone(
     memset( myZoneInfo, 0, sizeof( zoneInfo_t ) );
 
     rstrcpy( myZoneInfo->zoneName, zoneName, NAME_LEN );
-    if ( primaryServerHost != NULL ) {
+    if (primaryServerHost != NULL) {
         myZoneInfo->primaryServerHost = primaryServerHost;
         primaryServerHost->zoneInfo = myZoneInfo;
     }
-    if ( secondaryServerHost != NULL ) {
+    if (secondaryServerHost != NULL) {
         myZoneInfo->secondaryServerHost = secondaryServerHost;
         secondaryServerHost->zoneInfo = myZoneInfo;
     }
@@ -296,9 +294,8 @@ int queueZone(
     }
     myZoneInfo->next = NULL;
 
-    if ( primaryServerHost == NULL ) {
-        rodsLog( LOG_DEBUG,
-                 "queueZone:  primaryServerHost for %s is NULL", zoneName );
+    if (primaryServerHost == NULL) {
+        rodsLog(LOG_DEBUG, "queueZone:  primaryServerHost for %s is NULL", zoneName);
         return SYS_INVALID_SERVER_HOST;
     }
     else {
@@ -526,8 +523,8 @@ printZoneInfo() {
 
     while ( tmpZoneInfo != NULL ) {
         /* print the primary */
-        tmpRodsServerHost = ( rodsServerHost_t * ) tmpZoneInfo->primaryServerHost;
-    
+        tmpRodsServerHost = (rodsServerHost_t*) tmpZoneInfo->primaryServerHost;
+
         zone_info.push_back({"zone_info.name", tmpZoneInfo->zoneName});
 
         if ( tmpRodsServerHost->rcatEnabled == LOCAL_ICAT ) {
@@ -541,7 +538,7 @@ printZoneInfo() {
         zone_info.push_back({"zone_info.port", std::to_string(tmpZoneInfo->portNum)});
 
         /* print the secondary */
-        tmpRodsServerHost = ( rodsServerHost_t * ) tmpZoneInfo->secondaryServerHost;
+        tmpRodsServerHost = (rodsServerHost_t*) tmpZoneInfo->secondaryServerHost;
         if ( tmpRodsServerHost != NULL ) {
             zone_info.push_back({"zone_info.secondary_zone_name", tmpZoneInfo->zoneName});
             zone_info.push_back({"zone_info.secondary_type", "LOCAL_SECONDARY_ICAT"});
@@ -588,7 +585,7 @@ getZoneInfo( const char *rcatZoneHint, zoneInfo_t **myZoneInfo ) {
     tmpZoneInfo = ZoneInfoHead;
     while ( tmpZoneInfo != NULL ) {
         if ( zoneInput == 0 ) { /* assume local */
-            if ( tmpZoneInfo->primaryServerHost->rcatEnabled == LOCAL_ICAT ) {
+            if (tmpZoneInfo->primaryServerHost->rcatEnabled == LOCAL_ICAT) {
                 *myZoneInfo = tmpZoneInfo;
             }
         }
@@ -627,7 +624,7 @@ getLocalZoneInfo( zoneInfo_t **outZoneInfo ) {
 
     tmpZoneInfo = ZoneInfoHead;
     while ( tmpZoneInfo != NULL ) {
-        if ( tmpZoneInfo->primaryServerHost->rcatEnabled == LOCAL_ICAT ) {
+        if (tmpZoneInfo->primaryServerHost->rcatEnabled == LOCAL_ICAT) {
             *outZoneInfo = tmpZoneInfo;
             return 0;
         }
@@ -774,7 +771,7 @@ isLocalZone(const char *zoneHint ) {
     int status;
     rodsServerHost_t *icatServerHost = NULL;
 
-    status = getRcatHost( PRIMARY_RCAT, zoneHint, &icatServerHost );
+    status = getRcatHost(PRIMARY_RCAT, zoneHint, &icatServerHost);
 
     if ( status < 0 || NULL == icatServerHost ) { // JMC cppcheck - nullptr
         return 0;
@@ -817,7 +814,7 @@ getRemoteZoneHost( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     rodsServerHost_t *icatServerHost = NULL;
     rodsHostAddr_t *rescAddr = NULL;
 
-    status = getRcatHost( PRIMARY_RCAT, dataObjInp->objPath, &icatServerHost );
+    status = getRcatHost(PRIMARY_RCAT, dataObjInp->objPath, &icatServerHost);
 
     if ( status < 0 || NULL == icatServerHost ) { // JMC cppcheck - nullptr
         return status;
@@ -885,7 +882,7 @@ getReHost( rodsServerHost_t **rodsServerHost ) {
         }
         tmpRodsServerHost = tmpRodsServerHost->next;
     }
-    status = getRcatHost( PRIMARY_RCAT, ( const char* )NULL, rodsServerHost );
+    status = getRcatHost(PRIMARY_RCAT, (const char*) NULL, rodsServerHost);
 
     return status;
 }

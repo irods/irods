@@ -66,8 +66,8 @@ typedef struct rodsServerHost {
 typedef struct zoneInfo {
     char zoneName[NAME_LEN];
     int portNum;
-    rodsServerHost_t *primaryServerHost;
-    rodsServerHost_t *secondaryServerHost;
+    rodsServerHost_t* primaryServerHost;
+    rodsServerHost_t* secondaryServerHost;
     struct zoneInfo *next;
 } zoneInfo_t;
 
@@ -92,10 +92,10 @@ int queueRodsServerHost(rodsServerHost_t **rodsServerHostHead,
 
 rodsServerHost_t* mkServerHost(char *myHostAddr, char *zoneName);
 
-int queueZone(const char *zoneName,
+int queueZone(const char* zoneName,
               int portNum,
-              rodsServerHost_t *primaryServerHost,
-              rodsServerHost_t *secondaryServerHost);
+              rodsServerHost_t* primaryServerHost,
+              rodsServerHost_t* secondaryServerHost);
 
 int matchHostConfig(rodsServerHost_t *myRodsServerHost);
 

@@ -30,11 +30,7 @@ rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp ) {
 
     dataObjInfo = modDataObjMetaInp->dataObjInfo;
 
-    status = getAndConnRcatHost(
-                 rsComm,
-                 PRIMARY_RCAT,
-                 ( const char* )dataObjInfo->objPath,
-                 &rodsServerHost );
+    status = getAndConnRcatHost(rsComm, PRIMARY_RCAT, (const char*) dataObjInfo->objPath, &rodsServerHost);
     if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
         return status;
     }

@@ -74,11 +74,7 @@ int rsGetHierarchyForResc(
     // =-=-=-=-=-=-=-
     // use zone as hint to get the icat connectoin
     rodsServerHost_t* svr_host = NULL;
-    int status = getAndConnRcatHost(
-                     _comm,
-                     PRIMARY_RCAT,
-                     ( const char* )zone_name,
-                     &svr_host );
+    int status = getAndConnRcatHost(_comm, PRIMARY_RCAT, (const char*) zone_name, &svr_host);
     if ( status < 0 || NULL == svr_host ) {
         return status;
     }

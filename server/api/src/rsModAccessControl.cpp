@@ -24,11 +24,7 @@ rsModAccessControl( rsComm_t *rsComm, modAccessControlInp_t *modAccessControlInp
         newModAccessControlInp.path = newPath;
     }
 
-    status = getAndConnRcatHost(
-                 rsComm,
-                 PRIMARY_RCAT,
-                 ( const char* )newModAccessControlInp.path,
-                 &rodsServerHost );
+    status = getAndConnRcatHost(rsComm, PRIMARY_RCAT, (const char*) newModAccessControlInp.path, &rodsServerHost);
     if ( status < 0 ) {
         return status;
     }

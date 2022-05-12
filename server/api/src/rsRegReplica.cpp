@@ -205,10 +205,8 @@ namespace
 int rsRegReplica(rsComm_t *rsComm, regReplica_t *regReplicaInp)
 {
     rodsServerHost_t *rodsServerHost = nullptr;
-    const auto status = getAndConnRcatHost(rsComm,
-                                           PRIMARY_RCAT,
-                                           regReplicaInp->srcDataObjInfo->objPath,
-                                           &rodsServerHost);
+    const auto status =
+        getAndConnRcatHost(rsComm, PRIMARY_RCAT, regReplicaInp->srcDataObjInfo->objPath, &rodsServerHost);
     if (status < 0 || !rodsServerHost) {
         return status;
     }

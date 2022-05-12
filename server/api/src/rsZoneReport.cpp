@@ -87,7 +87,7 @@ irods::error get_server_reports(rsComm_t* _comm, json& _resc_arr)
     std::map< rodsServerHost_t*, int > svr_reported;
     rodsServerHost_t* icat_host = 0;
     char* zone_name = getLocalZoneName();
-    int status = getRcatHost( PRIMARY_RCAT, zone_name, &icat_host );
+    int status = getRcatHost(PRIMARY_RCAT, zone_name, &icat_host);
     if ( status < 0 ) {
         return ERROR(status, "getRcatHost failed");
     }

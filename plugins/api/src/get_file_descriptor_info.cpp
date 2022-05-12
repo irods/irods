@@ -159,13 +159,11 @@ namespace
             return nullptr;
         }
 
-        return {
-            {"zone_name", _p->zoneName},
-            {"port", _p->portNum},
-            {"primary_server_host", to_json(_p->primaryServerHost)},
-            {"secondary_server_host", to_json(_p->secondaryServerHost)},
-            {"next", to_json(_p->next)}
-        };
+        return {{"zone_name", _p->zoneName},
+                {"port", _p->portNum},
+                {"primary_server_host", to_json(_p->primaryServerHost)},
+                {"secondary_server_host", to_json(_p->secondaryServerHost)},
+                {"next", to_json(_p->next)}};
     }
 
     auto to_json(const hostName_t* _p) -> json
