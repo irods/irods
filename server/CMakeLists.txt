@@ -5,6 +5,12 @@ cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
 # create phony target to build everything in server folder
 add_custom_target(all-server)
 
+configure_file(
+  "${CMAKE_IRODS_SOURCE_DIR}/cmake/paths_cmake.py.in"
+  "${CMAKE_IRODS_BINARY_DIR}/scripts/irods/paths_cmake.py"
+  @ONLY
+)
+
 # create irods_server target first, as it's needed in executables
 add_library(
   irods_server
@@ -201,6 +207,13 @@ install(
 install(
   DIRECTORY "${CMAKE_IRODS_SOURCE_DIR}/scripts"
   DESTINATION "${IRODS_HOME_DIRECTORY}"
+  COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
+)
+
+install(
+  FILES
+  "${CMAKE_IRODS_BINARY_DIR}/scripts/irods/paths_cmake.py"
+  DESTINATION "${IRODS_HOME_DIRECTORY}/scripts/irods"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
 )
 

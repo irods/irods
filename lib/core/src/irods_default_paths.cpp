@@ -9,6 +9,9 @@
 
 #include <iterator>
 
+// If making changes to this file, equivalent changes may also be needed in
+// scripts/irods/paths.py
+
 namespace fs = boost::filesystem;
 
 namespace irods
@@ -56,6 +59,8 @@ namespace irods
     // we can tolerate a little re-prefixing if we ignore common base directories.
     // For example, if libdir is "usr/lib" and bindir is "usr/bin", we can ignore
     // "usr" when traversing from one to the other.
+    // equivalent to _convert_from_install_dir in paths.py
+    // but using CMAKE_INSTALL_LIBDIR as the traversal start point instead of IRODS_HOME_DIRECTORY
     static inline fs::path
     get_irods_directory_impl(fs::path install_path) {
         // if input path is absolute, do not traverse
