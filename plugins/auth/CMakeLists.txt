@@ -68,4 +68,10 @@ foreach(plugin IN LISTS IRODS_AUTH_PLUGINS)
     ENABLE_RE
     IRODS_ENABLE_SYSLOG
   )
+  install(
+    FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/plugins/auth/${plugin}.hpp"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/irods/plugins/auth"
+    COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
+  )
 endforeach()

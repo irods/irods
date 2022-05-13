@@ -1,3 +1,4 @@
+#include "irods/plugins/auth/native.hpp"
 #include "irods/authentication_plugin_framework.hpp"
 
 #include "irods/authCheck.h"
@@ -192,8 +193,7 @@ namespace irods
                 free(comm.auth_scheme);
             }
 
-            constexpr char* scheme = "native";
-            comm.auth_scheme = strdup(scheme);
+            comm.auth_scheme = strdup(irods_auth::scheme::native);
 
             return resp;
         } // native_auth_agent_request
