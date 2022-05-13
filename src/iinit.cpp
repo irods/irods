@@ -9,6 +9,7 @@
 #include <irods/irods_pack_table.hpp>
 #include <irods/irods_pam_auth_object.hpp>
 #include <irods/parseCommandLine.h>
+#include <irods/plugins/auth/pam_password.hpp>
 #include <irods/rcConnect.h>
 #include <irods/rcMisc.h>
 #include <irods/rods.h>
@@ -73,6 +74,8 @@ printUpdateMsg() {
 
 int main( int argc, char **argv )
 {
+    namespace irods_auth = irods::experimental::auth;
+
     signal( SIGPIPE, SIG_IGN );
 
     int i = 0, status = 0;
@@ -219,7 +222,8 @@ int main( int argc, char **argv )
         doPassword = 0;
     }
 
-    if ( irods::AUTH_PAM_SCHEME == lower_scheme ) {
+    if (irods::AUTH_PAM_SCHEME == lower_scheme ||
+        lower_scheme == irods_auth::scheme::pam_password) {
         doPassword = 0;
     }
 
@@ -263,7 +267,7 @@ int main( int argc, char **argv )
     // PAM auth gets special consideration, and also includes an
     // auth by the usual convention
     bool pam_flg = false;
-    const auto use_legacy_authentication = irods::experimental::auth::use_legacy_authentication(*Conn);
+    const auto use_legacy_authentication = irods_auth::use_legacy_authentication(*Conn);
     if (use_legacy_authentication && irods::AUTH_PAM_SCHEME == lower_scheme) {
         // =-=-=-=-=-=-=-
         // set a flag stating that we have done pam and the auth
@@ -350,7 +354,7 @@ int main( int argc, char **argv )
         else {
             auto ctx = nlohmann::json{
                 {irods::AUTH_TTL_KEY, std::to_string(ttl)},
-                {irods::experimental::auth::force_password_prompt, true}
+                {irods_auth::force_password_prompt, true}
             };
 
             if (const int ec = clientLogin(Conn, ctx.dump().data()); ec != 0) {
@@ -359,7 +363,7 @@ int main( int argc, char **argv )
             }
 
             printErrorStack(Conn->rError);
-            if (ttl > 0 && irods::AUTH_PAM_SCHEME != lower_scheme) {
+            if (ttl > 0 && lower_scheme != irods_auth::scheme::pam_password) {
                 status = clientLoginTTL(Conn, ttl);
                 if (status) {
                     rcDisconnect(Conn);
