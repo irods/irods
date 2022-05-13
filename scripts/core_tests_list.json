@@ -1,5 +1,6 @@
 [
     "test_all_rules",
+    "test_auth",
     "test_catalog",
     "test_collection_mtime",
     "test_control_plane",
