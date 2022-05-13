@@ -337,7 +337,9 @@ class ResourceSuite(ResourceBase):
                     filepath = lib.create_local_testfile(filename)
                     IrodsController().restart(test_mode=True)
 
-                    self.admin.assert_icommand(['iinit', self.admin.password])
+                    self.admin.assert_icommand('iinit', 'STDOUT_SINGLELINE',
+                                               'Enter your current iRODS password:',
+                                               input=f'{self.admin.password}\n')
                     self.admin.assert_icommand(['iput', filename])
                     self.admin.assert_icommand(['ils', '-L', filename], 'STDOUT_SINGLELINE', filename)
 
@@ -400,7 +402,9 @@ class ResourceSuite(ResourceBase):
                             ).restart(test_mode=True)
 
                     # reinitialize
-                    self.admin.assert_icommand(['iinit', self.admin.password])
+                    self.admin.assert_icommand('iinit', 'STDOUT_SINGLELINE',
+                                               'Enter your current iRODS password:',
+                                               input=f'{self.admin.password}\n')
 
                     #
                     # do the encrypted put

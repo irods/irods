@@ -100,7 +100,8 @@ class IrodsSession(object):
         self._session_id = datetime.datetime.utcnow().strftime('%Y-%m-%dZ%H:%M:%S--') + os.path.basename(self._local_session_dir)
 
         if self._password is not None:
-            self.assert_icommand(['iinit', self._password])
+            self.assert_icommand('iinit', 'STDOUT_SINGLELINE',
+                                 input=f'{self._password}\n')
         if self._manage_irods_data:
             self.assert_icommand(['imkdir', self.session_collection])
             self.assert_icommand(['icd', self.session_collection])
