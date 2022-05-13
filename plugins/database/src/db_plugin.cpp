@@ -36,6 +36,7 @@
 #include "irods/irods_lexical_cast.hpp"
 #include "irods/irods_logger.hpp"
 #include "irods/catalog_utilities.hpp"
+#include "irods/plugins/auth/pam_password.hpp"
 
 #include <boost/date_time.hpp>
 #include <boost/regex.hpp>
@@ -1939,13 +1940,35 @@ irods::error db_open_op(
     // =-=-=-=-=-=-=-
     // set pam properties
     try {
-        irods_pam_auth_no_extend = irods::get_server_property<const bool>(std::vector<std::string>{irods::KW_CFG_PLUGIN_TYPE_AUTHENTICATION, irods::AUTH_PAM_SCHEME, irods::KW_CFG_PAM_NO_EXTEND});
-        irods_pam_password_len = irods::get_server_property<const size_t>(std::vector<std::string>{irods::KW_CFG_PLUGIN_TYPE_AUTHENTICATION, irods::AUTH_PAM_SCHEME, irods::KW_CFG_PAM_PASSWORD_LENGTH});
-        snprintf(irods_pam_password_min_time, NAME_LEN, "%s", irods::get_server_property<const std::string>(std::vector<std::string>{irods::KW_CFG_PLUGIN_TYPE_AUTHENTICATION, irods::AUTH_PAM_SCHEME, irods::KW_CFG_PAM_PASSWORD_MIN_TIME}).c_str());
-        snprintf(irods_pam_password_max_time, NAME_LEN, "%s", irods::get_server_property<const std::string>(std::vector<std::string>{irods::KW_CFG_PLUGIN_TYPE_AUTHENTICATION, irods::AUTH_PAM_SCHEME, irods::KW_CFG_PAM_PASSWORD_MAX_TIME}).c_str());
-    } catch ( const irods::exception& e ) {
-        rodsLog(LOG_DEBUG, "[%s:%d] PAM property not found", __FUNCTION__, __LINE__);
-        return CODE( status );
+        // clang-format off
+        namespace auth_scheme = irods::experimental::auth::scheme;
+
+        irods_pam_auth_no_extend = irods::get_server_property<const bool>(
+            std::vector<std::string>{irods::KW_CFG_PLUGIN_TYPE_AUTHENTICATION,
+                                     auth_scheme::pam_password,
+                                     irods::KW_CFG_PAM_NO_EXTEND});
+
+        irods_pam_password_len = irods::get_server_property<const size_t>(
+            std::vector<std::string>{irods::KW_CFG_PLUGIN_TYPE_AUTHENTICATION,
+                                     auth_scheme::pam_password,
+                                     irods::KW_CFG_PAM_PASSWORD_LENGTH});
+
+        snprintf(irods_pam_password_min_time, NAME_LEN, "%s",
+                 irods::get_server_property<const std::string>(
+                     std::vector<std::string>{irods::KW_CFG_PLUGIN_TYPE_AUTHENTICATION,
+                                              auth_scheme::pam_password,
+                                              irods::KW_CFG_PAM_PASSWORD_MIN_TIME}).c_str());
+
+        snprintf(irods_pam_password_max_time, NAME_LEN, "%s",
+                 irods::get_server_property<const std::string>(
+                     std::vector<std::string>{irods::KW_CFG_PLUGIN_TYPE_AUTHENTICATION,
+                                              auth_scheme::pam_password,
+                                              irods::KW_CFG_PAM_PASSWORD_MAX_TIME}).c_str());
+        // clang-format on
+    }
+    catch (const irods::exception& e) {
+        rodsLog(LOG_DEBUG, "[%s:%d] PAM property not found [%s]", __func__, __LINE__, e.client_display_what());
+        return CODE(status);
     }
 
     if ( irods_pam_auth_no_extend ) {

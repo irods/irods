@@ -69,7 +69,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
                 'irods_ssl_certificate_key_file': server_key_path,
                 'irods_ssl_dh_params_file': dhparams_pem_path,
                 'irods_ssl_verify_server': 'none',
-                'irods_authentication_scheme': 'PaM',
+                'irods_authentication_scheme': 'pam_password',
             }
 
             # now the actual test
@@ -126,7 +126,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
                 'irods_ssl_certificate_key_file': server_key_path,
                 'irods_ssl_dh_params_file': dhparams_pem_path,
                 'irods_ssl_verify_server': 'none',
-                'irods_authentication_scheme': 'PaM',
+                'irods_authentication_scheme': 'pam_password',
                 'irods_client_server_policy': 'CS_NEG_REQUIRE',
             }
 
@@ -136,7 +136,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
             with lib.file_backed_up(irods_config.server_config_path):
                 server_config_update = {
                     'authentication' : {
-                        'pam' : {
+                        'pam_password' : {
                             'password_length': 20,
                             'no_extend': False,
                             'password_min_time': 121,

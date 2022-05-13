@@ -1,3 +1,4 @@
+#include "irods/plugins/auth/pam_password.hpp"
 #include "irods/authentication_plugin_framework.hpp"
 
 #define USE_SSL 1
@@ -57,9 +58,11 @@ namespace
     auto run_pam_auth_check(const std::string& _username, const std::string& _password) -> void
     {
         // TODO why do we need a separate executable?
+        // clang-format off
 #ifndef PAM_AUTH_CHECK_PROG
-#define PAM_AUTH_CHECK_PROG  "./irodsPamAuthCheck"
+#define PAM_AUTH_CHECK_PROG "./irodsPamAuthCheck"
 #endif
+        // clang-format on
 
         // pipe between parent and child processes to which the password will be written
         // Do not attempt to close the pipe at any ol' scope exit. Rather, only close the pipe
@@ -113,27 +116,30 @@ namespace
         //
         // The list of arguments must be terminated by a NULL pointer, and, since these are
         // variadic functions, this pointer must be cast (char *) NULL.
-        execl(PAM_AUTH_CHECK_PROG, PAM_AUTH_CHECK_PROG, _username.c_str(), (char*)NULL);
+        execl(PAM_AUTH_CHECK_PROG, PAM_AUTH_CHECK_PROG, _username.c_str(), (char*) nullptr);
 
         THROW(SYS_FORK_ERROR, fmt::format("execl failed [errno:{}]", errno));
-    } // run_pam_auth_check
+    }  // run_pam_auth_check
 #endif // #ifdef RODS_SERVER
 } // anonymous namespace
 
 namespace irods
 {
-    class pam_authentication : public irods_auth::authentication_base {
+    class pam_password_authentication : public irods_auth::authentication_base
+    {
     private:
         static constexpr char* perform_native_auth = "perform_native_auth";
 
     public:
-        pam_authentication()
+        pam_password_authentication()
         {
-            add_operation(AUTH_CLIENT_AUTH_REQUEST,  OPERATION(rcComm_t, pam_auth_client_request));
-            add_operation(perform_native_auth,       OPERATION(rcComm_t, pam_auth_client_perform_native_auth));
+            // clang-format off
+            add_operation(AUTH_CLIENT_AUTH_REQUEST, OPERATION(rcComm_t, pam_password_auth_client_request));
+            add_operation(perform_native_auth,      OPERATION(rcComm_t, pam_password_auth_client_perform_native_auth));
 #ifdef RODS_SERVER
-            add_operation(AUTH_AGENT_AUTH_REQUEST,   OPERATION(rsComm_t, pam_auth_agent_request));
+            add_operation(AUTH_AGENT_AUTH_REQUEST,  OPERATION(rsComm_t, pam_password_auth_agent_request));
 #endif
+            // clang-format on
         } // ctor
 
     private:
@@ -174,7 +180,7 @@ namespace irods
             return resp;
         } // auth_client_start
 
-        json pam_auth_client_request(rcComm_t& comm, const json& req)
+        json pam_password_auth_client_request(rcComm_t& comm, const json& req)
         {
             json svr_req{req};
 
@@ -184,7 +190,7 @@ namespace irods
             // is sent to the server in the clear.
             const bool using_ssl = irods::CS_NEG_USE_SSL == comm.negotiation_results;
             const auto end_ssl_if_we_enabled_it = irods::at_scope_exit{[&comm, using_ssl] {
-                if (!using_ssl)  {
+                if (!using_ssl) {
                     sslEnd(&comm);
                 }
             }};
@@ -197,9 +203,7 @@ namespace irods
 
             auto resp = irods_auth::request(comm, svr_req);
 
-            irods_auth::throw_if_request_message_is_missing_key(
-                resp, {"request_result"}
-            );
+            irods_auth::throw_if_request_message_is_missing_key(resp, {"request_result"});
 
             // Save the PAM password-based generated password so that the client remains
             // authenticated with the server while the password is still valid.
@@ -214,9 +218,9 @@ namespace irods
             resp[irods_auth::next_operation] = perform_native_auth;
 
             return resp;
-        } // pam_auth_client_request
+        } // pam_password_auth_client_request
 
-        json pam_auth_client_perform_native_auth(rcComm_t& comm, const json& req)
+        json pam_password_auth_client_perform_native_auth(rcComm_t& comm, const json& req)
         {
             // This operation is basically just running the entire native authentication flow
             // because this is how the PAM authentication plugin has worked historically. This
@@ -241,19 +245,15 @@ namespace irods
             comm.loggedIn = 1;
 
             return resp;
-        } // pam_auth_client_perform_native_auth
+        } // pam_password_auth_client_perform_native_auth
 
 #ifdef RODS_SERVER
-        json pam_auth_agent_request(rsComm_t& comm, const json& req)
+        json pam_password_auth_agent_request(rsComm_t& comm, const json& req)
         {
             using log_auth = irods::experimental::log::authentication;
 
-            const std::vector<std::string_view> required_keys{"user_name",
-                                                              "zone_name",
-                                                              irods::AUTH_PASSWORD_KEY};
-            irods_auth::throw_if_request_message_is_missing_key(
-                req, required_keys
-            );
+            const std::vector<std::string_view> required_keys{"user_name", "zone_name", irods::AUTH_PASSWORD_KEY};
+            irods_auth::throw_if_request_message_is_missing_key(req, required_keys);
 
             rodsServerHost_t* host = nullptr;
 
@@ -264,12 +264,10 @@ namespace irods
             }
 
             if (LOCAL_HOST != host->localFlag) {
-                const auto disconnect = irods::at_scope_exit{[host]
-                    {
-                        rcDisconnect(host->conn);
-                        host->conn = nullptr;
-                    }
-                };
+                const auto disconnect = irods::at_scope_exit{[host] {
+                    rcDisconnect(host->conn);
+                    host->conn = nullptr;
+                }};
 
                 log_auth::trace("redirecting call to CSP");
 
@@ -288,8 +286,7 @@ namespace irods
 
             int ttl = 0;
             if (req.contains(irods::AUTH_TTL_KEY)) {
-                if (const auto& ttl_str = req.at(irods::AUTH_TTL_KEY).get_ref<const std::string&>();
-                    !ttl_str.empty()) {
+                if (const auto& ttl_str = req.at(irods::AUTH_TTL_KEY).get_ref<const std::string&>(); !ttl_str.empty()) {
                     try {
                         ttl = boost::lexical_cast<int>(ttl_str);
                     }
@@ -310,11 +307,7 @@ namespace irods
 
             char password_out[MAX_NAME_LEN]{};
             char* pw_ptr = &password_out[0];
-            const int ec = chlUpdateIrodsPamPassword(&comm,
-                                                     const_cast<char*>(username.c_str()),
-                                                     ttl,
-                                                     nullptr,
-                                                     &pw_ptr);
+            const int ec = chlUpdateIrodsPamPassword(&comm, const_cast<char*>(username.c_str()), ttl, nullptr, &pw_ptr);
             if (ec < 0) {
                 THROW(ec, "failed updating iRODS pam password");
             }
@@ -325,17 +318,18 @@ namespace irods
                 free(comm.auth_scheme);
             }
 
-            static constexpr char* auth_scheme_pam = "pam";
-            comm.auth_scheme = strdup(auth_scheme_pam);
+            comm.auth_scheme = strdup(irods_auth::scheme::pam_password);
 
             return resp;
-        } // pam_auth_agent_request
-#endif // #ifdef RODS_SERVER
-    }; // class pam_authentication
+        } // pam_password_auth_agent_request
+#endif    // #ifdef RODS_SERVER
+    };    // class pam_password_authentication
 } // namespace irods
 
+// clang-format off
 extern "C"
-irods::pam_authentication* plugin_factory(const std::string&, const std::string&)
+irods::pam_password_authentication* plugin_factory(const std::string&, const std::string&)
 {
-    return new irods::pam_authentication{};
-}
+    return new irods::pam_password_authentication{};
+} // plugin_factory
+// clang-format on
