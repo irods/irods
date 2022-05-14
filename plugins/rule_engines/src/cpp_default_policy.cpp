@@ -746,59 +746,6 @@ irods::error acPostProcForDataCopyReceived( irods::callback, std::list<boost::an
     return SUCCESS();
 }
 
-irods::error acSetCreateConditions( irods::callback _cb, std::list<boost::any>& ) {
-//  msiGetNewObjDescriptor ::: recover_msiGetNewObjDescriptor; acSetResourceList;
-    irods::error ret = _cb(std::string("msiGetNewObjDescriptor"));
-    if( !ret.ok() ) {
-        _cb(std::string("recover_msiGetNewObjDescriptor"));
-        return ret;
-    }
-
-    ret = _cb(std::string("acSetResourceList"));
-
-    return ret;
-}
-
-irods::error acDOC( irods::callback _cb, std::list<boost::any>& ) {
-//  msiPhyDataObjCreate ::: recover_msiPhyDataObjCreate; acRegisterData ::: msiRollback; msiCommit;
-    irods::error ret = _cb(std::string("msiPhyDataObjCreate"));
-    if( !ret.ok() ) {
-        _cb(std::string("recover_msiPhyDataObjCreate"));
-        return ret;
-    }
-
-    ret = _cb(std::string("acRegisterData"));
-    if( !ret.ok() ) {
-        _cb(std::string("msiRollback"));
-        return ret;
-    }
-
-    ret = _cb(std::string("msiCommit"));
-
-    return ret;
-}
-
-irods::error acSetResourceList( irods::callback _cb, std::list<boost::any>& ) {
-//  msiSetResourceList;
-    return _cb(std::string("msiSetResourceList"));
-}
-
-irods::error acSetCopyNumber( irods::callback _cb, std::list<boost::any>& ) {
-//  msiSetCopyNumber;
-    return _cb(std::string("msiSetCopyNumber"));
-}
-
-irods::error acRegisterData( irods::callback _cb, std::list<boost::any>& ) {
-//  msiRegisterData ::: msiRollback
-    irods::error ret = _cb(std::string("msiRegisterData"));
-    if( !ret.ok() ) {
-        _cb(std::string("msiRollback"));
-        return ret;
-    }
-
-    return ret;
-}
-
 irods::error start(irods::default_re_ctx& _u, const std::string& _instance_name) {
     (void) _u;
     STATIC_PEP(printHello);
@@ -881,11 +828,6 @@ irods::error start(irods::default_re_ctx& _u, const std::string& _instance_name)
     STATIC_PEP(acPreProcForWriteSessionVariable);
     STATIC_PEP(acPostProcForParallelTransferReceived);
     STATIC_PEP(acPostProcForDataCopyReceived);
-    STATIC_PEP(acSetCreateConditions);
-    STATIC_PEP(acDOC);
-    STATIC_PEP(acSetResourceList);
-    STATIC_PEP(acSetCopyNumber);
-    STATIC_PEP(acRegisterData);
 
     // Can just do it, since this rule engine is pre-compiled
     RuleExistsHelper::Instance()->registerRuleRegex( DEFAULT_RULE_REGEX );

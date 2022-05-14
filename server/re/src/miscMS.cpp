@@ -11,63 +11,8 @@
 #include "irods/irods_re_structs.hpp"
 #include "irods/rsModAVUMetadata.hpp"
 
-/**
- * \fn msiRegisterData(ruleExecInfo_t *rei)
- *
- * \brief Register a new data object
- *
- * \module framework
- *
- * \since pre-2.1
- *
- * \author Arcot Rajasekar
- *
- * \note  Use this only internally as data object information has to be in rei.
- *
- * \usage See clients/icommands/test/rules/
- *
- * \param[in,out] rei - The RuleExecInfo structure that is automatically
- *    handled by the rule engine. The user does not include rei as a
- *    parameter in the rule invocation.
- *
- * \DolVarDependence $doi
- * \DolVarModified none
- * \iCatAttrDependence none
- * \iCatAttrModified file metadata
- * \sideeffect none
- *
- * \return integer
- * \retval 0 upon success
- * \pre none
- * \post none
- * \sa none
- **/
-int
-msiRegisterData( ruleExecInfo_t *rei ) {
-    int status;
-    dataObjInfo_t *myDataObjInfo;
-
-    myDataObjInfo = L1desc[rei->l1descInx].dataObjInfo;
-    status = svrRegDataObj( rei->rsComm, myDataObjInfo );
-    if ( status < 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "msiRegisterData: rsRegDataObj for %s failed, status = %d",
-                 myDataObjInfo->objPath, status );
-        return status;
-    }
-    else {
-        myDataObjInfo->replNum = status;
-        return 0;
-    }
-}
-
 int msiRollback( ruleExecInfo_t *rei );
-int
-recover_msiRegisterData( ruleExecInfo_t *rei ) {
-    msiRollback( rei ); /* rolling back */
-    return 0;
 
-}
 int
 print_bye( ruleExecInfo_t *rei ) {
     RE_TEST_MACRO( "Bye\n" );
