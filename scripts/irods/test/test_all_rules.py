@@ -155,26 +155,10 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
                 if os.path.dirname(os.path.abspath(__file__)) != '/var/lib/irods/scripts/irods/test':
                     return False
 
-            # skip rules that handle .irb files
-            names_to_skip = [
-                "rulemsiAdmAppendToTopOfCoreIRB",
-                "rulemsiAdmChangeCoreIRB",
-                "rulemsiGetRulesFromDBIntoStruct",
-            ]
-            for n in names_to_skip:
-                if n in rulefile:
-                    # print("skipping " + rulefile + " ----- RE")
-                    return False
-
             # skip rules that fail by design
             names_to_skip = [
                 "GoodFailure"
             ]
-            for n in names_to_skip:
-                if n in rulefile:
-                    # print("skipping " + rulefile + " ----- failbydesign")
-                    return False
-
             for n in names_to_skip:
                 if n in rulefile:
                     # print("skipping " + rulefile + " ----- failbydesign")
@@ -230,97 +214,17 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
                     # print("skipping " + rulefile + " ----- msiobj")
                     return False
 
-            # ERA
-            names_to_skip = [
-                "rulemsiFlagInfectedObjs",
-                "rulemsiGetAuditTrailInfoByActionID",
-                "rulemsiGetAuditTrailInfoByKeywords",
-                "rulemsiGetAuditTrailInfoByObjectID",
-                "rulemsiGetAuditTrailInfoByTimeStamp",
-                "rulemsiGetAuditTrailInfoByUserID",
-                "rulemsiMergeDataCopies",
-                "rulemsiGetCollectionPSmeta-null"  # marked for removal - iquest now handles this natively
-            ]
-            for n in names_to_skip:
-                if n in rulefile:
-                    # print("skipping " + rulefile + " ----- ERA")
-                    return False
-
-            # FTP
-            names_to_skip = [
-                "rulemsiFtpGet",
-                "rulemsiTwitterPost",
-            ]
-            for n in names_to_skip:
-                if n in rulefile:
-                    # print("skipping " + rulefile + " ----- FTP")
-                    return False
-
-            # webservices
-            names_to_skip = [
-                "rulemsiConvertCurrency",
-                "rulemsiGetQuote",
-                "rulemsiIp2location",
-                "rulemsiObjByName",
-                "rulemsiSdssImgCutout_GetJpeg",
-            ]
-            for n in names_to_skip:
-                if n in rulefile:
-                    # print("skipping " + rulefile + " ----- webservices")
-                    return False
-
-            # XML
-            names_to_skip = [
-                "rulemsiLoadMetadataFromXml",
-                "rulemsiXmlDocSchemaValidate",
-                "rulemsiXsltApply",
-            ]
-            for n in names_to_skip:
-                if n in rulefile:
-                    # print("skipping " + rulefile + " ----- XML")
-                    return False
-
             # transition to core microservices only
             names_to_skip = [
                 "rulemsiAddKeyVal.r",
                 "rulemsiApplyDCMetadataTemplate.r",
                 "rulemsiAssociateKeyValuePairsToObj.r",
                 "rulemsiCollectionSpider.r",
-                "rulemsiCopyAVUMetadata.r",
-                "rulemsiExportRecursiveCollMeta.r",
-                "rulemsiFlagDataObjwithAVU.r",
-                "rulemsiGetCollectionACL.r",
-                "rulemsiGetCollectionContentsReport.r",
-                "rulemsiGetCollectionPSmeta.r",
-                "rulemsiGetCollectionSize.r",
-                "rulemsiGetDataObjACL.r",
-                "rulemsiGetDataObjAIP.r",
-                "rulemsiGetDataObjAVUs.r",
-                "rulemsiGetDataObjPSmeta.r",
                 "rulemsiGetObjectPath.r",
-                "rulemsiGetUserACL.r",
-                "rulemsiGetUserInfo.r",
-                "rulemsiGuessDataType.r",
-                "rulemsiIsColl.r",
-                "rulemsiIsData.r",
-                "rulemsiLoadACLFromDataObj.r",
-                "rulemsiLoadMetadataFromDataObj.r",
-                "rulemsiLoadUserModsFromDataObj.r",
-                "rulemsiPropertiesAdd.r",
-                "rulemsiPropertiesClear.r",
-                "rulemsiPropertiesClone.r",
-                "rulemsiPropertiesExists.r",
-                "rulemsiPropertiesFromString.r",
                 "rulemsiPropertiesGet.r",
-                "rulemsiPropertiesNew.r",
-                "rulemsiPropertiesRemove.r",
-                "rulemsiPropertiesSet.r",
-                "rulemsiRecursiveCollCopy.r",
                 "rulemsiRemoveKeyValuePairsFromObj.r",
                 "rulemsiSetDataType.r",
                 "rulemsiString2KeyValPair.r",
-                "rulemsiStripAVUs.r",
-                "rulemsiStructFileBundle.r",
                 "rulewriteKeyValPairs.r",
             ]
             for n in names_to_skip:
@@ -350,15 +254,6 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
                 return False
 
             # misc / other
-            if "ruleintegrity" in rulefile:
-                # print("skipping " + rulefile + " ----- integrityChecks")
-                return False
-            if "z3950" in rulefile:
-                # print("skipping " + rulefile + " ----- z3950")
-                return False
-            if "rulemsiImage" in rulefile:
-                # print("skipping " + rulefile + " ----- image")
-                return False
             if "rulemsiCollRepl" in rulefile:
                 # print("skipping " + rulefile + " ----- deprecated")
                 return False
