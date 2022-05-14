@@ -632,18 +632,6 @@ acSetResourceList {msiSetResourceList; }
 acSetCopyNumber {msiSetCopyNumber; }
 acRegisterData {msiRegisterData ::: msiRollback; }
 #
-#These are actions for getting iCAT results for performing iRODS operations.
-#These rules generate the genQueryOut_ structure for each action for the given condition
-#
-acGetIcatResults(*Action,*Condition,*GenQOut) {ON((*Action == "replicate") %% (*Action == "trim") %% (*Action == "chksum") %% (*Action == "copy") %% (*Action == "remove")) {msiMakeQuery("DATA_NAME, COLL_NAME",*Condition,*Query); msiExecStrCondQuery(*Query, *GenQOut); cut; } }
-acGetIcatResults(*Action,*Condition,*GenQOut) {ON(*Action == "chksumRescLoc") {msiMakeQuery("DATA_NAME, COLL_NAME, RESC_LOC",*Condition,*Query); msiExecStrCondQuery(*Query, *GenQOut); cut; } }
-acGetIcatResults(*Action,*Condition,*GenQOut) {ON(*Action == "list") {msiMakeQuery("DATA_NAME, COLL_NAME, DATA_RESC_NAME, DATA_REPL_NUM, DATA_SIZE",*Condition,*Query); msiExecStrCondQuery(*Query, *GenQOut); cut; } }
-#
-#rules for purging a file which have expired
-#
-acPurgeFiles(*Condition) {ON((*Condition == "null") %% (*Condition == "")) {msiGetIcatTime(*Time,"unix"); acGetIcatResults("remove","DATA_EXPIRY < '*Time'",*List); foreach(*List) {msiDataObjUnlink(*List,*Status); msiGetValByKey(*List,"DATA_NAME",*D); msiGetValByKey(*List,"COLL_NAME",*E); writeLine("stdout","Purged File *E/*D at *Time"); } } }
-acPurgeFiles(*Condition) {msiGetIcatTime(*Time,"unix"); acGetIcatResults("remove","DATA_EXPIRY < '*Time' AND *Condition",*List); foreach(*List) {msiDataObjUnlink(*List,*Status); msiGetValByKey(*List,"DATA_NAME",*D); msiGetValByKey(*List,"COLL_NAME",*E); writeLine("stdout","Purged File *E/*D at *Time"); } }
-acConvertToInt(*R) {assign(*A,$sysUidClient); assign($sysUidClient,*R); assign(*K, $sysUidClient); assign(*R,*K); assign($sysUidClient,*A); }
 
 #
 #  rule for running a workflow
