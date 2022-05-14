@@ -1,14 +1,9 @@
-# iRODS Rule Base
-#  The new rule language is used to express all policies
-#  Recovery procedures are included for a micro-service after " ::: "
+# iRODS core.re Rule Base
 #
-#Test Rules
-printHello { print_hello; }
-
-#
-#
-# These are sys admin rules for creating and deleting users and renaming
-# the local zone.
+# Defines the SSL (client-server negotiation) policy for this server
+# - CS_NEG_REFUSE - No SSL
+# - CS_NEG_DONT_CARE - Depends on the Client request
+# - CS_NEG_REQUIRED - Require SSL
 acPreConnect(*OUT) { *OUT="CS_NEG_REFUSE"; }
 
 acCreateUser {
