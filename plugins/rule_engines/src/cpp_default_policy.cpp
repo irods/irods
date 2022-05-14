@@ -537,11 +537,6 @@ irods::error acSetVaultPathPolicy( irods::callback _cb, std::list<boost::any>& )
     return _cb(std::string("msiSetGraftPathScheme"), std::string("no"), std::string("1"));
 }
 
-irods::error acSetReServerNumProc( irods::callback _cb, std::list<boost::any>& ) {
-    //msiSetReServerNumProc("default");
-    return _cb(std::string("msiSetReServerNumProc"), std::string("default"));
-}
-
 irods::error acPreprocForCollCreate( irods::callback, std::list<boost::any>& ) {
     return SUCCESS();
 }
@@ -841,7 +836,6 @@ irods::error start(irods::default_re_ctx& _u, const std::string& _instance_name)
     STATIC_PEP(acSetPublicUserPolicy);
     STATIC_PEP(acChkHostAccessControl);
     STATIC_PEP(acSetVaultPathPolicy);
-    STATIC_PEP(acSetReServerNumProc);
     STATIC_PEP(acPreprocForCollCreate);
     STATIC_PEP(acPostProcForCollCreate);
     STATIC_PEP(acPreprocForRmColl);

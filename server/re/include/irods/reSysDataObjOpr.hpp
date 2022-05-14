@@ -51,7 +51,5 @@ msiSetGraftPathScheme( msParam_t *xaddUserName, msParam_t *xtrimDirCnt,
 int
 msiSetRandomScheme( ruleExecInfo_t *rei );
 int
-msiSetReServerNumProc( msParam_t *xnumProc, ruleExecInfo_t *rei );
-int
 msiSetRescQuotaPolicy( msParam_t *xflag, ruleExecInfo_t *rei );
 #endif	/* RE_SYS_DATA_OBJ_OPR_H */
