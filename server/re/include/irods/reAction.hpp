@@ -54,7 +54,6 @@ int msiPrintGenQueryOutToBuffer( msParam_t *queryOut, msParam_t *format, msParam
 int msiQuota( ruleExecInfo_t *rei );
 int msiDeleteUnusedAVUs( ruleExecInfo_t *rei );
 int msiGoodFailure( ruleExecInfo_t *rei );
-int msiRegisterData( ruleExecInfo_t *rei );
 int msiCheckPermission( msParam_t *perm, ruleExecInfo_t *rei );
 int msiCheckAccess( msParam_t *inObjName, msParam_t * inOperation,
                     msParam_t * outResult, ruleExecInfo_t *rei );

@@ -132,7 +132,6 @@
   - #msi_touch - Changes the mtime of a data object or collection
   - #msiExtractNaraMetadata - Extracts NARA style metadata from a local configuration file
   - #msiApplyDCMetadataTemplate - Adds Dublin Core Metadata fields to an object or collection
-  - #msiRegisterData - Registers a new data object
   - #writeBytesBuf - Writes the buffer in an inOutStruct to stdout or stderr
   - #msiBytesBufToStr - Converts a bytesBuf_t to a string
   - #msiStrToBytesBuf - Converts a string to a bytesBuf_t

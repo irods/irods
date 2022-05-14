@@ -618,25 +618,6 @@ getSessionVar(*name, *output) {
     *output = eval("str($"++*name++")");
 }
 
-# ----------------------------------------------------------------------------
-# These rules are for testing only
-#acDataObjCreate {acSetCreateConditions; acDOC; }
-acSetCreateConditions {msiGetNewObjDescriptor ::: recover_msiGetNewObjDescriptor; acSetResourceList; }
-acDOC {msiPhyDataObjCreate ::: recover_msiPhyDataObjCreate; acRegisterData ::: msiRollback; msiCommit; }
-acSetResourceList {msiSetResourceList; }
-acSetCopyNumber {msiSetCopyNumber; }
-acRegisterData {msiRegisterData ::: msiRollback; }
-#
-
-#
-#  rule for running a workflow
-#
-acRunWorkFlow(*File, *R_BUF) {
-   msiDataObjOpen("objPath=*File++++openFlags=O_RDONLY",*S_FD);
-   msiDataObjRead(*S_FD,33554412,*R_BUF);
-   msiDataObjClose(*S_FD,*Status2);
-}
-
 acPostProcForParallelTransferReceived(*leaf_resource) {}
 
 acPostProcForDataCopyReceived(*leaf_resource) {}
