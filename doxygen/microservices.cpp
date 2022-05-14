@@ -168,7 +168,6 @@
   - #msiDigestMonStat - Calculates and stores a digest performance value for each connected resource
   - #msiDeleteDisallowed - Sets the policy for determining certain data cannot be deleted
   - #msiSetDataTypeFromExt - Gets the data type based on file name extension
-  - #msiSetReServerNumProc - Sets the number of processes for the rule engine server
   - #msiSetRescQuotaPolicy - Sets the resource quota to on or off
   - #msiListEnabledMS - Returns the list of compiled microservices on the local iRODS server
   - #msiSetBulkPutPostProcPolicy - Sets whether acPostProcForPut should be run after a bulk put

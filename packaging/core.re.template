@@ -339,15 +339,6 @@ acSetChkFilePathPerm {msiSetChkFilePathPerm("disallowPathReg"); }
 # acSetVaultPathPolicy {msiSetRandomScheme; }
 acSetVaultPathPolicy {msiSetGraftPathScheme("no","1"); }
 #
-# 17) acSetReServerNumProc - This rule set the policy for the number of processes
-# to use when running jobs in the irodsDelayServer. The irodsDelayServer can now
-# multi-task such that one or two long running jobs cannot block the execution
-# of other jobs. One function can be called:
-#    msiSetReServerNumProc(numProc) - numProc can be "default" or a number
-#    in the range 1-4. numProc will be set to 1 if "default" is the input.
-#
-acSetReServerNumProc {msiSetReServerNumProc("default"); }
-#
 # 18) acPreProcForCollCreate - This is the PreProcessing rule for creating
 # a collection. Currently there is no function written specifically
 # for this rule.
