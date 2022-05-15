@@ -107,6 +107,16 @@ def run_update(irods_config, cursor):
         database_connect.execute_sql_statement(cursor, "insert into R_GRID_CONFIGURATION values ('delay_server','leader',?);", lib.get_hostname())
         database_connect.execute_sql_statement(cursor, "insert into R_GRID_CONFIGURATION values ('delay_server','successor','');")
 
+        # Update permission model to replace spaces with underscores
+        database_connect.execute_sql_statement(cursor, "update R_TOKN_MAIN set token_name = 'delete_object' where token_name = 'delete object';")
+        database_connect.execute_sql_statement(cursor, "update R_TOKN_MAIN set token_name = 'modify_object' where token_name = 'modify object';")
+        database_connect.execute_sql_statement(cursor, "update R_TOKN_MAIN set token_name = 'create_object' where token_name = 'create object';")
+        database_connect.execute_sql_statement(cursor, "update R_TOKN_MAIN set token_name = 'delete_metadata' where token_name = 'delete metadata';")
+        database_connect.execute_sql_statement(cursor, "update R_TOKN_MAIN set token_name = 'modify_metadata' where token_name = 'modify metadata';")
+        database_connect.execute_sql_statement(cursor, "update R_TOKN_MAIN set token_name = 'create_metadata' where token_name = 'create metadata';")
+        database_connect.execute_sql_statement(cursor, "update R_TOKN_MAIN set token_name = 'read_object' where token_name = 'read object';")
+        database_connect.execute_sql_statement(cursor, "update R_TOKN_MAIN set token_name = 'read_metadata' where token_name = 'read metadata';")
+
     else:
         raise IrodsError('Upgrade to schema version %d is unsupported.' % (new_schema_version))
 

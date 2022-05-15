@@ -103,9 +103,17 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         auto to_permission_enum(const std::string& _perm) -> perms
         {
             // clang-format off
-            if      (_perm == "read object")   { return perms::read; }
-            else if (_perm == "modify object") { return perms::write; }
-            else if (_perm == "own")           { return perms::own; }
+            if      (_perm == "read_metadata")   { return perms::read_metadata; }
+            else if (_perm == "read_object")     { return perms::read; }
+            else if (_perm == "read")            { return perms::read; }
+            else if (_perm == "create_metadata") { return perms::create_metadata; }
+            else if (_perm == "modify_metadata") { return perms::modify_metadata; }
+            else if (_perm == "delete_metadata") { return perms::delete_metadata; }
+            else if (_perm == "create_object")   { return perms::create_object; }
+            else if (_perm == "modify_object")   { return perms::write; }
+            else if (_perm == "write")           { return perms::write; }
+            else if (_perm == "delete_object")   { return perms::delete_object; }
+            else if (_perm == "own")             { return perms::own; }
             // clang-format on
 
             return perms::null;
@@ -323,12 +331,38 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
                     std::strncat(access, "null", 4);
                     break;
 
+                case perms::read_metadata:
+                    std::strncat(access, "read_metadata", 13);
+                    break;
+
+                case perms::read_object:
                 case perms::read:
                     std::strncat(access, "read", 4);
                     break;
 
+                case perms::create_metadata:
+                    std::strncat(access, "create_metadata", 15);
+                    break;
+
+                case perms::modify_metadata:
+                    std::strncat(access, "modify_metadata", 15);
+                    break;
+
+                case perms::delete_metadata:
+                    std::strncat(access, "delete_metadata", 15);
+                    break;
+
+                case perms::create_object:
+                    std::strncat(access, "create_object", 13);
+                    break;
+
+                case perms::modify_object:
                 case perms::write:
                     std::strncat(access, "write", 5);
+                    break;
+
+                case perms::delete_object:
+                    std::strncat(access, "delete_object", 13);
                     break;
 
                 case perms::own:
@@ -1136,7 +1170,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
                 status.type(object_type::none);
                 break;
         }
-        
+
         return status;
     }
 

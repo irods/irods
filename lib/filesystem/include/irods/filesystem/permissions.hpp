@@ -8,8 +8,16 @@ namespace irods::experimental::filesystem
     enum class perms
     {
         null,
+        read_metadata,
+        read_object,
         read,
+        create_metadata,
+        modify_metadata,
+        delete_metadata,
+        create_object,
+        modify_object,
         write,
+        delete_object,
         own
     };
 

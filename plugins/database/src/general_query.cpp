@@ -1657,7 +1657,7 @@ genqAppendAccessCheck() {
 
             cllBindVars[cllBindVarCount++] = accessControlUserName;
             cllBindVars[cllBindVarCount++] = accessControlZone;
-            if ( !rstrcat( whereSQL, "R_DATA_MAIN.data_id in (select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and UG.group_user_id = OA.user_id and OA.object_id = R_DATA_MAIN.data_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+            if ( !rstrcat( whereSQL, "R_DATA_MAIN.data_id in (select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and UG.group_user_id = OA.user_id and OA.object_id = R_DATA_MAIN.data_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'read_object')", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
         }
 
         if ( strstr( selectSQL, "R_COLL_MAIN" ) != NULL ||
@@ -1668,7 +1668,7 @@ genqAppendAccessCheck() {
 
             cllBindVars[cllBindVarCount++] = accessControlUserName;
             cllBindVars[cllBindVarCount++] = accessControlZone;
-            if ( !rstrcat( whereSQL, "R_COLL_MAIN.coll_id in (select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and UG.group_user_id = OA.user_id and OA.object_id = R_COLL_MAIN.coll_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+            if ( !rstrcat( whereSQL, "R_COLL_MAIN.coll_id in (select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and UG.group_user_id = OA.user_id and OA.object_id = R_COLL_MAIN.coll_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'read_object')", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
         }
     }
     else {
