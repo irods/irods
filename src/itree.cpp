@@ -124,12 +124,28 @@ const char* permission_type_string(fs::perms p) {
     switch(p){
     case perms::null:
         return "null";
+    case perms::read_metadata:
+        return "read_metadata";
+    case perms::read_object:
     case perms::read:
         return "read";
+    case perms::create_metadata:
+        return "create_metadata";
+    case perms::modify_metadata:
+        return "modify_metadata";
+    case perms::delete_metadata:
+        return "delete_metadata";
+    case perms::create_object:
+        return "create_object";
+    case perms::modify_object:
     case perms::write:
         return "write";
+    case perms::delete_object:
+        return "delete_object";
     case perms::own:
         return "own";
+    default:
+        return "unsupported";
     }
 }
 
