@@ -150,5 +150,5 @@ class Test_Ils(resource_suite.ResourceBase, unittest.TestCase):
     def test_ils_of_data_object_includes_group_prefix_for_group_permissions__issue_6200(self):
         self.admin.assert_icommand(['itouch', 'foo'])
         self.admin.assert_icommand(['ichmod', 'read', 'public', 'foo'])
-        self.admin.assert_icommand(['ils', '-A', 'foo'], 'STDOUT', [' g:public#{0}:read object'.format(self.admin.zone_name)])
+        self.admin.assert_icommand(['ils', '-A', 'foo'], 'STDOUT', [' g:public#{0}:read_object'.format(self.admin.zone_name)])
 

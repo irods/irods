@@ -242,7 +242,7 @@ class ResourceSuite(ResourceBase):
         self.admin.assert_icommand("imkdir " + targetpath)  # target
         self.admin.assert_icommand("ils -rAL " + targetpath, 'STDOUT_SINGLELINE', "own")  # debugging
         self.admin.assert_icommand("ichmod -r write " + self.user0.username + " " + targetpath)  # ichmod
-        self.admin.assert_icommand("ils -rAL " + targetpath, 'STDOUT_SINGLELINE', "modify object")  # debugging
+        self.admin.assert_icommand("ils -rAL " + targetpath, 'STDOUT_SINGLELINE', "modify_object")  # debugging
         self.admin.assert_icommand("imkdir " + sourcepath)  # source
         self.admin.assert_icommand("ichmod -r own " + self.user0.username + " " + sourcepath)  # ichmod
         self.admin.assert_icommand("ils -AL " + sourcepath, 'STDOUT_SINGLELINE', "own")  # debugging

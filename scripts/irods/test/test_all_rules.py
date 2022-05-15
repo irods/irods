@@ -604,9 +604,9 @@ OUTPUT ruleExecOut
             data_obj_rule_file="test_msiCheckAccess_data_obj_3309.r"
             rule_string= '''
 testMsiCheckAccess {
-     msiCheckAccess("/tempZone/home/rods/test_file_3309", "read object", *result);
+     msiCheckAccess("/tempZone/home/rods/test_file_3309", "read_object", *result);
      writeLine("stdout", "result=*result");
-     msiCheckAccess("/tempZone/home/rods/test_file_3309", "modify object", *result);
+     msiCheckAccess("/tempZone/home/rods/test_file_3309", "modify_object", *result);
      writeLine("stdout", "result=*result");
      msiCheckAccess("/tempZone/home/rods/test_file_3309", "own", *result);
      writeLine("stdout", "result=*result");
@@ -622,9 +622,9 @@ OUTPUT ruleExecOut
             collection_rule_file="test_msiCheckAccess_collection_3309.r"
             rule_string= '''
 testMsiCheckAccess {
-     msiCheckAccess("/tempZone/home/rods/test_collection_3309", "read object", *result);
+     msiCheckAccess("/tempZone/home/rods/test_collection_3309", "read_object", *result);
      writeLine("stdout", "result=*result");
-     msiCheckAccess("/tempZone/home/rods/test_collection_3309", "modify object", *result);
+     msiCheckAccess("/tempZone/home/rods/test_collection_3309", "modify_object", *result);
      writeLine("stdout", "result=*result");
      msiCheckAccess("/tempZone/home/rods/test_collection_3309", "own", *result);
      writeLine("stdout", "result=*result");
@@ -1046,8 +1046,8 @@ OUTPUT ruleExecOut
             })
 
             # Convert ACL string to the format expected by "ils".
-            if   'read'  == acl: ils_acl = 'read object'
-            elif 'write' == acl: ils_acl = 'modify object'
+            if   'read'  == acl: ils_acl = 'read_object'
+            elif 'write' == acl: ils_acl = 'modify_object'
             elif 'own'   == acl: ils_acl = 'own'
 
             # Atomically set the ACL for "user0".
@@ -1137,7 +1137,7 @@ OUTPUT ruleExecOut
                 # Show that the non-admin user can now manipulate ACLs because they have permission
                 # to do so via the public group.
                 self.user0.assert_icommand(['irule', '-r', rep_name, rule, 'null', 'ruleExecOut'])
-                self.admin.assert_icommand(['ils', '-A', logical_path], 'STDOUT', [' g:public#{0}:read object'.format(self.admin.zone_name)])
+                self.admin.assert_icommand(['ils', '-A', logical_path], 'STDOUT', [' g:public#{0}:read_object'.format(self.admin.zone_name)])
 
             finally:
                 self.admin.run_icommand(['irm', '-rf', logical_path])

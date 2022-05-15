@@ -342,7 +342,7 @@ irods::error determine_user_has_modify_metadata_access(
     // Get the minimum permission level across all data objects.
     // The user is allowed to modify the metadata of all matched data objects if and only if
     // the minimum permission level found among the list of data objects is greater than or
-    // equal to required permission level (i.e. "modify metadata").
+    // equal to required permission level (i.e. "modify_metadata").
     rodsLong_t access_permission = -1;
     {
         const char* const query =
@@ -11139,7 +11139,7 @@ irods::error db_move_object_op(
         bindVars.push_back( _ctx.comm()->clientUser.userName );
         bindVars.push_back( _ctx.comm()->clientUser.rodsZone );
         status = cmlGetStringValuesFromSql(
-                     "select parent_coll_name, coll_name from R_COLL_MAIN CM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where CM.coll_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'modify object'",
+                     "select parent_coll_name, coll_name from R_COLL_MAIN CM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where CM.coll_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'modify_object'",
                      cVal, iVal, 2, bindVars, &icss );
 
     }

@@ -39,27 +39,27 @@
 
    Having a particular access permission implies that the user has
    all of the lower ones.  For example, if you have "own", you have
-   all the rest.  And if you have "delete metadata", you have "modify
-   metadata".  The ICAT code generates sql that asks, essentially,
-   "does the user have ACCESS_x or better?"
+   all the rest.  And if you have "delete_metadata", you have
+   "modify_metadata".  The ICAT code generates sql that asks,
+   essentially, "does the user have ACCESS_x or better?"
 
  */
 #define ACCESS_NULL                 "null"
 #define ACCESS_EXECUTE              "execute"
-#define ACCESS_READ_ANNOTATION      "read annotation"
-#define ACCESS_READ_SYSTEM_METADATA "read system metadata"
-#define ACCESS_READ_METADATA        "read metadata"
-#define ACCESS_READ_OBJECT          "read object"
-#define ACCESS_WRITE_ANNOTATION     "write annotation"
-#define ACCESS_CREATE_METADATA      "create metadata"
-#define ACCESS_MODIFY_METADATA      "modify metadata"
-#define ACCESS_DELETE_METADATA      "delete metadata"
-#define ACCESS_ADMINISTER_OBJECT    "administer object"
-#define ACCESS_CREATE_OBJECT        "create object"
-#define ACCESS_MODIFY_OBJECT        "modify object"
-#define ACCESS_DELETE_OBJECT        "delete object"
-#define ACCESS_CREATE_TOKEN         "create token"
-#define ACCESS_DELETE_TOKEN         "delete token"
+#define ACCESS_READ_ANNOTATION      "read_annotation"
+#define ACCESS_READ_SYSTEM_METADATA "read_system_metadata"
+#define ACCESS_READ_METADATA        "read_metadata"
+#define ACCESS_READ_OBJECT          "read_object"
+#define ACCESS_WRITE_ANNOTATION     "write_annotation"
+#define ACCESS_CREATE_METADATA      "create_metadata"
+#define ACCESS_MODIFY_METADATA      "modify_metadata"
+#define ACCESS_DELETE_METADATA      "delete_metadata"
+#define ACCESS_ADMINISTER_OBJECT    "administer_object"
+#define ACCESS_CREATE_OBJECT        "create_object"
+#define ACCESS_MODIFY_OBJECT        "modify_object"
+#define ACCESS_DELETE_OBJECT        "delete_object"
+#define ACCESS_CREATE_TOKEN         "create_token"
+#define ACCESS_DELETE_TOKEN         "delete_token"
 #define ACCESS_CURATE               "curate"
 #define ACCESS_OWN                  "own"
 
