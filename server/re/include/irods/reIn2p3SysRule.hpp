@@ -21,9 +21,7 @@
 #define MAXLIST                 40      // max number of entries in the access list tab.
 
 #define MON_PERF_SCRIPT         "irodsServerMonPerf"
-#define MON_CFG_FILE            "../config/irodsMonPerf.config"     // contains list of servers to monitor, not mandatory.
 #define NRESULT                 7                                   // number of metrics returned by MON_PERF_SCRIPT.
-#define OUTPUT_MON_PERF         "../log/rodsMonPerfLog"
 #define MAX_VALUE               512                                 // for array definition.
 #define MAX_MESSAGE_SIZE        2000
 #define MAX_NSERVERS            512                                 // max number of servers that can be monitored (load balancing).

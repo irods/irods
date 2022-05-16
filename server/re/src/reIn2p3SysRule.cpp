@@ -33,6 +33,9 @@ static pthread_mutex_t my_mutex;
 #include <string>
 #include <sstream>
 
+#define MON_CFG_FILE    "../config/irodsMonPerf.config" // contains list of servers to monitor, not mandatory.
+#define OUTPUT_MON_PERF "../log/rodsMonPerfLog"
+
 short threadIsAlive[MAX_NSERVERS];
 
 int rodsMonPerfLog( char *serverName, char *resc, char *output, ruleExecInfo_t *rei ) {
