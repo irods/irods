@@ -4,19 +4,15 @@
     "type": "object",
     "properties": {
         "admin_password": {"type": "string"},
-        "host_access_control_config": {
-            "$ref": "host_access_control_config.json"
-        },
+        "default_resource_directory": {"type": "string"},
+        "default_resource_name": {"type": "string"},
         "host_system_information": {
             "type": "object",
             "properties": {
                 "service_account_user_name": {"type": "string"},
                 "service_account_group_name": {"type": "string"}
             },
-            "required": ["service_account_user_name","service_account_group_name"]
-        },
-        "hosts_config": {
-            "$ref": "hosts_config.json"
+            "required": ["service_account_user_name", "service_account_group_name"]
         },
         "server_config": {
             "$ref": "server_config.json"
@@ -27,9 +23,8 @@
     },
     "required": [
         "admin_password",
-        "host_access_control_config",
+        "default_resource_name",
         "host_system_information",
-        "hosts_config",
         "server_config",
         "service_account_environment"
     ]
