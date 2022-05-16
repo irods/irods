@@ -23,7 +23,7 @@ from . import resource_suite
 from . import session
 
 
-# Requires existence of OS account 'irodsauthuser' with password 'iamnotasecret'
+# Requires existence of OS account 'irodsauthuser' with password ';=iamnotasecret'
 @unittest.skip('This test passes when run manually, but fails with automation.')
 class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
@@ -52,6 +52,8 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
         lib.execute_command(['openssl', 'req', '-batch', '-new', '-x509', '-key', server_key_path, '-out', chain_pem_path, '-days', '365'])
         lib.execute_command(['openssl', 'dhparam', '-2', '-out', dhparams_pem_path, '1024'])  # normally 2048, but smaller size here for speed
 
+        IrodsController().stop()
+
         service_account_environment_file_path = os.path.join(os.path.expanduser('~'), '.irods', 'irods_environment.json')
         with lib.file_backed_up(service_account_environment_file_path):
             server_update = {
@@ -75,7 +77,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
             self.auth_session.environment_file_contents.update(client_update)
 
             # server reboot to pick up new irodsEnv settings
-            IrodsController().restart()
+            IrodsController().start()
 
             # do the reauth
             self.auth_session.assert_icommand('iinit', 'STDOUT_SINGLELINE',
@@ -105,6 +107,8 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
         lib.execute_command(['openssl', 'req', '-batch', '-new', '-key', server_key_path, '-out', server_csr_path])
         lib.execute_command(['openssl', 'req', '-batch', '-new', '-x509', '-key', server_key_path, '-out', chain_pem_path, '-days', '365'])
         lib.execute_command(['openssl', 'dhparam', '-2', '-out', dhparams_pem_path, '1024'])  # normally 2048, but smaller size here for speed
+
+        IrodsController().stop()
 
         service_account_environment_file_path = os.path.join(os.path.expanduser('~'), '.irods', 'irods_environment.json')
         with lib.file_backed_up(service_account_environment_file_path):
@@ -147,7 +151,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
                     core.add_rule(rule_texts[self.plugin_name]['Test_Rulebase']['test_client_server_negotiation__2564'])
                     time.sleep(1)  # remove once file hash fix is committed #2279
 
-                    IrodsController().restart()
+                    IrodsController().start()
 
                     # the test
                     print(f'running iinit for PAM user [{self.auth_session.username}] [{self.auth_session.password}]')
@@ -180,6 +184,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
         assert initial_contents == final_contents
 
     def test_denylist(self):
+        IrodsController().stop()
         with lib.file_backed_up(paths.server_config_path()):
             server_config_update = {
                 'controlled_user_connection_list' : {
@@ -194,12 +199,13 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
             }
             lib.update_json_file_from_dict(paths.server_config_path(), server_config_update)
 
-            IrodsController().restart()
+            IrodsController().start()
             self.user_sessions[0].assert_icommand( 'ils', 'STDERR_SINGLELINE', 'SYS_USER_NOT_ALLOWED_TO_CONN' )
             self.user_sessions[1].assert_icommand( 'ils', 'STDOUT_SINGLELINE', '/home' )
         IrodsController().restart()
 
     def test_allowlist(self):
+        IrodsController().stop()
         with lib.file_backed_up(paths.server_config_path()):
             service_account = IrodsConfig().client_environment
             server_config_update = {
@@ -216,7 +222,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
             }
             lib.update_json_file_from_dict(paths.server_config_path(), server_config_update)
 
-            IrodsController().restart()
+            IrodsController().start()
             self.user_sessions[0].assert_icommand( 'ils', 'STDOUT_SINGLELINE', '/home' )
             self.user_sessions[1].assert_icommand( 'ils', 'STDERR_SINGLELINE', 'SYS_USER_NOT_ALLOWED_TO_CONN' )
         IrodsController().restart()
