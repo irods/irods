@@ -111,4 +111,9 @@ namespace irods
         install_plugdir = install_plugdir.lexically_normal();
         return get_irods_directory_impl(install_plugdir);
     }
+
+    fs::path get_irods_stacktrace_directory()
+    {
+        return get_irods_home_directory().append("stacktraces");
+    }
 } // namespace irods
