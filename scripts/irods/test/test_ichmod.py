@@ -60,15 +60,15 @@ class Test_ichmod(session.make_sessions_mixin([('otherrods', 'rods')], [('alice'
         # The access_specifier can be a string, or a list of strings
         # if aliases exist. All aliases will be tested
         access_specifiers = {
-            Access.NULL            : "null",        
-            Access.READ_METADATA   : "read metadata",    
-            Access.READ_OBJECT     : ["read object", "read"],
-            Access.CREATE_METADATA : "create metadata",
-            Access.MODIFY_METADATA : "modify metadata",
-            Access.DELETE_METADATA : "delete metadata", 
-            Access.CREATE_OBJECT   : "create object",
-            Access.MODIFY_OBJECT   : ["modify object", "write"],
-            Access.DELETE_OBJECT   : "delete object",
+            Access.NULL            : "null",
+            Access.READ_METADATA   : "read_metadata",
+            Access.READ_OBJECT     : ["read_object", "read"],
+            Access.CREATE_METADATA : "create_metadata",
+            Access.MODIFY_METADATA : "modify_metadata",
+            Access.DELETE_METADATA : "delete_metadata",
+            Access.CREATE_OBJECT   : "create_object",
+            Access.MODIFY_OBJECT   : ["modify_object", "write"],
+            Access.DELETE_OBJECT   : "delete_object",
             Access.OWN             : "own"
         }
 
