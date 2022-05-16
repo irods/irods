@@ -106,17 +106,9 @@ def setup_server(irods_config, json_configuration_file=None, test_mode=False):
     if json_configuration_dict is not None:
         # role
         irods_config.commit(json_configuration_dict['server_config'], irods.paths.server_config_path())
-        # database
-        if irods_config.is_provider:
-            from irods import database_interface
-            if database_interface.database_already_in_use_by_irods(irods_config):
-                raise IrodsError('Database specified already in use by iRODS.')
         # default resource
         default_resource_name = json_configuration_dict['default_resource_name']
         default_resource_directory = json_configuration_dict.get('default_resource_directory', os.path.join(irods_config.irods_directory, 'Vault'))
-        # server config
-        irods_config.commit(json_configuration_dict['hosts_config'], irods.paths.hosts_config_path())
-        irods_config.commit(json_configuration_dict['host_access_control_config'], irods.paths.host_access_control_config_path())
         # client environment
         if not os.path.exists(os.path.dirname(irods_config.client_environment_path)):
             os.makedirs(os.path.dirname(irods_config.client_environment_path), mode=0o700)
@@ -139,6 +131,7 @@ def setup_server(irods_config, json_configuration_file=None, test_mode=False):
         setup_client_environment(irods_config)
 
     if irods_config.is_provider:
+        from irods import database_interface
         l.info(irods.lib.get_header('Setting up the database'))
         database_interface.setup_catalog(irods_config, default_resource_directory=default_resource_directory, default_resource_name=default_resource_name)
 
