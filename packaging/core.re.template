@@ -171,14 +171,6 @@ acSetRescSchemeForRepl {msiSetDefaultResc("demoResc","null"); }
 #    msiSetDataObjAvoidResc(avoidResc) - set the resource to avoid when
 #      opening an object. The copy stored in this resource will not be picked
 #      unless this is the only copy.
-#    msiSortDataObj(sortingScheme) - Sort the copies of the data object using
-#      this scheme. Currently, "random" and "byRescClass" sorting scheme are
-#      supported. If "byRescClass" is set, data objects in the "cache"
-#      resources will be placed ahead of of those in the "archive" resources.
-#      The sorting schemes can also be chained. e.g.,
-#      msiSortDataObj(random); msiSortDataObj(byRescClass) means that
-#      the data objects will be sorted randomly first and then separated
-#      by class.
 #    The $writeFlag session variable has been created to be used as a condition
 #    for differentiating between open for read ($writeFlag == "0") and
 #    write ($writeFlag == "1"). e.g. :

@@ -1,7 +1,7 @@
-#ifndef _RE_ACTION_HPP_
-#define _RE_ACTION_HPP_
+#ifndef IRODS_RE_ACTION_HPP
+#define IRODS_RE_ACTION_HPP
 
-// reAction.hpp - header file for Actions that are 'called' when executing the rules by the rule engine modules
+/// \file
 
 #include "irods/rodsUser.h"
 #include "irods/rods.h"
@@ -152,7 +152,6 @@ namespace irods
         table_[ "msiSetDefaultResc" ] = new irods::ms_table_entry( "msiSetDefaultResc", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiSetDefaultResc ) );
         table_[ "msiSetDataObjPreferredResc" ] = new irods::ms_table_entry( "msiSetDataObjPreferredResc", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiSetDataObjPreferredResc ) );
         table_[ "msiSetDataObjAvoidResc" ] = new irods::ms_table_entry( "msiSetDataObjAvoidResc", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiSetDataObjAvoidResc ) );
-        table_[ "msiSortDataObj" ] = new irods::ms_table_entry( "msiSortDataObj", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiSortDataObj ) );
         table_[ "msiSetDataTypeFromExt" ] = new irods::ms_table_entry( "msiSetDataTypeFromExt", 0, std::function<int(ruleExecInfo_t*)>( msiSetDataTypeFromExt ) );
         table_[ "msiSetNoDirectRescInp" ] = new irods::ms_table_entry( "msiSetNoDirectRescInp", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiSetNoDirectRescInp ) );
         table_[ "msiSetNumThreads" ] = new irods::ms_table_entry( "msiSetNumThreads", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiSetNumThreads ) );
@@ -263,4 +262,4 @@ namespace irods
 
 //irods::ms_table MicrosTable;
 
-#endif // _RE_ACTION_HPP_
+#endif // IRODS_RE_ACTION_HPP
