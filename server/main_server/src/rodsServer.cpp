@@ -341,7 +341,7 @@ namespace
     {
         namespace fs = boost::filesystem;
         boost::system::error_code ec;
-        fs::create_directories("../.." / fs::path{IRODS_DEFAULT_PATH_HOMEDIR} / "stacktraces", ec);
+        fs::create_directories(irods::get_irods_stacktrace_directory(), ec);
     } // create_stacktrace_directory
 
     int get_stacktrace_file_processor_sleep_time()
@@ -368,9 +368,7 @@ namespace
     {
         namespace fs = boost::filesystem;
 
-        // The leading "../.." enables support for non-package installations.
-        // In a packaged installation, this will produce "/var/lib/irods/stacktraces".
-        const auto stacktrace_directory = "../.." / fs::path{IRODS_DEFAULT_PATH_HOMEDIR} / "stacktraces";
+        const auto stacktrace_directory = irods::get_irods_stacktrace_directory();
 
         using log = irods::experimental::log;
 

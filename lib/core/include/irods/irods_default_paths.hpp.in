@@ -19,6 +19,8 @@ namespace irods
     boost::filesystem::path get_irods_home_directory();
 
     boost::filesystem::path get_irods_default_plugin_directory();
+
+    boost::filesystem::path get_irods_stacktrace_directory();
 } // namespace irods
 
 #endif // IRODS_DEFAULT_PATHS_HPP
