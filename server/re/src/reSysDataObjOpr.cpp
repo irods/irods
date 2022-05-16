@@ -303,55 +303,6 @@ msiSetDataObjAvoidResc( msParam_t *xavoidResc, ruleExecInfo_t *rei ) {
 }
 
 /**
- * \fn msiSortDataObj (msParam_t *xsortScheme, ruleExecInfo_t *rei)
- *
- * \brief  This microservice sorts the copies of the data object using this scheme. Currently, "random" sorting scheme is supported.
- *
- * \module core
- *
- * \since pre-2.1
- *
- * \author Mike Wan
- *
- * \usage See clients/icommands/test/rules/
- *
- * \param[in] xsortScheme - input sorting scheme.
- * \param[in,out] rei - The RuleExecInfo structure that is automatically
- *    handled by the rule engine. The user does not include rei as a
- *    parameter in the rule invocation.
- *
- * \DolVarDependence - rei->doi
- * \DolVarModified - rei->doi
- * \iCatAttrDependence none
- * \iCatAttrModified none
- * \sideeffect none
- *
- * \return integer
- * \retval 0 on success
- * \pre none
- * \post none
- * \sa none
- **/
-int
-msiSortDataObj( msParam_t *xsortScheme, ruleExecInfo_t *rei ) {
-    char *sortScheme;
-
-    sortScheme = ( char * ) xsortScheme->inOutStruct;
-    RE_TEST_MACRO( "    Calling msiSortDataObj" )
-
-    rei->status = 0;
-    if ( sortScheme != NULL ) {
-        if ( strcmp( sortScheme, "random" ) == 0 ) {
-            sortDataObjInfoRandom( &rei->doi );
-            // JMC - legacy resource -     } else if (strcmp (sortScheme, "byRescClass") == 0) {
-            //    rei->status = sortObjInfoForOpen( &rei->doi, NULL, 1 );
-        }
-    }
-    return rei->status;
-}
-
-
-/**
  * \fn msiSetDataTypeFromExt (ruleExecInfo_t *rei)
  *
  * \brief This microservice checks if the filename has an extension
