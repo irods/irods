@@ -28,8 +28,8 @@
 #include "irods/rcGlobalExtern.h"
 #include "irods/authenticate.h"
 
-#define OS_AUTH_CMD     "var/lib/irods/clients/bin/genOSAuth"
-#define OS_AUTH_KEYFILE "etc/irods/irods.key"
+#define OS_AUTH_CMD     "clients/bin/genOSAuth"
+#define OS_AUTH_KEYFILE "irods.key"
 
 extern char **environ;
 
@@ -176,7 +176,7 @@ extern "C" {
             return USER__NULL_INPUT_ERR;
         }
 
-        boost::filesystem::path default_os_auth_keyfile_path = irods::get_irods_root_directory();
+        boost::filesystem::path default_os_auth_keyfile_path = irods::get_irods_config_directory();
         default_os_auth_keyfile_path.append(OS_AUTH_KEYFILE);
         std::string default_os_auth_keyfile_path_string = default_os_auth_keyfile_path.string();
 
@@ -270,7 +270,7 @@ extern "C" {
             return SYS_PIPE_ERROR - errno;
         }
 
-        boost::filesystem::path os_auth_command_path = irods::get_irods_root_directory();
+        boost::filesystem::path os_auth_command_path = irods::get_irods_home_directory();
         os_auth_command_path.append(OS_AUTH_CMD);
 
         pid_t childPid;
