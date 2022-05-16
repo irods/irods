@@ -23,6 +23,7 @@
 #include "irods/irods_resource_backport.hpp"
 #include "irods/irods_resource_redirect.hpp"
 #include "irods/irods_re_structs.hpp"
+#include "irods/irods_default_paths.hpp"
 
 #include <boost/thread/mutex.hpp>
 boost::mutex ExecCmdMutex;
@@ -368,8 +369,8 @@ execCmd( execCmd_t *execCmdInp, int stdOutFd, int stdErrFd ) {
     char *av[LONG_NAME_LEN];
     int status;
 
-
-    snprintf( cmdPath, LONG_NAME_LEN, "%s/%s", CMD_DIR, execCmdInp->cmd );
+    const auto cmd_path = irods::get_irods_home_directory().append("msiExecCmd_bin").append(execCmdInp->cmd);
+    std::strncpy(cmdPath, cmd_path.c_str(), LONG_NAME_LEN);
     rodsLog( LOG_NOTICE, "execCmd:%s argv:%s", cmdPath, execCmdInp->cmdArgv );
     initCmdArg( av, execCmdInp->cmdArgv, cmdPath );
 

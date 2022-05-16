@@ -5,8 +5,6 @@
 #include "irods/procApiRequest.h"
 #include "irods/dataObjInpOut.h"
 
-#define CMD_DIR "../../var/lib/irods/msiExecCmd_bin"
-
 typedef struct ExecCmd {
     char cmd[LONG_NAME_LEN];
     char cmdArgv[HUGE_NAME_LEN];
