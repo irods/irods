@@ -625,6 +625,11 @@ int agentMain(rsComm_t *rsComm)
         if ( rsComm->auth_scheme == NULL ) {
             rsComm->auth_scheme = strdup( "native" );
         }
+        // The following is an artifact of the legacy authentication plugins. This operation is
+        // only useful for certain plugins which are not supported in 4.3.0, so it is being
+        // left out of compilation for now. Once we have determined that this is safe to do in
+        // general, this section can be removed.
+#if 0
         // construct an auth object based on the scheme specified in the comm
         irods::auth_object_ptr auth_obj;
         if (const auto err = irods::auth_factory(rsComm->auth_scheme, &rsComm->rError, auth_obj); !err.ok()) {
@@ -660,6 +665,7 @@ int agentMain(rsComm_t *rsComm)
 
             return err.code();
         }
+#endif
 
         // =-=-=-=-=-=-=-
         // add the user info to the server properties for

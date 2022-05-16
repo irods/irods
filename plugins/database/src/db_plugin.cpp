@@ -916,6 +916,11 @@ static int _delColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
 
 } // _delColl
 
+// The following is an artifact of the legacy authentication plugins. This operation is
+// only useful for certain plugins which are not supported in 4.3.0, so it is being
+// left out of compilation for now. Once we have determined that this is safe to do in
+// general, this section can be removed.
+#if 0
 // =-=-=-=-=-=-=-
 // local function to delegate the response
 // verification to an authentication plugin
@@ -970,6 +975,7 @@ irods::error verify_auth_response(
     return SUCCESS();
 
 } // verify_auth_response
+#endif
 
 /*
    Possibly descramble a password (for user passwords stored in the ICAT).
@@ -6436,6 +6442,11 @@ irods::error db_check_auth_op(
         snprintf( myUserZone, sizeof( myUserZone ), "%s", userZone );
     }
 
+    // The following is an artifact of the legacy authentication plugins. This operation is
+    // only useful for certain plugins which are not supported in 4.3.0, so it is being
+    // left out of compilation for now. Once we have determined that this is safe to do in
+    // general, this section can be removed.
+#if 0
     if ( _scheme && strlen( _scheme ) > 0 ) {
         irods::error ret = verify_auth_response( _scheme, _challenge, userName2, _response );
         if ( !ret.ok() ) {
@@ -6443,6 +6454,7 @@ irods::error db_check_auth_op(
         }
         goto checkLevel;
     }
+#endif
 
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "chlCheckAuth SQL 1 " );
