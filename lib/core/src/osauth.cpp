@@ -28,6 +28,9 @@
 #include "irods/rcGlobalExtern.h"
 #include "irods/authenticate.h"
 
+#define OS_AUTH_CMD     "var/lib/irods/clients/bin/genOSAuth"
+#define OS_AUTH_KEYFILE "etc/irods/irods.key"
+
 extern char **environ;
 
 extern "C" {

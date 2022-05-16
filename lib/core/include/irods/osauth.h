@@ -6,9 +6,7 @@
 #define OS_AUTH_H__
 
 
-#define OS_AUTH_CMD      "var/lib/irods/clients/bin/genOSAuth"
 #define OS_AUTH_ENV_USER "OSAUTH_USERNAME"
-#define OS_AUTH_KEYFILE "etc/irods/irods.key"
 
 #ifdef __cplusplus
 extern "C" {
