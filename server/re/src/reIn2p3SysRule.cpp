@@ -25,6 +25,7 @@ static pthread_mutex_t my_mutex;
 #include "irods/irods_get_full_path_for_config_file.hpp"
 #include "irods/irods_configuration_parser.hpp"
 #include "irods/rodsErrorTable.h"
+#include "irods/irods_default_paths.hpp"
 #include <boost/system/error_code.hpp>
 #include <boost/asio.hpp>
 #include <boost/algorithm/string.hpp>
@@ -33,8 +34,8 @@ static pthread_mutex_t my_mutex;
 #include <string>
 #include <sstream>
 
-#define MON_CFG_FILE    "../config/irodsMonPerf.config" // contains list of servers to monitor, not mandatory.
-#define OUTPUT_MON_PERF "../log/rodsMonPerfLog"
+#define MON_CFG_FILE    "config/irodsMonPerf.config" // contains list of servers to monitor, not mandatory.
+#define OUTPUT_MON_PERF "rodsMonPerfLog"
 
 short threadIsAlive[MAX_NSERVERS];
 
@@ -122,7 +123,8 @@ int rodsMonPerfLog( char *serverName, char *resc, char *output, ruleExecInfo_t *
         pthread_mutex_lock( &my_mutex );
 #endif
         /* append to the output log file */
-        FILE *foutput = fopen( fname, "a" );
+        const auto log_fname = irods::get_irods_home_directory() / "log" / fname;
+        FILE *foutput = fopen(log_fname.c_str(), "a");
         if ( foutput != NULL ) {
             fprintf( foutput, "time=%ji %s", ( intmax_t )timestamp, msg );
             // fclose(foutput); // JMC cppcheck - nullptr // cannot close it here. it is used later - hcj
@@ -574,8 +576,9 @@ int msiServerMonPerf( msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei ) {
     /* read the config file or the iCAT to know the servers list to monitor */
     nresc = 0;
 
+    const auto mon_cfg_file = irods::get_irods_home_directory() / MON_CFG_FILE;
     nservers = -1;  /* nservers = -1, no config file available, consider all resources for the monitoring */
-    if ( ( filein = fopen( MON_CFG_FILE, "r" ) ) != NULL ) {
+    if ((filein = fopen(mon_cfg_file.c_str(), "r")) != NULL) {
         i = 0;
         while ( fgets( line, sizeof line, filein ) != NULL ) { /* for each line of the file */
             /* if begin of line = # => ignore */
