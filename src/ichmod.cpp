@@ -20,7 +20,7 @@ main( int argc, char **argv ) {
 
 
     rodsArguments_t myRodsArgs;
-    int status = parseCmdLineOpt( argc, argv, "RrhvVM", 0, &myRodsArgs );
+    int status = parseCmdLineOpt( argc, argv, "rhvVM", 0, &myRodsArgs );
     if ( status ) {
         rodsLogError( LOG_ERROR, status, "main: parseCmdLineOpt error. " );
         printf( "Use -h for help\n" );
@@ -107,12 +107,6 @@ main( int argc, char **argv ) {
         }
         modAccessControl.path = rodsPathInp.srcPath[i].outPath;
 
-        char rescAccessLevel[LONG_NAME_LEN];
-        if ( myRodsArgs.resource ) {
-            snprintf( rescAccessLevel, sizeof( rescAccessLevel ), "%s%s", MOD_RESC_PREFIX, argv[myRodsArgs.optind] );
-            modAccessControl.accessLevel = rescAccessLevel; /* indicate resource*/
-            modAccessControl.path = argv[optind]; /* just use the plain name */
-        }
         char adminModeAccessLevel[LONG_NAME_LEN];
         if ( myRodsArgs.admin && i == 0 ) {  /* admin mode, add indicator */
             snprintf( adminModeAccessLevel, sizeof( adminModeAccessLevel ), "%s%s", MOD_ADMIN_MODE_PREFIX, modAccessControl.accessLevel );
