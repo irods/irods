@@ -41,7 +41,8 @@ namespace irods
     // =-=-=-=-=-=-=-
     /// @brief special resource for local file system operations only
     const std::string LOCAL_USE_ONLY_RESOURCE( "LOCAL_USE_ONLY_RESOURCE" );
-    const std::string LOCAL_USE_ONLY_RESOURCE_VAULT( "/var/lib/irods/LOCAL_USE_ONLY_RESOURCE_VAULT" );
+    const std::string LOCAL_USE_ONLY_RESOURCE_VAULT(
+        (get_irods_home_directory() / "LOCAL_USE_ONLY_RESOURCE_VAULT").string());
     const std::string LOCAL_USE_ONLY_RESOURCE_TYPE( "unixfilesystem" );
 
     // =-=-=-=-=-=-=-
