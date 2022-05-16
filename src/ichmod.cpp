@@ -193,6 +193,12 @@ usage() {
         " ",
         "The original owner of a dataObject can still set an ACCESS_LEVEL, even",
         "if their ACCESS_LEVEL has been set to 'null'.",
+        " ",
+        "Example Operations:",
+        " - irm - requires 'delete_object' or greater",
+        " - imv - requires 'delete_object' or greater, due to removal of old name",
+        " - iput - requires 'modify_object' or greater",
+        " - iget - requires 'read_object' or greater",
         ""
     };
     int i;
