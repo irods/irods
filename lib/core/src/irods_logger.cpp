@@ -1,6 +1,7 @@
 #include "irods/irods_logger.hpp"
 
 #include "irods/irods_server_properties.hpp"
+#include "irods/irods_default_paths.hpp"
 
 #include <fstream>
 #include <iomanip>
@@ -31,7 +32,7 @@ namespace irods::experimental
     public:
         test_mode_ipc_sink()
             : mutex_{ipc::open_or_create, shm_name}
-            , file_{"/var/lib/irods/log/test_mode_output.log", std::ios_base::app}
+            , file_{(irods::get_irods_home_directory() / "log" / "test_mode_output.log").string(), std::ios_base::app}
             , owner_pid_{getpid()}
         {
         }
