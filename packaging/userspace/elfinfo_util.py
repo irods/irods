@@ -394,7 +394,10 @@ class DynamicSectionTable(
 		if len(args) > 1:
 			raise ValueError('Too many positional arguments')
 
-		MutableMapping.__init__(self)  # pylint: disable=W0233
+		try:
+			MutableMapping.__init__(self)  # pylint: disable=W0233
+		except TypeError:
+			pass
 		DynamicSectionTableBase.__init__(self, OrderedDict(*args))  # pylint: disable=W0233
 
 		self._source = source
