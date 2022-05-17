@@ -14,21 +14,10 @@
 #
 # This file contains directives that are more or less universal for all distros we might support
 
-libarchive
-libavrocpp
-libboost_atomic
 libboost_chrono
 libboost_filesystem
-libboost_iostreams
 libboost_program_options
-libboost_random
-libboost_regex
-libboost_signals
-libboost_system
 libboost_thread
-libboost_timer
 libc++
 libc++abi
 libfmt
-libnanodbc
-libzmq
