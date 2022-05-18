@@ -11,9 +11,11 @@ from concurrent.futures import Executor
 from os import path
 from typing import Optional
 
+from distro import linux_distribution
+
 import script_common
 import log_instrumentation as logging_ext
-from compat_shims import Iterable, NoReturn, Sequence, Set, linux_distribution
+from compat_shims import Iterable, NoReturn, Sequence, Set
 from context import PackagerContext, PackagerOptionsBase, augment_module_search_paths
 from options import RunArgOption
 from utilbase import PackagerUtilBase
