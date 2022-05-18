@@ -205,6 +205,10 @@ class LibDirectives(PackagerUtilBase[LibDirectiveOptionsBase]):
 						soname = directive_l[1:]
 						self.allowlist.sonames.discard(soname)
 						self.denylist.sonames.add(soname)
+					elif directive_l[0] == '~':
+						soname = directive_l[1:]
+						self.allowlist.sonames.discard(soname)
+						self.denylist.sonames.discard(soname)
 					else:
 						l.warning('%s:%s: Syntax error, ignoring line', soname_dfname, str(lnum))
 		else:

@@ -4,6 +4,7 @@
 # Each line lists the soname of a library.
 # Lines starting with + denote a library that may be included.
 # Lines starting with - denote a library that must be excluded.
+# Lines starting with ~ denote that a previous directive should be ignored
 # Blank lines are ignored.
 # Lines starting with # are ignored.
 #
