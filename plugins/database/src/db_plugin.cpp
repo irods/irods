@@ -54,9 +54,11 @@
 #include <chrono>
 #include <iomanip>
 #include <locale>
+#include <charconv>
 
 // clang-format off
 using logger        = irods::experimental::log;
+using log_db        = irods::experimental::log::database;
 using leaf_bundle_t = irods::resource_manager::leaf_bundle_t;
 // clang-format on
 
@@ -12248,7 +12250,6 @@ irods::error db_set_quota_op(
         }
     }
 
-
     status = validateAndParseUserName( _name, userName, userZone );
     if ( status ) {
         return ERROR( status, "Invalid username format" );
@@ -12257,7 +12258,33 @@ irods::error db_set_quota_op(
         snprintf( userZone, sizeof( userZone ), "%s", zone.c_str() );
     }
 
+    if (!_limit) {
+        const auto msg = "Invalid argument for quota limit. Received null input argument.";
+        log_db::error(msg);
+        return ERROR(SYS_INVALID_INPUT_PARAM, msg);
+    }
+
+    std::int64_t int_limit = -1;
+
+    if (const auto [ptr, ec] = std::from_chars(_limit, _limit + std::strlen(_limit), int_limit); ec != std::errc{}) {
+        const auto msg = fmt::format("Invalid argument for quota limit. Could not convert [{}] to an integer.", _limit);
+        log_db::error(msg);
+        return ERROR(SYS_INVALID_INPUT_PARAM, msg);
+    }
+
+    // Handling user quota.
+    //
+    // Look up the entry that matches the given username and zone which does not have a type
+    // of "rodsgroup".
     if ( itype == 1 ) {
+        if (int_limit != 0) {
+            const auto msg = fmt::format("Setting user quota limit to anything other than zero is not allowed. "
+                                         "Received [{}].",
+                                         int_limit);
+            log_db::error(msg);
+            return ERROR(SYS_NOT_ALLOWED, msg);
+        }
+
         userId = 0;
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlSetQuota SQL 2" );
@@ -12278,6 +12305,10 @@ irods::error db_set_quota_op(
             return ERROR( status, "select user_id failed" );
         }
     }
+    // Handling group quota.
+    //
+    // Because groups are represented as entries in r_user_main, look up the entry that matches
+    // the given username and zone which has a type of "rodsgroup".
     else {
         userId = 0;
         if ( logSQL != 0 ) {
@@ -12317,7 +12348,7 @@ irods::error db_set_quota_op(
                  "chlSetQuota cmlExecuteNoAnswerSql delete failure %d",
                  status );
     }
-    if ( atol( _limit ) > 0 ) {
+    if (int_limit > 0) {
         getNowStr( myTime );
         cllBindVars[cllBindVarCount++] = userIdStr;
         cllBindVars[cllBindVarCount++] = rescIdStr;
@@ -12351,10 +12382,8 @@ irods::error db_set_quota_op(
     if ( status < 0 ) {
         return ERROR( status, "commit failure" );
     }
-    else {
-        return SUCCESS();
-    }
 
+    return SUCCESS();
 } // db_set_quota_op
 
 irods::error db_check_quota_op(

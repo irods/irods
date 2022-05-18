@@ -34,7 +34,7 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
             time.sleep(1)  # remove once file hash fix is committed #2279
             core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
             time.sleep(1)  # remove once file hash fix is committed #2279
-            for quotatype in [['suq',self.admin.username], ['sgq','public']]: # user and group
+            for quotatype in [['sgq', 'public']]: # group
                 for quotaresc in [self.testresc, 'total']: # resc and total
                     cmd = 'iadmin {0} {1} {2} 10000000'.format(quotatype[0], quotatype[1], quotaresc) # set high quota
                     self.admin.assert_icommand(cmd.split())
@@ -72,21 +72,12 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
         cmd = 'iadmin sgq' # no arguments
         self.admin.assert_icommand(cmd.split(), 'STDERR_SINGLELINE', 'ERROR: missing group name parameter') # usage information
 
-    def test_iquota_u_updates_usage__issue_3508(self):
-        filename = 'test_quota_u_updates_usage__issue_3508'
-        lib.make_file(filename, 1024, contents='arbitrary')
-        self.admin.assert_icommand(['iadmin', 'suq', self.admin.username, 'demoResc', '10000000'])
-        self.admin.assert_icommand(['iput', filename])
-        self.admin.assert_icommand(['iadmin', 'cu'])
-        # In 4.2.0, iadmin cu does not actually update the r_quota_usage table, so will remain at -10,000,000
-        # When fixed, will show the actual value, and so the string below will not match and the assert will fail
-        self.admin.assert_icommand_fail(['iquota', '-u', self.admin.username], 'STDOUT_SINGLELINE', 'Over:  -10,000,000 (-10 million) bytes')
-
     def test_filter_out_groups_when_selecting_user__issue_3507(self):
         self.admin.assert_icommand(['igroupadmin', 'mkgroup', 'test_group_3507'])
 
         try:
             # Attempt to set user quota passing in the name of a group; should fail
-            self.admin.assert_icommand(['iadmin', 'suq', 'test_group_3507', 'demoResc', '10000000'], 'STDERR_SINGLELINE', 'CAT_INVALID_USER')
+            self.admin.assert_icommand(['iadmin', 'suq', 'test_group_3507', 'demoResc', '0'], 'STDERR_SINGLELINE', 'CAT_INVALID_USER')
+
         finally:
             self.admin.assert_icommand(['iadmin', 'rmgroup', 'test_group_3507'])
