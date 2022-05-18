@@ -7,11 +7,12 @@ import concurrent.futures
 import errno
 import itertools
 import logging
+import re
 from concurrent.futures import Executor
 from os import path
 from typing import Optional
 
-from distro import linux_distribution
+import distro
 
 import script_common
 import log_instrumentation as logging_ext
@@ -129,16 +130,26 @@ class Packager(PackagerUtilBase[PackagerOptions]):
 		super().__init__(context, executor)
 
 		if not self.options.target_platform:
-			distro = linux_distribution(full_distribution_name=False)
-			self.options.target_platform = distro[0].lower()
-			self.options.target_platform_variant = distro[1].partition('.')[0].lower()
+			plat = distro.linux_distribution(full_distribution_name=False)
+			self.options.target_platform = plat[0].lower()
+			self.options.target_platform_variant = plat[1].partition('.')[0].lower()
+		# This will likely change once we are building on ubi8
+		if not self.options.target_platform_base:
+			os_plat_id = distro.os_release_attr('platform_id')
+			plat_id_re = None
+			if os_plat_id is not None:
+				plat_id_re = re.match('^platform:(?P<platform>\S+)', os_plat_id)
+			if plat_id_re is not None:
+				self.options.target_platform_base = plat_id_re.group('platform')
+		if self.options.target_platform_base == 'none' or self.options.target_platform_base == '':
+			self.options.target_platform_base = None
 		if self.options.target_platform_variant == 'none' or self.options.target_platform_variant == 'rolling':
 			self.options.target_platform_variant = None
-
-		if self.options.set_origin_flag is None and (
-			self.options.target_platform == 'centos' and self.options.target_platform_variant == '7'
-		):
-			self.options.set_origin_flag = not self.lief_info.fragile_builder
+		if self.options.target_platform == 'centos':
+			if not self.options.target_platform_base:
+				self.options.target_platform_base = 'el' + self.options.target_platform_variant
+			if self.options.target_platform_variant == '7' and self.options.set_origin_flag is None:
+				self.options.set_origin_flag = not self.lief_info.fragile_builder
 
 		context.lief_info.check_and_whine()
 		self.elfinfo_util = ElfInfoUtil(context, executor=executor, raise_if_ldd_not_found=True)
