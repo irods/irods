@@ -14,22 +14,6 @@
 # Unfortunately, we cannot detect whether or not a given library is installed by default without
 # introducing unreasonable package-time requirements.
 
--libbz2.so.1
--libcom_err.so.2
 -libcrypto.so.10
--libgssapi_krb5.so.2
--libk5crypto.so.3
--libkeyutils.so.1
--libkrb5.so.3
--libkrb5support.so.0
--liblzma.so.5
--libpcre.so.1
 -libssl.so.10
--libxml2.so.2
 -libcurl.so.4
-
-# libtool-ltdl package is not installed by default
-+libltdl.so.7
-
-# unixODBC package is not installed by default
-+libodbc.so.2
