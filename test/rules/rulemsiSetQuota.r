@@ -7,5 +7,5 @@ myTestRule {
   msiSetQuota(*Type, *Name, *Resource, *Value);
   writeLine("stdout","Set quota on *Name for resource *Resource to *Value bytes");
 }
-INPUT *Type="user", *Name="rods", *Resource="demoResc", *Value="1000000000"
+INPUT *Type="user", *Name="rods", *Resource="demoResc", *Value="0"
 OUTPUT ruleExecOut
