@@ -115,10 +115,13 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         finally :
             self.admin.assert_icommand(['iadmin', 'rmuser', username])
 
-    def test_quota_actions_3509(self):
-        self.admin.assert_icommand("iadmin suq " + self.user0.username + " " + self.testresc + " 50")
-        self.admin.assert_icommand("iadmin suq " + self.user1.username + " " + self.testresc + " 60")
-        self.admin.assert_icommand("iadmin cu")
+    def test_suq_only_accepts_zero_as_the_quota_limit__issue_4481(self):
+        self.admin.assert_icommand(['iadmin', 'suq', self.user0.username, 'demoResc', '0'])
+
+    def test_suq_no_longer_accepts_non_zero_quota_limits__issue_4481(self):
+        self.admin.assert_icommand(['iadmin', 'suq', self.user0.username, 'demoResc',        '50'], 'STDERR', ['SYS_NOT_ALLOWED'])
+        self.admin.assert_icommand(['iadmin', 'suq', self.user0.username, 'demoResc', 'bad_input'], 'STDERR', ['SYS_INVALID_INPUT_PARAM'])
+        self.admin.assert_icommand(['iadmin', 'suq', self.user0.username, 'demoResc',          ''], 'STDERR', ['SYS_INVALID_INPUT_PARAM'])
 
     # PASSWORDS
 
