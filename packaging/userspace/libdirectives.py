@@ -28,6 +28,10 @@ class LibDirectiveOptionsBase(PackagerOptionsBase):  # pylint: disable=W0223
 		'--target-platform', metavar='PLATFORM',
 		action='store', opt_type=str, default=None
 	)
+	target_platform_base: Optional[str] = RunArgOption(
+		'--target-platform-base', metavar='BASE',
+		action='store', opt_type=str, default=None
+	)
 	target_platform_variant: Optional[str] = RunArgOption(
 		'--target-platform-variant', metavar='VARIANT',
 		action='store', opt_type=str, default=None
@@ -161,18 +165,22 @@ class LibDirectives(PackagerUtilBase[LibDirectiveOptionsBase]):
 		self._denylist = DirectiveLibSets(context)
 
 		target_platform = context.options.target_platform
+		target_platform_base = context.options.target_platform_base
 		target_platform_variant = context.options.target_platform_variant
 		if target_platform == 'none':
 			target_platform = None
 		if target_platform_variant in ('none', 'rolling'):
 			target_platform_variant = None
+		if target_platform_base in ('none', ''):
+			target_platform_base = None
 		if target_platform and target_platform_variant:
 			target_platform = target_platform + target_platform_variant
 		self._target_platform = target_platform
+		self._target_platform_base = target_platform_base
 
-	def read_directives_for_target(self, target_name: str) -> NoReturn:
+	def read_directives_for_target(self, target_name: Optional[str]) -> bool:
 		if not target_name:
-			return
+			return True
 		l = logging.getLogger(__name__)  # noqa: VNE001,E741
 
 		libname_dfname = path.join(self.context.packager_dir, 'externs_libs.' + target_name)
@@ -211,21 +219,35 @@ class LibDirectives(PackagerUtilBase[LibDirectiveOptionsBase]):
 						self.denylist.sonames.discard(soname)
 					else:
 						l.warning('%s:%s: Syntax error, ignoring line', soname_dfname, str(lnum))
-		else:
-			l.warning('No soname directives file for %s target_name. '
-			          'This will likely result in the exclusion of required libraries.',
-			          target_name)
+			return True
+		return False
 
 	def read_directives(self) -> NoReturn:
 		l = logging.getLogger(__name__)  # noqa: VNE001,E741
 		l.info('reading known libs data')
 
 		self.read_directives_for_target(target_name='common')
-		self.read_directives_for_target(target_name=self.target_platform)
+
+		# FIXME: Account for populated target_platform_base but empty target_platform
+		got_base_directives = self.read_directives_for_target(target_name=self.target_platform_base)
+		got_target_directives = self.read_directives_for_target(target_name=self.target_platform)
+		if self.target_platform_base:
+			if not (got_base_directives or got_target_directives):
+				l.warning('Could not read soname directives file(s) for %s or %s. '
+						  'This will likely result in the exclusion of required libraries.',
+						  self.target_platform_base, self.target_platform)
+		elif not got_target_directives:
+			l.warning('Could not read soname directives file for %s. '
+					  'This will likely result in the exclusion of required libraries.',
+					  self.target_platform)
 
 	@property
 	def target_platform(self) -> Optional[str]:
 		return self._target_platform
+
+	@property
+	def target_platform_base(self) -> Optional[str]:
+		return self._target_platform_base
 
 	@property
 	def allowlist(self) -> DirectiveLibSets:
