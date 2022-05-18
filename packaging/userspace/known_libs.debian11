@@ -1,0 +1,57 @@
+# This file helps our userspace tarball packager figure out what distro-provided libraries should
+# be bundled with our icommands.
+#
+# Each line lists the soname of a library.
+# Lines starting with + denote a library that may be included.
+# Lines starting with - denote a library that must be excluded.
+# Blank lines are ignored.
+# Lines starting with # are ignored.
+#
+# RATIONALE: There is a need for userspace packages for environments in which the user may not be
+# authorized to install packages on the system. Therefore, we provide the option to bundle any
+# distro-provided dependencies that are not installed by default.
+# Unfortunately, we cannot detect whether or not a given library is installed by default without
+# introducing unreasonable package-time requirements.
+
+-libidn2.so.0
+-libgnutls.so.30
+-libnettle.so.8
+-libgmp.so.10
+-libhogweed.so.6
+-libunistring.so.2
+-libgcrypt.so.20
+
+# libssl1.1 installed by default in debian
+-libcrypto.so.1.1
+-libssl.so.1.1
+
+# libgssapi-krb5-2 installed by default in debian
+-libgssapi_krb5.so.2
+
+# Let's assume we're building against libcurl4-gnutls-dev
+
+# libcurl3-gnutls
++libcurl-gnutls.so.4
+
+# libssh2-1
++libssh2.so.1
+
+# libbrotli1
++libbrotlidec.so.1
++libbrotlicommon.so.1
+
+# libldap-2.4-2
++libldap_r-2.4.so.2
++liblber-2.4.so.2
+
+# libpsl5
++libpsl.so.5
+
+# libnghttp2-14
++libnghttp2.so.14
+
+# librtmp1
++librtmp.so.1
+
+# libsasl2-2
++libsasl2.so.2
