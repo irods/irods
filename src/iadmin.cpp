@@ -2384,11 +2384,13 @@ usage( char *subOpt ) {
 
     char *suqMsgs[] = {
         " suq User ResourceName-or-'total' Value (set user quota)",
-        "Set a quota for a particular user for either a resource or all iRODS",
-        "usage (total).  Use 0 for the value to remove quota limit.  Value is",
-        "in bytes.  As with other sub-commands, 'user' is of the form",
-        "userName[#zone] where the local zone is default.",
-        "Also see sgq, lq and cu.",
+        " ",
+        "Setting user quotas greater than zero is no longer supported in iRODS.",
+        " ",
+        "This sub-command exists so that administrators have a way to remove",
+        "existing user quotas.  Pass 0 as the value to do this.",
+        " ",
+        "Also see sgq, lq, and cu.",
         ""
     };
 
