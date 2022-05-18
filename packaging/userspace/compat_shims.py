@@ -191,16 +191,6 @@ else:
 	Tuple = tuple
 	Type = type
 
-# platform.linux_distribution was deprecated in 3.5 and removed in 3.8
-# the distro package is the recommended replacement
-try:
-	from distro import linux_distribution
-except ImportError:
-	if sys.version_info < (3, 8):
-		from platform import linux_distribution
-	else:
-		raise
-
 __all__ = [
 	'Version',
 	'parse_version',
@@ -229,6 +219,5 @@ __all__ = [
 	'Set',
 	'DefaultDict',
 	'Tuple',
-	'Type',
-	'linux_distribution'
+	'Type'
 ]
