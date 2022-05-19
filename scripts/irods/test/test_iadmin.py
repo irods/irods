@@ -1187,6 +1187,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
                 self.admin.assert_icommand("iadmin rmresc jimboResc")
                 self.admin.assert_icommand("iadmin rmresc larryResc")
 
+    @unittest.skip('this test frequently fails to properly restart the server - delete this line on resolution of #6404')
     def test_host_access_control(self):
         my_ip = socket.gethostbyname(socket.gethostname())
 
