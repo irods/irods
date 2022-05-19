@@ -98,8 +98,6 @@ class IrodsController(object):
         if self.get_server_proc():
             raise IrodsError('iRODS already running')
 
-        delete_s3_shmem()
-
         self.config.clear_cache()
         if not os.path.exists(self.config.server_executable):
             raise IrodsError(
@@ -242,9 +240,6 @@ class IrodsController(object):
                             proc.kill()
                         except psutil.NoSuchProcess:
                             pass
-                        delete_cache_files_by_pid(proc.pid)
-
-            delete_s3_shmem()
 
         except IrodsError as e:
             l.info('Failure')
@@ -341,29 +336,3 @@ def format_binary_to_procs_dict(proc_dict):
             os.path.basename(binary),
             lib.indent(*['Process {0}'.format(proc.pid) for proc in procs])))
     return '\n'.join(text_list)
-
-def delete_cache_files_by_pid(pid):
-    l = logging.getLogger(__name__)
-    l.debug('Deleting cache files for pid %s...', pid)
-    for shm_dir in paths.possible_shm_locations():
-        cache_shms = glob.glob(os.path.join(
-            shm_dir,
-            '*irods_re_cache*pid{0}_*'.format(pid)))
-        delete_cache_files_by_name(*cache_shms)
-
-def delete_cache_files_by_name(*filepaths):
-    l = logging.getLogger(__name__)
-    for path in filepaths:
-        try:
-            l.debug('Deleting %s', path)
-            os.unlink(path)
-        except (IOError, OSError):
-            l.warning(lib.indent('Error deleting cache file: %s'), path)
-
-def delete_s3_shmem():
-    # delete s3 shared memory if any exist 
-    for shm_dir in paths.possible_shm_locations():
-        s3_plugin_shms = glob.glob(os.path.join(
-            shm_dir,
-            '*irods_s3-shm*'))
-        delete_cache_files_by_name(*s3_plugin_shms)

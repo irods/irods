@@ -271,6 +271,65 @@ namespace
         }
     }
 
+    void remove_leftover_shared_memory_files() noexcept
+    {
+        using log_server = irods::experimental::log::server;
+
+        try {
+            namespace fs = boost::filesystem;
+
+            std::vector<fs::path> paths_to_remove;
+            paths_to_remove.reserve(10);
+
+            // clang-format off
+            const auto shm_dirs = {
+                fs::path{"/dev/shm"},
+                fs::path{"/var/run/shm"},
+                fs::path{"/run/shm"}
+            };
+            // clang-format on
+
+            for (auto&& shm_dir : shm_dirs) {
+                try {
+                    if (!fs::exists(shm_dir)) {
+                        log_server::trace("[{}] directory does not exist. Skipping.", shm_dir.c_str());
+                        continue;
+                    }
+
+                    paths_to_remove.clear();
+
+                    // Build up a list of files to remove.
+                    // This avoids potential issues with the directory iterator.
+                    for (auto&& shm_file : fs::directory_iterator{shm_dir}) {
+                        const auto filename = shm_file.path().filename();
+
+                        if (std::string_view{filename.c_str()}.starts_with("irods_")) {
+                            paths_to_remove.push_back(shm_file.path());
+                        }
+                    }
+
+                    // Try to remove each file.
+                    for (auto&& shm_file : paths_to_remove) {
+                        log_server::trace("Removing iRODS shared memory file [{}] ...", shm_file.c_str());
+
+                        try {
+                            fs::remove(shm_file);
+                        }
+                        catch (const fs::filesystem_error& e) {
+                            log_server::error("Could not remove shared memory file [{}]: {}",
+                                              shm_file.c_str(),
+                                              e.what());
+                        }
+                    }
+                }
+                catch (...) {
+                }
+            }
+        }
+        catch (...) {
+        }
+    } // remove_leftover_shared_memory_files
+
     void remove_leftover_rulebase_pid_files() noexcept
     {
         namespace fs = boost::filesystem;
@@ -944,6 +1003,11 @@ int main(int argc, char** argv)
     if (pid_file_fd == -1) {
         return 1;
     }
+
+    // This must always be called after successfully creating the PID file, but before any
+    // libraries that handle shared memory. Violating these requirements can result in incorrect
+    // behavior depending on whether an iRODS instance is already running.
+    remove_leftover_shared_memory_files();
 
     irods::at_scope_exit deinit_server_state{[] { irods::server_state::deinit(); }};
     irods::server_state::init();
