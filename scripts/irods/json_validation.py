@@ -1,8 +1,8 @@
-from __future__ import print_function
 import json
 import logging
 import pprint
 import sys
+from urllib.parse import urlparse
 
 from . import six
 
@@ -88,7 +88,7 @@ def load_json_schema(schema_uri):
     scheme_dispatch = {
         'file': load_json_schema_from_file,
         'http': load_json_schema_from_web,
-        'https': load_json_schema_from_web,
+        'https': load_json_schema_from_web
     }
 
     try:
@@ -115,9 +115,7 @@ def load_json_schema_from_web(schema_uri):
     return schema
 
 def load_json_schema_from_file(schema_uri):
-    # Skipping the first six characters (i.e. the "file://" prefix) results
-    # in either a relative path or an absolute path. 
-    with open(schema_uri.strip()[6:], 'rt') as f:
+    with open(urlparse(schema_uri).path, 'rt') as f:
         return json.load(f)
 
 logging.getLogger('requests.packages.urllib3.connectionpool').addFilter(irods_log.DeferInfoToDebugFilter())

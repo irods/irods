@@ -91,6 +91,32 @@ install(
   NAMELINK_COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
 )
 
+# Initialize IRODS_CONFIGURATION_SCHEMA_PREFIX for configuration schemas.
+# This variable helps to produce the correct URI for the "$id" JSON property.
+if (IS_ABSOLUTE "${IRODS_HOME_DIRECTORY}")
+  set(IRODS_CONFIGURATION_SCHEMA_PREFIX "")
+else()
+  if (CMAKE_INSTALL_PREFIX STREQUAL "/")
+    # This branch is primarily for packaged installations, but can work for non-package
+    # installs as well.
+    set(IRODS_CONFIGURATION_SCHEMA_PREFIX "")
+  elseif (NOT CMAKE_INSTALL_PREFIX STREQUAL "")
+    # This branch is for non-package installations.
+    if (NOT CMAKE_INSTALL_PREFIX MATCHES ".+/$")
+      set(IRODS_CONFIGURATION_SCHEMA_PREFIX "${CMAKE_INSTALL_PREFIX}/")
+    endif()
+  
+    # Remove the leading slash so that the protocol matches what we expect.
+    # i.e. file:///non-package-install-root instead of file:////non-package-install-root
+    if (IS_ABSOLUTE "${IRODS_CONFIGURATION_SCHEMA_PREFIX}")
+      string(SUBSTRING "${IRODS_CONFIGURATION_SCHEMA_PREFIX}" 1 -1 NEW_IRODS_CONFIGURATION_SCHEMA_PREFIX)
+      set(IRODS_CONFIGURATION_SCHEMA_PREFIX "${NEW_IRODS_CONFIGURATION_SCHEMA_PREFIX}")
+    endif()
+  else()
+    message(FATAL_ERROR "Cannot initialize IRODS_CONFIGURATION_SCHEMA_PREFIX. CMAKE_INSTALL_PREFIX is empty.")
+  endif()
+endif()
+
 # Install configuration schemas with updated id field
 set(IRODS_CONFIGURATION_SCHEMA_VERSION 4)
 set(
