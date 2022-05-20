@@ -8,7 +8,7 @@ from .. import lib
 from . import session
 from subprocess import PIPE
 from fcntl import fcntl, F_SETFL, F_GETFL
-from time import clock
+from time import process_time
 from os import O_NONBLOCK
 from array import array
 
@@ -45,8 +45,8 @@ def read_stream(stream, timeout):
         # The output may not have started yet so we wait until it starts or times out.
         if char is None:
             if timestamp is None:
-                timestamp = clock()
-            elif clock() - timestamp > timeout:
+                timestamp = process_time()
+            elif process_time() - timestamp > timeout:
                 break
             continue
         # The end of the stream is indicated by an empty string so break the loop here.
@@ -117,8 +117,8 @@ class Test_Imeta_Interactive(unittest.TestCase):
         self.assertEqual(out, 'imeta>')
         self.assertEqual(err, '')
         # ensure imeta stays open
-        timestamp = clock()
-        while clock() - timestamp < self.default_timeout:
+        timestamp = process_time()
+        while process_time() - timestamp < self.default_timeout:
             self.assertIsNone(self.imeta_p.poll())
 
     def test_space_cmd(self):
@@ -129,8 +129,8 @@ class Test_Imeta_Interactive(unittest.TestCase):
         self.assertEqual(out, 'imeta>')
         self.assertEqual(err, '')
         # ensure imeta stays open
-        timestamp = clock()
-        while clock() - timestamp < self.default_timeout:
+        timestamp = process_time()
+        while process_time() - timestamp < self.default_timeout:
             self.assertIsNone(self.imeta_p.poll())
 
     def test_quit(self):
@@ -141,8 +141,8 @@ class Test_Imeta_Interactive(unittest.TestCase):
         self.assertEqual(out, '')
         self.assertEqual(err, '')
         # ensure imeta closes
-        timestamp = clock()
-        while self.imeta_p.poll() is None and clock() - timestamp < self.default_timeout:
+        timestamp = process_time()
+        while self.imeta_p.poll() is None and process_time() - timestamp < self.default_timeout:
             pass
         self.assertEqual(self.imeta_p.poll(), 0)
 
@@ -153,8 +153,8 @@ class Test_Imeta_Interactive(unittest.TestCase):
         self.assertEqual(out, '\n')
         self.assertEqual(err, '')
         # ensure imeta closes
-        timestamp = clock()
-        while self.imeta_p.poll() is None and clock() - timestamp < self.default_timeout:
+        timestamp = process_time()
+        while self.imeta_p.poll() is None and process_time() - timestamp < self.default_timeout:
             pass
         self.assertEqual(self.imeta_p.poll(), 0)
 
@@ -166,8 +166,8 @@ class Test_Imeta_Interactive(unittest.TestCase):
         self.assertEqual(out, 'imeta>')
         self.assertRegexpMatches(err, '^Unrecognized subcommand ')
         # ensure imeta stays open
-        timestamp = clock()
-        while clock() - timestamp < self.default_timeout:
+        timestamp = process_time()
+        while process_time() - timestamp < self.default_timeout:
             self.assertIsNone(self.imeta_p.poll())
 
     def test_ls_no_args(self):
@@ -178,8 +178,8 @@ class Test_Imeta_Interactive(unittest.TestCase):
         self.assertEqual(out, 'imeta>')
         self.assertRegexpMatches(err, '^Error: No object type descriptor ')
         # ensure imeta stays open
-        timestamp = clock()
-        while clock() - timestamp < self.default_timeout:
+        timestamp = process_time()
+        while process_time() - timestamp < self.default_timeout:
             self.assertIsNone(self.imeta_p.poll())
 
     def test_imeta_quoted_arguments__5518(self):
@@ -198,8 +198,8 @@ class Test_Imeta_Interactive(unittest.TestCase):
                                    ],
                                    'STDOUT_SINGLELINE', '^{A}/{V}/{U}$'.format(**locals()), use_regex=True)
         # ensure imeta stays open
-        timestamp = clock()
-        while clock() - timestamp < self.default_timeout:
+        timestamp = process_time()
+        while process_time() - timestamp < self.default_timeout:
             self.assertIsNone(self.imeta_p.poll())
 
     def test_ls_d(self):
@@ -210,7 +210,7 @@ class Test_Imeta_Interactive(unittest.TestCase):
         self.assertRegexpMatches(out, '.+\nimeta>$')
         self.assertEqual(err, '')
         # ensure imeta stays open
-        timestamp = clock()
-        while clock() - timestamp < self.default_timeout:
+        timestamp = process_time()
+        while process_time() - timestamp < self.default_timeout:
             self.assertIsNone(self.imeta_p.poll())
 
