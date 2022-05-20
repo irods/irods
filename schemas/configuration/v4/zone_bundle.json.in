@@ -1,5 +1,5 @@
 {
-    "$id": "file:///@IRODS_HOME_DIRECTORY@/configuration_schemas/v4/zone_bundle.json",
+    "$id": "file:///@IRODS_CONFIGURATION_SCHEMA_PREFIX@@IRODS_HOME_DIRECTORY@/configuration_schemas/v4/zone_bundle.json",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "type": "object",
     "description": "Schema for an iRODS zone bundle (possibly featuring Federation)",
