@@ -297,9 +297,9 @@ class ResourceSuite(ResourceBase):
         chain_pem_path = os.path.join(self.admin.local_session_dir, 'chain.pem')
         dhparams_pem_path = os.path.join(self.admin.local_session_dir, 'dhparams.pem')
 
-        lib.execute_command(['openssl', 'genrsa', '-out', server_key_path, '1024'])
+        lib.execute_command(['openssl', 'genrsa', '-out', server_key_path, '2048'])
         lib.execute_command('openssl req -batch -new -x509 -key %s -out %s -days 365' % (server_key_path, chain_pem_path))
-        lib.execute_command('openssl dhparam -2 -out %s 1024' % (dhparams_pem_path))  # normally 2048, but smaller size here for speed
+        lib.execute_command('openssl dhparam -2 -out %s 2048' % (dhparams_pem_path))
 
         # make sure acPreConnect's definition matches that of a vanilla installation.
         # this is accomplished by inserting a new rulebase before core.re in the NREP's
@@ -362,9 +362,9 @@ class ResourceSuite(ResourceBase):
         chain_pem_path = os.path.join(self.admin.local_session_dir, 'chain.pem')
         dhparams_pem_path = os.path.join(self.admin.local_session_dir, 'dhparams.pem')
 
-        lib.execute_command(['openssl', 'genrsa', '-out', server_key_path, '1024'])
+        lib.execute_command(['openssl', 'genrsa', '-out', server_key_path, '2048'])
         lib.execute_command('openssl req -batch -new -x509 -key %s -out %s -days 365' % (server_key_path, chain_pem_path))
-        lib.execute_command('openssl dhparam -2 -out %s 1024' % (dhparams_pem_path))  # normally 2048, but smaller size here for speed
+        lib.execute_command('openssl dhparam -2 -out %s 2048' % (dhparams_pem_path))
 
         # client side environment variables
         os.environ['irodsSSLVerifyServer'] = "none"
