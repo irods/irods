@@ -67,7 +67,12 @@ class Test_Imeta_Error_Handling(unittest.TestCase):
 
     def test_imeta_addw_return_code(self):
         self.admin.assert_icommand(['imeta', 'addw', '-d', self.test_data_paths_wildcard, 'rc_attr', 'rc_attr'], 'STDOUT', desired_rc=0)
-        self.admin.assert_icommand(['imeta', 'addw', '-d', self.test_data_paths_wildcard, 'rc_attr', 'rc_attr'], 'STDERR_SINGLELINE', 'CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME', desired_rc=4)
+        _, err, ec = self.admin.run_icommand(['imeta', 'addw', '-d', self.test_data_paths_wildcard, 'rc_attr', 'rc_attr'])
+        self.assertEqual(4, ec)
+        # In unixODBC versions > 2.3.5, the database plugin does not return CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME
+        # but instead it returns CAT_SQL_ERR. We support platforms that use both 2.3.4 and 2.3.6, so either error
+        # code is acceptable for this test.
+        self.assertTrue('CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME' in err or 'CAT_SQL_ERR' in err)
 
     def test_imeta_addw_stderr_5184(self):
         self.admin.assert_icommand(['imeta', 'addw', '-d', self.test_data_paths_wildcard, '5184_attr', '5184_attr'], 'STDOUT')
