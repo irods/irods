@@ -12,6 +12,7 @@ from .resource_suite import ResourceBase
 from ..configuration import IrodsConfig
 from .rule_texts_for_tests import rule_texts
 from .. import lib
+from .. import test
 from . import session
 
 class Test_ImetaSet(ResourceBase, unittest.TestCase):
@@ -545,6 +546,7 @@ class Test_ImetaAdda(session.make_sessions_mixin([('otherrods', 'rods')], []), u
     def tearDown(self):
         super(Test_ImetaAdda, self).tearDown()
 
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'rError messages do not return to the client after redirect to provider')
     def test_use_of_adda_subcommand_produces_deprecation_message__issue_6187(self):
         attr_name  = 'issue_6187_attr'
         attr_value = 'issue_6187_value'

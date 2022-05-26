@@ -45,6 +45,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
     # iadmin
     ###################
 
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "msiDeleteUnusedAVUs does not redirect and remote() does not return errors")
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Applies to the NREP only')
     def test_non_admins_are_not_allowed_to_delete_unused_metadata__issue_6183(self):
         attr_name  = 'issue_6183_attr'
