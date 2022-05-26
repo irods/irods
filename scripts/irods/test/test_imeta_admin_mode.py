@@ -7,6 +7,7 @@ else:
     import unittest
 
 from . import session
+from .. import test
 
 rodsusers  = [('alice', 'apass')]
 rodsadmins = [('otherrods', 'rods')]
@@ -45,6 +46,10 @@ class Test_Imeta_Admin_Mode(session.make_sessions_mixin(rodsadmins, rodsusers), 
             object_type_option = tc['type']
 
             for op in ['add', 'adda', 'set']:
+                # rError messages do not return to the client after redirect to provider
+                if test.settings.TOPOLOGY_FROM_RESOURCE_SERVER and op == 'adda':
+                    continue
+
                 try:
                     # Create a data object or collection based on the object type.
                     self.user.assert_icommand(['itouch' if object_type_option == '-d' else 'imkdir', object_name])

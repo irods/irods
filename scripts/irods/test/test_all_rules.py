@@ -32,7 +32,10 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
 
     global database_instance_name
-    database_instance_name = next(iter(IrodsConfig().server_config['plugin_configuration']['database']))
+    if test.settings.TOPOLOGY_FROM_RESOURCE_SERVER:
+        database_instance_name = 'none'
+    else:
+        database_instance_name = next(iter(IrodsConfig().server_config['plugin_configuration']['database']))
 
     global rulesdir
     currentdir = os.path.dirname(os.path.realpath(__file__))
@@ -863,6 +866,7 @@ OUTPUT ruleExecOut
             do_test(data_object, 'data_object', 'add', ['atomic_pre_fired', 'atomic_post_fired'])
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for PREP')
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "database_instance_name cannot be determined from catalog consumer")
     @unittest.skipIf(database_instance_name == 'mysql',
                     ("Fails against databases with transaction isolation level set to REPEATABLE-READ (e.g. MySQL). "
                      "For more details, see https://github.com/irods/irods/issues/4917"))
@@ -988,6 +992,7 @@ OUTPUT ruleExecOut
             self.admin.assert_icommand(['imeta', 'ls', '-d', data_object], 'STDOUT', ['atomic_pre_fired', 'atomic_post_fired'])
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for PREP')
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "database_instance_name cannot be determined from catalog consumer")
     @unittest.skipIf(database_instance_name == 'mysql',
                     ("Fails against databases with transaction isolation level set to REPEATABLE-READ (e.g. MySQL). "
                      "For more details, see https://github.com/irods/irods/issues/4917"))

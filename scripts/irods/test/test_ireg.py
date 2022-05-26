@@ -554,7 +554,7 @@ class test_ireg_options(session.make_sessions_mixin([('otherrods', 'rods')], [])
         out,err,rc = self.admin.run_icommand(['ireg', reg_path, coll])
         self.assertNotEqual(rc, 0)
         self.assertEqual(len(out), 0)
-        self.assertIn('SYS_PATH_IS_NOT_A_FILE', err)
+        self.assertTrue('SYS_PATH_IS_NOT_A_FILE' in err or 'UNIX_FILE_STAT_ERR' in err)
 
         self.admin.assert_icommand_fail(['ils', '-l', coll], 'STDOUT', coll)
 
