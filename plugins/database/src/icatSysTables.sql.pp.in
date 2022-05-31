@@ -82,7 +82,11 @@ create table R_META_MAIN ( meta_id INT64TYPE not null, meta_namespace varchar(25
 
 create table R_TOKN_MAIN ( token_namespace varchar(250) not null, token_id INT64TYPE not null, token_name varchar(250) not null, token_value varchar(250), token_value2 varchar(250), token_value3 varchar(250), r_comment varchar(1000), create_ts varchar(32), modify_ts varchar(32)) ;
 
+#ifdef mysql
+create table R_RULE_MAIN ( rule_id INT64TYPE not null, rule_version varchar(250) DEFAULT '0', rule_base_name varchar(250) not null, rule_name text not null, rule_event text not null, rule_condition text, rule_body text not null, rule_recovery text not null, rule_status INT64TYPE DEFAULT 1, rule_owner_name varchar(250) not null, rule_owner_zone varchar(250) not null, rule_descr_1 text, rule_descr_2 text, input_params text, output_params text, dollar_vars text, icat_elements text, sideeffects text, r_comment varchar(1000), create_ts varchar(32), modify_ts varchar(32)) ;
+#else
 create table R_RULE_MAIN ( rule_id INT64TYPE not null, rule_version varchar(250) DEFAULT '0', rule_base_name varchar(250) not null, rule_name varchar(2700) not null, rule_event varchar(2700) not null, rule_condition varchar(2700), rule_body varchar(2700) not null, rule_recovery varchar(2700) not null, rule_status INT64TYPE DEFAULT 1, rule_owner_name varchar(250) not null, rule_owner_zone varchar(250) not null, rule_descr_1 varchar(2700), rule_descr_2 varchar(2700), input_params varchar(2700), output_params varchar(2700), dollar_vars varchar(2700), icat_elements varchar(2700), sideeffects varchar(2700), r_comment varchar(1000), create_ts varchar(32), modify_ts varchar(32)) ;
+#endif
 
 create table R_RULE_BASE_MAP ( map_version varchar(250) DEFAULT '0', map_base_name varchar(250) not null, map_priority INTEGER not null, rule_id INT64TYPE not null, map_owner_name varchar(250) not null, map_owner_zone varchar(250) not null, r_comment varchar(1000), create_ts varchar(32), modify_ts varchar(32)) ;
 
@@ -185,11 +189,29 @@ create index idx_resc_main1 on R_RESC_MAIN (resc_id);
 create unique index idx_resc_main2 on R_RESC_MAIN (zone_name,resc_name);
 create unique index idx_coll_main3 on R_COLL_MAIN (coll_name VARCHAR_MAX_IDX_SIZE);
 create index idx_coll_main1 on R_COLL_MAIN (coll_id);
+
+#ifdef mysql
+create index idx_coll_main2 on R_COLL_MAIN (parent_coll_name(767));
+#else
 create unique index idx_coll_main2 on R_COLL_MAIN (parent_coll_name VARCHAR_MAX_IDX_SIZE,coll_name VARCHAR_MAX_IDX_SIZE);
+#endif
+
 create index idx_data_main1 on R_DATA_MAIN (data_id);
+
+#ifdef mysql
+create unique index idx_data_main2 on R_DATA_MAIN (coll_id, data_name(515), data_repl_num, data_version);
+#else
 create unique index idx_data_main2 on R_DATA_MAIN (coll_id,data_name VARCHAR_MAX_IDX_SIZE,data_repl_num,data_version);
+#endif
+
 create index idx_data_main3 on R_DATA_MAIN (coll_id);
+
+#ifdef mysql
+create index idx_data_main4 on R_DATA_MAIN (data_name(515));
+#else
 create index idx_data_main4 on R_DATA_MAIN (data_name VARCHAR_MAX_IDX_SIZE);
+#endif
+
 create index idx_data_main5 on R_DATA_MAIN (data_type_name);
 
 /* this is not possible for MySQL reference :: http://stackoverflow.com/a/1827099 */
@@ -223,4 +245,8 @@ create unique index idx_ticket_host on R_TICKET_ALLOWED_HOSTS (ticket_id, host);
 create unique index idx_ticket_user on R_TICKET_ALLOWED_USERS (ticket_id, user_name);
 create unique index idx_ticket_group on R_TICKET_ALLOWED_GROUPS (ticket_id, group_name);
 
+#ifdef mysql
+create unique index idx_grid_configuration on R_GRID_CONFIGURATION (namespace(383), option_name(383));
+#else
 create unique index idx_grid_configuration on R_GRID_CONFIGURATION (namespace VARCHAR_MAX_IDX_SIZE, option_name VARCHAR_MAX_IDX_SIZE);
+#endif

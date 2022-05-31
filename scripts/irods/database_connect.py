@@ -87,7 +87,8 @@ def get_odbc_entry(db_config, catalog_database_type):
             'Port': str(db_config['db_port']),
             'Database': db_config['db_name'],
             'FOUND_ROWS': '1',
-            'BIG_PACKETS': '1'
+            'BIG_PACKETS': '1',
+            'Charset': 'UTF8'
         }
     elif catalog_database_type == 'oracle':
         return {
