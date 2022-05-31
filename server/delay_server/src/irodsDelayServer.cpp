@@ -95,13 +95,16 @@ namespace
             return std::nullopt;
         }
 
-        static std::atomic<int> index = 0;
+        static std::mutex executor_index_mutex;
+        std::scoped_lock index_lock{executor_index_mutex};
+
+        static int index = 0;
 
         // The calculation of the index could be configurable and would give the admin
         // options for how an executor is selected (e.g. round robin, random, etc.).
-        index = index++ % executors->size();
+        index = index % executors->size();
 
-        return executors->at(index).get_ref<const std::string&>();
+        return executors->at(index++).get_ref<const std::string&>();
     }
 
     ix::client_connection get_new_connection(const std::optional<std::string>& _client_user)
