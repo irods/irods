@@ -640,10 +640,11 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
         self.admin.assert_icommand(['iquest', 'select RULE_EXEC_ID'], 'STDOUT', ['CAT_NO_ROWS_FOUND']) # Show that no rules exist.
 
     @unittest.skipUnless(test.settings.RUN_IN_TOPOLOGY, 'Not running a topology test')
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'delete this line when database credentials are not required to run the delay server')
     def test_delay_server_implicit_remote__issue_4429(self):
         config = IrodsConfig()
         rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
-        hostnames_expected = ['resource1.example.org','resource2.example.org','resource3.example.org']
+        hostnames_expected = [test.settings.HOSTNAME_1,test.settings.HOSTNAME_2,test.settings.HOSTNAME_3]
         filename = 'hello'
         object_name = self.admin.session_collection + "/" + filename
         delay_rule = '''
@@ -652,20 +653,30 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
             msiModAVUMetadata("-d","{1}", "add","a%i",*hostname,"hostname")
         }}
         '''.format(rep_name, object_name)
-        with lib.file_backed_up(config.server_config_path):
-            self.admin.assert_icommand(['itouch', object_name])
-            # Use the consumers as rule executors
-            config.server_config['advanced_settings']['delay_rule_executors'] = hostnames_expected
-            config.server_config['advanced_settings']['delay_server_sleep_time_in_seconds'] = 1
-            lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+        try:
+            self.admin.assert_icommand(['iadmin', 'set_delay_server', lib.get_hostname()])
+            with lib.file_backed_up(config.server_config_path):
+                self.admin.assert_icommand(['itouch', object_name])
+                # Use the consumers as rule executors
+                config.server_config['advanced_settings']['delay_rule_executors'] = hostnames_expected
+                config.server_config['advanced_settings']['delay_server_sleep_time_in_seconds'] = 1
+                lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+                IrodsController().restart(test_mode=True)
+                for i in range(len(hostnames_expected)):
+                    self.admin.assert_icommand(['irule', '-r', rep_name,
+                                                delay_rule % i,
+                                                '*hostname=','ruleExecOut'])
+                for i, hostname in enumerate(hostnames_expected):
+                    a = f'a{i}'
+                    lib.delayAssert(
+                        lambda: lib.metadata_attr_with_value_exists(self.admin, a, 'CAT_NO_ROWS_FOUND') == False
+                    )
+
+                self.admin.assert_icommand(['imeta', 'ls', '-d', filename], 'STDOUT', hostnames_expected)
+
+        finally:
+            self.admin.assert_icommand(['iadmin', 'set_delay_server', test.settings.ICAT_HOSTNAME])
             IrodsController().restart(test_mode=True)
-            for i in range(len(hostnames_expected)):
-                self.admin.assert_icommand(['irule', '-r', rep_name,
-                                            delay_rule % i,
-                                            '*hostname=','ruleExecOut'])
-            time.sleep(3)
-            self.admin.assert_icommand(['imeta', 'ls', '-d', filename], 'STDOUT', hostnames_expected)
-        IrodsController().restart(test_mode=True)
 
 @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads server log')
 class Test_Execution_Frequency(resource_suite.ResourceBase, unittest.TestCase):
