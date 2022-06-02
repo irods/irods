@@ -191,7 +191,10 @@ irodsAgentSignalExit( int ) {
         rmProcLog( reaped_pid );
     }
 
-    exit( 1 );
+    // Because the agent factory does not call any of the exec-family functions,
+    // the POSIX standard recommends using _exit() instead of exit() to keep the
+    // child from corrupting the parent's memory.
+    _exit(1);
 }
 
 int
