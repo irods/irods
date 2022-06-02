@@ -9,6 +9,7 @@ else:
 
 from . import session
 from .. import lib
+from .. import test
 
 class Test_ichmod(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
     def setUp(self):
@@ -29,6 +30,7 @@ class Test_ichmod(session.make_sessions_mixin([('otherrods', 'rods')], [('alice'
         self.admin.assert_icommand('iput ' + filepath + ' sub_dir1\\\\%/subdir2/')
         self.user.assert_icommand('iget ' + self.admin.session_collection + '/sub_dir1\\\\%/subdir2/file ' + os.path.join(self.user.local_session_dir, ''))
 
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'some error messages differ depending on where one is connected, so skip in this case for now')
     def test_ichmod_access_levels(self):
         filename1 = 'test_ichmod_access_levels'
         filename2 = 'test_access_levels_put_file'
