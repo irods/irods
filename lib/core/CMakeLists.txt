@@ -54,6 +54,7 @@ add_library(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_stacktrace.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_string_tokenize.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_virtual_path.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/json_events.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/key_value_proxy.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/list.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/msParam.cpp"
