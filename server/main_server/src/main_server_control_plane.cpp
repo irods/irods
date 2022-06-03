@@ -547,7 +547,8 @@ namespace irods
     void server_control_executor::operator()()
     {
         signal( SIGINT, ctrl_plane_handle_shutdown_signal );
-        signal( SIGHUP, ctrl_plane_handle_shutdown_signal );
+        // SIGHUP is the signal to reload the configuration. This shouldn't interact with it
+        signal(SIGHUP, SIG_IGN);
         signal( SIGTERM, ctrl_plane_handle_shutdown_signal );
 
         int port, num_hash_rounds;

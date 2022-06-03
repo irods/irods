@@ -5,6 +5,7 @@
 #include "irods/irods_configuration_keywords.hpp"
 #include "irods/irods_configuration_parser.hpp"
 #include "irods/irods_get_full_path_for_config_file.hpp"
+#include "irods/json_events.hpp"
 #include "irods/rcMisc.h"
 #include "irods/rodsErrorTable.h"
 #include "irods/rodsServer.hpp"
@@ -85,6 +86,8 @@ namespace hnc  = irods::experimental::net::hostname_cache;
 namespace dnsc = irods::experimental::net::dns_cache;
 // clang-format on
 
+using log_server = irods::experimental::log::server;
+
 struct sockaddr_un local_addr{};
 int agent_conn_socket{};
 bool connected_to_agent{};
@@ -98,6 +101,8 @@ int SvrSock;
 
 std::atomic<bool> is_control_plane_accepting_requests = false;
 int failed_delay_server_migration_communication_attempts = 0;
+
+std::atomic<bool> reload_server_config = false;
 
 agentProc_t* ConnectedAgentHead{};
 agentProc_t* ConnReqHead{};
@@ -134,21 +139,21 @@ namespace
         // Should only ever set the cache salt once.
         try {
             const auto& existing_salt = irods::get_server_property<const std::string>(irods::KW_CFG_RE_CACHE_SALT);
-            rodsLog(LOG_ERROR, "createAndSetRECacheSalt: salt already set [%s]", existing_salt.c_str());
+            log_server::error("createAndSetRECacheSalt: salt already set [{}]", existing_salt.c_str());
             return ERROR(SYS_ALREADY_INITIALIZED, "createAndSetRECacheSalt: cache salt already set");
         }
         catch (const irods::exception&) {
             irods::buffer_crypt::array_t buf;
             irods::error ret = irods::buffer_crypt::generate_key(buf, RE_CACHE_SALT_NUM_RANDOM_BYTES);
             if (!ret.ok()) {
-                rodsLog(LOG_ERROR, "createAndSetRECacheSalt: failed to generate random bytes");
+                log_server::error("createAndSetRECacheSalt: failed to generate random bytes");
                 return PASS(ret);
             }
 
             std::string cache_salt_random;
             ret = irods::buffer_crypt::hex_encode(buf, cache_salt_random);
             if (!ret.ok()) {
-                rodsLog(LOG_ERROR, "createAndSetRECacheSalt: failed to hex encode random bytes");
+                log_server::error("createAndSetRECacheSalt: failed to hex encode random bytes");
                 return PASS(ret);
             }
 
@@ -158,13 +163,13 @@ namespace
                 irods::set_server_property<std::string>(irods::KW_CFG_RE_CACHE_SALT, cache_salt);
             }
             catch (const nlohmann::json::exception& e) {
-                rodsLog(LOG_ERROR, "createAndSetRECacheSalt: failed to set server_properties");
+                log_server::error("createAndSetRECacheSalt: failed to set server_properties");
                 return ERROR(SYS_INVALID_INPUT_PARAM, e.what());
             }
             catch (const std::exception&) {}
 
             if (setenv(SP_RE_CACHE_SALT, cache_salt.c_str(), 1) != 0) {
-                rodsLog(LOG_ERROR, "createAndSetRECacheSalt: failed to set environment variable");
+                log_server::error("createAndSetRECacheSalt: failed to set environment variable");
                 return ERROR(SYS_SETENV_ERR, "createAndSetRECacheSalt: failed to set environment variable");
             }
 
@@ -263,7 +268,7 @@ namespace
     {
         ix::log::init(_write_to_stdout, _enable_test_mode);
         irods::server_properties::instance().capture();
-        ix::log::server::set_level(ix::log::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_SERVER));
+        log_server::set_level(ix::log::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_SERVER));
         ix::log::set_server_type("server");
 
         if (char hostname[HOST_NAME_MAX]{}; gethostname(hostname, sizeof(hostname)) == 0) {
@@ -280,7 +285,7 @@ namespace
             std::string config_path;
 
             if (const auto err = irods::get_full_path_for_config_file("server_config.json", config_path); !err.ok()) {
-                ix::log::server::error("Could not locate server_config.json. Cannot remove leftover rulebase files.");
+                log_server::error("Could not locate server_config.json. Cannot remove leftover rulebase files.");
                 return;
             }
 
@@ -291,7 +296,7 @@ namespace
                 in >> config;
             }
             else {
-                ix::log::server::error("Could not open server configuration file. Cannot remove leftover rulebase files.");
+                log_server::error("Could not open server configuration file. Cannot remove leftover rulebase files.");
                 return;
             }
 
@@ -454,6 +459,11 @@ namespace
         }
     } // log_stacktrace_files
 
+    void set_reload_server_config_flag(int sig)
+    {
+        reload_server_config = true;
+    } // set_reload_server_config_flag
+
     void setup_signal_handlers() noexcept
     {
         signal(SIGTTIN, SIG_IGN);
@@ -462,11 +472,11 @@ namespace
         signal(SIGPIPE, SIG_IGN);
 #ifdef osx_platform
         signal(SIGINT, (sig_t) serverExit);
-        signal(SIGHUP, (sig_t) serverExit);
+        signal(SIGHUP, (sig_t) set_reload_server_config_flag);
         signal(SIGTERM, (sig_t) serverExit);
 #else
         signal(SIGINT, serverExit);
-        signal(SIGHUP, serverExit);
+        signal(SIGHUP, set_reload_server_config_flag);
         signal(SIGTERM, serverExit);
 #endif
     } // setup_signal_handlers
@@ -848,7 +858,7 @@ namespace
         }
 
         if (setsid() < 0) {
-            rodsLog(LOG_NOTICE, "serverize: setsid failed, errno = %d\n", errno);
+            log_server::info("serverize: setsid failed, errno = {}\n", errno);
             exit(1);
         }
 
@@ -935,10 +945,10 @@ int main(int argc, char** argv)
     if (!write_to_stdout) {
         daemonize();
     }
-    
+
     init_logger(write_to_stdout, enable_test_mode);
 
-    ix::log::server::info("Initializing server ...");
+    log_server::info("Initializing server ...");
 
     const auto pid_file_fd = irods::create_pid_file(irods::PID_FILENAME_MAIN_SERVER);
     if (pid_file_fd == -1) {
@@ -981,11 +991,13 @@ int main(int argc, char** argv)
     // Create a directory for IPC related sockets. This directory protects IPC sockets from
     // external applications.
     if (!mkdtemp(unix_domain_socket_directory)) {
-        ix::log::server::error("Error creating temporary directory for iRODS sockets, mkdtemp errno [{}]: [{}].", errno, strerror(errno));
+        log_server::error("Error creating temporary directory for iRODS sockets, mkdtemp errno [{}]: [{}].",
+                          errno,
+                          strerror(errno));
         return SYS_INTERNAL_ERR;
     }
 
-    ix::log::server::info("Setting up UNIX domain socket for agent factory ...");
+    log_server::info("Setting up UNIX domain socket for agent factory ...");
     char random_suffix[65];
     get64RandomBytes(random_suffix);
     std::snprintf(agent_factory_socket_file, sizeof(agent_factory_socket_file), "%s/irods_factory_%s", unix_domain_socket_directory, random_suffix);
@@ -1003,7 +1015,7 @@ int main(int argc, char** argv)
                 return;
             }
 
-            ix::log::server::info("Forking agent factory ...");
+            log_server::info("Forking agent factory ...");
 
             const auto pid = fork();
 
@@ -1026,7 +1038,7 @@ int main(int argc, char** argv)
                 // socket associated with the crashed agent factory.
                 close(agent_conn_socket);
 
-                ix::log::server::info("Connecting to agent factory [agent_factory_pid={}] ...", pid);
+                log_server::info("Connecting to agent factory [agent_factory_pid={}] ...", pid);
 
                 agent_conn_socket = socket(AF_UNIX, SOCK_STREAM, 0);
 
@@ -1043,8 +1055,9 @@ int main(int argc, char** argv)
                     const auto saved_errno = errno;
 
                     if ((std::time(nullptr) - start_time) > 5) {
-                        ix::log::server::error("Error connecting to agent factory socket, errno = [{}]: {}",
-                                               saved_errno, strerror(saved_errno));
+                        log_server::error("Error connecting to agent factory socket, errno = [{}]: {}",
+                                          saved_errno,
+                                          strerror(saved_errno));
                         exit(SYS_SOCK_CONNECT_ERR);
                     }
                 }
@@ -1064,17 +1077,15 @@ int main(int argc, char** argv)
     ix::cron::cron::instance().add_task(agent_watcher.build());
 
     ix::cron::cron_builder cache_clearer;
-    cache_clearer
-        .interval(600)
-        .task([] {
-            ix::log::server::trace("Expiring old cache entries");
-            irods::experimental::net::hostname_cache::erase_expired_entries();
-            irods::experimental::net::dns_cache::erase_expired_entries();
-        });
+    cache_clearer.interval(600).task([] {
+        log_server::trace("Expiring old cache entries");
+        irods::experimental::net::hostname_cache::erase_expired_entries();
+        irods::experimental::net::dns_cache::erase_expired_entries();
+    });
     ix::cron::cron::instance().add_task(cache_clearer.build());
 
     return serverMain(enable_test_mode, write_to_stdout);
-}
+} // main
 
 int serverMain(const bool enable_test_mode = false, const bool write_to_stdout = false)
 {
@@ -1083,7 +1094,7 @@ int serverMain(const bool enable_test_mode = false, const bool write_to_stdout =
     // set re cache salt here
     irods::error ret = createAndSetRECacheSalt();
     if (!ret.ok()) {
-        rodsLog(LOG_ERROR, "serverMain: createAndSetRECacheSalt error.\n%s", ret.result().c_str());
+        log_server::error("serverMain: createAndSetRECacheSalt error.\n{}", ret.result().c_str());
         exit(1);
     }
 
@@ -1099,7 +1110,7 @@ int serverMain(const bool enable_test_mode = false, const bool write_to_stdout =
     rsComm_t svrComm;
     int status = initServerMain(&svrComm, enable_test_mode, write_to_stdout);
     if (status < 0) {
-        rodsLog(LOG_ERROR, "serverMain: initServerMain error. status = %d", status);
+        log_server::error("serverMain: initServerMain error. status = {}", status);
         exit(1);
     }
 
@@ -1117,6 +1128,18 @@ int serverMain(const bool enable_test_mode = false, const bool write_to_stdout =
             .interval(get_stacktrace_file_processor_sleep_time())
             .task(log_stacktrace_files);
         ix::cron::cron::instance().add_task(task_builder.build());
+    }
+
+    {
+        ix::cron::cron_builder configuration_reloader;
+        configuration_reloader.interval(0).task([]() {
+            if (reload_server_config) {
+                reload_server_config = false;
+                auto diff_list = irods::server_properties::server_properties::instance().reload();
+                ix::json_events::run_hooks(diff_list);
+                log_server::info("Configuration Reloaded.");
+            }
+        });
     }
 
     std::thread cron_manager_thread{[] {
@@ -1149,7 +1172,7 @@ int serverMain(const bool enable_test_mode = false, const bool write_to_stdout =
 
         status = startProcConnReqThreads();
         if (status < 0) {
-            rodsLog(LOG_ERROR, "[%s] - Error in startProcConnReqThreads()", __FUNCTION__);
+            log_server::error("[{}] - Error in startProcConnReqThreads()", __FUNCTION__);
             return status;
         }
 
@@ -1158,7 +1181,8 @@ int serverMain(const bool enable_test_mode = false, const bool write_to_stdout =
                 PurgeLockFileThread = new boost::thread(purgeLockFileWorkerTask);
             }
             catch (const boost::thread_resource_error&) {
-                rodsLog(LOG_ERROR, "boost encountered a thread_resource_error during thread construction in serverMain.");
+                log_server::error(
+                    "boost encountered a thread_resource_error during thread construction in serverMain.");
             }
         }
 
@@ -1173,7 +1197,7 @@ int serverMain(const bool enable_test_mode = false, const bool write_to_stdout =
                 procChildren(&ConnectedAgentHead);
                 // Wake up the agent factory process so it can clean up and exit
                 kill(agent_spawning_pid, SIGTERM);
-                ix::log::server::info("iRODS Server is exiting with state [{}].", to_string(state));
+                log_server::info("iRODS Server is exiting with state [{}].", to_string(state));
                 break;
             }
 
@@ -1184,24 +1208,33 @@ int serverMain(const bool enable_test_mode = false, const bool write_to_stdout =
             }
 
             if (irods::server_state::server_state::running != state) {
-                ix::log::server::info("Invalid iRODS server state [{}].", to_string(state));
+                log_server::info("Invalid iRODS server state [{}].", to_string(state));
             }
-
             FD_SET(svrComm.sock, &sockMask);
 
             int numSock = 0;
             struct timeval time_out;
             time_out.tv_sec  = 0;
             time_out.tv_usec = irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC * 1000;
+
             while ((numSock = select(svrComm.sock + 1, &sockMask, nullptr, nullptr, &time_out)) < 0) {
                 if (errno == EINTR) {
-                    rodsLog(LOG_NOTICE, "serverMain: select() interrupted");
+                    log_server::info("serverMain: select() interrupted");
                     FD_SET(svrComm.sock, &sockMask);
                     continue;
                 }
 
-                rodsLog(LOG_NOTICE, "serverMain: select() error, errno = %d", errno);
+                log_server::info("serverMain: select() error, errno = {}", errno);
                 return -1;
+            }
+
+            if (reload_server_config) {
+                // As a side effect of reading the server properties object, we acquire a lock
+                // that cannot be had while the configuration is in the middle of reloading.
+                //
+                // This is important because otherwise the server may respond to a new request
+                // before loading the new settings.
+                irods::server_properties::instance().contains("");
             }
 
             procChildren(&ConnectedAgentHead);
@@ -1213,11 +1246,11 @@ int serverMain(const bool enable_test_mode = false, const bool write_to_stdout =
             const int newSock = rsAcceptConn(&svrComm);
             if (newSock < 0) {
                 if (++acceptErrCnt > MAX_ACCEPT_ERR_CNT) {
-                    rodsLog(LOG_ERROR, "serverMain: Too many socket accept error. Exiting");
+                    log_server::error("serverMain: Too many socket accept error. Exiting");
                     break;
                 }
 
-                rodsLog(LOG_NOTICE, "serverMain: acceptConn() error, errno = %d", errno);
+                log_server::info("serverMain: acceptConn() error, errno = {}", errno);
                 continue;
             }
             else {
@@ -1226,7 +1259,7 @@ int serverMain(const bool enable_test_mode = false, const bool write_to_stdout =
 
             status = chkAgentProcCnt();
             if (status < 0) {
-                rodsLog(LOG_NOTICE, "serverMain: chkAgentProcCnt failed status = %d", status);
+                log_server::info("serverMain: chkAgentProcCnt failed status = {}", status);
 
                 // =-=-=-=-=-=-=-
                 // create network object to communicate to the network
@@ -1259,7 +1292,7 @@ int serverMain(const bool enable_test_mode = false, const bool write_to_stdout =
                 PurgeLockFileThread->join();
             }
             catch (const boost::thread_resource_error&) {
-                rodsLog(LOG_ERROR, "boost encountered a thread_resource_error during join in serverMain.");
+                log_server::error("boost encountered a thread_resource_error during join in serverMain.");
             }
         }
 
@@ -1269,7 +1302,7 @@ int serverMain(const bool enable_test_mode = false, const bool write_to_stdout =
         irods::server_state::set_state(irods::server_state::server_state::exited);
     }
     catch (const irods::exception& e) {
-        rodsLog(LOG_ERROR, "Exception caught in server loop\n%s", e.what());
+        log_server::error("Exception caught in server loop\n{}", e.what());
         return_code = e.code();
     }
 
@@ -1277,7 +1310,7 @@ int serverMain(const bool enable_test_mode = false, const bool write_to_stdout =
     unlink(agent_factory_socket_file);
     rmdir(unix_domain_socket_directory);
 
-    ix::log::server::info("iRODS Server is done.");
+    log_server::info("iRODS Server is done.");
 
     return return_code;
 }
@@ -1396,11 +1429,14 @@ int sendEnvironmentVarIntToSocket(const char* var, int val, int socket)
     const ssize_t status = send(socket, msg.c_str(), msg.size(), 0);
 
     if (status < 0) {
-        rodsLog(LOG_ERROR, "Error in sendEnvironmentVarIntToSocket, errno = [%d]: %s", errno, strerror(errno));
+        log_server::error("Error in sendEnvironmentVarIntToSocket, errno = [{}]: {}", errno, strerror(errno));
     }
     else if (static_cast<std::size_t>(status) != msg.size()) {
-        rodsLog(LOG_DEBUG, "Failed to send entire message in sendEnvironmentVarIntToSocket - msg [%s] is [%d] bytes long, sent [%d] bytes",
-                msg.c_str(), msg.size(), status);
+        log_server::debug("Failed to send entire message in sendEnvironmentVarIntToSocket - msg [{}] is [{}] "
+                          "bytes long, sent [{}] bytes",
+                          msg.c_str(),
+                          msg.size(),
+                          status);
     }
 
     return status;
@@ -1412,11 +1448,14 @@ int sendEnvironmentVarStrToSocket(const char* var, const char* val, int socket)
     const ssize_t status = send(socket, msg.c_str(), msg.size(), 0);
 
     if (status < 0) {
-        rodsLog(LOG_ERROR, "Error in sendEnvironmentVarIntToSocket, errno = [%d]: %s", errno, strerror(errno));
+        log_server::error("Error in sendEnvironmentVarIntToSocket, errno = [{}]: {}", errno, strerror(errno));
     }
     else if (static_cast<std::size_t>(status) != msg.size()) {
-        rodsLog(LOG_DEBUG, "Failed to send entire message in sendEnvironmentVarIntToSocket - msg [%s] is [%d] bytes long, sent [%d] bytes",
-                msg.c_str(), msg.size(), status);
+        log_server::debug("Failed to send entire message in sendEnvironmentVarIntToSocket - msg [{}] is [{}] "
+                          "bytes long, sent [{}] bytes",
+                          msg.c_str(),
+                          msg.size(),
+                          status);
     }
 
     return status;
@@ -1462,15 +1501,21 @@ int execAgent(int newSock, startupPack_t* startupPack)
 
     sockaddr_un tmp_socket_addr{};
     char tmp_socket_file[sizeof(tmp_socket_addr.sun_path)]{};
-    std::snprintf(tmp_socket_file, sizeof(tmp_socket_file), "%s/irods_agent_%s", unix_domain_socket_directory, random_suffix);
+    std::snprintf(tmp_socket_file,
+                  sizeof(tmp_socket_file),
+                  "%s/irods_agent_%s",
+                  unix_domain_socket_directory,
+                  random_suffix);
 
     ssize_t status = send(agent_conn_socket, tmp_socket_file, strlen(tmp_socket_file), 0);
     if (status < 0) {
-        rodsLog(LOG_ERROR, "Error sending socket to agent factory process, errno = [%d]: %s", errno, strerror(errno));
+        log_server::error("Error sending socket to agent factory process, errno = [{}]: {}", errno, strerror(errno));
     }
     else if (static_cast<std::size_t>(status) < std::strlen(tmp_socket_file)) {
-        rodsLog(LOG_DEBUG, "Failed to send entire message - msg [%s] is [%d] bytes long, sent [%d] bytes",
-                tmp_socket_file, strlen(tmp_socket_file), status);
+        log_server::debug("Failed to send entire message - msg [{}] is [{}] bytes long, sent [{}] bytes",
+                          tmp_socket_file,
+                          strnlen(tmp_socket_file, sizeof(tmp_socket_file)),
+                          status);
     }
 
     tmp_socket_addr.sun_family = AF_UNIX;
@@ -1478,16 +1523,16 @@ int execAgent(int newSock, startupPack_t* startupPack)
 
     int tmp_socket{socket(AF_UNIX, SOCK_STREAM, 0)};
     if (tmp_socket < 0) {
-        rodsLog( LOG_ERROR, "Unable to create socket in execAgent, errno = [%d]: %s", errno, strerror( errno ) );
+        rodsLog(LOG_ERROR, "Unable to create socket in execAgent, errno = [{}]: {}", errno, strerror(errno));
     }
 
     const auto cleanup_sockets{[&]() {
         if (close(tmp_socket) < 0) {
-            rodsLog(LOG_ERROR, "close(tmp_socket) failed with errno = [%d]: %s", errno, strerror(errno));
+            log_server::error("close(tmp_socket) failed with errno = [{}]: {}", errno, strerror(errno));
         }
 
         if (unlink(tmp_socket_file) < 0) {
-            rodsLog(LOG_ERROR, "unlink(tmp_socket_file) failed with errno = [%d]: %s", errno, strerror(errno));
+            log_server::error("unlink(tmp_socket_file) failed with errno = [{}]: {}", errno, strerror(errno));
         }
     }};
 
@@ -1495,17 +1540,21 @@ int execAgent(int newSock, startupPack_t* startupPack)
     char in_buf[1024]{};
     status = recv(agent_conn_socket, &in_buf, sizeof(in_buf), 0);
     if (status < 0) {
-        rodsLog(LOG_ERROR, "Error in recv acknowledgement from agent factory process, errno = [%d]: %s", errno, strerror(errno));
+        log_server::error("Error in recv acknowledgement from agent factory process, errno = [{}]: {}",
+                          errno,
+                          strerror(errno));
         status = SYS_SOCK_READ_ERR;
     }
     else if (0 != strcmp(in_buf, "OK")) {
-        rodsLog(LOG_ERROR, "Bad acknowledgement from agent factory process, message = [%s]", in_buf);
+        log_server::error("Bad acknowledgement from agent factory process, message = [{}]", in_buf);
         status = SYS_SOCK_READ_ERR;
     }
     else {
         status = connect(tmp_socket, (const struct sockaddr*) &tmp_socket_addr, sizeof(local_addr));
         if (status < 0) {
-            rodsLog(LOG_ERROR, "Unable to connect to socket in agent factory process, errno = [%d]: %s", errno, strerror(errno));
+            log_server::error("Unable to connect to socket in agent factory process, errno = [{}]: {}",
+                              errno,
+                              strerror(errno));
             status = SYS_SOCK_CONNECT_ERR;
         }
     }
@@ -1527,57 +1576,57 @@ int execAgent(int newSock, startupPack_t* startupPack)
                                            irods::get_server_property<const std::string>(irods::KW_CFG_RE_CACHE_SALT).c_str(),
                                            tmp_socket);
     if (status < 0) {
-        rodsLog(LOG_ERROR, "Failed to send SP_RE_CACHE_SALT to agent");
+        log_server::error("Failed to send SP_RE_CACHE_SALT to agent");
     }
 
     status = sendEnvironmentVarIntToSocket(SP_CONNECT_CNT, startupPack->connectCnt, tmp_socket);
     if (status < 0) {
-        rodsLog(LOG_ERROR, "Failed to send SP_CONNECT_CNT to agent");
+        log_server::error("Failed to send SP_CONNECT_CNT to agent");
     }
 
     status = sendEnvironmentVarStrToSocket(SP_PROXY_RODS_ZONE, startupPack->proxyRodsZone, tmp_socket);
     if (status < 0) {
-        rodsLog(LOG_ERROR, "Failed to send SP_PROXY_RODS_ZONE to agent");
+        log_server::error("Failed to send SP_PROXY_RODS_ZONE to agent");
     }
 
     status = sendEnvironmentVarIntToSocket(SP_NEW_SOCK, newSock, tmp_socket);
     if (status < 0) {
-        rodsLog(LOG_ERROR, "Failed to send SP_NEW_SOCK to agent");
+        log_server::error("Failed to send SP_NEW_SOCK to agent");
     }
 
     status = sendEnvironmentVarIntToSocket(SP_PROTOCOL, startupPack->irodsProt, tmp_socket);
     if (status < 0) {
-        rodsLog(LOG_ERROR, "Failed to send SP_PROTOCOL to agent");
+        log_server::error("Failed to send SP_PROTOCOL to agent");
     }
 
     status = sendEnvironmentVarIntToSocket(SP_RECONN_FLAG, startupPack->reconnFlag, tmp_socket);
     if (status < 0) {
-        rodsLog(LOG_ERROR, "Failed to send SP_RECONN_FLAG to agent");
+        log_server::error("Failed to send SP_RECONN_FLAG to agent");
     }
 
     status = sendEnvironmentVarStrToSocket(SP_PROXY_USER, startupPack->proxyUser, tmp_socket);
     if (status < 0) {
-        rodsLog(LOG_ERROR, "Failed to send SP_PROXY_USER to agent");
+        log_server::error("Failed to send SP_PROXY_USER to agent");
     }
 
     status = sendEnvironmentVarStrToSocket(SP_CLIENT_USER, startupPack->clientUser, tmp_socket);
     if (status < 0) {
-        rodsLog(LOG_ERROR, "Failed to send SP_CLIENT_USER to agent");
+        log_server::error("Failed to send SP_CLIENT_USER to agent");
     }
 
     status = sendEnvironmentVarStrToSocket(SP_CLIENT_RODS_ZONE, startupPack->clientRodsZone, tmp_socket);
     if (status < 0) {
-        rodsLog(LOG_ERROR, "Failed to send SP_CLIENT_RODS_ZONE to agent");
+        log_server::error("Failed to send SP_CLIENT_RODS_ZONE to agent");
     }
 
     status = sendEnvironmentVarStrToSocket(SP_REL_VERSION, startupPack->relVersion, tmp_socket);
     if (status < 0) {
-        rodsLog(LOG_ERROR, "Failed to send SP_REL_VERSION to agent");
+        log_server::error("Failed to send SP_REL_VERSION to agent");
     }
 
     status = sendEnvironmentVarStrToSocket(SP_API_VERSION, startupPack->apiVersion, tmp_socket);
     if (status < 0) {
-        rodsLog(LOG_ERROR, "Failed to send SP_API_VERSION to agent");
+        log_server::error("Failed to send SP_API_VERSION to agent");
     }
 
     // If the client-server negotiation request is in the option variable, set that env var
@@ -1589,40 +1638,42 @@ int execAgent(int newSock, startupPack_t* startupPack)
 
         status = sendEnvironmentVarStrToSocket(SP_OPTION, trunc_str.c_str(), tmp_socket);
         if (status < 0) {
-            rodsLog(LOG_ERROR, "Failed to send SP_OPTION to agent");
+            log_server::error("Failed to send SP_OPTION to agent");
         }
 
         status = sendEnvironmentVarStrToSocket(irods::RODS_CS_NEG, REQ_SVR_NEG, tmp_socket);
         if (status < 0) {
-            rodsLog(LOG_ERROR, "Failed to send irods::RODS_CS_NEG to agent");
+            log_server::error("Failed to send irods::RODS_CS_NEG to agent");
         }
     }
     else {
         status = sendEnvironmentVarStrToSocket(SP_OPTION, startupPack->option, tmp_socket);
         if (status < 0) {
-            rodsLog(LOG_ERROR, "Failed to send SP_OPTION to agent");
+            log_server::error("Failed to send SP_OPTION to agent");
         }
     }
 
     status = sendEnvironmentVarIntToSocket(SERVER_BOOT_TIME, ServerBootTime, tmp_socket);
     if (status < 0) {
-        rodsLog(LOG_ERROR, "Failed to send SERVER_BOOT_TIME to agent");
+        log_server::error("Failed to send SERVER_BOOT_TIME to agent");
     }
 
     status = send(tmp_socket, "end_of_vars", 12, 0);
     if (status <= 0) {
-        rodsLog(LOG_ERROR, "Failed to send \"end_of_vars;\" to agent");
+        log_server::error("Failed to send \"end_of_vars;\" to agent");
     }
 
     status = recv(tmp_socket, &in_buf, sizeof(in_buf), 0);
     if (status < 0) {
-        rodsLog(LOG_ERROR, "Error in recv acknowledgement from agent factory process, errno = [%d]: %s", errno, strerror(errno));
+        log_server::error("Error in recv acknowledgement from agent factory process, errno = [{}]: {}",
+                          errno,
+                          strerror(errno));
         cleanup_sockets();
         return SYS_SOCK_READ_ERR;
     }
 
     if (std::strcmp(in_buf, "OK") != 0) {
-        rodsLog(LOG_ERROR, "Bad acknowledgement from agent factory process, message = [%s]", in_buf);
+        log_server::error("Bad acknowledgement from agent factory process, message = [{}]", in_buf);
         cleanup_sockets();
         return SYS_SOCK_READ_ERR;
     }
@@ -1630,7 +1681,9 @@ int execAgent(int newSock, startupPack_t* startupPack)
     sendSocketOverSocket(tmp_socket, newSock);
     status = recv(tmp_socket, &in_buf, sizeof(in_buf), 0);
     if (status < 0) {
-        rodsLog(LOG_ERROR, "Error in recv child_pid from agent factory process, errno = [%d]: %s", errno, strerror(errno));
+        log_server::error("Error in recv child_pid from agent factory process, errno = [{}]: {}",
+                          errno,
+                          strerror(errno));
         cleanup_sockets();
         return SYS_SOCK_READ_ERR;
     }
@@ -1711,7 +1764,7 @@ int chkAgentProcCnt()
 
     }
     catch (const nlohmann::json::exception& e) {
-        rodsLog(LOG_ERROR, "%s failed with message [%s]", e.what());
+        log_server::error("%s failed with message [{}]", e.what());
         return SYS_INTERNAL_ERR;
     }
 
@@ -1732,7 +1785,7 @@ int chkConnectedAgentProcQueue()
         if (!boost::filesystem::exists(procPath)) {
             // The agent proc is gone.
             auto* unmatchedAgentProc = tmpAgentProc;
-            rodsLog(LOG_DEBUG, "Agent process %d in Connected queue but not in ProcLogDir", tmpAgentProc->pid);
+            log_server::debug("Agent process {} in Connected queue but not in ProcLogDir", tmpAgentProc->pid);
 
             if (!prevAgentProc) {
                 ConnectedAgentHead = tmpAgentProc->next;
@@ -1759,7 +1812,7 @@ int initServer(rsComm_t* svrComm)
 {
     int status = initServerInfo(0, svrComm);
     if (status < 0) {
-        rodsLog(LOG_NOTICE, "initServer: initServerInfo error, status = %d", status);
+        log_server::info("initServer: initServerInfo error, status = {}", status);
         return status;
     }
 
@@ -1839,8 +1892,7 @@ int recordServerProcess(rsComm_t* svrComm)
             std::fclose(fd);
 
             if (const int ec = chmod(filePath, 0664); ec != 0) {
-                rodsLog(LOG_ERROR, "chmod failed in recordServerProcess on [%s] with error code %d",
-                        filePath, ec);
+                log_server::error("chmod failed in recordServerProcess on [{}] with error code {}", filePath, ec);
             }
         }
     }
@@ -1855,7 +1907,7 @@ int initServerMain(rsComm_t *svrComm,
     std::memset(svrComm, 0, sizeof(*svrComm));
     int status = getRodsEnv(&svrComm->myEnv);
     if (status < 0) {
-        rodsLog(LOG_ERROR, "%s: getRodsEnv error. status = %d", __func__, status);
+        log_server::error("{}: getRodsEnv error. status = {}", __func__, status);
         return status;
     }
     initAndClearProcLog();
@@ -1882,7 +1934,7 @@ int initServerMain(rsComm_t *svrComm,
 
     status = initServer(svrComm);
     if (status < 0) {
-        rodsLog(LOG_ERROR, "%s: initServer error. status = %d", __func__, status);
+        log_server::error("{}: initServer error. status = {}", __func__, status);
         exit(1);
     }
 
@@ -1897,16 +1949,16 @@ int initServerMain(rsComm_t *svrComm,
 
     svrComm->sock = sockOpenForInConn(svrComm, &zone_port, nullptr, SOCK_STREAM);
     if (svrComm->sock < 0) {
-        rodsLog(LOG_ERROR, "%s: sockOpenForInConn error. status = %d", __func__, svrComm->sock);
+        log_server::error("{}: sockOpenForInConn error. status = {}", __func__, svrComm->sock);
         return svrComm->sock;
     }
 
     if (listen(svrComm->sock, MAX_LISTEN_QUE) < 0) {
-        rodsLog(LOG_ERROR, "%s: listen failed, errno: %d", __func__, errno);
+        log_server::error("{}: listen failed, errno: {}", __func__, errno);
         return SYS_SOCK_LISTEN_ERR;
     }
 
-    ix::log::server::info("rodsServer Release version {} - API Version {} is up", RODS_REL_VERSION, RODS_API_VERSION);
+    log_server::info("rodsServer Release version {} - API Version {} is up", RODS_REL_VERSION, RODS_API_VERSION);
 
     // Record port, PID, and CWD into a well-known file.
     recordServerProcess(svrComm);
@@ -1984,7 +2036,8 @@ int startProcConnReqThreads()
             ReadWorkerThread[i] = new boost::thread(readWorkerTask);
         }
         catch (const boost::thread_resource_error&) {
-            rodsLog(LOG_ERROR, "boost encountered a thread_resource_error during thread construction in startProcConnReqThreads.");
+            log_server::error(
+                "boost encountered a thread_resource_error during thread construction in startProcConnReqThreads.");
             return SYS_THREAD_RESOURCE_ERR;
         }
     }
@@ -1993,7 +2046,8 @@ int startProcConnReqThreads()
         SpawnManagerThread = new boost::thread(spawnManagerTask);
     }
     catch (const boost::thread_resource_error&) {
-        rodsLog(LOG_ERROR, "boost encountered a thread_resource_error during thread construction in startProcConnReqThreads.");
+        log_server::error(
+            "boost encountered a thread_resource_error during thread construction in startProcConnReqThreads.");
         return SYS_THREAD_RESOURCE_ERR;
     }
 
@@ -2008,7 +2062,7 @@ void stopProcConnReqThreads()
         SpawnManagerThread->join();
     }
     catch (const boost::thread_resource_error&) {
-        rodsLog(LOG_ERROR, "boost encountered a thread_resource_error during join in stopProcConnReqThreads.");
+        log_server::error("boost encountered a thread_resource_error during join in stopProcConnReqThreads.");
     }
 
     for (int i = 0; i < NUM_READ_WORKER_THR; ++i) {
@@ -2018,7 +2072,7 @@ void stopProcConnReqThreads()
             ReadWorkerThread[i]->join();
         }
         catch (const boost::thread_resource_error&) {
-            rodsLog(LOG_ERROR, "boost encountered a thread_resource_error during join in stopProcConnReqThreads.");
+            log_server::error("boost encountered a thread_resource_error during join in stopProcConnReqThreads.");
         }
     }
 }
@@ -2063,7 +2117,7 @@ void readWorkerTask()
         irods::error ret = readStartupPack(net_obj, &startupPack, &tv);
 
         if (!ret.ok()) {
-            rodsLog(LOG_ERROR, "readWorkerTask - readStartupPack failed. %d", ret.code());
+            log_server::error("readWorkerTask - readStartupPack failed. {}", ret.code());
             sendVersion(net_obj, ret.code(), 0, nullptr, 0);
             boost::unique_lock<boost::mutex> bad_req_lock(BadReqMutex);
             queueAgentProc(myConnReq, &BadReqHead, TOP_POS);
@@ -2082,7 +2136,8 @@ void readWorkerTask()
                     bytes_to_send -= bytes_sent;
                 }
                 else if (errsav != EINTR) {
-                    rodsLog(LOG_ERROR, "Socket error encountered during heartbeat; socket returned %s", strerror(errsav));
+                    log_server::error("Socket error encountered during heartbeat; socket returned {}",
+                                      strerror(errsav));
                     break;
                 }
             }
@@ -2144,21 +2199,19 @@ void spawnManagerTask()
             close(mySpawnReq->sock);
 
             if (status < 0) {
-                rodsLog(LOG_NOTICE,
-                        "spawnAgent error for puser=%s and cuser=%s from %s, stat=%d",
-                        mySpawnReq->startupPack.proxyUser,
-                        mySpawnReq->startupPack.clientUser,
-                        inet_ntoa(mySpawnReq->remoteAddr.sin_addr),
-                        status);
+                log_server::info("spawnAgent error for puser={} and cuser=%s from {}, stat={}",
+                                 mySpawnReq->startupPack.proxyUser,
+                                 mySpawnReq->startupPack.clientUser,
+                                 inet_ntoa(mySpawnReq->remoteAddr.sin_addr),
+                                 status);
                 std::free(mySpawnReq);
             }
             else {
-                rodsLog(LOG_DEBUG,
-                        "Agent process %d started for puser=%s and cuser=%s from %s",
-                        mySpawnReq->pid,
-                        mySpawnReq->startupPack.proxyUser,
-                        mySpawnReq->startupPack.clientUser,
-                        inet_ntoa(mySpawnReq->remoteAddr.sin_addr));
+                log_server::debug("Agent process {} started for puser={} and cuser={} from {}",
+                                  mySpawnReq->pid,
+                                  mySpawnReq->startupPack.proxyUser,
+                                  mySpawnReq->startupPack.clientUser,
+                                  inet_ntoa(mySpawnReq->remoteAddr.sin_addr));
             }
 
             spwn_req_lock.lock();
@@ -2201,8 +2254,9 @@ int procSingleConnReq(agentProc_t* connReq)
     ret = readStartupPack(net_obj, &startupPack, nullptr);
 
     if (!ret.ok()) {
-        rodsLog(LOG_NOTICE, "readStartupPack error from %s, status = %d",
-                inet_ntoa(connReq->remoteAddr.sin_addr), ret.code());
+        log_server::info("readStartupPack error from {}, status = {}",
+                         inet_ntoa(connReq->remoteAddr.sin_addr),
+                         ret.code());
         sendVersion(net_obj, ret.code(), 0, nullptr, 0);
         mySockClose(newSock);
         return ret.code();
@@ -2222,19 +2276,18 @@ int procSingleConnReq(agentProc_t* connReq)
     close(newSock);
 
     if (status < 0) {
-        rodsLog(LOG_NOTICE, "spawnAgent error for puser=%s and cuser=%s from %s, status = %d",
-                connReq->startupPack.proxyUser,
-                connReq->startupPack.clientUser,
-                inet_ntoa(connReq->remoteAddr.sin_addr),
-                status);
+        log_server::info("spawnAgent error for puser={} and cuser={} from {}, status = {}",
+                         connReq->startupPack.proxyUser,
+                         connReq->startupPack.clientUser,
+                         inet_ntoa(connReq->remoteAddr.sin_addr),
+                         status);
     }
     else {
-        rodsLog(LOG_DEBUG,
-                "Agent process %d started for puser=%s and cuser=%s from %s",
-                connReq->pid,
-                connReq->startupPack.proxyUser,
-                connReq->startupPack.clientUser,
-                inet_ntoa(connReq->remoteAddr.sin_addr));
+        log_server::debug("Agent process {} started for puser={} and cuser={} from {}",
+                          connReq->pid,
+                          connReq->startupPack.proxyUser,
+                          connReq->startupPack.clientUser,
+                          inet_ntoa(connReq->remoteAddr.sin_addr));
     }
 
     return status;

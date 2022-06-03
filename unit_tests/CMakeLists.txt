@@ -46,6 +46,7 @@ set(
   get_file_descriptor_info
   hierarchy_parser
   hostname_cache
+  json_events
   key_value_proxy
   lifetime_manager
   linked_list_iterator

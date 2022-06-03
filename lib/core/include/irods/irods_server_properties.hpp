@@ -8,6 +8,8 @@
 #include "irods/irods_error.hpp"
 #include "irods/irods_exception.hpp"
 
+#include <mutex>
+#include <shared_mutex>
 #include <string>
 #include <string_view>
 
@@ -54,14 +56,20 @@ namespace irods
         /// @brief Read server configuration and fill server_properties::properties
         void capture();
 
+        /// \brief Read server configuration, replacing existing keys instead of deleting them.
+        /// \returns a json array containing a json patch
+        nlohmann::json reload();
+
         auto contains(const std::string_view _key) -> bool
         {
+            auto lock = acquire_read_lock();
             return config_props_.find(_key) != config_props_.end();
         }
 
         template<typename T>
         T get_property(const std::string& _key)
         {
+            auto lock = acquire_read_lock();
             auto prop = config_props_.find(_key);
             if (prop != config_props_.end()) {
                 return !prop->empty() ? prop->get<T>() : T{};
@@ -73,6 +81,7 @@ namespace irods
         template<typename T>
         T get_property(const configuration_parser::key_path_t& _keys)
         {
+            auto lock = acquire_read_lock();
             auto* tmp = &config_props_;
 
             for (auto&& k : _keys) {
@@ -89,6 +98,7 @@ namespace irods
         template<typename T>
         T set_property(const std::string& _key, const T& _val)
         {
+            auto lock = acquire_write_lock();
             nlohmann::json tmp;
             if (config_props_.contains(_key)) {
                 tmp = config_props_.at(_key);
@@ -102,6 +112,7 @@ namespace irods
         template<typename T>
         T set_property(const configuration_parser::key_path_t& _keys, const T& _val)
         {
+            auto lock = acquire_write_lock();
             auto* tmp = &config_props_;
 
             for (auto&& k : _keys) {
@@ -124,6 +135,7 @@ namespace irods
         template<typename T>
         T remove( const std::string& _key )
         {
+            auto lock = acquire_write_lock();
             nlohmann::json tmp;
 
             if (config_props_.contains(_key)) {
@@ -136,18 +148,41 @@ namespace irods
 
         void remove( const std::string& _key );
 
+        /// \brief Get a reference to the underlying json object. Writing
+        /// in particular should be done with caution as there is no guarantee
+        /// that this will be safe.
+        /// In threaded/asynchronous contexts, this function bypasses safety guarantees.
         nlohmann::json& map() noexcept
         {
             return config_props_;
         }
 
     private:
+        /// \brief Acquire a read lock, that is, a lock that is not exclusive, that is why it returns a shared_lock
+        /// here.
+        std::shared_lock<std::shared_mutex> acquire_read_lock() const
+        {
+            return std::shared_lock<std::shared_mutex>(property_mutex_);
+        }
+
+        /// \brief Acquire an exclusive lock for writing. While as many threads may read the properties object,
+        /// writing to the underlying std::map(or close enough, nlohmann uses red black trees) is not guaranteed to be
+        /// thread safe
+        ///
+        /// The unique lock is necessary here over scoped_lock or move_lock because the unique lock
+        /// supports move semantics.
+        std::unique_lock<std::shared_mutex> acquire_write_lock() const
+        {
+            return std::unique_lock(property_mutex_);
+        }
+
         server_properties();
 
         server_properties(const server_properties&) = delete;
         server_properties& operator=(const server_properties&) = delete;
 
         nlohmann::json config_props_;
+        mutable std::shared_mutex property_mutex_;
     }; // class server_properties
 
     template<>

@@ -63,7 +63,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
             self.assertTrue(occur[1].group(1) == b'logical_path'    and occur[1].group(2).startswith(b'/'))
             self.assertTrue(occur[2].group(1) == b'proxy_user_name' and occur[2].group(2).decode('utf-8') == self.admin.username)
         finally:
-            IrodsController().restart()
+            IrodsController().reload_configuration()
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-python', 'only applicable for python REP')
     def test_re_serialization__prep_55(self):
@@ -83,7 +83,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
             self.assertTrue(1 == len(occur))
             self.assertTrue(occur[0].group(1) == b'user_rods_zone' and occur[0].group(2).decode('utf-8') == self.admin.zone_name)
         finally:
-            IrodsController().restart()
+            IrodsController().reload_configuration()
 
     def iput_r_large_collection(self, user_session, base_name, file_count, file_size):
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
@@ -218,7 +218,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
                 with open(server_config_filename, 'w') as f:
                     f.write(new_server_config)
 
-                IrodsController().restart()
+                IrodsController().reload_configuration()
 
                 # get log offset
                 initial_size_of_server_log = lib.get_file_size_by_path(IrodsConfig().server_log_path)
