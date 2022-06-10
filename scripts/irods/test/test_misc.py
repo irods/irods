@@ -198,6 +198,7 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
                 self.assertFalse(os.path.exists(fn))
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "skip for topology testing")
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', "Requires the Native Rule Engine Plugin.")
     def test_server_respawns_processes__issue_4977(self):
         import psutil
         import time
