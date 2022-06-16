@@ -10,7 +10,7 @@ namespace irods::ticket::administration{
 
         ticketAdminInp.arg1 = "create";
         ticketAdminInp.arg2 = strdup(ticketName);
-        ticketAdminInp.arg3 = "read"
+        ticketAdminInp.arg3 = "read";
         ticketAdminInp.arg4 = strdup(objPath);
         ticketAdminInp.arg5 = strdup(ticketName);
         ticketAdminInp.arg6 = "";
