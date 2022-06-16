@@ -1,4 +1,4 @@
-#ifndef TIKCET_API_HPP
+#ifndef TICKET_API_HPP
 #define TICKET_API_HPP
 
 #include "irods/objInfo.h"
