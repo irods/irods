@@ -35,6 +35,7 @@ target_link_objects(
   PUBLIC
   irods_lib_api_server
   irods_lib_core_server
+  irods_lib_metadata_server
   irods_server_api
   irods_server_core
   irods_filesystem_path
