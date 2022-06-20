@@ -1,4 +1,5 @@
 #include <catch2/catch.hpp>
+#include <fmt/format.h>
 
 #include "irods/getRodsEnv.h"
 #include "irods/rodsClient.h"

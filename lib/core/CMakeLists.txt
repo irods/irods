@@ -106,7 +106,7 @@ set_target_properties(irods_common_core PROPERTIES POSITION_INDEPENDENT_CODE TRU
 
 add_library(
   irods_plugin_dependencies_obj
-  OBJECT  
+  OBJECT
   "${CMAKE_CURRENT_SOURCE_DIR}/src/apiHandler.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_auth_factory.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_auth_manager.cpp"
@@ -298,7 +298,6 @@ install(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/dispatch_processor.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/dns_cache.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/dstream.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/entity.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/experimental_plugin_framework.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/fixed_buffer_resource.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/fsckUtil.h"
@@ -373,7 +372,6 @@ install(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/lifetime_manager.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/lsUtil.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/mcollUtil.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/metadata.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/microservice.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/miscUtil.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/mkdirUtil.h"

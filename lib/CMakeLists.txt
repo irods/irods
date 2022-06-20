@@ -17,6 +17,7 @@ add_subdirectory(filesystem)
 add_subdirectory(administration)
 add_subdirectory(hasher)
 add_subdirectory(rbudp)
+add_subdirectory(metadata)
 
 target_link_objects(
   irods_common
@@ -67,6 +68,7 @@ target_link_objects(
   irods_filesystem_client
   irods_user_administration_client
   irods_resource_administration_client
+  irods_lib_metadata_client
 )
 target_link_libraries(
   irods_client
@@ -118,6 +120,7 @@ target_link_objects(
   irods_resource_administration_client
   irods_resource_administration_server
   irods_plugin_dependencies_obj
+  irods_lib_metadata_client
 )
 target_link_libraries(
   RodsAPIs
