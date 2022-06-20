@@ -1,9 +1,11 @@
 #ifndef IRODS_ENTITY_HPP
 #define IRODS_ENTITY_HPP
 
-namespace irods::experimental::entity {
+namespace irods::experimental::entity
+{
 
-    enum class entity_type {
+    enum class entity_type
+    {
         collection,
         data_object,
         resource,
@@ -11,6 +13,6 @@ namespace irods::experimental::entity {
         zone
     };
 
-} // irods::experimental::entity
+} // namespace irods::experimental::entity
 
 #endif // IRODS_ENTITY_HPP
