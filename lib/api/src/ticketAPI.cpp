@@ -13,10 +13,16 @@
 using namespace std;
 
 namespace irods::ticket::administration{
+    char num_char[MAX_DIGITS + sizeof(char)];
 
+    char* getStringFromInt(int num) {
+        std::to_chars(num_char, num_char + MAX_DIGITS, num);
+
+        return num_char;
+    };
     int login(RcComm* conn){
         return clientLogin(conn);
-    }
+    };
     void makeTicket( char *newTicket ) {
         const int ticket_len = 15;
         // random_bytes must be (unsigned char[]) to guarantee that following
@@ -37,7 +43,7 @@ namespace irods::ticket::administration{
         }
         newTicket[ticket_len] = '\0';
         printf( "ticket:%s\n", newTicket );
-    }
+    };
 
     int createReadTicket(RcComm* conn, char* objPath, char* ticketName) {
         ticketAdminInp_t ticketAdminInp{};
@@ -84,7 +90,28 @@ namespace irods::ticket::administration{
     };
 
     int removeUsageRestriction(RcComm* conn, char* ticketName) {
-       ticketAdminInp_t ticketAdminInp{};
+        return setUsageRestriction(conn, ticketName, 0); 
+    };
+    int removeUsageRestriction(RcComm* conn, int ticketID) {
+        return removeUsageRestriction(conn, getStringFromInt(ticketID));
+    };
+
+    int removeWriteFileRestriction(RcComm* conn, char* ticketName) {
+       return setWriteFileRestriction(conn, ticketName, 0); 
+    };
+    int removeWriteFileRestriction(RcComm* conn, int ticketID) {
+        return removeUsageRestriction(conn, getStringFromInt(ticketID));
+    };
+
+    int removeWriteByteRestriction(RcComm* conn, char* ticketName) {
+       return setWriteByteRestriction(conn, ticketName, 0);
+    };
+    int removeWriteByteRestriction(RcComm* conn, int ticketID) {
+        return removeUsageRestriction(conn, getStringFromInt(ticketID));
+    };
+
+    int setUsageRestriction(RcComm* conn, char* ticketName, int numUses){
+        ticketAdminInp_t ticketAdminInp{};
 
         if(const int ec = login(conn); ec != 0)
             return -1;
@@ -92,22 +119,18 @@ namespace irods::ticket::administration{
         ticketAdminInp.arg1 = "mod";
         ticketAdminInp.arg2 = strdup(ticketName);
         ticketAdminInp.arg3 = "uses";
-        ticketAdminInp.arg4 = "0";
+        ticketAdminInp.arg4 = getStringFromInt(numUses);
         ticketAdminInp.arg5 = "";
         ticketAdminInp.arg6 = "";
 
         return rcTicketAdmin(conn, &ticketAdminInp); 
     };
-    int removeUsageRestriction(RcComm* conn, int ticketID) {
-        char num_char[MAX_DIGITS + sizeof(char)];
-
-         std::to_chars(num_char, num_char + MAX_DIGITS, ticketID);
-
-        return removeUsageRestriction(conn, num_char);
+    int setUsageRestriction(RcComm* conn, int ticketID, int numUses) {
+        return setUsageRestriction(conn, getStringFromInt(ticketID), numUses);
     };
 
-    int removeWriteFileRestriction(RcComm* conn, char* ticketName) {
-       ticketAdminInp_t ticketAdminInp{};
+    int setWriteFileRestriction(RcComm* conn, char* ticketName, int numUses){
+        ticketAdminInp_t ticketAdminInp{};
 
         if(const int ec = login(conn); ec != 0)
             return -1;
@@ -115,22 +138,18 @@ namespace irods::ticket::administration{
         ticketAdminInp.arg1 = "mod";
         ticketAdminInp.arg2 = strdup(ticketName);
         ticketAdminInp.arg3 = "write-file";
-        ticketAdminInp.arg4 = "0";
+        ticketAdminInp.arg4 = getStringFromInt(numUses);
         ticketAdminInp.arg5 = "";
         ticketAdminInp.arg6 = "";
 
         return rcTicketAdmin(conn, &ticketAdminInp); 
     };
-    int removeWriteFileRestriction(RcComm* conn, int ticketID) {
-        char num_char[MAX_DIGITS + sizeof(char)];
-
-         std::to_chars(num_char, num_char + MAX_DIGITS, ticketID);
-
-        return removeUsageRestriction(conn, num_char);
+    int setWriteFileRestriction(RcComm* conn, int ticketID, int numUses) {
+        return setWriteFileRestriction(conn, getStringFromInt(ticketID), numUses);
     };
 
-     int removeWriteByteRestriction(RcComm* conn, char* ticketName) {
-       ticketAdminInp_t ticketAdminInp{};
+    int setWriteByteRestriction(RcComm* conn, char* ticketName, int numUses) { 
+        ticketAdminInp_t ticketAdminInp{};
 
         if(const int ec = login(conn); ec != 0)
             return -1;
@@ -138,19 +157,14 @@ namespace irods::ticket::administration{
         ticketAdminInp.arg1 = "mod";
         ticketAdminInp.arg2 = strdup(ticketName);
         ticketAdminInp.arg3 = "write-byte";
-        ticketAdminInp.arg4 = "0";
+        ticketAdminInp.arg4 = getStringFromInt(numUses);
         ticketAdminInp.arg5 = "";
         ticketAdminInp.arg6 = "";
 
         return rcTicketAdmin(conn, &ticketAdminInp); 
     };
-    int removeWriteByteRestriction(RcComm* conn, int ticketID) {
-        char num_char[MAX_DIGITS + sizeof(char)];
-
-         std::to_chars(num_char, num_char + MAX_DIGITS, ticketID);
-
-        return removeUsageRestriction(conn, num_char);
+    int setWriteByteRestriction(RcComm* conn, int ticketID, int numUses) {
+        return setWriteByteRestriction(conn, getStringFromInt(ticketID), numUses);
     };
-
 
 }
