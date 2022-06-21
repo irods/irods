@@ -5,6 +5,7 @@ struct RcComm;
 
 namespace irods::ticket::administration{
     int createReadTicket(RcComm* conn, char* objPath, char* ticketName);
+    int createWriteTicket(RcComm* conn, char* objPath, char* ticketName);
 }
 
 #endif
