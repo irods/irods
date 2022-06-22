@@ -29,7 +29,23 @@ namespace irods::ticket::administration{
     int setWriteByteRestriction(RcComm* conn, char* ticketName, int numUses);
     int setWriteByteRestriction(RcComm* conn, int ticketID, int numUses);
 
-    
+    int addUser(RcComm* conn, char* ticketName, char* user);
+    int addUser(RcComm* conn, int ticketID, char* user);
+
+    int removeUser(RcComm* conn, char* ticketName, char* user);
+    int removeUser(RcComm* conn, int ticketID, char* user);
+
+    int addGroup(RcComm* conn, char* ticketName, char* group);
+    int addGroup(RcComm* conn, int ticketID, char* group);
+
+    int removeGroup(RcComm* conn, char* ticketName, char* group);
+    int removeGroup(RcComm* conn, int ticketID, char* group);
+
+    int addHost(RcComm* conn, char* ticketName, char* host);
+    int addHost(RcComm* conn, int ticketID, char* host);
+
+    int removeHost(RcComm* conn, char* ticketName, char* host);
+    int removeHost(RcComm* conn, int ticketID, char* host);
 
 }
 
