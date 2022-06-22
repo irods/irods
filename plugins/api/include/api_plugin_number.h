@@ -1,7 +1,7 @@
 #ifndef IRODS_API_PLUGIN_NUMBER_H
 #define IRODS_API_PLUGIN_NUMBER_H
 
-#define API_PLUGIN_NUMBER(NAME, VALUE) const int NAME = VALUE;
+#define API_PLUGIN_NUMBER(NAME, VALUE) static const int NAME = VALUE;
 
 #include "api_plugin_number_data.h"
 
