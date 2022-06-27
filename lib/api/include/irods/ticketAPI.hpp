@@ -5,47 +5,47 @@ struct RcComm;
 
 namespace irods::ticket::administration{
 
-    int createReadTicket(RcComm* conn, char* objPath, char* ticketName);
-    int createReadTicket(RcComm* conn, char* objPath);
+    int createReadTicket(RcComm& conn, char* objPath, char* ticketName);
+    int createReadTicket(RcComm& conn, char* objPath);
 
-    int createWriteTicket(RcComm* conn, char* objPath, char* ticketName);
-    int createWriteTicket(RcComm* conn, char* objPath);
+    int createWriteTicket(RcComm& conn, char* objPath, char* ticketName);
+    int createWriteTicket(RcComm& conn, char* objPath);
 
-    int removeUsageRestriction(RcComm* conn, char* ticketName);
-    int removeUsageRestriction(RcComm* conn, int ticketID);
+    int removeUsageRestriction(RcComm& conn, char* ticketName);
+    int removeUsageRestriction(RcComm& conn, int ticketID);
 
-    int removeWriteFileRestriction(RcComm* conn, char* ticketName);
-    int removeWriteFileRestriction(RcComm* conn, int ticketID);
+    int removeWriteFileRestriction(RcComm& conn, char* ticketName);
+    int removeWriteFileRestriction(RcComm& conn, int ticketID);
 
-    int removeWriteByteRestriction(RcComm* conn, char* ticketName);
-    int removeWriteByteRestriction(RcComm* conn, int ticketID);
+    int removeWriteByteRestriction(RcComm& conn, char* ticketName);
+    int removeWriteByteRestriction(RcComm& conn, int ticketID);
 
-    int setUsageRestriction(RcComm* conn, char* ticketName, int numUses);
-    int setUsageRestriction(RcComm* conn, int ticketID, int numUses);
+    int setUsageRestriction(RcComm& conn, char* ticketName, int numUses);
+    int setUsageRestriction(RcComm& conn, int ticketID, int numUses);
 
-    int setWriteFileRestriction(RcComm* conn, char* ticketName, int numUses);
-    int setWriteFileRestriction(RcComm* conn, int ticketID, int numUses);
+    int setWriteFileRestriction(RcComm& conn, char* ticketName, int numUses);
+    int setWriteFileRestriction(RcComm& conn, int ticketID, int numUses);
 
-    int setWriteByteRestriction(RcComm* conn, char* ticketName, int numUses);
-    int setWriteByteRestriction(RcComm* conn, int ticketID, int numUses);
+    int setWriteByteRestriction(RcComm& conn, char* ticketName, int numUses);
+    int setWriteByteRestriction(RcComm& conn, int ticketID, int numUses);
 
-    int addUser(RcComm* conn, char* ticketName, char* user);
-    int addUser(RcComm* conn, int ticketID, char* user);
+    int addUser(RcComm& conn, char* ticketName, char* user);
+    int addUser(RcComm& conn, int ticketID, char* user);
 
-    int removeUser(RcComm* conn, char* ticketName, char* user);
-    int removeUser(RcComm* conn, int ticketID, char* user);
+    int removeUser(RcComm& conn, char* ticketName, char* user);
+    int removeUser(RcComm& conn, int ticketID, char* user);
 
-    int addGroup(RcComm* conn, char* ticketName, char* group);
-    int addGroup(RcComm* conn, int ticketID, char* group);
+    int addGroup(RcComm& conn, char* ticketName, char* group);
+    int addGroup(RcComm& conn, int ticketID, char* group);
 
-    int removeGroup(RcComm* conn, char* ticketName, char* group);
-    int removeGroup(RcComm* conn, int ticketID, char* group);
+    int removeGroup(RcComm& conn, char* ticketName, char* group);
+    int removeGroup(RcComm& conn, int ticketID, char* group);
 
-    int addHost(RcComm* conn, char* ticketName, char* host);
-    int addHost(RcComm* conn, int ticketID, char* host);
+    int addHost(RcComm& conn, char* ticketName, char* host);
+    int addHost(RcComm& conn, int ticketID, char* host);
 
-    int removeHost(RcComm* conn, char* ticketName, char* host);
-    int removeHost(RcComm* conn, int ticketID, char* host);
+    int removeHost(RcComm& conn, char* ticketName, char* host);
+    int removeHost(RcComm& conn, int ticketID, char* host);
 
 }
 

@@ -23,10 +23,10 @@ namespace irods::administration::ticket{
 
         return num_char;
     };
-    int login(RcComm* conn){
+    int login(RcComm& conn){
         return clientLogin(conn);
     };
-    void makeTicket( char *newTicket ) {
+    std::string makeTicket( char *newTicket ) {
         const int ticket_len = 15;
         // random_bytes must be (unsigned char[]) to guarantee that following
         // modulo result is positive (i.e. in [0, 61])
@@ -47,7 +47,7 @@ namespace irods::administration::ticket{
         newTicket[ticket_len] = '\0';
         printf( "ticket:%s\n", newTicket );
     };
-    int ticketManager(RcComm* conn, char* command, char* ticketIdentifier, char* commandModifier, 
+    int ticketManager(RcComm& conn, char* command, char* ticketIdentifier, char* commandModifier, 
                         char* commandModifier2, char* commandModifier3, char* commandModifier4, 
                         bool run_as_admin) {
 
@@ -97,230 +97,230 @@ namespace irods::administration::ticket{
 
         return status;
     };
-    int ticketManager(RcComm* conn, char* command, char* ticketIdentifier, char* commandModifier,
+    int ticketManager(RcComm& conn, char* command, char* ticketIdentifier, char* commandModifier,
                         char* commandModifier2, char* commandModifier3, char* commandModifier4) {
         return ticketManager(conn, command, ticketIdentifier, commandModifier, commandModifier2, commandModifier3, commandModifier4, false);
     };
 
-    int createReadTicket(RcComm* conn, char* objPath, char* ticketName) {
+    int createReadTicket(RcComm& conn, char* objPath, char* ticketName) {
         return ticketManager(conn, "create", ticketName, "read", objPath, ticketName, "");
     };
-    int createReadTicket(RcComm* conn, char* objPath) {
+    int createReadTicket(RcComm& conn, char* objPath) {
         char myTicket[30];
         makeTicket(myTicket);
 
         return ticketManager(conn, "create", myTicket, "read", objPath, myTicket, "");
     };
 
-    int createWriteTicket(RcComm* conn, char* objPath, char* ticketName) {
+    int createWriteTicket(RcComm& conn, char* objPath, char* ticketName) {
         return ticketManager(conn, "create", ticketName, "write", objPath, ticketName, "");
     };
-    int createWriteTicket(RcComm* conn, char* objPath) {
+    int createWriteTicket(RcComm& conn, char* objPath) {
         char myTicket[30];
         makeTicket(myTicket);
 
         return ticketManager(conn, "create", myTicket, "write", objPath, myTicket, "");
     };
 
-    int removeUsageRestriction(RcComm* conn, char* ticketName) {
+    int removeUsageRestriction(RcComm& conn, char* ticketName) {
         return setUsageRestriction(conn, ticketName, 0); 
     };
-    int removeUsageRestriction(RcComm* conn, int ticketID) {
+    int removeUsageRestriction(RcComm& conn, int ticketID) {
         return setUsageRestriction(conn, getStringFromInt(ticketID), 0);
     };
 
-    int removeWriteFileRestriction(RcComm* conn, char* ticketName) {
+    int removeWriteFileRestriction(RcComm& conn, char* ticketName) {
        return setWriteFileRestriction(conn, ticketName, 0); 
     };
-    int removeWriteFileRestriction(RcComm* conn, int ticketID) {
+    int removeWriteFileRestriction(RcComm& conn, int ticketID) {
         return setWriteFileRestriction(conn, getStringFromInt(ticketID), 0);
     };
 
-    int removeWriteByteRestriction(RcComm* conn, char* ticketName) {
+    int removeWriteByteRestriction(RcComm& conn, char* ticketName) {
        return setWriteByteRestriction(conn, ticketName, 0);
     };
-    int removeWriteByteRestriction(RcComm* conn, int ticketID) {
+    int removeWriteByteRestriction(RcComm& conn, int ticketID) {
         return setWriteByteRestriction(conn, getStringFromInt(ticketID), 0);
     };
 
-    int setUsageRestriction(RcComm* conn, char* ticketName, int numUses){
+    int setUsageRestriction(RcComm& conn, char* ticketName, int numUses){
         return ticketManager(conn, "mod", ticketName, "uses", getStringFromInt(numUses), "", ""); 
     };
-    int setUsageRestriction(RcComm* conn, int ticketID, int numUses) {
+    int setUsageRestriction(RcComm& conn, int ticketID, int numUses) {
         return ticketManager(conn, "mod", getStringFromInt(ticketID), "uses", getStringFromInt(numUses), "", ""); 
     };
 
-    int setWriteFileRestriction(RcComm* conn, char* ticketName, int numUses){
+    int setWriteFileRestriction(RcComm& conn, char* ticketName, int numUses){
         return ticketManager(conn, "mod", ticketName, "write-file", getStringFromInt(numUses), "", ""); 
     };
-    int setWriteFileRestriction(RcComm* conn, int ticketID, int numUses) {
+    int setWriteFileRestriction(RcComm& conn, int ticketID, int numUses) {
         return ticketManager(conn, "mod", getStringFromInt(ticketID), "write-file", getStringFromInt(numUses), "", ""); 
     };
 
-    int setWriteByteRestriction(RcComm* conn, char* ticketName, int numUses) { 
+    int setWriteByteRestriction(RcComm& conn, char* ticketName, int numUses) { 
         return ticketManager(conn, "mod", ticketName, "write-byte", getStringFromInt(numUses), "", ""); 
     };
-    int setWriteByteRestriction(RcComm* conn, int ticketID, int numUses) {
+    int setWriteByteRestriction(RcComm& conn, int ticketID, int numUses) {
         return ticketManager(conn, "mod", getStringFromInt(ticketID), "write-byte", getStringFromInt(numUses), "", ""); 
     };
 
-    int addUser(RcComm* conn, char* ticketName, char* user) {
+    int addUser(RcComm& conn, char* ticketName, char* user) {
         return ticketManager(conn, "mod", ticketName, "add", "user", user, "");
     };
-    int addUser(RcComm* conn, int ticketID, char* user) {
+    int addUser(RcComm& conn, int ticketID, char* user) {
         return ticketManager(conn, "mod", getStringFromInt(ticketID), "add", "user", user, "");
     };
 
-    int removeUser(RcComm* conn, char* ticketName, char* user) {
+    int removeUser(RcComm& conn, char* ticketName, char* user) {
         return ticketManager(conn, "mod", ticketName, "remove", "user", user, "");
     };
-    int removeUser(RcComm* conn, int ticketID, char* user) {
+    int removeUser(RcComm& conn, int ticketID, char* user) {
         return ticketManager(conn, "mod", getStringFromInt(ticketID), "remove", "user", user, "");
     };
 
-    int addGroup(RcComm* conn, char* ticketName, char* group) {
+    int addGroup(RcComm& conn, char* ticketName, char* group) {
         return ticketManager(conn, "mod", ticketName, "add", "group", group, "");
     };
-    int addGroup(RcComm* conn, int ticketID, char* group) {
+    int addGroup(RcComm& conn, int ticketID, char* group) {
         return ticketManager(conn, "mod", getStringFromInt(ticketID), "add", "group", group, "");
     };
 
-    int removeGroup(RcComm* conn, char* ticketName, char* group) {
+    int removeGroup(RcComm& conn, char* ticketName, char* group) {
         return ticketManager(conn, "mod", ticketName, "remove", "group", group, "");
     };
-    int removeGroup(RcComm* conn, int ticketID, char* group) {
+    int removeGroup(RcComm& conn, int ticketID, char* group) {
         return ticketManager(conn, "mod", getStringFromInt(ticketID), "remove", "group", group, "");
     };
 
-    int addHost(RcComm* conn, char* ticketName, char* host) {
+    int addHost(RcComm& conn, char* ticketName, char* host) {
         return ticketManager(conn, "mod", ticketName, "add", "host", host, "");
     };
-    int addHost(RcComm* conn, int ticketID, char* host) {
+    int addHost(RcComm& conn, int ticketID, char* host) {
         return ticketManager(conn, "mod", getStringFromInt(ticketID), "add", "host", host, "");
     };
 
-    int removeHost(RcComm* conn, char* ticketName, char* host) {
+    int removeHost(RcComm& conn, char* ticketName, char* host) {
         return ticketManager(conn, "mod", ticketName, "remove", "host", host, "");
     };
-    int removeHost(RcComm* conn, int ticketID, char* host) {
+    int removeHost(RcComm& conn, int ticketID, char* host) {
         return ticketManager(conn, "mod", getStringFromInt(ticketID), "remove", "host", host, "");
     };
 
-    int deleteTicket(RcComm* conn, char* ticketName) {
+    int deleteTicket(RcComm& conn, char* ticketName) {
         return ticketManager(conn, "delete", ticketName, "", "", "", "");
     };
-    int deleteTicket(RcComm* conn, int ticketID) {
+    int deleteTicket(RcComm& conn, int ticketID) {
         return ticketManager(conn, "delete", getStringFromInt(ticketID), "", "", "", "");
     };
 
-    int adminCreateReadTicket(RcComm* conn, char* objPath, char* ticketName) {
+    int adminCreateReadTicket(RcComm& conn, char* objPath, char* ticketName) {
         return ticketManager(conn, "create", ticketName, "read", objPath, ticketName, "", true);
     };
-    int adminCreateReadTicket(RcComm* conn, char* objPath) {
+    int adminCreateReadTicket(RcComm& conn, char* objPath) {
         char myTicket[30];
         makeTicket(myTicket);
 
         return ticketManager(conn, "create", myTicket, "read", objPath, myTicket, "", true);
     };
 
-    int adminCreateWriteTicket(RcComm* conn, char* objPath, char* ticketName) {
+    int adminCreateWriteTicket(RcComm& conn, char* objPath, char* ticketName) {
         return ticketManager(conn, "create", ticketName, "write", objPath, ticketName, "");
     };
-    int adminCreateWriteTicket(RcComm* conn, char* objPath) {
+    int adminCreateWriteTicket(RcComm& conn, char* objPath) {
         char myTicket[30];
         makeTicket(myTicket);
 
         return ticketManager(conn, "create", myTicket, "write", objPath, myTicket, "", true);
     };
 
-    int adminRemoveUsageRestriction(RcComm* conn, char* ticketName) {
+    int adminRemoveUsageRestriction(RcComm& conn, char* ticketName) {
         return adminSetUsageRestriction(conn, ticketName, 0); 
     };
-    int adminRemoveUsageRestriction(RcComm* conn, int ticketID) {
+    int adminRemoveUsageRestriction(RcComm& conn, int ticketID) {
         return adminSetUsageRestriction(conn, getStringFromInt(ticketID), 0);
     };
 
-    int adminRemoveWriteFileRestriction(RcComm* conn, char* ticketName) {
+    int adminRemoveWriteFileRestriction(RcComm& conn, char* ticketName) {
        return adminSetWriteFileRestriction(conn, ticketName, 0); 
     };
-    int adminRemoveWriteFileRestriction(RcComm* conn, int ticketID) {
+    int adminRemoveWriteFileRestriction(RcComm& conn, int ticketID) {
         return adminSetWriteFileRestriction(conn, getStringFromInt(ticketID), 0);
     };
 
-    int adminRemoveWriteByteRestriction(RcComm* conn, char* ticketName) {
+    int adminRemoveWriteByteRestriction(RcComm& conn, char* ticketName) {
        return adminSetWriteByteRestriction(conn, ticketName, 0);
     };
-    int adminRemoveWriteByteRestriction(RcComm* conn, int ticketID) {
+    int adminRemoveWriteByteRestriction(RcComm& conn, int ticketID) {
         return adminSetWriteByteRestriction(conn, getStringFromInt(ticketID), 0);
     };
 
-    int adminSetUsageRestriction(RcComm* conn, char* ticketName, int numUses){
+    int adminSetUsageRestriction(RcComm& conn, char* ticketName, int numUses){
         return ticketManager(conn, "mod", ticketName, "uses", getStringFromInt(numUses), "", ", true", true); 
     };
-    int adminSetUsageRestriction(RcComm* conn, int ticketID, int numUses) {
+    int adminSetUsageRestriction(RcComm& conn, int ticketID, int numUses) {
         return ticketManager(conn, "mod", getStringFromInt(ticketID), "uses", getStringFromInt(numUses), "", "", true); 
     };
 
-    int adminSetWriteFileRestriction(RcComm* conn, char* ticketName, int numUses){
+    int adminSetWriteFileRestriction(RcComm& conn, char* ticketName, int numUses){
         return ticketManager(conn, "mod", ticketName, "write-file", getStringFromInt(numUses), "", "", true); 
     };
-    int adminSetWriteFileRestriction(RcComm* conn, int ticketID, int numUses) {
+    int adminSetWriteFileRestriction(RcComm& conn, int ticketID, int numUses) {
         return ticketManager(conn, "mod", getStringFromInt(ticketID), "write-file", getStringFromInt(numUses), "", "", true); 
     };
 
-    int adminSetWriteByteRestriction(RcComm* conn, char* ticketName, int numUses) { 
+    int adminSetWriteByteRestriction(RcComm& conn, char* ticketName, int numUses) { 
         return ticketManager(conn, "mod", ticketName, "write-byte", getStringFromInt(numUses), "", "", true); 
     };
-    int adminSetWriteByteRestriction(RcComm* conn, int ticketID, int numUses) {
+    int adminSetWriteByteRestriction(RcComm& conn, int ticketID, int numUses) {
         return ticketManager(conn, "mod", getStringFromInt(ticketID), "write-byte", getStringFromInt(numUses), "", "", true); 
     };
 
-    int adminAddUser(RcComm* conn, char* ticketName, char* user) {
+    int adminAddUser(RcComm& conn, char* ticketName, char* user) {
         return ticketManager(conn, "mod", ticketName, "add", "user", user, "", true);
     };
-    int adminAddUser(RcComm* conn, int ticketID, char* user) {
+    int adminAddUser(RcComm& conn, int ticketID, char* user) {
         return ticketManager(conn, "mod", getStringFromInt(ticketID), "add", "user", user, "", true);
     };
 
-    int adminRemoveUser(RcComm* conn, char* ticketName, char* user) {
+    int adminRemoveUser(RcComm& conn, char* ticketName, char* user) {
         return ticketManager(conn, "mod", ticketName, "remove", "user", user, "", true);
     };
-    int adminRemoveUser(RcComm* conn, int ticketID, char* user) {
+    int adminRemoveUser(RcComm& conn, int ticketID, char* user) {
         return ticketManager(conn, "mod", getStringFromInt(ticketID), "remove", "user", user, "", true);
     };
 
-    int adminAddGroup(RcComm* conn, char* ticketName, char* group) {
+    int adminAddGroup(RcComm& conn, char* ticketName, char* group) {
         return ticketManager(conn, "mod", ticketName, "add", "group", group, "", true);
     };
-    int adminAddGroup(RcComm* conn, int ticketID, char* group) {
+    int adminAddGroup(RcComm& conn, int ticketID, char* group) {
         return ticketManager(conn, "mod", getStringFromInt(ticketID), "add", "group", group, "", true);
     };
 
-    int adminRemoveGroup(RcComm* conn, char* ticketName, char* group) {
+    int adminRemoveGroup(RcComm& conn, char* ticketName, char* group) {
         return ticketManager(conn, "mod", ticketName, "remove", "group", group, "", true);
     };
-    int adminRemoveGroup(RcComm* conn, int ticketID, char* group) {
+    int adminRemoveGroup(RcComm& conn, int ticketID, char* group) {
         return ticketManager(conn, "mod", getStringFromInt(ticketID), "remove", "group", group, "", true);
     };
 
-    int adminAddHost(RcComm* conn, char* ticketName, char* host) {
+    int adminAddHost(RcComm& conn, char* ticketName, char* host) {
         return ticketManager(conn, "mod", ticketName, "add", "host", host, "", true);
     };
-    int adminAddHost(RcComm* conn, int ticketID, char* host) {
+    int adminAddHost(RcComm& conn, int ticketID, char* host) {
         return ticketManager(conn, "mod", getStringFromInt(ticketID), "add", "host", host, "", true);
     };
 
-    int adminRemoveHost(RcComm* conn, char* ticketName, char* host) {
+    int adminRemoveHost(RcComm& conn, char* ticketName, char* host) {
         return ticketManager(conn, "mod", ticketName, "remove", "host", host, "", true);
     };
-    int adminRemoveHost(RcComm* conn, int ticketID, char* host) {
+    int adminRemoveHost(RcComm& conn, int ticketID, char* host) {
         return ticketManager(conn, "mod", getStringFromInt(ticketID), "remove", "host", host, "", true);
     };
 
-    int adminDeleteTicket(RcComm* conn, char* ticketName) {
+    int adminDeleteTicket(RcComm& conn, char* ticketName) {
         return ticketManager(conn, "delete", ticketName, "", "", "", "", true);
     };
-    int adminDeleteTicket(RcComm* conn, int ticketID) {
+    int adminDeleteTicket(RcComm& conn, int ticketID) {
         return ticketManager(conn, "delete", getStringFromInt(ticketID), "", "", "", "", true);
     };
 }
