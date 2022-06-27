@@ -1,5 +1,5 @@
-#ifndef TICKET_API_HPP
-#define TICKET_API_HPP
+#ifndef IRODS_TICKET_API_HPP
+#define IRODS_TICKET_API_HPP
 
 struct RcComm;
 
