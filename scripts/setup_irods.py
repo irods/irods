@@ -107,7 +107,7 @@ def setup_server(irods_config, json_configuration_file=None, test_mode=False):
         # role
         irods_config.commit(json_configuration_dict['server_config'], irods.paths.server_config_path())
         # default resource
-        default_resource_name = json_configuration_dict['default_resource_name']
+        default_resource_name = json_configuration_dict['server_config']['default_resource_name']
         default_resource_directory = json_configuration_dict.get('default_resource_directory', os.path.join(irods_config.irods_directory, 'Vault'))
         # client environment
         if not os.path.exists(os.path.dirname(irods_config.client_environment_path)):
