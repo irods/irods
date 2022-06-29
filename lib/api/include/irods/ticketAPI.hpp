@@ -3,7 +3,23 @@
 
 #include <string_view>
 
-struct RcComm;
+#undef NAMESPACE_IMPL
+#undef RxComm
+#undef rxTicketAdmin
+
+#ifdef IRODS_RESOURCE_ADMINISTRATION_ENABLE_SERVER_SIDE_API
+    #define NAMESPACE_IMPL      server
+    #define RxComm              RsComm
+    #define rxTicketAdmin       rsTicketAdmin
+
+    struct RsComm;
+#else
+    #define NAMESPACE_IMPL      client
+    #define RxComm              RcComm
+    #define rxTicketAdmin       rcTicketAdmin
+
+    struct RcComm;
+#endif // IRODS_RESOURCE_ADMINISTRATION_ENABLE_SERVER_SIDE_API
 
 /**
  * @brief Namespace to contain the API for tickets
