@@ -2,6 +2,7 @@
 #define IRODS_TICKET_API_HPP
 
 #include <string_view>
+#include <string>
 
 #undef NAMESPACE_IMPL
 #undef RxComm
@@ -21,13 +22,108 @@ struct RsComm;
 struct RcComm;
 #endif // IRODS_RESOURCE_ADMINISTRATION_ENABLE_SERVER_SIDE_API
 
+// WIP: user_constraint, host_constraint, and group_constraint
+enum ticket_prop
+{
+    USES,
+    WRITE_FILE,
+    WRITE_BYTE
+};
+enum ticket_operation
+{
+    SET,
+    REMOVE
+};
+
+class constraint
+{
+private:
+    ticket_prop property;
+    ticket_operation operation;
+    bool as_admin;
+    int ticket_ID;
+    std::string_view ticket_name;
+
+public:
+    constraint(ticket_prop _prop, ticket_operation _operation, bool admin_access, std::string_view _ticket_name)
+    {
+        property = _prop;
+        operation = _operation;
+        as_admin = admin_access;
+        ticket_name = _ticket_name;
+    }
+    constraint(ticket_prop _prop, ticket_operation _operation, bool admin_access, int ticketID)
+    {
+        property = _prop;
+        operation = _operation;
+        as_admin = admin_access;
+        ticket_ID = ticketID;
+    }
+    // constraint()
+
+    void set_ticket_prop(ticket_prop _prop)
+    {
+        property = _prop;
+    }
+    void set_operation(ticket_operation _oper)
+    {
+        operation = _oper;
+    }
+    void set_admin_access(bool admin_access)
+    {
+        as_admin = admin_access;
+    }
+    void set_ticket_ID(int ticketID)
+    {
+        ticket_ID = ticketID;
+    }
+    void set_ticket_name(std::string_view _ticket_name)
+    {
+        ticket_name = _ticket_name;
+    }
+
+    ticket_prop get_ticket_prop()
+    {
+        return property;
+    }
+    ticket_operation get_ticket_operation()
+    {
+        return operation;
+    }
+    bool get_admin_access()
+    {
+        return as_admin;
+    }
+    int get_ticket_ID()
+    {
+        return ticket_ID;
+    }
+    std::string get_ticket_name()
+    {
+        return static_cast<std::string>(ticket_name);
+    }
+};
+
+// class user_constraint : public constraint
+// {
+// private:
+//     std::string_view user_name;
+
+// public:
+//     user_constraint(std::string_view _user_name, int ticketID)
+//     {
+//         user_name = _user_name;
+//         set_ticket_ID(ticketID);
+//     }
+// };
+// END OF WIP
+
 /**
  * @brief Namespace to contain the API for tickets
  *
  */
 namespace irods::administration::ticket
 {
-
     /**
      * @brief Create a Read Ticket object
      *
