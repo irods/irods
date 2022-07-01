@@ -7,7 +7,7 @@
 #ifndef API_NUMBER_H__
 #define API_NUMBER_H__
 
-#define API_NUMBER(NAME, VALUE) const int NAME = VALUE;
+#define API_NUMBER(NAME, VALUE) static const int NAME = VALUE;
 
 #include "irods/apiNumberData.h"
 
