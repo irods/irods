@@ -22,6 +22,12 @@ struct RsComm;
 struct RcComm;
 #endif // IRODS_RESOURCE_ADMINISTRATION_ENABLE_SERVER_SIDE_API
 
+enum ticket_type
+{
+    READ,
+    WRITE
+};
+
 // WIP: user_constraint, host_constraint, and group_constraint
 enum ticket_prop
 {
@@ -124,6 +130,19 @@ public:
  */
 namespace irods::administration::ticket
 {
+
+    /**
+     * @brief Create a ticket object
+     *
+     * @param conn Communication object
+     * @param _type Specify type for ticket
+     * @param obj_path Path for the object
+     * @param ticket_name Name of the ticket (if provided)
+     * @return int Error code
+     */
+    int create_ticket(RxComm& conn, ticket_type _type, std::string_view obj_path, std::string_view ticket_name);
+    int create_ticket(RxComm& conn, ticket_type _type, std::string_view obj_path);
+
     /**
      * @brief Create a Read Ticket object
      *
@@ -344,4 +363,4 @@ namespace irods::administration::ticket
 
 } // namespace irods::administration::ticket
 
-#endif
+#endif // IRODS_TICKET_API_HPP
