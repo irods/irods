@@ -2132,6 +2132,10 @@ class test_moduser_user(unittest.TestCase):
                                    'STDERR', 'SYS_NOT_ALLOWED')
         self.assertEqual('rodsuser', lib.get_user_type(self.admin, self.username))
 
+    def test_moduser_bad_downgrade(self):
+        self.assertEqual('rodsadmin', lib.get_user_type(self.admin, 'rods'))
+        self.admin.assert_icommand(['iadmin', 'moduser', 'rods', 'type', 'rodsuser'])
+        self.assertEqual('rodsadmin', lib.get_user_type(self.admin, 'rods'))
 
     def test_moduser_type_invalid_type(self):
         """Test modifying the user's type to something that is not supported."""
@@ -2140,6 +2144,14 @@ class test_moduser_user(unittest.TestCase):
                                    'STDERR_SINGLELINE', 'CAT_INVALID_USER_TYPE')
         self.assertEqual('rodsuser', lib.get_user_type(self.admin, self.username))
 
+    def test_moduser_bad_downgrade(self):
+
+        remote_zone = 'somezone'
+        remote_zone_admin = 'zone_admin'
+
+        self.assertEqual('rodsadmin', lib.get_user_type(self.admin, 'rods'))
+        self.admin.assert_icommand(['admin', 'moduser', 'rods', 'type', 'roduser'])
+        self.assertEqual('rodsadmin', lib.get_user_type(self.admin, 'rods'))
 
     def test_moduser_zone(self):
         """Test modifying the user's zone (not supported)."""
