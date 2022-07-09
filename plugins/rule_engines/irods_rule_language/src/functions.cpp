@@ -1907,7 +1907,12 @@ Res *smsi_remoteExec( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int,
 
     try {
         auto taggedValues = getTaggedValues(params[1]->text);
-        auto it = taggedValues.find("ZONE");
+        auto it = taggedValues.find("INST_NAME");
+        if (it != taggedValues.end()) {
+            addKeyVal(&execMyRuleInp.condInput, INSTANCE_NAME_KW, it->second.front().c_str());
+            taggedValues.erase(it);
+        }
+        it = taggedValues.find("ZONE");
         if ( it != taggedValues.end() ) {
             strncpy(execMyRuleInp.addr.zoneName, it->second.front().c_str(), NAME_LEN);
             taggedValues.erase(it);
