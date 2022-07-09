@@ -15,6 +15,7 @@ import subprocess
 import mmap
 import shutil
 import re
+import textwrap
 
 from .. import lib
 from .. import paths
@@ -23,8 +24,11 @@ from . import settings
 from .resource_suite import ResourceBase
 from ..configuration import IrodsConfig
 from ..controller import IrodsController
-from ..core_file import temporary_core_file
+from ..core_file import (temporary_core_file,
+                         IRODS_RULE_LANGUAGE_RULE_ENGINE_PLUGIN_NAME,
+                         PYTHON_RULE_ENGINE_PLUGIN_NAME)
 from .rule_texts_for_tests import rule_texts
+from .test_python_rule_engine_plugin import append_native_re_to_server_config
 from ..test.command import assert_command
 from . import session
 
@@ -80,6 +84,86 @@ class Test_Rule_Engine_Plugin_Framework(session.make_sessions_mixin([('otherrods
         finally:
             self.admin.assert_icommand(['irm', '-r', '-f', logical_path])
             shutil.rmtree(local_dir)
+
+
+    @unittest.skipIf(plugin_name != 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Python REP and Topology Testing")
+    def test_remote_native_rule_engine_plugin_instance_6465(self):
+        with append_native_re_to_server_config():
+            with temporary_core_file( IRODS_RULE_LANGUAGE_RULE_ENGINE_PLUGIN_NAME ) as f_ir:
+                f_ir.add_rule("""
+                mymain() {
+                    writeLine('serverLog', 'Hello from Native Rule Engine Plugin')
+                }
+                """)
+                with tempfile.NamedTemporaryFile(suffix=".r",mode="w") as f:
+                    f.write(textwrap.dedent("""\
+                        main() {
+                            remote("localhost", "<INST_NAME>irods_rule_engine_plugin-irods_rule_language-instance</INST_NAME>") {
+                              mymain
+                            }
+                        }
+                        INPUT null
+                        OUTPUT null
+                        """))
+                    f.flush()
+                    log_offset = lib.get_file_size_by_path(paths.server_log_path())
+                    self.admin.assert_icommand(['irule', '-r', 'irods_rule_engine_plugin-irods_rule_language-instance', '-F', f.name])
+
+                    # Assert the core.re rule ran and had the desired effect.
+                    lib.delayAssert(
+                        lambda: lib.log_message_occurrences_equals_count(
+                            msg="Hello from Native",
+                            start_index=log_offset))
+
+                    # The following sleep seems to be the best way, presently, to assert that the unwelcome warning did not happen.
+                    # (We could use delayAssert to ensure a count of zero, but it obfuscates and has same effect as the sleep.)
+                    time.sleep(2)
+
+                    # Assert we don't see a warning from the Python plugin
+                    self.assertTrue(
+                        lib.log_message_occurrences_equals_count(
+                            msg='Improperly formatted rule text in Python rule engine plugin',
+                            count=0,
+                            start_index=log_offset))
+
+
+    @unittest.skipIf(plugin_name != 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Python REP and Topology Testing")
+    def test_remote_python_rule_engine_plugin_instance_6465(self):
+        with append_native_re_to_server_config():
+            with temporary_core_file( PYTHON_RULE_ENGINE_PLUGIN_NAME ) as f_py:
+                f_py.add_rule("def myrule(_,cbk,rei): cbk.writeLine('serverLog','Hello from Python Rule Engine Plugin')")
+                with tempfile.NamedTemporaryFile(suffix=".r",mode="w") as f:
+                    f.write(textwrap.dedent("""\
+                        def main(rule_args, callback, rei):
+                            py_code = '''def main(_,callback,rei): callback.myrule()'''
+                            callback.py_remote("localhost",
+                            "<INST_NAME>irods_rule_engine_plugin-python-instance</INST_NAME>",
+                            py_code,"")
+
+                        INPUT null
+                        OUTPUT null
+                        """))
+                    f.flush()
+                    log_offset = lib.get_file_size_by_path(paths.server_log_path())
+                    self.admin.assert_icommand(['irule', '-r', 'irods_rule_engine_plugin-python-instance', '-F', f.name])
+
+                    # Assert the core.py rule ran and had the desired effect.
+                    lib.delayAssert(
+                        lambda: lib.log_message_occurrences_equals_count(
+                            msg="Hello from Python",
+                            start_index=log_offset))
+
+                    # The following sleep seems to be the best way, presently, to assert that the unwelcome warning did not happen.
+                    # (We could use delayAssert to ensure a count of zero, but it obfuscates and has same effect as the sleep.)
+                    time.sleep(2)
+
+                    # Assert we don't see a warning from the Native Rule Engine Plugin
+                    self.assertTrue(
+                        lib.log_message_occurrences_equals_count(
+                            msg='Rule Engine Plugin returned [-1]',
+                            count=0,
+                            start_index=log_offset))
+
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Python REP and Topology Testing")
     def test_continuation_does_not_cause_NO_MICROSERVICE_FOUND_ERR__issue_4383(self):
