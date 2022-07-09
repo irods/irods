@@ -5,6 +5,7 @@
 #include "irods/irods_re_plugin.hpp"
 #include "irods/miscServerFunct.hpp"
 #include "irods/rcMisc.h"
+#include <unistd.h>
 
 extern std::unique_ptr<struct irods::global_re_plugin_mgr> irods::re_plugin_globals;
 
@@ -69,6 +70,8 @@ int rsExecMyRule(
     if( inst_name_str ) {
         inst_name = inst_name_str;
     }
+
+    irods::log(LOG_NOTICE, fmt::format("pid = {} ; inst_name = {}\n",getpid(),inst_name));
 
     ruleExecInfo_t rei;
     initReiWithDataObjInp( &rei, _comm, NULL );
@@ -136,6 +139,7 @@ remoteExecMyRule( rsComm_t *_comm, execMyRuleInp_t *_exec_inp,
                   msParamArray_t **_out_arr, rodsServerHost_t *rods_svr_host ) {
     int status;
 
+    //irods::log(LOG_NOTICE, "DWM - in function _-_- {}:{}",__func__,__LINE__);
     if ( rods_svr_host == NULL ) {
         rodsLog( LOG_ERROR,
                  "remoteExecMyRule: Invalid rods_svr_host" );

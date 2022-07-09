@@ -286,6 +286,9 @@ static int carryOverMsParam(
  * \endcond
 **/
 int remoteExec( msParam_t *mPD, msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, ruleExecInfo_t *rei ) {
+
+	irods::log( LOG_NOTICE, "dwm - in systemMS remoteExec");
+
     execMyRuleInp_t execMyRuleInp;
     msParamArray_t *tmpParamArray, *aParamArray;
     msParamArray_t *outParamArray = NULL;

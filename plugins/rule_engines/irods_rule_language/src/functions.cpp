@@ -1898,12 +1898,26 @@ Res *smsi_remoteExec( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int,
 
     Res **params = ( Res ** )paramsr;
 
+    irods::log(LOG_NOTICE,"dwm - start of smsi_remoteExec\n");
+
     memset( &execMyRuleInp, 0, sizeof( execMyRuleInp ) );
     execMyRuleInp.condInput.len = 0;
     rstrcpy( execMyRuleInp.outParamDesc, ALL_MS_PARAM_KW, LONG_NAME_LEN );
 
     rstrcpy( tmpStr, params[0]->text, LONG_NAME_LEN );
     parseHostAddrStr( tmpStr, &execMyRuleInp.addr );
+
+    try {
+        auto taggedValues = getTaggedValues(params[1]->text);
+        auto it = taggedValues.find("INST_NAME");
+        if ( it != taggedValues.end() ) {
+            addKeyVal( &execMyRuleInp.condInput, "instance_name", it->second.front().c_str());
+            //rodsLog(LOG_NOTICE, "In function [%s], saw tag for INST_NAME: [%s]",__func__,it->second.front().c_str());
+            taggedValues.erase(it);
+        }
+    } catch ( const irods::exception& e) {
+        irods::log( irods::error(e) );
+    }
 
     try {
         auto taggedValues = getTaggedValues(params[1]->text);
