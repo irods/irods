@@ -239,6 +239,7 @@ NEW_ERROR(NOT_A_COLLECTION,                            -170000)
 NEW_ERROR(NOT_A_DATA_OBJECT,                           -171000)
 NEW_ERROR(JSON_VALIDATION_ERROR,                       -172000)
 NEW_ERROR(DATABASE_TYPE_NOT_SUPPORTED,                 -173000)
+NEW_ERROR(RESOLUTION_ERROR,                            -174000)
 
 /** @} */
 
