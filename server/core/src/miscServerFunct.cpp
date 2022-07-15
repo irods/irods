@@ -32,6 +32,12 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/scoped_thread.hpp>
 #include <boost/lexical_cast.hpp>
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc++11-narrowing"
+#include <boost/process.hpp>
+#pragma clang diagnostic pop
+
 #include <openssl/md5.h>
 
 
@@ -59,6 +65,7 @@ char *__loc1;
 #include <cstring>
 #include <iomanip>
 #include <fstream>
+#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -2976,53 +2983,63 @@ irods::error get_script_output_single_line(
     const std::string&              script_name,
     const std::vector<std::string>& args,
     std::string&                    output ) {
-    output.clear();
-    std::stringstream exec;
+    namespace bp = boost::process;
+
     try {
-    exec << script_language
-         << " " << irods::get_irods_home_directory().string()
-         << "/scripts/" << script_name;
-    } catch (const irods::exception& e) {
-        irods::log(e);
-        return ERROR(-1, "failed to get irods home directory");
-    }
-    for ( std::vector<std::string>::size_type i = 0; i < args.size(); ++i ) {
-        exec << " " << args[i];
-    }
+        auto resolved_program = bp::search_path(script_language);
+        if (resolved_program.empty()) {
+            return ERROR(RESOLUTION_ERROR, fmt::format("Could not resolve {} to an executable", script_language));
+        }
 
-    FILE *fp = popen( exec.str().c_str(), "r" );
-    if ( fp == NULL ) {
-        return ERROR( SYS_FORK_ERROR, "popen() failed" );
+        auto script_path = fmt::format("{}/scripts/{}", irods::get_irods_home_directory().c_str(), script_name);
+        if (!std::filesystem::exists(script_path)) {
+            return ERROR(RESOLUTION_ERROR, fmt::format("Script file not found! {}", script_path));
+        }
+
+        auto script_path_and_args = args;
+        script_path_and_args.insert(script_path_and_args.begin(), script_path);
+
+        bp::ipstream program_output;
+        bp::ipstream program_stderr;
+        bp::child c(resolved_program, script_path_and_args, bp::std_out > program_output, bp::std_err > program_stderr);
+        output.clear();
+        c.wait();
+        const auto ec = c.exit_code();
+
+        std::string stderr_output;
+        if (ec != 0 || (program_stderr && std::getline(program_stderr, stderr_output) && !stderr_output.empty())) {
+            irods::experimental::log::server::error(
+                "Received stderr output [{}] from script process [{} {}] which exited with code {}",
+                stderr_output,
+                script_language,
+                fmt::join(script_path_and_args, " "),
+                ec);
+        }
+
+        if (!program_output) {
+            return ERROR(SYS_PIPE_ERROR,
+                         fmt::format("stdout was unable to be opened, process exited with code {}.", ec));
+        }
+
+        if (!std::getline(program_output, output)) {
+            return ERROR(SYS_PIPE_ERROR,
+                         fmt::format("Unable to read line from child process, exited with code {}.", ec));
+        }
+
+        return SUCCESS();
     }
-
-    std::vector<char> buf( 1000 );
-    const char* fgets_ret = fgets( &buf[0], buf.size(), fp );
-    if ( fgets_ret == NULL ) {
-        std::stringstream msg;
-        msg << "fgets() failed. feof["
-            << std::feof( fp )
-            << "] ferror["
-            << std::ferror( fp ) << "]";
-        const int pclose_ret = pclose( fp );
-        msg << " pclose[" << pclose_ret << "]";
-        return ERROR( FILE_READ_ERR, msg.str() );
+    catch (const bp::process_error& e) {
+        // In this case, the server is most likely unable to find a suitable
+        // executable to run with a given name
+        irods::experimental::log::server::error("Error starting process, {}", e.what());
+        return ERROR(SYS_LIBRARY_ERROR, e.what());
     }
-
-    const int pclose_ret = pclose( fp );
-    if ( pclose_ret == -1 ) {
-        return ERROR( SYS_FORK_ERROR,
-                      "pclose() failed." );
+    catch (const irods::exception& e) {
+        return ERROR(e.code(), e.what());
     }
-
-    output = &buf[0];
-    // Remove trailing newline
-    const std::string::size_type size = output.size();
-    if ( size > 0 && output[size - 1] == '\n' ) {
-        output.resize( size - 1 );
+    catch (const std::exception& e) {
+        return ERROR(SYS_INTERNAL_ERR, e.what());
     }
-
-    return SUCCESS();
-
 }  // get_script_output_single_line
 
 irods::error add_global_re_params_to_kvp_for_dynpep(
