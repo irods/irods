@@ -4,7 +4,6 @@
 #include <string>
 #include <sstream>
 
-
 #include "irods/irods_random.hpp"
 #include "irods/objInfo.h"
 #include "irods/rcConnect.h"

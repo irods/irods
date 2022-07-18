@@ -320,10 +320,10 @@ namespace irods::administration::ticket
 
     /**
      * @brief Delete a ticket
-     * 
+     *
      * @param conn Communication Object
      * @param ticket_name Name of the ticket
-     * or 
+     * or
      * @param ticket_ID ID for the ticket that needs to be deleted
      * @return int Error Code
      */
@@ -378,22 +378,28 @@ namespace irods::administration::ticket
 
 } // namespace irods::administration::ticket
 
-class USER_LOGIN_EXCEPTION : public std::exception{
-    public:
-        const char* what(){
-            return "Communication object could not be logged in";
-        }
+class USER_LOGIN_EXCEPTION : public std::exception
+{
+public:
+    const char* what()
+    {
+        return "Communication object could not be logged in";
+    }
 };
 
-class RC_TICKET_EXCEPTION : public std::exception{
+class RC_TICKET_EXCEPTION : public std::exception
+{
     char* error_message;
-    public:
-        void set_error_message(std::string_view message){
-            error_message = strdup(message.data());
-        }
-        char* what(){
-            return error_message;
-        }
+
+public:
+    void set_error_message(std::string_view message)
+    {
+        error_message = strdup(message.data());
+    }
+    char* what()
+    {
+        return error_message;
+    }
 };
 
 #endif // IRODS_TICKET_API_HPP
