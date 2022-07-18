@@ -111,20 +111,20 @@ namespace irods::administration::ticket
     int create_ticket(RxComm& conn, ticket_type _type, std::string_view obj_path, std::string_view ticket_name)
     {
         if (_type == ticket_type::READ) {
-            create_read_ticket(conn, obj_path, ticket_name);
+            return create_read_ticket(conn, obj_path, ticket_name);
         }
         else if (_type == ticket_type::WRITE) {
-            create_write_ticket(conn, obj_path, ticket_name);
+            return create_write_ticket(conn, obj_path, ticket_name);
         }
         return 1; // Ticket type not defined
     }
     int create_ticket(RxComm& conn, ticket_type _type, std::string_view obj_path)
     {
         if (_type == ticket_type::READ) {
-            create_read_ticket(conn, obj_path);
+            return create_read_ticket(conn, obj_path);
         }
         else if (_type == ticket_type::WRITE) {
-            create_write_ticket(conn, obj_path);
+            return create_write_ticket(conn, obj_path);
         }
         return 1; // Ticket type not defined
     }
