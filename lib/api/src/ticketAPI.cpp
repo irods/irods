@@ -3,10 +3,6 @@
 #include <charconv>
 #include <string>
 #include <sstream>
-<<<<<<< HEAD
-
-=======
->>>>>>> ticketLibTest
 
 #include "irods/irods_random.hpp"
 #include "irods/objInfo.h"
