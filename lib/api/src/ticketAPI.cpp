@@ -11,6 +11,7 @@
 #include "irods/rodsError.h"
 #include "irods/rodsKeyWdDef.h"
 #include "irods/ticketAdmin.h"
+#include "irods/irods_exception.hpp"
 
 namespace irods::administration::ticket
 {
@@ -43,11 +44,6 @@ namespace irods::administration::ticket
                        std::string_view commandModifier4,
                        bool run_as_admin)
     {
-        if (const int status = clientLogin(&conn); status != 0) {
-            throw USER_LOGIN_EXCEPTION(); // int error code -- client login didn't work
-            return 3;
-        }
-
         ticketAdminInp_t ticketAdminInp{};
 
         ticketAdminInp.arg1 = strdup(command.data());
@@ -79,12 +75,7 @@ namespace irods::administration::ticket
             const char* myName = rodsErrorName(status, &mySubName);
             // rodsLog(LOG_ERROR, "rcTicketAdmin failed with error %d %s %s", status, myName, mySubName);
             // free(mySubName);
-            std::stringstream fmt;
-            fmt << "rcTicketAdmin failed with error " << status << " " << myName;
-            std::string error_message = fmt.str();
-            RC_TICKET_EXCEPTION exception;
-            exception.set_error_message(error_message);
-            throw exception;
+            THROW(status, myName);
             return status;
         }
 
