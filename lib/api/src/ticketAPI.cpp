@@ -2,6 +2,8 @@
 
 #include <charconv>
 #include <string>
+#include <sstream>
+
 
 #include "irods/irods_random.hpp"
 #include "irods/objInfo.h"
@@ -43,7 +45,8 @@ namespace irods::administration::ticket
                        bool run_as_admin)
     {
         if (const int status = clientLogin(&conn); status != 0) {
-            return 3; // int error code -- client login didn't work
+            throw USER_LOGIN_EXCEPTION(); // int error code -- client login didn't work
+            return 3;
         }
 
         ticketAdminInp_t ticketAdminInp{};
@@ -62,21 +65,28 @@ namespace irods::administration::ticket
         const int status = rcTicketAdmin(&conn, &ticketAdminInp);
 
         if (status < 0) {
-            if (conn.rError) {
-                rError_t* Err;
-                rErrMsg_t* ErrMsg;
-                int i, len;
-                Err = conn.rError;
-                len = Err->len;
-                for (i = 0; i < len; i++) {
-                    ErrMsg = Err->errMsg[i];
-                    rodsLog(LOG_ERROR, "Level %d: %s", i, ErrMsg->msg);
-                }
-            }
+            // if (conn.rError) {
+            //     rError_t* Err;
+            //     rErrMsg_t* ErrMsg;
+            //     int i, len;
+            //     Err = conn.rError;
+            //     len = Err->len;
+            //     for (i = 0; i < len; i++) {
+            //         ErrMsg = Err->errMsg[i];
+            //         rodsLog(LOG_ERROR, "Level %d: %s", i, ErrMsg->msg);
+            //     }
+            // }
             char* mySubName = NULL;
             const char* myName = rodsErrorName(status, &mySubName);
-            rodsLog(LOG_ERROR, "rcTicketAdmin failed with error %d %s %s", status, myName, mySubName);
-            free(mySubName);
+            // rodsLog(LOG_ERROR, "rcTicketAdmin failed with error %d %s %s", status, myName, mySubName);
+            // free(mySubName);
+            std::stringstream fmt;
+            fmt << "rcTicketAdmin failed with error " << status << " " << myName;
+            std::string error_message = fmt.str();
+            RC_TICKET_EXCEPTION exception;
+            exception.set_error_message(error_message);
+            throw exception;
+            return status;
         }
 
         return status;

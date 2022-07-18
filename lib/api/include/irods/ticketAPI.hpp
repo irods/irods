@@ -378,4 +378,22 @@ namespace irods::administration::ticket
 
 } // namespace irods::administration::ticket
 
+class USER_LOGIN_EXCEPTION : public std::exception{
+    public:
+        const char* what(){
+            return "Communication object could not be logged in";
+        }
+};
+
+class RC_TICKET_EXCEPTION : public std::exception{
+    char* error_message;
+    public:
+        void set_error_message(std::string_view message){
+            error_message = strdup(message.data());
+        }
+        char* what(){
+            return error_message;
+        }
+};
+
 #endif // IRODS_TICKET_API_HPP
