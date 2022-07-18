@@ -318,6 +318,18 @@ namespace irods::administration::ticket
     int remove_host(RxComm& conn, std::string_view ticket_name, std::string_view host);
     int remove_host(RxComm& conn, int ticket_ID, std::string_view host);
 
+    /**
+     * @brief Delete a ticket
+     * 
+     * @param conn Communication Object
+     * @param ticket_name Name of the ticket
+     * or 
+     * @param ticket_ID ID for the ticket that needs to be deleted
+     * @return int Error Code
+     */
+    int delete_ticket(RxComm& conn, std::string_view ticket_name);
+    int delete_ticket(RxComm& conn, int ticket_ID);
+
     // These functions are the same as the above, but it does them as an admin of the system
     int admin_create_read_ticket(RxComm& conn, std::string_view obj_path, std::string_view ticket_name);
     int admin_create_read_ticket(RxComm& conn, std::string_view obj_path);
@@ -361,6 +373,27 @@ namespace irods::administration::ticket
     int admin_remove_host(RxComm& conn, std::string_view ticket_name, std::string_view host);
     int admin_remove_host(RxComm& conn, int ticket_ID, std::string_view host);
 
+    int admin_delete_ticket(RxComm& conn, std::string_view ticket_name);
+    int admin_delete_ticket(RxComm& conn, int ticket_ID);
+
 } // namespace irods::administration::ticket
+
+class USER_LOGIN_EXCEPTION : public std::exception{
+    public:
+        const char* what(){
+            return "Communication object could not be logged in";
+        }
+};
+
+class RC_TICKET_EXCEPTION : public std::exception{
+    char* error_message;
+    public:
+        void set_error_message(std::string_view message){
+            error_message = strdup(message.data());
+        }
+        char* what(){
+            return error_message;
+        }
+};
 
 #endif // IRODS_TICKET_API_HPP
