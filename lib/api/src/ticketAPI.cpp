@@ -48,14 +48,6 @@ namespace irods::administration::ticket
                        std::string_view commandModifier4,
                        bool run_as_admin)
     {
-<<<<<<< HEAD
-        if (const int status = clientLogin(&conn); status != 0) {
-            throw USER_LOGIN_EXCEPTION(); // int error code -- client login didn't work
-            return 3;
-        }
-
-=======
->>>>>>> ticketLibTest
         ticketAdminInp_t ticketAdminInp{};
 
         ticketAdminInp.arg1 = strdup(command.data());
