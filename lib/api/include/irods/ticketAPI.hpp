@@ -8,7 +8,7 @@
 #undef RxComm
 #undef rxTicketAdmin
 
-#ifdef IRODS_RESOURCE_ADMINISTRATION_ENABLE_SERVER_SIDE_API
+#ifdef IRODS_TICKET_ADMINISTRATION_ENABLE_SERVER_SIDE_API
 #    define NAMESPACE_IMPL server
 #    define RxComm         RsComm
 #    define rxTicketAdmin  rsTicketAdmin
@@ -20,7 +20,7 @@ struct RsComm;
 #    define rxTicketAdmin  rcTicketAdmin
 
 struct RcComm;
-#endif // IRODS_RESOURCE_ADMINISTRATION_ENABLE_SERVER_SIDE_API
+#endif // IRODS_TICKET_ADMINISTRATION_ENABLE_SERVER_SIDE_API
 
 enum ticket_type
 {
@@ -320,10 +320,17 @@ namespace irods::administration::ticket
 
     /**
      * @brief Delete a ticket
+<<<<<<< HEAD
      * 
      * @param conn Communication Object
      * @param ticket_name Name of the ticket
      * or 
+=======
+     *
+     * @param conn Communication Object
+     * @param ticket_name Name of the ticket
+     * or
+>>>>>>> ticketLibTest
      * @param ticket_ID ID for the ticket that needs to be deleted
      * @return int Error Code
      */
@@ -378,6 +385,7 @@ namespace irods::administration::ticket
 
 } // namespace irods::administration::ticket
 
+<<<<<<< HEAD
 class USER_LOGIN_EXCEPTION : public std::exception{
     public:
         const char* what(){
@@ -395,5 +403,30 @@ class RC_TICKET_EXCEPTION : public std::exception{
             return error_message;
         }
 };
+=======
+// class USER_LOGIN_EXCEPTION : public std::exception
+// {
+// public:
+//     const char* what()
+//     {
+//         return "Communication object could not be logged in";
+//     }
+// };
+
+// class RC_TICKET_EXCEPTION : public std::exception
+// {
+//     char* error_message;
+
+// public:
+//     void set_error_message(std::string_view message)
+//     {
+//         error_message = strdup(message.data());
+//     }
+//     char* what()
+//     {
+//         return error_message;
+//     }
+// };
+>>>>>>> ticketLibTest
 
 #endif // IRODS_TICKET_API_HPP
