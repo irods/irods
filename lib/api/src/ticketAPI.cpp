@@ -87,9 +87,7 @@ namespace irods::administration::ticket
             const char* myName = rodsErrorName(status, &mySubName);
             // rodsLog(LOG_ERROR, "rcTicketAdmin failed with error %d %s %s", status, myName, mySubName);
             // free(mySubName);
-<<<<<<< HEAD
             THROW(status, myName);
->>>>>>> ticketLibTest
             return status;
         }
 
