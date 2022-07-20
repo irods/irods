@@ -1,4 +1,6 @@
+
 #include "irods/rodsAgent.hpp"
+
 #include "irods/reconstants.hpp"
 #include "irods/rsApiHandler.hpp"
 #include "irods/icatHighLevelRoutines.hpp"
@@ -32,6 +34,7 @@
 #include "irods/server_utilities.hpp"
 #include "irods/plugin_lifetime_manager.hpp"
 #include "irods/version.hpp"
+#include "irods/replica_access_table.hpp"
 
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -68,21 +71,6 @@ ssize_t receiveSocketFromSocket( int readFd, int *socket) {
     *socket = theSocket;
 
     return n;
-}
-
-static void set_agent_process_name(const InformationRequiredToSafelyRenameProcess& info, const int socket_fd) {
-    try {
-        std::string remote_address = socket_fd_to_remote_address(socket_fd);
-        if (remote_address.size() > 0) {
-            const std::string desired_name = "irodsServer: " + remote_address;
-            const auto l_desired = desired_name.size();
-            if (l_desired <= info.argv0_size) {
-                strncpy(info.argv0, desired_name.c_str(), info.argv0_size);
-            }
-        }
-    } catch ( const irods::exception& e ) {
-        rodsLog(LOG_ERROR, "set_agent_process_name: failed to get remote address of socket\n%s", e.what());
-    }
 }
 
 int receiveDataFromServer( int conn_tmp_socket ) {
@@ -182,6 +170,39 @@ int receiveDataFromServer( int conn_tmp_socket ) {
     }
 
     return status;
+}
+
+void cleanup() {
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+    }
+
+    if (INITIAL_DONE == InitialState) {
+        close_all_l1_descriptors(*ThisComm);
+
+        irods::replica_state_table::deinit();
+
+        disconnectAllSvrToSvrConn();
+    }
+
+    if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        disconnectRcat();
+    }
+
+    irods::re_plugin_globals->global_re_mgr.call_stop_operations();
+}
+
+void cleanupAndExit( int status ) {
+    cleanup();
+
+    if ( status >= 0 ) {
+        exit( 0 );
+    }
+    else {
+        exit( 1 );
+    }
 }
 
 void
