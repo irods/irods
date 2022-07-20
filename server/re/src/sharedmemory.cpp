@@ -49,6 +49,7 @@ unsigned char *prepareServerSharedMemory( const std::string& _key ) {
     }
 }
 
+// TODO(june): this has been used other places, but it does nothing?
 void detachSharedMemory( const std::string& _key ) {
     //delete mapped;
     //delete shm_obj;
