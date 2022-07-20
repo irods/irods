@@ -13,10 +13,14 @@
 #include "irods/sockComm.h"
 #include "irods/getRodsEnv.h"
 #include "irods/rcConnect.h"
+#include "irods/rsIcatOpr.hpp"
+
+#include <sys/un.h>
 
 #define MAX_MSG_READ_RETRY	1
 #define READ_RETRY_SLEEP_TIME	1
 
 int agentMain( rsComm_t *rsComm );
+int runIrodsAgentFactory(sockaddr_un agent_addr);
 
 #endif	/* RODS_AGENT_H */
