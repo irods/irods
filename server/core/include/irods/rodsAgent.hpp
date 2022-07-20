@@ -1,3 +1,5 @@
+/// WORKING CHANGES(june): appended runIrodsAgentFactory
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
@@ -18,5 +20,6 @@
 #define READ_RETRY_SLEEP_TIME	1
 
 int agentMain( rsComm_t *rsComm );
+int runIrodsAgentFactory(sockaddr_un agent_addr);
 
 #endif	/* RODS_AGENT_H */

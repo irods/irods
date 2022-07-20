@@ -1,13 +1,47 @@
+
+/**
+
+WORKING CHANGES(june):
+
+* removed duplicate includes
+* re-ordered self refrence header include to be at the top
+* included irods/rodsAgent.hpp and appended int runIrodsAgentFactory(sockaddr_un agent_addr);
+* seperated .h from .hpp irods includes
+
+* removed unused function std::vector<std::string> setExecArg(const char* commandArgv);
+* removed unused function void set_agent_spawner_process_name(const InformationRequiredToSafelyRenameProcess& info)
+
+* re-ordered int queueConnectedAgentProc to be before its one callsite instead of forward decal
+
+* removed unused return type int from get64RandomBytes()
+
+* removed typedefed unsigned int "uint" type from use here TODO: remove this everywhere
+
+* moved one time use aliases hnc & dnsc to their usage sites
+
+	TODO(june): Split agent functions into their own file
+	TODO(june): Split delay server functions into their own file (move to delay server file?)
+	
+Im just seeing a lot in here that can probably be more localized to its call sites
+
+// TODO(june): this namespace enum class stuff is really redudant 
+irods::server_state::server_state:: 
+
+// TODO(june): convert connection request queue to modern object
+
+// TODO(june): cleanup initServer stuff, some functions there are redudant in a weird way
+
+
+**/
+
+#include "irods/rodsServer.hpp"
+
 #include "irods/client_connection.hpp"
-#include "irods/getRodsEnv.h"
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_buffer_encryption.hpp"
 #include "irods/irods_configuration_keywords.hpp"
 #include "irods/irods_configuration_parser.hpp"
 #include "irods/irods_get_full_path_for_config_file.hpp"
-#include "irods/rcMisc.h"
-#include "irods/rodsErrorTable.h"
-#include "irods/rodsServer.hpp"
 #include "irods/sharedmemory.hpp"
 #include "irods/initServer.hpp"
 #include "irods/miscServerFunct.hpp"
@@ -18,11 +52,8 @@
 #include "irods/irods_re_plugin.hpp"
 #include "irods/irods_server_properties.hpp"
 #include "irods/irods_server_control_plane.hpp"
-#include "irods/initServer.hpp"
-#include "irods/procLog.h"
 #include "irods/rsGlobalExtern.hpp"
 #include "irods/locks.hpp"
-#include "irods/sharedmemory.hpp"
 #include "irods/sockCommNetworkInterface.hpp"
 #include "irods/irods_random.hpp"
 #include "irods/replica_access_table.hpp"
@@ -36,9 +67,16 @@
 #include "irods/irods_server_api_table.hpp"
 #include "irods/irods_client_api_table.hpp"
 #include "irods/icatHighLevelRoutines.hpp"
+#include "irods/rodsAgent.hpp"
+
+#include "irods/rcMisc.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/getRodsEnv.h"
+#include "irods/procLog.h"
 #include "irods/plugins/api/grid_configuration_types.h"
 #include "irods/get_grid_configuration_value.h"
 #include "irods/set_delay_server_migration_info.h"
+
 
 #include <pthread.h>
 #include <sys/socket.h>
@@ -67,6 +105,7 @@
 #include <fmt/format.h>
 #include <nlohmann/json.hpp>
 
+
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
@@ -79,10 +118,11 @@
 #include <chrono>
 #include <sstream>
 
+
+// TODO(june): Move all these globals into namespaces and group them with their usages
+
 // clang-format off
 namespace ix   = irods::experimental;
-namespace hnc  = irods::experimental::net::hostname_cache;
-namespace dnsc = irods::experimental::net::dns_cache;
 // clang-format on
 
 struct sockaddr_un local_addr{};
@@ -93,7 +133,8 @@ pid_t agent_spawning_pid{};
 char unix_domain_socket_directory[] = "/tmp/irods_sockets_XXXXXX";
 char agent_factory_socket_file[sizeof(sockaddr_un::sun_path)]{};
 
-uint ServerBootTime;
+// TODO(june): this is set once, then loaded into agents enviromental variables, doesnt need to be global
+unsigned int ServerBootTime;
 int SvrSock;
 
 std::atomic<bool> is_control_plane_accepting_requests = false;
@@ -115,12 +156,6 @@ boost::mutex              ReadReqCondMutex;
 boost::mutex              SpawnReqCondMutex;
 boost::condition_variable ReadReqCond;
 boost::condition_variable SpawnReqCond;
-
-std::vector<std::string> setExecArg(const char* commandArgv);
-
-int runIrodsAgentFactory(sockaddr_un agent_addr);
-
-int queueConnectedAgentProc(int childPid, agentProc_t* connReq, agentProc_t** agentProcHead);
 
 namespace
 {
@@ -172,7 +207,8 @@ namespace
         }
     }
 
-    int get64RandomBytes(char* buf)
+	// TODO(june): this seems like a really weird way to build and then copy a string into a buffer
+    void get64RandomBytes(char* buf)
     {
         const int num_random_bytes = 32;
         unsigned char random_bytes[num_random_bytes];
@@ -185,8 +221,7 @@ namespace
 
         const int num_hex_bytes = 2 * num_random_bytes;
         std::snprintf(buf, num_hex_bytes + 1, "%s", ss.str().c_str());
-
-        return 0;
+		
     } // get64RandomBytes
 
     bool init_shared_memory_for_plugin(const nlohmann::json& _plugin_object)
@@ -471,16 +506,6 @@ namespace
 #endif
     } // setup_signal_handlers
 
-    void set_agent_spawner_process_name(const InformationRequiredToSafelyRenameProcess& info)
-    {
-        const char* desired_name = "irodsServer: factory";
-        const auto l_desired = std::strlen(desired_name);
-
-        if (l_desired <= info.argv0_size) {
-            std::strncpy(info.argv0, desired_name, info.argv0_size);
-        }
-    } // set_agent_spawner_process_name
-
     std::optional<std::string> get_grid_configuration_option_value(RcComm& _comm,
                                                                    const std::string_view _namespace,
                                                                    const std::string_view _option_name)
@@ -521,6 +546,7 @@ namespace
         }
     } // set_delay_server_migration_info
 
+	// TODO(june): why is this an optional bool?
     std::optional<bool> is_delay_server_running_on_remote_host(const std::string_view _hostname)
     {
         using log = irods::experimental::log::server;
@@ -860,6 +886,17 @@ namespace
         open("/dev/null", O_WRONLY);
         open("/dev/null", O_RDWR);
     } // daemonize
+	
+	void print_usage(char *prog)
+	{
+		printf( "Usage: %s [-uvVqs]\n", prog );
+		printf( " -u  user command level, remain attached to the tty (foreground)\n" );
+		printf( " -v  verbose (LOG_NOTICE)\n" );
+		printf( " -V  very verbose (LOG_DEBUG10)\n" );
+		printf( " -q  quiet (LOG_ERROR)\n" );
+		printf( " -s  log SQL commands\n" );
+	}
+	
 } // anonymous namespace
 
 int main(int argc, char** argv)
@@ -923,11 +960,11 @@ int main(int argc, char** argv)
 
             // Help
             case 'h':
-                usage(argv[0]);
+                print_usage(argv[0]);
                 exit(0);
 
             default:
-                usage(argv[0]);
+                print_usage(argv[0]);
                 exit(1);
         }
     }
@@ -951,9 +988,11 @@ int main(int argc, char** argv)
 
     create_stacktrace_directory();
 
+	namespace hnc  = irods::experimental::net::hostname_cache;
     hnc::init("irods_hostname_cache", irods::get_hostname_cache_shared_memory_size());
     irods::at_scope_exit deinit_hostname_cache{[] { hnc::deinit(); }};
 
+	namespace dnsc = irods::experimental::net::dns_cache;
     dnsc::init("irods_dns_cache", irods::get_dns_cache_shared_memory_size());
     irods::at_scope_exit deinit_dns_cache{[] { dnsc::deinit(); }};
 
@@ -1073,11 +1112,6 @@ int main(int argc, char** argv)
         });
     ix::cron::cron::instance().add_task(cache_clearer.build());
 
-    return serverMain(enable_test_mode, write_to_stdout);
-}
-
-int serverMain(const bool enable_test_mode = false, const bool write_to_stdout = false)
-{
     int acceptErrCnt = 0;
 
     // set re cache salt here
@@ -1301,16 +1335,6 @@ serverExit()
     exit(1);
 }
 
-void usage(char *prog)
-{
-    printf( "Usage: %s [-uvVqs]\n", prog );
-    printf( " -u  user command level, remain attached to the tty (foreground)\n" );
-    printf( " -v  verbose (LOG_NOTICE)\n" );
-    printf( " -V  very verbose (LOG_DEBUG10)\n" );
-    printf( " -q  quiet (LOG_ERROR)\n" );
-    printf( " -s  log SQL commands\n" );
-}
-
 int procChildren(agentProc_t** agentProcHead)
 {
     boost::unique_lock<boost::mutex> con_agent_lock(ConnectedAgentMutex);
@@ -1371,6 +1395,21 @@ agentProc_t* getAgentProcByPid(int childPid, agentProc_t** agentProcHead)
     con_agent_lock.unlock();
 
     return tmpAgentProc;
+}
+
+int queueConnectedAgentProc(int childPid, agentProc_t* connReq, agentProc_t** agentProcHead)
+{
+    if (!connReq) {
+        return USER__NULL_INPUT_ERR;
+    }
+
+    connReq->pid = childPid;
+
+    boost::unique_lock<boost::mutex> con_agent_lock(ConnectedAgentMutex);
+    queueAgentProc(connReq, agentProcHead, TOP_POS);
+    con_agent_lock.unlock();
+
+    return 0;
 }
 
 int spawnAgent(agentProc_t* connReq, agentProc_t** agentProcHead)
@@ -1638,21 +1677,6 @@ int execAgent(int newSock, startupPack_t* startupPack)
     cleanup_sockets();
 
     return std::atoi(in_buf);
-}
-
-int queueConnectedAgentProc(int childPid, agentProc_t* connReq, agentProc_t** agentProcHead)
-{
-    if (!connReq) {
-        return USER__NULL_INPUT_ERR;
-    }
-
-    connReq->pid = childPid;
-
-    boost::unique_lock<boost::mutex> con_agent_lock(ConnectedAgentMutex);
-    queueAgentProc(connReq, agentProcHead, TOP_POS);
-    con_agent_lock.unlock();
-
-    return 0;
 }
 
 int getAgentProcCnt()
@@ -2121,7 +2145,7 @@ void readWorkerTask()
 
 void spawnManagerTask()
 {
-    uint agentQueChkTime = 0;
+    unsigned int agentQueChkTime = 0;
 
     while (true) {
         const auto state = irods::server_state::get_state();
@@ -2166,7 +2190,7 @@ void spawnManagerTask()
 
         spwn_req_lock.unlock();
 
-        if (uint curTime = std::time(nullptr); curTime > agentQueChkTime + AGENT_QUE_CHK_INT) {
+        if (unsigned int curTime = std::time(nullptr); curTime > agentQueChkTime + AGENT_QUE_CHK_INT) {
             agentQueChkTime = curTime;
             procBadReq();
         }
@@ -2288,45 +2312,4 @@ void purgeLockFileWorkerTask()
         }
     }
 } // purgeLockFileWorkerTask
-
-std::vector<std::string> setExecArg(const char* commandArgv)
-{
-    std::vector<std::string> arguments;
-
-    if (commandArgv) {
-        int len = 0;
-        bool openQuote = false;
-        const char* cur = commandArgv;
-
-        for (int i = 0; commandArgv[i] != '\0'; ++i) {
-            if (commandArgv[i] == ' ' && !openQuote) {
-                if (len > 0) { // End of a argv.
-                    arguments.push_back(std::string(cur, len));
-
-                    // Reset index and pointer.
-                    cur = &commandArgv[i + 1];
-                    len = 0;
-                }
-                else { // Skip over blanks.
-                    cur = &commandArgv[i + 1];
-                }
-            }
-            else if (commandArgv[i] == '\'' || commandArgv[i] == '\"') {
-                openQuote ^= true;
-                if (openQuote) {
-                    // Skip the quote.
-                    cur = &commandArgv[i + 1];
-                }
-            }
-            else {
-                ++len;
-            }
-        }
-        if (len > 0) { // Handle the last argv.
-            arguments.push_back(std::string(cur, len));
-        }
-    }
-
-    return arguments;
-}
 

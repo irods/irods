@@ -1,3 +1,5 @@
+/// WORKING CHANGES(june): removed unused InformationRequiredToSafelyRenameProcess struct
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
@@ -12,11 +14,6 @@
 #include <string>
 
 /* server host configuration */
-struct InformationRequiredToSafelyRenameProcess {
-    explicit InformationRequiredToSafelyRenameProcess(char**argv);
-    char* argv0;
-    size_t argv0_size;
-};
 
 int
 //initServerInfo( rsComm_t *rsComm );

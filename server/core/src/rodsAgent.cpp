@@ -1,3 +1,13 @@
+/*
+
+WORKING CHANGES(june):
+
+* removed unused function static void set_agent_process_name(const InformationRequiredToSafelyRenameProcess& info, const int socket_fd)
+
+*/
+
+
+#include "irods/rodsAgent.hpp"
 #include "irods/rodsAgent.hpp"
 #include "irods/reconstants.hpp"
 #include "irods/rsApiHandler.hpp"
@@ -68,21 +78,6 @@ ssize_t receiveSocketFromSocket( int readFd, int *socket) {
     *socket = theSocket;
 
     return n;
-}
-
-static void set_agent_process_name(const InformationRequiredToSafelyRenameProcess& info, const int socket_fd) {
-    try {
-        std::string remote_address = socket_fd_to_remote_address(socket_fd);
-        if (remote_address.size() > 0) {
-            const std::string desired_name = "irodsServer: " + remote_address;
-            const auto l_desired = desired_name.size();
-            if (l_desired <= info.argv0_size) {
-                strncpy(info.argv0, desired_name.c_str(), info.argv0_size);
-            }
-        }
-    } catch ( const irods::exception& e ) {
-        rodsLog(LOG_ERROR, "set_agent_process_name: failed to get remote address of socket\n%s", e.what());
-    }
 }
 
 int receiveDataFromServer( int conn_tmp_socket ) {

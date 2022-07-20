@@ -1,3 +1,5 @@
+/// WORKING CHANGES(june): removed unused InformationRequiredToSafelyRenameProcess constructor
+
 #include "irods/initServer.hpp"
 
 #include "irods/genQuery.h"
@@ -161,11 +163,6 @@ namespace
         }
     } // close_all_l1_descriptors
 } // anonymous namespace
-
-InformationRequiredToSafelyRenameProcess::InformationRequiredToSafelyRenameProcess(char**argv) {
-    argv0 = argv[0];
-    argv0_size = strlen(argv[0]);
-}
 
 int initServerInfo(int processType, rsComm_t* rsComm)
 {
