@@ -28,8 +28,8 @@ struct RcComm;
  */
 namespace irods::administration::ticket
 {
-    enum class ticket_type
-    {
+    inline struct admin_tag {} admin;
+    enum class ticket_type    {
         read,
         write
     };
@@ -55,105 +55,116 @@ namespace irods::administration::ticket
      * @param ticket_name Name of the ticket (if provided)
      * @return int Error code
      */
-    int create_ticket(RxComm& conn, ticket_type _type, std::string_view obj_path, std::string_view ticket_name);
-    int create_ticket(RxComm& conn, ticket_type _type, std::string_view obj_path);
+    void create_ticket(RxComm& conn, ticket_type _type, std::string_view obj_path, std::string_view ticket_name);
+    std::string create_ticket(RxComm& conn, ticket_type _type, std::string_view obj_path);
 
-    /**
-     * @brief Create a Read Ticket object
-     *
-     * @param conn Communication Object
-     * @param obj_path Path for the object that the ticket is being made for
-     * @param ticket_name(if provided) Name of the ticket
-     * @return int Error Code that may come up
-     */
-    int create_read_ticket(RxComm& conn, std::string_view obj_path, std::string_view ticket_name);
-    int create_read_ticket(RxComm& conn, std::string_view obj_path);
+    void create_ticket(admin_tag, RxComm& conn, ticket_type _type, std::string_view obj_path, std::string_view ticket_name);
+    std::string create_ticket(admin_tag, RxComm& conn, ticket_type _type, std::string_view obj_path);
 
-    /**
-     * @brief Create a Write Ticket object
-     *
-     * @param conn Communication Object
-     * @param obj_path Path for the object that the ticket is being made for
-     * @param ticket_name(if provided) Name of the ticket
-     * @return int Error Code that may come up
-     */
-    int create_write_ticket(RxComm& conn, std::string_view obj_path, std::string_view ticket_name);
-    int create_write_ticket(RxComm& conn, std::string_view obj_path);
+    // OLD CREATE TICKET 
+    // /**
+    //  * @brief Create a Read Ticket object
+    //  *
+    //  * @param conn Communication Object
+    //  * @param obj_path Path for the object that the ticket is being made for
+    //  * @param ticket_name(if provided) Name of the ticket
+    //  * @return int Error Code that may come up
+    //  */
+    // int create_read_ticket(RxComm& conn, std::string_view obj_path, std::string_view ticket_name);
+    // int create_read_ticket(RxComm& conn, std::string_view obj_path);
+    //
+    // /**
+    //  * @brief Create a Write Ticket object
+    //  *
+    //  * @param conn Communication Object
+    //  * @param obj_path Path for the object that the ticket is being made for
+    //  * @param ticket_name(if provided) Name of the ticket
+    //  * @return int Error Code that may come up
+    //  */
+    // int create_write_ticket(RxComm& conn, std::string_view obj_path, std::string_view ticket_name);
+    // int create_write_ticket(RxComm& conn, std::string_view obj_path);
+    
+    void set_ticket_restrictions(RxComm& conn, ticket_operation _operand, ticket_property _property, std::string_view ticket_name, int num_of_restrictions);
+    void set_ticket_restrictions(RxComm& conn, ticket_operation _operand, ticket_property _property, int ticket_ID, int num_of_restrictions);
 
-    /**
-     * @brief Remove any restrictions on the number of uses of the ticket specified
-     *
-     * @param conn Communication object
-     * @param ticket_name Name of the ticket to affect
-     * or
-     * @param ticket_ID ID for the ticket to affect
-     * @return int Error Code
-     */
-    int remove_usage_restriction(RxComm& conn, std::string_view ticket_name);
-    int remove_usage_restriction(RxComm& conn, int ticket_ID);
+    // OLD RESTRICTION SETTING
+    // /**
+    //  * @brief Remove any restrictions on the number of uses of the ticket specified
+    //  *
+    //  * @param conn Communication object
+    //  * @param ticket_name Name of the ticket to affect
+    //  * or
+    //  * @param ticket_ID ID for the ticket to affect
+    //  * @return int Error Code
+    //  */
+    // int remove_usage_restriction(RxComm& conn, std::string_view ticket_name);
+    // int remove_usage_restriction(RxComm& conn, int ticket_ID);
+    //
+    // /**
+    //  * @brief Remove any restrictions on the number of times the file can be written to of the ticket specified
+    //  *
+    //  * @param conn Communication object
+    //  * @param ticket_name Name of the ticket to affect
+    //  * or
+    //  * @param ticket_ID ID for the ticket to affect
+    //  * @return int Error Code
+    //  */
+    // int remove_write_file_restriction(RxComm& conn, std::string_view ticket_name);
+    // int remove_write_file_restriction(RxComm& conn, int ticket_ID);
+    //
+    // /**
+    //  * @brief Remove any restrictions on the number of bytes that can be written to of the ticket specified
+    //  *
+    //  * @param conn Communication object
+    //  * @param ticket_name Name of the ticket to affect
+    //  * or
+    //  * @param ticket_ID ID for the ticket to affect
+    //  * @return int Error Code
+    //  */
+    // int remove_write_byte_restriction(RxComm& conn, std::string_view ticket_name);
+    // int remove_write_byte_restriction(RxComm& conn, int ticket_ID);
+    //
+    // /**
+    //  * @brief Set restrictions on the number of uses of the ticket specified
+    //  *
+    //  * @param conn Communication object
+    //  * @param ticket_name Name of the ticket to affect
+    //  * or
+    //  * @param ticket_ID ID for the ticket to affect
+    //  * @param numUses The number of uses to restrict the ticket to
+    //  * @return int Error Code
+    //  */
+    // int set_usage_restriction(RxComm& conn, std::string_view ticket_name, int numUses);
+    // int set_usage_restriction(RxComm& conn, int ticket_ID, int numUses);
+    //
+    // /**
+    //  * @brief Set restrictions on the number of times the file can be written to of the ticket specified
+    //  *
+    //  * @param conn Communication object
+    //  * @param ticket_name Name of the ticket to affect
+    //  * or
+    //  * @param ticket_ID ID for the ticket to affect
+    //  * @param numUses The number of uses to restrict the ticket to
+    //  * @return int Error Code
+    //  */
+    // int set_write_file_restriction(RxComm& conn, std::string_view ticket_name, int numUses);
+    // int set_write_file_restriction(RxComm& conn, int ticket_ID, int numUses);
+    //
+    // /**
+    //  * @brief Set restrictions on the number of byte that can be written to of the ticket specified
+    //  *
+    //  * @param conn Communication object
+    //  * @param ticket_name Name of the ticket to affect
+    //  * or
+    //  * @param ticket_ID ID for the ticket to affect
+    //  * @param numUses The number of bytes to restrict the ticket to
+    //  * @return int Error Code
+    //  */
+    // int set_write_byte_restriction(RxComm& conn, std::string_view ticket_name, int numUses);
+    // int set_write_byte_restriction(RxComm& conn, int ticket_ID, int numUses);
 
-    /**
-     * @brief Remove any restrictions on the number of times the file can be written to of the ticket specified
-     *
-     * @param conn Communication object
-     * @param ticket_name Name of the ticket to affect
-     * or
-     * @param ticket_ID ID for the ticket to affect
-     * @return int Error Code
-     */
-    int remove_write_file_restriction(RxComm& conn, std::string_view ticket_name);
-    int remove_write_file_restriction(RxComm& conn, int ticket_ID);
-
-    /**
-     * @brief Remove any restrictions on the number of bytes that can be written to of the ticket specified
-     *
-     * @param conn Communication object
-     * @param ticket_name Name of the ticket to affect
-     * or
-     * @param ticket_ID ID for the ticket to affect
-     * @return int Error Code
-     */
-    int remove_write_byte_restriction(RxComm& conn, std::string_view ticket_name);
-    int remove_write_byte_restriction(RxComm& conn, int ticket_ID);
-
-    /**
-     * @brief Set restrictions on the number of uses of the ticket specified
-     *
-     * @param conn Communication object
-     * @param ticket_name Name of the ticket to affect
-     * or
-     * @param ticket_ID ID for the ticket to affect
-     * @param numUses The number of uses to restrict the ticket to
-     * @return int Error Code
-     */
-    int set_usage_restriction(RxComm& conn, std::string_view ticket_name, int numUses);
-    int set_usage_restriction(RxComm& conn, int ticket_ID, int numUses);
-
-    /**
-     * @brief Set restrictions on the number of times the file can be written to of the ticket specified
-     *
-     * @param conn Communication object
-     * @param ticket_name Name of the ticket to affect
-     * or
-     * @param ticket_ID ID for the ticket to affect
-     * @param numUses The number of uses to restrict the ticket to
-     * @return int Error Code
-     */
-    int set_write_file_restriction(RxComm& conn, std::string_view ticket_name, int numUses);
-    int set_write_file_restriction(RxComm& conn, int ticket_ID, int numUses);
-
-    /**
-     * @brief Set restrictions on the number of byte that can be written to of the ticket specified
-     *
-     * @param conn Communication object
-     * @param ticket_name Name of the ticket to affect
-     * or
-     * @param ticket_ID ID for the ticket to affect
-     * @param numUses The number of bytes to restrict the ticket to
-     * @return int Error Code
-     */
-    int set_write_byte_restriction(RxComm& conn, std::string_view ticket_name, int numUses);
-    int set_write_byte_restriction(RxComm& conn, int ticket_ID, int numUses);
+    void set_ticket_restrictions(admin_tag, RxComm& conn, ticket_operation _operand, ticket_property _property, std::string_view ticket_name, int num_of_restrictions);
+    void set_ticket_restrictions(admin_tag, RxComm& conn, ticket_operation _operand, ticket_property _property, int ticket_ID, int num_of_restrictions);
 
     /**
      * @brief Add user to the ticket specified
@@ -242,33 +253,38 @@ namespace irods::administration::ticket
      * @param ticket_ID ID for the ticket that needs to be deleted
      * @return int Error Code
      */
-    int delete_ticket(RxComm& conn, std::string_view ticket_name);
-    int delete_ticket(RxComm& conn, int ticket_ID);
+    void delete_ticket(RxComm& conn, std::string_view ticket_name);
+    void delete_ticket(RxComm& conn, int ticket_ID);
+
+    void delete_ticket(admin_tag, RxComm& conn, std::string_view ticket_name);
+    void delete_ticket(admin_tag, RxComm& conn, int ticket_ID);
 
     // These functions are the same as the above, but it does them as an admin of the system
-    int admin_create_read_ticket(RxComm& conn, std::string_view obj_path, std::string_view ticket_name);
-    int admin_create_read_ticket(RxComm& conn, std::string_view obj_path);
 
-    int admin_create_write_ticket(RxComm& conn, std::string_view obj_path, std::string_view ticket_name);
-    int admin_create_write_ticket(RxComm& conn, std::string_view obj_path);
-
-    int admin_remove_usage_restriction(RxComm& conn, std::string_view ticket_name);
-    int admin_remove_usage_restriction(RxComm& conn, int ticket_ID);
-
-    int admin_remove_write_file_restriction(RxComm& conn, std::string_view ticket_name);
-    int admin_remove_write_file_restriction(RxComm& conn, int ticket_ID);
-
-    int admin_remove_write_byte_restriction(RxComm& conn, std::string_view ticket_name);
-    int admin_remove_write_byte_restriction(RxComm& conn, int ticket_ID);
-
-    int admin_set_usage_restriction(RxComm& conn, std::string_view ticket_name, int numUses);
-    int admin_set_usage_restriction(RxComm& conn, int ticket_ID, int numUses);
-
-    int admin_set_write_file_restriction(RxComm& conn, std::string_view ticket_name, int numUses);
-    int admin_set_write_file_restriction(RxComm& conn, int ticket_ID, int numUses);
-
-    int admin_set_write_byte_restriction(RxComm& conn, std::string_view ticket_name, int numUses);
-    int admin_set_write_byte_restriction(RxComm& conn, int ticket_ID, int numUses);
+    // OLD ADMIN TICKET FUNCTIONS
+    // int admin_create_read_ticket(RxComm& conn, std::string_view obj_path, std::string_view ticket_name);
+    // int admin_create_read_ticket(RxComm& conn, std::string_view obj_path);
+    //
+    // int admin_create_write_ticket(RxComm& conn, std::string_view obj_path, std::string_view ticket_name);
+    // int admin_create_write_ticket(RxComm& conn, std::string_view obj_path);
+    //
+    // int admin_remove_usage_restriction(RxComm& conn, std::string_view ticket_name);
+    // int admin_remove_usage_restriction(RxComm& conn, int ticket_ID);
+    //
+    // int admin_remove_write_file_restriction(RxComm& conn, std::string_view ticket_name);
+    // int admin_remove_write_file_restriction(RxComm& conn, int ticket_ID);
+    //
+    // int admin_remove_write_byte_restriction(RxComm& conn, std::string_view ticket_name);
+    // int admin_remove_write_byte_restriction(RxComm& conn, int ticket_ID);
+    //
+    // int admin_set_usage_restriction(RxComm& conn, std::string_view ticket_name, int numUses);
+    // int admin_set_usage_restriction(RxComm& conn, int ticket_ID, int numUses);
+    //
+    // int admin_set_write_file_restriction(RxComm& conn, std::string_view ticket_name, int numUses);
+    // int admin_set_write_file_restriction(RxComm& conn, int ticket_ID, int numUses);
+    //
+    // int admin_set_write_byte_restriction(RxComm& conn, std::string_view ticket_name, int numUses);
+    // int admin_set_write_byte_restriction(RxComm& conn, int ticket_ID, int numUses);
 
     int admin_add_user(RxComm& conn, std::string_view ticket_name, std::string_view user);
     int admin_add_user(RxComm& conn, int ticket_ID, std::string_view user);
