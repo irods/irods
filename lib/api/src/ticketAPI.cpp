@@ -118,7 +118,9 @@ namespace irods::administration::ticket
         else if (_type == ticket_type::write) {
             ticket_manager(conn, "create", ticket_name, "write", obj_path, ticket_name, "");
         }
-        throw std::invalid_argument("Ticket type is not defined");
+        else {
+            throw std::invalid_argument("Ticket type is not defined");
+        }
     }
     std::string_view create_ticket(RxComm& conn, ticket_type _type, std::string_view obj_path)
     {
@@ -133,7 +135,9 @@ namespace irods::administration::ticket
             ticket_manager(conn, "create", myTicket, "write", obj_path, myTicket, "");
             return myTicket;
         }
-        throw std::invalid_argument("Ticket type is not defined");
+        else {
+            throw std::invalid_argument("Ticket type is not defined");
+        }
     }
 
     void create_ticket(admin_tag,
@@ -148,7 +152,9 @@ namespace irods::administration::ticket
         else if (_type == ticket_type::write) {
             ticket_manager(conn, "create", ticket_name, "write", obj_path, ticket_name, "", true);
         }
-        throw std::invalid_argument("Ticket type is not defined");
+        else {
+            throw std::invalid_argument("Ticket type is not defined");
+        }
     }
     std::string_view create_ticket(admin_tag, RxComm& conn, ticket_type _type, std::string_view obj_path)
     {
@@ -163,7 +169,9 @@ namespace irods::administration::ticket
             ticket_manager(conn, "create", myTicket, "write", obj_path, myTicket, "", true);
             return myTicket;
         }
-        throw std::invalid_argument("Ticket type is not defined");
+        else {
+            throw std::invalid_argument("Ticket type is not defined");
+        }
     }
 
     void set_ticket_restrictions(admin_tag,
@@ -249,10 +257,10 @@ namespace irods::administration::ticket
                                  int num_of_restrictions)
     {
         std::string_view command = modify_command;
-        std::string commandModifier1;
-        std::string commandModifier2;
-        std::string commandModifier3 = "";
-        std::string commandModifier4 = "";
+        std::string_view commandModifier1;
+        std::string_view commandModifier2;
+        std::string_view commandModifier3 = "";
+        std::string_view commandModifier4 = "";
         switch (_operand) {
             case ticket_operation::set:
                 commandModifier2 = std::to_string(num_of_restrictions);
@@ -333,8 +341,72 @@ namespace irods::administration::ticket
         ticket_manager(conn, "delete", std::to_string(ticket_ID), "", "", "", "", true);
     }
 
-    void add_ticket_constraint(RxComm& conn, user_constraint& user_constraints){
-        
+    void add_ticket_constraint(RxComm& conn, constraint::constraint& constraints)
+    {
+        std::string_view command = modify_command;
+        std::string_view commandModifier1 = "add";
+        std::string_view commandModifier2 = constraints.get_group_type();
+        std::string_view commandModifier3 = constraints.get_value();
+        std::string_view commandModifier4 = "";
+
+        ticket_manager(conn,
+                       command,
+                       constraints.get_ticket_identifier(),
+                       commandModifier1,
+                       commandModifier2,
+                       commandModifier3,
+                       commandModifier4);
+    }
+    void remove_ticket_constraint(RxComm& conn, constraint::constraint& constraints)
+    {
+        std::string_view command = modify_command;
+        std::string_view commandModifier1 = "remove";
+        std::string_view commandModifier2 = constraints.get_group_type();
+        std::string_view commandModifier3 = constraints.get_value();
+        std::string_view commandModifier4 = "";
+
+        ticket_manager(conn,
+                       command,
+                       constraints.get_ticket_identifier(),
+                       commandModifier1,
+                       commandModifier2,
+                       commandModifier3,
+                       commandModifier4);
+    }
+
+    void add_ticket_constraint(admin_tag, RxComm& conn, constraint::constraint& constraints)
+    {
+        std::string_view command = modify_command;
+        std::string_view commandModifier1 = "add";
+        std::string_view commandModifier2 = constraints.get_group_type();
+        std::string_view commandModifier3 = constraints.get_value();
+        std::string_view commandModifier4 = "";
+
+        ticket_manager(conn,
+                       command,
+                       constraints.get_ticket_identifier(),
+                       commandModifier1,
+                       commandModifier2,
+                       commandModifier3,
+                       commandModifier4,
+                       true);
+    }
+    void remove_ticket_constraint(admin_tag, RxComm& conn, constraint::constraint& constraints)
+    {
+        std::string_view command = modify_command;
+        std::string_view commandModifier1 = "remove";
+        std::string_view commandModifier2 = constraints.get_group_type();
+        std::string_view commandModifier3 = constraints.get_value();
+        std::string_view commandModifier4 = "";
+
+        ticket_manager(conn,
+                       command,
+                       constraints.get_ticket_identifier(),
+                       commandModifier1,
+                       commandModifier2,
+                       commandModifier3,
+                       commandModifier4,
+                       true);
     }
 
     int add_user(RxComm& conn, std::string_view ticket_name, std::string_view user)
