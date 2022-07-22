@@ -31,6 +31,9 @@ irods::server_state::server_state::
 
 // TODO(june): cleanup initServer stuff, some functions there are redudant in a weird way
 
+* renamed task functions to new format
+* moved void task_purge_lock_file() to anon, only spawned here
+
 
 **/
 
@@ -139,6 +142,8 @@ int SvrSock;
 
 std::atomic<bool> is_control_plane_accepting_requests = false;
 int failed_delay_server_migration_communication_attempts = 0;
+
+
 
 agentProc_t* ConnectedAgentHead{};
 agentProc_t* ConnReqHead{};
@@ -897,6 +902,144 @@ namespace
 		printf( " -s  log SQL commands\n" );
 	}
 	
+	int purgeLockFileDir( int chkLockFlag )
+	{
+		char lockFilePath[MAX_NAME_LEN * 2];
+		struct dirent *myDirent;
+		struct stat statbuf;
+		int status;
+		int savedStatus = 0;
+		struct flock myflock;
+		unsigned int purgeTime;
+
+		std::string lock_dir;
+		irods::error ret = irods::get_full_path_for_unmoved_configs(
+				LOCK_FILE_DIR,
+				lock_dir );
+		if ( !ret.ok() ) {
+			irods::log( PASS( ret ) );
+			return ret.code();
+		}
+
+		DIR *dirPtr = opendir( lock_dir.c_str() );
+		if ( dirPtr == NULL ) {
+			rodsLog( LOG_ERROR,
+					"purgeLockFileDir: opendir error for %s, errno = %d",
+					lock_dir.c_str(), errno );
+			return UNIX_FILE_OPENDIR_ERR - errno;
+		}
+
+		std::memset(&myflock, 0, sizeof(myflock));
+		myflock.l_whence = SEEK_SET;
+		purgeTime = time( 0 ) - LOCK_FILE_PURGE_TIME;
+		while ( ( myDirent = readdir( dirPtr ) ) != NULL ) {
+			if ( strcmp( myDirent->d_name, "." ) == 0 ||
+					strcmp( myDirent->d_name, ".." ) == 0 ) {
+				continue;
+			}
+			snprintf( lockFilePath, MAX_NAME_LEN, "%-s/%-s",
+					lock_dir.c_str(), myDirent->d_name );
+			if ( chkLockFlag ) {
+				int myFd;
+				myFd = open( lockFilePath, O_RDWR | O_CREAT, 0644 );
+				if ( myFd < 0 ) {
+					savedStatus = FILE_OPEN_ERR - errno;
+					rodsLogError( LOG_ERROR, savedStatus,
+							"purgeLockFileDir: open error for %s", lockFilePath );
+					continue;
+				}
+				myflock.l_type = F_WRLCK;
+				int error_code = fcntl( myFd, F_GETLK, &myflock );
+				if ( error_code != 0 ) {
+					rodsLog( LOG_ERROR, "fcntl failed in purgeLockFileDir with error code %d", error_code );
+				}
+				close( myFd );
+				/* some process is locking it */
+				if ( myflock.l_type != F_UNLCK ) {
+					continue;
+				}
+			}
+			status = stat( lockFilePath, &statbuf );
+
+			if ( status != 0 ) {
+				rodsLog( LOG_ERROR,
+						"purgeLockFileDir: stat error for %s, errno = %d",
+						lockFilePath, errno );
+				savedStatus = UNIX_FILE_STAT_ERR - errno;
+				boost::system::error_code err;
+				boost::filesystem::remove( boost::filesystem::path( lockFilePath ), err );
+				continue;
+			}
+			if ( chkLockFlag && ( int )purgeTime < statbuf.st_mtime ) {
+				continue;
+			}
+			if ( ( statbuf.st_mode & S_IFREG ) == 0 ) {
+				continue;
+			}
+			boost::system::error_code err;
+			boost::filesystem::remove( boost::filesystem::path( lockFilePath ), err );
+		}
+		closedir( dirPtr );
+
+		return savedStatus;
+	}
+	
+	// TODO(june): Would this be better as a cron?
+	void task_purge_lock_file()
+	{
+		std::size_t wait_time_ms = 0;
+		const std::size_t purge_time_ms = LOCK_FILE_PURGE_TIME * 1000; // s to ms
+
+		while (true) {
+			const auto state = irods::server_state::get_state();
+
+			if (irods::server_state::server_state::stopped == state ||
+				irods::server_state::server_state::exited == state)
+			{
+				break;
+			}
+
+			rodsSleep(0, irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC * 1000); // second, microseconds
+			wait_time_ms += irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC;
+
+			if (wait_time_ms >= purge_time_ms) {
+				wait_time_ms = 0;
+				int status = purgeLockFileDir(1);
+				if (status < 0) {
+					rodsLogError(LOG_ERROR, status, "task_purge_lock_file: purgeLockFileDir failed");
+				}
+			}
+		}
+	} // task_purge_lock_file
+	
+	// TODO(june): wrap this in a list or queue and handout data? maybe list of managed pointers?
+	int queueAgentProc( agentProc_t *agentProc, agentProc_t **agentProcHead,
+			irodsPosition_t position ) {
+		if ( agentProc == NULL || agentProcHead == NULL ) {
+			return USER__NULL_INPUT_ERR;
+		}
+
+		if ( *agentProcHead == NULL ) {
+			*agentProcHead = agentProc;
+			agentProc->next = NULL;
+			return 0;
+		}
+
+		if ( position == TOP_POS ) {
+			agentProc->next = *agentProcHead;
+			*agentProcHead = agentProc;
+		}
+		else {
+			agentProc_t *tmpAgentProc = *agentProcHead;
+			while ( tmpAgentProc->next != NULL ) {
+				tmpAgentProc = tmpAgentProc->next;
+			}
+			tmpAgentProc->next = agentProc;
+			agentProc->next = NULL;
+		}
+		return 0;
+	}
+	
 } // anonymous namespace
 
 int main(int argc, char** argv)
@@ -1181,18 +1324,33 @@ int main(int argc, char** argv)
         // Launch the control plane.
         irods::server_control_plane ctrl_plane(irods::KW_CFG_SERVER_CONTROL_PLANE_PORT, is_control_plane_accepting_requests);
 
-        status = startProcConnReqThreads();
-        if (status < 0) {
-            rodsLog(LOG_ERROR, "[%s] - Error in startProcConnReqThreads()", __FUNCTION__);
-            return status;
-        }
+		// Start read worker thread
+		for (int i = 0; i < NUM_READ_WORKER_THR; ++i) {
+			try {
+				ReadWorkerThread[i] = new boost::thread(readWorkerTask);
+			}
+			catch (const boost::thread_resource_error&) {
+				rodsLog(LOG_ERROR, "boost encountered a thread_resource_error during readWorkerTask thread construction in serverMain.");
+				return SYS_THREAD_RESOURCE_ERR;
+			}
+		}
 
+		// Start spawn manager thread
+		try {
+			SpawnManagerThread = new boost::thread(task_spawn_manager);
+		}
+		catch (const boost::thread_resource_error&) {
+			rodsLog(LOG_ERROR, "boost encountered a thread_resource_error during task_spawn_manager thread construction in serverMain.");
+			return SYS_THREAD_RESOURCE_ERR;
+		}
+
+		// Start purge lock file thread
         if (irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role) {
             try {
-                PurgeLockFileThread = new boost::thread(purgeLockFileWorkerTask);
+                PurgeLockFileThread = new boost::thread(task_purge_lock_file);
             }
             catch (const boost::thread_resource_error&) {
-                rodsLog(LOG_ERROR, "boost encountered a thread_resource_error during thread construction in serverMain.");
+                rodsLog(LOG_ERROR, "boost encountered a thread_resource_error during task_purge_lock_file thread construction in serverMain.");
             }
         }
 
@@ -1298,7 +1456,27 @@ int main(int argc, char** argv)
         }
 
         procChildren(&ConnectedAgentHead);
-        stopProcConnReqThreads();
+        
+		// Stop spawn manager thread
+		SpawnReqCond.notify_all();
+		try {
+			SpawnManagerThread->join();
+		}
+		catch (const boost::thread_resource_error&) {
+			rodsLog(LOG_ERROR, "boost encountered a thread_resource_error during spawn manager thread join in serverMain.");
+		}
+
+		// Stop read worker threads
+		for (int i = 0; i < NUM_READ_WORKER_THR; ++i) {
+			ReadReqCond.notify_all();
+
+			try {
+				ReadWorkerThread[i]->join();
+			}
+			catch (const boost::thread_resource_error&) {
+				rodsLog(LOG_ERROR, "boost encountered a thread_resource_error during read worker thread join in serverMain.");
+			}
+		}
 
         irods::server_state::set_state(irods::server_state::server_state::exited);
     }
@@ -2001,48 +2179,77 @@ agentProc_t* getConnReqFromQueue()
     return myConnReq;
 }
 
-int startProcConnReqThreads()
+int process_bad_request()
 {
-    for (int i = 0; i < NUM_READ_WORKER_THR; ++i) {
-        try {
-            ReadWorkerThread[i] = new boost::thread(readWorkerTask);
-        }
-        catch (const boost::thread_resource_error&) {
-            rodsLog(LOG_ERROR, "boost encountered a thread_resource_error during thread construction in startProcConnReqThreads.");
-            return SYS_THREAD_RESOURCE_ERR;
-        }
+    boost::unique_lock<boost::mutex> bad_req_lock(BadReqMutex);
+
+    agentProc_t* tmpConnReq = BadReqHead;
+    agentProc_t* nextConnReq{};
+
+    // Just free them for now.
+
+    while (tmpConnReq) {
+        nextConnReq = tmpConnReq->next;
+        std::free(tmpConnReq);
+        tmpConnReq = nextConnReq;
     }
 
-    try {
-        SpawnManagerThread = new boost::thread(spawnManagerTask);
-    }
-    catch (const boost::thread_resource_error&) {
-        rodsLog(LOG_ERROR, "boost encountered a thread_resource_error during thread construction in startProcConnReqThreads.");
-        return SYS_THREAD_RESOURCE_ERR;
-    }
+    BadReqHead = nullptr;
+    bad_req_lock.unlock();
 
     return 0;
 }
 
-void stopProcConnReqThreads()
+void task_spawn_manager()
 {
-    SpawnReqCond.notify_all();
+    unsigned int agentQueChkTime = 0;
 
-    try {
-        SpawnManagerThread->join();
-    }
-    catch (const boost::thread_resource_error&) {
-        rodsLog(LOG_ERROR, "boost encountered a thread_resource_error during join in stopProcConnReqThreads.");
-    }
+    while (true) {
+        const auto state = irods::server_state::get_state();
 
-    for (int i = 0; i < NUM_READ_WORKER_THR; ++i) {
-        ReadReqCond.notify_all();
-
-        try {
-            ReadWorkerThread[i]->join();
+        if (irods::server_state::server_state::stopped == state ||
+            irods::server_state::server_state::exited == state)
+        {
+            break;
         }
-        catch (const boost::thread_resource_error&) {
-            rodsLog(LOG_ERROR, "boost encountered a thread_resource_error during join in stopProcConnReqThreads.");
+
+        boost::unique_lock<boost::mutex> spwn_req_lock(SpawnReqCondMutex);
+        SpawnReqCond.wait(spwn_req_lock);
+
+        while (SpawnReqHead) {
+            agentProc_t* mySpawnReq = SpawnReqHead;
+            SpawnReqHead = SpawnReqHead->next;
+
+            spwn_req_lock.unlock();
+            auto status = spawnAgent(mySpawnReq, &ConnectedAgentHead);
+            close(mySpawnReq->sock);
+
+            if (status < 0) {
+                rodsLog(LOG_NOTICE,
+                        "spawnAgent error for puser=%s and cuser=%s from %s, stat=%d",
+                        mySpawnReq->startupPack.proxyUser,
+                        mySpawnReq->startupPack.clientUser,
+                        inet_ntoa(mySpawnReq->remoteAddr.sin_addr),
+                        status);
+                std::free(mySpawnReq);
+            }
+            else {
+                rodsLog(LOG_DEBUG,
+                        "Agent process %d started for puser=%s and cuser=%s from %s",
+                        mySpawnReq->pid,
+                        mySpawnReq->startupPack.proxyUser,
+                        mySpawnReq->startupPack.clientUser,
+                        inet_ntoa(mySpawnReq->remoteAddr.sin_addr));
+            }
+
+            spwn_req_lock.lock();
+        }
+
+        spwn_req_lock.unlock();
+
+        if (unsigned int curTime = std::time(nullptr); curTime > agentQueChkTime + AGENT_QUE_CHK_INT) {
+            agentQueChkTime = curTime;
+            process_bad_request();
         }
     }
 }
@@ -2143,59 +2350,7 @@ void readWorkerTask()
     }
 } // readWorkerTask
 
-void spawnManagerTask()
-{
-    unsigned int agentQueChkTime = 0;
 
-    while (true) {
-        const auto state = irods::server_state::get_state();
-
-        if (irods::server_state::server_state::stopped == state ||
-            irods::server_state::server_state::exited == state)
-        {
-            break;
-        }
-
-        boost::unique_lock<boost::mutex> spwn_req_lock(SpawnReqCondMutex);
-        SpawnReqCond.wait(spwn_req_lock);
-
-        while (SpawnReqHead) {
-            agentProc_t* mySpawnReq = SpawnReqHead;
-            SpawnReqHead = SpawnReqHead->next;
-
-            spwn_req_lock.unlock();
-            auto status = spawnAgent(mySpawnReq, &ConnectedAgentHead);
-            close(mySpawnReq->sock);
-
-            if (status < 0) {
-                rodsLog(LOG_NOTICE,
-                        "spawnAgent error for puser=%s and cuser=%s from %s, stat=%d",
-                        mySpawnReq->startupPack.proxyUser,
-                        mySpawnReq->startupPack.clientUser,
-                        inet_ntoa(mySpawnReq->remoteAddr.sin_addr),
-                        status);
-                std::free(mySpawnReq);
-            }
-            else {
-                rodsLog(LOG_DEBUG,
-                        "Agent process %d started for puser=%s and cuser=%s from %s",
-                        mySpawnReq->pid,
-                        mySpawnReq->startupPack.proxyUser,
-                        mySpawnReq->startupPack.clientUser,
-                        inet_ntoa(mySpawnReq->remoteAddr.sin_addr));
-            }
-
-            spwn_req_lock.lock();
-        }
-
-        spwn_req_lock.unlock();
-
-        if (unsigned int curTime = std::time(nullptr); curTime > agentQueChkTime + AGENT_QUE_CHK_INT) {
-            agentQueChkTime = curTime;
-            procBadReq();
-        }
-    }
-}
 
 int procSingleConnReq(agentProc_t* connReq)
 {
@@ -2264,52 +2419,8 @@ int procSingleConnReq(agentProc_t* connReq)
     return status;
 }
 
-// procBadReq - process bad request.
-int procBadReq()
-{
-    boost::unique_lock<boost::mutex> bad_req_lock(BadReqMutex);
 
-    agentProc_t* tmpConnReq = BadReqHead;
-    agentProc_t* nextConnReq{};
 
-    // Just free them for now.
 
-    while (tmpConnReq) {
-        nextConnReq = tmpConnReq->next;
-        std::free(tmpConnReq);
-        tmpConnReq = nextConnReq;
-    }
 
-    BadReqHead = nullptr;
-    bad_req_lock.unlock();
-
-    return 0;
-}
-
-void purgeLockFileWorkerTask()
-{
-    std::size_t wait_time_ms = 0;
-    const std::size_t purge_time_ms = LOCK_FILE_PURGE_TIME * 1000; // s to ms
-
-    while (true) {
-        const auto state = irods::server_state::get_state();
-
-        if (irods::server_state::server_state::stopped == state ||
-            irods::server_state::server_state::exited == state)
-        {
-            break;
-        }
-
-        rodsSleep(0, irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC * 1000); // second, microseconds
-        wait_time_ms += irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC;
-
-        if (wait_time_ms >= purge_time_ms) {
-            wait_time_ms = 0;
-            int status = purgeLockFileDir(1);
-            if (status < 0) {
-                rodsLogError(LOG_ERROR, status, "purgeLockFileWorkerTask: purgeLockFileDir failed");
-            }
-        }
-    }
-} // purgeLockFileWorkerTask
 

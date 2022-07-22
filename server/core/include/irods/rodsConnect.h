@@ -18,16 +18,8 @@
 #define INITIAL_NOT_DONE                0
 #define INITIAL_DONE                    1
 
+// TODO(june): maybe move to rodsServer.hpp?
 #define LOCK_FILE_PURGE_TIME            7200 // purge lock files every 2 hr.
-
-// Managing the spawned agents
-typedef struct agentProc {
-    int pid;
-    int sock;
-    startupPack_t startupPack;
-    struct sockaddr_in  remoteAddr;  // remote address
-    struct agentProc *next;
-} agentProc_t;
 
 typedef struct hostName {
     char *name;

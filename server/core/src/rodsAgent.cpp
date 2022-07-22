@@ -179,6 +179,40 @@ int receiveDataFromServer( int conn_tmp_socket ) {
     return status;
 }
 
+// TODO(june): anon namespace
+void cleanup() {
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+    }
+
+    if (INITIAL_DONE == InitialState) {
+        close_all_l1_descriptors(*ThisComm);
+
+        irods::replica_state_table::deinit();
+
+        disconnectAllSvrToSvrConn();
+    }
+
+    if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        disconnectRcat();
+    }
+
+    irods::re_plugin_globals->global_re_mgr.call_stop_operations();
+}
+
+void cleanupAndExit( int status ) {
+    cleanup();
+
+    if ( status >= 0 ) {
+        exit( 0 );
+    }
+    else {
+        exit( 1 );
+    }
+}
+
 void
 irodsAgentSignalExit( int ) {
     int reaped_pid, child_status;
