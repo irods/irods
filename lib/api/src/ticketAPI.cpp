@@ -12,9 +12,18 @@
 #include "irods/rodsKeyWdDef.h"
 #include "irods/ticketAdmin.h"
 #include "irods/irods_exception.hpp"
+#include "irods/irods_at_scope_exit.hpp"
 
 namespace irods::administration::ticket
 {
+    namespace
+    {
+        std::string_view modify_command = "mod";
+        std::string_view use_property_string = "uses";
+        std::string_view write_file_property_string = "write-file";
+        std::string_view write_byte_property_string = "write-byte";
+    } // namespace
+
     void make_ticket_name(char* newTicket)
     {
         const int ticket_len = 15;
@@ -37,8 +46,8 @@ namespace irods::administration::ticket
     }
     int ticket_manager(RxComm& conn,
                        std::string_view command,
-                       std::string_view ticket_IDentifier,
-                       std::string_view commandModifier,
+                       std::string_view ticket_Identifier,
+                       std::string_view commandModifier1,
                        std::string_view commandModifier2,
                        std::string_view commandModifier3,
                        std::string_view commandModifier4,
@@ -46,18 +55,20 @@ namespace irods::administration::ticket
     {
         ticketAdminInp_t ticketAdminInp{};
 
-        ticketAdminInp.arg1 = strdup(command.data());
-        ticketAdminInp.arg2 = strdup(ticket_IDentifier.data());
-        ticketAdminInp.arg3 = strdup(commandModifier.data());
-        ticketAdminInp.arg4 = strdup(commandModifier2.data());
-        ticketAdminInp.arg5 = strdup(commandModifier3.data());
-        ticketAdminInp.arg6 = strdup(commandModifier4.data());
+        ticketAdminInp.arg1 = const_cast<char*>(command.data());
+        ticketAdminInp.arg2 = const_cast<char*>(ticket_Identifier.data());
+        ticketAdminInp.arg3 = const_cast<char*>(commandModifier1.data());
+        ticketAdminInp.arg4 = const_cast<char*>(commandModifier2.data());
+        ticketAdminInp.arg5 = const_cast<char*>(commandModifier3.data());
+        ticketAdminInp.arg6 = const_cast<char*>(commandModifier4.data());
 
         if (run_as_admin) {
             addKeyVal(&ticketAdminInp.condInput, ADMIN_KW, "");
         }
 
         const int status = rcTicketAdmin(&conn, &ticketAdminInp);
+
+        irods::at_scope_exit free_memory{[&ticketAdminInp] { clearKeyVal(&ticketAdminInp.condInput); }};
 
         if (status < 0) {
             // if (conn.rError) {
@@ -83,336 +94,587 @@ namespace irods::administration::ticket
     }
     int ticket_manager(RxComm& conn,
                        std::string_view command,
-                       std::string_view ticket_IDentifier,
-                       std::string_view commandModifier,
+                       std::string_view ticket_Identifier,
+                       std::string_view commandModifier1,
                        std::string_view commandModifier2,
                        std::string_view commandModifier3,
                        std::string_view commandModifier4)
     {
         return ticket_manager(conn,
                               command,
-                              ticket_IDentifier,
-                              commandModifier,
+                              ticket_Identifier,
+                              commandModifier1,
                               commandModifier2,
                               commandModifier3,
                               commandModifier4,
                               false);
     }
 
-    int create_ticket(RxComm& conn, ticket_type _type, std::string_view obj_path, std::string_view ticket_name)
+    void create_ticket(RxComm& conn, ticket_type _type, std::string_view obj_path, std::string_view ticket_name)
     {
-        if (_type == ticket_type::READ) {
-            return create_read_ticket(conn, obj_path, ticket_name);
+        if (_type == ticket_type::read) {
+            ticket_manager(conn, "create", ticket_name, "read", obj_path, ticket_name, "");
         }
-        else if (_type == ticket_type::WRITE) {
-            return create_write_ticket(conn, obj_path, ticket_name);
+        else if (_type == ticket_type::write) {
+            ticket_manager(conn, "create", ticket_name, "write", obj_path, ticket_name, "");
         }
-        return 1; // Ticket type not defined
+        else {
+            throw std::invalid_argument("Ticket type is not defined");
+        }
     }
-    int create_ticket(RxComm& conn, ticket_type _type, std::string_view obj_path)
-    {
-        if (_type == ticket_type::READ) {
-            return create_read_ticket(conn, obj_path);
-        }
-        else if (_type == ticket_type::WRITE) {
-            return create_write_ticket(conn, obj_path);
-        }
-        return 1; // Ticket type not defined
-    }
-
-    int create_read_ticket(RxComm& conn, std::string_view obj_path, std::string_view ticket_name)
-    {
-        return ticket_manager(conn, "create", ticket_name, "read", obj_path, ticket_name, "");
-    }
-    int create_read_ticket(RxComm& conn, std::string_view obj_path)
+    std::string_view create_ticket(RxComm& conn, ticket_type _type, std::string_view obj_path)
     {
         char myTicket[30];
         make_ticket_name(myTicket);
 
-        return ticket_manager(conn, "create", myTicket, "read", obj_path, myTicket, "");
+        if (_type == ticket_type::read) {
+            ticket_manager(conn, "create", myTicket, "read", obj_path, myTicket, "");
+            return myTicket;
+        }
+        else if (_type == ticket_type::write) {
+            ticket_manager(conn, "create", myTicket, "write", obj_path, myTicket, "");
+            return myTicket;
+        }
+        else {
+            throw std::invalid_argument("Ticket type is not defined");
+        }
     }
 
-    int create_write_ticket(RxComm& conn, std::string_view obj_path, std::string_view ticket_name)
+    void create_ticket(admin_tag,
+                       RxComm& conn,
+                       ticket_type _type,
+                       std::string_view obj_path,
+                       std::string_view ticket_name)
     {
-        return ticket_manager(conn, "create", ticket_name, "write", obj_path, ticket_name, "");
+        if (_type == ticket_type::read) {
+            ticket_manager(conn, "create", ticket_name, "read", obj_path, ticket_name, "", true);
+        }
+        else if (_type == ticket_type::write) {
+            ticket_manager(conn, "create", ticket_name, "write", obj_path, ticket_name, "", true);
+        }
+        else {
+            throw std::invalid_argument("Ticket type is not defined");
+        }
     }
-    int create_write_ticket(RxComm& conn, std::string_view obj_path)
+    std::string_view create_ticket(admin_tag, RxComm& conn, ticket_type _type, std::string_view obj_path)
     {
         char myTicket[30];
         make_ticket_name(myTicket);
 
-        return ticket_manager(conn, "create", myTicket, "write", obj_path, myTicket, "");
+        if (_type == ticket_type::read) {
+            ticket_manager(conn, "create", myTicket, "read", obj_path, myTicket, "", true);
+            return myTicket;
+        }
+        else if (_type == ticket_type::write) {
+            ticket_manager(conn, "create", myTicket, "write", obj_path, myTicket, "", true);
+            return myTicket;
+        }
+        else {
+            throw std::invalid_argument("Ticket type is not defined");
+        }
     }
 
-    int remove_usage_restriction(RxComm& conn, std::string_view ticket_name)
+    void set_ticket_restrictions(admin_tag,
+                                 RxComm& conn,
+                                 ticket_operation _operand,
+                                 ticket_property _property,
+                                 std::string_view ticket_name,
+                                 int num_of_restrictions)
     {
-        return set_usage_restriction(conn, ticket_name, 0);
+        std::string_view command = modify_command;
+        std::string commandModifier1;
+        std::string commandModifier2;
+        std::string commandModifier3 = "";
+        std::string commandModifier4 = "";
+        switch (_operand) {
+            case ticket_operation::set:
+                commandModifier2 = std::to_string(num_of_restrictions);
+                switch (_property) {
+                    case ticket_property::uses:
+                        commandModifier1 = use_property_string;
+                        break;
+
+                    case ticket_property::write_byte:
+                        commandModifier1 = write_byte_property_string;
+                        break;
+
+                    case ticket_property::write_file:
+                        commandModifier1 = write_file_property_string;
+                        break;
+
+                    default:
+                        throw std::invalid_argument("Ticket property not given");
+                }
+                break;
+
+            case ticket_operation::remove:
+                commandModifier2 = std::to_string(0);
+                switch (_property) {
+                    case ticket_property::uses:
+                        commandModifier1 = use_property_string;
+                        break;
+
+                    case ticket_property::write_byte:
+                        commandModifier1 = write_byte_property_string;
+                        break;
+
+                    case ticket_property::write_file:
+                        commandModifier1 = write_file_property_string;
+                        break;
+
+                    default:
+                        throw std::invalid_argument("Ticket property not given");
+                }
+                break;
+
+            default:
+                throw std::invalid_argument("Ticket operation not given");
+        }
+
+        ticket_manager(conn,
+                       command,
+                       ticket_name,
+                       commandModifier1,
+                       commandModifier2,
+                       commandModifier3,
+                       commandModifier4,
+                       true);
     }
-    int remove_usage_restriction(RxComm& conn, int ticket_ID)
+    void set_ticket_restrictions(admin_tag,
+                                 RxComm& conn,
+                                 ticket_operation _operand,
+                                 ticket_property _property,
+                                 int ticket_ID,
+                                 int num_of_restrictions)
     {
-        return set_usage_restriction(conn, std::to_string(ticket_ID), 0);
+        set_ticket_restrictions(admin_tag(), conn, _operand, _property, std::to_string(ticket_ID), num_of_restrictions);
     }
 
-    int remove_write_file_restriction(RxComm& conn, std::string_view ticket_name)
+    void set_ticket_restrictions(RxComm& conn,
+                                 ticket_operation _operand,
+                                 ticket_property _property,
+                                 std::string_view ticket_name,
+                                 int num_of_restrictions)
     {
-        return set_write_file_restriction(conn, ticket_name, 0);
+        std::string_view command = modify_command;
+        std::string_view commandModifier1;
+        std::string_view commandModifier2;
+        std::string_view commandModifier3 = "";
+        std::string_view commandModifier4 = "";
+        switch (_operand) {
+            case ticket_operation::set:
+                commandModifier2 = std::to_string(num_of_restrictions);
+                switch (_property) {
+                    case ticket_property::uses:
+                        commandModifier1 = use_property_string;
+                        break;
+
+                    case ticket_property::write_byte:
+                        commandModifier1 = write_byte_property_string;
+                        break;
+
+                    case ticket_property::write_file:
+                        commandModifier1 = write_file_property_string;
+                        break;
+
+                    default:
+                        throw std::invalid_argument("Ticket property not given");
+                }
+                break;
+
+            case ticket_operation::remove:
+                commandModifier2 = std::to_string(0);
+                switch (_property) {
+                    case ticket_property::uses:
+                        commandModifier1 = use_property_string;
+                        break;
+
+                    case ticket_property::write_byte:
+                        commandModifier1 = write_byte_property_string;
+                        break;
+
+                    case ticket_property::write_file:
+                        commandModifier1 = write_file_property_string;
+                        break;
+
+                    default:
+                        throw std::invalid_argument("Ticket property not given");
+                }
+                break;
+
+            default:
+                throw std::invalid_argument("Ticket operation not given");
+        }
+
+        ticket_manager(conn,
+                       command,
+                       ticket_name,
+                       commandModifier1,
+                       commandModifier2,
+                       commandModifier3,
+                       commandModifier4);
     }
-    int remove_write_file_restriction(RxComm& conn, int ticket_ID)
+    void set_ticket_restrictions(RxComm& conn,
+                                 ticket_operation _operand,
+                                 ticket_property _property,
+                                 int ticket_ID,
+                                 int num_of_restrictions)
     {
-        return set_write_file_restriction(conn, std::to_string(ticket_ID), 0);
+        set_ticket_restrictions(conn, _operand, _property, std::to_string(ticket_ID), num_of_restrictions);
     }
 
-    int remove_write_byte_restriction(RxComm& conn, std::string_view ticket_name)
+    void delete_ticket(RxComm& conn, std::string_view ticket_name)
     {
-        return set_write_byte_restriction(conn, ticket_name, 0);
+        ticket_manager(conn, "delete", ticket_name, "", "", "", "");
     }
-    int remove_write_byte_restriction(RxComm& conn, int ticket_ID)
+    void delete_ticket(RxComm& conn, int ticket_ID)
     {
-        return set_write_byte_restriction(conn, std::to_string(ticket_ID), 0);
-    }
-
-    int set_usage_restriction(RxComm& conn, std::string_view ticket_name, int numUses)
-    {
-        return ticket_manager(conn, "mod", ticket_name, "uses", std::to_string(numUses), "", "");
-    }
-    int set_usage_restriction(RxComm& conn, int ticket_ID, int numUses)
-    {
-        return ticket_manager(conn, "mod", std::to_string(ticket_ID), "uses", std::to_string(numUses), "", "");
+        ticket_manager(conn, "delete", std::to_string(ticket_ID), "", "", "", "");
     }
 
-    int set_write_file_restriction(RxComm& conn, std::string_view ticket_name, int numUses)
+    void delete_ticket(admin_tag, RxComm& conn, std::string_view ticket_name)
     {
-        return ticket_manager(conn, "mod", ticket_name, "write-file", std::to_string(numUses), "", "");
+        ticket_manager(conn, "delete", ticket_name, "", "", "", "", true);
     }
-    int set_write_file_restriction(RxComm& conn, int ticket_ID, int numUses)
+    void delete_ticket(admin_tag, RxComm& conn, int ticket_ID)
     {
-        return ticket_manager(conn, "mod", std::to_string(ticket_ID), "write-file", std::to_string(numUses), "", "");
+        ticket_manager(conn, "delete", std::to_string(ticket_ID), "", "", "", "", true);
     }
 
-    int set_write_byte_restriction(RxComm& conn, std::string_view ticket_name, int numUses)
+    void add_ticket_constraint(RxComm& conn, constraint::constraint& constraints)
     {
-        return ticket_manager(conn, "mod", ticket_name, "write-byte", std::to_string(numUses), "", "");
+        std::string_view command = modify_command;
+        std::string_view commandModifier1 = "add";
+        std::string_view commandModifier2 = constraints.get_group_type();
+        std::string_view commandModifier3 = constraints.get_value();
+        std::string_view commandModifier4 = "";
+
+        ticket_manager(conn,
+                       command,
+                       constraints.get_ticket_identifier(),
+                       commandModifier1,
+                       commandModifier2,
+                       commandModifier3,
+                       commandModifier4);
     }
-    int set_write_byte_restriction(RxComm& conn, int ticket_ID, int numUses)
+    void remove_ticket_constraint(RxComm& conn, constraint::constraint& constraints)
     {
-        return ticket_manager(conn, "mod", std::to_string(ticket_ID), "write-byte", std::to_string(numUses), "", "");
+        std::string_view command = modify_command;
+        std::string_view commandModifier1 = "remove";
+        std::string_view commandModifier2 = constraints.get_group_type();
+        std::string_view commandModifier3 = constraints.get_value();
+        std::string_view commandModifier4 = "";
+
+        ticket_manager(conn,
+                       command,
+                       constraints.get_ticket_identifier(),
+                       commandModifier1,
+                       commandModifier2,
+                       commandModifier3,
+                       commandModifier4);
+    }
+
+    void add_ticket_constraint(admin_tag, RxComm& conn, constraint::constraint& constraints)
+    {
+        std::string_view command = modify_command;
+        std::string_view commandModifier1 = "add";
+        std::string_view commandModifier2 = constraints.get_group_type();
+        std::string_view commandModifier3 = constraints.get_value();
+        std::string_view commandModifier4 = "";
+
+        ticket_manager(conn,
+                       command,
+                       constraints.get_ticket_identifier(),
+                       commandModifier1,
+                       commandModifier2,
+                       commandModifier3,
+                       commandModifier4,
+                       true);
+    }
+    void remove_ticket_constraint(admin_tag, RxComm& conn, constraint::constraint& constraints)
+    {
+        std::string_view command = modify_command;
+        std::string_view commandModifier1 = "remove";
+        std::string_view commandModifier2 = constraints.get_group_type();
+        std::string_view commandModifier3 = constraints.get_value();
+        std::string_view commandModifier4 = "";
+
+        ticket_manager(conn,
+                       command,
+                       constraints.get_ticket_identifier(),
+                       commandModifier1,
+                       commandModifier2,
+                       commandModifier3,
+                       commandModifier4,
+                       true);
     }
 
     int add_user(RxComm& conn, std::string_view ticket_name, std::string_view user)
     {
-        return ticket_manager(conn, "mod", ticket_name, "add", "user", user, "");
+        return ticket_manager(conn, modify_command, ticket_name, "add", "user", user, "");
     }
     int add_user(RxComm& conn, int ticket_ID, std::string_view user)
     {
-        return ticket_manager(conn, "mod", std::to_string(ticket_ID), "add", "user", user, "");
+        return ticket_manager(conn, modify_command, std::to_string(ticket_ID), "add", "user", user, "");
     }
 
     int remove_user(RxComm& conn, std::string_view ticket_name, std::string_view user)
     {
-        return ticket_manager(conn, "mod", ticket_name, "remove", "user", user, "");
+        return ticket_manager(conn, modify_command, ticket_name, "remove", "user", user, "");
     }
     int remove_user(RxComm& conn, int ticket_ID, std::string_view user)
     {
-        return ticket_manager(conn, "mod", std::to_string(ticket_ID), "remove", "user", user, "");
+        return ticket_manager(conn, modify_command, std::to_string(ticket_ID), "remove", "user", user, "");
     }
 
     int add_group(RxComm& conn, std::string_view ticket_name, std::string_view group)
     {
-        return ticket_manager(conn, "mod", ticket_name, "add", "group", group, "");
+        return ticket_manager(conn, modify_command, ticket_name, "add", "group", group, "");
     }
     int add_group(RxComm& conn, int ticket_ID, std::string_view group)
     {
-        return ticket_manager(conn, "mod", std::to_string(ticket_ID), "add", "group", group, "");
+        return ticket_manager(conn, modify_command, std::to_string(ticket_ID), "add", "group", group, "");
     }
 
     int remove_group(RxComm& conn, std::string_view ticket_name, std::string_view group)
     {
-        return ticket_manager(conn, "mod", ticket_name, "remove", "group", group, "");
+        return ticket_manager(conn, modify_command, ticket_name, "remove", "group", group, "");
     }
     int remove_group(RxComm& conn, int ticket_ID, std::string_view group)
     {
-        return ticket_manager(conn, "mod", std::to_string(ticket_ID), "remove", "group", group, "");
+        return ticket_manager(conn, modify_command, std::to_string(ticket_ID), "remove", "group", group, "");
     }
 
     int add_host(RxComm& conn, std::string_view ticket_name, std::string_view host)
     {
-        return ticket_manager(conn, "mod", ticket_name, "add", "host", host, "");
+        return ticket_manager(conn, modify_command, ticket_name, "add", "host", host, "");
     }
     int add_host(RxComm& conn, int ticket_ID, std::string_view host)
     {
-        return ticket_manager(conn, "mod", std::to_string(ticket_ID), "add", "host", host, "");
+        return ticket_manager(conn, modify_command, std::to_string(ticket_ID), "add", "host", host, "");
     }
 
     int remove_host(RxComm& conn, std::string_view ticket_name, std::string_view host)
     {
-        return ticket_manager(conn, "mod", ticket_name, "remove", "host", host, "");
+        return ticket_manager(conn, modify_command, ticket_name, "remove", "host", host, "");
     }
     int remove_host(RxComm& conn, int ticket_ID, std::string_view host)
     {
-        return ticket_manager(conn, "mod", std::to_string(ticket_ID), "remove", "host", host, "");
-    }
-
-    int delete_ticket(RxComm& conn, std::string_view ticket_name)
-    {
-        return ticket_manager(conn, "delete", ticket_name, "", "", "", "");
-    }
-    int delete_ticket(RxComm& conn, int ticket_ID)
-    {
-        return ticket_manager(conn, "delete", std::to_string(ticket_ID), "", "", "", "");
-    }
-
-    int admin_create_read_ticket(RxComm& conn, std::string_view obj_path, std::string_view ticket_name)
-    {
-        return ticket_manager(conn, "create", ticket_name, "read", obj_path, ticket_name, "", true);
-    }
-    int admin_create_read_ticket(RxComm& conn, std::string_view obj_path)
-    {
-        char myTicket[30];
-        make_ticket_name(myTicket);
-
-        return ticket_manager(conn, "create", myTicket, "read", obj_path, myTicket, "", true);
-    }
-
-    int admin_create_write_ticket(RxComm& conn, std::string_view obj_path, std::string_view ticket_name)
-    {
-        return ticket_manager(conn, "create", ticket_name, "write", obj_path, ticket_name, "");
-    }
-    int admin_create_write_ticket(RxComm& conn, std::string_view obj_path)
-    {
-        char myTicket[30];
-        make_ticket_name(myTicket);
-
-        return ticket_manager(conn, "create", myTicket, "write", obj_path, myTicket, "", true);
-    }
-
-    int admin_remove_usage_restriction(RxComm& conn, std::string_view ticket_name)
-    {
-        return admin_set_usage_restriction(conn, ticket_name, 0);
-    }
-    int admin_remove_usage_restriction(RxComm& conn, int ticket_ID)
-    {
-        return admin_set_usage_restriction(conn, std::to_string(ticket_ID), 0);
-    }
-
-    int admin_remove_write_file_restriction(RxComm& conn, std::string_view ticket_name)
-    {
-        return admin_set_write_file_restriction(conn, ticket_name, 0);
-    }
-    int admin_remove_write_file_restriction(RxComm& conn, int ticket_ID)
-    {
-        return admin_set_write_file_restriction(conn, std::to_string(ticket_ID), 0);
-    }
-
-    int admin_remove_write_byte_restriction(RxComm& conn, std::string_view ticket_name)
-    {
-        return admin_set_write_byte_restriction(conn, ticket_name, 0);
-    }
-    int admin_remove_write_byte_restriction(RxComm& conn, int ticket_ID)
-    {
-        return admin_set_write_byte_restriction(conn, std::to_string(ticket_ID), 0);
-    }
-
-    int admin_set_usage_restriction(RxComm& conn, std::string_view ticket_name, int numUses)
-    {
-        return ticket_manager(conn, "mod", ticket_name, "uses", std::to_string(numUses), "", ", true", true);
-    }
-    int admin_set_usage_restriction(RxComm& conn, int ticket_ID, int numUses)
-    {
-        return ticket_manager(conn, "mod", std::to_string(ticket_ID), "uses", std::to_string(numUses), "", "", true);
-    }
-
-    int admin_set_write_file_restriction(RxComm& conn, std::string_view ticket_name, int numUses)
-    {
-        return ticket_manager(conn, "mod", ticket_name, "write-file", std::to_string(numUses), "", "", true);
-    }
-    int admin_set_write_file_restriction(RxComm& conn, int ticket_ID, int numUses)
-    {
-        return ticket_manager(conn,
-                              "mod",
-                              std::to_string(ticket_ID),
-                              "write-file",
-                              std::to_string(numUses),
-                              "",
-                              "",
-                              true);
-    }
-
-    int admin_set_write_byte_restriction(RxComm& conn, std::string_view ticket_name, int numUses)
-    {
-        return ticket_manager(conn, "mod", ticket_name, "write-byte", std::to_string(numUses), "", "", true);
-    }
-    int admin_set_write_byte_restriction(RxComm& conn, int ticket_ID, int numUses)
-    {
-        return ticket_manager(conn,
-                              "mod",
-                              std::to_string(ticket_ID),
-                              "write-byte",
-                              std::to_string(numUses),
-                              "",
-                              "",
-                              true);
+        return ticket_manager(conn, modify_command, std::to_string(ticket_ID), "remove", "host", host, "");
     }
 
     int admin_add_user(RxComm& conn, std::string_view ticket_name, std::string_view user)
     {
-        return ticket_manager(conn, "mod", ticket_name, "add", "user", user, "", true);
+        return ticket_manager(conn, modify_command, ticket_name, "add", "user", user, "", true);
     }
     int admin_add_user(RxComm& conn, int ticket_ID, std::string_view user)
     {
-        return ticket_manager(conn, "mod", std::to_string(ticket_ID), "add", "user", user, "", true);
+        return ticket_manager(conn, modify_command, std::to_string(ticket_ID), "add", "user", user, "", true);
     }
 
     int admin_remove_user(RxComm& conn, std::string_view ticket_name, std::string_view user)
     {
-        return ticket_manager(conn, "mod", ticket_name, "remove", "user", user, "", true);
+        return ticket_manager(conn, modify_command, ticket_name, "remove", "user", user, "", true);
     }
     int admin_remove_user(RxComm& conn, int ticket_ID, std::string_view user)
     {
-        return ticket_manager(conn, "mod", std::to_string(ticket_ID), "remove", "user", user, "", true);
+        return ticket_manager(conn, modify_command, std::to_string(ticket_ID), "remove", "user", user, "", true);
     }
 
     int admin_add_group(RxComm& conn, std::string_view ticket_name, std::string_view group)
     {
-        return ticket_manager(conn, "mod", ticket_name, "add", "group", group, "", true);
+        return ticket_manager(conn, modify_command, ticket_name, "add", "group", group, "", true);
     }
     int admin_add_group(RxComm& conn, int ticket_ID, std::string_view group)
     {
-        return ticket_manager(conn, "mod", std::to_string(ticket_ID), "add", "group", group, "", true);
+        return ticket_manager(conn, modify_command, std::to_string(ticket_ID), "add", "group", group, "", true);
     }
 
     int admin_remove_group(RxComm& conn, std::string_view ticket_name, std::string_view group)
     {
-        return ticket_manager(conn, "mod", ticket_name, "remove", "group", group, "", true);
+        return ticket_manager(conn, modify_command, ticket_name, "remove", "group", group, "", true);
     }
     int admin_remove_group(RxComm& conn, int ticket_ID, std::string_view group)
     {
-        return ticket_manager(conn, "mod", std::to_string(ticket_ID), "remove", "group", group, "", true);
+        return ticket_manager(conn, modify_command, std::to_string(ticket_ID), "remove", "group", group, "", true);
     }
 
     int admin_add_host(RxComm& conn, std::string_view ticket_name, std::string_view host)
     {
-        return ticket_manager(conn, "mod", ticket_name, "add", "host", host, "", true);
+        return ticket_manager(conn, modify_command, ticket_name, "add", "host", host, "", true);
     }
     int admin_add_host(RxComm& conn, int ticket_ID, std::string_view host)
     {
-        return ticket_manager(conn, "mod", std::to_string(ticket_ID), "add", "host", host, "", true);
+        return ticket_manager(conn, modify_command, std::to_string(ticket_ID), "add", "host", host, "", true);
     }
 
     int admin_remove_host(RxComm& conn, std::string_view ticket_name, std::string_view host)
     {
-        return ticket_manager(conn, "mod", ticket_name, "remove", "host", host, "", true);
+        return ticket_manager(conn, modify_command, ticket_name, "remove", "host", host, "", true);
     }
     int admin_remove_host(RxComm& conn, int ticket_ID, std::string_view host)
     {
-        return ticket_manager(conn, "mod", std::to_string(ticket_ID), "remove", "host", host, "", true);
+        return ticket_manager(conn, modify_command, std::to_string(ticket_ID), "remove", "host", host, "", true);
     }
 
-    int admin_delete_ticket(RxComm& conn, std::string_view ticket_name)
-    {
-        return ticket_manager(conn, "delete", ticket_name, "", "", "", "", true);
-    }
-    int admin_delete_ticket(RxComm& conn, int ticket_ID)
-    {
-        return ticket_manager(conn, "delete", std::to_string(ticket_ID), "", "", "", "", true);
-    }
+    // int admin_delete_ticket(RxComm& conn, std::string_view ticket_name)
+    // {
+    //     return ticket_manager(conn, "delete", ticket_name, "", "", "", "", true);
+    // }
+    // int admin_delete_ticket(RxComm& conn, int ticket_ID)
+    // {
+    //     return ticket_manager(conn, "delete", std::to_string(ticket_ID), "", "", "", "", true);
+    // }
+
+    // int remove_usage_restriction(RxComm& conn, std::string_view ticket_name)
+    // {
+    //     return set_usage_restriction(conn, ticket_name, 0);
+    // }
+    // int remove_usage_restriction(RxComm& conn, int ticket_ID)
+    // {
+    //     return set_usage_restriction(conn, std::to_string(ticket_ID), 0);
+    // }
+
+    // int remove_write_file_restriction(RxComm& conn, std::string_view ticket_name)
+    // {
+    //     return set_write_file_restriction(conn, ticket_name, 0);
+    // }
+    // int remove_write_file_restriction(RxComm& conn, int ticket_ID)
+    // {
+    //     return set_write_file_restriction(conn, std::to_string(ticket_ID), 0);
+    // }
+
+    // int remove_write_byte_restriction(RxComm& conn, std::string_view ticket_name)
+    // {
+    //     return set_write_byte_restriction(conn, ticket_name, 0);
+    // }
+    // int remove_write_byte_restriction(RxComm& conn, int ticket_ID)
+    // {
+    //     return set_write_byte_restriction(conn, std::to_string(ticket_ID), 0);
+    // }
+
+    // int set_usage_restriction(RxComm& conn, std::string_view ticket_name, int numUses)
+    // {
+    //     return ticket_manager(conn, modify_command, ticket_name, "uses", std::to_string(numUses), "", "");
+    // }
+    // int set_usage_restriction(RxComm& conn, int ticket_ID, int numUses)
+    // {
+    //     return ticket_manager(conn, modify_command, std::to_string(ticket_ID), "uses", std::to_string(numUses), "",
+    //     "");
+    // }
+
+    // int set_write_file_restriction(RxComm& conn, std::string_view ticket_name, int numUses)
+    // {
+    //     return ticket_manager(conn, modify_command, ticket_name, "write-file", std::to_string(numUses), "", "");
+    // }
+    // int set_write_file_restriction(RxComm& conn, int ticket_ID, int numUses)
+    // {
+    //     return ticket_manager(conn, modify_command, std::to_string(ticket_ID), "write-file", std::to_string(numUses),
+    //     "", "");
+    // }
+
+    // int set_write_byte_restriction(RxComm& conn, std::string_view ticket_name, int numUses)
+    // {
+    //     return ticket_manager(conn, modify_command, ticket_name, "write-byte", std::to_string(numUses), "", "");
+    // }
+    // int set_write_byte_restriction(RxComm& conn, int ticket_ID, int numUses)
+    // {
+    //     return ticket_manager(conn, modify_command, std::to_string(ticket_ID), "write-byte", std::to_string(numUses),
+    //     "", "");
+    // }
+
+    // int admin_create_read_ticket(RxComm& conn, std::string_view obj_path, std::string_view ticket_name)
+    // {
+    //     return ticket_manager(conn, "create", ticket_name, "read", obj_path, ticket_name, "", true);
+    // }
+    // int admin_create_read_ticket(RxComm& conn, std::string_view obj_path)
+    // {
+    //     char myTicket[30];
+    //     make_ticket_name(myTicket);
+    //     return ticket_manager(conn, "create", myTicket, "read", obj_path, myTicket, "", true);
+    // }
+
+    // int admin_create_write_ticket(RxComm& conn, std::string_view obj_path, std::string_view ticket_name)
+    // {
+    //     return ticket_manager(conn, "create", ticket_name, "write", obj_path, ticket_name, "");
+    // }
+    // int admin_create_write_ticket(RxComm& conn, std::string_view obj_path)
+    // {
+    //     char myTicket[30];
+    //     make_ticket_name(myTicket);
+    //     return ticket_manager(conn, "create", myTicket, "write", obj_path, myTicket, "", true);
+    // }
+
+    // int admin_remove_usage_restriction(RxComm& conn, std::string_view ticket_name)
+    // {
+    //     return admin_set_usage_restriction(conn, ticket_name, 0);
+    // }
+    // int admin_remove_usage_restriction(RxComm& conn, int ticket_ID)
+    // {
+    //     return admin_set_usage_restriction(conn, std::to_string(ticket_ID), 0);
+    // }
+
+    // int admin_remove_write_file_restriction(RxComm& conn, std::string_view ticket_name)
+    // {
+    //     return admin_set_write_file_restriction(conn, ticket_name, 0);
+    // }
+    // int admin_remove_write_file_restriction(RxComm& conn, int ticket_ID)
+    // {
+    //     return admin_set_write_file_restriction(conn, std::to_string(ticket_ID), 0);
+    // }
+
+    // int admin_remove_write_byte_restriction(RxComm& conn, std::string_view ticket_name)
+    // {
+    //     return admin_set_write_byte_restriction(conn, ticket_name, 0);
+    // }
+    // int admin_remove_write_byte_restriction(RxComm& conn, int ticket_ID)
+    // {
+    //     return admin_set_write_byte_restriction(conn, std::to_string(ticket_ID), 0);
+    // }
+
+    // int admin_set_usage_restriction(RxComm& conn, std::string_view ticket_name, int numUses)
+    // {
+    //     return ticket_manager(conn, modify_command, ticket_name, "uses", std::to_string(numUses), "", ", true",
+    //     true);
+    // }
+    // int admin_set_usage_restriction(RxComm& conn, int ticket_ID, int numUses)
+    // {
+    //     return ticket_manager(conn, modify_command, std::to_string(ticket_ID), "uses", std::to_string(numUses), "",
+    //     "", true);
+    // }
+
+    // int admin_set_write_file_restriction(RxComm& conn, std::string_view ticket_name, int numUses)
+    // {
+    //     return ticket_manager(conn, modify_command, ticket_name, "write-file", std::to_string(numUses), "", "",
+    //     true);
+    // }
+    // int admin_set_write_file_restriction(RxComm& conn, int ticket_ID, int numUses)
+    // {
+    //     return ticket_manager(conn,
+    //                           modify_command,
+    //                           std::to_string(ticket_ID),
+    //                           "write-file",
+    //                           std::to_string(numUses),
+    //                           "",
+    //                           "",
+    //                           true);
+    // }
+
+    // int admin_set_write_byte_restriction(RxComm& conn, std::string_view ticket_name, int numUses)
+    // {
+    //     return ticket_manager(conn, modify_command, ticket_name, "write-byte", std::to_string(numUses), "", "",
+    //     true);
+    // }
+    // int admin_set_write_byte_restriction(RxComm& conn, int ticket_ID, int numUses)
+    // {
+    //     return ticket_manager(conn,
+    //                           modify_command,
+    //                           std::to_string(ticket_ID),
+    //                           "write-byte",
+    //                           std::to_string(numUses),
+    //                           "",
+    //                           "",
+    //                           true);
+    // }
+
 } // namespace irods::administration::ticket
