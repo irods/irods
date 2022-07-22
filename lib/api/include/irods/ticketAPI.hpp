@@ -28,8 +28,11 @@ struct RcComm;
  */
 namespace irods::administration::ticket
 {
-    inline struct admin_tag {} admin;
-    enum class ticket_type    {
+    inline struct admin_tag
+    {
+    } admin;
+    enum class ticket_type
+    {
         read,
         write
     };
@@ -46,6 +49,68 @@ namespace irods::administration::ticket
         remove
     };
 
+    namespace constraint
+    {
+        struct constraint
+        {
+        private:
+            std::string_view _value;
+            std::string_view ticket_identifier;
+
+        public:
+            explicit constraint(std::string_view _v, std::string_view ticket_name)
+            {
+                _value = _v;
+                ticket_identifier = ticket_name;
+            }
+            explicit constraint(){
+
+            }
+            std::string_view get_value()
+            {
+                return _value;
+            }
+            std::string_view get_ticket_identifier()
+            {
+                return ticket_identifier;
+            }
+        };
+    } // namespace constraint
+
+    struct user_constraint : constraint::constraint
+    {
+        explicit user_constraint(std::string_view _v, std::string_view ticket_name)
+        {
+            constraint(_v, ticket_name);
+        }
+        explicit user_constraint(std::string_view _v, int ticket_ID)
+        {
+            constraint(_v, std::to_string(ticket_ID));
+        }
+    };
+    struct group_constraint : constraint::constraint
+    {
+        explicit group_constraint(std::string_view _v, std::string_view ticket_name)
+        {
+            constraint(_v, ticket_name);
+        }
+        explicit group_constraint(std::string_view _v, int ticket_ID)
+        {
+            constraint(_v, std::to_string(ticket_ID));
+        }
+    };
+    struct host_constraint : constraint::constraint
+    {
+        explicit host_constraint(std::string_view _v, std::string_view ticket_name)
+        {
+            constraint(_v, ticket_name);
+        }
+        explicit host_constraint(std::string_view _v, int ticket_ID)
+        {
+            constraint(_v, std::to_string(ticket_ID));
+        }
+    };
+
     /**
      * @brief Create a ticket object
      *
@@ -56,12 +121,16 @@ namespace irods::administration::ticket
      * @return int Error code
      */
     void create_ticket(RxComm& conn, ticket_type _type, std::string_view obj_path, std::string_view ticket_name);
-    std::string create_ticket(RxComm& conn, ticket_type _type, std::string_view obj_path);
+    std::string_view create_ticket(RxComm& conn, ticket_type _type, std::string_view obj_path);
 
-    void create_ticket(admin_tag, RxComm& conn, ticket_type _type, std::string_view obj_path, std::string_view ticket_name);
-    std::string create_ticket(admin_tag, RxComm& conn, ticket_type _type, std::string_view obj_path);
+    void create_ticket(admin_tag,
+                       RxComm& conn,
+                       ticket_type _type,
+                       std::string_view obj_path,
+                       std::string_view ticket_name);
+    std::string_view create_ticket(admin_tag, RxComm& conn, ticket_type _type, std::string_view obj_path);
 
-    // OLD CREATE TICKET 
+    // OLD CREATE TICKET
     // /**
     //  * @brief Create a Read Ticket object
     //  *
@@ -83,9 +152,17 @@ namespace irods::administration::ticket
     //  */
     // int create_write_ticket(RxComm& conn, std::string_view obj_path, std::string_view ticket_name);
     // int create_write_ticket(RxComm& conn, std::string_view obj_path);
-    
-    void set_ticket_restrictions(RxComm& conn, ticket_operation _operand, ticket_property _property, std::string_view ticket_name, int num_of_restrictions);
-    void set_ticket_restrictions(RxComm& conn, ticket_operation _operand, ticket_property _property, int ticket_ID, int num_of_restrictions);
+
+    void set_ticket_restrictions(RxComm& conn,
+                                 ticket_operation _operand,
+                                 ticket_property _property,
+                                 std::string_view ticket_name,
+                                 int num_of_restrictions);
+    void set_ticket_restrictions(RxComm& conn,
+                                 ticket_operation _operand,
+                                 ticket_property _property,
+                                 int ticket_ID,
+                                 int num_of_restrictions);
 
     // OLD RESTRICTION SETTING
     // /**
@@ -163,8 +240,18 @@ namespace irods::administration::ticket
     // int set_write_byte_restriction(RxComm& conn, std::string_view ticket_name, int numUses);
     // int set_write_byte_restriction(RxComm& conn, int ticket_ID, int numUses);
 
-    void set_ticket_restrictions(admin_tag, RxComm& conn, ticket_operation _operand, ticket_property _property, std::string_view ticket_name, int num_of_restrictions);
-    void set_ticket_restrictions(admin_tag, RxComm& conn, ticket_operation _operand, ticket_property _property, int ticket_ID, int num_of_restrictions);
+    void set_ticket_restrictions(admin_tag,
+                                 RxComm& conn,
+                                 ticket_operation _operand,
+                                 ticket_property _property,
+                                 std::string_view ticket_name,
+                                 int num_of_restrictions);
+    void set_ticket_restrictions(admin_tag,
+                                 RxComm& conn,
+                                 ticket_operation _operand,
+                                 ticket_property _property,
+                                 int ticket_ID,
+                                 int num_of_restrictions);
 
     /**
      * @brief Add user to the ticket specified
@@ -285,6 +372,8 @@ namespace irods::administration::ticket
     //
     // int admin_set_write_byte_restriction(RxComm& conn, std::string_view ticket_name, int numUses);
     // int admin_set_write_byte_restriction(RxComm& conn, int ticket_ID, int numUses);
+
+    void add_ticket_constraint(RxComm& conn, constraint::constraint& user_constraints);
 
     int admin_add_user(RxComm& conn, std::string_view ticket_name, std::string_view user);
     int admin_add_user(RxComm& conn, int ticket_ID, std::string_view user);

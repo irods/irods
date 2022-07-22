@@ -12,6 +12,7 @@
 #include "irods/rodsKeyWdDef.h"
 #include "irods/ticketAdmin.h"
 #include "irods/irods_exception.hpp"
+#include "irods/irods_at_scope_exit.hpp"
 
 namespace irods::administration::ticket
 {
@@ -45,8 +46,8 @@ namespace irods::administration::ticket
     }
     int ticket_manager(RxComm& conn,
                        std::string_view command,
-                       std::string_view ticket_IDentifier,
-                       std::string_view commandModifier,
+                       std::string_view ticket_Identifier,
+                       std::string_view commandModifier1,
                        std::string_view commandModifier2,
                        std::string_view commandModifier3,
                        std::string_view commandModifier4,
@@ -54,18 +55,20 @@ namespace irods::administration::ticket
     {
         ticketAdminInp_t ticketAdminInp{};
 
-        ticketAdminInp.arg1 = strdup(command.data());
-        ticketAdminInp.arg2 = strdup(ticket_IDentifier.data());
-        ticketAdminInp.arg3 = strdup(commandModifier.data());
-        ticketAdminInp.arg4 = strdup(commandModifier2.data());
-        ticketAdminInp.arg5 = strdup(commandModifier3.data());
-        ticketAdminInp.arg6 = strdup(commandModifier4.data());
+        ticketAdminInp.arg1 = const_cast<char*>(command.data());
+        ticketAdminInp.arg2 = const_cast<char*>(ticket_Identifier.data());
+        ticketAdminInp.arg3 = const_cast<char*>(commandModifier1.data());
+        ticketAdminInp.arg4 = const_cast<char*>(commandModifier2.data());
+        ticketAdminInp.arg5 = const_cast<char*>(commandModifier3.data());
+        ticketAdminInp.arg6 = const_cast<char*>(commandModifier4.data());
 
         if (run_as_admin) {
             addKeyVal(&ticketAdminInp.condInput, ADMIN_KW, "");
         }
 
         const int status = rcTicketAdmin(&conn, &ticketAdminInp);
+
+        irods::at_scope_exit free_memory{[&ticketAdminInp] { clearKeyVal(&ticketAdminInp.condInput); }};
 
         if (status < 0) {
             // if (conn.rError) {
@@ -91,16 +94,16 @@ namespace irods::administration::ticket
     }
     int ticket_manager(RxComm& conn,
                        std::string_view command,
-                       std::string_view ticket_IDentifier,
-                       std::string_view commandModifier,
+                       std::string_view ticket_Identifier,
+                       std::string_view commandModifier1,
                        std::string_view commandModifier2,
                        std::string_view commandModifier3,
                        std::string_view commandModifier4)
     {
         return ticket_manager(conn,
                               command,
-                              ticket_IDentifier,
-                              commandModifier,
+                              ticket_Identifier,
+                              commandModifier1,
                               commandModifier2,
                               commandModifier3,
                               commandModifier4,
@@ -117,7 +120,7 @@ namespace irods::administration::ticket
         }
         throw std::invalid_argument("Ticket type is not defined");
     }
-    std::string create_ticket(RxComm& conn, ticket_type _type, std::string_view obj_path)
+    std::string_view create_ticket(RxComm& conn, ticket_type _type, std::string_view obj_path)
     {
         char myTicket[30];
         make_ticket_name(myTicket);
@@ -147,7 +150,7 @@ namespace irods::administration::ticket
         }
         throw std::invalid_argument("Ticket type is not defined");
     }
-    std::string create_ticket(admin_tag, RxComm& conn, ticket_type _type, std::string_view obj_path)
+    std::string_view create_ticket(admin_tag, RxComm& conn, ticket_type _type, std::string_view obj_path)
     {
         char myTicket[30];
         make_ticket_name(myTicket);
@@ -328,6 +331,10 @@ namespace irods::administration::ticket
     void delete_ticket(admin_tag, RxComm& conn, int ticket_ID)
     {
         ticket_manager(conn, "delete", std::to_string(ticket_ID), "", "", "", "", true);
+    }
+
+    void add_ticket_constraint(RxComm& conn, user_constraint& user_constraints){
+        
     }
 
     int add_user(RxComm& conn, std::string_view ticket_name, std::string_view user)
@@ -555,7 +562,8 @@ namespace irods::administration::ticket
 
     // int admin_set_usage_restriction(RxComm& conn, std::string_view ticket_name, int numUses)
     // {
-    //     return ticket_manager(conn, modify_command, ticket_name, "uses", std::to_string(numUses), "", ", true", true);
+    //     return ticket_manager(conn, modify_command, ticket_name, "uses", std::to_string(numUses), "", ", true",
+    //     true);
     // }
     // int admin_set_usage_restriction(RxComm& conn, int ticket_ID, int numUses)
     // {
@@ -565,7 +573,8 @@ namespace irods::administration::ticket
 
     // int admin_set_write_file_restriction(RxComm& conn, std::string_view ticket_name, int numUses)
     // {
-    //     return ticket_manager(conn, modify_command, ticket_name, "write-file", std::to_string(numUses), "", "", true);
+    //     return ticket_manager(conn, modify_command, ticket_name, "write-file", std::to_string(numUses), "", "",
+    //     true);
     // }
     // int admin_set_write_file_restriction(RxComm& conn, int ticket_ID, int numUses)
     // {
@@ -581,7 +590,8 @@ namespace irods::administration::ticket
 
     // int admin_set_write_byte_restriction(RxComm& conn, std::string_view ticket_name, int numUses)
     // {
-    //     return ticket_manager(conn, modify_command, ticket_name, "write-byte", std::to_string(numUses), "", "", true);
+    //     return ticket_manager(conn, modify_command, ticket_name, "write-byte", std::to_string(numUses), "", "",
+    //     true);
     // }
     // int admin_set_write_byte_restriction(RxComm& conn, int ticket_ID, int numUses)
     // {
