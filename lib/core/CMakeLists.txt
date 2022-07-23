@@ -338,7 +338,6 @@ install(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_load_plugin.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_log.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_logger.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_logger.tpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_lookup_table.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_native_auth_object.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_network_constants.hpp"
