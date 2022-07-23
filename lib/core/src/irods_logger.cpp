@@ -2,6 +2,7 @@
 
 #include "irods/irods_server_properties.hpp"
 #include "irods/irods_default_paths.hpp"
+#include "irods/rodsError.h"
 
 #include <fstream>
 #include <iomanip>
@@ -14,8 +15,8 @@
 #include <boost/interprocess/sync/scoped_lock.hpp>
 
 #ifdef IRODS_ENABLE_SYSLOG
-    #include <spdlog/sinks/base_sink.h>
-    #include <spdlog/sinks/syslog_sink.h>
+#  include <spdlog/sinks/base_sink.h>
+#  include <spdlog/sinks/syslog_sink.h>
 #endif // IRODS_ENABLE_SYSLOG
 
 #include <sys/types.h>
@@ -23,13 +24,33 @@
 
 namespace ipc = boost::interprocess;
 
-namespace irods::experimental
+namespace
+{
+    // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
+#ifdef IRODS_ENABLE_SYSLOG
+    std::shared_ptr<spdlog::logger> g_log;
+#endif // IRODS_ENABLE_SYSLOG
+    ErrorStack* g_error;
+    bool g_write_to_error_object;
+    int g_api_number;
+    bool g_log_api_number;
+    const Version* g_req_client_version;
+    std::string g_req_client_host;
+    std::string g_req_client_username;
+    std::string g_req_proxy_username;
+    std::string g_server_type;
+    std::string g_server_host;
+    std::string g_server_name;
+    // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
+} // anonymous namespace
+
+namespace irods::experimental::log
 {
 #ifdef IRODS_ENABLE_SYSLOG
-    class test_mode_ipc_sink
+    class test_mode_ipc_sink // NOLINT(cppcoreguidelines-special-member-functions)
         : public spdlog::sinks::base_sink<spdlog::details::null_mutex>
     {
-    public:
+      public:
         test_mode_ipc_sink()
             : mutex_{ipc::open_or_create, shm_name}
             , file_{(irods::get_irods_home_directory() / "log" / "test_mode_output.log").string(), std::ios_base::app}
@@ -38,9 +59,9 @@ namespace irods::experimental
         }
 
         test_mode_ipc_sink(const test_mode_ipc_sink&) = delete;
-        test_mode_ipc_sink& operator=(const test_mode_ipc_sink&) = delete;
+        auto operator=(const test_mode_ipc_sink&) -> test_mode_ipc_sink& = delete;
 
-        ~test_mode_ipc_sink()
+        ~test_mode_ipc_sink() // NOLINT(modernize-use-override)
         {
             try {
                 if (getpid() == owner_pid_) {
@@ -52,7 +73,7 @@ namespace irods::experimental
             }
         }
 
-    protected:
+      protected:
         void sink_it_(const spdlog::details::log_msg& msg) override
         {
             try {
@@ -68,7 +89,7 @@ namespace irods::experimental
         {
         }
 
-    private:
+      private:
         inline static const char* const shm_name = "irods_test_mode_ipc_sink";
 
         ipc::named_mutex mutex_;
@@ -76,10 +97,10 @@ namespace irods::experimental
         const pid_t owner_pid_;
     }; // class test_mode_ipc_sink
 
-    class stdout_ipc_sink
+    class stdout_ipc_sink // NOLINT(cppcoreguidelines-special-member-functions)
         : public spdlog::sinks::base_sink<spdlog::details::null_mutex>
     {
-    public:
+      public:
         stdout_ipc_sink()
             : mutex_{ipc::open_or_create, shm_name}
             , owner_pid_{getpid()}
@@ -87,9 +108,9 @@ namespace irods::experimental
         }
 
         stdout_ipc_sink(const stdout_ipc_sink&) = delete;
-        stdout_ipc_sink& operator=(const stdout_ipc_sink&) = delete;
+        auto operator=(const stdout_ipc_sink&) -> stdout_ipc_sink& = delete;
 
-        ~stdout_ipc_sink()
+        ~stdout_ipc_sink() // NOLINT(modernize-use-override)
         {
             try {
                 if (getpid() == owner_pid_) {
@@ -101,7 +122,7 @@ namespace irods::experimental
             }
         }
 
-    protected:
+      protected:
         void sink_it_(const spdlog::details::log_msg& msg) override
         {
             try {
@@ -117,7 +138,7 @@ namespace irods::experimental
         {
         }
 
-    private:
+      private:
         inline static const char* const shm_name = "irods_stdout_ipc_sink";
 
         ipc::named_mutex mutex_;
@@ -125,7 +146,7 @@ namespace irods::experimental
     }; // class stdout_ipc_sink
 #endif // IRODS_ENABLE_SYSLOG
 
-    void log::init(bool _write_to_stdout, bool _enable_test_mode) noexcept
+    void init(bool _write_to_stdout, bool _enable_test_mode) noexcept
     {
 #ifdef IRODS_ENABLE_SYSLOG
         std::vector<spdlog::sink_ptr> sinks;
@@ -134,8 +155,9 @@ namespace irods::experimental
             sinks.push_back(std::make_shared<stdout_ipc_sink>());
         }
         else {
-            std::string id = "";
+            std::string id;
             const bool enable_formatting = false;
+            // NOLINTNEXTLINE(hicpp-signed-bitwise)
             sinks.push_back(std::make_shared<spdlog::sinks::syslog_sink_mt>(id, LOG_PID, LOG_LOCAL0, enable_formatting));
         }
 
@@ -143,15 +165,15 @@ namespace irods::experimental
             sinks.push_back(std::make_shared<test_mode_ipc_sink>());
         }
 
-        log_ = std::make_shared<spdlog::logger>("composite_logger", std::begin(sinks), std::end(sinks));
-        log_->set_level(spdlog::level::trace); // Log everything!
+        g_log = std::make_shared<spdlog::logger>("composite_logger", std::begin(sinks), std::end(sinks));
+        g_log->set_level(spdlog::level::trace); // Log everything!
 #endif // IRODS_ENABLE_SYSLOG
     }
 
-    auto log::to_level(const std::string& _level) -> log::level
+    auto to_level(const std::string_view _level) noexcept -> level
     {
         // clang-format off
-        static const std::unordered_map<std::string, level> conv_table{
+        static const std::unordered_map<std::string_view, level> conv_table{
             {"trace",    level::trace},
             {"debug",    level::debug},
             {"info",     level::info},
@@ -168,79 +190,145 @@ namespace irods::experimental
         return level::info;
     }
 
-    auto log::get_level_from_config(const std::string& _category) -> log::level
+    auto get_level_from_config(const std::string_view _category) noexcept -> level
     {
         try {
             const auto& log_level = irods::get_server_property<const nlohmann::json&>(irods::KW_CFG_LOG_LEVEL);
-            return to_level(log_level.at(_category).get_ref<const std::string&>());
+            return to_level(log_level.at(_category.data()).get_ref<const std::string&>());
         }
-        catch (const std::exception&) {
-            log::server::warn({{"log_message", "Cannot get 'log_level' for log category. "
-                                               "Defaulting to 'info'."},
-                               {"requested_category",  _category}});
+        catch (...) {
+            try {
+                server::warn("Cannot get log level for log category [{}]. Defaulting to [info].", _category);
+            }
+            catch (...) {
+            }
         }
 
-        return log::level::info;
+        return level::info;
     }
 
-    void log::set_error_object(rError_t* _error) noexcept
+    auto set_error_object(ErrorStack* _error) noexcept -> void
     {
-        error_ = _error;
+        g_error = _error;
 
+        // NOLINTNEXTLINE(readability-implicit-bool-conversion)
         if (!_error) {
-            write_to_error_object_ = false;
+            g_write_to_error_object = false;
         }
     }
 
-    void log::write_to_error_object(bool _value) noexcept
+    auto get_error_object() noexcept -> ErrorStack*
     {
-        write_to_error_object_ = _value;
+        return g_error;
     }
 
-    void log::set_request_api_number(int _api_number) noexcept
+    auto write_to_error_object(bool _value) noexcept -> void
     {
-        api_number_ = _api_number;
-        log_api_number_ = true;
+        g_write_to_error_object = _value;
     }
 
-    void log::clear_request_api_number() noexcept
+    auto should_write_to_error_object() noexcept -> bool
     {
-        log_api_number_ = false;
+        return g_write_to_error_object;
     }
 
-    void log::set_request_client_version(const version_t* _client_version) noexcept
+    auto set_request_api_number(int _api_number) noexcept -> void
     {
-        req_client_version_ = _client_version;
+        g_api_number = _api_number;
+        g_log_api_number = true;
     }
 
-    void log::set_request_client_host(std::string _host) noexcept
+    auto clear_request_api_number() noexcept -> void
     {
-        req_client_host_ = std::move(_host);
+        g_log_api_number = false;
     }
 
-    void log::set_request_client_user(std::string _user) noexcept
+    auto get_request_api_number() noexcept -> std::optional<int>
     {
-        req_client_user_ = std::move(_user);
+        if (g_log_api_number) {
+            return g_api_number;
+        }
+
+        return std::nullopt;
     }
 
-    void log::set_request_proxy_user(std::string _user) noexcept
+    auto set_request_client_version(const Version* _client_version) noexcept -> void
     {
-        req_proxy_user_ = std::move(_user);
+        g_req_client_version = _client_version;
     }
 
-    void log::set_server_type(std::string _type) noexcept
+    auto get_request_client_version() noexcept -> const Version*
     {
-        server_type_ = std::move(_type);
+        return g_req_client_version;
     }
 
-    void log::set_server_host(std::string _host) noexcept
+    auto set_request_client_hostname(std::string _hostname) noexcept -> void
     {
-        server_host_ = std::move(_host);
+        g_req_client_host = std::move(_hostname);
     }
 
-    void log::set_server_name(std::string _name) noexcept
+    auto get_request_client_hostname() noexcept -> std::string_view
     {
-        server_name_ = std::move(_name);
+        return g_req_client_host;
     }
-} // namespace irods::experimental
 
+    auto set_request_client_username(std::string _username) noexcept -> void
+    {
+        g_req_client_username = std::move(_username);
+    }
+
+    auto get_request_client_username() noexcept -> std::string_view
+    {
+        return g_req_client_username;
+    }
+
+    auto set_request_proxy_username(std::string _username) noexcept -> void
+    {
+        g_req_proxy_username = std::move(_username);
+    }
+
+    auto get_request_proxy_username() noexcept -> std::string_view
+    {
+        return g_req_proxy_username;
+    }
+
+    auto set_server_type(std::string _type) noexcept -> void
+    {
+        g_server_type = std::move(_type);
+    }
+
+    auto get_server_type() noexcept -> std::string_view
+    {
+        return g_server_type;
+    }
+
+    auto set_server_hostname(std::string _hostname) noexcept -> void
+    {
+        g_server_host = std::move(_hostname);
+    }
+
+    auto get_server_hostname() noexcept -> std::string_view
+    {
+        return g_server_host;
+    }
+
+    auto set_server_name(std::string _name) noexcept -> void
+    {
+        g_server_name = std::move(_name);
+    }
+
+    auto get_server_name() noexcept -> std::string_view
+    {
+        return g_server_name;
+    }
+
+    namespace detail
+    {
+#ifdef IRODS_ENABLE_SYSLOG
+        auto get_logger() noexcept -> std::shared_ptr<spdlog::logger>
+        {
+            return g_log;
+        }
+#endif // IRODS_ENABLE_SYSLOG
+    } // namespace detail
+} // namespace irods::experimental::log
