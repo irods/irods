@@ -40,7 +40,7 @@ namespace irods::administration::ticket
 
     enum class ticket_property
     {
-        uses,
+        uses_count,
         write_file,
         write_byte
     };
@@ -159,14 +159,14 @@ namespace irods::administration::ticket
      * @return int Error code
      */
     void create_ticket(RxComm& conn, ticket_type _type, std::string_view obj_path, std::string_view ticket_name);
-    std::string_view create_ticket(RxComm& conn, ticket_type _type, std::string_view obj_path);
+    std::string create_ticket(RxComm& conn, ticket_type _type, std::string_view obj_path);
 
     void create_ticket(admin_tag,
                        RxComm& conn,
                        ticket_type _type,
                        std::string_view obj_path,
                        std::string_view ticket_name);
-    std::string_view create_ticket(admin_tag, RxComm& conn, ticket_type _type, std::string_view obj_path);
+    std::string create_ticket(admin_tag, RxComm& conn, ticket_type _type, std::string_view obj_path);
 
     
     void set_ticket_restrictions(RxComm& conn,
