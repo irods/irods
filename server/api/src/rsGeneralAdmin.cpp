@@ -53,7 +53,7 @@ namespace
         return std::find_if(b, e, [](unsigned char _ch) { return ::isspace(_ch); }) != e;
     } // contains_whitespace
 
-     auto throw_if_user_type_can_result_in_non_functional_irods_server(
+     auto throw_if_downgrading_irods_service_account_rodsadmin(
         RsComm& rsComm,
         const std::string_view _option,
         const std::string_view _user_name,
@@ -86,13 +86,14 @@ namespace
                     continue;
                 }
 
-            for ( const auto& server : zone.at("servers") ) {
-                const auto& server_admin = server.at("service_account_environment").at("irods_user_name").get_ref<const std::string&>();
-                if ( server_admin  == _user_name ) {
-                    const auto& host_of_target_user = server.at("host_system_information").at("hostname").get_ref<const std::string&>();
-                    const auto msg = fmt::format( "Cannot downgrade another rodsadmin ({}) running another server in this zone. On server: {}", _user_name, host_of_target_user );
-                    addRErrorMsg(&rsComm.rError, SYS_NOT_ALLOWED, msg.c_str());
-                    THROW(SYS_NOT_ALLOWED, msg);
+                for ( const auto& server : zone.at("servers") ) {
+                    const auto& server_admin = server.at("service_account_environment").at("irods_user_name").get_ref<const std::string&>();
+                    if ( server_admin  == _user_name ) {
+                        const auto& host_of_target_user = server.at("host_system_information").at("hostname").get_ref<const std::string&>();
+                        const auto msg = fmt::format( "Cannot downgrade another rodsadmin ({}) running another server in this zone. On server: {}", _user_name, host_of_target_user );
+                        addRErrorMsg(&rsComm.rError, SYS_NOT_ALLOWED, msg.c_str());
+                        THROW(SYS_NOT_ALLOWED, msg);
+                    }
                 }
             }
         }
@@ -850,7 +851,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                 // it will be used multiple times. Note: subject to TOCTOU problem.
                 const auto current_user_type = irods::user::get_type(*rsComm, user_name);
 
-                throw_if_user_type_can_result_in_non_functional_irods_server(
+                throw_if_downgrading_irods_service_account_rodsadmin(
                     *rsComm,
                     option,
                     user_name,
