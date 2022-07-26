@@ -68,7 +68,7 @@ namespace
 
         if (const auto ec = rsZoneReport(&rsComm, &bbuf); ec < 0 ) {
             const auto msg = fmt::format("[{}:{}] - Error fetching Zone Report", __func__, __LINE__);
-            addRErrorMsg(&rsComm.rError, ec , msg);
+            addRErrorMsg(&rsComm.rError, ec , msg.c_str());
             THROW(ec, msg);
         }
 
@@ -90,7 +90,7 @@ namespace
                     const auto& server_admin = server.at("service_account_environment").at("irods_user_name").get_ref<const std::string&>();
                     if ( server_admin  == _user_name ) {
                         const auto& host_of_target_user = server.at("host_system_information").at("hostname").get_ref<const std::string&>();
-                        const auto msg = fmt::format( "Cannot downgrade another rodsadmin ({}) running another server in this zone. On server: {}", _user_name, host_of_target_user );
+                        const auto msg = fmt::format( "Cannot downgrade another rodsadmin [{}] running another server [{}] in this zone.", _user_name, host_of_target_user );
                         addRErrorMsg(&rsComm.rError, SYS_NOT_ALLOWED, msg.c_str());
                         THROW(SYS_NOT_ALLOWED, msg);
                     }
