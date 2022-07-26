@@ -2,6 +2,8 @@
 #define IRODS_TICKET_API_HPP
 
 #include <string_view>
+#include <type_traits>
+#include <iostream>
 #include <string>
 
 #undef NAMESPACE_IMPL
@@ -44,110 +46,15 @@ namespace irods::administration::ticket
         write_file,
         write_byte
     };
-    enum class ticket_operation
-    {
-        set,
-        remove
-    };
 
-    namespace constraint
-    {
-        std::string_view user_string = "user";
-        std::string_view group_string = "group";
-        std::string_view host_string = "host";
-
-        struct constraint
-        {
-        private:
-            std::string_view _value;
-            std::string_view ticket_identifier;
-            std::string_view group_type;
-
-        public:
-            explicit constraint(std::string_view _v, std::string_view ticket_name)
-            {
-                _value = _v;
-                ticket_identifier = ticket_name;
-            }
-            explicit constraint()
-            {
-                _value = "";
-                ticket_identifier = "";
-            }
-
-            void set_group_type(std::string_view _group)
-            {
-                group_type = _group;
-            }
-            void set_value(std::string_view _v)
-            {
-                _value = _v;
-            }
-            void set_ticket_identifier(std::string_view ticket_name)
-            {
-                ticket_identifier = ticket_name;
-            }
-
-            std::string_view get_value()
-            {
-                return _value;
-            }
-            std::string_view get_ticket_identifier()
-            {
-                return ticket_identifier;
-            }
-            std::string_view get_group_type()
-            {
-                return group_type;
-            }
-        };
-    } // namespace constraint
-
-    struct user_constraint : constraint::constraint
-    {
-        explicit user_constraint(std::string_view _v, std::string_view ticket_name)
-        {
-            set_value(_v);
-            set_ticket_identifier(ticket_name);
-            set_group_type(::irods::administration::ticket::constraint::user_string);
-        }
-        explicit user_constraint(std::string_view _v, int ticket_ID)
-        {
-            set_value(_v);
-            set_ticket_identifier(std::to_string(ticket_ID));
-            set_group_type(::irods::administration::ticket::constraint::user_string);
-        }
-    };
-    struct group_constraint : constraint::constraint
-    {
-        explicit group_constraint(std::string_view _v, std::string_view ticket_name)
-        {
-            set_value(_v);
-            set_ticket_identifier(ticket_name);
-            set_group_type(::irods::administration::ticket::constraint::group_string);
-        }
-        explicit group_constraint(std::string_view _v, int ticket_ID)
-        {
-            set_value(_v);
-            set_ticket_identifier(std::to_string(ticket_ID));
-            set_group_type(::irods::administration::ticket::constraint::group_string);
-        }
-    };
-    struct host_constraint : constraint::constraint
-    {
-        explicit host_constraint(std::string_view _v, std::string_view ticket_name)
-        {
-            set_value(_v);
-            set_ticket_identifier(ticket_name);
-            set_group_type(::irods::administration::ticket::constraint::host_string);
-        }
-        explicit host_constraint(std::string_view _v, int ticket_ID)
-        {
-            set_value(_v);
-            set_ticket_identifier(std::to_string(ticket_ID));
-            set_group_type(::irods::administration::ticket::constraint::host_string);
-        }
-    };
+    void execute_ticket_operation(RxComm& conn,
+                                  std::string_view command,
+                                  std::string_view ticket_identifier,
+                                  std::string_view command_modifier1,
+                                  std::string_view command_modifier2,
+                                  std::string_view command_modifier3,
+                                  std::string_view command_modifier4,
+                                  bool run_as_admin);
 
     /**
      * @brief Create a ticket object
@@ -168,31 +75,6 @@ namespace irods::administration::ticket
                        std::string_view ticket_name);
     std::string create_ticket(admin_tag, RxComm& conn, ticket_type _type, std::string_view obj_path);
 
-    
-    void set_ticket_restrictions(RxComm& conn,
-                                 ticket_operation _operand,
-                                 ticket_property _property,
-                                 std::string_view ticket_name,
-                                 int num_of_restrictions);
-    void set_ticket_restrictions(RxComm& conn,
-                                 ticket_operation _operand,
-                                 ticket_property _property,
-                                 int ticket_ID,
-                                 int num_of_restrictions);
-
-    void set_ticket_restrictions(admin_tag,
-                                 RxComm& conn,
-                                 ticket_operation _operand,
-                                 ticket_property _property,
-                                 std::string_view ticket_name,
-                                 int num_of_restrictions);
-    void set_ticket_restrictions(admin_tag,
-                                 RxComm& conn,
-                                 ticket_operation _operand,
-                                 ticket_property _property,
-                                 int ticket_ID,
-                                 int num_of_restrictions);
-
     /**
      * @brief Delete a ticket
      *
@@ -208,238 +90,324 @@ namespace irods::administration::ticket
     void delete_ticket(admin_tag, RxComm& conn, std::string_view ticket_name);
     void delete_ticket(admin_tag, RxComm& conn, int ticket_ID);
 
-    // These functions are the same as the above, but it does them as an admin of the system
+    struct users_constraint
+    {
+        const std::string_view user_name;
+    };
 
-    void add_ticket_constraint(RxComm& conn, constraint::constraint& constraints);
-    void remove_ticket_constraint(RxComm& conn, constraint::constraint& constraints);
+    struct groups_constraint
+    {
+        const std::string_view group_name;
+    };
 
-    void add_ticket_constraint(admin_tag, RxComm& conn, constraint::constraint& constraints);
-    void remove_ticket_constraint(admin_tag, RxComm& conn, constraint::constraint& constraints);
+    struct hosts_constraint
+    {
+        const std::string_view host_name;
+    };
 
-    // OLD ADMIN PERMISSION CONTROL
-    // int admin_add_user(RxComm& conn, std::string_view ticket_name, std::string_view user);
-    // int admin_add_user(RxComm& conn, int ticket_ID, std::string_view user);
-    //
-    // int admin_remove_user(RxComm& conn, std::string_view ticket_name, std::string_view user);
-    // int admin_remove_user(RxComm& conn, int ticket_ID, std::string_view user);
-    //
-    // int admin_add_group(RxComm& conn, std::string_view ticket_name, std::string_view group);
-    // int admin_add_group(RxComm& conn, int ticket_ID, std::string_view group);
-    //
-    // int admin_remove_group(RxComm& conn, std::string_view ticket_name, std::string_view group);
-    // int admin_remove_group(RxComm& conn, int ticket_ID, std::string_view group);
-    //
-    // int admin_add_host(RxComm& conn, std::string_view ticket_name, std::string_view host);
-    // int admin_add_host(RxComm& conn, int ticket_ID, std::string_view host);
-    //
-    // int admin_remove_host(RxComm& conn, std::string_view ticket_name, std::string_view host);
-    // int admin_remove_host(RxComm& conn, int ticket_ID, std::string_view host);
-    //
-    // int admin_delete_ticket(RxComm& conn, std::string_view ticket_name);
-    // int admin_delete_ticket(RxComm& conn, int ticket_ID);
+    struct ticket_property_constraint
+    {
+        const ticket_property desired_property;
+        int value_of_property = -1;
+    };
 
-    // OLD CREATE TICKET
-    // /**
-    //  * @brief Create a Read Ticket object
-    //  *
-    //  * @param conn Communication Object
-    //  * @param obj_path Path for the object that the ticket is being made for
-    //  * @param ticket_name(if provided) Name of the ticket
-    //  * @return int Error Code that may come up
-    //  */
-    // int create_read_ticket(RxComm& conn, std::string_view obj_path, std::string_view ticket_name);
-    // int create_read_ticket(RxComm& conn, std::string_view obj_path);
-    //
-    // /**
-    //  * @brief Create a Write Ticket object
-    //  *
-    //  * @param conn Communication Object
-    //  * @param obj_path Path for the object that the ticket is being made for
-    //  * @param ticket_name(if provided) Name of the ticket
-    //  * @return int Error Code that may come up
-    //  */
-    // int create_write_ticket(RxComm& conn, std::string_view obj_path, std::string_view ticket_name);
-    // int create_write_ticket(RxComm& conn, std::string_view obj_path);
+    template <typename T>
+    void addTicketConstraints(RxComm& conn, const std::string_view ticket_name, const T& constraints)
+    {
+        std::string_view command = "mod";
+        std::string_view command_modifier1 = "add";
+        std::string_view command_modifier2 = "";
+        std::string_view command_modifier3 = "";
+        std::string_view command_modifier4 = "";
+        if constexpr (std::is_same_v<users_constraint, T>) {
+            command_modifier2 = "user";
+            command_modifier3 = constraints.user_name;
+        }
+        else if constexpr (std::is_same_v<groups_constraint, T>) {
+            command_modifier2 = "group";
+            command_modifier3 = constraints.group_name;
+        }
+        else if constexpr (std::is_same_v<hosts_constraint, T>) {
+            command_modifier2 = "host";
+            command_modifier3 = constraints.host_name;
+        }
+        else {
+            throw std::invalid_argument("Wrong type object given");
+        }
 
-    // OLD ADMIN TICKET FUNCTIONS
-    // int admin_create_read_ticket(RxComm& conn, std::string_view obj_path, std::string_view ticket_name);
-    // int admin_create_read_ticket(RxComm& conn, std::string_view obj_path);
-    //
-    // int admin_create_write_ticket(RxComm& conn, std::string_view obj_path, std::string_view ticket_name);
-    // int admin_create_write_ticket(RxComm& conn, std::string_view obj_path);
-    //
-    // int admin_remove_usage_restriction(RxComm& conn, std::string_view ticket_name);
-    // int admin_remove_usage_restriction(RxComm& conn, int ticket_ID);
-    //
-    // int admin_remove_write_file_restriction(RxComm& conn, std::string_view ticket_name);
-    // int admin_remove_write_file_restriction(RxComm& conn, int ticket_ID);
-    //
-    // int admin_remove_write_byte_restriction(RxComm& conn, std::string_view ticket_name);
-    // int admin_remove_write_byte_restriction(RxComm& conn, int ticket_ID);
-    //
-    // int admin_set_usage_restriction(RxComm& conn, std::string_view ticket_name, int numUses);
-    // int admin_set_usage_restriction(RxComm& conn, int ticket_ID, int numUses);
-    //
-    // int admin_set_write_file_restriction(RxComm& conn, std::string_view ticket_name, int numUses);
-    // int admin_set_write_file_restriction(RxComm& conn, int ticket_ID, int numUses);
-    //
-    // int admin_set_write_byte_restriction(RxComm& conn, std::string_view ticket_name, int numUses);
-    // int admin_set_write_byte_restriction(RxComm& conn, int ticket_ID, int numUses);
+        execute_ticket_operation(conn,
+                                 command,
+                                 ticket_name,
+                                 command_modifier1,
+                                 command_modifier2,
+                                 command_modifier3,
+                                 command_modifier4,
+                                 false);
+    }
+    template <typename T>
+    void addTicketConstraints(RxComm& conn, const int ticket_id, const T& constraints)
+    {
+        addTicketConstraints(conn, std::to_string(ticket_id), constraints);
+    }
 
-    // OLD PERSMISSION CONTROL
-    // /**
-    //  * @brief Add user to the ticket specified
-    //  *
-    //  * @param conn Communication Object
-    //  * @param ticket_name Name of the ticket
-    //  * or
-    //  * @param ticket_ID ID of the ticket affected
-    //  * @param user User to be added
-    //  * @return int Error Code
-    //  */
-    // int add_user(RxComm& conn, std::string_view ticket_name, std::string_view user);
-    // int add_user(RxComm& conn, int ticket_ID, std::string_view user);
-    //
-    // /**
-    //  * @brief Remove user to the ticket specified
-    //  *
-    //  * @param conn Communication Object
-    //  * @param ticket_name Name of the ticket
-    //  * or
-    //  * @param ticket_ID ID of the ticket affected
-    //  * @param user User to be added
-    //  * @return int Error Code
-    //  */
-    // int remove_user(RxComm& conn, std::string_view ticket_name, std::string_view user);
-    // int remove_user(RxComm& conn, int ticket_ID, std::string_view user);
-    //
-    // /**
-    //  * @brief Add group from the ticket specified
-    //  *
-    //  * @param conn Communication Object
-    //  * @param ticket_name Name of the ticket
-    //  * or
-    //  * @param ticket_ID ID of the ticket affected
-    //  * @param group Group to be added
-    //  * @return int Error Code
-    //  */
-    // int add_group(RxComm& conn, std::string_view ticket_name, std::string_view group);
-    // int add_group(RxComm& conn, int ticket_ID, std::string_view group);
-    //
-    // /**
-    //  * @brief Remove group from the ticket specified
-    //  *
-    //  * @param conn Communication Object
-    //  * @param ticket_name Name of the ticket
-    //  * or
-    //  * @param ticket_ID ID of the ticket affected
-    //  * @param group Group to be removed
-    //  * @return int Error Code
-    //  */
-    // int remove_group(RxComm& conn, std::string_view ticket_name, std::string_view group);
-    // int remove_group(RxComm& conn, int ticket_ID, std::string_view group);
-    //
-    // /**
-    //  * @brief Add host to the ticket specified
-    //  *
-    //  * @param conn Communication Object
-    //  * @param ticket_name Name of the ticket
-    //  * or
-    //  * @param ticket_ID ID of the ticket affected
-    //  * @param host Host to be added
-    //  * @return int Error Code
-    //  */
-    // int add_host(RxComm& conn, std::string_view ticket_name, std::string_view host);
-    // int add_host(RxComm& conn, int ticket_ID, std::string_view host);
-    //
-    // /**
-    //  * @brief Remove host from the ticket specified
-    //  *
-    //  * @param conn Communication Object
-    //  * @param ticket_name Name of the ticket
-    //  * or
-    //  * @param ticket_ID ID of the ticket affected
-    //  * @param host Host to be removed
-    //  * @return int Error Code
-    //  */
-    // int remove_host(RxComm& conn, std::string_view ticket_name, std::string_view host);
-    // int remove_host(RxComm& conn, int ticket_ID, std::string_view host);
+    template <typename T>
+    void addTicketConstraints(admin_tag, RxComm& conn, const std::string_view ticket_name, const T& constraints)
+    {
+        std::string_view command = "mod";
+        std::string_view command_modifier1 = "add";
+        std::string_view command_modifier2 = "";
+        std::string_view command_modifier3 = "";
+        std::string_view command_modifier4 = "";
+        if constexpr (std::is_same_v<users_constraint, T>) {
+            command_modifier2 = "user";
+            command_modifier3 = constraints.user_name;
+        }
+        else if constexpr (std::is_same_v<groups_constraint, T>) {
+            command_modifier2 = "group";
+            command_modifier3 = constraints.group_name;
+        }
+        else if constexpr (std::is_same_v<hosts_constraint, T>) {
+            command_modifier2 = "host";
+            command_modifier3 = constraints.host_name;
+        }
+        else {
+            throw std::invalid_argument("Wrong type object given");
+        }
 
-    // OLD RESTRICTION SETTING
-    // /**
-    //  * @brief Remove any restrictions on the number of uses of the ticket specified
-    //  *
-    //  * @param conn Communication object
-    //  * @param ticket_name Name of the ticket to affect
-    //  * or
-    //  * @param ticket_ID ID for the ticket to affect
-    //  * @return int Error Code
-    //  */
-    // int remove_usage_restriction(RxComm& conn, std::string_view ticket_name);
-    // int remove_usage_restriction(RxComm& conn, int ticket_ID);
-    //
-    // /**
-    //  * @brief Remove any restrictions on the number of times the file can be written to of the ticket specified
-    //  *
-    //  * @param conn Communication object
-    //  * @param ticket_name Name of the ticket to affect
-    //  * or
-    //  * @param ticket_ID ID for the ticket to affect
-    //  * @return int Error Code
-    //  */
-    // int remove_write_file_restriction(RxComm& conn, std::string_view ticket_name);
-    // int remove_write_file_restriction(RxComm& conn, int ticket_ID);
-    //
-    // /**
-    //  * @brief Remove any restrictions on the number of bytes that can be written to of the ticket specified
-    //  *
-    //  * @param conn Communication object
-    //  * @param ticket_name Name of the ticket to affect
-    //  * or
-    //  * @param ticket_ID ID for the ticket to affect
-    //  * @return int Error Code
-    //  */
-    // int remove_write_byte_restriction(RxComm& conn, std::string_view ticket_name);
-    // int remove_write_byte_restriction(RxComm& conn, int ticket_ID);
-    //
-    // /**
-    //  * @brief Set restrictions on the number of uses of the ticket specified
-    //  *
-    //  * @param conn Communication object
-    //  * @param ticket_name Name of the ticket to affect
-    //  * or
-    //  * @param ticket_ID ID for the ticket to affect
-    //  * @param numUses The number of uses to restrict the ticket to
-    //  * @return int Error Code
-    //  */
-    // int set_usage_restriction(RxComm& conn, std::string_view ticket_name, int numUses);
-    // int set_usage_restriction(RxComm& conn, int ticket_ID, int numUses);
-    //
-    // /**
-    //  * @brief Set restrictions on the number of times the file can be written to of the ticket specified
-    //  *
-    //  * @param conn Communication object
-    //  * @param ticket_name Name of the ticket to affect
-    //  * or
-    //  * @param ticket_ID ID for the ticket to affect
-    //  * @param numUses The number of uses to restrict the ticket to
-    //  * @return int Error Code
-    //  */
-    // int set_write_file_restriction(RxComm& conn, std::string_view ticket_name, int numUses);
-    // int set_write_file_restriction(RxComm& conn, int ticket_ID, int numUses);
-    //
-    // /**
-    //  * @brief Set restrictions on the number of byte that can be written to of the ticket specified
-    //  *
-    //  * @param conn Communication object
-    //  * @param ticket_name Name of the ticket to affect
-    //  * or
-    //  * @param ticket_ID ID for the ticket to affect
-    //  * @param numUses The number of bytes to restrict the ticket to
-    //  * @return int Error Code
-    //  */
-    // int set_write_byte_restriction(RxComm& conn, std::string_view ticket_name, int numUses);
-    // int set_write_byte_restriction(RxComm& conn, int ticket_ID, int numUses);
+        execute_ticket_operation(conn,
+                                 command,
+                                 ticket_name,
+                                 command_modifier1,
+                                 command_modifier2,
+                                 command_modifier3,
+                                 command_modifier4,
+                                 true);
+    }
+    template <typename T>
+    void addTicketConstraints(admin_tag, RxComm& conn, const int ticket_id, const T& constraints)
+    {
+        addTicketConstraints(conn, std::to_string(ticket_id), constraints);
+    }
+
+    template <typename T>
+    void setTicketConstraints(RxComm& conn, const std::string_view ticket_name, const T& constraints)
+    {
+        if constexpr (std::is_same_v<ticket_property_constraint, T>) {
+            std::string_view command = "mod";
+            std::string_view command_modifier1;
+            std::string_view command_modifier2 = std::to_string(constraints.value_of_property);
+            std::string_view command_modifier3 = "";
+            std::string_view command_modifier4 = "";
+
+            if (constraints.value_of_property < 0) {
+                throw std::invalid_argument("Value of the property invalid");
+            }
+
+            switch (constraints.desired_property) {
+                case ticket_property::uses_count:
+                    command_modifier1 = "uses";
+                    break;
+
+                case ticket_property::write_byte:
+                    command_modifier1 = "write-byte";
+                    break;
+
+                case ticket_property::write_file:
+                    command_modifier1 = "write-file";
+                    break;
+
+                default:
+                    throw std::invalid_argument("Ticket property not given");
+            }
+            execute_ticket_operation(conn,
+                                     command,
+                                     ticket_name,
+                                     command_modifier1,
+                                     command_modifier2,
+                                     command_modifier3,
+                                     command_modifier4,
+                                     false);
+        }
+        else {
+            throw std::invalid_argument("Wrong type object given");
+        }
+    }
+    template <typename T>
+    void setTicketConstraints(RxComm& conn, const int ticket_id, const T& constraints)
+    {
+        setTicketConstraints(conn, std::to_string(ticket_id), constraints);
+    }
+
+    template <typename T>
+    void setTicketConstraints(admin_tag, RxComm& conn, const std::string_view ticket_name, const T& constraints)
+    {
+        if constexpr (std::is_same_v<ticket_property_constraint, T>) {
+            std::string_view command = "mod";
+            std::string_view command_modifier1;
+            std::string_view command_modifier2 = std::to_string(constraints.value_of_property);
+            std::string_view command_modifier3 = "";
+            std::string_view command_modifier4 = "";
+
+            if (constraints.value_of_property < 0) {
+                throw std::invalid_argument("Value of the property invalid");
+            }
+
+            switch (constraints.desired_property) {
+                case ticket_property::uses_count:
+                    command_modifier1 = "uses";
+                    break;
+
+                case ticket_property::write_byte:
+                    command_modifier1 = "write-byte";
+                    break;
+
+                case ticket_property::write_file:
+                    command_modifier1 = "write-file";
+                    break;
+
+                default:
+                    throw std::invalid_argument("Ticket property not given");
+            }
+            execute_ticket_operation(conn,
+                                     command,
+                                     ticket_name,
+                                     command_modifier1,
+                                     command_modifier2,
+                                     command_modifier3,
+                                     command_modifier4,
+                                     true);
+        }
+        else {
+            throw std::invalid_argument("Wrong type object given");
+        }
+    }
+    template <typename T>
+    void setTicketConstraints(admin_tag, RxComm& conn, const int ticket_id, const T& constraints)
+    {
+        setTicketConstraints(conn, std::to_string(ticket_id), constraints);
+    }
+
+    template <typename T>
+    void removeTicketConstraints(RxComm& conn, const std::string_view ticket_name, const T& constraints)
+    {
+        std::string_view command = "mod";
+        std::string_view command_modifier1;
+        std::string_view command_modifier2 = "";
+        std::string_view command_modifier3 = "";
+        std::string_view command_modifier4 = "";
+        if constexpr (std::is_same_v<users_constraint, T>) {
+            command_modifier1 = "remove";
+            command_modifier2 = "user";
+            command_modifier3 = constraints.user_name;
+        }
+        else if constexpr (std::is_same_v<groups_constraint, T>) {
+            command_modifier1 = "remove";
+            command_modifier2 = "group";
+            command_modifier3 = constraints.group_name;
+        }
+        else if constexpr (std::is_same_v<hosts_constraint, T>) {
+            command_modifier1 = "remove";
+            command_modifier2 = "host";
+            command_modifier3 = constraints.host_name;
+        }
+        else if constexpr (std::is_same_v<ticket_property_constraint, T>) {
+            switch (constraints.desired_property) {
+                case ticket_property::uses_count:
+                    command_modifier1 = "uses";
+                    break;
+
+                case ticket_property::write_byte:
+                    command_modifier1 = "write-byte";
+                    break;
+
+                case ticket_property::write_file:
+                    command_modifier1 = "write-file";
+                    break;
+
+                default:
+                    throw std::invalid_argument("Ticket property not given");
+            }
+
+            command_modifier2 = "0";
+        }
+        else {
+            throw std::invalid_argument("Wrong type object given");
+        }
+        execute_ticket_operation(conn,
+                                 command,
+                                 ticket_name,
+                                 command_modifier1,
+                                 command_modifier2,
+                                 command_modifier3,
+                                 command_modifier4,
+                                 false);
+    }
+    template <typename T>
+    void removeTicketConstraints(RxComm& conn, const int ticket_id, const T& constraints)
+    {
+        removeTicketConstraints(conn, std::to_string(ticket_id), constraints);
+    }
+
+    template <typename T>
+    void removeTicketConstraints(admin_tag, RxComm& conn, const std::string_view ticket_name, const T& constraints)
+    {
+        std::string_view command = "mod";
+        std::string_view command_modifier1;
+        std::string_view command_modifier2 = "";
+        std::string_view command_modifier3 = "";
+        std::string_view command_modifier4 = "";
+        if constexpr (std::is_same_v<users_constraint, T>) {
+            command_modifier1 = "remove";
+            command_modifier2 = "user";
+            command_modifier3 = constraints.user_name;
+        }
+        else if constexpr (std::is_same_v<groups_constraint, T>) {
+            command_modifier1 = "remove";
+            command_modifier2 = "group";
+            command_modifier3 = constraints.group_name;
+        }
+        else if constexpr (std::is_same_v<hosts_constraint, T>) {
+            command_modifier1 = "remove";
+            command_modifier2 = "host";
+            command_modifier3 = constraints.host_name;
+        }
+        else if constexpr (std::is_same_v<ticket_property_constraint, T>) {
+            switch (constraints.desired_property) {
+                case ticket_property::uses_count:
+                    command_modifier1 = "uses";
+                    break;
+
+                case ticket_property::write_byte:
+                    command_modifier1 = "write-byte";
+                    break;
+
+                case ticket_property::write_file:
+                    command_modifier1 = "write-file";
+                    break;
+
+                default:
+                    throw std::invalid_argument("Ticket property not given");
+            }
+
+            command_modifier2 = "0";
+        }
+        else {
+            throw std::invalid_argument("Wrong type object given");
+        }
+        execute_ticket_operation(conn,
+                                 command,
+                                 ticket_name,
+                                 command_modifier1,
+                                 command_modifier2,
+                                 command_modifier3,
+                                 command_modifier4,
+                                 true);
+    }
+    template <typename T>
+    void removeTicketConstraints(admin_tag, RxComm& conn, const int ticket_id, const T& constraints)
+    {
+        removeTicketConstraints(conn, std::to_string(ticket_id), constraints);
+    }
 
 } // namespace irods::administration::ticket
 
