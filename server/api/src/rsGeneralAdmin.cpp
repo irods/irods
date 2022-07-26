@@ -67,14 +67,14 @@ namespace
         irods::at_scope_exit free_buf { [&bbuf] { std::free(bbuf); }  };
 
         if (const auto ec = rsZoneReport(&rsComm, &bbuf); ec < 0 ) {
-            const auto msg = "The server experienced an unexpected error while processing the request. Please report to the administrator.";
+            const auto msg = fmt::format("[{}:{}] - Error fetching Zone Report", __func__, __LINE__);
             addRErrorMsg(&rsComm.rError, ec , msg);
             THROW(ec, msg);
         }
 
         const auto buf = static_cast<char*> (bbuf->buf);
-        const nlohmann::json& zone_report = nlohmann::json::parse(buf, buf + bbuf->len);
         try {
+            const nlohmann::json& zone_report = nlohmann::json::parse(buf, buf + bbuf->len);
             const auto& zones = zone_report.at("zones");
 
             const auto * local_zone_name = getLocalZoneName();
