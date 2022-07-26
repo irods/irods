@@ -1,3 +1,5 @@
+/// WORKING CHANGES(june): removed unused InformationRequiredToSafelyRenameProcess constructor
+
 #include "irods/initServer.hpp"
 
 #include "irods/genQuery.h"
@@ -161,11 +163,6 @@ namespace
         }
     } // close_all_l1_descriptors
 } // anonymous namespace
-
-InformationRequiredToSafelyRenameProcess::InformationRequiredToSafelyRenameProcess(char**argv) {
-    argv0 = argv[0];
-    argv0_size = strlen(argv[0]);
-}
 
 int initServerInfo(int processType, rsComm_t* rsComm)
 {
@@ -640,45 +637,7 @@ initAgent( int processType, rsComm_t *rsComm ) {
     return status;
 }
 
-void
-cleanup() {
-    std::string svc_role;
-    irods::error ret = get_catalog_service_role(svc_role);
-    if(!ret.ok()) {
-        irods::log(PASS(ret));
-    }
 
-    if (INITIAL_DONE == InitialState) {
-        close_all_l1_descriptors(*ThisComm);
-
-        irods::replica_state_table::deinit();
-
-        disconnectAllSvrToSvrConn();
-    }
-
-    if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
-        disconnectRcat();
-    }
-
-    irods::re_plugin_globals->global_re_mgr.call_stop_operations();
-}
-
-void
-cleanupAndExit( int status ) {
-    cleanup();
-
-    if ( status >= 0 ) {
-        exit( 0 );
-    }
-    else {
-        exit( 1 );
-    }
-}
-
-void
-signalExit( int ) {
-    cleanupAndExit( SYS_CAUGHT_SIGNAL );
-}
 
 /// @brief parse the irodsHost file, creating address
 int initHostConfigByFile()
@@ -775,34 +734,6 @@ initRsComm( rsComm_t *rsComm ) {
     }
 
     return 0;
-}
-
-void
-daemonize( int runMode, int logFd ) {
-    if ( runMode == SINGLE_PASS ) {
-        return;
-    }
-
-    if ( runMode == STANDALONE_SERVER ) {
-        if ( fork() ) {
-            exit( 0 );
-        }
-
-        if ( setsid() < 0 ) {
-            fprintf( stderr, "daemonize" );
-            perror( "cannot create a new session." );
-            exit( 1 );
-        }
-    }
-
-    close( 0 );
-    close( 1 );
-    close( 2 );
-
-    ( void ) dup2( logFd, 0 );
-    ( void ) dup2( logFd, 1 );
-    ( void ) dup2( logFd, 2 );
-    close( logFd );
 }
 
 int
@@ -1056,117 +987,3 @@ setRsCommFromRodsEnv( rsComm_t *rsComm ) {
 
     return 0;
 }
-
-int
-queueAgentProc( agentProc_t *agentProc, agentProc_t **agentProcHead,
-        irodsPosition_t position ) {
-    if ( agentProc == NULL || agentProcHead == NULL ) {
-        return USER__NULL_INPUT_ERR;
-    }
-
-    if ( *agentProcHead == NULL ) {
-        *agentProcHead = agentProc;
-        agentProc->next = NULL;
-        return 0;
-    }
-
-    if ( position == TOP_POS ) {
-        agentProc->next = *agentProcHead;
-        *agentProcHead = agentProc;
-    }
-    else {
-        agentProc_t *tmpAgentProc = *agentProcHead;
-        while ( tmpAgentProc->next != NULL ) {
-            tmpAgentProc = tmpAgentProc->next;
-        }
-        tmpAgentProc->next = agentProc;
-        agentProc->next = NULL;
-    }
-    return 0;
-}
-
-// =-=-=-=-=-=-=-
-// JMC - backport 4612
-int
-purgeLockFileDir( int chkLockFlag ) {
-    char lockFilePath[MAX_NAME_LEN * 2];
-    struct dirent *myDirent;
-    struct stat statbuf;
-    int status;
-    int savedStatus = 0;
-    struct flock myflock;
-    uint purgeTime;
-
-    std::string lock_dir;
-    irods::error ret = irods::get_full_path_for_unmoved_configs(
-            LOCK_FILE_DIR,
-            lock_dir );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
-    }
-
-    DIR *dirPtr = opendir( lock_dir.c_str() );
-    if ( dirPtr == NULL ) {
-        rodsLog( LOG_ERROR,
-                "purgeLockFileDir: opendir error for %s, errno = %d",
-                lock_dir.c_str(), errno );
-        return UNIX_FILE_OPENDIR_ERR - errno;
-    }
-
-    std::memset(&myflock, 0, sizeof(myflock));
-    myflock.l_whence = SEEK_SET;
-    purgeTime = time( 0 ) - LOCK_FILE_PURGE_TIME;
-    while ( ( myDirent = readdir( dirPtr ) ) != NULL ) {
-        if ( strcmp( myDirent->d_name, "." ) == 0 ||
-                strcmp( myDirent->d_name, ".." ) == 0 ) {
-            continue;
-        }
-        snprintf( lockFilePath, MAX_NAME_LEN, "%-s/%-s",
-                lock_dir.c_str(), myDirent->d_name );
-        if ( chkLockFlag ) {
-            int myFd;
-            myFd = open( lockFilePath, O_RDWR | O_CREAT, 0644 );
-            if ( myFd < 0 ) {
-                savedStatus = FILE_OPEN_ERR - errno;
-                rodsLogError( LOG_ERROR, savedStatus,
-                        "purgeLockFileDir: open error for %s", lockFilePath );
-                continue;
-            }
-            myflock.l_type = F_WRLCK;
-            int error_code = fcntl( myFd, F_GETLK, &myflock );
-            if ( error_code != 0 ) {
-                rodsLog( LOG_ERROR, "fcntl failed in purgeLockFileDir with error code %d", error_code );
-            }
-            close( myFd );
-            /* some process is locking it */
-            if ( myflock.l_type != F_UNLCK ) {
-                continue;
-            }
-        }
-        status = stat( lockFilePath, &statbuf );
-
-        if ( status != 0 ) {
-            rodsLog( LOG_ERROR,
-                    "purgeLockFileDir: stat error for %s, errno = %d",
-                    lockFilePath, errno );
-            savedStatus = UNIX_FILE_STAT_ERR - errno;
-            boost::system::error_code err;
-            boost::filesystem::remove( boost::filesystem::path( lockFilePath ), err );
-            continue;
-        }
-        if ( chkLockFlag && ( int )purgeTime < statbuf.st_mtime ) {
-            continue;
-        }
-        if ( ( statbuf.st_mode & S_IFREG ) == 0 ) {
-            continue;
-        }
-        boost::system::error_code err;
-        boost::filesystem::remove( boost::filesystem::path( lockFilePath ), err );
-    }
-    closedir( dirPtr );
-
-    return savedStatus;
-}
-
-// =-=-=-=-=-=-=-

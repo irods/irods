@@ -1,3 +1,5 @@
+/// WORKING CHANGES(june): removed unused InformationRequiredToSafelyRenameProcess struct
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
@@ -12,43 +14,17 @@
 #include <string>
 
 /* server host configuration */
-struct InformationRequiredToSafelyRenameProcess {
-    explicit InformationRequiredToSafelyRenameProcess(char**argv);
-    char* argv0;
-    size_t argv0_size;
-};
 
-int
-//initServerInfo( rsComm_t *rsComm );
-initServerInfo( int processType, rsComm_t *rsComm );
-int
-initLocalServerHost();
-int
-initRcatServerHostByFile();
-int
-initZone( rsComm_t *rsComm );
-int
-initAgent( int processType, rsComm_t *rsComm );
-void cleanup();
-void cleanupAndExit( int status );
-void signalExit( int );
+int initServerInfo( int processType, rsComm_t *rsComm );
+int initLocalServerHost();
+int initRcatServerHostByFile();
+int initZone( rsComm_t *rsComm );
+int initAgent( int processType, rsComm_t *rsComm );
 
-int
-initHostConfigByFile();
-int
-initRsComm( rsComm_t *rsComm );
-void
-daemonize( int runMode, int logFd );
-int
-initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack );
-int
-chkAllowedUser( const char *userName, const char *rodsZone );
-int
-setRsCommFromRodsEnv( rsComm_t *rsComm );
-int
-queueAgentProc( agentProc_t *agentProc, agentProc_t **agentProcHead,
-              irodsPosition_t position );
-int
-purgeLockFileDir( int chkLockFlag );
+int initHostConfigByFile();
+int initRsComm( rsComm_t *rsComm );
+int initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack );
+int chkAllowedUser( const char *userName, const char *rodsZone );
+int setRsCommFromRodsEnv( rsComm_t *rsComm );
 
 #endif	/* INIT_SERVER_HPP */

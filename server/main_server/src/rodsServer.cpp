@@ -1,13 +1,50 @@
+
+/**
+
+WORKING CHANGES(june):
+
+* removed duplicate includes
+* re-ordered self refrence header include to be at the top
+* included irods/rodsAgent.hpp and appended int runIrodsAgentFactory(sockaddr_un agent_addr);
+* seperated .h from .hpp irods includes
+
+* removed unused function std::vector<std::string> setExecArg(const char* commandArgv);
+* removed unused function void set_agent_spawner_process_name(const InformationRequiredToSafelyRenameProcess& info)
+
+* re-ordered int queueConnectedAgentProc to be before its one callsite instead of forward decal
+
+* removed unused return type int from get64RandomBytes()
+
+* removed typedefed unsigned int "uint" type from use here TODO: remove this everywhere
+
+* moved one time use aliases hnc & dnsc to their usage sites
+
+	TODO(june): Split agent functions into their own file
+	TODO(june): Split delay server functions into their own file (move to delay server file?)
+	
+Im just seeing a lot in here that can probably be more localized to its call sites
+
+// TODO(june): this namespace enum class stuff is really redudant 
+irods::server_state::server_state:: 
+
+// TODO(june): convert connection request queue to modern object
+
+// TODO(june): cleanup initServer stuff, some functions there are redudant in a weird way
+
+* renamed task functions to new format
+* moved void task_purge_lock_file() to anon, only spawned here
+
+
+**/
+
+#include "irods/rodsServer.hpp"
+
 #include "irods/client_connection.hpp"
-#include "irods/getRodsEnv.h"
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_buffer_encryption.hpp"
 #include "irods/irods_configuration_keywords.hpp"
 #include "irods/irods_configuration_parser.hpp"
 #include "irods/irods_get_full_path_for_config_file.hpp"
-#include "irods/rcMisc.h"
-#include "irods/rodsErrorTable.h"
-#include "irods/rodsServer.hpp"
 #include "irods/sharedmemory.hpp"
 #include "irods/initServer.hpp"
 #include "irods/miscServerFunct.hpp"
@@ -18,11 +55,8 @@
 #include "irods/irods_re_plugin.hpp"
 #include "irods/irods_server_properties.hpp"
 #include "irods/irods_server_control_plane.hpp"
-#include "irods/initServer.hpp"
-#include "irods/procLog.h"
 #include "irods/rsGlobalExtern.hpp"
 #include "irods/locks.hpp"
-#include "irods/sharedmemory.hpp"
 #include "irods/sockCommNetworkInterface.hpp"
 #include "irods/irods_random.hpp"
 #include "irods/replica_access_table.hpp"
@@ -36,9 +70,16 @@
 #include "irods/irods_server_api_table.hpp"
 #include "irods/irods_client_api_table.hpp"
 #include "irods/icatHighLevelRoutines.hpp"
+#include "irods/rodsAgent.hpp"
+
+#include "irods/rcMisc.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/getRodsEnv.h"
+#include "irods/procLog.h"
 #include "irods/plugins/api/grid_configuration_types.h"
 #include "irods/get_grid_configuration_value.h"
 #include "irods/set_delay_server_migration_info.h"
+
 
 #include <pthread.h>
 #include <sys/socket.h>
@@ -67,6 +108,7 @@
 #include <fmt/format.h>
 #include <nlohmann/json.hpp>
 
+
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
@@ -79,10 +121,11 @@
 #include <chrono>
 #include <sstream>
 
+
+// TODO(june): Move all these globals into namespaces and group them with their usages
+
 // clang-format off
 namespace ix   = irods::experimental;
-namespace hnc  = irods::experimental::net::hostname_cache;
-namespace dnsc = irods::experimental::net::dns_cache;
 // clang-format on
 
 struct sockaddr_un local_addr{};
@@ -93,11 +136,14 @@ pid_t agent_spawning_pid{};
 char unix_domain_socket_directory[] = "/tmp/irods_sockets_XXXXXX";
 char agent_factory_socket_file[sizeof(sockaddr_un::sun_path)]{};
 
-uint ServerBootTime;
+// TODO(june): this is set once, then loaded into agents enviromental variables, doesnt need to be global
+unsigned int ServerBootTime;
 int SvrSock;
 
 std::atomic<bool> is_control_plane_accepting_requests = false;
 int failed_delay_server_migration_communication_attempts = 0;
+
+
 
 agentProc_t* ConnectedAgentHead{};
 agentProc_t* ConnReqHead{};
@@ -115,12 +161,6 @@ boost::mutex              ReadReqCondMutex;
 boost::mutex              SpawnReqCondMutex;
 boost::condition_variable ReadReqCond;
 boost::condition_variable SpawnReqCond;
-
-std::vector<std::string> setExecArg(const char* commandArgv);
-
-int runIrodsAgentFactory(sockaddr_un agent_addr);
-
-int queueConnectedAgentProc(int childPid, agentProc_t* connReq, agentProc_t** agentProcHead);
 
 namespace
 {
@@ -172,7 +212,8 @@ namespace
         }
     }
 
-    int get64RandomBytes(char* buf)
+	// TODO(june): this seems like a really weird way to build and then copy a string into a buffer
+    void get64RandomBytes(char* buf)
     {
         const int num_random_bytes = 32;
         unsigned char random_bytes[num_random_bytes];
@@ -185,8 +226,7 @@ namespace
 
         const int num_hex_bytes = 2 * num_random_bytes;
         std::snprintf(buf, num_hex_bytes + 1, "%s", ss.str().c_str());
-
-        return 0;
+		
     } // get64RandomBytes
 
     bool init_shared_memory_for_plugin(const nlohmann::json& _plugin_object)
@@ -471,16 +511,6 @@ namespace
 #endif
     } // setup_signal_handlers
 
-    void set_agent_spawner_process_name(const InformationRequiredToSafelyRenameProcess& info)
-    {
-        const char* desired_name = "irodsServer: factory";
-        const auto l_desired = std::strlen(desired_name);
-
-        if (l_desired <= info.argv0_size) {
-            std::strncpy(info.argv0, desired_name, info.argv0_size);
-        }
-    } // set_agent_spawner_process_name
-
     std::optional<std::string> get_grid_configuration_option_value(RcComm& _comm,
                                                                    const std::string_view _namespace,
                                                                    const std::string_view _option_name)
@@ -521,6 +551,7 @@ namespace
         }
     } // set_delay_server_migration_info
 
+	// TODO(june): why is this an optional bool?
     std::optional<bool> is_delay_server_running_on_remote_host(const std::string_view _hostname)
     {
         using log = irods::experimental::log::server;
@@ -860,6 +891,155 @@ namespace
         open("/dev/null", O_WRONLY);
         open("/dev/null", O_RDWR);
     } // daemonize
+	
+	void print_usage(char *prog)
+	{
+		printf( "Usage: %s [-uvVqs]\n", prog );
+		printf( " -u  user command level, remain attached to the tty (foreground)\n" );
+		printf( " -v  verbose (LOG_NOTICE)\n" );
+		printf( " -V  very verbose (LOG_DEBUG10)\n" );
+		printf( " -q  quiet (LOG_ERROR)\n" );
+		printf( " -s  log SQL commands\n" );
+	}
+	
+	int purgeLockFileDir( int chkLockFlag )
+	{
+		char lockFilePath[MAX_NAME_LEN * 2];
+		struct dirent *myDirent;
+		struct stat statbuf;
+		int status;
+		int savedStatus = 0;
+		struct flock myflock;
+		unsigned int purgeTime;
+
+		std::string lock_dir;
+		irods::error ret = irods::get_full_path_for_unmoved_configs(
+				LOCK_FILE_DIR,
+				lock_dir );
+		if ( !ret.ok() ) {
+			irods::log( PASS( ret ) );
+			return ret.code();
+		}
+
+		DIR *dirPtr = opendir( lock_dir.c_str() );
+		if ( dirPtr == NULL ) {
+			rodsLog( LOG_ERROR,
+					"purgeLockFileDir: opendir error for %s, errno = %d",
+					lock_dir.c_str(), errno );
+			return UNIX_FILE_OPENDIR_ERR - errno;
+		}
+
+		std::memset(&myflock, 0, sizeof(myflock));
+		myflock.l_whence = SEEK_SET;
+		purgeTime = time( 0 ) - LOCK_FILE_PURGE_TIME;
+		while ( ( myDirent = readdir( dirPtr ) ) != NULL ) {
+			if ( strcmp( myDirent->d_name, "." ) == 0 ||
+					strcmp( myDirent->d_name, ".." ) == 0 ) {
+				continue;
+			}
+			snprintf( lockFilePath, MAX_NAME_LEN, "%-s/%-s",
+					lock_dir.c_str(), myDirent->d_name );
+			if ( chkLockFlag ) {
+				int myFd;
+				myFd = open( lockFilePath, O_RDWR | O_CREAT, 0644 );
+				if ( myFd < 0 ) {
+					savedStatus = FILE_OPEN_ERR - errno;
+					rodsLogError( LOG_ERROR, savedStatus,
+							"purgeLockFileDir: open error for %s", lockFilePath );
+					continue;
+				}
+				myflock.l_type = F_WRLCK;
+				int error_code = fcntl( myFd, F_GETLK, &myflock );
+				if ( error_code != 0 ) {
+					rodsLog( LOG_ERROR, "fcntl failed in purgeLockFileDir with error code %d", error_code );
+				}
+				close( myFd );
+				/* some process is locking it */
+				if ( myflock.l_type != F_UNLCK ) {
+					continue;
+				}
+			}
+			status = stat( lockFilePath, &statbuf );
+
+			if ( status != 0 ) {
+				rodsLog( LOG_ERROR,
+						"purgeLockFileDir: stat error for %s, errno = %d",
+						lockFilePath, errno );
+				savedStatus = UNIX_FILE_STAT_ERR - errno;
+				boost::system::error_code err;
+				boost::filesystem::remove( boost::filesystem::path( lockFilePath ), err );
+				continue;
+			}
+			if ( chkLockFlag && ( int )purgeTime < statbuf.st_mtime ) {
+				continue;
+			}
+			if ( ( statbuf.st_mode & S_IFREG ) == 0 ) {
+				continue;
+			}
+			boost::system::error_code err;
+			boost::filesystem::remove( boost::filesystem::path( lockFilePath ), err );
+		}
+		closedir( dirPtr );
+
+		return savedStatus;
+	}
+	
+	// TODO(june): Would this be better as a cron?
+	void task_purge_lock_file()
+	{
+		std::size_t wait_time_ms = 0;
+		const std::size_t purge_time_ms = LOCK_FILE_PURGE_TIME * 1000; // s to ms
+
+		while (true) {
+			const auto state = irods::server_state::get_state();
+
+			if (irods::server_state::server_state::stopped == state ||
+				irods::server_state::server_state::exited == state)
+			{
+				break;
+			}
+
+			rodsSleep(0, irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC * 1000); // second, microseconds
+			wait_time_ms += irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC;
+
+			if (wait_time_ms >= purge_time_ms) {
+				wait_time_ms = 0;
+				int status = purgeLockFileDir(1);
+				if (status < 0) {
+					rodsLogError(LOG_ERROR, status, "task_purge_lock_file: purgeLockFileDir failed");
+				}
+			}
+		}
+	} // task_purge_lock_file
+	
+	// TODO(june): wrap this in a list or queue and handout data? maybe list of managed pointers?
+	int queueAgentProc( agentProc_t *agentProc, agentProc_t **agentProcHead,
+			irodsPosition_t position ) {
+		if ( agentProc == NULL || agentProcHead == NULL ) {
+			return USER__NULL_INPUT_ERR;
+		}
+
+		if ( *agentProcHead == NULL ) {
+			*agentProcHead = agentProc;
+			agentProc->next = NULL;
+			return 0;
+		}
+
+		if ( position == TOP_POS ) {
+			agentProc->next = *agentProcHead;
+			*agentProcHead = agentProc;
+		}
+		else {
+			agentProc_t *tmpAgentProc = *agentProcHead;
+			while ( tmpAgentProc->next != NULL ) {
+				tmpAgentProc = tmpAgentProc->next;
+			}
+			tmpAgentProc->next = agentProc;
+			agentProc->next = NULL;
+		}
+		return 0;
+	}
+	
 } // anonymous namespace
 
 int main(int argc, char** argv)
@@ -923,11 +1103,11 @@ int main(int argc, char** argv)
 
             // Help
             case 'h':
-                usage(argv[0]);
+                print_usage(argv[0]);
                 exit(0);
 
             default:
-                usage(argv[0]);
+                print_usage(argv[0]);
                 exit(1);
         }
     }
@@ -951,9 +1131,11 @@ int main(int argc, char** argv)
 
     create_stacktrace_directory();
 
+	namespace hnc  = irods::experimental::net::hostname_cache;
     hnc::init("irods_hostname_cache", irods::get_hostname_cache_shared_memory_size());
     irods::at_scope_exit deinit_hostname_cache{[] { hnc::deinit(); }};
 
+	namespace dnsc = irods::experimental::net::dns_cache;
     dnsc::init("irods_dns_cache", irods::get_dns_cache_shared_memory_size());
     irods::at_scope_exit deinit_dns_cache{[] { dnsc::deinit(); }};
 
@@ -1073,11 +1255,6 @@ int main(int argc, char** argv)
         });
     ix::cron::cron::instance().add_task(cache_clearer.build());
 
-    return serverMain(enable_test_mode, write_to_stdout);
-}
-
-int serverMain(const bool enable_test_mode = false, const bool write_to_stdout = false)
-{
     int acceptErrCnt = 0;
 
     // set re cache salt here
@@ -1147,18 +1324,33 @@ int serverMain(const bool enable_test_mode = false, const bool write_to_stdout =
         // Launch the control plane.
         irods::server_control_plane ctrl_plane(irods::KW_CFG_SERVER_CONTROL_PLANE_PORT, is_control_plane_accepting_requests);
 
-        status = startProcConnReqThreads();
-        if (status < 0) {
-            rodsLog(LOG_ERROR, "[%s] - Error in startProcConnReqThreads()", __FUNCTION__);
-            return status;
-        }
+		// Start read worker thread
+		for (int i = 0; i < NUM_READ_WORKER_THR; ++i) {
+			try {
+				ReadWorkerThread[i] = new boost::thread(readWorkerTask);
+			}
+			catch (const boost::thread_resource_error&) {
+				rodsLog(LOG_ERROR, "boost encountered a thread_resource_error during readWorkerTask thread construction in serverMain.");
+				return SYS_THREAD_RESOURCE_ERR;
+			}
+		}
 
+		// Start spawn manager thread
+		try {
+			SpawnManagerThread = new boost::thread(task_spawn_manager);
+		}
+		catch (const boost::thread_resource_error&) {
+			rodsLog(LOG_ERROR, "boost encountered a thread_resource_error during task_spawn_manager thread construction in serverMain.");
+			return SYS_THREAD_RESOURCE_ERR;
+		}
+
+		// Start purge lock file thread
         if (irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role) {
             try {
-                PurgeLockFileThread = new boost::thread(purgeLockFileWorkerTask);
+                PurgeLockFileThread = new boost::thread(task_purge_lock_file);
             }
             catch (const boost::thread_resource_error&) {
-                rodsLog(LOG_ERROR, "boost encountered a thread_resource_error during thread construction in serverMain.");
+                rodsLog(LOG_ERROR, "boost encountered a thread_resource_error during task_purge_lock_file thread construction in serverMain.");
             }
         }
 
@@ -1264,7 +1456,27 @@ int serverMain(const bool enable_test_mode = false, const bool write_to_stdout =
         }
 
         procChildren(&ConnectedAgentHead);
-        stopProcConnReqThreads();
+        
+		// Stop spawn manager thread
+		SpawnReqCond.notify_all();
+		try {
+			SpawnManagerThread->join();
+		}
+		catch (const boost::thread_resource_error&) {
+			rodsLog(LOG_ERROR, "boost encountered a thread_resource_error during spawn manager thread join in serverMain.");
+		}
+
+		// Stop read worker threads
+		for (int i = 0; i < NUM_READ_WORKER_THR; ++i) {
+			ReadReqCond.notify_all();
+
+			try {
+				ReadWorkerThread[i]->join();
+			}
+			catch (const boost::thread_resource_error&) {
+				rodsLog(LOG_ERROR, "boost encountered a thread_resource_error during read worker thread join in serverMain.");
+			}
+		}
 
         irods::server_state::set_state(irods::server_state::server_state::exited);
     }
@@ -1299,16 +1511,6 @@ serverExit()
     kill(agent_spawning_pid, SIGTERM);
 
     exit(1);
-}
-
-void usage(char *prog)
-{
-    printf( "Usage: %s [-uvVqs]\n", prog );
-    printf( " -u  user command level, remain attached to the tty (foreground)\n" );
-    printf( " -v  verbose (LOG_NOTICE)\n" );
-    printf( " -V  very verbose (LOG_DEBUG10)\n" );
-    printf( " -q  quiet (LOG_ERROR)\n" );
-    printf( " -s  log SQL commands\n" );
 }
 
 int procChildren(agentProc_t** agentProcHead)
@@ -1371,6 +1573,21 @@ agentProc_t* getAgentProcByPid(int childPid, agentProc_t** agentProcHead)
     con_agent_lock.unlock();
 
     return tmpAgentProc;
+}
+
+int queueConnectedAgentProc(int childPid, agentProc_t* connReq, agentProc_t** agentProcHead)
+{
+    if (!connReq) {
+        return USER__NULL_INPUT_ERR;
+    }
+
+    connReq->pid = childPid;
+
+    boost::unique_lock<boost::mutex> con_agent_lock(ConnectedAgentMutex);
+    queueAgentProc(connReq, agentProcHead, TOP_POS);
+    con_agent_lock.unlock();
+
+    return 0;
 }
 
 int spawnAgent(agentProc_t* connReq, agentProc_t** agentProcHead)
@@ -1638,21 +1855,6 @@ int execAgent(int newSock, startupPack_t* startupPack)
     cleanup_sockets();
 
     return std::atoi(in_buf);
-}
-
-int queueConnectedAgentProc(int childPid, agentProc_t* connReq, agentProc_t** agentProcHead)
-{
-    if (!connReq) {
-        return USER__NULL_INPUT_ERR;
-    }
-
-    connReq->pid = childPid;
-
-    boost::unique_lock<boost::mutex> con_agent_lock(ConnectedAgentMutex);
-    queueAgentProc(connReq, agentProcHead, TOP_POS);
-    con_agent_lock.unlock();
-
-    return 0;
 }
 
 int getAgentProcCnt()
@@ -1977,48 +2179,77 @@ agentProc_t* getConnReqFromQueue()
     return myConnReq;
 }
 
-int startProcConnReqThreads()
+int process_bad_request()
 {
-    for (int i = 0; i < NUM_READ_WORKER_THR; ++i) {
-        try {
-            ReadWorkerThread[i] = new boost::thread(readWorkerTask);
-        }
-        catch (const boost::thread_resource_error&) {
-            rodsLog(LOG_ERROR, "boost encountered a thread_resource_error during thread construction in startProcConnReqThreads.");
-            return SYS_THREAD_RESOURCE_ERR;
-        }
+    boost::unique_lock<boost::mutex> bad_req_lock(BadReqMutex);
+
+    agentProc_t* tmpConnReq = BadReqHead;
+    agentProc_t* nextConnReq{};
+
+    // Just free them for now.
+
+    while (tmpConnReq) {
+        nextConnReq = tmpConnReq->next;
+        std::free(tmpConnReq);
+        tmpConnReq = nextConnReq;
     }
 
-    try {
-        SpawnManagerThread = new boost::thread(spawnManagerTask);
-    }
-    catch (const boost::thread_resource_error&) {
-        rodsLog(LOG_ERROR, "boost encountered a thread_resource_error during thread construction in startProcConnReqThreads.");
-        return SYS_THREAD_RESOURCE_ERR;
-    }
+    BadReqHead = nullptr;
+    bad_req_lock.unlock();
 
     return 0;
 }
 
-void stopProcConnReqThreads()
+void task_spawn_manager()
 {
-    SpawnReqCond.notify_all();
+    unsigned int agentQueChkTime = 0;
 
-    try {
-        SpawnManagerThread->join();
-    }
-    catch (const boost::thread_resource_error&) {
-        rodsLog(LOG_ERROR, "boost encountered a thread_resource_error during join in stopProcConnReqThreads.");
-    }
+    while (true) {
+        const auto state = irods::server_state::get_state();
 
-    for (int i = 0; i < NUM_READ_WORKER_THR; ++i) {
-        ReadReqCond.notify_all();
-
-        try {
-            ReadWorkerThread[i]->join();
+        if (irods::server_state::server_state::stopped == state ||
+            irods::server_state::server_state::exited == state)
+        {
+            break;
         }
-        catch (const boost::thread_resource_error&) {
-            rodsLog(LOG_ERROR, "boost encountered a thread_resource_error during join in stopProcConnReqThreads.");
+
+        boost::unique_lock<boost::mutex> spwn_req_lock(SpawnReqCondMutex);
+        SpawnReqCond.wait(spwn_req_lock);
+
+        while (SpawnReqHead) {
+            agentProc_t* mySpawnReq = SpawnReqHead;
+            SpawnReqHead = SpawnReqHead->next;
+
+            spwn_req_lock.unlock();
+            auto status = spawnAgent(mySpawnReq, &ConnectedAgentHead);
+            close(mySpawnReq->sock);
+
+            if (status < 0) {
+                rodsLog(LOG_NOTICE,
+                        "spawnAgent error for puser=%s and cuser=%s from %s, stat=%d",
+                        mySpawnReq->startupPack.proxyUser,
+                        mySpawnReq->startupPack.clientUser,
+                        inet_ntoa(mySpawnReq->remoteAddr.sin_addr),
+                        status);
+                std::free(mySpawnReq);
+            }
+            else {
+                rodsLog(LOG_DEBUG,
+                        "Agent process %d started for puser=%s and cuser=%s from %s",
+                        mySpawnReq->pid,
+                        mySpawnReq->startupPack.proxyUser,
+                        mySpawnReq->startupPack.clientUser,
+                        inet_ntoa(mySpawnReq->remoteAddr.sin_addr));
+            }
+
+            spwn_req_lock.lock();
+        }
+
+        spwn_req_lock.unlock();
+
+        if (unsigned int curTime = std::time(nullptr); curTime > agentQueChkTime + AGENT_QUE_CHK_INT) {
+            agentQueChkTime = curTime;
+            process_bad_request();
         }
     }
 }
@@ -2119,59 +2350,7 @@ void readWorkerTask()
     }
 } // readWorkerTask
 
-void spawnManagerTask()
-{
-    uint agentQueChkTime = 0;
 
-    while (true) {
-        const auto state = irods::server_state::get_state();
-
-        if (irods::server_state::server_state::stopped == state ||
-            irods::server_state::server_state::exited == state)
-        {
-            break;
-        }
-
-        boost::unique_lock<boost::mutex> spwn_req_lock(SpawnReqCondMutex);
-        SpawnReqCond.wait(spwn_req_lock);
-
-        while (SpawnReqHead) {
-            agentProc_t* mySpawnReq = SpawnReqHead;
-            SpawnReqHead = SpawnReqHead->next;
-
-            spwn_req_lock.unlock();
-            auto status = spawnAgent(mySpawnReq, &ConnectedAgentHead);
-            close(mySpawnReq->sock);
-
-            if (status < 0) {
-                rodsLog(LOG_NOTICE,
-                        "spawnAgent error for puser=%s and cuser=%s from %s, stat=%d",
-                        mySpawnReq->startupPack.proxyUser,
-                        mySpawnReq->startupPack.clientUser,
-                        inet_ntoa(mySpawnReq->remoteAddr.sin_addr),
-                        status);
-                std::free(mySpawnReq);
-            }
-            else {
-                rodsLog(LOG_DEBUG,
-                        "Agent process %d started for puser=%s and cuser=%s from %s",
-                        mySpawnReq->pid,
-                        mySpawnReq->startupPack.proxyUser,
-                        mySpawnReq->startupPack.clientUser,
-                        inet_ntoa(mySpawnReq->remoteAddr.sin_addr));
-            }
-
-            spwn_req_lock.lock();
-        }
-
-        spwn_req_lock.unlock();
-
-        if (uint curTime = std::time(nullptr); curTime > agentQueChkTime + AGENT_QUE_CHK_INT) {
-            agentQueChkTime = curTime;
-            procBadReq();
-        }
-    }
-}
 
 int procSingleConnReq(agentProc_t* connReq)
 {
@@ -2240,93 +2419,8 @@ int procSingleConnReq(agentProc_t* connReq)
     return status;
 }
 
-// procBadReq - process bad request.
-int procBadReq()
-{
-    boost::unique_lock<boost::mutex> bad_req_lock(BadReqMutex);
 
-    agentProc_t* tmpConnReq = BadReqHead;
-    agentProc_t* nextConnReq{};
 
-    // Just free them for now.
 
-    while (tmpConnReq) {
-        nextConnReq = tmpConnReq->next;
-        std::free(tmpConnReq);
-        tmpConnReq = nextConnReq;
-    }
 
-    BadReqHead = nullptr;
-    bad_req_lock.unlock();
-
-    return 0;
-}
-
-void purgeLockFileWorkerTask()
-{
-    std::size_t wait_time_ms = 0;
-    const std::size_t purge_time_ms = LOCK_FILE_PURGE_TIME * 1000; // s to ms
-
-    while (true) {
-        const auto state = irods::server_state::get_state();
-
-        if (irods::server_state::server_state::stopped == state ||
-            irods::server_state::server_state::exited == state)
-        {
-            break;
-        }
-
-        rodsSleep(0, irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC * 1000); // second, microseconds
-        wait_time_ms += irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC;
-
-        if (wait_time_ms >= purge_time_ms) {
-            wait_time_ms = 0;
-            int status = purgeLockFileDir(1);
-            if (status < 0) {
-                rodsLogError(LOG_ERROR, status, "purgeLockFileWorkerTask: purgeLockFileDir failed");
-            }
-        }
-    }
-} // purgeLockFileWorkerTask
-
-std::vector<std::string> setExecArg(const char* commandArgv)
-{
-    std::vector<std::string> arguments;
-
-    if (commandArgv) {
-        int len = 0;
-        bool openQuote = false;
-        const char* cur = commandArgv;
-
-        for (int i = 0; commandArgv[i] != '\0'; ++i) {
-            if (commandArgv[i] == ' ' && !openQuote) {
-                if (len > 0) { // End of a argv.
-                    arguments.push_back(std::string(cur, len));
-
-                    // Reset index and pointer.
-                    cur = &commandArgv[i + 1];
-                    len = 0;
-                }
-                else { // Skip over blanks.
-                    cur = &commandArgv[i + 1];
-                }
-            }
-            else if (commandArgv[i] == '\'' || commandArgv[i] == '\"') {
-                openQuote ^= true;
-                if (openQuote) {
-                    // Skip the quote.
-                    cur = &commandArgv[i + 1];
-                }
-            }
-            else {
-                ++len;
-            }
-        }
-        if (len > 0) { // Handle the last argv.
-            arguments.push_back(std::string(cur, len));
-        }
-    }
-
-    return arguments;
-}
 
