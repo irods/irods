@@ -2133,14 +2133,8 @@ class test_moduser_user(unittest.TestCase):
         self.assertEqual('rodsuser', lib.get_user_type(self.admin, self.username))
 
     def test_moduser_bad_downgrade(self):
-        SYS_NOT_ALLOWED = -169000
         self.assertEqual('rodsadmin', lib.get_user_type(self.admin, 'rods'))
-        res, _ = lib.execute(['iadmin', 'moduser', 'rods', 'type', 'rodsuser'])
-        self.assertTrue(
-            res.find(f"{SYS_NOT_ALLOWED}")
-            !=
-            -1
-        )
+        self.admin.assert_icommand(['iadmin', 'moduser', 'rods', 'type', 'rodsuser'], 'STDERR_SINGLELINE', 'SYS_NOT_ALLOWED')
         self.assertEqual('rodsadmin', lib.get_user_type(self.admin, 'rods'))
 
     def test_moduser_type_invalid_type(self):
