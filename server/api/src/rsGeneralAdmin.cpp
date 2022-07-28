@@ -67,7 +67,7 @@ namespace
         irods::at_scope_exit free_buf { [&bbuf] { std::free(bbuf); }  };
 
         if (const auto ec = rsZoneReport(&rsComm, &bbuf); ec < 0 ) {
-            const auto msg = fmt::format("[{}:{}] - Error fetching Zone Report", __func__, __LINE__);
+            const auto msg = fmt::format("[{}:{}] - Failed to gather rodsadmin users managing a server in the local zone.", __func__, __LINE__);
             addRErrorMsg(&rsComm.rError, ec , msg.c_str());
             THROW(ec, msg);
         }
