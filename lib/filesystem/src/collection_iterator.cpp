@@ -22,8 +22,8 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
                                              collection_options _opts)
         : ctx_{}
     {
-        detail::throw_if_path_length_exceeds_limit(_p);
-    
+        filesystem::detail::throw_if_path_length_exceeds_limit(_p);
+
         ctx_ = std::make_shared<context>();
         ctx_->comm = &_comm;
         ctx_->path = _p;
@@ -37,13 +37,14 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         ctx_->handle = rsOpenCollection(&_comm, &input);
 
         if (ctx_->handle < 0) {
-            throw filesystem_error{"could not open collection for reading", detail::make_error_code(ctx_->handle)};
+            throw filesystem_error{
+                "could not open collection for reading", filesystem::detail::make_error_code(ctx_->handle)};
         }
 #else
         const auto no_flags = 0;
 
         if (const auto ec = rclOpenCollection(&_comm, const_cast<char*>(_p.c_str()), no_flags, &ctx_->handle); ec < 0) {
-            throw filesystem_error{"could not open collection for reading", detail::make_error_code(ec)};
+            throw filesystem_error{"could not open collection for reading", filesystem::detail::make_error_code(ec)};
         }
 #endif // IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 
@@ -75,7 +76,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
                 return *this;
             }
 
-            throw filesystem_error{"could not read collection entry", detail::make_error_code(ec)};
+            throw filesystem_error{"could not read collection entry", filesystem::detail::make_error_code(ec)};
         }
 
 #ifdef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
