@@ -2132,7 +2132,7 @@ class test_moduser_user(unittest.TestCase):
                                    'STDERR', 'SYS_NOT_ALLOWED')
         self.assertEqual('rodsuser', lib.get_user_type(self.admin, self.username))
 
-    def test_moduser_bad_downgrade(self):
+    def test_downgrade_of_service_account_user_is_not_allowed__6127(self):
         self.assertEqual('rodsadmin', lib.get_user_type(self.admin, 'rods'))
         self.admin.assert_icommand(['iadmin', 'moduser', 'rods', 'type', 'rodsuser'], 'STDERR_SINGLELINE', 'SYS_NOT_ALLOWED')
         self.assertEqual('rodsadmin', lib.get_user_type(self.admin, 'rods'))
