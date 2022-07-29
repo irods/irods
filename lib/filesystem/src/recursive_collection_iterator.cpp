@@ -10,7 +10,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         : ctx_{}
     {
         if (collection_iterator iter{_comm, _p, _opts}; collection_iterator{} != iter) {
-            ctx_.reset(new context{});
+            ctx_ = std::make_shared<context>();
             ctx_->stack.push(std::move(iter));
         }
     }
@@ -27,7 +27,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
             if (!is_empty(*iter.connection(), iter->path())) {
                 added_new_collection = true;
                 auto* conn = iter.connection();
-                auto path = std::move(iter->path());
+                auto path = iter->path();
 
                 // Move the iterator forward to avoid re-entering the same
                 // collection when the stack is popped.
