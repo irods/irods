@@ -24,6 +24,9 @@
 #include <type_traits>
 #include <algorithm>
 
+/// Provides various facilities for performing logical operations on data objects and collections.
+///
+/// \since 4.2.6
 namespace irods::experimental::filesystem
 {
     class path;
@@ -34,26 +37,28 @@ namespace irods::experimental::filesystem
     {
         none,
         no_trash
-    };
+    }; // enum class remove_options
 
     struct extended_remove_options
     {
-        bool no_trash   = false;
-        bool verbose    = false;
-        bool progress   = false;
-        bool recursive  = false;
+        bool no_trash = false;
+        bool verbose = false;
+        bool progress = false;
+        bool recursive = false;
         bool unregister = false;
-    };
+    }; // struct extended_remove_options
 
     struct metadata
     {
         std::string attribute;
         std::string value;
         std::string units;
-    };
+    }; // struct metadata
 
+    // clang-format off
     /// A tag type used to instruct an operation to run in administrator mode.
-    inline struct admin_tag {} admin;
+    const inline struct admin_tag {} admin;
+    // clang-format on
 
     namespace NAMESPACE_IMPL
     {
@@ -278,6 +283,18 @@ namespace irods::experimental::filesystem
         /// \since 4.2.12
         auto add_metadata(admin_tag _admin, rxComm& _comm, const path& _p, const metadata& _metadata) -> void;
 
+        namespace detail
+        {
+            template <typename Iterator>
+            auto do_metadata_op(
+                bool _add_admin_flag,
+                rxComm& _comm,
+                const path& _path,
+                Iterator _first,
+                Iterator _last,
+                std::string_view _op) -> void;
+        } // namespace detail
+
         /// \brief Atomically adds multiple metadata AVUs to a collection or data object.
         ///
         /// \throws filesystem_error If the path is empty, exceeds the path limit, does not reference
@@ -288,7 +305,11 @@ namespace irods::experimental::filesystem
         /// \param[in] _first An iterator pointing to the first element of a metadata AVU range.
         /// \param[in] _last  An iterator pointing to the last element of a metadata AVU range (not inclusive).
         template <typename Iterator>
-        auto add_metadata_atomic(rxComm& _comm, const path& _p, Iterator _first, Iterator _last) -> void;
+        auto add_metadata_atomic(rxComm& _comm, const path& _p, Iterator _first, Iterator _last) -> void
+        {
+            constexpr auto add_admin_flag = false;
+            detail::do_metadata_op(add_admin_flag, _comm, _p, _first, _last, "add");
+        } // add_metadata_atomic
 
         /// \brief Atomically adds multiple metadata AVUs to a collection or data object.
         ///
@@ -304,7 +325,13 @@ namespace irods::experimental::filesystem
         ///
         /// \since 4.2.12
         template <typename Iterator>
-        auto add_metadata_atomic(admin_tag _admin, rxComm& _comm, const path& _p, Iterator _first, Iterator _last) -> void;
+        auto add_metadata_atomic(admin_tag _admin, rxComm& _comm, const path& _p, Iterator _first, Iterator _last)
+            -> void
+        {
+            static_cast<void>(_admin);
+            constexpr auto add_admin_flag = true;
+            detail::do_metadata_op(add_admin_flag, _comm, _p, _first, _last, "add");
+        } // add_metadata_atomic
 
         /// \brief Atomically adds multiple metadata AVUs to a collection or data object.
         ///
@@ -314,10 +341,14 @@ namespace irods::experimental::filesystem
         /// \param[in] _comm      The communication object.
         /// \param[in] _p         The path to a collection or data object.
         /// \param[in] _container The list of metadata AVUs to add.
-        template <typename Container,
-                  typename = decltype(std::begin(std::declval<Container>())),
-                  typename = std::enable_if_t<std::is_same_v<std::decay_t<typename Container::value_type>, metadata>>>
-        auto add_metadata_atomic(rxComm& _comm, const path& _p, const Container& _container) -> void;
+        template <
+            typename Container,
+            typename = decltype(std::begin(std::declval<Container>())),
+            typename = std::enable_if_t<std::is_same_v<std::decay_t<typename Container::value_type>, metadata>>>
+        auto add_metadata_atomic(rxComm& _comm, const path& _p, const Container& _container) -> void
+        {
+            add_metadata_atomic(_comm, _p, std::begin(_container), std::end(_container));
+        } // add_metadata_atomic
 
         /// \brief Atomically adds multiple metadata AVUs to a collection or data object.
         ///
@@ -331,10 +362,15 @@ namespace irods::experimental::filesystem
         /// \param[in] _container The list of metadata AVUs to add.
         ///
         /// \since 4.2.12
-        template <typename Container,
-                  typename = decltype(std::begin(std::declval<Container>())),
-                  typename = std::enable_if_t<std::is_same_v<std::decay_t<typename Container::value_type>, metadata>>>
-        auto add_metadata_atomic(admin_tag _admin, rxComm& _comm, const path& _p, const Container& _container) -> void;
+        template <
+            typename Container,
+            typename = decltype(std::begin(std::declval<Container>())),
+            typename = std::enable_if_t<std::is_same_v<std::decay_t<typename Container::value_type>, metadata>>>
+        auto add_metadata_atomic(admin_tag _admin, rxComm& _comm, const path& _p, const Container& _container) -> void
+        {
+            static_cast<void>(_admin);
+            add_metadata_atomic(admin, _comm, _p, std::begin(_container), std::end(_container));
+        } // add_metadata_atomic
 
         /// \brief Removes a single metadata AVU from a collection or data object.
         ///
@@ -370,7 +406,11 @@ namespace irods::experimental::filesystem
         /// \param[in] _first An iterator pointing to the first element of a metadata AVU range.
         /// \param[in] _last  An iterator pointing to the last element of a metadata AVU range (not inclusive).
         template <typename Iterator>
-        auto remove_metadata_atomic(rxComm& _comm, const path& _p, Iterator _first, Iterator _last) -> void;
+        auto remove_metadata_atomic(rxComm& _comm, const path& _p, Iterator _first, Iterator _last) -> void
+        {
+            constexpr auto add_admin_flag = false;
+            detail::do_metadata_op(add_admin_flag, _comm, _p, _first, _last, "remove");
+        } // remove_metadata_atomic
 
         /// \brief Atomically removes multiple metadata AVUs from a collection or data object.
         ///
@@ -386,7 +426,13 @@ namespace irods::experimental::filesystem
         ///
         /// \since 4.2.12
         template <typename Iterator>
-        auto remove_metadata_atomic(admin_tag _admin, rxComm& _comm, const path& _p, Iterator _first, Iterator _last) -> void;
+        auto remove_metadata_atomic(admin_tag _admin, rxComm& _comm, const path& _p, Iterator _first, Iterator _last)
+            -> void
+        {
+            static_cast<void>(_admin);
+            constexpr auto add_admin_flag = true;
+            detail::do_metadata_op(add_admin_flag, _comm, _p, _first, _last, "remove");
+        } // remove_metadata_atomic
 
         /// \brief Atomically removes multiple metadata AVUs from a collection or data object.
         ///
@@ -396,10 +442,14 @@ namespace irods::experimental::filesystem
         /// \param[in] _comm      The communication object.
         /// \param[in] _p         The path to a collection or data object.
         /// \param[in] _container The list of metadata AVUs to remove.
-        template <typename Container,
-                  typename = decltype(std::begin(std::declval<Container>())),
-                  typename = std::enable_if_t<std::is_same_v<std::decay_t<typename Container::value_type>, metadata>>>
-        auto remove_metadata_atomic(rxComm& _comm, const path& _p, const Container& _container) -> void;
+        template <
+            typename Container,
+            typename = decltype(std::begin(std::declval<Container>())),
+            typename = std::enable_if_t<std::is_same_v<std::decay_t<typename Container::value_type>, metadata>>>
+        auto remove_metadata_atomic(rxComm& _comm, const path& _p, const Container& _container) -> void
+        {
+            remove_metadata_atomic(_comm, _p, std::begin(_container), std::end(_container));
+        } // remove_metadata_atomic
 
         /// \brief Atomically removes multiple metadata AVUs from a collection or data object.
         ///
@@ -413,12 +463,78 @@ namespace irods::experimental::filesystem
         /// \param[in] _container The list of metadata AVUs to remove.
         ///
         /// \since 4.2.12
-        template <typename Container,
-                  typename = decltype(std::begin(std::declval<Container>())),
-                  typename = std::enable_if_t<std::is_same_v<std::decay_t<typename Container::value_type>, metadata>>>
-        auto remove_metadata_atomic(admin_tag _admin, rxComm& _comm, const path& _p, const Container& _container) -> void;
+        template <
+            typename Container,
+            typename = decltype(std::begin(std::declval<Container>())),
+            typename = std::enable_if_t<std::is_same_v<std::decay_t<typename Container::value_type>, metadata>>>
+        auto remove_metadata_atomic(admin_tag _admin, rxComm& _comm, const path& _p, const Container& _container)
+            -> void
+        {
+            static_cast<void>(_admin);
+            remove_metadata_atomic(admin, _comm, _p, std::begin(_container), std::end(_container));
+        } // remove_metadata_atomic
 
-        #include "irods/filesystem/filesystem.tpp"
+        namespace detail
+        {
+            template <typename Iterator>
+            auto do_metadata_op(
+                bool _add_admin_flag,
+                rxComm& _comm,
+                const path& _path,
+                Iterator _first,
+                Iterator _last,
+                std::string_view _op) -> void
+            {
+                using filesystem::detail::make_error_code;
+
+                std::string_view entity_type;
+
+                if (const auto s = status(_comm, _path); is_data_object(s)) {
+                    entity_type = "data_object";
+                }
+                else if (is_collection(s)) {
+                    entity_type = "collection";
+                }
+                else {
+                    throw filesystem_error{
+                        "cannot apply metadata operations: unknown object type",
+                        _path,
+                        make_error_code(CAT_NOT_A_DATAOBJ_AND_NOT_A_COLLECTION)};
+                }
+
+                using json = nlohmann::json;
+
+                std::vector<json> operations;
+                operations.reserve(std::distance(_first, _last));
+
+                std::for_each(_first, _last, [_op, &operations](const metadata& md) {
+                    // clang-format off
+                    operations.push_back({
+                        {"operation", _op},
+                        {"attribute", md.attribute},
+                        {"value", md.value},
+                        {"units", md.units}
+                    });
+                    // clang-format on
+                });
+
+                // clang-format off
+                const auto json_input = json{
+                    {"admin_mode", _add_admin_flag},
+                    {"entity_name", _path.c_str()},
+                    {"entity_type", entity_type},
+                    {"operations", operations}
+                }.dump();
+                // clang-format on
+
+                char* json_error_string{};
+
+                if (const auto ec = rx_atomic_apply_metadata_operations(&_comm, json_input.data(), &json_error_string);
+                    ec) {
+                    throw filesystem_error{"cannot apply metadata operations", _path, make_error_code(ec)};
+                }
+            } // do_metadata_op
+        } // namespace detail
     } // namespace NAMESPACE_IMPL
 } // namespace irods::experimental::filesystem
 
