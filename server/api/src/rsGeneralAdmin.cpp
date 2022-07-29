@@ -100,7 +100,7 @@ namespace
         catch (const nlohmann::json::exception& e) {
             THROW(SYS_LIBRARY_ERROR, e.what());
         }
-     } // throw_if_user_type_can_result_in_non_functional_irods_server
+     } // throw_if_downgrading_irods_service_account_rodsadmin
 
     auto throw_if_group_is_changing_to_user_or_user_is_changing_to_group(
         RsComm& _comm,
