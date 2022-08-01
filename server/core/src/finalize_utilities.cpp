@@ -1,4 +1,5 @@
 #include "irods/finalize_utilities.hpp"
+
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_exception.hpp"
 #include "irods/irods_re_structs.hpp"
@@ -7,11 +8,12 @@
 #include "irods/objDesc.hpp"
 #include "irods/physPath.hpp"
 #include "irods/rcMisc.h"
+#include "irods/replica_state_table.hpp"
 #include "irods/rsDataObjTrim.hpp"
 #include "irods/rsModAVUMetadata.hpp"
 #include "irods/rsModAccessControl.hpp"
+#include "irods/rs_atomic_apply_metadata_operations.hpp"
 #include "irods/rs_replica_close.hpp"
-#include "irods/replica_state_table.hpp"
 #include "irods/scoped_privileged_client.hpp"
 
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
@@ -34,24 +36,46 @@ namespace irods
 {
     auto apply_metadata_from_cond_input(RsComm& _comm, const DataObjInp& _inp) -> void
     {
-        if ( const char* serialized_metadata = getValByKey( &_inp.condInput, METADATA_INCLUDED_KW ) ) {
-            std::vector<std::string> deserialized_metadata = irods::deserialize_metadata( serialized_metadata );
-            for ( size_t i = 0; i + 2 < deserialized_metadata.size(); i += 3 ) {
-                modAVUMetadataInp_t modAVUMetadataInp;
-                memset( &modAVUMetadataInp, 0, sizeof( modAVUMetadataInp ) );
+        using server_log = irods::experimental::log::server;
 
-                modAVUMetadataInp.arg0 = strdup( "add" );
-                modAVUMetadataInp.arg1 = strdup( "-d" );
-                modAVUMetadataInp.arg2 = strdup( _inp.objPath );
-                modAVUMetadataInp.arg3 = strdup( deserialized_metadata[i].c_str() );
-                modAVUMetadataInp.arg4 = strdup( deserialized_metadata[i + 1].c_str() );
-                modAVUMetadataInp.arg5 = strdup( deserialized_metadata[i + 2].c_str() );
-                int status = rsModAVUMetadata(&_comm, &modAVUMetadataInp );
-                clearModAVUMetadataInp( &modAVUMetadataInp );
-                if ( CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME != status && status < 0 ) {
-                    THROW( status, "rsModAVUMetadata failed" );
-                }
-            }
+        // Return early if METADATA_INCLUDED_KW was not provided because the rest of this
+        // function is exclusively concerned with inserting and associating metadata AVUs
+        // provided by this keyword from the DataObjInp.condInput.
+        const auto cond_input = irods::experimental::make_key_value_proxy(_inp.condInput);
+        const auto serialized_metadata_itr = cond_input.find(METADATA_INCLUDED_KW);
+        if (serialized_metadata_itr == cond_input.end()) {
+            return;
+        }
+
+        const auto serialized_metadata = *serialized_metadata_itr;
+        const auto avu_list = irods::deserialize_metadata(serialized_metadata.value().data());
+
+        // The strings in the avu_list are taken 3 at a time because METADATA_INCLUDED_KW
+        // must contain a value with a string of triplets of semicolon-separated tokens.
+        json::array_t operations;
+        for (std::size_t i = 0; i + 2 < avu_list.size(); i += 3) {
+            operations.push_back(
+                {{"operation", "add"},
+                 {"attribute", avu_list[i]},
+                 {"value", avu_list[i + 1]},
+                 {"units", avu_list[i + 2]}});
+        }
+
+        // clang-format off
+        const auto json_input_str = json{{"entity_name", _inp.objPath},
+                                         {"entity_type", "data_object"},
+                                         {"operations", operations}}.dump();
+        // clang-format on
+
+        server_log::debug("[{}:{}] - JSON input: [{}]", __func__, __LINE__, json_input_str);
+
+        char* error_string{};
+        // NOLINTNEXTLINE(cppcoreguidelines-no-malloc, cppcoreguidelines-owning-memory)
+        irods::at_scope_exit free_memory{[&error_string] { std::free(error_string); }};
+
+        if (const int ec = rs_atomic_apply_metadata_operations(&_comm, json_input_str.data(), &error_string); ec != 0) {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+            THROW(ec, fmt::format("rs_atomic_apply_metadata_operations failed: [{}] [ec={}]", error_string, ec));
         }
     } // apply_metadata_from_cond_input
 
