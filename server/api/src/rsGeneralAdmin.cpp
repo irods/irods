@@ -104,7 +104,7 @@ namespace
             }
         }
         catch (const nlohmann::json::exception& e) {
-            THROW( SYS_LIBRARY_ERROR, e.what() );
+            THROW(SYS_LIBRARY_ERROR, e.what());
         }
      } // throw_if_downgrading_irods_service_account_rodsadmin
 
