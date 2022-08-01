@@ -16,6 +16,7 @@ set(
   get_open_data_obj_l1desc_index
   get_file_descriptor_info
   get_hostname
+  get_server_property
 )
 
 foreach(plugin IN LISTS IRODS_MICROSERVICE_PLUGINS)

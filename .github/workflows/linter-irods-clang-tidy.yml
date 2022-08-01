@@ -1,0 +1,98 @@
+name: linter-irods-clang-tidy
+on: pull_request
+defaults:
+    run:
+        shell: bash
+jobs:
+    clang-tidy:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v3
+              with:
+                  # Get all history for the repository (branches, tags, etc).
+                  # This is required in order for clang-tidy to work correctly.
+                  fetch-depth: 0
+            - name: Install Prerequisites
+              run: |
+                  sudo apt-get update -qq
+                  sudo apt-get install -qq apt-transport-https ca-certificates
+                  sudo apt-get install -qq \
+                    wget \
+                    curl \
+                    g++ \
+                    make \
+                    python-dev \
+                    unixodbc \
+                    libcurl4-gnutls-dev \
+                    libbz2-dev \
+                    zlib1g-dev \
+                    libpam0g-dev \
+                    libssl-dev \
+                    libxml2-dev \
+                    unixodbc-dev \
+                    python-psutil \
+                    super \
+                    odbc-postgresql \
+                    libkrb5-dev \
+                    python3-distro
+            - name: Install libstdc++6
+              run: |
+                  sudo apt-get install -qq software-properties-common
+                  sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+                  sudo apt-get update -qq
+                  sudo apt-get install -qq libstdc++6
+            - name: Install iRODS Externals
+              run: |
+                  wget -qO - https://unstable.irods.org/irods-unstable-signing-key.asc | sudo apt-key add -
+                  echo "deb [arch=amd64] https://unstable.irods.org/apt/ $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/renci-irods-unstable.list
+                  sudo apt-get update -qq
+                  sudo apt-get install -qq \
+                    irods-externals-avro1.11.0-1 \
+                    irods-externals-boost1.78.0-0 \
+                    irods-externals-catch22.13.8-0 \
+                    irods-externals-clang-runtime13.0.0-0 \
+                    irods-externals-clang13.0.0-0 \
+                    irods-externals-cmake3.21.4-0 \
+                    irods-externals-cppzmq4.8.1-1 \
+                    irods-externals-fmt8.1.1-0 \
+                    irods-externals-json3.10.4-0 \
+                    irods-externals-libarchive3.5.2-0 \
+                    irods-externals-nanodbc2.13.0-1 \
+                    irods-externals-spdlog1.9.2-1 \
+                    irods-externals-zeromq4-14.1.8-0
+            - name: Configure CMake
+              run: |
+                  export PATH=/opt/irods-externals/cmake3.21.4-0/bin:$PATH
+                  mkdir build
+                  cd build
+                  cmake -DIRODS_DISABLE_COMPILER_OPTIMIZATIONS=ON ../
+            - name: Run Clang-Tidy
+              run: |
+                  # Make clang and clang-tidy available.
+                  export PATH=/opt/irods-externals/clang13.0.0-0/bin:$PATH
+                  export PATH=/opt/irods-externals/clang13.0.0-0/share/clang:$PATH
+
+                  # Run clang-tidy on the changes.
+                  git diff -U0 origin/$GITHUB_BASE_REF | \
+                      clang-tidy-diff.py -p1 -path build/compile_commands.json -quiet | \
+                      tee clang_tidy_output.txt
+
+                  # Return a failure if the output contains a clang-tidy error or warning.
+                  # clang-tidy-diff.py doesn't report a non-zero error code when it finds violations.
+                  clang_tidy_text=$(cat clang_tidy_output.txt)
+                  if [[ "$clang_tidy_text" == *": error: "* ]] || [[ "$clang_tidy_text" == *": warning: "* ]]; then
+                      echo 'Source code needs some attention!'
+                      echo
+                      echo 'If the results are hard to follow, you can enable color by running the following command at the bench:'
+                      echo
+                      echo "    git diff -U0 $GITHUB_BASE_REF | clang-tidy-diff.py -p1 -use-color -path /path/to/build/compile_commands.json -quiet"
+                      echo
+                      echo 'This command only works while the branch associated with this pull request is checked out.'
+                      echo
+
+                      exit 1
+                  fi
+
+                  echo "Source code is tidy :-)"
+

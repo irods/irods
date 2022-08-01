@@ -1,6 +1,7 @@
 #include "irods/irods_server_properties.hpp"
 
 #include "irods/irods_get_full_path_for_config_file.hpp"
+#include "irods/irods_logger.hpp"
 #include "irods/irods_stacktrace.hpp"
 #include "irods/rodsLog.h"
 
@@ -36,7 +37,10 @@ namespace irods
 
     namespace
     {
+        // clang-format off
         using json = nlohmann::json;
+        using log_server = irods::experimental::log::server;
+        // clang-format on
 
         struct string_t
         {
@@ -51,7 +55,7 @@ namespace irods
             void* tmp_ptr{};
 
             if (!stream) {
-                rodsLog (LOG_ERROR, "%s", "irodsCurl::write_string: NULL destination stream.");
+                log_server::error("irodsCurl::write_string: NULL destination stream.");
                 return 0;
             }
 
@@ -63,7 +67,7 @@ namespace irods
             // Add an extra byte for terminating null char.
             tmp_ptr = realloc(string->ptr, new_len + 1);
             if (!tmp_ptr) {
-                rodsLog(LOG_ERROR, "%s", "irodsCurl::write_string: realloc failed.");
+                log_server::error("irodsCurl::write_string: realloc failed.");
                 return -1;
             }
 
@@ -170,6 +174,7 @@ namespace irods
     template<>
     const nlohmann::json& server_properties::get_property<const nlohmann::json&>(const std::string& _key)
     {
+        auto lock = acquire_read_lock();
         if (auto prop = config_props_.find(_key); prop != config_props_.end()) {
             return *prop;
         }
@@ -180,6 +185,7 @@ namespace irods
     template<>
     const nlohmann::json& server_properties::get_property<const nlohmann::json&>(const configuration_parser::key_path_t& _keys)
     {
+        auto lock = acquire_read_lock();
         const json* tmp = &config_props_;
 
         for (auto&& k : _keys) {
@@ -206,6 +212,7 @@ namespace irods
 
     void server_properties::capture()
     {
+        auto lock = acquire_write_lock();
         if (use_remote_configuration()) {
             config_props_ = process_remote_configuration(capture_remote_configuration());
             return;
@@ -227,8 +234,53 @@ namespace irods
         config_props_ = json::parse(svr);
     } // capture
 
+    nlohmann::json server_properties::reload()
+    {
+        nlohmann::json new_values;
+        if (use_remote_configuration()) {
+            new_values = process_remote_configuration(capture_remote_configuration());
+        }
+        else {
+            std::string svr_fn;
+            irods::error ret = irods::get_full_path_for_config_file(SERVER_CONFIG_FILE, svr_fn);
+            if (!ret.ok()) {
+                THROW(
+                    ret.code(),
+                    fmt::format("[{}:{}] - Failed to find server config file [{}]", __func__, __LINE__, ret.result()));
+            }
+
+            std::ifstream svr{svr_fn};
+
+            if (!svr) {
+                THROW(FILE_OPEN_ERR, fmt::format("[{}:{}] - Failed to open server config file", __func__, __LINE__));
+            }
+            new_values = json::parse(svr);
+        }
+
+        auto patch = json::diff(config_props_, new_values);
+        for (auto i = patch.cbegin(); i != patch.cend(); ++i) {
+            // If we remove the runtime values the server will not be happy
+
+            // It may be prudent to have a list of runtime properties that need to be preserved instead, but
+            // I'm not entirely decided on that yet.
+            if (i.value().at("op").get_ref<const std::string&>() == "remove") {
+                i = patch.erase(i);
+                if (i == patch.cend()) {
+                    break;
+                }
+            }
+        }
+        auto lock = acquire_write_lock();
+        // TODO uncomment when issue #6470 is fixed
+        // log_server::error("Before patch '{}'", config_props_.dump());
+        config_props_.patch(patch);
+        // log_server::error("After patch '{}'", config_props_.dump());
+        return patch;
+    } // reload
+
     void server_properties::remove(const std::string& _key)
     {
+        auto lock = acquire_write_lock();
         if (config_props_.contains(_key)) {
             config_props_.erase(_key);
         }
@@ -249,14 +301,16 @@ namespace irods
                 return bytes;
             }
 
-            rodsLog(LOG_ERROR, "Invalid shared memory size for DNS cache [size=%d].", bytes);
+            log_server::error("Invalid shared memory size for DNS cache [size={}].", bytes);
         }
         catch (...) {
-            rodsLog(LOG_DEBUG, "Could not read server configuration property [%s.%s.%s].",
-                    KW_CFG_ADVANCED_SETTINGS, KW_CFG_DNS_CACHE, KW_CFG_SHARED_MEMORY_SIZE_IN_BYTES);
+            log_server::debug("Could not read server configuration property [{}.{}.{}].",
+                              KW_CFG_ADVANCED_SETTINGS,
+                              KW_CFG_DNS_CACHE,
+                              KW_CFG_SHARED_MEMORY_SIZE_IN_BYTES);
         }
 
-        rodsLog(LOG_DEBUG, "Returning default shared memory size for DNS cache [default=5000000].");
+        log_server::debug("Returning default shared memory size for DNS cache [default=5000000].");
 
         return 5'000'000;
     } // get_dns_cache_shared_memory_size
@@ -271,14 +325,16 @@ namespace irods
                 return seconds;
             }
 
-            rodsLog(LOG_ERROR, "Invalid eviction age for DNS cache [seconds=%d].", seconds);
+            log_server::error("Invalid eviction age for DNS cache [seconds={}].", seconds);
         }
         catch (...) {
-            rodsLog(LOG_DEBUG, "Could not read server configuration property [%s.%s.%s].",
-                    KW_CFG_ADVANCED_SETTINGS, KW_CFG_DNS_CACHE, KW_CFG_EVICTION_AGE_IN_SECONDS);
+            log_server::debug("Could not read server configuration property [{}.{}.{}].",
+                              KW_CFG_ADVANCED_SETTINGS,
+                              KW_CFG_DNS_CACHE,
+                              KW_CFG_EVICTION_AGE_IN_SECONDS);
         }
 
-        rodsLog(LOG_DEBUG, "Returning default eviction age for DNS cache [default=3600].");
+        log_server::debug("Returning default eviction age for DNS cache [default=3600].");
 
         return 3600;
     } // get_dns_cache_eviction_age
@@ -293,14 +349,16 @@ namespace irods
                 return bytes;
             }
 
-            rodsLog(LOG_ERROR, "Invalid shared memory size for Hostname cache [size=%d].", bytes);
+            log_server::error("Invalid shared memory size for Hostname cache [size={}].", bytes);
         }
         catch (...) {
-            rodsLog(LOG_DEBUG, "Could not read server configuration property [%s.%s.%s].",
-                    KW_CFG_ADVANCED_SETTINGS, KW_CFG_HOSTNAME_CACHE, KW_CFG_SHARED_MEMORY_SIZE_IN_BYTES);
+            log_server::debug("Could not read server configuration property [{}.{}.{}].",
+                              KW_CFG_ADVANCED_SETTINGS,
+                              KW_CFG_HOSTNAME_CACHE,
+                              KW_CFG_SHARED_MEMORY_SIZE_IN_BYTES);
         }
 
-        rodsLog(LOG_DEBUG, "Returning default shared memory size for Hostname cache [default=2500000].");
+        log_server::debug("Returning default shared memory size for Hostname cache [default=2500000].");
 
         return 2'500'000;
     } // get_hostname_cache_shared_memory_size
@@ -315,14 +373,16 @@ namespace irods
                 return seconds;
             }
 
-            rodsLog(LOG_ERROR, "Invalid eviction age for Hostname cache [seconds=%d].", seconds);
+            log_server::error("Invalid eviction age for Hostname cache [seconds={}].", seconds);
         }
         catch (...) {
-            rodsLog(LOG_DEBUG, "Could not read server configuration property [%s.%s.%s].",
-                    KW_CFG_ADVANCED_SETTINGS, KW_CFG_HOSTNAME_CACHE, KW_CFG_EVICTION_AGE_IN_SECONDS);
+            log_server::debug("Could not read server configuration property [{}.{}.{}].",
+                              KW_CFG_ADVANCED_SETTINGS,
+                              KW_CFG_HOSTNAME_CACHE,
+                              KW_CFG_EVICTION_AGE_IN_SECONDS);
         }
 
-        rodsLog(LOG_DEBUG, "Returning default eviction age for Hostname cache [default=3600].");
+        log_server::debug("Returning default eviction age for Hostname cache [default=3600].");
 
         return 3600;
     } // get_hostname_cache_eviction_age
