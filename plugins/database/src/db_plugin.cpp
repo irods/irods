@@ -1338,29 +1338,6 @@ findAVU( const char *attribute, const char *value, const char *units ) {
     return ( status ); // JMC - backport 4836
 }
 
-auto find_object_metamap_entry(rodsLong_t _metadata_id, rodsLong_t _object_id) -> rodsLong_t
-{
-    rodsLong_t result_value;
-    std::vector<std::string> bind_variables;
-
-    log_db::trace("metadata id:[{}]", _metadata_id);
-    bind_variables.push_back(std::to_string(_metadata_id));
-    log_db::trace("object id:[{}]", _object_id);
-    bind_variables.push_back(std::to_string(_object_id));
-
-    const char* sql = "select count(meta_id) from R_OBJT_METAMAP where meta_id=? and object_id=?";
-
-    if (auto ec = cmlGetIntegerValueFromSql(sql, &result_value, bind_variables, &icss); ec < 0) {
-        log_db::info("failed query [{}], ec [{}]", sql, ec);
-
-        return ec;
-    }
-
-    log_db::trace("result [{}]", result_value);
-
-    return result_value;
-} // find_object_metamap_entry
-
 /*
   Find existing or insert a new AVU triplet.
   Return code is error, or the AVU ID.
@@ -9279,26 +9256,6 @@ irods::error db_add_avu_metadata_op(
         return ERROR( status, "findOrInsertAVU failure" );
     }
     seqNum = status;
-
-    status = find_object_metamap_entry(seqNum, objId);
-    if (status < 0) {
-        log_db::info("[{}:{}] error occurred finding object metamap entry; "
-                     "ec [{}], meta ID [{}], object [{}]",
-                     __func__,
-                     __LINE__,
-                     status,
-                     seqNumStr,
-                     _name);
-        _rollback("chlAddAVUMetadata");
-        return ERROR(status, "error occurred finding object metamap entry; ec:[{}]");
-    }
-
-    // Only insert the object metamap entry if there is not already an identical one. We avoid
-    // the insertion because if it already exists, ODBC will raise an error even though the
-    // iRODS system does not consider this situation an error.
-    if (status != 0) {
-        return SUCCESS();
-    }
 
     getNowStr( myTime );
     snprintf( objIdStr, sizeof objIdStr, "%lld", objId );
