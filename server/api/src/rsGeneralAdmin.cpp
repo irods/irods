@@ -53,24 +53,24 @@ namespace
         return std::find_if(b, e, [](unsigned char _ch) { return ::isspace(_ch); }) != e;
     } // contains_whitespace
 
-     auto throw_if_downgrading_irods_service_account_rodsadmin(RsComm& rsComm,
-        						       const std::string_view _option,
-        						       const std::string_view _user_name,
-        						       const std::string_view _new_user_type) -> void 
-     {
-         if ("rodsadmin" == _new_user_type || "type" != _option) {
-             return;
-         }
+    auto throw_if_downgrading_irods_service_account_rodsadmin(RsComm& rsComm,
+                                                              const std::string_view _option,
+                                                              const std::string_view _user_name,
+                                                              const std::string_view _new_user_type) -> void
+    {
+        if ("rodsadmin" == _new_user_type || "type" != _option) {
+            return;
+        }
 
         BytesBuf* bbuf = nullptr;
-        irods::at_scope_exit free_buf {[&bbuf] { std::free(bbuf); }};
+        irods::at_scope_exit free_buf{[&bbuf] { std::free(bbuf); }};
 
-        if (const auto ec = rsZoneReport(&rsComm, &bbuf); ec < 0 ) {
-            const auto msg = 
-		    fmt::format("[{}:{}] - Failed to gather rodsadmin users managing a server in the local zone.", 
-				    __func__, 
-				    __LINE__);
-            addRErrorMsg(&rsComm.rError, ec , msg.c_str());
+        if (const auto ec = rsZoneReport(&rsComm, &bbuf); ec < 0) {
+            const auto msg =
+                fmt::format("[{}:{}] - Failed to gather rodsadmin users managing a server in the local zone.",
+                            __func__,
+                            __LINE__);
+            addRErrorMsg(&rsComm.rError, ec, msg.c_str());
             THROW(ec, msg);
         }
 
@@ -89,14 +89,15 @@ namespace
                 }
 
                 for (const auto& server : zone.at("servers")) {
-                    const auto& server_admin = server.at("service_account_environment").at("irods_user_name").get_ref<const std::string&>();
-                    if ( server_admin  == _user_name ) {
-                        const auto& host_of_target_user = 
-				server.at("host_system_information").at("hostname").get_ref<const std::string&>();
-                        const auto msg = 
-				fmt::format("Cannot downgrade another rodsadmin [{}] running another server [{}] in this zone.", 
-						_user_name, 
-						host_of_target_user);
+                    const auto& server_admin =
+                        server.at("service_account_environment").at("irods_user_name").get_ref<const std::string&>();
+                    if (server_admin == _user_name) {
+                        const auto& host_of_target_user =
+                            server.at("host_system_information").at("hostname").get_ref<const std::string&>();
+                        const auto msg = fmt::format(
+                            "Cannot downgrade another rodsadmin [{}] running another server [{}] in this zone.",
+                            _user_name,
+                            host_of_target_user);
                         addRErrorMsg(&rsComm.rError, SYS_NOT_ALLOWED, msg.c_str());
                         THROW(SYS_NOT_ALLOWED, msg);
                     }
@@ -106,7 +107,7 @@ namespace
         catch (const nlohmann::json::exception& e) {
             THROW(SYS_LIBRARY_ERROR, e.what());
         }
-     } // throw_if_downgrading_irods_service_account_rodsadmin
+    } // throw_if_downgrading_irods_service_account_rodsadmin
 
     auto throw_if_group_is_changing_to_user_or_user_is_changing_to_group(
         RsComm& _comm,
@@ -857,12 +858,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                 // it will be used multiple times. Note: subject to TOCTOU problem.
                 const auto current_user_type = irods::user::get_type(*rsComm, user_name);
 
-                throw_if_downgrading_irods_service_account_rodsadmin(
-                    *rsComm,
-                    option,
-                    user_name,
-                    new_value
-                );
+                throw_if_downgrading_irods_service_account_rodsadmin(*rsComm, option, user_name, new_value);
 
                 throw_if_group_is_changing_to_user_or_user_is_changing_to_group(
                     *rsComm, option, current_user_type, new_value);
