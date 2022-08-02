@@ -17,11 +17,11 @@ find_package(LibCXX 6 REQUIRED)
 set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES "${LIBCXX_INCLUDE_DIR}")
 set(CMAKE_CXX_STANDARD_LIBRARIES "${LIBCXX_CMAKE_CXX_STANDARD_LIBRARIES}")
 add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>)
-if (CMAKE_VERSION VERSION_LESS "3.15.0")
+if (CMAKE_VERSION VERSION_LESS "3.18.0")
   set(CMAKE_CXX_STANDARD_LIBRARIES "-stdlib=libc++ ${CMAKE_CXX_STANDARD_LIBRARIES}")
 else()
   # add_link_options command needs CMake 3.13
-  # LINK_LANGUAGE generator expression needs CMake 3.15
+  # LINK_LANGUAGE generator expression needs CMake 3.18
   add_link_options($<$<LINK_LANGUAGE:CXX>:-stdlib=libc++>)
 endif()
 
