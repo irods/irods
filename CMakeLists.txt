@@ -44,6 +44,7 @@ set(CMAKE_SHARED_LINKER_FLAGS_INIT "-Wl,--enable-new-dtags -Wl,--as-needed -Wl,-
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE_INIT "-Wl,--gc-sections -Wl,-z,combreloc")
 set(CMAKE_MODULE_LINKER_FLAGS_RELEASE_INIT "-Wl,--gc-sections -Wl,-z,combreloc")
 set(CMAKE_SHARED_LINKER_FLAGS_RELEASE_INIT "-Wl,--gc-sections -Wl,-z,combreloc")
+include(IrodsRunpathDefaults)
 
 set(IRODS_VERSION_MAJOR "4")
 set(IRODS_VERSION_MINOR "3")
@@ -77,10 +78,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/InstallDirs.cmake)
 
-set(CMAKE_SKIP_BUILD_RPATH FALSE)
-set(CMAKE_SKIP_INSTALL_RPATH FALSE)
-set(CMAKE_SKIP_RPATH FALSE)
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
 if (IRODS_DISABLE_COMPILER_OPTIMIZATIONS)
@@ -277,6 +274,7 @@ install(
   "${CMAKE_IRODS_SOURCE_DIR}/cmake/Modules/ObjectTargetHelpers.cmake"
   "${CMAKE_IRODS_SOURCE_DIR}/cmake/Modules/IrodsCPackPlatform.cmake"
   "${CMAKE_IRODS_SOURCE_DIR}/cmake/Modules/IrodsCPackCommon.cmake"
+  "${CMAKE_IRODS_SOURCE_DIR}/cmake/Modules/IrodsRunpathDefaults.cmake"
   DESTINATION "${CMAKE_INSTALL_LIBDIR}/irods/cmake/Modules"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
 )
