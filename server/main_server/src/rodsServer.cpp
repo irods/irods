@@ -1,42 +1,4 @@
 
-/**
-
-WORKING CHANGES(june):
-
-* removed duplicate includes
-* re-ordered self refrence header include to be at the top
-* included irods/rodsAgent.hpp and appended int runIrodsAgentFactory(sockaddr_un agent_addr);
-* seperated .h from .hpp irods includes
-
-* removed unused function std::vector<std::string> setExecArg(const char* commandArgv);
-* removed unused function void set_agent_spawner_process_name(const InformationRequiredToSafelyRenameProcess& info)
-
-* re-ordered int queueConnectedAgentProc to be before its one callsite instead of forward decal
-
-* removed unused return type int from get64RandomBytes()
-
-* removed typedefed unsigned int "uint" type from use here TODO: remove this everywhere
-
-* moved one time use aliases hnc & dnsc to their usage sites
-
-	TODO(june): Split agent functions into their own file
-	TODO(june): Split delay server functions into their own file (move to delay server file?)
-	
-Im just seeing a lot in here that can probably be more localized to its call sites
-
-// TODO(june): this namespace enum class stuff is really redudant 
-irods::server_state::server_state:: 
-
-// TODO(june): convert connection request queue to modern object
-
-// TODO(june): cleanup initServer stuff, some functions there are redudant in a weird way
-
-* renamed task functions to new format
-* moved void task_purge_lock_file() to anon, only spawned here
-
-
-**/
-
 #include "irods/rodsServer.hpp"
 
 #include "irods/client_connection.hpp"
@@ -80,7 +42,6 @@ irods::server_state::server_state::
 #include "irods/get_grid_configuration_value.h"
 #include "irods/set_delay_server_migration_info.h"
 
-
 #include <pthread.h>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -108,7 +69,6 @@ irods::server_state::server_state::
 #include <fmt/format.h>
 #include <nlohmann/json.hpp>
 
-
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
@@ -120,9 +80,6 @@ irods::server_state::server_state::
 #include <atomic>
 #include <chrono>
 #include <sstream>
-
-
-// TODO(june): Move all these globals into namespaces and group them with their usages
 
 // clang-format off
 namespace ix   = irods::experimental;
@@ -136,14 +93,11 @@ pid_t agent_spawning_pid{};
 char unix_domain_socket_directory[] = "/tmp/irods_sockets_XXXXXX";
 char agent_factory_socket_file[sizeof(sockaddr_un::sun_path)]{};
 
-// TODO(june): this is set once, then loaded into agents enviromental variables, doesnt need to be global
 unsigned int ServerBootTime;
 int SvrSock;
 
 std::atomic<bool> is_control_plane_accepting_requests = false;
 int failed_delay_server_migration_communication_attempts = 0;
-
-
 
 agentProc_t* ConnectedAgentHead{};
 agentProc_t* ConnReqHead{};
@@ -212,7 +166,6 @@ namespace
         }
     }
 
-	// TODO(june): this seems like a really weird way to build and then copy a string into a buffer
     void get64RandomBytes(char* buf)
     {
         const int num_random_bytes = 32;
@@ -551,7 +504,6 @@ namespace
         }
     } // set_delay_server_migration_info
 
-	// TODO(june): why is this an optional bool?
     std::optional<bool> is_delay_server_running_on_remote_host(const std::string_view _hostname)
     {
         using log = irods::experimental::log::server;
@@ -892,7 +844,7 @@ namespace
         open("/dev/null", O_RDWR);
     } // daemonize
 	
-	void print_usage(char *prog)
+	void print_usage(const char *prog)
 	{
 		printf( "Usage: %s [-uvVqs]\n", prog );
 		printf( " -u  user command level, remain attached to the tty (foreground)\n" );
@@ -984,7 +936,6 @@ namespace
 		return savedStatus;
 	}
 	
-	// TODO(june): Would this be better as a cron?
 	void task_purge_lock_file()
 	{
 		std::size_t wait_time_ms = 0;
@@ -1012,7 +963,6 @@ namespace
 		}
 	} // task_purge_lock_file
 	
-	// TODO(june): wrap this in a list or queue and handout data? maybe list of managed pointers?
 	int queueAgentProc( agentProc_t *agentProc, agentProc_t **agentProcHead,
 			irodsPosition_t position ) {
 		if ( agentProc == NULL || agentProcHead == NULL ) {
@@ -2349,8 +2299,6 @@ void readWorkerTask()
         }
     }
 } // readWorkerTask
-
-
 
 int procSingleConnReq(agentProc_t* connReq)
 {

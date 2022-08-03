@@ -1,14 +1,6 @@
-/*
-
-WORKING CHANGES(june):
-
-* removed unused function static void set_agent_process_name(const InformationRequiredToSafelyRenameProcess& info, const int socket_fd)
-
-*/
-
 
 #include "irods/rodsAgent.hpp"
-#include "irods/rodsAgent.hpp"
+
 #include "irods/reconstants.hpp"
 #include "irods/rsApiHandler.hpp"
 #include "irods/icatHighLevelRoutines.hpp"
@@ -42,6 +34,7 @@ WORKING CHANGES(june):
 #include "irods/server_utilities.hpp"
 #include "irods/plugin_lifetime_manager.hpp"
 #include "irods/version.hpp"
+#include "irods/replica_access_table.hpp"
 
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -179,7 +172,6 @@ int receiveDataFromServer( int conn_tmp_socket ) {
     return status;
 }
 
-// TODO(june): anon namespace
 void cleanup() {
     std::string svc_role;
     irods::error ret = get_catalog_service_role(svc_role);

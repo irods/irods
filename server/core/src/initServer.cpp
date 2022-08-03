@@ -1,4 +1,3 @@
-/// WORKING CHANGES(june): removed unused InformationRequiredToSafelyRenameProcess constructor
 
 #include "irods/initServer.hpp"
 

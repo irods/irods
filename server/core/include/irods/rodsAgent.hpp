@@ -1,5 +1,3 @@
-/// WORKING CHANGES(june): appended runIrodsAgentFactory
-
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
@@ -15,6 +13,9 @@
 #include "irods/sockComm.h"
 #include "irods/getRodsEnv.h"
 #include "irods/rcConnect.h"
+#include "irods/rsIcatOpr.hpp"
+
+#include <sys/un.h>
 
 #define MAX_MSG_READ_RETRY	1
 #define READ_RETRY_SLEEP_TIME	1

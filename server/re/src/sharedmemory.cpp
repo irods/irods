@@ -1,10 +1,5 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
- 
-// TODO(june): this needs to be updated to the same style as the dns cache
-//             update to std style functions like_this
-//             wrap in a namespace?
-//             unify that namespace with host_cache and dns_cache
 
 #include <fcntl.h>
 #include "irods/sharedmemory.hpp"
