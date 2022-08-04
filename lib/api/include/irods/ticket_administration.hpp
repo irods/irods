@@ -156,9 +156,9 @@ namespace irods::experimental::administration::ticket
     /// \brief Delete the ticket that is specified
     ///
     /// \param[in] conn The communication object
-    /// \param[in] ticket_ID The ticket ID for the ticket that should be deleted
+    /// \param[in] ticket_id The ticket ID for the ticket that should be deleted
     ///
-    void delete_ticket(RxComm& conn, int ticket_ID);
+    void delete_ticket(RxComm& conn, int ticket_id);
 
     ///
     /// \brief Delete the ticket that is specified using admin privilige
@@ -174,9 +174,9 @@ namespace irods::experimental::administration::ticket
     ///
     /// \param[in] admin_tag Struct tag to indicate admin privilige
     /// \param[in] conn The communication object
-    /// \param[in] ticket_ID The ticket ID for the ticket that should be deleted
+    /// \param[in] ticket_id The ticket ID for the ticket that should be deleted
     ///
-    void delete_ticket(admin_tag, RxComm& conn, int ticket_ID);
+    void delete_ticket(admin_tag, RxComm& conn, int ticket_id);
 
     ///
     /// \brief Add the ticket constraint to the specified ticket
@@ -186,7 +186,7 @@ namespace irods::experimental::administration::ticket
     /// \param[in] constraints The constraint that should be added to the ticket
     ///
     template <typename ticket_constraint>
-    void addTicketConstraints(RxComm& conn, const std::string_view ticket_name, const ticket_constraint& constraints)
+    void add_ticket_constraint(RxComm& conn, const std::string_view ticket_name, const ticket_constraint& constraints)
     {
         std::string_view command = "mod";
         std::string_view command_modifier1 = "add";
@@ -227,9 +227,9 @@ namespace irods::experimental::administration::ticket
     /// constraints The constraint that should be added to the ticket
     ///
     template <typename ticket_constraint>
-    void addTicketConstraints(RxComm& conn, const int ticket_id, const ticket_constraint& constraints)
+    void add_ticket_constraint(RxComm& conn, const int ticket_id, const ticket_constraint& constraints)
     {
-        addTicketConstraints(conn, std::to_string(ticket_id), constraints);
+        add_ticket_constraint(conn, std::to_string(ticket_id), constraints);
     }
 
     ///
@@ -241,7 +241,7 @@ namespace irods::experimental::administration::ticket
     /// be added to the ticket
     ///
     template <typename ticket_constraint>
-    void addTicketConstraints(admin_tag,
+    void add_ticket_constraint(admin_tag,
                               RxComm& conn,
                               const std::string_view ticket_name,
                               const ticket_constraint& constraints)
@@ -286,9 +286,9 @@ namespace irods::experimental::administration::ticket
     /// be added to the ticket
     ///
     template <typename ticket_constraint>
-    void addTicketConstraints(admin_tag, RxComm& conn, const int ticket_id, const ticket_constraint& constraints)
+    void add_ticket_constraint(admin_tag, RxComm& conn, const int ticket_id, const ticket_constraint& constraints)
     {
-        addTicketConstraints(admin_tag{}, conn, std::to_string(ticket_id), constraints);
+        add_ticket_constraint(admin_tag{}, conn, std::to_string(ticket_id), constraints);
     }
 
     ///
@@ -298,7 +298,7 @@ namespace irods::experimental::administration::ticket
     /// constraint) \param[in] conn The communication object \param[in] ticket_name \param[in] constraints
     ///
     template <typename ticket_constraint>
-    void setTicketConstraints(RxComm& conn, const std::string_view ticket_name, const ticket_constraint& constraints)
+    void set_ticket_constraint(RxComm& conn, const std::string_view ticket_name, const ticket_constraint& constraints)
     {
         if constexpr (std::is_same_v<ticket_property_constraint, ticket_constraint>) {
             std::string_view command = "mod";
@@ -349,9 +349,9 @@ namespace irods::experimental::administration::ticket
     /// constraints The constraint that should be set on the ticket specified
     ///
     template <typename ticket_constraint>
-    void setTicketConstraints(RxComm& conn, const int ticket_id, const ticket_constraint& constraints)
+    void set_ticket_constraint(RxComm& conn, const int ticket_id, const ticket_constraint& constraints)
     {
-        setTicketConstraints(conn, std::to_string(ticket_id), constraints);
+        set_ticket_constraint(conn, std::to_string(ticket_id), constraints);
     }
 
     ///
@@ -363,7 +363,7 @@ namespace irods::experimental::administration::ticket
     /// the ticket specified
     ///
     template <typename ticket_constraint>
-    void setTicketConstraints(admin_tag,
+    void set_ticket_constraint(admin_tag,
                               RxComm& conn,
                               const std::string_view ticket_name,
                               const ticket_constraint& constraints)
@@ -418,9 +418,9 @@ namespace irods::experimental::administration::ticket
     /// ticket specified
     ///
     template <typename ticket_constraint>
-    void setTicketConstraints(admin_tag, RxComm& conn, const int ticket_id, const ticket_constraint& constraints)
+    void set_ticket_constraint(admin_tag, RxComm& conn, const int ticket_id, const ticket_constraint& constraints)
     {
-        setTicketConstraints(admin_tag{}, conn, std::to_string(ticket_id), constraints);
+        set_ticket_constraint(admin_tag{}, conn, std::to_string(ticket_id), constraints);
     }
 
     ///
@@ -432,7 +432,7 @@ namespace irods::experimental::administration::ticket
     /// \param[in] constraints The constraint type that should be removed from the ticket
     ///
     template <typename ticket_constraint>
-    void removeTicketConstraints(RxComm& conn, const std::string_view ticket_name, const ticket_constraint& constraints)
+    void remove_ticket_constraint(RxComm& conn, const std::string_view ticket_name, const ticket_constraint& constraints)
     {
         std::string_view command = "mod";
         std::string_view command_modifier1;
@@ -496,9 +496,9 @@ namespace irods::experimental::administration::ticket
     /// \param[in] constraints The constraint type that should be removed from the ticket
     ///
     template <typename ticket_constraint>
-    void removeTicketConstraints(RxComm& conn, const int ticket_id, const ticket_constraint& constraints)
+    void remove_ticket_constraint(RxComm& conn, const int ticket_id, const ticket_constraint& constraints)
     {
-        removeTicketConstraints(conn, std::to_string(ticket_id), constraints);
+        remove_ticket_constraint(conn, std::to_string(ticket_id), constraints);
     }
 
     ///
@@ -511,7 +511,7 @@ namespace irods::experimental::administration::ticket
     /// \param[in] constraints The constraint type that should be removed from the ticket
     ///
     template <typename ticket_constraint>
-    void removeTicketConstraints(admin_tag,
+    void remove_ticket_constraint(admin_tag,
                                  RxComm& conn,
                                  const std::string_view ticket_name,
                                  const ticket_constraint& constraints)
@@ -579,9 +579,9 @@ namespace irods::experimental::administration::ticket
     /// \param[in] constraints The constraint type that should be removed from the ticket
     ///
     template <typename ticket_constraint>
-    void removeTicketConstraints(admin_tag, RxComm& conn, const int ticket_id, const ticket_constraint& constraints)
+    void remove_ticket_constraint(admin_tag, RxComm& conn, const int ticket_id, const ticket_constraint& constraints)
     {
-        removeTicketConstraints(admin_tag{}, conn, std::to_string(ticket_id), constraints);
+        remove_ticket_constraint(admin_tag{}, conn, std::to_string(ticket_id), constraints);
     }
 
 } // namespace irods::experimental::administration::ticket

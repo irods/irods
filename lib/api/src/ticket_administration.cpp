@@ -27,7 +27,11 @@
 
 namespace irods::experimental::administration::ticket
 {
-
+    /// 
+    /// \brief A function to make a new ticket name
+    /// 
+    /// \param[in] newTicket String memory address that stores the new ticket name
+    ///
     void make_ticket_name(char* newTicket)
     {
         const int ticket_len = 15;
@@ -48,6 +52,7 @@ namespace irods::experimental::administration::ticket
         newTicket[ticket_len] = '\0';
         printf("ticket:%s\n", newTicket);
     }
+
     void execute_ticket_operation(RxComm& conn,
                                   std::string_view command,
                                   std::string_view ticket_identifier,
@@ -87,6 +92,7 @@ namespace irods::experimental::administration::ticket
             execute_ticket_operation(conn, "create", ticket_name, "write", obj_path, ticket_name, "", false);
         }
     }
+    
     std::string create_ticket(RxComm& conn, type _type, std::string_view obj_path)
     {
         char myTicket[30];
@@ -113,6 +119,7 @@ namespace irods::experimental::administration::ticket
             execute_ticket_operation(conn, "create", ticket_name, "write", obj_path, ticket_name, "", true);
         }
     }
+    
     std::string create_ticket(admin_tag, RxComm& conn, type _type, std::string_view obj_path)
     {
         char myTicket[30];
@@ -134,18 +141,20 @@ namespace irods::experimental::administration::ticket
     {
         execute_ticket_operation(conn, "delete", ticket_name, "", "", "", "", false);
     }
-    void delete_ticket(RxComm& conn, int ticket_ID)
+    
+    void delete_ticket(RxComm& conn, int ticket_id)
     {
-        execute_ticket_operation(conn, "delete", std::to_string(ticket_ID), "", "", "", "", false);
+        execute_ticket_operation(conn, "delete", std::to_string(ticket_id), "", "", "", "", false);
     }
 
     void delete_ticket(admin_tag, RxComm& conn, std::string_view ticket_name)
     {
         execute_ticket_operation(conn, "delete", ticket_name, "", "", "", "", true);
     }
-    void delete_ticket(admin_tag, RxComm& conn, int ticket_ID)
+    
+    void delete_ticket(admin_tag, RxComm& conn, int ticket_id)
     {
-        execute_ticket_operation(conn, "delete", std::to_string(ticket_ID), "", "", "", "", true);
+        execute_ticket_operation(conn, "delete", std::to_string(ticket_id), "", "", "", "", true);
     }
 
 } // namespace irods::experimental::administration::ticket
