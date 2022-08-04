@@ -17,20 +17,19 @@ struct RcComm;
 #include <type_traits>
 #include <string>
 
-
-/// 
+///
 /// \brief Namespace to hold the ticket administration features
 ///
 namespace irods::experimental::administration::ticket
 {
-    /// 
+    ///
     /// \brief Struct tag to indicate admin privilige
     ///
     inline struct admin_tag
     {
     } admin;
 
-    /// 
+    ///
     /// \brief Enumeration to indicate the ticket type
     ///
     enum class type
@@ -39,7 +38,7 @@ namespace irods::experimental::administration::ticket
         write
     };
 
-    /// 
+    ///
     /// \brief Enumeration to indicate the property of ticket
     ///
     enum class property
@@ -49,7 +48,7 @@ namespace irods::experimental::administration::ticket
         write_byte
     };
 
-    /// 
+    ///
     /// \brief Struct that holds the user name of the user that should be added/removed
     ///
     struct users_constraint
@@ -57,7 +56,7 @@ namespace irods::experimental::administration::ticket
         const std::string_view user_name;
     };
 
-    /// 
+    ///
     /// \brief  Struct that holds the name of the group that should be added/removed
     ///
     struct groups_constraint
@@ -65,7 +64,7 @@ namespace irods::experimental::administration::ticket
         const std::string_view group_name;
     };
 
-    /// 
+    ///
     /// \brief  Struct that holds the name of the host that should be added/removed
     ///
     struct hosts_constraint
@@ -73,7 +72,7 @@ namespace irods::experimental::administration::ticket
         const std::string_view host_name;
     };
 
-    /// 
+    ///
     /// \brief Struct to hold info about the ticket property desired for the ticket specified in further function calls
     ///
     struct ticket_property_constraint
@@ -145,47 +144,45 @@ namespace irods::experimental::administration::ticket
     ///
     std::string create_ticket(admin_tag, RxComm& conn, type _type, std::string_view obj_path);
 
-    
-    /// 
+    ///
     /// \brief Delete the ticket that is specified
-    /// 
+    ///
     /// \param[in] conn The communication object
     /// \param[in] ticket_name Name of the ticket that is to be deleted
     ///
     void delete_ticket(RxComm& conn, std::string_view ticket_name);
 
-    /// 
+    ///
     /// \brief Delete the ticket that is specified
-    /// 
+    ///
     /// \param[in] conn The communication object
     /// \param[in] ticket_ID The ticket ID for the ticket that should be deleted
     ///
     void delete_ticket(RxComm& conn, int ticket_ID);
 
-    /// 
+    ///
     /// \brief Delete the ticket that is specified using admin privilige
-    /// 
+    ///
     /// \param[in] admin_tag Struct tag to indicate admin privilige
     /// \param[in] conn The communication Object
     /// \param[in] ticket_name Name of the ticket that is to be deleted
     ///
     void delete_ticket(admin_tag, RxComm& conn, std::string_view ticket_name);
 
-    /// 
+    ///
     /// \brief Delete the ticket that is specified using admin privilige
-    /// 
+    ///
     /// \param[in] admin_tag Struct tag to indicate admin privilige
     /// \param[in] conn The communication object
     /// \param[in] ticket_ID The ticket ID for the ticket that should be deleted
     ///
     void delete_ticket(admin_tag, RxComm& conn, int ticket_ID);
 
-    /// 
-    /// \brief Add the ticket constraint to the specified ticket 
-    /// 
-    /// \tparam ticket_constraint The template struct to indicate the type of constraint (only user, group, and host constraint struct)
-    /// \param[in] conn The communication object
-    /// \param[in] ticket_name The name of the ticket
+    ///
+    /// \brief Add the ticket constraint to the specified ticket
+    ///
+    /// \tparam ticket_constraint The template struct to indicate the type of constraint (only user, group, and host
+    /// constraint struct) \param[in] conn The communication object \param[in] ticket_name The name of the ticket
     /// \param[in] constraints The constraint that should be added to the ticket
     ///
     template <typename ticket_constraint>
@@ -221,14 +218,13 @@ namespace irods::experimental::administration::ticket
                                  command_modifier4,
                                  false);
     }
-    
-    /// 
-    /// \brief Add the ticket constraint to the specified ticket 
-    /// 
-    /// \tparam ticket_constraint The template struct to indicate the type of constraint (only user, group, and host constraint struct)
-    /// \param[in] conn The communication object
-    /// \param[in] ticket_id The id of the ticket
-    /// \param[in] constraints The constraint that should be added to the ticket
+
+    ///
+    /// \brief Add the ticket constraint to the specified ticket
+    ///
+    /// \tparam ticket_constraint The template struct to indicate the type of constraint (only user, group, and host
+    /// constraint struct) \param[in] conn The communication object \param[in] ticket_id The id of the ticket \param[in]
+    /// constraints The constraint that should be added to the ticket
     ///
     template <typename ticket_constraint>
     void addTicketConstraints(RxComm& conn, const int ticket_id, const ticket_constraint& constraints)
@@ -236,17 +232,19 @@ namespace irods::experimental::administration::ticket
         addTicketConstraints(conn, std::to_string(ticket_id), constraints);
     }
 
-    /// 
+    ///
     /// \brief Add the ticket constraint to the specified ticket using admin privilige
-    /// 
-    /// \tparam ticket_constraint The template struct to indicate the type of constraint (only user, group, and host constraint struct)
-    /// \param[in] admin_tag Struct tag that indicated admin privilige
-    /// \param[in] conn The communication object
-    /// \param[in] ticket_id The id of the ticket
-    /// \param[in] constraints The constraint that should be added to the ticket
+    ///
+    /// \tparam ticket_constraint The template struct to indicate the type of constraint (only user, group, and host
+    /// constraint struct) \param[in] admin_tag Struct tag that indicated admin privilige \param[in] conn The
+    /// communication object \param[in] ticket_id The id of the ticket \param[in] constraints The constraint that should
+    /// be added to the ticket
     ///
     template <typename ticket_constraint>
-    void addTicketConstraints(admin_tag, RxComm& conn, const std::string_view ticket_name, const ticket_constraint& constraints)
+    void addTicketConstraints(admin_tag,
+                              RxComm& conn,
+                              const std::string_view ticket_name,
+                              const ticket_constraint& constraints)
     {
         std::string_view command = "mod";
         std::string_view command_modifier1 = "add";
@@ -278,15 +276,14 @@ namespace irods::experimental::administration::ticket
                                  command_modifier4,
                                  true);
     }
-    
-    /// 
+
+    ///
     /// \brief Add the ticket constraint to the specified ticket using admin privilige
-    /// 
-    /// \tparam ticket_constraint The template struct to indicate the type of constraint (only user, group, and host constraint struct)
-    /// \param[in] admin_tag Struct tag that indicated admin privilige
-    /// \param[in] conn The communication object
-    /// \param[in] ticket_id The id of the ticket
-    /// \param[in] constraints The constraint that should be added to the ticket
+    ///
+    /// \tparam ticket_constraint The template struct to indicate the type of constraint (only user, group, and host
+    /// constraint struct) \param[in] admin_tag Struct tag that indicated admin privilige \param[in] conn The
+    /// communication object \param[in] ticket_id The id of the ticket \param[in] constraints The constraint that should
+    /// be added to the ticket
     ///
     template <typename ticket_constraint>
     void addTicketConstraints(admin_tag, RxComm& conn, const int ticket_id, const ticket_constraint& constraints)
@@ -294,13 +291,11 @@ namespace irods::experimental::administration::ticket
         addTicketConstraints(admin_tag{}, conn, std::to_string(ticket_id), constraints);
     }
 
-    /// 
+    ///
     /// \brief Set constraint to the ticket specified
-    /// 
-    /// \tparam ticket_constraint The template struct to indicate the type of constraint (only the ticket property constraint)
-    /// \param[in] conn The communication object
-    /// \param[in] ticket_name
-    /// \param[in] constraints
+    ///
+    /// \tparam ticket_constraint The template struct to indicate the type of constraint (only the ticket property
+    /// constraint) \param[in] conn The communication object \param[in] ticket_name \param[in] constraints
     ///
     template <typename ticket_constraint>
     void setTicketConstraints(RxComm& conn, const std::string_view ticket_name, const ticket_constraint& constraints)
@@ -345,14 +340,13 @@ namespace irods::experimental::administration::ticket
             throw std::invalid_argument("Wrong type object given");
         }
     }
-    
-    /// 
+
+    ///
     /// \brief Set constraint to the ticket specified
-    /// 
-    /// \tparam ticket_constraint The template struct to indicate the type of constraint (only the ticket property constraint)
-    /// \param[in] conn The communication object
-    /// \param[in] ticket_id The ID of the ticket
-    /// \param[in] constraints The constraint 
+    ///
+    /// \tparam ticket_constraint The template struct to indicate the type of constraint (only the ticket property
+    /// constraint) \param[in] conn The communication object \param[in] ticket_id The ID of the ticket \param[in]
+    /// constraints The constraint that should be set on the ticket specified
     ///
     template <typename ticket_constraint>
     void setTicketConstraints(RxComm& conn, const int ticket_id, const ticket_constraint& constraints)
@@ -360,17 +354,19 @@ namespace irods::experimental::administration::ticket
         setTicketConstraints(conn, std::to_string(ticket_id), constraints);
     }
 
-    /// 
-    /// \brief Set the Ticket Constraints object
-    /// 
-    /// \tparam ticket_constraint The template struct to indicate the type of constraint (only the ticket property constraint)
-    /// \param[in] admin_tag Struct tag that indicated admin privilige
-    /// \param[in] conn Co
-    /// \param[in] ticket_name
-    /// \param[in] constraints
+    ///
+    /// \brief Set constraint to the ticket specified using admin privilige
+    ///
+    /// \tparam ticket_constraint The template struct to indicate the type of constraint (only the ticket property
+    /// constraint) \param[in] admin_tag Struct tag that indicated admin privilige \param[in] conn The communication
+    /// object \param[in] ticket_name The name of the ticket \param[in] constraints The constraint that should be set on
+    /// the ticket specified
     ///
     template <typename ticket_constraint>
-    void setTicketConstraints(admin_tag, RxComm& conn, const std::string_view ticket_name, const ticket_constraint& constraints)
+    void setTicketConstraints(admin_tag,
+                              RxComm& conn,
+                              const std::string_view ticket_name,
+                              const ticket_constraint& constraints)
     {
         if constexpr (std::is_same_v<ticket_property_constraint, ticket_constraint>) {
             std::string_view command = "mod";
@@ -412,15 +408,14 @@ namespace irods::experimental::administration::ticket
             throw std::invalid_argument("Wrong type object given");
         }
     }
-    
-    /// 
-    /// \brief Set the Ticket Constraints object
-    /// 
-    /// \tparam ticket_constraint The template struct to indicate the type of constraint (only the ticket property constraint)
-    /// \param[in] admin_tag Struct tag that indicated admin privilige
-    /// \param[in] conn
-    /// \param[in] ticket_id
-    /// \param[in] constraints
+
+    ///
+    /// \brief Set constraint to the ticket specified using admin privilige
+    ///
+    /// \tparam ticket_constraint The template struct to indicate the type of constraint (only the ticket property
+    /// constraint) \param[in] admin_tag Struct tag that indicated admin privilige \param[in] conn The communication
+    /// object \param[in] ticket_id The ID of the ticket \param[in] constraints The constraint that should be set on the
+    /// ticket specified
     ///
     template <typename ticket_constraint>
     void setTicketConstraints(admin_tag, RxComm& conn, const int ticket_id, const ticket_constraint& constraints)
@@ -428,13 +423,13 @@ namespace irods::experimental::administration::ticket
         setTicketConstraints(admin_tag{}, conn, std::to_string(ticket_id), constraints);
     }
 
-    /// 
-    /// \brief 
-    /// 
-    /// \tparam ticket_constraint The template struct to indicate the type of constraint 
-    /// \param[in] conn
-    /// \param[in] ticket_name
-    /// \param[in] constraints
+    ///
+    /// \brief Remove the ticket constraint from the ticket
+    ///
+    /// \tparam ticket_constraint The template struct to indicate the type of constraint
+    /// \param[in] conn The communication object
+    /// \param[in] ticket_name The name of the ticket
+    /// \param[in] constraints The constraint type that should be removed from the ticket
     ///
     template <typename ticket_constraint>
     void removeTicketConstraints(RxComm& conn, const std::string_view ticket_name, const ticket_constraint& constraints)
@@ -491,14 +486,14 @@ namespace irods::experimental::administration::ticket
                                  command_modifier4,
                                  false);
     }
-    
-    /// 
-    /// \brief 
-    /// 
+
+    ///
+    /// \brief Remove the ticket constraint from the ticket
+    ///
     /// \tparam ticket_constraint The template struct to indicate the type of constraint
-    /// \param[in] conn
-    /// \param[in] ticket_id
-    /// \param[in] constraints
+    /// \param[in] conn The communication object
+    /// \param[in] ticket_id The id for the ticket
+    /// \param[in] constraints The constraint type that should be removed from the ticket
     ///
     template <typename ticket_constraint>
     void removeTicketConstraints(RxComm& conn, const int ticket_id, const ticket_constraint& constraints)
@@ -506,17 +501,20 @@ namespace irods::experimental::administration::ticket
         removeTicketConstraints(conn, std::to_string(ticket_id), constraints);
     }
 
-    /// 
-    /// \brief 
-    /// 
+    ///
+    /// \brief Remove the ticket constraint from the ticket using admin privilige
+    ///
     /// \tparam ticket_constraint The template struct to indicate the type of constraint
     /// \param[in] admin_tag Struct tag that indicated admin privilige
-    /// \param[in] conn
-    /// \param[in] ticket_name
-    /// \param[in] constraints
+    /// \param[in] conn The communication object
+    /// \param[in] ticket_name The name of the ticket
+    /// \param[in] constraints The constraint type that should be removed from the ticket
     ///
     template <typename ticket_constraint>
-    void removeTicketConstraints(admin_tag, RxComm& conn, const std::string_view ticket_name, const ticket_constraint& constraints)
+    void removeTicketConstraints(admin_tag,
+                                 RxComm& conn,
+                                 const std::string_view ticket_name,
+                                 const ticket_constraint& constraints)
     {
         std::string_view command = "mod";
         std::string_view command_modifier1;
@@ -570,15 +568,15 @@ namespace irods::experimental::administration::ticket
                                  command_modifier4,
                                  true);
     }
-    
-    /// 
-    /// \brief 
-    /// 
-    /// \tparam ticket_constraint The template struct to indicate the type of constraint 
+
+    ///
+    /// \brief Remove the ticket constraint from the ticket using admin privilige
+    ///
+    /// \tparam ticket_constraint The template struct to indicate the type of constraint
     /// \param[in] admin_tag Struct tag that indicated admin privilige
-    /// \param[in] conn
-    /// \param[in] ticket_id
-    /// \param[in] constraints
+    /// \param[in] conn The communication object
+    /// \param[in] ticket_id The id for the ticket
+    /// \param[in] constraints The constraint type that should be removed from the ticket
     ///
     template <typename ticket_constraint>
     void removeTicketConstraints(admin_tag, RxComm& conn, const int ticket_id, const ticket_constraint& constraints)
