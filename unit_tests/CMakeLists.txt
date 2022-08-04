@@ -74,6 +74,7 @@ set(
   with_durability
   json_apis_from_client
   zone_report
+  ticket_administration
 )
 
 foreach(test IN LISTS IRODS_UNIT_TESTS)
