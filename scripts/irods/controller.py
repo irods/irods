@@ -258,6 +258,12 @@ class IrodsController(object):
         self.stop()
         self.start(write_to_stdout, test_mode)
 
+    def reload_configuration(self):
+        """Send the SIGHUP signal to the server, causing it to reload the configuration."""
+        import signal
+        server_process = self.get_server_proc()
+        os.kill(server_process.pid, signal.SIGHUP)
+
     def status(self):
         l = logging.getLogger(__name__)
         l.debug('Calling status on IrodsController')

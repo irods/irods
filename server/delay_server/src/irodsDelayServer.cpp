@@ -678,11 +678,11 @@ int main(int argc, char** argv)
         }
 
         return irods::default_delay_server_sleep_time_in_seconds;
-    }();
+    };
 
     const auto go_to_sleep = [&sleep_time] {
         const auto start_time = std::chrono::system_clock::now();
-        const auto allowed_sleep_time = std::chrono::seconds{sleep_time};
+        const auto allowed_sleep_time = std::chrono::seconds{sleep_time()};
 
         // Loop until the server is signaled to shutdown or the max amount of time
         // to sleep has been reached.

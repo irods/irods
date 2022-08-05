@@ -319,7 +319,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
                 f.write(new_server_config)
 
             # Bounce server to apply setting
-            irodsctl.restart(test_mode=True)
+            irodsctl.reload_configuration()
 
             # Fire off rule and wait for message to get written out to serverLog
             self.admin.assert_icommand(['irule', '-F', rule_file], 'STDOUT_SINGLELINE', "rule queued")
@@ -370,8 +370,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
                         config.client_environment_path,
                         {'irods_connection_pool_refresh_time_in_seconds' : 2})
 
-                    # Bounce server to apply setting
-                    irodsctl.restart(test_mode=True)
+                    irodsctl.reload_configuration()
 
                     # Fire off rule and ensure the delay queue is correctly populated
                     self.admin.assert_icommand(['irule', '-F', rule_file])
@@ -400,7 +399,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
 
         finally:
             os.remove(rule_file)
-            irodsctl.restart(test_mode=True)
+            irodsctl.reload_configuration()
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Delete this line on resolution of #4094')
     def test_sigpipe_in_delay_server(self):
@@ -432,8 +431,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
                 with open(server_config_filename, 'w') as f:
                     f.write(new_server_config)
 
-                # Bounce server to apply setting
-                irodsctl.restart(test_mode=True)
+                irodsctl.reload_configuration()
 
                 # Fire off rule and wait for message to get written out to serverLog
                 self.admin.assert_icommand(['irule', '-F', rule_file], 'STDOUT_SINGLELINE', "rule queued")
@@ -459,7 +457,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
         finally:
             os.remove(rule_file)
             self.admin.run_icommand(['iqdel', '-a'])
-            irodsctl.restart(test_mode=True)
+            irodsctl.reload_configuration()
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Delete this line on resolution of #4094')
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'odbc.ini file does not exist on Catalog Service Consumer')
@@ -500,8 +498,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
                         config.client_environment_path,
                         {'irods_connection_pool_refresh_time_in_seconds' : 2})
 
-                    # Bounce server to apply setting
-                    irodsctl.restart(test_mode=True)
+                    irodsctl.reload_configuration()
                     with lib.file_backed_up(odbc_ini_file):
                         self.admin.assert_icommand(['irule', '-F', rule_file])
                         time.sleep(2)
@@ -536,7 +533,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
             # Lower the delay server's sleep time so that rules are executed quicker.
             config.server_config['advanced_settings']['delay_server_sleep_time_in_seconds'] = 1
             lib.update_json_file_from_dict(config.server_config_path, config.server_config)
-            IrodsController().restart(test_mode=True)
+            IrodsController().reload_configuration()
 
             core_re_path = os.path.join(config.core_re_directory, 'core.re')
 
@@ -568,7 +565,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
                 lib.delayAssert(lambda: assert_metadata_exists)
 
         # Restore the server's configuration settings.
-        IrodsController().restart(test_mode=True)
+        IrodsController().reload_configuration()
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for PREP and Topology Testing')
     def test_session_variables_can_be_used_in_delay_rules_indirectly(self):
@@ -578,7 +575,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
             # Lower the delay server's sleep time so that rules are executed quicker.
             config.server_config['advanced_settings']['delay_server_sleep_time_in_seconds'] = 1
             lib.update_json_file_from_dict(config.server_config_path, config.server_config)
-            IrodsController().restart(test_mode=True)
+            IrodsController().reload_configuration()
 
             core_re_path = os.path.join(config.core_re_directory, 'core.re')
 
@@ -613,7 +610,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
                 lib.delayAssert(lambda: assert_metadata_exists)
 
         # Restore the server's configuration settings.
-        IrodsController().restart(test_mode=True)
+        IrodsController().reload_configuration()
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for PREP and Topology Testing')
     def test_delay_rule_priority_level_defaults_to_5_when_no_priority_level_is_specified__issue_2759(self):

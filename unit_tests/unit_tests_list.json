@@ -17,6 +17,7 @@
     "irods_hierarchy_parser",
     "irods_hostname_cache",
     "irods_json_apis_from_client",
+    "irods_json_events",
     "irods_key_value_proxy",
     "irods_lifetime_manager",
     "irods_linked_list_iterator",
