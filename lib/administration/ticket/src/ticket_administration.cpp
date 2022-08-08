@@ -25,70 +25,76 @@
 #include <string>
 #include <sstream>
 
-namespace irods::experimental::administration::ticket
+namespace irods::experimental::administration::ticket::NAMESPACE_IMPL
 {
-    ///
-    /// \brief A function to make a new ticket name
-    ///
-    /// \param[in] newTicket String memory address that stores the new ticket name
-    ///
-    void make_ticket_name(char* newTicket)
+    namespace
     {
-        const int ticket_len = 15;
-        // random_bytes must be (unsigned char[]) to guarantee that following
-        // modulo result is positive (i.e. in [0, 61])
-        unsigned char random_bytes[ticket_len];
-        irods::getRandomBytes(random_bytes, ticket_len);
+        ///
+        /// \brief A function to make a new ticket name
+        ///
+        /// \param[in] newTicket String memory address that stores the new ticket name
+        ///
+        void make_ticket_name(char* newTicket)
+        {
+            const int ticket_len = 15;
+            // random_bytes must be (unsigned char[]) to guarantee that following
+            // modulo result is positive (i.e. in [0, 61])
+            unsigned char random_bytes[ticket_len];
+            irods::getRandomBytes(random_bytes, ticket_len);
 
-        const char characterSet[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
-                                     'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
-                                     'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-                                     'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+            const char characterSet[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+                                         'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
+                                         'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+                                         'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
-        for (int i = 0; i < ticket_len; ++i) {
-            const int ix = random_bytes[i] % sizeof(characterSet);
-            newTicket[i] = characterSet[ix];
+            for (int i = 0; i < ticket_len; ++i) {
+                const int ix = random_bytes[i] % sizeof(characterSet);
+                newTicket[i] = characterSet[ix];
+            }
+            newTicket[ticket_len] = '\0';
         }
-        newTicket[ticket_len] = '\0';
-    }
+    } // namespace
 
-    void execute_ticket_operation(RxComm& conn,
-                                  std::string_view command,
-                                  std::string_view ticket_identifier,
-                                  std::string_view command_modifier1,
-                                  std::string_view command_modifier2,
-                                  std::string_view command_modifier3,
-                                  std::string_view command_modifier4,
-                                  bool run_as_admin)
+    namespace detail
     {
-        ticketAdminInp_t ticketAdminInp{};
-        irods::at_scope_exit free_memory{[&ticketAdminInp] { clearKeyVal(&ticketAdminInp.condInput); }};
+        void execute_ticket_operation(RxComm& conn,
+                                      std::string_view command,
+                                      std::string_view ticket_identifier,
+                                      std::string_view command_modifier1,
+                                      std::string_view command_modifier2,
+                                      std::string_view command_modifier3,
+                                      std::string_view command_modifier4,
+                                      bool run_as_admin)
+        {
+            ticketAdminInp_t ticketAdminInp{};
+            irods::at_scope_exit free_memory{[&ticketAdminInp] { clearKeyVal(&ticketAdminInp.condInput); }};
 
-        ticketAdminInp.arg1 = const_cast<char*>(command.data());
-        ticketAdminInp.arg2 = const_cast<char*>(ticket_identifier.data());
-        ticketAdminInp.arg3 = const_cast<char*>(command_modifier1.data());
-        ticketAdminInp.arg4 = const_cast<char*>(command_modifier2.data());
-        ticketAdminInp.arg5 = const_cast<char*>(command_modifier3.data());
-        ticketAdminInp.arg6 = const_cast<char*>(command_modifier4.data());
+            ticketAdminInp.arg1 = const_cast<char*>(command.data());
+            ticketAdminInp.arg2 = const_cast<char*>(ticket_identifier.data());
+            ticketAdminInp.arg3 = const_cast<char*>(command_modifier1.data());
+            ticketAdminInp.arg4 = const_cast<char*>(command_modifier2.data());
+            ticketAdminInp.arg5 = const_cast<char*>(command_modifier3.data());
+            ticketAdminInp.arg6 = const_cast<char*>(command_modifier4.data());
 
-        if (run_as_admin) {
-            addKeyVal(&ticketAdminInp.condInput, ADMIN_KW, "");
+            if (run_as_admin) {
+                addKeyVal(&ticketAdminInp.condInput, ADMIN_KW, "");
+            }
+
+            int status = rxTicketAdmin(&conn, &ticketAdminInp);
+
+            if (status < 0) {
+                THROW(status, "Ticket operation failed");
+            }
         }
-
-        int status = rxTicketAdmin(&conn, &ticketAdminInp);
-
-        if (status < 0) {
-            THROW(status, "Ticket operation failed");
-        }
-    }
+    } // namespace detail
 
     void create_ticket(RxComm& conn, type _type, std::string_view obj_path, std::string_view ticket_name)
     {
         if (_type == type::read) {
-            execute_ticket_operation(conn, "create", ticket_name, "read", obj_path, ticket_name, "", false);
+            detail::execute_ticket_operation(conn, "create", ticket_name, "read", obj_path, ticket_name, "", false);
         }
         else if (_type == type::write) {
-            execute_ticket_operation(conn, "create", ticket_name, "write", obj_path, ticket_name, "", false);
+            detail::execute_ticket_operation(conn, "create", ticket_name, "write", obj_path, ticket_name, "", false);
         }
     }
 
@@ -98,10 +104,10 @@ namespace irods::experimental::administration::ticket
         make_ticket_name(myTicket);
 
         if (_type == type::read) {
-            execute_ticket_operation(conn, "create", myTicket, "read", obj_path, myTicket, "", false);
+            detail::execute_ticket_operation(conn, "create", myTicket, "read", obj_path, myTicket, "", false);
         }
         else if (_type == type::write) {
-            execute_ticket_operation(conn, "create", myTicket, "write", obj_path, myTicket, "", false);
+            detail::execute_ticket_operation(conn, "create", myTicket, "write", obj_path, myTicket, "", false);
         }
 
         return myTicket;
@@ -110,10 +116,10 @@ namespace irods::experimental::administration::ticket
     void create_ticket(admin_tag, RxComm& conn, type _type, std::string_view obj_path, std::string_view ticket_name)
     {
         if (_type == type::read) {
-            execute_ticket_operation(conn, "create", ticket_name, "read", obj_path, ticket_name, "", true);
+            detail::execute_ticket_operation(conn, "create", ticket_name, "read", obj_path, ticket_name, "", true);
         }
         else if (_type == type::write) {
-            execute_ticket_operation(conn, "create", ticket_name, "write", obj_path, ticket_name, "", true);
+            detail::execute_ticket_operation(conn, "create", ticket_name, "write", obj_path, ticket_name, "", true);
         }
     }
 
@@ -123,10 +129,10 @@ namespace irods::experimental::administration::ticket
         make_ticket_name(myTicket);
 
         if (_type == type::read) {
-            execute_ticket_operation(conn, "create", myTicket, "read", obj_path, myTicket, "", true);
+            detail::execute_ticket_operation(conn, "create", myTicket, "read", obj_path, myTicket, "", true);
         }
         else if (_type == type::write) {
-            execute_ticket_operation(conn, "create", myTicket, "write", obj_path, myTicket, "", true);
+            detail::execute_ticket_operation(conn, "create", myTicket, "write", obj_path, myTicket, "", true);
         }
 
         return myTicket;
@@ -134,22 +140,22 @@ namespace irods::experimental::administration::ticket
 
     void delete_ticket(RxComm& conn, std::string_view ticket_name)
     {
-        execute_ticket_operation(conn, "delete", ticket_name, "", "", "", "", false);
+        detail::execute_ticket_operation(conn, "delete", ticket_name, "", "", "", "", false);
     }
 
     void delete_ticket(RxComm& conn, int ticket_id)
     {
-        execute_ticket_operation(conn, "delete", std::to_string(ticket_id), "", "", "", "", false);
+        detail::execute_ticket_operation(conn, "delete", std::to_string(ticket_id), "", "", "", "", false);
     }
 
     void delete_ticket(admin_tag, RxComm& conn, std::string_view ticket_name)
     {
-        execute_ticket_operation(conn, "delete", ticket_name, "", "", "", "", true);
+        detail::execute_ticket_operation(conn, "delete", ticket_name, "", "", "", "", true);
     }
 
     void delete_ticket(admin_tag, RxComm& conn, int ticket_id)
     {
-        execute_ticket_operation(conn, "delete", std::to_string(ticket_id), "", "", "", "", true);
+        detail::execute_ticket_operation(conn, "delete", std::to_string(ticket_id), "", "", "", "", true);
     }
 
-} // namespace irods::experimental::administration::ticket
+} // namespace irods::experimental::administration::ticket::NAMESPACE_IMPL
