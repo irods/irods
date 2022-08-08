@@ -3,9 +3,10 @@
 #include "irods/connection_pool.hpp"
 #include "irods/rodsClient.h"
 #include "irods/ticket_administration.hpp"
-#include <fmt/format.h>
 #include "irods/query_builder.hpp"
 #include "irods/user_administration.hpp"
+
+#include <fmt/format.h>
 
 #include <string>
 #include <iostream>
