@@ -73,6 +73,30 @@ namespace irods::experimental::administration::ticket
     };
 
     ///
+    /// \brief Struct to hold the use count constraint for the ticket
+    ///
+    struct use_count_constraint
+    {
+        int n = -1;
+    };
+
+    ///
+    /// \brief Struct to hold the write count limit constraint for the ticket
+    ///
+    struct n_writes_to_data_object_constraint
+    {
+        int n = -1;
+    };
+
+    ///
+    /// \brief Struct to hold the write byte limit constraint for the ticket
+    ///
+    struct n_write_bytes_constraint
+    {
+        int n = -1;
+    };
+
+    ///
     /// \brief Struct to hold info about the ticket property desired for the ticket specified in further function calls
     ///
     struct ticket_property_constraint
@@ -183,19 +207,19 @@ namespace irods::experimental::administration::ticket
     ///
     /// \tparam ticket_constraint The template struct to indicate the type of constraint (only user, group, and host
     /// constraint struct) \param[in] conn The communication object \param[in] ticket_name The name of the ticket
-    /// \param[in] constraints The constraint that should be added to the ticket
+    /// \param[in] constraint The constraint that should be added to the ticket
     ///
     template <typename ticket_constraint>
-    void add_ticket_constraint(RxComm& conn, const std::string_view ticket_name, const ticket_constraint& constraints)
+    void add_ticket_constraint(RxComm& conn, const std::string_view ticket_name, const ticket_constraint& constraint)
     {
         if constexpr (std::is_same_v<user_constraint, ticket_constraint>) {
-            execute_ticket_operation(conn, "mod", ticket_name, "add", "user", constraints.name, "", false);
+            execute_ticket_operation(conn, "mod", ticket_name, "add", "user", constraint.name, "", false);
         }
         else if constexpr (std::is_same_v<group_constraint, ticket_constraint>) {
-            execute_ticket_operation(conn, "mod", ticket_name, "add", "group", constraints.name, "", false);
+            execute_ticket_operation(conn, "mod", ticket_name, "add", "group", constraint.name, "", false);
         }
         else if constexpr (std::is_same_v<host_constraint, ticket_constraint>) {
-            execute_ticket_operation(conn, "mod", ticket_name, "add", "host", constraints.name, "", false);
+            execute_ticket_operation(conn, "mod", ticket_name, "add", "host", constraint.name, "", false);
         }
         else {
             throw std::invalid_argument("Wrong type object given");
@@ -207,12 +231,12 @@ namespace irods::experimental::administration::ticket
     ///
     /// \tparam ticket_constraint The template struct to indicate the type of constraint (only user, group, and host
     /// constraint struct) \param[in] conn The communication object \param[in] ticket_id The id of the ticket \param[in]
-    /// constraints The constraint that should be added to the ticket
+    /// constraint The constraint that should be added to the ticket
     ///
     template <typename ticket_constraint>
-    void add_ticket_constraint(RxComm& conn, const int ticket_id, const ticket_constraint& constraints)
+    void add_ticket_constraint(RxComm& conn, const int ticket_id, const ticket_constraint& constraint)
     {
-        add_ticket_constraint(conn, std::to_string(ticket_id), constraints);
+        add_ticket_constraint(conn, std::to_string(ticket_id), constraint);
     }
 
     ///
@@ -220,23 +244,23 @@ namespace irods::experimental::administration::ticket
     ///
     /// \tparam ticket_constraint The template struct to indicate the type of constraint (only user, group, and host
     /// constraint struct) \param[in] admin_tag Struct tag that indicated admin privilige \param[in] conn The
-    /// communication object \param[in] ticket_id The id of the ticket \param[in] constraints The constraint that should
+    /// communication object \param[in] ticket_id The id of the ticket \param[in] constraint The constraint that should
     /// be added to the ticket
     ///
     template <typename ticket_constraint>
     void add_ticket_constraint(admin_tag,
                                RxComm& conn,
                                const std::string_view ticket_name,
-                               const ticket_constraint& constraints)
+                               const ticket_constraint& constraint)
     {
         if constexpr (std::is_same_v<user_constraint, ticket_constraint>) {
-            execute_ticket_operation(conn, "mod", ticket_name, "add", "user", constraints.name, "", true);
+            execute_ticket_operation(conn, "mod", ticket_name, "add", "user", constraint.name, "", true);
         }
         else if constexpr (std::is_same_v<group_constraint, ticket_constraint>) {
-            execute_ticket_operation(conn, "mod", ticket_name, "add", "group", constraints.name, "", true);
+            execute_ticket_operation(conn, "mod", ticket_name, "add", "group", constraint.name, "", true);
         }
         else if constexpr (std::is_same_v<host_constraint, ticket_constraint>) {
-            execute_ticket_operation(conn, "mod", ticket_name, "add", "host", constraints.name, "", true);
+            execute_ticket_operation(conn, "mod", ticket_name, "add", "host", constraint.name, "", true);
         }
         else {
             throw std::invalid_argument("Wrong type object given");
@@ -248,58 +272,57 @@ namespace irods::experimental::administration::ticket
     ///
     /// \tparam ticket_constraint The template struct to indicate the type of constraint (only user, group, and host
     /// constraint struct) \param[in] admin_tag Struct tag that indicated admin privilige \param[in] conn The
-    /// communication object \param[in] ticket_id The id of the ticket \param[in] constraints The constraint that should
+    /// communication object \param[in] ticket_id The id of the ticket \param[in] constraint The constraint that should
     /// be added to the ticket
     ///
     template <typename ticket_constraint>
-    void add_ticket_constraint(admin_tag, RxComm& conn, const int ticket_id, const ticket_constraint& constraints)
+    void add_ticket_constraint(admin_tag, RxComm& conn, const int ticket_id, const ticket_constraint& constraint)
     {
-        add_ticket_constraint(admin_tag{}, conn, std::to_string(ticket_id), constraints);
+        add_ticket_constraint(admin_tag{}, conn, std::to_string(ticket_id), constraint);
     }
 
     ///
     /// \brief Set constraint to the ticket specified
     ///
     /// \tparam ticket_constraint The template struct to indicate the type of constraint (only the ticket property
-    /// constraint) \param[in] conn The communication object \param[in] ticket_name \param[in] constraints
+    /// constraint) \param[in] conn The communication object \param[in] ticket_name \param[in] constraint
     ///
     template <typename ticket_constraint>
-    void set_ticket_constraint(RxComm& conn, const std::string_view ticket_name, const ticket_constraint& constraints)
+    void set_ticket_constraint(RxComm& conn, const std::string_view ticket_name, const ticket_constraint& constraint)
     {
-        if constexpr (std::is_same_v<ticket_property_constraint, ticket_constraint>) {
-            std::string_view command = "mod";
-            std::string command_modifier1;
-            std::string command_modifier2 = std::to_string(constraints.value_of_property);
-            std::string_view command_modifier3 = "";
-            std::string_view command_modifier4 = "";
-
-            if (constraints.value_of_property < 0) {
-                throw std::invalid_argument("Value of the property invalid");
+        if constexpr (std::is_same_v<use_count_constraint, ticket_constraint>) {
+            if (constraint.n < 0) {
+                throw std::invalid_argument("Value of the n is invalid!");
             }
 
-            switch (constraints.desired_property) {
-                case property::uses_count:
-                    command_modifier1 = "uses";
-                    break;
-
-                case property::write_byte:
-                    command_modifier1 = "write-bytes";
-                    break;
-
-                case property::write_file:
-                    command_modifier1 = "write-file";
-                    break;
-
-                default:
-                    throw std::invalid_argument("Ticket property not given");
+            execute_ticket_operation(conn, "mod", ticket_name, "uses", std::to_string(constraint.n), "", "", false);
+        }
+        else if constexpr (std::is_same_v<n_writes_to_data_object_constraint, ticket_constraint>) {
+            if (constraint.n < 0) {
+                throw std::invalid_argument("Value of the n is invalid!");
             }
+
             execute_ticket_operation(conn,
-                                     command,
+                                     "mod",
                                      ticket_name,
-                                     command_modifier1,
-                                     command_modifier2,
-                                     command_modifier3,
-                                     command_modifier4,
+                                     "write-file",
+                                     std::to_string(constraint.n),
+                                     "",
+                                     "",
+                                     false);
+        }
+        else if constexpr (std::is_same_v<n_write_bytes_constraint, ticket_constraint>) {
+            if (constraint.n < 0) {
+                throw std::invalid_argument("Value of the n is invalid!");
+            }
+
+            execute_ticket_operation(conn,
+                                     "mod",
+                                     ticket_name,
+                                     "write-bytes",
+                                     std::to_string(constraint.n),
+                                     "",
+                                     "",
                                      false);
         }
         else {
@@ -312,12 +335,12 @@ namespace irods::experimental::administration::ticket
     ///
     /// \tparam ticket_constraint The template struct to indicate the type of constraint (only the ticket property
     /// constraint) \param[in] conn The communication object \param[in] ticket_id The ID of the ticket \param[in]
-    /// constraints The constraint that should be set on the ticket specified
+    /// constraint The constraint that should be set on the ticket specified
     ///
     template <typename ticket_constraint>
-    void set_ticket_constraint(RxComm& conn, const int ticket_id, const ticket_constraint& constraints)
+    void set_ticket_constraint(RxComm& conn, const int ticket_id, const ticket_constraint& constraint)
     {
-        set_ticket_constraint(conn, std::to_string(ticket_id), constraints);
+        set_ticket_constraint(conn, std::to_string(ticket_id), constraint);
     }
 
     ///
@@ -325,57 +348,49 @@ namespace irods::experimental::administration::ticket
     ///
     /// \tparam ticket_constraint The template struct to indicate the type of constraint (only the ticket property
     /// constraint) \param[in] admin_tag Struct tag that indicated admin privilige \param[in] conn The communication
-    /// object \param[in] ticket_name The name of the ticket \param[in] constraints The constraint that should be set on
+    /// object \param[in] ticket_name The name of the ticket \param[in] constraint The constraint that should be set on
     /// the ticket specified
     ///
     template <typename ticket_constraint>
     void set_ticket_constraint(admin_tag,
                                RxComm& conn,
                                const std::string_view ticket_name,
-                               const ticket_constraint& constraints)
+                               const ticket_constraint& constraint)
     {
-        if constexpr (std::is_same_v<ticket_property_constraint, ticket_constraint>) {
-            if (constraints.value_of_property < 0) {
-                throw std::invalid_argument("Value of the property invalid");
+        if constexpr (std::is_same_v<use_count_constraint, ticket_constraint>) {
+            if (constraint.n < 0) {
+                throw std::invalid_argument("Value of the n is invalid!");
             }
 
-            switch (constraints.desired_property) {
-                case property::uses_count:
-                    execute_ticket_operation(conn,
-                                             "mod",
-                                             ticket_name,
-                                             "uses",
-                                             std::to_string(constraints.value_of_property),
-                                             "",
-                                             "",
-                                             true);
-                    break;
-
-                case property::write_byte:
-                    execute_ticket_operation(conn,
-                                             "mod",
-                                             ticket_name,
-                                             "write-bytes",
-                                             std::to_string(constraints.value_of_property),
-                                             "",
-                                             "",
-                                             true);
-                    break;
-
-                case property::write_file:
-                    execute_ticket_operation(conn,
-                                             "mod",
-                                             ticket_name,
-                                             "write-file",
-                                             std::to_string(constraints.value_of_property),
-                                             "",
-                                             "",
-                                             true);
-                    break;
-
-                default:
-                    throw std::invalid_argument("Ticket property not given");
+            execute_ticket_operation(conn, "mod", ticket_name, "uses", std::to_string(constraint.n), "", "", true);
+        }
+        else if constexpr (std::is_same_v<n_writes_to_data_object_constraint, ticket_constraint>) {
+            if (constraint.n < 0) {
+                throw std::invalid_argument("Value of the n is invalid!");
             }
+
+            execute_ticket_operation(conn,
+                                     "mod",
+                                     ticket_name,
+                                     "write-file",
+                                     std::to_string(constraint.n),
+                                     "",
+                                     "",
+                                     true);
+        }
+        else if constexpr (std::is_same_v<n_write_bytes_constraint, ticket_constraint>) {
+            if (constraint.n < 0) {
+                throw std::invalid_argument("Value of the n is invalid!");
+            }
+
+            execute_ticket_operation(conn,
+                                     "mod",
+                                     ticket_name,
+                                     "write-bytes",
+                                     std::to_string(constraint.n),
+                                     "",
+                                     "",
+                                     true);
         }
         else {
             throw std::invalid_argument("Wrong type object given");
@@ -387,13 +402,13 @@ namespace irods::experimental::administration::ticket
     ///
     /// \tparam ticket_constraint The template struct to indicate the type of constraint (only the ticket property
     /// constraint) \param[in] admin_tag Struct tag that indicated admin privilige \param[in] conn The communication
-    /// object \param[in] ticket_id The ID of the ticket \param[in] constraints The constraint that should be set on the
+    /// object \param[in] ticket_id The ID of the ticket \param[in] constraint The constraint that should be set on the
     /// ticket specified
     ///
     template <typename ticket_constraint>
-    void set_ticket_constraint(admin_tag, RxComm& conn, const int ticket_id, const ticket_constraint& constraints)
+    void set_ticket_constraint(admin_tag, RxComm& conn, const int ticket_id, const ticket_constraint& constraint)
     {
-        set_ticket_constraint(admin_tag{}, conn, std::to_string(ticket_id), constraints);
+        set_ticket_constraint(admin_tag{}, conn, std::to_string(ticket_id), constraint);
     }
 
     ///
@@ -402,58 +417,33 @@ namespace irods::experimental::administration::ticket
     /// \tparam ticket_constraint The template struct to indicate the type of constraint
     /// \param[in] conn The communication object
     /// \param[in] ticket_name The name of the ticket
-    /// \param[in] constraints The constraint type that should be removed from the ticket
+    /// \param[in] constraint The constraint type that should be removed from the ticket
     ///
     template <typename ticket_constraint>
-    void remove_ticket_constraint(RxComm& conn,
-                                  const std::string_view ticket_name,
-                                  const ticket_constraint& constraints)
+    void remove_ticket_constraint(RxComm& conn, const std::string_view ticket_name, const ticket_constraint& constraint)
     {
-        std::string_view command = "mod";
-        std::string_view command_modifier1;
-        std::string_view command_modifier2 = "";
-        std::string_view command_modifier3 = "";
-        std::string_view command_modifier4 = "";
         if constexpr (std::is_same_v<user_constraint, ticket_constraint>) {
-            execute_ticket_operation(conn, "mod", ticket_name, "remove", "user", constraints.name, "", false);
+            execute_ticket_operation(conn, "mod", ticket_name, "remove", "user", constraint.name, "", false);
         }
         else if constexpr (std::is_same_v<group_constraint, ticket_constraint>) {
-            execute_ticket_operation(conn, "mod", ticket_name, "remove", "group", constraints.name, "", false);
+            execute_ticket_operation(conn, "mod", ticket_name, "remove", "group", constraint.name, "", false);
         }
         else if constexpr (std::is_same_v<host_constraint, ticket_constraint>) {
-            execute_ticket_operation(conn, "mod", ticket_name, "remove", "host", constraints.name, "", false);
+            execute_ticket_operation(conn, "mod", ticket_name, "remove", "host", constraint.name, "", false);
         }
-        else if constexpr (std::is_same_v<ticket_property_constraint, ticket_constraint>) {
-            switch (constraints.desired_property) {
-                case property::uses_count:
-                    command_modifier1 = "uses";
-                    break;
 
-                case property::write_byte:
-                    command_modifier1 = "write-bytes";
-                    break;
-
-                case property::write_file:
-                    command_modifier1 = "write-file";
-                    break;
-
-                default:
-                    throw std::invalid_argument("Ticket property not given");
-            }
-
-            command_modifier2 = "0";
+        else if constexpr (std::is_same_v<use_count_constraint, ticket_constraint>) {
+            execute_ticket_operation(conn, "mod", ticket_name, "uses", "0", "", "", false);
+        }
+        else if constexpr (std::is_same_v<n_writes_to_data_object_constraint, ticket_constraint>) {
+            execute_ticket_operation(conn, "mod", ticket_name, "write-file", "0", "", "", false);
+        }
+        else if constexpr (std::is_same_v<n_write_bytes_constraint, ticket_constraint>) {
+            execute_ticket_operation(conn, "mod", ticket_name, "write-bytes", "0", "", "", false);
         }
         else {
             throw std::invalid_argument("Wrong type object given");
         }
-        execute_ticket_operation(conn,
-                                 command,
-                                 ticket_name,
-                                 command_modifier1,
-                                 command_modifier2,
-                                 command_modifier3,
-                                 command_modifier4,
-                                 false);
     }
 
     ///
@@ -462,12 +452,12 @@ namespace irods::experimental::administration::ticket
     /// \tparam ticket_constraint The template struct to indicate the type of constraint
     /// \param[in] conn The communication object
     /// \param[in] ticket_id The id for the ticket
-    /// \param[in] constraints The constraint type that should be removed from the ticket
+    /// \param[in] constraint The constraint type that should be removed from the ticket
     ///
     template <typename ticket_constraint>
-    void remove_ticket_constraint(RxComm& conn, const int ticket_id, const ticket_constraint& constraints)
+    void remove_ticket_constraint(RxComm& conn, const int ticket_id, const ticket_constraint& constraint)
     {
-        remove_ticket_constraint(conn, std::to_string(ticket_id), constraints);
+        remove_ticket_constraint(conn, std::to_string(ticket_id), constraint);
     }
 
     ///
@@ -477,59 +467,35 @@ namespace irods::experimental::administration::ticket
     /// \param[in] admin_tag Struct tag that indicated admin privilige
     /// \param[in] conn The communication object
     /// \param[in] ticket_name The name of the ticket
-    /// \param[in] constraints The constraint type that should be removed from the ticket
+    /// \param[in] constraint The constraint type that should be removed from the ticket
     ///
     template <typename ticket_constraint>
     void remove_ticket_constraint(admin_tag,
                                   RxComm& conn,
                                   const std::string_view ticket_name,
-                                  const ticket_constraint& constraints)
+                                  const ticket_constraint& constraint)
     {
-        std::string_view command = "mod";
-        std::string_view command_modifier1;
-        std::string_view command_modifier2 = "";
-        std::string_view command_modifier3 = "";
-        std::string_view command_modifier4 = "";
         if constexpr (std::is_same_v<user_constraint, ticket_constraint>) {
-            execute_ticket_operation(conn, "mod", ticket_name, "remove", "user", constraints.name, "", true);
+            execute_ticket_operation(conn, "mod", ticket_name, "remove", "user", constraint.name, "", true);
         }
         else if constexpr (std::is_same_v<group_constraint, ticket_constraint>) {
-            execute_ticket_operation(conn, "mod", ticket_name, "remove", "group", constraints.name, "", true);
+            execute_ticket_operation(conn, "mod", ticket_name, "remove", "group", constraint.name, "", true);
         }
         else if constexpr (std::is_same_v<host_constraint, ticket_constraint>) {
-            execute_ticket_operation(conn, "mod", ticket_name, "remove", "host", constraints.name, "", true);
+            execute_ticket_operation(conn, "mod", ticket_name, "remove", "host", constraint.name, "", true);
         }
-        else if constexpr (std::is_same_v<ticket_property_constraint, ticket_constraint>) {
-            switch (constraints.desired_property) {
-                case property::uses_count:
-                    command_modifier1 = "uses";
-                    break;
-
-                case property::write_byte:
-                    command_modifier1 = "write-bytes";
-                    break;
-
-                case property::write_file:
-                    command_modifier1 = "write-file";
-                    break;
-
-                default:
-                    throw std::invalid_argument("Ticket property not given");
-            }
-
-            command_modifier2 = "0";
+        else if constexpr (std::is_same_v<use_count_constraint, ticket_constraint>) {
+            execute_ticket_operation(conn, "mod", ticket_name, "uses", "0", "", "", true);
+        }
+        else if constexpr (std::is_same_v<n_writes_to_data_object_constraint, ticket_constraint>) {
+            execute_ticket_operation(conn, "mod", ticket_name, "write-file", "0", "", "", true);
+        }
+        else if constexpr (std::is_same_v<n_write_bytes_constraint, ticket_constraint>) {
+            execute_ticket_operation(conn, "mod", ticket_name, "write-bytes", "0", "", "", true);
         }
         else {
             throw std::invalid_argument("Wrong type object given");
         }
-        execute_ticket_operation(conn,
-                                 command,
-                                 ticket_name,
-                                 command_modifier1,
-                                 command_modifier2,
-                                 command_modifier3,
-                                 command_modifier4,
-                                 true);
     }
 
     ///
@@ -539,12 +505,12 @@ namespace irods::experimental::administration::ticket
     /// \param[in] admin_tag Struct tag that indicated admin privilige
     /// \param[in] conn The communication object
     /// \param[in] ticket_id The id for the ticket
-    /// \param[in] constraints The constraint type that should be removed from the ticket
+    /// \param[in] constraint The constraint type that should be removed from the ticket
     ///
     template <typename ticket_constraint>
-    void remove_ticket_constraint(admin_tag, RxComm& conn, const int ticket_id, const ticket_constraint& constraints)
+    void remove_ticket_constraint(admin_tag, RxComm& conn, const int ticket_id, const ticket_constraint& constraint)
     {
-        remove_ticket_constraint(admin_tag{}, conn, std::to_string(ticket_id), constraints);
+        remove_ticket_constraint(admin_tag{}, conn, std::to_string(ticket_id), constraint);
     }
 
 } // namespace irods::experimental::administration::ticket
