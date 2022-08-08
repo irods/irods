@@ -51,25 +51,25 @@ namespace irods::experimental::administration::ticket
     ///
     /// \brief Struct that holds the user name of the user that should be added/removed
     ///
-    struct users_constraint
+    struct user_constraint
     {
-        const std::string_view name;
+        std::string_view name;
     };
 
     ///
     /// \brief  Struct that holds the name of the group that should be added/removed
     ///
-    struct groups_constraint
+    struct group_constraint
     {
-        const std::string_view name;
+        std::string_view name;
     };
 
     ///
     /// \brief  Struct that holds the name of the host that should be added/removed
     ///
-    struct hosts_constraint
+    struct host_constraint
     {
-        const std::string_view name;
+        std::string_view name;
     };
 
     ///
@@ -77,7 +77,7 @@ namespace irods::experimental::administration::ticket
     ///
     struct ticket_property_constraint
     {
-        const property desired_property;
+        property desired_property;
         int value_of_property = -1;
     };
 
@@ -188,35 +188,18 @@ namespace irods::experimental::administration::ticket
     template <typename ticket_constraint>
     void add_ticket_constraint(RxComm& conn, const std::string_view ticket_name, const ticket_constraint& constraints)
     {
-        std::string_view command = "mod";
-        std::string_view command_modifier1 = "add";
-        std::string_view command_modifier2 = "";
-        std::string_view command_modifier3 = "";
-        std::string_view command_modifier4 = "";
-        if constexpr (std::is_same_v<users_constraint, ticket_constraint>) {
-            command_modifier2 = "user";
-            command_modifier3 = constraints.name;
+        if constexpr (std::is_same_v<user_constraint, ticket_constraint>) {
+            execute_ticket_operation(conn, "mod", ticket_name, "add", "user", constraints.name, "", false);
         }
-        else if constexpr (std::is_same_v<groups_constraint, ticket_constraint>) {
-            command_modifier2 = "group";
-            command_modifier3 = constraints.name;
+        else if constexpr (std::is_same_v<group_constraint, ticket_constraint>) {
+            execute_ticket_operation(conn, "mod", ticket_name, "add", "group", constraints.name, "", false);
         }
-        else if constexpr (std::is_same_v<hosts_constraint, ticket_constraint>) {
-            command_modifier2 = "host";
-            command_modifier3 = constraints.name;
+        else if constexpr (std::is_same_v<host_constraint, ticket_constraint>) {
+            execute_ticket_operation(conn, "mod", ticket_name, "add", "host", constraints.name, "", false);
         }
         else {
             throw std::invalid_argument("Wrong type object given");
         }
-
-        execute_ticket_operation(conn,
-                                 command,
-                                 ticket_name,
-                                 command_modifier1,
-                                 command_modifier2,
-                                 command_modifier3,
-                                 command_modifier4,
-                                 false);
     }
 
     ///
@@ -246,35 +229,18 @@ namespace irods::experimental::administration::ticket
                                const std::string_view ticket_name,
                                const ticket_constraint& constraints)
     {
-        std::string_view command = "mod";
-        std::string_view command_modifier1 = "add";
-        std::string_view command_modifier2 = "";
-        std::string_view command_modifier3 = "";
-        std::string_view command_modifier4 = "";
-        if constexpr (std::is_same_v<users_constraint, ticket_constraint>) {
-            command_modifier2 = "user";
-            command_modifier3 = constraints.name;
+        if constexpr (std::is_same_v<user_constraint, ticket_constraint>) {
+            execute_ticket_operation(conn, "mod", ticket_name, "add", "user", constraints.name, "", true);
         }
-        else if constexpr (std::is_same_v<groups_constraint, ticket_constraint>) {
-            command_modifier2 = "group";
-            command_modifier3 = constraints.name;
+        else if constexpr (std::is_same_v<group_constraint, ticket_constraint>) {
+            execute_ticket_operation(conn, "mod", ticket_name, "add", "group", constraints.name, "", true);
         }
-        else if constexpr (std::is_same_v<hosts_constraint, ticket_constraint>) {
-            command_modifier2 = "host";
-            command_modifier3 = constraints.name;
+        else if constexpr (std::is_same_v<host_constraint, ticket_constraint>) {
+            execute_ticket_operation(conn, "mod", ticket_name, "add", "host", constraints.name, "", true);
         }
         else {
             throw std::invalid_argument("Wrong type object given");
         }
-
-        execute_ticket_operation(conn,
-                                 command,
-                                 ticket_name,
-                                 command_modifier1,
-                                 command_modifier2,
-                                 command_modifier3,
-                                 command_modifier4,
-                                 true);
     }
 
     ///
@@ -448,20 +414,14 @@ namespace irods::experimental::administration::ticket
         std::string_view command_modifier2 = "";
         std::string_view command_modifier3 = "";
         std::string_view command_modifier4 = "";
-        if constexpr (std::is_same_v<users_constraint, ticket_constraint>) {
-            command_modifier1 = "remove";
-            command_modifier2 = "user";
-            command_modifier3 = constraints.name;
+        if constexpr (std::is_same_v<user_constraint, ticket_constraint>) {
+            execute_ticket_operation(conn, "mod", ticket_name, "remove", "user", constraints.name, "", false);
         }
-        else if constexpr (std::is_same_v<groups_constraint, ticket_constraint>) {
-            command_modifier1 = "remove";
-            command_modifier2 = "group";
-            command_modifier3 = constraints.name;
+        else if constexpr (std::is_same_v<group_constraint, ticket_constraint>) {
+            execute_ticket_operation(conn, "mod", ticket_name, "remove", "group", constraints.name, "", false);
         }
-        else if constexpr (std::is_same_v<hosts_constraint, ticket_constraint>) {
-            command_modifier1 = "remove";
-            command_modifier2 = "host";
-            command_modifier3 = constraints.name;
+        else if constexpr (std::is_same_v<host_constraint, ticket_constraint>) {
+            execute_ticket_operation(conn, "mod", ticket_name, "remove", "host", constraints.name, "", false);
         }
         else if constexpr (std::is_same_v<ticket_property_constraint, ticket_constraint>) {
             switch (constraints.desired_property) {
@@ -530,20 +490,14 @@ namespace irods::experimental::administration::ticket
         std::string_view command_modifier2 = "";
         std::string_view command_modifier3 = "";
         std::string_view command_modifier4 = "";
-        if constexpr (std::is_same_v<users_constraint, ticket_constraint>) {
-            command_modifier1 = "remove";
-            command_modifier2 = "user";
-            command_modifier3 = constraints.name;
+        if constexpr (std::is_same_v<user_constraint, ticket_constraint>) {
+            execute_ticket_operation(conn, "mod", ticket_name, "remove", "user", constraints.name, "", true);
         }
-        else if constexpr (std::is_same_v<groups_constraint, ticket_constraint>) {
-            command_modifier1 = "remove";
-            command_modifier2 = "group";
-            command_modifier3 = constraints.name;
+        else if constexpr (std::is_same_v<group_constraint, ticket_constraint>) {
+            execute_ticket_operation(conn, "mod", ticket_name, "remove", "group", constraints.name, "", true);
         }
-        else if constexpr (std::is_same_v<hosts_constraint, ticket_constraint>) {
-            command_modifier1 = "remove";
-            command_modifier2 = "host";
-            command_modifier3 = constraints.name;
+        else if constexpr (std::is_same_v<host_constraint, ticket_constraint>) {
+            execute_ticket_operation(conn, "mod", ticket_name, "remove", "host", constraints.name, "", true);
         }
         else if constexpr (std::is_same_v<ticket_property_constraint, ticket_constraint>) {
             switch (constraints.desired_property) {
