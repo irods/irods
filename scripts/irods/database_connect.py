@@ -60,7 +60,31 @@ def dump_odbc_ini(odbc_dict, f):
         print('', file=f)
 
 def get_odbc_entry(db_config, catalog_database_type):
-    if catalog_database_type == 'postgres' or catalog_database_type == 'cockroachdb':
+    if catalog_database_type == 'postgres' and 'db_sslmode' in db_config and db_config['db_sslmode'] == 'require':
+        return {
+            'Description': 'iRODS Catalog',
+            'Driver': db_config['db_odbc_driver'],
+            'Trace': 'No',
+            'Debug': '0',
+            'CommLog': '0',
+            'TraceFile': '',
+            'Database': db_config['db_name'],
+            'Servername': db_config['db_host'],
+            'Port': str(db_config['db_port']),
+            'ReadOnly': 'No',
+            'Ksqo': '0',
+            'RowVersioning': 'No',
+            'ShowSystemTables': 'No',
+            'ShowOidColumn': 'No',
+            'FakeOidIndex': 'No',
+            'ConnSettings': '',
+            'SSL': 'on',
+            'SSLMode': 'require',
+            'SSLRootCert': db_config['db_sslrootcert'],
+            'SSLCert': db_config['db_sslcert'],
+            'SSLKey': db_config['db_sslkey']
+        }
+    elif catalog_database_type == 'postgres' or catalog_database_type == 'cockroachdb':
         return {
             'Description': 'iRODS Catalog',
             'Driver': db_config['db_odbc_driver'],
@@ -180,6 +204,12 @@ def get_connection_string(db_config, irods_config):
     odbc_dict['UID'] = db_config['db_username']
     if irods_config.catalog_database_type == 'cockroachdb':
         odbc_dict['sslrootcert'] = irods_config.database_config['sslrootcert']
+        odbc_dict['sslmode'] = 'require'
+        odbc_dict['ssl'] = 'true'
+    if irods_config.catalog_database_type == 'postgres' and 'db_sslmode' in db_config and db_config['db_sslmode'] == 'require':
+        odbc_dict['sslkey'] = db_config['db_sslkey']
+        odbc_dict['sslrootcert'] = db_config['db_sslrootcert']
+        odbc_dict['sslcert'] =  db_config['db_sslcert']
         odbc_dict['sslmode'] = 'require'
         odbc_dict['ssl'] = 'true'
 
