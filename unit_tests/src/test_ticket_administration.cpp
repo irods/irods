@@ -46,7 +46,7 @@ TEST_CASE("ticket administration")
 
     SECTION("create read ticket")
     {
-        tic::client::create_ticket(conn, tic::type::read, read_coll_string, read_ticket_name);
+        tic::client::create_ticket(conn, tic::ticket_type::read, read_coll_string, read_ticket_name);
 
         auto general_query = builder.build<rcComm_t>(conn, "select TICKET_STRING");
 
@@ -91,7 +91,7 @@ TEST_CASE("ticket administration")
 
     SECTION("create write ticket")
     {
-        tic::client::create_ticket(conn, tic::type::write, write_coll_string, write_ticket_name);
+        tic::client::create_ticket(conn, tic::ticket_type::write, write_coll_string, write_ticket_name);
 
         auto general_query = builder.build<rcComm_t>(conn, "select TICKET_STRING");
 
@@ -136,7 +136,7 @@ TEST_CASE("ticket administration")
 
     SECTION("admin create read ticket")
     {
-        tic::client::create_ticket(tic::admin_tag{}, conn, tic::type::read, read_coll_string, read_ticket_name);
+        tic::client::create_ticket(tic::admin_tag{}, conn, tic::ticket_type::read, read_coll_string, read_ticket_name);
 
         auto general_query = builder.build<rcComm_t>(conn, "select TICKET_STRING");
 
@@ -164,7 +164,7 @@ TEST_CASE("ticket administration")
 
     SECTION("admin create write ticket")
     {
-        tic::client::create_ticket(tic::admin_tag{}, conn, tic::type::write, write_coll_string, write_ticket_name);
+        tic::client::create_ticket(tic::admin_tag{}, conn, tic::ticket_type::write, write_coll_string, write_ticket_name);
 
         auto general_query = builder.build<rcComm_t>(conn, "select TICKET_STRING");
 
@@ -192,7 +192,7 @@ TEST_CASE("ticket administration")
 
     SECTION("add user")
     {
-        tic::client::create_ticket(conn, tic::type::read, set_ticket_collection, set_ticket_name);
+        tic::client::create_ticket(conn, tic::ticket_type::read, set_ticket_collection, set_ticket_name);
 
         tic::client::add_ticket_constraint(conn, set_ticket_name, tic::user_constraint{user_name});
 
@@ -216,7 +216,7 @@ TEST_CASE("ticket administration")
 
     SECTION("remove user")
     {
-        tic::client::create_ticket(conn, tic::type::read, set_ticket_collection, set_ticket_name);
+        tic::client::create_ticket(conn, tic::ticket_type::read, set_ticket_collection, set_ticket_name);
 
         tic::client::add_ticket_constraint(conn, set_ticket_name, tic::user_constraint{user_name});
 
@@ -232,7 +232,7 @@ TEST_CASE("ticket administration")
 
     SECTION("add group")
     {
-        tic::client::create_ticket(conn, tic::type::write, set_ticket_collection, set_ticket_name);
+        tic::client::create_ticket(conn, tic::ticket_type::write, set_ticket_collection, set_ticket_name);
 
         tic::client::add_ticket_constraint(conn, set_ticket_name, tic::group_constraint{group_name});
 
@@ -247,7 +247,7 @@ TEST_CASE("ticket administration")
 
     SECTION("remove group")
     {
-        tic::client::create_ticket(conn, tic::type::write, set_ticket_collection, set_ticket_name);
+        tic::client::create_ticket(conn, tic::ticket_type::write, set_ticket_collection, set_ticket_name);
 
         tic::client::add_ticket_constraint(conn, set_ticket_name, tic::group_constraint{group_name});
 
@@ -263,7 +263,7 @@ TEST_CASE("ticket administration")
 
     SECTION("set uses_count")
     {
-        tic::client::create_ticket(conn, tic::type::write, set_ticket_collection, set_ticket_name);
+        tic::client::create_ticket(conn, tic::ticket_type::write, set_ticket_collection, set_ticket_name);
 
         tic::client::set_ticket_constraint(conn, set_ticket_name, tic::use_count_constraint{set_test_number});
 
@@ -278,7 +278,7 @@ TEST_CASE("ticket administration")
 
     SECTION("remove uses_count")
     {
-        tic::client::create_ticket(conn, tic::type::write, set_ticket_collection, set_ticket_name);
+        tic::client::create_ticket(conn, tic::ticket_type::write, set_ticket_collection, set_ticket_name);
 
         tic::client::set_ticket_constraint(conn, set_ticket_name, tic::use_count_constraint{set_test_number});
 
@@ -297,7 +297,7 @@ TEST_CASE("ticket administration")
 
     SECTION("admin set write_file")
     {
-        tic::client::create_ticket(conn, tic::type::write, set_ticket_collection, set_ticket_name);
+        tic::client::create_ticket(conn, tic::ticket_type::write, set_ticket_collection, set_ticket_name);
 
         tic::client::set_ticket_constraint(tic::admin_tag{},
                                    conn,
@@ -315,7 +315,7 @@ TEST_CASE("ticket administration")
 
     SECTION("remove write_file")
     {
-        tic::client::create_ticket(conn, tic::type::write, set_ticket_collection, set_ticket_name);
+        tic::client::create_ticket(conn, tic::ticket_type::write, set_ticket_collection, set_ticket_name);
 
         tic::client::set_ticket_constraint(conn, set_ticket_name, tic::n_writes_to_data_object_constraint{set_test_number});
 
@@ -334,7 +334,7 @@ TEST_CASE("ticket administration")
 
     SECTION("set write_byte")
     {
-        tic::client::create_ticket(conn, tic::type::write, set_ticket_collection, set_ticket_name);
+        tic::client::create_ticket(conn, tic::ticket_type::write, set_ticket_collection, set_ticket_name);
 
         tic::client::set_ticket_constraint(conn, set_ticket_name, tic::n_write_bytes_constraint{set_test_number});
 
@@ -349,7 +349,7 @@ TEST_CASE("ticket administration")
 
     SECTION("admin remove write_byte")
     {
-        tic::client::create_ticket(tic::admin_tag{}, conn, tic::type::write, set_ticket_collection, set_ticket_name);
+        tic::client::create_ticket(tic::admin_tag{}, conn, tic::ticket_type::write, set_ticket_collection, set_ticket_name);
 
         tic::client::set_ticket_constraint(conn, set_ticket_name, tic::n_write_bytes_constraint{set_test_number});
 
