@@ -2138,6 +2138,9 @@ class test_moduser_user(unittest.TestCase):
         self.admin.assert_icommand(['iadmin', 'moduser', 'rods', 'type', 'rodsuser'], 'STDERR_SINGLELINE', desired_error_msg)
         self.assertEqual('rodsadmin', lib.get_user_type(self.admin, 'rods'))
 
+        self.admin.assert_icommand(['iadmin', 'moduser', 'rods', 'type', 'groupadmin', 'STDERR_SINGLELINE', desired_error_msg])
+        self.assertEqual('rodsadmin', lib.get_user_type(self.admin, 'rods'))
+
     def test_moduser_type_invalid_type(self):
         """Test modifying the user's type to something that is not supported."""
         self.assertEqual('rodsuser', lib.get_user_type(self.admin, self.username))

@@ -74,8 +74,8 @@ namespace
             THROW(ec, msg);
         }
 
-        const auto buf = static_cast<char*>(bbuf->buf);
         try {
+            const auto buf = static_cast<char*>(bbuf->buf);
             const nlohmann::json& zone_report = nlohmann::json::parse(buf, buf + bbuf->len);
             const auto& zones = zone_report.at("zones");
 
