@@ -48,15 +48,14 @@ TEST_CASE("ticket administration")
     {
         tic::client::create_ticket(conn, tic::ticket_type::read, read_coll_string, read_ticket_name);
 
-        auto general_query = builder.build<rcComm_t>(conn, "select TICKET_STRING");
+        auto general_query = builder.build<rcComm_t>(conn, fmt::format("select TICKET_STRING where TICKET_STRING = '{}'", read_ticket_name));
 
         bool test_ticket_exists = false;
 
-        for (auto&& row : general_query) {
-            for (auto values : row) {
-                if (values.compare(read_ticket_name) == 0) {
-                    test_ticket_exists = true;
-                }
+        for (const auto& row : general_query) {
+            if (row[0] == read_ticket_name) {
+                test_ticket_exists = true;
+                break;
             }
         }
 
@@ -66,23 +65,22 @@ TEST_CASE("ticket administration")
             fmt::format("select TICKET_COLL_NAME, TICKET_TYPE where TICKET_STRING = '{}'", read_ticket_name);
         general_query = builder.build<rcComm_t>(conn, query);
 
-        REQUIRE(read_coll_string.compare(general_query.begin().capture_results().at(0)) == 0);
-        REQUIRE(read_string.compare(general_query.begin().capture_results().at(1)) == 0);
+        REQUIRE(read_coll_string == (general_query.begin().capture_results().at(0)));
+        REQUIRE(read_string == (general_query.begin().capture_results().at(1)));
     }
 
     SECTION("delete ticket")
     {
         tic::client::delete_ticket(conn, read_ticket_name);
 
-        auto general_query = builder.build<rcComm_t>(conn, "select TICKET_STRING");
+        auto general_query = builder.build<rcComm_t>(conn, fmt::format("select TICKET_STRING where TICKET_STRING = '{}'", read_ticket_name));
 
         bool test_ticket_exists = false;
 
-        for (auto&& row : general_query) {
-            for (auto values : row) {
-                if (values.compare(read_ticket_name) == 0) {
-                    test_ticket_exists = true;
-                }
+        for (const auto& row : general_query) {
+            if (row[0] == read_ticket_name) {
+                test_ticket_exists = true;
+                break;
             }
         }
 
@@ -93,15 +91,14 @@ TEST_CASE("ticket administration")
     {
         tic::client::create_ticket(conn, tic::ticket_type::write, write_coll_string, write_ticket_name);
 
-        auto general_query = builder.build<rcComm_t>(conn, "select TICKET_STRING");
+        auto general_query = builder.build<rcComm_t>(conn, fmt::format("select TICKET_STRING where TICKET_STRING = '{}'", write_ticket_name));
 
         bool test_ticket_exists = false;
 
-        for (auto&& row : general_query) {
-            for (auto values : row) {
-                if (values.compare(write_ticket_name) == 0) {
-                    test_ticket_exists = true;
-                }
+        for (const auto& row : general_query) {
+            if (row[0] == write_ticket_name) {
+                test_ticket_exists = true;
+                break;
             }
         }
 
@@ -111,23 +108,22 @@ TEST_CASE("ticket administration")
             fmt::format("select TICKET_COLL_NAME, TICKET_TYPE where TICKET_STRING = '{}'", write_ticket_name);
         general_query = builder.build<rcComm_t>(conn, query);
 
-        REQUIRE(write_coll_string.compare(general_query.begin().capture_results().at(0)) == 0);
-        REQUIRE(write_string.compare(general_query.begin().capture_results().at(1)) == 0);
+        REQUIRE(write_coll_string == general_query.begin().capture_results().at(0));
+        REQUIRE(write_string == general_query.begin().capture_results().at(1));
     }
 
     SECTION("admin delete ticket")
     {
         tic::client::delete_ticket(tic::admin_tag{}, conn, write_ticket_name);
 
-        auto general_query = builder.build<rcComm_t>(conn, "select TICKET_STRING");
+        auto general_query = builder.build<rcComm_t>(conn, fmt::format("select TICKET_STRING where TICKET_STRING = '{}'", write_ticket_name));
 
         bool test_ticket_exists = false;
 
-        for (auto&& row : general_query) {
-            for (auto values : row) {
-                if (values.compare(write_ticket_name) == 0) {
-                    test_ticket_exists = true;
-                }
+        for (const auto& row : general_query) {
+            if (row[0] == write_ticket_name) {
+                test_ticket_exists = true;
+                break;
             }
         }
 
@@ -138,15 +134,14 @@ TEST_CASE("ticket administration")
     {
         tic::client::create_ticket(tic::admin_tag{}, conn, tic::ticket_type::read, read_coll_string, read_ticket_name);
 
-        auto general_query = builder.build<rcComm_t>(conn, "select TICKET_STRING");
+        auto general_query = builder.build<rcComm_t>(conn, fmt::format("select TICKET_STRING where TICKET_STRING = '{}'", read_ticket_name));
 
         bool test_ticket_exists = false;
 
-        for (auto&& row : general_query) {
-            for (auto values : row) {
-                if (values.compare(read_ticket_name) == 0) {
-                    test_ticket_exists = true;
-                }
+        for (const auto& row : general_query) {
+            if (row[0] == read_ticket_name) {
+                test_ticket_exists = true;
+                break;
             }
         }
 
@@ -156,25 +151,28 @@ TEST_CASE("ticket administration")
             fmt::format("select TICKET_COLL_NAME, TICKET_TYPE where TICKET_STRING = '{}'", read_ticket_name);
         general_query = builder.build<rcComm_t>(conn, query);
 
-        REQUIRE(read_coll_string.compare(general_query.begin().capture_results().at(0)) == 0);
-        REQUIRE(read_string.compare(general_query.begin().capture_results().at(1)) == 0);
+        REQUIRE(read_coll_string == (general_query.begin().capture_results().at(0)));
+        REQUIRE(read_string == (general_query.begin().capture_results().at(1)));
 
         tic::client::delete_ticket(conn, read_ticket_name);
     }
 
     SECTION("admin create write ticket")
     {
-        tic::client::create_ticket(tic::admin_tag{}, conn, tic::ticket_type::write, write_coll_string, write_ticket_name);
+        tic::client::create_ticket(tic::admin_tag{},
+                                   conn,
+                                   tic::ticket_type::write,
+                                   write_coll_string,
+                                   write_ticket_name);
 
-        auto general_query = builder.build<rcComm_t>(conn, "select TICKET_STRING");
+        auto general_query = builder.build<rcComm_t>(conn, fmt::format("select TICKET_STRING where TICKET_STRING = '{}'", write_ticket_name));
 
         bool test_ticket_exists = false;
 
-        for (auto&& row : general_query) {
-            for (auto values : row) {
-                if (values.compare(write_ticket_name) == 0) {
-                    test_ticket_exists = true;
-                }
+        for (const auto& row : general_query) {
+            if (row[0] == write_ticket_name) {
+                test_ticket_exists = true;
+                break;
             }
         }
 
@@ -184,8 +182,8 @@ TEST_CASE("ticket administration")
             fmt::format("select TICKET_COLL_NAME, TICKET_TYPE where TICKET_STRING = '{}'", write_ticket_name);
         general_query = builder.build<rcComm_t>(conn, query);
 
-        REQUIRE(write_coll_string.compare(general_query.begin().capture_results().at(0)) == 0);
-        REQUIRE(write_string.compare(general_query.begin().capture_results().at(1)) == 0);
+        REQUIRE(write_coll_string == (general_query.begin().capture_results().at(0)));
+        REQUIRE(write_string == (general_query.begin().capture_results().at(1)));
 
         tic::client::delete_ticket(conn, write_ticket_name);
     }
@@ -201,11 +199,10 @@ TEST_CASE("ticket administration")
 
         bool user_name_exists = false;
 
-        for (auto&& row : general_query) {
-            for (auto values : row) {
-                if (user_name.compare(values) == 0) {
-                    user_name_exists = true;
-                }
+        for (const auto& row: general_query) {
+            if (row[0] == user_name){
+                user_name_exists = true;
+                break;
             }
         }
 
@@ -240,7 +237,7 @@ TEST_CASE("ticket administration")
         auto general_query = builder.build<rcComm_t>(conn, query);
 
         REQUIRE(general_query.size() > 0);
-        REQUIRE(group_name.compare(general_query.begin().capture_results().at(0)) == 0);
+        REQUIRE(group_name == (general_query.begin().capture_results().at(0)));
 
         tic::client::delete_ticket(conn, set_ticket_name);
     }
@@ -271,7 +268,7 @@ TEST_CASE("ticket administration")
         auto general_query = builder.build<rcComm_t>(conn, query);
 
         REQUIRE(general_query.size() > 0);
-        REQUIRE(set_test_number_string.compare(general_query.begin().capture_results().at(0)) == 0);
+        REQUIRE(set_test_number_string == (general_query.begin().capture_results().at(0)));
 
         tic::client::delete_ticket(conn, set_ticket_name);
     }
@@ -282,15 +279,13 @@ TEST_CASE("ticket administration")
 
         tic::client::set_ticket_constraint(conn, set_ticket_name, tic::use_count_constraint{set_test_number});
 
-        tic::client::remove_ticket_constraint(conn,
-                                      set_ticket_name,
-                                      tic::use_count_constraint{});
+        tic::client::remove_ticket_constraint(conn, set_ticket_name, tic::use_count_constraint{});
 
         std::string query = fmt::format("select TICKET_USES_LIMIT where TICKET_STRING = '{}'", set_ticket_name);
         auto general_query = builder.build<rcComm_t>(conn, query);
 
         REQUIRE(general_query.size() > 0);
-        REQUIRE(remove_test_number_string.compare(general_query.begin().capture_results().at(0)) == 0);
+        REQUIRE(remove_test_number_string == (general_query.begin().capture_results().at(0)));
 
         tic::client::delete_ticket(conn, set_ticket_name);
     }
@@ -300,15 +295,15 @@ TEST_CASE("ticket administration")
         tic::client::create_ticket(conn, tic::ticket_type::write, set_ticket_collection, set_ticket_name);
 
         tic::client::set_ticket_constraint(tic::admin_tag{},
-                                   conn,
-                                   set_ticket_name,
-                                   tic::n_writes_to_data_object_constraint{set_test_number});
+                                           conn,
+                                           set_ticket_name,
+                                           tic::n_writes_to_data_object_constraint{set_test_number});
 
         std::string query = fmt::format("select TICKET_WRITE_FILE_LIMIT where TICKET_STRING = '{}'", set_ticket_name);
         auto general_query = builder.build<rcComm_t>(conn, query);
 
         REQUIRE(general_query.size() > 0);
-        REQUIRE(set_test_number_string.compare(general_query.begin().capture_results().at(0)) == 0);
+        REQUIRE(set_test_number_string == (general_query.begin().capture_results().at(0)));
 
         tic::client::delete_ticket(conn, set_ticket_name);
     }
@@ -317,17 +312,17 @@ TEST_CASE("ticket administration")
     {
         tic::client::create_ticket(conn, tic::ticket_type::write, set_ticket_collection, set_ticket_name);
 
-        tic::client::set_ticket_constraint(conn, set_ticket_name, tic::n_writes_to_data_object_constraint{set_test_number});
+        tic::client::set_ticket_constraint(conn,
+                                           set_ticket_name,
+                                           tic::n_writes_to_data_object_constraint{set_test_number});
 
-        tic::client::remove_ticket_constraint(conn,
-                                      set_ticket_name,
-                                      tic::n_writes_to_data_object_constraint{});
+        tic::client::remove_ticket_constraint(conn, set_ticket_name, tic::n_writes_to_data_object_constraint{});
 
         std::string query = fmt::format("select TICKET_WRITE_FILE_LIMIT where TICKET_STRING = '{}'", set_ticket_name);
         auto general_query = builder.build<rcComm_t>(conn, query);
 
         REQUIRE(general_query.size() > 0);
-        REQUIRE(remove_test_number_string.compare(general_query.begin().capture_results().at(0)) == 0);
+        REQUIRE(remove_test_number_string == (general_query.begin().capture_results().at(0)));
 
         tic::client::delete_ticket(conn, set_ticket_name);
     }
@@ -342,27 +337,28 @@ TEST_CASE("ticket administration")
         auto general_query = builder.build<rcComm_t>(conn, query);
 
         REQUIRE(general_query.size() > 0);
-        REQUIRE(set_test_number_string.compare(general_query.begin().capture_results().at(0)) == 0);
+        REQUIRE(set_test_number_string == (general_query.begin().capture_results().at(0)));
 
         tic::client::delete_ticket(conn, set_ticket_name);
     }
 
     SECTION("admin remove write_byte")
     {
-        tic::client::create_ticket(tic::admin_tag{}, conn, tic::ticket_type::write, set_ticket_collection, set_ticket_name);
+        tic::client::create_ticket(tic::admin_tag{},
+                                   conn,
+                                   tic::ticket_type::write,
+                                   set_ticket_collection,
+                                   set_ticket_name);
 
         tic::client::set_ticket_constraint(conn, set_ticket_name, tic::n_write_bytes_constraint{set_test_number});
 
-        tic::client::remove_ticket_constraint(tic::admin_tag{},
-                                      conn,
-                                      set_ticket_name,
-                                      tic::n_write_bytes_constraint{});
+        tic::client::remove_ticket_constraint(tic::admin_tag{}, conn, set_ticket_name, tic::n_write_bytes_constraint{});
 
         std::string query = fmt::format("select TICKET_WRITE_BYTE_LIMIT where TICKET_STRING = '{}'", set_ticket_name);
         auto general_query = builder.build<rcComm_t>(conn, query);
 
         REQUIRE(general_query.size() > 0);
-        REQUIRE(remove_test_number_string.compare(general_query.begin().capture_results().at(0)) == 0);
+        REQUIRE(remove_test_number_string == (general_query.begin().capture_results().at(0)));
 
         tic::client::delete_ticket(conn, set_ticket_name);
     }

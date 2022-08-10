@@ -24,11 +24,15 @@ struct RcComm;
 namespace irods::experimental::administration::ticket
 {
     /// \brief Struct tag to indicate admin privilege
+    ///
+    /// \since 4.3.1
     inline struct admin_tag
     {
     } admin;
 
     /// \brief Enumeration to indicate the ticket type
+    ///
+    /// \since 4.3.1
     enum class ticket_type
     {
         read,
@@ -36,36 +40,48 @@ namespace irods::experimental::administration::ticket
     };
 
     /// \brief Struct that holds the user name of the user that should be added/removed
+    /// 
+    /// \since 4.3.1
     struct user_constraint
     {
         std::string_view value;
     };
 
     /// \brief  Struct that holds the name of the group that should be added/removed
+    /// 
+    /// \since 4.3.1
     struct group_constraint
     {
         std::string_view value;
     };
 
     /// \brief  Struct that holds the name of the host that should be added/removed
+    ///
+    /// \since 4.3.1
     struct host_constraint
     {
         std::string_view value;
     };
 
     /// \brief Struct to hold the use count constraint for the ticket
+    /// 
+    /// \since 4.3.1
     struct use_count_constraint
     {
         int value = -1;
     };
 
     /// \brief Struct to hold the write count limit constraint for the ticket
+    ///
+    /// \since 4.3.1
     struct n_writes_to_data_object_constraint
     {
         int value = -1;
     };
 
     /// \brief Struct to hold the write byte limit constraint for the ticket
+    ///
+    /// \since 4.3.1
     struct n_write_bytes_constraint
     {
         int value = -1;
@@ -75,7 +91,6 @@ namespace irods::experimental::administration::ticket
     {
         namespace detail
         {
-            ///
             /// \brief A function to run the ticket operation
             ///
             /// \param[in] conn The communication Object
@@ -87,6 +102,7 @@ namespace irods::experimental::administration::ticket
             /// \param[in] command_modifier4 The string to modify the command
             /// \param[in] run_as_admin A boolean that informs whether to run the operation as an admin
             ///
+            /// \since 4.3.1
             void execute_ticket_operation(RxComm& conn,
                                           std::string_view command,
                                           std::string_view ticket_identifier,
