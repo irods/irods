@@ -535,3 +535,16 @@ def possible_shm_locations():
     if _possible_shm_locations_str_cache is None:
         _possible_shm_locations_str_cache = frozenset(str(shm_dir) for shm_dir in _possible_shm_locations())
     return _possible_shm_locations_str_cache
+
+# This is a common mount point used by topology tests when testing detached mode
+# behavior for unixfilesystem resources.  In detached mode the servers are expected
+# to have a common mount where the vault exists.
+_test_mount_directory_cache = None
+def _test_mount_directory():
+    global _test_mount_directory_cache
+    if _test_mount_directory_cache is None:
+        _test_mount_directory_cache = pathlib.Path(os.sep, 'irods_testing_environment_mount_dir')
+    return _test_mount_directory_cache
+
+def test_mount_directory():
+    return str(_test_mount_directory())

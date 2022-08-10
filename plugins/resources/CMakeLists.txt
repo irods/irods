@@ -6,6 +6,7 @@ add_custom_target(all-plugins-resources)
 add_dependencies(all-plugins_no_database all-plugins-resources)
 
 add_subdirectory(replication)
+add_subdirectory(unixfilesystem)
 
 set(
   IRODS_RESOURCE_PLUGINS
