@@ -76,6 +76,7 @@ set(
   json_apis_from_client
   zone_report
   ticket_administration
+  host_list_context_string
 )
 
 foreach(test IN LISTS IRODS_UNIT_TESTS)

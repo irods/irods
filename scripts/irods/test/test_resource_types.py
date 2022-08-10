@@ -600,6 +600,496 @@ OUTPUT ruleExecOut
         # local cleanup
         os.remove(filepath)
 
+    ###################
+    # detached mode
+    ###################
+    def test_detached_mode__issue_4421(self):
+        try:
+            file1 = "f1"
+            file2 = "f2"
+            resource_host = "irods.org"
+            resource_name = 'detached_resource'
+            resource_context = 'host_mode=detached'
+
+            lib.create_ufs_resource(resource_name, self.admin, resource_host)
+            self.admin.assert_icommand("iadmin modresc %s context %s" %
+                                   (resource_name, resource_context))
+
+            # create file to put
+            lib.make_file(file1, 100)
+
+            # put small file
+            self.admin.assert_icommand("iput -R %s %s" % (resource_name, file1))  # iput
+
+            # get file
+            self.admin.assert_icommand("iget %s %s" % (file1, file2))  # iget
+
+            # make sure the file that was put and got are the same
+            self.admin.assert_icommand("diff %s %s " % (file1, file2))
+        finally:
+            # local cleanup
+            self.admin.assert_icommand("irm -f " + file1)
+
+            if os.path.exists(file1):
+                os.unlink(file1)
+            if os.path.exists(file2):
+                os.unlink(file2)
+
+            # cleanup
+            lib.remove_resource(resource_name, self.admin)
+
+    def test_detached_mode_in_host_list__issue_4421(self):
+        try:
+            file1 = "f1"
+            file2 = "f2"
+            resource_host = "irods.org"
+            resource_name = 'detached_resource'
+            hostname = lib.get_hostname()
+            resource_context = 'host_mode=detached;host_list=irods.org,%s' % hostname
+
+            lib.create_ufs_resource(resource_name, self.admin, resource_host)
+            self.admin.assert_icommand("iadmin modresc %s context %s" %
+                                   (resource_name, resource_context))
+
+            # create file to put
+            lib.make_file(file1, 100)
+
+            # put small file
+            self.admin.assert_icommand("iput -R %s %s" % (resource_name, file1))  # iput
+
+            # get file
+            self.admin.assert_icommand("iget %s %s" % (file1, file2))  # iget
+
+            # make sure the file that was put and got are the same
+            self.admin.assert_icommand("diff %s %s " % (file1, file2))
+        finally:
+            # local cleanup
+            self.admin.assert_icommand("irm -f " + file1)
+
+            if os.path.exists(file1):
+                os.unlink(file1)
+            if os.path.exists(file2):
+                os.unlink(file2)
+
+            # cleanup
+            lib.remove_resource(resource_name, self.admin)
+
+    def test_detached_mode_in_host_list_not_case_matching__issue_4421(self):
+        try:
+            file1 = "f1"
+            file2 = "f2"
+            resource_host = "irods.org"
+            resource_name = 'detached_resource'
+            hostname = lib.get_hostname().upper()
+            resource_context = 'host_mode=detached;host_list=irods.org,%s' % hostname
+
+            lib.create_ufs_resource(resource_name, self.admin, resource_host)
+            self.admin.assert_icommand("iadmin modresc %s context %s" %
+                                   (resource_name, resource_context))
+
+            # create file to put
+            lib.make_file(file1, 100)
+
+            # put small file
+            self.admin.assert_icommand("iput -R %s %s" % (resource_name, file1))  # iput
+
+            # get file
+            self.admin.assert_icommand("iget %s %s" % (file1, file2))  # iget
+
+            # make sure the file that was put and got are the same
+            self.admin.assert_icommand("diff %s %s " % (file1, file2))
+        finally:
+            # local cleanup
+            self.admin.assert_icommand("irm -f " + file1)
+
+            if os.path.exists(file1):
+                os.unlink(file1)
+            if os.path.exists(file2):
+                os.unlink(file2)
+
+            # cleanup
+            lib.remove_resource(resource_name, self.admin)
+
+    def test_detached_mode_host_not_in_host_list__issue_4421(self):
+        try:
+            file1 = "f1"
+            resource_host = "irods.org"
+            resource_name = 'detached_resource'
+            resource_context = 'host_mode=detached;host_list=irods.org,some_other_host'
+
+            lib.create_ufs_resource(resource_name, self.admin, resource_host)
+            self.admin.assert_icommand("iadmin modresc %s context %s" %
+                                   (resource_name, resource_context))
+
+            # create file to put
+            lib.make_file(file1, 100)
+
+            # put small file
+            self.admin.assert_icommand("iput -R %s %s" % (resource_name, file1), 'STDERR', 'USER_SOCK_CONNECT_ERR')  # iput
+            self.admin.assert_icommand("ils -L %s" % file1, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
+        finally:
+            if os.path.exists(file1):
+                os.unlink(file1)
+
+            # cleanup
+            lib.remove_resource(resource_name, self.admin)
+
+    def test_attached_mode_default_setting_invalid_host__issue_4421(self):
+        try:
+            file1 = "f1"
+            resource_host = "irods.org"
+            resource_name = 'attached_resource'
+
+            lib.create_ufs_resource(resource_name, self.admin, resource_host)
+
+            # create file to put
+            lib.make_file(file1, 100)
+
+            # put small file
+            self.admin.assert_icommand("iput -R %s %s" % (resource_name, file1), 'STDERR', 'USER_SOCK_CONNECT_ERR')  # iput
+            self.admin.assert_icommand("ils -L %s" % file1, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
+        finally:
+            if os.path.exists(file1):
+                os.unlink(file1)
+
+            # cleanup
+            lib.remove_resource(resource_name, self.admin)
+
+    def test_attached_mode_explicit_setting_invalid_host__issue_4421(self):
+        try:
+            file1 = "f1"
+            resource_host = "irods.org"
+            resource_name = 'attached_resource'
+            resource_context = 'host_mode=attached'
+
+            lib.create_ufs_resource(resource_name, self.admin, resource_host)
+            self.admin.assert_icommand("iadmin modresc %s context %s" %
+                                   (resource_name, resource_context))
+
+            # create file to put
+            lib.make_file(file1, 100)
+
+            # put small file
+            self.admin.assert_icommand("iput -R %s %s" % (resource_name, file1), 'STDERR', 'USER_SOCK_CONNECT_ERR')  # iput
+            self.admin.assert_icommand("ils -L %s" % file1, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
+        finally:
+            if os.path.exists(file1):
+                os.unlink(file1)
+
+            # cleanup
+            lib.remove_resource(resource_name, self.admin)
+
+    @unittest.skip("Currently the warning only displays if there is no redirect")
+    def test_detached_mode_register_outside_vault__issue_4421(self):
+        try:
+            file1 = "f1"
+
+            # create file to put
+            filepath = lib.create_local_testfile(file1)
+            registered_path = os.path.join(self.admin.session_collection, file1)
+
+            resource_host = lib.get_hostname().upper()
+            resource_name = 'detached_resource'
+            resource_context = 'host_mode=detached'
+
+            lib.create_ufs_resource(resource_name, self.admin, resource_host)
+            self.admin.assert_icommand("iadmin modresc %s context %s" %
+                                   (resource_name, resource_context))
+
+            self.admin.assert_icommand("ireg -R %s %s %s" % (resource_name, filepath, registered_path),
+                    'STDOUT_SINGLELINE',
+                    "Warning:  The registration was performed on a unixfilesystem resource [%s] currently configured as 'host_mode=detached'."
+                    % resource_name)
+
+        finally:
+            # cleanup
+            self.admin.assert_icommand("irm -f " + registered_path)
+            if os.path.exists(filepath):
+                os.unlink(filepath)
+            lib.remove_resource(resource_name, self.admin)
+
+    def test_detached_mode_register_inside_vault__issue_4421(self):
+        try:
+            resource_host = lib.get_hostname().upper()
+            resource_name = 'detached_resource'
+            resource_context = 'host_mode=detached'
+
+            lib.create_ufs_resource(resource_name, self.admin, resource_host)
+            self.admin.assert_icommand("iadmin modresc %s context %s" %
+                                   (resource_name, resource_context))
+
+            # create file to register
+            file1 = "f1"
+            registered_path = os.path.join(self.admin.session_collection, file1)
+            vault_path = self.admin.get_vault_path(resource=resource_name)
+            os.mkdir(vault_path)
+            filepath = '%s/%s' % (vault_path, file1)
+            with open(filepath, 'w+') as f:
+                print('I AM A TESTFILE -- [' + self.testfile + ']', file=f, end='')
+
+            self.admin.assert_icommand("ireg -R %s %s %s" % (resource_name, filepath, registered_path))
+
+        finally:
+            # cleanup
+            self.admin.assert_icommand("irm -f " + registered_path)
+            if os.path.exists(filepath):
+                os.unlink(filepath)
+            lib.remove_resource(resource_name, self.admin)
+
+    @unittest.skipUnless(test.settings.RUN_IN_TOPOLOGY, "Only run in topology")
+    def test_detached_mode_in_topology__issue_4421(self):
+        try:
+            file1 = "f1"
+            file2 = "f2"
+            resource_name = 'detached_resource'
+            resource_context = 'host_mode=detached'
+            shared_mount = paths.test_mount_directory()
+            vault_name = '%s_vault' % resource_name
+            vault_path = os.path.join(shared_mount, os.path.basename(self.admin.local_session_dir),\
+                    vault_name)
+
+            # make the resource
+            self.admin.assert_icommand(['iadmin', "mkresc", resource_name, 'unixfilesystem',\
+                    test.settings.HOSTNAME_2 + ":" + vault_path],\
+                    'STDOUT_SINGLELINE', 'unixfilesystem')
+
+            # create file to put
+            lib.make_file(file1, 100)
+
+            # put small file onto HOSTNAME_2
+            self.admin.assert_icommand("iput -R %s %s" % (resource_name, file1))
+
+            # modify resource to make it detached
+            self.admin.assert_icommand("iadmin modresc %s context %s" %
+                                   (resource_name, resource_context))
+
+            # pause HOSTNAME_2
+            with session.make_session_for_existing_admin() as admin_session:
+                admin_session.environment_file_contents = IrodsConfig().client_environment
+                admin_session.assert_icommand("irods-grid pause --hosts=%s" % test.settings.HOSTNAME_2,\
+                        'STDOUT_SINGLELINE', 'pausing')
+
+            # get file
+            self.admin.assert_icommand("iget %s %s" % (file1, file2))
+
+            # make sure the file that was put and got are the same
+            self.admin.assert_icommand("diff %s %s " % (file1, file2))
+
+        finally:
+            # cleanup
+            if os.path.exists(file1):
+                os.unlink(file1)
+            if os.path.exists(file2):
+                os.unlink(file2)
+
+            # resume HOSTNAME_2
+            with session.make_session_for_existing_admin() as admin_session:
+                admin_session.environment_file_contents = IrodsConfig().client_environment
+                admin_session.assert_icommand("irods-grid resume --hosts=%s" % test.settings.HOSTNAME_2,\
+                        'STDOUT_SINGLELINE', 'resuming')
+
+            self.admin.assert_icommand("irm -f " + file1)
+            lib.remove_resource(resource_name, self.admin)
+
+    @unittest.skipUnless(test.settings.RUN_IN_TOPOLOGY, "Only run in topology")
+    def test_detached_mode_in_topology_resource_assigned_to_icat__issue_4421(self):
+        # see irods_resource_plugin_s3 issue #2082
+        try:
+            file1 = "f1"
+            file2 = "f2"
+            resource_name = 'detached_resource'
+            resource_context = 'host_mode=detached'
+            shared_mount = paths.test_mount_directory()
+            vault_name = '%s_vault' % resource_name
+            vault_path = os.path.join(shared_mount, os.path.basename(self.admin.local_session_dir),\
+                    vault_name)
+
+            # make the resource
+            self.admin.assert_icommand(['iadmin', "mkresc", resource_name, 'unixfilesystem',\
+                    test.settings.ICAT_HOSTNAME + ":" + vault_path],\
+                    'STDOUT_SINGLELINE', 'unixfilesystem')
+
+            # create file to put
+            lib.make_file(file1, 100)
+
+            # put small file onto ICAT_HOSTNAME
+            self.admin.assert_icommand("iput -R %s %s" % (resource_name, file1))
+
+            # modify resource to make it detached
+            self.admin.assert_icommand("iadmin modresc %s context %s" %
+                                   (resource_name, resource_context))
+
+            # get file
+            self.admin.assert_icommand("iget %s %s" % (file1, file2))
+
+            # make sure the file that was put and got are the same
+            self.admin.assert_icommand("diff %s %s " % (file1, file2))
+
+        finally:
+            # cleanup
+            if os.path.exists(file1):
+                os.unlink(file1)
+            if os.path.exists(file2):
+                os.unlink(file2)
+
+            self.admin.assert_icommand("irm -f " + file1)
+            lib.remove_resource(resource_name, self.admin)
+
+    @unittest.skipUnless(test.settings.RUN_IN_TOPOLOGY, "Only run in topology")
+    def test_detached_mode_in_topology_with_host_list__issue_4421(self):
+        try:
+            file1 = "f1"
+            file2 = "f2"
+            resource_name = 'detached_resource'
+            resource_context = 'host_mode=detached;host_list=%s,%s,%s' %\
+                    (test.settings.HOSTNAME_1,\
+                    test.settings.HOSTNAME_2,\
+                    test.settings.ICAT_HOSTNAME)
+            shared_mount = paths.test_mount_directory()
+            vault_name = '%s_vault' % resource_name
+            vault_path = os.path.join(shared_mount, os.path.basename(self.admin.local_session_dir),\
+                    vault_name)
+
+            # make the resource
+            self.admin.assert_icommand(['iadmin', "mkresc", resource_name, 'unixfilesystem',\
+                    test.settings.HOSTNAME_2 + ":" + vault_path],\
+                    'STDOUT_SINGLELINE', 'unixfilesystem')
+
+            # create file to put
+            lib.make_file(file1, 100)
+
+            # put small file onto HOSTNAME_2
+            self.admin.assert_icommand("iput -R %s %s" % (resource_name, file1))
+
+            # modify resource to make it detached
+            self.admin.assert_icommand("iadmin modresc %s context %s" %
+                                   (resource_name, resource_context))
+
+            # pause HOSTNAME_2
+            with session.make_session_for_existing_admin() as admin_session:
+                admin_session.environment_file_contents = IrodsConfig().client_environment
+                admin_session.assert_icommand("irods-grid pause --hosts=%s" % test.settings.HOSTNAME_2,\
+                        'STDOUT_SINGLELINE', 'pausing')
+
+            # get file
+            self.admin.assert_icommand("iget %s %s" % (file1, file2))
+
+            # make sure the file that was put and got are the same
+            self.admin.assert_icommand("diff %s %s " % (file1, file2))
+
+        finally:
+            # cleanup
+            if os.path.exists(file1):
+                os.unlink(file1)
+            if os.path.exists(file2):
+                os.unlink(file2)
+
+            # resume HOSTNAME_2
+            with session.make_session_for_existing_admin() as admin_session:
+                admin_session.environment_file_contents = IrodsConfig().client_environment
+                admin_session.assert_icommand("irods-grid resume --hosts=%s" % test.settings.HOSTNAME_2,\
+                        'STDOUT_SINGLELINE', 'resuming')
+
+            self.admin.assert_icommand("irm -f " + file1)
+            lib.remove_resource(resource_name, self.admin)
+
+    @unittest.skipUnless(test.settings.RUN_IN_TOPOLOGY, "Only run in topology")
+    def test_detached_mode_in_topology_with_redirect__issue_4421(self):
+        try:
+            file1 = "f1"
+            file2 = "f2"
+            resource_name = 'detached_resource'
+            resource_context = 'host_mode=detached;host_list=%s' % test.settings.HOSTNAME_2
+            shared_mount = paths.test_mount_directory()
+            vault_name = '%s_vault' % resource_name
+            vault_path = os.path.join(shared_mount, os.path.basename(self.admin.local_session_dir),\
+                    vault_name)
+
+            # make the resource
+            self.admin.assert_icommand(['iadmin', "mkresc", resource_name, 'unixfilesystem',\
+                    test.settings.HOSTNAME_2 + ":" + vault_path],\
+                    'STDOUT_SINGLELINE', 'unixfilesystem')
+
+            # create file to put
+            lib.make_file(file1, 100)
+
+            # put small file onto HOSTNAME_2
+            self.admin.assert_icommand("iput -R %s %s" % (resource_name, file1))
+
+            # modify resource to make it detached
+            self.admin.assert_icommand("iadmin modresc %s context %s" %
+                                   (resource_name, resource_context))
+
+            # get file
+            self.admin.assert_icommand("iget %s %s" % (file1, file2))
+
+            # make sure the file that was put and got are the same
+            self.admin.assert_icommand("diff %s %s " % (file1, file2))
+
+        finally:
+            # cleanup
+            if os.path.exists(file1):
+                os.unlink(file1)
+            if os.path.exists(file2):
+                os.unlink(file2)
+
+            self.admin.assert_icommand("irm -f " + file1)
+            lib.remove_resource(resource_name, self.admin)
+
+    @unittest.skipUnless(test.settings.RUN_IN_TOPOLOGY, "Only run in topology")
+    def test_detached_mode_in_topology_put_with_resource_host_down__issue_4421(self):
+        try:
+            file1 = "f1"
+            file2 = "f2"
+            resource_name = 'detached_resource'
+            resource_context = 'host_mode=detached;host_list=%s,%s,%s' %\
+                    (test.settings.HOSTNAME_1,\
+                    test.settings.HOSTNAME_2,\
+                    test.settings.ICAT_HOSTNAME)
+            shared_mount = paths.test_mount_directory()
+            vault_name = '%s_vault' % resource_name
+            vault_path = os.path.join(shared_mount, os.path.basename(self.admin.local_session_dir),\
+                    vault_name)
+
+            # make the detached resource
+            self.admin.assert_icommand(['iadmin', "mkresc", resource_name, 'unixfilesystem',\
+                    test.settings.HOSTNAME_2 + ":" + vault_path, resource_context],\
+                    'STDOUT_SINGLELINE', 'unixfilesystem')
+
+            # create file to put
+            lib.make_file(file1, 100)
+
+            # pause HOSTNAME_2
+            with session.make_session_for_existing_admin() as admin_session:
+                admin_session.environment_file_contents = IrodsConfig().client_environment
+                admin_session.assert_icommand("irods-grid pause --hosts=%s" % test.settings.HOSTNAME_2,\
+                        'STDOUT_SINGLELINE', 'pausing')
+
+            # put small file onto HOSTNAME_2
+            self.admin.assert_icommand("iput -R %s %s" % (resource_name, file1))
+
+            # get file
+            self.admin.assert_icommand("iget %s %s" % (file1, file2))
+
+            # make sure the file that was put and got are the same
+            self.admin.assert_icommand("diff %s %s " % (file1, file2))
+
+        finally:
+            # cleanup
+            if os.path.exists(file1):
+                os.unlink(file1)
+            if os.path.exists(file2):
+                os.unlink(file2)
+
+            # resume HOSTNAME_2
+            with session.make_session_for_existing_admin() as admin_session:
+                admin_session.environment_file_contents = IrodsConfig().client_environment
+                admin_session.assert_icommand("irods-grid resume --hosts=%s" % test.settings.HOSTNAME_2,\
+                        'STDOUT_SINGLELINE', 'resuming')
+
+            self.admin.assert_icommand("irm -f " + file1)
+            lib.remove_resource(resource_name, self.admin)
+
 
 class Test_Resource_Passthru(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 

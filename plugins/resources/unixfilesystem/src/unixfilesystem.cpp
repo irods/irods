@@ -7,6 +7,7 @@
 
 // =-=-=-=-=-=-=-
 #include "irods/irods_resource_plugin.hpp"
+#include "irods/irods_resource_backport.hpp"
 #include "irods/irods_file_object.hpp"
 #include "irods/irods_physical_object.hpp"
 #include "irods/irods_collection_object.hpp"
@@ -19,6 +20,8 @@
 #include "irods/irods_kvp_string_parser.hpp"
 #include "irods/irods_logger.hpp"
 #include "irods/voting.hpp"
+#include "irods/private/irods_is_in_host_list.hpp"
+#include "irods/filesystem/path.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -26,6 +29,7 @@
 #include <sstream>
 #include <vector>
 #include <string>
+#include <optional>
 
 // =-=-=-=-=-=-=-
 // boost includes
@@ -83,7 +87,90 @@
 const std::string DEFAULT_VAULT_DIR_MODE( "default_vault_directory_mode_kw" );
 const std::string HIGH_WATER_MARK( "high_water_mark" ); // no longer used
 const std::string REQUIRED_FREE_INODES_FOR_CREATE("required_free_inodes_for_create"); // no longer used
+const std::string HOST_MODE("host_mode");
 
+namespace
+{
+    auto is_operating_in_detached_mode(irods::plugin_property_map& prop_map) -> bool
+    {
+        std::string host_mode_str;
+
+        irods::error ret = prop_map.get<std::string>(HOST_MODE, host_mode_str);
+        if (ret.ok()) {
+            return boost::iequals(host_mode_str.c_str(), "detached");
+        }
+
+        // default is attached mode
+        return false;
+    }
+} // namespace
+
+// The return value is always SUCCESS() because the errors encountered are to
+// be treated as warnings and no fatal errors.
+auto unix_file_start_operation(irods::plugin_property_map& prop_map) -> irods::error
+{
+    namespace logger = irods::experimental::log;
+
+    if (!is_operating_in_detached_mode(prop_map)) {
+        // Detached mode is disabled.  Return early.
+        return SUCCESS();
+    }
+
+    // check if we are in the host list
+    char local_hostname[MAX_NAME_LEN];
+    gethostname(local_hostname, MAX_NAME_LEN);
+
+    auto resource_hostname_optional = resolve_hostname(local_hostname, hostname_resolution_scheme::match_preferred);
+
+    std::string resource_hostname =
+        resource_hostname_optional ? std::move(*resource_hostname_optional) : local_hostname;
+
+    if (!is_host_in_host_list(prop_map, resource_hostname)) {
+        // Host is not in host list.  Return early as detached mode is disabled on this resource.
+        return SUCCESS();
+    }
+
+    // Set the RESOURCE_HOST of this resource to the rodsHostAddr_t for this server.
+    // This server will now act as the owner of this resource for any processing on
+    // this server.
+
+    // Note:  On error conditions below, detached mode will remain disabled and a warning
+    // will be logged.
+
+    std::string resource_name;
+    irods::error ret = prop_map.get<std::string>(irods::RESOURCE_NAME, resource_name);
+    if (!ret.ok()) {
+        // Logging a warning as returning an error here simply logs the error
+        // and continues.
+        logger::resource::warn(
+            "Detached mode for unixfilesystem resource failed to set RESOURCE_HOST to {}."
+            "  Failed to get irods::RESOURCE_NAME property.",
+            local_hostname);
+        return SUCCESS();
+    }
+
+    // Look up the rodsHostAddr_t for this server and set this as the RESOURCE_HOST of the resource.
+    // Note that the rodsHostAddr_t entry is shared throughout the code (not just used for this
+    // resource) so you can't adjust the existing entry attached to the resource.
+    rodsHostAddr_t addr{};
+    std::strncpy(addr.hostAddr, local_hostname, LONG_NAME_LEN);
+    const auto& zone_name = irods::get_server_property<const std::string>(irods::KW_CFG_ZONE_NAME);
+    std::strncpy(addr.zoneName, zone_name.c_str(), NAME_LEN);
+
+    rodsServerHost_t* local_host = nullptr;
+    if (resolveHost(&addr, &local_host) < 0) {
+        logger::resource::warn(
+            "[resource_name={}] Detached mode failed to set RESOURCE_HOST to {}."
+            "  Failed to call resolveHost.",
+            resource_name,
+            local_hostname);
+        return SUCCESS();
+    }
+
+    irods::set_resource_property<rodsServerHost_t*>(resource_name, irods::RESOURCE_HOST, local_host);
+
+    return SUCCESS();
+} // unix_file_start_operation
 // =-=-=-=-=-=-=-
 // NOTE: All storage resources must do this on the physical path stored in the file object and then update
 //       the file object's physical path with the full path
@@ -280,7 +367,32 @@ irods::error unix_file_mkdir_r(const std::string& path, mode_t mode)
 /// @brief interface to notify of a file registration
 irods::error unix_file_registered(irods::plugin_context& _ctx)
 {
-    // NOOP
+    if (!is_operating_in_detached_mode(_ctx.prop_map())) {
+        return SUCCESS();
+    }
+
+    irods::file_object_ptr fco = boost::dynamic_pointer_cast<irods::file_object>(_ctx.fco());
+    std::string file_path = fco->physical_path();
+
+    std::string vault_path;
+    _ctx.prop_map().get<std::string>(irods::RESOURCE_PATH, vault_path);
+
+    if (!has_prefix(file_path.c_str(), vault_path.c_str())) {
+        // registered path not in vault, give warning
+        std::string resource_name;
+        _ctx.prop_map().get<std::string>(irods::RESOURCE_NAME, resource_name);
+
+        auto warning_message = fmt::format(
+            "Warning:  The registration was performed on a "
+            "unixfilesystem resource [{}] currently configured as 'host_mode=detached'.  "
+            "Verify that the path [{}] is available on all servers that may serve "
+            "requests for this resource.",
+            resource_name.c_str(),
+            file_path.c_str());
+
+        addRErrorMsg(&_ctx.comm()->rError, 0, warning_message.c_str());
+    }
+
     return SUCCESS();
 } // unix_file_registered
 
@@ -1174,6 +1286,8 @@ class unixfilesystem_resource : public irods::resource {
                         itr->first,
                         itr->second );
                 } // for itr
+
+            set_start_operation(unix_file_start_operation);
 
         } // ctor
 
