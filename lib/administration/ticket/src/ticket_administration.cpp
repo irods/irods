@@ -5,11 +5,9 @@
 #ifdef IRODS_TICKET_ADMINISTRATION_ENABLE_SERVER_SIDE_API
 #    include "irods/rsTicketAdmin.hpp"
 #    define rxTicketAdmin rsTicketAdmin
-
 #else
 #    include "irods/ticketAdmin.h"
 #    define rxTicketAdmin rcTicketAdmin
-
 #endif // IRODS_TICKET_ADMINISTRATION_ENABLE_SERVER_SIDE_API
 
 #include "irods/irods_random.hpp"
@@ -21,9 +19,7 @@
 #include "irods/irods_exception.hpp"
 #include "irods/irods_at_scope_exit.hpp"
 
-#include <charconv>
 #include <string>
-#include <sstream>
 
 namespace irods::experimental::administration::ticket::NAMESPACE_IMPL
 {
@@ -48,7 +44,7 @@ namespace irods::experimental::administration::ticket::NAMESPACE_IMPL
             }
             newTicket[ticket_len] = '\0';
         }
-    } // namespace
+    } // anonymous namespace
 
     namespace detail
     {

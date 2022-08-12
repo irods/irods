@@ -9,19 +9,18 @@
 #include <fmt/format.h>
 
 #include <string>
-#include <iostream>
 #include <stdio.h>
 #include <stdexcept>
 
 TEST_CASE("ticket administration")
 {
     namespace tic = irods::experimental::administration::ticket;
-    std::string read_ticket_name = "testTicket";
-    std::string write_ticket_name = "testTicket2";
-    std::string read_string = "read";
-    std::string read_coll_string = "/tempZone/home/rods";
-    std::string write_string = "write";
-    std::string write_coll_string = "/tempZone";
+    const std::string read_ticket_name = "readTicket";
+    const std::string write_ticket_name = "writeTicket";
+    const std::string read_string = "read";
+    const std::string read_coll_string = "/tempZone/home/rods";
+    const std::string write_string = "write";
+    const std::string write_coll_string = "/tempZone";
 
     irods::experimental::query_builder builder;
 
@@ -29,14 +28,13 @@ TEST_CASE("ticket administration")
     auto conn_pool = irods::make_connection_pool();
     auto conn = conn_pool->get_connection();
 
-    std::string set_ticket_name = "setTicket";
-    std::string set_ticket_collection = "/tempZone/home";
-    std::string user_name = "testUser";
-    std::string group_name = "testGroup";
+    const std::string set_ticket_name = "setTicket";
+    const std::string set_ticket_collection = "/tempZone/home";
+    const std::string user_name = "testUser";
+    const std::string group_name = "testGroup";
 
     int set_test_number = 19;
-    std::string set_test_number_string = std::to_string(set_test_number);
-    std::string remove_test_number_string = std::to_string(0);
+    std::string remove_test_number_string = "0";
 
     irods::experimental::administration::user test_user{user_name};
     irods::experimental::administration::client::add_user(conn, test_user);
@@ -114,7 +112,7 @@ TEST_CASE("ticket administration")
 
     SECTION("admin delete ticket")
     {
-        tic::client::delete_ticket(tic::admin_tag{}, conn, write_ticket_name);
+        tic::client::delete_ticket(tic::admin, conn, write_ticket_name);
 
         auto general_query = builder.build<rcComm_t>(conn, fmt::format("select TICKET_STRING where TICKET_STRING = '{}'", write_ticket_name));
 
@@ -132,7 +130,7 @@ TEST_CASE("ticket administration")
 
     SECTION("admin create read ticket")
     {
-        tic::client::create_ticket(tic::admin_tag{}, conn, tic::ticket_type::read, read_coll_string, read_ticket_name);
+        tic::client::create_ticket(tic::admin, conn, tic::ticket_type::read, read_coll_string, read_ticket_name);
 
         auto general_query = builder.build<rcComm_t>(conn, fmt::format("select TICKET_STRING where TICKET_STRING = '{}'", read_ticket_name));
 
@@ -159,7 +157,7 @@ TEST_CASE("ticket administration")
 
     SECTION("admin create write ticket")
     {
-        tic::client::create_ticket(tic::admin_tag{},
+        tic::client::create_ticket(tic::admin,
                                    conn,
                                    tic::ticket_type::write,
                                    write_coll_string,
@@ -268,7 +266,7 @@ TEST_CASE("ticket administration")
         auto general_query = builder.build<rcComm_t>(conn, query);
 
         REQUIRE(general_query.size() > 0);
-        REQUIRE(set_test_number_string == (general_query.begin().capture_results().at(0)));
+        REQUIRE(std::to_string(set_test_number) == (general_query.begin().capture_results().at(0)));
 
         tic::client::delete_ticket(conn, set_ticket_name);
     }
@@ -294,7 +292,7 @@ TEST_CASE("ticket administration")
     {
         tic::client::create_ticket(conn, tic::ticket_type::write, set_ticket_collection, set_ticket_name);
 
-        tic::client::set_ticket_constraint(tic::admin_tag{},
+        tic::client::set_ticket_constraint(tic::admin,
                                            conn,
                                            set_ticket_name,
                                            tic::n_writes_to_data_object_constraint{set_test_number});
@@ -303,7 +301,7 @@ TEST_CASE("ticket administration")
         auto general_query = builder.build<rcComm_t>(conn, query);
 
         REQUIRE(general_query.size() > 0);
-        REQUIRE(set_test_number_string == (general_query.begin().capture_results().at(0)));
+        REQUIRE(std::to_string(set_test_number) == (general_query.begin().capture_results().at(0)));
 
         tic::client::delete_ticket(conn, set_ticket_name);
     }
@@ -337,14 +335,14 @@ TEST_CASE("ticket administration")
         auto general_query = builder.build<rcComm_t>(conn, query);
 
         REQUIRE(general_query.size() > 0);
-        REQUIRE(set_test_number_string == (general_query.begin().capture_results().at(0)));
+        REQUIRE(std::to_string(set_test_number) == (general_query.begin().capture_results().at(0)));
 
         tic::client::delete_ticket(conn, set_ticket_name);
     }
 
     SECTION("admin remove write_byte")
     {
-        tic::client::create_ticket(tic::admin_tag{},
+        tic::client::create_ticket(tic::admin,
                                    conn,
                                    tic::ticket_type::write,
                                    set_ticket_collection,
@@ -352,7 +350,7 @@ TEST_CASE("ticket administration")
 
         tic::client::set_ticket_constraint(conn, set_ticket_name, tic::n_write_bytes_constraint{set_test_number});
 
-        tic::client::remove_ticket_constraint(tic::admin_tag{}, conn, set_ticket_name, tic::n_write_bytes_constraint{});
+        tic::client::remove_ticket_constraint(tic::admin, conn, set_ticket_name, tic::n_write_bytes_constraint{});
 
         std::string query = fmt::format("select TICKET_WRITE_BYTE_LIMIT where TICKET_STRING = '{}'", set_ticket_name);
         auto general_query = builder.build<rcComm_t>(conn, query);
@@ -362,4 +360,7 @@ TEST_CASE("ticket administration")
 
         tic::client::delete_ticket(conn, set_ticket_name);
     }
+
+    irods::experimental::administration::client::remove_user(conn, test_user);
+    irods::experimental::administration::client::remove_group(conn, test_group);
 }

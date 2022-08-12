@@ -91,18 +91,6 @@ namespace irods::experimental::administration::ticket
     {
         namespace detail
         {
-            /// \brief A function to run the ticket operation
-            ///
-            /// \param[in] conn The communication Object
-            /// \param[in] command The string that specifies the command
-            /// \param[in] ticket_identifier The string to identify ticket
-            /// \param[in] command_modifier1 The string to modify the command
-            /// \param[in] command_modifier2 The string to modify the command
-            /// \param[in] command_modifier3 The string to modify the command
-            /// \param[in] command_modifier4 The string to modify the command
-            /// \param[in] run_as_admin A boolean that informs whether to run the operation as an admin
-            ///
-            /// \since 4.3.1
             void execute_ticket_operation(RxComm& conn,
                                           std::string_view command,
                                           std::string_view ticket_identifier,
@@ -128,6 +116,7 @@ namespace irods::experimental::administration::ticket
         /// \param[in] conn The communication object
         /// \param[in] _type Specify the type of ticket wanting to be created
         /// \param[in] obj_path The object path of the resource
+        ///
         /// \return std::string The name of the ticket generated
         ///
         /// \since 4.3.1
@@ -154,6 +143,7 @@ namespace irods::experimental::administration::ticket
         /// \param[in] conn The communication object
         /// \param[in] _type Specify the type of ticket wanting to be created
         /// \param[in] obj_path The object path of the resource
+        ///
         /// \return std::string The name of the ticket generated
         ///
         /// \since 4.3.1
@@ -196,6 +186,7 @@ namespace irods::experimental::administration::ticket
         /// \brief Add the ticket constraint to the specified ticket
         ///
         /// \tparam TicketConstraint The template struct to indicate the type of constraint (only user, group, and host constraint struct) 
+        ///
         /// \param[in] conn The communication object 
         /// \param[in] ticket_name The name of the ticket
         /// \param[in] constraint The constraint that should be added to the ticket
@@ -221,6 +212,7 @@ namespace irods::experimental::administration::ticket
         /// \brief Add the ticket constraint to the specified ticket
         ///
         /// \tparam TicketConstraint The template struct to indicate the type of constraint (only user, group, and host constraint struct) 
+        ///
         /// \param[in] conn The communication object 
         /// \param[in] ticket_id The id of the ticket
         /// \param[in] constraint The constraint that should be added to the ticket
@@ -235,6 +227,7 @@ namespace irods::experimental::administration::ticket
         /// \brief Add the ticket constraint to the specified ticket using admin privilege
         ///
         /// \tparam TicketConstraint The template struct to indicate the type of constraint (only user, group, and host constraint struct) 
+        ///
         /// \param[in] admin_tag Struct tag that indicated admin privilege
         /// \param[in] conn The communication object
         /// \param[in] ticket_id The id of the ticket
@@ -261,10 +254,10 @@ namespace irods::experimental::administration::ticket
             }
         }
 
-        
         /// \brief Add the ticket constraint to the specified ticket using admin privilege
         ///
         /// \tparam TicketConstraint The template struct to indicate the type of constraint (only user, group, and host constraint struct) 
+        ///
         /// \param[in] admin_tag Struct tag that indicated admin privilege 
         /// \param[in] conn The communication object 
         /// \param[in] ticket_id The id of the ticket 
@@ -280,6 +273,7 @@ namespace irods::experimental::administration::ticket
         /// \brief Set constraint to the ticket specified
         ///
         /// \tparam TicketConstraint The template struct to indicate the type of constraint (only the ticket property constraint)
+        ///
         /// \param[in] conn The communication object
         /// \param[in] ticket_name The name of the ticket
         /// \param[in] constraint The constraint that should be set on the ticket specified
@@ -290,7 +284,7 @@ namespace irods::experimental::administration::ticket
         {
             if constexpr (std::is_same_v<use_count_constraint, TicketConstraint>) {
                 if (constraint.value < 0) {
-                    throw std::invalid_argument("Value of the n is invalid!");
+                    throw std::invalid_argument("Invalid value for use-count.");
                 }
 
                 detail::execute_ticket_operation(conn,
@@ -304,7 +298,7 @@ namespace irods::experimental::administration::ticket
             }
             else if constexpr (std::is_same_v<n_writes_to_data_object_constraint, TicketConstraint>) {
                 if (constraint.value < 0) {
-                    throw std::invalid_argument("Value of the n is invalid!");
+                    throw std::invalid_argument("Invalid value for number of writes.");
                 }
 
                 detail::execute_ticket_operation(conn,
@@ -318,7 +312,7 @@ namespace irods::experimental::administration::ticket
             }
             else if constexpr (std::is_same_v<n_write_bytes_constraint, TicketConstraint>) {
                 if (constraint.value < 0) {
-                    throw std::invalid_argument("Value of the n is invalid!");
+                    throw std::invalid_argument("Invalid value for the number of bytes to be written.");
                 }
 
                 detail::execute_ticket_operation(conn,
@@ -338,6 +332,7 @@ namespace irods::experimental::administration::ticket
         /// \brief Set constraint to the ticket specified
         ///
         /// \tparam TicketConstraint The template struct to indicate the type of constraint (only the ticket property constraint) 
+        ///
         /// \param[in] conn The communication object 
         /// \param[in] ticket_id The ID of the ticket 
         /// \param[in] constraint The constraint that should be set on the ticket specified
@@ -352,6 +347,7 @@ namespace irods::experimental::administration::ticket
         /// \brief Set constraint to the ticket specified using admin privilege
         ///
         /// \tparam TicketConstraint The template struct to indicate the type of constraint (only the ticket property constraint)
+        ///
         /// \param[in] admin_tag Struct tag that indicated admin privilege
         /// \param[in] conn The communication object 
         /// \param[in] ticket_name The name of the ticket 
@@ -366,7 +362,7 @@ namespace irods::experimental::administration::ticket
         {
             if constexpr (std::is_same_v<use_count_constraint, TicketConstraint>) {
                 if (constraint.value < 0) {
-                    throw std::invalid_argument("Value of the n is invalid!");
+                    throw std::invalid_argument("Invalid value for use-count.");
                 }
 
                 detail::execute_ticket_operation(conn,
@@ -380,7 +376,7 @@ namespace irods::experimental::administration::ticket
             }
             else if constexpr (std::is_same_v<n_writes_to_data_object_constraint, TicketConstraint>) {
                 if (constraint.value < 0) {
-                    throw std::invalid_argument("Value of the n is invalid!");
+                    throw std::invalid_argument("Invalid value for number of writes.");
                 }
 
                 detail::execute_ticket_operation(conn,
@@ -394,7 +390,7 @@ namespace irods::experimental::administration::ticket
             }
             else if constexpr (std::is_same_v<n_write_bytes_constraint, TicketConstraint>) {
                 if (constraint.value < 0) {
-                    throw std::invalid_argument("Value of the n is invalid!");
+                    throw std::invalid_argument("Invalid value for the number of bytes to be written.");
                 }
 
                 detail::execute_ticket_operation(conn,
@@ -414,6 +410,7 @@ namespace irods::experimental::administration::ticket
         /// \brief Set constraint to the ticket specified using admin privilege
         ///
         /// \tparam TicketConstraint The template struct to indicate the type of constraint (only the ticket property constraint) 
+        ///
         /// \param[in] admin_tag Struct tag that indicated admin privilege 
         /// \param[in] conn The communication object 
         /// \param[in] ticket_id The ID of the ticket 
@@ -429,6 +426,7 @@ namespace irods::experimental::administration::ticket
         /// \brief Remove the ticket constraint from the ticket
         ///
         /// \tparam TicketConstraint The template struct to indicate the type of constraint
+        ///
         /// \param[in] conn The communication object
         /// \param[in] ticket_name The name of the ticket
         /// \param[in] constraint The constraint type that should be removed from the ticket
@@ -487,6 +485,7 @@ namespace irods::experimental::administration::ticket
         /// \brief Remove the ticket constraint from the ticket
         ///
         /// \tparam TicketConstraint The template struct to indicate the type of constraint
+        ///
         /// \param[in] conn The communication object
         /// \param[in] ticket_id The id for the ticket
         /// \param[in] constraint The constraint type that should be removed from the ticket
@@ -501,6 +500,7 @@ namespace irods::experimental::administration::ticket
         /// \brief Remove the ticket constraint from the ticket using admin privilege
         ///
         /// \tparam TicketConstraint The template struct to indicate the type of constraint
+        ///
         /// \param[in] admin_tag Struct tag that indicated admin privilege
         /// \param[in] conn The communication object
         /// \param[in] ticket_name The name of the ticket
@@ -560,6 +560,7 @@ namespace irods::experimental::administration::ticket
         /// \brief Remove the ticket constraint from the ticket using admin privilege
         ///
         /// \tparam TicketConstraint The template struct to indicate the type of constraint
+        ///
         /// \param[in] admin_tag Struct tag that indicated admin privilege
         /// \param[in] conn The communication object
         /// \param[in] ticket_id The id for the ticket
