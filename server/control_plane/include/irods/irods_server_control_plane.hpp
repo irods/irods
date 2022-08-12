@@ -25,6 +25,7 @@ namespace irods
     inline const std::string SERVER_CONTROL_RESUME( "server_control_resume" );
     inline const std::string SERVER_CONTROL_STATUS( "server_control_status" );
     inline const std::string SERVER_CONTROL_PING( "server_control_ping" );
+    inline const std::string SERVER_CONTROL_RELOAD("server_control_reload");
 
     inline const std::string SERVER_CONTROL_ALL_OPT( "all" );
     inline const std::string SERVER_CONTROL_HOSTS_OPT( "hosts" );

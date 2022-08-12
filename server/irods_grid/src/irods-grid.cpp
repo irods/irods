@@ -64,6 +64,7 @@ irods::error parse_program_options(
     irods::control_plane_command& _cmd ) {
 
     namespace po = boost::program_options;
+    // clang-format off
     po::options_description opt_desc( "options" );
     opt_desc.add_options()
     ( "action", "either 'status', 'ping', 'shutdown', 'pause', or 'resume'" )
@@ -76,7 +77,9 @@ irods::error parse_program_options(
     ( "status", "display status a server(s)" )
     ( "shutdown", "gracefully shutdown a server(s)" )
     ( "pause", "refuse new client connections" )
+    ( "reload", "Reload a server(s) configuration")
     ( "resume", "allow new client connections" );
+    // clang-format on
 
     po::positional_options_description pos_desc;
     pos_desc.add( "action", 1 );
@@ -106,11 +109,14 @@ irods::error parse_program_options(
         try {
             const std::string& action = vm["action"].as<std::string>();
             boost::unordered_map< std::string, std::string > cmd_map;
+            // clang-format off
             cmd_map[ "status"   ] = irods::SERVER_CONTROL_STATUS;
             cmd_map[ "ping"     ] = irods::SERVER_CONTROL_PING;
             cmd_map[ "pause"    ] = irods::SERVER_CONTROL_PAUSE;
             cmd_map[ "resume"   ] = irods::SERVER_CONTROL_RESUME;
             cmd_map[ "shutdown" ] = irods::SERVER_CONTROL_SHUTDOWN;
+            cmd_map[ "reload"   ] = irods::SERVER_CONTROL_RELOAD;
+            // clang-format on
 
             if ( cmd_map.end() == cmd_map.find( action ) ) {
                 std::cerr << "invalid subcommand ["

@@ -273,7 +273,7 @@ namespace irods
         auto lock = acquire_write_lock();
         // TODO uncomment when issue #6470 is fixed
         // log_server::error("Before patch '{}'", config_props_.dump());
-        config_props_.patch(patch);
+        config_props_ = config_props_.patch(patch);
         // log_server::error("After patch '{}'", config_props_.dump());
         return patch;
     } // reload
