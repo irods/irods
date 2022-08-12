@@ -8,6 +8,7 @@
 #include "irods/irods_server_properties.hpp"
 #include "irods/irods_server_state.hpp"
 #include "irods/irods_stacktrace.hpp"
+#include "irods/json_events.hpp"
 #include "irods/miscServerFunct.hpp"
 #include "irods/rcMisc.h"
 #include "irods/rodsServer.hpp"
@@ -394,6 +395,26 @@ namespace irods
         return SUCCESS();
     }
 
+    static auto operation_reload(const std::string& _wait_option, const size_t _wait_seconds, std::string& _output)
+        -> error
+    {
+        using json = nlohmann::json;
+
+        rodsEnv my_env;
+        _reloadRodsEnv(my_env);
+
+        auto diff = irods::server_properties::instance().reload();
+        irods::experimental::json_events::run_hooks(diff);
+
+        json obj = {{"configuration_changes_made", diff}, {"hostname", my_env.rodsHost}};
+        _output += obj.dump(4);
+        _output += ",";
+
+        logger::server::info("Control plane received signal to reload configuration");
+
+        return SUCCESS();
+    } // operation_reload
+
     bool server_control_executor::is_host_in_list(const std::string& _hn, const host_list_t& _hosts)
     {
         const auto e = std::end(_hosts);
@@ -438,6 +459,7 @@ namespace irods
         op_map_[SERVER_CONTROL_RESUME] = operation_resume;
         op_map_[SERVER_CONTROL_STATUS] = operation_status;
         op_map_[SERVER_CONTROL_PING]   = operation_ping;
+        op_map_[SERVER_CONTROL_RELOAD] = operation_reload;
         if (_prop == KW_CFG_RULE_ENGINE_CONTROL_PLANE_PORT) {
             op_map_[SERVER_CONTROL_SHUTDOWN] = rule_engine_operation_shutdown;
         }
@@ -546,10 +568,8 @@ namespace irods
 
     void server_control_executor::operator()()
     {
-        signal( SIGINT, ctrl_plane_handle_shutdown_signal );
-        // SIGHUP is the signal to reload the configuration. This shouldn't interact with it
-        signal(SIGHUP, SIG_IGN);
-        signal( SIGTERM, ctrl_plane_handle_shutdown_signal );
+        signal(SIGINT, ctrl_plane_handle_shutdown_signal);
+        signal(SIGTERM, ctrl_plane_handle_shutdown_signal);
 
         int port, num_hash_rounds;
         boost::optional<std::string> encryption_algorithm;
