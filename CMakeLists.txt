@@ -227,6 +227,10 @@ set(
   BOOST_CHRONO_DONT_PROVIDES_DEPRECATED_IO_SINCE_V2_0_0
   BOOST_STACKTRACE_USE_ADDR2LINE
   BOOST_ASIO_NO_DEPRECATED
+  # Historically, iRODS has used OpenSSL API version 1.1.x. OpenSSL 3.x deprecated and even removed some API calls
+  # in use by iRODS. This requires a compile definition which specifies the API version with which the target
+  # should be compatible. For more information, see https://www.openssl.org/docs/man3.0/man7/OPENSSL_API_COMPAT.html
+  OPENSSL_API_COMPAT=10100
   SPDLOG_FMT_EXTERNAL
   SPDLOG_NO_TLS
 )
