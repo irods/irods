@@ -83,3 +83,35 @@ class TestConfigurationReload(SessionsMixin, unittest.TestCase):
                 IrodsController().restart(test_mode=True)
                 self.admin.assert_icommand(
                     ['irule', rule, 'null', 'ruleExecOut'], "STDOUT", [str(i)])
+
+    def test_reload_command__issue_6529(self):
+        server_config_filename = paths.server_config_path()
+        PROP_NAME = "is_issue_6529_done"
+        with lib.file_backed_up(server_config_filename):
+            # Make the configuration changes
+            with open(server_config_filename) as f:
+                svr_cfg = json.load(f)
+            svr_cfg[PROP_NAME] = "Yes?"
+            with open(server_config_filename, 'w') as f:
+                f.write(json.dumps(svr_cfg, sort_keys=True,
+                        indent=4, separators=(',', ': ')))
+
+            # Invoke irods-grid reload --all
+            _, out, _ = self.admin.assert_icommand(
+                "irods-grid reload --all", 'STDOUT_MULTILINE')
+
+            # Load the output of the command
+            obj = json.loads(out)
+            changes = obj["hosts"][0]["configuration_changes_made"]
+
+            # And check the properties such that they are what we expect
+            self.assertTrue(len(changes) == 1)
+            self.assertTrue(changes[0]["path"] == f"/{PROP_NAME}")
+            self.assertTrue(changes[0]["op"] == "add")
+            self.assertTrue(changes[0]["value"] == "Yes?")
+
+            # Also make sure that the actual value is correct, as far as the
+            # rule engine is concerned.
+            rule = self.prepare_rule(PROP_NAME)
+            self.admin.assert_icommand(
+                ["irule", rule, 'null', 'ruleExecOut'], 'STDOUT', ["Yes?"])
