@@ -4,6 +4,7 @@ import json
 import os
 
 from . import session
+from ..configuration import IrodsConfig
 from ..controller import IrodsController
 from .. import lib
 from .. import paths
@@ -97,18 +98,20 @@ class TestConfigurationReload(SessionsMixin, unittest.TestCase):
                         indent=4, separators=(',', ': ')))
 
             # Invoke irods-grid reload --all
-            _, out, _ = self.admin.assert_icommand(
-                "irods-grid reload --all", 'STDOUT_MULTILINE')
+            with session.make_session_for_existing_admin() as admin_session:
+                admin_session.environment_file_contents = IrodsConfig().client_environment
+                _, out, _ = admin_session.assert_icommand(
+                    "irods-grid reload --all", 'STDOUT_MULTILINE')
 
-            # Load the output of the command
-            obj = json.loads(out)
-            changes = obj["hosts"][0]["configuration_changes_made"]
+                # Load the output of the command
+                obj = json.loads(out)
+                changes = obj["hosts"][0]["configuration_changes_made"]
 
-            # And check the properties such that they are what we expect
-            self.assertTrue(len(changes) == 1)
-            self.assertTrue(changes[0]["path"] == f"/{PROP_NAME}")
-            self.assertTrue(changes[0]["op"] == "add")
-            self.assertTrue(changes[0]["value"] == "Yes?")
+                # And check the properties such that they are what we expect
+                self.assertTrue(len(changes) == 1)
+                self.assertTrue(changes[0]["path"] == f"/{PROP_NAME}")
+                self.assertTrue(changes[0]["op"] == "add")
+                self.assertTrue(changes[0]["value"] == "Yes?")
 
             # Also make sure that the actual value is correct, as far as the
             # rule engine is concerned.
