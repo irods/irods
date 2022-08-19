@@ -108,10 +108,10 @@ class TestConfigurationReload(SessionsMixin, unittest.TestCase):
                 changes = obj["hosts"][0]["configuration_changes_made"]
 
                 # And check the properties such that they are what we expect
-                self.assertTrue(len(changes) == 1)
-                self.assertTrue(changes[0]["path"] == f"/{PROP_NAME}")
-                self.assertTrue(changes[0]["op"] == "add")
-                self.assertTrue(changes[0]["value"] == "Yes?")
+                self.assertEqual(len(changes), 1)
+                self.assertEqual(changes[0]["path"], f"/{PROP_NAME}")
+                self.assertEqual(changes[0]["op"], "add")
+                self.assertEqual(changes[0]["value"], "Yes?")
 
             # Also make sure that the actual value is correct, as far as the
             # rule engine is concerned.
