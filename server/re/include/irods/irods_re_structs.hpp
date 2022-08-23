@@ -5,10 +5,14 @@
 #include "irods/rods.h"
 #include "irods/msParam.h"
 #include "irods/reDefines.h"
+#include "irods/ruleExecSubmit.h"
 #include "irods/reconstants.hpp"
 #include <boost/any.hpp>
 
 #include <list>
+#include <map>
+#include <string>
+#include <vector>
 
 #define MAX_NUM_OF_ARGS_IN_ACTION 20
 
@@ -78,6 +82,14 @@ int initReiWithCollInp( ruleExecInfo_t *rei, RsComm *rsComm,
 int _writeString( char *writeId, char *writeStr, ruleExecInfo_t *rei );
 int writeString( msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei );
 
+std::map<std::string, std::vector<std::string>> getTaggedValues(const char *str);
+
+int fillSubmitConditions( const char *action, const char *inDelayCondition,
+                          bytesBuf_t *packedReiAndArgBBuf, ruleExecSubmitInp_t *ruleSubmitInfo,
+                          ruleExecInfo_t *rei );
+
+int
+packRei( ruleExecInfo_t *rei, bytesBuf_t **packedReiBBuf );
 int
 unpackRei( RsComm *rsComm, ruleExecInfo_t **rei,
            bytesBuf_t *packedReiBBuf );
@@ -91,6 +103,8 @@ unpackReiAndArg( RsComm *rsComm, ruleExecInfoAndArg_t **reiAndArg,
 int copyRuleExecInfo( ruleExecInfo_t *from, ruleExecInfo_t *to );
 
 int freeRuleExecInfoStruct( ruleExecInfo_t *rs, int freeSpecialStructFlag );
+
+int zeroRuleExecInfoStruct( ruleExecInfo_t *rei );
 
 int freeRuleExecInfoInternals( ruleExecInfo_t *rs, int freeSpecialStructFlag );
 
@@ -107,6 +121,12 @@ int freeUserInfo( userInfo_t *rs );
 int copyKeyValPairStruct( keyValPair_t *from, keyValPair_t *to );
 
 int freeKeyValPairStruct( keyValPair_t *rs );
+
+int pushStack( strArray_t *strArray, char *value );
+
+int popStack( strArray_t *strArray, char *value );
+
+int clearMsparamInRei( ruleExecInfo_t *rei );
 
 void *mallocAndZero( int s );
 

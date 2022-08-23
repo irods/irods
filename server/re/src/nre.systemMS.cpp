@@ -26,12 +26,6 @@ static std::vector<std::string> GlobalDelayExecStack;
 
 int checkFilePerms(char *fileName);
 
-int fillSubmitConditions(const char* action,
-                         const char* inDelayCondition,
-                         bytesBuf_t* packedReiAndArgBBuf,
-                         ruleExecSubmitInp_t* ruleSubmitInfo,
-                         ruleExecInfo_t* rei);
-
 /**
  * \cond oldruleengine
  * \fn delayExec(msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, ruleExecInfo_t *rei)
