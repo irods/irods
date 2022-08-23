@@ -333,7 +333,7 @@ ExprType *newTupleTypeVarArg( int arity, int vararg, ExprType **paramTypes, Regi
 ExprType *newSimpType( NodeType t, Region *r );
 ExprType *newErrorType( int errcode, Region *r );
 ExprType *newIRODSType( const char *name, Region *r );
-ExprType *newFlexKind( int arity, ExprType **typeArgs, Region *r );
+/*ExprType *newFlexKind( int arity, ExprType **typeArgs, Region *r );*/
 FunctionDesc *newFuncSymLink( char *fn , int nArgs, Region *r );
 Node *newPartialApplication( Node *func, Node *arg, int nArgsLeft, Region *r );
 
@@ -373,7 +373,6 @@ Node *createBinaryFunctionNode( char *fn, Node *a, Node *b, Label * exprloc, Reg
 Node *createFunctionNode( const char *fn, Node **params, int paramsLen, Label * exprloc, Region *r );
 Node *createActionsNode( Node **params, int paramsLen, Label * exprloc, Region *r );
 Node *createTextNode( char *t, Label * exprloc, Region *r );
-Node *createNumberNode( char *t, Label * exprloc, Region *r );
 Node *createStringNode( char *t, Label * exprloc, Region *r );
 Node *createErrorNode( char *error, Label * exprloc, Region *r );
 

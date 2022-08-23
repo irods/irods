@@ -15,6 +15,7 @@
 #include "irods/private/re/restructs.hpp"
 #include "irods/region.h"
 #include "irods/irods_hashtable.h"
+#include "irods/irods_list.h"
 
 
 #define CASCASE_NON_ZERO(x) {int ret = x; if(ret != 0) { return ret;} }
@@ -36,9 +37,7 @@ ExprType *dupType( ExprType *ty, Region *r );
 int typeEqSyntatic( ExprType *a, ExprType *b );
 
 Node **allocSubtrees( Region *r, int size );
-void setStringPair( ExprType *ty, Region *r );
-void replace( Hashtable *varTypes, int a, ExprType *b );
-void replaceCons( ExprType *consType, int a, ExprType *b );
+/*void replace( Hashtable *varTypes, int a, ExprType *b );*/
 ExprType* dereference( ExprType *type, Hashtable *tt, Region *r );
 ExprType *instantiate( ExprType *type, Hashtable *type_table, int replaceFreeVars, Region *r );
 
@@ -76,12 +75,6 @@ const void *lookupFromEnv( Env *env, const char *key );
 void updateInEnv( Env *env, char *varname, Res *res );
 void freeEnvUninterpretedStructs( Env *e );
 Env* globalEnv( Env *env );
-
-void listAppend( List *list, void *value, Region *r );
-void listAppendToNode( List *list, ListNode *node, void *value, Region *r );
-void listRemove( List *list, ListNode *node );
-void listAppendNoRegion( List *list, void *value );
-void listRemoveNoRegion( List *list, ListNode *node );
 
 void logErrMsg( rError_t *errmsg, rError_t *system );
 char *errMsgToString( rError_t *errmsg, char *buf, int buflen );
