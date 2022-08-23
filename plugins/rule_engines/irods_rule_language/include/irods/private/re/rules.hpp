@@ -11,7 +11,6 @@
 
 //extern irods::ms_table MicrosTable;
 
-int setLocalVarValue( char* varName, ruleExecInfo_t *rei, Res* res, char* errmsg, Region *r );
 int readRuleSetFromFile( const char *ruleBaseName, RuleSet *ruleSet, Env *funcDesc, int* errloc, rError_t *errmsg, Region *r );
 int readRuleSetFromLocalFile( const char *ruleBaseName, const char *fileName, RuleSet *ruleSet, Env *funcDesc, int *errloc, rError_t *errmsg, Region *r );
 int parseAndComputeMsParamArrayToEnv( msParamArray_t *msParamArray, Env *global, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r );
@@ -25,8 +24,6 @@ Res *computeNode( Node *expr, Node *reco, Env *env, ruleExecInfo_t *rei, int rei
 
 ExprType *typeRule( RuleDesc *ruleNode, Env *funcDesc, Hashtable *varTypes, List *typingConstraints, rError_t *errmsg, Node **errnode, Region *r );
 ExprType *typeRuleSet( RuleSet *ruleset, rError_t *errmsg, Node **errnode, Region *r );
-execCmdOut_t *addCmdExecOutToEnv( Env *global, Region *r );
-void freeCmdExecOut( execCmdOut_t *ruleExecOut );
 RuleDesc *getRuleDesc( int ri );
 int generateRuleTypes( RuleSet *inRuleSet, Hashtable *symbol_type_table, Region *r );
 int overflow( const char*expr, int len );

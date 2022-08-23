@@ -62,9 +62,6 @@ void getSystemFunctions( Hashtable *ft, Region *r );
 
 Res* eval( char *expr, Env *env, ruleExecInfo_t *rei, int saveREI, rError_t *errmsg, Region *r );
 
-int getParamIOType( char *iotypes, int index );
-
-FunctionDesc *getFuncDescFromChain( int n, FunctionDesc *fDesc );
 Node *construct( char *fn, Node **args, int argc, Node* constype, Region *r );
 Node *deconstruct( Node **args, int proj );
 char* matchWholeString( char *buf );
