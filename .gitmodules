@@ -1,3 +1,0 @@
-[submodule "irods_schema_messaging"]
-	path = irods_schema_messaging
-	url = https://github.com/irods/irods_schema_messaging
