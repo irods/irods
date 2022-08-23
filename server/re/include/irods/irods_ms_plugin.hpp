@@ -135,4 +135,6 @@ namespace irods {
 
 }; // namespace irods
 
+int actionTableLookUp( irods::ms_table_entry&, char *action );
+
 #endif // __IRODS_MS_PLUGIN_HPP__
