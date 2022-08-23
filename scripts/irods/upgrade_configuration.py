@@ -9,7 +9,6 @@ import stat
 import collections.abc
 
 from . import six
-from . import pyparsing
 from . import lib
 from . import paths
 from .exceptions import IrodsError, IrodsWarning
