@@ -24,9 +24,6 @@ int clearFuncMapStruct( rulefmapdef_t* inRuleFuncMapDef );
 int getRule( int ri, char *ruleBase, char *ruleHead, char *ruleCondition,
              char *ruleAction, char *ruleRecovery, int rSize );
 
-#include "irods/irods_ms_plugin.hpp"
-int actionTableLookUp( irods::ms_table_entry&, char *action );
-
 int applyRuleArgPA( const char *action, const char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
                     msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag );
 int applyRuleBase( char *inAction, msParamArray_t *inMsParamArray, int update,
@@ -47,21 +44,6 @@ int freeRescGrpInfo( rescGrpInfo_t *rs );
 
 int mapExternalFuncToInternalProc( char *funcName );
 
-int zeroRuleExecInfoStruct( ruleExecInfo_t *rei );
-int packRei( ruleExecInfo_t *rei, bytesBuf_t **packedReiBBuf );
-int unpackRei( rsComm_t *rsComm, ruleExecInfo_t **rei, bytesBuf_t *packedReiBBuf );
-int packReiAndArg( ruleExecInfo_t *rei, char *myArgv[],
-                   int myArgc, bytesBuf_t **packedReiAndArgBBuf );
-int unpackReiAndArg( rsComm_t *rsComm, ruleExecInfoAndArg_t **reiAndArg,
-                     bytesBuf_t *packedReiAndArgBBuf );
-
-int pushStack( strArray_t *strArray, char *value );
-int popStack( strArray_t *strArray, char *value );
-std::map<std::string, std::vector<std::string>> getTaggedValues(const char *str);
-/***  causing trouble in compiling clientLogin.c
-int
-fillSubmitConditions (const char *action, const char *inDelayCondition, bytesBuf_t *packedReiAndArgBBuf,   ruleExecSubmitInp_t *ruleSubmitInfo);
-***/
 int print_uoi( userInfo_t *uoi );
 int print_doi( dataObjInfo_t *doi );
 int execMyRule( char * ruleDef,  msParamArray_t *inMsParamArray, const char *outParamsDesc,
@@ -69,13 +51,10 @@ int execMyRule( char * ruleDef,  msParamArray_t *inMsParamArray, const char *out
 int execMyRuleWithSaveFlag( char * ruleDef, msParamArray_t *inMsParamArray, const char *outParamsDesc,
                             ruleExecInfo_t *rei, int reiSaveFlag );
 
-int clearMsparamInRei( ruleExecInfo_t *rei );
-
 int _delayExec( const char *inActionCall, const char *recoveryActionCall,
                 const char *delayCondition,  ruleExecInfo_t *rei );
 
 int doForkExec( char *prog, char *arg1 );
-int writeString( msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei );
 int getNewVarName( char *v, msParamArray_t *msParamArray );
 
 int mapExternalFuncToInternalProc( char *funcName );
