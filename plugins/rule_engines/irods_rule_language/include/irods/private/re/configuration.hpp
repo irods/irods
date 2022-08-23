@@ -149,7 +149,7 @@ void removeRuleFromExtIndex( char *ruleName, int i );
 void appendRuleIntoExtIndex( RuleDesc *rule, int i, Region *r );
 void prependRuleIntoAppIndex( RuleDesc *rule, int i, Region *r );
 int checkPointExtRuleSet( Region *r );
-void appendAppRule( RuleDesc *rd, Region *r );
+/*void appendAppRule( RuleDesc *rd, Region *r );*/
 void prependAppRule( RuleDesc *rd, Region *r );
 void popExtRuleSet( int checkPoint );
 void clearDelayed();

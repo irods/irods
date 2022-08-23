@@ -34,7 +34,6 @@ void clearIndex( Hashtable **ruleIndex );
 
 int createRuleStructIndex( ruleStruct_t *inRuleStrct, Hashtable *ruleIndex );
 int createRuleNodeIndex( RuleSet *inRuleSet, Hashtable *ruleIndex, int offset, Region *r );
-int createCoreAppExtRuleNodeIndex();
 int createCondIndex( Region *r );
 int createFuncMapDefIndex( rulefmapdef_t *inFuncStrct1, Hashtable **ruleIndex );
 /* int clearRuleSet(RuleSet *inRuleSet); */

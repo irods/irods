@@ -37,7 +37,6 @@ Res* execMicroService3( char *inAction, Res** largs, unsigned int nargs, Node *n
 Res* execRule( char *ruleName, Res** args, unsigned int narg, int applyAll, Env *outEnv, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r );
 Res* execRuleNodeRes( Node *rule, Res** args, unsigned int narg, int applyAll, Env *outEnv, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r );
 Res* matchPattern( Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r );
-Res* matchPattern( Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r );
 
 Res* getSessionVar( char *action,  Node *node, char *varName,  ruleExecInfo_t *rei, rError_t *errmsg, Region *r );
 Res* processCoercion( Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, rError_t *errmsg, Region *r );

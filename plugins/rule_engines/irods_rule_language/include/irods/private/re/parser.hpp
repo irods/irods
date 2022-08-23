@@ -395,7 +395,6 @@ void typeToStringParser( char **p, int *s, int indent, int lifted, Node *n );
 void functionApplicationToString( char *buf, int size, char *fn, Node **args, int n );
 
 char *nextRuleSection( char *expr, char* section );
-char *parseFunctionParameters( char *e, char *args[], int *argc );
 char *functionParameters( char *expr, char* param );
 ExprType *parseFuncTypeFromString( char *string, Region *r );
 Node* parseTypingConstraintsFromString( char *string, Region *r );
@@ -418,9 +417,6 @@ int eqExprNodeSyntacticVarMapping( Node *a, Node *b, Hashtable *varMapping /* fr
 
 int nextStringBase( Pointer *e, char *value, int max_len, char* delim, int consumeDelim, char escape, int cntOffset, int vars[] );
 int nextStringBase2( Pointer *e, char *value, int max_len, char* delim );
-Node *convertStringToExpression( Token *token, char *base, Node **node, Region *r );
-Node *nextActionBackwardCompatible( Pointer *e, Node **node, rError_t *errmsg, Region *r );
-Node *parseActionArgumentBackwardCompatible( Pointer *e, Node **node, rError_t *errmsg, Region *r );
 void nextActionArgumentStringBackwardCompatible( Pointer *e, Token *token );
 
 char* typeName_Res( Res *s );

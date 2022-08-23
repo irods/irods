@@ -18,7 +18,7 @@ int convertMsParamArrayToEnvAndFreeNonIRODSType( msParamArray_t *var, Env *env, 
 int convertMsParamToRes( msParam_t *var, Res *res, Region *r );
 int convertMsParamToResAndFreeNonIRODSType( msParam_t *mP, Res *res, Region *r );
 Res* convertMsParamToRes( msParam_t *mP, Region *r );
-void convertCollectionToRes( msParam_t *mP, Res* res );
+/*void convertCollectionToRes( msParam_t *mP, Res* res );*/
 void convertDoubleValue( Res *res, double inval, Region *r );
 void convertStrValue( Res *res, char *val, Region *r );
 /**
