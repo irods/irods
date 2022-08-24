@@ -24,7 +24,6 @@ extern void myfree(char* file, int line, void *x);
 #include "irods/rcGlobalExtern.h"
 #include "irods/objInfo.h"
 #include "irods/fileOpen.h"
-#include "irods/private/re/regExpMatch.hpp"
 #include "irods/reDefines.h"
 #include "irods/ruleExecSubmit.h"
 #include "irods/ruleExecDel.h"

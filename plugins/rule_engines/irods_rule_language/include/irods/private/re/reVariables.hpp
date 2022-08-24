@@ -11,7 +11,6 @@
 #include "irods/rcGlobalExtern.h"
 #include "irods/reDefines.h"
 #include "irods/objInfo.h"
-#include "irods/private/re/regExpMatch.hpp"
 
 /*************
 typedef struct {
