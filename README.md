@@ -2,6 +2,10 @@
 
 This repository hosts the client iCommands, the default command line interface to iRODS.
 
+The client iCommands are released as a single package called `irods-icommands` in the repository at https://packages.irods.org/
+
+Once the repository is configured, the `irods-icommands` package can be installed via the package manager on any supported OS.
+
 ## Build
 
 To build the iCommands, you will need the `irods-dev` and `irods-runtime` packages.
