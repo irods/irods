@@ -8,7 +8,7 @@
 
 #include <cstring>
 
-using logger = irods::experimental::log;
+namespace logger = irods::experimental::log;
 
 /* addMsParam - This is for backward compatibility only.
  *  addMsParamToArray should be used for all new functions

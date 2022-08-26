@@ -58,7 +58,6 @@
 #include <charconv>
 
 // clang-format off
-using logger        = irods::experimental::log;
 using log_db        = irods::experimental::log::database;
 using log_sql       = irods::experimental::log::sql;
 using leaf_bundle_t = irods::resource_manager::leaf_bundle_t;
@@ -13837,7 +13836,7 @@ namespace
         }
 
         if (0 != ec) {
-            logger::database::error("SQL execution error [{}].", ec);
+            log_db::error("SQL execution error [{}].", ec);
             return ERROR(ec, "SQL execution error.");
         }
 
@@ -13909,24 +13908,30 @@ namespace
             cllBindVarCount = 1;
             ec = cmlExecuteNoAnswerSql("delete from R_TICKET_ALLOWED_HOSTS where ticket_id = ?", &icss);
             if (0 != ec && CAT_SUCCESS_BUT_WITH_NO_INFO != ec) {
-                logger::database::warn("Failed to delete ticket information [error_code={}, ticket={}, table=R_TICKET_ALLOWED_HOSTS]",
-                                       ec, ticket_id_string);
+                log_db::warn(
+                    "Failed to delete ticket information [error_code={}, ticket={}, table=R_TICKET_ALLOWED_HOSTS]",
+                    ec,
+                    ticket_id_string);
             }
 
             cllBindVars[0] = ticket_id_string.c_str();
             cllBindVarCount = 1;
             ec = cmlExecuteNoAnswerSql("delete from R_TICKET_ALLOWED_USERS where ticket_id = ?", &icss);
             if (0 != ec && CAT_SUCCESS_BUT_WITH_NO_INFO != ec) {
-                logger::database::warn("Failed to delete ticket information [error_code={}, ticket={}, table=R_TICKET_ALLOWED_USERS]",
-                                       ec, ticket_id_string);
+                log_db::warn(
+                    "Failed to delete ticket information [error_code={}, ticket={}, table=R_TICKET_ALLOWED_USERS]",
+                    ec,
+                    ticket_id_string);
             }
 
             cllBindVars[0] = ticket_id_string.c_str();
             cllBindVarCount = 1;
             ec = cmlExecuteNoAnswerSql("delete from R_TICKET_ALLOWED_GROUPS where ticket_id = ?", &icss);
             if (0 != ec && CAT_SUCCESS_BUT_WITH_NO_INFO != ec) {
-                logger::database::warn("Failed to delete ticket information [error_code={}, ticket={}, table=R_TICKET_ALLOWED_GROUPS]",
-                                       ec, ticket_id_string);
+                log_db::warn(
+                    "Failed to delete ticket information [error_code={}, ticket={}, table=R_TICKET_ALLOWED_GROUPS]",
+                    ec,
+                    ticket_id_string);
             }
 
             ec = cmlExecuteNoAnswerSql("commit", &icss);

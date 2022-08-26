@@ -25,7 +25,7 @@ namespace
     namespace ix  = irods::experimental;
     namespace dml = irods::experimental::dml;
 
-    using log               = irods::experimental::log;
+    using log_db            = irods::experimental::log::database;
     using db_operation_type = std::tuple<std::string_view, std::string_view>;
     using db_column_type    = std::tuple<std::string_view, std::string_view>;
 
@@ -871,7 +871,7 @@ namespace
             const auto* column = get_non_ticket_id_column(_op.data);
 
             if (!column) {
-                log::database::error("Invalid arguments: missing non-ticket_id column for table [{}].", _op.table);
+                log_db::error("Invalid arguments: missing non-ticket_id column for table [{}].", _op.table);
                 return SYS_INVALID_INPUT_PARAM;
             }
 
@@ -933,7 +933,7 @@ namespace
 
             // Generate the final SQL.
             const auto sql = fmt::format("update {} set {} where {}", to_upper_copy(_op.table), set_string, conditions_string);
-            log::database::debug("{} :: Generated SQL = [{}]", __func__, sql);
+            log_db::debug("{} :: Generated SQL = [{}]", __func__, sql);
 
             nanodbc::statement stmt{_db_conn};
             nanodbc::prepare(stmt, sql);
@@ -973,7 +973,7 @@ namespace
 
             // Generate the final SQL.
             const auto sql = fmt::format("delete from {} where {}", to_upper_copy(_op.table), conditions_string);
-            log::database::debug("{} :: Generated SQL = [{}]", __func__, sql);
+            log_db::debug("{} :: Generated SQL = [{}]", __func__, sql);
 
             nanodbc::statement stmt{_db_conn};
             nanodbc::prepare(stmt, sql);
@@ -1015,7 +1015,7 @@ namespace
         if (_op.table == "r_ticket_allowed_users")  { return insert_secondary_ticket_info(_db_conn, _db_instance_name, _op); }
         // clang-format on
 
-        log::database::error("{} :: No insert statement executed! This message should not be reachable!", __func__);
+        log_db::error("{} :: No insert statement executed! This message should not be reachable!", __func__);
 
         return SYS_INTERNAL_ERR;
     } // exec_insert
@@ -1051,7 +1051,7 @@ namespace
         };
 
         if (std::none_of(std::begin(supported_operations), std::end(supported_operations), pred)) {
-            log::database::error("{} :: Database operation [{}] not supported on table [{}].", __func__, _db_op, _table_name);
+            log_db::error("{} :: Database operation [{}] not supported on table [{}].", __func__, _db_op, _table_name);
             return false;
         }
 
@@ -1068,7 +1068,7 @@ namespace
 
         if (std::none_of(std::begin(db_columns), std::end(db_columns), pred)) {
             const auto msg = fmt::format("Invalid table column [{}.{}].", _table_name, _column);
-            log::database::error("{} :: {}", __func__, msg);
+            log_db::error("{} :: {}", __func__, msg);
             THROW(SYS_INVALID_INPUT_PARAM, msg);
         }
     } // throw_if_invalid_table_column
@@ -1082,7 +1082,7 @@ namespace
 
         if (std::none_of(std::begin(supported_operators), std::end(supported_operators), pred)) {
             const auto msg = fmt::format("Invalid conditional operator [{}].", _operator);
-            log::database::error("{} :: {}", __func__, msg);
+            log_db::error("{} :: {}", __func__, msg);
             THROW(SYS_INVALID_INPUT_PARAM, msg);
         }
     } // throw_if_invalid_conditional_operator
@@ -1203,7 +1203,7 @@ namespace
     auto database_type_not_supported(const std::string_view _db_instance_name,
                                      const std::string_view _function_name) noexcept -> int
     {
-        log::database::error("{} :: Database type not supported [{}].", _function_name, _db_instance_name);
+        log_db::error("{} :: Database type not supported [{}].", _function_name, _db_instance_name);
         return DATABASE_TYPE_NOT_SUPPORTED;
     }
 } // anonymous namespace
@@ -1222,7 +1222,7 @@ namespace irods::experimental
                 std::tie(db_instance_name, db_conn) = ic::new_database_connection();
             }
             catch (const std::exception& e) {
-                log::database::error(e.what());
+                log_db::error(e.what());
                 return CAT_CONNECT_ERR;
             }
 
@@ -1252,11 +1252,11 @@ namespace irods::experimental
             });
         }
         catch (const irods::exception& e) {
-            log::database::error("{} :: Caught exception: {}", __func__, e.what());
+            log_db::error("{} :: Caught exception: {}", __func__, e.what());
             return e.code();
         }
         catch (const std::exception& e) {
-            log::database::error("{} :: Caught exception: {}", __func__, e.what());
+            log_db::error("{} :: Caught exception: {}", __func__, e.what());
             return SYS_INTERNAL_ERR;
         }
     } // atomic_apply_database_operations

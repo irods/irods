@@ -87,11 +87,11 @@ extern irods::resource_manager resc_mgr;
 namespace
 {
     // clang-format off
-    namespace ix = irods::experimental;
-    namespace fs = irods::experimental::filesystem;
+    namespace ix  = irods::experimental;
+    namespace fs  = irods::experimental::filesystem;
+    namespace log = irods::experimental::log;
 
     using json                = nlohmann::json;
-    using log                 = irods::experimental::log;
     using rep_type            = fs::object_time_type::rep;
     using replica_number_type = ix::replica::replica_number_type;
 

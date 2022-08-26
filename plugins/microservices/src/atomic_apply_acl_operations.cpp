@@ -14,7 +14,7 @@
 
 namespace
 {
-    using log = irods::experimental::log;
+    namespace log = irods::experimental::log;
 
     auto to_string(msParam_t& _p) -> const char*
     {

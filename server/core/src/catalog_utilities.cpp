@@ -12,7 +12,7 @@
 
 namespace
 {
-    using log = irods::experimental::log;
+    namespace log = irods::experimental::log;
 
     auto connected_to_catalog_provider(RsComm& _comm, const rodsServerHost& _host) -> bool
     {
@@ -79,7 +79,7 @@ namespace irods::experimental::catalog
                                               std::int64_t _object_id,
                                               const entity_type _entity_type) -> bool
     {
-        using log = irods::experimental::log;
+        namespace log = irods::experimental::log;
 
         switch (_entity_type) {
             case entity_type::data_object:

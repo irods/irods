@@ -5,7 +5,7 @@
 #include "irods/irods_re_structs.hpp"
 #include "irods/irods_logger.hpp"
 
-using logger = irods::experimental::log;
+namespace logger = irods::experimental::log;
 
 namespace
 {
