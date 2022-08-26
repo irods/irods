@@ -55,8 +55,8 @@ namespace
     // clang-format off
     namespace fs    = irods::experimental::filesystem;
     namespace ic    = irods::experimental::catalog;
+    namespace log   = irods::experimental::log;
 
-    using log       = irods::experimental::log;
     using json      = nlohmann::json;
     using operation = std::function<int(rsComm_t*, bytesBuf_t*, bytesBuf_t**)>;
     using id_type   = std::int64_t;

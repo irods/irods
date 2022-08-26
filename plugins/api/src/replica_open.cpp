@@ -38,7 +38,7 @@ extern l1desc_t L1desc[NUM_L1_DESC];
 
 namespace
 {
-    using log = irods::experimental::log;
+    namespace log = irods::experimental::log;
 
     //
     // Function Prototypes

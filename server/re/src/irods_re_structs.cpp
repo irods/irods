@@ -214,7 +214,7 @@ namespace
 {
     int append_message_to_data_object(ruleExecInfo_t* _rei, const char* _path, char* _message)
     {
-        using log = irods::experimental::log;
+        namespace log = irods::experimental::log;
 
         if (!_rei || !_rei->rsComm) {
             log::rule_engine::error("Rule execution info pointer or connection pointer is null");
@@ -286,7 +286,7 @@ namespace
 
 int _writeString( char *writeId, char *writeStr, ruleExecInfo_t *rei )
 {
-    using log = irods::experimental::log;
+    namespace log = irods::experimental::log;
 
     if (!writeId) {
         log::rule_engine::error("Output target is null");

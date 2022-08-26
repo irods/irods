@@ -23,7 +23,7 @@
 #ifdef IRODS_ENABLE_SYSLOG
     #define IRODS_SERVER_ONLY(x) x
     #include "irods/irods_logger.hpp"
-    using logger = irods::experimental::log;
+namespace logger = irods::experimental::log;
 #else
     #define IRODS_SERVER_ONLY(x)
 #endif // IRODS_ENABLE_SYSLOG

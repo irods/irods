@@ -91,14 +91,14 @@ void forward_to_syslog(int log_level, const std::string& msg)
     // clang-format off
     using log_level_type = int;
     using handler_type   = std::function<void(const std::string&)>;
-    using log_type       = irods::experimental::log;
+    using log_legacy     = irods::experimental::log::legacy;
 
-    static const auto trace    = [](const auto& msg) { log_type::legacy::trace(msg); };
-    static const auto debug    = [](const auto& msg) { log_type::legacy::debug(msg); };
-    static const auto info     = [](const auto& msg) { log_type::legacy::info(msg); };
-    static const auto warn     = [](const auto& msg) { log_type::legacy::warn(msg); };
-    static const auto error    = [](const auto& msg) { log_type::legacy::error(msg); };
-    static const auto critical = [](const auto& msg) { log_type::legacy::critical(msg); };
+    static const auto trace    = [](const auto& msg) { log_legacy::trace(msg); };
+    static const auto debug    = [](const auto& msg) { log_legacy::debug(msg); };
+    static const auto info     = [](const auto& msg) { log_legacy::info(msg); };
+    static const auto warn     = [](const auto& msg) { log_legacy::warn(msg); };
+    static const auto error    = [](const auto& msg) { log_legacy::error(msg); };
+    static const auto critical = [](const auto& msg) { log_legacy::critical(msg); };
 
     static const std::unordered_map<log_level_type, handler_type> msg_handlers{
         {LOG_DEBUG10,     trace},

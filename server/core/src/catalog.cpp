@@ -37,7 +37,7 @@ namespace irods::experimental::catalog {
 
     auto new_database_connection(bool _read_server_config) -> std::tuple<std::string, nanodbc::connection>
     {
-        using log = irods::experimental::log;
+        namespace log = irods::experimental::log;
 
         const std::string dsn = [] {
             if (const char* dsn = std::getenv("irodsOdbcDSN"); dsn) {
