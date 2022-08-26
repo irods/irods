@@ -10,7 +10,7 @@
 #include "irods/rodsErrorTable.h"
 #include "irods/irods_logger.hpp"
 
-using logger = irods::experimental::log;
+namespace logger = irods::experimental::log;
 
 int
 rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp ) {

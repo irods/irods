@@ -97,7 +97,7 @@ namespace
 
     using replica_proxy     = irods::experimental::replica::replica_proxy<DataObjInfo>;
     using data_object_proxy = irods::experimental::data_object::data_object_proxy<DataObjInfo>;
-    using log               = irods::experimental::log;
+    using log_api           = irods::experimental::log::api;
     // clang-format on
 
     constexpr auto minimum_valid_file_descriptor = 3;
@@ -161,7 +161,7 @@ namespace
             return 0;
         }
         catch (const rat::replica_access_table_error& e) {
-            log::api::error(e.what());
+            log_api::error(e.what());
 
             return SYS_INTERNAL_ERR;
         }
@@ -1264,7 +1264,7 @@ int rsDataObjOpen(rsComm_t *rsComm, dataObjInp_t *dataObjInp)
                 fs::server::last_write_time(*rsComm, parent_path, mtime);
             }
             catch (const fs::filesystem_error& e) {
-                log::api::error(e.what());
+                log_api::error(e.what());
                 return e.code().value();
             }
         }

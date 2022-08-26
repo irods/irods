@@ -67,7 +67,7 @@ namespace
         });
     }
 
-    using log = irods::experimental::log;
+    namespace log = irods::experimental::log;
 
     // Assumes zone redirection has already occurred, and that the function is
     // being called on a server in the zone the object belongs to.

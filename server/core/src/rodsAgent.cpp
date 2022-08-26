@@ -202,7 +202,7 @@ runIrodsAgentFactory( sockaddr_un agent_addr ) {
     int status{};
     rsComm_t rsComm;
 
-    using log = irods::experimental::log;
+    namespace log = irods::experimental::log;
 
     irods::server_properties::instance().capture();
     log::agent_factory::set_level(log::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_AGENT_FACTORY));

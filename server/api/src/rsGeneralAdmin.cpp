@@ -33,9 +33,7 @@
 #include <string>
 #include <tuple>
 
-// clang-format off
 using log_api = irods::experimental::log::api;
-// clang-format on
 
 extern irods::resource_manager resc_mgr;
 
@@ -326,7 +324,7 @@ int _addChildToResource(generalAdminInp_t* _generalAdminInp, rsComm_t* _rsComm)
             // Add this message to the rError stack should happen automatically.
             // The apiHandler does not know about the verbose flag for iadmin yet.
             addRErrorMsg(&_rsComm->rError, HIERARCHY_ERROR, msg.c_str());
-            logger::agent::error(msg);
+            log_api::error(msg);
 
             return HIERARCHY_ERROR;
         }
@@ -344,12 +342,12 @@ int _addChildToResource(generalAdminInp_t* _generalAdminInp, rsComm_t* _rsComm)
                 // appropriate error code to maintain backwards compatibility.
                 if (err.code() == SYS_RESC_DOES_NOT_EXIST) {
                     addRErrorMsg(&_rsComm->rError, CHILD_NOT_FOUND, err.user_result().c_str());
-                    logger::agent::error(err.result());
+                    log_api::error(err.result());
                     return CHILD_NOT_FOUND;
                 }
 
                 addRErrorMsg(&_rsComm->rError, err.code(), err.user_result().c_str());
-                logger::agent::error(err.result());
+                log_api::error(err.result());
 
                 return err.code();
             }
@@ -366,12 +364,12 @@ int _addChildToResource(generalAdminInp_t* _generalAdminInp, rsComm_t* _rsComm)
             // appropriate error code to maintain backwards compatibility.
             if (err.code() == SYS_RESC_DOES_NOT_EXIST) {
                 addRErrorMsg(&_rsComm->rError, CAT_INVALID_RESOURCE, err.user_result().c_str());
-                logger::agent::error(err.result());
+                log_api::error(err.result());
                 return CAT_INVALID_RESOURCE;
             }
 
             addRErrorMsg(&_rsComm->rError, err.code(), err.user_result().c_str());
-            logger::agent::error(err.result());
+            log_api::error(err.result());
             return err.code();
         }
 
@@ -389,7 +387,7 @@ int _addChildToResource(generalAdminInp_t* _generalAdminInp, rsComm_t* _rsComm)
             msg += "].";
 
             addRErrorMsg(&_rsComm->rError, HIERARCHY_ERROR, msg.c_str());
-            logger::agent::error(msg);
+            log_api::error(msg);
 
             return HIERARCHY_ERROR;
         }

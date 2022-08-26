@@ -33,7 +33,7 @@
 #include <ctime>
 #include <algorithm>
 
-using logger = irods::experimental::log;
+using log_server = irods::experimental::log::server;
 
 namespace irods
 {
@@ -410,7 +410,7 @@ namespace irods
         _output += obj.dump(4);
         _output += ",";
 
-        logger::server::info("Control plane received signal to reload configuration");
+        log_server::info("Control plane received signal to reload configuration");
 
         return SUCCESS();
     } // operation_reload
@@ -583,7 +583,7 @@ namespace irods
             shared_secret.assign(key.begin(), key.end());
         }
         catch (const nlohmann::json::exception& e) {
-            logger::server::error("Control plane configuration error: {}", e.what());
+            log_server::error("Control plane configuration error: {}", e.what());
             return;
         }
 

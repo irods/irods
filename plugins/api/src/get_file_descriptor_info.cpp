@@ -257,7 +257,7 @@ namespace
 
     auto rs_get_file_descriptor_info(rsComm_t* _comm, bytesBuf_t* _input, bytesBuf_t** _output) -> int
     {
-        using log = irods::experimental::log;
+        namespace log = irods::experimental::log;
 
         if (const auto [valid, msg] = is_input_valid(_input); !valid) {
             log::api::error(msg);

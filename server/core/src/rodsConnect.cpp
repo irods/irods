@@ -476,7 +476,7 @@ resoAndConnHostByDataObjInfo( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 
 int
 printServerHost( rodsServerHost_t *myServerHost ) {
-    using log = irods::experimental::log;
+    namespace log = irods::experimental::log;
 
     std::vector<log::key_value> server_info;
     hostName_t *tmpHostName;
@@ -517,7 +517,7 @@ printZoneInfo() {
 
     tmpZoneInfo = ZoneInfoHead;
 
-    using log = irods::experimental::log;
+    namespace log = irods::experimental::log;
 
     std::vector<log::key_value> zone_info;
 

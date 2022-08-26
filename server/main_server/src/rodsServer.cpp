@@ -272,7 +272,7 @@ namespace
         ix::log::set_server_type("server");
 
         if (char hostname[HOST_NAME_MAX]{}; gethostname(hostname, sizeof(hostname)) == 0) {
-            ix::log::set_server_host(hostname);
+            ix::log::set_server_hostname(hostname);
         }
     }
 
@@ -375,8 +375,6 @@ namespace
 
         const auto stacktrace_directory = irods::get_irods_stacktrace_directory();
 
-        using log = irods::experimental::log;
-
         for (auto&& entry : fs::directory_iterator{stacktrace_directory}) {
             // Expected filename format:
             //
@@ -387,15 +385,15 @@ namespace
             const auto p = entry.path().generic_string();
 
             // TODO std::string::rfind can be replaced with std::string::ends_with in C++20.
-            if (p.rfind(irods::STACKTRACE_NOT_READY_FOR_LOGGING_SUFFIX) != std::string::npos) { 
-                log::server::trace("Skipping [{}] ...", p);
+            if (p.rfind(irods::STACKTRACE_NOT_READY_FOR_LOGGING_SUFFIX) != std::string::npos) {
+                log_server::trace("Skipping [{}] ...", p);
                 continue;
             }
 
             auto slash_pos = p.rfind("/");
 
             if (slash_pos == std::string::npos) {
-                log::server::trace("Skipping [{}]. No forward slash separator found.", p);
+                log_server::trace("Skipping [{}]. No forward slash separator found.", p);
                 continue;
             }
 
@@ -403,26 +401,29 @@ namespace
             const auto first_dot_pos = p.find(".", slash_pos);
 
             if (first_dot_pos == std::string::npos) {
-                log::server::trace("Skipping [{}]. No dot separator found.", p);
+                log_server::trace("Skipping [{}]. No dot separator found.", p);
                 continue;
             }
 
             const auto last_dot_pos = p.rfind(".");
 
             if (last_dot_pos == std::string::npos || last_dot_pos == first_dot_pos) {
-                log::server::trace("Skipping [{}]. No dot separator found.", p);
+                log_server::trace("Skipping [{}]. No dot separator found.", p);
                 continue;
             }
 
             const auto epoch_seconds = p.substr(slash_pos, first_dot_pos - slash_pos);
             const auto remaining_millis = p.substr(first_dot_pos + 1, last_dot_pos - (first_dot_pos + 1));
             const auto pid = p.substr(last_dot_pos + 1);
-            log::server::trace("epoch seconds = [{}], remaining millis = [{}], agent pid = [{}]",
-                               epoch_seconds, remaining_millis, pid);
+            log_server::trace(
+                "epoch seconds = [{}], remaining millis = [{}], agent pid = [{}]",
+                epoch_seconds,
+                remaining_millis,
+                pid);
 
             try {
                 // Convert the epoch value to ISO8601 format.
-                log::server::trace("Converting epoch seconds to UTC timestamp ...");
+                log_server::trace("Converting epoch seconds to UTC timestamp ...");
                 using boost::chrono::system_clock;
                 using boost::chrono::time_fmt;
                 const auto tp = system_clock::from_time_t(std::stoll(epoch_seconds));
@@ -448,13 +449,13 @@ namespace
                 // We don't want the stacktrace files to go away without making it into the log.
                 // We can't rely on the log invocation above because of syslog.
                 // We don't want these files to accumulate for long running servers.
-                log::server::trace("Removing stacktrace file from disk ...");
+                log_server::trace("Removing stacktrace file from disk ...");
                 fs::remove(entry);
             }
             catch (...) {
                 // Something happened while logging the stacktrace file.
                 // Leaving the stacktrace file in-place for processing later.
-                log::server::trace("Caught exception while processing stacktrace file.");
+                log_server::trace("Caught exception while processing stacktrace file.");
             }
         }
     } // log_stacktrace_files
@@ -495,8 +496,6 @@ namespace
                                                                    const std::string_view _namespace,
                                                                    const std::string_view _option_name)
     {
-        using log = irods::experimental::log::server;
-
         GridConfigurationInput input{};
         std::strcpy(input.name_space, _namespace.data());
         std::strcpy(input.option_name, _option_name.data());
@@ -505,9 +504,12 @@ namespace
         irods::at_scope_exit free_output{[&output] { std::free(output); }};
 
         if (const auto ec = rc_get_grid_configuration_value(&_comm, &input, &output); ec != 0) {
-            log::error("Failed to get option value from r_grid_configuration "
-                       "[error_code={}, namespace={}, option_name={}].",
-                       ec, _namespace, _option_name);
+            log_server::error(
+                "Failed to get option value from r_grid_configuration "
+                "[error_code={}, namespace={}, option_name={}].",
+                ec,
+                _namespace,
+                _option_name);
             return std::nullopt;
         }
 
@@ -518,33 +520,32 @@ namespace
                                          const std::string_view _leader,
                                          const std::string_view _successor)
     {
-        using log = irods::experimental::log::server;
-
         DelayServerMigrationInput input{};
         std::strcpy(input.leader, _leader.data());
         std::strcpy(input.successor, _successor.data());
 
         if (const auto ec = rc_set_delay_server_migration_info(&_comm, &input); ec != 0) {
-            log::error("Failed to set delay server migration info in r_grid_configuration "
-                       "[error_code={}, leader={}, successor={}].",
-                       ec, _leader, _successor);
+            log_server::error(
+                "Failed to set delay server migration info in r_grid_configuration "
+                "[error_code={}, leader={}, successor={}].",
+                ec,
+                _leader,
+                _successor);
         }
     } // set_delay_server_migration_info
 
     std::optional<bool> is_delay_server_running_on_remote_host(const std::string_view _hostname)
     {
-        using log = irods::experimental::log::server;
-
         try {
             irods::control_plane_command cpc_cmd;
             cpc_cmd.command = irods::SERVER_CONTROL_STATUS;
             cpc_cmd.options[irods::SERVER_CONTROL_OPTION_KW] = irods::SERVER_CONTROL_HOSTS_OPT;
             cpc_cmd.options[irods::SERVER_CONTROL_HOST_KW + "0"] = _hostname;
-            log::trace("Configured control plane command.");
+            log_server::trace("Configured control plane command.");
 
             rodsEnv env;
             _getRodsEnv(env);
-            log::trace("Captured local environment information.");
+            log_server::trace("Captured local environment information.");
 
             // Build an encryption context.
             std::string_view encryption_key = env.irodsCtrlPlaneKey;
@@ -552,7 +553,7 @@ namespace
                                       0,
                                       env.irodsCtrlPlaneEncryptionNumHashRounds,
                                       env.irodsCtrlPlaneEncryptionAlgorithm);
-            log::trace("Constructed irods::buffer_crypt instance.");
+            log_server::trace("Constructed irods::buffer_crypt instance.");
 
             // Serialize using the generated avro class.
             auto out = avro::memoryOutputStream();
@@ -560,7 +561,7 @@ namespace
             e->init(*out);
             avro::encode(*e, cpc_cmd);
             std::shared_ptr<std::vector<std::uint8_t>> data = avro::snapshot(*out);
-            log::trace("Serialized control plane command using Avro encoder.");
+            log_server::trace("Serialized control plane command using Avro encoder.");
 
             // Encrypt outgoing request.
             std::vector<std::uint8_t> enc_data(std::begin(*data), std::end(*data));
@@ -574,14 +575,16 @@ namespace
                 THROW(SYS_INTERNAL_ERR, err.result());
             }
 
-            log::trace("Encrypted request.");
+            log_server::trace("Encrypted request.");
 
             const auto zmq_server_target = fmt::format("tcp://{}:{}", env.rodsHost, env.irodsCtrlPlanePort);
-            log::trace("Connecting to local control plane [{}] ...", zmq_server_target);
+            log_server::trace("Connecting to local control plane [{}] ...", zmq_server_target);
 
             if (!is_control_plane_accepting_requests.load()) {
-                log::info("Cannot determine if delay server on remote host [{}] is running at this time. "
-                          "Control plane is not accepting requests.", _hostname);
+                log_server::info(
+                    "Cannot determine if delay server on remote host [{}] is running at this time. "
+                    "Control plane is not accepting requests.",
+                    _hostname);
 
                 // The following only applies to delay server migration.
                 // Return true so that the successor does not attempt to launch the delay server.
@@ -595,9 +598,9 @@ namespace
             zmq_socket.set(zmq::sockopt::rcvtimeo, 5000);
             zmq_socket.set(zmq::sockopt::linger, 0);
             zmq_socket.connect(zmq_server_target);
-            log::trace("Connection established.");
+            log_server::trace("Connection established.");
 
-            log::trace("Sending request ...");
+            log_server::trace("Sending request ...");
             zmq::message_t request(data_to_send.size());
             std::memcpy(request.data(), data_to_send.data(), data_to_send.size());
 
@@ -605,7 +608,7 @@ namespace
                 THROW(SYS_LIBRARY_ERROR, "zmq::socket_t::send");
             }
 
-            log::trace("Sent request. Waiting for response ...");
+            log_server::trace("Sent request. Waiting for response ...");
 
             zmq::message_t response;
 
@@ -613,7 +616,7 @@ namespace
                 THROW(SYS_LIBRARY_ERROR, "zmq::socket_t::recv");
             }
 
-            log::trace("Response received. Processing response ...");
+            log_server::trace("Response received. Processing response ...");
 
             // Decrypt the response.
             const auto* data_ptr = static_cast<const std::uint8_t*>(response.data());
@@ -626,25 +629,25 @@ namespace
                 THROW(SYS_INTERNAL_ERR, err.result());
             }
 
-            log::trace("Decrypted response.");
+            log_server::trace("Decrypted response.");
 
             std::string response_string(dec_data.data(), dec_data.data() + dec_data.size());
-            log::trace("Control plane response ==> [{}]", response_string);
+            log_server::trace("Control plane response ==> [{}]", response_string);
 
             if (const auto pos = response_string.find_last_of(","); pos != std::string::npos) {
                 response_string[pos] = ' ';
             }
 
             const auto grid_status = nlohmann::json::parse(response_string);
-            log::trace("Control plane response ==> [{}]", grid_status.dump());
+            log_server::trace("Control plane response ==> [{}]", grid_status.dump());
 
             return grid_status.at("delay_server_pid").get<int>() > 0;
         }
         catch (const zmq::error_t& e) {
-            log::error("ZMQ error: {}", e.what());
+            log_server::error("ZMQ error: {}", e.what());
         }
         catch (const std::exception& e) {
-            log::error("General exception: {}", e.what());
+            log_server::error("General exception: {}", e.what());
         }
 
         return std::nullopt;
@@ -652,9 +655,7 @@ namespace
 
     void launch_delay_server(bool _enable_test_mode, bool _write_to_stdout)
     {
-        using log = irods::experimental::log::server;
-
-        log::info("Forking Delay Server (irodsDelayServer) ...");
+        log_server::info("Forking Delay Server (irodsDelayServer) ...");
 
         // If we're planning on calling one of the functions from the exec-family,
         // then we're only allowed to use async-signal-safe functions following the call
@@ -684,8 +685,6 @@ namespace
 
     void migrate_delay_server(bool _enable_test_mode, bool _write_to_stdout)
     {
-        using log = irods::experimental::log::server;
-
         try {
             if (!is_control_plane_accepting_requests.load()) {
                 return;
@@ -702,7 +701,7 @@ namespace
 
             std::string service_role;
             if (const auto err = get_catalog_service_role(service_role); !err.ok()) {
-                log::error("Could not retrieve server role [error_code={}].", err.code());
+                log_server::error("Could not retrieve server role [error_code={}].", err.code());
                 return;
             }
 
@@ -711,7 +710,7 @@ namespace
             irods::at_scope_exit disconnect_from_database{[is_provider] {
                 if (is_provider) {
                     if (const auto ec = chlClose(); ec != 0) {
-                        log::error("Could not disconnect from database [error_code={}].", ec);
+                        log_server::error("Could not disconnect from database [error_code={}].", ec);
                     }
                 }
             }};
@@ -719,17 +718,17 @@ namespace
             if (is_provider) {
                 // Assume this server has database credentials and attempt to connect to the database.
                 if (const auto ec = chlOpen(); ec != 0) {
-                    log::error("Could not connect to database [error_code={}].", ec);
+                    log_server::error("Could not connect to database [error_code={}].", ec);
                     return;
                 }
             }
 
             char hostname[HOST_NAME_MAX]{};
             if (gethostname(hostname, sizeof(hostname)) != 0) {
-                log::error("Failed to retrieve local server's hostname for delay server migration.");
+                log_server::error("Failed to retrieve local server's hostname for delay server migration.");
                 return;
             }
-            log::trace("Local server's hostname = [{}]", hostname);
+            log_server::trace("Local server's hostname = [{}]", hostname);
 
             std::string leader;
             std::string successor;
@@ -743,8 +742,8 @@ namespace
                 // This can lead to errors appearing in the log file. The errors aren't harmful to the system,
                 // but we want to avoid there if possible. This check helps this situation by shrinking the window.
                 if (const auto state = ss::get_state(); state != ss::server_state::running) {
-                    log::trace("Cannot establish client connection to local server at this time. "
-                               "Server is either shutting down or is paused.");
+                    log_server::trace("Cannot establish client connection to local server at this time. "
+                                      "Server is either shutting down or is paused.");
                     return;
                 }
 
@@ -756,7 +755,7 @@ namespace
                 }
 
                 leader = std::move(*result);
-                log::trace("Leader's hostname = [{}]", leader);
+                log_server::trace("Leader's hostname = [{}]", leader);
 
                 result = get_grid_configuration_option_value(comm, "delay_server", "successor");
                 if (!result) {
@@ -764,24 +763,24 @@ namespace
                 }
 
                 successor = std::move(*result);
-                log::trace("Successor's hostname = [{}]", successor);
+                log_server::trace("Successor's hostname = [{}]", successor);
             }
 
             if (hostname == leader) {
-                log::trace("Local server [{}] is the leader.", hostname);
+                log_server::trace("Local server [{}] is the leader.", hostname);
 
                 if (!successor.empty() && hostname != successor) {
-                    log::trace("New successor detected!");
+                    log_server::trace("New successor detected!");
 
                     const auto pid = irods::get_pid_from_file(irods::PID_FILENAME_DELAY_SERVER);
 
                     if (!pid) {
-                        log::trace("Could not get delay server PID.");
+                        log_server::trace("Could not get delay server PID.");
                         return;
                     }
 
-                    log::trace("Delay server PID = [{}]", *pid);
-                    log::info("Sending shutdown signal to delay server.");
+                    log_server::trace("Delay server PID = [{}]", *pid);
+                    log_server::info("Sending shutdown signal to delay server.");
 
                     // If the delay server is running locally, send SIGTERM to it and wait
                     // for graceful shutdown. The call to waitpid() will cause the CRON manager
@@ -790,10 +789,10 @@ namespace
 
                     int child_status = 0;
                     waitpid(*pid, &child_status, 0);
-                    log::info("Delay server has completed shutdown [exit_code={}].", WEXITSTATUS(child_status));
+                    log_server::info("Delay server has completed shutdown [exit_code={}].", WEXITSTATUS(child_status));
                 }
                 else {
-                    log::trace("No successor detected. Checking if delay server needs to be launched ...");
+                    log_server::trace("No successor detected. Checking if delay server needs to be launched ...");
 
                     // If the delay server is not running, launch it!
                     if (const auto pid = irods::get_pid_from_file(irods::PID_FILENAME_DELAY_SERVER); !pid) {
@@ -802,7 +801,7 @@ namespace
                 }
             }
             else if (hostname == successor) {
-                log::trace("Local server [{}] is the successor.", hostname);
+                log_server::trace("Local server [{}] is the successor.", hostname);
 
                 const auto promote_to_leader_and_launch_delay_server = [_enable_test_mode, _write_to_stdout, &hostname] {
                     failed_delay_server_migration_communication_attempts = 0;
@@ -813,8 +812,8 @@ namespace
                         // Check the server's state before attempting to establish a client connection.
                         // See identical check above for more information on why this is necessary.
                         if (const auto state = ss::get_state(); state != ss::server_state::running) {
-                            log::trace("Cannot establish client connection to local server at this time. "
-                                       "Server is either shutting down or is paused.");
+                            log_server::trace("Cannot establish client connection to local server at this time. "
+                                              "Server is either shutting down or is paused.");
                             return;
                         }
 
@@ -843,10 +842,10 @@ namespace
             }
         }
         catch (const std::exception& e) {
-            log::error("Caught exception in migrate_delay_server(): {}", e.what());
+            log_server::error("Caught exception in migrate_delay_server(): {}", e.what());
         }
         catch (...) {
-            log::error("Caught unknown exception in migrate_delay_server()");
+            log_server::error("Caught unknown exception in migrate_delay_server()");
         }
     } // migrate_delay_server
 

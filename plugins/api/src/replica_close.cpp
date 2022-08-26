@@ -60,10 +60,10 @@ namespace
     namespace ill = irods::logical_locking;
     namespace ir  = irods::experimental::replica;
     namespace rst = irods::replica_state_table;
+    namespace log = irods::experimental::log;
 
     using json      = nlohmann::json;
     using operation = std::function<int(rsComm_t*, bytesBuf_t*)>;
-    using log       = ix::log;
     // clang-format on
 
     //
