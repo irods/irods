@@ -25,7 +25,7 @@ namespace
     // Rule Engine Plugin
     //
 
-    using log = irods::experimental::log;
+    namespace log = irods::experimental::log;
 
     struct pep_config
     {

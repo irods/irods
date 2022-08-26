@@ -13,7 +13,7 @@
 
 namespace
 {
-    using log = irods::experimental::log;
+    namespace log = irods::experimental::log;
 
     auto msi_impl(msParam_t* _out_pid, ruleExecInfo_t* _rei) -> int
     {

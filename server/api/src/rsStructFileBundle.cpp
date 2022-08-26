@@ -31,9 +31,10 @@
 
 #include <cstring>
 
-namespace fs = irods::experimental::filesystem;
-
-using logger = irods::experimental::log;
+// clang-format off
+namespace fs     = irods::experimental::filesystem;
+namespace logger = irods::experimental::log;
+// clang-format on
 
 namespace
 {

@@ -41,16 +41,23 @@ jmp_buf Jenv;
 
 namespace ix = irods::experimental;
 
+// clang-format off
+using log_agent  = irods::experimental::log::server;
+using log_server = irods::experimental::log::server;
+// clang-format on
+
 namespace
 {
     void attach_api_request_info_to_logger(rsComm_t* _comm, int _api_number)
     {
-        using log = ix::log;
+        namespace log = irods::experimental::log;
 
         log::set_request_client_version(&_comm->cliVersion);
-        log::set_request_client_host(_comm->clientAddr);
-        log::set_request_client_user(_comm->clientUser.userName);
-        log::set_request_proxy_user(_comm->proxyUser.userName);
+        // NOLINTBEGIN(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        log::set_request_client_hostname(_comm->clientAddr);
+        log::set_request_client_username(_comm->clientUser.userName);
+        log::set_request_proxy_username(_comm->proxyUser.userName);
+        // NOLINTEND(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
         log::set_request_api_number(_api_number);
     }
 } // anonymous namespace
@@ -60,15 +67,12 @@ int rsApiHandler(rsComm_t*   rsComm,
                  bytesBuf_t* inputStructBBuf,
                  bytesBuf_t* bsBBuf)
 {
-    using log = ix::log;
-
     attach_api_request_info_to_logger(rsComm, apiNumber);
 
-    log::agent::trace("Verifying if API number is supported ...");
+    log_agent::trace("Verifying if API number is supported ...");
 
     if (const auto [supported, ec] = irods::is_api_number_supported(apiNumber); !supported) {
-        log::server::error({{"log_message", "unsupported api number"},
-                            {"error_code", std::to_string(ec)}});
+        log_server::error("Unsupported api number [{}]", ec);
         return ec;
     }
 
@@ -110,7 +114,7 @@ int rsApiHandler(rsComm_t*   rsComm,
         return status;
     }
 
-    log::agent::trace("Checking API permissions ...");
+    log_agent::trace("Checking API permissions ...");
 
     status = chkApiPermission( rsComm, apiInx );
     if ( status < 0 ) {

@@ -448,7 +448,7 @@ irods::error compound_start_operation(
 
 namespace {
 
-    using log = irods::experimental::log;
+    namespace log = irods::experimental::log;
 
     int open_source_replica(
         irods::plugin_context& _ctx,

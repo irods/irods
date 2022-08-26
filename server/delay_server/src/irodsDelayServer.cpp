@@ -52,7 +52,8 @@
 // clang-format off
 namespace ix = irods::experimental;
 
-using logger = irods::experimental::log;
+namespace logger = irods::experimental::log;
+
 using json   = nlohmann::json;
 // clang-format on
 
@@ -73,7 +74,8 @@ namespace
         logger::set_server_type("delay_server");
 
         if (char hostname[HOST_NAME_MAX]{}; gethostname(hostname, sizeof(hostname)) == 0) {
-            logger::set_server_host(hostname);
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+            logger::set_server_hostname(hostname);
         }
     } // init_logger
 

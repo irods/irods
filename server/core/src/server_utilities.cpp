@@ -74,7 +74,7 @@ namespace irods
 
     auto create_pid_file(const std::string_view _pid_filename) -> int
     {
-        using log = irods::experimental::log;
+        using log_server = irods::experimental::log::server;
 
         const auto pid_file = boost::filesystem::temp_directory_path() / _pid_filename.data();
 
@@ -82,14 +82,14 @@ namespace irods
         // permission to read and write to it.
         const auto fd = open(pid_file.c_str(), O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
         if (fd == -1) {
-            log::server::error("Could not open PID file.");
+            log_server::error("Could not open PID file.");
             return -1;
         }
 
         // Get the current open flags for the open file descriptor.
         const auto flags = fcntl(fd, F_GETFD);
         if (flags == -1) {
-            log::server::error("Could not retrieve open flags for PID file.");
+            log_server::error("Could not retrieve open flags for PID file.");
             return -1;
         }
 
@@ -97,7 +97,7 @@ namespace irods
         // This option will cause successful calls to exec() to close the file descriptor.
         // Keep in mind that record locks are NOT inherited by forked child processes.
         if (fcntl(fd, F_SETFD, flags | FD_CLOEXEC) == -1) {
-            log::server::error("Could not set FD_CLOEXEC on PID file.");
+            log_server::error("Could not set FD_CLOEXEC on PID file.");
             return -1;
         }
 
@@ -112,20 +112,20 @@ namespace irods
         // weird is going on.
         if (fcntl(fd, F_SETLK, &input) == -1) {
             if (EAGAIN == errno || EACCES == errno) {
-                log::server::error("Could not acquire write lock for PID file. Another instance "
-                                   "could be running already.");
+                log_server::error("Could not acquire write lock for PID file. Another instance "
+                                  "could be running already.");
                 return -1;
             }
         }
         
         if (ftruncate(fd, 0) == -1) {
-            log::server::error("Could not truncate PID file's contents.");
+            log_server::error("Could not truncate PID file's contents.");
             return -1;
         }
 
         const auto contents = fmt::format("{}\n", getpid());
         if (write(fd, contents.data(), contents.size()) != static_cast<long>(contents.size())) {
-            log::server::error("Could not write PID to PID file.");
+            log_server::error("Could not write PID to PID file.");
             return -1;
         }
 
@@ -134,20 +134,20 @@ namespace irods
 
     std::optional<pid_t> get_pid_from_file(const std::string_view _pid_filename) noexcept
     {
-        using log = irods::experimental::log::server;
+        using log_server = irods::experimental::log::server;
 
         try {
             const auto pid_file = boost::filesystem::temp_directory_path() / _pid_filename.data();
 
             if (!boost::filesystem::exists(pid_file)) {
-                log::trace("PID file does not exist [path={}].", pid_file.c_str());
+                log_server::trace("PID file does not exist [path={}].", pid_file.c_str());
                 return std::nullopt;
             }
 
             pid_t pid;
 
             if (!(std::ifstream{pid_file.c_str()} >> pid)) {
-                log::trace("Could not retrieve PID from file [path={}].", pid_file.c_str());
+                log_server::trace("Could not retrieve PID from file [path={}].", pid_file.c_str());
                 return std::nullopt;
             }
 
@@ -159,12 +159,11 @@ namespace irods
             }
         }
         catch (const std::exception& e) {
-            log::error("Caught exception in get_pid_from_file() [_pid_filename={}]: {}",
-                       _pid_filename, e.what());
+            log_server::error(
+                "Caught exception in get_pid_from_file() [_pid_filename={}]: {}", _pid_filename, e.what());
         }
         catch (...) {
-            log::error("Caught unknown exception in get_pid_from_file() [_pid_filename={}].",
-                       _pid_filename);
+            log_server::error("Caught unknown exception in get_pid_from_file() [_pid_filename={}].", _pid_filename);
         }
 
         return std::nullopt;

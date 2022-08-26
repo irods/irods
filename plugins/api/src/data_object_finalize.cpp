@@ -61,11 +61,11 @@ extern irods::resource_manager resc_mgr;
 namespace
 {
     // clang-format off
-    namespace fs      = irods::experimental::filesystem;
-    namespace ic      = irods::experimental::catalog;
-    namespace id      = irods::experimental::data_object;
+    namespace fs  = irods::experimental::filesystem;
+    namespace ic  = irods::experimental::catalog;
+    namespace id  = irods::experimental::data_object;
+    namespace log = irods::experimental::log;
 
-    using log       = irods::experimental::log;
     using json      = nlohmann::json;
     using operation = std::function<int(RsComm*, BytesBuf*, BytesBuf**)>;
     // clang-format on

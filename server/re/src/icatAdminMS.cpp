@@ -445,7 +445,7 @@ int msiRenameCollection(msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *
         return ret.code();
     }
 
-    using log = irods::experimental::log;
+    namespace log = irods::experimental::log;
 
     if (irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role) {
         namespace fs = irods::experimental::filesystem;
@@ -499,7 +499,7 @@ int msiRenameCollection(msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *
 /// \since 4.2.9
 int msiRenameLocalZoneCollection(msParam_t* _new_zone_name, ruleExecInfo_t* _rei)
 {
-    using log = irods::experimental::log;
+    namespace log = irods::experimental::log;
 
     std::string svc_role;
 
