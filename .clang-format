@@ -48,7 +48,7 @@ IndentCaseLabels: true
 IndentExternBlock: AfterExternBlock
 IndentGotoLabels: true
 IndentRequires:  true
-IndentRequiresClause: true
+#IndentRequiresClause: true
 IndentWrappedFunctionNames: false
 LambdaBodyIndentation: Signature
 NamespaceIndentation: All
@@ -88,8 +88,8 @@ BraceWrapping:
    SplitEmptyNamespace: true
    SplitEmptyRecord: true
 
-InsertBraces:    false
-RemoveBracesLLVM: false
+#InsertBraces:    false
+#RemoveBracesLLVM: false
 
 DeriveLineEnding: true
 DerivePointerAlignment: false
@@ -136,7 +136,7 @@ EmptyLineAfterAccessModifier: Never
 EmptyLineBeforeAccessModifier: LogicalBlock
 KeepEmptyLinesAtTheStartOfBlocks: false
 MaxEmptyLinesToKeep: 1
-SeparateDefinitionBlocks: Always
+#SeparateDefinitionBlocks: Always
 
 AttributeMacros:
   - __capability
@@ -188,7 +188,7 @@ PenaltyBreakAssignment: 2
 PenaltyBreakBeforeFirstCallParameter: 0
 PenaltyBreakComment: 300
 PenaltyBreakFirstLessLess: 120
-PenaltyBreakOpenParenthesis: 0
+#PenaltyBreakOpenParenthesis: 0
 PenaltyBreakString: 1000
 PenaltyBreakTemplateDeclaration: 10
 PenaltyExcessCharacter: 1000000
@@ -200,4 +200,4 @@ CompactNamespaces: false
 IncludeBlocks:   Preserve
 InsertTrailingCommas: None
 ReflowComments:  true
-RequiresClausePosition: OwnLine
+#RequiresClausePosition: OwnLine
