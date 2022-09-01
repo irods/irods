@@ -53,6 +53,7 @@ namespace irods::experimental
 
         struct category
         {
+            // clang-format off
             struct legacy {};
             struct server {};
             struct agent_factory {};
@@ -65,6 +66,8 @@ namespace irods::experimental
             struct microservice {};
             struct network {};
             struct rule_engine {};
+            struct sql {};
+            // clang-format on
         }; // struct category
 
         template <typename Category> class logger_config;
@@ -83,6 +86,7 @@ namespace irods::experimental
         using microservice   = logger<category::microservice>;
         using network        = logger<category::network>;
         using rule_engine    = logger<category::rule_engine>;
+        using sql            = logger<category::sql>;
         // clang-format on
 
         log() = delete;
