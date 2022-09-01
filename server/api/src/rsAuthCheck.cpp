@@ -8,6 +8,7 @@
 #include "irods/icatHighLevelRoutines.hpp"
 #include "irods/miscServerFunct.hpp"
 #include "irods/irods_configuration_keywords.hpp"
+#include "irods/irods_logger.hpp"
 #include "irods/rsAuthCheck.hpp"
 
 // =-=-=-=-=-=-=-
@@ -17,6 +18,8 @@
 // =-=-=-=-=-=-=-
 #include "irods/irods_kvp_string_parser.hpp"
 #include "irods/irods_auth_constants.hpp"
+
+using log_api = irods::experimental::log::api;
 
 int rsAuthCheck(
         rsComm_t *rsComm,
@@ -90,8 +93,7 @@ int rsAuthCheck(
                      &privLevel,
                      &clientPrivLevel );
         if ( status < 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "rsAuthCheck: chlCheckAuth status = %d", status );
+            log_api::info("rsAuthCheck: chlCheckAuth status = {}", status);
         }
 
         if ( status == 0 ) {
@@ -109,8 +111,8 @@ int rsAuthCheck(
             digest = ( unsigned char* )malloc( RESPONSE_LEN + 2 );
             memset( digest, 0, RESPONSE_LEN + 2 );
             if ( len <= 0 ) {
-                rodsLog( LOG_DEBUG,
-                         "rsAuthCheck: Warning, cannot authenticate this server to remote server, no LocalZoneSID defined in server_config.json", status );
+                log_api::debug("rsAuthCheck: Warning, cannot authenticate this server to remote server, no "
+                               "LocalZoneSID defined in server_config.json");
             }
             else {
                 strncpy( md5Buf + CHALLENGE_LEN, ServerID, len );
@@ -140,8 +142,7 @@ int rsAuthCheck(
         status = getAndConnRcatHostNoLogin(rsComm, PRIMARY_RCAT, rsComm->proxyUser.rodsZone, &rodsServerHost);
 
         if ( status < 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "rsAuthCheck:getAndConnRcatHostNoLogin() failed. error=%d", status );
+            log_api::info("rsAuthCheck:getAndConnRcatHostNoLogin() failed. error={}", status);
             return status;
         }
 
@@ -153,10 +154,7 @@ int rsAuthCheck(
         }
         return status;
     } else {
-        rodsLog(
-            LOG_ERROR,
-            "role not supported [%s]",
-            svc_role.c_str() );
+        log_api::error("role not supported [{}]", svc_role.c_str());
         return SYS_SERVICE_ROLE_NOT_SUPPORTED;
     }
 }

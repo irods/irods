@@ -34,7 +34,6 @@
 #include <tuple>
 
 // clang-format off
-using logger  = irods::experimental::log;
 using log_api = irods::experimental::log::api;
 // clang-format on
 
@@ -127,11 +126,11 @@ int _check_rebalance_timestamp_avu_on_resource(
         sqlResult_t* hostname_and_pid;
         sqlResult_t* timestamp;
         if ( ( hostname_and_pid = getSqlResultByInx( gen_out, COL_META_RESC_ATTR_VALUE ) ) == nullptr ) {
-            rodsLog( LOG_ERROR, "%s: getSqlResultByInx for COL_META_RESC_ATTR_VALUE failed", __FUNCTION__ );
+            log_api::error("{}: getSqlResultByInx for COL_META_RESC_ATTR_VALUE failed", __FUNCTION__);
             return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( timestamp = getSqlResultByInx( gen_out, COL_META_RESC_ATTR_UNITS ) ) == nullptr ) {
-            rodsLog( LOG_ERROR, "%s: getSqlResultByInx for COL_META_RESC_ATTR_UNITS failed", __FUNCTION__ );
+            log_api::error("{}: getSqlResultByInx for COL_META_RESC_ATTR_UNITS failed", __FUNCTION__);
             return UNMATCHED_KEY_OR_INDEX;
         }
         std::stringstream msg;
@@ -142,7 +141,7 @@ int _check_rebalance_timestamp_avu_on_resource(
         msg << "] [";
         msg << &timestamp->value[0];
         msg << "]";
-        rodsLog( LOG_ERROR, "%s: %s", __FUNCTION__, msg.str().c_str() );
+        log_api::error("{}", __FUNCTION__, msg.str().c_str());
         addRErrorMsg( &_rsComm->rError, REBALANCE_ALREADY_ACTIVE_ON_RESOURCE, msg.str().c_str() );
         return REBALANCE_ALREADY_ACTIVE_ON_RESOURCE;
     }
@@ -252,7 +251,7 @@ rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
     rodsServerHost_t *rodsServerHost;
     int status;
 
-    rodsLog( LOG_DEBUG, "generalAdmin" );
+    log_api::debug("generalAdmin");
 
     status = getAndConnRcatHost(rsComm, PRIMARY_RCAT, (const char*) NULL, &rodsServerHost);
     if ( status < 0 ) {
@@ -272,10 +271,7 @@ rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
         } else if( irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
             status = SYS_NO_RCAT_SERVER_ERR;
         } else {
-            rodsLog(
-                LOG_ERROR,
-                "role not supported [%s]",
-                svc_role.c_str() );
+            log_api::error("role not supported [{}]", svc_role.c_str());
             status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
         }
     }
@@ -290,8 +286,7 @@ rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
 
     }
     if ( status < 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "rsGeneralAdmin: rcGeneralAdmin error %d", status );
+        log_api::info("rsGeneralAdmin: rcGeneralAdmin error {}", status);
     }
     return status;
 }
@@ -312,12 +307,12 @@ int _addChildToResource(generalAdminInp_t* _generalAdminInp, rsComm_t* _rsComm)
         }
 
         if (contains_whitespace(_generalAdminInp->arg2)) {
-            logger::api::error("Whitespace is not allowed in resource names [{}].", _generalAdminInp->arg2);
+            log_api::error("Whitespace is not allowed in resource names [{}].", _generalAdminInp->arg2);
             return CAT_INVALID_RESOURCE_NAME;
         }
 
         if (contains_whitespace(_generalAdminInp->arg3)) {
-            logger::api::error("Whitespace is not allowed in resource names [{}].", _generalAdminInp->arg3);
+            log_api::error("Whitespace is not allowed in resource names [{}].", _generalAdminInp->arg3);
             return CAT_INVALID_RESOURCE_NAME;
         }
 
@@ -406,17 +401,22 @@ int _addChildToResource(generalAdminInp_t* _generalAdminInp, rsComm_t* _rsComm)
     std::string rescContext( _generalAdminInp->arg4 );
 
     if (rescContext.find(';') != std::string::npos) {
-        rodsLog(LOG_ERROR, "_addChildToResource: semicolon ';' not allowed in child context string [%s]", rescContext.c_str());
+        log_api::error(
+            "_addChildToResource: semicolon ';' not allowed in child context string [{}]", rescContext.c_str());
         return SYS_INVALID_INPUT_PARAM;
     }
 
     if (rescContext.find('{') != std::string::npos) {
-        rodsLog(LOG_ERROR, "_addChildToResource: open curly bracket '{' not allowed in child context string [%s]", rescContext.c_str());
+        log_api::error(
+            "_addChildToResource: open curly bracket '{{' not allowed in child context string [{}]",
+            rescContext.c_str());
         return SYS_INVALID_INPUT_PARAM;
     }
 
     if (rescContext.find('}') != std::string::npos) {
-        rodsLog(LOG_ERROR, "_addChildToResource: close curly bracket '}' not allowed in child context string [%s]", rescContext.c_str());
+        log_api::error(
+            "_addChildToResource: close curly bracket '}}' not allowed in child context string [{}]",
+            rescContext.c_str());
         return SYS_INVALID_INPUT_PARAM;
     }
 
@@ -430,8 +430,8 @@ int _addChildToResource(generalAdminInp_t* _generalAdminInp, rsComm_t* _rsComm)
 
     resc_input[irods::RESOURCE_CHILDREN] = rescChildren;
 
-    logger::api::info("rsGeneralAdmin add child \"{}\" to resource \"{}\"",
-                      _generalAdminInp->arg3, _generalAdminInp->arg2);
+    log_api::info(
+        R"__(rsGeneralAdmin add child "{}" to resource "{}")__", _generalAdminInp->arg3, _generalAdminInp->arg2);
 
     if ( ( result = chlAddChildResc( _rsComm, resc_input ) ) != 0 ) {
         chlRollback( _rsComm );
@@ -453,7 +453,7 @@ _removeChildFromResource(
     }
 
     if (contains_whitespace(_generalAdminInp->arg2)) {
-        logger::api::error("Whitespace is not allowed in resource names [{}].", _generalAdminInp->arg2);
+        log_api::error("Whitespace is not allowed in resource names [{}].", _generalAdminInp->arg2);
         return CAT_INVALID_RESOURCE_NAME;
     }
 
@@ -464,7 +464,7 @@ _removeChildFromResource(
     }
 
     if (contains_whitespace(_generalAdminInp->arg3)) {
-        logger::api::error("Whitespace is not allowed in resource names [{}].", _generalAdminInp->arg3);
+        log_api::error("Whitespace is not allowed in resource names [{}].", _generalAdminInp->arg3);
         return CAT_INVALID_RESOURCE_NAME;
     }
 
@@ -501,7 +501,7 @@ _addResource(
     }
 
     if (contains_whitespace(_generalAdminInp->arg2)) {
-        logger::api::error("Whitespace is not allowed in resource names [{}].", _generalAdminInp->arg2);
+        log_api::error("Whitespace is not allowed in resource names [{}].", _generalAdminInp->arg2);
         return CAT_INVALID_RESOURCE_NAME;
     }
 
@@ -584,11 +584,10 @@ _addResource(
     }
 
     if ( !name_gen.exists( resc_input[irods::RESOURCE_TYPE], plugin_home ) ) {
-        rodsLog(
-            LOG_DEBUG,
-            "No plugin exists to provide resource [%s] of type [%s]",
+        log_api::debug(
+            "No plugin exists to provide resource [{}] of type [{}]",
             resc_input[irods::RESOURCE_NAME].c_str(),
-            resc_input[irods::RESOURCE_TYPE].c_str() );
+            resc_input[irods::RESOURCE_TYPE].c_str());
     }
 
     // =-=-=-=-=-=-=-
@@ -597,8 +596,10 @@ _addResource(
         if ( _rei2.status < 0 ) {
             result = _rei2.status;
         }
-        rodsLog( LOG_ERROR, "rsGeneralAdmin: acPreProcForCreateResource error for %s, stat=%d",
-                 resc_input[irods::RESOURCE_NAME].c_str(), result );
+        log_api::error(
+            "rsGeneralAdmin: acPreProcForCreateResource error for {}, stat={}",
+            resc_input[irods::RESOURCE_NAME].c_str(),
+            result);
     }
 
     // =-=-=-=-=-=-=-
@@ -613,8 +614,10 @@ _addResource(
         if ( _rei2.status < 0 ) {
             result = _rei2.status;
         }
-        rodsLog( LOG_ERROR, "rsGeneralAdmin: acPostProcForCreateResource error for %s, stat=%d",
-                 resc_input[irods::RESOURCE_NAME].c_str(), result );
+        log_api::error(
+            "rsGeneralAdmin: acPostProcForCreateResource error for {}, stat={}",
+            resc_input[irods::RESOURCE_NAME].c_str(),
+            result);
     }
 
     return result;
@@ -671,10 +674,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
         rei2.uoip = &rsComm->proxyUser;
     }
 
-
-    rodsLog( LOG_DEBUG,
-             "_rsGeneralAdmin arg0=%s",
-             generalAdminInp->arg0 );
+    log_api::debug("_rsGeneralAdmin arg0={}", generalAdminInp->arg0);
 
     if ( strcmp( generalAdminInp->arg0, "add" ) == 0 ) {
         if ( strcmp( generalAdminInp->arg1, "user" ) == 0 ) {
@@ -747,9 +747,12 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                 if ( rei2.status < 0 ) {
                     i = rei2.status;
                 }
-                rodsLog( LOG_ERROR,
-                         "rsGeneralAdmin: acPreProcForCreateToken error for %s.%s=%s, stat=%d",
-                         args[0], args[1], args[2], i );
+                log_api::error(
+                    "rsGeneralAdmin: acPreProcForCreateToken error for {}.{}={}, stat={}",
+                    args[0],
+                    args[1],
+                    args[2],
+                    i);
                 return i;
             }
 
@@ -765,9 +768,12 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     if ( rei2.status < 0 ) {
                         i = rei2.status;
                     }
-                    rodsLog( LOG_ERROR,
-                             "rsGeneralAdmin: acPostProcForCreateToken error for %s.%s=%s, stat=%d",
-                             args[0], args[1], args[2], i );
+                    log_api::error(
+                        "rsGeneralAdmin: acPostProcForCreateToken error for {}.{}={}, stat={}",
+                        args[0],
+                        args[1],
+                        args[2],
+                        i);
                     return i;
                 }
             }
@@ -807,8 +813,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                 throw_if_password_is_being_set_on_a_group(*rsComm, option, current_user_type);
             }
             catch (const irods::exception& e) {
-                irods::log(LOG_ERROR, fmt::format("[{}:{}] - [{}]",
-                    __func__, __LINE__, e.client_display_what()));
+                log_api::error("[{}:{}] - [{}]", __func__, __LINE__, e.client_display_what());
                 return e.code();
             }
 
@@ -826,9 +831,8 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                 if ( rei2.status < 0 ) {
                     i = rei2.status;
                 }
-                rodsLog( LOG_ERROR,
-                         "rsGeneralAdmin: acPreProcForModifyUser error for %s and option %s, stat=%d",
-                         args[0], args[1], i );
+                log_api::error(
+                    "rsGeneralAdmin: acPreProcForModifyUser error for {} and option {}, stat={}", args[0], args[1], i);
                 return i;
             }
 
@@ -840,9 +844,11 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     if ( rei2.status < 0 ) {
                         i = rei2.status;
                     }
-                    rodsLog( LOG_ERROR,
-                             "rsGeneralAdmin: acPostProcForModifyUser error for %s and option %s, stat=%d",
-                             args[0], args[1], i );
+                    log_api::error(
+                        "rsGeneralAdmin: acPostProcForModifyUser error for {} and option {}, stat={}",
+                        args[0],
+                        args[1],
+                        i);
                     return i;
                 }
             }
@@ -867,9 +873,11 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                 if ( rei2.status < 0 ) {
                     i = rei2.status;
                 }
-                rodsLog( LOG_ERROR,
-                         "rsGeneralAdmin: acPreProcForModifyUserGroup error for %s and option %s, stat=%d",
-                         args[0], args[1], i );
+                log_api::error(
+                    "rsGeneralAdmin: acPreProcForModifyUserGroup error for {} and option {}, stat={}",
+                    args[0],
+                    args[1],
+                    i);
                 return i;
             }
 
@@ -882,9 +890,11 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     if ( rei2.status < 0 ) {
                         i = rei2.status;
                     }
-                    rodsLog( LOG_ERROR,
-                             "rsGeneralAdmin: acPostProcForModifyUserGroup error for %s and option %s, stat=%d",
-                             args[0], args[1], i );
+                    log_api::error(
+                        "rsGeneralAdmin: acPostProcForModifyUserGroup error for {} and option {}, stat={}",
+                        args[0],
+                        args[1],
+                        i);
                     return i;
                 }
             }
@@ -946,7 +956,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             args[1] = generalAdminInp->arg3; // option
 
             if (contains_whitespace(generalAdminInp->arg2)) {
-                logger::api::error("Whitespace is not allowed in resource names [{}].", generalAdminInp->arg2);
+                log_api::error("Whitespace is not allowed in resource names [{}].", generalAdminInp->arg2);
                 return CAT_INVALID_RESOURCE_NAME;
             }
 
@@ -956,7 +966,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
 
             if (std::strcmp(generalAdminInp->arg3, "name") == 0) {
                 if (contains_whitespace(generalAdminInp->arg4)) {
-                    logger::api::error("Whitespace is not allowed in resource names [{}].", generalAdminInp->arg4);
+                    log_api::error("Whitespace is not allowed in resource names [{}].", generalAdminInp->arg4);
                     return CAT_INVALID_RESOURCE_NAME;
                 }
 
@@ -972,9 +982,11 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                 if ( rei2.status < 0 ) {
                     i = rei2.status;
                 }
-                rodsLog( LOG_ERROR,
-                         "rsGeneralAdmin: acPreProcForModifyResource error for %s and option %s, stat=%d",
-                         args[0], args[1], i );
+                log_api::error(
+                    "rsGeneralAdmin: acPreProcForModifyResource error for {} and option {}, stat={}",
+                    args[0],
+                    args[1],
+                    i);
                 return i;
             }
 
@@ -1022,9 +1034,11 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     if ( rei2.status < 0 ) {
                         i = rei2.status;
                     }
-                    rodsLog( LOG_ERROR,
-                             "rsGeneralAdmin: acPostProcForModifyResource error for %s and option %s, stat=%d",
-                             args[0], args[1], i );
+                    log_api::error(
+                        "rsGeneralAdmin: acPostProcForModifyResource error for {} and option {}, stat={}",
+                        args[0],
+                        args[1],
+                        i);
                     return i;
                 }
             }
@@ -1069,14 +1083,14 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
 
                 resc_name = generalAdminInp->arg2;
 
-                rodsLog( LOG_STATUS, "Executing a dryrun of removal of resource [%s]", generalAdminInp->arg2 );
+                log_api::info("Executing a dryrun of removal of resource [{}]", generalAdminInp->arg2);
 
                 status = chlDelResc( rsComm, resc_name, 1 );
                 if ( 0 == status ) {
-                    rodsLog( LOG_STATUS, "DRYRUN REMOVING RESOURCE [%s] :: SUCCESS", generalAdminInp->arg2 );
+                    log_api::info("DRYRUN REMOVING RESOURCE [{}] :: SUCCESS", generalAdminInp->arg2);
                 }
                 else {
-                    rodsLog( LOG_STATUS, "DRYRUN REMOVING RESOURCE [%s] :: FAILURE", generalAdminInp->arg2 );
+                    log_api::info("DRYRUN REMOVING RESOURCE [{}] :: FAILURE", generalAdminInp->arg2);
                 }
 
                 return status;
@@ -1088,7 +1102,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             }
 
             if (contains_whitespace(generalAdminInp->arg2)) {
-                logger::api::error("Whitespace is not allowed in resource names [{}].", generalAdminInp->arg2);
+                log_api::error("Whitespace is not allowed in resource names [{}].", generalAdminInp->arg2);
                 return CAT_INVALID_RESOURCE_NAME;
             }
 
@@ -1101,9 +1115,8 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                 if ( rei2.status < 0 ) {
                     i = rei2.status;
                 }
-                rodsLog( LOG_ERROR,
-                         "rsGeneralAdmin: acPreProcForDeleteResource error for %s, stat=%d",
-                         resc_name.c_str(), i );
+                log_api::error(
+                    "rsGeneralAdmin: acPreProcForDeleteResource error for {}, stat={}", resc_name.c_str(), i);
                 return i;
             }
 
@@ -1114,9 +1127,8 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     if ( rei2.status < 0 ) {
                         i = rei2.status;
                     }
-                    rodsLog( LOG_ERROR,
-                             "rsGeneralAdmin: acPostProcForDeleteResource error for %s, stat=%d",
-                             resc_name.c_str(), i );
+                    log_api::error(
+                        "rsGeneralAdmin: acPostProcForDeleteResource error for {}, stat={}", resc_name.c_str(), i);
                     return i;
                 }
             }
@@ -1154,9 +1166,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                 if ( rei2.status < 0 ) {
                     i = rei2.status;
                 }
-                rodsLog( LOG_ERROR,
-                         "rsGeneralAdmin:acPreProcForDeleteToken error for %s.%s,stat=%d",
-                         args[0], args[1], i );
+                log_api::error("rsGeneralAdmin:acPreProcForDeleteToken error for {}.{},stat={}", args[0], args[1], i);
                 return i;
             }
 
@@ -1169,9 +1179,8 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     if ( rei2.status < 0 ) {
                         i = rei2.status;
                     }
-                    rodsLog( LOG_ERROR,
-                             "rsGeneralAdmin: acPostProcForDeleteToken error for %s.%s, stat=%d",
-                             args[0], args[1], i );
+                    log_api::error(
+                        "rsGeneralAdmin: acPostProcForDeleteToken error for {}.{}, stat={}", args[0], args[1], i);
                     return i;
                 }
             }

@@ -21,6 +21,7 @@
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_get_l1desc.hpp"
 #include "irods/irods_hierarchy_parser.hpp"
+#include "irods/irods_logger.hpp"
 #include "irods/irods_resource_backport.hpp"
 #include "irods/irods_resource_redirect.hpp"
 #include "irods/key_value_proxy.hpp"
@@ -54,22 +55,20 @@
 #include "irods/server_utilities.hpp"
 #include "irods/specColl.hpp"
 #include "irods/stringOpr.h"
-
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 #include "irods/filesystem.hpp"
-
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
 #include "irods/replica_proxy.hpp"
-
 #include <boost/lexical_cast.hpp>
 #include <fmt/format.h>
-
 #include <iostream>
 
 /* holds a struct that describes pathname match patterns
    to exclude from registration. Needs to be global due
    to the recursive dirPathReg() calls. */
 static pathnamePatterns_t *ExcludePatterns = NULL;
+
+using log_api = irods::experimental::log::api;
 
 namespace
 {
@@ -120,8 +119,8 @@ namespace
         status = rsFileStat( _comm, &fileStatInp, &stbuf );
         if ( status != 0 ) {
             if ( status != UNIX_FILE_STAT_ERR - ENOENT ) {
-                rodsLog( LOG_DEBUG, "readPathnamePatternsFromFile: can't stat %s. status = %d",
-                         fileStatInp.fileName, status );
+                log_api::debug(
+                    "readPathnamePatternsFromFile: can't stat {}. status = {}", fileStatInp.fileName, status);
             }
             return NULL;
         }
@@ -135,16 +134,15 @@ namespace
         fileOpenInp.flags = O_RDONLY;
         fd = rsFileOpen( _comm, &fileOpenInp );
         if ( fd < 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "readPathnamePatternsFromFile: can't open %s for reading. status = %d",
-                     fileOpenInp.fileName, fd );
+            log_api::info(
+                "readPathnamePatternsFromFile: can't open {} for reading. status = {}", fileOpenInp.fileName, fd);
             return NULL;
         }
 
         memset( &fileReadBuf, 0, sizeof( fileReadBuf ) );
         fileReadBuf.buf = malloc( buf_len );
         if ( fileReadBuf.buf == NULL ) {
-            rodsLog( LOG_NOTICE, "readPathnamePatternsFromFile: could not malloc buffer" );
+            log_api::info("readPathnamePatternsFromFile: could not malloc buffer");
             return NULL;
         }
 
@@ -158,8 +156,7 @@ namespace
         rsFileClose( _comm, &fileCloseInp );
 
         if ( status < 0 ) {
-            rodsLog( LOG_NOTICE, "readPathnamePatternsFromFile: could not read %s. status = %d",
-                     fileOpenInp.fileName, status );
+            log_api::info("readPathnamePatternsFromFile: could not read {}. status = {}", fileOpenInp.fileName, status);
             free( fileReadBuf.buf );
             return NULL;
         }
@@ -172,7 +169,7 @@ namespace
     int remotePhyPathReg(RsComm* _comm, DataObjInp* _inp, rodsServerHost* _host_info, BytesBuf** _out)
     {
         if (!_host_info) {
-            rodsLog(LOG_ERROR, "remotePhyPathReg: Invalid host_info");
+            log_api::error("remotePhyPathReg: Invalid host_info");
             return SYS_INVALID_SERVER_HOST;
         }
 
@@ -210,13 +207,13 @@ namespace
 
         // The resource hierarchy for this replica must be provided
         if (!phy_path_reg_cond_input.contains(RESC_HIER_STR_KW)) {
-            rodsLog( LOG_NOTICE, "%s - RESC_HIER_STR_KW is NULL", __FUNCTION__ );
+            log_api::info("{} - RESC_HIER_STR_KW is NULL", __FUNCTION__);
             return SYS_INVALID_INPUT_PARAM;
         }
 
         DataObjInfo* data_obj_info_head{};
         if (const int ec = getDataObjInfo(_comm, _inp, &data_obj_info_head, ACCESS_READ_OBJECT, 0); ec < 0) {
-            rodsLog(LOG_ERROR, "%s: getDataObjInfo for [%s] failed", __FUNCTION__, _inp->objPath);
+            log_api::error("{}: getDataObjInfo for [{}] failed", __FUNCTION__, _inp->objPath);
             return ec;
         }
 
@@ -411,7 +408,7 @@ namespace
 
         char* resc_hier = getValByKey( &_inp->condInput, RESC_HIER_STR_KW );
         if ( !resc_hier ) {
-            rodsLog( LOG_NOTICE, "dirPathReg - RESC_HIER_STR_KW is NULL" );
+            log_api::info("dirPathReg - RESC_HIER_STR_KW is NULL");
             return SYS_INVALID_INPUT_PARAM;
         }
 
@@ -467,8 +464,7 @@ namespace
         }
         else if ( rodsObjStatOut->specColl != NULL ) {
             freeRodsObjStat( rodsObjStatOut );
-            rodsLog( LOG_ERROR,
-                     "mountFileDir: %s already mounted", _inp->objPath );
+            log_api::error("mountFileDir: {} already mounted", _inp->objPath);
             return SYS_MOUNT_MOUNTED_COLL_ERR;
         }
         freeRodsObjStat( rodsObjStatOut );
@@ -483,9 +479,7 @@ namespace
 
         dirFd = rsFileOpendir( _comm, &fileOpendirInp );
         if ( dirFd < 0 ) {
-            rodsLog( LOG_ERROR,
-                     "dirPathReg: rsFileOpendir for %s error, status = %d",
-                     filePath, dirFd );
+            log_api::error("dirPathReg: rsFileOpendir for {} error, status = {}", filePath, dirFd);
             return dirFd;
         }
 
@@ -548,9 +542,7 @@ namespace
             status = rsFileStat( _comm, &fileStatInp, &myStat );
 
             if ( status != 0 ) {
-                rodsLog( LOG_ERROR,
-                         "dirPathReg: rsFileStat failed for %s, status = %d",
-                         fileStatInp.fileName, status );
+                log_api::error("dirPathReg: rsFileStat failed for {}, status = {}", fileStatInp.fileName, status);
                 free( rodsDirent ); // JMC - backport 4835
                 return status;
             }
@@ -585,7 +577,7 @@ namespace
 
                 if ( status != 0 ) {
                     if ( _comm->rError.len < MAX_ERROR_MESSAGES ) {
-                        rodsLog(LOG_ERROR, "[%s:%d] - adding error to stack...", __FUNCTION__, __LINE__);
+                        log_api::error("[{}:{}] - adding error to stack...", __FUNCTION__, __LINE__);
                         char error_msg[ERR_MSG_LEN];
                         snprintf( error_msg, ERR_MSG_LEN, "dirPathReg: %s failed for %s, status = %d",
                                  reg_func_name.c_str(), subPhyPathRegInp.objPath, status );
@@ -625,7 +617,7 @@ namespace
 
         char* resc_hier = getValByKey( &_inp->condInput, RESC_HIER_STR_KW );
         if ( !resc_hier ) {
-            rodsLog( LOG_NOTICE, "mountFileDir - RESC_HIER_STR_KW is NULL" );
+            log_api::info("mountFileDir - RESC_HIER_STR_KW is NULL");
             return SYS_INVALID_INPUT_PARAM;
         }
 
@@ -639,29 +631,27 @@ namespace
         }
 
         if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) { // JMC - backport 4832
-            rodsLog( LOG_NOTICE, "mountFileDir - insufficient privilege" );
+            log_api::info("mountFileDir - insufficient privilege");
             return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
         }
 
         status = collStat( _comm, _inp, &rodsObjStatOut );
         if ( status < 0 || NULL == rodsObjStatOut ) {
             freeRodsObjStat( rodsObjStatOut );
-            rodsLog( LOG_NOTICE, "mountFileDir collstat failed." );
+            log_api::info("mountFileDir collstat failed.");
             return status; // JMC cppcheck - nullptr
         }
 
         if ( rodsObjStatOut->specColl != NULL ) {
             freeRodsObjStat( rodsObjStatOut );
-            rodsLog( LOG_ERROR,
-                     "mountFileDir: %s already mounted", _inp->objPath );
+            log_api::error("mountFileDir: {} already mounted", _inp->objPath);
             return SYS_MOUNT_MOUNTED_COLL_ERR;
         }
         freeRodsObjStat( rodsObjStatOut );
         rodsObjStatOut = NULL;
 
         if ( isCollEmpty( _comm, _inp->objPath ) == False ) {
-            rodsLog( LOG_ERROR,
-                     "mountFileDir: collection %s not empty", _inp->objPath );
+            log_api::error("mountFileDir: collection {} not empty", _inp->objPath);
             return SYS_COLLECTION_NOT_EMPTY;
         }
 
@@ -678,9 +668,8 @@ namespace
         if ( status < 0 ) {
             fileMkdirInp_t fileMkdirInp;
 
-            rodsLog( LOG_NOTICE,
-                     "mountFileDir: rsFileStat failed for %s, status = %d, create it",
-                     fileStatInp.fileName, status );
+            log_api::info(
+                "mountFileDir: rsFileStat failed for {}, status = {}, create it", fileStatInp.fileName, status);
             memset( &fileMkdirInp, 0, sizeof( fileMkdirInp ) );
             rstrcpy( fileMkdirInp.dirName, filePath, MAX_NAME_LEN );
             rstrcpy( fileMkdirInp.rescHier, resc_hier, MAX_NAME_LEN );
@@ -692,9 +681,7 @@ namespace
             }
         }
         else if ( ( myStat->st_mode & S_IFDIR ) == 0 ) {
-            rodsLog( LOG_ERROR,
-                     "mountFileDir: phyPath %s is not a directory",
-                     fileStatInp.fileName );
+            log_api::error("mountFileDir: phyPath {} is not a directory", fileStatInp.fileName);
             free( myStat );
             return USER_FILE_DOES_NOT_EXIST;
         }
@@ -713,12 +700,12 @@ namespace
         status = rsModColl( _comm, &collCreateInp );
 
         if ( status < 0 ) {    /* try to create it */
-            rodsLog( LOG_NOTICE, "mountFileDir rsModColl < 0." );
+            log_api::info("mountFileDir rsModColl < 0.");
             status = rsRegColl( _comm, &collCreateInp );
         }
 
         if ( status >= 0 ) {
-            rodsLog( LOG_NOTICE, "mountFileDir rsModColl > 0." );
+            log_api::info("mountFileDir rsModColl > 0.");
 
             char outLogPath[MAX_NAME_LEN];
             /* see if the phyPath is mapped into a real collection */
@@ -735,15 +722,14 @@ namespace
                     modAccessControl.zone = _comm->clientUser.rodsZone;
                     modAccessControl.path = _inp->objPath;
                     if (const auto mod_acl_ec = rsModAccessControl(_comm, &modAccessControl); mod_acl_ec < 0) {
-                        rodsLog( LOG_NOTICE,
-                                 "mountFileDir: rsModAccessControl err for %s, stat = %d",
-                                 _inp->objPath, mod_acl_ec );
+                        log_api::info(
+                            "mountFileDir: rsModAccessControl err for {}, stat = {}", _inp->objPath, mod_acl_ec);
                     }
                 }
             }
         }
 
-        rodsLog( LOG_NOTICE, "mountFileDir return status." );
+        log_api::info("mountFileDir return status.");
         return status;
     } // mountFileDir
 
@@ -806,35 +792,27 @@ namespace
 
         if ( ( structFilePath = getValByKey( &_inp->condInput, FILE_PATH_KW ) )
                 == NULL ) {
-            rodsLog( LOG_ERROR,
-                     "structFileReg: No structFilePath input for %s",
-                     _inp->objPath );
+            log_api::error("structFileReg: No structFilePath input for {}", _inp->objPath);
             return SYS_INVALID_FILE_PATH;
         }
 
         collType = getValByKey( &_inp->condInput, COLLECTION_TYPE_KW );
         if ( collType == NULL ) {
-            rodsLog( LOG_ERROR,
-                     "structFileReg: Bad COLLECTION_TYPE_KW for structFilePath %s",
-                     dataObjInp.objPath );
+            log_api::error("structFileReg: Bad COLLECTION_TYPE_KW for structFilePath {}", dataObjInp.objPath);
             return SYS_INTERNAL_NULL_INPUT_ERR;
         }
 
         const auto len = strnlen(_inp->objPath, sizeof(_inp->objPath));
         if ( strncmp( structFilePath, _inp->objPath, len ) == 0 &&
                 ( structFilePath[len] == '\0' || structFilePath[len] == '/' ) ) {
-            rodsLog( LOG_ERROR,
-                     "structFileReg: structFilePath %s inside collection %s",
-                     structFilePath, _inp->objPath );
+            log_api::error("structFileReg: structFilePath {} inside collection {}", structFilePath, _inp->objPath);
             return SYS_STRUCT_FILE_INMOUNTED_COLL;
         }
 
         /* see if the struct file is in spec coll */
 
         if ( getSpecCollCache( _comm, structFilePath, 0,  &specCollCache ) >= 0 ) {
-            rodsLog( LOG_ERROR,
-                     "structFileReg: structFilePath %s is in a mounted path",
-                     structFilePath );
+            log_api::error("structFileReg: structFilePath {} is in a mounted path", structFilePath);
             return SYS_STRUCT_FILE_INMOUNTED_COLL;
         }
 
@@ -846,8 +824,7 @@ namespace
 
         if ( rodsObjStatOut->specColl != NULL ) {
             freeRodsObjStat( rodsObjStatOut );
-            rodsLog( LOG_ERROR,
-                     "structFileReg: %s already mounted", _inp->objPath );
+            log_api::error("structFileReg: {} already mounted", _inp->objPath);
             return SYS_MOUNT_MOUNTED_COLL_ERR;
         }
 
@@ -855,8 +832,7 @@ namespace
         rodsObjStatOut = NULL;
 
         if ( isCollEmpty( _comm, _inp->objPath ) == False ) {
-            rodsLog( LOG_ERROR,
-                     "structFileReg: collection %s not empty", _inp->objPath );
+            log_api::error("structFileReg: collection {} not empty", _inp->objPath);
             return SYS_COLLECTION_NOT_EMPTY;
         }
 
@@ -873,9 +849,10 @@ namespace
             rmKeyVal( &dataObjInp.condInput, FILE_PATH_KW );
             myStatus = rsDataObjCreate( _comm, &dataObjInp );
             if ( myStatus < 0 ) {
-                rodsLog( LOG_ERROR,
-                         "structFileReg: Problem with open/create structFilePath %s, status = %d",
-                         dataObjInp.objPath, status );
+                log_api::error(
+                    "structFileReg: Problem with open/create structFilePath {}, status = {}",
+                    dataObjInp.objPath,
+                    status);
                 return status;
             }
             else {
@@ -887,7 +864,7 @@ namespace
 
         char* tmp_hier = getValByKey( &_inp->condInput, RESC_HIER_STR_KW );
         if ( !tmp_hier ) {
-            rodsLog( LOG_ERROR, "structFileReg - RESC_HIER_STR_KW is NULL" );
+            log_api::error("structFileReg - RESC_HIER_STR_KW is NULL");
             return SYS_INVALID_INPUT_PARAM;
         }
         irods::hierarchy_parser parser;
@@ -981,52 +958,41 @@ namespace
         const auto cond_input = irods::experimental::make_key_value_proxy(_inp->condInput);
 
         if (!cond_input.contains(FILE_PATH_KW)) {
-            rodsLog( LOG_ERROR,
-                     "linkCollReg: No linkPath input for %s",
-                     _inp->objPath );
+            log_api::error("linkCollReg: No linkPath input for {}", _inp->objPath);
             return SYS_INVALID_FILE_PATH;
         }
 
         const auto linkPath = cond_input.at(FILE_PATH_KW).value();
 
         if (!cond_input.contains(COLLECTION_TYPE_KW) || cond_input.at(COLLECTION_TYPE_KW).value() != LINK_POINT_STR) {
-            rodsLog( LOG_ERROR,
-                     "linkCollReg: Bad COLLECTION_TYPE_KW for linkPath %s",
-                     _inp->objPath );
+            log_api::error("linkCollReg: Bad COLLECTION_TYPE_KW for linkPath {}", _inp->objPath);
             return SYS_INTERNAL_NULL_INPUT_ERR;
         }
 
         const auto collType = cond_input.at(COLLECTION_TYPE_KW).value();
 
         if ( _inp->objPath[0] != '/' || linkPath[0] != '/' ) {
-            rodsLog( LOG_ERROR,
-                     "linkCollReg: linkPath %s or collection %s not absolute path",
-                     linkPath.data(), _inp->objPath );
+            log_api::error(
+                "linkCollReg: linkPath {} or collection {} not absolute path", linkPath.data(), _inp->objPath);
             return SYS_COLL_LINK_PATH_ERR;
         }
 
         auto len = strnlen(_inp->objPath, sizeof(_inp->objPath));
         if (strncmp(linkPath.data(), _inp->objPath, len) == 0 && linkPath[len] == '/') {
-            rodsLog( LOG_ERROR,
-                     "linkCollReg: linkPath %s inside collection %s",
-                     linkPath.data(), _inp->objPath );
+            log_api::error("linkCollReg: linkPath {} inside collection {}", linkPath.data(), _inp->objPath);
             return SYS_COLL_LINK_PATH_ERR;
         }
 
         len = linkPath.size();
         if (strncmp(_inp->objPath, linkPath.data(), len) == 0 && _inp->objPath[len] == '/') {
-            rodsLog( LOG_ERROR,
-                     "linkCollReg: collection %s inside linkPath %s",
-                     linkPath.data(), _inp->objPath );
+            log_api::error("linkCollReg: collection {} inside linkPath {}", linkPath.data(), _inp->objPath);
             return SYS_COLL_LINK_PATH_ERR;
         }
 
         specCollCache_t *specCollCache = NULL;
         if ( getSpecCollCache( _comm, linkPath.data(), 0,  &specCollCache ) >= 0 &&
                 specCollCache->specColl.collClass != LINKED_COLL ) {
-            rodsLog( LOG_ERROR,
-                     "linkCollReg: linkPath %s is in a spec coll path",
-                     linkPath.data() );
+            log_api::error("linkCollReg: linkPath {} is in a spec coll path", linkPath.data());
             return SYS_COLL_LINK_PATH_ERR;
         }
 
@@ -1040,9 +1006,7 @@ namespace
             rstrcpy( collCreateInp.collName, _inp->objPath, MAX_NAME_LEN );
             status = rsRegColl( _comm, &collCreateInp );
             if ( status < 0 ) {
-                rodsLog( LOG_ERROR,
-                         "linkCollReg: rsRegColl error for  %s, status = %d",
-                         collCreateInp.collName, status );
+                log_api::error("linkCollReg: rsRegColl error for  {}, status = {}", collCreateInp.collName, status);
                 return status;
             }
             status = collStat( _comm, _inp, &rodsObjStatOut );
@@ -1057,9 +1021,7 @@ namespace
                 rodsObjStatOut->specColl != NULL &&
                 rodsObjStatOut->specColl->collClass != LINKED_COLL ) {
             freeRodsObjStat( rodsObjStatOut );
-            rodsLog( LOG_ERROR,
-                     "linkCollReg: link collection %s in a spec coll path",
-                     _inp->objPath );
+            log_api::error("linkCollReg: link collection {} in a spec coll path", _inp->objPath);
             return SYS_COLL_LINK_PATH_ERR;
         }
 
@@ -1067,8 +1029,7 @@ namespace
         rodsObjStatOut = NULL;
 
         if ( isCollEmpty( _comm, _inp->objPath ) == False ) {
-            rodsLog( LOG_ERROR,
-                     "linkCollReg: collection %s not empty", _inp->objPath );
+            log_api::error("linkCollReg: collection {} not empty", _inp->objPath);
             return SYS_COLLECTION_NOT_EMPTY;
         }
 
