@@ -47,7 +47,7 @@
 #include <cstring>
 #include <chrono>
 
-using logger = irods::experimental::log;
+using log_api = irods::experimental::log::api;
 
 namespace
 {
@@ -68,13 +68,12 @@ namespace
             return SYS_NO_ICAT_SERVER_ERR;
         }
         else if( irods::KW_CFG_SERVICE_ROLE_PROVIDER != svc_role ) {
-            rodsLog(LOG_ERROR, "%s: role not supported [%s]",
-                    __FUNCTION__, svc_role.c_str() );
+            log_api::error("{}: role not supported [{}]", __FUNCTION__, svc_role.c_str());
             return SYS_SERVICE_ROLE_NOT_SUPPORTED;
         }
 
         if (!rsComm) {
-            rodsLog( LOG_ERROR, "%s: rsComm is null", __FUNCTION__ );
+            log_api::error("{}: rsComm is null", __FUNCTION__);
             return SYS_INTERNAL_NULL_INPUT_ERR;
         }
         int status;
@@ -101,14 +100,14 @@ namespace
         // Separate source collection/object names and destination collection/object names
         if ( ( status = splitPathByKey(
                         srcDataObjInp->objPath, srcColl, MAX_NAME_LEN, srcObj, MAX_NAME_LEN, '/' ) ) < 0 ) {
-            rodsLog( LOG_ERROR, "%s: splitPathByKey for %s error, status = %d",
-                    __FUNCTION__, srcDataObjInp->objPath, status );
+            log_api::error(
+                "{}: splitPathByKey for {} error, status = {}", __FUNCTION__, srcDataObjInp->objPath, status);
             return status;
         }
         if ( ( status = splitPathByKey(
                         destDataObjInp->objPath, destColl, MAX_NAME_LEN, destObj, MAX_NAME_LEN, '/' ) ) < 0 ) {
-            rodsLog( LOG_ERROR, "%s: splitPathByKey for %s error, status = %d",
-                    __FUNCTION__, destDataObjInp->objPath, status );
+            log_api::error(
+                "{}: splitPathByKey for {} error, status = {}", __FUNCTION__, destDataObjInp->objPath, status);
             return status;
         }
 
@@ -118,18 +117,16 @@ namespace
                 srcId = dataObjInfoHead->dataId;
             }
             else {
-                rodsLog( LOG_ERROR,
-                        "%s: src data %s does not exist, status = %d",
-                        __FUNCTION__, srcDataObjInp->objPath, status );
+                log_api::error(
+                    "{}: src data {} does not exist, status = {}", __FUNCTION__, srcDataObjInp->objPath, status);
                 return status;
             }
         }
         else if ( srcDataObjInp->oprType == RENAME_COLL ) {
             status = isColl( rsComm, srcDataObjInp->objPath, &srcId );
             if ( status < 0 ) {
-                rodsLog( LOG_ERROR,
-                        "%s: src coll %s does not exist, status = %d",
-                        __FUNCTION__, srcDataObjInp->objPath, status );
+                log_api::error(
+                    "{}: src coll {} does not exist, status = {}", __FUNCTION__, srcDataObjInp->objPath, status);
                 return status;
             }
         }
@@ -138,9 +135,8 @@ namespace
                 srcDataObjInp->oprType = destDataObjInp->oprType = RENAME_DATA_OBJ;
                 status = getDataObjInfo( rsComm, srcDataObjInp, &dataObjInfoHead, ACCESS_DELETE_OBJECT, 0 );
                 if ( status < 0 ) {
-                    rodsLog( LOG_ERROR,
-                            "%s: src data %s does not exist, status = %d",
-                            __FUNCTION__, srcDataObjInp->objPath, status );
+                    log_api::error(
+                        "{}: src data {} does not exist, status = {}", __FUNCTION__, srcDataObjInp->objPath, status);
                     return status;
                 }
 
@@ -176,17 +172,15 @@ namespace
                 srcDataObjInp->oprType = destDataObjInp->oprType = RENAME_COLL;
             }
             else {
-                rodsLog( LOG_ERROR,
-                        "%s: src obj %s does not exist, status = %d",
-                        __FUNCTION__, srcDataObjInp->objPath, status );
+                log_api::error(
+                    "{}: src obj {} does not exist, status = {}", __FUNCTION__, srcDataObjInp->objPath, status);
                 return status;
             }
         }
 
         if (srcDataObjInp->oprType == RENAME_DATA_OBJ &&
             strstr(dataObjInfoHead->dataType, BUNDLE_STR)) { // JMC - backport 4658
-            rodsLog(LOG_ERROR, "%s: cannot rename tar bundle type obj %s",
-                    __FUNCTION__, srcDataObjInp->objPath );
+            log_api::error("{}: cannot rename tar bundle type obj {}", __FUNCTION__, srcDataObjInp->objPath);
             return CANT_RM_MV_BUNDLE_TYPE;
         }
 
@@ -207,9 +201,12 @@ namespace
                 if ( rei2.status < 0 ) {
                     i = rei2.status;
                 }
-                rodsLog( LOG_ERROR,
-                        "%s: acPreProcForObjRename error for source %s and destination %s,stat=%d",
-                        __FUNCTION__, args[0], args[1], i );
+                log_api::error(
+                    "{}: acPreProcForObjRename error for source {} and destination {},stat={}",
+                    __FUNCTION__,
+                    args[0],
+                    args[1],
+                    i);
                 return i;
             }
             /**  June 1 2009 for pre-post processing rule hooks **/
@@ -225,8 +222,11 @@ namespace
         if ( strcmp( srcColl, destColl ) != 0 ) {
             status = isColl( rsComm, destColl, &destId );
             if (status < 0) {
-                logger::api::error("%s: Destination collection does not exist [collection = {}, error_code = {}]",
-                                   __FUNCTION__, destColl, status);
+                log_api::error(
+                    "{}: Destination collection does not exist [collection = {}, error_code = {}]",
+                    __FUNCTION__,
+                    destColl,
+                    status);
                 return CAT_UNKNOWN_COLLECTION;
             }
 
@@ -240,9 +240,11 @@ namespace
                     if ( rei2.status < 0 ) {
                         i = rei2.status;
                     }
-                    rodsLog( LOG_ERROR,
-                            "rsDataObjRename: acPreProcForObjRename error for source %s and destination %s,stat=%d",
-                            args[0], args[1], i );
+                    log_api::error(
+                        "rsDataObjRename: acPreProcForObjRename error for source {} and destination {},stat={}",
+                        args[0],
+                        args[1],
+                        i);
                     return i;
                 }
             }
@@ -283,9 +285,8 @@ namespace
                     if ( rei2.status < 0 ) {
                         status = rei2.status;
                     }
-                    rodsLog( LOG_ERROR,
-                            "rsDataObjRename: acPostProc err for src %s dest %s,stat=%d",
-                            args[0], args[1], status );
+                    log_api::error(
+                        "rsDataObjRename: acPostProc err for src {} dest {},stat={}", args[0], args[1], status);
                 }
             }
         }
@@ -352,9 +353,7 @@ namespace
         }
 
         if ( destType >= 0 ) {
-            rodsLog( LOG_ERROR,
-                     "rsDataObjRename: dest specColl objPath %s exists",
-                     destDataObjInp->objPath );
+            log_api::error("rsDataObjRename: dest specColl objPath {} exists", destDataObjInp->objPath);
             freeDataObjInfo( srcDataObjInfo );
             freeDataObjInfo( destDataObjInfo );
             return SYS_DEST_SPEC_COLL_SUB_EXIST;
@@ -372,9 +371,10 @@ namespace
                 status = moveMountedCollObj( rsComm, srcDataObjInfo, srcType, destDataObjInp );
             }
             else {
-                rodsLog( LOG_ERROR,
-                         "rsDataObjRename: src %s is in spec coll but dest %s is not",
-                         srcDataObjInp->objPath, destDataObjInp->objPath );
+                log_api::error(
+                    "rsDataObjRename: src {} is in spec coll but dest {} is not",
+                    srcDataObjInp->objPath,
+                    destDataObjInp->objPath);
                 status = SYS_SRC_DEST_SPEC_COLL_CONFLICT;
             }
             freeDataObjInfo( srcDataObjInfo );
@@ -386,9 +386,10 @@ namespace
         }
         else if ( destType == SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
             /* source is normal object but dest is not */
-            rodsLog( LOG_ERROR,
-                     "rsDataObjRename: src %s is not in spec coll but dest %s is",
-                     srcDataObjInp->objPath, destDataObjInp->objPath );
+            log_api::error(
+                "rsDataObjRename: src {} is not in spec coll but dest {} is",
+                srcDataObjInp->objPath,
+                destDataObjInp->objPath);
             return SYS_SRC_DEST_SPEC_COLL_CONFLICT;
         }
 
@@ -412,10 +413,7 @@ namespace
             } else if( irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
                 status = SYS_NO_RCAT_SERVER_ERR;
             } else {
-                rodsLog(
-                    LOG_ERROR,
-                    "role not supported [%s]",
-                    svc_role.c_str() );
+                log_api::error("role not supported [{}]", svc_role.c_str());
                 status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
             }
         }
@@ -455,7 +453,7 @@ int rsDataObjRename(rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
             }
         }
         catch (const fs::filesystem_error& e) {
-            logger::api::error(e.what());
+            log_api::error(e.what());
             return e.code().value();
         }
     }
@@ -481,9 +479,8 @@ specCollObjRename( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
     status = l3Rename( rsComm, srcDataObjInfo, newPath );
 
     if ( status < 0 ) {
-        rodsLog( LOG_ERROR,
-                 "specCollObjRename: l3Rename error from %s to %s, status = %d",
-                 srcDataObjInfo->subPath, newPath, status );
+        log_api::error(
+            "specCollObjRename: l3Rename error from {} to {}, status = {}", srcDataObjInfo->subPath, newPath, status);
         return status;
     }
     return status;
@@ -575,18 +572,15 @@ moveMountedCollDataObj( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
     }
     status = getFilePathName( rsComm, &destDataObjInfo, destDataObjInp );
     if ( status < 0 ) {
-        rodsLog( LOG_ERROR,
-                 "moveMountedCollDataObj: getFilePathName err for %s. status = %d",
-                 destDataObjInfo.objPath, status );
+        log_api::error(
+            "moveMountedCollDataObj: getFilePathName err for {}. status = {}", destDataObjInfo.objPath, status);
         return status;
     }
 
     status = filePathTypeInResc( rsComm, destDataObjInfo.objPath, destDataObjInfo.filePath, destDataObjInfo.rescHier );
     if ( status == LOCAL_DIR_T ) {
         status = SYS_PATH_IS_NOT_A_FILE;
-        rodsLog( LOG_ERROR,
-                 "moveMountedCollDataObj: targ path %s is a dir. status = %d",
-                 destDataObjInfo.filePath, status );
+        log_api::error("moveMountedCollDataObj: targ path {} is a dir. status = {}", destDataObjInfo.filePath, status);
         return status;
     }
     else if ( status == LOCAL_FILE_T ) {
@@ -598,8 +592,9 @@ moveMountedCollDataObj( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
             char new_fn[ MAX_NAME_LEN ];
             rstrcpy( fileRenameInp.oldFileName, destDataObjInfo.filePath, MAX_NAME_LEN );
             int error_code = renameFilePathToNewDir( rsComm, ORPHAN_DIR, &fileRenameInp, 1, new_fn );
-            if ( error_code < 0 ) {
-                rodsLog( LOG_ERROR, "renameFilePathToNewDir failed in moveMountedCollDataObj with error code %d", error_code );
+            if (error_code < 0) {
+                log_api::error(
+                    "renameFilePathToNewDir failed in moveMountedCollDataObj with error code {}", error_code);
             }
             snprintf( destDataObjInfo.filePath, sizeof( destDataObjInfo.filePath ), "%s", new_fn );
         }
@@ -614,17 +609,18 @@ moveMountedCollDataObj( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
     status = l3Rename( rsComm, srcDataObjInfo, destDataObjInfo.filePath );
 
     if ( status < 0 ) {
-        rodsLog( LOG_ERROR,
-                 "moveMountedCollDataObj: l3Rename error from %s to %s, status = %d",
-                 srcDataObjInfo->filePath, destDataObjInfo.filePath, status );
+        log_api::error(
+            "moveMountedCollDataObj: l3Rename error from {} to {}, status = {}",
+            srcDataObjInfo->filePath,
+            destDataObjInfo.filePath,
+            status);
         return status;
     }
     status = svrRegDataObj( rsComm, &destDataObjInfo );
     if ( status < 0 ) {
         l3Rename( rsComm, &destDataObjInfo, srcDataObjInfo->filePath );
-        rodsLog( LOG_ERROR,
-                 "moveMountedCollDataObj: rsRegDataObj for %s failed, status = %d",
-                 destDataObjInfo.objPath, status );
+        log_api::error(
+            "moveMountedCollDataObj: rsRegDataObj for {} failed, status = {}", destDataObjInfo.objPath, status);
     }
     return status;
 }
@@ -669,9 +665,8 @@ moveMountedCollCollObj( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
 
         status = l3Stat( rsComm, &subSrcDataObjInfo, &fileStatOut );
         if ( status < 0 || fileStatOut == NULL ) { // JMC cppcheck
-            rodsLog( LOG_ERROR,
-                     "moveMountedCollCollObj: l3Stat for %s error, status = %d",
-                     subSrcDataObjInfo.filePath, status );
+            log_api::error(
+                "moveMountedCollCollObj: l3Stat for {} error, status = {}", subSrcDataObjInfo.filePath, status);
             return status;
         }
         snprintf( subSrcDataObjInfo.dataCreate, TIME_LEN, "%d",
@@ -691,9 +686,8 @@ moveMountedCollCollObj( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
         }
         if ( status < 0 ) {
             savedStatus = status;
-            rodsLog( LOG_ERROR,
-                     "moveMountedCollCollObj: moveMountedColl for %s error, stat = %d",
-                     subSrcDataObjInfo.objPath, status );
+            log_api::error(
+                "moveMountedCollCollObj: moveMountedColl for {} error, stat = {}", subSrcDataObjInfo.objPath, status);
         }
         free( fileStatOut );
         fileStatOut = NULL;

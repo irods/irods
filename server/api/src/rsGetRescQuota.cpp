@@ -2,6 +2,7 @@
 #include "irods/getRescQuota.h"
 #include "irods/miscUtil.h"
 
+#include "irods/irods_logger.hpp"
 #include "irods/objMetaOpr.hpp"
 #include "irods/resource.hpp"
 #include "irods/rsGetRescQuota.hpp"
@@ -11,6 +12,8 @@
 #include "irods/irods_resource_backport.hpp"
 
 #include <cstring>
+
+using log_api = irods::experimental::log::server;
 
 int
 rsGetRescQuota( rsComm_t *rsComm, getRescQuotaInp_t *getRescQuotaInp,
@@ -128,34 +131,29 @@ int queRescQuota(
 
     if ( ( quotaLimit = getSqlResultByInx( genQueryOut, COL_QUOTA_LIMIT ) ) ==
             NULL ) {
-        rodsLog( LOG_ERROR,
-                 "queRescQuota: getSqlResultByInx for COL_QUOTA_LIMIT failed" );
+        log_api::error("queRescQuota: getSqlResultByInx for COL_QUOTA_LIMIT failed");
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( quotaOver = getSqlResultByInx( genQueryOut, COL_QUOTA_OVER ) ) == NULL ) {
-        rodsLog( LOG_ERROR,
-                 "queRescQuota: getSqlResultByInx for COL_QUOTA_OVER failed" );
+        log_api::error("queRescQuota: getSqlResultByInx for COL_QUOTA_OVER failed");
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( rescName = getSqlResultByInx( genQueryOut, COL_R_RESC_NAME ) ) == NULL ) {
-        rodsLog( LOG_ERROR,
-                 "queRescQuota: getSqlResultByInx for COL_R_RESC_NAME failed" );
+        log_api::error("queRescQuota: getSqlResultByInx for COL_R_RESC_NAME failed");
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( quotaRescId = getSqlResultByInx( genQueryOut, COL_QUOTA_RESC_ID ) ) ==
             NULL ) {
-        rodsLog( LOG_ERROR,
-                 "queRescQuota: getSqlResultByInx for COL_QUOTA_RESC_ID failed" );
+        log_api::error("queRescQuota: getSqlResultByInx for COL_QUOTA_RESC_ID failed");
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( quotaUserId = getSqlResultByInx( genQueryOut, COL_QUOTA_USER_ID ) ) ==
             NULL ) {
-        rodsLog( LOG_ERROR,
-                 "queRescQuota: getSqlResultByInx for COL_QUOTA_USER_ID failed" );
+        log_api::error("queRescQuota: getSqlResultByInx for COL_QUOTA_USER_ID failed");
         return UNMATCHED_KEY_OR_INDEX;
     }
 
@@ -250,11 +248,7 @@ int setRescQuota(
             return SYS_RESC_QUOTA_EXCEEDED;
         }
     } else {
-        rodsLog(
-            LOG_DEBUG,
-            "%s rsGetRescQuota for total quota - status %d",
-            __FUNCTION__,
-            status );
+        log_api::debug("{} rsGetRescQuota for total quota - status {}", __FUNCTION__, status);
     }
 
     // if no global enforcement was successful try per resource
@@ -335,10 +329,7 @@ int chkRescQuotaPolicy( rsComm_t *rsComm ) {
         clearKeyVal(rei.condInputData);
         free(rei.condInputData);
         if ( status < 0 ) {
-            rodsLog(
-                LOG_ERROR,
-                "queRescQuota: acRescQuotaPolicy error status = %d",
-                status );
+            log_api::error("queRescQuota: acRescQuotaPolicy error status = {}", status);
             RescQuotaPolicy = RESC_QUOTA_OFF;
         }
     }
