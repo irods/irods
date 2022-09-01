@@ -5,12 +5,14 @@
 #include "irods/miscServerFunct.hpp"
 #include "irods/irods_configuration_keywords.hpp"
 
+using log_api = irods::experimental::log::api;
+
 int
 rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
     rodsServerHost_t *rodsServerHost;
     int status;
 
-    rodsLog( LOG_DEBUG, "userAdmin" );
+    log_api::debug("userAdmin");
 
     status = getAndConnRcatHost(rsComm, PRIMARY_RCAT, (const char*) NULL, &rodsServerHost);
     if ( status < 0 ) {
@@ -30,10 +32,7 @@ rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
         } else if( irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
             status = SYS_NO_RCAT_SERVER_ERR;
         } else {
-            rodsLog(
-                LOG_ERROR,
-                "role not supported [%s]",
-                svc_role.c_str() );
+            log_api::error("role not supported [{}]", svc_role.c_str());
             status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
         }
 
@@ -44,8 +43,7 @@ rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
     }
 
     if ( status < 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "rsUserAdmin: rcUserAdmin failed" );
+        log_api::info("rsUserAdmin: rcUserAdmin failed");
     }
     return status;
 }
@@ -66,9 +64,7 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
         rei2.uoip = &rsComm->proxyUser;
     }
 
-    rodsLog( LOG_DEBUG,
-             "_rsUserAdmin arg0=%s",
-             userAdminInp->arg0 );
+    log_api::debug("_rsUserAdmin arg0={}", userAdminInp->arg0);
 
     if ( strcmp( userAdminInp->arg0, "userpw" ) == 0 ) {
         args[0] = userAdminInp->arg1; /* username */
@@ -81,7 +77,11 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
             if ( rei2.status < 0 ) {
                 status2 = rei2.status;
             }
-            rodsLog( LOG_ERROR, "_rsUserAdmin: acPreProcForModifyUser failed [%s] [%s] [%d]", userAdminInp->arg1, userAdminInp->arg2, status2 );
+            log_api::error(
+                "_rsUserAdmin: acPreProcForModifyUser failed [{}] [{}] [{}]",
+                userAdminInp->arg1,
+                userAdminInp->arg2,
+                status2);
             return status2;
         }
         status = chlModUser( rsComm,
@@ -98,8 +98,11 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
             if ( rei2.status < 0 ) {
                 status2 = rei2.status;
             }
-            rodsLog( LOG_ERROR, "rsUserAdmin:acPreProcForModifyUser error for %s and option %s,stat=%d",
-                     userAdminInp->arg1, userAdminInp->arg2, status2 );
+            log_api::error(
+                "rsUserAdmin:acPreProcForModifyUser error for {} and option {},stat={}",
+                userAdminInp->arg1,
+                userAdminInp->arg2,
+                status2);
             return status2;
         }
         return status;
@@ -117,7 +120,11 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
                 if ( rei2.status < 0 ) {
                     status2 = rei2.status;
                 }
-                rodsLog( LOG_ERROR, "rsUserAdmin:acPreProcForModifyUserGroup error for %s and option %s,stat=%d", args[0], args[1], status2 );
+                log_api::error(
+                    "rsUserAdmin:acPreProcForModifyUserGroup error for {} and option {},stat={}",
+                    args[0],
+                    args[1],
+                    status2);
                 return status2;
             }
 
@@ -131,7 +138,11 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
                     if ( rei2.status < 0 ) {
                         status2 = rei2.status;
                     }
-                    rodsLog( LOG_ERROR, "rsUserAdmin:acPostProcForModifyUserGroup error for %s and option %s,stat=%d", args[0], args[1], status2 );
+                    log_api::error(
+                        "rsUserAdmin:acPostProcForModifyUserGroup error for {} and option {},stat={}",
+                        args[0],
+                        args[1],
+                        status2);
                     return status2;
                 }
             }
@@ -172,7 +183,7 @@ icatApplyRule( rsComm_t *rsComm, char *ruleName, char *arg1 ) {
     int status;
     const char *args[2];
 
-    rodsLog( LOG_DEBUG, "icatApplyRule called" );
+    log_api::debug("icatApplyRule called");
     memset( ( char* )&rei, 0, sizeof( rei ) );
     args[0] = arg1;
     rei.rsComm = rsComm;

@@ -6,9 +6,12 @@
 #include "irods/modAccessControl.h"
 #include "irods/specColl.hpp"
 #include "irods/rsModAccessControl.hpp"
+#include "irods/irods_logger.hpp"
 #include "irods/icatHighLevelRoutines.hpp"
 #include "irods/miscServerFunct.hpp"
 #include "irods/irods_configuration_keywords.hpp"
+
+using log_api = irods::experimental::log::api;
 
 int
 rsModAccessControl( rsComm_t *rsComm, modAccessControlInp_t *modAccessControlInp ) {
@@ -42,10 +45,7 @@ rsModAccessControl( rsComm_t *rsComm, modAccessControlInp_t *modAccessControlInp
         } else if( irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
             status = SYS_NO_RCAT_SERVER_ERR;
         } else {
-            rodsLog(
-                LOG_ERROR,
-                "role not supported [%s]",
-                svc_role.c_str() );
+            log_api::error("role not supported [{}]", svc_role.c_str());
             status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
         }
     }
@@ -55,8 +55,7 @@ rsModAccessControl( rsComm_t *rsComm, modAccessControlInp_t *modAccessControlInp
     }
 
     if ( status < 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "rsModAccessControl: rcModAccessControl failed" );
+        log_api::info("rsModAccessControl: rcModAccessControl failed");
     }
     return status;
 }
