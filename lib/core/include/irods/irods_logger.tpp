@@ -110,6 +110,15 @@ class log::logger_config<log::category::rule_engine>
     friend class logger<log::category::rule_engine>;
 };
 
+template <>
+class log::logger_config<log::category::sql>
+{
+    static constexpr const char* name = "sql";
+    inline static log::level level = log::level::info;
+
+    friend class logger<log::category::sql>;
+};
+
 //
 // Logger
 //
