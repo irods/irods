@@ -127,13 +127,13 @@ namespace irods {
 
 
 
-#define ERROR( code_, message_ ) ( irods::error( false, code_, message_, __FILE__, __LINE__, __PRETTY_FUNCTION__ ) )
-#define PASS( prev_error_ ) (irods::error( "", __FILE__, __LINE__, __PRETTY_FUNCTION__, prev_error_ ) )
-#define PASSMSG( message_, prev_error_ ) (irods::error( message_, __FILE__, __LINE__, __PRETTY_FUNCTION__, prev_error_ ) )
-#define CODE( code_ ) ( irods::error( true, code_, "", __FILE__, __LINE__, __PRETTY_FUNCTION__ ) )
-#define SUCCESS( ) ( irods::error( true, 0, "", __FILE__, __LINE__, __PRETTY_FUNCTION__ ) )
+#define ERROR( code_, message_ ) ( irods::error( false, code_, message_, __FILE__, __LINE__, __PRETTY_FUNCTION__ ) ) // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+#define PASS( prev_error_ ) (irods::error( "", __FILE__, __LINE__, __PRETTY_FUNCTION__, prev_error_ ) ) // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+#define PASSMSG( message_, prev_error_ ) (irods::error( message_, __FILE__, __LINE__, __PRETTY_FUNCTION__, prev_error_ ) ) // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+#define CODE( code_ ) ( irods::error( true, code_, "", __FILE__, __LINE__, __PRETTY_FUNCTION__ ) ) // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+#define SUCCESS( ) ( irods::error( true, 0, "", __FILE__, __LINE__, __PRETTY_FUNCTION__ ) ) // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
 
-#define ASSERT_ERROR(expr_, code_, format_, ...)  (irods::assert_error(expr_, code_, __FILE__, __PRETTY_FUNCTION__, format_, __LINE__, ##__VA_ARGS__))
-#define ASSERT_PASS(prev_error_, format_, ...) (irods::assert_pass(prev_error_, __FILE__, __PRETTY_FUNCTION__, format_, __LINE__, ##__VA_ARGS__))
+#define ASSERT_ERROR(expr_, code_, format_, ...)  (irods::assert_error(expr_, code_, __FILE__, __PRETTY_FUNCTION__, format_, __LINE__, ##__VA_ARGS__)) // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+#define ASSERT_PASS(prev_error_, format_, ...) (irods::assert_pass(prev_error_, __FILE__, __PRETTY_FUNCTION__, format_, __LINE__, ##__VA_ARGS__)) // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
 
 #endif // __IRODS_ERROR_HPP__
