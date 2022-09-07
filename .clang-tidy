@@ -31,7 +31,8 @@ Checks:
     performance-*,
     portability-std-allocator-const,
     portability-simd-intrinsics,
-    readability-*
+    readability-*,
+    -readability-avoid-const-params-in-decls
 WarningsAsErrors:
     boost-*,
     bugprone-*,
@@ -60,7 +61,8 @@ WarningsAsErrors:
     modernize-*,
     performance-*,
     portability-std-allocator-const,
-    readability-*
+    readability-*,
+    -readability-avoid-const-params-in-decls
 FormatStyle:     none
 CheckOptions:
   - key:             llvm-else-after-return.WarnOnConditionVariables
