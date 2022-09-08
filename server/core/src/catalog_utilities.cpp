@@ -12,10 +12,11 @@
 
 namespace
 {
-    namespace log = irods::experimental::log;
+    using log_db = irods::experimental::log::database;
 
     auto connected_to_catalog_provider(RsComm& _comm, const rodsServerHost& _host) -> bool
     {
+        static_cast<void>(_comm);
         return LOCAL_HOST == _host.localFlag;
     } // connected_to_catalog_provider
 } // anonymous namespace
@@ -28,7 +29,8 @@ namespace irods::experimental::catalog
         _bp.bind_values.push_back(std::move(v));
 
         const std::string& value = std::get<std::string>(_bp.bind_values.back());
-        log::database::trace("[{}:{}] - binding [{}] to [{}] at [{}]", __FUNCTION__, __LINE__, _bp.column_name, value, _bp.index);
+        log_db::trace(
+            "[{}:{}] - binding [{}] to [{}] at [{}]", __FUNCTION__, __LINE__, _bp.column_name, value, _bp.index);
 
         _bp.statement.bind(_bp.index, value.c_str());
     } // bind_string_to_statement
@@ -47,7 +49,8 @@ namespace irods::experimental::catalog
             _bp.bind_values.push_back(std::move(v));
 
             const auto& value = std::get<std::string>(_bp.bind_values.back());
-            log::database::trace("[{}:{}] - binding [{}] to [{}] at [{}]", __FUNCTION__, __LINE__, _bp.column_name, value, _bp.index);
+            log_db::trace(
+                "[{}:{}] - binding [{}] to [{}] at [{}]", __FUNCTION__, __LINE__, _bp.column_name, value, _bp.index);
 
             _bp.statement.bind(_bp.index, value.c_str());
         }
@@ -56,7 +59,8 @@ namespace irods::experimental::catalog
             _bp.bind_values.push_back(v);
 
             const std::uint64_t& value = std::get<std::uint64_t>(_bp.bind_values.back());
-            log::database::trace("[{}:{}] - binding [{}] to [{}] at [{}]", __FUNCTION__, __LINE__, _bp.column_name, value, _bp.index);
+            log_db::trace(
+                "[{}:{}] - binding [{}] to [{}] at [{}]", __FUNCTION__, __LINE__, _bp.column_name, value, _bp.index);
 
             _bp.statement.bind(_bp.index, &value);
         }
@@ -68,7 +72,8 @@ namespace irods::experimental::catalog
         _bp.bind_values.push_back(v);
 
         const int& value = std::get<int>(_bp.bind_values.back());
-        log::database::trace("[{}:{}] - binding [{}] to [{}] at [{}]", __FUNCTION__, __LINE__, _bp.column_name, value, _bp.index);
+        log_db::trace(
+            "[{}:{}] - binding [{}] to [{}] at [{}]", __FUNCTION__, __LINE__, _bp.column_name, value, _bp.index);
 
         _bp.statement.bind(_bp.index, &value);
     } // bind_integer_to_statement
@@ -79,8 +84,6 @@ namespace irods::experimental::catalog
                                               std::int64_t _object_id,
                                               const entity_type _entity_type) -> bool
     {
-        namespace log = irods::experimental::log;
-
         switch (_entity_type) {
             case entity_type::data_object:
                 [[fallthrough]];
@@ -125,13 +128,13 @@ namespace irods::experimental::catalog
             default: {
                 for (auto&& [k, v] : entity_type_map) {
                     if (_entity_type == v) {
-                        log::database::error("Invalid entity type [entity_type => {}]", k);
+                        log_db::error("Invalid entity type [entity_type => {}]", k);
                         break;
                     }
                 }
 
                 const auto et = static_cast<std::underlying_type_t<entity_type>>(_entity_type);
-                log::database::error("Entity type not supported [entity_type => {}]", et);
+                log_db::error("Entity type not supported [entity_type => {}]", et);
 
                 break;
             }

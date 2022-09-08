@@ -446,10 +446,8 @@ irods::error compound_start_operation(
 
 } // compound_start_operation
 
-namespace {
-
-    namespace log = irods::experimental::log;
-
+namespace
+{
     int open_source_replica(
         irods::plugin_context& _ctx,
         irods::file_object_ptr obj,
@@ -547,7 +545,7 @@ namespace {
         clearKeyVal( &data_obj_close_inp.condInput );
         return close_status;
     }
-}
+} // anonymous namespace
 
 /// =-=-=-=-=-=-=-
 /// @brief replicate a given object for either a sync or a stage
