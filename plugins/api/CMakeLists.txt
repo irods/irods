@@ -21,6 +21,7 @@ set(
   register_physical_path
   replica_close
   replica_open
+  switch_user
   touch
 )
 
@@ -170,6 +171,7 @@ install(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/plugins/api/api_plugin_number_data.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/plugins/api/delay_server_migration_types.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/plugins/api/grid_configuration_types.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/plugins/api/switch_user_types.h"
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/irods/plugins/api"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
 )
