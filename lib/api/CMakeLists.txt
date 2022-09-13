@@ -148,6 +148,7 @@ foreach(variant IN ITEMS client server)
     "${CMAKE_CURRENT_SOURCE_DIR}/src/rc_replica_open.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/rc_set_delay_server_migration_info.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/rc_set_grid_configuration_value.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/rc_switch_user.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/rc_touch.cpp"
   )
   target_link_libraries(
@@ -339,6 +340,7 @@ install(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/subStructFileTruncate.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/subStructFileUnlink.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/subStructFileWrite.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/switch_user.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/syncMountedColl.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/replica_open.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/replica_close.h"
