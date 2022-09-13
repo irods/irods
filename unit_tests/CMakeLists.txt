@@ -60,6 +60,7 @@ set(
   query_builder
   rc_data_obj
   rc_data_obj_repl
+  rc_switch_user
   re_serialization
   replica
   replica_access_table

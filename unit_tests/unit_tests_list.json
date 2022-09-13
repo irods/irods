@@ -29,6 +29,7 @@
     "irods_query_builder",
     "irods_rc_data_obj",
     "irods_rc_data_obj_repl",
+    "irods_rc_switch_user",
     "irods_re_serialization",
     "irods_replica",
     "irods_replica_access_table",
