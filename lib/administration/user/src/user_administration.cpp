@@ -26,31 +26,6 @@ namespace irods::experimental::administration::NAMESPACE_IMPL
     {
         namespace
         {
-            auto to_user_type(std::string_view user_type_string) -> user_type
-            {
-                // clang-format off
-                if      (user_type_string == "rodsuser")   { return user_type::rodsuser; }
-                else if (user_type_string == "groupadmin") { return user_type::groupadmin; }
-                else if (user_type_string == "rodsadmin")  { return user_type::rodsadmin; }
-                // clang-format on
-
-                throw user_management_error{"undefined user type"};
-            }
-
-            auto to_c_str(user_type user_type) -> const char*
-            {
-                // clang-format off
-                switch (user_type) {
-                    case user_type::rodsuser:   return "rodsuser";
-                    case user_type::groupadmin: return "groupadmin";
-                    case user_type::rodsadmin:  return "rodsadmin";
-                    default:                    break;
-                }
-                // clang-format on
-
-                throw user_management_error{"cannot convert user_type to string"};
-            }
-
             auto get_local_zone(rxComm& conn) -> std::string
             {
 #ifdef IRODS_USER_ADMINISTRATION_ENABLE_SERVER_SIDE_API
