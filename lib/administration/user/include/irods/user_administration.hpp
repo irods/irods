@@ -63,6 +63,31 @@ namespace irods::experimental::administration
         public:
             using std::runtime_error::runtime_error;
         }; // class user_management_error
+
+        /// \brief Converts a string to a user_type enumeration.
+        ///
+        /// \param[in] user_type_string The string to convert.
+        ///
+        /// \throws user_management_error If the string cannot be converted to an enumeration.
+        ///
+        /// \return A user_type enumeration.
+        ///
+        /// \since 4.3.1
+        auto to_user_type(const std::string_view user_type_string) -> user_type;
+
+        /// \brief Converts a user_type enumeration to a string.
+        ///
+        /// The string returned is a read-only string and must not be modified by the caller. Attempting
+        /// to modify the string will result in undefined behavior.
+        ///
+        /// \param[in] user_type The enumeration to convert.
+        ///
+        /// \throws user_management_error If the string cannot be converted to an enumeration.
+        ///
+        /// \return A C string.
+        ///
+        /// \since 4.3.1
+        auto to_c_str(user_type user_type) -> const char*;
     } // namespace v1
 
     /// \since 4.2.8
