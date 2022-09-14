@@ -368,6 +368,7 @@ install(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_threads.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_virtual_path.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/key_value_proxy.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/library_features.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/lifetime_manager.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/lsUtil.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/mcollUtil.h"

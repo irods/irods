@@ -1,0 +1,22 @@
+#ifndef IRODS_LIBRARY_FEATURES_H
+#define IRODS_LIBRARY_FEATURES_H
+
+/// \file
+///
+/// \brief iRODS Feature Test Macros
+///
+/// This file defines macros that can be used to test whether one or more features
+/// are supported by the iRODS library.
+///
+/// Each macro expands to the year and month at which it was first introduced. If a feature
+/// experiences significant changes, the value of the macro is allowed to be updated.
+///
+/// \since 4.3.1
+
+/// Defined if the development library supports the C++ zone administration library.
+///
+/// \since 4.3.1
+#define IRODS_HAS_LIBRARY_ZONE_ADMINISTRATION 202210L
+
+#endif // IRODS_LIBRARY_FEATURES_H
+
