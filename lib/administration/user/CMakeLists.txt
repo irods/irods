@@ -6,6 +6,7 @@ add_library(
   OBJECT
   "${CMAKE_CURRENT_SOURCE_DIR}/src/group.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/user.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/utilities.cpp"
 )
 target_link_libraries(
   irods_user_administration_common
