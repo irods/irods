@@ -1,3 +1,4 @@
+// clang-format off
 API_PLUGIN_NUMBER(HELLO_WORLD_APN,                              1300)
 API_PLUGIN_NUMBER(GET_FILE_DESCRIPTOR_INFO_APN,                 20000)
 API_PLUGIN_NUMBER(DATA_OBJECT_MODIFY_INFO_APN,                  20001)
@@ -14,3 +15,4 @@ API_PLUGIN_NUMBER(SET_DELAY_SERVER_MIGRATION_INFO_APN,          20011)
 API_PLUGIN_NUMBER(SWITCH_USER_APN,                              20012)
 API_PLUGIN_NUMBER(AUTHENTICATION_APN,                           110000)
 API_PLUGIN_NUMBER(ADAPTER_APN,                                  120000)
+// clang-format on
