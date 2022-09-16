@@ -78,7 +78,9 @@ namespace unit_test_utils
         ufs_info.host_name = host_name;
         ufs_info.vault_path = vault_path;
 
-        return adm::client::add_resource(_comm, ufs_info).value() == 0;
+        adm::client::add_resource(_comm, ufs_info);
+
+        return true; // TODO
     }
 
     inline auto replicate_data_object(RcComm& _comm,

@@ -1,296 +1,289 @@
-#ifndef __IRODS_RESOURCE_MANAGER_HPP__
-#define __IRODS_RESOURCE_MANAGER_HPP__
+#ifndef IRODS_RESOURCE_MANAGER_HPP
+#define IRODS_RESOURCE_MANAGER_HPP
 
-// =-=-=-=-=-=-=-
 #include "irods/rods.h"
 #include "irods/irods_resource_plugin.hpp"
 #include "irods/irods_first_class_object.hpp"
 
+#include <fmt/format.h>
+
 #include <functional>
+#include <string>
+#include <string_view>
 
 namespace irods
 {
     extern const std::string EMPTY_RESC_HOST;
     extern const std::string EMPTY_RESC_PATH;
 
-    // =-=-=-=-=-=-=-
-    /// @brief definition of the resource interface
+    /// definition of the resource interface
     extern const std::string RESOURCE_INTERFACE;
 
-    // =-=-=-=-=-=-=-
-    /// @brief special resource for local file system operations only
+    /// special resource for local file system operations only
     extern const std::string LOCAL_USE_ONLY_RESOURCE;
     extern const std::string LOCAL_USE_ONLY_RESOURCE_VAULT;
     extern const std::string LOCAL_USE_ONLY_RESOURCE_TYPE;
 
-    class resource_manager {
-        public:
-            // =-=-=-=-=-=-=-
-            /// @brief constructors
-            resource_manager();
-            resource_manager( const resource_manager& );
+    class resource_manager // NOLINT(cppcoreguidelines-special-member-functions)
+    {
+    public:
+        // clang-format off
+        using leaf_bundle_t = std::vector<rodsLong_t>;
+        using iterator      = lookup_table<resource_ptr>::iterator;
+        // clang-format on
 
-            // =-=-=-=-=-=-=-
-            // @brief  destructor
-            virtual ~resource_manager();
+        resource_manager() = default;
 
-            // =-=-=-=-=-=-=-
-            // @brief  resolve a resource from a key into the resource table
-            error resolve( std::string,     // resource key
-                           resource_ptr& ); // resource out variable
+        resource_manager(const resource_manager& _other) = default;
+        resource_manager& operator=(const resource_manager& _other) = default;
 
-            // =-=-=-=-=-=-=-
-            // @brief  resolve a resource from a key into the resource table
-            error resolve( rodsLong_t,      // resource id
-                           resource_ptr& ); // resource out variable
+        // TODO Should this be virtual?
+        virtual ~resource_manager() = default;
 
-            // =-=-=-=-=-=-=-
-            // @brief  resolve a resource from a match with a given property
-            error validate_vault_path( std::string,       // physical path  of the data object
-                                       rodsServerHost_t*, // host for which we find the path
-                                       std::string& );    // match vault path
+        /// Resolves a resource from a key into the resource table.
+        error resolve(const std::string& _resc_key, resource_ptr& _resc_ptr);
 
-            // =-=-=-=-=-=-=-
-            /// @brief  populate resource table from icat database
-            error init_from_catalog(rsComm_t&);
+        // Resolve a resource from a key into the resource table
+        error resolve(rodsLong_t _resc_id, resource_ptr& _resc_ptr);
 
-            // =-=-=-=-=-=-=-
-            /// @brief call shutdown on resources before destruction
-            error shut_down_resources( );
+        // Resolves a resource from a match with a given property
+        error validate_vault_path(const std::string& _physical_path,
+                                  const rodsServerHost* _host,
+                                  std::string& _vault_path);
 
-            // =-=-=-=-=-=-=-
-            /// @brief  load a resource plugin given a resource type
-            error init_from_type( std::string,     // resource type
-                                  std::string,     // resource name ( key )
-                                  std::string,     // instance name
-                                  std::string,     // resource context
-                                  resource_ptr& ); // resource out variable
+        /// Populate resource table from catalog.
+        error init_from_catalog(RsComm& _comm);
 
-            // =-=-=-=-=-=-=-
-            /// @brief create a list of resources who do not have parents ( roots )
-            error get_root_resources( std::vector< std::string >& );
+        /// Initialize a specific resource from the catalog.
+        ///
+        /// \param[in] _comm
+        /// \param[in] _resc_name
+        ///
+        /// \return An iRODS error object containing the status of the operation.
+        error init_from_catalog(RsComm& _comm, const std::string_view _resc_name);
 
-            /// \brief create a partial hier string for a given resource to the root
-            error get_hier_to_root_for_resc( const std::string&, std::string& );
+        /// call shutdown on resources before destruction
+        error shut_down_resources();
 
-            /// \brief create a partial hier string for a given resource to the root
-            ///
-            /// \param[in] _resource_name
-            ///
-            /// \returns std::string
-            /// \retval resource hierarchy from provided resource name to root resource
-            ///
-            /// \throws irods::exception
-            ///
-            /// \since 4.2.9
-            std::string get_hier_to_root_for_resc(std::string_view _resource_name);
+        /// TODO
+        error shut_down_resource(const std::string_view _resc_name);
 
-            // =-=-=-=-=-=-=-
-            /// @brief groups decedent leafs by child
-            // throws irods::exception
-            typedef std::vector<rodsLong_t> leaf_bundle_t;
-            std::vector<leaf_bundle_t> gather_leaf_bundles_for_resc(const std::string& _resource_name);
+        /// TODO
+        error shut_down_resource(rodsLong_t _resc_id);
 
-            // =-=-=-=-=-=-=-
-            /// @brief print the list of local resources out to stderr
-            void print_local_resources();
+        /// load a resource plugin given a resource type
+        error init_from_type(const std::string& _resc_type,
+                             const std::string& _resc_name,
+                             const std::string& _instance_name,
+                             const std::string& _resc_context,
+                             resource_ptr& _resc_ptr);
 
-            // =-=-=-=-=-=-=-
-            /// @brief determine if any pdmos need to run before doing a connection
-            bool need_maintenance_operations( );
+        /// create a list of resources who do not have parents ( roots )
+        error get_root_resources(std::vector<std::string>& _resources);
 
-            // =-=-=-=-=-=-=-
-            /// @brief exec the pdmos ( post disconnect maintenance operations ) in order
-            int call_maintenance_operations( rcComm_t* );
+        /// create a partial hier string for a given resource to the root
+        error get_hier_to_root_for_resc(const std::string& _resc_name, std::string& _resc_hier);
 
-            // =-=-=-=-=-=-=-
-            /// @brief construct a vector of all resource hierarchies in the system
-            std::vector<std::string> get_all_resc_hierarchies( void );
+        /// create a partial hier string for a given resource to the root
+        ///
+        /// \param[in] _resource_name
+        ///
+        /// \returns std::string
+        /// \retval resource hierarchy from provided resource name to root resource
+        ///
+        /// \throws irods::exception
+        ///
+        /// \since 4.2.9
+        std::string get_hier_to_root_for_resc(std::string_view _resc_name);
 
-            // =-=-=-=-=-=-=-
-            /// @brief get the resc id of the leaf resource in the hierarchy
-            error hier_to_leaf_id( const std::string&, rodsLong_t& );
+        /// groups decedent leafs by child
+        std::vector<leaf_bundle_t> gather_leaf_bundles_for_resc(const std::string& _resc_name);
 
-            /// \brief get the resc id of the leaf resource in the hierarchy
-            ///
-            /// \param[in] _hierarchy
-            ///
-            /// \retval leaf resource ID for given resource hierarchy
-            ///
-            /// \throws irods::exception
-            ///
-            /// \since 4.2.9
-            rodsLong_t hier_to_leaf_id(std::string_view _hierarchy);
+        /// print the list of local resources out to stderr
+        void print_local_resources();
 
-            // =-=-=-=-=-=-=-
-            /// @brief get the resc hier of the resource given an id
-            error leaf_id_to_hier( const rodsLong_t&, std::string& );
+        /// determine if any pdmos need to run before doing a connection
+        bool need_maintenance_operations();
 
-            /// \brief get the resource hierarchy string from provided leaf resource ID
-            ///
-            /// \param[in] _leaf_resource_id
-            ///
-            /// \retval resource hierarchy for given leaf resource ID
-            ///
-            /// \throws irods::exception
-            ///
-            /// \since 4.2.9
-            std::string leaf_id_to_hier(const rodsLong_t _leaf_resource_id);
+        /// exec the pdmos ( post disconnect maintenance operations ) in order
+        int call_maintenance_operations(RcComm* _comm);
 
-            // =-=-=-=-=-=-=-
-            /// @brief get the resc name of the resource given an id
-            error resc_id_to_name( const rodsLong_t&, std::string& );
+        /// construct a vector of all resource hierarchies in the system
+        std::vector<std::string> get_all_resc_hierarchies();
 
-            // =-=-=-=-=-=-=-
-            /// @brief get the resc name of the resource given an id as a string
-            error resc_id_to_name( const std::string&, std::string& );
+        /// get the resc id of the leaf resource in the hierarchy
+        error hier_to_leaf_id( const std::string&, rodsLong_t& );
 
-            /// \brief get the resc name of the resource given an id
-            ///
-            /// \param[in] _id
-            ///
-            /// \retval resource name for given resource id
-            ///
-            /// \throws irods::exception
-            ///
-            /// \since 4.2.9
-            std::string resc_id_to_name(const rodsLong_t& _id);
+        /// get the resc id of the leaf resource in the hierarchy
+        ///
+        /// \param[in] _hierarchy
+        ///
+        /// \retval leaf resource ID for given resource hierarchy
+        ///
+        /// \throws irods::exception
+        ///
+        /// \since 4.2.9
+        rodsLong_t hier_to_leaf_id(std::string_view _hierarchy);
 
-            /// \brief get the resc name of the resource given an id as a string
-            ///
-            /// \param[in] _id
-            ///
-            /// \retval resource name for given resource id
-            ///
-            /// \throws irods::exception
-            ///
-            /// \since 4.2.9
-            std::string resc_id_to_name(std::string_view _id);
+        /// get the resc hier of the resource given an id
+        error leaf_id_to_hier( const rodsLong_t& _resc_id, std::string& _resc_hier);
 
-            // =-=-=-=-=-=-=-
-            /// @brief check whether the specified resource name is a coordinating resource
-            error is_coordinating_resource( const std::string&, bool& );
+        /// get the resource hierarchy string from provided leaf resource ID
+        ///
+        /// \param[in] _leaf_resource_id
+        ///
+        /// \retval resource hierarchy for given leaf resource ID
+        ///
+        /// \throws irods::exception
+        ///
+        /// \since 4.2.9
+        std::string leaf_id_to_hier(const rodsLong_t _leaf_resource_id);
 
-            // =-=-=-=-=-=-=-
-            /// @brief check whether the specified resource name is a coordinating resource
-            bool is_coordinating_resource(const std::string& _resc_name);
+        /// get the resc name of the resource given an id
+        error resc_id_to_name(const rodsLong_t& _resc_id, std::string& _resc_name);
 
-            // =-=-=-=-=-=-=-
-            /// @brief resolve a resource from a match with a given property
-            template< typename value_type >
-            error resolve_from_property( std::string   _prop,    // property key
-                                         value_type    _value,   // property value
-                                         resource_ptr& _resc ) { // outgoing resource variable
-                // =-=-=-=-=-=-=-
-                // simple flag to state a resource matching the prop and value is found
-                bool found = false;
+        /// get the resc name of the resource given an id as a string
+        error resc_id_to_name(const std::string& _resc_id, std::string& _resc_name);
 
-                // =-=-=-=-=-=-=-
-                // quick check on the resource table
-                if ( resource_name_map_.empty() ) {
-                    return ERROR( SYS_INVALID_INPUT_PARAM, "empty resource table" );
-                }
+        /// get the resc name of the resource given an id
+        ///
+        /// \param[in] _id
+        ///
+        /// \retval resource name for given resource id
+        ///
+        /// \throws irods::exception
+        ///
+        /// \since 4.2.9
+        std::string resc_id_to_name(const rodsLong_t& _id);
 
-                // =-=-=-=-=-=-=-
-                // iterate through the map and search for our path
-                lookup_table< resource_ptr >::iterator itr = resource_name_map_.begin();
-                for ( ; itr != resource_name_map_.end(); ++itr ) {
-                    // =-=-=-=-=-=-=-
-                    // query resource for the property value
-                    value_type value = NULL;
-                    error ret = itr->second->get_property< value_type >( _prop, value );
+        /// get the resc name of the resource given an id as a string
+        ///
+        /// \param[in] _id
+        ///
+        /// \retval resource name for given resource id
+        ///
+        /// \throws irods::exception
+        ///
+        /// \since 4.2.9
+        std::string resc_id_to_name(std::string_view _id);
 
-                    // =-=-=-=-=-=-=-
-                    // if we get a good parameter
-                    if ( ret.ok() ) {
-                        // =-=-=-=-=-=-=-
-                        // compare incoming value and stored value, assumes that the
-                        // values support the comparison operator
-                        if ( _value == value ) {
-                            // =-=-=-=-=-=-=-
-                            // if we get a match, cache the resource pointer
-                            // in the given out variable and bail
-                            found = true;
-                            _resc = itr->second;
-                            break;
-                        }
+        /// check whether the specified resource name is a coordinating resource
+        error is_coordinating_resource(const std::string& _resc_name, bool& _result);
+
+        /// check whether the specified resource name is a coordinating resource
+        bool is_coordinating_resource(const std::string& _resc_name);
+
+        /// resolve a resource from a match with a given property key
+        template <typename ValueType>
+        error resolve_from_property(const std::string& _key, const ValueType& _value, resource_ptr& _resc_ptr)
+        {
+            // quick check on the resource table
+            if (resource_name_map_.empty()) {
+                return ERROR(SYS_INVALID_INPUT_PARAM, "empty resource table");
+            }
+
+            // simple flag to state a resource matching the prop and value is found
+            bool found = false;
+
+            // iterate through the map and search for our path
+            for (auto&& [name, resc_ptr] : resource_name_map_) {
+                // query resource for the property value
+                ValueType value;
+                error ret = resc_ptr->get_property<ValueType>(_key, value);
+
+                // if we get a good parameter
+                if (ret.ok()) {
+                    // compare incoming value and stored value, assumes that the
+                    // values support the comparison operator
+                    if (_value == value) {
+                        // if we get a match, cache the resource pointer
+                        // in the given out variable and bail
+                        found = true;
+                        _resc_ptr = resc_ptr;
+                        break;
                     }
-                    else {
-                        std::stringstream msg;
-                        msg << "resource_manager::resolve_from_property - ";
-                        msg << "failed to get vault parameter from resource";
-                        irods::error err = PASSMSG( msg.str(), ret );
-
-                    }
-
-                } // for itr
-
-                // =-=-=-=-=-=-=-
-                // did we find a resource and is the ptr valid?
-                if ( true == found && _resc.get() ) {
-                    return SUCCESS();
                 }
-                else {
-                    std::stringstream msg;
-                    msg << "failed to find resource for property [";
-                    msg << _prop;
-                    msg << "] and value [";
-                    msg << _value;
-                    msg << "]";
-                    return ERROR( SYS_RESC_DOES_NOT_EXIST, msg.str() );
-                }
+            }
 
-            } // resolve_from_property
+            // did we find a resource and is the ptr valid?
+            if (found) {
+                return SUCCESS();
+            }
 
-            typedef lookup_table< resource_ptr >::iterator iterator;
-            iterator begin() { return resource_name_map_.begin(); }
-            iterator end()   { return resource_name_map_.end();   }
+            constexpr char* msg = "failed to find resource for property [{}] and value";
+            return ERROR(SYS_RESC_DOES_NOT_EXIST, fmt::format(msg, _key));
+        } // resolve_from_property
 
-        private:
-            // =-=-=-=-=-=-=-
-            /// @brief load a resource plugin from a dynamic shared object
-            error load_resource_plugin(
-                resource_ptr&,
-                const std::string,
-                const std::string,
-                const std::string);
+        /// TODO
+        void add_child_to_resource(rodsLong_t _parent_resc_id, rodsLong_t _child_resc_id);
 
-            // =-=-=-=-=-=-=-
-            /// @brief Initialize the child map from the resources lookup table
-            error init_child_map( void );
+        /// TODO
+        void add_child_to_resource(const std::string_view _parent_resc_name, const std::string_view _child_resc_name);
 
-            // =-=-=-=-=-=-=-
-            /// @brief top level function to gather the post disconnect maintenance
-            //         operations from the resources, in breadth first order
-            error gather_operations( void );
+        /// TODO
+        void remove_child_from_resource(rodsLong_t _parent_resc_id, rodsLong_t _child_resc_id);
 
-            // =-=-=-=-=-=-=-
-            /// @brief top level function to call the start operation on the resource
-            //         plugins
-            error start_resource_plugins( void );
+        /// TODO
+        void remove_child_from_resource(const std::string_view _parent_resc_name, const std::string_view _child_resc_name);
 
-            // =-=-=-=-=-=-=-
-            /// @brief lower level recursive call to gather the post disconnect
-            //         maintenance operations from the resources, in breadth first order
-            error gather_operations_recursive( const std::string&,          // child string of parent resc
-                                               std::vector< std::string >&, // vector of 'done' resc names
-                                               std::vector<pdmo_type>& );   // vector of ops for this composition
+        /// TODO
+        void erase_resource(rodsLong_t _resc_id);
 
-            // =-=-=-=-=-=-=-
-            /// @brief helper function for gather_leaf_bundles_for_resc
-            error gather_leaf_bundle_for_child( const std::string&, leaf_bundle_t& );
+        /// TODO
+        void erase_resource(const std::string_view _resc_name);
 
-            // =-=-=-=-=-=-=-
-            /// @brief given a resource name get the parent name from the id
-            error get_parent_name( resource_ptr, std::string& );
+        iterator begin()
+        {
+            return resource_name_map_.begin();
+        }
 
-            // =-=-=-=-=-=-=-
-            // Attributes
-            lookup_table< resource_ptr >                        resource_name_map_;
-            lookup_table< resource_ptr, long, std::hash<long> > resource_id_map_;
-            std::vector< std::vector< pdmo_type > > maintenance_operations_;
+        iterator end()
+        {
+            return resource_name_map_.end();
+        }
 
+    private:
+        /// TODO
+        void init_resource_from_database_row(const std::vector<std::string>& _row);
+
+        /// Initialize the child map from the resources lookup table
+        error init_parent_child_relationships();
+
+        /// TODO
+        error init_parent_child_relationship(const std::string_view _resc_name);
+
+        void init_parent_child_relationship_impl(const std::string_view _resc_name, resource_ptr _resc_ptr);
+
+        /// top level function to gather the post disconnect maintenance 
+        /// operations from the resources, in breadth first order
+        error gather_operations();
+
+        /// TODO
+        error gather_operations(const std::string_view _resc_name);
+
+        /// top level function to call the start operation on the resource plugins
+        error start_resource_plugins();
+
+        /// TODO
+        error start_resource_plugin(const std::string_view _resc_name);
+
+        /// lower level recursive call to gather the post disconnect
+        /// maintenance operations from the resources, in breadth first order
+        error gather_operations_recursive(const std::string& _children,
+                                          std::vector<std::string>& _processed_resources,
+                                          std::vector<pdmo_type>& _gathered_ops);
+
+        /// helper function for gather_leaf_bundles_for_resc
+        error gather_leaf_bundle_for_child(const std::string&, leaf_bundle_t&);
+
+        /// given a resource name get the parent name from the id
+        error get_parent_name(resource_ptr _resc_ptr, std::string& _parent_name);
+
+        lookup_table<resource_ptr> resource_name_map_;
+        lookup_table<resource_ptr, long, std::hash<long>> resource_id_map_;
+        std::vector<std::vector<pdmo_type>> maintenance_operations_;
     }; // class resource_manager
 } // namespace irods
 
-#endif // __IRODS_RESOURCE_MANAGER_HPP__
+#endif // IRODS_RESOURCE_MANAGER_HPP
+

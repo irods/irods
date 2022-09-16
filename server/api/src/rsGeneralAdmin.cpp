@@ -32,6 +32,7 @@
 #include <optional>
 #include <string>
 #include <tuple>
+#include <iterator>
 
 using log_api = irods::experimental::log::api;
 
@@ -431,18 +432,27 @@ int _addChildToResource(generalAdminInp_t* _generalAdminInp, rsComm_t* _rsComm)
     log_api::info(
         R"__(rsGeneralAdmin add child "{}" to resource "{}")__", _generalAdminInp->arg3, _generalAdminInp->arg2);
 
-    if ( ( result = chlAddChildResc( _rsComm, resc_input ) ) != 0 ) {
+    if ((result = chlAddChildResc(_rsComm, resc_input)) == 0) {
+        try {
+            log_api::info("ADDING CHILD [{}] TO RESOURCE [{}] ::: rescChildren = [{}]", _generalAdminInp->arg3, _generalAdminInp->arg2, rescChildren);
+            resc_mgr.add_child_to_resource(_generalAdminInp->arg2, _generalAdminInp->arg3);
+        }
+        catch (const irods::exception& e) {
+            log_api::error(e.what());
+        }
+        catch (const std::exception& e) {
+            log_api::error(e.what());
+        }
+    }
+    else {
         chlRollback( _rsComm );
     }
 
     return result;
 }
 
-int
-_removeChildFromResource(
-    generalAdminInp_t* _generalAdminInp,
-    rsComm_t*          _rsComm ) {
-
+int _removeChildFromResource(generalAdminInp_t* _generalAdminInp, rsComm_t* _rsComm)
+{
     int result = 0;
     std::map<std::string, std::string> resc_input;
 
@@ -468,10 +478,23 @@ _removeChildFromResource(
 
     resc_input[irods::RESOURCE_CHILDREN] = boost::algorithm::trim_copy(std::string{_generalAdminInp->arg3});
 
-    rodsLog( LOG_NOTICE, "rsGeneralAdmin remove child \"%s\" from resource \"%s\"", resc_input[irods::RESOURCE_CHILDREN].c_str(),
-             resc_input[irods::RESOURCE_NAME].c_str() );
+    log_api::info("Removing child [{}] from resource [{}]", resc_input[irods::RESOURCE_CHILDREN],
+             resc_input[irods::RESOURCE_NAME]);
 
-    if ( ( result = chlDelChildResc( _rsComm, resc_input ) ) != 0 ) {
+    if ((result = chlDelChildResc(_rsComm, resc_input)) == 0) {
+        try {
+            log_api::info("REMOVING CHILD [{}] FROM RESOURCE [{}]", _generalAdminInp->arg3, _generalAdminInp->arg2);
+            resc_mgr.remove_child_from_resource(resc_input.at(irods::RESOURCE_NAME),
+                                                resc_input.at(irods::RESOURCE_CHILDREN));
+        }
+        catch (const irods::exception& e) {
+            log_api::error(e.what());
+        }
+        catch (const std::exception& e) {
+            log_api::error(e.what());
+        }
+    }
+    else {
         chlRollback( _rsComm );
     }
 
@@ -479,18 +502,13 @@ _removeChildFromResource(
 }
 
 /* extracted out the functionality for adding a resource to the grid - hcj */
-int
-_addResource(
-    generalAdminInp_t* _generalAdminInp,
-    ruleExecInfo_t&    _rei2,
-    rsComm_t*          _rsComm )
+int _addResource(generalAdminInp_t* _generalAdminInp, ruleExecInfo_t& _rei2, rsComm_t* _rsComm)
 {
     int result = 0;
     static const unsigned int argc = 7;
     const char *args[argc];
     std::map<std::string, std::string> resc_input;
 
-    // =-=-=-=-=-=-=-
     // Legacy checks
 
     // resource name
@@ -518,7 +536,6 @@ _addResource(
         return SYS_INVALID_INPUT_PARAM;
     }
 
-    // =-=-=-=-=-=-=-
     // capture all the parameters
     resc_input[irods::RESOURCE_NAME] = boost::algorithm::trim_copy(std::string{_generalAdminInp->arg2});
     resc_input[irods::RESOURCE_TYPE] = _generalAdminInp->arg3;
@@ -529,19 +546,15 @@ _addResource(
     resc_input[irods::RESOURCE_CHILDREN] = "";
     resc_input[irods::RESOURCE_PARENT] = "";
 
-    // =-=-=-=-=-=-=-
     // if it is not empty, parse out the host:path otherwise
     // fill in with the EMPTY placeholders
     if ( !resc_input[irods::RESOURCE_PATH].empty() ) {
-        // =-=-=-=-=-=-=-
         // separate the location:/vault/path pair
         std::vector< std::string > tok;
         irods::string_tokenize( resc_input[irods::RESOURCE_PATH], ":", tok );
 
-        // =-=-=-=-=-=-=-
         // if we have exactly 2 tokens, things are going well
         if ( 2 == tok.size() ) {
-            // =-=-=-=-=-=-=-
             // location is index 0, path is index 1
             if ( strlen( tok[0].c_str() ) >= NAME_LEN ) {
                 return SYS_INVALID_INPUT_PARAM;
@@ -553,14 +566,12 @@ _addResource(
             }
             resc_input[irods::RESOURCE_PATH] = tok[1];
         }
-
     }
     else {
         resc_input[irods::RESOURCE_LOCATION] = irods::EMPTY_RESC_HOST;
         resc_input[irods::RESOURCE_PATH] = irods::EMPTY_RESC_PATH;
     }
 
-    // =-=-=-=-=-=-=-
     args[0] = resc_input[irods::RESOURCE_NAME].c_str();
     args[1] = resc_input[irods::RESOURCE_TYPE].c_str();
     args[2] = resc_input[irods::RESOURCE_CLASS].c_str();
@@ -569,10 +580,9 @@ _addResource(
     args[5] = resc_input[irods::RESOURCE_CONTEXT].c_str();
     args[6] = resc_input[irods::RESOURCE_ZONE].c_str();
 
-    // =-=-=-=-=-=-=-
     // Check that there is a plugin matching the resource type
     irods::plugin_name_generator name_gen;
-    // =-=-=-=-=-=-=-
+
     // resolve plugin directory
     std::string plugin_home;
     irods::error ret = irods::resolve_plugin_path( irods::KW_CFG_PLUGIN_TYPE_RESOURCE, plugin_home );
@@ -588,38 +598,109 @@ _addResource(
             resc_input[irods::RESOURCE_TYPE].c_str());
     }
 
-    // =-=-=-=-=-=-=-
     // apply preproc policy enforcement point for creating a resource, handle errors
     if ( ( result =  applyRuleArg( "acPreProcForCreateResource", args, argc, &_rei2, NO_SAVE_REI ) ) < 0 ) {
         if ( _rei2.status < 0 ) {
             result = _rei2.status;
         }
-        log_api::error(
-            "rsGeneralAdmin: acPreProcForCreateResource error for {}, stat={}",
-            resc_input[irods::RESOURCE_NAME].c_str(),
-            result);
-    }
 
-    // =-=-=-=-=-=-=-
+        log_api::error("rsGeneralAdmin: acPreProcForCreateResource error for {}, stat={}",
+            resc_input[irods::RESOURCE_NAME], result);
+    }
     // register resource with the metadata catalog, roll back on an error
-    else if ( ( result = chlRegResc( _rsComm, resc_input ) ) != 0 ) {
-        chlRollback( _rsComm );
-    }
-
-    // =-=-=-=-=-=-=-
-    // apply postproc policy enforcement point for creating a resource, handle errors
-    else if ( ( result =  applyRuleArg( "acPostProcForCreateResource", args, argc, &_rei2, NO_SAVE_REI ) ) < 0 ) {
-        if ( _rei2.status < 0 ) {
-            result = _rei2.status;
+    else if ((result = chlRegResc(_rsComm, resc_input)) == 0) {
+        log_api::info("ADDING NEW RESOURCE [{}]", resc_input.at(irods::RESOURCE_NAME));
+        if (const auto err = resc_mgr.init_from_catalog(*_rsComm, resc_input.at(irods::RESOURCE_NAME)); !err.ok()) {
+            log_api::error(err.result());
         }
-        log_api::error(
-            "rsGeneralAdmin: acPostProcForCreateResource error for {}, stat={}",
-            resc_input[irods::RESOURCE_NAME].c_str(),
-            result);
+
+        // apply postproc policy enforcement point for creating a resource, handle errors
+        if ( ( result =  applyRuleArg( "acPostProcForCreateResource", args, argc, &_rei2, NO_SAVE_REI ) ) < 0 ) {
+            if ( _rei2.status < 0 ) {
+                result = _rei2.status;
+            }
+
+            log_api::error("rsGeneralAdmin: acPostProcForCreateResource error for {}, stat={}",
+                    resc_input[irods::RESOURCE_NAME], result);
+        }
+    }
+    else {
+        chlRollback( _rsComm );
     }
 
     return result;
 }
+
+int _remove_resource(RsComm& _comm, generalAdminInp_t& _input, ruleExecInfo_t& _rei2)
+{
+    if (std::strlen(_input.arg2) >= NAME_LEN) {	// resource name
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
+    if (contains_whitespace(_input.arg2)) {
+        log_api::error("Whitespace is not allowed in resource names [{}].", _input.arg2);
+        return CAT_INVALID_RESOURCE_NAME;
+    }
+
+    const std::string_view resc_name = _input.arg2;
+
+    // add a dry run option to idamin rmresc.
+    // basically run chlDelResc then run a rollback immediately after.
+    if (std::strcmp(_input.arg3, "--dryrun") == 0) {
+        log_api::info("Executing a dryrun of removal of resource [{}]", resc_name);
+
+        const auto ec = chlDelResc(&_comm, resc_name.data(), 1);
+
+        if (0 == ec) {
+            log_api::info("DRYRUN REMOVING RESOURCE [{}] :: SUCCESS", _input.arg2);
+        }
+        else {
+            log_api::info("DRYRUN REMOVING RESOURCE [{}] :: FAILURE", _input.arg2);
+        }
+
+        return ec;
+    }
+
+    const char* args[MAX_NUM_OF_ARGS_IN_ACTION] = {resc_name.data()};
+    const int argc = 1;
+
+    if (auto i = applyRuleArg("acPreProcForDeleteResource", args, argc, &_rei2, NO_SAVE_REI); i < 0) {
+        if (_rei2.status < 0) {
+            i = _rei2.status;
+        }
+
+        log_api::error("rsGeneralAdmin: acPreProcForDeleteResource error for {}, stat={}", resc_name, i);
+
+        return i;
+    }
+
+    const auto ec = chlDelResc(&_comm, resc_name.data());
+
+    if (ec == 0) {
+        log_api::info(">>>>>>>>>>>>>>>>> SHUTTING DOWN RESOURCE [{}]", resc_name);
+        resc_mgr.shut_down_resource(resc_name);
+        log_api::info(">>>>>>>>>>>>>>>>> ERASING RESOURCE [{}] FROM RESC_MGR", resc_name);
+        resc_mgr.erase_resource(resc_name);
+
+        auto i = applyRuleArg("acPostProcForDeleteResource", args, argc, &_rei2, NO_SAVE_REI);
+
+        if (i < 0) {
+            if (_rei2.status < 0) {
+                i = _rei2.status;
+            }
+
+            log_api::error("rsGeneralAdmin: acPostProcForDeleteResource error for {}, stat={}", resc_name, i);
+
+            return i;
+        }
+    }
+
+    if (ec != 0) {
+        chlRollback(&_comm);
+    }
+
+    return ec;
+} // _remove_resource
 
 int
 _listRescTypes( rsComm_t* _rsComm ) {
@@ -1048,12 +1129,14 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             return status;
         }
     }
+
     if ( strcmp( generalAdminInp->arg0, "rm" ) == 0 ) {
         if ( strcmp( generalAdminInp->arg1, "user" ) == 0 ) {
             return irods::remove_user(*rsComm,
                                       generalAdminInp->arg2 ? generalAdminInp->arg2 : "",
                                       generalAdminInp->arg3 ? generalAdminInp->arg3 : "");
         }
+
         if ( strcmp( generalAdminInp->arg1, "dir" ) == 0 ) {
             memset( ( char* )&collInfo, 0, sizeof( collInfo ) );
             snprintf( collInfo.collName, sizeof( collInfo.collName ), "%s", generalAdminInp->arg2 );
@@ -1066,75 +1149,9 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             }
             return status;
         }
-        if ( strcmp( generalAdminInp->arg1, "resource" ) == 0 ) {
 
-            std::string resc_name = "";
-
-            // =-=-=-=-=-=-=-
-            // JMC 04.11.2012 :: add a dry run option to idamin rmresc
-            //                :: basically run chlDelResc then run a rollback immediately after
-            if ( strcmp( generalAdminInp->arg3, "--dryrun" ) == 0 ) {
-
-                if ( strlen( generalAdminInp->arg2 ) >= NAME_LEN ) {	// resource name
-                    return SYS_INVALID_INPUT_PARAM;
-                }
-
-                resc_name = generalAdminInp->arg2;
-
-                log_api::info("Executing a dryrun of removal of resource [{}]", generalAdminInp->arg2);
-
-                status = chlDelResc( rsComm, resc_name, 1 );
-                if ( 0 == status ) {
-                    log_api::info("DRYRUN REMOVING RESOURCE [{}] :: SUCCESS", generalAdminInp->arg2);
-                }
-                else {
-                    log_api::info("DRYRUN REMOVING RESOURCE [{}] :: FAILURE", generalAdminInp->arg2);
-                }
-
-                return status;
-            } // if dryrun
-            // =-=-=-=-=-=-=-
-
-            if ( strlen( generalAdminInp->arg2 ) >= NAME_LEN ) {	// resource name
-                return SYS_INVALID_INPUT_PARAM;
-            }
-
-            if (contains_whitespace(generalAdminInp->arg2)) {
-                log_api::error("Whitespace is not allowed in resource names [{}].", generalAdminInp->arg2);
-                return CAT_INVALID_RESOURCE_NAME;
-            }
-
-            resc_name = generalAdminInp->arg2;
-
-            args[0] = resc_name.c_str();
-            argc = 1;
-            i =  applyRuleArg( "acPreProcForDeleteResource", args, argc, &rei2, NO_SAVE_REI );
-            if ( i < 0 ) {
-                if ( rei2.status < 0 ) {
-                    i = rei2.status;
-                }
-                log_api::error(
-                    "rsGeneralAdmin: acPreProcForDeleteResource error for {}, stat={}", resc_name.c_str(), i);
-                return i;
-            }
-
-            status = chlDelResc( rsComm, resc_name );
-            if ( status == 0 ) {
-                i =  applyRuleArg( "acPostProcForDeleteResource", args, argc, &rei2, NO_SAVE_REI );
-                if ( i < 0 ) {
-                    if ( rei2.status < 0 ) {
-                        i = rei2.status;
-                    }
-                    log_api::error(
-                        "rsGeneralAdmin: acPostProcForDeleteResource error for {}, stat={}", resc_name.c_str(), i);
-                    return i;
-                }
-            }
-
-            if ( status != 0 ) {
-                chlRollback( rsComm );
-            }
-            return status;
+        if (std::strcmp(generalAdminInp->arg1, "resource") == 0) {
+            return _remove_resource(*rsComm, *generalAdminInp, rei2);
         }
 
         /* remove a child resource from the specified parent resource */

@@ -802,7 +802,7 @@ auto add_ufs_resource(const std::string_view _resc_name, const std::string_view 
     ufs_info.vault_path = vault_path.c_str();
 
     irods::experimental::client_connection conn;
-    REQUIRE(adm::client::add_resource(conn, ufs_info).value() == 0);
+    REQUIRE_NOTHROW(adm::client::add_resource(conn, ufs_info));
 }
 
 auto replicate_data_object(const std::string_view _path, const std::string_view _resc_name) -> void
