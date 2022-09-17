@@ -61,7 +61,6 @@ from irods.controller import IrodsController
 from irods.exceptions import IrodsError, IrodsWarning
 import irods.log
 from irods.password_obfuscation import maximum_password_length
-from irods.logging_infrastructure import setup_rsyslog_and_logrotate, rsyslog_config_path, logrotate_config_path
 
 try:
     import pyodbc
@@ -97,7 +96,6 @@ def setup_server(irods_config, json_configuration_file=None, test_mode=False):
         irods_user, irods_group = get_irods_user_and_group(irods_config)
 
     setup_service_account(irods_config, irods_user, irods_group)
-    setup_rsyslog_and_logrotate(register_tty=False)
 
     # Do the rest of the setup as the irods user
     if os.getuid() == 0:
@@ -149,14 +147,16 @@ def setup_server(irods_config, json_configuration_file=None, test_mode=False):
     # test put
     test_put(irods_config)
 
+    # extract the "irods_version" property from the version.json.dist file.
+    # this guarantees that setup always uses the correct version information.
+    with open('.'.join([irods_config.version_path, 'dist'])) as f:
+        irods_version_string = json.load(f)['irods_version']
+
     l.info(irods.lib.get_header('Log Configuration Notes'))
-    l.info(('The iRODS log file is managed by rsyslog and logrotate.\n'
-            'The locations of the log file and configuration files are listed below.\n\n'
-            '  Log File Path               : ' + irods.paths.server_log_path() + '\n'
-            '  Rsyslog Configuration Path  : ' + rsyslog_config_path() + '\n'
-            '  Logrotate Configuration Path: ' + logrotate_config_path() + '\n\n'
-            'iRODS will never touch these configuration files again.\n'
-            'If you need to make adjustments, you must do so manually.'))
+    l.info(('iRODS uses syslog for logging. If your OS has a running syslog service, messages\n'
+            'will appear in the system log file (normally located at /var/log/syslog).\n\n'
+            'See the following for more information about configuring an iRODS-specific log file:\n\n'
+            f'  https://docs.irods.org/{irods_version_string}/system_overview/troubleshooting/'))
 
     l.info(irods.lib.get_header('Stopping iRODS...'))
     IrodsController(irods_config).stop()
