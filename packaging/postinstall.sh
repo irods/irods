@@ -84,15 +84,6 @@ if [ ! $UPGRADE_FLAG ] ; then
 fi
 
 # =-=-=-=-=-=-=-
-# if an upgrade is in progress and rsyslog or logrotate aren't configured,
-# print instructions for completing the upgrade.
-if [ "$UPGRADE_FLAG" = true ] ; then
-    if [ ! -f '/etc/rsyslog.d/00-irods.conf' -o ! -f '/etc/logrotate.d/irods' ] ; then
-        cat $IRODS_HOME/packaging/server_log_setup_instructions.txt
-    fi
-fi
-
-# =-=-=-=-=-=-=-
 # remove temporary files
 rm -f $UPGRADE_FLAG_FILE
 

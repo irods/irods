@@ -30,7 +30,7 @@ def add_options(parser):
 
     parser.add_option('--stdout',
                       dest='write_to_stdout', action='store_true',
-                      help='Write log messages to stdout instead of rsyslog')
+                      help='Write log messages to stdout instead of syslog')
 
     parser.add_option('--test',
                       dest='test_mode', action='store_true',
