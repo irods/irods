@@ -213,10 +213,7 @@ install(
   "${CMAKE_IRODS_SOURCE_DIR}/packaging/core.fnm.template"
   "${CMAKE_IRODS_SOURCE_DIR}/packaging/core.re.template"
   "${CMAKE_IRODS_SOURCE_DIR}/packaging/irodsMonPerf.config.in"
-  "${CMAKE_IRODS_SOURCE_DIR}/packaging/irods.logrotate"
-  "${CMAKE_IRODS_SOURCE_DIR}/packaging/irods.rsyslog"
   "${CMAKE_IRODS_SOURCE_DIR}/packaging/server_config.json.template"
-  "${CMAKE_IRODS_SOURCE_DIR}/packaging/server_log_setup_instructions.txt"
   "${CMAKE_IRODS_SOURCE_DIR}/packaging/server_setup_instructions.txt"
   DESTINATION "${IRODS_HOME_DIRECTORY}/packaging"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
