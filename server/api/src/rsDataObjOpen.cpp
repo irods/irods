@@ -215,8 +215,6 @@ namespace
                 irods::log(LOG_DEBUG, fmt::format(
                     "[{}:{}] - switching to overwrite an existing replica [path=[{}], hierarchy=[{}]]",
                     __FUNCTION__, __LINE__, _inp.objPath, hierarchy));
-                _inp.openFlags &= ~O_WRONLY;
-                _inp.openFlags |= O_RDWR;
                 cond_input[DEST_RESC_NAME_KW] = irods::hierarchy_parser{hierarchy.data()}.first_resc();
                 cond_input[OPEN_TYPE_KW] = std::to_string(OPEN_FOR_WRITE_TYPE);
 
