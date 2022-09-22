@@ -11,6 +11,7 @@
 #include <cstring>
 #include <fstream>
 #include <unordered_map>
+#include <algorithm>
 
 #include <curl/curl.h>
 #include <curl/easy.h>
@@ -236,7 +237,10 @@ namespace irods
 
     nlohmann::json server_properties::reload()
     {
-        nlohmann::json new_values;
+        using json = nlohmann::json;
+
+        json new_values;
+
         if (use_remote_configuration()) {
             new_values = process_remote_configuration(capture_remote_configuration());
         }
@@ -257,24 +261,40 @@ namespace irods
             new_values = json::parse(svr);
         }
 
+        auto lock = acquire_write_lock();
         auto patch = json::diff(config_props_, new_values);
-        for (auto i = patch.cbegin(); i != patch.cend(); ++i) {
-            // If we remove the runtime values the server will not be happy
 
-            // It may be prudent to have a list of runtime properties that need to be preserved instead, but
-            // I'm not entirely decided on that yet.
-            if (i.value().at("op").get_ref<const std::string&>() == "remove") {
-                i = patch.erase(i);
-                if (i == patch.cend()) {
-                    break;
-                }
+        // The set of runtime properties that MUST be maintained across reloads.
+        // Each property must be defined as a JSON pointer (not a C/C++ pointer).
+        static const auto runtime_properties = {fmt::format("/{}", irods::KW_CFG_RE_CACHE_SALT)};
+
+        // The patch object will contain operations that will result in runtime issues.
+        // This happens because the server adds runtime properties into "config_props_". The target
+        // object, "new_values", will not contain any runtime properties because it is loaded from
+        // server_config.json.
+        //
+        // Therefore, we must convert some of the "remove" instructions into "add" instructions.
+        // This will force the JSON library to maintain the runtime properties.
+        for (auto&& entry : patch) {
+            auto& op = entry.at("op");
+
+            if (op.get_ref<const std::string&>() != "remove") {
+                continue;
+            }
+
+            const auto& path = entry.at("path").get_ref<const std::string&>();
+            const auto pred = [&path](const std::string_view _p) { return _p == path; };
+
+            if (std::any_of(std::begin(runtime_properties), std::end(runtime_properties), pred)) {
+                op = "add";
+                entry["value"] = config_props_.at(json::json_pointer{path});
             }
         }
-        auto lock = acquire_write_lock();
-        // TODO uncomment when issue #6470 is fixed
-        // log_server::error("Before patch '{}'", config_props_.dump());
+
+        log_server::debug("Before patch ==> {}", [this] { return std::make_tuple(config_props_.dump()); });
         config_props_ = config_props_.patch(patch);
-        // log_server::error("After patch '{}'", config_props_.dump());
+        log_server::debug("After patch ==> {}", [this] { return std::make_tuple(config_props_.dump()); });
+
         return patch;
     } // reload
 
