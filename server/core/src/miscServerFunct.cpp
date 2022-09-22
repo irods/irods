@@ -1,11 +1,11 @@
-#include <sys/wait.h>
-
 #include "irods/miscServerFunct.hpp"
+
 #include "irods/QUANTAnet_rbudpBase_c.h"
 #include "irods/QUANTAnet_rbudpSender_c.h"
 #include "irods/QUANTAnet_rbudpReceiver_c.h"
 #include "irods/dataObjOpen.h"
 #include "irods/dataObjLseek.h"
+#include "irods/irods_configuration_keywords.hpp"
 #include "irods/rcMisc.h"
 #include "irods/dataObjOpr.hpp"
 #include "irods/dataObjClose.h"
@@ -28,25 +28,8 @@
 #include "irods/rsModAVUMetadata.hpp"
 #include "irods/rsModAccessControl.hpp"
 #include "irods/rsFileClose.hpp"
-
-#include <boost/thread/thread.hpp>
-#include <boost/thread/scoped_thread.hpp>
-#include <boost/lexical_cast.hpp>
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wc++11-narrowing"
-#include <boost/process.hpp>
-#pragma clang diagnostic pop
-
-#include <openssl/md5.h>
-
-
-#if !defined(solaris_platform)
-char *__loc1;
-#endif /* solaris_platform */
 #include "irods/rsGlobalExtern.hpp"
 #include "irods/rcGlobalExtern.h"
-
 #include "irods/irods_stacktrace.hpp"
 #include "irods/irods_network_factory.hpp"
 #include "irods/irods_buffer_encryption.hpp"
@@ -61,6 +44,22 @@ char *__loc1;
 #include "irods/irods_random.hpp"
 #include "irods/irods_resource_manager.hpp"
 #include "irods/irods_default_paths.hpp"
+#include "irods/irods_logger.hpp"
+
+#include <boost/filesystem.hpp>
+#include <boost/thread/thread.hpp>
+#include <boost/thread/scoped_thread.hpp>
+#include <boost/lexical_cast.hpp>
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc++11-narrowing"
+#include <boost/process.hpp>
+#pragma clang diagnostic pop
+
+#include <fmt/format.h>
+
+#include <sys/wait.h>
+#include <openssl/md5.h>
 
 #include <cstring>
 #include <iomanip>
@@ -69,9 +68,13 @@ char *__loc1;
 #include <string>
 #include <vector>
 
-#include <boost/filesystem.hpp>
+using log_server = irods::experimental::log::server;
 
 using leaf_bundle_t = irods::resource_manager::leaf_bundle_t;
+
+#if !defined(solaris_platform)
+char* __loc1;
+#endif /* solaris_platform */
 
 namespace {
 
@@ -2953,29 +2956,33 @@ checkModArgType( const char *arg ) {
     }
 }
 
-irods::error setRECacheSaltFromEnv() {
+irods::error setRECacheSaltFromEnv()
+{
     // Should only ever set the cache salt once
     try {
-        const auto& existing_name = irods::get_server_property<const std::string>( irods::KW_CFG_RE_CACHE_SALT);
-        rodsLog( LOG_NOTICE, "setRECacheSaltFromEnv: mutex name already set [%s]", existing_name.c_str() );
-        return SUCCESS();
-    } catch ( const irods::exception& ) {
-        const char *p_mutex_salt = std::getenv( SP_RE_CACHE_SALT );
-        if ( NULL == p_mutex_salt ) {
-            rodsLog( LOG_ERROR, "setRECacheSaltFromEnv: call to getenv failed" );
-            return ERROR( SYS_GETENV_ERR, "setRECacheSaltFromEnv: mutex name already set" );
+        const auto& existing_name = irods::get_server_property<const std::string>(irods::KW_CFG_RE_CACHE_SALT);
+        log_server::debug("{}: Cache salt already set [{}]", __func__, irods::KW_CFG_RE_CACHE_SALT, existing_name);
+    }
+    catch (const irods::exception&) {
+        const char* p_mutex_salt = std::getenv(SP_RE_CACHE_SALT); // NOLINT(concurrency-mt-unsafe)
+
+        if (!p_mutex_salt) {
+            const auto msg =
+                fmt::format("{}: Could not retrieve cache salt environment variable [{}].", __func__, SP_RE_CACHE_SALT);
+            log_server::critical(msg);
+            return ERROR(SYS_GETENV_ERR, msg);
         }
 
         try {
-            irods::set_server_property<std::string>( irods::KW_CFG_RE_CACHE_SALT, p_mutex_salt );
-        } catch ( const irods::exception& e ) {
-            rodsLog( LOG_ERROR, "setRECacheSaltFromEnv: failed to set server_properties" );
+            irods::set_server_property<std::string>(irods::KW_CFG_RE_CACHE_SALT, p_mutex_salt);
+        }
+        catch (const irods::exception& e) {
+            log_server::critical("{}: Failed to set [{}] in server properties.", __func__, irods::KW_CFG_RE_CACHE_SALT);
             return irods::error(e);
         }
-
-        return SUCCESS();
     }
 
+    return SUCCESS();
 } // setRECacheSaltFromEnv
 
 irods::error get_script_output_single_line(
