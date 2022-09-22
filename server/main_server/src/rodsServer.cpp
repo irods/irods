@@ -139,21 +139,21 @@ namespace
         // Should only ever set the cache salt once.
         try {
             const auto& existing_salt = irods::get_server_property<const std::string>(irods::KW_CFG_RE_CACHE_SALT);
-            log_server::error("createAndSetRECacheSalt: salt already set [{}]", existing_salt.c_str());
-            return ERROR(SYS_ALREADY_INITIALIZED, "createAndSetRECacheSalt: cache salt already set");
+            log_server::debug("createAndSetRECacheSalt: Cache salt already set [{}]", existing_salt.c_str());
+            return ERROR(SYS_ALREADY_INITIALIZED, "createAndSetRECacheSalt: Cache salt already set");
         }
         catch (const irods::exception&) {
             irods::buffer_crypt::array_t buf;
             irods::error ret = irods::buffer_crypt::generate_key(buf, RE_CACHE_SALT_NUM_RANDOM_BYTES);
             if (!ret.ok()) {
-                log_server::error("createAndSetRECacheSalt: failed to generate random bytes");
+                log_server::critical("createAndSetRECacheSalt: failed to generate random bytes");
                 return PASS(ret);
             }
 
             std::string cache_salt_random;
             ret = irods::buffer_crypt::hex_encode(buf, cache_salt_random);
             if (!ret.ok()) {
-                log_server::error("createAndSetRECacheSalt: failed to hex encode random bytes");
+                log_server::critical("createAndSetRECacheSalt: failed to hex encode random bytes");
                 return PASS(ret);
             }
 
@@ -163,13 +163,13 @@ namespace
                 irods::set_server_property<std::string>(irods::KW_CFG_RE_CACHE_SALT, cache_salt);
             }
             catch (const nlohmann::json::exception& e) {
-                log_server::error("createAndSetRECacheSalt: failed to set server_properties");
+                log_server::critical("createAndSetRECacheSalt: failed to set server_properties");
                 return ERROR(SYS_INVALID_INPUT_PARAM, e.what());
             }
             catch (const std::exception&) {}
 
             if (setenv(SP_RE_CACHE_SALT, cache_salt.c_str(), 1) != 0) {
-                log_server::error("createAndSetRECacheSalt: failed to set environment variable");
+                log_server::critical("createAndSetRECacheSalt: failed to set environment variable");
                 return ERROR(SYS_SETENV_ERR, "createAndSetRECacheSalt: failed to set environment variable");
             }
 
@@ -1134,8 +1134,8 @@ int serverMain(const bool enable_test_mode = false, const bool write_to_stdout =
         configuration_reloader.interval(0).task([]() {
             if (reload_server_config) {
                 reload_server_config = false;
-                auto diff_list = irods::server_properties::server_properties::instance().reload();
-                ix::json_events::run_hooks(diff_list);
+                auto diff = irods::server_properties::instance().reload();
+                ix::json_events::run_hooks(diff);
                 log_server::info("Configuration Reloaded.");
             }
         });
