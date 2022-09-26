@@ -1245,3 +1245,64 @@ TEST_CASE("rxDataObjPut")
     }
 } // rxDataObjPut
 
+TEST_CASE("#6600: server no longer changes the openmode from O_WRONLY to O_RDWR")
+{
+    namespace ix = irods::experimental;
+    namespace io = irods::experimental::io;
+
+    load_client_api_plugins();
+
+    ix::client_connection conn;
+    REQUIRE(conn);
+
+    rodsEnv env;
+    _getRodsEnv(env);
+
+    const auto sandbox = fs::path{env.rodsHome} / "unit_testing_sandbox";
+
+    if (!fs::client::exists(conn, sandbox)) {
+        REQUIRE(fs::client::create_collection(conn, sandbox));
+    }
+
+    irods::at_scope_exit remove_sandbox{
+        [&conn, &sandbox] { REQUIRE(fs::client::remove_all(conn, sandbox, fs::remove_options::no_trash)); }};
+
+    const auto data_object = sandbox / "data_object.txt";
+    const std::string_view contents = "0123456789";
+
+    // Create a new data object.
+    {
+        io::client::native_transport tp{conn};
+        io::odstream{tp, data_object} << contents;
+        REQUIRE(fs::client::data_object_size(conn, data_object) == contents.size());
+    }
+
+    auto* conn_ptr = static_cast<RcComm*>(conn);
+
+    // Open the replica in write-only mode.
+    dataObjInp_t open_inp{};
+    std::strcpy(open_inp.objPath, data_object.c_str());
+    open_inp.openFlags = O_WRONLY;
+    const auto fd = rcDataObjOpen(conn_ptr, &open_inp);
+    REQUIRE(fd > 2);
+
+    // Show that the read operation will fail because the server honored the openmode.
+    openedDataObjInp_t read_inp{};
+    read_inp.l1descInx = fd;
+    read_inp.len = contents.size();
+
+    bytesBuf_t read_bbuf{};
+    read_bbuf.len = read_inp.len;
+    read_bbuf.buf = std::malloc(read_bbuf.len);
+    irods::at_scope_exit free_bbuf{[&read_bbuf] { std::free(read_bbuf.buf); }};
+
+    const auto ec = rcDataObjRead(conn_ptr, &read_inp, &read_bbuf);
+
+    // Compare only the iRODS error code (i.e. ignore errno value).
+    CHECK(ec - (ec % UNIX_FILE_READ_ERR) == UNIX_FILE_READ_ERR);
+
+    // Close the replica.
+    openedDataObjInp_t close_inp{};
+    close_inp.l1descInx = fd;
+    REQUIRE(rcDataObjClose(conn_ptr, &close_inp) >= 0);
+}
