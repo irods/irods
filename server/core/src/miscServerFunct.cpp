@@ -72,10 +72,6 @@ using log_server = irods::experimental::log::server;
 
 using leaf_bundle_t = irods::resource_manager::leaf_bundle_t;
 
-#if !defined(solaris_platform)
-char* __loc1;
-#endif /* solaris_platform */
-
 namespace {
 
 int l3OpenByHost( rsComm_t *rsComm, int l3descInx, int flags ) {
