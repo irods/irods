@@ -16,8 +16,6 @@
 #include "irods/irods_re_structs.hpp"
 #include "irods/rsModAVUMetadata.hpp"
 
-extern char *__loc1;
-
 /**
  * \fn msiReadMDTemplateIntoTagStruct(msParam_t* bufParam, msParam_t* tagParam, ruleExecInfo_t *rei)
  *
