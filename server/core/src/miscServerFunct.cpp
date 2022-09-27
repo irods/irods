@@ -68,9 +68,10 @@
 #include <string>
 #include <vector>
 
-using log_server = irods::experimental::log::server;
-
+// clang-format off
+using log_server    = irods::experimental::log::server;
 using leaf_bundle_t = irods::resource_manager::leaf_bundle_t;
+// clang-format on
 
 namespace {
 
