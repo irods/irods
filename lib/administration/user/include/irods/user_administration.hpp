@@ -18,6 +18,7 @@
 
 #include "irods/user.hpp"
 #include "irods/group.hpp"
+#include "irods/zone_type.hpp"
 
 #include <vector>
 #include <string>
@@ -44,15 +45,6 @@ namespace irods::experimental::administration
             groupadmin, ///< Identifies users that have limited administrative privileges. 
             rodsadmin   ///< Identifies users that have full administrative privileges.
         }; // enum class user_type
-
-        /// \brief Defines the zone types.
-        ///
-        /// \since 4.2.8
-        enum class zone_type
-        {
-            local,  ///< Identifies the zone in which an operation originates.
-            remote  ///< Identifies a foreign zone.
-        }; // enum class zone_type
 
         /// \brief The generic exception type used by the user administration library.
         ///

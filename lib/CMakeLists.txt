@@ -70,6 +70,7 @@ target_link_objects(
   irods_resource_administration_client
   irods_lib_metadata_client
   irods_ticket_administration_client
+  irods_zone_administration_client
 )
 target_link_libraries(
   irods_client
@@ -124,6 +125,8 @@ target_link_objects(
   irods_ticket_administration_server
   irods_plugin_dependencies_obj
   irods_lib_metadata_client
+  irods_zone_administration_client
+  irods_zone_administration_server
 )
 target_link_libraries(
   RodsAPIs
@@ -160,3 +163,4 @@ install(
   DESTINATION "${CMAKE_INSTALL_LIBDIR}"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
 )
+
