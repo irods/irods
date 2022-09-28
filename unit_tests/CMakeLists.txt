@@ -45,7 +45,9 @@ set(
   fixed_buffer_resource
   get_file_descriptor_info
   hierarchy_parser
+  host_list_context_string
   hostname_cache
+  json_apis_from_client
   json_events
   key_value_proxy
   lifetime_manager
@@ -70,13 +72,12 @@ set(
   server_properties
   server_utilities
   shared_memory_object
+  ticket_administration
   user_administration
   version
   with_durability
-  json_apis_from_client
+  zone_administration
   zone_report
-  ticket_administration
-  host_list_context_string
 )
 
 foreach(test IN LISTS IRODS_UNIT_TESTS)

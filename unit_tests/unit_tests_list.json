@@ -44,5 +44,7 @@
     "irods_user_administration",
     "irods_version",
     "irods_with_durability",
+    "irods_zone_administration",
     "irods_zone_report"
 ]
+
