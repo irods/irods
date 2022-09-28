@@ -47,6 +47,8 @@ target_link_objects(
   irods_resource_administration_server
   irods_ticket_administration_client
   irods_ticket_administration_server
+  irods_zone_administration_client
+  irods_zone_administration_server
   irods_server_drivers
   irods_server_icat
   irods_server_re
