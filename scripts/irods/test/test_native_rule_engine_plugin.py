@@ -181,7 +181,7 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
 
         finally:
 
-            self.admin.run_icommand('ichmod own {} {}'.format(self.admin.username,temp_base))
+            self.admin.run_icommand('ichmod -M own {} {}'.format(self.admin.username,temp_base))
             os.unlink(largefile)
             if extrafile and os.path.isfile(extrafile):
                 os.unlink(extrafile)
