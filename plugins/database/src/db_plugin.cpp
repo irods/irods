@@ -10208,34 +10208,21 @@ irods::error db_mod_access_control_op(
                 return ERROR( CAT_INVALID_ARGUMENT, "unknown collection or file" );
             }
             if ( status1 != CAT_UNKNOWN_COLLECTION ) {
-                if ( logSQL != 0 ) {
-                    log_sql::debug("chlModAccessControl SQL 12");
-                }
-                int status = cmlCheckDirOwn( _path_name,
-                                             _ctx.comm()->clientUser.userName,
-                                             _ctx.comm()->clientUser.rodsZone,
-                                             &icss );
-                if ( status < 0 ) {
-                    return ERROR( status1, "cmlCheckDirOwn failed" );
-                }
-                snprintf( collIdStr, MAX_NAME_LEN, "%d", status );
+                return ERROR(
+                    status1,
+                    fmt::format(
+                        "User [{}] has insufficient permission to modifiy collection: [{}]",
+                        _ctx.comm()->clientUser.userName,
+                        _path_name));
             }
             else {
                 if ( status2 == CAT_NO_ACCESS_PERMISSION ) {
-                    /* See if this user is the owner (with no access, but still
-                       allowed to ichmod) */
-                    if ( logSQL != 0 ) {
-                        log_sql::debug("chlModAccessControl SQL 13");
-                    }
-                    int status = cmlCheckDataObjOwn( logicalParentDirName, logicalEndName,
-                                                     _ctx.comm()->clientUser.userName,
-                                                     _ctx.comm()->clientUser.rodsZone,
-                                                     &icss );
-                    if ( status < 0 ) {
-                        _rollback( "chlModAccessControl" );
-                        return ERROR( status2, "cmlCheckDataObjOwn failed" );
-                    }
-                    objId = status;
+                    return ERROR(
+                        status2,
+                        fmt::format(
+                            "User [{}] has insufficient permission to modifiy data object: [{}]",
+                            _ctx.comm()->clientUser.userName,
+                            _path_name));
                 }
                 else {
                     return ERROR( status2, "cmlCheckDataObjOnly failed" );
