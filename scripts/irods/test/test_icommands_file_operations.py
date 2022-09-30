@@ -148,12 +148,12 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         rods_files = [f for f in lib.get_object_names_from_entries(ils_out)]
 
         self.admin.assert_icommand(['ichmod','-r','null',self.admin.username,base_name])
-        self.admin.assert_icommand(['ichmod','read',self.admin.username,base_name+'/'+rods_files[-1]])
+        self.admin.assert_icommand(['ichmod','-M','read',self.admin.username,base_name+'/'+rods_files[-1]])
         self.admin.assert_icommand(['iget','-r',base_name,self.admin.local_session_dir],'STDERR_SINGLELINE','CAT_NO_ACCESS_PERMISSION')
 
         assert os.path.isfile(os.path.join(self.admin.local_session_dir,base_name,rods_files[-1]))
 
-        self.admin.assert_icommand(['ichmod','-r','own',self.admin.username,base_name])
+        self.admin.assert_icommand(['ichmod','-M','-r','own',self.admin.username,base_name])
 
     def test_iput_r(self):
         self.iput_r_large_collection(self.user0, "test_iput_r_dir", file_count=1000, file_size=100)

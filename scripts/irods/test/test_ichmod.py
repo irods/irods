@@ -207,6 +207,73 @@ class Test_ichmod(session.make_sessions_mixin([('otherrods', 'rods')], [('alice'
                         if access_level.value in range(check[0].value, check[1].value + 1):
                             self.user.assert_icommand(params.get('cmd'), *check[2])
 
+    def test_ichmod_does_not_bypass_permission_model_for_data_object__issue_6579(self):
+        data_object = 'testFile'
+        user_permissions = ['null',
+                            'read_metadata',
+                            'read',
+                            'read_object',
+                            'create_metadata',
+                            'modify_metadata',
+                            'delete_metadata',
+                            'create_object',
+                            'write',
+                            'modify_object',
+                            'delete_object',
+                            'own']
+
+        self.user.assert_icommand(['itouch', data_object])
+
+        for permission in user_permissions:
+            with self.subTest(permission):
+                self.user.assert_icommand(['ichmod', permission, self.user.username, data_object])
+                out, err, ec = self.user.run_icommand(['ichmod', 'own', self.user.username, data_object])
+
+                if permission == 'own':
+                    self.assertEqual(ec, 0)
+                    self.assertEqual(len(err), 0)
+                    self.assertEqual(len(out), 0)
+                else:
+                    self.assertEqual(ec, 8)
+                    self.assertIn('CAT_NO_ACCESS_PERMISSION', err)
+                    self.assertEqual(len(out), 0)
+
+                    # Restore data object permissions or error will be thrown on cleanup
+                    self.admin.assert_icommand(['ichmod', '-M', 'own', self.user.username, os.path.join(self.user.session_collection, data_object)])
+
+    def test_ichmod_does_not_bypass_permission_model_for_collection__issue_6579(self):
+        collection = 'testCol'
+        user_permissions = ['null',
+                            'read_metadata',
+                            'read',
+                            'read_object',
+                            'create_metadata',
+                            'modify_metadata',
+                            'delete_metadata',
+                            'create_object',
+                            'write',
+                            'modify_object',
+                            'delete_object',
+                            'own']
+
+        self.user.assert_icommand(['imkdir', collection])
+
+        for permission in user_permissions:
+            with self.subTest(permission):
+                self.user.assert_icommand(['ichmod', permission, self.user.username, collection])
+                out, err, ec = self.user.run_icommand(['ichmod', 'own', self.user.username, collection])
+
+                if permission == 'own':
+                    self.assertEqual(ec, 0)
+                    self.assertEqual(len(err), 0)
+                    self.assertEqual(len(out), 0)
+                else:
+                    self.assertEqual(ec, 8)
+                    self.assertIn('CAT_NO_ACCESS_PERMISSION', err)
+                    self.assertEqual(len(out), 0)
+
+                    # Restore collection permissions or error will be thrown on cleanup
+                    self.admin.assert_icommand(['ichmod', '-M', 'own', self.user.username, os.path.join(self.user.session_collection, collection)])
 
 
 class test_collection_acl_inheritance(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):

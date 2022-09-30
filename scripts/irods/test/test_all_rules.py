@@ -544,15 +544,15 @@ OUTPUT ruleExecOut
             self.rods_session.assert_icommand("irule -F " + data_obj_rule_file, 'STDOUT_MULTILINE', ['result=0$', 'result=0$', 'result=0$'],
                 use_regex=True)
 
-            self.rods_session.assert_icommand('ichmod read rods test_file_3309')
+            self.rods_session.assert_icommand('ichmod -M read rods test_file_3309')
             self.rods_session.assert_icommand("irule -F " + data_obj_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=0$', 'result=0$'],
                 use_regex=True)
 
-            self.rods_session.assert_icommand('ichmod write rods test_file_3309')
+            self.rods_session.assert_icommand('ichmod -M write rods test_file_3309')
             self.rods_session.assert_icommand("irule -F " + data_obj_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=1$', 'result=0$'],
                 use_regex=True)
 
-            self.rods_session.assert_icommand('ichmod own rods test_file_3309')
+            self.rods_session.assert_icommand('ichmod -M own rods test_file_3309')
             self.rods_session.assert_icommand("irule -F " + data_obj_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=1$', 'result=1$'],
                 use_regex=True)
 
@@ -561,15 +561,15 @@ OUTPUT ruleExecOut
 
             self.rods_session.assert_icommand('ichmod null rods test_file_3309')
 
-            self.rods_session.assert_icommand('ichmod read group2_3309 test_file_3309')
+            self.rods_session.assert_icommand('ichmod -M read group2_3309 test_file_3309')
             self.rods_session.assert_icommand("irule -F " + data_obj_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=0$', 'result=0$'],
                 use_regex=True)
 
-            self.rods_session.assert_icommand('ichmod write group2_3309 test_file_3309')
+            self.rods_session.assert_icommand('ichmod -M write group2_3309 test_file_3309')
             self.rods_session.assert_icommand("irule -F " + data_obj_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=1$', 'result=0$'],
                 use_regex=True)
 
-            self.rods_session.assert_icommand('ichmod own group2_3309 test_file_3309')
+            self.rods_session.assert_icommand('ichmod -M own group2_3309 test_file_3309')
             self.rods_session.assert_icommand("irule -F " + data_obj_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=1$', 'result=1$'],
                 use_regex=True)
 
@@ -582,15 +582,15 @@ OUTPUT ruleExecOut
             self.rods_session.assert_icommand("irule -F " + collection_rule_file, 'STDOUT_MULTILINE', ['result=0$', 'result=0$', 'result=0$'],
                 use_regex=True)
 
-            self.rods_session.assert_icommand('ichmod read rods test_collection_3309')
+            self.rods_session.assert_icommand('ichmod -M read rods test_collection_3309')
             self.rods_session.assert_icommand("irule -F " + collection_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=0$', 'result=0$'],
                 use_regex=True)
 
-            self.rods_session.assert_icommand('ichmod write rods test_collection_3309')
+            self.rods_session.assert_icommand('ichmod -M write rods test_collection_3309')
             self.rods_session.assert_icommand("irule -F " + collection_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=1$', 'result=0$'],
                 use_regex=True)
 
-            self.rods_session.assert_icommand('ichmod own rods test_collection_3309')
+            self.rods_session.assert_icommand('ichmod -M own rods test_collection_3309')
             self.rods_session.assert_icommand("irule -F " + collection_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=1$', 'result=1$'],
                 use_regex=True)
 
@@ -599,15 +599,15 @@ OUTPUT ruleExecOut
 
             self.rods_session.assert_icommand('ichmod null rods test_collection_3309')
 
-            self.rods_session.assert_icommand('ichmod read group2_3309 test_collection_3309')
+            self.rods_session.assert_icommand('ichmod -M read group2_3309 test_collection_3309')
             self.rods_session.assert_icommand("irule -F " + collection_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=0$', 'result=0$'],
                 use_regex=True)
 
-            self.rods_session.assert_icommand('ichmod write group2_3309 test_collection_3309')
+            self.rods_session.assert_icommand('ichmod -M write group2_3309 test_collection_3309')
             self.rods_session.assert_icommand("irule -F " + collection_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=1$', 'result=0$'],
                 use_regex=True)
 
-            self.rods_session.assert_icommand('ichmod own group2_3309 test_collection_3309')
+            self.rods_session.assert_icommand('ichmod -M own group2_3309 test_collection_3309')
             self.rods_session.assert_icommand("irule -F " + collection_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=1$', 'result=1$'],
                 use_regex=True)
 
