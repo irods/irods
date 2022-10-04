@@ -17,7 +17,10 @@ TEST_CASE("packstruct xml encoding")
     std::strncpy(input.objPath, data, sizeof(data));
 
     BytesBuf* packed_result = nullptr;
-    irods::at_scope_exit free_packed_result{[&packed_result] { std::free(packed_result); }};
+    irods::at_scope_exit free_packed_result{[&packed_result] {
+        std::free(packed_result->buf);
+        std::free(packed_result);
+    }};
 
     const auto is_equal = [](const BytesBuf& _bbuf, const std::string_view _expected) -> bool
     {
