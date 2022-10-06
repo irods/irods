@@ -8,7 +8,6 @@
 #include <irods/irods_pack_table.hpp>
 #include <irods/irods_pam_auth_object.hpp>
 #include <irods/parseCommandLine.h>
-#include <irods/plugins/auth/pam_password.hpp>
 #include <irods/rcConnect.h>
 #include <irods/rcMisc.h>
 #include <irods/rods.h>
@@ -19,9 +18,34 @@
 #include <fmt/format.h>
 #include <nlohmann/json.hpp>
 
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+
+namespace
+{
+    namespace irods_auth = irods::experimental::auth;
+
+    constexpr const char* const AUTH_OPENID_SCHEME = "openid";
+    constexpr const char* const PAM_INTERACTIVE_SCHEME = "pam_interactive";
+    constexpr const char* const PAM_PASSWORD_SCHEME = "pam_password";
+
+    auto scheme_uses_iinit_password_prompt(const std::string_view _scheme) -> bool
+    {
+        const std::initializer_list<const std::string_view> no_password_prompt = {
+            AUTH_OPENID_SCHEME,
+            irods::AUTH_GSI_SCHEME,
+            irods::AUTH_PAM_SCHEME,
+            PAM_PASSWORD_SCHEME,
+            PAM_INTERACTIVE_SCHEME
+        };
+
+        return std::none_of(std::cbegin(no_password_prompt),
+                            std::cend(no_password_prompt),
+                            [&_scheme](const auto& _s) { return _scheme == _s; });
+    } // scheme_uses_iinit_password_prompt
+} // anonymous namespace
 
 void usage( char *prog );
 
@@ -35,7 +59,6 @@ void usage( char *prog );
 
 #define TTYBUF_LEN 100
 #define UPDATE_TEXT_LEN NAME_LEN*10
-const char *AUTH_OPENID_SCHEME = "openid";
 
 /*
  Attempt to make the ~/.irods directory in case it doesn't exist (may
@@ -85,8 +108,6 @@ printUpdateMsg() {
 
 int main( int argc, char **argv )
 {
-    namespace irods_auth = irods::experimental::auth;
-
     signal( SIGPIPE, SIG_IGN );
 
     int i = 0, status = 0;
@@ -94,7 +115,6 @@ int main( int argc, char **argv )
     rcComm_t *Conn = 0;
     rErrMsg_t errMsg;
     rodsArguments_t myRodsArgs;
-    int doPassword = 0;
     bool doingEnvFileUpdate = false;
 
     status = parseCmdLineOpt( argc, argv, "hvVlZ", 1, &myRodsArgs );
@@ -213,10 +233,6 @@ int main( int argc, char **argv )
         printf( "other iCommands) if the login succeeds.\n\n" );
     }
 
-    /*
-      Now, get the password
-     */
-    doPassword = 1;
     // =-=-=-=-=-=-=-
     // ensure scheme is lower case for comparison
     std::string lower_scheme = my_env.rodsAuthScheme;
@@ -226,27 +242,12 @@ int main( int argc, char **argv )
         lower_scheme.begin(),
         ::tolower );
 
-    int useGsi = 0;
-    if ( AUTH_OPENID_SCHEME == lower_scheme ) {
-        doPassword = 0;
-    }
-    if ( irods::AUTH_GSI_SCHEME == lower_scheme ) {
-        useGsi = 1;
-        doPassword = 0;
-    }
-
-    if (irods::AUTH_PAM_SCHEME == lower_scheme ||
-        lower_scheme == irods_auth::scheme::pam_password) {
-        doPassword = 0;
-    }
-
-    if ( strcmp( my_env.rodsUserName, ANONYMOUS_USER ) == 0 ) {
-        doPassword = 0;
-    }
-    if ( useGsi == 1 ) {
+    if (irods::AUTH_GSI_SCHEME == lower_scheme) {
         printf( "Using GSI, attempting connection/authentication\n" );
     }
-    if ( doPassword == 1 ) {
+
+    if (std::string_view{ANONYMOUS_USER} != my_env.rodsUserName &&
+        scheme_uses_iinit_password_prompt(lower_scheme)) {
         if ( myRodsArgs.verbose == True ) {
             i = obfSavePw( 0, 1, 1, nullptr );
         }
@@ -376,7 +377,7 @@ int main( int argc, char **argv )
             }
 
             printErrorStack(Conn->rError);
-            if (ttl > 0 && lower_scheme != irods_auth::scheme::pam_password) {
+            if (ttl > 0 && lower_scheme != PAM_INTERACTIVE_SCHEME && lower_scheme != PAM_PASSWORD_SCHEME) {
                 status = clientLoginTTL(Conn, ttl);
                 if (status) {
                     rcDisconnect(Conn);
