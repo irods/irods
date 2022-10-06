@@ -111,7 +111,7 @@ closeAllL1desc( rsComm_t *rsComm ) {
     for ( i = 3; i < NUM_L1_DESC; i++ ) {
         if ( L1desc[i].inuseFlag == FD_INUSE &&
                 L1desc[i].l3descInx > 2 ) {
-            l3Close( rsComm, i );
+            close( FileDesc[L1desc[i].l3descInx].fd );
         }
     }
     return 0;
