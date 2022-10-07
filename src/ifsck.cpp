@@ -129,7 +129,7 @@ main( int argc, char **argv ) {
 void
 usage() {
     char *msgs[] = {
-        "Usage: ifsck [-hKrR] srcPhysicalFile|srcPhysicalDirectory ... ",
+        "Usage: ifsck [-hKrR] srcPhysicalFile|srcPhysicalDirectory",
         " ",
         "Check if a local file or local directory content is",
         "consistent in size (and optionally its checksum) with its",
