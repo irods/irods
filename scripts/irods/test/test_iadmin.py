@@ -159,6 +159,34 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand_fail('iadmin lg ' + group_name, 'STDOUT_SINGLELINE', 'notauser')
         self.admin.assert_icommand(['iadmin', 'rmgroup', group_name])
 
+    def test_list_users__issue_6624(self):
+        # A certain number of users with sufficiently long usernames will trigger a SimpleQuery bug.
+        created_user_count = 15
+        username_prefix = f'{"a" * 57}'
+        usernames = ['{}_{:02}#{}'.format(username_prefix, i, self.admin.zone_name) for i in range(created_user_count)]
+
+        # Get the initial list of users for proper reset after the test
+        initial_user_list = self.admin.run_icommand(['iadmin', 'lu'])[0].splitlines()
+
+        try:
+            # Create the users with long usernames
+            for username in usernames:
+                self.admin.assert_icommand(['iadmin', 'mkuser', username, 'rodsuser'])
+                self.admin.assert_icommand(['iadmin', 'lu', username], 'STDOUT', 'rodsuser')
+
+            # List all users after making the big list and ensure that they are all present
+            new_user_list = self.admin.assert_icommand(['iadmin', 'lu'], 'STDOUT', self.admin.username)[1].splitlines()
+            for username in initial_user_list + usernames:
+                self.assertIn(username, new_user_list)
+
+        finally:
+            for username in usernames:
+                self.admin.run_icommand(['iadmin', 'rmuser', username])
+
+            self.assertEqual(
+                len(initial_user_list),
+                len(self.admin.run_icommand(['iadmin', 'lu'])[0].splitlines()))
+
     # USERS
 
     def test_modify_user_info__ticket_3245(self):
@@ -1612,7 +1640,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.user0.assert_icommand(['iadmin', 'lg'], 'STDERR', ['-830000 CAT_INSUFFICIENT_PRIVILEGE_LEVEL'])
 
     def test_non_admins_are_not_allowed_to_invoke_iadmin_set_delay_server__issue_5249(self):
-        self.user0.assert_icommand(['iadmin', 'set_delay_server', lib.get_hostname()], 'STDERR', ['-13000 SYS_NO_API_PRIV'])
+        self.user0.assert_icommand(['iadmin', 'set_delay_server', lib.get_hostname()], 'STDERR', ['-830000 CAT_INSUFFICIENT_PRIVILEGE_LEVEL'])
 
     def test_non_admins_are_not_allowed_to_invoke_iadmin_get_delay_server_info__issue_5249(self):
         self.user0.assert_icommand(['iadmin', 'get_delay_server_info'], 'STDERR', ['-830000 CAT_INSUFFICIENT_PRIVILEGE_LEVEL'])
