@@ -5,7 +5,7 @@ returns bigint
 begin
    insert into R_ObjectId_seq_tbl values (NULL) ;
    set @R_ObjectId_val=LAST_INSERT_ID() ;
-   delete from R_ObjectId_seq_tbl ;
+   delete from R_ObjectId_seq_tbl where nextval = @R_ObjectId_val ;
    return @R_ObjectId_val ;
 end
 %%
