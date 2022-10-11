@@ -14,6 +14,7 @@
 #include <irods/get_grid_configuration_value.h>
 
 #include <algorithm>
+#include <array>
 #include <iostream>
 #include <string>
 #include <string_view>
@@ -23,18 +24,12 @@
 #include <vector>
 
 #include <boost/lexical_cast.hpp>
+#include <fmt/compile.h>
+#include <fmt/format.h>
 #include <nlohmann/json.hpp>
 
-#define MAX_SQL 300
 #define BIG_STR 3000
 
-/* The simpleQuery input sql is passed as an argument (along with up
-   to 4 bind variables) so that is is clear what is going on.  But the
-   server-side code checks the input sql against some pre-defined
-   forms (to improve security a bit).
-*/
-
-int debug = 0;
 int veryVerbose = 0;
 
 char localZone[BIG_STR] = "";
@@ -376,533 +371,536 @@ auto ls_replica(
     return 0;
 } // ls_replica
 
+constexpr auto is_timestamp_label(std::string_view _label) -> bool
+{
+    constexpr std::array timestamp_labels{"create_ts", "modify_ts"};
+
+    return std::any_of(
+        std::cbegin(timestamp_labels), std::cend(timestamp_labels), [&_label](const auto& _l) { return _l == _label; });
+} // is_timestamp_label
+
+auto print_genquery_result(std::string_view _label, std::string_view _value) -> void
+{
+    constexpr const char* fmt_str = "{}: {}\n";
+    if (!is_timestamp_label(_label)) {
+        fmt::print(fmt::runtime(fmt_str), _label, _value);
+    }
+    else {
+        char timestamp[TIME_LEN] = "";
+        if (const int ec = getLocalTimeFromRodsTime(_value.data(), timestamp); 0 == ec) {
+            fmt::print(fmt::runtime(fmt_str), _label, timestamp);
+        }
+    }
+} // print_genquery_result
+
+auto print_genquery_results(const std::string_view _query_string, const std::vector<const char*>& _labels) -> void
+{
+    auto q = irods::query(Conn, _query_string.data());
+    if (q.empty()) {
+        fmt::print("No rows found\n");
+        return;
+    }
+
+    for (auto&& result : q) {
+        if (result.size() != _labels.size()) {
+            THROW(SYS_INVALID_INPUT_PARAM, "Selected columns and labels must be a one-to-one mapping");
+        }
+
+        for (std::size_t l = 0; l < _labels.size(); ++l) {
+            print_genquery_result(_labels.at(l), result.at(l));
+        }
+    }
+} // print_genquery_results
 } // anonymous namespace
 
-/* print the results of a simple query, converting time values if
-   necessary.  Called recursively.
-*/
-int
-printSimpleQuery( char *buf ) {
-    std::vector<std::string> tokens;
-    irods::string_tokenize( buf, "\n", tokens );
+auto set_local_zone_global() -> int
+{
+    if (!std::string_view{localZone}.empty()) {
+        return 0;
+    }
 
-    for (const auto& token : tokens) {
-        // explicitly filter out the resource class
-        if ( std::string::npos != token.find( "resc_class" ) ) {
-            continue;
-        }
-        // explicitly filter out the resource object count
-        if ( std::string::npos != token.find( "resc_objcount" ) ) {
-            continue;
+    try {
+        const auto q = irods::query(Conn, "select ZONE_NAME where ZONE_TYPE = 'local'");
+        if (q.empty()) {
+            fmt::print(stderr, "Error getting local zone\n");
+            return 1;
         }
 
-        // determine if the token is of a time that needs
-        // converted from unix time to a human readable form.
-        if ( std::string::npos != token.find( "_ts:" ) ) {
-            // tokenize based on the ':' delimiter to convert
-            // the time.
-            std::vector<std::string> time_tokens;
-            irods::string_tokenize( token, ":", time_tokens );
-
-            if ( time_tokens.size() != 2 ) {
-                std::cout << "printSimpleQuery - incorrect number of tokens "
-                             "for case of time conversion\n";
-                return -1;
-            }
-
-            char local_time[TIME_LEN];
-            getLocalTimeFromRodsTime( time_tokens[1].c_str(), local_time );
-            std::cout << time_tokens[0] << ": " << local_time << '\n';
+        const auto& local_zone_name = q.front();
+        if (local_zone_name.empty()) {
+            fmt::print(stderr, "Error getting local zone\n");
+            return 2;
         }
-        else {
-            std::cout << token << '\n';
-        }
+
+        std::strncpy(localZone, q.front().at(0).data(), BIG_STR);
+    }
+    catch (const irods::exception& e) {
+        fmt::print(stderr, "Error getting local zone\n{}\n", e.client_display_what());
+        return 1;
+    }
+    catch (...) {
+        return 1;
     }
 
     return 0;
-}
+} // set_local_zone_global
 
-int
-doSimpleQuery( simpleQueryInp_t simpleQueryInp ) {
-    int status;
-    simpleQueryOut_t *simpleQueryOut;
-    status = rcSimpleQuery( Conn, &simpleQueryInp, &simpleQueryOut );
-    lastCommandStatus = status;
-
-    if ( status ==  CAT_NO_ROWS_FOUND ) {
-        lastCommandStatus = 0; /* success */
-        printf( "No rows found\n" );
-        return status;
-    }
-    if ( status < 0 ) {
-        if ( Conn->rError ) {
-            rError_t *Err;
-            rErrMsg_t *ErrMsg;
-            int i, len;
-            Err = Conn->rError;
-            len = Err->len;
-            for ( i = 0; i < len; i++ ) {
-                ErrMsg = Err->errMsg[i];
-                rodsLog( LOG_ERROR, "Level %d: %s", i, ErrMsg->msg );
-            }
-        }
-        char *mySubName = NULL;
-        const char *myName = rodsErrorName( status, &mySubName );
-        rodsLog( LOG_ERROR, "rcSimpleQuery failed with error %d %s %s",
-                 status, myName, mySubName );
-        free( mySubName );
-        return status;
-    }
-
-    printSimpleQuery( simpleQueryOut->outBuf );
-    if ( debug ) {
-        printf( "control=%d\n", simpleQueryOut->control );
-    }
-    if ( simpleQueryOut->control > 0 ) {
-        simpleQueryInp.control = simpleQueryOut->control;
-        for ( ; simpleQueryOut->control > 0 && status == 0; ) {
-            status = rcSimpleQuery( Conn, &simpleQueryInp, &simpleQueryOut );
-            if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
-                char *mySubName = NULL;
-                const char *myName = rodsErrorName( status, &mySubName );
-                rodsLog( LOG_ERROR,
-                         "rcSimpleQuery failed with error %d %s %s",
-                         status, myName, mySubName );
-                free( mySubName );
-                return status;
-            }
-            if ( status == 0 ) {
-                printSimpleQuery( simpleQueryOut->outBuf );
-                if ( debug ) {
-                    printf( "control=%d\n", simpleQueryOut->control );
-                }
-            }
-        }
-    }
-    return status;
-}
-
-int
-showToken( char *token, char *tokenName2 ) {
-    simpleQueryInp_t simpleQueryInp;
-
-    memset( &simpleQueryInp, 0, sizeof( simpleQueryInp_t ) );
-    simpleQueryInp.control = 0;
-    if ( token == 0 || *token == '\0' ) {
-        simpleQueryInp.form = 1;
-        simpleQueryInp.sql =
-            "select token_name from R_TOKN_MAIN where token_namespace = 'token_namespace'";
-        simpleQueryInp.maxBufSize = 1024;
-    }
-    else {
-        if ( tokenName2 == 0 || *tokenName2 == '\0' ) {
-            simpleQueryInp.form = 1;
-            simpleQueryInp.sql = "select token_name from R_TOKN_MAIN where token_namespace = ?";
-            simpleQueryInp.arg1 = token;
-            simpleQueryInp.maxBufSize = 1024;
-        }
-        else {
-            simpleQueryInp.form = 2;
-            simpleQueryInp.sql = "select * from R_TOKN_MAIN where token_namespace = ? and token_name like ?";
-            simpleQueryInp.arg1 = token;
-            simpleQueryInp.arg2 = tokenName2;
-            simpleQueryInp.maxBufSize = 1024;
-        }
-    }
-    return doSimpleQuery( simpleQueryInp );
-}
-
-int
-showResc( char *resc ) {
-    simpleQueryInp_t simpleQueryInp;
-
-    memset( &simpleQueryInp, 0, sizeof( simpleQueryInp_t ) );
-    simpleQueryInp.control = 0;
-    if ( resc == 0 || *resc == '\0' ) {
-        simpleQueryInp.form = 1;
-        simpleQueryInp.sql =
-            "select resc_name from R_RESC_MAIN";
-        simpleQueryInp.maxBufSize = 1024;
-    }
-    else {
-        simpleQueryInp.form = 2;
-        simpleQueryInp.sql = "select * from R_RESC_MAIN where resc_name=?";
-        simpleQueryInp.arg1 = resc;
-        simpleQueryInp.maxBufSize = 1024;
-    }
-    return doSimpleQuery( simpleQueryInp );
-}
-
-int
-showZone( char *zone ) {
-    simpleQueryInp_t simpleQueryInp;
-
-    memset( &simpleQueryInp, 0, sizeof( simpleQueryInp_t ) );
-    simpleQueryInp.control = 0;
-    if ( zone == 0 || *zone == '\0' ) {
-        simpleQueryInp.form = 1;
-        simpleQueryInp.sql =
-            "select zone_name from R_ZONE_MAIN";
-        simpleQueryInp.maxBufSize = 1024;
-    }
-    else {
-        simpleQueryInp.form = 2;
-        simpleQueryInp.sql = "select * from R_ZONE_MAIN where zone_name=?";
-        simpleQueryInp.arg1 = zone;
-        simpleQueryInp.maxBufSize = 1024;
-    }
-    return doSimpleQuery( simpleQueryInp );
-}
-
-int
-getLocalZone() {
-    int status, i;
-    simpleQueryInp_t simpleQueryInp;
-    simpleQueryOut_t *simpleQueryOut;
-    if ( localZone[0] == '\0' ) {
-        memset( &simpleQueryInp, 0, sizeof( simpleQueryInp_t ) );
-        simpleQueryInp.form = 1;
-        simpleQueryInp.sql =
-            "select zone_name from R_ZONE_MAIN where zone_type_name=?";
-        simpleQueryInp.arg1 = "local";
-        simpleQueryInp.maxBufSize = 1024;
-        status = rcSimpleQuery( Conn, &simpleQueryInp, &simpleQueryOut );
-        lastCommandStatus = status;
-        if ( status < 0 ) {
-            char *mySubName = NULL;
-            const char *myName = rodsErrorName( status, &mySubName );
-            rodsLog( LOG_ERROR, "rcSimpleQuery failed with error %d %s %s",
-                     status, myName, mySubName );
-            fprintf( stderr, "Error getting local zone\n" );
-            free( mySubName );
-            return status;
-        }
-        strncpy( localZone, simpleQueryOut->outBuf, BIG_STR );
-        i = strlen( localZone );
-        for ( ; i > 1; i-- ) {
-            if ( localZone[i] == '\n' ) {
-                localZone[i] = '\0';
-                if ( localZone[i - 1] == ' ' ) {
-                    localZone[i - 1] = '\0';
-                }
-                break;
-            }
-        }
-    }
-    return 0;
-}
-
-/*
-   print the results of a general query for the showGroup function below
-*/
-void // JMC - backport 4742
-printGenQueryResultsForGroup( genQueryOut_t *genQueryOut ) {
-    int i, j;
-    for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
-        char *tResult;
-        for ( j = 0; j < genQueryOut->attriCnt; j++ ) {
-            tResult = genQueryOut->sqlResult[j].value;
-            tResult += i * genQueryOut->sqlResult[j].len;
-            if ( j > 0 ) {
-                printf( "#%s", tResult );
-            }
-            else {
-                printf( "%s", tResult );
-            }
-        }
-        printf( "\n" );
-    }
-}
-
-int showGroup(char* groupName)
+auto show_token(const char* _token_namespace = nullptr, const char* _token = nullptr) -> int
 {
     try {
-        namespace adm = irods::experimental::administration;
+        constexpr const char* default_namespace = "token_namespace";
+        const char* token_namespace =
+            !_token_namespace || std::string_view{_token_namespace}.empty() ? default_namespace : _token_namespace;
+        if (!_token || std::string_view{_token}.empty()) {
+            const auto list_token_namespaces =
+                fmt::format(fmt::runtime("select TOKEN_NAME where TOKEN_NAMESPACE = '{}'"), token_namespace);
+            const auto query_string = fmt::format(fmt::runtime(list_token_namespaces), _token_namespace);
 
-        const auto user_type = adm::client::type(*Conn, adm::user{Conn->clientUser.userName, Conn->clientUser.rodsZone});
+            auto q = irods::query(Conn, query_string);
+            if (q.empty()) {
+                fmt::print("No rows found");
+                return 0;
+            }
 
-        if (!user_type) {
-            rodsLogError(LOG_ERROR, CAT_INVALID_USER_TYPE, "Could not determine if user has permission to view information.");
-            return 1;
+            for (auto&& result : q) {
+                fmt::print("{}\n", result.at(0));
+            }
+
+            return 0;
         }
 
-        if (*user_type != adm::user_type::rodsadmin) {
-            rodsLogError(LOG_ERROR, CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "Operation requires rodsadmin level privileges.");
-            return 1;
+        constexpr std::array columns{
+            "TOKEN_NAMESPACE",
+            "TOKEN_ID",
+            "TOKEN_NAME",
+            "TOKEN_VALUE",
+            "TOKEN_VALUE2",
+            "TOKEN_VALUE3",
+            "TOKEN_COMMENT",
+            "TOKEN_CREATE_TIME",
+            "TOKEN_MODIFY_TIME"};
+
+        static const std::vector labels{
+            "token_namespace",
+            "token_id",
+            "token_name",
+            "token_value",
+            "token_value2",
+            "token_value3",
+            "r_comment",
+            "create_ts",
+            "modify_ts"};
+
+        const auto query_string_template = fmt::format(
+            FMT_COMPILE("select {} where TOKEN_NAMESPACE = '{{}}' and TOKEN_NAME like '{{}}'"),
+            fmt::join(columns, ", "));
+
+        print_genquery_results(fmt::format(fmt::runtime(query_string_template), token_namespace, _token), labels);
+    }
+    catch (const irods::exception& e) {
+        fmt::print(stderr, e.client_display_what());
+        return 1;
+    }
+    catch (...) {
+        return 1;
+    }
+
+    return 0;
+} // show_token
+
+auto show_group(const char* _group = nullptr) -> int
+{
+    try {
+        if (_group && !std::string_view{_group}.empty()) {
+            fmt::print("Members of group {}:\n", _group);
+
+            constexpr const char* list_group_members =
+                "select USER_NAME, USER_ZONE where USER_GROUP_NAME = '{}' and USER_TYPE != 'rodsgroup'";
+            const auto query_string = fmt::format(fmt::runtime(list_group_members), _group);
+
+            auto q = irods::query(Conn, query_string);
+            if (q.empty()) {
+                fmt::print("No rows found\n");
+                return 0;
+            }
+
+            for (auto&& result : q) {
+                const auto& user = result.at(0);
+                const auto& zone = result.at(1);
+                fmt::print(fmt::runtime("{}#{}\n"), user, zone);
+            }
+        }
+        else {
+            constexpr const char* query_string = "select USER_NAME where USER_TYPE = 'rodsgroup'";
+
+            auto q = irods::query(Conn, query_string);
+            if (q.empty()) {
+                fmt::print("No rows found\n");
+                return 0;
+            }
+
+            for (auto&& result : q) {
+                fmt::print("{}\n", result.at(0));
+            }
+        }
+
+        return 0;
+    }
+    catch (const irods::exception& e) {
+        fmt::print(stderr, e.client_display_what());
+        return 1;
+    }
+    catch (...) {
+        return 1;
+    }
+
+    return 0;
+} // show_group
+
+auto show_resource(const char* _resc = nullptr) -> int
+{
+    try {
+        if (!_resc || std::string_view{_resc}.empty()) {
+            auto q = irods::query(Conn, "select RESC_NAME");
+            if (q.empty()) {
+                fmt::print("No rows found\n");
+                return 0;
+            }
+
+            for (auto&& result : q) {
+                fmt::print(fmt::runtime("{}\n"), result.at(0));
+            }
+
+            return 0;
+        }
+
+        constexpr std::array columns{
+            "RESC_ID",
+            "RESC_NAME",
+            "RESC_ZONE_NAME",
+            "RESC_TYPE_NAME",
+            "RESC_LOC",
+            "RESC_VAULT_PATH",
+            "RESC_FREE_SPACE",
+            "RESC_FREE_SPACE_TIME",
+            "RESC_INFO",
+            "RESC_COMMENT",
+            "RESC_STATUS",
+            "RESC_CREATE_TIME",
+            "RESC_MODIFY_TIME",
+            "RESC_CHILDREN",
+            "RESC_CONTEXT",
+            "RESC_PARENT",
+            "RESC_PARENT_CONTEXT"};
+
+        static const std::vector labels{
+            "resc_id",
+            "resc_name",
+            "zone_name",
+            "resc_type_name",
+            "resc_net",
+            "resc_def_path",
+            "free_space",
+            "free_space_ts",
+            "resc_info",
+            "r_comment",
+            "resc_status",
+            "create_ts",
+            "modify_ts",
+            "resc_children",
+            "resc_context",
+            "resc_parent",
+            "resc_parent_context"};
+
+        const auto query_string_template =
+            fmt::format(FMT_COMPILE("select {} where RESC_NAME = '{{}}'"), fmt::join(columns, ", "));
+
+        print_genquery_results(fmt::format(fmt::runtime(query_string_template), _resc), labels);
+    }
+    catch (const irods::exception& e) {
+        fmt::print(stderr, e.client_display_what());
+        return 1;
+    }
+    catch (...) {
+        return 1;
+    }
+
+    return 0;
+} // show_resource
+
+auto show_zone(const char* _zone = nullptr) -> int
+{
+    try {
+        if (!_zone || std::string_view{_zone}.empty()) {
+            auto q = irods::query(Conn, "select ZONE_NAME");
+            if (q.empty()) {
+                fmt::print("No rows found\n");
+                return 0;
+            }
+
+            for (auto&& result : q) {
+                fmt::print(fmt::runtime("{}\n"), result.at(0));
+            }
+
+            return 0;
+        }
+
+        constexpr std::array columns{
+            "ZONE_ID",
+            "ZONE_NAME",
+            "ZONE_TYPE",
+            "ZONE_CONNECTION",
+            "ZONE_COMMENT",
+            "ZONE_CREATE_TIME",
+            "ZONE_MODIFY_TIME"};
+
+        static const std::vector labels{
+            "zone_id", "zone_name", "zone_type_name", "zone_conn_string", "r_comment", "create_ts", "modify_ts"};
+
+        const auto query_string_template =
+            fmt::format(FMT_COMPILE("select {} where ZONE_NAME = '{{}}'"), fmt::join(columns, ", "));
+
+        print_genquery_results(fmt::format(fmt::runtime(query_string_template), _zone), labels);
+    }
+    catch (const irods::exception& e) {
+        fmt::print(stderr, e.client_display_what());
+        return 1;
+    }
+    catch (...) {
+        return 1;
+    }
+
+    return 0;
+} // show_zone
+
+auto show_user(const char* _user, const char* _zone = nullptr) -> int
+{
+    try {
+        if (!_user || std::string_view{_user}.empty()) {
+            constexpr const char* query_string = "select USER_NAME, USER_ZONE where USER_TYPE != 'rodsgroup'";
+
+            for (auto&& result : irods::query(Conn, query_string)) {
+                const auto& user = result.at(0);
+                const auto& zone = result.at(1);
+                fmt::print(fmt::runtime("{}#{}\n"), user, zone);
+            }
+
+            return 0;
+        }
+
+        constexpr std::array columns{
+            "USER_ID",
+            "USER_NAME",
+            "USER_TYPE",
+            "USER_ZONE",
+            "USER_INFO",
+            "USER_COMMENT",
+            "USER_CREATE_TIME",
+            "USER_MODIFY_TIME"};
+
+        static const std::vector labels{
+            "user_id", "user_name", "user_type_name", "zone_name", "user_info", "r_comment", "create_ts", "modify_ts"};
+
+        static const auto user_query =
+            fmt::format(FMT_COMPILE("select {} where USER_NAME = '{{}}'"), fmt::join(columns, ", "));
+
+        static const auto user_query_with_zone = fmt::format(
+            FMT_COMPILE("select {} where USER_NAME = '{{}}' and USER_ZONE = '{{}}'"), fmt::join(columns, ", "));
+
+        const auto query_string = _zone && !std::string_view{_zone}.empty()
+                                      ? fmt::format(fmt::runtime(user_query_with_zone), _user, _zone)
+                                      : fmt::format(fmt::runtime(user_query), _user);
+
+        print_genquery_results(query_string, labels);
+    }
+    catch (const irods::exception& e) {
+        fmt::print(stderr, e.client_display_what());
+        return 1;
+    }
+    catch (...) {
+        return 1;
+    }
+
+    return 0;
+} // show_user
+
+auto show_user_auth(const char* _user, const char* _zone = nullptr) -> int
+{
+    try {
+        std::string query_string;
+
+        if (!_user || std::string_view{_user}.empty()) {
+            query_string = "select USER_NAME, USER_DN";
+        }
+        else {
+            constexpr std::array columns{"USER_NAME", "USER_DN"};
+
+            static const auto user_query =
+                fmt::format(FMT_COMPILE("select {} where USER_NAME = '{{}}'"), fmt::join(columns, ", "));
+
+            static const auto user_query_with_zone = fmt::format(
+                FMT_COMPILE("select {} where USER_NAME = '{{}}' and USER_ZONE = '{{}}'"), fmt::join(columns, ", "));
+
+            query_string = _zone && !std::string_view{_zone}.empty()
+                               ? fmt::format(fmt::runtime(user_query_with_zone), _user, _zone)
+                               : fmt::format(fmt::runtime(user_query), _user);
+        }
+
+        auto q = irods::query(Conn, query_string);
+        if (q.empty()) {
+            fmt::print("No rows found\n");
+            return 0;
+        }
+
+        for (auto&& result : q) {
+            fmt::print("{} {}\n", result.at(0), result.at(1));
         }
     }
     catch (const irods::exception& e) {
-        rodsLogError(LOG_ERROR, e.code(), e.client_display_what());
+        fmt::print(stderr, e.client_display_what());
         return 1;
     }
-    catch (const std::exception& e) {
-        rodsLogError(LOG_ERROR, SYS_UNKNOWN_ERROR, e.what());
+    catch (...) {
         return 1;
     }
 
-    // =-=-=-=-=-=-=-
-    // JMC - backport 4742
-    genQueryInp_t  genQueryInp;
-    genQueryOut_t *genQueryOut = 0;
-    int selectIndexes[10];
-    int selectValues[10];
-    int conditionIndexes[10];
-    char *conditionValues[10];
-    char conditionString1[BIG_STR];
-    char conditionString2[BIG_STR];
-    int status;
-    memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
-    if ( groupName != NULL && *groupName != '\0' ) {
-        printf( "Members of group %s:\n", groupName );
-
-    }
-    selectIndexes[0] = COL_USER_NAME;
-    selectValues[0] = 0;
-    selectIndexes[1] = COL_USER_ZONE;
-    selectValues[1] = 0;
-    genQueryInp.selectInp.inx = selectIndexes;
-    genQueryInp.selectInp.value = selectValues;
-    if ( groupName != NULL && *groupName != '\0' ) {
-        genQueryInp.selectInp.len = 2;
-    }
-    else {
-        genQueryInp.selectInp.len = 1;
-    }
-
-    conditionIndexes[0] = COL_USER_TYPE;
-    sprintf( conditionString1, "='rodsgroup'" );
-    conditionValues[0] = conditionString1;
-
-    genQueryInp.sqlCondInp.inx = conditionIndexes;
-    genQueryInp.sqlCondInp.value = conditionValues;
-    genQueryInp.sqlCondInp.len = 1;
-
-    if ( groupName != NULL && *groupName != '\0' ) {
-
-        sprintf( conditionString1, "!='rodsgroup'" );
-
-        conditionIndexes[1] = COL_USER_GROUP_NAME;
-        sprintf( conditionString2, "='%s'", groupName );
-        conditionValues[1] = conditionString2;
-        genQueryInp.sqlCondInp.len = 2;
-    }
-
-    genQueryInp.maxRows = 50;
-    genQueryInp.continueInx = 0;
-    genQueryInp.condInput.len = 0;
-
-    status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-    if ( status == CAT_NO_ROWS_FOUND ) {
-        fprintf( stderr, "No rows found\n" );
-        return -1;
-    }
-    else {
-        printGenQueryResultsForGroup( genQueryOut );
-    }
-
-    while ( status == 0 && genQueryOut->continueInx > 0 ) {
-        genQueryInp.continueInx = genQueryOut->continueInx;
-        status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-        if ( status == 0 ) {
-            printGenQueryResultsForGroup( genQueryOut );
-        }
-    }
     return 0;
-    // =-=-=-=-=-=-=-
-}
+} // show_user_auth
 
-int
-showUser( char *user ) {
-    simpleQueryInp_t simpleQueryInp;
-
-    memset( &simpleQueryInp, 0, sizeof( simpleQueryInp_t ) );
-    simpleQueryInp.control = 0;
-    if ( *user != '\0' ) {
-        simpleQueryInp.form = 2;
-        simpleQueryInp.sql = "select * from R_USER_MAIN where user_name=?";
-        simpleQueryInp.arg1 = user;
-        simpleQueryInp.maxBufSize = 1024;
-    }
-    else {
-        simpleQueryInp.form = 1;
-        simpleQueryInp.sql = "select user_name||'#'||zone_name from R_USER_MAIN where user_type_name != 'rodsgroup'";
-        simpleQueryInp.maxBufSize = 1024;
-    }
-    return doSimpleQuery( simpleQueryInp );
-}
-
-int
-showUserAuth( char *user, char *zone ) {
-    simpleQueryInp_t simpleQueryInp;
-
-    memset( &simpleQueryInp, 0, sizeof( simpleQueryInp_t ) );
-    simpleQueryInp.control = 0;
-    simpleQueryInp.form = 1;
-    if ( *user != '\0' ) {
-        if ( *zone == '\0' ) {
-            simpleQueryInp.sql = "select user_name, user_auth_name from R_USER_AUTH, R_USER_MAIN where R_USER_AUTH.user_id = R_USER_MAIN.user_id and R_USER_MAIN.user_name=?";
-            simpleQueryInp.arg1 = user;
-        }
-        else {
-            simpleQueryInp.sql = "select user_name, user_auth_name from R_USER_AUTH, R_USER_MAIN where R_USER_AUTH.user_id = R_USER_MAIN.user_id and R_USER_MAIN.user_name=? and R_USER_MAIN.zone_name=?";
-            simpleQueryInp.arg1 = user;
-            simpleQueryInp.arg2 = zone;
-        }
-        simpleQueryInp.maxBufSize = 1024;
-    }
-    else {
-        simpleQueryInp.sql = "select user_name, user_auth_name from R_USER_AUTH, R_USER_MAIN where R_USER_AUTH.user_id = R_USER_MAIN.user_id";
-        simpleQueryInp.maxBufSize = 1024;
-    }
-    return doSimpleQuery( simpleQueryInp );
-}
-
-int
-showUserAuthName( char *authName )
-
+auto show_user_auth_name(const char* _auth_name) -> int
 {
-    simpleQueryInp_t simpleQueryInp;
-
-    memset( &simpleQueryInp, 0, sizeof( simpleQueryInp_t ) );
-    simpleQueryInp.control = 0;
-    simpleQueryInp.form = 1;
-    simpleQueryInp.sql = "select user_name, user_auth_name from R_USER_AUTH, R_USER_MAIN where R_USER_AUTH.user_id = R_USER_MAIN.user_id and R_USER_AUTH.user_auth_name=?";
-    simpleQueryInp.arg1 = authName;
-    simpleQueryInp.maxBufSize = 1024;
-    return doSimpleQuery( simpleQueryInp );
-}
-
-int
-showUserOfZone( char *zone, char *user ) {
-    simpleQueryInp_t simpleQueryInp;
-
-    memset( &simpleQueryInp, 0, sizeof( simpleQueryInp_t ) );
-    simpleQueryInp.control = 0;
-    if ( *user != '\0' ) {
-        simpleQueryInp.form = 2;
-        simpleQueryInp.sql = "select * from R_USER_MAIN where user_name=? and zone_name=?";
-        simpleQueryInp.arg1 = user;
-        simpleQueryInp.arg2 = zone;
-        simpleQueryInp.maxBufSize = 1024;
-    }
-    else {
-        simpleQueryInp.form = 1;
-        simpleQueryInp.sql = "select user_name from R_USER_MAIN where zone_name=? and user_type_name != 'rodsgroup'";
-        simpleQueryInp.arg1 = zone;
-        simpleQueryInp.maxBufSize = 1024;
-    }
-    return doSimpleQuery( simpleQueryInp );
-}
-
-int
-simpleQueryCheck() {
-    int status;
-    simpleQueryInp_t simpleQueryInp;
-    simpleQueryOut_t *simpleQueryOut;
-
-    memset( &simpleQueryInp, 0, sizeof( simpleQueryInp_t ) );
-
-    simpleQueryInp.control = 0;
-    simpleQueryInp.form = 2;
-    simpleQueryInp.sql = "select * from R_RESC_MAIN where resc_name=?";
-    simpleQueryInp.arg1 = "foo";
-    simpleQueryInp.maxBufSize = 1024;
-
-    status = rcSimpleQuery( Conn, &simpleQueryInp, &simpleQueryOut );
-
-    if ( status == CAT_NO_ROWS_FOUND ) {
-        status = 0;    /* success */
+    if (!_auth_name || std::string_view{_auth_name}.empty()) {
+        fmt::print("Provided user auth name is empty.\n");
+        return 1;
     }
 
-    return status;
-}
-
-int
-showGlobalQuotas( char *inputUserOrGroup ) {
-    simpleQueryInp_t simpleQueryInp;
-    char userName[NAME_LEN];
-    char zoneName[NAME_LEN];
-    int status;
-
-    if ( inputUserOrGroup == 0 || *inputUserOrGroup == '\0' ) {
-        printf( "\nGlobal (total usage) quotas (if any) for users/groups:\n" );
-    }
-    else {
-        printf( "\nGlobal (total usage) quotas (if any) for user/group %s:\n",
-                inputUserOrGroup );
-    }
-    memset( &simpleQueryInp, 0, sizeof( simpleQueryInp_t ) );
-    simpleQueryInp.control = 0;
-    if ( inputUserOrGroup == 0 || *inputUserOrGroup == '\0' ) {
-        simpleQueryInp.form = 2;
-        simpleQueryInp.sql =
-            "select user_name, R_USER_MAIN.zone_name, quota_limit, quota_over, R_QUOTA_MAIN.modify_ts from R_QUOTA_MAIN, R_USER_MAIN where R_USER_MAIN.user_id = R_QUOTA_MAIN.user_id and R_QUOTA_MAIN.resc_id = 0";
-        simpleQueryInp.maxBufSize = 1024;
-    }
-    else {
-        status = getLocalZone();
-        if ( status ) {
-            return status;
+    try {
+        auto q =
+            irods::query(Conn, fmt::format(fmt::runtime("select USER_NAME, USER_DN where USER_DN = '{}'"), _auth_name));
+        if (q.empty()) {
+            fmt::print("No rows found\n");
+            return 0;
         }
-        status = parseUserName( inputUserOrGroup, userName, zoneName );
-        if ( status ) {
-            return status;
-        }
-        if ( zoneName[0] == '\0' ) {
-            snprintf( zoneName, sizeof( zoneName ), "%s", localZone );
-        }
-        simpleQueryInp.form = 2;
-        simpleQueryInp.sql =
-            "select user_name, R_USER_MAIN.zone_name, quota_limit, quota_over, R_QUOTA_MAIN.modify_ts from R_QUOTA_MAIN, R_USER_MAIN where R_USER_MAIN.user_id = R_QUOTA_MAIN.user_id and R_QUOTA_MAIN.resc_id = 0 and user_name=? and R_USER_MAIN.zone_name=?";
-        simpleQueryInp.arg1 = userName;
-        simpleQueryInp.arg2 = zoneName;
-        simpleQueryInp.maxBufSize = 1024;
-    }
-    return doSimpleQuery( simpleQueryInp );
-}
 
-int
-showResourceQuotas( char *inputUserOrGroup ) {
-    simpleQueryInp_t simpleQueryInp;
-    char userName[NAME_LEN];
-    char zoneName[NAME_LEN];
-    int status;
+        for (auto&& result : q) {
+            fmt::print("{} {}\n", result.at(0), result.at(1));
+        }
+    }
+    catch (const irods::exception& e) {
+        fmt::print(stderr, e.client_display_what());
+        return 1;
+    }
+    catch (...) {
+        return 1;
+    }
 
-    if ( inputUserOrGroup == 0 || *inputUserOrGroup == '\0' ) {
-        printf( "Per resource quotas (if any) for users/groups:\n" );
-    }
-    else {
-        printf( "Per resource quotas (if any) for user/group %s:\n",
-                inputUserOrGroup );
-    }
-    memset( &simpleQueryInp, 0, sizeof( simpleQueryInp_t ) );
-    simpleQueryInp.control = 0;
-    if ( inputUserOrGroup == 0 || *inputUserOrGroup == '\0' ) {
-        simpleQueryInp.form = 2;
-        simpleQueryInp.sql =
-            "select user_name, R_USER_MAIN.zone_name, resc_name, quota_limit, quota_over, R_QUOTA_MAIN.modify_ts from R_QUOTA_MAIN, R_USER_MAIN, R_RESC_MAIN where R_USER_MAIN.user_id = R_QUOTA_MAIN.user_id and R_RESC_MAIN.resc_id = R_QUOTA_MAIN.resc_id";
-        simpleQueryInp.maxBufSize = 1024;
-    }
-    else {
-        status = getLocalZone();
-        if ( status ) {
-            return status;
+    return 0;
+} // show_user_auth_name
+
+auto show_global_quotas(const char* _user_or_group = nullptr) -> int
+{
+    try {
+        constexpr std::array columns{
+            "QUOTA_USER_NAME", "QUOTA_USER_ZONE", "QUOTA_LIMIT", "QUOTA_OVER", "QUOTA_MODIFY_TIME"};
+        static const std::vector labels{"user_name", "zone_name", "quota_limit", "quota_over", "modify_ts"};
+
+        const auto user_provided = _user_or_group && !std::string_view{_user_or_group}.empty();
+        if (!user_provided) {
+            fmt::print("\nGlobal (total usage) quotas (if any) for users/groups:\n");
+
+            const auto query_string =
+                fmt::format(FMT_COMPILE("select {} where QUOTA_RESC_ID = '0'"), fmt::join(columns, ", "));
+
+            print_genquery_results(query_string, labels);
+
+            return 0;
         }
-        status = parseUserName( inputUserOrGroup, userName, zoneName );
-        if ( status ) {
-            return status;
+
+        if (const int ec = set_local_zone_global(); ec) {
+            return ec;
         }
-        if ( zoneName[0] == '\0' ) {
-            snprintf( zoneName, sizeof( zoneName ), "%s", localZone );
+
+        char user_name[NAME_LEN]{};
+        char zone_name[NAME_LEN]{};
+        if (const int ec = parseUserName(_user_or_group, user_name, zone_name); ec) {
+            return ec;
         }
-        simpleQueryInp.form = 2;
-        simpleQueryInp.sql = "select user_name, R_USER_MAIN.zone_name, resc_name, quota_limit, quota_over, R_QUOTA_MAIN.modify_ts from R_QUOTA_MAIN, R_USER_MAIN, R_RESC_MAIN where R_USER_MAIN.user_id = R_QUOTA_MAIN.user_id and R_RESC_MAIN.resc_id = R_QUOTA_MAIN.resc_id and user_name=? and R_USER_MAIN.zone_name=?";
-        simpleQueryInp.arg1 = userName;
-        simpleQueryInp.arg2 = zoneName;
-        simpleQueryInp.maxBufSize = 1024;
+        if (std::string_view{zone_name}.empty()) {
+            std::strncpy(zone_name, localZone, sizeof(zone_name));
+        }
+
+        fmt::print("\nGlobal (total usage) quotas (if any) for user/group {}:\n", _user_or_group);
+
+        const auto query_string_template = fmt::format(
+            FMT_COMPILE(
+                "select {} where QUOTA_USER_NAME = '{{}}' and QUOTA_USER_ZONE = '{{}}' and QUOTA_RESC_ID = '0'"),
+            fmt::join(columns, ", "));
+
+        print_genquery_results(fmt::format(fmt::runtime(query_string_template), user_name, zone_name), labels);
     }
-    return doSimpleQuery( simpleQueryInp );
-}
+    catch (const irods::exception& e) {
+        fmt::print(stderr, e.client_display_what());
+        return 1;
+    }
+    catch (...) {
+        return 1;
+    }
+
+    return 0;
+} // show_global_quotas
+
+auto show_resource_quotas(const char* _user_or_group = nullptr) -> int
+{
+    try {
+        constexpr std::array columns{
+            "QUOTA_USER_NAME", "QUOTA_USER_ZONE", "QUOTA_RESC_NAME", "QUOTA_LIMIT", "QUOTA_OVER", "QUOTA_MODIFY_TIME"};
+        static const std::vector labels{
+            "user_name", "zone_name", "resc_name", "quota_limit", "quota_over", "modify_ts"};
+
+        const auto user_provided = _user_or_group && !std::string_view{_user_or_group}.empty();
+        if (!user_provided) {
+            fmt::print("Per resource quotas (if any) for users/groups:\n");
+
+            const auto query_string =
+                fmt::format(FMT_COMPILE("select {} where QUOTA_RESC_ID != '0'"), fmt::join(columns, ", "));
+
+            print_genquery_results(query_string, labels);
+
+            return 0;
+        }
+
+        if (const int ec = set_local_zone_global(); ec) {
+            return ec;
+        }
+
+        char user_name[NAME_LEN]{};
+        char zone_name[NAME_LEN]{};
+        if (const int ec = parseUserName(_user_or_group, user_name, zone_name); ec) {
+            return ec;
+        }
+        if (std::string_view{zone_name}.empty()) {
+            std::strncpy(zone_name, localZone, sizeof(zone_name));
+        }
+
+        fmt::print("Per resource quotas (if any) for user/group {}:\n", _user_or_group);
+
+        const auto query_string_template = fmt::format(
+            FMT_COMPILE(
+                "select {} where QUOTA_USER_NAME = '{{}}' and QUOTA_USER_ZONE = '{{}}' and QUOTA_RESC_NAME != '0'"),
+            fmt::join(columns, ", "));
+
+        print_genquery_results(fmt::format(fmt::runtime(query_string_template), user_name, zone_name), labels);
+    }
+    catch (const irods::exception& e) {
+        fmt::print(stderr, e.client_display_what());
+        return 1;
+    }
+    catch (...) {
+        return 1;
+    }
+
+    return 0;
+} // show_resource_quotas
 
 int
 generalAdmin( int userOption, char *arg0, char *arg1, char *arg2, char *arg3,
@@ -1094,21 +1092,15 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
     if ( strcmp( cmdToken[0], "lu" ) == 0 ) {
         char userName[NAME_LEN] = "";
         char zoneName[NAME_LEN] = "";
-        int status = parseUserName( cmdToken[1], userName, zoneName );
-        if ( status < 0 ) {
-            return status;
+        if (int ec = parseUserName(cmdToken[1], userName, zoneName); ec < 0) {
+            return ec;
         }
 
-        if ( zoneName[0] != '\0' ) {
-            showUserOfZone( zoneName, userName );
-        }
-        else {
-            showUser( cmdToken[1] );
-        }
+        show_user(userName, zoneName);
         return 0;
     }
     if ( strcmp( cmdToken[0], "luz" ) == 0 ) {
-        showUserOfZone( cmdToken[1], cmdToken[2] );
+        show_user(cmdToken[2], cmdToken[1]);
         return 0;
     }
     if ( strcmp( cmdToken[0], "lt" ) == 0 ) {
@@ -1116,12 +1108,12 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
             generalAdmin( 0, "lt", "resc_type", "", "", "", "", "", "", "", "" );
         }
         else {
-            showToken( cmdToken[1], cmdToken[2] );
+            show_token(cmdToken[1], cmdToken[2]);
         }
         return 0;
     }
     if ( strcmp( cmdToken[0], "lr" ) == 0 ) {
-        showResc( cmdToken[1] );
+        show_resource(cmdToken[1]);
         return 0;
     }
     if ( strcmp( cmdToken[0], "ls" ) == 0 ) {
@@ -1129,11 +1121,11 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         return 0;
     }
     if ( strcmp( cmdToken[0], "lz" ) == 0 ) {
-        showZone( cmdToken[1] );
+        show_zone(cmdToken[1]);
         return 0;
     }
     if ( strcmp( cmdToken[0], "lg" ) == 0 ) {
-        showGroup( cmdToken[1] );
+        show_group(cmdToken[1]);
         return 0;
     }
     if ( strcmp( cmdToken[0], "lgd" ) == 0 ) {
@@ -1141,7 +1133,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
             fprintf( stderr, "You must specify a group with the lgd command\n" );
         }
         else {
-            showUser( cmdToken[1] );
+            show_user(cmdToken[1]);
         }
         return 0;
     }
@@ -1238,15 +1230,15 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         }
 
         if ( zoneName[0] != '\0' ) {
-            showUserAuth( userName, zoneName );
+            show_user_auth(userName, zoneName);
         }
         else {
-            showUserAuth( cmdToken[1], "" );
+            show_user_auth(cmdToken[1]);
         }
         return 0;
     }
     if ( strcmp( cmdToken[0], "luan" ) == 0 ) {
-        showUserAuthName( cmdToken[1] );
+        show_user_auth_name(cmdToken[1]);
         return 0;
     }
     if ( strcmp( cmdToken[0], "cu" ) == 0 ) {
@@ -1291,8 +1283,8 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         return 0;
     }
     if ( strcmp( cmdToken[0], "lq" ) == 0 ) {
-        showResourceQuotas( cmdToken[1] );
-        showGlobalQuotas( cmdToken[1] );
+        show_resource_quotas(cmdToken[1]);
+        show_global_quotas(cmdToken[1]);
         return 0;
     }
     if ( strcmp( cmdToken[0], "mkdir" ) == 0 ) {
@@ -1811,9 +1803,34 @@ main( int argc, char **argv ) {
 
     status = clientLogin( Conn );
     if ( status != 0 ) {
-        if ( !debug ) {
-            return 3;
+        return 3;
+    }
+
+    // If the user is not a rodsadmin, they should not be allowed to execute admin commands.
+    try {
+        namespace adm = irods::experimental::administration;
+
+        const auto user_type =
+            adm::client::type(*Conn, adm::user{Conn->clientUser.userName, Conn->clientUser.rodsZone});
+
+        if (!user_type) {
+            rodsLogError(
+                LOG_ERROR, CAT_INVALID_USER_TYPE, "Could not determine if user has permission to view information.");
+            return 5;
         }
+
+        if (*user_type != adm::user_type::rodsadmin) {
+            rodsLogError(LOG_ERROR, CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "Operation requires rodsadmin level privileges.");
+            return 6;
+        }
+    }
+    catch (const irods::exception& e) {
+        rodsLogError(LOG_ERROR, e.code(), e.client_display_what());
+        return 7;
+    }
+    catch (const std::exception& e) {
+        rodsLogError(LOG_ERROR, SYS_UNKNOWN_ERROR, e.what());
+        return 8;
     }
 
     bool keepGoing = argc == 1;
