@@ -5,77 +5,79 @@
 #include <fmt/format.h>
 #include <fmt/chrono.h>
 
-#include <cstring>
 #include <map>
 #include <string>
 #include <string_view>
+#include <array>
 
 struct input
 {
-    std::string_view current_time;
-    std::string_view frequency;
+    std::string current_time;
+    std::string frequency;
 };
 
 struct output
 {
     int expected_action_code;
-    std::string_view expected_next_time;
-    std::string_view expected_frequency;
+    std::string expected_next_time;
+    std::string expected_frequency;
 };
 
 auto test_execution_frequency_handler(const input& _input, const output& _output)
 {
-    char current_time[TIME_LEN]{};
-    std::strcpy(current_time, _input.current_time.data());
+    std::array<char, TIME_LEN> current_time{};
+    std::copy(_input.current_time.cbegin(), _input.current_time.cend(), current_time.begin());
 
-    char frequency[128]{};
-    std::strcpy(frequency, _input.frequency.data());
+    constexpr int frequency_length{128};
+    std::array<char, frequency_length> frequency{};
+    std::copy(_input.frequency.cbegin(), _input.frequency.cend(), frequency.begin());
 
-    char next_time[TIME_LEN]{};
+    std::array<char, TIME_LEN> next_time{};
 
-    CHECK(getNextRepeatTime(current_time, frequency, next_time) == _output.expected_action_code);
-    CHECK(next_time == _output.expected_next_time);
-    CHECK(frequency == _output.expected_frequency);
+    CHECK(getNextRepeatTime(current_time.data(), frequency.data(), next_time.data()) == _output.expected_action_code);
+    CHECK(next_time.data() == _output.expected_next_time);
+    CHECK(frequency.data() == _output.expected_frequency);
 }
 
-template <typename Timepoint>
-auto make_repeat_until_time_string(int _nnnn,
-                                   const std::string_view _U,
-                                   const Timepoint _tp) -> std::string
+auto make_simple_directive_string(
+    int _delay_duration,
+    const std::string_view _delay_time_unit,
+    const std::string_view _directive) -> std::string
 {
-    return fmt::format("{}{} REPEAT UNTIL {}", _nnnn, _U, std::chrono::system_clock::to_time_t(_tp));
+    return fmt::format("{}{} {}", _delay_duration, _delay_time_unit, _directive);
 }
 
-template <typename Timepoint>
-auto make_repeat_until_success_or_until_time_string(int _nnnn,
-                                                    const std::string_view _U,
-                                                    const Timepoint _tp) -> std::string
+auto make_time_directive_string(
+    int _delay_duration,
+    const std::string_view _delay_time_unit,
+    const std::string_view _directive,
+    const rodsLong_t _time) -> std::string
 {
-    return fmt::format("{}{} REPEAT UNTIL SUCCESS OR UNTIL {}", _nnnn, _U, std::chrono::system_clock::to_time_t(_tp));
+    const auto simple_directive_string{make_simple_directive_string(_delay_duration, _delay_time_unit, _directive)};
+    return fmt::format("{} {}", simple_directive_string, _time);
 }
 
-#if 0
-//
-// Disabled due to issues with "DOUBLE" delay hints.
-// See https://github.com/irods/irods/issues/5964 for more details.
-//
-
-template <typename Timepoint>
-auto make_double_until_time_string(int _nnnn,
-                                   const std::string_view _U,
-                                   const Timepoint _tp) -> std::string
+auto make_counter_directive_string(
+    int _delay_duration,
+    const std::string_view _delay_time_unit,
+    const std::string_view _directive,
+    int _counter) -> std::string
 {
-    return fmt::format("{}{} DOUBLE UNTIL {}", _nnnn, _U, std::chrono::system_clock::to_time_t(_tp));
+    const auto base_directive_string{
+        make_time_directive_string(_delay_duration, _delay_time_unit, _directive, _counter)};
+    return fmt::format("{} TIMES", base_directive_string);
 }
 
-template <typename Timepoint>
-auto make_double_until_success_or_until_time_string(int _nnnn,
-                                                    const std::string_view _U,
-                                                    const Timepoint _tp) -> std::string
+auto make_modified_counter_directive_string(
+    int _delay_duration,
+    const std::string_view _delay_time_unit,
+    const std::string_view _directive,
+    int _updated_counter) -> std::string
 {
-    return fmt::format("{}{} DOUBLE UNTIL SUCCESS OR UNTIL {}", _nnnn, _U, std::chrono::system_clock::to_time_t(_tp));
+    const auto counter_directive_string{
+        make_counter_directive_string(_delay_duration, _delay_time_unit, _directive, _updated_counter)};
+    return fmt::format("{}. ORIGINAL TIMES={}", counter_directive_string, _updated_counter + 1);
 }
-#endif
 
 TEST_CASE("#5503: getNextRepeatTime parses frequency correctly")
 {
@@ -88,20 +90,9 @@ TEST_CASE("#5503: getNextRepeatTime parses frequency correctly")
     using namespace std::chrono_literals;
 
     const auto now = std::chrono::system_clock::now();
+    const auto one_hour_in_future = (now + 1h).time_since_epoch().count();
 
-    const auto repeat_until_time_string = make_repeat_until_time_string(10, "s", now + 1h);
-    const auto repeat_until_success_or_until_time_string = make_repeat_until_success_or_until_time_string(10, "s", now + 1h);
-
-#if 0
-    //
-    // Disabled due to issues with "DOUBLE" delay hints.
-    // See https://github.com/irods/irods/issues/5964 for more details.
-    //
-
-    auto double_until_time_string = make_double_until_time_string(10, "s", now + 1h);
-    auto double_until_success_or_until_time_string = make_double_until_success_or_until_time_string(10, "s", now + 1h);
-#endif
-
+    // clang-format off
     const std::map<std::string_view, test_case> map{
         {"empty directive", {
             // Input
@@ -120,179 +111,173 @@ TEST_CASE("#5503: getNextRepeatTime parses frequency correctly")
             // Input
            {
                 .current_time = "0",
-                .frequency    = "10s REPEAT FOR EVER"
+                .frequency    = make_simple_directive_string(10, "s", "REPEAT FOR EVER")
            },
             // Output
            {
                 .expected_action_code = 0,
                 .expected_next_time   = "10",
-                .expected_frequency   = "10s REPEAT FOR EVER"
+                .expected_frequency   = make_simple_directive_string(10, "s", "REPEAT FOR EVER")
            }
         }},
         {"REPEAT UNTIL SUCCESS", {
             // Input
            {
                 .current_time = "0",
-                .frequency    = "10s REPEAT UNTIL SUCCESS"
+                .frequency    = make_simple_directive_string(10, "s", "REPEAT UNTIL SUCCESS")
            },
             // Output
            {
                 .expected_action_code = 1,
                 .expected_next_time   = "10",
-                .expected_frequency   = "10s REPEAT UNTIL SUCCESS"
+                .expected_frequency   = make_simple_directive_string(10, "s", "REPEAT UNTIL SUCCESS")
            }
         }},
         {"REPEAT <N> TIMES", {
             // Input
            {
                 .current_time = "0",
-                .frequency    = "10s REPEAT 5 TIMES"
+                .frequency    = make_counter_directive_string(10, "s", "REPEAT", 5)
            },
             // Output
            {
                 .expected_action_code = 3,
                 .expected_next_time   = "10",
-                .expected_frequency   = "10s REPEAT 4 TIMES. ORIGINAL TIMES=5"
+                .expected_frequency   = make_modified_counter_directive_string(10, "s", "REPEAT", 4)
            }
         }},
         {"REPEAT UNTIL <TIME>", {
             // Input
            {
                 .current_time = "0",
-                .frequency    = repeat_until_time_string
+                .frequency    = make_time_directive_string(10, "s", "REPEAT UNTIL", one_hour_in_future)
            },
             // Output
            {
                 .expected_action_code = 0,
                 .expected_next_time   = "10",
-                .expected_frequency   = repeat_until_time_string
+                .expected_frequency   = make_time_directive_string(10, "s", "REPEAT UNTIL", one_hour_in_future)
            }
         }},
         {"REPEAT UNTIL SUCCESS OR UNTIL <TIME>", {
             // Input
            {
                 .current_time = "0",
-                .frequency    = repeat_until_success_or_until_time_string
+                .frequency    = make_time_directive_string(10, "s", "REPEAT UNTIL SUCCESS OR UNTIL", one_hour_in_future)
            },
             // Output
            {
                 .expected_action_code = 1,
                 .expected_next_time   = "10",
-                .expected_frequency   = repeat_until_success_or_until_time_string
+                .expected_frequency   = make_time_directive_string(10, "s", "REPEAT UNTIL SUCCESS OR UNTIL", one_hour_in_future)
            }
         }},
         {"REPEAT UNTIL SUCCESS OR <N> TIMES", {
             // Input
            {
                 .current_time = "0",
-                .frequency    = "10s REPEAT UNTIL SUCCESS OR 5 TIMES"
+                .frequency    = make_counter_directive_string(10, "s", "REPEAT UNTIL SUCCESS OR", 5)
            },
             // Output
            {
                 .expected_action_code = 4,
                 .expected_next_time   = "10",
-                .expected_frequency   = "10s REPEAT UNTIL SUCCESS OR 4 TIMES. ORIGINAL TIMES=5"
+                .expected_frequency   = make_modified_counter_directive_string(10, "s", "REPEAT UNTIL SUCCESS OR", 4)
            }
         }},
-#if 0
-        //
-        // Disabled due to issues with "DOUBLE" delay hints.
-        // See https://github.com/irods/irods/issues/5964 for more details.
-        //
-
         {"DOUBLE FOR EVER", {
             // Input
            {
                 .current_time = "0",
-                .frequency    = "10s DOUBLE FOR EVER"
+                .frequency    = make_simple_directive_string(10, "s", "DOUBLE FOR EVER")
            },
             // Output
            {
                 .expected_action_code = 3,
                 .expected_next_time   = "10",
-                .expected_frequency   = "20s DOUBLE FOR EVER"
+                .expected_frequency   = make_simple_directive_string(20, "s", "DOUBLE FOR EVER")
            }
         }},
         {"DOUBLE UNTIL SUCCESS", {
             // Input
            {
                 .current_time = "0",
-                .frequency    = "10s DOUBLE UNTIL SUCCESS"
+                .frequency    = make_simple_directive_string(10, "s", "DOUBLE UNTIL SUCCESS")
            },
             // Output
            {
                 .expected_action_code = 4,
                 .expected_next_time   = "10",
-                .expected_frequency   = "20s DOUBLE UNTIL SUCCESS"
+                .expected_frequency   = make_simple_directive_string(20, "s", "DOUBLE UNTIL SUCCESS")
            }
         }},
         {"DOUBLE <N> TIMES", {
             // Input
            {
                 .current_time = "0",
-                .frequency    = "10s DOUBLE 5 TIMES"
+                .frequency    = make_counter_directive_string(10, "s", "DOUBLE", 5)
            },
             // Output
            {
                 .expected_action_code = 3,
                 .expected_next_time   = "10",
-                .expected_frequency   = "20s DOUBLE 4 TIMES. ORIGINAL TIMES=5"
+                .expected_frequency   = make_modified_counter_directive_string(20, "s", "DOUBLE", 4)
            }
         }},
         {"DOUBLE UNTIL <TIME>", {
             // Input
            {
                 .current_time = "0",
-                .frequency    = double_until_time_string
+                .frequency    = make_time_directive_string(10, "s", "DOUBLE UNTIL", one_hour_in_future)
            },
             // Output
            {
                 .expected_action_code = 3,
                 .expected_next_time   = "10",
-                .expected_frequency   = double_until_time_string.replace(0, 2, "20")
+                .expected_frequency   = make_time_directive_string(20, "s", "DOUBLE UNTIL", one_hour_in_future)
            }
         }},
         {"DOUBLE UNTIL SUCCESS OR UNTIL <TIME>", {
             // Input
            {
                 .current_time = "0",
-                .frequency    = double_until_success_or_until_time_string
+                .frequency    = make_time_directive_string(10, "s", "DOUBLE UNTIL SUCCESS OR UNTIL", one_hour_in_future)
            },
             // Output
            {
                 .expected_action_code = 4,
                 .expected_next_time   = "10",
-                .expected_frequency   = double_until_success_or_until_time_string.replace(0, 2, "20")
+                .expected_frequency   = make_time_directive_string(20, "s", "DOUBLE UNTIL SUCCESS OR UNTIL", one_hour_in_future)
            }
         }},
         {"DOUBLE UNTIL SUCCESS OR <N> TIMES", {
             // Input
            {
                 .current_time = "0",
-                .frequency    = double_until_success_or_n_times
+                .frequency    = make_counter_directive_string(10, "s", "DOUBLE UNTIL SUCCESS OR", 20)
            },
             // Output
            {
-                .expected_action_code = 0,
-                .expected_next_time   = "20",
-                .expected_frequency   = double_until_success_or_n_times
+                .expected_action_code = 4,
+                .expected_next_time   = "10",
+                .expected_frequency   = make_modified_counter_directive_string(20, "s", "DOUBLE UNTIL SUCCESS OR", 19)
            }
         }},
-        {"DOUBLE UNTIL SUCCESS OR UPTO <TIME>", {
+        {"DOUBLE UNTIL SUCCESS UPTO <TIME>", {
             // Input
            {
                 .current_time = "0",
-                .frequency    = double_until_success_or_upto_time
+                .frequency    = make_time_directive_string(10, "s", "DOUBLE UNTIL SUCCESS UPTO", one_hour_in_future)
            },
             // Output
            {
-                .expected_action_code = 0,
-                .expected_next_time   = "20",
-                .expected_frequency   = double_until_success_or_upto_time
+                .expected_action_code = 4,
+                .expected_next_time   = "10",
+                .expected_frequency   = make_time_directive_string(20, "s", "DOUBLE UNTIL SUCCESS UPTO", one_hour_in_future)
            }
         }}
-#endif
     };
+    // clang-format on
 
     for (auto&& [test_case_name, in_out] : map) {
         DYNAMIC_SECTION("test case: " << test_case_name)
