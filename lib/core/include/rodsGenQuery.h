@@ -321,6 +321,8 @@ primary ordering column.
 #define COL_TOKEN_VALUE2 1104
 #define COL_TOKEN_VALUE3 1105
 #define COL_TOKEN_COMMENT 1106
+#define COL_TOKEN_CREATE_TIME 1107
+#define COL_TOKEN_MODIFY_TIME 1108
 
 /* R_OBJT_AUDIT */
 #define COL_AUDIT_OBJ_ID      1200

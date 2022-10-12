@@ -201,6 +201,8 @@ columnName_t columnNames[] = {
     { COL_TOKEN_VALUE2,    "TOKEN_VALUE2", },
     { COL_TOKEN_VALUE3,    "TOKEN_VALUE3", },
     { COL_TOKEN_COMMENT,   "TOKEN_COMMENT", },
+    { COL_TOKEN_CREATE_TIME, "TOKEN_CREATE_TIME", },
+    { COL_TOKEN_MODIFY_TIME, "TOKEN_MODIFY_TIME", },
 
     { COL_AUDIT_OBJ_ID,      "AUDIT_OBJ_ID", },
     { COL_AUDIT_USER_ID,     "AUDIT_USER_ID", },
