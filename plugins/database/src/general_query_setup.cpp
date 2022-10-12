@@ -378,6 +378,8 @@ icatGeneralQuerySetup() {
     sColumn( COL_TOKEN_VALUE2, "R_TOKN_MAIN", "token_value2" );
     sColumn( COL_TOKEN_VALUE3, "R_TOKN_MAIN", "token_value3" );
     sColumn( COL_TOKEN_COMMENT, "R_TOKN_MAIN", "r_comment" );
+    sColumn( COL_TOKEN_CREATE_TIME, "R_TOKN_MAIN", "create_ts" );
+    sColumn( COL_TOKEN_MODIFY_TIME, "R_TOKN_MAIN", "modify_ts" );
 
     sColumn( COL_AUDIT_OBJ_ID,      "R_OBJT_AUDIT", "object_id" );
     sColumn( COL_AUDIT_USER_ID,     "R_OBJT_AUDIT", "user_id" );
