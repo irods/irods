@@ -85,7 +85,7 @@ main( int argc, char **argv ) {
     }
 
     if ( rodsPath.objType != COLL_OBJ_T || rodsPath.objState != EXIST_ST ) {
-        printf( "No such directory (collection): %s\n", rodsPath.outPath );
+        printf( "No such collection: %s\n", rodsPath.outPath );
         exit( 3 );
     }
 
