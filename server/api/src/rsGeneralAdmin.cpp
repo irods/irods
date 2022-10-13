@@ -434,7 +434,6 @@ int _addChildToResource(generalAdminInp_t* _generalAdminInp, rsComm_t* _rsComm)
 
     if ((result = chlAddChildResc(_rsComm, resc_input)) == 0) {
         try {
-            log_api::info("ADDING CHILD [{}] TO RESOURCE [{}] ::: rescChildren = [{}]", _generalAdminInp->arg3, _generalAdminInp->arg2, rescChildren);
             resc_mgr.add_child_to_resource(_generalAdminInp->arg2, _generalAdminInp->arg3);
         }
         catch (const irods::exception& e) {
@@ -483,7 +482,6 @@ int _removeChildFromResource(generalAdminInp_t* _generalAdminInp, rsComm_t* _rsC
 
     if ((result = chlDelChildResc(_rsComm, resc_input)) == 0) {
         try {
-            log_api::info("REMOVING CHILD [{}] FROM RESOURCE [{}]", _generalAdminInp->arg3, _generalAdminInp->arg2);
             resc_mgr.remove_child_from_resource(resc_input.at(irods::RESOURCE_NAME),
                                                 resc_input.at(irods::RESOURCE_CHILDREN));
         }
@@ -609,7 +607,6 @@ int _addResource(generalAdminInp_t* _generalAdminInp, ruleExecInfo_t& _rei2, rsC
     }
     // register resource with the metadata catalog, roll back on an error
     else if ((result = chlRegResc(_rsComm, resc_input)) == 0) {
-        log_api::info("ADDING NEW RESOURCE [{}]", resc_input.at(irods::RESOURCE_NAME));
         if (const auto err = resc_mgr.init_from_catalog(*_rsComm, resc_input.at(irods::RESOURCE_NAME)); !err.ok()) {
             log_api::error(err.result());
         }
@@ -677,9 +674,7 @@ int _remove_resource(RsComm& _comm, generalAdminInp_t& _input, ruleExecInfo_t& _
     const auto ec = chlDelResc(&_comm, resc_name.data());
 
     if (ec == 0) {
-        log_api::info(">>>>>>>>>>>>>>>>> SHUTTING DOWN RESOURCE [{}]", resc_name);
         resc_mgr.shut_down_resource(resc_name);
-        log_api::info(">>>>>>>>>>>>>>>>> ERASING RESOURCE [{}] FROM RESC_MGR", resc_name);
         resc_mgr.erase_resource(resc_name);
 
         auto i = applyRuleArg("acPostProcForDeleteResource", args, argc, &_rei2, NO_SAVE_REI);
