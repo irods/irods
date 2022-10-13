@@ -26,6 +26,7 @@
 #include "irods/icatHighLevelRoutines.hpp"
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_exception.hpp"
+#include "irods/irods_file_object.hpp"
 #include "irods/irods_get_full_path_for_config_file.hpp"
 #include "irods/irods_get_l1desc.hpp"
 #include "irods/irods_logger.hpp"

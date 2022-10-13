@@ -69,33 +69,24 @@ TEST_CASE("rc_data_obj_open")
     try {
         load_client_api_plugins();
 
-        irods::experimental::client_connection setup_conn;
-        RcComm& setup_comm = static_cast<RcComm&>(setup_conn);
+        irods::experimental::client_connection conn;
+        RcComm& comm = static_cast<RcComm&>(conn);
 
         rodsEnv env;
         _getRodsEnv(env);
 
         const auto sandbox = fs::path{env.rodsHome} / "test_rc_data_obj";
-        if (!fs::client::exists(setup_comm, sandbox)) {
-            REQUIRE(fs::client::create_collection(setup_comm, sandbox));
+        if (!fs::client::exists(comm, sandbox)) {
+            REQUIRE(fs::client::create_collection(comm, sandbox));
         }
 
         const std::string test_resc = "test_resc";
         const std::string vault_name = "test_resc_vault";
 
-        // Create a new resource
-        {
-            irods::experimental::client_connection conn;
-            RcComm& comm = static_cast<RcComm&>(conn);
-            unit_test_utils::add_ufs_resource(comm, test_resc, vault_name);
-        }
+        unit_test_utils::add_ufs_resource(comm, test_resc, vault_name);
 
-        irods::at_scope_exit remove_sandbox{[&sandbox, &test_resc] {
-            irods::experimental::client_connection conn;
-            RcComm& comm = static_cast<RcComm&>(conn);
-
+        irods::at_scope_exit remove_sandbox{[&comm, &sandbox, &test_resc] {
             REQUIRE(fs::client::remove_all(comm, sandbox, fs::remove_options::no_trash));
-
             adm::client::remove_resource(comm, test_resc);
         }};
 
@@ -282,9 +273,6 @@ TEST_CASE("rc_data_obj_open")
 
         SECTION("open_for_read_and_close")
         {
-            irods::experimental::client_connection conn;
-            RcComm& comm = static_cast<RcComm&>(conn);
-
             unit_test_utils::create_empty_replica(comm, target_object);
 
             std::string original_mtime_for_replica_0;
@@ -315,9 +303,6 @@ TEST_CASE("rc_data_obj_open")
 
         SECTION("open_for_write_and_close")
         {
-            irods::experimental::client_connection conn;
-            RcComm& comm = static_cast<RcComm&>(conn);
-
             unit_test_utils::create_empty_replica(comm, target_object);
 
             std::string original_mtime_for_replica_0;
@@ -348,9 +333,6 @@ TEST_CASE("rc_data_obj_open")
 
         SECTION("open_for_read_no_close")
         {
-            irods::experimental::client_connection conn;
-            RcComm& comm = static_cast<RcComm&>(conn);
-
             unit_test_utils::create_empty_replica(comm, target_object);
 
             std::string original_mtime_for_replica_0;
@@ -384,9 +366,6 @@ TEST_CASE("rc_data_obj_open")
 
         SECTION("open_for_write_no_close")
         {
-            irods::experimental::client_connection conn;
-            RcComm& comm = static_cast<RcComm&>(conn);
-
             unit_test_utils::create_empty_replica(comm, target_object);
 
             std::string original_mtime_for_replica_0;
@@ -591,9 +570,6 @@ TEST_CASE("rc_data_obj_open")
 
         SECTION("create_empty_replica_on_non_default_resource_and_write_in_separate_open__issue_5548")
         {
-            irods::experimental::client_connection conn;
-            RcComm& comm = static_cast<RcComm&>(conn);
-
             // Create the initial replica on non-default resource as an empty replica.
             unit_test_utils::create_empty_replica(comm, target_object, test_resc);
             REQUIRE(GOOD_REPLICA == replica::replica_status(comm, target_object, 0));
@@ -648,9 +624,6 @@ TEST_CASE("rc_data_obj_open")
 
         SECTION("create_empty_replica_on_non_default_resource_and_create_with_no_keyword__issue_5548")
         {
-            irods::experimental::client_connection conn;
-            RcComm& comm = static_cast<RcComm&>(conn);
-
             // Create the initial replica on non-default resource as an empty replica.
             unit_test_utils::create_empty_replica(comm, target_object, test_resc);
             REQUIRE(GOOD_REPLICA == replica::replica_status(comm, target_object, 0));
@@ -712,10 +685,6 @@ TEST_CASE("rc_data_obj_open")
 
         SECTION("open_same_replica_on_non_default_resource_twice_with_other_replica_on_default_resource__issue_5848")
         {
-            // Create a new connection so that newly created resources are known.
-            irods::experimental::client_connection conn;
-            RcComm& comm = static_cast<RcComm&>(conn);
-
             // Create two replicas - one on the newly created resource and one on the default resource.
             unit_test_utils::create_empty_replica(comm, target_object, test_resc);
             unit_test_utils::replicate_data_object(comm, path_str, DEFAULT_RESOURCE_HIERARCHY);
@@ -1306,3 +1275,4 @@ TEST_CASE("#6600: server no longer changes the openmode from O_WRONLY to O_RDWR"
     close_inp.l1descInx = fd;
     REQUIRE(rcDataObjClose(conn_ptr, &close_inp) >= 0);
 }
+

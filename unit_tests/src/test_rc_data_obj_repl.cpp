@@ -44,15 +44,10 @@ TEST_CASE("verify_checksum")
         const std::string test_resc = "test_resc";
         const std::string vault_name = "test_resc_vault";
 
-        // Create a new resource
-        {
-            irods::experimental::client_connection conn;
-            RcComm& comm = static_cast<RcComm&>(conn);
-            unit_test_utils::add_ufs_resource(comm, test_resc, vault_name);
-        }
-
         irods::experimental::client_connection conn;
         RcComm& comm = static_cast<RcComm&>(conn);
+
+        unit_test_utils::add_ufs_resource(comm, test_resc, vault_name);
 
         rodsEnv env;
         _getRodsEnv(env);

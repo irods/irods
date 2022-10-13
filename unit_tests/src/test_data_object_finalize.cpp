@@ -43,33 +43,25 @@ TEST_CASE("finalize", "[finalize]")
     const std::string resc_0 = "get_data_obj_info_resc_0";
     const std::string resc_1 = "get_data_obj_info_resc_1";
 
-    irods::at_scope_exit remove_resources{[&resc_0, &resc_1] {
-        // reset connection to ensure resource manager is current
-        irods::experimental::client_connection conn;
-        RcComm& comm = static_cast<RcComm&>(conn);
+    irods::experimental::client_connection conn;
+    RcComm& comm = static_cast<RcComm&>(conn);
 
+    irods::at_scope_exit remove_resources{[&comm, &resc_0, &resc_1] {
         adm::client::remove_resource(comm, resc_0);
         adm::client::remove_resource(comm, resc_1);
     }};
 
-    const auto mkresc = [](std::string_view _name)
+    const auto mkresc = [](RcComm& _comm, std::string_view _name)
     {
-        irods::experimental::client_connection conn;
-        RcComm& comm = static_cast<RcComm&>(conn);
-
-        if (adm::client::resource_exists(comm, _name)) {
-            REQUIRE_NOTHROW(adm::client::remove_resource(comm, _name));
+        if (adm::client::resource_exists(_comm, _name)) {
+            REQUIRE_NOTHROW(adm::client::remove_resource(_comm, _name));
         }
 
-        REQUIRE(unit_test_utils::add_ufs_resource(comm, _name, "vault_for_"s + _name.data()));
+        REQUIRE_NOTHROW(unit_test_utils::add_ufs_resource(_comm, _name, "vault_for_"s + _name.data()));
     };
 
-    mkresc(resc_0);
-    mkresc(resc_1);
-
-    // reset connection so resources exist
-    irods::experimental::client_connection conn;
-    RcComm& comm = static_cast<RcComm&>(conn);
+    mkresc(comm, resc_0);
+    mkresc(comm, resc_1);
 
     // create data object on one resource
     rodsEnv env;
@@ -81,10 +73,7 @@ TEST_CASE("finalize", "[finalize]")
         REQUIRE(fs::client::create_collection(comm, sandbox));
     }
 
-    irods::at_scope_exit remove_sandbox{[&sandbox] {
-        irods::experimental::client_connection conn;
-        RcComm& comm = static_cast<RcComm&>(conn);
-
+    irods::at_scope_exit remove_sandbox{[&comm, &sandbox] {
         REQUIRE(fs::client::remove_all(comm, sandbox, fs::remove_options::no_trash));
     }};
 

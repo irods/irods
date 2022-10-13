@@ -21,34 +21,26 @@ namespace io = irods::experimental::io;
 namespace replica = irods::experimental::replica;
 namespace data_object = irods::experimental::data_object;
 
-// IMPORTANT NOTE REGARDING THE CLIENT_CONNECTION OBJECTS
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Connection Pools do not work well with the resource administration library
-// because the resource manager within the agents do not see any changes to the
-// resource hierarchies. The only way around this is to spawn a new agent by
-// creating a new connection to the iRODS server.
-
 TEST_CASE("replica", "[replica]")
 {
     using namespace std::chrono_literals;
 
     load_client_api_plugins();
 
-    irods::experimental::client_connection setup_conn;
-    RcComm& setup_comm = static_cast<RcComm&>(setup_conn);
+    irods::experimental::client_connection conn;
+    RcComm& comm = static_cast<RcComm&>(conn);
 
     rodsEnv env;
     _getRodsEnv(env);
 
     const auto sandbox = fs::path{env.rodsHome} / "test_replica";
 
-    if (!fs::client::exists(setup_comm, sandbox)) {
-        REQUIRE(fs::client::create_collection(setup_comm, sandbox));
+    if (!fs::client::exists(comm, sandbox)) {
+        REQUIRE(fs::client::create_collection(comm, sandbox));
     }
 
-    irods::at_scope_exit remove_sandbox{[&sandbox] {
-        irods::experimental::client_connection conn;
-        REQUIRE(fs::client::remove_all(conn, sandbox, fs::remove_options::no_trash));
+    irods::at_scope_exit remove_sandbox{[&comm, &sandbox] {
+        REQUIRE(fs::client::remove_all(comm, sandbox, fs::remove_options::no_trash));
     }};
 
     const auto target_object = sandbox / "target_object";
@@ -60,7 +52,7 @@ TEST_CASE("replica", "[replica]")
     std::string_view updated_checksum = "sha2:9B8/piX/Eg3cp+9Fa/ZjcezqI8Ep9OTDI2cQHttRbPg=";
 
     {
-        io::client::default_transport tp{setup_comm};
+        io::client::default_transport tp{comm};
         io::odstream{tp, target_object} << object_content;
     }
 
@@ -68,21 +60,11 @@ TEST_CASE("replica", "[replica]")
 
     const std::string_view resc_name = "unit_test_ufs";
 
-    {
-        // create resource.
-        irods::experimental::client_connection conn;
-        REQUIRE(unit_test_utils::add_ufs_resource(conn, resc_name, "unit_test_vault"));
-    }
+    REQUIRE_NOTHROW(unit_test_utils::add_ufs_resource(conn, resc_name, "unit_test_vault"));
+    REQUIRE(unit_test_utils::replicate_data_object(conn, target_object.c_str(), resc_name));
 
-    {
-        // replicate replica.
-        irods::experimental::client_connection conn;
-        REQUIRE(unit_test_utils::replicate_data_object(conn, target_object.c_str(), resc_name));
-    }
-
-    irods::at_scope_exit clean_up{[&target_object, &resc_name] {
+    irods::at_scope_exit clean_up{[&conn, &target_object, &resc_name] {
         namespace ix = irods::experimental;
-        ix::client_connection conn;
         fs::client::remove(conn, target_object, fs::remove_options::no_trash);
         ix::administration::client::remove_resource(conn, resc_name);
     }};
@@ -92,9 +74,6 @@ TEST_CASE("replica", "[replica]")
 
     SECTION("perform library operations using replica number")
     {
-        irods::experimental::client_connection conn;
-        RcComm& comm = static_cast<RcComm&>(conn);
-
         // existence
         REQUIRE(replica::replica_exists(comm, target_object, second_replica));
 
@@ -153,9 +132,6 @@ TEST_CASE("replica", "[replica]")
 
     SECTION("perform library operations using resource name")
     {
-        irods::experimental::client_connection conn;
-        RcComm& comm = static_cast<RcComm&>(conn);
-
         // existence
         REQUIRE(replica::replica_exists(comm, target_object, resc_name));
 
@@ -214,9 +190,6 @@ TEST_CASE("replica", "[replica]")
 
     SECTION("size in storage")
     {
-        irods::experimental::client_connection conn;
-        RcComm& comm = static_cast<RcComm&>(conn);
-
         // get info from the catalog once
         auto result = replica::get_data_object_info(comm, target_object, resc_name).front();
 
@@ -238,9 +211,6 @@ TEST_CASE("replica", "[replica]")
 
     SECTION("data objects")
     {
-        irods::experimental::client_connection conn;
-        RcComm& comm = static_cast<RcComm&>(conn);
-
         rodsLong_t data_id;
 
         {
@@ -258,9 +228,6 @@ TEST_CASE("replica", "[replica]")
 
     SECTION("invalid inputs")
     {
-        irods::experimental::client_connection conn;
-        RcComm& comm = static_cast<RcComm&>(conn);
-
         const char* very_long_string = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                                        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                                        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"

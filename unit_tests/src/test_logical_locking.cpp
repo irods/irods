@@ -48,16 +48,13 @@ namespace
         return fs::path{env.rodsHome} / "test_logical_locking";
     } // get_sandbox_name
 
-    auto mkresc(const std::string_view _name) -> void
+    auto mkresc(RcComm& _comm, const std::string_view _name) -> void
     {
-        irods::experimental::client_connection conn;
-        RcComm& comm = static_cast<RcComm&>(conn);
-
-        if (adm::client::resource_exists(comm, _name)) {
-            REQUIRE_NOTHROW(adm::client::remove_resource(comm, _name));
+        if (adm::client::resource_exists(_comm, _name)) {
+            REQUIRE_NOTHROW(adm::client::remove_resource(_comm, _name));
         }
 
-        REQUIRE(unit_test_utils::add_ufs_resource(comm, _name, "vault_for_"s + _name.data()));
+        REQUIRE_NOTHROW(unit_test_utils::add_ufs_resource(_comm, _name, "vault_for_"s + _name.data()));
     } // mkresc
 } // anonymous namespace
 
@@ -65,12 +62,11 @@ TEST_CASE("open_and_close", "[write_lock]")
 {
     load_client_api_plugins();
 
-    // Make sure that the test resources created below are removed upon test completion
-    irods::at_scope_exit remove_resources{[] {
-        // reset connection to ensure resource manager is current
-        irods::experimental::client_connection conn;
-        RcComm& comm = static_cast<RcComm&>(conn);
+    irods::experimental::client_connection conn;
+    RcComm& comm = static_cast<RcComm&>(conn);
 
+    // Make sure that the test resources created below are removed upon test completion
+    irods::at_scope_exit remove_resources{[&comm] {
         for (const auto& r : resc_names) {
             adm::client::remove_resource(comm, r);
         }
@@ -78,12 +74,8 @@ TEST_CASE("open_and_close", "[write_lock]")
 
     // Create resources to use for test cases
     for (const auto& r : resc_names) {
-        mkresc(r);
+        mkresc(comm, r);
     }
-
-    // reset connection so resources exist
-    irods::experimental::client_connection conn;
-    RcComm& comm = static_cast<RcComm&>(conn);
 
     // Construct some paths for use in tests
     const auto sandbox = get_sandbox_name();
@@ -95,10 +87,7 @@ TEST_CASE("open_and_close", "[write_lock]")
     }
 
     // Clean up test collection after tests complete
-    irods::at_scope_exit remove_sandbox{[&sandbox] {
-        irods::experimental::client_connection conn;
-        RcComm& comm = static_cast<RcComm&>(conn);
-
+    irods::at_scope_exit remove_sandbox{[&comm, &sandbox] {
         REQUIRE(fs::client::remove_all(comm, sandbox, fs::remove_options::no_trash));
     }};
 
@@ -256,12 +245,11 @@ TEST_CASE("unlink", "[write_lock]")
 {
     load_client_api_plugins();
 
-    // Make sure that the test resources created below are removed upon test completion
-    irods::at_scope_exit remove_resources{[] {
-        // reset connection to ensure resource manager is current
-        irods::experimental::client_connection conn;
-        RcComm& comm = static_cast<RcComm&>(conn);
+    irods::experimental::client_connection conn;
+    RcComm& comm = static_cast<RcComm&>(conn);
 
+    // Make sure that the test resources created below are removed upon test completion
+    irods::at_scope_exit remove_resources{[&comm] {
         for (const auto& r : resc_names) {
             adm::client::remove_resource(comm, r);
         }
@@ -269,12 +257,8 @@ TEST_CASE("unlink", "[write_lock]")
 
     // Create resources to use for test cases
     for (const auto& r : resc_names) {
-        mkresc(r);
+        mkresc(comm, r);
     }
-
-    // reset connection so resources exist
-    irods::experimental::client_connection conn;
-    RcComm& comm = static_cast<RcComm&>(conn);
 
     // Construct some paths for use in tests
     const auto sandbox = get_sandbox_name();
@@ -286,10 +270,7 @@ TEST_CASE("unlink", "[write_lock]")
     }
 
     // Clean up test collection after tests complete
-    irods::at_scope_exit remove_sandbox{[&sandbox] {
-        irods::experimental::client_connection conn;
-        RcComm& comm = static_cast<RcComm&>(conn);
-
+    irods::at_scope_exit remove_sandbox{[&comm, &sandbox] {
         REQUIRE(fs::client::remove_all(comm, sandbox, fs::remove_options::no_trash));
     }};
 
@@ -425,12 +406,11 @@ TEST_CASE("trim", "[write_lock]")
 {
     load_client_api_plugins();
 
-    // Make sure that the test resources created below are removed upon test completion
-    irods::at_scope_exit remove_resources{[] {
-        // reset connection to ensure resource manager is current
-        irods::experimental::client_connection conn;
-        RcComm& comm = static_cast<RcComm&>(conn);
+    irods::experimental::client_connection conn;
+    RcComm& comm = static_cast<RcComm&>(conn);
 
+    // Make sure that the test resources created below are removed upon test completion
+    irods::at_scope_exit remove_resources{[&comm] {
         for (const auto& r : resc_names) {
             adm::client::remove_resource(comm, r);
         }
@@ -438,12 +418,8 @@ TEST_CASE("trim", "[write_lock]")
 
     // Create resources to use for test cases
     for (const auto& r : resc_names) {
-        mkresc(r);
+        mkresc(comm, r);
     }
-
-    // reset connection so resources exist
-    irods::experimental::client_connection conn;
-    RcComm& comm = static_cast<RcComm&>(conn);
 
     // Construct some paths for use in tests
     const auto sandbox = get_sandbox_name();
@@ -455,10 +431,7 @@ TEST_CASE("trim", "[write_lock]")
     }
 
     // Clean up test collection after tests complete
-    irods::at_scope_exit remove_sandbox{[&sandbox] {
-        irods::experimental::client_connection conn;
-        RcComm& comm = static_cast<RcComm&>(conn);
-
+    irods::at_scope_exit remove_sandbox{[&comm, &sandbox] {
         REQUIRE(fs::client::remove_all(comm, sandbox, fs::remove_options::no_trash));
     }};
 
@@ -578,12 +551,11 @@ TEST_CASE("rename", "[write_lock]")
 {
     load_client_api_plugins();
 
-    // Make sure that the test resources created below are removed upon test completion
-    irods::at_scope_exit remove_resources{[] {
-        // reset connection to ensure resource manager is current
-        irods::experimental::client_connection conn;
-        RcComm& comm = static_cast<RcComm&>(conn);
+    irods::experimental::client_connection conn;
+    RcComm& comm = static_cast<RcComm&>(conn);
 
+    // Make sure that the test resources created below are removed upon test completion
+    irods::at_scope_exit remove_resources{[&comm] {
         for (const auto& r : resc_names) {
             adm::client::remove_resource(comm, r);
         }
@@ -591,12 +563,8 @@ TEST_CASE("rename", "[write_lock]")
 
     // Create resources to use for test cases
     for (const auto& r : resc_names) {
-        mkresc(r);
+        mkresc(comm, r);
     }
-
-    // reset connection so resources exist
-    irods::experimental::client_connection conn;
-    RcComm& comm = static_cast<RcComm&>(conn);
 
     // Construct some paths for use in tests
     const auto sandbox = get_sandbox_name();
@@ -608,10 +576,7 @@ TEST_CASE("rename", "[write_lock]")
     }
 
     // Clean up test collection after tests complete
-    irods::at_scope_exit remove_sandbox{[&sandbox] {
-        irods::experimental::client_connection conn;
-        RcComm& comm = static_cast<RcComm&>(conn);
-
+    irods::at_scope_exit remove_sandbox{[&comm, &sandbox] {
         REQUIRE(fs::client::remove_all(comm, sandbox, fs::remove_options::no_trash));
     }};
 

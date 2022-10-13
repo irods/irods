@@ -38,7 +38,7 @@ namespace unit_test_utils
 
     inline auto get_hostname() noexcept -> std::string
     {
-        char hostname[256] {};
+        char hostname[HOST_NAME_MAX] {};
         gethostname(hostname, sizeof(hostname));
         return hostname;
     }
@@ -64,7 +64,7 @@ namespace unit_test_utils
 
     inline auto add_ufs_resource(RcComm& _comm,
                                  const std::string_view _resc_name,
-                                 const std::string_view _vault_name) -> bool
+                                 const std::string_view _vault_name) -> void
     {
         namespace adm = irods::experimental::administration;
 
@@ -74,13 +74,11 @@ namespace unit_test_utils
         // The new resource's information.
         adm::resource_registration_info ufs_info;
         ufs_info.resource_name = _resc_name.data();
-        ufs_info.resource_type = adm::resource_type::unixfilesystem.data();
+        ufs_info.resource_type = adm::resource_type::unixfilesystem;
         ufs_info.host_name = host_name;
         ufs_info.vault_path = vault_path;
 
         adm::client::add_resource(_comm, ufs_info);
-
-        return true; // TODO
     }
 
     inline auto replicate_data_object(RcComm& _comm,

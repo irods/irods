@@ -202,13 +202,9 @@ TEST_CASE("stream factory utilities")
 
         const std::string_view resc_name = "5851_ufs_resc";
 
-        // Create a new UFS resource.
-        {
-            ix::client_connection conn;
-            unit_test_utils::add_ufs_resource(conn, resc_name, "5851_resc_vault");
-        }
-
         ix::client_connection conn;
+
+        unit_test_utils::add_ufs_resource(conn, resc_name, "5851_resc_vault");
 
         irods::at_scope_exit remove_resource{[&conn, resc_name] {
             adm::client::remove_resource(conn, resc_name);
