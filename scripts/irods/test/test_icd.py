@@ -38,5 +38,12 @@ class Test_icd(session.make_sessions_mixin([('otherrods', 'rods')], []), unittes
 
     def test_icd_to_root_with_badpath(self):
         # go to root with bad path
-        self.admin.assert_icommand("icd /doesnotexist", 'STDOUT_SINGLELINE', "No such directory (collection):")
+        self.admin.assert_icommand("icd /doesnotexist", 'STDOUT_SINGLELINE', "No such collection:")
+
+    def test_icd_to_data_object(self):
+        object_name = 'foo'
+        logical_path = os.path.join(self.admin.session_collection, object_name)
+        self.admin.assert_icommand(['itouch', logical_path])
+        self.admin.assert_icommand(['ils', logical_path], 'STDOUT', object_name)
+        self.admin.assert_icommand(['icd', logical_path], 'STDOUT', "No such collection:")
 
