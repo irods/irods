@@ -3997,7 +3997,6 @@ irods::error db_del_child_resc_op(
 
     irods::sql_logger logger( "chlDelChildResc", logSQL );
     std::string child_string( resc_input[irods::RESOURCE_CHILDREN] );
-    log_db::info("child_string=[{}]", child_string);
 
     std::string& parent_name = resc_input[irods::RESOURCE_NAME];
     std::string parent_resource_id;
@@ -4006,7 +4005,6 @@ irods::error db_del_child_resc_op(
               parent_name,
               parent_resource_id,
               parent_parent_resource_id);
-    log_db::info("parent_name=[{}], parent_resource_id=[{}], parent_parent_resource_id=[{}]", parent_name, parent_resource_id, parent_parent_resource_id);
     if(!ret.ok()) {
            return PASS(ret);
     }
@@ -4016,7 +4014,6 @@ irods::error db_del_child_resc_op(
 
     std::string child_name;
     parser.first_child( child_name );
-    log_db::info("child_name=[{}]", child_name);
 
     std::string child_resource_id;
     std::string child_parent_resource_id;
@@ -4024,13 +4021,11 @@ irods::error db_del_child_resc_op(
               child_name,
               child_resource_id,
               child_parent_resource_id);
-    log_db::info("child_name=[{}], child_resource_id=[{}], child_parent_resource_id=[{}]", child_name, child_resource_id, child_parent_resource_id);
     if(!ret.ok()) {
            return PASS(ret);
     }
 
     if (child_parent_resource_id != parent_resource_id) {
-        log_db::error("child_parent_resource_id=[{}], parent_resource_id=[{}]", child_parent_resource_id, parent_resource_id);
         return ERROR(CAT_INVALID_CHILD, "invalid parent/child relationship");
     }
 
