@@ -16,14 +16,14 @@ TEST_CASE("resource administration")
 
     adm::resource_registration_info repl_info;
     repl_info.resource_name = "unit_test_repl";
-    repl_info.resource_type = std::string{adm::resource_type::replication};
+    repl_info.resource_type = adm::resource_type::replication;
 
     char host_name[64] {};
     REQUIRE(gethostname(host_name, sizeof(host_name)) == 0);
 
     adm::resource_registration_info ufs_info;
     ufs_info.resource_name = "unit_test_ufs0";
-    ufs_info.resource_type = std::string{adm::resource_type::unixfilesystem};
+    ufs_info.resource_type = adm::resource_type::unixfilesystem;
     ufs_info.host_name = host_name;
     ufs_info.vault_path = "/tmp";
 
@@ -75,7 +75,7 @@ TEST_CASE("resource administration")
         auto info = adm::client::resource_info(conn, ufs_info.resource_name);
         REQUIRE(info.type() == ufs_info.resource_type);
 
-        const adm::resource_type_property property{std::string{adm::resource_type::replication}};
+        const adm::resource_type_property property{adm::resource_type::replication};
         REQUIRE_NOTHROW(adm::client::modify_resource(conn, ufs_info.resource_name, property));
         info = adm::client::resource_info(conn, ufs_info.resource_name);
         REQUIRE(info.type() == adm::resource_type::replication);

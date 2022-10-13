@@ -38,7 +38,7 @@
 #include <type_traits>
 #include <concepts>
 
-/// \brief A namespace that encapsulates administrative types and operations.
+/// A namespace that encapsulates administrative types and operations.
 namespace irods::experimental::administration
 {
     // clang-format off
@@ -56,25 +56,25 @@ namespace irods::experimental::administration
         auto resource_info(RxComm&, const resource_name_type) -> class resource_info;
     } // namespace NAMESPACE_IMPL
 
-    /// \brief A namespace defining the default set of resource types.
+    /// A namespace defining the default set of resource types.
     namespace resource_type
     {
         // clang-format off
-        inline constexpr std::string_view compound       = "compound";
-        inline constexpr std::string_view deferred       = "deferred";
-        inline constexpr std::string_view load_balanced  = "load_balanced";
-        inline constexpr std::string_view mockarchive    = "mockarchive";
-        inline constexpr std::string_view nonblocking    = "nonblocking";
-        inline constexpr std::string_view passthrough    = "passthru";
-        inline constexpr std::string_view random         = "random";
-        inline constexpr std::string_view replication    = "replication";
-        inline constexpr std::string_view struct_file    = "structfile";
-        inline constexpr std::string_view universal_mss  = "univmss";
-        inline constexpr std::string_view unixfilesystem = "unixfilesystem";
+        inline constexpr const char* const compound       = "compound";
+        inline constexpr const char* const deferred       = "deferred";
+        inline constexpr const char* const load_balanced  = "load_balanced";
+        inline constexpr const char* const mockarchive    = "mockarchive";
+        inline constexpr const char* const nonblocking    = "nonblocking";
+        inline constexpr const char* const passthrough    = "passthru";
+        inline constexpr const char* const random         = "random";
+        inline constexpr const char* const replication    = "replication";
+        inline constexpr const char* const struct_file    = "structfile";
+        inline constexpr const char* const universal_mss  = "univmss";
+        inline constexpr const char* const unixfilesystem = "unixfilesystem";
         // clang-format on
     } // namespace resource_type
 
-    /// \brief An enumeration defining all valid resource status values.
+    /// An enumeration defining all valid resource status values.
     enum class resource_status
     {
         up,     ///< The resource is available.
@@ -82,7 +82,7 @@ namespace irods::experimental::administration
         unknown ///< The library does not understand the value.
     }; // enum class resource_status
 
-    /// \brief A type that holds information about an existing resource.
+    /// A type that holds information about an existing resource.
     class resource_info
     {
     public:
@@ -126,7 +126,7 @@ namespace irods::experimental::administration
         resource_time_type mtime_;
     }; // class resource_info
 
-    /// \brief A type that holds the necessary information needed to add a new resource to the system.
+    /// A type that holds the necessary information needed to add a new resource to the system.
     struct resource_registration_info
     {
         std::string resource_name;
@@ -136,47 +136,130 @@ namespace irods::experimental::administration
         std::string context_string;
     }; // class resource_registration_info
 
+    /// An input type used to update the type property of a resource.
+    ///
+    /// Primarily used to modify a resource.
+    ///
+    /// \since 4.3.1
     struct resource_type_property
     {
         std::string value;
     }; // struct resource_type_property
 
+    /// An input type used to update the host name property of a resource.
+    ///
+    /// Primarily used to modify a resource.
+    ///
+    /// \since 4.3.1
     struct host_name_property
     {
         std::string value;
     }; // struct host_name_property
 
+    /// An input type used to update the vault path property of a resource.
+    ///
+    /// Primarily used to modify a resource.
+    ///
+    /// \since 4.3.1
     struct vault_path_property
     {
         std::string value;
     }; // struct vault_path_property
 
+    /// An input type used to update the status property of a resource.
+    ///
+    /// Primarily used to modify a resource.
+    ///
+    /// \since 4.3.1
     struct resource_status_property
     {
         resource_status value;
     }; // struct resource_status_property
 
+    /// An input type used to update the comments property of a resource.
+    ///
+    /// Primarily used to modify a resource.
+    ///
+    /// \since 4.3.1
     struct resource_comments_property
     {
         std::string value;
     }; // struct resource_comments_property
 
+    /// An input type used to update the info property of a resource.
+    ///
+    /// Primarily used to modify a resource.
+    ///
+    /// \since 4.3.1
     struct resource_info_property
     {
         std::string value;
     }; // struct resource_info_property
 
+    /// An input type used to update the free space property of a resource.
+    ///
+    /// Primarily used to modify a resource.
+    ///
+    /// \since 4.3.1
     struct free_space_property
     {
         std::string value;
     }; // struct free_space_property
 
+    /// An input type used to update the context string property of a resource.
+    ///
+    /// Primarily used to modify a resource.
+    ///
+    /// \since 4.3.1
     struct context_string_property
     {
         std::string value;
     }; // struct context_string_property
 
-    /// \brief A namespace defining the set of client-side or server-side API functions.
+    template <typename T>
+    concept ResourceProperty = std::same_as<T, resource_type_property> ||
+        std::same_as<T, resource_type_property> ||
+        std::same_as<T, host_name_property> ||
+        std::same_as<T, vault_path_property> ||
+        std::same_as<T, resource_status_property> ||
+        std::same_as<T, resource_comments_property> ||
+        std::same_as<T, resource_info_property> ||
+        std::same_as<T, free_space_property> ||
+        std::same_as<T, context_string_property>;
+
+    /// Converts a resource property type to its string representation.
+    ///
+    /// \tparam Property The type of the resource property.
+    template <ResourceProperty Property>
+    constexpr auto to_string() -> const char*
+    {
+        if constexpr (std::is_same_v<Property, resource_type_property>) {
+            return "resource type";
+        }
+        else if constexpr (std::is_same_v<Property, host_name_property>) {
+            return "resource host name";
+        }
+        else if constexpr (std::is_same_v<Property, vault_path_property>) {
+            return "resource vault path";
+        }
+        else if constexpr (std::is_same_v<Property, resource_status_property>) {
+            return "resource status";
+        }
+        else if constexpr (std::is_same_v<Property, resource_comments_property>) {
+            return "resource comments";
+        }
+        else if constexpr (std::is_same_v<Property, resource_info_property>) {
+            return "resource information";
+        }
+        else if constexpr (std::is_same_v<Property, free_space_property>) {
+            return "resource free space";
+        }
+        else if constexpr (std::is_same_v<Property, context_string_property>) {
+            return "resource context";
+        }
+    } // to_string
+
+    /// A namespace defining the set of client-side or server-side API functions.
     ///
     /// This namespace's name changes based on the presence of a special macro. If the following macro
     /// is defined, then the NAMESPACE_IMPL will be \p server, else it will be \p client.
@@ -185,7 +268,7 @@ namespace irods::experimental::administration
     ///
     namespace NAMESPACE_IMPL
     {
-        /// \brief Adds a new resource to the system.
+        /// Adds a new resource to the system.
         ///
         /// \param[in] _comm The communication object.
         /// \param[in] _info The resource information.
@@ -193,7 +276,7 @@ namespace irods::experimental::administration
         /// \returns A std::error_code.
         auto add_resource(RxComm& _comm, const resource_registration_info& _info) -> void;
 
-        /// \brief Removes a resource from the system.
+        /// Removes a resource from the system.
         ///
         /// \param[in] _comm The communication object.
         /// \param[in] _name The name of the resource.
@@ -201,7 +284,7 @@ namespace irods::experimental::administration
         /// \returns A std::error_code.
         auto remove_resource(RxComm& _comm, const resource_name_type _name) -> void;
 
-        /// \brief Makes a resource a child of another resource.
+        /// Makes a resource a child of another resource.
         ///
         /// \param[in] _comm            The communication object.
         /// \param[in] _parent          The name of the parent resource.
@@ -215,7 +298,7 @@ namespace irods::experimental::administration
                                 const resource_name_type _child,
                                 const std::string_view _context_string = "") -> void;
 
-        /// \brief Removes a child resource from a parent resource.
+        /// Removes a child resource from a parent resource.
         ///
         /// \param[in] _comm   The communication object.
         /// \param[in] _parent The name of the parent resource.
@@ -226,7 +309,7 @@ namespace irods::experimental::administration
                                    const resource_name_type _parent,
                                    const resource_name_type _child) -> void;
 
-        /// \brief Checks if a resource exists.
+        /// Checks if a resource exists.
         ///
         /// \param[in] _comm The communication object.
         /// \param[in] _name The name of the resource.
@@ -234,7 +317,7 @@ namespace irods::experimental::administration
         /// \returns A tuple containing error information and the existence results.
         auto resource_exists(RxComm& _comm, const resource_name_type _name) -> bool;
 
-        /// \brief Retrieves information about a resource.
+        /// Retrieves information about a resource.
         ///
         /// \param[in] _comm The communication object.
         /// \param[in] _name The name of the resource.
@@ -242,36 +325,41 @@ namespace irods::experimental::administration
         /// \returns A tuple containing error information and the resource information.
         auto resource_info(RxComm& _comm, const resource_name_type _name) -> class resource_info;
 
-        template <typename ResourceProperty>
-            requires std::same_as<ResourceProperty, resource_type_property> ||
-                std::same_as<ResourceProperty, resource_type_property> ||
-                std::same_as<ResourceProperty, host_name_property> ||
-                std::same_as<ResourceProperty, vault_path_property> ||
-                std::same_as<ResourceProperty, resource_status_property> ||
-                std::same_as<ResourceProperty, resource_comments_property> ||
-                std::same_as<ResourceProperty, resource_info_property> ||
-                std::same_as<ResourceProperty, free_space_property> ||
-                std::same_as<ResourceProperty, context_string_property>
-        auto modify_resource(RxComm& _comm, const resource_name_type _name, const ResourceProperty& _property) -> void
+        /// Modifies a property of a resource.
+        ///
+        /// \tparam Property \parblock The type of the property to modify.
+        ///
+        /// Property must satisfy the ResourceProperty concept. Failing to do so will result in a compile-time error.
+        /// \endparblock
+        ///
+        /// \param[in] _comm     The communication object.
+        /// \param[in] _name     The name of the resource.
+        /// \param[in] _property An object containing the required information for applying the change.
+        ///
+        /// \throws irods::exception If an error occurs.
+        ///
+        /// \since 4.3.1
+        template <ResourceProperty Property>
+        auto modify_resource(RxComm& _comm, const resource_name_type _name, const Property& _property) -> void
         {
             generalAdminInp_t input{};
             input.arg0 = "modify";
             input.arg1 = "resource";
             input.arg2 = _name.data();
 
-            if constexpr (std::is_same_v<ResourceProperty, resource_type_property>) {
+            if constexpr (std::is_same_v<Property, resource_type_property>) {
                 input.arg3 = "type";
                 input.arg4 = _property.value.data();
             }
-            else if constexpr (std::is_same_v<ResourceProperty, host_name_property>) {
+            else if constexpr (std::is_same_v<Property, host_name_property>) {
                 input.arg3 = "host";
                 input.arg4 = _property.value.data();
             }
-            else if constexpr (std::is_same_v<ResourceProperty, vault_path_property>) {
+            else if constexpr (std::is_same_v<Property, vault_path_property>) {
                 input.arg3 = "path";
                 input.arg4 = _property.value.data();
             }
-            else if constexpr (std::is_same_v<ResourceProperty, resource_status_property>) {
+            else if constexpr (std::is_same_v<Property, resource_status_property>) {
                 input.arg3 = "status";
 
                 if (_property.value == resource_status::up) {
@@ -284,126 +372,31 @@ namespace irods::experimental::administration
                     THROW(SYS_INVALID_INPUT_PARAM, "Invalid value for resource status");
                 }
             }
-            else if constexpr (std::is_same_v<ResourceProperty, resource_comments_property>) {
+            else if constexpr (std::is_same_v<Property, resource_comments_property>) {
                 input.arg3 = "comment";
                 input.arg4 = _property.value.data();
             }
-            else if constexpr (std::is_same_v<ResourceProperty, resource_info_property>) {
+            else if constexpr (std::is_same_v<Property, resource_info_property>) {
                 input.arg3 = "info";
                 input.arg4 = _property.value.data();
             }
-            else if constexpr (std::is_same_v<ResourceProperty, free_space_property>) {
+            else if constexpr (std::is_same_v<Property, free_space_property>) {
                 input.arg3 = "free_space";
                 input.arg4 = _property.value.data();
             }
-            else if constexpr (std::is_same_v<ResourceProperty, context_string_property>) {
+            else if constexpr (std::is_same_v<Property, context_string_property>) {
                 input.arg3 = "context";
                 input.arg4 = _property.value.data();
             }
 
             if (const auto ec = rxGeneralAdmin(&_comm, &input); ec < 0) {
-                constexpr char* msg = "Could not change [{}] to [{}] for resource [{}]";
+                constexpr char* msg = "Could not change {} from [{}] to [{}] for resource [{}]";
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-                THROW(ec, fmt::format(msg, input.arg3, input.arg4, _name));
+                THROW(ec, fmt::format(msg, to_string<Property>(), input.arg3, input.arg4, _name));
             }
         } // modify_resource
 
-        /// \brief Sets the type of a resource.
-        ///
-        /// \param[in] _comm      The communication object.
-        /// \param[in] _name      The name of the resource.
-        /// \param[in] _new_value The new resource type.
-        ///
-        /// \returns A std::error_code.
-        auto set_resource_type(RxComm& _comm,
-                               const resource_name_type _name,
-                               const std::string_view _new_value) -> void;
-
-        /// \brief Sets the host name of a resource.
-        ///
-        /// \param[in] _comm      The communication object.
-        /// \param[in] _name      The name of the resource.
-        /// \param[in] _new_value The new host name.
-        ///
-        /// \returns A std::error_code.
-        auto set_resource_host_name(RxComm& _comm,
-                                    const resource_name_type _name,
-                                    const std::string_view _new_value) -> void;
-
-        /// \brief Sets the vault path of a resource.
-        ///
-        /// \param[in] _comm      The communication object.
-        /// \param[in] _name      The name of the resource.
-        /// \param[in] _new_value The new vault path.
-        ///
-        /// \returns A std::error_code.
-        auto set_resource_vault_path(RxComm& _comm,
-                                     const resource_name_type _name,
-                                     const std::string_view _new_value) -> void;
-
-        /// \brief Sets the status of a resource.
-        ///
-        /// \param[in] _comm      The communication object.
-        /// \param[in] _name      The name of the resource.
-        /// \param[in] _new_value The new status. Passing resource_status::unknown results
-        ///                       in an error.
-        ///
-        /// \returns A std::error_code.
-        auto set_resource_status(RxComm& _comm,
-                                 const resource_name_type _name,
-                                 resource_status _new_value) -> void;
-
-        /// \brief Sets comments on a resource.
-        ///
-        /// This is a destructive update and will result in an overwrite of the existing
-        /// comments value if not careful.
-        ///
-        /// \param[in] _comm      The communication object.
-        /// \param[in] _name      The name of the resource.
-        /// \param[in] _new_value The new comments.
-        ///
-        /// \returns A std::error_code.
-        auto set_resource_comments(RxComm& _comm,
-                                   const resource_name_type _name,
-                                   const std::string_view _new_value) -> void;
-
-        /// \brief Sets textual information on a resource.
-        ///
-        /// This is a destructive update and will result in an overwrite of the existing
-        /// information value if not careful.
-        ///
-        /// \param[in] _comm      The communication object.
-        /// \param[in] _name      The name of the resource.
-        /// \param[in] _new_value The new information string.
-        ///
-        /// \returns A std::error_code.
-        auto set_resource_info_string(RxComm& _comm,
-                                      const resource_name_type _name,
-                                      const std::string_view _new_value) -> void;
-
-        /// \brief Sets the free space on a resource.
-        ///
-        /// \param[in] _comm      The communication object.
-        /// \param[in] _name      The name of the resource.
-        /// \param[in] _new_value The new free space value.
-        ///
-        /// \returns A std::error_code.
-        auto set_resource_free_space(RxComm& _comm,
-                                     const resource_name_type _name,
-                                     const std::string_view _new_value) -> void;
-
-        /// \brief Sets the context string of a resource.
-        ///
-        /// \param[in] _comm      The communication object.
-        /// \param[in] _name      The name of the resource.
-        /// \param[in] _new_value The new context string.
-        ///
-        /// \returns A std::error_code.
-        auto set_resource_context_string(RxComm& _comm,
-                                         const resource_name_type _name,
-                                         const std::string_view _new_value) -> void;
-
-        /// \brief Starts a rebalance on a resource.
+        /// Starts a rebalance on a resource.
         ///
         /// \param[in] _comm The communication object.
         /// \param[in] _name The name of the resource.
@@ -411,7 +404,7 @@ namespace irods::experimental::administration
         /// \returns A std::error_code.
         auto rebalance_resource(RxComm& _comm, const resource_name_type _name) -> void;
 
-        /// \brief Retrieves the name of a resource given a resource ID.
+        /// Retrieves the name of a resource given a resource ID.
         ///
         /// \param[in] _comm The communication object.
         /// \param[in] _name The ID of the resource.
