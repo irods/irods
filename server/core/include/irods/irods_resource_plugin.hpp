@@ -89,6 +89,215 @@ namespace irods
     ///
     /// \throws irods::exception thrown if the error object returned by get() is not ok()
     auto get_resource_location(plugin_context& ctx) -> std::string;
+
+    /// Retrieves the id of the resource.
+    ///
+    /// \param[in] _resc_ptr The handle to the resource plugin object.
+    ///
+    /// \throw irods::exception If an error occurs.
+    ///
+    /// \return rodsLong_t
+    ///
+    /// \since 4.3.1
+    auto resource_id(const resource_ptr _resc_ptr) -> rodsLong_t;
+
+    /// Retrieves the name of the resource.
+    ///
+    /// \param[in] _resc_ptr The handle to the resource plugin object.
+    ///
+    /// \throw irods::exception If an error occurs.
+    ///
+    /// \return std::string
+    ///
+    /// \since 4.3.1
+    auto resource_name(const resource_ptr _resc_ptr) -> std::string;
+
+    /// Retrieves the host information of the resource.
+    ///
+    /// \param[in] _resc_ptr The handle to the resource plugin object.
+    ///
+    /// \throw irods::exception If an error occurs.
+    ///
+    /// \return RodsHostAddress*
+    ///
+    /// \since 4.3.1
+    auto resource_host(const resource_ptr _resc_ptr) -> RodsHostAddress*;
+
+    /// Retrieves the quota value of the resource.
+    ///
+    /// \param[in] _resc_ptr The handle to the resource plugin object.
+    ///
+    /// \throw irods::exception If an error occurs.
+    ///
+    /// \return long
+    ///
+    /// \since 4.3.1
+    auto resource_quota(const resource_ptr _resc_ptr) -> long;
+
+    /// Retrieves the status of the resource.
+    ///
+    /// \param[in] _resc_ptr The handle to the resource plugin object.
+    ///
+    /// \throw irods::exception If an error occurs.
+    ///
+    /// \return int
+    ///
+    /// \since 4.3.1
+    auto resource_status(const resource_ptr _resc_ptr) -> int;
+
+    /// Retrieves the zone name of the resource.
+    ///
+    /// \param[in] _resc_ptr The handle to the resource plugin object.
+    ///
+    /// \throw irods::exception If an error occurs.
+    ///
+    /// \return std::string
+    ///
+    /// \since 4.3.1
+    auto resource_zone(const resource_ptr _resc_ptr) -> std::string;
+
+    /// Retrieves the location of the resource.
+    ///
+    /// \param[in] _resc_ptr The handle to the resource plugin object.
+    ///
+    /// \throw irods::exception If an error occurs.
+    ///
+    /// \return std::string
+    ///
+    /// \since 4.3.1
+    auto resource_location(const resource_ptr _resc_ptr) -> std::string;
+
+    /// Retrieves the type of the resource.
+    ///
+    /// \param[in] _resc_ptr The handle to the resource plugin object.
+    ///
+    /// \throw irods::exception If an error occurs.
+    ///
+    /// \return std::string
+    ///
+    /// \since 4.3.1
+    auto resource_type(const resource_ptr _resc_ptr) -> std::string;
+
+    /// Retrieves the classification of the resource.
+    ///
+    /// \param[in] _resc_ptr The handle to the resource plugin object.
+    ///
+    /// \throw irods::exception If an error occurs.
+    ///
+    /// \return std::string
+    ///
+    /// \since 4.3.1
+    auto resource_class(const resource_ptr _resc_ptr) -> std::string;
+
+    /// Retrieves the vault path of the resource.
+    ///
+    /// \param[in] _resc_ptr The handle to the resource plugin object.
+    ///
+    /// \throw irods::exception If an error occurs.
+    ///
+    /// \return std::string
+    ///
+    /// \since 4.3.1
+    auto resource_vault_path(const resource_ptr _resc_ptr) -> std::string;
+
+    /// Retrieves the general information of the resource.
+    ///
+    /// \param[in] _resc_ptr The handle to the resource plugin object.
+    ///
+    /// \throw irods::exception If an error occurs.
+    ///
+    /// \return std::string
+    ///
+    /// \since 4.3.1
+    auto resource_info(const resource_ptr _resc_ptr) -> std::string;
+
+    /// Retrieves the comments associated with the resource.
+    ///
+    /// \param[in] _resc_ptr The handle to the resource plugin object.
+    ///
+    /// \throw irods::exception If an error occurs.
+    ///
+    /// \return std::string
+    ///
+    /// \since 4.3.1
+    auto resource_comments(const resource_ptr _resc_ptr) -> std::string;
+
+    /// Retrieves the create time of the resource.
+    ///
+    /// \param[in] _resc_ptr The handle to the resource plugin object.
+    ///
+    /// \throw irods::exception If an error occurs.
+    ///
+    /// \return std::string
+    ///
+    /// \since 4.3.1
+    auto resource_create_time(const resource_ptr _resc_ptr) -> std::string;
+
+    /// Retrieves the modify time of the resource.
+    ///
+    /// \param[in] _resc_ptr The handle to the resource plugin object.
+    ///
+    /// \throw irods::exception If an error occurs.
+    ///
+    /// \return std::string
+    ///
+    /// \since 4.3.1
+    auto resource_modify_time(const resource_ptr _resc_ptr) -> std::string;
+
+    /// Retrieves the children of the resource.
+    ///
+    /// \param[in] _resc_ptr The handle to the resource plugin object.
+    ///
+    /// \throw irods::exception If an error occurs.
+    ///
+    /// \return std::string
+    ///
+    /// \since 4.3.1
+    auto resource_children(const resource_ptr _resc_ptr) -> std::string;
+
+    /// Retrieves the context of the resource.
+    ///
+    /// \param[in] _resc_ptr The handle to the resource plugin object.
+    ///
+    /// \throw irods::exception If an error occurs.
+    ///
+    /// \return std::string
+    ///
+    /// \since 4.3.1
+    auto resource_context(const resource_ptr _resc_ptr) -> std::string;
+
+    /// Retrieves the parent id of the resource.
+    ///
+    /// \param[in] _resc_ptr The handle to the resource plugin object.
+    ///
+    /// \throw irods::exception If an error occurs.
+    ///
+    /// \return std::string
+    ///
+    /// \since 4.3.1
+    auto resource_parent_id(const resource_ptr _resc_ptr) -> std::string;
+
+    /// Retrieves the parent conext of the resource.
+    ///
+    /// \param[in] _resc_ptr The handle to the resource plugin object.
+    ///
+    /// \throw irods::exception If an error occurs.
+    ///
+    /// \return std::string
+    ///
+    /// \since 4.3.1
+    auto resource_parent_context(const resource_ptr _resc_ptr) -> std::string;
+
+    /// Retrieves the free space of the resource.
+    ///
+    /// \param[in] _resc_ptr The handle to the resource plugin object.
+    ///
+    /// \throw irods::exception If an error occurs.
+    ///
+    /// \return std::string
+    ///
+    /// \since 4.3.1
+    auto resource_free_space(const resource_ptr _resc_ptr) -> std::string;
 } // namespace irods
 
 #endif // IRODS_RESOURCE_PLUGIN_HPP

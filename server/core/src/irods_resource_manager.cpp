@@ -9,6 +9,7 @@
 #include "irods/irods_lexical_cast.hpp"
 #include "irods/irods_load_plugin.hpp"
 #include "irods/irods_log.hpp"
+#include "irods/irods_resource_plugin.hpp"
 #include "irods/irods_resource_plugin_impostor.hpp"
 #include "irods/irods_stacktrace.hpp"
 #include "irods/irods_string_tokenize.hpp"
@@ -571,12 +572,7 @@ namespace irods
             return;
         }
 
-        rodsLong_t parent_id = 0;
-        ret = lexical_cast<rodsLong_t>(parent_id_str, parent_id);
-        if (!ret.ok()) {
-            log_resc::error(PASS(ret).result());
-            return;
-        }
+        const rodsLong_t parent_id = std::stoll(parent_id_str);
 
         if (!resource_id_map_.has_entry(parent_id)) {
             log_resc::error("Invalid parent resource id [{}] for resource [{}].", parent_id, _resc_name);
@@ -585,11 +581,8 @@ namespace irods
 
         resource_ptr parent_resc = resource_id_map_[parent_id];
 
-        std::string parent_child_context;
-        _resc_ptr->get_property<std::string>(RESOURCE_PARENT_CONTEXT, parent_child_context);
-
+        const auto parent_child_context = resource_parent_context(_resc_ptr);
         parent_resc->add_child(std::string{_resc_name}, parent_child_context, _resc_ptr);
-        _resc_ptr->set_parent(parent_resc);
 
         log_resc::debug("{} - add [{}][{}] to [{}]", __func__, _resc_name, parent_child_context, parent_id);
     } // init_parent_child_relationship_impl
@@ -597,74 +590,42 @@ namespace irods
     void resource_manager::add_child_to_resource(rodsLong_t _parent_resc_id, rodsLong_t _child_resc_id)
     {
         auto parent_resc_ptr = resource_id_map_[_parent_resc_id];
-        std::string resc_name;
-        if (const auto err = parent_resc_ptr->get_property<std::string>(RESOURCE_NAME, resc_name); !err.ok()) {
-            THROW(err.code(), err.result());
-        }
+        const auto resc_name = resource_name(parent_resc_ptr);
 
         auto child_resc_ptr = resource_id_map_[_child_resc_id];
-        std::string child_resc_name;
-        if (const auto err = child_resc_ptr->get_property<std::string>(RESOURCE_NAME, resc_name); !err.ok()) {
-            THROW(err.code(), err.result());
-        }
+        const auto child_resc_name = resource_name(child_resc_ptr);
 
-        std::string parent_child_context;
-        auto err = child_resc_ptr->get_property<std::string>(RESOURCE_PARENT_CONTEXT, parent_child_context);
-        log_resc::info(err.result());
+        const auto parent_child_context = resource_parent_context(child_resc_ptr);
 
-        err = parent_resc_ptr->add_child(std::string{child_resc_name}, parent_child_context, child_resc_ptr); // TODO Can throw!!!
-        log_resc::info(err.result());
+        auto err = parent_resc_ptr->add_child(std::string{child_resc_name}, parent_child_context, child_resc_ptr); // TODO Can throw!!!
         err = child_resc_ptr->set_parent(parent_resc_ptr); // TODO Can throw!!!
-        log_resc::info(err.result());
         err = child_resc_ptr->set_property<std::string>(RESOURCE_PARENT, std::to_string(_parent_resc_id)); // TODO Can throw!!!
-        log_resc::info(err.result());
     } // add_child_to_resource
 
     void resource_manager::add_child_to_resource(
         const std::string_view _parent_resc_name,
         const std::string_view _child_resc_name)
     {
-        log_resc::info(">>>>>>>>>>>>> IN {}", __func__);
-        log_resc::info("LOOKING UP PARENT RESC PTR USING NAME [{}]", _parent_resc_name);
         auto parent_resc_ptr = resource_name_map_[std::string{_parent_resc_name}];
 
-        log_resc::info("LOOKING UP CHILD RESC PTR USING NAME [{}]", _child_resc_name);
         const std::string child_resc_name{_child_resc_name};
         auto child_resc_ptr = resource_name_map_[child_resc_name];
 
-        log_resc::info("GETTING RESOURCE_PARENT_CONTEXT KEY FROM CHILD RESC PTR");
-        std::string parent_child_context;
-        auto err = child_resc_ptr->get_property<std::string>(RESOURCE_PARENT_CONTEXT, parent_child_context);
-        log_resc::info("child_resc_ptr->get_property<std::string>(RESOURCE_PARENT_CONTEXT) ::: value = [{}] ::: {}", parent_child_context, err.result());
+        const auto parent_child_context = resource_parent_context(child_resc_ptr);
+        const rodsLong_t parent_resc_id = resource_id(parent_resc_ptr);
 
-        log_resc::info("GETTING RESOURCE_ID KEY FROM CHILD RESC PTR");
-        rodsLong_t parent_resc_id;
-        err = parent_resc_ptr->get_property<rodsLong_t>(RESOURCE_ID, parent_resc_id);
-        log_resc::info("child_resc_ptr->get_property<std::string>(RESOURCE_ID) ::: value = [{}] ::: {}", parent_resc_id, err.result());
-
-        log_resc::info("UPDATING PARENT / CHILD RESC POINTERS");
-        err = parent_resc_ptr->add_child(child_resc_name, parent_child_context, child_resc_ptr); // TODO Can throw!!!
-        log_resc::info(err.result());
+        auto err = parent_resc_ptr->add_child(child_resc_name, parent_child_context, child_resc_ptr); // TODO Can throw!!!
         err = child_resc_ptr->set_parent(parent_resc_ptr); // TODO Can throw!!!
-        log_resc::info(err.result());
         err = child_resc_ptr->set_property<std::string>(RESOURCE_PARENT, std::to_string(parent_resc_id)); // TODO Can throw!!!
-        log_resc::info(err.result());
-        log_resc::info("DONE");
     } // add_child_to_resource
 
     void resource_manager::remove_child_from_resource(rodsLong_t _parent_resc_id, rodsLong_t _child_resc_id)
     {
         auto parent_resc_ptr = resource_id_map_[_parent_resc_id];
-        std::string resc_name;
-        if (const auto err = parent_resc_ptr->get_property<std::string>(RESOURCE_NAME, resc_name); !err.ok()) {
-            THROW(err.code(), err.result());
-        }
+        const auto resc_name = resource_name(parent_resc_ptr);
 
         auto child_resc_ptr = resource_id_map_[_child_resc_id];
-        std::string child_resc_name;
-        if (const auto err = child_resc_ptr->get_property<std::string>(RESOURCE_NAME, resc_name); !err.ok()) {
-            THROW(err.code(), err.result());
-        }
+        const auto child_resc_name = resource_name(child_resc_ptr);
 
         parent_resc_ptr->remove_child(std::string{child_resc_name});
         child_resc_ptr->set_parent(nullptr);
@@ -692,13 +653,7 @@ namespace irods
         }
 
         auto resc_ptr = resource_id_map_[_resc_id];
-        std::string resc_name;
-
-        if (const error err = resc_ptr->get_property<std::string>(RESOURCE_NAME, resc_name); !err.ok()) {
-            THROW(err.code(), err.result());
-        }
-
-        resource_name_map_.erase(resc_name);
+        resource_name_map_.erase(resource_name(resc_ptr));
         resource_id_map_.erase(_resc_id);
     } // erase_resource
 
@@ -708,15 +663,10 @@ namespace irods
             return;
         }
 
-        auto resc_ptr = resource_name_map_[_resc_name.data()];
-        rodsLong_t resc_id = 0;
-
-        if (const error err = resc_ptr->get_property<rodsLong_t>(RESOURCE_ID, resc_id); !err.ok()) {
-            THROW(err.code(), err.result());
-        }
-
-        resource_id_map_.erase(resc_id);
-        resource_name_map_.erase(_resc_name.data());
+        const std::string resc_name{_resc_name};
+        auto resc_ptr = resource_name_map_[resc_name];
+        resource_id_map_.erase(resource_id(resc_ptr));
+        resource_name_map_.erase(resc_name);
     } // erase_resource
 
     // print the list of local resources out to stderr
