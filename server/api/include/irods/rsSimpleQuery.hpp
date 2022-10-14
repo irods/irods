@@ -4,7 +4,11 @@
 #include "irods/rcConnect.h"
 #include "irods/simpleQuery.h"
 
-int rsSimpleQuery( rsComm_t *rsComm, simpleQueryInp_t *simpleQueryInp, simpleQueryOut_t **simpleQueryOut );
-int _rsSimpleQuery( rsComm_t *rsComm, simpleQueryInp_t *simpleQueryInp, simpleQueryOut_t **simpleQueryOut );
+// clang-format off
+
+[[deprecated("SimpleQuery is deprecated. Use GenQuery or SpecificQuery instead.")]]
+auto rsSimpleQuery(rsComm_t* rsComm, simpleQueryInp_t* simpleQueryInp, simpleQueryOut_t** simpleQueryOut) -> int;
+
+// clang-format on
 
 #endif

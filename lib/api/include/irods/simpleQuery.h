@@ -25,6 +25,7 @@ typedef struct {
 #ifdef __cplusplus
 extern "C"
 #endif
-int rcSimpleQuery( rcComm_t *conn, simpleQueryInp_t *simpleQueryInp, simpleQueryOut_t **simpleQueryOut );
+__attribute__((deprecated("SimpleQuery is deprecated. Use GenQuery or SpecificQuery instead.")))
+int rcSimpleQuery(rcComm_t* conn, simpleQueryInp_t* simpleQueryInp, simpleQueryOut_t** simpleQueryOut);
 
 #endif

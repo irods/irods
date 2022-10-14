@@ -11,37 +11,38 @@
 #include "irods/procApiRequest.h"
 #include "irods/apiNumber.h"
 /**
-* \fn rcSimpleQuery (rcComm_t *conn, simpleQueryInp_t *simpleQueryInp, simpleQueryOut_t **simpleQueryOut)
-*
-* \brief Perform a simple (pre-defined) query, allowed for Admin only, used in iadmin
-*
-* \user client
-*
-* \ingroup metadata
-*
-* \since 1.0
-*
-*
-* \remark none
-*
-* \note none
-*
-* \usage
-* Perform a simple (pre-defined) query:
-* \n See the SQL-Based_Queries on irods.org
-* \n and examples in iquest.c (function execAndShowSimpleQuery).
-*
-* \param[in] conn - A rcComm_t connection handle to the server.
-* \param[in] simpleQueryInp - input sql or alias (must match definition on server), and arguments
-* \param[out] simpleQueryOut - the same returned structure as general-query.
-* \return integer
-* \retval 0 on success
-*
-* \sideeffect none
-* \pre none
-* \post none
-* \sa none
-**/
+ * \fn rcSimpleQuery (rcComm_t *conn, simpleQueryInp_t *simpleQueryInp, simpleQueryOut_t **simpleQueryOut)
+ *
+ * \brief Perform a simple (pre-defined) query, allowed for Admin only, used in iadmin
+ *
+ * \user client
+ *
+ * \ingroup metadata
+ *
+ * \since 1.0
+ *
+ * \remark none
+ *
+ * \note none
+ *
+ * \usage
+ * Perform a simple (pre-defined) query:
+ * \n See the SQL-Based_Queries on irods.org
+ * \n and examples in iquest.c (function execAndShowSimpleQuery).
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] simpleQueryInp - input sql or alias (must match definition on server), and arguments
+ * \param[out] simpleQueryOut - the same returned structure as general-query.
+ * \return integer
+ * \retval 0 on success
+ *
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+ *
+ * \deprecated Deprecated in 4.3.1. Use rcGenQuery or rcSpecificQuery instead.
+ **/
 
 int
 rcSimpleQuery( rcComm_t *conn, simpleQueryInp_t *simpleQueryInp,

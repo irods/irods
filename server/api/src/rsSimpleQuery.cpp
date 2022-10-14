@@ -1,20 +1,56 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code (for the most part).  */
-/* See simpleQuery.h for a description of this API call.*/
-
-#include "irods/simpleQuery.h"
-#include "irods/rodsConnect.h"
-#include "irods/icatHighLevelRoutines.hpp"
-#include "irods/miscServerFunct.hpp"
-#include "irods/irods_configuration_keywords.hpp"
 #include "irods/rsSimpleQuery.hpp"
+
+#include "irods/apiNumber.h"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/irods_configuration_keywords.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/rodsConnect.h"
+
+namespace
+{
+    auto _rsSimpleQuery(rsComm_t* rsComm, simpleQueryInp_t* simpleQueryInp, simpleQueryOut_t** simpleQueryOut) -> int
+    {
+        int control = simpleQueryInp->control;
+        int maxBufSize = simpleQueryInp->maxBufSize;
+        char* outBuf = static_cast<char*>(malloc(maxBufSize));
+
+        int status = chlSimpleQuery(
+            rsComm,
+            simpleQueryInp->sql,
+            simpleQueryInp->arg1,
+            simpleQueryInp->arg2,
+            simpleQueryInp->arg3,
+            simpleQueryInp->arg4,
+            simpleQueryInp->form,
+            &control,
+            outBuf,
+            maxBufSize);
+
+        if (status < 0) {
+            if (status != CAT_NO_ROWS_FOUND) {
+                rodsLog(LOG_NOTICE, "_rsSimpleQuery: simpleQuery for %s, status = %d", simpleQueryInp->sql, status);
+            }
+            return status;
+        }
+
+        simpleQueryOut_t* myQueryOut = static_cast<simpleQueryOut_t*>(malloc(sizeof(simpleQueryOut_t)));
+        myQueryOut->control = control;
+        myQueryOut->outBuf = outBuf;
+
+        *simpleQueryOut = myQueryOut;
+
+        return status;
+    } // _rsSimpleQuery
+} // anonymous namespace
 
 int
 rsSimpleQuery( rsComm_t *rsComm, simpleQueryInp_t *simpleQueryInp,
                simpleQueryOut_t **simpleQueryOut ) {
     rodsServerHost_t *rodsServerHost;
     int status;
+
+    addRErrorMsg(
+        &rsComm->rError, DEPRECATED_API, "SimpleQuery has been deprecated. Use GenQuery or SpecificQuery instead.");
 
     status = getAndConnRcatHost(rsComm, PRIMARY_RCAT, (const char*) NULL, &rodsServerHost);
     if ( status < 0 ) {
@@ -42,56 +78,12 @@ rsSimpleQuery( rsComm_t *rsComm, simpleQueryInp_t *simpleQueryInp,
         }
     }
     else {
-        status = rcSimpleQuery( rodsServerHost->conn,
-                                simpleQueryInp, simpleQueryOut );
+        status = rcSimpleQuery(rodsServerHost->conn, simpleQueryInp, simpleQueryOut);
     }
 
     if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
         rodsLog( LOG_NOTICE,
                  "rsSimpleQuery: rcSimpleQuery failed, status = %d", status );
     }
-    return status;
-}
-
-int
-_rsSimpleQuery( rsComm_t *rsComm, simpleQueryInp_t *simpleQueryInp,
-                simpleQueryOut_t **simpleQueryOut ) {
-    int status;
-
-    int control;
-
-    int maxBufSize;
-    char *outBuf;
-
-    simpleQueryOut_t *myQueryOut;
-
-    control = simpleQueryInp->control;
-
-    maxBufSize = simpleQueryInp->maxBufSize;
-
-    outBuf = ( char* )malloc( maxBufSize );
-
-    status = chlSimpleQuery( rsComm, simpleQueryInp->sql,
-                             simpleQueryInp->arg1,
-                             simpleQueryInp->arg2,
-                             simpleQueryInp->arg3,
-                             simpleQueryInp->arg4,
-                             simpleQueryInp->form,
-                             &control, outBuf, maxBufSize );
-    if ( status < 0 ) {
-        if ( status != CAT_NO_ROWS_FOUND ) {
-            rodsLog( LOG_NOTICE,
-                     "_rsSimpleQuery: simpleQuery for %s, status = %d",
-                     simpleQueryInp->sql, status );
-        }
-        return status;
-    }
-
-    myQueryOut = ( simpleQueryOut_t* )malloc( sizeof( simpleQueryOut_t ) );
-    myQueryOut->control = control;
-    myQueryOut->outBuf = outBuf;
-
-    *simpleQueryOut = myQueryOut;
-
     return status;
 }
