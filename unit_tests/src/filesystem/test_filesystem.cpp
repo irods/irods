@@ -352,7 +352,7 @@ TEST_CASE("filesystem")
         permissions_match(status.permissions()[0], new_perms);
 
         new_perms = fs::perms::own;
-        fs::client::permissions(conn, p, env.rodsUserName, new_perms);
+        fs::client::permissions(fs::admin, conn, p, env.rodsUserName, new_perms);
         status = fs::client::status(conn, p);
         REQUIRE_FALSE(status.permissions().empty());
         permissions_match(status.permissions()[0], new_perms);
