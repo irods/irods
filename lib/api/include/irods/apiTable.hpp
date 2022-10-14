@@ -299,6 +299,7 @@ static irods::apidef_t client_api_table_inp[] = {
 #else
 #error "exactly one of {CREATE_API_TABLE_FOR_SERVER, CREATE_API_TABLE_FOR_CLIENT} must be defined"
 #endif
+    // clang-format off
     {
         GET_MISC_SVR_INFO_AN, RODS_API_VERSION, NO_USER_AUTH, NO_USER_AUTH,
         NULL, 0, "MiscSvrInfo_PI", 0,
@@ -563,7 +564,11 @@ static irods::apidef_t client_api_table_inp[] = {
     {
         SIMPLE_QUERY_AN, RODS_API_VERSION, LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH,
         "simpleQueryInp_PI", 0,  "simpleQueryOut_PI", 0,
+        // rsSimpleQuery is deprecated, but we need to continue to support it until its removal.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         boost::any(std::function<int(rsComm_t*,simpleQueryInp_t*,simpleQueryOut_t**)>(RS_SIMPLE_QUERY)),
+#pragma clang diagnostic pop
         "api_simple_query", irods::clearInStruct_noop,
         (funcPtr)CALL_SIMPLEQUERYINP_SIMPLEQUERYOUT
     },
@@ -1248,6 +1253,7 @@ static irods::apidef_t client_api_table_inp[] = {
         "api_exec_rule_expression", irods::clearInStruct_noop,
         (funcPtr)CALL_EXECRULEEXPRESSIONINP
     },
+    // clang-format on
 }; // _api_table_inp
 
 #endif	/* API_TABLE_H */
