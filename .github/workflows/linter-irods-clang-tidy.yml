@@ -66,7 +66,7 @@ jobs:
                   export PATH=/opt/irods-externals/cmake3.21.4-0/bin:$PATH
                   mkdir build
                   cd build
-                  cmake -DIRODS_DISABLE_COMPILER_OPTIMIZATIONS=ON ../
+                  cmake -DIRODS_DISABLE_COMPILER_OPTIMIZATIONS=YES -DIRODS_UNIT_TESTS_BUILD=YES ..
             - name: Run Clang-Tidy
               run: |
                   # Make clang and clang-tidy available.
