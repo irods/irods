@@ -1,21 +1,22 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
+#ifndef IRODS_GEN_QUERY_NAMES_H
+#define IRODS_GEN_QUERY_NAMES_H
 
-/* rodsGenQueryNames.h - common header file for the generalized query names.
- * Maps the user specified strings to the corresponding #define values.
- */
-
-#ifndef GEN_QUERY_NAMES_H__
-#define GEN_QUERY_NAMES_H__
+/// \file
+///
+/// \brief Common header file for the generalized query names.
+///
+/// Maps the user specified strings to the corresponding #define values.
 
 #include "irods/rodsGenQuery.h"
 
-typedef struct {
+// NOLINTNEXTLINE(modernize-use-using)
+typedef struct GenQueryColumnName {
     int columnId;
     char *columnName;
 } columnName_t;
 
-columnName_t columnNames[] = {
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+static const columnName_t columnNames[] = {
     { COL_ZONE_ID,          "ZONE_ID", },
     { COL_ZONE_NAME,        "ZONE_NAME", },
 
@@ -384,9 +385,9 @@ columnName_t columnNames[] = {
     { COL_TICKET_COLL_NAME,                "TICKET_COLL_NAME", },
     { COL_TICKET_OWNER_NAME,               "TICKET_OWNER_NAME", },
     { COL_TICKET_OWNER_ZONE,               "TICKET_OWNER_ZONE", },
-
 };
 
-int NumOfColumnNames = sizeof( columnNames ) / sizeof( columnName_t );
+static const int NumOfColumnNames = sizeof(columnNames) / sizeof(columnName_t);
 
-#endif	/* GEN_QUERY_NAMES_H__ */
+#endif	// IRODS_GEN_QUERY_NAMES_H
+
