@@ -13,18 +13,21 @@ struct RcComm;
 /// may experience frequent changes.
 namespace irods::experimental
 {
+    // clang-format off
+    //
     /// A tag type that indicates whether or not a client connection
     /// should allow the user to control when the connection and
     /// authentication occurs.
     ///
     /// \since 4.2.9
-    struct defer_connection {} defer_connection;
+    inline const struct defer_connection {} defer_connection;
+    // clang-format on
 
     /// This move-only class provides a convenient way to connect to and
     /// disconnect from an iRODS server in a safe manner.
     ///
     /// \since 4.2.9
-    class client_connection
+    class client_connection // NOLINT(cppcoreguidelines-special-member-functions)
     {
     public:
         /// Connects and authenticates using the information and credentials
@@ -144,14 +147,14 @@ namespace irods::experimental
         /// \retval false Otherwise.
         ///
         /// \since 4.2.9
-        operator bool() const noexcept;
+        operator bool() const noexcept; // NOLINT(google-explicit-constructor)
 
         /// Returns a reference to the underlying connection.
         ///
         /// \throws irods::exception If the underlying connection is null.
         ///
         /// \since 4.2.9
-        operator RcComm&() const;
+        operator RcComm&() const; // NOLINT(google-explicit-constructor)
 
         /// Returns a pointer to the underlying connection.
         ///
