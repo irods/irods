@@ -3,6 +3,7 @@
 
 #include "irods/authenticate.h"
 #include "irods/getRodsEnv.h"
+#include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_auth_constants.hpp"
 #include "irods/irods_exception.hpp"
 #include "irods/irods_load_plugin.hpp"
@@ -16,6 +17,7 @@
 #include <nlohmann/json.hpp>
 
 #include <functional>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -110,7 +112,7 @@ namespace irods::experimental::auth
     /// \returns The authentication plugin object (descendant of \p authentication_base).
     ///
     /// \since 4.3.0
-    auto resolve_authentication_plugin(const std::string& _scheme, const std::string& _type)
+    inline auto resolve_authentication_plugin(const std::string& _scheme, const std::string& _type)
     {
         using plugin_type = authentication_base;
 
@@ -156,15 +158,16 @@ namespace irods::experimental::auth
     /// \endparblock
     ///
     /// \since 4.3.0
-    void authenticate_client(RcComm& _comm, const RodsEnvironment& _env, const json& _ctx)
+    inline void authenticate_client(RcComm& _comm, const RodsEnvironment& _env, const json& _ctx)
     {
         std::string scheme = _env.rodsAuthScheme;
 
-        auto auth = resolve_authentication_plugin(scheme, "client");
+        std::unique_ptr<authentication_base> auth{resolve_authentication_plugin(scheme, "client")};
 
         const std::string* next_operation = &irods::AUTH_CLIENT_START;
 
-        json req{_ctx}, resp{};
+        json req{_ctx};
+        json resp;
 
         req["scheme"] = scheme;
         req[auth::next_operation] = *next_operation;
@@ -200,7 +203,7 @@ namespace irods::experimental::auth
     /// \retval false If server version is greater than or equal to 4.3.0
     ///
     /// \since 4.3.0
-    auto use_legacy_authentication(const RcComm& _comm) -> bool
+    inline auto use_legacy_authentication(const RcComm& _comm) -> bool
     {
         static constexpr auto minimum_version_for_auth_plugin_framework = irods::version{4, 3, 0};
 
@@ -228,7 +231,7 @@ namespace irods::experimental::auth
     /// \return JSON response from the server which may be built upon for the next request
     ///
     /// \since 4.3.0
-    auto request(rcComm_t& _comm, const json& _msg)
+    inline auto request(rcComm_t& _comm, const json& _msg)
     {
         constexpr int authentication_api_number = 110000;
 
@@ -249,6 +252,8 @@ namespace irods::experimental::auth
         if (ec < 0) {
             THROW(ec, "failed to perform request");
         }
+
+        at_scope_exit free_memory{[resp] { freeBBuf(resp); }};
 
         return json::parse(static_cast<char*>(resp->buf),
                            static_cast<char*>(resp->buf) + resp->len);
@@ -276,3 +281,4 @@ namespace irods::experimental::auth
 } // namespace irods::experimental::auth
 
 #endif // IRODS_AUTHENTICATION_PLUGIN_FRAMEWORK_HPP
+
