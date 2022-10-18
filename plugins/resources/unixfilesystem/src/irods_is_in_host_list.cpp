@@ -17,7 +17,7 @@ namespace irods
 
     // returns true if there is no host_list or if the current host is in
     // the list
-    auto is_host_in_host_list(irods::plugin_property_map& prop_map, const std::string_view& resource_hostname) -> bool
+    auto is_host_in_host_list(irods::plugin_property_map& prop_map, std::string_view resource_hostname) -> bool
     {
         std::string host_list_str;
 
