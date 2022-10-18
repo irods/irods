@@ -237,6 +237,12 @@ namespace irods::experimental::io::NAMESPACE_IMPL
 
             fileLseekOut_t* output{};
 
+            at_scope_exit free_memory{[&output] {
+                if (output) { // NOLINT(readability-implicit-bool-conversion)
+                    std::free(output); // NOLINTNEXTLINE(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
+                }
+            }};
+
             if (const auto ec = rxDataObjLseek(comm_, &input, &output); ec < 0) {
                 return seek_error;
             }
