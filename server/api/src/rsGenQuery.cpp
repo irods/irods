@@ -537,7 +537,8 @@ static bool is_zone_name_valid(const std::string& _zone_hint)
         return false;
     }
 
-    const std::string_view zone_name = *tokens.begin();
+    const auto iter = tokens.begin();
+    const std::string_view zone_name = *iter;
 
     for (const auto* tmp_zone = ZoneInfoHead; tmp_zone; tmp_zone = tmp_zone->next) {
         if (boost::iequals(zone_name, tmp_zone->zoneName)) {
@@ -559,12 +560,14 @@ irods::error process_query_terms_for_pre_irods4_server(const std::string& _zone_
         return ERROR(SYS_INVALID_ZONE_NAME, "No zone name parsed from zone hint");
     }
 
-    const std::string_view zone_name = *tokens.begin();
-    zoneInfo_t* tmp_zone = ZoneInfoHead;
+    const auto iter = tokens.begin();
+    const std::string_view zone_name = *iter;
+    const zoneInfo_t* tmp_zone = ZoneInfoHead;
 
     // grind through the zones and find the match to the kw
     while (tmp_zone) {
-        if (boost::iequals(zone_name, tmp_zone->zoneName) && tmp_zone->primaryServerHost->conn &&
+        if (boost::iequals(zone_name, tmp_zone->zoneName) &&
+            tmp_zone->primaryServerHost->conn &&
             tmp_zone->primaryServerHost->conn->svrVersion &&
             tmp_zone->primaryServerHost->conn->svrVersion->cookie < 301)
         {
