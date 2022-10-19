@@ -162,7 +162,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
     def test_list_users__issue_6624(self):
         # A certain number of users with sufficiently long usernames will trigger a SimpleQuery bug.
         created_user_count = 15
-        username_prefix = f'{"a" * 57}'
+        username_prefix = 'a' * 57
         usernames = ['{}_{:02}#{}'.format(username_prefix, i, self.admin.zone_name) for i in range(created_user_count)]
 
         # Get the initial list of users for proper reset after the test
