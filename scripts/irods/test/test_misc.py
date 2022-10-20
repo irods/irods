@@ -13,6 +13,7 @@ from .. import lib
 from .. import paths
 from ..configuration import IrodsConfig
 from ..controller import IrodsController
+from ..core_file import temporary_core_file
 
 class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unittest.TestCase):
 
@@ -31,6 +32,31 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
         env['irodsProt'] = '2'
         out, err, ec = lib.execute_command_permissive(['ils'], env=env)
         self.assertTrue('Invalid protocol value.' in err)
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', "only run for native rule language")
+    def test_acpreconnect_has_client_addr__5985(self):
+        with temporary_core_file() as core:
+            data_object_path = os.path.join(
+                self.admin.session_collection, 'importantData')
+            get_client_addr_rule = """
+                acPreConnect(*OUT) {{
+                    *OUT = "CS_NEG_DONT_CARE";
+                    msi_touch('{{"logical_path": "{path}"}}');
+                    msiModAVUMetadata("-d", "{path}", "set", "clientAddr", $clientAddr, "ip address");
+                }}
+            """.format(path=data_object_path)
+
+            core.add_rule(get_client_addr_rule)
+
+            self.admin.assert_icommand(
+                'ils', 'STDOUT_SINGLELINE', os.path.basename(data_object_path))
+            out, err, ec = self.admin.run_icommand(
+                ['imeta', 'ls', '-d', data_object_path, 'clientAddr'])
+
+            self.assertGreater(len(out), 0)
+            self.assertRegex(out, r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b")
+            self.assertEqual(len(err), 0)
+            self.assertEqual(ec, 0)
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_disallow_registration_of_path_with_missing_data_object_name__issue_4494(self):
