@@ -1,4 +1,5 @@
 // =-=-=-=-=-=-=-
+#include "irods/initServer.hpp"
 #include "irods/irods_client_server_negotiation.hpp"
 #include "irods/irods_configuration_keywords.hpp"
 #include "irods/irods_kvp_string_parser.hpp"
@@ -73,8 +74,19 @@ namespace irods
         std::string&               _result ) {
         // =-=-=-=-=-=-=-
         // manufacture an rei for the applyRule
-        ruleExecInfo_t rei;
-        memset( ( char* )&rei, 0, sizeof( ruleExecInfo_t ) );
+        ruleExecInfo_t rei{};
+
+        // If issues arise from this local rsComm either from lack of information,
+        // such as the missing rsComm.myEnv, or environment variable mismatch, use
+        // the existing rsComm higher up the call stack.
+        rsComm_t rsComm{};
+        auto comm_status{initRsCommWithStartupPack(&rsComm, nullptr)};
+
+        if (comm_status < 0) {
+            return ERROR(comm_status, "failed to initialize rsComm for rule execution information");
+        }
+
+        rei.rsComm = &rsComm;
 
         std::string rule_result;
         std::list<boost::any> params;
