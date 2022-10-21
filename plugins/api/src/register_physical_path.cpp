@@ -187,6 +187,7 @@ namespace
                 __FUNCTION__, __LINE__, _inp->objPath, ec));
         }
 
+        freeBBuf(*_out);
         *_out = irods::to_bytes_buffer(out_str);
         std::free(out_str);
         out_str = nullptr;
@@ -281,6 +282,7 @@ namespace
         }
 
         const auto info_j = ir::to_json(destination_replica);
+        freeBBuf(*_out);
         *_out = irods::to_bytes_buffer(info_j.dump());
 
         return 0;
@@ -383,6 +385,7 @@ namespace
         } // static PEP for filePathReg
 
         const auto info_j = ir::to_json(destination_replica);
+        freeBBuf(*_out);
         *_out = irods::to_bytes_buffer(info_j.dump());
 
         return ec;
