@@ -13,6 +13,7 @@
 #include "irods/irods_resource_backport.hpp"
 #include "irods/irods_hierarchy_parser.hpp"
 #include "irods/rsDataObjLseek.hpp"
+#include "irods/irods_at_scope_exit.hpp"
 
 #include <algorithm>
 #include <limits>
@@ -103,6 +104,12 @@ rsDataObjRead(rsComm_t* rsComm,
         input.whence = SEEK_CUR;
 
         FileLseekOut* output{};
+
+        irods::at_scope_exit free_output{[&output] {
+            if (output) { // NOLINT(readability-implicit-bool-conversion)
+                std::free(output); // NOLINT(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
+            }
+        }};
 
         if (const auto ec = rsDataObjLseek(rsComm, &input, &output); ec < 0) {
             rodsLog(LOG_ERROR, "%s: Could not retrieve the current file read position.", __func__, ec);
