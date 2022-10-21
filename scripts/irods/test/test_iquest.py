@@ -9,9 +9,10 @@ if sys.version_info < (2, 7):
 else:
     import unittest
 
+from . import session
+from .. import lib
 from ..configuration import IrodsConfig
 from .resource_suite import ResourceBase
-from .. import lib
 
 def create_large_hierarchy(self, count, hostname, directory):
     self.admin.assert_icommand("iadmin mkresc repRescPrime replication", 'STDOUT_SINGLELINE', 'replication')
@@ -148,3 +149,136 @@ class Test_Iquest(ResourceBase, unittest.TestCase):
     def test_iquest_incorrect_format_count(self):
         self.admin.assert_icommand("iquest \"%s %s\" \"select COLL_NAME where COLL_NAME like '%home%'\"",
                                    'STDERR_SINGLELINE', 'boost::too_few_args: format-string referred to more arguments than were passed')
+
+
+class test_iquest_with_data_resc_hier(unittest.TestCase):
+    @classmethod
+    def setUpClass(self):
+        self.user = session.mkuser_and_return_session('rodsuser', 'alice', 'apass', lib.get_hostname())
+
+        self.root_resource = 'root'
+        self.mid_resource = 'mid'
+        self.leaf_resource = 'leaf'
+        self.data_name = 'foo'
+        self.logical_path = os.path.join(self.user.session_collection, self.data_name)
+        self.hierarchy = ';'.join([self.root_resource, self.mid_resource, self.leaf_resource])
+
+        with session.make_session_for_existing_admin() as admin_session:
+            lib.create_passthru_resource(self.root_resource, admin_session)
+            lib.create_passthru_resource(self.mid_resource, admin_session)
+            lib.create_ufs_resource(self.leaf_resource, admin_session)
+            lib.add_child_resource(self.root_resource, self.mid_resource, admin_session)
+            lib.add_child_resource(self.mid_resource, self.leaf_resource, admin_session)
+
+        self.user.assert_icommand(['itouch', '-R', self.leaf_resource, self.logical_path])
+
+
+    @classmethod
+    def tearDownClass(self):
+        self.user.assert_icommand(['irm', '-f', self.logical_path])
+
+        with session.make_session_for_existing_admin() as admin_session:
+            self.user.__exit__()
+            admin_session.run_icommand(['iadmin', 'rmuser', 'alice'])
+            lib.remove_child_resource(self.mid_resource, self.leaf_resource, admin_session)
+            lib.remove_child_resource(self.root_resource, self.mid_resource, admin_session)
+            lib.remove_resource(self.leaf_resource, admin_session)
+            lib.remove_resource(self.mid_resource, admin_session)
+            lib.remove_resource(self.root_resource, admin_session)
+
+
+    def test_invalid_operations(self):
+        pattern = self.hierarchy
+        invalid_operations = [
+            '',
+            '==',
+            'lik',
+            'like not like',
+            'not lik',
+            'not like like',
+            'not not like',
+            'not',
+            'notlike',
+            'ot like'
+        ]
+
+        for op in invalid_operations:
+            with self.subTest(op):
+                query = f'select DATA_RESC_HIER where DATA_NAME = \'{self.data_name}\' and DATA_RESC_HIER {op} \'{pattern}\''
+                self.user.assert_icommand(['iquest', '%s', query], 'STDERR', 'CAT_INVALID_ARGUMENT')
+
+
+    def test_valid_operations_with_matching_glob(self):
+        pattern = f'{self.root_resource}%'
+        operations_to_expected_result = {
+            'like': self.hierarchy,
+            'LIKE': self.hierarchy,
+            'not like': 'CAT_NO_ROWS_FOUND',
+            'not LIKE': 'CAT_NO_ROWS_FOUND',
+            'NOT like': 'CAT_NO_ROWS_FOUND',
+            'NOT LIKE': 'CAT_NO_ROWS_FOUND',
+            '=': 'CAT_NO_ROWS_FOUND',
+            '!=': self.hierarchy
+        }
+
+        for op in operations_to_expected_result:
+            with self.subTest(op):
+                query = f'select DATA_RESC_HIER where DATA_NAME = \'{self.data_name}\' and DATA_RESC_HIER {op} \'{pattern}\''
+                self.user.assert_icommand(['iquest', '%s', query], 'STDOUT', operations_to_expected_result[op])
+
+
+    def test_valid_operations_with_nonmatching_glob(self):
+        pattern = 'nope%'
+        operations_to_expected_result = {
+            'like': 'CAT_NO_ROWS_FOUND',
+            'LIKE': 'CAT_NO_ROWS_FOUND',
+            'not like': self.hierarchy,
+            'not LIKE': self.hierarchy,
+            'NOT like': self.hierarchy,
+            'NOT LIKE': self.hierarchy,
+            '=': 'CAT_NO_ROWS_FOUND',
+            '!=': self.hierarchy
+        }
+
+        for op in operations_to_expected_result:
+            with self.subTest(op):
+                query = f'select DATA_RESC_HIER where DATA_NAME = \'{self.data_name}\' and DATA_RESC_HIER {op} \'{pattern}\''
+                self.user.assert_icommand(['iquest', '%s', query], 'STDOUT', operations_to_expected_result[op])
+
+
+    def test_valid_operations_with_exact_match(self):
+        pattern = self.hierarchy
+        operations_to_expected_result = {
+            'like': self.hierarchy,
+            'LIKE': self.hierarchy,
+            'not like': 'CAT_NO_ROWS_FOUND',
+            'not LIKE': 'CAT_NO_ROWS_FOUND',
+            'NOT like': 'CAT_NO_ROWS_FOUND',
+            'NOT LIKE': 'CAT_NO_ROWS_FOUND',
+            '=': self.hierarchy,
+            '!=': 'CAT_NO_ROWS_FOUND'
+        }
+
+        for op in operations_to_expected_result:
+            with self.subTest(op):
+                query = f'select DATA_RESC_HIER where DATA_NAME = \'{self.data_name}\' and DATA_RESC_HIER {op} \'{pattern}\''
+                self.user.assert_icommand(['iquest', '%s', query], 'STDOUT', operations_to_expected_result[op])
+
+
+    def test_valid_operations_with_no_match(self):
+        pattern = ';'.join(['nope', self.hierarchy])
+        operations_to_expected_result = {
+            'like': 'CAT_NO_ROWS_FOUND',
+            'LIKE': 'CAT_NO_ROWS_FOUND',
+            'not like': self.hierarchy,
+            'not LIKE': self.hierarchy,
+            'NOT like': self.hierarchy,
+            'NOT LIKE': self.hierarchy,
+            '=': 'CAT_NO_ROWS_FOUND',
+            '!=': self.hierarchy
+        }
+
+        for op in operations_to_expected_result:
+            with self.subTest(op):
+                query = f'select DATA_RESC_HIER where DATA_NAME = \'{self.data_name}\' and DATA_RESC_HIER {op} \'{pattern}\''
+                self.user.assert_icommand(['iquest', '%s', query], 'STDOUT', operations_to_expected_result[op])
