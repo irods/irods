@@ -1,6 +1,7 @@
+#include "irods/objDesc.hpp"
+
 #include "irods/rcMisc.h"
 #include "irods/rodsDef.h"
-#include "irods/objDesc.hpp"
 #include "irods/dataObjOpr.hpp"
 #include "irods/rodsDef.h"
 #include "irods/rsGlobalExtern.hpp"
@@ -28,9 +29,46 @@
 
 int
 initL1desc() {
-    memset( L1desc, 0, sizeof( L1desc ) );
+    for (auto&& e : L1desc) {
+        init_l1desc(e);
+    }
+
     return 0;
 }
+
+auto init_l1desc(l1desc& _l1d) -> void
+{
+    _l1d.l3descInx = 0;
+    _l1d.inuseFlag = 0;
+    _l1d.oprType = 0;
+    _l1d.openType = 0;
+    _l1d.oprStatus = 0;
+    _l1d.dataObjInpReplFlag = 0;
+    _l1d.copiesNeeded = 0;
+    _l1d.bytesWritten = 0;
+    _l1d.dataSize = 0;
+    _l1d.replStatus = 0;
+    _l1d.chksumFlag = 0;
+    _l1d.srcL1descInx = 0;
+    _l1d.remoteL1descInx = 0;
+    _l1d.stageFlag = 0;
+    _l1d.purgeCacheFlag = 0;
+    _l1d.lockFd = 0;
+
+    _l1d.dataObjInp = nullptr;
+    _l1d.dataObjInfo = nullptr;
+    _l1d.otherDataObjInfo = nullptr;
+    _l1d.replDataObjInfo = nullptr;
+    _l1d.remoteZoneHost = nullptr;
+
+    _l1d.pluginData.clear();
+    _l1d.replica_token.clear();
+
+    // NOLINTBEGIN(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+    std::memset(_l1d.chksum, 0, sizeof(l1desc::chksum));
+    std::memset(_l1d.in_pdmo, 0, sizeof(l1desc::in_pdmo));
+    // NOLINTEND(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+} // init_l1desc
 
 int
 allocL1desc() {
@@ -139,9 +177,7 @@ int freeL1desc_struct(l1desc& _l1desc)
         free(_l1desc.dataObjInp);
     }
 
-    _l1desc.replica_token.clear();
-
-    memset(&_l1desc, 0, sizeof(l1desc));
+    init_l1desc(_l1desc);
 
     return 0;
 } // freeL1desc
