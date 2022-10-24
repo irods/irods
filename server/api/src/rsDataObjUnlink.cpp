@@ -168,6 +168,8 @@ int rsMvDataObjToTrash(
         return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
     }
 
+    freeAllDataObjInfo(*dataObjInfoHead);
+
     int status = getDataObjInfo(rsComm, &dataObjInp, dataObjInfoHead, accessPerm, 1);
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE,
@@ -351,6 +353,10 @@ int rsMvDataObjToTrash(
         }
 
         dataObjInfo_t *dataObjInfoHead{};
+        irods::at_scope_exit free_data_obj_infos{[&dataObjInfoHead] {
+            freeAllDataObjInfo(dataObjInfoHead);
+        }};
+
         dataObjUnlinkInp->openFlags = O_WRONLY;
         status = getDataObjInfoIncSpecColl(rsComm, dataObjUnlinkInp, &dataObjInfoHead);
         if ( status < 0 ) {
@@ -373,16 +379,19 @@ int rsMvDataObjToTrash(
                 const auto age = time(0) - std::atoi(dataObjInfoHead->dataModify);
                 if (age < age_limit) {
                     /* younger than ageLimit. Nothing to do */
-                    freeAllDataObjInfo(dataObjInfoHead);
                     return 0;
                 }
             }
         }
 
+        // clang-format off
         if (dataObjUnlinkInp->oprType == UNREG_OPR ||
             getValByKey(&dataObjUnlinkInp->condInput, FORCE_FLAG_KW) ||
             getValByKey(&dataObjUnlinkInp->condInput, EMPTY_BUNDLE_ONLY_KW) ||
-            dataObjInfoHead->specColl || rmTrashFlag == 1) {
+            dataObjInfoHead->specColl ||
+            rmTrashFlag == 1)
+        // clang-format on
+        {
             status = _rsDataObjUnlink(*rsComm, *dataObjUnlinkInp, &dataObjInfoHead);
         }
         else {
@@ -396,14 +405,11 @@ int rsMvDataObjToTrash(
                 }
                 const auto err{ERROR(status, "acTrashPolicy failed")};
                 irods::log(err);
-                freeAllDataObjInfo(dataObjInfoHead);
                 return err.code();
             }
 
             if (NO_TRASH_CAN != rei.status) {
-                status = rsMvDataObjToTrash(rsComm, *dataObjUnlinkInp, &dataObjInfoHead);
-                freeAllDataObjInfo(dataObjInfoHead);
-                return status;
+                return rsMvDataObjToTrash(rsComm, *dataObjUnlinkInp, &dataObjInfoHead);
             }
             else {
                 status = _rsDataObjUnlink(*rsComm, *dataObjUnlinkInp, &dataObjInfoHead );
@@ -426,7 +432,7 @@ int rsMvDataObjToTrash(
 
         clearKeyVal(rei.condInputData);
         free(rei.condInputData);
-        freeAllDataObjInfo(dataObjInfoHead);
+
         return status;
     } // rsDataObjUnlink_impl
 
