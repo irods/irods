@@ -8,7 +8,7 @@
 
 #include <cstring>
 
-namespace logger = irods::experimental::log;
+using log_msi = irods::experimental::log::microservice;
 
 /* addMsParam - This is for backward compatibility only.
  *  addMsParamToArray should be used for all new functions
@@ -43,113 +43,148 @@ addIntParamToArray( msParamArray_t *msParamArray, char *label, int inpInt ) {
  *         and inpOutBuf will be passed. If replFlag == 1, the inOutStruct
  *         and inpOutBuf will be replicated.
  */
-
-int
-addMsParamToArray( msParamArray_t *msParamArray, const char *label,
-                   const char *type, void *inOutStruct, bytesBuf_t *inpOutBuf, int replFlag ) {
-    msParam_t **newParam;
-    int len, newLen;
-
-    if ( msParamArray == NULL || label == NULL ) {
-        rodsLog( LOG_ERROR,
-                 "addMsParam: NULL msParamArray or label input" );
+int addMsParamToArray(
+    msParamArray_t *msParamArray,
+    const char *label,
+    const char *type,
+    void *inOutStruct,
+    bytesBuf_t *inpOutBuf,
+    int replFlag )
+{
+    if (!msParamArray || !label) {
+        log_msi::error("{}: received null pointer", __func__);
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    len = msParamArray->len;
+    const int len = msParamArray->len;
 
-    for ( int i = 0; i < len; i++ ) {
-        if ( msParamArray->msParam[i]->label == NULL ) {
+    // Do not allow MsParam entries sharing the same name to exist in the MsParamArray.
+    for (int i = 0; i < len; ++i) {
+        auto* msp = msParamArray->msParam[i];
+
+        // Skip the entry if the MsParam has no label (i.e. no parameter name).
+        if (!msp->label) {
             continue;
         }
-        if ( strcmp( msParamArray->msParam[i]->label, label ) == 0 ) {
-            if (!type || !msParamArray->msParam[i]->type) {
-                rodsLog(LOG_ERROR, "[%s] - type is null for [%s]", __FUNCTION__, label);
+
+        // Check the existing MsParam if its label matches the label of the new MsParam to add.
+        if (std::strcmp(msp->label, label) == 0) {
+            if (!type || !msp->type) {
+                log_msi::warn("{}: Type argument for label [{}] is a null pointer.", __func__, label);
                 continue;
             }
-            /***  Jan 28 2010 to make it not given an error ***/
-            if ( !strcmp( msParamArray->msParam[i]->type, STR_MS_T ) &&
-                    !strcmp( type, STR_MS_T ) &&
-                    !strcmp( ( char * ) inOutStruct, ( char * ) msParamArray->msParam[i]->inOutStruct ) ) {
+
+            // clang-format off
+            // Return immediately if the input arguments will result in a duplicate entry being added to the
+            // MsParamArray.
+            //
+            // This check only applies to strings!
+            if (std::strcmp(msp->type, STR_MS_T) == 0 &&
+                std::strcmp(type, STR_MS_T) == 0 &&
+                std::strcmp(static_cast<char*>(inOutStruct), static_cast<char*>(msp->inOutStruct)) == 0)
+            {
                 return 0;
             }
-            /***  Jan 28 2010 to make it not given an error ***/
-            rodsLog( LOG_ERROR,
-                     "addMsParam: Two params have the same label %s", label );
-            if ( !strcmp( msParamArray->msParam[i]->type, STR_MS_T ) )
-                rodsLog( LOG_ERROR,
-                         "addMsParam: old string value = %s\n", ( char * ) msParamArray->msParam[i]->inOutStruct );
-            else
-                rodsLog( LOG_ERROR,
-                         "addMsParam: old param is of type: %s\n", msParamArray->msParam[i]->type );
-            if ( !strcmp( type, STR_MS_T ) )
-                rodsLog( LOG_ERROR,
-                         "addMsParam: new string value = %s\n", ( char * ) inOutStruct );
-            else
-                rodsLog( LOG_ERROR,
-                         "addMsParam: new param is of type: %s\n", type );
+            // clang-format on
+
+            //
+            // Found a MsParam with the same label, but with different types!
+            // Report it and return an error.
+            //
+
+            log_msi::error("{}: Two parameters have the same label [{}].", __func__, label);
+
+            if (std::strcmp(msp->type, STR_MS_T) == 0) {
+                log_msi::debug("{}: Old string value = [{}]\n", __func__, static_cast<char*>(msp->inOutStruct));
+            }
+            else {
+                log_msi::debug("{}: Old parameter is of type: [{}]\n", __func__, msp->type);
+            }
+
+            if (std::strcmp(type, STR_MS_T) == 0) {
+                log_msi::debug("{}: New string value = [{}]\n", __func__, static_cast<char*>(inOutStruct));
+            }
+            else {
+                log_msi::debug("{}: New parameter is of type: [{}]\n", __func__, type);
+            }
+
             return USER_PARAM_LABEL_ERR;
         }
     }
 
-    if ( ( msParamArray->len % PTR_ARRAY_MALLOC_LEN ) == 0 ) {
-        newLen = msParamArray->len + PTR_ARRAY_MALLOC_LEN;
-        newParam = ( msParam_t ** ) malloc( newLen * sizeof( *newParam ) );
-        memset( newParam, 0, newLen * sizeof( *newParam ) );
-        for ( int i = 0; i < len; i++ ) {
-            newParam[i] = msParamArray->msParam[i];
+    // Resize the MsParam array if necessary.
+    if ((msParamArray->len % PTR_ARRAY_MALLOC_LEN) == 0) {
+        const auto element_count = msParamArray->len + PTR_ARRAY_MALLOC_LEN;
+        const auto byte_count = element_count * sizeof(MsParam*);
+        auto** msp_pointers = static_cast<MsParam**>(std::malloc(byte_count));
+        std::memset(msp_pointers, 0, byte_count);
+
+        // Make the new set of pointers point to elements in the msParamArray.
+        // The new set of pointers will own the memory referenced by msParamArray.
+        for (int i = 0; i < len; ++i) {
+            msp_pointers[i] = msParamArray->msParam[i];
         }
-        if ( msParamArray->msParam != NULL ) {
-            free( msParamArray->msParam );
+
+        if (msParamArray->msParam) {
+            std::free(msParamArray->msParam);
         }
-        msParamArray->msParam = newParam;
+
+        // Attach the new array of MsParams to the msParamArray.
+        msParamArray->msParam = msp_pointers;
     }
 
-    msParamArray->msParam[len] = ( msParam_t * ) malloc( sizeof( msParam_t ) );
-    memset( msParamArray->msParam[len], 0, sizeof( msParam_t ) );
-    if ( replFlag == 0 ) {
-        fillMsParam( msParamArray->msParam[len], label, type, inOutStruct,
-                     inpOutBuf );
+    // Append a new MsParam to the end of the msParamArray.
+    auto* msp = msParamArray->msParam[len] = static_cast<MsParam*>(std::malloc(sizeof(MsParam)));
+    std::memset(msp, 0, sizeof(MsParam));
+
+    ++msParamArray->len;
+
+    // Fill the MsParam with the information provided by the caller.
+    if (replFlag == 0) {
+        fillMsParam(msp, label, type, inOutStruct, inpOutBuf);
     }
     else {
-        int status = replInOutStruct( inOutStruct, &msParamArray->msParam[len]->inOutStruct, type );
-        if ( status < 0 ) {
-            rodsLogError( LOG_ERROR, status, "Error when calling replInOutStruct in %s", __PRETTY_FUNCTION__ );
-            return status;
+        const int ec = replInOutStruct(inOutStruct, &msp->inOutStruct, type);
+
+        if (ec < 0) {
+            rodsLogError(LOG_ERROR, ec, "Error when calling replInOutStruct in %s", __PRETTY_FUNCTION__);
+            return ec;
         }
-        msParamArray->msParam[len]->label = label ? strdup(label) : NULL;
-        msParamArray->msParam[len]->type = type ? strdup( type ) : NULL;
-        msParamArray->msParam[len]->inpOutBuf = replBytesBuf(inpOutBuf);
+
+        msp->label = label ? strdup(label) : nullptr;
+        msp->type = type ? strdup(type) : nullptr;
+        msp->inpOutBuf = replBytesBuf(inpOutBuf);
     }
-    msParamArray->len++;
 
     return 0;
 }
 
-int
-replMsParamArray( msParamArray_t *in, msParamArray_t *out) {
-    if ( in == NULL || out == NULL ) {
+int replMsParamArray(msParamArray_t* in, msParamArray_t* out)
+{
+    if (!in || !out) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
-    memset( out, 0, sizeof( msParamArray_t ) );
+
+    std::memset(out, 0, sizeof(MsParamArray));
 
     //TODO: this is horrible. check if it is necessary
-    int newLen = ( ( in->len / PTR_ARRAY_MALLOC_LEN ) + 1 ) * PTR_ARRAY_MALLOC_LEN;
+    const int array_size = ((in->len / PTR_ARRAY_MALLOC_LEN) + 1) * PTR_ARRAY_MALLOC_LEN;
+    const auto byte_count = array_size * sizeof(MsParam*);
 
-    out->msParam =
-        ( msParam_t ** ) malloc( newLen * sizeof( *out->msParam ) );
-    memset( out->msParam, 0,
-            newLen * sizeof( *out->msParam ) );
+    out->msParam = static_cast<MsParam**>(std::malloc(byte_count));
+    std::memset(out->msParam, 0, byte_count);
 
     out->len = in->len;
-    for ( int i = 0; i < in->len; i++ ) {
-        memset( out->msParam[i], 0, sizeof( msParam_t ) );
-        int status = replMsParam(in->msParam[i], out->msParam[i]);
-        if ( status < 0 ) {
-            rodsLogError( LOG_ERROR, status, "Error when calling replMsParam in %s", __PRETTY_FUNCTION__ );
-            return status;
+
+    for (int i = 0; i < in->len; ++i) {
+        auto* msp = out->msParam[i] = static_cast<MsParam*>(std::malloc(sizeof(MsParam)));
+        std::memset(msp, 0, sizeof(MsParam));
+        if (const auto ec = replMsParam(in->msParam[i], msp); ec < 0) {
+            log_msi::error("An error occurred while replicating MsParam [line={}]", __LINE__);
+            return ec;
         }
     }
+
     return 0;
 }
 
@@ -219,21 +254,21 @@ replBytesBuf( const bytesBuf_t* in) {
 }
 
 
-int
-fillMsParam( msParam_t *msParam, const char *label,
-             const char *type, void *inOutStruct, bytesBuf_t *inpOutBuf ) {
-    if ( label != NULL ) {
-        msParam->label = strdup( label );
+int fillMsParam( msParam_t *msParam, const char *label, const char *type, void *inOutStruct, bytesBuf_t *inpOutBuf )
+{
+    if (label) {
+        msParam->label = strdup(label);
     }
 
-    msParam->type = type ? strdup( type ) : NULL;
-    if ( inOutStruct != NULL && msParam->type != NULL &&
-            strcmp( msParam->type, STR_MS_T ) == 0 ) {
-        msParam->inOutStruct = ( void * ) strdup( ( char * )inOutStruct );
+    msParam->type = type ? strdup(type) : nullptr;
+
+    if (inOutStruct && msParam->type && std::strcmp(msParam->type, STR_MS_T) == 0) {
+        msParam->inOutStruct = strdup(static_cast<char*>(inOutStruct));
     }
     else {
         msParam->inOutStruct = inOutStruct;
     }
+
     msParam->inpOutBuf = inpOutBuf;
 
     return 0;
@@ -493,48 +528,50 @@ rmMsParamByLabel( msParamArray_t *msParamArray, const char *label, int freeStruc
     return 0;
 }
 
-int
-clearMsParamArray( msParamArray_t *msParamArray, int freeStruct ) {
-    int i;
-
-    if ( msParamArray == NULL ) {
+int clearMsParamArray(msParamArray_t* msParamArray, int freeStruct)
+{
+    if (!msParamArray) {
         return 0;
     }
 
-    for ( i = 0; i < msParamArray->len; i++ ) {
-        clearMsParam( msParamArray->msParam[i], freeStruct );
-        free( msParamArray->msParam[i] );
+    for (int i = 0; i < msParamArray->len; ++i) {
+        clearMsParam(msParamArray->msParam[i], freeStruct);
+        std::free(msParamArray->msParam[i]);
     }
 
-    if ( msParamArray->len > 0 && msParamArray->msParam != NULL ) {
-        free( msParamArray->msParam );
-        memset( msParamArray, 0, sizeof( msParamArray_t ) );
+    if (msParamArray->msParam) {
+        std::free(msParamArray->msParam);
     }
+
+    std::memset(msParamArray, 0, sizeof(MsParamArray));
 
     return 0;
 }
 
-int
-clearMsParam( msParam_t *msParam, int freeStruct ) {
-    if ( msParam == NULL ) {
+int clearMsParam(msParam_t* msParam, int freeInOutStruct)
+{
+    if (!msParam) {
         return 0;
     }
 
-    if ( msParam->label != NULL ) {
-        free( msParam->label );
-    }
-    if ( msParam->inOutStruct != NULL && ( freeStruct > 0 ||
-                                           ( msParam->type != NULL && strcmp( msParam->type, STR_MS_T ) == 0 ) ) ) {
-        free( msParam->inOutStruct );
-    }
-    if ( msParam->type != NULL ) {
-        free( msParam->type );
+    if (msParam->label) {
+        std::free(msParam->label);
     }
 
-    memset( msParam, 0, sizeof( msParam_t ) );
+    if (msParam->inOutStruct) {
+        if (freeInOutStruct > 0 || (msParam->type && std::strcmp(msParam->type, STR_MS_T) == 0)) {
+            std::free(msParam->inOutStruct);
+        }
+    }
+
+    if (msParam->type) {
+        std::free(msParam->type);
+    }
+
+    std::memset(msParam, 0, sizeof(MsParam));
+
     return 0;
 }
-
 
 /* clears everything but the label */
 int resetMsParam(msParam_t* msParam)
@@ -562,72 +599,70 @@ int resetMsParam(msParam_t* msParam)
 }
 
 
-int
-trimMsParamArray( msParamArray_t * msParamArray, char * outParamDesc ) {
-    strArray_t strArray;
-    int status;
-    int i, j, k;
-    char *value;
-    msParam_t **msParam;
-
-    if ( msParamArray == NULL ) {
+int trimMsParamArray(msParamArray_t* msParamArray, char* outParamDesc)
+{
+    if (!msParamArray) {
         return 0;
     }
 
-    memset( &strArray, 0, sizeof( strArray ) );
+    strArray_t strArray{};
 
-    if ( outParamDesc != NULL && strlen( outParamDesc ) > 0 ) {
-        status = parseMultiStr( outParamDesc, &strArray );
-        if ( status < 0 ) {
-            rodsLog( LOG_ERROR,
-                     "trimMsParamArray: parseMultiStr error, status = %d", status );
+    // If outParamDesc is not null or empty, parse it into a strArray.
+    if (outParamDesc && std::strlen(outParamDesc) > 0) {
+        if (const auto ec = parseMultiStr(outParamDesc, &strArray); ec < 0) {
+            log_msi::error("trimMsParamArray: parseMultiStr error [error code = [{}]]", ec);
         }
     }
 
-    msParam = msParamArray->msParam;
-    value = strArray.value;
+    msParam_t** msParam = msParamArray->msParam;
+    char* value = strArray.value;
 
-    if ( strArray.len == 1 && strcmp( value, ALL_MS_PARAM_KW ) == 0 ) {
-        /* retain all msParam */
+    if (strArray.len == 1 && std::strcmp(value, ALL_MS_PARAM_KW) == 0) {
+        // Retain all microservice parameters.
         return 0;
     }
 
-    i = 0;
-    while ( i < msParamArray->len ) {
-        int match;
-        int nullType;
+    int i = 0;
+    while (i < msParamArray->len) {
+        bool msParam_label_in_strArray = false;
+        bool is_null_type = false;
 
-        match = 0;
-        nullType = 0;
-        if ( msParam[i]->type == NULL || strlen( msParam[i]->type ) == 0 ) {
-            nullType = 1;
+        // Check if the MsParam defines a type.
+        if (!msParam[i]->type || std::strlen(msParam[i]->type) == 0) {
+            is_null_type = true;
         }
         else {
-            for ( k = 0; k < strArray.len; k++ ) {
-                if ( strcmp( &value[k * strArray.size], msParam[i]->label )
-                        == 0 ) {
-                    match = 1;
+            // Check if the MsParam exists in the strArray (i.e. the parsed outParamDesc string).
+            for (int k = 0; k < strArray.len; ++k) {
+                if (std::strcmp(&value[k * strArray.size], msParam[i]->label) == 0) {
+                    msParam_label_in_strArray = true;
                     break;
                 }
             }
         }
-        if ( match == 0 || nullType == 1 ) {
-            if ( nullType != 1 ) {
-                clearMsParam( msParamArray->msParam[i], 1 );
+
+        // Remove the MsParam from msParamArray if necessary.
+        if (!msParam_label_in_strArray || is_null_type) {
+            if (!is_null_type) {
+                clearMsParam(msParamArray->msParam[i], 1);
             }
-            free( msParamArray->msParam[i] );
-            /* move the rest up */
-            for ( j = i + 1; j < msParamArray->len; j++ ) {
+
+            std::free(msParamArray->msParam[i]);
+
+            // Shift all MsParam elements up one position.
+            for (int j = i + 1; j < msParamArray->len; ++j) {
                 msParamArray->msParam[j - 1] = msParamArray->msParam[j];
             }
-            msParamArray->len --;
+
+            --msParamArray->len;
         }
         else {
-            i++;
+            ++i;
         }
     }
-    if ( value != NULL ) {
-        free( value );
+
+    if (value) {
+        std::free(value);
     }
 
     return 0;
@@ -1068,23 +1103,23 @@ namespace
     auto get_stdout_or_stderr_from_ExecCmdOut_impl(MsParam* _in, BytesBufFunc _func, char** _out) -> int
     {
         if (!_in || !_out) {
-            logger::microservice::error("{} :: Invalid input parameter.", __func__);
+            log_msi::error("{} :: Invalid input parameter.", __func__);
             return SYS_INVALID_INPUT_PARAM;
         }
 
         if (!_in->type) {
-            logger::microservice::error("{} :: Missing type information.", __func__);
+            log_msi::error("{} :: Missing type information.", __func__);
             return SYS_INTERNAL_NULL_INPUT_ERR;
         }
 
         if (std::strcmp(_in->type, ExecCmdOut_MS_T) != 0) {
-            logger::microservice::error("{} :: Unsupported type [{}].", __func__, _in->type);
+            log_msi::error("{} :: Unsupported type [{}].", __func__, _in->type);
             return USER_PARAM_TYPE_ERR;
         }
 
         auto* execCmdOut = static_cast<ExecCmdOut*>(_in->inOutStruct);
         if (!execCmdOut) {
-            logger::microservice::debug("{} :: ExecCmdOut is not available.", __func__);
+            log_msi::debug("{} :: ExecCmdOut is not available.", __func__);
             return SYS_INTERNAL_NULL_INPUT_ERR;
         }
 

@@ -1,13 +1,5 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-/* msParam.h - header file for msParam.c
- */
-
-
-
-#ifndef MS_PARAM_H__
-#define MS_PARAM_H__
+#ifndef IRODS_MS_PARAM_H
+#define IRODS_MS_PARAM_H
 
 #include "irods/rods.h"
 #include "irods/objInfo.h"
@@ -15,7 +7,6 @@
 #include "irods/structFileExtAndReg.h"
 #include "irods/execCmd.h"
 #include "irods/rodsPath.h"
-
 
 /* some commonly used MS (micro service) type */
 #define STR_MS_T                "STR_PI"
@@ -166,8 +157,11 @@ msParam_t *
 getMsParamByType( msParamArray_t *msParamArray, const char *type );
 int
 rmMsParamByLabel( msParamArray_t *msParamArray, const char *label, int freeStruct );
-int
-trimMsParamArray( msParamArray_t *msParamArray, char *outParamDesc );
+
+// Trims all MsParam elements from msParamArray that do not have a type or do not have
+// a label string which matches a string in outParamDesc.
+int trimMsParamArray(msParamArray_t* msParamArray, char* outParamDesc);
+
 int
 printMsParam( msParamArray_t *msParamArray );
 int
@@ -250,4 +244,5 @@ parseMsParamFromIRFile( msParamArray_t *inpParamArray, char *inBuf );
 #ifdef __cplusplus
 }
 #endif
-#endif    /* MS_PARAM_H */
+
+#endif // IRODS_MS_PARAM_H

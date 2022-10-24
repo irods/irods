@@ -1,5 +1,4 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
+#include "irods/rodsKeyWdDef.h"
 #define HAS_MICROSDEF_T
 #include "irods/rodsConnect.h"
 #include "irods/private/re/reGlobals.hpp"
@@ -19,6 +18,9 @@
 #include "irods/irods_re_plugin.hpp"
 #include "irods/rsGeneralRowInsert.hpp"
 #include "irods/rsEndTransaction.hpp"
+
+#include <string>
+#include <string_view>
 
 
 #ifdef MYMALLOC
@@ -241,25 +243,33 @@ execMyRule( char * ruleDef, msParamArray_t *inMsParamArray, const char *outParam
 
     return execMyRuleWithSaveFlag( ruleDef, inMsParamArray, outParamsDesc, rei, 0 );
 }
-void appendOutputToInput( msParamArray_t *inpParamArray, char **outParamNames, int outParamN ) {
-    int i, k, repeat = 0;
-    for ( i = 0; i < outParamN; i++ ) {
-        if ( strcmp( outParamNames[i], ALL_MS_PARAM_KW ) == 0 ) {
+
+// Adds all missing outParamNames, except ALL_MS_PARAM_KW, to the MsParamArray.
+void appendOutputToInput(MsParamArray* inpParamArray, char** outParamNames, int outParamN)
+{
+    for (int i = 0; i < outParamN; ++i) {
+        const std::string_view param_name = outParamNames[i];
+
+        // Ignore ALL_MS_PARAM_KW keyword.
+        if (param_name == ALL_MS_PARAM_KW) {
             continue;
         }
-        repeat = 0;
-        for ( k = 0; k < inpParamArray->len; k++ ) {
-            if ( inpParamArray->msParam[k]->label != NULL && strcmp( outParamNames[i], inpParamArray->msParam[k]->label ) == 0 ) {
-                repeat = 1;
+
+        bool is_in_msParamArray = false;
+
+        for (int k = 0; k < inpParamArray->len; ++k) {
+            if (inpParamArray->msParam[k]->label && param_name == inpParamArray->msParam[k]->label) {
+                is_in_msParamArray = true;
                 break;
             }
         }
-        if ( !repeat ) {
-            addMsParam( inpParamArray, outParamNames[i], NULL, NULL, NULL );
+
+        if (!is_in_msParamArray) {
+            addMsParam(inpParamArray, outParamNames[i], nullptr, nullptr, nullptr);
         }
     }
-
 }
+
 int extractVarNames( char **varNames, const char *outBuf ) {
     int n = 0;
     const char *p = outBuf;
@@ -284,7 +294,6 @@ int extractVarNames( char **varNames, const char *outBuf ) {
 int
 execMyRuleWithSaveFlag( char * ruleDef, msParamArray_t *inMsParamArray, const char *outParamsDesc,
                         ruleExecInfo_t *rei, int reiSaveFlag )
-
 {
     int status;
     if ( GlobalREAuditFlag ) {
@@ -293,7 +302,6 @@ execMyRuleWithSaveFlag( char * ruleDef, msParamArray_t *inMsParamArray, const ch
         param.ruleIndex = -1;
         reDebug( EXEC_MY_RULE_BEGIN, -1, &param, NULL, NULL, rei );
     }
-
 
     char *outParamNames[MAX_PARAMS_LEN];
     int n = extractVarNames( outParamNames, outParamsDesc );
