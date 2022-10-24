@@ -144,6 +144,7 @@ rsRsyncDataToFile( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         rodsLog( LOG_ERROR,
                  "rsRsyncDataToFile: _rsDataObjChksum of %s error. status = %d",
                  dataObjInp->objPath, status );
+        freeAllDataObjInfo( dataObjInfoHead );
         return status;
     }
 
