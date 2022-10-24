@@ -1960,6 +1960,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         }
     }
 
+    rodsLog(LOG_ERROR, "The delay string [%s] is not recognized!", delayStr);
     return 0;
 }
 
