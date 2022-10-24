@@ -240,7 +240,7 @@ namespace
 
     int do_verification(RsComm& _comm,
                         DataObjInp& _dataObjInp,
-                        DataObjInfo* _replicas,
+                        DataObjInfo*& _replicas,
                         char** _checksum)
     {
         ix::key_value_proxy kvp{_dataObjInp.condInput};
@@ -385,7 +385,7 @@ namespace
 
     int do_lookup_or_update(RsComm& _comm,
                             DataObjInp& _dataObjInp,
-                            DataObjInfo* _replicas,
+                            DataObjInfo*& _replicas,
                             char** _computed_checksum)
     {
         ix::key_value_proxy kvp{_dataObjInp.condInput};
