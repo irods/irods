@@ -12,15 +12,18 @@
 #include "irods/rodsGenQueryNames.h"
 
 #include <boost/format.hpp>
-#include <boost/regex.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 
 #include <cstring>
+#include <regex>
+#include <span>
 #include <string>
 #include <string_view>
 
 namespace {
+    using log_api = irods::experimental::log::api;
+
     std::string
     get_column_name(int j) {
         const int n = sizeof(columnNames)/sizeof(columnNames[0]);
@@ -125,7 +128,94 @@ namespace {
         f << '\n';
     }
 
-}
+    auto get_resc_id_cond_for_hier_cond(const std::string_view _cond) -> std::string
+    {
+        // The default return string will yield 0 results when run in a query because RESC_ID is never '0'.
+        constexpr const char* default_condition_str = "='0'";
+
+        const auto cond = std::string{_cond};
+
+        const auto open_quote_pos = cond.find_first_of('\'');
+        const auto close_quote_pos = cond.find_last_of('\'');
+        if (close_quote_pos == open_quote_pos) {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+            THROW(SYS_INVALID_INPUT_PARAM, fmt::format("Invalid condition: [{}]", cond));
+        }
+
+        const std::string op = cond.substr(0, open_quote_pos);
+
+        // Only allow =, !=, LIKE, and NOT LIKE to be specified. Check = first because it is used in some
+        // critical path operations and will only match 1 result, so it should be quick.
+        static const std::regex equal_regex{R"_(^\s*=\s*$)_"};
+        static const std::regex like_regex{R"_(^\s*(LIKE|like)\s*$)_"};
+        static const std::regex not_like_regex{R"_(^\s*(NOT|not)\s+(LIKE|like)\s*$)_"};
+        static const std::regex not_equal_regex{R"_(^\s*!=\s*$)_"};
+        bool equal_op = false;
+        bool like_op = false;
+        bool not_like_op = false;
+        bool not_equal_op = false;
+
+        if (std::regex_match(op.c_str(), equal_regex)) {
+            equal_op = true;
+        }
+        else if (std::regex_match(op.c_str(), like_regex)) {
+            like_op = true;
+        }
+        else if (std::regex_match(op.c_str(), not_like_regex)) {
+            not_like_op = true;
+        }
+        else if (std::regex_match(op.c_str(), not_equal_regex)) {
+            not_equal_op = true;
+        }
+
+        if (!equal_op && !like_op && !not_like_op && !not_equal_op) {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+            THROW(CAT_INVALID_ARGUMENT, fmt::format("Invalid condition: [{}]", cond));
+        }
+
+        // Generate a regex by replacing GenQuery wildcards with regex wildcards.
+        std::string hier_regex_str = cond.substr(open_quote_pos + 1, close_quote_pos - open_quote_pos - 1);
+        if (!equal_op && !not_equal_op) {
+            auto wildcard_pos = hier_regex_str.find_first_of('%');
+            while (std::string::npos != wildcard_pos) {
+                hier_regex_str.replace(wildcard_pos, 1, ".*");
+                wildcard_pos = hier_regex_str.find_first_of('%');
+            }
+        }
+        const std::regex hier_regex{hier_regex_str};
+
+        // If LIKE or = are used, this means that the WHERE clause is looking for the string to match. If a resource
+        // matches the regex and we want to include resources which match, then that resource ID is included in the
+        // list of leaf resource IDs. If neither LIKE nor = are used, this means that the WHERE clause is looking for
+        // strings which do NOT match. If a resource does NOT match the regex and we want to include resources which
+        // do NOT match, then that resource ID is included in the list of leaf resource IDs.
+        const auto want_to_match = like_op || equal_op;
+        std::vector<std::string> leaf_ids;
+        try {
+            for (const auto& hier : resc_mgr.get_all_resc_hierarchies()) {
+                const auto match_found = std::regex_match(hier, hier_regex);
+                if ((match_found && want_to_match) || (!match_found && !want_to_match)) {
+                    // Pre-format IDs such that they are ready to use with the GenQuery IN clause.
+                    leaf_ids.push_back(fmt::format("'{}'", resc_mgr.hier_to_leaf_id(hier)));
+                }
+            }
+        }
+        catch (const irods::exception& e) {
+            // Need to handle irods::exceptions here because get_all_resc_hierarchies throws when a structured file is
+            // being operated upon. Somehow, a resource with ID -1 is found in the resource map with structured files.
+            // Historically, this has not been treated as an error in this case, so just return the default condition,
+            // which will produce no results when the query is run.
+            log_api::debug("[{}:{}] - irods::exception occurred: [{}]", __func__, __LINE__, e.client_display_what());
+            return default_condition_str;
+        }
+
+        if (leaf_ids.empty()) {
+            return default_condition_str;
+        }
+
+        return fmt::format("IN ({})", fmt::join(leaf_ids, ","));
+    } // get_resc_id_cond_for_hier_cond
+} // anonymous namespace
 
 std::string
 genquery_inp_to_diagnostic_string(const genQueryInp_t *q) {
@@ -296,77 +386,6 @@ irods::error add_resc_grp_name_to_query_out( genQueryOut_t *_out, int& _pos ) {
 } // add_resc_grp_name_to_query_out
 
 static
-irods::error get_resc_id_cond_for_hier_cond(
-        const char*  _cond,
-        std::string& _new_cond ) {
-    const std::string in_cond( _cond );
-    const std::string::size_type p0 = in_cond.find_first_of( "'" );
-    const std::string::size_type p1 = in_cond.find_last_of( "'" );
-    if ( p1 == p0 ) {
-        return ERROR( SYS_INVALID_INPUT_PARAM, _cond );
-    }
-
-    std::string hier = in_cond.substr( p0 + 1, p1 - p0 - 1);
-
-    /* 
-     * If query condition uses "=", look for exact matches.
-     * Since % is not allowed in resource names, error out if found.
-     */
-    if ( std::string::npos != in_cond.find( "=" ) &&
-         std::string::npos != hier.find( "%" ) ) {
-        return ERROR( SYS_RESC_DOES_NOT_EXIST, hier );
-    }
-
-    /* 
-     * Convert input condition to regex syntax and filter list of
-     * hierarchies. For each matching result, get the leaf ID and
-     * add it to the list of results. Generate 'IN' condition with
-     * the resulting leaf IDs. Return early if none found.
-     */
-    std::string::size_type pos( hier.find_first_of( "%" ) );
-    std::string hierRegex( hier );
-    while ( std::string::npos != pos ) {
-        hierRegex.replace( pos, 1, "(.*)" );
-        pos = hierRegex.find_first_of( "%" );
-    }
-
-    std::vector<rodsLong_t> leaf_ids;
-    try {
-        const std::vector<std::string> hier_list = resc_mgr.get_all_resc_hierarchies();
-        for ( const auto& hier_ : hier_list ) {
-            if ( boost::regex_match( hier_, boost::regex( hierRegex ) ) ) { 
-                rodsLong_t leaf_id{};
-                irods::error ret = resc_mgr.hier_to_leaf_id( hier_, leaf_id );
-                if ( !ret.ok() ) {
-                    return PASS( ret );
-                }
-                leaf_ids.push_back( leaf_id );
-            }
-        }
-    }
-    catch ( const irods::exception& e ) {
-        return irods::error( e );
-    }
-
-    if ( leaf_ids.empty() ) {
-        return ERROR( SYS_RESC_DOES_NOT_EXIST, hier );
-    }
-
-    _new_cond = "IN (";
-    for ( const auto& leaf_id : leaf_ids ) {
-        std::stringstream current_cond;
-        current_cond << "'" << leaf_id << "'";
-        if( leaf_id != leaf_ids.back() ) {
-            current_cond << ",";
-        }
-        _new_cond += current_cond.str();
-    }
-    _new_cond += ")";
-    return SUCCESS();
-
-} // get_resc_id_cond_for_hier_cond
-
-static
 irods::error strip_resc_hier_name_from_query_inp( genQueryInp_t* _inp, int& _pos ) {
     // sanity check
     if ( !_inp ) {
@@ -405,39 +424,38 @@ irods::error strip_resc_hier_name_from_query_inp( genQueryInp_t* _inp, int& _pos
     // =-=-=-=-=-=-=-
     // cache pointers to the incoming inxIvalPair
     inxValPair_t tmpV;
+    const auto cleanup = irods::at_scope_exit{[&tmpV] { clearInxVal(&tmpV); }};
     tmpV.len   = _inp->sqlCondInp.len;
     tmpV.inx   = _inp->sqlCondInp.inx;
     tmpV.value = _inp->sqlCondInp.value;
+
+    const auto inxs = std::span{tmpV.inx, static_cast<std::size_t>(tmpV.len)};
+    const auto vals = std::span{tmpV.value, static_cast<std::size_t>(tmpV.len)};
 
     // =-=-=-=-=-=-=-
     // zero out the selectInp to copy
     // fresh indices and values
     std::memset(&_inp->sqlCondInp, 0, sizeof(_inp->selectInp));
 
-    // =-=-=-=-=-=-=-
-    // iterate over tmp and replace resource group with resource name
-    for ( int i = 0; i < tmpV.len; ++i ) {
-        if ( tmpV.inx[i] == COL_D_RESC_HIER ) {
-            std::string new_cond = "='0'";
-            irods::error ret = get_resc_id_cond_for_hier_cond(
-                                   tmpV.value[i],
-                                   new_cond);
-            if(!ret.ok()) {
-                irods::log(PASS(ret));
+    try {
+        // iterate over tmp and replace resource group with resource name
+        for (int i = 0; i < tmpV.len; ++i) {
+            const int inx = inxs[i];
+            const char* val = vals[i];
+            if (inx == COL_D_RESC_HIER) {
+                const auto new_cond = get_resc_id_cond_for_hier_cond(val);
+                addInxVal(&_inp->sqlCondInp, COL_D_RESC_ID, new_cond.empty() ? "='0'" : new_cond.c_str());
             }
-
-            addInxVal( &_inp->sqlCondInp, COL_D_RESC_ID, new_cond.c_str() );
+            else {
+                addInxVal(&_inp->sqlCondInp, inx, val);
+            }
         }
-        else {
-            addInxVal( &_inp->sqlCondInp, tmpV.inx[i], tmpV.value[i] );
-        }
-    } // for i
-
-    // cleanup
-    clearInxVal(&tmpV);
+    }
+    catch (const irods::exception& e) {
+        return ERROR(e.code(), e.client_display_what());
+    }
 
     return SUCCESS();
-
 } // strip_resc_hier_name_from_query_inp
 
 
@@ -650,7 +668,7 @@ rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
         // the zone name must be skipped when getZoneHintForGenQuery() derives it.
         if (getValByKey(&genQueryInp->condInput, ZONE_KW)) {
             if (!is_zone_name_valid(zone_hint_str)) {
-                rodsLog(LOG_ERROR, "%s:%d :: Unknown zone name [%s].", __func__, __LINE__, zone_hint_str.data());
+                log_api::error("[{}:{}] - Unknown zone name [{}].", __func__, __LINE__, zone_hint_str.c_str());
                 return SYS_INVALID_ZONE_NAME;
             }
         }
@@ -735,6 +753,10 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
     irods::error err = strip_resc_hier_name_from_query_inp( genQueryInp, resc_hier_attr_pos );
     if ( !err.ok() ) {
         irods::log( PASS( err ) );
+        // All irods::error::code values returned here are constructed from error codes created in the iRODS error
+        // table, which are all ints. Ignore narrowing conversion warnings because the values are not actually narrowed.
+        // NOLINTNEXTLINE(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+        return err.code();
     }
 
     if ( PrePostProcForGenQueryFlag < 0 ) {
