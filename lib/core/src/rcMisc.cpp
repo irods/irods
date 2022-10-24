@@ -483,67 +483,71 @@ freeAllDataObjInfo( dataObjInfo_t *dataObjInfoHead ) {
     return 0;
 }
 
-/* queDataObjInfo - queue the input dataObjInfo in dataObjInfoHead queue.
- * Input
- * int singleInfoFlag - 1 - the input dataObjInfo is a single dataObjInfo.
- *                      0 - the input dataObjInfo is a link list
- * int topFlag - 1 - queue the input dataObjInfo at the head of the queue
- *               0 - queue the input dataObjInfo at the bottom of the
- *                   queue.
- */
+// Queue the input dataObjInfo in dataObjInfoHead queue.
+//
+// Inputs:
+// singleInfoFlag > 1 - the input dataObjInfo is a single dataObjInfo.
+//                  0 - the input dataObjInfo is a link list.
+// topFlag > 1 - queue the input dataObjInfo at the head of the queue
+//           0 - queue the input dataObjInfo at the bottom of the queue.
 int queDataObjInfo(
     dataObjInfo_t** dataObjInfoHead,
-    dataObjInfo_t*  dataObjInfo,
-    int             singleInfoFlag,
-    int             topFlag ) {
-
-    dataObjInfo_t *tmpDataObjInfo;
-
-    if ( dataObjInfo == NULL ) {
+    dataObjInfo_t* dataObjInfo,
+    int singleInfoFlag,
+    int topFlag)
+{
+    if (!dataObjInfo) {
         return -1;
     }
 
-    if ( *dataObjInfoHead == NULL ) {
+    if (!*dataObjInfoHead) {
         *dataObjInfoHead = dataObjInfo;
-        if ( singleInfoFlag > 0 ) {
-            dataObjInfo->next = NULL;
-        }
-    }
-    else {
-        if ( topFlag > 0 ) {
-            dataObjInfo_t *savedDataObjInfo;
 
-            savedDataObjInfo = *dataObjInfoHead;
-            *dataObjInfoHead = dataObjInfo;
-            if ( singleInfoFlag > 0 ) {
-                ( *dataObjInfoHead )->next = savedDataObjInfo;
-            }
-            else {
-                /* have to drill down to find the last DataObjInfo */
-                tmpDataObjInfo = *dataObjInfoHead;
-                while ( tmpDataObjInfo->next != NULL ) {
-                    tmpDataObjInfo = tmpDataObjInfo->next;
-                }
-                tmpDataObjInfo->next = savedDataObjInfo;
-            }
+        if (singleInfoFlag > 0) {
+            dataObjInfo->next = nullptr;
+        }
+
+        return 0;
+    }
+
+    // Prepend one or more dataObjInfos to the list.
+    if (topFlag > 0) {
+        auto* old_head = *dataObjInfoHead;
+        *dataObjInfoHead = dataObjInfo;
+
+        // Prepend a single object to the list.
+        if (singleInfoFlag > 0) {
+            (*dataObjInfoHead)->next = old_head;
         }
         else {
-            tmpDataObjInfo = *dataObjInfoHead;
-            while ( tmpDataObjInfo->next != NULL ) {
-                tmpDataObjInfo = tmpDataObjInfo->next;
-            }
-            tmpDataObjInfo->next = dataObjInfo;
+            // Prepend multiple objects to the list.
+            auto* p = *dataObjInfoHead;
 
-            if ( singleInfoFlag > 0 ) {
-                dataObjInfo->next = NULL;
+            while (p->next) {
+                p = p->next;
             }
+
+            p->next = old_head;
         }
+
+        return 0;
+    }
+
+    auto* p = *dataObjInfoHead;
+
+    while (p->next) {
+        p = p->next;
+    }
+
+    p->next = dataObjInfo;
+
+    if (singleInfoFlag > 0) {
+        dataObjInfo->next = nullptr;
     }
 
     return 0;
 }
-// =-=-=-=-=-=-=-
-// JMC - backport 4590
+
 int
 dequeDataObjInfo( dataObjInfo_t **dataObjInfoHead, dataObjInfo_t *dataObjInfo ) {
     dataObjInfo_t *tmpDataObjInfo;
