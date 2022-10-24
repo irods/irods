@@ -347,7 +347,8 @@ getDataObjInfo(
         snprintf( dataObjInfo->objPath, MAX_NAME_LEN, "%s/%s", tmpCollName, tmpDataName );
         rstrcpy( dataObjInfo->rescHier, tmpHierString, MAX_NAME_LEN );
         irods::error ret = resc_mgr.hier_to_leaf_id( tmpHierString, dataObjInfo->rescId );
-        if( !ret.ok() ) {
+        if (!ret.ok()) {
+            freeDataObjInfo(dataObjInfo);
             irods::log(PASS(ret));
             return ret.code();
         }
