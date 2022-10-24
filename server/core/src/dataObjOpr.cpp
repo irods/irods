@@ -76,6 +76,7 @@ getDataObjInfo(
     dataObjInfo_t** dataObjInfoHead,
     char*           accessPerm,
     int             ignoreCondInput ) {
+
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
     int i, status;
@@ -152,18 +153,18 @@ getDataObjInfo(
                      status );
         }
 
-		genQueryInp.continueInx = genQueryOut->continueInx;
-		genQueryInp.maxRows = 0;
-		freeGenQueryOut( &genQueryOut );
-		rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
+        genQueryInp.continueInx = genQueryOut->continueInx;
+        genQueryInp.maxRows = 0;
+        freeGenQueryOut( &genQueryOut );
+        rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
 
-		freeGenQueryOut( &genQueryOut );
+        freeGenQueryOut( &genQueryOut );
         clearGenQueryInp( &genQueryInp );
 
         return status;
     }
 
-	clearGenQueryInp( &genQueryInp );
+    clearGenQueryInp( &genQueryInp );
 
     if ( genQueryOut == NULL ) {
         rodsLog( LOG_NOTICE,
@@ -380,10 +381,11 @@ getDataObjInfo(
         rstrcpy( dataObjInfo->dataMode, tmpDataMode, SHORT_STR_LEN );
         dataObjInfo->writeFlag = writeFlag;
 
-        dataObjInfo->next = 0;
+        dataObjInfo->next = nullptr;
 
-        queDataObjInfo( dataObjInfoHead, dataObjInfo, 1, 0 );
-
+        constexpr int is_single_object = 1;
+        constexpr int prepend_object = 0;
+        queDataObjInfo(dataObjInfoHead, dataObjInfo, is_single_object, prepend_object);
     } // for i
 
     freeGenQueryOut( &genQueryOut );
