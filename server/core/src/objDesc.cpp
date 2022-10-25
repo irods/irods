@@ -1,5 +1,6 @@
 #include "irods/objDesc.hpp"
 
+#include "irods/dataObjInpOut.h"
 #include "irods/rcMisc.h"
 #include "irods/rodsDef.h"
 #include "irods/dataObjOpr.hpp"
@@ -73,6 +74,72 @@ auto init_l1desc(l1desc& _l1d) -> void
     _l1d.pluginData.clear();
 #pragma clang diagnostic pop
 } // init_l1desc
+
+auto copy_l1desc(l1desc& _dst, const l1desc& _src) -> void
+{
+    _dst.l3descInx = _src.l3descInx;
+    _dst.inuseFlag = _src.inuseFlag;
+    _dst.oprType = _src.oprType;
+    _dst.openType = _src.openType;
+    _dst.oprStatus = _src.oprStatus;
+    _dst.dataObjInpReplFlag = _src.dataObjInpReplFlag;
+    _dst.copiesNeeded = _src.copiesNeeded;
+    _dst.bytesWritten = _src.bytesWritten;
+    _dst.dataSize = _src.dataSize;
+    _dst.replStatus = _src.replStatus;
+    _dst.chksumFlag = _src.chksumFlag;
+    _dst.srcL1descInx = _src.srcL1descInx;
+    _dst.remoteL1descInx = _src.remoteL1descInx;
+    _dst.stageFlag = _src.stageFlag;
+    _dst.purgeCacheFlag = _src.purgeCacheFlag;
+    _dst.lockFd = _src.lockFd;
+
+    if (_src.dataObjInp) {
+        if (_dst.dataObjInp) {
+            clearDataObjInp(&_dst);
+        }
+        else {
+            // NOLINTNEXTLINE(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
+            _dst.dataObjInp = static_cast<DataObjInp*>(std::malloc(sizeof(DataObjInp)));
+            std::memset(_dst.dataObjInp, 0, sizeof(DataObjInp));
+        }
+
+        replDataObjInp(_src.dataObjInp, _dst.dataObjInp);
+    }
+    else {
+        _dst.dataObjInp = nullptr;
+    }
+
+    if (_src.dataObjInfo) {
+        if (_dst.dataObjInfo) {
+            clearDataObjInfo(_dst.dataObjInfo);
+        }
+        else {
+            // NOLINTNEXTLINE(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
+            _dst.dataObjInfo = static_cast<DataObjInfo*>(std::malloc(sizeof(DataObjInfo)));
+            std::memset(_dst.dataObjInfo, 0, sizeof(DataObjInfo));
+        }
+
+        replDataObjInfo(_dst.dataObjInfo, _src.dataObjInfo);
+    }
+    else {
+        _dst.dataObjInfo = nullptr;
+    }
+
+    _dst.remoteZoneHost = _src.remoteZoneHost;
+    _dst.replica_token = _src.replica_token;
+
+    // NOLINTBEGIN(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+    std::memcpy(_dst.chksum, _src.chksum, sizeof(l1desc::chksum));
+    std::memcpy(_dst.in_pdmo, _src.in_pdmo, sizeof(l1desc::in_pdmo));
+    // NOLINTEND(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+
+    // The following member variables are ignored because they are not used by iRODS. 
+    // They are commented out to avoid potential issues.
+    //_dst.pluginData = _src.pluginData;
+    //_dst.otherDataObjInfo = _src.otherDataObjInfo;
+    //_dst.replDataObjInfo = _src.replDataObjInfo;
+} // copy_l1desc
 
 int
 allocL1desc() {

@@ -10,6 +10,7 @@
 #include "irods/generalAdmin.h"
 #include "irods/modDataObjMeta.h"
 #include "irods/msParam.h"
+#include "irods/objInfo.h"
 #include "irods/objStat.h"
 #include "irods/pamAuthRequest.h"
 #include "irods/rcGlobalExtern.h"
@@ -710,6 +711,32 @@ replDataObjInp( dataObjInp_t *srcDataObjInp, dataObjInp_t *destDataObjInp ) {
 
     replKeyVal( &srcDataObjInp->condInput, &destDataObjInp->condInput );
     replSpecColl( srcDataObjInp->specColl, &destDataObjInp->specColl );
+    return 0;
+}
+
+int replDataObjInfo(DataObjInfo* _dst, DataObjInfo* _src)
+{
+    if (nullptr == _src) {
+        return 0;
+    }
+
+    if (nullptr == _dst) {
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
+    clearDataObjInfo(_dst);
+    std::memset(_dst, 0, sizeof(DataObjInfo));
+
+    *_dst = *_src;
+    replKeyVal(&_src->condInput, &_dst->condInput);
+    replSpecColl(_src->specColl, &_dst->specColl);
+
+    if (_src->next) {
+        _dst->next = static_cast<DataObjInfo*>(std::malloc(sizeof(DataObjInfo)));
+        std::memset(_dst->next, 0, sizeof(DataObjInfo));
+        replDataObjInfo(_dst->next, _src->next);
+    }
+
     return 0;
 }
 
@@ -1698,6 +1725,8 @@ void clearDataObjInfo(void* _p)
     clearKeyVal(&q->condInput);
     free_pointer(q->specColl);
     freeAllDataObjInfo(q->next);
+
+    std::memset(q, 0, sizeof(DataObjInfo));
 }
 
 void clearBytesBuffer(void* _p)
