@@ -82,6 +82,8 @@ int initL1Desc();
 
 auto init_l1desc(l1desc& _l1d) -> void;
 
+auto copy_l1desc(l1desc& _dst, const l1desc& _src) -> void;
+
 int allocL1Desc();
 
 int freeL1desc_struct(l1desc& _l1desc);
