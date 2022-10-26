@@ -50,10 +50,10 @@ foreach(variant IN ITEMS client server)
     PUBLIC
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    PRIVATE
     "$<BUILD_INTERFACE:${CMAKE_IRODS_BINARY_DIR}/lib/core/include>"
     "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/core/include>"
     "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/api/include>"
+    PRIVATE
     "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
     "${IRODS_EXTERNALS_FULLPATH_FMT}/include"
   )
@@ -69,7 +69,7 @@ foreach(variant IN ITEMS client server)
 endforeach()
 target_include_directories(
   irods_user_administration_server
-  PRIVATE
+  PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/core/include>"
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/api/include>"
 )

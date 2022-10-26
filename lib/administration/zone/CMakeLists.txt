@@ -22,6 +22,7 @@ foreach(variant IN ITEMS client server)
     "$<BUILD_INTERFACE:${CMAKE_IRODS_BINARY_DIR}/lib/core/include>"
     "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/core/include>"
     "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/api/include>"
+    PRIVATE
     "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
     "${IRODS_EXTERNALS_FULLPATH_FMT}/include"
   )
@@ -37,7 +38,7 @@ foreach(variant IN ITEMS client server)
 endforeach()
 target_include_directories(
   irods_zone_administration_server
-  PRIVATE
+  PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/core/include>"
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/api/include>"
 )
