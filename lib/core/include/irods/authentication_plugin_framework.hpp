@@ -281,4 +281,3 @@ namespace irods::experimental::auth
 } // namespace irods::experimental::auth
 
 #endif // IRODS_AUTHENTICATION_PLUGIN_FRAMEWORK_HPP
-
