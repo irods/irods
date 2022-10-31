@@ -1,12 +1,15 @@
 #include "irods/rsExecRuleExpression.hpp"
 
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/irods_logger.hpp"
 #include "irods/irods_re_plugin.hpp"
 #include "irods/irods_re_structs.hpp"
 #include "irods/miscServerFunct.hpp"
-#include "irods/rcMisc.h"
 #include "irods/packStruct.h"
+#include "irods/rcMisc.h"
 #include "irods/stringOpr.h"
 
+#include <cstdlib>
 #include <cstring>
 #include <string>
 
@@ -14,20 +17,32 @@ extern const packInstruct_t RodsPackTable[];
 
 int rsExecRuleExpression(RsComm* _comm, ExecRuleExpression* _exec_rule)
 {
+    using log_api = irods::experimental::log::api;
+
     if (!_comm || !_exec_rule) {
+        log_api::error("Invalid input argument: received null pointer");
         return SYS_INVALID_INPUT_PARAM;
     }
 
     ruleExecInfoAndArg_t* rei_and_arg = nullptr;
-    const auto status = unpack_struct(_exec_rule->packed_rei_.buf,
-                                     reinterpret_cast<void **>(&rei_and_arg),
-                                     "ReiAndArg_PI",
-                                     RodsPackTable,
-                                     NATIVE_PROT,
-                                     nullptr);
-    if (status < 0) {
-        rodsLog(LOG_ERROR, "%s :: unpackStruct error. status = %d", __FUNCTION__, status);
-        return status;
+    irods::at_scope_exit free_rei_struct{[&rei_and_arg] {
+        if (rei_and_arg) {
+            freeRuleExecInfoStruct(rei_and_arg->rei, (FREE_MS_PARAM | FREE_DOINP));
+            std::free(rei_and_arg);
+        }
+    }};
+
+    const auto ec = unpack_struct(
+        _exec_rule->packed_rei_.buf,
+        reinterpret_cast<void**>(&rei_and_arg),
+        "ReiAndArg_PI",
+        RodsPackTable,
+        NATIVE_PROT,
+        nullptr);
+
+    if (ec < 0) {
+        log_api::error("Failed to unpack input structure [error_code=[{}]]", ec);
+        return ec;
     }
 
     ruleExecInfo_t* rei = rei_and_arg->rei;
@@ -37,7 +52,7 @@ int rsExecRuleExpression(RsComm* _comm, ExecRuleExpression* _exec_rule)
     // Do dataObjectInfo (doi) things?
     if (rei->doi) {
         if (rei->doi->next) {
-            free(rei->doi->next);
+            std::free(rei->doi->next);
             rei->doi->next = nullptr;
         }
     }
@@ -53,7 +68,7 @@ int rsExecRuleExpression(RsComm* _comm, ExecRuleExpression* _exec_rule)
     const auto* my_rule_text = static_cast<char*>(_exec_rule->rule_text_.buf);
     const auto err = re_ctx_mgr.exec_rule_expression(instance_name, my_rule_text, _exec_rule->params_);
     if (!err.ok()) {
-        rodsLog(LOG_ERROR, "%s : %d, %s", __FUNCTION__, err.code(), err.result().c_str());
+        log_api::error(err.result());
     }
 
     return err.code();
