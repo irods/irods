@@ -1,12 +1,18 @@
-#ifndef RS_EXEC_MY_RULE_HPP
-#define RS_EXEC_MY_RULE_HPP
+#ifndef IRODS_RS_EXEC_MY_RULE_HPP
+#define IRODS_RS_EXEC_MY_RULE_HPP
 
-#include "irods/objInfo.h"
-#include "irods/msParam.h"
-#include "irods/rcConnect.h"
-#include "irods/execMyRule.h"
+struct RsComm;
+struct ExecMyRuleInp;
+struct MsParamArray;
+struct rodsServerHost;
 
-int rsExecMyRule( rsComm_t *rsComm, execMyRuleInp_t *execMyRuleInp, msParamArray_t **outParamArray );
-int remoteExecMyRule( rsComm_t *rsComm, execMyRuleInp_t *execMyRuleInp, msParamArray_t **outParamArray, rodsServerHost_t *rodsServerHost );
+auto rsExecMyRule(RsComm* _comm, ExecMyRuleInp* _exec_inp, MsParamArray** _out_param_arr) -> int;
 
-#endif
+auto remoteExecMyRule(
+    RsComm* _comm,
+    ExecMyRuleInp* _exec_inp,
+    MsParamArray** _out_param_arr,
+    rodsServerHost* _remote_host) -> int;
+
+#endif // IRODS_RS_EXEC_MY_RULE_HPP
+
