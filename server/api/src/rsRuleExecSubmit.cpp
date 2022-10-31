@@ -1,5 +1,7 @@
 #include "irods/rsRuleExecSubmit.hpp"
 
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/irods_re_structs.hpp"
 #include "irods/rodsErrorTable.h"
 #include "irods/rodsConnect.h"
 #include "irods/icatHighLevelRoutines.hpp"
@@ -43,6 +45,13 @@ namespace
         }
 
         ruleExecInfoAndArg_t* rei_info{};
+        irods::at_scope_exit free_rei_info{[&rei_info] {
+            if (rei_info) {
+                freeRuleExecInfoStruct(rei_info->rei, (FREE_MS_PARAM | FREE_DOINP));
+                std::free(rei_info);
+            }
+        }};
+
         if (const auto ec = unpackReiAndArg(rsComm, &rei_info, ruleExecSubmitInp->packedReiAndArgBBuf); ec < 0) {
             rodsLog(LOG_ERROR, "_rsRuleExecSubmit: Could not unpack REI buffer [error_code=%i].", ec);
             return ec;
@@ -54,6 +63,7 @@ namespace
 
         irods::experimental::key_value_proxy kvp{ruleExecSubmitInp->condInput};
         kvp[RULE_EXECUTION_CONTEXT_KW] = irods::to_json(rei_info->rei).dump().data();
+        irods::at_scope_exit clear_cond_input{[&kvp] { kvp.clear(); }};
 
         // Verify that the priority is valid if the client provided one.
         if (std::strlen(ruleExecSubmitInp->priority) > 0) {
