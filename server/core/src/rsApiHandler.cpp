@@ -154,6 +154,7 @@ int rsApiHandler(rsComm_t*   rsComm,
     char *myInStruct = NULL;
 
     if ( inputStructBBuf->len > 0 ) {
+        log_agent::debug("Unpacking byte buffer based on packing instruction [{}]", RsApiTable[apiInx]->inPackInstruct);
         status = unpack_struct( inputStructBBuf->buf, ( void ** )( static_cast< void * >( &myInStruct ) ),
                                ( char* )RsApiTable[apiInx]->inPackInstruct, RodsPackTable, rsComm->irodsProt,
                                rsComm->cliVersion.relVersion);
@@ -233,63 +234,58 @@ int rsApiHandler(rsComm_t*   rsComm,
                      myArgv[3]);
     }
 
-    if ( retVal != SYS_NO_HANDLER_REPLY_MSG ) {
-        status = sendAndProcApiReply
-                 ( rsComm, apiInx, retVal, myOutStruct, &myOutBsBBuf );
+    if (retVal != SYS_NO_HANDLER_REPLY_MSG) {
+        status = sendAndProcApiReply(rsComm, apiInx, retVal, myOutStruct, &myOutBsBBuf);
     }
 
-    // =-=-=-=-=-=-=-
     // clear the incoming packing instruction
-    if ( myInStruct != NULL ) {
-        if ( RsApiTable[apiInx]->clearInStruct ) {
-            RsApiTable[apiInx]->clearInStruct( myInStruct );
+    if (myInStruct) {
+        if (RsApiTable[apiInx]->clearInStruct) {
+            RsApiTable[apiInx]->clearInStruct(myInStruct);
         }
 
-        free( myInStruct );
-        myInStruct = NULL;
+        std::free(myInStruct);
+        myInStruct = nullptr;
     }
 
-    if ( retVal >= 0 && status < 0 ) {
+    if (retVal >= 0 && status < 0) {
         return status;
     }
-    else {
-        return retVal;
-    }
+
+    return retVal;
 }
 
-int
-sendAndProcApiReply( rsComm_t * rsComm, int apiInx, int status,
-                     void * myOutStruct, bytesBuf_t * myOutBsBBuf ) {
-    int retval;
+int sendAndProcApiReply( rsComm_t * rsComm, int apiInx, int status, void*& myOutStruct, bytesBuf_t * myOutBsBBuf )
+{
+    const int retval = sendApiReply( rsComm, apiInx, status, myOutStruct, myOutBsBBuf );
 
-    retval = sendApiReply( rsComm, apiInx, status, myOutStruct, myOutBsBBuf );
+    clearBBuf(myOutBsBBuf);
 
-    clearBBuf( myOutBsBBuf );
-    if ( myOutStruct != NULL ) {
-        free( myOutStruct );
+    if (myOutStruct) {
+        std::free(myOutStruct);
+        myOutStruct = nullptr;
     }
-    freeRErrorContent( &rsComm->rError );
 
-    /* check for portal operation */
+    freeRErrorContent(&rsComm->rError);
 
-    if ( rsComm->portalOpr != NULL ) {
-        handlePortalOpr( rsComm );
-        clearKeyVal( &rsComm->portalOpr->dataOprInp.condInput );
-        free( rsComm->portalOpr );
-        rsComm->portalOpr = NULL;
+    // Check for portal operation.
+    if (rsComm->portalOpr) {
+        handlePortalOpr(rsComm);
+        clearKeyVal(&rsComm->portalOpr->dataOprInp.condInput);
+        std::free(rsComm->portalOpr);
+        rsComm->portalOpr = nullptr;
     }
 
     return retval;
 }
 
-int
-sendApiReply( rsComm_t * rsComm, int apiInx, int retVal,
-              void * myOutStruct, bytesBuf_t * myOutBsBBuf ) {
+int sendApiReply( rsComm_t * rsComm, int apiInx, int retVal, void*& myOutStruct, bytesBuf_t * myOutBsBBuf )
+{
     int status = 0;
-    bytesBuf_t *outStructBBuf = NULL;
-    bytesBuf_t *myOutStructBBuf;
-    bytesBuf_t *rErrorBBuf = NULL;
-    bytesBuf_t *myRErrorBBuf;
+    bytesBuf_t* outStructBBuf = nullptr;
+    bytesBuf_t* myOutStructBBuf;
+    bytesBuf_t* rErrorBBuf = nullptr;
+    bytesBuf_t* myRErrorBBuf;
 
     svrChkReconnAtSendStart( rsComm );
 
@@ -298,51 +294,44 @@ sendApiReply( rsComm_t * rsComm, int apiInx, int retVal,
         retVal = 0;
     }
 
-    // =-=-=-=-=-=-=-
-    // create a network object
+    // Create a network object.
     irods::network_object_ptr net_obj;
     irods::error ret = irods::network_factory( rsComm, net_obj );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
-
     }
 
-
     irods::api_entry_table& RsApiTable = irods::get_server_api_table();
-    if ( RsApiTable[apiInx]->outPackInstruct != NULL && myOutStruct != NULL ) {
 
-        status = pack_struct( ( char * ) myOutStruct, &outStructBBuf,
-                             ( char* )RsApiTable[apiInx]->outPackInstruct, RodsPackTable, FREE_POINTER,
+    if (RsApiTable[apiInx]->outPackInstruct && myOutStruct) {
+        status = pack_struct((char*) myOutStruct, &outStructBBuf,
+                             (char*) RsApiTable[apiInx]->outPackInstruct, RodsPackTable, FREE_POINTER,
                              rsComm->irodsProt, rsComm->cliVersion.relVersion );
 
         if ( status < 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "sendApiReply: packStruct error, status = %d", status );
-            sendRodsMsg( net_obj, RODS_API_REPLY_T, NULL,
-                         NULL, NULL, status, rsComm->irodsProt );
-            svrChkReconnAtSendEnd( rsComm );
+            log_agent::info("{}: packStruct error, status = [{}]", __func__, status);
+            sendRodsMsg(net_obj, RODS_API_REPLY_T, nullptr, nullptr, nullptr, status, rsComm->irodsProt);
+            svrChkReconnAtSendEnd(rsComm);
             return status;
         }
 
         myOutStructBBuf = outStructBBuf;
     }
     else {
-        myOutStructBBuf = NULL;
+        myOutStructBBuf = nullptr;
     }
 
     if ( RsApiTable[apiInx]->outBsFlag == 0 ) {
-        myOutBsBBuf = NULL;
+        myOutBsBBuf = nullptr;
     }
 
     if ( rsComm->rError.len > 0 ) {
-        status = pack_struct( ( char * ) &rsComm->rError, &rErrorBBuf,
-                             "RError_PI", RodsPackTable, 0, rsComm->irodsProt, rsComm->cliVersion.relVersion );
+        status = pack_struct((char*) &rsComm->rError, &rErrorBBuf, "RError_PI", RodsPackTable, 0, rsComm->irodsProt, rsComm->cliVersion.relVersion );
 
         if ( status < 0 ) {
-            rodsLog( LOG_NOTICE, "sendApiReply: packStruct error, status = %d", status );
-            sendRodsMsg( net_obj, RODS_API_REPLY_T, NULL,
-                         NULL, NULL, status, rsComm->irodsProt );
+            log_agent::info( "sendApiReply: packStruct error, status=[{}]", status );
+            sendRodsMsg( net_obj, RODS_API_REPLY_T, nullptr, nullptr, nullptr, status, rsComm->irodsProt );
             svrChkReconnAtSendEnd( rsComm );
             freeBBuf( outStructBBuf );
             freeBBuf( rErrorBBuf );
@@ -352,31 +341,27 @@ sendApiReply( rsComm_t * rsComm, int apiInx, int retVal,
         myRErrorBBuf = rErrorBBuf;
     }
     else {
-        myRErrorBBuf = NULL;
+        myRErrorBBuf = nullptr;
     }
-    ret = sendRodsMsg( net_obj, RODS_API_REPLY_T, myOutStructBBuf,
-                       myOutBsBBuf, myRErrorBBuf, retVal, rsComm->irodsProt );
+
+    ret = sendRodsMsg( net_obj, RODS_API_REPLY_T, myOutStructBBuf, myOutBsBBuf, myRErrorBBuf, retVal, rsComm->irodsProt );
+
     if ( !ret.ok() ) {
-        int status1;
         irods::log( PASS( ret ) );
 
         if ( rsComm->reconnSock > 0 ) {
             int savedStatus = ret.code();
             boost::unique_lock< boost::mutex > boost_lock( *rsComm->thread_ctx->lock );
-            rodsLog( LOG_DEBUG,
-                     "sendApiReply: svrSwitchConnect. cliState = %d,agState=%d",
-                     rsComm->clientState, rsComm->agentState );
-            status1 = svrSwitchConnect( rsComm );
+            log_agent::debug("sendApiReply: svrSwitchConnect. client state=[{}], agent state=[{}]", rsComm->clientState, rsComm->agentState );
+            const auto ec = svrSwitchConnect( rsComm );
             boost_lock.unlock();
-            if ( status1 > 0 ) {
-                /* should not be here */
-                rodsLog( LOG_NOTICE, "sendApiReply: Switch connection and retry sendRodsMsg" );
-                ret = sendRodsMsg( net_obj, RODS_API_REPLY_T,
-                                   myOutStructBBuf, myOutBsBBuf, myRErrorBBuf,
-                                   retVal, rsComm->irodsProt );
+            if (ec > 0) {
+                // Should not be here!
+                log_agent::info( "sendApiReply: Switch connection and retry sendRodsMsg" );
+                ret = sendRodsMsg( net_obj, RODS_API_REPLY_T, myOutStructBBuf, myOutBsBBuf, myRErrorBBuf, retVal, rsComm->irodsProt );
 
                 if ( ret.code() >= 0 ) {
-                    rodsLog( LOG_NOTICE, "sendApiReply: retry sendRodsMsg succeeded" );
+                    log_agent::info( "sendApiReply: retry sendRodsMsg succeeded" );
                 }
                 else {
                     status = savedStatus;
@@ -513,9 +498,9 @@ readAndProcClientMsg( rsComm_t * rsComm, int flags ) {
     msgHeader_t myHeader;
     bytesBuf_t inputStructBBuf, bsBBuf, errorBBuf;
 
-    std::memset(&inputStructBBuf, 0, sizeof(inputStructBBuf));
-    std::memset(&bsBBuf, 0, sizeof(bsBBuf));
-    std::memset(&errorBBuf, 0, sizeof(errorBBuf));
+    std::memset(&inputStructBBuf, 0, sizeof(BytesBuf));
+    std::memset(&bsBBuf, 0, sizeof(BytesBuf));
+    std::memset(&errorBBuf, 0, sizeof(BytesBuf));
 
     svrChkReconnAtReadStart( rsComm );
     /* everything else are set in readMsgBody */
@@ -597,8 +582,8 @@ readAndProcClientMsg( rsComm_t * rsComm, int flags ) {
     /* handler switch by msg type */
 
     if ( strcmp( myHeader.type, RODS_API_REQ_T ) == 0 ) {
-        status = rsApiHandler( rsComm, myHeader.intInfo, &inputStructBBuf,
-                               &bsBBuf );
+        status = rsApiHandler( rsComm, myHeader.intInfo, &inputStructBBuf, &bsBBuf );
+
         clearBBuf( &inputStructBBuf );
         clearBBuf( &bsBBuf );
         clearBBuf( &errorBBuf );
@@ -698,8 +683,8 @@ _svrSendCollOprStat( rsComm_t * rsComm, collOprStat_t * collOprStat ) {
     int myBuf;
     int status;
 
-    status = sendAndProcApiReply( rsComm, rsComm->apiInx,
-                                  SYS_SVR_TO_CLI_COLL_STAT, collOprStat, NULL );
+    auto* p = static_cast<void*>(collOprStat);
+    status = sendAndProcApiReply( rsComm, rsComm->apiInx, SYS_SVR_TO_CLI_COLL_STAT, p, nullptr );
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status,
                       "svrSendCollOprStat: sendAndProcApiReply failed. status = %d",
@@ -760,3 +745,4 @@ readTimeoutHandler( int ) {
         longjmp( Jenv, READ_HEADER_TIMED_OUT );
     }
 }
+
