@@ -31,6 +31,24 @@ void clearModDataObjMetaInp(void*);
 
 void clearRegReplicaInp(void* voidInp);
 
+void clearGeneralAdminInput(void* _p);
+
+void clearOpenedDataObjInp(void* _p);
+
+void clearSpecificQueryInp(void* _p);
+
+void clearTicketAdminInp(void* _p);
+
+void clearExecMyRuleInp(void* _p);
+
+void clearRuleExecModifyInput(void* _p);
+
+void clearExecCmd(void* _p);
+
+void clearExecRuleExpressionInput(void* _p);
+
+void clearRuleExecSubmitInput(void* _p);
+
 int isPath(char* path);
 
 rodsLong_t getFileSize(char* path);

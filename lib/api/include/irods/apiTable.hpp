@@ -1,5 +1,5 @@
-#ifndef API_TABLE_HPP
-#define API_TABLE_HPP
+#ifndef IRODS_API_TABLE_HPP
+#define IRODS_API_TABLE_HPP
 
 #include <functional>
 #include <boost/any.hpp>
@@ -10,6 +10,8 @@
 #include "irods/dataObjInpOut.h"
 #include "irods/ies_client_hints.h"
 #include "irods/irods_api_calling_functions.hpp"
+#include "irods/msParam.h"
+#include "irods/rcMisc.h"
 #include "irods/rods.h"
 #include "irods/rodsUser.h"
 #include "irods/server_report.h"
@@ -480,14 +482,14 @@ static irods::apidef_t client_api_table_inp[] = {
         DATA_OBJ_READ_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "OpenedDataObjInp_PI", 0, NULL, 1,
         boost::any(std::function<int(rsComm_t*,openedDataObjInp_t*,bytesBuf_t*)>(RS_DATA_OBJ_READ)),
-        "api_data_obj_read", irods::clearInStruct_noop,
+        "api_data_obj_read", clearOpenedDataObjInp,
         (funcPtr)CALL_OPENEDDATAOBJINP_BYTESBUFOUT
     },
     {
         DATA_OBJ_WRITE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "OpenedDataObjInp_PI", 1, NULL, 0,
         boost::any(std::function<int(rsComm_t*,openedDataObjInp_t*,bytesBuf_t*)>(RS_DATA_OBJ_WRITE)),
-        "api_data_obj_write", irods::clearInStruct_noop,
+        "api_data_obj_write", clearOpenedDataObjInp,
         (funcPtr)CALL_OPENEDDATAOBJINP_BYTESBUFOUT
 
     },
@@ -495,7 +497,7 @@ static irods::apidef_t client_api_table_inp[] = {
         DATA_OBJ_CLOSE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "OpenedDataObjInp_PI", 0, NULL, 0,
         boost::any(std::function<int(rsComm_t*,openedDataObjInp_t*)>(RS_DATA_OBJ_CLOSE)),
-        "api_data_obj_close", irods::clearInStruct_noop,
+        "api_data_obj_close", clearOpenedDataObjInp,
         (funcPtr)CALL_OPENEDDATAOBJINP
     },
     {
@@ -523,7 +525,7 @@ static irods::apidef_t client_api_table_inp[] = {
         DATA_OBJ_LSEEK_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "OpenedDataObjInp_PI", 0, "fileLseekOut_PI", 0,
         boost::any(std::function<int(rsComm_t*,openedDataObjInp_t*,fileLseekOut_t**)>(RS_DATA_OBJ_LSEEK)),
-        "api_data_obj_lseek", irods::clearInStruct_noop,
+        "api_data_obj_lseek", clearOpenedDataObjInp,
         (funcPtr)CALL_OPENEDDATAOBJINP_FILELSEEKOUT
     },
     {
@@ -575,7 +577,7 @@ static irods::apidef_t client_api_table_inp[] = {
         GENERAL_ADMIN_AN, RODS_API_VERSION, LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH,
         "generalAdminInp_PI", 0, NULL, 0,
         boost::any(std::function<int(rsComm_t*,generalAdminInp_t*)>(RS_GENERAL_ADMIN)),
-        "api_general_admin", irods::clearInStruct_noop,
+        "api_general_admin", clearGeneralAdminInput,
         (funcPtr)CALL_GENERALADMININP
     },
     {
@@ -626,14 +628,14 @@ static irods::apidef_t client_api_table_inp[] = {
         SPECIFIC_QUERY_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "specificQueryInp_PI", 0, "GenQueryOut_PI", 0,
         boost::any(std::function<int(rsComm_t*,specificQueryInp_t*,genQueryOut_t**)>(RS_SPECIFIC_QUERY)),
-        "api_specific_query", irods::clearInStruct_noop,
+        "api_specific_query", clearSpecificQueryInp,
         (funcPtr)CALL_SPECIFICQUERYINP_GENQUERYOUT
     },
     {
         TICKET_ADMIN_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "ticketAdminInp_PI", 0, NULL, 0,
         boost::any(std::function<int(rsComm_t*,ticketAdminInp_t*)>(RS_TICKET_ADMIN)),
-        "api_ticket_admin", irods::clearInStruct_noop,
+        "api_ticket_admin", clearTicketAdminInp,
         (funcPtr)CALL_TICKETADMININP
     },
     {
@@ -728,14 +730,14 @@ static irods::apidef_t client_api_table_inp[] = {
         MOD_ACCESS_CONTROL_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "modAccessControlInp_PI", 0, NULL, 0,
         boost::any(std::function<int(rsComm_t*,modAccessControlInp_t*)>(RS_MOD_ACCESS_CONTROL)),
-        "api_mod_access_control", irods::clearInStruct_noop,
+        "api_mod_access_control", clearModAccessControlInp,
         (funcPtr)CALL_MODACCESSCONTROLINP
     },
     {
         RULE_EXEC_MOD_AN, RODS_API_VERSION, LOCAL_USER_AUTH, LOCAL_PRIV_USER_AUTH,
         "RULE_EXEC_MOD_INP_PI", 0, NULL, 0,
         boost::any(std::function<int(rsComm_t*,ruleExecModInp_t*)>(RS_RULE_EXEC_MOD)),
-        "api_rule_exec_mod", irods::clearInStruct_noop,
+        "api_rule_exec_mod", clearRuleExecModifyInput,
         (funcPtr)CALL_RULEEXECMODINP
     },
     {
@@ -764,7 +766,7 @@ static irods::apidef_t client_api_table_inp[] = {
         RULE_EXEC_SUBMIT_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
         "RULE_EXEC_SUBMIT_INP_PI", 0, "IRODS_STR_PI", 0,
         boost::any(std::function<int(rsComm_t*,ruleExecSubmitInp_t*,char**)>(RS_RULE_EXEC_SUBMIT)),
-        "api_rule_exec_submit", irods::clearInStruct_noop,
+        "api_rule_exec_submit", clearRuleExecSubmitInput,
         (funcPtr)CALL_RULEEXECSUBMITINP_CHAROUT
     },
     {
@@ -778,7 +780,7 @@ static irods::apidef_t client_api_table_inp[] = {
         EXEC_MY_RULE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "ExecMyRuleInp_PI", 0, "MsParamArray_PI", 0,
         boost::any(std::function<int(rsComm_t*,execMyRuleInp_t*,msParamArray_t**)>(RS_EXEC_MY_RULE)),
-        "api_exec_my_rule", irods::clearInStruct_noop,
+        "api_exec_my_rule", clearExecMyRuleInp,
         (funcPtr)CALL_EXECMYRULEINP_MSPARAMARRAYOUT
     },
     {
@@ -841,7 +843,7 @@ static irods::apidef_t client_api_table_inp[] = {
         EXEC_CMD_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "ExecCmd_PI", 0, "ExecCmdOut_PI", 0,
         boost::any(std::function<int(rsComm_t*,execCmd_t*,execCmdOut_t**)>(RS_EXEC_CMD)),
-        "api_exec_cmd", irods::clearInStruct_noop,
+        "api_exec_cmd", clearExecCmd,
         (funcPtr)CALL_EXECCMDINP_EXECCMDOUT
     },
     {
@@ -1249,10 +1251,10 @@ static irods::apidef_t client_api_table_inp[] = {
         EXEC_RULE_EXPRESSION_AN, RODS_API_VERSION, LOCAL_USER_AUTH, LOCAL_USER_AUTH,
         "ExecRuleExpression_PI", 0,  NULL, 0,
         boost::any(std::function<int(rsComm_t*,exec_rule_expression_t*)>(RS_EXEC_RULE_EXPRESSION)),
-        "api_exec_rule_expression", irods::clearInStruct_noop,
+        "api_exec_rule_expression", clearExecRuleExpressionInput,
         (funcPtr)CALL_EXECRULEEXPRESSIONINP
     },
     // clang-format on
 }; // _api_table_inp
 
-#endif	/* API_TABLE_H */
+#endif // IRODS_API_TABLE_HPP
