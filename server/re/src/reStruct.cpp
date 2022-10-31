@@ -124,6 +124,7 @@ freeRuleExecInfoInternals( ruleExecInfo_t *rs, int freeSpecialStructFlag ) {
         freeUserInfo( rs->uoio );
     }
     if ( rs->condInputData != NULL ) {
+        clearKeyVal(rs->condInputData);
         freeKeyValPairStruct( rs->condInputData );
     }
     if ( rs->next != NULL ) {
