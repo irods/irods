@@ -275,6 +275,59 @@ class Test_ichmod(session.make_sessions_mixin([('otherrods', 'rods')], [('alice'
                     # Restore collection permissions or error will be thrown on cleanup
                     self.admin.assert_icommand(['ichmod', '-M', 'own', self.user.username, os.path.join(self.user.session_collection, collection)])
 
+    def test_ichmod_respects_strict_ACLs__issue_2570(self):
+        # Create other_user, for assignment only
+        other_user = 'testuser'
+        self.admin.assert_icommand(['iadmin', 'mkuser', other_user, 'rodsuser'])
+
+        # Create and add user to group
+        group = 'generalgroup'
+        self.admin.assert_icommand(['iadmin', 'mkgroup', group])
+        self.admin.assert_icommand(['iadmin', 'atg', group, self.user.username])
+
+        try:
+            # Create scenario where user has to use limited group permissions
+            collection_base = os.path.join(self.admin.session_collection, 'general')
+            self.admin.assert_icommand(['imkdir', collection_base])
+            self.admin.assert_icommand(['ichmod', 'modify_object', group, '-r', collection_base])
+            self.admin.assert_icommand(['ichmod', 'inherit', '-r', collection_base])
+
+            # Create collection using group permissions to test other_user cannot be added by user
+            collection_to_test = 'specific1'
+            self.user.assert_icommand(['imkdir', os.path.join(collection_base, collection_to_test)])
+
+            user_permissions = ['null',
+                                'read_metadata',
+                                'read',
+                                'read_object',
+                                'create_metadata',
+                                'modify_metadata',
+                                'delete_metadata',
+                                'create_object',
+                                'write',
+                                'modify_object',
+                                'delete_object',
+                                'own']
+
+            for permission in user_permissions:
+                with self.subTest(permission):
+                    # ichmod should fail attempting to give permission to other_user due to not having own permission
+                    out, err, ec = self.user.run_icommand(['ichmod', permission, other_user, os.path.join(collection_base, collection_to_test)])
+                    self.assertEqual(ec, 8)
+                    self.assertIn('CAT_NO_ACCESS_PERMISSION', err)
+                    self.assertEqual(len(out), 0)
+
+                    # ils should not display other_user as it should not have been given access to the collection
+                    out, err, ec = self.user.run_icommand(['ils', '-A', os.path.join(collection_base, collection_to_test)])
+                    self.assertEqual(ec, 0)
+                    self.assertEqual(len(err), 0)
+                    self.assertNotIn(other_user, out)
+
+        finally:
+            self.admin.assert_icommand(['iadmin', 'rfg', group, self.user.username])
+            self.admin.assert_icommand(['iadmin', 'rmgroup', group])
+            self.admin.assert_icommand(['iadmin', 'rmuser', other_user])
+
 
 class test_collection_acl_inheritance(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
     def setUp(self):
