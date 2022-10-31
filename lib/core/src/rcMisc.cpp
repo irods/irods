@@ -510,11 +510,7 @@ freeAllDataObjInfo( dataObjInfo_t *dataObjInfoHead ) {
 //                  0 - the input dataObjInfo is a link list.
 // topFlag > 1 - queue the input dataObjInfo at the head of the queue
 //           0 - queue the input dataObjInfo at the bottom of the queue.
-int queDataObjInfo(
-    dataObjInfo_t** dataObjInfoHead,
-    dataObjInfo_t* dataObjInfo,
-    int singleInfoFlag,
-    int topFlag)
+int queDataObjInfo(dataObjInfo_t** dataObjInfoHead, dataObjInfo_t* dataObjInfo, int singleInfoFlag, int topFlag)
 {
     if (!dataObjInfo) {
         return -1;

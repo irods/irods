@@ -238,10 +238,7 @@ namespace
         }
     }
 
-    int do_verification(RsComm& _comm,
-                        DataObjInp& _dataObjInp,
-                        DataObjInfo*& _replicas,
-                        char** _checksum)
+    int do_verification(RsComm& _comm, DataObjInp& _dataObjInp, DataObjInfo*& _replicas, char** _checksum)
     {
         ix::key_value_proxy kvp{_dataObjInp.condInput};
 
@@ -383,10 +380,7 @@ namespace
         return 0;
     } // do_verification
 
-    int do_lookup_or_update(RsComm& _comm,
-                            DataObjInp& _dataObjInp,
-                            DataObjInfo*& _replicas,
-                            char** _computed_checksum)
+    int do_lookup_or_update(RsComm& _comm, DataObjInp& _dataObjInp, DataObjInfo*& _replicas, char** _computed_checksum)
     {
         ix::key_value_proxy kvp{_dataObjInp.condInput};
 

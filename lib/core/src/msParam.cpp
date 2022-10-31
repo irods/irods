@@ -44,12 +44,12 @@ addIntParamToArray( msParamArray_t *msParamArray, char *label, int inpInt ) {
  *         and inpOutBuf will be replicated.
  */
 int addMsParamToArray(
-    msParamArray_t *msParamArray,
-    const char *label,
-    const char *type,
-    void *inOutStruct,
-    bytesBuf_t *inpOutBuf,
-    int replFlag )
+    msParamArray_t* msParamArray,
+    const char* label,
+    const char* type,
+    void* inOutStruct,
+    bytesBuf_t* inpOutBuf,
+    int replFlag)
 {
     if (!msParamArray || !label) {
         log_msi::error("{}: received null pointer", __func__);
@@ -253,8 +253,7 @@ replBytesBuf( const bytesBuf_t* in) {
     return out;
 }
 
-
-int fillMsParam( msParam_t *msParam, const char *label, const char *type, void *inOutStruct, bytesBuf_t *inpOutBuf )
+int fillMsParam(msParam_t* msParam, const char* label, const char* type, void* inOutStruct, bytesBuf_t* inpOutBuf)
 {
     if (label) {
         msParam->label = strdup(label);
@@ -597,7 +596,6 @@ int resetMsParam(msParam_t* msParam)
 
     return 0;
 }
-
 
 int trimMsParamArray(msParamArray_t* msParamArray, char* outParamDesc)
 {

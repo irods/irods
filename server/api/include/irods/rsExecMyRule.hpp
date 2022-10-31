@@ -15,4 +15,3 @@ auto remoteExecMyRule(
     rodsServerHost* _remote_host) -> int;
 
 #endif // IRODS_RS_EXEC_MY_RULE_HPP
-
