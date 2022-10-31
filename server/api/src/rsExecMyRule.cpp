@@ -4,149 +4,138 @@
 #include "irods/irods_logger.hpp"
 #include "irods/irods_re_plugin.hpp"
 #include "irods/miscServerFunct.hpp"
+#include "irods/msParam.h"
+#include "irods/objInfo.h"
+#include "irods/rcConnect.h"
 #include "irods/rcMisc.h"
 
-extern std::unique_ptr<struct irods::global_re_plugin_mgr> irods::re_plugin_globals;
+#include <cstdlib>
+#include <string>
+#include <vector>
 
-int rsExecMyRule(
-    rsComm_t*        _comm,
-    execMyRuleInp_t* _exec_inp,
-    msParamArray_t** _out_arr ) {
+using log_api = irods::experimental::log::api;
 
-    if ( _exec_inp == NULL ) {
-        rodsLog( LOG_NOTICE,
-                 "rsExecMyRule error. NULL input" );
+auto rsExecMyRule(RsComm* _comm, ExecMyRuleInp* _exec_inp, MsParamArray** _out_param_arr) -> int
+{
+    if (!_exec_inp) { // NOLINT(readability-implicit-bool-conversion)
+        log_api::error("Invalid input: null pointer");
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    char* available_str = getValByKey(
-                            &_exec_inp->condInput,
-                            "available" );
+    if (getValByKey(&_exec_inp->condInput, "available")) { // NOLINT(readability-implicit-bool-conversion)
+        std::vector<std::string> instance_names;
+        irods::error ret = list_rule_plugin_instances(instance_names);
 
-    if ( available_str ) {
-        std::vector< std::string > instance_names;
-        irods::error ret = list_rule_plugin_instances( instance_names );
-
-        if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
-            return ret.code();
+        if (!ret.ok()) {
+            log_api::error(ret.result());
+            return ret.code(); // NOLINT(bugprone-narrowing-conversions, cppcoreguidelines-narrowing-conversions)
         }
 
         std::string ret_string = "Available rule engine plugin instances:\n";
-        for ( auto& name : instance_names ) {
+        for (const auto& name : instance_names) {
             ret_string += "\t";
             ret_string += name;
             ret_string += "\n";
         }
 
-        int i = addRErrorMsg( &_comm->rError, 0, ret_string.c_str() );
-        if (i) {
-        irods::log( ERROR( i, "addRErrorMsg failed" ) );
+        const auto ec = addRErrorMsg(&_comm->rError, 0, ret_string.c_str());
+        if (ec != 0) {
+            log_api::error("Failed to add message to rError stack.");
         }
-        return i;
+
+        return ec;
     }
 
-    rodsServerHost_t* rods_svr_host = nullptr;
-    int remoteFlag = resolveHost( &_exec_inp->addr, &rods_svr_host );
+    rodsServerHost_t* remote_host = nullptr;
+    const int remoteFlag = resolveHost(&_exec_inp->addr, &remote_host);
     if (remoteFlag < 0) {
-        const auto msg = fmt::format(
-            fmt::runtime("Failed to resolve hostname: [{}]"),
-            _exec_inp->addr.hostAddr);
-        irods::experimental::log::api::error(msg);
+        const auto msg = fmt::format(fmt::runtime("Failed to resolve hostname: [{}]"), _exec_inp->addr.hostAddr);
+        log_api::error(msg);
         addRErrorMsg(&_comm->rError, remoteFlag, msg.data());
         return remoteFlag;
     }
 
-    if ( remoteFlag == REMOTE_HOST ) {
-        return remoteExecMyRule( _comm, _exec_inp,
-                                   _out_arr, rods_svr_host );
+    if (remoteFlag == REMOTE_HOST) {
+        return remoteExecMyRule(_comm, _exec_inp, _out_param_arr, remote_host);
     }
 
-    char* inst_name_str = getValByKey(
-                              &_exec_inp->condInput,
-                              irods::KW_CFG_INSTANCE_NAME);
+    const char* inst_name_str = getValByKey(&_exec_inp->condInput, irods::KW_CFG_INSTANCE_NAME);
     std::string inst_name;
-    if( inst_name_str ) {
+    if (inst_name_str) { // NOLINT(readability-implicit-bool-conversion)
         inst_name = inst_name_str;
     }
 
-    ruleExecInfo_t rei;
-    initReiWithDataObjInp( &rei, _comm, NULL );
-
-    // initReiWithDataObjInp allocates a KeyValPair struct. Free it now
-    // as it is immediately overwritten by the input KeyValPair.
-    free(rei.condInputData);
+    // Construct and initialize an REI object.
+    ruleExecInfo_t rei{};
+    rei.rsComm = _comm;
     rei.condInputData = &_exec_inp->condInput;
-
-    /* need to have a non zero inpParamArray for execMyRule to work */
-    if ( _exec_inp->inpParamArray == NULL ) {
-        _exec_inp->inpParamArray =
-            ( msParamArray_t * ) malloc( sizeof( msParamArray_t ) );
-        memset( _exec_inp->inpParamArray, 0, sizeof( msParamArray_t ) );
+    if (_comm) { // NOLINT(readability-implicit-bool-conversion)
+        rei.uoic = &_comm->clientUser;
+        rei.uoip = &_comm->proxyUser;
     }
+
+    // Need to have a non zero inpParamArray for execMyRule to work.
+    if (!_exec_inp->inpParamArray) { // NOLINT(readability-implicit-bool-conversion)
+        // NOLINTNEXTLINE(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
+        _exec_inp->inpParamArray = static_cast<MsParamArray*>(std::malloc(sizeof(MsParamArray)));
+        std::memset(_exec_inp->inpParamArray, 0, sizeof(MsParamArray));
+    }
+
+    // This exposes the MsParamArray provided by the client (or recently allocated) to the NREP.
     rei.msParamArray = _exec_inp->inpParamArray;
 
-    rstrcpy( rei.ruleName, EXEC_MY_RULE_KW, NAME_LEN );
+    rstrcpy(rei.ruleName, EXEC_MY_RULE_KW, NAME_LEN); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
 
-    const std::string& my_rule_text   = _exec_inp->myRule;
-    const std::string& out_param_desc = _exec_inp->outParamDesc;
-    irods::rule_engine_context_manager<
-        irods::unit,
-        ruleExecInfo_t*,
-        irods::AUDIT_RULE> re_ctx_mgr(
-                               irods::re_plugin_globals->global_re_mgr,
-                               &rei);
-    irods::error err = re_ctx_mgr.exec_rule_text(
-                           inst_name,
-                           my_rule_text,
-                           _exec_inp->inpParamArray,
-                           out_param_desc);
-    if(inst_name.empty()) {
+    const std::string my_rule_text = _exec_inp->myRule; // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+    const std::string out_param_desc = _exec_inp->outParamDesc; // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+    irods::rule_engine_context_manager<irods::unit, RuleExecInfo*, irods::AUDIT_RULE> re_ctx_mgr(irods::re_plugin_globals->global_re_mgr, &rei);
+    irods::error err = re_ctx_mgr.exec_rule_text(inst_name, my_rule_text, _exec_inp->inpParamArray, out_param_desc);
+
+    // If the client didn't specify a target REP, clear all error information.
+    // Doing this maintains the behavior seen by executing "irule" without specifying a target REP.
+    // This is further explained due to the fact that "irule" invokes this API endpoint directly to do its work.
+    if (inst_name.empty()) {
         freeRErrorContent(&rei.rsComm->rError);
     }
-
-    if(!inst_name.empty() && !err.ok()) {
-        rodsLog(
-            LOG_ERROR,
-            "%s : %d, %s",
-            __FUNCTION__,
-            err.code(),
-            err.result().c_str()
-        );
-        return err.code();
+    else if (!err.ok()) {
+        log_api::error("{}: {}, {}", __func__, err.code(), err.result());
+        return err.code(); // NOLINT(bugprone-narrowing-conversions, cppcoreguidelines-narrowing-conversions)
     }
 
-    trimMsParamArray( rei.msParamArray, _exec_inp->outParamDesc );
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+    trimMsParamArray(rei.msParamArray, _exec_inp->outParamDesc);
 
-    *_out_arr = rei.msParamArray;
-    rei.msParamArray = NULL;
+    // NOLINTNEXTLINE(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
+    *_out_param_arr = static_cast<MsParamArray*>(std::malloc(sizeof(MsParamArray)));
+    std::memset(*_out_param_arr, 0, sizeof(MsParamArray));
+    replMsParamArray(rei.msParamArray, *_out_param_arr);
 
-    if (!inst_name.empty() &&  err.code() < 0 ) {
-        rodsLog( LOG_ERROR,
-                 "rsExecMyRule : execMyRule error for %s, status = %d",
-                 _exec_inp->myRule, err.code() );
-        return err.code();
+    // Detach the MsParamArray from the REI.
+    rei.msParamArray = nullptr;
+
+    if (!inst_name.empty() && err.code() < 0) {
+        log_api::error("{}: Rule execution error for [{}], error code = [{}]", __func__, _exec_inp->myRule, err.code());
+        return err.code(); // NOLINT(bugprone-narrowing-conversions, cppcoreguidelines-narrowing-conversions)
     }
 
-    return err.code();
-}
+    return err.code(); // NOLINT(bugprone-narrowing-conversions, cppcoreguidelines-narrowing-conversions)
+} // rsExecMyRule
 
-int
-remoteExecMyRule( rsComm_t *_comm, execMyRuleInp_t *_exec_inp,
-                  msParamArray_t **_out_arr, rodsServerHost_t *rods_svr_host ) {
-    int status;
-
-    if ( rods_svr_host == NULL ) {
-        rodsLog( LOG_ERROR,
-                 "remoteExecMyRule: Invalid rods_svr_host" );
+auto remoteExecMyRule(
+    RsComm* _comm,
+    ExecMyRuleInp* _exec_inp,
+    MsParamArray** _out_param_arr,
+    rodsServerHost* _remote_host) -> int
+{
+    if (!_remote_host) { // NOLINT(readability-implicit-bool-conversion)
+        log_api::error("{}: Invalid server host.", __func__);
         return SYS_INVALID_SERVER_HOST;
     }
 
-    if ( ( status = svrToSvrConnect( _comm, rods_svr_host ) ) < 0 ) {
-        return status;
+    if (const auto ec = svrToSvrConnect(_comm, _remote_host); ec < 0) {
+        return ec;
     }
 
-    status = rcExecMyRule( rods_svr_host->conn, _exec_inp, _out_arr );
+    return rcExecMyRule(_remote_host->conn, _exec_inp, _out_param_arr);
+} // remoteExecMyRule
 
-    return status;
-}
