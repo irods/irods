@@ -76,7 +76,6 @@ getDataObjInfo(
     dataObjInfo_t** dataObjInfoHead,
     char*           accessPerm,
     int             ignoreCondInput ) {
-
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
     int i, status;
@@ -155,16 +154,16 @@ getDataObjInfo(
 
         genQueryInp.continueInx = genQueryOut->continueInx;
         genQueryInp.maxRows = 0;
-        freeGenQueryOut( &genQueryOut );
-        rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
+        freeGenQueryOut(&genQueryOut);
+        rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
 
-        freeGenQueryOut( &genQueryOut );
+        freeGenQueryOut(&genQueryOut);
         clearGenQueryInp( &genQueryInp );
 
         return status;
     }
 
-    clearGenQueryInp( &genQueryInp );
+    clearGenQueryInp(&genQueryInp);
 
     if ( genQueryOut == NULL ) {
         rodsLog( LOG_NOTICE,

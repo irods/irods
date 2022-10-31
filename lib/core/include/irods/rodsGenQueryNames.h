@@ -10,11 +10,13 @@
 #include "irods/rodsGenQuery.h"
 
 // NOLINTNEXTLINE(modernize-use-using)
-typedef struct GenQueryColumnName {
+typedef struct GenQueryColumnName
+{
     int columnId;
     char *columnName;
 } columnName_t;
 
+// clang-format off
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
 static const columnName_t columnNames[] = {
     { COL_ZONE_ID,          "ZONE_ID", },
@@ -386,8 +388,8 @@ static const columnName_t columnNames[] = {
     { COL_TICKET_OWNER_NAME,               "TICKET_OWNER_NAME", },
     { COL_TICKET_OWNER_ZONE,               "TICKET_OWNER_ZONE", },
 };
+// clang-format on
 
 static const int NumOfColumnNames = sizeof(columnNames) / sizeof(columnName_t);
 
-#endif	// IRODS_GEN_QUERY_NAMES_H
-
+#endif // IRODS_GEN_QUERY_NAMES_H

@@ -86,9 +86,13 @@ auto rsExecMyRule(RsComm* _comm, ExecMyRuleInp* _exec_inp, MsParamArray** _out_p
 
     rstrcpy(rei.ruleName, EXEC_MY_RULE_KW, NAME_LEN); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
 
-    const std::string my_rule_text = _exec_inp->myRule; // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-    const std::string out_param_desc = _exec_inp->outParamDesc; // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-    irods::rule_engine_context_manager<irods::unit, RuleExecInfo*, irods::AUDIT_RULE> re_ctx_mgr(irods::re_plugin_globals->global_re_mgr, &rei);
+    // NOLINTBEGIN(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+    const std::string my_rule_text = _exec_inp->myRule;
+    const std::string out_param_desc = _exec_inp->outParamDesc;
+    // NOLINTEND(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+
+    irods::rule_engine_context_manager<irods::unit, RuleExecInfo*, irods::AUDIT_RULE> re_ctx_mgr(
+        irods::re_plugin_globals->global_re_mgr, &rei);
     irods::error err = re_ctx_mgr.exec_rule_text(inst_name, my_rule_text, _exec_inp->inpParamArray, out_param_desc);
 
     // If the client didn't specify a target REP, clear all error information.
@@ -138,4 +142,3 @@ auto remoteExecMyRule(
 
     return rcExecMyRule(_remote_host->conn, _exec_inp, _out_param_arr);
 } // remoteExecMyRule
-
