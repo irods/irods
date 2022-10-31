@@ -1,7 +1,12 @@
 #include "irods/rcMisc.h"
 
 #include "irods/apiHeaderAll.h"
+#include "irods/dataObjInpOut.h"
+#include "irods/execMyRule.h"
+#include "irods/exec_rule_expression.h"
+#include "irods/generalAdmin.h"
 #include "irods/modDataObjMeta.h"
+#include "irods/msParam.h"
 #include "irods/rcGlobalExtern.h"
 #include "irods/rodsGenQueryNames.h"
 #include "irods/rodsType.h"
@@ -9,6 +14,8 @@
 #include "irods/rodsErrorTable.h"
 #include "irods/bulkDataObjPut.h"
 #include "irods/putUtil.h"
+#include "irods/ruleExecMod.h"
+#include "irods/ruleExecSubmit.h"
 #include "irods/sockComm.h"
 #include "irods/irods_virtual_path.hpp"
 #include "irods/irods_hierarchy_parser.hpp"
@@ -21,6 +28,8 @@
 #include "irods/dns_cache.hpp"
 #include "irods/irods_configuration_keywords.hpp"
 #include "irods/irods_server_properties.hpp"
+#include "irods/specificQuery.h"
+#include "irods/ticketAdmin.h"
 
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
@@ -41,6 +50,7 @@
     #include "irods/Unix2Nt.hpp"
 #endif
 
+#include <cstdlib>
 #include <cstring>
 #include <cstdlib>
 #include <iostream>
@@ -57,6 +67,16 @@
  * 1 - valid
  * 0 - not valid
  */
+
+namespace
+{
+    constexpr auto free_pointer(auto* _q)
+    {
+        if (_q) {
+            std::free(_q); // NOLINT(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
+        }
+    }
+} // namespace
 
 int
 isPath( char *myPath ) {
@@ -1438,6 +1458,165 @@ clearDataObjCopyInp( void* voidInp ) {
     memset( dataObjCopyInp, 0, sizeof( dataObjCopyInp_t ) );
 
     return;
+}
+
+void clearGeneralAdminInput(void* _p)
+{
+    if (!_p) {
+        return;
+    }
+
+    constexpr auto free_const_pointer = [](const char* _q) {
+        if (_q) {
+            std::free(const_cast<char*>(_q));
+        }
+    };
+
+    auto* q = static_cast<GeneralAdminInput*>(_p);
+
+    free_const_pointer(q->arg0);
+    free_const_pointer(q->arg1);
+    free_const_pointer(q->arg2);
+    free_const_pointer(q->arg3);
+    free_const_pointer(q->arg4);
+    free_const_pointer(q->arg5);
+    free_const_pointer(q->arg6);
+    free_const_pointer(q->arg7);
+    free_const_pointer(q->arg8);
+    free_const_pointer(q->arg9);
+
+    std::memset(q, 0, sizeof(GeneralAdminInput));
+}
+
+void clearOpenedDataObjInp(void* _p)
+{
+    if (!_p) {
+        return;
+    }
+
+    auto* q = static_cast<OpenedDataObjInp*>(_p);
+
+    clearKeyVal(&q->condInput);
+
+    std::memset(q, 0, sizeof(OpenedDataObjInp));
+}
+
+void clearSpecificQueryInp(void* _p)
+{
+    if (!_p) {
+        return;
+    }
+
+    auto* q = static_cast<SpecificQueryInp*>(_p);
+
+    free_pointer(q->sql);
+
+    for (auto&& arg_ptr : q->args) {
+        free_pointer(arg_ptr);
+    }
+
+    clearKeyVal(&q->condInput);
+
+    std::memset(q, 0, sizeof(SpecificQueryInp));
+}
+
+void clearTicketAdminInp(void* _p)
+{
+    if (!_p) {
+        return;
+    }
+
+    auto* q = static_cast<TicketAdminInput*>(_p);
+
+    free_pointer(q->arg1);
+    free_pointer(q->arg2);
+    free_pointer(q->arg3);
+    free_pointer(q->arg4);
+    free_pointer(q->arg5);
+    free_pointer(q->arg6);
+
+    clearKeyVal(&q->condInput);
+
+    std::memset(q, 0, sizeof(TicketAdminInput));
+}
+
+void clearExecMyRuleInp(void* _p)
+{
+    if (!_p) {
+        return;
+    }
+
+    auto* q = static_cast<ExecMyRuleInp*>(_p);
+
+    clearKeyVal(&q->condInput);
+
+    if (q->inpParamArray) {
+        constexpr auto free_ms_param_structures = 1;
+        clearMsParamArray(q->inpParamArray, free_ms_param_structures);
+        std::free(q->inpParamArray);
+    }
+
+    std::memset(q, 0, sizeof(ExecMyRuleInp));
+}
+
+void clearRuleExecModifyInput(void* _p)
+{
+    if (!_p) {
+        return;
+    }
+
+    auto* q = static_cast<RuleExecModifyInput*>(_p);
+
+    clearKeyVal(&q->condInput);
+
+    std::memset(q, 0, sizeof(RuleExecModifyInput));
+}
+
+void clearExecCmd(void* _p)
+{
+    if (!_p) {
+        return;
+    }
+
+    auto* q = static_cast<ExecCmd*>(_p);
+
+    clearKeyVal(&q->condInput);
+
+    std::memset(q, 0, sizeof(ExecCmd));
+}
+
+void clearExecRuleExpressionInput(void* _p)
+{
+    if (!_p) {
+        return;
+    }
+
+    auto* q = static_cast<ExecRuleExpression*>(_p);
+
+    clearBBuf(&q->rule_text_);
+    clearBBuf(&q->packed_rei_);
+
+    if (q->params_) {
+        constexpr auto free_internal_ms_param_structures = 1;
+        clearMsParamArray(q->params_, free_internal_ms_param_structures);
+        std::free(q->params_);
+    }
+
+    std::memset(q, 0, sizeof(ExecRuleExpression));
+}
+
+void clearRuleExecSubmitInput(void* _p)
+{
+    if (!_p) {
+        return;
+    }
+
+    auto* q = static_cast<RuleExecSubmitInput*>(_p);
+
+    clearKeyVal(&q->condInput);
+    freeBBuf(q->packedReiAndArgBBuf);
+
+    std::memset(q, 0, sizeof(RuleExecSubmitInput));
 }
 
 int
