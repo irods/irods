@@ -22,7 +22,6 @@
 #include <string>
 #include <string_view>
 
-
 #ifdef MYMALLOC
 # Within reLib1.c here, change back the redefines of malloc back to normal
 #define malloc(x) malloc(x)

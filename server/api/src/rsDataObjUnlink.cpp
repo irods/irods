@@ -353,9 +353,7 @@ int rsMvDataObjToTrash(
         }
 
         dataObjInfo_t *dataObjInfoHead{};
-        irods::at_scope_exit free_data_obj_infos{[&dataObjInfoHead] {
-            freeAllDataObjInfo(dataObjInfoHead);
-        }};
+        irods::at_scope_exit free_data_obj_infos{[&dataObjInfoHead] { freeAllDataObjInfo(dataObjInfoHead); }};
 
         dataObjUnlinkInp->openFlags = O_WRONLY;
         status = getDataObjInfoIncSpecColl(rsComm, dataObjUnlinkInp, &dataObjInfoHead);

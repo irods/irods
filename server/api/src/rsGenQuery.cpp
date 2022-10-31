@@ -548,10 +548,12 @@ irods::error process_query_terms_for_pre_irods4_server(const std::string& _zone_
 
     // grind through the zones and find the match to the kw
     while (tmp_zone) {
+        // clang-format off
         if (boost::iequals(zone_name, tmp_zone->zoneName) &&
             tmp_zone->primaryServerHost->conn &&
             tmp_zone->primaryServerHost->conn->svrVersion &&
             tmp_zone->primaryServerHost->conn->svrVersion->cookie < 301)
+        // clang-format on
         {
             return strip_new_query_terms(_inp);
         }

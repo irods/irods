@@ -9,11 +9,13 @@
 
 #ifdef RODS_SERVER
 
+// clang-format off
 #include "irods/client_api_allowlist.hpp"
 #include "irods/json_serialization.hpp"
 #include "irods/server_utilities.hpp"
 
 #include <memory>
+// clang-format on
 
 namespace
 {
@@ -52,7 +54,8 @@ namespace
 
         try {
             auto req  = to_json(bb_req);
-            std::unique_ptr<auth::authentication_base> auth{auth::resolve_authentication_plugin(get<std::string>("scheme", req), "server")};
+            std::unique_ptr<auth::authentication_base> auth{
+                auth::resolve_authentication_plugin(get<std::string>("scheme", req), "server")};
             auto opr  = get<std::string>(auth::next_operation, req);
             auto resp = auth->call(*comm, opr, req);
 

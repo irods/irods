@@ -255,9 +255,9 @@ int rsApiHandler(rsComm_t*   rsComm,
     return retVal;
 }
 
-int sendAndProcApiReply( rsComm_t * rsComm, int apiInx, int status, void*& myOutStruct, bytesBuf_t * myOutBsBBuf )
+int sendAndProcApiReply(rsComm_t* rsComm, int apiInx, int status, void*& myOutStruct, bytesBuf_t* myOutBsBBuf)
 {
-    const int retval = sendApiReply( rsComm, apiInx, status, myOutStruct, myOutBsBBuf );
+    const int retval = sendApiReply(rsComm, apiInx, status, myOutStruct, myOutBsBBuf);
 
     clearBBuf(myOutBsBBuf);
 
@@ -279,7 +279,7 @@ int sendAndProcApiReply( rsComm_t * rsComm, int apiInx, int status, void*& myOut
     return retval;
 }
 
-int sendApiReply( rsComm_t * rsComm, int apiInx, int retVal, void*& myOutStruct, bytesBuf_t * myOutBsBBuf )
+int sendApiReply(rsComm_t* rsComm, int apiInx, int retVal, void*& myOutStruct, bytesBuf_t* myOutBsBBuf)
 {
     int status = 0;
     bytesBuf_t* outStructBBuf = nullptr;
@@ -305,9 +305,14 @@ int sendApiReply( rsComm_t * rsComm, int apiInx, int retVal, void*& myOutStruct,
     irods::api_entry_table& RsApiTable = irods::get_server_api_table();
 
     if (RsApiTable[apiInx]->outPackInstruct && myOutStruct) {
-        status = pack_struct((char*) myOutStruct, &outStructBBuf,
-                             (char*) RsApiTable[apiInx]->outPackInstruct, RodsPackTable, FREE_POINTER,
-                             rsComm->irodsProt, rsComm->cliVersion.relVersion );
+        status = pack_struct(
+            (char*) myOutStruct,
+            &outStructBBuf,
+            (char*) RsApiTable[apiInx]->outPackInstruct,
+            RodsPackTable,
+            FREE_POINTER,
+            rsComm->irodsProt,
+            rsComm->cliVersion.relVersion);
 
         if ( status < 0 ) {
             log_agent::info("{}: packStruct error, status = [{}]", __func__, status);
@@ -327,11 +332,18 @@ int sendApiReply( rsComm_t * rsComm, int apiInx, int retVal, void*& myOutStruct,
     }
 
     if ( rsComm->rError.len > 0 ) {
-        status = pack_struct((char*) &rsComm->rError, &rErrorBBuf, "RError_PI", RodsPackTable, 0, rsComm->irodsProt, rsComm->cliVersion.relVersion );
+        status = pack_struct(
+            (char*) &rsComm->rError,
+            &rErrorBBuf,
+            "RError_PI",
+            RodsPackTable,
+            0,
+            rsComm->irodsProt,
+            rsComm->cliVersion.relVersion);
 
         if ( status < 0 ) {
-            log_agent::info( "sendApiReply: packStruct error, status=[{}]", status );
-            sendRodsMsg( net_obj, RODS_API_REPLY_T, nullptr, nullptr, nullptr, status, rsComm->irodsProt );
+            log_agent::info("sendApiReply: packStruct error, status=[{}]", status);
+            sendRodsMsg(net_obj, RODS_API_REPLY_T, nullptr, nullptr, nullptr, status, rsComm->irodsProt);
             svrChkReconnAtSendEnd( rsComm );
             freeBBuf( outStructBBuf );
             freeBBuf( rErrorBBuf );
@@ -344,7 +356,7 @@ int sendApiReply( rsComm_t * rsComm, int apiInx, int retVal, void*& myOutStruct,
         myRErrorBBuf = nullptr;
     }
 
-    ret = sendRodsMsg( net_obj, RODS_API_REPLY_T, myOutStructBBuf, myOutBsBBuf, myRErrorBBuf, retVal, rsComm->irodsProt );
+    ret = sendRodsMsg(net_obj, RODS_API_REPLY_T, myOutStructBBuf, myOutBsBBuf, myRErrorBBuf, retVal, rsComm->irodsProt);
 
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
@@ -352,16 +364,20 @@ int sendApiReply( rsComm_t * rsComm, int apiInx, int retVal, void*& myOutStruct,
         if ( rsComm->reconnSock > 0 ) {
             int savedStatus = ret.code();
             boost::unique_lock< boost::mutex > boost_lock( *rsComm->thread_ctx->lock );
-            log_agent::debug("sendApiReply: svrSwitchConnect. client state=[{}], agent state=[{}]", rsComm->clientState, rsComm->agentState );
-            const auto ec = svrSwitchConnect( rsComm );
+            log_agent::debug(
+                "sendApiReply: svrSwitchConnect. client state=[{}], agent state=[{}]",
+                rsComm->clientState,
+                rsComm->agentState);
+            const auto ec = svrSwitchConnect(rsComm);
             boost_lock.unlock();
             if (ec > 0) {
                 // Should not be here!
-                log_agent::info( "sendApiReply: Switch connection and retry sendRodsMsg" );
-                ret = sendRodsMsg( net_obj, RODS_API_REPLY_T, myOutStructBBuf, myOutBsBBuf, myRErrorBBuf, retVal, rsComm->irodsProt );
+                log_agent::info("sendApiReply: Switch connection and retry sendRodsMsg");
+                ret = sendRodsMsg(
+                    net_obj, RODS_API_REPLY_T, myOutStructBBuf, myOutBsBBuf, myRErrorBBuf, retVal, rsComm->irodsProt);
 
                 if ( ret.code() >= 0 ) {
-                    log_agent::info( "sendApiReply: retry sendRodsMsg succeeded" );
+                    log_agent::info("sendApiReply: retry sendRodsMsg succeeded");
                 }
                 else {
                     status = savedStatus;
@@ -582,7 +598,7 @@ readAndProcClientMsg( rsComm_t * rsComm, int flags ) {
     /* handler switch by msg type */
 
     if ( strcmp( myHeader.type, RODS_API_REQ_T ) == 0 ) {
-        status = rsApiHandler( rsComm, myHeader.intInfo, &inputStructBBuf, &bsBBuf );
+        status = rsApiHandler(rsComm, myHeader.intInfo, &inputStructBBuf, &bsBBuf);
 
         clearBBuf( &inputStructBBuf );
         clearBBuf( &bsBBuf );
@@ -684,7 +700,7 @@ _svrSendCollOprStat( rsComm_t * rsComm, collOprStat_t * collOprStat ) {
     int status;
 
     auto* p = static_cast<void*>(collOprStat);
-    status = sendAndProcApiReply( rsComm, rsComm->apiInx, SYS_SVR_TO_CLI_COLL_STAT, p, nullptr );
+    status = sendAndProcApiReply(rsComm, rsComm->apiInx, SYS_SVR_TO_CLI_COLL_STAT, p, nullptr);
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status,
                       "svrSendCollOprStat: sendAndProcApiReply failed. status = %d",
@@ -745,4 +761,3 @@ readTimeoutHandler( int ) {
         longjmp( Jenv, READ_HEADER_TIMED_OUT );
     }
 }
-
