@@ -12,6 +12,7 @@ import socket
 import tempfile
 import time  # remove once file hash fix is committed #2279
 import subprocess
+import textwrap
 
 from .. import lib
 from .. import paths
@@ -394,6 +395,63 @@ OUTPUT ruleExecOut
         os.unlink(rule_file)
 
         self.admin.assert_icommand(['iadmin', 'ls', 'logical_path', logical_path, 'replica_number', '0'], 'STDOUT', 'DATA_REPL_STATUS: 1')
+
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
+    def test_msiExecCmd_closeAllL1Desc__issue_6623(self):
+        logical_path = os.path.join(self.admin.session_collection, 'foo')
+        attr = 'test_msiExecCmd_closeAllL1Desc__issue_6623'
+
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent(
+                f'''
+                pep_resource_close_post(*inst, *ctx, *out) {{
+                    msiGetSystemTime(*time_str, '');
+                    msiAddKeyVal(*key_val_pair,"{attr}","*time_str");
+                    msiAssociateKeyValuePairsToObj(*key_val_pair,"{logical_path}","-d");
+                    # Sleep to ensure that the actual close doesn't occur in the same second
+                    msiSleep("1", "0");
+                }}''')
+        }
+
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent(
+                f'''
+                execute_hello {{
+                    msiDataObjOpen("{logical_path}", *fd);
+                    msiExecCmd('hello', '', '', '', '', *out);
+                    msiDataObjClose(*fd, *unused_status);
+                }}
+                INPUT null
+                OUTPUT ruleExecOut''')
+        }
+
+        self.assertFalse(lib.replica_exists(self.admin, logical_path, 0))
+        try:
+            with temporary_core_file() as core:
+                self.admin.assert_icommand(['itouch', logical_path])
+                self.assertTrue(lib.replica_exists(self.admin, logical_path, 0))
+
+                # Add a PEP which fires after the "close" resource operation. The PEP adds an AVU to the object at logical_path.
+                core.add_rule(pep_map[self.plugin_name])
+
+                # Create an iRODS rule which opens a data object at logical_path, calls msiExecCmd, and then closes the data object.
+                rule_file = os.path.join(self.admin.local_session_dir, 'rule.r')
+                with open(rule_file, 'w') as f:
+                    f.write(rule_map[self.plugin_name])
+
+                self.admin.assert_icommand(['irule', '-r', self.plugin_name + '-instance', '-F', rule_file])
+
+                # msiExecCmd should not execute any policy. Since the rule calls msiDataObjClose only once, there should be only
+                # AVU associated with the data object. If this were not the case, there would be two: once for the msiDataObjClose
+                # call, and once for the close resource operation invoked by the execCmd API.
+                expected_count = 1
+                q = f"select COUNT(META_DATA_ATTR_ID) where META_DATA_ATTR_NAME = '{attr}'"
+                self.admin.assert_icommand(['iquest', '%s', q], 'STDOUT', str(expected_count))
+
+        finally:
+            self.admin.run_icommand(['irm', '-f', logical_path])
+            self.admin.run_icommand(['iadmin', 'rum'])
 
 
 @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
