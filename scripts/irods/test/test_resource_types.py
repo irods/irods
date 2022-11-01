@@ -11,6 +11,7 @@ import subprocess
 import sys
 import tempfile
 from threading import Timer
+import textwrap
 import time
 import socket
 
@@ -30,7 +31,6 @@ from .. import paths
 from .resource_suite import ResourceSuite, ResourceBase
 from .test_chunkydevtest import ChunkyDevTest
 from . import session
-from .rule_texts_for_tests import rule_texts
 from . import ustrings
 
 def assert_number_of_replicas(admin_session, logical_path, data_obj_name, replica_count):
@@ -483,6 +483,18 @@ OUTPUT ruleExecOut
         self.admin.assert_icommand('iput ' + filename + ' file3')
 
     def test_msi_update_unixfilesystem_resource_free_space_and_acPostProcForParallelTransferReceived(self):
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                acPostProcForParallelTransferReceived(*leaf_resource) {
+                    msi_update_unixfilesystem_resource_free_space(*leaf_resource);
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def acPostProcForParallelTransferReceived(rule_args, callback, rei):
+                    callback.msi_update_unixfilesystem_resource_free_space(rule_args[0])
+            ''')
+        }
+
         try:
             filename = 'test_msi_update_unixfilesystem_resource_free_space_and_acPostProcForParallelTransferReceived'
             filepath = lib.make_file(filename, 50000000)
@@ -492,7 +504,7 @@ OUTPUT ruleExecOut
 
             with temporary_core_file() as core:
                 time.sleep(1)  # remove once file hash fix is committed #2279
-                core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+                core.add_rule(pep_map[self.plugin_name])
                 time.sleep(1)  # remove once file hash fix is committed #2279
 
                 self.user0.assert_icommand(['iput', filename])
@@ -2066,6 +2078,29 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         self.admin.assert_icommand("ils -l " + logical_path_rsync, 'STDOUT_SINGLELINE', filename_rsync )
 
     def test_msiDataObjRsync__2976(self):
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                test_msiDataObjRsync {{
+                    *err = errormsg( msiDataObjRsync(*SourceFile,"IRODS_TO_IRODS",*Resource,*DestFile,*status), *msg );
+                    if( 0 != *err ) {{
+                        writeLine( "stdout", "*err - *msg" );
+                    }}
+                }}
+
+                INPUT *SourceFile="{logical_path}", *Resource="{dest_resc}", *DestFile="{logical_path_rsync}"
+                OUTPUT ruleExecOut
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def main(rule_args, callback, rei):
+                    out_dict = callback.msiDataObjRsync(global_vars['*SourceFile'][1:-1], 'IRODS_TO_IRODS', global_vars['*Resource'][1:-1], global_vars['*DestFile'][1:-1], 0)
+                    if not out_dict['status']:
+                        callback.writeLine('stdout', 'ERROR: ' + str(out_dict['code']))
+
+                INPUT *SourceFile="{logical_path}", *Resource="{dest_resc}", *DestFile="{logical_path_rsync}"
+                OUTPUT ruleExecOut
+            ''')
+        }
+
         filename = "test_msiDataObjRsync__2976.txt"
         filename_rsync = "test_msiDataObjRsync__2976.txt.rsync"
 
@@ -2080,7 +2115,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         parameters['logical_path_rsync'] = logical_path_rsync
         parameters['dest_resc'] = 'null'
         rule_file_path = 'test_msiDataObjRsync__2976.r'
-        rule_str = rule_texts[self.plugin_name][self.class_name]['test_msiDataObjRsync__2976'].format(**parameters)
+        rule_str = rule_map[self.plugin_name].format(**parameters)
 
         with open(rule_file_path, 'w') as rule_file:
             rule_file.write(rule_str)
@@ -2105,6 +2140,29 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         self.admin.assert_icommand("ils -lr " + logical_path_rsync, 'STDOUT_SINGLELINE', dir_name_rsync )
 
     def test_msiCollRsync__2976(self):
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                test_msiCollRepl {{
+                    *err = errormsg( msiCollRsync(*SourceColl,*DestColl,*Resource,"IRODS_TO_IRODS",*status), *msg );
+                    if( 0 != *err ) {{
+                        writeLine( "stdout", "*err - *msg" );
+                    }}
+                }}
+
+                INPUT *SourceColl="{logical_path}", *Resource="{dest_resc}", *DestColl="{logical_path_rsync}"
+                OUTPUT ruleExecOut
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def main(rule_args, callback, rei):
+                    out_dict = callback.msiCollRsync(global_vars['*SourceColl'][1:-1], global_vars['*DestColl'][1:-1], global_vars['*Resource'][1:-1], 'IRODS_TO_IRODS', 0)
+                    if not out_dict['status']:
+                        callback.writeLine('stdout', 'ERROR: ' + str(out_dict['code']))
+
+                INPUT *SourceColl="{logical_path}", *Resource="{dest_resc}", *DestColl="{logical_path_rsync}"
+                OUTPUT ruleExecOut
+            ''')
+        }
+
         dir_name = 'test_irsync_for_collection__2976'
         dir_name_rsync = dir_name + '_rsync'
         lib.create_directory_of_small_files(dir_name,10)
@@ -2118,7 +2176,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         parameters['logical_path_rsync'] = logical_path_rsync
         parameters['dest_resc'] = 'demoResc'
         rule_file_path = 'test_msiDataObjRsync__2976.r'
-        rule_str = rule_texts[self.plugin_name][self.class_name]['test_msiCollRsync__2976'].format(**parameters)
+        rule_str = rule_map[self.plugin_name].format(**parameters)
 
         with open(rule_file_path, 'w') as rule_file:
             rule_file.write(rule_str)
@@ -2151,6 +2209,29 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "local filesystem check")
     def test_msiDataObjUnlink__2983(self):
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                test_msiDataObjUnlink {{
+                    *err = errormsg( msiDataObjUnlink("objPath=*SourceFile++++unreg=",*Status), *msg );
+                    if( 0 != *err ) {{
+                        writeLine( "stdout", "*err - *msg" );
+                    }}
+                }}
+
+                INPUT *SourceFile="{logical_path}"
+                OUTPUT ruleExecOut
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def main(rule_args, callback, rei):
+                    out_dict = callback.msiDataObjUnlink('objPath=' + global_vars['*SourceFile'][1:-1] + '++++unreg=', 0)
+                    if not out_dict['status']:
+                        callback.writeLine('stdout', 'ERROR: ' + str(out_dict['code']))
+
+                INPUT *SourceFile="{logical_path}"
+                OUTPUT ruleExecOut
+            ''')
+        }
+
         filename = "test_test_msiDataObjUnlink__2983.txt"
         filepath = lib.create_local_testfile(filename)
         logical_path = os.path.join( self.admin.session_collection, filename )
@@ -2160,7 +2241,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         parameters = {}
         parameters['logical_path'] = logical_path
         rule_file_path = 'test_msiDataObjUnlink__2983.r'
-        rule_str = rule_texts[self.plugin_name][self.class_name]['test_msiDataObjUnlink__2983'].format(**parameters)
+        rule_str = rule_map[self.plugin_name].format(**parameters)
 
         with open(rule_file_path, 'w') as rule_file:
             rule_file.write(rule_str)
@@ -2172,6 +2253,29 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         assert os.path.isfile(filepath)
 
     def test_msiDataObjRepl_as_admin__2988(self):
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                test_msiDataObjRepl {{
+                    *err = errormsg( msiDataObjRepl(*SourceFile,"destRescName=*Resource++++irodsAdmin=",*Status), *msg );
+                    if( 0 != *err ) {{
+                        writeLine( "stdout", "*err - *msg" );
+                    }}
+                }}
+
+                INPUT *SourceFile="{logical_path}", *Resource="{dest_resc}"
+                OUTPUT ruleExecOut
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def main(rule_args, callback, rei):
+                    out_dict = callback.msiDataObjRepl(global_vars['*SourceFile'][1:-1], 'destRescName=' + global_vars['*Resource'][1:-1] + '++++irodsAdmin=', 0)
+                    if not out_dict['status']:
+                        callback.writeLine('stdout', 'ERROR: ' + str(out_dict['code']))
+
+                INPUT *SourceFile="{logical_path}", *Resource="{dest_resc}"
+                OUTPUT ruleExecOut
+            ''')
+        }
+
         filename = "test_msiDataObjRepl_as_admin__2988_file.txt"
         filepath = lib.create_local_testfile(filename)
         self.user1.assert_icommand("iput -R TestResc " + filename)
@@ -2181,7 +2285,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         parameters['logical_path'] = logical_path
         parameters['dest_resc'] = 'demoResc'
         rule_file_path = 'test_msiDataObjRepl_as_admin__2988.r'
-        rule_str = rule_texts[self.plugin_name][self.class_name]['test_msiDataObjRepl_as_admin__2988'].format(**parameters)
+        rule_str = rule_map[self.plugin_name].format(**parameters)
 
         with open(rule_file_path, 'w') as rule_file:
             rule_file.write(rule_str)
@@ -2203,6 +2307,29 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', 'archiveResc')
 
     def test_msisync_to_archive__2962_and_6029(self):
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                test_msisync_to_archive {{
+                    *err = errormsg( msisync_to_archive(*RescHier,*PhysicalPath,*LogicalPath), *msg );
+                    if( 0 != *err ) {{
+                        writeLine( "stdout", "*err - *msg" );
+                    }}
+                }}
+
+                INPUT *LogicalPath="{logical_path}", *PhysicalPath="{physical_path}",*RescHier="{resc_hier}"
+                OUTPUT ruleExecOut
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def main(rule_args, callback, rei):
+                    out_dict = callback.msisync_to_archive(global_vars['*RescHier'][1:-1], global_vars['*PhysicalPath'][1:-1], global_vars['*LogicalPath'][1:-1])
+                    if not out_dict['status']:
+                        callback.writeLine('stdout', 'ERROR: ' + str(out_dict['code']))
+
+                INPUT *LogicalPath="{logical_path}", *PhysicalPath="{physical_path}",*RescHier="{resc_hier}"
+                OUTPUT ruleExecOut
+            ''')
+        }
+
         self.admin.assert_icommand("iadmin modresc demoResc context \"auto_repl=off\"" )
 
         filename = "test_msisync_to_archive__2962_and 6029 with spaces.txt"
@@ -2222,7 +2349,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         parameters['resc_hier'] = 'demoResc;cacheResc'
 
         rule_file_path = 'test_msisync_to_archive__2962_and_6029.r'
-        rule_str = rule_texts[self.plugin_name][self.class_name]['test_msisync_to_archive__2962_and_6029'].format(**parameters)
+        rule_str = rule_map[self.plugin_name].format(**parameters)
 
         with open(rule_file_path, 'w') as rule_file:
             rule_file.write(rule_str)
@@ -2281,6 +2408,17 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_iget_prefer_from_archive_corrupt_archive__ticket_3145(self):
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                pep_resource_resolve_hierarchy_pre(*INSTANCE, *CONTEXT, *OUT, *OPERATION, *HOST, *PARSER, *VOTE){
+                    *OUT="compound_resource_cache_refresh_policy=always";
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def pep_resource_resolve_hierarchy_pre(rule_args, callback, rei):
+                    rule_args[2] = 'compound_resource_cache_refresh_policy=always'
+            ''')
+        }
 
         # new file to put and get
         filename = "archivepolicyfile.txt"
@@ -2298,7 +2436,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         # manipulate the core.re to add the new policy
         with temporary_core_file() as core:
             time.sleep(2)  # remove once file hash fix is committed #2279
-            core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+            core.add_rule(rule_map[self.plugin_name])
             time.sleep(2)  # remove once file hash fix is committed #2279
 
             self.admin.assert_icommand("irm -f " + filename)
@@ -2308,6 +2446,17 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing: Checks local file")
     def test_iget_prefer_from_archive__ticket_1660(self):
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                pep_resource_resolve_hierarchy_pre(*INSTANCE, *CONTEXT,*OUT,*OPERATION,*HOST,*PARSER,*VOTE){
+                    *OUT="compound_resource_cache_refresh_policy=always";
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def pep_resource_resolve_hierarchy_pre(rule_args, callback, rei):
+                    rule_args[2] = 'compound_resource_cache_refresh_policy=always'
+            ''')
+        }
 
         # new file to put and get
         filename = "archivepolicyfile.txt"
@@ -2334,7 +2483,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         # manipulate the core.re to add the new policy
         with temporary_core_file() as core:
             time.sleep(1)  # remove once file hash fix is committed #2279
-            core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+            core.add_rule(pep_map[self.plugin_name])
             time.sleep(1)  # remove once file hash fix is committed #2279
 
             # restart the server to reread the new core.re
@@ -3055,6 +3204,17 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_iget_prefer_from_archive__ticket_1660(self):
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                pep_resource_resolve_hierarchy_pre(*INSTANCE, *CONTEXT,*OUT,*OPERATION,*HOST,*PARSER,*VOTE){
+                    *OUT="compound_resource_cache_refresh_policy=always";
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def pep_resource_resolve_hierarchy_pre(rule_args, callback, rei):
+                    rule_args[2] = 'compound_resource_cache_refresh_policy=always'
+            ''')
+        }
 
         # new file to put and get
         filename = "archivepolicyfile.txt"
@@ -3090,7 +3250,7 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
         # manipulate the core.re to add the new policy
         with temporary_core_file() as core:
             time.sleep(1)  # remove once file hash fix is committed #2279
-            core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+            core.add_rule(pep_map[self.plugin_name])
             time.sleep(1)  # remove once file hash fix is committed #2279
 
             # restart the server to reread the new core.re
@@ -3436,13 +3596,25 @@ class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDev
     class_name = 'Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive'
 
     def setUp(self):
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                pep_resource_resolve_hierarchy_pre(*INSTANCE, *CONTEXT,*OUT,*OPERATION,*HOST,*PARSER,*VOTE){
+                    *OUT="compound_resource_cache_refresh_policy=always";
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def pep_resource_resolve_hierarchy_pre(rule_args, callback, rei):
+                    rule_args[2] = 'compound_resource_cache_refresh_policy=always'
+            ''')
+        }
+
         # back up core file
         core = CoreFile()
         backupcorefilepath = core.filepath + "--" + self._testMethodName
         shutil.copy(core.filepath, backupcorefilepath)
 
         time.sleep(1)  # remove once file hash fix is committed #2279
-        core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+        core.add_rule(pep_map[self.plugin_name])
         time.sleep(1)  # remove once file hash fix is committed #2279
 
         with session.make_session_for_existing_admin() as admin_session:

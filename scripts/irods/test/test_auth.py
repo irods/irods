@@ -10,6 +10,7 @@ import os
 import pprint
 import time
 import json
+import textwrap
 
 from .. import test
 from . import settings
@@ -17,7 +18,6 @@ from .. import lib
 from ..configuration import IrodsConfig
 from ..controller import IrodsController
 from ..core_file import temporary_core_file
-from .rule_texts_for_tests import rule_texts
 from .. import paths
 from . import resource_suite
 from . import session
@@ -146,9 +146,21 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
                     }
                 lib.update_json_file_from_dict(irods_config.server_config_path, server_config_update)
 
+                pep_map = {
+                    'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                        acPreConnect(*OUT) {
+                            *OUT = 'CS_NEG_REQUIRE';
+                        }
+                    '''),
+                    'irods_rule_engine_plugin-python': textwrap.dedent('''
+                        def acPreConnect(rule_args, callback, rei):
+                            rule_args[0] = 'CS_NEG_REQUIRE'
+                    ''')
+                }
+
                 with temporary_core_file() as core:
                     time.sleep(1)  # remove once file hash fix is committed #2279
-                    core.add_rule(rule_texts[self.plugin_name]['Test_Rulebase']['test_client_server_negotiation__2564'])
+                    core.add_rule(pep_map[self.plugin_name])
                     time.sleep(1)  # remove once file hash fix is committed #2279
 
                     IrodsController().start()

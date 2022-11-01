@@ -1,6 +1,7 @@
 from __future__ import print_function
 import os
 import sys
+import textwrap
 
 if sys.version_info < (2, 7):
     import unittest2 as unittest
@@ -8,7 +9,6 @@ else:
     import unittest
 
 from . import session
-from .rule_texts_for_tests import rule_texts
 from .. import test
 from .. import lib
 from .. import paths
@@ -146,6 +146,24 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [])
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_data_obj_info_parameters_in_pep_database_reg_data_obj_post__issue_5554(self):
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                pep_database_reg_data_obj_post(*INSTANCE, *CONTEXT, *OUT, *DATA_OBJ_INFO) {{
+                    *logical_path = *DATA_OBJ_INFO.logical_path;
+                    *create_time = *DATA_OBJ_INFO.data_create;
+                    *owner_name = *DATA_OBJ_INFO.data_owner_name;
+                    *owner_zone = *DATA_OBJ_INFO.data_owner_zone;
+
+                    msiAddKeyVal(*key_val_pair,'{attribute}::{path_attr}',         '*logical_path');
+                    msiAddKeyVal(*key_val_pair,'{attribute}::{create_time_attr}',  '*create_time');
+                    msiAddKeyVal(*key_val_pair,'{attribute}::{owner_name_attr}',   '*owner_name');
+                    msiAddKeyVal(*key_val_pair,'{attribute}::{owner_zone_attr}',   '*owner_zone');
+
+                    msiAssociateKeyValuePairsToObj(*key_val_pair,'{resource}','-R');
+                }}
+            ''')
+        }
+
         name = 'test_data_obj_info_parameters_in_pep_database_reg_data_obj_post__issue_5554'
         resource = 'metadata_attr_resource'
         config = IrodsConfig()
@@ -161,10 +179,9 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [])
                 parameters['owner_name_attr'] = 'owner_name_attr'
                 parameters['owner_zone_attr'] = 'owner_zone_attr'
                 parameters['resource'] = resource
-                rule_str = rule_texts[self.plugin_name]['Test_Dynamic_PEPs'][name].format(**parameters)
 
                 with open(core_re_path, 'a') as core_re:
-                    core_re.write(rule_str)
+                    core_re.write(pep_map[self.plugin_name].format(**parameters))
 
                 local_file = lib.create_local_testfile(os.path.join(self.admin.local_session_dir, name))
                 logical_path = os.path.join(self.admin.session_collection, name)

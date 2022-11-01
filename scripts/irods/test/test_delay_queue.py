@@ -7,6 +7,7 @@ else:
 
 import json
 import os
+import textwrap
 import time
 
 from . import resource_suite
@@ -16,7 +17,6 @@ from .. import paths
 from .. import lib
 from ..configuration import IrodsConfig
 from ..controller import IrodsController
-from .rule_texts_for_tests import rule_texts
 
 class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
@@ -58,6 +58,21 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Delete this line on resolution of #4094')
     def test_failed_delay_job(self):
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                test_delay_with_output_param {{
+                    delay("<PLUSET>0.1s</PLUSET><INST_NAME>irods_rule_engine_plugin-irods_rule_language-instance</INST_NAME>") {{
+                        msiAddKeyVal(*kvp,"{metadata_attr}","We are about to fail...");
+                        msiAssociateKeyValuePairsToObj(*kvp,"{logical_path}","-d");
+                        msiGoodFailure();
+                        msiAddKeyVal(*fail_kvp,"{metadata_attr}","You should never see this line.");
+                        msiAssociateKeyValuePairsToObj(*fail_kvp,"{logical_path}","-d");
+                    }}
+                    writeLine("stdout", "rule queued");
+                }}
+                OUTPUT ruleExecOut
+            ''')
+        }
         irodsctl = IrodsController()
         server_config_filename = paths.server_config_path()
 
@@ -66,7 +81,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
         parameters = {}
         parameters['logical_path'] = self.logical_path
         parameters['metadata_attr'] = rule_text_key
-        rule_text = rule_texts[self.plugin_name][self.class_name][rule_text_key].format(**parameters)
+        rule_text = rule_map[self.plugin_name].format(**parameters)
         rule_file = rule_text_key + '.r'
         with open(rule_file, 'w') as f:
             f.write(rule_text)
@@ -117,6 +132,32 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
         delay server's ability to execute multiple jobs per query as well as to pick up new jobs even as a
         long-running job continues to execute.
         """
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                test_delay_queue_with_long_job {{
+                    delay("<PLUSET>0.1s</PLUSET>") {{
+                        msiAddKeyVal(*sleep_kvp,"{metadata_attr}","Sleeping...");
+                        msiAssociateKeyValuePairsToObj(*sleep_kvp,"{logical_path}","-d");
+                        msiSleep("{long_job_run_time}", "0");
+                        msiAddKeyVal(*wake_kvp,"{metadata_attr}","Waking!");
+                        msiAssociateKeyValuePairsToObj(*wake_kvp,"{logical_path}","-d");
+                    }}
+                    for(*i = 0; *i < {delay_job_batch_size}; *i = *i + 1) {{
+                        delay("<PLUSET>{sooner_delay}s</PLUSET>") {{
+                            msiAddKeyVal(*sooner_kvp,"{metadata_attr}_sooner","sooner: *i");
+                            msiAssociateKeyValuePairsToObj(*sooner_kvp,"{logical_path}","-d");
+                        }}
+                    }}
+                    for(*i = 0; *i < {delay_job_batch_size}; *i = *i + 1) {{
+                        delay("<PLUSET>{later_delay}s</PLUSET>") {{
+                            msiAddKeyVal(*later_kvp,"{metadata_attr}_later","later: *i");
+                            msiAssociateKeyValuePairsToObj(*later_kvp,"{logical_path}","-d");
+                        }}
+                    }}
+                }}
+                OUTPUT ruleExecOut
+            ''')
+        }
         irodsctl = IrodsController()
         server_config_filename = paths.server_config_path()
 
@@ -135,7 +176,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
         parameters['logical_path'] = self.logical_path
         parameters['metadata_attr'] = rule_text_key
         parameters['metadata_value'] = rule_text_key
-        rule_text = rule_texts[self.plugin_name][self.class_name][rule_text_key].format(**parameters)
+        rule_text = rule_map[self.plugin_name].format(**parameters)
         rule_file = rule_text_key + '.r'
         with open(rule_file, 'w') as f:
             f.write(rule_text)
@@ -240,6 +281,20 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Delete this line on resolution of #4094')
     def test_batch_delay_processing__3941(self):
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                test_batch_delay_processing {{
+                    for(*i = 0; *i < {expected_count}; *i = *i + 1) {{
+                        delay("<PLUSET>0.1s</PLUSET>") {{
+                            msiAddKeyVal(*key_val_pair,"{metadata_attr}","{metadata_value}_*i");
+                            msiAssociateKeyValuePairsToObj(*key_val_pair,"{logical_path}","-d");
+                        }}
+                    }}
+                }}
+                OUTPUT ruleExecOut
+            ''')
+        }
+
         irodsctl = IrodsController()
         server_config_filename = paths.server_config_path()
 
@@ -250,7 +305,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
         parameters['logical_path'] = self.logical_path
         parameters['metadata_attr'] = rule_text_key
         parameters['metadata_value'] = rule_text_key
-        rule_text = rule_texts[self.plugin_name][self.class_name][rule_text_key].format(**parameters)
+        rule_text = rule_map[self.plugin_name].format(**parameters)
         rule_file = rule_text_key + '.r'
         with open(rule_file, 'w') as f:
             f.write(rule_text)
@@ -292,6 +347,20 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Delete this line on resolution of #4094')
     def test_delay_block_with_output_param__3906(self):
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                test_delay_with_output_param {{
+                    delay("<PLUSET>0.1s</PLUSET>") {{
+                        msiAddKeyVal(*key_val_pair,"{metadata_attr}","{metadata_value}");
+                        msiAssociateKeyValuePairsToObj(*key_val_pair,"{logical_path}","-d");
+                    }}
+                    *status = "rule queued";
+                }}
+                INPUT null
+                OUTPUT *status
+            ''')
+        }
+
         irodsctl = IrodsController()
         server_config_filename = paths.server_config_path()
 
@@ -300,7 +369,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
         parameters['metadata_attr'] = rule_text_key
         parameters['metadata_value'] = 'wedidit'
         parameters['logical_path'] = self.logical_path
-        rule_text = rule_texts[self.plugin_name][self.class_name][rule_text_key].format(**parameters)
+        rule_text = rule_map[self.plugin_name].format(**parameters)
         rule_file = rule_text_key + '.r'
         with open(rule_file, 'w') as f:
             f.write(rule_text)
@@ -336,6 +405,32 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Delete this line on resolution of #4094')
     def test_delay_queue_connection_refresh(self):
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                test_delay_queue_connection_refresh {{
+                    delay("<PLUSET>0.1s</PLUSET>") {{
+                        msi_get_agent_pid(*first_pid)
+                        msiAddKeyVal(*first_kvp,"{metadata_attr}::job_1","before::*first_pid");
+                        msiAssociateKeyValuePairsToObj(*first_kvp,"{logical_path}","-d");
+                        msiSleep("{sleep_time}", "0");
+                        msi_get_agent_pid(*second_pid)
+                        msiAddKeyVal(*second_kvp,"{metadata_attr}::job_1","after::*second_pid");
+                        msiAssociateKeyValuePairsToObj(*second_kvp,"{logical_path}","-d");
+                    }}
+                    delay("<PLUSET>0.1s</PLUSET>") {{
+                        msi_get_agent_pid(*first_pid)
+                        msiAddKeyVal(*first_kvp,"{metadata_attr}::job_2","before::*first_pid");
+                        msiAssociateKeyValuePairsToObj(*first_kvp,"{logical_path}","-d");
+                        msiSleep("{sleep_time}", "0");
+                        msi_get_agent_pid(*second_pid)
+                        msiAddKeyVal(*second_kvp,"{metadata_attr}::job_2","after::*second_pid");
+                        msiAssociateKeyValuePairsToObj(*second_kvp,"{logical_path}","-d");
+                    }}
+                }}
+                OUTPUT ruleExecOut
+            ''')
+        }
+
         irodsctl = IrodsController()
         config = IrodsConfig()
 
@@ -345,7 +440,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
         parameters['sleep_time'] = rule_sleep_time
         parameters['metadata_attr'] = rule_text_key
         parameters['logical_path'] = self.logical_path
-        rule_text = rule_texts[self.plugin_name][self.class_name][rule_text_key].format(**parameters)
+        rule_text = rule_map[self.plugin_name].format(**parameters)
         rule_file = rule_text_key + '.r'
         with open(rule_file, 'w') as f:
             f.write(rule_text)
@@ -403,6 +498,26 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Delete this line on resolution of #4094')
     def test_sigpipe_in_delay_server(self):
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                test_sigpipe_in_delay_server {{
+                    delay("<PLUSET>0.1s</PLUSET><INST_NAME>irods_rule_engine_plugin-irods_rule_language-instance</INST_NAME>") {{
+                        msiAddKeyVal(*kvp,"{metadata_attr}","We are about to segfault...");
+                        msiAssociateKeyValuePairsToObj(*kvp,"{logical_path}","-d");
+                        msiSegFault();
+                        msiAddKeyVal(*fail_kvp,"{metadata_attr}","You should never see this line.");
+                        msiAssociateKeyValuePairsToObj(*fail_kvp,"{logical_path}","-d");
+                    }}
+                    delay("<PLUSET>{longer_delay_time}s</PLUSET><INST_NAME>irods_rule_engine_plugin-irods_rule_language-instance</INST_NAME>") {{
+                        msiAddKeyVal(*kvp,"{metadata_attr}","Follow-up rule executed later!");
+                        msiAssociateKeyValuePairsToObj(*kvp,"{logical_path}","-d");
+                    }}
+                    writeLine("stdout", "rule queued");
+                }}
+                OUTPUT ruleExecOut
+            ''')
+        }
+
         irodsctl = IrodsController()
 
         delay_server_sleep_time = 2
@@ -412,7 +527,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
         parameters['longer_delay_time'] = str(longer_delay_time)
         parameters['logical_path'] = self.logical_path
         parameters['metadata_attr'] = rule_text_key
-        rule_text = rule_texts[self.plugin_name][self.class_name][rule_text_key].format(**parameters)
+        rule_text = rule_map[self.plugin_name].format(**parameters)
         rule_file = rule_text_key + '.r'
         with open(rule_file, 'w') as f:
             f.write(rule_text)
@@ -462,6 +577,24 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Delete this line on resolution of #4094')
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'odbc.ini file does not exist on Catalog Service Consumer')
     def test_exception_in_delay_server(self):
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                test_exception_in_delay_server {{
+                    delay("<PLUSET>0.1s</PLUSET><INST_NAME>irods_rule_engine_plugin-irods_rule_language-instance</INST_NAME>") {{
+                        msiAddKeyVal(*kvp,"{metadata_attr}","Sleeping now...");
+                        msiAssociateKeyValuePairsToObj(*kvp,"{logical_path}","-d");
+                        msiSleep("{sleep_time}", "0"); # sleep to simulate a "long" job
+                        msiSegFault();
+                    }}
+                    delay("<PLUSET>{longer_delay_time}s</PLUSET><INST_NAME>irods_rule_engine_plugin-irods_rule_language-instance</INST_NAME>") {{
+                        msiAddKeyVal(*kvp,"{metadata_attr}","Follow-up rule executed later!");
+                        msiAssociateKeyValuePairsToObj(*kvp,"{logical_path}","-d");
+                    }}
+                }}
+                OUTPUT ruleExecOut
+            ''')
+        }
+
         config = IrodsConfig()
         irodsctl = IrodsController()
         server_config_filename = paths.server_config_path()
@@ -473,7 +606,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
         parameters['longer_delay_time'] = str(delay_job_sleep_time)
         parameters['logical_path'] = self.logical_path
         parameters['metadata_attr'] = rule_text_key
-        rule_text = rule_texts[self.plugin_name][self.class_name][rule_text_key].format(**parameters)
+        rule_text = rule_map[self.plugin_name].format(**parameters)
         rule_file = rule_text_key + '.r'
         with open(rule_file, 'w') as f:
             f.write(rule_text)
@@ -707,6 +840,18 @@ class Test_Execution_Frequency(resource_suite.ResourceBase, unittest.TestCase):
     #def test_repeat_until_success(self):
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Delete this line on resolution of #4094')
     def test_repeat_n_times(self):
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                test_delay_with_output_param {{
+                    delay("<PLUSET>{repeat_delay}s</PLUSET><EF>{repeat_delay}s REPEAT {repeat_n} TIMES</EF>") {{
+                        writeLine("serverLog", "{repeat_string}");
+                    }}
+                }}
+                INPUT null
+                OUTPUT *status
+            ''')
+        }
+
         irodsctl = IrodsController()
 
         repeat_delay = self.delay_server_sleep_time * 3
@@ -717,7 +862,7 @@ class Test_Execution_Frequency(resource_suite.ResourceBase, unittest.TestCase):
         parameters['repeat_delay'] = repeat_delay
         parameters['repeat_string'] = repeat_string
         rule_text_key = 'test_repeat_n_times'
-        rule_text = rule_texts[self.plugin_name][self.class_name][rule_text_key].format(**parameters)
+        rule_text = rule_map[self.plugin_name].format(**parameters)
         rule_file = rule_text_key + '.r'
         with open(rule_file, 'w') as f:
             f.write(rule_text)
@@ -749,6 +894,18 @@ class Test_Execution_Frequency(resource_suite.ResourceBase, unittest.TestCase):
     #def test_double_until_success(self):
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Delete this line on resolution of #4094')
     def test_double_n_times(self):
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                test_delay_with_output_param {{
+                    delay("<PLUSET>{repeat_delay}s</PLUSET><EF>{repeat_delay}s DOUBLE {repeat_n} TIMES</EF>") {{
+                        writeLine("serverLog", "{repeat_string}");
+                    }}
+                }}
+                INPUT null
+                OUTPUT *status
+            ''')
+        }
+
         irodsctl = IrodsController()
 
         repeat_delay = self.delay_server_sleep_time * 3
@@ -759,7 +916,7 @@ class Test_Execution_Frequency(resource_suite.ResourceBase, unittest.TestCase):
         parameters['repeat_delay'] = repeat_delay
         parameters['repeat_string'] = repeat_string
         rule_text_key = 'test_double_n_times'
-        rule_text = rule_texts[self.plugin_name][self.class_name][rule_text_key].format(**parameters)
+        rule_text = rule_map[self.plugin_name].format(**parameters)
         rule_file = rule_text_key + '.r'
         with open(rule_file, 'w') as f:
             f.write(rule_text)

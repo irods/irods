@@ -1,7 +1,7 @@
-import inspect
 import os
 import re
 import sys
+import textwrap
 import time
 
 if sys.version_info < (2, 7):
@@ -14,7 +14,6 @@ from .. import lib
 from .. import paths
 from ..core_file import temporary_core_file
 from ..configuration import IrodsConfig
-from .rule_texts_for_tests import rule_texts
 
 
 class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
@@ -28,11 +27,23 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
         super(Test_Quotas, self).tearDown()
 
     def test_iquota__3044(self):
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                acRescQuotaPolicy {
+                    msiSetRescQuotaPolicy("on");
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def acRescQuotaPolicy(rule_args, callback, rei):
+                    callback.msiSetRescQuotaPolicy('on')
+            ''')
+        }
+
         filename_1 = 'test_iquota__3044_1'
         filename_2 = 'test_iquota__3044_2'
         with temporary_core_file() as core:
             time.sleep(1)  # remove once file hash fix is committed #2279
-            core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+            core.add_rule(pep_map[self.plugin_name])
             time.sleep(1)  # remove once file hash fix is committed #2279
             for quotatype in [['sgq', 'public']]: # group
                 for quotaresc in [self.testresc, 'total']: # resc and total

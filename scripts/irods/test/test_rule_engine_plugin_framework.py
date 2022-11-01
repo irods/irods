@@ -27,7 +27,6 @@ from ..controller import IrodsController
 from ..core_file import (temporary_core_file,
                          IRODS_RULE_LANGUAGE_RULE_ENGINE_PLUGIN_NAME,
                          PYTHON_RULE_ENGINE_PLUGIN_NAME)
-from .rule_texts_for_tests import rule_texts
 from .test_python_rule_engine_plugin import append_native_re_to_server_config
 from ..test.command import assert_command
 from . import session
