@@ -1,12 +1,13 @@
 from __future__ import print_function
-import os
-import socket
-import shutil
-import sys
 import getpass
-import tempfile
 import json
+import os
+import shutil
 import six
+import socket
+import sys
+import tempfile
+import textwrap
 
 if sys.version_info >= (2, 7):
     import unittest
@@ -21,7 +22,6 @@ from ..controller import IrodsController
 from . import metaclass_unittest_test_case_generator
 from . import resource_suite
 from . import session
-from .rule_texts_for_tests import rule_texts
 
 @six.add_metaclass(metaclass_unittest_test_case_generator.MetaclassUnittestTestCaseGenerator)
 class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
@@ -622,6 +622,17 @@ OUTPUT ruleExecOut
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     @unittest.skip('Generation of large file causes I/O thrashing... skip for now')
     def test_msiTarFileExtract_big_file__issue_4118(self):
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                myTestRule {{
+                    msiTarFileExtract(*File,*Coll,*Resc,*Status);
+                    writeLine("stdout","Extract files from a tar file *File into collection *Coll on resource *Resc");
+                }}
+                INPUT *File="{logical_path_to_tar_file}", *Coll="{logical_path_to_untar_coll}", *Resc="demoResc"
+                OUTPUT ruleExecOut
+            ''')
+        }
+
         try:
             test_name = 'test_msiTarFileExtract_big_file__issue_4118'
             root_name = test_name + '_dir'
@@ -654,9 +665,8 @@ OUTPUT ruleExecOut
                 logical_path_to_tar_file = os.path.join(self.admin.session_collection, tar_file_name)
                 logical_path_to_untar_coll = os.path.join(self.admin.session_collection, untar_collection_name)
                 rule_file = test_name + '.r'
-                rule_string = rule_texts[plugin_name][self.class_name][test_name].format(**locals())
                 with open(rule_file, 'w') as f:
-                    f.write(rule_string)
+                    f.write(rule_map[plugin_name].format(**locals()))
                 self.admin.assert_icommand(['irule', '-F', rule_file], 'STDOUT', 'Extract files from a tar file')
             finally:
                 if os.path.exists(rule_file):
@@ -1203,8 +1213,15 @@ OUTPUT ruleExecOut
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_data_obj_read_for_2100MB_file__5709(self):
-        test_name = "test_data_obj_read_for_2100MB_file__5709"
-        rule_string = rule_texts[plugin_name][self.class_name][test_name]
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                msiDataObjOpen("objPath={0}", *fd);
+                *len = {1};
+                msiDataObjRead(*fd, *len, *buf);   # test of read from  data object >= 2GB in size, irods/irods#5709
+                writeLine("stdout", *buf);
+            ''')
+        }
+        rule_string = rule_map[plugin_name]
         f = None
         try:
             N = 2100

@@ -10,10 +10,11 @@ import inspect
 import json
 import logging
 import os
-import tempfile
-import time
-import shutil
 import re
+import shutil
+import tempfile
+import textwrap
+import time
 
 from ..configuration import IrodsConfig
 from ..controller import IrodsController
@@ -23,7 +24,6 @@ from .. import test
 from .. import lib
 from . import resource_suite
 from . import ustrings
-from .rule_texts_for_tests import rule_texts
 
 
 @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
@@ -45,11 +45,20 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-python', 'only applicable for python REP')
     def test_re_serialization__prep_13(self):
+        pep_map = {
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def pep_resource_create_post(rule_args,callback,rei):
+                    d = rule_args[1].map()
+                    callback.writeLine("serverLog","physical_path="   + d["physical_path"]   + " ")    # write out variables from pluginContext
+                    callback.writeLine("serverLog","logical_path="    + d["logical_path"]    + " ")
+                    callback.writeLine("serverLog","proxy_user_name=" + d["proxy_user_name"] + " ")
+            ''')
+        }
         try:
             IrodsController().stop()
             initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
             with temporary_core_file() as core:
-                core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+                core.add_rule(pep_map[self.plugin_name])
                 IrodsController().start()
                 with tempfile.NamedTemporaryFile(prefix='test_re_serialization__prep_13') as f:
                     lib.make_file(f.name, 80, contents='arbitrary')
@@ -67,11 +76,18 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-python', 'only applicable for python REP')
     def test_re_serialization__prep_55(self):
+        pep_map = {
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def pep_api_data_obj_put_post(rule_args,callback,rei):
+                    d = rule_args[1].map()
+                    callback.writeLine("serverLog","user_rods_zone="   + d["user_rods_zone"]   + " ")    # write out a variable from pluginContext
+            ''')
+        }
         try:
             IrodsController().stop()
             initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
             with temporary_core_file() as core:
-                core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+                core.add_rule(pep_map[self.plugin_name])
                 IrodsController().start()
                 with tempfile.NamedTemporaryFile(prefix='test_re_serialization__prep_55') as f:
                     lib.make_file(f.name, 80, contents='arbitrary')
@@ -760,9 +776,22 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         self.admin.assert_icommand('iadmin rmresc test2')
 
     def test_delay_in_dynamic_pep__3342(self):
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                pep_resource_write_post(*A,*B,*C,*D,*E) {
+                    delay("<PLUSET>1s</PLUSET>") {
+                        writeLine("serverLog","dynamic pep in delay");
+                    }
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def pep_resource_write_post(rule_args, callback, rei):
+                    callback.delayExec('<PLUSET>1s</PLUSET>', 'callback.writeLine("serverLog", "dynamic pep in delay")', '')
+            ''')
+        }
         with temporary_core_file() as core:
             time.sleep(1)  # remove once file hash fix is committed #2279
-            core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+            core.add_rule(pep_map[self.plugin_name])
             time.sleep(1)  # remove once file hash fix is committed #2279
 
             initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
@@ -775,6 +804,24 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
                     start_index=initial_size_of_server_log))
 
     def test_iput_bulk_check_acpostprocforput__2841(self):
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                acBulkPutPostProcPolicy {
+                    msiSetBulkPutPostProcPolicy("on");
+                }
+                acPostProcForPut {
+                    writeLine("serverLog", "acPostProcForPut called for $objPath");
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def acBulkPutPostProcPolicy(rule_args, callback, rei):
+                    callback.msiSetBulkPutPostProcPolicy('on')
+
+                def acPostProcForPut(rule_args, callback, rei):
+                    obj_path = str(rei.doi.objPath if rei.doi else rei.doinp.objPath)
+                    callback.writeLine('serverLog', 'acPostProcForPut called for ' + obj_path)
+            ''')
+        }
         # prepare test directory
         number_of_files = 5
         dirname = self.admin.local_session_dir + '/files'
@@ -784,7 +831,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
             # manipulate core.re and check the server log
             with temporary_core_file() as core:
                 time.sleep(1)  # remove once file hash fix is committed #2279
-                core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+                core.add_rule(pep_map[self.plugin_name])
                 time.sleep(1)  # remove once file hash fix is committed #2279
 
                 initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
@@ -826,13 +873,24 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
             self.admin.environment_file_contents = env_backup
 
     def test_iput_resc_scheme_forced(self):
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                acSetRescSchemeForCreate {
+                    msiSetDefaultResc("demoResc","forced");
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def acSetRescSchemeForCreate(rule_args, callback, rei):
+                    callback.msiSetDefaultResc('demoResc','forced')
+            ''')
+        }
         filename = 'test_iput_resc_scheme_forced_test_file.txt'
         filepath = lib.create_local_testfile(filename)
 
         # manipulate core.re and check the server log
         with temporary_core_file() as core:
             time.sleep(1)  # remove once file hash fix is committed #2279
-            core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+            core.add_rule(pep_map[self.plugin_name])
             time.sleep(1)  # remove once file hash fix is committed #2279
 
             # test as rodsuser
@@ -860,12 +918,23 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
             os.unlink(filepath)
 
     def test_iput_resc_scheme_preferred(self):
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                acSetRescSchemeForCreate {
+                    msiSetDefaultResc("demoResc","preferred")
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def acSetRescSchemeForCreate(rule_args, callback, rei):
+                    callback.msiSetDefaultResc('demoResc','preferred')
+            ''')
+        }
         filename = 'test_iput_resc_scheme_preferred_test_file.txt'
         filepath = lib.create_local_testfile(filename)
 
         with temporary_core_file() as core:
             time.sleep(1)  # remove once file hash fix is committed #2279
-            core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+            core.add_rule(pep_map[self.plugin_name])
             time.sleep(1)  # remove once file hash fix is committed #2279
 
             # test as rodsuser
@@ -893,12 +962,23 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
             os.unlink(filepath)
 
     def test_iput_resc_scheme_null(self):
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                acSetRescSchemeForCreate {
+                    msiSetDefaultResc("demoResc","null");
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def acSetRescSchemeForCreate(rule_args, callback, rei):
+                    callback.msiSetDefaultResc('demoResc','null')
+            ''')
+        }
         filename = 'test_iput_resc_scheme_null_test_file.txt'
         filepath = lib.create_local_testfile(filename)
 
         with temporary_core_file() as core:
             time.sleep(1)  # remove once file hash fix is committed #2279
-            core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+            core.add_rule(pep_map[self.plugin_name])
             time.sleep(1)  # remove once file hash fix is committed #2279
 
             # test as rodsuser

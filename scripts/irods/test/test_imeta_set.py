@@ -1,7 +1,8 @@
 import itertools
+import os
 import re
 import sys
-import os
+import textwrap
 
 if sys.version_info >= (2, 7):
     import unittest
@@ -10,7 +11,6 @@ else:
 
 from .resource_suite import ResourceBase
 from ..configuration import IrodsConfig
-from .rule_texts_for_tests import rule_texts
 from .. import lib
 from .. import test
 from . import session
@@ -310,8 +310,41 @@ class Test_ImetaSet(ResourceBase, unittest.TestCase):
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_mod_avu_msvc_with_rodsuser_invoking_rule_4521(self):
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                test {
+                    msiModAVUMetadata("-C", "*homeColln","set","a1","v1","x")
+                    *a.a1 = "v1"
+                    *a.a2 = "v2"
+                    msiAssociateKeyValuePairsToObj(*a ,"*homeColln","-C" )
+                    msiModAVUMetadata("-C", "*homeColln","add","a2","v2","u2")
+                    printmeta("1",*b)
+                    msiModAVUMetadata("-C", "*homeColln","set","a2","v2","u")
+                    printmeta("2",*b)
+                    msiModAVUMetadata("-C", "*homeColln","rmw","%","%","")
+                    printmeta("3",*b)
+                    msiModAVUMetadata("-C", "*homeColln","rmw","%","%","%")
+                    printmeta("4",*b)
+                }
+                printmeta(*id,*z) {
+                    msiString2KeyValPair("",*z)
+                    foreach (*x in select META_COLL_ATTR_NAME,
+                                          META_COLL_ATTR_VALUE,
+                                          META_COLL_ATTR_UNITS
+                                    where META_COLL_ATTR_NAME like 'a_' and
+                                          COLL_NAME like '*homeColln') {
+                        *key = *x.META_COLL_ATTR_NAME ++ ":" ++ *x.META_COLL_ATTR_VALUE
+                                                      ++ ":" ++ *x.META_COLL_ATTR_UNITS
+                        *z.*key = "*id"
+                        writeLine("stdout","(*id,*key)")
+                    }
+                }
+                INPUT *homeColln="/$rodsZoneClient/home/$userNameClient"
+                OUTPUT ruleExecOut
+            ''')
+        }
+
         rule_file = "test_msiModAVUMetadata.r"
-        rule_string = rule_texts[self.plugin_name][self.__class__.__name__]['test_mod_avu_msvc_with_rodsuser_invoking_rule_4521']
         expected_output = sorted([
         "(1,a1:v1:)",
         "(1,a1:v1:x)",
@@ -324,7 +357,7 @@ class Test_ImetaSet(ResourceBase, unittest.TestCase):
         "(3,a2:v2:u)"])
         try:
             with open(rule_file, 'w') as f:
-                f.write(rule_string)
+                f.write(pep_map[self.plugin_name])
             dummy_rc,out,_ = self.user0.assert_icommand("irule -F " + rule_file,'STDOUT','')
             output_list = [l for l in sorted(out.split('\n')) if l]
             self.assertTrue( output_list == expected_output )
