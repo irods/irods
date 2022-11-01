@@ -1,9 +1,10 @@
 from __future__ import print_function
 import inspect
-import os
 import json
+import os
 import shutil
 import sys
+import textwrap
 
 if sys.version_info < (2, 7):
     import unittest2 as unittest
@@ -16,7 +17,6 @@ from .. import core_file
 from .. import paths
 from .. import test
 from . import ustrings
-from .rule_texts_for_tests import rule_texts
 from ..configuration import IrodsConfig
 from ..test.command import assert_command
 
@@ -32,6 +32,16 @@ class Test_Icp(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
         super(Test_Icp, self).tearDown()
 
     def test_icp_closes_file_descriptors__4862(self):
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                acSetRescSchemeForCreate {
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def acSetRescSchemeForCreate(rule_args, callback, rei):
+                    pass
+            ''')
+        }
         test_dir_path = 'test_icp_closes_file_descriptors__4862'
         logical_put_path = 'iput_large_dir'
         logical_cp_path = 'icp_large_dir'
@@ -43,7 +53,7 @@ class Test_Icp(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
                     if 'python' not in self.plugin_name:
                         os.unlink(filepath)
                     with open(filepath,'a') as f:
-                        f.write(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+                        f.write(pep_map[self.plugin_name])
 
                     lib.make_large_local_tmp_dir(test_dir_path, 1024, 1024)
 

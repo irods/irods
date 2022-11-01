@@ -10,7 +10,7 @@ import json
 import os
 import time
 import tempfile
-from textwrap import dedent
+import textwrap
 
 from . import resource_suite
 from .. import test
@@ -19,7 +19,6 @@ from .. import paths
 from .. import lib
 from ..configuration import IrodsConfig
 from ..core_file import temporary_core_file
-from .rule_texts_for_tests import rule_texts
 from ..controller import IrodsController
 
 def exec_icat_command(command):
@@ -119,25 +118,81 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Native only test when not in a topology')
     def test_failing_on_code_5043 (self):
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                fail_on_code(*name) {
+                    fail( error(*name) )
+                }
+            ''')
+        }
+
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                main {
+                  *Name = "SYS_NOT_SUPPORTED"
+                  writeLine("stdout", errorcode( fail_on_code(*Name) ) == error( *Name  ))
+                }
+                OUTPUT ruleExecOut
+            ''')
+        }
+
         with temporary_core_file() as core:
-            rule_code = rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name]
-            core.add_rule( rule_code )
+            core.add_rule(pep_map[self.plugin_name])
             with tempfile.NamedTemporaryFile(mode='w+t', suffix='.r') as rule_file:
-                rule_file_text = rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name + "__rule_file"]
-                print (rule_file_text, file = rule_file)
+                print(rule_map[self.plugin_name], file = rule_file)
                 rule_file.flush()
-                self.admin.assert_icommand(['irule','-r','irods_rule_engine_plugin-irods_rule_language-instance','-F',rule_file.name],
+                self.admin.assert_icommand(['irule','-r', self.plugin_name + '-instance','-F',rule_file.name],
                                            'STDOUT_SINGLELINE', ["true"])
 
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Native only test when not in a topology')
     def test_error_smsi_5043 (self):
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                validate_error_and_state_smsi(*name,*error_int) {
+                    *msg = "[general_failure]"
+                    *error_int = 0
+                    *status = errorcode( *error_i = error(*name) )
+                    if (*status != 0) {
+                        *msg = "BAD error() call"
+                    }
+                    else {
+                        *status = errorcode( *state_i = state(*name) )
+                        if (*status != 0) {
+                            *msg = "BAD state() call"
+                        }
+                        else {
+                            if ((*error_i < 0 && *error_i == -*state_i) ||
+                                (*error_i > 0 && *error_i ==  *state_i))
+                            {
+                              *msg = ""
+                              *error_int = *error_i
+                            }
+                        }
+                    }
+                    if (*msg != "") { writeLine('stderr', *msg) }
+                }
+            ''')
+        }
+
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                test() {
+                    *symbols = list("SYS_INTERNAL_ERR",
+                                    "RULE_ENGINE_CONTINUE")
+                    foreach (*sym in *symbols) {
+                      validate_error_and_state_smsi (*sym, *error_int)
+                      writeLine("stdout", "*sym = *error_int")
+                    }
+                }
+                OUTPUT ruleExecOut
+            ''')
+        }
+
         with temporary_core_file() as core:
-            rule_code = rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name]
-            core.add_rule( rule_code )
-            rule_file_text = rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name + '__rule_file']
+            core.add_rule(pep_map[self.plugin_name])
             with tempfile.NamedTemporaryFile(mode='w+t', suffix='.r') as rule_file:
-                print (rule_file_text, file = rule_file)
+                print(rule_map[self.plugin_name], file = rule_file)
                 rule_file.flush()
                 self.admin.assert_icommand(['irule','-F',rule_file.name], 'STDOUT_MULTILINE', ['SYS_INTERNAL_ERR = -154000',
                                                                                                'RULE_ENGINE_CONTINUE = 5000000'])
@@ -145,6 +200,32 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Native only test when not in a topology')
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Do not run in topology on resource server')
     def test_peps_for_parallel_mode_transfers__4404(self):
+        # Each PEP annotates a resource with a metadata AVU in a dynamic PEP.
+        # Needs to be formatted such that argument 0 is 'get' or 'put' and argument 1 is the name of the resource to annotate.
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                pep_api_data_obj_{0}_pre (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
+                {{
+                    msiAddKeyVal(*key_val_pair,"test_peps_for_parallel_mode_transfers__4404_{0}","data-obj-{0}-pre");
+                    msiAssociateKeyValuePairsToObj(*key_val_pair,"{1}","-R");
+                }}
+                pep_api_data_obj_{0}_post (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
+                {{
+                    msiAddKeyVal(*key_val_pair,"test_peps_for_parallel_mode_transfers__4404_{0}","data-obj-{0}-post");
+                    msiAssociateKeyValuePairsToObj(*key_val_pair,"{1}","-R");
+                }}
+                pep_api_data_obj_{0}_except (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
+                {{
+                    msiAddKeyVal(*key_val_pair,"test_peps_for_parallel_mode_transfers__4404_{0}","data-obj-{0}-except");
+                    msiAssociateKeyValuePairsToObj(*key_val_pair,"{1}","-R");
+                }}
+                pep_api_data_obj_{0}_finally (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
+                {{
+                    msiAddKeyVal(*key_val_pair,"test_peps_for_parallel_mode_transfers__4404_{0}","data-obj-{0}-finally");
+                    msiAssociateKeyValuePairsToObj(*key_val_pair,"{1}","-R");
+                }}
+            ''')
+        }
 
         (fd, largefile) = tempfile.mkstemp()
         os.write(fd, b"123456789abcdef\n"*(6*1024**2))
@@ -154,10 +235,8 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
         extrafile = ""
 
         try:
-            parameters = {}
-            parameters['resource'] = self.resc_name
-            get_peps = rule_texts[self.plugin_name][self.class_name]['test_peps_for_parallel_mode_transfers__4404_get'].format(**parameters)
-            put_peps = rule_texts[self.plugin_name][self.class_name]['test_peps_for_parallel_mode_transfers__4404_put'].format(**parameters)
+            get_peps = pep_map[self.plugin_name].format('get', self.resc_name)
+            put_peps = pep_map[self.plugin_name].format('put', self.resc_name)
 
             self.reset_resource()
             self.helper_test_pep_with_metadata( put_peps, "iput -f {}".format(largefile), 'test_peps_for_parallel_mode_transfers__4404_put',
@@ -191,6 +270,48 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Native only test when not in a topology')
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Do not run in topology on resource server')
     def test_dynamic_policy_enforcement_point_exception_for_plugins__4128(self):
+        pre_pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent(f'''
+                pep_resource_open_pre(*INST, *CTX, *OUT)
+                {{
+                    msiAddKeyVal(*key_val_pair,"test_dynamic_policy_enforcement_point_exception_for_plugins__4128_pre_pep_fail","PRE PEP FAIL");
+                    msiAssociateKeyValuePairsToObj(*key_val_pair,"{self.resc_name}","-R");
+                    failmsg(-1, "PRE PEP FAIL")
+                }}
+                pep_resource_open_except(*INST, *CTX, *OUT)
+                {{
+                    msiAddKeyVal(*key_val_pair,"test_dynamic_policy_enforcement_point_exception_for_plugins__4128_pre_pep_fail","EXCEPT FOR PRE PEP FAIL");
+                    msiAssociateKeyValuePairsToObj(*key_val_pair,"{self.resc_name}","-R");
+                }}
+            ''')
+        }
+
+        op_pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent(f'''
+                pep_resource_open_except(*INST, *CTX, *OUT)
+                {{
+                    msiAddKeyVal(*key_val_pair,"test_dynamic_policy_enforcement_point_exception_for_plugins__4128_op_fail","EXCEPT FOR OPERATION FAIL");
+                    msiAssociateKeyValuePairsToObj(*key_val_pair,"{self.resc_name}","-R");
+                }}
+            ''')
+        }
+
+        post_pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent(f'''
+                pep_resource_open_post(*INST, *CTX, *OUT)
+                {{
+                    msiAddKeyVal(*key_val_pair,"test_dynamic_policy_enforcement_point_exception_for_plugins__4128_post_pep_fail","POST PEP FAIL");
+                    msiAssociateKeyValuePairsToObj(*key_val_pair,"{self.resc_name}","-R");
+                    failmsg(-1, "POST PEP FAIL")
+                }}
+                pep_resource_open_except(*INST, *CTX, *OUT)
+                {{
+                    msiAddKeyVal(*key_val_pair,"test_dynamic_policy_enforcement_point_exception_for_plugins__4128_post_pep_fail","EXCEPT FOR POST PEP FAIL");
+                    msiAssociateKeyValuePairsToObj(*key_val_pair,"{self.resc_name}","-R");
+                }}
+            ''')
+        }
+
         try:
             path = self.admin.get_vault_session_path('demoResc')
 
@@ -198,11 +319,9 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
             self.admin.run_icommand('iput -f '+self.testfile+' bad_file')
             os.unlink(os.path.join(path, 'bad_file'))
 
-            parameters = {}
-            parameters['resource'] = self.resc_name
-            pre_pep_fail = rule_texts[self.plugin_name][self.class_name]['test_dynamic_policy_enforcement_point_exception_for_plugins__4128_pre_pep_fail'].format(**parameters)
-            op_fail = rule_texts[self.plugin_name][self.class_name]['test_dynamic_policy_enforcement_point_exception_for_plugins__4128_op_fail'].format(**parameters)
-            post_pep_fail = rule_texts[self.plugin_name][self.class_name]['test_dynamic_policy_enforcement_point_exception_for_plugins__4128_post_pep_fail'].format(**parameters)
+            pre_pep_fail = pre_pep_map[self.plugin_name]
+            op_fail = op_pep_map[self.plugin_name]
+            post_pep_fail = post_pep_map[self.plugin_name]
 
             self.reset_resource()
             self.helper_test_pep_with_metadata(pre_pep_fail, 'iget -f '+self.testfile,
@@ -226,6 +345,47 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Native only test when not in a topology')
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Do not run in topology on resource server')
     def test_dynamic_policy_enforcement_point_exception_for_apis__4128(self):
+        pre_pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent(f'''
+                pep_api_data_obj_get_pre(*INST, *COMM, *INP, *PORT, *BUF)
+                {{
+                    msiAddKeyVal(*key_val_pair,"test_dynamic_policy_enforcement_point_exception_for_apis__4128_pre_pep_fail","PRE PEP FAIL");
+                    msiAssociateKeyValuePairsToObj(*key_val_pair,"{self.resc_name}","-R");
+                    failmsg(-1, "PRE PEP FAIL")
+                }}
+                pep_api_data_obj_get_except(*INST, *COMM, *INP, *PORT, *BUF)
+                {{
+                    msiAddKeyVal(*key_val_pair,"test_dynamic_policy_enforcement_point_exception_for_apis__4128_pre_pep_fail","EXCEPT FOR PRE PEP FAIL");
+                    msiAssociateKeyValuePairsToObj(*key_val_pair,"{self.resc_name}","-R");
+                }}
+            ''')
+        }
+
+        op_pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent(f'''
+                pep_api_data_obj_get_except(*INST, *COMM, *INP, *PORT, *BUF)
+                {{
+                    msiAddKeyVal(*key_val_pair,"test_dynamic_policy_enforcement_point_exception_for_apis__4128_op_fail","EXCEPT FOR OPERATION FAIL");
+                    msiAssociateKeyValuePairsToObj(*key_val_pair,"{self.resc_name}","-R");
+                }}
+            ''')
+        }
+
+        post_pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent(f'''
+                pep_api_data_obj_get_post(*INST, *COMM, *INP, *PORT, *BUF)
+                {{
+                    msiAddKeyVal(*key_val_pair,"test_dynamic_policy_enforcement_point_exception_for_apis__4128_post_pep_fail","POST PEP FAIL");
+                    msiAssociateKeyValuePairsToObj(*key_val_pair,"{self.resc_name}","-R");
+                    failmsg(-1, "POST PEP FAIL")
+                }}
+                pep_api_data_obj_get_except(*INST, *COMM, *INP, *PORT, *BUF)
+                {{
+                    msiAddKeyVal(*key_val_pair,"test_dynamic_policy_enforcement_point_exception_for_apis__4128_post_pep_fail","EXCEPT FOR POST PEP FAIL");
+                    msiAssociateKeyValuePairsToObj(*key_val_pair,"{self.resc_name}","-R");
+                }}
+            ''')
+        }
         try:
             path = self.admin.get_vault_session_path('demoResc')
 
@@ -233,13 +393,9 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
             self.admin.run_icommand('iput -f '+self.testfile+' bad_file')
             os.unlink(os.path.join(path, 'bad_file'))
 
-            parameters = {}
-            parameters['resource'] = self.resc_name
-
-            rule_text_dict = rule_texts[self.plugin_name][self.class_name]
-            pre_pep_fail = rule_text_dict[inspect.currentframe().f_code.co_name + '_pre_pep_fail'].format(**parameters)
-            op_fail = rule_text_dict[inspect.currentframe().f_code.co_name + '_op_fail'].format(**parameters)
-            post_pep_fail = rule_text_dict[inspect.currentframe().f_code.co_name + '_post_pep_fail'].format(**parameters)
+            pre_pep_fail = pre_pep_map[self.plugin_name]
+            op_fail = op_pep_map[self.plugin_name]
+            post_pep_fail = post_pep_map[self.plugin_name]
 
             self.reset_resource()
             self.helper_test_pep_with_metadata(pre_pep_fail, 'iget -f '+self.testfile,
@@ -263,6 +419,16 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
 
     @unittest.skipIf(plugin_name != 'irods_rule_engine_plugin-python' or not test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Python only test from resource server in a topology')
     def test_remote_rule_execution(self):
+        rule_map = {
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def main(rule_args, callback, rei):
+                    rule_code = "def main(rule_args, callback, rei):\\n    print('XXXX - PREP REMOTE EXEC TEST')"
+                    callback.py_remote('{}', '', rule_code, '')
+                INPUT null
+                OUTPUT ruleExecOut
+            ''')
+        }
+
         # =-=-=-=-=-=-=-=-
         # stat the icat log to get its current size
         log_stat_cmd = 'stat -c%s ' + paths.server_log_path()
@@ -282,7 +448,7 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
 
         # =-=-=-=-=-=-=-=-
         # run the remote rule to write to the log
-        rule_code = rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name].format(test.settings.ICAT_HOSTNAME)
+        rule_code = rule_map[self.plugin_name].format(test.settings.ICAT_HOSTNAME)
         print('Executing code:\n'+rule_code)
         rule_file = 'test_remote_rule_execution.r'
         with open(rule_file, 'wt') as f:
@@ -319,6 +485,24 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
             assert(1)
 
     def test_network_pep(self):
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                pep_network_agent_start_pre(*INST,*CTX,*OUT) {
+                    *OUT = "THIS IS AN OUT VARIABLE"
+                }
+                pep_network_agent_start_post(*INST,*CTX,*OUT){
+                    writeLine( 'serverLog', '*OUT')
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def pep_network_agent_start_pre(rule_args, callback, rei):
+                    rule_args[2] = 'THIS IS AN OUT VARIABLE'
+
+                def pep_network_agent_start_post(rule_args, callback, rei):
+                    callback.writeLine('serverLog', rule_args[2])
+            ''')
+        }
+
         irodsctl = IrodsController()
         server_config_filename = paths.server_config_path()
 
@@ -342,55 +526,184 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
             irodsctl.restart()
 
             # Actually run the test
-            self.helper_test_pep(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name], "iput -f --metadata ATTR;VALUE;UNIT "+self.testfile)
+            self.helper_test_pep(pep_map[self.plugin_name], "iput -f --metadata ATTR;VALUE;UNIT "+self.testfile)
 
         # Bounce server to get back original settings
         irodsctl.restart()
 
     def test_auth_pep(self):
-        self.helper_test_pep(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name], "iput -f --metadata ATTR;VALUE;UNIT "+self.testfile)
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                pep_resource_resolve_hierarchy_pre(*INSTANCE,*CONTEXT,*OUT,*OPERATION,*HOST,*PARSER,*VOTE){
+                    *OUT = "THIS IS AN OUT VARIABLE"
+                }
+                pep_resource_resolve_hierarchy_post(*INSTANCE,*CONTEXT,*OUT,*OPERATION,*HOST,*PARSER,*VOTE){
+                    writeLine( 'serverLog', '*OUT')
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def pep_resource_resolve_hierarchy_pre(rule_args, callback, rei):
+                    rule_args[2] = 'THIS IS AN OUT VARIABLE'
+
+                def pep_resource_resolve_hierarchy_post(rule_args, callback, rei):
+                    callback.writeLine('serverLog', rule_args[2])
+            ''')
+        }
+
+        self.helper_test_pep(pep_map[self.plugin_name], "iput -f --metadata ATTR;VALUE;UNIT "+self.testfile)
 
     def test_out_variable(self):
-        self.helper_test_pep(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name], "iput -f --metadata ATTR;VALUE;UNIT "+self.testfile)
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                pep_resource_resolve_hierarchy_pre(*INSTANCE,*CONTEXT,*OUT,*OPERATION,*HOST,*PARSER,*VOTE){
+                    *OUT = "THIS IS AN OUT VARIABLE"
+                }
+                pep_resource_resolve_hierarchy_post(*INSTANCE,*CONTEXT,*OUT,*OPERATION,*HOST,*PARSER,*VOTE){
+                    writeLine( 'serverLog', '*OUT')
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def pep_resource_resolve_hierarchy_pre(rule_args, callback, rei):
+                    rule_args[2] = 'THIS IS AN OUT VARIABLE'
+
+                def pep_resource_resolve_hierarchy_post(rule_args, callback, rei):
+                    callback.writeLine('serverLog', rule_args[2])
+            ''')
+        }
+
+        self.helper_test_pep(pep_map[self.plugin_name], "iput -f --metadata ATTR;VALUE;UNIT "+self.testfile)
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Python rule engine does not use re_serialization except for api plugins')
     def test_re_serialization(self):
-        self.helper_test_pep(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name], "iput -f --metadata ATTR;VALUE;UNIT "+self.testfile,
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                pep_resource_resolve_hierarchy_pre(*INSTANCE,*CONTEXT,*OUT,*OPERATION,*HOST,*PARSER,*VOTE){
+                    writeLine("serverLog", "pep_resource_resolve_hierarchy_pre - [*INSTANCE] [*CONTEXT] [*OUT] [*OPERATION] [*HOST] [*PARSER] [*VOTE]");
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def pep_resource_resolve_hierarchy_pre(rule_args, callback, rei):
+                    callback.writeLine('serverLog', 'pep_resource_resolve_hierarchy_pre - [{0}] [{1}] [{2}] [{3}] [{4}] [{5}] [{6}]'.format(rule_args[0], rule_args[1], rule_args[2], rule_args[3], rule_args[4], rule_args[5], rule_args[6]))
+            ''')
+        }
+
+        self.helper_test_pep(pep_map[self.plugin_name], "iput -f --metadata ATTR;VALUE;UNIT "+self.testfile,
             ['file_size=33', 'logical_path=/tempZone/home/otherrods', 'metadataIncluded'])
 
     def test_api_plugin(self):
-        self.helper_test_pep(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name], "iapitest", ['pep_api_hello_world_pre -', ', null_value', 'HELLO WORLD', 'pep_api_hello_world_post -', 'value=128'])
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                pep_api_hello_world_pre(*INST, *OUT, *HELLO_IN, *HELLO_OUT) {
+                    writeLine("serverLog", "pep_api_hello_world_pre - *INST *OUT *HELLO_IN, *HELLO_OUT");
+                }
+                pep_api_hello_world_post(*INST, *OUT, *HELLO_IN, *HELLO_OUT) {
+                    writeLine("serverLog", "pep_api_hello_world_post - *INST *OUT *HELLO_IN, *HELLO_OUT");
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def pep_api_hello_world_pre(rule_args, callback, rei):
+                    hello_inp = rule_args[2]
+                    hello_inp_string = ', '.join([k + '=' + hello_inp[k] for k in hello_inp])
+                    hello_out = rule_args[3]
+                    hello_out_string = ', '.join([k + '=' + hello_out[k] for k in hello_out])
+                    callback.writeLine('serverLog', 'pep_api_hello_world_pre - {0} {1} {2}, {3}'.format(rule_args[0], rule_args[1], hello_inp_string, hello_out_string))
+
+                def pep_api_hello_world_post(rule_args, callback, rei):
+                    hello_inp = rule_args[2]
+                    hello_inp_string = ', '.join([k + '=' + hello_inp[k] for k in hello_inp])
+                    hello_out = rule_args[3]
+                    hello_out_string = ', '.join([k + '=' + hello_out[k] for k in hello_out])
+                    callback.writeLine('serverLog', 'pep_api_hello_world_post - {0} {1} {2}, {3}'.format(rule_args[0], rule_args[1], hello_inp_string, hello_out_string))
+            ''')
+        }
+
+        self.helper_test_pep(pep_map[self.plugin_name], "iapitest", ['pep_api_hello_world_pre -', ', null_value', 'HELLO WORLD', 'pep_api_hello_world_post -', 'value=128'])
 
     def test_out_string(self):
-        self.helper_test_pep(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name], "iput -f "+self.testfile,
-            ['this_is_the_out_string'])
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                test(*OUT) { *OUT = "this_is_the_out_string"; }
+                acPostProcForPut {
+                    test(*out_string);
+                    writeLine("serverLog", "out_string = *out_string");
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def test(rule_args, callback, rei):
+                    rule_args[0] = 'this_is_the_out_string'
+                def acPostProcForPut(rule_args, callback, rei):
+                    callback.writeLine("serverLog", callback.test('')['arguments'][0]);
+            ''')
+        }
+
+        self.helper_test_pep(pep_map[self.plugin_name], "iput -f "+self.testfile, ['this_is_the_out_string'])
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Python rule engine has no mechanism to update session vars')
     def test_rule_engine_2242(self):
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': [
+                textwrap.dedent('''
+                    test {
+                        $userNameClient = "foobar";
+                    }
+                    INPUT *A="status"
+                    OUTPUT ruleExecOut
+                '''),
+                textwrap.dedent('''
+                    test {
+                        $status = \"1\";
+                    }
+
+                    acPreProcForWriteSessionVariable(*x) {
+                        writeLine(\"stdout\", \"bwahahaha\");
+                        succeed;
+                    }
+
+                    INPUT *A=\"status\"
+                    OUTPUT ruleExecOut
+                '''),
+            ]
+        }
+
+        rules = rule_map[self.plugin_name]
+
         rule_file1 = "rule1_2242.r"
-        rule_string1 = rule_texts[self.plugin_name][self.class_name]['test_rule_engine_2242_1']
         with open(rule_file1, 'wt') as f:
-            print(rule_string1, file=f, end='')
+            print(rules[0], file=f, end='')
 
         out, _, _ = self.admin.run_icommand("irule -r irods_rule_engine_plugin-irods_rule_language-instance -F " + rule_file1)
         assert 'Update session variable $userNameClient not allowed' in out
 
         rule_file2 = "rule2_2242.r"
-        rule_string2 = rule_texts[self.plugin_name][self.class_name]['test_rule_engine_2242_2']
-
         with open(rule_file2, 'wt') as f:
-            print(rule_string2, file=f, end='')
+            print(rules[1], file=f, end='')
 
         self.admin.assert_icommand("irule -r irods_rule_engine_plugin-irods_rule_language-instance -F " + rule_file2, "EMPTY")
 
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads re server log')
     def test_rule_engine_2309(self):
+        # Format this string with 'put' or 'get' to inject the desired string into the rule
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                acSetNumThreads() {{
+                    writeLine("serverLog", "test_rule_engine_2309: {}: acSetNumThreads oprType [$oprType]");
+                }}
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def acSetNumThreads(rule_args, callback, rei):
+                    opr_type = str(rei.doinp.oprType)
+                    callback.writeLine('serverLog', 'test_rule_engine_2309: {}: acSetNumThreads oprType [' + str(opr_type) + ']')
+            ''')
+        }
+
+        rule_text = pep_map[self.plugin_name]
+
         coredvm = paths.core_re_directory() + "/core.dvm"
         with lib.file_backed_up(coredvm):
             lib.prepend_string_to_file('oprType||rei->doinp->oprType\n', coredvm)
             with temporary_core_file() as core:
                 time.sleep(1)  # remove once file hash fix is committed #2279
-                core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name + '_1'])
+                core.add_rule(rule_text.format('put'))
                 time.sleep(1)  # remove once file hash fix is committed #2279
 
                 trigger_file = 'file_to_trigger_acSetNumThreads'
@@ -411,7 +724,7 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
 
             with temporary_core_file() as core:
                 time.sleep(1)  # remove once file hash fix is committed #2279
-                core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name + '_2'])
+                core.add_rule(rule_text.format('get'))
                 time.sleep(1)  # remove once file hash fix is committed #2279
 
                 initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
@@ -499,11 +812,20 @@ OUTPUT ruleExecOut
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'rule language only')
     def test_msiSegFault(self):
-        rule_text = rule_texts[self.plugin_name][self.class_name]['test_msiSegFault']
-        rule_file = 'test_msiSegFault.r'
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                test_msiSegFault {{
+                    writeLine("stdout", "We are about to segfault...");
+                    msiSegFault();
+                    writeLine("stdout", "You should never see this line.");
+                }}
+                OUTPUT ruleExecOut
+                ''')
+        }
 
+        rule_file = 'test_msiSegFault.r'
         with open(rule_file, 'w') as f:
-            f.write(rule_text)
+            f.write(rule_map[self.plugin_name])
 
         try:
             rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
@@ -518,11 +840,32 @@ OUTPUT ruleExecOut
             os.unlink(rule_file)
 
     def test_re_serialization_for_RsComm_ptr__issue_5950(self):
-        rule_text = rule_texts[self.plugin_name][self.class_name]['test_re_serialization_for_RsComm_ptr__issue_5950']
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                pep_api_auth_request_pre(*instance, *comm, *request) {
+                    # TODO: probably want to include more members here
+                    *err = msiGetValByKey(*comm, "option", *option);
+                    if (*err != 0) {
+                        fail(*err);
+                    }
+
+                    if (*option != 'ils') {
+                        fail(error(USER_INPUT_OPTION_ERR));
+                    }
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def pep_api_auth_request_pre(rule_args, callback, rei):
+                    option = rule_args[1].map()['option']
+                    print(option)
+
+                    return 0 if option == 'ils' else irods_errors.USER_INPUT_OPTION_ERR
+            ''')
+        }
 
         with temporary_core_file() as core:
             time.sleep(1)  # remove once file hash fix is committed #2279
-            core.add_rule(rule_text)
+            core.add_rule(pep_map[self.plugin_name])
             time.sleep(1)  # remove once file hash fix is committed #2279
             self.user0.assert_icommand(['ils'], 'STDOUT', self.user0.session_collection)
 

@@ -8,7 +8,6 @@ else:
 import contextlib
 import copy
 import getpass
-import inspect
 import json
 import os
 import shutil
@@ -17,6 +16,7 @@ import stat
 import subprocess
 import time
 import tempfile
+import textwrap
 
 from ..configuration import IrodsConfig
 from ..controller import IrodsController
@@ -28,7 +28,6 @@ from . import settings
 from .. import lib
 from . import resource_suite
 from . import ustrings
-from .rule_texts_for_tests import rule_texts
 
 class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
@@ -1218,11 +1217,23 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
     @unittest.skip('this test frequently fails to properly restart the server - delete this line on resolution of #6404')
     def test_host_access_control(self):
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                acChkHostAccessControl {
+                    msiCheckHostAccessControl;
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def acChkHostAccessControl(rule_args, callback, rei):
+                    callback.msiCheckHostAccessControl()
+            ''')
+        }
+
         my_ip = socket.gethostbyname(socket.gethostname())
 
         with temporary_core_file() as core:
             time.sleep(1)  # remove once file hash fix is committed #2279
-            core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+            core.add_rule(pep_map[self.plugin_name])
             time.sleep(1)  # remove once file hash fix is committed #2279
 
             # restart the server to reread the new core.re
@@ -1251,10 +1262,23 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
                 self.admin.assert_icommand("ils", 'STDOUT_SINGLELINE', self.admin.zone_name)
 
     def test_issue_2420(self):
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                acAclPolicy {
+                    ON($userNameClient == "quickshare") { }
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def acAclPolicy(rule_args, callback, rei):
+                    userNameClient = str(rei.uoic.userName if rei.uoic else rei.rsComm.clientUser.userName)
+                    if (userNameClient == 'quickshare'):
+                        pass
+            ''')
+        }
 
         with temporary_core_file() as core:
             time.sleep(1)  # remove once file hash fix is committed #2279
-            core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+            core.add_rule(pep_map[self.plugin_name])
             time.sleep(1)  # remove once file hash fix is committed #2279
 
             # restart the server to reread the new core.re
@@ -1320,11 +1344,23 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand_fail('''iquest "select META_DATA_ATTR_NAME where META_DATA_ATTR_NAME = '{a}'"'''.format(**vars()), 'STDOUT_SINGLELINE', a)
 
     def test_msiset_default_resc__2712(self):
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                acSetRescSchemeForCreate{
+                    msiSetDefaultResc('TestResc', 'forced');
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def acSetRescSchemeForCreate(rule_args, callback, rei):
+                    callback.msiSetDefaultResc('TestResc', 'forced');
+            ''')
+        }
+
         hostname = lib.get_hostname()
         testresc1 = 'TestResc'
         with temporary_core_file() as core:
             time.sleep(2)  # remove once file hash fix is committed #2279
-            core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+            core.add_rule(pep_map[self.plugin_name])
             time.sleep(2)  # remove once file hash fix is committed #2279
 
             trigger_file = 'file_to_trigger_acSetRescSchemeForCreate'
