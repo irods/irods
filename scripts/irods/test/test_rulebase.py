@@ -5,7 +5,6 @@ if sys.version_info >= (2, 7):
 else:
     import unittest2 as unittest
 import copy
-import inspect
 import json
 import os
 import socket
@@ -23,7 +22,6 @@ from .resource_suite import ResourceBase
 from ..configuration import IrodsConfig
 from ..controller import IrodsController
 from ..core_file import temporary_core_file
-from .rule_texts_for_tests import rule_texts
 
 class Test_Rulebase(ResourceBase, unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
@@ -36,9 +34,21 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         super(Test_Rulebase, self).tearDown()
 
     def test_client_server_negotiation__2564(self):
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                acPreConnect(*OUT) {
+                    *OUT = 'CS_NEG_REQUIRE';
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def acPreConnect(rule_args, callback, rei):
+                    rule_args[0] = 'CS_NEG_REQUIRE'
+            ''')
+        }
+
         with temporary_core_file() as core:
             time.sleep(1)  # remove once file hash fix is committed #2279
-            core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+            core.add_rule(pep_map[self.plugin_name])
             time.sleep(1)  # remove once file hash fix is committed #2279
 
             client_update = {
@@ -53,27 +63,66 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
             self.admin.environment_file_contents = session_env_backup
 
     def test_msiDataObjWrite__2795(self):
+        filename = 'test_file.txt'
+        logical_path = os.path.join(self.admin.session_collection, filename)
+
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent(f'''
+                test_msiDataObjWrite__2795 {{
+                    ### write a string to a file in irods
+                    msiDataObjCreate("*TEST_ROOT" ++ "/" ++ "{filename}","null",*FD);
+                    msiDataObjWrite(*FD,"this_is_a_test_string",*LEN);
+                    msiDataObjClose(*FD,*Status);
+                }}
+                INPUT *TEST_ROOT="{self.admin.session_collection}"
+                OUTPUT ruleExecOut
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent(f'''
+                def main(rule_args, callback, rei):
+                    out_dict = callback.msiDataObjCreate(global_vars['*TEST_ROOT'][1:-1] + '/' + '{filename}', 'null', 0)
+                    file_desc = out_dict['arguments'][2]
+
+                    out_dict = callback.msiDataObjWrite(file_desc, 'this_is_a_test_string', 0)
+
+                    out_dict = callback.msiDataObjClose(file_desc, 0)
+
+                INPUT *TEST_ROOT="{self.admin.session_collection}"
+                OUTPUT ruleExecOut
+            ''')
+        }
+
         rule_file = "test_rule_file.r"
-        rule_string = rule_texts[self.plugin_name][self.class_name]['test_msiDataObjWrite__2795_1'] + self.admin.session_collection + rule_texts[self.plugin_name][self.class_name]['test_msiDataObjWrite__2795_2']
+        rule_string = rule_map[self.plugin_name]
         with open(rule_file, 'wt') as f:
             print(rule_string, file=f, end='')
 
-        test_file = self.admin.session_collection+'/test_file.txt'
+        self.admin.assert_icommand(['irule', '-r', self.plugin_name + '-instance', '-F', rule_file])
+        self.admin.assert_icommand('ils -l','STDOUT_SINGLELINE', filename)
+        self.admin.assert_icommand('iget -f '+ logical_path)
 
-        self.admin.assert_icommand('irule -F ' + rule_file)
-        self.admin.assert_icommand('ils -l','STDOUT_SINGLELINE','test_file')
-        self.admin.assert_icommand('iget -f '+test_file)
-
-        with open("test_file.txt", 'r') as f:
+        with open(filename, 'r') as f:
             file_contents = f.read()
 
-        assert( not file_contents.endswith('\0') )
+        self.assertFalse(file_contents.endswith('\0'))
 
-    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for Python REP')
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'Skip for non-rule-language REP')
     def test_irods_re_infinite_recursion_3169(self):
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                call_with_wrong_number_of_string_arguments(*A, *B, *C) {
+                }
+
+                acPostProcForPut {
+                    call_with_wrong_number_of_string_arguments("a", "b");
+                }
+
+                acPostProcForPut { }
+            ''')
+        }
+
         with temporary_core_file() as core:
             time.sleep(1)  # remove once file hash fix is committed #2279
-            core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+            core.add_rule(pep_map[self.plugin_name])
             time.sleep(1)  # remove once file hash fix is committed #2279
 
             test_file = 'rulebasetestfile'
@@ -81,6 +130,51 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
             self.admin.assert_icommand(['iput', test_file])
 
     def test_acPostProcForPut_replicate_to_multiple_resources(self):
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                # multiple replication rule
+                replicateMultiple(*destRgStr) {
+                    *destRgList = split(*destRgStr, ',');
+                    writeLine("serverLog", " acPostProcForPut multiple replicate $objPath $filePath -> *destRgStr");
+                    foreach (*destRg in *destRgList) {
+                        writeLine("serverLog", " acPostProcForPut replicate $objPath $filePath -> *destRg");
+                        *err = errormsg(msiDataObjRepl($objPath,"destRescName=*destRg++++irodsAdmin=",*Status), *msg );
+                        if( 0 != *err ) {
+                            if(*err == -808000) {
+                                writeLine("serverLog", "$objPath cannot be found");
+                                $status = 0;
+                                succeed;
+                            } else {
+                                fail(*err);
+                            }
+                        }
+                    }
+                }
+                acPostProcForPut {
+                    replicateMultiple( "r1,r2" )
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                # multiple replication rule
+                def replicateMultiple(dest_list, callback, rei):
+                    obj_path = str(rei.doi.objPath if rei.doi is not None else rei.doinp.objPath)
+                    filepath = str(rei.doi.filePath)
+                    callback.writeLine('serverLog', ' acPostProcForPut multiple replicate ' + obj_path + ' ' + filepath + ' -> ' + str(dest_list))
+                    for dest in dest_list:
+                        callback.writeLine('serverLog', 'acPostProcForPut replicate ' + obj_path + ' ' + filepath + ' -> ' + dest)
+                        out_dict = callback.msiDataObjRepl(obj_path,"destRescName=" + dest + "++++irodsAdmin=", 0);
+                        if not out_dict['code'] == 0:
+                            if out_dict['code'] == -808000:
+                                callback.writeLine('serverLog', obj_path + ' cannot be found')
+                                return 0
+                            else:
+                                callback.writeLine('serverLog', 'ERROR: ' + out_dict['code'])
+                                return int(out_dict['code'])
+                def acPostProcForPut(rule_args, callback, rei):
+                    replicateMultiple(["r1","r2"], callback, rei)
+            '''),
+        }
+
         # create new resources
         hostname = socket.gethostname()
         self.admin.assert_icommand("iadmin mkresc r1 unixfilesystem " + hostname + ":/tmp/irods/r1", 'STDOUT_SINGLELINE', "Creating")
@@ -89,7 +183,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         try:
             with temporary_core_file() as core:
                 time.sleep(1)  # remove once file hash fix is committed #2279
-                core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+                core.add_rule(pep_map[self.plugin_name])
                 time.sleep(1)  # remove once file hash fix is committed #2279
 
                 # put data
@@ -126,9 +220,22 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
             self.admin.assert_icommand("iadmin rmresc r2")
 
     def test_dynamic_pep_with_rscomm_usage(self):
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                pep_resource_open_pre(*OUT, *FOO, *BAR) {
+                    msiGetSystemTime( *junk, '' );
+                }
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def pep_resource_open_pre(rule_args, callback, rei):
+                    retStr = ''
+                    callback.msiGetSystemTime( retStr, '' )
+            '''),
+        }
+
         with temporary_core_file() as core:
             time.sleep(1)  # remove once file hash fix is committed #2279
-            core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+            core.add_rule(pep_map[self.plugin_name])
             time.sleep(1)  # remove once file hash fix is committed #2279
 
             # check rei functioning
@@ -138,7 +245,33 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads re server log')
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'tests cache update - only applicable for irods_rule_language REP')
     def test_rulebase_update__2585(self):
-        my_rule = rule_texts[self.plugin_name][self.class_name]['test_rulebase_update__2585_1']
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': [
+                textwrap.dedent('''
+                    my_rule {
+                        delay("<PLUSET>1s</PLUSET>") {
+                            do_some_stuff();
+                        }
+                    }
+                    INPUT null
+                    OUTPUT ruleExecOut
+                '''),
+                textwrap.dedent('''
+                    do_some_stuff() {
+                        writeLine("serverLog", "TEST_STRING_TO_FIND_1_2585");
+                    }
+                '''),
+                textwrap.dedent('''
+                    do_some_stuff() {
+                        writeLine("serverLog", "TEST_STRING_TO_FIND_2_2585");
+                    }
+                ''')
+            ]
+        }
+
+        rules = rule_map[self.plugin_name]
+
+        my_rule = rules[0]
         rule_file = 'my_rule.r'
         with open(rule_file, 'wt') as f:
             print(my_rule, file=f, end='')
@@ -159,7 +292,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
             test_re = os.path.join(paths.core_re_directory(), 'test.re')
             # write new rule file to config dir
             with open(test_re, 'wt') as f:
-                print(rule_texts[self.plugin_name][self.class_name]['test_rulebase_update__2585_2'], file=f, end='')
+                print(rules[1], file=f, end='')
 
             # repave the existing server_config.json
             with open(server_config_filename, 'w') as f:
@@ -175,7 +308,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
             # repave rule with new string
             os.unlink(test_re)
             with open(test_re, 'wt') as f:
-                print(rule_texts[self.plugin_name][self.class_name]['test_rulebase_update__2585_3'], file=f, end='')
+                print(rules[2], file=f, end='')
 
             # checkpoint log to know where to look for the string
             initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
@@ -214,10 +347,34 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
             fastswap_test_script = os.path.join('/var', 'lib', 'irods', 'scripts', 'rulebase_fastswap_test_2276.sh')
             rc, _, _ = self.admin.assert_icommand(['bash', fastswap_test_script], 'STDOUT_SINGLELINE', 'etc')
             assert rc == 0
-	
+
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'tests cache update - only applicable for irods_rule_language REP')
     def test_rulebase_update_without_delay(self):
-        my_rule = rule_texts[self.plugin_name][self.class_name]['test_rulebase_update_without_delay_1']
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': [
+                textwrap.dedent('''
+                    my_rule {
+                        do_some_stuff();
+                    }
+                    INPUT null
+                    OUTPUT ruleExecOut
+                '''),
+                textwrap.dedent('''
+                    do_some_stuff() {
+                        writeLine("serverLog", "TEST_STRING_TO_FIND_1_NODELAY");
+                    }
+                '''),
+                textwrap.dedent('''
+                    do_some_stuff() {
+                        writeLine("serverLog", "TEST_STRING_TO_FIND_2_NODELAY");
+                    }
+                ''')
+            ]
+        }
+
+        rules = rule_map[self.plugin_name]
+
+        my_rule = rules[0]
         rule_file = 'my_rule.r'
         with open(rule_file, 'wt') as f:
             print(my_rule, file=f, end='')
@@ -238,7 +395,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
             test_re = os.path.join(paths.core_re_directory(), 'test.re')
             # write new rule file to config dir
             with open(test_re, 'wt') as f:
-                print(rule_texts[self.plugin_name][self.class_name]['test_rulebase_update_without_delay_2'], file=f, end='')
+                print(rules[1], file=f, end='')
 
             # repave the existing server_config.json
             with open(server_config_filename, 'w') as f:
@@ -254,7 +411,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
             # repave rule with new string
             os.unlink(test_re)
             with open(test_re, 'wt') as f:
-                print(rule_texts[self.plugin_name][self.class_name]['test_rulebase_update_without_delay_3'], file=f, end='')
+                print(rules[2], file=f, end='')
 
             # checkpoint log to know where to look for the string
             initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
@@ -268,9 +425,19 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Python REP does not guarantee argument preservation')
     def test_argument_preservation__3236(self):
-        with tempfile.NamedTemporaryFile(suffix='.r', mode='w+t') as f:
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                test_msiDataObjWrite__3236 {
+                    msiTakeThreeArgumentsAndDoNothing(*arg1, *arg2, *arg3);
+                    writeLine("stdout", "AFTER arg1=*arg1 arg2=*arg2 arg3=*arg3");
+                }
+                INPUT *arg1="abc", *arg2="def", *arg3="ghi"
+                OUTPUT ruleExecOut
+            ''')
+        }
 
-            rule_string = rule_texts[self.plugin_name][self.class_name]['test_argument_preservation__3236']
+        with tempfile.NamedTemporaryFile(suffix='.r', mode='w+t') as f:
+            rule_string = rule_map[self.plugin_name]
             f.write(rule_string)
             f.flush()
 
@@ -383,11 +550,32 @@ OUTPUT ruleExecOut
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only run for native rule language')
     def test_create_close__issue_5018(self):
-        parameters = {}
         logical_path = os.path.join(self.admin.session_collection, 'test_create_close__issue_5018')
-        parameters['logical_path'] = logical_path
+
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent(f'''
+                test_create_close__issue_5018 {{
+                    msiDataObjCreate("{logical_path}", "destRescName=demoResc", *fd)
+                    msiDataObjClose(*fd, *status)
+                    writeLine("stdout", "created [{logical_path}]");
+                }}
+                INPUT null
+                OUTPUT ruleExecOut
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent(f'''
+                def main(rule_args, callback, rei):
+                    out_dict = callback.msiDataObjCreate('{logical_path}', 'destRescName=demoResc', 0)
+                    fd = out_dict['arguments'][2]
+                    out_dict = callback.msiDataObjClose(fd, 0)
+                    callback.writeLine('stdout', 'created [{logical_path}]');
+
+                INPUT null
+                OUTPUT ruleExecOut
+            ''')
+        }
+
         rule_file = os.path.join(self.admin.local_session_dir, 'test_create_close__issue_5018.r')
-        rule_string = rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name].format(**parameters)
+        rule_string = rule_map[self.plugin_name]
         with open(rule_file, 'w') as f:
             f.write(rule_string)
 
@@ -481,8 +669,11 @@ class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
         self.pep_test_helper(commands=['iput -f {testfile}'])
 
     def test_acSetNumThreads(self):
-        rule_body = rule_texts[self.plugin_name][self.class_name]['test_acSetNumThreads']
-        self.pep_test_helper(commands=['iput -f {large_file}'], rule_body=rule_body)
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': 'msiSetNumThreads("default", "0", "default");',
+            'irods_rule_engine_plugin-python': "    callback.msiSetNumThreads('default', '0', 'default')"
+        }
+        self.pep_test_helper(commands=['iput -f {large_file}'], rule_body=rule_map[self.plugin_name])
 
     def test_acDataDeletePolicy(self):
         self.pep_test_helper(precommands=['iput -f {testfile}'], commands=['irm -f {testfile}'])
@@ -516,15 +707,52 @@ class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
         self.pep_test_helper(commands=['iput -f {testfile}'])
 
     def test_acPreprocForDataObjOpen(self):
-        client_rule = rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name]
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                test_{pep_name} {{
+                    msiDataObjOpen("{target_obj}", *FD);
+                    msiDataObjClose(*FD, *Status);
+                }}
+                INPUT null
+                OUTPUT ruleExecOut
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def main(rule_args, callback, rei):
+                    out_dict = callback.msiDataObjOpen("{target_obj}", 0)
+                    file_desc = out_dict['arguments'][1]
 
-        self.pep_test_helper(precommands=['iput -f {testfile}'], commands=['irule -F {client_rule_file}'], client_rule=client_rule)
+                    out_dict = callback.msiDataObjClose(file_desc, 0)
+
+                INPUT null
+                OUTPUT ruleExecOut
+            ''')
+        }
+
+        self.pep_test_helper(precommands=['iput -f {testfile}'], commands=['irule -F {client_rule_file}'], client_rule=rule_map[self.plugin_name])
 
     def test_acPostProcForOpen(self):
-        # prepare rule file
-        client_rule = rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name]
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                test_{pep_name} {{
+                    msiDataObjOpen("{target_obj}", *FD);
+                    msiDataObjClose(*FD, *Status);
+                }}
+                INPUT null
+                OUTPUT ruleExecOut
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def main(rule_args, callback, rei):
+                    out_dict = callback.msiDataObjOpen("{target_obj}", 0)
+                    file_desc = out_dict['arguments'][1]
 
-        self.pep_test_helper(precommands=['iput -f {testfile}'], commands=['irule -F {client_rule_file}'], client_rule=client_rule)
+                    out_dict = callback.msiDataObjClose(file_desc, 0)
+
+                INPUT null
+                OUTPUT ruleExecOut
+            ''')
+        }
+
+        self.pep_test_helper(precommands=['iput -f {testfile}'], commands=['irule -F {client_rule_file}'], client_rule=rule_map[self.plugin_name])
 
     def get_resource_property_list(self, session):
         # query for resource properties
@@ -729,19 +957,32 @@ class Test_Remote_Exec(session.make_sessions_mixin([('otherrods', 'rods')], []),
     def tearDown(self):
         super(Test_Remote_Exec, self).tearDown()
 
-    def create_rule_file(self, rule_text_key):
+    @staticmethod
+    def create_rule_file(rule_text_key, rule_text):
         rule_file_path = rule_text_key + '.r'
         parameters = {}
         parameters['host'] = test.settings.ICAT_HOSTNAME
         parameters['zone'] = 'tempZone'
-        rule_str = rule_texts[self.plugin_name][self.class_name][rule_text_key].format(**parameters)
         with open(rule_file_path, 'w') as rule_file:
-            rule_file.write(rule_str)
+            rule_file.write(rule_text.format(**parameters))
         return rule_file_path
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for Python REP')
     def test_remote_no_writeline(self):
-        rule_file_path = self.create_rule_file('test_remote_no_writeline')
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                test_remote_no_writeLine {{
+                    remote("{host}", "<ZONE>{zone}</ZONE>") {{
+                        *a = "remote";
+                    }}
+                    writeLine("stdout", "a=*a");
+                }}
+                INPUT *a="input"
+                OUTPUT ruleExecOut
+            ''')
+        }
+
+        rule_file_path = Test_Remote_Exec.create_rule_file('test_remote_no_writeline', rule_map[self.plugin_name])
         try:
             self.admin.assert_icommand(['irule', '-F', rule_file_path], 'STDOUT', 'a=remote')
         finally:
@@ -750,7 +991,19 @@ class Test_Remote_Exec(session.make_sessions_mixin([('otherrods', 'rods')], []),
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for Python REP')
     def test_remote_writeline(self):
-        rule_file_path = self.create_rule_file('test_remote_writeline')
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                test_remote_writeLine {{
+                    remote("{host}", "<ZONE>{zone}</ZONE>") {{
+                        writeLine("stdout", "Remote writeLine");
+                    }}
+                }}
+                INPUT null
+                OUTPUT ruleExecOut
+            ''')
+        }
+
+        rule_file_path = Test_Remote_Exec.create_rule_file('test_remote_writeline', rule_map[self.plugin_name])
         try:
             self.admin.assert_icommand(['irule', '-F', rule_file_path], 'STDOUT', 'Remote writeLine')
         finally:
@@ -760,7 +1013,22 @@ class Test_Remote_Exec(session.make_sessions_mixin([('otherrods', 'rods')], []),
     @unittest.skip('Remove skip with resolution of #4262')
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for Python REP')
     def test_remote_in_remote_writeline(self):
-        rule_file_path = self.create_rule_file('test_remote_in_remote_writeline')
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                test_remote_writeLine {{
+                    remote("{host}", "<ZONE>{zone}</ZONE>") {{
+                        remote("{host}", "<ZONE>{zone}</ZONE>") {{
+                            writeLine("stdout", "Remote in remote writeLine");
+                        }}
+                        writeLine("stdout", "Remote writeLine");
+                    }}
+                }}
+                INPUT null
+                OUTPUT ruleExecOut
+            ''')
+        }
+
+        rule_file_path = Test_Remote_Exec.create_rule_file('test_remote_in_remote_writeline', rule_map[self.plugin_name])
         try:
             self.admin.assert_icommand(['irule', '-F', rule_file_path], 'STDOUT_MULTILINE', ['Remote in remote writeLine', 'Remote writeLine'])
         finally:
@@ -770,7 +1038,22 @@ class Test_Remote_Exec(session.make_sessions_mixin([('otherrods', 'rods')], []),
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads server log')
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for Python REP')
     def test_delay_in_remote_writeline(self):
-        rule_file_path = self.create_rule_file('test_delay_in_remote_writeline')
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                test_remote_writeLine {{
+                    remote("{host}", "<ZONE>{zone}</ZONE>") {{
+                        delay("<PLUSET>1s</PLUSET>") {{
+                            writeLine("serverLog", "Delay in remote writeLine");
+                        }}
+                        writeLine("stdout", "Remote writeLine");
+                    }}
+                }}
+                INPUT null
+                OUTPUT ruleExecOut
+            ''')
+        }
+
+        rule_file_path = Test_Remote_Exec.create_rule_file('test_delay_in_remote_writeline', rule_map[self.plugin_name])
         try:
             initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
             self.admin.assert_icommand(['irule', '-F', rule_file_path], 'STDOUT', 'Remote writeLine')
@@ -782,7 +1065,22 @@ class Test_Remote_Exec(session.make_sessions_mixin([('otherrods', 'rods')], []),
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads server log')
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for Python REP')
     def test_remote_in_delay_writeline(self):
-        rule_file_path = self.create_rule_file('test_remote_in_delay_writeline')
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                test_remote_writeLine {{
+                    delay("<PLUSET>1s</PLUSET>") {{
+                        remote("{host}", "<ZONE>{zone}</ZONE>") {{
+                            writeLine("serverLog", "Remote in delay writeLine");
+                        }}
+                        writeLine("serverLog", "Delay writeLine");
+                    }}
+                }}
+                INPUT null
+                OUTPUT ruleExecOut
+            ''')
+        }
+
+        rule_file_path = Test_Remote_Exec.create_rule_file('test_remote_in_delay_writeline', rule_map[self.plugin_name])
         try:
             initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
             self.admin.assert_icommand(['irule', '-F', rule_file_path])
@@ -795,6 +1093,24 @@ class Test_Remote_Exec(session.make_sessions_mixin([('otherrods', 'rods')], []),
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for Python REP')
     def test_remote_returns_appropriate_error_on_bad_hostname__issue_4260(self):
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                test_remote_with_bad_hostname {{
+                    # this will execute
+                    msiAddKeyVal(*key_val_pair,"{metadata_attr}","{metadata_value_true}");
+                    msiAssociateKeyValuePairsToObj(*key_val_pair,"{username}","-u");
+
+                    # this block definitely should not execute
+                    remote("{hostname}", "<ZONE>{zone}</ZONE>") {{
+                        msiAddKeyVal(*key_val_pair,"{metadata_attr}","{metadata_value_false}");
+                        msiAssociateKeyValuePairsToObj(*key_val_pair,"{username}","-u");
+                    }}
+                }}
+                INPUT null
+                OUTPUT ruleExecOut
+            ''')
+        }
+
         rule_text_key = 'test_remote_returns_appropriate_error_on_bad_hostname__issue_4260'
         rule_file_path = os.path.join(self.admin.local_session_dir, rule_text_key + '.r')
         parameters = {}
@@ -804,7 +1120,7 @@ class Test_Remote_Exec(session.make_sessions_mixin([('otherrods', 'rods')], []),
         parameters['metadata_attr'] = rule_text_key
         parameters['metadata_value_true'] = 'this executed!'
         parameters['metadata_value_false'] = 'this will never execute!'
-        rule_str = rule_texts[self.plugin_name][self.class_name][rule_text_key].format(**parameters)
+        rule_str = rule_map[self.plugin_name].format(**parameters)
         with open(rule_file_path, 'w') as rule_file:
             rule_file.write(rule_str)
 
