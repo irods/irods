@@ -387,6 +387,8 @@ int call_dataCopyInp(
                    _inp);
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 int call_simpleQueryInp_simpleQueryOut(
     irods::api_entry*   _api,
     rsComm_t*           _comm,
@@ -399,6 +401,7 @@ int call_simpleQueryInp_simpleQueryOut(
                    _inp,
                    _out);
 }
+#pragma clang diagnostic pop
 
 int call_generalAdminInp(
     irods::api_entry*  _api,
