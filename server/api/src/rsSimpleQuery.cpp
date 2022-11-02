@@ -6,6 +6,9 @@
 #include "irods/miscServerFunct.hpp"
 #include "irods/rodsConnect.h"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 namespace
 {
     auto _rsSimpleQuery(rsComm_t* rsComm, simpleQueryInp_t* simpleQueryInp, simpleQueryOut_t** simpleQueryOut) -> int
@@ -87,3 +90,5 @@ rsSimpleQuery( rsComm_t *rsComm, simpleQueryInp_t *simpleQueryInp,
     }
     return status;
 }
+
+#pragma clang diagnostic pop // ignored "-Wdeprecated-declarations"
