@@ -5,7 +5,7 @@ defaults:
         shell: bash
 jobs:
     clang-tidy:
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-20.04
         steps:
             - name: Checkout Repository
               uses: actions/checkout@v3
