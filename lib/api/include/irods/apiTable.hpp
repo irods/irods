@@ -561,17 +561,16 @@ static irods::apidef_t client_api_table_inp[] = {
         "api_data_copy", irods::clearInStruct_noop,
         (funcPtr)CALL_DATACOPYINP
     },
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     {
         SIMPLE_QUERY_AN, RODS_API_VERSION, LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH,
         "simpleQueryInp_PI", 0,  "simpleQueryOut_PI", 0,
-        // rsSimpleQuery is deprecated, but we need to continue to support it until its removal.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         boost::any(std::function<int(rsComm_t*,simpleQueryInp_t*,simpleQueryOut_t**)>(RS_SIMPLE_QUERY)),
-#pragma clang diagnostic pop
         "api_simple_query", irods::clearInStruct_noop,
         (funcPtr)CALL_SIMPLEQUERYINP_SIMPLEQUERYOUT
     },
+#pragma clang diagnostic pop
     {
         GENERAL_ADMIN_AN, RODS_API_VERSION, LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH,
         "generalAdminInp_PI", 0, NULL, 0,

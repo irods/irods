@@ -37,6 +37,7 @@ API_NUMBER(DATA_PUT_AN,                             607)
 API_NUMBER(DATA_OBJ_GET_AN,                         608)
 API_NUMBER(DATA_GET_AN,                             609)
 API_NUMBER(DATA_COPY_AN,                            611)
+// DEPRECATED: SimpleQuery is deprecated. Use GenQuery or SpecificQuery instead.
 API_NUMBER(SIMPLE_QUERY_AN,                         614)
 API_NUMBER(DATA_OBJ_UNLINK_AN,                      615)
 API_NUMBER(REG_DATA_OBJ_AN,                         619)

@@ -5995,7 +5995,7 @@ irods::error db_simple_query_op_vector(
     cmlFreeStatement(stmtNum, &icss);
     return SUCCESS();
 
-} // db_simple_query_op
+} // db_simple_query_op_vector
 
 irods::error db_simple_query_op(
     irods::plugin_context& _ctx,
@@ -6023,7 +6023,7 @@ irods::error db_simple_query_op(
         }
     }
     return db_simple_query_op_vector( _ctx, _sql, bindVars, _format, _control, _out_buf, _max_out_buf );
-}
+} // db_simple_query_op
 
 // =-=-=-=-=-=-=-
 // commit the transaction
@@ -15070,10 +15070,13 @@ irods::database* plugin_factory(
         DATABASE_OP_DEL_ZONE,
         function<error(plugin_context&,const char*)>(
             db_del_zone_op ) );
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     pg->add_operation(
         DATABASE_OP_SIMPLE_QUERY,
         function<error(plugin_context&,const char*,const char*,const char*,const char*,const char*,int,int*,char*,int)>(
             db_simple_query_op ) );
+#pragma clang diagnostic pop
     pg->add_operation(
         DATABASE_OP_DEL_COLL_BY_ADMIN,
         function<error(plugin_context&,collInfo_t*)>(
