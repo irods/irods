@@ -3,6 +3,7 @@
 
 #include "irods/rcConnect.h"
 
+__attribute__((deprecated("SimpleQuery is deprecated. Use GenQuery or SpecificQuery instead.")))
 typedef struct {
     char *sql;
     char *arg1;
@@ -15,6 +16,7 @@ typedef struct {
 } simpleQueryInp_t;
 #define simpleQueryInp_PI "str *sql; str *arg1; str *arg2; str *arg3; str *arg4; int control; int form; int maxBufSize;"
 
+__attribute__((deprecated("SimpleQuery is deprecated. Use GenQuery or SpecificQuery instead.")))
 typedef struct {
     int control;
     char *outBuf;
