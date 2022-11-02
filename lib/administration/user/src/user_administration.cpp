@@ -358,7 +358,7 @@ namespace irods::experimental::administration::NAMESPACE_IMPL
         auto id(rxComm& conn, const user& user) -> std::optional<std::string>
         {
             std::string gql = "select USER_ID where USER_TYPE != 'rodsgroup' and USER_NAME = '";
-            gql += local_unique_name(conn, user);
+            gql += user.name;
             gql += "' and USER_ZONE = '";
             gql += (user.zone.empty() ? get_local_zone(conn) : user.zone);
             gql += "'";
@@ -386,7 +386,7 @@ namespace irods::experimental::administration::NAMESPACE_IMPL
         auto type(rxComm& conn, const user& user) -> std::optional<user_type>
         {
             std::string gql = "select USER_TYPE where USER_TYPE != 'rodsgroup' and USER_NAME = '";
-            gql += local_unique_name(conn, user);
+            gql += user.name;
             gql += "' and USER_ZONE = '";
             gql += (user.zone.empty() ? get_local_zone(conn) : user.zone);
             gql += "'";
@@ -403,7 +403,7 @@ namespace irods::experimental::administration::NAMESPACE_IMPL
             std::vector<std::string> auth_names;
 
             std::string gql = "select USER_DN where USER_TYPE != 'rodsgroup' and USER_NAME = '";
-            gql += local_unique_name(conn, user);
+            gql += user.name;
             gql += "' and USER_ZONE = '";
             gql += (user.zone.empty() ? get_local_zone(conn) : user.zone);
             gql += "'";
@@ -418,7 +418,7 @@ namespace irods::experimental::administration::NAMESPACE_IMPL
         auto user_is_member_of_group(rxComm& conn, const group& group, const user& user) -> bool
         {
             std::string gql = "select USER_ID where USER_TYPE != 'rodsgroup' and USER_NAME = '";
-            gql += local_unique_name(conn, user);
+            gql += user.name;
             gql += "' and USER_ZONE = '";
             gql += (user.zone.empty() ? get_local_zone(conn) : user.zone);
             gql += "' and USER_GROUP_NAME = '";
