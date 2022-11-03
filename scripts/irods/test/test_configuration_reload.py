@@ -11,6 +11,10 @@ from .. import paths
 
 SessionsMixin = session.make_sessions_mixin([('otherrods', 'rods')], [])
 
+plugin_name = IrodsConfig().default_rule_engine_plugin
+
+@unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language',
+                     'Only implemented for NREP. See #4094.')
 class TestConfigurationReload(SessionsMixin, unittest.TestCase):
 
     def setUp(self):
