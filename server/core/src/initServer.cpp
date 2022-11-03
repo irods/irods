@@ -1,4 +1,3 @@
-
 #include "irods/initServer.hpp"
 
 #include "irods/genQuery.h"
@@ -35,6 +34,7 @@
 #include "irods/irods_threads.hpp"
 #include "irods/key_value_proxy.hpp"
 #include "irods/replica_state_table.hpp"
+#include "irods/irods_logger.hpp"
 
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
 #include "irods/replica_proxy.hpp"
@@ -58,6 +58,8 @@ namespace
 {
     namespace ill = irods::logical_locking;
     namespace rst = irods::replica_state_table;
+
+    using log_agent = irods::experimental::log::agent;
 
     auto finalize_replica_opened_for_create_or_write(RsComm& _comm, DataObjInfo& _info, l1desc& _l1desc) -> void
     {
@@ -112,55 +114,6 @@ namespace
                 __FUNCTION__, __LINE__, ec, r.logical_path(), r.hierarchy()));
         }
     } // finalize_replica_opened_for_create_or_write
-
-    void close_all_l1_descriptors(RsComm& _comm)
-    {
-        rodsLog(LOG_DEBUG, "[%s:%d] Closing all L1 descriptors ...", __func__, __LINE__);
-
-        for (int fd = 3; fd < NUM_L1_DESC; ++fd) {
-            auto& l1desc = L1desc[fd];
-            if (FD_INUSE != l1desc.inuseFlag || l1desc.l3descInx < 3) {
-                continue;
-            }
-
-            if (!l1desc.dataObjInfo) {
-                irods::log(LOG_ERROR, fmt::format(
-                    "[{}:{}] - l1 descriptor [{}] has no data object info",
-                    __FUNCTION__, __LINE__, fd));
-
-                continue;
-            }
-
-            try {
-                auto [replica, replica_lm] = irods::experimental::replica::duplicate_replica(*l1desc.dataObjInfo);
-                struct l1desc fd_cache = irods::duplicate_l1_descriptor(l1desc);
-                const irods::at_scope_exit free_fd{[&fd_cache] { freeL1desc_struct(fd_cache); }};
-                constexpr auto preserve_rst = true;
-
-                // close the replica, free L1 descriptor
-                if (const int ec = irods::close_replica_without_catalog_update(_comm, fd, preserve_rst); ec < 0) {
-                    irods::log(LOG_ERROR, fmt::format(
-                        "[{}:{}] - error closing replica; ec:[{}]",
-                        __FUNCTION__, __LINE__, ec));
-
-                    continue;
-                }
-
-                // Don't do anything for special collections - they do not enter intermediate state
-                if (replica.special_collection_info()) {
-                    continue;
-                }
-
-                // TODO: need to unlock read-locked replicas
-                if (OPEN_FOR_READ_TYPE != fd_cache.openType) {
-                    finalize_replica_opened_for_create_or_write(_comm, *replica.get(), fd_cache);
-                }
-            }
-            catch (const irods::exception& e) {
-                irods::log(e);
-            }
-        }
-    } // close_all_l1_descriptors
 } // anonymous namespace
 
 int initServerInfo(int processType, rsComm_t* rsComm)
@@ -986,3 +939,51 @@ setRsCommFromRodsEnv( rsComm_t *rsComm ) {
 
     return 0;
 }
+
+void close_all_l1_descriptors(RsComm& _comm)
+{
+    log_agent::debug("[{}:{}] Closing all L1 descriptors ...", __func__, __LINE__);
+
+    for (int fd = 3; fd < NUM_L1_DESC; ++fd) {
+        auto& l1desc = L1desc[fd];
+        if (FD_INUSE != l1desc.inuseFlag || l1desc.l3descInx < 3) {
+            continue;
+        }
+
+        if (!l1desc.dataObjInfo) {
+            irods::log(
+                LOG_ERROR,
+                fmt::format("[{}:{}] - l1 descriptor [{}] has no data object info", __FUNCTION__, __LINE__, fd));
+
+            continue;
+        }
+
+        try {
+            auto [replica, replica_lm] = irods::experimental::replica::duplicate_replica(*l1desc.dataObjInfo);
+            struct l1desc fd_cache = irods::duplicate_l1_descriptor(l1desc);
+            const irods::at_scope_exit free_fd{[&fd_cache] { freeL1desc_struct(fd_cache); }};
+            constexpr auto preserve_rst = true;
+
+            // close the replica, free L1 descriptor
+            if (const int ec = irods::close_replica_without_catalog_update(_comm, fd, preserve_rst); ec < 0) {
+                irods::log(
+                    LOG_ERROR, fmt::format("[{}:{}] - error closing replica; ec:[{}]", __FUNCTION__, __LINE__, ec));
+
+                continue;
+            }
+
+            // Don't do anything for special collections - they do not enter intermediate state
+            if (replica.special_collection_info()) {
+                continue;
+            }
+
+            // TODO: need to unlock read-locked replicas
+            if (OPEN_FOR_READ_TYPE != fd_cache.openType) {
+                finalize_replica_opened_for_create_or_write(_comm, *replica.get(), fd_cache);
+            }
+        }
+        catch (const irods::exception& e) {
+            irods::log(e);
+        }
+    }
+} // close_all_l1_descriptors
