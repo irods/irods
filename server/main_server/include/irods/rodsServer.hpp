@@ -35,12 +35,13 @@ extern int optopt;
 #define AGENT_QUE_CHK_INT               600     // check the agent queue every 600 sec for consistence.
 
 // Managing the spawned agents
-typedef struct agentProc {
+typedef struct agentProc
+{
     int pid;
     int sock;
     startupPack_t startupPack;
-    struct sockaddr_in  remoteAddr;  // remote address
-    struct agentProc *next;
+    struct sockaddr_in remoteAddr; // remote address
+    struct agentProc* next;
 } agentProc_t;
 
 int serverMain(const bool enable_test_mode, const bool write_to_stdout);
@@ -92,6 +93,8 @@ void stopProcConnReqThreads();
 void spawnManagerTask();
 
 int procBadReq();
+
+void task_spawn_manager();
 
 #endif // IRODS_RODS_SERVER_HPP
 

@@ -121,12 +121,10 @@ Cache *restoreCache( const char* _inst_name ) {
     if ( pointersCopy == NULL ) {
         free( bufCopy );
         rodsLog( LOG_ERROR, "Cannot allocate pointer pointer buffer of size %lld", pointersSize);
-        detachSharedMemory( _inst_name );
         unlockReadMutex(_inst_name, &mutex);
         return NULL;
     }
     memcpy( pointersCopy, pointersMapped + ( buf - bufMapped ), pointersSize );
-    detachSharedMemory( _inst_name );
     unlockReadMutex(_inst_name, &mutex);
     pointers = pointersCopy;
     /*    bufCopy = (unsigned char *)malloc(cache->dataSize);
@@ -227,7 +225,6 @@ int updateCache( const char* _inst_name, size_t size, Cache *cache ) {
                     /* copy pointers */
                     memcpy( cacheCopy->pointers, pointers, pointersSize );
                     ret = 0;
-                    detachSharedMemory( _inst_name );
                 }
                 unlockWriteMutex(_inst_name, &mutex);
             }

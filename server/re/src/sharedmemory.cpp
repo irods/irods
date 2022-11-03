@@ -1,6 +1,3 @@
-/* For copyright information please refer to files in the COPYRIGHT directory
- */
-
 #include <fcntl.h>
 #include "irods/sharedmemory.hpp"
 #include "irods/rodsConnect.h"
@@ -47,12 +44,6 @@ unsigned char *prepareServerSharedMemory( const std::string& _key ) {
         rodsLog( LOG_ERROR, "prepareServerSharedMemory: failed to prepare shared memory. Exception caught [%s]", e.what() );
         return NULL;
     }
-}
-
-// TODO(june): this has been used other places, but it does nothing?
-void detachSharedMemory( const std::string& _key ) {
-    //delete mapped;
-    //delete shm_obj;
 }
 
 int removeSharedMemory( const std::string& _key ) {
