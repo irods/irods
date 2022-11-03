@@ -1,4 +1,3 @@
-
 #include "irods/rodsAgent.hpp"
 
 #include "irods/reconstants.hpp"
@@ -34,7 +33,7 @@
 #include "irods/server_utilities.hpp"
 #include "irods/plugin_lifetime_manager.hpp"
 #include "irods/version.hpp"
-#include "irods/replica_access_table.hpp"
+#include "irods/replica_state_table.hpp"
 
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -172,10 +171,11 @@ int receiveDataFromServer( int conn_tmp_socket ) {
     return status;
 }
 
-void cleanup() {
+void cleanup()
+{
     std::string svc_role;
     irods::error ret = get_catalog_service_role(svc_role);
-    if(!ret.ok()) {
+    if (!ret.ok()) {
         irods::log(PASS(ret));
     }
 
@@ -187,21 +187,22 @@ void cleanup() {
         disconnectAllSvrToSvrConn();
     }
 
-    if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+    if (irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role) {
         disconnectRcat();
     }
 
     irods::re_plugin_globals->global_re_mgr.call_stop_operations();
 }
 
-void cleanupAndExit( int status ) {
+void cleanupAndExit(int status)
+{
     cleanup();
 
-    if ( status >= 0 ) {
-        exit( 0 );
+    if (status >= 0) {
+        exit(0);
     }
     else {
-        exit( 1 );
+        exit(1);
     }
 }
 

@@ -1,4 +1,3 @@
-
 #include "irods/rodsServer.hpp"
 
 #include "irods/client_connection.hpp"
@@ -34,6 +33,7 @@
 #include "irods/irods_client_api_table.hpp"
 #include "irods/icatHighLevelRoutines.hpp"
 #include "irods/rodsAgent.hpp"
+#include "irods/physPath.hpp"
 
 #include "irods/rcMisc.h"
 #include "irods/rodsErrorTable.h"
@@ -81,6 +81,8 @@
 #include <atomic>
 #include <chrono>
 #include <sstream>
+
+#define LOCK_FILE_PURGE_TIME 7200 // Purge lock files every 2 hr.
 
 // clang-format off
 namespace ix   = irods::experimental;
@@ -184,7 +186,6 @@ namespace
 
         const int num_hex_bytes = 2 * num_random_bytes;
         std::snprintf(buf, num_hex_bytes + 1, "%s", ss.str().c_str());
-		
     } // get64RandomBytes
 
     bool init_shared_memory_for_plugin(const nlohmann::json& _plugin_object)
@@ -194,7 +195,6 @@ namespace
         if (_plugin_object.end() != itr) {
             const auto& mem_name = itr->get_ref<const std::string&>();
             prepareServerSharedMemory(mem_name);
-            detachSharedMemory(mem_name);
             return true;
         }
 
@@ -852,153 +852,142 @@ namespace
         open("/dev/null", O_WRONLY);
         open("/dev/null", O_RDWR);
     } // daemonize
-	
-	void print_usage(const char *prog)
-	{
-		printf( "Usage: %s [-uvVqs]\n", prog );
-		printf( " -u  user command level, remain attached to the tty (foreground)\n" );
-		printf( " -v  verbose (LOG_NOTICE)\n" );
-		printf( " -V  very verbose (LOG_DEBUG10)\n" );
-		printf( " -q  quiet (LOG_ERROR)\n" );
-		printf( " -s  log SQL commands\n" );
-	}
-	
-	int purgeLockFileDir( int chkLockFlag )
-	{
-		char lockFilePath[MAX_NAME_LEN * 2];
-		struct dirent *myDirent;
-		struct stat statbuf;
-		int status;
-		int savedStatus = 0;
-		struct flock myflock;
-		unsigned int purgeTime;
 
-		std::string lock_dir;
-		irods::error ret = irods::get_full_path_for_unmoved_configs(
-				LOCK_FILE_DIR,
-				lock_dir );
-		if ( !ret.ok() ) {
-			irods::log( PASS( ret ) );
-			return ret.code();
-		}
+    void print_usage(const char* prog)
+    {
+        fmt::print("Usage: {} [-uvVqs]\n", prog);
+        fmt::print(" -u  user command level, remain attached to the tty (foreground)\n");
+        fmt::print(" -v  verbose (LOG_NOTICE)\n");
+        fmt::print(" -V  very verbose (LOG_DEBUG10)\n");
+        fmt::print(" -q  quiet (LOG_ERROR)\n");
+        fmt::print(" -s  log SQL commands\n");
+    }
 
-		DIR *dirPtr = opendir( lock_dir.c_str() );
-		if ( dirPtr == NULL ) {
-			rodsLog( LOG_ERROR,
-					"purgeLockFileDir: opendir error for %s, errno = %d",
-					lock_dir.c_str(), errno );
-			return UNIX_FILE_OPENDIR_ERR - errno;
-		}
+    int purgeLockFileDir(int chkLockFlag)
+    {
+        char lockFilePath[MAX_NAME_LEN * 2];
+        struct dirent* myDirent;
+        struct stat statbuf;
+        int status;
+        int savedStatus = 0;
+        struct flock myflock;
+        unsigned int purgeTime;
 
-		std::memset(&myflock, 0, sizeof(myflock));
-		myflock.l_whence = SEEK_SET;
-		purgeTime = time( 0 ) - LOCK_FILE_PURGE_TIME;
-		while ( ( myDirent = readdir( dirPtr ) ) != NULL ) {
-			if ( strcmp( myDirent->d_name, "." ) == 0 ||
-					strcmp( myDirent->d_name, ".." ) == 0 ) {
-				continue;
-			}
-			snprintf( lockFilePath, MAX_NAME_LEN, "%-s/%-s",
-					lock_dir.c_str(), myDirent->d_name );
-			if ( chkLockFlag ) {
-				int myFd;
-				myFd = open( lockFilePath, O_RDWR | O_CREAT, 0644 );
-				if ( myFd < 0 ) {
-					savedStatus = FILE_OPEN_ERR - errno;
-					rodsLogError( LOG_ERROR, savedStatus,
-							"purgeLockFileDir: open error for %s", lockFilePath );
-					continue;
-				}
-				myflock.l_type = F_WRLCK;
-				int error_code = fcntl( myFd, F_GETLK, &myflock );
-				if ( error_code != 0 ) {
-					rodsLog( LOG_ERROR, "fcntl failed in purgeLockFileDir with error code %d", error_code );
-				}
-				close( myFd );
-				/* some process is locking it */
-				if ( myflock.l_type != F_UNLCK ) {
-					continue;
-				}
-			}
-			status = stat( lockFilePath, &statbuf );
+        std::string lock_dir;
+        irods::error ret = irods::get_full_path_for_unmoved_configs(LOCK_FILE_DIR, lock_dir);
+        if (!ret.ok()) {
+            irods::log(PASS(ret));
+            return ret.code();
+        }
 
-			if ( status != 0 ) {
-				rodsLog( LOG_ERROR,
-						"purgeLockFileDir: stat error for %s, errno = %d",
-						lockFilePath, errno );
-				savedStatus = UNIX_FILE_STAT_ERR - errno;
-				boost::system::error_code err;
-				boost::filesystem::remove( boost::filesystem::path( lockFilePath ), err );
-				continue;
-			}
-			if ( chkLockFlag && ( int )purgeTime < statbuf.st_mtime ) {
-				continue;
-			}
-			if ( ( statbuf.st_mode & S_IFREG ) == 0 ) {
-				continue;
-			}
-			boost::system::error_code err;
-			boost::filesystem::remove( boost::filesystem::path( lockFilePath ), err );
-		}
-		closedir( dirPtr );
+        DIR* dirPtr = opendir(lock_dir.c_str());
+        if (dirPtr == NULL) {
+            log_server::error("purgeLockFileDir: opendir error for [{}], errno = [{}]", lock_dir.c_str(), errno);
+            return UNIX_FILE_OPENDIR_ERR - errno;
+        }
 
-		return savedStatus;
-	}
-	
-	void task_purge_lock_file()
-	{
-		std::size_t wait_time_ms = 0;
-		const std::size_t purge_time_ms = LOCK_FILE_PURGE_TIME * 1000; // s to ms
+        std::memset(&myflock, 0, sizeof(myflock));
+        myflock.l_whence = SEEK_SET;
+        purgeTime = time(0) - LOCK_FILE_PURGE_TIME;
+        while ((myDirent = readdir(dirPtr)) != NULL) {
+            if (strcmp(myDirent->d_name, ".") == 0 || strcmp(myDirent->d_name, "..") == 0) {
+                continue;
+            }
+            snprintf(lockFilePath, MAX_NAME_LEN, "%-s/%-s", lock_dir.c_str(), myDirent->d_name);
+            if (chkLockFlag) {
+                int myFd;
+                myFd = open(lockFilePath, O_RDWR | O_CREAT, 0644);
+                if (myFd < 0) {
+                    savedStatus = FILE_OPEN_ERR - errno;
+                    rodsLogError(LOG_ERROR, savedStatus, "purgeLockFileDir: open error for [{}]", lockFilePath);
+                    continue;
+                }
+                myflock.l_type = F_WRLCK;
+                int error_code = fcntl(myFd, F_GETLK, &myflock);
+                if (error_code != 0) {
+                    log_server::error("fcntl failed in purgeLockFileDir with error code [{}]", error_code);
+                }
+                close(myFd);
+                /* some process is locking it */
+                if (myflock.l_type != F_UNLCK) {
+                    continue;
+                }
+            }
+            status = stat(lockFilePath, &statbuf);
 
-		while (true) {
-			const auto state = irods::server_state::get_state();
+            if (status != 0) {
+                log_server::error("purgeLockFileDir: stat error for [{}], errno = [{}]", lockFilePath, errno);
+                savedStatus = UNIX_FILE_STAT_ERR - errno;
+                boost::system::error_code err;
+                boost::filesystem::remove(boost::filesystem::path(lockFilePath), err);
+                continue;
+            }
+            if (chkLockFlag && (int) purgeTime < statbuf.st_mtime) {
+                continue;
+            }
+            if ((statbuf.st_mode & S_IFREG) == 0) {
+                continue;
+            }
+            boost::system::error_code err;
+            boost::filesystem::remove(boost::filesystem::path(lockFilePath), err);
+        }
+        closedir(dirPtr);
 
-			if (irods::server_state::server_state::stopped == state ||
-				irods::server_state::server_state::exited == state)
-			{
-				break;
-			}
+        return savedStatus;
+    }
 
-			rodsSleep(0, irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC * 1000); // second, microseconds
-			wait_time_ms += irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC;
+    void task_purge_lock_file()
+    {
+        std::size_t wait_time_ms = 0;
+        const std::size_t purge_time_ms = LOCK_FILE_PURGE_TIME * 1000; // s to ms
 
-			if (wait_time_ms >= purge_time_ms) {
-				wait_time_ms = 0;
-				int status = purgeLockFileDir(1);
-				if (status < 0) {
-					rodsLogError(LOG_ERROR, status, "task_purge_lock_file: purgeLockFileDir failed");
-				}
-			}
-		}
-	} // task_purge_lock_file
-	
-	int queueAgentProc( agentProc_t *agentProc, agentProc_t **agentProcHead,
-			irodsPosition_t position ) {
-		if ( agentProc == NULL || agentProcHead == NULL ) {
-			return USER__NULL_INPUT_ERR;
-		}
+        while (true) {
+            const auto state = irods::server_state::get_state();
 
-		if ( *agentProcHead == NULL ) {
-			*agentProcHead = agentProc;
-			agentProc->next = NULL;
-			return 0;
-		}
+            if (irods::server_state::server_state::stopped == state ||
+                irods::server_state::server_state::exited == state) {
+                break;
+            }
 
-		if ( position == TOP_POS ) {
-			agentProc->next = *agentProcHead;
-			*agentProcHead = agentProc;
-		}
-		else {
-			agentProc_t *tmpAgentProc = *agentProcHead;
-			while ( tmpAgentProc->next != NULL ) {
-				tmpAgentProc = tmpAgentProc->next;
-			}
-			tmpAgentProc->next = agentProc;
-			agentProc->next = NULL;
-		}
-		return 0;
-	}
-	
+            rodsSleep(0, irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC * 1000); // second, microseconds
+            wait_time_ms += irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC;
+
+            if (wait_time_ms >= purge_time_ms) {
+                wait_time_ms = 0;
+                int status = purgeLockFileDir(1);
+                if (status < 0) {
+                    rodsLogError(LOG_ERROR, status, "task_purge_lock_file: purgeLockFileDir failed");
+                }
+            }
+        }
+    } // task_purge_lock_file
+
+    int queueAgentProc(agentProc_t* agentProc, agentProc_t** agentProcHead, irodsPosition_t position)
+    {
+        if (agentProc == NULL || agentProcHead == NULL) {
+            return USER__NULL_INPUT_ERR;
+        }
+
+        if (*agentProcHead == NULL) {
+            *agentProcHead = agentProc;
+            agentProc->next = NULL;
+            return 0;
+        }
+
+        if (position == TOP_POS) {
+            agentProc->next = *agentProcHead;
+            *agentProcHead = agentProc;
+        }
+        else {
+            agentProc_t* tmpAgentProc = *agentProcHead;
+            while (tmpAgentProc->next != NULL) {
+                tmpAgentProc = tmpAgentProc->next;
+            }
+            tmpAgentProc->next = agentProc;
+            agentProc->next = NULL;
+        }
+        return 0;
+    }
 } // anonymous namespace
 
 int main(int argc, char** argv)
@@ -1090,11 +1079,11 @@ int main(int argc, char** argv)
 
     create_stacktrace_directory();
 
-	namespace hnc  = irods::experimental::net::hostname_cache;
+    namespace hnc = irods::experimental::net::hostname_cache;
     hnc::init("irods_hostname_cache", irods::get_hostname_cache_shared_memory_size());
     irods::at_scope_exit deinit_hostname_cache{[] { hnc::deinit(); }};
 
-	namespace dnsc = irods::experimental::net::dns_cache;
+    namespace dnsc = irods::experimental::net::dns_cache;
     dnsc::init("irods_dns_cache", irods::get_dns_cache_shared_memory_size());
     irods::at_scope_exit deinit_dns_cache{[] { dnsc::deinit(); }};
 
@@ -1220,7 +1209,7 @@ int main(int argc, char** argv)
     // set re cache salt here
     irods::error ret = createAndSetRECacheSalt();
     if (!ret.ok()) {
-        log_server::error("serverMain: createAndSetRECacheSalt error.\n{}", ret.result().c_str());
+        log_server::error("{}: createAndSetRECacheSalt error.\n{}", __func__, ret.result());
         exit(1);
     }
 
@@ -1236,7 +1225,7 @@ int main(int argc, char** argv)
     rsComm_t svrComm;
     int status = initServerMain(&svrComm, enable_test_mode, write_to_stdout);
     if (status < 0) {
-        log_server::error("serverMain: initServerMain error. status = {}", status);
+        log_server::error("{}: initServerMain error. status = {}", __func__, status);
         exit(1);
     }
 
@@ -1302,7 +1291,9 @@ int main(int argc, char** argv)
                 ReadWorkerThread[i] = new boost::thread(readWorkerTask);
             }
             catch (const boost::thread_resource_error&) {
-                rodsLog(LOG_ERROR, "boost encountered a thread_resource_error during readWorkerTask thread construction in serverMain.");
+                log_server::error(
+                    "boost encountered a thread_resource_error during readWorkerTask thread construction in {}.",
+                    __func__);
                 return SYS_THREAD_RESOURCE_ERR;
             }
         }
@@ -1312,7 +1303,9 @@ int main(int argc, char** argv)
             SpawnManagerThread = new boost::thread(task_spawn_manager);
         }
         catch (const boost::thread_resource_error&) {
-            rodsLog(LOG_ERROR, "boost encountered a thread_resource_error during task_spawn_manager thread construction in serverMain.");
+            log_server::error(
+                "boost encountered a thread_resource_error during task_spawn_manager thread construction in {}.",
+                __func__);
             return SYS_THREAD_RESOURCE_ERR;
         }
 
@@ -1323,7 +1316,8 @@ int main(int argc, char** argv)
             }
             catch (const boost::thread_resource_error&) {
                 log_server::error(
-                    "boost encountered a thread_resource_error during task_purge_lock_file thread construction in serverMain.");
+                    "boost encountered a thread_resource_error during task_purge_lock_file thread construction in {}.",
+                    __func__);
             }
         }
 
@@ -1360,12 +1354,12 @@ int main(int argc, char** argv)
 
             while ((numSock = select(svrComm.sock + 1, &sockMask, nullptr, nullptr, &time_out)) < 0) {
                 if (errno == EINTR) {
-                    log_server::info("serverMain: select() interrupted");
+                    log_server::info("{}: select() interrupted", __func__);
                     FD_SET(svrComm.sock, &sockMask);
                     continue;
                 }
 
-                log_server::info("serverMain: select() error, errno = {}", errno);
+                log_server::info("{}: select() error, errno = {}", __func__, errno);
                 return -1;
             }
 
@@ -1387,11 +1381,11 @@ int main(int argc, char** argv)
             const int newSock = rsAcceptConn(&svrComm);
             if (newSock < 0) {
                 if (++acceptErrCnt > MAX_ACCEPT_ERR_CNT) {
-                    log_server::error("serverMain: Too many socket accept error. Exiting");
+                    log_server::error("{}: Too many socket accept error. Exiting", __func__);
                     break;
                 }
 
-                log_server::info("serverMain: acceptConn() error, errno = {}", errno);
+                log_server::info("{}: acceptConn() error, errno = {}", __func__, errno);
                 continue;
             }
             else {
@@ -1400,7 +1394,7 @@ int main(int argc, char** argv)
 
             status = chkAgentProcCnt();
             if (status < 0) {
-                log_server::info("serverMain: chkAgentProcCnt failed status = {}", status);
+                log_server::info("{}: chkAgentProcCnt failed status = {}", __func__, status);
 
                 // =-=-=-=-=-=-=-
                 // create network object to communicate to the network
@@ -1433,32 +1427,34 @@ int main(int argc, char** argv)
                 PurgeLockFileThread->join();
             }
             catch (const boost::thread_resource_error&) {
-                log_server::error("boost encountered a thread_resource_error during join in serverMain.");
+                log_server::error("boost encountered a thread_resource_error during join in {}.", __func__);
             }
         }
 
         procChildren(&ConnectedAgentHead);
-        
-		// Stop spawn manager thread
-		SpawnReqCond.notify_all();
-		try {
-			SpawnManagerThread->join();
-		}
-		catch (const boost::thread_resource_error&) {
-			rodsLog(LOG_ERROR, "boost encountered a thread_resource_error during spawn manager thread join in serverMain.");
-		}
 
-		// Stop read worker threads
-		for (int i = 0; i < NUM_READ_WORKER_THR; ++i) {
-			ReadReqCond.notify_all();
+        // Stop spawn manager thread
+        SpawnReqCond.notify_all();
+        try {
+            SpawnManagerThread->join();
+        }
+        catch (const boost::thread_resource_error&) {
+            log_server::error(
+                "boost encountered a thread_resource_error during spawn manager thread join in {}.", __func__);
+        }
 
-			try {
-				ReadWorkerThread[i]->join();
-			}
-			catch (const boost::thread_resource_error&) {
-				rodsLog(LOG_ERROR, "boost encountered a thread_resource_error during read worker thread join in serverMain.");
-			}
-		}
+        // Stop read worker threads
+        for (int i = 0; i < NUM_READ_WORKER_THR; ++i) {
+            ReadReqCond.notify_all();
+
+            try {
+                ReadWorkerThread[i]->join();
+            }
+            catch (const boost::thread_resource_error&) {
+                log_server::error(
+                    "boost encountered a thread_resource_error during read worker thread join in {}.", __func__);
+            }
+        }
 
         irods::server_state::set_state(irods::server_state::server_state::exited);
     }
@@ -1689,7 +1685,7 @@ int execAgent(int newSock, startupPack_t* startupPack)
 
     int tmp_socket{socket(AF_UNIX, SOCK_STREAM, 0)};
     if (tmp_socket < 0) {
-        rodsLog(LOG_ERROR, "Unable to create socket in execAgent, errno = [{}]: {}", errno, strerror(errno));
+        log_server::error("Unable to create socket in execAgent, errno = [{}]: {}", errno, strerror(errno));
     }
 
     const auto cleanup_sockets{[&]() {
@@ -2208,9 +2204,7 @@ void task_spawn_manager()
     while (true) {
         const auto state = irods::server_state::get_state();
 
-        if (irods::server_state::server_state::stopped == state ||
-            irods::server_state::server_state::exited == state)
-        {
+        if (irods::server_state::server_state::stopped == state || irods::server_state::server_state::exited == state) {
             break;
         }
 
@@ -2226,21 +2220,21 @@ void task_spawn_manager()
             close(mySpawnReq->sock);
 
             if (status < 0) {
-                rodsLog(LOG_NOTICE,
-                        "spawnAgent error for puser=%s and cuser=%s from %s, stat=%d",
-                        mySpawnReq->startupPack.proxyUser,
-                        mySpawnReq->startupPack.clientUser,
-                        inet_ntoa(mySpawnReq->remoteAddr.sin_addr),
-                        status);
+                log_server::info(
+                    "spawnAgent error for puser=[{}] and cuser=[{}] from [{}], stat=[{}]",
+                    mySpawnReq->startupPack.proxyUser,
+                    mySpawnReq->startupPack.clientUser,
+                    inet_ntoa(mySpawnReq->remoteAddr.sin_addr),
+                    status);
                 std::free(mySpawnReq);
             }
             else {
-                rodsLog(LOG_DEBUG,
-                        "Agent process %d started for puser=%s and cuser=%s from %s",
-                        mySpawnReq->pid,
-                        mySpawnReq->startupPack.proxyUser,
-                        mySpawnReq->startupPack.clientUser,
-                        inet_ntoa(mySpawnReq->remoteAddr.sin_addr));
+                log_server::debug(
+                    "Agent process [{}] started for puser=[{}] and cuser=[{}] from [{}]",
+                    mySpawnReq->pid,
+                    mySpawnReq->startupPack.proxyUser,
+                    mySpawnReq->startupPack.clientUser,
+                    inet_ntoa(mySpawnReq->remoteAddr.sin_addr));
             }
 
             spwn_req_lock.lock();

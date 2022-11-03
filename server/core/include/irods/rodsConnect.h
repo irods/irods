@@ -18,9 +18,6 @@
 #define INITIAL_NOT_DONE                0
 #define INITIAL_DONE                    1
 
-// TODO(june): maybe move to rodsServer.hpp?
-#define LOCK_FILE_PURGE_TIME            7200 // purge lock files every 2 hr.
-
 typedef struct hostName {
     char *name;
     struct hostName *next;
