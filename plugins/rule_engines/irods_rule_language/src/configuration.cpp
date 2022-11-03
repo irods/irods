@@ -501,7 +501,6 @@ int loadRuleFromCacheOrFile( const char* inst_name, const char *irbSet ) {
         buf = prepareNonServerSharedMemory( inst_name );
         if ( buf != NULL ) {
             cmp = strcmp((char*)buf, "UNINITIALIZED");
-            detachSharedMemory( inst_name );
         } else {
             rodsLog( LOG_DEBUG, "Cannot open shared memory." );
         }
