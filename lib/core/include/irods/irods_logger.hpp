@@ -398,9 +398,9 @@ namespace irods::experimental::log
         namespace log
         {
             // clang-format off
-            inline constexpr const char* const category = "log_category";
-            inline constexpr const char* const message  = "log_message";
-            inline constexpr const char* const level    = "log_level";
+            inline constexpr const char* category = "log_category";
+            inline constexpr const char* message  = "log_message";
+            inline constexpr const char* level    = "log_level";
             // clang-format on
         } // namespace log
 
@@ -410,13 +410,13 @@ namespace irods::experimental::log
         namespace request
         {
             // clang-format off
-            inline constexpr const char* const release_version = "request_release_version";
-            inline constexpr const char* const api_version     = "request_api_version";
-            inline constexpr const char* const host            = "request_host";
-            inline constexpr const char* const client_user     = "request_client_user";
-            inline constexpr const char* const proxy_user      = "request_proxy_user";
-            inline constexpr const char* const api_number      = "request_api_number";
-            inline constexpr const char* const api_name        = "request_api_name";
+            inline constexpr const char* release_version = "request_release_version";
+            inline constexpr const char* api_version     = "request_api_version";
+            inline constexpr const char* host            = "request_host";
+            inline constexpr const char* client_user     = "request_client_user";
+            inline constexpr const char* proxy_user      = "request_proxy_user";
+            inline constexpr const char* api_number      = "request_api_number";
+            inline constexpr const char* api_name        = "request_api_name";
             // clang-forexprmat on
         } // namespace request
 
@@ -426,11 +426,12 @@ namespace irods::experimental::log
         namespace server
         {
             // clang-format off
-            inline constexpr const char* const type      = "server_type";
-            inline constexpr const char* const host      = "server_host";
-            inline constexpr const char* const pid       = "server_pid";
-            inline constexpr const char* const name      = "server_name";
-            inline constexpr const char* const timestamp = "server_timestamp";
+            inline constexpr const char* type      = "server_type";
+            inline constexpr const char* host      = "server_host";
+            inline constexpr const char* pid       = "server_pid";
+            inline constexpr const char* name      = "server_name";
+            inline constexpr const char* timestamp = "server_timestamp";
+            inline constexpr const char* zone      = "server_zone";
             // clang-format on
         } // namespace server
     } // namespace tag
