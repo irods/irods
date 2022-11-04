@@ -41,6 +41,7 @@ namespace
     std::string g_server_type;
     std::string g_server_host;
     std::string g_server_name;
+    std::string g_server_zone;
     // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 } // anonymous namespace
 
@@ -320,6 +321,16 @@ namespace irods::experimental::log
     auto get_server_name() noexcept -> std::string_view
     {
         return g_server_name;
+    }
+
+    auto set_server_zone(std::string _name) noexcept -> void
+    {
+        g_server_zone = std::move(_name);
+    }
+
+    auto get_server_zone() noexcept -> std::string_view
+    {
+        return g_server_zone;
     }
 
     namespace detail
