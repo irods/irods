@@ -383,7 +383,6 @@ namespace irods::experimental::log
         {
             // clang-format off
             inline constexpr const char* const category = "log_category";
-            inline constexpr const char* const facility = "log_facility";
             inline constexpr const char* const message  = "log_message";
             inline constexpr const char* const level    = "log_level";
             // clang-format on
@@ -651,7 +650,6 @@ namespace irods::experimental::log
 
                 object[tag::log::category] = logger_config<Category>::name;
                 object[tag::log::level] = log_level_as_string();
-                object[tag::log::facility] = "local0";
 
                 if (const auto api_num = get_request_api_number(); api_num) {
                     object[tag::request::api_number] = *api_num;
