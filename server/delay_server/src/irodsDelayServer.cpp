@@ -6,7 +6,9 @@
 #include "irods/initServer.hpp"
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_client_api_table.hpp"
+#include "irods/irods_configuration_keywords.hpp"
 #include "irods/irods_delay_queue.hpp"
+#include "irods/irods_get_full_path_for_config_file.hpp"
 #include "irods/irods_logger.hpp"
 #include "irods/irods_pack_table.hpp"
 #include "irods/irods_query.hpp"
@@ -76,6 +78,31 @@ namespace
         if (char hostname[HOST_NAME_MAX]{}; gethostname(hostname, sizeof(hostname)) == 0) {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
             logger::set_server_hostname(hostname);
+        }
+
+        // Attach the zone name to the logger.
+        // We can't use the server properties interface because it depends on the logger.
+        try {
+            // Find the server configuration file.
+            std::string config_path;
+
+            if (const auto err = irods::get_full_path_for_config_file("server_config.json", config_path); !err.ok()) {
+                return;
+            }
+
+            // Load the server configuration file in as JSON.
+            nlohmann::json config;
+
+            if (std::ifstream in{config_path}; in) {
+                in >> config;
+            }
+            else {
+                return;
+            }
+
+            logger::set_server_zone(config.at(irods::KW_CFG_ZONE_NAME).get<std::string>());
+        }
+        catch (...) {
         }
     } // init_logger
 

@@ -258,29 +258,14 @@ namespace
         return SUCCESS();
     } // deinit_shared_memory_for_plugins
 
-    void init_logger(bool _write_to_stdout = false, bool _enable_test_mode = false)
+    std::optional<nlohmann::json> load_server_config()
     {
-        ix::log::init(_write_to_stdout, _enable_test_mode);
-        irods::server_properties::instance().capture();
-        log_server::set_level(ix::log::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_SERVER));
-        ix::log::set_server_type("server");
-
-        if (char hostname[HOST_NAME_MAX]{}; gethostname(hostname, sizeof(hostname)) == 0) {
-            ix::log::set_server_hostname(hostname);
-        }
-    }
-
-    void remove_leftover_rulebase_pid_files() noexcept
-    {
-        namespace fs = boost::filesystem;
-
         try {
             // Find the server configuration file.
             std::string config_path;
 
             if (const auto err = irods::get_full_path_for_config_file("server_config.json", config_path); !err.ok()) {
-                log_server::error("Could not locate server_config.json. Cannot remove leftover rulebase files.");
-                return;
+                return std::nullopt;
             }
 
             // Load the server configuration file in as JSON.
@@ -290,12 +275,38 @@ namespace
                 in >> config;
             }
             else {
-                log_server::error("Could not open server configuration file. Cannot remove leftover rulebase files.");
-                return;
+                return std::nullopt;
             }
 
+            return config;
+        }
+        catch (...) {
+        }
+
+        return std::nullopt;
+    } // load_server_config
+
+    void
+    init_logger(const nlohmann::json& _server_config, bool _write_to_stdout = false, bool _enable_test_mode = false)
+    {
+        ix::log::init(_write_to_stdout, _enable_test_mode);
+        irods::server_properties::instance().capture();
+        log_server::set_level(ix::log::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_SERVER));
+        ix::log::set_server_type("server");
+        ix::log::set_server_zone(_server_config.at(irods::KW_CFG_ZONE_NAME).get<std::string>());
+
+        if (char hostname[HOST_NAME_MAX]{}; gethostname(hostname, sizeof(hostname)) == 0) {
+            ix::log::set_server_hostname(hostname);
+        }
+    }
+
+    void remove_leftover_rulebase_pid_files(const nlohmann::json& _server_config) noexcept
+    {
+        namespace fs = boost::filesystem;
+
+        try {
             // Find the NREP.
-            const auto& plugin_config = config.at(irods::KW_CFG_PLUGIN_CONFIGURATION);
+            const auto& plugin_config = _server_config.at(irods::KW_CFG_PLUGIN_CONFIGURATION);
             const auto& rule_engines = plugin_config.at(irods::KW_CFG_PLUGIN_TYPE_RULE_ENGINE);
 
             const auto end = std::end(rule_engines);
@@ -1065,7 +1076,12 @@ int main(int argc, char** argv)
         daemonize();
     }
 
-    init_logger(write_to_stdout, enable_test_mode);
+    auto server_config = load_server_config();
+    if (!server_config) {
+        return 1;
+    }
+
+    init_logger(*server_config, write_to_stdout, enable_test_mode);
 
     log_server::info("Initializing server ...");
 
@@ -1093,7 +1109,12 @@ int main(int argc, char** argv)
     ix::replica_access_table::init();
     irods::at_scope_exit deinit_replica_access_table{[] { ix::replica_access_table::deinit(); }};
 
-    remove_leftover_rulebase_pid_files();
+    remove_leftover_rulebase_pid_files(*server_config);
+
+    // Clear the temporary server config object used for initialization.
+    // After this point, everything will rely on the irods::server_properties interface for
+    // information defined in server_config.json.
+    server_config.reset();
 
     irods::server_properties::instance().capture();
 
@@ -2415,9 +2436,3 @@ int procSingleConnReq(agentProc_t* connReq)
 
     return status;
 }
-
-
-
-
-
-
