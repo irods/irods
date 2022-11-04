@@ -359,6 +359,22 @@ namespace irods::experimental::log
     /// \since 4.3.1
     auto get_server_name() noexcept -> std::string_view;
 
+    /// Sets the name of the zone for subsequent log messages.
+    ///
+    /// This function is not thread-safe.
+    ///
+    /// \param[in] _name A string representing the server zone.
+    ///
+    /// \since 4.3.1
+    auto set_server_zone(std::string _name) noexcept -> void;
+
+    /// Returns the name of the zone currently used by all loggers.
+    ///
+    /// This function is not thread-safe.
+    ///
+    /// \since 4.3.1
+    auto get_server_zone() noexcept -> std::string_view;
+
     /// Defines types and functions that are private to the implementation of the library.
     ///
     /// Users of this library MUST NOT use anything defined in this namespace.
@@ -684,6 +700,7 @@ namespace irods::experimental::log
                 object[tag::server::host] = get_server_hostname();
                 object[tag::server::pid] = getpid();
                 object[tag::server::timestamp] = utc_timestamp();
+                object[tag::server::zone] = get_server_zone();
 
                 return object.dump();
             } // to_json_string
