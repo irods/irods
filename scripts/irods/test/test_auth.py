@@ -24,7 +24,6 @@ from . import session
 
 
 # Requires existence of OS account 'irodsauthuser' with password ';=iamnotasecret'
-@unittest.skip('This test passes when run manually, but fails with automation.')
 class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
 
@@ -42,15 +41,14 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
 
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER or test.settings.USE_SSL, 'Topo from resource or SSL')
     def test_authentication_PAM_without_negotiation(self):
+        numbits = 1024 # normally 2048, but smaller size here for speed
         irods_config = IrodsConfig()
         server_key_path = os.path.join(irods_config.irods_directory, 'test', 'server.key')
-        server_csr_path = os.path.join(irods_config.irods_directory, 'test', 'server.csr')
         chain_pem_path = os.path.join(irods_config.irods_directory, 'test', 'chain.pem')
         dhparams_pem_path = os.path.join(irods_config.irods_directory, 'test', 'dhparams.pem')
-        lib.execute_command(['openssl', 'genrsa', '-out', server_key_path, '1024'])
-        lib.execute_command(['openssl', 'req', '-batch', '-new', '-key', server_key_path, '-out', server_csr_path])
+        lib.execute_command(['openssl', 'genrsa', '-out', server_key_path, str(numbits)])
         lib.execute_command(['openssl', 'req', '-batch', '-new', '-x509', '-key', server_key_path, '-out', chain_pem_path, '-days', '365'])
-        lib.execute_command(['openssl', 'dhparam', '-2', '-out', dhparams_pem_path, '1024'])  # normally 2048, but smaller size here for speed
+        lib.execute_command(['openssl', 'dhparam', '-2', '-out', dhparams_pem_path, str(numbits)])
 
         IrodsController().stop()
 
@@ -60,6 +58,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
                 'irods_ssl_certificate_chain_file': chain_pem_path,
                 'irods_ssl_certificate_key_file': server_key_path,
                 'irods_ssl_dh_params_file': dhparams_pem_path,
+                'irods_ssl_ca_certificate_file': chain_pem_path,
                 'irods_ssl_verify_server': 'none',
             }
             lib.update_json_file_from_dict(service_account_environment_file_path, server_update)
@@ -68,6 +67,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
                 'irods_ssl_certificate_chain_file': chain_pem_path,
                 'irods_ssl_certificate_key_file': server_key_path,
                 'irods_ssl_dh_params_file': dhparams_pem_path,
+                'irods_ssl_ca_certificate_file': chain_pem_path,
                 'irods_ssl_verify_server': 'none',
                 'irods_authentication_scheme': 'pam_password',
             }
@@ -90,7 +90,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
             self.auth_session.environment_file_contents = auth_session_env_backup
 
             # clean up
-            for filename in [chain_pem_path, server_key_path, dhparams_pem_path, server_csr_path]:
+            for filename in [chain_pem_path, server_key_path, dhparams_pem_path]:
                 os.unlink(filename)
 
         # server reboot to pick up new irodsEnv and server settings
@@ -99,85 +99,89 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER or test.settings.USE_SSL, 'Topo from resource or SSL')
     def test_authentication_PAM_with_server_params(self):
         irods_config = IrodsConfig()
+        numbits = 1024 # normally 2048, but smaller size here for speed
         server_key_path = os.path.join(irods_config.irods_directory, 'test', 'server.key')
-        server_csr_path = os.path.join(irods_config.irods_directory, 'test', 'server.csr')
         chain_pem_path = os.path.join(irods_config.irods_directory, 'test', 'chain.pem')
         dhparams_pem_path = os.path.join(irods_config.irods_directory, 'test', 'dhparams.pem')
-        lib.execute_command(['openssl', 'genrsa', '-out', server_key_path, '1024'])
-        lib.execute_command(['openssl', 'req', '-batch', '-new', '-key', server_key_path, '-out', server_csr_path])
+        lib.execute_command(['openssl', 'genrsa', '-out', server_key_path, str(numbits)])
         lib.execute_command(['openssl', 'req', '-batch', '-new', '-x509', '-key', server_key_path, '-out', chain_pem_path, '-days', '365'])
-        lib.execute_command(['openssl', 'dhparam', '-2', '-out', dhparams_pem_path, '1024'])  # normally 2048, but smaller size here for speed
+        lib.execute_command(['openssl', 'dhparam', '-2', '-out', dhparams_pem_path, str(numbits)])
 
         IrodsController().stop()
 
         service_account_environment_file_path = os.path.join(os.path.expanduser('~'), '.irods', 'irods_environment.json')
-        with lib.file_backed_up(service_account_environment_file_path):
-            irods_config = IrodsConfig()
-            server_update = {
-                'irods_ssl_certificate_chain_file': chain_pem_path,
-                'irods_ssl_certificate_key_file': server_key_path,
-                'irods_ssl_dh_params_file': dhparams_pem_path,
-                'irods_ssl_verify_server': 'none',
-            }
-            lib.update_json_file_from_dict(service_account_environment_file_path, server_update)
+        auth_session_env_backup = copy.deepcopy(self.auth_session.environment_file_contents)
+        try:
+            with lib.file_backed_up(service_account_environment_file_path):
+                irods_config = IrodsConfig()
+                server_update = {
+                    'irods_client_server_policy': 'CS_NEG_REQUIRE',
+                    'irods_ssl_certificate_chain_file': chain_pem_path,
+                    'irods_ssl_certificate_key_file': server_key_path,
+                    'irods_ssl_dh_params_file': dhparams_pem_path,
+                    'irods_ssl_ca_certificate_file': chain_pem_path,
+                    'irods_ssl_verify_server': 'none',
+                }
+                lib.update_json_file_from_dict(service_account_environment_file_path, server_update)
 
-            client_update = {
-                'irods_ssl_certificate_chain_file': chain_pem_path,
-                'irods_ssl_certificate_key_file': server_key_path,
-                'irods_ssl_dh_params_file': dhparams_pem_path,
-                'irods_ssl_verify_server': 'none',
-                'irods_authentication_scheme': 'pam_password',
-                'irods_client_server_policy': 'CS_NEG_REQUIRE',
-            }
+                client_update = {
+                    'irods_ssl_certificate_chain_file': chain_pem_path,
+                    'irods_ssl_certificate_key_file': server_key_path,
+                    'irods_ssl_dh_params_file': dhparams_pem_path,
+                    'irods_ssl_ca_certificate_file': chain_pem_path,
+                    'irods_ssl_verify_server': 'none',
+                    'irods_authentication_scheme': 'pam_password',
+                    'irods_client_server_policy': 'CS_NEG_REQUIRE',
+                }
 
-            auth_session_env_backup = copy.deepcopy(self.auth_session.environment_file_contents)
-            self.auth_session.environment_file_contents.update(client_update)
+                self.auth_session.environment_file_contents.update(client_update)
 
-            with lib.file_backed_up(irods_config.server_config_path):
-                server_config_update = {
-                    'authentication' : {
-                        'pam_password' : {
-                            'password_length': 20,
-                            'no_extend': False,
-                            'password_min_time': 121,
-                            'password_max_time': 1209600,
+                with lib.file_backed_up(irods_config.server_config_path):
+                    server_config_update = {
+                        'authentication' : {
+                            'pam_password' : {
+                                'password_length': 20,
+                                'no_extend': False,
+                                'password_min_time': 121,
+                                'password_max_time': 1209600
                             }
                         }
                     }
-                lib.update_json_file_from_dict(irods_config.server_config_path, server_config_update)
+                    lib.update_json_file_from_dict(irods_config.server_config_path, server_config_update)
 
-                pep_map = {
-                    'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
-                        acPreConnect(*OUT) {
-                            *OUT = 'CS_NEG_REQUIRE';
-                        }
-                    '''),
-                    'irods_rule_engine_plugin-python': textwrap.dedent('''
-                        def acPreConnect(rule_args, callback, rei):
-                            rule_args[0] = 'CS_NEG_REQUIRE'
-                    ''')
-                }
+                    pep_map = {
+                        'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                            acPreConnect(*OUT) {
+                                *OUT = 'CS_NEG_REQUIRE';
+                            }
+                        '''),
+                        'irods_rule_engine_plugin-python': textwrap.dedent('''
+                            def acPreConnect(rule_args, callback, rei):
+                                rule_args[0] = 'CS_NEG_REQUIRE'
+                        ''')
+                    }
 
-                with temporary_core_file() as core:
-                    time.sleep(1)  # remove once file hash fix is committed #2279
-                    core.add_rule(pep_map[self.plugin_name])
-                    time.sleep(1)  # remove once file hash fix is committed #2279
+                    with temporary_core_file() as core:
+                        time.sleep(1)  # remove once file hash fix is committed #2279
+                        core.add_rule(pep_map[self.plugin_name])
+                        time.sleep(1)  # remove once file hash fix is committed #2279
 
-                    IrodsController().start()
+                        IrodsController().start()
 
-                    # the test
-                    print(f'running iinit for PAM user [{self.auth_session.username}] [{self.auth_session.password}]')
-                    self.auth_session.assert_icommand('iinit', 'STDOUT_SINGLELINE',
-                                                      input=f'{self.auth_session.password}\n')
-                    self.auth_session.assert_icommand("icd")
-                    self.auth_session.assert_icommand("ils -L", 'STDOUT_SINGLELINE', "home")
+                        # the test
+                        print(f'running iinit for PAM user [{self.auth_session.username}] [{self.auth_session.password}]')
+                        self.auth_session.assert_icommand('iinit', 'STDOUT_SINGLELINE',
+                                                          input=f'{self.auth_session.password}\n')
+                        self.auth_session.assert_icommand("icd")
+                        self.auth_session.assert_icommand("ils -L", 'STDOUT_SINGLELINE', "home")
+        finally:
+            self.auth_session.environment_file_contents = auth_session_env_backup
+            irods_config = IrodsConfig()
+            for filename in [chain_pem_path, server_key_path, dhparams_pem_path]:
+                if os.path.exists(filename):
+                    os.unlink(filename)
 
-        self.auth_session.environment_file_contents = auth_session_env_backup
-        irods_config = IrodsConfig()
-        for filename in [chain_pem_path, server_key_path, dhparams_pem_path, server_csr_path]:
-            os.unlink(filename)
-
-        IrodsController().restart()
+            IrodsController().restart()
 
     def test_iinit_repaving_2646(self):
         l = logging.getLogger(__name__)
