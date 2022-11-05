@@ -269,7 +269,7 @@ extern "C" auto plugin_factory(
     [[maybe_unused]] const std::string& _context) -> irods::api_entry*
 {
 #ifdef RODS_SERVER
-    irods::client_api_allowlist::instance().add(SWITCH_USER_APN);
+    irods::client_api_allowlist::add(SWITCH_USER_APN);
 #endif // RODS_SERVER
 
     // clang-format off
