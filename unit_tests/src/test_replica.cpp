@@ -71,7 +71,7 @@ TEST_CASE("replica", "[replica]")
     {
         // create resource.
         irods::experimental::client_connection conn;
-        REQUIRE(unit_test_utils::add_ufs_resource(conn, resc_name, "unit_test_vault"));
+        REQUIRE_NOTHROW(unit_test_utils::add_ufs_resource(conn, resc_name, "unit_test_vault"));
     }
 
     {
