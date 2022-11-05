@@ -424,9 +424,9 @@ int chkApiPermission(rsComm_t* rsComm, int apiInx)
         return SYS_NO_API_PRIV;
     }
 
-    auto& allowlist = irods::client_api_allowlist::instance();
+    namespace allowlist = irods::client_api_allowlist;
 
-    if (allowlist.enforce(*rsComm) && !allowlist.contains(api_entry->apiNumber)) {
+    if (allowlist::enforce(*rsComm) && !allowlist::contains(api_entry->apiNumber)) {
         return SYS_NO_API_PRIV;
     }
 
