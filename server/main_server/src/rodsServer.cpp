@@ -1,5 +1,6 @@
 #include "irods/rodsServer.hpp"
 
+#include "irods/client_api_allowlist.hpp"
 #include "irods/client_connection.hpp"
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_buffer_encryption.hpp"
@@ -1072,6 +1073,8 @@ int main(int argc, char** argv)
     if (pid_file_fd == -1) {
         return 1;
     }
+
+    irods::client_api_allowlist::init();
 
     irods::at_scope_exit deinit_server_state{[] { irods::server_state::deinit(); }};
     irods::server_state::init();
