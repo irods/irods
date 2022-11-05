@@ -215,9 +215,7 @@ TEST_CASE("stream factory utilities")
         }};
 
         // Verify that the resource exists.
-        auto [ec, exists] = adm::client::resource_exists(conn, resc_name);
-        REQUIRE(!ec);
-        REQUIRE(exists);
+        REQUIRE(adm::client::resource_exists(conn, resc_name));
 
         // Create the sandbox for testing.
         rodsEnv env;
