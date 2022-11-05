@@ -119,7 +119,7 @@ extern "C" {
     irods::api_entry* plugin_factory(const std::string&, const std::string&)
     {
 #ifdef RODS_SERVER
-        irods::client_api_allowlist::instance().add(AUTHENTICATION_APN);
+        irods::client_api_allowlist::add(AUTHENTICATION_APN);
 #endif
 
         // =-=-=-=-=-=-=-

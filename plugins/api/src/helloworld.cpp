@@ -126,7 +126,7 @@ extern "C" {
                                      const std::string&)     // _context
     {
 #ifdef RODS_SERVER
-        irods::client_api_allowlist::instance().add(HELLO_WORLD_APN);
+        irods::client_api_allowlist::add(HELLO_WORLD_APN);
 #endif // RODS_SERVER
 
         // =-=-=-=-=-=-=-

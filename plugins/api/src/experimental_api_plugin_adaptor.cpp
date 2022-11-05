@@ -292,9 +292,9 @@ namespace {
 extern "C" {
     irods::api_entry* plugin_factory(const std::string&, const std::string&)
     {
-        #ifdef RODS_SERVER
-        irods::client_api_allowlist::instance().add(ADAPTER_APN);
-        #endif
+#ifdef RODS_SERVER
+        irods::client_api_allowlist::add(ADAPTER_APN);
+#endif
 
         // =-=-=-=-=-=-=-
         // create a api def object
