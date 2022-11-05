@@ -31,6 +31,8 @@
 #include "irods/dstream.hpp"
 #include "irods/transport/default_transport.hpp"
 
+#include "unit_test_utils.hpp"
+
 #include <boost/filesystem.hpp>
 #include <fmt/format.h>
 
@@ -48,14 +50,6 @@
 #include <array>
 #include <string>
 #include <string_view>
-
-auto get_hostname() noexcept -> std::string;
-
-auto create_resource_vault(const std::string_view _vault_name) -> boost::filesystem::path;
-
-auto add_ufs_resource(const std::string_view _resc_name, const std::string_view _vault_name) -> void;
-
-auto replicate_data_object(const std::string_view _path, const std::string_view _resc_name) -> void;
 
 TEST_CASE("filesystem")
 {
@@ -193,16 +187,19 @@ TEST_CASE("filesystem")
 
         const std::string_view ufs_resc = "unit_test_ufs";
 
-        add_ufs_resource(ufs_resc, "irods_unit_testing_vault");
+        REQUIRE_NOTHROW(unit_test_utils::add_ufs_resource(conn, ufs_resc, "irods_unit_testing_vault"));
 
         namespace adm = irods::experimental::administration;
 
         irods::at_scope_exit remove_resources{[&ufs_resc] {
             irods::experimental::client_connection conn;
-            adm::client::remove_resource(conn, ufs_resc);
+            REQUIRE_NOTHROW(adm::client::remove_resource(conn, ufs_resc));
         }};
 
-        replicate_data_object(p.c_str(), ufs_resc);
+        {
+            irods::experimental::client_connection conn;
+            REQUIRE(unit_test_utils::replicate_data_object(conn, p.c_str(), ufs_resc));
+        }
 
         // Sleep for a few seconds so that the mtime is guaranteed to be different
         // for each replica.
@@ -290,16 +287,19 @@ TEST_CASE("filesystem")
 
         const std::string_view ufs_resc = "unit_test_ufs";
 
-        add_ufs_resource(ufs_resc, "irods_unit_testing_vault");
+        REQUIRE_NOTHROW(unit_test_utils::add_ufs_resource(conn, ufs_resc, "irods_unit_testing_vault"));
 
         namespace adm = irods::experimental::administration;
 
         irods::at_scope_exit remove_resources{[&ufs_resc] {
             irods::experimental::client_connection conn;
-            adm::client::remove_resource(conn, ufs_resc);
+            REQUIRE_NOTHROW(adm::client::remove_resource(conn, ufs_resc));
         }};
 
-        replicate_data_object(p.c_str(), ufs_resc);
+        {
+            irods::experimental::client_connection conn;
+            REQUIRE(unit_test_utils::replicate_data_object(conn, p.c_str(), ufs_resc));
+        }
 
         using duration_type = fs::object_time_type::duration;
 
@@ -759,60 +759,5 @@ TEST_CASE("filesystem")
         // Show that normal collections are not considered to be special collections.
         REQUIRE_FALSE(fs::client::is_special_collection(conn, sandbox));
     }
-}
-
-auto get_hostname() noexcept -> std::string
-{
-    char hostname[250];
-    gethostname(hostname, sizeof(hostname));
-    return hostname;
-}
-
-auto create_resource_vault(const std::string_view _vault_name) -> boost::filesystem::path
-{
-    namespace fs = boost::filesystem;
-
-    const auto suffix = "_" + std::to_string(std::chrono::system_clock::now().time_since_epoch().count());
-    const auto vault = boost::filesystem::temp_directory_path() / (_vault_name.data() + suffix).data();
-
-    // Create the vault for the resource and allow the iRODS server to
-    // read and write to the vault.
-
-    if (!exists(vault)) {
-        REQUIRE(fs::create_directory(vault));
-    }
-
-    fs::permissions(vault, fs::perms::add_perms | fs::perms::others_read | fs::perms::others_write);
-
-    return vault;
-}
-
-auto add_ufs_resource(const std::string_view _resc_name, const std::string_view _vault_name) -> void
-{
-    namespace adm = irods::experimental::administration;
-
-    const auto host_name = get_hostname();
-    const auto vault_path = create_resource_vault(_vault_name);
-
-    // The new resource's information.
-    adm::resource_registration_info ufs_info;
-    ufs_info.resource_name = _resc_name.data();
-    ufs_info.resource_type = adm::resource_type::unixfilesystem.data();
-    ufs_info.host_name = host_name;
-    ufs_info.vault_path = vault_path.c_str();
-
-    irods::experimental::client_connection conn;
-    REQUIRE(adm::client::add_resource(conn, ufs_info).value() == 0);
-}
-
-auto replicate_data_object(const std::string_view _path, const std::string_view _resc_name) -> void
-{
-    dataObjInp_t repl_input{};
-    irods::at_scope_exit free_memory{[&repl_input] { clearKeyVal(&repl_input.condInput); }};
-    std::strncpy(repl_input.objPath, _path.data(), _path.size());
-    addKeyVal(&repl_input.condInput, DEST_RESC_NAME_KW, _resc_name.data());
-
-    irods::experimental::client_connection conn;
-    REQUIRE(rcDataObjRepl(static_cast<rcComm_t*>(conn), &repl_input) == 0);
 }
 

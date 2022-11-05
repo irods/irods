@@ -53,11 +53,11 @@ namespace
         irods::experimental::client_connection conn;
         RcComm& comm = static_cast<RcComm&>(conn);
 
-        if (const auto [ec, exists] = adm::client::resource_exists(comm, _name); exists) {
-            REQUIRE(adm::client::remove_resource(comm, _name));
+        if (adm::client::resource_exists(comm, _name)) {
+            REQUIRE_NOTHROW(adm::client::remove_resource(comm, _name));
         }
 
-        REQUIRE(unit_test_utils::add_ufs_resource(comm, _name, "vault_for_"s + _name.data()));
+        REQUIRE_NOTHROW(unit_test_utils::add_ufs_resource(comm, _name, "vault_for_"s + _name.data()));
     } // mkresc
 } // anonymous namespace
 

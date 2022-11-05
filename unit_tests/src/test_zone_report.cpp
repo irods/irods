@@ -21,7 +21,7 @@ TEST_CASE("json zone report")
 
     adm::resource_registration_info ufs_info;
     ufs_info.resource_name = "unit_test_ufs0";
-    ufs_info.resource_type = adm::resource_type::unixfilesystem.data();
+    ufs_info.resource_type = adm::resource_type::unixfilesystem;
     ufs_info.host_name = host_name;
     ufs_info.vault_path = "/tmp";
 
@@ -30,11 +30,10 @@ TEST_CASE("json zone report")
     auto conn_pool = irods::make_connection_pool();
     auto conn = conn_pool->get_connection();
 
-    irods::at_scope_exit remove_resources{[&conn, &ufs_info] {
-        adm::client::remove_resource(conn, ufs_info.resource_name);
-    }};
+    irods::at_scope_exit remove_resources{
+        [&conn, &ufs_info] { CHECK_NOTHROW(adm::client::remove_resource(conn, ufs_info.resource_name)); }};
 
-    REQUIRE(adm::client::add_resource(conn, ufs_info).value() == 0);
+    REQUIRE_NOTHROW(adm::client::add_resource(conn, ufs_info));
 
     // see issue #5170
     SECTION("verify resource id from json serialization")
@@ -43,8 +42,8 @@ TEST_CASE("json zone report")
         auto conn_pool = irods::make_connection_pool();
         auto conn = conn_pool->get_connection();
 
-        auto [ec, info] = adm::client::resource_info(conn, ufs_info.resource_name);
-        REQUIRE(ec.value() == 0);
+        auto info = adm::client::resource_info(conn, ufs_info.resource_name);
+        REQUIRE(info);
         REQUIRE(info->type() == ufs_info.resource_type);
 
         bytesBuf_t *jbuf{};
