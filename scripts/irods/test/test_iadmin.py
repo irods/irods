@@ -2188,7 +2188,6 @@ class test_moduser_user(unittest.TestCase):
         self.admin.assert_icommand(['iadmin', 'moduser', self.username, 'type', 'rodsuser'])
         self.assertEqual('rodsuser', lib.get_user_type(self.admin, self.username))
 
-
     def test_moduser_type_rodsgroup(self):
         """Test modifying the user's type to a group (not allowed)."""
         self.assertEqual('rodsuser', lib.get_user_type(self.admin, self.username))
@@ -2196,21 +2195,30 @@ class test_moduser_user(unittest.TestCase):
                                    'STDERR', 'SYS_NOT_ALLOWED')
         self.assertEqual('rodsuser', lib.get_user_type(self.admin, self.username))
 
-    def test_downgrade_of_service_account_user_is_not_allowed__6127(self):
-        self.assertEqual('rodsadmin', lib.get_user_type(self.admin, 'rods'))
-        desired_error_msg = "Cannot downgrade another rodsadmin"
-        self.admin.assert_icommand(['iadmin', 'moduser', 'rods', 'type', 'rodsuser'], 'STDERR_SINGLELINE', desired_error_msg)
-        self.assertEqual('rodsadmin', lib.get_user_type(self.admin, 'rods'))
-
-        self.admin.assert_icommand(['iadmin', 'moduser', 'rods', 'type', 'groupadmin', 'STDERR_SINGLELINE', desired_error_msg])
-        self.assertEqual('rodsadmin', lib.get_user_type(self.admin, 'rods'))
-
     def test_moduser_type_invalid_type(self):
         """Test modifying the user's type to something that is not supported."""
         self.assertEqual('rodsuser', lib.get_user_type(self.admin, self.username))
         self.admin.assert_icommand(['iadmin', 'moduser', self.username, 'type', 'invalid_user_type'],
                                    'STDERR_SINGLELINE', 'CAT_INVALID_USER_TYPE')
         self.assertEqual('rodsuser', lib.get_user_type(self.admin, self.username))
+
+    def test_downgrade_of_service_account_user_is_not_allowed__issue_6127(self):
+        """Test downgrading of service account user's type from rodsadmin to other supported types is not allowed."""
+        # rodsadmin -> rodsuser
+        self.assertEqual('rodsadmin', lib.get_user_type(self.admin, 'rods'))
+        error_msg = f'Cannot downgrade another rodsadmin [rods] running another server [{lib.get_hostname()}] in this zone.'
+        out, err, ec = self.admin.run_icommand(['iadmin', 'moduser', 'rods', 'type', 'rodsuser'])
+        self.assertNotEqual(ec, 0)
+        self.assertIn(error_msg, out)
+        self.assertIn('SYS_NOT_ALLOWED', err)
+        self.assertEqual('rodsadmin', lib.get_user_type(self.admin, 'rods'))
+
+        # rodsadmin -> groupadmin
+        out, err, ec = self.admin.run_icommand(['iadmin', 'moduser', 'rods', 'type', 'groupadmin'])
+        self.assertNotEqual(ec, 0)
+        self.assertIn(error_msg, out)
+        self.assertIn('SYS_NOT_ALLOWED', err)
+        self.assertEqual('rodsadmin', lib.get_user_type(self.admin, 'rods'))
 
     def test_moduser_zone(self):
         """Test modifying the user's zone (not supported)."""

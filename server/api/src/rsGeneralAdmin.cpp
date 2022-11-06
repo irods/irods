@@ -50,59 +50,69 @@ namespace
         return std::find_if(b, e, [](unsigned char _ch) { return ::isspace(_ch); }) != e;
     } // contains_whitespace
 
-    auto throw_if_downgrading_irods_service_account_rodsadmin(RsComm& rsComm,
-                                                              const std::string_view _option,
-                                                              const std::string_view _user_name,
-                                                              const std::string_view _new_user_type) -> void
+    auto throw_if_downgrading_irods_service_account_rodsadmin(
+        RsComm& rsComm,
+        const std::string_view _option, // NOLINT(bugprone-easily-swappable-parameters)
+        const std::string_view _user_name,
+        const std::string_view _new_user_type) -> void
     {
         if ("rodsadmin" == _new_user_type || "type" != _option) {
             return;
         }
 
         BytesBuf* bbuf = nullptr;
-        irods::at_scope_exit free_buf{[&bbuf] { std::free(bbuf); }};
+        irods::at_scope_exit free_buf{[&bbuf] { freeBBuf(bbuf); }};
 
         if (const auto ec = rsZoneReport(&rsComm, &bbuf); ec < 0) {
-            const auto msg =
-                fmt::format("[{}:{}] - Failed to gather rodsadmin users managing a server in the local zone.",
-                            __func__,
-                            __LINE__);
+            const auto msg = fmt::format(
+                "[{}:{}] - Failed to gather rodsadmin users managing a server in the local zone.", __func__, __LINE__);
             addRErrorMsg(&rsComm.rError, ec, msg.c_str());
-            THROW(ec, msg);
+            THROW(ec, msg); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
         }
 
         try {
-            const auto buf = static_cast<char*>(bbuf->buf);
-            const nlohmann::json& zone_report = nlohmann::json::parse(buf, buf + bbuf->len);
+            const auto* buf = static_cast<char*>(bbuf->buf);
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            const nlohmann::json zone_report = nlohmann::json::parse(buf, buf + bbuf->len);
             const auto& zones = zone_report.at("zones");
 
             const auto* local_zone_name = getLocalZoneName();
 
+            const auto throw_if_user_is_found = [&rsComm, _user_name](const nlohmann::json& _server) {
+                const auto& server_admin =
+                    _server.at("service_account_environment").at("irods_user_name").get_ref<const std::string&>();
+                if (server_admin == _user_name) {
+                    const auto& host_of_target_user =
+                        _server.at("host_system_information").at("hostname").get_ref<const std::string&>();
+                    const auto msg = fmt::format(
+                        "Cannot downgrade another rodsadmin [{}] running another server [{}] in this zone.",
+                        _user_name,
+                        host_of_target_user);
+                    addRErrorMsg(&rsComm.rError, SYS_NOT_ALLOWED, msg.c_str());
+                    THROW(SYS_NOT_ALLOWED, msg); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+                }
+            };
+
             for (const auto& zone : zones) {
                 const auto& icat_server_env = zone.at("icat_server").at("service_account_environment");
 
+                // Administrators are not allowed to invoke administrative operations in a remote zone.
+                // Therefore, skip all servers that do not belong to the local zone.
                 if (icat_server_env.at("irods_zone_name").get_ref<const std::string&>() != local_zone_name) {
                     continue;
                 }
 
+                // Handle the local server first.
+                throw_if_user_is_found(zone.at("icat_server"));
+
+                // Handle other servers.
                 for (const auto& server : zone.at("servers")) {
-                    const auto& server_admin =
-                        server.at("service_account_environment").at("irods_user_name").get_ref<const std::string&>();
-                    if (server_admin == _user_name) {
-                        const auto& host_of_target_user =
-                            server.at("host_system_information").at("hostname").get_ref<const std::string&>();
-                        const auto msg = fmt::format(
-                            "Cannot downgrade another rodsadmin [{}] running another server [{}] in this zone.",
-                            _user_name,
-                            host_of_target_user);
-                        addRErrorMsg(&rsComm.rError, SYS_NOT_ALLOWED, msg.c_str());
-                        THROW(SYS_NOT_ALLOWED, msg);
-                    }
+                    throw_if_user_is_found(server);
                 }
             }
         }
         catch (const nlohmann::json::exception& e) {
-            THROW(SYS_LIBRARY_ERROR, e.what());
+            THROW(SYS_LIBRARY_ERROR, e.what()); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
         }
     } // throw_if_downgrading_irods_service_account_rodsadmin
 
