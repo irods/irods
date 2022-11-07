@@ -630,7 +630,7 @@ OUTPUT ruleExecOut
 
                 self.admin.assert_icommand(['irule', '-r', self.plugin_name + '-instance', '-F', rule_file])
 
-                # msiExecCmd should not execute any policy. Since the rule calls msiDataObjClose only once, there should be only
+                # msiExecCmd should not execute any policy. Since the rule calls msiDataObjClose only once, there should be only one
                 # AVU associated with the data object. If this were not the case, there would be two: once for the msiDataObjClose
                 # call, and once for the close resource operation invoked by the execCmd API.
                 expected_count = 1
