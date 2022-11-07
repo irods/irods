@@ -1761,7 +1761,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         sprintf(delayStr, "%lld%c %s", double_delay, time_unit, directive);
         return 3;
     }
-    if (const char* directive{"REPEAT UNTIL SUCCESS OR UNTIL "}; (alt_delay_index = strstr(delay_index, directive)) != NULL) {
+    if (const char* directive{"REPEAT UNTIL SUCCESS OR UNTIL "}; (alt_delay_index = strstr(delay_index, directive)) != nullptr) {
         alt_delay_index = alt_delay_index + strlen(directive);
         while (isspace(*alt_delay_index)) {
             alt_delay_index++;
@@ -1776,7 +1776,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             return 1;
         }
     }
-    if (const char* directive{"DOUBLE UNTIL SUCCESS OR UNTIL "}; (alt_delay_index = strstr(delay_index, directive)) != NULL) {
+    if (const char* directive{"DOUBLE UNTIL SUCCESS OR UNTIL "}; (alt_delay_index = strstr(delay_index, directive)) != nullptr) {
         alt_delay_index = alt_delay_index + strlen(directive);
         while (isspace(*alt_delay_index)) {
             alt_delay_index++;
@@ -1792,7 +1792,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             return 4;
         }
     }
-    if (const char* directive{"REPEAT UNTIL SUCCESS OR "}; (alt_delay_index = strstr(delay_index, directive)) != NULL) {
+    if (const char* directive{"REPEAT UNTIL SUCCESS OR "}; (alt_delay_index = strstr(delay_index, directive)) != nullptr) {
         alt_delay_index = alt_delay_index + strlen(directive);
         while (isspace(*alt_delay_index)) {
             alt_delay_index++;
@@ -1806,7 +1806,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         delay_counter = atoi(alt_delay_buffer);
         delay_counter--;
         sprintf(nextTime, "%lld", next_delay.count());
-        if (strstr(alt_delay_index + 1, "ORIGINAL TIMES") != NULL) {
+        if (strstr(alt_delay_index + 1, "ORIGINAL TIMES") != nullptr) {
             sprintf(delayStr, "%lld%c %s%i %s", delay_duration.count(), time_unit, directive, delay_counter, alt_delay_index + 1);
         }
         else {
@@ -1819,7 +1819,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             return 4;
         }
     }
-    if (const char* directive{"DOUBLE UNTIL SUCCESS OR "}; (alt_delay_index = strstr(delay_index, directive)) != NULL) {
+    if (const char* directive{"DOUBLE UNTIL SUCCESS OR "}; (alt_delay_index = strstr(delay_index, directive)) != nullptr) {
         alt_delay_index = alt_delay_index + strlen(directive);
         while (isspace(*alt_delay_index)) {
             alt_delay_index++;
@@ -1833,7 +1833,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         delay_counter = atoi(alt_delay_buffer);
         delay_counter--;
         sprintf(nextTime, "%lld", next_delay.count());
-        if (strstr(alt_delay_index + 1, "ORIGINAL TIMES") != NULL) {
+        if (strstr(alt_delay_index + 1, "ORIGINAL TIMES") != nullptr) {
             sprintf(delayStr, "%lld%c %s%i %s", double_delay, time_unit, directive, delay_counter, alt_delay_index + 1);
         }
         else {
@@ -1846,7 +1846,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             return 4;
         }
     }
-    if (const char* directive{"DOUBLE UNTIL SUCCESS UPTO "}; (alt_delay_index = strstr(delay_index, directive)) != NULL)
+    if (const char* directive{"DOUBLE UNTIL SUCCESS UPTO "}; (alt_delay_index = strstr(delay_index, directive)) != nullptr)
     {
         alt_delay_index = alt_delay_index + strlen(directive);
         while (isspace(*alt_delay_index)) {
@@ -1864,16 +1864,16 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         }
         return 4;
     }
-    if (strstr(delay_index, "REPEAT UNTIL SUCCESS") != NULL) {
+    if (strstr(delay_index, "REPEAT UNTIL SUCCESS") != nullptr) {
         sprintf(nextTime, "%lld", next_delay.count());
         return 1;
     }
-    if (const char* directive{"DOUBLE UNTIL SUCCESS"}; strstr(delay_index, directive) != NULL) {
+    if (const char* directive{"DOUBLE UNTIL SUCCESS"}; strstr(delay_index, directive) != nullptr) {
         sprintf(nextTime, "%lld", next_delay.count());
         sprintf(delayStr, "%lld%c %s", double_delay, time_unit, directive);
         return 4;
     }
-    if (const char* directive{"REPEAT UNTIL "}; (alt_delay_index = strstr(delay_index, directive)) != NULL) {
+    if (const char* directive{"REPEAT UNTIL "}; (alt_delay_index = strstr(delay_index, directive)) != nullptr) {
         alt_delay_index = alt_delay_index + strlen(directive);
         while (isspace(*alt_delay_index)) {
             alt_delay_index++;
@@ -1888,7 +1888,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             return 0;
         }
     }
-    if (const char* directive{"DOUBLE UNTIL "}; (alt_delay_index = strstr(delay_index, directive)) != NULL) {
+    if (const char* directive{"DOUBLE UNTIL "}; (alt_delay_index = strstr(delay_index, directive)) != nullptr) {
         alt_delay_index = alt_delay_index + strlen(directive);
         while (isspace(*alt_delay_index)) {
             alt_delay_index++;
@@ -1904,7 +1904,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             return 3;
         }
     }
-    if (const char* directive{"REPEAT "}; (alt_delay_index = strstr(delay_index, directive)) != NULL) {
+    if (const char* directive{"REPEAT "}; (alt_delay_index = strstr(delay_index, directive)) != nullptr) {
         alt_delay_index = alt_delay_index + strlen(directive);
         while (isspace(*alt_delay_index)) {
             alt_delay_index++;
@@ -1919,7 +1919,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         delay_counter--;
 
         sprintf(nextTime, "%lld", next_delay.count());
-        if (strstr(alt_delay_index + 1, "ORIGINAL TIMES") != NULL) {
+        if (strstr(alt_delay_index + 1, "ORIGINAL TIMES") != nullptr) {
             sprintf(delayStr, "%lld%c %s%i %s", delay_duration.count(), time_unit, directive, delay_counter, alt_delay_index + 1);
         }
         else {
@@ -1932,7 +1932,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             return 3;
         }
     }
-    if (const char* directive{"DOUBLE "}; (alt_delay_index = strstr(delay_index, directive)) != NULL) {
+    if (const char* directive{"DOUBLE "}; (alt_delay_index = strstr(delay_index, directive)) != nullptr) {
         alt_delay_index = alt_delay_index + strlen(directive);
         while (isspace(*alt_delay_index)) {
             alt_delay_index++;
@@ -1946,7 +1946,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         delay_counter = atoi(alt_delay_buffer);
         delay_counter--;
         sprintf(nextTime, "%lld", next_delay.count());
-        if (strstr(alt_delay_index + 1, "ORIGINAL TIMES") != NULL) {
+        if (strstr(alt_delay_index + 1, "ORIGINAL TIMES") != nullptr) {
             sprintf(delayStr, "%lld%c %s%i %s", double_delay, time_unit, directive, delay_counter, alt_delay_index + 1);
         }
         else {
@@ -2028,7 +2028,7 @@ convertDateFormat( char * s, char * currTime ) {
     if (int errorCode{checkDateFormat(timeBuffer)}; errorCode != 0) {
         return errorCode;
     }
-    if (!isInteger(s) && strchr(s, '-') == NULL && strchr(s, ':') == NULL) {
+    if (!isInteger(s) && strchr(s, '-') == nullptr && strchr(s, ':') == nullptr) {
         rodsLong_t it{atoll(timeBuffer) + atoll(currTime)};
         sprintf(s, "%lld", it);
     }
