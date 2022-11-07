@@ -1760,11 +1760,11 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
     while (std::isspace(static_cast<unsigned char>(*delay_index))) {
         delay_index++;
     }
-    if (std::strlen(delay_index) == 0 || !std::strcmp(delay_index, "REPEAT FOR EVER")) {
+    if (std::strlen(delay_index) == 0 || std::strcmp(delay_index, "REPEAT FOR EVER") == 0) {
         std::sprintf(nextTime, "%lld", next_delay.count());
         return 0;
     }
-    if (const char* directive{"DOUBLE FOR EVER"}; !std::strcmp(delay_index, directive)) {
+    if (const char* directive{"DOUBLE FOR EVER"}; std::strcmp(delay_index, directive) == 0) {
         std::sprintf(nextTime, "%lld", next_delay.count());
         std::sprintf(delayStr, "%lld%c %s", double_delay, time_unit, directive);
         return 3;
