@@ -1709,7 +1709,7 @@ updateOffsetTimeStr( char *timeStr, int offset ) {
 int
 getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
     char* delay_index{delayStr};
-    while (std::isdigit(*delay_index)) {
+    while (std::isdigit(static_cast<unsigned char>(*delay_index))) {
         delay_index++;
     }
 
@@ -1749,7 +1749,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
     char alt_delay_buffer[200]{};
     int delay_counter{};
 
-    while (std::isspace(*delay_index)) {
+    while (std::isspace(static_cast<unsigned char>(*delay_index))) {
         delay_index++;
     }
     if (std::strlen(delay_index) == 0 || !std::strcmp(delay_index, "REPEAT FOR EVER")) {
@@ -1763,7 +1763,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
     }
     if (const char* directive{"REPEAT UNTIL SUCCESS OR UNTIL "}; (alt_delay_index = std::strstr(delay_index, directive)) != nullptr) {
         alt_delay_index = alt_delay_index + std::strlen(directive);
-        while (std::isspace(*alt_delay_index)) {
+        while (std::isspace(static_cast<unsigned char>(*alt_delay_index))) {
             alt_delay_index++;
         }
         std::snprintf(alt_delay_buffer, sizeof(alt_delay_buffer), "%s", alt_delay_index);
@@ -1778,7 +1778,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
     }
     if (const char* directive{"DOUBLE UNTIL SUCCESS OR UNTIL "}; (alt_delay_index = std::strstr(delay_index, directive)) != nullptr) {
         alt_delay_index = alt_delay_index + std::strlen(directive);
-        while (std::isspace(*alt_delay_index)) {
+        while (std::isspace(static_cast<unsigned char>(*alt_delay_index))) {
             alt_delay_index++;
         }
         std::snprintf(alt_delay_buffer, sizeof(alt_delay_buffer), "%s", alt_delay_index);
@@ -1794,12 +1794,12 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
     }
     if (const char* directive{"REPEAT UNTIL SUCCESS OR "}; (alt_delay_index = std::strstr(delay_index, directive)) != nullptr) {
         alt_delay_index = alt_delay_index + std::strlen(directive);
-        while (std::isspace(*alt_delay_index)) {
+        while (std::isspace(static_cast<unsigned char>(*alt_delay_index))) {
             alt_delay_index++;
         }
         std::snprintf(alt_delay_buffer, sizeof(alt_delay_buffer), "%s", alt_delay_index);
         alt_delay_index = alt_delay_buffer;
-        while (std::isdigit(*alt_delay_index)) {
+        while (std::isdigit(static_cast<unsigned char>(*alt_delay_index))) {
             alt_delay_index++;
         }
         *alt_delay_index = '\0';
@@ -1821,12 +1821,12 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
     }
     if (const char* directive{"DOUBLE UNTIL SUCCESS OR "}; (alt_delay_index = std::strstr(delay_index, directive)) != nullptr) {
         alt_delay_index = alt_delay_index + std::strlen(directive);
-        while (std::isspace(*alt_delay_index)) {
+        while (std::isspace(static_cast<unsigned char>(*alt_delay_index))) {
             alt_delay_index++;
         }
         std::snprintf(alt_delay_buffer, sizeof(alt_delay_buffer), "%s", alt_delay_index);
         alt_delay_index = alt_delay_buffer;
-        while (std::isdigit(*alt_delay_index)) {
+        while (std::isdigit(static_cast<unsigned char>(*alt_delay_index))) {
             alt_delay_index++;
         }
         *alt_delay_index = '\0';
@@ -1849,7 +1849,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
     if (const char* directive{"DOUBLE UNTIL SUCCESS UPTO "}; (alt_delay_index = std::strstr(delay_index, directive)) != nullptr)
     {
         alt_delay_index = alt_delay_index + std::strlen(directive);
-        while (std::isspace(*alt_delay_index)) {
+        while (std::isspace(static_cast<unsigned char>(*alt_delay_index))) {
             alt_delay_index++;
         }
         std::snprintf(alt_delay_buffer, sizeof(alt_delay_buffer), "%s", alt_delay_index);
@@ -1875,7 +1875,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
     }
     if (const char* directive{"REPEAT UNTIL "}; (alt_delay_index = std::strstr(delay_index, directive)) != nullptr) {
         alt_delay_index = alt_delay_index + std::strlen(directive);
-        while (std::isspace(*alt_delay_index)) {
+        while (std::isspace(static_cast<unsigned char>(*alt_delay_index))) {
             alt_delay_index++;
         }
         std::snprintf(alt_delay_buffer, sizeof(alt_delay_buffer), "%s", alt_delay_index);
@@ -1890,7 +1890,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
     }
     if (const char* directive{"DOUBLE UNTIL "}; (alt_delay_index = std::strstr(delay_index, directive)) != nullptr) {
         alt_delay_index = alt_delay_index + std::strlen(directive);
-        while (std::isspace(*alt_delay_index)) {
+        while (std::isspace(static_cast<unsigned char>(*alt_delay_index))) {
             alt_delay_index++;
         }
         std::snprintf(alt_delay_buffer, sizeof(alt_delay_buffer), "%s", alt_delay_index);
@@ -1906,12 +1906,12 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
     }
     if (const char* directive{"REPEAT "}; (alt_delay_index = std::strstr(delay_index, directive)) != nullptr) {
         alt_delay_index = alt_delay_index + std::strlen(directive);
-        while (std::isspace(*alt_delay_index)) {
+        while (std::isspace(static_cast<unsigned char>(*alt_delay_index))) {
             alt_delay_index++;
         }
         std::snprintf(alt_delay_buffer, sizeof(alt_delay_buffer), "%s", alt_delay_index);
         alt_delay_index = alt_delay_buffer;
-        while (std::isdigit(*alt_delay_index)) {
+        while (std::isdigit(static_cast<unsigned char>(*alt_delay_index))) {
             alt_delay_index++;
         }
         *alt_delay_index = '\0';
@@ -1934,12 +1934,12 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
     }
     if (const char* directive{"DOUBLE "}; (alt_delay_index = std::strstr(delay_index, directive)) != nullptr) {
         alt_delay_index = alt_delay_index + std::strlen(directive);
-        while (std::isspace(*alt_delay_index)) {
+        while (std::isspace(static_cast<unsigned char>(*alt_delay_index))) {
             alt_delay_index++;
         }
         std::snprintf(alt_delay_buffer, sizeof(alt_delay_buffer), "%s", alt_delay_index);
         alt_delay_index = alt_delay_buffer;
-        while (std::isdigit(*alt_delay_index)) {
+        while (std::isdigit(static_cast<unsigned char>(*alt_delay_index))) {
             alt_delay_index++;
         }
         *alt_delay_index = '\0';
