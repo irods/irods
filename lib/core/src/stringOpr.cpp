@@ -3,11 +3,15 @@
 #include "irods/rodsErrorTable.h"
 #include "irods/irods_stacktrace.hpp"
 #include "irods/rodsLog.h"
+#include "irods/irods_logger.hpp"
+#include "irods/rcGlobalExtern.h"
 
 #include <boost/regex.hpp>
 
 #include <cstring>
 #include <string>
+
+using log_server = irods::experimental::log::server;
 
 char *rmemmove( void *dest, const void *src, int strLen, int maxLen ) {
 
@@ -45,28 +49,35 @@ char *rmemcpy( void *dest, const void *src, int strLen, int maxLen ) {
     }
 }
 
-char *rstrcpy( char *dest, const char *src, int maxLen ) {
+char* rstrcpy(char* dest, const char* src, int maxLen)
+{
     // snprintf with logging on fail
+    if (dest == nullptr || src == nullptr) {
+        return nullptr;
+    }
 
-    if ( dest == NULL || src == NULL ) {
-        return NULL;
+    int status{std::snprintf(dest, maxLen, "%s", src)};
+    int err{errno};
+    if (status >= 0) {
+        if (status < maxLen) {
+            return dest;
+        }
+        if (::ProcessType != CLIENT_PT) {
+            log_server::error(
+                "rstrcpy not enough space in destination buffer, source length:[{}], destination length:[{}]; "
+                "resulting state of destination [{}], truncated from source [{}]",
+                status,
+                maxLen,
+                dest,
+                src);
+        }
+        return nullptr;
     }
-    int status = snprintf( dest, maxLen, "%s", src );
 
-    if ( status >= 0 && status < maxLen ) {
-        return dest;
+    if (::ProcessType != CLIENT_PT) {
+        log_server::error("rstrcpy encountered an error: [{}]", std::strerror(err));
     }
-    else if ( status >= 0 ) {
-        rodsLog( LOG_ERROR,
-                 "rstrcpy not enough space in dest, slen:%d, maxLen:%d, stacktrace:\n%s",
-                 status, maxLen, irods::stacktrace().dump().c_str());
-        rodsLog( LOG_DEBUG, "rstrcpy arguments dest [%s] src [%s]", dest, src );
-        return NULL;
-    }
-    else {
-        rodsLog( LOG_ERROR, "rstrcpy encountered an encoding error." );
-        return NULL;
-    }
+    return nullptr;
 }
 
 int is_empty_string(const char* _s, size_t _max_size)
