@@ -53,6 +53,7 @@
 #include <unordered_map>
 #include <iterator>
 #include <chrono>
+#include <cctype>
 
 /* check with the input path is a valid path -
  * 1 - valid
