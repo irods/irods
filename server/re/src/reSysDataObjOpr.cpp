@@ -1,12 +1,13 @@
 /// \file
 
-#include "rcMisc.h"
 #include "reSysDataObjOpr.hpp"
+#include "rcMisc.h"
 #include "genQuery.h"
 #include "getRescQuota.h"
 #include "dataObjOpr.hpp"
 #include "resource.hpp"
 #include "physPath.hpp"
+#include "rodsLog.h"
 #include "rsGenQuery.hpp"
 #include "rsModDataObjMeta.hpp"
 #include "rsDataObjRepl.hpp"
@@ -15,6 +16,7 @@
 #include "irods_resource_backport.hpp"
 #include "irods_server_api_table.hpp"
 #include "irods_server_properties.hpp"
+#include "irods_configuration_keywords.hpp"
 
 /**
  * \fn msiSetDefaultResc (msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecInfo_t *rei)
@@ -1284,7 +1286,7 @@ msiSetRandomScheme( ruleExecInfo_t *rei ) {
 /**
  * \fn msiSetReServerNumProc (msParam_t *xnumProc, ruleExecInfo_t *rei)
  *
- * \brief  Sets number of processes for the rule engine server
+ * \brief  Sets number of executors for the rule engine server.
  *
  * \module core
  *
@@ -1294,8 +1296,10 @@ msiSetRandomScheme( ruleExecInfo_t *rei ) {
  *
  * \usage See clients/icommands/test/rules/
  *
- * \param[in] xnumProc - a STR_MS_T representing number of processes
+ * \param[in] xnumProc - a STR_MS_T representing number of executors
  *     - this value can be "default" or an integer
+ *     - this value will be clamped to "maximum_number_of_concurrent_rule_engine_server_processes" if defined in server_config.json.
+ *     - if "maximum_number_of_concurrent_rule_engine_server_processes" is not defined, the number of executors will be clamped to 4.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
@@ -1314,29 +1318,36 @@ msiSetRandomScheme( ruleExecInfo_t *rei ) {
  **/
 int
 msiSetReServerNumProc( msParam_t *xnumProc, ruleExecInfo_t *rei ) {
-    int numProc{irods::default_max_number_of_concurrent_re_threads};
-    char* numProcStr = ( char* )xnumProc->inOutStruct;
+    int executors = irods::default_max_number_of_concurrent_re_threads;
+    char* requested_number_of_executors = static_cast<char*>(xnumProc->inOutStruct);
 
-    if (0 != strcmp(numProcStr, "default")) {
-        numProc = atoi( numProcStr );
-        int max_re_procs{irods::default_max_number_of_concurrent_re_threads};
+    if (0 != std::strcmp(requested_number_of_executors, "default")) {
+        executors = std::atoi(requested_number_of_executors);
+        int number_of_concurrent_executors = -1;
+
         try {
-            max_re_procs = irods::get_advanced_setting<const int>(irods::CFG_MAX_NUMBER_OF_CONCURRENT_RE_PROCS);
-        } catch ( const irods::exception& e ) {
-            irods::log(e);
-            return e.code();
+            number_of_concurrent_executors = irods::get_advanced_setting<const int>(irods::CFG_MAX_NUMBER_OF_CONCURRENT_RE_PROCS);
+        }
+        catch (...) {
+            number_of_concurrent_executors = irods::default_max_number_of_concurrent_re_threads;
+
+            rodsLog(LOG_WARNING,
+                    "Could not retrieve [%s] from advanced settings configuration. Using default value of %i.",
+                    irods::CFG_MAX_NUMBER_OF_CONCURRENT_RE_PROCS.c_str(),
+                    number_of_concurrent_executors);
         }
 
-        if ( numProc > max_re_procs ) {
-            numProc = max_re_procs;
+        if (executors > number_of_concurrent_executors) {
+            executors = number_of_concurrent_executors;
         }
-        else if ( numProc < 0 ) {
-            numProc = irods::default_max_number_of_concurrent_re_threads;
+        else if (executors < 0) {
+            executors = irods::default_max_number_of_concurrent_re_threads;
         }
     }
-    rei->status = numProc;
 
-    return numProc;
+    rei->status = executors;
+
+    return executors;
 }
 
 /**
