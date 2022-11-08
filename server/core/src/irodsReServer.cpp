@@ -2,6 +2,7 @@
 #include "client_connection.hpp"
 #include "initServer.hpp"
 #include "irods_at_scope_exit.hpp"
+#include "irods_configuration_keywords.hpp"
 #include "irods_delay_queue.hpp"
 #include "irods_log.hpp"
 #include "irods_query.hpp"
@@ -617,9 +618,14 @@ int main(int, char* _argv[])
     const auto sleep_time = [] {
         try {
             return irods::get_advanced_setting<const int>(irods::CFG_RE_SERVER_SLEEP_TIME);
-        } catch (const irods::exception& e) {
-            irods::log(e);
         }
+        catch (...) {
+            rodsLog(LOG_WARNING,
+                    "Could not retrieve [%s] from advanced settings configuration. Using default value of %i.",
+                    irods::CFG_RE_SERVER_SLEEP_TIME.c_str(),
+                    irods::default_re_server_sleep_time);
+        }
+
         return irods::default_re_server_sleep_time;
     }();
 
@@ -634,9 +640,14 @@ int main(int, char* _argv[])
     const auto thread_count = [] {
         try {
             return irods::get_advanced_setting<const int>(irods::CFG_MAX_NUMBER_OF_CONCURRENT_RE_PROCS);
-        } catch (const irods::exception& e) {
-            irods::log(e);
         }
+        catch (...) {
+            rodsLog(LOG_WARNING,
+                    "Could not retrieve [%s] from advanced settings configuration. Using default value of %i.",
+                    irods::CFG_MAX_NUMBER_OF_CONCURRENT_RE_PROCS.c_str(),
+                    irods::default_max_number_of_concurrent_re_threads);
+        }
+
         return irods::default_max_number_of_concurrent_re_threads;
     }();
     irods::thread_pool thread_pool{thread_count};
@@ -649,10 +660,11 @@ int main(int, char* _argv[])
                 return bytes;
             }
         }
-        catch (const irods::exception& e) {
-            rodsLog(LOG_WARNING, e.what());
-            rodsLog(LOG_WARNING, "Could not retrieve delay queue byte limit from configuration. "
-                                 "Delay server will use as much memory as necessary.");
+        catch (...) {
+            rodsLog(LOG_WARNING,
+                    "Could not retrieve [%s] from advanced settings configuration. "
+                    "Delay server will use as much memory as necessary.",
+                    irods::CFG_MAX_SIZE_OF_DELAY_QUEUE_IN_BYTES_KW.c_str());
         }
 
         return 0;
