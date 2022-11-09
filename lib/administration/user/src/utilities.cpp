@@ -1,6 +1,11 @@
 #include "irods/user_administration.hpp"
 
-namespace irods::experimental::administration::inline v1
+#include "irods/rodsErrorTable.h"
+#include "irods/irods_exception.hpp"
+
+#include <fmt/format.h>
+
+namespace irods::experimental::administration
 {
     auto to_user_type(const std::string_view user_type_string) -> user_type
     {
@@ -10,8 +15,9 @@ namespace irods::experimental::administration::inline v1
         if (user_type_string == "rodsadmin")  { return user_type::rodsadmin; }
         // clang-format on
 
-        throw user_management_error{"undefined user type"};
-    }
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        THROW(SYS_INVALID_INPUT_PARAM, fmt::format("Undefined user type [{}].", user_type_string));
+    } // to_user_type
 
     auto to_c_str(user_type user_type) -> const char*
     {
@@ -24,7 +30,7 @@ namespace irods::experimental::administration::inline v1
         }
         // clang-format on
 
-        throw user_management_error{"cannot convert user_type to string"};
-    }
-} // namespace irods::experimental::administration::inline v1
-
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        THROW(SYS_INVALID_INPUT_PARAM, "Cannot convert user_type to string.");
+    } // to_c_str
+} // namespace irods::experimental::administration

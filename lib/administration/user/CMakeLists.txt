@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
 add_library(
   irods_user_administration_common
   OBJECT
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/detail.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/group.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/user.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/utilities.cpp"
@@ -19,6 +20,11 @@ target_include_directories(
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/administration/zone/include>"
+  "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/core/include>"
+  "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/api/include>"
+  PRIVATE
+  "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
+  "${IRODS_EXTERNALS_FULLPATH_FMT}/include"
 )
 target_compile_definitions(
   irods_user_administration_common
