@@ -5,6 +5,7 @@
 #include "irods/ticket_administration.hpp"
 #include "irods/query_builder.hpp"
 #include "irods/user_administration.hpp"
+#include "irods/irods_at_scope_exit.hpp"
 
 #include <fmt/format.h>
 
@@ -12,9 +13,11 @@
 #include <cstdio>
 #include <stdexcept>
 
+namespace adm = irods::experimental::administration;
+namespace tic = irods::experimental::administration::ticket;
+
 TEST_CASE("ticket administration")
 {
-    namespace tic = irods::experimental::administration::ticket;
     const std::string read_ticket_name = "readTicket";
     const std::string write_ticket_name = "writeTicket";
     const std::string read_string = "read";
@@ -36,11 +39,13 @@ TEST_CASE("ticket administration")
     int set_test_number = 19;
     std::string remove_test_number_string = "0";
 
-    irods::experimental::administration::user test_user{user_name};
-    irods::experimental::administration::client::add_user(conn, test_user);
+    adm::user test_user{user_name};
+    adm::client::add_user(conn, test_user);
+    irods::at_scope_exit remove_user{[&conn, &test_user] { adm::client::remove_user(conn, test_user); }};
 
-    irods::experimental::administration::group test_group{group_name};
-    irods::experimental::administration::client::add_group(conn, test_group);
+    adm::group test_group{group_name};
+    adm::client::add_group(conn, test_group);
+    irods::at_scope_exit remove_group{[&conn, &test_group] { adm::client::remove_group(conn, test_group); }};
 
     SECTION("create read ticket / delete ticket")
     {
@@ -311,7 +316,4 @@ TEST_CASE("ticket administration")
 
         tic::client::delete_ticket(conn, set_ticket_name);
     }
-
-    irods::experimental::administration::client::remove_user(conn, test_user);
-    irods::experimental::administration::client::remove_group(conn, test_group);
 }
