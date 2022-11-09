@@ -53,10 +53,9 @@ TEST_CASE("rc_switch_user basic usage")
 
     // Create a test user.
     const adm::user alice{"test_user_alice", env.rodsZone};
-    REQUIRE(adm::client::add_user(conn, alice).value() == 0);
+    REQUIRE_NOTHROW(adm::client::add_user(conn, alice));
 
-    irods::at_scope_exit remove_test_user{
-        [&conn, &alice] { REQUIRE(adm::client::remove_user(conn, alice).value() == 0); }};
+    irods::at_scope_exit remove_test_user{[&conn, &alice] { REQUIRE_NOTHROW(adm::client::remove_user(conn, alice)); }};
 
     // Give the test user permission to see the admin's data object and the contents of
     // the sandbox collection.
@@ -119,10 +118,9 @@ TEST_CASE("rc_switch_user honors permission model following successful invocatio
 
     // Create a test user.
     const adm::user alice{"test_user_alice", env.rodsZone};
-    REQUIRE(adm::client::add_user(conn, alice).value() == 0);
+    REQUIRE_NOTHROW(adm::client::add_user(conn, alice));
 
-    irods::at_scope_exit remove_test_user{
-        [&conn, &alice] { REQUIRE(adm::client::remove_user(conn, alice).value() == 0); }};
+    irods::at_scope_exit remove_test_user{[&conn, &alice] { REQUIRE_NOTHROW(adm::client::remove_user(conn, alice)); }};
 
     // Become the test user.
     auto* conn_ptr = static_cast<RcComm*>(conn);
@@ -236,11 +234,11 @@ TEST_CASE("rc_switch_user supports remote zones")
 
     // Create a test user for the remote zone.
     const adm::user alice{"test_user_alice", zone_name};
-    REQUIRE(adm::client::add_user(conn, alice, adm::user_type::rodsuser, adm::zone_type::remote).value() == 0);
+    REQUIRE_NOTHROW(adm::client::add_user(conn, alice, adm::user_type::rodsuser, adm::zone_type::remote));
 
     irods::at_scope_exit remove_test_user{[&alice] {
         irods::experimental::client_connection conn;
-        REQUIRE(adm::client::remove_user(conn, alice).value() == 0);
+        REQUIRE_NOTHROW(adm::client::remove_user(conn, alice));
     }};
 
     // Become the test user.
@@ -271,11 +269,10 @@ TEST_CASE("rc_switch_user cannot be invoked by non-admins")
 
     // Create a test user.
     const adm::user alice{"test_user_alice", env.rodsZone};
-    REQUIRE(adm::client::add_user(conn, alice).value() == 0);
-    REQUIRE(adm::client::set_user_password(conn, alice, "rods").value() == 0);
+    REQUIRE_NOTHROW(adm::client::add_user(conn, alice));
+    REQUIRE_NOTHROW(adm::client::modify_user(conn, alice, adm::user_password_property{"rods"}));
 
-    irods::at_scope_exit remove_test_user{
-        [&conn, &alice] { REQUIRE(adm::client::remove_user(conn, alice).value() == 0); }};
+    irods::at_scope_exit remove_test_user{[&conn, &alice] { REQUIRE_NOTHROW(adm::client::remove_user(conn, alice)); }};
 
     // Connect to the server as the test user.
     rErrMsg_t error;
