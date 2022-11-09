@@ -1,9 +1,11 @@
-#ifndef GENERAL_ADMIN_H__
-#define GENERAL_ADMIN_H__
+#ifndef IRODS_GENERAL_ADMIN_H
+#define IRODS_GENERAL_ADMIN_H
 
-#include "irods/rcConnect.h"
+struct RcComm;
 
-typedef struct {
+// NOLINTNEXTLINE(modernize-use-using)
+typedef struct GeneralAdminInput
+{
     const char *arg0;
     const char *arg1;
     const char *arg2;
@@ -15,11 +17,19 @@ typedef struct {
     const char *arg8;
     const char *arg9;
 } generalAdminInp_t;
+
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define generalAdminInp_PI "str *arg0; str *arg1; str *arg2; str *arg3; str *arg4; str *arg5; str *arg6; str *arg7;  str *arg8;  str *arg9;"
 
 #ifdef __cplusplus
-extern "C"
+extern "C" {
 #endif
-int rcGeneralAdmin( rcComm_t *conn, generalAdminInp_t *generalAdminInp );
 
+// NOLINTNEXTLINE(modernize-use-trailing-return-type)
+int rcGeneralAdmin(struct RcComm* conn, struct GeneralAdminInput* generalAdminInp);
+
+#ifdef __cplusplus
+} // extern "C"
 #endif
+
+#endif // IRODS_GENERAL_ADMIN_H
