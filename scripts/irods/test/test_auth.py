@@ -41,7 +41,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
 
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER or test.settings.USE_SSL, 'Topo from resource or SSL')
     def test_authentication_PAM_without_negotiation(self):
-        numbits = 1024 # normally 2048, but smaller size here for speed
+        numbits = 2048
         irods_config = IrodsConfig()
         server_key_path = os.path.join(irods_config.irods_directory, 'test', 'server.key')
         chain_pem_path = os.path.join(irods_config.irods_directory, 'test', 'chain.pem')
@@ -99,7 +99,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER or test.settings.USE_SSL, 'Topo from resource or SSL')
     def test_authentication_PAM_with_server_params(self):
         irods_config = IrodsConfig()
-        numbits = 1024 # normally 2048, but smaller size here for speed
+        numbits = 2048
         server_key_path = os.path.join(irods_config.irods_directory, 'test', 'server.key')
         chain_pem_path = os.path.join(irods_config.irods_directory, 'test', 'chain.pem')
         dhparams_pem_path = os.path.join(irods_config.irods_directory, 'test', 'dhparams.pem')
