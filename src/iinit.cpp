@@ -4,7 +4,6 @@
 #include <irods/irods_environment_properties.hpp>
 #include <irods/irods_gsi_object.hpp>
 #include <irods/irods_kvp_string_parser.hpp>
-#include <irods/irods_kvp_string_parser.hpp>
 #include <irods/irods_native_auth_object.hpp>
 #include <irods/irods_pack_table.hpp>
 #include <irods/irods_pam_auth_object.hpp>
@@ -17,10 +16,12 @@
 
 #include <boost/lexical_cast.hpp>
 
+#include <fmt/format.h>
 #include <nlohmann/json.hpp>
 
-#include <iostream>
+#include <filesystem>
 #include <fstream>
+#include <iostream>
 
 void usage( char *prog );
 
@@ -43,27 +44,37 @@ const char *AUTH_OPENID_SCHEME = "openid";
  */
 int
 mkrodsdir() {
-    char dirName[NAME_LEN];
-    int mode;
-    char *getVar;
-#ifdef windows_platform
-    getVar = iRODSNt_gethome();
-#else
-    getVar = getenv( "HOME" );
-#endif
-    rstrcpy( dirName, getVar, NAME_LEN );
-    rstrcat( dirName, "/.irods", NAME_LEN );
-    mode = 0700;
-#ifdef _WIN32
-    iRODSNt_mkdir( dirName, mode );
-#else
-    int error_code = mkdir( dirName, mode );
-    int errsv = errno;
-    if ( error_code != 0 && errsv != EEXIST ) {
-        rodsLog( LOG_NOTICE, "mkdir failed in mkrodsdir with error code %d", error_code );
+    namespace fs = std::filesystem;
+
+    const char* home_dir{std::getenv("HOME")};
+    if (home_dir == nullptr) {
+        fmt::print(stderr, "environment variable HOME not set\n");
+        return -1;
     }
-#endif
-    return 0; /* no error messages as it normally fails */
+
+    fs::path irods_dir{home_dir};
+    irods_dir /= ".irods";
+
+    std::error_code err_code;
+    fs::create_directory(irods_dir, err_code);
+    if (err_code) {
+        fmt::print(
+            stderr,
+            "failed to create directory [{}] with the following error: [{}]\n",
+            irods_dir.string(), err_code.message());
+        return -1;
+    }
+
+    fs::permissions(irods_dir, fs::perms::owner_all, err_code);
+    if (err_code) {
+        fmt::print(stderr,
+                   "setting permissions for directory [{}] failed with the "
+                   "following error: [{}]\n",
+                   irods_dir.string(), err_code.message());
+        return -1;
+    }
+
+    return 0;
 }
 
 void
@@ -123,7 +134,9 @@ int main( int argc, char **argv )
     }
 
     // Create ~/.irods/ if it does not exist
-    mkrodsdir();
+    if (mkrodsdir() != 0) {
+        return 1;
+    }
 
     using json = nlohmann::json;
 
@@ -242,7 +255,7 @@ int main( int argc, char **argv )
         }
 
         if ( i != 0 ) {
-            rodsLogError( LOG_ERROR, i, "Save Password failure" );
+            rodsLogError( LOG_ERROR, i, "Failed to save password." );
             return 1;
         }
     }
