@@ -498,7 +498,7 @@ auto show_token(const char* _token_namespace = nullptr, const char* _token = nul
         print_genquery_results(fmt::format(fmt::runtime(query_string_template), token_namespace, _token), labels);
     }
     catch (const irods::exception& e) {
-        fmt::print(stderr, e.client_display_what());
+        fmt::print(stderr, fmt::runtime(e.client_display_what()));
         return 1;
     }
     catch (...) {
@@ -547,7 +547,7 @@ auto show_group(const char* _group = nullptr) -> int
         return 0;
     }
     catch (const irods::exception& e) {
-        fmt::print(stderr, e.client_display_what());
+        fmt::print(stderr, fmt::runtime(e.client_display_what()));
         return 1;
     }
     catch (...) {
@@ -618,7 +618,7 @@ auto show_resource(const char* _resc = nullptr) -> int
         print_genquery_results(fmt::format(fmt::runtime(query_string_template), _resc), labels);
     }
     catch (const irods::exception& e) {
-        fmt::print(stderr, e.client_display_what());
+        fmt::print(stderr, fmt::runtime(e.client_display_what()));
         return 1;
     }
     catch (...) {
@@ -663,7 +663,7 @@ auto show_zone(const char* _zone = nullptr) -> int
         print_genquery_results(fmt::format(fmt::runtime(query_string_template), _zone), labels);
     }
     catch (const irods::exception& e) {
-        fmt::print(stderr, e.client_display_what());
+        fmt::print(stderr, fmt::runtime(e.client_display_what()));
         return 1;
     }
     catch (...) {
@@ -714,7 +714,7 @@ auto show_user(const char* _user, const char* _zone = nullptr) -> int
         print_genquery_results(query_string, labels);
     }
     catch (const irods::exception& e) {
-        fmt::print(stderr, e.client_display_what());
+        fmt::print(stderr, fmt::runtime(e.client_display_what()));
         return 1;
     }
     catch (...) {
@@ -757,7 +757,7 @@ auto show_user_auth(const char* _user, const char* _zone = nullptr) -> int
         }
     }
     catch (const irods::exception& e) {
-        fmt::print(stderr, e.client_display_what());
+        fmt::print(stderr, fmt::runtime(e.client_display_what()));
         return 1;
     }
     catch (...) {
@@ -787,7 +787,7 @@ auto show_user_auth_name(const char* _auth_name) -> int
         }
     }
     catch (const irods::exception& e) {
-        fmt::print(stderr, e.client_display_what());
+        fmt::print(stderr, fmt::runtime(e.client_display_what()));
         return 1;
     }
     catch (...) {
@@ -839,7 +839,7 @@ auto show_global_quotas(const char* _user_or_group = nullptr) -> int
         print_genquery_results(fmt::format(fmt::runtime(query_string_template), user_name, zone_name), labels);
     }
     catch (const irods::exception& e) {
-        fmt::print(stderr, e.client_display_what());
+        fmt::print(stderr, fmt::runtime(e.client_display_what()));
         return 1;
     }
     catch (...) {
@@ -892,7 +892,7 @@ auto show_resource_quotas(const char* _user_or_group = nullptr) -> int
         print_genquery_results(fmt::format(fmt::runtime(query_string_template), user_name, zone_name), labels);
     }
     catch (const irods::exception& e) {
-        fmt::print(stderr, e.client_display_what());
+        fmt::print(stderr, fmt::runtime(e.client_display_what()));
         return 1;
     }
     catch (...) {

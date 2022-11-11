@@ -8,7 +8,7 @@ set(IRODS_PACKAGE_REVISION "1")
 include(RequireOutOfSourceBuild)
 include(IrodsCXXCompiler)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD ${IRODS_CXX_STANDARD})
 # export-dynamic so stacktrace entries from executables have function names
 set(CMAKE_EXE_LINKER_FLAGS_INIT "-rdynamic -Wl,--export-dynamic -Wl,--enable-new-dtags -Wl,--as-needed -Wl,-z,defs")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE_INIT "-Wl,--gc-sections -Wl,-z,combreloc")
