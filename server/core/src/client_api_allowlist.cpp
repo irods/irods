@@ -186,25 +186,32 @@ namespace irods::client_api_allowlist
 
     auto enforce(const RsComm& _comm) noexcept -> bool
     {
-        if (irods::is_privileged_client(_comm)) {
-            log_api::trace("Client has administrative privileges. Skipping client API allowlist.");
-            return false;
+        try {
+            if (irods::is_privileged_client(_comm)) {
+                log_api::trace("Client has administrative privileges. Skipping client API allowlist.");
+                return false;
+            }
+
+            if (!is_client_to_agent_connection()) {
+                log_api::trace("Connection is a server-to-server connection. Skipping client API allowlist.");
+                return false;
+            }
+
+            const auto& config = irods::server_properties::instance().map();
+
+            if (const auto iter = config.find(irods::KW_CFG_CLIENT_API_ALLOWLIST_POLICY); iter != std::end(config)) {
+                return iter->get_ref<const std::string&>() == "enforce";
+            }
+
+            log_api::trace(
+                "Could not retrieve [{}] from configuration. Using default value of [enforce].",
+                irods::KW_CFG_CLIENT_API_ALLOWLIST_POLICY);
         }
-
-        if (!is_client_to_agent_connection()) {
-            log_api::trace("Connection is a server-to-server connection. Skipping client API allowlist.");
-            return false;
+        catch (...) {
+            // At this point, this function MUST NOT invoke anything that could result in an
+            // exception being thrown. Failing to follow this rule can result in the application
+            // being terminated immediately!
         }
-
-        const auto& config = irods::server_properties::instance().map();
-
-        if (const auto iter = config.find(irods::KW_CFG_CLIENT_API_ALLOWLIST_POLICY); iter != std::end(config)) {
-            return iter->get_ref<const std::string&>() == "enforce";
-        }
-
-        log_api::trace(
-            "Could not retrieve [{}] from configuration. Using default value of [enforce].",
-            irods::KW_CFG_CLIENT_API_ALLOWLIST_POLICY);
 
         return true;
     } // enforce
