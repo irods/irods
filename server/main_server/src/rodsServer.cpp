@@ -678,6 +678,15 @@ namespace
         }
     } // launch_delay_server
 
+    std::string get_preferred_hostname(const std::string_view _hostname)
+    {
+        if (const auto hn = resolve_hostname(_hostname, hostname_resolution_scheme::match_preferred); hn) {
+            return *hn;
+        }
+
+        return std::string{_hostname};
+    } // get_preferred_hostname
+
     void migrate_delay_server(bool _enable_test_mode, bool _write_to_stdout)
     {
         try {
@@ -718,11 +727,19 @@ namespace
                 }
             }
 
-            char hostname[HOST_NAME_MAX + 1]{};
-            if (gethostname(hostname, sizeof(hostname)) != 0) {
-                log_server::error("Failed to retrieve local server's hostname for delay server migration.");
-                return;
+            std::string hostname;
+
+            {
+                char hn[HOST_NAME_MAX + 1]{};
+
+                if (gethostname(hn, sizeof(hn)) != 0) {
+                    log_server::error("Failed to retrieve local server's hostname for delay server migration.");
+                    return;
+                }
+
+                hostname = get_preferred_hostname(hn);
             }
+
             log_server::trace("Local server's hostname = [{}]", hostname);
 
             std::string leader;
@@ -749,7 +766,7 @@ namespace
                     return;
                 }
 
-                leader = std::move(*result);
+                leader = get_preferred_hostname(*result);
                 log_server::trace("Leader's hostname = [{}]", leader);
 
                 result = get_grid_configuration_option_value(comm, "delay_server", "successor");
@@ -757,7 +774,7 @@ namespace
                     return;
                 }
 
-                successor = std::move(*result);
+                successor = get_preferred_hostname(*result);
                 log_server::trace("Successor's hostname = [{}]", successor);
             }
 
