@@ -75,7 +75,7 @@ namespace
 
         logger::set_server_type("delay_server");
 
-        if (char hostname[HOST_NAME_MAX]{}; gethostname(hostname, sizeof(hostname)) == 0) {
+        if (char hostname[HOST_NAME_MAX + 1]{}; gethostname(hostname, sizeof(hostname)) == 0) {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
             logger::set_server_hostname(hostname);
         }

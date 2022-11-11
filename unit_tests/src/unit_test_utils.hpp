@@ -38,7 +38,7 @@ namespace unit_test_utils
 
     inline auto get_hostname() noexcept -> std::string
     {
-        char hostname[HOST_NAME_MAX]{};
+        char hostname[HOST_NAME_MAX + 1]{};
         gethostname(hostname, sizeof(hostname));
         return hostname;
     }

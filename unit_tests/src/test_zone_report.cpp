@@ -16,13 +16,13 @@ TEST_CASE("json zone report")
 {
     namespace adm = irods::experimental::administration;
 
-    char host_name[64] {};
-    REQUIRE(gethostname(host_name, sizeof(host_name)) == 0);
+    char hostname[HOST_NAME_MAX + 1]{};
+    REQUIRE(gethostname(hostname, sizeof(hostname)) == 0);
 
     adm::resource_registration_info ufs_info;
     ufs_info.resource_name = "unit_test_ufs0";
     ufs_info.resource_type = adm::resource_type::unixfilesystem;
-    ufs_info.host_name = host_name;
+    ufs_info.host_name = hostname;
     ufs_info.vault_path = "/tmp";
 
     load_client_api_plugins();

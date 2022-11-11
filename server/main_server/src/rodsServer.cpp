@@ -295,7 +295,7 @@ namespace
         ix::log::set_server_type("server");
         ix::log::set_server_zone(_server_config.at(irods::KW_CFG_ZONE_NAME).get<std::string>());
 
-        if (char hostname[HOST_NAME_MAX]{}; gethostname(hostname, sizeof(hostname)) == 0) {
+        if (char hostname[HOST_NAME_MAX + 1]{}; gethostname(hostname, sizeof(hostname)) == 0) {
             ix::log::set_server_hostname(hostname);
         }
     }
@@ -718,7 +718,7 @@ namespace
                 }
             }
 
-            char hostname[HOST_NAME_MAX]{};
+            char hostname[HOST_NAME_MAX + 1]{};
             if (gethostname(hostname, sizeof(hostname)) != 0) {
                 log_server::error("Failed to retrieve local server's hostname for delay server migration.");
                 return;
