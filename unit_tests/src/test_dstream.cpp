@@ -307,7 +307,7 @@ TEST_CASE("dstream", "[iostreams]")
 
 auto get_hostname() noexcept -> std::string
 {
-    char hostname[250];
+    char hostname[HOST_NAME_MAX + 1]{};
     gethostname(hostname, sizeof(hostname));
     return hostname;
 }
