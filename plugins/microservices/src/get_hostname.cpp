@@ -18,8 +18,8 @@ namespace
         if (!_out || !_rei){
             return SYS_INTERNAL_NULL_INPUT_ERR;
         }
-        char hostname[HOST_NAME_MAX];
-        gethostname(hostname, HOST_NAME_MAX);
+        char hostname[HOST_NAME_MAX + 1]{};
+        gethostname(hostname, sizeof(hostname));
         fillStrInMsParam(_out, _rei->rsComm->myEnv.rodsHost);
         return 0;
     }// msi_impl
