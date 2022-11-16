@@ -1765,11 +1765,13 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         std::sprintf(nextTime, "%lld", next_delay.count());
         return 0;
     }
+
     if (const char* directive{"DOUBLE FOR EVER"}; std::strcmp(delay_index, directive) == 0) {
         std::sprintf(nextTime, "%lld", next_delay.count());
         std::sprintf(delayStr, "%lld%c %s", double_delay, time_unit, directive);
         return 3;
     }
+    
     if (const char* directive{"REPEAT UNTIL SUCCESS OR UNTIL "}; (alt_delay_index = std::strstr(delay_index, directive)) != nullptr) {
         alt_delay_index = skip_directive_and_whitespace(alt_delay_index, directive);
         std::snprintf(alt_delay_buffer, sizeof(alt_delay_buffer), "%s", alt_delay_index);
@@ -1782,6 +1784,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             return 1;
         }
     }
+
     if (const char* directive{"DOUBLE UNTIL SUCCESS OR UNTIL "}; (alt_delay_index = std::strstr(delay_index, directive)) != nullptr) {
         alt_delay_index = skip_directive_and_whitespace(alt_delay_index, directive);
         std::snprintf(alt_delay_buffer, sizeof(alt_delay_buffer), "%s", alt_delay_index);
@@ -1795,6 +1798,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             return 4;
         }
     }
+
     if (const char* directive{"REPEAT UNTIL SUCCESS OR "}; (alt_delay_index = std::strstr(delay_index, directive)) != nullptr) {
         alt_delay_index = skip_directive_and_whitespace(alt_delay_index, directive);
         std::snprintf(alt_delay_buffer, sizeof(alt_delay_buffer), "%s", alt_delay_index);
@@ -1819,6 +1823,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             return 4;
         }
     }
+
     if (const char* directive{"DOUBLE UNTIL SUCCESS OR "}; (alt_delay_index = std::strstr(delay_index, directive)) != nullptr) {
         alt_delay_index = skip_directive_and_whitespace(alt_delay_index, directive);
         std::snprintf(alt_delay_buffer, sizeof(alt_delay_buffer), "%s", alt_delay_index);
@@ -1843,6 +1848,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             return 4;
         }
     }
+
     if (const char* directive{"DOUBLE UNTIL SUCCESS UPTO "}; (alt_delay_index = std::strstr(delay_index, directive)) != nullptr)
     {
         alt_delay_index = skip_directive_and_whitespace(alt_delay_index, directive);
@@ -1858,15 +1864,18 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         }
         return 4;
     }
+
     if (std::strstr(delay_index, "REPEAT UNTIL SUCCESS") != nullptr) {
         std::sprintf(nextTime, "%lld", next_delay.count());
         return 1;
     }
+
     if (const char* directive{"DOUBLE UNTIL SUCCESS"}; std::strstr(delay_index, directive) != nullptr) {
         std::sprintf(nextTime, "%lld", next_delay.count());
         std::sprintf(delayStr, "%lld%c %s", double_delay, time_unit, directive);
         return 4;
     }
+    
     if (const char* directive{"REPEAT UNTIL "}; (alt_delay_index = std::strstr(delay_index, directive)) != nullptr) {
         alt_delay_index = skip_directive_and_whitespace(alt_delay_index, directive);
         std::snprintf(alt_delay_buffer, sizeof(alt_delay_buffer), "%s", alt_delay_index);
@@ -1879,6 +1888,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             return 0;
         }
     }
+    
     if (const char* directive{"DOUBLE UNTIL "}; (alt_delay_index = std::strstr(delay_index, directive)) != nullptr) {
         alt_delay_index = skip_directive_and_whitespace(alt_delay_index, directive);
         std::snprintf(alt_delay_buffer, sizeof(alt_delay_buffer), "%s", alt_delay_index);
@@ -1892,6 +1902,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             return 3;
         }
     }
+    
     if (const char* directive{"REPEAT "}; (alt_delay_index = std::strstr(delay_index, directive)) != nullptr) {
         alt_delay_index = skip_directive_and_whitespace(alt_delay_index, directive);
         std::snprintf(alt_delay_buffer, sizeof(alt_delay_buffer), "%s", alt_delay_index);
@@ -1917,6 +1928,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             return 3;
         }
     }
+    
     if (const char* directive{"DOUBLE "}; (alt_delay_index = std::strstr(delay_index, directive)) != nullptr) {
         alt_delay_index = skip_directive_and_whitespace(alt_delay_index, directive);
         std::snprintf(alt_delay_buffer, sizeof(alt_delay_buffer), "%s", alt_delay_index);
