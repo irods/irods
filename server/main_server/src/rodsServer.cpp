@@ -869,7 +869,7 @@ namespace
         }
 
         if (setsid() < 0) {
-            log_server::info("serverize: setsid failed, errno = {}\n", errno);
+            log_server::error("daemonize: setsid failed, errno = {}\n", errno);
             exit(1);
         }
 
