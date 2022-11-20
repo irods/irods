@@ -23,7 +23,7 @@ void stacktrace_signal_handler(int _signal)
     timespec ts;
 
     if (clock_gettime(CLOCK_REALTIME, &ts) != 0) {
-        std::exit(_signal);
+        _exit(_signal);
     }
 
     // "_POSIX_PATH_MAX" is guaranteed to be defined as 256.
@@ -71,7 +71,7 @@ void stacktrace_signal_handler(int _signal)
         }
     }
 
-    std::exit(_signal);
+    _exit(_signal);
 } // stacktrace_signal_handler
 
 namespace irods
