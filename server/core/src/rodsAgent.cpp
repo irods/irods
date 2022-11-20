@@ -43,6 +43,10 @@
 #include <memory>
 #include <sstream>
 
+#if __has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
+#  include <sanitizer/lsan_interface.h>
+#endif
+
 namespace ix = irods::experimental;
 
 ssize_t receiveSocketFromSocket( int readFd, int *socket) {
@@ -212,6 +216,13 @@ irodsAgentSignalExit( int ) {
     while( ( reaped_pid = waitpid( -1, &child_status, WNOHANG ) ) > 0 ) {
         rmProcLog( reaped_pid );
     }
+
+#if __has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
+    // Calling this function is likely not async-signal-safe, but it is okay because
+    // if the code has been compiled with Address Sanitizer enabled. For that reason,
+    // we can assume that the binary is not running in a production environment.
+    __lsan_do_leak_check();
+#endif
 
     // Because the agent factory does not call any of the exec-family functions,
     // the POSIX standard recommends using _exit() instead of exit() to keep the
