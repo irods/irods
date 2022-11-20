@@ -1179,9 +1179,9 @@ int main(int argc, char** argv)
 
             log_server::info("Forking agent factory ...");
 
-            const auto pid = fork();
+            agent_spawning_pid = fork();
 
-            if (pid == 0) {
+            if (agent_spawning_pid == 0) {
                 close(pid_file_fd);
 
                 ProcessType = AGENT_PT;
@@ -1195,12 +1195,12 @@ int main(int argc, char** argv)
                     _exit(1);
                 }
             }
-            else if (pid > 0) {
+            else if (agent_spawning_pid > 0) {
                 // If the agent factory is no longer available (e.g. it crashed or something), close the
                 // socket associated with the crashed agent factory.
                 close(agent_conn_socket);
 
-                log_server::info("Connecting to agent factory [agent_factory_pid={}] ...", pid);
+                log_server::info("Connecting to agent factory [agent_factory_pid={}] ...", agent_spawning_pid);
 
                 agent_conn_socket = socket(AF_UNIX, SOCK_STREAM, 0);
 
@@ -1223,8 +1223,6 @@ int main(int argc, char** argv)
                         exit(SYS_SOCK_CONNECT_ERR);
                     }
                 }
-
-                agent_spawning_pid = pid;
             }
         }
         catch (...) {
