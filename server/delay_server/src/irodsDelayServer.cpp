@@ -51,6 +51,10 @@
 #include <string_view>
 #include <fstream>
 
+#if __has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
+#  include <sanitizer/lsan_interface.h>
+#endif
+
 // clang-format off
 namespace ix = irods::experimental;
 
@@ -802,6 +806,10 @@ int main(int argc, char** argv)
     }
 
     logger::delay_server::info("Delay server exited normally.");
+
+#if __has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
+    __lsan_do_leak_check();
+#endif
 
     return 0;
 }
