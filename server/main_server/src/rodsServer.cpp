@@ -1173,6 +1173,7 @@ int main(int argc, char** argv)
             // When the server is starting up, agent_spawning_pid will be zero. Therefore,
             // we skip checking for the agent factory on startup.
             if (agent_spawning_pid > 0 && waitpid(agent_spawning_pid, nullptr, WNOHANG) != -1) {
+                log_server::info("Agent factory [{}] still exists.", agent_spawning_pid);
                 return;
             }
 
@@ -1371,8 +1372,14 @@ int main(int argc, char** argv)
 
             if (irods::server_state::server_state::stopped == state) {
                 procChildren(&ConnectedAgentHead);
-                // Wake up the agent factory process so it can clean up and exit
+
+                // Shut down the agent factory.
                 kill(agent_spawning_pid, SIGTERM);
+                int agent_factory_status = 0;
+                waitpid(agent_spawning_pid, &agent_factory_status, 0);
+                log_server::info(
+                    "Agent factory has completed shutdown [exit_code={}].", WEXITSTATUS(agent_factory_status));
+
                 log_server::info("iRODS Server is exiting with state [{}].", to_string(state));
                 break;
             }
