@@ -8,7 +8,7 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <openssl/sha.h>
 
-#include "irods/base64.h"
+#include "irods/base64.hpp"
 
 namespace irods {
 

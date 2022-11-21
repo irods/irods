@@ -1,13 +1,7 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
+#ifndef IRODS_BASE64_H
+#define IRODS_BASE64_H
 
-/* base64.h - header file for base64.c
- */
-
-
-
-#ifndef BASE64_H__
-#define BASE64_H__
+#warning "base64.h is deprecated and will be removed in a future iRODS release.  Please use base64.hpp."
 
 #include "irods/rodsDef.h"
 
@@ -15,13 +9,12 @@
 extern "C" {
 #endif
 
-int base64_encode( const unsigned char *in,  unsigned long inlen,
-                   unsigned char *out, unsigned long *outlen );
-int base64_decode( const unsigned char *in,  unsigned long inlen,
-                   unsigned char *out, unsigned long *outlen );
+int base64_encode(const unsigned char* in, unsigned long inlen, unsigned char* out, unsigned long* outlen);
+
+int base64_decode(const unsigned char* in, unsigned long inlen, unsigned char* out, unsigned long* outlen);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	// BASE64_H__
+#endif //IRODS_BASE64_H
