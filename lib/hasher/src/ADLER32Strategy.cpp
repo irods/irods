@@ -7,7 +7,7 @@
 #include <cstring>
 #include <boost/algorithm/string/predicate.hpp>
 
-#include "irods/base64.h"
+#include "irods/base64.hpp"
 
 namespace irods {
 

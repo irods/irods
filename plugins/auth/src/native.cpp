@@ -6,7 +6,7 @@
 #include "irods/authRequest.h"
 #include "irods/authResponse.h"
 #include "irods/authenticate.h"
-#include "irods/base64.h"
+#include "irods/base64.hpp"
 #include "irods/irods_auth_constants.hpp"
 #include "irods/irods_auth_plugin.hpp"
 #include "irods/irods_logger.hpp"

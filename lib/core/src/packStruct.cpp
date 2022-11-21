@@ -3,7 +3,7 @@
 #include "irods/alignPointer.hpp"
 #include "irods/rodsLog.h"
 #include "irods/rcGlobalExtern.h"
-#include "irods/base64.h"
+#include "irods/base64.hpp"
 #include "irods/rcMisc.h"
 #include "irods/version.hpp"
 #include "irods/irods_pack_table.hpp"
@@ -1328,8 +1328,8 @@ namespace
                 packedOutput.bBuf.len += len;
             }
             else {
-                status = base64_encode( static_cast<const unsigned char *>(inPtr), len,
-                                        static_cast<unsigned char *>(outPtr), &outlen );
+                status = irods::base64_encode(
+                    static_cast<const unsigned char*>(inPtr), len, static_cast<unsigned char*>(outPtr), &outlen);
                 if ( status < 0 ) {
                     return status;
                 }
@@ -2028,8 +2028,9 @@ namespace
         if ( packTypeTable[typeInx].number == PACK_BIN_TYPE ) {
             /* bin type. need to decode */
             unsigned long outLen = len;
-            if ( int status = base64_decode( static_cast<const unsigned char *>(inPtr), inLen,
-                        static_cast<unsigned char *>(outPtr), &outLen ) ) {
+            if (int status = irods::base64_decode(
+                    static_cast<const unsigned char*>(inPtr), inLen, static_cast<unsigned char*>(outPtr), &outLen))
+            {
                 return status;
             }
             if ( static_cast<int>(outLen) != len ) {
