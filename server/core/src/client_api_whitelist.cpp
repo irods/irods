@@ -185,20 +185,23 @@ namespace irods
 
     auto client_api_whitelist::enforce(const rsComm_t& comm) const noexcept -> bool
     {
-        if (!irods::is_privileged_client(comm)) {
-            try {
-                using T = const std::string&;
-                const auto& keyword = irods::CFG_CLIENT_API_WHITELIST_POLICY_KW;
-                return "enforce" == irods::get_server_property<T>(keyword) && is_client_to_agent_connection();
+        try {
+            if (!irods::is_privileged_client(comm)) {
+                try {
+                    using T = const std::string&;
+                    const auto& keyword = irods::CFG_CLIENT_API_WHITELIST_POLICY_KW;
+                    return "enforce" == irods::get_server_property<T>(keyword) && is_client_to_agent_connection();
+                }
+                catch (const irods::exception&) {
+                    rodsLog(LOG_DEBUG, "Skipping client API whitelist. Server is not configured to enforce the API "
+                                       "or the connection is not a client-to-agent connection.");
+                }
             }
-            catch (const irods::exception&) {
-                rodsLog(LOG_DEBUG, "Skipping client API whitelist. Server is not configured to enforce the API "
-                                   "or the connection is not a client-to-agent connection.");
+            else {
+                rodsLog(LOG_DEBUG, "Skipping client API whitelist. Client has administrative privileges.");
             }
         }
-        else {
-            rodsLog(LOG_DEBUG, "Skipping client API whitelist. Client has administrative privileges.");
-        }
+        catch (...) {}
 
         return false;
     }
