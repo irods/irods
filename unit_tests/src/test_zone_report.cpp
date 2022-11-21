@@ -15,7 +15,7 @@ TEST_CASE("json zone report")
 {
     namespace adm = irods::experimental::administration;
 
-    char host_name[64] {};
+    char host_name[HOST_NAME_MAX + 1] {};
     REQUIRE(gethostname(host_name, sizeof(host_name)) == 0);
 
     adm::resource_registration_info ufs_info;
