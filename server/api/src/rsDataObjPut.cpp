@@ -10,6 +10,7 @@
 #include "irods/objMetaOpr.hpp"
 #include "irods/physPath.hpp"
 #include "irods/rcGlobalExtern.h"
+#include "irods/rcMisc.h"
 #include "irods/regDataObj.h"
 #include "irods/rodsErrorTable.h"
 #include "irods/rodsLog.h"
@@ -576,6 +577,10 @@ namespace
 
         try {
             dataObjInfo_t* dataObjInfoHead{};
+            irods::at_scope_exit free_data_object_info{[&dataObjInfoHead] {
+                freeAllDataObjInfo(dataObjInfoHead);
+            }};
+
             irods::file_object_ptr file_obj(new irods::file_object());
             file_obj->logical_path(dataObjInp->objPath);
             irods::error fac_err = irods::file_object_factory(rsComm, dataObjInp, file_obj, &dataObjInfoHead);
