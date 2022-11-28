@@ -22,7 +22,7 @@ auto rsExecMyRule(RsComm* _comm, ExecMyRuleInp* _exec_inp, MsParamArray** _out_p
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    if (getValByKey(&_exec_inp->condInput, "available")) { // NOLINT(readability-implicit-bool-conversion)
+    if (getValByKey(&_exec_inp->condInput, AVAILABLE_KW)) { // NOLINT(readability-implicit-bool-conversion)
         std::vector<std::string> instance_names;
         irods::error ret = list_rule_plugin_instances(instance_names);
 
