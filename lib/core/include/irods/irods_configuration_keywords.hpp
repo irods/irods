@@ -55,6 +55,7 @@ namespace irods
     extern const char* const KW_CFG_LOG_LEVEL_CATEGORY_MICROSERVICE;
     extern const char* const KW_CFG_LOG_LEVEL_CATEGORY_NETWORK;
     extern const char* const KW_CFG_LOG_LEVEL_CATEGORY_RULE_ENGINE;
+    extern const char* const KW_CFG_LOG_LEVEL_CATEGORY_SQL;
 
     // client_allow_list_policy
     extern const char* const KW_CFG_CLIENT_API_ALLOWLIST_POLICY;
