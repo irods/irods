@@ -41,29 +41,6 @@ class IrodsController(object):
             self.config.rule_engine_executable
         ]
 
-    def define_log_levels(self, logger):
-        config = self.config.server_config
-
-        # If the log levels are not defined, then add them to server config!
-        if 'log_level' not in config or 'server' not in config['log_level']:
-            logger.debug('Adding log levels to server configuration ...')
-            lib.update_json_file_from_dict(paths.server_config_path(), {
-                'log_level': {
-                    'agent': 'info',
-                    'agent_factory': 'info',
-                    'api': 'info',
-                    'authentication': 'info',
-                    'database': 'info',
-                    'delay_server': 'info',
-                    'legacy': 'info',
-                    'microservice': 'info',
-                    'network': 'info',
-                    'resource': 'info',
-                    'rule_engine': 'info',
-                    'server': 'info'
-                }
-            })
-
     def get_server_proc(self):
         server_pid = lib.get_server_pid()
 
@@ -87,8 +64,6 @@ class IrodsController(object):
 
         if upgrade_configuration.requires_upgrade(self.config):
             upgrade_configuration.upgrade(self.config)
-
-        self.define_log_levels(l)
 
         try:
             self.config.validate_configuration()
