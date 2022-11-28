@@ -1,8 +1,10 @@
 #include "irods/msParam.h"
 
 #include "irods/apiHeaderAll.h"
+#include "irods/irods_re_structs.hpp"
 #include "irods/modDataObjMeta.h"
 #include "irods/rcGlobalExtern.h"
+#include "irods/rcMisc.h"
 #include "irods/rodsErrorTable.h"
 #include "irods/irods_logger.hpp"
 
@@ -558,7 +560,21 @@ int clearMsParam(msParam_t* msParam, int freeInOutStruct)
     }
 
     if (msParam->inOutStruct) {
-        if (freeInOutStruct > 0 || (msParam->type && std::strcmp(msParam->type, STR_MS_T) == 0)) {
+        if (msParam->type) {
+            if (std::strcmp(msParam->type, STR_MS_T) == 0) {
+                std::free(msParam->inOutStruct);
+            }
+            else if (std::strcmp(msParam->type, ExecCmdOut_MS_T) == 0) {
+                clearExecCmdOut(msParam->inOutStruct);
+                std::free(msParam->inOutStruct);
+            }
+            // This else-block must always be the final block in this if-ladder.
+            // Changing the order of these if-blocks can result in memory leaks.
+            else if (freeInOutStruct > 0) {
+                std::free(msParam->inOutStruct);
+            }
+        }
+        else if (freeInOutStruct > 0) {
             std::free(msParam->inOutStruct);
         }
     }
