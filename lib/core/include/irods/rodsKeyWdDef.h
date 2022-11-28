@@ -319,6 +319,8 @@
 #define BUNDLE_STR        "bundle"
 #define BUNDLE_RESC_CLASS "bundle"
 
+#define AVAILABLE_KW                                "available"
+
 // clang-format on
 
 #endif  // RODS_KEYWD_DEF_H__
