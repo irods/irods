@@ -53,6 +53,7 @@ namespace irods
     const char* const KW_CFG_LOG_LEVEL_CATEGORY_MICROSERVICE{"microservice"};
     const char* const KW_CFG_LOG_LEVEL_CATEGORY_NETWORK{"network"};
     const char* const KW_CFG_LOG_LEVEL_CATEGORY_RULE_ENGINE{"rule_engine"};
+    const char* const KW_CFG_LOG_LEVEL_CATEGORY_SQL{"sql"};
 
     const char* const KW_CFG_CLIENT_API_ALLOWLIST_POLICY{"client_api_allowlist_policy"};
 
