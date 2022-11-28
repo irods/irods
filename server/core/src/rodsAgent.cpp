@@ -317,6 +317,7 @@ void set_log_levels_for_all_log_categories()
     log::microservice::set_level(log::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_MICROSERVICE));
     log::network::set_level(log::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_NETWORK));
     log::rule_engine::set_level(log::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_RULE_ENGINE));
+    log::sql::set_level(log::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_SQL));
 } // set_log_levels_for_all_log_categories
 
 void setup_signal_handlers()
