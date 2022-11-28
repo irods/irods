@@ -50,7 +50,8 @@
         "network": "info",
         "resource": "info",
         "rule_engine": "info",
-        "server": "info"
+        "server": "info",
+        "sql": "info"
     },
     "match_hash_policy": "compatible",
     "plugin_configuration": {
