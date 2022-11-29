@@ -15,6 +15,7 @@
 #include "irods/irods_stacktrace.hpp"
 #include "irods/irods_exception.hpp"
 #include "irods/irods_log.hpp"
+#include "irods/irods_logger.hpp"
 #include "irods/irods_random.hpp"
 #include "irods/irods_path_recursion.hpp"
 #include "irods/irods_get_full_path_for_config_file.hpp"
@@ -54,6 +55,8 @@
 #include <iterator>
 #include <chrono>
 #include <cctype>
+
+using log_server = irods::experimental::log::server;
 
 /* check with the input path is a valid path -
  * 1 - valid
@@ -1954,7 +1957,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         }
     }
 
-    rodsLog(LOG_ERROR, "The delay string [%s] is not recognized!", delayStr);
+    log_server::error("The delay string {} is not recognized!", delayStr);
     return 0;
 }
 
