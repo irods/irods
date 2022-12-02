@@ -71,7 +71,9 @@ namespace irods::experimental::catalog {
             capture_database_info(config, db_instance_name, db_username, db_password);
         }
         else {
-            capture_database_info(server_properties::instance().map(), db_instance_name, db_username, db_password);
+            const auto config_handle{server_properties::instance().map()};
+            const auto& config{config_handle.get_json()};
+            capture_database_info(config, db_instance_name, db_username, db_password);
         }
 
         try {

@@ -4,6 +4,7 @@
 
 int main(int argc, char* argv[])
 {
-    std::cout << irods::server_properties::instance().map().dump(4).c_str() << std::endl;
+    const auto config_handle{irods::server_properties::instance().map()};
+    std::cout << config_handle.get_json().dump(4).c_str() << '\n';
     return 0;
 } // main

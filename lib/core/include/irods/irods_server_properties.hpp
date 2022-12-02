@@ -148,13 +148,48 @@ namespace irods
 
         void remove( const std::string& _key );
 
-        /// \brief Get a reference to the underlying json object. Writing
-        /// in particular should be done with caution as there is no guarantee
-        /// that this will be safe.
-        /// In threaded/asynchronous contexts, this function bypasses safety guarantees.
-        nlohmann::json& map() noexcept
+    private:
+        class [[nodiscard("Do not discard lock!")]] readonly_config_handle
         {
-            return config_props_;
+          public:
+            readonly_config_handle(const nlohmann::json& json, std::shared_mutex& mutex)
+                : server_config{json}
+                , lock{mutex}
+            {
+            }
+
+            readonly_config_handle(const readonly_config_handle&) = delete;
+            auto operator=(const readonly_config_handle&)->readonly_config_handle& = delete;
+
+            [[nodiscard]] auto get_json() const& noexcept->const nlohmann::json&
+            {
+                return server_config;
+            }
+
+          private:
+            const nlohmann::json& server_config;
+            std::shared_lock<std::shared_mutex> lock;
+        };
+
+    public:
+        /// \brief Acquire a read-only handle containing the server configuration.
+        ///
+        /// This function acquires a read-only handle that ensures, for the lifetime of the handle, the server
+        /// configuration cannot be modified by other threads of execution.
+        ///
+        /// Example of usage is as follows:
+        /// \code{.cpp}
+        /// const auto config_handle{irods::server_properties::server_properties::instance().map()};
+        /// const auto& config{config_handle.get_json()};
+        /// \endcode
+        ///
+        /// \warning Do not store the handle in a `const auto&` variable. This will cause the lifetime of the handle
+        ///          to extend past what is normally expected, and result in code containing unexpected behavior.
+        ///
+        /// \since 4.3.1
+        readonly_config_handle map() const noexcept
+        {
+            return readonly_config_handle{config_props_, property_mutex_};
         }
 
     private:
