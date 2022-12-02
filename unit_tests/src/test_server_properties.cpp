@@ -7,6 +7,8 @@
 
 #include <fmt/format.h>
 
+#include <atomic>
+#include <string>
 #include <thread>
 
 TEST_CASE("server_properties", "[exceptions]")
@@ -53,6 +55,45 @@ TEST_CASE("server_properties is threadsafe", "[thread-safety]")
         if (irods::server_property_exists(key)) {
             REQUIRE(irods::get_server_property<int>(key) == i);
             i++;
+        }
+    }
+}
+
+TEST_CASE("server_properties map function is threadsafe", "[thread-safety]")
+{
+    constexpr auto limit{1000};
+
+    // Populate object
+    for (int i{}; i < limit; i++) {
+        irods::set_server_property(std::to_string(i), i);
+    }
+
+    std::atomic_bool do_busy_loop{true};
+
+    // Attempt to contend access with write lock
+    std::thread persistent_write([&do_busy_loop]() {
+        // Actively wait for chance to run
+        while (do_busy_loop) {
+        }
+        for (int i{}; i < limit; i++) {
+            irods::set_server_property(std::to_string(i), -1);
+        }
+    });
+    irods::at_scope_exit exit_action([&persistent_write]() { persistent_write.join(); });
+
+    // Acquire read handle
+    const auto config_handle{irods::server_properties::server_properties::instance().map()};
+
+    // Allow write attempts from 'persistent_write'
+    do_busy_loop = false;
+
+    const auto& config{config_handle.get_json()};
+
+    // If lock works, object should be as originally populated
+    for (int i{}; i < limit; i++) {
+        auto key{std::to_string(i)};
+        if (auto res{config.find(key)}; res != std::end(config)) {
+            REQUIRE(*res == i);
         }
     }
 }

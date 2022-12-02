@@ -225,7 +225,8 @@ namespace
     irods::error init_shared_memory_for_plugins()
     {
         try {
-            const auto& config = irods::server_properties::instance().map();
+            const auto config_handle{irods::server_properties::instance().map()};
+            const auto& config{config_handle.get_json()};
 
             for (const auto& item : config.at(irods::KW_CFG_PLUGIN_CONFIGURATION).items()) {
                 for (const auto& plugin : item.value().items()) {
@@ -260,7 +261,8 @@ namespace
     irods::error deinit_shared_memory_for_plugins()
     {
         try {
-            const auto& config = irods::server_properties::instance().map();
+            const auto config_handle{irods::server_properties::instance().map()};
+            const auto& config{config_handle.get_json()};
 
             for (const auto& item : config.at(irods::KW_CFG_PLUGIN_CONFIGURATION).items()) {
                 for (const auto& plugin : item.value().items()) {
@@ -377,8 +379,9 @@ namespace
     int get_stacktrace_file_processor_sleep_time()
     {
         try {
-            const auto adv_settings = irods::server_properties::instance().map()
-                .at(irods::KW_CFG_ADVANCED_SETTINGS);
+            const auto config_handle{irods::server_properties::instance().map()};
+            const auto& config{config_handle.get_json()};
+            const auto adv_settings{config.at(irods::KW_CFG_ADVANCED_SETTINGS)};
 
             const auto iter = adv_settings
                 .find(irods::KW_CFG_STACKTRACE_FILE_PROCESSOR_SLEEP_TIME_IN_SECONDS);
