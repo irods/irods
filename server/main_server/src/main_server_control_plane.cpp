@@ -73,7 +73,8 @@ namespace irods
         boost::optional<std::string> encryption_algorithm;
         buffer_crypt::array_t shared_secret;
         try {
-            const auto& config = server_properties::instance().map();
+            const auto config_handle{server_properties::instance().map()};
+            const auto& config{config_handle.get_json()};
             time_out = config.at(KW_CFG_SERVER_CONTROL_PLANE_TIMEOUT).get<int>();
             port = config.at(_port_keyword).get<int>();
             num_hash_rounds = config.at(KW_CFG_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS).get<int>();
@@ -473,7 +474,9 @@ namespace irods
         local_server_hostname_ = my_env.rodsHost;
 
         // get the provider's hostname host for ordering
-        provider_hostname_ = server_properties::instance().map().at(KW_CFG_CATALOG_PROVIDER_HOSTS)[0].get_ref<const std::string&>();
+        const auto config_handle{server_properties::instance().map()};
+        const auto& config{config_handle.get_json()};
+        provider_hostname_ = config.at(KW_CFG_CATALOG_PROVIDER_HOSTS)[0].get_ref<const std::string&>();
 
         // repave provider_hostname_ as we do not want to process 'localhost'
         if ("localhost" == provider_hostname_) {
@@ -575,7 +578,8 @@ namespace irods
         boost::optional<std::string> encryption_algorithm;
         buffer_crypt::array_t shared_secret;
         try {
-            const auto& config = server_properties::instance().map();
+            const auto config_handle{server_properties::instance().map()};
+            const auto& config{config_handle.get_json()};
             port = config.at(port_prop_).get<int>();
             num_hash_rounds = config.at(KW_CFG_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS).get<int>();
             encryption_algorithm.reset(config.at(KW_CFG_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM).get_ref<const std::string&>());
@@ -988,7 +992,8 @@ namespace irods
         boost::optional<std::string> encryption_algorithm;
         buffer_crypt::array_t shared_secret;
         try {
-            const auto& config = server_properties::instance().map();
+            const auto config_handle{server_properties::instance().map()};
+            const auto& config{config_handle.get_json()};
             num_hash_rounds = config.at(KW_CFG_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS).get<int>();
             encryption_algorithm.reset(config.at(KW_CFG_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM).get_ref<const std::string&>());
             const auto& key = config.at(KW_CFG_SERVER_CONTROL_PLANE_KEY).get_ref<const std::string&>();

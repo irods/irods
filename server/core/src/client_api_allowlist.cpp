@@ -197,7 +197,8 @@ namespace irods::client_api_allowlist
                 return false;
             }
 
-            const auto& config = irods::server_properties::instance().map();
+            const auto config_handle{irods::server_properties::instance().map()};
+            const auto& config{config_handle.get_json()};
 
             if (const auto iter = config.find(irods::KW_CFG_CLIENT_API_ALLOWLIST_POLICY); iter != std::end(config)) {
                 return iter->get_ref<const std::string&>() == "enforce";
