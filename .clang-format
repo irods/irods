@@ -19,7 +19,7 @@ PPIndentWidth:   2
 IndentAccessModifiers: false
 AccessModifierOffset: -2
 
-AlignAfterOpenBracket: AlwaysBreak
+AlignAfterOpenBracket: Align
 #AlignAfterOpenBracket: BlockIndent
 AlignArrayOfStructures: None
 AlignConsecutiveAssignments: None
