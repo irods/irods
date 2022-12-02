@@ -32,7 +32,8 @@ namespace
         try {
             const std::string name = parseMspForStr(_in_name);
             const nlohmann::json* json_value = nullptr;
-            const auto& config = irods::server_properties::server_properties::instance().map();
+            const auto config_handle{irods::server_properties::server_properties::instance().map()};
+            const auto& config{config_handle.get_json()};
 
             try {
                 if (name.find("/") != std::string::npos) {

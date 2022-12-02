@@ -127,7 +127,8 @@ namespace
 
     std::optional<std::string_view> next_executor()
     {
-        const auto& config = irods::server_properties::instance().map();
+        const auto config_handle{irods::server_properties::instance().map()};
+        const auto& config{config_handle.get_json()};
 
         const auto advanced_settings = config.find(irods::KW_CFG_ADVANCED_SETTINGS);
         if (advanced_settings == std::end(config)) {
