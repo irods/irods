@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.7.0 FATAL_ERROR) #CPACK_DEBIAN_<COMPONENT>_PACKAGE_NAME
 
+option(IRODS_ENABLE_ADDRESS_SANITIZER "Enables detection of memory leaks and other features provided by Address Sanitizer." OFF)
+
 find_package(IRODS 4.3.0 EXACT REQUIRED CONFIG)
 set(IRODS_PACKAGE_PREFIX "${PACKAGE_PREFIX_DIR}")
 
@@ -10,8 +12,25 @@ include(IrodsCXXCompiler)
 
 set(CMAKE_CXX_STANDARD ${IRODS_CXX_STANDARD})
 # export-dynamic so stacktrace entries from executables have function names
-set(CMAKE_EXE_LINKER_FLAGS_INIT "-rdynamic -Wl,--export-dynamic -Wl,--enable-new-dtags -Wl,--as-needed -Wl,-z,defs")
+set(CMAKE_EXE_LINKER_FLAGS_INIT "-rdynamic -Wl,--export-dynamic -Wl,--enable-new-dtags -Wl,--as-needed")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE_INIT "-Wl,--gc-sections -Wl,-z,combreloc")
+
+if (IRODS_ENABLE_ADDRESS_SANITIZER)
+  add_compile_options(
+    -fsanitize=address
+    -fno-omit-frame-pointer
+    -fno-optimize-sibling-calls
+    -O1
+  )
+  add_link_options(
+    -fsanitize=address
+    -fno-omit-frame-pointer
+    -fno-optimize-sibling-calls
+    -O1
+  )
+else()
+  set(CMAKE_EXE_LINKER_FLAGS_INIT "${CMAKE_EXE_LINKER_FLAGS_INIT} -Wl,-z,defs")
+endif()
 
 project(icommands
   VERSION "${IRODS_VERSION}"
