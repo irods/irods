@@ -71,6 +71,7 @@
 #include <fmt/format.h>
 #include <nlohmann/json.hpp>
 
+#include <ctime>
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
@@ -676,8 +677,12 @@ namespace
         if (fork() == 0) {
             execv(args[0], args.data());
 
-            // If execv() fails, the POSIX standard recommends using _exit() instead of
-            // exit() to keep the child from corrupting the parent's memory.
+            // If execv() fails, the POSIX standard recommends using _exit() instead of exit() to avoid
+            // flushing stdio buffers and handlers registered by the parent.
+            //
+            // In the case of C++, this is necessary to avoid triggering destructors. Triggering a destructor
+            // could result in assertions made by the struct/class being violatied. For some data types,
+            // violating an assertion results in program termination (i.e. SIGABRT).
             _exit(1);
         }
     } // launch_delay_server
@@ -967,7 +972,7 @@ namespace
         closedir(dirPtr);
 
         return savedStatus;
-    }
+    } // purgeLockFileDir
 
     void task_purge_lock_file()
     {
@@ -1020,13 +1025,87 @@ namespace
             agentProc->next = NULL;
         }
         return 0;
-    }
+    } // queueAgentProc
+
+    void launch_read_worker_threads()
+    {
+        for (int i = 0; i < NUM_READ_WORKER_THR; ++i) {
+            try {
+                ReadWorkerThread[i] = new boost::thread(readWorkerTask);
+            }
+            catch (const boost::thread_resource_error&) {
+                THROW(SYS_THREAD_RESOURCE_ERR, "Error launching read worker threads.");
+            }
+        }
+    } // launch_read_worker_threads
+
+    void launch_spawn_manager_thread()
+    {
+        try {
+            SpawnManagerThread = new boost::thread(task_spawn_manager);
+        }
+        catch (const boost::thread_resource_error&) {
+            THROW(SYS_THREAD_RESOURCE_ERR, "Error launching spawn management thread.");
+        }
+    } // launch_spawn_manager_thread
+
+    void launch_purge_lock_file_thread(std::string_view _server_role)
+    {
+        // Start purge lock file thread
+        if (irods::KW_CFG_SERVICE_ROLE_PROVIDER == _server_role) {
+            try {
+                PurgeLockFileThread = new boost::thread(task_purge_lock_file);
+            }
+            catch (const boost::thread_resource_error&) {
+                log_server::error("{}: Error launching thread.", __func__);
+            }
+        }
+    } // launch_purge_lock_file_thread
+
+    void join_purge_lock_file_thread(std::string_view _server_role)
+    {
+        if (irods::KW_CFG_SERVICE_ROLE_PROVIDER == _server_role) {
+            try {
+                PurgeLockFileThread->join();
+            }
+            catch (const boost::thread_resource_error&) {
+                log_server::error("{}: Error joining thread.", __func__);
+            }
+        }
+    } // join_purge_lock_file_thread
+
+    void join_spawn_manager_thread()
+    {
+        SpawnReqCond.notify_all();
+
+        try {
+            SpawnManagerThread->join();
+        }
+        catch (const boost::thread_resource_error&) {
+            log_server::error("{}: Error joining thread.", __func__);
+        }
+    } // join_spawn_manager_thread
+
+    void join_read_worker_threads()
+    {
+        for (int i = 0; i < NUM_READ_WORKER_THR; ++i) {
+            ReadReqCond.notify_all();
+
+            try {
+                ReadWorkerThread[i]->join();
+            }
+            catch (const boost::thread_resource_error&) {
+                log_server::error("{}: Error joining thread.", __func__);
+            }
+        }
+    } // join_read_worker_threads
 } // anonymous namespace
 
 int main(int argc, char** argv)
 {
     int c;
-    char tmpStr1[100], tmpStr2[100];
+    char tmpStr1[100];
+    char tmpStr2[100];
     bool write_to_stdout = false;
     bool enable_test_mode = false;
 
@@ -1043,7 +1122,8 @@ int main(int argc, char** argv)
     	rodsLogSqlReq(1);
     }
 
-    ServerBootTime = time(nullptr);
+    ServerBootTime = std::time(nullptr);
+
     while ((c = getopt(argc, argv, "tuvVqsh")) != EOF) {
         switch (c) {
             case 't':
@@ -1177,7 +1257,6 @@ int main(int argc, char** argv)
             // When the server is starting up, agent_spawning_pid will be zero. Therefore,
             // we skip checking for the agent factory on startup.
             if (agent_spawning_pid > 0 && waitpid(agent_spawning_pid, nullptr, WNOHANG) != -1) {
-                log_server::info("Agent factory [{}] still exists.", agent_spawning_pid);
                 return;
             }
 
@@ -1191,8 +1270,31 @@ int main(int argc, char** argv)
                 ProcessType = AGENT_PT;
 
                 try {
+                    const auto ec = runIrodsAgentFactory(local_addr);
+
+                    log_server::critical("Agent factory returned with error code [{}].", ec);
+
+#if __has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
+                    // This function must be called here due to the use of _exit() (just below). Address Sanitizer
+                    // (ASan) relies on std::atexit handlers to report its findings. _exit() does not trigger any
+                    // of the handlers registered by ASan, therefore, we manually run ASan just before the agent
+                    // factory exits.
+                    __lsan_do_leak_check();
+#endif
+
                     // Collapse non-zero error codes into one.
-                    _exit(runIrodsAgentFactory(local_addr) == 0 ? 0 : 1);
+                    //
+                    // The agent factory is normally shut down via the SIGTERM signal. However, if the agent factory
+                    // fails to fork an agent, it will return SYS_FORK_ERROR here.
+                    //
+                    // If the agent factory terminates for whatever reason, is respawned by the main server process,
+                    // and then fails to fork an agent, the agent factory will most likely exit with a SIGABRT due to
+                    // a failed assertion in boost::mutex or boost::condition_variable. Destructing a mutex while it
+                    // is locked is not allowed by the Boost.Thread library.
+                    //
+                    // The only way to avoid this situation is to use _exit(). Using _exit() is safe here because this
+                    // is the final step in shutting down the agent factory process.
+                    _exit(ec == 0 ? 0 : 1);
                 }
                 catch (...) {
                     // If an exception is thrown for any reason, terminate the agent factory.
@@ -1329,41 +1431,9 @@ int main(int argc, char** argv)
         // Launch the control plane.
         irods::server_control_plane ctrl_plane(irods::KW_CFG_SERVER_CONTROL_PLANE_PORT, is_control_plane_accepting_requests);
 
-        // Start read worker thread
-        for (int i = 0; i < NUM_READ_WORKER_THR; ++i) {
-            try {
-                ReadWorkerThread[i] = new boost::thread(readWorkerTask);
-            }
-            catch (const boost::thread_resource_error&) {
-                log_server::error(
-                    "boost encountered a thread_resource_error during readWorkerTask thread construction in {}.",
-                    __func__);
-                return SYS_THREAD_RESOURCE_ERR;
-            }
-        }
-
-        // Start spawn manager thread
-        try {
-            SpawnManagerThread = new boost::thread(task_spawn_manager);
-        }
-        catch (const boost::thread_resource_error&) {
-            log_server::error(
-                "boost encountered a thread_resource_error during task_spawn_manager thread construction in {}.",
-                __func__);
-            return SYS_THREAD_RESOURCE_ERR;
-        }
-
-        // Start purge lock file thread
-        if (irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role) {
-            try {
-                PurgeLockFileThread = new boost::thread(task_purge_lock_file);
-            }
-            catch (const boost::thread_resource_error&) {
-                log_server::error(
-                    "boost encountered a thread_resource_error during task_purge_lock_file thread construction in {}.",
-                    __func__);
-            }
-        }
+        launch_read_worker_threads();
+        launch_spawn_manager_thread();
+        launch_purge_lock_file_thread(svc_role);
 
         fd_set sockMask;
         FD_ZERO(&sockMask);
@@ -1472,39 +1542,12 @@ int main(int argc, char** argv)
             addConnReqToQueue(&svrComm, newSock);
         }
 
-        if (irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role) {
-            try {
-                PurgeLockFileThread->join();
-            }
-            catch (const boost::thread_resource_error&) {
-                log_server::error("boost encountered a thread_resource_error during join in {}.", __func__);
-            }
-        }
+        join_purge_lock_file_thread(svc_role);
 
         procChildren(&ConnectedAgentHead);
 
-        // Stop spawn manager thread
-        SpawnReqCond.notify_all();
-        try {
-            SpawnManagerThread->join();
-        }
-        catch (const boost::thread_resource_error&) {
-            log_server::error(
-                "boost encountered a thread_resource_error during spawn manager thread join in {}.", __func__);
-        }
-
-        // Stop read worker threads
-        for (int i = 0; i < NUM_READ_WORKER_THR; ++i) {
-            ReadReqCond.notify_all();
-
-            try {
-                ReadWorkerThread[i]->join();
-            }
-            catch (const boost::thread_resource_error&) {
-                log_server::error(
-                    "boost encountered a thread_resource_error during read worker thread join in {}.", __func__);
-            }
-        }
+        join_spawn_manager_thread();
+        join_read_worker_threads();
 
         irods::server_state::set_state(irods::server_state::server_state::exited);
     }
@@ -1540,12 +1583,12 @@ serverExit()
 
 #if __has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
     // Calling this function is likely not async-signal-safe, but it is okay because
-    // if the code has been compiled with Address Sanitizer enabled. For that reason,
+    // the code has been compiled with Address Sanitizer enabled. For that reason,
     // we can assume that the binary is not running in a production environment.
     __lsan_do_leak_check();
 #endif
 
-    _exit(1);
+    _exit(sig);
 }
 
 int procChildren(agentProc_t** agentProcHead)
