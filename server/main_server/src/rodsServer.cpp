@@ -1565,12 +1565,7 @@ int main(int argc, char** argv)
     return return_code;
 }
 
-void
-#if defined(linux_platform) || defined(aix_platform) || defined(solaris_platform) || defined(osx_platform)
-serverExit( int sig )
-#else
-serverExit()
-#endif
+void serverExit(int _signal)
 {
     recordServerProcess(nullptr); // Unlink the process id file.
 
@@ -1588,7 +1583,7 @@ serverExit()
     __lsan_do_leak_check();
 #endif
 
-    _exit(sig);
+    _exit(_signal);
 }
 
 int procChildren(agentProc_t** agentProcHead)
