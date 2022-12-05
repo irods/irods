@@ -1,7 +1,7 @@
 #include "irods/irods_signal.hpp"
 
 #include "irods/irods_default_paths.hpp"
-#include "irods/rodsLog.h"
+#include "irods/irods_logger.hpp"
 
 #include <boost/stacktrace/safe_dump_to.hpp>
 
@@ -80,14 +80,20 @@ namespace irods
 
     const std::string STACKTRACE_DIR(irods::get_irods_stacktrace_directory().string());
 
-    void set_unrecoverable_signal_handlers() // TODO Consider calling this for grandpa also.
+    void set_unrecoverable_signal_handlers()
     {
-        rodsLog(LOG_DEBUG, "Setting stacktrace dump signal handler for process %d", getpid());
-        rodsLog(LOG_DEBUG, "Stacktraces will be dumped to \"%s\"", irods::STACKTRACE_DIR.c_str());
-        struct sigaction action{};
+        using log_server = irods::experimental::log::server;
+
+        log_server::debug("Setting stacktrace dump signal handler for process [{}].", getpid());
+        log_server::debug("Stacktraces will be dumped to [{}].", irods::STACKTRACE_DIR);
+
+        struct sigaction action;
+        action.sa_flags = 0;
+        sigemptyset(&action.sa_mask);
         action.sa_handler = stacktrace_signal_handler;
-        sigaction(SIGSEGV, &action, 0);
-        sigaction(SIGABRT, &action, 0);
-        sigaction(SIGINT, &action, 0);
+
+        sigaction(SIGSEGV, &action, nullptr);
+        sigaction(SIGABRT, &action, nullptr);
+        sigaction(SIGINT, &action, nullptr);
     } // set_unrecoverable_signal_handlers
 } // namespace irods
