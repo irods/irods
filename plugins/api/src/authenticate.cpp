@@ -3,6 +3,7 @@
 #include "irods/apiHandler.hpp"
 #include "irods/plugins/api/api_plugin_number.h"
 #include "irods/irods_logger.hpp"
+#include "irods/rcMisc.h"
 #include "irods/rodsPackInstruct.h"
 
 #include <nlohmann/json.hpp>
@@ -119,34 +120,36 @@ namespace
 
 #endif // RODS_SERVER
 
-extern "C" {
-    irods::api_entry* plugin_factory(const std::string&, const std::string&)
-    {
+extern "C"
+irods::api_entry* plugin_factory(const std::string&, const std::string&)
+{
 #ifdef RODS_SERVER
-        irods::client_api_allowlist::add(AUTHENTICATION_APN);
+    irods::client_api_allowlist::add(AUTHENTICATION_APN);
 #endif
 
-        // =-=-=-=-=-=-=-
-        // create a api def object
-        irods::apidef_t def{AUTHENTICATION_APN, // api number
-                            RODS_API_VERSION,   // api version
-                            NO_USER_AUTH,       // client auth
-                            NO_USER_AUTH,       // proxy auth
-                            "BinBytesBuf_PI", 0,                        // In PI / bs flag
-                            "BinBytesBuf_PI", 0,                        // Out PI / bs flag
-                            op,                 // operation
-                            "api_authenticate", // operation name
-                            nullptr,            // null clear fcn
-                            (funcPtr)CALL_AUTHENTICATE};
+    // clang-format off
+    irods::apidef_t def{
+        AUTHENTICATION_APN,     // api number
+        RODS_API_VERSION,       // api version
+        NO_USER_AUTH,           // client auth
+        NO_USER_AUTH,           // proxy auth
+        "BinBytesBuf_PI", 0,    // In PI / bs flag
+        "BinBytesBuf_PI", 0,    // Out PI / bs flag
+        op,                     // operation
+        "api_authenticate",     // operation name
+        clearBytesBuffer,       // clear input function
+        clearBytesBuffer,       // clear output function
+        (funcPtr)CALL_AUTHENTICATE
+    };
+    // clang-format on
 
-        auto* api = new irods::api_entry{def};
+    auto* api = new irods::api_entry{def};
 
-        api->in_pack_key = "BinBytesBuf_PI";
-        api->in_pack_value = BytesBuf_PI;
+    api->in_pack_key = "BinBytesBuf_PI";
+    api->in_pack_value = BytesBuf_PI;
 
-        api->out_pack_key = "BinBytesBuf_PI";
-        api->out_pack_value = BytesBuf_PI;
+    api->out_pack_key = "BinBytesBuf_PI";
+    api->out_pack_value = BytesBuf_PI;
 
-        return api;
-    } // plugin_factory
-} // extern "C"
+    return api;
+} // plugin_factory

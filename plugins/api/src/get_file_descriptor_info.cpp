@@ -1,4 +1,5 @@
 #include "irods/plugins/api/api_plugin_number.h"
+#include "irods/rcMisc.h"
 #include "irods/rodsDef.h"
 #include "irods/rcConnect.h"
 #include "irods/rodsPackInstruct.h"
@@ -348,16 +349,19 @@ auto plugin_factory(const std::string& _instance_name,
 #endif // RODS_SERVER
 
     // clang-format off
-    irods::apidef_t def{GET_FILE_DESCRIPTOR_INFO_APN,    // API number
-                        RODS_API_VERSION,                // API version
-                        NO_USER_AUTH,                    // Client auth
-                        NO_USER_AUTH,                    // Proxy auth
-                        "BinBytesBuf_PI", 0,             // In PI / bs flag
-                        "BinBytesBuf_PI", 0,             // Out PI / bs flag
-                        op,                              // Operation
-                        "api_get_file_descriptor_info",  // Operation name
-                        nullptr,                         // Null clear function
-                        (funcPtr) CALL_GET_FD_INFO};
+    irods::apidef_t def{
+        GET_FILE_DESCRIPTOR_INFO_APN,    // API number
+        RODS_API_VERSION,                // API version
+        NO_USER_AUTH,                    // Client auth
+        NO_USER_AUTH,                    // Proxy auth
+        "BinBytesBuf_PI", 0,             // In PI / bs flag
+        "BinBytesBuf_PI", 0,             // Out PI / bs flag
+        op,                              // Operation
+        "api_get_file_descriptor_info",  // Operation name
+        clearBytesBuffer,               // clear input function
+        clearBytesBuffer,               // clear output function
+        (funcPtr) CALL_GET_FD_INFO
+    };
     // clang-format on
 
     auto* api = new irods::api_entry{def};
@@ -369,5 +373,4 @@ auto plugin_factory(const std::string& _instance_name,
     api->out_pack_value = BytesBuf_PI;
 
     return api;
-}
-
+} // plugin_factory

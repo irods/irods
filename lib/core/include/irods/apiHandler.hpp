@@ -1,5 +1,5 @@
-#ifndef API_HANDLER_HPP
-#define API_HANDLER_HPP
+#ifndef IRODS_API_HANDLER_HPP
+#define IRODS_API_HANDLER_HPP
 
 #include "irods/rods.h"
 #include "irods/packStruct.h"
@@ -28,9 +28,6 @@
 
 namespace irods
 {
-    // NOOP function for clearInStruct
-    void clearInStruct_noop( void* );
-
     struct apidef_t {
         // =-=-=-=-=-=-=-
         // attributes
@@ -56,7 +53,8 @@ namespace irods
 
         const char *   operation_name;
 
-        std::function<void( void* )> clearInStruct;	// free input struct function
+        std::function<void(void*)> clearInStruct;	// free input struct function
+        std::function<void(void*)> clearOutStruct;	// free output struct function
 
         int(*call_wrapper)(...);        // wraps the api call for type casting
     }; // struct apidef_t
@@ -306,17 +304,14 @@ namespace irods
             return 0;
         } // call_handler_without_policy
 
-        // =-=-=-=-=-=-=-
         // ctors
         api_entry( apidef_t& );
 
         api_entry( const api_entry& );
 
-        // =-=-=-=-=-=-=-
         // operators
         api_entry& operator=( const api_entry& );
 
-        // =-=-=-=-=-=-=-
         // attributes
         int            apiNumber;      /* the API number */
         char*          apiVersion;     /* The API version of this call */
@@ -344,7 +339,8 @@ namespace irods
 
         lookup_table< std::string>   extra_pack_struct;
 
-        std::function<void( void* )> clearInStruct;		//free input struct function
+        std::function<void(void*)> clearInStruct;   // free input struct function
+        std::function<void(void*)> clearOutStruct;  // free output struct function
 
     private:
 #ifdef ENABLE_RE
@@ -425,6 +421,6 @@ namespace irods
         api_entry_table&  _api_tbl,    // table holding api entries
         pack_entry_table& _pack_tbl,   // table for pack struct ref
         bool              _cli_flg = true ); // default to client
-}; // namespace irods
+} // namespace irods
 
-#endif          /* API_HANDLER_H */
+#endif // IRODS_API_HANDLER_HPP

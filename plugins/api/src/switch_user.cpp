@@ -1,3 +1,4 @@
+#include "irods/irods_pack_table.hpp"
 #include "irods/plugins/api/api_plugin_number.h"
 #include "irods/plugins/api/switch_user_types.h"
 #include "irods/rodsDef.h"
@@ -273,16 +274,19 @@ extern "C" auto plugin_factory(
 #endif // RODS_SERVER
 
     // clang-format off
-    irods::apidef_t def{SWITCH_USER_APN,            // API number
-                        RODS_API_VERSION,           // API version
-                        NO_USER_AUTH,               // Client auth
-                        NO_USER_AUTH,               // Proxy auth
-                        "SwitchUserInp_PI", 0,      // In PI / bs flag
-                        nullptr, 0,                 // Out PI / bs flag
-                        op,                         // Operation
-                        "api_switch_user",          // Operation name
-                        nullptr,                    // Null clear function
-                        fn_ptr};
+    irods::apidef_t def{
+        SWITCH_USER_APN,            // API number
+        RODS_API_VERSION,           // API version
+        NO_USER_AUTH,               // Client auth
+        NO_USER_AUTH,               // Proxy auth
+        "SwitchUserInp_PI", 0,      // In PI / bs flag
+        nullptr, 0,                 // Out PI / bs flag
+        op,                         // Operation
+        "api_switch_user",          // Operation name
+        irods::clearInStruct_noop,  // Clear input function
+        irods::clearOutStruct_noop, // Clear output function
+        fn_ptr
+    };
     // clang-format on
 
     auto* api = new irods::api_entry{def}; // NOLINT(cppcoreguidelines-owning-memory)

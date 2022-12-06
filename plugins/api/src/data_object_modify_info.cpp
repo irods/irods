@@ -1,3 +1,4 @@
+#include "irods/irods_pack_table.hpp"
 #include "irods/plugins/api/api_plugin_number.h"
 #include "irods/rodsDef.h"
 #include "irods/rcConnect.h"
@@ -134,16 +135,19 @@ auto plugin_factory(const std::string& _instance_name,
 #endif // RODS_SERVER
 
     // clang-format off
-    irods::apidef_t def{DATA_OBJECT_MODIFY_INFO_APN,     // API number
-                        RODS_API_VERSION,                // API version
-                        NO_USER_AUTH,                    // Client auth
-                        NO_USER_AUTH,                    // Proxy auth
-                        "ModDataObjMeta_PI", 0,          // In PI / bs flag
-                        nullptr, 0,                      // Out PI / bs flag
-                        op,                              // Operation
-                        "api_data_object_modify_info",   // Operation name
-                        clearModDataObjMetaInp,          // Null clear function
-                        (funcPtr) CALL_DATA_OBJECT_MODIFY_INFO};
+    irods::apidef_t def{
+        DATA_OBJECT_MODIFY_INFO_APN,     // API number
+        RODS_API_VERSION,                // API version
+        NO_USER_AUTH,                    // Client auth
+        NO_USER_AUTH,                    // Proxy auth
+        "ModDataObjMeta_PI", 0,          // In PI / bs flag
+        nullptr, 0,                      // Out PI / bs flag
+        op,                              // Operation
+        "api_data_object_modify_info",   // Operation name
+        clearModDataObjMetaInp,          // Null clear function
+        irods::clearOutStruct_noop,
+        (funcPtr) CALL_DATA_OBJECT_MODIFY_INFO
+    };
     // clang-format on
 
     auto* api = new irods::api_entry{def};
@@ -152,5 +156,4 @@ auto plugin_factory(const std::string& _instance_name,
     api->in_pack_value = ModDataObjMeta_PI;
 
     return api;
-}
-
+} // plugin_factory

@@ -1,19 +1,23 @@
-// =-=-=-=-=-=-=-
-// irods includes
 #include "irods/apiHandler.hpp"
 #include "irods/irods_load_plugin.hpp"
 #include "irods/irods_plugin_name_generator.hpp"
 #include "irods/irods_pack_table.hpp"
 #include "irods/irods_client_api_table.hpp"
+#include "irods/irods_logger.hpp"
 
 #include <boost/filesystem.hpp>
 
 #include <algorithm>
 
+extern int ProcessType; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+
+namespace
+{
+    using log_agent = irods::experimental::log::agent;
+} // anonymous namespace
+
 namespace irods
 {
-    // =-=-=-=-=-=-=-
-    // public - ctor
     api_entry::api_entry( apidef_t& _def )
         : plugin_base( "api_instance", "api_context" )
         , apiNumber( _def.apiNumber )
@@ -27,12 +31,11 @@ namespace irods
         , call_wrapper(_def.call_wrapper)
         , operation_name(_def.operation_name)
         , clearInStruct( _def.clearInStruct )
+        , clearOutStruct( _def.clearOutStruct )
     {
         operations_[ _def.operation_name ] = _def.svrHandler;
-    } // ctor
+    } // constructor
 
-    // =-=-=-=-=-=-=-
-    // public - copy ctor
     api_entry::api_entry( const api_entry& _rhs )
         : plugin_base( _rhs )
         , apiNumber( _rhs.apiNumber )
@@ -51,11 +54,10 @@ namespace irods
         , operation_name(_rhs.operation_name)
         , extra_pack_struct(_rhs.extra_pack_struct)
         , clearInStruct( _rhs.clearInStruct )
+        , clearOutStruct( _rhs.clearOutStruct )
     {
-    } // cctor
+    } // copy constructor
 
-    // =-=-=-=-=-=-=-
-    // public - assignment operator
     api_entry& api_entry::operator=( const api_entry& _rhs )
     {
         if ( this == &_rhs ) {
@@ -73,17 +75,15 @@ namespace irods
         outBsFlag       = _rhs.outBsFlag;
 
         return *this;
-    } // assignment op
+    } // assignment operator
 
-    // =-=-=-=-=-=-=-
-    // public - ctor for api entry table
     api_entry_table::api_entry_table(apidef_t defs[], size_t num)
         : loaded_plugins_{}
     {
         for (size_t i = 0; i < num; ++i) {
             table_[defs[i].apiNumber] = api_entry_ptr(new api_entry(defs[i]));
         }
-    } // ctor
+    } // constructor
 
     auto api_entry_table::is_plugin_loaded(std::string_view plugin_name) -> bool
     {
@@ -122,8 +122,10 @@ namespace irods
 
                 // Skip the API plugin if it was loaded before.
                 if (_api_tbl.is_plugin_loaded(path.c_str())) {
-                    const auto* msg = "init_api_table :: API plugin [%s] has already been loaded. Skipping ...";
-                    rodsLog(LOG_DEBUG, msg, path.stem().c_str());
+                    if (CLIENT_PT != ::ProcessType) {
+                        log_agent::debug(
+                            "init_api_table :: API plugin [{}] has already been loaded. Skipping ...", path.stem());
+                    }
                     continue;
                 }
 
@@ -154,12 +156,10 @@ namespace irods
                                 "api_instance",
                                 "api_context");
                 if (ret.ok() && entry) {
-                    rodsLog(
-                        LOG_DEBUG,
-                        "init_api_table :: adding %d - [%s] - [%s]",
-                        entry->apiNumber,
-                        entry->operation_name.c_str(),
-                        name.c_str() );
+                    if (CLIENT_PT != ::ProcessType) {
+                        log_agent::debug(
+                            "init_api_table :: adding {} - [{}] - [{}].", entry->apiNumber, entry->operation_name, name);
+                    }
 
                     // =-=-=-=-=-=-=-
                     // ask the plugin to fill in the api and pack
@@ -203,4 +203,3 @@ namespace irods
         return SUCCESS();
     } // init_api_table
 } // namespace irods
-
