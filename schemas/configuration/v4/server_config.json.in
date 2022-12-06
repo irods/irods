@@ -6,6 +6,7 @@
         "advanced_settings": {
             "type": "object",
             "properties": {
+                "agent_factory_watcher_sleep_time_in_seconds": {"type": "integer"},
                 "default_number_of_transfer_threads": {"type": "integer"},
                 "default_temporary_password_lifetime_in_seconds": {"type": "integer"},
                 "delay_rule_executors": {
@@ -18,19 +19,22 @@
                     "type": "object",
                     "properties": {
                         "shared_memory_size_in_bytes": {"type": "integer"},
-                        "eviction_age_in_seconds": {"type": "integer"}
+                        "eviction_age_in_seconds": {"type": "integer"},
+                        "cache_clearer_sleep_time_in_seconds": {"type": "integer"}
                     }
                 },
                 "hostname_cache": {
                     "type": "object",
                     "properties": {
                         "shared_memory_size_in_bytes": {"type": "integer"},
-                        "eviction_age_in_seconds": {"type": "integer"}
+                        "eviction_age_in_seconds": {"type": "integer"},
+                        "cache_clearer_sleep_time_in_seconds": {"type": "integer"}
                     }
                 },
                 "maximum_size_for_single_buffer_in_megabytes": {"type": "integer"},
                 "maximum_size_of_delay_queue_in_bytes": {"type": "integer"},
                 "maximum_temporary_password_lifetime_in_seconds": {"type": "integer"},
+                "migrate_delay_server_sleep_time_in_seconds":  {"type": "integer"},
                 "number_of_concurrent_delay_rule_executors": {"type": "integer"},
                 "stacktrace_file_processor_sleep_time_in_seconds": {"type": "integer"},
                 "transfer_buffer_size_for_parallel_transfer_in_megabytes": {"type": "integer"},
