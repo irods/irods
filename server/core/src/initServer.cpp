@@ -832,13 +832,17 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
             rstrcpy( rsComm->option, tmpStr, LONG_NAME_LEN );
         }
     }
-    if ( rsComm->sock != 0 ) {
-        /* remove error messages from xmsLog */
-        setLocalAddr( rsComm->sock, &rsComm->localAddr );
-        setRemoteAddr( rsComm->sock, &rsComm->remoteAddr );
+
+    if (const auto ec = setLocalAddr(rsComm->sock, &rsComm->localAddr); ec == USER_RODS_HOSTNAME_ERR) {
+        return ec;
+    }
+
+    if (const auto ec = setRemoteAddr(rsComm->sock, &rsComm->remoteAddr); ec != 0) {
+        return ec;
     }
 
     tmpStr = inet_ntoa( rsComm->remoteAddr.sin_addr );
+
     if ( tmpStr == NULL || *tmpStr == '\0' ) {
         tmpStr = "UNKNOWN";
     }
