@@ -631,8 +631,18 @@ namespace
 
             zmq::context_t zmq_ctx;
             zmq::socket_t zmq_socket{zmq_ctx, zmq::socket_type::req};
-            zmq_socket.set(zmq::sockopt::sndtimeo, 500);
-            zmq_socket.set(zmq::sockopt::rcvtimeo, 5000);
+            const int server_control_plane_timeout_in_milliseconds = [] {
+                try {
+                    const auto config_handle = irods::server_properties::instance().map();
+                    return config_handle.get_json().at(irods::KW_CFG_SERVER_CONTROL_PLANE_TIMEOUT).get<int>();
+                }
+                catch (...) {
+                    constexpr int default_server_control_plane_timeout_in_milliseconds = 10000;
+                    return default_server_control_plane_timeout_in_milliseconds;
+                }
+            }();
+            zmq_socket.set(zmq::sockopt::sndtimeo, server_control_plane_timeout_in_milliseconds);
+            zmq_socket.set(zmq::sockopt::rcvtimeo, server_control_plane_timeout_in_milliseconds);
             zmq_socket.set(zmq::sockopt::linger, 0);
             zmq_socket.connect(zmq_server_target);
             log_server::trace("Connection established.");
