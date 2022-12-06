@@ -1,6 +1,7 @@
 #include <irods/authentication_plugin_framework.hpp>
 #include <irods/irods_auth_constants.hpp>
 #include <irods/irods_client_api_table.hpp>
+#include <irods/irods_configuration_keywords.hpp>
 #include <irods/irods_environment_properties.hpp>
 #include <irods/irods_gsi_object.hpp>
 #include <irods/irods_kvp_string_parser.hpp>
@@ -19,33 +20,10 @@
 #include <nlohmann/json.hpp>
 
 #include <algorithm>
+#include <iostream>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-
-namespace
-{
-    namespace irods_auth = irods::experimental::auth;
-
-    constexpr const char* const AUTH_OPENID_SCHEME = "openid";
-    constexpr const char* const PAM_INTERACTIVE_SCHEME = "pam_interactive";
-    constexpr const char* const PAM_PASSWORD_SCHEME = "pam_password";
-
-    auto scheme_uses_iinit_password_prompt(const std::string_view _scheme) -> bool
-    {
-        const std::initializer_list<const std::string_view> no_password_prompt = {
-            AUTH_OPENID_SCHEME,
-            irods::AUTH_GSI_SCHEME,
-            irods::AUTH_PAM_SCHEME,
-            PAM_PASSWORD_SCHEME,
-            PAM_INTERACTIVE_SCHEME
-        };
-
-        return std::none_of(std::cbegin(no_password_prompt),
-                            std::cend(no_password_prompt),
-                            [&_scheme](const auto& _s) { return _scheme == _s; });
-    } // scheme_uses_iinit_password_prompt
-} // anonymous namespace
 
 void usage( char *prog );
 
@@ -100,11 +78,239 @@ mkrodsdir() {
     return 0;
 }
 
-void
-printUpdateMsg() {
-    printf( "One or more fields in your iRODS environment file (irods_environment.json) are\n" );
-    printf( "missing; please enter them.\n" );
-}
+namespace
+{
+    namespace irods_auth = irods::experimental::auth;
+
+    constexpr const char* const AUTH_OPENID_SCHEME = "openid";
+    constexpr const char* const PAM_INTERACTIVE_SCHEME = "pam_interactive";
+    constexpr const char* const PAM_PASSWORD_SCHEME = "pam_password";
+
+    auto scheme_uses_iinit_password_prompt(const std::string_view _scheme) -> bool
+    {
+        const std::initializer_list<const std::string_view> no_password_prompt = {
+            AUTH_OPENID_SCHEME,
+            irods::AUTH_GSI_SCHEME,
+            irods::AUTH_PAM_SCHEME,
+            PAM_PASSWORD_SCHEME,
+            PAM_INTERACTIVE_SCHEME
+        };
+
+        return std::none_of(std::cbegin(no_password_prompt),
+                            std::cend(no_password_prompt),
+                            [&_scheme](const auto& _s) { return _scheme == _s; });
+    } // scheme_uses_iinit_password_prompt
+
+    auto save_updates_to_irods_environment(const nlohmann::json& _update) -> void
+    {
+        std::string env_file;
+        std::string session_file;
+        if (auto ret = irods::get_json_environment_file(env_file, session_file); !ret.ok()) {
+            fmt::print("failed to get environment file - [{}]\n", ret.code());
+        }
+
+        json obj_to_dump;
+
+        if (std::ifstream in{env_file}; in) {
+            try {
+                in >> obj_to_dump;
+            }
+            catch (const json::parse_error& e) {
+                obj_to_dump = _update;
+                fmt::print(
+                    stderr,
+                    "Failed to parse environment file: [{}]\n"
+                    "Falling back to original environment settings.",
+                    e.what());
+            }
+
+            obj_to_dump.merge_patch(_update);
+        }
+        else {
+            obj_to_dump = _update;
+        }
+
+        if (std::ofstream f(env_file.c_str(), std::ios::out); f) {
+            f << obj_to_dump.dump(4) << "\n";
+        }
+        else {
+            fmt::print("Failed to save environment file [{}]\n", env_file);
+        }
+    } // save_updates_to_irods_environment
+
+    auto option_specified(std::string_view _option, int argc, char** argv) -> bool
+    {
+        for (int arg = 0; arg < argc; ++arg) {
+            if (!argv[arg]) {
+                continue;
+            }
+
+            if (_option == argv[arg]) {
+                // parseCmdLineOpt is EVIL and requires this. Please don't ask why.
+                argv[arg] = "-Z";
+                return true;
+            }
+        }
+
+        return false;
+    } // option_specified
+
+    auto set_env_from_prompt(char _setting[], const char* _prompt, std::size_t _len) -> void
+    {
+        // If the setting already has a value, use that as the default value and show it in the prompt.
+        if (0 == std::strlen(_setting)) {
+            fmt::print("{}: ", _prompt);
+        }
+        else {
+            fmt::print("{} [{}]: ", _prompt, _setting);
+        }
+
+        std::string response;
+        std::getline(std::cin, response);
+
+        if (!response.empty()) {
+            std::strncpy(_setting, response.c_str(), _len);
+        }
+    } // set_env_from_prompt
+
+    auto set_env_from_prompt(char _setting[], const char* _default, const char* _prompt, std::size_t _len) -> void
+    {
+        const bool env_has_value = 0 != std::strlen(_setting);
+        const char* default_value = env_has_value ? _setting : _default;
+
+        fmt::print("{} [{}]: ", _prompt, default_value);
+        std::string response;
+        std::getline(std::cin, response);
+
+        if (!response.empty()) {
+            std::strncpy(_setting, response.c_str(), _len);
+        }
+        else if (!env_has_value) {
+            std::strncpy(_setting, default_value, _len);
+        }
+    } // set_env_from_prompt
+
+    auto set_env_from_prompt(int& _setting, int _default, const char* _prompt) -> void
+    {
+        const bool env_has_value = 0 != _setting;
+        const auto default_value = env_has_value ? _setting : _default;
+
+        fmt::print("{} [{}]: ", _prompt, default_value);
+        std::string response;
+        std::getline(std::cin, response);
+
+        if (!response.empty()) {
+            try {
+                _setting = boost::lexical_cast<int>(response);
+            }
+            catch (const boost::bad_lexical_cast&) {
+                fmt::print("Entered value [{}] failed to convert to integer. Using [{}].\n", response, default_value);
+                _setting = default_value;
+            }
+        }
+        else if (!env_has_value) {
+            _setting = default_value;
+        }
+    } // set_env_from_prompt
+
+    auto configure_required_settings_in_env(RodsEnvironment& _env, nlohmann::json& _json_env) -> void
+    {
+        if (0 == std::strlen(_env.rodsHost)) {
+            constexpr const char* host_prompt = "Enter the host name (DNS) of the server to connect to";
+            set_env_from_prompt(_env.rodsHost, host_prompt, sizeof(_env.rodsHost));
+            _json_env[irods::KW_CFG_IRODS_HOST] = _env.rodsHost;
+        }
+
+        if (0 == _env.rodsPort) {
+            constexpr const char* port_prompt = "Enter the port number";
+            constexpr int default_port = 1247;
+            set_env_from_prompt(_env.rodsPort, default_port, port_prompt);
+            _json_env[irods::KW_CFG_IRODS_PORT] = _env.rodsPort;
+        }
+
+        if (0 == std::strlen(_env.rodsUserName)) {
+            constexpr const char* username_prompt = "Enter your iRODS user name";
+            set_env_from_prompt(_env.rodsUserName, username_prompt, sizeof(_env.rodsUserName));
+            _json_env[irods::KW_CFG_IRODS_USER_NAME] = _env.rodsUserName;
+        }
+
+        if (0 == std::strlen(_env.rodsZone)) {
+            constexpr const char* zone_prompt = "Enter your iRODS zone";
+            set_env_from_prompt(_env.rodsZone, zone_prompt, sizeof(_env.rodsZone));
+            _json_env[irods::KW_CFG_IRODS_ZONE] = _env.rodsZone;
+        }
+    } // configure_required_settings_in_env
+
+    auto configure_ssl_in_env(RodsEnvironment& _env, nlohmann::json& _json_env) -> void
+    {
+        // If the user indicated that SSL is going to be used, this setting is required, so no prompt is shown.
+        constexpr const char* default_client_server_policy = "CS_NEG_REQUIRE";
+        std::strncpy(_env.rodsClientServerPolicy, default_client_server_policy, sizeof(_env.rodsClientServerPolicy));
+        _json_env[irods::KW_CFG_IRODS_CLIENT_SERVER_POLICY] = _env.rodsClientServerPolicy;
+
+        // If the user indicated that SSL is going to be used, this setting is required, so no prompt is shown.
+        constexpr const char* default_server_negotiation = "request_server_negotiation";
+        std::strncpy(
+            _env.rodsClientServerNegotiation, default_server_negotiation, sizeof(_env.rodsClientServerNegotiation));
+        _json_env[irods::KW_CFG_IRODS_CLIENT_SERVER_NEGOTIATION] = _env.rodsClientServerNegotiation;
+
+        constexpr const char* default_server_verification = "hostname";
+        constexpr const char* server_verification_prompt = "Enter the server verification level";
+        set_env_from_prompt(
+            _env.irodsSSLVerifyServer,
+            default_server_verification,
+            server_verification_prompt,
+            sizeof(_env.irodsSSLVerifyServer));
+        _json_env[irods::KW_CFG_IRODS_SSL_VERIFY_SERVER] = _env.irodsSSLVerifyServer;
+
+        constexpr const char* certificate_file_prompt = "Enter the full path to the CA certificate file";
+        set_env_from_prompt(
+            _env.irodsSSLCACertificateFile, certificate_file_prompt, sizeof(_env.irodsSSLCACertificateFile));
+        _json_env[irods::KW_CFG_IRODS_SSL_CA_CERTIFICATE_FILE] = _env.irodsSSLCACertificateFile;
+
+        constexpr const char* certificate_key_prompt = "Enter the full path to the certificate key file";
+        set_env_from_prompt(
+            _env.irodsSSLCertificateKeyFile, certificate_key_prompt, sizeof(_env.irodsSSLCertificateKeyFile));
+        _json_env[irods::KW_CFG_IRODS_SSL_CERTIFICATE_KEY_FILE] = _env.irodsSSLCertificateKeyFile;
+
+        constexpr const char* certificate_chain_prompt = "Enter the full path to the certificate chain file";
+        set_env_from_prompt(
+            _env.irodsSSLCertificateChainFile, certificate_chain_prompt, sizeof(_env.irodsSSLCertificateChainFile));
+        _json_env[irods::KW_CFG_IRODS_SSL_CERTIFICATE_CHAIN_FILE] = _env.irodsSSLCertificateChainFile;
+
+        constexpr const char* dh_param_prompt = "Enter the full path to the DH parameters file";
+        set_env_from_prompt(_env.irodsSSLDHParamsFile, dh_param_prompt, sizeof(_env.irodsSSLDHParamsFile));
+        _json_env[irods::KW_CFG_IRODS_SSL_DH_PARAMS_FILE] = _env.irodsSSLDHParamsFile;
+    } // configure_ssl_in_env
+
+    auto configure_encryption_in_env(RodsEnvironment& _env, nlohmann::json& _json_env) -> void
+    {
+        constexpr const char* default_encryption_algorithm = "AES-256-CBC";
+        constexpr const char* encryption_algorithm_prompt = "Enter the encryption algorithm";
+        set_env_from_prompt(
+            _env.rodsEncryptionAlgorithm,
+            default_encryption_algorithm,
+            encryption_algorithm_prompt,
+            sizeof(_env.rodsEncryptionAlgorithm));
+        _json_env[irods::KW_CFG_IRODS_ENCRYPTION_ALGORITHM] = _env.rodsEncryptionAlgorithm;
+
+        constexpr int default_encryption_key_size = 32;
+        constexpr const char* encryption_key_size_prompt = "Enter the encryption key size";
+        set_env_from_prompt(_env.rodsEncryptionKeySize, default_encryption_key_size, encryption_key_size_prompt);
+        _json_env[irods::KW_CFG_IRODS_ENCRYPTION_KEY_SIZE] = _env.rodsEncryptionKeySize;
+
+        constexpr int default_encryption_salt_size = 8;
+        constexpr const char* encryption_salt_size_prompt = "Enter the encryption salt size";
+        set_env_from_prompt(_env.rodsEncryptionSaltSize, default_encryption_salt_size, encryption_salt_size_prompt);
+        _json_env[irods::KW_CFG_IRODS_ENCRYPTION_SALT_SIZE] = _env.rodsEncryptionSaltSize;
+
+        constexpr int default_encryption_num_hash_rounds = 16;
+        constexpr const char* encryption_num_hash_rounds_prompt = "Enter the number of hash rounds";
+        set_env_from_prompt(
+            _env.rodsEncryptionNumHashRounds, default_encryption_num_hash_rounds, encryption_num_hash_rounds_prompt);
+        _json_env[irods::KW_CFG_IRODS_ENCRYPTION_NUM_HASH_ROUNDS] = _env.rodsEncryptionNumHashRounds;
+    } // configure_encryption_in_env
+} // anonymous namespace
 
 int main( int argc, char **argv )
 {
@@ -115,7 +321,11 @@ int main( int argc, char **argv )
     rcComm_t *Conn = 0;
     rErrMsg_t errMsg;
     rodsArguments_t myRodsArgs;
-    bool doingEnvFileUpdate = false;
+
+    // THESE MUST BE DONE HERE! parseCmdLineOpt is EVIL and considers any unknown options invalid.
+    // TODO: use boost::program_options
+    const auto configure_ssl = option_specified("--with-ssl", argc, argv);
+    const auto prompt_auth_scheme = option_specified("--prompt-auth-scheme", argc, argv);
 
     status = parseCmdLineOpt( argc, argv, "hvVlZ", 1, &myRodsArgs );
     if ( status != 0 ) {
@@ -162,76 +372,24 @@ int main( int argc, char **argv )
 
     auto json_env = json::object();
 
-    /*
-       Check on the key Environment values, prompt and save
-       them if not already available.
-     */
-    if ( strlen( my_env.rodsHost ) == 0 ) {
-        if ( !doingEnvFileUpdate ) {
-            doingEnvFileUpdate = true;
-            printUpdateMsg();
-        }
-        printf( "Enter the host name (DNS) of the server to connect to: " );
-        std::string response;
-        getline( std::cin, response );
-        snprintf( my_env.rodsHost, NAME_LEN, "%s", response.c_str() );
-        json_env["irods_host"] = my_env.rodsHost;
-    }
-    if ( my_env.rodsPort == 0 ) {
-        if ( !doingEnvFileUpdate ) {
-            doingEnvFileUpdate = true;
-            printUpdateMsg();
-        }
-        printf( "Enter the port number: " );
-        std::string response;
-        getline( std::cin, response );
-        try {
-            my_env.rodsPort = boost::lexical_cast< int >( response );
-        }
-        catch ( const boost::bad_lexical_cast& ) {
-            my_env.rodsPort = 0;
-        }
+    configure_required_settings_in_env(my_env, json_env);
 
-        json_env["irods_port"] = my_env.rodsPort;
-    }
-    if ( strlen( my_env.rodsUserName ) == 0 ) {
-        if ( !doingEnvFileUpdate ) {
-            doingEnvFileUpdate = true;
-            printUpdateMsg();
-        }
-        printf( "Enter your irods user name: " );
-        std::string response;
-        getline( std::cin, response );
-        snprintf( my_env.rodsUserName, NAME_LEN, "%s", response.c_str() );
-        json_env["irods_user_name"] = my_env.rodsUserName;
-    }
-    if ( strlen( my_env.rodsZone ) == 0 ) {
-        if ( !doingEnvFileUpdate ) {
-            doingEnvFileUpdate = true;
-            printUpdateMsg();
-        }
-        printf( "Enter your irods zone: " );
-        std::string response;
-        getline( std::cin, response );
-        snprintf( my_env.rodsZone, NAME_LEN, "%s", response.c_str() );
-        json_env["irods_zone_name"] = my_env.rodsZone;
-    }
-    if ( strlen( my_env.rodsAuthScheme ) == 0 ) {
-        if ( !doingEnvFileUpdate ) {
-            doingEnvFileUpdate = true;
-            printUpdateMsg();
-        }
-        printf( "Enter your irods authentication scheme: " );
-        std::string response;
-        getline( std::cin, response );
-        snprintf( my_env.rodsAuthScheme, NAME_LEN, "%s", response.c_str() );
+    if (prompt_auth_scheme) {
+        constexpr const char* default_auth_scheme = "native";
+        constexpr const char* auth_scheme_prompt = "Enter your iRODS authentication scheme";
+        set_env_from_prompt(
+            my_env.rodsAuthScheme, default_auth_scheme, auth_scheme_prompt, sizeof(my_env.rodsAuthScheme));
         json_env[irods::KW_CFG_IRODS_AUTHENTICATION_SCHEME] = my_env.rodsAuthScheme;
     }
 
-    if ( doingEnvFileUpdate ) {
-        printf( "Those values will be added to your environment file (for use by\n" );
-        printf( "other iCommands) if the login succeeds.\n\n" );
+    if (configure_ssl) {
+        configure_ssl_in_env(my_env, json_env);
+
+        configure_encryption_in_env(my_env, json_env);
     }
+
+    save_updates_to_irods_environment(json_env);
+    _reloadRodsEnv(my_env);
 
     // =-=-=-=-=-=-=-
     // ensure scheme is lower case for comparison
@@ -291,11 +449,10 @@ int main( int argc, char **argv )
         // =-=-=-=-=-=-=-
         // build a context string which includes the ttl and password
         std::stringstream ttl_str;  ttl_str << ttl;
-		irods::kvp_map_t ctx_map;
-		ctx_map[ irods::AUTH_TTL_KEY ] = ttl_str.str();
-		ctx_map[ irods::AUTH_PASSWORD_KEY ] = "";
-		std::string ctx_str = irods::escaped_kvp_string(
-		                          ctx_map);
+        irods::kvp_map_t ctx_map;
+        ctx_map[irods::AUTH_TTL_KEY] = ttl_str.str();
+        ctx_map[irods::AUTH_PASSWORD_KEY] = "";
+        std::string ctx_str = irods::escaped_kvp_string(ctx_map);
         // =-=-=-=-=-=-=-
         // pass the context with the ttl as well as an override which
         // demands the pam authentication plugin
@@ -371,7 +528,10 @@ int main( int argc, char **argv )
                 {irods_auth::force_password_prompt, true}
             };
 
-            if (const int ec = clientLogin(Conn, ctx.dump().data()); ec != 0) {
+            // Use the scheme override here to ensure that the authentication scheme in the environment is the same as
+            // the authentication scheme configured here. If the scheme in the environment and the scheme configured in
+            // iinit match, then nothing will need to change in clientLogin. If they do not match, the override wins.
+            if (const int ec = clientLogin(Conn, ctx.dump().c_str(), my_env.rodsAuthScheme); ec != 0) {
                 rcDisconnect(Conn);
                 return 7;
             }
@@ -395,43 +555,6 @@ int main( int argc, char **argv )
 
     rcDisconnect( Conn );
 
-    /* Save updates to irods_environment.json. */
-    if ( doingEnvFileUpdate ) {
-        std::string env_file, session_file;
-        irods::error ret = irods::get_json_environment_file( env_file, session_file );
-        if ( ret.ok() ) {
-            json obj_to_dump;
-
-            if (std::ifstream in{env_file}; in) {
-                try {
-                    in >> obj_to_dump;
-                }
-                catch (const json::parse_error& e) {
-                    obj_to_dump = json_env;
-                    std::cerr << "Failed to parse environment file: " << e.what() << '\n'
-                              << "Falling back to original environment settings.";
-                }
-
-                obj_to_dump.merge_patch(json_env);
-            }
-            else {
-                obj_to_dump = json_env;
-            }
-
-            std::ofstream f( env_file.c_str(), std::ios::out );
-            if ( f.is_open() ) {
-                f << obj_to_dump.dump(4) << std::endl;
-                f.close();
-            }
-            else {
-                printf( "failed to open environment file [%s]\n", env_file.c_str() );
-            }
-        }
-        else {
-            printf( "failed to get environment file - %ji\n", ( intmax_t )ret.code() );
-        }
-    } // if doingEnvFileUpdate
-
     return 0;
 } // main
 
@@ -440,13 +563,17 @@ void usage( char *prog ) {
     printf( "Creates a file containing your iRODS password in a scrambled form,\n" );
     printf( "to be used automatically by the icommands.\n" );
     printf( "\n" );
-    printf( "Usage: %s [-hvVl] [--ttl TTL]\n", prog );
+    printf( "Usage: %s [-hvVl] [--ttl TTL] [--with-ssl] [--prompt-auth-scheme]\n", prog );
     printf( "\n" );
-    printf( "iinit looks for a client environment file in the 'usual' places in\n" );
-    printf( "order to attempt to capture any configured client environment settings.\n" );
-    printf( "The client environment file is sought in ~/.irods/irods_environment.json\n" );
-    printf( "(unless there is an environment variable indicating a different location),\n" );
-    printf( "but the configurations can be set via environment variables as well.\n" );
+    printf( "iinit loads environment information from the following locations, with\n" );
+    printf( "priority being given to the top of the list:\n" );
+    printf( "   - in specific environment variables\n" );
+    printf( "   - in an irods_environment.json file located at IRODS_ENVIRONMENT_FILE\n" );
+    printf( "   - in ~/.irods/irods_environment.json\n" );
+    printf( "   - default values set in the server\n" );
+    printf( "The active client environment file will be updated each time iinit is run in\n" );
+    printf( "order to ensure that the settings are applied properly when connecting to the\n" );
+    printf( "server.\n" );
     printf( "\n" );
     printf( "If any setting from the minimal client environment is found to be\n" );
     printf( "missing, prompts will be presented to the user to retrieve the missing\n" );
@@ -481,6 +608,12 @@ void usage( char *prog ) {
     printf( " -V  Very verbose\n" );
     printf( " --ttl TTL\n" );
     printf( "     set the password Time To Live (specified in hours)\n" );
+    printf(" --with-ssl\n");
+    printf("      Include prompts which will set up SSL communications in the\n");
+    printf("      client environment.\n");
+    printf(" --prompt-auth-scheme\n");
+    printf("      Include a prompt to select the authentication scheme. If not specified\n");
+    printf("      and no active client environment file exists, the default is 'native'.\n");
     printf( " -h  this help\n" );
     printReleaseInfo( "iinit" );
 }
