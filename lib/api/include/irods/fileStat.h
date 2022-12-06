@@ -1,21 +1,25 @@
-#ifndef FILE_STAT_H__
-#define FILE_STAT_H__
+#ifndef IRODS_FILE_STAT_H
+#define IRODS_FILE_STAT_H
 
 #include "irods/rodsDef.h"
-#include "irods/rcConnect.h"
+#include "irods/rodsType.h"
 
-typedef struct {
+struct RcComm;
+struct rodsStat;
+
+typedef struct FileStatInp {
     rodsHostAddr_t addr;
     char fileName[MAX_NAME_LEN];
     char rescHier[MAX_NAME_LEN];
     char objPath[MAX_NAME_LEN];
     rodsLong_t rescId;
 } fileStatInp_t;
+
 #define fileStatInp_PI "struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; double rescId;"
 
 #ifdef __cplusplus
 extern "C"
 #endif
-int rcFileStat( rcComm_t *conn, fileStatInp_t *fileStatInp, rodsStat_t **fileStatOut );
+int rcFileStat(struct RcComm* conn, fileStatInp_t* fileStatInp, struct rodsStat** fileStatOut);
 
-#endif
+#endif // IRODS_FILE_STAT_H

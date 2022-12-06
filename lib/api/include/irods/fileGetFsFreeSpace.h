@@ -1,10 +1,10 @@
-#ifndef FILE_GET_FS_FREESPACE_H__
-#define FILE_GET_FS_FREESPACE_H__
+#ifndef IRODS_FILE_GET_FS_FREESPACE_H
+#define IRODS_FILE_GET_FS_FREESPACE_H
 
 #include "irods/rodsDef.h"
 #include "irods/rcConnect.h"
 
-typedef struct {
+typedef struct FileGetFsFreespaceInp {
     rodsHostAddr_t addr;
     char fileName[MAX_NAME_LEN];
     char rescHier[MAX_NAME_LEN];
@@ -13,7 +13,7 @@ typedef struct {
 } fileGetFsFreeSpaceInp_t;
 #define fileGetFsFreeSpaceInp_PI "struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; int flag;"
 
-typedef struct {
+typedef struct FileGetFsFreespaceOut {
     rodsLong_t size;
 } fileGetFsFreeSpaceOut_t;
 #define fileGetFsFreeSpaceOut_PI "double size;"
@@ -23,4 +23,4 @@ extern "C"
 #endif
 int rcFileGetFsFreeSpace( rcComm_t *conn, fileGetFsFreeSpaceInp_t *fileGetFsFreeSpaceInp, fileGetFsFreeSpaceOut_t **fileGetFsFreeSpaceOut );
 
-#endif
+#endif // IRODS_FILE_GET_FS_FREESPACE_H
