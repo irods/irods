@@ -1,3 +1,4 @@
+#include "irods/irods_pack_table.hpp"
 #include "irods/plugins/api/api_plugin_number.h"
 #include "irods/client_api_allowlist.hpp"
 #include "irods/fileDriver.hpp"
@@ -1349,16 +1350,19 @@ auto plugin_factory(const std::string& _instance_name,
 #endif // RODS_SERVER
 
     // clang-format off
-    irods::apidef_t def{REGISTER_PHYSICAL_PATH_APN,                 // API number
-                        RODS_API_VERSION,                           // API version
-                        NO_USER_AUTH,                               // Client auth
-                        NO_USER_AUTH,                               // Proxy auth
-                        "DataObjInp_PI", 0,                         // In PI / bs flag
-                        "BinBytesBuf_PI", 0,                        // Out PI / bs flag
-                        op,                                         // Operation
-                        "api_register_physical_path",               // Operation name
-                        nullptr,                                    // Null clear function
-                        (funcPtr) CALL_REGISTER_PHYSICAL_PATH};
+    irods::apidef_t def{
+        REGISTER_PHYSICAL_PATH_APN,     // API number
+        RODS_API_VERSION,               // API version
+        NO_USER_AUTH,                   // Client auth
+        NO_USER_AUTH,                   // Proxy auth
+        "DataObjInp_PI", 0,             // In PI / bs flag
+        "BinBytesBuf_PI", 0,            // Out PI / bs flag
+        op,                             // Operation
+        "api_register_physical_path",   // Operation name
+        clearDataObjInp,                // Clear input function
+        clearBytesBuffer,               // Clear output function
+        (funcPtr) CALL_REGISTER_PHYSICAL_PATH
+    };
     // clang-format on
 
     auto* api = new irods::api_entry{def};
@@ -1371,4 +1375,3 @@ auto plugin_factory(const std::string& _instance_name,
 
     return api;
 } // plugin_factory
-

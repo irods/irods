@@ -1,3 +1,4 @@
+#include "irods/irods_pack_table.hpp"
 #include "irods/plugins/api/api_plugin_number.h"
 #include "irods/rodsDef.h"
 #include "irods/rcConnect.h"
@@ -510,16 +511,19 @@ auto plugin_factory(const std::string& _instance_name,
 #endif // RODS_SERVER
 
     // clang-format off
-    irods::apidef_t def{TOUCH_APN,              // API number
-                        RODS_API_VERSION,       // API version
-                        NO_USER_AUTH,           // Client auth
-                        NO_USER_AUTH,           // Proxy auth
-                        "BinBytesBuf_PI", 0,    // In PI / bs flag
-                        nullptr, 0,             // Out PI / bs flag
-                        op,                     // Operation
-                        "api_touch",            // Operation name
-                        nullptr,                // Clear function
-                        (funcPtr) CALL_TOUCH};
+    irods::apidef_t def{
+        TOUCH_APN,                  // API number
+        RODS_API_VERSION,           // API version
+        NO_USER_AUTH,               // Client auth
+        NO_USER_AUTH,               // Proxy auth
+        "BinBytesBuf_PI", 0,        // In PI / bs flag
+        nullptr, 0,                 // Out PI / bs flag
+        op,                         // Operation
+        "api_touch",                // Operation name
+        clearBytesBuffer,           // Clear input function
+        irods::clearOutStruct_noop, // Clear output function
+        (funcPtr) CALL_TOUCH
+    };
     // clang-format on
 
     auto* api = new irods::api_entry{def};
@@ -528,5 +532,4 @@ auto plugin_factory(const std::string& _instance_name,
     api->in_pack_value = BytesBuf_PI;
 
     return api;
-}
-
+} // plugin_factory

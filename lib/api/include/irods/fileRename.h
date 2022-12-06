@@ -1,5 +1,5 @@
-#ifndef FILE_RENAME_H
-#define FILE_RENAME_H
+#ifndef IRODS_FILE_RENAME_H
+#define IRODS_FILE_RENAME_H
 
 /// \file
 
@@ -17,7 +17,7 @@ typedef struct FileRenameInp {
 #define fileRenameInp_PI "struct RHostAddr_PI; str oldFileName[MAX_NAME_LEN]; str newFileName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN];"
 
 typedef struct FileRenameOut {
-    char file_name[ MAX_NAME_LEN ];
+    char file_name[MAX_NAME_LEN];
 } fileRenameOut_t;
 #define fileRenameOut_PI "str file_name[MAX_NAME_LEN];"
 
@@ -46,5 +46,4 @@ int rcFileRename(struct RcComm* conn,
 } // extern "C"
 #endif
 
-#endif // FILE_RENAME_H
-
+#endif // IRODS_FILE_RENAME_H

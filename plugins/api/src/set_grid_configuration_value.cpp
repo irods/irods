@@ -1,3 +1,4 @@
+#include "irods/irods_pack_table.hpp"
 #include "irods/plugins/api/api_plugin_number.h"
 #include "irods/plugins/api/grid_configuration_types.h"
 #include "irods/rodsDef.h"
@@ -96,16 +97,19 @@ auto plugin_factory(const std::string& _instance_name,
                     const std::string& _context) -> irods::api_entry*
 {
     // clang-format off
-    irods::apidef_t def{SET_GRID_CONFIGURATION_VALUE_APN,     // API number
-                        RODS_API_VERSION,                     // API version
-                        LOCAL_PRIV_USER_AUTH,                 // Client auth
-                        LOCAL_PRIV_USER_AUTH,                 // Proxy auth
-                        "GridConfigurationInp_PI", 0,         // In PI / bs flag
-                        nullptr, 0,                           // Out PI / bs flag
-                        op,                                   // Operation
-                        "api_set_grid_configuration_value",   // Operation name
-                        nullptr,                              // Null clear function
-                        (funcPtr) CALL_SET_GRID_CONFIGURATION_VALUE};
+    irods::apidef_t def{
+        SET_GRID_CONFIGURATION_VALUE_APN,       // API number
+        RODS_API_VERSION,                       // API version
+        LOCAL_PRIV_USER_AUTH,                   // Client auth
+        LOCAL_PRIV_USER_AUTH,                   // Proxy auth
+        "GridConfigurationInp_PI", 0,           // In PI / bs flag
+        nullptr, 0,                             // Out PI / bs flag
+        op,                                     // Operation
+        "api_set_grid_configuration_value",     // Operation name
+        irods::clearInStruct_noop,              // Clear input function
+        irods::clearOutStruct_noop,             // Clear output function
+        (funcPtr) CALL_SET_GRID_CONFIGURATION_VALUE
+    };
     // clang-format on
 
     auto* api = new irods::api_entry{def};
@@ -114,5 +118,4 @@ auto plugin_factory(const std::string& _instance_name,
     api->in_pack_value = GridConfigurationInp_PI;
 
     return api;
-}
-
+} // plugin_factory

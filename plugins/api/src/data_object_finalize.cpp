@@ -4,6 +4,7 @@
 #include "irods/irods_configuration_keywords.hpp"
 #include "irods/json_deserialization.hpp"
 #include "irods/rcConnect.h"
+#include "irods/rcMisc.h"
 #include "irods/rodsDef.h"
 #include "irods/rodsErrorTable.h"
 #include "irods/rodsPackInstruct.h"
@@ -642,16 +643,19 @@ auto plugin_factory(const std::string& _instance_name,
 #endif // RODS_SERVER
 
     // clang-format off
-    irods::apidef_t def{DATA_OBJECT_FINALIZE_APN,                   // API number
-                        RODS_API_VERSION,                           // API version
-                        NO_USER_AUTH,                               // Client auth
-                        NO_USER_AUTH,                               // Proxy auth
-                        "BinBytesBuf_PI", 0,                        // In PI / bs flag
-                        "BinBytesBuf_PI", 0,                        // Out PI / bs flag
-                        op,                                         // Operation
-                        "data_object_finalize",                     // Operation name
-                        nullptr,                                    // Null clear function
-                        (funcPtr) CALL_DATA_OBJECT_FINALIZE};
+    irods::apidef_t def{
+        DATA_OBJECT_FINALIZE_APN,   // API number
+        RODS_API_VERSION,           // API version
+        NO_USER_AUTH,               // Client auth
+        NO_USER_AUTH,               // Proxy auth
+        "BinBytesBuf_PI", 0,        // In PI / bs flag
+        "BinBytesBuf_PI", 0,        // Out PI / bs flag
+        op,                         // Operation
+        "data_object_finalize",     // Operation name
+        clearBytesBuffer,           // clear input function
+        clearBytesBuffer,           // clear output function
+        (funcPtr) CALL_DATA_OBJECT_FINALIZE
+    };
     // clang-format on
 
     auto* api = new irods::api_entry{def};
@@ -663,5 +667,4 @@ auto plugin_factory(const std::string& _instance_name,
     api->out_pack_value = BytesBuf_PI;
 
     return api;
-}
-
+} // plugin_factory

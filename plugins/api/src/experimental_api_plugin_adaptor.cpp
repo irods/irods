@@ -289,26 +289,28 @@ namespace {
 
 } // namespace
 
-extern "C" {
-    irods::api_entry* plugin_factory(const std::string&, const std::string&)
-    {
+extern "C"
+irods::api_entry* plugin_factory(const std::string&, const std::string&)
+{
 #ifdef RODS_SERVER
-        irods::client_api_allowlist::add(ADAPTER_APN);
+    irods::client_api_allowlist::add(ADAPTER_APN);
 #endif
 
-        // =-=-=-=-=-=-=-
-        // create a api def object
-        irods::apidef_t def{ADAPTER_APN,                // api number
-                            RODS_API_VERSION,           // api version
-                            NO_USER_AUTH,               // client auth
-                            NO_USER_AUTH,               // proxy auth
-                            "BinBytesBuf_PI", 0,        // in PI / bs flag
-                            "BinBytesBuf_PI", 0,        // out PI / bs flag
-                            std::function<int(rsComm_t*, bytesBuf_t*, bytesBuf_t**)>(adapter),  // operation
-                            "experimental_api_adaptor", // operation name
-                            nullptr,                    // clear fcn
-                            (funcPtr)CALL_ADAPTOR};
-        return new irods::api_entry(def);
-    } // plugin_factory
+    // clang-format off
+    irods::apidef_t def{
+        ADAPTER_APN,                // api number
+        RODS_API_VERSION,           // api version
+        NO_USER_AUTH,               // client auth
+        NO_USER_AUTH,               // proxy auth
+        "BinBytesBuf_PI", 0,        // in PI / bs flag
+        "BinBytesBuf_PI", 0,        // out PI / bs flag
+        std::function<int(rsComm_t*, bytesBuf_t*, bytesBuf_t**)>(adapter),  // operation
+        "experimental_api_adaptor", // operation name
+        clearBytesBuffer,           // clear input function
+        clearBytesBuffer,           // clear output function
+        (funcPtr)CALL_ADAPTOR
+    };
+    // clang-format on
 
-}; // extern "C"
+    return new irods::api_entry(def);
+} // plugin_factory

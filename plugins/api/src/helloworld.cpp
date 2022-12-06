@@ -1,6 +1,7 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "irods/apiHandler.hpp"
+#include "irods/irods_pack_table.hpp"
 #include "irods/plugins/api/api_plugin_number.h"
 #include "irods/irods_stacktrace.hpp"
 #include "irods/irods_server_api_call.hpp"
@@ -119,54 +120,53 @@ int rs_hello_world( rsComm_t*, helloInp_t* _inp, helloOut_t** _out ) {
     return 0;
 }
 
-extern "C" {
-    // =-=-=-=-=-=-=-
-    // factory function to provide instance of the plugin
-    irods::api_entry* plugin_factory(const std::string&,     //_inst_name
-                                     const std::string&)     // _context
-    {
+extern "C"
+irods::api_entry* plugin_factory(const std::string&,     //_inst_name
+                                 const std::string&)     // _context
+{
 #ifdef RODS_SERVER
-        irods::client_api_allowlist::add(HELLO_WORLD_APN);
+    irods::client_api_allowlist::add(HELLO_WORLD_APN);
 #endif // RODS_SERVER
 
-        // =-=-=-=-=-=-=-
-        // create a api def object
-        irods::apidef_t def = {HELLO_WORLD_APN,      // api number
-                               RODS_API_VERSION,     // api version
-                               NO_USER_AUTH,         // client auth
-                               NO_USER_AUTH,         // proxy auth
-                               "HelloInp_PI", 0,     // in PI / bs flag
-                               "HelloOut_PI", 0,     // out PI / bs flag
-                               std::function<int(rsComm_t*, helloInp_t*, helloOut_t**)>(rs_hello_world), // operation
-                               "api_hello_world",    // operation name
-                               0,                    // null clear fcn
-                               (funcPtr)CALL_HELLOINP_HELLO_OUT};
-        // =-=-=-=-=-=-=-
-        // create an api object
-        irods::api_entry* api = new irods::api_entry( def );
+    // clang-format off
+    irods::apidef_t def = {
+        HELLO_WORLD_APN,             // api number
+        RODS_API_VERSION,            // api version
+        NO_USER_AUTH,                // client auth
+        NO_USER_AUTH,                // proxy auth
+        "HelloInp_PI", 0,            // in PI / bs flag
+        "HelloOut_PI", 0,            // out PI / bs flag
+        std::function<int(rsComm_t*, helloInp_t*, helloOut_t**)>(rs_hello_world), // operation
+        "api_hello_world",           // operation name
+        irods::clearInStruct_noop,   // clear input function
+        irods::clearOutStruct_noop,  // clear output function
+        (funcPtr)CALL_HELLOINP_HELLO_OUT
+    };
+    // clang-format on
+
+    // =-=-=-=-=-=-=-
+    // create an api object
+    irods::api_entry* api = new irods::api_entry( def );
 
 #ifdef RODS_SERVER
-        irods::re_serialization::add_operation(
-                typeid(helloInp_t*),
-                serialize_helloInp_ptr );
+    irods::re_serialization::add_operation(
+            typeid(helloInp_t*),
+            serialize_helloInp_ptr );
 
-        irods::re_serialization::add_operation(
-                typeid(helloOut_t**),
-                serialize_helloOut_ptr_ptr );
+    irods::re_serialization::add_operation(
+            typeid(helloOut_t**),
+            serialize_helloOut_ptr_ptr );
 #endif
 
-        // =-=-=-=-=-=-=-
-        // assign the pack struct key and value
-        api->in_pack_key   = "HelloInp_PI";
-        api->in_pack_value = HelloInp_PI;
+    // =-=-=-=-=-=-=-
+    // assign the pack struct key and value
+    api->in_pack_key   = "HelloInp_PI";
+    api->in_pack_value = HelloInp_PI;
 
-        api->out_pack_key   = "HelloOut_PI";
-        api->out_pack_value = HelloOut_PI;
+    api->out_pack_key   = "HelloOut_PI";
+    api->out_pack_value = HelloOut_PI;
 
-        api->extra_pack_struct[ "OtherOut_PI" ] = OtherOut_PI;
+    api->extra_pack_struct[ "OtherOut_PI" ] = OtherOut_PI;
 
-        return api;
-
-    } // plugin_factory
-
-}; // extern "C"
+    return api;
+} // plugin_factory
