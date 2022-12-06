@@ -376,26 +376,51 @@ namespace
         fs::create_directories(irods::get_irods_stacktrace_directory(), ec);
     } // create_stacktrace_directory
 
-    int get_stacktrace_file_processor_sleep_time()
+    auto get_advanced_setting(const char* _keyword, int _default, bool _negative_values_allowed = false) -> int
     {
         try {
             const auto config_handle{irods::server_properties::instance().map()};
             const auto& config{config_handle.get_json()};
-            const auto adv_settings{config.at(irods::KW_CFG_ADVANCED_SETTINGS)};
+            const auto& adv_settings{config.at(irods::KW_CFG_ADVANCED_SETTINGS)};
 
-            const auto iter = adv_settings
-                .find(irods::KW_CFG_STACKTRACE_FILE_PROCESSOR_SLEEP_TIME_IN_SECONDS);
+            const auto iter = adv_settings.find(_keyword);
 
             if (iter != std::end(adv_settings)) {
-                if (const auto seconds = iter->get<int>(); seconds > 0) {
-                    return seconds;
+                const auto val = iter->get<int>();
+                if (_negative_values_allowed || val > 0) {
+                    return val;
                 }
             }
         }
         catch (...) {}
 
-        return 10; // The default sleep time.
-    } // get_stacktrace_file_processor_sleep_time
+        return _default;
+    } // get_advanced_setting
+
+    auto get_cache_clearer_sleep_time(const char* _keyword, int _default) -> int
+    {
+        try {
+            const auto config_handle = irods::server_properties::instance().map();
+            const auto& adv_settings = config_handle.get_json().at(irods::KW_CFG_ADVANCED_SETTINGS);
+
+            const auto cache_type_iter = adv_settings.find(_keyword);
+
+            if (cache_type_iter != std::end(adv_settings)) {
+                const auto cache_clearer_iter =
+                    cache_type_iter->find(irods::KW_CFG_CACHE_CLEARER_SLEEP_TIME_IN_SECONDS);
+
+                if (cache_clearer_iter != std::end(*cache_type_iter)) {
+                    if (const auto val = cache_clearer_iter->get<int>(); val > 0) {
+                        return val;
+                    }
+                }
+            }
+        }
+        catch (...) {
+        }
+
+        return _default;
+    } // get_cache_clearer_sleep_time
 
     void log_stacktrace_files()
     {
@@ -1351,16 +1376,28 @@ int main(int argc, char** argv)
 
     launch_agent_factory();
     ix::cron::cron_builder agent_watcher;
-    agent_watcher.interval(5).task(launch_agent_factory);
+    const auto agent_factory_watcher_sleep_time_in_seconds =
+        get_advanced_setting(irods::KW_CFG_AGENT_FACTORY_WATCHER_SLEEP_TIME_IN_SECONDS, 5);
+    agent_watcher.interval(agent_factory_watcher_sleep_time_in_seconds).task(launch_agent_factory);
     ix::cron::cron::instance().add_task(agent_watcher.build());
 
-    ix::cron::cron_builder cache_clearer;
-    cache_clearer.interval(600).task([] {
-        log_server::trace("Expiring old cache entries");
-        irods::experimental::net::hostname_cache::erase_expired_entries();
-        irods::experimental::net::dns_cache::erase_expired_entries();
-    });
-    ix::cron::cron::instance().add_task(cache_clearer.build());
+    {
+        ix::cron::cron_builder cache_clearer;
+        cache_clearer.interval(get_cache_clearer_sleep_time(irods::KW_CFG_DNS_CACHE, 600)).task([] {
+            log_server::trace("Expiring old DNS cache entries");
+            irods::experimental::net::dns_cache::erase_expired_entries();
+        });
+        ix::cron::cron::instance().add_task(cache_clearer.build());
+    }
+
+    {
+        ix::cron::cron_builder cache_clearer;
+        cache_clearer.interval(get_cache_clearer_sleep_time(irods::KW_CFG_HOSTNAME_CACHE, 600)).task([] {
+            log_server::trace("Expiring old hostname cache entries");
+            irods::experimental::net::hostname_cache::erase_expired_entries();
+        });
+        ix::cron::cron::instance().add_task(cache_clearer.build());
+    }
 
     int acceptErrCnt = 0;
 
@@ -1397,9 +1434,9 @@ int main(int argc, char** argv)
     // Add the stacktrace file processor task to the CRON manager.
     {
         ix::cron::cron_builder task_builder;
-        task_builder
-            .interval(get_stacktrace_file_processor_sleep_time())
-            .task(log_stacktrace_files);
+        const auto stacktrace_file_processor_sleep_time =
+            get_advanced_setting(irods::KW_CFG_STACKTRACE_FILE_PROCESSOR_SLEEP_TIME_IN_SECONDS, 10);
+        task_builder.interval(stacktrace_file_processor_sleep_time).task(log_stacktrace_files);
         ix::cron::cron::instance().add_task(task_builder.build());
     }
 
@@ -2220,11 +2257,11 @@ int initServerMain(rsComm_t *svrComm,
     // Setup the delay server CRON task.
     // The delay server will launch just before we enter the server's main loop.
     ix::cron::cron_builder delay_server;
-    delay_server
-        .interval(5)
-        .task([enable_test_mode, write_to_stdout] {
-            migrate_delay_server(enable_test_mode, write_to_stdout);
-        });
+    const auto migrate_delay_server_sleep_time =
+        get_advanced_setting(irods::KW_CFG_MIGRATE_DELAY_SERVER_SLEEP_TIME_IN_SECONDS, 5);
+    delay_server.interval(migrate_delay_server_sleep_time).task([enable_test_mode, write_to_stdout] {
+        migrate_delay_server(enable_test_mode, write_to_stdout);
+    });
     ix::cron::cron::instance().add_task(delay_server.build());
 
     return 0;

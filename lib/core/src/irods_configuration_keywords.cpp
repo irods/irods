@@ -80,6 +80,8 @@ namespace irods
     const char* const KW_CFG_NUMBER_OF_CONCURRENT_DELAY_RULE_EXECUTORS{"number_of_concurrent_delay_rule_executors"};
     const char* const KW_CFG_MAX_SIZE_OF_DELAY_QUEUE_IN_BYTES{"maximum_size_of_delay_queue_in_bytes"};
     const char* const KW_CFG_STACKTRACE_FILE_PROCESSOR_SLEEP_TIME_IN_SECONDS{"stacktrace_file_processor_sleep_time_in_seconds"};
+    const char* const KW_CFG_AGENT_FACTORY_WATCHER_SLEEP_TIME_IN_SECONDS{"agent_factory_watcher_sleep_time_in_seconds"};
+    const char* const KW_CFG_MIGRATE_DELAY_SERVER_SLEEP_TIME_IN_SECONDS{"migrate_delay_server_sleep_time_in_seconds"};
 
     const char* const KW_CFG_RE_CACHE_SALT{"reCacheSalt"};
     const char* const KW_CFG_DELAY_SERVER_SLEEP_TIME_IN_SECONDS{"delay_server_sleep_time_in_seconds"};
@@ -89,6 +91,7 @@ namespace irods
 
     const char* const KW_CFG_SHARED_MEMORY_SIZE_IN_BYTES{"shared_memory_size_in_bytes"};
     const char* const KW_CFG_EVICTION_AGE_IN_SECONDS{"eviction_age_in_seconds"};
+    const char* const KW_CFG_CACHE_CLEARER_SLEEP_TIME_IN_SECONDS{"cache_clearer_sleep_time_in_seconds"};
 
     // service_account_environment.json keywords
     const char* const KW_CFG_IRODS_USER_NAME{"irods_user_name"};
