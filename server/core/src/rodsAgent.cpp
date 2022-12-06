@@ -596,6 +596,7 @@ int runIrodsAgentFactory(sockaddr_un agent_addr)
     }
 
     if (status < 0) {
+        log_agent::error("initRsCommWithStartupPack error: [{}]", status);
         sendVersion(net_obj, status, 0, nullptr, 0);
         cleanupAndExit(status);
     }
