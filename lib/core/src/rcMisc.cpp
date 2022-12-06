@@ -1,12 +1,17 @@
 #include "irods/rcMisc.h"
 
 #include "irods/apiHeaderAll.h"
+#include "irods/authCheck.h"
+#include "irods/authRequest.h"
 #include "irods/dataObjInpOut.h"
+#include "irods/execCmd.h"
 #include "irods/execMyRule.h"
 #include "irods/exec_rule_expression.h"
 #include "irods/generalAdmin.h"
 #include "irods/modDataObjMeta.h"
 #include "irods/msParam.h"
+#include "irods/objStat.h"
+#include "irods/pamAuthRequest.h"
 #include "irods/rcGlobalExtern.h"
 #include "irods/rodsGenQueryNames.h"
 #include "irods/rodsType.h"
@@ -16,6 +21,7 @@
 #include "irods/putUtil.h"
 #include "irods/ruleExecMod.h"
 #include "irods/ruleExecSubmit.h"
+#include "irods/simpleQuery.h"
 #include "irods/sockComm.h"
 #include "irods/irods_virtual_path.hpp"
 #include "irods/irods_hierarchy_parser.hpp"
@@ -1613,6 +1619,106 @@ void clearRuleExecSubmitInput(void* _p)
     freeBBuf(q->packedReiAndArgBBuf);
 
     std::memset(q, 0, sizeof(RuleExecSubmitInput));
+}
+
+void clearAuthRequestOut(void* _p)
+{
+    if (!_p) {
+        return;
+    }
+
+    auto* q = static_cast<authRequestOut_t*>(_p);
+
+    free_pointer(q->challenge);
+
+    std::memset(q, 0, sizeof(authRequestOut_t));
+}
+
+void clearAuthCheckOut(void* _p)
+{
+    if (!_p) {
+        return;
+    }
+
+    auto* q = static_cast<authCheckOut_t*>(_p);
+
+    free_pointer(q->serverResponse);
+
+    std::memset(q, 0, sizeof(authCheckOut_t));
+}
+
+void clearPamAuthRequestOut(void* _p)
+{
+    if (!_p) {
+        return;
+    }
+
+    auto* q = static_cast<pamAuthRequestOut_t*>(_p);
+
+    free_pointer(q->irodsPamPassword);
+
+    std::memset(q, 0, sizeof(pamAuthRequestOut_t));
+}
+
+void clearRodsObjStat(void* _p)
+{
+    if (!_p) {
+        return;
+    }
+
+    auto* q = static_cast<rodsObjStat_t*>(_p);
+
+    free_pointer(q->specColl);
+
+    std::memset(q, 0, sizeof(rodsObjStat_t));
+}
+
+void clearExecCmdOut(void* _p)
+{
+    if (!_p) {
+        return;
+    }
+
+    auto* q = static_cast<ExecCmdOut*>(_p);
+
+    free_pointer(q->stderrBuf.buf);
+    free_pointer(q->stdoutBuf.buf);
+
+    std::memset(q, 0, sizeof(ExecCmdOut));
+}
+
+void clearDataObjInfo(void* _p)
+{
+    if (!_p) {
+        return;
+    }
+
+    auto* q = static_cast<DataObjInfo*>(_p);
+
+    clearKeyVal(&q->condInput);
+    free_pointer(q->specColl);
+    freeAllDataObjInfo(q->next);
+}
+
+void clearBytesBuffer(void* _p)
+{
+    clearBBuf(static_cast<BytesBuf*>(_p));
+}
+
+void clearSimpleQueryOut(void* _p)
+{
+    if (!_p) {
+        return;
+    }
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    auto* q = static_cast<simpleQueryOut_t*>(_p);
+#pragma clang diagnostic pop
+
+    free_pointer(q->outBuf);
+
+    std::memset(q, 0, sizeof(simpleQueryOut_t));
 }
 
 int

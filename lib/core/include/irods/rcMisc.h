@@ -49,6 +49,25 @@ void clearExecRuleExpressionInput(void* _p);
 
 void clearRuleExecSubmitInput(void* _p);
 
+void clearAuthRequestOut(void* _p);
+
+void clearAuthCheckOut(void* _p);
+
+void clearPamAuthRequestOut(void* _p);
+
+void clearRodsObjStat(void* _p);
+
+void clearExecCmdOut(void* _p);
+
+void clearDataObjInfo(void* _p);
+
+void clearBytesBuffer(void* _p);
+
+// clang-format off
+__attribute__((deprecated("SimpleQuery is deprecated. Use GenQuery or SpecificQuery instead.")))
+void clearSimpleQueryOut(void* _p);
+// clang-format on
+
 int isPath(char* path);
 
 rodsLong_t getFileSize(char* path);

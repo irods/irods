@@ -1,5 +1,6 @@
 #include "irods/plugins/api/api_plugin_number.h"
 #include "irods/irods_configuration_keywords.hpp"
+#include "irods/rcMisc.h"
 #include "irods/rodsDef.h"
 #include "irods/rcConnect.h"
 #include "irods/rodsErrorTable.h"
@@ -590,16 +591,19 @@ auto plugin_factory(const std::string& _instance_name,
 #endif // RODS_SERVER
 
     // clang-format off
-    irods::apidef_t def{ATOMIC_APPLY_ACL_OPERATIONS_APN,            // API number
-                        RODS_API_VERSION,                           // API version
-                        NO_USER_AUTH,                               // Client auth
-                        NO_USER_AUTH,                               // Proxy auth
-                        "BinBytesBuf_PI", 0,                        // In PI / bs flag
-                        "BinBytesBuf_PI", 0,                        // Out PI / bs flag
-                        op,                                         // Operation
-                        "api_atomic_apply_acl_operations",          // Operation name
-                        nullptr,                                    // Null clear function
-                        (funcPtr) CALL_ATOMIC_APPLY_ACL_OPERATIONS};
+    irods::apidef_t def{
+        ATOMIC_APPLY_ACL_OPERATIONS_APN,    // API number
+        RODS_API_VERSION,                   // API version
+        NO_USER_AUTH,                       // Client auth
+        NO_USER_AUTH,                       // Proxy auth
+        "BinBytesBuf_PI", 0,                // In PI / bs flag
+        "BinBytesBuf_PI", 0,                // Out PI / bs flag
+        op,                                 // Operation
+        "api_atomic_apply_acl_operations",  // Operation name
+        clearBytesBuffer,                   // Clear input function
+        clearBytesBuffer,                   // Clear output function
+        (funcPtr) CALL_ATOMIC_APPLY_ACL_OPERATIONS
+    };
     // clang-format on
 
     auto* api = new irods::api_entry{def};
@@ -611,5 +615,4 @@ auto plugin_factory(const std::string& _instance_name,
     api->out_pack_value = BytesBuf_PI;
 
     return api;
-}
-
+} // plugin_factory
