@@ -1493,9 +1493,7 @@ pep_api_data_obj_put_finally (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORT
             test_session.assert_icommand(['iput', local_file, local_logical_path])
 
             with temporary_core_file() as core:
-                time.sleep(1)  # remove once file hash fix is committed #2279
                 core.add_rule(put_peps)
-                time.sleep(1)  # remove once file hash fix is committed #2279
 
                 # peps to check for the first, successful put
                 peps = ['data-obj-put-pre', 'data-obj-put-post', 'data-obj-put-finally']
