@@ -9,7 +9,7 @@ import json
 import os
 import socket
 import tempfile
-import time  # remove once file hash fix is committed #2279
+import time
 import subprocess
 import textwrap
 
@@ -47,9 +47,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         }
 
         with temporary_core_file() as core:
-            time.sleep(1)  # remove once file hash fix is committed #2279
             core.add_rule(pep_map[self.plugin_name])
-            time.sleep(1)  # remove once file hash fix is committed #2279
 
             client_update = {
                 'irods_client_server_policy': 'CS_NEG_REFUSE'
@@ -121,9 +119,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         }
 
         with temporary_core_file() as core:
-            time.sleep(1)  # remove once file hash fix is committed #2279
             core.add_rule(pep_map[self.plugin_name])
-            time.sleep(1)  # remove once file hash fix is committed #2279
 
             test_file = 'rulebasetestfile'
             lib.touch(test_file)
@@ -182,9 +178,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         tfile = "rulebasetestfile"
         try:
             with temporary_core_file() as core:
-                time.sleep(1)  # remove once file hash fix is committed #2279
                 core.add_rule(pep_map[self.plugin_name])
-                time.sleep(1)  # remove once file hash fix is committed #2279
 
                 # put data
                 lib.touch(tfile)
@@ -211,7 +205,6 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
                 # check replicas
                 self.admin.assert_icommand(['ils', '-L', tfile], 'STDOUT_MULTILINE', [' demoResc ', ' r1 ', ' r2 '])
 
-            time.sleep(2)  # remove once file hash fix is committed #2279
 
         finally:
             # clean up and remove new resources
@@ -234,9 +227,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         }
 
         with temporary_core_file() as core:
-            time.sleep(1)  # remove once file hash fix is committed #2279
             core.add_rule(pep_map[self.plugin_name])
-            time.sleep(1)  # remove once file hash fix is committed #2279
 
             # check rei functioning
             self.admin.assert_icommand("iget " + self.testfile + " - ", 'STDOUT_SINGLELINE', self.testfile)
@@ -325,9 +316,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
     def test_update_core_multiple_agents__3184(self):
         with temporary_core_file() as core:
             for l in range(100):
-                time.sleep(1)  # remove once file hash fix is committed #2279
                 core.add_rule("multiple_agents {}")
-                time.sleep(1)  # remove once file hash fix is committed #2279
 
                 processes = []
                 initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
@@ -869,9 +858,7 @@ class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
             # write pep rule into test_re
 #            with open(test_re, 'w') as f:
 #                f.write(test_rule)
-            time.sleep(1)  # remove once file hash fix is committed #2279
             core.add_rule(test_rule)
-            time.sleep(1)  # remove once file hash fix is committed #2279
 
 #            # repave the existing server_config.json to add test_re
 #            with open(server_config_filename, 'w') as f:

@@ -70,9 +70,7 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
             raise TypeError('values_to_check_for must be a dict')
 
         with temporary_core_file() as core:
-            time.sleep(1)  # remove once file hash fix is committed #2279
             core.add_rule(rules_to_add)
-            time.sleep(1)  # remove once file hash fix is committed #2279
             self.admin.run_icommand(icommand)
 
         def assert_presence_of_attr_value_avu(attr, value, assert_true=True):
@@ -95,9 +93,7 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
 
     def helper_test_pep(self, rules_to_add, icommand, strings_to_check_for=['THIS IS AN OUT VARIABLE'], number_of_strings_to_look_for=1):
         with temporary_core_file() as core:
-            time.sleep(1)  # remove once file hash fix is committed #2279
             core.add_rule(rules_to_add)
-            time.sleep(1)  # remove once file hash fix is committed #2279
             initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
             self.admin.run_icommand(icommand)
 
@@ -702,9 +698,7 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
         with lib.file_backed_up(coredvm):
             lib.prepend_string_to_file('oprType||rei->doinp->oprType\n', coredvm)
             with temporary_core_file() as core:
-                time.sleep(1)  # remove once file hash fix is committed #2279
                 core.add_rule(rule_text.format('put'))
-                time.sleep(1)  # remove once file hash fix is committed #2279
 
                 trigger_file = 'file_to_trigger_acSetNumThreads'
                 lib.make_file(trigger_file, 4 * pow(10, 7))
@@ -723,9 +717,7 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
                 os.unlink(trigger_file)
 
             with temporary_core_file() as core:
-                time.sleep(1)  # remove once file hash fix is committed #2279
                 core.add_rule(rule_text.format('get'))
-                time.sleep(1)  # remove once file hash fix is committed #2279
 
                 initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
                 self.admin.assert_icommand('iget {0}'.format(trigger_file), use_unsafe_shell=True)
@@ -864,8 +856,6 @@ OUTPUT ruleExecOut
         }
 
         with temporary_core_file() as core:
-            time.sleep(1)  # remove once file hash fix is committed #2279
             core.add_rule(pep_map[self.plugin_name])
-            time.sleep(1)  # remove once file hash fix is committed #2279
             self.user0.assert_icommand(['ils'], 'STDOUT', self.user0.session_collection)
 
