@@ -389,6 +389,28 @@ class Test_ImetaSet(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['imeta', 'ls', '-C', os.path.join(collection) + '/'],  'STDOUT', ['None'])
         self.admin.assert_icommand(['imeta', 'ls', '-C', os.path.join(collection) + '//'], 'STDOUT', ['None'])
 
+    def test_imeta_cannot_set_shared_avu_value_to_empty_string__issue_4063(self):
+        # Generate collections for test
+        collections = ['games', 'super_secret_documents']
+        collections = [os.path.join(self.admin.session_collection, col) for col in collections]
+
+        # Create collections
+        for collection in collections:
+            self.admin.assert_icommand(['imkdir', collection])
+
+        # Set the same AVUs for the collections
+        for collection in collections:
+            self.admin.assert_icommand(['imeta', 'set', '-C', collection, 'is_cool', 'yes'])
+
+        # Attempt to clear value of second collection
+        expected_err = 'ERROR: rcModAVUMetadata failed with error -816000 CAT_INVALID_ARGUMENT'
+        self.admin.assert_icommand(['imeta', 'set', '-C', collections[1], 'is_cool', ''], 'STDERR_SINGLELINE', expected_err, desired_rc=4)
+
+        # Check that the value is unaffected for both collections
+        for collection in collections:
+            expected_value = 'value: yes'
+            self.admin.assert_icommand(['imeta', 'ls', '-C', collection], 'STDOUT', expected_value)
+
 class Test_ImetaQu(ResourceBase, unittest.TestCase):
 
     def helper_imeta_qu_comparison_2748(self, irods_object_option_flag):
