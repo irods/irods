@@ -155,6 +155,18 @@ validateAndParseUserName( const char *fullUserNameIn, char *userName, char *user
     return 0;
 } // validateAndParseUserName
 
+[[nodiscard]] auto is_valid_avu(const char *_attribute, const char *_value, const char *_unit) noexcept -> bool
+{
+    if (_attribute == nullptr || _value == nullptr || _unit == nullptr) {
+        return false;
+    }
+    if (*_attribute == '\0' || *_value == '\0') {
+        return false;
+    }
+
+    return true;
+}
+
 // =-=-=-=-=-=-=-
 // helper fcn to handle cast to pg object
 irods::error make_db_ptr(
@@ -9253,6 +9265,10 @@ irods::error db_set_avu_metadata_op(
     /* Treat unspecified unit as empty string */
     if ( _new_unit == NULL ) {
         _new_unit = "";
+    }
+
+    if (!is_valid_avu(_attribute, _new_value, _new_unit)) {
+        return ERROR(CAT_INVALID_ARGUMENT, "invalid AVU");
     }
 
     /* Query to see if the attribute exists for this object
