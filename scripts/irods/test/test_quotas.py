@@ -42,9 +42,7 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
         filename_1 = 'test_iquota__3044_1'
         filename_2 = 'test_iquota__3044_2'
         with temporary_core_file() as core:
-            time.sleep(1)  # remove once file hash fix is committed #2279
             core.add_rule(pep_map[self.plugin_name])
-            time.sleep(1)  # remove once file hash fix is committed #2279
             for quotatype in [['sgq', 'public']]: # group
                 for quotaresc in [self.testresc, 'total']: # resc and total
                     cmd = 'iadmin {0} {1} {2} 10000000'.format(quotatype[0], quotatype[1], quotaresc) # set high quota
@@ -75,7 +73,6 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
                     self.admin.assert_icommand(cmd.split())
                     cmd = 'irm -rf {0}'.format(filename_2) # clean up
                     self.admin.assert_icommand(cmd.split())
-            time.sleep(2)  # remove once file hash fix is committed #2279
 
     def test_iquota_empty__3048(self):
         cmd = 'iadmin suq' # no arguments

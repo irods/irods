@@ -162,9 +162,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
                     }
 
                     with temporary_core_file() as core:
-                        time.sleep(1)  # remove once file hash fix is committed #2279
                         core.add_rule(pep_map[self.plugin_name])
-                        time.sleep(1)  # remove once file hash fix is committed #2279
 
                         IrodsController().start()
 
