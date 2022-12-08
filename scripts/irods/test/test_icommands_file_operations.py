@@ -790,9 +790,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
             ''')
         }
         with temporary_core_file() as core:
-            time.sleep(1)  # remove once file hash fix is committed #2279
             core.add_rule(pep_map[self.plugin_name])
-            time.sleep(1)  # remove once file hash fix is committed #2279
 
             initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
             with tempfile.NamedTemporaryFile(prefix='test_delay_in_dynamic_pep__3342') as f:
@@ -830,9 +828,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
             lib.make_large_local_tmp_dir(dirname, number_of_files, filesize)
             # manipulate core.re and check the server log
             with temporary_core_file() as core:
-                time.sleep(1)  # remove once file hash fix is committed #2279
                 core.add_rule(pep_map[self.plugin_name])
-                time.sleep(1)  # remove once file hash fix is committed #2279
 
                 initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
                 self.admin.assert_icommand(['iput', '-frb', dirname], "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
@@ -889,9 +885,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
 
         # manipulate core.re and check the server log
         with temporary_core_file() as core:
-            time.sleep(1)  # remove once file hash fix is committed #2279
             core.add_rule(pep_map[self.plugin_name])
-            time.sleep(1)  # remove once file hash fix is committed #2279
 
             # test as rodsuser
             self.user0.assert_icommand(['ils', '-l', filename], 'STDERR_SINGLELINE', 'does not exist')
@@ -933,9 +927,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         filepath = lib.create_local_testfile(filename)
 
         with temporary_core_file() as core:
-            time.sleep(1)  # remove once file hash fix is committed #2279
             core.add_rule(pep_map[self.plugin_name])
-            time.sleep(1)  # remove once file hash fix is committed #2279
 
             # test as rodsuser
             self.user0.assert_icommand(['ils', '-l', filename], 'STDERR_SINGLELINE', 'does not exist')
@@ -977,9 +969,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         filepath = lib.create_local_testfile(filename)
 
         with temporary_core_file() as core:
-            time.sleep(1)  # remove once file hash fix is committed #2279
             core.add_rule(pep_map[self.plugin_name])
-            time.sleep(1)  # remove once file hash fix is committed #2279
 
             # test as rodsuser
             self.user0.assert_icommand(['ils', '-l', filename], 'STDERR_SINGLELINE', 'does not exist')

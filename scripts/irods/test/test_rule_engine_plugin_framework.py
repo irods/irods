@@ -10,7 +10,7 @@ import json
 import os
 import socket
 import tempfile
-import time  # remove once file hash fix is committed #2279
+import time
 import subprocess
 import mmap
 import shutil

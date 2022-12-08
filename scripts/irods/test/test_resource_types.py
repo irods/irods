@@ -503,9 +503,7 @@ OUTPUT ruleExecOut
             lib.make_dir_p(self.admin.get_vault_path('demoResc'))
 
             with temporary_core_file() as core:
-                time.sleep(1)  # remove once file hash fix is committed #2279
                 core.add_rule(pep_map[self.plugin_name])
-                time.sleep(1)  # remove once file hash fix is committed #2279
 
                 self.user0.assert_icommand(['iput', filename])
                 free_space = psutil.disk_usage(self.admin.get_vault_path('demoResc')).free
@@ -2435,9 +2433,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
         # manipulate the core.re to add the new policy
         with temporary_core_file() as core:
-            time.sleep(2)  # remove once file hash fix is committed #2279
             core.add_rule(rule_map[self.plugin_name])
-            time.sleep(2)  # remove once file hash fix is committed #2279
 
             self.admin.assert_icommand("irm -f " + filename)
 
@@ -2482,9 +2478,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
         # manipulate the core.re to add the new policy
         with temporary_core_file() as core:
-            time.sleep(1)  # remove once file hash fix is committed #2279
             core.add_rule(pep_map[self.plugin_name])
-            time.sleep(1)  # remove once file hash fix is committed #2279
 
             # restart the server to reread the new core.re
             IrodsController().restart()
@@ -3249,9 +3243,7 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
 
         # manipulate the core.re to add the new policy
         with temporary_core_file() as core:
-            time.sleep(1)  # remove once file hash fix is committed #2279
             core.add_rule(pep_map[self.plugin_name])
-            time.sleep(1)  # remove once file hash fix is committed #2279
 
             # restart the server to reread the new core.re
             IrodsController().restart()
@@ -3613,9 +3605,7 @@ class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDev
         backupcorefilepath = core.filepath + "--" + self._testMethodName
         shutil.copy(core.filepath, backupcorefilepath)
 
-        time.sleep(1)  # remove once file hash fix is committed #2279
         core.add_rule(pep_map[self.plugin_name])
-        time.sleep(1)  # remove once file hash fix is committed #2279
 
         with session.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
