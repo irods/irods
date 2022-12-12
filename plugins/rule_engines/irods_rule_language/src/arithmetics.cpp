@@ -30,6 +30,35 @@ const static std::map<const std::string, const int> irods_error_name_map = irods
 extern int GlobalREDebugFlag;
 extern int GlobalREAuditFlag;
 
+namespace
+{
+    // This function exists to maintain the legacy behavior of the iRODS Rule Language.
+    // This function was introduced because of changes to clearMsParam(). clearMsParam()
+    // now handles ExecCmdOut directly which has shown to lead to SIGSEGV in certain cases.
+    auto clear_ms_param(MsParam* _p, int _freeInOutStruct) -> void
+    {
+        if (!_p) {
+            return;
+        }
+
+        if (_p->label) {
+            std::free(_p->label);
+        }
+
+        if (_p->inOutStruct) {
+            if (_freeInOutStruct > 0 || (_p->type && std::strcmp(_p->type, STR_MS_T) == 0)) {
+                std::free(_p->inOutStruct);
+            }
+        }
+
+        if (_p->type) {
+            std::free(_p->type);
+        }
+
+        std::memset(_p, 0, sizeof(MsParam));
+    } // clear_ms_param
+} // anonymous namespace
+
 /* utilities */
 int initializeEnv( Node *params, Res *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc, Hashtable *env ) {
 
@@ -1071,7 +1100,7 @@ Res* execMicroService3( char *msName, Res **args, unsigned int nargs, Node *node
                     if ( NULL != args[j] && NULL != args[j]->exprType ) {
                         freeStruct = ( T_IRODS != TYPE( args[j] ) ) ? 1 : 0;
                     }
-                    clearMsParam( myArgv[j], freeStruct );
+                    clear_ms_param(myArgv[j], freeStruct);
                     free( myArgv[j] );
                 }
                 return newErrorRes( r, ret );
@@ -1156,7 +1185,7 @@ ret:
         if ( NULL != args[i] && NULL != args[i]->exprType ) {
             freeStruct = ( T_IRODS != TYPE( args[i] ) ) ? 1 : 0;
         }
-        clearMsParam( myArgv[i], freeStruct );
+        clear_ms_param(myArgv[i], freeStruct);
         free( myArgv[i] );
     }
     if ( getNodeType( res ) == N_ERROR ) {
