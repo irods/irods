@@ -139,7 +139,6 @@ namespace irods
                     auto* v = to_string(const_cast<msParam_t&>(*_p));
                     param["type"] = _p->type;
                     param["in_out_struct"] = v;
-                    std::free(v);
                 }
                 else if (std::string_view{INT_MS_T} == _p->type) {
                     param["type"] = _p->type;
