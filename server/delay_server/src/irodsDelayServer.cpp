@@ -51,8 +51,23 @@
 #include <string_view>
 #include <fstream>
 
+// __has_feature is a Clang specific feature.
+// The preprocessor code below exists so that other compilers can be used (e.g. GCC).
+#ifndef __has_feature
+#  define __has_feature(feature) 0
+#endif
+
 #if __has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
 #  include <sanitizer/lsan_interface.h>
+
+// Defines default options for running iRODS with Address Sanitizer enabled.
+// This is a convenience function which allows the iRODS server to start without
+// having to specify options via environment variables.
+extern "C" const char* __asan_default_options()
+{
+    // See root CMakeLists.txt file for definition.
+    return IRODS_ADDRESS_SANITIZER_DEFAULT_OPTIONS;
+} // __asan_default_options
 #endif
 
 // clang-format off
