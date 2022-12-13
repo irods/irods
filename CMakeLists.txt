@@ -45,6 +45,19 @@ set(CMAKE_MODULE_LINKER_FLAGS_INIT "-Wl,--enable-new-dtags -Wl,--as-needed")
 set(CMAKE_SHARED_LINKER_FLAGS_INIT "-Wl,--enable-new-dtags -Wl,--as-needed")
 
 if (IRODS_ENABLE_ADDRESS_SANITIZER)
+  # The following options are compiled into all binaries and allow them to start even
+  # when an ODR violation is detected.
+  #
+  # Make sure the correct llvm-symbolizer binary is available to Address Sanitizer. This binary
+  # allows debug symbols to be reported appropriately. There are two ways to do this:
+  #
+  #     export PATH=/opt/irods-externals/clang13.0.0-0/bin:$PATH
+  #
+  # - or -
+  #
+  #     export ASAN_SYMBOLIZER_PATH=/opt/irods-externals/clang13.0.0-0/bin/llvm-symbolizer
+  #
+  add_compile_definitions(IRODS_ADDRESS_SANITIZER_DEFAULT_OPTIONS="log_path=/tmp/irods_asan_output:detect_odr_violation=1")
   add_compile_options(
     -fsanitize=address
     -fno-omit-frame-pointer
