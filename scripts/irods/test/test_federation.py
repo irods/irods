@@ -967,7 +967,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         expected_after_remote = 'stdout after remote: {0}, {1}, {2}, {3}'.format(
             inputnum_after, inputstring, localnum_after, localstring)
 
-        if zone_info is 'local':
+        if zone_info == 'local':
             zone = config['local_zone']
             host = socket.gethostname()
             # TODO: Add support for remote with #4164
@@ -1004,14 +1004,14 @@ OUTPUT ruleExecOut
             f.write(rule_string)
 
         # TODO: Add support for remote with #4164
-        if zone_info is 'local':
+        if zone_info == 'local':
             initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
 
         # Execute rule and ensure that output is empty (success)
         self.user_sessions[0].assert_icommand(['irule', '-F', rule_file], 'STDOUT_MULTILINE', [expected_before_remote, expected_from_remote, expected_after_remote])
 
         # TODO: Add support for remote with #4164
-        if zone_info is 'local':
+        if zone_info == 'local':
             lib.delayAssert(
                 lambda: lib.log_message_occurrences_equals_count(
                     msg=expected_from_remote_log,
