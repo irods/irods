@@ -12,6 +12,11 @@ import sys
 # Invoke module functions directly from the command line by passing the
 #  desired function name minus the leading 'get_' as the first argument.
 
+def get_os_distribution_name():
+    system = platform.system()
+    if system == 'Linux' : return distro.id()
+    if system == 'Darwin': return 'MacOSX'
+
 def get_os_distribution_version():
     system = platform.system()
     if system == 'Linux' : return distro.version()
