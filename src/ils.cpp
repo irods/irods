@@ -1,18 +1,16 @@
-/*
- * ils - The irods ls utility
-*/
-
-#include <irods/rodsClient.h>
-#include <irods/parseCommandLine.h>
-#include <irods/rodsPath.h>
-#include <irods/lsUtil.h>
-
+#include <irods/filesystem.hpp>
 #include <irods/irods_buffer_encryption.hpp>
 #include <irods/irods_client_api_table.hpp>
 #include <irods/irods_pack_table.hpp>
+#include <irods/lsUtil.h>
+#include <irods/parseCommandLine.h>
+#include <irods/rodsClient.h>
+#include <irods/rodsPath.h>
 
-#include <string>
+#include <fmt/core.h>
+
 #include <iostream>
+#include <string>
 
 void usage();
 
@@ -82,7 +80,25 @@ main( int argc, char **argv ) {
         }
     }
 
-    status = lsUtil( conn, &myEnv, &myRodsArgs, &rodsPathInp );
+    try {
+        status = lsUtil(conn, &myEnv, &myRodsArgs, &rodsPathInp);
+    }
+    catch (const irods::exception& e) {
+        status = e.code();
+        fmt::print(stderr, "iRODS exception occurred: [{}]\n", e.client_display_what());
+    }
+    catch (const irods::experimental::filesystem::filesystem_error& e) {
+        status = e.code().value();
+        fmt::print(stderr, "iRODS filesystem error occurred: [{}]\n", e.what());
+    }
+    catch (const std::exception& e) {
+        status = SYS_INTERNAL_ERR;
+        fmt::print(stderr, "std::exception caught: [{}]\n", e.what());
+    }
+    catch (...) {
+        status = SYS_UNKNOWN_ERROR;
+        fmt::print(stderr, "An unknown error occurred.\n");
+    }
 
     printErrorStack( conn->rError );
     rcDisconnect( conn );
