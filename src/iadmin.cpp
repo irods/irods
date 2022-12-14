@@ -1801,6 +1801,8 @@ main( int argc, char **argv ) {
         return 2;
     }
 
+    const auto disconnect = irods::at_scope_exit{[] { rcDisconnect(Conn); }};
+
     status = clientLogin( Conn );
     if ( status != 0 ) {
         return 3;
@@ -1854,7 +1856,6 @@ main( int argc, char **argv ) {
     while ( keepGoing );
 
     printErrorStack( Conn->rError );
-    rcDisconnect( Conn );
 
     if ( lastCommandStatus != 0 ) {
         return 4;

@@ -1,14 +1,7 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-/*
-  User interface to display quota information.
-*/
-
-#include <irods/rods.h>
-#include <irods/rodsClient.h>
 #include <irods/irods_client_api_table.hpp>
 #include <irods/irods_pack_table.hpp>
+#include <irods/rods.h>
+#include <irods/rodsClient.h>
 
 #define BIG_STR 200
 #define QUOTA_APPROACH_WARNING_SIZE -10000000000LL
@@ -546,10 +539,12 @@ main( int argc, char **argv ) {
         exit( 2 );
     }
 
+    const auto disconnect = irods::at_scope_exit{[] { rcDisconnect(Conn); }};
+
     status = clientLogin( Conn );
     if ( status != 0 ) {
         if ( !debug ) {
-            exit( 3 );
+            return 3;
         }
     }
 
@@ -606,9 +601,8 @@ main( int argc, char **argv ) {
     }
 
     printErrorStack( Conn->rError );
-    rcDisconnect( Conn );
 
-    exit( 0 );
+    return 0;
 }
 
 /*

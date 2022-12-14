@@ -1,14 +1,7 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-/*
-  A user interface for deleting delayed execution rules
-*/
-
-#include <irods/rodsClient.h>
-#include <irods/parseCommandLine.h>
 #include <irods/irods_client_api_table.hpp>
 #include <irods/irods_pack_table.hpp>
+#include <irods/parseCommandLine.h>
+#include <irods/rodsClient.h>
 
 #define MAX_SQL 300
 #define BIG_STR 200
@@ -97,11 +90,13 @@ main( int argc, char **argv ) {
         exit( 2 );
     }
 
+    const auto disconnect = irods::at_scope_exit{[] { rcDisconnect(Conn); }};
+
     status = clientLogin( Conn );
     if ( status != 0 ) {
         printError( Conn, status, "clientLogin" );
         if ( !debug ) {
-            exit( 3 );
+            return 3;
         }
     }
 
@@ -118,12 +113,11 @@ main( int argc, char **argv ) {
     }
 
     printErrorStack( Conn->rError );
-    rcDisconnect( Conn );
 
     if ( status ) {
-        exit( 4 );
+        return 4;
     }
-    exit( 0 );
+    return 0;
 }
 
 int

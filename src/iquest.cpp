@@ -1,18 +1,15 @@
-/*
- * iquest - The irods iquest (question (query)) utility
-*/
-
-#include <irods/rodsClient.h>
-#include <irods/parseCommandLine.h>
-#include <irods/rodsPath.h>
-#include <irods/rcMisc.h>
-#include <irods/lsUtil.h>
-#include <iostream>
-#include <string>
 #include <irods/irods_client_api_table.hpp>
 #include <irods/irods_pack_table.hpp>
+#include <irods/lsUtil.h>
+#include <irods/parseCommandLine.h>
+#include <irods/rcMisc.h>
+#include <irods/rodsClient.h>
+#include <irods/rodsPath.h>
 
 #include <boost/format.hpp>
+
+#include <iostream>
+#include <string>
 
 void usage();
 
@@ -388,9 +385,11 @@ main( int argc, char **argv ) {
         exit( 2 );
     }
 
+    const auto disconnect = irods::at_scope_exit{[conn] { rcDisconnect(conn); }};
+
     status = clientLogin( conn );
     if ( status != 0 ) {
-        exit( 3 );
+        return 3;
     }
 
     if ( myRodsArgs.sql ) {
@@ -399,16 +398,15 @@ main( int argc, char **argv ) {
                                            myRodsArgs.optind + 1,
                                            myRodsArgs.noPage,
                                            myRodsArgs.zoneName );
-        rcDisconnect( conn );
         if ( status == CAT_NO_ROWS_FOUND ) {
-            exit( 1 );
+            return 1;
         }
         else if ( status < 0 ) {
             rodsLogError( LOG_ERROR, status, "iquest Error: specificQuery (sql-query) failed" );
-            exit( 4 );
+            return 4;
         }
         else {
-            exit( 0 );
+            return 0;
         }
     }
 
@@ -431,20 +429,18 @@ main( int argc, char **argv ) {
                                       myRodsArgs.zoneName,
                                       myRodsArgs.noPage );
     }
-    rcDisconnect( conn );
 
     if ( status < 0 ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
             printf( "CAT_NO_ROWS_FOUND: Nothing was found matching your query\n" );
-            exit( 1 );
+            return 1;
         }
         else {
             rodsLogError( LOG_ERROR, status, "iquest Error: queryAndShowStrCond failed" );
-            exit( 4 );
+            return 4;
         }
     }
     else {
-        exit( 0 );
+        return 0;
     }
-
 }
