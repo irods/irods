@@ -1,6 +1,7 @@
 #include "irods/dataObjTrim.h"
 #include "irods/dataObjUnlink.h"
 #include "irods/dataObjOpr.hpp"
+#include "irods/rcMisc.h"
 #include "irods/rodsLog.h"
 #include "irods/objMetaOpr.hpp"
 #include "irods/specColl.hpp"
@@ -259,6 +260,7 @@ int rsDataObjTrim(
         }
 
         const auto [file_obj, info] = get_data_object_info(rsComm, *dataObjInp);
+        irods::at_scope_exit free_data_obj_infos{[p = info] { freeAllDataObjInfo(const_cast<DataObjInfo*>(p)); }};
 
         if (!info) {
             irods::log(LOG_ERROR, fmt::format(
