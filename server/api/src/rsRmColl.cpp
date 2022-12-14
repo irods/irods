@@ -387,6 +387,7 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
                         free( collEnt );
                         break;
                     }
+                    std::free(*collOprStat);
                     *collOprStat = ( collOprStat_t* )malloc( sizeof( collOprStat_t ) );
                     memset( *collOprStat, 0, sizeof( collOprStat_t ) );
                 }
