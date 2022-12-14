@@ -1,5 +1,6 @@
 /// \file
 
+#include "irods/irods_at_scope_exit.hpp"
 #include "irods/rsRuleExecSubmit.hpp"
 #include "irods/icatHighLevelRoutines.hpp"
 #include "irods/rcMisc.h"
@@ -165,19 +166,20 @@ int _delayExec(const char* inActionCall,
     /* Fill Conditions into Submit Struct */
     ruleExecSubmitInp_t* ruleSubmitInfo = (ruleExecSubmitInp_t*) malloc(sizeof(ruleExecSubmitInp_t));
     memset(ruleSubmitInfo, 0, sizeof(ruleExecSubmitInp_t));
-    if (const auto ec = fillSubmitConditions(inActionCall, delayCondition, packedReiAndArgBBuf, ruleSubmitInfo, rei); ec < 0) {
+    ruleSubmitInfo->packedReiAndArgBBuf = packedReiAndArgBBuf;
+
+    irods::at_scope_exit free_input{[ruleSubmitInfo] {
+        clearRuleExecSubmitInput(ruleSubmitInfo);
         free(ruleSubmitInfo);
+    }};
+
+    if (const auto ec = fillSubmitConditions(inActionCall, delayCondition, packedReiAndArgBBuf, ruleSubmitInfo, rei); ec < 0) {
         return ec;
     }
 
     /* Store ReiArgs Struct in a File */
     char *ruleExecId = nullptr;
     const int i = rsRuleExecSubmit(rei->rsComm, ruleSubmitInfo, &ruleExecId);
-    if (packedReiAndArgBBuf) {
-        clearBBuf(packedReiAndArgBBuf);
-        free(packedReiAndArgBBuf);
-    }
-    free(ruleSubmitInfo);
     free(ruleExecId);
 
     if (i >= 0) {
