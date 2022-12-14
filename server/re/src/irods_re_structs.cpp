@@ -551,7 +551,6 @@ fillSubmitConditions( const char *action, const char *inDelayCondition,
         taggedValues->erase(it);
     }
 
-    ruleSubmitInfo->condInput.len = 0;
     ruleSubmitInfo->packedReiAndArgBBuf = packedReiAndArgBBuf;
     if ( strlen( ruleSubmitInfo->userName ) == 0 ) {
         if ( strlen( rei->uoic->userName ) != 0 ) {
