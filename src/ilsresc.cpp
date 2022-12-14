@@ -1,15 +1,11 @@
-//
-// This is a regular-user level utility to list the resources.
-//
-
+#include <irods/irods_children_parser.hpp>
+#include <irods/irods_client_api_table.hpp>
+#include <irods/irods_exception.hpp>
+#include <irods/irods_pack_table.hpp>
+#include <irods/irods_resource_constants.hpp>
 #include <irods/rods.h>
 #include <irods/rodsClient.h>
 #include <irods/rodsErrorTable.h>
-#include <irods/irods_children_parser.hpp>
-#include <irods/irods_client_api_table.hpp>
-#include <irods/irods_pack_table.hpp>
-#include <irods/irods_resource_constants.hpp>
-#include <irods/irods_exception.hpp>
 
 #include <iostream>
 #include <vector>
@@ -505,6 +501,8 @@ main( int argc, char **argv ) {
             return 2;
         }
 
+        const auto disconnect = irods::at_scope_exit{[Conn] { rcDisconnect(Conn); }};
+
         status = clientLogin( Conn );
         if ( status != 0 ) {
             return 3;
@@ -528,7 +526,6 @@ main( int argc, char **argv ) {
     }
 
     printErrorStack( Conn->rError );
-    rcDisconnect( Conn );
 
     if (status < 0) {
         return 1;

@@ -1,14 +1,7 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-/*
-  This is an interface to the Attribute-Value-Units type of metadata.
-*/
-
-#include <irods/rods.h>
-#include <irods/rodsClient.h>
 #include <irods/irods_client_api_table.hpp>
 #include <irods/irods_pack_table.hpp>
+#include <irods/rods.h>
+#include <irods/rodsClient.h>
 
 #define MAX_SQL 300
 #define BIG_STR 200
@@ -316,6 +309,8 @@ main( int argc, char **argv ) {
         return 2;
     }
 
+    const auto disconnect = irods::at_scope_exit{[] { rcDisconnect(Conn); }};
+
     status = clientLogin( Conn );
     if ( status != 0 ) {
         if ( !debug ) {
@@ -338,7 +333,6 @@ main( int argc, char **argv ) {
     }
 
     printErrorStack( Conn->rError );
-    rcDisconnect( Conn );
 
     return status;
 }
