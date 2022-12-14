@@ -110,6 +110,41 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
             test_session.assert_icommand(
                 ['irm', '-f', '{0}/{1}'.format(remote_home_collection, filename)])
 
+
+    @unittest.skipUnless(test.settings.USE_SSL, 'This test uses SSL and so it is required in order to run.')
+    def test_ils_with_misconfigured_ssl_catches_exceptions__issue_6365(self):
+        test_session = self.user_sessions[0]
+        remote_home_collection = test_session.remote_home_collection(test.settings.FEDERATION.REMOTE_ZONE)
+        test_session.assert_icommand(['ils', remote_home_collection], 'STDOUT_SINGLELINE', remote_home_collection)
+        with temporary_core_file() as core:
+            # Disable SSL communications in the local server. This should break communications with the remote zone,
+            # which is supposed to be configured for SSL communications.
+            core.add_rule('acPreConnect(*OUT) { *OUT = "CS_NEG_REFUSE"; }')
+
+            # Disable SSL communications in the service account client environment so that it can communicate with
+            # the local server, which has just disabled SSL communications.
+            env_update = {'irods_client_server_policy': 'CS_NEG_REFUSE'}
+            service_account_env_file = os.path.join(paths.irods_directory(), '.irods', "irods_environment.json")
+            with lib.file_backed_up(service_account_env_file):
+                lib.update_json_file_from_dict(service_account_env_file, env_update)
+
+                # Disable SSL communications in the test session client environment so that it can communicate with
+                # the local server, which has just disabled SSL communications.
+                client_env_file = os.path.join(test_session.local_session_dir, "irods_environment.json")
+                with lib.file_backed_up(client_env_file):
+                    lib.update_json_file_from_dict(client_env_file, env_update)
+
+                    # Make sure communications with the local zone are in working order...
+                    _, pwd, _ = test_session.assert_icommand(['ipwd'], 'STDOUT', test_session.zone_name)
+                    test_session.assert_icommand(['ils'], 'STDOUT_SINGLELINE', pwd.strip())
+
+                    # ils in the remote zone should fail due to the misconfigured SSL settings, but not explode.
+                    out, err, rc = test_session.run_icommand(['ils', remote_home_collection])
+                    self.assertNotEqual(0, rc)
+                    self.assertEqual(0, len(out))
+                    self.assertIn('iRODS filesystem error occurred', err)
+                    self.assertNotIn('terminating with uncaught exception', err)
+
     def test_ils_subcolls(self):
         # pick session(s) for the test
         test_session = self.user_sessions[0]
