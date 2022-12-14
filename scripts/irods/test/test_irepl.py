@@ -148,6 +148,70 @@ class Test_Irepl(session.make_sessions_mixin([('otherrods', 'rods')], [('alice',
         # checksums and replicating replicas.
         self.do_test_for_issue_5592(trigger_checksum_mismatch_error=False)
 
+
+    def test_irepl_a_updates_stale_zero_byte_replicas__issue_6285(self):
+        # The data object needs to have a really weird name and exist inside a really weirdly named collection.
+        collection = os.path.join(
+            self.user.session_collection,
+            'sharePoint',
+            'mgb',
+            '{collectionName=Maize Gene Bank Regeneration}{plantType=Maize-Ear}{imageType=earImage}',
+            'algorithmResults',
+            'resultObjects')
+        logical_path = os.path.join(
+            collection,
+            '{algorithm=earImage}{computeStatus=complete}'
+            '{input=['
+            '{accessionNumber=CIMMYTMA~217}'
+            '{accessionName=MORE~17}'
+            '{fieldData=PV17A}'
+            '{experimentId=1903}'
+            '{plotId=64}'
+            '{dataType=earData}]}'
+            '{inputHash=d7b8d47f13839131e805a59091f7c4f12dc553d8}.mat')
+
+        # Construct two hierarchies consisting of a passthru to a unixfilesystem resource.
+        roots = ['root_a', 'root_b']
+        leaves = ['leaf_a', 'leaf_b']
+        self.assertEqual(len(roots), len(leaves))
+
+        lib.create_passthru_resource(roots[0], self.admin)
+        lib.create_passthru_resource(roots[1], self.admin)
+        lib.create_ufs_resource(leaves[0], self.admin, test.settings.HOSTNAME_2)
+        lib.create_ufs_resource(leaves[1], self.admin, test.settings.HOSTNAME_3)
+        lib.add_child_resource(roots[0], leaves[0], self.admin)
+        lib.add_child_resource(roots[1], leaves[1], self.admin)
+
+        try:
+            # itouch a data object in a hierarchy and replicate it such that there are 2 zero-length replicas.
+            self.user.assert_icommand(['imkdir', '-p', collection])
+            self.user.assert_icommand(['itouch', '-R', leaves[0], logical_path])
+            lib.replica_exists_on_resource(self.user, logical_path, leaves[0])
+            self.user.assert_icommand(['irepl', '-R', roots[1], logical_path])
+            lib.replica_exists_on_resource(self.user, logical_path, leaves[1])
+
+            # Create a large-ish file and overwrite replica 0, which will make replica 1 stale.
+            filesize = 24111062
+            localfile = os.path.join(self.user.local_session_dir, 'biggishfile.bin')
+            lib.make_file(localfile, filesize, contents='arbitrary')
+            self.user.assert_icommand(['iput', '-n', '0', '-f', localfile, logical_path])
+            self.assertEqual(1, int(lib.get_replica_status(self.user, os.path.basename(logical_path), 0)))
+            self.assertEqual(0, int(lib.get_replica_status(self.user, os.path.basename(logical_path), 1)))
+
+            # Run irepl -a -M on that data object and ensure that replica 1 is updated appropriately.
+            self.admin.assert_icommand(['irepl', '-a', '-M', logical_path])
+            self.assertEqual(1, int(lib.get_replica_status(self.user, os.path.basename(logical_path), 0)))
+            self.assertEqual(1, int(lib.get_replica_status(self.user, os.path.basename(logical_path), 1)))
+
+        finally:
+            self.user.assert_icommand(['irm', '-f', logical_path])
+            lib.remove_child_resource(roots[0], leaves[0], self.admin)
+            lib.remove_child_resource(roots[1], leaves[1], self.admin)
+            lib.remove_resource(leaves[0], self.admin)
+            lib.remove_resource(leaves[1], self.admin)
+            lib.remove_resource(roots[0], self.admin)
+            lib.remove_resource(roots[1], self.admin)
+
 class test_irepl_with_special_resource_configurations(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
     # In this suite:
     #   - rodsadmin otherrods
