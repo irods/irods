@@ -274,7 +274,7 @@ int extractVarNames( char **varNames, const char *outBuf ) {
     const char *p = outBuf;
     const char *psrc = p;
 
-    for ( ;; ) {
+    while (n < MAX_PARAMS_LEN) {
         if ( *psrc == '%' ) {
             varNames[n++] = strndup( p, psrc - p );
             p = psrc + 1;
