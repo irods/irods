@@ -496,9 +496,27 @@ namespace
 
         rodsLog(LOG_DEBUG, "Checking if user has permission to modify permissions ...");
 
-        if (!ic::user_has_permission_to_modify_acls(*_comm, db_conn, db_instance_name, object_id)) {
-            rodsLog(LOG_ERROR, "User not allowed to modify ACLs [logical_path=%s, object_id=%d]", logical_path.data(), object_id);
-            *_output = irods::to_bytes_buffer(make_error_object(json{}, 0, "User not allowed to modify ACLs").dump());
+        if (const auto iter = input.find("admin_mode"); iter != std::end(input) && iter->get<bool>()) {
+            if (!irods::is_privileged_client(*_comm)) {
+                const auto msg = fmt::format("User [{}#{}] not allowed to modify ACLs [logical_path={}, object_id={}]. "
+                                             "admin_mode cannot be enabled because user is not an administrator.",
+                                             _comm->clientUser.userName,
+                                             _comm->clientUser.rodsZone,
+                                             logical_path,
+                                             object_id);
+                rodsLog(LOG_ERROR, msg.c_str());
+                *_output = irods::to_bytes_buffer(make_error_object(json{}, 0, msg).dump());
+                return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
+            }
+        }
+        else if (!ic::user_has_permission_to_modify_acls(*_comm, db_conn, db_instance_name, object_id)) {
+            const auto msg = fmt::format("User [{}#{}] not allowed to modify ACLs [logical_path={}, object_id={}]",
+                                         _comm->clientUser.userName,
+                                         _comm->clientUser.rodsZone,
+                                         logical_path.c_str(),
+                                         object_id);
+            rodsLog(LOG_ERROR, msg.c_str());
+            *_output = irods::to_bytes_buffer(make_error_object(json{}, 0, msg.c_str()).dump());
             return CAT_NO_ACCESS_PERMISSION;
         }
 
