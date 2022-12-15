@@ -1,10 +1,5 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-/* objDesc.h - header file for objDesc.c
- */
-#ifndef OBJ_DESC_HPP
-#define OBJ_DESC_HPP
+#ifndef IRODS_OBJ_DESC_HPP
+#define IRODS_OBJ_DESC_HPP
 
 #include "rods.h"
 #include "objInfo.h"
@@ -28,8 +23,13 @@
 #define REG_CHKSUM      1
 #define VERIFY_CHKSUM   2
 
-/* values in l1desc_t is the desired value. values in dataObjInfo are
- * the values in rcat */
+// Values in l1desc are the desired values.
+// Values in dataObjInfo are the values in the catalog.
+//
+// If you modify this data type, you must also update init_l1desc().
+//
+// DO NOT call std::memset() on this data type. Use init_l1desc().
+// DO NOT call std::memcpy() on this data type. Use the assignment operator.
 typedef struct l1desc {
     int l3descInx;
     int inuseFlag;
@@ -41,30 +41,28 @@ typedef struct l1desc {
     dataObjInfo_t *dataObjInfo;
     dataObjInfo_t *otherDataObjInfo;
     int copiesNeeded;
-    rodsLong_t bytesWritten;    /* mark whether it has been written */
-    rodsLong_t dataSize;        /* this is the target size. The size in
-                                 * dataObjInfo is the registered size */
-    int replStatus;     /* the replica status */
-    int chksumFlag;     /* parsed from condition */
+    rodsLong_t bytesWritten; /* mark whether it has been written */
+    rodsLong_t dataSize;     /* this is the target size. The size in dataObjInfo is the registered size */
+    int replStatus;          /* the replica status */
+    int chksumFlag;          /* parsed from condition */
     int srcL1descInx;
     char chksum[NAME_LEN]; /* the input chksum */
     int remoteL1descInx;
     int stageFlag;
-    int purgeCacheFlag; // JMC - backport 4537
-    int lockFd; // JMC - backport 4604
+    int purgeCacheFlag;
+    int lockFd;
     boost::any pluginData;
-    dataObjInfo_t *replDataObjInfo; /* if non NULL, repl to this dataObjInfo
-                                     * on close */
+    dataObjInfo_t *replDataObjInfo; // if non NULL, repl to this dataObjInfo on close.
     rodsServerHost_t *remoteZoneHost;
     char in_pdmo[MAX_NAME_LEN];
 
     std::string replica_token;
 } l1desc_t;
 
-extern "C" {
-
 int
 initL1Desc();
+
+auto init_l1desc(l1desc& _l1d) -> void;
 
 int
 allocL1Desc();
@@ -111,8 +109,6 @@ allocAndSetL1descForZoneOpr( int l3descInx, dataObjInp_t *dataObjInp,
 int
 isL1descInuse();
 
-}
-
 namespace irods
 {
     /// \brief Allocates and populates an L1 descriptor based on the provided inputs.
@@ -130,4 +126,4 @@ namespace irods
         const rodsLong_t _data_size) -> int;
 } // namespace irods
 
-#endif  /* OBJ_DESC_H */
+#endif // IRODS_OBJ_DESC_HPP
