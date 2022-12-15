@@ -78,6 +78,8 @@ int cipherBlockChaining = 0;
    HASH_TYPE_MD5 and HASH_TYPE_SHA1 */
 static int defaultHashType = HASH_TYPE_MD5;
 
+constexpr auto max_path_length{MAX_NAME_LEN + 10};
+
 /*
   What can be a main routine for some simple tests.
  */
@@ -117,40 +119,30 @@ obfSetDebug( int opt ) {
 
 int
 obfiGetFilename( char *fileName ) {
-    char *envVar = NULL;
+    char* envVar{getRodsEnvAuthFileName()};
 
-    envVar = getRodsEnvAuthFileName();
-    if ( envVar != NULL && *envVar != '\0' ) {
-        strcpy( fileName, envVar );
+    if (envVar != nullptr && *envVar != '\0') {
+        std::strncpy(fileName, envVar, max_path_length);
         return 0;
     }
 
-#ifdef windows_platform
-    if ( ProcessType != CLIENT_PT ) {
-        char *tmpstr1;
-        int t;
-        tmpstr1 = iRODSNtGetServerConfigPath();
-        sprintf( fileName, "%s\\irodsA.txt", tmpstr1 );
-        return 0;
-    }
-
-    /* for clients */
-    envVar = iRODSNt_gethome();
-#else
-    envVar =  getenv( "HOME" );
-#endif
-    if ( envVar == NULL ) {
+    envVar = std::getenv("HOME");
+    if (envVar == nullptr) {
         return ENVIRONMENT_VAR_HOME_NOT_DEFINED;
     }
-    strncpy( fileName, envVar, MAX_NAME_LEN );
-    strncat( fileName, "/", MAX_NAME_LEN );
-    strncat( fileName, AUTH_FILENAME_DEFAULT, MAX_NAME_LEN );
 
-#ifdef windows_platform
-    if ( envVar != NULL ) {
-        free( envVar );
+    const auto env_length_with_null_term{std::strlen(envVar) + 1};
+    constexpr auto auth_file_length{std::char_traits<char>::length(AUTH_FILENAME_DEFAULT)};
+    constexpr auto path_separator_length{1};
+
+    const auto required_size{env_length_with_null_term + auth_file_length + path_separator_length};
+    if (required_size > max_path_length) {
+        return USER_PATH_EXCEEDS_MAX;
     }
-#endif
+
+    std::strncpy(fileName, envVar, env_length_with_null_term);
+    std::strncat(fileName, "/", path_separator_length);
+    std::strncat(fileName, AUTH_FILENAME_DEFAULT, auth_file_length);
 
     return 0;
 }
@@ -159,7 +151,7 @@ int
 obfGetPw( char *pw ) {
     char myPw[MAX_PASSWORD_LEN + 10];
     char myPwD[MAX_PASSWORD_LEN + 10];
-    char fileName[MAX_NAME_LEN + 10];
+    char fileName[max_path_length];
     char *cp;
 
     int i;
@@ -210,7 +202,7 @@ obfGetPw( char *pw ) {
 */
 int
 obfRmPw( int opt ) {
-    char fileName[MAX_NAME_LEN + 10];
+    char fileName[max_path_length];
     char inbuf[MAX_NAME_LEN + 10];
 
     if ( int status = obfiGetFilename( fileName ) ) {
@@ -280,7 +272,7 @@ obfiSetTimeFromFile( int fd ) {
 int
 obfSavePw( int promptOpt, int fileOpt, int printOpt, const char *pwArg ) {
     using namespace boost::filesystem;
-    char fileName[MAX_NAME_LEN + 10];
+    char fileName[max_path_length];
     char inbuf[MAX_PASSWORD_LEN + 100];
     char myPw[MAX_PASSWORD_LEN + 10];
     int i = 0, fd = 0, envVal = 0;
@@ -377,7 +369,7 @@ obfSavePw( int promptOpt, int fileOpt, int printOpt, const char *pwArg ) {
 
 /* various options for temporary auth files/pws */
 int obfTempOps( int tmpOpt ) {
-    char fileName[MAX_NAME_LEN + 10];
+    char fileName[max_path_length];
     char pw[MAX_PASSWORD_LEN + 10];
     int i;
     if ( tmpOpt == 1 ) { /* store pw flagged as temporary */

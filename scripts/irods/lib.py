@@ -779,3 +779,18 @@ def replica_exists_on_resource(session, logical_path, resource_name):
 
 def get_first_delay_rule_id(session):
     return session.run_icommand(['iquest', '%s', "select RULE_EXEC_ID"])[0].strip()
+
+def log_command_result(command, stdout, stderr, ec):
+    print(' --- IrodsSession: command [{}] executed manually --- '.format(command))
+    print('Manual Check')
+    print('  return code: {}'.format(ec))
+
+    indent_prefix = '    | '
+
+    print('  stdout:')
+    output = [indent_prefix + line for line in stdout.splitlines()]
+    print(os.linesep.join(output))
+
+    print('  stderr:')
+    output = [indent_prefix + line for line in stderr.splitlines()]
+    print(os.linesep.join(output) + os.linesep)
