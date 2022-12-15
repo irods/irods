@@ -1,6 +1,7 @@
 import os
 import sys
 from datetime import datetime, timedelta
+import tempfile
 
 if sys.version_info < (2, 7):
     import unittest2 as unittest
@@ -331,3 +332,39 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "skip for topology testing")
     def test_scoped_client_identity_updates_zone_of_RsComm__issue_6268(self):
         self.admin.assert_icommand(['irule', '-r', 'irods_rule_engine_plugin-irods_rule_language-instance', 'msi_test_scoped_client_identity', 'null', 'ruleExecOut'])
+
+    def test_iinit_does_not_crash_from_long_home_directory__issue_5411(self):
+        with tempfile.TemporaryDirectory() as temp_dir_name:
+            # Create new home directory for test
+            temp_home = os.path.join(temp_dir_name, 'crazy', 'long', 'temp', 'home', 'directory',
+                                     'like', 'this', 'is', 'longer', 'than', 'the', 'solos', 'in', 'chameleon')
+            os.makedirs(temp_home)
+
+            # Setup environment
+            temp_env = os.environ.copy()
+            temp_env['HOME'] = temp_home
+
+            # Setup input for execution
+            user_input = os.linesep.join(
+                ['localhost', '1247', 'rods', 'tempZone', 'rods']) + os.linesep
+            command = 'iinit'
+
+            # Execute iinit
+            # Avoid using *_icommand(...), as they set the auth file location to a separate, shorter directory!
+            stdout, stderr, rc = lib.execute_command_permissive(command, input=user_input, env=temp_env)
+            lib.log_command_result(command, stdout, stderr, rc)
+
+            # Ensure program terminated gracefully
+            self.assertEqual(rc, 0)
+
+            # Check all input prompted
+            self.assertIn('Enter the host name (DNS) of the server to connect to:', stdout)
+            self.assertIn('Enter the port number:', stdout)
+            self.assertIn('Enter your irods user name:', stdout)
+            self.assertIn('Enter your irods zone:', stdout)
+            self.assertIn('Enter your current iRODS password:', stdout)
+
+            # Check expected error exists
+            error_string = ' ERROR: environment_properties::capture: missing environment file. should be at [{}/.irods/irods_environment.json]\n'.format(
+                temp_home)
+            self.assertEqual(stderr, error_string)
