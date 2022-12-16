@@ -17,6 +17,7 @@
 
 #include <cstring>
 #include <regex>
+#include <span>
 #include <string>
 #include <string_view>
 
@@ -428,6 +429,9 @@ irods::error strip_resc_hier_name_from_query_inp( genQueryInp_t* _inp, int& _pos
     tmpV.inx   = _inp->sqlCondInp.inx;
     tmpV.value = _inp->sqlCondInp.value;
 
+    const auto inxs = std::span{tmpV.inx, static_cast<std::size_t>(tmpV.len)};
+    const auto vals = std::span{tmpV.value, static_cast<std::size_t>(tmpV.len)};
+
     // =-=-=-=-=-=-=-
     // zero out the selectInp to copy
     // fresh indices and values
@@ -436,12 +440,14 @@ irods::error strip_resc_hier_name_from_query_inp( genQueryInp_t* _inp, int& _pos
     try {
         // iterate over tmp and replace resource group with resource name
         for (int i = 0; i < tmpV.len; ++i) {
-            if (tmpV.inx[i] == COL_D_RESC_HIER) {
-                const auto new_cond = get_resc_id_cond_for_hier_cond(tmpV.value[i]);
+            const int inx = inxs[i];
+            const char* val = vals[i];
+            if (inx == COL_D_RESC_HIER) {
+                const auto new_cond = get_resc_id_cond_for_hier_cond(val);
                 addInxVal(&_inp->sqlCondInp, COL_D_RESC_ID, new_cond.empty() ? "='0'" : new_cond.c_str());
             }
             else {
-                addInxVal(&_inp->sqlCondInp, tmpV.inx[i], tmpV.value[i]);
+                addInxVal(&_inp->sqlCondInp, inx, val);
             }
         }
     }
