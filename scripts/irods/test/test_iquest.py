@@ -228,7 +228,7 @@ class test_iquest_with_data_resc_hier(unittest.TestCase):
 
 
     def test_valid_operations_with_nonmatching_glob(self):
-        pattern = f'nope%'
+        pattern = 'nope%'
         operations_to_expected_result = {
             'like': 'CAT_NO_ROWS_FOUND',
             'LIKE': 'CAT_NO_ROWS_FOUND',
