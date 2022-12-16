@@ -134,9 +134,10 @@ namespace {
 
         const auto cond = std::string{_cond};
 
-        const auto open_quote_pos = cond.find_first_of("'");
-        const auto close_quote_pos = cond.find_last_of("'");
+        const auto open_quote_pos = cond.find_first_of('\'');
+        const auto close_quote_pos = cond.find_last_of('\'');
         if (close_quote_pos == open_quote_pos) {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
             THROW(SYS_INVALID_INPUT_PARAM, fmt::format("Invalid condition: [{}]", cond));
         }
 
@@ -167,16 +168,17 @@ namespace {
         }
 
         if (!equal_op && !like_op && !not_like_op && !not_equal_op) {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
             THROW(CAT_INVALID_ARGUMENT, fmt::format("Invalid condition: [{}]", cond));
         }
 
         // Generate a regex by replacing GenQuery wildcards with regex wildcards.
         std::string hier_regex_str = cond.substr(open_quote_pos + 1, close_quote_pos - open_quote_pos - 1);
         if (!equal_op && !not_equal_op) {
-            auto wildcard_pos = hier_regex_str.find_first_of("%");
+            auto wildcard_pos = hier_regex_str.find_first_of('%');
             while (std::string::npos != wildcard_pos) {
                 hier_regex_str.replace(wildcard_pos, 1, "(.*)");
-                wildcard_pos = hier_regex_str.find_first_of("%");
+                wildcard_pos = hier_regex_str.find_first_of('%');
             }
         }
         const std::regex hier_regex{hier_regex_str};
@@ -745,6 +747,9 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
     irods::error err = strip_resc_hier_name_from_query_inp( genQueryInp, resc_hier_attr_pos );
     if ( !err.ok() ) {
         irods::log( PASS( err ) );
+        // All irods::error::code values returned here are constructed from error codes created in the iRODS error
+        // table, which are all ints. Ignore narrowing conversion warnings because the values are not actually narrowed.
+        // NOLINTNEXTLINE(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
         return err.code();
     }
 
