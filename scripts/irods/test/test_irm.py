@@ -73,3 +73,34 @@ class Test_Irm(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
         # non-existent data object.
         self.user.assert_icommand(['irm', '-f', data_object])
 
+
+    def test_remove_data_object_in_collection_with_read_permissions__issue_6428(self):
+        def get_collection_mtime(session, collection_path):
+            return session.run_icommand(['iquest', '%s',
+                f"select COLL_MODIFY_TIME where COLL_NAME = '{collection_path}'"])[0].strip()
+
+        filename = 'issue_6428_object'
+        collection_name = 'issue_6428_collection'
+        collection_path = os.path.join('/' + self.admin.zone_name, 'home', 'public', collection_name)
+        logical_path = os.path.join(collection_path, filename)
+
+        try:
+            self.admin.assert_icommand(['imkdir', collection_path])
+            self.admin.assert_icommand(['itouch', logical_path])
+            self.admin.assert_icommand(['ichmod', 'read', self.user.username, collection_path])
+            self.admin.assert_icommand(['ichmod', 'own', self.user.username, logical_path])
+
+            original_mtime = get_collection_mtime(self.admin, collection_path)
+
+            self.assertTrue(lib.replica_exists(self.user, logical_path, 0))
+            self.user.assert_icommand(['irm', logical_path])
+            self.assertFalse(lib.replica_exists(self.user, logical_path, 0))
+
+            new_mtime = get_collection_mtime(self.admin, collection_path)
+
+            self.assertNotEqual(original_mtime, new_mtime, msg='collection mtime was not updated')
+
+        finally:
+            self.user.assert_icommand(['irmtrash'])
+            self.admin.assert_icommand(['irm', '-r', '-f', collection_path])
+            self.admin.assert_icommand(['irmtrash', '-M'])
