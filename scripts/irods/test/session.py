@@ -124,6 +124,10 @@ class IrodsSession(object):
         return self._environment_file_contents['irods_user_name']
 
     @property
+    def qualified_username(self):
+        return self.username + '#' + self.zone_name
+
+    @property
     def password(self):
         return self._password
 
@@ -189,7 +193,7 @@ class IrodsSession(object):
             log_string = ' '.join(arg)
 
         message = ' --- IrodsSession: icommand executed by [{0}] [{1}] --- \n'.format(
-            self.username, log_string)
+            self.qualified_username, log_string)
         if IrodsConfig().version_tuple < (4, 2, 0):
             server_log_dir = os.path.join(paths.irods_directory(), 'iRODS', 'server', 'log')
             server_log_path = sorted([os.path.join(server_log_dir, name)

@@ -1,8 +1,10 @@
-#ifndef RS_RULE_EXEC_DEL_HPP
-#define RS_RULE_EXEC_DEL_HPP
+#ifndef IRODS_RS_RULE_EXEC_DEL_HPP
+#define IRODS_RS_RULE_EXEC_DEL_HPP
 
 #include "ruleExecDel.h"
 
-int rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp );
+struct RsComm;
 
-#endif
+int rsRuleExecDel(RsComm* rsComm, ruleExecDelInp_t* ruleExecDelInp);
+
+#endif // IRODS_RS_RULE_EXEC_DEL_HPP
