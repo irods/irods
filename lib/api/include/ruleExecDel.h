@@ -1,10 +1,11 @@
-#ifndef RULE_EXEC_DEL_H__
-#define RULE_EXEC_DEL_H__
+#ifndef IRODS_RULE_EXEC_DEL_H
+#define IRODS_RULE_EXEC_DEL_H
 
-#include "rcConnect.h"
 #include "rodsDef.h"
 
-typedef struct {
+struct RcComm;
+
+typedef struct RuleExecDeleteInput {
     char ruleExecId[NAME_LEN];
 } ruleExecDelInp_t;
 
@@ -13,6 +14,6 @@ typedef struct {
 #ifdef __cplusplus
 extern "C"
 #endif
-int rcRuleExecDel( rcComm_t *conn, ruleExecDelInp_t *ruleExecDelInp );
+int rcRuleExecDel(struct RcComm* conn, ruleExecDelInp_t* ruleExecDelInp);
 
-#endif
+#endif // IRODS_RULE_EXEC_DEL_H

@@ -763,3 +763,7 @@ def replica_exists(session, data_name, replica_number):
         .format(data_name, str(replica_number))])[0]
 
     return 'CAT_NO_ROWS_FOUND' not in out
+
+
+def get_first_delay_rule_id(session):
+    return session.run_icommand(['iquest', '%s', "select RULE_EXEC_ID"])[0].strip()
