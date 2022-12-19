@@ -18,6 +18,7 @@ extern "C" {
 /// \p json_input must have the following JSON structure:
 /// \code{.js}
 /// {
+///   "admin_mode": boolean,
 ///   "logical_path": string,
 ///   "operations": [
 ///     {
@@ -27,6 +28,9 @@ extern "C" {
 ///   ]
 /// }
 /// \endcode
+///
+/// \p admin_mode a boolean value instructing the server to execute the operations as an
+/// administrator (i.e. rodsadmin).
 ///
 /// \p logical_path must be an absolute path to a data object or collection.
 ///
