@@ -22,39 +22,37 @@
 
 // clang-format off
 #ifdef IRODS_IO_TRANSPORT_ENABLE_SERVER_SIDE_API
-    #include "irods/rs_replica_open.hpp"
-    #include "irods/rs_replica_close.hpp"
+#  include "irods/rs_replica_open.hpp"
+#  include "irods/rs_replica_close.hpp"
+#  include "irods/rsDataObjRead.hpp"
+#  include "irods/rsDataObjWrite.hpp"
+#  include "irods/rsDataObjLseek.hpp"
 
-    #include "irods/rsDataObjRead.hpp"
-    #include "irods/rsDataObjWrite.hpp"
-    #include "irods/rsDataObjLseek.hpp"
+#  define NAMESPACE_IMPL                  server
 
-    #define NAMESPACE_IMPL                  server
+#  define rxComm                          rsComm_t
 
-    #define rxComm                          rsComm_t
-
-    #define rxDataObjRead                   rsDataObjRead
-    #define rxDataObjWrite                  rsDataObjWrite
-    #define rxDataObjLseek                  rsDataObjLseek
-    #define rx_replica_open                 rs_replica_open
-    #define rx_replica_close                rs_replica_close
+#  define rxDataObjRead                   rsDataObjRead
+#  define rxDataObjWrite                  rsDataObjWrite
+#  define rxDataObjLseek                  rsDataObjLseek
+#  define rx_replica_open                 rs_replica_open
+#  define rx_replica_close                rs_replica_close
 #else
-    #include "irods/replica_open.h"
-    #include "irods/replica_close.h"
+#  include "irods/replica_open.h"
+#  include "irods/replica_close.h"
+#  include "irods/dataObjRead.h"
+#  include "irods/dataObjWrite.h"
+#  include "irods/dataObjLseek.h"
 
-    #include "irods/dataObjRead.h"
-    #include "irods/dataObjWrite.h"
-    #include "irods/dataObjLseek.h"
+#  define NAMESPACE_IMPL                  client
 
-    #define NAMESPACE_IMPL                  client
+#  define rxComm                          rcComm_t
 
-    #define rxComm                          rcComm_t
-
-    #define rxDataObjRead                   rcDataObjRead
-    #define rxDataObjWrite                  rcDataObjWrite
-    #define rxDataObjLseek                  rcDataObjLseek
-    #define rx_replica_open                 rc_replica_open
-    #define rx_replica_close                rc_replica_close
+#  define rxDataObjRead                   rcDataObjRead
+#  define rxDataObjWrite                  rcDataObjWrite
+#  define rxDataObjLseek                  rcDataObjLseek
+#  define rx_replica_open                 rc_replica_open
+#  define rx_replica_close                rc_replica_close
 #endif // IRODS_IO_TRANSPORT_ENABLE_SERVER_SIDE_API
 // clang-format on
 
