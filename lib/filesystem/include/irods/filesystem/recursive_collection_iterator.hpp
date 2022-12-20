@@ -94,7 +94,8 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         return _iter;
     }
 
-    inline auto end(const recursive_collection_iterator&) noexcept -> const recursive_collection_iterator
+    inline auto end([[maybe_unused]] const recursive_collection_iterator& _iter) noexcept
+        -> recursive_collection_iterator
     {
         return {};
     }

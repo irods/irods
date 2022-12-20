@@ -18,7 +18,7 @@
 #include "irods/filesystem/path.hpp"
 
 #ifndef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
-    #include "irods/miscUtil.h"
+#  include "irods/miscUtil.h"
 #endif // IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 
 #include <iterator>
@@ -104,7 +104,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         return _iter;
     }
 
-    inline auto end(const collection_iterator&) noexcept -> const collection_iterator
+    inline auto end([[maybe_unused]] const collection_iterator& _iter) noexcept -> collection_iterator
     {
         return {};
     }

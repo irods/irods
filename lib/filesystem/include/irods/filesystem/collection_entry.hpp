@@ -30,6 +30,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         // Observers
 
         // clang-format off
+        // NOLINTNEXTLINE(google-explicit-constructor)
         operator const path&() const noexcept                     { return path_; }
         auto path() const noexcept -> const path&                 { return path_; }
         auto exists() const noexcept -> bool                      { return filesystem::NAMESPACE_IMPL::exists(status_); }
