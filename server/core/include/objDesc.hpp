@@ -30,7 +30,21 @@
 //
 // DO NOT call std::memset() on this data type. Use init_l1desc().
 // DO NOT call std::memcpy() on this data type. Use the assignment operator.
-typedef struct l1desc {
+typedef struct l1desc
+{
+    l1desc() = default;
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    l1desc(const l1desc&) = default;
+    auto operator=(const l1desc&) -> l1desc& = default;
+
+    l1desc(l1desc&&) = default;
+    auto operator=(l1desc&&) -> l1desc& = default;
+#pragma clang diagnostic pop
+
+    ~l1desc() = default;
+
     int l3descInx;
     int inuseFlag;
     int oprType;
@@ -39,7 +53,7 @@ typedef struct l1desc {
     int dataObjInpReplFlag;
     dataObjInp_t *dataObjInp;
     dataObjInfo_t *dataObjInfo;
-    dataObjInfo_t *otherDataObjInfo;
+    [[deprecated]] dataObjInfo_t *otherDataObjInfo;
     int copiesNeeded;
     rodsLong_t bytesWritten; /* mark whether it has been written */
     rodsLong_t dataSize;     /* this is the target size. The size in dataObjInfo is the registered size */
@@ -51,8 +65,8 @@ typedef struct l1desc {
     int stageFlag;
     int purgeCacheFlag;
     int lockFd;
-    boost::any pluginData;
-    dataObjInfo_t *replDataObjInfo; // if non NULL, repl to this dataObjInfo on close.
+    [[deprecated]] boost::any pluginData;
+    [[deprecated]] dataObjInfo_t *replDataObjInfo; // if non NULL, repl to this dataObjInfo on close.
     rodsServerHost_t *remoteZoneHost;
     char in_pdmo[MAX_NAME_LEN];
 
