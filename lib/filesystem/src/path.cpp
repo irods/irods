@@ -444,4 +444,3 @@ namespace irods::experimental::filesystem
         return std::nullopt;
     }
 } // namespace irods::experimental::filesystem
-
