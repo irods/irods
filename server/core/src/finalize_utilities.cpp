@@ -199,7 +199,7 @@ namespace irods
 
     auto duplicate_l1_descriptor(const l1desc& _src) -> l1desc
     {
-        l1desc dest = _src;
+        auto dest = _src;
 
         if (_src.dataObjInp) {
             DataObjInp* doi = static_cast<DataObjInp*>(std::malloc(sizeof(DataObjInp)));
@@ -214,8 +214,11 @@ namespace irods
 
         // TODO: need duplication logic
         dest.remoteZoneHost = nullptr;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         dest.otherDataObjInfo = nullptr;
         dest.replDataObjInfo = nullptr;
+#pragma clang diagnostic pop
 
         return dest;
     } // duplicate_l1_descriptor

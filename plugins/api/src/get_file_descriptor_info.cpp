@@ -208,7 +208,10 @@ namespace
             {"data_object_input_replica_flag", _fd_info.dataObjInpReplFlag},
             {"data_object_input", to_json(_fd_info.dataObjInp)},
             {"data_object_info", to_json(_fd_info.dataObjInfo)},
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
             {"other_data_object_info", to_json(_fd_info.otherDataObjInfo)},
+#pragma clang diagnostic pop
             {"copies_needed", _fd_info.copiesNeeded},
             {"bytes_written", _fd_info.bytesWritten},
             {"data_size", _fd_info.dataSize},
@@ -221,7 +224,10 @@ namespace
             {"purge_cache_flag", _fd_info.purgeCacheFlag},
             {"lock_file_descriptor", _fd_info.lockFd},
             {"plugin_data", nullptr}, // Not used anywhere as of 2019-01-28
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
             {"replication_data_object_info", to_json(_fd_info.replDataObjInfo)},
+#pragma clang diagnostic pop
             {"remote_zone_host", to_json(_fd_info.remoteZoneHost)},
             {"in_pdmo", _fd_info.in_pdmo},
             {"replica_token", _fd_info.replica_token}
