@@ -150,7 +150,7 @@ const char* permission_type_string(fs::perms p) {
 }
 
 // Convenience function to wrap the logic for matching/ignoring.
-auto object_matches(const fs::collection_entry& entry) -> bool {
+auto object_matches(const fs::client::collection_entry& entry) -> bool {
     if( exclude_matcher.has_value() && std::regex_match(entry.path().object_name().string(), exclude_matcher.value()) ) {
         return false;
     }
@@ -162,7 +162,7 @@ auto object_matches(const fs::collection_entry& entry) -> bool {
 
 // Collection iterators don't populate the permissions field on the object status at this time.
 // If that should change this may still be useful.
-auto print_acl(const fs::collection_entry& e, const po::variables_map& vm){
+auto print_acl(const fs::client::collection_entry& e, const po::variables_map& vm){
     std::vector<std::string> elements;
     size_t size = 0;
     auto status = e.status();
@@ -191,7 +191,7 @@ auto directory_depth(const fs::path& origin, const fs::path& descendant) -> int{
     return depth;
 }
 
-auto print_entry(const fs::collection_entry& e, const po::variables_map& vm, int depth){
+auto print_entry(const fs::client::collection_entry& e, const po::variables_map& vm, int depth){
     fmt::print("{:{}}","",depth * vm["indent"].as<unsigned int>());
     auto disp = e.path();
     if( !vm["fullpath"].as<bool>() ){
