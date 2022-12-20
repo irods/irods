@@ -6,36 +6,36 @@
 
 // clang-format off
 #ifdef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
-    #define IRODS_QUERY_ENABLE_SERVER_SIDE_API
+#  define IRODS_QUERY_ENABLE_SERVER_SIDE_API
 
-    #include "irods/rods.h"
-    #include "irods/apiHeaderAll.h"
-    #include "irods/rsSpecificQuery.hpp"
-    #include "irods/rsObjStat.hpp"
-    #include "irods/rsDataObjCopy.hpp"
-    #include "irods/rsDataObjRename.hpp"
-    #include "irods/rsDataObjUnlink.hpp"
-    #include "irods/rsDataObjChksum.hpp"
-    #include "irods/rsModAccessControl.hpp"
-    #include "irods/rsCollCreate.hpp"
-    #include "irods/rsModColl.hpp"
-    #include "irods/rsRmColl.hpp"
-    #include "irods/rsModAVUMetadata.hpp"
-    #include "irods/rsModDataObjMeta.hpp"
+#  include "irods/rods.h"
+#  include "irods/apiHeaderAll.h"
+#  include "irods/rsSpecificQuery.hpp"
+#  include "irods/rsObjStat.hpp"
+#  include "irods/rsDataObjCopy.hpp"
+#  include "irods/rsDataObjRename.hpp"
+#  include "irods/rsDataObjUnlink.hpp"
+#  include "irods/rsDataObjChksum.hpp"
+#  include "irods/rsModAccessControl.hpp"
+#  include "irods/rsCollCreate.hpp"
+#  include "irods/rsModColl.hpp"
+#  include "irods/rsRmColl.hpp"
+#  include "irods/rsModAVUMetadata.hpp"
+#  include "irods/rsModDataObjMeta.hpp"
 #else
-    #include "irods/rodsClient.h"
-    #include "irods/specificQuery.h"
-    #include "irods/objStat.h"
-    #include "irods/dataObjCopy.h"
-    #include "irods/dataObjRename.h"
-    #include "irods/dataObjUnlink.h"
-    #include "irods/dataObjChksum.h"
-    #include "irods/modAccessControl.h"
-    #include "irods/collCreate.h"
-    #include "irods/modColl.h"
-    #include "irods/rmColl.h"
-    #include "irods/modAVUMetadata.h"
-    #include "irods/data_object_modify_info.h"
+#  include "irods/rodsClient.h"
+#  include "irods/specificQuery.h"
+#  include "irods/objStat.h"
+#  include "irods/dataObjCopy.h"
+#  include "irods/dataObjRename.h"
+#  include "irods/dataObjUnlink.h"
+#  include "irods/dataObjChksum.h"
+#  include "irods/modAccessControl.h"
+#  include "irods/collCreate.h"
+#  include "irods/modColl.h"
+#  include "irods/rmColl.h"
+#  include "irods/modAVUMetadata.h"
+#  include "irods/data_object_modify_info.h"
 #endif // IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 // clang-format on
 
@@ -1252,4 +1252,3 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         do_metadata_op(add_admin_flag, _comm, _p, _metadata, "rm");
     }
 } // namespace irods::experimental::filesystem::NAMESPACE_IMPL
-

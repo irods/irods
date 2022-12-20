@@ -4,9 +4,9 @@
 #include "irods/filesystem/filesystem_error.hpp"
 
 #ifdef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
-    #include "irods/rsOpenCollection.hpp"
-    #include "irods/rsReadCollection.hpp"
-    #include "irods/rsCloseCollection.hpp"
+#  include "irods/rsOpenCollection.hpp"
+#  include "irods/rsReadCollection.hpp"
+#  include "irods/rsCloseCollection.hpp"
 #endif // IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 
 #include "irods/irods_at_scope_exit.hpp"
@@ -137,4 +137,3 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         }
     }
 } // namespace irods::experimental::filesystem::NAMESPACE_IMPL
-

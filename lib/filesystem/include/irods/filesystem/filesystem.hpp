@@ -19,9 +19,9 @@
 #include "irods/filesystem/filesystem_error.hpp"
 
 #ifdef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
-    #include "irods/rs_atomic_apply_metadata_operations.hpp"
+#  include "irods/rs_atomic_apply_metadata_operations.hpp"
 #else
-    #include "irods/atomic_apply_metadata_operations.h"
+#  include "irods/atomic_apply_metadata_operations.h"
 #endif // IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 
 #include "irods/system_error.hpp"
