@@ -69,4 +69,3 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         ctx_->stack.pop();
     }
 } // namespace irods::experimental::filesystem::NAMESPACE_IMPL
-
