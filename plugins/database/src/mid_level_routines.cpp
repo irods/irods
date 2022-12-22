@@ -1380,10 +1380,17 @@ int checkObjIdByTicket( const char *dataId, const char *accessLevel,
 
     char original_collection_name[MAX_NAME_LEN];
     std::vector<std::string> bindVars;
-    bindVars.push_back( dataId );
+    // "dataId" will match the ID of a collection or data object.
+    // See the prepared statement to understand why "dataId" is passed twice.
+    bindVars.emplace_back(dataId);
+    bindVars.emplace_back(dataId);
     int cml_error = cmlGetStringValueFromSql(
-                 "select coll_name from R_COLL_MAIN where coll_id in (select coll_id from R_DATA_MAIN where data_id=?)",
-                 original_collection_name, MAX_NAME_LEN, bindVars, icss );
+        "select coll_name from R_COLL_MAIN "
+        "where coll_id = ? or coll_id in (select coll_id from R_DATA_MAIN where data_id = ?)",
+        original_collection_name, // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        MAX_NAME_LEN,
+        bindVars,
+        icss);
     if(0 != cml_error) {
         rodsLog(
             LOG_ERROR,
