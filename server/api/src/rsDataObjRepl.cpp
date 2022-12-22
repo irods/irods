@@ -92,14 +92,6 @@ namespace
         irods::apply_static_post_pep(_comm, _l1desc, _operation_status, "acPostProcForPut");
     } // apply_static_peps
 
-    auto finalize_source_replica(RsComm& _comm, l1desc& _l1desc, ir::replica_proxy_t& _info) -> int
-    {
-        irods::apply_metadata_from_cond_input(_comm, *_l1desc.dataObjInp);
-        irods::apply_acl_from_cond_input(_comm, *_l1desc.dataObjInp);
-
-        return 0;
-    } // finalize_source_replica
-
     auto calculate_checksum(
         RsComm& _comm,
         l1desc& _l1desc,
@@ -481,11 +473,13 @@ namespace
     int replicate_data(RsComm& _comm, DataObjInp& _source_inp, DataObjInp& _destination_inp, transferStat_t** _stat)
     {
         // Open source replica
-        int source_l1descInx = open_source_replica(_comm, _source_inp);
+        const int source_l1descInx = open_source_replica(_comm, _source_inp);
         if (source_l1descInx < 0) {
             return source_l1descInx;
         }
 
+        // Source replica information is copied here because information from the L1 descriptor is freed before the
+        // last time the information is needed in this operation.
         auto [source_replica, source_replica_lm] = ir::duplicate_replica(*L1desc[source_l1descInx].dataObjInfo);
 
         irods::log(LOG_DEBUG8, fmt::format("[{}:{}] - source:[{}]",
@@ -527,7 +521,7 @@ namespace
         // Open destination replica
         int destination_l1descInx = open_destination_replica(_comm, _destination_inp, source_l1descInx);
         if (destination_l1descInx < 0) {
-            constexpr auto preserve_rst = false;
+            constexpr bool preserve_rst = false;
             if (const int ec = irods::close_replica_without_catalog_update(_comm, source_l1descInx, preserve_rst); ec < 0) {
                 irods::log(LOG_ERROR, fmt::format(
                     "[{}:{}] - failed to close source replica:[{}]",
@@ -626,15 +620,8 @@ namespace
 
         // finalize source replica
         try {
-            if (const int ec = finalize_source_replica(_comm, source_fd, source_replica); ec < 0) {
-                irods::log(LOG_ERROR, fmt::format(
-                    "[{}:{}] - closing source replica [{}] failed with [{}]",
-                    __FUNCTION__, __LINE__, source_replica.logical_path(), ec));
-
-                if (status >= 0) {
-                    status = ec;
-                }
-            }
+            irods::apply_metadata_from_cond_input(_comm, *source_fd.dataObjInp);
+            irods::apply_acl_from_cond_input(_comm, *source_fd.dataObjInp);
         }
         catch (const irods::exception& e) {
             irods::log(LOG_ERROR, fmt::format(
@@ -695,13 +682,19 @@ namespace
 
     int replicate_data_object(RsComm& _comm, DataObjInp& _inp, transferStat_t** _stat)
     {
-        const auto cond_input = irods::experimental::make_key_value_proxy(_inp.condInput);
+        auto cond_input = irods::experimental::make_key_value_proxy(_inp.condInput);
 
         // get information about source replica
         auto source_inp = init_source_replica_input(_comm, _inp);
         const irods::at_scope_exit free_source_cond_input{[&source_inp]() { clearKeyVal(&source_inp.condInput); }};
         auto source_cond_input = irods::experimental::make_key_value_proxy(source_inp.condInput);
         auto source_obj = resolve_hierarchy_and_get_data_object_info(_comm, source_inp, irods::OPEN_OPERATION);
+
+        // Copy the resolved hierarchy for the source back into the input struct to maintain legacy behavior.
+        if (!cond_input.contains(RESC_HIER_STR_KW)) {
+            cond_input[RESC_HIER_STR_KW] = source_cond_input.at(RESC_HIER_STR_KW).value();
+        }
+
         auto& source_replica = get_replica_with_hierarchy(
             _comm, source_obj, source_cond_input.at(RESC_HIER_STR_KW).value(),
             irods::replication::log_errors::yes);
@@ -734,6 +727,12 @@ namespace
         const irods::at_scope_exit free_destination_cond_input{[&destination_inp]() { clearKeyVal(&destination_inp.condInput); }};
         auto destination_cond_input = irods::experimental::make_key_value_proxy(destination_inp.condInput);
         auto destination_obj = resolve_hierarchy_and_get_data_object_info(_comm, destination_inp, irods::CREATE_OPERATION);
+
+        // Copy the resolved hierarchy for the destination back into the input struct to maintain legacy behavior.
+        if (!cond_input.contains(DEST_RESC_HIER_STR_KW)) {
+            cond_input[DEST_RESC_HIER_STR_KW] = destination_cond_input.at(DEST_RESC_HIER_STR_KW).value();
+        }
+
         try {
             if (irods::experimental::keyword_has_a_value(destination_inp.condInput, DEST_RESC_NAME_KW)) {
                 const auto resolved_hierarchy = destination_cond_input.at(DEST_RESC_HIER_STR_KW).value();
