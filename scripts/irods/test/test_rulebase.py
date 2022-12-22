@@ -631,6 +631,48 @@ OUTPUT ruleExecOut
             self.admin.run_icommand(['iadmin', 'rum'])
 
 
+    def test_rsDataObjRepl_populates_input_struct__issue_6100(self):
+        resc1 = 'resc1'
+        resc2 = 'resc2'
+
+        filename = 'test_rsDataObjRepl_populates_input_struct__issue_6100'
+        logical_path = os.path.join(self.user0.session_collection, filename)
+
+        metadata_attr = 'keyword_from_repl'
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent(
+                f'''pep_api_data_obj_repl_post(*inst, *comm, *inp, *stat) {{
+                    msiGetValByKey(*inp, "resc_hier", *src);
+                    msiAddKeyVal(*src_kvp,"{metadata_attr}_src", "*src");
+                    msiAssociateKeyValuePairsToObj(*src_kvp, "{logical_path}", "-d");
+
+                    msiGetValByKey(*inp, "dest_resc_hier", *dest);
+                    msiAddKeyVal(*dest_kvp,"{metadata_attr}_dest", "*dest");
+                    msiAssociateKeyValuePairsToObj(*dest_kvp, "{logical_path}", "-d");
+                }}
+            ''')
+        }
+
+        try:
+            with temporary_core_file() as core:
+                core.add_rule(pep_map[self.plugin_name])
+
+                lib.create_ufs_resource(resc1, self.admin, hostname=test.settings.HOSTNAME_2)
+                lib.create_ufs_resource(resc2, self.admin, hostname=test.settings.HOSTNAME_3)
+
+                self.user0.assert_icommand(['itouch', '-R', resc1, logical_path])
+                self.user0.assert_icommand(['irepl', '-R', resc2, logical_path])
+
+                self.assertTrue(lib.metadata_attr_with_value_exists(self.admin, f'{metadata_attr}_src', resc1))
+                self.assertTrue(lib.metadata_attr_with_value_exists(self.admin, f'{metadata_attr}_dest', resc2))
+
+        finally:
+            self.user0.assert_icommand(['irm', '-f', logical_path])
+            lib.remove_resource(resc2, self.admin)
+            lib.remove_resource(resc1, self.admin)
+            self.admin.assert_icommand(['iadmin', 'rum'])
+
+
 @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
 class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
