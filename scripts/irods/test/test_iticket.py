@@ -728,3 +728,41 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
         self.user.assert_icommand(['iticket', '-M', 'mod', ticket_string, 'remove', 'group', 'public'], 'STDERR', ['CAT_INSUFFICIENT_PRIVILEGE_LEVEL'])
         self.user.assert_icommand(['iticket', 'ls', ticket_string], 'STDOUT', ['No group restrictions'])
 
+    def test_write_tickets_for_collections_allow_creation_of_data_objects__issue_5913(self):
+        ticket_name = 'issue_5913_ticket'
+        filename = 'issue_5913_file'
+
+        try:
+            # Create a write ticket for the rodsadmin's session collection.
+            self.admin.assert_icommand(['iticket', 'create', 'write', self.admin.session_collection, ticket_name])
+
+            # Show that the rodsadmin's session collection is empty.
+            out, err, ec = self.admin.run_icommand(['ils'])
+            self.assertEqual(ec, 0);
+            self.assertEqual(out.strip(), self.admin.session_collection + ':')
+            self.assertEqual(len(err), 0)
+
+            # Show that the rodsuser does not have any permissions on the rodsadmin's session collection.
+            out, err, ec = self.admin.run_icommand(['ils', '-A'])
+            self.assertEqual(ec, 0);
+            self.assertNotIn(f'{self.user.username}#{self.user.zone_name}', out)
+            self.assertEqual(len(err), 0)
+
+            # Show that the rodsuser can use the ticket to create data objects in the rodsadmin's
+            # session collection.
+            for fname, fsize in [(filename + '_1', 100), (filename + '_2', 40 * 1024 * 1024)]:
+                # Create a new data object as the rodsuser.
+                test_file = os.path.join(self.user.local_session_dir, fname)
+                lib.make_file(test_file, fsize, 'arbitrary')
+                self.user.assert_icommand(['iput', '-t', ticket_name, test_file, self.admin.session_collection])
+
+                # Show that a new data object exists in the rodsadmin's session collection.
+                data_object = os.path.join(self.admin.session_collection, fname)
+                _, out, _ = self.admin.assert_icommand(['ils', '-A', data_object], 'STDOUT', ['  ' + data_object])
+                self.assertIn(f'{self.user.username}#{self.user.zone_name}:own', out)
+
+        finally:
+            for fname in [filename + '_1', filename + '_2']:
+                self.admin.run_icommand(['ichmod', '-M', 'own', self.admin.username, fname])
+
+            self.admin.run_icommand(['iticket', 'delete', ticket_name])
