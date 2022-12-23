@@ -57,17 +57,21 @@ auto init_l1desc(l1desc& _l1d) -> void
 
     _l1d.dataObjInp = nullptr;
     _l1d.dataObjInfo = nullptr;
-    _l1d.otherDataObjInfo = nullptr;
-    _l1d.replDataObjInfo = nullptr;
     _l1d.remoteZoneHost = nullptr;
 
-    _l1d.pluginData.clear();
     _l1d.replica_token.clear();
 
     // NOLINTBEGIN(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
     std::memset(_l1d.chksum, 0, sizeof(l1desc::chksum));
     std::memset(_l1d.in_pdmo, 0, sizeof(l1desc::in_pdmo));
     // NOLINTEND(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    _l1d.otherDataObjInfo = nullptr;
+    _l1d.replDataObjInfo = nullptr;
+    _l1d.pluginData.clear();
+#pragma clang diagnostic pop
 } // init_l1desc
 
 int
@@ -163,6 +167,8 @@ int freeL1desc_struct(l1desc& _l1desc)
         //freeAllDataObjInfo(_l1desc.dataObjInfo);
     }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     if (_l1desc.otherDataObjInfo) {
         freeAllDataObjInfo(_l1desc.otherDataObjInfo);
     }
@@ -171,6 +177,7 @@ int freeL1desc_struct(l1desc& _l1desc)
         freeDataObjInfo(_l1desc.replDataObjInfo);
         //freeAllDataObjInfo(_l1desc.replDataObjInfo);
     }
+#pragma clang diagnostic pop
 
     if (_l1desc.dataObjInpReplFlag == 1 && _l1desc.dataObjInp) {
         clearDataObjInp(_l1desc.dataObjInp);

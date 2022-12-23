@@ -238,8 +238,11 @@ namespace irods
 
         // TODO: need duplication logic
         dest.remoteZoneHost = nullptr;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         dest.otherDataObjInfo = nullptr;
         dest.replDataObjInfo = nullptr;
+#pragma clang diagnostic pop
 
         return dest;
     } // duplicate_l1_descriptor
