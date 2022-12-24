@@ -253,7 +253,7 @@ class Test_Rule_Engine_Plugin_Framework(session.make_sessions_mixin([('otherrods
             log_offset = lib.get_file_size_by_path(paths.server_log_path())
 
             # Trigger PEPs. Should return an error immediately.
-            self.admin.assert_icommand('ils', 'STDERR_MULTILINE', [str(CAT_PASSWORD_EXPIRED)])
+            self.admin.assert_icommand('ils', 'STDERR_MULTILINE', ['CAT_PASSWORD_EXPIRED'])
 
             # Search the log file for instances of CAT_PASSWORD_EXPIRED and RULE_ENGINE_CONTINUE.
             # Should only find CAT_PASSWORD_EXPIRED.
@@ -323,7 +323,7 @@ class Test_Rule_Engine_Plugin_Framework(session.make_sessions_mixin([('otherrods
             log_offset = lib.get_file_size_by_path(paths.server_log_path())
 
             # Trigger PEPs. Should return an error immediately.
-            self.admin.assert_icommand('ils', 'STDERR_MULTILINE', [str(CAT_PASSWORD_EXPIRED)])
+            self.admin.assert_icommand('ils', 'STDERR_MULTILINE', ['CAT_PASSWORD_EXPIRED'])
 
             # Search the log file for instances of CAT_PASSWORD_EXPIRED and RULE_ENGINE_CONTINUE.
             with open(paths.server_log_path(), 'r') as log_file:

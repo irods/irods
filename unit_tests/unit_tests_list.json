@@ -41,6 +41,7 @@
     "irods_scoped_privileged_client",
     "irods_server_properties",
     "irods_shared_memory_object",
+    "irods_system_error",
     "irods_ticket_administration",
     "irods_user_administration",
     "irods_version",
