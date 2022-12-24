@@ -73,6 +73,7 @@ set(
   server_properties
   server_utilities
   shared_memory_object
+  system_error
   ticket_administration
   user_administration
   version

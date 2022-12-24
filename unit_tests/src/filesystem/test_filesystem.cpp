@@ -27,6 +27,7 @@
 #include "irods/irods_pack_table.hpp"
 #include "irods/irods_query.hpp"
 #include "irods/replica.hpp"
+#include "irods/system_error.hpp"
 
 #include "irods/dstream.hpp"
 #include "irods/transport/default_transport.hpp"
@@ -759,5 +760,18 @@ TEST_CASE("filesystem")
         // Show that normal collections are not considered to be special collections.
         REQUIRE_FALSE(fs::client::is_special_collection(conn, sandbox));
     }
-}
 
+    SECTION("filesystem_error::what() reports error code name")
+    {
+        using namespace std::string_literals;
+        using namespace std::string_view_literals;
+
+        const auto msg = "this is a test message"s;
+        constexpr auto ec = USER_FILE_DOES_NOT_EXIST;
+        const fs::filesystem_error err{msg, irods::experimental::make_error_code(ec)};
+
+        CHECK(err.code().value() == ec);
+        CHECK(err.code().message() == "USER_FILE_DOES_NOT_EXIST");
+        CHECK(err.what() == msg + ": USER_FILE_DOES_NOT_EXIST");
+    }
+}

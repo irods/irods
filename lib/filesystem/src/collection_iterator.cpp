@@ -10,6 +10,7 @@
 #endif // IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 
 #include "irods/irods_at_scope_exit.hpp"
+#include "irods/system_error.hpp"
 
 #include <functional>
 #include <string>
@@ -37,14 +38,13 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         ctx_->handle = rsOpenCollection(&_comm, &input);
 
         if (ctx_->handle < 0) {
-            throw filesystem_error{
-                "could not open collection for reading", filesystem::detail::make_error_code(ctx_->handle)};
+            throw filesystem_error{"could not open collection for reading", make_error_code(ctx_->handle)};
         }
 #else
         const auto no_flags = 0;
 
         if (const auto ec = rclOpenCollection(&_comm, const_cast<char*>(_p.c_str()), no_flags, &ctx_->handle); ec < 0) {
-            throw filesystem_error{"could not open collection for reading", filesystem::detail::make_error_code(ec)};
+            throw filesystem_error{"could not open collection for reading", make_error_code(ec)};
         }
 #endif // IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 
@@ -76,7 +76,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
                 return *this;
             }
 
-            throw filesystem_error{"could not read collection entry", filesystem::detail::make_error_code(ec)};
+            throw filesystem_error{"could not read collection entry", make_error_code(ec)};
         }
 
 #ifdef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
