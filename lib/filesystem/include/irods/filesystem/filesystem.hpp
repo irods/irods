@@ -6,13 +6,15 @@
 #include "irods/filesystem/permissions.hpp"
 #include "irods/filesystem/copy_options.hpp"
 #include "irods/filesystem/filesystem_error.hpp"
-#include "irods/filesystem/detail.hpp"
 
 #ifdef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
     #include "irods/rs_atomic_apply_metadata_operations.hpp"
 #else
     #include "irods/atomic_apply_metadata_operations.h"
 #endif // IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+
+#include "irods/system_error.hpp"
+#include "irods/rodsErrorTable.h"
 
 #include <nlohmann/json.hpp>
 
@@ -485,8 +487,6 @@ namespace irods::experimental::filesystem
                 Iterator _last,
                 std::string_view _op) -> void
             {
-                using filesystem::detail::make_error_code;
-
                 std::string_view entity_type;
 
                 if (const auto s = status(_comm, _path); is_data_object(s)) {

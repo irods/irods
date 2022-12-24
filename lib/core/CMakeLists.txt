@@ -69,6 +69,7 @@ add_library(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rodsLog.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rodsPath.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/stringOpr.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/system_error.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/version.cpp"
 )
 target_link_libraries(
@@ -426,6 +427,7 @@ install(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/sslSockComm.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/stream_factory_utility.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/stringOpr.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/system_error.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/termiosUtil.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/thread_pool.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/trimUtil.h"
