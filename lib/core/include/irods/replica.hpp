@@ -24,6 +24,7 @@
 #endif
 
 #include "irods/filesystem.hpp"
+#include "irods/filesystem/detail.hpp" // FIXME This shouldn't be used outside of the fsys lib.
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_exception.hpp"
 #include "irods/key_value_proxy.hpp"

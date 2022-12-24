@@ -6,17 +6,12 @@
 
 #include "irods/rodsDef.h"
 #include "irods/rodsErrorTable.h"
+#include "irods/system_error.hpp"
 
 #include <cstring>
-#include <system_error>
 
 namespace irods::experimental::filesystem::detail
 {
-    inline auto make_error_code(int _ec) noexcept -> std::error_code
-    {
-        return {_ec, std::system_category()};
-    }
-
     inline auto is_separator(path::value_type _c) noexcept -> bool
     {
         return path::preferred_separator == _c;

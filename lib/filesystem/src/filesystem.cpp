@@ -2,6 +2,7 @@
 
 #include "irods/filesystem/path.hpp"
 #include "irods/filesystem/collection_iterator.hpp"
+#include "irods/filesystem/detail.hpp"
 
 // clang-format off
 #ifdef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
@@ -62,8 +63,6 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 {
     namespace
     {
-        using filesystem::detail::make_error_code;
-
 #ifdef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
         int rsDataObjCopy(rsComm_t* _comm, dataObjCopyInp_t* _dataObjCopyInp)
         {

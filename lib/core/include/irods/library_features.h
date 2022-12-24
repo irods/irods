@@ -23,5 +23,9 @@
 /// \since 4.3.1
 #define IRODS_HAS_API_ENDPOINT_SWITCH_USER    202211L
 
-#endif // IRODS_LIBRARY_FEATURES_H
+/// Defined if the development library supports the C++ system_error library.
+///
+/// \since 4.3.1
+#define IRODS_HAS_LIBRARY_SYSTEM_ERROR        202301L
 
+#endif // IRODS_LIBRARY_FEATURES_H
