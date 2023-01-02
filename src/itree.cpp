@@ -16,12 +16,19 @@
 #include <regex>
 #include <stdexcept>
 #include <string>
+#include <variant>
+
+#include <fnmatch.h>
 
 // clang-format off
 namespace po   = boost::program_options;
 namespace fs   = irods::experimental::filesystem;
 namespace ix   = irods::experimental;
 namespace json = nlohmann;
+
+using pattern_matcher = std::variant<int,               // no option specified
+                                     std::string,       // glob-style pattern specified
+                                     std::regex>;       // regex-style pattern specified
 
 auto print_dir(const fs::path&,
                const po::variables_map&,
@@ -31,13 +38,14 @@ auto print_dir(const fs::path&,
 auto correct_path(const po::variables_map&, rodsEnv&) -> fs::path;
 auto print_usage() -> void;
 auto get_json(const fs::path&, const po::variables_map&, ix::client_connection&, unsigned int depth) -> json::json;
+auto contains_pattern(const pattern_matcher& pm) -> bool;
 
 // ANSI escape numbers. For setting the colors.
 static const auto directory_color=fmt::color::blue;
 static const auto file_color = fmt::color::green;
 static rodsEnv env;
-static std::regex matcher;
-static std::optional<std::regex> exclude_matcher;
+static pattern_matcher matcher;
+static pattern_matcher exclude_matcher;
 static unsigned int collections = 0, objects = 0;
 static std::uintmax_t total_size = 0;
 
@@ -55,9 +63,12 @@ int main(int argc, char** argv){
         //This does not function because the ownership variable is initialized to the
         //original uploader of the data_object
         //        ("owner,o", po::bool_switch(), "Display the owner along with the collection")
-        ("pattern,P", po::value<std::string>()->default_value(".*"), "Filter files by a regexp")
+        ("pattern,P", po::value<std::string>(), "Filter files by a filename glob")
+        ("pattern-regex,p", po::value<std::string>(), "Filter files by a regexp")
         ("size,s", po::bool_switch(),"Display the size of each data object")
-        ("ignore,I", po::value<std::string>(), "Ignore matching data objects.")
+        ("ignore,I", po::value<std::string>(), "Ignore matching data objects (using glob pattern)")
+        ("ignore-regex,i", po::value<std::string>(), "Ignore matching data objects (using regexp pattern).")
+        ("regex-extended-syntax,x", po::bool_switch(), "Regular expressions use extended syntax.")
         ("classify,F", po::bool_switch(), "Display a / at the end of listings of collections")
         ("indent", po::value<unsigned int>()->default_value(2), "The number of spaces each level of nested collection adds.")
         // Currently this does not work because the object_status is not initialized with the necessary information to
@@ -76,11 +87,31 @@ int main(int argc, char** argv){
             return 0;
         }
 
-        matcher = std::regex(vm["pattern"].as<std::string>(),
-                             std::regex::basic | std::regex::optimize );
+        auto regex_syntax_choice = std::regex::basic;
+        if (vm["regex-extended-syntax"].as<bool>()) {
+            regex_syntax_choice = std::regex::extended;
+        }
+        if (vm.count("pattern-regex")) {
+            matcher = std::regex(vm["pattern-regex"].as<std::string>(),
+                                 regex_syntax_choice | std::regex::optimize );
+        }
+        if (vm.count("pattern")) {
+            if (contains_pattern(matcher)) {
+                std::cerr << "Incompatible options: --pattern and --pattern-regex cannot be used together\n";
+                exit(2);
+            }
+            matcher = vm["pattern"].as<std::string>();
+        }
+        if (vm.count("ignore-regex")) {
+            exclude_matcher = std::regex(vm["ignore-regex"].as<std::string>(),
+                                         regex_syntax_choice | std::regex::optimize);
+        }
         if (vm.count("ignore")) {
-            exclude_matcher = std::regex(vm["ignore"].as<std::string>(),
-                                         std::regex::basic | std::regex::optimize);
+            if (contains_pattern(exclude_matcher)) {
+                std::cerr << "Incompatible options: --ignore and --ignore-regex cannot be used together\n";
+                exit(2);
+            }
+            exclude_matcher = vm["ignore"].as<std::string>();
         }
 
         if (getRodsEnv(&env) < 0) {
@@ -149,15 +180,29 @@ const char* permission_type_string(fs::perms p) {
     }
 }
 
+template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>; // deduction guide, supposedly not needed in C++20
+                                                              // (but still needed in clang 13 using -std=gnu++20).
+
+// Helper function to invoke the right match type (regex / glob) based on std::variant contents.
+
+auto flexible_match(const std::string& obj_name, const pattern_matcher& pattern_variant) -> bool
+{
+    auto matches = overloaded{
+        [](const auto &)->bool { return false; },
+        [&obj_name](const std::string& glob)->bool { return !fnmatch(glob.c_str(), obj_name.c_str(), 0); },
+        [&obj_name](const std::regex& rgx)->bool { return std::regex_match(obj_name, rgx); }
+    };
+    return std::visit(matches, pattern_variant);
+}
+
 // Convenience function to wrap the logic for matching/ignoring.
 auto object_matches(const fs::client::collection_entry& entry) -> bool {
-    if( exclude_matcher.has_value() && std::regex_match(entry.path().object_name().string(), exclude_matcher.value()) ) {
-        return false;
-    }
-    if( !std::regex_match(entry.path().object_name().string(), matcher) ){
-        return false;
-    }
-    return true;
+    const auto obj_name = entry.path().object_name().string();
+
+    // consider --ignore* and --pattern* as logically AND'ed together
+    return ((!contains_pattern(exclude_matcher) || !flexible_match(obj_name, exclude_matcher)) &&
+            (!contains_pattern(matcher) || flexible_match(obj_name, matcher)));
 }
 
 // Collection iterators don't populate the permissions field on the object status at this time.
@@ -356,4 +401,8 @@ auto get_json(const fs::path& path, const po::variables_map& vm, ix::client_conn
         value["size"] = contents_size(value);
     }
     return value;
+}
+
+auto contains_pattern(const pattern_matcher& pm) -> bool {
+    return !std::holds_alternative<int>(pm);
 }
