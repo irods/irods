@@ -46,6 +46,26 @@ class Test_ITree(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
         for index,item in enumerate(directory_names):
             self.admin.assert_icommand(["itree", "-L", str(1 + index)], 'STDOUT_SINGLELINE', ["  " * (1 + index) + item])
 
+    def test_pattern_and_ignore_options_together__6791_6806(self):
+        patterns = ['foo', 'bar', 'bat']
+        for i in range(10):
+            for p in patterns:
+                self.admin.assert_icommand(['itouch', p + str(i)])
+
+        to_catch = [r'\b{}\b'.format('bat'+str(i)) for i in range(10)]
+
+        # Using forward and reverse combination of -P and -I options, catch 'bat*' objects as result
+        self.admin.assert_icommand(["itree", "-P", "ba*", "-I", "*ar?"], "STDOUT_MULTILINE", to_catch, use_regex = True)
+        self.admin.assert_icommand(["itree", "-I", "*ar?", "-P", "ba*"], "STDOUT_MULTILINE", to_catch, use_regex = True)
+
+        # Using regular expressions, catch objects matching /bat[0-9]/
+        self.admin.assert_icommand(["itree", "--ignore-regex", ".*ar.", "--pattern-regex", "ba.*"], "STDOUT_MULTILINE", to_catch, use_regex = True)
+
+        # Using regular expressions with extended syntax, catch objects matching /(bar|bat)[0-2]/x
+        to_catch = [r'\b{}\b'.format(prefix+str(i)) for i in range(3) for prefix in ('bar','bat')]
+        self.admin.assert_icommand(["itree",  "--regex-extended", "--ignore-regex", ".*[3-9]", "--pattern-regex", "ba(r|t)[[:digit:]]"],
+                                    "STDOUT_MULTILINE", to_catch, use_regex = True)
+
     def test_pattern_and_ignore_options(self):
         patterns = ['foo', 'bar', 'bat']
         for i in range(10):
@@ -53,9 +73,18 @@ class Test_ITree(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
                 self.admin.assert_icommand(['itouch', p + str(i)])
 
         for i in patterns:
-            i = i + '.*'
-            self.admin.assert_icommand(["itree", "-P", i], "STDOUT_SINGLELINE", "Found 0 collections and 10 data objects")
-            self.admin.assert_icommand(["itree", "-I", i], "STDOUT_SINGLELINE", "Found 0 collections and 20 data objects")
+            i_star = i + '*'
+            positive_space = [r'\b{}\b'.format(i+str(n)) for n in range(10)]
+            negative_space = [r'\b{}\b'.format(P+str(n)) for n in range(10) for P in set(patterns) - {i}]
+            self.admin.assert_icommand(["itree", "-P", i_star], "STDOUT_MULTILINE", positive_space, use_regex = True)
+            self.admin.assert_icommand(["itree", "-I", i_star], "STDOUT_MULTILINE", negative_space, use_regex = True)
+
+        for i in patterns:
+            i_dot_star = i + '.*'
+            positive_space = [r'\b{}\b'.format(i+str(n)) for n in range(10)]
+            negative_space = [r'\b{}\b'.format(P+str(n)) for n in range(10) for P in set(patterns) - {i}]
+            self.admin.assert_icommand(["itree", "--pattern-regex", i_dot_star], "STDOUT_MULTILINE", positive_space, use_regex = True)
+            self.admin.assert_icommand(["itree", "--ignore-regex", i_dot_star], "STDOUT_MULTILINE", negative_space, use_regex = True)
 
     def test_collections_only(self):
         for i in range(10):
