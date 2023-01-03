@@ -8,13 +8,13 @@ namespace irods
 {
     class pack_entry
     {
-    public:
+      public:
         std::string packInstruct;
     }; // class pack_entry
 
     class pack_entry_table : public lookup_table<pack_entry>
     {
-    public:
+      public:
         // NOLINTNEXTLINE(modernize-avoid-c-arrays, cppcoreguidelines-avoid-c-arrays)
         explicit pack_entry_table(packInstruct_t _defs[]);
     }; // class pack_entry_table

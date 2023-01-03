@@ -308,14 +308,13 @@ int sendApiReply(rsComm_t* rsComm, int apiInx, int retVal, void*& myOutStruct, b
     irods::api_entry_table& RsApiTable = irods::get_server_api_table();
 
     if (RsApiTable[apiInx]->outPackInstruct && myOutStruct) {
-        status = pack_struct(
-            static_cast<char*>(myOutStruct),
-            &outStructBBuf,
-            RsApiTable[apiInx]->outPackInstruct,
-            RodsPackTable,
-            0,
-            rsComm->irodsProt,
-            rsComm->cliVersion.relVersion);
+        status = pack_struct(static_cast<char*>(myOutStruct),
+                             &outStructBBuf,
+                             RsApiTable[apiInx]->outPackInstruct,
+                             RodsPackTable,
+                             0,
+                             rsComm->irodsProt,
+                             rsComm->cliVersion.relVersion);
 
         if ( status < 0 ) {
             log_agent::info("{}: packStruct error, status = [{}]", __func__, status);
@@ -335,14 +334,13 @@ int sendApiReply(rsComm_t* rsComm, int apiInx, int retVal, void*& myOutStruct, b
     }
 
     if ( rsComm->rError.len > 0 ) {
-        status = pack_struct(
-            &rsComm->rError,
-            &rErrorBBuf,
-            "RError_PI",
-            RodsPackTable,
-            0,
-            rsComm->irodsProt,
-            rsComm->cliVersion.relVersion);
+        status = pack_struct(&rsComm->rError,
+                             &rErrorBBuf,
+                             "RError_PI",
+                             RodsPackTable,
+                             0,
+                             rsComm->irodsProt,
+                             rsComm->cliVersion.relVersion);
 
         if ( status < 0 ) {
             log_agent::info("sendApiReply: packStruct error, status=[{}]", status);
@@ -367,10 +365,9 @@ int sendApiReply(rsComm_t* rsComm, int apiInx, int retVal, void*& myOutStruct, b
         if ( rsComm->reconnSock > 0 ) {
             int savedStatus = ret.code();
             boost::unique_lock< boost::mutex > boost_lock( *rsComm->thread_ctx->lock );
-            log_agent::debug(
-                "sendApiReply: svrSwitchConnect. client state=[{}], agent state=[{}]",
-                rsComm->clientState,
-                rsComm->agentState);
+            log_agent::debug("sendApiReply: svrSwitchConnect. client state=[{}], agent state=[{}]",
+                             rsComm->clientState,
+                             rsComm->agentState);
             const auto ec = svrSwitchConnect(rsComm);
             boost_lock.unlock();
             if (ec > 0) {

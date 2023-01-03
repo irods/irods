@@ -132,10 +132,7 @@ int addStrArray(strArray_t* strArray, char* value);
 
 int resizeStrArray(strArray_t* strArray, int newSize);
 
-int queueDataObjInfo(dataObjInfo_t** dataObjInfoHead,
-                     dataObjInfo_t* dataObjInfo,
-                     int singleInfoFlag,
-                     int topFlag);
+int queueDataObjInfo(dataObjInfo_t** dataObjInfoHead, dataObjInfo_t* dataObjInfo, int singleInfoFlag, int topFlag);
 
 int dequeDataObjInfo(dataObjInfo_t** dataObjInfoHead, dataObjInfo_t* dataObjInfo); // JMC - backport 4590
 

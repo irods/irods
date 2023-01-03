@@ -120,8 +120,7 @@ namespace
 
 #endif // RODS_SERVER
 
-extern "C"
-irods::api_entry* plugin_factory(const std::string&, const std::string&)
+extern "C" irods::api_entry* plugin_factory(const std::string&, const std::string&)
 {
 #ifdef RODS_SERVER
     irods::client_api_allowlist::add(AUTHENTICATION_APN);
