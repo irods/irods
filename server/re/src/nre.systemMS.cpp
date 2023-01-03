@@ -173,7 +173,9 @@ int _delayExec(const char* inActionCall,
         free(ruleSubmitInfo);
     }};
 
-    if (const auto ec = fillSubmitConditions(inActionCall, delayCondition, packedReiAndArgBBuf, ruleSubmitInfo, rei); ec < 0) {
+    if (const auto ec = fillSubmitConditions(inActionCall, delayCondition, packedReiAndArgBBuf, ruleSubmitInfo, rei);
+        ec < 0)
+    {
         return ec;
     }
 

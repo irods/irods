@@ -597,7 +597,7 @@ sortDataObjInfoRandom( dataObjInfo_t **dataObjInfoHead ) {
 
     *dataObjInfoHead = NULL;
     for ( i = 0; i < numInfo; i ++ ) {
-        queueDataObjInfo( dataObjInfoHead, myDataObjInfo[i], 1, 1 );
+        queueDataObjInfo(dataObjInfoHead, myDataObjInfo[i], 1, 1);
     }
 
     return 0;
@@ -685,8 +685,7 @@ matchAndTrimRescGrp( dataObjInfo_t **dataObjInfoHead,
                 }
 
                 if ( trimmedDataObjInfo != NULL ) {
-                    queueDataObjInfo( trimmedDataObjInfo, tmpDataObjInfo, 1, 0 );
-
+                    queueDataObjInfo(trimmedDataObjInfo, tmpDataObjInfo, 1, 0);
                 }
                 else {
                     free( tmpDataObjInfo );
@@ -1015,7 +1014,7 @@ int matchDataObjInfoByCondInput( dataObjInfo_t **dataObjInfoHead,
             else {
                 *dataObjInfoHead = ( *dataObjInfoHead )->next;
             }
-            queueDataObjInfo( matchedDataObjInfo, tmpDataObjInfo, 1, 0 );
+            queueDataObjInfo(matchedDataObjInfo, tmpDataObjInfo, 1, 0);
         }
         else if ( destHierCond &&
                   ( strcmp( rescHier, tmpDataObjInfo->rescHier ) == 0 ||
@@ -1026,7 +1025,7 @@ int matchDataObjInfoByCondInput( dataObjInfo_t **dataObjInfoHead,
             else {
                 *dataObjInfoHead = ( *dataObjInfoHead )->next;
             }
-            queueDataObjInfo( matchedDataObjInfo, tmpDataObjInfo, 1, 0 );
+            queueDataObjInfo(matchedDataObjInfo, tmpDataObjInfo, 1, 0);
         }
         else if ( rescCond == 1 &&
                   ( strstr( tmpDataObjInfo->rescHier, rescName ) != 0 ) ) {
@@ -1037,7 +1036,7 @@ int matchDataObjInfoByCondInput( dataObjInfo_t **dataObjInfoHead,
                 *dataObjInfoHead = ( *dataObjInfoHead )->next;
             }
             /* que single to the bottom */
-            queueDataObjInfo( matchedDataObjInfo, tmpDataObjInfo, 1, 0 );
+            queueDataObjInfo(matchedDataObjInfo, tmpDataObjInfo, 1, 0);
         }
         else {
             prevDataObjInfo = tmpDataObjInfo;
@@ -1056,7 +1055,7 @@ int matchDataObjInfoByCondInput( dataObjInfo_t **dataObjInfoHead,
             else {
                 *oldDataObjInfoHead = ( *oldDataObjInfoHead )->next;
             }
-            queueDataObjInfo( matchedOldDataObjInfo, tmpDataObjInfo, 1, 0 );
+            queueDataObjInfo(matchedOldDataObjInfo, tmpDataObjInfo, 1, 0);
         }
         else if ( destHierCond &&
                   ( strcmp( rescHier, tmpDataObjInfo->rescHier ) == 0 ||
@@ -1067,7 +1066,7 @@ int matchDataObjInfoByCondInput( dataObjInfo_t **dataObjInfoHead,
             else {
                 *oldDataObjInfoHead = ( *oldDataObjInfoHead )->next;
             }
-            queueDataObjInfo( matchedOldDataObjInfo, tmpDataObjInfo, 1, 0 );
+            queueDataObjInfo(matchedOldDataObjInfo, tmpDataObjInfo, 1, 0);
         }
         else if ( rescCond == 1 &&
                   ( strstr( tmpDataObjInfo->rescHier, rescName ) != 0 ) ) {
@@ -1077,7 +1076,7 @@ int matchDataObjInfoByCondInput( dataObjInfo_t **dataObjInfoHead,
             else {
                 *oldDataObjInfoHead = ( *oldDataObjInfoHead )->next;
             }
-            queueDataObjInfo( matchedOldDataObjInfo, tmpDataObjInfo, 1, 0 );
+            queueDataObjInfo(matchedOldDataObjInfo, tmpDataObjInfo, 1, 0);
         }
         else {
             prevDataObjInfo = tmpDataObjInfo;

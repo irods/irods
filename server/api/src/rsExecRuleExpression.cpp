@@ -32,13 +32,12 @@ int rsExecRuleExpression(RsComm* _comm, ExecRuleExpression* _exec_rule)
         }
     }};
 
-    const auto ec = unpack_struct(
-        _exec_rule->packed_rei_.buf,
-        reinterpret_cast<void**>(&rei_and_arg),
-        "ReiAndArg_PI",
-        RodsPackTable,
-        NATIVE_PROT,
-        nullptr);
+    const auto ec = unpack_struct(_exec_rule->packed_rei_.buf,
+                                  reinterpret_cast<void**>(&rei_and_arg),
+                                  "ReiAndArg_PI",
+                                  RodsPackTable,
+                                  NATIVE_PROT,
+                                  nullptr);
 
     if (ec < 0) {
         log_api::error("Failed to unpack input structure [error_code=[{}]]", ec);
