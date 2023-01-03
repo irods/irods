@@ -4,7 +4,8 @@
 #include "irods/rodsType.h"
 #include "irods/rcConnect.h"
 
-typedef struct FileReadDirInp {
+typedef struct FileReadDirInp
+{
     int fileInx;
 } fileReaddirInp_t;
 #define fileReaddirInp_PI "int fileInx;"

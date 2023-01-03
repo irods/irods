@@ -45,13 +45,12 @@ addIntParamToArray( msParamArray_t *msParamArray, char *label, int inpInt ) {
  *         and inpOutBuf will be passed. If replFlag == 1, the inOutStruct
  *         and inpOutBuf will be replicated.
  */
-int addMsParamToArray(
-    msParamArray_t* msParamArray,
-    const char* label,
-    const char* type,
-    void* inOutStruct,
-    bytesBuf_t* inpOutBuf,
-    int replFlag)
+int addMsParamToArray(msParamArray_t* msParamArray,
+                      const char* label,
+                      const char* type,
+                      void* inOutStruct,
+                      bytesBuf_t* inpOutBuf,
+                      int replFlag)
 {
     if (!msParamArray || !label) {
         log_msi::error("{}: received null pointer", __func__);

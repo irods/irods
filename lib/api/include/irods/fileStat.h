@@ -7,7 +7,8 @@
 struct RcComm;
 struct rodsStat;
 
-typedef struct FileStatInp {
+typedef struct FileStatInp
+{
     rodsHostAddr_t addr;
     char fileName[MAX_NAME_LEN];
     char rescHier[MAX_NAME_LEN];
@@ -18,8 +19,13 @@ typedef struct FileStatInp {
 #define fileStatInp_PI "struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; double rescId;"
 
 #ifdef __cplusplus
-extern "C"
+extern "C" {
 #endif
+
 int rcFileStat(struct RcComm* conn, fileStatInp_t* fileStatInp, struct rodsStat** fileStatOut);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif // IRODS_FILE_STAT_H

@@ -484,7 +484,8 @@ int runIrodsAgentFactory(sockaddr_un agent_addr)
             log_agent_factory::error(msg, __func__, __LINE__);
 
             if (close(listen_tmp_socket) < 0) {
-                log_agent_factory::error("close(listen_tmp_socket) failed with errno = [{}]: {}", errno, strerror(errno));
+                log_agent_factory::error(
+                    "close(listen_tmp_socket) failed with errno = [{}]: {}", errno, strerror(errno));
             }
 
             continue;
@@ -547,8 +548,8 @@ int runIrodsAgentFactory(sockaddr_un agent_addr)
 
         // Restore signal dispositions for agents.
         std::signal(SIGABRT, SIG_DFL);
-        std::signal(SIGINT,  SIG_DFL);
-        std::signal(SIGHUP,  SIG_DFL);
+        std::signal(SIGINT, SIG_DFL);
+        std::signal(SIGHUP, SIG_DFL);
         std::signal(SIGTERM, SIG_DFL);
         std::signal(SIGCHLD, SIG_DFL);
         std::signal(SIGUSR1, SIG_DFL);
@@ -741,7 +742,7 @@ int runIrodsAgentFactory(sockaddr_un agent_addr)
     // If these assertions are violated, SIGABRT is triggered. For that reason, we cannot allow agents to
     // execute std::exit() or return up the call chain. Doing so would result in SIGABRT. For the most part,
     // using _exit() is perfectly fine here because this is the final step in shutting down the agent process.
-    // 
+    //
     // The key word here is process. Following this call, the OS will reclaim all memory associated with
     // the terminated agent process.
     _exit((0 == status) ? 0 : 1);

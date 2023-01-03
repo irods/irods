@@ -584,7 +584,7 @@ namespace
             return status;
         }
         /* que the cache copy at the top */
-        queueDataObjInfo( subfileObjInfoHead, cacheObjInfo, 0, 1 );
+        queueDataObjInfo(subfileObjInfoHead, cacheObjInfo, 0, 1);
         return status;
     } // stage_bundled_data_to_cache_directory
 
