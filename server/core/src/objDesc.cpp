@@ -134,7 +134,7 @@ auto copy_l1desc(l1desc& _dst, const l1desc& _src) -> void
     std::memcpy(_dst.in_pdmo, _src.in_pdmo, sizeof(l1desc::in_pdmo));
     // NOLINTEND(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
 
-    // The following member variables are ignored because they are not used by iRODS. 
+    // The following member variables are ignored because they are not used by iRODS.
     // They are commented out to avoid potential issues.
     //_dst.pluginData = _src.pluginData;
     //_dst.otherDataObjInfo = _src.otherDataObjInfo;

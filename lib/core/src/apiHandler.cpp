@@ -18,34 +18,34 @@ namespace
 
 namespace irods
 {
-    api_entry::api_entry( apidef_t& _def )
-        : plugin_base( "api_instance", "api_context" )
-        , apiNumber( _def.apiNumber )
-        , apiVersion( _def.apiVersion )
-        , clientUserAuth( _def.clientUserAuth )
-        , proxyUserAuth( _def.proxyUserAuth )
-        , inPackInstruct( _def.inPackInstruct )
-        , inBsFlag( _def.inBsFlag )
-        , outPackInstruct( _def.outPackInstruct )
-        , outBsFlag( _def.outBsFlag )
+    api_entry::api_entry(apidef_t& _def)
+        : plugin_base("api_instance", "api_context")
+        , apiNumber(_def.apiNumber)
+        , apiVersion(_def.apiVersion)
+        , clientUserAuth(_def.clientUserAuth)
+        , proxyUserAuth(_def.proxyUserAuth)
+        , inPackInstruct(_def.inPackInstruct)
+        , inBsFlag(_def.inBsFlag)
+        , outPackInstruct(_def.outPackInstruct)
+        , outBsFlag(_def.outBsFlag)
         , call_wrapper(_def.call_wrapper)
         , operation_name(_def.operation_name)
-        , clearInStruct( _def.clearInStruct )
-        , clearOutStruct( _def.clearOutStruct )
+        , clearInStruct(_def.clearInStruct)
+        , clearOutStruct(_def.clearOutStruct)
     {
         operations_[ _def.operation_name ] = _def.svrHandler;
     } // constructor
 
-    api_entry::api_entry( const api_entry& _rhs )
-        : plugin_base( _rhs )
-        , apiNumber( _rhs.apiNumber )
-        , apiVersion( _rhs.apiVersion )
-        , clientUserAuth( _rhs.clientUserAuth )
-        , proxyUserAuth( _rhs.proxyUserAuth )
-        , inPackInstruct( _rhs.inPackInstruct )
-        , inBsFlag( _rhs.inBsFlag )
-        , outPackInstruct( _rhs.outPackInstruct )
-        , outBsFlag( _rhs.outBsFlag )
+    api_entry::api_entry(const api_entry& _rhs)
+        : plugin_base(_rhs)
+        , apiNumber(_rhs.apiNumber)
+        , apiVersion(_rhs.apiVersion)
+        , clientUserAuth(_rhs.clientUserAuth)
+        , proxyUserAuth(_rhs.proxyUserAuth)
+        , inPackInstruct(_rhs.inPackInstruct)
+        , inBsFlag(_rhs.inBsFlag)
+        , outPackInstruct(_rhs.outPackInstruct)
+        , outBsFlag(_rhs.outBsFlag)
         , call_wrapper(_rhs.call_wrapper)
         , in_pack_key(_rhs.in_pack_key)
         , out_pack_key(_rhs.out_pack_key)
@@ -53,8 +53,8 @@ namespace irods
         , out_pack_value(_rhs.out_pack_value)
         , operation_name(_rhs.operation_name)
         , extra_pack_struct(_rhs.extra_pack_struct)
-        , clearInStruct( _rhs.clearInStruct )
-        , clearOutStruct( _rhs.clearOutStruct )
+        , clearInStruct(_rhs.clearInStruct)
+        , clearOutStruct(_rhs.clearOutStruct)
     {
     } // copy constructor
 
@@ -157,8 +157,10 @@ namespace irods
                                 "api_context");
                 if (ret.ok() && entry) {
                     if (CLIENT_PT != ::ProcessType) {
-                        log_agent::debug(
-                            "init_api_table :: adding {} - [{}] - [{}].", entry->apiNumber, entry->operation_name, name);
+                        log_agent::debug("init_api_table :: adding {} - [{}] - [{}].",
+                                         entry->apiNumber,
+                                         entry->operation_name,
+                                         name);
                     }
 
                     // =-=-=-=-=-=-=-

@@ -125,11 +125,10 @@ auto rsExecMyRule(RsComm* _comm, ExecMyRuleInp* _exec_inp, MsParamArray** _out_p
     return err.code(); // NOLINT(bugprone-narrowing-conversions, cppcoreguidelines-narrowing-conversions)
 } // rsExecMyRule
 
-auto remoteExecMyRule(
-    RsComm* _comm,
-    ExecMyRuleInp* _exec_inp,
-    MsParamArray** _out_param_arr,
-    rodsServerHost* _remote_host) -> int
+auto remoteExecMyRule(RsComm* _comm,
+                      ExecMyRuleInp* _exec_inp,
+                      MsParamArray** _out_param_arr,
+                      rodsServerHost* _remote_host) -> int
 {
     if (!_remote_host) { // NOLINT(readability-implicit-bool-conversion)
         log_api::error("{}: Invalid server host.", __func__);

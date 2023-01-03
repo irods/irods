@@ -53,8 +53,8 @@ namespace irods
 
         const char *   operation_name;
 
-        std::function<void(void*)> clearInStruct;	// free input struct function
-        std::function<void(void*)> clearOutStruct;	// free output struct function
+        std::function<void(void*)> clearInStruct; // free input struct function
+        std::function<void(void*)> clearOutStruct; // free output struct function
 
         int(*call_wrapper)(...);        // wraps the api call for type casting
     }; // struct apidef_t
@@ -71,11 +71,12 @@ namespace irods
     }
 
     template <typename... types_t>
-    class api_call_adaptor {
-    private:
+    class api_call_adaptor
+    {
+      private:
         std::function<int(rsComm_t*, types_t...)> fcn_;
 
-    public:
+      public:
         api_call_adaptor( std::function<int(rsComm_t*, types_t...)> _fcn )
             : fcn_(_fcn)
         {
@@ -134,10 +135,10 @@ namespace irods
 
     class api_entry : public irods::plugin_base
     {
-    private:
+      private:
         using rule_engine_context_manager_type = rule_engine_context_manager<unit, ruleExecInfo_t*, AUDIT_RULE>;
 
-    public:
+      public:
         /// =-=-=-=-=-=-=-
         /// @brief adaptor from old api sig to new plugin sig
         template<typename... types_t>
@@ -339,10 +340,10 @@ namespace irods
 
         lookup_table< std::string>   extra_pack_struct;
 
-        std::function<void(void*)> clearInStruct;   // free input struct function
-        std::function<void(void*)> clearOutStruct;  // free output struct function
+        std::function<void(void*)> clearInStruct; // free input struct function
+        std::function<void(void*)> clearOutStruct; // free output struct function
 
-    private:
+      private:
 #ifdef ENABLE_RE
         template<typename... types_t>
         error invoke_policy_enforcement_point(
@@ -405,13 +406,13 @@ namespace irods
     class api_entry_table
         : public lookup_table<api_entry_ptr, size_t, boost::hash<size_t>>
     {
-    public:
+      public:
         api_entry_table(apidef_t defs[], size_t size);
 
         auto is_plugin_loaded(std::string_view plugin_name) -> bool;
         auto mark_plugin_as_loaded(std::string_view plugin_name) -> void;
 
-    private:
+      private:
         std::vector<std::string> loaded_plugins_;
     }; // class api_entry_table
 

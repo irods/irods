@@ -120,9 +120,8 @@ int rs_hello_world( rsComm_t*, helloInp_t* _inp, helloOut_t** _out ) {
     return 0;
 }
 
-extern "C"
-irods::api_entry* plugin_factory(const std::string&,     //_inst_name
-                                 const std::string&)     // _context
+extern "C" irods::api_entry* plugin_factory(const std::string&, //_inst_name
+                                            const std::string&) // _context
 {
 #ifdef RODS_SERVER
     irods::client_api_allowlist::add(HELLO_WORLD_APN);
@@ -146,27 +145,23 @@ irods::api_entry* plugin_factory(const std::string&,     //_inst_name
 
     // =-=-=-=-=-=-=-
     // create an api object
-    irods::api_entry* api = new irods::api_entry( def );
+    irods::api_entry* api = new irods::api_entry(def);
 
 #ifdef RODS_SERVER
-    irods::re_serialization::add_operation(
-            typeid(helloInp_t*),
-            serialize_helloInp_ptr );
+    irods::re_serialization::add_operation(typeid(helloInp_t*), serialize_helloInp_ptr);
 
-    irods::re_serialization::add_operation(
-            typeid(helloOut_t**),
-            serialize_helloOut_ptr_ptr );
+    irods::re_serialization::add_operation(typeid(helloOut_t**), serialize_helloOut_ptr_ptr);
 #endif
 
     // =-=-=-=-=-=-=-
     // assign the pack struct key and value
-    api->in_pack_key   = "HelloInp_PI";
+    api->in_pack_key = "HelloInp_PI";
     api->in_pack_value = HelloInp_PI;
 
-    api->out_pack_key   = "HelloOut_PI";
+    api->out_pack_key = "HelloOut_PI";
     api->out_pack_value = HelloOut_PI;
 
-    api->extra_pack_struct[ "OtherOut_PI" ] = OtherOut_PI;
+    api->extra_pack_struct["OtherOut_PI"] = OtherOut_PI;
 
     return api;
 } // plugin_factory

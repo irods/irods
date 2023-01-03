@@ -21,8 +21,13 @@ typedef struct MiscSvrInfo {
 #define MiscSvrInfo_PI "int serverType; int serverBootTime; str relVersion[NAME_LEN]; str apiVersion[NAME_LEN]; str rodsZone[NAME_LEN];"
 
 #ifdef __cplusplus
-extern "C"
+extern "C" {
 #endif
-int rcGetMiscSvrInfo(rcComm_t *conn, miscSvrInfo_t **outSvrInfo );
+
+int rcGetMiscSvrInfo(rcComm_t* conn, miscSvrInfo_t** outSvrInfo);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif // IRODS_GET_MISC_SVR_INFO_H
