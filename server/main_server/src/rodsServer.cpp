@@ -496,15 +496,9 @@ namespace
         signal(SIGTTOU, SIG_IGN);
         signal(SIGCHLD, SIG_DFL); // Setting SIGCHLD to SIG_IGN is not portable.
         signal(SIGPIPE, SIG_IGN);
-#ifdef osx_platform
-        signal(SIGINT, (sig_t) serverExit);
-        signal(SIGHUP, (sig_t) set_reload_server_config_flag);
-        signal(SIGTERM, (sig_t) serverExit);
-#else
         signal(SIGINT, serverExit);
         signal(SIGHUP, set_reload_server_config_flag);
         signal(SIGTERM, serverExit);
-#endif
     } // setup_signal_handlers
 
     std::optional<std::string> get_grid_configuration_option_value(RcComm& _comm,
