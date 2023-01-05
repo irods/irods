@@ -43,7 +43,6 @@ static std::uintmax_t total_size = 0;
 
 
 int main(int argc, char** argv){
-    int status = getRodsEnv(&env);
     po::options_description desc{""};
     po::positional_options_description pod;
     pod.add("dir",1);
@@ -66,10 +65,6 @@ int main(int argc, char** argv){
         //        ("acl,A", po::bool_switch(), "Print the access control information for each object")
         ("json,J", po::bool_switch(), "Produce json instead of a human readable output")
         ("color,C", po::bool_switch(), "Print in color (requires ansi terminal)");
-    if ( status < 0) {
-        std::cerr << "Irods connection error" << std::endl;
-        return 1;
-    }
     try{
         po::variables_map vm;
         po::store(po::command_line_parser(argc,argv).options(desc).positional(pod).run(),vm);
@@ -86,6 +81,11 @@ int main(int argc, char** argv){
         if (vm.count("ignore")) {
             exclude_matcher = std::regex(vm["ignore"].as<std::string>(),
                                          std::regex::basic | std::regex::optimize);
+        }
+
+        if (getRodsEnv(&env) < 0) {
+            std::cerr << "Error: Could not get iRODS environment.\n";
+            return 1;
         }
 
         auto path = correct_path(vm, env);
