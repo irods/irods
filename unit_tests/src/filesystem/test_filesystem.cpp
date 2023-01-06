@@ -19,7 +19,6 @@
 #include "irods/rcMisc.h"
 
 #include "irods/client_connection.hpp"
-#include "irods/connection_pool.hpp"
 #include "irods/filesystem.hpp"
 #include "irods/resource_administration.hpp"
 #include "irods/irods_at_scope_exit.hpp"
@@ -52,6 +51,7 @@
 #include <string>
 #include <string_view>
 
+// NOLINTNEXTLINE(readability-function-cognitive-complexity, readability-function-size)
 TEST_CASE("filesystem")
 {
     auto& api_table = irods::get_client_api_table();
@@ -61,25 +61,16 @@ TEST_CASE("filesystem")
     rodsEnv env;
     REQUIRE(getRodsEnv(&env) >= 0);
 
-    const auto connection_count = 1;
-    const auto refresh_time = 600;
+    irods::experimental::client_connection conn;
 
-    irods::connection_pool conn_pool{connection_count,
-                                     env.rodsHost,
-                                     env.rodsPort,
-                                     env.rodsUserName,
-                                     env.rodsZone,
-                                     refresh_time};
-
-    auto conn = conn_pool.get_connection();
-
-    // clang-format off
     namespace fs = irods::experimental::filesystem;
 
+    // clang-format off
     using odstream          = irods::experimental::io::odstream;
     using default_transport = irods::experimental::io::client::default_transport;
     // clang-format on
 
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
     const auto sandbox = fs::path{env.rodsHome} / "unit_testing_sandbox";
 
     if (!fs::client::exists(conn, sandbox)) {
@@ -104,6 +95,7 @@ TEST_CASE("filesystem")
         REQUIRE_NOTHROW(fs::client::copy(conn, sandbox / "file1.txt", sandbox / "file2.txt"));
         REQUIRE_NOTHROW(fs::client::copy(conn, sandbox / "dir", sandbox / "dir2"));
 
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
         const auto copy_of_sandbox = fs::path{env.rodsHome} / "copy_of_sandbox";
         REQUIRE_NOTHROW(fs::client::copy(conn, sandbox, copy_of_sandbox, fs::copy_options::recursive));
 
@@ -184,6 +176,7 @@ TEST_CASE("filesystem")
 
         REQUIRE(fs::client::exists(conn, p));
         REQUIRE(fs::client::data_object_size(conn, p) == 12);
+        // NOLINTNEXTLINE(readability-container-size-empty)
         REQUIRE(fs::client::data_object_checksum(conn, p) == "");
 
         const std::string_view ufs_resc = "unit_test_ufs";
@@ -335,8 +328,8 @@ TEST_CASE("filesystem")
             odstream{tp, p} << "hello world!";
         }
 
-        const auto permissions_match = [&env](const auto& _entity_perms, const auto& _expected_perms)
-        {
+        const auto permissions_match = [&env](const auto& _entity_perms, const auto& _expected_perms) {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
             REQUIRE(_entity_perms.name == env.rodsUserName);
             REQUIRE(_entity_perms.prms == _expected_perms);
         };
@@ -347,12 +340,14 @@ TEST_CASE("filesystem")
         permissions_match(status.permissions()[0], fs::perms::own);
 
         auto new_perms = fs::perms::read;
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
         fs::client::permissions(conn, p, env.rodsUserName, new_perms);
         status = fs::client::status(conn, p);
         REQUIRE_FALSE(status.permissions().empty());
         permissions_match(status.permissions()[0], new_perms);
 
         new_perms = fs::perms::own;
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
         fs::client::permissions(fs::admin, conn, p, env.rodsUserName, new_perms);
         status = fs::client::status(conn, p);
         REQUIRE_FALSE(status.permissions().empty());
@@ -749,10 +744,10 @@ TEST_CASE("filesystem")
 
         irods::at_scope_exit remove_special_collection{[&link_name] {
             const auto cmd = fmt::format("imcoll -U {}", link_name.c_str());
-            REQUIRE(std::system(cmd.data()) == 0);
+            REQUIRE(std::system(cmd.data()) == 0); // NOLINT(cert-env33-c, concurrency-mt-unsafe)
         }};
 
-        REQUIRE(std::system(cmd.data()) == 0);
+        REQUIRE(std::system(cmd.data()) == 0); // NOLINT(cert-env33-c, concurrency-mt-unsafe)
 
         // Show that special collections are detected.
         REQUIRE(fs::client::is_special_collection(conn, link_name));
