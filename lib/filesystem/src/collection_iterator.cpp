@@ -1,6 +1,6 @@
 #include "irods/filesystem/collection_iterator.hpp"
 
-#include "irods/filesystem/detail.hpp"
+#include "irods/filesystem/path_utilities.hpp"
 #include "irods/filesystem/filesystem_error.hpp"
 
 #ifdef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
@@ -23,7 +23,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
                                              collection_options _opts)
         : ctx_{}
     {
-        filesystem::detail::throw_if_path_length_exceeds_limit(_p);
+        throw_if_path_length_exceeds_limit(_p);
 
         ctx_ = std::make_shared<context>();
         ctx_->comm = &_comm;

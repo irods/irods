@@ -91,7 +91,7 @@ install(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/collection_iterator.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/config.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/copy_options.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/detail.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/path_utilities.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/filesystem.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/filesystem_error.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/object_status.hpp"

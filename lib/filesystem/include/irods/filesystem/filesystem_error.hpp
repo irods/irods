@@ -15,7 +15,7 @@ namespace irods::experimental::filesystem
     class filesystem_error
         : public std::system_error
     {
-    public:
+      public:
         explicit filesystem_error(const std::string& _msg, std::error_code _ec)
             : std::system_error{_ec, _msg}
         {
@@ -52,7 +52,7 @@ namespace irods::experimental::filesystem
             return p2_;
         }
 
-    private:
+      private:
         path p1_;
         path p2_;
     };
