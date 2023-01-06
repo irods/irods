@@ -15,6 +15,8 @@
 #include <catch2/catch.hpp>
 
 #include "irods/filesystem/path.hpp"
+#include "irods/filesystem/path_utilities.hpp"
+#include "irods/filesystem/filesystem_error.hpp"
 
 #include <string>
 #include <string_view>
@@ -527,3 +529,32 @@ TEST_CASE("path iterators", "[iterator]")
     }
 }
 
+// NOLINTNEXTLINE(readability-function-cognitive-complexity, readability-function-size)
+TEST_CASE("path validation functions", "[validation]")
+{
+    // clang-format off
+    CHECK_THROWS_AS([] {
+        fs::throw_if_path_is_empty("");
+    }(), fs::filesystem_error);
+    // clang-format on
+
+    // clang-format off
+    CHECK_THROWS_AS([] {
+        const std::string p(MAX_NAME_LEN, 'X');
+        fs::throw_if_path_length_exceeds_limit(p);
+    }(), fs::filesystem_error);
+    // clang-format on
+
+    // clang-format off
+    CHECK_NOTHROW([] {
+        fs::throw_if_path_is_empty("a");
+    }());
+    // clang-format on
+
+    // clang-format off
+    CHECK_NOTHROW([] {
+        const std::string p(MAX_NAME_LEN - 1, 'X');
+        fs::throw_if_path_length_exceeds_limit(p);
+    }());
+    // clang-format on
+}
