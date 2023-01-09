@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
 # target_link_libraries for object targets
 
+set(IRODS_MICROSERVICE_TEST_PLUGINS_BUILD OFF CACHE BOOL "Build microservice plugins designed for testing.")
+
 # create phony target to build everything in plugins/microservices folder
 add_custom_target(all-plugins-microservices)
 add_dependencies(all-plugins_no_database all-plugins-microservices)
@@ -18,6 +20,10 @@ set(
   get_hostname
   get_server_property
 )
+
+if (IRODS_MICROSERVICE_TEST_PLUGINS_BUILD OR IRODS_ENABLE_ALL_TESTS)
+  list(APPEND IRODS_MICROSERVICE_PLUGINS test_issue_6782)
+endif()
 
 foreach(plugin IN LISTS IRODS_MICROSERVICE_PLUGINS)
   string(TOUPPER ${plugin} PLUGIN_UPPERCASE)
