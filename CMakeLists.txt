@@ -6,6 +6,7 @@ include(RequireOutOfSourceBuild)
 
 option(IRODS_DISABLE_COMPILER_OPTIMIZATIONS "Disables compiler optimizations by setting -O0." OFF)
 option(IRODS_ENABLE_ADDRESS_SANITIZER "Enables detection of memory leaks and other features provided by Address Sanitizer." OFF)
+option(IRODS_ENABLE_ALL_TESTS "Enables all tests (e.g. C/C++ unit tests, microservices specifically designed for testing)." OFF)
 
 if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build {Debug, Release}." FORCE)
