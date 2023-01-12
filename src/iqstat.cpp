@@ -1,7 +1,19 @@
 #include <irods/irods_client_api_table.hpp>
 #include <irods/irods_pack_table.hpp>
+#include <irods/irods_query.hpp>
+#include <irods/rcMisc.h>
 #include <irods/rods.h>
 #include <irods/rodsClient.h>
+#include <irods/rodsLog.h>
+#include <irods/user_administration.hpp>
+
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/format.hpp>
+
+#include <cstdint>
+#include <cstdio>
+#include <stdexcept>
+#include <string>
 
 #define MAX_SQL 300
 #define BIG_STR 200
@@ -10,21 +22,21 @@ char cwd[BIG_STR];
 
 int debug = 0;
 
-rcComm_t *Conn;
+rcComm_t *Conn{};
 rodsEnv myEnv;
 
 void usage();
 
+auto throw_if_id_cannot_be_converted_to_int(const std::string& key) -> void;
+
 /*
  print the results of a general query.
  */
-int
+void
 printGenQueryResults( rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
                       char *descriptions[], int formatFlag ) {
-    int printCount;
     int i, j;
     char localTime[TIME_LEN];
-    printCount = 0;
     if ( status != 0 ) {
         printError( Conn, status, "rcGenQuery" );
     }
@@ -56,7 +68,6 @@ printGenQueryResults( rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
                             printf( "%s ", tResult );
                         }
                     }
-                    printCount++;
                 }
                 if ( formatFlag == 1 ) {
                     printf( "\n" );
@@ -64,206 +75,57 @@ printGenQueryResults( rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
             }
         }
     }
-    return 0;
 }
 
 /*
 Via a general query, show rule information
 */
-int
-showRuleExec( char *name, char *ruleName, int allFlag ) {
-    genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut;
-    int i1a[20];
-    int i1b[20] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    int i2a[20];
-    char *condVal[10];
-    char v1[BIG_STR];
-    char v2[BIG_STR];
-    int i, status;
-    int printCount;
-    char *columnNames[] = {"id", "name", "rei_file_path", "user_name",
-                           "address", "time", "frequency", "priority",
-                           "estimated_exe_time", "notification_addr",
-                           "last_exe_time", "exec_status"
-                          };
 
-    printCount = 0;
-    memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
+namespace
+{
+    /* This structure encapsulates a number of parameters having generally to do with
+       the output choices of "brief" or "long" formats when listing the information
+       for each rule ID; in a nutshell, which columns are listed, and how many.
+       The info given in a "brief" is a subset (of the first two) of the "long" listing.
+     */
+    struct output_format_parameters {
+        int columns[20]{};
+        int brief_format_len{};
+        int long_format_len{};
 
-    i = 0;
-    i1a[i++] = COL_RULE_EXEC_ID;
-    i1a[i++] = COL_RULE_EXEC_NAME;
-    i1a[i++] = COL_RULE_EXEC_REI_FILE_PATH;
-    i1a[i++] = COL_RULE_EXEC_USER_NAME;
-    i1a[i++] = COL_RULE_EXEC_ADDRESS;
-    i1a[i++] = COL_RULE_EXEC_TIME;
-    i1a[i++] = COL_RULE_EXEC_FREQUENCY;
-    i1a[i++] = COL_RULE_EXEC_PRIORITY;
-    i1a[i++] = COL_RULE_EXEC_ESTIMATED_EXE_TIME;
-    i1a[i++] = COL_RULE_EXEC_NOTIFICATION_ADDR;
-    i1a[i++] = COL_RULE_EXEC_LAST_EXE_TIME;
-    i1a[i++] = COL_RULE_EXEC_STATUS;
+        constexpr output_format_parameters() {
+            int i = 0;
+            columns[i++] = COL_RULE_EXEC_ID;
+            columns[i++] = COL_RULE_EXEC_NAME;
 
-    genQueryInp.selectInp.inx = i1a;
-    genQueryInp.selectInp.value = i1b;
-    genQueryInp.selectInp.len = i;
+            brief_format_len = i;
 
-    if ( allFlag ) {
-        genQueryInp.sqlCondInp.len = 0;
-    }
-    else {
-        i2a[0] = COL_RULE_EXEC_USER_NAME;
-        snprintf( v1, BIG_STR, "='%s'", name );
-        condVal[0] = v1;
-        genQueryInp.sqlCondInp.inx = i2a;
-        genQueryInp.sqlCondInp.value = condVal;
-        genQueryInp.sqlCondInp.len = 1;
-    }
+            columns[i++] = COL_RULE_EXEC_REI_FILE_PATH;
+            columns[i++] = COL_RULE_EXEC_USER_NAME;
+            columns[i++] = COL_RULE_EXEC_ADDRESS;
+            columns[i++] = COL_RULE_EXEC_TIME;
+            columns[i++] = COL_RULE_EXEC_FREQUENCY;
+            columns[i++] = COL_RULE_EXEC_PRIORITY;
+            columns[i++] = COL_RULE_EXEC_ESTIMATED_EXE_TIME;
+            columns[i++] = COL_RULE_EXEC_NOTIFICATION_ADDR;
+            columns[i++] = COL_RULE_EXEC_LAST_EXE_TIME;
+            columns[i++] = COL_RULE_EXEC_STATUS;
 
-    if ( ruleName != NULL && *ruleName != '\0' ) {
-        int i;
-        i =  genQueryInp.sqlCondInp.len;
-        /*  i2a[i]=COL_RULE_EXEC_NAME;
-        sprintf(v2,"='%s'",ruleName);  */
-        i2a[i] = COL_RULE_EXEC_ID;
-        snprintf( v2, BIG_STR, "='%s'", ruleName );
-        condVal[i] = v2;
-        genQueryInp.sqlCondInp.len++;
-    }
-
-    genQueryInp.condInput.len = 0;
-
-    genQueryInp.maxRows = 50;
-    genQueryInp.continueInx = 0;
-    status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-    if ( status == CAT_NO_ROWS_FOUND ) {
-        if ( ruleName != NULL && *ruleName != '\0' ) {
-            printf( "User %s or rule '%s' does not exist.\n", name, ruleName );
+            long_format_len = i;
         }
-        else {
-            i1a[0] = COL_USER_COMMENT;
-            i2a[0] = COL_USER_NAME;
-            genQueryInp.selectInp.len = 1;
-            status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-            if ( status == 0 ) {
-                if ( allFlag ) {
-                    printf( "No delayed rules pending\n" );
-                }
-                else {
-                    printf( "No delayed rules pending for user %s\n", name );
-                }
-                return 0;
-            }
-            printf( "User %s does not exist.\n", name );
-            return 0;
-        }
-    }
-
-    if ( allFlag ) {
-        printf( "Pending rule-executions\n" );
-    }
-    else {
-        printf( "Pending rule-executions for user %s\n", name );
-    }
-    printCount += printGenQueryResults( Conn, status, genQueryOut, columnNames, 0 );
-
-    while ( status == 0 && genQueryOut->continueInx > 0 ) {
-        genQueryInp.continueInx = genQueryOut->continueInx;
-        status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-        if ( genQueryOut->rowCnt > 0 ) {
-            printf( "----\n" );
-        }
-        printCount += printGenQueryResults( Conn, status, genQueryOut,
-                                            columnNames, 0 );
-    }
-
-    static_cast<void>(printCount);
-
-    return 0;
+    };
 }
 
-/*
-Via a general query, show rule information, brief form
-*/
-int
-showRuleExecBrief( char *name, int allFlag ) {
-    genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut;
-    int i1a[20];
-    int i1b[20] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    int i2a[20];
-    char *condVal[10];
-    char v1[BIG_STR];
-    int i, status;
-    int printCount;
-
-    memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
-    printCount = 0;
-    i = 0;
-    i1a[i++] = COL_RULE_EXEC_ID;
-    i1a[i++] = COL_RULE_EXEC_NAME;
-
-    genQueryInp.selectInp.inx = i1a;
-    genQueryInp.selectInp.value = i1b;
-    genQueryInp.selectInp.len = i;
-
-    i2a[0] = COL_RULE_EXEC_USER_NAME;
-    sprintf( v1, "='%s'", name );
-    condVal[0] = v1;
-
-    genQueryInp.sqlCondInp.inx = i2a;
-    genQueryInp.sqlCondInp.value = condVal;
-    genQueryInp.sqlCondInp.len = 1;
-    if ( allFlag ) {
-        genQueryInp.sqlCondInp.len = 0;
-    }
-
-    genQueryInp.condInput.len = 0;
-
-    genQueryInp.maxRows = 50;
-    genQueryInp.continueInx = 0;
-    status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-    if ( status == CAT_NO_ROWS_FOUND ) {
-        i1a[0] = COL_USER_COMMENT;
-        i2a[0] = COL_USER_NAME;
-        genQueryInp.selectInp.len = 1;
-        status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-        if ( status == 0 ) {
-            if ( allFlag ) {
-                printf( "No delayed rules pending\n" );
-            }
-            else {
-                printf( "No delayed rules pending for user %s\n", name );
-            }
-            return 0;
-        }
-        if ( status == CAT_NO_ROWS_FOUND ) {
-            printf( "User %s does not exist.\n", name );
-            return 0;
-        }
-    }
-    printf( "id     name\n" );
-    printCount += printGenQueryResults( Conn, status, genQueryOut, NULL, 1 );
-
-    while ( status == 0 && genQueryOut->continueInx > 0 ) {
-        genQueryInp.continueInx = genQueryOut->continueInx;
-        status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-        printCount += printGenQueryResults( Conn, status, genQueryOut,
-                                            NULL, 1 );
-    }
-
-    static_cast<void>(printCount);
-
-    return 0;
-}
+auto show_RuleExec( char *userName,
+                    const char *ruleName="",
+                    int allFlag = false,
+                    bool brief = false ) -> int;
 
 int
 main( int argc, char **argv ) {
 
     signal( SIGPIPE, SIG_IGN );
 
-    int status, nArgs;
     rErrMsg_t errMsg;
 
     rodsArguments_t myRodsArgs;
@@ -272,7 +134,7 @@ main( int argc, char **argv ) {
 
     rodsLogLevel( LOG_ERROR );
 
-    status = parseCmdLineOpt( argc, argv, "alu:vVh", 0, &myRodsArgs );
+    int status = parseCmdLineOpt( argc, argv, "alu:vVh", 0, &myRodsArgs );
     if ( status ) {
         printf( "Use -h for help\n" );
         return 1;
@@ -281,12 +143,16 @@ main( int argc, char **argv ) {
         usage();
         return 0;
     }
-
     status = getRodsEnv( &myEnv );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "main: getRodsEnv error. status = %d",
                  status );
         return 1;
+    }
+
+    if ( myRodsArgs.user && myRodsArgs.all ) {
+        std::fprintf(stderr, "Incompatible options: -u and -a cannot be used together\n");
+        return 2;
     }
 
     if ( myRodsArgs.user ) {
@@ -295,6 +161,8 @@ main( int argc, char **argv ) {
     else {
         snprintf( userName, sizeof( userName ), "%s", myEnv.rodsUserName );
     }
+
+    const auto disconnect = irods::at_scope_exit{[] { rcDisconnect(Conn); }};
 
     // =-=-=-=-=-=-=-
     // initialize pluggable api table
@@ -305,12 +173,6 @@ main( int argc, char **argv ) {
     Conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
                       myEnv.rodsZone, 0, &errMsg );
 
-    if ( Conn == NULL ) {
-        return 2;
-    }
-
-    const auto disconnect = irods::at_scope_exit{[] { rcDisconnect(Conn); }};
-
     status = clientLogin( Conn );
     if ( status != 0 ) {
         if ( !debug ) {
@@ -318,21 +180,25 @@ main( int argc, char **argv ) {
         }
     }
 
-    nArgs = argc - myRodsArgs.optind;
-    if ( nArgs > 0 ) {
-        status = showRuleExec( userName, argv[myRodsArgs.optind],
-                               myRodsArgs.all );
+    try{
+        int nArgs { argc - myRodsArgs.optind };
+        if (nArgs > 0) {
+            throw_if_id_cannot_be_converted_to_int(argv[myRodsArgs.optind]);
+        }
+
+        status = show_RuleExec( userName,
+                               nArgs > 0 ? argv[myRodsArgs.optind] : "",
+                               myRodsArgs.all,
+                               myRodsArgs.longOption == 0 && nArgs == 0 );
     }
-    else {
-        if ( myRodsArgs.longOption == 0 ) {
-            status = showRuleExecBrief( userName, myRodsArgs.all );
-        }
-        else {
-            status = showRuleExec( userName, "", myRodsArgs.all );
-        }
+    catch (const irods::exception& e) {
+        fprintf(stderr, "Error: %s\n", e.client_display_what());
+        status = 1;
     }
 
-    printErrorStack( Conn->rError );
+    if (Conn) {
+        printErrorStack( Conn->rError );
+    }
 
     return status;
 }
@@ -342,13 +208,16 @@ Print the main usage/help information.
  */
 void usage() {
     char *msgs[] = {
-        "Usage: iqstat [-luvVh] [-u user] [ruleId]",
-        "Show information about your pending iRODS rule executions",
-        "or for the entered user.",
-        " -a        display requests of all users",
-        " -l        for long format",
-        " -u user   for the specified user",
-        " ruleId for the specified rule",
+        "Usage:     iqstat [-luvVh] [-u USER] [RULE_ID]",
+        " ",
+        "Show information about pending iRODS rule executions (i.e. delayed rules).",
+        "By default, only the invoking user's rules are shown.",
+        " ",
+        "Options:",
+        " -a        Display requests of all users.",
+        " -l        Force use of the long format.",
+        " -u USER   Display requests for the specified user (may not be used together with -a).",
+        " RULE_ID   Limits the query to the specified integer rule ID (and implies long format).",
         " ",
         "See also iqdel and iqmod",
         ""
@@ -361,4 +230,141 @@ void usage() {
         printf( "%s\n", msgs[i] );
     }
     printReleaseInfo( "iqstat" );
+}
+
+auto show_RuleExec( char *userName,
+                    const char *ruleName,
+                    int allFlag,
+                    bool brief ) -> int
+{
+    genQueryInp_t genQueryInp{};
+    genQueryOut_t *genQueryOut{};
+
+    constexpr output_format_parameters output_format;
+
+    auto num_cols_selected = (brief ? output_format.brief_format_len
+                                    : output_format.long_format_len);
+
+    for (int i = 0; i < num_cols_selected; i++) {
+        addInxIval(&genQueryInp.selectInp, output_format.columns[i], 0);
+    }
+
+
+    if (!allFlag) {
+        char v1[BIG_STR];
+        snprintf( v1, BIG_STR, "='%s'", userName );
+        addInxVal(&genQueryInp.sqlCondInp, COL_RULE_EXEC_USER_NAME, v1);
+    }
+
+    std::string diagnostic;
+    if (ruleName != NULL && *ruleName != '\0') {
+        char v2[BIG_STR];
+        diagnostic = (boost::format( " (and matching key '%s')" ) % ruleName).str();
+        snprintf( v2, BIG_STR, "='%s'", ruleName );
+        addInxVal(&genQueryInp.sqlCondInp, COL_RULE_EXEC_ID, v2);
+    }
+
+    genQueryInp.maxRows = 50;
+
+    // idempotent version of clearGenQueryOut.
+    const auto clear_gq_out = [&o = genQueryOut] {
+        clearGenQueryOut(o);
+        o->attriCnt = 0;
+    };
+
+    // TODO's : should we set attriCnt = 0 as the last thing in the clearGenQueryOut() routine?
+    // And...investigate 1. if this ^^^ is the best way or via init'ing via memset(ptr,0,sizeof(...))
+    //                   2. reimplementation of iqstat using the C++ query iterator
+    //                   3. possibility of memory leaks on rcGenQuery/rsGenQuery side
+
+    // RAII for both GenQuery variables.
+    const auto cleanup_gq_in_out = [&, &i = genQueryInp, &o = genQueryOut] {
+        clearGenQueryInp(&i);
+        clear_gq_out();
+        free(o); o = nullptr;
+    };
+
+    // Deploy the RAII.
+    const auto cleanup_gq = irods::at_scope_exit{[&] { cleanup_gq_in_out(); }};
+
+    int status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
+
+    if ( status == CAT_NO_ROWS_FOUND ) {
+        // Need to determine which table "no rows" refers to: USER or RULE.
+        namespace ia = irods::experimental::administration;
+        if (ia::client::exists(*Conn, ia::user{userName})) {
+            if ( allFlag ) {
+                printf( "No delayed rules pending%s\n", diagnostic.c_str() );
+            }
+            else {
+                printf( "No delayed rules pending for user %s%s\n", userName, diagnostic.c_str());
+            }
+            return 0;
+        }
+        else {
+            printf( "User %s does not exist.\n", userName );
+            return 0;
+        }
+    }
+    else if (status < 0) {
+        char* errno_message{};
+        const char* main_message = rodsErrorName(status, &errno_message);
+        std::cerr << "rcGenQuery failed with error "
+                  << status << " "
+                  << main_message << " "
+                  << errno_message << std::endl;
+        std::free(errno_message);
+        return 1;
+    }
+
+    if (brief) {
+        printf( "id     name\n" );
+    }
+
+    static char *columnNames[] = {"id", "name", "rei_file_path", "user_name",
+                                  "address", "time", "frequency", "priority",
+                                  "estimated_exe_time", "notification_addr",
+                                  "last_exe_time", "exec_status"
+                                 };
+
+    auto increment_count_and_print_results = [&] {
+        printGenQueryResults( Conn, status, genQueryOut,
+                              brief ? NULL: columnNames,
+                              int{brief} );
+    };
+
+    increment_count_and_print_results();
+
+    while ( status == 0 && genQueryOut->continueInx > 0 ) {
+        genQueryInp.continueInx = genQueryOut->continueInx;
+        clear_gq_out();
+        status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
+        if (!brief && genQueryOut->rowCnt > 0 ) {
+            printf( "----\n" );
+        }
+        increment_count_and_print_results();
+    }
+    return 0;
+}
+
+auto throw_if_id_cannot_be_converted_to_int(const std::string& key) -> void
+{
+    std::string k{key};
+    boost::algorithm::trim(k);
+    try {
+        std::stoul(k);
+    }
+    catch(const std::invalid_argument&){
+        THROW(SYS_INVALID_INPUT_PARAM, "Delay rule ID has incorrect format.");
+    }
+    catch(const std::out_of_range&){
+        THROW(SYS_INVALID_INPUT_PARAM, "Delay rule ID is too large.");
+    }
+    catch(const std::exception& e){
+        auto message = std::string{ "Error parsing delay rule ID: "} + e.what();
+        THROW(SYS_INVALID_INPUT_PARAM, message);
+    }
+    catch(...){
+        THROW(SYS_INVALID_INPUT_PARAM, "Unknown error parsing delay rule ID.");
+    }
 }
