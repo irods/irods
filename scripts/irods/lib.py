@@ -757,10 +757,22 @@ def get_replica_size(session, data_name, replica_number):
         .format(data_name, str(replica_number))])[0].strip()
 
 
-def replica_exists(session, data_name, replica_number):
+def replica_exists(session, logical_path, replica_number):
     out = session.run_icommand(['iquest',
-        "select DATA_ID where DATA_NAME = '{}' and DATA_REPL_NUM = '{}'"
-        .format(data_name, str(replica_number))])[0]
+        "select DATA_ID where COLL_NAME = '{}' and DATA_NAME = '{}' and DATA_REPL_NUM = '{}'"
+        .format(os.path.dirname(logical_path),
+                os.path.basename(logical_path),
+                str(replica_number))])[0]
+
+    return 'CAT_NO_ROWS_FOUND' not in out
+
+
+def replica_exists_on_resource(session, logical_path, resource_name):
+    out = session.run_icommand(['iquest',
+        "select DATA_ID where COLL_NAME = '{}' and DATA_NAME = '{}' and DATA_RESC_NAME = '{}'"
+        .format(os.path.dirname(logical_path),
+                os.path.basename(logical_path),
+                resource_name)])[0]
 
     return 'CAT_NO_ROWS_FOUND' not in out
 

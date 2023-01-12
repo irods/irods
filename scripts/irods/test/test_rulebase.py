@@ -411,11 +411,11 @@ OUTPUT ruleExecOut
                 OUTPUT ruleExecOut''')
         }
 
-        self.assertFalse(lib.replica_exists(self.admin, os.path.basename(logical_path), 0))
+        self.assertFalse(lib.replica_exists(self.admin, logical_path, 0))
         try:
             with temporary_core_file() as core:
                 self.admin.assert_icommand(['itouch', logical_path])
-                self.assertTrue(lib.replica_exists(self.admin, os.path.basename(logical_path), 0))
+                self.assertTrue(lib.replica_exists(self.admin, logical_path, 0))
 
                 # Add a PEP which fires after the "close" resource operation. The PEP adds an AVU to the object at logical_path.
                 core.add_rule(pep_map[self.plugin_name].format(attr, logical_path))
