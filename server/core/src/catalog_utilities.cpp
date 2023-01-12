@@ -197,11 +197,11 @@ namespace irods::experimental::catalog
         }
     } // throw_if_service_role_is_invalid
 
-    auto get_catalog_provider_host() -> rodsServerHost
+    auto get_catalog_provider_host(const char* _zone_hint) -> rodsServerHost
     {
         rodsServerHost* host{};
 
-        if (const int status = getRcatHost(PRIMARY_RCAT, nullptr, &host); status < 0 || !host) {
+        if (const int status = getRcatHost(PRIMARY_RCAT, _zone_hint, &host); status < 0 || !host) {
             THROW(status, "failed getting catalog provider host");
         }
 
@@ -213,11 +213,11 @@ namespace irods::experimental::catalog
         return ::connected_to_catalog_provider(_comm, get_catalog_provider_host());
     } // connected_to_catalog_provider
 
-    auto redirect_to_catalog_provider(RsComm& _comm) -> rodsServerHost*
+    auto redirect_to_catalog_provider(RsComm& _comm, const char* _zone_hint) -> rodsServerHost*
     {
         rodsServerHost* host = nullptr;
 
-        if (const int ec = getAndConnRcatHost(&_comm, PRIMARY_RCAT, nullptr, &host); ec < 0) {
+        if (const int ec = getAndConnRcatHost(&_comm, PRIMARY_RCAT, _zone_hint, &host); ec < 0) {
             THROW(ec, "failed to connect to catalog provider host");
         }
 

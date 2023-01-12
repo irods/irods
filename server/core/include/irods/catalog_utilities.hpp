@@ -186,12 +186,14 @@ namespace irods::experimental::catalog
 
     /// \brief Thin wrapper around getRcatHost
     ///
+    /// \param[in] _zone_hint Input to getZoneNameFromHint to derive the zone name from a path.
+    ///
     /// \returns Information about the catalog provider host
     ///
     /// \throws irods::exception If an error occurs while retrieving the host information
     ///
     /// \since 4.2.9
-    auto get_catalog_provider_host() -> rodsServerHost;
+    auto get_catalog_provider_host(const char* _zone_hint = nullptr) -> rodsServerHost;
 
     /// \brief Determine if connected to the catalog provider host
     ///
@@ -213,13 +215,14 @@ namespace irods::experimental::catalog
     /// is connected and so should not be free'd after use by the caller.
     ///
     /// \param[in] _comm iRODS connection structure
+    /// \param[in] _zone_hint Input to getZoneNameFromHint to derive the zone name from a path.
     ///
     /// \throws irods::exception If fails to find or connect to the catalog provider host.
     ///
     /// \returns rodsServerHost* pointer to rodsServerHost which is managed by ServerHostHead
     ///
     /// \since 4.2.9
-    auto redirect_to_catalog_provider(RsComm& _comm) -> rodsServerHost*;
+    auto redirect_to_catalog_provider(RsComm& _comm, const char* _zone_hint = nullptr) -> rodsServerHost*;
 } // namespace irods::experimental::catalog
 
 #endif // #ifndef IRODS_CATALOG_UTILITIES_HPP
