@@ -4711,3 +4711,28 @@ auto chl_update_ticket_write_byte_count(RsComm& _comm, const rodsLong_t _data_id
     return ret.code();
 } // chl_update_ticket_write_byte_count
 
+auto chl_get_delay_rule_info(RsComm& _comm, const char* _rule_id, std::vector<std::string>* _info) -> int
+{
+    irods::database_object_ptr db_obj_ptr;
+    if (const auto ret = irods::database_factory(database_plugin_type, db_obj_ptr); !ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
+    }
+
+    irods::plugin_ptr db_plug_ptr;
+    if (const auto ret = db_obj_ptr->resolve(irods::DATABASE_INTERFACE, db_plug_ptr); !ret.ok()) {
+        irods::log(PASSMSG("failed to resolve database interface", ret));
+        return ret.code();
+    }
+
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast<irods::first_class_object>(db_obj_ptr);
+    irods::database_ptr db = boost::dynamic_pointer_cast<irods::database>(db_plug_ptr);
+
+    const auto ret = db->call<const char*, std::vector<std::string>*>(&_comm,
+                                                                      irods::DATABASE_OP_GET_DELAY_RULE_INFO,
+                                                                      ptr,
+                                                                      _rule_id,
+                                                                      _info);
+
+    return ret.code();
+} // chl_get_delay_rule_info

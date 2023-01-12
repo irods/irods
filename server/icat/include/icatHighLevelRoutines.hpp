@@ -273,4 +273,19 @@ auto chl_check_permission_to_modify_data_object(RsComm& _comm, const rodsLong_t 
 /// \since 4.2.9
 auto chl_update_ticket_write_byte_count(RsComm& _comm, const rodsLong_t _data_id, const rodsLong_t _bytes_written) -> int;
 
+/// \brief High-level wrapper for fetching the all information about a delay rule.
+///
+/// Triggers policy associated with database operations.
+///
+/// \param[in]     _comm    The communication object.
+/// \param[in]     _rule_id The ID of the delay rule.
+/// \param[in,out] _info    A pointer to a vector of strings that will hold the row information.
+///
+/// \returns An error code representing whether the operation was successful.
+/// \retval  0 On success.
+/// \retval <0 On failure.
+///
+/// \since 4.2.12
+auto chl_get_delay_rule_info(RsComm& _comm, const char* _rule_id, std::vector<std::string>* _info) -> int;
+
 #endif // IRODS_ICAT_HIGHLEVEL_ROUTINES_HPP

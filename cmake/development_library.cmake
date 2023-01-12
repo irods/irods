@@ -249,6 +249,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/include/fileUnlink.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/fileWrite.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/genQuery.h
+  ${CMAKE_SOURCE_DIR}/lib/api/include/get_delay_rule_info.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/get_file_descriptor_info.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/generalAdmin.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/generalRowInsert.h
@@ -343,6 +344,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/api/include/rs_atomic_apply_acl_operations.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rs_atomic_apply_metadata_operations.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rs_data_object_finalize.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rs_get_delay_rule_info.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rs_get_file_descriptor_info.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rs_register_physical_path.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rs_replica_open.hpp
