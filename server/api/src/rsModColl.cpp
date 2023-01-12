@@ -1,5 +1,6 @@
 #include "catalog_utilities.hpp"
 #include "client_connection.hpp"
+#include "filesystem/path.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "irods_configuration_keywords.hpp"
 #include "irods_rs_comm_query.hpp"
@@ -75,8 +76,24 @@ namespace
 auto rsModColl(rsComm_t* rsComm, collInp_t* modCollInp) -> int
 {
     namespace ic = irods::experimental::catalog;
+    namespace fs = irods::experimental::filesystem;
+
+    if (!rsComm || !modCollInp) {
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
 
     try {
+        // If the zone name cannot be derived from the collection name in the input, the path cannot be valid.
+        const auto zone_name = fs::zone_name(fs::path{static_cast<char*>(modCollInp->collName)});
+        if (!zone_name) {
+            return SYS_INVALID_FILE_PATH;
+        }
+
+        if (!isLocalZone(zone_name->data())) {
+            auto* host = ic::redirect_to_catalog_provider(*rsComm, static_cast<char*>(modCollInp->collName));
+            return rcModColl(host->conn, modCollInp);
+        }
+
         const auto catalog_provider_host = ic::get_catalog_provider_host();
 
         if (LOCAL_HOST == catalog_provider_host.localFlag) {
