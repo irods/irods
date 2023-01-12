@@ -8,3 +8,8 @@ API_PLUGIN_NUMBER(ATOMIC_APPLY_ACL_OPERATIONS_APN,              20005)
 API_PLUGIN_NUMBER(DATA_OBJECT_FINALIZE_APN,                     20006)
 API_PLUGIN_NUMBER(TOUCH_APN,                                    20007)
 API_PLUGIN_NUMBER(REGISTER_PHYSICAL_PATH_APN,                   20008)
+//
+// API plugin numbers 20009-20012 are mapped to API plugins only
+// available in the 4.3 series.
+//
+API_PLUGIN_NUMBER(GET_DELAY_RULE_INFO_APN,                      20013)

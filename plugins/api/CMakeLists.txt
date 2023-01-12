@@ -93,6 +93,37 @@ set(
   irods_client
   )
 
+# get_delay_rule_info API
+set(
+  IRODS_API_PLUGIN_SOURCES_irods_get_delay_rule_info_server
+  ${CMAKE_SOURCE_DIR}/plugins/api/src/get_delay_rule_info.cpp
+  )
+
+set(
+  IRODS_API_PLUGIN_SOURCES_irods_get_delay_rule_info_client
+  ${CMAKE_SOURCE_DIR}/plugins/api/src/get_delay_rule_info.cpp
+  )
+
+set(
+  IRODS_API_PLUGIN_COMPILE_DEFINITIONS_irods_get_delay_rule_info_server
+  RODS_SERVER
+  ENABLE_RE
+  )
+
+set(
+  IRODS_API_PLUGIN_COMPILE_DEFINITIONS_irods_get_delay_rule_info_client
+  )
+
+set(
+  IRODS_API_PLUGIN_LINK_LIBRARIES_irods_get_delay_rule_info_server
+  irods_server
+  )
+
+set(
+  IRODS_API_PLUGIN_LINK_LIBRARIES_irods_get_delay_rule_info_client
+  irods_client
+  )
+
 # atomic_apply_acl_operations API
 set(
   IRODS_API_PLUGIN_SOURCES_irods_atomic_apply_acl_operations_server
@@ -327,6 +358,8 @@ set(
   irods_data_object_finalize_server
   irods_data_object_modify_info_client
   irods_data_object_modify_info_server
+  irods_get_delay_rule_info_client
+  irods_get_delay_rule_info_server
   irods_get_file_descriptor_info_client
   irods_get_file_descriptor_info_server
   irods_register_physical_path_client

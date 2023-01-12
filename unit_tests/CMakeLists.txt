@@ -45,6 +45,7 @@ set(TEST_INCLUDE_LIST test_config/irods_atomic_apply_acl_operations
                       test_config/irods_dstream
                       test_config/irods_filesystem
                       test_config/irods_fixed_buffer_resource
+                      test_config/irods_get_delay_rule_info
                       test_config/irods_get_file_descriptor_info
                       test_config/irods_hierarchy_parser
                       test_config/irods_hostname_cache
