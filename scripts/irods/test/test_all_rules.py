@@ -1543,7 +1543,7 @@ OUTPUT ruleExecOut
         self.assertNotEqual(0, ec)
 
         self.assertEqual(0, len(lib.get_replica_checksum(self.test_user, self.filename, 0)))
-        self.assertFalse(lib.replica_exists(self.test_user, self.filename, 1))
+        self.assertFalse(lib.replica_exists(self.test_user, self.logical_path, 1))
 
 
     def test_chksum_true_forceChksum_none_verifyChksum_1__issue_5927(self):
@@ -1585,7 +1585,7 @@ OUTPUT ruleExecOut
         self.assertNotEqual(0, ec)
 
         self.assertNotEqual(0, len(lib.get_replica_checksum(self.test_user, self.filename, 0)))
-        self.assertFalse(lib.replica_exists(self.test_user, self.filename, 1))
+        self.assertFalse(lib.replica_exists(self.test_user, self.logical_path, 1))
 
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'checksum related errors in iRODS 4.3 under python RE plugin')
@@ -1601,7 +1601,7 @@ OUTPUT ruleExecOut
         self.assertNotEqual(0, ec)
 
         self.assertEqual(0, len(lib.get_replica_checksum(self.test_user, self.filename, 0)))
-        self.assertFalse(lib.replica_exists(self.test_user, self.filename, 1))
+        self.assertFalse(lib.replica_exists(self.test_user, self.logical_path, 1))
 
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'checksum related errors in iRODS 4.3 under python RE plugin')
@@ -1615,7 +1615,7 @@ OUTPUT ruleExecOut
         self.assertNotEqual(0, ec)
 
         self.assertNotEqual(0, len(lib.get_replica_checksum(self.test_user, self.filename, 0)))
-        self.assertFalse(lib.replica_exists(self.test_user, self.filename, 1))
+        self.assertFalse(lib.replica_exists(self.test_user, self.logical_path, 1))
 
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'checksum related errors in iRODS 4.3 under python RE plugin')
@@ -1629,7 +1629,7 @@ OUTPUT ruleExecOut
         self.assertNotEqual(0, ec)
 
         self.assertEqual(0, len(lib.get_replica_checksum(self.test_user, self.filename, 0)))
-        self.assertFalse(lib.replica_exists(self.test_user, self.filename, 1))
+        self.assertFalse(lib.replica_exists(self.test_user, self.logical_path, 1))
 
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'checksum related errors in iRODS 4.3 under python RE plugin')
@@ -1643,4 +1643,4 @@ OUTPUT ruleExecOut
         self.assertNotEqual(0, ec)
 
         self.assertNotEqual(0, len(lib.get_replica_checksum(self.test_user, self.filename, 0)))
-        self.assertFalse(lib.replica_exists(self.test_user, self.filename, 1))
+        self.assertFalse(lib.replica_exists(self.test_user, self.logical_path, 1))
