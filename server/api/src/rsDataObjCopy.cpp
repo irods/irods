@@ -302,28 +302,7 @@ int rsDataObjCopy(rsComm_t* rsComm,
                   dataObjCopyInp_t* dataObjCopyInp,
                   transferStat_t** transStat)
 {
-    namespace fs = ix::filesystem;
-
-    const auto ec = rsDataObjCopy_impl(rsComm, dataObjCopyInp, transStat);
-    const auto parent_path = fs::path{dataObjCopyInp->destDataObjInp.objPath}.parent_path();
-
-    // Update the parent collection's mtime.
-    if (ec == 0 && fs::server::is_collection_registered(*rsComm, parent_path)) {
-        using std::chrono::system_clock;
-        using std::chrono::time_point_cast;
-
-        const auto mtime = time_point_cast<fs::object_time_type::duration>(system_clock::now());
-
-        try {
-            ix::scoped_privileged_client spc{*rsComm};
-            fs::server::last_write_time(*rsComm, parent_path, mtime);
-        }
-        catch (const fs::filesystem_error& e) {
-            ix::log::api::error(e.what());
-            return e.code().value();
-        }
-    }
-
-    return ec;
+    // Do not update the collection mtime here because the open API call for the destination data object does it.
+    return rsDataObjCopy_impl(rsComm, dataObjCopyInp, transStat);
 }
 
