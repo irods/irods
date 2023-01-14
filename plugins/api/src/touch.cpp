@@ -16,6 +16,7 @@
 #include "touch.h"
 
 #include "rcMisc.h"
+#include "rodsConnect.h"
 #include "rodsErrorTable.h"
 #include "catalog_utilities.hpp"
 #include "irods_exception.hpp"
@@ -408,6 +409,30 @@ namespace
             // correct permissions.
 
             const fs::path path = json_input.at(prop_logical_path.data()).get_ref<const std::string&>();
+
+            {
+                //
+                // Redirect to the remote/federated zone if necessary.
+                //
+
+                DataObjInp input{};
+                std::strncpy(input.objPath, path.c_str(), sizeof(DataObjInp::objPath) - 1);
+
+                rodsServerHost_t* remote_host{};
+
+                const auto remote_flag = getAndConnRemoteZone(_comm, &input, &remote_host, REMOTE_CREATE);
+
+                if (remote_flag < 0) {
+                    const char* msg = "Could not determine if operation needs to be redirected to federated zone "
+                                      "[error_code=[%d], logical_path=[%s]].";
+                    rodsLog(LOG_ERROR, msg, remote_flag, path.c_str());
+                    return remote_flag;
+                }
+
+                if (remote_flag != LOCAL_HOST) {
+                    return rc_touch(remote_host->conn, static_cast<const char*>(_bbuf_input->buf));
+                }
+            }
 
             // This function will return true if the target data object does not exist and "no_create" is
             // set to true in the JSON input.
