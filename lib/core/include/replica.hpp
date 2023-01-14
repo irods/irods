@@ -24,6 +24,7 @@
 #endif
 
 #include "filesystem.hpp"
+#include "filesystem/path_utilities.hpp"
 #include "irods_at_scope_exit.hpp"
 #include "irods_exception.hpp"
 #include "key_value_proxy.hpp"
@@ -135,9 +136,9 @@ namespace irods::experimental::replica
             rxComm& _comm,
             const irods::experimental::filesystem::path& _logical_path) -> void
         {
-            irods::experimental::filesystem::detail::throw_if_path_is_empty(_logical_path);
+            throw_if_path_is_empty(_logical_path);
 
-            irods::experimental::filesystem::detail::throw_if_path_length_exceeds_limit(_logical_path);
+            throw_if_path_length_exceeds_limit(_logical_path);
 
             throw_if_path_is_not_a_data_object(_comm, _logical_path);
         } // throw_if_replica_logical_path_is_invalid

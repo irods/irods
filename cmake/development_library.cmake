@@ -156,6 +156,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/socket_wrapper.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/sslSockComm.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/stringOpr.h
+  ${CMAKE_SOURCE_DIR}/lib/core/include/system_error.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/termiosUtil.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/thread_pool.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/trimUtil.h
@@ -625,13 +626,13 @@ install(
     PATTERN */filesystem/collection_iterator.hpp
     PATTERN */filesystem/config.hpp
     PATTERN */filesystem/copy_options.hpp
-    PATTERN */filesystem/detail.hpp
     PATTERN */filesystem/filesystem.hpp
     PATTERN */filesystem/filesystem.tpp
     PATTERN */filesystem/filesystem_error.hpp
     PATTERN */filesystem/object_status.hpp
     PATTERN */filesystem/path.hpp
     PATTERN */filesystem/path_traits.hpp
+    PATTERN */filesystem/path_utilities.hpp
     PATTERN */filesystem/permissions.hpp
     PATTERN */filesystem/recursive_collection_iterator.hpp
   )

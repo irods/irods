@@ -1,6 +1,6 @@
 #include "filesystem/path.hpp"
 
-#include "filesystem/detail.hpp"
+#include "filesystem/path_utilities.hpp"
 
 #include <iostream>
 #include <iomanip>
@@ -349,12 +349,12 @@ namespace irods::experimental::filesystem
 
         // If we're not at the end of the path, then we're most likely at a separator.
         // Skip consecutive separators.
-        while (detail::is_separator(fp[pos_]))
+        while (is_separator(fp[pos_]))
         {
             ++pos_;
         }
 
-        if (fp.size() == pos_ && detail::is_separator(fp[fp.size() - 1]))
+        if (fp.size() == pos_ && is_separator(fp[fp.size() - 1]))
         {
             // Found a trailing separator.
             e.clear();
@@ -390,14 +390,14 @@ namespace irods::experimental::filesystem
         // is a separator, then set the current element to the dot path.
         if (fp.size() == pos_ &&
             fp.size() > 1 &&
-            detail::is_separator(fp[pos_ - 1]))
+            is_separator(fp[pos_ - 1]))
         {
             --pos_;
             e.clear();
             return *this;
         }
 
-        if (detail::is_separator(fp[pos_ - 1]))
+        if (is_separator(fp[pos_ - 1]))
         {
             // We've reached the root separator of the path.
             if (0 == pos_ - 1)
@@ -409,7 +409,7 @@ namespace irods::experimental::filesystem
 
             // Point at the separator just after the preceding element.
             // Separators represent the end of a path element.
-            while (pos_ > 0 && detail::is_separator(fp[pos_ - 1]))
+            while (pos_ > 0 && is_separator(fp[pos_ - 1]))
             {
                 --pos_;
             }
@@ -418,7 +418,7 @@ namespace irods::experimental::filesystem
         const auto end = pos_;
 
         // Find the start of the path element.
-        while (pos_ > 0 && !detail::is_separator(fp[pos_ - 1]))
+        while (pos_ > 0 && !is_separator(fp[pos_ - 1]))
         {
             --pos_;
         }

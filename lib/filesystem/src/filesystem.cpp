@@ -1,6 +1,7 @@
 #include "filesystem/filesystem.hpp"
 
 #include "filesystem/path.hpp"
+#include "filesystem/path_utilities.hpp"
 #include "filesystem/collection_iterator.hpp"
 
 // clang-format off
@@ -64,8 +65,6 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 {
     namespace
     {
-        using detail::make_error_code;
-
 #ifdef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
         int rsDataObjCopy(rsComm_t* _comm, dataObjCopyInp_t* _dataObjCopyInp)
         {
@@ -249,7 +248,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
         auto remove_impl(rxComm& _comm, const path& _p, remove_impl_options _opts) -> bool
         {
-            detail::throw_if_path_length_exceeds_limit(_p);
+            throw_if_path_length_exceeds_limit(_p);
 
             const auto s = status(_comm, _p);
 
@@ -301,7 +300,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
                              const std::string& _user_or_group,
                              perms _prms) -> void
         {
-            detail::throw_if_path_length_exceeds_limit(_p);
+            throw_if_path_length_exceeds_limit(_p);
 
             char username[NAME_LEN]{};
             char zone[NAME_LEN]{};
@@ -356,8 +355,8 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
         auto set_inheritance(bool _add_admin_flag, rxComm& _comm, const path& _p, bool _value) -> void
         {
-            detail::throw_if_path_is_empty(_p);
-            detail::throw_if_path_length_exceeds_limit(_p);
+            throw_if_path_is_empty(_p);
+            throw_if_path_length_exceeds_limit(_p);
 
             if (!is_collection(_comm, _p)) {
                 throw filesystem_error{"existing path is not a collection", _p, make_error_code(NOT_A_COLLECTION)};
@@ -411,8 +410,8 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
                             const metadata& _metadata,
                             std::string_view op) -> void
         {
-            detail::throw_if_path_is_empty(_p);
-            detail::throw_if_path_length_exceeds_limit(_p);
+            throw_if_path_is_empty(_p);
+            throw_if_path_length_exceeds_limit(_p);
 
             modAVUMetadataInp_t input{};
 
@@ -523,8 +522,8 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
     auto copy_data_object(rxComm& _comm, const path& _from, const path& _to, copy_options _options) -> bool
     {
-        detail::throw_if_path_length_exceeds_limit(_from);
-        detail::throw_if_path_length_exceeds_limit(_to);
+        throw_if_path_length_exceeds_limit(_from);
+        throw_if_path_length_exceeds_limit(_to);
 
         if (!is_data_object(_comm, _from)) {
             throw filesystem_error{"path does not point to a data object", _from, make_error_code(INVALID_OBJECT_TYPE)};
@@ -582,7 +581,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
     auto create_collection(rxComm& _comm, const path& _p) -> bool // Implies perms::all
     {
-        detail::throw_if_path_length_exceeds_limit(_p);
+        throw_if_path_length_exceeds_limit(_p);
 
         if (!exists(_comm, _p.parent_path())) {
             throw filesystem_error{"path does not exist", _p.parent_path(), make_error_code(OBJ_PATH_DOES_NOT_EXIST)};
@@ -606,10 +605,10 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
     auto create_collection(rxComm& _comm, const path& _p, const path& _existing_p) -> bool
     {
-        detail::throw_if_path_is_empty(_p);
-        detail::throw_if_path_is_empty(_existing_p);
-        detail::throw_if_path_length_exceeds_limit(_p);
-        detail::throw_if_path_length_exceeds_limit(_existing_p);
+        throw_if_path_is_empty(_p);
+        throw_if_path_is_empty(_existing_p);
+        throw_if_path_length_exceeds_limit(_p);
+        throw_if_path_length_exceeds_limit(_existing_p);
 
         const auto s = status(_comm, _existing_p);
 
@@ -628,7 +627,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
     auto create_collections(rxComm& _comm, const path& _p) -> bool
     {
-        detail::throw_if_path_length_exceeds_limit(_p);
+        throw_if_path_length_exceeds_limit(_p);
 
         if (exists(_comm, _p)) {
             return false;
@@ -654,8 +653,8 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
     auto is_collection_registered(rxComm& _comm, const path& _p) -> bool
     {
-        detail::throw_if_path_is_empty(_p);
-        detail::throw_if_path_length_exceeds_limit(_p);
+        throw_if_path_is_empty(_p);
+        throw_if_path_length_exceeds_limit(_p);
 
         irods::experimental::query_builder qb;
 
@@ -670,8 +669,8 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
     auto is_data_object_registered(rxComm& _comm, const path& _p) -> bool
     {
-        detail::throw_if_path_is_empty(_p);
-        detail::throw_if_path_length_exceeds_limit(_p);
+        throw_if_path_is_empty(_p);
+        throw_if_path_length_exceeds_limit(_p);
 
         irods::experimental::query_builder qb;
 
@@ -688,8 +687,8 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
     auto equivalent(rxComm& _comm, const path& _p1, const path& _p2) -> bool
     {
-        detail::throw_if_path_is_empty(_p1);
-        detail::throw_if_path_is_empty(_p2);
+        throw_if_path_is_empty(_p1);
+        throw_if_path_is_empty(_p2);
 
         const auto p1_info = stat(_comm, _p1);
 
@@ -716,8 +715,8 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
     auto data_object_size(rxComm& _comm, const path& _p) -> std::uintmax_t
     {
-        detail::throw_if_path_is_empty(_p);
-        detail::throw_if_path_length_exceeds_limit(_p);
+        throw_if_path_is_empty(_p);
+        throw_if_path_length_exceeds_limit(_p);
 
         if (!is_data_object(_comm, _p)) {
             throw filesystem_error{"path does not point to a data object", _p, make_error_code(SYS_INVALID_INPUT_PARAM)};
@@ -775,8 +774,8 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
     auto is_special_collection(rxComm& _comm, const path& _p) -> bool
     {
-        detail::throw_if_path_is_empty(_p);
-        detail::throw_if_path_length_exceeds_limit(_p);
+        throw_if_path_is_empty(_p);
+        throw_if_path_length_exceeds_limit(_p);
 
         const auto gql = fmt::format("select COLL_TYPE, COLL_INFO_1, COLL_INFO_2 "
                                      "where COLL_NAME = '{}'", _p.c_str());
@@ -861,7 +860,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
     auto last_write_time(rxComm& _comm, const path& _p, object_time_type _new_time) -> void
     {
-        detail::throw_if_path_length_exceeds_limit(_p);
+        throw_if_path_length_exceeds_limit(_p);
 
         if (!is_collection(_comm, _p)) {
             throw filesystem_error{"path does not point to a collection", _p, make_error_code(SYS_INVALID_INPUT_PARAM)};
@@ -950,10 +949,10 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
     auto rename(rxComm& _comm, const path& _old_p, const path& _new_p) -> void
     {
-        detail::throw_if_path_is_empty(_old_p);
-        detail::throw_if_path_is_empty(_new_p);
-        detail::throw_if_path_length_exceeds_limit(_old_p);
-        detail::throw_if_path_length_exceeds_limit(_new_p);
+        throw_if_path_is_empty(_old_p);
+        throw_if_path_is_empty(_new_p);
+        throw_if_path_length_exceeds_limit(_old_p);
+        throw_if_path_length_exceeds_limit(_new_p);
 
         const auto old_p_stat = status(_comm, _old_p.lexically_normal());
         const auto new_p_stat = status(_comm, _new_p.lexically_normal());
@@ -998,7 +997,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
             // Case 3: "_new_p" is a non-existing collection w/ the following requirements:
             //  1. Does not end with a collection separator.
             //  2. The parent collection must exist.
-            else if (detail::is_separator(_new_p.string().back())) {
+            else if (is_separator(_new_p.string().back())) {
                 throw filesystem_error{"path cannot end with a separator", _new_p, make_error_code(SYS_INVALID_INPUT_PARAM)};
             }
             else if (!is_collection(_comm, _new_p.parent_path())) {
@@ -1027,8 +1026,8 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
     auto data_object_checksum(rxComm& _comm, const path& _p) -> std::string
     {
-        detail::throw_if_path_is_empty(_p);
-        detail::throw_if_path_length_exceeds_limit(_p);
+        throw_if_path_is_empty(_p);
+        throw_if_path_length_exceeds_limit(_p);
 
         if (!is_data_object(_comm, _p)) {
             throw filesystem_error{"path does not point to a data object", _p, make_error_code(SYS_INVALID_INPUT_PARAM)};
@@ -1120,8 +1119,8 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
     auto get_metadata(rxComm& _comm, const path& _p) -> std::vector<metadata>
     {
-        detail::throw_if_path_is_empty(_p);
-        detail::throw_if_path_length_exceeds_limit(_p);
+        throw_if_path_is_empty(_p);
+        throw_if_path_length_exceeds_limit(_p);
 
         std::string sql;
 

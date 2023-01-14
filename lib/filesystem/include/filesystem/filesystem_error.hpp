@@ -15,27 +15,18 @@ namespace irods::experimental::filesystem
         : public std::system_error
     {
     public:
-        explicit filesystem_error(const std::string& _msg,
-                                  std::error_code _ec = {EIO, std::system_category()})
+        explicit filesystem_error(const std::string& _msg, std::error_code _ec)
             : std::system_error{_ec, _msg}
-            , p1_{}
-            , p2_{}
         {
         }
 
-        filesystem_error(const std::string& _msg,
-                         const path& _p1,
-                         std::error_code _ec = {EIO, std::system_category()})
+        filesystem_error(const std::string& _msg, const path& _p1, std::error_code _ec)
             : std::system_error{_ec, _msg}
             , p1_{_p1}
-            , p2_{}
         {
         }
 
-        filesystem_error(const std::string& _msg,
-                         const path& _p1,
-                         const path& _p2,
-                         std::error_code _ec = {EIO, std::system_category()})
+        filesystem_error(const std::string& _msg, const path& _p1, const path& _p2, std::error_code _ec)
             : std::system_error{_ec, _msg}
             , p1_{_p1}
             , p2_{_p2}
