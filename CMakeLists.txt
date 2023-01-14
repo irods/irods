@@ -1045,6 +1045,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/rodsLog.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/rodsPath.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/stringOpr.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/system_error.cpp
   ${CMAKE_SOURCE_DIR}/lib/hasher/src/Hasher.cpp
   ${CMAKE_SOURCE_DIR}/lib/hasher/src/MD5Strategy.cpp
   ${CMAKE_SOURCE_DIR}/lib/hasher/src/SHA256Strategy.cpp
@@ -1213,6 +1214,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/rodsLog.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/rodsPath.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/stringOpr.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/system_error.cpp
   )
 
 set(

@@ -19,7 +19,6 @@
 #include "rcMisc.h"
 
 #include "client_connection.hpp"
-#include "connection_pool.hpp"
 #include "filesystem.hpp"
 #include "resource_administration.hpp"
 #include "irods_at_scope_exit.hpp"
@@ -27,6 +26,7 @@
 #include "irods_pack_table.hpp"
 #include "irods_query.hpp"
 #include "replica.hpp"
+#include "system_error.hpp"
 
 #include "dstream.hpp"
 #include "transport/default_transport.hpp"
@@ -66,17 +66,7 @@ TEST_CASE("filesystem")
     rodsEnv env;
     REQUIRE(getRodsEnv(&env) >= 0);
 
-    const auto connection_count = 1;
-    const auto refresh_time = 600;
-
-    irods::connection_pool conn_pool{connection_count,
-                                     env.rodsHost,
-                                     env.rodsPort,
-                                     env.rodsUserName,
-                                     env.rodsZone,
-                                     refresh_time};
-
-    auto conn = conn_pool.get_connection();
+    irods::experimental::client_connection conn;
 
     // clang-format off
     namespace fs = irods::experimental::filesystem;
@@ -747,6 +737,20 @@ TEST_CASE("filesystem")
 
         // Show that normal collections are not considered to be special collections.
         REQUIRE_FALSE(fs::client::is_special_collection(conn, sandbox));
+    }
+
+    SECTION("filesystem_error::what() reports error code name")
+    {
+        using namespace std::string_literals;
+        using namespace std::string_view_literals;
+
+        const auto msg = "this is a test message"s;
+        constexpr auto ec = USER_FILE_DOES_NOT_EXIST;
+        const fs::filesystem_error err{msg, irods::experimental::make_error_code(ec)};
+
+        CHECK(err.code().value() == ec);
+        CHECK(err.code().message() == "USER_FILE_DOES_NOT_EXIST");
+        CHECK(err.what() == msg + ": USER_FILE_DOES_NOT_EXIST");
     }
 }
 

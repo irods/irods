@@ -6,13 +6,15 @@
 #include "filesystem/permissions.hpp"
 #include "filesystem/copy_options.hpp"
 #include "filesystem/filesystem_error.hpp"
-#include "filesystem/detail.hpp"
 
 #ifdef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
     #include "rs_atomic_apply_metadata_operations.hpp"
 #else
     #include "atomic_apply_metadata_operations.h"
 #endif // IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+
+#include "system_error.hpp"
+#include "rodsErrorTable.h"
 
 #include "json.hpp"
 

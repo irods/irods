@@ -8,8 +8,6 @@ namespace
                         Iterator _last,
                         std::string_view _op) -> void
     {
-        using detail::make_error_code;
-
         std::string_view entity_type;
 
         if (const auto s = status(_comm, _path); is_data_object(s)) {

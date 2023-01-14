@@ -39,6 +39,7 @@
     "irods_scoped_client_identity",
     "irods_scoped_privileged_client",
     "irods_shared_memory_object",
+    "irods_system_error",
     "irods_user_administration",
     "irods_version",
     "irods_with_durability",
