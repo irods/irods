@@ -1,5 +1,16 @@
-#ifndef IRODS_FILESYSTEM_FILESYSTEM_HPP
-#define IRODS_FILESYSTEM_FILESYSTEM_HPP
+#undef IRODS_FILESYSTEM_FILESYSTEM_HPP_INCLUDE_HEADER
+
+#if defined(IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API)
+    #if !defined(IRODS_FILESYSTEM_FILESYSTEM_HPP_FOR_SERVER)
+        #define IRODS_FILESYSTEM_FILESYSTEM_HPP_FOR_SERVER
+        #define IRODS_FILESYSTEM_FILESYSTEM_HPP_INCLUDE_HEADER
+    #endif
+#elif !defined(IRODS_FILESYSTEM_FILESYSTEM_HPP_FOR_CLIENT)
+    #define IRODS_FILESYSTEM_FILESYSTEM_HPP_FOR_CLIENT
+    #define IRODS_FILESYSTEM_FILESYSTEM_HPP_INCLUDE_HEADER
+#endif
+
+#ifdef IRODS_FILESYSTEM_FILESYSTEM_HPP_INCLUDE_HEADER
 
 #include "filesystem/config.hpp"
 #include "filesystem/object_status.hpp"
@@ -33,6 +44,15 @@ namespace irods::experimental::filesystem
 
     using object_time_type = std::chrono::time_point<std::chrono::system_clock, std::chrono::seconds>;
 
+#ifndef IRODS_FILESYSTEM_FILESYSTEM_COMMON_TYPES_AND_OBJECTS
+#define IRODS_FILESYSTEM_FILESYSTEM_COMMON_TYPES_AND_OBJECTS
+    //
+    // The data types and objects defined in this space represent entities that
+    // are shared across the client-side and server-side interfaces.
+    //
+    // These symbols MUST NOT be introduced into the space more than once!
+    //
+
     enum class remove_options
     {
         none,
@@ -47,7 +67,8 @@ namespace irods::experimental::filesystem
     };
 
     /// A tag type used to instruct an operation to run in administrator mode.
-    inline struct admin_tag {} admin;
+    const inline struct admin_tag {} admin;
+#endif // IRODS_FILESYSTEM_FILESYSTEM_COMMON_TYPES_AND_OBJECTS
 
     namespace NAMESPACE_IMPL
     {
@@ -414,4 +435,4 @@ namespace irods::experimental::filesystem
     } // namespace NAMESPACE_IMPL
 } // namespace irods::experimental::filesystem
 
-#endif // IRODS_FILESYSTEM_FILESYSTEM_HPP
+#endif // IRODS_FILESYSTEM_FILESYSTEM_HPP_INCLUDE_HEADER

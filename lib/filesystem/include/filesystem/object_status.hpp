@@ -1,7 +1,6 @@
 #ifndef IRODS_FILESYSTEM_OBJECT_STATUS_HPP
 #define IRODS_FILESYSTEM_OBJECT_STATUS_HPP
 
-#include "filesystem/filesystem.hpp"
 #include "filesystem/permissions.hpp"
 
 #include <vector>
