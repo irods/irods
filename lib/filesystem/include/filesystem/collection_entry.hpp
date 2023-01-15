@@ -1,5 +1,16 @@
-#ifndef IRODS_FILESYSTEM_COLLECTION_ENTRY_HPP
-#define IRODS_FILESYSTEM_COLLECTION_ENTRY_HPP
+#undef IRODS_FILESYSTEM_COLLECTION_ENTRY_HPP_INCLUDE_HEADER
+
+#if defined(IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API)
+    #if !defined(IRODS_FILESYSTEM_COLLECTION_ENTRY_HPP_FOR_SERVER)
+        #define IRODS_FILESYSTEM_COLLECTION_ENTRY_HPP_FOR_SERVER
+        #define IRODS_FILESYSTEM_COLLECTION_ENTRY_HPP_INCLUDE_HEADER
+    #endif
+#elif !defined(IRODS_FILESYSTEM_COLLECTION_ENTRY_HPP_FOR_CLIENT)
+    #define IRODS_FILESYSTEM_COLLECTION_ENTRY_HPP_FOR_CLIENT
+    #define IRODS_FILESYSTEM_COLLECTION_ENTRY_HPP_INCLUDE_HEADER
+#endif
+
+#ifdef IRODS_FILESYSTEM_COLLECTION_ENTRY_HPP_INCLUDE_HEADER
 
 #include "filesystem/config.hpp"
 #include "filesystem/filesystem.hpp"
@@ -8,13 +19,10 @@
 
 #include <chrono>
 
-namespace irods::experimental::filesystem
+namespace irods::experimental::filesystem::NAMESPACE_IMPL
 {
-    namespace NAMESPACE_IMPL
-    {
-        class collection_iterator;
-        class recursive_collection_iterator;
-    } // namespace NAMESPACE_IMPL
+    class collection_iterator;
+    class recursive_collection_iterator;
 
     class collection_entry
     {
@@ -49,8 +57,8 @@ namespace irods::experimental::filesystem
         // clang-format on
 
     private:
-        friend class NAMESPACE_IMPL::collection_iterator;
-        friend class NAMESPACE_IMPL::recursive_collection_iterator;
+        friend class collection_iterator;
+        friend class recursive_collection_iterator;
 
         mutable class path path_;
         mutable object_status status_;
@@ -63,6 +71,6 @@ namespace irods::experimental::filesystem
         mutable std::string owner_;
         mutable std::string data_type_;
     };
-} // namespace irods::experimental::filesystem
+} // namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
-#endif // IRODS_FILESYSTEM_COLLECTION_ENTRY_HPP
+#endif // IRODS_FILESYSTEM_COLLECTION_ENTRY_HPP_INCLUDE_HEADER
