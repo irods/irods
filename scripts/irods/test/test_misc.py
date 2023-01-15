@@ -199,3 +199,7 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
             for fn in [pid_file_1, pid_file_2, pid_file_3]:
                 self.assertFalse(os.path.exists(fn))
 
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', "only run for native rule language")
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "skip for topology testing")
+    def test_client_side_and_server_side_filesystem_library_interfaces_can_be_used_in_same_translation_unit__issue_6782(self):
+        self.admin.assert_icommand(['irule', '-r', 'irods_rule_engine_plugin-irods_rule_language-instance', 'msi_test_issue_6782', 'null', 'ruleExecOut'])

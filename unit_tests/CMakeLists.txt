@@ -6,7 +6,7 @@ set(IRODS_UNIT_TESTS_REPORTING_STYLE "junit" CACHE STRING "The style of output u
 set(IRODS_UNIT_TESTS_REPORT_FILENAME "report.xml" CACHE STRING "The filename of the unit test report")
 set(IRODS_UNIT_TESTS_ENABLE_ALL NO CACHE BOOL "Enables all unit tests")
 
-if (NOT IRODS_UNIT_TESTS_BUILD)
+if (NOT IRODS_UNIT_TESTS_BUILD AND NOT IRODS_ENABLE_ALL_TESTS)
     return()
 endif()
 
