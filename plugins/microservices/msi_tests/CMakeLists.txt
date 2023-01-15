@@ -1,6 +1,7 @@
 set(
   IRODS_PLUGIN_TARGETS
   msi_test_issue_6782
+  msi_test_issue_6829
 )
 
 add_compile_definitions(
