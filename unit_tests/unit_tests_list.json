@@ -36,7 +36,6 @@
     "irods_replica_state_table",
     "irods_rerror_stack",
     "irods_resource_administration",
-    "irods_scoped_client_identity",
     "irods_scoped_privileged_client",
     "irods_shared_memory_object",
     "irods_system_error",
