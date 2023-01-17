@@ -78,10 +78,10 @@ jobs:
                       clang-tidy-diff.py -p1 -path build/compile_commands.json -quiet | \
                       tee clang_tidy_output.txt
 
-                  # Return a failure if the output contains a clang-tidy error or warning.
+                  # Return a failure if the output contains a clang-tidy error.
                   # clang-tidy-diff.py doesn't report a non-zero error code when it finds violations.
                   clang_tidy_text=$(cat clang_tidy_output.txt)
-                  if [[ "$clang_tidy_text" == *": error: "* ]] || [[ "$clang_tidy_text" == *": warning: "* ]]; then
+                  if [[ "$clang_tidy_text" == *": error: "* ]] ; then
                       echo 'Source code needs some attention!'
                       echo
                       echo 'If the results are hard to follow, you can enable color by running the following command at the bench:'
@@ -92,6 +92,21 @@ jobs:
                       echo
 
                       exit 1
+                  fi
+
+                  # Print a message if the output contains warnings, but do not report a non-zero error code.
+                  # If there is a warning which needs to be an error, add it to the WarningsAsErrors section of the clang-tidy configuration.
+                  if [[ "$clang_tidy_text" == *": warning: "* ]] ; then
+                      echo 'The analysis generated warnings which you may want to consider fixing.'
+                      echo
+                      echo 'If the results are hard to follow, you can enable color by running the following command at the bench:'
+                      echo
+                      echo "    git diff -U0 $GITHUB_BASE_REF | clang-tidy-diff.py -p1 -use-color -path /path/to/build/compile_commands.json -quiet"
+                      echo
+                      echo 'This command only works while the branch associated with this pull request is checked out.'
+                      echo
+
+                      exit 0
                   fi
 
                   echo "Source code is tidy :-)"

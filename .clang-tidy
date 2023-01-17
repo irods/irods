@@ -62,7 +62,8 @@ WarningsAsErrors:
     performance-*,
     portability-std-allocator-const,
     readability-*,
-    -readability-avoid-const-params-in-decls
+    -readability-avoid-const-params-in-decls,
+    -readability-implicit-bool-conversion
 FormatStyle:     none
 CheckOptions:
   - key:             llvm-else-after-return.WarnOnConditionVariables
