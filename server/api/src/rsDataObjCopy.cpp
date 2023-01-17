@@ -32,10 +32,8 @@
 
 #include <chrono>
 
-namespace ix = irods::experimental;
-
-namespace {
-
+namespace
+{
     int connect_to_remote_zone(
         rsComm_t *rsComm,
         dataObjCopyInp_t *dataObjCopyInp,
@@ -109,14 +107,24 @@ namespace {
         return srcL1descInx;
     } // open_source_data_obj
 
-    auto close_source_data_obj(RsComm* rsComm, const int _inx) -> int
+    auto close_source_data_obj(RsComm* _comm, const int _l1_index, const DataObjInp& _inp) -> int
     {
-        openedDataObjInp_t dataObjCloseInp{};
-        dataObjCloseInp.l1descInx = _inx;
+        // The L1 descriptor may not be available later, so we need to use the path from the DataObjInp.
+        const std::string_view path = static_cast<const char*>(_inp.objPath);
 
-        rodsLog(LOG_DEBUG8, "[%s:%d] - closing [%s]", __FUNCTION__, __LINE__, L1desc[_inx].dataObjInp->objPath);
+        irods::log(LOG_DEBUG8, fmt::format("[{}:{}] - closing [{}]", __func__, __LINE__, path));
 
-        return rsDataObjClose(rsComm, &dataObjCloseInp);
+        openedDataObjInp_t close_inp{};
+        close_inp.l1descInx = _l1_index;
+
+        const int ec = rsDataObjClose(_comm, &close_inp);
+
+        if (ec < 0) {
+            irods::log(
+                LOG_ERROR, fmt::format("[{}:{}] - failed closing [{}] with status [{}]", __func__, __LINE__, path, ec));
+        }
+
+        return ec;
     } // close_source_data_obj
 
     int open_destination_data_obj(rsComm_t *rsComm, dataObjInp_t& inp)
@@ -153,15 +161,57 @@ namespace {
         return destL1descInx;
     } // open_destination_data_obj
 
-    auto close_destination_data_obj(RsComm* rsComm, const int _inx) -> int
+    auto close_destination_data_obj(RsComm* _comm, const int _l1_index, const DataObjInp& _inp) -> int
     {
-        openedDataObjInp_t dataObjCloseInp{};
-        dataObjCloseInp.l1descInx = _inx;
-        dataObjCloseInp.bytesWritten = L1desc[L1desc[_inx].srcL1descInx].dataObjInfo->dataSize;
+        // The L1 descriptor may not be available at this point, so we need to use the path from the DataObjInp.
+        const std::string_view path = static_cast<const char*>(_inp.objPath);
 
-        rodsLog(LOG_DEBUG8, "[%s:%d] - closing [%s]", __FUNCTION__, __LINE__, L1desc[_inx].dataObjInp->objPath);
+        irods::log(LOG_DEBUG8, fmt::format("[{}:{}] - closing [{}]", __func__, __LINE__, path));
 
-        return rsDataObjClose(rsComm, &dataObjCloseInp);
+        openedDataObjInp_t close_inp{};
+        close_inp.l1descInx = _l1_index;
+
+        // Declare this here because we need to return an error if the source index is invalid.
+        int ec = 0;
+
+        // The L1 descriptor index is const and bounds-checked before this function is called. Therefore, ignore linter.
+        //
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+        auto& l1_desc = L1desc[_l1_index];
+
+        const int source_l1_index = l1_desc.srcL1descInx;
+        if (source_l1_index < 3 || source_l1_index >= NUM_L1_DESC) {
+            irods::log(LOG_ERROR,
+                       fmt::format("[{}:{}] - Source L1 descriptor for [{}] is out of range: [{}]",
+                                   __func__,
+                                   __LINE__,
+                                   path,
+                                   source_l1_index));
+
+            // Set the error code, but continue to the close call so the destination data object can be finalized. The
+            // L1 descriptor oprType is also set so that rsDataObjClose knows that the operation encountered an issue.
+            // The data object should be marked stale because the source L1 descriptor has been corrupted and cannot be
+            // used for data verification in the finalization process of the new data object.
+            ec = SYS_FILE_DESC_OUT_OF_RANGE;
+            l1_desc.oprStatus = ec;
+        }
+        else {
+            // The L1 descriptor index is const and confirmed to be in-bounds above. Therefore, ignore linter.
+            //
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+            close_inp.bytesWritten = L1desc[source_l1_index].dataObjInfo->dataSize;
+        }
+
+        if (const int close_ec = rsDataObjClose(_comm, &close_inp); close_ec < 0) {
+            ec = close_ec;
+        }
+
+        if (ec < 0) {
+            irods::log(
+                LOG_ERROR, fmt::format("[{}:{}] - failed closing [{}] with status [{}]", __func__, __LINE__, path, ec));
+        }
+
+        return ec;
     } // close_destination_data_obj
 
     int rsDataObjCopy_impl(
@@ -170,10 +220,6 @@ namespace {
         transferStat_t **transStat)
     {
         namespace fs = irods::experimental::filesystem;
-
-        if (!dataObjCopyInp) {
-            return SYS_INTERNAL_NULL_INPUT_ERR;
-        }
 
         dataObjInp_t* srcDataObjInp = &dataObjCopyInp->srcDataObjInp;
         dataObjInp_t* destDataObjInp = &dataObjCopyInp->destDataObjInp;
@@ -196,12 +242,13 @@ namespace {
         resolveLinkedPath(rsComm, srcDataObjInp->objPath, &specCollCache, &srcDataObjInp->condInput);
         resolveLinkedPath(rsComm, destDataObjInp->objPath, &specCollCache, &destDataObjInp->condInput);
 
-        rodsServerHost_t *rodsServerHost;
+        rodsServerHost_t* rodsServerHost = nullptr;
         int remoteFlag = connect_to_remote_zone( rsComm, dataObjCopyInp, &rodsServerHost );
-        if ( remoteFlag < 0 ) {
+        if (remoteFlag < 0) {
             return remoteFlag;
         }
         else if ( remoteFlag == REMOTE_HOST ) {
+            // It is not possible to reach this case with rodsServerHost being nullptr, so no check is needed.
             return _rcDataObjCopy(rodsServerHost->conn, dataObjCopyInp, transStat);
         }
 
@@ -212,47 +259,9 @@ namespace {
             return USER_INPUT_PATH_ERR;
         }
 
-        int srcL1descInx{};
-        int destL1descInx{};
-        const auto close_objects{[&]() -> int {
-            int result = 0;
-
-            if (destL1descInx > 3) {
-                // The transferStat_t communicates information back to the client regarding
-                // the data transfer such as bytes written and how many threads were used.
-                // These must be saved before the L1 descriptor is free'd.
-                *transStat = (transferStat_t*)malloc(sizeof(transferStat_t));
-                memset(*transStat, 0, sizeof(transferStat_t));
-                (*transStat)->bytesWritten = L1desc[srcL1descInx].dataObjInfo->dataSize;
-                (*transStat)->numThreads = L1desc[destL1descInx].dataObjInp->numThreads;
-
-                if (const int ec = close_destination_data_obj(rsComm, destL1descInx); ec < 0) {
-                    irods::log(LOG_ERROR, fmt::format(
-                        "[{}:{}] - failed closing [{}] with status [{}]",
-                        __FUNCTION__, __LINE__, destDataObjInp->objPath, ec));
-
-                    result = ec;
-                }
-            }
-
-            if (srcL1descInx > 3) {
-                if (const int ec = close_source_data_obj(rsComm, srcL1descInx); ec < 0) {
-                    irods::log(LOG_ERROR, fmt::format(
-                        "[{}:{}] - failed closing [{}] with status [{}]",
-                        __FUNCTION__, __LINE__, srcDataObjInp->objPath, ec));
-
-                    if (!result) {
-                        result = ec;
-                    }
-                }
-            }
-
-            return result;
-        }};
-
-        srcL1descInx = open_source_data_obj(rsComm, *srcDataObjInp);
-        if (srcL1descInx < 0) {
-            return srcL1descInx;
+        const int srcL1descInx = open_source_data_obj(rsComm, *srcDataObjInp);
+        if (srcL1descInx < 3 || srcL1descInx >= NUM_L1_DESC) {
+            return srcL1descInx < 0 ? srcL1descInx : SYS_FILE_DESC_OUT_OF_RANGE;
         }
 
         const int createMode = std::atoi(L1desc[srcL1descInx].dataObjInfo->dataMode);
@@ -260,11 +269,11 @@ namespace {
             destDataObjInp->createMode = createMode;
         }
 
-        destL1descInx = open_destination_data_obj(rsComm, *destDataObjInp);
-        if (destL1descInx < 0) {
-            close_objects();
+        const int destL1descInx = open_destination_data_obj(rsComm, *destDataObjInp);
+        if (destL1descInx < 3 || destL1descInx >= NUM_L1_DESC) {
+            std::ignore = close_source_data_obj(rsComm, srcL1descInx, *srcDataObjInp);
 
-            return destL1descInx;
+            return destL1descInx < 0 ? destL1descInx : SYS_FILE_DESC_OUT_OF_RANGE;
         }
 
         L1desc[destL1descInx].srcL1descInx = srcL1descInx;
@@ -292,7 +301,26 @@ namespace {
             L1desc[destL1descInx].oprStatus = copy_ec;
         }
 
-        const auto close_ec = close_objects();
+        if (transStat) {
+            // The transferStat_t communicates information back to the client regarding
+            // the data transfer such as bytes written and how many threads were used.
+            // These must be saved before the L1 descriptor is free'd.
+            //
+            // NOLINTNEXTLINE(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
+            *transStat = static_cast<transferStat_t*>(std::malloc(sizeof(transferStat_t)));
+            std::memset(*transStat, 0, sizeof(transferStat_t));
+
+            // The L1 descriptor indexes are const and confirmed to be in-bounds above. Therefore, ignore linter.
+            //
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+            (*transStat)->bytesWritten = L1desc[srcL1descInx].dataObjInfo->dataSize;
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+            (*transStat)->numThreads = L1desc[destL1descInx].dataObjInp->numThreads;
+        }
+
+        const auto close_dest_ec = close_destination_data_obj(rsComm, destL1descInx, *destDataObjInp);
+        const auto close_source_ec = close_source_data_obj(rsComm, srcL1descInx, *srcDataObjInp);
+        const auto close_ec = 0 == close_dest_ec ? close_source_ec : close_dest_ec;
 
         return copy_ec < 0 ? copy_ec : close_ec;
     } // rsDataObjCopy_impl
@@ -303,6 +331,10 @@ int rsDataObjCopy(rsComm_t* rsComm,
                   dataObjCopyInp_t* dataObjCopyInp,
                   transferStat_t** transStat)
 {
+    if (!rsComm || !dataObjCopyInp) {
+        return USER__NULL_INPUT_ERR;
+    }
+
     // Do not update the collection mtime here because the open API call for the destination data object does it.
     return rsDataObjCopy_impl(rsComm, dataObjCopyInp, transStat);
 }
