@@ -10,6 +10,7 @@ import shutil
 import socket
 import tempfile
 import time
+from textwrap import dedent
 
 from . import session
 from . import settings
@@ -1586,3 +1587,97 @@ pep_api_data_obj_put_finally (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORT
             test_session.run_icommand(['irm', '-f', local_logical_path])
             test_session.run_icommand(['irm', '-f', logical_path])
             self.admin.assert_icommand(['iadmin', 'rum'])
+
+class Test_Delay_Rule_Removal(SessionsMixin, unittest.TestCase):
+
+    # This test suite expects tempZone to contain the following users:
+    #
+    #   - rods#tempZone
+    #   - zonehopper#tempZone (created by the irods_testing_environment)
+    #   - zonehopper#otherZone (created by the irods_testing_environment)
+    #
+    # otherZone must contain the following users:
+    #
+    #   - rods#otherZone
+    #
+    # The test suite must be launched from a server in otherZone. That means tempZone
+    # is identified as the remote federated zone.
+    #
+    # Just before the tests are run, the base class will create three additional users
+    # in otherZone. The following users will appear:
+    #
+    #   - admin#otherZone
+    #   - zonehopper#otherZone
+    #   - zonehopper#tempZone (created by setUp())
+
+    plugin_name = IrodsConfig().default_rule_engine_plugin
+
+    def setUp(self):
+        super(Test_Delay_Rule_Removal, self).setUp()
+
+        # session.make_sessions_mixin() creates admins and users that connect to the host
+        # identified by lib.get_hostname().
+        #
+        # For this particular set of tests, that means these users connect to the host where
+        # "otherZone" runs.
+        self.local_admin = self.admin_sessions[0] # admin#otherZone
+        self.local_user = self.user_sessions[0]   # zonehopper#otherZone
+
+        # Create session for zonehopper#tempZone. The session will be connected to tempZone.
+        password = test.settings.FEDERATION.RODSUSER_NAME_PASSWORD_LIST[0][1]
+        host = test.settings.FEDERATION.REMOTE_HOST
+        zone = test.settings.FEDERATION.REMOTE_ZONE
+        self.remote_user = session.make_session_for_existing_user(self.local_user.username, password, host, zone)
+
+        # Create zonehopper#tempZone in otherZone. This must be handled by the test suite rather
+        # than the session.make_sessions_mixin() because that function only knows about the local zone.
+        self.remote_user_home_collection = self.remote_user.remote_home_collection(self.local_user.zone_name)
+        self.local_admin.assert_icommand(['iadmin', 'mkuser', self.remote_user.qualified_username, 'rodsuser'])
+
+        # Validity check: If the remote user's home collection does not exist in the zone these tests
+        # are run from, then the testing environment is in a bad state.
+        self.local_admin.assert_icommand(['ils', self.remote_user_home_collection], 'STDOUT', [self.remote_user.qualified_username])
+
+        # Make sure there are no left over delay rules.
+        self.local_admin.run_icommand(['iqdel', '-a'])
+
+    def tearDown(self):
+        self.remote_user.__exit__()
+        self.local_admin.run_icommand(['iadmin', 'rmuser', self.remote_user.qualified_username])
+        super(Test_Delay_Rule_Removal, self).tearDown()
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip if testing the PREP')
+    def test_local_zone_user_is_not_allowed_to_delete_delay_rules_created_by_remote_user_with_the_same_username__issue_6482(self):
+        try:
+            with temporary_core_file() as core_re:
+                # Users in a federated environment are not allowed to create delay rules in the
+                # remote zone directly. Remote users can only create delay rules indirectly
+                # (e.g. through a PEP in the federated zone).
+                core_re.add_rule(dedent('''
+                    pep_api_touch_pre(*a, *b, *c)
+                    {
+                        delay("<INST_NAME>irods_rule_engine_plugin-irods_rule_language-instance</INST_NAME><PLUSET>3600s</PLUSET>") {
+                            writeLine("serverLog", "#6482");
+                        }
+                    }
+                '''))
+
+                # Trigger the PEP so that a delay rule is created.
+                self.remote_user.assert_icommand(['itouch', self.remote_user_home_collection])
+
+                # For debug purposes (allows developers to see the delay rule in the test output).
+                self.local_admin.assert_icommand(['iqstat', '-a'], 'STDOUT')
+
+            # Capture the ID of the new delay rule.
+            rule_id = lib.get_first_delay_rule_id(self.local_admin)
+
+            # Show that the local zone user cannot delete a remote zone user's rule by ID even when
+            # they share identical unqualified usernames.
+            expected_error_msg = ['rcRuleExecDel failed with error -350000 USER_ACCESS_DENIED']
+            self.local_user.assert_icommand(['iqdel', rule_id], 'STDERR_SINGLELINE', expected_error_msg)
+
+            # Show that the local user cannot delete a remote zone user's rule by username either.
+            self.local_user.assert_icommand(['iqdel', '-u', self.remote_user.username], 'STDERR_SINGLELINE', expected_error_msg)
+
+        finally:
+            self.local_admin.run_icommand(['iqdel', '-a'])
