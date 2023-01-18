@@ -7,7 +7,7 @@ from irods.test import session
 from irods.configuration import IrodsConfig
 from irods.test import settings
 
-test_user_list = ['alice', 'bobby', 'otherrods', 'zonehopper', 'admin']
+test_user_list = ['alice', 'bobby', 'otherrods', 'zonehopper', 'admin', 'zonehopper#tempZone']
 test_resc_list = ['AnotherResc', 'TestResc', 'pt', 'leaf']
 
 # make admin session
