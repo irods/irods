@@ -68,7 +68,6 @@ set(
   replica_state_table
   rerror_stack
   resource_administration
-  scoped_client_identity
   scoped_privileged_client
   server_properties
   server_utilities
