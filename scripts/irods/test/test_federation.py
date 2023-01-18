@@ -1111,6 +1111,22 @@ OUTPUT ruleExecOut
         finally:
             user.run_icommand(['irm', '-f', parameters['remote_data_object']])
 
+    def test_itouch__issue_6849(self):
+        user = self.user_sessions[0]
+        parameters = self.config.copy()
+
+        parameters['filename'] = 'itouch_test_file.txt'
+        parameters['user_name'] = user.username
+        parameters['remote_home_collection'] = '/{remote_zone}/home/{user_name}#{local_zone}'.format(**parameters)
+        parameters['remote_data_object'] = '{remote_home_collection}/{filename}'.format(**parameters)
+
+        try:
+            user.assert_icommand('itouch {remote_data_object}'.format(**parameters))
+            user.assert_icommand('ils {remote_data_object}'.format(**parameters), 'STDOUT', [parameters['remote_data_object']])
+
+        finally:
+            user.run_icommand(['irm', '-f', parameters['remote_data_object']])
+
 class Test_Admin_Commands(unittest.TestCase):
 
     '''
