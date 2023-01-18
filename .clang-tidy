@@ -46,6 +46,7 @@ WarningsAsErrors:
     cert-flp30-c,
     cert-oop*,
     cppcoreguidelines-*,
+    -cppcoreguidelines-pro-bounds-array-to-pointer-decay
     concurrency-thread-canceltype-asynchronous,
     google-build-namespaces,
     google-build-using-namespace,
