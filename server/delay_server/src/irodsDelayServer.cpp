@@ -1,8 +1,8 @@
 #include "irods/irodsDelayServer.hpp"
 
-#include "irods/catalog.hpp"
 #include "irods/client_connection.hpp"
 #include "irods/connection_pool.hpp"
+#include "irods/get_delay_rule_info.h"
 #include "irods/initServer.hpp"
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_client_api_table.hpp"
@@ -23,6 +23,7 @@
 #include "irods/objInfo.h"
 #include "irods/query_processor.hpp"
 #include "irods/rcGlobalExtern.h"
+#include "irods/rcMisc.h"
 #include "irods/rodsClient.h"
 #include "irods/rodsDef.h"
 #include "irods/rodsErrorTable.h"
@@ -37,7 +38,6 @@
 #include <boost/filesystem.hpp>
 #include <fmt/format.h>
 #include <nlohmann/json.hpp>
-#include <nanodbc/nanodbc.h>
 
 #include <cstdlib>
 #include <cstring>
@@ -180,39 +180,31 @@ namespace
         return {};
     } // get_new_connection
 
-    ruleExecSubmitInp_t fill_rule_exec_submit_inp(const std::string_view rule_id)
+    ruleExecSubmitInp_t fill_rule_exec_submit_inp(irods::experimental::client_connection& conn,
+                                                  const std::string_view rule_id)
     {
-        std::vector<std::string> exec_info;
+        const std::string id{rule_id};
+        BytesBuf* bbuf{};
 
-        // The database plugin implementation is not capable of fetching the r_rule_exec.exe_context
-        // column when it contains a large string. To get around this limitation, the delay server
-        // uses nanodbc directly. This solution assumes the delay server runs on an iRODS server that
-        // has access to the database credentials.
-
-        namespace ic = irods::experimental::catalog;
-
-        auto [db_instance_name, db_conn] = ic::new_database_connection(/* read_server_config */ false);
-
-        nanodbc::statement stmt{db_conn};
-        nanodbc::prepare(stmt, "select rule_name, rei_file_path, user_name, exe_address, exe_time,"
-                               " exe_frequency, priority, last_exe_time, exe_status, estimated_exe_time,"
-                               " notification_addr, exe_context "
-                               "from R_RULE_EXEC where rule_exec_id = ?");
-
-        stmt.bind(0, rule_id.data());
-
-        auto row = nanodbc::execute(stmt);
-
-        if (!row.next()) {
-            THROW(CAT_NO_ROWS_FOUND, fmt::format("Could not find row matching rule ID [{}]", rule_id));
+        if (const auto ec = rc_get_delay_rule_info(static_cast<RcComm*>(conn), id.c_str(), &bbuf); ec != 0) {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+            THROW(ec, fmt::format("Error retrieving delay rule matching rule ID [{}]", rule_id));
         }
 
-        constexpr auto number_of_columns = 12;
-        exec_info.reserve(number_of_columns);
+        irods::at_scope_exit free_bbuf{[bbuf] { freeBBuf(bbuf); }};
 
-        for (int i = 0; i < number_of_columns; ++i) {
-            exec_info.push_back(row.get<std::string>(i, ""));
-        }
+        const auto* p = static_cast<const char*>(bbuf->buf);
+        const auto info = json::parse(p, p + bbuf->len); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+
+        // clang-format off
+        const auto get_string_ref = [&info](const char* _prop) constexpr -> const std::string&
+        {
+            return info.at(_prop).get_ref<const std::string&>();
+        };
+        // clang-format on
+
+        const auto& rei_file_path = get_string_ref("rei_file_path");
+        const auto& exe_context = get_string_ref("exe_context");
 
         namespace fs = boost::filesystem;
 
@@ -224,19 +216,18 @@ namespace
         // - r_rule_exec.rei_file_path will be set to a valid file path on the file system.
         //
         // These rules will be migrated if and only if the rule text does not contain session variables.
-        if (const auto& rei_file_path = exec_info[1];
-            exec_info[11].empty() &&
-            rei_file_path != "EMPTY_REI_PATH" &&
-            fs::exists(rei_file_path))
-        {
+        if (exe_context.empty() && rei_file_path != "EMPTY_REI_PATH" && fs::exists(rei_file_path)) {
             std::ifstream rei_file{rei_file_path, std::ios::in | std::ios::binary};
 
             if (!rei_file) {
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
                 THROW(SYS_OPEN_REI_FILE_ERR, fmt::format("Could not open REI file for rule [path={}].", rei_file_path));
             }
 
+            // NOLINTNEXTLINE(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
             rule_exec_submit_inp.packedReiAndArgBBuf = static_cast<BytesBuf*>(std::malloc(sizeof(BytesBuf)));
             rule_exec_submit_inp.packedReiAndArgBBuf->len = static_cast<int>(fs::file_size(rei_file_path));
+            // NOLINTNEXTLINE(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
             rule_exec_submit_inp.packedReiAndArgBBuf->buf = std::malloc(rule_exec_submit_inp.packedReiAndArgBBuf->len + 1);
 
             std::memset(rule_exec_submit_inp.packedReiAndArgBBuf->buf, 0, rule_exec_submit_inp.packedReiAndArgBBuf->len + 1);
@@ -248,25 +239,33 @@ namespace
                 const auto msg = fmt::format("Incorrect number of bytes read [expected={}, read={}].",
                                              rule_exec_submit_inp.packedReiAndArgBBuf->len,
                                              rei_file.gcount());
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
                 THROW(UNIX_FILE_READ_ERR, msg);
             }
         }
 
-        rstrcpy(rule_exec_submit_inp.ruleExecId, rule_id.data(), NAME_LEN);
-        rstrcpy(rule_exec_submit_inp.ruleName, exec_info[0].c_str(), META_STR_LEN);
-        rstrcpy(rule_exec_submit_inp.reiFilePath, exec_info[1].c_str(), MAX_NAME_LEN);
-        rstrcpy(rule_exec_submit_inp.userName, exec_info[2].c_str(), NAME_LEN);
-        rstrcpy(rule_exec_submit_inp.exeAddress, exec_info[3].c_str(), NAME_LEN);
-        rstrcpy(rule_exec_submit_inp.exeTime, exec_info[4].c_str(), TIME_LEN);
-        rstrcpy(rule_exec_submit_inp.exeFrequency, exec_info[5].c_str(), NAME_LEN);
-        rstrcpy(rule_exec_submit_inp.priority, exec_info[6].c_str(), NAME_LEN);
-        rstrcpy(rule_exec_submit_inp.lastExecTime, exec_info[7].c_str(), NAME_LEN);
-        rstrcpy(rule_exec_submit_inp.exeStatus, exec_info[8].c_str(), NAME_LEN);
-        rstrcpy(rule_exec_submit_inp.estimateExeTime, exec_info[9].c_str(), NAME_LEN);
-        rstrcpy(rule_exec_submit_inp.notificationAddr, exec_info[10].c_str(), NAME_LEN);
+        // clang-format off
+        const auto to_cstr = []<typename T>(T&& _s) constexpr noexcept -> char*
+        {
+            return static_cast<char*>(std::forward<T>(_s));
+        };
+        // clang-format on
+
+        rstrcpy(to_cstr(rule_exec_submit_inp.ruleExecId), id.c_str(), NAME_LEN);
+        rstrcpy(to_cstr(rule_exec_submit_inp.ruleName), get_string_ref("rule_name").c_str(), META_STR_LEN);
+        rstrcpy(to_cstr(rule_exec_submit_inp.reiFilePath), rei_file_path.c_str(), MAX_NAME_LEN);
+        rstrcpy(to_cstr(rule_exec_submit_inp.userName), get_string_ref("user_name").c_str(), NAME_LEN);
+        rstrcpy(to_cstr(rule_exec_submit_inp.exeAddress), get_string_ref("exe_address").c_str(), NAME_LEN);
+        rstrcpy(to_cstr(rule_exec_submit_inp.exeTime), get_string_ref("exe_time").c_str(), TIME_LEN);
+        rstrcpy(to_cstr(rule_exec_submit_inp.exeFrequency), get_string_ref("exe_frequency").c_str(), NAME_LEN);
+        rstrcpy(to_cstr(rule_exec_submit_inp.priority), get_string_ref("priority").c_str(), NAME_LEN);
+        rstrcpy(to_cstr(rule_exec_submit_inp.lastExecTime), get_string_ref("last_exe_time").c_str(), NAME_LEN);
+        rstrcpy(to_cstr(rule_exec_submit_inp.exeStatus), get_string_ref("exe_status").c_str(), NAME_LEN);
+        rstrcpy(to_cstr(rule_exec_submit_inp.estimateExeTime), get_string_ref("estimated_exe_time").c_str(), NAME_LEN);
+        rstrcpy(to_cstr(rule_exec_submit_inp.notificationAddr), get_string_ref("notification_addr").c_str(), NAME_LEN);
 
         ix::key_value_proxy kvp{rule_exec_submit_inp.condInput};
-        kvp[RULE_EXECUTION_CONTEXT_KW] = exec_info[11];
+        kvp[RULE_EXECUTION_CONTEXT_KW] = exe_context;
 
         return rule_exec_submit_inp;
     } // fill_rule_exec_submit_inp
@@ -562,7 +561,7 @@ namespace
         ix::client_connection conn = get_new_connection(std::nullopt);
 
         try {
-            rule_exec_submit_inp = fill_rule_exec_submit_inp(rule_id);
+            rule_exec_submit_inp = fill_rule_exec_submit_inp(conn, rule_id);
         }
         catch (const irods::exception& e) {
             if (delay_server_terminated) {
@@ -705,6 +704,8 @@ int main(int argc, char** argv)
 
     set_ips_display_name(boost::filesystem::path{argv[0]}.filename().c_str());
 
+    load_client_api_plugins();
+
     const auto signal_exit_handler = [](int) { delay_server_terminated.store(true); };
     signal(SIGINT, signal_exit_handler);
     signal(SIGHUP, signal_exit_handler);
@@ -829,4 +830,3 @@ int main(int argc, char** argv)
 
     return 0;
 }
-
