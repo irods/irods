@@ -699,3 +699,6 @@ def iterfy(iterable):
     except TypeError:
         iterable = [iterable]
     return iterable
+
+def get_first_delay_rule_id(session):
+    return session.run_icommand(['iquest', '%s', "select RULE_EXEC_ID"])[0].strip()

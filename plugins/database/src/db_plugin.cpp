@@ -3563,41 +3563,16 @@ irods::error db_mod_rule_exec_op(
     return CODE( status );
 } // db_mod_rule_exec_op
 
-// =-=-=-=-=-=-=-
-// unregister a data object
-irods::error db_del_rule_exec_op(
-    irods::plugin_context& _ctx,
-    const char*            _re_id ) {
-    // =-=-=-=-=-=-=-
-    // check the context
+irods::error db_del_rule_exec_op(irods::plugin_context& _ctx, const char* _re_id)
+{
     irods::error ret = _ctx.valid();
     if ( !ret.ok() ) {
         return PASS( ret );
     }
 
-    // =-=-=-=-=-=-=-
-    // check the params
-    if (
-        !_re_id ) {
-        return ERROR(
-                   CAT_INVALID_ARGUMENT,
-                   "null parameter" );
+    if (!_re_id) {
+        return ERROR(CAT_INVALID_ARGUMENT, "null parameter");
     }
-
-    // =-=-=-=-=-=-=-
-    // get a postgres object from the context
-    /*irods::postgres_object_ptr pg;
-    ret = make_db_ptr( _ctx.fco(), pg );
-    if ( !ret.ok() ) {
-        return PASS( ret );
-
-    }*/
-
-    // =-=-=-=-=-=-=-
-    // extract the icss property
-//        icatSessionStruct icss;
-//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
-    char userName[MAX_NAME_LEN + 2];
 
     if ( logSQL != 0 ) {
         log_sql::debug("chlDelRuleExec");
@@ -3607,54 +3582,25 @@ irods::error db_del_rule_exec_op(
         return ERROR( CATALOG_NOT_CONNECTED, "catalog not connected" );
     }
 
-    if ( _ctx.comm()->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        if ( _ctx.comm()->proxyUser.authInfo.authFlag == LOCAL_USER_AUTH ) {
-            if ( logSQL != 0 ) {
-                log_sql::debug("chlDelRuleExec SQL 1 ");
-            }
-            int status;
-            {
-                std::vector<std::string> bindVars;
-                bindVars.push_back( _re_id );
-                status = cmlGetStringValueFromSql(
-                             "select user_name from R_RULE_EXEC where rule_exec_id=?",
-                             userName, MAX_NAME_LEN, bindVars, &icss );
-            }
-            if ( status != 0 || strncmp( userName, _ctx.comm()->clientUser.userName, MAX_NAME_LEN )
-                    != 0 ) {
-                return ERROR( CAT_NO_ACCESS_PERMISSION, "no access permission" );
-            }
-        }
-        else {
-            return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
-        }
-    }
-
     cllBindVars[cllBindVarCount++] = _re_id;
     if ( logSQL != 0 ) {
         log_sql::debug("chlDelRuleExec SQL 2 ");
     }
-    int status =  cmlExecuteNoAnswerSql(
-                      "delete from R_RULE_EXEC where rule_exec_id=?",
-                      &icss );
+    int status = cmlExecuteNoAnswerSql("delete from R_RULE_EXEC where rule_exec_id=?", &icss);
     if ( status != 0 ) {
         log_db::info("chlDelRuleExec delete failure {}", status);
         _rollback( "chlDelRuleExec" );
         return ERROR( status, "delete failure" );
     }
 
-    status =  cmlExecuteNoAnswerSql( "commit", &icss );
+    status = cmlExecuteNoAnswerSql("commit", &icss);
     if ( status != 0 ) {
         log_db::info("chlDelRuleExec cmlExecuteNoAnswerSql commit failure {}", status);
         return ERROR( status, "cmlExecuteNoAnswerSql commit failure" );
     }
 
     return CODE( status );
-
 } // db_del_rule_exec_op
-
-
-
 
 static irods::error extract_resource_properties_for_operations(
     const std::string& _resc_name,
