@@ -16,7 +16,6 @@ target_link_libraries(
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_container.so"
   "${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so"
-  "${IRODS_EXTERNALS_FULLPATH_NANODBC}/lib/libnanodbc.so"
   rt
   ${CMAKE_DL_LIBS}
   m
@@ -27,7 +26,6 @@ target_include_directories(
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
   "${IRODS_EXTERNALS_FULLPATH_FMT}/include"
-  "${IRODS_EXTERNALS_FULLPATH_NANODBC}/include"
   "${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include"
 )
 target_compile_definitions(
