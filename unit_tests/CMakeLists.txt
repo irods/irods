@@ -43,6 +43,7 @@ set(
   dstream
   filesystem
   fixed_buffer_resource
+  get_delay_rule_info
   get_file_descriptor_info
   hierarchy_parser
   host_list_context_string
