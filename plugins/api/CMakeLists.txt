@@ -14,6 +14,7 @@ set(
   authenticate
   data_object_finalize
   data_object_modify_info
+  get_delay_rule_info
   get_file_descriptor_info
   get_grid_configuration_value
   set_grid_configuration_value

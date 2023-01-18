@@ -35,6 +35,7 @@
 #include "irods/rodsErrorTable.h"
 #include "irods/irods_lexical_cast.hpp"
 #include "irods/irods_logger.hpp"
+#include "irods/catalog.hpp"
 #include "irods/catalog_utilities.hpp"
 #include "irods/plugins/auth/pam_password.hpp"
 
@@ -43,6 +44,7 @@
 #include <boost/lexical_cast.hpp>
 #include <fmt/format.h>
 #include <fmt/chrono.h>
+#include <nanodbc/nanodbc.h>
 
 #include <cstring>
 #include <sstream>
@@ -14904,6 +14906,52 @@ auto db_update_ticket_write_byte_count_op(
     return SUCCESS();
 } // db_update_ticket_write_byte_count_op
 
+auto db_get_delay_rule_info_op(irods::plugin_context& _ctx, const char* _rule_id, std::vector<std::string>* _info)
+    -> irods::error
+{
+    if (const auto ret = _ctx.valid(); !ret.ok()) {
+        return PASS(ret);
+    }
+
+    if (!_rule_id || !_info) {
+        return ERROR(SYS_INVALID_INPUT_PARAM, "Invalid input: rule id or info container is null");
+    }
+
+    log_db::debug("{}: _rule_id => [{}]", __func__, _rule_id);
+
+    try {
+        auto [db_instance, db_conn] = irods::experimental::catalog::new_database_connection();
+
+        nanodbc::statement stmt{db_conn};
+        nanodbc::prepare(stmt,
+                         "select rule_name, rei_file_path, user_name, exe_address, exe_time,"
+                         " exe_frequency, priority, last_exe_time, exe_status, estimated_exe_time,"
+                         " notification_addr, exe_context "
+                         "from R_RULE_EXEC where rule_exec_id = ?");
+
+        stmt.bind(0, _rule_id);
+
+        auto row = nanodbc::execute(stmt);
+
+        if (!row.next()) {
+            const auto msg = fmt::format("Could not find a delay rule with id [{}].", _rule_id);
+            log_db::error(msg);
+            return ERROR(CAT_NO_ROWS_FOUND, msg);
+        }
+
+        constexpr auto number_of_columns = 12;
+
+        for (int i = 0; i < number_of_columns; ++i) {
+            _info->push_back(row.get<std::string>(i, ""));
+        }
+
+        return SUCCESS();
+    }
+    catch (const std::exception& e) {
+        return ERROR(SYS_LIBRARY_ERROR, e.what());
+    }
+} // db_get_delay_rule_info_op
+
 // =-=-=-=-=-=-=-
 //
 irods::error db_start_operation( irods::plugin_property_map& _props ) {
@@ -15305,6 +15353,10 @@ irods::database* plugin_factory(
         DATABASE_OP_UPDATE_TICKET_WRITE_BYTE_COUNT,
         function<error(plugin_context&,const rodsLong_t,const rodsLong_t)>(
             db_update_ticket_write_byte_count_op));
+    pg->add_operation<const char*, std::vector<std::string>*>(
+        DATABASE_OP_GET_DELAY_RULE_INFO,
+        function<error(plugin_context&, const char*, std::vector<std::string>*)>(db_get_delay_rule_info_op));
+
     return pg;
 
 } // plugin_factory
