@@ -1,13 +1,10 @@
-#ifndef __IRODS_DATABASE_CONSTANTS_HPP__
-#define __IRODS_DATABASE_CONSTANTS_HPP__
+#ifndef IRODS_DATABASE_CONSTANTS_HPP
+#define IRODS_DATABASE_CONSTANTS_HPP
 
-// =-=-=-=-=-=-=-
-// stl includes
 #include <string>
 
-namespace irods {
-/// =-=-=-=-=-=-=-
-/// @brief constants for network object indexing
+namespace irods
+{
     const std::string DATABASE_OP_START( "database_start" );
     const std::string DATABASE_OP_STOP( "database_stop" );
 
@@ -116,6 +113,7 @@ namespace irods {
     const std::string DATABASE_OP_GET_REPL_LIST_FOR_LEAF_BUNDLES( "database_get_repl_list_for_leaf_bundles" );
     const std::string DATABASE_OP_CHECK_PERMISSION_TO_MODIFY_DATA_OBJECT{"database_check_permission_to_modify_data_object"};
     const std::string DATABASE_OP_UPDATE_TICKET_WRITE_BYTE_COUNT{"database_update_ticket_write_byte_count"};
-}; // namespace irods
+    const std::string DATABASE_OP_GET_DELAY_RULE_INFO{"database_get_delay_rule_info"};
+} // namespace irods
 
-#endif // __IRODS_DATABASE_CONSTANTS_HPP__
+#endif // IRODS_DATABASE_CONSTANTS_HPP
