@@ -1,142 +1,110 @@
 #include "irods/rsRuleExecDel.hpp"
 
+#include "irods/catalog_utilities.hpp"
 #include "irods/genQuery.h"
 #include "irods/icatHighLevelRoutines.hpp"
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_configuration_keywords.hpp"
+#include "irods/irods_logger.hpp"
+#include "irods/irods_rs_comm_query.hpp"
+#include "irods/json_deserialization.hpp"
 #include "irods/miscServerFunct.hpp"
 #include "irods/objMetaOpr.hpp"
 #include "irods/rcMisc.h"
+#include "irods/rodsErrorTable.h"
 #include "irods/rsGenQuery.hpp"
 #include "irods/ruleExecSubmit.h"
 
 #include <fmt/format.h>
 
+#include <string>
+#include <string_view>
+
 namespace
 {
-    int get_username_of_delay_rule( rsComm_t *rsComm, char *ruleExecId, genQueryOut_t **genQueryOut )
+    using log_api = irods::experimental::log::api;
+
+    int _rsRuleExecDel(rsComm_t* rsComm, ruleExecDelInp_t* ruleExecDelInp)
     {
-        genQueryInp_t genQueryInp{};
+        // If the user is not an administrator, then they must be the creator of the delay rule
+        // in order to delete it.
+        if (!irods::is_privileged_client(*rsComm)) {
+            std::vector<std::string> info;
 
-        addInxIval( &genQueryInp.selectInp, COL_RULE_EXEC_USER_NAME, 1 );
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+            if (const int ec = chl_get_delay_rule_info(*rsComm, ruleExecDelInp->ruleExecId, &info); ec < 0) {
+                log_api::error("{}: chl_get_delay_rule_info failed, status = {}", __func__, ec);
+                return ec;
+            }
 
-        char tmpStr[NAME_LEN];
-        snprintf( tmpStr, NAME_LEN, "='%s'", ruleExecId );
-        addInxVal( &genQueryInp.sqlCondInp, COL_RULE_EXEC_ID, tmpStr );
+            try {
+                constexpr auto exe_context_column = 11;
+                auto rei = irods::to_rule_execution_info(info.at(exe_context_column));
+                irods::at_scope_exit free_rei_internals{
+                    [&rei] { freeRuleExecInfoInternals(&rei, (FREE_MS_PARAM | FREE_DOINP)); }};
 
-        genQueryInp.maxRows = MAX_SQL_ROWS;
+                // NOLINTBEGIN(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+                const std::string_view creator = rei.uoic->userName;
+                const std::string_view zone = rei.uoic->rodsZone;
+                const auto& client = rsComm->clientUser;
+                // NOLINTEND(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
 
-        const auto status = rsGenQuery( rsComm, &genQueryInp, genQueryOut );
-
-        clearGenQueryInp( &genQueryInp );
-
-        return status;
-    } // get_username_of_delay_rule
-
-    int _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp )
-    {
-        std::string svc_role;
-        irods::error ret = get_catalog_service_role(svc_role);
-        if (!ret.ok()) {
-            irods::log(PASS(ret));
-            return ret.code();
-        }
-
-        // First check permission (now that API is allowed for non-admin users).
-        if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
-            if (rsComm->clientUser.authInfo.authFlag == LOCAL_USER_AUTH) {
-                genQueryOut_t *genQueryOut = nullptr;
-                irods::at_scope_exit free_gen_query_output{[&genQueryOut] { freeGenQueryOut(&genQueryOut); }};
-
-                // Get the username of the user who created the rule.
-                const int ec = get_username_of_delay_rule(rsComm, ruleExecDelInp->ruleExecId, &genQueryOut);
-                if (ec < 0) {
-                    rodsLog(LOG_ERROR, "_rsRuleExecDel: get_username_of_delay_rule failed, status = %d", ec);
-                    return ec;
-                }
-
-                auto* ruleUserName = getSqlResultByInx(genQueryOut, COL_RULE_EXEC_USER_NAME);
-                if (!ruleUserName) {
-                    rodsLog(LOG_ERROR, "_rsRuleExecDel: getSqlResultByInx for COL_RULE_EXEC_USER_NAME failed");
-                    return UNMATCHED_KEY_OR_INDEX;
-                }
-
-                if (strncmp(ruleUserName->value, rsComm->clientUser.userName, MAX_NAME_LEN) != 0) {
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+                if (client.userName != creator || client.rodsZone != zone) {
+                    log_api::error("{}: User [{}#{}] is not allowed to delete delay rule [{}].",
+                                   __func__,
+                                   client.userName,
+                                   client.rodsZone,
+                                   ruleExecDelInp->ruleExecId);
                     return USER_ACCESS_DENIED;
                 }
             }
-            else {
-                return USER_ACCESS_DENIED;
+            catch (const irods::exception& e) {
+                log_api::error(
+                    "{}: Caught exception while deleting delay rule. [{}]", __func__, e.client_display_what());
+                return static_cast<int>(e.code());
+            }
+            catch (const std::exception& e) {
+                log_api::error("{}: Caught exception while deleting delay rule. [{}]", __func__, e.what());
+                return SYS_LIBRARY_ERROR;
             }
         }
 
-        if (irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role) {
-            // Unregister rule (i.e. remove the entry from the catalog).
-            const auto ec = chlDelRuleExec(rsComm, ruleExecDelInp->ruleExecId);
+        // Delete the delay rule from the catalog.
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        const auto ec = chlDelRuleExec(rsComm, ruleExecDelInp->ruleExecId);
 
-            if (ec < 0) {
-                rodsLog(LOG_ERROR, "_rsRuleExecDel: chlDelRuleExec for %s error, status = %d",
-                        ruleExecDelInp->ruleExecId, ec);
-            }
-
-            return ec;
+        if (ec < 0) {
+            log_api::error("{}: chlDelRuleExec for {} error, status = {}", __func__, ruleExecDelInp->ruleExecId, ec);
         }
 
-        if (irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role) {
-            rodsLog(LOG_ERROR, "_rsRuleExecDel: chlDelRuleExec must be invoked on the catalog provider host");
-            return SYS_NO_RCAT_SERVER_ERR;
-        }
-        
-        const auto err = ERROR(SYS_SERVICE_ROLE_NOT_SUPPORTED,
-                               fmt::format("role not supported [{}]", svc_role));
-        irods::log(err);
-
-        return err.code();
+        return ec;
     } // _rsRuleExecDel
 } // anonymous namespace
 
-int rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp )
+auto rsRuleExecDel(rsComm_t* rsComm, ruleExecDelInp_t* ruleExecDelInp) -> int
 {
-    rodsServerHost_t *rodsServerHost = nullptr;
-
-    if ( ruleExecDelInp == NULL ) {
-        rodsLog( LOG_NOTICE, "rsRuleExecDel error. NULL input" );
+    if (!ruleExecDelInp) {
+        log_api::error("{}: Invalid input: null pointer", __func__);
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    int status = getAndConnReHost( rsComm, &rodsServerHost );
-    if ( status < 0 ) {
-        return status;
-    }
+    namespace ic = irods::experimental::catalog;
 
-    if ( rodsServerHost->localFlag == LOCAL_HOST ) {
-        std::string svc_role;
-        irods::error ret = get_catalog_service_role(svc_role);
-        if (!ret.ok()) {
-            irods::log(PASS(ret));
-            return ret.code();
+    // Redirect to the catalog service provider so that we can query the database.
+    try {
+        if (!ic::connected_to_catalog_provider(*rsComm)) {
+            log_api::trace("{}: Redirecting request to catalog service provider ...", __func__);
+            auto* host_info = ic::redirect_to_catalog_provider(*rsComm);
+            return rcRuleExecDel(host_info->conn, ruleExecDelInp);
         }
 
-        if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
-            status = _rsRuleExecDel( rsComm, ruleExecDelInp );
-        }
-        else if( irods::KW_CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
-            rodsLog( LOG_NOTICE, "rsRuleExecDel error. ICAT is not configured on this host" );
-            return SYS_NO_RCAT_SERVER_ERR;
-        }
-        else {
-            rodsLog( LOG_ERROR, "role not supported [%s]", svc_role.c_str() );
-            status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
-        }
+        ic::throw_if_catalog_provider_service_role_is_invalid();
     }
-    else {
-        status = rcRuleExecDel( rodsServerHost->conn, ruleExecDelInp );
+    catch (const irods::exception& e) {
+        log_api::error(e.what());
+        return static_cast<int>(e.code());
     }
 
-    if ( status < 0 ) {
-        rodsLog( LOG_ERROR, "rsRuleExecDel: rcRuleExecDel failed, status = %d", status );
-    }
-
-    return status;
-}
-
+    return _rsRuleExecDel(rsComm, ruleExecDelInp);
+} // rsRuleExecDel
