@@ -86,6 +86,8 @@ class Test_Irm(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
 
 
     def test_remove_data_object_in_collection_with_read_permissions__issue_6428(self):
+        import time
+
         def get_collection_mtime(session, collection_path):
             return session.run_icommand(['iquest', '%s',
                 "select COLL_MODIFY_TIME where COLL_NAME = '{}'".format(collection_path)])[0].strip()
@@ -100,10 +102,13 @@ class Test_Irm(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
             self.admin.assert_icommand(['itouch', logical_path])
             self.admin.assert_icommand(['ichmod', 'read', self.user.username, collection_path])
             self.admin.assert_icommand(['ichmod', 'own', self.user.username, logical_path])
+            self.assertTrue(lib.replica_exists(self.user, logical_path, 0))
 
             original_mtime = get_collection_mtime(self.admin, collection_path)
 
-            self.assertTrue(lib.replica_exists(self.user, logical_path, 0))
+            # Sleep here so that the collection mtime is guaranteed to be different if updated correctly.
+            time.sleep(1)
+
             self.user.assert_icommand(['irm', logical_path])
             self.assertFalse(lib.replica_exists(self.user, logical_path, 0))
 
