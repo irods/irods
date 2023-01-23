@@ -973,7 +973,7 @@ void close_all_l1_descriptors(RsComm& _comm)
                 irods::log(
                     LOG_ERROR, fmt::format("[{}:{}] - error closing replica; ec:[{}]", __FUNCTION__, __LINE__, ec));
 
-                continue;
+                // Even though closing failed, continue to the end of the loop so that the data object is finalized.
             }
 
             // Don't do anything for special collections - they do not enter intermediate state

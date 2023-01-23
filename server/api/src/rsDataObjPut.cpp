@@ -330,9 +330,36 @@ namespace
 
             // close the replica, free L1 descriptor
             if (const int ec = irods::close_replica_without_catalog_update(_comm, fd, preserve_rst); ec < 0) {
+                // Closing the replica failed. We need to clean up everything and unlock the data object so that this
+                // data object is left in a workable state.
                 irods::log(LOG_ERROR, fmt::format(
                     "[{}:{}] - error closing replica; ec:[{}]",
                     __FUNCTION__, __LINE__, ec));
+
+                if (const auto l1_desc_ec = freeL1desc(fd); l1_desc_ec != 0) {
+                    irods::experimental::log::api::error(
+                        "Failed to release L1 descriptor [error_code={}].", l1_desc_ec);
+                }
+
+                const auto admin_op =
+                    irods::experimental::make_key_value_proxy(l1desc_cache.dataObjInp->condInput).contains(ADMIN_KW);
+                if (const int unlock_ec =
+                        ill::unlock_and_publish(_comm, {final_replica, admin_op}, STALE_REPLICA, ill::restore_status);
+                    unlock_ec < 0)
+                {
+                    irods::log(LOG_ERROR,
+                               fmt::format("[{}:{}] - Failed to unlock data object "
+                                           "[error_code=[{}], path=[{}], hierarchy=[{}]]",
+                                           __func__,
+                                           __LINE__,
+                                           unlock_ec,
+                                           final_replica.logical_path(),
+                                           final_replica.hierarchy()));
+                }
+
+                if (rst::contains(final_replica.data_id())) {
+                    rst::erase(final_replica.data_id());
+                }
 
                 return ec;
             }
