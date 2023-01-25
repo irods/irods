@@ -209,15 +209,15 @@ class Test_Itouch(session.make_sessions_mixin([('otherrods', 'rods')], []), unit
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_mutually_exclusive_options_are_handled(self):
         error_msg = 'USER_INCOMPATIBLE_PARAMS: [replica_number] and [leaf_resource_name] cannot be used together.'
-        self.admin.assert_icommand(['itouch', '-n', '0', '-R', 'demoResc', 'foo'], 'STDOUT', [error_msg])
+        self.admin.assert_icommand(['itouch', '-n', '0', '-R', 'demoResc', 'foo'], 'STDOUT', [error_msg], desired_rc=1)
 
         error_msg = 'USER_INCOMPATIBLE_PARAMS: [reference] and [seconds_since_epoch] cannot be used together.'
-        self.admin.assert_icommand(['itouch', '-r', 'source', '-s', '1', 'foo'], 'STDOUT', [error_msg])
+        self.admin.assert_icommand(['itouch', '-r', 'source', '-s', '1', 'foo'], 'STDOUT', [error_msg], desired_rc=1)
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_replica_number_cannot_be_used_to_create_new_replicas(self):
         error_msg = 'OBJ_PATH_DOES_NOT_EXIST: Replica numbers cannot be used when creating new data objects.'
-        self.admin.assert_icommand(['itouch', '-n', '3', 'foo'], 'STDOUT', [error_msg])
+        self.admin.assert_icommand(['itouch', '-n', '3', 'foo'], 'STDOUT', [error_msg], desired_rc=1)
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_replica_number_option_and_leaf_resource_option_cannot_be_used_to_create_additional_replicas(self):
@@ -231,12 +231,12 @@ class Test_Itouch(session.make_sessions_mixin([('otherrods', 'rods')], []), unit
             # Show that using the leaf resource option to create an additional replica
             # results in an error.
             error_msg = 'SYS_REPLICA_DOES_NOT_EXIST: Replica does not exist matching that replica number.'
-            self.admin.assert_icommand(['itouch', '-n', '1', data_object], 'STDOUT', [error_msg])
+            self.admin.assert_icommand(['itouch', '-n', '1', data_object], 'STDOUT', [error_msg], desired_rc=1)
 
             # Show that using the leaf resource option to create an additional replica
             # results in an error.
             error_msg = 'SYS_REPLICA_DOES_NOT_EXIST: Replica does not exist in resource.'
-            self.admin.assert_icommand(['itouch', '-R', resc_0, data_object], 'STDOUT', [error_msg])
+            self.admin.assert_icommand(['itouch', '-R', resc_0, data_object], 'STDOUT', [error_msg], desired_rc=1)
 
         finally:
             self.admin.assert_icommand(['iadmin', 'rmresc', resc_0])
@@ -254,7 +254,7 @@ class Test_Itouch(session.make_sessions_mixin([('otherrods', 'rods')], []), unit
             # Show that passing a coordinating resource as a leaf resource results in an error.
             data_object = os.path.join(self.admin.session_collection, 'foo')
             error_msg = 'USER_INVALID_RESC_INPUT: [{0}] is not a leaf resource.'.format(pt)
-            self.admin.assert_icommand(['itouch', '-R', pt, data_object], 'STDOUT', [error_msg])
+            self.admin.assert_icommand(['itouch', '-R', pt, data_object], 'STDOUT', [error_msg], desired_rc=1)
 
         finally:
             self.admin.run_icommand(['iadmin', 'rmchildfromresc', pt, resc])
