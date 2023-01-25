@@ -74,6 +74,7 @@ int main(int _argc, char* _argv[])
 
         if (const auto ec = rc_touch(&comm_ref, json_input.data()); ec < 0) {
             printErrorStack(comm_ref.rError);
+            return 1;
         }
 
         return 0;
