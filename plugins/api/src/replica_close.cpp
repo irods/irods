@@ -155,10 +155,17 @@ namespace
 
     auto close_physical_object(rsComm_t& _comm, int _l3desc_index) -> int
     {
+        // The L3 descriptor index is set to -1 when the physical data has already been closed so that it can be
+        // detected on subsequent calls to replica_close. Return 0 here so that the rest of the close operations
+        // (i.e. finalizing) can complete since we do not need to close the data again.
+        if (_l3desc_index < 0) {
+            return 0;
+        }
+
         fileCloseInp_t input{};
         input.fileInx = _l3desc_index;
         return rsFileClose(&_comm, &input);
-    }
+    } // close_physical_object
 
     auto unlock_and_publish_replica(rsComm_t& _comm,
                                     const ir::replica_proxy_t& _replica,
@@ -341,7 +348,9 @@ namespace
         }
 
         const auto& l1desc = L1desc[l1desc_index];
+        const auto is_write_operation = (O_RDONLY != (l1desc.dataObjInp->openFlags & O_ACCMODE));
         const auto send_notifications = !json_input.contains("send_notifications") || json_input.at("send_notifications").get<bool>();
+        const auto update_status = !json_input.contains("update_status") || json_input.at("update_status").get<bool>();
 
         try {
             if (l1desc.inuseFlag != FD_INUSE) {
@@ -376,15 +385,27 @@ namespace
                 }
             }};
 
-            const auto is_write_operation = (O_RDONLY != (l1desc.dataObjInp->openFlags & O_ACCMODE));
+            const auto update_size = !json_input.contains("update_size") || json_input.at("update_size").get<bool>();
+            const auto compute_checksum =
+                json_input.contains("compute_checksum") && json_input.at("compute_checksum").get<bool>();
+
+            // Close the underlying file object.
+            if (const auto ec = close_physical_object(*_comm, l1desc.l3descInx); ec != 0) {
+                irods::log(LOG_ERROR, fmt::format("Failed to close file object [error_code={}].", ec));
+                if (is_write_operation && update_status) {
+                    update_replica_status_on_error(*_comm, l1desc);
+                    free_l1_descriptor(l1desc_index);
+                }
+                return ec;
+            }
+
+            // Set the L3 descriptor index to -1 here so that any subsequent calls to replica_close will not attempt to
+            // close the physical object again.
+            L1desc[l1desc_index].l3descInx = -1; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
 
             // Allow updates to the replica's catalog information if the stream supports
             // write operations (i.e. the stream is opened in write-only or read-write mode).
             if (is_write_operation) {
-                const auto update_size = !json_input.contains("update_size") || json_input.at("update_size").get<bool>();
-                const auto update_status = !json_input.contains("update_status") || json_input.at("update_status").get<bool>();
-                const auto compute_checksum = json_input.contains("compute_checksum") && json_input.at("compute_checksum").get<bool>();
-
                 // Update the replica's information in the catalog if requested.
                 if (update_size && update_status) {
                     if (const auto ec = update_replica_size_and_status(*_comm, l1desc, send_notifications); ec != 0) {
@@ -395,8 +416,11 @@ namespace
                 }
                 else if (update_size) {
                     if (const auto ec = update_replica_size(*_comm, l1desc, send_notifications); ec != 0) {
+                        // Intentionally do not update the replica status here. The client explicitly disabled updating
+                        // the status, so it is not updated. This leaves the data object in a locked status and the
+                        // caller is now responsible for unlocking/finalizing the data object. Note that the physical
+                        // data has been closed at this point.
                         rodsLog(LOG_ERROR, "Failed to update the replica size in the catalog [error_code=%d].", ec);
-                        update_replica_status_on_error(*_comm, l1desc);
                         return ec;
                     }
                 }
@@ -434,51 +458,41 @@ namespace
                     constexpr const auto calculation = irods::experimental::replica::verification_calculation::always;
                     irods::experimental::replica::replica_checksum(*_comm, info.objPath, info.replNum, calculation);
                 }
+
+                // Remove the agent's PID from the replica access table for this replica. The replica access table entry
+                // is only erased when everythng else is successful.
+                irods::experimental::replica_access_table::erase_pid(l1desc.replica_token, getpid());
             }
 
-            // Remove the agent's PID from the replica access table.
-            auto entry = is_write_operation
-                ? ix::replica_access_table::erase_pid(l1desc.replica_token, getpid())
-                : std::nullopt;
-
-            // Close the underlying file object.
-            if (const auto ec = close_physical_object(*_comm, l1desc.l3descInx); ec != 0) {
-                if (entry) {
-                    ix::replica_access_table::restore(*entry);
-                }
-
-                rodsLog(LOG_ERROR, "Failed to close file object [error_code=%d].", ec);
-                update_replica_status(*_comm, l1desc, STALE_REPLICA, false);
-                return ec;
-            }
-
-            const auto ec = free_l1_descriptor(l1desc_index);
-
-            if (ec != 0) {
-                update_replica_status_on_error(*_comm, l1desc);
-            }
-
-            return ec;
+            return free_l1_descriptor(l1desc_index);
         }
         catch (const json::type_error& e) {
             rodsLog(LOG_ERROR, "Failed to extract property from JSON object [error_code=%d]", SYS_INTERNAL_ERR);
-            update_replica_status_on_error(*_comm, l1desc);
+            if (is_write_operation && update_status) {
+                update_replica_status_on_error(*_comm, l1desc);
+            }
             return SYS_INTERNAL_ERR;
         }
         catch (const irods::exception& e) {
             rodsLog(LOG_ERROR, "%s [error_code=%d]", e.what(), e.code());
-            update_replica_status_on_error(*_comm, l1desc);
+            if (is_write_operation && update_status) {
+                update_replica_status_on_error(*_comm, l1desc);
+            }
             return e.code();
         }
         catch (const fs::filesystem_error& e) {
             rodsLog(LOG_ERROR, "%s [error_code=%d]", e.what(), e.code().value());
-            update_replica_status_on_error(*_comm, l1desc);
+            if (is_write_operation && update_status) {
+                update_replica_status_on_error(*_comm, l1desc);
+            }
             return e.code().value();
         }
         catch (const std::exception& e) {
             rodsLog(LOG_ERROR, "An unexpected error occurred while closing the replica. %s [error_code=%d]",
                             e.what(), SYS_INTERNAL_ERR);
-            update_replica_status_on_error(*_comm, l1desc);
+            if (is_write_operation && update_status) {
+                update_replica_status_on_error(*_comm, l1desc);
+            }
             return SYS_INTERNAL_ERR;
         }
     } // rs_replica_close
