@@ -1,10 +1,11 @@
 #ifndef IRODS_KEY_VALUE_PROXY_HPP
 #define IRODS_KEY_VALUE_PROXY_HPP
 
+#include "irods/lifetime_manager.hpp"
 #include "irods/objInfo.h"
 #include "irods/rcMisc.h"
 
-#include "irods/lifetime_manager.hpp"
+#include <fmt/format.h>
 
 #include <algorithm>
 #include <limits>
@@ -344,7 +345,7 @@ namespace irods::experimental {
             if (contains(_k)) {
                 return {_k, *kvp_};
             }
-            throw std::out_of_range{"key not found"};
+            throw std::out_of_range{fmt::format("key not found [{}]", _k)};
         }
 
         /// \see https://en.cppreference.com/w/cpp/container/map/at
@@ -357,7 +358,7 @@ namespace irods::experimental {
             if (contains(_k)) {
                 return {_k, *kvp_};
             }
-            throw std::out_of_range{"key not found"};
+            throw std::out_of_range{fmt::format("key not found [{}]", _k)};
         }
 
         /// \see https://en.cppreference.com/w/cpp/container/map/operator_at
