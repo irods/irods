@@ -805,8 +805,11 @@ irods::error repl_object(
         const auto free_out = irods::at_scope_exit{[&sync_out] { if (sync_out) std::free(sync_out); }};
         int status = rsFileSyncToArch(_ctx.comm(), &inp, &sync_out );
 
-        // Need to update the physical path with whatever the archive resource came up with
-        if (status >= 0 && CREATE_PATH == dst_create_path) {
+        if (status < 0) {
+            ret = ERROR(status, "rsFileSyncToArch failed");
+        }
+        else if (CREATE_PATH == dst_create_path) {
+            // Need to update the physical path with whatever the archive resource came up with
             rstrcpy( destDataObjInfo->filePath, sync_out->file_name, MAX_NAME_LEN );
         }
     }
