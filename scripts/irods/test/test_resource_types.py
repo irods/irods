@@ -1807,9 +1807,11 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
             admin_session.assert_icommand("iadmin mkresc demoResc compound", 'STDOUT_SINGLELINE', 'compound')
             irods_config = IrodsConfig()
             admin_session.assert_icommand("iadmin mkresc cacheResc 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":" +
-                                          irods_config.irods_directory + "/cacheRescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+                                          irods_config.irods_directory + "/cacheResc_vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             admin_session.assert_icommand("iadmin mkresc archiveResc 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":" +
-                                          irods_config.irods_directory + "/archiveRescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+                                          irods_config.irods_directory + "/archiveResc_vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            self.cache_resc = 'cacheResc'
+            self.archive_resc = 'archiveResc'
             admin_session.assert_icommand("iadmin addchildtoresc demoResc cacheResc cache")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc archiveResc archive")
         super(Test_Resource_Compound, self).setUp()
@@ -1824,8 +1826,8 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
             admin_session.assert_icommand("iadmin rmresc demoResc")
             admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
         irods_config = IrodsConfig()
-        shutil.rmtree(irods_config.irods_directory + "/archiveRescVault", ignore_errors=True)
-        shutil.rmtree("rm -rf " + irods_config.irods_directory + "/cacheRescVault", ignore_errors=True)
+        shutil.rmtree(os.path.join(irods_config.irods_directory, self.archive_resc + '_vault'), ignore_errors=True)
+        shutil.rmtree(os.path.join(irods_config.irods_directory, self.cache_resc + '_vault'), ignore_errors=True)
 
     def test_checksums_not_computed_for_archive__issue_6089(self):
         filename = 'test_checksums_not_computed_for_archive__issue_6089'
@@ -2020,7 +2022,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
         self.admin.assert_icommand("ils -L '{}'".format(filename), 'STDOUT_SINGLELINE', 'cacheResc')
 
-        physical_path = os.path.join(IrodsConfig().irods_directory, 'cacheRescVault')
+        physical_path = os.path.join(IrodsConfig().irods_directory, 'cacheResc_vault')
         physical_path = os.path.join(physical_path,os.path.basename(self.admin.session_collection))
         physical_path = os.path.join(physical_path,filename)
 
@@ -2129,7 +2131,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
         # manually update the replica in archive vault
         out, _, _ = self.admin.run_icommand('ils -L ' + filename)
-        archivereplicaphypath = filter(lambda x : "archiveRescVault" in x, out.split())[0]
+        archivereplicaphypath = filter(lambda x : "archiveResc_vault" in x, out.split())[0]
         with open(archivereplicaphypath, 'wt') as f:
             print('MANUALLY UPDATED ON ARCHIVE\n', file=f, end='')
         # get file
@@ -2151,7 +2153,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
             # manually update the replica in archive vault
             out, _, _ = self.admin.run_icommand('ils -L ' + filename)
-            archivereplicaphypath = filter(lambda x : "archiveRescVault" in x, out.split())[0]
+            archivereplicaphypath = filter(lambda x : "archiveResc_vault" in x, out.split())[0]
             with open(archivereplicaphypath, 'wt') as f:
                 print('UPDATED ARCHIVE AGAIN\n', file=f, end='')
 
@@ -2473,6 +2475,102 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
             self.admin.run_icommand(['iadmin', 'rmresc', archive_resc])
             self.admin.run_icommand(['iadmin', 'rmresc', cache_resc])
             self.admin.run_icommand(['iadmin', 'rmresc', comp_resc])
+
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Manipulates vault directory permissions on local host.")
+    def test_synctoarch_failure_returns_an_error_and_can_be_overwritten__issue_6886(self):
+        filename = 'test_iput_with_unwritable_archive_resource_vault__issue_6886'
+        logical_path = os.path.join(self.user0.session_collection, filename)
+        local_file = os.path.join(self.user0.local_session_dir, filename)
+        file_size_in_bytes = 10
+        archive_vault_path = os.path.join(IrodsConfig().irods_directory, self.archive_resc + '_vault')
+
+        try:
+            lib.make_file(local_file, file_size_in_bytes)
+
+            # Do a test put to make sure everything is in working order. This creates the vault directories as well.
+            self.user0.assert_icommand(['iput', local_file, logical_path])
+            self.assertTrue(lib.replica_exists_on_resource(self.user0, logical_path, self.cache_resc))
+            self.assertTrue(lib.replica_exists_on_resource(self.user0, logical_path, self.archive_resc))
+            self.assertEqual(str(1), lib.get_replica_status(self.user0, os.path.basename(logical_path), 0))
+            self.assertEqual(str(1), lib.get_replica_status(self.user0, os.path.basename(logical_path), 1))
+
+            # debugging
+            self.user0.assert_icommand(['ils', '-L', os.path.dirname(logical_path)], 'STDOUT', filename)
+
+            # Clean it up
+            self.user0.assert_icommand(['irm', '-f', logical_path])
+
+            # Make the service account have no permissions on the archive vault so that sync-to-archive fails.
+            os.chmod(archive_vault_path, 0o000)
+
+            # Try a put to the compound resource and make sure that a failure occurs. The archive replica should exist
+            # and be stale in addition to an error being returned from the operation.
+            self.user0.assert_icommand(['iput', local_file, logical_path], 'STDERR', 'UNIX_FILE_OPEN_ERR')
+            self.assertTrue(lib.replica_exists_on_resource(self.user0, logical_path, self.archive_resc))
+            self.assertTrue(lib.replica_exists_on_resource(self.user0, logical_path, self.cache_resc))
+            self.assertEqual(str(1), lib.get_replica_status(self.user0, os.path.basename(logical_path), 0))
+            self.assertEqual(str(0), lib.get_replica_status(self.user0, os.path.basename(logical_path), 1))
+
+            # debugging
+            self.user0.assert_icommand(['ils', '-L', os.path.dirname(logical_path)], 'STDOUT', filename)
+
+            # Make sure the archive vault is put back to a workable permissions set.
+            os.chmod(archive_vault_path, 0o750)
+
+            # Try overwriting the object now that permissions are better and ensure that everything works.
+            self.user0.assert_icommand(['iput', '-f', local_file, logical_path])
+            self.assertTrue(lib.replica_exists_on_resource(self.user0, logical_path, self.cache_resc))
+            self.assertTrue(lib.replica_exists_on_resource(self.user0, logical_path, self.archive_resc))
+            self.assertEqual(str(1), lib.get_replica_status(self.user0, os.path.basename(logical_path), 0))
+            self.assertEqual(str(1), lib.get_replica_status(self.user0, os.path.basename(logical_path), 1))
+
+        finally:
+            # Make sure the archive vault is put back to a workable permissions set.
+            os.chmod(archive_vault_path, 0o750)
+
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Manipulates vault directory permissions on local host.")
+    def test_synctoarch_failure_returns_an_error_and_can_be_removed__issue_6886(self):
+        filename = 'test_iput_with_unwritable_archive_resource_vault__issue_6886'
+        logical_path = os.path.join(self.user0.session_collection, filename)
+        local_file = os.path.join(self.user0.local_session_dir, filename)
+        file_size_in_bytes = 10
+        archive_vault_path = os.path.join(IrodsConfig().irods_directory, self.archive_resc + '_vault')
+
+        try:
+            lib.make_file(local_file, file_size_in_bytes)
+
+            # Do a test put to make sure everything is in working order. This creates the vault directories as well.
+            self.user0.assert_icommand(['iput', local_file, logical_path])
+            self.assertTrue(lib.replica_exists_on_resource(self.user0, logical_path, self.cache_resc))
+            self.assertTrue(lib.replica_exists_on_resource(self.user0, logical_path, self.archive_resc))
+            self.assertEqual(str(1), lib.get_replica_status(self.user0, os.path.basename(logical_path), 0))
+            self.assertEqual(str(1), lib.get_replica_status(self.user0, os.path.basename(logical_path), 1))
+
+            # Clean it up
+            self.user0.assert_icommand(['irm', '-f', logical_path])
+
+            # Make the service account have no permissions on the archive vault so that sync-to-archive fails.
+            os.chmod(archive_vault_path, 0o000)
+
+            # Try a put to the compound resource and make sure that a failure occurs. The archive replica should exist
+            # and be stale in addition to an error being returned from the operation.
+            self.user0.assert_icommand(['iput', local_file, logical_path], 'STDERR', 'UNIX_FILE_OPEN_ERR')
+            self.assertTrue(lib.replica_exists_on_resource(self.user0, logical_path, self.archive_resc))
+            self.assertTrue(lib.replica_exists_on_resource(self.user0, logical_path, self.cache_resc))
+            self.assertEqual(str(1), lib.get_replica_status(self.user0, os.path.basename(logical_path), 0))
+            self.assertEqual(str(0), lib.get_replica_status(self.user0, os.path.basename(logical_path), 1))
+
+            # Try to clean it up, even though the archive replica physical path does not exist.
+            self.user0.assert_icommand(['irm', '-f', logical_path])
+            self.assertFalse(lib.replica_exists_on_resource(self.user0, logical_path, self.cache_resc))
+            self.assertFalse(lib.replica_exists_on_resource(self.user0, logical_path, self.archive_resc))
+
+        finally:
+            # Make sure the archive vault is put back to a workable permissions set.
+            os.chmod(archive_vault_path, 0o750)
+
 
 class Test_Resource_ReplicationWithinReplication(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
