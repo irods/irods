@@ -291,7 +291,8 @@ doCommand( char *cmdToken[] ) {
     }
 
     if ( strcmp( cmdToken[0], "mkuser" ) == 0 ) {
-        userAdmin( "mkuser", cmdToken[1], setScrambledPw( cmdToken[2] ),
+        char empty_string[] = "";
+        userAdmin( "mkuser", cmdToken[1], *cmdToken[2] ? setScrambledPw(cmdToken[2]) : empty_string,
                    cmdToken[3], "", "", "", "" );
         return 0;
     }
@@ -333,8 +334,8 @@ main( int argc, char **argv ) {
 
     int argOffset;
 
-    int maxCmdTokens = 20;
-    char *cmdToken[20];
+    constexpr int maxCmdTokens = 20;
+    char *cmdToken[maxCmdTokens];
     int keepGoing;
     int firstTime;
 
