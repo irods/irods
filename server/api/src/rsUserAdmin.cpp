@@ -1,4 +1,5 @@
 #include "irods/administration_utilities.hpp"
+#include "irods/authenticate.h"
 #include "irods/userAdmin.h"
 #include "irods/rsUserAdmin.hpp"
 #include "irods/icatHighLevelRoutines.hpp"
@@ -151,12 +152,34 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
     }
     // =-=-=-=-=-=-=-
     // JMC - backport 4772
-    if ( strcmp( userAdminInp->arg0, "mkuser" ) == 0 ) {
-        return irods::create_user(*rsComm,
-                                  userAdminInp->arg1 ? userAdminInp->arg1 : "",
-                                  "rodsuser", "",
-                                  userAdminInp->arg3 ? userAdminInp->arg3 : "");
+
+    if (strcmp(userAdminInp->arg0, "mkuser") == 0) {
+        int result = irods::create_user(*rsComm,
+                                        userAdminInp->arg1 ? userAdminInp->arg1 : "",
+                                        "rodsuser",
+                                        "",
+                                        userAdminInp->arg3 ? userAdminInp->arg3 : "");
+        // On error, rollback is handled internally within irods::create_user.
+        if (result != 0) {
+            return result;
+        }
+
+        // Initialize new user's password with the scrambled password string, but only if given and with length
+        // between 1 and MAX_PASSWORD_LEN - 8 inclusive (the latter being the maximum for a scrambled password).
+        // Ref: similar logic in the db_mod_user_op function, in plugins/database/src/db_plugin.cpp
+        auto scrambled_pw = userAdminInp->arg2;
+        int pw_len = scrambled_pw ? strlen(scrambled_pw) : -1;
+        if (pw_len > 0) {
+            result = (pw_len > MAX_PASSWORD_LEN - 8)
+                         ? PASSWORD_EXCEEDS_MAX_SIZE
+                         : chlModUser(rsComm, userAdminInp->arg1, "password", userAdminInp->arg2);
+            if (result != 0) {
+                chlRollback(rsComm);
+            }
+        }
+        return result;
     }
+
     if ( strcmp( userAdminInp->arg0, "mkgroup" ) == 0 ) {
         return irods::create_user(*rsComm,
                                   userAdminInp->arg1 ? userAdminInp->arg1 : "",
