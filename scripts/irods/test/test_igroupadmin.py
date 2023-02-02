@@ -45,7 +45,6 @@ class Test_Igroupadmin(resource_suite.ResourceBase, unittest.TestCase):
                 self.admin.assert_icommand(['iadmin', 'lg', 'test_group'], 'STDOUT', self.user_sessions[0].username)
                 self.admin.assert_icommand(['iadmin', 'lg', 'test_group'], 'STDOUT', self.user_sessions[1].username)
                 self.user_sessions[0].assert_icommand(['igroupadmin', 'rfg', 'test_group', self.user_sessions[1].username])
-
             finally :
                 self.admin.assert_icommand(['iadmin', 'rmgroup', 'test_group'])
         finally :
@@ -71,6 +70,22 @@ class test_mkuser_group(unittest.TestCase):
 
             self.admin.__exit__()
             admin_session.assert_icommand(['iadmin', 'rmuser', self.admin.username])
+
+    def test_create_user_with_password_in_igroupadmin__issue_6887(self):
+        username = 'alice'
+        # Passwords of length 42 (the current maximum) cannot be used as input for iinit
+        # until resolution https://github.com/irods/irods/issues/6913
+        password_length = 41
+        try:
+            # Create a user and assign a password of the given length.
+            passwd = (username[0]+'pass_6887_the_quick_brown_fox_jumps_over_the_lazy_dog')[:password_length]
+            self.groupadmin.assert_icommand(['igroupadmin', 'mkuser', username, passwd])
+
+            # Test that we can log in as the user, with the assigned password.
+            with session.make_session_for_existing_user(username, passwd, lib.get_hostname(), self.admin.zone_name) as user_session:
+                user_session.assert_icommand('ils','STDOUT')
+        finally:
+            self.admin.run_icommand(['iadmin','rmuser',username])
 
 
     def test_mkgroup_with_no_zone(self):
