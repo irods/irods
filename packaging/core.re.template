@@ -621,7 +621,7 @@ acPostProcForDataCopyReceived(*leaf_resource) {}
 
 # =-=-=-=-=-=-=-
 # policy controlling when a dataObject is staged to cache from archive in a compound coordinating resource
-#  - the default is to stage when cache is not present ("when_necessary")
+#  - the default is to stage when cache is stale or not present ("when_necessary")
 # =-=-=-=-=-=-=-
 # pep_resource_resolve_hierarchy_pre(*INSTANCE, *CONTEXT, *OUT, *OPERATION, *HOST, *PARSER, *VOTE){*OUT="compound_resource_cache_refresh_policy=when_necessary";}  # default
 # pep_resource_resolve_hierarchy_pre(*INSTANCE, *CONTEXT, *OUT, *OPERATION, *HOST, *PARSER, *VOTE){*OUT="compound_resource_cache_refresh_policy=always";}
