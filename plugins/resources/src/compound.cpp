@@ -22,6 +22,7 @@
 #include "irods/irods_lexical_cast.hpp"
 #include "irods/irods_random.hpp"
 #include "irods/irods_at_scope_exit.hpp"
+#include "irods/voting.hpp"
 
 #include <boost/lexical_cast.hpp>
 #include <boost/function.hpp>
@@ -531,12 +532,16 @@ namespace
         return destination_l1descInx;
     } // open_destination_replica
 
-    int close_replica(
-        irods::plugin_context& _ctx,
-        const int l1descInx) {
+    int close_replica(irods::plugin_context& _ctx, const int l1descInx, const int operation_status = 0)
+    {
         openedDataObjInp_t data_obj_close_inp{};
         data_obj_close_inp.l1descInx = l1descInx;
-        L1desc[data_obj_close_inp.l1descInx].oprStatus = l1descInx;
+        if (operation_status == 0) {
+            L1desc[data_obj_close_inp.l1descInx].oprStatus = l1descInx;
+        }
+        else {
+            L1desc[data_obj_close_inp.l1descInx].oprStatus = operation_status;
+        }
         addKeyVal(&data_obj_close_inp.condInput, IN_PDMO_KW, L1desc[l1descInx].dataObjInfo->rescHier);
         int close_status = rsDataObjClose( _ctx.comm(), &data_obj_close_inp);
         if (close_status < 0) {
@@ -652,11 +657,17 @@ irods::error repl_object(
 
     int source_l1descInx{};
     int destination_l1descInx{};
+
+    // If we have an error on rsFileStageToCache, this needs to be set
+    // to the oprStatus on close to make sure the replica is staled.  A status of 0
+    // indicates no error and the oprStatus will be set to l1descInx as normal.
+    int error_code_set_to_oprStatus_on_dest_close = 0;
+
     const irods::at_scope_exit close_l1_descriptors{
         [&]()
         {
             if (destination_l1descInx > 0) {
-                close_replica(_ctx, destination_l1descInx);
+                close_replica(_ctx, destination_l1descInx, error_code_set_to_oprStatus_on_dest_close);
             }
             if (source_l1descInx > 0) {
                 close_replica(_ctx, source_l1descInx);
@@ -714,6 +725,7 @@ irods::error repl_object(
 
         int status = rsFileStageToCache(_ctx.comm(), &file_stage);
         if (status < 0) {
+            error_code_set_to_oprStatus_on_dest_close = status;
             ret = ERROR(status, "rsFileStageToCache failed");
         }
     }
@@ -1426,6 +1438,8 @@ irods::error compound_file_redirect_create(
     irods::hierarchy_parser* _out_parser,
     float*                   _out_vote)
 {
+    namespace irv = irods::experimental::resource::voting;
+
     // =-=-=-=-=-=-=-
     // determine if the resource is down
     int resc_status = 0;
@@ -1437,7 +1451,7 @@ irods::error compound_file_redirect_create(
     // =-=-=-=-=-=-=-
     // if the status is down, vote no.
     if ( INT_RESC_STATUS_DOWN == resc_status ) {
-        *_out_vote = 0.0f;
+        *_out_vote = irv::vote::zero;
         return SUCCESS();
     }
 
@@ -1473,6 +1487,8 @@ irods::error compound_file_redirect_unlink(
     const std::string*               _curr_host,
     irods::hierarchy_parser*         _out_parser,
     float*                           _out_vote ) {
+    namespace irv = irods::experimental::resource::voting;
+
     // =-=-=-=-=-=-=-
     // determine if the resource is down
     int resc_status = 0;
@@ -1484,7 +1500,7 @@ irods::error compound_file_redirect_unlink(
     // =-=-=-=-=-=-=-
     // if the status is down, vote no.
     if ( INT_RESC_STATUS_DOWN == resc_status ) {
-        ( *_out_vote ) = 0.0;
+        (*_out_vote) = irv::vote::zero;
         return SUCCESS();
     }
 
@@ -1509,7 +1525,7 @@ irods::error compound_file_redirect_unlink(
 
     // =-=-=-=-=-=-=-
     // if cache votes non zero we're done
-    if (*_out_vote > 0.0) {
+    if (*_out_vote > irv::vote::zero) {
         return SUCCESS();
     }
 
@@ -1545,6 +1561,8 @@ irods::error open_for_prefer_archive_policy(
     irods::hierarchy_parser& _out_parser,
     float&                   _out_vote)
 {
+    namespace irv = irods::experimental::resource::voting;
+
     // =-=-=-=-=-=-=-
     // get the archive resource
     irods::resource_ptr arch_resc;
@@ -1567,13 +1585,38 @@ irods::error open_for_prefer_archive_policy(
         rodsLog(LOG_NOTICE, "[%s] - operation not found in property map; using open.", __FUNCTION__);
     }
 
+    irods::file_object_ptr f_ptr = boost::dynamic_pointer_cast<irods::file_object>(_ctx.fco());
+
+    // =-=-=-=-=-=-=-
+    // get the archive name
+    std::string archive_name;
+    ret = _ctx.prop_map().get<std::string>(ARCHIVE_CONTEXT_TYPE, archive_name);
+    if (!ret.ok()) {
+        return PASS(ret);
+    }
+
+    // =-=-=-=-=-=-=-
+    // get the cache name
+    std::string cache_name;
+    ret = _ctx.prop_map().get<std::string>(CACHE_CONTEXT_TYPE, cache_name);
+    if (!ret.ok()) {
+        return PASS(ret);
+    }
+
+    try {
+        throw_error_if_archive_replica_requested(f_ptr, archive_name);
+    }
+    catch (const irods::exception& e) {
+        irods::log(e);
+        return irods::error(e);
+    }
+
     // =-=-=-=-=-=-=-
     // repave the repl requested temporarily
-    irods::file_object_ptr f_ptr = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
     int repl_requested = f_ptr->repl_requested();
     const irods::at_scope_exit restore_repl_requested{[&] { f_ptr->repl_requested(repl_requested); }};
 
-    float arch_check_vote = 0.0f;
+    float arch_check_vote = irv::vote::zero;
     irods::hierarchy_parser arch_check_parser = _out_parser;
 
     try {
@@ -1590,11 +1633,11 @@ irods::error open_for_prefer_archive_policy(
     }
     catch (const irods::exception& e) {
         // continue to the cache vote because failed vote isn't necessarily an error
-        arch_check_vote = 0.0;
+        arch_check_vote = irv::vote::zero;
         irods::log(LOG_DEBUG, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, e.what()));
     }
 
-    if ( !ret.ok() || 0.0 == arch_check_vote ) {
+    if (!ret.ok() || irv::vote::zero == arch_check_vote) {
         rodsLog(
             LOG_DEBUG,
             "replica not found in archive for [%s]",
@@ -1603,7 +1646,7 @@ irods::error open_for_prefer_archive_policy(
         // the archive query redirect failed, something terrible happened
         // or mounted collection hijinks are afoot.  ask the cache if it
         // has the data object in question, politely as a fallback
-        float cache_check_vote = 0.0;
+        float cache_check_vote = irv::vote::zero;
         irods::hierarchy_parser cache_check_parser = _out_parser;
         ret = cache_resc->call<const std::string*, const std::string*, irods::hierarchy_parser*, float*>(
             _ctx.comm(), irods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(),
@@ -1613,8 +1656,8 @@ irods::error open_for_prefer_archive_policy(
             return PASS( ret );
         }
 
-        if (0.0 == cache_check_vote ) {
-            _out_vote = 0.0;
+        if (irv::vote::zero == cache_check_vote) {
+            _out_vote = irv::vote::zero;
             return SUCCESS();
         }
 
@@ -1711,6 +1754,8 @@ irods::error open_for_prefer_cache_policy(
     irods::hierarchy_parser*        _out_parser,
     float*                           _out_vote )
 {
+    namespace irv = irods::experimental::resource::voting;
+
     // =-=-=-=-=-=-=-
     // check incoming parameters
     if ( !_curr_host ) {
@@ -1776,7 +1821,7 @@ irods::error open_for_prefer_cache_policy(
 
     // =-=-=-=-=-=-=-
     // ask the cache if it has the data object in question, politely
-    float                    cache_check_vote   = 0.0;
+    float cache_check_vote = irv::vote::zero;
     irods::hierarchy_parser cache_check_parser = ( *_out_parser );
     ret = cache_resc->call < const std::string*, const std::string*, irods::hierarchy_parser*, float* > (
         _ctx.comm(), irods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(),
@@ -1788,18 +1833,18 @@ irods::error open_for_prefer_cache_policy(
     }
 
     // =-=-=-=-=-=-=-
-    // if the vote is 0 then the cache doesn't have it so it will need be staged
-    if ( 0.0 == cache_check_vote ) {
+    // If the vote is irv::vote::low or less, either the replica does not exist in cache,
+    // the cache replica is stale, or the user requested a specific replica.
+    // In this case check the archive to see if it has a higher vote.
+    float arch_check_vote = irv::vote::zero;
+    irods::hierarchy_parser arch_check_parser = *_out_parser;
+    irods::file_object_ptr f_ptr = boost::dynamic_pointer_cast<irods::file_object>(_ctx.fco());
+
+    if (irv::vote::low >= cache_check_vote) {
         // =-=-=-=-=-=-=-
         // repave the repl requested temporarily
-        irods::file_object_ptr f_ptr = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
         int repl_requested = f_ptr->repl_requested();
         f_ptr->repl_requested( -1 );
-
-        // =-=-=-=-=-=-=-
-        // ask the archive if it has the data object in question, politely
-        float arch_check_vote  = 0.0;
-        irods::hierarchy_parser arch_check_parser = *_out_parser;
 
         ret = arch_resc->call<const std::string*, const std::string*, irods::hierarchy_parser*, float*>(
             _ctx.comm(),
@@ -1810,13 +1855,23 @@ irods::error open_for_prefer_cache_policy(
             &arch_check_parser,
             &arch_check_vote);
 
+        // =-=-=-=-=-=-=-
+        // restore repl requested
+        f_ptr->repl_requested(repl_requested);
+
         if ( !ret.ok() ) {
             irods::log(ret);
             return PASS( ret );
         }
 
-        if( 0.0 == arch_check_vote ) {
-            *_out_vote = 0.0;
+    }
+
+    // =-=-=-=-=-=-=-
+    // If the archive voted higher it will need to be staged to cache
+    if ( arch_check_vote > cache_check_vote ) {
+
+        if( irv::vote::zero == arch_check_vote ) {
+            *_out_vote = irv::vote::zero;
             return SUCCESS();
         }
 
@@ -1848,10 +1903,6 @@ irods::error open_for_prefer_cache_policy(
             return PASS( ret );
         }
 
-        // =-=-=-=-=-=-=-
-        // restore repl requested
-        f_ptr->repl_requested( repl_requested );
-
         ( *_out_parser ) = cache_check_parser;
         ( *_out_vote ) = arch_check_vote;
     }
@@ -1876,6 +1927,8 @@ irods::error compound_file_redirect_open(
     irods::hierarchy_parser* _out_parser,
     float*                   _out_vote)
 {
+    namespace irv = irods::experimental::resource::voting;
+
     // =-=-=-=-=-=-=-
     // check incoming parameters
     if ( !_curr_host ) {
@@ -1899,7 +1952,7 @@ irods::error compound_file_redirect_open(
     // =-=-=-=-=-=-=-
     // if the status is down, vote no.
     if ( INT_RESC_STATUS_DOWN == resc_status ) {
-        ( *_out_vote ) = 0.0;
+        (*_out_vote) = irv::vote::zero;
         return SUCCESS();
     }
 
@@ -1962,6 +2015,8 @@ irods::error compound_file_resolve_hierarchy(
     irods::hierarchy_parser* _out_parser,
     float*                   _out_vote)
 {
+    namespace irv = irods::experimental::resource::voting;
+
     // =-=-=-=-=-=-=-
     // check the context validity
     irods::error ret = _ctx.valid< irods::file_object >();
@@ -1986,7 +2041,7 @@ irods::error compound_file_resolve_hierarchy(
         return ERROR( SYS_INVALID_INPUT_PARAM, "null outgoing vote" );
     }
 
-    ( *_out_vote ) = 0.0f;
+    (*_out_vote) = irv::vote::zero;
 
     // =-=-=-=-=-=-=-
     // get the name of this resource

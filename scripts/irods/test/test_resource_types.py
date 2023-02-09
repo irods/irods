@@ -2385,6 +2385,44 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', 'cacheResc')
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', 'archiveResc')
 
+    def test_get_stale_cache_replica__issue_6502(self):
+
+        try:
+            filename = "testgetstalecachereplica.txt"
+            lib.make_file(filename, 10, 'arbitrary')
+            stale_replica_filename = "stalereplica.txt"
+            lib.make_file(stale_replica_filename, 20, 'arbitrary')
+
+            self.admin.assert_icommand("iput " + filename)
+            self.admin.assert_icommand("iadmin modresc demoResc context \"auto_repl=off\"" )
+            self.admin.assert_icommand("iput -f " + stale_replica_filename + " " + filename)
+
+            # at this point the cache (repl 0) will be good and the archive (repl 1) will be stale
+            # swap the status of these two so archive is good and cache is stale
+            logical_path = os.path.join(self.admin.session_collection, filename)
+            self.admin.assert_icommand("iadmin modrepl logical_path " + logical_path + " replica_number 0 DATA_REPL_STATUS 0")
+            self.admin.assert_icommand("iadmin modrepl logical_path " + logical_path + " replica_number 1 DATA_REPL_STATUS 1")
+
+            # get the stale replica
+            get_filename = "getfile.txt"
+            self.admin.assert_icommand("iget -n 0 " + filename + " " +  get_filename)
+
+            # assert on the stale replica file size
+            self.assertEqual(os.path.getsize(get_filename), 20)
+
+            # get the file without selecting the replica
+            self.admin.assert_icommand("iget -f " + filename + " " +  get_filename)
+
+            # assert on the good replica file size
+            self.assertEqual(os.path.getsize(get_filename), 10)
+
+        finally:
+            # cleanup
+            self.admin.assert_icommand("irm -f " + filename)
+            lib.remove_file_if_exists(filename)
+            lib.remove_file_if_exists(stale_replica_filename)
+            lib.remove_file_if_exists(get_filename)
+
     def test_irm_specific_replica(self):
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + self.testfile)  # creates replica
