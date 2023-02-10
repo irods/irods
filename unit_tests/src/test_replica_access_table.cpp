@@ -51,6 +51,9 @@ TEST_CASE("replica_access_table")
     REQUIRE(infos[0].token == infos[1].token);
     REQUIRE(infos[0].token != infos[2].token);
 
+    // Erase a PID which does not exist in the replica access table. This should be a no-op.
+    CHECK_NOTHROW(rat::erase_pid(7000));
+
     SECTION("erase and restore entry with single PID")
     {
         auto& info = infos[2];
