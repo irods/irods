@@ -1,14 +1,28 @@
+#include "initServer.hpp"
+
+#include "finalize_utilities.hpp"
 #include "genQuery.h"
 #include "getRemoteZoneResc.h"
 #include "getRescQuota.h"
-#include "initServer.hpp"
+#include "irods_configuration_parser.hpp"
+#include "irods_exception.hpp"
+#include "irods_get_full_path_for_config_file.hpp"
+#include "irods_log.hpp"
+#include "irods_random.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_server_properties.hpp"
 #include "irods_stacktrace.hpp"
+#include "irods_threads.hpp"
+#include "key_value_proxy.hpp"
 #include "miscServerFunct.hpp"
 #include "objDesc.hpp"
+#include "objMetaOpr.hpp"
 #include "physPath.hpp"
 #include "procLog.h"
 #include "rcGlobalExtern.h"
 #include "rcMisc.h"
+#include "replica_access_table.hpp"
+#include "replica_state_table.hpp"
 #include "resource.hpp"
 #include "rodsConnect.h"
 #include "rodsErrorTable.h"
@@ -21,18 +35,6 @@
 #include "rsModDataObjMeta.hpp"
 #include "rs_replica_close.hpp"
 #include "sockComm.h"
-#include "objMetaOpr.hpp"
-#include "finalize_utilities.hpp"
-#include "irods_configuration_parser.hpp"
-#include "irods_exception.hpp"
-#include "irods_get_full_path_for_config_file.hpp"
-#include "irods_log.hpp"
-#include "irods_random.hpp"
-#include "irods_resource_backport.hpp"
-#include "irods_server_properties.hpp"
-#include "irods_threads.hpp"
-#include "key_value_proxy.hpp"
-#include "replica_state_table.hpp"
 
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
 #include "replica_proxy.hpp"
@@ -144,7 +146,7 @@ namespace
                         "[{}:{}] - error closing replica; ec:[{}]",
                         __FUNCTION__, __LINE__, ec));
 
-                    continue;
+                    // Even though closing failed, continue to the end of the loop so that the data object is finalized.
                 }
 
                 // Don't do anything for special collections - they do not enter intermediate state
@@ -674,6 +676,9 @@ cleanup() {
 
     if (INITIAL_DONE == InitialState) {
         close_all_l1_descriptors(*ThisComm);
+
+        // This agent's PID must be erased from all replica access table entries as it will soon no longer exist.
+        irods::experimental::replica_access_table::erase_pid(getpid());
 
         irods::replica_state_table::deinit();
 
