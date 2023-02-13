@@ -7851,7 +7851,13 @@ irods::error db_mod_user_op(
         int i;
         char userIdStr[MAX_NAME_LEN];
         i = decodePw( _ctx.comm(), _new_value, decoded );
-        if (strlen(decoded) > MAX_PASSWORD_LEN - 8) {
+        if (i == CAT_PASSWORD_ENCODING_ERROR || strlen(decoded) > MAX_PASSWORD_LEN - 8) {
+            // Password encoding error occurs when the password is not of the correct
+            // length.  Pop the existing CAT_PASSWORD_ENCODING_ERROR and return PASSWORD_EXCEEDS_MAX_SIZE
+            // error.  See issue 6764.
+            // Note that there are other conditions that may cause CAT_PASSWORD_ENCODING_ERROR but
+            // the most likely one is a password of invalid length.
+            irods::pop_error_message(_ctx.comm()->rError);
             return ERROR(PASSWORD_EXCEEDS_MAX_SIZE, "Password must be between 3 and 42 characters");
         }
         int status2 = icatApplyRule( _ctx.comm(), ( char* )"acCheckPasswordStrength", decoded );
