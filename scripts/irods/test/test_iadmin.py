@@ -2285,6 +2285,56 @@ class test_moduser_user(unittest.TestCase):
             with session.make_session_for_existing_user(self.username, pw1, host, self.admin.zone_name):
                 pass
 
+        # Change password to 41 bytes (should succeed)
+        pw3 = '12345678901234567890123456789012345678901'
+        self.admin.assert_icommand(['iadmin', 'moduser', self.username, 'password', pw3])
+        with session.make_session_for_existing_user(self.username, pw3, host, self.admin.zone_name):
+            pass
+
+        # Make sure old password does not work
+        with self.assertRaises(Exception):
+            with session.make_session_for_existing_user(self.username, pw2, host, self.admin.zone_name):
+                pass
+
+        # Change password to 42 bytes (should fail)
+        pw4 = '123456789012345678901234567890123456789012'
+        self.admin.assert_icommand(['iadmin', 'moduser', self.username, 'password', pw3])
+
+        # Make sure new password does not work
+        with self.assertRaises(Exception):
+            with session.make_session_for_existing_user(self.username, pw4, host, self.admin.zone_name):
+                pass
+
+        # Change password to 43 bytes (should fail)
+        pw4 = '1234567890123456789012345678901234567890123'
+        self.admin.assert_icommand(['iadmin', 'moduser', self.username, 'password', pw4], 'STDERR', 'PASSWORD_EXCEEDS_MAX_SIZE')
+
+        # Make sure new password does not work
+        with self.assertRaises(Exception):
+            with session.make_session_for_existing_user(self.username, pw4, host, self.admin.zone_name):
+                pass
+
+        # Change password to 45 bytes (should fail)
+        pw4 = '123456789012345678901234567890123456789012345'
+        self.admin.assert_icommand(['iadmin', 'moduser', self.username, 'password', pw4], 'STDERR', 'PASSWORD_EXCEEDS_MAX_SIZE')
+
+        # Make sure new password does not work
+        with self.assertRaises(Exception):
+            with session.make_session_for_existing_user(self.username, pw4, host, self.admin.zone_name):
+                pass
+
+        # Change password to 46 bytes (should fail)
+        pw4 = '1234567890123456789012345678901234567890123456'
+        self.admin.assert_icommand(['iadmin', 'moduser', self.username, 'password', pw4], 'STDERR', 'PASSWORD_EXCEEDS_MAX_SIZE')
+
+        # Make sure new password does not work
+        with self.assertRaises(Exception):
+            with session.make_session_for_existing_user(self.username, pw4, host, self.admin.zone_name):
+                pass
+
+        # Make sure last successful password setting works
+        with session.make_session_for_existing_user(self.username, pw3, host, self.admin.zone_name) as user_session:
+            user_session.assert_icommand(['ils'], 'STDOUT_SINGLELINE', '/tempZone/home/%s' % self.username)
 
 class test_moduser_group(unittest.TestCase):
     """Test modifying a group."""
