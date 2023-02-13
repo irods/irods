@@ -778,6 +778,31 @@ def replica_exists_on_resource(session, logical_path, resource_name):
     return 'CAT_NO_ROWS_FOUND' not in out
 
 
+def get_replica_mtime(session, logical_path, replica_number):
+    return session.run_icommand(['iquest', '%s',
+        "select DATA_MODIFY_TIME where COLL_NAME = '{}' and DATA_NAME = '{}' and DATA_REPL_NUM = '{}'"
+        .format(os.path.dirname(logical_path),
+                os.path.basename(logical_path),
+                str(replica_number))])[0].strip()
+
+
+def iterfy(iterable):
+    """Will return an iterable, even if input is a single item
+
+    Args:
+        iterable : any type
+
+    Returns:
+        [ iterable ] if iterable is not iterable, otherwise just iterable.
+    """    
+    if isinstance(iterable, str):
+        iterable = [iterable]
+    try:
+        iter(iterable)
+    except TypeError:
+        iterable = [iterable]
+    return iterable
+
 def get_first_delay_rule_id(session):
     return session.run_icommand(['iquest', '%s', "select RULE_EXEC_ID"])[0].strip()
 
@@ -828,3 +853,12 @@ def make_arbitrary_file(f_name, f_size, buffer_size=32*1024*1024):
             out.write(bytearray(buffer))
 
             bytes_written += to_write
+
+def get_resource_parent(session, resource_name):
+    parent_id = session.run_icommand(['iquest', '%s',
+        "select RESC_PARENT where RESC_NAME = '{}'"
+        .format(resource_name)])[0].strip()
+
+    return session.run_icommand(['iquest', '%s',
+        "select RESC_NAME where RESC_ID = '{}'"
+        .format(parent_id)])[0].strip()
