@@ -16,6 +16,8 @@
 
 namespace
 {
+    namespace irv = irods::experimental::resource::voting;
+
     std::string get_keyword_from_inp(
         const dataObjInp_t& _data_obj_inp)
     {
@@ -113,8 +115,6 @@ namespace
         std::string&             _out_hier,
         float&                   _out_vote )
     {
-        namespace irv = irods::experimental::resource::voting;
-
         // request the resource by name
         irods::resource_ptr resc;
         irods::error err = resc_mgr.resolve( _resc_name, resc );
@@ -152,7 +152,7 @@ namespace
             vote, parser.str().c_str(),
             err.code()));
 
-        if ( !err.ok() || irv::vote::zero == vote ) {
+        if (!err.ok() || irv::vote_is_zero(vote)) {
             std::stringstream msg;
             msg << "failed in call to redirect";
             msg << " host [" << host_name      << "] ";
@@ -177,8 +177,6 @@ namespace
         const std::string&     _key_word,
         const std::string&     _oper)
     {
-        namespace irv = irods::experimental::resource::voting;
-
         bool kw_match_found{};
         std::string max_hier{};
         float max_vote = -1.0;
@@ -222,7 +220,7 @@ namespace
                 continue;
             }
 
-            if (irv::vote::zero != vote && !_key_word.empty() && root_resc.first == _key_word) {
+            if (!irv::vote_is_zero(vote) && !_key_word.empty() && root_resc.first == _key_word) {
                 irods::log(LOG_DEBUG, fmt::format(
                     "[{}:{}] - with keyword... kw:[{}],root:[{}],max_hier:[{}],max_vote:[{}],vote:[{}],hier:[{}],resc_hier:[{}]",
                     __FUNCTION__, __LINE__,
@@ -242,10 +240,37 @@ namespace
             }
         }
 
-        const double diff = max_vote - 0.00000001;
-        if (diff <= irv::vote::zero) {
+        if (irv::vote_is_zero(max_vote)) {
             THROW(HIERARCHY_ERROR, "no valid resource found for data object");
         }
+
+        // If a replica was requested, voting for other replicas is not considered. This is because the user specified
+        // a specific replica. If it voted 0, this is an error. If it did not vote 0, the user should get that replica.
+        // If the administrator wants to make sure that the highest vote always wins, then their policy can/should be
+        // configured to accommodate that situation.
+        if (_file_obj->repl_requested() > -1) {
+            const auto& target_replica = _file_obj->get_replica(_file_obj->repl_requested());
+            if (!target_replica) {
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+                THROW(SYS_REPLICA_DOES_NOT_EXIST,
+                      fmt::format("Requested replica [{}] of [{}] does not exist.",
+                                  _file_obj->repl_requested(),
+                                  _file_obj->logical_path()));
+            }
+
+            if (irv::vote_is_zero(target_replica->get().vote())) {
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+                THROW(SYS_REPLICA_INACCESSIBLE,
+                      fmt::format("Requested replica [{}] of [{}] voted 0.0.",
+                                  _file_obj->repl_requested(),
+                                  _file_obj->logical_path()));
+            }
+
+            // Overwrite the winning hierarchy with the hierarchy of the requested replica and return it as the winner.
+            _file_obj->resc_hier(target_replica->get().resc_hier());
+            return _file_obj->resc_hier();
+        }
+
         if (kw_match_found) {
             return _file_obj->resc_hier();
         }
@@ -259,8 +284,6 @@ namespace
         irods::file_object_ptr _file_obj,
         const std::string&     _key_word)
     {
-        namespace irv = irods::experimental::resource::voting;
-
         _file_obj->resc_hier(_key_word);
 
         // =-=-=-=-=-=-=-
