@@ -87,6 +87,56 @@ class test_mkuser_group(unittest.TestCase):
         finally:
             self.admin.run_icommand(['iadmin','rmuser',username])
 
+    def test_group_administrator_scenarios__issue_6888(self):
+        """Thoroughly test atg, rfg (remove from group) and transfer of responsiblity to another group administrator"""
+        rodsuser_name = 'alice'
+        try:
+            # Use the groupadmin account to create group and set itself up as administrator.
+            self.groupadmin.assert_icommand(['igroupadmin', 'mkgroup', self.group])
+            self.groupadmin.assert_icommand(['igroupadmin', 'atg', self.group, self.groupadmin.username])
+
+            # Another groupadmin is needed for this test.
+            self.groupadmin2 = session.mkuser_and_return_session('groupadmin', 'groupadmin2', 'rods', lib.get_hostname())
+
+            # Test another user (a rodsuser) can be created and added to the group by this.
+            self.groupadmin.assert_icommand(['igroupadmin', 'mkuser', rodsuser_name])
+            self.groupadmin.assert_icommand(['igroupadmin', 'atg', self.group, rodsuser_name])
+
+            user_with_zone = lambda user_name,zn='': '{}#{}'.format(user_name, zn if zn else self.groupadmin.zone_name)
+
+            # Test that the groupadmin itself, and the new rodsuser, are members of the group.
+            self.groupadmin.assert_icommand(['igroupadmin', 'lg', self.group, ], 'STDOUT_MULTILINE', [user_with_zone(rodsuser_name),
+                                                                                                      user_with_zone(self.groupadmin.username)])
+
+            # Another groupadmin who tries adding themselves to a nonempty group must be unsuccessful, else they could hijack the group.
+            self.groupadmin2.assert_icommand(['igroupadmin', 'atg', self.group, self.groupadmin2.username ],'STDERR', 'CAT_INSUFFICIENT_PRIVILEGE_LEVEL')
+            rc, out, _ = self.groupadmin2.assert_icommand(['igroupadmin', 'lg', self.group], 'STDOUT')
+            self.assertNotIn(user_with_zone(self.groupadmin2.username), out)
+
+            # Test removal of users, and self, from a group, as well as assignment of a new admin for the group via "atg".
+            self.groupadmin.assert_icommand(['igroupadmin', 'rfg', self.group, rodsuser_name])         # remove rodsuser
+            self.groupadmin.assert_icommand(['igroupadmin', 'atg', self.group, self.groupadmin2.username])  # add other groupadmin
+            self.groupadmin.assert_icommand(['igroupadmin', 'rfg', self.group, self.groupadmin.username])   # remove self
+
+            # Test that groupadmin2 is now a member of the group, and that groupadmin and the rodsuser have successfully been removed.
+            rc, out, _ = self.groupadmin2.assert_icommand(['igroupadmin', 'lg', self.group], 'STDOUT_MULTILINE', user_with_zone(self.groupadmin2.username))
+            self.assertEqual(rc, 0)
+            self.assertNotIn(user_with_zone(rodsuser_name), out)
+            self.assertNotIn(user_with_zone(self.groupadmin.username), out)
+
+            # Test that the new groupadmin can do some necessary things (add and remove a user).
+            self.groupadmin2.assert_icommand(['igroupadmin', 'atg', self.group, rodsuser_name], desired_rc = 0)
+            self.groupadmin2.assert_icommand(['igroupadmin', 'lg', self.group], 'STDOUT_MULTILINE', user_with_zone(rodsuser_name))
+
+            self.groupadmin2.assert_icommand(['igroupadmin', 'rfg', self.group, rodsuser_name], desired_rc = 0)
+            rc, out, _ = self.groupadmin2.assert_icommand(['igroupadmin', 'lg', self.group], 'STDOUT', desired_rc = 0)
+            self.assertNotIn(user_with_zone(rodsuser_name), out)
+        finally:
+            self.groupadmin2.__exit__()
+            self.admin.assert_icommand(['iadmin', 'rfg', self.group, self.groupadmin2.username])
+            self.admin.assert_icommand(['iadmin', 'rmgroup', self.group])
+            self.admin.assert_icommand(['iadmin', 'rmuser', rodsuser_name])
+            self.admin.assert_icommand(['iadmin', 'rmuser', self.groupadmin2.username])
 
     def test_mkgroup_with_no_zone(self):
         """Test mkgroup with no zone name provided."""
