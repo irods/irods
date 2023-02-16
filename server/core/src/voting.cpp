@@ -5,6 +5,7 @@
 
 #include <boost/lexical_cast.hpp>
 
+#include <cmath>
 #include <optional>
 
 namespace irods::experimental::resource::voting {
@@ -246,5 +247,11 @@ float calculate(
 
     return vote;
 } // calculate
+
+auto vote_is_zero(float _vote) -> bool
+{
+    constexpr double epsilon = 0.00000001;
+    return _vote - epsilon <= vote::zero;
+} // vote_is_zero
 
 } // namespace irods::experimental::resource::voting
