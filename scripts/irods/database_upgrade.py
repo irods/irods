@@ -117,6 +117,19 @@ def run_update(irods_config, cursor):
         database_connect.execute_sql_statement(cursor, "update R_TOKN_MAIN set token_name = 'read_object' where token_name = 'read object';")
         database_connect.execute_sql_statement(cursor, "update R_TOKN_MAIN set token_name = 'read_metadata' where token_name = 'read metadata';")
 
+    elif new_schema_version == 10:
+        if irods_config.catalog_database_type == 'mysql':
+            # Assume the database is MySQL 8 or later (support for the SQL WITH-clause was not added until MySQL 8).
+            if len(database_connect.execute_sql_statement(cursor, "select alias from R_SPECIFIC_QUERY where alias = 'DataObjInCollReCur';").fetchall()) == 0:
+                sql = ("insert into R_SPECIFIC_QUERY (alias, sqlStr, create_ts) "
+                       "values ('DataObjInCollReCur', "
+                                "'with COLL as (select coll_id, coll_name from R_COLL_MAIN where R_COLL_MAIN.coll_name = ? or R_COLL_MAIN.coll_name like ?)"
+                                " select distinct d.data_id, (select coll_name from COLL where COLL.coll_id = d.coll_id) coll_name, d.data_name, d.data_repl_num, d.resc_name, d.data_path, d.resc_id"
+                                " from R_DATA_MAIN d"
+                                " where d.coll_id = any(select coll_id from COLL) order by coll_name, d.data_name, d.data_repl_num', "
+                                "'1580297960');")
+                database_connect.execute_sql_statement(cursor, sql)
+
     else:
         raise IrodsError('Upgrade to schema version %d is unsupported.' % (new_schema_version))
 
