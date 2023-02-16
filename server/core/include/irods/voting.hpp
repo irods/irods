@@ -22,6 +22,18 @@ float calculate(
     std::string_view curr_host,
     const irods::hierarchy_parser& parser);
 
+/// \brief Check to see whether \p _vote is equal to 0.
+///
+/// This function exists because comparing floating point values is fraught with peril.
+///
+/// \param[in] _vote The vote being compared to 0.
+///
+/// \retval true If \p _vote is considered equal to 0.
+/// \retval false If \p _vote is not considered equal to 0.
+///
+/// \since 4.2.12
+auto vote_is_zero(float _vote) -> bool;
+
 } // namespace irods::experimental::resource::voting
 
 #endif // VOTING_HPP
