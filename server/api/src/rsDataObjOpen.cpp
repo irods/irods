@@ -763,10 +763,22 @@ namespace
 
         if (hierarchy_for_open.empty()) {
             try {
+                std::string operation;
+
+                // NOLINTNEXTLINE(hicpp-signed-bitwise)
+                if (0 != (_inp.openFlags & O_CREAT)) {
+                    operation = irods::CREATE_OPERATION;
+                }
+                else if (0 != getWriteFlag(_inp.openFlags)) {
+                    operation = irods::WRITE_OPERATION;
+                }
+                else {
+                    operation = irods::OPEN_OPERATION;
+                }
+
                 irods::file_object_ptr file_obj;
-                std::tie(file_obj, hierarchy_for_open) = irods::resolve_resource_hierarchy(
-                    (_inp.openFlags & O_CREAT) ? irods::CREATE_OPERATION : irods::OPEN_OPERATION,
-                    &_comm, _inp, &info_head);
+                std::tie(file_obj, hierarchy_for_open) =
+                    irods::resolve_resource_hierarchy(operation, &_comm, _inp, &info_head);
             }
             catch (const irods::exception& e) {
                 // If the data object does not exist, then the exception will contain
