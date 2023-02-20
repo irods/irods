@@ -100,7 +100,7 @@ main( int argc, char **argv ) {
 void
 usage() {
     char *msgs[] = {
-        "Usage: irm [-rUfvVh] [-n replNum] [--empty] dataObj|collection ... ", // JMC - backport 4552
+        "Usage: irm [-rUfvVh] [--empty] dataObj|collection ... ",
         " ",
         "Remove one or more data objects and/or collections from the iRODS namespace. ",
         "By default, the data objects are moved to the trash collection (/myZone/trash) unless",
@@ -122,7 +122,7 @@ usage() {
         "                 collection, and all subcollections.",
         " -v  verbose",
         " -V  Very verbose",
-        " --empty  If the file to be removed is a bundle file (generated with iphybun)", // JMC - backport 4552
+        " --empty  If the file to be removed is a bundle file (generated with iphybun)",
         "     remove it only if all the subfiles of the bundle have been removed.",
         " -h  this help",
         ""
