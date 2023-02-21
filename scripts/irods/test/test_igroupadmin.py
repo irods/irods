@@ -104,6 +104,10 @@ class test_mkuser_group(unittest.TestCase):
 
             user_with_zone = lambda user_name,zn='': '{}#{}'.format(user_name, zn if zn else self.groupadmin.zone_name)
 
+            # Test that another groupadmin (not in the group) cannot remove a member.
+
+            self.groupadmin2.assert_icommand(['igroupadmin', 'rfg', self.group, self.groupadmin.username], 'STDERR', 'CAT_INSUFFICIENT_PRIVILEGE_LEVEL')
+
             # Test that the groupadmin itself, and the new rodsuser, are members of the group.
             self.groupadmin.assert_icommand(['igroupadmin', 'lg', self.group, ], 'STDOUT_MULTILINE', [user_with_zone(rodsuser_name),
                                                                                                       user_with_zone(self.groupadmin.username)])
