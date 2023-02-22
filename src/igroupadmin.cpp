@@ -469,6 +469,10 @@ void usageMain() {
         "A blank execute line invokes the interactive mode, where it",
         "prompts and executes commands until 'quit' or 'q' is entered.",
         "Single or double quotes can be used to enter items with blanks.",
+        " ",
+        "NOTE: atg and rfg have additional usage requirements. See the help text",
+        "of these subcommands for details (e.g. igroupadmin h atg).",
+        " ",
         "Commands are:",
         " lg [name] (list group info (user member list))",
         " mkuser Name Password (make a user and set the initial password)",
@@ -487,11 +491,11 @@ usage( char *subOpt ) {
     char *mkuserMsgs[] = {
         " mkuser Name Group Password (make user by a group-admin)",
         "Create a new iRODS user in the ICAT database",
-        "",
+        " ",
         "Name is the user name to create",
         "Group is the group to also add the user to",
         "Password is the user's initial password",
-        "",
+        " ",
         "The user type will be automatically set to 'rodsuser' and the zone local.",
         ""
     };
@@ -509,16 +513,31 @@ usage( char *subOpt ) {
     char *atgMsgs[] = {
         " atg groupName userName[#userZone] (add to group - add a user to a group)",
         "For remote-zone users, include the userZone.",
-        "Also see mkgroup, rfg and rmgroup.",
+        " ",
+        "NOTE: A groupadmin may add themselves to an empty group (such as one just created)",
+        "but not to one already containing other users.",
+        " ",
+        "Also see mkgroup and rfg.",
+        " ",
         "In addition to the 'rodsadmin', users of type 'groupadmin' can atg and rfg",
         "for groups they are members of.  They can see group membership via iuserinfo.",
+        " ",
+        "Example (as groupAdm, transferring group privileges to groupAdm2):",
+        "    igroupadmin atg labGroup groupAdm2",
+        "    igroupadmin rfg labGroup groupAdm",
         ""
     };
 
     char *rfgMsgs[] = {
         " rfg groupName userName[#userZone] (remove from group - remove a user from a group)",
         "For remote-zone users, include the userZone.",
-        "Also see mkgroup, afg and rmgroup.",
+        " ",
+        "NOTE: A groupadmin may freely add or remove members of any group to which they already",
+        "belong.  Also, the rfg command can be combined with atg to transfer responsibility",
+        "for an existing group to another groupadmin. (See the atg help for an example.)",
+        " ",
+        "Also see mkgroup and atg.",
+        " ",
         "In addition to the 'rodsadmin', users of type 'groupadmin' can atg and rfg",
         "for groups they are members of.  They can see group membership via iuserinfo.",
         ""
@@ -526,9 +545,16 @@ usage( char *subOpt ) {
 
     char *mkgroupMsgs[] = {
         " mkgroup groupName[#Zone] (make a new group)",
-        "Make a new group.  You will need to add yourself to the new group to then",
-        "be able to add and remove others (when the group is empty groupadmins are",
-        "allowed to add themselves.)",
+        "Make a new group.  You will need to add yourself to the new group first in",
+        "order to be able to add and remove others.  (When the group is empty, groupadmins",
+        "are allowed to add themselves.)",
+        " ",
+        "Example (as groupAdm):",
+        "    igroupadmin mkgroup labGroup",
+        "    igroupadmin atg labGroup groupAdm  # add self as first member.",
+        "    igroupadmin atg labGroup student1",
+        "    igroupadmin atg labGroup student2",
+        "    igroupadmin rfg labGroup student1",
         ""
     };
 
