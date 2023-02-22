@@ -3,7 +3,7 @@
 # Defines the SSL (client-server negotiation) policy for this server
 # - CS_NEG_REFUSE - No SSL
 # - CS_NEG_DONT_CARE - Depends on the Client request
-# - CS_NEG_REQUIRED - Require SSL
+# - CS_NEG_REQUIRE - Require SSL
 acPreConnect(*OUT) { *OUT="CS_NEG_REFUSE"; }
 
 acCreateUser {
