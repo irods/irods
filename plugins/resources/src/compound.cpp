@@ -57,6 +57,35 @@ const std::string AUTO_REPL_POLICY_ENABLED( "on" );
 
 namespace
 {
+    auto throw_error_if_archive_replica_requested(const irods::file_object_ptr& obj,
+                                                  const std::string_view archive_resc_name) -> void
+    {
+        // specifying replica by number for a replica in an archive resource is not allowed as it creates
+        // troublesome edge cases (see issue 6926)
+        if (obj->repl_requested() > -1) {
+            const auto& target_replica = obj->get_replica(obj->repl_requested());
+            if (!target_replica) {
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+                THROW(
+                    SYS_REPLICA_DOES_NOT_EXIST,
+                    fmt::format(
+                        "Requested replica [{}] of [{}] does not exist.", obj->repl_requested(), obj->logical_path()));
+            }
+
+            auto target_resource_name = target_replica->get().resc_name();
+
+            if (target_resource_name == archive_resc_name) {
+                THROW(
+                    DIRECT_ARCHIVE_ACCESS,
+                    fmt::format("Direct access to an archive resource is not allowed.  replica number {} of object {} "
+                                "belongs to archive resource {}.",
+                                obj->repl_requested(),
+                                obj->logical_path(),
+                                target_resource_name));
+            }
+        }
+    }
+
     auto get_archive_replica_number(
         const irods::file_object_ptr _obj,
         const std::string_view _archive_resource_name) -> int
@@ -1620,8 +1649,6 @@ irods::error open_for_prefer_archive_policy(
     irods::hierarchy_parser arch_check_parser = _out_parser;
 
     try {
-        std::string archive_name;
-        _ctx.prop_map().get<std::string>(ARCHIVE_CONTEXT_TYPE, archive_name);
         f_ptr->repl_requested(get_archive_replica_number(f_ptr, archive_name));
 
         // =-=-=-=-=-=-=-
@@ -1700,14 +1727,6 @@ irods::error open_for_prefer_archive_policy(
     // get this resc name
     std::string current_name;
     ret = _ctx.prop_map().get<std::string>( irods::RESOURCE_NAME, current_name );
-    if ( !ret.ok() ) {
-        return PASS( ret );
-    }
-
-    // =-=-=-=-=-=-=-
-    // get the cache name
-    std::string cache_name;
-    ret = _ctx.prop_map().get< std::string >( CACHE_CONTEXT_TYPE, cache_name );
     if ( !ret.ok() ) {
         return PASS( ret );
     }
@@ -1813,6 +1832,14 @@ irods::error open_for_prefer_cache_policy(
         return PASS( ret );
     }
 
+    try {
+        throw_error_if_archive_replica_requested(obj, archive_resc_name);
+    }
+    catch (const irods::exception& e) {
+        irods::log(e);
+        return irods::error(e);
+    }
+
     std::string operation{irods::OPEN_OPERATION};
     ret = _ctx.prop_map().get<std::string>(OPERATION_TYPE, operation);
     if (!ret.ok()) {
@@ -1863,7 +1890,6 @@ irods::error open_for_prefer_cache_policy(
             irods::log(ret);
             return PASS( ret );
         }
-
     }
 
     // =-=-=-=-=-=-=-

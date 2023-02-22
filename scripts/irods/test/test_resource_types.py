@@ -2423,6 +2423,104 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
             lib.remove_file_if_exists(stale_replica_filename)
             lib.remove_file_if_exists(get_filename)
 
+    def test_direct_request_for_cache_archive_replicas__issue_6926(self):
+
+        try:
+            filename = "directrequestcachearchivereplica.txt"
+            get_filename = "getfile.txt"
+            lib.make_file(filename, 10, 'arbitrary')
+
+            logical_path = os.path.join(self.admin.session_collection, filename)
+
+            self.admin.assert_icommand("iput " + filename)
+
+            # attempt to get the replica directly from archive - should fail
+            self.admin.assert_icommand(['iget', '-n1', filename, get_filename], 'STDERR', 'HIERARCHY_ERROR')
+
+            # attempt to get the replica directly from cache - should pass
+            self.admin.assert_icommand(['iget', '-n0', filename, get_filename])
+
+            # assert that the retrieved file is the right size
+            self.assertEqual(os.path.getsize(get_filename), 10)
+            os.remove(get_filename)
+
+            # get the file without requesting replica or resource
+            self.admin.assert_icommand(['iget', filename, get_filename])
+
+            # assert that the retrieved file is the right size
+            self.assertEqual(os.path.getsize(get_filename), 10)
+            os.remove(get_filename)
+
+            # get the file specifying the compound resource - should pass
+            self.admin.assert_icommand(['iget', '-R', 'demoResc', filename, get_filename])
+
+            # assert that the retrieved file is the right size
+            self.assertEqual(os.path.getsize(get_filename), 10)
+            os.remove(get_filename)
+
+        finally:
+            # cleanup
+            self.admin.assert_icommand("irm -f " + filename)
+            lib.remove_file_if_exists(filename)
+            lib.remove_file_if_exists(get_filename)
+
+    def test_direct_request_for_cache_archive_replicas_when_policy_is_set_to_prefer_archive__issue_6926(self):
+
+        try:
+            rule_map = {
+                'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                    pep_resource_resolve_hierarchy_pre(*INSTANCE, *CONTEXT, *OUT, *OPERATION, *HOST, *PARSER, *VOTE){
+                        *OUT="compound_resource_cache_refresh_policy=always";
+                 '''),
+                 'irods_rule_engine_plugin-python': textwrap.dedent('''
+                     def pep_resource_resolve_hierarchy_pre(rule_args, callback, rei):
+                         rule_args[2] = 'compound_resource_cache_refresh_policy=always'
+                 ''')
+            }
+
+            # manipulate the core.re to add the new policy
+            with temporary_core_file() as core:
+
+                core.add_rule(rule_map[self.plugin_name])
+
+                filename = "directrequestcachearchivereplica.txt"
+                get_filename = "getfile.txt"
+                lib.make_file(filename, 10, 'arbitrary')
+
+                logical_path = os.path.join(self.admin.session_collection, filename)
+
+                self.admin.assert_icommand("iput " + filename)
+
+                # attempt to get the replica directly from archive - should fail
+                self.admin.assert_icommand(['iget', '-n1', filename, get_filename], 'STDERR', 'HIERARCHY_ERROR')
+
+                # attempt to get the replica directly from cache - should pass
+                self.admin.assert_icommand(['iget', '-n0', filename, get_filename])
+
+                # assert that the retrieved file is the right size
+                self.assertEqual(os.path.getsize(get_filename), 10)
+                os.remove(get_filename)
+
+                # get the file without requesting replica or resource
+                self.admin.assert_icommand(['iget', filename, get_filename])
+
+                # assert that the retrieved file is the right size
+                self.assertEqual(os.path.getsize(get_filename), 10)
+                os.remove(get_filename)
+
+                # get the file specifying the compound resource - should pass
+                self.admin.assert_icommand(['iget', '-R', 'demoResc', filename, get_filename])
+
+                # assert that the retrieved file is the right size
+                self.assertEqual(os.path.getsize(get_filename), 10)
+                os.remove(get_filename)
+
+        finally:
+            # cleanup
+            self.admin.assert_icommand("irm -f " + filename)
+            lib.remove_file_if_exists(filename)
+            lib.remove_file_if_exists(get_filename)
+
     def test_irm_specific_replica(self):
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + self.testfile)  # creates replica
