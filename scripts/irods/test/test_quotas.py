@@ -54,6 +54,8 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
                     lib.make_file(filename_2, 1024, contents='arbitrary')
                     cmd = 'iput -R {0} {1}'.format(self.testresc, filename_2) # should fail
                     self.admin.assert_icommand(cmd.split(), 'STDERR_SINGLELINE', 'SYS_RESC_QUOTA_EXCEEDED')
+                    cmd = 'istream write nopes'
+                    self.admin.assert_icommand(cmd.split(), 'STDERR', 'Error: Cannot open data object.', input='some data')
                     cmd = 'iadmin {0} {1} {2} 0'.format(quotatype[0], quotatype[1], quotaresc) # remove quota
                     self.admin.assert_icommand(cmd.split())
                     cmd = 'iadmin cu' # update db
