@@ -1893,10 +1893,9 @@ irods::error open_for_prefer_cache_policy(
     }
 
     // =-=-=-=-=-=-=-
-    // If the archive voted higher it will need to be staged to cache
-    if ( arch_check_vote > cache_check_vote ) {
-
-        if( irv::vote::zero == arch_check_vote ) {
+    // If the archive voted higher and this is not a write, archive will need to be staged to cache
+    if (irods::WRITE_OPERATION != *_opr && arch_check_vote > cache_check_vote) {
+        if (irv::vote::zero == arch_check_vote) {
             *_out_vote = irv::vote::zero;
             return SUCCESS();
         }

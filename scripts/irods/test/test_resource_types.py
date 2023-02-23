@@ -2423,6 +2423,36 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
             lib.remove_file_if_exists(stale_replica_filename)
             lib.remove_file_if_exists(get_filename)
 
+    def test_no_stage_to_cache_on_write__issue_6935(self):
+
+        try:
+
+            filename = 'testnostagetocacheonwrite.txt'
+            logical_path = os.path.join(self.admin.session_collection, filename)
+
+            # put the file to demoResc (compound)
+            self.admin.assert_icommand(['istream', 'write', '-R', 'demoResc', filename], input='testing issue 6935')
+
+            # repl the file to TestResc (unixfilesystem)
+            self.admin.assert_icommand(['irepl', '-R', 'TestResc', filename])
+
+            # trim the cache replica
+            self.admin.assert_icommand(['itrim', '-n0', filename], 'STDOUT', ['files trimmed = 1'])
+
+            # write a new file to TestResc (unixfilesystem)
+            self.admin.assert_icommand(['istream', 'write', '-R', 'TestResc', filename], input='testing issue 6935 with more bytes')
+
+            # assert that the replica does not exist on cache_resc
+            self.assertFalse(lib.replica_exists_on_resource(self.admin, logical_path, self.cache_resc))
+
+            # assert that the replica exists on TestResc and self.archive_resc
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, 'TestResc'))
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, self.archive_resc))  # this will be stale but not testing that
+
+        finally:
+            # cleanup
+            self.admin.assert_icommand("irm -f " + filename)
+
     def test_direct_request_for_cache_archive_replicas__issue_6926(self):
 
         try:
