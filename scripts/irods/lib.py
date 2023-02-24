@@ -24,6 +24,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import random
 
 from . import six
 
@@ -794,3 +795,36 @@ def log_command_result(command, stdout, stderr, ec):
     print('  stderr:')
     output = [indent_prefix + line for line in stderr.splitlines()]
     print(os.linesep.join(output) + os.linesep)
+
+def remove_file_if_exists(filename):
+    if os.path.exists(filename):
+        os.remove(filename)
+
+def make_arbitrary_file(f_name, f_size, buffer_size=32*1024*1024):
+    # do not care about true randomness
+    # note that this method does not use up system entropy
+    random.seed(5)
+    bytes_written = 0
+    buffer = buffer_size * [0x78]       # 'x' - bytearray() below appears to require int instead
+                                        #       of char which was valid in python2
+    with open(f_name, "wb") as out:
+
+        while bytes_written < f_size:
+
+            if f_size - bytes_written < buffer_size:
+                to_write = f_size - bytes_written
+                buffer = to_write * [0x78]  # 'x'
+            else:
+                to_write = buffer_size
+
+            current_char = random.randrange(256)
+
+            # just write some random byte each 1024 chars
+            for i in range(0, to_write, 1024):
+                buffer[i] = current_char
+                current_char = random.randrange(256)
+            buffer[len(buffer)-1] = random.randrange(256)
+
+            out.write(bytearray(buffer))
+
+            bytes_written += to_write
