@@ -1157,7 +1157,7 @@ static irods::apidef_t client_api_table_inp[] = {
         REG_DATA_OBJ_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "DataObjInfo_PI", 0, "DataObjInfo_PI", 0,
         boost::any(std::function<int(rsComm_t*,dataObjInfo_t*,dataObjInfo_t**)>(RS_REG_DATA_OBJ)),
-        "api_reg_data_obj", irods::clearInStruct_noop, [](void* _p) { freeDataObjInfo(static_cast<DataObjInfo*>(_p)); },
+        "api_reg_data_obj", irods::clearInStruct_noop, clearDataObjInfo,
         (funcPtr)CALL_DATAOBJINFOINP_DATAOBJINFOOUT
     },
     {
