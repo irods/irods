@@ -1893,10 +1893,14 @@ irods::error open_for_prefer_cache_policy(
     }
 
     // =-=-=-=-=-=-=-
-    // If the archive voted higher it will need to be staged to cache
-    if ( arch_check_vote > cache_check_vote ) {
-
-        if( irv::vote::zero == arch_check_vote ) {
+    // Determine if we need to replicate from archive to cache.
+    // On a read, this is true if the archive vote is greater than cache vote.
+    // On a write, stale replicas vote higher than good replicas (see issue 4010)
+    // so the replication needs to happen if archive vote is less than cache vote.
+    if ((irods::WRITE_OPERATION != *_opr && arch_check_vote > cache_check_vote) ||
+        (irods::WRITE_OPERATION == *_opr && arch_check_vote < cache_check_vote))
+    {
+        if (irv::vote::zero == arch_check_vote) {
             *_out_vote = irv::vote::zero;
             return SUCCESS();
         }
