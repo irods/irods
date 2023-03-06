@@ -22,6 +22,7 @@
 
 // =-=-=-=-=-=-=-
 // stl includes
+#include <algorithm>
 #include <cstdlib>
 #include <map>
 #include <regex>
@@ -43,39 +44,47 @@ namespace irods
 
     /// =-=-=-=-=-=-=-
     /// @brief given a property map and the target host name decide between a federated key and a local key
-    const std::string& determine_negotiation_key( const std::string& _host_name )
+    auto determine_negotiation_key(const std::string& _host_name) -> std::string
     {
-        // search the federation map for the host name
         try {
-            for ( const auto& el : irods::get_server_property<const std::vector<boost::any>>(irods::CFG_FEDERATION_KW) ) {
+            for (const auto& el : irods::get_server_property<const std::vector<boost::any>&>(irods::CFG_FEDERATION_KW))
+            {
                 try {
-                    const auto& federation = boost::any_cast<const std::unordered_map<std::string, boost::any>&>(el);
-                    try {
-                        if ( _host_name == boost::any_cast<const std::string&>(boost::any_cast<const std::vector<boost::any>&>(federation.at(irods::CFG_CATALOG_PROVIDER_HOSTS_KW))[0]) ) {
-                            return boost::any_cast<const std::string&>(federation.at(irods::CFG_NEGOTIATION_KEY_KW));
-                        }
-                    } catch ( const boost::bad_any_cast& ) {
-                        rodsLog(
-                            LOG_ERROR,
-                            "%s - failed to cast federation entry to string",
-                            __PRETTY_FUNCTION__);
-                        continue;
-                    } catch ( const std::out_of_range& ) {
-                        rodsLog(
-                            LOG_ERROR,
-                            "%s - federation object did not contain required keys",
-                            __PRETTY_FUNCTION__);
+                    const auto& item = boost::any_cast<const std::unordered_map<std::string, boost::any>&>(el);
+
+                    const auto e = std::cend(item);
+                    const auto provider_hosts_itr = item.find(irods::CFG_CATALOG_PROVIDER_HOSTS_KW);
+                    const auto negotiation_key = item.find(irods::CFG_NEGOTIATION_KEY_KW);
+                    if (e == provider_hosts_itr || e == negotiation_key) {
+                        irods::log(
+                            LOG_WARNING,
+                            fmt::format(
+                                "[{}] federation entry missing required properties - check configuration", __func__));
                         continue;
                     }
-                } catch ( const boost::bad_any_cast& ) {
-                    rodsLog(
-                        LOG_ERROR,
-                        "%s - failed to cast array member to federation object",
-                        __PRETTY_FUNCTION__);
+
+                    const auto& provider_hosts =
+                        boost::any_cast<const std::vector<boost::any>&>(provider_hosts_itr->second);
+
+                    const auto hostname_in_provider_hosts_list = std::any_of(
+                        std::cbegin(provider_hosts), std::cend(provider_hosts), [&_host_name](const auto& _host) {
+                            return _host_name == boost::any_cast<const std::string&>(_host);
+                        });
+
+                    if (hostname_in_provider_hosts_list) {
+                        return boost::any_cast<const std::string&>(negotiation_key->second);
+                    }
+                }
+                catch (const boost::bad_any_cast& e) {
+                    irods::log(LOG_ERROR,
+                               fmt::format(
+                                   "[{}] boost::any_cast failed for federation entry - check configuration", __func__));
                     continue;
                 }
-            } // for i
-        } catch ( const irods::exception& ) {}
+            }
+        }
+        catch (const irods::exception&) {
+        }
 
         // if not, it must be in our zone
         return irods::get_server_property<const std::string>(CFG_NEGOTIATION_KEY_KW);
