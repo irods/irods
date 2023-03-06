@@ -20,6 +20,7 @@
 
 // =-=-=-=-=-=-=-
 // stl includes
+#include <algorithm>
 #include <cstdlib>
 #include <map>
 #include <regex>
@@ -41,39 +42,33 @@ namespace irods
 
     /// =-=-=-=-=-=-=-
     /// @brief given a property map and the target host name decide between a federated key and a local key
-    const std::string determine_negotiation_key( const std::string& _host_name )
+    auto determine_negotiation_key(const std::string& _host_name) -> std::string
     {
-        // search the federation map for the host name
         try {
-            for ( const auto& federation : irods::get_server_property<const nlohmann::json&>(irods::KW_CFG_FEDERATION) ) {
-                try {
-                    try {
-                        if (_host_name == federation.at(irods::KW_CFG_CATALOG_PROVIDER_HOSTS)[0].get<std::string>()) {
-                            return federation.at(irods::KW_CFG_NEGOTIATION_KEY).get<std::string>();
-                        }
-                    } catch ( const nlohmann::json::exception& e) {
-                        rodsLog(
-                            LOG_ERROR,
-                            "%s - failed to get federation entry hostname string [%s]",
-                            __PRETTY_FUNCTION__,
-                            e.what());
-                        continue;
-                    } catch ( const std::out_of_range& ) {
-                        rodsLog(
-                            LOG_ERROR,
-                            "%s - federation object did not contain required keys",
-                            __PRETTY_FUNCTION__);
-                        continue;
-                    }
-                } catch ( const boost::bad_any_cast& ) {
-                    rodsLog(
-                        LOG_ERROR,
-                        "%s - failed to cast array member to federation object",
-                        __PRETTY_FUNCTION__);
+            const auto& federation_list = irods::get_server_property<const nlohmann::json&>(irods::KW_CFG_FEDERATION);
+            for (const auto& item : federation_list) {
+                const auto e = std::cend(item);
+                const auto provider_hosts = item.find(irods::KW_CFG_CATALOG_PROVIDER_HOSTS);
+                const auto negotiation_key = item.find(irods::KW_CFG_NEGOTIATION_KEY);
+                if (e == provider_hosts || e == negotiation_key) {
+                    irods::log(LOG_WARNING,
+                               fmt::format("[{}] federation entry missing required properties - check configuration",
+                                           __func__));
                     continue;
                 }
-            } // for i
-        } catch ( const irods::exception& ) {}
+
+                const auto hostname_in_provider_hosts_list = std::any_of(
+                    std::cbegin(*provider_hosts), std::cend(*provider_hosts), [&_host_name](const auto& _host) {
+                        return _host_name == _host;
+                    });
+
+                if (hostname_in_provider_hosts_list) {
+                    return negotiation_key->get<std::string>();
+                }
+            }
+        }
+        catch (const irods::exception&) {
+        }
 
         // if not, it must be in our zone
         return irods::get_server_property<std::string>(KW_CFG_NEGOTIATION_KEY);
