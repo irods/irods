@@ -1128,6 +1128,53 @@ OUTPUT ruleExecOut
         finally:
             user.run_icommand(['irm', '-f', parameters['remote_data_object']])
 
+
+    def test_catalog_provider_hosts_other_than_the_first_are_considered__issue_6827(self):
+        import json
+
+        user = self.user_sessions[0]
+        remote_zone = self.config['remote_zone']
+        local_zone = self.config['local_zone']
+        remote_home_collection = os.path.join('/{}'.format(remote_zone), 'home', '#'.join([user.username, local_zone]))
+
+        # Control case: Make sure we can list the contents in the remote zone...
+        user.assert_icommand(['ils', '-l', remote_home_collection], 'STDOUT')
+
+        # Get the current server configuration so we can make changes
+        server_config_filename = paths.server_config_path()
+        with open(server_config_filename) as f:
+            svr_cfg = json.load(f)
+
+        # Add a dummy entry to the beginning of the catalog_provider_hosts which will not resolve.
+        remote_provider_host = svr_cfg['federation'][0]['catalog_provider_hosts'][0]
+        svr_cfg['federation'][0]['catalog_provider_hosts'][0] = 'keeplookinbuddy'
+
+        new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
+        with lib.file_backed_up(server_config_filename):
+            # Repave the existing server_config.json. It will be restored when we leave this 'with' block.
+            with open(server_config_filename, 'w') as f:
+                f.write(new_server_config)
+
+            # If the hostname is not found in the catalog_provider_hosts list, the remote server will sign its local
+            # zone key with its local negotiation key and the signed zone key sent by the local server will not match
+            # that signed zone key. This should cause the ils to result in a SERVER_NEGOTIATION_ERROR.
+            user.assert_icommand(['ils', '-l', remote_home_collection], 'STDERR', 'SERVER_NEGOTIATION_ERROR')
+
+        # Now add the valid hostname to the end of the list so that the zone key will be correctly signed.
+        svr_cfg['federation'][0]['catalog_provider_hosts'].append(remote_provider_host)
+
+        # Dump to a string to repave the existing server_config.json.
+        new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
+        with lib.file_backed_up(server_config_filename):
+            # Repave the existing server_config.json. It will be restored when we leave this 'with' block.
+            with open(server_config_filename, 'w') as f:
+                f.write(new_server_config)
+
+            # Ensure that we can still list the contents in the remote zone because the server negotiation logic looked
+            # at all the entries in the catalog_provider_hosts (not just the first one).
+            user.assert_icommand(['ils', '-l', remote_home_collection], 'STDOUT')
+
+
 class Test_Admin_Commands(unittest.TestCase):
 
     '''
