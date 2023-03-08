@@ -277,3 +277,549 @@ class test_iquest_with_data_resc_hier(unittest.TestCase):
         for op in operations_to_expected_result:
             query = 'select DATA_RESC_HIER where DATA_NAME = \'{}\' and DATA_RESC_HIER {} \'{}\''.format(self.data_name, op, pattern)
             self.user.assert_icommand(['iquest', '%s', query], 'STDOUT', operations_to_expected_result[op])
+
+
+class test_iquest_logical_or_operator_with_data_resc_hier(unittest.TestCase):
+    @classmethod
+    def setUpClass(self):
+        self.user = session.mkuser_and_return_session('rodsuser', 'alice', 'apass', lib.get_hostname())
+
+        self.root_resource = 'root'
+        self.mid_resource = 'mid'
+        self.leaf_resource1 = 'leaf1'
+        self.leaf_resource2 = 'leaf2'
+        self.data_name = 'foo'
+        self.logical_path = os.path.join(self.user.session_collection, self.data_name)
+        self.hierarchy1 = ';'.join([self.root_resource, self.mid_resource, self.leaf_resource1])
+        self.hierarchy2 = ';'.join([self.root_resource, self.mid_resource, self.leaf_resource2])
+
+        with session.make_session_for_existing_admin() as admin_session:
+            lib.create_passthru_resource(self.root_resource, admin_session)
+            lib.create_replication_resource(self.mid_resource, admin_session)
+            lib.create_ufs_resource(self.leaf_resource1, admin_session)
+            lib.create_ufs_resource(self.leaf_resource2, admin_session)
+            lib.add_child_resource(self.root_resource, self.mid_resource, admin_session)
+            lib.add_child_resource(self.mid_resource, self.leaf_resource1, admin_session)
+            lib.add_child_resource(self.mid_resource, self.leaf_resource2, admin_session)
+
+        # This should trigger a replication to the other resource.
+        self.user.assert_icommand(['itouch', '-R', self.leaf_resource1, self.logical_path])
+
+        self.base_query = 'select DATA_RESC_HIER where DATA_NAME = \'{}\' and DATA_RESC_HIER'.format(self.data_name)
+
+
+    @classmethod
+    def tearDownClass(self):
+        self.user.assert_icommand(['irm', '-f', self.logical_path])
+
+        with session.make_session_for_existing_admin() as admin_session:
+            self.user.__exit__()
+            admin_session.run_icommand(['iadmin', 'rmuser', 'alice'])
+            lib.remove_child_resource(self.mid_resource, self.leaf_resource2, admin_session)
+            lib.remove_child_resource(self.mid_resource, self.leaf_resource1, admin_session)
+            lib.remove_child_resource(self.root_resource, self.mid_resource, admin_session)
+            lib.remove_resource(self.leaf_resource2, admin_session)
+            lib.remove_resource(self.leaf_resource1, admin_session)
+            lib.remove_resource(self.mid_resource, admin_session)
+            lib.remove_resource(self.root_resource, admin_session)
+
+
+    def run_logical_or_query_scenarios(self, scenarios):
+        # Each of the scenarios being tested here is a list of lists of tuples. The tuples consist of an operation, a
+        # condition, and an expected result set:
+        #  - The operation is one of the GenQuery WHERE operations: LIKE, NOT LIKE, =, and !=
+        #  - The condition is a string which will be paired with the operation, e.g. 'root;%'
+        #  - The expected result set is a list of strings representing resource hierarchies which the query will return
+        #
+        # Here is an example scenario:
+        #   [('LIKE', '%;leaf1', [self.hierarchy1]),
+        #    ('NOT LIKE', '%;leaf1', [self.hierarchy2])]
+        #
+        # This will result in a clause for the GenQuery that looks like this:
+        #   LIKE '%;leaf1' || NOT LIKE '%;leaf2'
+        #
+        # The clause will then be put into a GenQuery string run by iquest, which will look like this:
+        #   iquest "%s" "select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER LIKE '%;leaf1' || NOT LIKE '%;leaf2'"
+        #
+        # The expected result set is {self.hierarchy1, self.hierarchy2} because the first condition expects
+        # self.hierarchy1 and the second condition expects self.hierarchy2. The || operator combines the expected
+        # result sets.
+        i = 0
+        for scenario in scenarios:
+            i = i + 1
+
+            clauses = []
+            expected_result_set = set()
+            for clause_tuple in scenario:
+                operator = clause_tuple[0]
+                condition = clause_tuple[1]
+                clauses.append('{} \'{}\''.format(operator, condition))
+
+                for expected_result in clause_tuple[2]:
+                    expected_result_set.add(expected_result)
+
+            query = self.base_query + ' ' + ' || '.join(clauses)
+
+            print("============= (" + query + "): [" + str(i) + "] =============")
+            print(scenario)
+
+            out,err,_ = self.user.run_icommand(['iquest', '%s', query])
+            print(out)
+            print(err)
+
+            if 0 != len(expected_result_set):
+                for result in expected_result_set:
+                    self.assertIn(result, out)
+            else:
+                self.assertIn('CAT_NO_ROWS_FOUND', out)
+
+
+    def test_like_like(self):
+        op1 = 'LIKE'
+        op2 = 'LIKE'
+        scenarios = [
+            [(op1, 'nope;%', []),                                                           (op2, 'nope;%', [])],
+            [(op1, 'nope;%', []),                                                           (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+            [(op1, 'nope;%', []),                                                           (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy1])],
+            [(op1, 'nope;%', []),                                                           (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy2])],
+            [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op2, 'nope;%', [])],
+            [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+            [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy1])],
+            [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy1]),                  (op2, 'nope;%', [])],
+            [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy1]),                  (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy1]),                  (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy1])],
+            [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy1]),                  (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy2]),                  (op2, 'nope;%', [])],
+            [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy2]),                  (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy2]),                  (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy1])],
+            [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy2]),                  (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy2])],
+        ]
+
+        self.run_logical_or_query_scenarios(scenarios)
+
+
+    def test_like_not_like(self):
+        op1 = 'LIKE'
+        op2 = 'NOT LIKE'
+        scenarios = [
+            [(op1, 'nope;%', []),                                                           (op2, '{};%'.format(self.root_resource), [])],
+            [(op1, 'nope;%', []),                                                           (op2, 'nope;%', [self.hierarchy1, self.hierarchy2])],
+            [(op1, 'nope;%', []),                                                           (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy1])],
+            [(op1, 'nope;%', []),                                                           (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy2])],
+            [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op2, '{};%'.format(self.root_resource), [])],
+            [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op2, 'nope;%', [self.hierarchy1, self.hierarchy2])],
+            [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy1])],
+            [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy1]),                  (op2, '{};%'.format(self.root_resource), [])],
+            [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy1]),                  (op2, 'nope;%', [self.hierarchy1, self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy1]),                  (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy1])],
+            [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy1]),                  (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy2]),                  (op2, '{};%'.format(self.root_resource), [])],
+            [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy2]),                  (op2, 'nope;%', [self.hierarchy1, self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy2]),                  (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy1])],
+            [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy2]),                  (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy2])],
+        ]
+
+        self.run_logical_or_query_scenarios(scenarios)
+
+
+    def test_like_equals(self):
+        op1 = 'LIKE'
+        op2 = '='
+        # All cases where multiple matches are expected with = have been skipped. These are not valid scenarios for = operator.
+        scenarios = [
+            [(op1, 'nope;%', []),                                                           (op2, 'nope;%', [])],
+        #   [(op1, 'nope;%', []),                                                           (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+            [(op1, 'nope;%', []),                                                           (op2, self.hierarchy1, [self.hierarchy1])],
+            [(op1, 'nope;%', []),                                                           (op2, self.hierarchy2, [self.hierarchy2])],
+            [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op2, 'nope;%', [])],
+        #   [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+            [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op2, self.hierarchy1, [self.hierarchy1])],
+            [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op2, self.hierarchy2, [self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy1]),                  (op2, 'nope;%', [])],
+        #   [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy1]),                  (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy1]),                  (op2, self.hierarchy1, [self.hierarchy1])],
+            [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy1]),                  (op2, self.hierarchy2, [self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy2]),                  (op2, 'nope;%', [])],
+        #   [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy2]),                  (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy2]),                  (op2, self.hierarchy1, [self.hierarchy1])],
+            [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy2]),                  (op2, self.hierarchy2, [self.hierarchy2])],
+        ]
+
+        self.run_logical_or_query_scenarios(scenarios)
+
+
+    def test_like_not_equals(self):
+        op1 = 'LIKE'
+        op2 = '!='
+        # All cases where no matches are expected with != have been skipped. These are not valid scenarios for != operator.
+        scenarios = [
+        #   [(op1, 'nope;%', []),                                                           (op2, 'nope;%', [])],
+            [(op1, 'nope;%', []),                                                           (op2, 'nope;%', [self.hierarchy1, self.hierarchy2])],
+            [(op1, 'nope;%', []),                                                           (op2, self.hierarchy1, [self.hierarchy2])],
+            [(op1, 'nope;%', []),                                                           (op2, self.hierarchy2, [self.hierarchy1])],
+        #   [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op2, 'nope;%', [])],
+            [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op1, 'nope;%', [self.hierarchy1, self.hierarchy2])],
+            [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op2, self.hierarchy1, [self.hierarchy2])],
+            [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op2, self.hierarchy2, [self.hierarchy1])],
+        #   [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy1]),                  (op2, 'nope;%', [])],
+            [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy1]),                  (op2, 'nope;%', [self.hierarchy1, self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy1]),                  (op2, self.hierarchy1, [self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy1]),                  (op2, self.hierarchy2, [self.hierarchy1])],
+        #   [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy2]),                  (op2, 'nope;%', [])],
+            [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy2]),                  (op2, 'nope;%', [self.hierarchy1, self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy2]),                  (op2, self.hierarchy1, [self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy2]),                  (op2, self.hierarchy2, [self.hierarchy1])],
+        ]
+
+        self.run_logical_or_query_scenarios(scenarios)
+
+
+    def test_not_like_like(self):
+        op1 = 'NOT LIKE'
+        op2 = 'LIKE'
+        scenarios = [
+            [(op1, '{};%'.format(self.root_resource), []),                  (op2, 'nope;%', [])],
+            [(op1, '{};%'.format(self.root_resource), []),                  (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+            [(op1, '{};%'.format(self.root_resource), []),                  (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy1])],
+            [(op1, '{};%'.format(self.root_resource), []),                  (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy2])],
+            [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),           (op2, 'nope;%', [])],
+            [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),           (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+            [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),           (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy1])],
+            [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),           (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy1]),  (op2, 'nope;%', [])],
+            [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy1]),  (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy1]),  (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy1])],
+            [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy1]),  (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy2]),  (op2, 'nope;%', [])],
+            [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy2]),  (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy2]),  (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy1])],
+            [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy2]),  (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy2])],
+        ]
+
+        self.run_logical_or_query_scenarios(scenarios)
+
+
+    def test_not_like_not_like(self):
+        op1 = 'NOT LIKE'
+        op2 = 'NOT LIKE'
+        scenarios = [
+            [(op1, '{};%'.format(self.root_resource), []),                  (op2, '{};%'.format(self.root_resource), [])],
+            [(op1, '{};%'.format(self.root_resource), []),                  (op2, 'nope;%', [self.hierarchy1, self.hierarchy2])],
+            [(op1, '{};%'.format(self.root_resource), []),                  (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy1])],
+            [(op1, '{};%'.format(self.root_resource), []),                  (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy2])],
+            [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),           (op2, '{};%'.format(self.root_resource), [])],
+            [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),           (op2, 'nope;%', [self.hierarchy1, self.hierarchy2])],
+            [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),           (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy1])],
+            [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),           (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy1]),  (op2, '{};%'.format(self.root_resource), [])],
+            [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy1]),  (op2, 'nope;%', [self.hierarchy1, self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy1]),  (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy1])],
+            [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy1]),  (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy2]),  (op2, '{};%'.format(self.root_resource), [])],
+            [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy2]),  (op2, 'nope;%', [self.hierarchy1, self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy2]),  (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy1])],
+            [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy2]),  (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy2])],
+        ]
+
+        self.run_logical_or_query_scenarios(scenarios)
+
+
+    def test_not_like_equals(self):
+        op1 = 'NOT LIKE'
+        op2 = '='
+        # All cases where multiple matches are expected with = have been skipped. These are not valid scenarios for = operator.
+        scenarios = [
+            [(op1, '{};%'.format(self.root_resource), []),                  (op2, 'nope;%', [])],
+        #   [(op1, '{};%'.format(self.root_resource), []),                  (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+            [(op1, '{};%'.format(self.root_resource), []),                  (op2, self.hierarchy1, [self.hierarchy1])],
+            [(op1, '{};%'.format(self.root_resource), []),                  (op2, self.hierarchy2, [self.hierarchy2])],
+            [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),           (op2, 'nope;%', [])],
+        #   [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),           (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+            [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),           (op2, self.hierarchy1, [self.hierarchy1])],
+            [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),           (op2, self.hierarchy2, [self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy1]),  (op2, 'nope;%', [])],
+        #   [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy1]),  (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy1]),  (op2, self.hierarchy1, [self.hierarchy1])],
+            [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy1]),  (op2, self.hierarchy2, [self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy2]),  (op2, 'nope;%', [])],
+        #   [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy2]),  (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy2]),  (op2, self.hierarchy1, [self.hierarchy1])],
+            [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy2]),  (op2, self.hierarchy2, [self.hierarchy2])],
+        ]
+
+        self.run_logical_or_query_scenarios(scenarios)
+
+
+    def test_not_like_not_equals(self):
+        op1 = 'NOT LIKE'
+        op2 = '!='
+        # All cases where no matches are expected with != have been skipped. These are not valid scenarios for != operator.
+        scenarios = [
+        #   [(op1, '{};%'.format(self.root_resource), []),                  (op2, 'nope;%', [])],
+            [(op1, '{};%'.format(self.root_resource), []),                  (op2, 'nope;%', [self.hierarchy1, self.hierarchy2])],
+            [(op1, '{};%'.format(self.root_resource), []),                  (op2, self.hierarchy1, [self.hierarchy2])],
+            [(op1, '{};%'.format(self.root_resource), []),                  (op2, self.hierarchy2, [self.hierarchy1])],
+        #   [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),           (op2, 'nope;%', [])],
+            [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),           (op2, 'nope;%', [self.hierarchy1, self.hierarchy2])],
+            [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),           (op2, self.hierarchy1, [self.hierarchy2])],
+            [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),           (op2, self.hierarchy2, [self.hierarchy1])],
+        #   [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy1]),  (op2, 'nope;%', [])],
+            [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy1]),  (op2, 'nope;%', [self.hierarchy1, self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy1]),  (op2, self.hierarchy1, [self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource2), [self.hierarchy1]),  (op2, self.hierarchy2, [self.hierarchy1])],
+        #   [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy2]),  (op2, 'nope;%', [])],
+            [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy2]),  (op2, 'nope;%', [self.hierarchy1, self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy2]),  (op2, self.hierarchy1, [self.hierarchy2])],
+            [(op1, '%;{}'.format(self.leaf_resource1), [self.hierarchy2]),  (op2, self.hierarchy2, [self.hierarchy1])],
+        ]
+
+        self.run_logical_or_query_scenarios(scenarios)
+
+
+    def test_equals_like(self):
+        op1 = '='
+        op2 = 'LIKE'
+        # All cases where multiple matches are expected with = have been skipped. These are not valid scenarios for = operator.
+        scenarios = [
+            [(op1, 'nope;%', []),                                                   (op2, 'nope;%', [])],
+            [(op1, 'nope;%', []),                                                   (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+            [(op1, 'nope;%', []),                                                   (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy1])],
+            [(op1, 'nope;%', []),                                                   (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy2])],
+        #   [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op2, 'nope;%', [])],
+        #   [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+        #   [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy1])],
+        #   [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy2])],
+            [(op1, self.hierarchy1, [self.hierarchy1]),                             (op2, 'nope;%', [])],
+            [(op1, self.hierarchy1, [self.hierarchy1]),                             (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+            [(op1, self.hierarchy1, [self.hierarchy1]),                             (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy1])],
+            [(op1, self.hierarchy1, [self.hierarchy1]),                             (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy2])],
+            [(op1, self.hierarchy2, [self.hierarchy2]),                             (op2, 'nope;%', [])],
+            [(op1, self.hierarchy2, [self.hierarchy2]),                             (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+            [(op1, self.hierarchy2, [self.hierarchy2]),                             (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy1])],
+            [(op1, self.hierarchy2, [self.hierarchy2]),                             (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy2])],
+        ]
+
+        self.run_logical_or_query_scenarios(scenarios)
+
+
+    def test_equals_not_like(self):
+        op1 = '='
+        op2 = 'NOT LIKE'
+        # All cases where multiple matches are expected with = have been skipped. These are not valid scenarios for = operator.
+        scenarios = [
+            [(op1, 'nope;%', []),                                                   (op2, '{};%'.format(self.root_resource), [])],
+            [(op1, 'nope;%', []),                                                   (op2, 'nope;%', [self.hierarchy1, self.hierarchy2])],
+            [(op1, 'nope;%', []),                                                   (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy1])],
+            [(op1, 'nope;%', []),                                                   (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy2])],
+        #   [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op2, '{};%'.format(self.root_resource), [])],
+        #   [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op2, 'nope;%', [self.hierarchy1, self.hierarchy2])],
+        #   [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy1])],
+        #   [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy2])],
+            [(op1, self.hierarchy1, [self.hierarchy1]),                             (op2, '{};%'.format(self.root_resource), [])],
+            [(op1, self.hierarchy1, [self.hierarchy1]),                             (op2, 'nope;%', [self.hierarchy1, self.hierarchy2])],
+            [(op1, self.hierarchy1, [self.hierarchy1]),                             (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy1])],
+            [(op1, self.hierarchy1, [self.hierarchy1]),                             (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy2])],
+            [(op1, self.hierarchy2, [self.hierarchy2]),                             (op2, '{};%'.format(self.root_resource), [])],
+            [(op1, self.hierarchy2, [self.hierarchy2]),                             (op2, 'nope;%', [self.hierarchy1, self.hierarchy2])],
+            [(op1, self.hierarchy2, [self.hierarchy2]),                             (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy1])],
+            [(op1, self.hierarchy2, [self.hierarchy2]),                             (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy2])],
+        ]
+
+        self.run_logical_or_query_scenarios(scenarios)
+
+
+    def test_equals_equals(self):
+        op1 = '='
+        op2 = '='
+        # All cases where multiple matches are expected with = have been skipped. These are not valid scenarios for = operator.
+        scenarios = [
+            [(op1, 'nope;%', []),                                                   (op2, 'nope;%', [])],
+        #   [(op1, 'nope;%', []),                                                   (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+            [(op1, 'nope;%', []),                                                   (op2, self.hierarchy1, [self.hierarchy1])],
+            [(op1, 'nope;%', []),                                                   (op2, self.hierarchy2, [self.hierarchy2])],
+        #   [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op2, 'nope;%', [])],
+        #   [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+        #   [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op2, self.hierarchy1, [self.hierarchy1])],
+        #   [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op2, self.hierarchy2, [self.hierarchy2])],
+            [(op1, self.hierarchy1, [self.hierarchy1]),                             (op2, 'nope;%', [])],
+        #   [(op1, self.hierarchy1, [self.hierarchy1]),                             (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+            [(op1, self.hierarchy1, [self.hierarchy1]),                             (op2, self.hierarchy1, [self.hierarchy1])],
+            [(op1, self.hierarchy1, [self.hierarchy1]),                             (op2, self.hierarchy2, [self.hierarchy2])],
+            [(op1, self.hierarchy2, [self.hierarchy2]),                             (op2, 'nope;%', [])],
+        #   [(op1, self.hierarchy2, [self.hierarchy2]),                             (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+            [(op1, self.hierarchy2, [self.hierarchy2]),                             (op2, self.hierarchy1, [self.hierarchy1])],
+            [(op1, self.hierarchy2, [self.hierarchy2]),                             (op2, self.hierarchy2, [self.hierarchy2])],
+        ]
+
+        self.run_logical_or_query_scenarios(scenarios)
+
+
+    def test_equals_not_equals(self):
+        op1 = '='
+        op2 = '!='
+        # All cases where multiple matches are expected with = have been skipped. These are not valid scenarios for = operator.
+        # All cases where no matches are expected with != have been skipped. These are not valid scenarios for != operator.
+        scenarios = [
+        #   [(op1, 'nope;%', []),                                                   (op2, 'nope;%', [])],
+            [(op1, 'nope;%', []),                                                   (op2, 'nope;%', [self.hierarchy1, self.hierarchy2])],
+            [(op1, 'nope;%', []),                                                   (op2, self.hierarchy1, [self.hierarchy2])],
+            [(op1, 'nope;%', []),                                                   (op2, self.hierarchy2, [self.hierarchy1])],
+        #   [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op2, 'nope;%', [])],
+        #   [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op2, 'nope;%', [self.hierarchy1, self.hierarchy2])],
+        #   [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op2, self.hierarchy1, [self.hierarchy2])],
+        #   [(op1, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2]),  (op2, self.hierarchy2, [self.hierarchy1])],
+        #   [(op1, self.hierarchy1, [self.hierarchy1]),                             (op2, 'nope;%', [])],
+            [(op1, self.hierarchy1, [self.hierarchy1]),                             (op2, 'nope;%', [self.hierarchy1, self.hierarchy2])],
+            [(op1, self.hierarchy1, [self.hierarchy1]),                             (op2, self.hierarchy1, [self.hierarchy2])],
+            [(op1, self.hierarchy1, [self.hierarchy1]),                             (op2, self.hierarchy2, [self.hierarchy1])],
+        #   [(op1, self.hierarchy2, [self.hierarchy2]),                             (op2, 'nope;%', [])],
+            [(op1, self.hierarchy2, [self.hierarchy2]),                             (op2, 'nope;%', [self.hierarchy1, self.hierarchy2])],
+            [(op1, self.hierarchy2, [self.hierarchy2]),                             (op2, self.hierarchy1, [self.hierarchy2])],
+            [(op1, self.hierarchy2, [self.hierarchy2]),                             (op2, self.hierarchy2, [self.hierarchy1])],
+        ]
+
+        self.run_logical_or_query_scenarios(scenarios)
+
+
+    def test_not_equals_like(self):
+        op1 = '!='
+        op2 = 'LIKE'
+        # All cases where no matches are expected with != have been skipped. These are not valid scenarios for != operator.
+        scenarios = [
+        #   [(op1, 'nope;%', []),                                   (op2, 'nope;%', [])],
+        #   [(op1, 'nope;%', []),                                   (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+        #   [(op1, 'nope;%', []),                                   (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy1])],
+        #   [(op1, 'nope;%', []),                                   (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy2])],
+            [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),   (op2, 'nope;%', [])],
+            [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),   (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+            [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),   (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy1])],
+            [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),   (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy2])],
+            [(op1, self.hierarchy1, [self.hierarchy2]),             (op2, 'nope;%', [])],
+            [(op1, self.hierarchy1, [self.hierarchy2]),             (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+            [(op1, self.hierarchy1, [self.hierarchy2]),             (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy1])],
+            [(op1, self.hierarchy1, [self.hierarchy2]),             (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy2])],
+            [(op1, self.hierarchy2, [self.hierarchy1]),             (op2, 'nope;%', [])],
+            [(op1, self.hierarchy2, [self.hierarchy1]),             (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+            [(op1, self.hierarchy2, [self.hierarchy1]),             (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy1])],
+            [(op1, self.hierarchy2, [self.hierarchy1]),             (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy2])],
+        ]
+
+        self.run_logical_or_query_scenarios(scenarios)
+
+
+    def test_not_equals_not_like(self):
+        op1 = '!='
+        op2 = 'NOT LIKE'
+        # All cases where no matches are expected with != have been skipped. These are not valid scenarios for != operator.
+        scenarios = [
+        #   [(op1, 'nope;%', []),                                   (op2, '{};%'.format(self.root_resource), [])],
+        #   [(op1, 'nope;%', []),                                   (op2, 'nope;%', [self.hierarchy1, self.hierarchy2])],
+        #   [(op1, 'nope;%', []),                                   (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy1])],
+        #   [(op1, 'nope;%', []),                                   (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy2])],
+            [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),   (op2, '{};%'.format(self.root_resource), [])],
+            [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),   (op2, 'nope;%', [self.hierarchy1, self.hierarchy2])],
+            [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),   (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy1])],
+            [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),   (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy2])],
+            [(op1, self.hierarchy1, [self.hierarchy2]),             (op2, '{};%'.format(self.root_resource), [])],
+            [(op1, self.hierarchy1, [self.hierarchy2]),             (op2, 'nope;%', [self.hierarchy1, self.hierarchy2])],
+            [(op1, self.hierarchy1, [self.hierarchy2]),             (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy1])],
+            [(op1, self.hierarchy1, [self.hierarchy2]),             (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy2])],
+            [(op1, self.hierarchy2, [self.hierarchy1]),             (op2, '{};%'.format(self.root_resource), [])],
+            [(op1, self.hierarchy2, [self.hierarchy1]),             (op2, 'nope;%', [self.hierarchy1, self.hierarchy2])],
+            [(op1, self.hierarchy2, [self.hierarchy1]),             (op2, '%;{}'.format(self.leaf_resource2), [self.hierarchy1])],
+            [(op1, self.hierarchy2, [self.hierarchy1]),             (op2, '%;{}'.format(self.leaf_resource1), [self.hierarchy2])],
+        ]
+
+        self.run_logical_or_query_scenarios(scenarios)
+
+
+    def test_not_equals_equals(self):
+        op1 = '!='
+        op2 = '='
+        # All cases where multiple matches are expected with = have been skipped. These are not valid scenarios for = operator.
+        # All cases where no matches are expected with != have been skipped. These are not valid scenarios for != operator.
+        scenarios = [
+        #   [(op1, 'nope;%', []),                                   (op2, 'nope;%', [])],
+        #   [(op1, 'nope;%', []),                                   (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+        #   [(op1, 'nope;%', []),                                   (op2, self.hierarchy1, [self.hierarchy1])],
+        #   [(op1, 'nope;%', []),                                   (op2, self.hierarchy2, [self.hierarchy2])],
+            [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),   (op2, 'nope;%', [])],
+        #   [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),   (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+            [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),   (op2, self.hierarchy1, [self.hierarchy1])],
+            [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),   (op2, self.hierarchy2, [self.hierarchy2])],
+            [(op1, self.hierarchy1, [self.hierarchy2]),             (op2, 'nope;%', [])],
+        #   [(op1, self.hierarchy1, [self.hierarchy2]),             (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+            [(op1, self.hierarchy1, [self.hierarchy2]),             (op2, self.hierarchy1, [self.hierarchy1])],
+            [(op1, self.hierarchy1, [self.hierarchy2]),             (op2, self.hierarchy2, [self.hierarchy2])],
+            [(op1, self.hierarchy2, [self.hierarchy1]),             (op2, 'nope;%', [])],
+        #   [(op1, self.hierarchy2, [self.hierarchy1]),             (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+            [(op1, self.hierarchy2, [self.hierarchy1]),             (op2, self.hierarchy1, [self.hierarchy1])],
+            [(op1, self.hierarchy2, [self.hierarchy1]),             (op2, self.hierarchy2, [self.hierarchy2])],
+        ]
+
+        self.run_logical_or_query_scenarios(scenarios)
+
+
+    def test_not_equals_not_equals(self):
+        op1 = '!='
+        op2 = '!='
+        # All cases where no matches are expected with != have been skipped. These are not valid scenarios for != operator.
+        scenarios = [
+        #   [(op1, 'nope;%', []),                                   (op2, 'nope;%', [])],
+        #   [(op1, 'nope;%', []),                                   (op2, '{};%'.format(self.root_resource), [self.hierarchy1, self.hierarchy2])],
+        #   [(op1, 'nope;%', []),                                   (op2, self.hierarchy1, [self.hierarchy1])],
+        #   [(op1, 'nope;%', []),                                   (op2, self.hierarchy2, [self.hierarchy2])],
+        #   [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),   (op2, 'nope;%', [])],
+            [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),   (op2, 'nope;%', [self.hierarchy1, self.hierarchy2])],
+            [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),   (op2, self.hierarchy1, [self.hierarchy2])],
+            [(op1, 'nope;%', [self.hierarchy1, self.hierarchy2]),   (op2, self.hierarchy2, [self.hierarchy1])],
+        #   [(op1, self.hierarchy1, [self.hierarchy2]),             (op2, 'nope;%', [])],
+            [(op1, self.hierarchy1, [self.hierarchy2]),             (op2, 'nope;%', [self.hierarchy1, self.hierarchy2])],
+            [(op1, self.hierarchy1, [self.hierarchy2]),             (op2, self.hierarchy1, [self.hierarchy2])],
+            [(op1, self.hierarchy1, [self.hierarchy2]),             (op2, self.hierarchy2, [self.hierarchy1])],
+        #   [(op1, self.hierarchy2, [self.hierarchy1]),             (op2, 'nope;%', [])],
+            [(op1, self.hierarchy2, [self.hierarchy1]),             (op2, 'nope;%', [self.hierarchy1, self.hierarchy2])],
+            [(op1, self.hierarchy2, [self.hierarchy1]),             (op2, self.hierarchy1, [self.hierarchy2])],
+            [(op1, self.hierarchy2, [self.hierarchy1]),             (op2, self.hierarchy2, [self.hierarchy1])],
+        ]
+
+        self.run_logical_or_query_scenarios(scenarios)
+
+
+    def test_invalid_operations(self):
+        pattern = self.hierarchy1
+        valid_operations = [
+            'like',
+            'LIKE',
+            'not like',
+            'not LIKE',
+            'NOT like',
+            'NOT LIKE',
+            '=',
+            '!='
+        ]
+
+        invalid_operations = [
+            '',
+            '==',
+            'lik',
+            'like not like',
+            'not lik',
+            'not like like',
+            'not not like',
+            'not',
+            'notlike',
+            'ot like'
+        ]
+
+        for iop in invalid_operations:
+            for vop in valid_operations:
+                # First, with the invalid operation as the first clause of the ||...
+                query = '{} {} \'{}\' || {} \'{}\''.format(self.base_query, iop, pattern, vop, pattern)
+                self.user.assert_icommand(['iquest', '%s', query], 'STDERR', 'CAT_INVALID_ARGUMENT')
+
+                # Now, the valid operation as the first clause of the || and the invalid operation as the second.
+                query = '{} {} \'{}\' || {} \'{}\''.format(self.base_query, vop, pattern, iop, pattern)
+                self.user.assert_icommand(['iquest', '%s', query], 'STDERR', 'CAT_INVALID_ARGUMENT')
