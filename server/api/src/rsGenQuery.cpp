@@ -127,21 +127,19 @@ namespace {
         f << '\n';
     }
 
-    auto get_resc_id_cond_for_hier_cond(const std::string_view _cond) -> std::string
+    auto translate_single_data_resc_hier_condition_to_resc_id(const std::string& _cond) -> std::string
     {
         // The default return string will yield 0 results when run in a query because RESC_ID is never '0'.
         constexpr const char* default_condition_str = "='0'";
 
-        const auto cond = std::string{_cond};
-
-        const auto open_quote_pos = cond.find_first_of('\'');
-        const auto close_quote_pos = cond.find_last_of('\'');
+        const auto open_quote_pos = _cond.find_first_of('\'');
+        const auto close_quote_pos = _cond.find_last_of('\'');
         if (close_quote_pos == open_quote_pos) {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-            THROW(SYS_INVALID_INPUT_PARAM, fmt::format("Invalid condition: [{}]", cond));
+            THROW(SYS_INVALID_INPUT_PARAM, fmt::format("Invalid condition: [{}]", _cond));
         }
 
-        const std::string op = cond.substr(0, open_quote_pos);
+        const std::string op = _cond.substr(0, open_quote_pos);
 
         // Only allow =, !=, LIKE, and NOT LIKE to be specified. Check = first because it is used in some
         // critical path operations and will only match 1 result, so it should be quick.
@@ -169,11 +167,11 @@ namespace {
 
         if (!equal_op && !like_op && !not_like_op && !not_equal_op) {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-            THROW(CAT_INVALID_ARGUMENT, fmt::format("Invalid condition: [{}]", cond));
+            THROW(CAT_INVALID_ARGUMENT, fmt::format("Invalid condition: [{}]", _cond));
         }
 
         // Generate a regex by replacing GenQuery wildcards with regex wildcards.
-        std::string hier_regex_str = cond.substr(open_quote_pos + 1, close_quote_pos - open_quote_pos - 1);
+        std::string hier_regex_str = _cond.substr(open_quote_pos + 1, close_quote_pos - open_quote_pos - 1);
         if (!equal_op && !not_equal_op) {
             auto wildcard_pos = hier_regex_str.find_first_of('%');
             while (std::string::npos != wildcard_pos) {
@@ -213,7 +211,32 @@ namespace {
         }
 
         return fmt::format("IN ({})", fmt::join(leaf_ids, ","));
-    } // get_resc_id_cond_for_hier_cond
+    } // translate_single_data_resc_hier_condition_to_resc_id
+
+    auto translate_data_resc_hier_where_clause_to_resc_id(const std::string& _condition) -> std::string
+    {
+        std::string condition_str;
+
+        // For each || operator found, take the condition immediately preceding and translate it from the DATA_RESC_HIER
+        // condition to the equivalent RESC_ID condition.
+        auto previous_or_position = std::string_view::size_type{};
+        for (auto or_position = _condition.find("||", previous_or_position); std::string_view::npos != or_position;
+             or_position = _condition.find("||", previous_or_position))
+        {
+            condition_str += translate_single_data_resc_hier_condition_to_resc_id(
+                _condition.substr(previous_or_position, or_position));
+            condition_str += " || ";
+
+            // Advance the previous position tracker to the current || position, plus 2 so that the next condition to
+            // translate does not include the || itself.
+            previous_or_position = or_position + 2;
+        }
+
+        // There should be one condition found after the last || operator has been found which will need to be
+        // translated because the loop above is translating conditions BEFORE the || operator. || is a binary operation,
+        // so there will necessarily be one left over at the end.
+        return condition_str += translate_single_data_resc_hier_condition_to_resc_id(_condition.substr(previous_or_position));
+    } // translate_data_resc_hier_where_clause_to_resc_id
 } // anonymous namespace
 
 std::string
@@ -439,7 +462,7 @@ irods::error strip_resc_hier_name_from_query_inp( genQueryInp_t* _inp, int& _pos
             const int inx = tmpV.inx[i];
             const char* val = tmpV.value[i];
             if (inx == COL_D_RESC_HIER) {
-                const auto new_cond = get_resc_id_cond_for_hier_cond(val);
+                const auto new_cond = translate_data_resc_hier_where_clause_to_resc_id(val);
                 addInxVal(&_inp->sqlCondInp, COL_D_RESC_ID, new_cond.empty() ? "='0'" : new_cond.c_str());
             }
             else {
