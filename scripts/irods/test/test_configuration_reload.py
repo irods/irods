@@ -2,6 +2,7 @@ import unittest
 
 import json
 import os
+import socket
 
 from . import session
 from ..configuration import IrodsConfig
@@ -75,9 +76,21 @@ class TestConfigurationReload(SessionsMixin, unittest.TestCase):
 
                 # Load the output of the command
                 obj = json.loads(out)
-                changes = obj["hosts"][0]["configuration_changes_made"]
 
-                # Verify that the number of changes are what we expect.
+                # Find the configuration changes for the host running the tests (local host). All hosts will exhibit at
+                # least one configuration change when the reload command is issued with --all because the reCacheSalt
+                # is captured each time the configuration is loaded. This being the case, we need to make sure we are
+                # only looking at configuration changes for the local host.
+                changes = None
+                hostname_running_this_test = socket.gethostname()
+                for host in obj['hosts']:
+                    if hostname_running_this_test == host['hostname']:
+                        changes = host['configuration_changes_made']
+                        break
+
+                # We expect the changes to be a list with two items. One is the configuration change made above. The
+                # other is the reCacheSalt, which is always captured when the configuration is loaded.
+                self.assertIsNotNone(changes)
                 self.assertEqual(len(changes), 2)
 
                 # Find the object holding the test property.
