@@ -1920,7 +1920,7 @@ void usageMain() {
         " suq User ResourceName-or-'total' Value (set user quota)",
         " sgq Group ResourceName-or-'total' Value (set group quota)",
         " lq [Name] List Quotas",
-        " cu (calulate usage (for quotas))",
+        " cu (calculate usage (for quotas))",
         " rum (remove unused metadata (user-defined AVUs)",
         " asq 'SQL query' [Alias] (add specific query)",
         " rsq 'SQL query' or Alias (remove specific query)",
@@ -2430,7 +2430,7 @@ usage( char *subOpt ) {
     };
 
     char *cuMsgs[] = {
-        " cu (calulate usage (for quotas))",
+        " cu (calculate usage (for quotas))",
         "Calculate (via DBMS SQL) the usage on resources for each user and",
         "determine if users are over quota.",
         "Also see suq, sgq, and lq.",
