@@ -32,8 +32,15 @@ class Test_AllRules(with_metaclass(metaclass_unittest_test_case_generator.Metacl
     global plugin_name
     plugin_name = IrodsConfig().default_rule_engine_plugin
 
+    # Get the database instance name from the zone report. Test_AllRules does not and shall not run in federation, so
+    # this should be good enough for single machine tests and topology tests for both provider and consumer.
     global database_instance_name
-    database_instance_name = next(iter(IrodsConfig().server_config['plugin_configuration']['database']))
+    database_instance_name = next(
+        iter(
+            json.loads(session.make_session_for_existing_admin().assert_icommand(['izonereport'], 'STDOUT')[1]) \
+                ['zones'][0]['icat_server']['server_config']['plugin_configuration']['database']
+        )
+    )
 
     global rulesdir
     currentdir = os.path.dirname(os.path.realpath(__file__))

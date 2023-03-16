@@ -61,6 +61,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
     # iadmin
     ###################
 
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'msiDeleteUnusedAVUs does not redirect appropriately. See #6989.')
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Applies to the NREP only')
     def test_non_admins_are_not_allowed_to_delete_unused_metadata__issue_6183(self):
         attr_name  = 'issue_6183_attr'
@@ -2140,7 +2141,8 @@ class test_moduser_user(unittest.TestCase):
         """Test downgrading of service account user's type from rodsadmin to other supported types is not allowed."""
         # rodsadmin -> rodsuser
         self.assertEqual('rodsadmin', lib.get_user_type(self.admin, 'rods'))
-        error_msg = 'Cannot downgrade another rodsadmin [rods] running another server [{0}] in this zone.'.format(lib.get_hostname())
+        host = test.settings.ICAT_HOSTNAME
+        error_msg = 'Cannot downgrade another rodsadmin [rods] running another server [{0}] in this zone.'.format(host)
         out, err, ec = self.admin.run_icommand(['iadmin', 'moduser', 'rods', 'type', 'rodsuser'])
         self.assertNotEqual(ec, 0)
         self.assertIn(error_msg, out)

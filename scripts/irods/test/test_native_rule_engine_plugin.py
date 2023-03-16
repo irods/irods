@@ -95,6 +95,9 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
             assert_presence_of_attr_value_avu(attr, value, assert_true)
 
     def helper_test_pep(self, rules_to_add, icommand, strings_to_check_for=['THIS IS AN OUT VARIABLE'], number_of_strings_to_look_for=1):
+        # Restart the server here because sometimes the log just stops receiving messages for some unknown reason.
+        IrodsController().restart()
+
         with temporary_core_file() as core:
             time.sleep(1)  # remove once file hash fix is committed #2279
             core.add_rule(rules_to_add)
