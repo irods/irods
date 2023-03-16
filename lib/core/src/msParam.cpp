@@ -8,7 +8,10 @@
 #include "irods/rodsErrorTable.h"
 #include "irods/irods_logger.hpp"
 
+#include <algorithm>
 #include <cstring>
+#include <iterator>
+#include <string_view>
 
 using log_msi = irods::experimental::log::microservice;
 
@@ -1708,3 +1711,32 @@ parseMsParamFromIRFile( msParamArray_t * inpParamArray, char * inBuf ) {
 
     return 0;
 }
+
+auto msp_free_type(MsParam* _msp) -> void
+{
+    // NOLINTNEXTLINE(readability-implicit-bool-conversion)
+    if (!_msp || !_msp->type) {
+        return;
+    }
+
+    // NOLINTNEXTLINE(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
+    std::free(_msp->type);
+    _msp->type = nullptr;
+} // msp_free_type
+
+auto msp_free_inOutStruct(MsParam* _msp) -> void
+{
+    // NOLINTNEXTLINE(readability-implicit-bool-conversion)
+    if (!_msp || !_msp->type || !_msp->inOutStruct) {
+        return;
+    }
+
+    const std::string_view type = _msp->type;
+    const auto types = {STR_MS_T, INT_MS_T};
+
+    if (std::find(std::begin(types), std::end(types), type) != std::end(types)) {
+        // NOLINTNEXTLINE(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
+        std::free(_msp->inOutStruct);
+        _msp->inOutStruct = nullptr;
+    }
+} // msp_free_inOutStruct
