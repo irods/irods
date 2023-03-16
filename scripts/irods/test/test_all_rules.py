@@ -23,6 +23,7 @@ from . import metaclass_unittest_test_case_generator
 from . import resource_suite
 from . import session
 
+
 @six.add_metaclass(metaclass_unittest_test_case_generator.MetaclassUnittestTestCaseGenerator)
 class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
 
@@ -31,11 +32,10 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
     global plugin_name
     plugin_name = IrodsConfig().default_rule_engine_plugin
 
+    # Get the database instance name from the zone report. Test_AllRules does not and shall not run in federation, so
+    # this should be good enough for single machine tests and topology tests for both provider and consumer.
     global database_instance_name
-    if test.settings.TOPOLOGY_FROM_RESOURCE_SERVER:
-        database_instance_name = 'none'
-    else:
-        database_instance_name = next(iter(IrodsConfig().server_config['plugin_configuration']['database']))
+    database_instance_name = lib.get_database_instance_name(session.make_session_for_existing_admin())
 
     global rulesdir
     currentdir = os.path.dirname(os.path.realpath(__file__))
@@ -1624,7 +1624,14 @@ OUTPUT ruleExecOut
 
         # Show the MSI returns an error when the user is not a rodsadmin.
         rule = rule_map[plugin_name].format(group, self.user0.username, self.user0.zone_name)
-        self.user0.assert_icommand(['irule', '-r', rep_instance, rule, 'null', 'ruleExecOut'], 'STDERR', ['-830000 CAT_INSUFFICIENT_PRIVILEGE_LEVEL'])
+        # The returned error string changes depending on where the the rule is running. The API being invoked by the
+        # microservice does not perform the permission check until after it has redirected to the appropriate server
+        # so the API privilege level will trip for the general admin API before getting to the database plugin.
+        if test.settings.TOPOLOGY_FROM_RESOURCE_SERVER:
+            expected_error_str = '-13000 SYS_NO_API_PRIV'
+        else:
+            expected_error_str = '-830000 CAT_INSUFFICIENT_PRIVILEGE_LEVEL'
+        self.user0.assert_icommand(['irule', '-r', rep_instance, rule, 'null', 'ruleExecOut'], 'STDERR', [expected_error_str])
 
         # Show the MSI returns an error when the group does not exist.
         rule = rule_map[plugin_name].format('does_not_exist', self.user0.username, self.user0.zone_name)

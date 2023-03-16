@@ -774,3 +774,11 @@ def get_resource_parent_name(session, resource_name):
     return session.run_icommand(['iquest', '%s',
         "select RESC_NAME where RESC_ID = '{}'"
         .format(parent_id)])[0].strip()
+
+def get_database_instance_name(session):
+    servers = json.loads(session.assert_icommand(['izonereport'], 'STDOUT')[1])['zones'][0]['servers']
+
+    for server in servers:
+        server_config = server['server_config']
+        if server_config['catalog_service_role'] == 'provider':
+            return next(iter(server_config['plugin_configuration']['database']))

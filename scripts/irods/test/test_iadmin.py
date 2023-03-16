@@ -44,7 +44,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
     # iadmin
     ###################
 
-    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "msiDeleteUnusedAVUs does not redirect and remote() does not return errors")
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'msiDeleteUnusedAVUs does not redirect appropriately. See #6989.')
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Applies to the NREP only')
     def test_non_admins_are_not_allowed_to_delete_unused_metadata__issue_6183(self):
         attr_name  = 'issue_6183_attr'
@@ -2197,9 +2197,15 @@ class test_moduser_user(unittest.TestCase):
 
     def test_downgrade_of_service_account_user_is_not_allowed__issue_6127(self):
         """Test downgrading of service account user's type from rodsadmin to other supported types is not allowed."""
+        def get_first_hostname_from_zone_report():
+            """Get the hostname of the first "servers" entry of the zone report."""
+            zr = json.loads(self.admin.assert_icommand(['izonereport'], 'STDOUT')[1].strip())
+            return zr['zones'][0]['servers'][0]['service_account_environment']['irods_host']
+
         # rodsadmin -> rodsuser
         self.assertEqual('rodsadmin', lib.get_user_type(self.admin, 'rods'))
-        error_msg = f'Cannot downgrade another rodsadmin [rods] running another server [{lib.get_hostname()}] in this zone.'
+        hostname = get_first_hostname_from_zone_report()
+        error_msg = f'Cannot downgrade another rodsadmin [rods] running another server [{hostname}] in this zone.'
         out, err, ec = self.admin.run_icommand(['iadmin', 'moduser', 'rods', 'type', 'rodsuser'])
         self.assertNotEqual(ec, 0)
         self.assertIn(error_msg, out)
