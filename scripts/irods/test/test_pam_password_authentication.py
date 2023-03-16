@@ -13,6 +13,7 @@ from ..core_file import temporary_core_file
 
 
 @unittest.skipIf(test.settings.USE_SSL, 'SSL is set up in these tests, so just skip if SSL is enabled already.')
+@unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, 'SSL configuration cannot be applied to all servers from the tests.')
 class test_configurations(unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
 
