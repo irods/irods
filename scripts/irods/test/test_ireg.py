@@ -559,42 +559,58 @@ class test_ireg_options(session.make_sessions_mixin([('otherrods', 'rods')], [])
         self.admin.assert_icommand_fail(['ils', '-l', coll], 'STDOUT', coll)
 
 
-    def test_ireg_recursive_C__issue_2912(self):
+    def test_ireg_recursive_C__issue_2919(self):
         reg_path = os.path.join(self.admin.local_session_dir, 'regme')
         coll = os.path.join(self.admin.session_collection, 'reghere')
+        local_resource = 'test_ireg_recursive_C__issue_2919_resc'
 
-        self.admin.assert_icommand_fail(['ils', '-l', coll], 'STDOUT', coll)
+        try:
+            lib.create_ufs_resource(self.admin, local_resource)
 
-        lib.make_deep_local_tmp_dir(reg_path)
+            self.admin.assert_icommand_fail(['ils', '-l', coll], 'STDOUT', coll)
 
-        out,err,rc = self.admin.run_icommand(['ireg', '-C', reg_path, coll])
-        self.assertEqual(rc, 0)
-        self.assertEqual(len(err), 0)
-        self.assertIn('-C option is deprecated. Use -r instead.', out)
+            lib.make_deep_local_tmp_dir(reg_path)
 
-        _,out,_ = self.admin.assert_icommand(['ils', '-lr', coll], 'STDOUT', coll)
+            out,err,rc = self.admin.run_icommand(['ireg', '-R', local_resource, '-C', reg_path, coll])
+            self.assertEqual(rc, 0)
+            self.assertEqual(len(err), 0)
+            self.assertIn('-C option is deprecated. Use -r instead.', out)
 
-        for f in lib.files_in_dir(reg_path):
-            self.assertIn(f, out)
+            _,out,_ = self.admin.assert_icommand(['ils', '-lr', coll], 'STDOUT', coll)
 
-        for d in lib.dirs_in_dir(reg_path):
-            self.assertIn(d, out)
+            for f in lib.files_in_dir(reg_path):
+                self.assertIn(f, out)
+
+            for d in lib.dirs_in_dir(reg_path):
+                self.assertIn(d, out)
+
+        finally:
+            self.admin.run_icommand(['iunreg', '-r', coll])
+            lib.remove_resource(self.admin, local_resource)
 
 
-    def test_ireg_recursive_r__issue_2912(self):
+    def test_ireg_recursive_r__issue_2919(self):
         reg_path = os.path.join(self.admin.local_session_dir, 'regme')
         coll = os.path.join(self.admin.session_collection, 'reghere')
+        local_resource = 'test_ireg_recursive_C__issue_2919_resc'
 
-        self.admin.assert_icommand_fail(['ils', '-l', coll], 'STDOUT', coll)
+        try:
+            lib.create_ufs_resource(self.admin, local_resource)
 
-        lib.make_deep_local_tmp_dir(reg_path)
+            self.admin.assert_icommand_fail(['ils', '-l', coll], 'STDOUT', coll)
 
-        self.admin.assert_icommand(['ireg', '-r', reg_path, coll])
+            lib.make_deep_local_tmp_dir(reg_path)
 
-        _,out,_ = self.admin.assert_icommand(['ils', '-lr', coll], 'STDOUT', coll)
+            self.admin.assert_icommand(['ireg', '-R', local_resource, '-r', reg_path, coll])
 
-        for f in lib.files_in_dir(reg_path):
-            self.assertIn(f, out)
+            _,out,_ = self.admin.assert_icommand(['ils', '-lr', coll], 'STDOUT', coll)
 
-        for d in lib.dirs_in_dir(reg_path):
-            self.assertIn(d, out)
+            for f in lib.files_in_dir(reg_path):
+                self.assertIn(f, out)
+
+            for d in lib.dirs_in_dir(reg_path):
+                self.assertIn(d, out)
+
+        finally:
+            self.admin.run_icommand(['iunreg', '-r', coll])
+            lib.remove_resource(self.admin, local_resource)
