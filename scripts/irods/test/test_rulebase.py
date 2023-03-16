@@ -342,29 +342,50 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
  
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_acPreProcForExecCmd__3867(self):
-        with temporary_core_file() as core:
-            core.add_rule('acPreProcForExecCmd(*cmd, *args, *addr, *hint){ writeLine("serverLog", "TEST_MARKER_test_acPreProcForExecCmd__3867")}')
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent(
+                '''
+                acPreProcForExecCmd(*cmd, *args, *addr, *hint) {{
+                    msiAddKeyVal(*key_val_pair,"{}","{}");
+                    msiAssociateKeyValuePairsToObj(*key_val_pair,"{}","-R");
+                }}''')
+        }
 
-            rule_file = 'test_acPreProcForExecCmd__3867.r'
-            rule_string = '''
-test_acPreProcForExecCmd__3867_rule {
-    msiExecCmd('hello', '', '', '', '', *out)
-}
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent(
+                '''
+                test_acPreProcForExecCmd__3867_rule {{
+                    msiExecCmd('hello', '', '', '', '', *out)
+                }}
 
-INPUT null
-OUTPUT ruleExecOut
-'''
-            with open(rule_file, 'w') as f:
-                f.write(rule_string)
+                INPUT null
+                OUTPUT ruleExecOut''')
+        }
 
-            initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
-            self.admin.assert_icommand('irule -F ' + rule_file)
-            os.unlink(rule_file)
+        temporary_resource = 'test_acPreProcForExecCmd__3867_resc'
+        metadata_attr = 'TEST_MARKER_test_acPreProcForExecCmd__3867'
+        metadata_value = 'wow, static PEPs still work'
 
-            lib.delayAssert(
-                lambda: lib.log_message_occurrences_equals_count(
-                    msg='TEST_MARKER_test_acPreProcForExecCmd__3867',
-                    start_index=initial_log_size))
+        rule_file = os.path.join(self.admin.local_session_dir, 'test_acPreProcForExecCmd__3867.r')
+        rule_string = rule_map[self.plugin_name]
+
+        try:
+            lib.create_passthru_resource(temporary_resource, self.admin)
+
+            with temporary_core_file() as core:
+                core.add_rule(pep_map[self.plugin_name].format(metadata_attr, metadata_value, temporary_resource))
+
+                with open(rule_file, 'w') as f:
+                    f.write(rule_string)
+
+                self.admin.assert_icommand(['irule', '-F', rule_file])
+
+                lib.delayAssert(lambda: lib.metadata_attr_with_value_exists(self.admin, metadata_attr, metadata_value))
+
+        finally:
+            lib.remove_resource(temporary_resource, self.admin)
+            self.admin.run_icommand(['iadmin', 'rum'])
+
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only run for native rule language')
     def test_create_close__issue_5018(self):
@@ -384,6 +405,7 @@ OUTPUT ruleExecOut
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_msiExecCmd_closeAllL1Desc__issue_6623(self):
+        local_resource = 'localresc'
         logical_path = os.path.join(self.admin.session_collection, 'foo')
         attr = 'test_msiExecCmd_closeAllL1Desc__issue_6623'
 
@@ -413,8 +435,9 @@ OUTPUT ruleExecOut
 
         self.assertFalse(lib.replica_exists(self.admin, logical_path, 0))
         try:
+            lib.create_ufs_resource(local_resource, self.admin)
             with temporary_core_file() as core:
-                self.admin.assert_icommand(['itouch', logical_path])
+                self.admin.assert_icommand(['itouch', '-R', local_resource, logical_path])
                 self.assertTrue(lib.replica_exists(self.admin, logical_path, 0))
 
                 # Add a PEP which fires after the "close" resource operation. The PEP adds an AVU to the object at logical_path.
@@ -437,6 +460,7 @@ OUTPUT ruleExecOut
         finally:
             self.admin.run_icommand(['irm', '-f', logical_path])
             self.admin.run_icommand(['iadmin', 'rum'])
+            lib.remove_resource(local_resource, self.admin)
 
 
     def test_rsDataObjRepl_populates_input_struct__issue_6100(self):
@@ -637,6 +661,9 @@ class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
 #        return json.dumps(svr_cfg, sort_keys=True,indent=4, separators=(',', ': '))
 
     def pep_test_helper(self, precommands=[], commands=[], rule_body='', client_rule=None, target_name=None, user_session=None):
+        # Restart the server here because sometimes the log just stops receiving messages for some unknown reason.
+        IrodsController().restart()
+
         pep_name = self.pep_name
 
         # user session
@@ -797,6 +824,8 @@ class Test_Remote_Exec(session.make_sessions_mixin([('otherrods', 'rods')], []),
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads server log')
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for Python REP')
     def test_delay_in_remote_writeline(self):
+        # Restart the server here because sometimes the log just stops receiving messages for some unknown reason.
+        IrodsController().restart()
         rule_file_path = self.create_rule_file('test_delay_in_remote_writeline')
         try:
             initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
@@ -809,6 +838,8 @@ class Test_Remote_Exec(session.make_sessions_mixin([('otherrods', 'rods')], []),
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads server log')
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for Python REP')
     def test_remote_in_delay_writeline(self):
+        # Restart the server here because sometimes the log just stops receiving messages for some unknown reason.
+        IrodsController().restart()
         rule_file_path = self.create_rule_file('test_remote_in_delay_writeline')
         try:
             initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
