@@ -9,16 +9,26 @@ add_dependencies(all-plugins_no_database all-plugins-microservices)
 
 set(
   IRODS_MICROSERVICE_PLUGINS
-  sync_to_archive
-  update_unixfilesystem_resource_free_space
   atomic_apply_acl_operations
   atomic_apply_metadata_operations
   get_agent_pid
-  touch
-  get_open_data_obj_l1desc_index
   get_file_descriptor_info
   get_hostname
+  get_open_data_obj_l1desc_index
   get_server_property
+  json_compare
+  json_contains
+  json_dump
+  json_free
+  json_handles
+  json_names
+  json_parse
+  json_size
+  json_type
+  json_value
+  sync_to_archive
+  touch
+  update_unixfilesystem_resource_free_space
 )
 
 if (IRODS_MICROSERVICE_TEST_PLUGINS_BUILD OR IRODS_ENABLE_ALL_TESTS)
