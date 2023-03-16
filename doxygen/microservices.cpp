@@ -124,6 +124,18 @@
   - #msiSetKeyValuePairsToObj - Ingests or overwrites object metadata into iCAT from a AVU structure
   - #msiAddKeyVal - Adds a new key and value to a keyValPair_t
 
+\subsection msijson JSON microservices
+  - #msi_json_compare  - Compares two JSON structures
+  - #msi_json_contains - Returns if an element exists inside of a JSON structure
+  - #msi_json_dump     - Serializes a JSON structure to a string
+  - #msi_json_free     - Releases any resources assoicated with a JSON handle
+  - #msi_json_handles  - Returns all JSON handles in the process
+  - #msi_json_names    - Returns all property names inside a JSON structure
+  - #msi_json_parse    - Parses a string or byte/integer sequence into a JSON structure
+  - #msi_json_size     - Returns the number of property names in a JSON structure
+  - #msi_json_type     - Returns the type of an element inside a JSON structure
+  - #msi_json_value    - Returns the value of a JSON structure
+
  \subsection msiotheruser Other User Microservices
   - #msiModAVUMetadata - Modifies AVU metadata on a user, resource, data object, or collection
   - #msi_atomic_apply_acl_operations - Atomically modifies multiple ACLs on a single data object or collection
