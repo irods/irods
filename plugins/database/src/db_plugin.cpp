@@ -4818,7 +4818,7 @@ irods::error db_reg_coll_op(
             cllBindVars[cllBindVarCount++] = "1";
             cllBindVars[cllBindVarCount++] = myTime;
             snprintf( tSQL, MAX_SQL_SIZE,
-                      "update R_COLL_MAIN set coll_inheritance=?, modify_ts=? where coll_id=%s",
+                      "update R_COLL_MAIN set coll_inheritance=?, modify_ts=? where coll_id=(select %s)",
                       currStr2 );
             status =  cmlExecuteNoAnswerSql( tSQL, &icss );
 #endif
