@@ -14,6 +14,7 @@
 #include "irods/irods_resource_redirect.hpp"
 #include "irods/irods_stacktrace.hpp"
 #include "irods/irods_server_properties.hpp"
+#include "irods/voting.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -580,6 +581,7 @@ irods::error mock_archive_file_resolve_hierarchy(
     const std::string*                  _curr_host,
     irods::hierarchy_parser*           _out_parser,
     float*                              _out_vote ) {
+    namespace irv = irods::experimental::resource::voting;
 
     // =-=-=-=-=-=-=-
     // check the context validity
@@ -606,14 +608,18 @@ irods::error mock_archive_file_resolve_hierarchy(
 
     // =-=-=-=-=-=-=-
     // test the operation to determine which choices to make
-    if ( irods::OPEN_OPERATION == ( *_opr ) || irods::UNLINK_OPERATION == ( *_opr )) {
-        // =-=-=-=-=-=-=-
-        // cast down the chain to our understood object type
-        irods::file_object_ptr file_obj = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
-
-        // =-=-=-=-=-=-=-
-        // call redirect determination for 'open' operation
-        ret = mock_archive_redirect_open( _ctx.prop_map(), file_obj, resc_name, ( *_curr_host ), ( *_out_vote ) );
+    if (irods::WRITE_OPERATION == (*_opr) || irods::OPEN_OPERATION == (*_opr) || irods::UNLINK_OPERATION == (*_opr)) {
+        try {
+            *_out_vote = irv::calculate(*_opr, _ctx, *_curr_host, *_out_parser);
+            return SUCCESS();
+        }
+        catch (const std::out_of_range& e) {
+            return ERROR(INVALID_OPERATION, e.what());
+        }
+        catch (const irods::exception& e) {
+            return irods::error(e);
+        }
+        return ERROR(SYS_UNKNOWN_ERROR, "An unknown error occurred while resolving hierarchy.");
     }
     else if ( irods::CREATE_OPERATION == ( *_opr ) ) {
         ret = ERROR( SYS_INVALID_INPUT_PARAM, "Create operation not supported for an archive" );
