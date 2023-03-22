@@ -407,7 +407,8 @@ int convertResToMsParam( msParam_t *var, Res *res, rError_t *errmsg ) {
                 arr2->len = res->degree;
                 arr2->value = ( int * )malloc( sizeof( int ) * ( arr2->len ) );
                 for ( i = 0; i < res->degree; i++ ) {
-                    arr2->value[i] = RES_INT_VAL( res );
+                    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                    arr2->value[i] = RES_INT_VAL(res->subtrees[i]);
                 }
                 var->inOutStruct = arr2;
                 var->type = strdup( IntArray_MS_T );
