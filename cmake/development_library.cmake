@@ -89,6 +89,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_random.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_serialization.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_server_properties.hpp
+  ${CMAKE_SOURCE_DIR}/lib/core/include/irods_service_account.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_ssl_object.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_stacktrace.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_state_table.h
