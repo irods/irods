@@ -1028,6 +1028,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_random.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_serialization.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_server_properties.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/irods_service_account.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_socket_information.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_stacktrace.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_string_tokenize.cpp
@@ -1197,6 +1198,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_random.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_serialization.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_server_properties.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/irods_service_account.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_socket_information.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_stacktrace.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_string_tokenize.cpp
