@@ -38,7 +38,7 @@ main( int argc, char **argv ) {
         isServiceAccount = true; // to make if/else blocks neater
         std::fprintf(stderr,
                      "WARNING: Could not determine whether %s is running as service account "
-                     "due to thrown exception: %s",
+                     "due to thrown exception: %s\n",
                      argv[0],
                      e.client_display_what());
     }
