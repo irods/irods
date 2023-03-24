@@ -1728,3 +1728,131 @@ class Test_Delay_Rule_Removal(SessionsMixin, unittest.TestCase):
 
         finally:
             self.local_admin.run_icommand(['iqdel', '-a'])
+
+
+class test_compound_resource_operations(SessionsMixin, unittest.TestCase):
+    def setUp(self):
+        super(test_compound_resource_operations, self).setUp()
+
+        # load federation settings in dictionary (all lower case)
+        self.config = {}
+        for key, val in test.settings.FEDERATION.__dict__.items():
+            if not key.startswith('__'):
+                self.config[key.lower()] = val
+        self.config['local_zone'] = self.user_sessions[0].zone_name
+
+        self.admin = self.admin_sessions[0]
+        self.user = self.user_sessions[0]
+
+        # Create a session as the administrator for the remote zone so we can create resources in the remote zone.
+        self.remote_admin = session.make_session_for_existing_user(
+            test.settings.PREEXISTING_ADMIN_PASSWORD,
+            test.settings.PREEXISTING_ADMIN_PASSWORD,
+            test.settings.FEDERATION.REMOTE_HOST,
+            test.settings.FEDERATION.REMOTE_ZONE)
+
+        # Create a regular user local to the remote zone in the remote zone and create a session for it.
+        self.remote_admin.assert_icommand(['iadmin', 'mkuser', 'smeagol', 'rodsuser'])
+        self.remote_admin.assert_icommand(['iadmin', 'moduser', 'smeagol', 'password', 'spass'])
+        self.remote_user = session.IrodsSession(
+            lib.make_environment_dict(
+                'smeagol',
+                test.settings.FEDERATION.REMOTE_HOST,
+                test.settings.FEDERATION.REMOTE_ZONE,
+                use_ssl=test.settings.USE_SSL
+            ),
+            'spass',
+            manage_irods_data=True)
+
+        # Create a compound resource hierarchy in the remote zone.
+        self.compound_resource = 'compResc'
+        self.cache_resource = 'cacheResc'
+        self.archive_resource = 'archiveResc'
+        self.remote_admin.assert_icommand(['iadmin', 'mkresc', self.compound_resource, 'compound'], 'STDOUT')
+        lib.create_ufs_resource(self.cache_resource, self.remote_admin, hostname=test.settings.FEDERATION.REMOTE_HOST)
+        lib.create_ufs_resource(self.archive_resource, self.remote_admin, hostname=test.settings.FEDERATION.REMOTE_HOST)
+        self.remote_admin.assert_icommand(
+            ['iadmin', 'addchildtoresc', self.compound_resource, self.cache_resource, 'cache'])
+        self.remote_admin.assert_icommand(
+            ['iadmin', 'addchildtoresc', self.compound_resource, self.archive_resource, 'archive'])
+
+
+    def tearDown(self):
+        # Exit the remote user session so it can be cleaned it up.
+        self.remote_user.__exit__()
+        self.remote_admin.assert_icommand(['iadmin', 'rmuser', 'smeagol'])
+
+        # Clean up the compound resource hierarchy and exit the remote admin session.
+        lib.remove_child_resource(self.compound_resource, self.cache_resource, self.remote_admin)
+        lib.remove_child_resource(self.compound_resource, self.archive_resource, self.remote_admin)
+        lib.remove_resource(self.cache_resource, self.remote_admin)
+        lib.remove_resource(self.archive_resource, self.remote_admin)
+        lib.remove_resource(self.compound_resource, self.remote_admin)
+
+        self.remote_admin.__exit__()
+
+        super(test_compound_resource_operations, self).tearDown()
+
+
+    def test_iget_data_object_as_user_with_read_only_access_and_replica_only_in_archive__issue_6697(self):
+        def assert_permissions_on_data_object_for_user(username, zone_name, logical_path, permission_value):
+            data_access_type = self.remote_admin.run_icommand(['iquest', '%s',
+                'select DATA_ACCESS_TYPE where '
+                    'COLL_NAME = \'{}\' and '
+                    'DATA_NAME = \'{}\' and '
+                    'USER_NAME = \'{}\' and '
+                    'USER_ZONE = \'{}\''.format(
+                        os.path.dirname(logical_path), os.path.basename(logical_path), username, zone_name)
+                ])[0].strip()
+
+            self.assertEqual(str(data_access_type), str(permission_value))
+
+        cache_hierarchy = self.compound_resource + ';' + self.cache_resource
+        archive_hierarchy = self.compound_resource + ';' + self.archive_resource
+
+        owner_user = self.remote_user
+        readonly_user = self.user
+        filename = 'foo'
+        contents = 'jimbo'
+        logical_path = os.path.join(owner_user.session_collection, filename)
+
+        try:
+            # Create a data object which should appear under the compound resource.
+            owner_user.assert_icommand(['istream', '-R', self.compound_resource, 'write', logical_path], input=contents)
+            self.assertTrue(lib.replica_exists_on_resource(owner_user, logical_path, self.cache_resource))
+            self.assertTrue(lib.replica_exists_on_resource(owner_user, logical_path, self.archive_resource))
+
+            # Grant read access to another user, ensuring that the other user can see the data object.
+            owner_user.assert_icommand(
+                ['ichmod', '-r', 'read', readonly_user.qualified_username, os.path.dirname(logical_path)])
+
+            # Ensure that the read-only user has read-only permission on the data object.
+            assert_permissions_on_data_object_for_user(
+                readonly_user.username, readonly_user.zone_name, logical_path, 1050)
+
+            # Trim the replica on the cache resource so that only the replica in the archive remains. Replica 0 resides
+            # on the cache resource at this point.
+            owner_user.assert_icommand(['itrim', '-N1', '-n0', logical_path], 'STDOUT')
+            self.assertFalse(lib.replica_exists_on_resource(owner_user, logical_path, self.cache_resource))
+            self.assertTrue(lib.replica_exists_on_resource(owner_user, logical_path, self.archive_resource))
+
+            # As the user with read-only access, attempt to get the data object. Replica 1 resides on the archive
+            # resource, so the replica on the cache resource which results from the stage-to-cache should be number 2.
+            readonly_user.assert_icommand(['iget', logical_path, '-'], 'STDOUT', contents)
+            self.assertEqual(str(1), lib.get_replica_status(owner_user, os.path.basename(logical_path), 1))
+            self.assertEqual(str(1), lib.get_replica_status(owner_user, os.path.basename(logical_path), 2))
+
+            # Ensure that the user has the same permissions on the data object as before getting it.
+            assert_permissions_on_data_object_for_user(
+                readonly_user.username, readonly_user.zone_name, logical_path, 1050)
+
+        finally:
+            self.remote_admin.assert_icommand(['ils', '-Al', logical_path], 'STDOUT') # Debugging
+
+            # Make sure that the data object can be removed by marking both replicas stale before removing.
+            self.remote_admin.run_icommand(['ichmod', '-M', 'own', self.remote_admin.username, logical_path])
+            self.remote_admin.run_icommand(
+                ['iadmin', 'modrepl', 'logical_path', logical_path, 'resource_hierarchy', cache_hierarchy, 'DATA_REPL_STATUS', '0'])
+            self.remote_admin.run_icommand(
+                ['iadmin', 'modrepl', 'logical_path', logical_path, 'resource_hierarchy', archive_hierarchy, 'DATA_REPL_STATUS', '0'])
+            self.remote_admin.run_icommand(['irm', '-f', logical_path])
