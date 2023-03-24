@@ -1,27 +1,30 @@
-#include "msParam.h"
-#include "generalAdmin.h"
-#include "physPath.hpp"
-#include "reIn2p3SysRule.hpp"
-#include "miscServerFunct.hpp"
-#include "dataObjRepl.h"
-#include "rsDataObjOpen.hpp"
-#include "rsDataObjClose.hpp"
-#include "rsFileStageToCache.hpp"
-#include "rsFileSyncToArch.hpp"
 #include "dataObjOpr.hpp"
-#include "irods_resource_plugin.hpp"
-#include "irods_file_object.hpp"
-#include "irods_physical_object.hpp"
+#include "dataObjRepl.h"
+#include "filesystem/path.hpp"
+#include "filesystem/permissions.hpp"
+#include "generalAdmin.h"
+#include "irods_at_scope_exit.hpp"
 #include "irods_collection_object.hpp"
-#include "irods_string_tokenize.hpp"
+#include "irods_file_object.hpp"
 #include "irods_hierarchy_parser.hpp"
-#include "irods_log.hpp"
-#include "irods_resource_redirect.hpp"
-#include "irods_stacktrace.hpp"
 #include "irods_kvp_string_parser.hpp"
 #include "irods_lexical_cast.hpp"
+#include "irods_log.hpp"
+#include "irods_physical_object.hpp"
 #include "irods_random.hpp"
-#include "irods_at_scope_exit.hpp"
+#include "irods_resource_plugin.hpp"
+#include "irods_resource_redirect.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_string_tokenize.hpp"
+#include "miscServerFunct.hpp"
+#include "msParam.h"
+#include "physPath.hpp"
+#include "reIn2p3SysRule.hpp"
+#include "rsDataObjClose.hpp"
+#include "rsDataObjOpen.hpp"
+#include "rsFileStageToCache.hpp"
+#include "rsFileSyncToArch.hpp"
+#include "scoped_permission.hpp"
 #include "voting.hpp"
 #include "finalize_utilities.hpp"
 #include "replica_proxy.hpp"
@@ -33,11 +36,12 @@
 #include <fmt/format.h>
 
 #include <iostream>
+#include <optional>
 #include <sstream>
-#include <vector>
 #include <string>
 #include <string_view>
 #include <tuple>
+#include <vector>
 
 /// =-=-=-=-=-=-=-
 /// @brief constant to reference the operation type for
@@ -1794,7 +1798,19 @@ irods::error open_for_prefer_archive_policy(
     // =-=-=-=-=-=-=-
     // if the vote is 0 then we do a wholesale stage, not an update
     // otherwise it is an update operation for the stage to cache.
-    ret = repl_object(_ctx, _out_parser, STAGE_OBJ_KW);
+    if (irods::OPEN_OPERATION == operation) {
+        namespace fs = irods::experimental::filesystem;
+        using sp = irods::experimental::scoped_permission;
+
+        // Temporarily grant ownership of the data object to the connected client so that the object can be staged
+        // to cache even if the user does not have write permission for the data object.
+        irods::file_object_ptr obj = boost::dynamic_pointer_cast<irods::file_object>(_ctx.fco());
+        const auto temporary_object_ownership = sp{*_ctx.comm(), fs::path{obj->logical_path()}, fs::perms::own};
+        ret = repl_object(_ctx, _out_parser, STAGE_OBJ_KW);
+    }
+    else {
+        ret = repl_object(_ctx, _out_parser, STAGE_OBJ_KW);
+    }
     if ( !ret.ok() ) {
         return PASS( ret );
     }
@@ -2034,7 +2050,19 @@ irods::error open_for_prefer_cache_policy(
 
         // =-=-=-=-=-=-=-
         // if the archive has it, then replicate
-        ret = repl_object( _ctx, arch_check_parser, STAGE_OBJ_KW );
+        if (irods::OPEN_OPERATION == operation) {
+            namespace fs = irods::experimental::filesystem;
+            using sp = irods::experimental::scoped_permission;
+
+            // Temporarily grant ownership of the data object to the connected client so that the object can be staged
+            // to cache even if the user does not have write permission for the data object.
+            const auto temporary_object_ownership = sp{*_ctx.comm(), fs::path{obj->logical_path()}, fs::perms::own};
+            ret = repl_object(_ctx, arch_check_parser, STAGE_OBJ_KW);
+        }
+        else {
+            ret = repl_object(_ctx, arch_check_parser, STAGE_OBJ_KW);
+        }
+
         if ( !ret.ok() ) {
             return PASS( ret );
         }
