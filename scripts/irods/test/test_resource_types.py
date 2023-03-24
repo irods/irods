@@ -402,6 +402,11 @@ class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unitte
         os.remove(doublefile)
 
 
+    @unittest.skip('This test only applies to compound hierarchies.')
+    def test_iget_data_object_as_user_with_read_only_access_and_replica_only_in_archive__issue_6697(self):
+        pass
+
+
 @unittest.skip('Round Robin is deprecated and non-deterministic under load - #3778')
 class Test_Resource_RoundRobinWithinReplication(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
@@ -726,6 +731,11 @@ class Test_Resource_RoundRobinWithinReplication(ChunkyDevTest, ResourceSuite, un
         os.remove(doublefile)
 
 
+    @unittest.skip('This test only applies to compound hierarchies.')
+    def test_iget_data_object_as_user_with_read_only_access_and_replica_only_in_archive__issue_6697(self):
+        pass
+
+
 class Test_Resource_Unixfilesystem(ResourceSuite, ChunkyDevTest, unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
     class_name = 'Test_Resource_Unixfilesystem'
@@ -903,6 +913,11 @@ OUTPUT ruleExecOut
         os.remove(filepath)
 
 
+    @unittest.skip('This test only applies to compound hierarchies.')
+    def test_iget_data_object_as_user_with_read_only_access_and_replica_only_in_archive__issue_6697(self):
+        pass
+
+
 class Test_Resource_Passthru(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
     def setUp(self):
@@ -925,6 +940,11 @@ class Test_Resource_Passthru(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
+        pass
+
+
+    @unittest.skip('This test only applies to compound hierarchies.')
+    def test_iget_data_object_as_user_with_read_only_access_and_replica_only_in_archive__issue_6697(self):
         pass
 
 
@@ -1030,6 +1050,12 @@ class Test_Resource_WeightedPassthru(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iget " + filename + " - ", 'STDOUT_SINGLELINE', "TESTFILE")
         self.admin.assert_icommand("irm -f " + filename)
 
+
+    @unittest.skip('This test only applies to compound hierarchies.')
+    def test_iget_data_object_as_user_with_read_only_access_and_replica_only_in_archive__issue_6697(self):
+        pass
+
+
 class Test_Resource_Deferred(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
     def setUp(self):
@@ -1052,6 +1078,11 @@ class Test_Resource_Deferred(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
+        pass
+
+
+    @unittest.skip('This test only applies to compound hierarchies.')
+    def test_iget_data_object_as_user_with_read_only_access_and_replica_only_in_archive__issue_6697(self):
         pass
 
 
@@ -1119,6 +1150,12 @@ class Test_Resource_Random(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         self.admin.assert_icommand('iput ' + filename + ' file3')
         self.admin.assert_icommand('ils -l file3', 'STDOUT_SINGLELINE', 'unix2Resc')
 
+
+    @unittest.skip('This test only applies to compound hierarchies.')
+    def test_iget_data_object_as_user_with_read_only_access_and_replica_only_in_archive__issue_6697(self):
+        pass
+
+
 class Test_Resource_NonBlocking(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
     def setUp(self):
@@ -1133,6 +1170,11 @@ class Test_Resource_NonBlocking(ChunkyDevTest, ResourceSuite, unittest.TestCase)
         with session.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin rmresc demoResc")
             admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
+
+
+    @unittest.skip('This test only applies to compound hierarchies.')
+    def test_iget_data_object_as_user_with_read_only_access_and_replica_only_in_archive__issue_6697(self):
+        pass
 
 
 class Test_Resource_CompoundWithMockarchive(ChunkyDevTest, ResourceSuite, unittest.TestCase):
@@ -3016,6 +3058,11 @@ class Test_Resource_ReplicationWithinReplication(ChunkyDevTest, ResourceSuite, u
         os.remove(doublefile)
 
 
+    @unittest.skip('This test only applies to compound hierarchies.')
+    def test_iget_data_object_as_user_with_read_only_access_and_replica_only_in_archive__issue_6697(self):
+        pass
+
+
 class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
     class_name = 'Test_Resource_ReplicationToTwoCompound'
@@ -3477,6 +3524,12 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
             os.unlink(filepath)
 
 
+    @unittest.skip('This test only works for a standalone compound hierarchy.')
+    def test_iget_data_object_as_user_with_read_only_access_and_replica_only_in_archive__issue_6697(self):
+        # TODO: Implement this test for this suite
+        pass
+
+
 class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
     class_name = 'Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive'
@@ -3867,6 +3920,12 @@ class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDev
             os.unlink(filepath)
 
 
+    @unittest.skip('This test only works for a standalone compound hierarchy.')
+    def test_iget_data_object_as_user_with_read_only_access_and_replica_only_in_archive__issue_6697(self):
+        # TODO: Implement this test for this suite
+        pass
+
+
 class Test_Resource_RoundRobin(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
     def setUp(self):
@@ -3938,6 +3997,13 @@ class Test_Resource_RoundRobin(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         # local cleanup
         if os.path.exists(filepath):
             os.unlink(filepath)
+
+
+    @unittest.skip('This test only applies to compound hierarchies.')
+    def test_iget_data_object_as_user_with_read_only_access_and_replica_only_in_archive__issue_6697(self):
+        # TODO: Implement this test for this suite
+        pass
+
 
 class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
@@ -4743,6 +4809,13 @@ OUTPUT ruleExecOut
             self.admin.assert_icommand(['iadmin', 'modresc', 'unix3Resc', 'host', test.settings.HOSTNAME_3])
             self.admin.assert_icommand(['iadmin', 'rmresc', test_resc])
 
+
+    @unittest.skip('This test only applies to compound hierarchies.')
+    def test_iget_data_object_as_user_with_read_only_access_and_replica_only_in_archive__issue_6697(self):
+        # TODO: Implement this test for this suite
+        pass
+
+
 class Test_Resource_MultiLayered(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
     def setUp(self):
@@ -4788,6 +4861,13 @@ class Test_Resource_MultiLayered(ChunkyDevTest, ResourceSuite, unittest.TestCase
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
         pass
+
+
+    @unittest.skip('This test only applies to compound hierarchies.')
+    def test_iget_data_object_as_user_with_read_only_access_and_replica_only_in_archive__issue_6697(self):
+        # TODO: Implement this test for this suite
+        pass
+
 
 class Test_Resource_RandomWithinRandom(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
@@ -4856,3 +4936,9 @@ class Test_Resource_RandomWithinRandom(ChunkyDevTest, ResourceSuite, unittest.Te
         filepath = lib.create_local_testfile(filename)
         self.admin.assert_icommand(['iput', filename])
         os.unlink(filepath)
+
+
+    @unittest.skip('This test only applies to compound hierarchies.')
+    def test_iget_data_object_as_user_with_read_only_access_and_replica_only_in_archive__issue_6697(self):
+        # TODO: Implement this test for this suite
+        pass
