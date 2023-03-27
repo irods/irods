@@ -11,7 +11,8 @@ class Test_iexit(unittest.TestCase):
 
     def test_iexit(self):
         with session.make_session_for_existing_admin() as admin_session:
-            admin_session.assert_icommand("iexit")
+            expected_output = 'WARNING: iexit appears to be running as service account. Skipping auth file deletion (pass -f to force).'
+            admin_session.assert_icommand("iexit", 'STDOUT', expected_output)
 
     def test_iexit_verbose(self):
         with session.make_session_for_existing_admin() as admin_session:
