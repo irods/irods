@@ -5,7 +5,10 @@
 #include "rcGlobalExtern.h"
 #include "rodsErrorTable.h"
 
+#include <algorithm>
 #include <cstring>
+#include <iterator>
+#include <string_view>
 
 /* addMsParam - This is for backward compatibility only.
  *  addMsParamToArray should be used for all new functions
@@ -1657,3 +1660,32 @@ parseMsParamFromIRFile( msParamArray_t * inpParamArray, char * inBuf ) {
 
     return 0;
 }
+
+auto msp_free_type(MsParam* _msp) -> void
+{
+    // NOLINTNEXTLINE(readability-implicit-bool-conversion)
+    if (!_msp || !_msp->type) {
+        return;
+    }
+
+    // NOLINTNEXTLINE(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
+    std::free(_msp->type);
+    _msp->type = nullptr;
+} // msp_free_type
+
+auto msp_free_inOutStruct(MsParam* _msp) -> void
+{
+    // NOLINTNEXTLINE(readability-implicit-bool-conversion)
+    if (!_msp || !_msp->type || !_msp->inOutStruct) {
+        return;
+    }
+
+    const std::string_view type = _msp->type;
+    const auto types = {STR_MS_T, INT_MS_T};
+
+    if (std::find(std::begin(types), std::end(types), type) != std::end(types)) {
+        // NOLINTNEXTLINE(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
+        std::free(_msp->inOutStruct);
+        _msp->inOutStruct = nullptr;
+    }
+} // msp_free_inOutStruct
