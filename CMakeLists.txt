@@ -1040,6 +1040,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/osauth.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/packStruct.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/parseCommandLine.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/process_stash.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/rcGlobal.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/rcMisc.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/region.cpp
