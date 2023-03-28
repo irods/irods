@@ -253,6 +253,22 @@ parseMsKeyValStrForStructFileExtAndRegInp( msParam_t *inpParam,
 int
 parseMsParamFromIRFile( msParamArray_t *inpParamArray, char *inBuf );
 
+/// Deallocates memory which contains the type information for a microservice parameter.
+///
+/// \param[in] _msp The microservice parameter to check.
+///
+/// \since 4.2.12
+void msp_free_type(struct MsParam* _msp);
+
+/// Deallocates memory which contains the value information for a microservice parameter.
+///
+/// This function requires that the type information be valid, otherwise this function will result in a no-op.
+///
+/// \param[in] _msp The microservice parameter to check.
+///
+/// \since 4.2.12
+void msp_free_inOutStruct(struct MsParam* _msp);
+
 #ifdef __cplusplus
 }
 #endif

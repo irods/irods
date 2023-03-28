@@ -7,6 +7,7 @@ add_subdirectory(msi_get_agent_pid)
 add_subdirectory(msi_touch)
 add_subdirectory(msi_get_open_data_obj_l1desc_index)
 add_subdirectory(msi_get_file_descriptor_info)
+add_subdirectory(msi_json)
 
 if (IRODS_MICROSERVICE_TEST_PLUGINS_BUILD OR IRODS_ENABLE_ALL_TESTS)
   add_subdirectory(msi_tests)

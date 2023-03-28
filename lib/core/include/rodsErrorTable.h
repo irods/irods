@@ -223,6 +223,9 @@ NEW_ERROR(SYS_NOT_ALLOWED,                             -169000)
 NEW_ERROR(NOT_A_COLLECTION,                            -170000)
 NEW_ERROR(NOT_A_DATA_OBJECT,                           -171000)
 NEW_ERROR(JSON_VALIDATION_ERROR,                       -172000)
+NEW_ERROR(INVALID_HANDLE,                              -175000)
+NEW_ERROR(DOES_NOT_EXIST,                              -176000)
+NEW_ERROR(TYPE_NOT_SUPPORTED,                          -177000)
 
 /** @} */
 

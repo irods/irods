@@ -6,6 +6,7 @@ import sys
 import getpass
 import tempfile
 import json
+import textwrap
 from six import with_metaclass
 
 if sys.version_info >= (2, 7):
@@ -1420,8 +1421,6 @@ OUTPUT ruleExecOut
         self.admin.assert_icommand(['irule', '-r', rep_name, rule_text, 'null', 'ruleExecOut'])
 
 
-
-
 class Test_msiDataObjRepl_checksum_keywords(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
     global plugin_name
     plugin_name = IrodsConfig().default_rule_engine_plugin
@@ -1651,3 +1650,309 @@ OUTPUT ruleExecOut
 
         self.assertNotEqual(0, len(lib.get_replica_checksum(self.test_user, self.filename, 0)))
         self.assertFalse(lib.replica_exists(self.test_user, self.logical_path, 1))
+
+
+class Test_JSON_microservices(session.make_sessions_mixin([], [('alice', 'apass')]), unittest.TestCase):
+
+    global plugin_name
+    plugin_name = IrodsConfig().default_rule_engine_plugin
+
+    def setUp(self):
+        super(Test_JSON_microservices, self).setUp()
+
+        self.user = self.user_sessions[0]
+
+    def tearDown(self):
+        super(Test_JSON_microservices, self).tearDown()
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'Only applicable to the NREP')
+    def test_json_microservices_detect_invalid_handles__issue_6968(self):
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+
+        msi_calls = [
+            "msi_json_compare('a', '', 'b', '', *ignored);",
+            "msi_json_contains('a', '', *ignored);",
+            "msi_json_dump('a', '', *ignored);",
+            "msi_json_names('a', '', *ignored);",
+            "msi_json_size('a', '', *ignored);",
+            "msi_json_type('a', '', *ignored);",
+            "msi_json_value('a', '', *ignored);"
+        ]
+
+        for rule_text in msi_calls:
+            self.user.assert_icommand(['irule', '-r', rep_name, rule_text, 'null', 'ruleExecOut'], 'STDERR', ['INVALID_HANDLE'])
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'Only applicable to the NREP')
+    def test_json_microservices_detect_invalid_json_pointers__issue_6968(self):
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+
+        msi_calls = [
+            "msi_json_compare(*h, '/', *h, '', *ignored);",
+            "msi_json_compare(*h, '', *h, '/', *ignored);",
+            "msi_json_dump(*h, '/', *ignored);",
+            "msi_json_names(*h, '/', *ignored);",
+            "msi_json_size(*h, '/', *ignored);",
+            "msi_json_type(*h, '/', *ignored);",
+            "msi_json_value(*h, '/', *ignored);"
+        ]
+
+        for msi_call in msi_calls:
+            rule_text = textwrap.dedent('''
+                *json_string = '{{"x": 100}}';
+                msiStrlen(*json_string, *size);
+
+                msi_json_parse(*json_string, int(*size), *h);
+                {0}
+            '''.format(msi_call))
+
+            self.user.assert_icommand(['irule', '-r', rep_name, rule_text, 'null', 'ruleExecOut'], 'STDERR', ['DOES_NOT_EXIST'])
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'Only applicable to the NREP')
+    def test_msi_json_compare__issue_6968(self):
+        json_object = json.dumps({
+            'p1': 'alice',
+            'p2': 'bob',
+            'data': {'values': [1, 2, 3]}
+        })
+
+        def do_test(json_ptr_1, json_ptr_2, cmp_result):
+            rule_text = textwrap.dedent('''
+                msiStrlen('{0}', *size);
+
+                msi_json_parse('{0}', int(*size), *h);
+                msi_json_compare(*h, '{1}', *h, '{2}', *cmp_result);
+                msi_json_free(*h);
+
+                writeLine('stdout', 'cmp_result=[*cmp_result]');
+            '''.format(json_object, json_ptr_1, json_ptr_2))
+
+            rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+            self.user.assert_icommand(['irule', '-r', rep_name, rule_text, 'null', 'ruleExecOut'], 'STDOUT', ['cmp_result=[{0}]'.format(cmp_result)])
+
+        do_test(   '',    '', 'equivalent')
+        do_test('/p1', '/p2', 'less')
+        do_test('/p2', '/p1', 'greater')
+        #do_test(   '', '/p1', 'unordered') # TODO Requires the ability to generate NaN.
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'Only applicable to the NREP')
+    def test_msi_json_contains__issue_6968(self):
+        rule_text = textwrap.dedent('''
+            *json = '{"name": "john"}';
+            msiStrlen(*json, *size);
+
+            msi_json_parse(*json, int(*size), *h);
+            msi_json_contains(*h, '/name', *result_1);
+            msi_json_contains(*h, '/nope', *result_2);
+            msi_json_free(*h);
+
+            writeLine('stdout', 'result_1=[*result_1]');
+            writeLine('stdout', 'result_2=[*result_2]');
+        ''')
+
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        expected_output = ['result_1=[1]', 'result_2=[0]']
+        self.user.assert_icommand(['irule', '-r', rep_name, rule_text, 'null', 'ruleExecOut'], 'STDOUT', expected_output)
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'Only applicable to the NREP')
+    def test_msi_json_dump__issue_6968(self):
+        json_string = json.dumps({
+            'fname': 'john',
+            'lname': 'doe'
+        }, separators=(',', ':'), sort_keys=True)
+
+        rule_text = textwrap.dedent('''
+            *json = '{0}';
+            msiStrlen(*json, *size);
+
+            msi_json_parse(*json, int(*size), *h);
+            msi_json_dump(*h, '', *out);
+            msi_json_free(*h);
+
+            writeLine('stdout', 'json_string=[*out]');
+        '''.format(json_string))
+
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        expected_output = ['json_string=[{0}]'.format(json_string)]
+        self.user.assert_icommand(['irule', '-r', rep_name, rule_text, 'null', 'ruleExecOut'], 'STDOUT', expected_output)
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'Only applicable to the NREP')
+    def test_msi_json_handles__issue_6968(self):
+        json_string = json.dumps({
+            'fname': 'john',
+            'lname': 'doe'
+        })
+
+        rule_text = textwrap.dedent('''
+            *json = '{0}';
+            msiStrlen(*json, *size);
+
+            msi_json_parse(*json, int(*size), *h1);
+            msi_json_parse(*json, int(*size), *h2);
+            msi_json_parse(*json, int(*size), *h3);
+            msi_json_handles(*handles);
+            msi_json_free(*h1);
+            msi_json_free(*h2);
+            msi_json_free(*h3);
+
+            *count = 0;
+            foreach (*handles) {{
+                *count = *count + 1;
+            }}
+
+            writeLine('stdout', 'count=[*count]');
+        '''.format(json_string))
+
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        self.user.assert_icommand(['irule', '-r', rep_name, rule_text, 'null', 'ruleExecOut'], 'STDOUT', ['count=[3]'])
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'Only applicable to the NREP')
+    def test_msi_json_names__issue_6968(self):
+        json_object = json.dumps({
+            'p1': 'alice',
+            'p2': 'bob',
+            'data': {'values': [1, 2, 3]}
+        })
+
+        rule_text = textwrap.dedent('''
+            msiStrlen('{0}', *size);
+
+            msi_json_parse('{0}', int(*size), *h);
+            msi_json_names(*h, '', *root_names);
+            msi_json_names(*h, '/data', *data_names);
+            msi_json_free(*h);
+
+            foreach (*n in *root_names) {{
+                writeLine('stdout', 'name=[*n]');
+            }}
+
+            foreach (*n in *data_names) {{
+                writeLine('stdout', 'name=[*n]');
+            }}
+        '''.format(json_object))
+
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        expected_output = ['name=[p1]', 'name=[p2]', 'name=[data]', 'name=[values]']
+        self.user.assert_icommand(['irule', '-r', rep_name, rule_text, 'null', 'ruleExecOut'], 'STDOUT', expected_output)
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'Only applicable to the NREP')
+    def test_msi_json_parse_with_list_of_integers__issue_6968(self):
+        # In the rule text, "*bytes" includes four trailing identical bytes. This creates a situation
+        # where the last four bytes need to be ignored in order for msi_json_parse() to succeed. We
+        # show that the "buffer_size" parameter of msi_json_parse() can be used to achieve this.
+        rule_text = textwrap.dedent('''
+            # characters:   {   "    x   "   :   1    }   "   "   "   "
+            *bytes = list(123, 34, 120, 34, 58, 49, 125, 34, 34, 34, 34);
+
+            msi_json_parse(*bytes, size(*bytes) - 4, *h);
+            msi_json_size(*h, '', *size);
+            msi_json_free(*h);
+
+            writeLine('stdout', 'size=[*size]');
+        ''')
+
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        self.user.assert_icommand(['irule', '-r', rep_name, rule_text, 'null', 'ruleExecOut'], 'STDOUT', ['size=[1]'])
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'Only applicable to the NREP')
+    def test_msi_json_parse_with_string__issue_6968(self):
+        rule_text = textwrap.dedent('''
+            *json_string = '{"x": 1}';
+            msiStrlen(*json_string, *size);
+
+            msi_json_parse(*json_string, int(*size), *h);
+            msi_json_size(*h, '', *size);
+            msi_json_free(*h);
+
+            writeLine('stdout', 'size=[*size]');
+        ''')
+
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        self.user.assert_icommand(['irule', '-r', rep_name, rule_text, 'null', 'ruleExecOut'], 'STDOUT', ['size=[1]'])
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'Only applicable to the NREP')
+    def test_msi_json_size__issue_6968(self):
+        rule_text = textwrap.dedent('''
+            *json_string = '{"x": 1, "y": [1, 2, 3, 4]}';
+            msiStrlen(*json_string, *size);
+
+            msi_json_parse(*json_string, int(*size), *h);
+            msi_json_size(*h, '/y', *size);
+            msi_json_free(*h);
+
+            writeLine('stdout', 'size=[*size]');
+        ''')
+
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        self.user.assert_icommand(['irule', '-r', rep_name, rule_text, 'null', 'ruleExecOut'], 'STDOUT', ['size=[4]'])
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'Only applicable to the NREP')
+    def test_msi_json_type__issue_6968(self):
+        json_string = json.dumps({
+            'string': 'john doe',
+            'integer': 100,
+            'array': [1, 2, 3],
+            'object': {'x': 3, 'y': 4},
+            'null': None,
+            'boolean': True
+        })
+
+        def do_test(json_ptr, expected_type_string):
+            rule_text = textwrap.dedent('''
+                *json = '{0}';
+                msiStrlen(*json, *size);
+
+                msi_json_parse(*json, int(*size), *h);
+                msi_json_type(*h, '{1}', *result);
+                msi_json_free(*h);
+
+                writeLine('stdout', 'type=[*result]');
+            '''.format(json_string, json_ptr))
+
+            rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+            expected_output = ['type=[{0}]'.format(expected_type_string)]
+            self.user.assert_icommand(['irule', '-r', rep_name, rule_text, 'null', 'ruleExecOut'], 'STDOUT', expected_output)
+
+        do_test(        '',  'object')
+        do_test( '/string',  'string')
+        do_test('/integer',  'number')
+        do_test(  '/array',   'array')
+        do_test('/array/0',  'number')
+        do_test( '/object',  'object')
+        do_test(   '/null',    'null')
+        do_test('/boolean', 'boolean')
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'Only applicable to the NREP')
+    def test_msi_json_value__issue_6968(self):
+        json_object = json.dumps({
+            'p1': 'alice',
+            'p2': 'bob',
+            'data': {'values': [1, 2, 3]},
+            'other': None,
+            'bool1': True,
+            'bool2': False
+        })
+
+        def do_test(json_ptr, expected_value):
+            rule_text = textwrap.dedent('''
+                msiStrlen('{0}', *size);
+
+                msi_json_parse('{0}', int(*size), *h);
+                msi_json_value(*h, '{1}', *v);
+                msi_json_free(*h);
+
+                writeLine('stdout', 'value=[*v]');
+            '''.format(json_object, json_ptr))
+
+            rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+            expected_output = ['value=[{0}]'.format(expected_value)]
+            self.user.assert_icommand(['irule', '-r', rep_name, rule_text, 'null', 'ruleExecOut'], 'STDOUT', expected_output)
+
+        do_test(              '', 'object')
+        do_test(           '/p1',  'alice')
+        do_test(           '/p2',    'bob')
+        do_test(         '/data', 'object')
+        do_test(  '/data/values',  'array')
+        do_test('/data/values/0',      '1')
+        do_test(        '/other',   'null')
+        do_test(        '/bool1',   'true')
+        do_test(        '/bool2',  'false')

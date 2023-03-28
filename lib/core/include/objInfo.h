@@ -216,9 +216,9 @@ typedef struct InxValPair {
 
 /* strArray_t - just a single array */
 typedef struct StrArray {
-    int len;
-    int size;
-    char *value;        /* char array of [len][size] */
+    int len; // The number of elements in the array.
+    int size; // The max size of every element (i.e. number of chars).
+    char* value; // char array of [len][size]
 } strArray_t;
 
 /* intArray_t - just a single array */
