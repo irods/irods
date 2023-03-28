@@ -116,6 +116,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/phybunUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/phymvUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/procApiRequest.h
+  ${CMAKE_SOURCE_DIR}/lib/core/include/process_stash.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/putUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/query_builder.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/query_processor.hpp
