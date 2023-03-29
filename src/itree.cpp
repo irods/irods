@@ -123,6 +123,11 @@ int main(int argc, char** argv){
         load_client_api_plugins();
         irods::experimental::client_connection conn;
 
+        if (!fs::client::is_collection(conn, path)) {
+            std::cerr << "Error: The specified path does not refer to a collection.\n";
+            return 1;
+        }
+
         if (vm["json"].as<bool>()) {
             auto value = get_json(path, vm, conn, vm["depth"].as<int>() );
             json::json top;
