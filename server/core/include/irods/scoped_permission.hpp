@@ -10,6 +10,8 @@
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 #include "irods/filesystem.hpp"
 
+#include <fmt/format.h>
+
 namespace irods::experimental
 {
     /// This class provides a convenient RAII-style mechanism for setting permissions
@@ -33,30 +35,35 @@ namespace irods::experimental
             : comm_{_comm}
             , path_{_path}
             , old_perm_{filesystem::perms::null}
+            , qualified_username_{}
         {
             namespace fs = filesystem;
-            
+
             // Elevate privileges so that we can see the permissions.
             scoped_privileged_client spc{comm_};
+
+            // If the zone in the RsComm.clientUser is empty, we assume that it refers to the local zone.
+            const auto* client_zone =
+                std::strlen(comm_.clientUser.rodsZone) > 0 ? comm_.clientUser.rodsZone : getLocalZoneName();
 
             // Capture the client's current permissions if any.
             const auto s = fs::server::status(comm_, path_);
             for (auto&& entity : s.permissions()) {
-                if (entity.name == comm_.clientUser.userName &&
-                    entity.zone == comm_.clientUser.rodsZone)
-                {
+                if (entity.name == comm_.clientUser.userName && entity.zone == client_zone) {
                     old_perm_ = entity.prms;
                     break;
                 }
             }
 
+            qualified_username_ = fmt::format("{}#{}", comm_.clientUser.userName, client_zone);
+
             // Set the client's requested permissions on the collection or data object.
-            fs::server::permissions(fs::admin, comm_, path_, comm_.clientUser.userName, _perm);
+            fs::server::permissions(fs::admin, comm_, path_, qualified_username_, _perm);
         }
-        
+
         scoped_permission(const scoped_permission&) = delete;
         auto operator=(const scoped_permission&) -> scoped_permission& = delete;
-        
+
         /// Restores the permissions on the collection or data object to their original value.
         ~scoped_permission()
         {
@@ -67,7 +74,7 @@ namespace irods::experimental
             scoped_privileged_client spc{comm_};
 
             try {
-                fs::server::permissions(fs::admin, comm_, path_, comm_.clientUser.userName, old_perm_);
+                fs::server::permissions(fs::admin, comm_, path_, qualified_username_, old_perm_);
             }
             catch (const fs::filesystem_error& e) {
                 rodsLog(LOG_ERROR, "%s: %s [error_code=%d]", __func__, e.what(), e.code().value());
@@ -78,6 +85,7 @@ namespace irods::experimental
         RsComm& comm_;
         const filesystem::path path_;
         filesystem::perms old_perm_;
+        std::string qualified_username_;
     }; // class scoped_permission
 } // namespace irods::experimental
 
