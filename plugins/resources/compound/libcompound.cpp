@@ -696,7 +696,14 @@ irods::error repl_object(
         [&]()
         {
             if (destination_l1descInx > 0) {
+                auto [replica, lm] =
+                    irods::experimental::replica::duplicate_replica(*L1desc[destination_l1descInx].dataObjInfo);
                 close_replica(_ctx, destination_l1descInx, error_code_set_to_oprStatus_on_dest_close);
+
+                // If we got a REPLICA_IS_BEING_STAGED error, just remove the cache replica.
+                if (REPLICA_IS_BEING_STAGED == error_code_set_to_oprStatus_on_dest_close) {
+                    irods::purge_cache(*_ctx.comm(), *replica.get());
+                }
             }
             if (source_l1descInx > 0) {
                 close_replica(_ctx, source_l1descInx);
