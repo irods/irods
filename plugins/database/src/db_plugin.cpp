@@ -55,6 +55,7 @@
 #include <iomanip>
 #include <iostream>
 #include <locale>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -701,6 +702,42 @@ irods::error validate_resource_name( std::string _resc_name ) {
     return SUCCESS();
 
 } // validate_resource_name
+
+// Not super robust
+static inline auto validate_zone_connection_string(const char* _zone_conn_info, irods::plugin_context& _ctx)
+    -> irods::error
+{
+    const std::size_t addr_len = std::strlen(_zone_conn_info);
+    if (addr_len > 0) {
+        // _zone_conn_info is const, so copy it
+        std::vector<char> addr_buf(addr_len + 1, '\0');
+        std::strncpy(addr_buf.data(), _zone_conn_info, addr_buf.size());
+        rodsHostAddr_t addr{};
+        auto status = parseHostAddrStr(addr_buf.data(), &addr);
+        if (status < 0) {
+            std::string errmsg = fmt::format("failed to validate zone connection info [{}]", status);
+            rodsLog(LOG_NOTICE, errmsg.c_str());
+            addRErrorMsg(&_ctx.comm()->rError, status, errmsg.c_str());
+            return ERROR(status, errmsg);
+        }
+        const std::size_t host_len = std::strlen(addr.hostAddr);
+        if (host_len == 0 || (host_len == 1 && addr.hostAddr[0] == ':')) {
+            std::string errmsg =
+                fmt::format("failed to validate zone connection info due to empty hostname [{}]", _zone_conn_info);
+            rodsLog(LOG_NOTICE, errmsg.c_str());
+            addRErrorMsg(&_ctx.comm()->rError, CAT_HOSTNAME_INVALID, errmsg.c_str());
+            return ERROR(CAT_HOSTNAME_INVALID, errmsg);
+        }
+        if ((addr.portNum > 65535) || (addr.portNum <= 0)) {
+            std::string errmsg = fmt::format(
+                "failed to validate zone connection info due to invalid or unspecified port [{}]", _zone_conn_info);
+            rodsLog(LOG_NOTICE, errmsg.c_str());
+            addRErrorMsg(&_ctx.comm()->rError, CAT_INVALID_ARGUMENT, errmsg.c_str());
+            return ERROR(CAT_INVALID_ARGUMENT, errmsg);
+        }
+    }
+    return SUCCESS();
+}
 
 bool
 _rescHasParentOrChild( char* rescId ) {
@@ -5368,6 +5405,13 @@ irods::error db_reg_zone_op(
         return PASS( ret );
     }
 
+    // =-=-=-=-=-=-=-
+    // validate the connection string is well formed
+    ret = validate_zone_connection_string(_zone_conn_info, _ctx);
+    if (!ret.ok()) {
+        return ret;
+    }
+
     /* String to get next sequence item for objects */
     cllNextValueString( "R_ObjectID", nextStr, MAX_NAME_LEN );
 
@@ -5521,7 +5565,14 @@ irods::error db_mod_zone_op(
         }
         OK = 1;
     }
-    if ( strcmp( _option, "conn" ) == 0 ) {
+    if (strcmp(_option, "conn") == 0) {
+        // =-=-=-=-=-=-=-
+        // validate the connection string is well formed
+        ret = validate_zone_connection_string(_option_value, _ctx);
+        if (!ret.ok()) {
+            return ret;
+        }
+
         cllBindVars[cllBindVarCount++] = _option_value;
         cllBindVars[cllBindVarCount++] = myTime;
         cllBindVars[cllBindVarCount++] = zoneId;
