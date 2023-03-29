@@ -23,6 +23,8 @@
 #include "irods/irods_random.hpp"
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/voting.hpp"
+#include "irods/finalize_utilities.hpp"
+#include "irods/replica_proxy.hpp"
 
 #include <boost/lexical_cast.hpp>
 #include <boost/function.hpp>
@@ -35,6 +37,7 @@
 #include <vector>
 #include <string>
 #include <string_view>
+#include <tuple>
 
 /// =-=-=-=-=-=-=-
 /// @brief constant to reference the operation type for
@@ -57,6 +60,8 @@ const std::string AUTO_REPL_POLICY_ENABLED( "on" );
 
 namespace
 {
+    const int REPLICA_DOES_NOT_EXIST = -1;
+
     auto throw_error_if_archive_replica_requested(const irods::file_object_ptr& obj,
                                                   const std::string_view archive_resc_name) -> void
     {
@@ -86,27 +91,21 @@ namespace
         }
     }
 
-    auto get_archive_replica_number(
-        const irods::file_object_ptr _obj,
-        const std::string_view _archive_resource_name) -> int
+    auto get_replica_number(const irods::file_object_ptr _obj, const std::string_view _leaf_resource_name) -> int
     {
         const auto& replicas = _obj->replicas();
-        const auto itr = std::find_if(
-            replicas.cbegin(), replicas.cend(),
-            [&_archive_resource_name] (const auto& _replica)
-            {
-                return _archive_resource_name == resc_mgr.resc_id_to_name(_replica.resc_id());
-            }
-        );
+        const auto itr = std::find_if(replicas.cbegin(), replicas.cend(), [&_leaf_resource_name](const auto& _replica) {
+            return _leaf_resource_name == resc_mgr.resc_id_to_name(_replica.resc_id());
+        });
 
         if (replicas.cend() == itr) {
-            THROW(SYS_REPLICA_DOES_NOT_EXIST, fmt::format(
-                "no replica found for [{}] on archive resource [{}]",
-                _obj->logical_path(), _archive_resource_name));
+            THROW(SYS_REPLICA_DOES_NOT_EXIST,
+                  fmt::format(
+                      "no replica found for [{}] on archive resource [{}]", _obj->logical_path(), _leaf_resource_name));
         }
 
         return itr->repl_num();
-    } // get_archive_replica_number
+    } // get_replica_number
 
     auto get_child_resource(const std::string_view _compound_resc_name,
                             const std::string_view _compound_context_type) -> irods::resource_ptr
@@ -138,6 +137,71 @@ namespace
 
         return nullptr;
     }
+
+    // returns a std::tuple with:
+    //  - cache_replica_number
+    //  - cache_replica_status
+    //  - archive_replica_number
+    //  - archive_replica_status
+    auto get_replica_number_and_status_for_cache_and_archive(irods::plugin_context& _ctx)
+        -> std::tuple<int, int, int, int>
+    {
+        irods::file_object_ptr f_ptr = boost::dynamic_pointer_cast<irods::file_object>(_ctx.fco());
+
+        // initialize replica statuses
+        int cache_replica_number = REPLICA_DOES_NOT_EXIST;
+        int cache_replica_status = REPLICA_DOES_NOT_EXIST;
+        int archive_replica_number = REPLICA_DOES_NOT_EXIST;
+        int archive_replica_status = REPLICA_DOES_NOT_EXIST;
+
+        // get the cache name
+        std::string cache_name;
+        irods::error ret = _ctx.prop_map().get<std::string>(CACHE_CONTEXT_TYPE, cache_name);
+        if (!ret.ok()) {
+            THROW(ret.code(), ret.result());
+        }
+
+        // get the archive name
+        std::string archive_name;
+        ret = _ctx.prop_map().get<std::string>(ARCHIVE_CONTEXT_TYPE, archive_name);
+        if (!ret.ok()) {
+            THROW(ret.code(), ret.result());
+        }
+
+        // get the cache replica number
+        try {
+            cache_replica_number = get_replica_number(f_ptr, cache_name);
+        }
+        catch (const irods::exception& _e) {
+            cache_replica_number = REPLICA_DOES_NOT_EXIST;
+        }
+
+        // get the archive replica number
+        try {
+            archive_replica_number = get_replica_number(f_ptr, archive_name);
+        }
+        catch (const irods::exception& _e) {
+            archive_replica_number = REPLICA_DOES_NOT_EXIST;
+        }
+
+        // get the cache replica status
+        if (cache_replica_number >= 0) {
+            const auto& cache_replica = f_ptr->get_replica(cache_replica_number);
+            if (cache_replica != std::nullopt) {
+                cache_replica_status = cache_replica->get().replica_status();
+            }
+        }
+
+        // get the archive replica status
+        const auto& archive_replica = f_ptr->get_replica(archive_replica_number);
+        if (archive_replica != std::nullopt) {
+            archive_replica_status = archive_replica->get().replica_status();
+        }
+
+        return std::make_tuple(
+            cache_replica_number, cache_replica_status, archive_replica_number, archive_replica_status);
+    } // get_replica_number_and_status_for_cache_and_archive
+
 } // anonymous namespace
 
 /// =-=-=-=-=-=-=-
@@ -1656,7 +1720,7 @@ irods::error open_for_prefer_archive_policy(
     irods::hierarchy_parser arch_check_parser = _out_parser;
 
     try {
-        f_ptr->repl_requested(get_archive_replica_number(f_ptr, archive_name));
+        f_ptr->repl_requested(get_replica_number(f_ptr, archive_name));
 
         // =-=-=-=-=-=-=-
         // ask the archive if it has the data object in question, politely
@@ -1853,6 +1917,20 @@ irods::error open_for_prefer_cache_policy(
         rodsLog(LOG_NOTICE, "[%s] - operation not found in property map; using open.", __FUNCTION__);
     }
 
+    // get the replica statuses for cache and archive
+    int cache_replica_status = REPLICA_DOES_NOT_EXIST;
+    int archive_replica_status = REPLICA_DOES_NOT_EXIST;
+    int cache_replica_number = REPLICA_DOES_NOT_EXIST;
+    int archive_replica_number = REPLICA_DOES_NOT_EXIST;
+    try {
+        std::tie(cache_replica_number, cache_replica_status, archive_replica_number, archive_replica_status) =
+            get_replica_number_and_status_for_cache_and_archive(_ctx);
+    }
+    catch (const irods::exception& _e) {
+        irods::log(_e);
+        return irods::error(_e);
+    }
+
     // =-=-=-=-=-=-=-
     // ask the cache if it has the data object in question, politely
     float cache_check_vote = irv::vote::zero;
@@ -1874,7 +1952,7 @@ irods::error open_for_prefer_cache_policy(
     irods::hierarchy_parser arch_check_parser = *_out_parser;
     irods::file_object_ptr f_ptr = boost::dynamic_pointer_cast<irods::file_object>(_ctx.fco());
 
-    if (irv::vote::low >= cache_check_vote) {
+    if (GOOD_REPLICA != cache_replica_status) {
         // =-=-=-=-=-=-=-
         // repave the repl requested temporarily
         int repl_requested = f_ptr->repl_requested();
@@ -1901,12 +1979,12 @@ irods::error open_for_prefer_cache_policy(
 
     // =-=-=-=-=-=-=-
     // Determine if we need to replicate from archive to cache.
-    // On a read, this is true if the archive vote is greater than cache vote.
-    // On a write, stale replicas vote higher than good replicas (see issue 4010)
-    // so the replication needs to happen if archive vote is less than cache vote.
-    if ((irods::WRITE_OPERATION != *_opr && arch_check_vote > cache_check_vote) ||
-        (irods::WRITE_OPERATION == *_opr && arch_check_vote < cache_check_vote))
-    {
+    // Note if they request a stale cache replica we will not overwrite the cache.
+    int repl_requested = f_ptr->repl_requested();
+    const auto cache_replica_is_requested = (repl_requested >= 0 && repl_requested == cache_replica_number);
+    const auto archive_is_good = (GOOD_REPLICA == archive_replica_status);
+    const auto cache_is_good = (GOOD_REPLICA == cache_replica_status);
+    if (!cache_replica_is_requested && archive_is_good && !cache_is_good) {
         if (irv::vote::zero == arch_check_vote) {
             *_out_vote = irv::vote::zero;
             return SUCCESS();
