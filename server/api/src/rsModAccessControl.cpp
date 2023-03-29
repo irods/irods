@@ -1,68 +1,97 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code (for the most part).  */
-/* See modAccessControl.h for a description of this API call.*/
+#include "rsModAccessControl.hpp"
 
+#include "catalog_utilities.hpp"
+#include "client_connection.hpp"
+#include "filesystem/path.hpp"
+#include "icatHighLevelRoutines.hpp"
+#include "irods_configuration_keywords.hpp"
+#include "irods_rs_comm_query.hpp"
+#include "miscServerFunct.hpp"
 #include "modAccessControl.h"
 #include "specColl.hpp"
-#include "rsModAccessControl.hpp"
-#include "icatHighLevelRoutines.hpp"
-#include "miscServerFunct.hpp"
-#include "irods_configuration_keywords.hpp"
 
-int
-rsModAccessControl( rsComm_t *rsComm, modAccessControlInp_t *modAccessControlInp ) {
-    rodsServerHost_t *rodsServerHost;
-    int status;
-    specCollCache_t *specCollCache = NULL;
-    char newPath[MAX_NAME_LEN];
+#define IRODS_USER_ADMINISTRATION_ENABLE_SERVER_SIDE_API
+#include "user_administration.hpp"
+
+#include <fmt/format.h>
+
+int rsModAccessControl(rsComm_t* rsComm, modAccessControlInp_t* modAccessControlInp)
+{
+    namespace fs = irods::experimental::filesystem;
+    namespace ic = irods::experimental::catalog;
+    namespace ua = irods::experimental::administration;
+
+    if (!rsComm || !modAccessControlInp) {
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
+
+    specCollCache_t* specCollCache = nullptr;
     modAccessControlInp_t newModAccessControlInp = *modAccessControlInp;
 
-    rstrcpy( newPath, newModAccessControlInp.path, MAX_NAME_LEN );
-    resolveLinkedPath( rsComm, newPath, &specCollCache, NULL );
-    if ( strcmp( newPath, newModAccessControlInp.path ) != 0 ) {
+    char newPath[MAX_NAME_LEN]{};
+    rstrcpy(newPath, newModAccessControlInp.path, MAX_NAME_LEN);
+    resolveLinkedPath(rsComm, newPath, &specCollCache, nullptr);
+    if (strcmp(newPath, newModAccessControlInp.path)) {
         newModAccessControlInp.path = newPath;
     }
 
-    status = getAndConnRcatHost(
-                 rsComm,
-                 MASTER_RCAT,
-                 ( const char* )newModAccessControlInp.path,
-                 &rodsServerHost );
-    if ( status < 0 ) {
-        return status;
-    }
-
-    if ( rodsServerHost->localFlag == LOCAL_HOST ) {
-        std::string svc_role;
-        irods::error ret = get_catalog_service_role(svc_role);
-        if(!ret.ok()) {
-            irods::log(PASS(ret));
-            return ret.code();
+    try {
+        // If the zone name cannot be derived from the collection name in the input, the path cannot be valid.
+        const auto zone_name = fs::zone_name(fs::path{static_cast<char*>(newModAccessControlInp.path)});
+        if (!zone_name) {
+            return SYS_INVALID_FILE_PATH;
         }
 
-        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
-            status = _rsModAccessControl( rsComm, &newModAccessControlInp );
-        } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
-            status = SYS_NO_RCAT_SERVER_ERR;
-        } else {
-            rodsLog(
-                LOG_ERROR,
-                "role not supported [%s]",
-                svc_role.c_str() );
-            status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        if (!isLocalZone(zone_name->data())) {
+            auto* host = ic::redirect_to_catalog_provider(*rsComm, static_cast<char*>(newModAccessControlInp.path));
+            return rcModAccessControl(host->conn, &newModAccessControlInp);
         }
-    }
-    else {
-        status = rcModAccessControl( rodsServerHost->conn,
-                                     &newModAccessControlInp );
-    }
 
-    if ( status < 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "rsModAccessControl: rcModAccessControl failed" );
+        const auto catalog_provider_host = ic::get_catalog_provider_host();
+
+        if (LOCAL_HOST == catalog_provider_host.localFlag) {
+            ic::throw_if_catalog_provider_service_role_is_invalid();
+            return _rsModAccessControl(rsComm, &newModAccessControlInp);
+        }
+
+        // Some privileged clients may be affected by temporary elevated privileges. The redirect to the catalog service
+        // provider here will cause the temporary privileged status granted to this connection to be lost in the
+        // server-to-server connection. The compound resource temporarily elevates permissions for users with read-only
+        // access to data objects which need to be staged to cache. A client connection is made here using the service
+        // account rodsadmin credentials to modify the permissions and then is immediately disconnected. This is only
+        // done for connections with elevated privileges that are not rodsadmins.
+        if (irods::is_privileged_client(*rsComm)) {
+            const auto client_user_type =
+                *ua::server::type(*rsComm, ua::user{rsComm->clientUser.userName, rsComm->clientUser.rodsZone});
+            if (ua::user_type::rodsadmin != client_user_type) {
+                auto conn = irods::experimental::client_connection{catalog_provider_host.hostName->name,
+                                                                   rsComm->myEnv.rodsPort,
+                                                                   static_cast<char*>(rsComm->myEnv.rodsUserName),
+                                                                   static_cast<char*>(rsComm->myEnv.rodsZone)};
+
+                return rcModAccessControl(static_cast<RcComm*>(conn), &newModAccessControlInp);
+            }
+        }
+
+        auto* host = ic::redirect_to_catalog_provider(*rsComm);
+        return rcModAccessControl(host->conn, &newModAccessControlInp);
     }
-    return status;
+    catch (const irods::exception& e) {
+        irods::log(LOG_ERROR,
+                   fmt::format("[{}:{}] - caught iRODS exception [{}]", __func__, __LINE__, e.client_display_what()));
+        // The irods::exceptions thrown here are constructed from error codes found in rodsErrorTable and explicit ints
+        // found in structs. There will never be a narrowing conversion which affects the value here.
+        // NOLINTNEXTLINE(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+        return e.code();
+    }
+    catch (const std::exception& e) {
+        irods::log(LOG_ERROR, fmt::format("[{}:{}] - caught std::exception [{}]", __func__, __LINE__, e.what()));
+        return SYS_INTERNAL_ERR;
+    }
+    catch (...) {
+        irods::log(LOG_ERROR, fmt::format("[{}:{}] - caught unknown error", __func__, __LINE__));
+        return SYS_UNKNOWN_ERROR;
+    }
 }
 
 int
