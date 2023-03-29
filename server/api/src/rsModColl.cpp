@@ -1,3 +1,5 @@
+#include "irods/rsModColl.hpp"
+
 #include "irods/catalog_utilities.hpp"
 #include "irods/client_connection.hpp"
 #include "irods/filesystem/path.hpp"
@@ -7,7 +9,11 @@
 #include "irods/miscServerFunct.hpp"
 #include "irods/modColl.h"
 #include "irods/rcMisc.h"
-#include "irods/rsModColl.hpp"
+
+#define IRODS_USER_ADMINISTRATION_ENABLE_SERVER_SIDE_API
+#include "irods/user_administration.hpp"
+
+#include <fmt/format.h>
 
 namespace
 {
@@ -73,8 +79,9 @@ namespace
 
 auto rsModColl(rsComm_t* rsComm, collInp_t* modCollInp) -> int
 {
-    namespace ic = irods::experimental::catalog;
     namespace fs = irods::experimental::filesystem;
+    namespace ic = irods::experimental::catalog;
+    namespace ua = irods::experimental::administration;
 
     if (!rsComm || !modCollInp) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -104,14 +111,19 @@ auto rsModColl(rsComm_t* rsComm, collInp_t* modCollInp) -> int
         // server-to-server connection. Many operations in iRODS use this API to update the collection mtime after a
         // data object modification or creation and requires privileged status to modify the collection in the event
         // that the user does not have permissions on the parent collection. A client connection is made here using the
-        // service account rodsadmin credentials to modify the collection and then is immediately disconnected.
+        // service account rodsadmin credentials to modify the collection and then is immediately disconnected. This is
+        // only done for connections with elevated privileges that are not rodsadmins.
         if (irods::is_privileged_client(*rsComm)) {
-            auto conn = irods::experimental::client_connection{catalog_provider_host.hostName->name,
-                                                               rsComm->myEnv.rodsPort,
-                                                               static_cast<char*>(rsComm->myEnv.rodsUserName),
-                                                               static_cast<char*>(rsComm->myEnv.rodsZone)};
+            const auto client_user_type =
+                *ua::server::type(*rsComm, ua::user{rsComm->clientUser.userName, rsComm->clientUser.rodsZone});
+            if (ua::user_type::rodsadmin != client_user_type) {
+                auto conn = irods::experimental::client_connection{catalog_provider_host.hostName->name,
+                                                                   rsComm->myEnv.rodsPort,
+                                                                   static_cast<char*>(rsComm->myEnv.rodsUserName),
+                                                                   static_cast<char*>(rsComm->myEnv.rodsZone)};
 
-            return rcModColl(static_cast<RcComm*>(conn), modCollInp);
+                return rcModColl(static_cast<RcComm*>(conn), modCollInp);
+            }
         }
 
         auto* host = ic::redirect_to_catalog_provider(*rsComm);
