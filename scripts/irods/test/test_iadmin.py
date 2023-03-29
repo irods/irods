@@ -2535,3 +2535,218 @@ class test_mkuser_group(unittest.TestCase):
         finally:
             self.admin.run_icommand(['iadmin', 'rmgroup', self.group])
             self.admin.run_icommand(['iadmin', 'rmzone', remote_zone])
+
+
+class test_mkzone_conn_str_validation(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        """Set up the test class."""
+        cls.admin = session.mkuser_and_return_session('rodsadmin', 'otherrods', 'rods', lib.get_hostname())
+
+    @classmethod
+    def tearDownClass(cls):
+        """Tear down the test class."""
+        with session.make_session_for_existing_admin() as admin_session:
+            cls.admin.__exit__()
+            admin_session.assert_icommand(['iadmin', 'rmuser', cls.admin.username])
+
+    def test_good_localhost(self):
+        try:
+            self.admin.assert_icommand(['iadmin', 'mkzone', 'goodzone', 'remote', 'localhost:1247'], 'EMPTY')
+            self.admin.assert_icommand(['iadmin', 'lz', 'goodzone'],
+                                       'STDOUT_MULTILINE', '^zone_conn_string:\s+localhost:1247$', use_regex=True)
+        finally:
+            self.admin.run_icommand(['iadmin', 'rmzone', 'goodzone'])
+
+    def test_good_blank(self):
+        try:
+            self.admin.assert_icommand(['iadmin', 'mkzone', 'goodzone', 'remote', ''], 'EMPTY')
+            self.admin.assert_icommand(['iadmin', 'lz', 'goodzone'],
+                                       'STDOUT_MULTILINE', '^zone_conn_string:\s*$', use_regex=True)
+        finally:
+            self.admin.run_icommand(['iadmin', 'rmzone', 'goodzone'])
+
+    def test_bad_noport(self):
+        try:
+            self.admin.assert_icommand(['iadmin', 'mkzone', 'badzone', 'remote', 'hostname'],
+                                       'STDERR', 'CAT_INVALID_ARGUMENT')
+            self.admin.assert_icommand(['iadmin', 'lz', 'badzone'],
+                                       'STDOUT', 'No rows found')
+        finally:
+            self.admin.run_icommand(['iadmin', 'rmzone', 'badzone'])
+
+    def test_bad_0port(self):
+        try:
+            self.admin.assert_icommand(['iadmin', 'mkzone', 'badzone', 'remote', 'hostname:0'],
+                                       'STDERR', 'CAT_INVALID_ARGUMENT')
+            self.admin.assert_icommand(['iadmin', 'lz', 'badzone'],
+                                       'STDOUT', 'No rows found')
+        finally:
+            self.admin.run_icommand(['iadmin', 'rmzone', 'badzone'])
+
+    def test_bad_nohost(self):
+        try:
+            self.admin.assert_icommand(['iadmin', 'mkzone', 'badzone', 'remote', ':1234'],
+                                       'STDERR', 'CAT_HOSTNAME_INVALID')
+            self.admin.assert_icommand(['iadmin', 'lz', 'badzone'],
+                                       'STDOUT', 'No rows found')
+        finally:
+            self.admin.run_icommand(['iadmin', 'rmzone', 'badzone'])
+
+    def test_bad_negport(self):
+        try:
+            self.admin.assert_icommand(['iadmin', 'mkzone', 'badzone', 'remote', 'hostname:-1234'],
+                                       'STDERR', 'CAT_INVALID_ARGUMENT')
+            self.admin.assert_icommand(['iadmin', 'lz', 'badzone'],
+                                       'STDOUT', 'No rows found')
+        finally:
+            self.admin.run_icommand(['iadmin', 'rmzone', 'badzone'])
+
+    def test_bad_bigport(self):
+        try:
+            self.admin.assert_icommand(['iadmin', 'mkzone', 'badzone', 'remote', 'hostname:1234567890'],
+                                       'STDERR', 'CAT_INVALID_ARGUMENT')
+            self.admin.assert_icommand(['iadmin', 'lz', 'badzone'],
+                                       'STDOUT', 'No rows found')
+        finally:
+            self.admin.run_icommand(['iadmin', 'rmzone', 'badzone'])
+
+    def test_bad_NaNportNaN(self):
+        try:
+            self.admin.assert_icommand(['iadmin', 'mkzone', 'badzone', 'remote', 'hostname:asdf1234asdf'],
+                                       'STDERR', 'CAT_INVALID_ARGUMENT')
+            self.admin.assert_icommand(['iadmin', 'lz', 'badzone'],
+                                       'STDOUT', 'No rows found')
+        finally:
+            self.admin.run_icommand(['iadmin', 'rmzone', 'badzone'])
+
+    def test_bad_NaNport(self):
+        try:
+            self.admin.assert_icommand(['iadmin', 'mkzone', 'badzone', 'remote', 'hostname:asdf1234'],
+                                       'STDERR', 'CAT_INVALID_ARGUMENT')
+            self.admin.assert_icommand(['iadmin', 'lz', 'badzone'],
+                                       'STDOUT', 'No rows found')
+        finally:
+            self.admin.run_icommand(['iadmin', 'rmzone', 'badzone'])
+
+    def test_bad_portNaN(self):
+        try:
+            self.admin.assert_icommand(['iadmin', 'mkzone', 'badzone', 'remote', 'hostname:1234asdf'],
+                                       'STDERR', 'CAT_INVALID_ARGUMENT')
+            self.admin.assert_icommand(['iadmin', 'lz', 'badzone'],
+                                       'STDOUT', 'No rows found')
+        finally:
+            self.admin.run_icommand(['iadmin', 'rmzone', 'badzone'])
+
+class test_modzone_conn_str_validation(unittest.TestCase):
+    localhost_zone = 'goodzone_localhost'
+    localhost_connstr = 'localhost:1247'
+    localhost_test_re = '^zone_conn_string:\s+' + localhost_connstr + '$'
+    blank_zone = 'goodzone_blank'
+    blank_test_re = '^zone_conn_string:\s*$'
+
+    @classmethod
+    def setUpClass(cls):
+        """Set up the test class."""
+        cls.admin = session.mkuser_and_return_session('rodsadmin', 'otherrods', 'rods', lib.get_hostname())
+
+    @classmethod
+    def tearDownClass(cls):
+        """Tear down the test class."""
+        with session.make_session_for_existing_admin() as admin_session:
+            cls.admin.__exit__()
+            admin_session.assert_icommand(['iadmin', 'rmuser', cls.admin.username])
+
+    def setUp(self):
+        self.admin.assert_icommand(['iadmin', 'mkzone', self.localhost_zone, 'remote', self.localhost_connstr], 'EMPTY')
+        self.admin.assert_icommand(['iadmin', 'mkzone', self.blank_zone, 'remote', ''], 'EMPTY')
+
+    def tearDown(self):
+        self.admin.run_icommand(['iadmin', 'rmzone', self.localhost_zone])
+        self.admin.run_icommand(['iadmin', 'rmzone', self.blank_zone])
+
+    def test_good_localhost(self):
+        self.admin.assert_icommand(['iadmin', 'modzone', self.blank_zone, 'conn', self.localhost_connstr], 'EMPTY')
+        self.admin.assert_icommand(['iadmin', 'lz', self.blank_zone],
+                                   'STDOUT_MULTILINE', self.localhost_test_re, use_regex=True)
+
+    def test_bad_noport(self):
+        self.admin.assert_icommand(['iadmin', 'modzone', self.localhost_zone, 'conn', 'hostname'],
+                                   'STDERR', 'CAT_INVALID_ARGUMENT')
+        self.admin.assert_icommand(['iadmin', 'modzone', self.blank_zone, 'conn', 'hostname'],
+                                   'STDERR', 'CAT_INVALID_ARGUMENT')
+        self.admin.assert_icommand(['iadmin', 'lz', self.localhost_zone],
+                                   'STDOUT_MULTILINE', self.localhost_test_re, use_regex=True)
+        self.admin.assert_icommand(['iadmin', 'lz', self.blank_zone],
+                                   'STDOUT_MULTILINE', self.blank_test_re, use_regex=True)
+
+    def test_bad_0port(self):
+        self.admin.assert_icommand(['iadmin', 'modzone', self.localhost_zone, 'conn', 'hostname:0'],
+                                   'STDERR', 'CAT_INVALID_ARGUMENT')
+        self.admin.assert_icommand(['iadmin', 'modzone', self.blank_zone, 'conn', 'hostname:0'],
+                                   'STDERR', 'CAT_INVALID_ARGUMENT')
+        self.admin.assert_icommand(['iadmin', 'lz', self.localhost_zone],
+                                   'STDOUT_MULTILINE', self.localhost_test_re, use_regex=True)
+        self.admin.assert_icommand(['iadmin', 'lz', self.blank_zone],
+                                   'STDOUT_MULTILINE', self.blank_test_re, use_regex=True)
+
+    def test_bad_nohost(self):
+        self.admin.assert_icommand(['iadmin', 'modzone', self.localhost_zone, 'conn', ':1234'],
+                                   'STDERR', 'CAT_HOSTNAME_INVALID')
+        self.admin.assert_icommand(['iadmin', 'modzone', self.blank_zone, 'conn', ':1234'],
+                                   'STDERR', 'CAT_HOSTNAME_INVALID')
+        self.admin.assert_icommand(['iadmin', 'lz', self.localhost_zone],
+                                   'STDOUT_MULTILINE', self.localhost_test_re, use_regex=True)
+        self.admin.assert_icommand(['iadmin', 'lz', self.blank_zone],
+                                   'STDOUT_MULTILINE', self.blank_test_re, use_regex=True)
+
+    def test_bad_negport(self):
+        self.admin.assert_icommand(['iadmin', 'modzone', self.localhost_zone, 'conn', 'hostname:-1234'],
+                                   'STDERR', 'CAT_INVALID_ARGUMENT')
+        self.admin.assert_icommand(['iadmin', 'modzone', self.blank_zone, 'conn', 'hostname:-1234'],
+                                   'STDERR', 'CAT_INVALID_ARGUMENT')
+        self.admin.assert_icommand(['iadmin', 'lz', self.localhost_zone],
+                                   'STDOUT_MULTILINE', self.localhost_test_re, use_regex=True)
+        self.admin.assert_icommand(['iadmin', 'lz', self.blank_zone],
+                                   'STDOUT_MULTILINE', self.blank_test_re, use_regex=True)
+
+    def test_bad_bigport(self):
+        self.admin.assert_icommand(['iadmin', 'modzone', self.localhost_zone, 'conn', 'hostname:1234567890'],
+                                   'STDERR', 'CAT_INVALID_ARGUMENT')
+        self.admin.assert_icommand(['iadmin', 'modzone', self.blank_zone, 'conn', 'hostname:1234567890'],
+                                   'STDERR', 'CAT_INVALID_ARGUMENT')
+        self.admin.assert_icommand(['iadmin', 'lz', self.localhost_zone],
+                                   'STDOUT_MULTILINE', self.localhost_test_re, use_regex=True)
+        self.admin.assert_icommand(['iadmin', 'lz', self.blank_zone],
+                                   'STDOUT_MULTILINE', self.blank_test_re, use_regex=True)
+
+    def test_bad_NaNportNaN(self):
+        self.admin.assert_icommand(['iadmin', 'modzone', self.localhost_zone, 'conn', 'hostname:asdf1234asdf'],
+                                   'STDERR', 'CAT_INVALID_ARGUMENT')
+        self.admin.assert_icommand(['iadmin', 'modzone', self.blank_zone, 'conn', 'hostname:asdf1234asdf'],
+                                   'STDERR', 'CAT_INVALID_ARGUMENT')
+        self.admin.assert_icommand(['iadmin', 'lz', self.localhost_zone],
+                                   'STDOUT_MULTILINE', self.localhost_test_re, use_regex=True)
+        self.admin.assert_icommand(['iadmin', 'lz', self.blank_zone],
+                                   'STDOUT_MULTILINE', self.blank_test_re, use_regex=True)
+
+    def test_bad_NaNport(self):
+        self.admin.assert_icommand(['iadmin', 'modzone', self.localhost_zone, 'conn', 'hostname:asdf1234'],
+                                   'STDERR', 'CAT_INVALID_ARGUMENT')
+        self.admin.assert_icommand(['iadmin', 'modzone', self.blank_zone, 'conn', 'hostname:asdf1234'],
+                                   'STDERR', 'CAT_INVALID_ARGUMENT')
+        self.admin.assert_icommand(['iadmin', 'lz', self.localhost_zone],
+                                   'STDOUT_MULTILINE', self.localhost_test_re, use_regex=True)
+        self.admin.assert_icommand(['iadmin', 'lz', self.blank_zone],
+                                   'STDOUT_MULTILINE', self.blank_test_re, use_regex=True)
+
+    def test_bad_portNaN(self):
+        self.admin.assert_icommand(['iadmin', 'modzone', self.localhost_zone, 'conn', 'hostname:1234asdf'],
+                                   'STDERR', 'CAT_INVALID_ARGUMENT')
+        self.admin.assert_icommand(['iadmin', 'modzone', self.blank_zone, 'conn', 'hostname:1234asdf'],
+                                   'STDERR', 'CAT_INVALID_ARGUMENT')
+        self.admin.assert_icommand(['iadmin', 'lz', self.localhost_zone],
+                                   'STDOUT_MULTILINE', self.localhost_test_re, use_regex=True)
+        self.admin.assert_icommand(['iadmin', 'lz', self.blank_zone],
+                                   'STDOUT_MULTILINE', self.blank_test_re, use_regex=True)
