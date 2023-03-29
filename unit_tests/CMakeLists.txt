@@ -58,6 +58,7 @@ set(
   metadata
   packstruct
   parallel_transfer_engine
+  process_stash
   query_builder
   rc_data_obj
   rc_data_obj_repl
