@@ -10,11 +10,12 @@ if sys.version_info < (2,7):
 else:
     import unittest
 
-class Test_ITree(session.make_sessions_mixin([('otherrods', 'rods')], []), unittest.TestCase):
+class Test_ITree(session.make_sessions_mixin([('otherrods', 'rods')], [('alice','apass')]), unittest.TestCase):
 
     def setUp(self):
         super(Test_ITree, self).setUp()
         self.admin = self.admin_sessions[0]
+        self.user0 = self.user_sessions[0]
         self.previous_dir,_, _ = self.admin.run_icommand(["ipwd"])
         self.admin.run_icommand(["icd", self.admin.session_collection])
 
@@ -98,3 +99,24 @@ class Test_ITree(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
         self.admin.assert_icommand(["itree", os.path.join("..", collection_name)], "STDOUT_SINGLELINE", "Found 0 collections and 0 data objects")
         self.assertEqual(self.admin.run_icommand(["itree"]), self.admin.run_icommand(["itree", "."]))
 
+    def test_for_error_message_when_used_with_data_object_path__issue_6627(self):
+        relative_path_to_data_object = "data_object_6627"
+        absolute_path_to_data_object = os.path.join(self.user0.session_collection, relative_path_to_data_object)
+
+        self.user0.assert_icommand(["itouch", relative_path_to_data_object])
+
+        # Assert that the data object, as recognized by its absolute path, exists in the iRODS filesystem.
+        self.user0.assert_icommand(['ils', absolute_path_to_data_object], 'STDOUT_SINGLELINE', absolute_path_to_data_object, desired_rc = 0)
+
+        self.user0.assert_icommand(["itree", relative_path_to_data_object], "STDERR", "does not refer to a collection")
+        self.user0.assert_icommand(["itree", absolute_path_to_data_object], "STDERR", "does not refer to a collection")
+
+    def test_for_error_message_when_used_with_nonexistent_path__issue_6627(self):
+        relative_path_to_nonexistent_object = "nonexistent_object_6627"
+        absolute_path_to_nonexistent_object = os.path.join(self.user0.session_collection, relative_path_to_nonexistent_object)
+
+        # Assert that the absolute path, as built, doesn't correspond to any object in the iRODS filesystem.
+        self.user0.assert_icommand(['ils', absolute_path_to_nonexistent_object], 'STDERR_SINGLELINE', 'does not exist')
+
+        self.user0.assert_icommand(["itree", relative_path_to_nonexistent_object], "STDERR", "does not refer to a collection")
+        self.user0.assert_icommand(["itree", absolute_path_to_nonexistent_object], "STDERR", "does not refer to a collection")
