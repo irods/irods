@@ -9,19 +9,21 @@ else:
     import unittest
 
 from . import session
-from .. import test
 from .. import lib
 from .. import paths
+from .. import test
 from ..configuration import IrodsConfig
+from ..core_file import temporary_core_file
 from textwrap import dedent
 
-class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], []), unittest.TestCase):
+class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
 
     plugin_name = IrodsConfig().default_rule_engine_plugin
 
     def setUp(self):
         super(Test_Dynamic_PEPs, self).setUp()
         self.admin = self.admin_sessions[0]
+        self.user = self.user_sessions[0]
 
     def tearDown(self):
         super(Test_Dynamic_PEPs, self).tearDown()
@@ -216,3 +218,107 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [])
                     self.admin.assert_icommand(['irm', '-f', logical_path])
                     self.admin.assert_icommand(['iadmin', 'rum'])
 
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'Only implemented for NREP.')
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER , 'Database PEPs only fire on the catalog provider.')
+    def test_pep_database_data_object_finalize__issue_6385(self):
+        other_resource = 'test_pep_database_data_object_finalize_resc'
+        filename = 'test_pep_database_data_object_finalize__issue_6385'
+        contents = 'knock knock'
+        logical_path = os.path.join(self.user.session_collection, filename)
+        expected_attribute = 'latest_replica'
+
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': dedent('''
+                pep_database_data_object_finalize_post(*instance, *ctx, *out, *replicas) {{
+                    # This PEP annotates an AVU to the target data object indicating the most recently created replica.
+
+                    # Get a JSON handle so we can work with the replicas input.
+                    msiStrlen(*replicas, *size);
+                    msi_json_parse(*replicas, int(*size), *handle);
+
+                    # Get the logical path based on the data ID. (Seems silly that we have to do this.)
+                    msi_json_value(*handle, "/replicas/0/before/data_id", *data_id);
+                    foreach (*result in select COLL_NAME, DATA_NAME where DATA_ID = '*data_id') {{
+                        *logical_path = *result.COLL_NAME ++ '/' ++ *result.DATA_NAME;
+                        break;
+                    }}
+
+                    # Loop over the replicas and find the one which was just created based on "before" replica status.
+                    # We want to get the replica number so we can annotate it as metadata on the data object.
+                    *replica_number = "null";
+
+                    # *replicas is a pure array. Pass an empty string for the JSON pointer to get the size of the array.
+                    msi_json_size(*handle, "/replicas", *array_len);
+                    for (*i = 0; *i < *array_len; *i = *i + 1) {{
+                        msi_json_value(*handle, "/replicas/*i/before/data_is_dirty", *status_before);
+                        # '2' is the intermediate replica status.
+                        if (*status_before == '2') {{
+                            msi_json_value(*handle, "/replicas/*i/after/data_repl_num", *replica_number);
+                            break;
+                        }}
+                    }}
+
+                    # Free the JSON handle because we don't need it anymore.
+                    msi_json_free(*handle);
+
+                    # If replica_number is "null", then no replica was found with replica status of intermediate in its
+                    # "before" object. This database operation is invoked both when locking the data object on open and
+                    # when finalizing the data object on close. In that case, the new replica would not have been
+                    # created yet, so it will not be found in the list of replicas above. We only want to annotate
+                    # metadata when the object was newly created (i.e. its "before" replica status is intermediate) and
+                    # is being closed. Objects opened for appending or overwriting will not have a "before" replica
+                    # status of intermediate.
+                    if (*replica_number != "null") {{
+                        # Annotate the metadata indicating the replica number which was just updated.
+                        msiAddKeyVal(*kvp, "{}", "*replica_number");
+                        msiSetKeyValuePairsToObj(*kvp, "*logical_path", "-d");
+                    }}
+
+                }}''')
+        }
+
+        lib.create_ufs_resource(other_resource, self.admin, hostname=test.settings.HOSTNAME_2)
+
+        try:
+            putfile = os.path.join(self.user.local_session_dir, 'putme')
+            lib.touch(putfile)
+
+            with temporary_core_file() as core:
+                core.add_rule(pep_map[self.plugin_name].format(expected_attribute))
+
+                # Create the first replica with iput. There should be only one replica, it should be good, and it
+                # should annotate metadata indicating that replica 0 as the latest replica.
+                self.user.assert_icommand(['iput', putfile, logical_path])
+                self.assertEqual(str(1), lib.get_replica_status(self.user, os.path.basename(logical_path), 0))
+                self.assertTrue(lib.metadata_attr_with_value_exists(self.user, expected_attribute, str(0)))
+
+                # Create a second replica with istream. There should now be two replicas, one should be good and one
+                # should be stale, and the annotated metadata should indicate that replica 1 is the latest replica.
+                self.user.assert_icommand(['istream', '-R', other_resource, 'write', logical_path], input=contents)
+                self.assertEqual(str(0), lib.get_replica_status(self.user, os.path.basename(logical_path), 0))
+                self.assertEqual(str(1), lib.get_replica_status(self.user, os.path.basename(logical_path), 1))
+                self.assertTrue(lib.metadata_attr_with_value_exists(self.user, expected_attribute, str(1)))
+                self.assertFalse(lib.metadata_attr_with_value_exists(self.user, expected_attribute, str(0)))
+
+                # Overpave the stale replica with irepl. There should still be two replicas, both should be good, and
+                # the annotated metadata should still indicate that replica 1 is the latest replica.
+                self.user.assert_icommand(['irepl', logical_path])
+                self.assertEqual(str(1), lib.get_replica_status(self.user, os.path.basename(logical_path), 0))
+                self.assertEqual(str(1), lib.get_replica_status(self.user, os.path.basename(logical_path), 1))
+                self.assertTrue(lib.metadata_attr_with_value_exists(self.user, expected_attribute, str(1)))
+                self.assertFalse(lib.metadata_attr_with_value_exists(self.user, expected_attribute, str(0)))
+
+        finally:
+            print(self.user.run_icommand(['ils', '-AL', os.path.dirname(logical_path)])[0]) # Debugging
+            print(self.user.run_icommand(['imeta', 'ls', '-d', logical_path])[0]) # Debugging
+
+            for replica_number in [0, 1]:
+                self.admin.run_icommand([
+                    'iadmin', 'modrepl',
+                    'logical_path', logical_path,
+                    'replica_number', str(replica_number),
+                    'DATA_REPL_STATUS', str(0)])
+
+            self.user.run_icommand(['irm', '-f', logical_path])
+            lib.remove_resource(other_resource, self.admin)
