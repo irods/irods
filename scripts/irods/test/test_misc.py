@@ -3,6 +3,7 @@ import sys
 from datetime import datetime, timedelta
 import tempfile
 import shutil
+import time
 
 if sys.version_info < (2, 7):
     import unittest2 as unittest
@@ -15,6 +16,8 @@ from .. import lib
 from .. import paths
 from ..configuration import IrodsConfig
 from ..controller import IrodsController
+from ..test.command import assert_command
+
 
 class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unittest.TestCase):
 
@@ -256,3 +259,31 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
 
         # Remove temp directory
         shutil.rmtree(temp_dir_name)
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'native rule used')
+    def test_msiFlushMonStat_clears_database_rows__issue_6350(self):
+
+        def run_rule_code(rule_code):
+            self.admin.assert_icommand(['irule','-r','irods_rule_engine_plugin-irods_rule_language-instance', rule_code, 'null', 'null'])
+
+        def get_number_of_serverload_rows():
+            database_select_command = ['psql', 'ICAT', '-t', '-c', 'select count(create_ts) from r_server_load']
+            (rc, out, _) = outp = assert_command(database_select_command, 'STDOUT')
+            return int(out,10)
+
+        # Create a row in the database and mark a time for the ageoff window.
+        run_rule_code("msiServerMonPerf('default','1')")
+        keep_time = int(time.time())+3
+
+        # There should now be at least one row.
+        n_rows_before = get_number_of_serverload_rows()
+        self.assertGreater (n_rows_before, 0)
+
+        # This monitoring operation will insert another row after running for default interval of 10 seconds.
+        run_rule_code("msiServerMonPerf('default','default')")
+        secs_to_keep = int(time.time() + 1) - keep_time
+
+        # Age off all rows but the most recent one.
+        run_rule_code("msiFlushMonStat('{}s','serverload')".format(secs_to_keep))
+        n_rows_after = get_number_of_serverload_rows()
+        self.assertEqual (n_rows_after, 1)
