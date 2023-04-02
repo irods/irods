@@ -820,11 +820,15 @@ int msiFlushMonStat( msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t 
         return rei->status;
     }
 
-    if ( atoi( timespan ) > 0 ) {
-        elapseTime = atoi( timespan ) * 3600;
+    char *endc{};
+    if (int scanned_number = strtol( timespan, &endc, 10 ); nullptr != endc && *endc == 's') {
+        elapseTime = scanned_number; /* timespan backward in seconds;
+                                        "0s" would mean from the present */
     }
     else {
-        elapseTime = defaultTimespan * 3600; /* default timespan in seconds */
+        elapseTime = (scanned_number > 0 ? scanned_number : defaultTimespan) * 3600; /* timespan backward in hours; 
+                                                                                        positive numbers have intended effect, ie "1" -> 1 hr; but
+                                                                                        "", "0", "default" or other non-numeric -> default timespan */
     }
 
     if ( strcmp( tablename, "serverload" ) != 0 &&
