@@ -460,6 +460,14 @@ int rsDataObjUnlink(rsComm_t* rsComm, dataObjInp_t* dataObjUnlinkInp)
         const auto ec = rsDataObjUnlink_impl(rsComm, dataObjUnlinkInp);
         const auto parent_path = fs::path{dataObjUnlinkInp->objPath}.parent_path();
 
+        // Do not update the collection mtime if the logical path refers to a remote zone. If the remote zone cares
+        // about updating the mtime, the remote API endpoint called above should have updated the collection mtime
+        // already, so it is unnecessary. Failing to prevent the remote collection mtime update can lead to errors
+        // being returned even though the operation was successful and the collection mtime is the expected value.
+        if (const auto zone_hint = fs::zone_name(parent_path); zone_hint && !isLocalZone(zone_hint->data())) {
+            return ec;
+        }
+
         // Update the parent collection's mtime.
         if (ec == 0 && fs::server::is_collection_registered(*rsComm, parent_path)) {
             using std::chrono::system_clock;
