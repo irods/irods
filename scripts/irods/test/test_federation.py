@@ -1175,6 +1175,48 @@ OUTPUT ruleExecOut
             user.assert_icommand(['ils', '-l', remote_home_collection], 'STDOUT')
 
 
+    def test_remove_data_object_in_collection_with_read_permissions__issue_6428(self):
+        def get_collection_mtime(session, collection_path):
+            return session.run_icommand(['iquest', '%s',
+                "select COLL_MODIFY_TIME where COLL_NAME = '{}'".format(collection_path)])[0].strip()
+
+        user = self.user_sessions[0]
+        filename = 'issue_6428_object'
+        collection_name = 'issue_6428_collection'
+        collection_path = os.path.join('/' + test.settings.FEDERATION.REMOTE_ZONE, 'home', 'public', collection_name)
+        logical_path = os.path.join(collection_path, filename)
+
+        with session.make_session_for_existing_user(test.settings.PREEXISTING_ADMIN_PASSWORD,
+                                                    test.settings.PREEXISTING_ADMIN_PASSWORD,
+                                                    test.settings.FEDERATION.REMOTE_HOST,
+                                                    test.settings.FEDERATION.REMOTE_ZONE) as owner:
+            try:
+                owner.assert_icommand(['imkdir', collection_path])
+                owner.assert_icommand(['itouch', logical_path])
+                owner.assert_icommand(['ichmod', 'read', user.qualified_username, collection_path])
+                owner.assert_icommand(['ichmod', 'own', user.qualified_username, logical_path])
+                self.assertTrue(lib.replica_exists(user, logical_path, 0))
+
+                original_mtime = get_collection_mtime(owner, collection_path)
+
+                # Sleep here so that the collection mtime is guaranteed to be different if updated correctly.
+                time.sleep(1)
+
+                user.assert_icommand(['irm', logical_path])
+                self.assertFalse(lib.replica_exists(user, logical_path, 0))
+
+                new_mtime = get_collection_mtime(owner, collection_path)
+
+                self.assertNotEqual(original_mtime, new_mtime, msg='collection mtime was not updated')
+
+            finally:
+                owner.assert_icommand(['ils', '-Al', collection_path], 'STDOUT') # Debugging
+
+                user.assert_icommand(['irmtrash'])
+                owner.assert_icommand(['irm', '-r', '-f', collection_path])
+                owner.assert_icommand(['irmtrash', '-M'])
+
+
 class Test_Admin_Commands(unittest.TestCase):
 
     '''
