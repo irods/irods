@@ -13,7 +13,7 @@
 
 namespace
 {
-    auto test_basic_usage() -> int
+    auto test_basic_usage(RuleExecInfo& _rei) -> int
     {
         IRODS_MSI_TEST_BEGIN("scoped_client_identity - basic usage")
 
@@ -45,7 +45,7 @@ namespace
         IRODS_MSI_TEST_END
     } // test_basic_usage
 
-    auto test_updates_zone() -> int
+    auto test_updates_zone(RuleExecInfo& _rei) -> int
     {
         IRODS_MSI_TEST_BEGIN("#6268: scoped_client_identity updates the zone")
 
@@ -93,7 +93,7 @@ namespace
         IRODS_MSI_TEST_END
     } // test_updates_zone
 
-    auto test_invalid_input() -> int
+    auto test_invalid_input(RuleExecInfo& _rei) -> int
     {
         IRODS_MSI_TEST_BEGIN("scoped_client_identity throws on invalid input")
 
@@ -123,9 +123,9 @@ namespace
 
     auto msi_impl(RuleExecInfo* _rei) -> int
     {
-        IRODS_MSI_TEST_CASE(test_basic_usage)
-        IRODS_MSI_TEST_CASE(test_updates_zone)
-        IRODS_MSI_TEST_CASE(test_invalid_input)
+        IRODS_MSI_TEST_CASE(test_basic_usage, *_rei)
+        IRODS_MSI_TEST_CASE(test_updates_zone, *_rei)
+        IRODS_MSI_TEST_CASE(test_invalid_input, *_rei)
 
         return 0;
     } // msi_impl

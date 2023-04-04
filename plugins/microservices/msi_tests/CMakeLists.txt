@@ -3,6 +3,7 @@ set(
   msi_test_issue_6782
   msi_test_issue_6829
   msi_test_scoped_client_identity
+  msi_test_scoped_permission
 )
 
 add_compile_definitions(
