@@ -6,8 +6,8 @@
 
 #include <cstring>
 
-#define IRODS_MSI_TEST_CASE(func) \
-  if (func()) { return -1; }
+#define IRODS_MSI_TEST_CASE(func, rei) \
+  if (func(rei)) { return -1; }
 
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define IRODS_MSI_TEST_BEGIN(test_title)                             \
