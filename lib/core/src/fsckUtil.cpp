@@ -181,6 +181,9 @@ int chkObjConsistency(rcComm_t* conn,
             status = SYS_INTERNAL_ERR;
         }
     }
+    else if (status == CAT_NO_ROWS_FOUND) {
+        std::printf("WARNING: local file [%s] is not registered in iRODS.\n", inpPath);
+    }
     else {
         std::printf("ERROR chkObjConsistency: rcGenQuery failed: status [%d] genQueryOut [%p] file [%s]\n", status, genQueryOut, inpPath);
     }
