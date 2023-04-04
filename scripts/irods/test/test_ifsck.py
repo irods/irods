@@ -83,3 +83,24 @@ class Test_Ifsck(session.make_sessions_mixin([('otherrods', 'rods')], [('alice',
             for d in dirs:
                 os.chmod(d, 0o777)
 
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing, checks vault")
+    def test_ifsck_returns_error_when_an_unregistered_file_is_detected__issue_6367(self):
+        directory_name = 'test_ifsck_returns_error_when_an_unregistered_file_is_detected__issue_6367'
+        filename1 = 'test_ifsck_returns_error_when_an_unregistered_file_is_detected__issue_6367_f1'
+        filename2 = 'test_ifsck_returns_error_when_an_unregistered_file_is_detected__issue_6367_f2'
+        full_directory_path = '%s/%s' % (self.admin.local_session_dir, directory_name)
+        full_directory_logical_path = '%s/%s' % (self.admin.session_collection, directory_name)
+        full_path_filename1 = '%s/%s' % (full_directory_path, filename1)
+        full_path_filename2 = '%s/%s' % (full_directory_path, filename2)
+        # create directory with file and register it
+        os.mkdir(full_directory_path)
+        filesize = 100
+        lib.make_file(full_path_filename1, filesize)
+        self.admin.assert_icommand(['ireg', '-C', full_directory_path, full_directory_logical_path])
+        # verify ifsck returns no error
+        self.admin.assert_icommand(['ifsck', '-r', full_directory_path])
+        # create a new unregistered file
+        lib.make_file(full_path_filename2, filesize)
+        # verify ifsck errors
+        self.admin.assert_icommand(['ifsck', '-r', full_directory_path], 'STDOUT_SINGLELINE', 'WARNING: local file [{0}] is not registered in iRODS.'.format(full_path_filename2), desired_rc=3)
+
