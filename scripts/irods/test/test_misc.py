@@ -333,6 +333,10 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
     def test_scoped_client_identity_updates_zone_of_RsComm__issue_6268(self):
         self.admin.assert_icommand(['irule', '-r', 'irods_rule_engine_plugin-irods_rule_language-instance', 'msi_test_scoped_client_identity', 'null', 'ruleExecOut'])
 
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', "Not implemented for other REPs.")
+    def test_scoped_permission__issue_7032(self):
+        self.admin.assert_icommand(['irule', '-r', 'irods_rule_engine_plugin-irods_rule_language-instance', 'msi_test_scoped_permission', 'null', 'ruleExecOut'])
+
     def test_iinit_does_not_crash_from_long_home_directory__issue_5411(self):
         with tempfile.TemporaryDirectory() as temp_dir_name:
             # Create new home directory for test
