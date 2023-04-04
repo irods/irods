@@ -29,6 +29,8 @@ static pthread_mutex_t my_mutex;
 #include <boost/asio.hpp>
 #include <boost/algorithm/string.hpp>
 
+#include <cstring>
+#include <cctype>
 #include <vector>
 #include <string>
 #include <sstream>
@@ -821,7 +823,9 @@ int msiFlushMonStat( msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t 
     }
 
     char *endc{};
-    if (int scanned_number = strtol( timespan, &endc, 10 ); nullptr != endc && *endc == 's') {
+    if (int scanned_number = strtol(timespan, &endc, 10), ws_len = strspn(endc ? endc : "", "\x20\t\n");
+        nullptr != endc && tolower(endc[ws_len]) == 's')
+    {
         elapseTime = scanned_number; /* timespan backward in seconds;
                                         "0s" would mean from the present */
     }
