@@ -485,6 +485,110 @@ OUTPUT ruleExecOut
         self.rods_session.assert_icommand("irule -F " + rule_file);
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
+    def test_msiAddKeyValToMspStr_works_with_empty_string__issue_6918(self):
+        rule_file="test_msiAddKeyValToMspStr.r"
+        rule_string= '''
+msiTestAddKeyValToMspStr {{
+    *Flag = "";
+    msiAddKeyValToMspStr("keyOnly", "", *Flag);
+    writeLine("stdout", *Flag);
+
+    *Flag = "";
+    msiAddKeyValToMspStr("", "valueOnly", *Flag);
+    writeLine("stdout", *Flag);
+
+    *Flag = "";
+    msiAddKeyValToMspStr("key", "value", *Flag);
+    writeLine("stdout", *Flag);
+}}
+
+INPUT null
+OUTPUT ruleExecOut
+'''
+
+        with open(rule_file, 'w') as f:
+            f.write(rule_string)
+
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        self.admin.assert_icommand(['irule', '-r', rep_name, '-F', rule_file], 'STDOUT_MULTILINE', ['keyOnly=', 'valueOnly', 'key=value'])
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
+    def test_msiRmColl_removes_trash__issue_6918(self):
+        collection_to_free = os.path.join(self.admin.session_collection, 'freeMe')
+
+        # Generate trash
+        self.admin.assert_icommand(['itouch', collection_to_free])
+        self.admin.assert_icommand(['irm', collection_to_free])
+
+        rule_file="test_msiRmCollTrash.r"
+        rule_string= '''
+msiTestRmCollRemovesTrash {{
+    *Flag = "";
+    *Coll = "{trash_col}";
+    msiAddKeyValToMspStr("irodsAdminRmTrash", "", *Flag);
+    msiRmColl(*Coll, *Flag, *result);
+}}
+
+INPUT null
+OUTPUT ruleExecOut
+'''.format(trash_col=os.path.join(self.admin.session_collection_trash))
+
+        with open(rule_file, 'w') as f:
+            f.write(rule_string)
+
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        self.admin.assert_icommand(['irule', '-r', rep_name, '-F', rule_file])
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
+    def test_msiRmColl_removes_collection__issue_6918(self):
+        collection_to_free = os.path.join(self.admin.session_collection, 'freeMe')
+
+        self.admin.assert_icommand(['imkdir', collection_to_free])
+
+        rule_file="test_msiRmCollSimple.r"
+        rule_string= '''
+msiTestRmCollSimple {{
+    *Flag = "";
+    *Coll = "{collection}";
+    msiRmColl(*Coll, *Flag, *result);
+}}
+
+INPUT null
+OUTPUT ruleExecOut
+'''.format(collection=collection_to_free)
+
+        with open(rule_file, 'w') as f:
+            f.write(rule_string)
+
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        self.admin.assert_icommand(['irule', '-r', rep_name, '-F', rule_file])
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
+    def test_msiRmColl_removes_collection_via_flag__issue_6918(self):
+        collection_to_free = os.path.join(self.admin.session_collection, 'freeMe')
+
+        self.admin.assert_icommand(['imkdir', collection_to_free])
+
+        rule_file="test_msiRmCollViaFlag.r"
+        rule_string= '''
+msiTestRmCollWithFlag {{
+    *Flag = "";
+    *Coll = "";
+    msiAddKeyValToMspStr("collName", "{collection}", *Flag);
+    msiRmColl(*Coll, *Flag, *result);
+}}
+
+INPUT null
+OUTPUT ruleExecOut
+'''.format(collection=collection_to_free)
+
+        with open(rule_file, 'w') as f:
+            f.write(rule_string)
+
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        self.admin.assert_icommand(['irule', '-r', rep_name, '-F', rule_file])
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_msiCheckAccess_3309(self):
         # setup for test_msiCheckAccess_3309
         self.rods_session.assert_icommand('icd')

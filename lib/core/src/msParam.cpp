@@ -1501,61 +1501,61 @@ chkCollInpKw( char * keyWd, int validKwFlags ) {
 int
 addKeyValToMspStr( msParam_t * keyStr, msParam_t * valStr,
                    msParam_t * msKeyValStr ) {
-
-    if ( ( keyStr == NULL && valStr == NULL ) || msKeyValStr == NULL ) {
+    if ((keyStr == nullptr && valStr == nullptr) || msKeyValStr == nullptr) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    if ( msKeyValStr->type == NULL ) {
-        fillStrInMsParam( msKeyValStr, NULL );
+    if (msKeyValStr->type == nullptr) {
+        fillStrInMsParam(msKeyValStr, nullptr);
     }
 
-    char *keyPtr = parseMspForStr( keyStr );
-    int keyLen;
-    if ( keyPtr == NULL || strcmp( keyPtr, MS_NULL_STR ) == 0 ) {
-        keyLen = 0;
-    }
-    else {
-        keyLen = strlen( keyPtr );
-    }
+    auto get_length{[](const char* str) -> std::size_t {
+        if (str == nullptr || std::strcmp(str, MS_NULL_STR) == 0) {
+            return 0;
+        }
+        return std::strlen(str);
+    }};
 
-    char *valPtr = parseMspForStr( valStr );
-    int valLen;
-    if ( valPtr == NULL || strcmp( valPtr, MS_NULL_STR ) == 0 ) {
-        valLen = 0;
-    }
-    else {
-        valLen = strlen( valPtr );
-    }
-    if ( valLen + keyLen <= 0 ) {
+    const char* keyPtr{parseMspForStr(keyStr)};
+    int keyLen{static_cast<int>(get_length(keyPtr))};
+
+    const char* valPtr{parseMspForStr(valStr)};
+    int valLen{static_cast<int>(get_length(valPtr))};
+
+    // Handle case where key and value are empty strings
+    if (valLen + keyLen <= 0) {
         return 0;
     }
 
-    char *oldKeyValPtr = parseMspForStr( msKeyValStr );
-    char *newKeyValPtr, *tmpPtr;
-    if ( oldKeyValPtr == NULL ) {
-        int newLen = valLen + keyLen + 10;
-        newKeyValPtr = ( char * )malloc( newLen );
-        *newKeyValPtr = '\0';
-        tmpPtr = newKeyValPtr;
+    char* oldKeyValPtr{parseMspForStr(msKeyValStr)};
+
+    const int old_len{oldKeyValPtr == nullptr ? 0 : static_cast<int>(std::strlen(oldKeyValPtr))};
+    const int new_len{old_len + valLen + keyLen + 10};
+
+    char* newKeyValPtr{static_cast<char*>(std::malloc(new_len * sizeof(char)))};
+    char* tmpPtr{newKeyValPtr};
+    if (old_len > 0) {
+        std::snprintf(newKeyValPtr, new_len, "%s%s", oldKeyValPtr, MS_INP_SEP_STR);
+
+        constexpr auto separator_length{std::char_traits<char>::length(MS_INP_SEP_STR)};
+        tmpPtr += old_len + separator_length;
     }
     else {
-        int oldLen = strlen( oldKeyValPtr );
-        int newLen = oldLen + valLen + keyLen + 10;
-        newKeyValPtr = ( char * )malloc( newLen );
-        snprintf( newKeyValPtr, newLen, "%s%s", oldKeyValPtr, MS_INP_SEP_STR );
-        tmpPtr = newKeyValPtr + oldLen + 4;
-        free( oldKeyValPtr );
+        *newKeyValPtr = '\0';
     }
+    std::free(oldKeyValPtr);
 
-    if ( keyLen > 0 ) {
-        snprintf( tmpPtr, keyLen + 2, "%s=", keyPtr );
-        tmpPtr += keyLen + 1;
+    constexpr auto null_term_length{1};
+
+    if (keyLen > 0) {
+        constexpr auto null_term_and_kv_separator_length{2};
+        std::snprintf(tmpPtr, keyLen + null_term_and_kv_separator_length, "%s=", keyPtr);
+        tmpPtr += keyLen + null_term_length;
     }
-    if ( valLen > 0 ) {
-        snprintf( tmpPtr, valLen + 2, "%s", valPtr );
+    if (valLen > 0) {
+        std::snprintf(tmpPtr, valLen + null_term_length, "%s", valPtr);
     }
-    msKeyValStr->inOutStruct = ( void * ) newKeyValPtr;
+    msKeyValStr->inOutStruct = newKeyValPtr;
 
     return 0;
 }
