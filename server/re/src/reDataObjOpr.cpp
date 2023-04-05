@@ -2049,7 +2049,6 @@ msiCollCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, 
     return rei->status;
 }
 
-
 /**
  * \fn msiRmColl (msParam_t *inpParam1, msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
  *
@@ -2074,7 +2073,10 @@ msiCollCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, 
  *                      it in the trash. This keyWd has no value. But the
  *                      '=' character is still needed.
  *        \li "irodsAdminRmTrash" - Admin remove trash. This keyWd has no value.
+ *                              inpParam1 must be a path to a trash collection.
  *        \li "irodsRmTrash" - Remove trash. This keyWd has no value.
+ *        \li "collName" - Replaces inpParam1 with value in collName. An alternate
+ *                      method to set the collection to remove.
  * \param[out] outParam - an INT_MS_T containing the status.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -2091,7 +2093,7 @@ msiCollCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, 
  * \pre none
  * \post none
  * \sa none
-**/
+ **/
 int
 msiRmColl( msParam_t *inpParam1, msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei ) {
     rsComm_t *rsComm;
