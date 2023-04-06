@@ -268,7 +268,7 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
 
         def get_number_of_serverload_rows():
             database_select_command = ['psql', 'ICAT', '-t', '-c', 'select count(create_ts) from r_server_load']
-            (rc, out, _) = outp = assert_command(database_select_command, 'STDOUT')
+            (rc, out, _) = assert_command(database_select_command, 'STDOUT')
             return int(out,10)
 
         # Create a row in the database and mark a time for the ageoff window.
@@ -281,7 +281,7 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
 
         # This monitoring operation will insert another row after running for default interval of 10 seconds.
         run_rule_code("msiServerMonPerf('default','default')")
-        secs_to_keep = int(time.time() + 1) - keep_time
+        secs_to_keep = int(time.time()) + 1 - keep_time
 
         # Age off all rows but the most recent one.
         run_rule_code("msiFlushMonStat('{}s','serverload')".format(secs_to_keep))
