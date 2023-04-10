@@ -268,7 +268,7 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
 
         def get_number_of_serverload_rows():
             database_select_command = ['psql', 'ICAT', '-t', '-c', 'select count(create_ts) from r_server_load']
-            (rc, out, _) = assert_command(database_select_command, 'STDOUT')
+            _, out, _ = assert_command(database_select_command, 'STDOUT')
             return int(out,10)
 
         # Create a row in the database and mark a time for the ageoff window.
