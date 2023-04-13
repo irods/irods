@@ -3763,8 +3763,24 @@ parseHostAddrStr( char * hostAddr, rodsHostAddr_t * addr ) {
         addr->portNum = 0;
     }
     else {
-        rstrcpy( addr->hostAddr, buffer, LONG_NAME_LEN );
-        addr->portNum = atoi( port );
+        rstrcpy(addr->hostAddr, buffer, LONG_NAME_LEN);
+        std::size_t port_parse_idx{};
+        try {
+            addr->portNum = std::stoi(port, &port_parse_idx);
+        }
+        catch (...) {
+            // previously, we used atoi to parse the port number.
+            // atoi never throws exceptions and just returns 0 if it runs into trouble.
+            // let's preserve that behavior until this function can get a proper refactor
+            addr->portNum = 0;
+        }
+
+        // make sure we parsed the whole thing
+        const std::size_t port_len = strnlen(port, SHORT_STR_LEN);
+        if (port_parse_idx < port_len) {
+            // again, until this function can get a proper refactor, we're just going to set 0
+            addr->portNum = 0;
+        }
     }
     return 0;
 }
