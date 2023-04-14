@@ -1,30 +1,32 @@
-#include "irods/msParam.h"
-#include "irods/generalAdmin.h"
-#include "irods/physPath.hpp"
-#include "irods/reIn2p3SysRule.hpp"
-#include "irods/miscServerFunct.hpp"
-#include "irods/dataObjRepl.h"
-#include "irods/rsDataObjOpen.hpp"
-#include "irods/rsDataObjClose.hpp"
-#include "irods/rsFileStageToCache.hpp"
-#include "irods/rsFileSyncToArch.hpp"
 #include "irods/dataObjOpr.hpp"
-#include "irods/irods_resource_plugin.hpp"
-#include "irods/irods_file_object.hpp"
-#include "irods/irods_physical_object.hpp"
+#include "irods/dataObjRepl.h"
+#include "irods/finalize_utilities.hpp"
+#include "irods/generalAdmin.h"
+#include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_collection_object.hpp"
-#include "irods/irods_string_tokenize.hpp"
+#include "irods/irods_file_object.hpp"
 #include "irods/irods_hierarchy_parser.hpp"
-#include "irods/irods_logger.hpp"
-#include "irods/irods_resource_redirect.hpp"
-#include "irods/irods_stacktrace.hpp"
 #include "irods/irods_kvp_string_parser.hpp"
 #include "irods/irods_lexical_cast.hpp"
+#include "irods/irods_logger.hpp"
+#include "irods/irods_physical_object.hpp"
 #include "irods/irods_random.hpp"
-#include "irods/irods_at_scope_exit.hpp"
-#include "irods/voting.hpp"
-#include "irods/finalize_utilities.hpp"
+#include "irods/irods_resource_plugin.hpp"
+#include "irods/irods_resource_redirect.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/irods_string_tokenize.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/msParam.h"
+#include "irods/physPath.hpp"
+#include "irods/reIn2p3SysRule.hpp"
 #include "irods/replica_proxy.hpp"
+#include "irods/rsDataObjClose.hpp"
+#include "irods/rsDataObjOpen.hpp"
+#include "irods/rsFileStageToCache.hpp"
+#include "irods/rsFileSyncToArch.hpp"
+#include "irods/scoped_client_identity.hpp"
+#include "irods/scoped_privileged_client.hpp"
+#include "irods/voting.hpp"
 
 #include <boost/lexical_cast.hpp>
 #include <boost/function.hpp>
@@ -34,10 +36,10 @@
 
 #include <iostream>
 #include <sstream>
-#include <vector>
 #include <string>
 #include <string_view>
 #include <tuple>
+#include <vector>
 
 /// =-=-=-=-=-=-=-
 /// @brief constant to reference the operation type for
@@ -57,6 +59,10 @@ const std::string AUTO_REPL_POLICY( "auto_repl" );
 
 /// @brief constant indicating the replication policy is enabled
 const std::string AUTO_REPL_POLICY_ENABLED( "on" );
+
+auto repl_object(irods::plugin_context& _ctx,
+                 const irods::hierarchy_parser& _hier_from_root_to_compound,
+                 const std::string_view _stage_sync_kw) -> irods::error;
 
 namespace
 {
@@ -202,6 +208,75 @@ namespace
             cache_replica_number, cache_replica_status, archive_replica_number, archive_replica_status);
     } // get_replica_number_and_status_for_cache_and_archive
 
+    auto disconnect_server_to_server_connections() -> void
+    {
+        // Loop over all of the servers and disconnect any existing connections that this agent has with them. This
+        // ensures that future redirects will use newly created connections.
+        for (auto* zone_ptr = ZoneInfoHead; zone_ptr; zone_ptr = zone_ptr->next) {
+            for (auto* host_ptr = zone_ptr->primaryServerHost; host_ptr; host_ptr = host_ptr->next) {
+                if (host_ptr->conn) {
+                    rcDisconnect(host_ptr->conn);
+                    host_ptr->conn = nullptr;
+                }
+            }
+
+            for (auto* host_ptr = zone_ptr->secondaryServerHost; host_ptr; host_ptr = host_ptr->next) {
+                if (host_ptr->conn) {
+                    rcDisconnect(host_ptr->conn);
+                    host_ptr->conn = nullptr;
+                }
+            }
+        }
+    } // disconnect_server_to_server_connections
+
+    auto stage_to_cache(irods::plugin_context& _ctx, const irods::hierarchy_parser& _hier_from_root_to_compound)
+        -> irods::error
+    {
+        // If a user does not have sufficient permission on the target data object to replicate or trim, the compound
+        // resource operations may not behave correctly. So, we temporarily assume the identity of the local admin and
+        // perform the stage-to-cache on behalf of the client user.
+        const auto temporary_admin_identity =
+            irods::experimental::scoped_client_identity{*_ctx.comm(),
+                                                        static_cast<char*>(_ctx.comm()->myEnv.rodsUserName),
+                                                        static_cast<char*>(_ctx.comm()->myEnv.rodsZone)};
+
+        // We also need to escalate privileges here because changing client identity does not grant privileged status.
+        const auto temporary_privilege_escalation = irods::experimental::scoped_privileged_client{*_ctx.comm()};
+
+        // Disconnect existing server-to-server connections in order to allow future server-to-server connections to
+        // assume the new client identity. If existing server-to-server connections are re-used, the original client
+        // identity will be used and can lead to unexpected results.
+        disconnect_server_to_server_connections();
+
+        // Adding the admin keyword ensures that the stage-to-cache replication can complete. The admin may not have
+        // sufficient permissions on the data object to perform the replication, so using the admin keyword is needed in
+        // addition to the elevated privileges.
+        irods::file_object_ptr obj = boost::dynamic_pointer_cast<irods::file_object>(_ctx.fco());
+        const auto* admin_kw = getValByKey(static_cast<keyValPair_t*>(&obj->cond_input()), ADMIN_KW);
+
+        const auto cleanup = irods::at_scope_exit{[&obj, admin_kw] {
+            // Only remove the admin keyword if it was not present to begin with.
+            if (!admin_kw) {
+                rmKeyVal(static_cast<keyValPair_t*>(&obj->cond_input()), ADMIN_KW);
+            }
+
+            // Disconnect any new server-to-server connections created with the scoped client identity because re-using
+            // these connections with the original client identity could lead to unexpected results. Any
+            // server-to-server connections which are established after this point will be newly created, but the
+            // client identity will be set correctly.
+            disconnect_server_to_server_connections();
+        }};
+
+        if (!admin_kw) {
+            addKeyVal(static_cast<keyValPair_t*>(&obj->cond_input()), ADMIN_KW, "");
+        }
+
+        if (const auto err = repl_object(_ctx, _hier_from_root_to_compound, STAGE_OBJ_KW); !err.ok()) {
+            return PASS(err);
+        }
+
+        return SUCCESS();
+    } // stage_to_cache
 } // anonymous namespace
 
 /// =-=-=-=-=-=-=-
@@ -776,6 +851,10 @@ irods::error repl_object(
     };
     if (STAGE_OBJ_KW == keyword) {
         try {
+            // Remove SYNC_OBJ_KW if present because following helper functions detect and change behavior based on its
+            // presence.
+            rmKeyVal(static_cast<keyValPair_t*>(&obj->cond_input()), SYNC_OBJ_KW);
+
             source_l1descInx = open_source_replica(_ctx, obj, src_hier);
             destination_l1descInx = open_destination_replica(_ctx, obj, source_l1descInx, dst_hier);
             L1desc[destination_l1descInx].srcL1descInx = source_l1descInx;
@@ -831,6 +910,10 @@ irods::error repl_object(
     }
     else if (SYNC_OBJ_KW == keyword) {
         try {
+            // Remove STAGE_OBJ_KW if present because following helper functions detect and change behavior based on its
+            // presence.
+            rmKeyVal(static_cast<keyValPair_t*>(&obj->cond_input()), STAGE_OBJ_KW);
+
             source_l1descInx = open_source_replica(_ctx, obj, src_hier);
             destination_l1descInx = open_destination_replica(_ctx, obj, source_l1descInx, dst_hier);
             L1desc[destination_l1descInx].srcL1descInx = source_l1descInx;
@@ -1785,12 +1868,8 @@ irods::error open_for_prefer_archive_policy(
     irods::data_object_ptr d_ptr = boost::dynamic_pointer_cast<irods::data_object>(f_ptr);
     add_key_val(d_ptr, NO_CHK_COPY_LEN_KW, "prefer_archive_policy");
 
-    // =-=-=-=-=-=-=-
-    // if the vote is 0 then we do a wholesale stage, not an update
-    // otherwise it is an update operation for the stage to cache.
-    ret = repl_object(_ctx, _out_parser, STAGE_OBJ_KW);
-    if ( !ret.ok() ) {
-        return PASS( ret );
+    if (const auto err = stage_to_cache(_ctx, _out_parser); !err.ok()) {
+        return PASS(err);
     }
 
     remove_key_val(d_ptr, NO_CHK_COPY_LEN_KW);
@@ -1852,6 +1931,7 @@ irods::error open_for_prefer_archive_policy(
 
 // =-=-=-=-=-=-=-
 /// @brief - handler for prefer cache policy
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 irods::error open_for_prefer_cache_policy(
     irods::plugin_context& _ctx,
     const std::string*               _opr,
@@ -2026,11 +2106,8 @@ irods::error open_for_prefer_cache_policy(
             f_ptr->resc_hier(old_resc_hier);
         }};
 
-        // =-=-=-=-=-=-=-
-        // if the archive has it, then replicate
-        ret = repl_object( _ctx, arch_check_parser, STAGE_OBJ_KW );
-        if ( !ret.ok() ) {
-            return PASS( ret );
+        if (const auto err = stage_to_cache(_ctx, arch_check_parser); !err.ok()) {
+            return PASS(err);
         }
 
         ( *_out_parser ) = cache_check_parser;
