@@ -82,8 +82,6 @@ int main(int argc, char** argv){
         po::notify(vm);
         if( vm.count("help") ) {
             print_usage();
-            std::cout << desc;
-            printReleaseInfo("itree");
             return 0;
         }
 
@@ -147,7 +145,6 @@ int main(int argc, char** argv){
     }
     catch (const std::exception& e) {
         std::cerr << "Error:" << e.what() << "\n";
-        std::cout << desc << "\n";
         return 1;
     }
 
@@ -340,7 +337,42 @@ auto correct_path(const po::variables_map& pm, rodsEnv& env) -> fs::path {
 }
 
 auto print_usage() -> void {
-    std::cout << "Display a collection structure as a tree.\n";
+    fmt::print(
+R"_(itree - List contents of collections in a tree-like format.
+
+Usage: itree [OPTION]... COLLECTION
+
+When using this command, avoid listing very large collections. Failing to
+follow this advice can result in unexpected failures. Consider listing smaller
+collections or using --depth to limit the number of collections traversed.
+
+Options:
+  -c, --collections-only
+                  Only list collections.
+  -C, --color     Print in color (requires ANSI terminal).
+  -f, --fullpath  Print the full path of each item.
+  -F, --classify  Display a forward slash (/) at the end of collections.
+  -h, --help      Display this help message and exit.
+  -i, --ignore-regex=PATTERN
+                  Ignore data objects matching a regular expression.
+  -I, --ignore=PATTERN
+                  Ignore data objects matching a file glob pattern.
+      --indent=INTEGER
+                  The number of spaces used for indenting nested collections.
+                  (defaults to 2).
+  -j, --json      Print collection tree as JSON.
+  -L, --depth=INTEGER
+                  Limit the depth of the listing (defaults to 1000).
+  -p, --pattern-regex=PATTERN
+                  Filter data objects by a regular expression.
+  -P, --pattern=PATTERN
+                  Filter data objects by a file glob pattern.
+  -s, --size      Display the size of each data object.
+  -x, --regex-extended-syntax
+                  Enable extended syntax for regular expressions.
+)_");
+
+    printReleaseInfo("itree");
 }
 
 auto contents_size(const json::json& value) -> std::uintmax_t {
