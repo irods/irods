@@ -408,6 +408,11 @@ class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unitte
         pass
 
 
+    @unittest.skip('This test only applies to compound hierarchies.')
+    def test_iget_data_object_as_user_with_null_access_and_replica_only_in_archive__issue_6697(self):
+        pass
+
+
 class Test_Resource_Unixfilesystem(ResourceSuite, ChunkyDevTest, unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
     class_name = 'Test_Resource_Unixfilesystem'
@@ -1113,6 +1118,11 @@ OUTPUT ruleExecOut
         pass
 
 
+    @unittest.skip('This test only applies to compound hierarchies.')
+    def test_iget_data_object_as_user_with_null_access_and_replica_only_in_archive__issue_6697(self):
+        pass
+
+
 class Test_Resource_Passthru(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
     def setUp(self):
@@ -1140,6 +1150,11 @@ class Test_Resource_Passthru(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
     @unittest.skip('This test only applies to compound hierarchies.')
     def test_iget_data_object_as_user_with_read_only_access_and_replica_only_in_archive__issue_6697(self):
+        pass
+
+
+    @unittest.skip('This test only applies to compound hierarchies.')
+    def test_iget_data_object_as_user_with_null_access_and_replica_only_in_archive__issue_6697(self):
         pass
 
 
@@ -1251,6 +1266,11 @@ class Test_Resource_WeightedPassthru(ResourceBase, unittest.TestCase):
         pass
 
 
+    @unittest.skip('This test only applies to compound hierarchies.')
+    def test_iget_data_object_as_user_with_null_access_and_replica_only_in_archive__issue_6697(self):
+        pass
+
+
 class Test_Resource_Deferred(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
     def setUp(self):
@@ -1278,6 +1298,11 @@ class Test_Resource_Deferred(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
     @unittest.skip('This test only applies to compound hierarchies.')
     def test_iget_data_object_as_user_with_read_only_access_and_replica_only_in_archive__issue_6697(self):
+        pass
+
+
+    @unittest.skip('This test only applies to compound hierarchies.')
+    def test_iget_data_object_as_user_with_null_access_and_replica_only_in_archive__issue_6697(self):
         pass
 
 
@@ -1351,6 +1376,11 @@ class Test_Resource_Random(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         pass
 
 
+    @unittest.skip('This test only applies to compound hierarchies.')
+    def test_iget_data_object_as_user_with_null_access_and_replica_only_in_archive__issue_6697(self):
+        pass
+
+
 class Test_Resource_NonBlocking(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
     def setUp(self):
@@ -1369,6 +1399,11 @@ class Test_Resource_NonBlocking(ChunkyDevTest, ResourceSuite, unittest.TestCase)
 
     @unittest.skip('This test only applies to compound hierarchies.')
     def test_iget_data_object_as_user_with_read_only_access_and_replica_only_in_archive__issue_6697(self):
+        pass
+
+
+    @unittest.skip('This test only applies to compound hierarchies.')
+    def test_iget_data_object_as_user_with_null_access_and_replica_only_in_archive__issue_6697(self):
         pass
 
 
@@ -3393,6 +3428,11 @@ class Test_Resource_ReplicationWithinReplication(ChunkyDevTest, ResourceSuite, u
         pass
 
 
+    @unittest.skip('This test only applies to compound hierarchies.')
+    def test_iget_data_object_as_user_with_null_access_and_replica_only_in_archive__issue_6697(self):
+        pass
+
+
 class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
     class_name = 'Test_Resource_ReplicationToTwoCompound'
@@ -3869,6 +3909,12 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
         pass
 
 
+    @unittest.skip('This test only applies to compound hierarchies.')
+    def test_iget_data_object_as_user_with_null_access_and_replica_only_in_archive__issue_6697(self):
+        # TODO: Implement this test for this suite
+        pass
+
+
 class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
     class_name = 'Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive'
@@ -4271,6 +4317,12 @@ class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDev
 
     @unittest.skip('This test only works for a standalone compound hierarchy.')
     def test_iget_data_object_as_user_with_read_only_access_and_replica_only_in_archive__issue_6697(self):
+        # TODO: Implement this test for this suite
+        pass
+
+
+    @unittest.skip('This test only applies to compound hierarchies.')
+    def test_iget_data_object_as_user_with_null_access_and_replica_only_in_archive__issue_6697(self):
         # TODO: Implement this test for this suite
         pass
 
@@ -5034,6 +5086,12 @@ OUTPUT ruleExecOut
         pass
 
 
+    @unittest.skip('This test only applies to compound hierarchies.')
+    def test_iget_data_object_as_user_with_null_access_and_replica_only_in_archive__issue_6697(self):
+        # TODO: Implement this test for this suite
+        pass
+
+
 class Test_Resource_MultiLayered(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
     def setUp(self):
@@ -5083,6 +5141,12 @@ class Test_Resource_MultiLayered(ChunkyDevTest, ResourceSuite, unittest.TestCase
 
     @unittest.skip('This test only applies to compound hierarchies.')
     def test_iget_data_object_as_user_with_read_only_access_and_replica_only_in_archive__issue_6697(self):
+        # TODO: Implement this test for this suite
+        pass
+
+
+    @unittest.skip('This test only applies to compound hierarchies.')
+    def test_iget_data_object_as_user_with_null_access_and_replica_only_in_archive__issue_6697(self):
         # TODO: Implement this test for this suite
         pass
 
@@ -5158,5 +5222,11 @@ class Test_Resource_RandomWithinRandom(ChunkyDevTest, ResourceSuite, unittest.Te
 
     @unittest.skip('This test only applies to compound hierarchies.')
     def test_iget_data_object_as_user_with_read_only_access_and_replica_only_in_archive__issue_6697(self):
+        # TODO: Implement this test for this suite
+        pass
+
+
+    @unittest.skip('This test only applies to compound hierarchies.')
+    def test_iget_data_object_as_user_with_null_access_and_replica_only_in_archive__issue_6697(self):
         # TODO: Implement this test for this suite
         pass

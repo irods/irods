@@ -1835,20 +1835,19 @@ class test_compound_resource_operations(SessionsMixin, unittest.TestCase):
 
         super(test_compound_resource_operations, self).tearDown()
 
+    def assert_permissions_on_data_object_for_user(self, username, zone_name, logical_path, permission_value):
+        data_access_type = self.remote_admin.run_icommand(['iquest', '%s',
+            'select DATA_ACCESS_TYPE where '
+                'COLL_NAME = \'{}\' and '
+                'DATA_NAME = \'{}\' and '
+                'USER_NAME = \'{}\' and '
+                'USER_ZONE = \'{}\''.format(
+                    os.path.dirname(logical_path), os.path.basename(logical_path), username, zone_name)
+            ])[0].strip()
+
+        self.assertEqual(str(data_access_type), str(permission_value))
 
     def test_iget_data_object_as_user_with_read_only_access_and_replica_only_in_archive__issue_6697(self):
-        def assert_permissions_on_data_object_for_user(username, zone_name, logical_path, permission_value):
-            data_access_type = self.remote_admin.run_icommand(['iquest', '%s',
-                'select DATA_ACCESS_TYPE where '
-                    'COLL_NAME = \'{}\' and '
-                    'DATA_NAME = \'{}\' and '
-                    'USER_NAME = \'{}\' and '
-                    'USER_ZONE = \'{}\''.format(
-                        os.path.dirname(logical_path), os.path.basename(logical_path), username, zone_name)
-                ])[0].strip()
-
-            self.assertEqual(str(data_access_type), str(permission_value))
-
         cache_hierarchy = self.compound_resource + ';' + self.cache_resource
         archive_hierarchy = self.compound_resource + ';' + self.archive_resource
 
@@ -1869,7 +1868,7 @@ class test_compound_resource_operations(SessionsMixin, unittest.TestCase):
                 ['ichmod', '-r', 'read', readonly_user.qualified_username, os.path.dirname(logical_path)])
 
             # Ensure that the read-only user has read-only permission on the data object.
-            assert_permissions_on_data_object_for_user(
+            self.assert_permissions_on_data_object_for_user(
                 readonly_user.username, readonly_user.zone_name, logical_path, 1050)
 
             # Trim the replica on the cache resource so that only the replica in the archive remains. Replica 0 resides
@@ -1885,8 +1884,58 @@ class test_compound_resource_operations(SessionsMixin, unittest.TestCase):
             self.assertEqual(str(1), lib.get_replica_status(owner_user, os.path.basename(logical_path), 2))
 
             # Ensure that the user has the same permissions on the data object as before getting it.
-            assert_permissions_on_data_object_for_user(
+            self.assert_permissions_on_data_object_for_user(
                 readonly_user.username, readonly_user.zone_name, logical_path, 1050)
+
+        finally:
+            self.remote_admin.assert_icommand(['ils', '-Al', logical_path], 'STDOUT') # Debugging
+
+            # Make sure that the data object can be removed by marking both replicas stale before removing.
+            self.remote_admin.run_icommand(['ichmod', '-M', 'own', self.remote_admin.username, logical_path])
+            self.remote_admin.run_icommand(
+                ['iadmin', 'modrepl', 'logical_path', logical_path, 'resource_hierarchy', cache_hierarchy, 'DATA_REPL_STATUS', '0'])
+            self.remote_admin.run_icommand(
+                ['iadmin', 'modrepl', 'logical_path', logical_path, 'resource_hierarchy', archive_hierarchy, 'DATA_REPL_STATUS', '0'])
+            self.remote_admin.run_icommand(['irm', '-f', logical_path])
+
+
+    def test_iget_data_object_as_user_with_null_access_and_replica_only_in_archive__issue_6697(self):
+        cache_hierarchy = self.compound_resource + ';' + self.cache_resource
+        archive_hierarchy = self.compound_resource + ';' + self.archive_resource
+
+        owner_user = self.remote_user
+        no_access_user = self.user
+        filename = 'foo'
+        contents = 'jimbo'
+        not_found_string = 'CAT_NO_ROWS_FOUND: Nothing was found matching your query'
+        logical_path = os.path.join(owner_user.session_collection, filename)
+
+        try:
+            # Create a data object which should appear under the compound resource.
+            owner_user.assert_icommand(['istream', '-R', self.compound_resource, 'write', logical_path], input=contents)
+            self.assertTrue(lib.replica_exists_on_resource(owner_user, logical_path, self.cache_resource))
+            self.assertTrue(lib.replica_exists_on_resource(owner_user, logical_path, self.archive_resource))
+
+            # Ensure that the no-access user has no access permissions on the data object.
+            self.assert_permissions_on_data_object_for_user(
+                no_access_user.username, no_access_user.zone_name, logical_path, not_found_string)
+
+            # Trim the replica on the cache resource so that only the replica in the archive remains. Replica 0 resides
+            # on the cache resource at this point.
+            owner_user.assert_icommand(['itrim', '-N1', '-n0', logical_path], 'STDOUT')
+            self.assertFalse(lib.replica_exists_on_resource(owner_user, logical_path, self.cache_resource))
+            self.assertTrue(lib.replica_exists_on_resource(owner_user, logical_path, self.archive_resource))
+
+            # As the user with no access, attempt to get the data object. This should fail, and stage-to-cache should
+            # not occur. Confirm that no replica exists on the cache resource.
+            no_access_user.assert_icommand(
+                ['iget', logical_path, '-'], 'STDERR', '{} does not exist'.format(logical_path))
+            self.assertFalse(lib.replica_exists_on_resource(owner_user, logical_path, self.cache_resource))
+            self.assertTrue(lib.replica_exists_on_resource(owner_user, logical_path, self.archive_resource))
+
+            # Ensure that the no-access user still has no access permissions on the data object.
+            self.assert_permissions_on_data_object_for_user(
+                no_access_user.username, no_access_user.zone_name, logical_path, not_found_string)
 
         finally:
             self.remote_admin.assert_icommand(['ils', '-Al', logical_path], 'STDOUT') # Debugging
