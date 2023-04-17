@@ -16,13 +16,14 @@ from .. import test
 class Test_ibun(resource_suite.ResourceBase, unittest.TestCase):
     def setUp(self):
         super(Test_ibun, self).setUp()
-        self.known_file_name = 'known_file'
 
     def tearDown(self):
         super(Test_ibun, self).tearDown()
 
     @unittest.skip('Generation of large file causes I/O thrashing... skip for now')
     def test_ibun_extraction_of_big_zip_file__issue_4495(self):
+        known_file_name = 'known_file'
+
         try:
             root_name = tempfile.mkdtemp()
             unzip_collection_name = 'my_exploded_coll'
@@ -35,7 +36,7 @@ class Test_ibun(resource_suite.ResourceBase, unittest.TestCase):
                 shutil.copytree(source_dir, dest_dir)
 
             filesize = 3900000000
-            lib.make_file(os.path.join(root_name, self.known_file_name), filesize, 'random')
+            lib.make_file(os.path.join(root_name, known_file_name), filesize, 'random')
 
             out,_ = lib.execute_command(['du', '-h', root_name])
             print(out)
@@ -47,7 +48,7 @@ class Test_ibun(resource_suite.ResourceBase, unittest.TestCase):
             self.admin.assert_icommand(['iput', zip_file_name])
 
             self.admin.assert_icommand(['ibun', '-x', zip_file_name, unzip_collection_name])
-            self.admin.assert_icommand(['ils', '-lr', unzip_collection_name], 'STDOUT', self.known_file_name)
+            self.admin.assert_icommand(['ils', '-lr', unzip_collection_name], 'STDOUT', known_file_name)
 
             self.admin.assert_icommand(['iget', '-r', unzip_collection_name, unzip_directory_name])
             lib.execute_command(['diff', '-r', root_name, os.path.join(unzip_directory_name, root_name)])
@@ -61,6 +62,8 @@ class Test_ibun(resource_suite.ResourceBase, unittest.TestCase):
 
     @unittest.skip('Generation of large file causes I/O thrashing... skip for now')
     def test_ibun_extraction_of_big_tar_file__issue_4118(self):
+        known_file_name = 'known_file'
+
         try:
             root_name = tempfile.mkdtemp()
             untar_collection_name = 'my_exploded_coll'
@@ -69,15 +72,15 @@ class Test_ibun(resource_suite.ResourceBase, unittest.TestCase):
 
             # Generate a junk file
             filesize = 524288000 # 500MB
-            lib.make_file(self.known_file_name, filesize, 'random')
-            out,_ = lib.execute_command(['ls', '-l', self.known_file_name])
+            lib.make_file(known_file_name, filesize, 'random')
+            out,_ = lib.execute_command(['ls', '-l', known_file_name])
             print(out)
 
             # Copy junk file until a sufficiently large tar file size is reached
             for i in range(0, 13):
-                lib.execute_command(['cp', self.known_file_name, os.path.join(root_name, self.known_file_name + str(i))])
+                lib.execute_command(['cp', known_file_name, os.path.join(root_name, known_file_name + str(i))])
 
-            os.unlink(self.known_file_name)
+            os.unlink(known_file_name)
 
             out,_ = lib.execute_command(['ls', '-l', root_name])
             print(out)
@@ -89,7 +92,7 @@ class Test_ibun(resource_suite.ResourceBase, unittest.TestCase):
             self.admin.assert_icommand(['iput', tar_file_name])
 
             self.admin.assert_icommand(['ibun', '-x', tar_file_name, untar_collection_name])
-            self.admin.assert_icommand(['ils', '-lr', untar_collection_name], 'STDOUT', self.known_file_name)
+            self.admin.assert_icommand(['ils', '-lr', untar_collection_name], 'STDOUT', known_file_name)
 
             self.admin.assert_icommand(['iget', '-r', untar_collection_name, untar_directory_name])
             lib.execute_command(['diff', '-r', root_name, os.path.join(untar_directory_name, root_name)])
@@ -214,3 +217,72 @@ class Test_ibun(resource_suite.ResourceBase, unittest.TestCase):
 
         self.admin.assert_icommand("irm -rf " + dir_path)
         self.admin.assert_icommand("irm -rf " + tar_path)
+
+
+    def test_ibun_x_tarfile_only_on_remote_archive_resource__issue_6997(self):
+        def count_objects_in_collection(collection_path):
+            return self.admin.run_icommand(['iquest', '%s',
+                "select COUNT(DATA_ID) where COLL_NAME like '{}%'"
+                .format(collection_path)])[0].strip()
+
+        filename = 'test_ibun_x_tarfile_on_remote_archive_resource'
+        file_count = 10
+        dir_path = os.path.join(self.user0.local_session_dir, filename)
+        tar_path = os.path.join(self.user0.local_session_dir, '{}.tar'.format(filename))
+        tar_logical_path = os.path.join(self.user0.session_collection, '{}.tar'.format(filename))
+        untar_logical_path = os.path.join(self.user0.session_collection, filename)
+
+        compound_resource = 'comp'
+        cache_resource = 'cache'
+        archive_resource = 'archive'
+
+        try:
+            # Set up a simple compound resource hierarchy. The default policy is sufficient for this test because it
+            # simply requires that a stage-to-cache be triggered. This can be forced by purging the cache replica.
+            self.admin.assert_icommand(['iadmin', 'mkresc', compound_resource, 'compound'], 'STDOUT')
+            lib.create_ufs_resource(cache_resource, self.admin, test.settings.HOSTNAME_2)
+            lib.create_ufs_resource(archive_resource, self.admin, test.settings.HOSTNAME_2)
+            self.admin.assert_icommand(['iadmin', 'addchildtoresc', compound_resource, cache_resource, 'cache'])
+            self.admin.assert_icommand(['iadmin', 'addchildtoresc', compound_resource, archive_resource, 'archive'])
+
+            # Create some test data and tar it up so iRODS can extract it for the test.
+            lib.create_directory_of_small_files(dir_path, file_count)
+            lib.execute_command(['tar', 'cf', tar_path, dir_path])
+
+            # Put the test tar file to the compound resource and ensure that it exists in the cache and the archive.
+            self.user0.assert_icommand(['iput', '-R', compound_resource, tar_path, tar_logical_path])
+            self.assertTrue(lib.replica_exists_on_resource(self.user0, tar_logical_path, cache_resource))
+            self.assertTrue(lib.replica_exists_on_resource(self.user0, tar_logical_path, archive_resource))
+            self.assertEqual(str(1), lib.get_replica_status(self.user0, os.path.basename(tar_logical_path), 0))
+            self.assertEqual(str(1), lib.get_replica_status(self.user0, os.path.basename(tar_logical_path), 1))
+
+            # Trim the replica in the cache to ensure that a stage-to-cache will occur when extracting the file via
+            # ibun. Replica 0 should be the replica in the cache, so trim that one.
+            self.user0.assert_icommand(
+                ['itrim', '-n0', '-N1', tar_logical_path], 'STDOUT', 'Number of files trimmed = 1.')
+            self.assertFalse(lib.replica_exists_on_resource(self.user0, tar_logical_path, cache_resource))
+            self.assertTrue(lib.replica_exists_on_resource(self.user0, tar_logical_path, archive_resource))
+
+            # Extract the tar file via ibun -x and ensure that the stage-to-cache was successful. Also make sure that
+            # the extracted contents at least has the same number of objects as there were files. Note that replica 2
+            # is the replica in the cache because replica 1 is the replica in the archive and was staged to cache.
+            self.user0.assert_icommand(['ibun', '-x', tar_logical_path, untar_logical_path])
+            self.assertTrue(lib.replica_exists_on_resource(self.user0, tar_logical_path, cache_resource))
+            self.assertTrue(lib.replica_exists_on_resource(self.user0, tar_logical_path, archive_resource))
+            self.assertEqual(str(1), lib.get_replica_status(self.user0, os.path.basename(tar_logical_path), 1))
+            self.assertEqual(str(1), lib.get_replica_status(self.user0, os.path.basename(tar_logical_path), 2))
+
+            # There should be two times the number of results in the resulting collection than the original directory
+            # because there is one replica in the cache and one in the archive.
+            self.assertEqual(str(2 * file_count), count_objects_in_collection(untar_logical_path))
+
+        finally:
+            self.user0.assert_icommand(['ils', '-ALr', os.path.dirname(tar_logical_path)], 'STDOUT') # Debugging
+
+            self.user0.run_icommand(['irm', '-rf', tar_logical_path, untar_logical_path])
+
+            self.admin.assert_icommand(['iadmin', 'rmchildfromresc', compound_resource, cache_resource])
+            self.admin.assert_icommand(['iadmin', 'rmchildfromresc', compound_resource, archive_resource])
+            lib.remove_resource(compound_resource, self.admin)
+            lib.remove_resource(cache_resource, self.admin)
+            lib.remove_resource(archive_resource, self.admin)
