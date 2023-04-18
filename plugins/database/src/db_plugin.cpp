@@ -1595,6 +1595,7 @@ int setOverQuota( rsComm_t *rsComm ) {
             status2 = 0;
         }
         if ( status2 != 0 ) {
+            cmlFreeStatement(statementNum, &icss);
             return status2;
         }
     }
