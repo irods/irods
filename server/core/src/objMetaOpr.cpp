@@ -689,11 +689,10 @@ checkPermissionByObjType( rsComm_t *rsComm, char *objName, char *objType, char *
                     }
                 }   
             }
-
-            freeGenQueryOut( &genQueryOut );
-            clearGenQueryInp( &genQueryInp );
-
         }
+
+        freeGenQueryOut( &genQueryOut );
+        clearGenQueryInp( &genQueryInp );
 
     }
 
