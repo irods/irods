@@ -1021,36 +1021,42 @@ syncCollPhyPath( rsComm_t *rsComm, char *collection ) {
                 == NULL ) {
             rodsLog( LOG_ERROR,
                      "syncCollPhyPath: getSqlResultByInx for COL_D_DATA_ID failed" );
+            freeGenQueryOut( &genQueryOut );
             return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( subCollRes = getSqlResultByInx( genQueryOut, COL_COLL_NAME ) )
                 == NULL ) {
             rodsLog( LOG_ERROR,
                      "syncCollPhyPath: getSqlResultByInx for COL_COLL_NAME failed" );
+            freeGenQueryOut( &genQueryOut );
             return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( dataNameRes = getSqlResultByInx( genQueryOut, COL_DATA_NAME ) )
                 == NULL ) {
             rodsLog( LOG_ERROR,
                      "syncCollPhyPath: getSqlResultByInx for COL_DATA_NAME failed" );
+            freeGenQueryOut( &genQueryOut );
             return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( replNumRes = getSqlResultByInx( genQueryOut, COL_DATA_REPL_NUM ) )
                 == NULL ) {
             rodsLog( LOG_ERROR,
                      "syncCollPhyPath:getSqlResultByIn for COL_DATA_REPL_NUM failed" );
+            freeGenQueryOut( &genQueryOut );
             return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( rescNameRes = getSqlResultByInx( genQueryOut, COL_D_RESC_NAME ) )
                 == NULL ) {
             rodsLog( LOG_ERROR,
                      "syncCollPhyPath: getSqlResultByInx for COL_D_RESC_NAME failed" );
+            freeGenQueryOut( &genQueryOut );
             return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( filePathRes = getSqlResultByInx( genQueryOut, COL_D_DATA_PATH ) )
                 == NULL ) {
             rodsLog( LOG_ERROR,
                      "syncCollPhyPath: getSqlResultByInx for COL_D_DATA_PATH failed" );
+            freeGenQueryOut( &genQueryOut );
             return UNMATCHED_KEY_OR_INDEX;
         }
 
@@ -1058,6 +1064,7 @@ syncCollPhyPath( rsComm_t *rsComm, char *collection ) {
                 == NULL ) {
             rodsLog( LOG_ERROR,
                      "syncCollPhyPath: getSqlResultByInx for COL_D_RESC_ID failed" );
+            freeGenQueryOut( &genQueryOut );
             return UNMATCHED_KEY_OR_INDEX;
         }
 

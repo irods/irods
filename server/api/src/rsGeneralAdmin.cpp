@@ -188,10 +188,12 @@ int _check_rebalance_timestamp_avu_on_resource(
         sqlResult_t* timestamp;
         if ( ( hostname_and_pid = getSqlResultByInx( gen_out, COL_META_RESC_ATTR_VALUE ) ) == nullptr ) {
             rodsLog( LOG_ERROR, "%s: getSqlResultByInx for COL_META_RESC_ATTR_VALUE failed", __FUNCTION__ );
+            freeGenQueryOut( &gen_out );
             return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( timestamp = getSqlResultByInx( gen_out, COL_META_RESC_ATTR_UNITS ) ) == nullptr ) {
             rodsLog( LOG_ERROR, "%s: getSqlResultByInx for COL_META_RESC_ATTR_UNITS failed", __FUNCTION__ );
+            freeGenQueryOut( &gen_out );
             return UNMATCHED_KEY_OR_INDEX;
         }
         std::stringstream msg;
@@ -204,6 +206,7 @@ int _check_rebalance_timestamp_avu_on_resource(
         msg << "]";
         rodsLog( LOG_ERROR, "%s: %s", __FUNCTION__, msg.str().c_str() );
         addRErrorMsg( &_rsComm->rError, REBALANCE_ALREADY_ACTIVE_ON_RESOURCE, msg.str().c_str() );
+        freeGenQueryOut( &gen_out );
         return REBALANCE_ALREADY_ACTIVE_ON_RESOURCE;
     }
     freeGenQueryOut( &gen_out );

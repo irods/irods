@@ -663,6 +663,7 @@ rsMvCollToTrash( rsComm_t *rsComm, collInp_t *rmCollInp ) {
                 == NULL ) {
             rodsLog( LOG_ERROR,
                      "rsMvCollToTrash: getSqlResultByInx for COL_COLL_NAME failed" );
+            freeGenQueryOut( &genQueryOut );
             return UNMATCHED_KEY_OR_INDEX;
         }
 
@@ -670,6 +671,7 @@ rsMvCollToTrash( rsComm_t *rsComm, collInp_t *rmCollInp ) {
                 == NULL ) {
             rodsLog( LOG_ERROR,
                      "rsMvCollToTrash: getSqlResultByInx for COL_DATA_NAME failed" );
+            freeGenQueryOut( &genQueryOut );
             return UNMATCHED_KEY_OR_INDEX;
         }
 
@@ -677,6 +679,7 @@ rsMvCollToTrash( rsComm_t *rsComm, collInp_t *rmCollInp ) {
                 == NULL ) {
             rodsLog( LOG_ERROR,
                      "rsMvCollToTrash: getSqlResultByInx for COL_D_RESC_NAME failed" );
+            freeGenQueryOut( &genQueryOut );
             return UNMATCHED_KEY_OR_INDEX;
         }
 
@@ -700,6 +703,7 @@ rsMvCollToTrash( rsComm_t *rsComm, collInp_t *rmCollInp ) {
             rodsLog( LOG_NOTICE,
                      "rsMvCollToTrash: acDataDeletePolicy error for %s. status = %d",
                      dataObjInfo.objPath, status );
+            freeGenQueryOut( &genQueryOut );
             return status;
         }
 
@@ -707,6 +711,7 @@ rsMvCollToTrash( rsComm_t *rsComm, collInp_t *rmCollInp ) {
             rodsLog( LOG_NOTICE,
                      "rsMvCollToTrash:disallowed for %s via DataDeletePolicy,status=%d",
                      dataObjInfo.objPath, rei.status );
+            freeGenQueryOut( &genQueryOut );
             return rei.status;
         }
 

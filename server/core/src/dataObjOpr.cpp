@@ -175,6 +175,7 @@ getDataObjInfo(
                 getSqlResultByInx( genQueryOut, COL_D_OWNER_NAME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "%s: getSqlResultByInx for COL_D_OWNER_NAME failed", __FUNCTION__);
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
@@ -182,6 +183,7 @@ getDataObjInfo(
                 getSqlResultByInx( genQueryOut, COL_DATA_NAME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "%s: getSqlResultByInx for COL_DATA_NAME failed", __FUNCTION__);
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
@@ -189,18 +191,21 @@ getDataObjInfo(
                 getSqlResultByInx( genQueryOut, COL_COLL_NAME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "%s: getSqlResultByInx for COL_COLL_NAME failed", __FUNCTION__);
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataId = getSqlResultByInx( genQueryOut, COL_D_DATA_ID ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "%s: getSqlResultByInx for COL_D_DATA_ID failed", __FUNCTION__);
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( collId = getSqlResultByInx( genQueryOut, COL_D_COLL_ID ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "%s: getSqlResultByInx for COL_D_COLL_ID failed", __FUNCTION__);
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
@@ -208,6 +213,7 @@ getDataObjInfo(
             NULL ) {
         rodsLog( LOG_NOTICE,
                  "%s: getSqlResultByInx for COL_DATA_REPL_NUM failed", __FUNCTION__);
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
@@ -215,6 +221,7 @@ getDataObjInfo(
             NULL ) {
         rodsLog( LOG_NOTICE,
                  "%s: getSqlResultByInx for COL_DATA_VERSION failed", __FUNCTION__);
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
@@ -222,12 +229,14 @@ getDataObjInfo(
             NULL ) {
         rodsLog( LOG_NOTICE,
                  "%s: getSqlResultByInx for COL_DATA_TYPE_NAME failed", __FUNCTION__);
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataSize = getSqlResultByInx( genQueryOut, COL_DATA_SIZE ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "%s: getSqlResultByInx for COL_DATA_SIZE failed", __FUNCTION__);
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
@@ -235,6 +244,7 @@ getDataObjInfo(
             NULL ) {
         rodsLog( LOG_NOTICE,
                  "%s: getSqlResultByInx for COL_D_RESC_HIER failed", __FUNCTION__);
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
@@ -242,6 +252,7 @@ getDataObjInfo(
             NULL ) {
         rodsLog( LOG_NOTICE,
                  "%s: getSqlResultByInx for COL_D_DATA_PATH failed", __FUNCTION__);
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
@@ -249,6 +260,7 @@ getDataObjInfo(
                 getSqlResultByInx( genQueryOut, COL_D_OWNER_ZONE ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "%s: getSqlResultByInx for COL_D_OWNER_ZONE failed", __FUNCTION__);
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
@@ -256,6 +268,7 @@ getDataObjInfo(
                 getSqlResultByInx( genQueryOut, COL_D_REPL_STATUS ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "%s: getSqlResultByInx for COL_D_REPL_STATUS failed", __FUNCTION__);
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
@@ -263,6 +276,7 @@ getDataObjInfo(
                 getSqlResultByInx( genQueryOut, COL_D_DATA_STATUS ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "%s: getSqlResultByInx for COL_D_DATA_STATUS failed", __FUNCTION__);
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
@@ -270,6 +284,7 @@ getDataObjInfo(
                 getSqlResultByInx( genQueryOut, COL_D_DATA_CHECKSUM ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "%s: getSqlResultByInx for COL_D_DATA_CHECKSUM failed", __FUNCTION__);
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
@@ -277,6 +292,7 @@ getDataObjInfo(
                 getSqlResultByInx( genQueryOut, COL_D_EXPIRY ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "%s: getSqlResultByInx for COL_D_EXPIRY failed", __FUNCTION__);
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
@@ -284,6 +300,7 @@ getDataObjInfo(
                 getSqlResultByInx( genQueryOut, COL_D_MAP_ID ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "%s: getSqlResultByInx for COL_D_MAP_ID failed", __FUNCTION__);
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
@@ -291,6 +308,7 @@ getDataObjInfo(
                 getSqlResultByInx( genQueryOut, COL_D_COMMENTS ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "%s: getSqlResultByInx for COL_D_COMMENTS failed", __FUNCTION__);
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
@@ -298,6 +316,7 @@ getDataObjInfo(
                 getSqlResultByInx( genQueryOut, COL_D_CREATE_TIME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "%s: getSqlResultByInx for COL_D_CREATE_TIME failed", __FUNCTION__);
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
@@ -305,6 +324,7 @@ getDataObjInfo(
                 getSqlResultByInx( genQueryOut, COL_D_MODIFY_TIME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "%s: getSqlResultByInx for COL_D_MODIFY_TIME failed", __FUNCTION__);
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
@@ -312,6 +332,7 @@ getDataObjInfo(
                 getSqlResultByInx( genQueryOut, COL_DATA_MODE ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "%s: getSqlResultByInx for COL_DATA_MODE failed", __FUNCTION__);
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
@@ -349,6 +370,7 @@ getDataObjInfo(
         irods::error ret = resc_mgr.hier_to_leaf_id( tmpHierString, dataObjInfo->rescId );
         if( !ret.ok() ) {
             irods::log(PASS(ret));
+            freeGenQueryOut( &genQueryOut );
             return ret.code();
         }
         std::string hier( tmpHierString );

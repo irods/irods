@@ -238,6 +238,7 @@ int getListOfResc( rsComm_t *rsComm, char serverList[MAX_VALUE][MAX_NAME_LEN], i
         freeGenQueryOut( &genQueryOut );
         return 0;
     }
+    freeGenQueryOut( &genQueryOut );
     return -1;
 }
 

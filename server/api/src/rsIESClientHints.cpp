@@ -92,6 +92,7 @@ irods::error get_query_array( rsComm_t* _comm, json& _queries )
     genQueryOut_t* gen_out = 0;
     int status = rsSpecificQuery( _comm, &spec_inp, &gen_out );
     if ( status < 0 ) {
+        freeGenQueryOut( &gen_out );
         return ERROR( status, "rsSpecificQuery for 'ls' failed" );
     }
 

@@ -313,48 +313,56 @@ collStat( rsComm_t *rsComm, const dataObjInp_t *dataObjInp,
                                            COL_COLL_ID ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat: getSqlResultByInx for COL_COLL_ID failed" );
+            freeGenQueryOut( &genQueryOut );
             return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( ownerName = getSqlResultByInx( genQueryOut,
                                 COL_COLL_OWNER_NAME ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_COLL_OWNER_NAME failed" );
+            freeGenQueryOut( &genQueryOut );
             return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( ownerZone = getSqlResultByInx( genQueryOut,
                                 COL_COLL_OWNER_ZONE ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_COLL_OWNER_ZONE failed" );
+            freeGenQueryOut( &genQueryOut );
             return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( createTime = getSqlResultByInx( genQueryOut,
                                  COL_COLL_CREATE_TIME ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_COLL_CREATE_TIME failed" );
+            freeGenQueryOut( &genQueryOut );
             return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( modifyTime = getSqlResultByInx( genQueryOut,
                                  COL_COLL_MODIFY_TIME ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_COLL_MODIFY_TIME failed" );
+            freeGenQueryOut( &genQueryOut );
             return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( collType = getSqlResultByInx( genQueryOut,
                                COL_COLL_TYPE ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_COLL_TYPE failed" );
+            freeGenQueryOut( &genQueryOut );
             return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( collInfo1 = getSqlResultByInx( genQueryOut,
                                 COL_COLL_INFO1 ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_COLL_INFO1 failed" );
+            freeGenQueryOut( &genQueryOut );
             return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( collInfo2 = getSqlResultByInx( genQueryOut,
                                 COL_COLL_INFO2 ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_COLL_INFO2 failed" );
+            freeGenQueryOut( &genQueryOut );
             return UNMATCHED_KEY_OR_INDEX;
         }
         else {
@@ -379,6 +387,7 @@ collStat( rsComm_t *rsComm, const dataObjInp_t *dataObjInp,
                     status = queueSpecCollCache( rsComm, genQueryOut, // JMC - backport 4680?
                                                  dataObjInp->objPath );
                     if ( status < 0 ) {
+                        freeGenQueryOut( &genQueryOut );
                         return status;
                     }
                     replSpecColl( &SpecCollCacheHead->specColl,

@@ -495,24 +495,28 @@ initZone( rsComm_t *rsComm ) {
     if ( ( zoneName = getSqlResultByInx( genQueryOut, COL_ZONE_NAME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "initZone: getSqlResultByInx for COL_ZONE_NAME failed" );
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( zoneType = getSqlResultByInx( genQueryOut, COL_ZONE_TYPE ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "initZone: getSqlResultByInx for COL_ZONE_TYPE failed" );
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( zoneConn = getSqlResultByInx( genQueryOut, COL_ZONE_CONNECTION ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "initZone: getSqlResultByInx for COL_ZONE_CONNECTION failed" );
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( zoneComment = getSqlResultByInx( genQueryOut, COL_ZONE_COMMENT ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "initZone: getSqlResultByInx for COL_ZONE_COMMENT failed" );
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 

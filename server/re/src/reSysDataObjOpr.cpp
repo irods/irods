@@ -496,6 +496,7 @@ msiSetDataTypeFromExt( ruleExecInfo_t *rei ) {
     rodsLog( LOG_DEBUG, "msiSetDataTypeFromExt: query status %d rowCnt=%d", status, genQueryOut->rowCnt );
 
     if ( genQueryOut->rowCnt != 1 ) {
+        freeGenQueryOut( &genQueryOut );
         return 0;
     }
 

@@ -586,24 +586,28 @@ printDataAcl( rcComm_t *conn, char *dataId ) {
 
     if ( status < 0 ) {
         printf( "\n" );
+        freeGenQueryOut( &genQueryOut );
         return status;
     }
 
     if ( ( userName = getSqlResultByInx( genQueryOut, COL_USER_NAME ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "printDataAcl: getSqlResultByInx for COL_USER_NAME failed" );
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( userZone = getSqlResultByInx( genQueryOut, COL_USER_ZONE ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "printDataAcl: getSqlResultByInx for COL_USER_ZONE failed" );
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( userType = getSqlResultByInx( genQueryOut, COL_USER_TYPE ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "printDataAcl: getSqlResultByInx for COL_USER_TYPE failed" );
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
@@ -611,6 +615,7 @@ printDataAcl( rcComm_t *conn, char *dataId ) {
             == NULL ) {
         rodsLog( LOG_ERROR,
                  "printDataAcl: getSqlResultByInx for COL_DATA_ACCESS_NAME failed" );
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
@@ -817,6 +822,7 @@ lsSubfilesInBundle( rcComm_t *conn, char *srcPath ) {
                               srcPath );
             }
             clearGenQueryInp( &genQueryInp );
+            freeGenQueryOut( &genQueryOut );
             return status;
         }
 
@@ -824,18 +830,21 @@ lsSubfilesInBundle( rcComm_t *conn, char *srcPath ) {
                 NULL ) {
             rodsLog( LOG_ERROR,
                      "lsSubfilesInBundle: getSqlResultByInx for COL_COLL_NAME failed" );
+            freeGenQueryOut( &genQueryOut );
             return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( dataName = getSqlResultByInx( genQueryOut, COL_DATA_NAME ) ) ==
                 NULL ) {
             rodsLog( LOG_ERROR,
                      "lsSubfilesInBundle: getSqlResultByInx for COL_DATA_NAME failed" );
+            freeGenQueryOut( &genQueryOut );
             return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( dataSize = getSqlResultByInx( genQueryOut, COL_DATA_SIZE ) ) ==
                 NULL ) {
             rodsLog( LOG_ERROR,
                      "lsSubfilesInBundle: getSqlResultByInx for COL_DATA_SIZE failed" );
+            freeGenQueryOut( &genQueryOut );
             return UNMATCHED_KEY_OR_INDEX;
         }
 

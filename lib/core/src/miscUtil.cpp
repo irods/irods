@@ -1889,12 +1889,14 @@ getZoneType( rcComm_t *conn, char *icatZone, char *inZoneName,
     status =  rcGenQuery( conn, &genQueryInp, &genQueryOut );
 
     if ( status < 0 ) {
+        freeGenQueryOut( &genQueryOut );
         return status;
     }
 
     if ( ( zoneType = getSqlResultByInx( genQueryOut, COL_ZONE_TYPE ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getZoneInfo: getSqlResultByInx for COL_ZONE_TYPE failed" );
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 

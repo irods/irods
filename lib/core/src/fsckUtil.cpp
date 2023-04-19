@@ -150,10 +150,12 @@ int chkObjConsistency(rcComm_t* conn,
         }
         catch (const std::invalid_argument& e) {
             std::cerr << "ERROR: could not parse object size into integer [exception => " << e.what() << ", path => " << inpPath << "].\n";
+            freeGenQueryOut(&genQueryOut);
             return SYS_INTERNAL_ERR;
         }
         catch (const std::out_of_range& e) {
             std::cerr << "ERROR: could not parse object size into integer [exception => " << e.what() << ", path => " << inpPath << "].\n";
+            freeGenQueryOut(&genQueryOut);
             return SYS_INTERNAL_ERR;
         }
 
