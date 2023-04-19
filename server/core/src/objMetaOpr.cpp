@@ -66,6 +66,7 @@ isData( rsComm_t *rsComm, char *objName, rodsLong_t *dataId ) {
                 NULL ) {
             rodsLog( LOG_ERROR,
                      "isData: getSqlResultByInx for COL_D_DATA_ID failed" );
+            freeGenQueryOut( &genQueryOut );
             return UNMATCHED_KEY_OR_INDEX;
         }
         if ( dataId != NULL ) {
@@ -159,6 +160,7 @@ getPhyPath(
         if ( !phy_path_res ) {
             rodsLog( LOG_ERROR,
                      "getPhyPath: getSqlResultByInx for COL_D_DATA_PATH failed" );
+            freeGenQueryOut( &gen_out );
             return UNMATCHED_KEY_OR_INDEX;
         }
 
@@ -214,6 +216,7 @@ isColl( rsComm_t *rsComm, char *objName, rodsLong_t *collId ) {
                 NULL ) {
             rodsLog( LOG_ERROR,
                      "isColl: getSqlResultByInx for COL_D_DATA_ID failed" );
+            freeGenQueryOut( &genQueryOut );
             return UNMATCHED_KEY_OR_INDEX;
         }
 
