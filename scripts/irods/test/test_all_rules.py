@@ -1275,6 +1275,68 @@ OUTPUT ruleExecOut
         self.admin.assert_icommand(['irule', '-r', rep_name, rule_text, 'null', 'ruleExecOut'])
 
 
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'Only implemented for NREP.')
+    def test_msiDataObjChksum_with_admin_keyword__issue_6118(self):
+        pep_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                pep_api_data_obj_repl_post(*INSTANCE_NAME, *COMM, *DATAOBJINP, *TRANSSTAT) {
+                    msiDataObjChksum(*DATAOBJINP.obj_path, "irodsAdmin=++++ChksumAll=", *checksum);
+                }
+            ''')
+        }
+
+        resource = 'test_msiDataObjChksum_with_admin_keyword_resc'
+
+        filename = 'test_msiDataObjChksum_with_admin_keyword__issue_6118'
+        logical_path = os.path.join(self.user0.session_collection, filename)
+        contents = 'please let this be a normal field trip'
+
+        config = IrodsConfig()
+        with lib.file_backed_up(config.server_config_path):
+            core_re_path = os.path.join(config.core_re_directory, 'core.re')
+
+            with lib.file_backed_up(core_re_path):
+                # Inject a PEP to perform a checksum on the data object after replication.
+                with open(core_re_path, 'a') as core_re:
+                    core_re.write(pep_map[plugin_name])
+
+                try:
+                    # Create a resource to which we can replicate to trigger the policy.
+                    lib.create_ufs_resource(resource, self.admin, hostname=test.settings.HOSTNAME_2)
+
+                    # Create a data object which can be replicated.
+                    self.user0.assert_icommand(['istream', 'write', logical_path], input=contents)
+
+                    # Replicate as the rodsuser and confirm that an error occurs due to the presence of the irodsAdmin
+                    # flag. The replication still created a new replica, so be sure to trim it before trying it again
+                    # as the rodsadmin.
+                    self.user0.assert_icommand(
+                        ['irepl', '-R', resource, logical_path], 'STDERR', 'CAT_INSUFFICIENT_PRIVILEGE_LEVEL')
+                    destination_checksum = lib.get_replica_checksum(self.user0, os.path.basename(logical_path), 1)
+                    source_checksum = lib.get_replica_checksum(self.user0, os.path.basename(logical_path), 0)
+                    self.assertEqual(0, len(destination_checksum))
+                    self.assertEqual(0, len(source_checksum))
+                    self.user0.assert_icommand(
+                        ['itrim', '-N1', '-S', resource, logical_path], 'STDOUT', 'Number of files trimmed = 1.')
+
+                    # Replicate the data object and ensure that a checksum was calculated.
+                    self.admin.assert_icommand(['irepl', '-M', '-R', resource, logical_path])
+                    destination_checksum = lib.get_replica_checksum(self.user0, os.path.basename(logical_path), 1)
+                    source_checksum = lib.get_replica_checksum(self.user0, os.path.basename(logical_path), 0)
+                    self.assertNotEqual(0, len(destination_checksum))
+                    self.assertNotEqual(0, len(source_checksum))
+
+                    # Ensure that the checksum for the source and the destination are equal.
+                    self.assertEqual(source_checksum, destination_checksum)
+
+                finally:
+                    self.user0.assert_icommand(['ils', '-AL', os.path.dirname(logical_path)], 'STDOUT') # debugging
+
+                    self.user0.run_icommand(['irm', '-f', logical_path])
+
+                    lib.remove_resource(resource, self.admin)
+
+
 class Test_msiDataObjRepl_checksum_keywords(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
     global plugin_name
     plugin_name = IrodsConfig().default_rule_engine_plugin
