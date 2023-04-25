@@ -1,33 +1,30 @@
-#include "irods/dataObjOpr.hpp"
-#include "irods/dataObjRepl.h"
-#include "irods/filesystem/path.hpp"
-#include "irods/filesystem/permissions.hpp"
-#include "irods/finalize_utilities.hpp"
-#include "irods/generalAdmin.h"
-#include "irods/irods_at_scope_exit.hpp"
-#include "irods/irods_collection_object.hpp"
-#include "irods/irods_file_object.hpp"
-#include "irods/irods_hierarchy_parser.hpp"
-#include "irods/irods_kvp_string_parser.hpp"
-#include "irods/irods_lexical_cast.hpp"
-#include "irods/irods_logger.hpp"
-#include "irods/irods_physical_object.hpp"
-#include "irods/irods_random.hpp"
-#include "irods/irods_resource_plugin.hpp"
-#include "irods/irods_resource_redirect.hpp"
-#include "irods/irods_stacktrace.hpp"
-#include "irods/irods_string_tokenize.hpp"
-#include "irods/miscServerFunct.hpp"
 #include "irods/msParam.h"
+#include "irods/generalAdmin.h"
 #include "irods/physPath.hpp"
 #include "irods/reIn2p3SysRule.hpp"
-#include "irods/replica_proxy.hpp"
-#include "irods/rsDataObjClose.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/dataObjRepl.h"
 #include "irods/rsDataObjOpen.hpp"
+#include "irods/rsDataObjClose.hpp"
 #include "irods/rsFileStageToCache.hpp"
 #include "irods/rsFileSyncToArch.hpp"
-#include "irods/scoped_permission.hpp"
+#include "irods/dataObjOpr.hpp"
+#include "irods/irods_resource_plugin.hpp"
+#include "irods/irods_file_object.hpp"
+#include "irods/irods_physical_object.hpp"
+#include "irods/irods_collection_object.hpp"
+#include "irods/irods_string_tokenize.hpp"
+#include "irods/irods_hierarchy_parser.hpp"
+#include "irods/irods_logger.hpp"
+#include "irods/irods_resource_redirect.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/irods_kvp_string_parser.hpp"
+#include "irods/irods_lexical_cast.hpp"
+#include "irods/irods_random.hpp"
+#include "irods/irods_at_scope_exit.hpp"
 #include "irods/voting.hpp"
+#include "irods/finalize_utilities.hpp"
+#include "irods/replica_proxy.hpp"
 
 #include <boost/lexical_cast.hpp>
 #include <boost/function.hpp>
@@ -36,12 +33,11 @@
 #include <fmt/format.h>
 
 #include <iostream>
-#include <optional>
 #include <sstream>
+#include <vector>
 #include <string>
 #include <string_view>
 #include <tuple>
-#include <vector>
 
 /// =-=-=-=-=-=-=-
 /// @brief constant to reference the operation type for
@@ -1792,19 +1788,7 @@ irods::error open_for_prefer_archive_policy(
     // =-=-=-=-=-=-=-
     // if the vote is 0 then we do a wholesale stage, not an update
     // otherwise it is an update operation for the stage to cache.
-    if (irods::OPEN_OPERATION == operation) {
-        namespace fs = irods::experimental::filesystem;
-        using sp = irods::experimental::scoped_permission;
-
-        // Temporarily grant ownership of the data object to the connected client so that the object can be staged
-        // to cache even if the user does not have write permission for the data object.
-        irods::file_object_ptr obj = boost::dynamic_pointer_cast<irods::file_object>(_ctx.fco());
-        const auto temporary_object_ownership = sp{*_ctx.comm(), fs::path{obj->logical_path()}, fs::perms::own};
-        ret = repl_object(_ctx, _out_parser, STAGE_OBJ_KW);
-    }
-    else {
-        ret = repl_object(_ctx, _out_parser, STAGE_OBJ_KW);
-    }
+    ret = repl_object(_ctx, _out_parser, STAGE_OBJ_KW);
     if ( !ret.ok() ) {
         return PASS( ret );
     }
@@ -2044,19 +2028,7 @@ irods::error open_for_prefer_cache_policy(
 
         // =-=-=-=-=-=-=-
         // if the archive has it, then replicate
-        if (irods::OPEN_OPERATION == operation) {
-            namespace fs = irods::experimental::filesystem;
-            using sp = irods::experimental::scoped_permission;
-
-            // Temporarily grant ownership of the data object to the connected client so that the object can be staged
-            // to cache even if the user does not have write permission for the data object.
-            const auto temporary_object_ownership = sp{*_ctx.comm(), fs::path{obj->logical_path()}, fs::perms::own};
-            ret = repl_object(_ctx, arch_check_parser, STAGE_OBJ_KW);
-        }
-        else {
-            ret = repl_object(_ctx, arch_check_parser, STAGE_OBJ_KW);
-        }
-
+        ret = repl_object( _ctx, arch_check_parser, STAGE_OBJ_KW );
         if ( !ret.ok() ) {
             return PASS( ret );
         }
