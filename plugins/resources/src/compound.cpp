@@ -841,7 +841,8 @@ irods::error repl_object(
 
                 // If we got a REPLICA_IS_BEING_STAGED error, just remove the cache replica.
                 if (REPLICA_IS_BEING_STAGED == error_code_set_to_oprStatus_on_dest_close) {
-                    irods::purge_cache(*_ctx.comm(), *replica.get());
+                    constexpr bool use_admin_kw = true;
+                    irods::trim_replica(*_ctx.comm(), *replica.get(), use_admin_kw);
                 }
             }
             if (source_l1descInx > 0) {
