@@ -610,7 +610,7 @@ namespace
             apply_static_peps(_comm, _inp, _fd, l1desc.oprStatus);
 
             if (L1desc[_fd].purgeCacheFlag) {
-                irods::purge_cache(_comm, *l1desc.dataObjInfo);
+                irods::trim_replica(_comm, *l1desc.dataObjInfo);
             }
 
             return l1desc.oprStatus;
@@ -630,7 +630,7 @@ namespace
         l1desc.bytesWritten = l1desc.dataObjInfo->dataSize;
 
         if (L1desc[_fd].purgeCacheFlag) {
-            irods::purge_cache(_comm, *l1desc.dataObjInfo);
+            irods::trim_replica(_comm, *l1desc.dataObjInfo);
         }
 
         apply_static_peps(_comm, _inp, _fd, l1desc.oprStatus);
@@ -654,7 +654,7 @@ namespace
 
         if (l1desc.oprStatus >= 0) {
             if (l1desc.purgeCacheFlag) {
-                irods::purge_cache(_comm, *l1desc.dataObjInfo);
+                irods::trim_replica(_comm, *l1desc.dataObjInfo);
             }
 
             irods::apply_metadata_from_cond_input(_comm, *l1desc.dataObjInp);
