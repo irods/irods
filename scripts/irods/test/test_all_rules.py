@@ -1441,6 +1441,58 @@ OUTPUT ruleExecOut
                     lib.remove_resource(resource, self.admin)
 
 
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'Only implemented for NREP.')
+    def test_adding_user_to_more_than_SQL_MAX_ROWS_groups_and_try_msiCheckAccess__issue_7050(self):
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                *access = 0;
+                *iterations = 51;
+                for (*i = 0; *i < *iterations; *i = *i + 1) {{
+                    msiCheckAccess("{}", "read_object", *access);
+                }}
+            ''')
+        }
+
+        rep_instance = '-'.join([plugin_name, 'instance'])
+        group_count = 260
+        groupie_user = self.admin
+        other_user = self.user1
+        contents = 'check this out'
+
+        filename = 'test_adding_user_to_more_than_SQL_MAX_ROWS_groups_and_try_msiCheckAccess__issue_7050'
+        logical_path = os.path.join(other_user.session_collection, filename)
+        rule_text = rule_map[plugin_name].format(logical_path)
+
+        try:
+            # Put a user into a large number of groups such that when we run msiCheckAccess, the results when checking
+            # for permissions for the various groups will cause the GenQuery to have to page results.
+            for i in range(group_count):
+                group_name = 'group_' + str(i + 1)
+                self.admin.assert_icommand(['iadmin', 'mkgroup', group_name])
+                self.admin.assert_icommand(['iadmin', 'atg', group_name, groupie_user.username])
+
+            # Create a data object and give no permissions to the user who is in the large number of groups.
+            other_user.assert_icommand(['istream', 'write', logical_path], input=contents)
+            self.assertTrue(lib.replica_exists(other_user, logical_path, 0))
+
+            # The many-group user should be able to see the object because the user is a rodsadmin.
+            self.assertTrue(lib.replica_exists(groupie_user, logical_path, 0))
+
+            # Run a rule as the user in the large number of groups which checks the access on the object to which they
+            # have no access exactly 51 times. This used to leak database statement handles, and iRODS has a hard-coded
+            # limit of 50 open database statement handles. If the bug exists here, the irule invocation will return an
+            # error. Otherwise, this will have no output.
+            groupie_user.assert_icommand(['irule', '-r', rep_instance, rule_text, 'null', 'ruleExecOut'])
+
+        finally:
+            self.admin.assert_icommand(['ils', '-AL', os.path.dirname(logical_path)], 'STDOUT') # debugging
+
+            for i in range(group_count):
+                group_name = 'group_' + str(i + 1)
+                self.admin.run_icommand(['iadmin', 'rfg', group_name, groupie_user.username])
+                self.admin.run_icommand(['iadmin', 'rmgroup', group_name])
+
+
 class Test_msiDataObjRepl_checksum_keywords(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
     global plugin_name
     plugin_name = IrodsConfig().default_rule_engine_plugin
