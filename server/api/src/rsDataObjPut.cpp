@@ -401,7 +401,7 @@ namespace
             }
 
             if (l1desc_cache.purgeCacheFlag) {
-                irods::purge_cache(_comm, *final_replica.get());
+                irods::trim_replica(_comm, *final_replica.get());
             }
 
             if (status < 0) {

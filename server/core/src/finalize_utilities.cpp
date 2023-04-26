@@ -175,7 +175,7 @@ namespace irods
         return size_in_vault;
     } // get_size_in_vault
 
-    auto purge_cache(RsComm& _comm, DataObjInfo& _info) -> int
+    auto trim_replica(RsComm& _comm, DataObjInfo& _info, bool _admin_operation) -> int
     {
         auto replica = irods::experimental::replica::make_replica_proxy(_info);
 
@@ -188,6 +188,10 @@ namespace irods
         cond_input[REPL_NUM_KW] = std::to_string(replica.replica_number());
         cond_input[RESC_HIER_STR_KW] = replica.hierarchy();
 
+        if (_admin_operation) {
+            cond_input[ADMIN_KW] = "";
+        }
+
         int status = rsDataObjTrim(&_comm, &inp);
         if (status < 0) {
             irods::log(LOG_ERROR, fmt::format(
@@ -195,7 +199,7 @@ namespace irods
                 __FUNCTION__, replica.hierarchy(), replica.logical_path()));
         }
         return status;
-    } // purge_cache
+    } // trim_replica
 
     auto duplicate_l1_descriptor(const l1desc& _src) -> l1desc
     {

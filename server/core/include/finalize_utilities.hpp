@@ -91,8 +91,14 @@ namespace irods
     /// \since 4.2.9
     auto apply_static_post_pep(RsComm& _comm, l1desc& _l1desc, const int _operation_status, std::string_view _pep_name) -> int;
 
-    // TODO: ...remove this.
-    auto purge_cache(RsComm& _comm, DataObjInfo& _info) -> int;
+    /// \brief Trims the replica referred to by \p _info.
+    ///
+    /// \param[in] _comm The server communication object.
+    /// \param[in] _info DataObjInfo which contains information about the replica to trim.
+    /// \param[in] _admin_operation Adds the admin keyword to the input to the trim API if true.
+    ///
+    /// \returns return code of rsDataObjTrim
+    auto trim_replica(RsComm& _comm, DataObjInfo& _info, bool _admin_operation = false) -> int;
 
     /// \brief Call rs_replica_close without touching the catalog
     ///

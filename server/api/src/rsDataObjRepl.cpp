@@ -668,11 +668,11 @@ namespace
         }
 
         if (source_fd.purgeCacheFlag > 0) {
-            irods::purge_cache(_comm, *source_replica.get());
+            irods::trim_replica(_comm, *source_replica.get());
         }
 
         if (destination_fd.purgeCacheFlag > 0) {
-            irods::purge_cache(_comm, *destination_replica.get());
+            irods::trim_replica(_comm, *destination_replica.get());
         }
 
         if (status >= 0) {
