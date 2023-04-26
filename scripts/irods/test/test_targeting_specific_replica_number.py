@@ -35,7 +35,7 @@ class test_targeting_specific_replica_number__issue_6896(
         for parent, child in [(self.pt1, self.ufs1), (self.pt2, self.ufs2)]:
             lib.add_child_resource(parent, child, self.admin)
 
-        self.admin.assert_icommand('ilsresc', 'STDOUT') # debugging
+        self.admin.assert_icommand(['ilsresc', '--ascii'], 'STDOUT') # debugging
 
         # Set up some local files to put for reading and writing in the tests which follow...
         self.file_size = 1000
