@@ -1516,7 +1516,7 @@ msiDataObjGet( msParam_t *inpParam1, msParam_t *msKeyValStr,
 }
 
 /**
-* \fn msiDataObjChksum (msParam_t *inpParam1, msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
+ * \fn msiDataObjChksum (msParam_t *inpParam1, msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
  *
  * \brief This microservice calls rsDataObjChksum to chksum the iput data object as part of a workflow execution.
  *
@@ -1534,6 +1534,8 @@ msiDataObjGet( msParam_t *inpParam1, msParam_t *msKeyValStr,
  *      assumed to be the target resource ("destRescName") for backward
  *      compatibility.
  *      Valid keyWds are:
+ *        \li "irodsAdmin" - Allows an admin user to checksum data objects on which they have no permissions.
+ *            This keyword does not need a value.
  *        \li "ChksumAll" - checksum all replicas. This keyWd has no value.
  *            But the '=' character is still needed.
  *        \li "verifyChksum" - verify the chksum value.
@@ -1556,7 +1558,7 @@ msiDataObjGet( msParam_t *inpParam1, msParam_t *msKeyValStr,
  * \pre none
  * \post none
  * \sa none
-**/
+ **/
 int
 msiDataObjChksum( msParam_t *inpParam1, msParam_t *msKeyValStr,
                   msParam_t *outParam, ruleExecInfo_t *rei ) {
@@ -1592,8 +1594,8 @@ msiDataObjChksum( msParam_t *inpParam1, msParam_t *msKeyValStr,
         return rei->status;
     }
 
-    validKwFlags = CHKSUM_ALL_FLAG | FORCE_CHKSUM_FLAG | REPL_NUM_FLAG |
-                   OBJ_PATH_FLAG | VERIFY_CHKSUM_FLAG;
+    validKwFlags =
+        CHKSUM_ALL_FLAG | FORCE_CHKSUM_FLAG | REPL_NUM_FLAG | OBJ_PATH_FLAG | VERIFY_CHKSUM_FLAG | ADMIN_FLAG;
     if ( ( rei->status = parseMsKeyValStrForDataObjInp( msKeyValStr,
                          myDataObjInp, KEY_WORD_KW, validKwFlags, &outBadKeyWd ) ) < 0 ) {
         if ( outBadKeyWd != NULL ) {
