@@ -654,8 +654,7 @@ checkPermissionByObjType( rsComm_t *rsComm, char *objName, char *objType, char *
         int status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
 
         // note:  if rsGenQuery has an error, just continue to below
-        while ( genQueryOut && status >= 0 ) {
-
+        while (genQueryOut && status >= 0) {
             group_sql_result = getSqlResultByInx(genQueryOut, COL_USER_GROUP_NAME);
 
             if (group_sql_result != nullptr) {
@@ -701,12 +700,12 @@ checkPermissionByObjType( rsComm_t *rsComm, char *objName, char *objType, char *
 
             genQueryInp.continueInx = genQueryOut->continueInx;
             genQueryInp.maxRows = MAX_SQL_ROWS;
-            freeGenQueryOut( &genQueryOut );
-            status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
+            freeGenQueryOut(&genQueryOut);
+            status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
         }
 
-        freeGenQueryOut( &genQueryOut );
-        clearGenQueryInp( &genQueryInp );
+        freeGenQueryOut(&genQueryOut);
+        clearGenQueryInp(&genQueryInp);
     }
 
     return i;
