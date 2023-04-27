@@ -708,7 +708,7 @@ static inline auto validate_zone_connection_string(const char* _zone_conn_info, 
         auto status = parseHostAddrStr(addr_buf.data(), &addr);
         if (status < 0) {
             std::string errmsg = fmt::format("failed to validate zone connection info [{}]", status);
-            log_db::info(errmsg);
+            log_db::error(errmsg);
             addRErrorMsg(&_ctx.comm()->rError, status, errmsg.c_str());
             return ERROR(status, errmsg);
         }
@@ -716,14 +716,14 @@ static inline auto validate_zone_connection_string(const char* _zone_conn_info, 
         if (host_len == 0 || (host_len == 1 && addr.hostAddr[0] == ':')) {
             std::string errmsg =
                 fmt::format("failed to validate zone connection info due to empty hostname [{}]", _zone_conn_info);
-            log_db::info(errmsg);
+            log_db::error(errmsg);
             addRErrorMsg(&_ctx.comm()->rError, CAT_HOSTNAME_INVALID, errmsg.c_str());
             return ERROR(CAT_HOSTNAME_INVALID, errmsg);
         }
         if ((addr.portNum > 65535) || (addr.portNum <= 0)) {
             std::string errmsg = fmt::format(
                 "failed to validate zone connection info due to invalid or unspecified port [{}]", _zone_conn_info);
-            log_db::info(errmsg);
+            log_db::error(errmsg);
             addRErrorMsg(&_ctx.comm()->rError, CAT_INVALID_ARGUMENT, errmsg.c_str());
             return ERROR(CAT_INVALID_ARGUMENT, errmsg);
         }
