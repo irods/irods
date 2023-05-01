@@ -631,6 +631,7 @@ OUTPUT ruleExecOut
             self.admin.run_icommand(['iadmin', 'rum'])
 
 
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'Only implemented for NREP.')
     def test_rsDataObjRepl_populates_input_struct__issue_6100(self):
         resc1 = 'resc1'
         resc2 = 'resc2'
