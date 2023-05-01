@@ -15,6 +15,7 @@ from ..configuration import IrodsConfig
 from ..test.command import assert_command
 
 class Test_Iqstat(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
+    plugin_name = IrodsConfig().default_rule_engine_plugin
 
     def setUp(self):
         super(Test_Iqstat, self).setUp()
@@ -38,6 +39,7 @@ class Test_Iqstat(session.make_sessions_mixin([('otherrods', 'rods')], [('alice'
         self.rule_ids += rule_id
         return rule_id.strip()
 
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'Only implemented for NREP.')
     def test_iqstat_with_all_option_and_id__issue_6740(self):
 
         rule_id = self.spawn_delay_rule(self.user)
@@ -45,6 +47,7 @@ class Test_Iqstat(session.make_sessions_mixin([('otherrods', 'rods')], [('alice'
         # Asserting long format.  (iqstat traditionally prints in long format (-l) if invoked with an ID for match.)
         self.admin.assert_icommand('iqstat -a {}'.format(rule_id), 'STDOUT_SINGLELINE', r'id:\s\s*{}'.format(rule_id), use_regex = True)
 
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'Only implemented for NREP.')
     def test_iqstat_with_all_option_and_no_id__issue_6740(self):
 
         rule_ids = [ self.spawn_delay_rule(self.user),
