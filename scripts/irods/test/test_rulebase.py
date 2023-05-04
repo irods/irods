@@ -194,6 +194,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
                         start_index=initial_log_size))
 
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads re server log')
+    @unittest.skipIf(test.settings.USE_SSL, 'Skip when SSL is enabled because it is too slow.')
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'tests cache update - only applicable for irods_rule_language REP')
     def test_fast_updates__2279(self):
             fastswap_test_script = os.path.join('/var', 'lib', 'irods', 'scripts', 'rulebase_fastswap_test_2276.sh')
