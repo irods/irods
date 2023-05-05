@@ -24,6 +24,11 @@ rsGeneralRowPurge( rsComm_t *rsComm, generalRowPurgeInp_t *generalRowPurgeInp ) 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
 
         std::string svc_role;
+        irods::error ret = get_catalog_service_role(svc_role);
+        if(!ret.ok()) {
+            irods::log(PASS(ret));
+            return ret.code();
+        }
         if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             status = _rsGeneralRowPurge( rsComm, generalRowPurgeInp );
         } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {

@@ -29,9 +29,14 @@ static pthread_mutex_t my_mutex;
 #include <boost/asio.hpp>
 #include <boost/algorithm/string.hpp>
 
+#include <cstring>
+#include <cctype>
+#include <limits>
 #include <vector>
 #include <string>
+#include <string_view>
 #include <sstream>
+#include <tuple>
 
 short threadIsAlive[MAX_NSERVERS];
 
@@ -734,6 +739,45 @@ int msiServerMonPerf( msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei ) {
 
 }
 
+namespace {
+
+    auto seconds_from_integer_time_and_units(const char *numstring) -> std::tuple<int,std::string>
+    {
+        char *endptr {};
+        std::string error;
+        long scanned_number = 24, units = 1;
+        if (long my_long = strtol(numstring, &endptr, 10); endptr > numstring) {
+            // An integer was successfully scanned.
+            if (my_long <= std::numeric_limits<int>::max()) {
+                    if (my_long >= 0) scanned_number = my_long;
+                    else {
+                        return {0,"Negative timespan found."};
+                    }
+            }
+            else {
+                return {0,"Scanned timespan was too large."}; }
+            // Try to get units (default to hours per the established interface.)
+            while (isspace(*endptr)) { endptr++; }
+            switch(tolower(*endptr)) {
+                    case 's' : units = 1; break;
+                    case 'm' : units = 60; break;
+                    case 'd' : units = 24 * 3600; break;
+                    case '\0': // end-of-string. Deliberate fall-through to 'h' (hours).
+                    case 'h': units = 3600; break;
+                    default :  return { 0, "Bad units." };
+            }
+        }
+        else { // no integer was scanned; again, default to hours
+                std::string_view s{numstring};
+                if (s == "default" || s == "") { units = 3600; }
+                else {
+                    return {0, "Incorrect timespan"};
+                }
+        }
+        return {scanned_number * units, error};
+    }
+
+}
 
 /**
  * \fn msiFlushMonStat (msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t *rei)
@@ -772,7 +816,7 @@ int msiServerMonPerf( msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei ) {
  * \sa  N/A
  **/
 int msiFlushMonStat( msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t *rei ) {
-    int elapseTime, defaultTimespan, rc;
+    int defaultTimespan, rc;
     char secAgo[MAXLEN], *tablename, *timespan;
     generalRowPurgeInp_t generalRowPurgeInp;
     rsComm_t *rsComm;
@@ -820,11 +864,10 @@ int msiFlushMonStat( msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t 
         return rei->status;
     }
 
-    if ( atoi( timespan ) > 0 ) {
-        elapseTime = atoi( timespan ) * 3600;
-    }
-    else {
-        elapseTime = defaultTimespan * 3600; /* default timespan in seconds */
+    const auto & [ elapseTime, error_message ] = seconds_from_integer_time_and_units(timespan);
+    if (error_message.size()) {
+        rodsLog(LOG_ERROR, error_message.c_str());
+        return SYS_INVALID_INPUT_PARAM;
     }
 
     if ( strcmp( tablename, "serverload" ) != 0 &&
