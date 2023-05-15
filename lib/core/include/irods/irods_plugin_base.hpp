@@ -22,6 +22,10 @@
 #include "irods/irods_lookup_table.hpp"
 #include "irods/irods_plugin_context.hpp"
 
+#ifdef IRODS_ENABLE_TEST_PLUGIN_OPERATIONS
+#  include "irods/test_plugin_operations.hpp"
+#endif
+
 static double PLUGIN_INTERFACE_VERSION = 2.0;
 
 irods::error add_global_re_params_to_kvp_for_dynpep( keyValPair_t& );
@@ -165,13 +169,19 @@ namespace irods
                 plugin_context ctx( _comm, properties_, _fco, "" );
 
                 using adapted_func_type = std::function<error(plugin_context&, std::string*, types_t...)>;
-                
+
                 adapted_func_type adapted_fcn = [this, &_operation_name](plugin_context& _ctx, std::string* _out_param, types_t... _t) {
                     _ctx.rule_results( *_out_param );
                     typedef std::function<error(plugin_context&,types_t...)> fcn_t;
                     fcn_t& fcn = boost::any_cast< fcn_t& >( operations_[ _operation_name ] );
                     error ret = fcn( _ctx, _t... );
                     *_out_param = _ctx.rule_results();
+#ifdef IRODS_ENABLE_TEST_PLUGIN_OPERATIONS
+                    if (const auto rc = irods::get_plugin_operation_return_code(_ctx.prop_map(), _operation_name);
+                        rc != 0) {
+                        return ERROR(rc, fmt::format("Operation is configured to fail [{}]", _operation_name));
+                    }
+#endif
                     return ret;
                 };
 
@@ -344,6 +354,10 @@ namespace irods
         }
 
         error start_operation() {
+#ifdef IRODS_ENABLE_TEST_PLUGIN_OPERATIONS
+            irods::set_munge_operations(properties_);
+#endif
+
             return start_operation_( properties_ );
         }
 

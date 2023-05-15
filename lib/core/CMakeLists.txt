@@ -195,6 +195,8 @@ install(
   NAMELINK_COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
 )
 
+set(IRODS_TEST_PLUGIN_OPERATIONS_ENABLE OFF CACHE BOOL "Enables testing mechanism for plugin operations.")
+
 foreach(variant IN ITEMS client server)
   add_library(
     irods_lib_core_${variant}
@@ -276,6 +278,14 @@ target_compile_definitions(
   IRODS_ENABLE_SYSLOG
 )
 
+if (IRODS_TEST_PLUGIN_OPERATIONS_ENABLE OR IRODS_ENABLE_ALL_TESTS)
+  target_compile_definitions(
+    irods_lib_core_server
+    PRIVATE
+    IRODS_ENABLE_TEST_PLUGIN_OPERATIONS
+  )
+endif()
+
 install(
   FILES
   "${CMAKE_CURRENT_BINARY_DIR}/include/irods/irods_default_paths.hpp"
@@ -285,8 +295,9 @@ install(
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
   )
 
-install(
-  FILES
+list(
+  APPEND
+  IRODS_LIB_CORE_INSTALL_FILES_LIST
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/alignPointer.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/apiHandler.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/authentication_plugin_framework.hpp"
@@ -316,7 +327,6 @@ install(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_auth_factory.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_auth_manager.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_auth_object.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_generic_auth_object.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_auth_plugin.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_auth_types.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_buffer_encryption.hpp"
@@ -329,6 +339,7 @@ install(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_error.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_exception.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_first_class_object.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_generic_auth_object.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_get_full_path_for_config_file.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_gsi_object.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_hash.hpp"
@@ -403,8 +414,8 @@ install(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/replUtil.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/replica.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/replica_proxy.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rmdirUtil.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rmUtil.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rmdirUtil.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rmtrashUtil.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rods.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rodsClient.h"
@@ -437,6 +448,19 @@ install(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/trimUtil.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/version.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/with_durability.hpp"
+)
+
+if (IRODS_TEST_PLUGIN_OPERATIONS_ENABLE OR IRODS_ENABLE_ALL_TESTS)
+  list(
+    APPEND
+    IRODS_LIB_CORE_INSTALL_FILES_LIST
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/test_plugin_operations.hpp"
+  )
+endif()
+
+install(
+  FILES
+  ${IRODS_LIB_CORE_INSTALL_FILES_LIST}
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/irods"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
 )

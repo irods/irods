@@ -613,8 +613,8 @@ def create_random_resource(resource_name, user):
 def remove_resource(resource_name, user):
     user.assert_icommand(['iadmin', 'rmresc', resource_name])
 
-def add_child_resource(parent_resource_name, child_resource_name, user):
-    user.assert_icommand(['iadmin', 'addchildtoresc', parent_resource_name, child_resource_name])
+def add_child_resource(parent_resource_name, child_resource_name, user, parent_context=''):
+    user.assert_icommand(['iadmin', 'addchildtoresc', parent_resource_name, child_resource_name, parent_context])
 
 def remove_child_resource(parent_resource_name, child_resource_name, user):
     user.assert_icommand(['iadmin', 'rmchildfromresc', parent_resource_name, child_resource_name])
@@ -691,6 +691,13 @@ def get_replica_mtime(session, logical_path, replica_number):
         .format(os.path.dirname(logical_path),
                 os.path.basename(logical_path),
                 str(replica_number))])[0].strip()
+
+
+def set_replica_status(session, logical_path, replica_number, desired_status):
+    session.run_icommand(['iadmin', 'modrepl',
+        'logical_path', logical_path,
+        'replica_number', str(replica_number),
+        'DATA_REPL_STATUS', str(desired_status)])
 
 
 def iterfy(iterable):
