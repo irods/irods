@@ -11,8 +11,11 @@ from . import session
 from ..test.command import assert_command
 from ..configuration import IrodsConfig
 from .. import test
+from .. import paths
 
 class Test_Izonereport(unittest.TestCase):
+
+    plugin_name = IrodsConfig().default_rule_engine_plugin
 
     @classmethod
     def setUpClass(cls):
@@ -87,7 +90,7 @@ class Test_Izonereport(unittest.TestCase):
     def test_resource_json_has_id(self):
         with session.make_session_for_existing_admin() as admin:
             _, stdout, _ = admin.assert_icommand(['izonereport'], 'STDOUT')
-            
+
             zone_info = json.loads(stdout)['zones'][0]
             server_array = zone_info['servers']
             server = None
@@ -115,3 +118,29 @@ class Test_Izonereport(unittest.TestCase):
 
         self.assertIn('coordinating_resources', zone_info.keys())
         self.assertEqual(len(zone_info['coordinating_resources']), 3)
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', "only run for native rule language")
+    def test_zone_report_calculates_checksums_for_all_plugins__issue_6856(self):
+        _, stdout, _ = self.admin.assert_icommand('izonereport', 'STDOUT')
+
+        zone_info = json.loads(stdout)['zones'][0]
+
+        for server in zone_info['servers']:
+            for plugin in server['plugins']:
+                # Skip database plugin which only exists on catalog server when running on consumer server
+                if plugin['type'] == 'database' and test.settings.TOPOLOGY_FROM_RESOURCE_SERVER:
+                    continue
+
+                plugin_name = f'lib{plugin["name"]}.so'
+
+                # Find folder containing plugin file
+                plugin_folder = ""
+                for root, _dirs, files in os.walk(paths.plugins_directory()):
+                    if plugin_name in files:
+                        plugin_folder = root
+                        break
+
+                plugin_path = os.path.join(plugin_folder, plugin_name)
+                expected_plugin_checksum = lib.file_digest(plugin_path, 'sha256', encoding='base64')
+
+                self.assertEqual(plugin['checksum_sha256'], expected_plugin_checksum)
