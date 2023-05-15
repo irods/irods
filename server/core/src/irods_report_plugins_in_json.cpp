@@ -1,6 +1,15 @@
 #include "irods/irods_report_plugins_in_json.hpp"
 
+#include "irods/SHA256Strategy.hpp"
+#include "irods/checksum.h"
+#include "irods/irods_logger.hpp"
+
+#include <fmt/format.h>
+
+#include <cstring>
+
 using json = nlohmann::json;
+using log_api = irods::experimental::log::api;
 
 namespace irods {
 
@@ -26,12 +35,25 @@ namespace irods {
              itr != plugin_list.end();
              ++itr)
         {
-            json plug{
-                {"name", itr->c_str()},
-                {"type", _type_name},
-                {"version", ""},
-                {"checksum_sha256", ""}
-            };
+            json plug{{"name", itr->c_str()}, {"type", _type_name}, {"version", ""}};
+
+            const auto filepath = fmt::format("{}lib{}.so", plugin_home, *itr);
+
+            char checksum[NAME_LEN]{}; // NOLINT(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+            int ret = chksumLocFile(filepath.c_str(), checksum, irods::SHA256_NAME.c_str());
+
+            if (ret < 0) {
+                log_api::error("Failed to calculate checksum for plugin: [{}], status = {}", *itr, ret);
+                plug["checksum_sha256"] = "";
+            }
+            else {
+                constexpr int sha256_prefix_length = 5;
+                // clang-format off
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay, cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                plug["checksum_sha256"] = checksum + sha256_prefix_length;
+                // clang-format on
+            }
 
             _json_array.push_back(plug);
         }
