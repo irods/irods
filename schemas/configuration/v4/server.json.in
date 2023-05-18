@@ -6,9 +6,6 @@
         "configuration_directory": {
             "$ref": "configuration_directory.json"
         },
-        "host_access_control_config": {
-            "$ref": "host_access_control_config.json"
-        },
         "host_system_information": {
             "type": "object",
             "properties": {
@@ -19,11 +16,7 @@
                 "service_account_group_name": {"type": "string"},
                 "uname": {"type": "string"}
             },
-            "required": ["os_distribution_name","os_distribution_version","uname"]
-        },
-        "hostname": {"type": "string"},
-        "hosts_config": {
-            "$ref": "hosts_config.json"
+            "required": ["os_distribution_name", "os_distribution_version", "uname", "hostname"]
         },
         "plugins": {
             "type": "array",
@@ -49,9 +42,7 @@
     },
     "required": [
         "configuration_directory",
-        "host_access_control_config",
         "host_system_information",
-        "hosts_config",
         "plugins",
         "resources",
         "server_config",

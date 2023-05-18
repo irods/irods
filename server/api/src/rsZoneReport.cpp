@@ -85,12 +85,6 @@ irods::error get_server_reports(rsComm_t* _comm, json& _resc_arr)
     _resc_arr = json::array();
 
     std::map< rodsServerHost_t*, int > svr_reported;
-    rodsServerHost_t* icat_host = 0;
-    char* zone_name = getLocalZoneName();
-    int status = getRcatHost(PRIMARY_RCAT, zone_name, &icat_host);
-    if ( status < 0 ) {
-        return ERROR(status, "getRcatHost failed");
-    }
 
     for (irods::resource_manager::iterator itr = resc_mgr.begin();
          itr != resc_mgr.end();
@@ -105,10 +99,8 @@ irods::error get_server_reports(rsComm_t* _comm, json& _resc_arr)
             continue;
         }
 
-        // skip the icat server as that is done separately
-        // also skip null tmp_hosts resources ( coordinating )
-        // skip local host
-        if ( !tmp_host || tmp_host == icat_host || LOCAL_HOST == tmp_host->localFlag ) {
+        // skip null tmp_hosts resources ( coordinating )
+        if (!tmp_host) { // NOLINT(readability-implicit-bool-conversion)
             continue;
         }
 
@@ -208,24 +200,6 @@ irods::error get_coordinating_resources(rsComm_t* _comm, json& _resources)
 
 int _rsZoneReport(rsComm_t* _comm, bytesBuf_t** _bbuf)
 {
-    bytesBuf_t* bbuf = 0;
-    int status = rsServerReport(_comm, &bbuf);
-    if ( status < 0 ) {
-        freeBBuf(bbuf);
-        rodsLog(LOG_ERROR, "_rsZoneReport - rsServerReport failed %d", status);
-        return status;
-    }
-
-    json cat_svr;
-
-    try {
-        cat_svr = json::parse(std::string(static_cast<char*>(bbuf->buf), bbuf->len));
-        freeBBuf(bbuf);
-    }
-    catch (const json::type_error& e) {
-        rodsLog(LOG_ERROR, "_rsZoneReport - json::parse failed [%s]", e.what());
-        return ACTION_FAILED_ERR;
-    }
 
     json coord_resc;
     irods::error ret = get_coordinating_resources( _comm, coord_resc );
@@ -241,11 +215,9 @@ int _rsZoneReport(rsComm_t* _comm, bytesBuf_t** _bbuf)
         return ret.code();
     }
 
-    cat_svr["coordinating_resources"] = coord_resc;
-
     auto zone_obj = json::object();
+    zone_obj["coordinating_resources"] = coord_resc;
     zone_obj["servers"] = svr_arr;
-    zone_obj["icat_server"] = cat_svr;
 
     auto zone_arr = json::array();
     zone_arr.push_back(zone_obj);
