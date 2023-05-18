@@ -94,18 +94,24 @@ namespace
             };
 
             for (const auto& zone : zones) {
-                const auto& icat_server_env = zone.at("icat_server").at("service_account_environment");
+                const nlohmann::json* catalog_server = nullptr;
+                for (const nlohmann::json& server : zone.at("servers")) {
+                    if (server.at("server_config").at("catalog_service_role") == "provider") {
+                        catalog_server = &server;
+                        break;
+                    }
+                }
 
                 // Administrators are not allowed to invoke administrative operations in a remote zone.
                 // Therefore, skip all servers that do not belong to the local zone.
-                if (icat_server_env.at("irods_zone_name").get_ref<const std::string&>() != local_zone_name) {
+                // NOLINTNEXTLINE(readability-implicit-bool-conversion)
+                if (catalog_server && catalog_server->at("service_account_environment")
+                                              .at("irods_zone_name")
+                                              .get_ref<const std::string&>() != local_zone_name)
+                {
                     continue;
                 }
 
-                // Handle the local server first.
-                throw_if_user_is_found(zone.at("icat_server"));
-
-                // Handle other servers.
                 for (const auto& server : zone.at("servers")) {
                     throw_if_user_is_found(server);
                 }
