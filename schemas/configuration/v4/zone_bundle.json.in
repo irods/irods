@@ -10,6 +10,12 @@
             "items": {
                 "type": "object",
                 "properties": {
+                    "coordinating_resources": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "resource.json"
+                        }
+                    },
                     "servers": {
                         "type": "array",
                         "items": {
@@ -17,7 +23,7 @@
                         }
                     }
                 },
-                "required": ["servers"]
+                "required": ["coordinating_resources", "servers"]
             }
         }
     },
