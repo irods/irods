@@ -10,6 +10,7 @@ from .. import lib
 from . import session
 from ..test.command import assert_command
 from ..configuration import IrodsConfig
+from .. import test
 
 class Test_Izonereport(unittest.TestCase):
 
@@ -48,9 +49,9 @@ class Test_Izonereport(unittest.TestCase):
             'comp_resc'
         ]
 
-        icat_server_object = json.loads(stdout)['zones'][0]['icat_server']
-        self.assertIn('coordinating_resources', icat_server_object.keys())
-        coord_array = icat_server_object['coordinating_resources']
+        zone_info = json.loads(stdout)['zones'][0]
+        self.assertIn('coordinating_resources', zone_info.keys())
+        coord_array = zone_info['coordinating_resources']
         coord_names = [n for n in map(lambda r : r['name'], coord_array)]
 
         for n in expected_names:
@@ -86,14 +87,31 @@ class Test_Izonereport(unittest.TestCase):
     def test_resource_json_has_id(self):
         with session.make_session_for_existing_admin() as admin:
             _, stdout, _ = admin.assert_icommand(['izonereport'], 'STDOUT')
-            icat_server_object = json.loads(stdout)['zones'][0]['icat_server']
+            
+            zone_info = json.loads(stdout)['zones'][0]
+            server_array = zone_info['servers']
+            server = None
+            for server in server_array:
+                # If server is a catalog server
+                if server['server_config']['catalog_service_role'] == 'provider':
+                    self.assertIn('resources', server.keys())
+                    self.assertGreaterEqual(len(server['resources']), 1)
+                    for resource in server['resources']:
+                        self.assertIn('id', resource.keys())
 
-            self.assertIn('resources', icat_server_object.keys())
-            self.assertGreaterEqual(len(icat_server_object['resources']), 1)
-            for resource in icat_server_object['resources']:
+            self.assertIn('coordinating_resources', zone_info.keys())
+            self.assertGreaterEqual(len(zone_info['coordinating_resources']), 1)
+            for resource in zone_info['coordinating_resources']:
                 self.assertIn('id', resource.keys())
 
-            self.assertIn('coordinating_resources', icat_server_object.keys())
-            self.assertGreaterEqual(len(icat_server_object['coordinating_resources']), 1)
-            for resource in icat_server_object['coordinating_resources']:
-                self.assertIn('id', resource.keys())
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', "Skip for python rule engine")
+    def test_servers_are_flattened__issue_6857(self):
+        _, stdout, _ = self.admin.assert_icommand('izonereport', 'STDOUT')
+
+        zone_info = json.loads(stdout)['zones'][0]
+        self.assertIn('servers', zone_info.keys())
+        self.assertNotIn('catalog_server', zone_info.keys())
+        self.assertEqual(len(zone_info['servers']), 4 if test.settings.RUN_IN_TOPOLOGY else 1)
+
+        self.assertIn('coordinating_resources', zone_info.keys())
+        self.assertEqual(len(zone_info['coordinating_resources']), 3)

@@ -54,11 +54,14 @@
         "catalog_service_role": {"enum": ["consumer","provider"]},
         "client_api_allowlist_policy": {"enum": ["disabled", "enforce"]},
         "controlled_user_connection_list": {
-            "control_type": {"enum": ["denylist", "allowlist"]},
-            "users": {
-                "type": "array",
-                "items": {"type": "string"},
-                "uniqueItems": true
+            "type": "object",
+            "properties": {
+                "control_type": {"enum": ["denylist", "allowlist"]},
+                "users": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "uniqueItems": true
+                }
             }
         },
         "maximum_connections": {
@@ -182,6 +185,7 @@
         "match_hash_policy",
         "negotiation_key",
         "plugin_configuration",
+        "rule_engine_namespaces",
         "schema_name",
         "schema_validation_base_uri",
         "schema_version",

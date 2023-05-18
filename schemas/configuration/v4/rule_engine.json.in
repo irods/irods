@@ -8,7 +8,8 @@
         "plugin_specific_configuration": {
             "type": "object",
             "properties": {}
-        }
+        },
+        "shared_memory_instance": {"type": "string"}
     },
     "required": [
         "instance_name",
