@@ -3,10 +3,12 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "type": "object",
     "properties": {
+        "comments": {"type": "string"},
         "context_string": {"type": "string"},
         "host": {"type": "string"},
         "free_space": {"type": "string"},
         "id": {"type": "string"},
+        "info": {"type": "string"},
         "name": {"type": "string"},
         "parent_context": {"type": "string"},
         "parent_resource": {"type": "string"},
@@ -15,10 +17,12 @@
         "vault_path": {"type": "string"}
     },
     "required": [
+        "comments",
         "context_string",
         "host",
         "free_space",
         "id",
+        "info",
         "name",
         "parent_context",
         "parent_resource",

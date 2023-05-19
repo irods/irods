@@ -144,3 +144,17 @@ class Test_Izonereport(unittest.TestCase):
                 expected_plugin_checksum = lib.file_digest(plugin_path, 'sha256', encoding='base64')
 
                 self.assertEqual(plugin['checksum_sha256'], expected_plugin_checksum)
+
+    def test_resource_json_has_comments_and_info_fields__issue_3739(self):
+        _, stdout, _ = self.admin.assert_icommand('izonereport', 'STDOUT')
+
+        zone_info = json.loads(stdout)['zones'][0]
+
+        for resource in zone_info['coordinating_resources']:
+            self.assertIn('comments', resource.keys())
+            self.assertIn('info', resource.keys())
+
+        for server in zone_info["servers"]:
+            for resource in server['resources']:
+                self.assertIn('comments', resource.keys())
+                self.assertIn('info', resource.keys())
