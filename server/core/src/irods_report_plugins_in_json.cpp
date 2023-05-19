@@ -167,6 +167,19 @@ namespace irods {
             return PASS(ret);
         }
 
+        std::string property_value;
+        ret = _resc->get_property<std::string>(irods::RESOURCE_COMMENTS, property_value);
+        if (!ret.ok()) {
+            return PASS(ret);
+        }
+        _entry["comments"] = property_value;
+
+        ret = _resc->get_property<std::string>(irods::RESOURCE_INFO, property_value);
+        if (!ret.ok()) {
+            return PASS(ret);
+        }
+        _entry["info"] = property_value;
+
         int status = 0;
         ret = _resc->get_property< int >( irods::RESOURCE_STATUS, status );
         if ( !ret.ok() ) {
