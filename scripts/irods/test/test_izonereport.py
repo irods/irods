@@ -158,3 +158,9 @@ class Test_Izonereport(unittest.TestCase):
             for resource in server['resources']:
                 self.assertIn('comments', resource.keys())
                 self.assertIn('info', resource.keys())
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', "Skip for python rule engine")
+    def test_servers_are_not_duplicated__issue_3682(self):
+        _, stdout, _ = self.admin.assert_icommand('izonereport', 'STDOUT')
+        zone_info = json.loads(stdout)['zones'][0]
+        self.assertEqual(len(zone_info['servers']), 4 if test.settings.RUN_IN_TOPOLOGY else 1)
