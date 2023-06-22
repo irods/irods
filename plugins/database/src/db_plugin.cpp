@@ -13796,15 +13796,16 @@ irods::error db_get_hierarchy_for_resc_op(
 namespace
 {
     // A support function for executing SQL operations.
-    irods::error execute_sql(const std::string_view _sql)
+    irods::error execute_sql(const char* _sql, const char* _function_name)
     {
-        auto ec = cmlExecuteNoAnswerSql(_sql.data(), &icss);
+        auto ec = cmlExecuteNoAnswerSql(_sql, &icss);
         if (CAT_SUCCESS_BUT_WITH_NO_INFO == ec) {
             return CODE(ec);
         }
 
         if (0 != ec) {
             log_db::error("SQL execution error [{}].", ec);
+            _rollback(_function_name);
             return ERROR(ec, "SQL execution error.");
         }
 
@@ -13816,6 +13817,7 @@ namespace
         return SUCCESS();
     } // execute_sql
 
+    // NOLINTNEXTLINE(readability-function-cognitive-complexity)
     irods::error execute_ticket_operation_as_admin(irods::plugin_context& _ctx,
                                                    const char* _op_name,
                                                    const char* _ticket_string,
@@ -13913,27 +13915,45 @@ namespace
         // Modify ticket operation.
         if (std::strcmp(_op_name, "mod") == 0) {
             if (std::strcmp(_arg3, "uses") == 0) {
-                cllBindVars[0] = _arg4;
-                cllBindVars[1] = ticket_id_string.c_str();
-                cllBindVarCount = 2;
+                int i{0};
+                char myTime[TIME_LEN]{}; // NOLINT(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+                getNowStr(myTime);
+                cllBindVars[i++] = _arg4; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+                cllBindVars[i++] = myTime; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+                cllBindVars[i++] = ticket_id_string.c_str();
+                cllBindVarCount = i;
 
-                return execute_sql("update R_TICKET_MAIN set uses_limit = ? where ticket_id = ?");
+                return execute_sql(
+                    "update R_TICKET_MAIN set uses_limit = ?, modify_ts = ? where ticket_id = ?", __func__);
             } // uses
 
             if (std::strcmp(_arg3, "write-file") == 0) {
-                cllBindVars[0] = _arg4;
-                cllBindVars[1] = ticket_id_string.c_str();
-                cllBindVarCount = 2;
+                int i{};
+                char myTime[TIME_LEN]{}; // NOLINT(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+                getNowStr(myTime);
+                cllBindVars[i++] = _arg4; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+                cllBindVars[i++] = myTime; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+                cllBindVars[i++] = ticket_id_string.c_str();
+                cllBindVarCount = i;
 
-                return execute_sql("update R_TICKET_MAIN set write_file_limit = ? where ticket_id = ?");
+                return execute_sql(
+                    "update R_TICKET_MAIN set write_file_limit = ?, modify_ts = ? where ticket_id = ?", __func__);
             } // write-file
 
             if (std::strcmp(_arg3, "write-bytes") == 0) {
-                cllBindVars[0] = _arg4;
-                cllBindVars[1] = ticket_id_string.c_str();
-                cllBindVarCount = 2;
+                int i{};
+                char myTime[TIME_LEN]{}; // NOLINT(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+                getNowStr(myTime);
+                cllBindVars[i++] = _arg4; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+                cllBindVars[i++] = myTime; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+                cllBindVars[i++] = ticket_id_string.c_str();
+                cllBindVarCount = i;
 
-                return execute_sql("update R_TICKET_MAIN set write_byte_limit = ? where ticket_id = ?");
+                return execute_sql(
+                    "update R_TICKET_MAIN set write_byte_limit = ?, modify_ts = ? where ticket_id = ?", __func__);
             } // write-bytes
 
             if (std::strcmp(_arg3, "expire") == 0) {
@@ -13977,11 +13997,18 @@ namespace
                     }
                 }
 
-                cllBindVars[0] = ticket_expiration_string.c_str();
-                cllBindVars[1] = ticket_id_string.c_str();
-                cllBindVarCount = 2;
+                int i{};
+                char myTime[TIME_LEN]{}; // NOLINT(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+                getNowStr(myTime);
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+                cllBindVars[i++] = ticket_expiration_string.c_str();
+                cllBindVars[i++] = myTime; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+                cllBindVars[i++] = ticket_id_string.c_str();
+                cllBindVarCount = i;
 
-                return execute_sql("update R_TICKET_MAIN set ticket_expiry_ts = ? where ticket_id = ?");
+                return execute_sql(
+                    "update R_TICKET_MAIN set ticket_expiry_ts = ?, modify_ts = ? where ticket_id = ?", __func__);
             } // expire
 
             if (std::strcmp(_arg3, "add") == 0) {
@@ -13996,7 +14023,42 @@ namespace
                     cllBindVars[1] = hostIp;
                     cllBindVarCount = 2;
 
-                    return execute_sql("insert into R_TICKET_ALLOWED_HOSTS (ticket_id, host) values (? , ?)");
+                    ec = cmlExecuteNoAnswerSql(
+                        "insert into R_TICKET_ALLOWED_HOSTS (ticket_id, host) values (?, ?)", &icss);
+                    if (ec != 0) {
+                        auto err_msg = fmt::format(
+                            "Failed to add host [{}] to ticket [{}], status [{}]", hostIp, ticket_id_string, ec);
+                        log_sql::error(err_msg);
+                        _rollback(__func__);
+                        return ERROR(ec, std::move(err_msg));
+                    }
+
+                    int i{};
+                    char myTime[TIME_LEN]{}; // NOLINT(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+                    getNowStr(myTime);
+                    cllBindVars[i++] = myTime; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+                    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+                    cllBindVars[i++] = ticket_id_string.c_str();
+                    cllBindVarCount = i;
+
+                    ec = cmlExecuteNoAnswerSql("update R_TICKET_MAIN set modify_ts = ? where ticket_id = ?", &icss);
+                    if (ec != 0) {
+                        auto err_msg = fmt::format(
+                            "Failed to update modify_ts for ticket [{}] while adding host [{}], status [{}]",
+                            ticket_id_string,
+                            hostIp,
+                            ec);
+                        log_sql::error(err_msg);
+                        _rollback(__func__);
+                        return ERROR(ec, std::move(err_msg));
+                    }
+
+                    ec = cmlExecuteNoAnswerSql("commit", &icss);
+                    if (ec < 0) {
+                        return ERROR(ec, "Failed to commit SQL updates.");
+                    }
+
+                    return SUCCESS();
                 } // host
 
                 if (std::strcmp(_arg4, "user") == 0) {
@@ -14011,7 +14073,42 @@ namespace
                     cllBindVars[1] = _arg5;
                     cllBindVarCount = 2;
 
-                    return execute_sql("insert into R_TICKET_ALLOWED_USERS (ticket_id, user_name) values (? , ?)");
+                    ec = cmlExecuteNoAnswerSql(
+                        "insert into R_TICKET_ALLOWED_USERS (ticket_id, user_name) values (?, ?)", &icss);
+                    if (ec != 0) {
+                        auto err_msg = fmt::format(
+                            "Failed to add user [{}] to ticket [{}], status [{}]", _arg5, ticket_id_string, ec);
+                        log_sql::error(err_msg);
+                        _rollback(__func__);
+                        return ERROR(ec, std::move(err_msg));
+                    }
+
+                    int i{};
+                    char myTime[TIME_LEN]{}; // NOLINT(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+                    getNowStr(myTime);
+                    cllBindVars[i++] = myTime; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+                    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+                    cllBindVars[i++] = ticket_id_string.c_str();
+                    cllBindVarCount = i;
+
+                    ec = cmlExecuteNoAnswerSql("update R_TICKET_MAIN set modify_ts = ? where ticket_id = ?", &icss);
+                    if (ec != 0) {
+                        auto err_msg = fmt::format(
+                            "Failed to update modify_ts for ticket [{}] while adding user [{}], status [{}]",
+                            ticket_id_string,
+                            _arg5,
+                            ec);
+                        log_sql::error(err_msg);
+                        _rollback(__func__);
+                        return ERROR(ec, std::move(err_msg));
+                    }
+
+                    ec = cmlExecuteNoAnswerSql("commit", &icss);
+                    if (ec < 0) {
+                        return ERROR(ec, "Failed to commit SQL updates.");
+                    }
+
+                    return SUCCESS();
                 } // user
 
                 if (std::strcmp(_arg4, "group") == 0) {
@@ -14026,7 +14123,42 @@ namespace
                     cllBindVars[1] = _arg5;
                     cllBindVarCount = 2;
 
-                    return execute_sql("insert into R_TICKET_ALLOWED_GROUPS (ticket_id, group_name) values (? , ?)");
+                    ec = cmlExecuteNoAnswerSql(
+                        "insert into R_TICKET_ALLOWED_GROUPS (ticket_id, group_name) values (?, ?)", &icss);
+                    if (ec != 0) {
+                        auto err_msg = fmt::format(
+                            "Failed to add group [{}] to ticket [{}], status [{}]", _arg5, ticket_id_string, ec);
+                        log_sql::error(err_msg);
+                        _rollback(__func__);
+                        return ERROR(ec, std::move(err_msg));
+                    }
+
+                    int i{};
+                    char myTime[TIME_LEN]{}; // NOLINT(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+                    getNowStr(myTime);
+                    cllBindVars[i++] = myTime; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+                    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+                    cllBindVars[i++] = ticket_id_string.c_str();
+                    cllBindVarCount = i;
+
+                    ec = cmlExecuteNoAnswerSql("update R_TICKET_MAIN set modify_ts = ? where ticket_id = ?", &icss);
+                    if (ec != 0) {
+                        auto err_msg = fmt::format(
+                            "Failed to update modify_ts for ticket [{}] while adding group [{}], status [{}]",
+                            ticket_id_string,
+                            _arg5,
+                            ec);
+                        log_sql::error(err_msg);
+                        _rollback(__func__);
+                        return ERROR(ec, std::move(err_msg));
+                    }
+
+                    ec = cmlExecuteNoAnswerSql("commit", &icss);
+                    if (ec < 0) {
+                        return ERROR(ec, "Failed to commit SQL updates.");
+                    }
+
+                    return SUCCESS();
                 } // group
             } // add
             else if (std::strcmp(_arg3, "remove") == 0) {
@@ -14041,7 +14173,42 @@ namespace
                     cllBindVars[1] = hostIp;
                     cllBindVarCount = 2;
 
-                    return execute_sql("delete from R_TICKET_ALLOWED_HOSTS where ticket_id = ? and host = ?");
+                    ec = cmlExecuteNoAnswerSql(
+                        "delete from R_TICKET_ALLOWED_HOSTS where ticket_id = ? and host = ?", &icss);
+                    if (ec != 0) {
+                        auto err_msg = fmt::format(
+                            "Failed to remove host [{}] from ticket [{}], status [{}]", hostIp, ticket_id_string, ec);
+                        log_sql::error(err_msg);
+                        _rollback(__func__);
+                        return ERROR(ec, std::move(err_msg));
+                    }
+
+                    int i{};
+                    char myTime[TIME_LEN]{}; // NOLINT(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+                    getNowStr(myTime);
+                    cllBindVars[i++] = myTime; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+                    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+                    cllBindVars[i++] = ticket_id_string.c_str();
+                    cllBindVarCount = i;
+
+                    ec = cmlExecuteNoAnswerSql("update R_TICKET_MAIN set modify_ts = ? where ticket_id = ?", &icss);
+                    if (ec != 0) {
+                        auto err_msg = fmt::format(
+                            "Failed to update modify_ts for ticket [{}] while removing host [{}], status [{}]",
+                            ticket_id_string,
+                            hostIp,
+                            ec);
+                        log_sql::error(err_msg);
+                        _rollback(__func__);
+                        return ERROR(ec, std::move(err_msg));
+                    }
+
+                    ec = cmlExecuteNoAnswerSql("commit", &icss);
+                    if (ec < 0) {
+                        return ERROR(ec, "Failed to commit SQL updates.");
+                    }
+
+                    return SUCCESS();
                 } // host
 
                 if (std::strcmp(_arg4, "user") == 0) {
@@ -14056,7 +14223,42 @@ namespace
                     cllBindVars[1] = _arg5;
                     cllBindVarCount = 2;
 
-                    return execute_sql("delete from R_TICKET_ALLOWED_USERS where ticket_id = ? and user_name = ?");
+                    ec = cmlExecuteNoAnswerSql(
+                        "delete from R_TICKET_ALLOWED_USERS where ticket_id = ? and user_name = ?", &icss);
+                    if (ec != 0) {
+                        auto err_msg = fmt::format(
+                            "Failed to remove user [{}] from ticket [{}], status [{}]", _arg5, ticket_id_string, ec);
+                        log_sql::error(err_msg);
+                        _rollback(__func__);
+                        return ERROR(ec, std::move(err_msg));
+                    }
+
+                    int i{};
+                    char myTime[TIME_LEN]{}; // NOLINT(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+                    getNowStr(myTime);
+                    cllBindVars[i++] = myTime; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+                    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+                    cllBindVars[i++] = ticket_id_string.c_str();
+                    cllBindVarCount = i;
+
+                    ec = cmlExecuteNoAnswerSql("update R_TICKET_MAIN set modify_ts = ? where ticket_id = ?", &icss);
+                    if (ec != 0) {
+                        auto err_msg = fmt::format(
+                            "Failed to update modify_ts for ticket [{}] while removing user [{}], status [{}]",
+                            ticket_id_string,
+                            _arg5,
+                            ec);
+                        log_sql::error(err_msg);
+                        _rollback(__func__);
+                        return ERROR(ec, std::move(err_msg));
+                    }
+
+                    ec = cmlExecuteNoAnswerSql("commit", &icss);
+                    if (ec < 0) {
+                        return ERROR(ec, "Failed to commit SQL updates.");
+                    }
+
+                    return SUCCESS();
                 } // user
 
                 if (std::strcmp(_arg4, "group") == 0) {
@@ -14071,7 +14273,42 @@ namespace
                     cllBindVars[1] = _arg5;
                     cllBindVarCount = 2;
 
-                    return execute_sql("delete from R_TICKET_ALLOWED_GROUPS where ticket_id = ? and group_name = ?");
+                    ec = cmlExecuteNoAnswerSql(
+                        "delete from R_TICKET_ALLOWED_GROUPS where ticket_id = ? and group_name = ?", &icss);
+                    if (ec != 0) {
+                        auto err_msg = fmt::format(
+                            "Failed to remove group [{}] from ticket [{}], status [{}]", _arg5, ticket_id_string, ec);
+                        log_sql::error(err_msg);
+                        _rollback(__func__);
+                        return ERROR(ec, std::move(err_msg));
+                    }
+
+                    int i{};
+                    char myTime[TIME_LEN]{}; // NOLINT(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+                    getNowStr(myTime);
+                    cllBindVars[i++] = myTime; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+                    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+                    cllBindVars[i++] = ticket_id_string.c_str();
+                    cllBindVarCount = i;
+
+                    ec = cmlExecuteNoAnswerSql("update R_TICKET_MAIN set modify_ts = ? where ticket_id = ?", &icss);
+                    if (ec != 0) {
+                        auto err_msg = fmt::format(
+                            "Failed to update modify_ts for ticket [{}] while removing group [{}], status [{}]",
+                            ticket_id_string,
+                            _arg5,
+                            ec);
+                        log_sql::error(err_msg);
+                        _rollback(__func__);
+                        return ERROR(ec, std::move(err_msg));
+                    }
+
+                    ec = cmlExecuteNoAnswerSql("commit", &icss);
+                    if (ec < 0) {
+                        return ERROR(ec, "Failed to commit SQL updates.");
+                    }
+
+                    return SUCCESS();
                 } // group
             } // remove
         } // modify ticket operation
@@ -14080,6 +14317,7 @@ namespace
     } // execute_ticket_operation_as_admin
 } // anonymous namespace
 
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 irods::error db_mod_ticket_op(
     irods::plugin_context& _ctx,
     const char*            _op_name,
@@ -14124,8 +14362,6 @@ irods::error db_mod_ticket_op(
     char group2IdStr[NAME_LEN];
     char ticketIdStr[NAME_LEN];
     char ticketType[NAME_LEN];
-    int i;
-    char myTime[50];
 
     /* session ticket */
     if ( strcmp( _op_name, "session" ) == 0 ) {
@@ -14234,8 +14470,10 @@ irods::error db_mod_ticket_op(
         else {
             snprintf( ticketType, sizeof( ticketType ), "%s", "read" );
         }
+
+        int i{};
+        char myTime[TIME_LEN]{}; // NOLINT(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
         getNowStr( myTime );
-        i = 0;
         cllBindVars[i++] = seqNumStr;
         cllBindVars[i++] = _ticket_string;
         cllBindVars[i++] = ticketType;
@@ -14329,7 +14567,7 @@ irods::error db_mod_ticket_op(
 
     // delete
     if ( strcmp( _op_name, "delete" ) == 0 ) {
-        i = 0;
+        int i{};
         cllBindVars[i++] = ticketIdStr;
         cllBindVars[i++] = userIdStr;
         cllBindVarCount = i;
@@ -14388,45 +14626,59 @@ irods::error db_mod_ticket_op(
     // modify
     if ( strcmp( _op_name, "mod" ) == 0 ) {
         if (strcmp(_arg3, "uses") == 0) {
-            i = 0;
-            cllBindVars[i++] = _arg4;
-            cllBindVars[i++] = ticketIdStr;
-            cllBindVars[i++] = userIdStr;
+            int i{};
+            char myTime[TIME_LEN]{}; // NOLINT(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+            getNowStr(myTime);
+            cllBindVars[i++] = _arg4; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[i++] = myTime; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[i++] = ticketIdStr; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[i++] = userIdStr; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
             cllBindVarCount = i;
 
             if ( logSQL != 0 ) {
                 log_sql::debug("chlModTicket SQL 7");
             }
 
-            return execute_sql("update R_TICKET_MAIN set uses_limit=? where ticket_id = ? and user_id = ?");
+            return execute_sql(
+                "update R_TICKET_MAIN set uses_limit = ?, modify_ts = ? where ticket_id = ? and user_id = ?", __func__);
         } // uses
 
         if ( strcmp(_arg3, "write-file") == 0 ) {
-            i = 0;
-            cllBindVars[i++] = _arg4;
-            cllBindVars[i++] = ticketIdStr;
-            cllBindVars[i++] = userIdStr;
+            int i{};
+            char myTime[TIME_LEN]{}; // NOLINT(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+            getNowStr(myTime);
+            cllBindVars[i++] = _arg4; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[i++] = myTime; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[i++] = ticketIdStr; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[i++] = userIdStr; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
             cllBindVarCount = i;
 
             if ( logSQL != 0 ) {
                 log_sql::debug("chlModTicket SQL 8");
             }
 
-            return execute_sql("update R_TICKET_MAIN set write_file_limit=? where ticket_id = ? and user_id = ?");
+            return execute_sql(
+                "update R_TICKET_MAIN set write_file_limit = ?, modify_ts = ? where ticket_id = ? and user_id = ?",
+                __func__);
         } // write-file
 
         if (strcmp(_arg3, "write-bytes") == 0) {
-            i = 0;
-            cllBindVars[i++] = _arg4;
-            cllBindVars[i++] = ticketIdStr;
-            cllBindVars[i++] = userIdStr;
+            int i{};
+            char myTime[TIME_LEN]{}; // NOLINT(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+            getNowStr(myTime);
+            cllBindVars[i++] = _arg4; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[i++] = myTime; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[i++] = ticketIdStr; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[i++] = userIdStr; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
             cllBindVarCount = i;
 
             if ( logSQL != 0 ) {
                 log_sql::debug("chlModTicket SQL 9");
             }
 
-            return execute_sql("update R_TICKET_MAIN set write_byte_limit=? where ticket_id = ? and user_id = ?");
+            return execute_sql(
+                "update R_TICKET_MAIN set write_byte_limit = ?, modify_ts = ? where ticket_id = ? and user_id = ?",
+                __func__);
         } // write-bytes
 
         if (strcmp(_arg3, "expire") == 0 ) {
@@ -14470,17 +14722,23 @@ irods::error db_mod_ticket_op(
                 }
             }
 
-            i = 0;
+            int i{};
+            char myTime[TIME_LEN]{}; // NOLINT(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+            getNowStr(myTime);
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
             cllBindVars[i++] = ticket_expiration_string.c_str();
-            cllBindVars[i++] = ticketIdStr;
-            cllBindVars[i++] = userIdStr;
+            cllBindVars[i++] = myTime; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[i++] = ticketIdStr; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[i++] = userIdStr; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
             cllBindVarCount = i;
 
             if (logSQL != 0) {
                 log_sql::debug("chlModTicket SQL 10");
             }
 
-            return execute_sql("update R_TICKET_MAIN set ticket_expiry_ts=? where ticket_id = ? and user_id = ?");
+            return execute_sql(
+                "update R_TICKET_MAIN set ticket_expiry_ts = ?, modify_ts = ? where ticket_id = ? and user_id = ?",
+                __func__);
         } // expire
 
         if ( strcmp( _arg3, "add" ) == 0 ) {
@@ -14490,7 +14748,7 @@ irods::error db_mod_ticket_op(
                     return ERROR( CAT_HOSTNAME_INVALID, _arg5 );
                 }
 
-                i = 0;
+                int i{};
                 cllBindVars[i++] = ticketIdStr;
                 cllBindVars[i++] = hostIp;
                 cllBindVarCount = i;
@@ -14499,7 +14757,41 @@ irods::error db_mod_ticket_op(
                     log_sql::debug("chlModTicket SQL 11");
                 }
 
-                return execute_sql("insert into R_TICKET_ALLOWED_HOSTS (ticket_id, host) values (? , ?)");
+                int ec{};
+                ec = cmlExecuteNoAnswerSql("insert into R_TICKET_ALLOWED_HOSTS (ticket_id, host) values (?, ?)", &icss);
+                if (ec != 0) {
+                    auto err_msg =
+                        fmt::format("Failed to add host [{}] to ticket [{}], status [{}]", hostIp, ticketIdStr, ec);
+                    log_sql::error(err_msg);
+                    _rollback(__func__);
+                    return ERROR(ec, std::move(err_msg));
+                }
+
+                char myTime[TIME_LEN]{}; // NOLINT(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+                getNowStr(myTime);
+                i = 0;
+                cllBindVars[i++] = myTime; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+                cllBindVars[i++] = ticketIdStr; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+                cllBindVarCount = i;
+
+                ec = cmlExecuteNoAnswerSql("update R_TICKET_MAIN set modify_ts = ? where ticket_id = ?", &icss);
+                if (ec != 0) {
+                    auto err_msg =
+                        fmt::format("Failed to update modify_ts for ticket [{}] while adding host [{}], status [{}]",
+                                    ticketIdStr,
+                                    hostIp,
+                                    ec);
+                    log_sql::error(err_msg);
+                    _rollback(__func__);
+                    return ERROR(ec, std::move(err_msg));
+                }
+
+                ec = cmlExecuteNoAnswerSql("commit", &icss);
+                if (ec < 0) {
+                    return ERROR(ec, "Failed to commit SQL updates.");
+                }
+
+                return SUCCESS();
             } // host
 
             if ( strcmp( _arg4, "user" ) == 0 ) {
@@ -14508,7 +14800,7 @@ irods::error db_mod_ticket_op(
                     return ERROR( status, "icatGetTicketUserId failed" );
                 }
 
-                i = 0;
+                int i{};
                 cllBindVars[i++] = ticketIdStr;
                 cllBindVars[i++] = _arg5;
                 cllBindVarCount = i;
@@ -14517,7 +14809,42 @@ irods::error db_mod_ticket_op(
                     log_sql::debug("chlModTicket SQL 12");
                 }
 
-                return execute_sql("insert into R_TICKET_ALLOWED_USERS (ticket_id, user_name) values (? , ?)");
+                int ec{};
+                ec = cmlExecuteNoAnswerSql(
+                    "insert into R_TICKET_ALLOWED_USERS (ticket_id, user_name) values (?, ?)", &icss);
+                if (ec != 0) {
+                    auto err_msg =
+                        fmt::format("Failed to add user [{}] to ticket [{}], status [{}]", _arg5, ticketIdStr, ec);
+                    log_sql::error(err_msg);
+                    _rollback(__func__);
+                    return ERROR(ec, std::move(err_msg));
+                }
+
+                char myTime[TIME_LEN]{}; // NOLINT(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+                getNowStr(myTime);
+                i = 0;
+                cllBindVars[i++] = myTime; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+                cllBindVars[i++] = ticketIdStr; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+                cllBindVarCount = i;
+
+                ec = cmlExecuteNoAnswerSql("update R_TICKET_MAIN set modify_ts = ? where ticket_id = ?", &icss);
+                if (ec != 0) {
+                    auto err_msg =
+                        fmt::format("Failed to update modify_ts for ticket [{}] while adding user [{}], status [{}]",
+                                    ticketIdStr,
+                                    _arg5,
+                                    ec);
+                    log_sql::error(err_msg);
+                    _rollback(__func__);
+                    return ERROR(ec, std::move(err_msg));
+                }
+
+                ec = cmlExecuteNoAnswerSql("commit", &icss);
+                if (ec < 0) {
+                    return ERROR(ec, "Failed to commit SQL updates.");
+                }
+
+                return SUCCESS();
             } // user
 
             if ( strcmp( _arg4, "group" ) == 0 ) {
@@ -14526,7 +14853,7 @@ irods::error db_mod_ticket_op(
                     return ERROR( status, "icatGetTicketGroupId failed" );
                 }
 
-                i = 0;
+                int i{};
                 cllBindVars[i++] = ticketIdStr;
                 cllBindVars[i++] = _arg5;
                 cllBindVarCount = i;
@@ -14535,7 +14862,42 @@ irods::error db_mod_ticket_op(
                     log_sql::debug("chlModTicket SQL 13");
                 }
 
-                return execute_sql("insert into R_TICKET_ALLOWED_GROUPS (ticket_id, group_name) values (? , ?)");
+                int ec{};
+                ec = cmlExecuteNoAnswerSql(
+                    "insert into R_TICKET_ALLOWED_GROUPS (ticket_id, group_name) values (?, ?)", &icss);
+                if (ec != 0) {
+                    auto err_msg =
+                        fmt::format("Failed to add group [{}] to ticket [{}], status [{}]", _arg5, ticketIdStr, ec);
+                    log_sql::error(err_msg);
+                    _rollback(__func__);
+                    return ERROR(ec, std::move(err_msg));
+                }
+
+                char myTime[TIME_LEN]{}; // NOLINT(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+                getNowStr(myTime);
+                i = 0;
+                cllBindVars[i++] = myTime; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+                cllBindVars[i++] = ticketIdStr; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+                cllBindVarCount = i;
+
+                ec = cmlExecuteNoAnswerSql("update R_TICKET_MAIN set modify_ts = ? where ticket_id = ?", &icss);
+                if (ec != 0) {
+                    auto err_msg =
+                        fmt::format("Failed to update modify_ts for ticket [{}] while adding group [{}], status [{}]",
+                                    ticketIdStr,
+                                    _arg5,
+                                    ec);
+                    log_sql::error(err_msg);
+                    _rollback(__func__);
+                    return ERROR(ec, std::move(err_msg));
+                }
+
+                ec = cmlExecuteNoAnswerSql("commit", &icss);
+                if (ec < 0) {
+                    return ERROR(ec, "Failed to commit SQL updates.");
+                }
+
+                return SUCCESS();
             } // group
         } // add
         else if ( strcmp( _arg3, "remove" ) == 0 ) {
@@ -14545,7 +14907,7 @@ irods::error db_mod_ticket_op(
                     return ERROR( CAT_HOSTNAME_INVALID, "host name null" );
                 }
 
-                i = 0;
+                int i{};
                 cllBindVars[i++] = ticketIdStr;
                 cllBindVars[i++] = hostIp;
                 cllBindVarCount = i;
@@ -14554,7 +14916,41 @@ irods::error db_mod_ticket_op(
                     log_sql::debug("chlModTicket SQL 14");
                 }
 
-                return execute_sql("delete from R_TICKET_ALLOWED_HOSTS where ticket_id=? and host=?");
+                int ec{};
+                ec = cmlExecuteNoAnswerSql("delete from R_TICKET_ALLOWED_HOSTS where ticket_id=? and host=?", &icss);
+                if (ec != 0) {
+                    auto err_msg = fmt::format(
+                        "Failed to remove host [{}] from ticket [{}], status [{}]", hostIp, ticketIdStr, ec);
+                    log_sql::error(err_msg);
+                    _rollback(__func__);
+                    return ERROR(ec, std::move(err_msg));
+                }
+
+                char myTime[TIME_LEN]{}; // NOLINT(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+                getNowStr(myTime);
+                i = 0;
+                cllBindVars[i++] = myTime; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+                cllBindVars[i++] = ticketIdStr; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+                cllBindVarCount = i;
+
+                ec = cmlExecuteNoAnswerSql("update R_TICKET_MAIN set modify_ts = ? where ticket_id = ?", &icss);
+                if (ec != 0) {
+                    auto err_msg =
+                        fmt::format("Failed to update modify_ts for ticket [{}] while removing host [{}], status [{}]",
+                                    ticketIdStr,
+                                    hostIp,
+                                    ec);
+                    log_sql::error(err_msg);
+                    _rollback(__func__);
+                    return ERROR(ec, std::move(err_msg));
+                }
+
+                ec = cmlExecuteNoAnswerSql("commit", &icss);
+                if (ec < 0) {
+                    return ERROR(ec, "Failed to commit SQL updates.");
+                }
+
+                return SUCCESS();
             } // host
 
             if ( strcmp( _arg4, "user" ) == 0 ) {
@@ -14563,7 +14959,7 @@ irods::error db_mod_ticket_op(
                     return ERROR( status, "icatGetTicketUserId failed" );
                 }
 
-                i = 0;
+                int i{};
                 cllBindVars[i++] = ticketIdStr;
                 cllBindVars[i++] = _arg5;
                 cllBindVarCount = i;
@@ -14572,7 +14968,42 @@ irods::error db_mod_ticket_op(
                     log_sql::debug("chlModTicket SQL 15");
                 }
 
-                return execute_sql("delete from R_TICKET_ALLOWED_USERS where ticket_id=? and user_name=?");
+                int ec{};
+                ec = cmlExecuteNoAnswerSql(
+                    "delete from R_TICKET_ALLOWED_USERS where ticket_id=? and user_name=?", &icss);
+                if (ec != 0) {
+                    auto err_msg =
+                        fmt::format("Failed to remove user [{}] from ticket [{}], status [{}]", _arg5, ticketIdStr, ec);
+                    log_sql::error(err_msg);
+                    _rollback(__func__);
+                    return ERROR(ec, std::move(err_msg));
+                }
+
+                char myTime[TIME_LEN]{}; // NOLINT(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+                getNowStr(myTime);
+                i = 0;
+                cllBindVars[i++] = myTime; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+                cllBindVars[i++] = ticketIdStr; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+                cllBindVarCount = i;
+
+                ec = cmlExecuteNoAnswerSql("update R_TICKET_MAIN set modify_ts = ? where ticket_id = ?", &icss);
+                if (ec != 0) {
+                    auto err_msg =
+                        fmt::format("Failed to update modify_ts for ticket [{}] while removing user [{}], status [{}]",
+                                    ticketIdStr,
+                                    _arg5,
+                                    ec);
+                    log_sql::error(err_msg);
+                    _rollback(__func__);
+                    return ERROR(ec, std::move(err_msg));
+                }
+
+                ec = cmlExecuteNoAnswerSql("commit", &icss);
+                if (ec < 0) {
+                    return ERROR(ec, "Failed to commit SQL updates.");
+                }
+
+                return SUCCESS();
             } // user
 
             if ( strcmp( _arg4, "group" ) == 0 ) {
@@ -14581,7 +15012,7 @@ irods::error db_mod_ticket_op(
                     return ERROR( status, "icatGetTicketGroupId failed" );
                 }
 
-                i = 0;
+                int i{};
                 cllBindVars[i++] = ticketIdStr;
                 cllBindVars[i++] = _arg5;
                 cllBindVarCount = i;
@@ -14590,7 +15021,42 @@ irods::error db_mod_ticket_op(
                     log_sql::debug("chlModTicket SQL 16");
                 }
 
-                return execute_sql("delete from R_TICKET_ALLOWED_GROUPS where ticket_id=? and group_name=?");
+                int ec{};
+                ec = cmlExecuteNoAnswerSql(
+                    "delete from R_TICKET_ALLOWED_GROUPS where ticket_id=? and group_name=?", &icss);
+                if (ec != 0) {
+                    auto err_msg = fmt::format(
+                        "Failed to remove group [{}] from ticket [{}], status [{}]", _arg5, ticketIdStr, ec);
+                    log_sql::error(err_msg);
+                    _rollback(__func__);
+                    return ERROR(ec, std::move(err_msg));
+                }
+
+                char myTime[TIME_LEN]{}; // NOLINT(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+                getNowStr(myTime);
+                i = 0;
+                cllBindVars[i++] = myTime; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+                cllBindVars[i++] = ticketIdStr; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+                cllBindVarCount = i;
+
+                ec = cmlExecuteNoAnswerSql("update R_TICKET_MAIN set modify_ts = ? where ticket_id = ?", &icss);
+                if (ec != 0) {
+                    auto err_msg =
+                        fmt::format("Failed to update modify_ts for ticket [{}] while removing group [{}], status [{}]",
+                                    ticketIdStr,
+                                    _arg5,
+                                    ec);
+                    log_sql::error(err_msg);
+                    _rollback(__func__);
+                    return ERROR(ec, std::move(err_msg));
+                }
+
+                ec = cmlExecuteNoAnswerSql("commit", &icss);
+                if (ec < 0) {
+                    return ERROR(ec, "Failed to commit SQL updates.");
+                }
+
+                return SUCCESS();
             } // group
         } // remove
     } // modify operation
