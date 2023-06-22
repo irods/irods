@@ -3,6 +3,7 @@ import re
 import sys
 import socket
 import tempfile
+import time
 
 if sys.version_info < (2, 7):
     import unittest2 as unittest
@@ -828,7 +829,7 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
             self.admin.run_icommand(['iticket', 'delete', home_collection_ticket_name])
             self.admin.run_icommand(['iticket', 'delete', home_data_object_ticket_name])
 
-def test_ticket_create_with_relative_paths_non_admin__issue_7103(self):
+    def test_ticket_create_with_relative_paths_non_admin__issue_7103(self):
         collection_1, collection_1_ticket_name = 'user_issue_7103_collection_1', 'user_coll_1_ticket'
         collection_2, collection_2_ticket_name = 'user_issue_7103_collection_2', 'user_coll_2_ticket'
         data_object_1, data_object_1_ticket_name = 'user_issue_7103_data_object_1', 'user_object_1_ticket'
@@ -888,3 +889,246 @@ def test_ticket_create_with_relative_paths_non_admin__issue_7103(self):
             self.user.run_icommand(['iticket', 'delete', data_object_2_ticket_name])
             self.user.run_icommand(['iticket', 'delete', home_collection_ticket_name])
             self.user.run_icommand(['iticket', 'delete', home_data_object_ticket_name])
+
+    def test_ticket_mtime_is_updated_when_ticket_properties_are_modified_by_admin__issue_7125(self):
+        ticket_string = "issue_7125_ticket_admin"
+        file_name = "issue_7125_file_admin"
+        self.admin.assert_icommand(['itouch', file_name])
+
+        self.admin.assert_icommand(['iticket', 'create', 'write', file_name, ticket_string])
+
+        modify_ts, original_create_ts = get_modification_and_creation_time(self, ticket_string)
+        self.assertEqual(modify_ts, original_create_ts)
+
+        # Modify ticket usage amount
+        time.sleep(1) # Must sleep between modifications to ensure modifications do not occur in the same second
+        self.admin.assert_icommand(['iticket', 'mod', ticket_string, 'uses', '10'])
+        previous_ts = modify_ts
+        modify_ts, create_ts = get_modification_and_creation_time(self, ticket_string)
+        self.assertEqual(original_create_ts, create_ts) # Check that creation time is never updated
+        self.assertGreater(modify_ts, create_ts) # Check that modification time is larger than the creation time
+        self.assertGreater(modify_ts, previous_ts) # Check that the modification time is bigger than the previous modification time
+
+        # Modify ticket expiration
+        time.sleep(1)
+        self.admin.assert_icommand(['iticket', 'mod', ticket_string, 'expire', '2104-05-07.17:22:00'])
+        previous_ts = modify_ts
+        modify_ts, create_ts = get_modification_and_creation_time(self, ticket_string)
+        self.assertEqual(original_create_ts, create_ts)
+        self.assertGreater(modify_ts, create_ts)
+        self.assertGreater(modify_ts, previous_ts)
+
+        # Add ticket write-file amount restriction
+        time.sleep(1)
+        self.admin.assert_icommand(['iticket', 'mod', ticket_string, 'write-file', '10'])
+        previous_ts = modify_ts
+        modify_ts, create_ts = get_modification_and_creation_time(self, ticket_string)
+        self.assertEqual(original_create_ts, create_ts)
+        self.assertGreater(modify_ts, create_ts)
+        self.assertGreater(modify_ts, previous_ts)
+
+        # Remove ticket write-file restriction
+        time.sleep(1)
+        self.admin.assert_icommand(['iticket', 'mod', ticket_string, 'write-file', '0'])
+        previous_ts = modify_ts
+        modify_ts, create_ts = get_modification_and_creation_time(self, ticket_string)
+        self.assertEqual(original_create_ts, create_ts)
+        self.assertGreater(modify_ts, create_ts)
+        self.assertGreater(modify_ts, previous_ts)
+
+        # Add ticket write-bytes amount restriction
+        time.sleep(1)
+        self.admin.assert_icommand(['iticket', 'mod', ticket_string, 'write-bytes', '10'])
+        previous_ts = modify_ts
+        modify_ts, create_ts = get_modification_and_creation_time(self, ticket_string)
+        self.assertEqual(original_create_ts, create_ts)
+        self.assertGreater(modify_ts, create_ts)
+        self.assertGreater(modify_ts, previous_ts)
+
+        # Remove ticket write-bytes restriction
+        time.sleep(1)
+        self.admin.assert_icommand(['iticket', 'mod', ticket_string, 'write-bytes', '0'])
+        previous_ts = modify_ts
+        modify_ts, create_ts = get_modification_and_creation_time(self, ticket_string)
+        self.assertEqual(original_create_ts, create_ts)
+        self.assertGreater(modify_ts, create_ts)
+        self.assertGreater(modify_ts, previous_ts)
+
+        # Add ticket host restriction
+        time.sleep(1)
+        self.admin.assert_icommand(['iticket', 'mod', ticket_string, 'add', 'host', lib.get_hostname()])
+        previous_ts = modify_ts
+        modify_ts, create_ts = get_modification_and_creation_time(self, ticket_string)
+        self.assertEqual(original_create_ts, create_ts)
+        self.assertGreater(modify_ts, create_ts)
+        self.assertGreater(modify_ts, previous_ts)
+
+        # Remove ticket host restriction
+        time.sleep(1)
+        self.admin.assert_icommand(['iticket', 'mod', ticket_string, 'remove', 'host', lib.get_hostname()])
+        previous_ts = modify_ts
+        modify_ts, create_ts = get_modification_and_creation_time(self, ticket_string)
+        self.assertEqual(original_create_ts, create_ts)
+        self.assertGreater(modify_ts, create_ts)
+        self.assertGreater(modify_ts, previous_ts)
+
+        # Add ticket user restriction
+        time.sleep(1)
+        self.admin.assert_icommand(['iticket', 'mod', ticket_string, 'add', 'user', self.admin.username])
+        previous_ts = modify_ts
+        modify_ts, create_ts = get_modification_and_creation_time(self, ticket_string)
+        self.assertEqual(original_create_ts, create_ts)
+        self.assertGreater(modify_ts, create_ts)
+        self.assertGreater(modify_ts, previous_ts)
+
+        # Remove ticket user restriction
+        time.sleep(1)
+        self.admin.assert_icommand(['iticket', 'mod', ticket_string, 'remove', 'user', self.admin.username])
+        previous_ts = modify_ts
+        modify_ts, create_ts = get_modification_and_creation_time(self, ticket_string)
+        self.assertEqual(original_create_ts, create_ts)
+        self.assertGreater(modify_ts, create_ts)
+        self.assertGreater(modify_ts, previous_ts)
+
+        # Add ticket group restriction
+        time.sleep(1)
+        self.admin.assert_icommand(['iticket', 'mod', ticket_string, 'add', 'group', 'public'])
+        previous_ts = modify_ts
+        modify_ts, create_ts = get_modification_and_creation_time(self, ticket_string)
+        self.assertGreater(modify_ts, previous_ts)
+
+        # Remove ticket group restriction
+        time.sleep(1)
+        self.admin.assert_icommand(['iticket', 'mod', ticket_string, 'remove', 'group', 'public'])
+        previous_ts = modify_ts
+        modify_ts, create_ts = get_modification_and_creation_time(self, ticket_string)
+        self.assertEqual(original_create_ts, create_ts)
+        self.assertGreater(modify_ts, create_ts)
+        self.assertGreater(modify_ts, previous_ts)
+
+    def test_ticket_mtime_is_updated_when_ticket_properties_are_modified_by_non_admins__issue_7125(self):
+        ticket_string = "issue_7125_ticket_non_admin"
+        file_name = "issue_7125_file_non_admin"
+        self.user.assert_icommand(['itouch', file_name])
+
+        self.user.assert_icommand(['iticket', 'create', 'write', file_name, ticket_string])
+
+        modify_ts, original_create_ts = get_modification_and_creation_time(self, ticket_string)
+        self.assertEqual(modify_ts, original_create_ts)
+
+        # Modify ticket usage amount
+        time.sleep(1) # Must sleep between modifications to ensure modifications do not occur in the same second
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'uses', '10'])
+        previous_ts = modify_ts
+        modify_ts, create_ts = get_modification_and_creation_time(self, ticket_string)
+        self.assertEqual(original_create_ts, create_ts) # Check that creation time is never updated
+        self.assertGreater(modify_ts, create_ts) # Check that modification time is larger than the creation time
+        self.assertGreater(modify_ts, previous_ts) # Check that the modification time is bigger than the previous modification time
+
+        # Modify ticket expiration
+        time.sleep(1)
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'expire', '2104-05-07.17:22:00'])
+        previous_ts = modify_ts
+        modify_ts, create_ts = get_modification_and_creation_time(self, ticket_string)
+        self.assertEqual(original_create_ts, create_ts)
+        self.assertGreater(modify_ts, create_ts)
+        self.assertGreater(modify_ts, previous_ts)
+
+        # Add ticket write-file amount restriction
+        time.sleep(1)
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'write-file', '10'])
+        previous_ts = modify_ts
+        modify_ts, create_ts = get_modification_and_creation_time(self, ticket_string)
+        self.assertEqual(original_create_ts, create_ts)
+        self.assertGreater(modify_ts, create_ts)
+        self.assertGreater(modify_ts, previous_ts)
+
+        # Remove ticket write-file restriction
+        time.sleep(1)
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'write-file', '0'])
+        previous_ts = modify_ts
+        modify_ts, create_ts = get_modification_and_creation_time(self, ticket_string)
+        self.assertEqual(original_create_ts, create_ts)
+        self.assertGreater(modify_ts, create_ts)
+        self.assertGreater(modify_ts, previous_ts)
+
+        # Add ticket write-bytes amount restriction
+        time.sleep(1)
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'write-bytes', '10'])
+        previous_ts = modify_ts
+        modify_ts, create_ts = get_modification_and_creation_time(self, ticket_string)
+        self.assertEqual(original_create_ts, create_ts)
+        self.assertGreater(modify_ts, create_ts)
+        self.assertGreater(modify_ts, previous_ts)
+
+        # Remove ticket write-bytes restriction
+        time.sleep(1)
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'write-bytes', '0'])
+        previous_ts = modify_ts
+        modify_ts, create_ts = get_modification_and_creation_time(self, ticket_string)
+        self.assertEqual(original_create_ts, create_ts)
+        self.assertGreater(modify_ts, create_ts)
+        self.assertGreater(modify_ts, previous_ts)
+
+        # Add ticket host restriction
+        time.sleep(1)
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'add', 'host', lib.get_hostname()])
+        previous_ts = modify_ts
+        modify_ts, create_ts = get_modification_and_creation_time(self, ticket_string)
+        self.assertEqual(original_create_ts, create_ts)
+        self.assertGreater(modify_ts, create_ts)
+        self.assertGreater(modify_ts, previous_ts)
+
+        # Remove ticket host restriction
+        time.sleep(1)
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'remove', 'host', lib.get_hostname()])
+        previous_ts = modify_ts
+        modify_ts, create_ts = get_modification_and_creation_time(self, ticket_string)
+        self.assertEqual(original_create_ts, create_ts)
+        self.assertGreater(modify_ts, create_ts)
+        self.assertGreater(modify_ts, previous_ts)
+
+        # Add ticket user restriction
+        time.sleep(1)
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'add', 'user', self.user.username])
+        previous_ts = modify_ts
+        modify_ts, create_ts = get_modification_and_creation_time(self, ticket_string)
+        self.assertEqual(original_create_ts, create_ts)
+        self.assertGreater(modify_ts, create_ts)
+        self.assertGreater(modify_ts, previous_ts)
+
+        # Remove ticket user restriction
+        time.sleep(1)
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'remove', 'user', self.user.username])
+        previous_ts = modify_ts
+        modify_ts, create_ts = get_modification_and_creation_time(self, ticket_string)
+        self.assertEqual(original_create_ts, create_ts)
+        self.assertGreater(modify_ts, create_ts)
+        self.assertGreater(modify_ts, previous_ts)
+
+        # Add ticket group restriction
+        time.sleep(1)
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'add', 'group', 'public'])
+        previous_ts = modify_ts
+        modify_ts, create_ts = get_modification_and_creation_time(self, ticket_string)
+        self.assertGreater(modify_ts, previous_ts)
+
+        # Remove ticket group restriction
+        time.sleep(1)
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'remove', 'group', 'public'])
+        previous_ts = modify_ts
+        modify_ts, create_ts = get_modification_and_creation_time(self, ticket_string)
+        self.assertEqual(original_create_ts, create_ts)
+        self.assertGreater(modify_ts, create_ts)
+        self.assertGreater(modify_ts, previous_ts)
+
+def get_modification_and_creation_time(cls, ticket_string):
+    out, err, ec = cls.admin.run_icommand(['iquest', '%s...%s', "select TICKET_MODIFY_TIME, TICKET_CREATE_TIME where TICKET_STRING = '{}'".format(ticket_string)])
+    cls.assertEqual(ec, 0)
+    cls.assertEqual(len(err), 0)
+
+    out = out.strip().split('...')
+    modification_time = out[0]
+    creation_time = out[1]
+
+    return int(modification_time), int(creation_time)
