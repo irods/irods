@@ -13,6 +13,7 @@
     "irods_dstream",
     "irods_filesystem",
     "irods_fixed_buffer_resource",
+    "irods_fully_qualified_username",
     "irods_get_delay_rule_info",
     "irods_get_file_descriptor_info",
     "irods_hierarchy_parser",
