@@ -305,6 +305,7 @@ install(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/experimental_plugin_framework.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/fixed_buffer_resource.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/fsckUtil.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/fully_qualified_username.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/future.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/getRodsEnv.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/getUtil.h"
