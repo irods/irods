@@ -62,7 +62,7 @@ namespace
         const auto& env = _rei->rsComm->myEnv;
 
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-        irods::experimental::client_connection conn{env.rodsHost, env.rodsPort, username, env.rodsZone};
+        irods::experimental::client_connection conn{env.rodsHost, env.rodsPort, {username, env.rodsZone}};
         IRODS_MSI_ASSERT(conn);
 
         io::client::native_transport tp{conn};

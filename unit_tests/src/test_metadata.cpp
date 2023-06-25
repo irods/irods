@@ -1,12 +1,13 @@
 #include <catch2/catch.hpp>
 #include <fmt/format.h>
 
-#include "irods/getRodsEnv.h"
-#include "irods/rodsClient.h"
-#include "irods/rcConnect.h"
 #include "irods/connection_pool.hpp"
 #include "irods/filesystem.hpp"
+#include "irods/fully_qualified_username.hpp"
+#include "irods/getRodsEnv.h"
 #include "irods/metadata.hpp"
+#include "irods/rcConnect.h"
+#include "irods/rodsClient.h"
 
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/dstream.hpp"
@@ -29,12 +30,8 @@ TEST_CASE("metadata")
     const int cp_size = 1;
     const int cp_refresh_time = 600;
 
-    irods::connection_pool conn_pool{cp_size,
-                                     env.rodsHost,
-                                     env.rodsPort,
-                                     env.rodsUserName,
-                                     env.rodsZone,
-                                     cp_refresh_time};
+    irods::experimental::fully_qualified_username user{env.rodsUserName, env.rodsZone};
+    irods::connection_pool conn_pool{cp_size, env.rodsHost, env.rodsPort, user, cp_refresh_time};
 
     auto conn = conn_pool.get_connection();
 
