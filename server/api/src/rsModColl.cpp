@@ -3,6 +3,7 @@
 #include "irods/catalog_utilities.hpp"
 #include "irods/client_connection.hpp"
 #include "irods/filesystem/path.hpp"
+#include "irods/fully_qualified_username.hpp"
 #include "irods/icatHighLevelRoutines.hpp"
 #include "irods/irods_configuration_keywords.hpp"
 #include "irods/irods_rs_comm_query.hpp"
@@ -117,10 +118,11 @@ auto rsModColl(rsComm_t* rsComm, collInp_t* modCollInp) -> int
             const auto client_user_type =
                 *ua::server::type(*rsComm, ua::user{rsComm->clientUser.userName, rsComm->clientUser.rodsZone});
             if (ua::user_type::rodsadmin != client_user_type) {
-                auto conn = irods::experimental::client_connection{catalog_provider_host.hostName->name,
-                                                                   rsComm->myEnv.rodsPort,
-                                                                   static_cast<char*>(rsComm->myEnv.rodsUserName),
-                                                                   static_cast<char*>(rsComm->myEnv.rodsZone)};
+                auto local_admin =
+                    irods::experimental::fully_qualified_username{rsComm->myEnv.rodsUserName, rsComm->myEnv.rodsZone};
+
+                auto conn = irods::experimental::client_connection{
+                    catalog_provider_host.hostName->name, rsComm->myEnv.rodsPort, local_admin};
 
                 return rcModColl(static_cast<RcComm*>(conn), modCollInp);
             }
