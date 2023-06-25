@@ -2,6 +2,7 @@
 
 #include "irods/client_connection.hpp"
 #include "irods/connection_pool.hpp"
+#include "irods/fully_qualified_username.hpp"
 #include "irods/get_delay_rule_info.h"
 #include "irods/initServer.hpp"
 #include "irods/irods_at_scope_exit.hpp"
@@ -167,7 +168,10 @@ namespace
                     logger::delay_server::debug("Connecting to host [{}] as proxy user [{}] on behalf of user [{}] ...",
                                                 *executor, env.rodsUserName, *_client_user);
 
-                    return {*executor, env.rodsPort, env.rodsUserName, env.rodsZone, *_client_user, env.rodsZone};
+                    irods::experimental::fully_qualified_username local_admin{env.rodsUserName, env.rodsZone};
+                    irods::experimental::fully_qualified_username user{*_client_user, env.rodsZone};
+
+                    return {*executor, env.rodsPort, local_admin, user};
                 }
             }
         }

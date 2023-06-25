@@ -285,7 +285,7 @@ TEST_CASE("Non-admin users are not allowed to use the admin_mode option")
     conn.disconnect();
     rodsEnv env;
     _getRodsEnv(env);
-    conn.connect(env.rodsHost, env.rodsPort, test_user.name.c_str(), env.rodsZone);
+    conn.connect(env.rodsHost, env.rodsPort, {test_user.name.c_str(), env.rodsZone});
 
     // Capture the home collection of the test user.
     const auto test_user_home = fs::path{"/"} / env.rodsZone / "home" / test_user.name;

@@ -105,7 +105,8 @@ TEST_CASE("rc_get_delay_rule_info")
 
                 // Connect to the server as the test user.
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-                irods::experimental::client_connection alice_conn{env.rodsHost, env.rodsPort, alice.name, env.rodsZone};
+                irods::experimental::client_connection alice_conn{
+                    env.rodsHost, env.rodsPort, {alice.name, env.rodsZone}};
                 REQUIRE(alice_conn);
 
                 // Show that the non-admin user is not allowed to invoke the API endpoint.

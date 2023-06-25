@@ -72,10 +72,7 @@ TEST_CASE("test atomic metadata with BinBytesBuf", "[xml]")
 
     const auto sandbox = fs::path{env.rodsHome} / "unit_testing_sandbox";
 
-    ix::client_connection conn{env.rodsHost,
-                               env.rodsPort,
-                               env.rodsUserName,
-                               env.rodsZone};
+    ix::client_connection conn{env.rodsHost, env.rodsPort, {env.rodsUserName, env.rodsZone}};
 
     REQUIRE(fs::client::create_collection(conn, sandbox));
 
