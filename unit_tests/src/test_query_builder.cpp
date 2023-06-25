@@ -23,10 +23,7 @@ TEST_CASE("query builder")
 
     load_client_api_plugins();
 
-    ix::client_connection conn{env.rodsHost,
-                               env.rodsPort,
-                               env.rodsUserName,
-                               env.rodsZone};
+    ix::client_connection conn{env.rodsHost, env.rodsPort, {env.rodsUserName, env.rodsZone}};
 
     const fs::path user_home = env.rodsHome;
 
