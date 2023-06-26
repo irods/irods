@@ -354,3 +354,44 @@ class test_targeting_specific_replica_number__issue_6896(
 
         finally:
             self.user.assert_icommand(['ils', '-L', self.logical_path], 'STDOUT') # debugging
+
+
+    def test_ichksum_n_returns_error_when_requested_replica_votes_0__issue_7133(self):
+        data_name = os.path.basename(self.logical_path)
+
+        # Assert that no checksum is registered in the catalog for any replica.
+        self.assertEqual(len(lib.get_replica_checksum(self.user, data_name, 0)), 0)
+        self.assertEqual(len(lib.get_replica_checksum(self.user, data_name, 1)), 0)
+
+        # set read weight to 0.0 on passthru with replica 1
+        self.admin.assert_icommand(['iadmin', 'modresc', self.pt2, 'context', 'read=0.0'])
+
+        self.user.assert_icommand(['ils', '-L', self.logical_path], 'STDOUT') # debugging
+
+        # execute ichksum -n 1, assert that an error is returned because the requested replica voted 0.
+        self.user.assert_icommand(
+            ['ichksum', '-n1', self.logical_path], 'STDERR', 'SYS_REPLICA_INACCESSIBLE')
+
+        # Assert that no checksum was registered in the catalog for the target or any other replica.
+        self.assertEqual(len(lib.get_replica_checksum(self.user, data_name, 0)), 0)
+        self.assertEqual(len(lib.get_replica_checksum(self.user, data_name, 1)), 0)
+
+
+    def test_ichksum_n_always_calculates_checksum_for_requested_replica__issue_7133(self):
+        data_name = os.path.basename(self.logical_path)
+
+        # Assert that no checksum is registered in the catalog for this replica.
+        self.assertEqual(len(lib.get_replica_checksum(self.user, data_name, 0)), 0)
+        self.assertEqual(len(lib.get_replica_checksum(self.user, data_name, 1)), 0)
+
+        # set read weight to 0.1 (very low) on passthru with replica 1
+        self.admin.assert_icommand(['iadmin', 'modresc', self.pt2, 'context', 'read=0.1'])
+
+        self.user.assert_icommand(['ils', '-L', self.logical_path], 'STDOUT') # debugging
+
+        # execute ichksum -n 1, assert that replica 1 has a checksum even though it will vote extremely low.
+        self.user.assert_icommand(['ichksum', '-n1', self.logical_path], 'STDOUT', '    sha2:')
+
+        # Assert that replica 0 has no checksum and replica 1 has a checksum.
+        self.assertEqual(len(lib.get_replica_checksum(self.user, data_name, 0)), 0)
+        self.assertGreater(len(lib.get_replica_checksum(self.user, data_name, 1)), 0)
