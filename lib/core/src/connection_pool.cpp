@@ -1,9 +1,10 @@
 #include "irods/connection_pool.hpp"
 
+#include "irods/irods_exception.hpp"
 #include "irods/irods_query.hpp"
+#include "irods/rodsErrorTable.h"
 #include "irods/thread_pool.hpp"
 
-#include <stdexcept>
 #include <thread>
 #include <tuple> // For std::ignore.
 
@@ -59,7 +60,8 @@ namespace irods
     connection_pool::connection_proxy::operator RcComm&() const
     {
         if (!conn_) { // NOLINT(readability-implicit-bool-conversion)
-            throw std::runtime_error{"Invalid connection object"};
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+            THROW(SYS_LIBRARY_ERROR, "Invalid connection object");
         }
 
         return *conn_;
@@ -134,7 +136,8 @@ namespace irods
         , conn_ctxs_(_size)
     {
         if (_size < 1) {
-            throw std::runtime_error{"Invalid connection pool size"}; // TODO These should be irods::exceptions.
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+            THROW(SYS_INVALID_INPUT_PARAM, "Invalid connection pool size");
         }
 
         // Always initialize the first connection to guarantee that the
@@ -142,8 +145,10 @@ namespace irods
         // to rcConnect do not cause a segfault.
         create_connection(
             0,
-            [] { throw std::runtime_error{"Connect error"}; },
-            [] { throw std::runtime_error{"Client login error"}; });
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+            [] { THROW(USER_SOCK_CONNECT_ERR, "Connect error"); },
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+            [] { THROW(AUTHENTICATION_ERROR, "Client login error"); });
 
         // If the size of the pool is one, then return immediately.
         if (_size == 1) {
@@ -152,7 +157,7 @@ namespace irods
 
         // Initialize the rest of the connection pool asynchronously.
 
-        irods::thread_pool thread_pool{std::min<int>(_size, std::thread::hardware_concurrency())};
+        irods::thread_pool thread_pool{std::min<int>(_size, static_cast<int>(std::thread::hardware_concurrency()))};
 
         std::atomic<bool> connect_error{};
         std::atomic<bool> login_error{};
@@ -174,15 +179,18 @@ namespace irods
         thread_pool.join();
 
         if (connect_error.load()) {
-            throw std::runtime_error{"Connect error"};
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+            THROW(USER_SOCK_CONNECT_ERR, "Connect error");
         }
 
         if (login_error.load()) {
-            throw std::runtime_error{"Client login error"};
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+            THROW(AUTHENTICATION_ERROR, "Client login error");
         }
     } // constructor
 
     void connection_pool::create_connection(int _index,
+                                            // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
                                             const std::function<void()>& _on_connect_error,
                                             const std::function<void()>& _on_login_error)
     {
@@ -254,8 +262,10 @@ namespace irods
         if (!verify_connection(_index)) {
             create_connection(
                 _index,
-                [] { throw std::runtime_error{"Connect error"}; },
-                [] { throw std::runtime_error{"Client login error"}; });
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+                [] { THROW(USER_SOCK_CONNECT_ERR, "Connect error"); },
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+                [] { THROW(AUTHENTICATION_ERROR, "Client login error"); });
         }
 
         return ctx.conn.get();
