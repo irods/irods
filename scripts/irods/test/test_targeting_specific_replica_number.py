@@ -1,6 +1,7 @@
 from __future__ import print_function
 import os
 import sys
+import textwrap
 
 if sys.version_info < (2, 7):
     import unittest2 as unittest
@@ -10,11 +11,15 @@ else:
 from . import session
 from .. import lib
 from .. import test
+from ..configuration import IrodsConfig
 from ..test.command import assert_command
 
 class test_targeting_specific_replica_number__issue_6896(
     session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]),
     unittest.TestCase):
+
+    global plugin_name
+    plugin_name = IrodsConfig().default_rule_engine_plugin
 
     def setUp(self):
         super(test_targeting_specific_replica_number__issue_6896, self).setUp()
@@ -391,6 +396,56 @@ class test_targeting_specific_replica_number__issue_6896(
 
         # execute ichksum -n 1, assert that replica 1 has a checksum even though it will vote extremely low.
         self.user.assert_icommand(['ichksum', '-n1', self.logical_path], 'STDOUT', '    sha2:')
+
+        # Assert that replica 0 has no checksum and replica 1 has a checksum.
+        self.assertEqual(len(lib.get_replica_checksum(self.user, data_name, 0)), 0)
+        self.assertGreater(len(lib.get_replica_checksum(self.user, data_name, 1)), 0)
+
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'Only implemented for NREP.')
+    def test_msiDataObjChksum_with_replNum_keyword__issue_7133(self):
+        # Note: If this is ever implemented for PREP, this will have to be modified to add the rule to the configured
+        # rulebase and execute the rule by name rather than directly executing rule text as is being done here.
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                msiDataObjChksum(*file, "replNum=*repl_num++++forceChksum=", *checksum);
+                writeLine("stdout", "file: [*file], checksum: [*checksum]");
+            ''')
+        }
+
+        rep_intance = plugin_name + '-instance'
+
+        rule_text = rule_map[plugin_name]
+        partial_expected_output = 'file: [{}], checksum:'.format(self.logical_path) # Not testing checksum accuracy
+
+        data_name = os.path.basename(self.logical_path)
+
+        self.user.assert_icommand(['ils', '-L', self.logical_path], 'STDOUT') # debugging
+
+        # Assert that no checksum is registered in the catalog for this replica.
+        self.assertEqual(len(lib.get_replica_checksum(self.user, data_name, 0)), 0)
+        self.assertEqual(len(lib.get_replica_checksum(self.user, data_name, 1)), 0)
+
+        # set read weight to 0.1 (very low) on passthru with replica 1
+        self.admin.assert_icommand(['iadmin', 'modresc', self.pt2, 'context', 'read=0.1'])
+
+        self.user.assert_icommand(
+            ['irule', '-r', rep_intance, rule_text, '*file={}%*repl_num={}'.format(self.logical_path, 1), 'ruleExecOut'],
+            'STDOUT', partial_expected_output)
+
+        self.user.assert_icommand(['ils', '-L', self.logical_path], 'STDOUT') # debugging
+
+        # Assert that replica 0 has no checksum and replica 1 has a checksum.
+        self.assertEqual(len(lib.get_replica_checksum(self.user, data_name, 0)), 0)
+        self.assertGreater(len(lib.get_replica_checksum(self.user, data_name, 1)), 0)
+
+        # set read weight to 0.0 on passthru with replica 0
+        self.admin.assert_icommand(['iadmin', 'modresc', self.pt1, 'context', 'read=0.0'])
+
+        # Try generating a checksum on replica 0 and ensure that this fails.
+        self.user.assert_icommand(
+            ['irule', '-r', rep_intance, rule_text, '*file={}%*repl_num={}'.format(self.logical_path, 0), 'ruleExecOut'],
+            'STDERR', 'SYS_REPLICA_INACCESSIBLE')
 
         # Assert that replica 0 has no checksum and replica 1 has a checksum.
         self.assertEqual(len(lib.get_replica_checksum(self.user, data_name, 0)), 0)
