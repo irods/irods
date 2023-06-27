@@ -243,6 +243,7 @@ NEW_ERROR(RESOLUTION_ERROR,                            -174000)
 NEW_ERROR(INVALID_HANDLE,                              -175000)
 NEW_ERROR(DOES_NOT_EXIST,                              -176000)
 NEW_ERROR(TYPE_NOT_SUPPORTED,                          -177000)
+NEW_ERROR(AUTHENTICATION_ERROR,                        -178000)
 
 /** @} */
 
