@@ -756,21 +756,21 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         try:
             # =-=-=-=-=-=-=-
             # STANDUP
-            lib.create_replication_resource('repl', self.admin)
+            lib.create_replication_resource(self.admin, 'repl')
 
-            lib.create_random_resource('red', self.admin)
-            lib.create_random_resource('green', self.admin)
+            lib.create_random_resource(self.admin, 'red')
+            lib.create_random_resource(self.admin, 'green')
 
             for i in range(1,301):
-                lib.create_ufs_resource('ufs{0}'.format(i), self.admin)
+                lib.create_ufs_resource(self.admin, 'ufs{0}'.format(i))
 
-            lib.add_child_resource('repl', 'red', self.admin)
-            lib.add_child_resource('repl', 'green', self.admin)
+            lib.add_child_resource(self.admin, 'repl', 'red')
+            lib.add_child_resource(self.admin, 'repl', 'green')
 
             for i in range(1,151):
-                lib.add_child_resource('red', 'ufs{0}'.format(i), self.admin)
+                lib.add_child_resource(self.admin, 'red', 'ufs{0}'.format(i))
             for i in range(151,301):
-                lib.add_child_resource('green', 'ufs{0}'.format(i), self.admin)
+                lib.add_child_resource(self.admin, 'green', 'ufs{0}'.format(i))
 
             # =-=-=-=-=-=-=-
             # call rebalance function - confirm no error returned (USER_STRLEN_TOOLONG)
@@ -780,17 +780,17 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             # =-=-=-=-=-=-=-
             # TEARDOWN
             for i in range(1,151):
-                lib.remove_child_resource('red', 'ufs{0}'.format(i), self.admin)
+                lib.remove_child_resource(self.admin, 'red', 'ufs{0}'.format(i))
             for i in range(151,301):
-                lib.remove_child_resource('green', 'ufs{0}'.format(i), self.admin)
-            lib.remove_child_resource('repl', 'red', self.admin)
-            lib.remove_child_resource('repl', 'green', self.admin)
+                lib.remove_child_resource(self.admin, 'green', 'ufs{0}'.format(i))
+            lib.remove_child_resource(self.admin, 'repl', 'red')
+            lib.remove_child_resource(self.admin, 'repl', 'green')
 
             for i in range(1,301):
-                lib.remove_resource('ufs{0}'.format(i), self.admin)
-            lib.remove_resource('red', self.admin)
-            lib.remove_resource('green', self.admin)
-            lib.remove_resource('repl', self.admin)
+                lib.remove_resource(self.admin, 'ufs{0}'.format(i))
+            lib.remove_resource(self.admin, 'red')
+            lib.remove_resource(self.admin, 'green')
+            lib.remove_resource(self.admin, 'repl')
 
     def test_rebalance_for_repl_in_repl_node(self):
         # =-=-=-=-=-=-=-
@@ -1544,8 +1544,8 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             self.admin.assert_icommand(['iadmin', 'mkresc', 'pt0', 'passthru'], 'STDOUT', ['pt0'])
             self.admin.assert_icommand(['iadmin', 'mkresc', 'pt1', 'passthru'], 'STDOUT', ['pt1'])
             self.admin.assert_icommand(['iadmin', 'mkresc', 'repl_resc', 'replication'], 'STDOUT', ['repl_resc'])
-            lib.create_ufs_resource('ufs0', self.admin)
-            lib.create_ufs_resource('ufs1', self.admin)
+            lib.create_ufs_resource(self.admin, 'ufs0')
+            lib.create_ufs_resource(self.admin, 'ufs1')
 
             # Create resource hierarchy.
             self.admin.assert_icommand(['iadmin', 'addchildtoresc', 'root_resc', 'repl_resc'])
@@ -1763,7 +1763,7 @@ class Test_Iadmin_Resources(resource_suite.ResourceBase, unittest.TestCase):
     def test_renaming_resource_to_name_containing_whitespace_is_not_allowed__issue_5861(self):
         try:
             resc_name = 'ufs_5861_Resc'
-            lib.create_ufs_resource(resc_name, self.admin)
+            lib.create_ufs_resource(self.admin, resc_name)
 
             expected_output = [' -859000 CAT_INVALID_RESOURCE_NAME']
 

@@ -61,10 +61,10 @@ class Test_Irepl(session.make_sessions_mixin([('otherrods', 'rods')], [('alice',
 
         try:
             # Create our resource hierarchy.
-            lib.create_replication_resource(repl_resc, self.admin)
+            lib.create_replication_resource(self.admin, repl_resc)
 
             for resc_name in ufs_resources:
-                lib.create_ufs_resource(resc_name, self.admin)
+                lib.create_ufs_resource(self.admin, resc_name)
                 self.admin.assert_icommand(['iadmin', 'addchildtoresc', repl_resc, resc_name])
 
             # Create a data object (this should result in three replicas).
@@ -175,12 +175,12 @@ class Test_Irepl(session.make_sessions_mixin([('otherrods', 'rods')], [('alice',
         leaves = ['leaf_a', 'leaf_b']
         self.assertEqual(len(roots), len(leaves))
 
-        lib.create_passthru_resource(roots[0], self.admin)
-        lib.create_passthru_resource(roots[1], self.admin)
-        lib.create_ufs_resource(leaves[0], self.admin, test.settings.HOSTNAME_2)
-        lib.create_ufs_resource(leaves[1], self.admin, test.settings.HOSTNAME_3)
-        lib.add_child_resource(roots[0], leaves[0], self.admin)
-        lib.add_child_resource(roots[1], leaves[1], self.admin)
+        lib.create_passthru_resource(self.admin, roots[0])
+        lib.create_passthru_resource(self.admin, roots[1])
+        lib.create_ufs_resource(self.admin, leaves[0], test.settings.HOSTNAME_2)
+        lib.create_ufs_resource(self.admin, leaves[1], test.settings.HOSTNAME_3)
+        lib.add_child_resource(self.admin, roots[0], leaves[0])
+        lib.add_child_resource(self.admin, roots[1], leaves[1])
 
         try:
             # itouch a data object in a hierarchy and replicate it such that there are 2 zero-length replicas.
@@ -205,12 +205,12 @@ class Test_Irepl(session.make_sessions_mixin([('otherrods', 'rods')], [('alice',
 
         finally:
             self.user.assert_icommand(['irm', '-f', logical_path])
-            lib.remove_child_resource(roots[0], leaves[0], self.admin)
-            lib.remove_child_resource(roots[1], leaves[1], self.admin)
-            lib.remove_resource(leaves[0], self.admin)
-            lib.remove_resource(leaves[1], self.admin)
-            lib.remove_resource(roots[0], self.admin)
-            lib.remove_resource(roots[1], self.admin)
+            lib.remove_child_resource(self.admin, roots[0], leaves[0])
+            lib.remove_child_resource(self.admin, roots[1], leaves[1])
+            lib.remove_resource(self.admin, leaves[0])
+            lib.remove_resource(self.admin, leaves[1])
+            lib.remove_resource(self.admin, roots[0])
+            lib.remove_resource(self.admin, roots[1])
 
 class test_irepl_with_special_resource_configurations(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
     # In this suite:
