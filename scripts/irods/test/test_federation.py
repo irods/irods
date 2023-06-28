@@ -1811,8 +1811,8 @@ class test_compound_resource_operations(SessionsMixin, unittest.TestCase):
         self.cache_resource = 'cacheResc'
         self.archive_resource = 'archiveResc'
         self.remote_admin.assert_icommand(['iadmin', 'mkresc', self.compound_resource, 'compound'], 'STDOUT')
-        lib.create_ufs_resource(self.cache_resource, self.remote_admin, hostname=test.settings.FEDERATION.REMOTE_HOST)
-        lib.create_ufs_resource(self.archive_resource, self.remote_admin, hostname=test.settings.FEDERATION.REMOTE_HOST)
+        lib.create_ufs_resource(self.remote_admin, self.cache_resource, hostname=test.settings.FEDERATION.REMOTE_HOST)
+        lib.create_ufs_resource(self.remote_admin, self.archive_resource, hostname=test.settings.FEDERATION.REMOTE_HOST)
         self.remote_admin.assert_icommand(
             ['iadmin', 'addchildtoresc', self.compound_resource, self.cache_resource, 'cache'])
         self.remote_admin.assert_icommand(
@@ -1825,11 +1825,11 @@ class test_compound_resource_operations(SessionsMixin, unittest.TestCase):
         self.remote_admin.assert_icommand(['iadmin', 'rmuser', 'smeagol'])
 
         # Clean up the compound resource hierarchy and exit the remote admin session.
-        lib.remove_child_resource(self.compound_resource, self.cache_resource, self.remote_admin)
-        lib.remove_child_resource(self.compound_resource, self.archive_resource, self.remote_admin)
-        lib.remove_resource(self.cache_resource, self.remote_admin)
-        lib.remove_resource(self.archive_resource, self.remote_admin)
-        lib.remove_resource(self.compound_resource, self.remote_admin)
+        lib.remove_child_resource(self.remote_admin, self.compound_resource, self.cache_resource)
+        lib.remove_child_resource(self.remote_admin, self.compound_resource, self.archive_resource)
+        lib.remove_resource(self.remote_admin, self.cache_resource)
+        lib.remove_resource(self.remote_admin, self.archive_resource)
+        lib.remove_resource(self.remote_admin, self.compound_resource)
 
         self.remote_admin.__exit__()
 

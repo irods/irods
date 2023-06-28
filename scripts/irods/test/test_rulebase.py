@@ -658,8 +658,8 @@ OUTPUT ruleExecOut
             with temporary_core_file() as core:
                 core.add_rule(pep_map[self.plugin_name])
 
-                lib.create_ufs_resource(resc1, self.admin, hostname=test.settings.HOSTNAME_2)
-                lib.create_ufs_resource(resc2, self.admin, hostname=test.settings.HOSTNAME_3)
+                lib.create_ufs_resource(self.admin, resc1, hostname=test.settings.HOSTNAME_2)
+                lib.create_ufs_resource(self.admin, resc2, hostname=test.settings.HOSTNAME_3)
 
                 self.user0.assert_icommand(['itouch', '-R', resc1, logical_path])
                 self.user0.assert_icommand(['irepl', '-R', resc2, logical_path])
@@ -669,8 +669,8 @@ OUTPUT ruleExecOut
 
         finally:
             self.user0.assert_icommand(['irm', '-f', logical_path])
-            lib.remove_resource(resc2, self.admin)
-            lib.remove_resource(resc1, self.admin)
+            lib.remove_resource(self.admin, resc2)
+            lib.remove_resource(self.admin, resc1)
             self.admin.assert_icommand(['iadmin', 'rum'])
 
 

@@ -155,8 +155,8 @@ class Test_Itrim(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
         logical_path = os.path.join(self.admin.session_collection, filename)
 
         try:
-            lib.create_ufs_resource(resc1, self.admin, test.settings.HOSTNAME_2)
-            lib.create_ufs_resource(resc2, self.admin, test.settings.HOSTNAME_3)
+            lib.create_ufs_resource(self.admin, resc1, test.settings.HOSTNAME_2)
+            lib.create_ufs_resource(self.admin, resc2, test.settings.HOSTNAME_3)
 
             # Create a data object
             self.admin.assert_icommand(['itouch', '-R', resc1, logical_path])
@@ -177,8 +177,8 @@ class Test_Itrim(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
 
         finally:
             self.admin.run_icommand(['irm', '-f', logical_path])
-            lib.remove_resource(resc1, self.admin)
-            lib.remove_resource(resc2, self.admin)
+            lib.remove_resource(self.admin, resc1)
+            lib.remove_resource(self.admin, resc2)
 
 
     def test_itrim_displays_incorrect_count__issue_3531(self):
@@ -194,8 +194,8 @@ class Test_Itrim(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
         logical_path = os.path.join(self.admin.session_collection, filename)
 
         try:
-            lib.create_ufs_resource(resc1, self.admin, test.settings.HOSTNAME_2)
-            lib.create_ufs_resource(resc2, self.admin, test.settings.HOSTNAME_3)
+            lib.create_ufs_resource(self.admin, resc1, test.settings.HOSTNAME_2)
+            lib.create_ufs_resource(self.admin, resc2, test.settings.HOSTNAME_3)
 
             # Create the data object.
             self.admin.assert_icommand(['iput', '-R', resc1, filepath, logical_path])
@@ -216,5 +216,5 @@ class Test_Itrim(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
 
         finally:
             self.admin.run_icommand(['irm', '-f', logical_path])
-            lib.remove_resource(resc1, self.admin)
-            lib.remove_resource(resc2, self.admin)
+            lib.remove_resource(self.admin, resc1)
+            lib.remove_resource(self.admin, resc2)

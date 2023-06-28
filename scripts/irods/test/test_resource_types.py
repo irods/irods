@@ -633,7 +633,7 @@ OUTPUT ruleExecOut
             resource_name = 'detached_resource'
             resource_context = 'host_mode=detached'
 
-            lib.create_ufs_resource(resource_name, self.admin, resource_host)
+            lib.create_ufs_resource(self.admin, resource_name, resource_host)
             self.admin.assert_icommand("iadmin modresc %s context %s" %
                                    (resource_name, resource_context))
 
@@ -658,7 +658,7 @@ OUTPUT ruleExecOut
                 os.unlink(file2)
 
             # cleanup
-            lib.remove_resource(resource_name, self.admin)
+            lib.remove_resource(self.admin, resource_name)
 
     def test_detached_mode_in_host_list__issue_4421(self):
         try:
@@ -669,7 +669,7 @@ OUTPUT ruleExecOut
             hostname = lib.get_hostname()
             resource_context = 'host_mode=detached;host_list=irods.org,%s' % hostname
 
-            lib.create_ufs_resource(resource_name, self.admin, resource_host)
+            lib.create_ufs_resource(self.admin, resource_name, resource_host)
             self.admin.assert_icommand("iadmin modresc %s context %s" %
                                    (resource_name, resource_context))
 
@@ -694,7 +694,7 @@ OUTPUT ruleExecOut
                 os.unlink(file2)
 
             # cleanup
-            lib.remove_resource(resource_name, self.admin)
+            lib.remove_resource(self.admin, resource_name)
 
     def test_detached_mode_in_host_list_not_case_matching__issue_4421(self):
         try:
@@ -705,7 +705,7 @@ OUTPUT ruleExecOut
             hostname = lib.get_hostname().upper()
             resource_context = 'host_mode=detached;host_list=irods.org,%s' % hostname
 
-            lib.create_ufs_resource(resource_name, self.admin, resource_host)
+            lib.create_ufs_resource(self.admin, resource_name, resource_host)
             self.admin.assert_icommand("iadmin modresc %s context %s" %
                                    (resource_name, resource_context))
 
@@ -730,7 +730,7 @@ OUTPUT ruleExecOut
                 os.unlink(file2)
 
             # cleanup
-            lib.remove_resource(resource_name, self.admin)
+            lib.remove_resource(self.admin, resource_name)
 
     def test_detached_mode_host_not_in_host_list__issue_4421(self):
         try:
@@ -739,7 +739,7 @@ OUTPUT ruleExecOut
             resource_name = 'detached_resource'
             resource_context = 'host_mode=detached;host_list=irods.org,some_other_host'
 
-            lib.create_ufs_resource(resource_name, self.admin, resource_host)
+            lib.create_ufs_resource(self.admin, resource_name, resource_host)
             self.admin.assert_icommand("iadmin modresc %s context %s" %
                                    (resource_name, resource_context))
 
@@ -754,7 +754,7 @@ OUTPUT ruleExecOut
                 os.unlink(file1)
 
             # cleanup
-            lib.remove_resource(resource_name, self.admin)
+            lib.remove_resource(self.admin, resource_name)
 
     def test_attached_mode_default_setting_invalid_host__issue_4421(self):
         try:
@@ -762,7 +762,7 @@ OUTPUT ruleExecOut
             resource_host = "irods.org"
             resource_name = 'attached_resource'
 
-            lib.create_ufs_resource(resource_name, self.admin, resource_host)
+            lib.create_ufs_resource(self.admin, resource_name, resource_host)
 
             # create file to put
             lib.make_file(file1, 100)
@@ -775,7 +775,7 @@ OUTPUT ruleExecOut
                 os.unlink(file1)
 
             # cleanup
-            lib.remove_resource(resource_name, self.admin)
+            lib.remove_resource(self.admin, resource_name)
 
     def test_attached_mode_explicit_setting_invalid_host__issue_4421(self):
         try:
@@ -784,7 +784,7 @@ OUTPUT ruleExecOut
             resource_name = 'attached_resource'
             resource_context = 'host_mode=attached'
 
-            lib.create_ufs_resource(resource_name, self.admin, resource_host)
+            lib.create_ufs_resource(self.admin, resource_name, resource_host)
             self.admin.assert_icommand("iadmin modresc %s context %s" %
                                    (resource_name, resource_context))
 
@@ -799,7 +799,7 @@ OUTPUT ruleExecOut
                 os.unlink(file1)
 
             # cleanup
-            lib.remove_resource(resource_name, self.admin)
+            lib.remove_resource(self.admin, resource_name)
 
     @unittest.skip("Currently the warning only displays if there is no redirect")
     def test_detached_mode_register_outside_vault__issue_4421(self):
@@ -814,7 +814,7 @@ OUTPUT ruleExecOut
             resource_name = 'detached_resource'
             resource_context = 'host_mode=detached'
 
-            lib.create_ufs_resource(resource_name, self.admin, resource_host)
+            lib.create_ufs_resource(self.admin, resource_name, resource_host)
             self.admin.assert_icommand("iadmin modresc %s context %s" %
                                    (resource_name, resource_context))
 
@@ -828,7 +828,7 @@ OUTPUT ruleExecOut
             self.admin.assert_icommand("irm -f " + registered_path)
             if os.path.exists(filepath):
                 os.unlink(filepath)
-            lib.remove_resource(resource_name, self.admin)
+            lib.remove_resource(self.admin, resource_name)
 
     def test_detached_mode_register_inside_vault__issue_4421(self):
         try:
@@ -836,7 +836,7 @@ OUTPUT ruleExecOut
             resource_name = 'detached_resource'
             resource_context = 'host_mode=detached'
 
-            lib.create_ufs_resource(resource_name, self.admin, resource_host)
+            lib.create_ufs_resource(self.admin, resource_name, resource_host)
             self.admin.assert_icommand("iadmin modresc %s context %s" %
                                    (resource_name, resource_context))
 
@@ -856,7 +856,7 @@ OUTPUT ruleExecOut
             self.admin.assert_icommand("irm -f " + registered_path)
             if os.path.exists(filepath):
                 os.unlink(filepath)
-            lib.remove_resource(resource_name, self.admin)
+            lib.remove_resource(self.admin, resource_name)
 
     @unittest.skipUnless(test.settings.RUN_IN_TOPOLOGY, "Only run in topology")
     def test_detached_mode_in_topology__issue_4421(self):
@@ -911,7 +911,7 @@ OUTPUT ruleExecOut
                         'STDOUT_SINGLELINE', 'resuming')
 
             self.admin.assert_icommand("irm -f " + file1)
-            lib.remove_resource(resource_name, self.admin)
+            lib.remove_resource(self.admin, resource_name)
 
     @unittest.skipUnless(test.settings.RUN_IN_TOPOLOGY, "Only run in topology")
     def test_detached_mode_in_topology_resource_assigned_to_icat__issue_4421(self):
@@ -955,7 +955,7 @@ OUTPUT ruleExecOut
                 os.unlink(file2)
 
             self.admin.assert_icommand("irm -f " + file1)
-            lib.remove_resource(resource_name, self.admin)
+            lib.remove_resource(self.admin, resource_name)
 
     @unittest.skipUnless(test.settings.RUN_IN_TOPOLOGY, "Only run in topology")
     def test_detached_mode_in_topology_with_host_list__issue_4421(self):
@@ -1013,7 +1013,7 @@ OUTPUT ruleExecOut
                         'STDOUT_SINGLELINE', 'resuming')
 
             self.admin.assert_icommand("irm -f " + file1)
-            lib.remove_resource(resource_name, self.admin)
+            lib.remove_resource(self.admin, resource_name)
 
     @unittest.skipUnless(test.settings.RUN_IN_TOPOLOGY, "Only run in topology")
     def test_detached_mode_in_topology_with_redirect__issue_4421(self):
@@ -1056,7 +1056,7 @@ OUTPUT ruleExecOut
                 os.unlink(file2)
 
             self.admin.assert_icommand("irm -f " + file1)
-            lib.remove_resource(resource_name, self.admin)
+            lib.remove_resource(self.admin, resource_name)
 
     @unittest.skipUnless(test.settings.RUN_IN_TOPOLOGY, "Only run in topology")
     def test_detached_mode_in_topology_put_with_resource_host_down__issue_4421(self):
@@ -1110,7 +1110,7 @@ OUTPUT ruleExecOut
                         'STDOUT_SINGLELINE', 'resuming')
 
             self.admin.assert_icommand("irm -f " + file1)
-            lib.remove_resource(resource_name, self.admin)
+            lib.remove_resource(self.admin, resource_name)
 
 
     @unittest.skip('This test only applies to compound hierarchies.')
@@ -4079,8 +4079,8 @@ class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDev
 
         try:
             # Create third and fourth resources
-            lib.create_ufs_resource('thirdresc', self.admin)
-            lib.create_ufs_resource('fourthresc', self.admin)
+            lib.create_ufs_resource(self.admin, 'thirdresc')
+            lib.create_ufs_resource(self.admin, 'fourthresc')
 
             # Show that the target data object does not exist.
             self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")

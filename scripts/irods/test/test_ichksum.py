@@ -161,7 +161,7 @@ class Test_Ichksum(resource_suite.ResourceBase, unittest.TestCase):
         data_object = os.path.join(self.admin.session_collection, 'foo')
 
         try:
-            lib.create_ufs_resource(other_resc, self.admin)
+            lib.create_ufs_resource(self.admin, other_resc)
 
             self.admin.assert_icommand(['istream', 'write', data_object], input='some data')
             self.admin.assert_icommand(['irepl', '-R', other_resc, data_object])
@@ -251,9 +251,9 @@ class Test_Ichksum(resource_suite.ResourceBase, unittest.TestCase):
             # resource for the session, which is demoResc by default. Replica 1 will then
             # land on the passthru hierarchy. The ichksum will vote higher on the passthru
             # resource (high read weight) and so Replica 1 will receive the checksum.
-            lib.create_passthru_resource(other_resc, self.admin)
-            lib.create_ufs_resource(other_ufs, self.admin)
-            lib.add_child_resource(other_resc, other_ufs, self.admin)
+            lib.create_passthru_resource(self.admin, other_resc)
+            lib.create_ufs_resource(self.admin, other_ufs)
+            lib.add_child_resource(self.admin, other_resc, other_ufs)
             self.admin.assert_icommand(['iadmin', 'modresc', other_resc, 'context', 'write=0.1;read=1.50'])
 
             self.admin.assert_icommand(['istream', 'write', data_object], input='some data')
@@ -273,7 +273,7 @@ class Test_Ichksum(resource_suite.ResourceBase, unittest.TestCase):
 
         finally:
             self.admin.run_icommand(['irm', '-f', data_object])
-            lib.remove_child_resource(other_resc, other_ufs, self.admin)
+            lib.remove_child_resource(self.admin, other_resc, other_ufs)
             self.admin.run_icommand(['iadmin', 'rmresc', other_resc])
             self.admin.run_icommand(['iadmin', 'rmresc', other_ufs])
 

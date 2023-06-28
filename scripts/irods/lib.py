@@ -591,33 +591,33 @@ def metadata_attr_with_value_exists(session, attr, value):
     print(out)
     return value in out
 
-def create_ufs_resource(resource_name, user, hostname=None):
+def create_ufs_resource(session, resource_name, hostname=None):
     vault_name = resource_name + '_vault'
-    vault_directory = os.path.join(user.local_session_dir, vault_name)
+    vault_directory = os.path.join(session.local_session_dir, vault_name)
 
     if not hostname:
         hostname = socket.gethostname()
 
     vault = hostname + ':' + vault_directory
-    user.assert_icommand(['iadmin', 'mkresc', resource_name, 'unixfilesystem', vault], 'STDOUT', [resource_name])
+    session.assert_icommand(['iadmin', 'mkresc', resource_name, 'unixfilesystem', vault], 'STDOUT', [resource_name])
 
-def create_replication_resource(resource_name, user):
-    user.assert_icommand(['iadmin', 'mkresc', resource_name, 'replication'], 'STDOUT', [resource_name])
+def create_replication_resource(session, resource_name):
+    session.assert_icommand(['iadmin', 'mkresc', resource_name, 'replication'], 'STDOUT', [resource_name])
 
-def create_passthru_resource(resource_name, user):
-    user.assert_icommand(['iadmin', 'mkresc', resource_name, 'passthru'], 'STDOUT', [resource_name])
+def create_passthru_resource(session, resource_name):
+    session.assert_icommand(['iadmin', 'mkresc', resource_name, 'passthru'], 'STDOUT', [resource_name])
 
-def create_random_resource(resource_name, user):
-    user.assert_icommand(['iadmin', 'mkresc', resource_name, 'random'], 'STDOUT', [resource_name])
+def create_random_resource(session, resource_name):
+    session.assert_icommand(['iadmin', 'mkresc', resource_name, 'random'], 'STDOUT', [resource_name])
 
-def remove_resource(resource_name, user):
-    user.assert_icommand(['iadmin', 'rmresc', resource_name])
+def remove_resource(session, resource_name):
+    session.assert_icommand(['iadmin', 'rmresc', resource_name])
 
-def add_child_resource(parent_resource_name, child_resource_name, user):
-    user.assert_icommand(['iadmin', 'addchildtoresc', parent_resource_name, child_resource_name])
+def add_child_resource(session, parent_resource_name, child_resource_name):
+    session.assert_icommand(['iadmin', 'addchildtoresc', parent_resource_name, child_resource_name])
 
-def remove_child_resource(parent_resource_name, child_resource_name, user):
-    user.assert_icommand(['iadmin', 'rmchildfromresc', parent_resource_name, child_resource_name])
+def remove_child_resource(session, parent_resource_name, child_resource_name):
+    session.assert_icommand(['iadmin', 'rmchildfromresc', parent_resource_name, child_resource_name])
 
 def get_user_type(session, user_name, zone_name=None):
     """Get the type field of the user indicated by user_name and zone_name."""

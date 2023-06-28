@@ -1406,7 +1406,7 @@ OUTPUT ruleExecOut
 
                 try:
                     # Create a resource to which we can replicate to trigger the policy.
-                    lib.create_ufs_resource(resource, self.admin, hostname=test.settings.HOSTNAME_2)
+                    lib.create_ufs_resource(self.admin, resource, hostname=test.settings.HOSTNAME_2)
 
                     # Create a data object which can be replicated.
                     self.user0.assert_icommand(['istream', 'write', logical_path], input=contents)
@@ -1438,7 +1438,7 @@ OUTPUT ruleExecOut
 
                     self.user0.run_icommand(['irm', '-f', logical_path])
 
-                    lib.remove_resource(resource, self.admin)
+                    lib.remove_resource(self.admin, resource)
 
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'Only implemented for NREP.')
@@ -1508,12 +1508,12 @@ class Test_msiDataObjRepl_checksum_keywords(session.make_sessions_mixin([('other
         self.logical_path = os.path.join(self.test_user.session_collection, self.filename)
 
         self.target_resc = 'msiDataObjRepl_test_resource'
-        lib.create_ufs_resource(self.target_resc, self.admin, hostname=test.settings.HOSTNAME_2)
+        lib.create_ufs_resource(self.admin, self.target_resc, hostname=test.settings.HOSTNAME_2)
 
 
     def tearDown(self):
         self.test_user.assert_icommand(['irm', '-f', self.logical_path])
-        lib.remove_resource(self.target_resc, self.admin)
+        lib.remove_resource(self.admin, self.target_resc)
 
         super(Test_msiDataObjRepl_checksum_keywords, self).tearDown()
 
