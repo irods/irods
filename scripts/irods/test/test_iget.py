@@ -32,10 +32,10 @@ class test_iget_general(session.make_sessions_mixin([('otherrods', 'rods')], [('
             root_resource = 'pt1'
 
             try:
-                lib.create_passthru_resource(root_resource, self.admin)
-                lib.create_ufs_resource(resource_1, self.admin, test.settings.HOSTNAME_2)
-                lib.create_ufs_resource(resource_2, self.admin, test.settings.HOSTNAME_3)
-                lib.add_child_resource(root_resource, resource_1, self.admin)
+                lib.create_passthru_resource(self.admin, root_resource)
+                lib.create_ufs_resource(self.admin, resource_1, test.settings.HOSTNAME_2)
+                lib.create_ufs_resource(self.admin, resource_2, test.settings.HOSTNAME_3)
+                lib.add_child_resource(self.admin, root_resource, resource_1)
 
                 if not os.path.exists(local_file):
                     lib.make_file(local_file, file_size, 'arbitrary')
@@ -64,10 +64,10 @@ class test_iget_general(session.make_sessions_mixin([('otherrods', 'rods')], [('
 
             finally:
                 self.user.run_icommand(['irm', '-f', logical_path])
-                lib.remove_child_resource(root_resource, resource_1, self.admin)
-                lib.remove_resource(root_resource, self.admin)
-                lib.remove_resource(resource_1, self.admin)
-                lib.remove_resource(resource_2, self.admin)
+                lib.remove_child_resource(self.admin, root_resource, resource_1)
+                lib.remove_resource(self.admin, root_resource)
+                lib.remove_resource(self.admin, resource_1)
+                lib.remove_resource(self.admin, resource_2)
 
         do_test_iget_R_is_a_directive_not_a_preference__issue_4475(self, 1024)
         do_test_iget_R_is_a_directive_not_a_preference__issue_4475(self, 40 * 1024 * 1024)

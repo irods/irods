@@ -24,14 +24,14 @@ class Test_Special_Collections(session.make_sessions_mixin([('otherrods', 'rods'
 
         self.root_resc = 'rootResc'
         self.leaf_resc = 'ufs0'
-        lib.create_passthru_resource(self.root_resc, self.admin)
-        lib.create_ufs_resource(self.leaf_resc, self.admin)
-        lib.add_child_resource(self.root_resc, self.leaf_resc, self.admin)
+        lib.create_passthru_resource(self.admin, self.root_resc)
+        lib.create_ufs_resource(self.admin, self.leaf_resc)
+        lib.add_child_resource(self.admin, self.root_resc, self.leaf_resc)
 
     def tearDown(self):
-        lib.remove_child_resource(self.root_resc, self.leaf_resc, self.admin)
-        lib.remove_resource(self.leaf_resc, self.admin)
-        lib.remove_resource(self.root_resc, self.admin)
+        lib.remove_child_resource(self.admin, self.root_resc, self.leaf_resc)
+        lib.remove_resource(self.admin, self.leaf_resc)
+        lib.remove_resource(self.admin, self.root_resc)
         super(Test_Special_Collections, self).tearDown()
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, 'Uses mounted collection on local filesystem - only works on single-machine deployment')

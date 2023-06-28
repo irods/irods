@@ -295,7 +295,7 @@ class test_ireg_replica(unittest.TestCase):
         logical_path = os.path.join(self.admin.session_collection, local_file)
 
         try:
-            lib.create_ufs_resource(resource, self.admin, test.settings.HOSTNAME_2)
+            lib.create_ufs_resource(self.admin, resource, test.settings.HOSTNAME_2)
 
             lib.make_file(path_to_file, 1)
 
@@ -327,7 +327,7 @@ class test_ireg_replica(unittest.TestCase):
         try:
             os.rename(old_path_to_file, new_path_to_file)
 
-            lib.create_ufs_resource(resource, self.admin, test.settings.HOSTNAME_2)
+            lib.create_ufs_resource(self.admin, resource, test.settings.HOSTNAME_2)
 
             self.admin.assert_icommand(['iput', new_path_to_file, logical_path])
 
@@ -355,7 +355,7 @@ class test_ireg_replica(unittest.TestCase):
         logical_path = os.path.join(self.admin.session_collection, local_file)
 
         try:
-            lib.create_ufs_resource(resource, self.admin, test.settings.HOSTNAME_2)
+            lib.create_ufs_resource(self.admin, resource, test.settings.HOSTNAME_2)
 
             lib.make_file(path_to_file, 1)
             self.admin.assert_icommand(['iput', path_to_file, logical_path])
@@ -407,8 +407,8 @@ class test_ireg_replica(unittest.TestCase):
         logical_path = os.path.join(self.admin.session_collection, local_file)
 
         try:
-            lib.create_ufs_resource(remote_resource, self.admin, test.settings.HOSTNAME_2)
-            lib.create_ufs_resource(local_resource, self.admin)
+            lib.create_ufs_resource(self.admin, remote_resource, test.settings.HOSTNAME_2)
+            lib.create_ufs_resource(self.admin, local_resource)
 
             lib.make_file(path_to_file, 1)
             self.admin.assert_icommand(['iput', '-R', remote_resource, path_to_file, logical_path])
@@ -441,8 +441,8 @@ class test_ireg_replica(unittest.TestCase):
         logical_path = os.path.join(self.admin.session_collection, local_file)
 
         try:
-            lib.create_ufs_resource(remote_resource, self.admin, test.settings.HOSTNAME_2)
-            lib.create_ufs_resource(local_resource, self.admin)
+            lib.create_ufs_resource(self.admin, remote_resource, test.settings.HOSTNAME_2)
+            lib.create_ufs_resource(self.admin, local_resource)
 
             lib.make_file(path_to_file, 1)
             self.admin.assert_icommand(['iput', '-R', remote_resource, path_to_file, logical_path])
@@ -475,8 +475,8 @@ class test_ireg_replica(unittest.TestCase):
         logical_path = os.path.join(self.admin.session_collection, local_file)
 
         try:
-            lib.create_ufs_resource(remote_resource, self.admin, test.settings.HOSTNAME_2)
-            lib.create_ufs_resource(local_resource, self.admin)
+            lib.create_ufs_resource(self.admin, remote_resource, test.settings.HOSTNAME_2)
+            lib.create_ufs_resource(self.admin, local_resource)
 
             lib.make_file(path_to_file, 100)
             self.admin.assert_icommand(['iput', '-K', '-R', remote_resource, path_to_file, logical_path])
@@ -509,8 +509,8 @@ class test_ireg_replica(unittest.TestCase):
         logical_path = os.path.join(self.admin.session_collection, local_file)
 
         try:
-            lib.create_ufs_resource(remote_resource, self.admin, test.settings.HOSTNAME_2)
-            lib.create_ufs_resource(local_resource, self.admin)
+            lib.create_ufs_resource(self.admin, remote_resource, test.settings.HOSTNAME_2)
+            lib.create_ufs_resource(self.admin, local_resource)
 
             lib.make_file(path_to_file, 100)
             self.admin.assert_icommand(['iput', '-K', '-R', remote_resource, path_to_file, logical_path])

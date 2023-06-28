@@ -32,13 +32,13 @@ class test_targeting_specific_replica_number__issue_6896(
         self.ufs2 = 'ufs2'
 
         # Create two resources with passthrus as parents in order to manipulate voting.
-        lib.create_passthru_resource(self.pt1, self.admin)
-        lib.create_passthru_resource(self.pt2, self.admin)
-        lib.create_ufs_resource(self.ufs1, self.admin, hostname=test.settings.HOSTNAME_2)
-        lib.create_ufs_resource(self.ufs2, self.admin, hostname=test.settings.HOSTNAME_3)
+        lib.create_passthru_resource(self.admin, self.pt1)
+        lib.create_passthru_resource(self.admin, self.pt2)
+        lib.create_ufs_resource(self.admin, self.ufs1, hostname=test.settings.HOSTNAME_2)
+        lib.create_ufs_resource(self.admin, self.ufs2, hostname=test.settings.HOSTNAME_3)
 
         for parent, child in [(self.pt1, self.ufs1), (self.pt2, self.ufs2)]:
-            lib.add_child_resource(parent, child, self.admin)
+            lib.add_child_resource(self.admin, parent, child)
 
         self.admin.assert_icommand(['ilsresc', '--ascii'], 'STDOUT') # debugging
 
@@ -72,12 +72,12 @@ class test_targeting_specific_replica_number__issue_6896(
 
         for parent, child in [(self.pt1, self.ufs1), (self.pt2, self.ufs2)]:
             if (lib.get_resource_parent_name(self.admin, child) == parent):
-                lib.remove_child_resource(parent, child, self.admin)
+                lib.remove_child_resource(self.admin, parent, child)
 
-        lib.remove_resource(self.ufs2, self.admin)
-        lib.remove_resource(self.ufs1, self.admin)
-        lib.remove_resource(self.pt2, self.admin)
-        lib.remove_resource(self.pt1, self.admin)
+        lib.remove_resource(self.admin, self.ufs2)
+        lib.remove_resource(self.admin, self.ufs1)
+        lib.remove_resource(self.admin, self.pt2)
+        lib.remove_resource(self.admin, self.pt1)
 
         super(test_targeting_specific_replica_number__issue_6896, self).tearDown()
 
@@ -172,7 +172,7 @@ class test_targeting_specific_replica_number__issue_6896(
         other_resc = 'other_resc'
 
         try:
-            lib.create_ufs_resource(other_resc, self.admin, hostname=test.settings.HOSTNAME_1)
+            lib.create_ufs_resource(self.admin, other_resc, hostname=test.settings.HOSTNAME_1)
 
             # Modify replica status for the target so it can be differentiated.
             self.admin.assert_icommand([
@@ -198,14 +198,14 @@ class test_targeting_specific_replica_number__issue_6896(
 
             self.user.assert_icommand(['irm', '-f', self.logical_path])
 
-            lib.remove_resource(other_resc, self.admin)
+            lib.remove_resource(self.admin, other_resc)
 
 
     def test_irepl_n_always_uses_requested_replica_as_source(self):
         other_resc = 'other_resc'
 
         try:
-            lib.create_ufs_resource(other_resc, self.admin, hostname=test.settings.HOSTNAME_1)
+            lib.create_ufs_resource(self.admin, other_resc, hostname=test.settings.HOSTNAME_1)
 
             # Modify replica status for the target so it can be differentiated.
             self.admin.assert_icommand([
@@ -230,14 +230,14 @@ class test_targeting_specific_replica_number__issue_6896(
 
             self.user.assert_icommand(['irm', '-f', self.logical_path])
 
-            lib.remove_resource(other_resc, self.admin)
+            lib.remove_resource(self.admin, other_resc)
 
 
     def test_iphymv_n_returns_error_when_requested_replica_votes_0(self):
         other_resc = 'other_resc'
 
         try:
-            lib.create_ufs_resource(other_resc, self.admin, hostname=test.settings.HOSTNAME_1)
+            lib.create_ufs_resource(self.admin, other_resc, hostname=test.settings.HOSTNAME_1)
 
             # Modify replica status for the target so it can be differentiated.
             self.admin.assert_icommand([
@@ -263,14 +263,14 @@ class test_targeting_specific_replica_number__issue_6896(
 
             self.user.assert_icommand(['irm', '-f', self.logical_path])
 
-            lib.remove_resource(other_resc, self.admin)
+            lib.remove_resource(self.admin, other_resc)
 
 
     def test_iphymv_n_always_moves_requested_replica(self):
         other_resc = 'other_resc'
 
         try:
-            lib.create_ufs_resource(other_resc, self.admin, hostname=test.settings.HOSTNAME_1)
+            lib.create_ufs_resource(self.admin, other_resc, hostname=test.settings.HOSTNAME_1)
 
             # Modify replica status for the target so it can be differentiated.
             self.admin.assert_icommand([
@@ -297,7 +297,7 @@ class test_targeting_specific_replica_number__issue_6896(
 
             self.user.assert_icommand(['irm', '-f', self.logical_path])
 
-            lib.remove_resource(other_resc, self.admin)
+            lib.remove_resource(self.admin, other_resc)
 
 
     def test_istream_n_returns_error_when_requested_replica_votes_0(self):

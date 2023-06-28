@@ -164,11 +164,11 @@ class test_iquest_with_data_resc_hier(unittest.TestCase):
         self.hierarchy = ';'.join([self.root_resource, self.mid_resource, self.leaf_resource])
 
         with session.make_session_for_existing_admin() as admin_session:
-            lib.create_passthru_resource(self.root_resource, admin_session)
-            lib.create_passthru_resource(self.mid_resource, admin_session)
-            lib.create_ufs_resource(self.leaf_resource, admin_session)
-            lib.add_child_resource(self.root_resource, self.mid_resource, admin_session)
-            lib.add_child_resource(self.mid_resource, self.leaf_resource, admin_session)
+            lib.create_passthru_resource(admin_session, self.root_resource)
+            lib.create_passthru_resource(admin_session, self.mid_resource)
+            lib.create_ufs_resource(admin_session, self.leaf_resource)
+            lib.add_child_resource(admin_session, self.root_resource, self.mid_resource)
+            lib.add_child_resource(admin_session, self.mid_resource, self.leaf_resource)
 
         self.user.assert_icommand(['itouch', '-R', self.leaf_resource, self.logical_path])
 
@@ -180,11 +180,11 @@ class test_iquest_with_data_resc_hier(unittest.TestCase):
         with session.make_session_for_existing_admin() as admin_session:
             self.user.__exit__()
             admin_session.run_icommand(['iadmin', 'rmuser', 'alice'])
-            lib.remove_child_resource(self.mid_resource, self.leaf_resource, admin_session)
-            lib.remove_child_resource(self.root_resource, self.mid_resource, admin_session)
-            lib.remove_resource(self.leaf_resource, admin_session)
-            lib.remove_resource(self.mid_resource, admin_session)
-            lib.remove_resource(self.root_resource, admin_session)
+            lib.remove_child_resource(admin_session, self.mid_resource, self.leaf_resource)
+            lib.remove_child_resource(admin_session, self.root_resource, self.mid_resource)
+            lib.remove_resource(admin_session, self.leaf_resource)
+            lib.remove_resource(admin_session, self.mid_resource)
+            lib.remove_resource(admin_session, self.root_resource)
 
 
     def test_invalid_operations(self):
@@ -299,13 +299,13 @@ class test_iquest_logical_or_operator_with_data_resc_hier(unittest.TestCase):
         self.hierarchy2 = ';'.join([self.root_resource, self.mid_resource, self.leaf_resource2])
 
         with session.make_session_for_existing_admin() as admin_session:
-            lib.create_passthru_resource(self.root_resource, admin_session)
-            lib.create_replication_resource(self.mid_resource, admin_session)
-            lib.create_ufs_resource(self.leaf_resource1, admin_session)
-            lib.create_ufs_resource(self.leaf_resource2, admin_session)
-            lib.add_child_resource(self.root_resource, self.mid_resource, admin_session)
-            lib.add_child_resource(self.mid_resource, self.leaf_resource1, admin_session)
-            lib.add_child_resource(self.mid_resource, self.leaf_resource2, admin_session)
+            lib.create_passthru_resource(admin_session, self.root_resource)
+            lib.create_replication_resource(admin_session, self.mid_resource)
+            lib.create_ufs_resource(admin_session, self.leaf_resource1)
+            lib.create_ufs_resource(admin_session, self.leaf_resource2)
+            lib.add_child_resource(admin_session, self.root_resource, self.mid_resource)
+            lib.add_child_resource(admin_session, self.mid_resource, self.leaf_resource1)
+            lib.add_child_resource(admin_session, self.mid_resource, self.leaf_resource2)
 
         # This should trigger a replication to the other resource.
         self.user.assert_icommand(['itouch', '-R', self.leaf_resource1, self.logical_path])
@@ -320,13 +320,13 @@ class test_iquest_logical_or_operator_with_data_resc_hier(unittest.TestCase):
         with session.make_session_for_existing_admin() as admin_session:
             self.user.__exit__()
             admin_session.run_icommand(['iadmin', 'rmuser', 'alice'])
-            lib.remove_child_resource(self.mid_resource, self.leaf_resource2, admin_session)
-            lib.remove_child_resource(self.mid_resource, self.leaf_resource1, admin_session)
-            lib.remove_child_resource(self.root_resource, self.mid_resource, admin_session)
-            lib.remove_resource(self.leaf_resource2, admin_session)
-            lib.remove_resource(self.leaf_resource1, admin_session)
-            lib.remove_resource(self.mid_resource, admin_session)
-            lib.remove_resource(self.root_resource, admin_session)
+            lib.remove_child_resource(admin_session, self.mid_resource, self.leaf_resource2)
+            lib.remove_child_resource(admin_session, self.mid_resource, self.leaf_resource1)
+            lib.remove_child_resource(admin_session, self.root_resource, self.mid_resource)
+            lib.remove_resource(admin_session, self.leaf_resource2)
+            lib.remove_resource(admin_session, self.leaf_resource1)
+            lib.remove_resource(admin_session, self.mid_resource)
+            lib.remove_resource(admin_session, self.root_resource)
 
 
     def run_logical_or_query_scenarios(self, scenarios):
