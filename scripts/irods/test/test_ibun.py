@@ -120,11 +120,11 @@ class Test_ibun(resource_suite.ResourceBase, unittest.TestCase):
 
             try:
                 # generate a replication hierarchy to two unixfilesystem resources
-                lib.create_replication_resource(replication, self.admin)
-                lib.create_ufs_resource(resource_0, self.admin, test.settings.HOSTNAME_2)
-                lib.create_ufs_resource(resource_1, self.admin, test.settings.HOSTNAME_3)
-                lib.add_child_resource(replication, resource_0, self.admin)
-                lib.add_child_resource(replication, resource_1, self.admin)
+                lib.create_replication_resource(self.admin, replication)
+                lib.create_ufs_resource(self.admin, resource_0, test.settings.HOSTNAME_2)
+                lib.create_ufs_resource(self.admin, resource_1, test.settings.HOSTNAME_3)
+                lib.add_child_resource(self.admin, replication, resource_0)
+                lib.add_child_resource(self.admin, replication, resource_1)
 
                 # generate (uncompressible) contents for the collection
                 lib.make_file(local_file, filesize, 'random')
@@ -173,11 +173,11 @@ class Test_ibun(resource_suite.ResourceBase, unittest.TestCase):
             finally:
                 self.admin.run_icommand(['irm', '-r', '-f', collection_path])
                 self.admin.run_icommand(['irm', '-f', archive_path])
-                lib.remove_child_resource(replication, resource_0, self.admin)
-                lib.remove_child_resource(replication, resource_1, self.admin)
-                lib.remove_resource(replication, self.admin)
-                lib.remove_resource(resource_0, self.admin)
-                lib.remove_resource(resource_1, self.admin)
+                lib.remove_child_resource(self.admin, replication, resource_0)
+                lib.remove_child_resource(self.admin, replication, resource_1)
+                lib.remove_resource(self.admin, replication)
+                lib.remove_resource(self.admin, resource_0)
+                lib.remove_resource(self.admin, resource_1)
 
         do_test_ibun_atop_existing_archive_file_in_replication_hierarchy(self, 1038425, 1044480)
         do_test_ibun_atop_existing_archive_file_in_replication_hierarchy(self, 1040425, 1054720)
@@ -240,8 +240,8 @@ class Test_ibun(resource_suite.ResourceBase, unittest.TestCase):
             # Set up a simple compound resource hierarchy. The default policy is sufficient for this test because it
             # simply requires that a stage-to-cache be triggered. This can be forced by purging the cache replica.
             self.admin.assert_icommand(['iadmin', 'mkresc', compound_resource, 'compound'], 'STDOUT')
-            lib.create_ufs_resource(cache_resource, self.admin, test.settings.HOSTNAME_2)
-            lib.create_ufs_resource(archive_resource, self.admin, test.settings.HOSTNAME_2)
+            lib.create_ufs_resource(self.admin, cache_resource, test.settings.HOSTNAME_2)
+            lib.create_ufs_resource(self.admin, archive_resource, test.settings.HOSTNAME_2)
             self.admin.assert_icommand(['iadmin', 'addchildtoresc', compound_resource, cache_resource, 'cache'])
             self.admin.assert_icommand(['iadmin', 'addchildtoresc', compound_resource, archive_resource, 'archive'])
 
@@ -283,6 +283,6 @@ class Test_ibun(resource_suite.ResourceBase, unittest.TestCase):
 
             self.admin.assert_icommand(['iadmin', 'rmchildfromresc', compound_resource, cache_resource])
             self.admin.assert_icommand(['iadmin', 'rmchildfromresc', compound_resource, archive_resource])
-            lib.remove_resource(compound_resource, self.admin)
-            lib.remove_resource(cache_resource, self.admin)
-            lib.remove_resource(archive_resource, self.admin)
+            lib.remove_resource(self.admin, compound_resource)
+            lib.remove_resource(self.admin, cache_resource)
+            lib.remove_resource(self.admin, archive_resource)

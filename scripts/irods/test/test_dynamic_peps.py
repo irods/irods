@@ -278,7 +278,7 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [('
                 }}''')
         }
 
-        lib.create_ufs_resource(other_resource, self.admin, hostname=test.settings.HOSTNAME_2)
+        lib.create_ufs_resource(self.admin, other_resource, hostname=test.settings.HOSTNAME_2)
 
         try:
             putfile = os.path.join(self.user.local_session_dir, 'putme')
@@ -321,4 +321,4 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [('
                     'DATA_REPL_STATUS', str(0)])
 
             self.user.run_icommand(['irm', '-f', logical_path])
-            lib.remove_resource(other_resource, self.admin)
+            lib.remove_resource(self.admin, other_resource)
