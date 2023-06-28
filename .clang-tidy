@@ -28,6 +28,7 @@ Checks:
     hicpp-signed-bitwise,
     misc-*,
     modernize-*,
+    -modernize-use-trailing-return-type,
     performance-*,
     portability-std-allocator-const,
     portability-simd-intrinsics,
@@ -36,6 +37,7 @@ Checks:
 WarningsAsErrors:
     boost-*,
     bugprone-*,
+    -bugprone-easily-swappable-parameters,
     clang-diagnostic-*,
     clang-analyzer-*,
     cert-dcl*,
@@ -43,10 +45,12 @@ WarningsAsErrors:
     cert-env33-c,
     cert-err34-c,
     cert-err*-cpp,
+    -cert-err58-cpp,
     cert-flp30-c,
     cert-oop*,
     cppcoreguidelines-*,
-    -cppcoreguidelines-pro-bounds-array-to-pointer-decay
+    -cppcoreguidelines-avoid-magic-numbers,
+    -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
     concurrency-thread-canceltype-asynchronous,
     google-build-namespaces,
     google-build-using-namespace,
@@ -60,11 +64,14 @@ WarningsAsErrors:
     hicpp-signed-bitwise,
     misc-*,
     modernize-*,
+    -modernize-use-trailing-return-type,
     performance-*,
     portability-std-allocator-const,
     readability-*,
     -readability-avoid-const-params-in-decls,
-    -readability-implicit-bool-conversion
+    -readability-function-cognitive-complexity,
+    -readability-implicit-bool-conversion,
+    -readability-named-parameter
 FormatStyle:     none
 CheckOptions:
   - key:             llvm-else-after-return.WarnOnConditionVariables
