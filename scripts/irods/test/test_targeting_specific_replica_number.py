@@ -66,7 +66,7 @@ class test_targeting_specific_replica_number__issue_6896(
         self.user.run_icommand(['irm', '-f', self.logical_path])
 
         for parent, child in [(self.pt1, self.ufs1), (self.pt2, self.ufs2)]:
-            if (lib.get_resource_parent(self.admin, child) == parent):
+            if (lib.get_resource_parent_name(self.admin, child) == parent):
                 lib.remove_child_resource(parent, child, self.admin)
 
         lib.remove_resource(self.ufs2, self.admin)

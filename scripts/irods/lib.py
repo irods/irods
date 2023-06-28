@@ -761,11 +761,13 @@ def make_arbitrary_file(f_name, f_size, buffer_size=32*1024*1024):
 
             bytes_written += to_write
 
-def get_resource_parent(session, resource_name):
-    parent_id = session.run_icommand(['iquest', '%s',
+def get_resource_parent_id(session, resource_name):
+    return session.run_icommand(['iquest', '%s',
         "select RESC_PARENT where RESC_NAME = '{}'"
         .format(resource_name)])[0].strip()
 
+def get_resource_parent_name(session, resource_name):
+    parent_id = get_resource_parent_id(session, resource_name)
     return session.run_icommand(['iquest', '%s',
         "select RESC_NAME where RESC_ID = '{}'"
         .format(parent_id)])[0].strip()
