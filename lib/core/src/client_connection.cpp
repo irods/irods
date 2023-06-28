@@ -139,7 +139,7 @@ namespace irods::experimental
     {
         if (!conn_) {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-            THROW(USER_SOCK_CONNECT_ERR, "Invalid client_connection object");
+            THROW(SYS_LIBRARY_ERROR, "Invalid connection object");
         }
 
         return *conn_;
@@ -158,7 +158,7 @@ namespace irods::experimental
 
         if (clientLogin(conn_.get()) != 0) {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-            THROW(USER_SOCK_CONNECT_ERR, "Client login error");
+            THROW(AUTHENTICATION_ERROR, "Client login error");
         }
     } // connect_and_login
 
@@ -171,7 +171,7 @@ namespace irods::experimental
 
         if (clientLogin(conn_.get()) != 0) {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-            THROW(USER_SOCK_CONNECT_ERR, "Client login error");
+            THROW(AUTHENTICATION_ERROR, "Client login error");
         }
     } // connect_and_login
 
