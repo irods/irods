@@ -766,3 +766,125 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
                 self.admin.run_icommand(['ichmod', '-M', 'own', self.admin.username, fname])
 
             self.admin.run_icommand(['iticket', 'delete', ticket_name])
+
+    def test_ticket_create_with_relative_paths_admin__issue_7103(self):
+        collection_1, collection_1_ticket_name = 'admin_issue_7103_collection_1', 'admin_coll_1_ticket'
+        collection_2, collection_2_ticket_name = 'admin_issue_7103_collection_2', 'admin_coll_2_ticket'
+        data_object_1, data_object_1_ticket_name = 'admin_issue_7103_data_object_1', 'admin_object_1_ticket'
+        data_object_2, data_object_2_ticket_name = 'admin_issue_7103_data_object_2', 'admin_object_2_ticket'
+        home_data_object, home_data_object_ticket_name = 'admin_issue_7103_home_data_object', 'admin_home_object_ticket'
+
+        home_collection_ticket_name = 'admin_home_coll_ticket'
+
+        try:
+            self.admin.assert_icommand(['icd'])
+
+            # Create collections
+            self.admin.assert_icommand(['imkdir', collection_1])
+            self.admin.assert_icommand(['imkdir', collection_2])
+
+            # Create objects
+            self.admin.assert_icommand(['itouch', f'{collection_1}/{data_object_1}'])
+            self.admin.assert_icommand(['itouch', f'{collection_2}/{data_object_2}'])
+            self.admin.assert_icommand(['itouch', home_data_object])
+
+            self.admin.assert_icommand(['icd', collection_1])
+
+            # Create ticket for current working directory
+            self.admin.assert_icommand(['iticket', 'create', 'read', '.', collection_1_ticket_name])
+            self.admin.assert_icommand(['iticket', 'ls', collection_1_ticket_name], 'STDOUT', [collection_1_ticket_name])
+
+            # Create ticket for object in current working directory
+            self.admin.assert_icommand(['iticket', 'create', 'read', f'./{data_object_1}', data_object_1_ticket_name])
+            self.admin.assert_icommand(['iticket', 'ls', data_object_1_ticket_name], 'STDOUT', [data_object_1_ticket_name])
+
+            # Create ticket for parent directory
+            self.admin.assert_icommand(['iticket', 'create', 'read', '../', home_collection_ticket_name])
+            self.admin.assert_icommand(['iticket', 'ls', home_collection_ticket_name], 'STDOUT', [home_collection_ticket_name])
+
+            # Create ticket for object in parent directory
+            self.admin.assert_icommand(['iticket', 'create', 'read', f'../{home_data_object}', home_data_object_ticket_name])
+            self.admin.assert_icommand(['iticket', 'ls', home_data_object_ticket_name], 'STDOUT', [home_data_object_ticket_name])
+
+            # Create ticket for sibling directory
+            self.admin.assert_icommand(['iticket', 'create', 'read', f'../{collection_2}', collection_2_ticket_name])
+            self.admin.assert_icommand(['iticket', 'ls', collection_2_ticket_name], 'STDOUT', [collection_2_ticket_name])
+
+            # Create ticket for object in sibling directory
+            self.admin.assert_icommand(['iticket', 'create', 'read', f'../{collection_2}/{data_object_2}', data_object_2_ticket_name])
+            self.admin.assert_icommand(['iticket', 'ls', data_object_2_ticket_name], 'STDOUT', [data_object_2_ticket_name])
+
+        finally:
+            # Cleanup
+            self.admin.assert_icommand(['icd'])
+            self.admin.assert_icommand(['irm', '-rf', collection_1])
+            self.admin.assert_icommand(['irm', '-rf', collection_2])
+            self.admin.assert_icommand(['irm', '-f', home_data_object])
+
+            self.admin.run_icommand(['iticket', 'delete', collection_1_ticket_name])
+            self.admin.run_icommand(['iticket', 'delete', collection_2_ticket_name])
+            self.admin.run_icommand(['iticket', 'delete', data_object_1_ticket_name])
+            self.admin.run_icommand(['iticket', 'delete', data_object_2_ticket_name])
+            self.admin.run_icommand(['iticket', 'delete', home_collection_ticket_name])
+            self.admin.run_icommand(['iticket', 'delete', home_data_object_ticket_name])
+
+def test_ticket_create_with_relative_paths_non_admin__issue_7103(self):
+        collection_1, collection_1_ticket_name = 'user_issue_7103_collection_1', 'user_coll_1_ticket'
+        collection_2, collection_2_ticket_name = 'user_issue_7103_collection_2', 'user_coll_2_ticket'
+        data_object_1, data_object_1_ticket_name = 'user_issue_7103_data_object_1', 'user_object_1_ticket'
+        data_object_2, data_object_2_ticket_name = 'user_issue_7103_data_object_2', 'user_object_2_ticket'
+        home_data_object, home_data_object_ticket_name = 'user_issue_7103_home_data_object', 'user_home_object_ticket'
+
+        home_collection_ticket_name = 'user_home_coll_ticket'
+
+        try:
+            self.user.assert_icommand(['icd'])
+
+            # Create collections
+            self.user.assert_icommand(['imkdir', collection_1])
+            self.user.assert_icommand(['imkdir', collection_2])
+
+            # Create objects
+            self.user.assert_icommand(['itouch', f'{collection_1}/{data_object_1}'])
+            self.user.assert_icommand(['itouch', f'{collection_2}/{data_object_2}'])
+            self.user.assert_icommand(['itouch', home_data_object])
+
+            self.user.assert_icommand(['icd', collection_1])
+
+            # Create ticket for current working directory
+            self.user.assert_icommand(['iticket', 'create', 'read', '.', collection_1_ticket_name])
+            self.user.assert_icommand(['iticket', 'ls', collection_1_ticket_name], 'STDOUT', [collection_1_ticket_name])
+
+            # Create ticket for object in current working directory
+            self.user.assert_icommand(['iticket', 'create', 'read', f'./{data_object_1}', data_object_1_ticket_name])
+            self.user.assert_icommand(['iticket', 'ls', data_object_1_ticket_name], 'STDOUT', [data_object_1_ticket_name])
+
+            # Create ticket for parent directory
+            self.user.assert_icommand(['iticket', 'create', 'read', '../', home_collection_ticket_name])
+            self.user.assert_icommand(['iticket', 'ls', home_collection_ticket_name], 'STDOUT', [home_collection_ticket_name])
+
+            # Create ticket for object in parent directory
+            self.user.assert_icommand(['iticket', 'create', 'read', f'../{home_data_object}', home_data_object_ticket_name])
+            self.user.assert_icommand(['iticket', 'ls', home_data_object_ticket_name], 'STDOUT', [home_data_object_ticket_name])
+
+            # Create ticket for sibling directory
+            self.user.assert_icommand(['iticket', 'create', 'read', f'../{collection_2}', collection_2_ticket_name])
+            self.user.assert_icommand(['iticket', 'ls', collection_2_ticket_name], 'STDOUT', [collection_2_ticket_name])
+
+            # Create ticket for object in sibling directory
+            self.user.assert_icommand(['iticket', 'create', 'read', f'../{collection_2}/{data_object_2}', data_object_2_ticket_name])
+            self.user.assert_icommand(['iticket', 'ls', data_object_2_ticket_name], 'STDOUT', [data_object_2_ticket_name])
+
+        finally:
+            # Cleanup
+            self.user.assert_icommand(['icd'])
+            self.user.assert_icommand(['irm', '-rf', collection_1])
+            self.user.assert_icommand(['irm', '-rf', collection_2])
+            self.user.assert_icommand(['irm', '-f', home_data_object])
+
+            self.user.run_icommand(['iticket', 'delete', collection_1_ticket_name])
+            self.user.run_icommand(['iticket', 'delete', collection_2_ticket_name])
+            self.user.run_icommand(['iticket', 'delete', data_object_1_ticket_name])
+            self.user.run_icommand(['iticket', 'delete', data_object_2_ticket_name])
+            self.user.run_icommand(['iticket', 'delete', home_collection_ticket_name])
+            self.user.run_icommand(['iticket', 'delete', home_data_object_ticket_name])
