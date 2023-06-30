@@ -4,11 +4,13 @@
 #include <irods/rcMisc.h>
 #include <irods/rods.h>
 #include <irods/rodsClient.h>
+#include <irods/rodsPath.h>
 
 #include <boost/date_time.hpp>
 
 #include <cstdio>
 #include <locale>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -457,18 +459,18 @@ showTickets( char *inName ) {
     }
 }
 
+auto canonical(const char *inName) -> std::optional<std::string>
+{
+    char out_path[MAX_NAME_LEN]{};
+    if (parseRodsPathStr(inName, &myEnv, out_path) != 0) {
+        return std::nullopt;
+    }
 
-std::string
-makeFullPath( const char *inName ) {
-    std::stringstream fullPathStream;
-    if ( strlen( inName ) == 0 ) {
-        return std::string();
-    }
-    if ( *inName != '/' ) {
-        fullPathStream << cwd << "/";
-    }
-    fullPathStream << inName;
-    return fullPathStream.str();
+    auto* escaped_path = escape_path(out_path);
+    std::optional<std::string> p = escaped_path;
+    std::free(escaped_path);
+
+    return p;
 }
 
 /*
@@ -653,8 +655,13 @@ doCommand( char *cmdToken[] ) {
         else {
             makeTicket( myTicket );
         }
-        std::string fullPath = makeFullPath( cmdToken[2] );
-        doTicketOp( "create", myTicket, cmdToken[1], fullPath.c_str(),
+
+        auto fullPath = canonical(cmdToken[2]);
+        if (!fullPath.has_value()) {
+            return -2;
+        }
+
+        doTicketOp( "create", myTicket, cmdToken[1], fullPath->c_str(),
                     cmdToken[3] );
         return 0;
     }
