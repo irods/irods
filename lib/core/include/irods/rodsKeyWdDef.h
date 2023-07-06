@@ -321,6 +321,10 @@
 
 #define AVAILABLE_KW                                "available"
 
+#define KW_SWITCH_PROXY_USER                        "switch_proxy_user"
+#define KW_CLOSE_OPEN_REPLICAS                      "close_open_replicas"
+#define KW_KEEP_SVR_TO_SVR_CONNECTIONS              "keep_svr_to_svr_connections"
+
 // clang-format on
 
 #endif  // RODS_KEYWD_DEF_H__
