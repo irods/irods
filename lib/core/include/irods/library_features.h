@@ -29,7 +29,7 @@
 /// \since 4.3.1
 #define IRODS_HAS_LIBRARY_ZONE_ADMINISTRATION                                202210L
 
-/// Defined if the development library supports ::rc_switch_user.
+/// Defined if the development library supports #rc_switch_user.
 ///
 /// \since 4.3.1
 #define IRODS_HAS_API_ENDPOINT_SWITCH_USER                                   202211L
