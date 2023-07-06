@@ -19,18 +19,25 @@
 
 // clang-format off
 #include "irods/switch_user.h"
-#include "irods/irods_rs_comm_query.hpp"
-#include "irods/rodsErrorTable.h"
+
+#include "irods/fileOpr.hpp" // For FD_INUSE.
+#include "irods/initServer.hpp" // For close_all_l1_descriptors.
 #include "irods/irods_logger.hpp"
+#include "irods/irods_rs_comm_query.hpp"
 #include "irods/irods_server_properties.hpp"
+#include "irods/key_value_proxy.hpp"
+#include "irods/rodsErrorTable.h"
+#include "irods/rsGlobalExtern.hpp" // For L1desc array.
+#include "irods/rsTicketAdmin.hpp"
 #include "irods/server_utilities.hpp"
-#include "irods/version.hpp"
 #include "irods/stringOpr.h"
+#include "irods/version.hpp"
 
 #define IRODS_USER_ADMINISTRATION_ENABLE_SERVER_SIDE_API
 #include "irods/user_administration.hpp"
 
 #include <cstring>
+#include <span>
 #include <string>
 #include <string_view>
 // clang-format on
@@ -57,9 +64,9 @@ namespace
     // Function Prototypes
     //
 
-    auto call_switch_user(irods::api_entry*, RsComm*, SwitchUserInput*) -> int;
+    auto call_switch_user(irods::api_entry*, RsComm*, const SwitchUserInput*) -> int;
 
-    auto rs_switch_user(RsComm*, SwitchUserInput*) -> int;
+    auto rs_switch_user(RsComm*, const SwitchUserInput*) -> int;
 
     auto check_input(const SwitchUserInput*) -> int;
 
@@ -67,15 +74,17 @@ namespace
 
     auto update_privilege_level(AuthInfo&, adm::user_type, const std::string_view, const std::string_view) -> void;
 
-    auto update_server_to_server_connections(RsComm&) -> void;
+    auto update_server_to_server_connections(RsComm&, const SwitchUserInput&) -> void;
+
+    auto terminate_ticket_session(RsComm&) -> void;
 
     //
     // Function Implementations
     //
 
-    auto call_switch_user(irods::api_entry* _api, RsComm* _comm, SwitchUserInput* _input) -> int
+    auto call_switch_user(irods::api_entry* _api, RsComm* _comm, const SwitchUserInput* _input) -> int
     {
-        return _api->call_handler<SwitchUserInput*>(_comm, _input);
+        return _api->call_handler<const SwitchUserInput*>(_comm, _input);
     } // call_switch_user
 
     auto check_input(const SwitchUserInput* _input) -> int
@@ -121,24 +130,41 @@ namespace
         }
     } // update_privilege_level
 
-    auto update_server_to_server_connections(RsComm& _comm) -> void
+    auto update_server_to_server_connections(const SwitchUserInput& _input) -> void
     {
-        const auto switch_user_or_disconnect = [&client = _comm.clientUser](rodsServerHost& _host) {
+        const auto switch_user_or_disconnect = [&](rodsServerHost& _host) {
             if (!_host.conn) {
                 log_api::trace("No connection to remote host [{}].", _host.hostName->name);
                 return;
             }
 
-            // Disconnect if the remote server's version is older than 4.3.1.
+            // Disconnect if the client requested that all server-to-server connections be closed or
+            // if the remote server's version is earlier than 4.3.1.
+            //
             // Remember, only iRODS 4.3.1 and later support the switch user API plugin.
-            if (*irods::to_version(_host.conn->svrVersion->relVersion) < irods::version{4, 3, 1}) {
+            if (!getValByKey(&_input.options, KW_KEEP_SVR_TO_SVR_CONNECTIONS) ||
+                *irods::to_version(_host.conn->svrVersion->relVersion) < irods::version{4, 3, 1})
+            {
+                log_api::trace("Closing server-to-server connection to remote host [{}].", _host.hostName->name);
                 rcDisconnect(_host.conn);
                 _host.conn = nullptr;
                 return;
             }
 
+            // Create a copy of the SwitchUserInput and update it for connections created due to server
+            // redirection.
+            SwitchUserInput input_copy{};
+            std::strncpy(input_copy.username, _input.username, sizeof(SwitchUserInput::username) - 1);
+            std::strncpy(input_copy.zone, _input.zone, sizeof(SwitchUserInput::zone) - 1);
+            copyKeyVal(&_input.options, &input_copy.options);
+
+            // Server-to-server connections are proxy connections created by the server. That means the
+            // identity of the proxy user matches that of the local iRODS administrator. The proxy user
+            // for these connections MUST NOT be updated.
+            rmKeyVal(&input_copy.options, KW_SWITCH_PROXY_USER);
+
             // At this point, we know the remote server supports this API plugin.
-            if (const auto ec = rc_switch_user(_host.conn, client.userName, client.rodsZone); ec != 0) {
+            if (const auto ec = rc_switch_user(_host.conn, &input_copy); ec != 0) {
                 log_api::error(
                     "rc_switch_user failed on remote host [{}] with error_code [{}]. Disconnecting from remote host.",
                     _host.hostName->name,
@@ -159,7 +185,21 @@ namespace
         }
     } // update_server_to_server_connections
 
-    auto rs_switch_user(RsComm* _comm, SwitchUserInput* _input) -> int
+    auto terminate_ticket_session(RsComm& _comm) -> void
+    {
+        log_api::trace("Terminating ticket session.");
+
+        TicketAdminInput input{};
+        input.arg1 = "session";
+        input.arg2 = "";
+        input.arg3 = "";
+
+        if (const auto ec = rsTicketAdmin(&_comm, &input); ec < 0) {
+            log_api::error("rsTicketAdmin failed with error_code [{}].", ec);
+        }
+    } // terminate_ticket_session
+
+    auto rs_switch_user(RsComm* _comm, const SwitchUserInput* _input) -> int
     {
         try {
             // Only administrators are allowed to invoke this API.
@@ -169,6 +209,22 @@ namespace
                 log_api::error(
                     "Proxy user [{}] does not have permission to switch client user.", _comm->proxyUser.userName);
                 return SYS_PROXYUSER_NO_PRIV;
+            }
+
+            const irods::experimental::key_value_proxy opts{_input->options};
+
+            if (opts.contains(KW_CLOSE_OPEN_REPLICAS)) {
+                close_all_l1_descriptors(*_comm);
+            }
+            else {
+                // Verify there are no open L1 descriptors. Return an error if there are. This forces the
+                // client to clean up behind themselves and keeps this API plugin from becoming overly complicated.
+                for (const auto& l1d : std::span{L1desc}) {
+                    if (FD_INUSE == l1d.inuseFlag) {
+                        log_api::error("Switching to another user is not allowed while there are open L1 descriptors.");
+                        return SYS_NOT_ALLOWED;
+                    }
+                }
             }
 
             // Return immediately if the client did not provide non-empty strings for the
@@ -204,9 +260,8 @@ namespace
             update_user_info(client, _input->username, _input->zone, user_type_string);
             update_privilege_level(client.authInfo, *user_type, _input->zone, local_zone);
 
-            // Update the proxy user identity associated with the RsComm if this connection does NOT represent
-            // a server-to-server connection.
-            if (!irods::server_property_exists(irods::AGENT_CONN_KW)) {
+            // Update the proxy user identity associated with the RsComm if requested by the client.
+            if (opts.contains(KW_SWITCH_PROXY_USER)) {
                 auto proxy = _comm->proxyUser;
 
                 update_user_info(proxy, _input->username, _input->zone, user_type_string);
@@ -224,9 +279,14 @@ namespace
             }
 
             // iRODS agents do not disconnect from other nodes following a redirect. For long running agents,
-            // this means the API plugin must invoke rc_switch_user() on each connection or disconnect each
+            // this means the API plugin must invoke rc_switch_user on each connection or disconnect each
             // connection.
-            update_server_to_server_connections(*_comm);
+            update_server_to_server_connections(*_input);
+
+            // If the connection had a ticket enabled on it, we must clear it to avoid security issues.
+            // Failing to do so can result in the switched-to user gaining access to data they normally
+            // wouldn't have access to.
+            terminate_ticket_session(*_comm);
 
             return 0;
         }
@@ -244,7 +304,7 @@ namespace
         }
     } // rs_switch_user
 
-    using operation = std::function<int(RsComm*, SwitchUserInput*)>;
+    using operation = std::function<int(RsComm*, const SwitchUserInput*)>;
     const operation op = rs_switch_user;
     auto fn_ptr = reinterpret_cast<funcPtr>(call_switch_user);
 } // anonymous namespace
@@ -257,7 +317,7 @@ namespace
 
 namespace
 {
-    using operation = std::function<int(RsComm*, SwitchUserInput*)>;
+    using operation = std::function<int(RsComm*, const SwitchUserInput*)>;
     const operation op{};
     funcPtr fn_ptr = nullptr; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 } // anonymous namespace
