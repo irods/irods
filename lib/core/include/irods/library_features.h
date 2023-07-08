@@ -19,6 +19,11 @@
 ///
 /// \since 4.3.1
 
+/// Defined if the development library supports the C++ ticket administration library.
+///
+/// \since 4.3.1
+#define IRODS_HAS_LIBRARY_TICKET_ADMINISTRATION 202209L
+
 /// Defined if the development library supports the C++ zone administration library.
 ///
 /// \since 4.3.1
