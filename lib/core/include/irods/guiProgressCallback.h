@@ -1,6 +1,9 @@
 #ifndef _GUI_PROGRESS_CALLBACK_H__
 #define _GUI_PROGRESS_CALLBACK_H__
 
+#include "irods/rodsDef.h" // For MAX_NAME_LEN
+#include "irods/rodsType.h" // For rodsLong_t
+
 #ifdef __cplusplus
 extern "C" {
 #endif
