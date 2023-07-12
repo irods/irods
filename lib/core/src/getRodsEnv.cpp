@@ -24,6 +24,7 @@
   the env file, either creating it or appending to it.
 */
 
+#include "irods/rodsDef.h"
 #include "irods/rods.h"
 #include "irods/rodsErrorTable.h"
 #include "irods/getRodsEnv.h"
@@ -32,6 +33,8 @@
 #include "irods/irods_version.h"
 #include "irods/irods_environment_properties.hpp"
 #include "irods/irods_configuration_keywords.hpp"
+
+#include <cstring>
 
 #define BUF_LEN 100
 #define LARGE_BUF_LEN MAX_NAME_LEN+20
@@ -139,12 +142,19 @@ extern "C" {
         createRodsEnvDefaults( &rodsEnvArg );
     }
 
-    static
-    int capture_string_property(
-        const std::string&             _key,
-        char*                          _val ) {
+    static int capture_string_property(const std::string& _key, char* _val, std::size_t _val_size)
+    {
+        if (_val == nullptr || _val_size == 0) {
+            return SYS_GETENV_ERR;
+        }
         try {
-            sprintf(_val, "%s", irods::get_environment_property<const std::string>(_key).c_str());
+            auto property = irods::get_environment_property<const std::string>(_key);
+
+            // If truncation would occur because property.size() >= _val_size, return an error
+            if (property.size() >= _val_size) {
+                return SYS_GETENV_ERR;
+            }
+            std::strncpy(_val, property.c_str(), _val_size);
             return 0;
         } catch ( const irods::exception& e ) {
             if ( e.code() == KEY_NOT_FOUND ) {
@@ -156,6 +166,11 @@ extern "C" {
         }
 
     } // capture_string_property
+
+    int capture_string_property(const char* _key, char* _val, size_t _val_size)
+    {
+        return capture_string_property(std::string{_key}, _val, _val_size);
+    }
 
     static
     int capture_integer_property(
@@ -193,49 +208,41 @@ extern "C" {
             sizeof( _env->rodsAuthScheme ),
             "native" );
 
-        capture_string_property(
-            irods::KW_CFG_IRODS_SESSION_ENVIRONMENT_FILE,
-            configFileName );
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        capture_string_property(irods::KW_CFG_IRODS_SESSION_ENVIRONMENT_FILE, configFileName, LONG_NAME_LEN);
 
-        capture_string_property(
-            irods::KW_CFG_IRODS_USER_NAME,
-            _env->rodsUserName );
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        capture_string_property(irods::KW_CFG_IRODS_USER_NAME, _env->rodsUserName, NAME_LEN);
 
-        capture_string_property(
-            irods::KW_CFG_IRODS_HOST,
-            _env->rodsHost );
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        capture_string_property(irods::KW_CFG_IRODS_HOST, _env->rodsHost, NAME_LEN);
 
-        capture_string_property(
-            irods::KW_CFG_IRODS_HOME,
-            _env->rodsHome );
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        capture_string_property(irods::KW_CFG_IRODS_HOME, _env->rodsHome, MAX_NAME_LEN);
 
-        capture_string_property(
-            irods::KW_CFG_IRODS_CWD,
-            _env->rodsCwd );
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        capture_string_property(irods::KW_CFG_IRODS_CWD, _env->rodsCwd, MAX_NAME_LEN);
 
-        capture_string_property(
-            irods::KW_CFG_IRODS_AUTHENTICATION_SCHEME,
-            _env->rodsAuthScheme );
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        capture_string_property(irods::KW_CFG_IRODS_AUTHENTICATION_SCHEME, _env->rodsAuthScheme, NAME_LEN);
 
         capture_integer_property(
             irods::KW_CFG_IRODS_PORT,
             _env->rodsPort );
 
-        capture_string_property(
-            irods::KW_CFG_IRODS_DEFAULT_RESOURCE,
-            _env->rodsDefResource );
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        capture_string_property(irods::KW_CFG_IRODS_DEFAULT_RESOURCE, _env->rodsDefResource, NAME_LEN);
 
-        capture_string_property(
-            irods::KW_CFG_IRODS_ZONE,
-            _env->rodsZone );
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        capture_string_property(irods::KW_CFG_IRODS_ZONE, _env->rodsZone, NAME_LEN);
 
-        capture_string_property(
-            irods::KW_CFG_IRODS_CLIENT_SERVER_POLICY,
-            _env->rodsClientServerPolicy );
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        capture_string_property(irods::KW_CFG_IRODS_CLIENT_SERVER_POLICY, _env->rodsClientServerPolicy, LONG_NAME_LEN);
 
-        capture_string_property(
-            irods::KW_CFG_IRODS_CLIENT_SERVER_NEGOTIATION,
-            _env->rodsClientServerNegotiation );
+        capture_string_property(irods::KW_CFG_IRODS_CLIENT_SERVER_NEGOTIATION,
+                                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+                                _env->rodsClientServerNegotiation,
+                                LONG_NAME_LEN);
 
         capture_integer_property(
             irods::KW_CFG_IRODS_ENCRYPTION_KEY_SIZE,
@@ -249,21 +256,19 @@ extern "C" {
             irods::KW_CFG_IRODS_ENCRYPTION_NUM_HASH_ROUNDS,
             _env->rodsEncryptionNumHashRounds );
 
-        capture_string_property(
-            irods::KW_CFG_IRODS_ENCRYPTION_ALGORITHM,
-            _env->rodsEncryptionAlgorithm );
+        capture_string_property(irods::KW_CFG_IRODS_ENCRYPTION_ALGORITHM,
+                                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+                                _env->rodsEncryptionAlgorithm,
+                                HEADER_TYPE_LEN);
 
-        capture_string_property(
-            irods::KW_CFG_IRODS_DEFAULT_HASH_SCHEME,
-            _env->rodsDefaultHashScheme );
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        capture_string_property(irods::KW_CFG_IRODS_DEFAULT_HASH_SCHEME, _env->rodsDefaultHashScheme, NAME_LEN);
 
-        capture_string_property(
-            irods::KW_CFG_IRODS_MATCH_HASH_POLICY,
-            _env->rodsMatchHashPolicy );
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        capture_string_property(irods::KW_CFG_IRODS_MATCH_HASH_POLICY, _env->rodsMatchHashPolicy, NAME_LEN);
 
-        capture_string_property(
-            irods::KW_CFG_IRODS_DEBUG,
-            _env->rodsDebug );
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        capture_string_property(irods::KW_CFG_IRODS_DEBUG, _env->rodsDebug, NAME_LEN);
 
         _env->rodsLogLevel = 0;
         int status = capture_integer_property(
@@ -277,9 +282,8 @@ extern "C" {
         }
 
         memset( _env->rodsAuthFile, 0, sizeof( _env->rodsAuthFile ) );
-        status = capture_string_property(
-                     irods::KW_CFG_IRODS_AUTHENTICATION_FILE,
-                     _env->rodsAuthFile );
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        status = capture_string_property(irods::KW_CFG_IRODS_AUTHENTICATION_FILE, _env->rodsAuthFile, LONG_NAME_LEN);
         if ( status == 0 ) {
             rstrcpy(
                 authFileName,
@@ -288,42 +292,44 @@ extern "C" {
         }
 
         // legacy ssl environment variables
-        capture_string_property(
-            irods::KW_CFG_IRODS_SSL_CA_CERTIFICATE_PATH,
-            _env->irodsSSLCACertificatePath );
+        capture_string_property(irods::KW_CFG_IRODS_SSL_CA_CERTIFICATE_PATH,
+                                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+                                _env->irodsSSLCACertificatePath,
+                                MAX_NAME_LEN);
 
-        capture_string_property(
-            irods::KW_CFG_IRODS_SSL_CA_CERTIFICATE_FILE,
-            _env->irodsSSLCACertificateFile );
+        capture_string_property(irods::KW_CFG_IRODS_SSL_CA_CERTIFICATE_FILE,
+                                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+                                _env->irodsSSLCACertificateFile,
+                                MAX_NAME_LEN);
 
-        capture_string_property(
-            irods::KW_CFG_IRODS_SSL_VERIFY_SERVER,
-            _env->irodsSSLVerifyServer );
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        capture_string_property(irods::KW_CFG_IRODS_SSL_VERIFY_SERVER, _env->irodsSSLVerifyServer, MAX_NAME_LEN);
 
-        capture_string_property(
-            irods::KW_CFG_IRODS_SSL_CERTIFICATE_CHAIN_FILE,
-            _env->irodsSSLCertificateChainFile );
+        capture_string_property(irods::KW_CFG_IRODS_SSL_CERTIFICATE_CHAIN_FILE,
+                                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+                                _env->irodsSSLCertificateChainFile,
+                                MAX_NAME_LEN);
 
-        capture_string_property(
-            irods::KW_CFG_IRODS_SSL_CERTIFICATE_KEY_FILE,
-            _env->irodsSSLCertificateKeyFile );
+        capture_string_property(irods::KW_CFG_IRODS_SSL_CERTIFICATE_KEY_FILE,
+                                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+                                _env->irodsSSLCertificateKeyFile,
+                                MAX_NAME_LEN);
 
-        capture_string_property(
-            irods::KW_CFG_IRODS_SSL_DH_PARAMS_FILE,
-            _env->irodsSSLDHParamsFile );
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        capture_string_property(irods::KW_CFG_IRODS_SSL_DH_PARAMS_FILE, _env->irodsSSLDHParamsFile, MAX_NAME_LEN);
 
         // control plane variables
-        capture_string_property(
-            irods::KW_CFG_IRODS_SERVER_CONTROL_PLANE_KEY,
-            _env->irodsCtrlPlaneKey );
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        capture_string_property(irods::KW_CFG_IRODS_SERVER_CONTROL_PLANE_KEY, _env->irodsCtrlPlaneKey, MAX_NAME_LEN);
 
         capture_integer_property(
             irods::KW_CFG_IRODS_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS,
             _env->irodsCtrlPlaneEncryptionNumHashRounds );
 
-        capture_string_property(
-            irods::KW_CFG_IRODS_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM,
-            _env->irodsCtrlPlaneEncryptionAlgorithm );
+        capture_string_property(irods::KW_CFG_IRODS_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM,
+                                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+                                _env->irodsCtrlPlaneEncryptionAlgorithm,
+                                HEADER_TYPE_LEN);
 
         capture_integer_property(
             irods::KW_CFG_IRODS_SERVER_CONTROL_PLANE_PORT,
@@ -345,9 +351,8 @@ extern "C" {
             irods::KW_CFG_IRODS_CONNECTION_POOL_REFRESH_TIME,
             _env->irodsConnectionPoolRefreshTime );
 
-        capture_string_property(
-            irods::KW_CFG_IRODS_PLUGINS_HOME,
-            _env->irodsPluginHome );
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        capture_string_property(irods::KW_CFG_IRODS_PLUGINS_HOME, _env->irodsPluginHome, MAX_NAME_LEN);
 
         return 0;
     }
