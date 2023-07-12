@@ -69,6 +69,8 @@ char *getRodsEnvAuthFileName();
 
 int printRodsEnv( FILE* );
 
+int capture_string_property(const char* _key, char* _val, size_t _val_size);
+
 #ifdef __cplusplus
 
 void _getRodsEnv( rodsEnv &myRodsEnv );
