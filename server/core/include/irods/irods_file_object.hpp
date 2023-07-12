@@ -5,6 +5,7 @@
 // irods includes
 #include "irods/fileCreate.h"
 #include "irods/rodsConnect.h"
+#include "irods/rodsType.h"
 
 // =-=-=-=-=-=-=-
 #include "irods/irods_data_object.hpp"
@@ -103,7 +104,7 @@ namespace irods {
             virtual int                            l1_desc_idx()     const {
                 return l1_desc_idx_;
             }
-            virtual size_t                         size()            const {
+            virtual rodsLong_t                         size()            const {
                 return size_;
             }
             virtual int                            repl_requested()  const {
@@ -134,7 +135,7 @@ namespace irods {
             virtual void comm( rsComm_t* _c )                   {
                 comm_            = _c;
             }
-            virtual void size( size_t _v )                       {
+            virtual void size( rodsLong_t _v )                       {
                 size_            = _v;
             }
             virtual void repl_requested( int _v )                {
@@ -167,7 +168,7 @@ namespace irods {
             std::string                    data_type_;       // data type as described in objInfo.h:32
             int                            file_descriptor_; // file descriptor, if the file is in flight
             int                            l1_desc_idx_;     // index into irods L1 file descriptor table
-            size_t                         size_;            // size of the file in bytes
+            rodsLong_t                     size_;            // size of the file in bytes
             int                            repl_requested_;  // requested replica number
             std::string                    in_pdmo_;         // hierarchy indicating the current operations are
             // occurring from within a pdmo
