@@ -23,15 +23,26 @@ from . import resource_suite
 from . import session
 
 
-# Requires existence of OS account 'irodsauthuser' with password ';=iamnotasecret'
 class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
 
     def setUp(self):
-        super(Test_Auth, self).setUp()
         cfg = lib.open_and_load_json(os.path.join(IrodsConfig().irods_directory, 'test', 'test_framework_configuration.json'))
         auth_user = cfg['irods_authuser_name']
         auth_pass = cfg['irods_authuser_password']
+
+        # Requires existence of OS account 'irodsauthuser' with password ';=iamnotasecret'
+        try:
+            import pwd
+            pwd.getpwnam(auth_user)
+
+        except KeyError:
+            # This is a requirement in order to run these tests and running the tests is required for our test suite, so
+            # we always fail here when the prerequisites are not being met on the test-running host.
+            self.fail('OS user "irodsauthuser" with password ";=iamnotasecret" must exist in order to run these tests.')
+
+        super(Test_Auth, self).setUp()
+
         self.auth_session = session.mkuser_and_return_session('rodsuser', auth_user, auth_pass, lib.get_hostname())
 
     def tearDown(self):
