@@ -13,6 +13,7 @@
 #include <irods/rcMisc.h>
 #include <irods/rods.h>
 #include <irods/rodsClient.h>
+#include <irods/rodsError.h>
 
 #include <boost/lexical_cast.hpp>
 
@@ -20,6 +21,7 @@
 #include <nlohmann/json.hpp>
 
 #include <algorithm>
+#include <cstdio>
 #include <iostream>
 #include <filesystem>
 #include <fstream>
@@ -458,6 +460,7 @@ int main( int argc, char **argv )
         // demands the pam authentication plugin
         status = clientLogin( Conn, ctx_str.c_str(), irods::AUTH_PAM_SCHEME.c_str() );
         if ( status != 0 ) {
+            print_error_stack_to_file(Conn->rError, stderr);
             return 8;
         }
 
@@ -487,6 +490,7 @@ int main( int argc, char **argv )
         std::string ctx_str = irods::escaped_kvp_string( ctx_map );
         status = clientLogin( Conn, ctx_str.c_str(), AUTH_OPENID_SCHEME );
         if ( status != 0 ) {
+            print_error_stack_to_file(Conn->rError, stderr);
             rcDisconnect( Conn );
             return 7;
         }
@@ -501,6 +505,7 @@ int main( int argc, char **argv )
                                   my_env.rodsAuthScheme;
             status = clientLogin( Conn, 0, auth_scheme );
             if ( status != 0 ) {
+                print_error_stack_to_file(Conn->rError, stderr);
                 rcDisconnect( Conn );
                 return 7;
             }
@@ -511,12 +516,14 @@ int main( int argc, char **argv )
                 short-term password (after initial login) */
                 status = clientLoginTTL( Conn, ttl );
                 if ( status != 0 ) {
+                    print_error_stack_to_file(Conn->rError, stderr);
                     rcDisconnect( Conn );
                     return 8;
                 }
                 /* And check that it works */
                 status = clientLogin( Conn );
                 if ( status != 0 ) {
+                    print_error_stack_to_file(Conn->rError, stderr);
                     rcDisconnect( Conn );
                     return 7;
                 }
@@ -532,6 +539,7 @@ int main( int argc, char **argv )
             // the authentication scheme configured here. If the scheme in the environment and the scheme configured in
             // iinit match, then nothing will need to change in clientLogin. If they do not match, the override wins.
             if (const int ec = clientLogin(Conn, ctx.dump().c_str(), my_env.rodsAuthScheme); ec != 0) {
+                print_error_stack_to_file(Conn->rError, stderr);
                 rcDisconnect(Conn);
                 return 7;
             }
@@ -540,12 +548,14 @@ int main( int argc, char **argv )
             if (ttl > 0 && lower_scheme != PAM_INTERACTIVE_SCHEME && lower_scheme != PAM_PASSWORD_SCHEME) {
                 status = clientLoginTTL(Conn, ttl);
                 if (status) {
+                    print_error_stack_to_file(Conn->rError, stderr);
                     rcDisconnect(Conn);
                     return 8;
                 }
                 /* And check that it works */
                 status = clientLogin(Conn);
                 if (status) {
+                    print_error_stack_to_file(Conn->rError, stderr);
                     rcDisconnect(Conn);
                     return 7;
                 }

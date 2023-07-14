@@ -4,10 +4,12 @@
 #include <irods/parseCommandLine.h>
 #include <irods/rcMisc.h>
 #include <irods/rodsClient.h>
+#include <irods/rodsError.h>
 #include <irods/rodsPath.h>
 
 #include <boost/format.hpp>
 
+#include <cstdio>
 #include <iostream>
 #include <string>
 
@@ -393,6 +395,7 @@ main( int argc, char **argv ) {
 
     status = clientLogin( conn );
     if ( status != 0 ) {
+        print_error_stack_to_file(conn->rError, stderr);
         return 3;
     }
 

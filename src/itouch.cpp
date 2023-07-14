@@ -1,4 +1,5 @@
 #include <irods/rodsClient.h>
+#include <irods/rodsError.h>
 #include <irods/client_connection.hpp>
 #include <irods/irods_version.h>
 #include <irods/touch.h>

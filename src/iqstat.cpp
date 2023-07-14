@@ -4,6 +4,7 @@
 #include <irods/rcMisc.h>
 #include <irods/rods.h>
 #include <irods/rodsClient.h>
+#include <irods/rodsError.h>
 #include <irods/rodsLog.h>
 #include <irods/user_administration.hpp>
 
@@ -175,6 +176,7 @@ main( int argc, char **argv ) {
 
     status = clientLogin( Conn );
     if ( status != 0 ) {
+        print_error_stack_to_file(Conn->rError, stderr);
         if ( !debug ) {
             return 3;
         }

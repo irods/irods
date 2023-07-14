@@ -4,9 +4,13 @@
 #include <irods/irods_client_api_table.hpp>
 #include <irods/irods_pack_table.hpp>
 #include <irods/rodsClient.h>
+#include <irods/rodsError.h>
 #include <irods/parseCommandLine.h>
 #include <irods/rodsPath.h>
 #include <irods/fsckUtil.h>
+
+#include <cstdio>
+
 void usage();
 
 static int set_genquery_inp_from_physical_path_using_hostname(genQueryInp_t* genquery_inp, const char* physical_path, const char* hostname) {
@@ -99,6 +103,7 @@ main( int argc, char **argv ) {
     if ( strcmp( myEnv.rodsUserName, PUBLIC_USER_NAME ) != 0 ) {
         status = clientLogin( conn );
         if ( status != 0 ) {
+            print_error_stack_to_file(conn->rError, stderr);
             rcDisconnect( conn );
             return 7;
         }

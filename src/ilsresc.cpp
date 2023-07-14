@@ -5,8 +5,10 @@
 #include <irods/irods_resource_constants.hpp>
 #include <irods/rods.h>
 #include <irods/rodsClient.h>
+#include <irods/rodsError.h>
 #include <irods/rodsErrorTable.h>
 
+#include <cstdio>
 #include <iostream>
 #include <vector>
 
@@ -505,6 +507,7 @@ main( int argc, char **argv ) {
 
         status = clientLogin( Conn );
         if ( status != 0 ) {
+            print_error_stack_to_file(Conn->rError, stderr);
             return 3;
         }
 

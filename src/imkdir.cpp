@@ -5,11 +5,14 @@
 */
 
 #include <irods/rodsClient.h>
+#include <irods/rodsError.h>
 #include <irods/parseCommandLine.h>
 #include <irods/rodsPath.h>
 #include <irods/mkdirUtil.h>
 #include <irods/irods_client_api_table.hpp>
 #include <irods/irods_pack_table.hpp>
+
+#include <cstdio>
 
 void usage();
 
@@ -69,6 +72,7 @@ main( int argc, char **argv ) {
 
     status = clientLogin( conn );
     if ( status != 0 ) {
+        print_error_stack_to_file(conn->rError, stderr);
         rcDisconnect( conn );
         exit( 7 );
     }
