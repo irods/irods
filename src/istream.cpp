@@ -1,4 +1,5 @@
 #include <irods/rodsClient.h>
+#include <irods/rodsError.h>
 #include <irods/client_connection.hpp>
 #include <irods/dstream.hpp>
 #include <irods/transport/default_transport.hpp>

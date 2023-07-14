@@ -5,10 +5,12 @@
 #include <irods/lsUtil.h>
 #include <irods/parseCommandLine.h>
 #include <irods/rodsClient.h>
+#include <irods/rodsError.h>
 #include <irods/rodsPath.h>
 
 #include <fmt/core.h>
 
+#include <cstdio>
 #include <iostream>
 #include <string>
 
@@ -75,6 +77,7 @@ main( int argc, char **argv ) {
     if ( strcmp( myEnv.rodsUserName, PUBLIC_USER_NAME ) != 0 ) {
         status = clientLogin( conn );
         if ( status != 0 ) {
+            print_error_stack_to_file(conn->rError, stderr);
             rcDisconnect( conn );
             exit( 7 );
         }

@@ -3,8 +3,11 @@
 
 #include <irods/rods.h>
 #include <irods/rodsClient.h>
+#include <irods/rodsError.h>
 #include <irods/irods_client_api_table.hpp>
 #include <irods/irods_pack_table.hpp>
+
+#include <cstdio>
 
 rcComm_t *Conn;
 
@@ -411,6 +414,7 @@ main( int argc, char **argv ) {
 
     status = clientLogin( Conn );
     if ( status != 0 ) {
+        print_error_stack_to_file(Conn->rError, stderr);
         rcDisconnect( Conn );
         exit( 3 );
     }

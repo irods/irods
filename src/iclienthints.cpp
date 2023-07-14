@@ -4,13 +4,15 @@
 #include <irods/irods_client_api_table.hpp>
 #include <irods/irods_pack_table.hpp>
 #include <irods/rodsClient.h>
+#include <irods/rodsError.h>
 #include <irods/parseCommandLine.h>
 #include <irods/rodsPath.h>
 #include <irods/lsUtil.h>
 #include <irods/irods_buffer_encryption.hpp>
+
+#include <cstdio>
 #include <string>
 #include <iostream>
-
 
 void usage() {
     const char *msgs[] = {
@@ -86,6 +88,7 @@ main( int _argc, char** argv ) {
     if ( strcmp( myEnv.rodsUserName, PUBLIC_USER_NAME ) != 0 ) {
         status = clientLogin( conn );
         if ( status != 0 ) {
+            print_error_stack_to_file(conn->rError, stderr);
             rcDisconnect( conn );
             exit( 7 );
         }

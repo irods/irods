@@ -2,6 +2,7 @@
 
 #include <irods/rods.h>
 #include <irods/rodsClient.h>
+#include <irods/rodsError.h>
 #include <irods/irods_client_api_table.hpp>
 #include <irods/irods_pack_table.hpp>
 #include <irods/rodsPath.h>
@@ -2160,6 +2161,7 @@ int main( int argc, const char **argv )
     const auto disconnect = irods::at_scope_exit{[] { rcDisconnect(Conn); }};
 
     if ( clientLogin( Conn ) != 0 ) {
+        print_error_stack_to_file(Conn->rError, stderr);
         return 3;
     }
 

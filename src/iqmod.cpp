@@ -2,6 +2,9 @@
 #include <irods/irods_pack_table.hpp>
 #include <irods/parseCommandLine.h>
 #include <irods/rodsClient.h>
+#include <irods/rodsError.h>
+
+#include <cstdio>
 
 #define MAX_SQL 300
 #define BIG_STR 200
@@ -98,6 +101,7 @@ main( int argc, char **argv ) {
 
     status = clientLogin( Conn );
     if ( status != 0 ) {
+        print_error_stack_to_file(Conn->rError, stderr);
         printError( Conn, status, "clientLogin" );
         if ( !debug ) {
             return 3;

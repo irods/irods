@@ -4,12 +4,14 @@
 /* User command to change their password. */
 #include <irods/rods.h>
 #include <irods/rodsClient.h>
+#include <irods/rodsError.h>
 #include <unistd.h>
 #include <termios.h>
 #include <irods/termiosUtil.hpp>
 #include <irods/irods_client_api_table.hpp>
 #include <irods/irods_pack_table.hpp>
 
+#include <cstdio>
 #include <iostream>
 #include <string>
 
@@ -105,6 +107,7 @@ main( int argc, char **argv ) {
     /* and check that the user/password is OK */
     status = clientLogin( Conn );
     if ( status != 0 ) {
+        print_error_stack_to_file(Conn->rError, stderr);
         rcDisconnect( Conn );
         exit( 7 );
     }
