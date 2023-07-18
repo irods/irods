@@ -56,6 +56,15 @@ namespace irods::process_stash
         g_stash.erase(_key);
     } // erase
 
+    auto erase_if(const std::function<bool(const std::string&, const boost::any&)>& _pred) -> void
+    {
+        std::lock_guard lock{g_mtx};
+        std::erase_if(g_stash, [&_pred](const auto& _item) {
+            const auto& [k, v] = _item;
+            return _pred(k, v);
+        });
+    } // erase_if
+
     auto handles() -> std::vector<std::string>
     {
         std::vector<std::string> handles;

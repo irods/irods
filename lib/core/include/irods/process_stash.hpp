@@ -7,6 +7,7 @@
 // because it produces the correct results when used across shared library boundaries.
 #include <boost/any.hpp>
 
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -51,6 +52,26 @@ namespace irods::process_stash
     ///
     /// \since 4.2.12
     auto erase(const std::string& _key) -> void;
+
+    /// Removes all entries satisfying the predicate.
+    ///
+    /// This function is thread-safe.
+    ///
+    /// \param[in] _pred \parblock The predicate to test each entry against.
+    ///
+    /// \p _pred must take a std::string and boost::any by reference and return a boolean
+    /// indicating whether the entry should be removed. The arguments passed must be
+    /// treated as read-only.
+    ///
+    /// The std::string parameter is the handle mapped to the object stored in the boost::any.
+    ///
+    /// The boost::any parameter is the wrapped object identified by the handle.
+    ///
+    /// If \p _pred returns \p true, the entry is removed.
+    /// \endparblock
+    ///
+    /// \since 4.3.1
+    auto erase_if(const std::function<bool(const std::string&, const boost::any&)>& _pred) -> void;
 
     /// Returns all handles in the process stash.
     ///
