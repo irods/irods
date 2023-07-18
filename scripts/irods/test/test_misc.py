@@ -363,11 +363,11 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
             self.assertEqual(rc, 0)
 
             # Check all input prompted
-            self.assertIn('Enter the host name (DNS) of the server to connect to:', stdout)
-            self.assertIn('Enter the port number:', stdout)
-            self.assertIn('Enter your irods user name:', stdout)
-            self.assertIn('Enter your irods zone:', stdout)
-            self.assertIn('Enter your current iRODS password:', stdout)
+            self.assertIn('Enter the host name (DNS) of the server to connect to', stdout)
+            self.assertIn('Enter the port number', stdout)
+            self.assertIn('Enter your iRODS user name', stdout)
+            self.assertIn('Enter your iRODS zone', stdout)
+            self.assertIn('Enter your current iRODS password', stdout)
 
             # Check expected error exists
             error_string = ' ERROR: environment_properties::capture: missing environment file. should be at [{}/.irods/irods_environment.json]\n'.format(
