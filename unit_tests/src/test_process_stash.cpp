@@ -65,3 +65,37 @@ TEST_CASE("process_stash basic operations")
     // Show that the stash is now empty.
     REQUIRE(irods::process_stash::handles().empty());
 }
+
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+TEST_CASE("process_stash::erase_if")
+{
+    // A POD type which helps to demonstrate the stash's ability to store heterogeneous data.
+    struct pod
+    {
+        int x = 0;
+        int y = 0;
+    };
+
+    // Const data used throughout the test.
+    const int an_integer = 100;
+    const std::string a_string = "some data";
+    const pod a_pod{320, 240};
+
+    // Insert some data into the stash.
+    const auto h1 = irods::process_stash::insert(an_integer);
+    const auto h2 = irods::process_stash::insert(a_string);
+    const auto h3 = irods::process_stash::insert(a_pod);
+
+    // Show that the size of the stash is equivalent to the number of handles.
+    auto handles = irods::process_stash::handles();
+    REQUIRE(handles.size() == 3);
+
+    // Show that the handles can be erased using a predicate.
+    irods::process_stash::erase_if([&h1, &h3](auto&& _k, auto&&) { return _k == h1 || _k == h3; });
+    CHECK_FALSE(irods::process_stash::find(h1));
+    CHECK_FALSE(irods::process_stash::find(h3));
+
+    // Show that the stash now has a size of 1.
+    CHECK(irods::process_stash::find(h2));
+    CHECK(irods::process_stash::handles().size() == 1);
+}
