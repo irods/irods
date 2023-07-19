@@ -41,6 +41,7 @@ set(
   delay_hints_parser
   dns_cache
   dstream
+  file_object
   filesystem
   fixed_buffer_resource
   fully_qualified_username

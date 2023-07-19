@@ -11,6 +11,7 @@
     "irods_delay_hints_parser",
     "irods_dns_cache",
     "irods_dstream",
+    "irods_file_object",
     "irods_filesystem",
     "irods_fixed_buffer_resource",
     "irods_fully_qualified_username",
