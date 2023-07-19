@@ -343,6 +343,8 @@ namespace irods::experimental::io::NAMESPACE_IMPL
             dataObjInp_t input{};
             at_scope_exit free_memory{[&input] { clearKeyVal(&input.condInput); }};
 
+            // Set dataSize to invalid size to signal unknown size for streaming.
+            input.dataSize = -1;
             input.createMode = 0600;
             input.openFlags = flags;
             rstrcpy(input.objPath, _path.c_str(), sizeof(input.objPath));
