@@ -9,7 +9,10 @@
 #include "irods/rodsClient.h"
 #include "irods/user_administration.hpp"
 
+#include <algorithm>
 #include <array>
+#include <string_view>
+#include <utility>
 
 namespace ix = irods::experimental;
 
@@ -251,4 +254,49 @@ TEST_CASE("defer authentication", "client_connection")
         REQUIRE(clientLoginWithPassword(static_cast<RcComm*>(conn), password.data()) == 0);
         REQUIRE(ix::filesystem::client::exists(conn, path));
     }
+}
+
+TEST_CASE("#7192: all connections store unique session signatures", "client_connection")
+{
+    //
+    // IMPORTANT: This test relies on client_connection to verify session signatures are handled
+    //            correctly. However, this applies to the connection_pool implementation as well.
+    //            Meaning, if it works here, it should work for anything else built on top of
+    //            rcConnect-based facilities.
+    //
+
+    load_client_api_plugins();
+
+    std::array<ix::client_connection, 3> conns;
+
+    // Show that all connections are in a good state.
+    for (auto&& c : conns) {
+        CHECK(c);
+    }
+
+    //
+    // Show that all connections have unique session signatures.
+    //
+
+    // clang-format off
+    const auto pairs = {
+        std::pair{0, 1},
+        std::pair{0, 2},
+        std::pair{1, 2}
+    };
+    // clang-format on
+
+    const auto has_unique_session_signatures = [&conns](auto&& p) {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        std::string_view sig_a = static_cast<RcComm*>(conns.at(p.first))->session_signature;
+        INFO("sig_a: [" << sig_a << ']');
+
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        std::string_view sig_b = static_cast<RcComm*>(conns.at(p.second))->session_signature;
+        INFO("sig_b: [" << sig_b << ']');
+
+        return !sig_a.empty() && !sig_b.empty() && sig_a != sig_b;
+    };
+
+    CHECK(std::all_of(std::begin(pairs), std::end(pairs), has_unique_session_signatures));
 }

@@ -50,6 +50,16 @@ namespace irods {
                 return digest_;
             }
 
+            auto rcComm(RcComm* _comm) noexcept -> void
+            {
+                comm_ = _comm;
+            }
+
+            [[nodiscard]] auto rcComm() const noexcept -> RcComm*
+            {
+                return comm_;
+            }
+
             /// =-=-=-=-=-=-=-
             /// @brief mutators
             void digest( const std::string& _dd ) {
@@ -60,6 +70,7 @@ namespace irods {
             /// =-=-=-=-=-=-=-
             /// @brief md5 digest computed
             std::string digest_;
+            RcComm* comm_ = nullptr;
 
     }; // class native_auth_object
 

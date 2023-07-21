@@ -32,6 +32,7 @@
     "irods_parallel_transfer_engine",
     "irods_process_stash",
     "irods_query_builder",
+    "irods_rcConnect",
     "irods_rcTicketAdmin",
     "irods_rc_data_obj",
     "irods_rc_data_obj_repl",

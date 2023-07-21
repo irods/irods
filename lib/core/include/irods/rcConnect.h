@@ -120,6 +120,9 @@ typedef struct RcComm {
     // this struct needs to stay at the bottom of
     // rcComm_t
     fileRestart_t              fileRestart;
+
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+    char session_signature[33]; // NOLINT(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
 } rcComm_t;
 
 typedef struct PerfStat {
@@ -229,8 +232,38 @@ clientLoginPam( rcComm_t *conn, char *password, int ttl );
 int
 clientLoginTTL( rcComm_t *conn, int ttl );
 
-char *
-getSessionSignatureClientside();
+// clang-format off
+__attribute__((deprecated("Use session_signature member variable in RcComm instance.")))
+char* getSessionSignatureClientside();
+// clang-format on
+
+/// Stores the first 16 bytes of a buffer as hexadecimal in the \p session_signature member
+/// variable of an RcComm.
+///
+/// If either pointer is NULL or the size of the buffer is too small, an error is returned.
+///
+/// \param[in] _comm        A pointer to a RcComm.
+/// \param[in] _buffer      A buffer holding at least 16 bytes.
+/// \param[in] _buffer_size The size of \p _buffer.
+///
+/// \return An integer.
+/// \retval  0 On success.
+/// \retval <0 On failure.
+///
+/// \b Example
+/// \code{.cpp}
+/// RcComm* comm = // Our iRODS connection.
+///
+/// char buf[256];
+/// memset(buf, 0, sizeof(buf));
+/// fill_with_random_bytes(buf, sizeof(buf));
+///
+/// assert(set_session_signature_client_side(comm, buf, sizeof(buf)) == 0);
+/// assert(strncmp(comm->session_signature, buf, 16) == 0);
+/// \endcode
+///
+/// \since 4.3.1
+int set_session_signature_client_side(rcComm_t* _comm, const char* _buffer, size_t _buffer_size);
 
 int
 clientLoginWithPassword( rcComm_t *conn, char* password );
