@@ -98,6 +98,10 @@ namespace irods
     extern const char* const KW_CFG_EVICTION_AGE_IN_SECONDS;
     extern const char* const KW_CFG_CACHE_CLEARER_SLEEP_TIME_IN_SECONDS;
 
+    extern const char* const KW_CFG_IRODS_TCP_KEEPALIVE_PROBES;
+    extern const char* const KW_CFG_IRODS_TCP_KEEPALIVE_TIME_IN_SECONDS;
+    extern const char* const KW_CFG_IRODS_TCP_KEEPALIVE_INTVL_IN_SECONDS;
+
     // service_account_environment.json keywords
     extern const char* const KW_CFG_IRODS_USER_NAME;
     extern const char* const KW_CFG_IRODS_HOST;

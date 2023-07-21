@@ -2371,13 +2371,15 @@ svrChkReconnAtReadEnd( rsComm_t *rsComm ) {
     return 0;
 }
 
-int
-svrSockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
-    int status;
+int svrSockOpenForInConn(rsComm_t* rsComm, int* portNum, char** addr, int proto)
+{
+    int sfd = sockOpenForInConn(rsComm, portNum, addr, proto);
+    if (sfd < 0) {
+        return sfd;
+    }
 
-    status = sockOpenForInConn( rsComm, portNum, addr, proto );
-    if ( status < 0 ) {
-        return status;
+    if (const int ec = set_socket_tcp_keepalive_options(sfd); ec < 0) {
+        return ec;
     }
 
     if ( addr != NULL && *addr != NULL &&
@@ -2397,8 +2399,8 @@ svrSockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
                      *addr );
         }
     }
-    return status;
-}
+    return sfd;
+} // svrSockOpenForInConn
 
 char *
 getLocalSvrAddr() {

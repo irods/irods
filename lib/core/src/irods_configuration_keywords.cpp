@@ -130,6 +130,10 @@ namespace irods
     const char* const KW_CFG_IRODS_TRANS_BUFFER_SIZE_FOR_PARA_TRANS{"irods_transfer_buffer_size_for_parallel_transfer_in_megabytes"};
     const char* const KW_CFG_IRODS_CONNECTION_POOL_REFRESH_TIME{"irods_connection_pool_refresh_time_in_seconds"};
 
+    const char* const KW_CFG_IRODS_TCP_KEEPALIVE_PROBES{"irods_tcp_keepalive_probes"};
+    const char* const KW_CFG_IRODS_TCP_KEEPALIVE_TIME_IN_SECONDS{"irods_tcp_keepalive_time_in_seconds"};
+    const char* const KW_CFG_IRODS_TCP_KEEPALIVE_INTVL_IN_SECONDS{"irods_tcp_keepalive_intvl_in_seconds"};
+
     // legacy ssl environment variables
     const char* const KW_CFG_IRODS_SSL_CA_CERTIFICATE_PATH{"irods_ssl_ca_certificate_path"};
     const char* const KW_CFG_IRODS_SSL_CA_CERTIFICATE_FILE{"irods_ssl_ca_certificate_file"};

@@ -1,5 +1,7 @@
-#ifndef SOCK_COMM_H__
-#define SOCK_COMM_H__
+#ifndef IRODS_SOCK_COMM_H
+#define IRODS_SOCK_COMM_H
+
+/// \file
 
 #include "irods/rodsDef.h"
 #include "irods/rodsPackInstruct.h"
@@ -92,9 +94,19 @@ int rcReconnect(struct RcComm **comm, char *newHost, struct RodsEnvironment *myE
 
 int mySockClose(int sock); // server stop fcn <==> rsAccept?
 
+/// \brief Set the TCP_KEEPALIVE options for the specified socket.
+///
+/// param[in] _sfd Socket file descriptor on which options are being set.
+///
+/// \return An integer
+/// \retval 0 on success
+/// \retval <0 on failure
+///
+/// \since 4.3.1
+int set_socket_tcp_keepalive_options(int _sfd); // NOLINT(modernize-use-trailing-return-type)
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif // SOCK_COMM_H__ 
-
+#endif // IRODS_SOCK_COMM_H

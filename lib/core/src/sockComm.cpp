@@ -24,23 +24,54 @@
     jmp_buf Jcenv;
 #endif  /* _WIN32 */
 
-#include "irods/irods_stacktrace.hpp"
-#include "irods/irods_client_server_negotiation.hpp"
-#include "irods/irods_network_plugin.hpp"
-#include "irods/irods_network_manager.hpp"
-#include "irods/irods_network_factory.hpp"
-#include "irods/irods_network_constants.hpp"
-#include "irods/irods_environment_properties.hpp"
-#include "irods/irods_server_properties.hpp"
-#include "irods/sockCommNetworkInterface.hpp"
-#include "irods/irods_random.hpp"
 #include "irods/hostname_cache.hpp"
+#include "irods/irods_client_server_negotiation.hpp"
 #include "irods/irods_configuration_keywords.hpp"
+#include "irods/irods_environment_properties.hpp"
+#include "irods/irods_network_constants.hpp"
+#include "irods/irods_network_factory.hpp"
+#include "irods/irods_network_manager.hpp"
+#include "irods/irods_network_plugin.hpp"
+#include "irods/irods_random.hpp"
+#include "irods/irods_server_properties.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/sockCommNetworkInterface.hpp"
+#include "irods/with_durability.hpp"
 
 #include <nlohmann/json.hpp>
 
 #include <cstring>
 #include <exception>
+
+#include <sys/socket.h>
+#include <sys/types.h>
+
+namespace
+{
+    // Tries to create a socket of specified _domain and _type, retrying up to _retries times before failing.
+    auto try_to_create_socket(int _domain, int _type, int _protocol, int _retries = 1) -> int
+    {
+        int sock = -1;
+        int last_errno = 0;
+
+        const auto exec_result = irods::experimental::with_durability(irods::experimental::retries{_retries}, [&] {
+            sock = socket(_domain, _type, _protocol);
+
+            if (sock < 0) {
+                last_errno = errno;
+                return irods::experimental::execution_result::failure;
+            }
+
+            return irods::experimental::execution_result::success;
+        });
+
+        if (irods::experimental::execution_result::failure == exec_result || sock < 0) {
+            return USER_SOCK_OPEN_ERR - last_errno;
+        }
+
+        return sock;
+    } // try_to_create_socket
+} // anonymous namespace
 
 irods::error sockClientStart(irods::network_object_ptr _ptr, rodsEnv* _env)
 {
@@ -280,6 +311,60 @@ irods::error readMsgBody(
 
 } // readMsgBody
 
+// NOLINTNEXTLINE(modernize-use-trailing-return-type)
+int set_socket_tcp_keepalive_options(int _sfd)
+{
+    int ec = 0;
+    rodsEnv env{};
+    if (ec = getRodsEnv(&env); ec < 0) {
+        return ec;
+    }
+
+    // Make sure that SO_KEEPALIVE option is set on the socket. If not, we need to enable it here because iRODS will use
+    // TCP keepalive for all socket connections over the network.
+    int optval = 0;
+    socklen_t optlen = sizeof(optval);
+    if (ec = getsockopt(_sfd, SOL_SOCKET, SO_KEEPALIVE, &optval, &optlen); ec < 0) {
+        return SOCKET_ERROR - errno;
+    }
+
+    if (0 == optval) {
+        optval = 1;
+        optlen = sizeof(optval);
+        if (ec = setsockopt(_sfd, SOL_SOCKET, SO_KEEPALIVE, &optval, optlen); ec < 0) {
+            return SOCKET_ERROR - errno;
+        }
+    }
+
+    // If the configuration is invalid for the TCP keepalive options, that option should not be set on the socket. This
+    // will allow the socket to use to the kernel configuration instead. At this time, only non-positive values are
+    // considered to be invalid.
+    optval = env.tcp_keepalive_probes;
+    if (optval > 0) {
+        optlen = sizeof(optval);
+        if (ec = setsockopt(_sfd, SOL_TCP, TCP_KEEPCNT, &optval, optlen); ec < 0) {
+            return SOCKET_ERROR - errno;
+        }
+    }
+
+    optval = env.tcp_keepalive_time;
+    if (optval > 0) {
+        optlen = sizeof(optval);
+        if (ec = setsockopt(_sfd, SOL_TCP, TCP_KEEPIDLE, &optval, optlen); ec < 0) {
+            return SOCKET_ERROR - errno;
+        }
+    }
+
+    optval = env.tcp_keepalive_intvl;
+    if (optval > 0) {
+        optlen = sizeof(optval);
+        if (ec = setsockopt(_sfd, SOL_TCP, TCP_KEEPINTVL, &optval, optlen); ec < 0) {
+            return SOCKET_ERROR - errno;
+        }
+    }
+
+    return 0;
+} // set_socket_tcp_keepalive_options
 
 /* open sock for incoming connection */
 int
@@ -295,7 +380,7 @@ sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
     struct sockaddr_in  mySockAddr;
     memset( ( char * ) &mySockAddr, 0, sizeof mySockAddr );
 
-    const int sock = socket( AF_INET, proto, 0 );
+    const int sock = try_to_create_socket(AF_INET, proto, 0);
 
     if ( sock < 0 ) {
         status = SYS_SOCK_OPEN_ERR - errno;
@@ -307,6 +392,11 @@ sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
     /* For SOCK_DGRAM, done in checkbuf */
     if ( proto == SOCK_STREAM ) {
         rodsSetSockOpt( sock, rsComm->windowSize );
+
+        if (status = set_socket_tcp_keepalive_options(sock); status < 0) {
+            close(sock);
+            return status;
+        }
     }
 
     mySockAddr.sin_family = AF_INET;
@@ -814,21 +904,6 @@ connectToRhost( rcComm_t *conn, int connectCnt, int reconnFlag ) {
 
 
 int
-try_twice_to_create_socket(void) {
-    int sock = socket( AF_INET, SOCK_STREAM, 0 );
-    if ( sock < 0 ) {  /* the ol' one-two */
-        sock = socket( AF_INET, SOCK_STREAM, 0 );
-    }
-    if ( sock < 0 ) {
-        rodsLog( LOG_ERROR,
-                 "try_twice_to_create_socket() - socket() failed: errno=%d",
-                 errno );
-        return USER_SOCK_OPEN_ERR - errno;
-    }
-    return sock;
-}
-
-int
 connectToRhostWithRaddr( struct sockaddr_in *remoteAddr, int windowSize,
                          int timeoutFlag ) {
     int sock = -1;
@@ -837,11 +912,18 @@ connectToRhostWithRaddr( struct sockaddr_in *remoteAddr, int windowSize,
         if (sock < 0) {
             return sock;
         }
-    } else {
-        sock = try_twice_to_create_socket();
+    }
+    else {
+        sock = try_to_create_socket(AF_INET, SOCK_STREAM, 0);
         if (sock < 0) {
             return sock;
         }
+
+        if (const int ec = set_socket_tcp_keepalive_options(sock); ec < 0) {
+            close(sock);
+            return ec;
+        }
+
         const int status = connect( sock, ( struct sockaddr * ) remoteAddr,
                                     sizeof( struct sockaddr ) );
         if ( status < 0 ) {
@@ -869,40 +951,18 @@ connectToRhostWithRaddr( struct sockaddr_in *remoteAddr, int windowSize,
     return sock;
 }
 
-#ifdef _WIN32
-int
-connectToRhostWithTout(struct sockaddr *sin ) {
-    // A Windows console app has very limited timeout functionality.
-    // An pseudo timeout is implemented.
-    int timeoutCnt = 0;
-    int status = 0;
-    const int sock = try_twice_to_create_socket();
+int create_nonblocking_socket()
+{
+    const int sock = try_to_create_socket(AF_INET, SOCK_STREAM, 0);
     if (sock < 0) {
         return sock;
     }
 
-    while ( ( timeoutCnt < MAX_CONN_RETRY_CNT ) && ( !win_connect_timeout ) ) {
-        if ( ( status = connect( sock, sin, sizeof( struct sockaddr ) ) ) < 0 ) {
-            timeoutCnt ++;
-            rodsSleep( 0, 200000 );
-        }
-        else {
-            break;
-        }
-    }
-    if ( status != 0 ) {
-        return USER_SOCK_CONNECT_TIMEDOUT;
+    if (const int ec = set_socket_tcp_keepalive_options(sock); ec < 0) {
+        close(sock);
+        return ec;
     }
 
-    return 0;
-}
-#else
-int
-create_nonblocking_socket(void) {
-    const int sock = try_twice_to_create_socket();
-    if (sock < 0) {
-        return sock;
-    }
     long flags = fcntl( sock, F_GETFL, NULL );
     if ( flags < 0 ) {
         close( sock );
@@ -1030,8 +1090,6 @@ connectToRhostWithTout(struct sockaddr *sin ) {
     }
     return sock;
 }
-
-#endif
 
 int
 setConnAddr( rcComm_t *conn ) {
