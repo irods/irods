@@ -354,6 +354,25 @@ extern "C" {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
         capture_string_property(irods::KW_CFG_IRODS_PLUGINS_HOME, _env->irodsPluginHome, MAX_NAME_LEN);
 
+        // If the configuration is not set for the TCP keepalive options, set the value to something invalid. This
+        // indicates that we should not set the option on the socket, which will allow the socket to use the kernel
+        // configuration.
+        status =
+            capture_integer_property(irods::KW_CFG_IRODS_TCP_KEEPALIVE_INTVL_IN_SECONDS, _env->tcp_keepalive_intvl);
+        if (status < 0) {
+            _env->tcp_keepalive_intvl = -1;
+        }
+
+        status = capture_integer_property(irods::KW_CFG_IRODS_TCP_KEEPALIVE_PROBES, _env->tcp_keepalive_probes);
+        if (status < 0) {
+            _env->tcp_keepalive_probes = -1;
+        }
+
+        status = capture_integer_property(irods::KW_CFG_IRODS_TCP_KEEPALIVE_TIME_IN_SECONDS, _env->tcp_keepalive_time);
+        if (status < 0) {
+            _env->tcp_keepalive_time = -1;
+        }
+
         return 0;
     }
 
@@ -630,6 +649,10 @@ extern "C" {
         capture_string_env_var(
             env_var,
             _env->irodsPluginHome );
+
+        capture_integer_env_var(irods::KW_CFG_IRODS_TCP_KEEPALIVE_INTVL_IN_SECONDS, _env->tcp_keepalive_intvl);
+        capture_integer_env_var(irods::KW_CFG_IRODS_TCP_KEEPALIVE_PROBES, _env->tcp_keepalive_probes);
+        capture_integer_env_var(irods::KW_CFG_IRODS_TCP_KEEPALIVE_TIME_IN_SECONDS, _env->tcp_keepalive_time);
 
         return 0;
     }
