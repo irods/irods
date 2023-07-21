@@ -19,10 +19,15 @@
 #include "irods/termiosUtil.hpp"
 
 #include <openssl/md5.h>
+
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
 
+#include <fmt/format.h>
+
 #include <cerrno>
+#include <cstdint>
+#include <cstring>
 #include <string_view>
 
 #include <termios.h>
@@ -131,6 +136,29 @@ void setSessionSignatureClientside( char* _sig ) {
         ( unsigned char )_sig[15] );
 
 } // setSessionSignatureClientside
+
+auto set_session_signature_client_side(rcComm_t* _comm, const char* _buffer, std::size_t _buffer_size) -> int
+{
+    constexpr std::size_t required_size = 16;
+
+    if (!_comm || !_buffer || _buffer_size < required_size) {
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
+    std::memset(_comm->session_signature, 0, sizeof(RcComm::session_signature));
+
+    const std::string_view bytes{_buffer, required_size};
+    const auto* end = fmt::format_to(_comm->session_signature, "{:02x}", fmt::join(bytes, ""));
+
+    // If the difference in position is not double the original size, something went wrong.
+    // The session signature is expected to be 32 bytes long (w/o the null byte). Each byte
+    // in the original string will occupy 2 bytes in the signature.
+    if ((required_size * 2) != (end - _comm->session_signature)) {
+        return SYS_LIBRARY_ERROR;
+    }
+
+    return 0;
+} // set_session_signature_client_side
 
 int clientLoginPam( rcComm_t* Conn,
                     char*     password,
@@ -456,6 +484,15 @@ clientLoginWithPassword( rcComm_t *Conn, char* password ) {
     strncpy( md5Buf, authReqOut->challenge, CHALLENGE_LEN );
     setSessionSignatureClientside( md5Buf );
 
+    // Attach the leading bytes of the md5Buf buffer to the RcComm.
+    //
+    // This is important because setSessionSignatureClientside assumes client applications
+    // only ever manage a single iRODS connection. This assumption breaks C/C++ application's
+    // ability to modify passwords when multiple iRODS connections are under management.
+    //
+    // However, instead of replacing the original call, we leave it in place to avoid breaking
+    // backwards compatibility.
+    set_session_signature_client_side(Conn, md5Buf, sizeof(md5Buf));
 
     len = strlen( password );
     sprintf( md5Buf + CHALLENGE_LEN, "%s", password );

@@ -26,6 +26,8 @@
 
 #include <termios.h>
 #include <unistd.h>
+
+#include <cstring>
 #include <iostream>
 #include <sstream>
 
@@ -65,7 +67,7 @@ namespace irods
             return resp;
         } // auth_client_start
 
-        json native_auth_establish_context(rcComm_t&, const json& req)
+        json native_auth_establish_context(rcComm_t& _comm, const json& req)
         {
             irods_auth::throw_if_request_message_is_missing_key(
                 req, {"user_name", "zone_name", "request_result"}
@@ -85,6 +87,16 @@ namespace irods
 
             // Save a representation of some of the challenge string for use as a session signature
             setSessionSignatureClientside(md5_buf);
+
+            // Attach the leading bytes of the md5_buf buffer to the RcComm.
+            //
+            // This is important because setSessionSignatureClientside assumes client applications
+            // only ever manage a single iRODS connection. This assumption breaks C/C++ application's
+            // ability to modify passwords when multiple iRODS connections are under management.
+            //
+            // However, instead of replacing the original call, we leave it in place to avoid breaking
+            // backwards compatibility.
+            set_session_signature_client_side(&_comm, md5_buf, sizeof(md5_buf));
 
             // determine if a password challenge is needed, are we anonymous or not?
             bool need_password = false;
