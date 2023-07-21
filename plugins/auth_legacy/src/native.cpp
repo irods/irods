@@ -67,6 +67,7 @@ irods::error native_auth_client_start(irods::plugin_context& _ctx,
     }
 
     irods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast<irods::native_auth_object>(_ctx.fco());
+    ptr->rcComm(_comm);
     ptr->user_name(_comm->proxyUser.userName);
     ptr->zone_name(_comm->proxyUser.rodsZone);
 
@@ -94,6 +95,16 @@ irods::error native_auth_establish_context(irods::plugin_context& _ctx)
 
     // Save a representation of some of the challenge string for use as a session signature
     setSessionSignatureClientside( md5_buf );
+
+    // Attach the leading bytes of the md5_buf buffer to the RcComm.
+    //
+    // This is important because setSessionSignatureClientside assumes client applications
+    // only ever manage a single iRODS connection. This assumption breaks C/C++ application's
+    // ability to modify passwords when multiple iRODS connections are under management.
+    //
+    // However, instead of replacing the original call, we leave it in place to avoid breaking
+    // backwards compatibility.
+    set_session_signature_client_side(ptr->rcComm(), md5_buf, sizeof(md5_buf));
 
     // determine if a password challenge is needed, are we anonymous or not?
     int need_password = 0;

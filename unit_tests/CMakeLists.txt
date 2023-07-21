@@ -63,6 +63,7 @@ set(
   parallel_transfer_engine
   process_stash
   query_builder
+  rcConnect
   rcTicketAdmin
   rc_data_obj
   rc_data_obj_repl
