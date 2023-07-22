@@ -2,6 +2,7 @@
 
 #include "irods/client_connection.hpp"
 #include "irods/irods_at_scope_exit.hpp"
+#include "irods/rcConnect.h"
 #include "irods/rodsClient.h"
 #include "irods/user_administration.hpp"
 #include "irods/zone_administration.hpp"
@@ -183,5 +184,43 @@ TEST_CASE("user group administration")
             adm::group{"unit_test_test_group_a"},
             adm::group{"unit_test_test_group_c"}
         });
+    }
+
+    SECTION("#7208: password can be changed without obfGetPw")
+    {
+        // Create a new rodsadmin.
+        const adm::user test_admin{"unit_test_test_admin"};
+        REQUIRE_NOTHROW(adm::client::add_user(conn, test_admin, adm::user_type::rodsadmin));
+        irods::at_scope_exit remove_admin{
+            [&conn, &test_admin] { CHECK_NOTHROW(adm::client::remove_user(conn, test_admin)); }};
+
+        // Set the test admin's password. This will be used later.
+        adm::user_password_property admin_prop{"admin_pass"};
+        REQUIRE_NOTHROW(adm::client::modify_user(conn, test_admin, admin_prop));
+
+        // Connect to the server and authenticate as the new admin.
+        rodsEnv env;
+        _getRodsEnv(env);
+        irods::experimental::client_connection admin_conn{
+            irods::experimental::defer_authentication, env.rodsHost, env.rodsPort, {test_admin.name, env.rodsZone}};
+        CHECK(clientLoginWithPassword(static_cast<RcComm*>(admin_conn), admin_prop.value.data()) == 0);
+
+        // Create a rodsuser.
+        const adm::user test_user{"unit_test_test_user"};
+        REQUIRE_NOTHROW(adm::client::add_user(admin_conn, test_user));
+        irods::at_scope_exit remove_user{
+            [&admin_conn, &test_user] { CHECK_NOTHROW(adm::client::remove_user(admin_conn, test_user)); }};
+
+        // Show we can set the password of the test user without needing to call obfGetPw.
+        // Notice the second argument on the property. This instructs the user administration library
+        // to not call obfGetPw and instead, use the given argument as the descrambled password. The
+        // password passed as the second argument must be the requester's password.
+        adm::user_password_property test_user_prop{"user_pass", admin_prop.value};
+        REQUIRE_NOTHROW(adm::client::modify_user(admin_conn, test_user, test_user_prop));
+
+        // Show the test user can connect to the server and authenticate using the new password.
+        irods::experimental::client_connection user_conn{
+            irods::experimental::defer_authentication, env.rodsHost, env.rodsPort, {test_user.name, env.rodsZone}};
+        CHECK(clientLoginWithPassword(static_cast<RcComm*>(user_conn), test_user_prop.value.data()) == 0);
     }
 }
