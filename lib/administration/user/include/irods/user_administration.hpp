@@ -74,7 +74,27 @@ namespace irods::experimental::administration
     /// \since 4.3.1
     struct user_password_property
     {
-        std::string value;
+        /// Constructs an instance of #user_password_property.
+        ///
+        /// \param[in] _value              The new password for a user.
+        /// \param[in] _requester_password The plaintext password of the user requesting the
+        ///                                change. If passed, #obfGetPw will not be used.
+        ///
+        /// \since 4.3.1
+        explicit user_password_property(std::string _value,
+                                        std::optional<std::string> _requester_password = std::nullopt)
+            : value{std::move(_value)}
+            , requester_password{std::move(_requester_password)}
+        {
+        }
+
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
+        std::string value; ///< The new password.
+
+        /// The password of the user requesting the change.
+        /// If not set, obfGetPw() is used. Use of obfGetPw() implies a .irods/.irodsA file
+        /// exists locally.
+        std::optional<std::string> requester_password; // NOLINT(misc-non-private-member-variables-in-classes)
     }; // struct user_password_property
 
     /// Holds the new type of a user. Primarily used to modify a user.
@@ -141,7 +161,7 @@ namespace irods::experimental::administration
     /// \since 4.3.1
     namespace detail
     {
-        auto obfuscate_password(const std::string_view new_password) -> std::string;
+        auto obfuscate_password(const user_password_property& _property) -> std::string;
     } // namespace detail
 
     /// A namespace defining the set of client-side or server-side API functions.
@@ -230,7 +250,7 @@ namespace irods::experimental::administration
             // clang-format on
 
             if constexpr (std::is_same_v<Property, user_password_property>) {
-                obfuscated_password = detail::obfuscate_password(_property.value);
+                obfuscated_password = detail::obfuscate_password(_property);
                 input.arg3 = "password";
                 input.arg4 = obfuscated_password.c_str();
                 execute("Failed to set password for user [{}].", name);
