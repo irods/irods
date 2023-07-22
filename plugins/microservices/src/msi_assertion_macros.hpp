@@ -94,6 +94,17 @@ using log_msi_test_internal = irods::experimental::log::microservice;
     return msi_test_error_code = -1;                                                          \
   }
 
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#define IRODS_MSI_NOTHROW(expr)                                                             \
+  try {                                                                                     \
+    expr;                                                                                   \
+    log_msi_test_internal::info("ASSERTION PASSED [{}:{}]: {}", __FILE__, __LINE__, #expr); \
+  }                                                                                         \
+  catch (...) {                                                                             \
+    log_msi_test_internal::info("ASSERTION FAILED [{}:{}]: {}", __FILE__, __LINE__, #expr); \
+    return msi_test_error_code = -1;                                                        \
+  }
+
 // clang-format on
 
 #endif // IRODS_MSI_ASSERTION_MACROS_HPP
