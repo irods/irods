@@ -337,6 +337,10 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
     def test_scoped_permission__issue_7032(self):
         self.admin.assert_icommand(['irule', '-r', 'irods_rule_engine_plugin-irods_rule_language-instance', 'msi_test_scoped_permission', 'null', 'ruleExecOut'])
 
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', "Not implemented for other REPs.")
+    def test_user_administration__issue_7208(self):
+        self.admin.assert_icommand(['irule', '-r', 'irods_rule_engine_plugin-irods_rule_language-instance', 'msi_test_user_administration', 'null', 'ruleExecOut'])
+
     @unittest.skipIf(test.settings.USE_SSL, 'iinit does not correctly create irods_environment.json with SSL enabled.')
     def test_iinit_does_not_crash_from_long_home_directory__issue_5411(self):
         with tempfile.TemporaryDirectory() as temp_dir_name:
