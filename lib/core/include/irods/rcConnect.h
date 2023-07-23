@@ -1,11 +1,5 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-/* rcConnect.h - common header file for client connect
- */
-
-#ifndef RC_CONNECT_H__
-#define RC_CONNECT_H__
+#ifndef IRODS_RC_CONNECT_H
+#define IRODS_RC_CONNECT_H
 
 #include "irods/rodsDef.h"
 #include "irods/rodsError.h"
@@ -18,12 +12,6 @@
 #include "irods/dataObjInpOut.h"
 #include "irods/guiProgressCallback.h"
 
-// =-=-=-=-=-=-=-
-// forard del of thread context
-struct thread_context;
-
-// =-=-=-=-=-=-=-
-// ssl includes
 #include <openssl/ssl.h>
 #include <openssl/x509v3.h>
 #include <openssl/err.h>
@@ -35,6 +23,8 @@ struct thread_context;
 
 #define RECONN_TIMEOUT_TIME  600   /* re-connection timeout time in sec */
 
+// Forward declaration of thread context.
+struct thread_context;
 
 typedef enum ProcState {
     PROCESSING_STATE,    /* the process is not sending nor receiving */
@@ -258,7 +248,7 @@ int
 isLoopbackAddress( const char* ip_address );
 
 #ifdef __cplusplus
-}
+} // extern "C"
 #endif
-#endif  // RC_CONNECT_H__
 
+#endif // IRODS_RC_CONNECT_H
