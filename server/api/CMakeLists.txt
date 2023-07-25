@@ -6,6 +6,7 @@ add_library(
   OBJECT
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rs_atomic_apply_acl_operations.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rs_atomic_apply_metadata_operations.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/rs_check_auth_credentials.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rs_data_object_finalize.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rs_get_delay_rule_info.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rs_get_file_descriptor_info.cpp"
@@ -205,6 +206,7 @@ install(
   FILES
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rs_atomic_apply_acl_operations.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rs_atomic_apply_metadata_operations.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rs_check_auth_credentials.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rs_data_object_finalize.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rs_get_delay_rule_info.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rs_get_file_descriptor_info.hpp"

@@ -1024,64 +1024,11 @@ int call_execRuleExpressionInp(
 #define CALL_EXECRULEEXPRESSIONINP nullptr
 #endif
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#ifdef CREATE_API_TABLE_FOR_SERVER
+int call_check_auth_credentials_inout(irods::api_entry*, rsComm_t*, checkAuthCredsInp_t*, int**);
+#  define CALL_CHECK_AUTH_CREDENTIALS_INOUT call_check_auth_credentials_inout
+#else
+#  define CALL_CHECK_AUTH_CREDENTIALS_INOUT nullptr // NOLINT(cppcoreguidelines-macro-usage)
+#endif
 
 #endif // IRODS_API_CALLING_FUNCTIONS_HPP

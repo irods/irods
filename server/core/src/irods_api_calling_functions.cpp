@@ -1118,3 +1118,11 @@ int call_execRuleExpressionInp(
                    _inp);
 
 }
+
+int call_check_auth_credentials_inout(irods::api_entry* _api,
+                                      rsComm_t* _comm,
+                                      checkAuthCredsInp_t* _input,
+                                      int** _result)
+{
+    return _api->call_handler<checkAuthCredsInp_t*, int**>(_comm, _input, _result);
+} // call_check_auth_credentials_inout
