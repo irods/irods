@@ -24,6 +24,7 @@
 #include "irods/rsAuthenticate.hpp"
 #include "irods/rsBulkDataObjPut.hpp"
 #include "irods/rsBulkDataObjReg.hpp"
+#include "irods/rs_check_auth_credentials.hpp"
 #include "irods/rsChkNVPathPerm.hpp"
 #include "irods/rsChkObjPermAndStat.hpp"
 #include "irods/rsClientHints.hpp"
@@ -169,6 +170,7 @@
 #define RS_AUTH_RESPONSE NULLPTR_FOR_CLIENT_TABLE(rsAuthResponse)
 #define RS_BULK_DATA_OBJ_PUT NULLPTR_FOR_CLIENT_TABLE(rsBulkDataObjPut)
 #define RS_BULK_DATA_OBJ_REG NULLPTR_FOR_CLIENT_TABLE(rsBulkDataObjReg)
+#define RS_CHECK_AUTH_CREDENTIALS NULLPTR_FOR_CLIENT_TABLE(rs_check_auth_credentials)
 #define RS_CHK_NV_PATH_PERM NULLPTR_FOR_CLIENT_TABLE(rsChkNVPathPerm)
 #define RS_CHK_OBJ_PERM_AND_STAT NULLPTR_FOR_CLIENT_TABLE(rsChkObjPermAndStat)
 #define RS_CLIENT_HINTS NULLPTR_FOR_CLIENT_TABLE(rsClientHints)
@@ -1250,6 +1252,13 @@ static irods::apidef_t client_api_table_inp[] = {
         boost::any(std::function<int(rsComm_t*,exec_rule_expression_t*)>(RS_EXEC_RULE_EXPRESSION)),
         "api_exec_rule_expression", clearExecRuleExpressionInput, irods::clearOutStruct_noop,
         (funcPtr)CALL_EXECRULEEXPRESSIONINP
+    },
+    {
+        CHECK_AUTH_CREDENTIALS_AN, RODS_API_VERSION, LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH,
+        "CheckAuthCredentialsInput_PI", 0, "INT_PI", 0,
+        boost::any(std::function<int(rsComm_t*, checkAuthCredsInp_t*, int**)>(RS_CHECK_AUTH_CREDENTIALS)),
+        "api_check_auth_credentials", irods::clearInStruct_noop, irods::clearOutStruct_noop,
+        (funcPtr) CALL_CHECK_AUTH_CREDENTIALS_INOUT
     },
     // clang-format on
 }; // _api_table_inp

@@ -143,6 +143,8 @@ API_NUMBER(GET_TEMP_PASSWORD_FOR_OTHER_AN,          724)
 API_NUMBER(PAM_AUTH_REQUEST_AN,                     725)
 API_NUMBER(GET_LIMITED_PASSWORD_AN,                 726)
 
+API_NUMBER(CHECK_AUTH_CREDENTIALS_AN,               800)
+
 /* 1100 - 1200 - SSL API calls */
 API_NUMBER(SSL_START_AN,                            1100)
 API_NUMBER(SSL_END_AN,                              1101)

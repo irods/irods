@@ -15599,6 +15599,70 @@ auto db_data_object_finalize_op(irods::plugin_context& _ctx, const char* _json_i
     return SUCCESS();
 } // db_data_object_finalize_op
 
+auto db_check_auth_credentials_op(irods::plugin_context& _ctx,
+                                  const char* _username,
+                                  const char* _zone,
+                                  const char* _password,
+                                  int* _correct) -> irods::error
+{
+    if (const auto ret = _ctx.valid(); !ret.ok()) {
+        return PASS(ret);
+    }
+
+    if (!_username || !_zone || !_password || !_correct) {
+        log_db::error("{}: Received one or more null pointers.", __func__);
+        return ERROR(SYS_INVALID_INPUT_PARAM, "Received one or more null pointers.");
+    }
+
+    *_correct = -1; // Indicates the correctness of the credentials is unknown.
+
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+    std::array<char, MAX_PASSWORD_LEN + 20> decoded_password{};
+
+    if (const auto ec = decodePw(_ctx.comm(), _password, decoded_password.data()); ec < 0) {
+        log_db::error("{}: Failed to decode password with error code [{}].", __func__, ec);
+        return ERROR(ec, "Password decode error.");
+    }
+
+    icatScramble(decoded_password.data());
+
+    try {
+        auto [db_instance, db_conn] = irods::experimental::catalog::new_database_connection();
+
+        nanodbc::statement stmt{db_conn};
+        nanodbc::prepare(stmt,
+                         "select u.user_id from r_user_main u "
+                         "inner join r_user_password p on u.user_id = p.user_id "
+                         "where u.user_name = ? and u.zone_name = ? and p.rcat_password = ?");
+
+        stmt.bind(0, _username);
+        stmt.bind(1, _zone);
+        stmt.bind(2, decoded_password.data());
+
+        if (auto row = nanodbc::execute(stmt); !row.next()) {
+            log_db::warn("{}: Incorrect credentials for user [{}#{}].", __func__, _username, _zone);
+            *_correct = 0;
+        }
+        else {
+            *_correct = 1;
+        }
+
+        return SUCCESS();
+    }
+    catch (const irods::exception& e) {
+        log_db::error("{}: {}", __func__, e.client_display_what());
+        return ERROR(SYS_LIBRARY_ERROR, e.what());
+    }
+    catch (const std::exception& e) {
+        log_db::error("{}: {}", __func__, e.what());
+        return ERROR(SYS_LIBRARY_ERROR, e.what());
+    }
+    catch (...) {
+        log_db::error("{}: An unknown error was caught.", __func__);
+        return ERROR(SYS_UNKNOWN_ERROR, "An unknown error was caught.");
+    }
+} // db_check_auth_credentials_op
+
 // =-=-=-=-=-=-=-
 //
 irods::error db_start_operation( irods::plugin_property_map& _props ) {
@@ -16005,6 +16069,9 @@ irods::database* plugin_factory(
         function<error(plugin_context&, const char*, std::vector<std::string>*)>(db_get_delay_rule_info_op));
     pg->add_operation<const char*>(
         DATABASE_OP_DATA_OBJECT_FINALIZE, function<error(plugin_context&, const char*)>(db_data_object_finalize_op));
+    pg->add_operation<const char*, const char*, const char*, int*>(
+        DATABASE_OP_CHECK_AUTH_CREDENTIALS,
+        function<error(plugin_context&, const char*, const char*, const char*, int*)>(db_check_auth_credentials_op));
 
     return pg;
 

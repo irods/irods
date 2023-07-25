@@ -363,4 +363,31 @@ auto chl_get_delay_rule_info(RsComm& _comm, const char* _rule_id, std::vector<st
 /// \since 4.2.12
 auto chl_data_object_finalize(RsComm& _comm, const char* _json_input) -> int;
 
+/// \brief High-level wrapper for verifying if the native authentication credentials for a specific
+///        user are correct.
+///
+/// Triggers policy associated with database operations.
+///
+/// \param[in]     _comm     The communication object.
+/// \param[in]     _username The part of a fully-qualified iRODS username preceding the pound sign.
+/// \param[in]     _zone     The part of a fully-qualified iRODS username following the pound sign.
+/// \param[in]     _password The expected obfuscated password.
+/// \param[in,out] _correct  \parblock The integer that will hold whether the credentials are correct.
+///
+/// If the credentials are correct, this parameter is set to 1.
+/// If the credentials are incorrect, this parameter is set to 0.
+/// If correctness cannot be determined, this parameter is set to -1.
+/// \endparblock
+///
+/// \return An integer.
+/// \retval  0 On success.
+/// \retval <0 On failure.
+///
+/// \since 4.3.1
+auto chl_check_auth_credentials(RsComm& _comm,
+                                const char* _username,
+                                const char* _zone,
+                                const char* _password,
+                                int* _correct) -> int;
+
 #endif // IRODS_ICAT_HIGHLEVEL_ROUTINES_HPP

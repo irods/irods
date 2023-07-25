@@ -92,6 +92,7 @@ inline const packInstruct_t api_pack_table_init[] = {
     {"GetHierInp_PI", GetHierInp_PI, irods::clearInStruct_noop},
     {"GetHierOut_PI", GetHierOut_PI, irods::clearInStruct_noop},
     {"ExecRuleExpression_PI", ExecRuleExpression_PI, irods::clearInStruct_noop},
+    {"CheckAuthCredentialsInput_PI", CheckAuthCredentialsInput_PI, irods::clearInStruct_noop},
     {PACK_TABLE_END_PI, nullptr, irods::clearInStruct_noop},
 };
 

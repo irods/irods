@@ -65,6 +65,7 @@ set(
   query_builder
   rcConnect
   rcTicketAdmin
+  rc_check_auth_credentials
   rc_data_obj
   rc_data_obj_repl
   rc_switch_user
