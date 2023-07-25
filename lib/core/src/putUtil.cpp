@@ -145,7 +145,7 @@ setStateForResume( rcComm_t * conn, rodsRestart_t * rodsRestart,
 
 int
 setSessionTicket( rcComm_t *myConn, char *ticket ) {
-    ticketAdminInp_t ticketAdminInp;
+    ticketAdminInp_t ticketAdminInp{};
     int status;
 
     ticketAdminInp.arg1 = "session";
