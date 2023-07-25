@@ -1492,6 +1492,179 @@ OUTPUT ruleExecOut
                 self.admin.run_icommand(['iadmin', 'rfg', group_name, groupie_user.username])
                 self.admin.run_icommand(['iadmin', 'rmgroup', group_name])
 
+    def test_msiRemoveUserFromGroup__issue_7165(self):
+        # The name of the group that will be created.
+        group = 'issue_7165'
+
+        # This map contains rule code key'd off of the the REP type.
+        #
+        # The use of the double opening/closing curly braces is to allow the zone name to be
+        # fed into the rules. This is necessary for testing unqualified usernames and qualified
+        # usernames.
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent(f'''
+                msiRemoveUserFromGroup('{group}', '{self.user0.username}', '{{}}')
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent(f'''
+                def issue_7165(_, callback, _):
+                    callback.msiRemoveUserFromGroup('{group}', '{self.user0.username}', '{{}}')
+            '''),
+        }
+
+        try:
+            # Create a new group and add a user to it.
+            self.admin.assert_icommand(['iadmin', 'mkgroup', group])
+            self.admin.assert_icommand(['iadmin', 'atg', group, self.user0.username])
+            self.admin.assert_icommand(['iadmin', 'lg', group], 'STDOUT', [self.user0.qualified_username])
+
+            # Remove the user from the group using the microservice.
+            rep_instance = plugin_name + '-instance'
+            self.admin.assert_icommand(['irule', '-r', rep_instance, rule_map[plugin_name].format(''), 'null', 'ruleExecOut'])
+
+            # Show the user is no longer a member of the group.
+            out, _, ec = self.admin.run_icommand(['iadmin', 'lg', group])
+            self.assertEqual(ec, 0)
+            self.assertNotIn(self.user0.qualified_username, out.strip())
+
+            # Add the user back to the group and remove them again, except this time, include the user's zone.
+            self.admin.assert_icommand(['iadmin', 'atg', group, self.user0.username])
+            self.admin.assert_icommand(['iadmin', 'lg', group], 'STDOUT', [self.user0.qualified_username])
+            self.admin.assert_icommand(['irule', '-r', rep_instance, rule_map[plugin_name].format(self.user0.zone_name), 'null', 'ruleExecOut'])
+
+            # Show the user was removed from the group successfully.
+            out, _, ec = self.admin.run_icommand(['iadmin', 'lg', group])
+            self.assertEqual(ec, 0)
+            self.assertNotIn(self.user0.qualified_username, out.strip())
+
+        finally:
+            self.admin.run_icommand(['iadmin', 'rmgroup', group])
+
+    def test_msiRemoveUserFromGroup_supports_remote_users__issue_7165(self):
+        # The name of the group that will be created.
+        group = 'issue_7165'
+
+        # The imaginary remote zone.
+        # The remote zone does not need to exist. We simply need to define it such that the
+        # remote host is resolvable.
+        remote_zone = 'issue_7165_zone'
+
+        # The user that is a member of the remote zone.
+        # Notice the user shares the same unqualified name as self.user0.
+        remote_user = self.user0.username
+        remote_user_qualified_name = f'{remote_user}#{remote_zone}'
+
+        # This map contains rule code key'd off of the the REP type.
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent(f'''
+                msiRemoveUserFromGroup('{group}', '{{}}', '{{}}')
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent(f'''
+                def issue_7165(_, callback, _):
+                    callback.msiRemoveUserFromGroup('{group}', '{{}}', '{{}}')
+            '''),
+        }
+
+        try:
+            # Create the remote zone and user.
+            self.admin.assert_icommand(['iadmin', 'mkzone', remote_zone, 'remote', 'localhost:1247'])
+            self.admin.assert_icommand(['iadmin', 'mkuser', remote_user_qualified_name, 'rodsuser'])
+
+            # Create a new group and add a local user and remote user to it.
+            # The local user and remote user share the same unqualified name.
+            self.admin.assert_icommand(['iadmin', 'mkgroup', group])
+            self.admin.assert_icommand(['iadmin', 'atg', group, self.user0.username])
+            self.admin.assert_icommand(['iadmin', 'atg', group, remote_user_qualified_name])
+            self.admin.assert_icommand(['iadmin', 'lg', group], 'STDOUT', [self.user0.qualified_username, remote_user_qualified_name])
+
+            # Remove the local user from the group using the microservice.
+            # Notice the zone is empty. This implies the local zone.
+            rep_instance = plugin_name + '-instance'
+            rule = rule_map[plugin_name].format(self.user0.username, '')
+            self.admin.assert_icommand(['irule', '-r', rep_instance, rule, 'null', 'ruleExecOut'])
+
+            # Show the local user is no longer a member of the group, but the remote user is.
+            out, _, ec = self.admin.run_icommand(['iadmin', 'lg', group])
+            self.assertEqual(ec, 0)
+            self.assertNotIn(self.user0.qualified_username, out.strip())
+            self.assertIn(remote_user_qualified_name, out.strip())
+
+            # Add the user back to the group and remove the remote user.
+            # Notice how we pass the remote zone. This is required because otherwise, the MSI will
+            # assume the user to remove originated in the local zone.
+            self.admin.assert_icommand(['iadmin', 'atg', group, self.user0.username])
+            self.admin.assert_icommand(['iadmin', 'lg', group], 'STDOUT', [self.user0.qualified_username, remote_user_qualified_name])
+            rule = rule_map[plugin_name].format(remote_user, remote_zone)
+            self.admin.assert_icommand(['irule', '-r', rep_instance, rule, 'null', 'ruleExecOut'])
+
+            # Show the remote user was removed from the group successfully.
+            out, _, ec = self.admin.run_icommand(['iadmin', 'lg', group])
+            self.assertEqual(ec, 0)
+            self.assertIn(self.user0.qualified_username, out.strip())
+            self.assertNotIn(remote_user_qualified_name, out.strip())
+
+        finally:
+            self.admin.run_icommand(['iadmin', 'rmgroup', group])
+            self.admin.run_icommand(['iadmin', 'rmuser', remote_user_qualified_name])
+            self.admin.run_icommand(['iadmin', 'rmzone', remote_zone])
+
+    def test_msiRemoveUserFromGroup_correctly_handles_incorrect_arguments__issue_7165(self):
+        # This map contains rule code key'd off of the the REP type.
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                msiRemoveUserFromGroup('{}', '{}', '{}')
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def issue_7165(_, callback, _):
+                    callback.msiRemoveUserFromGroup('{}', '{}', '{}')
+            '''),
+        }
+
+        rep_instance = plugin_name + '-instance'
+        group = 'public'
+
+        # Show the MSI returns an error when the user is not a rodsadmin.
+        rule = rule_map[plugin_name].format(group, self.user0.username, self.user0.zone_name)
+        self.user0.assert_icommand(['irule', '-r', rep_instance, rule, 'null', 'ruleExecOut'], 'STDERR', ['-830000 CAT_INSUFFICIENT_PRIVILEGE_LEVEL'])
+
+        # Show the MSI returns an error when the group does not exist.
+        rule = rule_map[plugin_name].format('does_not_exist', self.user0.username, self.user0.zone_name)
+        self.admin.assert_icommand(['irule', '-r', rep_instance, rule, 'null', 'ruleExecOut'], 'STDERR', ['-829000 CAT_INVALID_GROUP'])
+
+        # Show the MSI returns an error when the user does not exist.
+        rule = rule_map[plugin_name].format(group, 'does_not_exist', self.user0.zone_name)
+        self.admin.assert_icommand(['irule', '-r', rep_instance, rule, 'null', 'ruleExecOut'], 'STDERR', ['-827000 CAT_INVALID_USER'])
+
+        # Show the MSI returns an error when the zone is incorrect.
+        rule = rule_map[plugin_name].format(group, self.user0.username, 'does_not_exist')
+        self.admin.assert_icommand(['irule', '-r', rep_instance, rule, 'null', 'ruleExecOut'], 'STDERR', ['-827000 CAT_INVALID_USER'])
+
+    def test_msiRemoveUserFromGroup_returns_error_when_attempting_to_remove_user_from_group_which_they_are_not_a_member_of__issue_7165(self):
+        # The name of the group that will be created.
+        group = 'issue_7165'
+
+        # This map contains rule code key'd off of the the REP type.
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent(f'''
+                msiRemoveUserFromGroup('{group}', '{self.user0.username}', '')
+            '''),
+            'irods_rule_engine_plugin-python': textwrap.dedent(f'''
+                def issue_7165(_, callback, _):
+                    callback.msiRemoveUserFromGroup('{group}', '{self.user0.username}', '')
+            '''),
+        }
+
+        try:
+            # Create a new group.
+            self.admin.assert_icommand(['iadmin', 'mkgroup', group])
+            self.admin.assert_icommand(['iadmin', 'lg', group], 'STDOUT', ['No rows found'])
+
+            # Remove the user from the group using the microservice.
+            rep_instance = plugin_name + '-instance'
+            self.admin.assert_icommand(['irule', '-r', rep_instance, rule_map[plugin_name], 'null', 'ruleExecOut'], 'STDERR', ['-819000 CAT_SUCCESS_BUT_WITH_NO_INFO'])
+
+        finally:
+            self.admin.run_icommand(['iadmin', 'rmgroup', group])
+
 
 class Test_msiDataObjRepl_checksum_keywords(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
     global plugin_name
