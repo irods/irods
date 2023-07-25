@@ -87,6 +87,7 @@
   - #msiCreateUser - Creates a new user
   - #msiDeleteUser - Deletes a user
   - #msiAddUserToGroup - Adds a user to a group
+  - #msiRemoveUserFromGroup - Removes a user from a group
   - #msiCreateCollByAdmin  - Creates a collection by administrator
   - #msiDeleteCollByAdmin  - Deletes a collection by administrator
   - #msiRenameLocalZone  - Renames the local zone by updating various tables
