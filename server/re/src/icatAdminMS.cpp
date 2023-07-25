@@ -1,6 +1,7 @@
 /// \file
 
 #include "irods/icatHighLevelRoutines.hpp"
+#include "irods/msParam.h"
 #include "irods/rcMisc.h"
 #include "irods/generalAdmin.h"
 #include "irods/miscServerFunct.hpp"
@@ -12,6 +13,18 @@
 
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 #include "irods/filesystem.hpp"
+
+#define IRODS_USER_ADMINISTRATION_ENABLE_SERVER_SIDE_API
+#include "irods/user_administration.hpp"
+
+#include <cstring>
+#include <string>
+#include <string_view>
+
+namespace
+{
+    using log_re = irods::experimental::log::rule_engine;
+} // anonymous namespace
 
 /**
  * \fn msiCreateUser (ruleExecInfo_t *rei)
@@ -340,6 +353,74 @@ msiAddUserToGroup( msParam_t *msParam, ruleExecInfo_t *rei ) {
 
     return i;
 }
+
+/// Removes a user from a group.
+///
+/// \param[in] _group     The name of the group to remove the user from.
+/// \param[in] _user_name The part of a fully-qualified username preceding the pound sign.
+/// \param[in] _user_zone The part of a fully-qualified username following the pound sign. If empty,
+///                       it defaults to the local zone.
+/// \param[in] _rei       Automatically handled by the rule engine plugin framework. This parameter
+///                       is not visible to callers of the microservice and should therefore be
+///                       ignored.
+///
+/// \return An integer.
+/// \retval  0 On success.
+/// \retval <0 On failure.
+///
+/// \since 4.3.1
+auto msiRemoveUserFromGroup(MsParam* _group, MsParam* _user_name, MsParam* _user_zone, RuleExecInfo* _rei) -> int
+{
+    if (!_group || !_user_name || !_rei) {
+        log_re::error("{}: Received one or more null pointers as input.", __func__);
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
+    // NOLINTNEXTLINE(bugprone-lambda-function-name)
+    const auto is_msp_type_valid = [fn = __func__](const MsParam* _msp, const std::string_view _param_name) {
+        if (!_msp->type) {
+            log_re::error("{}: Missing type information for {} parameter.", fn, _param_name);
+            return false;
+        }
+
+        if (std::strcmp(_msp->type, STR_MS_T) != 0) {
+            log_re::error("{}: Incorrect type for {} parameter. Expected a string.", fn, _param_name);
+            return false;
+        }
+
+        return true;
+    };
+
+    // clang-format off
+    if (!is_msp_type_valid(_group, "group") ||
+        !is_msp_type_valid(_user_name, "user_name") ||
+        !is_msp_type_valid(_user_zone, "user zone"))
+    {
+        return SYS_INVALID_INPUT_PARAM;
+    }
+    // clang-format on
+
+    try {
+        namespace adm = irods::experimental::administration;
+
+        const auto to_c_str = [](const MsParam& _msp) { return static_cast<const char*>(_msp.inOutStruct); };
+
+        const adm::group group{to_c_str(*_group)};
+        const adm::user user{to_c_str(*_user_name), to_c_str(*_user_zone)};
+
+        adm::server::remove_user_from_group(*_rei->rsComm, group, user);
+
+        return 0;
+    }
+    catch (const irods::exception& e) {
+        log_re::error("{}: Failed to remove user from group. [{}]", __func__, e.client_display_what());
+        return e.code(); // NOLINT(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+    }
+    catch (...) {
+        log_re::error("{}: Failed to remove user from group.", __func__);
+        return SYS_UNKNOWN_ERROR;
+    }
+} // msiRemoveUserFromGroup
 
 /**
  * \fn msiRenameLocalZone (msParam_t *oldName, msParam_t *newName, ruleExecInfo_t *rei)

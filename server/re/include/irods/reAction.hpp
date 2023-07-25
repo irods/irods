@@ -64,6 +64,7 @@ int msiCommit( ruleExecInfo_t *rei );
 int msiDeleteCollByAdmin( msParam_t *parColl, msParam_t *childName, ruleExecInfo_t *rei );
 int msiDeleteUser( ruleExecInfo_t *rei );
 int msiAddUserToGroup( msParam_t *msParam, ruleExecInfo_t *rei );
+int msiRemoveUserFromGroup(MsParam* _group, MsParam* _user, MsParam* _user_zone, RuleExecInfo* _rei);
 int msiSendMail( msParam_t *toAddr, msParam_t *subjectLine, msParam_t *body, ruleExecInfo_t *rei );
 int msiGetObjType( msParam_t *objNameP, msParam_t *objTypeP,
                    ruleExecInfo_t *rei );
@@ -125,6 +126,8 @@ int msiTakeThreeArgumentsAndDoNothing(msParam_t *arg1, msParam_t *arg2, msParam_
 
 namespace irods
 {
+    // clang-format off
+
     // =-=-=-=-=-=-=-
     // implementation of the microservice table class, which initializes the table during the ctor
     // inserting the statically compiled microservices during construction providing RAII behavior
@@ -149,6 +152,7 @@ namespace irods
         table_[ "msiDeleteCollByAdmin" ] = new irods::ms_table_entry( "msiDeleteCollByAdmin", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiDeleteCollByAdmin ) );
         table_[ "msiDeleteUser" ] = new irods::ms_table_entry( "msiDeleteUser", 0, std::function<int(ruleExecInfo_t*)>( msiDeleteUser ) );
         table_[ "msiAddUserToGroup" ] = new irods::ms_table_entry( "msiAddUserToGroup", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiAddUserToGroup ) );
+        table_[ "msiRemoveUserFromGroup" ] = new irods::ms_table_entry("msiRemoveUserFromGroup", 3, std::function<int(MsParam*, MsParam*, MsParam*, RuleExecInfo*)>(msiRemoveUserFromGroup)); // NOLINT(cppcoreguidelines-owning-memory)
         table_[ "msiSetDefaultResc" ] = new irods::ms_table_entry( "msiSetDefaultResc", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiSetDefaultResc ) );
         table_[ "msiSetDataObjPreferredResc" ] = new irods::ms_table_entry( "msiSetDataObjPreferredResc", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiSetDataObjPreferredResc ) );
         table_[ "msiSetDataObjAvoidResc" ] = new irods::ms_table_entry( "msiSetDataObjAvoidResc", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiSetDataObjAvoidResc ) );
@@ -248,6 +252,8 @@ namespace irods
         table_[ "msiDoSomething" ] = new irods::ms_table_entry( "msiDoSomething", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiDoSomething ) );
         table_[ "msiTakeThreeArgumentsAndDoNothing" ] = new irods::ms_table_entry( "msiTakeThreeArgumentsAndDoNothing", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiTakeThreeArgumentsAndDoNothing ) );
     }; // ms_table::ms_table
+
+    // clang-format on
 
     // =-=-=-=-=-=-=-
     // implement the micros table dtor
