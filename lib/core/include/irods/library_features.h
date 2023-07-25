@@ -44,4 +44,9 @@
 /// \since 4.3.1
 #define IRODS_HAS_FEATURE_PROXY_USER_SUPPORT_FOR_CLIENT_CONNECTION_LIBRARIES 202306L
 
+/// Defined if the development library supports #rc_check_auth_credentials.
+///
+/// \since 4.3.1
+#define IRODS_HAS_API_ENDPOINT_CHECK_AUTH_CREDENTIALS                        202307L
+
 #endif // IRODS_LIBRARY_FEATURES_H
