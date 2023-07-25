@@ -146,4 +146,6 @@
 #include "irods/get_hier_from_leaf_id.h"
 #include "irods/exec_rule_expression.h"
 
+#include "irods/check_auth_credentials.h"
+
 #endif	// API_HEADER_ALL_H__
