@@ -1,9 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/*
- * ichmod - The irods chmod utility
-*/
-
 #include <irods/rodsClient.h>
 #include <irods/parseCommandLine.h>
 #include <irods/rodsPath.h>
@@ -162,13 +156,24 @@ usage() {
         " ",
         " - 'own'",
         " - 'delete_object'",
-        " - 'write', 'modify_object'",
+        " - 'modify_object'",
         " - 'create_object'",
         " - 'delete_metadata'",
         " - 'modify_metadata'",
         " - 'create_metadata'",
-        " - 'read', 'read_object'",
+        " - 'read_object'",
         " - 'read_metadata'",
+        " - 'null'",
+        " ",
+        "To maintain backwards compatibility, 'write' and 'read' are provided as",
+        "aliases to 'modify_object' and 'read_object' respectively.",
+        " ",
+        "Note, when interacting with an iRODS deployment predating 4.3.0, only the",
+        "following ACCESS_LEVELs are allowed.",
+        " ",
+        " - 'own'",
+        " - 'write'",
+        " - 'read'",
         " - 'null'",
         " ",
         "Granting 'own' to another USER_OR_GROUP will allow them to grant",
@@ -190,9 +195,6 @@ usage() {
         "and the inheritance status.",
         " ",
         "The -M option allows a rodsadmin to set an ACCESS_LEVEL without having 'own'.",
-        " ",
-        "The original owner of a dataObject can still set an ACCESS_LEVEL, even",
-        "if their ACCESS_LEVEL has been set to 'null'.",
         " ",
         "Example Operations:",
         " - irm - requires 'delete_object' or greater",
