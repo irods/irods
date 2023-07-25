@@ -32,7 +32,12 @@ namespace irods::re_serialization
             serialized_parameter_t& _out) { 
         try {
              float* f = boost::any_cast<float*>(_p);
-             _out["float_pointer"] = boost::lexical_cast<std::string>(*f);
+             if (f) {
+                 _out["float_pointer"] = boost::lexical_cast<std::string>(*f);
+             }
+             else {
+                 _out["float_pointer"] = "nullptr";
+             }
         }
         catch ( std::exception& ) {
             return ERROR(
@@ -47,8 +52,13 @@ namespace irods::re_serialization
             boost::any               _p,
             serialized_parameter_t& _out) { 
         try {
-             const std::string* s = boost::any_cast<const std::string*>(_p);
-             _out["const_std_string_ptr"] = *s;
+            const std::string* s = boost::any_cast<const std::string*>(_p);
+            if (s) {
+                _out["const_std_string_ptr"] = *s;
+            }
+            else {
+                _out["const_std_string_ptr"] = "nullptr";
+            }
         }
         catch ( std::exception& ) {
             return ERROR(
@@ -64,7 +74,12 @@ namespace irods::re_serialization
             serialized_parameter_t& _out) { 
         try {
              std::string* s = boost::any_cast<std::string*>(_p);
-             _out["std_string_ptr"] = *s;
+             if (s) {
+                 _out["std_string_ptr"] = *s;
+             }
+             else {
+                 _out["std_string_ptr"] = "nullptr";
+             }
         }
         catch ( std::exception& ) {
             return ERROR(
@@ -95,9 +110,14 @@ namespace irods::re_serialization
             serialized_parameter_t& _out) { 
         try {
             hierarchy_parser* p = boost::any_cast<hierarchy_parser*>(_p);
-            std::string hier;
-            p->str(hier);
-             _out["hierarchy_parser_ptr"] = hier;
+            if (p) {
+                std::string hier;
+                p->str(hier);
+                _out["hierarchy_parser_ptr"] = hier;
+            }
+            else {
+                _out["hierarchy_parser_ptr"] = "nullptr";
+            }
         }
         catch ( std::exception& ) {
             return ERROR(
@@ -129,7 +149,12 @@ namespace irods::re_serialization
             serialized_parameter_t& _out) { 
         try {
             rodsLong_t* l = boost::any_cast<rodsLong_t*>(_p);
-            _out["rodslong_ptr"] = boost::lexical_cast<std::string>(*l);
+            if (l) {
+                _out["rodslong_ptr"] = boost::lexical_cast<std::string>(*l); // NOLINT(boost-use-to-string)
+            }
+            else {
+                _out["rodslong_ptr"] = "nullptr";
+            }
         }
         catch ( std::exception& ) {
             return ERROR(
@@ -177,7 +202,12 @@ namespace irods::re_serialization
             serialized_parameter_t& _out) { 
         try {
             int* l = boost::any_cast<int*>(_p);
-            _out["int_ptr"] = boost::lexical_cast<std::string>(*l);
+            if (l) {
+                _out["int_ptr"] = boost::lexical_cast<std::string>(*l); // NOLINT(boost-use-to-string)
+            }
+            else {
+                _out["int_ptr"] = "nullptr";
+            }
         }
         catch ( std::exception& ) {
             return ERROR(
@@ -337,6 +367,9 @@ namespace irods::re_serialization
             catch( boost::bad_lexical_cast& ) {
                 _out["repl_num"] = "<unconvertable>";
             }
+        }
+        else {
+            _out["specColl_ptr"] = "nullptr";
         }
     } // serialize_spec_coll_info_ptr
 
@@ -846,25 +879,23 @@ namespace irods::re_serialization
             serialized_parameter_t& _out) { 
         try {
             rodsObjStat_t* tmp = boost::any_cast<rodsObjStat_t*>(_p);
-            if(tmp) {
-                rodsObjStat_t* l = tmp;
 
-                _out["obj_size"] = boost::lexical_cast<std::string>(l->objSize);
-                _out["obj_type"] = boost::lexical_cast<std::string>((int)l->objType);
-                _out["data_mode"] = boost::lexical_cast<std::string>(l->dataMode);
-                
-                _out["data_id"] = boost::lexical_cast<std::string>(l->dataId);
-                _out["checksum"] = boost::lexical_cast<std::string>(l->chksum);
-                _out["ownerName"] = boost::lexical_cast<std::string>(l->ownerName);
-                _out["owner_zone"] = boost::lexical_cast<std::string>(l->ownerZone);
-                _out["create_time"] = boost::lexical_cast<std::string>(l->createTime);
-                _out["modify_time"] = boost::lexical_cast<std::string>(l->modifyTime);
-                _out["resc_hier"] = boost::lexical_cast<std::string>(l->rescHier);
+            if (tmp) {
+                _out["obj_size"] = boost::lexical_cast<std::string>(tmp->objSize); // NOLINT(boost-use-to-string)
+                // NOLINTNEXTLINE(boost-use-to-string)
+                _out["obj_type"] = boost::lexical_cast<std::string>(static_cast<int>(tmp->objType));
+                _out["data_mode"] = boost::lexical_cast<std::string>(tmp->dataMode); // NOLINT(boost-use-to-string)
 
-                if(l->specColl) {
-                    serialize_spec_coll_info_ptr(
-                        l->specColl,
-                        _out );
+                _out["data_id"] = boost::lexical_cast<std::string>(tmp->dataId);
+                _out["checksum"] = boost::lexical_cast<std::string>(tmp->chksum);
+                _out["ownerName"] = boost::lexical_cast<std::string>(tmp->ownerName);
+                _out["owner_zone"] = boost::lexical_cast<std::string>(tmp->ownerZone);
+                _out["create_time"] = boost::lexical_cast<std::string>(tmp->createTime);
+                _out["modify_time"] = boost::lexical_cast<std::string>(tmp->modifyTime);
+                _out["resc_hier"] = boost::lexical_cast<std::string>(tmp->rescHier);
+
+                if (tmp->specColl) {
+                    serialize_spec_coll_info_ptr(tmp->specColl, _out);
                 }
             }
             else {
@@ -885,29 +916,33 @@ namespace irods::re_serialization
             serialized_parameter_t& _out) { 
         try {
             genQueryInp_t* tmp = boost::any_cast<genQueryInp_t*>(_p);
-            if(tmp) {
-                genQueryInp_t* l = tmp;
 
-                _out["maxRows"] = boost::lexical_cast<std::string>(l->maxRows);
-                _out["continueInx"] = boost::lexical_cast<std::string>(l->continueInx);
-                _out["rowOffset"] = boost::lexical_cast<std::string>(l->rowOffset);
-                _out["options"] = boost::lexical_cast<std::string>(l->options);
+            if (tmp) {
+                _out["maxRows"] = boost::lexical_cast<std::string>(tmp->maxRows); // NOLINT(boost-use-to-string)
+                _out["continueInx"] = boost::lexical_cast<std::string>(tmp->continueInx); // NOLINT(boost-use-to-string)
+                _out["rowOffset"] = boost::lexical_cast<std::string>(tmp->rowOffset); // NOLINT(boost-use-to-string)
+                _out["options"] = boost::lexical_cast<std::string>(tmp->options); // NOLINT(boost-use-to-string)
 
-                for(int i = 0; i < l->condInput.len; ++i) {
-                    _out[l->condInput.keyWord[i]] = l->condInput.value[i];
+                for (int i = 0; i < tmp->condInput.len; ++i) {
+                    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                    _out[tmp->condInput.keyWord[i]] = tmp->condInput.value[i];
                 }
 
-                for (int i = 0; i < l->selectInp.len; ++i) {
-                    std::string index = boost::lexical_cast<std::string>(l->selectInp.inx[i]);
+                for (int i = 0; i < tmp->selectInp.len; ++i) {
+                    // NOLINTNEXTLINE(boost-use-to-string, cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                    std::string index = boost::lexical_cast<std::string>(tmp->selectInp.inx[i]);
 
-                    std::string value = boost::lexical_cast<std::string>(l->selectInp.value[i]);
+                    // NOLINTNEXTLINE(boost-use-to-string, cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                    std::string value = boost::lexical_cast<std::string>(tmp->selectInp.value[i]);
                     _out["select_" + index] = value;
                 }
 
-                for (int i = 0; i < l->sqlCondInp.len; ++i) {
-                    std::string index = boost::lexical_cast<std::string>(l->sqlCondInp.inx[i]);
+                for (int i = 0; i < tmp->sqlCondInp.len; ++i) {
+                    // NOLINTNEXTLINE(boost-use-to-string, cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                    std::string index = boost::lexical_cast<std::string>(tmp->sqlCondInp.inx[i]);
 
-                    _out["where_" + index] = l->sqlCondInp.value[i];
+                    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                    _out["where_" + index] = tmp->sqlCondInp.value[i];
                 }
             }
             else {
@@ -928,24 +963,31 @@ namespace irods::re_serialization
            serialized_parameter_t&  _out) {
         try {
             genQueryOut_t* tmp = boost::any_cast<genQueryOut_t*>(_p);
+
             if (tmp) {
-                genQueryOut_t* l = tmp;
+                _out["rowCnt"] = boost::lexical_cast<std::string>(tmp->rowCnt); // NOLINT(boost-use-to-string)
+                _out["attriCnt"] = boost::lexical_cast<std::string>(tmp->attriCnt); // NOLINT(boost-use-to-string)
+                _out["continueInx"] = boost::lexical_cast<std::string>(tmp->continueInx); // NOLINT(boost-use-to-string)
+                // NOLINTNEXTLINE(boost-use-to-string)
+                _out["totalRowCount"] = boost::lexical_cast<std::string>(tmp->totalRowCount);
 
-                _out["rowCnt"] = boost::lexical_cast<std::string>(l->rowCnt);
-                _out["attriCnt"] = boost::lexical_cast<std::string>(l->attriCnt);
-                _out["continueInx"] = boost::lexical_cast<std::string>(l->continueInx);
-                _out["totalRowCount"] = boost::lexical_cast<std::string>(l->totalRowCount);
-
-                for (int i = 0; i < l->attriCnt; ++i) {
-                    for (int j = 0; j < l->rowCnt; ++j) {
+                for (int i = 0; i < tmp->attriCnt; ++i) {
+                    for (int j = 0; j < tmp->rowCnt; ++j) {
                         std::string i_str = boost::lexical_cast<std::string>(i);
                         std::string j_str = boost::lexical_cast<std::string>(j);
-                        _out["attriInx_" + i_str] = boost::lexical_cast<std::string>(l->sqlResult[i].attriInx);
-                        _out["len_" + i_str] = boost::lexical_cast<std::string>(l->sqlResult[i].len);
-                        _out["value_" + j_str + "_" + i_str] = boost::lexical_cast<std::string>(l->sqlResult[i].value+j*l->sqlResult[i].len);
+                        // NOLINTNEXTLINE(boost-use-to-string, cppcoreguidelines-pro-bounds-constant-array-index)
+                        _out["attriInx_" + i_str] = boost::lexical_cast<std::string>(tmp->sqlResult[i].attriInx);
+                        // NOLINTNEXTLINE(boost-use-to-string, cppcoreguidelines-pro-bounds-constant-array-index)
+                        _out["len_" + i_str] = boost::lexical_cast<std::string>(tmp->sqlResult[i].len);
+
+                        // clang-format off
+                        // NOLINTNEXTLINE(bugprone-implicit-widening-of-multiplication-result, cppcoreguidelines-pro-bounds-constant-array-index, cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                        _out[fmt::format("value_{}_{}", j_str, i_str)] = boost::lexical_cast<std::string>(tmp->sqlResult[i].value + j * tmp->sqlResult[i].len);
+                        // clang-format on
                     }
                 }
-            } else {
+            }
+            else {
                 _out["null_value"] = "null_value";
             }
         } catch ( std::exception& ) {
@@ -1172,4 +1214,3 @@ namespace irods::re_serialization
 
     } // serialize_parameter
 } // namespace irods::re_serialization
-
