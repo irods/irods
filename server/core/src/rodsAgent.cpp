@@ -54,7 +54,7 @@
 #  include <sanitizer/lsan_interface.h>
 #endif
 
-namespace log = irods::experimental::log;
+namespace log_ns = irods::experimental::log;
 
 // clang-format off
 using log_agent_factory = irods::experimental::log::agent_factory;
@@ -311,16 +311,16 @@ void set_eviction_age_for_dns_and_hostname_caches()
 
 void set_log_levels_for_all_log_categories()
 {
-    log::agent::set_level(log::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_AGENT));
-    log::legacy::set_level(log::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_LEGACY));
-    log::resource::set_level(log::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_RESOURCE));
-    log::database::set_level(log::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_DATABASE));
-    log::authentication::set_level(log::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_AUTHENTICATION));
-    log::api::set_level(log::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_API));
-    log::microservice::set_level(log::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_MICROSERVICE));
-    log::network::set_level(log::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_NETWORK));
-    log::rule_engine::set_level(log::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_RULE_ENGINE));
-    log::sql::set_level(log::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_SQL));
+    log_ns::agent::set_level(log_ns::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_AGENT));
+    log_ns::legacy::set_level(log_ns::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_LEGACY));
+    log_ns::resource::set_level(log_ns::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_RESOURCE));
+    log_ns::database::set_level(log_ns::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_DATABASE));
+    log_ns::authentication::set_level(log_ns::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_AUTHENTICATION));
+    log_ns::api::set_level(log_ns::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_API));
+    log_ns::microservice::set_level(log_ns::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_MICROSERVICE));
+    log_ns::network::set_level(log_ns::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_NETWORK));
+    log_ns::rule_engine::set_level(log_ns::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_RULE_ENGINE));
+    log_ns::sql::set_level(log_ns::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_SQL));
 } // set_log_levels_for_all_log_categories
 
 void setup_signal_handlers()
@@ -369,10 +369,10 @@ int runIrodsAgentFactory(sockaddr_un agent_addr)
 {
     namespace log = irods::experimental::log;
 
-    log::set_server_type("agent_factory");
+    log_ns::set_server_type("agent_factory");
 
     irods::server_properties::instance().capture();
-    log_agent_factory::set_level(log::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_AGENT_FACTORY));
+    log_agent_factory::set_level(log_ns::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_AGENT_FACTORY));
 
     log_agent_factory::info("Initializing agent factory ...");
 
@@ -539,7 +539,7 @@ int runIrodsAgentFactory(sockaddr_un agent_addr)
     int status{};
 
     try {
-        log::set_server_type("agent");
+        log_ns::set_server_type("agent");
 
         // Reload irods_environment.json and server_config.json for the newly forked agent process.
         irods::environment_properties::instance().capture();
@@ -584,8 +584,8 @@ int runIrodsAgentFactory(sockaddr_un agent_addr)
 
     RsComm rsComm{};
 
-    log::set_error_object(&rsComm.rError);
-    irods::at_scope_exit release_error_stack{[] { log::set_error_object(nullptr); }};
+    log_ns::set_error_object(&rsComm.rError);
+    irods::at_scope_exit release_error_stack{[] { log_ns::set_error_object(nullptr); }};
 
     //std::memset(&rsComm, 0, sizeof(RsComm));
     rsComm.thread_ctx = static_cast<thread_context*>(std::malloc(sizeof(thread_context)));
