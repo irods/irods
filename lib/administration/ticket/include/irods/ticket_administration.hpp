@@ -16,6 +16,7 @@ struct RsComm;
 struct RcComm;
 #endif // IRODS_TICKET_ADMINISTRATION_ENABLE_SERVER_SIDE_API
 
+#include <stdexcept>
 #include <string_view>
 #include <type_traits>
 #include <string>
