@@ -28,6 +28,7 @@ Checks:
     hicpp-signed-bitwise,
     misc-*,
     modernize-*,
+    -modernize-use-auto,
     -modernize-use-trailing-return-type,
     performance-*,
     portability-std-allocator-const,
