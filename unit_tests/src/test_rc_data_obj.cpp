@@ -105,6 +105,57 @@ TEST_CASE("rc_data_obj_open")
 
         std::string contents = "content!";
 
+        SECTION("#7154: open with dataSize of -1 on resource with minimum_free_space_for_create_in_bytes configured")
+        {
+            constexpr char* free_space = "1000000000";
+            constexpr char* context = "minimum_free_space_for_create_in_bytes=1000";
+
+            // Modify the test resource free space and minimum_free_space_for_create_in_bytes in the context string.
+            // This must be done on a separate connection because the resource manager is not updated with any changes
+            // which occur to resources after it is initialized.
+            {
+                irods::experimental::client_connection conn;
+                RcComm& comm = static_cast<RcComm&>(conn);
+
+                REQUIRE_NOTHROW(adm::client::modify_resource(comm, test_resc, adm::free_space_property{free_space}));
+                REQUIRE_NOTHROW(adm::client::modify_resource(comm, test_resc, adm::context_string_property{context}));
+            }
+
+            irods::experimental::client_connection conn;
+            RcComm& comm = static_cast<RcComm&>(conn);
+
+            // Create data object with a specified dataSize of -1.
+            dataObjInp_t open_inp{};
+            std::strncpy(open_inp.objPath, path_str.data(), sizeof(open_inp.objPath));
+            open_inp.openFlags = O_CREAT | O_TRUNC | O_WRONLY; // NOLINT(hicpp-signed-bitwise)
+            open_inp.dataSize = -1;
+            addKeyVal(&open_inp.condInput, DEST_RESC_NAME_KW, test_resc.data());
+            const auto fd = rcDataObjOpen(&comm, &open_inp);
+            REQUIRE(fd > 2);
+
+            // Write something to the data object so we have something to check for success.
+            bytesBuf_t write_bbuf{};
+            write_bbuf.buf = const_cast<char*>(free_space); // NOLINT(cppcoreguidelines-pro-type-const-cast)
+            // NOLINTNEXTLINE(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+            write_bbuf.len = std::strlen(free_space) + 1;
+
+            openedDataObjInp_t write_inp{};
+            write_inp.l1descInx = fd;
+            write_inp.len = write_bbuf.len;
+            const auto bytes_written = rcDataObjWrite(&comm, &write_inp, &write_bbuf);
+            CHECK(write_bbuf.len == bytes_written);
+
+            // Close data object and ensure that everything completes successfully.
+            openedDataObjInp_t close_inp{};
+            close_inp.l1descInx = fd;
+            REQUIRE(rcDataObjClose(&comm, &close_inp) >= 0);
+
+            // Show that the data object was created and has the right size.
+            const auto [rp, lm] = replica::make_replica_proxy<RcComm>(conn, target_object, 0);
+            CHECK(rp.replica_status() == GOOD_REPLICA);
+            CHECK(rp.size() == write_bbuf.len);
+        }
+
         SECTION("#5496: partial overwrite erases checksum")
         {
             irods::experimental::client_connection conn;
