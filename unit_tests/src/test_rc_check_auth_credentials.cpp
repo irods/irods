@@ -49,7 +49,7 @@ TEST_CASE("rc_check_auth_credentials basic functionality")
 
     SECTION("would_succeed member variable is set to 1 (true) on correct password")
     {
-        const auto scrambled_password = adm::detail::obfuscate_password(password_prop);
+        const auto scrambled_password = adm::obfuscate_password(password_prop);
         std::strncpy(input.password, scrambled_password.c_str(), sizeof(CheckAuthCredentialsInput::password));
         CHECK(rc_check_auth_credentials(conn_ptr, &input, &correct) == 0);
         CHECK(correct);
@@ -59,7 +59,7 @@ TEST_CASE("rc_check_auth_credentials basic functionality")
     SECTION("would_succeed member variable is set to 0 (false) on incorrect password")
     {
         password_prop.value = "bogus";
-        const auto scrambled_password = adm::detail::obfuscate_password(password_prop);
+        const auto scrambled_password = adm::obfuscate_password(password_prop);
         std::strncpy(input.password, scrambled_password.c_str(), sizeof(CheckAuthCredentialsInput::password));
         CHECK(rc_check_auth_credentials(conn_ptr, &input, &correct) == 0);
         CHECK(correct);

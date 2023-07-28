@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
 add_library(
   irods_user_administration_common
   OBJECT
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/detail.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/common.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/group.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/user.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/utilities.cpp"
