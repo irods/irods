@@ -532,6 +532,31 @@ OUTPUT ruleExecOut
         except:
             print('Skipping for plugin name ['+self.plugin_name+']')
 
+    def test_istream_works_with_minimum_free_space_for_create_in_bytes_configured__issue_7160(self):
+        filename = 'test_istream_works_with_minimum_free_space_for_create_in_bytes_configured__issue_7160'
+        contents = 'smol'
+        logical_path = os.path.join(self.user0.session_collection, filename)
+        free_space = 1000000000
+        minimum = 1000
+
+        # Free space should exceed the minimum required for a create. That's not what this test is about.
+        self.assertGreater(free_space, minimum)
+
+        try:
+            # Configure the resource free space and minimum required for create.
+            self.admin.assert_icommand(['iadmin', 'modresc', 'demoResc', 'freespace', str(free_space)])
+            self.admin.assert_icommand(
+                ['iadmin', 'modresc', 'demoResc', 'context', 'minimum_free_space_for_create_in_bytes={}'.format(minimum)])
+
+            # Attempt to create a data object on the resource. The dataSize in use by the dstream library on the open
+            # call is -1 and we need to make sure that the vote successfully interprets the remaining free space on
+            # the resource.
+            self.user0.assert_icommand(['istream', 'write', logical_path], input=contents)
+            self.user0.assert_icommand(['istream', 'read', logical_path], 'STDOUT', contents)
+
+        finally:
+            self.user0.run_icommand(['irm', '-f', logical_path])
+
     def test_key_value_passthru(self):
         file_name = 'file.txt'
         other_file_name = 'other.txt'
