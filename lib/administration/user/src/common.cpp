@@ -11,7 +11,7 @@
 #include <array>
 #include <string>
 
-namespace irods::experimental::administration::detail
+namespace irods::experimental::administration
 {
     auto obfuscate_password(const user_password_property& _property) -> std::string
     {
@@ -53,4 +53,4 @@ namespace irods::experimental::administration::detail
 
         return obfuscated_password.data();
     } // obfuscate_password
-} // namespace irods::experimental::administration::detail
+} // namespace irods::experimental::administration

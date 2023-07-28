@@ -154,15 +154,12 @@ namespace irods::experimental::administration
     /// \since 4.3.1
     auto to_c_str(user_type user_type) -> const char*;
 
-    /// Reserved for the implementation of the library.
+    /// Obfuscates a user password.
     ///
-    /// Users of this library MUST NOT use anything defined in this namespace.
+    /// See #user_password_property for additional details.
     ///
     /// \since 4.3.1
-    namespace detail
-    {
-        auto obfuscate_password(const user_password_property& _property) -> std::string;
-    } // namespace detail
+    auto obfuscate_password(const user_password_property& _property) -> std::string;
 
     /// A namespace defining the set of client-side or server-side API functions.
     ///
@@ -250,7 +247,7 @@ namespace irods::experimental::administration
             // clang-format on
 
             if constexpr (std::is_same_v<Property, user_password_property>) {
-                obfuscated_password = detail::obfuscate_password(_property);
+                obfuscated_password = obfuscate_password(_property);
                 input.arg3 = "password";
                 input.arg4 = obfuscated_password.c_str();
                 execute("Failed to set password for user [{}].", name);
