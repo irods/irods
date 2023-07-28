@@ -373,3 +373,93 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
             error_string = ' ERROR: environment_properties::capture: missing environment file. should be at [{}/.irods/irods_environment.json]\n'.format(
                 temp_home)
             self.assertEqual(stderr, error_string)
+
+
+    def test_tcp_keepalive_time__issue_2533_3824(self):
+        # This test sets the iRODS TCP keepalive time to various values. Due to the nature of TCP socket timeouts, this
+        # does not test the behavior of the TCP keepalive options on the sockets. It mainly demonstrates the range of
+        # values allowed by the system.
+        self.env = os.environ.copy()
+
+        # Test with tcp_keepalive_time unset.
+        self.admin.assert_icommand('ils', 'STDOUT', self.admin.session_collection, env=self.env)
+
+        # Test with tcp_keepalive_time set to 1. This is the smallest valid value and should not affect behavior.
+        self.env['IRODS_TCP_KEEPALIVE_TIME_IN_SECONDS'] = str(1)
+        self.admin.assert_icommand('ils', 'STDOUT', self.admin.session_collection, env=self.env)
+
+        # Test with tcp_keepalive_time set to 0. This value is invalid, but is detected by the socket-creating function
+        # and ignored, effectively leaving it unset.
+        self.env['IRODS_TCP_KEEPALIVE_TIME_IN_SECONDS'] = str(0)
+        self.admin.assert_icommand('ils', 'STDOUT', self.admin.session_collection, env=self.env)
+
+        # Test with tcp_keepalive_time set to 0. This value is invalid, but is detected by the socket-creating function
+        # and ignored, effectively leaving it unset.
+        self.env['IRODS_TCP_KEEPALIVE_TIME_IN_SECONDS'] = str(-1)
+        self.admin.assert_icommand('ils', 'STDOUT', self.admin.session_collection, env=self.env)
+
+        # Test with tcp_keepalive_time set to INT32_MAX. This value is invalid and is not detected by the
+        # socket-creating function, so it attempts to set the socket option and fails because the value is invalid.
+        # Check for SOCKET_ERROR (-179000) with an errno of 22 (Invalid argument).
+        self.env['IRODS_TCP_KEEPALIVE_TIME_IN_SECONDS'] = str(2147483647)
+        self.admin.assert_icommand('ils', 'STDERR', '-179022 SOCKET_ERROR, Invalid argument', env=self.env)
+
+
+    def test_tcp_keepalive_intvl__issue_2533_3824(self):
+        # This test sets the iRODS TCP keepalive interval to various values. Due to the nature of TCP socket timeouts,
+        # this does not test the behavior of the TCP keepalive options on the sockets. It mainly demonstrates the range
+        # of values allowed by the system.
+        self.env = os.environ.copy()
+
+        # Test with tcp_keepalive_intvl unset.
+        self.admin.assert_icommand('ils', 'STDOUT', self.admin.session_collection, env=self.env)
+
+        # Test with tcp_keepalive_intvl set to 1. This is the smallest valid value and should not affect behavior.
+        self.env['IRODS_TCP_KEEPALIVE_INTVL_IN_SECONDS'] = str(1)
+        self.admin.assert_icommand('ils', 'STDOUT', self.admin.session_collection, env=self.env)
+
+        # Test with tcp_keepalive_intvl set to 0. This value is invalid, but is detected by the socket-creating function
+        # and ignored, effectively leaving it unset.
+        self.env['IRODS_TCP_KEEPALIVE_INTVL_IN_SECONDS'] = str(0)
+        self.admin.assert_icommand('ils', 'STDOUT', self.admin.session_collection, env=self.env)
+
+        # Test with tcp_keepalive_intvl set to 0. This value is invalid, but is detected by the socket-creating function
+        # and ignored, effectively leaving it unset.
+        self.env['IRODS_TCP_KEEPALIVE_INTVL_IN_SECONDS'] = str(-1)
+        self.admin.assert_icommand('ils', 'STDOUT', self.admin.session_collection, env=self.env)
+
+        # Test with tcp_keepalive_intvl set to INT32_MAX. This value is invalid and is not detected by the
+        # socket-creating function, so it attempts to set the socket option and fails because the value is invalid.
+        # Check for SOCKET_ERROR (-179000) with an errno of 22 (Invalid argument).
+        self.env['IRODS_TCP_KEEPALIVE_INTVL_IN_SECONDS'] = str(2147483647)
+        self.admin.assert_icommand('ils', 'STDERR', '-179022 SOCKET_ERROR, Invalid argument', env=self.env)
+
+
+    def test_tcp_keepalive_probes__issue_2533_3824(self):
+        # This test sets the iRODS TCP keepalive probes to various values. Due to the nature of TCP socket timeouts,
+        # this does not test the behavior of the TCP keepalive options on the sockets. It mainly demonstrates the range
+        # of values allowed by the system.
+        self.env = os.environ.copy()
+
+        # Test with tcp_keepalive_probes unset.
+        self.admin.assert_icommand('ils', 'STDOUT', self.admin.session_collection, env=self.env)
+
+        # Test with tcp_keepalive_probes set to 1. This is the smallest valid value and should not affect behavior.
+        self.env['IRODS_TCP_KEEPALIVE_PROBES'] = str(1)
+        self.admin.assert_icommand('ils', 'STDOUT', self.admin.session_collection, env=self.env)
+
+        # Test with tcp_keepalive_probes set to 0. This value is invalid, but is detected by the socket-creating
+        # function and ignored, effectively leaving it unset.
+        self.env['IRODS_TCP_KEEPALIVE_PROBES'] = str(0)
+        self.admin.assert_icommand('ils', 'STDOUT', self.admin.session_collection, env=self.env)
+
+        # Test with tcp_keepalive_probes set to 0. This value is invalid, but is detected by the socket-creating
+        # function and ignored, effectively leaving it unset.
+        self.env['IRODS_TCP_KEEPALIVE_PROBES'] = str(-1)
+        self.admin.assert_icommand('ils', 'STDOUT', self.admin.session_collection, env=self.env)
+
+        # Test with tcp_keepalive_probes set to INT32_MAX. This value is invalid and is not detected by the
+        # socket-creating function, so it attempts to set the socket option and fails because the value is invalid.
+        # Check for SOCKET_ERROR (-179000) with an errno of 22 (Invalid argument).
+        self.env['IRODS_TCP_KEEPALIVE_PROBES'] = str(2147483647)
+        self.admin.assert_icommand('ils', 'STDERR', '-179022 SOCKET_ERROR, Invalid argument', env=self.env)
