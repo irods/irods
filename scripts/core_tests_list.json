@@ -21,6 +21,8 @@
     "test_iadmin.test_moduser_group",
     "test_iadmin.test_moduser_user",
     "test_iadmin.test_modzone_conn_str_validation",
+    "test_iadmin_set_grid_configuration.test_get_grid_configuration",
+    "test_iadmin_set_grid_configuration.test_set_grid_configuration",
     "test_ibun",
     "test_icd",
     "test_ichksum",
