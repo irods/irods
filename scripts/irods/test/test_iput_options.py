@@ -203,6 +203,10 @@ class Test_iPut_Options(ResourceBase, unittest.TestCase):
         tempfile.mkstemp(dir=source_path)
         try:
             _,out,_ = self.admin.assert_icommand(
+                ['iput', '-v', '-r', '-b', '-f', source_path, 'v-r-b-f'],
+                'STDERR', '-402000 USER_INCOMPATIBLE_PARAMS')
+
+            _,out,_ = self.admin.assert_icommand(
                 ['iput', '-v', '-r', source_path, 'v-r'],
                 'STDOUT', ustrings.recurse_ok_string())
             self.assertNotIn(bulk_str, out, 'Bulk upload performed with no bulk flag')
@@ -217,10 +221,6 @@ class Test_iPut_Options(ResourceBase, unittest.TestCase):
                 'STDOUT', ustrings.recurse_ok_string())
             self.assertIn(bulk_str, out, 'Bulk upload not performed when requested')
 
-            _,out,_ = self.admin.assert_icommand(
-                ['iput', '-v', '-r', '-b', '-f', source_path, 'v-r-b-f'],
-                'STDOUT', ustrings.recurse_ok_string())
-            self.assertIn(bulk_str, out, 'Bulk upload not performed when requested')
         finally:
             shutil.rmtree(source_path, ignore_errors=True)
 
