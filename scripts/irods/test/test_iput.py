@@ -541,6 +541,79 @@ class Test_Iput(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.Tes
 
             self.user.assert_icommand(['ils', '-l', collection_path], 'STDOUT', coll)
 
+    def test_recursive_bulk_overwrite_is_not_allowed__issue_7110(self):
+        filenames = ['file1', 'file2']
+        bonus_filename = 'file3'
+
+        dirname = 'bulkputme'
+        directory_path = os.path.join(self.user.local_session_dir, dirname)
+
+        collection_path = os.path.join(self.user.session_collection, dirname)
+        logical_paths = [os.path.join(collection_path, f) for f in filenames]
+        bonus_logical_path = os.path.join(collection_path, bonus_filename)
+
+        random_resource = 'rand'
+        ufs_resource_1 = 'ufs1'
+        ufs_resource_2 = 'ufs2'
+
+        try:
+            # Create the two files so that we can perform the bulk put.
+            os.mkdir(directory_path)
+            for f in filenames:
+                physical_path = os.path.join(directory_path, f)
+                lib.make_arbitrary_file(physical_path, 2)
+
+            # Set up random resource hierarchy such that only 1 replica will appear.
+            lib.create_random_resource(self.admin, random_resource)
+            lib.create_ufs_resource(self.admin, ufs_resource_1, hostname=test.settings.HOSTNAME_2)
+            lib.create_ufs_resource(self.admin, ufs_resource_2, hostname=test.settings.HOSTNAME_3)
+            lib.add_child_resource(self.admin, random_resource, ufs_resource_1)
+            lib.add_child_resource(self.admin, random_resource, ufs_resource_2)
+
+            # Bulk put the directory ensure that the objects appear as expected.
+            self.user.assert_icommand(
+                ['iput', '-R', random_resource, '-br', directory_path, self.user.session_collection], 'STDOUT')
+
+            for lp in logical_paths:
+                self.assertFalse(lib.replica_exists(self.user, lp, 1))
+                self.assertEqual(str(1), lib.get_replica_status(self.user, os.path.basename(lp), 0))
+
+            # Add a bonus file to the directory so that the overwrite has something to do.
+            lib.make_arbitrary_file(os.path.join(directory_path, bonus_filename), 2)
+
+            # Bulk put the directory with force flag to overwrite and ensure that the action is disallowed.
+            self.user.assert_icommand(
+                ['iput', '-R', random_resource, '-brf', directory_path, self.user.session_collection],
+                'STDERR', '-402000 USER_INCOMPATIBLE_PARAMS')
+
+            # Ensure that no extra replicas are created.
+            for lp in logical_paths:
+                self.assertFalse(lib.replica_exists(self.user, lp, 1))
+                self.assertEqual(str(1), lib.get_replica_status(self.user, os.path.basename(lp), 0))
+
+            # Ensure that the overwrite did not occur as evidenced by the lack of the bonus file.
+            self.assertFalse(lib.replica_exists(self.user, bonus_logical_path, 0))
+
+        finally:
+            self.user.assert_icommand(['ils', '-lr', self.user.session_collection], 'STDOUT') # debugging
+
+            # Just in case, make sure any existing replicas are stale before removing. The issue results in replicas
+            # being stuck in the intermediate status.
+            for lp in logical_paths:
+                self.admin.run_icommand(
+                    ['iadmin', 'modrepl', 'logical_path', lp, 'replica_number', str(0), 'DATA_REPL_STATUS', str(0)])
+                self.admin.run_icommand(
+                    ['iadmin', 'modrepl', 'logical_path', lp, 'replica_number', str(1), 'DATA_REPL_STATUS', str(0)])
+
+            self.user.run_icommand(['irm', '-rf', collection_path])
+
+            self.admin.run_icommand(['iadmin', 'rmchildfromresc', random_resource, ufs_resource_1])
+            self.admin.run_icommand(['iadmin', 'rmchildfromresc', random_resource, ufs_resource_2])
+            self.admin.run_icommand(['iadmin', 'rmresc', random_resource])
+            self.admin.run_icommand(['iadmin', 'rmresc', ufs_resource_1])
+            self.admin.run_icommand(['iadmin', 'rmresc', ufs_resource_2])
+
+
 class test_iput_with_checksums(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.TestCase):
 
     def setUp(self):
