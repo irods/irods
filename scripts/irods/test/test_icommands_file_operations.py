@@ -823,6 +823,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         # prepare test directory
         number_of_files = 5
         dirname = self.admin.local_session_dir + '/files'
+        collection = os.path.join(self.admin.session_collection, 'files')
         # files less than 4200000 were failing to trigger the writeLine
         for filesize in range(5000, 6000000, 500000):
             lib.make_large_local_tmp_dir(dirname, number_of_files, filesize)
@@ -831,13 +832,14 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
                 core.add_rule(pep_map[self.plugin_name])
 
                 initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
-                self.admin.assert_icommand(['iput', '-frb', dirname], "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+                self.admin.assert_icommand(['iput', '-rb', dirname], "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
                 lib.delayAssert(
                     lambda: lib.log_message_occurrences_equals_count(
                         msg='writeLine: inString = acPostProcForPut called for',
                         count=number_of_files,
                         start_index=initial_size_of_server_log))
                 shutil.rmtree(dirname)
+            self.admin.assert_icommand(['irm', '-rf', collection])
 
     def test_large_irods_maximum_size_for_single_buffer_in_megabytes_2880(self):
         self.admin.environment_file_contents['irods_maximum_size_for_single_buffer_in_megabytes'] = 2000
