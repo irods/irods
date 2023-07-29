@@ -88,6 +88,15 @@ postProcRenamedPhyFiles(
 int
 rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
                   bytesBuf_t *bulkOprInpBBuf ) {
+    if (!rsComm || !bulkOprInp) {
+        return USER__NULL_INPUT_ERR;
+    }
+
+    if (getValByKey(&bulkOprInp->condInput, FORCE_FLAG_KW)) {
+        addRErrorMsg(&rsComm->rError, USER_INCOMPATIBLE_PARAMS, "Force flag keyword is not allowed for bulk puts.");
+        return USER_INCOMPATIBLE_PARAMS;
+    }
+
     int status;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
