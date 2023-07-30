@@ -2,7 +2,20 @@
 #include "irods/rodsError.h"
 #include "irods/rodsErrorTable.h"
 
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+
 struct ErrorStack;
+
+void allocate_error_stack_if_necessary(ErrorStack** _stack)
+{
+    if (_stack != nullptr && *_stack == nullptr) {
+        // NOLINTNEXTLINE(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc)
+        *_stack = static_cast<rError_t*>(std::malloc(sizeof(rError_t)));
+        std::memset(*_stack, 0, sizeof(rError_t));
+    }
+} // allocate_error_stack_if_necessary
 
 int addRErrorMsg(ErrorStack *myError, const int status, const char *msg)
 {
@@ -38,6 +51,12 @@ int addRErrorMsg(ErrorStack *myError, const int status, const char *msg)
 
     return 0;
 } // addRErrorMsg
+
+int allocate_if_necessary_and_add_rError_msg(ErrorStack** _stack, const int _status, const char* _msg)
+{
+    allocate_error_stack_if_necessary(_stack);
+    return addRErrorMsg(*_stack, _status, _msg);
+} // allocate_if_necessary_and_add_rError_msg
 
 int replErrorStack(ErrorStack *srcRError, ErrorStack *destRError)
 {
@@ -87,6 +106,11 @@ int freeRErrorContent(ErrorStack *myError)
 
 int printErrorStack(ErrorStack* rError)
 {
+    return print_error_stack_to_file(rError, stdout);
+} // printErrorStack
+
+int print_error_stack_to_file(const ErrorStack* rError, FILE* stream)
+{
     if (!rError || !rError->errMsg) {
         return USER__NULL_INPUT_ERR;
     }
@@ -97,9 +121,15 @@ int printErrorStack(ErrorStack* rError)
         ErrorMessage* errMsg = rError->errMsg[i];
         if (errMsg) {
             if (STDOUT_STATUS != errMsg->status) {
-                printf("Level %d: ", i);
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
+                if (std::fprintf(stream, "Level %d: ", i) < 0) {
+                    return FILE_WRITE_ERR;
+                }
             }
-            printf("%s\n", errMsg->msg);
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+            if (std::fprintf(stream, "%s\n", errMsg->msg) < 0) {
+                return FILE_WRITE_ERR;
+            }
         }
     }
 

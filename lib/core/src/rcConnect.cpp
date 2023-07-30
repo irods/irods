@@ -65,6 +65,8 @@ rcComm_t* _rcConnect(
     conn->thread_ctx = ( thread_context* ) malloc( sizeof( thread_context ) );
     memset( conn->thread_ctx, 0, sizeof( thread_context ) );
 
+    allocate_error_stack_if_necessary(&conn->rError);
+
     if ( errMsg != NULL ) {
         memset( errMsg, 0, sizeof( rErrMsg_t ) );
     }
@@ -96,6 +98,7 @@ rcComm_t* _rcConnect(
             delete  conn->thread_ctx->cond;
             free( conn->thread_ctx );
         }
+        freeRError(conn->rError);
         free( conn );
         return NULL;
     }
@@ -116,6 +119,7 @@ rcComm_t* _rcConnect(
             delete  conn->thread_ctx->cond;
             free( conn->thread_ctx );
         }
+        freeRError(conn->rError);
         free( conn );
         return NULL;
     }
@@ -145,6 +149,7 @@ rcComm_t* _rcConnect(
             delete  conn->thread_ctx->cond;
             free( conn->thread_ctx );
         }
+        freeRError(conn->rError);
         free( conn );
         return NULL;
     }
