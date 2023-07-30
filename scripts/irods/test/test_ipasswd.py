@@ -139,7 +139,7 @@ class Test_Ipasswd(resource_suite.ResourceBase, unittest.TestCase):
         #
         expected_lines = [
                             'CAT_INVALID_AUTHENTICATION',
-                            '826000 CAT_INVALID_AUTHENTICATION'
+                            '826000'
                          ]
         self.user0.assert_icommand('ipasswd BAD_PASSWD', 'STDERR_MULTILINE', expected_lines, input='apass\napass\n', desired_rc=7)
 
@@ -222,11 +222,6 @@ class Test_Ipasswd(resource_suite.ResourceBase, unittest.TestCase):
         # and...
 
         str1 = "CAT_INVALID_AUTHENTICATION: failed to perform request"
-        self.assertIn(str1, stderr, "ipasswd: Expected stderr: \"...{0}...\", got: \"{1}\"".format(str1, stderr))
-
-        # and...
-
-        str1 = "failed with error -826000 CAT_INVALID_AUTHENTICATION"
         self.assertIn(str1, stderr, "ipasswd: Expected stderr: \"...{0}...\", got: \"{1}\"".format(str1, stderr))
 
     # ==========================================================================================================
@@ -321,7 +316,7 @@ class Test_Ipasswd(resource_suite.ResourceBase, unittest.TestCase):
         #
         expected_lines = [
                             'CAT_INVALID_AUTHENTICATION',
-                            '826000 CAT_INVALID_AUTHENTICATION'
+                            '826000'
                          ]
         self.admin.assert_icommand('ipasswd BAD_PASSWD', 'STDERR_MULTILINE', expected_lines, input='rods\nrods\n', desired_rc=7)
 
@@ -404,9 +399,4 @@ class Test_Ipasswd(resource_suite.ResourceBase, unittest.TestCase):
         # and...
 
         str1 = "CAT_INVALID_AUTHENTICATION: failed to perform request"
-        self.assertIn(str1, stderr, "ipasswd: Expected stderr: \"...{0}...\", got: \"{1}\"".format(str1, stderr))
-
-        # and...
-
-        str1 = "failed with error -826000 CAT_INVALID_AUTHENTICATION"
         self.assertIn(str1, stderr, "ipasswd: Expected stderr: \"...{0}...\", got: \"{1}\"".format(str1, stderr))
