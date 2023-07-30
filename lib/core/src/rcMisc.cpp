@@ -58,8 +58,8 @@
 #endif
 
 #include <cstdlib>
+#include <cstdio>
 #include <cstring>
-#include <cstdlib>
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
@@ -5040,3 +5040,31 @@ int may_contain_sensitive_data(const char* _buffer, size_t _buffer_size)
         return std::search(_buffer, end, std::begin(_s), std::end(_s)) != end;
     });
 } // may_contain_sensitive_data
+
+int printError(rcComm_t* Conn, int status, char* routineName)
+{
+    rError_t* Err{};
+    rErrMsg_t* ErrMsg{};
+    int i{};
+    int len{};
+    if (Conn != nullptr) {
+        if (Conn->rError != nullptr) {
+            Err = Conn->rError;
+            len = Err->len;
+            for (i = 0; i < len; i++) {
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                ErrMsg = Err->errMsg[i];
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+                std::fprintf(stderr, "Level %d: %s\n", i, ErrMsg->msg);
+            }
+        }
+    }
+    char* mySubName = nullptr;
+    const char* myName = rodsErrorName(status, &mySubName);
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
+    std::fprintf(stderr, "%s failed with error %d %s %s\n", routineName, status, myName, mySubName);
+    // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
+    std::free(mySubName);
+
+    return 0;
+}
