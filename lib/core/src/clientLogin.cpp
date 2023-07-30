@@ -55,7 +55,8 @@ namespace
 
             log_auth::info(msg);
 
-            printError(&_comm, ec, const_cast<char*>(msg.data()));
+            // NOLINTNEXTLINE(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+            allocate_if_necessary_and_add_rError_msg(&_comm.rError, ec, msg.c_str());
 
             return ec;
         }
@@ -68,7 +69,7 @@ namespace
 
             log_auth::info(msg);
 
-            printError(&_comm, ec, const_cast<char*>(msg.data()));
+            allocate_if_necessary_and_add_rError_msg(&_comm.rError, ec, msg.c_str());
 
             return ec;
         }
@@ -81,7 +82,7 @@ namespace
 
             log_auth::info(msg);
 
-            printError(&_comm, ec, const_cast<char*>(msg.data()));
+            allocate_if_necessary_and_add_rError_msg(&_comm.rError, ec, msg.c_str());
 
             return ec;
         }
@@ -94,7 +95,7 @@ namespace
 
             log_auth::info(msg);
 
-            printError(&_comm, ec, const_cast<char*>(msg.data()));
+            allocate_if_necessary_and_add_rError_msg(&_comm.rError, ec, msg.c_str());
 
             return ec;
         }
@@ -130,29 +131,6 @@ void setSessionSignatureClientside( char* _sig ) {
         ( unsigned char )_sig[15] );
 
 } // setSessionSignatureClientside
-
-int printError( rcComm_t *Conn, int status, char *routineName ) {
-    rError_t *Err;
-    rErrMsg_t *ErrMsg;
-    int i, len;
-    if ( Conn ) {
-        if ( Conn->rError ) {
-            Err = Conn->rError;
-            len = Err->len;
-            for ( i = 0; i < len; i++ ) {
-                ErrMsg = Err->errMsg[i];
-                fprintf( stderr, "Level %d: %s\n", i, ErrMsg->msg );
-            }
-        }
-    }
-    char *mySubName = NULL;
-    const char *myName = rodsErrorName( status, &mySubName );
-    fprintf( stderr, "%s failed with error %d %s %s\n", routineName,
-             status, myName, mySubName );
-    free( mySubName );
-
-    return 0;
-}
 
 int clientLoginPam( rcComm_t* Conn,
                     char*     password,
@@ -199,7 +177,7 @@ int clientLoginPam( rcComm_t* Conn,
        communication socket. */
     status = sslStart( Conn );
     if ( status ) {
-        printError( Conn, status, "sslStart" );
+        allocate_if_necessary_and_add_rError_msg(&Conn->rError, status, "sslStart");
         return status;
     }
 
@@ -209,7 +187,7 @@ int clientLoginPam( rcComm_t* Conn,
     pamAuthReqInp.timeToLive = ttl;
     status = rcPamAuthRequest( Conn, &pamAuthReqInp, &pamAuthReqOut );
     if ( status ) {
-        printError( Conn, status, "rcPamAuthRequest" );
+        allocate_if_necessary_and_add_rError_msg(&Conn->rError, status, "rcPamAuthRequest");
         sslEnd( Conn );
         return status;
     }
@@ -247,7 +225,7 @@ int clientLoginTTL( rcComm_t *Conn, int ttl ) {
     if ( int status = rcGetLimitedPassword( Conn,
                 &getLimitedPasswordInp,
                 &getLimitedPasswordOut ) ) {
-        printError( Conn, status, "rcGetLimitedPassword" );
+        allocate_if_necessary_and_add_rError_msg(&Conn->rError, status, "rcGetLimitedPassword");
         memset( userPassword, 0, sizeof( userPassword ) );
         return status;
     }
@@ -299,7 +277,8 @@ int clientLogin(rcComm_t* _comm, const char* _context, const char* _scheme_overr
 
         log_auth::info(msg);
 
-        printError(_comm, ec, const_cast<char*>(msg.data()));
+        // NOLINTNEXTLINE(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+        allocate_if_necessary_and_add_rError_msg(&_comm->rError, ec, msg.c_str());
 
         return ec;
     }
@@ -369,7 +348,8 @@ int clientLogin(rcComm_t* _comm, const char* _context, const char* _scheme_overr
 
             log_auth::info(msg);
 
-            printError(_comm, ec, const_cast<char*>(msg.data()));
+            // NOLINTNEXTLINE(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+            allocate_if_necessary_and_add_rError_msg(&_comm->rError, ec, msg.c_str());
 
             return ec;
         }
@@ -379,7 +359,7 @@ int clientLogin(rcComm_t* _comm, const char* _context, const char* _scheme_overr
 
             log_auth::info(msg);
 
-            printError(_comm, ec, const_cast<char*>(msg.data()));
+            allocate_if_necessary_and_add_rError_msg(&_comm->rError, ec, msg.c_str());
 
             return ec;
         }
@@ -416,10 +396,8 @@ int clientLogin(rcComm_t* _comm, const char* _context, const char* _scheme_overr
     // send an authentication request to the server
     ret = auth_plugin->call <rcComm_t* > ( NULL, irods::AUTH_CLIENT_AUTH_REQUEST, auth_obj, _comm );
     if ( !ret.ok() ) {
-        printError(
-            _comm,
-            ret.code(),
-            ( char* )ret.result().c_str() );
+        // NOLINTNEXTLINE(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+        allocate_if_necessary_and_add_rError_msg(&_comm->rError, ret.code(), ret.result().c_str());
         return ret.code();
     }
 
@@ -435,10 +413,8 @@ int clientLogin(rcComm_t* _comm, const char* _context, const char* _scheme_overr
     // send the auth response to the agent
     ret = auth_plugin->call <rcComm_t* > ( NULL, irods::AUTH_CLIENT_AUTH_RESPONSE, auth_obj, _comm );
     if ( !ret.ok() ) {
-        printError(
-            _comm,
-            ret.code(),
-            ( char* )ret.result().c_str() );
+        // NOLINTNEXTLINE(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+        allocate_if_necessary_and_add_rError_msg(&_comm->rError, ret.code(), ret.result().c_str());
         return ret.code();
     }
 
@@ -462,7 +438,7 @@ clientLoginWithPassword( rcComm_t *Conn, char* password ) {
     char userNameAndZone[NAME_LEN * 2 + 1];
     MD5_CTX context;
     if ( !password ) {
-        printError( Conn, -1, "null password pointer" );
+        allocate_if_necessary_and_add_rError_msg(&Conn->rError, -1, "null password pointer");
         return -1;
     }
 
@@ -472,7 +448,7 @@ clientLoginWithPassword( rcComm_t *Conn, char* password ) {
     }
     status = rcAuthRequest( Conn, &authReqOut );
     if ( status || NULL == authReqOut ) { // JMC cppcheck - nullptr
-        printError( Conn, status, "rcAuthRequest" );
+        allocate_if_necessary_and_add_rError_msg(&Conn->rError, status, "rcAuthRequest");
         return status;
     }
 
@@ -512,7 +488,7 @@ clientLoginWithPassword( rcComm_t *Conn, char* password ) {
     status = rcAuthResponse( Conn, &authRespIn );
 
     if ( status ) {
-        printError( Conn, status, "rcAuthResponse" );
+        allocate_if_necessary_and_add_rError_msg(&Conn->rError, status, "rcAuthResponse");
         return status;
     }
     Conn->loggedIn = 1;
