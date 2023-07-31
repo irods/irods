@@ -3,7 +3,9 @@ from .exceptions import IrodsError, IrodsWarning
 from . import lib
 
 import logging
+import os
 import re
+import tempfile
 import time
 
 def run_update(irods_config, cursor):
@@ -129,6 +131,26 @@ def run_update(irods_config, cursor):
                                 " where d.coll_id = any(select coll_id from COLL) order by coll_name, d.data_name, d.data_repl_num', "
                                 "'1580297960');")
                 database_connect.execute_sql_statement(cursor, sql)
+
+    elif new_schema_version == 11:
+        if irods_config.catalog_database_type == 'mysql':
+            # Rerunning the MySQL script, mysql_functions.sql, fixes issues with sequence numbers
+            # and the potential for deadlocks in the database.
+            with tempfile.NamedTemporaryFile() as f:
+                f.write('\n'.join([
+                    '[client]',
+                    '='.join(['user', irods_config.database_config['db_username']]),
+                    '='.join(['password', irods_config.database_config['db_password']]),
+                    '='.join(['port', str(irods_config.database_config['db_port'])]),
+                    '='.join(['host', irods_config.database_config['db_host']])
+                ]).encode())
+
+                f.flush()
+
+                with open(os.path.join(irods_config.irods_directory, 'packaging', 'sql', 'mysql_functions.sql'), 'r') as sql_file:
+                    lib.execute_command(
+                        ['mysql', '='.join(['--defaults-file', f.name]), irods_config.database_config['db_name']],
+                        stdin=sql_file)
 
     else:
         raise IrodsError('Upgrade to schema version %d is unsupported.' % (new_schema_version))
