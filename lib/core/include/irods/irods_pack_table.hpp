@@ -16,7 +16,7 @@ namespace irods
     {
       public:
         // NOLINTNEXTLINE(modernize-avoid-c-arrays, cppcoreguidelines-avoid-c-arrays)
-        explicit pack_entry_table(packInstruct_t _defs[]);
+        explicit pack_entry_table(const packInstruct_t _defs[]);
     }; // class pack_entry_table
 
     // NOLINTNEXTLINE(modernize-use-trailing-return-type)

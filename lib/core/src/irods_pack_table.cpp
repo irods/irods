@@ -1,13 +1,13 @@
 #include "irods/irods_pack_table.hpp"
 
-#include "irods/apiPackTable.h"
+#include "irods/api_pack_table.hpp"
 
 #include <cstring>
 
 namespace irods
 {
     // NOLINTNEXTLINE(modernize-avoid-c-arrays, cppcoreguidelines-avoid-c-arrays)
-    pack_entry_table::pack_entry_table(packInstruct_t _defs[])
+    pack_entry_table::pack_entry_table(const packInstruct_t _defs[])
     {
         // NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         for (int i = 0; std::strcmp(_defs[i].name, PACK_TABLE_END_PI) != 0; ++i) {
