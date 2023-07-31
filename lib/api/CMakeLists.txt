@@ -204,6 +204,7 @@ install(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/apiNumberMap.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/apiPackTable.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/apiTable.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/api_pack_table.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/authCheck.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/authPluginRequest.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/authRequest.h"
