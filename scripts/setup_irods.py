@@ -138,11 +138,11 @@ def setup_server(irods_config, json_configuration_file=None, test_mode=False):
 
     # create local storage resource for consumer (provider was configured directly in database_interface.setup_catalog above)
     if irods_config.is_consumer:
-        irods.lib.execute_command(['iadmin', 'mkresc', irods_config.server_config['default_resource_name'], 'unixfilesystem', ':'.join([irods.lib.get_hostname(), default_resource_directory]), ''])
+        irods.lib.execute_command(['iadmin', 'mkresc', default_resource_name, 'unixfilesystem', ':'.join([irods.lib.get_hostname(), default_resource_directory]), ''])
 
     # update core.re with default resource
     core_re_path = os.path.join(irods_config.core_re_directory, 'core.re')
-    replace_in_file(core_re_path, 'demoResc', irods_config.server_config['default_resource_name'])
+    replace_in_file(core_re_path, 'demoResc', default_resource_name)
 
     # test put
     test_put(irods_config)
