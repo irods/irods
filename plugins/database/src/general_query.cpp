@@ -1525,6 +1525,9 @@ insertWhere( char *condition, int option ) {
     }
 
     for ( cp1 = cpFirstQuote + 1; cp1 < cpSecondQuote; cp1++ ) {
+        if ( *cp1 == '\'' && *(cp1 + 1) == '\'' ) {
+            cp1++;
+        }
         bindVars[bindIx++] = *cp1;
     }
     bindVars[bindIx++] = '\0';
