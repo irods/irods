@@ -1,14 +1,15 @@
 #ifndef IRODS_UNIT_TEST_UTILS_HPP
 #define IRODS_UNIT_TEST_UTILS_HPP
 
-#include "irods/rcMisc.h"
-#include "irods/rodsClient.h"
 #include "irods/dataObjRepl.h"
-#include "irods/resource_administration.hpp"
-#include "irods/irods_at_scope_exit.hpp"
 #include "irods/filesystem/path.hpp"
-#include "irods/key_value_proxy.hpp"
+#include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_configuration_keywords.hpp"
+#include "irods/key_value_proxy.hpp"
+#include "irods/rcMisc.h"
+#include "irods/replica_close.h"
+#include "irods/resource_administration.hpp"
+#include "irods/rodsClient.h"
 
 #include <boost/filesystem.hpp>
 
