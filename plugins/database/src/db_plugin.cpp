@@ -2427,9 +2427,8 @@ irods::error db_mod_data_obj_meta_op(
                                                 dataSizeString,
                                                 objIdString, &icss );
             if ( status != 0 ) {
-                return ERROR(
-                           status,
-                           "cmlTicketUpdateWriteBytes failed" );
+                //_rollback("chlModDataObjMeta");
+                return ERROR(status, "cmlTicketUpdateWriteBytes failed");
             }
         }
 
@@ -2744,6 +2743,7 @@ irods::error db_reg_data_obj_op(
             errMsg << "no permission to update collection '" << logicalDirName << "'";
             addRErrorMsg( &_ctx.comm()->rError, 0, errMsg.str().c_str() );
         }
+        //_rollback("chlRegDataObj");
         return ERROR( iVal, "" );
     }
     snprintf( collIdNum, MAX_NAME_LEN, "%lld", iVal );
