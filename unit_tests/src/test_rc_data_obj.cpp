@@ -1,5 +1,8 @@
 #include <catch2/catch.hpp>
 
+#include "irods_error_enum_matcher.hpp"
+#include "unit_test_utils.hpp"
+
 #include "irods/client_connection.hpp"
 #include "irods/dataObjChksum.h"
 #include "irods/dataObjInpOut.h"
@@ -10,7 +13,6 @@
 #include "irods/filesystem.hpp"
 #include "irods/get_file_descriptor_info.h"
 #include "irods/irods_at_scope_exit.hpp"
-#include "irods_error_enum_matcher.hpp"
 #include "irods/irods_exception.hpp"
 #include "irods/key_value_proxy.hpp"
 #include "irods/modDataObjMeta.h"
@@ -22,8 +24,9 @@
 #include "irods/rodsClient.h"
 #include "irods/rodsDef.h"
 #include "irods/rodsErrorTable.h"
+#include "irods/ticketAdmin.h"
+#include "irods/ticket_administration.hpp"
 #include "irods/transport/default_transport.hpp"
-#include "unit_test_utils.hpp"
 
 #include <boost/filesystem.hpp>
 #include <fmt/format.h>
@@ -1356,4 +1359,172 @@ TEST_CASE("#6600: server no longer changes the openmode from O_WRONLY to O_RDWR"
     openedDataObjInp_t close_inp{};
     close_inp.l1descInx = fd;
     REQUIRE(rcDataObjClose(conn_ptr, &close_inp) >= 0);
+}
+
+TEST_CASE("#7250: updates to ticket stats do not hang")
+{
+    load_client_api_plugins();
+
+    irods::experimental::client_connection conn1;
+    REQUIRE(conn1);
+
+    rodsEnv env;
+    _getRodsEnv(env);
+
+    const auto sandbox = fs::path{env.rodsHome} / "unit_testing_sandbox";
+
+    if (!fs::client::exists(conn1, sandbox)) {
+        REQUIRE(fs::client::create_collection(conn1, sandbox));
+    }
+
+    irods::at_scope_exit remove_sandbox{
+        [&conn1, &sandbox] { REQUIRE(fs::client::remove_all(conn1, sandbox, fs::remove_options::no_trash)); }};
+
+    const auto data_object = sandbox / "issue_7250.txt";
+
+    // Create a new data object.
+    {
+        irods::experimental::io::client::native_transport tp{conn1};
+        irods::experimental::io::odstream{tp, data_object} << "the data";
+        REQUIRE(fs::client::data_object_size(conn1, data_object) > 0);
+    }
+
+    namespace ticket = irods::experimental::administration::ticket;
+
+    const auto enable_ticket = [](auto& _conn, const auto* _ticket_string) {
+        TicketAdminInput input{};
+        input.arg1 = const_cast<char*>("session"); // NOLINT(cppcoreguidelines-pro-type-const-cast)
+        input.arg2 = const_cast<char*>(_ticket_string); // NOLINT(cppcoreguidelines-pro-type-const-cast)
+        input.arg3 = const_cast<char*>(""); // NOLINT(cppcoreguidelines-pro-type-const-cast)
+        REQUIRE(rcTicketAdmin(static_cast<RcComm*>(_conn), &input) == 0);
+    };
+
+    SECTION("for read tickets and rcGetHostForGet")
+    {
+        std::string ticket_string;
+
+        SECTION("create ticket for collection")
+        {
+            REQUIRE_NOTHROW(ticket_string =
+                                ticket::client::create_ticket(conn1, ticket::ticket_type::read, sandbox.c_str()));
+        }
+
+        SECTION("create ticket for data object")
+        {
+            REQUIRE_NOTHROW(ticket_string =
+                                ticket::client::create_ticket(conn1, ticket::ticket_type::read, data_object.c_str()));
+        }
+
+        irods::at_scope_exit delete_ticket{
+            [&conn1, &ticket_string] { ticket::client::delete_ticket(conn1, ticket_string); }};
+
+        REQUIRE_FALSE(ticket_string.empty());
+
+        // Enable the ticket on the connection.
+        enable_ticket(conn1, ticket_string.c_str());
+        irods::at_scope_exit disable_ticket{[&conn1, &enable_ticket] { enable_ticket(conn1, ""); }};
+
+        // Call rcGetHostForGet to determine to which server to connect.
+        // Keep in mind there is only one server. This step is necessary for reproducing the error.
+        dataObjInp_t open_inp{};
+        std::strcpy(open_inp.objPath, data_object.c_str()); // NOLINT(clang-analyzer-security.insecureAPI.strcpy)
+        open_inp.openFlags = O_RDONLY;
+        char* new_host{};
+        REQUIRE(rcGetHostForGet(static_cast<RcComm*>(conn1), &open_inp, &new_host) == 0);
+        REQUIRE(new_host != nullptr);
+        REQUIRE(std::strlen(new_host) > 0);
+
+        // Connect to the server using a different connection and enable the ticket on it.
+        irods::experimental::client_connection conn2{new_host, env.rodsPort, {env.rodsUserName, env.rodsZone}};
+        std::free(new_host); // NOLINT(cppcoreguidelines-no-malloc, cppcoreguidelines-owning-memory)
+        enable_ticket(conn2, ticket_string.c_str());
+
+        // Open the replica for reading using the new connection.
+        auto* conn_ptr2 = static_cast<RcComm*>(conn2);
+        const auto fd = rcDataObjOpen(conn_ptr2, &open_inp);
+        REQUIRE(fd > 2);
+
+        // Close the replica.
+        openedDataObjInp_t close_inp{};
+        close_inp.l1descInx = fd;
+        REQUIRE(rcDataObjClose(conn_ptr2, &close_inp) >= 0);
+    }
+
+    SECTION("for write tickets and rcGetHostForPut")
+    {
+        std::string ticket_string;
+
+        SECTION("create ticket for collection")
+        {
+            REQUIRE_NOTHROW(ticket_string =
+                                ticket::client::create_ticket(conn1, ticket::ticket_type::write, sandbox.c_str()));
+        }
+
+        SECTION("create ticket for data object")
+        {
+            REQUIRE_NOTHROW(ticket_string =
+                                ticket::client::create_ticket(conn1, ticket::ticket_type::write, data_object.c_str()));
+        }
+
+        irods::at_scope_exit delete_ticket{
+            [&conn1, &ticket_string] { ticket::client::delete_ticket(conn1, ticket_string); }};
+
+        REQUIRE_FALSE(ticket_string.empty());
+
+        // Set an upper limit on the total number of bytes that can be written to the replica.
+        // This is required so the server knows to track/update the byte count.
+        // Without this, the assertion involving the GenQuery check would always fail.
+        REQUIRE_NOTHROW(
+            ticket::client::set_ticket_constraint(conn1, ticket_string, ticket::n_write_bytes_constraint{100}));
+
+        // Enable the ticket on the connection.
+        enable_ticket(conn1, ticket_string.c_str());
+        irods::at_scope_exit disable_ticket{[&conn1, &enable_ticket] { enable_ticket(conn1, ""); }};
+
+        // Call rcGetHostForPut to determine to which server to connect.
+        // Keep in mind there is only one server. This step is necessary for reproducing the error.
+        dataObjInp_t open_inp{};
+        std::strcpy(open_inp.objPath, data_object.c_str()); // NOLINT(clang-analyzer-security.insecureAPI.strcpy)
+        open_inp.openFlags = O_WRONLY;
+        char* new_host{};
+        REQUIRE(rcGetHostForPut(static_cast<RcComm*>(conn1), &open_inp, &new_host) == 0);
+        REQUIRE(new_host != nullptr);
+        REQUIRE(std::strlen(new_host) > 0);
+
+        // Connect to the server using a different connection and enable the ticket on it.
+        irods::experimental::client_connection conn2{new_host, env.rodsPort, {env.rodsUserName, env.rodsZone}};
+        std::free(new_host); // NOLINT(cppcoreguidelines-no-malloc, cppcoreguidelines-owning-memory)
+        enable_ticket(conn2, ticket_string.c_str());
+
+        // Open the replica for writing using the new connection.
+        auto* conn_ptr2 = static_cast<RcComm*>(conn2);
+        const auto fd = rcDataObjOpen(conn_ptr2, &open_inp);
+        REQUIRE(fd > 2);
+
+        // Write new data to the replica.
+        char new_data[] = "the new data"; // NOLINT(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+        bytesBuf_t write_bbuf{};
+        write_bbuf.buf = new_data;
+        write_bbuf.len = static_cast<int>(std::strlen(new_data));
+
+        openedDataObjInp_t write_inp{};
+        write_inp.l1descInx = fd;
+        write_inp.len = write_bbuf.len;
+        const auto bytes_written = rcDataObjWrite(conn_ptr2, &write_inp, &write_bbuf);
+        CHECK(write_bbuf.len == bytes_written);
+
+        // Close the replica.
+        openedDataObjInp_t close_inp{};
+        close_inp.l1descInx = fd;
+        REQUIRE(rcDataObjClose(conn_ptr2, &close_inp) >= 0);
+
+        // Show that the ticket stats have been updated correctly.
+        const auto gql = fmt::format(
+            "select TICKET_WRITE_FILE_COUNT, TICKET_WRITE_BYTE_COUNT where TICKET_STRING = '{}'", ticket_string);
+
+        for (auto&& row : irods::query{conn_ptr2, gql}) {
+            CHECK(row[0] == "2");
+            CHECK(row[1] == std::to_string(write_bbuf.len));
+        }
+    }
 }
