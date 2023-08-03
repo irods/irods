@@ -1545,6 +1545,7 @@ int checkObjIdByTicket( const char *dataId, const char *accessLevel,
                 if ( status != 0 ) {
                     return status;
                 }
+
 #ifndef ORA_ICAT
                 /* do a commit on disconnect if needed */
                 cllCheckPending( "", 2, icss->databaseType );
@@ -1575,6 +1576,7 @@ int checkObjIdByTicket( const char *dataId, const char *accessLevel,
             if ( status != 0 ) {
                 return status;
             }
+
 #ifndef ORA_ICAT
             /* do a commit on disconnect if needed*/
             cllCheckPending( "", 2, icss->databaseType );
@@ -1671,6 +1673,7 @@ cmlTicketUpdateWriteBytes( const char *ticketStr,
     if ( status != 0 ) {
         return status;
     }
+
 #ifndef ORA_ICAT
     /* do a commit on disconnect if needed */
     cllCheckPending( "", 2, icss->databaseType );

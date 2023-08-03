@@ -25,14 +25,18 @@
  */
 #include "irods/rodsClient.h"
 #include "irods/icatHighLevelRoutines.hpp"
+#include "irods/irods_logger.hpp"
 #include "irods/private/mid_level.hpp"
 #include "irods/private/low_level.hpp"
 #include "irods/irods_virtual_path.hpp"
+#include "irods/stringOpr.h"
 
 #include <boost/algorithm/string.hpp>
 
 #include <string>
 #include <algorithm>
+
+using log_db = irods::experimental::log::database;
 
 extern int logSQLGenQuery;
 
@@ -2213,8 +2217,23 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
                      genQueryInp.condInput.value[accessIx],
                      /*                  sessionTicket, accessControlHost, icss); */
                      sessionTicket, sessionClientAddr, icss );
-        prevStatus = status;
-        return status;
+
+        if (is_non_empty_string(sessionTicket, sizeof(sessionTicket)) == 1) {
+            if (status < 0) {
+                log_db::error("{}: cmlCheckDataObjId error [{}]. Rolling back database updates.", __func__, status);
+
+                if (const auto ec = cmlExecuteNoAnswerSql("rollback", icss); ec < 0) {
+                    log_db::error("{}: Database rollback error [{}].", __func__, ec);
+                }
+            }
+            else {
+                if (const auto ec = cmlExecuteNoAnswerSql("commit", icss); ec < 0) {
+                    log_db::error("{}: Database commit error [{}].", __func__, ec);
+                }
+            }
+        }
+
+        return prevStatus = status;
     }
 
     if ( collIx >= 0 ) {
