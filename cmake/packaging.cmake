@@ -187,7 +187,7 @@ endif()
 ## Postgres database plugin package
 #######################################
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_POSTGRES_NAME_UPPERCASE}_PACKAGE_NAME "irods-database-plugin-postgres")
-set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_POSTGRES_NAME_UPPERCASE}_PACKAGE_DEPENDS "${IRODS_PACKAGE_DEPENDENCIES_STRING}, irods-server (= ${CPACK_DEBIAN_PACKAGE_VERSION}-${CPACK_DEBIAN_PACKAGE_RELEASE}), libodbc1, odbcinst, odbc-postgresql, postgresql-client, super, libc6")
+set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_POSTGRES_NAME_UPPERCASE}_PACKAGE_DEPENDS "${IRODS_PACKAGE_DEPENDENCIES_STRING}, irods-server (= ${CPACK_DEBIAN_PACKAGE_VERSION}-${CPACK_DEBIAN_PACKAGE_RELEASE}), unixodbc, libodbc1, odbcinst, odbc-postgresql, postgresql-client, super, libc6")
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_POSTGRES_NAME_UPPERCASE}_PACKAGE_PROVIDES "irods-database-plugin-postgres (= ${CPACK_DEBIAN_PACKAGE_VERSION})")
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_POSTGRES_NAME_UPPERCASE}_PACKAGE_CONFLICTS "irods-database-plugin-mysql, irods-database-plugin-oracle")
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_POSTGRES_NAME_UPPERCASE}_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_SOURCE_DIR}/plugins/database/packaging/preinst;${CMAKE_CURRENT_SOURCE_DIR}/plugins/database/packaging/postinst;${CMAKE_CURRENT_SOURCE_DIR}/plugins/database/packaging/postrm;")
@@ -219,7 +219,7 @@ endif()
 ## MySQL database plugin package
 #######################################
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_MYSQL_NAME_UPPERCASE}_PACKAGE_NAME "irods-database-plugin-mysql")
-set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_MYSQL_NAME_UPPERCASE}_PACKAGE_DEPENDS "${IRODS_PACKAGE_DEPENDENCIES_STRING}, irods-server (= ${CPACK_DEBIAN_PACKAGE_VERSION}-${CPACK_DEBIAN_PACKAGE_RELEASE}), libodbc1, odbcinst, default-mysql-client, libc6")
+set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_MYSQL_NAME_UPPERCASE}_PACKAGE_DEPENDS "${IRODS_PACKAGE_DEPENDENCIES_STRING}, irods-server (= ${CPACK_DEBIAN_PACKAGE_VERSION}-${CPACK_DEBIAN_PACKAGE_RELEASE}), unixodbc, libodbc1, odbcinst, default-mysql-client, libc6")
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_MYSQL_NAME_UPPERCASE}_PACKAGE_PROVIDES "irods-database-plugin-mysql (= ${CPACK_DEBIAN_PACKAGE_VERSION})")
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_MYSQL_NAME_UPPERCASE}_PACKAGE_CONFLICTS "irods-database-plugin-postgres, irods-database-plugin-oracle")
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_MYSQL_NAME_UPPERCASE}_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_SOURCE_DIR}/plugins/database/packaging/preinst;${CMAKE_CURRENT_SOURCE_DIR}/plugins/database/packaging/postinst;${CMAKE_CURRENT_SOURCE_DIR}/plugins/database/packaging/postrm;")
@@ -251,7 +251,7 @@ endif()
 ## Oracle database plugin package
 #######################################
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_ORACLE_NAME_UPPERCASE}_PACKAGE_NAME "irods-database-plugin-oracle")
-set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_ORACLE_NAME_UPPERCASE}_PACKAGE_DEPENDS "${IRODS_PACKAGE_DEPENDENCIES_STRING}, irods-server (= ${CPACK_DEBIAN_PACKAGE_VERSION}-${CPACK_DEBIAN_PACKAGE_RELEASE}), libodbc1, odbcinst, libc6")
+set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_ORACLE_NAME_UPPERCASE}_PACKAGE_DEPENDS "${IRODS_PACKAGE_DEPENDENCIES_STRING}, irods-server (= ${CPACK_DEBIAN_PACKAGE_VERSION}-${CPACK_DEBIAN_PACKAGE_RELEASE}), unixodbc, libodbc1, odbcinst, libc6")
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_ORACLE_NAME_UPPERCASE}_PACKAGE_PROVIDES "irods-database-plugin-oracle (= ${CPACK_DEBIAN_PACKAGE_VERSION})")
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_ORACLE_NAME_UPPERCASE}_PACKAGE_CONFLICTS "irods-database-plugin-mysql, irods-database-plugin-postgres")
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_ORACLE_NAME_UPPERCASE}_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_SOURCE_DIR}/plugins/database/packaging/preinst;${CMAKE_CURRENT_SOURCE_DIR}/plugins/database/packaging/postinst;${CMAKE_CURRENT_SOURCE_DIR}/plugins/database/packaging/postrm;")
