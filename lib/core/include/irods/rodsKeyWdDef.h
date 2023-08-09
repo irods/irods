@@ -148,6 +148,8 @@
 #define FILE_SOURCE_PATH_KW                         "fileSourcePath"
 #define EXCLUDE_FILE_KW                             "excludeFile"
 
+#define GET_RESOURCE_INFO_OP_TYPE_KW                "getResourceInfoOpType"
+
 /* The following are the keyWord definition for the rescCond key/value pair */
 /* RESC_NAME_KW is defined above */
 

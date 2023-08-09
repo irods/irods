@@ -152,6 +152,7 @@
 #  include "irods/rsZoneReport.hpp"
 #  include "irods/rs_check_auth_credentials.hpp"
 #  include "irods/rs_get_library_features.hpp"
+#  include "irods/rs_get_resource_info_for_operation.hpp"
 #  define NULLPTR_FOR_CLIENT_TABLE(x) x
 #elif !defined(CREATE_API_TABLE_FOR_SERVER) && defined(CREATE_API_TABLE_FOR_CLIENT)
 #  define NULLPTR_FOR_CLIENT_TABLE(x) nullptr
@@ -242,6 +243,7 @@
 #define RS_GET_MISC_SVR_INFO           NULLPTR_FOR_CLIENT_TABLE(rsGetMiscSvrInfo)
 #define RS_GET_REMOTE_ZONE_RESC        NULLPTR_FOR_CLIENT_TABLE(rsGetRemoteZoneResc)
 #define RS_GET_RESC_QUOTA              NULLPTR_FOR_CLIENT_TABLE(rsGetRescQuota)
+#define RS_GET_RESOURCE_INFO_FOR_OPERATION NULLPTR_FOR_CLIENT_TABLE(rs_get_resource_info_for_operation)
 #define RS_GET_TEMP_PASSWORD           NULLPTR_FOR_CLIENT_TABLE(rsGetTempPassword)
 #define RS_GET_TEMP_PASSWORD_FOR_OTHER NULLPTR_FOR_CLIENT_TABLE(rsGetTempPasswordForOther)
 #define RS_IES_CLIENT_HINTS            NULLPTR_FOR_CLIENT_TABLE(rsClientHints)
@@ -1269,6 +1271,12 @@ static irods::apidef_t client_api_table_inp[] = {
         "api_get_library_features", irods::clearInStruct_noop, irods::clearOutStruct_noop,
         (funcPtr) CALL_GET_LIBRARY_FEATURES_OUT
     },
+    {   GET_RESOURCE_INFO_FOR_OPERATION_AN,  RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
+        "DataObjInp_PI", 0, "STR_PI", 0,
+        boost::any(std::function<int(rsComm_t*,dataObjInp_t*,char**)>(RS_GET_RESOURCE_INFO_FOR_OPERATION)),
+        "api_get_resource_info_for_operation", clearDataObjInp, irods::clearOutStruct_noop,
+        (funcPtr)CALL_GET_RESOURCE_INFO_FOR_OPERATION
+    }
     // clang-format on
 }; // _api_table_inp
 
