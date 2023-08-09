@@ -23,6 +23,7 @@
 #include <string>
 
 #include <boost/filesystem.hpp>
+#include <fmt/format.h>
 
 /* Size of the R_OBJT_AUDIT comment field;must match table column definition */
 #define AUDIT_COMMENT_MAX_SIZE       1000
@@ -995,9 +996,7 @@ cmlCheckDirAndGetInheritFlag( const char *dirName, const char *userName, const c
     }
 
     return iVal;
-
-}
-
+} // cmlCheckDirAndGetInheritFlag
 
 /*
   Check that a collection exists and user has 'accessLevel' permission.
@@ -1373,11 +1372,16 @@ cmlCheckTicketRestrictions( const char *ticketId, const char *ticketHost,
 }
 
 /* Check access via a Ticket to a data-object or collection */
-int checkObjIdByTicket( const char *dataId, const char *accessLevel,
-                        const char *ticketStr, const char *ticketHost,
-                        const char *userName, const char *userZone,
-                        icatSessionStruct *icss ) {
-
+int checkObjIdByTicket(const char* dataId,
+                       const char* accessLevel,
+                       const char* ticketStr,
+                       const char* ticketHost,
+                       const char* userName,
+                       const char* userZone,
+                       icatSessionStruct* icss)
+{
+    // Get the collection name of the object which has a id matching dataId.
+    // The object can be a collection or data object.
     char original_collection_name[MAX_NAME_LEN];
     std::vector<std::string> bindVars;
     // "dataId" will match the ID of a collection or data object.
@@ -1434,54 +1438,89 @@ int checkObjIdByTicket( const char *dataId, const char *accessLevel,
     cVal[2] = usesCount;
     cVal[3] = ticketExpiry;
     cVal[4] = restrictions;
+
+    // accessLevel is a misleading parameter name.
+    //
+    // It primarily acts as a boolean which when true (i.e. is equal to "modify"), causes the write-file
+    // count and write-file limit for a ticket to be fetched from the database. Assuming the ticket can be
+    // used for writing.
+    //
+    // This code path is for when a client is attempting to write to a data object via a ticket and
+    // ticket stats must be checked/updated.
     if ( strncmp( accessLevel, "modify", 6 ) == 0 ) {
         if ( logSQL_CML != 0 ) {
             rodsLog( LOG_SQL, "checkObjIdByTicket SQL 1 " );
         }
-        /* ticket must also be of type 'write', and get the
-            writeFileCount and writeFileLimit  */
+
         cVal[5] = writeFileCount;
         cVal[6] = writeFileLimit;
         cVal[7] = writeByteCount;
         cVal[8] = writeByteLimit;
-        const std::string zone_path{boost::str(boost::format("/%s") % userZone)};
+        const auto zone_path = fmt::format("/{}", userZone);
         boost::filesystem::path coll_path{original_collection_name};
-        while(coll_path != zone_path) {
-            std::vector<std::string> bindVars;
-            bindVars.push_back( ticketStr );
-            bindVars.push_back( dataId );
-            bindVars.push_back( coll_path.string() );
-            status = cmlGetStringValuesFromSql(
-                         "select ticket_id, uses_limit, uses_count, ticket_expiry_ts, restrictions, write_file_count, write_file_limit, write_byte_count, write_byte_limit from R_TICKET_MAIN where ticket_type = 'write' and ticket_string = ? and (object_id = ? or object_id in (select coll_id from R_COLL_MAIN where coll_name = ?))",
-                         cVal, iVal, 9, bindVars, icss );
-                if(0 == status) {
-                    break;
-                }
 
-                coll_path = coll_path.parent_path();
+        // Get the current write-file count and write-file limit for the ticket from the database.
+        // Loop until we've reached the zone collection path.
+        while (coll_path != zone_path) {
+            std::vector<std::string> bindVars;
+            bindVars.emplace_back(ticketStr);
+            bindVars.emplace_back(dataId);
+            bindVars.push_back(coll_path.string());
+            status = cmlGetStringValuesFromSql(
+                "select ticket_id, uses_limit, uses_count, ticket_expiry_ts, restrictions, write_file_count, "
+                "write_file_limit, write_byte_count, write_byte_limit from R_TICKET_MAIN where ticket_type = 'write' "
+                "and ticket_string = ? and (object_id = ? or object_id in (select coll_id from R_COLL_MAIN where "
+                "coll_name = ?))",
+                cVal,
+                iVal,
+                9, // NOLINT(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+                bindVars,
+                icss);
+            if (0 == status) {
+                break;
+            }
+
+            // If we've reached this point, that means the query didn't find anything.
+            // In this case, get the parent path and see if the ticket is associated with a parent collection.
+            coll_path = coll_path.parent_path();
         }
     }
     else {
-        /* don't check ticket type, 'read' or 'write' is fine */
+        // If we're in this branch, that means the client isn't attempting to modify any
+        // data object or collection. Essentially, the client is performing a read or checking
+        // the existence of a collection or data object.
+
+        // Don't check ticket type, "read" or "write" is fine.
         if ( logSQL_CML != 0 ) {
             rodsLog( LOG_SQL, "checkObjIdByTicket SQL 2 " );
         }
 
-        const std::string zone_path{boost::str(boost::format("/%s") % userZone)};
+        const auto zone_path = fmt::format("/{}", userZone);
         boost::filesystem::path coll_path{original_collection_name};
-        while(coll_path != zone_path) {
-                std::vector<std::string> bindVars;
-                bindVars.push_back( ticketStr );
-                bindVars.push_back( dataId );
-                bindVars.push_back( coll_path.string() );
-                status = cmlGetStringValuesFromSql(
-                             "select ticket_id, uses_limit, uses_count, ticket_expiry_ts, restrictions from R_TICKET_MAIN where ticket_string = ? and (object_id = ? or object_id in (select coll_id from R_COLL_MAIN where coll_name = ?))",
-                             cVal, iVal, 5, bindVars, icss );
-                if(0 == status) {
-                    break;
-                }
 
-                coll_path = coll_path.parent_path();
+        // Get the current use count and limit for the ticket from the database.
+        // Loop until we've reached the zone collection path.
+        while (coll_path != zone_path) {
+            std::vector<std::string> bindVars;
+            bindVars.emplace_back(ticketStr);
+            bindVars.emplace_back(dataId);
+            bindVars.push_back(coll_path.string());
+            status =
+                cmlGetStringValuesFromSql("select ticket_id, uses_limit, uses_count, ticket_expiry_ts, restrictions "
+                                          "from R_TICKET_MAIN where ticket_string = ? and (object_id = ? or object_id "
+                                          "in (select coll_id from R_COLL_MAIN where coll_name = ?))",
+                                          cVal,
+                                          iVal,
+                                          5, // NOLINT(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+                                          bindVars,
+                                          icss);
+            if (0 == status) {
+                break;
+            }
+
+            // If we've reached this point, that means the query didn't find anything.
+            // In this case, get the parent path and see if the ticket is associated with a parent collection.
+            coll_path = coll_path.parent_path();
         }
     }
 
@@ -1507,8 +1546,7 @@ int checkObjIdByTicket( const char *dataId, const char *accessLevel,
         }
     }
 
-    status = cmlCheckTicketRestrictions( ticketId, ticketHost,
-                                         userName, userZone, icss );
+    status = cmlCheckTicketRestrictions(ticketId, ticketHost, userName, userZone, icss);
     if ( status != 0 ) {
         return status;
     }
@@ -1528,29 +1566,34 @@ int checkObjIdByTicket( const char *dataId, const char *accessLevel,
             if ( iWriteFileCount > iWriteFileLimit ) {
                 return CAT_TICKET_WRITE_USES_EXCEEDED;
             }
+
             intDataId = atoll( dataId );
-            /* Don't update a second time if this id matches the last one */
+
+            // Don't update a second time if this id matches the last one.
+            // Given this function can be called multiple times within the same operation, checking to
+            // see if the data id is different keeps the server from updating the ticket information multiple times.
             if ( previousDataId1 != intDataId ) {
                 iWriteFileCount++;
-                snprintf( myWriteFileCount, sizeof myWriteFileCount, "%d",
-                          iWriteFileCount );
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
+                snprintf(myWriteFileCount, sizeof(myWriteFileCount), "%d", iWriteFileCount);
                 cllBindVars[cllBindVarCount++] = myWriteFileCount;
                 cllBindVars[cllBindVarCount++] = ticketId;
                 if ( logSQL_CML != 0 ) {
                     rodsLog( LOG_SQL, "checkObjIdByTicket SQL 3 " );
                 }
-                status =  cmlExecuteNoAnswerSql(
-                              "update R_TICKET_MAIN set write_file_count=? where ticket_id=?",
-                              icss );
+                status = cmlExecuteNoAnswerSql("update R_TICKET_MAIN set write_file_count=? where ticket_id=?", icss);
+                // Notice we don't call commit or rollback after executing the update.
+                // The reason for this is that this function is allowed to be called within a transaction.
+                // The caller of this function is expected to handle committing or rolling back.
                 if ( status != 0 ) {
                     return status;
                 }
 
 #ifndef ORA_ICAT
-                /* do a commit on disconnect if needed */
                 cllCheckPending( "", 2, icss->databaseType );
 #endif
             }
+
             previousDataId1 = intDataId;
         }
     }
@@ -1561,8 +1604,12 @@ int checkObjIdByTicket( const char *dataId, const char *accessLevel,
         if ( iUsesCount > iUsesLimit ) {
             return CAT_TICKET_USES_EXCEEDED;
         }
+
         intDataId = atoll( dataId );
-        /* Don't update a second time if this id matches the last one */
+
+        // Don't update a second time if this id matches the last one.
+        // Given this function can be called multiple times within the same operation, checking to
+        // see if the data id is different keeps the server from updating the ticket information multiple times.
         if ( previousDataId2 != intDataId ) {
             iUsesCount++;
             snprintf( myUsesCount, sizeof myUsesCount, "%d", iUsesCount );
@@ -1571,27 +1618,31 @@ int checkObjIdByTicket( const char *dataId, const char *accessLevel,
             if ( logSQL_CML != 0 ) {
                 rodsLog( LOG_SQL, "checkObjIdByTicket SQL 4 " );
             }
-            status =  cmlExecuteNoAnswerSql(
-                          "update R_TICKET_MAIN set uses_count=? where ticket_id=?", icss );
+            status = cmlExecuteNoAnswerSql("update R_TICKET_MAIN set uses_count=? where ticket_id=?", icss);
+            // Notice we don't call commit or rollback after executing the update.
+            // The reason for this is that this function is allowed to be called within a transaction.
+            // The caller of this function is expected to handle committing or rolling back.
             if ( status != 0 ) {
                 return status;
             }
 
 #ifndef ORA_ICAT
-            /* do a commit on disconnect if needed*/
             cllCheckPending( "", 2, icss->databaseType );
 #endif
         }
+
         previousDataId2 = intDataId;
     }
+
     return 0;
-}
+} // checkObjIdByTicket
 
-int
-cmlTicketUpdateWriteBytes( const char *ticketStr,
-                           const char *dataSize, const char *objectId,
-                           icatSessionStruct *icss ) {
-
+int cmlTicketUpdateWriteBytes(const char* ticketStr,
+                              const char* dataSize,
+                              const char* objectId,
+                              icatSessionStruct* icss)
+{
+    // Get the collection name of the data object which has a data_id matching objectId.
     char original_collection_name[MAX_NAME_LEN];
     std::vector<std::string> bindVars;
     bindVars.push_back( objectId );
@@ -1636,6 +1687,9 @@ cmlTicketUpdateWriteBytes( const char *ticketStr,
     }
 
     boost::filesystem::path coll_path{original_collection_name};
+
+    // Get the current byte count and byte limit for the ticket from the database.
+    // Loop until we've reached the root collection path.
     while(coll_path != irods::get_virtual_path_separator()) {
         std::vector<std::string> bindVars;
         bindVars.push_back( ticketStr );
@@ -1648,6 +1702,8 @@ cmlTicketUpdateWriteBytes( const char *ticketStr,
             break;
         }
 
+        // If we've reached this point, that means the query didn't find anything.
+        // In this case, get the parent path and see if the ticket is associated with a parent collection.
         coll_path = coll_path.parent_path();
     }
 
@@ -1661,6 +1717,7 @@ cmlTicketUpdateWriteBytes( const char *ticketStr,
         return 0;
     }
 
+    // Calculate new byte count and update the ticket information in the database.
     iNewByteCount = iWriteByteCount + iDataSize;
     snprintf( myWriteByteCount, sizeof myWriteByteCount, "%lld", iNewByteCount );
     cllBindVars[cllBindVarCount++] = myWriteByteCount;
@@ -1668,19 +1725,20 @@ cmlTicketUpdateWriteBytes( const char *ticketStr,
     if ( logSQL_CML != 0 ) {
         rodsLog( LOG_SQL, "cmlTicketUpdateWriteBytes SQL 2 " );
     }
-    status =  cmlExecuteNoAnswerSql(
-                  "update R_TICKET_MAIN set write_byte_count=? where ticket_id=?", icss );
+    status = cmlExecuteNoAnswerSql("update R_TICKET_MAIN set write_byte_count=? where ticket_id=?", icss);
+    // Notice we don't call commit or rollback after executing the update.
+    // The reason for this is that this function is allowed to be called within a transaction.
+    // The caller of this function is expected to handle committing or rolling back.
     if ( status != 0 ) {
         return status;
     }
 
 #ifndef ORA_ICAT
-    /* do a commit on disconnect if needed */
     cllCheckPending( "", 2, icss->databaseType );
 #endif
-    return 0;
-}
 
+    return 0;
+} // cmlTicketUpdateWriteBytes
 
 /*
   Check that a user has the specified permission or better to a dataObj.
@@ -1725,7 +1783,7 @@ int cmlCheckDataObjId( const char *dataId, const char *userName,  const char *zo
         return CAT_NO_ACCESS_PERMISSION;
     }
     return status;
-}
+} // cmlCheckDataObjId
 
 /*
  * Check that the user has group-admin permission.  The user must be of
