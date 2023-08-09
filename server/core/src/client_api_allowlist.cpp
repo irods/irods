@@ -182,6 +182,8 @@ namespace irods::client_api_allowlist
             CLIENT_HINTS_AN,
 
             GET_LIBRARY_FEATURES_AN,
+
+            GET_RESOURCE_INFO_FOR_OPERATION_AN
         };
         // clang-format on
     } // init

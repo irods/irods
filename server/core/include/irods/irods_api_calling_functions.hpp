@@ -1038,4 +1038,11 @@ int call_get_library_features_out(irods::api_entry*, rsComm_t*, char**);
 #  define CALL_GET_LIBRARY_FEATURES_OUT nullptr // NOLINT(cppcoreguidelines-macro-usage)
 #endif
 
+#ifdef CREATE_API_TABLE_FOR_SERVER
+int call_get_resource_info_for_operation(irods::api_entry*, rsComm_t*, dataObjInp_t*, char**);
+#  define CALL_GET_RESOURCE_INFO_FOR_OPERATION call_get_resource_info_for_operation
+#else
+#  define CALL_GET_RESOURCE_INFO_FOR_OPERATION nullptr // NOLINT(cppcoreguidelines-macro-usage)
+#endif
+
 #endif // IRODS_API_CALLING_FUNCTIONS_HPP
