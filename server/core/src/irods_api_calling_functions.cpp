@@ -1131,3 +1131,8 @@ int call_get_library_features_out(irods::api_entry* _api, rsComm_t* _comm, char*
 {
     return _api->call_handler<char**>(_comm, _features);
 } // call_get_library_features_out
+
+int call_get_resource_info_for_operation(irods::api_entry* _api, rsComm_t* _comm, dataObjInp_t* _inp, char** _out)
+{
+    return _api->call_handler<dataObjInp_t*, char**>(_comm, _inp, _out);
+} // call_get_resource_info_for_operation
