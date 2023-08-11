@@ -391,7 +391,7 @@ namespace
                 insert_acl(_db_conn, _db_instance_name, _object_id, entity_id, acl);
             }
 
-            return {0, irods::to_bytes_buffer("{}")};
+            return {0, nullptr};
         }
         catch (const nanodbc::database_error& e) {
             rodsLog(LOG_ERROR, "%s [acl_operation=%s]", e.what(), _op.dump().data());
