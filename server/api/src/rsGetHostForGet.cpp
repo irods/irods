@@ -53,6 +53,8 @@ int rsGetHostForGet(
                 }   
                 catch (const irods::exception& e ) { 
                     irods::log(e);
+                    std::free(*outHost); // NOLINT(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
+                    *outHost = nullptr;
                     return e.code();
                 }
                 addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
@@ -69,6 +71,7 @@ int rsGetHostForGet(
 
             // =-=-=-=-=-=-=-
             // set the out variable
+            std::free(*outHost); // NOLINT(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
             *outHost = strdup( location.c_str() );
 
         } // if not a collection
