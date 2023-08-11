@@ -415,7 +415,7 @@ namespace
                 return {INVALID_OPERATION, irods::to_bytes_buffer(make_error_object(_op, _op_index, "Invalid metadata operation.").dump())};
             }
 
-            return {0, irods::to_bytes_buffer("{}")};
+            return {0, nullptr};
         }
         catch (const nanodbc::database_error& e) {
             rodsLog(LOG_ERROR, "%s [metadata_operation=%s]", e.what(), _op.dump().c_str());
