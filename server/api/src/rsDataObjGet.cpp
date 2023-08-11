@@ -257,11 +257,12 @@ int rsDataObjGet(
     const auto hier = irods::hierarchy_parser{cond_input.at(RESC_HIER_STR_KW).value().data()};
     if (irods::experimental::keyword_has_a_value(*cond_input.get(), RESC_NAME_KW) &&
         !hier.contains(cond_input.at(RESC_NAME_KW).value())) {
-        const auto msg = fmt::format(
-            "hierarchy descending from specified resource name does not "
-            "have a replica or the replica is inaccessible at this time "
-            "[path=[{}], resource name=[{}], resolved hierarchy=[{}]]",
-            dataObjInp->objPath, cond_input.at(RESC_NAME_KW).value(), hier.str());
+        const auto msg = fmt::format("hierarchy descending from requested resource name does not "
+                                     "have a replica or the replica is inaccessible at this time "
+                                     "[path=[{}], requested resource name=[{}], resolved hierarchy=[{}]]",
+                                     dataObjInp->objPath,
+                                     cond_input.at(RESC_NAME_KW).value(),
+                                     hier.str());
 
         addRErrorMsg(&rsComm->rError, SYS_REPLICA_INACCESSIBLE, msg.data());
 
