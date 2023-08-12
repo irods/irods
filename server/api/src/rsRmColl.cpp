@@ -1,8 +1,7 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* rsRmColl.c
- */
+#include "irods/rsRmColl.hpp"
 
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/rcMisc.h"
 #include "irods/rmColl.h"
 #include "irods/objMetaOpr.hpp"
 #include "irods/specColl.hpp"
@@ -18,7 +17,6 @@
 #include "irods/dataObjRename.h"
 #include "irods/genQuery.h"
 #include "irods/miscServerFunct.hpp"
-#include "irods/rsRmColl.hpp"
 #include "irods/rsOpenCollection.hpp"
 #include "irods/rsCloseCollection.hpp"
 #include "irods/rsReadCollection.hpp"
@@ -653,6 +651,8 @@ rsMvCollToTrash( rsComm_t *rsComm, collInp_t *rmCollInp ) {
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
     status = rsQueryDataObjInCollReCur( rsComm, rmCollInp->collName,
                                         &genQueryInp, &genQueryOut, ACCESS_DELETE_OBJECT, 0 );
+
+    irods::at_scope_exit free_genQueryOut{[&genQueryOut] { freeGenQueryOut(&genQueryOut); }};
 
     memset( &dataObjInfo, 0, sizeof( dataObjInfo ) );
     while ( status >= 0 ) {
