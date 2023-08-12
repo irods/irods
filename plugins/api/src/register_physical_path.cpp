@@ -1056,6 +1056,8 @@ namespace
             status = rsRegColl( _comm, &collCreateInp );
         }
 
+        clearKeyVal(&collCreateInp.condInput);
+
         return status;
     } // linkCollReg
 
