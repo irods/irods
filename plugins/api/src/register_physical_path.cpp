@@ -228,11 +228,11 @@ namespace
         }
 
         // Free the structure before exiting the function
-        irods::at_scope_exit free_data_obj_info_head{ [data_obj_info_head] { freeAllDataObjInfo(data_obj_info_head); } };
+        irods::at_scope_exit free_data_obj_info_head{[&data_obj_info_head] { freeAllDataObjInfo(data_obj_info_head); }};
 
         // Populate information for the replica being registered
-        auto [destination_replica, destination_replica_lm] = irods::experimental::replica::make_replica_proxy();
-        std::memcpy(destination_replica_lm.release(), data_obj_info_head, sizeof(DataObjInfo));
+        auto dst_replica_info = *data_obj_info_head;
+        irods::experimental::replica::replica_proxy destination_replica{dst_replica_info};
         destination_replica.physical_path(_path);
         destination_replica.resource(_resc);
         destination_replica.hierarchy(phy_path_reg_cond_input.at(RESC_HIER_STR_KW).value());
