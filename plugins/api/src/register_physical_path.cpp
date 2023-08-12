@@ -776,7 +776,10 @@ namespace
         cond_input[COLLECTION_INFO1_KW] = "NULL_SPECIAL_VALUE";
         cond_input[COLLECTION_INFO2_KW] = "NULL_SPECIAL_VALUE";
 
-        return rsModColl(_comm, &mod_coll_inp);
+        const auto ec = rsModColl(_comm, &mod_coll_inp);
+        cond_input.clear(); // Clear the conditional input to avoid a memory leak.
+
+        return ec;
     } // unmountFileDir
 
     int structFileReg(
