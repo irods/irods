@@ -1,4 +1,5 @@
 #include "irods/dataObjRename.h"
+#include "irods/irods_at_scope_exit.hpp"
 #include "irods/objMetaOpr.hpp"
 #include "irods/dataObjOpr.hpp"
 #include "irods/collection.hpp"
@@ -80,7 +81,6 @@ namespace
         char srcColl[MAX_NAME_LEN], srcObj[MAX_NAME_LEN];
         char destColl[MAX_NAME_LEN], destObj[MAX_NAME_LEN];
         dataObjInp_t *srcDataObjInp, *destDataObjInp;
-        dataObjInfo_t *dataObjInfoHead = NULL;
         rodsLong_t srcId, destId;
         int acPreProcFromRenameFlag = 0;
 
@@ -110,6 +110,9 @@ namespace
                 "{}: splitPathByKey for {} error, status = {}", __FUNCTION__, destDataObjInp->objPath, status);
             return status;
         }
+
+        dataObjInfo_t* dataObjInfoHead{};
+        irods::at_scope_exit free_dataObjInfo{[&dataObjInfoHead] { freeAllDataObjInfo(dataObjInfoHead); }};
 
         if ( srcDataObjInp->oprType == RENAME_DATA_OBJ ) {
             status = getDataObjInfo( rsComm, srcDataObjInp, &dataObjInfoHead, ACCESS_DELETE_OBJECT, 0 );
@@ -264,6 +267,7 @@ namespace
                 }
                 status = syncDataObjPhyPath( rsComm, destDataObjInp, dataObjInfoHead, NULL );
                 freeAllDataObjInfo( dataObjInfoHead );
+                dataObjInfoHead = nullptr;
             }
             else {
                 status = syncCollPhyPath( rsComm, destDataObjInp->objPath );
@@ -311,12 +315,22 @@ namespace
 
         /* don't translate the link pt. treat it as a normal collection */
         addKeyVal( &srcDataObjInp->condInput, NO_TRANSLATE_LINKPT_KW, "" );
+        irods::at_scope_exit clear_src_cond_input{[&srcDataObjInp] {
+            if (srcDataObjInp) {
+                clearKeyVal(&srcDataObjInp->condInput);
+            }
+        }};
         resolveLinkedPath( rsComm, srcDataObjInp->objPath, &specCollCache,
                            &srcDataObjInp->condInput );
         rmKeyVal( &srcDataObjInp->condInput, NO_TRANSLATE_LINKPT_KW );
 
         resolveLinkedPath( rsComm, destDataObjInp->objPath, &specCollCache,
                            &destDataObjInp->condInput );
+        irods::at_scope_exit clear_dst_cond_input{[&destDataObjInp] {
+            if (destDataObjInp) {
+                clearKeyVal(&destDataObjInp->condInput);
+            }
+        }};
 
         if ( strcmp( srcDataObjInp->objPath, destDataObjInp->objPath ) == 0 ) {
             return SAME_SRC_DEST_PATHS_ERR;
