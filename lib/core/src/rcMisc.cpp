@@ -37,6 +37,7 @@
 #include "irods/irods_server_properties.hpp"
 #include "irods/specificQuery.h"
 #include "irods/ticketAdmin.h"
+#include "irods/plugins/api/switch_user_types.h"
 
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
@@ -1732,6 +1733,15 @@ void clearDataObjInfo(void* _p)
 void clearBytesBuffer(void* _p)
 {
     clearBBuf(static_cast<BytesBuf*>(_p));
+}
+
+void clearSwitchUserInput(void* _p)
+{
+    if (!_p) {
+        return;
+    }
+
+    clearKeyVal(&static_cast<SwitchUserInput*>(_p)->options);
 }
 
 void clearSimpleQueryOut(void* _p)

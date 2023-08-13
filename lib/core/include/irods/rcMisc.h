@@ -63,6 +63,8 @@ void clearDataObjInfo(void* _p);
 
 void clearBytesBuffer(void* _p);
 
+void clearSwitchUserInput(void* _p);
+
 // clang-format off
 __attribute__((deprecated("SimpleQuery is deprecated. Use GenQuery or SpecificQuery instead.")))
 void clearSimpleQueryOut(void* _p);
