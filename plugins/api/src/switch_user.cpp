@@ -343,7 +343,7 @@ extern "C" auto plugin_factory(
         nullptr, 0,                 // Out PI / bs flag
         op,                         // Operation
         "api_switch_user",          // Operation name
-        irods::clearInStruct_noop,  // Clear input function
+        clearSwitchUserInput,       // Clear input function
         irods::clearOutStruct_noop, // Clear output function
         fn_ptr
     };
