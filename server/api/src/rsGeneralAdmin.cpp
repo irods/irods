@@ -2,6 +2,7 @@
 
 #include "irods/administration_utilities.hpp"
 #include "irods/generalAdmin.h"
+#include "irods/rcMisc.h"
 #include "irods/rsZoneReport.hpp"
 #include "irods/rodsConnect.h"
 #include "irods/icatHighLevelRoutines.hpp"
@@ -278,18 +279,27 @@ int _remove_rebalance_timestamp_avu_from_resource(
     rsComm_t* _rsComm,
     const std::string& _resource_name) {
     // build genquery to find active or stale "rebalance operation" entries for this resource
-    genQueryOut_t* gen_out = nullptr;
-    char tmp_str[MAX_NAME_LEN];
-    genQueryInp_t gen_inp{};
 
+    genQueryInp_t gen_inp{};
+    irods::at_scope_exit clear_gen_inp{[&gen_inp] { clearGenQueryInp(&gen_inp); }};
+
+    char tmp_str[MAX_NAME_LEN]; // NOLINT(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
     snprintf( tmp_str, MAX_NAME_LEN, "='%s'", _resource_name.c_str() );
     addInxVal( &gen_inp.sqlCondInp, COL_R_RESC_NAME, tmp_str );
+
     snprintf( tmp_str, MAX_NAME_LEN, "='rebalance_operation'" );
     addInxVal( &gen_inp.sqlCondInp, COL_META_RESC_ATTR_NAME, tmp_str );
+
     addInxIval( &gen_inp.selectInp, COL_META_RESC_ATTR_VALUE, 1 );
     addInxIval( &gen_inp.selectInp, COL_META_RESC_ATTR_UNITS, 1 );
+
     gen_inp.maxRows = 1;
-    int status = rsGenQuery( _rsComm, &gen_inp, &gen_out );
+
+    genQueryOut_t* gen_out = nullptr;
+    irods::at_scope_exit free_gen_out{[&gen_out] { freeGenQueryOut(&gen_out); }};
+
+    int status = rsGenQuery(_rsComm, &gen_inp, &gen_out);
+
     // if existing entry found, remove it
     if ( status >= 0 ) {
         modAVUMetadataInp_t modAVUMetadataInp{};
