@@ -230,18 +230,23 @@ int _rsZoneReport(rsComm_t* _comm, bytesBuf_t** _bbuf)
     zone["zones"] = zone_arr;
 
     const auto zr = zone.dump(4);
-    char* tmp_buf = new char[zr.length() + 1]{};
+    const auto buf_size = sizeof(char) * (zr.length() + 1);
+    // NOLINTNEXTLINE(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
+    char* tmp_buf = static_cast<char*>(std::malloc(buf_size));
+    std::memset(tmp_buf, 0, buf_size);
     std::strncpy(tmp_buf, zr.c_str(), zr.length());
 
-    *_bbuf = (bytesBuf_t*) malloc(sizeof(bytesBuf_t));
+    // NOLINTNEXTLINE(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
+    *_bbuf = static_cast<bytesBuf_t*>(std::malloc(sizeof(bytesBuf_t)));
     if (!*_bbuf) {
-        delete [] tmp_buf;
+        // NOLINTNEXTLINE(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
+        std::free(tmp_buf);
         rodsLog( LOG_ERROR, "_rsZoneReport: failed to allocate _bbuf" );
         return SYS_MALLOC_ERR;
     }
 
     (*_bbuf)->buf = tmp_buf;
-    (*_bbuf)->len = zr.length();
+    (*_bbuf)->len = static_cast<int>(zr.length());
 
     return 0;
 } // _rsZoneReport
