@@ -522,11 +522,14 @@ int _rsServerReport( rsComm_t* _comm, bytesBuf_t** _bbuf )
     }
 
     const auto rs = resc_svr.dump(4);
-    char* tmp_buf = new char[rs.length() + 1]{};
+    const auto buf_size = sizeof(char) * (rs.length() + 1);
+    // NOLINTNEXTLINE(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
+    char* tmp_buf = static_cast<char*>(std::malloc(buf_size));
+    std::memset(tmp_buf, 0, buf_size);
     std::strncpy(tmp_buf, rs.c_str(), rs.length());
 
     ( *_bbuf )->buf = tmp_buf;
-    ( *_bbuf )->len = rs.length();
+    (*_bbuf)->len = static_cast<int>(rs.length());
 
     return 0;
 } // _rsServerReport
