@@ -12,6 +12,9 @@
 
 #include "irods/irods_resource_redirect.hpp"
 
+#define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+#include "irods/filesystem.hpp"
+
 int
 rsDataObjRsync( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 msParamArray_t **outParamArray ) {
@@ -254,23 +257,25 @@ rsRsyncDataToData( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         clearKeyVal( &dataObjCopyInp.srcDataObjInp.condInput );
         return status;
     }
+    if (irods::experimental::filesystem::server::is_data_object(*rsComm, destObjPath)) {
+        /* use rsDataObjChksum because the path could be in a remote zone */
+        status = rsDataObjChksum(rsComm, &dataObjCopyInp.destDataObjInp, &destChksumStr);
 
-    /* use rsDataObjChksum because the path could in in remote zone */
-    status = rsDataObjChksum( rsComm, &dataObjCopyInp.destDataObjInp,
-                              &destChksumStr );
-
-    if ( status < 0 && status != CAT_NO_ACCESS_PERMISSION &&
-            status != CAT_NO_ROWS_FOUND ) {
-        rodsLog( LOG_ERROR,
-                 "rsRsyncDataToData: _rsDataObjChksum error for %s, status = %d",
-                 dataObjCopyInp.destDataObjInp.objPath, status );
-        free( srcChksumStr );
-        free( destChksumStr );
-        clearKeyVal( &dataObjCopyInp.srcDataObjInp.condInput );
-        clearKeyVal( &dataObjCopyInp.destDataObjInp.condInput );
-        return status;
+        if (status < 0 && status != CAT_NO_ACCESS_PERMISSION && status != CAT_NO_ROWS_FOUND) {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg, cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+            rodsLog(LOG_ERROR,
+                    "rsRsyncDataToData: _rsDataObjChksum error for %s, status = %d",
+                    dataObjCopyInp.destDataObjInp.objPath,
+                    status);
+            // NOLINTNEXTLINE(cppcoreguidelines-no-malloc, cppcoreguidelines-owning-memory)
+            free(srcChksumStr);
+            // NOLINTNEXTLINE(cppcoreguidelines-no-malloc, cppcoreguidelines-owning-memory)
+            free(destChksumStr);
+            clearKeyVal(&dataObjCopyInp.srcDataObjInp.condInput);
+            clearKeyVal(&dataObjCopyInp.destDataObjInp.condInput);
+            return status;
+        }
     }
-
     if ( destChksumStr != NULL && strcmp( srcChksumStr, destChksumStr ) == 0 ) {
         free( srcChksumStr );
         free( destChksumStr );
