@@ -1,6 +1,8 @@
 #include <irods/filesystem.hpp>
+#include <irods/get_grid_configuration_value.h>
 #include <irods/irods_at_scope_exit.hpp>
 #include <irods/irods_client_api_table.hpp>
+#include <irods/irods_configuration_keywords.hpp>
 #include <irods/irods_pack_table.hpp>
 #include <irods/irods_string_tokenize.hpp>
 #include <irods/key_value_proxy.hpp>
@@ -10,9 +12,9 @@
 #include <irods/rodsError.h>
 #include <irods/rodsErrorTable.h>
 #include <irods/rodsLog.h>
-#include <irods/user_administration.hpp>
+#include <irods/set_grid_configuration_value.h>
 #include <irods/user.hpp>
-#include <irods/get_grid_configuration_value.h>
+#include <irods/user_administration.hpp>
 
 #include <algorithm>
 #include <array>
@@ -20,10 +22,11 @@
 #include <iostream>
 #include <string>
 #include <string_view>
-#include <termios.h>
-#include <unistd.h>
 #include <variant>
 #include <vector>
+
+#include <termios.h>
+#include <unistd.h>
 
 #include <boost/lexical_cast.hpp>
 #include <fmt/compile.h>
@@ -146,6 +149,148 @@ auto get_replica_value(
     }
     return v;
 } // get_replica_value
+
+auto print_grid_config(const char* _namespace, const char* _option_name) -> int
+{
+    try {
+        namespace adm = irods::experimental::administration;
+
+        const auto user_type =
+            adm::client::type(*Conn, adm::user{Conn->clientUser.userName, Conn->clientUser.rodsZone});
+
+        if (!user_type) {
+            rodsLogError(
+                LOG_ERROR, CAT_INVALID_USER_TYPE, "Could not determine if user has permission to perform operation.");
+            return 1;
+        }
+
+        if (*user_type != adm::user_type::rodsadmin) {
+            rodsLogError(LOG_ERROR, CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "Operation requires rodsadmin level privileges.");
+            return 1;
+        }
+    }
+    catch (const irods::exception& e) {
+        rodsLogError(LOG_ERROR, e.code(), e.client_display_what());
+        return 1;
+    }
+    catch (const std::exception& e) {
+        rodsLogError(LOG_ERROR, SYS_UNKNOWN_ERROR, e.what());
+        return 1;
+    }
+
+    GridConfigurationInput input{};
+
+    // This is the maximum size for the namespace (minus 1 for null terminator).
+    constexpr auto namespace_max_size = sizeof(input.name_space) - 1;
+    if (const auto len = strnlen(_namespace, namespace_max_size + 1); 0 == len || len > namespace_max_size) {
+        std::cerr << fmt::format("Error: namespace must be between 1 and {} characters.\n", namespace_max_size);
+        return 1;
+    }
+
+    // This is the maximum size for the option name (minus 1 for null terminator).
+    constexpr auto option_name_max_size = sizeof(input.option_name) - 1;
+    if (const auto len = strnlen(_option_name, option_name_max_size + 1); 0 == len || len > option_name_max_size) {
+        std::cerr << fmt::format("Error: option name must be between 1 and {} characters.\n", option_name_max_size);
+        return 1;
+    }
+
+    std::strncpy(input.name_space, _namespace, namespace_max_size);
+    std::strncpy(input.option_name, _option_name, option_name_max_size);
+
+    GridConfigurationOutput* output{};
+
+    irods::at_scope_exit free_output{[&output] { std::free(output); }};
+
+    if (const auto ec = rc_get_grid_configuration_value(Conn, &input, &output); ec != 0) {
+        const auto msg = fmt::format("Failed to get grid configuration for namespace [{}] and option [{}] [ec={}]",
+                                     _namespace,
+                                     _option_name,
+                                     ec);
+
+        std::cerr << msg << "\n";
+
+        return 1;
+    }
+
+    std::cout << output->option_value << '\n';
+
+    return 0;
+} // print_grid_config
+
+auto set_grid_config(const char* _namespace, const char* _option_name, const char* _option_value) -> int
+{
+    if (!_namespace || !_option_name || !_option_value) {
+        std::cerr << "One or more parameters to set_grid_configuration are null.\n";
+        return 1;
+    }
+
+    try {
+        namespace adm = irods::experimental::administration;
+
+        const auto user_type =
+            adm::client::type(*Conn, adm::user{Conn->clientUser.userName, Conn->clientUser.rodsZone});
+
+        if (!user_type) {
+            rodsLogError(LOG_ERROR,
+                         CAT_INVALID_USER_TYPE,
+                         "Could not determine if user has permission to set grid configuration values.");
+            return 1;
+        }
+
+        if (*user_type != adm::user_type::rodsadmin) {
+            rodsLogError(LOG_ERROR, CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "Operation requires rodsadmin level privileges.");
+            return 1;
+        }
+    }
+    catch (const irods::exception& e) {
+        rodsLogError(LOG_ERROR, e.code(), e.client_display_what());
+        return 1;
+    }
+    catch (const std::exception& e) {
+        rodsLogError(LOG_ERROR, SYS_UNKNOWN_ERROR, e.what());
+        return 1;
+    }
+
+    GridConfigurationInput input{};
+
+    // This is the maximum size for the namespace (minus 1 for null terminator).
+    constexpr auto namespace_max_size = sizeof(input.name_space) - 1;
+    if (const auto len = strnlen(_namespace, namespace_max_size + 1); 0 == len || len > namespace_max_size) {
+        std::cerr << fmt::format("Error: namespace must be between 1 and {} characters.\n", namespace_max_size);
+        return 1;
+    }
+
+    // This is the maximum size for the option name (minus 1 for null terminator).
+    constexpr auto option_name_max_size = sizeof(input.option_name) - 1;
+    if (const auto len = strnlen(_option_name, option_name_max_size + 1); 0 == len || len > option_name_max_size) {
+        std::cerr << fmt::format("Error: option name must be between 1 and {} characters.\n", option_name_max_size);
+        return 1;
+    }
+
+    // This is the maximum size for the option value (minus 1 for null terminator).
+    constexpr auto option_value_max_size = sizeof(input.option_value) - 1;
+    if (const auto len = strnlen(_option_value, option_value_max_size + 1); 0 == len || len > option_value_max_size) {
+        std::cerr << fmt::format("Error: option value must be between 1 and {} characters.\n", option_value_max_size);
+        return 1;
+    }
+
+    std::strncpy(input.name_space, _namespace, namespace_max_size);
+    std::strncpy(input.option_name, _option_name, option_name_max_size);
+    std::strncpy(input.option_value, _option_value, option_value_max_size);
+
+    if (const auto ec = rc_set_grid_configuration_value(Conn, &input); ec != 0) {
+        const auto msg = fmt::format("Failed to set grid configuration for namespace [{}] and option [{}] [ec={}]",
+                                     _namespace,
+                                     _option_name,
+                                     ec);
+
+        std::cerr << msg << "\n";
+
+        return 1;
+    }
+
+    return 0;
+} // set_grid_config
 
 auto print_delay_server_info() -> int
 {
@@ -1616,6 +1761,14 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         return modify_replica(cmdToken);
     }
 
+    if (0 == strcmp(cmdToken[0], "get_grid_configuration")) {
+        return print_grid_config(cmdToken[1], cmdToken[2]);
+    }
+
+    if (0 == strcmp(cmdToken[0], "set_grid_configuration")) {
+        return set_grid_config(cmdToken[1], cmdToken[2], cmdToken[3]);
+    }
+
     if (0 == strcmp(cmdToken[0], "get_delay_server_info")) {
         return print_delay_server_info();
     }
@@ -2516,6 +2669,28 @@ usage( char *subOpt ) {
         ""
     };
 
+    char* set_grid_configuration_usage[] = {
+        "set_grid_configuration NAMESPACE OPTION_NAME OPTION_VALUE",
+        " ",
+        "Set the specified OPTION_NAME to OPTION_VALUE for the specified",
+        "NAMESPACE in the local zone in R_GRID_CONFIGURATION. If NAMESPACE or",
+        "OPTION_NAME is not valid, an error is returned.",
+        ""};
+
+    char* get_grid_configuration_usage[] = {
+        "get_grid_configuration NAMESPACE OPTION_NAME",
+        " ",
+        "Prints local zone grid configuration value for specified NAMESPACE and",
+        "OPTION_NAME.",
+        " ",
+        "This command allows administrators to view grid configuration values",
+        "without running queries directly against the database. If NAMESPACE or",
+        "OPTION_NAME is not valid, an error is returned.",
+        " ",
+        "This information is retrieved from the R_GRID_CONFIGURATION database",
+        "table.",
+        ""};
+
     char* get_delay_server_info_usage[] = {
         "get_delay_server_info",
         " ",
@@ -2556,41 +2731,109 @@ usage( char *subOpt ) {
         ""
     };
 
-    char *subCmds[] = {"lu", "lua", "luan", "luz", "lt", "lr",
-                       "ls", "lz",
-                       "lg", "lgd", "mkuser",
-                       "moduser", "aua", "rua", "rpp",
-                       "rmuser", "mkdir", "rmdir", "mkresc",
-                       "modresc", "modrescdatapaths", "rmresc",
-                       "addchildtoresc", "rmchildfromresc",
-                       "mkzone", "modzone", "modzonecollacl", "rmzone",
-                       "mkgroup", "rmgroup", "atg",
-                       "rfg", "at", "rt", "spass", "dspass",
+    char* subCmds[] = {"lu",
+                       "lua",
+                       "luan",
+                       "luz",
+                       "lt",
+                       "lr",
+                       "ls",
+                       "lz",
+                       "lg",
+                       "lgd",
+                       "mkuser",
+                       "moduser",
+                       "aua",
+                       "rua",
+                       "rpp",
+                       "rmuser",
+                       "mkdir",
+                       "rmdir",
+                       "mkresc",
+                       "modresc",
+                       "modrescdatapaths",
+                       "rmresc",
+                       "addchildtoresc",
+                       "rmchildfromresc",
+                       "mkzone",
+                       "modzone",
+                       "modzonecollacl",
+                       "rmzone",
+                       "mkgroup",
+                       "rmgroup",
+                       "atg",
+                       "rfg",
+                       "at",
+                       "rt",
+                       "spass",
+                       "dspass",
                        "ctime",
-                       "suq", "sgq", "lq", "cu",
-                       "rum", "asq", "rsq", "modrepl",
+                       "suq",
+                       "sgq",
+                       "lq",
+                       "cu",
+                       "rum",
+                       "asq",
+                       "rsq",
+                       "modrepl",
                        "get_delay_server_info",
                        "set_delay_server",
-                       "help", "h"
-                      };
+                       "get_grid_configuration",
+                       "set_grid_configuration",
+                       "help",
+                       "h"};
 
-    char **pMsgs[] = { luMsgs, luaMsgs, luanMsgs, luzMsgs, ltMsgs, lrMsgs,
-                       lsMsgs, lzMsgs,
-                       lgMsgs, lgdMsgs, mkuserMsgs,
-                       moduserMsgs, auaMsgs, ruaMsgs, rppMsgs,
-                       rmuserMsgs, mkdirMsgs, rmdirMsgs, mkrescMsgs,
-                       modrescMsgs, modrescDataPathsMsgs, rmrescMsgs,
-                       addchildtorescMsgs, rmchildfromrescMsgs,
-                       mkzoneMsgs, modzoneMsgs, modzonecollaclMsgs, rmzoneMsgs,
-                       mkgroupMsgs, rmgroupMsgs, atgMsgs,
-                       rfgMsgs, atMsgs, rtMsgs, spassMsgs, dspassMsgs,
-                       ctimeMsgs,
-                       suqMsgs, sgqMsgs, lqMsgs, cuMsgs,
-                       rumMsgs, asqMsgs, rsqMsgs, modrepl_usage,
-                       get_delay_server_info_usage,
-                       set_delay_server_usage,
-                       helpMsgs, helpMsgs
-                     };
+    char** pMsgs[] = {luMsgs,
+                      luaMsgs,
+                      luanMsgs,
+                      luzMsgs,
+                      ltMsgs,
+                      lrMsgs,
+                      lsMsgs,
+                      lzMsgs,
+                      lgMsgs,
+                      lgdMsgs,
+                      mkuserMsgs,
+                      moduserMsgs,
+                      auaMsgs,
+                      ruaMsgs,
+                      rppMsgs,
+                      rmuserMsgs,
+                      mkdirMsgs,
+                      rmdirMsgs,
+                      mkrescMsgs,
+                      modrescMsgs,
+                      modrescDataPathsMsgs,
+                      rmrescMsgs,
+                      addchildtorescMsgs,
+                      rmchildfromrescMsgs,
+                      mkzoneMsgs,
+                      modzoneMsgs,
+                      modzonecollaclMsgs,
+                      rmzoneMsgs,
+                      mkgroupMsgs,
+                      rmgroupMsgs,
+                      atgMsgs,
+                      rfgMsgs,
+                      atMsgs,
+                      rtMsgs,
+                      spassMsgs,
+                      dspassMsgs,
+                      ctimeMsgs,
+                      suqMsgs,
+                      sgqMsgs,
+                      lqMsgs,
+                      cuMsgs,
+                      rumMsgs,
+                      asqMsgs,
+                      rsqMsgs,
+                      modrepl_usage,
+                      get_delay_server_info_usage,
+                      set_delay_server_usage,
+                      get_grid_configuration_usage,
+                      set_grid_configuration_usage,
+                      helpMsgs,
+                      helpMsgs};
 
     if ( *subOpt == '\0' ) {
         usageMain();
