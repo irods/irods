@@ -14,6 +14,7 @@ set(CMAKE_CXX_STANDARD ${IRODS_CXX_STANDARD})
 # export-dynamic so stacktrace entries from executables have function names
 set(CMAKE_EXE_LINKER_FLAGS_INIT "-rdynamic -Wl,--export-dynamic -Wl,--enable-new-dtags -Wl,--as-needed")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE_INIT "-Wl,--gc-sections -Wl,-z,combreloc")
+include(IrodsRunpathDefaults)
 
 if (IRODS_ENABLE_ADDRESS_SANITIZER)
   add_compile_options(
@@ -35,13 +36,6 @@ endif()
 project(icommands
   VERSION "${IRODS_VERSION}"
   LANGUAGES CXX)
-
-set(CMAKE_SKIP_BUILD_RPATH OFF)
-set(CMAKE_SKIP_INSTALL_RPATH OFF)
-set(CMAKE_SKIP_RPATH OFF)
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH OFF)
-set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
