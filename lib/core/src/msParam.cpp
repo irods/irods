@@ -615,6 +615,10 @@ int resetMsParam(msParam_t* msParam)
     return 0;
 }
 
+// Removes all MsParams from msParamArray that are not in the set of parameters
+// contained in outParamDesc.
+//
+// outParamDesc is a string that will be parsed into a strArray (a string array).
 int trimMsParamArray(msParamArray_t* msParamArray, char* outParamDesc)
 {
     if (!msParamArray) {
