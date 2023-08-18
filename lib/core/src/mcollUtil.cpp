@@ -1,5 +1,5 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/rcMisc.h"
 #include "irods/rodsPath.h"
 #include "irods/rodsErrorTable.h"
 #include "irods/rodsLog.h"
@@ -19,6 +19,8 @@ mcollUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     if ( rodsPathInp == NULL ) {
         return USER__NULL_INPUT_ERR;
     }
+
+    irods::at_scope_exit clear_dataObjInp{[&dataObjOprInp] { clearDataObjInp(&dataObjOprInp); }};
 
     int savedStatus = initCondForMcoll( myRodsEnv, myRodsArgs, &dataObjOprInp );
     if ( savedStatus < 0 ) {
