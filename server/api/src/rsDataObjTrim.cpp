@@ -94,18 +94,25 @@ namespace
     auto get_data_object_info(rsComm_t *rsComm, dataObjInp_t& dataObjInp) -> std::tuple<irods::file_object_ptr, DataObjInfo*>
     {
         DataObjInfo* info{};
-        if (!getValByKey(&dataObjInp.condInput, RESC_HIER_STR_KW)) {
-            auto result = irods::resolve_resource_hierarchy(irods::UNLINK_OPERATION, rsComm, dataObjInp, &info);
-            auto file_obj = std::get<irods::file_object_ptr>(result);
-            return {file_obj, info};
-        }
-        else {
+
+        try {
+            if (!getValByKey(&dataObjInp.condInput, RESC_HIER_STR_KW)) {
+                auto result = irods::resolve_resource_hierarchy(irods::UNLINK_OPERATION, rsComm, dataObjInp, &info);
+                auto file_obj = std::get<irods::file_object_ptr>(result);
+                return {file_obj, info};
+            }
+
             irods::file_object_ptr file_obj( new irods::file_object() );
             irods::error fac_err = irods::file_object_factory(rsComm, &dataObjInp, file_obj, &info);
             if (!fac_err.ok()) {
                 THROW(fac_err.code(), "file_object_factory failed");
             }
+
             return {file_obj, info};
+        }
+        catch (...) {
+            freeAllDataObjInfo(info);
+            throw;
         }
     } // get_data_object_info
 
