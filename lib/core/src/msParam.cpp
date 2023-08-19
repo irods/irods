@@ -663,6 +663,19 @@ int trimMsParamArray(msParamArray_t* msParamArray, char* outParamDesc)
                 clearMsParam(msParamArray->msParam[i], 1);
             }
 
+            // ruleExecOut is a special output parameter that isn't guaranteed to always have a
+            // type associated with it. This happens when irule is invoked and ruleExecOut is
+            // passed, but nothing is written to stdout or stderr. When this occurs, the agent
+            // will leak memory because the label has not been free'd. Hence the reason this
+            // check exists.
+            //
+            // ruleExecOut will only be assigned a type (i.e. ExecCmdOut_MS_T) when written to.
+            // For example, writeLine('stdout', 'messsage ...').
+            if (msParam[i]->label) { // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                // NOLINTNEXTLINE(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
+                std::free(msParam[i]->label); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            }
+
             std::free(msParamArray->msParam[i]);
 
             // Shift all MsParam elements up one position.
