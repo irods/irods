@@ -74,7 +74,7 @@ auto rsExecMyRule(RsComm* _comm, ExecMyRuleInp* _exec_inp, MsParamArray** _out_p
         rei.uoip = &_comm->proxyUser;
     }
 
-    // Need to have a non zero inpParamArray for execMyRule to work.
+    // Need to have a valid MsParamArray for execMyRule to work.
     if (!_exec_inp->inpParamArray) { // NOLINT(readability-implicit-bool-conversion)
         // NOLINTNEXTLINE(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
         _exec_inp->inpParamArray = static_cast<MsParamArray*>(std::malloc(sizeof(MsParamArray)));
