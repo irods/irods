@@ -490,6 +490,8 @@ main( int argc, char **argv ) {
     rcComm_t *Conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
                       myEnv.rodsZone, 0, &errMsg );
 
+    const auto disconnect = irods::at_scope_exit{[&Conn] { rcDisconnect(Conn); }};
+
     try {
         if ( Conn == NULL ) {
             char *mySubName;
@@ -502,8 +504,6 @@ main( int argc, char **argv ) {
 
             return 2;
         }
-
-        const auto disconnect = irods::at_scope_exit{[Conn] { rcDisconnect(Conn); }};
 
         status = clientLogin( Conn );
         if ( status != 0 ) {
