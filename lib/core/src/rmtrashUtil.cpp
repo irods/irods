@@ -1,5 +1,5 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/rcMisc.h"
 #ifndef windows_platform
 #include <sys/time.h>
 #endif
@@ -19,10 +19,14 @@ rmtrashUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs,
     collInp_t collInp;
     dataObjInp_t dataObjInp;
 
-
     if ( rodsPathInp == NULL ) {
         return USER__NULL_INPUT_ERR;
     }
+
+    irods::at_scope_exit clear_input_objects{[&collInp, &dataObjInp] {
+        clearCollInp(&collInp);
+        clearDataObjInp(&dataObjInp);
+    }};
 
     initCondForRmtrash( myRodsArgs, &dataObjInp, &collInp );
 
