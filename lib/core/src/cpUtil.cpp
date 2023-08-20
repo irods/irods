@@ -2,6 +2,8 @@
 #include <sys/time.h>
 #endif
 
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/rcMisc.h"
 #include "irods/rodsPath.h"
 #include "irods/rodsErrorTable.h"
 #include "irods/rodsLog.h"
@@ -27,6 +29,8 @@ cpUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     }
 
     dataObjCopyInp_t dataObjCopyInp;
+    irods::at_scope_exit cleanup_dataObjCopyInp{[&dataObjCopyInp] { clearDataObjCopyInp(&dataObjCopyInp); }};
+
     rodsRestart_t rodsRestart;
     initCondForCp( myRodsEnv, myRodsArgs, &dataObjCopyInp, &rodsRestart );
 
