@@ -1,3 +1,5 @@
+#include <irods/irods_at_scope_exit.hpp>
+#include <irods/rcMisc.h>
 #include <unistd.h>
 
 #include <irods/rods.h>
@@ -149,6 +151,12 @@ showDataObj( char *name, char *attrName, int wild ) {
     char *columnNames[] = { "attribute", "value", "units", "time set" };
 
     genQueryInp_t genQueryInp;
+
+    irods::at_scope_exit cleanup{[&genQueryInp, &genQueryOut] {
+        clearKeyVal(&genQueryInp.condInput);
+        freeGenQueryOut(&genQueryOut);
+    }};
+
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
     if ( upperCaseFlag ) {
         genQueryInp.options = UPPER_CASE_WHERE;
@@ -245,6 +253,7 @@ showDataObj( char *name, char *attrName, int wild ) {
         i1a[0] = COL_D_DATA_PATH;
         genQueryInp.selectInp.len = 1;
         genQueryInp.sqlCondInp.len = 2;
+        freeGenQueryOut(&genQueryOut);
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
         if ( status == 0 ) {
             printf( "None\n" );
@@ -267,6 +276,7 @@ showDataObj( char *name, char *attrName, int wild ) {
 
     while ( status == 0 && genQueryOut->continueInx > 0 ) {
         genQueryInp.continueInx = genQueryOut->continueInx;
+        freeGenQueryOut(&genQueryOut);
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
         if ( genQueryOut->rowCnt > 0 ) {
             printf( "----\n" );
@@ -283,7 +293,7 @@ Via a general query, show the AVUs for a collection
 */
 int
 showColl( char *name, char *attrName, int wild ) {
-    genQueryOut_t *genQueryOut;
+    genQueryOut_t *genQueryOut{};
     int i1a[10];
     int i1b[10];
     int i2a[10];
@@ -294,6 +304,12 @@ showColl( char *name, char *attrName, int wild ) {
     char *columnNames[] = { "attribute", "value", "units", "time set" };
 
     genQueryInp_t genQueryInp;
+
+    irods::at_scope_exit cleanup{[&genQueryInp, &genQueryOut] {
+        clearKeyVal(&genQueryInp.condInput);
+        freeGenQueryOut(&genQueryOut);
+    }};
+
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
     if ( upperCaseFlag ) {
         genQueryInp.options = UPPER_CASE_WHERE;
@@ -381,6 +397,7 @@ showColl( char *name, char *attrName, int wild ) {
         i1a[0] = COL_COLL_COMMENTS;
         genQueryInp.selectInp.len = 1;
         genQueryInp.sqlCondInp.len = 1;
+        freeGenQueryOut(&genQueryOut);
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
         if ( status == 0 ) {
             printf( "None\n" );
@@ -399,6 +416,7 @@ showColl( char *name, char *attrName, int wild ) {
 
     while ( status == 0 && genQueryOut->continueInx > 0 ) {
         genQueryInp.continueInx = genQueryOut->continueInx;
+        freeGenQueryOut(&genQueryOut);
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
         if ( genQueryOut->rowCnt > 0 ) {
             printf( "----\n" );
@@ -425,6 +443,12 @@ showResc( char *name, char *attrName, int wild ) {
     char *columnNames[] = { "attribute", "value", "units", "time set" };
 
     genQueryInp_t genQueryInp;
+
+    irods::at_scope_exit cleanup{[&genQueryInp, &genQueryOut] {
+        clearKeyVal(&genQueryInp.condInput);
+        freeGenQueryOut(&genQueryOut);
+    }};
+
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
     if ( upperCaseFlag ) {
         genQueryInp.options = UPPER_CASE_WHERE;
@@ -490,6 +514,7 @@ showResc( char *name, char *attrName, int wild ) {
         i1a[0] = COL_R_RESC_INFO;
         genQueryInp.selectInp.len = 1;
         genQueryInp.sqlCondInp.len = 1;
+        freeGenQueryOut(&genQueryOut);
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
         if ( status == 0 ) {
             printf( "None\n" );
@@ -508,6 +533,7 @@ showResc( char *name, char *attrName, int wild ) {
 
     while ( status == 0 && genQueryOut->continueInx > 0 ) {
         genQueryInp.continueInx = genQueryOut->continueInx;
+        freeGenQueryOut(&genQueryOut);
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
         if ( genQueryOut->rowCnt > 0 ) {
             printf( "----\n" );
@@ -546,6 +572,12 @@ showUser( char *name, char *attrName, int wild ) {
     }
 
     genQueryInp_t genQueryInp;
+
+    irods::at_scope_exit cleanup{[&genQueryInp, &genQueryOut] {
+        clearKeyVal(&genQueryInp.condInput);
+        freeGenQueryOut(&genQueryOut);
+    }};
+
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
     if ( upperCaseFlag ) {
         genQueryInp.options = UPPER_CASE_WHERE;
@@ -619,6 +651,7 @@ showUser( char *name, char *attrName, int wild ) {
         i1a[0] = COL_USER_COMMENT;
         genQueryInp.selectInp.len = 1;
         genQueryInp.sqlCondInp.len = 1;
+        freeGenQueryOut(&genQueryOut);
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
         if ( status == 0 ) {
             printf( "None\n" );
@@ -637,6 +670,7 @@ showUser( char *name, char *attrName, int wild ) {
 
     while ( status == 0 && genQueryOut->continueInx > 0 ) {
         genQueryInp.continueInx = genQueryOut->continueInx;
+        freeGenQueryOut(&genQueryOut);
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
         if ( genQueryOut->rowCnt > 0 ) {
             printf( "----\n" );
