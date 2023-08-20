@@ -1,3 +1,4 @@
+#include <irods/irods_at_scope_exit.hpp>
 #include <irods/irods_client_api_table.hpp>
 #include <irods/irods_pack_table.hpp>
 #include <irods/lsUtil.h>
@@ -161,8 +162,14 @@ queryAndShowStrCond( rcComm_t *conn, char *hint, char *format,
      */
 
     genQueryInp_t genQueryInp;
+    genQueryOut_t* genQueryOut{};
+
+    irods::at_scope_exit cleanup{[&genQueryInp, &genQueryOut] {
+        clearGenQueryInp(&genQueryInp);
+        freeGenQueryOut(&genQueryOut);
+    }};
+
     int i;
-    genQueryOut_t *genQueryOut = NULL;
 
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
     i = fillGenQueryInpFromStrCond( selectConditionString, &genQueryInp );
