@@ -1,3 +1,4 @@
+#include <irods/irods_at_scope_exit.hpp>
 #include <irods/irods_client_api_table.hpp>
 #include <irods/irods_pack_table.hpp>
 #include <irods/irods_random.hpp>
@@ -127,7 +128,13 @@ printResultsAndSubQuery( rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
 void
 showRestrictionsByHost( char *inColumn ) {
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut;
+    genQueryOut_t *genQueryOut{};
+
+    irods::at_scope_exit cleanup{[&genQueryInp, &genQueryOut] {
+        clearKeyVal(&genQueryInp.condInput);
+        freeGenQueryOut(&genQueryOut);
+    }};
+
     int i1a[10];
     int i1b[10];
     int i2a[10];
@@ -165,6 +172,7 @@ showRestrictionsByHost( char *inColumn ) {
     if ( status == CAT_NO_ROWS_FOUND ) {
         i1a[0] = COL_USER_COMMENT;
         genQueryInp.selectInp.len = 1;
+        freeGenQueryOut(&genQueryOut);
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
         if ( status == 0 ) {
             printf( "No host restrictions (1)\n" );
@@ -180,6 +188,7 @@ showRestrictionsByHost( char *inColumn ) {
 
     while ( status == 0 && genQueryOut->continueInx > 0 ) {
         genQueryInp.continueInx = genQueryOut->continueInx;
+        freeGenQueryOut(&genQueryOut);
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
         printResultsAndSubQuery( Conn, status, genQueryOut,
                                  columnNames, 0, 0 );
@@ -190,7 +199,13 @@ showRestrictionsByHost( char *inColumn ) {
 void
 showRestrictionsByUser( char *inColumn ) {
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut;
+    genQueryOut_t *genQueryOut{};
+
+    irods::at_scope_exit cleanup{[&genQueryInp, &genQueryOut] {
+        clearKeyVal(&genQueryInp.condInput);
+        freeGenQueryOut(&genQueryOut);
+    }};
+
     int i1a[10];
     int i1b[10];
     int i2a[10];
@@ -228,6 +243,7 @@ showRestrictionsByUser( char *inColumn ) {
     if ( status == CAT_NO_ROWS_FOUND ) {
         i1a[0] = COL_USER_COMMENT;
         genQueryInp.selectInp.len = 1;
+        freeGenQueryOut(&genQueryOut);
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
         if ( status == 0 ) {
             printf( "No user restrictions (1)\n" );
@@ -243,6 +259,7 @@ showRestrictionsByUser( char *inColumn ) {
 
     while ( status == 0 && genQueryOut->continueInx > 0 ) {
         genQueryInp.continueInx = genQueryOut->continueInx;
+        freeGenQueryOut(&genQueryOut);
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
         printResultsAndSubQuery( Conn, status, genQueryOut,
                                  columnNames, 0, 0 );
@@ -253,7 +270,13 @@ showRestrictionsByUser( char *inColumn ) {
 void
 showRestrictionsByGroup( char *inColumn ) {
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut;
+    genQueryOut_t *genQueryOut{};
+
+    irods::at_scope_exit cleanup{[&genQueryInp, &genQueryOut] {
+        clearKeyVal(&genQueryInp.condInput);
+        freeGenQueryOut(&genQueryOut);
+    }};
+
     int i1a[10];
     int i1b[10];
     int i2a[10];
@@ -291,6 +314,7 @@ showRestrictionsByGroup( char *inColumn ) {
     if ( status == CAT_NO_ROWS_FOUND ) {
         i1a[0] = COL_USER_COMMENT;
         genQueryInp.selectInp.len = 1;
+        freeGenQueryOut(&genQueryOut);
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
         if ( status == 0 ) {
             printf( "No group restrictions (1)\n" );
@@ -306,6 +330,7 @@ showRestrictionsByGroup( char *inColumn ) {
 
     while ( status == 0 && genQueryOut->continueInx > 0 ) {
         genQueryInp.continueInx = genQueryOut->continueInx;
+        freeGenQueryOut(&genQueryOut);
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
         printResultsAndSubQuery( Conn, status, genQueryOut,
                                  columnNames, 0, 0 );
@@ -328,7 +353,13 @@ Via a general query, show the Tickets for this user
 int
 showTickets1( char *inOption, char *inName ) {
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut;
+    genQueryOut_t *genQueryOut{};
+
+    irods::at_scope_exit cleanup{[&genQueryInp, &genQueryOut] {
+        clearKeyVal(&genQueryInp.condInput);
+        freeGenQueryOut(&genQueryOut);
+    }};
+
     int i1a[20];
     int i1b[20];
     int i2a[20];
@@ -418,6 +449,7 @@ showTickets1( char *inOption, char *inName ) {
     if ( status == CAT_NO_ROWS_FOUND ) {
         i1a[0] = COL_USER_COMMENT;
         genQueryInp.selectInp.len = 1;
+        freeGenQueryOut(&genQueryOut);
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
         if ( status == 0 ) {
             return 0;
@@ -431,6 +463,7 @@ showTickets1( char *inOption, char *inName ) {
 
     while ( status == 0 && genQueryOut->continueInx > 0 ) {
         genQueryInp.continueInx = genQueryOut->continueInx;
+        freeGenQueryOut(&genQueryOut);
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
         if ( genQueryOut->rowCnt > 0 ) {
             printf( "----\n" );
