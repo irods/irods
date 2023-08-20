@@ -1,3 +1,5 @@
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/rcMisc.h"
 #ifndef windows_platform
 #include <sys/time.h>
 #endif
@@ -1864,7 +1866,13 @@ int
 getZoneType( rcComm_t *conn, char *icatZone, char *inZoneName,
              char *outZoneType ) {
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t* genQueryOut{};
+
+    irods::at_scope_exit cleanup{[&genQueryInp, &genQueryOut] {
+        clearGenQueryInp(&genQueryInp);
+        freeGenQueryOut(&genQueryOut);
+    }};
+
     int status;
     sqlResult_t *zoneType;
     char tmpStr[MAX_NAME_LEN];
@@ -1899,8 +1907,6 @@ getZoneType( rcComm_t *conn, char *icatZone, char *inZoneName,
     }
 
     rstrcpy( outZoneType, zoneType->value, MAX_NAME_LEN );
-
-    freeGenQueryOut( &genQueryOut );
 
     return 0;
 }
