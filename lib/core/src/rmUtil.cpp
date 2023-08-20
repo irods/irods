@@ -1,3 +1,5 @@
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/rcMisc.h"
 #include "irods/rodsPath.h"
 #include "irods/rodsErrorTable.h"
 #include "irods/miscUtil.h"
@@ -23,6 +25,12 @@ rmUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs,
 
     collInp_t collInp;
     dataObjInp_t dataObjInp;
+
+    irods::at_scope_exit clear_inputs_objects{[&collInp, &dataObjInp] {
+        clearCollInp(&collInp);
+        clearDataObjInp(&dataObjInp);
+    }};
+
     initCondForRm( myRodsArgs, &dataObjInp, &collInp );
 
     int savedStatus = 0;
