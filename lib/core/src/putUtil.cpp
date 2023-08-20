@@ -1,3 +1,5 @@
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/rcMisc.h"
 #ifndef windows_platform
 #include <sys/time.h>
 #endif
@@ -168,8 +170,6 @@ putUtil( rcComm_t **myConn, rodsEnv *myRodsEnv,
     int status;
     int savedStatus = 0;
     rodsPath_t *targPath = 0;
-    dataObjInp_t dataObjOprInp;
-    bulkOprInp_t bulkOprInp;
     rodsRestart_t rodsRestart;
     rcComm_t *conn = *myConn;
 
@@ -188,8 +188,17 @@ putUtil( rcComm_t **myConn, rodsEnv *myRodsEnv,
         }
     }
 
+    dataObjInp_t dataObjOprInp{};
+    bulkOprInp_t bulkOprInp{};
+
+    irods::at_scope_exit cleanup_input_objects{[&dataObjOprInp, &bulkOprInp] {
+        clearDataObjInp(&dataObjOprInp);
+        clearBulkOprInp(&bulkOprInp);
+    }};
+
     status = initCondForPut( conn, myRodsEnv, myRodsArgs, &dataObjOprInp,
                              &bulkOprInp, &rodsRestart );
+
     if ( status < 0 ) {
         return status;
     }
