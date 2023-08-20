@@ -1,8 +1,10 @@
+#include <irods/irods_at_scope_exit.hpp>
 #include <irods/irods_children_parser.hpp>
 #include <irods/irods_client_api_table.hpp>
 #include <irods/irods_exception.hpp>
 #include <irods/irods_pack_table.hpp>
 #include <irods/irods_resource_constants.hpp>
+#include <irods/rcMisc.h>
 #include <irods/rods.h>
 #include <irods/rodsClient.h>
 #include <irods/rodsError.h>
@@ -366,6 +368,11 @@ int showRescTree( const char *name, const char *zoneArgument, rcComm_t *Conn , D
     genQueryInp_t genQueryInp;
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
     genQueryOut_t *genQueryOut = NULL;
+
+    irods::at_scope_exit cleanup{[&genQueryInp, &genQueryOut] {
+        clearGenQueryInp(&genQueryInp);
+        freeGenQueryOut(&genQueryOut);
+    }};
 
     // set up query columns
     addInxIval( &genQueryInp.selectInp, COL_R_RESC_NAME, ORDER_BY );
