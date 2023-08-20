@@ -156,7 +156,6 @@ namespace irods {
         repl_requested_ = _rhs.repl_requested_;
         replicas_       = _rhs.replicas_;
         in_pdmo_        = _rhs.in_pdmo_;
-        replKeyVal( &_rhs.cond_input_, &cond_input_ );
 
         return *this;
 
