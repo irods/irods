@@ -1,5 +1,7 @@
 #include "irods/lsUtil.h"
 
+#include "irods/irods_at_scope_exit.hpp"
+#include "irods/rcMisc.h"
 #include "irods/rodsPath.h"
 #include "irods/rodsErrorTable.h"
 #include "irods/rodsLog.h"
@@ -135,9 +137,15 @@ int printLsStrShort( char *srcPath ) {
 
 int lsDataObjUtilLong(RcComm* conn, char* srcPath, RodsArguments* rodsArgs, GenQueryInp*)
 {
-    int status;
     genQueryInp_t genQueryInp{};
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t* genQueryOut{};
+
+    irods::at_scope_exit cleanup{[&genQueryInp, &genQueryOut] {
+        clearGenQueryInp(&genQueryInp);
+        freeGenQueryOut(&genQueryOut);
+    }};
+
+    int status = 0;
     char myColl[MAX_NAME_LEN], myData[MAX_NAME_LEN];
     char condStr[MAX_NAME_LEN];
     int queryFlags;
