@@ -24,7 +24,6 @@
 #  include "irods/rsAuthenticate.hpp"
 #  include "irods/rsBulkDataObjPut.hpp"
 #  include "irods/rsBulkDataObjReg.hpp"
-#  include "irods/rs_check_auth_credentials.hpp"
 #  include "irods/rsChkNVPathPerm.hpp"
 #  include "irods/rsChkObjPermAndStat.hpp"
 #  include "irods/rsClientHints.hpp"
@@ -151,6 +150,8 @@
 #  include "irods/rsUnregDataObj.hpp"
 #  include "irods/rsUserAdmin.hpp"
 #  include "irods/rsZoneReport.hpp"
+#  include "irods/rs_check_auth_credentials.hpp"
+#  include "irods/rs_get_library_features.hpp"
 #  define NULLPTR_FOR_CLIENT_TABLE(x) x
 #elif !defined(CREATE_API_TABLE_FOR_SERVER) && defined(CREATE_API_TABLE_FOR_CLIENT)
 #  define NULLPTR_FOR_CLIENT_TABLE(x) nullptr
@@ -236,6 +237,7 @@
 #define RS_GET_HIER_FROM_LEAF_ID       NULLPTR_FOR_CLIENT_TABLE(rsGetHierFromLeafId)
 #define RS_GET_HOST_FOR_GET            NULLPTR_FOR_CLIENT_TABLE(rsGetHostForGet)
 #define RS_GET_HOST_FOR_PUT            NULLPTR_FOR_CLIENT_TABLE(rsGetHostForPut)
+#define RS_GET_LIBRARY_FEATURES        NULLPTR_FOR_CLIENT_TABLE(rs_get_library_features)
 #define RS_GET_LIMITED_PASSWORD        NULLPTR_FOR_CLIENT_TABLE(rsGetLimitedPassword)
 #define RS_GET_MISC_SVR_INFO           NULLPTR_FOR_CLIENT_TABLE(rsGetMiscSvrInfo)
 #define RS_GET_REMOTE_ZONE_RESC        NULLPTR_FOR_CLIENT_TABLE(rsGetRemoteZoneResc)
@@ -1259,6 +1261,13 @@ static irods::apidef_t client_api_table_inp[] = {
         boost::any(std::function<int(rsComm_t*, checkAuthCredsInp_t*, int**)>(RS_CHECK_AUTH_CREDENTIALS)),
         "api_check_auth_credentials", irods::clearInStruct_noop, irods::clearOutStruct_noop,
         (funcPtr) CALL_CHECK_AUTH_CREDENTIALS_INOUT
+    },
+    {
+        GET_LIBRARY_FEATURES_AN, RODS_API_VERSION, NO_USER_AUTH, NO_USER_AUTH,
+        nullptr, 0, "STR_PI", 0,
+        boost::any(std::function<int(rsComm_t*, char**)>(RS_GET_LIBRARY_FEATURES)),
+        "api_get_library_features", irods::clearInStruct_noop, irods::clearOutStruct_noop,
+        (funcPtr) CALL_GET_LIBRARY_FEATURES_OUT
     },
     // clang-format on
 }; // _api_table_inp
