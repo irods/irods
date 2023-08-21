@@ -1031,4 +1031,11 @@ int call_check_auth_credentials_inout(irods::api_entry*, rsComm_t*, checkAuthCre
 #  define CALL_CHECK_AUTH_CREDENTIALS_INOUT nullptr // NOLINT(cppcoreguidelines-macro-usage)
 #endif
 
+#ifdef CREATE_API_TABLE_FOR_SERVER
+int call_get_library_features_out(irods::api_entry*, rsComm_t*, char**);
+#  define CALL_GET_LIBRARY_FEATURES_OUT call_get_library_features_out
+#else
+#  define CALL_GET_LIBRARY_FEATURES_OUT nullptr // NOLINT(cppcoreguidelines-macro-usage)
+#endif
+
 #endif // IRODS_API_CALLING_FUNCTIONS_HPP

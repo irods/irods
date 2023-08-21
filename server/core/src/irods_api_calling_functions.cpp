@@ -1126,3 +1126,8 @@ int call_check_auth_credentials_inout(irods::api_entry* _api,
 {
     return _api->call_handler<checkAuthCredsInp_t*, int**>(_comm, _input, _result);
 } // call_check_auth_credentials_inout
+
+int call_get_library_features_out(irods::api_entry* _api, rsComm_t* _comm, char** _features)
+{
+    return _api->call_handler<char**>(_comm, _features);
+} // call_get_library_features_out
