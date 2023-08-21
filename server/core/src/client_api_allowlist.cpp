@@ -179,7 +179,9 @@ namespace irods::client_api_allowlist
 
             SERVER_REPORT_AN,
             ZONE_REPORT_AN,
-            CLIENT_HINTS_AN
+            CLIENT_HINTS_AN,
+
+            GET_LIBRARY_FEATURES_AN,
         };
         // clang-format on
     } // init
