@@ -2038,12 +2038,13 @@ chlMakeLimitedPw(
 // If one already exists, the expire time is updated, and it's value is returned.
 // Passwords created are pseudo-random strings, unrelated to the PAM password.
 // If testTime is non-null, use that as the create-time, as a testing aid.
-int chlUpdateIrodsPamPassword(
-    rsComm_t* _comm,
-    const char*     _user_name,
-    int             _ttl,
-    const char*     _test_time,
-    char**    _irods_password ) {
+auto chlUpdateIrodsPamPassword(rsComm_t* _comm,
+                               const char* _user_name,
+                               int _ttl,
+                               const char* _test_time,
+                               char** _password_buffer,
+                               std::size_t _password_buffer_size) -> int
+{
     // =-=-=-=-=-=-=-
     // call factory for database object
     irods::database_object_ptr db_obj_ptr;
@@ -2078,18 +2079,14 @@ int chlUpdateIrodsPamPassword(
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call <
-          const char*,
-          int,
-          const char*,
-          char** > (
-              _comm,
-              irods::DATABASE_OP_UPDATE_PAM_PASSWORD,
-              ptr,
-              _user_name,
-              _ttl,
-              _test_time,
-              _irods_password );
+    ret = db->call(_comm,
+                   irods::DATABASE_OP_UPDATE_PAM_PASSWORD,
+                   ptr,
+                   _user_name,
+                   _ttl,
+                   _test_time,
+                   _password_buffer,
+                   _password_buffer_size);
 
     return ret.code();
 

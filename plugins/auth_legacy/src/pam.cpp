@@ -402,18 +402,18 @@ irods::error pam_auth_agent_request(
         return ERROR( status, "pam auth check failed" );
     }
 
-    // =-=-=-=-=-=-=-
-    // request the resulting irods password after the handshake
-    char password_out[ MAX_NAME_LEN ];
-    char* pw_ptr = &password_out[0];
-    status = chlUpdateIrodsPamPassword( _ctx.comm(), const_cast< char* >( user_name.c_str() ), ttl, NULL, &pw_ptr );
+    // Request the resulting irods password after the handshake. Plus 1 for null terminator.
+    std::array<char, MAX_PASSWORD_LEN + 1> password_out{};
+    char* password_ptr = password_out.data();
+    status =
+        chlUpdateIrodsPamPassword(_ctx.comm(), user_name.c_str(), ttl, nullptr, &password_ptr, password_out.size());
     if (status < 0) {
         return ERROR(status, "failed updating iRODS pam password");
     }
 
     // =-=-=-=-=-=-=-
     // set the result for communication back to the client
-    ptr->request_result( password_out );
+    ptr->request_result(password_out.data());
 
     // =-=-=-=-=-=-=-
     // win!

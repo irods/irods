@@ -43,15 +43,13 @@ namespace
         printf("Enter your current PAM password:");
         std::string password;
         getline(std::cin, password);
-        char new_password[MAX_PASSWORD_LEN + 2]{};
-        strncpy(new_password, password.c_str(), MAX_PASSWORD_LEN);
         printf("\n");
         tty.c_lflag = oldflag;
         if (tcsetattr(STDIN_FILENO, TCSANOW, &tty)) {
             printf("Error reinstating echo mode.\n");
         }
 
-        return new_password;
+        return password;
     } // get_password_from_client_stdin
 
 #ifdef RODS_SERVER
@@ -312,8 +310,8 @@ namespace irods
                 }
             }
 
-            const auto username = req.at("user_name").get_ref<const std::string&>();
-            const auto password = req.at(irods::AUTH_PASSWORD_KEY).get_ref<const std::string&>();
+            const auto& username = req.at("user_name").get_ref<const std::string&>();
+            const auto& password = req.at(irods::AUTH_PASSWORD_KEY).get_ref<const std::string&>();
 
             log_auth::trace("performing PAM auth check for [{}]", username);
 
@@ -321,14 +319,16 @@ namespace irods
 
             log_auth::trace("PAM auth check done", username);
 
-            char password_out[MAX_NAME_LEN]{};
-            char* pw_ptr = &password_out[0];
-            const int ec = chlUpdateIrodsPamPassword(&comm, const_cast<char*>(username.c_str()), ttl, nullptr, &pw_ptr);
+            // Plus 1 for null terminator.
+            std::array<char, MAX_PASSWORD_LEN + 1> password_out{};
+            char* password_ptr = password_out.data();
+            const int ec =
+                chlUpdateIrodsPamPassword(&comm, username.c_str(), ttl, nullptr, &password_ptr, password_out.size());
             if (ec < 0) {
                 THROW(ec, "failed updating iRODS pam password");
             }
 
-            resp["request_result"] = password_out;
+            resp["request_result"] = password_out.data();
 
             if (comm.auth_scheme) {
                 free(comm.auth_scheme);
