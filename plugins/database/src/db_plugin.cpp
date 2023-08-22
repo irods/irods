@@ -103,7 +103,6 @@ static rodsLong_t MAX_PASSWORDS = 40;
 // =-=-=-=-=-=-=-
 // local variables externed for config file setting in
 bool irods_pam_auth_no_extend = false;
-size_t irods_pam_password_len = 20;
 char irods_pam_password_min_time[ NAME_LEN ]     = { "121" };
 char irods_pam_password_max_time[ NAME_LEN ]     = { "1209600" };
 char irods_pam_password_default_time[ NAME_LEN ] = { "1209600" };
@@ -1993,11 +1992,6 @@ irods::error db_open_op(
             std::vector<std::string>{irods::KW_CFG_PLUGIN_TYPE_AUTHENTICATION,
                                      auth_scheme::pam_password,
                                      irods::KW_CFG_PAM_NO_EXTEND});
-
-        irods_pam_password_len = irods::get_server_property<const size_t>(
-            std::vector<std::string>{irods::KW_CFG_PLUGIN_TYPE_AUTHENTICATION,
-                                     auth_scheme::pam_password,
-                                     irods::KW_CFG_PAM_PASSWORD_LENGTH});
 
         snprintf(irods_pam_password_min_time, NAME_LEN, "%s",
                  irods::get_server_property<const std::string>(
@@ -7070,12 +7064,13 @@ irods::error db_make_limited_pw_op(
 
 // =-=-=-=-=-=-=-
 // authenticate user
-irods::error db_update_pam_password_op(
-    irods::plugin_context& _ctx,
-    const char*            _user_name,
-    int                    _ttl,
-    const char*            _test_time,
-    char**                 _irods_password ) {
+auto db_update_pam_password_op(irods::plugin_context& _ctx,
+                               const char* _user_name,
+                               int _ttl,
+                               const char* _test_time,
+                               char** _password_buffer,
+                               std::size_t _password_buffer_size) -> irods::error
+{
     // =-=-=-=-=-=-=-
     // check the context
     irods::error ret = _ctx.valid();
@@ -7083,14 +7078,19 @@ irods::error db_update_pam_password_op(
         return PASS( ret );
     }
 
-    // =-=-=-=-=-=-=-
-    // check the params
-    if (
-        !_user_name ||
-        !_irods_password ) {
+    if (!_user_name || !_password_buffer) {
+        return ERROR(CAT_INVALID_ARGUMENT, "null parameter");
+    }
+
+    // Plus 1 for null terminator.
+    std::array<char, MAX_PASSWORD_LEN + 1> random_password{};
+    if (random_password.size() > _password_buffer_size) {
         return ERROR(
-                   CAT_INVALID_ARGUMENT,
-                   "null parameter" );
+            SYS_INVALID_INPUT_PARAM,
+            fmt::format("{}: Buffer not large enough to hold password. Requires [{}] bytes, received [{}] bytes.",
+                        __func__,
+                        random_password.size(),
+                        _password_buffer_size));
     }
 
     // =-=-=-=-=-=-=-
@@ -7108,12 +7108,7 @@ irods::error db_update_pam_password_op(
 //        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
 
     char myTime[50];
-    char rBuf[200];
-    size_t i, j;
-    char randomPw[50];
-    char randomPwEncoded[50];
     int status;
-    char passwordInIcat[MAX_PASSWORD_LEN + 2];
     char passwordModifyTime[50];
     char *cVal[3];
     int iVal[3];
@@ -7184,9 +7179,11 @@ irods::error db_update_pam_password_op(
         return ERROR( status, "delete failure" );
     }
 
-    if (logSQL != 0)
+    if (logSQL != 0) {
         log_sql::debug("chlUpdateIrodsPamPassword SQL 3");
-    cVal[0] = passwordInIcat;
+    }
+
+    cVal[0] = random_password.data();
     iVal[0] = MAX_PASSWORD_LEN;
     cVal[1] = passwordModifyTime;
     iVal[1] = sizeof( passwordModifyTime );
@@ -7212,7 +7209,8 @@ irods::error db_update_pam_password_op(
             cllBindVars[cllBindVarCount++] = myTime;
             cllBindVars[cllBindVarCount++] = expTime;
             cllBindVars[cllBindVarCount++] = selUserId;
-            cllBindVars[cllBindVarCount++] = passwordInIcat;
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+            cllBindVars[cllBindVarCount++] = random_password.data();
             status =  cmlExecuteNoAnswerSql( "update R_USER_PASSWORD set modify_ts=?, pass_expiry_ts=? where user_id = ? and rcat_password = ?",
                                              &icss );
             if ( status ) {
@@ -7225,45 +7223,39 @@ irods::error db_update_pam_password_op(
                 return ERROR( status, "commit failure" );
             }
         } // if !irods_pam_auth_no_extend
-        icatDescramble( passwordInIcat );
-        strncpy( *_irods_password, passwordInIcat, irods_pam_password_len );
+
+        // random_password is the randomly generated password (see while loop below) in a scrambled form.
+        icatDescramble(random_password.data());
+
+        // The descrambled password at time of generation is 50 characters or less (see below).
+        std::strncpy(*_password_buffer, random_password.data(), _password_buffer_size);
+
         return SUCCESS();
     }
 
-    // =-=-=-=-=-=-=-
-    // if the resultant scrambled password has a ' in the
-    // string, this can cause issues on some systems, notably
-    // Suse 12.  if this is the case we will just get another
-    // random password.
-    bool pw_good = false;
-    while ( !pw_good ) {
-        j = 0;
-        get64RandomBytes( rBuf );
-        for ( i = 0; i < 50 && j < irods_pam_password_len - 1; i++ ) {
-            char c;
-            c = rBuf[i] & 0x7f;
-            if ( c < '0' ) {
-                c += '0';
-            }
-            if ( ( c > 'a' && c < 'z' ) || ( c > 'A' && c < 'Z' ) ||
-                    ( c > '0' && c < '9' ) ) {
-                randomPw[j++] = c;
-            }
-        }
-        randomPw[j] = '\0';
+    // +1 for null terminator
+    std::array<char, MAX_PASSWORD_LEN + 1> scrambled_random_password{};
 
-        snprintf( randomPwEncoded, sizeof( randomPwEncoded ), "%s", randomPw );
-        icatScramble( randomPwEncoded );
-        if ( !strstr( randomPwEncoded, "\'" ) ) {
-            pw_good = true;
+    constexpr auto random_bytes_count = 64 + 1; // +1 for null terminator
+    std::array<char, random_bytes_count> random_bytes_buffer{};
+    get64RandomBytes(random_bytes_buffer.data());
 
+    // Minus 1 for null terminator.
+    for (std::size_t i = 0; i < random_password.size() - 1; i++) {
+        constexpr auto bitmask = 0x7f;
+        // NOLINTNEXTLINE(hicpp-signed-bitwise,bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+        char c = random_bytes_buffer.at(i) & bitmask;
+        if (c < '0') {
+            c += '0';
         }
-        else {
-            log_db::debug(
-                "chlUpdateIrodsPamPassword :: getting a new password [{}] has a single quote", randomPwEncoded);
+        if ((c > 'a' && c < 'z') || (c > 'A' && c < 'Z') || (c > '0' && c < '9')) {
+            random_password.at(i) = c;
         }
+    }
+    random_password.back() = '\0';
 
-    } // while
+    std::strncpy(scrambled_random_password.data(), random_password.data(), MAX_PASSWORD_LEN);
+    icatScramble(scrambled_random_password.data());
 
     if ( _test_time != NULL && strlen( _test_time ) > 0 ) {
         snprintf( myTime, sizeof( myTime ), "%s", _test_time );
@@ -7272,7 +7264,8 @@ irods::error db_update_pam_password_op(
     if (logSQL != 0)
         log_sql::debug("chlUpdateIrodsPamPassword SQL 5");
     cllBindVars[cllBindVarCount++] = selUserId;
-    cllBindVars[cllBindVarCount++] = randomPwEncoded;
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+    cllBindVars[cllBindVarCount++] = scrambled_random_password.data();
     cllBindVars[cllBindVarCount++] = expTime;
     cllBindVars[cllBindVarCount++] = myTime;
     cllBindVars[cllBindVarCount++] = myTime;
@@ -7286,9 +7279,9 @@ irods::error db_update_pam_password_op(
         return ERROR( status, "commit failure" );
     }
 
-    strncpy( *_irods_password, randomPw, irods_pam_password_len );
-    return SUCCESS();
+    std::strncpy(*_password_buffer, random_password.data(), _password_buffer_size);
 
+    return SUCCESS();
 } // db_update_pam_password_op
 
 // =-=-=-=-=-=-=-
@@ -15852,10 +15845,9 @@ irods::database* plugin_factory(
         DATABASE_OP_MAKE_TEMP_PW,
         function<error(plugin_context&,char*, const char*)>(
             db_make_temp_pw_op ) );
-    pg->add_operation(
-        DATABASE_OP_UPDATE_PAM_PASSWORD,
-        function<error(plugin_context&,const char*,int,const char*,char**)>(
-            db_update_pam_password_op ) );
+    pg->add_operation(DATABASE_OP_UPDATE_PAM_PASSWORD,
+                      function<error(plugin_context&, const char*, int, const char*, char**, std::size_t)>(
+                          db_update_pam_password_op));
     pg->add_operation(
         DATABASE_OP_MOD_USER,
         function<error(plugin_context&,const char*,const char*,const char*)>(

@@ -194,9 +194,12 @@ int chlVersionFnmBase( rsComm_t *rsComm,
 int chlModTicket( rsComm_t *rsComm, const char *opName, const char *ticket,
                   const char *arg1, const char *arg2, const char *arg3,
                   const KeyValPair *condInput);
-int chlUpdateIrodsPamPassword( rsComm_t *rsComm, const char *userName,
-                               int timeToLive, const char *testTime,
-                               char **irodsPassword );
+auto chlUpdateIrodsPamPassword(rsComm_t* _comm,
+                               const char* _user_name,
+                               int _ttl,
+                               const char* _test_time,
+                               char** _password_buffer,
+                               std::size_t _password_buffer_size) -> int;
 
 /// =-=-=-=-=-=-=-
 /// @brief typedefs and prototype for query used for rebalancing operation
