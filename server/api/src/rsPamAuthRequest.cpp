@@ -1,20 +1,16 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
+#include "irods/rsPamAuthRequest.hpp"
 
-/* See pamAuthRequest.h for a description of this API call.*/
+#include "irods/authenticate.h"
+#include "irods/genQuery.h"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/irods_log.hpp"
+#include "irods/irods_server_properties.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/pamAuthRequest.h"
+#include "irods/sslSockComm.h"
 
 #include <sys/wait.h>
-
-#include "irods/pamAuthRequest.h"
-#include "irods/genQuery.h"
-#include "irods/rsPamAuthRequest.hpp"
-#include "irods/icatHighLevelRoutines.hpp"
-#include "irods/miscServerFunct.hpp"
-#include "irods/irods_server_properties.hpp"
-#include "irods/irods_log.hpp"
-#include "irods/sslSockComm.h"
-#include "irods/miscServerFunct.hpp"
-
 
 int
 rsPamAuthRequest( rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
@@ -127,13 +123,10 @@ int
 _rsPamAuthRequest( rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
                    pamAuthRequestOut_t **pamAuthRequestOut ) {
     int status = 0;
-    pamAuthRequestOut_t *result;
 
     *pamAuthRequestOut = ( pamAuthRequestOut_t * )
                          malloc( sizeof( pamAuthRequestOut_t ) );
     memset( ( char * )*pamAuthRequestOut, 0, sizeof( pamAuthRequestOut_t ) );
-
-    result = *pamAuthRequestOut;
 
     /* Normal mode, fork/exec setuid program to do the Pam check */
     status = runPamAuthCheck( pamAuthRequestInp->pamUser,
@@ -151,15 +144,23 @@ _rsPamAuthRequest( rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
     if ( status ) {
         return status;
     }
-    result->irodsPamPassword = ( char* )malloc( 100 );
-    if ( result->irodsPamPassword == 0 ) {
+
+    pamAuthRequestOut_t* result = *pamAuthRequestOut;
+
+    // Plus 1 for null terminator.
+    constexpr std::size_t password_buffer_size = MAX_PASSWORD_LEN + 1;
+    // NOLINTNEXTLINE(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
+    result->irodsPamPassword = static_cast<char*>(std::malloc(password_buffer_size));
+    if (nullptr == result->irodsPamPassword) {
         return SYS_MALLOC_ERR;
     }
-    memset(result->irodsPamPassword, 0, 100);
-    status = chlUpdateIrodsPamPassword( rsComm,
-                                        pamAuthRequestInp->pamUser,
-                                        pamAuthRequestInp->timeToLive,
-                                        NULL,
-                                        &result->irodsPamPassword );
+
+    std::memset(result->irodsPamPassword, 0, password_buffer_size);
+    status = chlUpdateIrodsPamPassword(rsComm,
+                                       pamAuthRequestInp->pamUser,
+                                       pamAuthRequestInp->timeToLive,
+                                       nullptr,
+                                       &result->irodsPamPassword,
+                                       password_buffer_size);
     return status;
 }
