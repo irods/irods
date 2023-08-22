@@ -4,6 +4,7 @@
 #include "irods/connection_pool.hpp"
 #include "irods/fully_qualified_username.hpp"
 #include "irods/get_delay_rule_info.h"
+#include "irods/get_grid_configuration_value.h"
 #include "irods/initServer.hpp"
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_client_api_table.hpp"
@@ -674,6 +675,47 @@ namespace
 
         return {qstr, job};
     } // make_delay_queue_query_processor
+
+    auto is_local_server_defined_as_delay_server_leader() -> bool
+    {
+        std::string hostname;
+        //NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+        char hn[HOST_NAME_MAX + 1]{};
+
+        if (const auto err = gethostname(hn, sizeof(hn)); err != 0) {
+            logger::delay_server::error("{}: Failed to retrieve local server's hostname. Error {}", __func__, err);
+            return false;
+        }
+
+        if (const auto hn_resolved = resolve_hostname(hn, hostname_resolution_scheme::match_preferred); hn_resolved) {
+            hostname = *hn_resolved;
+        }
+        else {
+            hostname = hn;
+        }
+        irods::experimental::client_connection conn;
+        GridConfigurationInput input{};
+        std::strcpy(input.name_space, "delay_server");
+        std::strcpy(input.option_name, "leader");
+
+        GridConfigurationOutput* output{};
+        //NOLINTNEXTLINE(cppcoreguidelines-no-malloc, cppcoreguidelines-owning-memory)
+        irods::at_scope_exit free_output{[&output] { std::free(output); }};
+
+        if (const auto ec = rc_get_grid_configuration_value(static_cast<RcComm*>(conn), &input, &output); ec != 0) {
+            logger::delay_server::warn("{}: Failed to retrieve leader config option. Error {}", __func__, ec);
+            return false;
+        }
+
+        if (const auto hn_resolved =
+                resolve_hostname(output->option_value, hostname_resolution_scheme::match_preferred);
+            hn_resolved)
+        {
+            return hostname == *hn_resolved;
+        }
+        return hostname == output->option_value;
+    } //is_local_server_defined_as_delay_server_leader
+
 } // anonymous namespace
 
 int main(int argc, char** argv)
@@ -794,7 +836,10 @@ int main(int argc, char** argv)
         while (!delay_server_terminated) {
             try {
                 irods::server_properties::instance().capture();
-
+                if (!is_local_server_defined_as_delay_server_leader()) {
+                    logger::delay_server::warn("This server is not the leader. Terminating...");
+                    break;
+                }
                 auto delay_queue_processor = make_delay_queue_query_processor(thread_pool, queue);
 
                 logger::delay_server::trace("Gathering rules for execution ...");
