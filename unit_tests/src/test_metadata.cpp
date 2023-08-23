@@ -28,10 +28,9 @@ TEST_CASE("metadata")
     REQUIRE(getRodsEnv(&env) == 0);
 
     const int cp_size = 1;
-    const int cp_refresh_time = 600;
 
     irods::experimental::fully_qualified_username user{env.rodsUserName, env.rodsZone};
-    irods::connection_pool conn_pool{cp_size, env.rodsHost, env.rodsPort, user, cp_refresh_time};
+    irods::connection_pool conn_pool{cp_size, env.rodsHost, env.rodsPort, user};
 
     auto conn = conn_pool.get_connection();
 
