@@ -226,7 +226,8 @@ irods::check_directories_for_loops( boost::filesystem::path const & dirpath,
     try {
         // Default constructor creates an end iterator
         fs::recursive_directory_iterator end_itr;
-        const fs::symlink_option opt = (dashdashlink? fs::symlink_option::none : fs::symlink_option::recurse);
+        const fs::directory_options opt =
+            (dashdashlink ? fs::directory_options::none : fs::directory_options::follow_directory_symlink);
         for ( fs::recursive_directory_iterator itr( dirpath, opt ); itr != end_itr; ++itr )
         {
             fs::path p = itr->path();
