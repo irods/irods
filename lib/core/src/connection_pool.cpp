@@ -5,6 +5,7 @@
 #include "irods/rodsErrorTable.h"
 #include "irods/thread_pool.hpp"
 
+#include <algorithm>
 #include <thread>
 #include <tuple> // For std::ignore.
 
@@ -96,8 +97,8 @@ namespace irods
                                      const int _port,
                                      const std::string& _name,
                                      const std::string& _zone,
-                                     const int _refresh_time)
-        : connection_pool{_size, _host, _port, std::nullopt, {_name, _zone}, _refresh_time, {}}
+                                     [[maybe_unused]] const int _refresh_time)
+        : connection_pool{_size, _host, _port, std::nullopt, {_name, _zone}, {}}
     {
     } // constructor
 
@@ -105,8 +106,8 @@ namespace irods
                                      const std::string& _host,
                                      const int _port,
                                      experimental::fully_qualified_username _username,
-                                     const int _refresh_time)
-        : connection_pool{_size, _host, _port, std::nullopt, std::move(_username), _refresh_time, {}}
+                                     const connection_pool_options& _options)
+        : connection_pool{_size, _host, _port, std::nullopt, std::move(_username), {}, _options}
     {
     } // constructor
 
@@ -114,9 +115,9 @@ namespace irods
                                      const std::string& _host,
                                      const int _port,
                                      experimental::fully_qualified_username _username,
-                                     const int _refresh_time,
-                                     std::function<void(RcComm&)> _auth_func)
-        : connection_pool{_size, _host, _port, std::nullopt, std::move(_username), _refresh_time, std::move(_auth_func)}
+                                     std::function<void(RcComm&)> _auth_func,
+                                     const connection_pool_options& _options)
+        : connection_pool{_size, _host, _port, std::nullopt, std::move(_username), std::move(_auth_func), _options}
     {
     } // constructor
 
@@ -125,19 +126,35 @@ namespace irods
                                      const int _port,
                                      std::optional<experimental::fully_qualified_username> _proxy_username,
                                      experimental::fully_qualified_username _username,
-                                     const int _refresh_time,
-                                     std::function<void(RcComm&)> _auth_func)
+                                     std::function<void(RcComm&)> _auth_func,
+                                     const connection_pool_options& _options)
         : host_{_host}
         , port_{_port}
         , proxy_username_{std::move(_proxy_username)}
         , username_{std::move(_username)}
-        , refresh_time_(_refresh_time)
         , auth_func_{std::move(_auth_func)}
         , conn_ctxs_(_size)
+        , options_{_options}
     {
         if (_size < 1) {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
             THROW(SYS_INVALID_INPUT_PARAM, "Invalid connection pool size");
+        }
+
+        if (_options.number_of_retrievals_before_connection_refresh) {
+            if (*_options.number_of_retrievals_before_connection_refresh <= 0) {
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+                THROW(SYS_INVALID_INPUT_PARAM,
+                      "Value for option [number_of_retrievals_before_connection_refresh] must be greater than zero");
+            }
+        }
+
+        if (_options.number_of_seconds_before_connection_refresh) {
+            if (_options.number_of_seconds_before_connection_refresh->count() <= 0) {
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+                THROW(SYS_INVALID_INPUT_PARAM,
+                      "Value for option [number_of_seconds_before_connection_refresh] must be greater than zero");
+            }
         }
 
         // Always initialize the first connection to guarantee that the
@@ -149,6 +166,28 @@ namespace irods
             [] { THROW(USER_SOCK_CONNECT_ERR, "Connect error"); },
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
             [] { THROW(AUTHENTICATION_ERROR, "Client login error"); });
+
+        if (_options.refresh_connections_when_resource_changes_detected) {
+            std::uint64_t latest_mtime = 0;
+
+            // Capture the latest time any resource was modified.
+            // This will be used to track when a connection should be refreshed.
+            // This helps with long-running agents.
+            for (auto&& row : irods::query{conn_ctxs_[0].conn.get(), "select max(RESC_MODIFY_TIME)"}) {
+                try {
+                    latest_mtime = std::stoull(row[0]);
+                }
+                catch (...) {
+                    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+                    THROW(SYS_LIBRARY_ERROR, "Failed to convert RESC_MODIFY_TIME to an integer");
+                }
+            }
+
+            // Attach the mtime to each connection context.
+            std::for_each(std::begin(conn_ctxs_), std::end(conn_ctxs_), [latest_mtime](auto&& _ctx) {
+                _ctx.latest_resc_mtime = latest_mtime;
+            });
+        }
 
         // If the size of the pool is one, then return immediately.
         if (_size == 1) {
@@ -195,7 +234,14 @@ namespace irods
                                             const std::function<void()>& _on_login_error)
     {
         auto& ctx = conn_ctxs_[_index];
-        ctx.creation_time = std::time(nullptr);
+
+        if (options_.number_of_seconds_before_connection_refresh) {
+            ctx.creation_time = std::chrono::steady_clock::now();
+        }
+
+        if (options_.number_of_retrievals_before_connection_refresh) {
+            ctx.retrieval_count = 0;
+        }
 
         if (proxy_username_.has_value()) {
             ctx.conn.reset(_rcConnect(host_.c_str(),
@@ -237,11 +283,45 @@ namespace irods
         }
 
         try {
-            // NOLINTNEXTLINE(bugprone-unused-raii)
-            query<RcComm>{ctx.conn.get(), "select ZONE_NAME where ZONE_TYPE = 'local'"};
-            if (std::time(nullptr) - ctx.creation_time > refresh_time_) {
-                return false;
+            // Check if the number of retrievals via get_connection() has been reached.
+            if (options_.number_of_retrievals_before_connection_refresh) {
+                if (ctx.retrieval_count >= *options_.number_of_retrievals_before_connection_refresh) {
+                    return false;
+                }
             }
+
+            // Check age of connection.
+            if (options_.number_of_seconds_before_connection_refresh) {
+                const auto elapsed = std::chrono::steady_clock::now() - ctx.creation_time;
+
+                if (elapsed >= *options_.number_of_seconds_before_connection_refresh) {
+                    return false;
+                }
+            }
+
+            // Check if any resources have been modified.
+            if (options_.refresh_connections_when_resource_changes_detected) {
+                for (auto&& row : irods::query{ctx.conn.get(), "select max(RESC_MODIFY_TIME)"}) {
+                    try {
+                        if (const auto mtime = std::stoull(row[0]); mtime > ctx.latest_resc_mtime) {
+                            ctx.latest_resc_mtime = mtime;
+                            return false;
+                        }
+                    }
+                    catch (...) {
+                        // In theory, we should never reach this block. However, if we do, just
+                        // go ahead and refresh the connection. At the very least, the agent will
+                        // reflect the latest state in the catalog for a small penalty of TCP socket
+                        // reconstruction.
+                        return false;
+                    }
+                }
+            }
+
+            // Check if the connection is still valid.
+            // This query will always succeed unless there's an issue in which case an exception will
+            // be thrown.
+            query{ctx.conn.get(), "select ZONE_NAME where ZONE_TYPE = 'local'"}; // NOLINT(bugprone-unused-raii)
         }
         catch (const std::exception&) {
             return false;
@@ -279,7 +359,13 @@ namespace irods
             if (lock.try_lock()) {
                 if (!conn_ctxs_[i].in_use.load()) {
                     conn_ctxs_[i].in_use.store(true);
-                    return {*this, *refresh_connection(i), i};
+                    connection_proxy proxy{*this, *refresh_connection(i), i};
+
+                    if (options_.number_of_retrievals_before_connection_refresh) {
+                        ++conn_ctxs_[i].retrieval_count;
+                    }
+
+                    return proxy;
                 }
             }
         }

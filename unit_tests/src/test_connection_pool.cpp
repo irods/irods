@@ -8,9 +8,13 @@
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_exception.hpp"
 #include "irods/rcConnect.h"
+#include "irods/resource_administration.hpp"
 #include "irods/rodsClient.h"
 #include "irods/rodsErrorTable.h"
 #include "irods/user_administration.hpp"
+
+#include <chrono>
+#include <thread>
 
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 TEST_CASE("connection pool")
@@ -78,7 +82,7 @@ TEST_CASE("connection pool")
         irods::at_scope_exit at_scope_exit{[&released_conn_ptr] { REQUIRE(rcDisconnect(released_conn_ptr) == 0); }};
 
         irods::experimental::fully_qualified_username user{env.rodsUserName, env.rodsZone};
-        irods::connection_pool conn_pool{cp_size, env.rodsHost, env.rodsPort, user, cp_refresh_time};
+        irods::connection_pool conn_pool{cp_size, env.rodsHost, env.rodsPort, user};
 
         namespace fs = irods::experimental::filesystem;
 
@@ -167,7 +171,7 @@ TEST_CASE("connection pool")
             };
 
             irods::experimental::fully_qualified_username user{env.rodsUserName, env.rodsZone};
-            irods::connection_pool conn_pool{cp_size, env.rodsHost, env.rodsPort, user, cp_refresh_time, auth_func};
+            irods::connection_pool conn_pool{cp_size, env.rodsHost, env.rodsPort, user, auth_func};
         }());
     }
 
@@ -196,8 +200,7 @@ TEST_CASE("connection pool")
         irods::experimental::fully_qualified_username proxy_user{proxy_admin.name, env.rodsZone};
         irods::experimental::fully_qualified_username user{env.rodsUserName, env.rodsZone};
 
-        irods::connection_pool conn_pool{
-            cp_size, env.rodsHost, env.rodsPort, proxy_user, user, cp_refresh_time, auth_func};
+        irods::connection_pool conn_pool{cp_size, env.rodsHost, env.rodsPort, proxy_user, user, auth_func};
 
         auto conn = conn_pool.get_connection();
 
@@ -218,7 +221,7 @@ TEST_CASE("connection pool")
 
         try {
             irods::experimental::fully_qualified_username user{env.rodsUserName, env.rodsZone};
-            irods::connection_pool conn_pool{cp_size, env.rodsHost, env.rodsPort, user, cp_refresh_time, auth_func};
+            irods::connection_pool conn_pool{cp_size, env.rodsHost, env.rodsPort, user, auth_func};
         }
         catch (const irods::exception& e) {
             REQUIRE(e.code() == SYS_SOCK_CONNECT_ERR);
@@ -254,11 +257,161 @@ TEST_CASE("connection pool")
             irods::experimental::fully_qualified_username proxy_user{proxy_admin.name, env.rodsZone};
             irods::experimental::fully_qualified_username user{env.rodsUserName, env.rodsZone};
 
-            irods::connection_pool conn_pool{
-                cp_size, env.rodsHost, env.rodsPort, proxy_user, user, cp_refresh_time, auth_func};
+            irods::connection_pool conn_pool{cp_size, env.rodsHost, env.rodsPort, proxy_user, user, auth_func};
         }
         catch (const irods::exception& e) {
             REQUIRE(e.code() == SYS_SOCK_CONNECT_ERR);
+        }
+    }
+
+    SECTION("connection_pool_options")
+    {
+        irods::experimental::fully_qualified_username user{env.rodsUserName, env.rodsZone};
+        irods::connection_pool_options cp_opts{};
+
+        SECTION("refresh connection after N retrievals")
+        {
+            // This test case proves correctness by tracking the memory address of the underyling
+            // RcComm. After some number of calls to connection_pool::get_connection, the memory
+            // address of the RcComm is expected to change due to the connection pool options we
+            // configured during the construction of the pool.
+            //
+            // No iRODS API/RPC calls are necessary for verifying this behavior.
+
+            cp_opts.number_of_retrievals_before_connection_refresh = 3;
+
+            irods::connection_pool conn_pool{1, env.rodsHost, env.rodsPort, user, cp_opts};
+
+            RcComm* conn_ptr{};
+
+            {
+                auto conn = conn_pool.get_connection();
+                CHECK(conn);
+
+                // Capture the memory address of the underlying RcComm.
+                conn_ptr = static_cast<RcComm*>(conn);
+                CHECK(conn_ptr);
+            }
+
+            {
+                auto conn = conn_pool.get_connection();
+                CHECK(conn);
+
+                // Show the memory address has not yet changed.
+                CHECK(static_cast<RcComm*>(conn) == conn_ptr);
+            }
+
+            {
+                auto conn = conn_pool.get_connection();
+                CHECK(conn);
+
+                // Show the memory address has not yet changed.
+                CHECK(static_cast<RcComm*>(conn) == conn_ptr);
+            }
+
+            auto conn = conn_pool.get_connection();
+            CHECK(conn);
+
+            // Show the memory address has changed now that the retrieval count has been exceeded.
+            CHECK(static_cast<RcComm*>(conn) != conn_ptr);
+        }
+
+        SECTION("refresh connection after N seconds")
+        {
+            constexpr std::chrono::seconds seconds{5};
+            cp_opts.number_of_seconds_before_connection_refresh = seconds;
+
+            irods::connection_pool conn_pool{1, env.rodsHost, env.rodsPort, user, cp_opts};
+
+            RcComm* conn_ptr{};
+
+            {
+                auto conn = conn_pool.get_connection();
+                CHECK(conn);
+
+                // Capture the memory address of the underlying RcComm.
+                conn_ptr = static_cast<RcComm*>(conn);
+                CHECK(conn_ptr);
+            }
+
+            {
+                auto conn = conn_pool.get_connection();
+                CHECK(conn);
+
+                // Show the memory address has not yet changed.
+                CHECK(static_cast<RcComm*>(conn) == conn_ptr);
+            }
+
+            std::this_thread::sleep_for(seconds);
+
+            auto conn = conn_pool.get_connection();
+            CHECK(conn);
+
+            // Show the memory address has changed now that enough time has passed.
+            CHECK(static_cast<RcComm*>(conn) != conn_ptr);
+        }
+
+        SECTION("refresh connection after resource modification")
+        {
+            cp_opts.refresh_connections_when_resource_changes_detected = true;
+
+            irods::connection_pool conn_pool{1, env.rodsHost, env.rodsPort, user, cp_opts};
+
+            namespace adm = irods::experimental::administration;
+
+            RcComm* conn_ptr{};
+
+            {
+                auto conn = conn_pool.get_connection();
+                REQUIRE(conn);
+
+                conn_ptr = static_cast<RcComm*>(conn);
+                REQUIRE(conn_ptr);
+
+                // This will cause all connections in the pool to be replaced on their next usage.
+                REQUIRE_NOTHROW(adm::client::modify_resource(
+                    conn, "demoResc", adm::resource_comments_property{"testing connection pool refresh"}));
+            }
+
+            auto conn = conn_pool.get_connection();
+            REQUIRE(conn);
+            REQUIRE(static_cast<RcComm*>(conn) != conn_ptr);
+            REQUIRE_NOTHROW(adm::client::modify_resource(conn, "demoResc", adm::resource_comments_property{""}));
+        }
+
+        SECTION("invalid option values")
+        {
+            for (auto&& v : {0, -1}) {
+                DYNAMIC_SECTION("number_of_retrievals_before_connection_refresh = [" << v << ']')
+                {
+                    try {
+                        cp_opts.number_of_retrievals_before_connection_refresh = v;
+                        irods::connection_pool{1, env.rodsHost, env.rodsPort, user, cp_opts};
+                    }
+                    catch (const irods::exception& e) {
+                        constexpr const auto* msg = "Value for option [number_of_retrievals_before_connection_refresh] "
+                                                    "must be greater than zero";
+
+                        CHECK(e.code() == SYS_INVALID_INPUT_PARAM);
+                        CHECK(std::string_view{e.client_display_what()}.find(msg) != std::string_view::npos);
+                    }
+                }
+
+                DYNAMIC_SECTION("number_of_seconds_before_connection_refresh = [" << v << ']')
+                {
+                    try {
+                        cp_opts.number_of_seconds_before_connection_refresh = std::chrono::seconds{v};
+                        irods::connection_pool{1, env.rodsHost, env.rodsPort, user, cp_opts};
+                    }
+                    catch (const irods::exception& e) {
+                        constexpr const auto* msg =
+                            "Value for option [number_of_seconds_before_connection_refresh] must be greater than zero";
+
+                        CHECK(e.code() == SYS_INVALID_INPUT_PARAM);
+                        CHECK(std::string_view{e.client_display_what()}.find(msg) != std::string_view::npos);
+                    }
+                }
+            }
         }
     }
 }
