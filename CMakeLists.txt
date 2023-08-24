@@ -234,13 +234,6 @@ set(
   SPDLOG_FMT_EXTERNAL
   SPDLOG_NO_TLS
 )
-# Manually defined because Boost cannot detect that std::result_of has been removed in C++20.
-# Verified that Boost 1.77 and Boost 1.78 do not handle this yet. Normally, defining
-# BOOST_ASIO_HAS_ macros should be avoided except when absolutely required as a workaround for the
-# latest version of a compiler or platform.
-# See the following for more information:
-#   https://www.boost.org/doc/libs/1_77_0/doc/html/boost_asio/using.html
-list(APPEND IRODS_COMPILE_DEFINITIONS_PRIVATE "BOOST_ASIO_HAS_STD_INVOKE_RESULT")
 
 # Define our component names here so they're defined everywhere
 set(IRODS_PACKAGE_COMPONENT_RUNTIME_NAME "irods-runtime")
