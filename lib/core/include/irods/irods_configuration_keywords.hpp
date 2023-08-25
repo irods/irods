@@ -10,6 +10,7 @@ namespace irods
     extern const char* const KW_CFG_PAM_NO_EXTEND;
     extern const char* const KW_CFG_PAM_PASSWORD_MIN_TIME;
     extern const char* const KW_CFG_PAM_PASSWORD_MAX_TIME;
+    extern const char* const KW_CFG_PAM_PASSWORD_EXTEND_LIFETIME;
 
     extern const char* const KW_CFG_DB_HOST;
     extern const char* const KW_CFG_DB_PORT;
