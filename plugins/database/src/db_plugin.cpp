@@ -11893,6 +11893,20 @@ irods::error db_set_grid_configuration_value_op(
         return ERROR(CATALOG_NOT_CONNECTED, "catalog not connected");
     }
 
+    std::vector<std::string> bindVars{_namespace, _option_name};
+    std::array<char, grid_configuration_size + 1> config_value{};
+    int status = cmlGetStringValueFromSql(
+        "select option_value from R_GRID_CONFIGURATION where namespace = ? and option_name = ?",
+        config_value.data(),
+        config_value.size(),
+        bindVars,
+        &icss);
+
+    if (status < 0) {
+        log_db::info("chlSetGridConfigurationValue cmlGetStringValueFromSql failure {}", status);
+        return ERROR(status, "Set Grid Configuration Value select failure");
+    }
+
     int i = 0;
     cllBindVars[i++] = _option_value;
     cllBindVars[i++] = _namespace;
@@ -11902,8 +11916,8 @@ irods::error db_set_grid_configuration_value_op(
         log_sql::debug("chlSetGridConfigurationValue  SQL 1");
     }
 
-    int status = cmlExecuteNoAnswerSql(
-          "update R_GRID_CONFIGURATION set option_value = ? where namespace = ? and option_name = ?", &icss);
+    status = cmlExecuteNoAnswerSql(
+        "update R_GRID_CONFIGURATION set option_value = ? where namespace = ? and option_name = ?", &icss);
     if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
         _rollback("chlSetGridConfigurationValue");
         log_db::info("chlSetGridConfigurationValue cmlExecuteNoAnswerSql failure {}", status);
