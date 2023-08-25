@@ -9,6 +9,7 @@ namespace irods
     const char* const KW_CFG_PAM_NO_EXTEND{"no_extend"};
     const char* const KW_CFG_PAM_PASSWORD_MIN_TIME{"password_min_time"};
     const char* const KW_CFG_PAM_PASSWORD_MAX_TIME{"password_max_time"};
+    const char* const KW_CFG_PAM_PASSWORD_EXTEND_LIFETIME{"password_extend_lifetime"};
 
     const char* const KW_CFG_DB_HOST{"db_host"};
     const char* const KW_CFG_DB_PORT{"db_port"};

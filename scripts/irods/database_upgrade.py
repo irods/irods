@@ -159,6 +159,30 @@ def run_update(irods_config, cursor):
         else:
             database_connect.execute_sql_statement(cursor, "alter table R_RESC_MAIN add column modify_ts_millis varchar(3) default '000';")
 
+        # Get the pam_password configurations from the server_config and populate the R_GRID_CONFIGURATION table with
+        # the new configuration options. This is required because set_grid_configuration only updates rows, which means
+        # that the rows must already exist in order to be configurable through the API.
+        server_config = lib.open_and_load_json(irods_config.server_config_path)
+        auth_config = server_config.get('plugin_configuration').get('authentication')
+
+        # 4.3.0 uses 'pam_password'; all other versions use 'pam'; empty dict will result in default values.
+        pam_password_config = auth_config.get('pam', auth_config.get('pam_password', {}))
+
+        password_config_dict = {
+            # Removing negative language from the option name results in the meaning being reversed.
+            'password_extend_lifetime': '0' if True == pam_password_config.get('no_extend', False) else '1',
+            'password_max_time': str(pam_password_config.get('password_min_time', 121)),
+            'password_min_time': str(pam_password_config.get('password_max_time', 1209600))
+        }
+
+        scheme_namespaces = ['authentication::pam_password', 'authentication::native']
+        statement_str = "insert into R_GRID_CONFIGURATION (namespace, option_name, option_value) values ('{}','{}','{}');"
+        # pam_password configurations for password lifetime have always been used with native authentication as well.
+        # The configurations are now separately configurable.
+        for scheme in scheme_namespaces:
+            for option in password_config_dict:
+                database_connect.execute_sql_statement(cursor, statement_str.format(scheme, option, password_config_dict[option]))
+
     else:
         raise IrodsError('Upgrade to schema version %d is unsupported.' % (new_schema_version))
 
