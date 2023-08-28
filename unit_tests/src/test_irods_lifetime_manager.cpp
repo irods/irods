@@ -34,7 +34,8 @@ namespace {
             if (str_) {
                 free(str_);
             }
-            str_ = get_pointer_to_struct<char>(std::strlen(_str));
+            // NOLINTNEXTLINE(bugprone-narrowing-conversions, cppcoreguidelines-narrowing-conversions)
+            str_ = get_pointer_to_struct<char>(std::strlen(_str) + 1);
             std::strncpy(str_, _str, std::strlen(_str));
             return str();
         }
