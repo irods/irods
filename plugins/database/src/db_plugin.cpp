@@ -15624,8 +15624,8 @@ auto db_check_auth_credentials_op(irods::plugin_context& _ctx,
 
         nanodbc::statement stmt{db_conn};
         nanodbc::prepare(stmt,
-                         "select u.user_id from r_user_main u "
-                         "inner join r_user_password p on u.user_id = p.user_id "
+                         "select u.user_id from R_USER_MAIN u "
+                         "inner join R_USER_PASSWORD p on u.user_id = p.user_id "
                          "where u.user_name = ? and u.zone_name = ? and p.rcat_password = ?");
 
         stmt.bind(0, _username);
