@@ -450,6 +450,7 @@ def default_prompt(*args, **kwargs):
     l = logging.getLogger(__name__)
     default = kwargs.pop('default', [])
     input_filter = kwargs.pop('input_filter', lambda x: x)
+    previous = kwargs.pop('previous', [])
 
     while True:
         if default:
@@ -465,7 +466,9 @@ def default_prompt(*args, **kwargs):
                     args[0] % tuple(args[1:]), ':\n',
                     '\n'.join(['%d. %s' % (i + 1, default[i]) for i in range(0, len(default))]),
                     '\nPlease select a number or choose 0 to enter a new value'])
-                user_input = default_prompt(message, default=[1], **kwargs)
+
+                user_input = default_prompt(message, default=[previous if previous else 1], **kwargs)
+
                 try:
                     i = int(user_input) - 1
                 except (TypeError, ValueError):

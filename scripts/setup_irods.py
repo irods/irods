@@ -198,7 +198,8 @@ def determine_server_role(irods_config):
     default_catalog_service_role = irods_config.server_config.get('catalog_service_role', 'provider')
     irods_config.server_config['catalog_service_role'] = irods.lib.default_prompt(
         'iRODS server\'s role',
-        default=[default_catalog_service_role] + list(catalog_service_roles - set([default_catalog_service_role])),
+        default=catalog_service_roles,
+        previous=catalog_service_roles.index(default_catalog_service_role) + 1,
         input_filter=irods.lib.set_filter(catalog_service_roles, field='Server role'))
     irods_config.commit(irods_config.server_config, irods_config.server_config_path, clear_cache=False)
 
