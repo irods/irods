@@ -50,16 +50,16 @@ namespace irods::process_stash
         return nullptr;
     } // find
 
-    auto erase(const std::string& _key) -> void
+    auto erase(const std::string& _key) -> bool
     {
         std::lock_guard lock{g_mtx};
-        g_stash.erase(_key);
+        return g_stash.erase(_key);
     } // erase
 
-    auto erase_if(const std::function<bool(const std::string&, const boost::any&)>& _pred) -> void
+    auto erase_if(const std::function<bool(const std::string&, const boost::any&)>& _pred) -> std::size_t
     {
         std::lock_guard lock{g_mtx};
-        std::erase_if(g_stash, [&_pred](const auto& _item) {
+        return std::erase_if(g_stash, [&_pred](const auto& _item) {
             const auto& [k, v] = _item;
             return _pred(k, v);
         });
