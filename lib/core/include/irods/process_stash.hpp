@@ -50,8 +50,10 @@ namespace irods::process_stash
     ///
     /// \param[in] _key The string which maps to the value of interest.
     ///
+    /// \returns A boolean indicating if an element is removed.
+    ///
     /// \since 4.2.12
-    auto erase(const std::string& _key) -> void;
+    auto erase(const std::string& _key) -> bool;
 
     /// Removes all entries satisfying the predicate.
     ///
@@ -70,8 +72,10 @@ namespace irods::process_stash
     /// If \p _pred returns \p true, the entry is removed.
     /// \endparblock
     ///
+    /// \returns The number of elements removed.
+    ///
     /// \since 4.3.1
-    auto erase_if(const std::function<bool(const std::string&, const boost::any&)>& _pred) -> void;
+    auto erase_if(const std::function<bool(const std::string&, const boost::any&)>& _pred) -> std::size_t;
 
     /// Returns all handles in the process stash.
     ///
