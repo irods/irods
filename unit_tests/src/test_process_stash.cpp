@@ -53,14 +53,17 @@ TEST_CASE("process_stash basic operations")
     CHECK(boost::any_cast<pod&>(*p).y == a_pod.y);
 
     // Show that the handles can be used to erase data in the stash.
-    irods::process_stash::erase(h1);
+    CHECK(irods::process_stash::erase(h1));
     CHECK_FALSE(irods::process_stash::find(h1));
 
-    irods::process_stash::erase(h2);
+    CHECK(irods::process_stash::erase(h2));
     CHECK_FALSE(irods::process_stash::find(h2));
 
-    irods::process_stash::erase(h3);
+    CHECK(irods::process_stash::erase(h3));
     CHECK_FALSE(irods::process_stash::find(h3));
+
+    // Try to erase something not there
+    CHECK_FALSE(irods::process_stash::erase(h3));
 
     // Show that the stash is now empty.
     REQUIRE(irods::process_stash::handles().empty());
@@ -91,7 +94,7 @@ TEST_CASE("process_stash::erase_if")
     REQUIRE(handles.size() == 3);
 
     // Show that the handles can be erased using a predicate.
-    irods::process_stash::erase_if([&h1, &h3](auto&& _k, auto&&) { return _k == h1 || _k == h3; });
+    CHECK(irods::process_stash::erase_if([&h1, &h3](auto&& _k, auto&&) { return _k == h1 || _k == h3; }) == 2);
     CHECK_FALSE(irods::process_stash::find(h1));
     CHECK_FALSE(irods::process_stash::find(h3));
 
