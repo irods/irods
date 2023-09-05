@@ -2,7 +2,9 @@
 
 #include "irods/irods_exception.hpp"
 #include "irods/irods_query.hpp"
+#include "irods/query_builder.hpp"
 #include "irods/rodsErrorTable.h"
+#include "irods/rodsGenQuery.h"
 #include "irods/thread_pool.hpp"
 
 #include <algorithm>
@@ -168,24 +170,27 @@ namespace irods
             [] { THROW(AUTHENTICATION_ERROR, "Client login error"); });
 
         if (_options.refresh_connections_when_resource_changes_detected) {
-            std::uint64_t latest_mtime = 0;
-
             // Capture the latest time any resource was modified.
             // This will be used to track when a connection should be refreshed.
             // This helps with long-running agents.
-            for (auto&& row : irods::query{conn_ctxs_[0].conn.get(), "select max(RESC_MODIFY_TIME)"}) {
-                try {
-                    latest_mtime = std::stoull(row[0]);
-                }
-                catch (...) {
-                    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-                    THROW(SYS_LIBRARY_ERROR, "Failed to convert RESC_MODIFY_TIME to an integer");
-                }
+
+            auto q = irods::experimental::query_builder{}
+                         .options(NO_DISTINCT | RETURN_TOTAL_ROW_COUNT) // NOLINT(hicpp-signed-bitwise)
+                         .build(*conn_ctxs_[0].conn,
+                                "select order_desc(RESC_MODIFY_TIME), order_desc(RESC_MODIFY_TIME_MILLIS)");
+
+            const auto resc_count = q.total_row_count();
+            std::string latest_mtime;
+
+            if (resc_count > 0) {
+                const auto row = q.front();
+                latest_mtime = fmt::format("{}.{}", row[0], row[1]);
             }
 
-            // Attach the mtime to each connection context.
-            std::for_each(std::begin(conn_ctxs_), std::end(conn_ctxs_), [latest_mtime](auto&& _ctx) {
+            // Attach the resource information to each connection context.
+            std::for_each(std::begin(conn_ctxs_), std::end(conn_ctxs_), [&latest_mtime, resc_count](auto&& _ctx) {
                 _ctx.latest_resc_mtime = latest_mtime;
+                _ctx.resc_count = resc_count;
             });
         }
 
@@ -301,11 +306,29 @@ namespace irods
 
             // Check if any resources have been modified.
             if (options_.refresh_connections_when_resource_changes_detected) {
-                for (auto&& row : irods::query{ctx.conn.get(), "select max(RESC_MODIFY_TIME)"}) {
+                // Capture whether the resources are in sync (or not). It's important that each
+                // resource property be updated to avoid unnecessary refreshes of the connection.
+                auto in_sync = true;
+
+                auto q =
+                    irods::experimental::query_builder{}
+                        .options(NO_DISTINCT | RETURN_TOTAL_ROW_COUNT) // NOLINT(hicpp-signed-bitwise)
+                        .build(*ctx.conn, "select order_desc(RESC_MODIFY_TIME), order_desc(RESC_MODIFY_TIME_MILLIS)");
+
+                if (const auto v = q.total_row_count(); v != ctx.resc_count) {
+                    in_sync = false;
+                    ctx.resc_count = v;
+                }
+
+                if (ctx.resc_count > 0) {
+                    const auto row = q.front();
+
                     try {
-                        if (const auto mtime = std::stoull(row[0]); mtime > ctx.latest_resc_mtime) {
-                            ctx.latest_resc_mtime = mtime;
-                            return false;
+                        auto latest_mtime = fmt::format("{}.{}", row[0], row[1]);
+
+                        if (latest_mtime != ctx.latest_resc_mtime) {
+                            in_sync = false;
+                            ctx.latest_resc_mtime = std::move(latest_mtime);
                         }
                     }
                     catch (...) {
@@ -313,15 +336,26 @@ namespace irods
                         // go ahead and refresh the connection. At the very least, the agent will
                         // reflect the latest state in the catalog for a small penalty of TCP socket
                         // reconstruction.
-                        return false;
+                        in_sync = false;
                     }
                 }
-            }
 
-            // Check if the connection is still valid.
-            // This query will always succeed unless there's an issue in which case an exception will
-            // be thrown.
-            query{ctx.conn.get(), "select ZONE_NAME where ZONE_TYPE = 'local'"}; // NOLINT(bugprone-unused-raii)
+                // Only return false if it was determined that the connection needed to be synchronized
+                // with the catalog.
+                //
+                // This if-block may seem unnecessary, but it serves an important role in keeping this
+                // implementation future-proof. The existence of this if-block means new options can be
+                // added after this option block without risk of introducing bugs.
+                if (!in_sync) {
+                    return in_sync;
+                }
+            }
+            else {
+                // Check if the connection is still valid.
+                // This query will always succeed unless there's an issue in which case an exception will
+                // be thrown.
+                query{ctx.conn.get(), "select ZONE_NAME where ZONE_TYPE = 'local'"}; // NOLINT(bugprone-unused-raii)
+            }
         }
         catch (const std::exception&) {
             return false;

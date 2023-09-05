@@ -232,7 +232,8 @@ namespace irods
             connection_pointer conn{nullptr, rcDisconnect};
             rErrMsg_t error{};
             std::chrono::steady_clock::time_point creation_time;
-            std::uint64_t latest_resc_mtime{};
+            std::string latest_resc_mtime;
+            std::int32_t resc_count{};
             std::int16_t retrieval_count{};
         }; // struct connection_context
 
