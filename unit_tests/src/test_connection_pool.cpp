@@ -267,7 +267,7 @@ TEST_CASE("connection pool")
     SECTION("connection_pool_options")
     {
         irods::experimental::fully_qualified_username user{env.rodsUserName, env.rodsZone};
-        irods::connection_pool_options cp_opts{};
+        irods::connection_pool_options cp_opts;
 
         SECTION("refresh connection after N retrievals")
         {
@@ -351,7 +351,7 @@ TEST_CASE("connection pool")
             CHECK(static_cast<RcComm*>(conn) != conn_ptr);
         }
 
-        SECTION("refresh connection after resource modification")
+        SECTION("refresh connection after modifying property of existing resource")
         {
             cp_opts.refresh_connections_when_resource_changes_detected = true;
 
@@ -377,6 +377,108 @@ TEST_CASE("connection pool")
             REQUIRE(conn);
             REQUIRE(static_cast<RcComm*>(conn) != conn_ptr);
             REQUIRE_NOTHROW(adm::client::modify_resource(conn, "demoResc", adm::resource_comments_property{""}));
+        }
+
+        SECTION("refresh connection after adding/removing resource")
+        {
+            cp_opts.refresh_connections_when_resource_changes_detected = true;
+
+            irods::connection_pool conn_pool{1, env.rodsHost, env.rodsPort, user, cp_opts};
+
+            namespace adm = irods::experimental::administration;
+
+            RcComm* conn_ptr{};
+
+            const char* resc_name = "unit_test_repl_tracked";
+
+            {
+                auto conn = conn_pool.get_connection();
+                REQUIRE(conn);
+
+                conn_ptr = static_cast<RcComm*>(conn);
+                REQUIRE(conn_ptr);
+
+                adm::resource_registration_info repl_info;
+                repl_info.resource_name = resc_name;
+                repl_info.resource_type = adm::resource_type::replication;
+
+                // This will cause all connections in the pool to be replaced on their next usage.
+                REQUIRE_NOTHROW(adm::client::add_resource(conn, repl_info));
+            }
+
+            {
+                auto conn = conn_pool.get_connection();
+                REQUIRE(conn);
+                REQUIRE(static_cast<RcComm*>(conn) != conn_ptr);
+
+                // Capture the memory address again. We'll need this later.
+                conn_ptr = static_cast<RcComm*>(conn);
+
+                // This will cause all connections in the pool to be replaced on their next usage.
+                REQUIRE_NOTHROW(adm::client::remove_resource(conn, resc_name));
+            }
+
+            // Show the connection in the pool has been updated again.
+            auto conn = conn_pool.get_connection();
+            REQUIRE(conn);
+            REQUIRE(static_cast<RcComm*>(conn) != conn_ptr);
+        }
+
+        SECTION("refresh connection after old resource is removed by external source")
+        {
+            const char* const resc_name_0 = "unit_test_repl_0";
+            const char* const resc_name_1 = "unit_test_repl_1";
+
+            // Create two replication resources.
+            {
+                irods::experimental::client_connection conn;
+
+                irods::experimental::administration::resource_registration_info info;
+                info.resource_name = resc_name_0;
+                info.resource_type = irods::experimental::administration::resource_type::replication;
+
+                REQUIRE_NOTHROW(irods::experimental::administration::client::add_resource(conn, info));
+
+                // Sleep for two seconds to guarantee the mtime for both resources are different.
+                std::this_thread::sleep_for(std::chrono::seconds{2});
+
+                info.resource_name = resc_name_1;
+                REQUIRE_NOTHROW(irods::experimental::administration::client::add_resource(conn, info));
+            }
+
+            cp_opts.refresh_connections_when_resource_changes_detected = true;
+
+            irods::connection_pool conn_pool{1, env.rodsHost, env.rodsPort, user, cp_opts};
+
+            namespace adm = irods::experimental::administration;
+
+            RcComm* conn_ptr{};
+
+            {
+                auto conn = conn_pool.get_connection();
+                REQUIRE(conn);
+
+                // Capture the memory address of the underlying RcComm.
+                conn_ptr = static_cast<RcComm*>(conn);
+                REQUIRE(conn_ptr);
+            }
+
+            {
+                // This connection is used to simulate an external client.
+                irods::experimental::client_connection external_conn;
+
+                // Remove the oldest of the two resources.
+                // This will cause all connections in the pool to be replaced on their next retrieval.
+                REQUIRE_NOTHROW(adm::client::remove_resource(external_conn, resc_name_0));
+            }
+
+            // Show the connection in the pool has been updated again.
+            auto conn = conn_pool.get_connection();
+            REQUIRE(conn);
+            REQUIRE(static_cast<RcComm*>(conn) != conn_ptr);
+
+            // Remove the other resource.
+            REQUIRE_NOTHROW(adm::client::remove_resource(conn, resc_name_1));
         }
 
         SECTION("invalid option values")
