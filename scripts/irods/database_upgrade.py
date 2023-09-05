@@ -152,6 +152,13 @@ def run_update(irods_config, cursor):
                         ['mysql', '='.join(['--defaults-file', f.name]), irods_config.database_config['db_name']],
                         stdin=sql_file)
 
+        # Add a new column that will be responsible for holding the fractional part of the modify_ts
+        # for a resource. The value stored will be in milliseconds.
+        if irods_config.catalog_database_type == 'oracle':
+            database_connect.execute_sql_statement(cursor, "alter table R_RESC_MAIN add (modify_ts_millis varchar(3) default '000');")
+        else:
+            database_connect.execute_sql_statement(cursor, "alter table R_RESC_MAIN add column modify_ts_millis varchar(3) default '000';")
+
     else:
         raise IrodsError('Upgrade to schema version %d is unsupported.' % (new_schema_version))
 
