@@ -30,6 +30,7 @@
 */
 #include "irods/rodsClient.h"
 #include "irods/icatHighLevelRoutines.hpp"
+#include "irods/rodsGenQuery.h"
 
 void
 icatGeneralQuerySetup() {
@@ -225,6 +226,7 @@ icatGeneralQuerySetup() {
     sColumn( COL_R_RESC_STATUS, "R_RESC_MAIN", "resc_status" );
     sColumn( COL_R_CREATE_TIME, "R_RESC_MAIN", "create_ts" );
     sColumn( COL_R_MODIFY_TIME, "R_RESC_MAIN", "modify_ts " );
+    sColumn(COL_R_MODIFY_TIME_MILLIS, "R_RESC_MAIN", "modify_ts_millis");
     sColumn( COL_R_RESC_CHILDREN, "R_RESC_MAIN", "resc_children " );
     sColumn( COL_R_RESC_CONTEXT, "R_RESC_MAIN", "resc_context " );
     sColumn( COL_R_RESC_PARENT,  "R_RESC_MAIN", "resc_parent " );

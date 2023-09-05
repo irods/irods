@@ -60,6 +60,7 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 // clang-format off
@@ -125,6 +126,24 @@ static const auto intermediate_replica_status_str = std::to_string(INTERMEDIATE_
 // =-=-=-=-=-=-=-
 // virtual path management
 #define PATH_SEPARATOR irods::get_virtual_path_separator().c_str()
+
+// Returns the current time as a pair of strings.
+//
+// The first string represents the number of seconds since the epoch. It will be left-padded
+// with zeros and have a minimum width of 11 characters.
+//
+// The second string represents the fractional part of a second in milliseconds. It will be
+// left-padded with zeros and have an exact width of 3 characters.
+auto get_current_time() -> std::pair<std::string, std::string>
+{
+    using std::chrono::duration_cast;
+
+    const auto now = std::chrono::system_clock::now();
+    const auto secs = duration_cast<std::chrono::seconds>(now.time_since_epoch());
+    const auto millis = duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) - secs;
+
+    return {fmt::format("{:011}", secs.count()), fmt::format("{:03}", millis.count())};
+} // get_current_time
 
 /*
    Parse the input fullUserNameIn into an output userName and userZone
@@ -618,35 +637,36 @@ irods::error _childIsValid(
     return SUCCESS();
 }
 
-irods::error _updateChildParent(
-    const std::string& _child_resc_id,
-    const std::string& _parent_resc_id,
-    const std::string& _parent_child_context ) {
-    irods::sql_logger logger( "_updateChildParent", logSQL );
+irods::error update_child_parent(const std::string& _child_resc_id,
+                                 const std::string& _parent_resc_id,
+                                 const std::string& _parent_child_context)
+{
+    irods::sql_logger logger("update_child_parent", logSQL);
+
+    const auto [current_time_secs, current_time_msecs] = get_current_time();
 
     // Update the parent for the child resource
     // have to do this to get around const
-    char myTime[50];
-    getNowStr( myTime );
     cllBindVarCount = 0;
     cllBindVars[cllBindVarCount++] = _parent_resc_id.c_str();
     cllBindVars[cllBindVarCount++] = _parent_child_context.c_str();
-    cllBindVars[cllBindVarCount++] = myTime;
+    cllBindVars[cllBindVarCount++] = current_time_secs.c_str();
+    cllBindVars[cllBindVarCount++] = current_time_msecs.c_str();
     cllBindVars[cllBindVarCount++] = _child_resc_id.c_str();
     logger.log();
 
     int status = cmlExecuteNoAnswerSql(
-                     "update R_RESC_MAIN set resc_parent=?, resc_parent_context=?, modify_ts=? "
-                     "where resc_id=?",
-                     &icss );
+        "update R_RESC_MAIN set resc_parent=?, resc_parent_context=?, modify_ts=?, modify_ts_millis=? "
+        "where resc_id=?",
+        &icss);
     if( status != 0 ) {
-        _rollback( "_updateChildParent" );
+        _rollback("update_child_parent");
         return ERROR( status, "cmlExecuteNoAnswerSql failed" );
     }
 
     return SUCCESS();
 
-} // _updateChildParent
+} // update_child_parent
 
 /**
  * @brief Returns true if the specified resource has associated data objects
@@ -3783,10 +3803,7 @@ irods::error db_add_child_resc_op(
 
     logger.log();
 
-    ret = _updateChildParent(
-              child_resource_id,
-              parent_resource_id,
-              child_context );
+    ret = update_child_parent(child_resource_id, parent_resource_id, child_context);
     if(!ret.ok()) {
         return PASS(ret);
     }
@@ -3841,7 +3858,6 @@ irods::error db_reg_resc_op(
     rodsLong_t seqNum;
     char idNum[MAX_SQL_SIZE];
     int status;
-    char myTime[50];
 
     if ( logSQL != 0 ) {
         log_sql::debug("chlRegResc");
@@ -3927,7 +3943,7 @@ irods::error db_reg_resc_op(
         return PASS(ret);
     }
 
-    getNowStr( myTime );
+    const auto [current_time_secs, current_time_msecs] = get_current_time();
 
     cllBindVars[0] = idNum;
     cllBindVars[1] = resc_input[irods::RESOURCE_NAME].c_str();
@@ -3936,19 +3952,21 @@ irods::error db_reg_resc_op(
     cllBindVars[4] = resc_input[irods::RESOURCE_CLASS].c_str();
     cllBindVars[5] = resc_input[irods::RESOURCE_LOCATION].c_str();
     cllBindVars[6] = resc_input[irods::RESOURCE_PATH].c_str();
-    cllBindVars[7] = myTime;
-    cllBindVars[8] = myTime;
-    cllBindVars[9] = resc_input[irods::RESOURCE_CHILDREN].c_str();
-    cllBindVars[10] = resc_input[irods::RESOURCE_CONTEXT].c_str();
-    cllBindVars[11] = resc_input[irods::RESOURCE_PARENT].c_str();
-    cllBindVarCount = 12;
+    cllBindVars[7] = current_time_secs.c_str();
+    cllBindVars[8] = current_time_secs.c_str();
+    cllBindVars[9] = current_time_msecs.c_str();
+    cllBindVars[10] = resc_input[irods::RESOURCE_CHILDREN].c_str();
+    cllBindVars[11] = resc_input[irods::RESOURCE_CONTEXT].c_str();
+    cllBindVars[12] = resc_input[irods::RESOURCE_PARENT].c_str();
+    cllBindVarCount = 13;
 
     if ( logSQL != 0 ) {
         log_sql::debug("chlRegResc SQL 4");
     }
-    status =  cmlExecuteNoAnswerSql(
-                  "insert into R_RESC_MAIN (resc_id, resc_name, zone_name, resc_type_name, resc_class_name, resc_net, resc_def_path, create_ts, modify_ts, resc_children, resc_context, resc_parent) values (?,?,?,?,?,?,?,?,?,?,?,?)",
-                  &icss );
+    status = cmlExecuteNoAnswerSql("insert into R_RESC_MAIN (resc_id, resc_name, zone_name, resc_type_name, "
+                                   "resc_class_name, resc_net, resc_def_path, create_ts, modify_ts, modify_ts_millis, "
+                                   "resc_children, resc_context, resc_parent) values (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                                   &icss);
 
     if ( status != 0 ) {
         log_db::info("chlRegResc cmlExectuteNoAnswerSql(insert) failure {}", status);
@@ -4036,10 +4054,7 @@ irods::error db_del_child_resc_op(
         return PASS(ret);
     }
 
-    ret = _updateChildParent(
-              child_resource_id,
-              std::string(""),
-              std::string(""));
+    ret = update_child_parent(child_resource_id, std::string(""), std::string(""));
     if(!ret.ok()) {
         return PASS(ret);
     }
@@ -7850,7 +7865,6 @@ irods::error db_mod_resc_op(
 //        icatSessionStruct icss;
 //        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
     int status = 0, OK = 0;
-    char myTime[50];
     char rescId[MAX_NAME_LEN];
     char rescPath[MAX_NAME_LEN] = "";
     char rescPathMsg[MAX_NAME_LEN + 100];
@@ -7908,19 +7922,19 @@ irods::error db_mod_resc_op(
         return ERROR( status, "failed to get resource id" );
     }
 
-    getNowStr( myTime );
+    const auto [current_time_secs, current_time_msecs] = get_current_time();
     OK = 0;
 
     if ( strcmp( _option, "comment" ) == 0 ) {
         cllBindVars[cllBindVarCount++] = _option_value;
-        cllBindVars[cllBindVarCount++] = myTime;
+        cllBindVars[cllBindVarCount++] = current_time_secs.c_str();
+        cllBindVars[cllBindVarCount++] = current_time_msecs.c_str();
         cllBindVars[cllBindVarCount++] = rescId;
         if ( logSQL != 0 ) {
             log_sql::debug("chlModResc SQL 3");
         }
-        status =  cmlExecuteNoAnswerSql(
-                      "update R_RESC_MAIN set r_comment = ?, modify_ts=? where resc_id=?",
-                      &icss );
+        status = cmlExecuteNoAnswerSql(
+            "update R_RESC_MAIN set r_comment=?, modify_ts=?, modify_ts_millis=? where resc_id=?", &icss);
         if ( status != 0 ) {
             log_db::info("chlModResc cmlExecuteNoAnswerSql update failure {}", status);
             _rollback( "chlModResc" );
@@ -7938,14 +7952,14 @@ irods::error db_mod_resc_op(
 
     if ( strcmp( _option, "info" ) == 0 ) {
         cllBindVars[cllBindVarCount++] = _option_value;
-        cllBindVars[cllBindVarCount++] = myTime;
+        cllBindVars[cllBindVarCount++] = current_time_secs.c_str();
+        cllBindVars[cllBindVarCount++] = current_time_msecs.c_str();
         cllBindVars[cllBindVarCount++] = rescId;
         if ( logSQL != 0 ) {
             log_sql::debug("chlModResc SQL 2");
         }
-        status =  cmlExecuteNoAnswerSql(
-                      "update R_RESC_MAIN set resc_info=?, modify_ts=? where resc_id=?",
-                      &icss );
+        status = cmlExecuteNoAnswerSql(
+            "update R_RESC_MAIN set resc_info=?, modify_ts=?, modify_ts_millis=? where resc_id=?", &icss);
         if ( status != 0 ) {
             log_db::info("chlModResc cmlExecuteNoAnswerSql update failure {}", status);
             _rollback( "chlModResc" );
@@ -7966,47 +7980,52 @@ irods::error db_mod_resc_op(
             _option_value++; /* skip over the - */
         }
         cllBindVars[cllBindVarCount++] = _option_value;
-        cllBindVars[cllBindVarCount++] = myTime;
-        cllBindVars[cllBindVarCount++] = myTime;
+        cllBindVars[cllBindVarCount++] = current_time_secs.c_str();
+        cllBindVars[cllBindVarCount++] = current_time_secs.c_str();
+        cllBindVars[cllBindVarCount++] = current_time_msecs.c_str();
         cllBindVars[cllBindVarCount++] = rescId;
         if ( logSQL != 0 ) {
             log_sql::debug("chlModResc SQL 4");
         }
         if ( inType == 0 ) {
-            status =  cmlExecuteNoAnswerSql(
-                          "update R_RESC_MAIN set free_space = ?, free_space_ts = ?, modify_ts=? where resc_id=?",
-                          &icss );
+            status = cmlExecuteNoAnswerSql(
+                "update R_RESC_MAIN set free_space=?, free_space_ts=?, modify_ts=?, modify_ts_millis=? where resc_id=?",
+                &icss);
         }
-        if ( inType == 1 ) {
+        else if (inType == 1) {
 #if ORA_ICAT
             /* For Oracle cast is to integer, for Postgres to bigint,for MySQL no cast*/
-            status =  cmlExecuteNoAnswerSql(
-                          "update R_RESC_MAIN set free_space = cast(free_space as integer) + cast(? as integer), free_space_ts = ?, modify_ts=? where resc_id=?",
-                          &icss );
+            status =
+                cmlExecuteNoAnswerSql("update R_RESC_MAIN set free_space = cast(free_space as integer) + cast(? as "
+                                      "integer), free_space_ts = ?, modify_ts=?, modify_ts_millis=? where resc_id=?",
+                                      &icss);
 #elif MY_ICAT
-            status =  cmlExecuteNoAnswerSql(
-                          "update R_RESC_MAIN set free_space = free_space + ?, free_space_ts = ?, modify_ts=? where resc_id=?",
-                          &icss );
+            status = cmlExecuteNoAnswerSql("update R_RESC_MAIN set free_space = free_space + ?, free_space_ts = ?, "
+                                           "modify_ts=?, modify_ts_millis=? where resc_id=?",
+                                           &icss);
 #else
-            status =  cmlExecuteNoAnswerSql(
-                          "update R_RESC_MAIN set free_space = cast(free_space as bigint) + cast(? as bigint), free_space_ts = ?, modify_ts=? where resc_id=?",
-                          &icss );
+            status =
+                cmlExecuteNoAnswerSql("update R_RESC_MAIN set free_space = cast(free_space as bigint) + cast(? as "
+                                      "bigint), free_space_ts = ?, modify_ts=?, modify_ts_millis=? where resc_id=?",
+                                      &icss);
 #endif
         }
-        if ( inType == 2 ) {
+        else if (inType == 2) {
 #if ORA_ICAT
             /* For Oracle cast is to integer, for Postgres to bigint,for MySQL no cast*/
-            status =  cmlExecuteNoAnswerSql(
-                          "update R_RESC_MAIN set free_space = cast(free_space as integer) - cast(? as integer), free_space_ts = ?, modify_ts=? where resc_id=?",
-                          &icss );
+            status =
+                cmlExecuteNoAnswerSql("update R_RESC_MAIN set free_space = cast(free_space as integer) - cast(? as "
+                                      "integer), free_space_ts = ?, modify_ts=?, modify_ts_millis=? where resc_id=?",
+                                      &icss);
 #elif MY_ICAT
-            status =  cmlExecuteNoAnswerSql(
-                          "update R_RESC_MAIN set free_space = free_space - ?, free_space_ts = ?, modify_ts=? where resc_id=?",
-                          &icss );
+            status = cmlExecuteNoAnswerSql("update R_RESC_MAIN set free_space = free_space - ?, free_space_ts = ?, "
+                                           "modify_ts=?, modify_ts_millis=? where resc_id=?",
+                                           &icss);
 #else
-            status =  cmlExecuteNoAnswerSql(
-                          "update R_RESC_MAIN set free_space = cast(free_space as bigint) - cast(? as bigint), free_space_ts = ?, modify_ts=? where resc_id=?",
-                          &icss );
+            status =
+                cmlExecuteNoAnswerSql("update R_RESC_MAIN set free_space = cast(free_space as bigint) - cast(? as "
+                                      "bigint), free_space_ts = ?, modify_ts=?, modify_ts_millis=? where resc_id=?",
+                                      &icss);
 #endif
         }
         if ( status != 0 ) {
@@ -8024,14 +8043,14 @@ irods::error db_mod_resc_op(
 
         // =-=-=-=-=-=-=-
         cllBindVars[cllBindVarCount++] = _option_value;
-        cllBindVars[cllBindVarCount++] = myTime;
+        cllBindVars[cllBindVarCount++] = current_time_secs.c_str();
+        cllBindVars[cllBindVarCount++] = current_time_msecs.c_str();
         cllBindVars[cllBindVarCount++] = rescId;
         if ( logSQL != 0 ) {
             log_sql::debug("chlModResc SQL 5");
         }
-        status =  cmlExecuteNoAnswerSql(
-                      "update R_RESC_MAIN set resc_net = ?, modify_ts=? where resc_id=?",
-                      &icss );
+        status = cmlExecuteNoAnswerSql(
+            "update R_RESC_MAIN set resc_net=?, modify_ts=?, modify_ts_millis=? where resc_id=?", &icss);
         if ( status != 0 ) {
             log_db::info("chlModResc cmlExecuteNoAnswerSql update failure {}", status);
             _rollback( "chlModResc" );
@@ -8046,14 +8065,14 @@ irods::error db_mod_resc_op(
         }
 
         cllBindVars[cllBindVarCount++] = _option_value;
-        cllBindVars[cllBindVarCount++] = myTime;
+        cllBindVars[cllBindVarCount++] = current_time_secs.c_str();
+        cllBindVars[cllBindVarCount++] = current_time_msecs.c_str();
         cllBindVars[cllBindVarCount++] = rescId;
         if ( logSQL != 0 ) {
             log_sql::debug("chlModResc SQL 7");
         }
-        status =  cmlExecuteNoAnswerSql(
-                      "update R_RESC_MAIN set resc_type_name = ?, modify_ts=? where resc_id=?",
-                      &icss );
+        status = cmlExecuteNoAnswerSql(
+            "update R_RESC_MAIN set resc_type_name = ?, modify_ts=?, modify_ts_millis=? where resc_id=?", &icss);
         if ( status != 0 ) {
             log_db::info("chlModResc cmlExecuteNoAnswerSql update failure {}", status);
             _rollback( "chlModResc" );
@@ -8090,11 +8109,11 @@ irods::error db_mod_resc_op(
         }
 
         cllBindVars[cllBindVarCount++] = _option_value;
-        cllBindVars[cllBindVarCount++] = myTime;
+        cllBindVars[cllBindVarCount++] = current_time_secs.c_str();
+        cllBindVars[cllBindVarCount++] = current_time_msecs.c_str();
         cllBindVars[cllBindVarCount++] = rescId;
-        status =  cmlExecuteNoAnswerSql(
-                      "update R_RESC_MAIN set resc_def_path=?, modify_ts=? where resc_id=?",
-                      &icss );
+        status = cmlExecuteNoAnswerSql(
+            "update R_RESC_MAIN set resc_def_path=?, modify_ts=?, modify_ts_millis=? where resc_id=?", &icss);
         if ( status != 0 ) {
             log_db::info("chlModResc cmlExecuteNoAnswerSql update failure {}", status);
             _rollback( "chlModResc" );
@@ -8108,11 +8127,11 @@ irods::error db_mod_resc_op(
             log_sql::debug("chlModResc SQL 12");
         }
         cllBindVars[cllBindVarCount++] = _option_value;
-        cllBindVars[cllBindVarCount++] = myTime;
+        cllBindVars[cllBindVarCount++] = current_time_secs.c_str();
+        cllBindVars[cllBindVarCount++] = current_time_msecs.c_str();
         cllBindVars[cllBindVarCount++] = rescId;
-        status =  cmlExecuteNoAnswerSql(
-                      "update R_RESC_MAIN set resc_status=?, modify_ts=? where resc_id=?",
-                      &icss );
+        status = cmlExecuteNoAnswerSql(
+            "update R_RESC_MAIN set resc_status=?, modify_ts=?, modify_ts_millis=? where resc_id=?", &icss);
         if ( status != 0 ) {
             log_db::info("chlModResc cmlExecuteNoAnswerSql update failure {}", status);
             _rollback( "chlModResc" );
@@ -8126,12 +8145,12 @@ irods::error db_mod_resc_op(
             log_sql::debug("chlModResc SQL 13");
         }
         cllBindVars[cllBindVarCount++] = _option_value;
-        cllBindVars[cllBindVarCount++] = myTime;
+        cllBindVars[cllBindVarCount++] = current_time_secs.c_str();
+        cllBindVars[cllBindVarCount++] = current_time_msecs.c_str();
         cllBindVars[cllBindVarCount++] = rescId;
         /*    If the new name is not unique, this will return an error */
-        status =  cmlExecuteNoAnswerSql(
-                      "update R_RESC_MAIN set resc_name=?, modify_ts=? where resc_id=?",
-                      &icss );
+        status = cmlExecuteNoAnswerSql(
+            "update R_RESC_MAIN set resc_name=?, modify_ts=?, modify_ts_millis=? where resc_id=?", &icss);
         if ( status != 0 ) {
             log_db::info("chlModResc cmlExecuteNoAnswerSql update failure {}", status);
             _rollback( "chlModResc" );
@@ -8183,11 +8202,11 @@ irods::error db_mod_resc_op(
 
     if ( strcmp( _option, "context" ) == 0 ) {
         cllBindVars[cllBindVarCount++] = _option_value;
-        cllBindVars[cllBindVarCount++] = myTime;
+        cllBindVars[cllBindVarCount++] = current_time_secs.c_str();
+        cllBindVars[cllBindVarCount++] = current_time_msecs.c_str();
         cllBindVars[cllBindVarCount++] = rescId;
-        status =  cmlExecuteNoAnswerSql(
-                      "update R_RESC_MAIN set resc_context=?, modify_ts=? where resc_id=?",
-                      &icss );
+        status = cmlExecuteNoAnswerSql(
+            "update R_RESC_MAIN set resc_context=?, modify_ts=?, modify_ts_millis=? where resc_id=?", &icss);
         if ( status != 0 ) {
             log_db::info("chlModResc cmlExecuteNoAnswerSql update failure for resc context {}", status);
             _rollback( "chlModResc" );
@@ -8215,7 +8234,6 @@ irods::error db_mod_resc_op(
     }
 
     return SUCCESS();
-
 } // db_mod_resc_op
 
 // =-=-=-=-=-=-=-
@@ -8343,6 +8361,7 @@ irods::error db_mod_resc_data_paths_op(
         if ( logSQL != 0 ) {
             log_sql::debug("chlModRescDataPaths SQL 2");
         }
+
         cllBindVars[cllBindVarCount++] = _old_path;
         cllBindVars[cllBindVarCount++] = _new_path;
         cllBindVars[cllBindVarCount++] = rescId;
@@ -8357,6 +8376,7 @@ irods::error db_mod_resc_data_paths_op(
         if ( logSQL != 0 ) {
             log_sql::debug("chlModRescDataPaths SQL 3");
         }
+
         cllBindVars[cllBindVarCount++] = _old_path;
         cllBindVars[cllBindVarCount++] = _new_path;
         cllBindVars[cllBindVarCount++] = rescId;
@@ -8426,7 +8446,6 @@ irods::error db_mod_resc_freespace_op(
 //        icatSessionStruct icss;
 //        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
     int status;
-    char myTime[50];
     char updateValueStr[MAX_NAME_LEN];
 
     if ( logSQL != 0 ) {
@@ -8448,20 +8467,22 @@ irods::error db_mod_resc_freespace_op(
         return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege level" );
     }
 
-    getNowStr( myTime );
-
     snprintf( updateValueStr, MAX_NAME_LEN, "%d", _update_value );
 
+    const auto [current_time_secs, current_time_msecs] = get_current_time();
+
     cllBindVars[cllBindVarCount++] = updateValueStr;
-    cllBindVars[cllBindVarCount++] = myTime;
+    cllBindVars[cllBindVarCount++] = current_time_secs.c_str();
+    cllBindVars[cllBindVarCount++] = current_time_secs.c_str();
+    cllBindVars[cllBindVarCount++] = current_time_msecs.c_str();
     cllBindVars[cllBindVarCount++] = _resc_name;
 
     if ( logSQL != 0 ) {
         log_sql::debug("chlModRescFreeSpace SQL 1 ");
     }
-    status =  cmlExecuteNoAnswerSql(
-                  "update R_RESC_MAIN set free_space = ?, free_space_ts=? where resc_name=?",
-                  &icss );
+    status = cmlExecuteNoAnswerSql(
+        "update R_RESC_MAIN set free_space = ?, free_space_ts=?, modify_ts=?, modify_ts_millis=? where resc_name=?",
+        &icss);
     if ( status != 0 ) {
         log_db::info("chlModRescFreeSpace cmlExecuteNoAnswerSql update failure {}", status);
         _rollback( "chlModRescFreeSpace" );
