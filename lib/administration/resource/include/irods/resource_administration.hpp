@@ -87,21 +87,22 @@ namespace irods::experimental::administration
     {
     public:
         // clang-format off
-        [[nodiscard]] auto id() const noexcept -> const std::string&                       { return id_; }
-        [[nodiscard]] auto name() const noexcept -> const std::string&                     { return name_; }
-        [[nodiscard]] auto type() const noexcept -> const std::string&                     { return type_; }
-        [[nodiscard]] auto zone_name() const noexcept -> const std::string&                { return zone_name_; }
-        [[nodiscard]] auto host_name() const noexcept -> const std::string&                { return host_name_; }
-        [[nodiscard]] auto vault_path() const noexcept -> const std::string&               { return vault_path_; }
-        [[nodiscard]] auto status() const noexcept -> resource_status                      { return status_; }
-        [[nodiscard]] auto context_string() const noexcept -> const std::string&           { return context_string_; }
-        [[nodiscard]] auto comments() const noexcept -> const std::string&                 { return comments_; }
-        [[nodiscard]] auto information() const noexcept -> const std::string&              { return info_; }
-        [[nodiscard]] auto free_space() const noexcept -> const std::string&               { return free_space_; }
-        [[nodiscard]] auto free_space_last_modified() const noexcept -> resource_time_type { return free_space_time_; }
-        [[nodiscard]] auto parent_id() const noexcept -> const std::string&                { return parent_id_; }
-        [[nodiscard]] auto created() const noexcept -> resource_time_type                  { return ctime_; }
-        [[nodiscard]] auto last_modified() const noexcept -> resource_time_type            { return mtime_; }
+        [[nodiscard]] auto id() const noexcept -> const std::string&                          { return id_; }
+        [[nodiscard]] auto name() const noexcept -> const std::string&                        { return name_; }
+        [[nodiscard]] auto type() const noexcept -> const std::string&                        { return type_; }
+        [[nodiscard]] auto zone_name() const noexcept -> const std::string&                   { return zone_name_; }
+        [[nodiscard]] auto host_name() const noexcept -> const std::string&                   { return host_name_; }
+        [[nodiscard]] auto vault_path() const noexcept -> const std::string&                  { return vault_path_; }
+        [[nodiscard]] auto status() const noexcept -> resource_status                         { return status_; }
+        [[nodiscard]] auto context_string() const noexcept -> const std::string&              { return context_string_; }
+        [[nodiscard]] auto comments() const noexcept -> const std::string&                    { return comments_; }
+        [[nodiscard]] auto information() const noexcept -> const std::string&                 { return info_; }
+        [[nodiscard]] auto free_space() const noexcept -> const std::string&                  { return free_space_; }
+        [[nodiscard]] auto free_space_last_modified() const noexcept -> resource_time_type    { return free_space_time_; }
+        [[nodiscard]] auto parent_id() const noexcept -> const std::string&                   { return parent_id_; }
+        [[nodiscard]] auto created() const noexcept -> resource_time_type                     { return ctime_; }
+        [[nodiscard]] auto last_modified() const noexcept -> resource_time_type               { return mtime_; }
+        [[nodiscard]] auto last_modified_millis() const noexcept -> std::chrono::milliseconds { return mtime_millis_; }
 
         friend auto NAMESPACE_IMPL::resource_info(RxComm&, const resource_name_type)
             -> std::optional<class resource_info>;
@@ -125,6 +126,7 @@ namespace irods::experimental::administration
         std::string parent_id_;
         resource_time_type ctime_;
         resource_time_type mtime_;
+        std::chrono::milliseconds mtime_millis_;
     }; // class resource_info
 
     /// A type that holds the necessary information needed to add a new resource to the system.
