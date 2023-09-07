@@ -7,9 +7,15 @@
 
 #include <unistd.h>
 
+#include <functional>
 #include <string_view>
 #include <tuple>
 
+auto make_deferred_mtime_changed_assertion(irods::experimental::client_connection& _conn,
+                                           const std::string_view _resc_name)
+    -> irods::at_scope_exit<std::function<void()>>;
+
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 TEST_CASE("resource administration")
 {
     namespace adm = irods::experimental::administration;
@@ -42,6 +48,8 @@ TEST_CASE("resource administration")
     SECTION("add / remove child resource")
     {
         {
+            auto deferred_mtime_changed_assertion = make_deferred_mtime_changed_assertion(conn, ufs_info.resource_name);
+
             // Because the resource manager caches the resource state at agent startup,
             // we must spawn a new agent so that the resource manager sees the changes.
             irods::experimental::client_connection conn;
@@ -58,6 +66,8 @@ TEST_CASE("resource administration")
         }
 
         {
+            auto deferred_mtime_changed_assertion = make_deferred_mtime_changed_assertion(conn, ufs_info.resource_name);
+
             irods::experimental::client_connection conn;
             REQUIRE_NOTHROW(adm::client::remove_child_resource(conn, repl_info.resource_name, ufs_info.resource_name));
 
@@ -76,6 +86,8 @@ TEST_CASE("resource administration")
 
     SECTION("modify resource type")
     {
+        auto deferred_mtime_changed_assertion = make_deferred_mtime_changed_assertion(conn, ufs_info.resource_name);
+
         auto info = adm::client::resource_info(conn, ufs_info.resource_name);
         REQUIRE(info);
         REQUIRE(info->type() == ufs_info.resource_type);
@@ -89,6 +101,8 @@ TEST_CASE("resource administration")
 
     SECTION("modify resource host name")
     {
+        auto deferred_mtime_changed_assertion = make_deferred_mtime_changed_assertion(conn, ufs_info.resource_name);
+
         auto info = adm::client::resource_info(conn, ufs_info.resource_name);
         REQUIRE(info);
         REQUIRE(info->host_name() == ufs_info.host_name);
@@ -102,6 +116,8 @@ TEST_CASE("resource administration")
 
     SECTION("modify resource vault path")
     {
+        auto deferred_mtime_changed_assertion = make_deferred_mtime_changed_assertion(conn, ufs_info.resource_name);
+
         auto info = adm::client::resource_info(conn, ufs_info.resource_name);
         REQUIRE(info);
         REQUIRE(info->vault_path() == ufs_info.vault_path);
@@ -115,6 +131,8 @@ TEST_CASE("resource administration")
 
     SECTION("modify resource status")
     {
+        auto deferred_mtime_changed_assertion = make_deferred_mtime_changed_assertion(conn, ufs_info.resource_name);
+
         auto info = adm::client::resource_info(conn, ufs_info.resource_name);
         REQUIRE(info);
         REQUIRE(info->status() == adm::resource_status::unknown);
@@ -128,6 +146,8 @@ TEST_CASE("resource administration")
 
     SECTION("modify resource comments")
     {
+        auto deferred_mtime_changed_assertion = make_deferred_mtime_changed_assertion(conn, ufs_info.resource_name);
+
         auto info = adm::client::resource_info(conn, ufs_info.resource_name);
         REQUIRE(info);
         REQUIRE(info->comments().empty());
@@ -141,6 +161,8 @@ TEST_CASE("resource administration")
 
     SECTION("modify resource information")
     {
+        auto deferred_mtime_changed_assertion = make_deferred_mtime_changed_assertion(conn, ufs_info.resource_name);
+
         auto info = adm::client::resource_info(conn, ufs_info.resource_name);
         REQUIRE(info);
         REQUIRE(info->information().empty());
@@ -154,6 +176,8 @@ TEST_CASE("resource administration")
 
     SECTION("modify resource free space")
     {
+        auto deferred_mtime_changed_assertion = make_deferred_mtime_changed_assertion(conn, ufs_info.resource_name);
+
         auto info = adm::client::resource_info(conn, ufs_info.resource_name);
         REQUIRE(info);
         REQUIRE(info->free_space().empty());
@@ -188,6 +212,8 @@ TEST_CASE("resource administration")
 
     SECTION("modify resource context string")
     {
+        auto deferred_mtime_changed_assertion = make_deferred_mtime_changed_assertion(conn, ufs_info.resource_name);
+
         auto info = adm::client::resource_info(conn, ufs_info.resource_name);
         REQUIRE(info);
         REQUIRE(info->context_string().empty());
@@ -212,3 +238,25 @@ TEST_CASE("resource administration")
     }
 }
 
+auto make_deferred_mtime_changed_assertion(irods::experimental::client_connection& _conn,
+                                           const std::string_view _resc_name)
+    -> irods::at_scope_exit<std::function<void()>>
+{
+    namespace adm = irods::experimental::administration;
+
+    auto old_info = adm::client::resource_info(_conn, _resc_name);
+    REQUIRE(old_info);
+
+    auto* conn_ptr = static_cast<RcComm*>(_conn);
+
+    return irods::at_scope_exit{std::function{[conn_ptr, _resc_name, old_info = std::move(old_info)] {
+        auto new_info = adm::client::resource_info(*conn_ptr, _resc_name);
+        REQUIRE(new_info);
+
+        const auto mtime_is_greater = (new_info->last_modified() > old_info->last_modified());
+        const auto mtimes_are_equal = (new_info->last_modified() == old_info->last_modified());
+        const auto mtime_millis_are_equal = (new_info->last_modified_millis() == old_info->last_modified_millis());
+
+        REQUIRE((mtime_is_greater || (mtimes_are_equal && !mtime_millis_are_equal)));
+    }}};
+} // make_deferred_mtime_changed_assertion
