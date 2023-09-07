@@ -230,7 +230,6 @@ namespace irods
             std::atomic<bool> in_use{};
             bool refresh{};
             connection_pointer conn{nullptr, rcDisconnect};
-            rErrMsg_t error{};
             std::chrono::steady_clock::time_point creation_time;
             std::string latest_resc_mtime;
             std::int32_t resc_count{};
