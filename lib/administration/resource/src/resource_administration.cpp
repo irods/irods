@@ -108,14 +108,13 @@ namespace irods::experimental::administration::NAMESPACE_IMPL
     auto resource_info(RxComm& _comm, const resource_name_type _name) -> std::optional<class resource_info>
     {
         try {
-            const auto gql = fmt::format(
-                "select RESC_ID, RESC_TYPE_NAME, RESC_ZONE_NAME, "
-                "RESC_LOC, RESC_VAULT_PATH, RESC_STATUS, "
-                "RESC_CONTEXT, RESC_COMMENT, RESC_INFO, "
-                "RESC_FREE_SPACE, RESC_FREE_SPACE_TIME, "
-                "RESC_PARENT, RESC_CREATE_TIME, RESC_MODIFY_TIME "
-                "where RESC_NAME = '{}'",
-                _name);
+            const auto gql = fmt::format("select RESC_ID, RESC_TYPE_NAME, RESC_ZONE_NAME, "
+                                         "RESC_LOC, RESC_VAULT_PATH, RESC_STATUS, "
+                                         "RESC_CONTEXT, RESC_COMMENT, RESC_INFO, "
+                                         "RESC_FREE_SPACE, RESC_FREE_SPACE_TIME, "
+                                         "RESC_PARENT, RESC_CREATE_TIME, RESC_MODIFY_TIME, RESC_MODIFY_TIME_MILLIS "
+                                         "where RESC_NAME = '{}'",
+                                         _name);
 
             for (auto&& row : query_builder{}.build(_comm, gql)) {
                 class resource_info info;
@@ -135,6 +134,7 @@ namespace irods::experimental::administration::NAMESPACE_IMPL
                 info.parent_id_ = row[11];
                 info.ctime_ = resource_time_type{std::chrono::seconds{std::stoull(row[12])}};
                 info.mtime_ = resource_time_type{std::chrono::seconds{std::stoull(row[13])}};
+                info.mtime_millis_ = std::chrono::milliseconds{std::stoull(row[14])};
 
                 if (!row[10].empty()) {
                     info.free_space_time_ = resource_time_type{std::chrono::seconds{std::stoull(row[10])}};
