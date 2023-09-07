@@ -248,6 +248,8 @@ namespace irods
             ctx.retrieval_count = 0;
         }
 
+        rErrMsg_t error{};
+
         if (proxy_username_.has_value()) {
             ctx.conn.reset(_rcConnect(host_.c_str(),
                                       port_,
@@ -255,13 +257,13 @@ namespace irods
                                       proxy_username_->zone().c_str(),
                                       username_.name().c_str(),
                                       username_.zone().c_str(),
-                                      &ctx.error,
+                                      &error,
                                       1,
                                       NO_RECONN));
         }
         else {
-            ctx.conn.reset(rcConnect(
-                host_.c_str(), port_, username_.name().c_str(), username_.zone().c_str(), NO_RECONN, &ctx.error));
+            ctx.conn.reset(
+                rcConnect(host_.c_str(), port_, username_.name().c_str(), username_.zone().c_str(), NO_RECONN, &error));
         }
 
         if (!ctx.conn) {
@@ -367,7 +369,6 @@ namespace irods
     RcComm* connection_pool::refresh_connection(int _index)
     {
         auto& ctx = conn_ctxs_[_index];
-        ctx.error = {};
 
         if (ctx.refresh) {
             ctx.refresh = false;
