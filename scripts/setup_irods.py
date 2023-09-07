@@ -194,13 +194,20 @@ def check_hostname():
         raise IrodsError('The hostname (%s) must resolve to the local machine.' % (hostname))
 
 def determine_server_role(irods_config):
-    catalog_service_roles = set(['provider', 'consumer'])
+    # The list of catalog service roles supported by the server.
+    catalog_service_roles = ['provider', 'consumer']
+
+    # Get the service role previously configured if available. Otherwise, set to "provider".
     default_catalog_service_role = irods_config.server_config.get('catalog_service_role', 'provider')
+
+    # Get the new value from user via default_prompt
     irods_config.server_config['catalog_service_role'] = irods.lib.default_prompt(
         'iRODS server\'s role',
         default=catalog_service_roles,
         previous=catalog_service_roles.index(default_catalog_service_role) + 1,
         input_filter=irods.lib.set_filter(catalog_service_roles, field='Server role'))
+
+    # Save
     irods_config.commit(irods_config.server_config, irods_config.server_config_path, clear_cache=False)
 
 def determine_local_storage(irods_config):
