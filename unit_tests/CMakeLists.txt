@@ -49,6 +49,7 @@ set(
   generate_random_alphanumeric_string
   get_delay_rule_info
   get_file_descriptor_info
+  get_resource_info_for_operation
   hierarchy_parser
   host_list_context_string
   hostname_cache
