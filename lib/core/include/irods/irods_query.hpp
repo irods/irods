@@ -137,6 +137,11 @@ namespace irods
 
             virtual void reset_for_page_boundary() = 0;
 
+            virtual int total_row_count() noexcept
+            {
+                return 0;
+            } // total_row_count
+
         protected:
             connection_type* comm_;
             const uint32_t query_limit_;
@@ -207,6 +212,15 @@ namespace irods
                            &gen_input_,
                            &this->gen_output_);
             } // fetch_page
+
+            int total_row_count() noexcept override
+            {
+                if (!this->gen_output_) {
+                    return 0;
+                }
+
+                return this->gen_output_->totalRowCount;
+            } // total_row_count
 
         private:
             genQueryInp_t gen_input_;
@@ -492,6 +506,11 @@ namespace irods
         size_t empty() { return 0 == query_impl_->size(); }
 
         size_t empty() const { return 0 == query_impl_->size(); }
+
+        int total_row_count()
+        {
+            return query_impl_->total_row_count();
+        }
 
     private:
         std::unique_ptr<iterator>        iter_;
