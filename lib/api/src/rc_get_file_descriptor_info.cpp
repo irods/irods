@@ -23,9 +23,9 @@ auto rc_get_file_descriptor_info(RcComm* _comm, const char* _json_input, char** 
                                   &input_buf, nullptr,
                                   reinterpret_cast<void**>(&output_buf), nullptr);
 
-    if (ec == 0) {
+    if (output_buf) {
         *_json_output = static_cast<char*>(output_buf->buf);
-        std::free(output_buf);
+        std::free(output_buf); // NOLINT(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
     }
 
     return ec;
