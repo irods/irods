@@ -18,6 +18,7 @@
 #include "irods/modDataObjMeta.h"
 #include "irods/objInfo.h"
 #include "irods/rcMisc.h"
+#include "irods/register_physical_path.h"
 #include "irods/replica.hpp"
 #include "irods/replica_proxy.hpp"
 #include "irods/resource_administration.hpp"
@@ -26,6 +27,7 @@
 #include "irods/rodsErrorTable.h"
 #include "irods/ticketAdmin.h"
 #include "irods/ticket_administration.hpp"
+#include "irods/touch.h"
 #include "irods/transport/default_transport.hpp"
 
 #include <boost/filesystem.hpp>
@@ -1526,5 +1528,26 @@ TEST_CASE("#7250: updates to ticket stats do not hang")
             CHECK(row[0] == "2");
             CHECK(row[1] == std::to_string(write_bbuf.len));
         }
+    }
+}
+
+TEST_CASE("#7338")
+{
+    load_client_api_plugins();
+
+    irods::experimental::client_connection conn{irods::experimental::defer_authentication};
+
+    SECTION("rc_register_physical_path")
+    {
+        DataObjInp input{};
+        char* json_error_string{};
+
+        CHECK(rc_register_physical_path(static_cast<RcComm*>(conn), &input, &json_error_string) == SYS_NO_API_PRIV);
+        CHECK(json_error_string == nullptr);
+    }
+
+    SECTION("rc_touch")
+    {
+        CHECK(rc_touch(static_cast<RcComm*>(conn), "") == SYS_NO_API_PRIV);
     }
 }

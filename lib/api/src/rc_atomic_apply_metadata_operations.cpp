@@ -23,8 +23,10 @@ auto rc_atomic_apply_metadata_operations(RcComm* _comm, const char* _json_input,
                                   &input_buf, nullptr,
                                   reinterpret_cast<void**>(&output_buf), nullptr);
 
-    *_json_output = static_cast<char*>(output_buf->buf);
-    std::free(output_buf);
+    if (output_buf) {
+        *_json_output = static_cast<char*>(output_buf->buf);
+        std::free(output_buf); // NOLINT(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
+    }
 
     return ec;
 }
