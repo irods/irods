@@ -1,15 +1,17 @@
 #include <catch2/catch.hpp>
 
+#include "irods/client_connection.hpp"
+#include "irods/connection_pool.hpp"
+#include "irods/data_object_modify_info.h"
+#include "irods/dstream.hpp"
+#include "irods/filesystem.hpp"
 #include "irods/getRodsEnv.h"
+#include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_client_api_table.hpp"
 #include "irods/irods_pack_table.hpp"
-#include "irods/connection_pool.hpp"
-#include "irods/filesystem.hpp"
-#include "irods/dstream.hpp"
-#include "irods/transport/default_transport.hpp"
+#include "irods/rodsClient.h"
 #include "irods/rodsErrorTable.h"
-#include "irods/irods_at_scope_exit.hpp"
-#include "irods/data_object_modify_info.h"
+#include "irods/transport/default_transport.hpp"
 
 TEST_CASE("data_object_modify_info")
 {
@@ -85,3 +87,12 @@ TEST_CASE("data_object_modify_info")
     }
 }
 
+TEST_CASE("#7338")
+{
+    load_client_api_plugins();
+
+    irods::experimental::client_connection conn{irods::experimental::defer_authentication};
+
+    modDataObjMeta_t input{};
+    CHECK(rc_data_object_modify_info(static_cast<RcComm*>(conn), &input) == SYS_NO_API_PRIV);
+}

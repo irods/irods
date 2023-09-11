@@ -1,12 +1,13 @@
 #include <catch2/catch.hpp>
 
-#include "irods/rodsClient.h"
+#include "irods/client_connection.hpp"
 #include "irods/connection_pool.hpp"
 #include "irods/dstream.hpp"
-#include "irods/transport/default_transport.hpp"
 #include "irods/filesystem.hpp"
 #include "irods/get_file_descriptor_info.h"
 #include "irods/irods_at_scope_exit.hpp"
+#include "irods/rodsClient.h"
+#include "irods/transport/default_transport.hpp"
 
 #include <nlohmann/json.hpp>
 
@@ -67,3 +68,14 @@ TEST_CASE("get_file_descriptor_info")
     REQUIRE(info.count("data_size"));
 }
 
+TEST_CASE("#7338")
+{
+    load_client_api_plugins();
+
+    irods::experimental::client_connection conn{irods::experimental::defer_authentication};
+
+    char* json_error_string{};
+
+    CHECK(rc_get_file_descriptor_info(static_cast<RcComm*>(conn), "", &json_error_string) == SYS_NO_API_PRIV);
+    CHECK(json_error_string == nullptr);
+}

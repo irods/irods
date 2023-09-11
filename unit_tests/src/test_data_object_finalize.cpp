@@ -269,3 +269,15 @@ TEST_CASE("invalid inputs", "[invalid]")
         CHECK(!output.at("error_message").get<std::string>().empty());
     }
 }
+
+TEST_CASE("#7338")
+{
+    load_client_api_plugins();
+
+    irods::experimental::client_connection conn{irods::experimental::defer_authentication};
+
+    char* json_error_string{};
+
+    CHECK(rc_data_object_finalize(static_cast<RcComm*>(conn), "", &json_error_string) == SYS_NO_API_PRIV);
+    CHECK(json_error_string == nullptr);
+}

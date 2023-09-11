@@ -19,9 +19,9 @@ auto rc_replica_open(RcComm* _comm, DataObjInp* _input, char** _json_output) -> 
                                   _input, nullptr,
                                   reinterpret_cast<void**>(&output), nullptr);
 
-    if (ec >= 3) {
+    if (output) {
         *_json_output = static_cast<char*>(output->buf);
-        std::free(output);
+        std::free(output); // NOLINT(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
     }
 
     return ec;

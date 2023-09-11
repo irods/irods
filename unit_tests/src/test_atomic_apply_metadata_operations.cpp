@@ -356,6 +356,18 @@ TEST_CASE("atomic_apply_metadata_operations")
     }
 }
 
+TEST_CASE("#7338")
+{
+    load_client_api_plugins();
+
+    irods::experimental::client_connection conn{irods::experimental::defer_authentication};
+
+    char* json_error_string{};
+
+    CHECK(rc_atomic_apply_metadata_operations(static_cast<RcComm*>(conn), "", &json_error_string) == SYS_NO_API_PRIV);
+    CHECK(json_error_string == nullptr);
+}
+
 auto contains_error_information(const char* _json_string) -> bool
 {
     try {

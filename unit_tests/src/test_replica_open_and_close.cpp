@@ -1,6 +1,7 @@
 #include <catch2/catch.hpp>
 
 #include "irods/rodsClient.h"
+#include "irods/client_connection.hpp"
 #include "irods/connection_pool.hpp"
 #include "irods/filesystem.hpp"
 #include "irods/replica_open.h"
@@ -191,3 +192,17 @@ TEST_CASE("replica_open and replica_close")
     }
 }
 
+TEST_CASE("#7338")
+{
+    load_client_api_plugins();
+
+    irods::experimental::client_connection conn{irods::experimental::defer_authentication};
+
+    DataObjInp input{};
+    char* json_output{};
+
+    CHECK(rc_replica_open(static_cast<RcComm*>(conn), &input, &json_output) == SYS_NO_API_PRIV);
+    CHECK(json_output == nullptr);
+
+    CHECK(rc_replica_close(static_cast<RcComm*>(conn), "") == SYS_NO_API_PRIV);
+}
