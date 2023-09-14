@@ -245,6 +245,7 @@ NEW_ERROR(DOES_NOT_EXIST,                              -176000)
 NEW_ERROR(TYPE_NOT_SUPPORTED,                          -177000)
 NEW_ERROR(AUTHENTICATION_ERROR,                        -178000)
 NEW_ERROR(SOCKET_ERROR,                                -179000)
+NEW_ERROR(CONFIGURATION_ERROR,                         -180000)
 
 /** @} */
 
