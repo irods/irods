@@ -1,43 +1,43 @@
-#include "irods/rodsDef.h"
 #include "irods/authenticate.h"
-#include "irods/rodsQuota.h"
-#include "irods/msParam.h"
-#include "irods/rcConnect.h"
-#include "irods/icatStructs.hpp"
-#include "irods/icatHighLevelRoutines.hpp"
-#include "irods/private/mid_level.hpp"
-#include "irods/private/low_level.hpp"
-#include "irods/irods_database_plugin.hpp"
-#include "irods/irods_database_constants.hpp"
-#include "irods/irods_postgres_object.hpp"
-#include "irods/irods_stacktrace.hpp"
-#include "irods/private/irods_catalog_properties.hpp"
-#include "irods/private/irods_sql_logger.hpp"
-#include "irods/irods_hierarchy_parser.hpp"
-#include "irods/irods_children_parser.hpp"
-#include "irods/irods_auth_object.hpp"
-#include "irods/irods_pam_auth_object.hpp"
-#include "irods/irods_auth_factory.hpp"
-#include "irods/irods_auth_plugin.hpp"
-#include "irods/irods_auth_manager.hpp"
-#include "irods/irods_auth_constants.hpp"
-#include "irods/irods_server_properties.hpp"
-#include "irods/irods_resource_manager.hpp"
-#include "irods/irods_virtual_path.hpp"
-#include "irods/irods_rs_comm_query.hpp"
-#include "irods/modAccessControl.h"
-#include "irods/checksum.h"
-#include "irods/key_value_proxy.hpp"
-#include "irods/user_validation_utilities.hpp"
-#include "irods/rods.h"
-#include "irods/rcMisc.h"
-#include "irods/miscServerFunct.hpp"
-#include "irods/rodsErrorTable.h"
-#include "irods/irods_lexical_cast.hpp"
-#include "irods/irods_logger.hpp"
 #include "irods/catalog.hpp"
 #include "irods/catalog_utilities.hpp"
-#include "irods/plugins/auth/pam_password.hpp"
+#include "irods/checksum.h"
+#include "irods/icatHighLevelRoutines.hpp"
+#include "irods/icatStructs.hpp"
+#include "irods/irods_auth_constants.hpp"
+#include "irods/irods_auth_factory.hpp"
+#include "irods/irods_auth_manager.hpp"
+#include "irods/irods_auth_object.hpp"
+#include "irods/irods_auth_plugin.hpp"
+#include "irods/irods_children_parser.hpp"
+#include "irods/irods_database_constants.hpp"
+#include "irods/irods_database_plugin.hpp"
+#include "irods/irods_hierarchy_parser.hpp"
+#include "irods/irods_lexical_cast.hpp"
+#include "irods/irods_logger.hpp"
+#include "irods/irods_pam_auth_object.hpp"
+#include "irods/irods_postgres_object.hpp"
+#include "irods/irods_random.hpp"
+#include "irods/irods_resource_manager.hpp"
+#include "irods/irods_rs_comm_query.hpp"
+#include "irods/irods_server_properties.hpp"
+#include "irods/irods_stacktrace.hpp"
+#include "irods/irods_virtual_path.hpp"
+#include "irods/key_value_proxy.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/modAccessControl.h"
+#include "irods/msParam.h"
+#include "irods/private/irods_catalog_properties.hpp"
+#include "irods/private/irods_sql_logger.hpp"
+#include "irods/private/low_level.hpp"
+#include "irods/private/mid_level.hpp"
+#include "irods/rcConnect.h"
+#include "irods/rcMisc.h"
+#include "irods/rods.h"
+#include "irods/rodsDef.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/rodsQuota.h"
+#include "irods/user_validation_utilities.hpp"
 
 #include <fmt/chrono.h>
 #include <fmt/format.h>
@@ -49,6 +49,7 @@
 #include <boost/regex.hpp>
 
 #include <algorithm>
+#include <cctype>
 #include <charconv>
 #include <chrono>
 #include <cstring>
@@ -7165,13 +7166,13 @@ auto db_update_pam_password_op(irods::plugin_context& _ctx,
     }
 
     // Plus 1 for null terminator.
-    std::array<char, MAX_PASSWORD_LEN + 1> random_password{};
-    if (random_password.size() > _password_buffer_size) {
+    std::array<char, MAX_PASSWORD_LEN + 1> password_in_database_buffer{};
+    if (password_in_database_buffer.size() > _password_buffer_size) {
         return ERROR(
             SYS_INVALID_INPUT_PARAM,
             fmt::format("{}: Buffer not large enough to hold password. Requires [{}] bytes, received [{}] bytes.",
                         __func__,
-                        random_password.size(),
+                        password_in_database_buffer.size(),
                         _password_buffer_size));
     }
 
@@ -7273,7 +7274,7 @@ auto db_update_pam_password_op(irods::plugin_context& _ctx,
         log_sql::debug("chlUpdateIrodsPamPassword SQL 3");
     }
 
-    cVal[0] = random_password.data();
+    cVal[0] = password_in_database_buffer.data();
     iVal[0] = MAX_PASSWORD_LEN;
     cVal[1] = passwordModifyTime;
     iVal[1] = sizeof( passwordModifyTime );
@@ -7300,7 +7301,7 @@ auto db_update_pam_password_op(irods::plugin_context& _ctx,
             cllBindVars[cllBindVarCount++] = expTime;
             cllBindVars[cllBindVarCount++] = selUserId;
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
-            cllBindVars[cllBindVarCount++] = random_password.data();
+            cllBindVars[cllBindVarCount++] = password_in_database_buffer.data();
             status =  cmlExecuteNoAnswerSql( "update R_USER_PASSWORD set modify_ts=?, pass_expiry_ts=? where user_id = ? and rcat_password = ?",
                                              &icss );
             if ( status ) {
@@ -7314,37 +7315,41 @@ auto db_update_pam_password_op(irods::plugin_context& _ctx,
             }
         }
 
-        // random_password is the randomly generated password (see while loop below) in a scrambled form.
-        icatDescramble(random_password.data());
+        // password_in_database_buffer holds the randomly generated password in a scrambled form. It needs to be
+        // descrambled before returning to the caller.
+        icatDescramble(password_in_database_buffer.data());
 
         // The descrambled password at time of generation is 50 characters or less (see below).
-        std::strncpy(*_password_buffer, random_password.data(), _password_buffer_size);
+        std::strncpy(*_password_buffer, password_in_database_buffer.data(), _password_buffer_size);
 
         return SUCCESS();
     }
 
-    // +1 for null terminator
-    std::array<char, MAX_PASSWORD_LEN + 1> scrambled_random_password{};
-
-    constexpr auto random_bytes_count = 64 + 1; // +1 for null terminator
-    std::array<char, random_bytes_count> random_bytes_buffer{};
-    get64RandomBytes(random_bytes_buffer.data());
-
-    // Minus 1 for null terminator.
-    for (std::size_t i = 0; i < random_password.size() - 1; i++) {
-        constexpr auto bitmask = 0x7f;
-        // NOLINTNEXTLINE(hicpp-signed-bitwise,bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
-        char c = random_bytes_buffer.at(i) & bitmask;
-        if (c < '0') {
-            c += '0';
-        }
-        if ((c > 'a' && c < 'z') || (c > 'A' && c < 'Z') || (c > '0' && c < '9')) {
-            random_password.at(i) = c;
-        }
+    // See db_mod_user_op operation "password" for explanation about password lengths. This is apparently the enforced
+    // longest password length for native authentication. The random password is used with native authentication and so
+    // it cannot exceed this size. Also, make sure the output buffer can hold the randomly generated password.
+    constexpr auto random_password_len = MAX_PASSWORD_LEN - 8;
+    if (random_password_len + 1 > _password_buffer_size) {
+        return ERROR(
+            SYS_INVALID_INPUT_PARAM,
+            fmt::format("{}: Buffer not large enough to hold password. Requires [{}] bytes, received [{}] bytes.",
+                        __func__,
+                        random_password_len + 1,
+                        _password_buffer_size));
     }
-    random_password.back() = '\0';
 
-    std::strncpy(scrambled_random_password.data(), random_password.data(), MAX_PASSWORD_LEN);
+    // The length of the randomly generated password must fit into the buffer for the random password in scrambled form.
+    std::array<char, MAX_PASSWORD_LEN + 1> scrambled_random_password{}; // +1 for null terminator
+    static_assert(random_password_len < scrambled_random_password.size());
+
+    // Historically, the randomly generated password had been a string no longer than MAX_PASSWORD_LEN with characters
+    // in the set [1-8B-Yb-y]. The string is now guaranteed to be the specified length and contain characters in the
+    // set of alphanumeric characters.
+    const auto random_password = irods::generate_random_alphanumeric_string(random_password_len);
+
+    // Copy the randomly generated password because icatScramble modifies the passed-in buffer. We want to retain the
+    // unscrambled password so that it can be returned to the user for future authentication purposes.
+    std::strncpy(scrambled_random_password.data(), random_password.c_str(), random_password_len + 1);
     icatScramble(scrambled_random_password.data());
 
     if ( _test_time != NULL && strlen( _test_time ) > 0 ) {
@@ -7369,7 +7374,8 @@ auto db_update_pam_password_op(irods::plugin_context& _ctx,
         return ERROR( status, "commit failure" );
     }
 
-    std::strncpy(*_password_buffer, random_password.data(), _password_buffer_size);
+    // Return the unscrambled, randomly generated password to the user.
+    std::strncpy(*_password_buffer, random_password.c_str(), _password_buffer_size);
 
     return SUCCESS();
 } // db_update_pam_password_op
