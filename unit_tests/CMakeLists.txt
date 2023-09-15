@@ -46,6 +46,7 @@ set(
   filesystem
   fixed_buffer_resource
   fully_qualified_username
+  generate_random_alphanumeric_string
   get_delay_rule_info
   get_file_descriptor_info
   hierarchy_parser
