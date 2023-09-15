@@ -1709,8 +1709,8 @@ void clearExecCmdOut(void* _p)
 
     auto* q = static_cast<ExecCmdOut*>(_p);
 
-    free_pointer(q->stderrBuf.buf);
-    free_pointer(q->stdoutBuf.buf);
+    clearBBuf(&q->stderrBuf);
+    clearBBuf(&q->stdoutBuf);
 
     std::memset(q, 0, sizeof(ExecCmdOut));
 }
