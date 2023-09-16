@@ -25,23 +25,40 @@ from .. import lib
 from . import resource_suite
 from . import ustrings
 
+class shared_functions:
+    """A base class which acts as a space for functionality needed by multiple classes in this source file."""
+
+    def iput_r_large_collection(self, user_session, base_name, file_count, file_size):
+        local_dir = os.path.join(self.testing_tmp_dir, base_name)
+        local_files = lib.make_large_local_tmp_dir(local_dir, file_count, file_size)
+        user_session.assert_icommand(['iput', '-r', local_dir], "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+        rods_files = set(user_session.get_entries_in_collection(base_name))
+        self.assertTrue(set(local_files) == rods_files,
+                        msg="Files missing:\n" + str(set(local_files) - rods_files) + "\n\n" +
+                            "Extra files:\n" + str(rods_files - set(local_files)))
+        vault_files = set(os.listdir(os.path.join(user_session.get_vault_session_path(), base_name)))
+        self.assertTrue(set(local_files) == vault_files,
+                        msg="Files missing from vault:\n" + str(set(local_files) - vault_files) + "\n\n" +
+                            "Extra files in vault:\n" + str(vault_files - set(local_files)))
+        return (local_dir, local_files)
+
 
 @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
-class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestCase):
+class Test_ICommands_File_Operations_1(resource_suite.ResourceBase, shared_functions, unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
-    class_name = 'Test_ICommands_File_Operations'
+    class_name = 'Test_ICommands_File_Operations_1'
 
     def setUp(self):
         # TODO: Remove this sleep when #4359 is resolved
         time.sleep(30)
-        super(Test_ICommands_File_Operations, self).setUp()
+        super(Test_ICommands_File_Operations_1, self).setUp()
         self.testing_tmp_dir = '/tmp/irods-test-icommands-recursive'
         shutil.rmtree(self.testing_tmp_dir, ignore_errors=True)
         os.mkdir(self.testing_tmp_dir)
 
     def tearDown(self):
         shutil.rmtree(self.testing_tmp_dir)
-        super(Test_ICommands_File_Operations, self).tearDown()
+        super(Test_ICommands_File_Operations_1, self).tearDown()
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-python', 'only applicable for python REP')
     def test_re_serialization__prep_13(self):
@@ -100,20 +117,6 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
             self.assertTrue(occur[0].group(1) == b'user_rods_zone' and occur[0].group(2).decode('utf-8') == self.admin.zone_name)
         finally:
             IrodsController().reload_configuration()
-
-    def iput_r_large_collection(self, user_session, base_name, file_count, file_size):
-        local_dir = os.path.join(self.testing_tmp_dir, base_name)
-        local_files = lib.make_large_local_tmp_dir(local_dir, file_count, file_size)
-        user_session.assert_icommand(['iput', '-r', local_dir], "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
-        rods_files = set(user_session.get_entries_in_collection(base_name))
-        self.assertTrue(set(local_files) == rods_files,
-                        msg="Files missing:\n" + str(set(local_files) - rods_files) + "\n\n" +
-                            "Extra files:\n" + str(rods_files - set(local_files)))
-        vault_files = set(os.listdir(os.path.join(user_session.get_vault_session_path(), base_name)))
-        self.assertTrue(set(local_files) == vault_files,
-                        msg="Files missing from vault:\n" + str(set(local_files) - vault_files) + "\n\n" +
-                            "Extra files in vault:\n" + str(vault_files - set(local_files)))
-        return (local_dir, local_files)
 
     def ichksum_with_multiple_bad_replicas(self):
         filename = 'checksum_test.txt'
@@ -254,6 +257,23 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
 
         finally:
             IrodsController().restart()
+
+@unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
+class Test_ICommands_File_Operations_2(resource_suite.ResourceBase, shared_functions, unittest.TestCase):
+    plugin_name = IrodsConfig().default_rule_engine_plugin
+    class_name = 'Test_ICommands_File_Operations_2'
+
+    def setUp(self):
+        # TODO: Remove this sleep when #4359 is resolved
+        time.sleep(30)
+        super(Test_ICommands_File_Operations_2, self).setUp()
+        self.testing_tmp_dir = '/tmp/irods-test-icommands-recursive'
+        shutil.rmtree(self.testing_tmp_dir, ignore_errors=True)
+        os.mkdir(self.testing_tmp_dir)
+
+    def tearDown(self):
+        shutil.rmtree(self.testing_tmp_dir)
+        super(Test_ICommands_File_Operations_2, self).tearDown()
 
     def test_imv_r(self):
         base_name_source = "test_imv_r_dir_source"
@@ -534,6 +554,23 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
             self.assertTrue(local_files == files_in_vault,
                         msg="Files missing from vault:\n" + str(local_files - files_in_vault) + "\n\n" +
                             "Extra files in vault:\n" + str(files_in_vault - local_files))
+
+@unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
+class Test_ICommands_File_Operations_3(resource_suite.ResourceBase, unittest.TestCase):
+    plugin_name = IrodsConfig().default_rule_engine_plugin
+    class_name = 'Test_ICommands_File_Operations_3'
+
+    def setUp(self):
+        # TODO: Remove this sleep when #4359 is resolved
+        time.sleep(30)
+        super(Test_ICommands_File_Operations_3, self).setUp()
+        self.testing_tmp_dir = '/tmp/irods-test-icommands-recursive'
+        shutil.rmtree(self.testing_tmp_dir, ignore_errors=True)
+        os.mkdir(self.testing_tmp_dir)
+
+    def tearDown(self):
+        shutil.rmtree(self.testing_tmp_dir)
+        super(Test_ICommands_File_Operations_3, self).tearDown()
 
     def test_irsync_r_nested_coll_to_coll_large_files(self):
         # test settings
@@ -869,6 +906,23 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
             self.assertTrue('errno = {0}'.format(errno.EINVAL) not in out, 'found EINVAL errno in\n' + out)
 
             self.admin.environment_file_contents = env_backup
+
+@unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
+class Test_ICommands_File_Operations_4(resource_suite.ResourceBase, unittest.TestCase):
+    plugin_name = IrodsConfig().default_rule_engine_plugin
+    class_name = 'Test_ICommands_File_Operations_4'
+
+    def setUp(self):
+        # TODO: Remove this sleep when #4359 is resolved
+        time.sleep(30)
+        super(Test_ICommands_File_Operations_4, self).setUp()
+        self.testing_tmp_dir = '/tmp/irods-test-icommands-recursive'
+        shutil.rmtree(self.testing_tmp_dir, ignore_errors=True)
+        os.mkdir(self.testing_tmp_dir)
+
+    def tearDown(self):
+        shutil.rmtree(self.testing_tmp_dir)
+        super(Test_ICommands_File_Operations_4, self).tearDown()
 
     def test_iput_resc_scheme_forced(self):
         pep_map = {
@@ -1339,6 +1393,23 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
             shutil.rmtree(os.path.abspath(dir1path), ignore_errors=True)
             shutil.rmtree(os.path.abspath(dir2path), ignore_errors=True)
 
+
+@unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
+class Test_ICommands_File_Operations_5(resource_suite.ResourceBase, unittest.TestCase):
+    plugin_name = IrodsConfig().default_rule_engine_plugin
+    class_name = 'Test_ICommands_File_Operations_5'
+
+    def setUp(self):
+        # TODO: Remove this sleep when #4359 is resolved
+        time.sleep(30)
+        super(Test_ICommands_File_Operations_5, self).setUp()
+        self.testing_tmp_dir = '/tmp/irods-test-icommands-recursive'
+        shutil.rmtree(self.testing_tmp_dir, ignore_errors=True)
+        os.mkdir(self.testing_tmp_dir)
+
+    def tearDown(self):
+        shutil.rmtree(self.testing_tmp_dir)
+        super(Test_ICommands_File_Operations_5, self).tearDown()
 
     ##################################
     # Issue - 3997:
@@ -1820,4 +1891,3 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         finally:
             self.admin.run_icommand(['irm', '-f', logical_path])
             os.unlink(file_path)
-
