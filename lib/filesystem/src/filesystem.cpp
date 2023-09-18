@@ -102,20 +102,24 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         auto to_permission_enum(const std::string& _perm) -> perms
         {
             // clang-format off
+            if (_perm == "null")            { return perms::null; }
             if (_perm == "read_metadata")   { return perms::read_metadata; }
             if (_perm == "read_object")     { return perms::read; }
+            if (_perm == "read object")     { return perms::read; }
             if (_perm == "read")            { return perms::read; }
             if (_perm == "create_metadata") { return perms::create_metadata; }
             if (_perm == "modify_metadata") { return perms::modify_metadata; }
             if (_perm == "delete_metadata") { return perms::delete_metadata; }
             if (_perm == "create_object")   { return perms::create_object; }
             if (_perm == "modify_object")   { return perms::write; }
+            if (_perm == "modify object")   { return perms::write; }
             if (_perm == "write")           { return perms::write; }
             if (_perm == "delete_object")   { return perms::delete_object; }
             if (_perm == "own")             { return perms::own; }
             // clang-format on
 
-            return perms::null;
+            throw filesystem_error{
+                "stat error: cannot convert string to permission enum", make_error_code(SYS_INVALID_INPUT_PARAM)};
         }
 
         auto set_permissions(rxComm& _comm, const path& _p, stat& _s) -> void
