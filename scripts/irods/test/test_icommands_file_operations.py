@@ -49,8 +49,6 @@ class Test_ICommands_File_Operations_1(resource_suite.ResourceBase, shared_funct
     class_name = 'Test_ICommands_File_Operations_1'
 
     def setUp(self):
-        # TODO: Remove this sleep when #4359 is resolved
-        time.sleep(30)
         super(Test_ICommands_File_Operations_1, self).setUp()
         self.testing_tmp_dir = '/tmp/irods-test-icommands-recursive'
         shutil.rmtree(self.testing_tmp_dir, ignore_errors=True)
@@ -264,8 +262,6 @@ class Test_ICommands_File_Operations_2(resource_suite.ResourceBase, shared_funct
     class_name = 'Test_ICommands_File_Operations_2'
 
     def setUp(self):
-        # TODO: Remove this sleep when #4359 is resolved
-        time.sleep(30)
         super(Test_ICommands_File_Operations_2, self).setUp()
         self.testing_tmp_dir = '/tmp/irods-test-icommands-recursive'
         shutil.rmtree(self.testing_tmp_dir, ignore_errors=True)
@@ -427,8 +423,6 @@ class Test_ICommands_File_Operations_3(resource_suite.ResourceBase, unittest.Tes
     class_name = 'Test_ICommands_File_Operations_3'
 
     def setUp(self):
-        # TODO: Remove this sleep when #4359 is resolved
-        time.sleep(30)
         super(Test_ICommands_File_Operations_3, self).setUp()
         self.testing_tmp_dir = '/tmp/irods-test-icommands-recursive'
         shutil.rmtree(self.testing_tmp_dir, ignore_errors=True)
@@ -779,8 +773,6 @@ class Test_ICommands_File_Operations_4(resource_suite.ResourceBase, shared_funct
     class_name = 'Test_ICommands_File_Operations_4'
 
     def setUp(self):
-        # TODO: Remove this sleep when #4359 is resolved
-        time.sleep(30)
         super(Test_ICommands_File_Operations_4, self).setUp()
         self.testing_tmp_dir = '/tmp/irods-test-icommands-recursive'
         shutil.rmtree(self.testing_tmp_dir, ignore_errors=True)
@@ -1322,8 +1314,6 @@ class Test_ICommands_File_Operations_5(resource_suite.ResourceBase, unittest.Tes
     class_name = 'Test_ICommands_File_Operations_5'
 
     def setUp(self):
-        # TODO: Remove this sleep when #4359 is resolved
-        time.sleep(30)
         super(Test_ICommands_File_Operations_5, self).setUp()
         self.testing_tmp_dir = '/tmp/irods-test-icommands-recursive'
         shutil.rmtree(self.testing_tmp_dir, ignore_errors=True)
