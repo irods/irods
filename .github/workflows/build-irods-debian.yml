@@ -7,14 +7,14 @@ jobs:
     container: ${{ matrix.container }}
     strategy:
       matrix:
-        container: ['debian:11']
+        container: ['debian:11','debian:12']
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
       - name: Install Prerequisites
         run:  |
               apt-get update -qq
-              apt-get install -qq apt-transport-https ca-certificates gnupg wget curl g++ make python-dev unixodbc libcurl4-gnutls-dev libbz2-dev zlib1g-dev libpam0g-dev libssl-dev libxml2-dev unixodbc-dev python3-psutil super odbc-postgresql libkrb5-dev python3-distro
+              apt-get install -qq apt-transport-https ca-certificates gnupg wget curl g++ make python3-dev unixodbc libcurl4-gnutls-dev libbz2-dev zlib1g-dev libpam0g-dev libssl-dev libxml2-dev unixodbc-dev python3-psutil super odbc-postgresql libkrb5-dev python3-distro
       - name: Install iRODS Externals
         run:  |
               wget -qO - https://unstable.irods.org/irods-unstable-signing-key.asc | apt-key add -
