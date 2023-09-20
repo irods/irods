@@ -91,7 +91,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
             IrodsController().start()
 
             # do the reauth
-            self.auth_session.assert_icommand('iinit', 'STDOUT_SINGLELINE',
+            self.auth_session.assert_icommand('iinit', 'STDOUT', 'Enter your current PAM password',
                                               input=f'{self.auth_session.password}\n')
             # connect and list some files
             self.auth_session.assert_icommand('icd')
@@ -179,7 +179,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
 
                         # the test
                         print(f'running iinit for PAM user [{self.auth_session.username}] [{self.auth_session.password}]')
-                        self.auth_session.assert_icommand('iinit', 'STDOUT_SINGLELINE',
+                        self.auth_session.assert_icommand('iinit', 'STDOUT', 'Enter your current PAM password',
                                                           input=f'{self.auth_session.password}\n')
                         self.auth_session.assert_icommand("icd")
                         self.auth_session.assert_icommand("ils -L", 'STDOUT_SINGLELINE', "home")
