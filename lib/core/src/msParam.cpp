@@ -1022,6 +1022,34 @@ parseMspForPosInt( msParam_t* inpParam ) {
     return myInt;
 }
 
+int msp_to_string(msParam_t* _inpParam, char** _outParam)
+{
+    if (_outParam == nullptr) {
+        log_msi::error("{}: _outParam is null", __func__);
+        return SYS_NULL_INPUT;
+    }
+
+    if (_inpParam == nullptr || _inpParam->inOutStruct == nullptr) {
+        log_msi::error("{}: _inpParam is null or _inpParam's inOutStruct is null", __func__);
+        *_outParam = nullptr;
+        return SYS_NULL_INPUT;
+    }
+
+    if (strcmp(_inpParam->type, STR_MS_T) != 0) {
+        log_msi::error("{}: _inpParam type {} is not STR_MS_T", __func__, _inpParam->type);
+        *_outParam = nullptr;
+        return USER_PARAM_TYPE_ERR;
+    }
+
+    *_outParam = static_cast<char*>(_inpParam->inOutStruct);
+
+    if (strcmp(*_outParam, "null") == 0) {
+        *_outParam = nullptr;
+    }
+
+    return 0;
+} // msp_to_string
+
 char *
 parseMspForStr( msParam_t * inpParam ) {
     if ( inpParam == NULL || inpParam->inOutStruct == NULL ) {
