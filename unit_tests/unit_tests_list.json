@@ -19,6 +19,7 @@
     "irods_generate_random_alphanumeric_string",
     "irods_get_delay_rule_info",
     "irods_get_file_descriptor_info",
+    "irods_get_resource_info_for_operation",
     "irods_hierarchy_parser",
     "irods_hostname_cache",
     "irods_json_apis_from_client",
