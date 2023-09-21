@@ -171,8 +171,8 @@ def run_update(irods_config, cursor):
         password_config_dict = {
             # Removing negative language from the option name results in the meaning being reversed.
             'password_extend_lifetime': '0' if True == pam_password_config.get('no_extend', False) else '1',
-            'password_max_time': str(pam_password_config.get('password_min_time', 121)),
-            'password_min_time': str(pam_password_config.get('password_max_time', 1209600))
+            'password_min_time': str(pam_password_config.get('password_min_time', 121)),
+            'password_max_time': str(pam_password_config.get('password_max_time', 1209600))
         }
 
         scheme_namespaces = ['authentication::pam_password', 'authentication::native']
