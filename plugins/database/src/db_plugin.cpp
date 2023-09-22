@@ -122,14 +122,16 @@ namespace
     // This structure holds authentication configuration values.
     struct auth_config
     {
-        // Holds the value for the irods::KW_CFG_PAM_PASSWORD_EXTEND_LIFETIME configuration.
-        bool password_extend_lifetime = true;
-
+        static constexpr bool default_password_extend_lifetime = true;
         static constexpr rodsLong_t default_password_max_time = 1209600;
+        static constexpr rodsLong_t default_password_min_time = 121;
+
+        // Holds the value for the irods::KW_CFG_PAM_PASSWORD_EXTEND_LIFETIME configuration.
+        bool password_extend_lifetime = default_password_extend_lifetime;
+
         // Holds the value for the irods::KW_CFG_PAM_PASSWORD_MAX_TIME configuration.
         rodsLong_t password_max_time = default_password_max_time;
 
-        static constexpr rodsLong_t default_password_min_time = 121;
         // Holds the value for the irods::KW_CFG_PAM_PASSWORD_MIN_TIME configuration.
         rodsLong_t password_min_time = default_password_min_time;
     };
@@ -145,33 +147,54 @@ namespace
 
             for (auto result = nanodbc::execute(stmt); result.next();) {
                 const auto option_name = result.get<std::string>(0);
+                const auto option_value = result.get<std::string>(1);
 
-                if (option_name == irods::KW_CFG_PAM_PASSWORD_MIN_TIME) {
-                    _out.password_min_time = std::stoll(result.get<std::string>(1));
-                    if (_out.password_min_time < 0) {
-                        return ERROR(CONFIGURATION_ERROR,
-                                     fmt::format("Invalid configuration for option [{}] in namespace [{}]: [{}]",
-                                                 option_name,
-                                                 _namespace,
-                                                 _out.password_min_time));
+                // Given the level of nesting that occurs here to maintain specificity in the error messages, the logic
+                // has been condensed for reuse. The option_name still needs to be differentiated to apply the correct
+                // setting, and given that there are only two alternatives for this case, it is sufficient to use only
+                // one for a boolean flag. Therefore, check for the password_min_time option_name once to determine
+                // which option_name this is and avoid duplicating the string comparison.
+                if (const bool is_min_option = (option_name == irods::KW_CFG_PAM_PASSWORD_MIN_TIME);
+                    is_min_option || option_name == irods::KW_CFG_PAM_PASSWORD_MAX_TIME)
+                {
+                    const auto default_value =
+                        is_min_option ? auth_config::default_password_min_time : auth_config::default_password_max_time;
+                    auto& config = is_min_option ? _out.password_min_time : _out.password_max_time;
+                    try {
+                        config = std::stoll(option_value);
+                        if (config < 0) {
+                            config = default_value;
+                            log_db::warn("Invalid R_GRID_CONFIGURATION value. namespace:[{}], option:[{}], value:[{}]. "
+                                         "Using default value [{}].",
+                                         _namespace,
+                                         option_name,
+                                         option_value,
+                                         config);
+                        }
                     }
-                    continue;
-                }
-
-                if (option_name == irods::KW_CFG_PAM_PASSWORD_MAX_TIME) {
-                    _out.password_max_time = std::stoll(result.get<std::string>(1));
-                    if (_out.password_max_time < 0) {
-                        return ERROR(CONFIGURATION_ERROR,
-                                     fmt::format("Invalid configuration for option [{}] in namespace [{}]: [{}]",
-                                                 option_name,
-                                                 _namespace,
-                                                 _out.password_max_time));
+                    catch (const std::exception& e) {
+                        config = default_value;
+                        log_db::warn("Error occurred getting R_GRID_CONFIGURATION value. namespace:[{}], option:[{}], "
+                                     "value:[{}]. Using default value [{}]. error:[{}]",
+                                     _namespace,
+                                     option_name,
+                                     option_value,
+                                     config,
+                                     e.what());
+                    }
+                    catch (...) {
+                        config = default_value;
+                        log_db::warn("Error occurred getting R_GRID_CONFIGURATION value. namespace:[{}], option:[{}], "
+                                     "value:[{}]. Using default value [{}]. error:[Unknown error]",
+                                     _namespace,
+                                     option_name,
+                                     option_value,
+                                     config);
                     }
                     continue;
                 }
 
                 if (option_name == irods::KW_CFG_PAM_PASSWORD_EXTEND_LIFETIME) {
-                    const auto option_value = result.get<std::string>(1);
                     if (option_value == "1") {
                         _out.password_extend_lifetime = true;
                     }
@@ -179,13 +202,14 @@ namespace
                         _out.password_extend_lifetime = false;
                     }
                     else {
-                        return ERROR(CONFIGURATION_ERROR,
-                                     fmt::format("Invalid configuration for option [{}] in namespace [{}]: [{}]",
-                                                 option_name,
-                                                 _namespace,
-                                                 option_value));
+                        _out.password_extend_lifetime = auth_config::default_password_extend_lifetime;
+                        log_db::warn("Invalid R_GRID_CONFIGURATION value. namespace:[{}], option:[{}], value:[{}]. "
+                                     "Using default value [{}].",
+                                     _namespace,
+                                     option_name,
+                                     option_value,
+                                     _out.password_extend_lifetime);
                     }
-
                     continue;
                 }
             }
@@ -194,7 +218,7 @@ namespace
             return ERROR(
                 SYS_LIBRARY_ERROR,
                 fmt::format(
-                    "Error occurred getting grid configurations. Check R_GRID_CONFIGURATION namespace [{}]. error:[{}]",
+                    "Error occurred getting grid configurations from R_GRID_CONFIGURATION namespace [{}]. error:[{}]",
                     _namespace,
                     e.what()));
         }
@@ -202,7 +226,7 @@ namespace
             return ERROR(
                 SYS_UNKNOWN_ERROR,
                 fmt::format(
-                    "Unknown error occurred getting grid configurations. Check R_GRID_CONFIGURATION namespace [{}].",
+                    "Unknown error occurred getting grid configurations from R_GRID_CONFIGURATION namespace [{}].",
                     _namespace));
         }
 
@@ -6619,7 +6643,9 @@ irods::error db_check_auth_op(
         return irods::error(e);
     }
 
-    if ( expireTime < temp_password_max_time ) {
+    // Only the enigmatic temporary passwords are stored as unscrambled in the catalog, so only perform this bit for
+    // passwords that are not stored as scrambled in the catalog.
+    if (!std::string_view{lastPw}.starts_with(PASSWORD_SCRAMBLE_PREFIX) && expireTime < temp_password_max_time) {
         int temp_password_time;
         try {
             temp_password_time = irods::get_advanced_setting<const int>(irods::KW_CFG_DEF_TEMP_PASSWORD_LIFETIME);
