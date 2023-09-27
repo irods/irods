@@ -135,13 +135,14 @@ namespace irods
         , proxy_username_{std::move(_proxy_username)}
         , username_{std::move(_username)}
         , auth_func_{std::move(_auth_func)}
-        , conn_ctxs_(_size)
         , options_{_options}
     {
         if (_size < 1) {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
             THROW(SYS_INVALID_INPUT_PARAM, "Invalid connection pool size");
         }
+
+        conn_ctxs_ = std::vector<connection_context>(_size);
 
         if (_options.number_of_retrievals_before_connection_refresh) {
             if (*_options.number_of_retrievals_before_connection_refresh <= 0) {
