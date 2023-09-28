@@ -1,4 +1,4 @@
-name: build-irods-enterprise-linux
+name: build-irods-enterprise-linux-8
 on: [push, pull_request]
 jobs:
   build:
