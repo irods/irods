@@ -98,7 +98,7 @@
     "test_misc",
     "test_native_rule_engine_plugin",
     "test_negotiation",
-    "test_pam_password.test_configurations",
+    "test_pam_password_authentication.test_configurations",
     "test_prep_genquery_iterator",
     "test_python_rule_engine_plugin",
     "test_quotas",
