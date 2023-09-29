@@ -7100,15 +7100,17 @@ irods::error db_make_limited_pw_op(
         return err;
     }
 
-    if (_ttl < ac.password_min_time || _ttl > ac.password_max_time) {
-        log_db::error(
-            "Invalid TTL - min time: [{}] max time:[{}] ttl: [{}]", ac.password_min_time, ac.password_max_time, _ttl);
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+    int timeToLive = _ttl * 3600; /* convert input hours to seconds */
+    if (timeToLive < ac.password_min_time || timeToLive > ac.password_max_time) {
+        log_db::error("Invalid TTL - min time: [{}] max time:[{}] ttl: [{}]",
+                      ac.password_min_time,
+                      ac.password_max_time,
+                      timeToLive);
         return ERROR( PAM_AUTH_PASSWORD_INVALID_TTL, "invalid ttl" );
     }
 
     /* Insert the limited password */
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-    int timeToLive = _ttl * 3600; /* convert input hours to seconds */
     snprintf( expTime, sizeof expTime, "%d", timeToLive );
     cllBindVars[cllBindVarCount++] = _ctx.comm()->clientUser.userName;
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
