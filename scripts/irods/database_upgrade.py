@@ -175,10 +175,10 @@ def run_update(irods_config, cursor):
             'password_max_time': str(pam_password_config.get('password_max_time', 1209600))
         }
 
-        scheme_namespaces = ['authentication::pam_password', 'authentication::native']
+        scheme_namespaces = ['authentication']
         statement_str = "insert into R_GRID_CONFIGURATION (namespace, option_name, option_value) values ('{}','{}','{}');"
         # pam_password configurations for password lifetime have always been used with native authentication as well.
-        # The configurations are now separately configurable.
+        # The new configurations shall continue to configure both schemes, but under a more generic namespace.
         for scheme in scheme_namespaces:
             for option in password_config_dict:
                 database_connect.execute_sql_statement(cursor, statement_str.format(scheme, option, password_config_dict[option]))
