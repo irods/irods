@@ -42,7 +42,7 @@ class test_get_grid_configuration(unittest.TestCase):
             f'Failed to get grid configuration for namespace [{bad_namespace}] and option [{option_name}] [ec=-808000]')
 
     def test_no_option_name(self):
-        namespace = 'authentication::native'
+        namespace = 'authentication'
         self.admin.assert_icommand(
             ['iadmin', 'get_grid_configuration', namespace],
             'STDERR', 'Error: option name must be between 1 and 2699 characters.')
@@ -51,7 +51,7 @@ class test_get_grid_configuration(unittest.TestCase):
         # The input buffer to set_grid_configuration_value API is only 2700 characters long. If a value of 2700
         # characters or more is fed to the input struct for the set_pam_password_config API, packstruct gives an error.
         # iadmin will catch this case and show a slightly more presentable error, which is checked in this test.
-        namespace = 'authentication::native'
+        namespace = 'authentication'
         really_long_option_name = 'this_is_27_characters_long_' * 100
 
         self.admin.assert_icommand(
@@ -59,7 +59,7 @@ class test_get_grid_configuration(unittest.TestCase):
             'STDERR', 'Error: option name must be between 1 and 2699 characters.')
 
     def test_nonexistent_option_name(self):
-        namespace = 'authentication::native'
+        namespace = 'authentication'
         bad_option_name = 'nopes'
 
         self.admin.assert_icommand(
@@ -67,7 +67,7 @@ class test_get_grid_configuration(unittest.TestCase):
             f'Failed to get grid configuration for namespace [{namespace}] and option [{bad_option_name}] [ec=-808000]')
 
     def test_get_grid_configuration_valid(self):
-        namespace = 'authentication::native'
+        namespace = 'authentication'
         option_name = 'password_max_time'
 
         # Assert that a value is returned and that there are no errors.
@@ -112,7 +112,7 @@ class test_set_grid_configuration(unittest.TestCase):
             f'Failed to set grid configuration for namespace [{bad_namespace}] and option [{option_name}] [ec=-808000]')
 
     def test_no_option_name(self):
-        namespace = 'authentication::native'
+        namespace = 'authentication'
         self.admin.assert_icommand(
             ['iadmin', 'set_grid_configuration', namespace],
             'STDERR', 'Error: option name must be between 1 and 2699 characters.')
@@ -121,7 +121,7 @@ class test_set_grid_configuration(unittest.TestCase):
         # The input buffer to set_grid_configuration_value API is only 2700 characters long. If a value of 2700
         # characters or more is fed to the input struct for the set_pam_password_config API, packstruct gives an error.
         # iadmin will catch this case and show a slightly more presentable error, which is checked in this test.
-        namespace = 'authentication::native'
+        namespace = 'authentication'
         really_long_option_name = 'this_is_27_characters_long_' * 100
         option_value = '1000'
 
@@ -130,7 +130,7 @@ class test_set_grid_configuration(unittest.TestCase):
             'STDERR', 'Error: option name must be between 1 and 2699 characters.')
 
     def test_nonexistent_option_name(self):
-        namespace = 'authentication::native'
+        namespace = 'authentication'
         bad_option_name = 'nopes'
         option_value = '1000'
 
@@ -139,14 +139,14 @@ class test_set_grid_configuration(unittest.TestCase):
             f'Failed to set grid configuration for namespace [{namespace}] and option [{bad_option_name}] [ec=-808000]')
 
     def test_no_option_value(self):
-        namespace = 'authentication::native'
+        namespace = 'authentication'
         option_name = 'password_max_time'
         self.admin.assert_icommand(
             ['iadmin', 'set_grid_configuration', namespace, option_name],
             'STDERR', 'Error: option value must be between 1 and 2699 characters.')
 
     def test_really_long_option_value(self):
-        namespace = 'authentication::native'
+        namespace = 'authentication'
         option_name = 'password_max_time'
 
         # The input buffer to set_grid_configuration_value API is only 2700 characters long. If a value of 2700
@@ -167,7 +167,7 @@ class test_set_grid_configuration(unittest.TestCase):
             self.admin.assert_icommand(['iadmin', 'get_grid_configuration', namespace, option_name], 'STDOUT')[1])
 
     def test_set_grid_configuration_valid(self):
-        namespace = 'authentication::native'
+        namespace = 'authentication'
         option_name = 'password_max_time'
 
         original_value = self.admin.assert_icommand(
@@ -188,7 +188,7 @@ class test_set_grid_configuration(unittest.TestCase):
             self.admin.run_icommand(['iadmin', 'set_grid_configuration', namespace, option_name, original_value])
 
     def test_set_invalid_grid_configuration_with_option_name_that_is_protected_in_another_namespace(self):
-        namespace = 'authentication::native'
+        namespace = 'authentication'
         option_name = 'schema_version'
 
         # Make sure this namespace doesn't have the option_name used in the test...
@@ -274,7 +274,7 @@ class test_set_grid_configuration(unittest.TestCase):
 
     def test_set_delay_server_namespace_is_protected_even_with_option_name_from_unprotected_namespaces(self):
         namespace = 'delay_server'
-        other_namespace = 'authentication::native'
+        other_namespace = 'authentication'
         option_name = 'password_max_time'
         option_value = 'shenanigans!'
 
