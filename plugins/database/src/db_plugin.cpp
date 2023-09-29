@@ -6596,9 +6596,7 @@ irods::error db_check_auth_op(
     expireTime = atoll( goodPwExpiry );
     getNowStr( myTime );
 
-    /* Check for PAM_AUTH type passwords */
-
-    if (const auto err = get_auth_config("authentication::pam_password", ac); !err.ok()) {
+    if (const auto err = get_auth_config("authentication", ac); !err.ok()) {
         log_db::error("Failed to get auth configuration. [{}]", err.result());
         return err;
     }
@@ -7095,7 +7093,7 @@ irods::error db_make_limited_pw_op(
     getNowStr( myTime );
 
     auth_config ac{};
-    if (const auto err = get_auth_config("authentication::native", ac); !err.ok()) {
+    if (const auto err = get_auth_config("authentication", ac); !err.ok()) {
         log_db::error("Failed to get auth configuration. [{}]", err.result());
         return err;
     }
@@ -7235,7 +7233,7 @@ auto db_update_pam_password_op(irods::plugin_context& _ctx,
     getNowStr( myTime );
 
     auth_config ac{};
-    if (const auto err = get_auth_config("authentication::pam_password", ac); !err.ok()) {
+    if (const auto err = get_auth_config("authentication", ac); !err.ok()) {
         log_db::error("Failed to get auth configuration. [{}]", err.result());
         return err;
     }
@@ -7573,7 +7571,7 @@ irods::error db_mod_user_op(
 
     if ( strncmp( _option, "rmPamPw", 9 ) == 0 ) {
         auth_config ac{};
-        if (const auto err = get_auth_config("authentication::pam_password", ac); !err.ok()) {
+        if (const auto err = get_auth_config("authentication", ac); !err.ok()) {
             log_db::error("Failed to get auth configuration. [{}]", err.result());
             return err;
         }
