@@ -253,7 +253,8 @@ int clientLoginTTL( rcComm_t *Conn, int ttl ) {
     if ( int status = rcGetLimitedPassword( Conn,
                 &getLimitedPasswordInp,
                 &getLimitedPasswordOut ) ) {
-        allocate_if_necessary_and_add_rError_msg(&Conn->rError, status, "rcGetLimitedPassword");
+        const auto msg = fmt::format("rcGetLimitedPassword failed with error [{}]", status);
+        allocate_if_necessary_and_add_rError_msg(&Conn->rError, status, msg.c_str());
         memset( userPassword, 0, sizeof( userPassword ) );
         return status;
     }
