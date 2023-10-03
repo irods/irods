@@ -90,7 +90,13 @@ namespace
             if (!ic::connected_to_catalog_provider(*_comm)) {
                 log_api::trace("Redirecting request to catalog service provider ...");
                 auto* host_info = ic::redirect_to_catalog_provider(*_comm);
-                return rc_set_grid_configuration_value(host_info->conn, _input);
+                const auto ec = rc_set_grid_configuration_value(host_info->conn, _input);
+
+                // Replicate the rError stack here so that any messages the API communicates to the client will
+                // persist through the redirect. See #6426 for details.
+                replErrorStack(host_info->conn->rError, &_comm->rError);
+
+                return ec;
             }
 
             ic::throw_if_catalog_provider_service_role_is_invalid();
