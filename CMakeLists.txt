@@ -282,7 +282,7 @@ install(
 write_basic_package_version_file(
   "${CMAKE_IRODS_BINARY_DIR}/IRODSConfigVersion.cmake"
   VERSION ${IRODS_VERSION}
-  COMPATIBILITY ExactVersion
+  COMPATIBILITY SameMinorVersion
 )
 
 install(
