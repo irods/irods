@@ -2,10 +2,10 @@ cmake_minimum_required(VERSION 3.7.0 FATAL_ERROR) #CPACK_DEBIAN_<COMPONENT>_PACK
 
 option(IRODS_ENABLE_ADDRESS_SANITIZER "Enables detection of memory leaks and other features provided by Address Sanitizer." OFF)
 
-find_package(IRODS 4.3.0 EXACT REQUIRED CONFIG)
+find_package(IRODS 4.3.1 EXACT REQUIRED CONFIG)
 set(IRODS_PACKAGE_PREFIX "${PACKAGE_PREFIX_DIR}")
 
-set(IRODS_PACKAGE_REVISION "1")
+set(IRODS_PACKAGE_REVISION "0")
 
 include(RequireOutOfSourceBuild)
 include(IrodsCXXCompiler)
