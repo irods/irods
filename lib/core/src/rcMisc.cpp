@@ -1773,6 +1773,32 @@ freeAllRescQuota( rescQuota_t *rescQuotaHead ) {
     return 0;
 }
 
+void clearRescQuotaInp(void* _p)
+{
+    if (!_p) {
+        return;
+    }
+
+    auto* q = static_cast<getRescQuotaInp*>(_p);
+
+    clearKeyVal(&q->condInput);
+
+    std::memset(q, 0, sizeof(getRescQuotaInp));
+} // clearRescQuotaInp
+
+void clearRescQuota(void* _p)
+{
+    if (!_p) {
+        return;
+    }
+
+    auto* q = static_cast<rescQuota*>(_p);
+
+    freeAllRescQuota(q->next);
+
+    std::memset(q, 0, sizeof(rescQuota));
+} // clearRescQuota
+
 int
 parseMultiStr( char *strInput, strArray_t *strArray ) {
     char *startPtr, *endPtr;

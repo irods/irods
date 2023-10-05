@@ -1121,7 +1121,7 @@ static irods::apidef_t client_api_table_inp[] = {
         GET_RESC_QUOTA_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "getRescQuotaInp_PI", 0, "rescQuota_PI", 0,
         boost::any(std::function<int(rsComm_t*,getRescQuotaInp_t*,rescQuota_t**)>(RS_GET_RESC_QUOTA)),
-        "api_get_resc_quota", irods::clearInStruct_noop, clearDataObjInfo,
+        "api_get_resc_quota", clearRescQuotaInp, clearRescQuota,
         (funcPtr)CALL_GETRESCQUOTAINP_RESCQUOTAOUT
     },
     {
