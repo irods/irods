@@ -37,7 +37,7 @@ int rsTicketAdmin(rsComm_t* rsComm, ticketAdminInp_t* ticketAdminInp)
     }
     else {
         if (strcmp(ticketAdminInp->arg1, "session") == 0) {
-            ticketAdminInp->arg3 = rsComm->clientAddr;
+            ticketAdminInp->arg3 = strdup(rsComm->clientAddr);
         }
 
         status = rcTicketAdmin(rodsServerHost->conn, ticketAdminInp);
