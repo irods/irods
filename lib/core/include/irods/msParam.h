@@ -195,6 +195,7 @@ int
 parseMspForPhyPathReg( msParam_t *inpParam, keyValPair_t *condInput );
 int
 parseMspForPosInt( msParam_t *inpParam );
+int msp_to_string(msParam_t* _inp_param, char** _out_param);
 char *
 parseMspForStr( msParam_t *inpParam );
 int
