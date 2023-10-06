@@ -338,6 +338,10 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
         self.admin.assert_icommand(['irule', '-r', 'irods_rule_engine_plugin-irods_rule_language-instance', 'msi_test_scoped_permission', 'null', 'ruleExecOut'])
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', "Not implemented for other REPs.")
+    def test_msp_functions(self):
+        self.admin.assert_icommand(['irule', '-r', 'irods_rule_engine_plugin-irods_rule_language-instance', 'msi_test_msp_functions', 'null', 'ruleExecOut'])
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', "Not implemented for other REPs.")
     def test_user_administration__issue_7208(self):
         self.admin.assert_icommand(['irule', '-r', 'irods_rule_engine_plugin-irods_rule_language-instance', 'msi_test_user_administration', 'null', 'ruleExecOut'])
 

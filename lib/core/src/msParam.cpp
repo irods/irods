@@ -1022,29 +1022,32 @@ parseMspForPosInt( msParam_t* inpParam ) {
     return myInt;
 }
 
-int msp_to_string(msParam_t* _inpParam, char** _outParam)
+int msp_to_string(msParam_t* _inp_param, char** _out_param)
 {
-    if (_outParam == nullptr) {
-        log_msi::error("{}: _outParam is null", __func__);
+    if (nullptr == _out_param) {
+        log_msi::error("{}: _out_param is null", __func__);
         return SYS_NULL_INPUT;
     }
 
-    if (_inpParam == nullptr || _inpParam->inOutStruct == nullptr) {
-        log_msi::error("{}: _inpParam is null or _inpParam's inOutStruct is null", __func__);
-        *_outParam = nullptr;
+    if (nullptr == _inp_param || nullptr == _inp_param->inOutStruct) {
+        log_msi::error("{}: _inp_param is null or _inpParam's inOutStruct is null", __func__);
         return SYS_NULL_INPUT;
     }
 
-    if (strcmp(_inpParam->type, STR_MS_T) != 0) {
-        log_msi::error("{}: _inpParam type {} is not STR_MS_T", __func__, _inpParam->type);
-        *_outParam = nullptr;
+    if (nullptr == _inp_param->type) {
+        log_msi::error("{}: _inp_param->type is null", __func__);
+        return SYS_NULL_INPUT;
+    }
+
+    if (strcmp(_inp_param->type, STR_MS_T) != 0) {
+        log_msi::error("{}: _inp_param type [{}] is not STR_MS_T", __func__, _inp_param->type);
         return USER_PARAM_TYPE_ERR;
     }
 
-    *_outParam = static_cast<char*>(_inpParam->inOutStruct);
+    *_out_param = static_cast<char*>(_inp_param->inOutStruct);
 
-    if (strcmp(*_outParam, "null") == 0) {
-        *_outParam = nullptr;
+    if (strcmp(*_out_param, "null") == 0) {
+        *_out_param = nullptr;
     }
 
     return 0;
