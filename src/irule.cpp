@@ -99,7 +99,6 @@ irods::error parseProgramOptions(
 
     opt_desc.add_options()
         ( "help,h",                              "Show command usage" )
-        ( "test,t",                              "Test mode" )
         ( "string,s",                            "String mode" )
         ( "file,F", po::value< std::string >(),  "Rule file" )
         ( "list,l",                              "List file" )
@@ -172,10 +171,6 @@ main( int argc, char **argv ) {
     execMyRuleInp.inpParamArray = &msParamArray;
     execMyRuleInp.condInput.len = 0;
 
-    /* add key val for test mode */
-    if ( argsMap.count( "test" ) ) {
-        addKeyVal( &execMyRuleInp.condInput, "looptest", "true" );
-    }
     /* add key val for specifying instance on which to run rule */
     if ( argsMap.count( "rule-engine-plugin-instance" ) ) {
         addKeyVal( &execMyRuleInp.condInput, irods::KW_CFG_INSTANCE_NAME, argsMap["rule-engine-plugin-instance"].as<std::string>().c_str() );
@@ -455,10 +450,6 @@ main( int argc, char **argv ) {
 
     status = rcExecMyRule( conn, &execMyRuleInp, &outParamArray );
 
-    if ( argsMap.count( "test" ) ) {
-        printErrorStack( conn->rError );
-    }
-
     if ( status < 0 ) {
         msParam_t *mP;
         execCmdOut_t *execCmdOut;
@@ -734,8 +725,8 @@ void
 usage() {
     char *msgs[] = {
         "Usage: irule [--available]",
-        "Usage: irule [--test] [-v] [-r instanceName] rule inputParam outParamDesc",
-        "Usage: irule [--test] [-v] [-l] [-r instanceName] -F inputFile [prompt | arg_1 arg_2 ...]",
+        "Usage: irule [-v] [-r instanceName] rule inputParam outParamDesc",
+        "Usage: irule [-v] [-l] [-r instanceName] -F inputFile [prompt | arg_1 arg_2 ...]",
         " ",
         "Submit a user defined rule to be executed by an iRODS server.",
         " ",
@@ -799,8 +790,6 @@ usage() {
         "To view the output parameters (outParamDesc), use the -v option.",
         " ",
         "Options are:",
-        " --test,-t                         - enable test mode so that the microservices are not executed,",
-        "                                     instead a loopback is performed",
         " --string,-s                       - enable string mode, in string mode all command line input arguments do not need",
         "                                     to be quoted and are automatically converted to strings",
         "                                     string mode does not affect input parameter values in rule files",
