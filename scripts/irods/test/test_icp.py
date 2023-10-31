@@ -218,3 +218,181 @@ class Test_Icp(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
                 self.user.assert_icommand(['irm', '-rf', source_collection_path])
                 self.user.assert_icommand(['imkdir', '-p', source_collection_path])
 
+
+class test_overwriting(unittest.TestCase):
+    @classmethod
+    def setUpClass(self):
+        self.user = session.mkuser_and_return_session('rodsuser', 'alice', 'apass', lib.get_hostname())
+
+        self.target_resource = 'target_resource'
+        self.other_resource = 'other_resource'
+
+        with session.make_session_for_existing_admin() as admin_session:
+            lib.create_ufs_resource(admin_session, self.target_resource, hostname=test.settings.HOSTNAME_2)
+            lib.create_ufs_resource(admin_session, self.other_resource, hostname=test.settings.HOSTNAME_3)
+
+    @classmethod
+    def tearDownClass(self):
+        self.user.__exit__()
+
+        with session.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand(['iadmin', 'rmuser', self.user.username])
+            lib.remove_resource(admin_session, self.target_resource)
+            lib.remove_resource(admin_session, self.other_resource)
+
+    def test_overwrites_replica_on_target_resource__issue_6497(self):
+        object_name = 'test_overwrites_replica_on_target_resource__issue_6497'
+        other_object_name = 'test_overwrites_replica_on_target_resource__issue_6497_other'
+        logical_path = os.path.join(self.user.session_collection, object_name)
+        other_logical_path = os.path.join(self.user.session_collection, other_object_name)
+
+        original_content = 'goin down to cowtown'
+        new_content = 'gonna see the cow beneath the sea'
+
+        try:
+            # Make an object and replicate to some target resource...
+            self.user.assert_icommand(['istream', 'write', logical_path], 'STDOUT', input=original_content)
+            self.user.assert_icommand(['irepl', '-R', self.target_resource, logical_path])
+
+            self.assertTrue(lib.replica_exists_on_resource(self.user, logical_path, self.user.default_resource))
+            self.assertTrue(lib.replica_exists_on_resource(self.user, logical_path, self.target_resource))
+            self.assertFalse(lib.replica_exists_on_resource(self.user, logical_path, self.other_resource))
+
+            # Make a new object with different content and copy over the first object (the copy should succeed).
+            self.user.assert_icommand(['istream', 'write', other_logical_path], 'STDOUT', input=new_content)
+            self.user.assert_icommand(['icp', '-f', '-R', self.target_resource, other_logical_path, logical_path])
+
+            # Assert that the copy occurred and the existing replicas have been updated appropriately.
+            self.assertTrue(lib.replica_exists_on_resource(self.user, logical_path, self.user.default_resource))
+            self.assertTrue(lib.replica_exists_on_resource(self.user, logical_path, self.target_resource))
+            self.assertFalse(lib.replica_exists_on_resource(self.user, logical_path, self.other_resource))
+
+            self.assertEqual(
+                str(0), lib.get_replica_status_for_resource(self.user, logical_path, self.user.default_resource))
+            self.assertEqual(str(1), lib.get_replica_status_for_resource(self.user, logical_path, self.target_resource))
+
+            self.assertEqual(
+                original_content,
+                self.user.assert_icommand(
+                    ['istream', '-R', self.user.default_resource, 'read', logical_path], 'STDOUT')[1].strip())
+
+            self.assertEqual(
+                new_content,
+                self.user.assert_icommand(
+                    ['istream', '-R', self.target_resource, 'read', logical_path], 'STDOUT')[1].strip())
+
+        finally:
+            self.user.assert_icommand(['irm', '-f', logical_path])
+            self.user.assert_icommand(['irm', '-f', other_logical_path])
+
+    def test_overwrite_fails_when_target_resource_has_no_replica__issue_6497(self):
+        object_name = 'test_overwrite_fails_when_target_resource_has_no_replica__issue_6497'
+        other_object_name = 'test_overwrite_fails_when_target_resource_has_no_replica__issue_6497_other'
+        logical_path = os.path.join(self.user.session_collection, object_name)
+        other_logical_path = os.path.join(self.user.session_collection, other_object_name)
+
+        original_content = "you're older than you've ever been"
+        new_content = "and now you're even older"
+
+        try:
+            # Make an object and replicate to some target resource...
+            self.user.assert_icommand(['istream', 'write', logical_path], 'STDOUT', input=original_content)
+            self.user.assert_icommand(['irepl', '-R', self.target_resource, logical_path])
+
+            self.assertTrue(lib.replica_exists_on_resource(self.user, logical_path, self.user.default_resource))
+            self.assertTrue(lib.replica_exists_on_resource(self.user, logical_path, self.target_resource))
+            self.assertFalse(lib.replica_exists_on_resource(self.user, logical_path, self.other_resource))
+
+            # Make a new object with different content and attempt to copy over the first object (the copy should fail).
+            self.user.assert_icommand(['istream', 'write', other_logical_path], 'STDOUT', input=new_content)
+            self.user.assert_icommand(
+                ['icp', '-f', '-R', self.other_resource, other_logical_path, logical_path],
+                'STDERR', '-1803000 HIERARCHY_ERROR')
+
+            # Assert that no copy occurred and the existing replicas remain untouched.
+            self.assertTrue(lib.replica_exists_on_resource(self.user, logical_path, self.user.default_resource))
+            self.assertTrue(lib.replica_exists_on_resource(self.user, logical_path, self.target_resource))
+            self.assertFalse(lib.replica_exists_on_resource(self.user, logical_path, self.other_resource))
+
+            self.assertEqual(
+                str(1), lib.get_replica_status_for_resource(self.user, logical_path, self.user.default_resource))
+            self.assertEqual(str(1), lib.get_replica_status_for_resource(self.user, logical_path, self.target_resource))
+
+            self.assertEqual(
+                original_content,
+                self.user.assert_icommand(
+                    ['istream', '-R', self.user.default_resource, 'read', logical_path], 'STDOUT')[1].strip())
+
+            self.assertEqual(
+                original_content,
+                self.user.assert_icommand(
+                    ['istream', '-R', self.target_resource, 'read', logical_path], 'STDOUT')[1].strip())
+
+        finally:
+            self.user.assert_icommand(['irm', '-f', logical_path])
+            self.user.assert_icommand(['irm', '-f', other_logical_path])
+
+    def test_overwrite_fails_when_source_path_matches_destination_path(self):
+        object_name = 'test_overwrite_fails_when_source_path_matches_destination_path__issue_6497'
+        logical_path = os.path.join(self.user.session_collection, object_name)
+
+        original_content = 'we will copy the object over itself!'
+
+        try:
+            # Make an object...
+            self.user.assert_icommand(['istream', 'write', logical_path], 'STDOUT', input=original_content)
+
+            self.assertTrue(lib.replica_exists_on_resource(self.user, logical_path, self.user.default_resource))
+
+            # Attempt to overwrite the object with itself -- this should fail.
+            self.user.assert_icommand(
+                ['icp', '-f', logical_path, logical_path], 'STDERR', '-317000 USER_INPUT_PATH_ERR')
+
+            # Assert that no copy occurred and the existing replica remains untouched.
+            self.assertTrue(lib.replica_exists_on_resource(self.user, logical_path, self.user.default_resource))
+
+            self.assertEqual(
+                str(1), lib.get_replica_status_for_resource(self.user, logical_path, self.user.default_resource))
+
+            self.assertEqual(
+                original_content,
+                self.user.assert_icommand(
+                    ['istream', 'read', logical_path], 'STDOUT')[1].strip())
+
+        finally:
+            self.user.assert_icommand(['irm', '-f', logical_path])
+
+    def test_overwrite_fails_when_force_flag_is_not_specified(self):
+        object_name = 'test_overwrite_fails_when_force_flag_is_not_specified__issue_6497'
+        other_object_name = 'test_overwrite_fails_when_force_flag_is_not_specified__issue_6497_other'
+        logical_path = os.path.join(self.user.session_collection, object_name)
+        other_logical_path = os.path.join(self.user.session_collection, other_object_name)
+
+        original_content = 'you should always see this'
+        new_content = 'you should never see this'
+
+        try:
+            # Make an object...
+            self.user.assert_icommand(['istream', 'write', logical_path], 'STDOUT', input=original_content)
+
+            self.assertTrue(lib.replica_exists_on_resource(self.user, logical_path, self.user.default_resource))
+
+            # Make a new object with different content and attempt to copy over the first object (the copy should fail).
+            self.user.assert_icommand(['istream', 'write', other_logical_path], 'STDOUT', input=new_content)
+            self.user.assert_icommand(['icp', other_logical_path, logical_path],
+                                      'STDERR', '-312000 OVERWRITE_WITHOUT_FORCE_FLAG')
+
+            # Assert that no copy occurred and the existing replica remains untouched.
+            self.assertTrue(lib.replica_exists_on_resource(self.user, logical_path, self.user.default_resource))
+
+            self.assertEqual(
+                str(1), lib.get_replica_status_for_resource(self.user, logical_path, self.user.default_resource))
+
+            self.assertEqual(
+                original_content,
+                self.user.assert_icommand(
+                    ['istream', 'read', logical_path], 'STDOUT')[1].strip())
+
+        finally:
+            self.user.assert_icommand(['irm', '-f', logical_path])
+            self.user.assert_icommand(['irm', '-f', other_logical_path])
