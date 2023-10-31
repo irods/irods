@@ -10,7 +10,7 @@
 
 namespace
 {
-    // A mapping containing handles to heterogenous objects.
+    // A mapping containing handles to heterogeneous objects.
     std::unordered_map<std::string, boost::any> g_stash; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
     // A mutex which protects the map from data corruption.
