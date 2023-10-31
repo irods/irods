@@ -661,6 +661,12 @@ def get_replica_status(session, data_name, replica_number):
         "select DATA_REPL_STATUS where DATA_NAME = '{}' and DATA_REPL_NUM = '{}'"
         .format(data_name, str(replica_number))])[0].strip()
 
+def get_replica_status_for_resource(session, logical_path, resource_name):
+    return session.run_icommand(['iquest', '%s',
+        "select DATA_REPL_STATUS where COLL_NAME = '{}' and DATA_NAME = '{}' and DATA_RESC_NAME = '{}'"
+        .format(os.path.dirname(logical_path),
+                os.path.basename(logical_path),
+                resource_name)])[0].strip()
 
 def get_replica_size(session, data_name, replica_number):
     return session.run_icommand(['iquest', '%s',
