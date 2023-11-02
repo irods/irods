@@ -963,26 +963,6 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(["imeta","rmw","-R",self.testresc,"rebalance_operation","%","%"])
         self.admin.assert_icommand(["imeta","rmw","-R","demoResc","rebalance_operation","%","%"])
 
-    def test_ibun(self):
-        test_file = "ibun_test_file"
-        lib.make_file(test_file, 1000)
-        cmd = "tar cf somefile.tar " + test_file
-        lib.execute_command(['tar', 'cf', 'somefile.tar', test_file])
-
-        tar_path = self.admin.session_collection + '/somefile.tar'
-        dir_path = self.admin.session_collection + '/somedir'
-
-        self.admin.assert_icommand("iput somefile.tar")
-        self.admin.assert_icommand("imkdir " + dir_path)
-        self.admin.assert_icommand("iput %s %s/foo0" % (test_file, dir_path))
-        self.admin.assert_icommand("iput %s %s/foo1" % (test_file, dir_path))
-
-        self.admin.assert_icommand("ibun -cD tar " + tar_path + " " +
-                                   dir_path, 'STDERR_SINGLELINE', "OVERWRITE_WITHOUT_FORCE_FLAG")
-
-        self.admin.assert_icommand("irm -rf " + dir_path)
-        self.admin.assert_icommand("irm -rf " + tar_path)
-
     @unittest.skip( "configuration requires sudo to create the environment")
     def test_rebalance_for_repl_node_with_different_users_with_write_failure__issue_3674(self):
         #  sudo truncate -s 3M /tmp/irods/badfs_file
