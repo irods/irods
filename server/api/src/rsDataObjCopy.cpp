@@ -1,3 +1,5 @@
+#include "irods/rsDataObjCopy.hpp"
+
 #include "irods/collection.hpp"
 #include "irods/dataObjClose.h"
 #include "irods/dataObjCopy.h"
@@ -6,12 +8,12 @@
 #include "irods/dataObjRepl.h"
 #include "irods/getRemoteZoneResc.h"
 #include "irods/irods_logger.hpp"
+#include "irods/key_value_proxy.hpp"
 #include "irods/objMetaOpr.hpp"
 #include "irods/rcGlobalExtern.h"
 #include "irods/regDataObj.h"
 #include "irods/rodsLog.h"
 #include "irods/rsDataObjClose.hpp"
-#include "irods/rsDataObjCopy.hpp"
 #include "irods/rsDataObjCreate.hpp"
 #include "irods/rsDataObjOpen.hpp"
 #include "irods/rsDataObjRepl.hpp"
@@ -24,7 +26,8 @@
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 #include "irods/filesystem.hpp"
 
-#include "irods/key_value_proxy.hpp"
+#define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
+#include "irods/data_object_proxy.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods/irods_resource_redirect.hpp"
@@ -35,6 +38,8 @@
 
 namespace
 {
+    namespace fs = irods::experimental::filesystem;
+
     using log_api = irods::experimental::log::api;
 
     int connect_to_remote_zone(
@@ -217,23 +222,66 @@ namespace
         dataObjCopyInp_t *dataObjCopyInp,
         transferStat_t **transStat)
     {
-        namespace fs = irods::experimental::filesystem;
-
         dataObjInp_t* srcDataObjInp = &dataObjCopyInp->srcDataObjInp;
         dataObjInp_t* destDataObjInp = &dataObjCopyInp->destDataObjInp;
         try {
-            if (!fs::server::is_data_object(*rsComm, srcDataObjInp->objPath) ||
-                fs::path{destDataObjInp->objPath}.is_relative()) {
+            const auto source_exists_and_is_data_object = fs::server::is_data_object(*rsComm, srcDataObjInp->objPath);
+            if (!source_exists_and_is_data_object || fs::path{destDataObjInp->objPath}.is_relative()) {
                 return USER_INPUT_PATH_ERR;
             }
 
-            if (irods::is_force_flag_required(*rsComm, *destDataObjInp)) {
-                return OVERWRITE_WITHOUT_FORCE_FLAG;
+            // These checks should only be done when the destination data object exists. If not, it does not matter if
+            // the force flag was provided or not, or which resource is being targeted for the copy.
+            const auto destination_exists_and_is_data_object =
+                fs::server::is_data_object(*rsComm, destDataObjInp->objPath);
+            if (destination_exists_and_is_data_object) {
+                // If destination object exists and the force flag is not being used, an overwrite without the force
+                // flag is being attempted. Return an error in this case.
+                if (!getValByKey(&destDataObjInp->condInput, FORCE_FLAG_KW)) {
+                    log_api::error("[{}]: Overwrite of [{}] requires use of the force flag keyword [{}].",
+                                   __func__,
+                                   destDataObjInp->objPath,
+                                   FORCE_FLAG_KW);
+                    return OVERWRITE_WITHOUT_FORCE_FLAG;
+                }
+
+                if (const auto* destination_resource = getValByKey(&destDataObjInp->condInput, DEST_RESC_NAME_KW);
+                    destination_resource) {
+                    // Construct a query to determine whether the data object has any replicas in a resource hierarchy
+                    // that starts with the target resource.
+                    irods::experimental::query_builder qb;
+                    if (const auto zone = fs::zone_name(destDataObjInp->objPath); zone) {
+                        qb.zone_hint(*zone);
+                    }
+                    const auto path = fs::path{destDataObjInp->objPath};
+                    const auto qstr = fmt::format("select DATA_ID where COLL_NAME = '{0}' and DATA_NAME = '{1}' and "
+                                                  "DATA_RESC_HIER like '{2};%' || = '{2}'",
+                                                  path.parent_path().c_str(),
+                                                  path.object_name().c_str(),
+                                                  destination_resource);
+
+                    // If no results come back from the query, that means no replica exists on the target resource.
+                    // Creating new replicas on existing data objects with copy is not allowed, so we throw an error
+                    // indicating that an error occurred while resolving the hierarchy.
+                    if (auto q = qb.build(*rsComm, qstr); q.empty()) {
+                        log_api::error(fmt::format(
+                            "[{}]: Cannot overwrite [{}] on resource [{}] because resource does not hold a replica.",
+                            __func__,
+                            destDataObjInp->objPath,
+                            destination_resource));
+                        return HIERARCHY_ERROR;
+                    }
+                }
             }
         }
         catch (const fs::filesystem_error& e) {
-            irods::experimental::log::api::error(e.what());
+            log_api::error(e.what());
             return e.code().value();
+        }
+        catch (const irods::exception& e) {
+            log_api::error(e.client_display_what());
+            // NOLINTNEXTLINE(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+            return e.code();
         }
 
         specCollCache_t *specCollCache{};
@@ -246,7 +294,13 @@ namespace
             return remoteFlag;
         }
         else if ( remoteFlag == REMOTE_HOST ) {
-            // It is not possible to reach this case with rodsServerHost being nullptr, so no check is needed.
+            // It is not possible to reach this case with rodsServerHost being nullptr. However, in the event that it
+            // ever does occur for some reason, we should return an error.
+            if (!rodsServerHost) {
+                log_api::error("[{}]: rodsServerHost is nullptr despite remoteFlag being valid.", __func__);
+                return SYS_INTERNAL_ERR;
+            }
+
             return _rcDataObjCopy(rodsServerHost->conn, dataObjCopyInp, transStat);
         }
 
