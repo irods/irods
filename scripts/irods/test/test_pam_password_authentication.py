@@ -219,8 +219,9 @@ class test_configurations(unittest.TestCase):
                             self.admin.assert_icommand(
                                 ['iadmin', 'set_grid_configuration', self.configuration_namespace, max_time_option_name, option_value])
 
-                            # Note: The min/max check does not occur when no TTL parameter is passed, for some reason.
-                            # We must pass TTL explicitly for each test.
+                            # Note: The min/max check does not occur when no TTL parameter is passed. If no TTL is
+                            # passed, the minimum password lifetime is used for the TTL. Therefore, to test TTL lifetime
+                            # boundaries, we must pass TTL explicitly for each test.
 
                             # This is lower than the minimum and higher than the maximum. The TTL is invalid.
                             self.auth_session.assert_icommand(
@@ -584,3 +585,78 @@ class test_configurations(unittest.TestCase):
             # Re-authenticate as the session user to make sure things can be cleaned up.
             self.auth_session.assert_icommand(
                 ['iinit'], 'STDOUT', 'iRODS password', input=f'{self.auth_session.password}\n')
+
+    def test_password_max_time_can_exceed_1209600__issue_3742_5096(self):
+        # Note: This does NOT test the TTL as this would require waiting for the password to expire (2 weeks + 1 hour).
+        # The test is meant to ensure that a TTL greater than 1209600 is allowed with iinit when it is so configured.
+
+        max_time_option_name = 'password_max_time'
+
+        # Stash away the original configuration for later...
+        original_max_time = self.admin.assert_icommand(
+            ['iadmin', 'get_grid_configuration', self.configuration_namespace, max_time_option_name], 'STDOUT')[1].strip()
+
+        IrodsController().stop()
+
+        auth_session_env_backup = copy.deepcopy(self.auth_session.environment_file_contents)
+        admin_session_env_backup = copy.deepcopy(self.admin.environment_file_contents)
+        try:
+            service_account_environment_file_path = os.path.join(
+                os.path.expanduser('~'), '.irods', 'irods_environment.json')
+            with lib.file_backed_up(service_account_environment_file_path):
+                client_update = test_configurations.make_dict_for_ssl_client_environment(
+                    self.server_key_path, self.chain_pem_path, self.dhparams_pem_path)
+
+                lib.update_json_file_from_dict(service_account_environment_file_path, client_update)
+
+                self.admin.environment_file_contents.update(client_update)
+
+                client_update['irods_authentication_scheme'] = self.authentication_scheme
+                self.auth_session.environment_file_contents.update(client_update)
+
+                with temporary_core_file() as core:
+                    core.add_rule(test_configurations.get_pep_for_ssl(self.plugin_name))
+
+                    IrodsController().start()
+
+                    # The test value is 2 hours more than the default in order to try a TTL value 1 greater and 1 less
+                    # than the configured password_max_time while still remaining above 1209600 to show that there is
+                    # nothing special about that value.
+                    base_ttl_in_hours = 336 + 2
+                    base_ttl_in_seconds = base_ttl_in_hours * 3600
+
+                    # Set password_max_time to the value for the test.
+                    option_value = str(base_ttl_in_seconds)
+                    self.admin.assert_icommand(
+                        ['iadmin', 'set_grid_configuration', self.configuration_namespace, max_time_option_name, option_value])
+
+                    # Note: The min/max check does not occur when no TTL parameter is passed. If no TTL is passed, the
+                    # minimum password lifetime is used for the TTL. Therefore, to test TTL lifetime boundaries, we must
+                    # pass TTL explicitly for each test.
+
+                    # TTL value is higher than the maximum. The TTL is invalid.
+                    self.auth_session.assert_icommand(
+                        ['iinit', '--ttl', str(base_ttl_in_hours + 1)],
+                         'STDERR', 'PAM_AUTH_PASSWORD_INVALID_TTL',
+                         input=f'{self.auth_session.password}\n')
+
+                    # TTL value is lower than the maximum. The TTL is valid.
+                    self.auth_session.assert_icommand(
+                         ['iinit', '--ttl', str(base_ttl_in_hours - 1)],
+                         'STDOUT', 'PAM password',
+                         input=f'{self.auth_session.password}\n')
+ 
+                    # TTL value is equal to the maximum. The TTL is valid.
+                    self.auth_session.assert_icommand(
+                         ['iinit', '--ttl', str(base_ttl_in_hours)],
+                         'STDOUT', 'PAM password',
+                         input=f'{self.auth_session.password}\n')
+
+        finally:
+            self.auth_session.environment_file_contents = auth_session_env_backup
+            self.admin.environment_file_contents = admin_session_env_backup
+
+            IrodsController().restart()
+
+            self.admin.assert_icommand(
+                ['iadmin', 'set_grid_configuration', self.configuration_namespace, max_time_option_name, original_max_time])
