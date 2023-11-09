@@ -93,8 +93,9 @@ class test_configurations(unittest.TestCase):
                     self.admin.assert_icommand(
                         ['iadmin', 'set_grid_configuration', self.configuration_namespace, max_time_option_name, option_value])
 
-                    # Note: The min/max check does not occur when no TTL parameter is passed, for some reason.
-                    # We must pass TTL explicitly for each test. Even though this is native authentication,
+                    # Note: The min/max check does not occur when no TTL parameter is passed. If no TTL is passed, the
+                    # password never expires (i.e. no TTL). Therefore, to test TTL lifetime configurations, we must pass
+                    # TTL explicitly for each test. Even though this is native authentication,
                     # PAM_AUTH_PASSWORD_INVALID_TTL is the returned error.
 
                     # This is lower than the minimum and higher than the maximum. The TTL is invalid.
@@ -354,3 +355,52 @@ class test_configurations(unittest.TestCase):
 
             # Re-authenticate as the session user to make sure things can be cleaned up.
             self.auth_session.assert_icommand(['iinit'], 'STDOUT', 'iRODS password', input=f'{self.auth_session.password}\n')
+
+    def test_password_max_time_can_exceed_1209600__issue_3742_5096(self):
+        # Note: This does NOT test the TTL as this would require waiting for the password to expire (2 weeks + 1 hour).
+        # The test is meant to ensure that a TTL greater than 1209600 is allowed with iinit when it is so configured.
+
+        max_time_option_name = 'password_max_time'
+
+        # Stash away the original configuration for later...
+        original_max_time = self.admin.assert_icommand(
+            ['iadmin', 'get_grid_configuration', self.configuration_namespace, max_time_option_name], 'STDOUT')[1].strip()
+
+        try:
+            # The test value is 2 hours more than the default in order to try a TTL value 1 greater and 1 less than the
+            # configured password_max_time while still remaining above 1209600 to show that there is nothing special
+            # about that value.
+            base_ttl_in_hours = 336 + 2
+            base_ttl_in_seconds = base_ttl_in_hours * 3600
+
+            # Set password_max_time to the value for the test.
+            option_value = str(base_ttl_in_seconds)
+            self.admin.assert_icommand(
+                ['iadmin', 'set_grid_configuration', self.configuration_namespace, max_time_option_name, option_value])
+
+            # Note: The min/max check does not occur when no TTL parameter is passed. If no TTL is passed, the
+            # password never expires (i.e. no TTL). Therefore, to test TTL lifetime configurations, we must pass
+            # TTL explicitly for each test. Even though this is native authentication,
+            # PAM_AUTH_PASSWORD_INVALID_TTL is the returned error.
+
+            # TTL value is higher than the maximum. The TTL is invalid.
+            self.auth_session.assert_icommand(
+                ['iinit', '--ttl', str(base_ttl_in_hours + 1)],
+                 'STDERR', 'rcGetLimitedPassword failed with error [-994000]',
+                 input=f'{self.auth_session.password}\n')
+
+            # TTL value is lower than the maximum. The TTL is valid.
+            self.auth_session.assert_icommand(
+                 ['iinit', '--ttl', str(base_ttl_in_hours - 1)],
+                 'STDOUT', 'Enter your current iRODS password',
+                 input=f'{self.auth_session.password}\n')
+
+            # TTL value is equal to the maximum. The TTL is valid.
+            self.auth_session.assert_icommand(
+                 ['iinit', '--ttl', str(base_ttl_in_hours)],
+                 'STDOUT', 'Enter your current iRODS password',
+                 input=f'{self.auth_session.password}\n')
+
+        finally:
+            self.admin.assert_icommand(
+                ['iadmin', 'set_grid_configuration', self.configuration_namespace, max_time_option_name, original_max_time])
