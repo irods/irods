@@ -316,7 +316,7 @@ checkStringForSystem( const char * inString ) {
     if ( inString == NULL ) {
         return 0;
     }
-    if ( boost::regex_match( inString, boost::regex( "[a-zA-Z0-9,./ ]*" ) ) ) {
+    if (boost::regex_match(inString, boost::regex("[^\r\n]*"))) {
         return 0;
     }
     return USER_INPUT_STRING_ERR;

@@ -1,10 +1,11 @@
-/// \file
+// \file
 
 #include "irods/icatHighLevelRoutines.hpp"
 
 #include "irods/irods_log.hpp"
 #include "irods/irods_re_structs.hpp"
 
+#include <boost/process.hpp>
 #include <unistd.h>
 #include <sys/types.h>
 #include <pwd.h>
@@ -87,20 +88,11 @@ int msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, 
         return SYS_MALLOC_ERR;
     }
 
-#ifdef solaris_platform
-    sprintf( mailStr, "cat %s| mail  '%s'", fName, toAddr );
-#else /* tested for linux - not sure how other platforms operate for subject */
-    if ( strlen( subjectLine ) > 0 ) {
-        sprintf( mailStr, "cat %s| mail -s '%s'  '%s'", fName, subjectLine, toAddr );
-    }
-    else {
-        sprintf( mailStr, "cat %s| mail  '%s'", fName, toAddr );
-    }
-#endif
     int ret = 0;
-    ret = system( mailStr );
+    namespace bp = boost::process;
+    ret = bp::system(bp::search_path("mail"), "-s", subjectLine, toAddr, bp::std_in < fName);
     if ( ret ) {
-        irods::log( ERROR( ret, "mailStr command returned non-zero status" ) );
+        irods::log(ERROR(ret, "boost::process::system command returned non-zero status"));
     }
     sprintf( mailStr, "rm %s", fName );
     ret = system( mailStr );
