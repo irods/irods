@@ -122,6 +122,7 @@ usage() {
         " ",
         "Options are:",
         " -f  force - Immediate removal of data objects without putting them in trash.",
+        "             Ignores non-existent data objects and collections.",
         " -r  recursive - Recursively remove the target collection, all data objects in the ",
         "                 collection, and all subcollections.",
         " -v  verbose",
