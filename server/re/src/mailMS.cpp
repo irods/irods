@@ -1,4 +1,4 @@
-// \file
+/// \file
 
 #include "irods/icatHighLevelRoutines.hpp"
 
@@ -10,6 +10,10 @@
 #include <sys/types.h>
 #include <pwd.h>
 
+namespace
+{
+    using log_re = irods::experimental::log::rule_engine;
+} // anonymous namespace
 /**
  * \fn msiSendMail(msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, ruleExecInfo_t *)
  *
@@ -20,7 +24,8 @@
  * \since pre-2.1
  *
  *
- * \note   This microservice sends e-mail using the mail command in the unix system. No attachments are supported. The sender of the e-mail is the unix user-id running the irodsServer.
+ * \note   This microservice sends e-mail using the mail command in the unix system. No attachments are supported. The
+ *sender of the e-mail is the unix user-id running the irodsServer.
  *
  * \usage See clients/icommands/test/rules/
  *
@@ -42,7 +47,7 @@
  * \pre none
  * \post none
  * \sa none
-**/
+ **/
 int msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, ruleExecInfo_t* ) {
 
     const char * toAddr = ( char * ) xtoAddr->inOutStruct;
@@ -88,11 +93,10 @@ int msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, 
         return SYS_MALLOC_ERR;
     }
 
-    int ret = 0;
     namespace bp = boost::process;
-    ret = bp::system(bp::search_path("mail"), "-s", subjectLine, toAddr, bp::std_in < fName);
+    int ret = bp::system(bp::search_path("mail"), "-s", subjectLine, toAddr, bp::std_in < fName);
     if ( ret ) {
-        irods::log(ERROR(ret, "boost::process::system command returned non-zero status"));
+        log_re::error("{}: error code: {}", __func__, ret);
     }
     sprintf( mailStr, "rm %s", fName );
     ret = system( mailStr );

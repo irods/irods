@@ -316,6 +316,8 @@ checkStringForSystem( const char * inString ) {
     if ( inString == NULL ) {
         return 0;
     }
+    // Now that boost::process is being used, no need to check for shell injections
+    // Disallowing \r and \n is by spec
     if (boost::regex_match(inString, boost::regex("[^\r\n]*"))) {
         return 0;
     }
