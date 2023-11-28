@@ -9,6 +9,8 @@
 #include <irods/irods_pack_table.hpp>
 #include <irods/rodsPath.h>
 
+#include "utility.hpp"
+
 #include <fmt/format.h>
 
 #include <cstdio>
@@ -2135,6 +2137,8 @@ int display_help(const std::vector<std::string>& _sub_args) {
 int main( int argc, const char **argv )
 {
     signal( SIGPIPE, SIG_IGN );
+
+    utils::set_ips_display_name(boost::filesystem::path{argv[0]}.filename().c_str());
 
     rodsLogLevel(LOG_ERROR);
 
