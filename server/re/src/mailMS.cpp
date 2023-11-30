@@ -94,9 +94,10 @@ int msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, 
     }
 
     namespace bp = boost::process;
-    int ret = bp::system(bp::search_path("mail"), "-s", subjectLine, toAddr, bp::std_in < fName);
-    if ( ret ) {
-        log_re::error("{}: error code: {}", __func__, ret);
+    std::error_code ec{0, std::system_category()};
+    int ret = bp::system(bp::search_path("mail"), "-s", subjectLine, toAddr, bp::std_in < fName, ec);
+    if (ret || ec) {
+        log_re::error("{}: mail command return code: {}, error code: {}", __func__, ret, ec.value());
     }
     sprintf( mailStr, "rm %s", fName );
     ret = system( mailStr );
