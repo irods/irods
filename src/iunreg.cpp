@@ -124,7 +124,7 @@ usage() {
         " ",
         "Reduce the number of replicas of a dataObject in iRODS by unregistering some replicas.",
         "Nothing will be done if this is less than or equal to numCopies. The -n and",
-        "the -S options are used to specified which replicas to unregister.",
+        "the -S options are used to specify which replicas to unregister.",
         " ",
         "Note that if both are used at the same time, the server will return an error",
         "if -n violates the requirements of -N.",
