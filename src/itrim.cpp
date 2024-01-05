@@ -130,7 +130,7 @@ usage() {
         " -v  verbose",
         " -V  Very verbose",
         "--age age_in_minutes - The minimum age of the replica in minutes for trimming.",
-        "     i.e., a repliaa will not be trimmed if its age is less.",
+        "     i.e., a replica will not be trimmed if its age is less.",
         "--dryrun - Do a dry run. No replicas will be trimmed.",
         " -h  this help",
         ""
