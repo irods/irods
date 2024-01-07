@@ -2191,7 +2191,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
             '''),
             'irods_rule_engine_plugin-python': textwrap.dedent('''
                 def main(rule_args, callback, rei):
-                    out_dict = callback.msiDataObjRsync(global_vars['*SourceFile'][1:-1], 'IRODS_TO_IRODS', global_vars['*Resource'][1:-1], global_vars['*DestFile'][1:-1], 0)
+                    out_dict = callback.msiDataObjRsync(irods_rule_vars['*SourceFile'][1:-1], 'IRODS_TO_IRODS', global_vars['*Resource'][1:-1], global_vars['*DestFile'][1:-1], 0)
                     if not out_dict['status']:
                         callback.writeLine('stdout', 'ERROR: ' + str(out_dict['code']))
 
@@ -2253,7 +2253,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
             '''),
             'irods_rule_engine_plugin-python': textwrap.dedent('''
                 def main(rule_args, callback, rei):
-                    out_dict = callback.msiCollRsync(global_vars['*SourceColl'][1:-1], global_vars['*DestColl'][1:-1], global_vars['*Resource'][1:-1], 'IRODS_TO_IRODS', 0)
+                    out_dict = callback.msiCollRsync(irods_rule_vars['*SourceColl'][1:-1], global_vars['*DestColl'][1:-1], global_vars['*Resource'][1:-1], 'IRODS_TO_IRODS', 0)
                     if not out_dict['status']:
                         callback.writeLine('stdout', 'ERROR: ' + str(out_dict['code']))
 
@@ -2322,7 +2322,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
             '''),
             'irods_rule_engine_plugin-python': textwrap.dedent('''
                 def main(rule_args, callback, rei):
-                    out_dict = callback.msiDataObjUnlink('objPath=' + global_vars['*SourceFile'][1:-1] + '++++unreg=', 0)
+                    out_dict = callback.msiDataObjUnlink('objPath=' + irods_rule_vars['*SourceFile'][1:-1] + '++++unreg=', 0)
                     if not out_dict['status']:
                         callback.writeLine('stdout', 'ERROR: ' + str(out_dict['code']))
 
@@ -2366,7 +2366,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
             '''),
             'irods_rule_engine_plugin-python': textwrap.dedent('''
                 def main(rule_args, callback, rei):
-                    out_dict = callback.msiDataObjRepl(global_vars['*SourceFile'][1:-1], 'destRescName=' + global_vars['*Resource'][1:-1] + '++++irodsAdmin=', 0)
+                    out_dict = callback.msiDataObjRepl(irods_rule_vars['*SourceFile'][1:-1], 'destRescName=' + global_vars['*Resource'][1:-1] + '++++irodsAdmin=', 0)
                     if not out_dict['status']:
                         callback.writeLine('stdout', 'ERROR: ' + str(out_dict['code']))
 
@@ -2420,7 +2420,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
             '''),
             'irods_rule_engine_plugin-python': textwrap.dedent('''
                 def main(rule_args, callback, rei):
-                    out_dict = callback.msisync_to_archive(global_vars['*RescHier'][1:-1], global_vars['*PhysicalPath'][1:-1], global_vars['*LogicalPath'][1:-1])
+                    out_dict = callback.msisync_to_archive(irods_rule_vars['*RescHier'][1:-1], global_vars['*PhysicalPath'][1:-1], global_vars['*LogicalPath'][1:-1])
                     if not out_dict['status']:
                         callback.writeLine('stdout', 'ERROR: ' + str(out_dict['code']))
 
