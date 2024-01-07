@@ -77,7 +77,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
             '''),
             'irods_rule_engine_plugin-python': textwrap.dedent(f'''
                 def main(rule_args, callback, rei):
-                    out_dict = callback.msiDataObjCreate(global_vars['*TEST_ROOT'][1:-1] + '/' + '{filename}', 'null', 0)
+                    out_dict = callback.msiDataObjCreate(irods_rule_vars['*TEST_ROOT'][1:-1] + '/' + '{filename}', 'null', 0)
                     file_desc = out_dict['arguments'][2]
 
                     out_dict = callback.msiDataObjWrite(file_desc, 'this_is_a_test_string', 0)
