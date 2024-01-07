@@ -356,7 +356,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
                 rule_file = f.name
                 print(dedent('''\
                 def main(rule_args,callback,rei):
-                    TestCollection = global_vars['*testcollection'][1:-1]
+                    TestCollection = irods_rule_vars['*testcollection'][1:-1]
                     retval = callback.my_rule_256(TestCollection);
                     result = retval['arguments'][0]
                     callback.writeLine("stdout", "multiples of 256 test: {}".format(result))
@@ -451,7 +451,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
                 rule_file = f.name
                 print(dedent('''\
                 def main(rule_args,callback,rei):
-                    TestCollection = global_vars['*testcollection'][1:-1]
+                    TestCollection = irods_rule_vars['*testcollection'][1:-1]
                     retval = callback.my_rule_256_nonnested(TestCollection);
                     result = retval['arguments'][0]
                     callback.writeLine("stdout", "nonnested repeats test: {}".format(result))
@@ -514,7 +514,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
                 rule_file = f.name
                 print(dedent('''\
                 def main(rule_args,callback,rei):
-                    TestCollection = global_vars['*testcollection'][1:-1]
+                    TestCollection = irods_rule_vars['*testcollection'][1:-1]
                     retval = callback.my_rule_256_nested(TestCollection);
                     result = retval['arguments'][0]
                     # import os
@@ -573,7 +573,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
             rule_file = f.name
             print(dedent('''\
             def main(rule_args,callback,rei):
-                collect = global_vars['*testcollection'][1:-1]
+                collect = irods_rule_vars['*testcollection'][1:-1]
                 from genquery import row_iterator, paged_iterator, AS_LIST
 
                 condString1 = "COLL_NAME = '" + collect + "' and {cond1}"
@@ -695,10 +695,10 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
                 rule_string = dedent('''\
                                  def main(rule_args,callback,rei):
                                      a = "%s/%%" # collection  plus Sql match pattern
-                                     b = global_vars['*rpi'][1:-1]  # rows_per_iter
+                                     b = irods_rule_vars['*rpi'][1:-1]  # rows_per_iter
                                      c = ""      # empty string (no verbose log dump)
-                                     rpi = global_vars['*rpi'][1:-1]
-                                     nobj = global_vars['*nobj'][1:-1]
+                                     rpi = irods_rule_vars['*rpi'][1:-1]
+                                     nobj = irods_rule_vars['*nobj'][1:-1]
                                      #callback.writeLine('serverLog', '*nobj = {}'.format(nobj))
                                      predicted = validate_output( nobj , rpi , "" )
                                      if b == "0": b = ""
