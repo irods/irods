@@ -70,6 +70,7 @@ set(
   rc_check_auth_credentials
   rc_data_obj
   rc_data_obj_repl
+  rc_data_obj_truncate
   rc_get_library_features
   rc_switch_user
   re_serialization

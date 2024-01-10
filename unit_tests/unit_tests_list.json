@@ -39,6 +39,7 @@
     "irods_rc_check_auth_credentials",
     "irods_rc_data_obj",
     "irods_rc_data_obj_repl",
+    "irods_rc_data_obj_truncate",
     "irods_rc_get_library_features",
     "irods_rc_switch_user",
     "irods_re_serialization",
