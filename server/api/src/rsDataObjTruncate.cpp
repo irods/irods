@@ -1,29 +1,23 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code (for the most part).  */
-/* See dataObjTruncate.h for a description of this API call.*/
-
-#include "irods/rcMisc.h"
-#include "irods/dataObjTruncate.h"
-#include "irods/rodsLog.h"
-#include "irods/icatDefines.h"
-#include "irods/fileTruncate.h"
-#include "irods/unregDataObj.h"
-#include "irods/objMetaOpr.hpp"
-#include "irods/dataObjOpr.hpp"
-#include "irods/rsGlobalExtern.hpp"
-#include "irods/rcGlobalExtern.h"
 #include "irods/rsDataObjTruncate.hpp"
-#include "irods/rmColl.h"
-#include "irods/modDataObjMeta.h"
-#include "irods/subStructFileTruncate.h"
+
+#include "irods/dataObjOpr.hpp"
+#include "irods/dataObjTruncate.h"
+#include "irods/fileTruncate.h"
 #include "irods/getRemoteZoneResc.h"
+#include "irods/icatDefines.h"
+#include "irods/irods_resource_backport.hpp"
+#include "irods/modDataObjMeta.h"
+#include "irods/objMetaOpr.hpp"
+#include "irods/rcGlobalExtern.h"
+#include "irods/rcMisc.h"
+#include "irods/rmColl.h"
+#include "irods/rodsLog.h"
+#include "irods/rsFileTruncate.hpp"
+#include "irods/rsGlobalExtern.hpp"
 #include "irods/rsModDataObjMeta.hpp"
 #include "irods/rsSubStructFileTruncate.hpp"
-#include "irods/rsFileTruncate.hpp"
-
-#include "irods/irods_resource_backport.hpp"
-
+#include "irods/subStructFileTruncate.h"
+#include "irods/unregDataObj.h"
 
 
 int
