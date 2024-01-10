@@ -77,6 +77,7 @@ set(
   replica_access_table
   replica_open_and_close
   replica_state_table
+  replica_truncate
   rerror_stack
   resource_administration
   scoped_privileged_client
