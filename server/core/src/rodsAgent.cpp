@@ -29,6 +29,7 @@
 #include "irods/reconstants.hpp"
 #include "irods/replica_access_table.hpp"
 #include "irods/replica_state_table.hpp"
+#include "irods/rodsErrorTable.h"
 #include "irods/rsApiHandler.hpp"
 #include "irods/server_utilities.hpp"
 #include "irods/sockCommNetworkInterface.hpp"
@@ -141,8 +142,9 @@ int receiveDataFromServer(int conn_tmp_socket)
             const auto pos = tmpStr.find('=');
 
             if (pos == std::string_view::npos) {
-                // No equal sign was found.
-                continue;
+                log_agent_factory::error(
+                    "{}: Malformed payload: please check the client's settings for invalid characters.", __func__);
+                return SYS_AGENT_INIT_ERR;
             }
 
             const auto lhs = tmpStr.substr(0, pos);
