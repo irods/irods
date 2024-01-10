@@ -5,7 +5,9 @@
 #include "irods/fileTruncate.h"
 #include "irods/getRemoteZoneResc.h"
 #include "irods/icatDefines.h"
+#include "irods/irods_logger.hpp"
 #include "irods/irods_resource_backport.hpp"
+#include "irods/logical_locking.hpp"
 #include "irods/modDataObjMeta.h"
 #include "irods/objMetaOpr.hpp"
 #include "irods/rcGlobalExtern.h"
@@ -19,6 +21,11 @@
 #include "irods/subStructFileTruncate.h"
 #include "irods/unregDataObj.h"
 
+namespace
+{
+    namespace ill = irods::logical_locking;
+    using log_api = irods::experimental::log::api;
+} // anonymous namespace
 
 int
 rsDataObjTruncate( rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp ) {
@@ -44,6 +51,23 @@ rsDataObjTruncate( rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp ) {
 
     if ( status < 0 ) {
         return status;
+    }
+
+    // NOLINTNEXTLINE(readability-implicit-bool-conversion)
+    if (!dataObjInfoHead) {
+        log_api::error("{}: Failed to get data object info for [{}].", __func__, dataObjTruncateInp->objPath);
+        return SYS_INTERNAL_ERR;
+    }
+
+    const auto free_data_obj_info = irods::at_scope_exit{[dataObjInfoHead] { freeAllDataObjInfo(dataObjInfoHead); }};
+
+    if (const auto ret = ill::try_lock(*dataObjInfoHead, ill::lock_type::write); ret < 0) {
+        log_api::info("{}: Truncate not allowed because data object is locked. [error code={}, logical path={}].",
+                      __func__,
+                      ret,
+                      dataObjTruncateInp->objPath);
+
+        return ret;
     }
 
     status = _rsDataObjTruncate( rsComm, dataObjTruncateInp, dataObjInfoHead );
@@ -72,8 +96,6 @@ _rsDataObjTruncate( rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp,
         }
         tmpDataObjInfo = tmpDataObjInfo->next;
     }
-
-    freeAllDataObjInfo( dataObjInfoHead );
 
     return retVal;
 }
