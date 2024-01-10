@@ -46,6 +46,7 @@
     "irods_replica_access_table",
     "irods_replica_open_and_close",
     "irods_replica_state_table",
+    "irods_replica_truncate",
     "irods_rerror_stack",
     "irods_resource_administration",
     "irods_scoped_privileged_client",
