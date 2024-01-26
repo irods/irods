@@ -114,7 +114,7 @@ Options:
   -n, --replica    The replica number of the replica to update.  This
                    option applies to data objects only. Cannot be used
                    with -R.
-  -R, --resource   The leaf resource that contians the replica to update.
+  -R, --resource   The leaf resource that contains the replica to update.
                    This option applies to data objects only. If the data
                    object does not exist and this option is used, the
                    replica will be created on the resource specified.
