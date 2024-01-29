@@ -57,8 +57,6 @@ namespace irods {
             copyKeyVal( ( keyValPair_t* )&object.cond_input(), &dataObjInp.condInput );
             addKeyVal( &dataObjInp.condInput, RESC_HIER_STR_KW, child_.c_str() );
             addKeyVal( &dataObjInp.condInput, DEST_RESC_HIER_STR_KW, hierarchy_string.c_str() );
-            addKeyVal( &dataObjInp.condInput, RESC_NAME_KW, root_resource_.c_str() );
-            addKeyVal( &dataObjInp.condInput, DEST_RESC_NAME_KW, root_resource_.c_str() );
             addKeyVal( &dataObjInp.condInput, IN_PDMO_KW, sub_hier.c_str() );
 
             try {

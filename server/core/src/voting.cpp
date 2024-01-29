@@ -213,7 +213,7 @@ namespace detail {
 
     float calculate_for_write(context& ctx)
     {
-        return calculate_with_repl_status(ctx, STALE_REPLICA);
+        return calculate_with_repl_status(ctx, GOOD_REPLICA);
     } // calculate_for_write
 } // namespace detail
 
