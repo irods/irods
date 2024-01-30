@@ -12,6 +12,7 @@ import tempfile
 from . import resource_suite
 from .. import lib
 from .. import test
+from ..test.command import assert_command
 
 class Test_ibun(resource_suite.ResourceBase, unittest.TestCase):
     def setUp(self):
@@ -286,3 +287,59 @@ class Test_ibun(resource_suite.ResourceBase, unittest.TestCase):
             lib.remove_resource(self.admin, compound_resource)
             lib.remove_resource(self.admin, cache_resource)
             lib.remove_resource(self.admin, archive_resource)
+
+    @unittest.skip('Generation of large file causes I/O thrashing... skip for now')
+    def test_ibun_tar_with_file_over_8GB__issue_7474(self):
+        try:
+            test_file_small = "ibun_test_file_small"
+            test_file_medium = "ibun_test_file_medium"
+            test_file_large = "ibun_test_file_large"
+            lib.make_arbitrary_file(test_file_small, 1000)
+            lib.make_arbitrary_file(test_file_medium, 100*1024*1024)
+
+            # for this very large file, just making it with truncate as make_arbitrary_file
+            # would take too long and contents='random' would use too much entropy
+            lib.make_file(test_file_large, 12*1024*1024*1024, 'arbitrary')   # make_arbitrary
+
+            tar_path = f'{self.admin.session_collection}/somefile.tar'
+            collection_to_tar = 'tardir'
+            extract_collection = 'extracted'
+            collection_to_tar_fullpath = f'{self.admin.session_collection}/{collection_to_tar}'
+            extract_collection_fullpath = f'{self.admin.session_collection}/{extract_collection}'
+
+            # create directories to tar up and extract the tar to
+            self.admin.assert_icommand(f'imkdir {collection_to_tar_fullpath}')
+            self.admin.assert_icommand(f'imkdir {extract_collection_fullpath}')
+
+            # put files into tar colleciton
+            self.admin.assert_icommand(f'iput {test_file_small} {collection_to_tar_fullpath}')
+            self.admin.assert_icommand(f'iput {test_file_medium} {collection_to_tar_fullpath}')
+            self.admin.assert_icommand(f'iput {test_file_large} {collection_to_tar_fullpath}')
+
+            # create tar file
+            self.admin.assert_icommand(f'ibun -cDtar {tar_path} {collection_to_tar_fullpath}')
+
+            # extract tar file
+            self.admin.assert_icommand(f'ibun -x {tar_path} {extract_collection_fullpath}')
+
+            # verify contents of extracted file into irods
+            self.admin.assert_icommand(f'ils -l {extract_collection_fullpath}/{collection_to_tar}', 'STDOUT_MULTILINE', [test_file_small, test_file_medium, test_file_large])
+
+            # get the files and compare contents
+            self.admin.assert_icommand(f'iget {extract_collection_fullpath}/{collection_to_tar}/{test_file_small} {test_file_small}.downloaded')
+            assert_command(f'diff {test_file_small} {test_file_small}.downloaded', 'EMPTY')
+            self.admin.assert_icommand(f'iget {extract_collection_fullpath}/{collection_to_tar}/{test_file_medium} {test_file_medium}.downloaded')
+            assert_command(f'diff {test_file_medium} {test_file_medium}.downloaded', 'EMPTY')
+            self.admin.assert_icommand(f'iget {extract_collection_fullpath}/{collection_to_tar}/{test_file_large} {test_file_large}.downloaded')
+            assert_command(f'diff {test_file_large} {test_file_large}.downloaded', 'EMPTY')
+
+        finally:
+            self.admin.assert_icommand(f'irm -f {tar_path}')
+            self.admin.assert_icommand(f'irm -rf {collection_to_tar_fullpath}')
+            self.admin.assert_icommand(f'irm -rf {extract_collection_fullpath}')
+            lib.remove_file_if_exists(test_file_small)
+            lib.remove_file_if_exists(f'{test_file_small}.downloaded')
+            lib.remove_file_if_exists(test_file_medium)
+            lib.remove_file_if_exists(f'{test_file_medium}.downloaded')
+            lib.remove_file_if_exists(test_file_large)
+            lib.remove_file_if_exists(f'{test_file_large}.downloaded')
