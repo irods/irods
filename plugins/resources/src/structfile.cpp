@@ -2287,8 +2287,7 @@ irods::error bundle_cache_dir( int                _index,
 
         // =-=-=-=-=-=-=-
         // set the format of the tar archive
-        archive_write_set_format_ustar( arch );
-
+        archive_write_set_format_pax(arch);
     }
     else if ( _data_type == BZIP2_TAR_DT_STR ) {
         if ( archive_write_add_filter_bzip2( arch ) != ARCHIVE_OK ) {
@@ -2304,8 +2303,7 @@ irods::error bundle_cache_dir( int                _index,
 
         // =-=-=-=-=-=-=-
         // set the format of the tar archive
-        archive_write_set_format_ustar( arch );
-
+        archive_write_set_format_pax(arch);
     }
     else {
         if ( archive_write_add_filter_none( arch ) != ARCHIVE_OK ) {
@@ -2321,8 +2319,7 @@ irods::error bundle_cache_dir( int                _index,
 
         // =-=-=-=-=-=-=-
         // set the format of the tar archive
-        archive_write_set_format_ustar( arch );
-
+        archive_write_set_format_pax(arch);
     }
 
     // =-=-=-=-=-=-=-
