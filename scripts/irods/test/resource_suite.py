@@ -923,11 +923,14 @@ class ResourceSuite(ResourceBase):
         self.admin.assert_icommand("irepl " + filename)               # replicate to default resource
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', filename)          # for debugging
         # replicate overtop default resource
-        self.admin.assert_icommand(['irepl', filename], 'STDERR', 'SYS_NOT_ALLOWED')
+        # This is allowed, but will result in a no-op because default resource already has good replicas and should not
+        # have any stale or missing replicas.
+        self.admin.assert_icommand(['irepl', '-S', self.testresc, '-R', self.admin.default_resource, filename])
         # should not have a replica 2
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 2 ", " & " + filename])
         # replicate overtop test resource
-        self.admin.assert_icommand(['irepl', '-R', self.testresc, filename], 'STDERR', 'SYS_NOT_ALLOWED')
+        # This is allowed, but will result in a no-op because testresc already has a good replica.
+        self.admin.assert_icommand(['irepl', '-S', self.admin.default_resource, '-R', self.testresc, filename])
         # should not have a replica 2
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 2 ", " & " + filename])
         # local cleanup
@@ -947,13 +950,17 @@ class ResourceSuite(ResourceBase):
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate to test resource
         self.admin.assert_icommand("irepl -R thirdresc " + filename)              # replicate to third resource
         # replicate overtop default resource
-        self.admin.assert_icommand(['irepl', filename], 'STDERR', 'SYS_NOT_ALLOWED')
+        # This is allowed, but will result in a no-op because default resource already has good replicas and should not
+        # have any stale or missing replicas.
+        self.admin.assert_icommand(['irepl', '-S', self.testresc, '-R', self.admin.default_resource, filename])
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', filename)          # for debugging
         # replicate overtop test resource
-        self.admin.assert_icommand(['irepl', '-R', self.testresc, filename], 'STDERR', 'SYS_NOT_ALLOWED')
+        # This is allowed, but will result in a no-op because testresc already has a good replica.
+        self.admin.assert_icommand(['irepl', '-S', self.admin.default_resource, '-R', self.testresc, filename])
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', filename)          # for debugging
         # replicate overtop third resource
-        self.admin.assert_icommand(['irepl', '-R', 'thirdresc', filename], 'STDERR', 'SYS_NOT_ALLOWED')
+        # This is allowed, but will result in a no-op because thirdresc already has a good replica.
+        self.admin.assert_icommand(['irepl', '-S', self.admin.default_resource, '-R', 'thirdresc', filename])
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', filename)          # for debugging
         # should not have a replica 3
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 3 ", " & " + filename])
