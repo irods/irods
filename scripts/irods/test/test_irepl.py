@@ -824,15 +824,15 @@ class test_irepl_repl_status(session.make_sessions_mixin([('otherrods', 'rods')]
             {'start':{'a':'-', 'b':'X', 'c':'-'}, 'end':{'a':'X', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'-', 'b':'X', 'c':'&'}, 'end':{'a':'&', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'-', 'b':'X', 'c':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
-            {'start':{'a':'&', 'b':'-', 'c':'-'}, 'end':{'a':'&', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'&', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'-', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'&', 'b':'-', 'c':'X'}, 'end':{'a':'&', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'&', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'&', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'&', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'&', 'b':'X', 'c':'-'}, 'end':{'a':'&', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'&', 'b':'X', 'c':'&'}, 'end':{'a':'&', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'&', 'b':'X', 'c':'X'}, 'end':{'a':'&', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'-'}, 'end':{'a':'&', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'-', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'X'}, 'end':{'a':'&', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'-'}, 'end':{'a':'&', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'&'}, 'end':{'a':'&', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'X'}, 'end':{'a':'&', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'X', 'b':'-', 'c':'-'}, 'end':{'a':'X', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
             {'start':{'a':'X', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'-', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'X', 'b':'-', 'c':'X'}, 'end':{'a':'X', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
@@ -847,31 +847,31 @@ class test_irepl_repl_status(session.make_sessions_mixin([('otherrods', 'rods')]
         replica_status_test.run_command_against_scenarios(self, ['irepl', self.logical_path], scenarios, 'irepl foo')
 
     def test_irepl_Rb_foo(self):
-        # irepl -R b foo (source unspecified, destination b)
+        # irepl -R b foo (source unspecified, destination non-default resource)
         scenarios = [
             {'start':{'a':'-', 'b':'-', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'-', 'b':'-', 'c':'X'}, 'end':{'a':'-', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
-            {'start':{'a':'-', 'b':'&', 'c':'-'}, 'end':{'a':'-', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'-', 'b':'&', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'-', 'b':'&', 'c':'X'}, 'end':{'a':'-', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'-'}, 'end':{'a':'-', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'X'}, 'end':{'a':'-', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'-', 'b':'X', 'c':'-'}, 'end':{'a':'-', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
             {'start':{'a':'-', 'b':'X', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'-', 'b':'X', 'c':'X'}, 'end':{'a':'-', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
             {'start':{'a':'&', 'b':'-', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'&', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'&', 'b':'-', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
-            {'start':{'a':'&', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'&', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'&', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'&', 'b':'X', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'&', 'b':'X', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'&', 'b':'X', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'X', 'b':'-', 'c':'-'}, 'end':{'a':'X', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'X', 'b':'-', 'c':'&'}, 'end':{'a':'X', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'X', 'b':'-', 'c':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
-            {'start':{'a':'X', 'b':'&', 'c':'-'}, 'end':{'a':'X', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'X', 'b':'&', 'c':'&'}, 'end':{'a':'X', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'X', 'b':'&', 'c':'X'}, 'end':{'a':'X', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'-'}, 'end':{'a':'X', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'&'}, 'end':{'a':'X', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'X'}, 'end':{'a':'X', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'X', 'b':'X', 'c':'-'}, 'end':{'a':'X', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
             {'start':{'a':'X', 'b':'X', 'c':'&'}, 'end':{'a':'X', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'X', 'b':'X', 'c':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}}
@@ -895,9 +895,9 @@ class test_irepl_repl_status(session.make_sessions_mixin([('otherrods', 'rods')]
             {'start':{'a':'&', 'b':'-', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'&', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'&', 'b':'-', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
-            {'start':{'a':'&', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'&', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'&', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'&', 'b':'X', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'&', 'b':'X', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'&', 'b':'X', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
@@ -922,7 +922,7 @@ class test_irepl_repl_status(session.make_sessions_mixin([('otherrods', 'rods')]
             {'start':{'a':'-', 'b':'-', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'-', 'b':'-', 'c':'X'}, 'end':{'a':'-', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'-', 'b':'&', 'c':'-'}, 'end':{'a':'-', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},
-            {'start':{'a':'-', 'b':'&', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'-', 'b':'&', 'c':'X'}, 'end':{'a':'-', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
             {'start':{'a':'-', 'b':'X', 'c':'-'}, 'end':{'a':'-', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},
             {'start':{'a':'-', 'b':'X', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
@@ -931,7 +931,7 @@ class test_irepl_repl_status(session.make_sessions_mixin([('otherrods', 'rods')]
             {'start':{'a':'&', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'&', 'b':'-', 'c':'X'}, 'end':{'a':'&', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'&', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},
-            {'start':{'a':'&', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'&', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
             {'start':{'a':'&', 'b':'X', 'c':'-'}, 'end':{'a':'&', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},
             {'start':{'a':'&', 'b':'X', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
@@ -940,7 +940,7 @@ class test_irepl_repl_status(session.make_sessions_mixin([('otherrods', 'rods')]
             {'start':{'a':'X', 'b':'-', 'c':'&'}, 'end':{'a':'X', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'X', 'b':'-', 'c':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'X', 'b':'&', 'c':'-'}, 'end':{'a':'X', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},
-            {'start':{'a':'X', 'b':'&', 'c':'&'}, 'end':{'a':'X', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'&'}, 'end':{'a':'X', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'X', 'b':'&', 'c':'X'}, 'end':{'a':'X', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
             {'start':{'a':'X', 'b':'X', 'c':'-'}, 'end':{'a':'X', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},
             {'start':{'a':'X', 'b':'X', 'c':'&'}, 'end':{'a':'X', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
@@ -965,9 +965,9 @@ class test_irepl_repl_status(session.make_sessions_mixin([('otherrods', 'rods')]
             {'start':{'a':'&', 'b':'-', 'c':'-'}, 'end':{'a':'&', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},
             {'start':{'a':'&', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'-', 'c':'&'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},
             {'start':{'a':'&', 'b':'-', 'c':'X'}, 'end':{'a':'&', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},
-            {'start':{'a':'&', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'&', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'&', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'&', 'b':'X', 'c':'-'}, 'end':{'a':'&', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
             {'start':{'a':'&', 'b':'X', 'c':'&'}, 'end':{'a':'&', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
             {'start':{'a':'&', 'b':'X', 'c':'X'}, 'end':{'a':'&', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
@@ -997,15 +997,15 @@ class test_irepl_repl_status(session.make_sessions_mixin([('otherrods', 'rods')]
             {'start':{'a':'-', 'b':'X', 'c':'-'}, 'end':{'a':'X', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'-', 'b':'X', 'c':'&'}, 'end':{'a':'X', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'-', 'b':'X', 'c':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
-            {'start':{'a':'&', 'b':'-', 'c':'-'}, 'end':{'a':'&', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'&', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'-', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'&', 'b':'-', 'c':'X'}, 'end':{'a':'&', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'&', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'&', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'&', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'&', 'b':'X', 'c':'-'}, 'end':{'a':'&', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'&', 'b':'X', 'c':'&'}, 'end':{'a':'&', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'&', 'b':'X', 'c':'X'}, 'end':{'a':'&', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'-'}, 'end':{'a':'&', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'-', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'X'}, 'end':{'a':'&', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'-'}, 'end':{'a':'&', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'&'}, 'end':{'a':'&', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'X'}, 'end':{'a':'&', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'X', 'b':'-', 'c':'-'}, 'end':{'a':'X', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
             {'start':{'a':'X', 'b':'-', 'c':'&'}, 'end':{'a':'X', 'b':'-', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
             {'start':{'a':'X', 'b':'-', 'c':'X'}, 'end':{'a':'X', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
@@ -1033,11 +1033,11 @@ class test_irepl_repl_status(session.make_sessions_mixin([('otherrods', 'rods')]
             {'start':{'a':'-', 'b':'X', 'c':'&'}, 'end':{'a':'&', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'-', 'b':'X', 'c':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'&', 'b':'-', 'c':'-'}, 'end':{'a':'&', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
-            {'start':{'a':'&', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'-', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'-', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'&', 'b':'-', 'c':'X'}, 'end':{'a':'&', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'&', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'&', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'&', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'&', 'b':'X', 'c':'-'}, 'end':{'a':'&', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
             {'start':{'a':'&', 'b':'X', 'c':'&'}, 'end':{'a':'&', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
             {'start':{'a':'&', 'b':'X', 'c':'X'}, 'end':{'a':'&', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
@@ -1061,18 +1061,18 @@ class test_irepl_repl_status(session.make_sessions_mixin([('otherrods', 'rods')]
         scenarios = [
             {'start':{'a':'-', 'b':'-', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'-', 'b':'-', 'c':'X'}, 'end':{'a':'-', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
-            {'start':{'a':'-', 'b':'&', 'c':'-'}, 'end':{'a':'-', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'-', 'b':'&', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'-', 'b':'&', 'c':'X'}, 'end':{'a':'-', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'-'}, 'end':{'a':'-', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'X'}, 'end':{'a':'-', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'-', 'b':'X', 'c':'-'}, 'end':{'a':'-', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
             {'start':{'a':'-', 'b':'X', 'c':'&'}, 'end':{'a':'-', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
             {'start':{'a':'-', 'b':'X', 'c':'X'}, 'end':{'a':'-', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
             {'start':{'a':'&', 'b':'-', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'&', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'&', 'b':'-', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
-            {'start':{'a':'&', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'&', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'&', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'&', 'b':'X', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'&', 'b':'X', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'&', 'b':'X', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
@@ -1097,7 +1097,7 @@ class test_irepl_repl_status(session.make_sessions_mixin([('otherrods', 'rods')]
             {'start':{'a':'-', 'b':'-', 'c':'&'}, 'end':{'a':'-', 'b':'-', 'c':'&'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
             {'start':{'a':'-', 'b':'-', 'c':'X'}, 'end':{'a':'-', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
             {'start':{'a':'-', 'b':'&', 'c':'-'}, 'end':{'a':'-', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
-            {'start':{'a':'-', 'b':'&', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'-', 'b':'&', 'c':'X'}, 'end':{'a':'-', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
             {'start':{'a':'-', 'b':'X', 'c':'-'}, 'end':{'a':'-', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
             {'start':{'a':'-', 'b':'X', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
@@ -1105,18 +1105,18 @@ class test_irepl_repl_status(session.make_sessions_mixin([('otherrods', 'rods')]
             {'start':{'a':'&', 'b':'-', 'c':'-'}, 'end':{'a':'&', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
             {'start':{'a':'&', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'&', 'b':'-', 'c':'X'}, 'end':{'a':'&', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
-            {'start':{'a':'&', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'&', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'&', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'&', 'b':'X', 'c':'-'}, 'end':{'a':'&', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
             {'start':{'a':'&', 'b':'X', 'c':'&'}, 'end':{'a':'&', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
             {'start':{'a':'&', 'b':'X', 'c':'X'}, 'end':{'a':'&', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
             {'start':{'a':'X', 'b':'-', 'c':'-'}, 'end':{'a':'X', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_DOES_NOT_EXIST', 'rc':None}},
             {'start':{'a':'X', 'b':'-', 'c':'&'}, 'end':{'a':'X', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'X', 'b':'-', 'c':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
-            {'start':{'a':'X', 'b':'&', 'c':'-'}, 'end':{'a':'X', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'X', 'b':'&', 'c':'&'}, 'end':{'a':'X', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
-            {'start':{'a':'X', 'b':'&', 'c':'X'}, 'end':{'a':'X', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'-'}, 'end':{'a':'X', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'&'}, 'end':{'a':'X', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'X'}, 'end':{'a':'X', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
             {'start':{'a':'X', 'b':'X', 'c':'-'}, 'end':{'a':'X', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
             {'start':{'a':'X', 'b':'X', 'c':'&'}, 'end':{'a':'X', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},
             {'start':{'a':'X', 'b':'X', 'c':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}}
@@ -1424,36 +1424,36 @@ class test_irepl_replication_hierachy(session.make_sessions_mixin([('otherrods',
     #   - there are 81 scenarios total (Cartesian product)
     #   - the no-replica scenario is invalid
     #   - 51 of these are duplicates
-#   def test_irepl_foo_no_arguments_favor_hierarchy(self):
-#       # irepl foo (irepl -R d foo) (source unspecified, target default resource (root of replication hierarchy))
-#       scenarios = [
-#           #{'start':{'a':'-', 'b':'-', 'c':'-', 'f':'-'}, 'end':{'a':'-', 'b':'-', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},              # -
-#           {'start':{'a':'-', 'b':'-', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d-f&
-#           {'start':{'a':'-', 'b':'-', 'c':'-', 'f':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d-fX
-#           {'start':{'a':'-', 'b':'-', 'c':'&', 'f':'-'}, 'end':{'a':'-', 'b':'-', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&f-
-#           {'start':{'a':'-', 'b':'-', 'c':'&', 'f':'&'}, 'end':{'a':'-', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&f&
-#           {'start':{'a':'-', 'b':'-', 'c':'&', 'f':'X'}, 'end':{'a':'-', 'b':'-', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&fX
-#           {'start':{'a':'-', 'b':'-', 'c':'X', 'f':'-'}, 'end':{'a':'-', 'b':'-', 'c':'X', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXf-
-#           {'start':{'a':'-', 'b':'-', 'c':'X', 'f':'&'}, 'end':{'a':'-', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # dXf&
-#           {'start':{'a':'-', 'b':'-', 'c':'X', 'f':'X'}, 'end':{'a':'-', 'b':'-', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXfX
+    def test_irepl_foo_no_arguments(self):
+        # irepl foo (irepl -R d foo) (source unspecified, target default resource (root of replication hierarchy))
+        scenarios = [
+            #{'start':{'a':'-', 'b':'-', 'c':'-', 'f':'-'}, 'end':{'a':'-', 'b':'-', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},              # -
+            {'start':{'a':'-', 'b':'-', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d-f&
+            {'start':{'a':'-', 'b':'-', 'c':'-', 'f':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d-fX
+            {'start':{'a':'-', 'b':'-', 'c':'&', 'f':'-'}, 'end':{'a':'-', 'b':'-', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&f-
+            {'start':{'a':'-', 'b':'-', 'c':'&', 'f':'&'}, 'end':{'a':'-', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&f&
+            {'start':{'a':'-', 'b':'-', 'c':'&', 'f':'X'}, 'end':{'a':'-', 'b':'-', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&fX
+            {'start':{'a':'-', 'b':'-', 'c':'X', 'f':'-'}, 'end':{'a':'-', 'b':'-', 'c':'X', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXf-
+            {'start':{'a':'-', 'b':'-', 'c':'X', 'f':'&'}, 'end':{'a':'-', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # dXf&
+            {'start':{'a':'-', 'b':'-', 'c':'X', 'f':'X'}, 'end':{'a':'-', 'b':'-', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXfX
 #           {'start':{'a':'-', 'b':'&', 'c':'-', 'f':'-'}, 'end':{'a':'-', 'b':'&', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&f- (duplicate)
 #           {'start':{'a':'-', 'b':'&', 'c':'-', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&f& (duplicate)
 #           {'start':{'a':'-', 'b':'&', 'c':'-', 'f':'X'}, 'end':{'a':'-', 'b':'&', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&fX (duplicate)
-#           {'start':{'a':'-', 'b':'&', 'c':'&', 'f':'-'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&f-
-#           {'start':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&f&
-#           {'start':{'a':'-', 'b':'&', 'c':'&', 'f':'X'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&fX
-#           {'start':{'a':'-', 'b':'&', 'c':'X', 'f':'-'}, 'end':{'a':'-', 'b':'&', 'c':'X', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&Xf-
-#           {'start':{'a':'-', 'b':'&', 'c':'X', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&Xf&
-#           {'start':{'a':'-', 'b':'&', 'c':'X', 'f':'X'}, 'end':{'a':'-', 'b':'&', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&XfX
+            {'start':{'a':'-', 'b':'&', 'c':'&', 'f':'-'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&&f-
+            {'start':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&&f&
+            {'start':{'a':'-', 'b':'&', 'c':'&', 'f':'X'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&&fX
+            {'start':{'a':'-', 'b':'&', 'c':'X', 'f':'-'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&Xf-
+            {'start':{'a':'-', 'b':'&', 'c':'X', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&Xf&
+            {'start':{'a':'-', 'b':'&', 'c':'X', 'f':'X'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&XfX
 #           {'start':{'a':'-', 'b':'X', 'c':'-', 'f':'-'}, 'end':{'a':'-', 'b':'X', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXf- (duplicate)
 #           {'start':{'a':'-', 'b':'X', 'c':'-', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # dXf& (duplicate)
 #           {'start':{'a':'-', 'b':'X', 'c':'-', 'f':'X'}, 'end':{'a':'-', 'b':'X', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXfX (duplicate)
 #           {'start':{'a':'-', 'b':'X', 'c':'&', 'f':'-'}, 'end':{'a':'-', 'b':'X', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&Xf- (duplicate)
 #           {'start':{'a':'-', 'b':'X', 'c':'&', 'f':'&'}, 'end':{'a':'-', 'b':'X', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&Xf& (duplicate)
 #           {'start':{'a':'-', 'b':'X', 'c':'&', 'f':'X'}, 'end':{'a':'-', 'b':'X', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&XfX (duplicate)
-#           {'start':{'a':'-', 'b':'X', 'c':'X', 'f':'-'}, 'end':{'a':'-', 'b':'X', 'c':'X', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXXf-
-#           {'start':{'a':'-', 'b':'X', 'c':'X', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # dXXf&
-#           {'start':{'a':'-', 'b':'X', 'c':'X', 'f':'X'}, 'end':{'a':'-', 'b':'X', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXXfX
+            {'start':{'a':'-', 'b':'X', 'c':'X', 'f':'-'}, 'end':{'a':'-', 'b':'X', 'c':'X', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXXf-
+            {'start':{'a':'-', 'b':'X', 'c':'X', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # dXXf&
+            {'start':{'a':'-', 'b':'X', 'c':'X', 'f':'X'}, 'end':{'a':'-', 'b':'X', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXXfX
 #           {'start':{'a':'&', 'b':'-', 'c':'-', 'f':'-'}, 'end':{'a':'&', 'b':'-', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&f- (duplicate)
 #           {'start':{'a':'&', 'b':'-', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'-', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&f& (duplicate)
 #           {'start':{'a':'&', 'b':'-', 'c':'-', 'f':'X'}, 'end':{'a':'&', 'b':'-', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&fX (duplicate)
@@ -1466,21 +1466,21 @@ class test_irepl_replication_hierachy(session.make_sessions_mixin([('otherrods',
 #           {'start':{'a':'&', 'b':'&', 'c':'-', 'f':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&f- (duplicate)
 #           {'start':{'a':'&', 'b':'&', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&f& (duplicate)
 #           {'start':{'a':'&', 'b':'&', 'c':'-', 'f':'X'}, 'end':{'a':'&', 'b':'&', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&fX (duplicate)
-#           {'start':{'a':'&', 'b':'&', 'c':'&', 'f':'-'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&&f-
-#           {'start':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&&f&
-#           {'start':{'a':'&', 'b':'&', 'c':'&', 'f':'X'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&&fX
-#           {'start':{'a':'&', 'b':'&', 'c':'X', 'f':'-'}, 'end':{'a':'&', 'b':'&', 'c':'X', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&Xf-
-#           {'start':{'a':'&', 'b':'&', 'c':'X', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&Xf&
-#           {'start':{'a':'&', 'b':'&', 'c':'X', 'f':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&XfX
+            {'start':{'a':'&', 'b':'&', 'c':'&', 'f':'-'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&&&f-
+            {'start':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&&&f&
+            {'start':{'a':'&', 'b':'&', 'c':'&', 'f':'X'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&&&fX
+            {'start':{'a':'&', 'b':'&', 'c':'X', 'f':'-'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&&Xf-
+            {'start':{'a':'&', 'b':'&', 'c':'X', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&&Xf&
+            {'start':{'a':'&', 'b':'&', 'c':'X', 'f':'X'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&&XfX
 #           {'start':{'a':'&', 'b':'X', 'c':'-', 'f':'-'}, 'end':{'a':'&', 'b':'X', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&Xf- (duplicate)
 #           {'start':{'a':'&', 'b':'X', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'X', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&Xf& (duplicate)
 #           {'start':{'a':'&', 'b':'X', 'c':'-', 'f':'X'}, 'end':{'a':'&', 'b':'X', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&XfX (duplicate)
 #           {'start':{'a':'&', 'b':'X', 'c':'&', 'f':'-'}, 'end':{'a':'&', 'b':'X', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&Xf- (duplicate)
 #           {'start':{'a':'&', 'b':'X', 'c':'&', 'f':'&'}, 'end':{'a':'&', 'b':'X', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&Xf& (duplicate)
 #           {'start':{'a':'&', 'b':'X', 'c':'&', 'f':'X'}, 'end':{'a':'&', 'b':'X', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&XfX (duplicate)
-#           {'start':{'a':'&', 'b':'X', 'c':'X', 'f':'-'}, 'end':{'a':'&', 'b':'X', 'c':'X', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&XXf-
-#           {'start':{'a':'&', 'b':'X', 'c':'X', 'f':'&'}, 'end':{'a':'&', 'b':'X', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&XXf&
-#           {'start':{'a':'&', 'b':'X', 'c':'X', 'f':'X'}, 'end':{'a':'&', 'b':'X', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&XXfX
+            {'start':{'a':'&', 'b':'X', 'c':'X', 'f':'-'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&XXf-
+            {'start':{'a':'&', 'b':'X', 'c':'X', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&XXf&
+            {'start':{'a':'&', 'b':'X', 'c':'X', 'f':'X'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&XXfX
 #           {'start':{'a':'X', 'b':'-', 'c':'-', 'f':'-'}, 'end':{'a':'X', 'b':'-', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXf- (duplicate)
 #           {'start':{'a':'X', 'b':'-', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'-', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # dXf& (duplicate)
 #           {'start':{'a':'X', 'b':'-', 'c':'-', 'f':'X'}, 'end':{'a':'X', 'b':'-', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXfX (duplicate)
@@ -1505,145 +1505,44 @@ class test_irepl_replication_hierachy(session.make_sessions_mixin([('otherrods',
 #           {'start':{'a':'X', 'b':'X', 'c':'&', 'f':'-'}, 'end':{'a':'X', 'b':'X', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&XXf- (duplicate)
 #           {'start':{'a':'X', 'b':'X', 'c':'&', 'f':'&'}, 'end':{'a':'X', 'b':'X', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&XXf& (duplicate)
 #           {'start':{'a':'X', 'b':'X', 'c':'&', 'f':'X'}, 'end':{'a':'X', 'b':'X', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&XXfX (duplicate)
-#           {'start':{'a':'X', 'b':'X', 'c':'X', 'f':'-'}, 'end':{'a':'X', 'b':'X', 'c':'X', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXXXf-
-#           {'start':{'a':'X', 'b':'X', 'c':'X', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # dXXXf&
-#           {'start':{'a':'X', 'b':'X', 'c':'X', 'f':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}}   # dXXXfX
-#       ]
+            {'start':{'a':'X', 'b':'X', 'c':'X', 'f':'-'}, 'end':{'a':'X', 'b':'X', 'c':'X', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXXXf-
+            {'start':{'a':'X', 'b':'X', 'c':'X', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # dXXXf&
+            {'start':{'a':'X', 'b':'X', 'c':'X', 'f':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}}   # dXXXfX
+        ]
 
-#       try:
-#           self.admin.run_icommand(['iadmin', 'modresc', self.parent_rescs['d'], 'context', 'read=1.5'])
+        self.run_command_against_scenarios(['irepl', self.logical_path], scenarios, 'irepl foo')
+        self.run_command_against_scenarios(['irepl', self.logical_path], scenarios, 'irepl foo', file_size=0)
 
-#           self.run_command_against_scenarios(['irepl', self.logical_path], scenarios, 'irepl foo')
-
-#           self.run_command_against_scenarios(['irepl', self.logical_path], scenarios, 'irepl foo', file_size=0)
-#       finally:
-#           self.admin.run_icommand(['iadmin', 'modresc', self.parent_rescs['d'], 'context', 'read=1.0'])
-
-#   def test_irepl_foo_no_arguments_favor_standalone(self):
-#       # irepl foo (irepl -R d foo) (source unspecified, target default resource (root of replication hierarchy))
-#       scenarios = [
-#           #{'start':{'a':'-', 'b':'-', 'c':'-', 'f':'-'}, 'end':{'a':'-', 'b':'-', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},              # -
-#           {'start':{'a':'-', 'b':'-', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d-f&
-#           {'start':{'a':'-', 'b':'-', 'c':'-', 'f':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d-fX
-#           {'start':{'a':'-', 'b':'-', 'c':'&', 'f':'-'}, 'end':{'a':'-', 'b':'-', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&f-
-#           {'start':{'a':'-', 'b':'-', 'c':'&', 'f':'&'}, 'end':{'a':'-', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&f&
-#           {'start':{'a':'-', 'b':'-', 'c':'&', 'f':'X'}, 'end':{'a':'-', 'b':'-', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&fX
-#           {'start':{'a':'-', 'b':'-', 'c':'X', 'f':'-'}, 'end':{'a':'-', 'b':'-', 'c':'X', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXf-
-#           {'start':{'a':'-', 'b':'-', 'c':'X', 'f':'&'}, 'end':{'a':'-', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # dXf&
-#           {'start':{'a':'-', 'b':'-', 'c':'X', 'f':'X'}, 'end':{'a':'-', 'b':'-', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXfX
-#           {'start':{'a':'-', 'b':'&', 'c':'-', 'f':'-'}, 'end':{'a':'-', 'b':'&', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&f- (duplicate)
-#           {'start':{'a':'-', 'b':'&', 'c':'-', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&f& (duplicate)
-#           {'start':{'a':'-', 'b':'&', 'c':'-', 'f':'X'}, 'end':{'a':'-', 'b':'&', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&fX (duplicate)
-#           {'start':{'a':'-', 'b':'&', 'c':'&', 'f':'-'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&f-
-#           {'start':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&f&
-#           {'start':{'a':'-', 'b':'&', 'c':'&', 'f':'X'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&fX
-#           {'start':{'a':'-', 'b':'&', 'c':'X', 'f':'-'}, 'end':{'a':'-', 'b':'&', 'c':'X', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&Xf-
-#           {'start':{'a':'-', 'b':'&', 'c':'X', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&Xf& - note: updates, but also returns an error
-#           {'start':{'a':'-', 'b':'&', 'c':'X', 'f':'X'}, 'end':{'a':'-', 'b':'&', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&XfX
-#           {'start':{'a':'-', 'b':'X', 'c':'-', 'f':'-'}, 'end':{'a':'-', 'b':'X', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXf- (duplicate)
-#           {'start':{'a':'-', 'b':'X', 'c':'-', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # dXf& (duplicate)
-#           {'start':{'a':'-', 'b':'X', 'c':'-', 'f':'X'}, 'end':{'a':'-', 'b':'X', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXfX (duplicate)
-#           {'start':{'a':'-', 'b':'X', 'c':'&', 'f':'-'}, 'end':{'a':'-', 'b':'X', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&Xf- (duplicate)
-#           {'start':{'a':'-', 'b':'X', 'c':'&', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&Xf& (duplicate) - note: updates, but also returns an error
-#           {'start':{'a':'-', 'b':'X', 'c':'&', 'f':'X'}, 'end':{'a':'-', 'b':'X', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&XfX (duplicate)
-#           {'start':{'a':'-', 'b':'X', 'c':'X', 'f':'-'}, 'end':{'a':'-', 'b':'X', 'c':'X', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXXf-
-#           {'start':{'a':'-', 'b':'X', 'c':'X', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # dXXf&
-#           {'start':{'a':'-', 'b':'X', 'c':'X', 'f':'X'}, 'end':{'a':'-', 'b':'X', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXXfX
-#           {'start':{'a':'&', 'b':'-', 'c':'-', 'f':'-'}, 'end':{'a':'&', 'b':'-', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&f- (duplicate)
-#           {'start':{'a':'&', 'b':'-', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'-', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&f& (duplicate)
-#           {'start':{'a':'&', 'b':'-', 'c':'-', 'f':'X'}, 'end':{'a':'&', 'b':'-', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&fX (duplicate)
-#           {'start':{'a':'&', 'b':'-', 'c':'&', 'f':'-'}, 'end':{'a':'&', 'b':'-', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&f- (duplicate)
-#           {'start':{'a':'&', 'b':'-', 'c':'&', 'f':'&'}, 'end':{'a':'&', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&f& (duplicate)
-#           {'start':{'a':'&', 'b':'-', 'c':'&', 'f':'X'}, 'end':{'a':'&', 'b':'-', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&fX (duplicate)
-#           {'start':{'a':'&', 'b':'-', 'c':'X', 'f':'-'}, 'end':{'a':'&', 'b':'-', 'c':'X', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&Xf- (duplicate)
-#           {'start':{'a':'&', 'b':'-', 'c':'X', 'f':'&'}, 'end':{'a':'&', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&Xf& (duplicate) - note: updates, but also returns an error
-#           {'start':{'a':'&', 'b':'-', 'c':'X', 'f':'X'}, 'end':{'a':'&', 'b':'-', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&XfX (duplicate)
-#           {'start':{'a':'&', 'b':'&', 'c':'-', 'f':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&f- (duplicate)
-#           {'start':{'a':'&', 'b':'&', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&f& (duplicate)
-#           {'start':{'a':'&', 'b':'&', 'c':'-', 'f':'X'}, 'end':{'a':'&', 'b':'&', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&fX (duplicate)
-#           {'start':{'a':'&', 'b':'&', 'c':'&', 'f':'-'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&&f-
-#           {'start':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&&f&
-#           {'start':{'a':'&', 'b':'&', 'c':'&', 'f':'X'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&&fX
-#           {'start':{'a':'&', 'b':'&', 'c':'X', 'f':'-'}, 'end':{'a':'&', 'b':'&', 'c':'X', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&Xf-
-#           {'start':{'a':'&', 'b':'&', 'c':'X', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&Xf& - note: updates, but also returns an error
-#           {'start':{'a':'&', 'b':'&', 'c':'X', 'f':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&XfX
-#           {'start':{'a':'&', 'b':'X', 'c':'-', 'f':'-'}, 'end':{'a':'&', 'b':'X', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&Xf- (duplicate)
-#           {'start':{'a':'&', 'b':'X', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&Xf& (duplicate) - note: updates, but also returns an error
-#           {'start':{'a':'&', 'b':'X', 'c':'-', 'f':'X'}, 'end':{'a':'&', 'b':'X', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&XfX (duplicate)
-#           {'start':{'a':'&', 'b':'X', 'c':'&', 'f':'-'}, 'end':{'a':'&', 'b':'X', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&Xf- (duplicate)
-#           {'start':{'a':'&', 'b':'X', 'c':'&', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&Xf& (duplicate) - note: updates, but also returns an error
-#           {'start':{'a':'&', 'b':'X', 'c':'&', 'f':'X'}, 'end':{'a':'&', 'b':'X', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&XfX (duplicate)
-#           {'start':{'a':'&', 'b':'X', 'c':'X', 'f':'-'}, 'end':{'a':'&', 'b':'X', 'c':'X', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&XXf-
-#           {'start':{'a':'&', 'b':'X', 'c':'X', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&XXf& - note: updates, but also returns an error
-#           {'start':{'a':'&', 'b':'X', 'c':'X', 'f':'X'}, 'end':{'a':'&', 'b':'X', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&XXfX
-#           {'start':{'a':'X', 'b':'-', 'c':'-', 'f':'-'}, 'end':{'a':'X', 'b':'-', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXf- (duplicate)
-#           {'start':{'a':'X', 'b':'-', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'-', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # dXf& (duplicate)
-#           {'start':{'a':'X', 'b':'-', 'c':'-', 'f':'X'}, 'end':{'a':'X', 'b':'-', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXfX (duplicate)
-#           {'start':{'a':'X', 'b':'-', 'c':'&', 'f':'-'}, 'end':{'a':'&', 'b':'-', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&Xf- (duplicate) - note: updates, but also returns an error
-#           {'start':{'a':'X', 'b':'-', 'c':'&', 'f':'&'}, 'end':{'a':'&', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&Xf& (duplicate) - note: updates, but also returns an error
-#           {'start':{'a':'X', 'b':'-', 'c':'&', 'f':'X'}, 'end':{'a':'X', 'b':'-', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&XfX (duplicate)
-#           {'start':{'a':'X', 'b':'-', 'c':'X', 'f':'-'}, 'end':{'a':'X', 'b':'-', 'c':'X', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXf- (duplicate)
-#           {'start':{'a':'X', 'b':'-', 'c':'X', 'f':'&'}, 'end':{'a':'&', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # dXf& (duplicate)
-#           {'start':{'a':'X', 'b':'-', 'c':'X', 'f':'X'}, 'end':{'a':'X', 'b':'-', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXfX (duplicate)
-#           {'start':{'a':'X', 'b':'&', 'c':'-', 'f':'-'}, 'end':{'a':'X', 'b':'&', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&Xf- (duplicate)
-#           {'start':{'a':'X', 'b':'&', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&Xf& (duplicate) - note: updates, but also returns an error
-#           {'start':{'a':'X', 'b':'&', 'c':'-', 'f':'X'}, 'end':{'a':'X', 'b':'&', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&XfX (duplicate)
-#           {'start':{'a':'X', 'b':'&', 'c':'&', 'f':'-'}, 'end':{'a':'X', 'b':'&', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&Xf- (duplicate)
-#           {'start':{'a':'X', 'b':'&', 'c':'&', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&Xf& (duplicate) - note: updates, but also returns an error
-#           {'start':{'a':'X', 'b':'&', 'c':'&', 'f':'X'}, 'end':{'a':'X', 'b':'&', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&XfX (duplicate)
-#           {'start':{'a':'X', 'b':'&', 'c':'X', 'f':'-'}, 'end':{'a':'X', 'b':'&', 'c':'X', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&XXf- (duplicate)
-#           {'start':{'a':'X', 'b':'&', 'c':'X', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&XXf& (duplicate) - note: updates, but also returns an error
-#           {'start':{'a':'X', 'b':'&', 'c':'X', 'f':'X'}, 'end':{'a':'X', 'b':'&', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&XXfX (duplicate)
-#           {'start':{'a':'X', 'b':'X', 'c':'-', 'f':'-'}, 'end':{'a':'X', 'b':'X', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXXf- (duplicate)
-#           {'start':{'a':'X', 'b':'X', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # dXXf& (duplicate)
-#           {'start':{'a':'X', 'b':'X', 'c':'-', 'f':'X'}, 'end':{'a':'X', 'b':'X', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXXfX (duplicate)
-#           {'start':{'a':'X', 'b':'X', 'c':'&', 'f':'-'}, 'end':{'a':'X', 'b':'X', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&XXf- (duplicate)
-#           {'start':{'a':'X', 'b':'X', 'c':'&', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&XXf& (duplicate) - note: updates, but also returns an error
-#           {'start':{'a':'X', 'b':'X', 'c':'&', 'f':'X'}, 'end':{'a':'X', 'b':'X', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&XXfX (duplicate)
-#           {'start':{'a':'X', 'b':'X', 'c':'X', 'f':'-'}, 'end':{'a':'X', 'b':'X', 'c':'X', 'f':'-'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXXXf-
-#           {'start':{'a':'X', 'b':'X', 'c':'X', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # dXXXf&
-#           {'start':{'a':'X', 'b':'X', 'c':'X', 'f':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}}   # dXXXfX
-#       ]
-
-#       try:
-#           self.admin.run_icommand(['iadmin', 'modresc', self.parent_rescs['d'], 'context', 'read=0.5'])
-
-#           self.run_command_against_scenarios(['irepl', self.logical_path], scenarios, 'irepl foo')
-
-#           self.run_command_against_scenarios(['irepl', self.logical_path], scenarios, 'irepl foo', file_size=0)
-#       finally:
-#           self.admin.run_icommand(['iadmin', 'modresc', self.parent_rescs['d'], 'context', 'read=1.0'])
-
-#   def test_irepl_Rf_foo(self):
-#       # irepl -R f foo (source unspecified, destination f (standalone resource))
-#       scenarios = [
-#           #{'start':{'a':'-', 'b':'-', 'c':'-', 'f':'-'}, 'end':{'a':'-', 'b':'-', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},              # -
-#           {'start':{'a':'-', 'b':'-', 'c':'-', 'f':'&'}, 'end':{'a':'-', 'b':'-', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d-f&
-#           {'start':{'a':'-', 'b':'-', 'c':'-', 'f':'X'}, 'end':{'a':'-', 'b':'-', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d-fX
-#           {'start':{'a':'-', 'b':'-', 'c':'&', 'f':'-'}, 'end':{'a':'-', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&f-
-#           {'start':{'a':'-', 'b':'-', 'c':'&', 'f':'&'}, 'end':{'a':'-', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&f&
-#           {'start':{'a':'-', 'b':'-', 'c':'&', 'f':'X'}, 'end':{'a':'-', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&fX
-#           {'start':{'a':'-', 'b':'-', 'c':'X', 'f':'-'}, 'end':{'a':'-', 'b':'-', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},               # dXf-
-#           {'start':{'a':'-', 'b':'-', 'c':'X', 'f':'&'}, 'end':{'a':'-', 'b':'-', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXf&
-#           {'start':{'a':'-', 'b':'-', 'c':'X', 'f':'X'}, 'end':{'a':'-', 'b':'-', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXfX
+    def test_irepl_Rf_foo(self):
+        # irepl -R f foo (source unspecified, destination f (standalone resource))
+        scenarios = [
+            #{'start':{'a':'-', 'b':'-', 'c':'-', 'f':'-'}, 'end':{'a':'-', 'b':'-', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},              # -
+            {'start':{'a':'-', 'b':'-', 'c':'-', 'f':'&'}, 'end':{'a':'-', 'b':'-', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},  # d-f&
+            {'start':{'a':'-', 'b':'-', 'c':'-', 'f':'X'}, 'end':{'a':'-', 'b':'-', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d-fX
+            {'start':{'a':'-', 'b':'-', 'c':'&', 'f':'-'}, 'end':{'a':'-', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&f-
+            {'start':{'a':'-', 'b':'-', 'c':'&', 'f':'&'}, 'end':{'a':'-', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&f&
+            {'start':{'a':'-', 'b':'-', 'c':'&', 'f':'X'}, 'end':{'a':'-', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&fX
+            {'start':{'a':'-', 'b':'-', 'c':'X', 'f':'-'}, 'end':{'a':'-', 'b':'-', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},               # dXf-
+            {'start':{'a':'-', 'b':'-', 'c':'X', 'f':'&'}, 'end':{'a':'-', 'b':'-', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # dXf&
+            {'start':{'a':'-', 'b':'-', 'c':'X', 'f':'X'}, 'end':{'a':'-', 'b':'-', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXfX
 #           {'start':{'a':'-', 'b':'&', 'c':'-', 'f':'-'}, 'end':{'a':'-', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&f- (duplicate)
 #           {'start':{'a':'-', 'b':'&', 'c':'-', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&f& (duplicate)
 #           {'start':{'a':'-', 'b':'&', 'c':'-', 'f':'X'}, 'end':{'a':'-', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&fX (duplicate)
-#           {'start':{'a':'-', 'b':'&', 'c':'&', 'f':'-'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&&f-
-#           {'start':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&f&
-#           {'start':{'a':'-', 'b':'&', 'c':'&', 'f':'X'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&&fX
-#           {'start':{'a':'-', 'b':'&', 'c':'X', 'f':'-'}, 'end':{'a':'-', 'b':'&', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&Xf-
-#           {'start':{'a':'-', 'b':'&', 'c':'X', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&Xf&
-#           {'start':{'a':'-', 'b':'&', 'c':'X', 'f':'X'}, 'end':{'a':'-', 'b':'&', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&XfX
+            {'start':{'a':'-', 'b':'&', 'c':'&', 'f':'-'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&&f-
+            {'start':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&&f&
+            {'start':{'a':'-', 'b':'&', 'c':'&', 'f':'X'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&&fX
+            {'start':{'a':'-', 'b':'&', 'c':'X', 'f':'-'}, 'end':{'a':'-', 'b':'&', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&Xf-
+            {'start':{'a':'-', 'b':'&', 'c':'X', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&Xf&
+            {'start':{'a':'-', 'b':'&', 'c':'X', 'f':'X'}, 'end':{'a':'-', 'b':'&', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&XfX
 #           {'start':{'a':'-', 'b':'X', 'c':'-', 'f':'-'}, 'end':{'a':'-', 'b':'X', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},               # dXf- (duplicate)
 #           {'start':{'a':'-', 'b':'X', 'c':'-', 'f':'&'}, 'end':{'a':'-', 'b':'X', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXf& (duplicate)
 #           {'start':{'a':'-', 'b':'X', 'c':'-', 'f':'X'}, 'end':{'a':'-', 'b':'X', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXfX (duplicate)
 #           {'start':{'a':'-', 'b':'X', 'c':'&', 'f':'-'}, 'end':{'a':'-', 'b':'X', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&Xf- (duplicate)
 #           {'start':{'a':'-', 'b':'X', 'c':'&', 'f':'&'}, 'end':{'a':'-', 'b':'X', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&Xf& (duplicate)
 #           {'start':{'a':'-', 'b':'X', 'c':'&', 'f':'X'}, 'end':{'a':'-', 'b':'X', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&XfX (duplicate)
-#           {'start':{'a':'-', 'b':'X', 'c':'X', 'f':'-'}, 'end':{'a':'-', 'b':'X', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},               # dXXf-
-#           {'start':{'a':'-', 'b':'X', 'c':'X', 'f':'&'}, 'end':{'a':'-', 'b':'X', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXXf&
-#           {'start':{'a':'-', 'b':'X', 'c':'X', 'f':'X'}, 'end':{'a':'-', 'b':'X', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXXfX
+            {'start':{'a':'-', 'b':'X', 'c':'X', 'f':'-'}, 'end':{'a':'-', 'b':'X', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},               # dXXf-
+            {'start':{'a':'-', 'b':'X', 'c':'X', 'f':'&'}, 'end':{'a':'-', 'b':'X', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # dXXf&
+            {'start':{'a':'-', 'b':'X', 'c':'X', 'f':'X'}, 'end':{'a':'-', 'b':'X', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXXfX
 #           {'start':{'a':'&', 'b':'-', 'c':'-', 'f':'-'}, 'end':{'a':'&', 'b':'-', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&f- (duplicate)
 #           {'start':{'a':'&', 'b':'-', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'-', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&f& (duplicate)
 #           {'start':{'a':'&', 'b':'-', 'c':'-', 'f':'X'}, 'end':{'a':'&', 'b':'-', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&fX (duplicate)
@@ -1656,21 +1555,21 @@ class test_irepl_replication_hierachy(session.make_sessions_mixin([('otherrods',
 #           {'start':{'a':'&', 'b':'&', 'c':'-', 'f':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&&f- (duplicate)
 #           {'start':{'a':'&', 'b':'&', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&f& (duplicate)
 #           {'start':{'a':'&', 'b':'&', 'c':'-', 'f':'X'}, 'end':{'a':'&', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&&fX (duplicate)
-#           {'start':{'a':'&', 'b':'&', 'c':'&', 'f':'-'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&&&f-
-#           {'start':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&&f&
-#           {'start':{'a':'&', 'b':'&', 'c':'&', 'f':'X'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&&&fX
-#           {'start':{'a':'&', 'b':'&', 'c':'X', 'f':'-'}, 'end':{'a':'&', 'b':'&', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&&Xf-
-#           {'start':{'a':'&', 'b':'&', 'c':'X', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&Xf&
-#           {'start':{'a':'&', 'b':'&', 'c':'X', 'f':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&&XfX
+            {'start':{'a':'&', 'b':'&', 'c':'&', 'f':'-'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&&&f-
+            {'start':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&&&f&
+            {'start':{'a':'&', 'b':'&', 'c':'&', 'f':'X'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&&&fX
+            {'start':{'a':'&', 'b':'&', 'c':'X', 'f':'-'}, 'end':{'a':'&', 'b':'&', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&&Xf-
+            {'start':{'a':'&', 'b':'&', 'c':'X', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&&Xf&
+            {'start':{'a':'&', 'b':'&', 'c':'X', 'f':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&&XfX
 #           {'start':{'a':'&', 'b':'X', 'c':'-', 'f':'-'}, 'end':{'a':'&', 'b':'X', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&Xf- (duplicate)
 #           {'start':{'a':'&', 'b':'X', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'X', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&Xf& (duplicate)
 #           {'start':{'a':'&', 'b':'X', 'c':'-', 'f':'X'}, 'end':{'a':'&', 'b':'X', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&XfX (duplicate)
 #           {'start':{'a':'&', 'b':'X', 'c':'&', 'f':'-'}, 'end':{'a':'&', 'b':'X', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&&Xf- (duplicate)
 #           {'start':{'a':'&', 'b':'X', 'c':'&', 'f':'&'}, 'end':{'a':'&', 'b':'X', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&&Xf& (duplicate)
 #           {'start':{'a':'&', 'b':'X', 'c':'&', 'f':'X'}, 'end':{'a':'&', 'b':'X', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&&XfX (duplicate)
-#           {'start':{'a':'&', 'b':'X', 'c':'X', 'f':'-'}, 'end':{'a':'&', 'b':'X', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&XXf-
-#           {'start':{'a':'&', 'b':'X', 'c':'X', 'f':'&'}, 'end':{'a':'&', 'b':'X', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&XXf&
-#           {'start':{'a':'&', 'b':'X', 'c':'X', 'f':'X'}, 'end':{'a':'&', 'b':'X', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&XXfX
+            {'start':{'a':'&', 'b':'X', 'c':'X', 'f':'-'}, 'end':{'a':'&', 'b':'X', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&XXf-
+            {'start':{'a':'&', 'b':'X', 'c':'X', 'f':'&'}, 'end':{'a':'&', 'b':'X', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&XXf&
+            {'start':{'a':'&', 'b':'X', 'c':'X', 'f':'X'}, 'end':{'a':'&', 'b':'X', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&XXfX
 #           {'start':{'a':'X', 'b':'-', 'c':'-', 'f':'-'}, 'end':{'a':'X', 'b':'-', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},               # dXf- (duplicate)
 #           {'start':{'a':'X', 'b':'-', 'c':'-', 'f':'&'}, 'end':{'a':'X', 'b':'-', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXf& (duplicate)
 #           {'start':{'a':'X', 'b':'-', 'c':'-', 'f':'X'}, 'end':{'a':'X', 'b':'-', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXfX (duplicate)
@@ -1695,19 +1594,19 @@ class test_irepl_replication_hierachy(session.make_sessions_mixin([('otherrods',
 #           {'start':{'a':'X', 'b':'X', 'c':'&', 'f':'-'}, 'end':{'a':'X', 'b':'X', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&XXf- (duplicate)
 #           {'start':{'a':'X', 'b':'X', 'c':'&', 'f':'&'}, 'end':{'a':'X', 'b':'X', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # d&XXf& (duplicate)
 #           {'start':{'a':'X', 'b':'X', 'c':'&', 'f':'X'}, 'end':{'a':'X', 'b':'X', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # d&XXfX (duplicate)
-#           {'start':{'a':'X', 'b':'X', 'c':'X', 'f':'-'}, 'end':{'a':'X', 'b':'X', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},               # dXXXf-
-#           {'start':{'a':'X', 'b':'X', 'c':'X', 'f':'&'}, 'end':{'a':'X', 'b':'X', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},  # dXXXf&
-#           {'start':{'a':'X', 'b':'X', 'c':'X', 'f':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}}   # dXXXfX
-#       ]
+            {'start':{'a':'X', 'b':'X', 'c':'X', 'f':'-'}, 'end':{'a':'X', 'b':'X', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},               # dXXXf-
+            {'start':{'a':'X', 'b':'X', 'c':'X', 'f':'&'}, 'end':{'a':'X', 'b':'X', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},               # dXXXf&
+            {'start':{'a':'X', 'b':'X', 'c':'X', 'f':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}}   # dXXXfX
+        ]
 
-#       self.run_command_against_scenarios(
-#           ['irepl', '-R', self.leaf_rescs['f']['name'], self.logical_path],
-#           scenarios, 'irepl -R f foo')
+        self.run_command_against_scenarios(
+            ['irepl', '-R', self.leaf_rescs['f']['name'], self.logical_path],
+            scenarios, 'irepl -R f foo')
 
-#       self.run_command_against_scenarios(
-#           ['irepl', '-R', self.leaf_rescs['f']['name'], self.logical_path],
-#           scenarios, 'irepl -R f foo',
-#           file_size=0)
+        self.run_command_against_scenarios(
+            ['irepl', '-R', self.leaf_rescs['f']['name'], self.logical_path],
+            scenarios, 'irepl -R f foo',
+            file_size=0)
 
     def test_irepl_Sd_Rf_foo(self):
         # irepl -S d -R f foo (source replication hierarchy, destination f (standalone, non-default resource))
@@ -1716,80 +1615,80 @@ class test_irepl_replication_hierachy(session.make_sessions_mixin([('otherrods',
             {'start':{'a':'-', 'b':'-', 'c':'-', 'f':'&'}, 'end':{'a':'-', 'b':'-', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d-f&
             {'start':{'a':'-', 'b':'-', 'c':'-', 'f':'X'}, 'end':{'a':'-', 'b':'-', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d-fX
             {'start':{'a':'-', 'b':'-', 'c':'&', 'f':'-'}, 'end':{'a':'-', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&f-
-            {'start':{'a':'-', 'b':'-', 'c':'&', 'f':'&'}, 'end':{'a':'-', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&f&
+            {'start':{'a':'-', 'b':'-', 'c':'&', 'f':'&'}, 'end':{'a':'-', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&f&
             {'start':{'a':'-', 'b':'-', 'c':'&', 'f':'X'}, 'end':{'a':'-', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&fX
             {'start':{'a':'-', 'b':'-', 'c':'X', 'f':'-'}, 'end':{'a':'-', 'b':'-', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # dXf-
             {'start':{'a':'-', 'b':'-', 'c':'X', 'f':'&'}, 'end':{'a':'-', 'b':'-', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # dXf&
             {'start':{'a':'-', 'b':'-', 'c':'X', 'f':'X'}, 'end':{'a':'-', 'b':'-', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # dXfX
-            {'start':{'a':'-', 'b':'&', 'c':'-', 'f':'-'}, 'end':{'a':'-', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&f- (duplicate)
-            {'start':{'a':'-', 'b':'&', 'c':'-', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&f& (duplicate)
-            {'start':{'a':'-', 'b':'&', 'c':'-', 'f':'X'}, 'end':{'a':'-', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&fX (duplicate)
+#           {'start':{'a':'-', 'b':'&', 'c':'-', 'f':'-'}, 'end':{'a':'-', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&f- (duplicate)
+#           {'start':{'a':'-', 'b':'&', 'c':'-', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&f& (duplicate)
+#           {'start':{'a':'-', 'b':'&', 'c':'-', 'f':'X'}, 'end':{'a':'-', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&fX (duplicate)
             {'start':{'a':'-', 'b':'&', 'c':'&', 'f':'-'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&f-
-            {'start':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&&f&
+            {'start':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&f&
             {'start':{'a':'-', 'b':'&', 'c':'&', 'f':'X'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&fX
             {'start':{'a':'-', 'b':'&', 'c':'X', 'f':'-'}, 'end':{'a':'-', 'b':'&', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&Xf-
-            {'start':{'a':'-', 'b':'&', 'c':'X', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&Xf&
+            {'start':{'a':'-', 'b':'&', 'c':'X', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&Xf&
             {'start':{'a':'-', 'b':'&', 'c':'X', 'f':'X'}, 'end':{'a':'-', 'b':'&', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&XfX
-            {'start':{'a':'-', 'b':'X', 'c':'-', 'f':'-'}, 'end':{'a':'-', 'b':'X', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # dXf- (duplicate)
-            {'start':{'a':'-', 'b':'X', 'c':'-', 'f':'&'}, 'end':{'a':'-', 'b':'X', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # dXf& (duplicate)
-            {'start':{'a':'-', 'b':'X', 'c':'-', 'f':'X'}, 'end':{'a':'-', 'b':'X', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # dXfX (duplicate)
-            {'start':{'a':'-', 'b':'X', 'c':'&', 'f':'-'}, 'end':{'a':'-', 'b':'X', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&Xf- (duplicate)
-            {'start':{'a':'-', 'b':'X', 'c':'&', 'f':'&'}, 'end':{'a':'-', 'b':'X', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&Xf& (duplicate)
-            {'start':{'a':'-', 'b':'X', 'c':'&', 'f':'X'}, 'end':{'a':'-', 'b':'X', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&XfX (duplicate)
+#           {'start':{'a':'-', 'b':'X', 'c':'-', 'f':'-'}, 'end':{'a':'-', 'b':'X', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # dXf- (duplicate)
+#           {'start':{'a':'-', 'b':'X', 'c':'-', 'f':'&'}, 'end':{'a':'-', 'b':'X', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # dXf& (duplicate)
+#           {'start':{'a':'-', 'b':'X', 'c':'-', 'f':'X'}, 'end':{'a':'-', 'b':'X', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # dXfX (duplicate)
+#           {'start':{'a':'-', 'b':'X', 'c':'&', 'f':'-'}, 'end':{'a':'-', 'b':'X', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&Xf- (duplicate)
+#           {'start':{'a':'-', 'b':'X', 'c':'&', 'f':'&'}, 'end':{'a':'-', 'b':'X', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&Xf& (duplicate)
+#           {'start':{'a':'-', 'b':'X', 'c':'&', 'f':'X'}, 'end':{'a':'-', 'b':'X', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&XfX (duplicate)
             {'start':{'a':'-', 'b':'X', 'c':'X', 'f':'-'}, 'end':{'a':'-', 'b':'X', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # dXXf-
             {'start':{'a':'-', 'b':'X', 'c':'X', 'f':'&'}, 'end':{'a':'-', 'b':'X', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # dXXf&
             {'start':{'a':'-', 'b':'X', 'c':'X', 'f':'X'}, 'end':{'a':'-', 'b':'X', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # dXXfX
-            {'start':{'a':'&', 'b':'-', 'c':'-', 'f':'-'}, 'end':{'a':'&', 'b':'-', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&f- (duplicate)
-            {'start':{'a':'&', 'b':'-', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'-', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&f& (duplicate)
-            {'start':{'a':'&', 'b':'-', 'c':'-', 'f':'X'}, 'end':{'a':'&', 'b':'-', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&fX (duplicate)
-            {'start':{'a':'&', 'b':'-', 'c':'&', 'f':'-'}, 'end':{'a':'&', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&f- (duplicate)
-            {'start':{'a':'&', 'b':'-', 'c':'&', 'f':'&'}, 'end':{'a':'&', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&&f& (duplicate)
-            {'start':{'a':'&', 'b':'-', 'c':'&', 'f':'X'}, 'end':{'a':'&', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&fX (duplicate)
-            {'start':{'a':'&', 'b':'-', 'c':'X', 'f':'-'}, 'end':{'a':'&', 'b':'-', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&Xf- (duplicate)
-            {'start':{'a':'&', 'b':'-', 'c':'X', 'f':'&'}, 'end':{'a':'&', 'b':'-', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&Xf& (duplicate)
-            {'start':{'a':'&', 'b':'-', 'c':'X', 'f':'X'}, 'end':{'a':'&', 'b':'-', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&XfX (duplicate)
-            {'start':{'a':'&', 'b':'&', 'c':'-', 'f':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&f- (duplicate)
-            {'start':{'a':'&', 'b':'&', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&&f& (duplicate)
-            {'start':{'a':'&', 'b':'&', 'c':'-', 'f':'X'}, 'end':{'a':'&', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&fX (duplicate)
+#           {'start':{'a':'&', 'b':'-', 'c':'-', 'f':'-'}, 'end':{'a':'&', 'b':'-', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&f- (duplicate)
+#           {'start':{'a':'&', 'b':'-', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'-', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&f& (duplicate)
+#           {'start':{'a':'&', 'b':'-', 'c':'-', 'f':'X'}, 'end':{'a':'&', 'b':'-', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&fX (duplicate)
+#           {'start':{'a':'&', 'b':'-', 'c':'&', 'f':'-'}, 'end':{'a':'&', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&f- (duplicate)
+#           {'start':{'a':'&', 'b':'-', 'c':'&', 'f':'&'}, 'end':{'a':'&', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&f& (duplicate)
+#           {'start':{'a':'&', 'b':'-', 'c':'&', 'f':'X'}, 'end':{'a':'&', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&fX (duplicate)
+#           {'start':{'a':'&', 'b':'-', 'c':'X', 'f':'-'}, 'end':{'a':'&', 'b':'-', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&Xf- (duplicate)
+#           {'start':{'a':'&', 'b':'-', 'c':'X', 'f':'&'}, 'end':{'a':'&', 'b':'-', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&Xf& (duplicate)
+#           {'start':{'a':'&', 'b':'-', 'c':'X', 'f':'X'}, 'end':{'a':'&', 'b':'-', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&XfX (duplicate)
+#           {'start':{'a':'&', 'b':'&', 'c':'-', 'f':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&f- (duplicate)
+#           {'start':{'a':'&', 'b':'&', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&f& (duplicate)
+#           {'start':{'a':'&', 'b':'&', 'c':'-', 'f':'X'}, 'end':{'a':'&', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&fX (duplicate)
             {'start':{'a':'&', 'b':'&', 'c':'&', 'f':'-'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&&f-
-            {'start':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&&&f&
+            {'start':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&&f&
             {'start':{'a':'&', 'b':'&', 'c':'&', 'f':'X'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&&fX
             {'start':{'a':'&', 'b':'&', 'c':'X', 'f':'-'}, 'end':{'a':'&', 'b':'&', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&Xf-
-            {'start':{'a':'&', 'b':'&', 'c':'X', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&&Xf&
+            {'start':{'a':'&', 'b':'&', 'c':'X', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&Xf&
             {'start':{'a':'&', 'b':'&', 'c':'X', 'f':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&XfX
-            {'start':{'a':'&', 'b':'X', 'c':'-', 'f':'-'}, 'end':{'a':'&', 'b':'X', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&Xf- (duplicate)
-            {'start':{'a':'&', 'b':'X', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'X', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&Xf& (duplicate)
-            {'start':{'a':'&', 'b':'X', 'c':'-', 'f':'X'}, 'end':{'a':'&', 'b':'X', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&XfX (duplicate)
-            {'start':{'a':'&', 'b':'X', 'c':'&', 'f':'-'}, 'end':{'a':'&', 'b':'X', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&Xf- (duplicate)
-            {'start':{'a':'&', 'b':'X', 'c':'&', 'f':'&'}, 'end':{'a':'&', 'b':'X', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&&Xf& (duplicate)
-            {'start':{'a':'&', 'b':'X', 'c':'&', 'f':'X'}, 'end':{'a':'&', 'b':'X', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&XfX (duplicate)
+#           {'start':{'a':'&', 'b':'X', 'c':'-', 'f':'-'}, 'end':{'a':'&', 'b':'X', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&Xf- (duplicate)
+#           {'start':{'a':'&', 'b':'X', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'X', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&Xf& (duplicate)
+#           {'start':{'a':'&', 'b':'X', 'c':'-', 'f':'X'}, 'end':{'a':'&', 'b':'X', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&XfX (duplicate)
+#           {'start':{'a':'&', 'b':'X', 'c':'&', 'f':'-'}, 'end':{'a':'&', 'b':'X', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&Xf- (duplicate)
+#           {'start':{'a':'&', 'b':'X', 'c':'&', 'f':'&'}, 'end':{'a':'&', 'b':'X', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&Xf& (duplicate)
+#           {'start':{'a':'&', 'b':'X', 'c':'&', 'f':'X'}, 'end':{'a':'&', 'b':'X', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&XfX (duplicate)
             {'start':{'a':'&', 'b':'X', 'c':'X', 'f':'-'}, 'end':{'a':'&', 'b':'X', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&XXf-
-            {'start':{'a':'&', 'b':'X', 'c':'X', 'f':'&'}, 'end':{'a':'&', 'b':'X', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&XXf&
+            {'start':{'a':'&', 'b':'X', 'c':'X', 'f':'&'}, 'end':{'a':'&', 'b':'X', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&XXf&
             {'start':{'a':'&', 'b':'X', 'c':'X', 'f':'X'}, 'end':{'a':'&', 'b':'X', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&XXfX
-            {'start':{'a':'X', 'b':'-', 'c':'-', 'f':'-'}, 'end':{'a':'X', 'b':'-', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # dXf- (duplicate)
-            {'start':{'a':'X', 'b':'-', 'c':'-', 'f':'&'}, 'end':{'a':'X', 'b':'-', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # dXf& (duplicate)
-            {'start':{'a':'X', 'b':'-', 'c':'-', 'f':'X'}, 'end':{'a':'X', 'b':'-', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # dXfX (duplicate)
-            {'start':{'a':'X', 'b':'-', 'c':'&', 'f':'-'}, 'end':{'a':'X', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&Xf- (duplicate)
-            {'start':{'a':'X', 'b':'-', 'c':'&', 'f':'&'}, 'end':{'a':'X', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&Xf& (duplicate)
-            {'start':{'a':'X', 'b':'-', 'c':'&', 'f':'X'}, 'end':{'a':'X', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&XfX (duplicate)
-            {'start':{'a':'X', 'b':'-', 'c':'X', 'f':'-'}, 'end':{'a':'X', 'b':'-', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # dXf- (duplicate)
-            {'start':{'a':'X', 'b':'-', 'c':'X', 'f':'&'}, 'end':{'a':'X', 'b':'-', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # dXf& (duplicate)
-            {'start':{'a':'X', 'b':'-', 'c':'X', 'f':'X'}, 'end':{'a':'X', 'b':'-', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # dXfX (duplicate)
-            {'start':{'a':'X', 'b':'&', 'c':'-', 'f':'-'}, 'end':{'a':'X', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&Xf- (duplicate)
-            {'start':{'a':'X', 'b':'&', 'c':'-', 'f':'&'}, 'end':{'a':'X', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&Xf& (duplicate)
-            {'start':{'a':'X', 'b':'&', 'c':'-', 'f':'X'}, 'end':{'a':'X', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&XfX (duplicate)
-            {'start':{'a':'X', 'b':'&', 'c':'&', 'f':'-'}, 'end':{'a':'X', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&Xf- (duplicate)
-            {'start':{'a':'X', 'b':'&', 'c':'&', 'f':'&'}, 'end':{'a':'X', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&&Xf& (duplicate)
-            {'start':{'a':'X', 'b':'&', 'c':'&', 'f':'X'}, 'end':{'a':'X', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&XfX (duplicate)
-            {'start':{'a':'X', 'b':'&', 'c':'X', 'f':'-'}, 'end':{'a':'X', 'b':'&', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&XXf- (duplicate)
-            {'start':{'a':'X', 'b':'&', 'c':'X', 'f':'&'}, 'end':{'a':'X', 'b':'&', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&XXf& (duplicate)
-            {'start':{'a':'X', 'b':'&', 'c':'X', 'f':'X'}, 'end':{'a':'X', 'b':'&', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&XXfX (duplicate)
-            {'start':{'a':'X', 'b':'X', 'c':'-', 'f':'-'}, 'end':{'a':'X', 'b':'X', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # dXXf- (duplicate)
-            {'start':{'a':'X', 'b':'X', 'c':'-', 'f':'&'}, 'end':{'a':'X', 'b':'X', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # dXXf& (duplicate)
-            {'start':{'a':'X', 'b':'X', 'c':'-', 'f':'X'}, 'end':{'a':'X', 'b':'X', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # dXXfX (duplicate)
-            {'start':{'a':'X', 'b':'X', 'c':'&', 'f':'-'}, 'end':{'a':'X', 'b':'X', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&XXf- (duplicate)
-            {'start':{'a':'X', 'b':'X', 'c':'&', 'f':'&'}, 'end':{'a':'X', 'b':'X', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&XXf& (duplicate)
-            {'start':{'a':'X', 'b':'X', 'c':'&', 'f':'X'}, 'end':{'a':'X', 'b':'X', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&XXfX (duplicate)
+#           {'start':{'a':'X', 'b':'-', 'c':'-', 'f':'-'}, 'end':{'a':'X', 'b':'-', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # dXf- (duplicate)
+#           {'start':{'a':'X', 'b':'-', 'c':'-', 'f':'&'}, 'end':{'a':'X', 'b':'-', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # dXf& (duplicate)
+#           {'start':{'a':'X', 'b':'-', 'c':'-', 'f':'X'}, 'end':{'a':'X', 'b':'-', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # dXfX (duplicate)
+#           {'start':{'a':'X', 'b':'-', 'c':'&', 'f':'-'}, 'end':{'a':'X', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&Xf- (duplicate)
+#           {'start':{'a':'X', 'b':'-', 'c':'&', 'f':'&'}, 'end':{'a':'X', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&Xf& (duplicate)
+#           {'start':{'a':'X', 'b':'-', 'c':'&', 'f':'X'}, 'end':{'a':'X', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&XfX (duplicate)
+#           {'start':{'a':'X', 'b':'-', 'c':'X', 'f':'-'}, 'end':{'a':'X', 'b':'-', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # dXf- (duplicate)
+#           {'start':{'a':'X', 'b':'-', 'c':'X', 'f':'&'}, 'end':{'a':'X', 'b':'-', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # dXf& (duplicate)
+#           {'start':{'a':'X', 'b':'-', 'c':'X', 'f':'X'}, 'end':{'a':'X', 'b':'-', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # dXfX (duplicate)
+#           {'start':{'a':'X', 'b':'&', 'c':'-', 'f':'-'}, 'end':{'a':'X', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&Xf- (duplicate)
+#           {'start':{'a':'X', 'b':'&', 'c':'-', 'f':'&'}, 'end':{'a':'X', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&Xf& (duplicate)
+#           {'start':{'a':'X', 'b':'&', 'c':'-', 'f':'X'}, 'end':{'a':'X', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&XfX (duplicate)
+#           {'start':{'a':'X', 'b':'&', 'c':'&', 'f':'-'}, 'end':{'a':'X', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&Xf- (duplicate)
+#           {'start':{'a':'X', 'b':'&', 'c':'&', 'f':'&'}, 'end':{'a':'X', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&Xf& (duplicate)
+#           {'start':{'a':'X', 'b':'&', 'c':'&', 'f':'X'}, 'end':{'a':'X', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&XfX (duplicate)
+#           {'start':{'a':'X', 'b':'&', 'c':'X', 'f':'-'}, 'end':{'a':'X', 'b':'&', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&XXf- (duplicate)
+#           {'start':{'a':'X', 'b':'&', 'c':'X', 'f':'&'}, 'end':{'a':'X', 'b':'&', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&XXf& (duplicate)
+#           {'start':{'a':'X', 'b':'&', 'c':'X', 'f':'X'}, 'end':{'a':'X', 'b':'&', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&XXfX (duplicate)
+#           {'start':{'a':'X', 'b':'X', 'c':'-', 'f':'-'}, 'end':{'a':'X', 'b':'X', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # dXXf- (duplicate)
+#           {'start':{'a':'X', 'b':'X', 'c':'-', 'f':'&'}, 'end':{'a':'X', 'b':'X', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # dXXf& (duplicate)
+#           {'start':{'a':'X', 'b':'X', 'c':'-', 'f':'X'}, 'end':{'a':'X', 'b':'X', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # dXXfX (duplicate)
+#           {'start':{'a':'X', 'b':'X', 'c':'&', 'f':'-'}, 'end':{'a':'X', 'b':'X', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&XXf- (duplicate)
+#           {'start':{'a':'X', 'b':'X', 'c':'&', 'f':'&'}, 'end':{'a':'X', 'b':'X', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&XXf& (duplicate)
+#           {'start':{'a':'X', 'b':'X', 'c':'&', 'f':'X'}, 'end':{'a':'X', 'b':'X', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&XXfX (duplicate)
             {'start':{'a':'X', 'b':'X', 'c':'X', 'f':'-'}, 'end':{'a':'X', 'b':'X', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # dXXXf-
             {'start':{'a':'X', 'b':'X', 'c':'X', 'f':'&'}, 'end':{'a':'X', 'b':'X', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # dXXXf&
             {'start':{'a':'X', 'b':'X', 'c':'X', 'f':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}}            # dXXXfX
@@ -1810,80 +1709,80 @@ class test_irepl_replication_hierachy(session.make_sessions_mixin([('otherrods',
             {'start':{'a':'-', 'b':'-', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d-f&
             {'start':{'a':'-', 'b':'-', 'c':'-', 'f':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d-fX
             {'start':{'a':'-', 'b':'-', 'c':'&', 'f':'-'}, 'end':{'a':'-', 'b':'-', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&f-
-            {'start':{'a':'-', 'b':'-', 'c':'&', 'f':'&'}, 'end':{'a':'-', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&f&
+            {'start':{'a':'-', 'b':'-', 'c':'&', 'f':'&'}, 'end':{'a':'-', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&f&
             {'start':{'a':'-', 'b':'-', 'c':'&', 'f':'X'}, 'end':{'a':'-', 'b':'-', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&fX
             {'start':{'a':'-', 'b':'-', 'c':'X', 'f':'-'}, 'end':{'a':'-', 'b':'-', 'c':'X', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # dXf-
             {'start':{'a':'-', 'b':'-', 'c':'X', 'f':'&'}, 'end':{'a':'-', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # dXf&
             {'start':{'a':'-', 'b':'-', 'c':'X', 'f':'X'}, 'end':{'a':'-', 'b':'-', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # dXfX
-            {'start':{'a':'-', 'b':'&', 'c':'-', 'f':'-'}, 'end':{'a':'-', 'b':'&', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&f- (duplicate)
-            {'start':{'a':'-', 'b':'&', 'c':'-', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&f& (duplicate)
-            {'start':{'a':'-', 'b':'&', 'c':'-', 'f':'X'}, 'end':{'a':'-', 'b':'&', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&fX (duplicate)
+#           {'start':{'a':'-', 'b':'&', 'c':'-', 'f':'-'}, 'end':{'a':'-', 'b':'&', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&f- (duplicate)
+#           {'start':{'a':'-', 'b':'&', 'c':'-', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&f& (duplicate)
+#           {'start':{'a':'-', 'b':'&', 'c':'-', 'f':'X'}, 'end':{'a':'-', 'b':'&', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&fX (duplicate)
             {'start':{'a':'-', 'b':'&', 'c':'&', 'f':'-'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&&f-
-            {'start':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&&f&
+            {'start':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&f&
             {'start':{'a':'-', 'b':'&', 'c':'&', 'f':'X'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&&fX
             {'start':{'a':'-', 'b':'&', 'c':'X', 'f':'-'}, 'end':{'a':'-', 'b':'&', 'c':'X', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&Xf-
             {'start':{'a':'-', 'b':'&', 'c':'X', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&Xf&
             {'start':{'a':'-', 'b':'&', 'c':'X', 'f':'X'}, 'end':{'a':'-', 'b':'&', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&XfX
-            {'start':{'a':'-', 'b':'X', 'c':'-', 'f':'-'}, 'end':{'a':'-', 'b':'X', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # dXf- (duplicate)
-            {'start':{'a':'-', 'b':'X', 'c':'-', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # dXf& (duplicate)
-            {'start':{'a':'-', 'b':'X', 'c':'-', 'f':'X'}, 'end':{'a':'-', 'b':'X', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # dXfX (duplicate)
-            {'start':{'a':'-', 'b':'X', 'c':'&', 'f':'-'}, 'end':{'a':'-', 'b':'X', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&Xf- (duplicate)
-            {'start':{'a':'-', 'b':'X', 'c':'&', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&Xf& (duplicate)
-            {'start':{'a':'-', 'b':'X', 'c':'&', 'f':'X'}, 'end':{'a':'-', 'b':'X', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&XfX (duplicate)
+#           {'start':{'a':'-', 'b':'X', 'c':'-', 'f':'-'}, 'end':{'a':'-', 'b':'X', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # dXf- (duplicate)
+#           {'start':{'a':'-', 'b':'X', 'c':'-', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # dXf& (duplicate)
+#           {'start':{'a':'-', 'b':'X', 'c':'-', 'f':'X'}, 'end':{'a':'-', 'b':'X', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # dXfX (duplicate)
+#           {'start':{'a':'-', 'b':'X', 'c':'&', 'f':'-'}, 'end':{'a':'-', 'b':'X', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&Xf- (duplicate)
+#           {'start':{'a':'-', 'b':'X', 'c':'&', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&Xf& (duplicate)
+#           {'start':{'a':'-', 'b':'X', 'c':'&', 'f':'X'}, 'end':{'a':'-', 'b':'X', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&XfX (duplicate)
             {'start':{'a':'-', 'b':'X', 'c':'X', 'f':'-'}, 'end':{'a':'-', 'b':'X', 'c':'X', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # dXXf-
             {'start':{'a':'-', 'b':'X', 'c':'X', 'f':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # dXXf&
             {'start':{'a':'-', 'b':'X', 'c':'X', 'f':'X'}, 'end':{'a':'-', 'b':'X', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # dXXfX
-            {'start':{'a':'&', 'b':'-', 'c':'-', 'f':'-'}, 'end':{'a':'&', 'b':'-', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&f- (duplicate)
-            {'start':{'a':'&', 'b':'-', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'-', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&f& (duplicate)
-            {'start':{'a':'&', 'b':'-', 'c':'-', 'f':'X'}, 'end':{'a':'&', 'b':'-', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&fX (duplicate)
-            {'start':{'a':'&', 'b':'-', 'c':'&', 'f':'-'}, 'end':{'a':'&', 'b':'-', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&&f- (duplicate)
-            {'start':{'a':'&', 'b':'-', 'c':'&', 'f':'&'}, 'end':{'a':'&', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&&f& (duplicate)
-            {'start':{'a':'&', 'b':'-', 'c':'&', 'f':'X'}, 'end':{'a':'&', 'b':'-', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&&fX (duplicate)
-            {'start':{'a':'&', 'b':'-', 'c':'X', 'f':'-'}, 'end':{'a':'&', 'b':'-', 'c':'X', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&Xf- (duplicate)
-            {'start':{'a':'&', 'b':'-', 'c':'X', 'f':'&'}, 'end':{'a':'&', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&Xf& (duplicate)
-            {'start':{'a':'&', 'b':'-', 'c':'X', 'f':'X'}, 'end':{'a':'&', 'b':'-', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&XfX (duplicate)
-            {'start':{'a':'&', 'b':'&', 'c':'-', 'f':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&&f- (duplicate)
-            {'start':{'a':'&', 'b':'&', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&&f& (duplicate)
-            {'start':{'a':'&', 'b':'&', 'c':'-', 'f':'X'}, 'end':{'a':'&', 'b':'&', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&&fX (duplicate)
+#           {'start':{'a':'&', 'b':'-', 'c':'-', 'f':'-'}, 'end':{'a':'&', 'b':'-', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&f- (duplicate)
+#           {'start':{'a':'&', 'b':'-', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'-', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&f& (duplicate)
+#           {'start':{'a':'&', 'b':'-', 'c':'-', 'f':'X'}, 'end':{'a':'&', 'b':'-', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&fX (duplicate)
+#           {'start':{'a':'&', 'b':'-', 'c':'&', 'f':'-'}, 'end':{'a':'&', 'b':'-', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&&f- (duplicate)
+#           {'start':{'a':'&', 'b':'-', 'c':'&', 'f':'&'}, 'end':{'a':'&', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&f& (duplicate)
+#           {'start':{'a':'&', 'b':'-', 'c':'&', 'f':'X'}, 'end':{'a':'&', 'b':'-', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&&fX (duplicate)
+#           {'start':{'a':'&', 'b':'-', 'c':'X', 'f':'-'}, 'end':{'a':'&', 'b':'-', 'c':'X', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&Xf- (duplicate)
+#           {'start':{'a':'&', 'b':'-', 'c':'X', 'f':'&'}, 'end':{'a':'&', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&Xf& (duplicate)
+#           {'start':{'a':'&', 'b':'-', 'c':'X', 'f':'X'}, 'end':{'a':'&', 'b':'-', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&XfX (duplicate)
+#           {'start':{'a':'&', 'b':'&', 'c':'-', 'f':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&&f- (duplicate)
+#           {'start':{'a':'&', 'b':'&', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&f& (duplicate)
+#           {'start':{'a':'&', 'b':'&', 'c':'-', 'f':'X'}, 'end':{'a':'&', 'b':'&', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&&fX (duplicate)
             {'start':{'a':'&', 'b':'&', 'c':'&', 'f':'-'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&&&f-
-            {'start':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&&&f&
+            {'start':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&&f&
             {'start':{'a':'&', 'b':'&', 'c':'&', 'f':'X'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&&&fX
             {'start':{'a':'&', 'b':'&', 'c':'X', 'f':'-'}, 'end':{'a':'&', 'b':'&', 'c':'X', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&&Xf-
             {'start':{'a':'&', 'b':'&', 'c':'X', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&Xf&
             {'start':{'a':'&', 'b':'&', 'c':'X', 'f':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&&XfX
-            {'start':{'a':'&', 'b':'X', 'c':'-', 'f':'-'}, 'end':{'a':'&', 'b':'X', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&Xf- (duplicate)
-            {'start':{'a':'&', 'b':'X', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&Xf& (duplicate)
-            {'start':{'a':'&', 'b':'X', 'c':'-', 'f':'X'}, 'end':{'a':'&', 'b':'X', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&XfX (duplicate)
-            {'start':{'a':'&', 'b':'X', 'c':'&', 'f':'-'}, 'end':{'a':'&', 'b':'X', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&&Xf- (duplicate)
-            {'start':{'a':'&', 'b':'X', 'c':'&', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&Xf& (duplicate)
-            {'start':{'a':'&', 'b':'X', 'c':'&', 'f':'X'}, 'end':{'a':'&', 'b':'X', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&&XfX (duplicate)
+#           {'start':{'a':'&', 'b':'X', 'c':'-', 'f':'-'}, 'end':{'a':'&', 'b':'X', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&Xf- (duplicate)
+#           {'start':{'a':'&', 'b':'X', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&Xf& (duplicate)
+#           {'start':{'a':'&', 'b':'X', 'c':'-', 'f':'X'}, 'end':{'a':'&', 'b':'X', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&XfX (duplicate)
+#           {'start':{'a':'&', 'b':'X', 'c':'&', 'f':'-'}, 'end':{'a':'&', 'b':'X', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&&Xf- (duplicate)
+#           {'start':{'a':'&', 'b':'X', 'c':'&', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&Xf& (duplicate)
+#           {'start':{'a':'&', 'b':'X', 'c':'&', 'f':'X'}, 'end':{'a':'&', 'b':'X', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&&XfX (duplicate)
             {'start':{'a':'&', 'b':'X', 'c':'X', 'f':'-'}, 'end':{'a':'&', 'b':'X', 'c':'X', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&XXf-
             {'start':{'a':'&', 'b':'X', 'c':'X', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&XXf&
             {'start':{'a':'&', 'b':'X', 'c':'X', 'f':'X'}, 'end':{'a':'&', 'b':'X', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&XXfX
             {'start':{'a':'X', 'b':'-', 'c':'-', 'f':'-'}, 'end':{'a':'X', 'b':'-', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # dXf- (duplicate)
-            {'start':{'a':'X', 'b':'-', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'-', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # dXf& (duplicate)
-            {'start':{'a':'X', 'b':'-', 'c':'-', 'f':'X'}, 'end':{'a':'X', 'b':'-', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # dXfX (duplicate)
-            {'start':{'a':'X', 'b':'-', 'c':'&', 'f':'-'}, 'end':{'a':'X', 'b':'-', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&Xf- (duplicate)
-            {'start':{'a':'X', 'b':'-', 'c':'&', 'f':'&'}, 'end':{'a':'&', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&Xf& (duplicate)
-            {'start':{'a':'X', 'b':'-', 'c':'&', 'f':'X'}, 'end':{'a':'X', 'b':'-', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&XfX (duplicate)
-            {'start':{'a':'X', 'b':'-', 'c':'X', 'f':'-'}, 'end':{'a':'X', 'b':'-', 'c':'X', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # dXf- (duplicate)
-            {'start':{'a':'X', 'b':'-', 'c':'X', 'f':'&'}, 'end':{'a':'&', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # dXf& (duplicate)
-            {'start':{'a':'X', 'b':'-', 'c':'X', 'f':'X'}, 'end':{'a':'X', 'b':'-', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # dXfX (duplicate)
-            {'start':{'a':'X', 'b':'&', 'c':'-', 'f':'-'}, 'end':{'a':'X', 'b':'&', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&Xf- (duplicate)
-            {'start':{'a':'X', 'b':'&', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&Xf& (duplicate)
-            {'start':{'a':'X', 'b':'&', 'c':'-', 'f':'X'}, 'end':{'a':'X', 'b':'&', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&XfX (duplicate)
-            {'start':{'a':'X', 'b':'&', 'c':'&', 'f':'-'}, 'end':{'a':'X', 'b':'&', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&&Xf- (duplicate)
-            {'start':{'a':'X', 'b':'&', 'c':'&', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&Xf& (duplicate)
-            {'start':{'a':'X', 'b':'&', 'c':'&', 'f':'X'}, 'end':{'a':'X', 'b':'&', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&&XfX (duplicate)
-            {'start':{'a':'X', 'b':'&', 'c':'X', 'f':'-'}, 'end':{'a':'X', 'b':'&', 'c':'X', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&XXf- (duplicate)
-            {'start':{'a':'X', 'b':'&', 'c':'X', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&XXf& (duplicate)
-            {'start':{'a':'X', 'b':'&', 'c':'X', 'f':'X'}, 'end':{'a':'X', 'b':'&', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&XXfX (duplicate)
-            {'start':{'a':'X', 'b':'X', 'c':'-', 'f':'-'}, 'end':{'a':'X', 'b':'X', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # dXXf- (duplicate)
-            {'start':{'a':'X', 'b':'X', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # dXXf& (duplicate)
-            {'start':{'a':'X', 'b':'X', 'c':'-', 'f':'X'}, 'end':{'a':'X', 'b':'X', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # dXXfX (duplicate)
-            {'start':{'a':'X', 'b':'X', 'c':'&', 'f':'-'}, 'end':{'a':'X', 'b':'X', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&XXf- (duplicate)
-            {'start':{'a':'X', 'b':'X', 'c':'&', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&XXf& (duplicate)
-            {'start':{'a':'X', 'b':'X', 'c':'&', 'f':'X'}, 'end':{'a':'X', 'b':'X', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&XXfX (duplicate)
+#           {'start':{'a':'X', 'b':'-', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'-', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # dXf& (duplicate)
+#           {'start':{'a':'X', 'b':'-', 'c':'-', 'f':'X'}, 'end':{'a':'X', 'b':'-', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # dXfX (duplicate)
+#           {'start':{'a':'X', 'b':'-', 'c':'&', 'f':'-'}, 'end':{'a':'X', 'b':'-', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&Xf- (duplicate)
+#           {'start':{'a':'X', 'b':'-', 'c':'&', 'f':'&'}, 'end':{'a':'&', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&Xf& (duplicate)
+#           {'start':{'a':'X', 'b':'-', 'c':'&', 'f':'X'}, 'end':{'a':'X', 'b':'-', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&XfX (duplicate)
+#           {'start':{'a':'X', 'b':'-', 'c':'X', 'f':'-'}, 'end':{'a':'X', 'b':'-', 'c':'X', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # dXf- (duplicate)
+#           {'start':{'a':'X', 'b':'-', 'c':'X', 'f':'&'}, 'end':{'a':'&', 'b':'-', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # dXf& (duplicate)
+#           {'start':{'a':'X', 'b':'-', 'c':'X', 'f':'X'}, 'end':{'a':'X', 'b':'-', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # dXfX (duplicate)
+#           {'start':{'a':'X', 'b':'&', 'c':'-', 'f':'-'}, 'end':{'a':'X', 'b':'&', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&Xf- (duplicate)
+#           {'start':{'a':'X', 'b':'&', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&Xf& (duplicate)
+#           {'start':{'a':'X', 'b':'&', 'c':'-', 'f':'X'}, 'end':{'a':'X', 'b':'&', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&XfX (duplicate)
+#           {'start':{'a':'X', 'b':'&', 'c':'&', 'f':'-'}, 'end':{'a':'X', 'b':'&', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&&Xf- (duplicate)
+#           {'start':{'a':'X', 'b':'&', 'c':'&', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&&Xf& (duplicate)
+#           {'start':{'a':'X', 'b':'&', 'c':'&', 'f':'X'}, 'end':{'a':'X', 'b':'&', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&&XfX (duplicate)
+#           {'start':{'a':'X', 'b':'&', 'c':'X', 'f':'-'}, 'end':{'a':'X', 'b':'&', 'c':'X', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&XXf- (duplicate)
+#           {'start':{'a':'X', 'b':'&', 'c':'X', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&XXf& (duplicate)
+#           {'start':{'a':'X', 'b':'&', 'c':'X', 'f':'X'}, 'end':{'a':'X', 'b':'&', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&XXfX (duplicate)
+#           {'start':{'a':'X', 'b':'X', 'c':'-', 'f':'-'}, 'end':{'a':'X', 'b':'X', 'c':'-', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # dXXf- (duplicate)
+#           {'start':{'a':'X', 'b':'X', 'c':'-', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'-', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # dXXf& (duplicate)
+#           {'start':{'a':'X', 'b':'X', 'c':'-', 'f':'X'}, 'end':{'a':'X', 'b':'X', 'c':'-', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # dXXfX (duplicate)
+#           {'start':{'a':'X', 'b':'X', 'c':'&', 'f':'-'}, 'end':{'a':'X', 'b':'X', 'c':'&', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # d&XXf- (duplicate)
+#           {'start':{'a':'X', 'b':'X', 'c':'&', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # d&XXf& (duplicate)
+#           {'start':{'a':'X', 'b':'X', 'c':'&', 'f':'X'}, 'end':{'a':'X', 'b':'X', 'c':'&', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}},           # d&XXfX (duplicate)
             {'start':{'a':'X', 'b':'X', 'c':'X', 'f':'-'}, 'end':{'a':'X', 'b':'X', 'c':'X', 'f':'-'}, 'output':{'out':None, 'err':'SYS_REPLICA_INACCESSIBLE', 'rc':None}},  # dXXXf-
             {'start':{'a':'X', 'b':'X', 'c':'X', 'f':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},                        # dXXXf&
             {'start':{'a':'X', 'b':'X', 'c':'X', 'f':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':'SYS_NOT_ALLOWED', 'rc':None}}            # dXXXfX
