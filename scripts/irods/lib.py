@@ -788,3 +788,11 @@ def get_database_instance_name(session):
         server_config = server['server_config']
         if server_config['catalog_service_role'] == 'provider':
             return next(iter(server_config['plugin_configuration']['database']))
+
+def set_replica_status(session, logical_path, replica_number, replica_status):
+    session.assert_icommand([
+        'iadmin', 'modrepl',
+        'logical_path', logical_path,
+        'replica_number', str(replica_number),
+        'DATA_REPL_STATUS', str(replica_status)
+    ])
