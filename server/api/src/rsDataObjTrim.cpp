@@ -19,6 +19,8 @@
 #include "irods/logical_locking.hpp"
 
 #include <tuple>
+#include <type_traits> // For std::remove_cv_t
+#include <utility>
 
 namespace
 {
@@ -54,42 +56,78 @@ namespace
         return info;
     }
 
-    int get_time_of_expiration(const char* age_kw) {
-        if (!age_kw) {
+    auto get_time_of_expiration(const char* _age_in_minutes) -> std::uint64_t
+    {
+        if (!_age_in_minutes) {
             return 0;
         }
-        try {
-            const auto age_in_minutes = std::atoi(age_kw);
-            if ( age_in_minutes > 0 ) {
-                const auto now = time(0);
-                const auto age_in_seconds = age_in_minutes * 60;
-                return now - age_in_seconds;
-            }
-            return 0;
-        }
-        catch (const std::exception&) {
-            return 0;
-        }
-    }
 
-    unsigned long get_minimum_replica_count(const char* copies_kw) {
+        const auto now = std::time(nullptr);
+        if (-1 == now) {
+            THROW(SYS_INTERNAL_ERR, fmt::format("{}: Error occurred getting current time.", __func__));
+        }
+
+        try {
+            const auto age_in_minutes = std::stoll(_age_in_minutes);
+            if (age_in_minutes < 0) {
+                THROW(
+                    SYS_INVALID_INPUT_PARAM,
+                    fmt::format("{}: {} value [{}] must be a non-negative value.", __func__, AGE_KW, _age_in_minutes));
+            }
+
+            constexpr decltype(age_in_minutes) seconds_in_one_minute = 60;
+            const auto age_in_seconds = age_in_minutes * seconds_in_one_minute;
+            if (0 != age_in_minutes && age_in_seconds / age_in_minutes != seconds_in_one_minute) {
+                // If the provided time was so large that representing it in seconds caused the value to wrap, just
+                // return 0 because the replicas would have to be older than epoch time 0 in order to be old enough to
+                // be trimmed. iRODS itself has not existed that long, so none of the replicas are old enough to be
+                // trimmed based on the input.
+                return 0;
+            }
+
+            // If the provided time is larger than the current epoch time, just return 0 because iRODS itself has not
+            // existed that long, so none of the replicas are old enough to be trimmed based on the input.
+            if (std::cmp_less(now, age_in_seconds)) {
+                return 0;
+            }
+
+            // The expiration time is the desired minimum age of the replicas to trim subtracted from the current time.
+            // Replicas which have a last-modified time less than this expiration time will be trimmed. Based on the
+            // preceding checks above, this value is guaranteed to be non-negative.
+            return now - age_in_seconds;
+        }
+        catch (const std::invalid_argument& e) {
+            THROW(SYS_INVALID_INPUT_PARAM,
+                  fmt::format("{}: {} value [{}] is invalid: [{}]", __func__, AGE_KW, _age_in_minutes, e.what()));
+        }
+        catch (const std::out_of_range&) {
+            THROW(SYS_INVALID_INPUT_PARAM,
+                  fmt::format("{}: {} value [{}] is out of range.", __func__, AGE_KW, _age_in_minutes));
+        }
+    } // get_time_of_expiration
+
+    auto get_minimum_replica_count(const char* copies_kw) -> std::int32_t
+    {
         if (!copies_kw) {
             return DEF_MIN_COPY_CNT;
         }
         try {
-            const auto minimum_replica_count = std::stoul(copies_kw);
-            if (0 == minimum_replica_count) {
-                return DEF_MIN_COPY_CNT;
+            const auto minimum_replica_count = std::stoi(copies_kw);
+            if (minimum_replica_count <= 0) {
+                THROW(SYS_INVALID_INPUT_PARAM,
+                      fmt::format("{}: {} value [{}] must be a positive value.", __func__, COPIES_KW, copies_kw));
             }
             return minimum_replica_count;
         }
-        catch (const std::invalid_argument&) {
-            return DEF_MIN_COPY_CNT;
+        catch (const std::invalid_argument& e) {
+            THROW(SYS_INVALID_INPUT_PARAM,
+                  fmt::format("{}: {} value [{}] is invalid: [{}]", __func__, COPIES_KW, copies_kw, e.what()));
         }
         catch (const std::out_of_range&) {
-            return DEF_MIN_COPY_CNT;
+            THROW(SYS_INVALID_INPUT_PARAM,
+                  fmt::format("{}: {} value [{}] is out of range.", __func__, COPIES_KW, copies_kw));
         }
-    }
+    } // get_minimum_replica_count
 
     auto get_data_object_info(rsComm_t *rsComm, dataObjInp_t& dataObjInp) -> std::tuple<irods::file_object_ptr, DataObjInfo*>
     {
@@ -116,38 +154,42 @@ namespace
         }
     } // get_data_object_info
 
-    auto get_list_of_replicas_to_trim(
-        dataObjInp_t& _inp,
-        const irods::file_object_ptr _obj,
-        const DataObjInfo& _info)
+    auto get_list_of_replicas_to_trim(const DataObjInp& _inp,
+                                      const irods::file_object_ptr& _obj,
+                                      const DataObjInfo& _info) -> std::vector<irods::physical_object>
     {
-        const auto& list = _obj->replicas();
-
-        std::vector<irods::physical_object> trim_list;
-
-        const unsigned long good_replica_count = std::count_if(list.begin(), list.end(),
-            [](const auto& repl) {
-                return GOOD_REPLICA == repl.replica_status();
-            });
-
         const auto minimum_replica_count = get_minimum_replica_count(getValByKey(&_inp.condInput, COPIES_KW));
-        const auto expiration = get_time_of_expiration(getValByKey(&_inp.condInput, AGE_KW));
-        const auto expired = [&expiration](const irods::physical_object& obj) {
-            return expiration && std::atoi(obj.modify_ts().c_str()) > expiration;
+        const auto& replica_list = _obj->replicas();
+        auto remaining_replica_count = replica_list.size();
+        if (std::cmp_less_equal(remaining_replica_count, minimum_replica_count)) {
+            // If the number of existing replicas is already at the minimum required count, we should return an empty
+            // list so that no replicas are trimmed.
+            return {};
+        }
+
+        const auto good_replica_count = std::count_if(replica_list.begin(), replica_list.end(), [](const auto& repl) {
+            return GOOD_REPLICA == repl.replica_status();
+        });
+        constexpr decltype(good_replica_count) minimum_good_replica_count = 1;
+
+        const auto* age_kw = getValByKey(&_inp.condInput, AGE_KW);
+        const auto expiration_time = get_time_of_expiration(age_kw);
+        const auto expired = [expiration_time](const irods::physical_object& _replica) {
+            // Any replica with a last-modified time that is EARLIER than the expiration time (that is, less than) is
+            // considered expired.
+            return std::cmp_less(std::stoul(_replica.modify_ts()), expiration_time);
         };
 
         // If a specific replica number is specified, only trim that one!
-        const char* repl_num = getValByKey(&_inp.condInput, REPL_NUM_KW);
-        if (repl_num) {
+        if (const char* repl_num = getValByKey(&_inp.condInput, REPL_NUM_KW); repl_num) {
             try {
                 const auto num = std::stoi(repl_num);
 
-                const auto repl = std::find_if(list.begin(), list.end(),
-                    [&num](const auto& repl) {
-                        return num == repl.repl_num();
-                    });
+                const auto repl = std::find_if(replica_list.begin(), replica_list.end(), [num](const auto& repl) {
+                    return num == repl.repl_num();
+                });
 
-                if (repl == list.end()) {
+                if (repl == replica_list.end()) {
                     THROW(SYS_REPLICA_DOES_NOT_EXIST, "target replica does not exist");
                 }
 
@@ -160,24 +202,23 @@ namespace
                     THROW(ret, msg);
                 }
 
-                if (expired(*repl)) {
+                if (age_kw && !expired(*repl)) {
                     THROW(USER_INCOMPATIBLE_PARAMS, "target replica is not old enough for removal");
                 }
 
-                if (good_replica_count <= minimum_replica_count && GOOD_REPLICA == repl->replica_status()) {
+                if (good_replica_count <= minimum_good_replica_count && GOOD_REPLICA == repl->replica_status()) {
                     THROW(USER_INCOMPATIBLE_PARAMS, "cannot remove the last good replica");
                 }
 
-                trim_list.push_back(*repl);
-                return trim_list;
+                return {*repl};
             }
             catch (const std::invalid_argument& e) {
-                irods::log(LOG_ERROR, e.what());
-                THROW(USER_INVALID_REPLICA_INPUT, "invalid replica number requested");
+                THROW(USER_INVALID_REPLICA_INPUT,
+                      fmt::format("{}: {} value [{}] is invalid: [{}]", __func__, REPL_NUM_KW, repl_num, e.what()));
             }
             catch (const std::out_of_range& e) {
-                irods::log(LOG_ERROR, e.what());
-                THROW(USER_INVALID_REPLICA_INPUT, "invalid replica number requested");
+                THROW(USER_INVALID_REPLICA_INPUT,
+                      fmt::format("{}: {} value [{}] is out of range.", __func__, REPL_NUM_KW, repl_num));
             }
         }
 
@@ -193,39 +234,65 @@ namespace
         }
 
         const char* resc_name = getValByKey(&_inp.condInput, RESC_NAME_KW);
-        const auto matches_target_resource = [&resc_name](const irods::physical_object& obj) {
-            return resc_name && irods::hierarchy_parser{obj.resc_hier()}.first_resc() == resc_name;
+        const auto matches_target_resource = [resc_name](const irods::physical_object& _replica) {
+            return resc_name && irods::hierarchy_parser{_replica.resc_hier()}.first_resc() == resc_name;
         };
 
+        std::vector<irods::physical_object> trim_list;
+
         // Walk list and add stale replicas to the list
-        for (const auto& obj : list) {
-            if ((obj.replica_status() & 0x0F) == STALE_REPLICA) {
-                if (expired(obj) || (resc_name && !matches_target_resource(obj))) {
-                    continue;
-                }
-                trim_list.push_back(obj);
+        for (const auto& obj : replica_list) {
+            if (std::cmp_less_equal(replica_list.size() - trim_list.size(), minimum_replica_count)) {
+                // Once the size of the list of replicas is reduced by the size of the list of replicas to be trimmed
+                // down to the minimum number of replicas to keep, there is nothing left to do.
+                return trim_list;
             }
-        }
-        if (good_replica_count <= minimum_replica_count) {
-            return trim_list;
+            if (STALE_REPLICA != obj.replica_status()) {
+                // Only considering stale replicas at this stage.
+                continue;
+            }
+            if (age_kw && !expired(obj)) {
+                // Skip replicas that are not expired if the AGE_KW was provided.
+                continue;
+            }
+            if (resc_name && !matches_target_resource(obj)) {
+                // Skip replicas which are not on the specified target resource.
+                continue;
+            }
+            trim_list.push_back(obj);
         }
 
         // If we have not reached the minimum count, walk list again and add good replicas
-        unsigned long good_replicas_to_be_trimmed = 0;
-        for (const auto& obj : list) {
-            if ((obj.replica_status() & 0x0F) == GOOD_REPLICA) {
-                if (expired(obj) || (resc_name && !matches_target_resource(obj))) {
-                    continue;
-                }
-                if (good_replica_count - good_replicas_to_be_trimmed <= minimum_replica_count) {
-                    return trim_list;
-                }
-                trim_list.push_back(obj);
-                good_replicas_to_be_trimmed++;
+        std::remove_cv_t<decltype(good_replica_count)> good_replicas_to_be_trimmed = 0;
+        for (const auto& obj : replica_list) {
+            if (std::cmp_less_equal(good_replica_count - good_replicas_to_be_trimmed, minimum_good_replica_count)) {
+                // Stop adding to the trim list as soon as the number of good replicas that will remain after the
+                // number of good replicas to trim have been trimmed is less than the minimum good replica count (1).
+                return trim_list;
             }
+            if (std::cmp_less_equal(replica_list.size() - trim_list.size(), minimum_replica_count)) {
+                // Once the size of the list of replicas is reduced by the size of the list of replicas to be trimmed
+                // down to the minimum number of replicas to keep, there is nothing left to do.
+                return trim_list;
+            }
+            if (GOOD_REPLICA != obj.replica_status()) {
+                // Only considering good replicas at this stage.
+                continue;
+            }
+            if (age_kw && !expired(obj)) {
+                // Skip replicas that are not expired if the AGE_KW was provided.
+                continue;
+            }
+            if (resc_name && !matches_target_resource(obj)) {
+                // Skip replicas which are not on the specified target resource.
+                continue;
+            }
+            trim_list.push_back(obj);
+            good_replicas_to_be_trimmed++;
         }
+
         return trim_list;
-    }
+    } // get_list_of_replicas_to_trim
 }
 
 int rsDataObjTrim(
