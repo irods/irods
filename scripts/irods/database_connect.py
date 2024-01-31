@@ -116,6 +116,7 @@ def get_odbc_driver_paths(db_type, oracle_home=None):
             key = lambda p: 0 if is_64_bit_ELF(p) else 1)
     elif db_type == 'mysql':
         return sorted(unique_list(itertools.chain(
+                    lib.find_shared_object('libmaodbc.so'),
                     lib.find_shared_object('libmyodbc.so'),
                     lib.find_shared_object('libmyodbc5.so'),
                     lib.find_shared_object('libmyodbc3.so'),
