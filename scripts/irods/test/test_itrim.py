@@ -52,9 +52,6 @@ class Test_Itrim(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
 
             # Error cases.
             self.admin.assert_icommand('itrim -S resc_1 -n3 {0}'.format(filename), 'STDERR', 'status = -402000 USER_INCOMPATIBLE_PARAMS')
-            self.admin.assert_icommand('itrim -N2 -n0 {0}'.format(filename), 'STDERR', 'status = -402000 USER_INCOMPATIBLE_PARAMS')
-            self.admin.assert_icommand('itrim -N9 -n0 {0}'.format(filename), 'STDERR', 'status = -402000 USER_INCOMPATIBLE_PARAMS')
-            self.admin.assert_icommand('itrim -n0 {0}'.format(filename), 'STDERR', 'status = -402000 USER_INCOMPATIBLE_PARAMS')
 
             self.admin.assert_icommand('itrim -S invalid_resc {0}'.format(filename), 'STDERR', 'status = -78000 SYS_RESC_DOES_NOT_EXIST')
             self.admin.assert_icommand('itrim -n999 {0}'.format(filename), 'STDERR', 'status = -164000 SYS_REPLICA_DOES_NOT_EXIST')
@@ -62,12 +59,19 @@ class Test_Itrim(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
             self.admin.assert_icommand('itrim -nX {0}'.format(filename), 'STDERR', 'status = -403000 USER_INVALID_REPLICA_INPUT')
 
             # No error cases.
+            # In this case, no replicas are trimmed because the specified minimum number of replicas to keep is higher
+            # than the number of replicas that exist.
+            self.admin.assert_icommand('itrim -N9 -n0 {0}'.format(filename), 'STDOUT', 'files trimmed = 0')
+            # In this case, replica 0 is trimmed because the replica on resc_5 is still good so at least one good
+            # replica would remain after trimming, and the minimum number of replicas to keep is lower than the number
+            # of replicas that exist.
+            self.admin.assert_icommand('itrim -N2 -n0 {0}'.format(filename), 'STDOUT', 'files trimmed = 1')
             self.admin.assert_icommand('itrim -N2 -S resc_1 {0}'.format(filename), 'STDOUT', 'files trimmed = 1')
             self.admin.assert_icommand('ils -l {0}'.format(filename), 'STDOUT', filename)
             self.admin.assert_icommand('itrim -S resc_2 {0}'.format(filename), 'STDOUT', 'files trimmed = 1')
             self.admin.assert_icommand('ils -l {0}'.format(filename), 'STDOUT', filename)
 
-            self.admin.assert_icommand('itrim -N4 {0}'.format(filename), 'STDOUT', 'files trimmed = 1')
+            self.admin.assert_icommand('itrim -N2 {0}'.format(filename), 'STDOUT', 'files trimmed = 1')
             self.admin.assert_icommand('ils -l {0}'.format(filename), 'STDOUT', filename)
             self.admin.assert_icommand('itrim -N2 {0}'.format(filename), 'STDOUT', 'files trimmed = 0')
             self.admin.assert_icommand('ils -l {0}'.format(filename), 'STDOUT', filename)
@@ -78,6 +82,7 @@ class Test_Itrim(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
             self.admin.assert_icommand('ils -l {0}'.format(filename), 'STDOUT', filename)
 
         finally:
+            self.admin.assert_icommand('ils -l {0}'.format(filename), 'STDOUT', filename) # debugging
             # Clean up.
             self.admin.assert_icommand('irm -f {0}'.format(filename))
             for i in range(replicas):
@@ -254,3 +259,326 @@ class Test_Itrim(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
             self.admin.run_icommand(['irm', '-f', logical_path])
             lib.remove_resource(self.admin, resc1)
             lib.remove_resource(self.admin, resc2)
+
+    def test_itrim_does_not_remove_the_last_replica__issue_7468(self):
+        resc1 = 'issue_7468_1'
+        resc2 = 'issue_7468_2'
+
+        filename = 'test_itrim_does_not_remove_the_last_replica__issue_7468'
+        logical_path = os.path.join(self.admin.session_collection, filename)
+
+        try:
+            lib.create_ufs_resource(self.admin, resc1, test.settings.HOSTNAME_2)
+            lib.create_ufs_resource(self.admin, resc2, test.settings.HOSTNAME_3)
+
+            # Create the data object.
+            self.admin.assert_icommand(['itouch', '-R', resc1, logical_path])
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc1))
+
+            # Replicate to another resource so that we have something to trim.
+            self.admin.assert_icommand(['irepl', '-R', resc2, logical_path])
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc2))
+
+            # Now make sure that one of the replicas is stale...
+            lib.set_replica_status(self.admin, logical_path, 0, 0)
+            self.admin.assert_icommand(['ils', '-l', logical_path], 'STDOUT', filename) # debugging
+
+            # Try trimming replica 1, which is marked "good". Ensure that it fails because it is the last good replica.
+            self.admin.assert_icommand(['itrim', '-N1', '-n1', logical_path], 'STDERR', 'USER_INCOMPATIBLE_PARAMS')
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc1))
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc2))
+
+            # Now mark the other replica as stale.
+            lib.set_replica_status(self.admin, logical_path, 1, 0)
+            self.admin.assert_icommand(['ils', '-l', logical_path], 'STDOUT', filename) # debugging
+
+            # Try to trim replica 0 with no minimum number of replicas to keep specified. This does nothing because the
+            # default minimum number of replicas to keep is 2 and there are only 2 replicas. An error is not expected
+            # here because the client does not direct the API to do anything that it cannot carry out. The minimum
+            # number of replicas required (2) is still being met.
+            self.admin.assert_icommand(['itrim', '-n0', logical_path], 'STDOUT', 'Number of files trimmed = 0.')
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc1))
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc2))
+
+            # Trim replica 0 and specify a minimum number of replicas to keep of 1. This should succeed because there is
+            # still another replica and the replica being trimmed is stale.
+            self.admin.assert_icommand(['itrim', '-N1', '-n0', logical_path], 'STDOUT', 'Number of files trimmed = 1.')
+            self.assertFalse(lib.replica_exists_on_resource(self.admin, logical_path, resc1))
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc2))
+
+            # Try trimming replica 0, which is now "stale". Ensure that it fails because it is the last replica.
+            self.admin.assert_icommand(['itrim', '-N1', '-n1', logical_path], 'STDOUT', 'Number of files trimmed = 0.')
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc2))
+
+        finally:
+            self.admin.assert_icommand(['ils', '-l', logical_path], 'STDOUT', filename) # debugging
+            self.admin.run_icommand(['irm', '-f', logical_path])
+            lib.remove_resource(self.admin, resc1)
+            lib.remove_resource(self.admin, resc2)
+
+    def test_itrim_minimum_replicas_to_keep_invalid_values__issue_7502(self):
+        resc1 = 'test_itrim_minimum_replicas_to_keep_invalid_values_resc_1'
+        resc2 = 'test_itrim_minimum_replicas_to_keep_invalid_values_resc_2'
+
+        filename = 'test_itrim_minimum_replicas_to_keep_invalid_values'
+        logical_path = os.path.join(self.admin.session_collection, filename)
+
+        try:
+            lib.create_ufs_resource(self.admin, resc1, test.settings.HOSTNAME_2)
+            lib.create_ufs_resource(self.admin, resc2, test.settings.HOSTNAME_3)
+
+            # Create the data object.
+            self.admin.assert_icommand(['itouch', logical_path])
+
+            # Replicate to two other resources so that we have something to trim, even with the default minimum.
+            self.admin.assert_icommand(['irepl', '-R', resc1, logical_path])
+            self.admin.assert_icommand(['irepl', '-R', resc2, logical_path])
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, self.admin.default_resource))
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc1))
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc2))
+
+            # -N cannot be 0.
+            self.admin.assert_icommand(['itrim', '-N0', logical_path], 'STDERR', 'SYS_INVALID_INPUT_PARAM')
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, self.admin.default_resource))
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc1))
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc2))
+
+            # -N cannot be negative.
+            self.admin.assert_icommand(['itrim', '-N"-1"', logical_path], 'STDERR', 'SYS_INVALID_INPUT_PARAM')
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, self.admin.default_resource))
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc1))
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc2))
+
+            # -N cannot overflow. Maximum value is INT32_MAX (2^31 - 1 = 2147483647). Should be enough for anyone.
+            self.admin.assert_icommand(
+                ['itrim', '-N2147483648', logical_path], 'STDERR', 'SYS_INVALID_INPUT_PARAM')
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, self.admin.default_resource))
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc1))
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc2))
+
+            # -N must be a number.
+            self.admin.assert_icommand(['itrim', '-Nnope', logical_path], 'STDERR', 'SYS_INVALID_INPUT_PARAM')
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, self.admin.default_resource))
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc1))
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc2))
+
+            # -N must be an Integer.
+            self.admin.assert_icommand(['itrim', '-N"3.14"', logical_path], 'STDERR', 'SYS_INVALID_INPUT_PARAM')
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, self.admin.default_resource))
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc1))
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc2))
+
+        finally:
+            self.admin.assert_icommand(['ils', '-l', logical_path], 'STDOUT', filename) # debugging
+            self.admin.run_icommand(['irm', '-f', logical_path])
+            lib.remove_resource(self.admin, resc1)
+            lib.remove_resource(self.admin, resc2)
+
+
+class test_itrim_target_replica_selection_decision_making__issue_7515(unittest.TestCase):
+
+	hostnames = [test.settings.ICAT_HOSTNAME, test.settings.HOSTNAME_1, test.settings.HOSTNAME_2, test.settings.HOSTNAME_3]
+	resource_names = [f'ufs{i}' for i in range(len(hostnames))]
+
+	@classmethod
+	def setUpClass(cls):
+		# Create a test admin user and a test regular user.
+		cls.admin = session.mkuser_and_return_session('rodsadmin', 'otherrods', 'rods', lib.get_hostname())
+		cls.user = session.mkuser_and_return_session('rodsuser', 'smeagol', 'spass', lib.get_hostname())
+
+		# Create some test resources.
+		for i, resource_name in enumerate(cls.resource_names):
+			lib.create_ufs_resource(cls.admin, resource_name, hostname=cls.hostnames[i])
+
+	@classmethod
+	def tearDownClass(cls):
+		with session.make_session_for_existing_admin() as admin_session:
+			# Remove all the test resources.
+			for resource_name in cls.resource_names:
+				lib.remove_resource(admin_session, resource_name)
+
+			# Remove the regular test user.
+			cls.user.__exit__()
+			admin_session.assert_icommand(['iadmin', 'rmuser', cls.user.username])
+
+			# Remove the test admin.
+			cls.admin.__exit__()
+			admin_session.assert_icommand(['iadmin', 'rmuser', cls.admin.username])
+
+	def setUp(cls):
+		# Create a data object and replicate to each resource.
+		contents = 'trim-ly mcskimbly'
+		cls.data_name = 'test_itrim_target_replica_selection_decision_making.txt'
+		cls.logical_path = '/'.join([cls.user.session_collection, cls.data_name])
+		for i, resource_name in enumerate(cls.resource_names):
+			if i == 0:
+				cls.user.assert_icommand(['istream', 'write', '-R', resource_name, cls.logical_path], input=contents)
+				continue
+
+			cls.user.assert_icommand(['irepl', '-R', resource_name, cls.logical_path])
+			cls.assertTrue(lib.replica_exists_on_resource(cls.user, cls.logical_path, resource_name))
+
+	def tearDown(cls):
+		# Remove the data object.
+		cls.user.assert_icommand(['irm', '-f', cls.logical_path])
+
+	def set_replica_statuses(self, replica_status_list):
+		# Ensure that the number of replicas will line up with the number of replica statuses.
+		self.assertEqual(len(self.resource_names), len(replica_status_list))
+		for replica_number, replica_status in enumerate(replica_status_list):
+			# The replica statuses should only be numbers (either literally or as a string).
+			self.assertTrue(isinstance(replica_status, int) or isinstance(replica_status, str))
+			lib.set_replica_status(self.admin, self.logical_path, replica_number, replica_status)
+
+	def check_replica_statuses(self, replica_status_list):
+		# Ensure that the number of replicas will line up with the number of replica statuses.
+		self.assertEqual(len(self.resource_names), len(replica_status_list))
+		for replica_number, replica_status in enumerate(replica_status_list):
+			if replica_status is None:
+				# We use None to represent a replica which does not exist.
+				self.assertFalse(lib.replica_exists(self.user, self.logical_path, replica_number))
+			else:
+				self.assertEqual(
+					str(replica_status), lib.get_replica_status(self.user, self.data_name, replica_number))
+
+	def do_test(self, replica_status_list_at_start, replica_status_list_at_end):
+		try:
+			self.set_replica_statuses(replica_status_list_at_start)
+
+			self.user.assert_icommand(['ils', '-l', self.logical_path], 'STDOUT', self.data_name) # debugging
+
+			self.user.assert_icommand(['itrim', self.logical_path], 'STDOUT', 'Number of files trimmed = 1.')
+
+			self.check_replica_statuses(replica_status_list_at_end)
+
+		finally:
+			# For debugging...
+			self.user.assert_icommand(['ils', '-l', self.logical_path], 'STDOUT', self.data_name)
+
+	def test_case00_XXXX(self):
+		"""
+		case	0
+		start	XXXX
+		end 	--XX
+		"""
+		self.do_test([0, 0, 0, 0], [None, None, 0, 0])
+
+	def test_case01_XXXG(self):
+		"""
+		case	1
+		start	XXX&
+		end		--X&
+		"""
+		self.do_test([0, 0, 0, 1], [None, None, 0, 1])
+
+	def test_case02_XXGX(self):
+		"""
+		case	2
+		start	XX&X
+		end 	--&X
+		"""
+		self.do_test([0, 0, 1, 0], [None, None, 1, 0])
+
+	def test_case03_XXGG(self):
+		"""
+		case	3
+		start	XX&&
+		end 	--&&
+		"""
+		self.do_test([0, 0, 1, 1], [None, None, 1, 1])
+
+	def test_case04_XGXX(self):
+		"""
+		case	4
+		start	X&XX
+		end 	-&-X
+		"""
+		self.do_test([0, 1, 0, 0], [None, 1, None, 0])
+
+	def test_case05_XGXG(self):
+		"""
+		case	5
+		start	X&X&
+		end 	-&-&
+		"""
+		self.do_test([0, 1, 0, 1], [None, 1, None, 1])
+
+	def test_case06_XGGX(self):
+		"""
+		case	6
+		start	X&&X
+		end 	-&&-
+		"""
+		self.do_test([0, 1, 1, 0], [None, 1, 1, None])
+
+	def test_case07_XGGG(self):
+		"""
+		case	7
+		start	X&&&
+		end 	--&&
+		"""
+		self.do_test([0, 1, 1, 1], [None, None, 1, 1])
+
+	def test_case08_GXXX(self):
+		"""
+		case	8
+		start	&XXX
+		end 	&--X
+		"""
+		self.do_test([1, 0, 0, 0], [1, None, None, 0])
+
+	def test_case09_GXXG(self):
+		"""
+		case	9
+		start	&XX&
+		end 	&--&
+		"""
+		self.do_test([1, 0, 0, 1], [1, None, None, 1])
+
+	def test_case10_GXGX(self):
+		"""
+		case	10
+		start	&X&X
+		end 	&-&-
+		"""
+		self.do_test([1, 0, 1, 0], [1, None, 1, None])
+
+	def test_case11_GXGG(self):
+		"""
+		case	11
+		start	&X&&
+		end 	--&&
+		"""
+		self.do_test([1, 0, 1, 1], [None, None, 1, 1])
+
+	def test_case12_GGXX(self):
+		"""
+		case	12
+		start	&&XX
+		end		&&--
+		"""
+		self.do_test([1, 1, 0, 0], [1, 1, None, None])
+
+	def test_case13_GGXG(self):
+		"""
+		case	13
+		start	&&X&
+		end		-&-&
+		"""
+		self.do_test([1, 1, 0, 1], [None, 1, None, 1])
+
+	def test_case14_GGGX(self):
+		"""
+		case	14
+		start	&&&X
+		end		-&&-
+		"""
+		self.do_test([1, 1, 1, 0], [None, 1, 1, None])
+
+	def test_case15_GGGG(self):
+		"""
+		case	15
+		start	&&&&
+		end		--&&
+		"""
+		self.do_test([1, 1, 1, 1], [None, None, 1, 1])

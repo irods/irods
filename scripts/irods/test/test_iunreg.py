@@ -127,7 +127,8 @@ class Test_Iunreg(session.make_sessions_mixin([('otherrods', 'rods')], [('alice'
         self.admin.assert_icommand(['ireg', self.local_data_path, logical_path_to_obj])
         self.admin.assert_icommand(['irepl', '-R', self.resc1, logical_path_to_obj])
         # Unregister 1 of the replicas by number
-        self.admin.assert_icommand(['iunreg', '-n0', logical_path_to_obj], 'STDERR', 'USER_INCOMPATIBLE_PARAMS')
+        # The implied minimum number of replicas to keep is 2, so no unreg occurs here as it is using the trim API.
+        self.admin.assert_icommand(['iunreg', '-n0', logical_path_to_obj], 'STDOUT', 'Number of files trimmed = 0.')
         self.admin.assert_icommand(['iunreg', '-n1', '-N1', logical_path_to_obj], 'STDOUT', 'Number of files trimmed = 1.')
         out,_,_ = self.admin.run_icommand(['ils', '-L', logical_path_to_obj])
         self.assertTrue(
