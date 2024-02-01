@@ -1396,27 +1396,29 @@ class test_irepl_replication_hierachy(session.make_sessions_mixin([('otherrods',
         i = 0
         for scenario in scenarios:
             i = i + 1
-            print("============= (" + name + "): [" + str(i) + "] =============")
-            print(scenario)
-            try:
-                if not os.path.exists(self.local_path):
-                    lib.make_file(self.local_path, file_size)
-                self.admin.assert_icommand(['imkdir', os.path.dirname(self.logical_path)])
+            subtest_name = name.replace(' ', '_').replace('-', '') + f'_{i}'
+            with self.subTest(subtest_name):
+                print("============= (" + name + "): [" + str(i) + "] =============")
+                print(scenario)
+                try:
+                    if not os.path.exists(self.local_path):
+                        lib.make_file(self.local_path, file_size)
+                    self.admin.assert_icommand(['imkdir', os.path.dirname(self.logical_path)])
 
-                self.setup_replicas(scenario)
+                    self.setup_replicas(scenario)
 
-                out,err,_ = self.admin.run_icommand(command)
-                print(out)
-                print(err)
-                replica_status_test.assert_result(self, scenario, err=err)
+                    out,err,_ = self.admin.run_icommand(command)
+                    print(out)
+                    print(err)
+                    replica_status_test.assert_result(self, scenario, err=err)
 
-            finally:
-                self.admin.assert_icommand(['irm', '-rf', os.path.dirname(self.logical_path)])
+                finally:
+                    self.admin.assert_icommand(['irm', '-rf', os.path.dirname(self.logical_path)])
 
-                # take the tree apart
-                for resc in self.leaf_rescs.values():
-                    if resc['name'] is not self.leaf_rescs['f']['name']:
-                        self.admin.run_icommand(['iadmin', 'rmchildfromresc', self.parent_rescs['e'], resc['name']])
+                    # take the tree apart
+                    for resc in self.leaf_rescs.values():
+                        if resc['name'] is not self.leaf_rescs['f']['name']:
+                            self.admin.run_icommand(['iadmin', 'rmchildfromresc', self.parent_rescs['e'], resc['name']])
 
     # Each of these matrix tests contains 29 unique scenarios:
     #   - there are 81 scenarios total (Cartesian product)

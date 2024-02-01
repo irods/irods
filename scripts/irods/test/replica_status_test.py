@@ -68,20 +68,22 @@ def run_command_against_scenarios(cls, command, scenarios, name, file_size=1024)
     i = 0
     for scenario in scenarios:
         i = i + 1
-        print("============= (" + name + "): [" + str(i) + "] =============")
-        print(scenario)
-        try:
-            if not os.path.exists(cls.local_path):
-                lib.make_file(cls.local_path, file_size)
-            cls.admin.assert_icommand(['imkdir', os.path.dirname(cls.logical_path)])
+        subtest_name = name.replace(' ', '_').replace('-', '') + f'_{i}'
+        with cls.subTest(subtest_name):
+            print("============= (" + name + "): [" + str(i) + "] =============")
+            print(scenario)
+            try:
+                if not os.path.exists(cls.local_path):
+                    lib.make_file(cls.local_path, file_size)
+                cls.admin.assert_icommand(['imkdir', os.path.dirname(cls.logical_path)])
 
-            setup_replicas(cls, scenario)
+                setup_replicas(cls, scenario)
 
-            out,err,_ = cls.admin.run_icommand(command)
-            print(out)
-            print(err)
-            assert_result(cls, scenario, err=err)
+                out,err,_ = cls.admin.run_icommand(command)
+                print(out)
+                print(err)
+                assert_result(cls, scenario, err=err)
 
-        finally:
-            cls.admin.assert_icommand(['irm', '-rf', os.path.dirname(cls.logical_path)])
+            finally:
+                cls.admin.assert_icommand(['irm', '-rf', os.path.dirname(cls.logical_path)])
 
