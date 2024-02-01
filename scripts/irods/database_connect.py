@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import pprint
+import shutil
 import sys
 import tempfile
 import time
@@ -340,6 +341,11 @@ def create_database_tables(irods_config, cursor, default_resource_directory=None
     else:
         if irods_config.catalog_database_type == 'mysql':
             l.info('Defining mysql functions...')
+            mysql_exec = shutil.which('mysql')
+            if mysql_exec is None:
+                mysql_exec = shutil.which('mariadb')
+            if mysql_exec is None:
+                raise IrodsError('Database setup failed: Could not find \'mysql\' or \'mariadb\' in PATH.')
             with tempfile.NamedTemporaryFile() as f:
                 f.write('\n'.join([
                         '[client]',
@@ -351,7 +357,7 @@ def create_database_tables(irods_config, cursor, default_resource_directory=None
                 f.flush()
                 with open(os.path.join(irods_config.irods_directory, 'packaging', 'sql', 'mysql_functions.sql'), 'r') as sql_file:
                     lib.execute_command(
-                        ['mysql', '='.join(['--defaults-file', f.name]), irods_config.database_config['db_name']],
+                        [mysql_exec, '='.join(['--defaults-file', f.name]), irods_config.database_config['db_name']],
                         stdin=sql_file)
         l.info('Creating database tables...')
         sql_files = [
