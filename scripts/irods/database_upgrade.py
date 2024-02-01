@@ -5,6 +5,7 @@ from . import lib
 import logging
 import os
 import re
+import shutil
 import tempfile
 import time
 
@@ -136,6 +137,11 @@ def run_update(irods_config, cursor):
         if irods_config.catalog_database_type == 'mysql':
             # Rerunning the MySQL script, mysql_functions.sql, fixes issues with sequence numbers
             # and the potential for deadlocks in the database.
+            mysql_exec = shutil.which('mysql')
+            if mysql_exec is None:
+                mysql_exec = shutil.which('mariadb')
+            if mysql_exec is None:
+                raise IrodsError('Database update failed: Could not find \'mysql\' or \'mariadb\' in PATH.')
             with tempfile.NamedTemporaryFile() as f:
                 f.write('\n'.join([
                     '[client]',
@@ -149,7 +155,7 @@ def run_update(irods_config, cursor):
 
                 with open(os.path.join(irods_config.irods_directory, 'packaging', 'sql', 'mysql_functions.sql'), 'r') as sql_file:
                     lib.execute_command(
-                        ['mysql', '='.join(['--defaults-file', f.name]), irods_config.database_config['db_name']],
+                        [mysql_exec, '='.join(['--defaults-file', f.name]), irods_config.database_config['db_name']],
                         stdin=sql_file)
 
         # Add a new column that will be responsible for holding the fractional part of the modify_ts
