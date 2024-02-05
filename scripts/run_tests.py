@@ -21,10 +21,11 @@ else:
 
 from irods.configuration import IrodsConfig
 from irods.controller import IrodsController
-import irods.test
-import irods.test.settings
+import irods.lib
 import irods.log
 import irods.paths
+import irods.test
+import irods.test.settings
 
 def run_irodsctl_with_arg(arg):
     irodsctl = os.path.join(IrodsConfig().irods_directory, 'irodsctl')
@@ -137,6 +138,16 @@ class RegisteredTestResult(unittest.TextTestResult):
         print('{0} ... '.format(test.id()), end='', file=self.stream)
         unittest.TestResult.startTest(self, test)
 
+def clear_irods_shared_memory_files():
+    for shm_location in irods.paths.possible_shm_locations():
+        try:
+            for f in os.listdir(shm_location):
+                if 'irods' in f.lower():
+                    print(f'Warning: Unlinking shared memory file [{f}]')
+                    os.unlink(f)
+        except OSError:
+            pass
+
 if __name__ == '__main__':
     logging.getLogger().setLevel(logging.NOTSET)
     l = logging.getLogger(__name__)
@@ -202,7 +213,12 @@ if __name__ == '__main__':
     if options.run_plugin_tests:
         test_identifiers.extend(get_plugin_tests())
 
-    IrodsController().restart(test_mode=True)
+    IrodsController().stop()
+    # This is a workaround for #6594. If the server did not clean up its shared memory files, these need to be cleared
+    # in order for the tests to function properly. If the issue occurs, it is likely that the test which caused the
+    # leftover shared memory files failed and will be picked up in the test results.
+    clear_irods_shared_memory_files()
+    IrodsController().start(test_mode=True)
     results = run_tests_from_names(test_identifiers, options.buffer_test_output, options.xml_output, options.skip_until)
     print(results)
 
