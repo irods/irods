@@ -574,6 +574,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
             self.admin.run_icommand(['iqdel', '-a'])
             irodsctl.reload_configuration()
 
+    @unittest.skip('Skip until #7491 is resolved.')
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Delete this line on resolution of #4094')
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'odbc.ini file does not exist on Catalog Service Consumer')
     def test_exception_in_delay_server(self):
