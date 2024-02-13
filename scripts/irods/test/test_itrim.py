@@ -84,11 +84,40 @@ class Test_Itrim(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
                 self.admin.assert_icommand('iadmin rmresc resc_{0}'.format(i))
 
     def test_itrim_option_N_is_deprecated__issue_4860(self):
-        data_object = 'foo'
-        filename = os.path.join(self.admin.local_session_dir, data_object)
-        lib.make_file(filename, 1)
-        self.admin.assert_icommand(['iput', filename])
-        self.admin.assert_icommand(['itrim', '-N2', data_object], 'STDOUT', 'Specifying a minimum number of replicas to keep is deprecated.')
+        resc1 = 'issue_4860_1'
+        resc2 = 'issue_4860_2'
+        filename = 'test_itrim_option_N_is_deprecated__issue_4860'
+        logical_path = os.path.join(self.admin.session_collection, filename)
+
+        try:
+            lib.create_ufs_resource(self.admin, resc1, test.settings.HOSTNAME_2)
+            lib.create_ufs_resource(self.admin, resc2, test.settings.HOSTNAME_3)
+
+            # Create 3 replicas so that a trim will actually occur.
+            self.admin.assert_icommand(['itouch', logical_path])
+            self.admin.assert_icommand(['irepl', '-R', resc1, logical_path])
+            self.admin.assert_icommand(['irepl', '-R', resc2, logical_path])
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, self.admin.default_resource))
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc1))
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc2))
+
+            # Ensure the deprecation message appears when a replica is not trimmed.
+            self.admin.assert_icommand(
+                ['itrim', '-N4', logical_path],
+                'STDOUT_MULTILINE',
+                ['Specifying a minimum number of replicas to keep is deprecated.', 'files trimmed = 0'])
+
+            # Ensure the deprecation message appears when a replica is trimmed.
+            self.admin.assert_icommand(
+                ['itrim', '-N2', logical_path],
+                'STDOUT_MULTILINE',
+                ['Specifying a minimum number of replicas to keep is deprecated.', 'files trimmed = 1'])
+
+        finally:
+            self.admin.assert_icommand(['ils', '-l', logical_path], 'STDOUT', filename) # debugging
+            self.admin.run_icommand(['irm', '-f', logical_path])
+            lib.remove_resource(self.admin, resc1)
+            lib.remove_resource(self.admin, resc2)
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_itrim_removes_in_vault_registered_replicas_from_disk__issue_5362(self):
