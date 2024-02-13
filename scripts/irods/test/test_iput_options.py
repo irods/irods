@@ -320,8 +320,9 @@ class Test_iPut_Options_Issue_3883(ResourceBase, unittest.TestCase):
         # replica, which has been done historically in the event of a DIRECT_ARCHIVE_ACCESS
         # error. So, it is enough to see that an error did not occur here and that the replica
         # on the archive resource exists.
-        self.user0.assert_icommand(['iput', '-R', 'compoundresc3883', '--purgec', '-k',
-                                    filename, logical_path])
+        self.user0.assert_icommand(
+            ['iput', '-R', 'compoundresc3883', '--purgec', '-k', filename, logical_path],
+            'STDOUT', 'Specifying a minimum number of replicas to keep is deprecated.')
         self.user0.assert_icommand_fail(['ils', '-L', logical_path],
                                         'STDOUT_SINGLELINE', 'cacheresc3883')
         self.user0.assert_icommand(['ils', '-L', logical_path],
