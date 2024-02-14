@@ -307,12 +307,15 @@ int rsDataObjTrim(
     // The native rule engine may erase all messages in the rError array.
     // The only way to guarantee that messages are received by the client
     // is to add them to the rError array when the function returns.
-    irods::at_scope_exit at_scope_exit{[&] {
-        // itrim -N
+    const auto add_warning_messages_for_deprecated_parameters = irods::at_scope_exit{[&] {
         if (getValByKey(&dataObjInp->condInput, COPIES_KW)) {
             addRErrorMsg(&rsComm->rError,
                          DEPRECATED_PARAMETER,
                          "Specifying a minimum number of replicas to keep is deprecated.");
+        }
+        if (getValByKey(&dataObjInp->condInput, AGE_KW)) {
+            addRErrorMsg(
+                &rsComm->rError, DEPRECATED_PARAMETER, "Specifying a minimum age of replicas to trim is deprecated.");
         }
     }};
 
