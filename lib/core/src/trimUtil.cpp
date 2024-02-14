@@ -9,6 +9,7 @@
 #include "irods/miscUtil.h"
 #include "irods/trimUtil.h"
 #include "irods/rcGlobalExtern.h"
+#include "irods/irods_at_scope_exit.hpp"
 
 rodsLong_t TotalSizeTrimmed = 0;
 int TotalTrimmed = 0;
@@ -75,7 +76,6 @@ int
 trimDataObjUtil( rcComm_t *conn, char *srcPath,
                  rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp ) {
     int status = 0;
-    rodsObjStat_t *rodsObjStatOut = NULL;
 
     if ( srcPath == NULL ) {
         rodsLog( LOG_ERROR,
@@ -84,6 +84,22 @@ trimDataObjUtil( rcComm_t *conn, char *srcPath,
     }
 
     rstrcpy( dataObjInp->objPath, srcPath, MAX_NAME_LEN );
+
+    // rcObjStat results will only be used if rcDataObjTrim is successful and actually trims at least one replica from
+    // the data object. The invocation occurs before the rcDataObjTrim call because the API call will cause the rError
+    // stack in the RcComm struct to be freed and set to nullptr (in successful cases), losing any rError messages
+    // which might have been added in rcDataObjTrim. Specifically, a successful trim might include messages warning the
+    // client that a deprecated option has been used and we want to ensure that these are returned to the client.
+    rodsObjStat_t* rodsObjStatOut = nullptr;
+    const auto free_obj_stat = irods::at_scope_exit{[&rodsObjStatOut] {
+        if (rodsObjStatOut) {
+            freeRodsObjStat(rodsObjStatOut);
+        }
+    }};
+    const int objStatus = rcObjStat(conn, dataObjInp, &rodsObjStatOut);
+    if (objStatus < 0) {
+        return objStatus;
+    }
 
     status = rcDataObjTrim( conn, dataObjInp );
 
@@ -102,10 +118,6 @@ trimDataObjUtil( rcComm_t *conn, char *srcPath,
     }
 
     if ( status > 0 ) {
-        const int objStatus = rcObjStat(conn, dataObjInp, &rodsObjStatOut);
-        if ( objStatus < 0 ) {
-            return objStatus;
-        } 
         if ( objStatus == DATA_OBJ_T ) {
             TotalSizeTrimmed += rodsObjStatOut->objSize;
             TotalTrimmed++;
