@@ -2,6 +2,8 @@
 FindLibCXX
 ----------
 
+This module is deprecated and will be removed in a future release of iRODS
+
 Result variables
 ^^^^^^^^^^^^^^^^
 
@@ -33,6 +35,11 @@ The following cache variables may also be set:
   libc++abi library (if found)
 
 #]======================================================================]
+
+string(TOUPPER "${PROJECT_NAME}" PROJECT_NAME_UPPER)
+if (NOT PROJECT_NAME_UPPER STREQUAL "IRODS")
+  message(DEPRECATION "The LibCXX CMake find module is deprecated and will be removed in a future relase of iRODS.")
+endif()
 
 get_filename_component(__find_libcxx_dir "${CMAKE_CURRENT_LIST_FILE}" PATH)
 
