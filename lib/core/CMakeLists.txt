@@ -79,7 +79,7 @@ target_link_libraries(
   PUBLIC
   nlohmann_json::nlohmann_json
   fmt::fmt
-  spdlog::spdlog_header_only
+  spdlog::spdlog
   Threads::Threads
 )
 target_include_directories(
@@ -236,7 +236,7 @@ foreach(variant IN ITEMS client server)
     PUBLIC
     nlohmann_json::nlohmann_json
     fmt::fmt
-    spdlog::spdlog_header_only
+    spdlog::spdlog
     OpenSSL::Crypto
     OpenSSL::SSL
   )

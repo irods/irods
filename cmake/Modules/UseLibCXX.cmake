@@ -5,6 +5,8 @@ UseLibCXX
 Sets toolchain variables and directory properties for using libc++.
 Define CMAKE_CXX_STANDARD before including this module.
 
+This module is deprecated and will be removed in a future release of iRODS
+
 #]======================================================================]
 
 include_guard(GLOBAL)
@@ -14,15 +16,15 @@ cmake_minimum_required(VERSION 3.6.0 FATAL_ERROR)
 # - CMAKE_<LANG>_INCLUDE_DIRECTORIES variable
 # - CMAKE_<LANG>_STANDARD_LIBRARIES variable
 
-if (CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
-  set(IRODS_BUILD_AGAINST_LIBCXX_DEFAULT ON)
-else()
-  set(IRODS_BUILD_AGAINST_LIBCXX_DEFAULT OFF)
+string(TOUPPER "${PROJECT_NAME}" PROJECT_NAME_UPPER)
+if (NOT PROJECT_NAME_UPPER STREQUAL "IRODS")
+  message(DEPRECATION "The UseLibCXX CMake module is deprecated and will be removed in a future relase of iRODS.")
 endif()
 
-set(IRODS_BUILD_AGAINST_LIBCXX ${IRODS_BUILD_AGAINST_LIBCXX_DEFAULT} CACHE BOOL "Try to build against libc++ instead of libstdc++.")
+set(IRODS_BUILD_AGAINST_LIBCXX OFF CACHE BOOL "[DEPRECATED] Try to build against libc++ instead of libstdc++.")
 
 if (IRODS_BUILD_AGAINST_LIBCXX)
+  message(DEPRECATION "Using the IRODS_BUILD_AGAINST_LIBCXX variable to explicitly build agaisnst libc++ is deprecated and will be removed in a future release of iRODS.")
   include(IrodsExternals)
   IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_DEVELOP_DEPENDENCIES_LIST(CLANG clang13.0.1-0)
   IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(CLANG_RUNTIME clang-runtime13.0.1-0)
