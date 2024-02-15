@@ -121,7 +121,7 @@ usage() {
         "Options are:",
         " -M  admin - admin user uses this option to trim other users files",
         " -n  replNum - the replica number of the replica to be deleted",
-        " -N  numCopies - minimum number of good replicas to keep. The default",
+        " -N  numCopies - [Deprecated] minimum number of replicas to keep. The default",
         "     value is 2.",
         " -r  recursive - trim the whole subtree",
         " -S  srcResource - specifies the resource of the replica(s) to be deleted.",
