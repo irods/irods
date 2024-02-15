@@ -23,11 +23,11 @@ jobs:
                   wget -qO - https://unstable.irods.org/irods-unstable-signing-key.asc | sudo apt-key add -
                   echo "deb [arch=amd64] https://unstable.irods.org/apt/ $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/renci-irods-unstable.list
                   sudo apt-get update -qq
-                  sudo apt-get install -qq irods-externals-clang13.0.0-0
+                  sudo apt-get install -qq irods-externals-clang13.0.1-0
             - name: Run Clang-Format
               run: |
                   # Make clang-format available.
-                  export PATH=/opt/irods-externals/clang13.0.0-0/bin:$PATH
+                  export PATH=/opt/irods-externals/clang13.0.1-0/bin:$PATH
 
                   # Configure Git so that "git clang-format" can be run.
                   git config --global clangFormat.binary clang-format

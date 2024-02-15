@@ -24,8 +24,8 @@ jobs:
                 irods-externals-avro1.11.0-2 \
                 irods-externals-boost1.81.0-0 \
                 irods-externals-catch22.13.8-0 \
-                irods-externals-clang-runtime13.0.0-0 \
-                irods-externals-clang13.0.0-0 \
+                irods-externals-clang-runtime13.0.1-0 \
+                irods-externals-clang13.0.1-0 \
                 irods-externals-cmake3.21.4-0 \
                 irods-externals-cppzmq4.8.1-1 \
                 irods-externals-fmt8.1.1-0 \
