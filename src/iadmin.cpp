@@ -2083,6 +2083,8 @@ void usageMain() {
         " modrepl [logical_path <string>|data_id <int>] [replica_number <int>|resource_hierarchy <string>] ATTR_NAME VALUE",
         " get_delay_server_info",
         " set_delay_server HOSTNAME",
+        " get_grid_configuration NAMESPACE OPTION_NAME",
+        " set_grid_configuration NAMESPACE OPTION_NAME OPTION_VALUE",
         " help (or h) [command] (this help, or more details on a command)",
         "Also see 'irmtrash -M -u user' for the admin mode of removing trash and",
         "similar admin modes in irepl, iphymv, and itrim.",
@@ -2675,6 +2677,14 @@ usage( char *subOpt ) {
         "Set the specified OPTION_NAME to OPTION_VALUE for the specified",
         "NAMESPACE in the local zone in R_GRID_CONFIGURATION. If NAMESPACE or",
         "OPTION_NAME is not valid, an error is returned.",
+        " ",
+        "The grid configuration NAMESPACEs and their respective OPTION_NAMEs for",
+        "set_grid_configuration are currently:",
+        " ",
+        "NAMESPACE        OPTION_NAME",
+        "authentication   password_extend_lifetime",
+        "authentication   password_max_time",
+        "authentication   password_min_time",
         ""};
 
     char* get_grid_configuration_usage[] = {
@@ -2689,6 +2699,18 @@ usage( char *subOpt ) {
         " ",
         "This information is retrieved from the R_GRID_CONFIGURATION database",
         "table.",
+        " ",
+        "The grid configuration NAMESPACEs and their respective OPTION_NAMEs for",
+        "get_grid_configuration are currently:",
+        " ",
+        "NAMESPACE        OPTION_NAME",
+        "authentication   password_extend_lifetime",
+        "authentication   password_max_time",
+        "authentication   password_min_time",
+        "database         schema_version",
+        "delay_server     leader",
+        "delay_server     successor",
+        " ",
         ""};
 
     char* get_delay_server_info_usage[] = {
