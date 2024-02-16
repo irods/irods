@@ -42,7 +42,7 @@ foreach(plugin IN LISTS IRODS_AUTH_LEGACY_PLUGINS)
       ${plugin_target}
       PRIVATE
       "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-      "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/server/api/include>"
+      "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/api/include>"
       "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
       "${IRODS_EXTERNALS_FULLPATH_FMT}/include"
       "${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include"
