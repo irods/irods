@@ -9,6 +9,7 @@ foreach(variant IN ITEMS server client)
   target_link_libraries(
     irods_lib_metadata_${variant}
     PUBLIC
+    fmt::fmt
     irods_lib_api_${variant}
     irods_lib_core_${variant}
     irods_filesystem_${variant}
@@ -25,7 +26,6 @@ foreach(variant IN ITEMS server client)
     "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/rbudp/include>"
     PRIVATE
     "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
-    "${IRODS_EXTERNALS_FULLPATH_FMT}/include"
   )
   target_compile_definitions(
     irods_lib_metadata_${variant}

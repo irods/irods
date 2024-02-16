@@ -11,6 +11,8 @@ add_library(
 )
 target_link_libraries(
   irods_user_administration_common
+  PUBLIC
+  fmt::fmt
   PRIVATE
   nlohmann_json::nlohmann_json
 )
@@ -24,7 +26,6 @@ target_include_directories(
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/api/include>"
   PRIVATE
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
-  "${IRODS_EXTERNALS_FULLPATH_FMT}/include"
 )
 target_compile_definitions(
   irods_user_administration_common
@@ -48,6 +49,7 @@ foreach(variant IN ITEMS client server)
     ${target_name}
     PUBLIC
     irods_user_administration_common
+    fmt::fmt
     PRIVATE
     nlohmann_json::nlohmann_json
   )
@@ -61,7 +63,6 @@ foreach(variant IN ITEMS client server)
     "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/api/include>"
     PRIVATE
     "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
-    "${IRODS_EXTERNALS_FULLPATH_FMT}/include"
   )
   target_compile_definitions(
     ${target_name}

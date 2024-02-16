@@ -10,6 +10,8 @@ foreach(variant IN ITEMS client server)
 
     target_link_libraries(
         ${target_name}
+        PUBLIC
+        fmt::fmt
         PRIVATE
         nlohmann_json::nlohmann_json
     )
@@ -24,7 +26,6 @@ foreach(variant IN ITEMS client server)
         "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/api/include>"
         PRIVATE
         "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
-        "${IRODS_EXTERNALS_FULLPATH_FMT}/include"
     )
 
     target_compile_definitions(

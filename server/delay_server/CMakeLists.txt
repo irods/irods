@@ -8,6 +8,7 @@ add_executable(
 target_link_libraries(
   irodsDelayServer
   PRIVATE
+  fmt::fmt
   irods_server
   irods_client
   irods_common
@@ -15,7 +16,6 @@ target_link_libraries(
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_container.so"
-  "${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so"
   rt
   ${CMAKE_DL_LIBS}
   m
@@ -25,7 +25,6 @@ target_include_directories(
   PRIVATE
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
-  "${IRODS_EXTERNALS_FULLPATH_FMT}/include"
   "${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include"
 )
 target_compile_definitions(
