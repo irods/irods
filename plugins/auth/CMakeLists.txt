@@ -43,7 +43,6 @@ foreach(plugin IN LISTS IRODS_AUTH_PLUGINS)
       "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
       "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/api/include>"
       "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
-      "${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include"
     )
     target_compile_definitions(
       ${plugin_target}

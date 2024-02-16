@@ -41,7 +41,6 @@ target_include_directories(
   "${IRODS_EXTERNALS_FULLPATH_CPPZMQ}/include"
   "${IRODS_EXTERNALS_FULLPATH_NANODBC}/include"
   "${IRODS_EXTERNALS_FULLPATH_ZMQ}/include"
-  "${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include"
 )
 target_compile_definitions(
   irods_server_icat
