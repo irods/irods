@@ -59,9 +59,9 @@ foreach(plugin IN LISTS IRODS_API_PLUGINS)
       "${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/lib/libarchive.so"
       "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
       "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
-      "${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so"
       "${IRODS_EXTERNALS_FULLPATH_NANODBC}/lib/libnanodbc.so"
       nlohmann_json::nlohmann_json
+      fmt::fmt
     )
     target_include_directories(
       ${plugin_target}
@@ -70,7 +70,6 @@ foreach(plugin IN LISTS IRODS_API_PLUGINS)
       "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/api/include>"
       "${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/include"
       "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
-      "${IRODS_EXTERNALS_FULLPATH_FMT}/include"
       "${IRODS_EXTERNALS_FULLPATH_NANODBC}/include"
       "${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include"
     )

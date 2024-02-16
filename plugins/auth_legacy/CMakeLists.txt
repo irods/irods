@@ -33,8 +33,8 @@ foreach(plugin IN LISTS IRODS_AUTH_LEGACY_PLUGINS)
       irods_${variant}
       "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
       "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
-      "${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so"
       nlohmann_json::nlohmann_json
+      fmt::fmt
       OpenSSL::Crypto
       ${CMAKE_DL_LIBS}
     )
@@ -44,7 +44,6 @@ foreach(plugin IN LISTS IRODS_AUTH_LEGACY_PLUGINS)
       "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
       "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/api/include>"
       "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
-      "${IRODS_EXTERNALS_FULLPATH_FMT}/include"
       "${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include"
     )
     target_compile_definitions(

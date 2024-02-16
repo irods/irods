@@ -20,7 +20,7 @@ target_link_libraries(
   "${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/lib/libarchive.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
-  "${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so"
+  fmt::fmt
   OpenSSL::Crypto
 )
 target_include_directories(
@@ -29,7 +29,6 @@ target_include_directories(
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/include"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
-  "${IRODS_EXTERNALS_FULLPATH_FMT}/include"
   "${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include"
 )
 target_compile_definitions(

@@ -69,8 +69,8 @@ foreach(plugin IN LISTS IRODS_DATABASE_PLUGINS)
     "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
     "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
     "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so"
-    "${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so"
     "${IRODS_EXTERNALS_FULLPATH_NANODBC}/lib/libnanodbc.so"
+    fmt::fmt
     ${ODBC_LIBRARY}
   )
   target_include_directories(
@@ -78,7 +78,6 @@ foreach(plugin IN LISTS IRODS_DATABASE_PLUGINS)
     PRIVATE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
-    "${IRODS_EXTERNALS_FULLPATH_FMT}/include"
     "${IRODS_EXTERNALS_FULLPATH_NANODBC}/include"
     "${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include"
   )

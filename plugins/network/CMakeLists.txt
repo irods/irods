@@ -31,7 +31,7 @@ foreach(plugin IN LISTS IRODS_NETWORK_PLUGINS)
       irods_${variant}
       "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
       "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
-      "${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so"
+      fmt::fmt
       OpenSSL::SSL
       OpenSSL::Crypto
     )
@@ -39,7 +39,6 @@ foreach(plugin IN LISTS IRODS_NETWORK_PLUGINS)
       ${plugin_target}
       PRIVATE
       "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
-      "${IRODS_EXTERNALS_FULLPATH_FMT}/include"
       "${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include"
     )
     target_compile_definitions(
