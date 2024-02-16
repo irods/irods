@@ -64,7 +64,6 @@ foreach(plugin IN LISTS IRODS_MICROSERVICE_PLUGINS)
     ${plugin_target}
     PRIVATE
     "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
-    "${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include"
   )
   target_compile_definitions(
     ${plugin_target}

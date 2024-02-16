@@ -17,7 +17,6 @@ target_include_directories(
   irods_resource_plugin_obj-unixfilesystem
   PUBLIC
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
-  "${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include"
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
 )
 target_compile_definitions(
@@ -55,7 +54,6 @@ target_include_directories(
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/include"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
-  "${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include"
 )
 target_compile_definitions(
   irods_resource_plugin-unixfilesystem

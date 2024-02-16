@@ -71,7 +71,6 @@ foreach(plugin IN LISTS IRODS_API_PLUGINS)
       "${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/include"
       "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
       "${IRODS_EXTERNALS_FULLPATH_NANODBC}/include"
-      "${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include"
     )
     target_compile_definitions(
       ${plugin_target}
