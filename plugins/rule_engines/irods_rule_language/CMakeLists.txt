@@ -34,7 +34,7 @@ target_link_libraries(
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so"
-  "${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so"
+  fmt::fmt
   ${CMAKE_DL_LIBS}
 )
 target_include_directories(
@@ -44,7 +44,6 @@ target_include_directories(
   #"$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/plugins/rule_engines/include>"
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/main_server/include>"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
-  "${IRODS_EXTERNALS_FULLPATH_FMT}/include"
   "${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include"
 )
 target_compile_definitions(

@@ -9,6 +9,7 @@ add_executable(
 target_link_libraries(
   irodsServer
   PRIVATE
+  fmt::fmt
   irods_common
   irods_plugin_dependencies
   irods_server
@@ -19,7 +20,6 @@ target_link_libraries(
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so"
-  "${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so"
   "${IRODS_EXTERNALS_FULLPATH_ZMQ}/lib/libzmq.so"
   rt
   ${CMAKE_DL_LIBS}
@@ -33,7 +33,6 @@ target_include_directories(
   "${IRODS_EXTERNALS_FULLPATH_AVRO}/include"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
   "${IRODS_EXTERNALS_FULLPATH_CPPZMQ}/include"
-  "${IRODS_EXTERNALS_FULLPATH_FMT}/include"
   "${IRODS_EXTERNALS_FULLPATH_ZMQ}/include"
   "${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include"
 )

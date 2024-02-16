@@ -37,6 +37,7 @@ foreach(variant IN ITEMS client server)
     irods_filesystem_${variant}
     PUBLIC
     nlohmann_json::nlohmann_json
+    fmt::fmt
   )
   target_include_directories(
     irods_filesystem_${variant}
@@ -54,7 +55,6 @@ foreach(variant IN ITEMS client server)
     "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/drivers/include>"
     PRIVATE
     "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
-    "${IRODS_EXTERNALS_FULLPATH_FMT}/include"
   )
   target_compile_definitions(
     irods_filesystem_${variant}

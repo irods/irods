@@ -58,13 +58,12 @@ foreach(plugin IN LISTS IRODS_MICROSERVICE_PLUGINS)
     irods_server
     "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
     "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
-    "${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so"
+    fmt::fmt
   )
   target_include_directories(
     ${plugin_target}
     PRIVATE
     "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
-    "${IRODS_EXTERNALS_FULLPATH_FMT}/include"
     "${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include"
   )
   target_compile_definitions(

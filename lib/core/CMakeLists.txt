@@ -78,6 +78,7 @@ target_link_libraries(
   irods_common_core
   PUBLIC
   nlohmann_json::nlohmann_json
+  fmt::fmt
   Threads::Threads
 )
 target_include_directories(
@@ -94,7 +95,6 @@ target_include_directories(
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/icat/include>"
   PRIVATE
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
-  "${IRODS_EXTERNALS_FULLPATH_FMT}/include"
   "${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include"
 )
 target_compile_definitions(
@@ -131,6 +131,7 @@ target_link_libraries(
   irods_plugin_dependencies_obj
   PUBLIC
   nlohmann_json::nlohmann_json
+  fmt::fmt
   irods_common
 )
 target_include_directories(
@@ -148,7 +149,6 @@ target_include_directories(
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/drivers/include>"
   PRIVATE
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
-  "${IRODS_EXTERNALS_FULLPATH_FMT}/include"
 )
 set_target_properties(irods_plugin_dependencies_obj PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE TRUE)
 set_target_properties(irods_plugin_dependencies_obj PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
@@ -175,7 +175,6 @@ target_link_libraries(
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_random.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
-  "${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so"
   ${CMAKE_DL_LIBS}
 )
 target_include_directories(
@@ -236,6 +235,7 @@ foreach(variant IN ITEMS client server)
     irods_lib_core_${variant}
     PUBLIC
     nlohmann_json::nlohmann_json
+    fmt::fmt
     OpenSSL::Crypto
     OpenSSL::SSL
   )
@@ -256,7 +256,6 @@ foreach(variant IN ITEMS client server)
     "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/drivers/include>"
     PRIVATE
     "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
-    "${IRODS_EXTERNALS_FULLPATH_FMT}/include"
     "${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include"
   )
   target_compile_definitions(
