@@ -33,6 +33,7 @@ target_link_libraries(
   irods_server_re
   PUBLIC
   nlohmann_json::nlohmann_json
+  fmt::fmt
   irods_common
   irods_plugin_dependencies
   PRIVATE
@@ -42,7 +43,6 @@ target_link_libraries(
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
-  "${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so"
   "${IRODS_EXTERNALS_FULLPATH_NANODBC}/lib/libnanodbc.so"
   "${IRODS_EXTERNALS_FULLPATH_ZMQ}/lib/libzmq.so"
   OpenSSL::SSL
@@ -65,7 +65,6 @@ target_include_directories(
   "${IRODS_EXTERNALS_FULLPATH_AVRO}/include"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
   "${IRODS_EXTERNALS_FULLPATH_CPPZMQ}/include"
-  "${IRODS_EXTERNALS_FULLPATH_FMT}/include"
   "${IRODS_EXTERNALS_FULLPATH_NANODBC}/include"
   "${IRODS_EXTERNALS_FULLPATH_ZMQ}/include"
   "${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include"

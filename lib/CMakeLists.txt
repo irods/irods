@@ -35,7 +35,6 @@ target_link_libraries(
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_random.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
-  "${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so"
   OpenSSL::SSL
   ${CMAKE_DL_LIBS}
   rt
@@ -83,7 +82,6 @@ target_link_libraries(
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so"
-  "${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so"
   OpenSSL::SSL
   OpenSSL::Crypto
   ${CMAKE_DL_LIBS}
@@ -142,7 +140,6 @@ target_link_libraries(
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so"
-  "${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so"
   ${CMAKE_DL_LIBS}
   rt
 )
