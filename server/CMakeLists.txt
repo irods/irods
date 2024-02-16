@@ -70,16 +70,6 @@ target_link_libraries(
   ${CMAKE_DL_LIBS}
   rt
 )
-target_include_directories(
-  irods_server
-  PRIVATE
-  "${IRODS_EXTERNALS_FULLPATH_AVRO}/include"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
-  "${IRODS_EXTERNALS_FULLPATH_CPPZMQ}/include"
-  "${IRODS_EXTERNALS_FULLPATH_FMT}/include"
-  "${IRODS_EXTERNALS_FULLPATH_NANODBC}/include"
-  "${IRODS_EXTERNALS_FULLPATH_ZMQ}/include"
-)
 set_property(TARGET irods_server PROPERTY VERSION ${IRODS_VERSION})
 set_property(TARGET irods_server PROPERTY SOVERSION ${IRODS_VERSION})
 
