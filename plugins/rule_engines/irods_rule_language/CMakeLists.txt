@@ -44,7 +44,6 @@ target_include_directories(
   #"$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/plugins/rule_engines/include>"
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/main_server/include>"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
-  "${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include"
 )
 target_compile_definitions(
   irods_rule_engine_plugin-irods_rule_language

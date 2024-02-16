@@ -40,7 +40,6 @@ foreach(plugin IN LISTS IRODS_EXPERIMENTAL_API_PLUGINS)
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/include"
     "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
-    "${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include"
   )
   target_compile_definitions(
     ${plugin_target}

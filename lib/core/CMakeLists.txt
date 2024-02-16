@@ -79,6 +79,7 @@ target_link_libraries(
   PUBLIC
   nlohmann_json::nlohmann_json
   fmt::fmt
+  spdlog::spdlog_header_only
   Threads::Threads
 )
 target_include_directories(
@@ -95,7 +96,6 @@ target_include_directories(
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/icat/include>"
   PRIVATE
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
-  "${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include"
 )
 target_compile_definitions(
   irods_common_core
@@ -236,6 +236,7 @@ foreach(variant IN ITEMS client server)
     PUBLIC
     nlohmann_json::nlohmann_json
     fmt::fmt
+    spdlog::spdlog_header_only
     OpenSSL::Crypto
     OpenSSL::SSL
   )
@@ -256,7 +257,6 @@ foreach(variant IN ITEMS client server)
     "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/drivers/include>"
     PRIVATE
     "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
-    "${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include"
   )
   target_compile_definitions(
     irods_lib_core_${variant}

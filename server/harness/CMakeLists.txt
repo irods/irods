@@ -24,7 +24,6 @@ foreach(harness IN ITEMS api configuration)
     irods_${harness}_test_harness
     PRIVATE
     "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
-    "${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include"
   )
   target_compile_definitions(
     irods_${harness}_test_harness
