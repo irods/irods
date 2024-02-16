@@ -146,12 +146,6 @@ target_link_libraries(
   ${CMAKE_DL_LIBS}
   rt
 )
-target_include_directories(
-  RodsAPIs
-  PRIVATE
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
-  "${IRODS_EXTERNALS_FULLPATH_FMT}/include"
-)
 target_compile_definitions(RodsAPIs PRIVATE ${IRODS_COMPILE_DEFINITIONS_PRIVATE})
 
 add_dependencies(all-lib RodsAPIs)
