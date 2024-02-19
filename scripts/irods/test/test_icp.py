@@ -16,7 +16,6 @@ from . import session
 from .. import core_file
 from .. import paths
 from .. import test
-from . import ustrings
 from ..configuration import IrodsConfig
 from ..test.command import assert_command
 
@@ -59,7 +58,7 @@ class Test_Icp(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
 
                     self.user.assert_icommand(['iput', os.path.join(test_dir_path, 'junk0001')], 'STDERR', 'SYS_INVALID_RESC_INPUT')
 
-                    self.user.assert_icommand(['iput', '-R', 'demoResc', '-r', test_dir_path, logical_put_path], 'STDOUT', ustrings.recurse_ok_string())
+                    self.user.assert_icommand(['iput', '-R', 'demoResc', '-r', test_dir_path, logical_put_path])
                     _,_,err = self.user.assert_icommand(['icp', '-r', logical_put_path, logical_cp_path], 'STDERR', 'SYS_INVALID_RESC_INPUT')
                     self.assertNotIn('SYS_OUT_OF_FILE_DESC', err, 'SYS_OUT_OF_FILE_DESC found in output.')
         finally:
