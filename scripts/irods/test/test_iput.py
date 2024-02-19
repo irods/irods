@@ -613,6 +613,213 @@ class Test_Iput(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.Tes
             self.admin.run_icommand(['iadmin', 'rmresc', ufs_resource_1])
             self.admin.run_icommand(['iadmin', 'rmresc', ufs_resource_2])
 
+    def test_iput_link_option_ignores_symlinks__issue_5359(self):
+        """Creates a directory to target for iput -r --link with good and bad symlinks which should all be ignored."""
+
+        import shutil
+
+        dirname = 'test_iput_link_option_ignores_broken_symlinks__issue_5359'
+        collection_path = os.path.join(self.user.session_collection, dirname)
+
+        # Put all the files/dirs and symlinks in the test dir so it all gets cleaned up "for free".
+        put_dir = os.path.join(self.user.local_session_dir, dirname)
+
+        # These are the broken symlink files and directories.
+        deleted_file_path = os.path.join(put_dir, 'this_file_will_be_deleted')
+        deleted_subdir_path = os.path.join(put_dir, 'this_dir_will_be_deleted')
+        broken_symlink_file_path = os.path.join(put_dir, 'broken_symlink_file')
+        broken_symlink_dir_path = os.path.join(put_dir, 'broken_symlink_dir')
+
+        # These are the data objects and collections which shouldn't exist for the broken symlink files and directories.
+        nonexistent_data_object_path = os.path.join(collection_path, os.path.basename(deleted_file_path))
+        nonexistent_subcollection_path = os.path.join(collection_path, os.path.basename(deleted_subdir_path))
+        broken_symlink_data_object_path = os.path.join(collection_path, os.path.basename(broken_symlink_file_path))
+        broken_symlink_collection_path = os.path.join(collection_path, os.path.basename(broken_symlink_dir_path))
+
+        # These are the good symlink files and directories. The symlink target file and subdirectory actually have to
+        # exist outside of the target directory because the symlinks will be followed and it cannot make multiples of
+        # the same data object or collection.
+        good_symlink_target_file_path = os.path.join(os.path.dirname(put_dir), 'this_symlink_target_file_will_exist')
+        good_symlink_target_dir_path = os.path.join(os.path.dirname(put_dir), 'this_symlink_target_dir_will_exist')
+        good_symlink_file_path = os.path.join(put_dir, 'not_actually_broken_symlink_file')
+        good_symlink_dir_path = os.path.join(put_dir, 'not_actually_broken_symlink_dir')
+
+        # These are the data objects and collections which shouldn't exist for the good symlink files and directories.
+        good_symlink_target_file_data_object_path = os.path.join(
+            collection_path, os.path.basename(good_symlink_target_file_path))
+        good_symlink_target_dir_subcollection_path = os.path.join(
+            collection_path, os.path.basename(good_symlink_target_dir_path))
+        good_symlink_data_object_path = os.path.join(collection_path, os.path.basename(good_symlink_file_path))
+        good_symlink_collection_path = os.path.join(collection_path, os.path.basename(good_symlink_dir_path))
+
+        # These are the normal files and directories. These will be added so that SOMETHING is in iRODS at the end.
+        existent_file_path = os.path.join(put_dir, 'this_file_will_exist')
+        existent_subdir_path = os.path.join(put_dir, 'this_dir_will_exist')
+
+        # These are the data objects and collections which should exist for the normal files and directories.
+        existent_data_object_path = os.path.join(collection_path, os.path.basename(existent_file_path))
+        existent_subcollection_path = os.path.join(collection_path, os.path.basename(existent_subdir_path))
+
+        file_size = 1024 # This value has no particular significance.
+
+        try:
+            # Create the directory which will contain all the broken links...
+            os.mkdir(put_dir)
+            self.assertTrue(os.path.exists(put_dir))
+
+            # Create subdirectories and symlinks to the subdirectories.
+            os.mkdir(deleted_subdir_path)
+            self.assertTrue(os.path.exists(deleted_subdir_path))
+            os.mkdir(existent_subdir_path)
+            self.assertTrue(os.path.exists(existent_subdir_path))
+            os.mkdir(good_symlink_target_dir_path)
+            self.assertTrue(os.path.exists(good_symlink_target_dir_path))
+            os.symlink(deleted_subdir_path, broken_symlink_dir_path)
+            self.assertTrue(os.path.exists(broken_symlink_dir_path))
+            os.symlink(good_symlink_target_dir_path, good_symlink_dir_path)
+            self.assertTrue(os.path.exists(good_symlink_dir_path))
+
+            # Create files and symlinks to the files.
+            lib.make_file(deleted_file_path, file_size)
+            self.assertTrue(os.path.exists(deleted_file_path))
+            lib.make_file(good_symlink_target_file_path, file_size)
+            self.assertTrue(os.path.exists(good_symlink_target_file_path))
+            lib.make_file(existent_file_path, file_size)
+            self.assertTrue(os.path.exists(existent_file_path))
+            os.symlink(deleted_file_path, broken_symlink_file_path)
+            self.assertTrue(os.path.exists(broken_symlink_file_path))
+            os.symlink(good_symlink_target_file_path, good_symlink_file_path)
+            self.assertTrue(os.path.exists(good_symlink_file_path))
+
+            # Now break the symlinks that are supposed to be broken by removing their target files/directories.
+            # Note: os.path.lexists returns True for broken symbolic links.
+            shutil.rmtree(deleted_subdir_path)
+            self.assertFalse(os.path.exists(deleted_subdir_path))
+            self.assertTrue(os.path.lexists(broken_symlink_dir_path))
+
+            os.remove(deleted_file_path)
+            self.assertFalse(os.path.exists(deleted_file_path))
+            self.assertTrue(os.path.lexists(broken_symlink_file_path))
+
+            # Run iput to upload the directory. Use the --link option to instruct that symlinks are to be ignored,
+            # broken or not.
+            self.user.assert_icommand(['iput', '--link', '-r', put_dir, collection_path])
+
+            # Confirm that the main collection was created - no funny business there.
+            self.assertTrue(lib.collection_exists(self.user, collection_path))
+
+            # Confirm that a subcollection was created for the existent subcollection, but that no subcollection was
+            # created for the symlink or the collection to which it points because iput was supposed to ignore symlinks.
+            self.assertTrue(lib.collection_exists(self.user, existent_subcollection_path))
+            self.assertFalse(lib.collection_exists(self.user, good_symlink_collection_path))
+            self.assertFalse(lib.collection_exists(self.user, good_symlink_target_dir_subcollection_path))
+            self.assertFalse(lib.replica_exists(self.user, good_symlink_collection_path, 0))
+            self.assertFalse(lib.replica_exists(self.user, good_symlink_target_dir_subcollection_path, 0))
+
+            # Confirm that a subcollection was not created for the nonexistent subdirectory, and that no subcollection
+            # was created for the symlink because iput was supposed to ignore symlinks. Also make sure a data object
+            # was not created.
+            self.assertFalse(lib.collection_exists(self.user, nonexistent_subcollection_path))
+            self.assertFalse(lib.collection_exists(self.user, broken_symlink_collection_path))
+            self.assertFalse(lib.replica_exists(self.user, broken_symlink_collection_path, 0))
+
+            # Confirm that a data object was not created for the nonexistent file, and that no data object was created
+            # for the symlink because iput was supposed to ignore symlinks.
+            self.assertFalse(lib.replica_exists(self.user, nonexistent_data_object_path, 0))
+            self.assertFalse(lib.replica_exists(self.user, broken_symlink_data_object_path, 0))
+
+            # Confirm that a data object was created for the existent file, but that no data object was created for the
+            # symlink because iput was supposed to ignore symlinks.
+            self.assertTrue(lib.replica_exists(self.user, existent_data_object_path, 0))
+            self.assertFalse(lib.replica_exists(self.user, good_symlink_data_object_path, 0))
+            self.assertFalse(lib.replica_exists(self.user, good_symlink_target_file_data_object_path, 0))
+
+        finally:
+            self.user.assert_icommand(['ils', '-lr'], 'STDOUT', self.user.session_collection) # debugging
+
+    def test_iput_does_not_ignore_symlinks_by_default__issue_5359(self):
+        """Creates a directory to target for iput -r with good symlinks, all of which should be sync'd."""
+
+        dirname = 'test_iput_does_not_ignore_symlinks_by_default__issue_5359'
+        collection_path = os.path.join(self.user.session_collection, dirname)
+
+        # Put all the files/dirs and symlinks in the test dir so it all gets cleaned up "for free".
+        put_dir = os.path.join(self.user.local_session_dir, dirname)
+
+        # These are the good symlink files and directories. The symlink target file and subdirectory actually have to
+        # exist outside of the target directory because the symlinks will be followed and it cannot make multiples of
+        # the same data object or collection.
+        good_symlink_target_file_path = os.path.join(os.path.dirname(put_dir), 'this_symlink_target_file_will_exist')
+        good_symlink_target_dir_path = os.path.join(os.path.dirname(put_dir), 'this_symlink_target_dir_will_exist')
+        good_symlink_file_path = os.path.join(put_dir, 'not_actually_broken_symlink_file')
+        good_symlink_dir_path = os.path.join(put_dir, 'not_actually_broken_symlink_dir')
+
+        # These are the data objects and collections which shouldn't exist for the good symlink target files and
+        # directories. The symlink files and directories themselves will be the names used for the data objects and
+        # collections.
+        good_symlink_target_file_data_object_path = os.path.join(
+            collection_path, os.path.basename(good_symlink_target_file_path))
+        good_symlink_target_dir_subcollection_path = os.path.join(
+            collection_path, os.path.basename(good_symlink_target_dir_path))
+
+        # These are the data objects and collections which should exist for the good symlink files and directories
+        # because, while the symlinks will be followed when they are sync'd for the actual data, the symlink file names
+        # will be used.
+        good_symlink_data_object_path = os.path.join(collection_path, os.path.basename(good_symlink_file_path))
+        good_symlink_collection_path = os.path.join(collection_path, os.path.basename(good_symlink_dir_path))
+
+        # These are the normal files and directories.
+        existent_file_path = os.path.join(put_dir, 'this_file_will_exist')
+        existent_subdir_path = os.path.join(put_dir, 'this_dir_will_exist')
+
+        # These are the data objects and collections which should exist for the normal files and directories.
+        existent_data_object_path = os.path.join(collection_path, os.path.basename(existent_file_path))
+        existent_subcollection_path = os.path.join(collection_path, os.path.basename(existent_subdir_path))
+
+        file_size = 1024 # This value has no particular significance.
+
+        try:
+            # Create the directory which will contain all the broken links...
+            os.mkdir(put_dir)
+            self.assertTrue(os.path.exists(put_dir))
+
+            # Create subdirectories and symlinks to the subdirectories.
+            os.mkdir(existent_subdir_path)
+            self.assertTrue(os.path.exists(existent_subdir_path))
+            os.mkdir(good_symlink_target_dir_path)
+            self.assertTrue(os.path.exists(good_symlink_target_dir_path))
+            os.symlink(good_symlink_target_dir_path, good_symlink_dir_path)
+            self.assertTrue(os.path.exists(good_symlink_dir_path))
+
+            # Create files and symlinks to the files.
+            lib.make_file(good_symlink_target_file_path, file_size)
+            self.assertTrue(os.path.exists(good_symlink_target_file_path))
+            lib.make_file(existent_file_path, file_size)
+            self.assertTrue(os.path.exists(existent_file_path))
+            os.symlink(good_symlink_target_file_path, good_symlink_file_path)
+            self.assertTrue(os.path.exists(good_symlink_file_path))
+
+            # Run iput to upload the directory.
+            self.user.assert_icommand(['iput', '-r', put_dir, collection_path])
+
+            # Confirm that the main collection was created - no funny business there.
+            self.assertTrue(lib.collection_exists(self.user, collection_path))
+
+            # Confirm that a subcollection was created for the existent subdirectory and the symlinked subdirectory, but
+            # that no subcollection was created for the symlink itself because it should have been followed.
+            self.assertTrue(lib.collection_exists(self.user, existent_subcollection_path))
+            self.assertTrue(lib.collection_exists(self.user, good_symlink_collection_path))
+            self.assertFalse(lib.collection_exists(self.user, good_symlink_target_dir_subcollection_path))
+            self.assertFalse(lib.replica_exists(self.user, good_symlink_target_dir_subcollection_path, 0))
+
+            # Confirm that a data object was created for the existent file and the symlinked file, but that no data
+            # object was created for the symlink itself because it should have been followed.
+            self.assertTrue(lib.replica_exists(self.user, existent_data_object_path, 0))
+            self.assertTrue(lib.replica_exists(self.user, good_symlink_data_object_path, 0))
+            self.assertFalse(lib.replica_exists(self.user, good_symlink_target_file_data_object_path, 0))
+
+        finally:
+            self.user.assert_icommand(['ils', '-lr'], 'STDOUT', self.user.session_collection) # debugging
 
 class test_iput_with_checksums(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.TestCase):
 
