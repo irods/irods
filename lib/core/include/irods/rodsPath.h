@@ -49,10 +49,19 @@ int
 addSrcInPath( rodsPathInp_t *rodsPathInp, const char *inPath );
 int
 parseLocalPath( rodsPath_t *rodsPath );
+int parse_local_path(const struct RodsArguments* _args, struct RodsPath* _path);
 int
 parseCmdLinePath( int argc, char **argv, int optInd, rodsEnv *myRodsEnv,
                   int srcFileType, int destFileType, int flag, rodsPathInp_t *rodsPathInp );
-
+int parse_command_line_path(int argc,
+                            char** argv,
+                            int optInd,
+                            struct RodsEnvironment* myRodsEnv,
+                            int srcFileType,
+                            int destFileType,
+                            int flag,
+                            struct RodsPathInp* rodsPathInp,
+                            const struct RodsArguments* _rods_args);
 int
 getLastPathElement( char *inPath, char *lastElement );
 

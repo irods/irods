@@ -817,6 +817,10 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
             snprintf( targChildPath, MAX_NAME_LEN, "%s/%s", targColl, p.filename().c_str() );
 
             if ( is_symlink( p ) ) {
+                if (rodsArgs->link) {
+                    // --link option means ignore symlinks.
+                    continue;
+                }
                 fs::path cp = read_symlink( p );
                 // Issue 4009 (similar to Issue 3663).
                 if (cp.is_relative()) {

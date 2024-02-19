@@ -18,7 +18,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
-#include <boost/format.hpp>
+
+#include <fmt/format.h>
 
 // Returns nothing, throws exception if file system loop is detected.
 // Each path canonical path which is inserted into the map, also gets
@@ -83,18 +84,31 @@ irods::is_path_valid_for_recursion( boost::filesystem::path const & userpath,
 {
     namespace fs = boost::filesystem;
 
-    const fs::path resolved = [&userpath](const fs::path& up)
-        {
-            try {
-                return fs::canonical(up);
-            }
-            catch(const fs::filesystem_error &_ec)
-            {
-                std::ostringstream sstr;
-                sstr << _ec.code().message() << "\n" << "Path = " << userpath.string();
-                THROW( USER_INPUT_PATH_ERR, sstr.str().c_str() );
-            }
-        }(userpath);
+    const fs::path normal_path = [](const fs::path& up) {
+        try {
+            return up.lexically_normal();
+        }
+        catch (const fs::filesystem_error& e) {
+            THROW(USER_INPUT_PATH_ERR, fmt::format("{}\nPath = {}", e.code().message(), up.c_str()));
+        }
+    }(userpath);
+
+    // Return early if the provided path is a symlink and --link is being used. --link means that symlinks should be
+    // ignored, so the path is going to be ignored - that is, it should not be examined.
+    if (dashdashlink && fs::is_symlink(normal_path)) {
+        return false;
+    }
+
+    // Only call canonical once we have confirmed that symlinks are not being ignored. canonical follows symlinks and
+    // makes sure that they are valid.
+    const fs::path resolved = [](const fs::path& up) {
+        try {
+            return fs::canonical(up);
+        }
+        catch (const fs::filesystem_error& e) {
+            THROW(USER_INPUT_PATH_ERR, fmt::format("{}\nPath = {}", e.code().message(), up.c_str()));
+        }
+    }(normal_path);
 
     const std::string& canpath = resolved.string();
 
@@ -117,13 +131,7 @@ irods::is_path_valid_for_recursion( boost::filesystem::path const & userpath,
 
     if (path_exists)
     {
-        if (dashdashlink && fs::is_symlink(userpath))
-        {
-            // A symlink with the --link flag turned on
-            return false;
-        }
-        else if (fs::is_directory( resolved ))
-        {
+        if (fs::is_directory(resolved)) {
             try {
                 // Adds the path to the usermap, if it's not there yet.
                 // Throws an irods::exception if a loop is found (there is
@@ -132,7 +140,6 @@ irods::is_path_valid_for_recursion( boost::filesystem::path const & userpath,
             } catch ( const irods::exception & _e ) {
                 return false;
             }
-
         }
         // Whether it is a file or directory, it can be included.
         return true;
@@ -158,41 +165,12 @@ irods::is_path_valid_for_recursion( boost::filesystem::path const & userpath,
 bool
 irods::is_path_valid_for_recursion( rodsArguments_t const * const rodsArgs, const char *myPath )
 {
-    namespace fs = boost::filesystem;
-
-    // This variant of the function is only concerned with whether the path
-    // is a symlink to a file or directory, whether the "--link" flag was
-    // specified, and if the path exists:
-    irods::recursion_map_t dummyset;
-    const fs::path p( myPath );
-
-    if ( rodsArgs != NULL && rodsArgs->link == True )
-    {
-        // The "--link" flag has been specified.  If it can be
-        // determined that the file exists and is a symlink, we
-        // can return immediately with false - the path is not
-        // valid for recursion.
-        try
-        {
-            if ( fs::exists( p ) && fs::is_symlink( p ) ) {
-                return false;
-            }
-        }
-        catch(const fs::filesystem_error &ec)
-        {
-            std::ostringstream sstr;
-
-            sstr << ec.code().message() << "\nPath: " << p.string();
-            rodsLog( LOG_ERROR, sstr.str().c_str() );
-
-            return false;
-        }
+    if (!rodsArgs || !myPath) {
+        THROW(USER__NULL_INPUT_ERR, fmt::format("{}: Provided rodsArgs or myPath is null.", __func__));
     }
-    // The path is not a symlink, or the "--link" has not been specified.
-    // Check for recursion. This call may throws n exception if the path
-    // creates a file system loop, or if a boost::filesystem exception were
-    // thrown in the process.
-    return irods::is_path_valid_for_recursion(p, dummyset, (rodsArgs->link == True? true: false));
+
+    recursion_map_t usermap{};
+    return irods::is_path_valid_for_recursion(boost::filesystem::path{myPath}, usermap, rodsArgs->link == True);
 }
 
 // see .hpp for comment
@@ -351,6 +329,8 @@ int
 irods::disallow_file_dir_mix_on_command_line( rodsArguments_t const * const rodsArgs,
                                                      rodsPathInp_t const * const rodsPathInp )
 {
+    namespace fs = boost::filesystem;
+
     // If the "-r" flag is not used, there's nothing to check.
     if ( rodsArgs->recursive != True )
     {
@@ -364,6 +344,9 @@ irods::disallow_file_dir_mix_on_command_line( rodsArguments_t const * const rods
     {
         if ( rodsPathInp->srcPath[i].objType == LOCAL_FILE_T )
         {
+            if (True == rodsArgs->link && fs::is_symlink(rodsPathInp->srcPath[i].outPath)) {
+                continue;
+            }
             filevec.push_back(const_cast<const char *>(rodsPathInp->srcPath[i].outPath));
         }
     }
