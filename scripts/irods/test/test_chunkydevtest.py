@@ -18,7 +18,6 @@ from .. import test
 from . import settings
 from .resource_suite import ResourceBase
 from .. import lib
-from . import ustrings
 
 
 class ChunkyDevTest(ResourceBase):
@@ -664,7 +663,7 @@ class ChunkyDevTest(ResourceBase):
             shutil.rmtree(dir_w + "/testz")
         self.admin.assert_icommand("iget -vPKr --retries 10 -X " + rsfile + " --lfrestart " + lrsfile +
                                    " --rlock -N 2 " + irodshome + "/icmdtest/testz " + dir_w + "/testz", 'STDOUT_SINGLELINE', "testz")
-        self.admin.assert_icommand("irsync -r " + dir_w + "/testz i:" + irodshome + "/icmdtest/testz", "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+        self.admin.assert_icommand("irsync -r " + dir_w + "/testz i:" + irodshome + "/icmdtest/testz")
         self.admin.assert_icommand("irsync -r i:" + irodshome + "/icmdtest/testz " + dir_w + "/testz")
         if os.path.isfile(lrsfile):
             os.unlink(lrsfile)

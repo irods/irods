@@ -27,7 +27,6 @@ from . import session
 from . import settings
 from .. import lib
 from . import resource_suite
-from . import ustrings
 
 class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
@@ -323,8 +322,8 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         lib.create_directory_of_small_files(dir2, tree2)
 
         # add files
-        self.admin.assert_icommand("iput -R %s -r %s" % ("pt", dir1), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
-        self.admin.assert_icommand("iput -R %s -r %s" % ("replB", dir2), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+        self.admin.assert_icommand("iput -R %s -r %s" % ("pt", dir1))
+        self.admin.assert_icommand("iput -R %s -r %s" % ("replB", dir2))
 
         # debugging
         self.admin.assert_icommand("ils -L %s" % dir1, 'STDOUT_SINGLELINE', dir1)

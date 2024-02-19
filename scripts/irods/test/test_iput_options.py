@@ -15,7 +15,6 @@ from ..configuration import IrodsConfig
 from .. import lib
 from .. import test
 from . import session
-from . import ustrings
 
 class Test_iPut_Options(ResourceBase, unittest.TestCase):
 
@@ -77,7 +76,7 @@ class Test_iPut_Options(ResourceBase, unittest.TestCase):
             lib.make_deep_local_tmp_dir(new_dir, depth=5, files_per_level=30, file_size=57)
             self.new_paths.append(os.path.abspath(new_dir))
             os.chdir(new_dir)
-            self.user0.assert_icommand(['iput', '-r', './'], 'STDOUT_SINGLELINE', ustrings.recurse_ok_string())
+            self.user0.assert_icommand(['iput', '-r', './'])
             self.user0.assert_icommand_fail('ils -l', 'STDOUT_SINGLELINE', '/.')
         finally:
             os.chdir(save_dir)
@@ -206,19 +205,13 @@ class Test_iPut_Options(ResourceBase, unittest.TestCase):
                 ['iput', '-v', '-r', '-b', '-f', source_path, 'v-r-b-f'],
                 'STDERR', '-402000 USER_INCOMPATIBLE_PARAMS')
 
-            _,out,_ = self.admin.assert_icommand(
-                ['iput', '-v', '-r', source_path, 'v-r'],
-                'STDOUT', ustrings.recurse_ok_string())
+            _,out,_ = self.admin.assert_icommand(['iput', '-v', '-r', source_path, 'v-r'], 'STDOUT', '0 thr')
             self.assertNotIn(bulk_str, out, 'Bulk upload performed with no bulk flag')
 
-            _,out,_ = self.admin.assert_icommand(
-                ['iput', '-v', '-r', '-f', source_path, 'v-r-f'],
-                'STDOUT', ustrings.recurse_ok_string())
+            _,out,_ = self.admin.assert_icommand(['iput', '-v', '-r', '-f', source_path, 'v-r-f'], 'STDOUT', '0 thr')
             self.assertNotIn(bulk_str, out, 'Bulk upload performed with no bulk flag')
 
-            _,out,_ = self.admin.assert_icommand(
-                ['iput', '-v', '-r', '-b', source_path, 'v-r-b'],
-                'STDOUT', ustrings.recurse_ok_string())
+            _,out,_ = self.admin.assert_icommand(['iput', '-v', '-r', '-b', source_path, 'v-r-b'], 'STDOUT', '0 thr')
             self.assertIn(bulk_str, out, 'Bulk upload not performed when requested')
 
         finally:
@@ -237,7 +230,7 @@ class Test_iPut_Options(ResourceBase, unittest.TestCase):
 
         try:
             coll_name = os.path.join(self.admin.session_collection, 'issue_5288.d')
-            self.admin.assert_icommand(['iput', '-rbK', dir_name, coll_name], 'STDOUT', [' '])
+            self.admin.assert_icommand(['iput', '-rbK', dir_name, coll_name])
 
             # Show that each data object in the new collection has a checksum.
             for f in files:
@@ -263,7 +256,7 @@ class Test_iPut_Options(ResourceBase, unittest.TestCase):
 
         try:
             coll_name = os.path.join(self.admin.session_collection, 'issue_5288.d')
-            self.admin.assert_icommand(['iput', '-rb', dir_name, coll_name], 'STDOUT', [' '])
+            self.admin.assert_icommand(['iput', '-rb', dir_name, coll_name])
 
             # Show that each data object in the new collection does not have a checksum.
             for f in files:

@@ -10,7 +10,8 @@ from ..configuration import IrodsConfig
 from .. import test
 from .. import lib
 from . import resource_suite
-from . import ustrings
+
+recurse_fail_string = 'Aborting data transfer'
 
 
 @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
@@ -73,8 +74,7 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
         anotherdirsym1 = os.path.join(local_dir, 'anotherdirsym1')
         lib.execute_command(['ln', '-s', local_anotherdir, anotherdirsym1])
 
-        self.user0.assert_icommand('iput -r --link {local_dir} {target_collection_path}'.format(**locals()),
-                                   'STDOUT_SINGLELINE', ustrings.recurse_ok_string())
+        self.user0.assert_icommand('iput -r --link {local_dir} {target_collection_path}'.format(**locals()))
 
         cmd = 'ils -lr {target_collection_path}'.format(**locals())
         stdout,_,_ = self.user0.run_icommand(cmd)
@@ -162,8 +162,7 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
         ##################################
         # --link flag OFF:  Move the data into irods, with all valid symbolic links
         ########
-        self.user0.assert_icommand('iput -r {local_dir} {target_collection_path}'.format(**locals()),
-                                   'STDOUT_SINGLELINE', ustrings.recurse_ok_string())
+        self.user0.assert_icommand('iput -r {local_dir} {target_collection_path}'.format(**locals()))
 
         cmd = 'ils -lr {target_collection_path}'.format(**locals())
         stdout,_,_ = self.user0.run_icommand(cmd)
@@ -251,8 +250,8 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
                 cmd = teststring.format(**locals())
                 stdout,stderr,_ = self.user0.run_icommand(cmd)
 
-                self.assertIn(ustrings.recurse_fail_string(), stdout,
-                              '{0}: Expected stdout: "...{1}...", got: "{2}"'.format(cmd, ustrings.recurse_fail_string(), stdout))
+                self.assertIn(recurse_fail_string, stdout,
+                              '{0}: Expected stdout: "...{1}...", got: "{2}"'.format(cmd, recurse_fail_string, stdout))
 
                 self.assertIn('ERROR: USER_INPUT_PATH_ERR: No such file or directory', stderr,
                               '{0}: Expected stderr: "...{1}...", got: "{2}"'.format(cmd,
@@ -405,7 +404,7 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
             for teststring in test_list:
 
                 cmd = teststring.format(**locals())
-                self.user0.assert_icommand( cmd,'STDOUT_SINGLELINE', ustrings.recurse_ok_string() )
+                self.user0.assert_icommand( cmd )
 
                 ##################################
                 # Under the target collection, we expect there to be the following structure.
@@ -613,7 +612,7 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
             for teststring in test_list:
 
                 cmd = teststring.format(**locals())
-                self.user0.assert_icommand( cmd, 'STDOUT_SINGLELINE', ustrings.recurse_ok_string())
+                self.user0.assert_icommand( cmd)
 
                 ##################################
                 # Under the target collection, we expect there to be the following structure:
@@ -797,8 +796,8 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
                 # this will display it in the output.
                 # self.assertEqual(stderr, "", "{0}: Expected no stderr, got: \"{1}\"".format(cmd, stderr))
 
-                self.assertIn(ustrings.recurse_fail_string(), stdout,
-                                 '{0}: Expected stdout: "...{1}...", got: "{2}"'.format(cmd, ustrings.recurse_fail_string(), stdout))
+                self.assertIn(recurse_fail_string, stdout,
+                                 '{0}: Expected stdout: "...{1}...", got: "{2}"'.format(cmd, recurse_fail_string, stdout))
 
                 self.assertIn('ERROR: USER_INPUT_PATH_ERR: Too many levels of symbolic links', stderr,
                                 '{0}: Expected stderr: "...{1}...", got: "{2}"'.format(cmd,
@@ -901,8 +900,8 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
                 errstring = 'Too many levels of symbolic links'
                 self.assertIn(errstring, stderr, '{0}: Expected stderr: "...{1}...", got: "{2}"'.format(cmd, errstring, stderr))
 
-                self.assertIn(ustrings.recurse_fail_string(), stdout,
-                              '{0}: Expected stdout: "...{1}...", got: "{2}"'.format(cmd, ustrings.recurse_fail_string(), stdout))
+                self.assertIn(recurse_fail_string, stdout,
+                              '{0}: Expected stdout: "...{1}...", got: "{2}"'.format(cmd, recurse_fail_string, stdout))
 
                 errstring = 'symtodir1/symtodir2/symtodir1/symtodir2/symtodir1/symtodir2/symtodir1/symtodir2'
                 self.assertIn(errstring, stderr, '{0}: Expected stderr: "...{1}...", got: "{2}"'.format(cmd, errstring, stderr))
@@ -1004,8 +1003,8 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
                 # this will display it in the output.
                 # self.assertEqual(stderr, "", "{0}: Expected no stderr, got: \"{1}\"".format(cmd, stderr))
 
-                self.assertIn(ustrings.recurse_fail_string(), stdout,
-                                 '{0}: Expected stdout: "...{1}...", got: "{2}"'.format(cmd, ustrings.recurse_fail_string(), stdout))
+                self.assertIn(recurse_fail_string, stdout,
+                                 '{0}: Expected stdout: "...{1}...", got: "{2}"'.format(cmd, recurse_fail_string, stdout))
 
                 self.assertIn('Permission denied', stderr,
                                 '{0}: Expected stderr: "...{1}...", got: "{2}"'.format(cmd,
@@ -1027,8 +1026,8 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
                 cmd = teststring.format(**locals())
                 stdout,stderr,_ = self.user0.run_icommand(cmd)
 
-                self.assertIn(ustrings.recurse_ok_string(), stdout,
-                              '{0}: Expected stdout: "...{1}...", got: "{2}"'.format(cmd, ustrings.recurse_ok_string(), stdout))
+                self.assertEqual(str(), stdout,
+                              '{0}: Expected stdout: "...{1}...", got: "{2}"'.format(cmd, str(), stdout))
 
                 # Files WILL be transferred, with the exception of these errors:
                 errstr = 'dir1/0 failed. status = -510013 status = -510013 UNIX_FILE_OPEN_ERR, Permission denied'

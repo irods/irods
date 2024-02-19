@@ -17,7 +17,6 @@ from .. import test
 from .. import lib
 from .resource_suite import ResourceBase
 from . import session
-from . import ustrings
 
 
 class Test_Resource_Replication_Timing(ResourceBase, unittest.TestCase):
@@ -59,7 +58,7 @@ class Test_Resource_Replication_Timing(ResourceBase, unittest.TestCase):
         localdir = '3665_tmpdir'
         shutil.rmtree(localdir, ignore_errors=True)
         lib.make_large_local_tmp_dir(dir_name=localdir, file_count=600, file_size=5)
-        self.admin.assert_icommand(['iput', '-r', localdir], "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+        self.admin.assert_icommand(['iput', '-r', localdir])
         self.admin.assert_icommand(['iadmin', 'mkresc', 'newchild', 'unixfilesystem', test.settings.HOSTNAME_1+':/tmp/newchildVault'], 'STDOUT_SINGLELINE', 'unixfilesystem')
         self.admin.assert_icommand(['iadmin','addchildtoresc','demoResc','newchild'])
         # run rebalance with concurrent, interleaved put/trim of new file
