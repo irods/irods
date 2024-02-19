@@ -6,9 +6,9 @@
 #include "irods/rcMisc.h"
 namespace fs = boost::filesystem;
 
-#include <vector>
-#include <string>
 #include <iostream>
+#include <string>
+#include <vector>
 
 typedef std::vector< std::string > path_list_t;
 
@@ -260,14 +260,14 @@ static int parse_program_options(
 
 } // parse_program_options
 
-static int build_irods_path_structure(
-    const path_list_t& _path_list,
-    rodsEnv*           _rods_env,
-    int                _src_type,
-    int                _dst_type,
-    int                _flag,
-    rodsPathInp_t*     _rods_paths ) {
-
+static int build_irods_path_structure(const path_list_t& _path_list,
+                                      const RodsArguments& _rods_args,
+                                      rodsEnv* _rods_env,
+                                      int _src_type,
+                                      int _dst_type,
+                                      int _flag,
+                                      rodsPathInp_t* _rods_paths)
+{
     int numSrc = 0;
 
     if ( _rods_paths == NULL ) {
@@ -313,7 +313,7 @@ static int build_irods_path_structure(
             }
         }
         else {
-            status = parseLocalPath( &_rods_paths->srcPath[i] );
+            status = parse_local_path(&_rods_args, &_rods_paths->srcPath[i]);
         }
         if ( status < 0 ) {
             return status;
@@ -398,13 +398,7 @@ int parse_opts_and_paths(
         return 0;
     }
 
-    p_err = build_irods_path_structure(
-                paths,
-                _rods_env,
-                _src_type,
-                _dst_type,
-                _flag,
-                _rods_paths );
+    p_err = build_irods_path_structure(paths, _rods_args, _rods_env, _src_type, _dst_type, _flag, _rods_paths);
     if ( p_err < 0 ) {
         return p_err;
     }

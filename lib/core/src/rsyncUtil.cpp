@@ -851,6 +851,10 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
         snprintf( myTargPath.outPath, MAX_NAME_LEN, "%s/%s",
                   targColl, childPath.c_str() );
         if ( is_symlink( p ) ) {
+            if (rodsArgs->link) {
+                // --link option means ignore symlinks.
+                continue;
+            }
             fs::path cp = read_symlink( p );
             // Issue 3663 - If the path is FQDN, do not add srcDir on path
             if (cp.is_relative()) {

@@ -9,9 +9,10 @@
 
 #include "irods/filesystem/path.hpp"
 
+#include <filesystem>
+#include <map>
 #include <string>
 #include <string_view>
-#include <map>
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
@@ -19,6 +20,38 @@
 /* parseRodsPathStr - This is similar to parseRodsPath except the
  * input and output are char string inPath and outPath
  */
+
+// This is a function meant to act as a replacement for parseLocalPath because parseLocalPath's interface cannot
+// change but also needs to take provided RodsArguments into account in the contexts in which it is being used.
+auto parse_local_path(const RodsArguments* _args, RodsPath* _path) -> int
+{
+    namespace fs = std::filesystem;
+
+    if (!_path || !_args) {
+        fprintf(stderr, "%s: NULL input\n", __func__);
+        return USER__NULL_INPUT_ERR;
+    }
+
+    if (0 == strlen(_path->inPath)) {
+        std::strncpy(_path->outPath, ".", MAX_NAME_LEN);
+    }
+    else {
+        std::strncpy(_path->outPath, _path->inPath, MAX_NAME_LEN);
+    }
+
+    // getFileType calls boost::filesystem::exists, which follows symlinks. --link is supposed to ignore symlinks.
+    // We do not know whether this symlink exists, and we do not care whether it exists. The path could be removed
+    // from the list at this point, but this could create a hole which has not happened in the past. Therefore, we
+    // must now lie in order to keep up the historical interfaces and trust that the symlink will continue to be
+    // ignored down the line. The lie is that the symlink is a local file and that it exists.
+    if (_args->link == True && fs::is_symlink(fs::path{_path->inPath})) {
+        _path->objType = LOCAL_FILE_T;
+        _path->objState = EXIST_ST;
+        return 0;
+    }
+
+    return getFileType(_path);
+} // parse_local_path
 
 int
 parseRodsPathStr( const char *inPath, rodsEnv *myRodsEnv, char *outPath ) {
@@ -364,17 +397,37 @@ addSrcInPath( rodsPathInp_t *rodsPathInp, const char *inPath ) {
  *
  */
 
-int
-parseCmdLinePath( int argc, char **argv, int optInd, rodsEnv *myRodsEnv,
-                  int srcFileType, int destFileType, int flag, rodsPathInp_t *rodsPathInp ) {
+int parseCmdLinePath(int argc,
+                     char** argv,
+                     int optInd,
+                     rodsEnv* myRodsEnv,
+                     int srcFileType,
+                     int destFileType,
+                     int flag,
+                     rodsPathInp_t* rodsPathInp)
+{
+    RodsArguments args{};
+    return parse_command_line_path(argc, argv, optInd, myRodsEnv, srcFileType, destFileType, flag, rodsPathInp, &args);
+} // parseCmdLinePath
+
+int parse_command_line_path(int argc,
+                            char** argv,
+                            int optInd,
+                            RodsEnvironment* myRodsEnv,
+                            int srcFileType,
+                            int destFileType,
+                            int flag,
+                            RodsPathInp* rodsPathInp,
+                            const RodsArguments* _rods_args)
+{
     int nInput;
     int i, status;
     int numSrc;
 
     nInput = argc - optInd;
 
-    if ( rodsPathInp == NULL ) {
-        rodsLog( LOG_ERROR, "parseCmdLinePath: NULL rodsPathInp input" );
+    if (!rodsPathInp || !_rods_args) {
+        rodsLog(LOG_ERROR, "parseCmdLinePath: NULL input");
         return USER__NULL_INPUT_ERR;
     }
 
@@ -416,7 +469,7 @@ parseCmdLinePath( int argc, char **argv, int optInd, rodsEnv *myRodsEnv,
             }
         }
         else {
-            status = parseLocalPath( &rodsPathInp->srcPath[i] );
+            status = parse_local_path(_rods_args, &rodsPathInp->srcPath[i]);
         }
 
         if ( status < 0 ) {
