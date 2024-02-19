@@ -77,7 +77,7 @@ class Test_Rule_Engine_Plugin_Framework(session.make_sessions_mixin([('otherrods
 
                     """.format(logical_path))
 
-                self.admin.assert_icommand(['iput', '-b', '-r', local_dir], 'STDOUT_SINGLELINE', 'Running')
+                self.admin.assert_icommand(['iput', '-b', '-r', local_dir])
                 self.admin.assert_icommand(['ils', '-l'], 'STDOUT_SINGLELINE', 'rods')
                 self.admin.assert_icommand(['imeta', 'ls', '-C', logical_path], 'STDOUT_SINGLELINE', 'logical_path')
         finally:

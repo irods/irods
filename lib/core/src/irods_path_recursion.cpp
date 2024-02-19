@@ -300,8 +300,6 @@ irods::file_system_sanity_check( irods::recursion_map_t& pathmap,
         }
     }
 
-#define DISPLAY_PREFLIGHT       true
-
     if (dirvec.size() > 0)
     {
         if ( rodsArgs->recursive != True ) {
@@ -323,24 +321,22 @@ irods::file_system_sanity_check( irods::recursion_map_t& pathmap,
             return USER_INPUT_OPTION_ERR;
         }
 
-        if (DISPLAY_PREFLIGHT) { std::cout << "Running recursive pre-scan... " << std::flush; }
+        if (rodsArgs->veryVerbose) {
+            std::cout << "Running recursive pre-scan... ";
+        }
 
         if ((status = irods::scan_all_source_directories_for_loops(pathmap,
                                                                    dirvec,
                                                                    (rodsArgs->link == True? true: false))) < 0)
         {
-            if (DISPLAY_PREFLIGHT) {
-                std::cout << "pre-scan complete... errors found.\n" << std::flush;
-                std::cout << "Aborting data transfer.\n" << std::flush;
-            }
+            std::cout << "pre-scan complete... errors found.\nAborting data transfer.\n";
             if (getenv(irods::chrono_env)) {
                 std::cout << "Directory scan duration: " << sctime.get_duration_string() << " seconds\n" << std::flush;
             }
             return status;
         }
-        if (DISPLAY_PREFLIGHT) {
-            std::cout << "pre-scan complete... " << std::flush;
-            std::cout << "transferring data...\n" << std::flush;
+        if (rodsArgs->veryVerbose) {
+            std::cout << "pre-scan complete... transferring data...\n";
         }
         if (getenv(irods::chrono_env)) {
             std::cout << "Directory scan duration: " << sctime.get_duration_string() << " seconds\n" << std::flush;
