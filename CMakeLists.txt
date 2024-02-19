@@ -293,6 +293,7 @@ write_basic_package_version_file(
 install(
   FILES
   "${CMAKE_IRODS_BINARY_DIR}/IRODSConfigVersion.cmake"
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/IRODSTargetsWrapper.cmake"
   DESTINATION "${CMAKE_INSTALL_LIBDIR}/irods/cmake"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
 )
