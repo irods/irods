@@ -10,7 +10,6 @@ import unittest
 
 from . import session
 from . import settings
-from . import ustrings
 from .. import lib
 from .. import paths
 from .. import test
@@ -232,7 +231,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
 
 		# put dir in remote collection
 		test_session.assert_icommand(
-			"iput -r {dir_path} {remote_home_collection}/".format(**parameters), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+			"iput -r {dir_path} {remote_home_collection}/".format(**parameters))
 
 		# time listing of collection
 		t0 = time.time()
@@ -268,7 +267,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
 
 		# put dir in remote collection
 		test_session.assert_icommand(
-			"iput -r {dir_path} {remote_home_collection}/".format(**parameters), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+			"iput -r {dir_path} {remote_home_collection}/".format(**parameters))
 
 		# new collection should be there
 		test_session.assert_icommand(
@@ -392,7 +391,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
 
 		# put dir in remote collection
 		test_session.assert_icommand(
-			"iput -r {dir_path} {remote_home_collection}/".format(**parameters), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+			"iput -r {dir_path} {remote_home_collection}/".format(**parameters))
 
 		# remove local test dir
 		shutil.rmtree(dir_path)
@@ -467,7 +466,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
 
 		# put dir in remote collection
 		test_session.assert_icommand(
-			"iput -r {dir_path} {remote_home_collection}/".format(**parameters), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+			"iput -r {dir_path} {remote_home_collection}/".format(**parameters))
 
 		# new collection should be there
 		test_session.assert_icommand(
@@ -670,7 +669,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
 
 		# put dir in local collection
 		test_session.assert_icommand(
-			"iput -r {dir_path} {local_home_collection}/".format(**parameters), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+			"iput -r {dir_path} {local_home_collection}/".format(**parameters))
 
 		# remove local test dir
 		shutil.rmtree(dir_path)
@@ -769,7 +768,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
 
 			# sync dir with remote collection
 			test_session.assert_icommand(
-				"irsync -r {dir_path} i:{remote_home_collection}/{dir_name}".format(**parameters), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+				"irsync -r {dir_path} i:{remote_home_collection}/{dir_name}".format(**parameters))
 
 			# new collection should be there
 			test_session.assert_icommand(
@@ -808,7 +807,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
 
 			# put dir in local collection
 			test_session.assert_icommand(
-				"iput -r {dir_path} {local_home_collection}/".format(**parameters), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+				"iput -r {dir_path} {local_home_collection}/".format(**parameters))
 
 			# remove local test dir
 			shutil.rmtree(dir_path)
@@ -863,7 +862,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
 
 			# sync dir with remote collection
 			test_session.assert_icommand(
-				"irsync -r {dir_path} i:{remote_home_collection}/{dir_name}".format(**parameters), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+				"irsync -r {dir_path} i:{remote_home_collection}/{dir_name}".format(**parameters))
 
 			# remove local test dir
 			shutil.rmtree(dir_path)
@@ -1300,7 +1299,7 @@ class Test_Microservices(SessionsMixin, unittest.TestCase):
 
 		# put dir in remote collection
 		test_session.assert_icommand(
-			"iput -r {dir_path} {remote_home_collection}/".format(**parameters), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+			"iput -r {dir_path} {remote_home_collection}/".format(**parameters))
 
 		# new collection should be there
 		test_session.assert_icommand(
@@ -1496,7 +1495,7 @@ class Test_Recursive_Icp(SessionsMixin, unittest.TestCase):
 		self.local_source_coll = os.path.join(test_session.home_collection, source_coll_name)
 		test_session.assert_icommand(['imkdir', self.local_source_coll])
 
-		test_session.assert_icommand(['irsync', '-r', self.local_dir1, self.local_dir2, 'i:{}'.format(self.local_source_coll)], 'STDOUT_SINGLELINE', ustrings.recurse_ok_string())
+		test_session.assert_icommand(['irsync', '-r', self.local_dir1, self.local_dir2, 'i:{}'.format(self.local_source_coll)])
 
 	def tearDown(self):
 		test_session = self.user_sessions[0]

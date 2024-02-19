@@ -12,7 +12,6 @@ import shutil
 from .resource_suite import ResourceBase
 from .. import lib
 from .. import test
-from . import ustrings
 
 class Test_iRsync(ResourceBase, unittest.TestCase):
 
@@ -65,7 +64,7 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         # sync dir to coll
-        self.user0.assert_icommand("irsync -r -K {local_dir} i:{base_name}".format(**locals()), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+        self.user0.assert_icommand("irsync -r -K {local_dir} i:{base_name}".format(**locals()))
         self.user0.assert_icommand("ils -L {base_name}".format(**locals()), "STDOUT_SINGLELINE", "ec8bb3b24d5b0f1b5bdf8c8f0f541ee6")
 
         out, err, ec = self.user0.run_icommand("ichksum -r -K {base_name}".format(**locals()))
@@ -97,7 +96,7 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
         file_names = set(lib.make_large_local_tmp_dir(local_dir, file_count=1000, file_size=100))
 
-        self.user0.assert_icommand("irsync -r " + local_dir + " i:" + base_name, "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+        self.user0.assert_icommand("irsync -r " + local_dir + " i:" + base_name)
         self.user0.assert_icommand("ils", 'STDOUT_SINGLELINE', base_name)
         rods_files = set(self.user0.get_entries_in_collection(base_name))
         self.assertTrue(file_names == rods_files,
@@ -182,7 +181,7 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         # sync dir to coll
-        self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+        self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()))
 
         # compare files at each level
         for dir, files in local_dirs.items():
@@ -218,7 +217,7 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         # sync dir to coll
-        self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+        self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()))
 
         # compare files at each level
         for dir, files in local_dirs.items():
@@ -255,7 +254,7 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         # iput dir
-        self.user0.assert_icommand("iput -r {local_dir}".format(**locals()), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+        self.user0.assert_icommand("iput -r {local_dir}".format(**locals()))
 
         # sync collections
         self.user0.assert_icommand("irsync -r i:{source_base_name} i:{dest_base_name}".format(**locals()), "EMPTY")
@@ -316,7 +315,7 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         # iput dir
-        self.user0.assert_icommand("iput -r {local_dir}".format(**locals()), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+        self.user0.assert_icommand("iput -r {local_dir}".format(**locals()))
 
         # sync collections
         self.user0.assert_icommand("irsync -r i:{source_base_name} i:{dest_base_name}".format(**locals()), "EMPTY")
@@ -360,7 +359,7 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         # sync dir to coll
-        self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+        self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()))
 
         # remove local coll
         shutil.rmtree(local_dir)
@@ -395,7 +394,7 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         # sync dir to coll
-        self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+        self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()))
 
         # remove local coll
         shutil.rmtree(local_dir)
@@ -439,4 +438,4 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         lib.execute_command(['ln', '-s', file_name, link_path_2])
 
         # sync dir to coll
-        self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+        self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()))

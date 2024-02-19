@@ -23,7 +23,6 @@ from .. import paths
 from .. import test
 from .. import lib
 from . import resource_suite
-from . import ustrings
 
 class shared_functions:
     """A base class which acts as a space for functionality needed by multiple classes in this source file."""
@@ -31,7 +30,7 @@ class shared_functions:
     def iput_r_large_collection(self, user_session, base_name, file_count, file_size):
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
         local_files = lib.make_large_local_tmp_dir(local_dir, file_count, file_size)
-        user_session.assert_icommand(['iput', '-r', local_dir], "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+        user_session.assert_icommand(['iput', '-r', local_dir])
         rods_files = set(user_session.get_entries_in_collection(base_name))
         self.assertTrue(set(local_files) == rods_files,
                         msg="Files missing:\n" + str(set(local_files) - rods_files) + "\n\n" +
@@ -160,7 +159,7 @@ class Test_ICommands_File_Operations_1(resource_suite.ResourceBase, shared_funct
         base_name = 'test_dir_for_perms'
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
         local_files = lib.make_large_local_tmp_dir(local_dir, 30, 10)
-        self.admin.assert_icommand(['iput', '-r', local_dir], "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+        self.admin.assert_icommand(['iput', '-r', local_dir])
         ils_out, _, _ = self.admin.run_icommand(['ils', base_name])
         rods_files = [f for f in lib.get_object_names_from_entries(ils_out)]
 
@@ -199,7 +198,7 @@ class Test_ICommands_File_Operations_1(resource_suite.ResourceBase, shared_funct
         local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         # iput dir
-        self.user0.assert_icommand("iput -r {local_dir}".format(**locals()), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+        self.user0.assert_icommand("iput -r {local_dir}".format(**locals()))
 
         # force remove collection
         self.user0.assert_icommand("irm -rf {coll_name}".format(**locals()), "EMPTY")
@@ -241,7 +240,7 @@ class Test_ICommands_File_Operations_1(resource_suite.ResourceBase, shared_funct
                 initial_size_of_server_log = lib.get_file_size_by_path(IrodsConfig().server_log_path)
 
                 # iput dir
-                self.user0.assert_icommand("iput -r {local_dir}".format(**locals()), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+                self.user0.assert_icommand("iput -r {local_dir}".format(**locals()))
                 self.user0.assert_icommand('iquest "SELECT COUNT(DATA_ID) WHERE COLL_NAME LIKE \'%/{coll_name}%\'"'.format(**locals()), 'STDOUT', str(files_per_level * depth))
 
                 # look for occurrences of debug sequences in the log
@@ -373,7 +372,7 @@ class Test_ICommands_File_Operations_3(resource_suite.ResourceBase, unittest.Tes
         local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         # iput dir
-        self.user0.assert_icommand("iput -r {local_dir}".format(**locals()), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+        self.user0.assert_icommand("iput -r {local_dir}".format(**locals()))
 
         # sync collections
         self.user0.assert_icommand("irsync -r i:{source_base_name} i:{dest_base_name}".format(**locals()), "EMPTY")
@@ -431,7 +430,7 @@ class Test_ICommands_File_Operations_3(resource_suite.ResourceBase, unittest.Tes
         local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         # sync dir to coll
-        self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+        self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()))
 
         # remove local coll
         shutil.rmtree(local_dir)
@@ -473,7 +472,7 @@ class Test_ICommands_File_Operations_3(resource_suite.ResourceBase, unittest.Tes
         local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         # sync dir to coll
-        self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+        self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()))
 
         # remove local coll
         shutil.rmtree(local_dir)
@@ -657,7 +656,7 @@ class Test_ICommands_File_Operations_3(resource_suite.ResourceBase, unittest.Tes
                 core.add_rule(pep_map[self.plugin_name])
 
                 initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
-                self.admin.assert_icommand(['iput', '-rb', dirname], "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+                self.admin.assert_icommand(['iput', '-rb', dirname])
                 lib.delayAssert(
                     lambda: lib.log_message_occurrences_equals_count(
                         msg='writeLine: inString = acPostProcForPut called for',
@@ -955,7 +954,7 @@ class Test_ICommands_File_Operations_4(resource_suite.ResourceBase, shared_funct
                 # placed directly under target_collection (recursively).
                 ########
 
-                self.user0.assert_icommand(cmd, "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+                self.user0.assert_icommand(cmd)
 
                 self.user0.assert_icommand( 'ils {target1}'.format(**locals()),
                                             'STDOUT_MULTILINE',
@@ -1021,7 +1020,7 @@ class Test_ICommands_File_Operations_4(resource_suite.ResourceBase, shared_funct
                 # placed directly under target_collection (recursively).
                 ########
 
-                self.user0.assert_icommand(cmd, "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+                self.user0.assert_icommand(cmd)
 
                 # Command creates source dir under existing collection
                 self.user0.assert_icommand( 'ils {target1}'.format(**locals()), 'STDOUT_SINGLELINE', dir1 )
@@ -1090,7 +1089,7 @@ class Test_ICommands_File_Operations_4(resource_suite.ResourceBase, shared_funct
                 # placed directly under target_collection (recursively).
                 ########
 
-                self.user0.assert_icommand(cmd, "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+                self.user0.assert_icommand(cmd)
 
                 self.user0.assert_icommand( 'ils {target1}'.format(**locals()),
                                             'STDOUT_MULTILINE',
@@ -1153,7 +1152,7 @@ class Test_ICommands_File_Operations_4(resource_suite.ResourceBase, shared_funct
                     if runimkdir == 'yes':
                         self.user0.run_icommand('imkdir -p {target1path}'.format(**locals()))
 
-                    self.user0.assert_icommand(cmd, "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+                    self.user0.assert_icommand(cmd)
 
                     # Command creates source dir under existing collection
                     self.user0.assert_icommand( 'ils {target1}'.format(**locals()), 'STDOUT_MULTILINE', [ dir1, dir2 ] )
@@ -1591,7 +1590,7 @@ class Test_ICommands_File_Operations_5(resource_suite.ResourceBase, unittest.Tes
             self.user0.run_icommand('icd {self.user0.session_collection}'.format(**locals()))
 
             # We put a collection into irods so that we can run icp.
-            self.user0.assert_icommand('iput -r {dir1path}'.format(**locals()), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+            self.user0.assert_icommand('iput -r {dir1path}'.format(**locals()))
 
             ##################################
             # Grouped tests (should) produce the same behavior and results:

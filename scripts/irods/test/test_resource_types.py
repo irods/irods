@@ -32,7 +32,6 @@ from .. import paths
 from .resource_suite import ResourceSuite, ResourceBase
 from .test_chunkydevtest import ChunkyDevTest
 from . import session
-from . import ustrings
 
 def assert_number_of_replicas(admin_session, logical_path, data_obj_name, replica_count):
     for i in range(0, replica_count):
@@ -132,7 +131,7 @@ class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unitte
         dirname = 'test_redirect_map_regeneration__3904'
         lib.create_directory_of_small_files(dirname, filecount)
 
-        self.admin.assert_icommand(['iput', '-r', dirname], "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+        self.admin.assert_icommand(['iput', '-r', dirname])
 
         # Count the number of recipients of replicas
         hier_ctr = {}
@@ -2284,7 +2283,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         dir_name = 'test_irsync_for_collection__2976'
         dir_name_rsync = dir_name + '_rsync'
         lib.create_directory_of_small_files(dir_name,10)
-        self.admin.assert_icommand('iput -rR demoResc ' + dir_name, "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+        self.admin.assert_icommand('iput -rR demoResc ' + dir_name)
 
         logical_path = os.path.join( self.admin.session_collection, dir_name )
         logical_path_rsync = os.path.join( self.admin.session_collection, dir_name_rsync )
@@ -2320,7 +2319,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         dir_name = 'test_irsync_for_collection__2976'
         dir_name_rsync = dir_name + '_rsync'
         lib.create_directory_of_small_files(dir_name,10)
-        self.admin.assert_icommand('iput -rR demoResc ' + dir_name, "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+        self.admin.assert_icommand('iput -rR demoResc ' + dir_name)
 
         logical_path = os.path.join( self.admin.session_collection, dir_name )
         logical_path_rsync = os.path.join( self.admin.session_collection, dir_name_rsync )
