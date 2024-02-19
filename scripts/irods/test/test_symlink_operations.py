@@ -230,7 +230,6 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
             # Create the file system directory hierarchy
             ########
             lib.make_dir_p(local_dir)
-            self.user0.run_icommand('imkdir {target_collection_path}'.format(**locals()))
             dirname1 = os.path.join(local_dir, 'dir1')
 
             # This creates dir1 with a single regular files 0 in it
@@ -246,26 +245,44 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
             # Iterate through each of the tests:
             ########
             for teststring in test_list:
+                with self.subTest(teststring):
+                    # Create the test collection every time because it has to be cleaned up every time.
+                    self.user0.run_icommand(['imkdir', target_collection_path])
 
-                cmd = teststring.format(**locals())
-                stdout,stderr,_ = self.user0.run_icommand(cmd)
+                    ignore_symlinks = '--link' in teststring
 
-                self.assertIn(recurse_fail_string, stdout,
-                              '{0}: Expected stdout: "...{1}...", got: "{2}"'.format(cmd, recurse_fail_string, stdout))
+                    cmd = teststring.format(**locals())
+                    stdout,stderr,_ = self.user0.run_icommand(cmd)
 
-                self.assertIn('ERROR: USER_INPUT_PATH_ERR: No such file or directory', stderr,
-                              '{0}: Expected stderr: "...{1}...", got: "{2}"'.format(cmd,
-                                    'ERROR: USER_INPUT_PATH_ERR: No such file or directory', stderr)
-                )
+                    if ignore_symlinks:
+                        self.assertEqual('', stdout, '{}: Expected stdout: "", got: "{}"'.format(cmd, stdout))
+                        self.assertEqual('', stderr, '{}: Expected stderr: "", got: "{}"'.format(cmd, stderr))
 
-                # Make sure the single valid file under dir1
-                # was not moved into the vault
-                self.user0.assert_icommand('ils -l {target_collection_path}/newname'.format(**locals()),
-                            'STDERR_SINGLELINE',
-                        '{target_collection_path}/newname does not exist or user lacks access permission'.format(**locals())
-                )
+                    else:
+                        self.assertIn(recurse_fail_string, stdout,
+                                      '{0}: Expected stdout: "...{1}...", got: "{2}"'.format(cmd, recurse_fail_string, stdout))
+
+                        self.assertIn('ERROR: USER_INPUT_PATH_ERR: No such file or directory', stderr,
+                                      '{0}: Expected stderr: "...{1}...", got: "{2}"'.format(cmd,
+                                            'ERROR: USER_INPUT_PATH_ERR: No such file or directory', stderr)
+                        )
+
+                        # Make sure the single valid file under dir1 was not moved into the vault
+                        self.user0.assert_icommand(
+                            ['ils', '-l', f'{target_collection_path}/newname'], 'STDERR',
+                            f'{target_collection_path}/newname does not exist or user lacks access permission'
+                        )
+
+                    # Make sure the dangling symlink file under dir1 was not moved into the vault.
+                    self.assertFalse(
+                        lib.replica_exists(self.user0, os.path.join(target_collection_path, 'dangling_symlink'), 0))
+
+                    # Clean up every time - some of these tests actually upload things and some of them do not expect
+                    # there to be things inside the test collection.
+                    self.user0.run_icommand('irm -r -f {target_collection_path}'.format(**locals()))
 
         finally:
+            self.user0.assert_icommand(['ils', '-lr', self.user0.session_collection], 'STDOUT', '') # debuggin
             self.user0.run_icommand('irm -r -f {target_collection_path}'.format(**locals()))
             shutil.rmtree(os.path.abspath(dirname1), ignore_errors=True)
 
@@ -317,28 +334,34 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
             # Iterate through each of the tests:
             ########
             for teststring in test_list:
+                with self.subTest(teststring):
+                    ignore_symlinks = '--link' in teststring
 
-                cmd = teststring.format(**locals())
-                stdout,stderr,_ = self.user0.run_icommand(cmd)
+                    cmd = teststring.format(**locals())
+                    stdout,stderr,_ = self.user0.run_icommand(cmd)
 
-                ##################################
-                # Output on stderr should look like this:
-                # remote addresses: 127.0.0.1 ERROR: resolveRodsTarget: source dir1/dangling_symlink does not exist
-                # remote addresses: 127.0.0.1 ERROR: putUtil: resolveRodsTarget error, status = -317000 status = -317000 USER_INPUT_PATH_ERR
-                ########
+                    ##################################
+                    # Output on stderr should look like this:
+                    # remote addresses: 127.0.0.1 ERROR: resolveRodsTarget: source dir1/dangling_symlink does not exist
+                    # remote addresses: 127.0.0.1 ERROR: putUtil: resolveRodsTarget error, status = -317000 status = -317000 USER_INPUT_PATH_ERR
+                    ########
 
-                self.assertIn('/dangling_symlink does not exist', stderr,
-                          '{0}: Expected stderr: "...{1}...", got: "{2}"'.format(cmd, '/dangling_symlink does not exist', stderr))
+                    if ignore_symlinks:
+                        self.assertEqual('', stdout, '{}: Expected stdout: "", got: "{}"'.format(cmd, stdout))
+                        self.assertEqual('', stderr, '{}: Expected stderr: "", got: "{}"'.format(cmd, stderr))
+                    else:
+                        self.assertIn('/dangling_symlink does not exist', stderr,
+                                  '{0}: Expected stderr: "...{1}...", got: "{2}"'.format(cmd, '/dangling_symlink does not exist', stderr))
 
-                self.assertIn('status = -317000 USER_INPUT_PATH_ERR', stderr,
-                          '{0}: Expected stderr: "...{1}...", got: "{2}"'.format(cmd, 'status = -317000 USER_INPUT_PATH_ERR', stderr))
+                        self.assertIn('status = -317000 USER_INPUT_PATH_ERR', stderr,
+                                  '{0}: Expected stderr: "...{1}...", got: "{2}"'.format(cmd, 'status = -317000 USER_INPUT_PATH_ERR', stderr))
 
-                # Make sure the dangling link is nowhere in this collection tree:
-                cmd = 'ils -lr {target_collection_path}'.format(**locals())
-                stdout,_,_ = self.user0.run_icommand(cmd)
+                    # Make sure the dangling link is nowhere in this collection tree:
+                    cmd = 'ils -lr {target_collection_path}'.format(**locals())
+                    stdout,_,_ = self.user0.run_icommand(cmd)
 
-                self.assertNotIn('& dangling_symlink', stdout,
-                          '{0}: Not expected in stdout: "...{1}...", got: "{2}"'.format(cmd, '& dangling_symlink', stdout))
+                    self.assertNotIn('& dangling_symlink', stdout,
+                              '{0}: Not expected in stdout: "...{1}...", got: "{2}"'.format(cmd, '& dangling_symlink', stdout))
 
         finally:
             self.user0.run_icommand('irm -r -f {target_collection_path}'.format(**locals()))
@@ -772,60 +795,71 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
             # Iterate through each of the tests:
             ########
             for teststring in test_list:
+                with self.subTest(teststring):
+                    ignore_symlinks = '--link' in teststring
 
-                # Run the command:
-                cmd = teststring.format(**locals())
-                stdout,stderr,_ = self.user0.run_icommand(cmd)
+                    # Run the command:
+                    cmd = teststring.format(**locals())
+                    stdout,stderr,_ = self.user0.run_icommand(cmd)
 
-                ##################################
-                # Output on stdout should look like this:
-                #
-                #   Running recursive pre-scan... pre-scan complete... errors found.
-                #   Aborting data transfer.
-                #
-                # Output on stderr should look like this:
-                #
-                #   remote addresses: 127.0.0.1 ERROR: USER_INPUT_PATH_ERR: Too many levels of symbolic links
-                #   Path = dir2/symself
-                #
-                #   remote addresses: 127.0.0.1 ERROR: filesystem::recursive_directory_iterator directory error: Too many levels of symbolic links
-                #
-                ########
+                    ##################################
+                    # Output on stdout should look like this:
+                    #
+                    #   Running recursive pre-scan... pre-scan complete... errors found.
+                    #   Aborting data transfer.
+                    #
+                    # Output on stderr should look like this:
+                    #
+                    #   ERROR: USER_INPUT_PATH_ERR: Too many levels of symbolic links
+                    #   Path = dir2/symself
+                    #
+                    #   ERROR: filesystem::recursive_directory_iterator directory error: Too many levels of symbolic links
+                    #
+                    ########
 
-                # Keeping this around - sometimes when another error shows up,
-                # this will display it in the output.
-                # self.assertEqual(stderr, "", "{0}: Expected no stderr, got: \"{1}\"".format(cmd, stderr))
+                    # Keeping this around - sometimes when another error shows up,
+                    # this will display it in the output.
+                    # self.assertEqual(stderr, "", "{0}: Expected no stderr, got: \"{1}\"".format(cmd, stderr))
 
-                self.assertIn(recurse_fail_string, stdout,
-                                 '{0}: Expected stdout: "...{1}...", got: "{2}"'.format(cmd, recurse_fail_string, stdout))
+                    if ignore_symlinks:
+                        self.assertEqual('', stdout, '{}: Expected stdout: "", got: "{}"'.format(cmd, stdout))
+                        self.assertEqual('', stderr, '{}: Expected stderr: "", got: "{}"'.format(cmd, stderr))
+                    else:
+                        self.assertIn(recurse_fail_string, stdout,
+                                         '{0}: Expected stdout: "...{1}...", got: "{2}"'.format(cmd, recurse_fail_string, stdout))
 
-                self.assertIn('ERROR: USER_INPUT_PATH_ERR: Too many levels of symbolic links', stderr,
-                                '{0}: Expected stderr: "...{1}...", got: "{2}"'.format(cmd,
-                                'ERROR: USER_INPUT_PATH_ERR: Too many levels of symbolic links', stderr)
-                )
+                        self.assertIn('ERROR: USER_INPUT_PATH_ERR: Too many levels of symbolic links', stderr,
+                                        '{0}: Expected stderr: "...{1}...", got: "{2}"'.format(cmd,
+                                        'ERROR: USER_INPUT_PATH_ERR: Too many levels of symbolic links', stderr)
+                        )
 
-                # Make sure the loop link is nowhere in this collection tree:
-                cmd = 'ils -lr {target_collection_path}'.format(**locals())
-                self.user0.assert_icommand_fail( cmd, 'STDOUT_SINGLELINE', 'symself' );
+                    # Make sure the loop link is nowhere in this collection tree:
+                    cmd = 'ils -lr {target_collection_path}'.format(**locals())
+                    self.user0.assert_icommand_fail( cmd, 'STDOUT_SINGLELINE', 'symself' );
 
 
             ##################################
             # Iterate through the second set of tests:
             ########
             for teststring in second_test_list:
+                with self.subTest(teststring):
+                    ignore_symlinks = '--link' in teststring
 
-                # Run the command:
-                cmd = teststring.format(**locals())
-                _,stderr,_ = self.user0.run_icommand(cmd)
+                    # Run the command:
+                    cmd = teststring.format(**locals())
+                    _,stderr,_ = self.user0.run_icommand(cmd)
 
-                self.assertIn('Too many levels of symbolic links', stderr,
-                              '{0}: Expected stderr: "...{1}...", got: "{2}"'.format(cmd,
-                                    'Too many levels of symbolic links', stderr)
-                )
+                    if ignore_symlinks:
+                        self.assertEqual('', stderr, '{}: Expected stderr: "", got: "{}"'.format(cmd, stderr))
+                    else:
+                        self.assertIn('Too many levels of symbolic links', stderr,
+                                      '{0}: Expected stderr: "...{1}...", got: "{2}"'.format(cmd,
+                                            'Too many levels of symbolic links', stderr)
+                        )
 
-                # Make sure the loop link is nowhere in this collection tree:
-                cmd = 'ils -lr {target_collection_path}'.format(**locals())
-                self.user0.assert_icommand_fail( cmd, 'STDOUT_SINGLELINE', 'symself' );
+                    # Make sure the loop link is nowhere in this collection tree:
+                    cmd = 'ils -lr {target_collection_path}'.format(**locals())
+                    self.user0.assert_icommand_fail( cmd, 'STDOUT_SINGLELINE', 'symself' );
 
         finally:
             self.user0.run_icommand('irm -r -f {target_collection_path}'.format(**locals()))
@@ -1026,8 +1060,7 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
                 cmd = teststring.format(**locals())
                 stdout,stderr,_ = self.user0.run_icommand(cmd)
 
-                self.assertEqual(str(), stdout,
-                              '{0}: Expected stdout: "...{1}...", got: "{2}"'.format(cmd, str(), stdout))
+                self.assertEqual('', stdout, '{}: Expected stdout: "", got: "{}"'.format(cmd, stdout))
 
                 # Files WILL be transferred, with the exception of these errors:
                 errstr = 'dir1/0 failed. status = -510013 status = -510013 UNIX_FILE_OPEN_ERR, Permission denied'

@@ -701,6 +701,10 @@ def get_replica_mtime(session, logical_path, replica_number):
                 os.path.basename(logical_path),
                 str(replica_number))])[0].strip()
 
+def collection_exists(session, logical_path):
+    out = session.run_icommand(['iquest', f"select COLL_ID where COLL_NAME = '{logical_path}'"])[0]
+
+    return 'CAT_NO_ROWS_FOUND' not in out
 
 def iterfy(iterable):
     """Will return an iterable, even if input is a single item
