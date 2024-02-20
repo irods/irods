@@ -59,6 +59,8 @@ set(IRODS_BUILD_WITH_WERROR ${IRODS_BUILD_WITH_WERROR_DEFAULT} CACHE BOOL "Choos
 include(UseLibCXX)
 
 find_package(nlohmann_json "3.6.1" REQUIRED)
+find_package(fmt "8.1.1"
+  HINTS "${IRODS_EXTERNALS_FULLPATH_FMT}")
 find_package(Threads REQUIRED)
 find_package(OpenSSL REQUIRED COMPONENTS Crypto SSL)
 
@@ -215,11 +217,11 @@ foreach(EXECUTABLE ${IRODS_CLIENT_ICOMMANDS_EXECUTABLES})
     irods_plugin_dependencies
     irods_common
     nlohmann_json::nlohmann_json
+    fmt::fmt
     ${IRODS_EXTERNALS_FULLPATH_AVRO}/lib/libavrocpp.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_program_options.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
-    ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
     ${IRODS_EXTERNALS_FULLPATH_ZMQ}/lib/libzmq.so
     ${CMAKE_DL_LIBS}
     )
@@ -232,7 +234,6 @@ foreach(EXECUTABLE ${IRODS_CLIENT_ICOMMANDS_EXECUTABLES})
     ${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/include
     ${IRODS_EXTERNALS_FULLPATH_CPPZMQ}/include
     ${IRODS_EXTERNALS_FULLPATH_ZMQ}/include
-    ${IRODS_EXTERNALS_FULLPATH_FMT}/include
     )
   target_compile_definitions(${EXECUTABLE} PRIVATE ${IRODS_COMPILE_DEFINITIONS} ${IRODS_COMPILE_DEFINITIONS_PRIVATE} BOOST_SYSTEM_NO_DEPRECATED)
   target_compile_options(${EXECUTABLE} PRIVATE -Wno-write-strings)
