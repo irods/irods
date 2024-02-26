@@ -94,8 +94,8 @@ main( int argc, char **argv ) {
         exit( 1 );
     }
 
-    status = parseCmdLinePath( argc, argv, optind, &myEnv,
-                               srcType, destType, 0, &rodsPathInp );
+    status = parse_command_line_path(argc, argv, optind, &myEnv, srcType,
+                                     destType, 0, &rodsPathInp, &myRodsArgs);
 
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status, "main: parseCmdLinePath error. " );
