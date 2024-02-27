@@ -485,6 +485,22 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin mkuser lando invalid_user_type",
                                    'STDERR_SINGLELINE', "CAT_INVALID_USER_TYPE")  # should be rejected
 
+    @unittest.skipIf(IrodsConfig().version_tuple < (4, 3, 2), "Only applies to 4.3.2 and above.")
+    def test_iadmin_rmuser_rmgroup_report_error_on_mismatch_entity_type__issue_7380(self):
+        user_name = "test_user_mismatch_entity_issue_7380"
+        group_name = "test_group_mismatch_entity_issue_7380"
+        self.admin.assert_icommand("iadmin mkuser %s rodsuser" % user_name)
+        self.admin.assert_icommand("iadmin mkgroup %s" % group_name)
+
+        try:
+            self.admin.assert_icommand("iadmin rmuser %s" % group_name,
+                                       'STDERR_SINGLELINE', "rcGeneralAdmin failed with error -827000 CAT_INVALID_USER")
+            self.admin.assert_icommand("iadmin rmgroup %s" % user_name,
+                                       'STDERR_SINGLELINE', "rcGeneralAdmin failed with error -829000 CAT_INVALID_GROUP")
+        finally:
+            self.admin.assert_icommand("iadmin rmuser %s" % user_name)
+            self.admin.assert_icommand("iadmin rmgroup %s" % group_name)
+
     # =-=-=-=-=-=-=-
     # REBALANCE
     def test_rebalance_for_invalid_data__ticket_3147(self):
@@ -1437,7 +1453,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['iadmin', 'lrg'], 'STDERR_SINGLELINE', 'Resource groups are deprecated.')
 
     def test_group_membership(self):
-        self.admin.assert_icommand(["iadmin", "rmgroup", "g1"], 'STDERR_SINGLELINE', 'CAT_INVALID_USER')
+        self.admin.assert_icommand(["iadmin", "rmgroup", "g1"], 'STDERR_SINGLELINE', 'CAT_INVALID_GROUP')
         self.admin.assert_icommand(["iadmin", "mkgroup", "g1"])
         self.admin.assert_icommand(["iadmin", "atg", "g1", self.user0.username])
         self.admin.assert_icommand(["iadmin", "atg", "g1a", self.user0.username], 'STDERR_SINGLELINE', 'CAT_INVALID_GROUP')
