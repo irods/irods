@@ -275,6 +275,11 @@ configure_package_config_file(
   INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/irods/cmake"
   PATH_VARS IRODS_INCLUDE_DIRS
 )
+configure_file(
+  "${CMAKE_IRODS_SOURCE_DIR}/cmake/IRODSConfigVersion.cmake.in"
+  "${CMAKE_IRODS_BINARY_DIR}/IRODSConfigVersion.cmake"
+  @ONLY
+)
 
 install(
   FILES
@@ -282,12 +287,6 @@ install(
   DESTINATION "${CMAKE_INSTALL_LIBDIR}/irods/cmake"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
   RENAME IRODSConfig.cmake
-)
-
-write_basic_package_version_file(
-  "${CMAKE_IRODS_BINARY_DIR}/IRODSConfigVersion.cmake"
-  VERSION ${IRODS_VERSION}
-  COMPATIBILITY SameMinorVersion
 )
 
 install(

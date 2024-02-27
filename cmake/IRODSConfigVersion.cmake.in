@@ -1,0 +1,171 @@
+# CMake package version file for iRODS, for use with find_package().
+#
+# A couple of details about our version numbers:
+#
+# Prior to iRODS version 5.0, major releases incremented the second part of the version number,
+# and minor releases incremented the third part. For example, 4.3.0 was a major release, and 4.3.1
+# was a minor release of 4.3.
+# Starting with iRODS 5.0, major releases increment the first part of the version number, and
+# minor releases increment the second part. For example, 5.0 is a major release, and 5.1 is a
+# minor release of 5. Patch releases, should we decide to do them, increment the third part of the
+# version number. For example, 5.0.1 would be a patch release of 5.0.
+# 4.3 was the last major release before 5.0.
+#
+# Additionally, starting with the leadup to iRODS version 5.0, we have adopted .9x version numbers
+# for development builds. For example, 4.97 would be a development version between 4.3 and 5.0,
+# and 5.92 would be a development version between 5 and 6.0.
+# Starting with iRODS 5.0, this extends to minor releases as well. For example, 5.1.94 would be a
+# development version between 5.1 and 5.2.0.
+#
+# Thusly, our CMake package version file is designed as so:
+# - An iRODS installation should match as exactly compatible if the find_package()-calling project
+#   is searching for the exact same version.
+# - An iRODS installation should match as compatible if the find_package()-calling project is
+#   searching for a version range containing the version of the iRODS installation.
+# - An iRODS installation without a .9x version should match as potentially compatible if the
+#   find_package()-calling project is searching for an earlier version of the same major release
+#   or a .9x version of the previous major release.
+# - An iRODS installation with a .9x version in the second part of the version number should match
+#   as potentially compatible if the find_package()-calling project is searching for the next
+#   major release or any earlier version of the same major release.
+# - An iRODS installation with a .9x version in the third part of the version number should match
+#   as potentially compatible if the find_package()-calling project is searching for the next
+#   minor release or any earlier version of the same major release.
+
+set(IRODS_VERSION_1 "@IRODS_VERSION_MAJOR@")
+set(IRODS_VERSION_2 "@IRODS_VERSION_MINOR@")
+set(IRODS_VERSION_3 "@IRODS_VERSION_PATCH@")
+set(PACKAGE_VERSION "${IRODS_VERSION_1}.${IRODS_VERSION_2}.${IRODS_VERSION_3}")
+
+# Get rid of any leading zeroes. (There probably won't ever be any, but best to check anyway.)
+# This needs to be done after setting PACKAGE_VERSION, as PACKAGE_VERSION should be pristine.
+if(NOT IRODS_VERSION_1 VERSION_EQUAL "0")
+  string(REGEX REPLACE "^0+" "" IRODS_VERSION_1 "${IRODS_VERSION_1}")
+endif()
+if(NOT IRODS_VERSION_2 VERSION_EQUAL "0")
+  string(REGEX REPLACE "^0+" "" IRODS_VERSION_2 "${IRODS_VERSION_2}")
+endif()
+if(NOT IRODS_VERSION_3 VERSION_EQUAL "0")
+  string(REGEX REPLACE "^0+" "" IRODS_VERSION_3 "${IRODS_VERSION_3}")
+endif()
+
+# Check version range first.
+if (PACKAGE_FIND_VERSION_RANGE)
+  # Here we check if the iRODS version is outside the version range passed to find_package().
+  # This is a bit of a hefty conditional, so let's break it down.
+  # PACKAGE_FIND_VERSION_MIN is the lower end of the version range, and
+  # PACKAGE_FIND_VERSION_RANGE_MIN tells us whether the lower end of the version range is
+  # inclusive ("INCLUDE") or exclusive ("EXCLUDE"). (At time of writing, CMake only supports
+  # "INCLUDE" for the lower end, but the way the documentation is written implies that "EXCLUDE"
+  # might someday be supported, and supporting that possibility here is trivial, so we do.)
+  # PACKAGE_FIND_VERSION_MAX is the upper end of the version range, and
+  # PACKAGE_FIND_VERSION_RANGE_MAX tells us whether the upper end of the version range is
+  # inclusive ("INCLUDE") or exclusive ("EXCLUDE").
+  if (
+    # lower end of version range is inclusive and iRODS version is older than requested range
+    ((PACKAGE_FIND_VERSION_RANGE_MIN STREQUAL "INCLUDE" AND PACKAGE_VERSION VERSION_LESS PACKAGE_FIND_VERSION_MIN)
+      # lower end of version range is exclusive and iRODS version is older than or equal to requested range
+      OR (PACKAGE_FIND_VERSION_RANGE_MIN STREQUAL "EXCLUDE" AND PACKAGE_VERSION VERSION_LESS_EQUAL PACKAGE_FIND_VERSION_MIN))
+    # upper end of version range is inclusive and iRODS version is newer than requested range
+    OR ((PACKAGE_FIND_VERSION_RANGE_MAX STREQUAL "INCLUDE" AND PACKAGE_VERSION VERSION_GREATER PACKAGE_FIND_VERSION_MAX)
+      # upper end of version range is exclusive and iRODS version is newer than or equal to requested range
+      OR (PACKAGE_FIND_VERSION_RANGE_MAX STREQUAL "EXCLUDE" AND PACKAGE_VERSION VERSION_GREATER_EQUAL PACKAGE_FIND_VERSION_MAX))
+  )
+    set(PACKAGE_VERSION_COMPATIBLE FALSE)
+  else()
+    set(PACKAGE_VERSION_COMPATIBLE TRUE)
+  endif()
+elseif (PACKAGE_FIND_VERSION VERSION_EQUAL PACKAGE_VERSION) # the easy case: an exact match
+  set(PACKAGE_VERSION_EXACT TRUE)
+  set(PACKAGE_VERSION_COMPATIBLE TRUE)
+else()
+  set(PACKAGE_VERSION_EXACT FALSE)
+
+  if (IRODS_VERSION_2 GREATER_EQUAL "90")
+    # development major version
+    math(EXPR IRODS_VERSION_1_NEXT "${IRODS_VERSION_1} + 1")
+    set(IRODS_DEVELOPMENT_VERSION_FOR "${IRODS_VERSION_1_NEXT}.0.0")
+    if (IRODS_DEVELOPMENT_VERSION_FOR VERSION_EQUAL PACKAGE_FIND_VERSION)
+      # looking for next major release
+      set(PACKAGE_VERSION_COMPATIBLE TRUE)
+    elseif(
+      IRODS_VERSION_1 EQUAL PACKAGE_FIND_VERSION_MAJOR
+        AND PACKAGE_VERSION VERSION_GREATER_EQUAL PACKAGE_FIND_VERSION
+    )
+      # first version component matches, looking for equal or lesser
+      if (PACKAGE_FIND_VERSION_MAJOR EQUAL "4")
+        if (PACKAGE_FIND_VERSION_MINOR GREATER_EQUAL "3")
+          # looking for 4.3 or 4.9x, we are 4.9x
+          set(PACKAGE_VERSION_COMPATIBLE TRUE)
+        else()
+          set(PACKAGE_VERSION_COMPATIBLE FALSE)
+        endif()
+      else()
+        set(PACKAGE_VERSION_COMPATIBLE TRUE)
+      endif()
+    endif()
+  elseif (IRODS_VERSION_3 GREATER_EQUAL "90")
+    # development minor version
+    math(EXPR IRODS_VERSION_2_NEXT "${IRODS_VERSION_2} + 1")
+    set(IRODS_DEVELOPMENT_VERSION_FOR "${IRODS_VERSION_1}.${IRODS_VERSION_2_NEXT}.0")
+    if (IRODS_DEVELOPMENT_VERSION_FOR VERSION_EQUAL PACKAGE_FIND_VERSION)
+      # looking for next minor release
+      set(PACKAGE_VERSION_COMPATIBLE TRUE)
+    elseif(
+      IRODS_VERSION_1 EQUAL PACKAGE_FIND_VERSION_MAJOR
+        AND PACKAGE_VERSION VERSION_GREATER_EQUAL PACKAGE_FIND_VERSION
+    )
+      # same major release, looking for equal or lesser
+      set(PACKAGE_VERSION_COMPATIBLE TRUE)
+    else()
+      set(PACKAGE_VERSION_COMPATIBLE FALSE)
+    endif()
+  elseif (IRODS_VERSION_1 GREATER_EQUAL "5")
+    # not a development version
+    # major release is first part of version number
+    if (
+      IRODS_VERSION_1 EQUAL PACKAGE_FIND_VERSION_MAJOR
+        AND PACKAGE_VERSION VERSION_GREATER_EQUAL PACKAGE_FIND_VERSION
+    )
+      # major release matches, looking for equal or lesser
+      # covers case of looking for development version for next major release
+      set(PACKAGE_VERSION_COMPATIBLE TRUE)
+    elseif (PACKAGE_FIND_VERSION_MINOR GREATER_EQUAL "90")
+      # looking for development major version
+      math(EXPR PACKAGE_FIND_VERSION_1_NEXT "${PACKAGE_FIND_VERSION_MAJOR} + 1")
+      if (PACKAGE_FIND_VERSION_1_NEXT EQUAL IRODS_VERSION_1)
+        # looking for development version leading up to current major release - compatible
+        set(PACKAGE_VERSION_COMPATIBLE TRUE)
+      else()
+        set(PACKAGE_VERSION_COMPATIBLE FALSE)
+      endif()
+    else()
+      set(PACKAGE_VERSION_COMPATIBLE FALSE)
+    endif()
+  elseif (
+    IRODS_VERSION_1 EQUAL PACKAGE_FIND_VERSION_MAJOR
+      AND IRODS_VERSION_2 EQUAL PACKAGE_FIND_VERSION_MINOR
+      AND PACKAGE_VERSION VERSION_GREATER_EQUAL PACKAGE_FIND_VERSION
+  )
+    # major release is second part of version number
+    # development versions not a consideration here
+    # major release matches, looking for equal or lesser
+    set(PACKAGE_VERSION_COMPATIBLE TRUE)
+  else()
+    set(PACKAGE_VERSION_COMPATIBLE FALSE)
+  endif()
+endif()
+
+# After checking version number, check bit-ness
+set(IRODS_SIZEOF_VOID_P "@CMAKE_SIZEOF_VOID_P@")
+
+# if the installed or the calling project don't have CMAKE_SIZEOF_VOID_P set, ignore it:
+if ("${CMAKE_SIZEOF_VOID_P}" STREQUAL "" OR "${IRODS_SIZEOF_VOID_P}" STREQUAL "")
+  return()
+endif()
+
+if (NOT CMAKE_SIZEOF_VOID_P STREQUAL IRODS_SIZEOF_VOID_P)
+  math(EXPR installedBits "${IRODS_SIZEOF_VOID_P} * 8")
+  set(PACKAGE_VERSION "${PACKAGE_VERSION} (${installedBits}bit)")
+  set(PACKAGE_VERSION_UNSUITABLE TRUE)
+endif()
