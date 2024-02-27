@@ -22,6 +22,10 @@
 #include "irods/irods_logger.hpp"
 #include "irods/user_validation_utilities.hpp"
 #include "irods/rs_set_delay_server_migration_info.hpp"
+#include "irods/version.hpp"
+
+#define IRODS_USER_ADMINISTRATION_ENABLE_SERVER_SIDE_API
+#include "irods/user_administration.hpp"
 
 #include <fmt/format.h>
 
@@ -1135,9 +1139,39 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
     }
     if ( strcmp( generalAdminInp->arg0, "rm" ) == 0 ) {
         if ( strcmp( generalAdminInp->arg1, "user" ) == 0 ) {
-            return irods::remove_user(*rsComm,
-                                      generalAdminInp->arg2 ? generalAdminInp->arg2 : "",
-                                      generalAdminInp->arg3 ? generalAdminInp->arg3 : "");
+            const auto* user_name = generalAdminInp->arg2 ? generalAdminInp->arg2 : "";
+            const auto* zone_name = generalAdminInp->arg3 ? generalAdminInp->arg3 : "";
+            namespace iua = irods::experimental::administration;
+            // new functionality only enforced on versions >= 4.3.2
+            const auto client_version = irods::to_version(rsComm->cliVersion.relVersion);
+            constexpr irods::version v4320{4, 3, 2};
+            if (client_version && client_version.value() >= v4320) {
+                const auto user_and_zone = irods::user::validate_name(user_name);
+                if (user_and_zone) {
+                    std::string derived_zone = std::get<1>(user_and_zone.value());
+                    if (derived_zone.empty()) {
+                        derived_zone = std::string{zone_name};
+                    }
+
+                    if (!iua::server::exists(*rsComm, iua::user{std::get<0>(user_and_zone.value()), derived_zone})) {
+                        log_api::error("{}: Cannot remove nonexistent user [{}#{}]", __func__, user_name, zone_name);
+                        return CAT_INVALID_USER;
+                    }
+                }
+            }
+            return irods::remove_user(*rsComm, user_name, zone_name);
+        }
+        if (strcmp(generalAdminInp->arg1, "group") == 0) {
+            const auto* group_name = generalAdminInp->arg2 ? generalAdminInp->arg2 : "";
+            const auto* zone_name = generalAdminInp->arg3 ? generalAdminInp->arg3 : "";
+            namespace iua = irods::experimental::administration;
+
+            if (!iua::server::exists(*rsComm, iua::group{group_name})) {
+                log_api::error("{}: Cannot remove nonexistent group [{}]", __func__, group_name);
+                return CAT_INVALID_GROUP;
+            }
+
+            return irods::remove_user(*rsComm, group_name, zone_name);
         }
         if ( strcmp( generalAdminInp->arg1, "dir" ) == 0 ) {
             memset( ( char* )&collInfo, 0, sizeof( collInfo ) );
