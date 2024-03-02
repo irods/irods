@@ -306,6 +306,7 @@ install(
   "${CMAKE_IRODS_SOURCE_DIR}/cmake/Modules/CheckCPPMacroDefinition.c.in"
   "${CMAKE_IRODS_SOURCE_DIR}/cmake/Modules/FindLibCXX.cmake"
   "${CMAKE_IRODS_SOURCE_DIR}/cmake/Modules/UseLibCXX.cmake"
+  "${CMAKE_IRODS_SOURCE_DIR}/cmake/Modules/FindCatch2.cmake"
   "${CMAKE_IRODS_SOURCE_DIR}/cmake/Modules/Findnlohmann_json.cmake"
   "${CMAKE_IRODS_SOURCE_DIR}/cmake/Modules/IrodsExternals.cmake"
   "${CMAKE_IRODS_SOURCE_DIR}/cmake/Modules/IrodsCXXCompiler.cmake"
