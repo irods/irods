@@ -1,6 +1,10 @@
 # We need to define everything for CPack at the top level of the project.
 # Variables defined in CMake files included via add_subdirectory don't make it back to the calling CMake file.
 
+# Dependency declarations for externals packages
+string(REPLACE ";" ", " IRODS_PACKAGE_DEPENDENCIES_STRING "${IRODS_PACKAGE_DEPENDENCIES_LIST}")
+string(REPLACE ";" ", " IRODS_DEVELOP_DEPENDENCIES_STRING "${IRODS_DEVELOP_DEPENDENCIES_LIST}")
+
 # We build multiple packages, so this doesn't really matter.
 # We define it anyway to avoid potential issues.
 set(CPACK_PACKAGE_FILE_NAME "irods")
