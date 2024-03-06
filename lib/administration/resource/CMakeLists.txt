@@ -9,7 +9,7 @@ foreach(variant IN ITEMS client server)
     OBJECT
     "${CMAKE_CURRENT_SOURCE_DIR}/src/resource_administration.cpp"
   )
-  target_link_libraries(
+  objects_link_libraries(
     ${target_name}
     PUBLIC
     fmt::fmt

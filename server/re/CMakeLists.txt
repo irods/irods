@@ -29,7 +29,7 @@ add_library(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/sharedmemory.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/testMS.cpp"
 )
-target_link_libraries(
+objects_link_libraries(
   irods_server_re
   PUBLIC
   nlohmann_json::nlohmann_json

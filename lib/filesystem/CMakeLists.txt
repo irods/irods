@@ -33,7 +33,7 @@ foreach(variant IN ITEMS client server)
     "${CMAKE_CURRENT_SOURCE_DIR}/src/collection_iterator.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/recursive_collection_iterator.cpp"
   )
-  target_link_libraries(
+  objects_link_libraries(
     irods_filesystem_${variant}
     PUBLIC
     nlohmann_json::nlohmann_json

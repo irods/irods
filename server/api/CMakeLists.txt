@@ -152,7 +152,7 @@ add_library(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rsUserAdmin.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rsZoneReport.cpp"
 )
-target_link_libraries(
+objects_link_libraries(
   irods_server_api
   PUBLIC
   nlohmann_json::nlohmann_json
