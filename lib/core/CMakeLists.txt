@@ -181,6 +181,13 @@ irods_plugin_dependencies
 set_property(TARGET irods_plugin_dependencies PROPERTY VERSION ${IRODS_VERSION})
 set_property(TARGET irods_plugin_dependencies PROPERTY SOVERSION ${IRODS_VERSION})
 
+target_deduplicate_interface_properties(
+  irods_plugin_dependencies
+  COMPILE_DEFINITIONS
+  INCLUDE_DIRECTORIES
+  LINK_LIBRARIES
+)
+
 install(
   TARGETS
   irods_plugin_dependencies
