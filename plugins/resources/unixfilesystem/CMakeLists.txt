@@ -1,6 +1,3 @@
-cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
-# target_link_libraries for object targets
-
 # anything being unit tested needs to be split out into an object library.
 add_library(
   irods_resource_plugin_obj-unixfilesystem

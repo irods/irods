@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
 # target_link_libraries for object targets
 # CURL::libcurl target
+# install() NAMELINK_COMPONENT argument
+
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 include(RequireOutOfSourceBuild)
 

@@ -1,6 +1,3 @@
-cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
-# target_link_libraries for object targets
-
 if (NOT PAM_LIBRARY)
   find_library(PAM_LIBRARY pam)
   if (PAM_LIBRARY)
