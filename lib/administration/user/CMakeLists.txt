@@ -9,7 +9,7 @@ add_library(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/user.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/utilities.cpp"
 )
-target_link_libraries(
+objects_link_libraries(
   irods_user_administration_common
   PUBLIC
   fmt::fmt
@@ -45,7 +45,7 @@ foreach(variant IN ITEMS client server)
     OBJECT
     "${CMAKE_CURRENT_SOURCE_DIR}/src/user_administration.cpp"
   )
-  target_link_libraries(
+  objects_link_libraries(
     ${target_name}
     PUBLIC
     irods_user_administration_common

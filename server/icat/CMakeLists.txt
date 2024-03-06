@@ -6,7 +6,7 @@ add_library(
   OBJECT
   "${CMAKE_CURRENT_SOURCE_DIR}/src/icatHighLevelRoutines.cpp"
 )
-target_link_libraries(
+objects_link_libraries(
   irods_server_icat
   PUBLIC
   nlohmann_json::nlohmann_json

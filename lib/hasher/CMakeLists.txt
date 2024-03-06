@@ -13,7 +13,7 @@ add_library(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/checksum.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_hasher_factory.cpp"
 )
-target_link_libraries(
+objects_link_libraries(
   irods_hasher
   PUBLIC
   OpenSSL::Crypto

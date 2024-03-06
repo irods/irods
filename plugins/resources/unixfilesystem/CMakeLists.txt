@@ -7,7 +7,7 @@ add_library(
   OBJECT
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_is_in_host_list.cpp"
 )
-target_link_libraries(
+objects_link_libraries(
   irods_resource_plugin_obj-unixfilesystem
   PUBLIC
   irods_common

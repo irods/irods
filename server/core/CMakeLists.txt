@@ -64,7 +64,7 @@ add_library(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/user_validation_utilities.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/voting.cpp"
 )
-target_link_libraries(
+objects_link_libraries(
   irods_server_core
   PUBLIC
   nlohmann_json::nlohmann_json

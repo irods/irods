@@ -6,7 +6,7 @@ foreach(variant IN ITEMS server client)
     OBJECT
     "${CMAKE_CURRENT_SOURCE_DIR}/src/metadata.cpp"
   )
-  target_link_libraries(
+  objects_link_libraries(
     irods_lib_metadata_${variant}
     PUBLIC
     fmt::fmt

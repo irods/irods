@@ -8,7 +8,7 @@ add_library(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/QUANTAnet_rbudpReceiver_c.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/QUANTAnet_rbudpSender_c.cpp"
 )
-target_link_libraries(
+objects_link_libraries(
   irods_rbudp
   PUBLIC
   nlohmann_json::nlohmann_json
