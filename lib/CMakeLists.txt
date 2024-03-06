@@ -135,11 +135,6 @@ target_link_libraries(
   CURL::libcurl
   Threads::Threads
   PRIVATE
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_chrono.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so"
   ${CMAKE_DL_LIBS}
   rt
 )
