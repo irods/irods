@@ -148,4 +148,6 @@
 
 #include "irods/check_auth_credentials.h"
 
+#include "irods/replica_truncate.h"
+
 #endif	// API_HEADER_ALL_H__

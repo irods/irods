@@ -153,6 +153,7 @@
 #  include "irods/rs_check_auth_credentials.hpp"
 #  include "irods/rs_get_library_features.hpp"
 #  include "irods/rs_get_resource_info_for_operation.hpp"
+#  include "irods/rs_replica_truncate.hpp"
 #  define NULLPTR_FOR_CLIENT_TABLE(x) x
 #elif !defined(CREATE_API_TABLE_FOR_SERVER) && defined(CREATE_API_TABLE_FOR_CLIENT)
 #  define NULLPTR_FOR_CLIENT_TABLE(x) nullptr
@@ -264,6 +265,7 @@
 #define RS_REG_COLL                        NULLPTR_FOR_CLIENT_TABLE(rsRegColl)
 #define RS_REG_DATA_OBJ                    NULLPTR_FOR_CLIENT_TABLE(rsRegDataObj)
 #define RS_REG_REPLICA                     NULLPTR_FOR_CLIENT_TABLE(rsRegReplica)
+#define RS_REPLICA_TRUNCATE                NULLPTR_FOR_CLIENT_TABLE(rs_replica_truncate)
 #define RS_RM_COLL                         NULLPTR_FOR_CLIENT_TABLE(rsRmColl)
 #define RS_RULE_EXEC_DEL                   NULLPTR_FOR_CLIENT_TABLE(rsRuleExecDel)
 #define RS_RULE_EXEC_MOD                   NULLPTR_FOR_CLIENT_TABLE(rsRuleExecMod)
@@ -1279,6 +1281,12 @@ static irods::apidef_t client_api_table_inp[] = {
         boost::any(std::function<int(rsComm_t*,dataObjInp_t*,char**)>(RS_GET_RESOURCE_INFO_FOR_OPERATION)),
         "api_get_resource_info_for_operation", clearDataObjInp, irods::clearOutStruct_noop,
         (funcPtr)CALL_GET_RESOURCE_INFO_FOR_OPERATION
+    },
+    {   REPLICA_TRUNCATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
+        "DataObjInp_PI", 0, "STR_PI", 0,
+        boost::any(std::function<int(rsComm_t*, dataObjInp_t*, char**)>(RS_REPLICA_TRUNCATE)),
+        "api_replica_truncate", clearDataObjInp, irods::clearOutStruct_noop,
+        (funcPtr)CALL_REPLICA_TRUNCATE
     }
     // clang-format on
 }; // _api_table_inp

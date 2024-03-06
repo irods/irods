@@ -49,4 +49,9 @@
 /// \since 4.3.1
 #define IRODS_HAS_API_ENDPOINT_CHECK_AUTH_CREDENTIALS                        202307L
 
+/// Defined if the development library supports #rc_replica_truncate.
+///
+/// \since 4.3.2
+#define IRODS_HAS_API_ENDPOINT_REPLICA_TRUNCATE                              202403L
+
 #endif // IRODS_LIBRARY_FEATURES_H

@@ -1045,4 +1045,11 @@ int call_get_resource_info_for_operation(irods::api_entry*, rsComm_t*, dataObjIn
 #  define CALL_GET_RESOURCE_INFO_FOR_OPERATION nullptr // NOLINT(cppcoreguidelines-macro-usage)
 #endif
 
+#ifdef CREATE_API_TABLE_FOR_SERVER
+int call_replica_truncate(irods::api_entry*, rsComm_t*, dataObjInp_t*, char**);
+#  define CALL_REPLICA_TRUNCATE call_replica_truncate
+#else
+#  define CALL_REPLICA_TRUNCATE nullptr // NOLINT(cppcoreguidelines-macro-usage)
+#endif
+
 #endif // IRODS_API_CALLING_FUNCTIONS_HPP
