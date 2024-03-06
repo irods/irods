@@ -8,7 +8,7 @@ foreach(variant IN ITEMS client server)
         "${CMAKE_CURRENT_SOURCE_DIR}/src/ticket_administration.cpp"
     )
 
-    target_link_libraries(
+    objects_link_libraries(
         ${target_name}
         PUBLIC
         fmt::fmt

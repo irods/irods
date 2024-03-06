@@ -74,7 +74,7 @@ add_library(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/system_error.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/version.cpp"
 )
-target_link_libraries(
+objects_link_libraries(
   irods_common_core
   PUBLIC
   nlohmann_json::nlohmann_json
@@ -127,7 +127,7 @@ add_library(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_ssl_object.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_tcp_object.cpp"
 )
-target_link_libraries(
+objects_link_libraries(
   irods_plugin_dependencies_obj
   PUBLIC
   nlohmann_json::nlohmann_json
@@ -231,7 +231,7 @@ foreach(variant IN ITEMS client server)
     "${CMAKE_CURRENT_SOURCE_DIR}/src/sslSockComm.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/trimUtil.cpp"
   )
-  target_link_libraries(
+  objects_link_libraries(
     irods_lib_core_${variant}
     PUBLIC
     nlohmann_json::nlohmann_json

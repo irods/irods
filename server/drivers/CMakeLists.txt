@@ -6,7 +6,7 @@ add_library(
   OBJECT
   "${CMAKE_CURRENT_SOURCE_DIR}/src/fileDriver.cpp"
 )
-target_link_libraries(
+objects_link_libraries(
   irods_server_drivers
   PUBLIC
   nlohmann_json::nlohmann_json
