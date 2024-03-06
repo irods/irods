@@ -288,16 +288,16 @@ function(__target_link_objects_impl target linkage objlib is_inner_call)
 
 endfunction()
 
-set(CMAKE_DUMMY_SOURCE_FILES_DIR "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/DummyFiles" CACHE INTERNAL "Directory containing dummy source files")
+set(IRODS_DUMMY_SOURCE_FILES_DIR "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/DummyFiles" CACHE INTERNAL "Directory containing dummy source files")
 
-if (NOT TARGET cmake_dummy_source_files_directory)
+if (NOT TARGET irods_dummy_source_files_directory)
   add_custom_command(
-    OUTPUT "${CMAKE_DUMMY_SOURCE_FILES_DIR}"
-    COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_DUMMY_SOURCE_FILES_DIR}"
+    OUTPUT "${IRODS_DUMMY_SOURCE_FILES_DIR}"
+    COMMAND "${CMAKE_COMMAND}" -E make_directory "${IRODS_DUMMY_SOURCE_FILES_DIR}"
   )
   add_custom_target(
-    cmake_dummy_source_files_directory
-    DEPENDS "${CMAKE_DUMMY_SOURCE_FILES_DIR}"
+    irods_dummy_source_files_directory
+    DEPENDS "${IRODS_DUMMY_SOURCE_FILES_DIR}"
   )
 endif()
 
@@ -310,17 +310,17 @@ function(create_dummy_source_file_target language)
     message(FATAL_ERROR "Unknown language:\n  ${language}\nSupported languages: C, CXX.\n")
   endif()
 
-  set(CMAKE_${language}_DUMMY_SOURCE_FILE "${CMAKE_DUMMY_SOURCE_FILES_DIR}/empty_dummy${dummy_ext}" CACHE INTERNAL "Dummy ${language} source file")
+  set(IRODS_${language}_DUMMY_SOURCE_FILE "${IRODS_DUMMY_SOURCE_FILES_DIR}/empty_dummy${dummy_ext}" CACHE INTERNAL "Dummy ${language} source file")
 
-  if (NOT TARGET cmake_dummy_${language}_source_file)
+  if (NOT TARGET irods_${language}_dummy_source_file)
     add_custom_command(
-      OUTPUT "${CMAKE_${language}_DUMMY_SOURCE_FILE}"
-      COMMAND "${CMAKE_COMMAND}" -E touch "${CMAKE_${language}_DUMMY_SOURCE_FILE}"
-      MAIN_DEPENDENCY "${CMAKE_DUMMY_SOURCE_FILES_DIR}"
+      OUTPUT "${IRODS_${language}_DUMMY_SOURCE_FILE}"
+      COMMAND "${CMAKE_COMMAND}" -E touch "${IRODS_${language}_DUMMY_SOURCE_FILE}"
+      MAIN_DEPENDENCY "${IRODS_DUMMY_SOURCE_FILES_DIR}"
     )
     add_custom_target(
-      cmake_dummy_${language}_source_file
-      DEPENDS "${CMAKE_${language}_DUMMY_SOURCE_FILE}"
+      irods_${language}_dummy_source_file
+      DEPENDS "${IRODS_${language}_DUMMY_SOURCE_FILE}"
     )
   endif()
 endfunction()
