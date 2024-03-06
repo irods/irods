@@ -155,7 +155,7 @@ foreach(variant IN ITEMS client server)
     "${CMAKE_CURRENT_SOURCE_DIR}/src/rc_switch_user.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/rc_touch.cpp"
   )
-  target_link_libraries(
+  objects_link_libraries(
     irods_lib_api_${variant}
     PUBLIC
     nlohmann_json::nlohmann_json

@@ -8,6 +8,12 @@ functions for working with these targets.
 
 .. command:: target_link_objects
 
+  .. code-block:: cmake
+
+    target_link_objects(<target>
+                        <PRIVATE|PUBLIC|INTERFACE> <item>...
+                       [<PRIVATE|PUBLIC|INTERFACE> <item>...]...)
+
   Since object library targets are typically intermediate targets used for
   building executables, shared libraries, and static libraries, they are
   usually not packaged or exported into CMake targets files. Unfortunately,
@@ -19,6 +25,24 @@ functions for working with these targets.
   specify the object files as source files for the final target does not pass
   down dependencies from the object library target.
 
+  To solve this problem, :command:`target_link_objects` is provided as an
+  equivalent to :command:`target_link_libraries` for use when linking to
+  object libraries.
+
+.. command:: objects_link_libraries
+
+  .. code-block:: cmake
+
+    objects_link_libraries(<target>
+                           <PRIVATE|PUBLIC|INTERFACE> <item>...
+                          [<PRIVATE|PUBLIC|INTERFACE> <item>...]...)
+
+  Calling :command:`target_link_libraries` on object libraries will update
+  :prop_tgt:`INTERFACE_LINK_LIBRARIES`, which is problematic, as they will be
+  passed down further than the first link target. To solve this problem,
+  :command:`objects_link_libraries` is provided as an equivalent to
+  :command:`target_link_libraries` for use when linking from object libraries.
+
 #]=======================================================================]
 
 include_guard(GLOBAL)
@@ -27,9 +51,32 @@ cmake_policy(PUSH)
 cmake_policy(SET CMP0054 NEW)
 cmake_policy(SET CMP0051 NEW)
 
+define_property(
+  TARGET
+  PROPERTY INTERFACE_LINK_LIBRARIES_PRIVATE
+  BRIEF_DOCS "List of direct link dependencies for object libraries."
+  FULL_DOCS "This property is a list of libraries and targets that are \
+required for linking to the object library, but should not be passed down as \
+dependencies further than the first link target."
+)
+
+#-----------------------------------------------------------------------------
+# Helper functions for debugging purposes.
+function(__irods_oth_trace message)
+  if (NOT CMAKE_VERSION VERSION_LESS "3.15")
+    message(TRACE "ObjectTargetHelpers TRACE: ${message}")
+  elseif(IRODS_OBJECT_TARGET_HELPERS_TRACE)
+    message("ObjectTargetHelpers TRACE: ${message}")
+  endif()
+endfunction()
+
 #-----------------------------------------------------------------------------
 # Helper function.  DO NOT CALL DIRECTLY.
 function(__target_link_objects_impl target linkage objlib is_inner_call)
+  get_target_property(target_type "${target}" TYPE)
+  if (target_type STREQUAL "OBJECT_LIBRARY")
+    message(FATAL_ERROR "__target_link_objects_impl called on object library '${target}'")
+  endif()
 
   # We need to process object library targets in objlib's INTERFACE_LINK_LIBRARIES list and
   # we need to ensure we do not process the same object library target twice. To accomplish
@@ -60,15 +107,15 @@ function(__target_link_objects_impl target linkage objlib is_inner_call)
 
   if (linkage STREQUAL "INTERFACE")
     # make sure objlib is built first
-    add_dependencies(${target} ${objlib})
+    add_dependencies("${target}" "${objlib}")
   else()
     # add object files to source list
     if (CMAKE_VERSION VERSION_LESS "3.21.0")
       # make sure objlib is built first
       # (newer versions of CMake will do this automatically)
-      add_dependencies(${target} ${objlib})
+      add_dependencies("${target}" "${objlib}")
     endif()
-    target_sources(${target} PRIVATE $<TARGET_OBJECTS:${objlib}>)
+    target_sources("${target}" PRIVATE $<TARGET_OBJECTS:${objlib}>)
   endif()
 
   # process libraries, pt one
@@ -89,6 +136,30 @@ function(__target_link_objects_impl target linkage objlib is_inner_call)
       endif()
     endforeach()
   endif()
+  set(objlib_pilibs)
+  get_target_property(objlib_plibs "${objlib}" INTERFACE_LINK_LIBRARIES_PRIVATE)
+  if (objlib_plibs)
+    foreach (objlib_lib IN LISTS objlib_plibs)
+      if (TARGET "${objlib_plib}")
+        get_target_property(pilib_type "${objlib_lib}" TYPE)
+        if (pilib_type STREQUAL "OBJECT_LIBRARY")
+          __target_link_objects_impl("${target}" PRIVATE "${objlib_lib}" TRUE)
+        else()
+          # LINK_ONLY, as include directories are no longer needed by this point
+          list(APPEND objlib_pilibs "$<LINK_ONLY:${objlib_lib}>")
+        endif()
+      else()
+        list(APPEND objlib_pilibs "${objlib_lib}")
+      endif()
+    endforeach()
+  endif()
+  # to allow for neater code later, move objlib_ilibs into objlib_pilibs if linkage is PRIVATE
+  if (linkage STREQUAL "PRIVATE")
+    set(objlib_pilibs "${objlib_ilibs}" "${objlib_pilibs}")
+    set(objlib_ilibs)
+  endif()
+  # remove any empty entries
+  list(FILTER objlib_ilibs EXCLUDE REGEX "^$")
 
   # process everything else
   get_target_property(objlib_includes "${objlib}" INTERFACE_INCLUDE_DIRECTORIES)
@@ -155,15 +226,35 @@ function(__target_link_objects_impl target linkage objlib is_inner_call)
       set_target_properties("${target}" PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE "${objlib_pic}")
     endif()
   endif()
-  
+
   # TODO: INTERFACE_LINK_DEPENDS
   # TODO: INTERFACE_SOURCES
-  
 
   # process libraries, pt two
   foreach (objlib_lib IN LISTS objlib_ilibs)
+    __irods_oth_trace("(from ${objlib}) linking target ${target} to ${objlib_lib} with scope ${linkage}")
     target_link_libraries("${target}" "${linkage}" "${objlib_lib}")
   endforeach()
+  if (target_type STREQUAL "STATIC_LIBRARY")
+    foreach (objlib_lib IN LISTS objlib_pilibs)
+      # target_link_libraries calls on static library targets for PRIVATE linkage behaves similarly
+      # to calls on object library targets, in that INTERFACE_LINK_LIBRARIES is still updated.
+      # Therefore, in order to keep absolute paths from ending up in our targets file, we will
+      # update the LINK_LIBRARIES property manually.
+      __irods_oth_trace("(from ${objlib}) linking target ${target} to ${objlib_lib} via LINK_LIBRARIES")
+      set_property(
+        TARGET "${target}"
+        APPEND
+        PROPERTY "LINK_LIBRARIES"
+        "${objlib_lib}"
+      )
+    endforeach()
+  else()
+    foreach (objlib_lib IN LISTS objlib_pilibs)
+      __irods_oth_trace("(from ${objlib}) linking target ${target} to ${objlib_lib} with scope PRIVATE")
+      target_link_libraries("${target}" PRIVATE "${objlib_lib}")
+    endforeach()
+  endif()
 
   ## some sanity checks before we clean up
   # ensure callstack is the same as it was when we added the current objlib
@@ -242,7 +333,7 @@ function(create_dummy_source_file_target language)
 endfunction()
 
 function(target_link_objects target)
-  get_target_property(target_type ${target} TYPE)
+  get_target_property(target_type "${target}" TYPE)
   if (target_type STREQUAL "OBJECT_LIBRARY")
     set(target_is_objlib TRUE)
   else()
@@ -256,14 +347,55 @@ function(target_link_objects target)
     elseif (NOT TARGET "${arg}")
       message(FATAL_ERROR "Unknown argument:\n  ${arg}\n")
     else()
-    get_target_property(objlib_type "${arg}" TYPE)
-    if (NOT objlib_type STREQUAL "OBJECT_LIBRARY")
-      message(FATAL_ERROR "Non-objlib target passed to target_link_objects:\n  ${objlib}\n")
-    endif()
+      get_target_property(objlib_type "${arg}" TYPE)
+      if (NOT objlib_type STREQUAL "OBJECT_LIBRARY")
+        message(FATAL_ERROR "Non-objlib target passed to target_link_objects:\n  ${objlib}\n")
+      endif()
       if (target_is_objlib)
         target_link_libraries("${target}" "${current_linkage}" "${arg}")
       else()
         __target_link_objects_impl("${target}" "${current_linkage}" "${arg}" FALSE)
+      endif()
+    endif()
+  endforeach()
+endfunction()
+
+function(objects_link_libraries target)
+  get_target_property(target_type ${target} TYPE)
+  if (NOT target_type STREQUAL "OBJECT_LIBRARY")
+    message(FATAL_ERROR "object_library_link_libraries called on non-objlib target:\n  ${target}\n")
+  endif()
+
+  set(current_linkage "PUBLIC")
+  foreach (arg ${ARGN})
+    if ("x${arg}" MATCHES "^x(PRIVATE|PUBLIC|INTERFACE)$")
+      set(current_linkage "${arg}")
+    else()
+      if (TARGET "${arg}")
+        get_target_property(lib_type "${arg}" TYPE)
+      else()
+        set(lib_type)
+      endif()
+      if (lib_type STREQUAL "OBJECT_LIBRARY")
+        __irods_oth_trace("linking target ${target} to ${arg} with scope ${current_linkage}")
+        target_link_objects("${target}" "${current_linkage}" "${arg}")
+      elseif (current_linkage STREQUAL "PRIVATE")
+        __irods_oth_trace("linking target ${target} to ${arg} via LINK_LIBRARIES and INTERFACE_LINK_LIBRARIES_PRIVATE")
+        set_property(
+          TARGET "${target}"
+          APPEND
+          PROPERTY "LINK_LIBRARIES"
+          "${arg}"
+        )
+        set_property(
+          TARGET "${target}"
+          APPEND
+          PROPERTY "INTERFACE_LINK_LIBRARIES_PRIVATE"
+          "${arg}"
+        )
+      else()
+        __irods_oth_trace("linking target ${target} to ${arg} with scope ${current_linkage}")
+        target_link_libraries("${target}" "${current_linkage}" "${arg}")
       endif()
     endif()
   endforeach()
