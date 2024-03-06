@@ -39,6 +39,13 @@ target_link_libraries(
 set_property(TARGET irods_common PROPERTY VERSION ${IRODS_VERSION})
 set_property(TARGET irods_common PROPERTY SOVERSION ${IRODS_VERSION})
 
+target_deduplicate_interface_properties(
+  irods_common
+  COMPILE_DEFINITIONS
+  INCLUDE_DIRECTORIES
+  LINK_LIBRARIES
+)
+
 add_dependencies(all-lib irods_common)
 install(
   TARGETS
@@ -84,6 +91,13 @@ target_link_libraries(
 )
 set_property(TARGET irods_client PROPERTY VERSION ${IRODS_VERSION})
 set_property(TARGET irods_client PROPERTY SOVERSION ${IRODS_VERSION})
+
+target_deduplicate_interface_properties(
+  irods_client
+  COMPILE_DEFINITIONS
+  INCLUDE_DIRECTORIES
+  LINK_LIBRARIES
+)
 
 add_dependencies(all-lib irods_client)
 install(
@@ -135,6 +149,13 @@ target_link_libraries(
   rt
 )
 target_compile_definitions(RodsAPIs PRIVATE ${IRODS_COMPILE_DEFINITIONS_PRIVATE})
+
+target_deduplicate_interface_properties(
+  RodsAPIs
+  COMPILE_DEFINITIONS
+  INCLUDE_DIRECTORIES
+  LINK_LIBRARIES
+)
 
 add_dependencies(all-lib RodsAPIs)
 install(

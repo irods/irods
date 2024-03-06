@@ -43,6 +43,57 @@ functions for working with these targets.
   :command:`objects_link_libraries` is provided as an equivalent to
   :command:`target_link_libraries` for use when linking from object libraries.
 
+.. command: target_deduplicate_interface_properties
+
+  .. code-block:: cmake
+
+    target_deduplicate_interface_properties(<target>
+                                            [COMPILE_DEFINITIONS]
+                                            [COMPILE_FEATURES]
+                                            [COMPILE_OPTIONS]
+                                            [INCLUDE_DIRECTORIES]
+                                            [LINK_DIRECTORIES]
+                                            [LINK_LIBRARIES]
+                                            [LINK_OPTIONS]
+                                            [PRECOMPILE_HEADERS]
+                                            [SYSTEM_INCLUDE_DIRECTORIES])
+
+  While :command`target_link_objects` will skip processing an object library
+  if it has already processed the object library earlier in the dependency
+  tree, it only does so to detect circular dependencies, and makes no further
+  effort to avoid duplicating entries in a target's list properties, as this
+  can interfere with order-sensitive flags such as ``-Wl,--as-needed``. This
+  can result in very messy targets files.
+  :command:`target_deduplicate_interface_properties` is provided to solve
+  this by de-duplicating list entries in the ``INTERFACE_`` properties.
+
+  ``COMPILE_DEFINITIONS``
+    De-duplicate entries in :prop_tgt:`INTERFACE_COMPILE_DEFINITIONS`
+
+  ``COMPILE_FEATURES``
+    De-duplicate entries in :prop_tgt:`INTERFACE_COMPILE_FEATURES`
+
+  ``COMPILE_OPTIONS``
+    De-duplicate entries in :prop_tgt:`INTERFACE_COMPILE_OPTIONS`
+
+  ``INCLUDE_DIRECTORIES``
+    De-duplicate entries in :prop_tgt:`INTERFACE_INCLUDE_DIRECTORIES`
+
+  ``LINK_DIRECTORIES``
+    De-duplicate entries in :prop_tgt:`INTERFACE_LINK_DIRECTORIES`
+
+  ``LINK_LIBRARIES``
+    De-duplicate entries in :prop_tgt:`INTERFACE_LINK_LIBRARIES`
+
+  ``LINK_OPTIONS``
+    De-duplicate entries in :prop_tgt:`INTERFACE_LINK_OPTIONS`
+
+  ``PRECOMPILE_HEADERS``
+    De-duplicate entries in :prop_tgt:`INTERFACE_PRECOMPILE_HEADERS`
+
+  ``SYSTEM_INCLUDE_DIRECTORIES``
+    De-duplicate entries in :prop_tgt:`INTERFACE_SYSTEM_INCLUDE_DIRECTORIES`
+
 #]=======================================================================]
 
 include_guard(GLOBAL)
@@ -393,6 +444,117 @@ function(objects_link_libraries target)
         __irods_oth_trace("linking target ${target} to ${arg} with scope ${current_linkage}")
         target_link_libraries("${target}" "${current_linkage}" "${arg}")
       endif()
+    endif()
+  endforeach()
+endfunction()
+
+function(target_deduplicate_interface_properties target)
+  if (NOT TARGET "${target}")
+    message(FATAL_ERROR "target_deduplicate_interface_properties called on non-target:\n  ${target}\n")
+  endif()
+
+  foreach (arg ${ARGN})
+    if (arg STREQUAL "COMPILE_DEFINITIONS")
+      get_target_property(__target_COMPILE_DEFINITIONS "${target}" INTERFACE_COMPILE_DEFINITIONS)
+      if (__target_COMPILE_DEFINITIONS)
+        list(REMOVE_DUPLICATES __target_COMPILE_DEFINITIONS)
+        set_target_properties(
+          "${target}"
+          PROPERTIES
+          INTERFACE_COMPILE_DEFINITIONS
+          "${__target_COMPILE_DEFINITIONS}"
+        )
+      endif()
+    elseif (arg STREQUAL "COMPILE_FEATURES")
+      get_target_property(__target_COMPILE_FEATURES "${target}" INTERFACE_COMPILE_FEATURES)
+      if (__target_COMPILE_FEATURES)
+        list(REMOVE_DUPLICATES __target_COMPILE_FEATURES)
+        set_target_properties(
+          "${target}"
+          PROPERTIES
+          INTERFACE_COMPILE_FEATURES
+          "${__target_COMPILE_FEATURES}"
+        )
+      endif()
+    elseif (arg STREQUAL "COMPILE_OPTIONS")
+      get_target_property(__target_COMPILE_OPTIONS "${target}" INTERFACE_COMPILE_OPTIONS)
+      if (__target_COMPILE_OPTIONS)
+        list(REMOVE_DUPLICATES __target_COMPILE_OPTIONS)
+        set_target_properties(
+          "${target}"
+          PROPERTIES
+          INTERFACE_COMPILE_OPTIONS
+          "${__target_COMPILE_OPTIONS}"
+        )
+      endif()
+    elseif (arg STREQUAL "INCLUDE_DIRECTORIES")
+      get_target_property(__target_INCLUDE_DIRECTORIES "${target}" INTERFACE_INCLUDE_DIRECTORIES)
+      if (__target_INCLUDE_DIRECTORIES)
+        list(REMOVE_DUPLICATES __target_INCLUDE_DIRECTORIES)
+        set_target_properties(
+          "${target}"
+          PROPERTIES
+          INTERFACE_INCLUDE_DIRECTORIES
+          "${__target_INCLUDE_DIRECTORIES}"
+        )
+      endif()
+    elseif (arg STREQUAL "LINK_DIRECTORIES")
+      get_target_property(__target_LINK_DIRECTORIES "${target}" INTERFACE_LINK_DIRECTORIES)
+      if (__target_LINK_DIRECTORIES)
+        list(REMOVE_DUPLICATES __target_LINK_DIRECTORIES)
+        set_target_properties(
+          "${target}"
+          PROPERTIES
+          INTERFACE_LINK_DIRECTORIES
+          "${__target_LINK_DIRECTORIES}"
+        )
+      endif()
+    elseif (arg STREQUAL "LINK_LIBRARIES")
+      get_target_property(__target_LINK_LIBRARIES "${target}" INTERFACE_LINK_LIBRARIES)
+      if (__target_LINK_LIBRARIES)
+        list(REMOVE_DUPLICATES __target_LINK_LIBRARIES)
+        set_target_properties(
+          "${target}"
+          PROPERTIES
+          INTERFACE_LINK_LIBRARIES
+          "${__target_LINK_LIBRARIES}"
+        )
+      endif()
+    elseif (arg STREQUAL "LINK_OPTIONS")
+      get_target_property(__target_LINK_OPTIONS "${target}" INTERFACE_LINK_OPTIONS)
+      if (__target_LINK_OPTIONS)
+        list(REMOVE_DUPLICATES __target_LINK_OPTIONS)
+        set_target_properties(
+          "${target}"
+          PROPERTIES
+          INTERFACE_LINK_OPTIONS
+          "${__target_LINK_OPTIONS}"
+        )
+      endif()
+    elseif (arg STREQUAL "PRECOMPILE_HEADERS")
+      get_target_property(__target_PRECOMPILE_HEADERS "${target}" INTERFACE_PRECOMPILE_HEADERS)
+      if (__target_PRECOMPILE_HEADERS)
+        list(REMOVE_DUPLICATES __target_PRECOMPILE_HEADERS)
+        set_target_properties(
+          "${target}"
+          PROPERTIES
+          INTERFACE_PRECOMPILE_HEADERS
+          "${__target_PRECOMPILE_HEADERS}"
+        )
+      endif()
+    elseif (arg STREQUAL "SYSTEM_INCLUDE_DIRECTORIES")
+      get_target_property(__target_SYSTEM_INCLUDE_DIRECTORIES "${target}" INTERFACE_SYSTEM_INCLUDE_DIRECTORIES)
+      if (__target_SYSTEM_INCLUDE_DIRECTORIES)
+        list(REMOVE_DUPLICATES __target_SYSTEM_INCLUDE_DIRECTORIES)
+        set_target_properties(
+          "${target}"
+          PROPERTIES
+          INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
+          "${__target_SYSTEM_INCLUDE_DIRECTORIES}"
+        )
+      endif()
+    else()
+      message(FATAL_ERROR "Unknown argument:\n  ${arg}\n")
     endif()
   endforeach()
 endfunction()
