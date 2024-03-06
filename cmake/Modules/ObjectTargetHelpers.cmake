@@ -288,10 +288,7 @@ function(__target_link_objects_impl target linkage objlib is_inner_call)
 
 endfunction()
 
-if (NOT CMAKE_DUMMY_SOURCE_FILES_DIR)
-  set(CMAKE_DUMMY_SOURCE_FILES_DIR "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/DummyFiles")
-  set(CMAKE_DUMMY_SOURCE_FILES_DIR "${CMAKE_DUMMY_SOURCE_FILES_DIR}" CACHE INTERNAL "Directory containing dummy source files")
-endif()
+set(CMAKE_DUMMY_SOURCE_FILES_DIR "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/DummyFiles" CACHE INTERNAL "Directory containing dummy source files")
 
 if (NOT TARGET cmake_dummy_source_files_directory)
   add_custom_command(
@@ -313,11 +310,7 @@ function(create_dummy_source_file_target language)
     message(FATAL_ERROR "Unknown language:\n  ${language}\nSupported languages: C, CXX.\n")
   endif()
 
-  if (NOT CMAKE_${language}_DUMMY_SOURCE_FILE)
-    set(CMAKE_${language}_DUMMY_SOURCE_FILE "${CMAKE_DUMMY_SOURCE_FILES_DIR}/empty_dummy${dummy_ext}")
-    set(CMAKE_${language}_DUMMY_SOURCE_FILE "${CMAKE_${language}_DUMMY_SOURCE_FILE}" PARENT_SCOPE)
-    set(CMAKE_${language}_DUMMY_SOURCE_FILE "${CMAKE_${language}_DUMMY_SOURCE_FILE}" CACHE INTERNAL "Dummy ${language} source file")
-  endif()
+  set(CMAKE_${language}_DUMMY_SOURCE_FILE "${CMAKE_DUMMY_SOURCE_FILES_DIR}/empty_dummy${dummy_ext}" CACHE INTERNAL "Dummy ${language} source file")
 
   if (NOT TARGET cmake_dummy_${language}_source_file)
     add_custom_command(
