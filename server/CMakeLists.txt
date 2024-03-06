@@ -1,7 +1,3 @@
-cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
-# target_link_libraries for object targets
-# install() NAMELINK_COMPONENT argument
-
 # create phony target to build everything in server folder
 add_custom_target(all-server)
 

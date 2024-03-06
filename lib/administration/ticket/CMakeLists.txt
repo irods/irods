@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
 foreach(variant IN ITEMS client server)
     set(target_name "irods_ticket_administration_${variant}")
 

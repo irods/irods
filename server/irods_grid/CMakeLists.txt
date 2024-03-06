@@ -1,8 +1,5 @@
 # irods-grid was previously part of the iCommands repo
 
-cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
-# target_link_libraries for object targets
-
 add_executable(
   irods-grid
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods-grid.cpp"

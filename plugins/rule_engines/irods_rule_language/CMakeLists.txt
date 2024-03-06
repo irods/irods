@@ -1,6 +1,3 @@
-cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
-# target_link_libraries for object targets
-
 add_library(
   irods_rule_engine_plugin-irods_rule_language
   MODULE
