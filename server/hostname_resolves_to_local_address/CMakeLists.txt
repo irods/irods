@@ -1,6 +1,3 @@
-cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
-# target_link_libraries for object targets
-
 add_executable(
   hostname_resolves_to_local_address
   "${CMAKE_CURRENT_SOURCE_DIR}/src/hostname_resolves_to_local_address.cpp"

@@ -1,6 +1,4 @@
 # original auth plugins - these are required to exist to talk to older servers
-cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
-# target_link_libraries for object targets
 
 # create phony target to build everything in plugins/auth_legacy folder
 add_custom_target(all-plugins-auth_legacy)
