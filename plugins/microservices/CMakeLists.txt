@@ -1,6 +1,3 @@
-cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
-# target_link_libraries for object targets
-
 set(IRODS_MICROSERVICE_TEST_PLUGINS_BUILD OFF CACHE BOOL "Build microservice plugins designed for testing.")
 
 # create phony target to build everything in plugins/microservices folder

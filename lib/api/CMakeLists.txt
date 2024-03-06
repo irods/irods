@@ -1,6 +1,3 @@
-cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
-# target_link_libraries for object targets
-
 foreach(variant IN ITEMS client server)
   add_library(
     irods_lib_api_${variant}

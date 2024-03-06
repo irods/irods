@@ -47,6 +47,9 @@ functions for working with these targets.
 
 include_guard(GLOBAL)
 
+cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
+# target_link_libraries for object targets
+
 cmake_policy(PUSH)
 cmake_policy(SET CMP0054 NEW)
 cmake_policy(SET CMP0051 NEW)

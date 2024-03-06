@@ -1,6 +1,3 @@
-cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
-# target_link_libraries for object targets
-
 # create phony target to build everything in plugins/api folder
 add_custom_target(all-plugins-api)
 add_dependencies(all-plugins_no_database all-plugins-api)
