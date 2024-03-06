@@ -68,6 +68,13 @@ target_link_libraries(
 set_property(TARGET irods_server PROPERTY VERSION ${IRODS_VERSION})
 set_property(TARGET irods_server PROPERTY SOVERSION ${IRODS_VERSION})
 
+target_deduplicate_interface_properties(
+  irods_server
+  COMPILE_DEFINITIONS
+  INCLUDE_DIRECTORIES
+  LINK_LIBRARIES
+)
+
 install(
   TARGETS
   irods_server
