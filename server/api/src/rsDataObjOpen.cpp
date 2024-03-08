@@ -202,11 +202,8 @@ namespace
                 enable_creation_of_additional_replicas(_comm);
             }
 
-            const auto creating_new_replica = [&]() -> bool
-            {
-                return brand_new_data_object ||
-                       !id::find_replica(id::make_data_object_proxy(*_existing_replica_list), hierarchy);
-            }();
+            const auto creating_new_replica =
+                brand_new_data_object || !id::find_replica(*_existing_replica_list, hierarchy);
 
             // This is the case where a create was requested but the replica already exists
             // and the operation is supposed to turn into an overwrite of the existing data object.
@@ -1003,7 +1000,7 @@ namespace
             "[{}:{}] - path=[{}], hierarchy=[{}], replica count=[{}]",
             __FUNCTION__, __LINE__, obj.logical_path(), hierarchy, obj.replica_count()));
 
-        auto maybe_replica = id::find_replica(obj, hierarchy);
+        auto maybe_replica = obj.find_replica(hierarchy);
         if (!maybe_replica) {
             irods::log(LOG_ERROR, fmt::format(
                 "[{}:{}] - requested replica does not exist "

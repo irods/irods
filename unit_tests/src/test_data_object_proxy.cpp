@@ -248,7 +248,7 @@ TEST_CASE("test_data_object_proxy", "[lib]")
 
     SECTION("test find_replica with leaf resource name")
     {
-        auto replica = irods::experimental::data_object::find_replica(o, RESC_2);
+        auto replica = o.find_replica(RESC_2);
         REQUIRE(replica);
         CHECK(replica->get() == &r1);
         CHECK(replica->resource() == r1.rescName);
@@ -256,7 +256,7 @@ TEST_CASE("test_data_object_proxy", "[lib]")
 
     SECTION("test find_replica with replica number")
     {
-        auto replica = irods::experimental::data_object::find_replica(o, 1);
+        auto replica = o.find_replica(1);
         REQUIRE(replica);
         CHECK(replica->get() == &r1);
         CHECK(replica->resource() == r1.rescName);
@@ -266,13 +266,13 @@ TEST_CASE("test_data_object_proxy", "[lib]")
     {
         SECTION("leaf resource name")
         {
-            auto replica = irods::experimental::data_object::find_replica(o, "nope");
+            auto replica = o.find_replica("nope");
             REQUIRE(!replica);
         }
 
         SECTION("replica number")
         {
-            auto replica = irods::experimental::data_object::find_replica(o, -1);
+            auto replica = o.find_replica(-1);
             REQUIRE(!replica);
         }
     }
