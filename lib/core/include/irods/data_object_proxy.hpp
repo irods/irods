@@ -197,6 +197,92 @@ namespace irods::experimental::data_object
 
         operator bool() const noexcept { return static_cast<bool>(data_obj_info_); }
 
+        /// \brief Finds a replica in the list based on resource hierarchy.
+        ///
+        /// \param[in] _hierarchy resource hierarchy to find
+        ///
+        /// \retval replica_proxy<doi_type> if found
+        /// \retval std::nullopt if no replica is found with the provided resource hierarchy
+        ///
+        /// \since 4.3.2
+        auto find_replica(std::string_view _hierarchy) -> std::optional<replica::replica_proxy<doi_type>>
+        {
+            auto itr = std::find_if(std::begin(replicas()), std::end(replicas()), [&_hierarchy](const auto& _r) {
+                return _r.hierarchy() == _hierarchy;
+            });
+
+            if (std::end(replicas()) != itr) {
+                return *itr;
+            }
+
+            return std::nullopt;
+        } // find_replica
+
+        /// \brief Finds a replica in the list based on resource hierarchy.
+        ///
+        /// \param[in] _hierarchy resource hierarchy to find
+        ///
+        /// \retval const replica_proxy<doi_type> if found
+        /// \retval std::nullopt if no replica is found with the provided resource hierarchy
+        ///
+        /// \since 4.3.2
+        auto find_replica(std::string_view _hierarchy) const -> std::optional<const replica::replica_proxy<doi_type>>
+        {
+            auto itr = std::find_if(std::cbegin(replicas()), std::cend(replicas()), [&_hierarchy](const auto& _r) {
+                return _r.hierarchy() == _hierarchy;
+            });
+
+            if (std::cend(replicas()) != itr) {
+                return *itr;
+            }
+
+            return std::nullopt;
+        } // find_replica
+
+        /// \brief Finds a replica in the list based on replica number.
+        ///
+        /// \param[in] _replica_number
+        ///
+        /// \retval replica_proxy<doi_type> if found
+        /// \retval std::nullopt if no replica is found with the provided replica number
+        ///
+        /// \since 4.3.2
+        auto find_replica(int _replica_number) -> std::optional<replica::replica_proxy<doi_type>>
+        {
+            auto itr = std::find_if(std::begin(replicas()), std::end(replicas()), [&_replica_number](const auto& _r) {
+                return _r.replica_number() == _replica_number;
+            });
+
+            if (std::end(replicas()) != itr) {
+                return *itr;
+            }
+
+            return std::nullopt;
+        } // find_replica
+
+        /// \brief Finds a replica in the list based on replica number
+        ///
+        /// \param[in] _obj data_object_proxy to search in
+        /// \param[in] _replica_number
+        ///
+        /// \retval replica_proxy if found
+        /// \retval std::nullopt if no replica is found with the provided replica number
+        ///
+        /// \since 4.3.2
+        auto find_replica(int _replica_number) const -> std::optional<const replica::replica_proxy<doi_type>>
+        {
+            const auto itr =
+                std::find_if(std::cbegin(replicas()), std::cend(replicas()), [&_replica_number](const auto& _r) {
+                    return _r.replica_number() == _replica_number;
+                });
+
+            if (std::cend(replicas()) != itr) {
+                return *itr;
+            }
+
+            return std::nullopt;
+        } // find_replica
+
     private:
         /// \brief Pointer to underlying doi_type
         /// \since 4.2.9
@@ -441,103 +527,64 @@ namespace irods::experimental::data_object
         return duplicate_data_object(*_obj.get());
     } //duplicate_data_object
 
-    /// \brief Finds a replica in the list based on resource hierarchy
+    /// \brief Finds a replica in the list based on resource hierarchy.
     ///
-    /// \param[in] _obj data_object_proxy to search in
+    /// \param[in] _info DataObjInfo to search in
     /// \param[in] _hierarchy resource hierarchy to find
     ///
-    /// \retval replica_proxy if found
-    /// \retval std::nullopt if no replica is found with the provided resource hierarchy
+    /// \retval \p DataObjInfo* Node in linked list if found
+    /// \retval nullptr if no replica is found with the provided hierarchy
     ///
-    /// \since 4.2.9
-    template<typename doi_type>
-    static auto find_replica(data_object_proxy<doi_type>& _obj, std::string_view _hierarchy)
-        -> std::optional<replica::replica_proxy<doi_type>>
+    /// \since 4.3.2
+    static auto find_replica(DataObjInfo& _info, std::string_view _hierarchy) -> DataObjInfo*
     {
-        auto itr = std::find_if(
-            std::begin(_obj.replicas()), std::end(_obj.replicas()),
-            [&_hierarchy](const auto& _r)
-            {
-                return _r.hierarchy() == _hierarchy;
-            });
-
-        if (std::end(_obj.replicas()) != itr) {
-            return *itr;
-        }
-
-        return std::nullopt;
+        auto maybe_replica = data_object_proxy(_info).find_replica(_hierarchy);
+        return maybe_replica ? maybe_replica->get() : nullptr;
     } // find_replica
 
-    template<typename doi_type>
-    static auto find_replica(const data_object_proxy<doi_type>& _obj, std::string_view _hierarchy)
-        -> std::optional<const replica::replica_proxy<doi_type>>
+    /// \brief Finds a replica in the list based on resource hierarchy.
+    ///
+    /// \param[in] _info DataObjInfo list to search.
+    /// \param[in] _hierarchy Replica to find must reside in this hierarchy.
+    ///
+    /// \retval \p DataObjInfo* Node in linked list if found.
+    /// \retval nullptr If no replica is found with the provided hierarchy.
+    ///
+    /// \since 4.3.2
+    static auto find_replica(const DataObjInfo& _info, std::string_view _hierarchy) -> const DataObjInfo*
     {
-        auto itr = std::find_if(
-            std::begin(_obj.replicas()), std::end(_obj.replicas()),
-            [&_hierarchy](const auto& _r)
-            {
-                return _r.hierarchy() == _hierarchy;
-            });
-
-        if (std::end(_obj.replicas()) != itr) {
-            return *itr;
-        }
-
-        return std::nullopt;
+        const auto maybe_replica = data_object_proxy(_info).find_replica(_hierarchy);
+        return maybe_replica ? maybe_replica->get() : nullptr;
     } // find_replica
 
-    /// \brief Finds a replica in the list based on replica number
+    /// \brief Finds a replica in the list based on replica number.
     ///
-    /// \param[in] _obj data_object_proxy to search in
-    /// \param[in] _replica_number
+    /// \param[in] _info DataObjInfo list to search.
+    /// \param[in] _replica_number Replica to find must have this replica number.
     ///
-    /// \retval replica_proxy if found
-    /// \retval std::nullopt if no replica is found with the provided replica number
+    /// \retval \p DataObjInfo* Node in linked list if found.
+    /// \retval nullptr If no replica is found with the provided replica number.
     ///
-    /// \since 4.2.9
-    template<typename doi_type>
-    static auto find_replica(data_object_proxy<doi_type>& _obj, const int _replica_number)
-        -> std::optional<replica::replica_proxy<doi_type>>
+    /// \since 4.3.2
+    static auto find_replica(DataObjInfo& _info, int _replica_number) -> DataObjInfo*
     {
-        auto itr = std::find_if(
-            std::cbegin(_obj.replicas()), std::cend(_obj.replicas()),
-            [&_replica_number](const auto& _r)
-            {
-                return _r.replica_number() == _replica_number;
-            });
-
-        if (std::end(_obj.replicas()) != itr) {
-            return *itr;
-        }
-
-        return std::nullopt;
+        const auto maybe_replica = data_object_proxy(_info).find_replica(_replica_number);
+        return maybe_replica ? maybe_replica->get() : nullptr;
     } // find_replica
 
     /// \brief Finds a replica in the list based on replica number
     ///
-    /// \param[in] _obj data_object_proxy to search in
-    /// \param[in] _replica_number
+    /// \param[in] _info DataObjInfo list to search.
+    /// \param[in] _replica_number Replica to find must have this replica number.
     ///
-    /// \retval replica_proxy if found
-    /// \retval std::nullopt if no replica is found with the provided replica number
+    /// \retval \p DataObjInfo* Node in linked list if found.
+    /// \retval nullptr If no replica is found with the provided replica number.
     ///
-    /// \since 4.2.9
-    template<typename doi_type>
-    static auto find_replica(const data_object_proxy<doi_type>& _obj, const int _replica_number)
-        -> std::optional<replica::replica_proxy<doi_type>>
+    /// \since 4.3.2
+    static auto find_replica(const DataObjInfo& _info, int _replica_number) -> const DataObjInfo*
     {
-        auto itr = std::find_if(
-            std::cbegin(_obj.replicas()), std::cend(_obj.replicas()),
-            [&_replica_number](const auto& _r)
-            {
-                return _r.replica_number() == _replica_number;
-            });
-
-        if (std::end(_obj.replicas()) != itr) {
-            return *itr;
-        }
-
-        return std::nullopt;
+        const auto maybe_replica = data_object_proxy(_info).find_replica(_replica_number);
+        return maybe_replica ? maybe_replica->get() : nullptr;
     } // find_replica
 } // namespace irods::experimental::data_object
 
