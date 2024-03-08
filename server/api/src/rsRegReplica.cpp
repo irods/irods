@@ -136,7 +136,7 @@ namespace
         // are not registering multiple replicas on a single resource, which is not supported.
         const auto source = id::make_data_object_proxy(*_inp.srcDataObjInfo);
         const auto dest = ir::make_replica_proxy(*_inp.destDataObjInfo);
-        if (id::find_replica(source, dest.hierarchy())) {
+        if (source.find_replica(dest.hierarchy())) {
             return SYS_COPY_ALREADY_IN_RESC;
         }
 

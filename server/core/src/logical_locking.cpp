@@ -282,12 +282,13 @@ namespace
         return 0;
     } // try_lock_for_intermediate_replica_access
 
-    auto try_lock_for_locked_data_object(
-        const id::data_object_proxy<const DataObjInfo>& _obj,
-        const ill::lock_type _lock_type,
-        const bool _check_intermediate_replicas = true) -> int
+    auto try_lock_for_locked_data_object(const DataObjInfo& _obj,
+                                         const ill::lock_type _lock_type,
+                                         const bool _check_intermediate_replicas = true) -> int
     {
-        for (const auto& r : _obj.replicas()) {
+        const auto obj = id::make_data_object_proxy(_obj);
+
+        for (const auto& r : obj.replicas()) {
             // If any replica is locked, opening is not allowed.
             switch (r.replica_status()) {
                 // TODO: Read locks
@@ -313,23 +314,27 @@ namespace
         return 0;
     } // try_lock_for_locked_data_object
 
-    auto try_lock_for_specific_replica(const ir::replica_proxy<const DataObjInfo>& _r,
-                                       const std::string_view _target_replica_token) -> int
+    auto try_lock_for_specific_replica(const DataObjInfo& _replica, const std::string_view _target_replica_token) -> int
     {
+        const auto r = ir::make_replica_proxy(_replica);
+
         // If the replica is found, check to see if the target replica is in the intermediate status and,
         // if so, whether the provided replica token is valid for the given replica.
-        if (const auto ec = try_lock_for_intermediate_replica_access(_r, _target_replica_token); ec < 0) {
+        if (const auto ec = try_lock_for_intermediate_replica_access(r, _target_replica_token); ec < 0) {
             return ec;
         }
 
         // This replica is either at rest, or it is intermediate and a valid replica token is present.
         // Now make sure that the replica is not locked, which is a subset of "at rest" and indicates
         // that it is a sibling to an intermediate replica. It should not be opened for any reason.
-        if (_r.locked()) {
-            irods::log(LOG_NOTICE, fmt::format(
-                "[{}:{}] - data object is locked. "
-                "[path=[{}], hierarchy=[{}]]",
-                __FUNCTION__, __LINE__, _r.logical_path(), _r.hierarchy()));
+        if (r.locked()) {
+            irods::log(LOG_NOTICE,
+                       fmt::format("[{}:{}] - data object is locked. "
+                                   "[path=[{}], hierarchy=[{}]]",
+                                   __FUNCTION__,
+                                   __LINE__,
+                                   r.logical_path(),
+                                   r.hierarchy()));
 
             return LOCKED_DATA_OBJECT_ACCESS;
         }
@@ -401,9 +406,7 @@ namespace irods::logical_locking
 
     auto try_lock(const DataObjInfo& _obj, const lock_type _lock_type) -> int
     {
-        const auto obj = id::make_data_object_proxy(_obj);
-
-        return try_lock_for_locked_data_object(obj, _lock_type);
+        return try_lock_for_locked_data_object(_obj, _lock_type);
     } // try_lock
 
     auto try_lock(
@@ -412,14 +415,12 @@ namespace irods::logical_locking
         const std::string_view _target_replica_hierarchy,
         const std::string_view _target_replica_token) -> int
     {
-        const auto obj = id::make_data_object_proxy(_obj);
-
-        const auto maybe_replica = id::find_replica(obj, _target_replica_hierarchy);
+        const auto maybe_replica = id::find_replica(_obj, _target_replica_hierarchy);
 
         // If the replica was not found, check to see whether any of the existing replicas are locked or
         // in the intermediate status.
         if (!maybe_replica) {
-            return try_lock_for_locked_data_object(obj, _lock_type);
+            return try_lock_for_locked_data_object(_obj, _lock_type);
         }
 
         return try_lock_for_specific_replica(*maybe_replica, _target_replica_token);
@@ -431,18 +432,12 @@ namespace irods::logical_locking
         const int              _target_replica_number,
         const std::string_view _target_replica_token) -> int
     {
-        const auto obj = id::make_data_object_proxy(_obj);
-
-        irods::log(LOG_DEBUG, fmt::format(
-            "[{}:{}] - path=[{}], replica_number=[{}], replica count=[{}]",
-            __FUNCTION__, __LINE__, obj.logical_path(), _target_replica_number, obj.replica_count()));
-
-        const auto maybe_replica = id::find_replica(obj, _target_replica_number);
+        const auto maybe_replica = id::find_replica(_obj, _target_replica_number);
 
         // If the replica was not found, check to see whether any of the existing replicas are locked or
         // in the intermediate status.
         if (!maybe_replica) {
-            return try_lock_for_locked_data_object(obj, _lock_type);
+            return try_lock_for_locked_data_object(_obj, _lock_type);
         }
 
         return try_lock_for_specific_replica(*maybe_replica, _target_replica_token);
