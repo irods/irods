@@ -17,8 +17,18 @@
  */
 
 #ifdef __cplusplus
-extern "C"
+extern "C" {
 #endif
+
+// clang-format off
+
+__attribute__((deprecated("rcDataObjTruncate is deprecated. Use rc_replica_truncate instead.")))
 int rcDataObjTruncate( rcComm_t *conn, dataObjInp_t *dataObjInp );
+
+// clang-format on
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif
