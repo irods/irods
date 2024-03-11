@@ -70,6 +70,7 @@ API_NUMBER(SUB_STRUCT_FILE_RMDIR_AN,                648)
 API_NUMBER(SUB_STRUCT_FILE_OPENDIR_AN,              649)
 API_NUMBER(SUB_STRUCT_FILE_READDIR_AN,              650)
 API_NUMBER(SUB_STRUCT_FILE_CLOSEDIR_AN,             651)
+// DEPRECATED: rcDataObjTruncate is deprecated. Use rc_replica_truncate instead.
 API_NUMBER(DATA_OBJ_TRUNCATE_AN,                    652)
 API_NUMBER(SUB_STRUCT_FILE_TRUNCATE_AN,             653)
 API_NUMBER(GET_XMSG_TICKET_AN,                      654)
