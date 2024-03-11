@@ -15,6 +15,7 @@
 #include <irods/set_grid_configuration_value.h>
 #include <irods/user.hpp>
 #include <irods/user_administration.hpp>
+#include <irods/version.hpp>
 
 #include <algorithm>
 #include <array>
@@ -1624,8 +1625,9 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         return 0;
     }
     if ( strcmp( cmdToken[0], "rmgroup" ) == 0 ) {
-        generalAdmin( 0, "rm", "user", cmdToken[1],
-                      myEnv.rodsZone, "", "", "", "", "", "" );
+        const auto version = irods::to_version(Conn->svrVersion->relVersion);
+        const char* entity_type = (version && version.value() > irods::version{4, 3, 1}) ? "group" : "user";
+        generalAdmin(0, "rm", const_cast<char*>(entity_type), cmdToken[1], myEnv.rodsZone, "", "", "", "", "", "");
         return 0;
     }
 
