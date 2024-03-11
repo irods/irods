@@ -24,150 +24,157 @@
 
 #include "irods/irods_resource_backport.hpp"
 
+namespace
+{
+    int l3Truncate(rsComm_t* rsComm, dataObjInp_t* dataObjTruncateInp, dataObjInfo_t* dataObjInfo)
+    {
+        int status;
 
+        // =-=-=-=-=-=-=-
+        // extract the host location from the resource hierarchy
+        std::string location;
+        irods::error ret = irods::get_loc_for_hier_string(dataObjInfo->rescHier, location);
+        if (!ret.ok()) {
+            irods::log(PASSMSG("l3Truncate - failed in get_loc_for_hier_string", ret));
+            return -1;
+        }
 
-int
-rsDataObjTruncate( rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp ) {
-    int status;
-    dataObjInfo_t *dataObjInfoHead = NULL;
-    int remoteFlag;
-    rodsServerHost_t *rodsServerHost;
-
-    remoteFlag = getAndConnRemoteZone( rsComm, dataObjTruncateInp,
-                                       &rodsServerHost, REMOTE_OPEN );
-
-    if ( remoteFlag < 0 ) {
-        return remoteFlag;
-    }
-    else if ( remoteFlag == REMOTE_HOST ) {
-        status = rcDataObjTruncate( rodsServerHost->conn, dataObjTruncateInp );
+        if (getStructFileType(dataObjInfo->specColl) >= 0) {
+            subFile_t subFile{};
+            rstrcpy(subFile.subFilePath, dataObjInfo->subPath, MAX_NAME_LEN);
+            rstrcpy(subFile.addr.hostAddr, location.c_str(), NAME_LEN);
+            subFile.specColl = dataObjInfo->specColl;
+            subFile.offset = dataObjTruncateInp->dataSize;
+            status = rsSubStructFileTruncate(rsComm, &subFile);
+        }
+        else {
+            fileOpenInp_t fileTruncateInp{};
+            rstrcpy(fileTruncateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
+            rstrcpy(fileTruncateInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN);
+            rstrcpy(fileTruncateInp.addr.hostAddr, location.c_str(), NAME_LEN);
+            fileTruncateInp.dataSize = dataObjTruncateInp->dataSize;
+            status = rsFileTruncate(rsComm, &fileTruncateInp);
+        }
         return status;
     }
 
-    dataObjTruncateInp->openFlags = O_WRONLY;  /* set the permission checking */
-    status = getDataObjInfoIncSpecColl( rsComm, dataObjTruncateInp,
-                                        &dataObjInfoHead );
+    int dataObjTruncateS(rsComm_t* rsComm, dataObjInp_t* dataObjTruncateInp, dataObjInfo_t* dataObjInfo)
+    {
+        int status;
+        char tmpStr[MAX_NAME_LEN];
 
-    if ( status < 0 ) {
-        return status;
-    }
+        if (dataObjInfo->dataSize == dataObjTruncateInp->dataSize) {
+            return 0;
+        }
 
-    status = _rsDataObjTruncate( rsComm, dataObjTruncateInp, dataObjInfoHead );
+        /* don't do anything for BUNDLE_RESC for now */
+        if (strcmp(dataObjInfo->rescName, BUNDLE_RESC) == 0) {
+            return 0;
+        }
 
-    return status;
+        status = l3Truncate(rsComm, dataObjTruncateInp, dataObjInfo);
 
-}
-
-int
-_rsDataObjTruncate( rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp,
-                    dataObjInfo_t *dataObjInfoHead ) {
-    int status;
-    int retVal = 0;
-    dataObjInfo_t *tmpDataObjInfo;
-
-    tmpDataObjInfo = dataObjInfoHead;
-    while ( tmpDataObjInfo != NULL ) {
-        status = dataObjTruncateS( rsComm, dataObjTruncateInp, tmpDataObjInfo );
-        if ( status < 0 ) {
-            if ( retVal == 0 ) {
-                retVal = status;
+        if (status < 0) {
+            int myError = getErrno(status);
+            rodsLog(LOG_NOTICE,
+                    "dataObjTruncateS: l3Truncate error for %s. status = %d",
+                    dataObjTruncateInp->objPath,
+                    status);
+            /* allow ENOENT to go on and unregister */
+            if (myError != ENOENT && myError != EACCES) {
+                return status;
             }
         }
-        if ( dataObjTruncateInp->specColl != NULL ) {  /* do only one */
-            break;
+
+        if (dataObjInfo->specColl == NULL) {
+            /* reigister the new size */
+
+            keyValPair_t regParam{};
+            modDataObjMeta_t modDataObjMetaInp{};
+
+            snprintf(tmpStr, MAX_NAME_LEN, "%lld", dataObjTruncateInp->dataSize);
+            addKeyVal(&regParam, DATA_SIZE_KW, tmpStr);
+            addKeyVal(&regParam, CHKSUM_KW, "");
+
+            modDataObjMetaInp.dataObjInfo = dataObjInfo;
+            modDataObjMetaInp.regParam = &regParam;
+            status = rsModDataObjMeta(rsComm, &modDataObjMetaInp);
+            clearKeyVal(&regParam);
+            if (status < 0) {
+                rodsLog(LOG_NOTICE,
+                        "dataObjTruncateS: rsModDataObjMeta error for %s. status = %d",
+                        dataObjTruncateInp->objPath,
+                        status);
+            }
         }
-        tmpDataObjInfo = tmpDataObjInfo->next;
+        return status;
     }
 
-    freeAllDataObjInfo( dataObjInfoHead );
+    int _rsDataObjTruncate(rsComm_t* rsComm, dataObjInp_t* dataObjTruncateInp, dataObjInfo_t* dataObjInfoHead)
+    {
+        int status;
+        int retVal = 0;
+        dataObjInfo_t* tmpDataObjInfo;
 
-    return retVal;
-}
+        tmpDataObjInfo = dataObjInfoHead;
+        while (tmpDataObjInfo != NULL) {
+            status = dataObjTruncateS(rsComm, dataObjTruncateInp, tmpDataObjInfo);
+            if (status < 0) {
+                if (retVal == 0) {
+                    retVal = status;
+                }
+            }
+            if (dataObjTruncateInp->specColl != NULL) { /* do only one */
+                break;
+            }
+            tmpDataObjInfo = tmpDataObjInfo->next;
+        }
 
-int dataObjTruncateS( rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp,
-                      dataObjInfo_t *dataObjInfo ) {
+        freeAllDataObjInfo(dataObjInfoHead);
+
+        return retVal;
+    }
+} // anonymous namespace
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
+int rsDataObjTruncate(rsComm_t* rsComm, dataObjInp_t* dataObjTruncateInp)
+{
     int status;
-    keyValPair_t regParam;
-    modDataObjMeta_t modDataObjMetaInp;
-    char tmpStr[MAX_NAME_LEN];
+    dataObjInfo_t* dataObjInfoHead = NULL;
+    int remoteFlag;
+    rodsServerHost_t* rodsServerHost;
 
-    if ( dataObjInfo->dataSize == dataObjTruncateInp->dataSize ) {
-        return 0;
+    // Deprecation messages must be handled by doing the following.
+    // The native rule engine may erase all messages in the rError array.
+    // The only way to guarantee that messages are received by the client
+    // is to add them to the rError array when the function returns.
+    const auto add_deprecated_api_warning_message = irods::at_scope_exit{[&] {
+        addRErrorMsg(
+            &rsComm->rError, DEPRECATED_API, "rxDataObjTruncate has been deprecated. Use rx_replica_truncate instead.");
+    }};
+
+    remoteFlag = getAndConnRemoteZone(rsComm, dataObjTruncateInp, &rodsServerHost, REMOTE_OPEN);
+
+    if (remoteFlag < 0) {
+        return remoteFlag;
+    }
+    else if (remoteFlag == REMOTE_HOST) {
+        status = rcDataObjTruncate(rodsServerHost->conn, dataObjTruncateInp);
+        return status;
     }
 
-    /* don't do anything for BUNDLE_RESC for now */
-    if ( strcmp( dataObjInfo->rescName, BUNDLE_RESC ) == 0 ) {
-        return 0;
+    dataObjTruncateInp->openFlags = O_WRONLY; /* set the permission checking */
+    status = getDataObjInfoIncSpecColl(rsComm, dataObjTruncateInp, &dataObjInfoHead);
+
+    if (status < 0) {
+        return status;
     }
 
-    status = l3Truncate( rsComm, dataObjTruncateInp, dataObjInfo );
+    status = _rsDataObjTruncate(rsComm, dataObjTruncateInp, dataObjInfoHead);
 
-    if ( status < 0 ) {
-        int myError = getErrno( status );
-        rodsLog( LOG_NOTICE,
-                 "dataObjTruncateS: l3Truncate error for %s. status = %d",
-                 dataObjTruncateInp->objPath, status );
-        /* allow ENOENT to go on and unregister */
-        if ( myError != ENOENT && myError != EACCES ) {
-            return status;
-        }
-    }
-
-    if ( dataObjInfo->specColl == NULL ) {
-        /* reigister the new size */
-
-        memset( &regParam, 0, sizeof( regParam ) );
-        memset( &modDataObjMetaInp, 0, sizeof( modDataObjMetaInp ) );
-
-        snprintf( tmpStr, MAX_NAME_LEN, "%lld", dataObjTruncateInp->dataSize );
-        addKeyVal( &regParam, DATA_SIZE_KW, tmpStr );
-        addKeyVal( &regParam, CHKSUM_KW, "" );
-
-        modDataObjMetaInp.dataObjInfo = dataObjInfo;
-        modDataObjMetaInp.regParam = &regParam;
-        status = rsModDataObjMeta( rsComm, &modDataObjMetaInp );
-        clearKeyVal( &regParam );
-        if ( status < 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "dataObjTruncateS: rsModDataObjMeta error for %s. status = %d",
-                     dataObjTruncateInp->objPath, status );
-        }
-    }
     return status;
 }
 
-int
-l3Truncate( rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp,
-            dataObjInfo_t *dataObjInfo ) {
-    fileOpenInp_t fileTruncateInp;
-    int status;
-
-    // =-=-=-=-=-=-=-
-    // extract the host location from the resource hierarchy
-    std::string location;
-    irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
-    if ( !ret.ok() ) {
-        irods::log( PASSMSG( "l3Truncate - failed in get_loc_for_hier_string", ret ) );
-        return -1;
-    }
-
-
-    if ( getStructFileType( dataObjInfo->specColl ) >= 0 ) {
-        subFile_t subFile;
-        memset( &subFile, 0, sizeof( subFile ) );
-        rstrcpy( subFile.subFilePath, dataObjInfo->subPath, MAX_NAME_LEN );
-        rstrcpy( subFile.addr.hostAddr, location.c_str(), NAME_LEN );
-        subFile.specColl = dataObjInfo->specColl;
-        subFile.offset = dataObjTruncateInp->dataSize;
-        status = rsSubStructFileTruncate( rsComm, &subFile );
-    }
-    else {
-        memset( &fileTruncateInp, 0, sizeof( fileTruncateInp ) );
-        rstrcpy( fileTruncateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN );
-        rstrcpy( fileTruncateInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
-        rstrcpy( fileTruncateInp.addr.hostAddr, location.c_str(), NAME_LEN );
-        fileTruncateInp.dataSize = dataObjTruncateInp->dataSize;
-        status = rsFileTruncate( rsComm, &fileTruncateInp );
-    }
-    return status;
-}
+#pragma clang diagnostic pop // ignored "-Wdeprecated-declarations"

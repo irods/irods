@@ -5,9 +5,11 @@
 #include "irods/dataObjInpOut.h"
 #include "irods/objInfo.h"
 
-int rsDataObjTruncate( rsComm_t *rsComm, dataObjInp_t *dataObjInp );
-int _rsDataObjTruncate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, dataObjInfo_t *dataObjInfoHead );
-int dataObjTruncateS( rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp, dataObjInfo_t *dataObjInfo );
-int l3Truncate( rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp, dataObjInfo_t *dataObjInfo );
+// clang-format off
+
+[[deprecated("rsDataObjTruncate is deprecated. Use rs_replica_truncate instead.")]]
+int rsDataObjTruncate(rsComm_t* rsComm, dataObjInp_t* dataObjInp);
+
+// clang-format on
 
 #endif
