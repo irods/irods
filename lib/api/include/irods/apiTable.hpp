@@ -991,6 +991,8 @@ static irods::apidef_t client_api_table_inp[] = {
         "api_sub_struct_file_closedir", irods::clearInStruct_noop, irods::clearOutStruct_noop,
         (funcPtr)CALL_SUBSTRUCTFILEFDOPRINP
     },
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     {
         DATA_OBJ_TRUNCATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "DataObjInp_PI", 0, NULL, 0,
@@ -998,6 +1000,7 @@ static irods::apidef_t client_api_table_inp[] = {
         "api_data_obj_truncate", clearDataObjInp, irods::clearOutStruct_noop,
         (funcPtr)CALL_DATAOBJINP
     },
+#pragma clang diagnostic pop
     {
         SUB_STRUCT_FILE_TRUNCATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
         "SubFile_PI", 0, NULL, 0,

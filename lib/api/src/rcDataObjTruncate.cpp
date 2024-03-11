@@ -30,7 +30,7 @@
  * \n dataObjInp.dataSize = 12345;
  * \n status = rcDataObjTruncate (conn, &dataObjInp);
  * \n if (status < 0) {
-* \n .... handle the error
+ * \n .... handle the error
  * \n }
  *
  * \param[in] conn - A rcComm_t connection handle to the server.
@@ -44,7 +44,9 @@
  * \pre none
  * \post none
  * \sa none
-**/
+ *
+ * \deprecated Deprecated in 4.3.2. Use #rc_replica_truncate instead.
+ **/
 
 int
 rcDataObjTruncate( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
