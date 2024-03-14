@@ -32,7 +32,6 @@ jobs:
                     libxml2-dev \
                     unixodbc-dev \
                     python-psutil \
-                    super \
                     odbc-postgresql \
                     libkrb5-dev \
                     python3-distro
