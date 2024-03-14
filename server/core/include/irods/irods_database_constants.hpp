@@ -37,7 +37,8 @@ namespace irods
     const std::string DATABASE_OP_GEN_QUERY_ACCESS_CONTROL_SETUP( "database_gen_query_access_control_setup" );
     const std::string DATABASE_OP_GEN_QUERY_TICKET_SETUP( "database_gen_query_ticket_setup" );
     const std::string DATABASE_OP_SPECIFIC_QUERY( "database_specific_query" );
-    const std::string DATABASE_OP_GENERAL_UPDATE( "database_general_update" );
+    [[deprecated("GeneralUpdate is deprecated. Its use should be avoided.")]] const std::string
+        DATABASE_OP_GENERAL_UPDATE("database_general_update");
     const std::string DATABASE_OP_DEL_COLL_BY_ADMIN( "database_del_coll_by_admin" );
     const std::string DATABASE_OP_DEL_COLL( "database_del_coll" );
     const std::string DATABASE_OP_CHECK_AUTH( "database_check_auth" );
