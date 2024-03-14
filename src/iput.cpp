@@ -116,7 +116,7 @@ usage( FILE* _fout ) {
         return;
     }
 
-    char *msgs[] = {
+    const char *msgs[] = {
         "Usage: iput [-abfIkKPQrtTUvV] [-D dataType] [-N numThreads] [-n replNum]",
         "             [-p physicalPath] [-R resource] [-X restartFile] [--ignore-symlinks]",
         "             [--lfrestart lfRestartFile] [--retries count] [--wlock]",
@@ -238,5 +238,6 @@ usage( FILE* _fout ) {
         }
         fprintf( _fout, "%s\n", msgs[i] );
     }
-    printReleaseInfo( "iput" );
+    char name[] = "iput";
+    printReleaseInfo(name);
 }
