@@ -76,7 +76,7 @@
     "test_irepl.Test_Irepl",
     "test_irepl.test_invalid_parameters",
     "test_irepl.test_irepl_repl_status",
-    "test_irepl.test_irepl_replication_hierachy",
+    "test_irepl.test_irepl_replication_hierarchy",
     "test_irepl.test_irepl_with_special_resource_configurations",
     "test_irepl.test_irepl_with_two_basic_ufs_resources",
     "test_irm",
