@@ -15406,11 +15406,17 @@ irods::error db_gen_query_ticket_setup_op(
 
 // =-=-=-=-=-=-=-
 // from general_query.cpp ::
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 int chl_general_update_impl( generalUpdateInp_t );
+#pragma clang diagnostic pop
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 irods::error db_general_update_op(
     irods::plugin_context& _ctx,
     generalUpdateInp_t*    _update_inp ) {
+#pragma clang diagnostic pop
     // =-=-=-=-=-=-=-
     // check the context
     irods::error ret = _ctx.valid();
@@ -16178,10 +16184,13 @@ irods::database* plugin_factory(
         DATABASE_OP_GEN_QUERY,
         function<error(plugin_context&,genQueryInp_t*,genQueryOut_t*)>(
             db_gen_query_op ) );
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     pg->add_operation(
         DATABASE_OP_GENERAL_UPDATE,
         function<error(plugin_context&,generalUpdateInp_t*)>(
             db_general_update_op ) );
+#pragma clang diagnostic pop
     pg->add_operation(
         DATABASE_OP_GEN_QUERY_ACCESS_CONTROL_SETUP,
         function<error(plugin_context&,const char*,const char*,const char*,int,int)>(

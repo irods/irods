@@ -129,6 +129,7 @@ API_NUMBER(MOD_AVU_METADATA_AN,                     706)
 API_NUMBER(MOD_ACCESS_CONTROL_AN,                   707)
 API_NUMBER(RULE_EXEC_MOD_AN,                        708)
 API_NUMBER(GET_TEMP_PASSWORD_AN,                    709)
+// DEPRECATED: GeneralUpdate is deprecated. Its use should be avoided.
 API_NUMBER(GENERAL_UPDATE_AN,                       710)
 API_NUMBER(READ_COLLECTION_AN,                      713)
 API_NUMBER(USER_ADMIN_AN,                           714)
