@@ -821,6 +821,41 @@ class Test_Iput(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.Tes
         finally:
             self.user.assert_icommand(['ils', '-lr'], 'STDOUT', self.user.session_collection) # debugging
 
+    def test_iput_ignore_symlinks_option_is_an_alias_of_the_link_option__issue_7537(self):
+        # Create a file.
+        test_file_basename = 'iput_issue_7537.txt'
+        test_file = f'{self.user.local_session_dir}/{test_file_basename}'
+        with open(test_file, 'w') as f:
+            f.write('This file will be ignored by iput due to the symlink.')
+
+        # Create a directory for the symlink.
+        # The symlink file must be placed in a separate directory due to the recursive flag for iput.
+        symlink_dir_basename = 'iput_issue_7537_symlink_dir'
+        symlink_dir = f'{self.user.local_session_dir}/{symlink_dir_basename}'
+        os.mkdir(symlink_dir)
+
+        # Create a symlink to the file.
+        symlink_file_basename = f'{test_file_basename}.symlink'
+        symlink_file = f'{symlink_dir}/{symlink_file_basename}'
+        os.symlink(test_file, symlink_file)
+        self.assertTrue(os.path.exists(symlink_file))
+
+        # Try to upload the symlink file into iRODS.
+        self.user.assert_icommand(['iput', '--ignore-symlinks', symlink_file])
+        self.user.assert_icommand(['ils', '-lr'], 'STDOUT') # Debugging
+
+        # Show no data object exists, proving the symlink file was ignored.
+        logical_path = f'{self.user.session_collection}/{symlink_file_basename}'
+        self.assertFalse(lib.replica_exists(self.user, logical_path, 0))
+
+        # Try to upload the symlink file again using the recursive flag and the parent directory.
+        self.user.assert_icommand(['iput', '--ignore-symlinks', '-r', symlink_dir])
+        self.user.assert_icommand(['ils', '-lr'], 'STDOUT') # Debugging
+
+        # Show no data object exists, proving the symlink file was ignored.
+        logical_path = f'{self.user.session_collection}/{symlink_dir_basename}/{symlink_file_basename}'
+        self.assertFalse(lib.replica_exists(self.user, logical_path, 0))
+
 class test_iput_with_checksums(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.TestCase):
 
     def setUp(self):
@@ -985,4 +1020,3 @@ class test_iput_with_checksums(session.make_sessions_mixin(rodsadmins, rodsusers
 
     def overwrite_verify_stale_with_checksum(self, filename, expected_checksum):
         pass
-
