@@ -14,12 +14,15 @@
  *
  * \brief Sends email
  *
+ * \deprecated Deprecated in 4.3.2. Use the Python rule engine plugin or expose your own mail utility via msiExecCmd.
+ *
  * \module core
  *
  * \since pre-2.1
  *
  *
- * \note   This microservice sends e-mail using the mail command in the unix system. No attachments are supported. The sender of the e-mail is the unix user-id running the irodsServer.
+ * \note This microservice sends e-mail using the mail command in the unix system. No attachments are supported. The
+ *       sender of the e-mail is the unix user-id running the irodsServer.
  *
  * \usage See clients/icommands/test/rules/
  *
@@ -41,7 +44,7 @@
  * \pre none
  * \post none
  * \sa none
-**/
+ **/
 int msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, ruleExecInfo_t* ) {
 
     const char * toAddr = ( char * ) xtoAddr->inOutStruct;
