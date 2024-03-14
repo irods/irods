@@ -735,7 +735,7 @@ int getValFromDataObjInfo( char *varMap, dataObjInfo_t *rei, Res **varValue, Reg
         return i;
     }
 
-
+    // The backupResc feature has been deprecated and will be removed in a future release.
     if ( strcmp( varName, "backupRescName" ) == 0 ) {
 
         i = getStrLeafValue( varValue, rei->backupRescName, r );
@@ -991,6 +991,7 @@ int setValFromDataObjInfo( char *varMap, dataObjInfo_t **inrei, Res *newVarValue
         return i;
     }
 
+    // The backupResc feature has been deprecated and will be removed in a future release.
     if ( strcmp( varName, "backupRescName" ) == 0 ) {
 
         i = setStrLeafValue( rei->backupRescName, NAME_LEN, newVarValue );
@@ -1233,7 +1234,7 @@ ExprType *getVarTypeFromDataObjInfo( char *varMap, Region *r ) {
 
     }
 
-
+    // The backupResc feature has been deprecated and will be removed in a future release.
     if ( strcmp( varName, "backupRescName" ) == 0 ) {
 
         return newSimpType( T_STRING, r );

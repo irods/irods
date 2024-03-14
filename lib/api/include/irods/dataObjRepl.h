@@ -21,7 +21,7 @@
  *          DEST_RESC_NAME_KW - "value" = The destination Resource.
  *          ADMIN_KW - Admin removing other users' files. Only files
  *              in trash can be removed.
- *          BACKUP_RESC_NAME_KW - backup resource (backup mode).
+ *          BACKUP_RESC_NAME_KW - (Deprecated) backup resource (backup mode).
  *   return value - The status of the operation.
  */
 #ifdef __cplusplus
