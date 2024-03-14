@@ -28,8 +28,11 @@ int updateDebug = 0;
 extern int logSQLGenUpdate;
 char tSQL[MAX_SQL_SIZE];
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 int
 generalInsert( generalUpdateInp_t generalUpdateInp ) {
+#pragma clang diagnostic pop
     int i, j;
     char *tableName, *columnName;
     char *firstTableName;
@@ -127,8 +130,11 @@ generalInsert( generalUpdateInp_t generalUpdateInp ) {
     return 0;
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 int
 generalDelete( generalUpdateInp_t generalUpdateInp ) {
+#pragma clang diagnostic pop
     int i, j;
     char *tableName, *columnName;
     char *firstTableName;
@@ -179,10 +185,12 @@ generalDelete( generalUpdateInp_t generalUpdateInp ) {
     return 0;
 }
 
-
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 /* General Update */
 int chl_general_update_impl(
     generalUpdateInp_t generalUpdateInp ) {
+#pragma clang diagnostic pop
     int status;
     static int firstCall = 1;
     icatSessionStruct *icss;

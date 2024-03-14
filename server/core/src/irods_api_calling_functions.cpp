@@ -647,6 +647,8 @@ int call_ruleExecModInp(
                    _inp);
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 int call_generalUpdateInp(
     irods::api_entry*    _api,
     rsComm_t*            _comm,
@@ -656,6 +658,7 @@ int call_generalUpdateInp(
                    _comm,
                    _inp);
 }
+#pragma clang diagnostic pop
 
 int call_modDataObjMetaInp(
     irods::api_entry*    _api,

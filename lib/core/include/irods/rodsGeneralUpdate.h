@@ -24,10 +24,13 @@
 #define UPDATE_NOW_TIME "update_now_time"
 
 #define GeneralUpdateInp_PI "int type; struct InxValPair_PI;"
-typedef struct GeneralUpdateInp {
+
+// NOLINTNEXTLINE(modernize-use-using)
+__attribute__((deprecated("GeneralUpdate is deprecated. Its use should be avoided."))) typedef struct __attribute__((
+    deprecated("GeneralUpdate is deprecated. Its use should be avoided."))) GeneralUpdateInp
+{
     int type;  /* GEN_UPDATE_INSERT or DELETE */
     inxValPair_t values;  /* Column IDs (from rodsGenQuery.h) and values */
 } generalUpdateInp_t;
-
 
 #endif	// RODS_GENERAL_UPDATE_H__
