@@ -112,7 +112,7 @@
   - #msiSubstr   - Returns a substring of the given string
 
  \subsection msiemail Email Microservices
-  - #msiSendMail   - Sends email
+  - #msiSendMail   - (Deprecated) Sends email
 
  \subsection msikv Key-Value (Attr-Value) Microservices
   - #writeKeyValPairs - Writes key-value pairs to stdout or stderr and with given separator
