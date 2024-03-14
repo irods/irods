@@ -646,3 +646,38 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
 
         finally:
             self.user0.assert_icommand(['ils', '-lr'], 'STDOUT', self.user0.session_collection) # debugging
+
+    def test_irsync_ignore_symlinks_option_is_an_alias_of_the_link_option__issue_7537(self):
+        # Create a file.
+        test_file_basename = 'irsync_issue_7537.txt'
+        test_file = f'{self.user0.local_session_dir}/{test_file_basename}'
+        with open(test_file, 'w') as f:
+            f.write('This file will be ignored by irsync due to the symlink.')
+
+        # Create a directory for the symlink.
+        # The symlink file must be placed in a separate directory due to the recursive flag for irsync.
+        symlink_dir_basename = 'irsync_issue_7537_symlink_dir'
+        symlink_dir = f'{self.user0.local_session_dir}/{symlink_dir_basename}'
+        os.mkdir(symlink_dir)
+
+        # Create a symlink to the file.
+        symlink_file_basename = f'{test_file_basename}.symlink'
+        symlink_file = f'{symlink_dir}/{symlink_file_basename}'
+        os.symlink(test_file, symlink_file)
+        self.assertTrue(os.path.exists(symlink_file))
+
+        # Try to upload the symlink file into iRODS.
+        self.user0.assert_icommand(['irsync', '--ignore-symlinks', symlink_file, f'i:{symlink_file_basename}'])
+        self.user0.assert_icommand(['ils', '-lr'], 'STDOUT') # Debugging
+
+        # Show no data object exists, proving the symlink file was ignored.
+        logical_path = f'{self.user0.session_collection}/{symlink_file_basename}'
+        self.assertFalse(lib.replica_exists(self.user0, logical_path, 0))
+
+        # Try to upload the symlink file again using the recursive flag and the parent directory.
+        self.user0.assert_icommand(['irsync', '--ignore-symlinks', '-r', symlink_dir, f'i:{symlink_dir_basename}'])
+        self.user0.assert_icommand(['ils', '-lr'], 'STDOUT') # Debugging
+
+        # Show no data object exists, proving the symlink file was ignored.
+        logical_path = f'{self.user0.session_collection}/{symlink_dir_basename}/{symlink_file_basename}'
+        self.assertFalse(lib.replica_exists(self.user0, logical_path, 0))
