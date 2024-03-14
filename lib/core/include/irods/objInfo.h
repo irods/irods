@@ -151,6 +151,8 @@ typedef struct DataObjInfo {
     int  dataAccessInx;
     int  writeFlag;
     char destRescName[NAME_LEN];
+    // The backupResc feature has been deprecated and will be removed in a future release. It is not being marked as
+    // deprecated for compilation purposes because we cannot change this struct and it is used everywhere.
     char backupRescName[NAME_LEN];
     char subPath[MAX_NAME_LEN];
     specColl_t *specColl;

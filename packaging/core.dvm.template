@@ -33,6 +33,7 @@ collId||rei->doi->collId
 statusString||rei->doi->statusString
 # dataMapId||rei->doi->dataMapId
 destRescName||rei->doi->destRescName
+# The backupRescName feature has been deprecated and will be removed in a future release.
 backupRescName||rei->doi->backupRescName
 rescName||rei->doi->rescName
 # user info coming directly

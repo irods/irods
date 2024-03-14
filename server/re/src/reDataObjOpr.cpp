@@ -912,7 +912,7 @@ msiDataObjUnlink( msParam_t *inpParam, msParam_t *outParam,
  *      compatibility.
  *    Valid keyWds are:
  *          \li "destRescName" - the target resource to replicate to.
- *          \li "backupRescName" - the target resource to backup
+ *          \li "backupRescName" - (Deprecated) the target resource to backup
  *                the data. If this keyWd is used, the backup mode
  *                will be switched on.
  *          \li "rescName" - the resource of the source copy.
@@ -957,7 +957,7 @@ msiDataObjUnlink( msParam_t *inpParam, msParam_t *outParam,
  * \pre none
  * \post none
  * \sa none
-**/
+ **/
 int
 msiDataObjRepl( msParam_t *inpParam1, msParam_t *msKeyValStr,
                 msParam_t *outParam, ruleExecInfo_t *rei ) {
@@ -993,11 +993,11 @@ msiDataObjRepl( msParam_t *inpParam1, msParam_t *msKeyValStr,
         return rei->status;
     }
 
-    validKwFlags = OBJ_PATH_FLAG | DEST_RESC_NAME_FLAG | NUM_THREADS_FLAG |
-                   BACKUP_RESC_NAME_FLAG | RESC_NAME_FLAG | UPDATE_REPL_FLAG |
-                   REPL_NUM_FLAG | ALL_FLAG | ADMIN_FLAG | VERIFY_CHKSUM_FLAG |
-                   RBUDP_TRANSFER_FLAG | RBUDP_SEND_RATE_FLAG | RBUDP_PACK_SIZE_FLAG |
-                   FORCE_CHKSUM_FLAG;
+    validKwFlags = OBJ_PATH_FLAG | DEST_RESC_NAME_FLAG | NUM_THREADS_FLAG | RESC_NAME_FLAG | UPDATE_REPL_FLAG |
+                   REPL_NUM_FLAG | ALL_FLAG | ADMIN_FLAG | VERIFY_CHKSUM_FLAG | RBUDP_TRANSFER_FLAG |
+                   RBUDP_SEND_RATE_FLAG | RBUDP_PACK_SIZE_FLAG | FORCE_CHKSUM_FLAG;
+    // The BACKUP_RESC_NAME feature has been deprecated and will be removed in a future version.
+    validKwFlags |= BACKUP_RESC_NAME_FLAG;
     rei->status = parseMsKeyValStrForDataObjInp( msKeyValStr, myDataObjInp,
                   DEST_RESC_NAME_KW, validKwFlags, &outBadKeyWd );
 
@@ -2834,7 +2834,6 @@ msiExecCmd( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,
     return rei->status;
 }
 
-
 /**
  * \fn msiCollRepl (msParam_t *collection, msParam_t *msKeyValStr, msParam_t *status,
  * ruleExecInfo_t *rei)
@@ -2860,7 +2859,7 @@ msiExecCmd( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,
  *      compatibility.
  *      Valid keyWds are:
  *        \li "destRescName" - the target resource to replicate to.
- *        \li "backupRescName" - the target resource to backup
+ *        \li "backupRescName" - (Deprecated) the target resource to backup
  *              the data. If this keyWd is used, the backup mode
  *              will be switched on.
  *        \li "rescName" - the resource of the source copy.
@@ -2899,7 +2898,7 @@ msiExecCmd( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,
  * \pre none
  * \post none
  * \sa none
-**/
+ **/
 int
 msiCollRepl( msParam_t *collection, msParam_t *msKeyValStr, msParam_t *status,
              ruleExecInfo_t *rei ) {
@@ -2939,10 +2938,10 @@ msiCollRepl( msParam_t *collection, msParam_t *msKeyValStr, msParam_t *status,
 
 
     /* Parse resource name and directly write to collReplInp */
-    validKwFlags = COLL_NAME_FLAG | DEST_RESC_NAME_FLAG |
-                   BACKUP_RESC_NAME_FLAG | RESC_NAME_FLAG | UPDATE_REPL_FLAG |
-                   REPL_NUM_FLAG | ALL_FLAG | ADMIN_FLAG | VERIFY_CHKSUM_FLAG |
-                   FORCE_CHKSUM_FLAG;
+    validKwFlags = COLL_NAME_FLAG | DEST_RESC_NAME_FLAG | RESC_NAME_FLAG | UPDATE_REPL_FLAG | REPL_NUM_FLAG | ALL_FLAG |
+                   ADMIN_FLAG | VERIFY_CHKSUM_FLAG | FORCE_CHKSUM_FLAG;
+    // The BACKUP_RESC_NAME feature has been deprecated and will be removed in a future version.
+    validKwFlags |= BACKUP_RESC_NAME_FLAG;
     rei->status = parseMsKeyValStrForCollInp( msKeyValStr, collInp,
                   DEST_RESC_NAME_KW, validKwFlags, &outBadKeyWd );
 

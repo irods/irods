@@ -17,6 +17,7 @@
 #define RESC_NAME_KW                                "rescName"      /* resource name */
 #define DEST_RESC_NAME_KW                           "destRescName"  /* destination resource name */
 #define DEF_RESC_NAME_KW                            "defRescName"   /* default resource name */
+// BACKUP_RESC_NAME has been deprecated.
 #define BACKUP_RESC_NAME_KW                         "backupRescName" /* destination resource name */
 #define LEAF_RESOURCE_NAME_KW                       "leafRescName"
 #define DATA_TYPE_KW                                "dataType"      /* data type */
