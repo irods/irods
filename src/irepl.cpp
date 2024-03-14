@@ -160,7 +160,7 @@ usage() {
         " ",
         "Options are:",
         " -a  all - if used with -U, update all stale copies",
-        " -B  Backup mode - if a good copy already exists in this",
+        " -B  Backup mode - [Deprecated] if a good copy already exists in this",
         "     resource, don't make another copy.",
         " -P  output the progress of the replication.",
         " -Q  use RBUDP (datagram) protocol for the data transfer",
