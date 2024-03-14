@@ -94,6 +94,7 @@ typedef struct ValidKeyWd {
 
 #define RESC_NAME_FLAG          0x1
 #define DEST_RESC_NAME_FLAG     0x2
+// BACKUP_RESC_NAME has been deprecated.
 #define BACKUP_RESC_NAME_FLAG   0x4
 #define FORCE_FLAG_FLAG         0x8
 #define ALL_FLAG                0x10
