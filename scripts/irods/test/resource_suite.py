@@ -513,68 +513,82 @@ class ResourceSuite(ResourceBase):
         if os.path.exists(datafilename):
             os.unlink(datafilename)
 
-    @unittest.skipIf(True, 'Enable once #2634 is resolved')
     def test_local_iput_interrupt_directory(self):
-        # local setup
-        datadir = "newdatadir"
-        os.makedirs(datadir)
+        local_dir_path = os.path.join(self.admin.local_session_dir, "newdatadir")
+        collection_path = os.path.join(self.admin.session_collection, 'newdatadir')
         datafiles = ["file1", "file2", "file3", "file4", "file5", "file6", "file7"]
+        restartfile = os.path.join(self.admin.local_session_dir, 'collectionrestartfile')
+        iputcmd = f'iput -X {restartfile} -r {local_dir_path} {collection_path}'
+
+        os.makedirs(local_dir_path)
         for datafilename in datafiles:
             print("-------------------")
             print("creating " + datafilename + "...")
-            localpath = datadir + "/" + datafilename
+            localpath = local_dir_path + "/" + datafilename
             lib.make_file(localpath, 2**20)
-        restartfile = "collectionrestartfile"
-        # assertions
-        iputcmd = "iput -X " + restartfile + " -r " + datadir
-        if os.path.exists(restartfile):
-            os.unlink(restartfile)
-        self.admin.interrupt_icommand(iputcmd, restartfile, 10)  # once restartfile reaches 10 bytes
-        assert os.path.exists(restartfile), restartfile + " should now exist, but did not"
-        print("  restartfile [" + restartfile + "] contents --> [")
-        with open(restartfile, 'r') as f:
-            for line in f:
-                print(line)
-        print("]")
-        self.admin.assert_icommand("ils -L " + datadir, 'STDOUT_SINGLELINE', datadir)  # just to show contents
-        self.admin.assert_icommand(iputcmd, 'STDOUT_SINGLELINE', "File last completed")  # confirm the restart
-        for datafilename in datafiles:
-            self.admin.assert_icommand("ils -L " + datadir, 'STDOUT_SINGLELINE', datafilename)  # should be listed
-        # local cleanup
-        lib.execute_command(['rm', '-rf', datadir])
-        if os.path.exists(restartfile):
-            os.unlink(restartfile)
 
-    @unittest.skipIf(True, 'Enable once race conditions fixed, see #2634')
-    def test_local_iput_interrupt_largefile(self):
-        # local setup
-        datafilename = 'bigfile'
-        file_size = int(6 * pow(10, 8))
-        lib.make_file(datafilename, file_size)
-        restartfile = 'bigrestartfile'
-        iputcmd = 'iput --lfrestart {0} {1}'.format(restartfile, datafilename)
-        if os.path.exists(restartfile):
-            os.unlink(restartfile)
-        self.admin.interrupt_icommand(iputcmd, restartfile, 300)  # once restartfile reaches 300 bytes
-        time.sleep(2)  # wait for all interrupted threads to exit
-        assert os.path.exists(restartfile), restartfile + " should now exist, but did not"
+        # once restartfile reaches 10 bytes
+        self.admin.interrupt_icommand(iputcmd, restartfile, 10)
+        # Wait for all interrupted threads to exit - the files are large enough to trigger parallel transfer and some
+        # suites that run this test may be running some replication, sync-to-archive, etc.
+        # #6879 - This sleep will not be necessary if iput disconnects on SIGTERM.
+        time.sleep(10)
+
+        self.assertTrue(os.path.exists(restartfile), msg=f'{restartfile} should now exist, but did not')
+
         print("  restartfile [" + restartfile + "] contents --> [")
         with open(restartfile, 'r') as f:
             for line in f:
                 print(line)
         print("]")
-        today = datetime.date.today()
-        # length should not be zero
-        self.admin.assert_icommand_fail("ils -L " + datafilename, 'STDOUT_SINGLELINE', [" 0 " + today.isoformat(), datafilename])
-        # confirm the restart
-        self.admin.assert_icommand(iputcmd, 'STDOUT_SINGLELINE', datafilename + " was restarted successfully")
-        self.admin.assert_icommand("ils -L " + datafilename, 'STDOUT_SINGLELINE',
-                                   [" " + str(os.stat(datafilename).st_size) + " " + today.isoformat(), datafilename])  # length should be size on disk
-        # local cleanup
-        if os.path.exists(datafilename):
-            os.unlink(datafilename)
-        if os.path.exists(restartfile):
-            os.unlink(restartfile)
+
+        _,out,_ = self.admin.assert_icommand(['ils', '-L', collection_path], 'STDOUT', collection_path, desired_rc=0)
+        some_files_missing_from_collection = False
+        for datafile in datafiles:
+            if datafile not in out:
+                # We only need to check if any files are missing, so one is good enough. Break here.
+                some_files_missing_from_collection = True
+                break
+
+        # Some of these should have failed to upload.
+        self.assertTrue(some_files_missing_from_collection)
+
+        # Confirm the restart occurs and all of the files are present as data objects in the collection.
+        self.admin.assert_icommand(iputcmd, 'STDOUT', "File last completed")
+        _,out,_ = self.admin.assert_icommand(['ils', '-L', collection_path], 'STDOUT', collection_path, desired_rc=0)
+        for datafile in datafiles:
+            self.assertIn(datafile, out)
+
+    def test_local_iput_interrupt_largefile(self):
+        local_filepath = os.path.join(self.admin.local_session_dir, 'bigfile')
+        logical_path = os.path.join(self.admin.session_collection, 'bigfile')
+        file_size = int(6 * pow(10, 8))
+        restartfile = os.path.join(self.admin.local_session_dir, 'bigrestartfile')
+        iputcmd = f'iput --lfrestart {restartfile} {local_filepath}'
+
+        lib.make_file(local_filepath, file_size)
+        # once restartfile reaches 300 bytes
+        self.admin.interrupt_icommand(iputcmd, restartfile, 300)
+        # #6879 - This sleep will not be necessary if iput disconnects on SIGTERM.
+        time.sleep(10)  # wait for all interrupted threads to exit
+
+        self.assertTrue(os.path.exists(restartfile), msg=f'{restartfile} should now exist, but did not')
+
+        print("  restartfile [" + restartfile + "] contents --> [")
+        with open(restartfile, 'r') as f:
+            for line in f:
+                print(line)
+        print("]")
+
+        # Confirm that there is no replica of size 0. Depending on when the interrupt occurs, the replica may or
+        # may not exist. If it does exist, the replica should have some data in it. If it does not exist, the
+        # function called will return CAT_NO_ROWS_FOUND or something of that sort, which is also fine.
+        self.assertNotEqual(str(0), lib.get_replica_size(self.admin, os.path.dirname(logical_path), 0))
+
+        # Confirm the restart occurs and that the replica is the correct size at the end.
+        self.admin.assert_icommand(iputcmd, 'STDOUT', "was restarted successfully")
+        self.assertEqual(
+            str(os.stat(local_filepath).st_size), lib.get_replica_size(self.admin, os.path.basename(logical_path), 0))
 
     def test_local_iput_physicalpath_no_permission(self):
         # local setup
