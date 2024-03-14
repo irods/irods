@@ -20,6 +20,7 @@ typedef struct RodsArguments {
     int noattr;
     char *attrStr;
     int bulk;
+    // backupMode has been deprecated and will be removed in a future release.
     int backupMode;
     int condition;
     char *conditionString;

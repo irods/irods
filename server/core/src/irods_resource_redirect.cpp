@@ -30,6 +30,7 @@ namespace
         if (dest_resc_name) {
             key_word = dest_resc_name;
         }
+        // The BACKUP_RESC_NAME feature has been deprecated and will be removed in a future release.
         char* backup_resc_name = getValByKey(&_data_obj_inp.condInput, BACKUP_RESC_NAME_KW);
         if (backup_resc_name) {
             key_word = backup_resc_name;
