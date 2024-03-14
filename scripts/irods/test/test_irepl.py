@@ -1299,10 +1299,10 @@ class test_irepl_repl_status(session.make_sessions_mixin([('otherrods', 'rods')]
                 ['irepl', '-a', '-n', '1', self.logical_path],
                 scenarios, 'irepl -a -n1 foo')
 
-class test_irepl_replication_hierachy(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
+class test_irepl_replication_hierarchy(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
     repl_statuses = ['X', '&', '?']
     def setUp(self):
-        super(test_irepl_replication_hierachy, self).setUp()
+        super(test_irepl_replication_hierarchy, self).setUp()
 
         self.admin = self.admin_sessions[0]
 
@@ -1362,7 +1362,7 @@ class test_irepl_replication_hierachy(session.make_sessions_mixin([('otherrods',
         for resc in self.leaf_rescs.values():
             self.admin.assert_icommand(['iadmin', 'rmresc', resc['name']])
 
-        super(test_irepl_replication_hierachy, self).tearDown()
+        super(test_irepl_replication_hierarchy, self).tearDown()
 
     def setup_replicas(self, scenario):
         initial_replicas = scenario['start']
