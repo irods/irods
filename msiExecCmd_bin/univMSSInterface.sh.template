@@ -15,7 +15,8 @@
 syncToArch () {
     # <your command or script to copy from cache to MSS> $1 $2
     # e.g: /usr/local/bin/rfcp $1 rfioServerFoo:$2
-    op=`which template-cp`
+    # 'type -P' is used because 'which' finds functions on some platforms, causing infinite recursion in some cases.
+    op=`type -P template-cp`
     echo "UNIVMSS $op \"$1\" \"$2\""
     `$op "$1" "$2"`
     return
@@ -25,7 +26,8 @@ syncToArch () {
 stageToCache () {
     # <your command to stage from MSS to cache> $1 $2
     # e.g: /usr/local/bin/rfcp rfioServerFoo:$1 $2
-    op=`which template-cp`
+    # 'type -P' is used because 'which' finds functions on some platforms, causing infinite recursion in some cases.
+    op=`type -P template-cp`
     echo "UNIVMSS $op \"$1\" \"$2\""
     `$op "$1" "$2"`
     return
@@ -35,7 +37,8 @@ stageToCache () {
 mkdir () {
     # <your command to make a directory in the MSS> $1
     # e.g.: /usr/local/bin/rfmkdir -p rfioServerFoo:$1
-    op=`which template-mkdir`
+    # 'type -P' is used because 'which' finds functions on some platforms, causing infinite recursion in some cases.
+    op=`type -P template-mkdir`
     `$op -p "$1"`
     return
 }
@@ -50,7 +53,8 @@ chmod () {
     # $2 is mode
     # $1 is directory
     ############
-    op=`which template-chmod`
+    # 'type -P' is used because 'which' finds functions on some platforms, causing infinite recursion in some cases.
+    op=`type -P template-chmod`
     `$op "$2" "$1"`
     return
 }
@@ -59,7 +63,8 @@ chmod () {
 rm () {
     # <your command to remove a file from the MSS> $1
     # e.g: /usr/local/bin/rfrm rfioServerFoo:$1
-    op=`which template-rm`
+    # 'type -P' is used because 'which' finds functions on some platforms, causing infinite recursion in some cases.
+    op=`type -P template-rm`
     `$op "$1"`
     return
 }
@@ -68,14 +73,16 @@ rm () {
 mv () {
     # <your command to rename a file in the MSS> $1 $2
     # e.g: /usr/local/bin/rfrename rfioServerFoo:$1 rfioServerFoo:$2
-    op=`which template-mv`
+    # 'type -P' is used because 'which' finds functions on some platforms, causing infinite recursion in some cases.
+    op=`type -P template-mv`
     `$op "$1" "$2"`
     return
 }
 
 # function to do a stat on a file $1 stored in the MSS
 stat () {
-    op=`which template-stat`
+    # 'type -P' is used because 'which' finds functions on some platforms, causing infinite recursion in some cases.
+    op=`type -P template-stat`
     output=`$op "$1"`
     # <your command to retrieve stats on the file> $1
     # e.g: output=`/usr/local/bin/rfstat rfioServerFoo:$1`
