@@ -2628,6 +2628,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
                 'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
                     pep_resource_resolve_hierarchy_pre(*INSTANCE, *CONTEXT, *OUT, *OPERATION, *HOST, *PARSER, *VOTE){
                         *OUT="compound_resource_cache_refresh_policy=always";
+                    }
                  '''),
                  'irods_rule_engine_plugin-python': textwrap.dedent('''
                      def pep_resource_resolve_hierarchy_pre(rule_args, callback, rei):
@@ -2636,7 +2637,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
             }
 
             # manipulate the core.re to add the new policy
-            with temporary_core_file() as core:
+            with temporary_core_file(self.plugin_name) as core:
 
                 core.add_rule(rule_map[self.plugin_name])
 
