@@ -78,7 +78,8 @@ class test_configurations(unittest.TestCase):
         except KeyError:
             # This is a requirement in order to run these tests and running the tests is required for our test suite, so
             # we always fail here when the prerequisites are not being met on the test-running host.
-            self.fail('OS user "[{}]" with password "[{}]" must exist in order to run these tests.'.format(
+            raise EnvironmentError(
+                'OS user "{}" with password "{}" must exist in order to run these tests.'.format(
                 self.auth_user, self.auth_pass))
 
         self.auth_session = session.mkuser_and_return_session('rodsuser', self.auth_user, self.auth_pass, lib.get_hostname())
