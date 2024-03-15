@@ -37,9 +37,9 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
 
         except KeyError:
             # This is a requirement in order to run these tests and running the tests is required for our test suite, so
-            # we always fail here when the prerequisites are not being met on the test-running host.
-            self.fail('OS user "[{}]" with password "[{}]" must exist in order to run these tests.'.format(
-                auth_user, auth_pass))
+            # we always error here when the prerequisites are not being met on the test-running host.
+            raise EnvironmentError(
+                'OS user "{}" with password "{}" must exist in order to run these tests.'.format(auth_user, auth_pass))
 
         super(Test_Auth, self).setUp()
 
