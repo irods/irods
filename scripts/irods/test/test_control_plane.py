@@ -211,7 +211,7 @@ class TestControlPlane(SessionsMixin, unittest.TestCase):
                     # TODO: Restart here in case the main server isn't finished tearing down yet.
                     # We should only need to perform a start() here, though.
                     #IrodsController().start()
-                    IrodsController().restart()
+                    IrodsController().restart(test_mode=True)
             finally:
                 admin_session.assert_icommand('iadmin rmresc invalid_resc')
 
