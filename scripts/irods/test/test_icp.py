@@ -47,12 +47,8 @@ class Test_Icp(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
         try:
             with lib.file_backed_up(self.user._environment_file_path):
                 del self.user.environment_file_contents['irods_default_resource']
-                filepath = core_file.CoreFile(self.plugin_name).filepath
-                with lib.file_backed_up(filepath):
-                    if 'python' not in self.plugin_name:
-                        os.unlink(filepath)
-                    with open(filepath,'a') as f:
-                        f.write(pep_map[self.plugin_name])
+                with core_file.temporary_core_file(self.plugin_name) as core:
+                    core.add_rule(pep_map[self.plugin_name])
 
                     lib.make_large_local_tmp_dir(test_dir_path, 1024, 1024)
 
