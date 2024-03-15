@@ -218,6 +218,12 @@ if __name__ == '__main__':
     # in order for the tests to function properly. If the issue occurs, it is likely that the test which caused the
     # leftover shared memory files failed and will be picked up in the test results.
     clear_irods_shared_memory_files()
+
+    # Some platforms do not include the 'sbin' directory in the path of the service account. There are several
+    # executables installed in this directory and used in the tests which need to be accessible, so add the directory
+    # to the front of PATH for the duration of the tests.
+    os.environ['PATH'] = ':'.join([irods.paths.server_bin_directory(), os.environ['PATH']])
+
     IrodsController().start(test_mode=True)
     results = run_tests_from_names(test_identifiers, options.buffer_test_output, options.xml_output, options.skip_until)
     print(results)
