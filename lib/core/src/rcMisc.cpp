@@ -1799,6 +1799,20 @@ void clearRescQuota(void* _p)
     std::memset(q, 0, sizeof(rescQuota));
 } // clearRescQuota
 
+void clearGenquery2Input(void* _p)
+{
+    if (!_p) {
+        return;
+    }
+
+    auto* q = static_cast<Genquery2Input*>(_p);
+
+    free_pointer(q->query_string);
+    free_pointer(q->zone);
+
+    std::memset(q, 0, sizeof(Genquery2Input));
+} // clearGenquery2Input
+
 int
 parseMultiStr( char *strInput, strArray_t *strArray ) {
     char *startPtr, *endPtr;

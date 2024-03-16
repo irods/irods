@@ -1050,4 +1050,11 @@ int call_replica_truncate(irods::api_entry*, rsComm_t*, dataObjInp_t*, char**);
 #  define CALL_REPLICA_TRUNCATE nullptr // NOLINT(cppcoreguidelines-macro-usage)
 #endif
 
+#ifdef CREATE_API_TABLE_FOR_SERVER
+int call_genquery2_inout(irods::api_entry*, rsComm_t*, genquery2Inp_t*, char**);
+#  define CALL_GENQUERY2_INOUT call_genquery2_inout
+#else
+#  define CALL_GENQUERY2_INOUT nullptr // NOLINT(cppcoreguidelines-macro-usage)
+#endif
+
 #endif // IRODS_API_CALLING_FUNCTIONS_HPP
