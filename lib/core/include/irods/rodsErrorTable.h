@@ -318,6 +318,8 @@ NEW_ERROR(USER_INCOMPATIBLE_OPEN_FLAGS,                -404000)
 NEW_ERROR(INTERMEDIATE_REPLICA_ACCESS,                 -405000)
 NEW_ERROR(LOCKED_DATA_OBJECT_ACCESS,                   -406000)
 NEW_ERROR(CHECK_VERIFICATION_RESULTS,                  -407000)
+NEW_ERROR(END_OF_RESULTSET,                            -408000)
+
 /** @} */
 
 /* 500,000 to 800,000 - file driver error */

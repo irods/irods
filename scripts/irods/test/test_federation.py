@@ -2379,3 +2379,94 @@ class test_irepl_all_permission_levels__issue_7444_7465(unittest.TestCase):
 							'DATA_REPL_STATUS', str(0)
 						])
 					self.user0.assert_icommand(['irm', '-f', logical_path])
+
+
+class Test_GenQuery2_IQuery(SessionsMixin, unittest.TestCase):
+
+	# This test suite expects tempZone to contain the following users:
+	#
+	#   - rods#tempZone
+	#   - zonehopper#tempZone (created by the irods_testing_environment)
+	#   - zonehopper#otherZone (created by the irods_testing_environment)
+	#
+	# otherZone must contain the following users:
+	#
+	#   - rods#otherZone
+	#
+	# The test suite must be launched from a server in otherZone. That means tempZone
+	# is identified as the remote federated zone.
+	#
+	# Just before the tests are run, the base class will create two additional users
+	# in otherZone. The following users will appear:
+	#
+	#   - admin#otherZone
+	#   - zonehopper#otherZone
+
+	def setUp(self):
+		super(Test_GenQuery2_IQuery, self).setUp()
+
+		# session.make_sessions_mixin() creates admins and users that connect to the host
+		# identified by lib.get_hostname().
+		#
+		# For this particular set of tests, that means these users connect to the host where
+		# "otherZone" runs.
+		self.local_admin = self.admin_sessions[0] # admin#otherZone
+		self.local_user = self.user_sessions[0]   # zonehopper#otherZone
+
+		# Create session for zonehopper#tempZone. The session will be connected to tempZone.
+		password = test.settings.FEDERATION.RODSUSER_NAME_PASSWORD_LIST[0][1]
+		host = test.settings.FEDERATION.REMOTE_HOST
+		zone = test.settings.FEDERATION.REMOTE_ZONE
+		self.remote_user = session.make_session_for_existing_user(self.local_user.username, password, host, zone)
+
+	def tearDown(self):
+		self.remote_user.__exit__()
+		super(Test_GenQuery2_IQuery, self).tearDown()
+
+	def test_iquery_correctly_honors_permissions_when_users_share_the_same_username_but_different_zone_names__issue_7570(self):
+		import json
+
+		remote_zone = test.settings.FEDERATION.REMOTE_ZONE
+
+		# Show the local user can find their remote home collection using iquery.
+		local_user_remote_home_collection = self.local_user.remote_home_collection(remote_zone)
+		query = f"select COLL_NAME where COLL_NAME = '{local_user_remote_home_collection}'"
+		self.local_user.assert_icommand(['iquery', '-z', remote_zone, query], 'STDOUT', [local_user_remote_home_collection])
+
+		# Show the local user cannot find the remote home collection of the remote user using iquery.
+		query = f"select COLL_NAME where COLL_NAME = '{self.remote_user.home_collection}'"
+		self.local_user.assert_icommand(['iquery', '-z', remote_zone, query], 'STDOUT', ['[]'])
+
+		# Give the local user read permission on the remote user's remote home collection and show that
+		# iquery now returns a non-empty resultset.
+		self.remote_user.assert_icommand(['ichmod', 'read_object', self.local_user.qualified_username, self.remote_user.home_collection])
+		self.local_user.assert_icommand(['iquery', '-z', remote_zone, query], 'STDOUT', [self.remote_user.home_collection])
+
+		#
+		# Demonstrate the same thing using data objects.
+		#
+
+		# Create a data object in the remote user's home collection.
+		data_object = f'{self.remote_user.home_collection}/issue_7570.txt'
+		self.remote_user.assert_icommand(['itouch', data_object])
+
+		# Give the local user permission to read the contents of the remote user's remote home collection.
+		# This allows the local user to list the contents of the remote user's remote home collection.
+		self.remote_user.assert_icommand(['ichmod', 'read_object', self.local_user.qualified_username, self.remote_user.home_collection])
+
+		# Show the remote user can find the data object using iquery.
+		remote_coll_name = self.remote_user.home_collection
+		remote_data_name = os.path.basename(data_object)
+		query = f"select COLL_NAME, DATA_NAME where COLL_NAME = '{remote_coll_name}' and DATA_NAME = '{remote_data_name}'"
+		expected_output = [json.dumps([[remote_coll_name, remote_data_name]], separators=(',', ':'))]
+		self.remote_user.assert_icommand(['iquery', query], 'STDOUT', expected_output)
+
+		# Show the local user cannot find the remote data object of the remote user using iquery.
+		# This proves that iquery understands the permission model for data objects even in federated environments.
+		query = f"select COLL_NAME, DATA_NAME where COLL_NAME = '{remote_coll_name}' and DATA_NAME = '{remote_data_name}'"
+		self.local_user.assert_icommand(['iquery', '-z', remote_zone, query], 'STDOUT', ['[]'])
+
+		# Give the local user read permission on the remote user's data object and show that iquery
+		# now returns a non-empty resultset.
+		self.remote_user.assert_icommand(['ichmod', 'read_object', self.local_user.qualified_username, data_object])
+		self.local_user.assert_icommand(['iquery', '-z', remote_zone, query], 'STDOUT', expected_output)

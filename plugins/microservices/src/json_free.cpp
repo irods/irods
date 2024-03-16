@@ -1,12 +1,11 @@
 /// \file
 
-#include "msi_preconditions.hpp"
-
 #include "irods/irods_error.hpp"
 #include "irods/irods_logger.hpp"
 #include "irods/irods_ms_plugin.hpp"
 #include "irods/irods_re_structs.hpp"
 #include "irods/msParam.h"
+#include "irods/msi_preconditions.hpp"
 #include "irods/process_stash.hpp"
 #include "irods/rodsErrorTable.h"
 
