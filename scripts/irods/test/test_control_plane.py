@@ -1,24 +1,20 @@
-import sys
-
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
-
 import copy
 import json
 import os
+import shutil
+import tempfile
 import time
+import unittest
 
-from .. import test
+from . import session
 from . import settings
-from .resource_suite import ResourceBase
-from ..controller import IrodsController
-from ..configuration import IrodsConfig
 from .. import lib
 from .. import paths
-from . import session
+from .. import test
+from ..configuration import IrodsConfig
+from ..controller import IrodsController
 from ..test.command import assert_command
+from .resource_suite import ResourceBase
 
 try:
     import zmq
@@ -28,6 +24,34 @@ except ImportError:
 SessionsMixin = session.make_sessions_mixin([('otherrods','pass')], [])
 
 class TestControlPlane(SessionsMixin, unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        # Copy the server config to a temporary file for backup.
+        config = IrodsConfig()
+        cls.backup_server_config = tempfile.NamedTemporaryFile(prefix=os.path.basename(config.server_config_path)).name
+        shutil.copyfile(config.server_config_path, cls.backup_server_config)
+
+        # Get the contents of the server config.
+        with open(config.server_config_path) as f:
+            server_config = json.load(f)
+
+        # Update the delay server sleep time to some really long time. This test suite does not use the delay server
+        # and the nature of the tests are such that any additional connections to the main server can cause problems
+        # with test clean up whenever the server is restarted. Specifically, it seems that delay server queries for
+        # work to do can cause shared memory cleanup problems, so we can just avoid them by effectively disabling the
+        # delay server.
+        server_config['advanced_settings']['delay_server_sleep_time_in_seconds'] = 7200
+        lib.update_json_file_from_dict(config.server_config_path, server_config)
+
+        IrodsController().restart(test_mode=True)
+
+    @classmethod
+    def tearDownClass(cls):
+        # Copy the backed up server config back to where it belongs and restart the server.
+        config = IrodsConfig()
+        shutil.copyfile(cls.backup_server_config, config.server_config_path)
+        IrodsController().restart(test_mode=True)
 
     def test_pause_and_resume(self):
         with session.make_session_for_existing_admin() as admin_session:
