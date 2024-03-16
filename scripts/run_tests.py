@@ -35,9 +35,6 @@ def run_devtesty():
     print('devtesty is currently disabled', file=sys.stderr)
     # run_irodsctl_with_arg('devtesty')
 
-def run_fastswap_test():
-    subprocess.check_call('rulebase_fastswap_test_2276.sh')
-
 def optparse_callback_catch_keyboard_interrupt(*args, **kwargs):
     unittest.installHandler()
 
