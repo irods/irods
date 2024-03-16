@@ -14,6 +14,7 @@ add_library(
 )
 
 add_subdirectory(core)
+add_subdirectory(genquery2)
 add_subdirectory(api)
 add_subdirectory(icat)
 add_subdirectory(re)
@@ -37,6 +38,7 @@ target_link_objects(
   irods_filesystem_path
   irods_filesystem_client
   irods_filesystem_server
+  irods_genquery2_parser
   irods_user_administration_client
   irods_user_administration_server
   irods_resource_administration_client

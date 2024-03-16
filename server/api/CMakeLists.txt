@@ -5,6 +5,7 @@ add_library(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rs_atomic_apply_metadata_operations.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rs_check_auth_credentials.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rs_data_object_finalize.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/rs_genquery2.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rs_get_delay_rule_info.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rs_get_file_descriptor_info.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rs_get_grid_configuration_value.cpp"
@@ -150,6 +151,10 @@ add_library(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rsUserAdmin.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rsZoneReport.cpp"
 )
+add_dependencies(
+  irods_server_api
+  irods_genquery2_parser
+)
 objects_link_libraries(
   irods_server_api
   PUBLIC
@@ -178,6 +183,8 @@ target_include_directories(
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/plugins/api/include>"
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/core/include>"
+  "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/server/genquery2>" # For parser.hpp.
+  "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/genquery2/include>"
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/administration/user/include>"
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/administration/zone/include>"
   PRIVATE
@@ -206,6 +213,7 @@ install(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rs_atomic_apply_metadata_operations.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rs_check_auth_credentials.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rs_data_object_finalize.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rs_genquery2.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rs_get_delay_rule_info.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rs_get_file_descriptor_info.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/rs_get_grid_configuration_value.hpp"

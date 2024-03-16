@@ -70,6 +70,7 @@ set(
   rc_check_auth_credentials
   rc_data_obj
   rc_data_obj_repl
+  rc_genquery2
   rc_get_library_features
   rc_mod_data_obj_meta
   rc_switch_user

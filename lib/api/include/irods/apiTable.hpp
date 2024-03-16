@@ -151,6 +151,7 @@
 #  include "irods/rsUserAdmin.hpp"
 #  include "irods/rsZoneReport.hpp"
 #  include "irods/rs_check_auth_credentials.hpp"
+#  include "irods/rs_genquery2.hpp"
 #  include "irods/rs_get_library_features.hpp"
 #  include "irods/rs_get_resource_info_for_operation.hpp"
 #  include "irods/rs_replica_truncate.hpp"
@@ -234,6 +235,7 @@
 #define RS_GENERAL_ROW_INSERT              NULLPTR_FOR_CLIENT_TABLE(rsGeneralRowInsert)
 #define RS_GENERAL_ROW_PURGE               NULLPTR_FOR_CLIENT_TABLE(rsGeneralRowPurge)
 #define RS_GENERAL_UPDATE                  NULLPTR_FOR_CLIENT_TABLE(rsGeneralUpdate)
+#define RS_GENQUERY2                       NULLPTR_FOR_CLIENT_TABLE(rs_genquery2)
 #define RS_GEN_QUERY                       NULLPTR_FOR_CLIENT_TABLE(rsGenQuery)
 #define RS_GET_HIER_FOR_RESC               NULLPTR_FOR_CLIENT_TABLE(rsGetHierarchyForResc)
 #define RS_GET_HIER_FROM_LEAF_ID           NULLPTR_FOR_CLIENT_TABLE(rsGetHierFromLeafId)
@@ -1290,6 +1292,13 @@ static irods::apidef_t client_api_table_inp[] = {
         boost::any(std::function<int(rsComm_t*, dataObjInp_t*, char**)>(RS_REPLICA_TRUNCATE)),
         "api_replica_truncate", clearDataObjInp, irods::clearOutStruct_noop,
         (funcPtr)CALL_REPLICA_TRUNCATE
+    },
+    {
+        GENQUERY2_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
+        "Genquery2Input_PI", 0, "STR_PI", 0,
+        boost::any(std::function<int(rsComm_t*, Genquery2Input*, char**)>(RS_GENQUERY2)),
+        "api_genquery2", clearGenquery2Input, irods::clearOutStruct_noop,
+        (funcPtr) CALL_GENQUERY2_INOUT
     }
     // clang-format on
 }; // _api_table_inp

@@ -316,6 +316,7 @@ void set_log_levels_for_all_log_categories()
     log_ns::agent::set_level(log_ns::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_AGENT));
     log_ns::legacy::set_level(log_ns::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_LEGACY));
     log_ns::resource::set_level(log_ns::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_RESOURCE));
+    log_ns::genquery2::set_level(log_ns::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_GENQUERY2));
     log_ns::database::set_level(log_ns::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_DATABASE));
     log_ns::authentication::set_level(log_ns::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_AUTHENTICATION));
     log_ns::api::set_level(log_ns::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_API));

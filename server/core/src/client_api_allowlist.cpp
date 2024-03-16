@@ -184,7 +184,8 @@ namespace irods::client_api_allowlist
             GET_LIBRARY_FEATURES_AN,
 
             GET_RESOURCE_INFO_FOR_OPERATION_AN,
-            REPLICA_TRUNCATE_AN
+            REPLICA_TRUNCATE_AN,
+            GENQUERY2_AN
         };
         // clang-format on
     } // init

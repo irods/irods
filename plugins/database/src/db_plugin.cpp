@@ -15822,6 +15822,67 @@ auto db_check_auth_credentials_op(irods::plugin_context& _ctx,
     }
 } // db_check_auth_credentials_op
 
+auto db_execute_genquery2_sql(irods::plugin_context& _ctx,
+                              const char* _sql,
+                              const std::vector<std::string>* _values,
+                              char** _output) -> irods::error
+{
+    if (const auto ret = _ctx.valid(); !ret.ok()) {
+        return PASS(ret);
+    }
+
+    if (!_sql || !_values || !_output) {
+        log_db::error("{}: Received one or more null pointers.", __func__);
+        return ERROR(SYS_INVALID_INPUT_PARAM, "Received one or more null pointers.");
+    }
+
+    *_output = nullptr;
+
+    try {
+        auto [db_instance, db_conn] = irods::experimental::catalog::new_database_connection();
+
+        nanodbc::statement stmt{db_conn};
+        nanodbc::prepare(stmt, _sql);
+
+        for (std::vector<std::string>::size_type i = 0; i < _values->size(); ++i) {
+            stmt.bind(static_cast<short>(i), _values->at(i).c_str());
+        }
+
+        using json = nlohmann::json;
+
+        auto json_array = json::array();
+        auto json_row = json::array();
+
+        auto row = nanodbc::execute(stmt);
+        const auto n_cols = row.columns();
+
+        while (row.next()) {
+            for (std::remove_cvref_t<decltype(n_cols)> i = 0; i < n_cols; ++i) {
+                json_row.push_back(row.get<std::string>(i, ""));
+            }
+
+            json_array.push_back(json_row);
+            json_row.clear();
+        }
+
+        *_output = strdup(json_array.dump().c_str());
+
+        return SUCCESS();
+    }
+    catch (const irods::exception& e) {
+        log_db::error("{}: {}", __func__, e.client_display_what());
+        return ERROR(SYS_LIBRARY_ERROR, e.what());
+    }
+    catch (const std::exception& e) {
+        log_db::error("{}: {}", __func__, e.what());
+        return ERROR(SYS_LIBRARY_ERROR, e.what());
+    }
+    catch (...) {
+        log_db::error("{}: An unknown error was caught.", __func__);
+        return ERROR(SYS_UNKNOWN_ERROR, "An unknown error was caught.");
+    }
+} // db_execute_genquery2_sql
+
 // =-=-=-=-=-=-=-
 //
 irods::error db_start_operation( irods::plugin_property_map& _props ) {
@@ -16233,7 +16294,10 @@ irods::database* plugin_factory(
     pg->add_operation<const char*, const char*, const char*, int*>(
         DATABASE_OP_CHECK_AUTH_CREDENTIALS,
         function<error(plugin_context&, const char*, const char*, const char*, int*)>(db_check_auth_credentials_op));
+    pg->add_operation<const char*, const std::vector<std::string>*, char**>(
+        DATABASE_OP_EXECUTE_GENQUERY2_SQL,
+        function<error(plugin_context&, const char*, const std::vector<std::string>*, char**)>(
+            db_execute_genquery2_sql));
 
     return pg;
-
 } // plugin_factory
