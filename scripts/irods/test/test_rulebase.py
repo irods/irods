@@ -333,9 +333,24 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads re server log')
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'tests cache update - only applicable for irods_rule_language REP')
     def test_fast_updates__2279(self):
-            fastswap_test_script = os.path.join('/var', 'lib', 'irods', 'scripts', 'rulebase_fastswap_test_2276.sh')
-            rc, _, _ = self.admin.assert_icommand(['bash', fastswap_test_script], 'STDOUT_SINGLELINE', 'etc')
-            assert rc == 0
+        listcore_rule = 'writeLine("stdout", listcorerules)'
+        looptotal = 10
+        for _ in range(looptotal):
+            with temporary_core_file(self.plugin_name) as core:
+                _, no_updates_out, _ = self.admin.assert_icommand(
+                    ['irule', listcore_rule, 'null', 'ruleExecOut'], 'STDOUT', 'acPreConnect')
+
+                core.add_rule('firstupdate{}')
+                _, first_update_out, _ = self.admin.assert_icommand(
+                    ['irule', listcore_rule, 'null', 'ruleExecOut'], 'STDOUT', 'firstupdate')
+
+                core.add_rule('secondupdate{}')
+                _, second_update_out, _ = self.admin.assert_icommand(
+                    ['irule', listcore_rule, 'null', 'ruleExecOut'], 'STDOUT', 'secondupdate')
+
+                self.assertNotEqual(no_updates_out, first_update_out)
+                self.assertNotEqual(first_update_out, second_update_out)
+                self.assertNotEqual(no_updates_out, second_update_out)
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'tests cache update - only applicable for irods_rule_language REP')
     def test_rulebase_update_without_delay(self):
