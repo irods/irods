@@ -1144,3 +1144,8 @@ auto call_replica_truncate(irods::api_entry* _api, rsComm_t* _comm, dataObjInp_t
 {
     return _api->call_handler<dataObjInp_t*, char**>(_comm, _inp, _out);
 } // call_replica_truncate
+
+int call_genquery2_inout(irods::api_entry* _api, rsComm_t* _comm, genquery2Inp_t* _inp, char** _out)
+{
+    return _api->call_handler<genquery2Inp_t*, char**>(_comm, _inp, _out);
+} // call_genquery2_inout

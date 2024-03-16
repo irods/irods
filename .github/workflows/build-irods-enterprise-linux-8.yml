@@ -17,7 +17,7 @@ jobs:
               dnf -y install bind-utils wget git epel-release
               dnf -y install dnf-plugin-config-manager dnf-plugins-core
               dnf config-manager --set-enabled powertools
-              dnf -y install gcc gcc-c++ make rpm-build bzip2-devel curl-devel fakeroot openssl-devel pam-devel python36-devel unixODBC unixODBC-devel zlib-devel python3-distro
+              dnf -y install gcc gcc-c++ make rpm-build bzip2-devel curl-devel fakeroot openssl-devel pam-devel python36-devel unixODBC unixODBC-devel zlib-devel python3-distro flex bison
       - name: Install iRODS Externals
         run:  |
               rpm --import https://unstable.irods.org/irods-unstable-signing-key.asc
