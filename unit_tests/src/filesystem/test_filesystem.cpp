@@ -66,6 +66,7 @@ TEST_CASE("filesystem")
     namespace fs = irods::experimental::filesystem;
 
     // clang-format off
+    using idstream          = irods::experimental::io::idstream;
     using odstream          = irods::experimental::io::odstream;
     using default_transport = irods::experimental::io::client::default_transport;
     // clang-format on
@@ -768,5 +769,75 @@ TEST_CASE("filesystem")
         CHECK(err.code().value() == ec);
         CHECK(err.code().message() == "USER_FILE_DOES_NOT_EXIST");
         CHECK(err.what() == msg + ": USER_FILE_DOES_NOT_EXIST");
+    }
+
+    SECTION("copy_data_object")
+    {
+        constexpr std::string_view contents = "testing copy_data_object";
+        const auto data_object = sandbox / "data_object.txt";
+
+        // Create a non-empty data object.
+        {
+            default_transport tp{conn};
+            odstream{tp, data_object} << contents;
+        }
+
+        REQUIRE(fs::client::is_data_object(conn, data_object));
+
+        // Create a copy of the data object using copy_options::none.
+        // The assertion that follows specifically proves #7443 is resolved.
+        const auto new_data_object = sandbox / "data_object.txt.copy";
+        REQUIRE(fs::client::copy_data_object(conn, data_object, new_data_object, fs::copy_options::none));
+
+        // Show that attempting to copy over an existing data object using copy_options::none
+        // will result in an exception being thrown.
+        const auto matcher = Catch::Matchers::Message("cannot copy data object: OVERWRITE_WITHOUT_FORCE_FLAG");
+        CHECK_THROWS_MATCHES(fs::client::copy_data_object(conn, data_object, new_data_object, fs::copy_options::none),
+                             fs::filesystem_error,
+                             matcher);
+
+        // Show that the results are the same when the default copy_options are passed.
+        // The default is copy_options::none.
+        CHECK_THROWS_MATCHES(
+            fs::client::copy_data_object(conn, data_object, new_data_object), fs::filesystem_error, matcher);
+
+        // Show the new data object contains the data.
+        {
+            default_transport tp{conn};
+            idstream in{tp, new_data_object};
+
+            std::string line;
+            CHECK(std::getline(in, line));
+            CHECK(contents == line);
+        }
+
+        // Capture the mtime of the new data object.
+        // This will be used to assert correctness of copy_options::skip_existing.
+        auto old_mtime = fs::client::last_write_time(conn, new_data_object);
+
+        // Guarantee a difference in the mtime is noticeable if a change occurs.
+        using namespace std::chrono_literals;
+        std::this_thread::sleep_for(2s);
+
+        // Show copy_options::skip_existing works as intended.
+        // That is, if the target data object already exists, do nothing.
+        CHECK_FALSE(fs::client::copy_data_object(conn, data_object, new_data_object, fs::copy_options::skip_existing));
+        CHECK(old_mtime == fs::client::last_write_time(conn, new_data_object));
+
+        // Show that copy_options::overwrite_existing works as intended.
+        // That is, overwrite the contents of the target data object.
+        // This will result in the mtime of the target data object being updated.
+        CHECK(fs::client::copy_data_object(conn, data_object, new_data_object, fs::copy_options::overwrite_existing));
+        CHECK(old_mtime < fs::client::last_write_time(conn, new_data_object));
+
+        // Capture the mtime of the very first data object.
+        // This will be used to assert correctness of copy_options::update_existing.
+        old_mtime = fs::client::last_write_time(conn, data_object);
+
+        // Show that copy_options::update_existing works as intended.
+        // That is, only overwrite the contents of the target data object if the source
+        // data object is newer than the target data object, as defined by last_write_time().
+        CHECK(fs::client::copy_data_object(conn, new_data_object, data_object, fs::copy_options::update_existing));
+        CHECK(old_mtime < fs::client::last_write_time(conn, data_object));
     }
 }
