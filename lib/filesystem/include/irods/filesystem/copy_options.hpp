@@ -6,15 +6,17 @@
 
 namespace irods::experimental::filesystem
 {
-    enum class copy_options
+    enum class copy_options : std::uint32_t
     {
-        none                    = 0,
-        skip_existing           = 1 << 0,
-        overwrite_existing      = 1 << 1,
-        update_existing         = 1 << 2,
-        recursive               = 1 << 3,
-        collections_only        = 1 << 4,
-        in_recursive_copy       = 1 << 5
+        // clang-format off
+        none               = 0U,
+        skip_existing      = 1U,
+        overwrite_existing = 2U,
+        update_existing    = 4U,
+        recursive          = 8U,
+        collections_only   = 16U,
+        in_recursive_copy  = 32U
+        // clang-format on
     };
 
     inline auto operator|=(copy_options& _lhs, copy_options _rhs) noexcept -> copy_options&

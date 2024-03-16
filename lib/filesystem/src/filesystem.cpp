@@ -574,10 +574,6 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
                 throw filesystem_error{"path does not point to a data object", _to, make_error_code(INVALID_OBJECT_TYPE)};
             }
 
-            if (copy_options::none == _options) {
-                throw filesystem_error{"copy options not set", make_error_code(SYS_INVALID_INPUT_PARAM)};
-            }
-
             if (copy_options::skip_existing == _options) {
                 return false;
             }
@@ -585,17 +581,17 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
             if (copy_options::overwrite_existing == _options) {
                 addKeyVal(&input.destDataObjInp.condInput, FORCE_FLAG_KW, "");
             }
-
-            if (copy_options::update_existing == _options) {
+            else if (copy_options::update_existing == _options) {
                 if (last_write_time(_comm, _from) <= last_write_time(_comm, _to)) {
                     return false;
                 }
+
+                addKeyVal(&input.destDataObjInp.condInput, FORCE_FLAG_KW, "");
             }
         }
 
         std::strncpy(input.srcDataObjInp.objPath, _from.c_str(), std::strlen(_from.c_str()));
         std::strncpy(input.destDataObjInp.objPath, _to.c_str(), std::strlen(_to.c_str()));
-        addKeyVal(&input.destDataObjInp.condInput, DEST_RESC_NAME_KW, "");
 
         if (const auto ec = rxDataObjCopy(&_comm, &input); ec < 0) {
             throw filesystem_error{"cannot copy data object", _from, _to, make_error_code(ec)};
