@@ -54,4 +54,9 @@
 /// \since 4.3.2
 #define IRODS_HAS_API_ENDPOINT_REPLICA_TRUNCATE                              202403L
 
+/// Defined if the development library supports #rc_genquery2.
+///
+/// \since 4.3.2
+#define IRODS_HAS_API_ENDPOINT_GENQUERY2                                     202403L
+
 #endif // IRODS_LIBRARY_FEATURES_H

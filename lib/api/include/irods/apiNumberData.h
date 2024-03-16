@@ -165,5 +165,6 @@ API_NUMBER(ZONE_REPORT_AN,                          10205)
 API_NUMBER(CLIENT_HINTS_AN,                         10215)
 
 API_NUMBER(GET_RESOURCE_INFO_FOR_OPERATION_AN,      10220)
+API_NUMBER(GENQUERY2_AN,                            10221)
 
 // clang-format on

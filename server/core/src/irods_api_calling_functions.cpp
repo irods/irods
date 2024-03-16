@@ -1,3 +1,4 @@
+#include "irods/genquery2.h"
 #include "irods/rcConnect.h"
 #include "irods/apiHeaderAll.h"
 #include "irods/apiHandler.hpp"
@@ -1144,3 +1145,8 @@ auto call_replica_truncate(irods::api_entry* _api, rsComm_t* _comm, dataObjInp_t
 {
     return _api->call_handler<dataObjInp_t*, char**>(_comm, _inp, _out);
 } // call_replica_truncate
+
+int call_genquery2_inout(irods::api_entry* _api, rsComm_t* _comm, genQuery2Inp_t* _inp, char** _out)
+{
+    return _api->call_handler<genQuery2Inp_t*, char**>(_comm, _inp, _out);
+} // call_genquery2_inout
