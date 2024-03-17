@@ -8,7 +8,7 @@ const char * const icmds[] = {
     "ierror", "iexit", "ifsck", "iget", "igroupadmin",
     "ihelp", "iinit", "ilocate", "ils", "ilsresc",
     "imcoll", "imeta", "imiscsvrinfo", "imkdir", "imv", "ipasswd",
-    "iphymv", "ips", "iput", "ipwd", "iqdel", "iqmod", "iqstat",
+    "iphymv", "ips", "iput", "ipwd", "iqdel", "iqmod", "iqstat", "iquery",
     "iquest", "iquota", "ireg", "irepl", "irm", "irmdir", "irmtrash", "irsync", "irule",
     "iscan", "istream", "isysmeta", "iticket", "itouch", "itree", "itrim", "iunreg", "iuserinfo",
     "izonereport"
@@ -51,6 +51,7 @@ printMainHelp() {
         "iqdel        - remove a delayed rule (owned by you) from the queue.",
         "iqmod        - modify certain values in existing delayed rules (owned by you).",
         "iqstat       - show the queue status of delayed rules.",
+        "iquery       - query the catalog using the GenQuery2 parser.",
         "iquest       - issue a question (query on system/user-defined metadata).",
         "iquota       - show information on iRODS quotas (if any).",
         "ireg         - register a file or directory/files/subdirectories into iRODS.",
