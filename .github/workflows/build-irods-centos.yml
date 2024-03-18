@@ -15,7 +15,7 @@ jobs:
         run:  |
               yum -y update ca-certificates
               yum -y install bind-utils wget epel-release centos-release-scl
-              yum -y install gcc g++ libstdc++-static make rpm-build bzip2-devel curl-devel fakeroot openssl-devel pam-devel python-devel unixODBC unixODBC-devel zlib-devel python36-distro
+              yum -y install gcc g++ libstdc++-static make rpm-build bzip2-devel curl-devel fakeroot openssl-devel pam-devel python-devel unixODBC unixODBC-devel zlib-devel python36-distro flex bison
       - name: Install iRODS Externals
         run:  |
               rpm --import https://unstable.irods.org/irods-unstable-signing-key.asc
