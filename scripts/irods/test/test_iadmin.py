@@ -1457,11 +1457,11 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(["iadmin", "mkgroup", "g1"])
         self.admin.assert_icommand(["iadmin", "atg", "g1", self.user0.username])
         self.admin.assert_icommand(["iadmin", "atg", "g1a", self.user0.username], 'STDERR_SINGLELINE', 'CAT_INVALID_GROUP')
-        self.admin.assert_icommand(["iadmin", "rfg", "g1", self.user1.username])
+        self.admin.assert_icommand(["iadmin", "rfg", "g1", self.user1.username], 'STDERR', '-1830000 USER_NOT_IN_GROUP')
         self.admin.assert_icommand(["iadmin", "atg", "g1", self.user1.username])
         self.admin.assert_icommand(["iadmin", "rfg", "g1", self.user0.username])
         self.admin.assert_icommand(["iadmin", "rfg", "g1", self.user1.username])
-        self.admin.assert_icommand(["iadmin", "rfg", "g1", self.user1.username])
+        self.admin.assert_icommand(["iadmin", "rfg", "g1", self.user1.username], 'STDERR', '-1830000 USER_NOT_IN_GROUP')
         self.admin.assert_icommand(["iadmin", "rmgroup", "g1"])
 
     def test_idempotent_aua__issue_3104(self):
