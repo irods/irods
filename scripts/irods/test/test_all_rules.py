@@ -1715,14 +1715,30 @@ OUTPUT ruleExecOut
 
         # This map contains rule code key'd off of the the REP type.
         rule_map = {
-            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent(f'''
-                msiRemoveUserFromGroup('{group}', '{self.user0.username}', '')
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                issue_7165 {{
+                    msiRemoveUserFromGroup('{0}', '{1}', '{2}')
+                }}
+
+                INPUT null
+                OUTPUT ruleExecOut
             '''),
-            'irods_rule_engine_plugin-python': textwrap.dedent(f'''
-                def issue_7165(_, callback, _):
-                    callback.msiRemoveUserFromGroup('{group}', '{self.user0.username}', '')
+            'irods_rule_engine_plugin-python': textwrap.dedent('''
+                def main(rule_args, callback, rei):
+                    try:
+                        callback.msiRemoveUserFromGroup('{0}', '{1}', '{2}')
+                    except Exception as e:
+                        callback.writeLine('stderr', str(e))
+
+                INPUT null
+                OUTPUT ruleExecOut
             '''),
         }
+
+        plugin = IrodsConfig().default_rule_engine_plugin
+        rule_file_path = os.path.join(
+            self.admin.local_session_dir,
+            'test_msiRemoveUserFromGroup_returns_error_when_attempting_to_remove_user_from_group_which_they_are_not_a_member_of__issue_7165.r')
 
         try:
             # Create a new group.
@@ -1731,7 +1747,9 @@ OUTPUT ruleExecOut
 
             # Remove the user from the group using the microservice.
             rep_instance = plugin_name + '-instance'
-            self.admin.assert_icommand(['irule', '-r', rep_instance, rule_map[plugin_name], 'null', 'ruleExecOut'], 'STDERR', ['-819000 CAT_SUCCESS_BUT_WITH_NO_INFO'])
+            with open(rule_file_path, 'w') as rule_file:
+                rule_file.write(rule_map[plugin].format(group, self.user0.username, ''))
+            self.admin.assert_icommand(['irule', '-r', rep_instance, '-F', rule_file_path], 'STDERR', ['-1830000', 'USER_NOT_IN_GROUP'])
 
         finally:
             self.admin.run_icommand(['iadmin', 'rmgroup', group])
