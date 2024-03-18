@@ -7903,6 +7903,12 @@ irods::error db_mod_group_op(
                       "delete from R_USER_GROUP where group_user_id = ? and user_id = ?",
                       &icss );
         if ( status != 0 ) {
+            if (CAT_SUCCESS_BUT_WITH_NO_INFO == status) {
+                // If the removal resulted in nothing happening, the target user is not a member of the target group.
+                // Some clients and REPs do not acknowledge CAT_SUCCESS_BUT_WITH_NO_INFO so we need to return something
+                // a little more specific to indicate the state of affairs.
+                status = USER_NOT_IN_GROUP;
+            }
             log_db::info("chlModGroup cmlExecuteNoAnswerSql delete failure {}", status);
             _rollback( "chlModGroup" );
             return ERROR( status, "delete failure" );
