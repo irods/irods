@@ -252,6 +252,10 @@ namespace irods
         table_[ "msiCutBufferInHalf" ] = new irods::ms_table_entry( "msiCutBufferInHalf", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiCutBufferInHalf ) );
         table_[ "msiDoSomething" ] = new irods::ms_table_entry( "msiDoSomething", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiDoSomething ) );
         table_[ "msiTakeThreeArgumentsAndDoNothing" ] = new irods::ms_table_entry( "msiTakeThreeArgumentsAndDoNothing", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiTakeThreeArgumentsAndDoNothing ) );
+        table_["msi_genquery2_execute"] = new irods::ms_table_entry("msi_genquery2_execute", 2, std::function<int(msParam_t*, msParam_t*, ruleExecInfo_t*)>(msi_genquery2_execute));
+        table_["msi_genquery2_next_row"] = new irods::ms_table_entry("msi_genquery2_next_row", 1, std::function<int(msParam_t*, ruleExecInfo_t*)>(msi_genquery2_next_row));
+        table_["msi_genquery2_column"] = new irods::ms_table_entry("msi_genquery2_column", 3, std::function<int(msParam_t*, msParam_t*, msParam_t*, ruleExecInfo_t*)>(msi_genquery2_column));
+        table_["msi_genquery2_free"] = new irods::ms_table_entry("msi_genquery2_free", 1, std::function<int(msParam_t*, ruleExecInfo_t*)>(msi_genquery2_free));
     }; // ms_table::ms_table
 
     // clang-format on
