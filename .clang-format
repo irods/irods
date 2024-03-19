@@ -1,0 +1,203 @@
+---
+DisableFormat:   false
+
+Language:        Cpp
+Standard:        c++20
+
+ColumnLimit:     120
+UseCRLF:         false
+
+#UseTab:          AlignWithSpaces
+UseTab:          Never
+TabWidth:        4
+IndentWidth:     4
+ConstructorInitializerIndentWidth: 4
+
+IndentPPDirectives: AfterHash
+PPIndentWidth:   2
+
+IndentAccessModifiers: false
+AccessModifierOffset: -2
+
+AlignAfterOpenBracket: Align
+#AlignAfterOpenBracket: BlockIndent
+AlignArrayOfStructures: None
+AlignConsecutiveAssignments: None
+AlignConsecutiveBitFields: Consecutive
+AlignConsecutiveDeclarations: None
+AlignConsecutiveMacros: AcrossEmptyLinesAndComments
+AlignEscapedNewlines: Left
+AlignOperands:   Align
+AlignTrailingComments: false
+
+AllowAllArgumentsOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowAllConstructorInitializersOnNextLine: false
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+
+AllowShortBlocksOnASingleLine: Empty
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortEnumsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLambdasOnASingleLine: All
+AllowShortLoopsOnASingleLine: false
+
+IndentCaseBlocks: false
+IndentCaseLabels: true
+IndentExternBlock: AfterExternBlock
+IndentGotoLabels: true
+IndentRequires:  true
+#IndentRequiresClause: true
+IndentWrappedFunctionNames: false
+LambdaBodyIndentation: Signature
+NamespaceIndentation: All
+
+AlwaysBreakAfterReturnType: None
+AlwaysBreakAfterDefinitionReturnType: None
+AlwaysBreakBeforeMultilineStrings: false
+AlwaysBreakTemplateDeclarations: Yes
+
+BinPackArguments: false
+BinPackParameters: false
+
+BreakBeforeBinaryOperators: None
+BreakBeforeConceptDeclarations: true
+BreakBeforeInheritanceComma: true
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializers: BeforeComma
+BreakInheritanceList: BeforeComma
+BreakStringLiterals: true
+BreakBeforeBraces: Custom
+BraceWrapping:
+   AfterCaseLabel:  false
+   AfterClass:      true
+   AfterControlStatement: MultiLine
+   AfterEnum:       true
+   AfterExternBlock: false
+   AfterFunction:   true
+   AfterNamespace:  true
+   AfterStruct:     true
+   AfterUnion:      true
+   BeforeCatch:     true
+   BeforeElse:      true
+   BeforeLambdaBody: false
+   BeforeWhile:     true
+   IndentBraces:    false
+   SplitEmptyFunction: true
+   SplitEmptyNamespace: true
+   SplitEmptyRecord: true
+
+#InsertBraces:    false
+#RemoveBracesLLVM: false
+
+DeriveLineEnding: true
+DerivePointerAlignment: false
+ExperimentalAutoDetectBinPacking: false
+
+SpaceAfterCStyleCast: true
+SpaceAfterLogicalNot: false
+SpaceAfterTemplateKeyword: true
+SpaceAroundPointerQualifiers: Default
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCaseColon: false
+SpaceBeforeCpp11BracedList: false
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon: true
+SpaceBeforeParens: ControlStatements
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceBeforeSquareBrackets: false
+SpaceInEmptyBlock: false
+SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: 1
+SpacesInAngles:  Never
+SpacesInConditionalStatement: false
+SpacesInContainerLiterals: false
+SpacesInCStyleCastParentheses: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+SpacesInLineCommentPrefix:
+   Minimum:         0
+   Maximum:         -1
+
+BitFieldColonSpacing: Both
+Cpp11BracedListStyle: true
+
+FixNamespaceComments: true
+ShortNamespaceLines: 0
+
+SortIncludes:    Never
+SortUsingDeclarations: true
+
+PointerAlignment: Left
+ReferenceAlignment: Pointer
+
+EmptyLineAfterAccessModifier: Never
+EmptyLineBeforeAccessModifier: LogicalBlock
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 1
+#SeparateDefinitionBlocks: Always
+
+AttributeMacros:
+  - __capability
+  - __extension__
+  - __const__
+  - __volatile__
+  - __signed__
+  - __inline__
+  - BOOST_RESTRICT
+  - BOOST_FORCEINLINE
+  - BOOST_NOINLINE
+  - BOOST_NORETURN
+  - BOOST_ATTRIBUTE_UNUSED
+  - BOOST_ATTRIBUTE_NODISCARD
+  - BOOST_ATTRIBUTE_NO_UNIQUE_ADDRESS
+  - BOOST_MAY_ALIAS
+  - BOOST_NO_MAY_ALIAS
+  - BOOST_SYMBOL_VISIBLE
+  - BOOST_SYMBOL_EXPORT
+  - BOOST_SYMBOL_IMPORT
+  - BOOST_INLINE_VARIABLE
+  - BOOST_INLINE_CONSTEXPR
+  - BOOST_NOEXCEPT_OR_NOTHROW
+  - BOOST_FINAL
+  - BOOST_OVERRIDE
+ForEachMacros:
+   - foreach
+   - BOOST_FOREACH
+   - BOOST_REVERSE_FOREACH
+IfMacros:
+   - CATCH_CHECKED_IF
+   - CATCH_CHECKED_ELSE
+   - CHECKED_IF
+   - CHECKED_ELSE
+   - BOOST_IF_CONSTEXPR
+StatementMacros:
+   - BOOST_PRAGMA_MESSAGE
+   - BOOST_HEADER_DEPRECATED
+WhitespaceSensitiveMacros:
+   - STRINGIZE
+   - PP_STRINGIZE
+   - BOOST_STRINGIZE
+   - BOOST_PP_STRINGIZE
+   - BOOST_PP_WSTRINGIZE
+   - CMAKE_STRINGIFY
+   - CMAKE_TOSTRING
+
+PenaltyBreakAssignment: 2
+PenaltyBreakBeforeFirstCallParameter: 0
+PenaltyBreakComment: 300
+PenaltyBreakFirstLessLess: 120
+#PenaltyBreakOpenParenthesis: 0
+PenaltyBreakString: 1000
+PenaltyBreakTemplateDeclaration: 10
+PenaltyExcessCharacter: 1000000
+PenaltyIndentedWhitespace: 0
+PenaltyReturnTypeOnItsOwnLine: 200
+
+CommentPragmas:  '^ (IWYU pragma:|(NOLINT(NEXTLINE|BEGIN|END)?)|clang-format)'
+CompactNamespaces: false
+IncludeBlocks:   Preserve
+InsertTrailingCommas: None
+ReflowComments:  true
+#RequiresClausePosition: OwnLine
