@@ -12,6 +12,7 @@
 #include "irods/reNaraMetaData.hpp"
 #include "irods/reIn2p3SysRule.hpp"
 #include "irods/irods_ms_plugin.hpp"
+#include "irods/msi_genquery2.hpp"
 
 int msiRollback( ruleExecInfo_t *rei );
 int msiSetACL( msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *userName,
