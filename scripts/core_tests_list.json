@@ -74,6 +74,7 @@
     "test_ireg.test_ireg_options",
     "test_ireg.test_ireg_replica",
     "test_irepl.Test_Irepl",
+    "test_irepl.test_all_permission_levels__issue_7444_7465",
     "test_irepl.test_invalid_parameters",
     "test_irepl.test_irepl_repl_status",
     "test_irepl.test_irepl_replication_hierarchy",

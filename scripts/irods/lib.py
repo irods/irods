@@ -661,12 +661,19 @@ def get_replica_status(session, data_name, replica_number):
         "select DATA_REPL_STATUS where DATA_NAME = '{}' and DATA_REPL_NUM = '{}'"
         .format(data_name, str(replica_number))])[0].strip()
 
-def get_replica_status_for_resource(session, logical_path, resource_name):
-    return session.run_icommand(['iquest', '%s',
-        "select DATA_REPL_STATUS where COLL_NAME = '{}' and DATA_NAME = '{}' and DATA_RESC_NAME = '{}'"
-        .format(os.path.dirname(logical_path),
-                os.path.basename(logical_path),
-                resource_name)])[0].strip()
+def get_replica_status_for_resource(session, logical_path, resource_name, zone_name=None):
+    query = "select DATA_REPL_STATUS where COLL_NAME = '{}' and DATA_NAME = '{}' and DATA_RESC_NAME = '{}'".format(
+        os.path.dirname(logical_path),
+        os.path.basename(logical_path),
+        resource_name)
+    output_line_number = 0
+    if zone_name:
+        command = ['iquest', '-z', zone_name, '%s', query]
+        # For some reason, iquest prints "Zone is <zone_name>" when -z is used. Skip this line.
+        output_line_number = 1
+    else:
+        command = ['iquest', '%s', query]
+    return session.run_icommand(command)[0].splitlines()[output_line_number].strip()
 
 def get_replica_size(session, data_name, replica_number):
     return session.run_icommand(['iquest', '%s',
@@ -684,14 +691,21 @@ def replica_exists(session, logical_path, replica_number):
     return 'CAT_NO_ROWS_FOUND' not in out
 
 
-def replica_exists_on_resource(session, logical_path, resource_name):
-    out = session.run_icommand(['iquest',
-        "select DATA_ID where COLL_NAME = '{}' and DATA_NAME = '{}' and DATA_RESC_NAME = '{}'"
-        .format(os.path.dirname(logical_path),
-                os.path.basename(logical_path),
-                resource_name)])[0]
+def replica_exists_on_resource(session, logical_path, resource_name, zone_name=None):
+    query = "select DATA_ID where COLL_NAME = '{}' and DATA_NAME = '{}' and DATA_RESC_NAME = '{}'".format(
+        os.path.dirname(logical_path),
+        os.path.basename(logical_path),
+        resource_name)
+    if zone_name:
+        command = ['iquest', '-z', zone_name, '%s', query]
+    else:
+        command = ['iquest', '%s', query]
+    out, _, rc = session.run_icommand(command)
 
-    return 'CAT_NO_ROWS_FOUND' not in out
+    # CAT_NO_ROWS_FOUND indicates that no results were found for the query. If this error code is not in the
+    # output and the return code is 0, that means results WERE found and this function should return true. Else, no
+    # results were found or some other error occurred, in which case this function should return false.
+    return 'CAT_NO_ROWS_FOUND' not in out and 0 == rc
 
 
 def get_replica_mtime(session, logical_path, replica_number):
