@@ -1878,3 +1878,182 @@ class test_irepl_replication_hierarchy(session.make_sessions_mixin([('otherrods'
            #{'start':{'a':'X', 'b':'X', 'c':'X', 'f':'-'}, 'end':{'a':'X', 'b':'X', 'c':'X', 'f':'-'}, 'output':{'out':None, 'err':None, 'rc':None}}, # dXXXf-
            #{'start':{'a':'X', 'b':'X', 'c':'X', 'f':'&'}, 'end':{'a':'X', 'b':'X', 'c':'X', 'f':'&'}, 'output':{'out':None, 'err':None, 'rc':None}}, # dXXXf&
            #{'start':{'a':'X', 'b':'X', 'c':'X', 'f':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X', 'f':'X'}, 'output':{'out':None, 'err':None, 'rc':None}}  # dXXXfX
+
+
+class test_all_permission_levels__issue_7444_7465(unittest.TestCase):
+    @classmethod
+    def setUpClass(self):
+        self.user0 = session.mkuser_and_return_session('rodsuser', 'smeagol', 'spass', lib.get_hostname())
+        self.user1 = session.mkuser_and_return_session('rodsuser', 'bilbo', 'bpass', lib.get_hostname())
+
+        # Give other user ownership of the session collection so we can focus on object permissions.
+        self.user0.assert_icommand(['ichmod', 'own', self.user1.username, self.user0.session_collection])
+
+        self.target_resource = 'target_resource'
+        self.other_resource = 'other_resource'
+
+        with session.make_session_for_existing_admin() as admin_session:
+            lib.create_ufs_resource(admin_session, self.target_resource, hostname=test.settings.HOSTNAME_2)
+            lib.create_ufs_resource(admin_session, self.other_resource, hostname=test.settings.HOSTNAME_3)
+
+    @classmethod
+    def tearDownClass(self):
+        self.user0.__exit__()
+        self.user1.__exit__()
+
+        with session.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand(['iadmin', 'rmuser', self.user0.username])
+            admin_session.assert_icommand(['iadmin', 'rmuser', self.user1.username])
+            lib.remove_resource(admin_session, self.target_resource)
+            lib.remove_resource(admin_session, self.other_resource)
+
+    def test_permissions_that_do_not_allow_user_to_see_object_results_in_no_replication_and_an_error(self):
+        logical_path = os.path.join(self.user0.session_collection, 'this_object_is_invisible')
+        permissions = [None, 'null', 'read_metadata']
+
+        for permission in permissions:
+            with self.subTest(str(permission)):
+                try:
+                    # Create a data object and make sure it is good.
+                    self.user0.assert_icommand(['itouch', '-R', self.target_resource, logical_path])
+                    self.assertTrue(lib.replica_exists_on_resource(self.user0, logical_path, self.target_resource))
+                    self.assertEqual(str(1), lib.get_replica_status(self.user0, os.path.basename(logical_path), 0))
+
+                    if permission is not None:
+                        self.user0.assert_icommand(['ichmod', permission, self.user1.username, logical_path])
+
+                    # Try to replicate the data object and fail because user1 cannot even see the data object.
+                    self.user1.assert_icommand(
+                        ['irepl', '-R', self.other_resource, logical_path], 'STDERR', 'does not exist')
+                    self.assertTrue(lib.replica_exists_on_resource(self.user0, logical_path, self.target_resource))
+                    self.assertEqual(str(1), lib.get_replica_status(self.user0, os.path.basename(logical_path), 0))
+                    self.assertFalse(lib.replica_exists_on_resource(self.user0, logical_path, self.other_resource))
+
+                    # Now replicate the data object and set it to stale so that it is possible to be updated.
+                    self.user0.assert_icommand(['irepl', '-R', self.other_resource, logical_path])
+                    self.assertTrue(lib.replica_exists_on_resource(self.user0, logical_path, self.other_resource))
+                    self.assertEqual(str(1), lib.get_replica_status(self.user0, os.path.basename(logical_path), 1))
+                    with session.make_session_for_existing_admin() as admin_session:
+                        lib.set_replica_status(admin_session, logical_path, 1, 0)
+                    self.assertEqual(str(0), lib.get_replica_status(self.user0, os.path.basename(logical_path), 1))
+
+                    # Try to update the stale replicas and fail because user1 cannot even see the data object.
+                    self.user1.assert_icommand(['irepl', '-a', logical_path], 'STDERR', 'does not exist')
+                    self.assertTrue(lib.replica_exists_on_resource(self.user0, logical_path, self.target_resource))
+                    self.assertEqual(str(1), lib.get_replica_status(self.user0, os.path.basename(logical_path), 0))
+                    self.assertTrue(lib.replica_exists_on_resource(self.user0, logical_path, self.other_resource))
+                    self.assertEqual(str(0), lib.get_replica_status(self.user0, os.path.basename(logical_path), 1))
+
+                finally:
+                    # In the case where this test does not pass (i.e. REGRESSION) it is possible for the replicas to be
+                    # stuck in the intermediate or write-locked status. We set the status at the end here to ensure
+                    # that the object can be removed.
+                    with session.make_session_for_existing_admin() as admin_session:
+                        admin_session.assert_icommand(['ils', '-L', os.path.dirname(logical_path)], 'STDOUT') # debug
+                        for replica_number in range(2):
+                            admin_session.run_icommand([
+                                'iadmin', 'modrepl',
+                                'logical_path', logical_path,
+                                'replica_number', str(replica_number),
+                                'DATA_REPL_STATUS', str(0)
+                            ])
+                    self.user0.assert_icommand(['irm', '-f', logical_path])
+
+    def test_insufficient_permissions_results_in_no_replication_and_an_error(self):
+        logical_path = os.path.join(self.user0.session_collection, 'this_object_will_not_be_replicated')
+        permissions = ['read_object', 'create_metadata', 'modify_metadata', 'delete_metadata', 'create_object']
+
+        for permission in permissions:
+            with self.subTest(permission):
+                try:
+                    # Create a data object and make sure it is good.
+                    self.user0.assert_icommand(['itouch', '-R', self.target_resource, logical_path])
+                    self.assertTrue(lib.replica_exists_on_resource(self.user0, logical_path, self.target_resource))
+                    self.assertEqual(str(1), lib.get_replica_status(self.user0, os.path.basename(logical_path), 0))
+
+                    self.user0.assert_icommand(['ichmod', permission, self.user1.username, logical_path])
+
+                    # Try to replicate the data object and ensure that it fails with an error.
+                    self.user1.assert_icommand(
+                        ['irepl', '-R', self.other_resource, logical_path], 'STDERR', 'SYS_USER_NO_PERMISSION')
+                    self.assertTrue(lib.replica_exists_on_resource(self.user0, logical_path, self.target_resource))
+                    self.assertEqual(str(1), lib.get_replica_status(self.user0, os.path.basename(logical_path), 0))
+                    self.assertFalse(lib.replica_exists_on_resource(self.user0, logical_path, self.other_resource))
+
+                    # Now replicate the data object and set it to stale so that it is possible to be updated.
+                    self.user0.assert_icommand(['irepl', '-R', self.other_resource, logical_path])
+                    self.assertTrue(lib.replica_exists_on_resource(self.user0, logical_path, self.other_resource))
+                    self.assertEqual(str(1), lib.get_replica_status(self.user0, os.path.basename(logical_path), 1))
+                    with session.make_session_for_existing_admin() as admin_session:
+                        lib.set_replica_status(admin_session, logical_path, 1, 0)
+                    self.assertEqual(str(0), lib.get_replica_status(self.user0, os.path.basename(logical_path), 1))
+
+                    # Try to update the stale replicas and ensure that it fails with an error.
+                    self.user1.assert_icommand(['irepl', '-a', logical_path], 'STDERR', 'SYS_USER_NO_PERMISSION')
+                    self.assertTrue(lib.replica_exists_on_resource(self.user0, logical_path, self.target_resource))
+                    self.assertEqual(str(1), lib.get_replica_status(self.user0, os.path.basename(logical_path), 0))
+                    self.assertTrue(lib.replica_exists_on_resource(self.user0, logical_path, self.other_resource))
+                    self.assertEqual(str(0), lib.get_replica_status(self.user0, os.path.basename(logical_path), 1))
+
+                finally:
+                    # In the case where this test does not pass (i.e. REGRESSION) it is possible for the replicas to be
+                    # stuck in the intermediate or write-locked status. We set the status at the end here to ensure
+                    # that the object can be removed.
+                    with session.make_session_for_existing_admin() as admin_session:
+                        admin_session.assert_icommand(['ils', '-L', os.path.dirname(logical_path)], 'STDOUT') # debug
+                        for replica_number in range(2):
+                            admin_session.run_icommand([
+                                'iadmin', 'modrepl',
+                                'logical_path', logical_path,
+                                'replica_number', str(replica_number),
+                                'DATA_REPL_STATUS', str(0)
+                            ])
+                    self.user0.assert_icommand(['irm', '-f', logical_path])
+
+    def test_sufficient_permissions_results_in_replication_and_no_error(self):
+        logical_path = os.path.join(self.user0.session_collection, 'this_object_will_be_replicated')
+        permissions = ['modify_object', 'delete_object', 'own']
+
+        for permission in permissions:
+            with self.subTest(permission):
+                try:
+                    # Create a data object and make sure it is good.
+                    self.user0.assert_icommand(['itouch', '-R', self.target_resource, logical_path])
+                    self.assertTrue(lib.replica_exists_on_resource(self.user0, logical_path, self.target_resource))
+                    self.assertEqual(str(1), lib.get_replica_status(self.user0, os.path.basename(logical_path), 0))
+
+                    self.user0.assert_icommand(['ichmod', permission, self.user1.username, logical_path])
+
+                    # Try to replicate the data object and ensure that it completes successfully.
+                    self.user1.assert_icommand(['irepl', '-R', self.other_resource, logical_path])
+                    self.assertTrue(lib.replica_exists_on_resource(self.user0, logical_path, self.target_resource))
+                    self.assertEqual(str(1), lib.get_replica_status(self.user0, os.path.basename(logical_path), 0))
+                    self.assertTrue(lib.replica_exists_on_resource(self.user0, logical_path, self.other_resource))
+                    self.assertEqual(str(1), lib.get_replica_status(self.user0, os.path.basename(logical_path), 1))
+
+                    # Set a replica to stale so that it is possible to be updated.
+                    with session.make_session_for_existing_admin() as admin_session:
+                        lib.set_replica_status(admin_session, logical_path, 1, 0)
+                    self.assertEqual(str(0), lib.get_replica_status(self.user0, os.path.basename(logical_path), 1))
+
+                    # Try to update the stale replicas and ensure that it completes successfully.
+                    self.user1.assert_icommand(['irepl', '-a', logical_path])
+                    self.assertTrue(lib.replica_exists_on_resource(self.user0, logical_path, self.target_resource))
+                    self.assertEqual(str(1), lib.get_replica_status(self.user0, os.path.basename(logical_path), 0))
+                    self.assertTrue(lib.replica_exists_on_resource(self.user0, logical_path, self.other_resource))
+                    self.assertEqual(str(1), lib.get_replica_status(self.user0, os.path.basename(logical_path), 1))
+
+                finally:
+                    # In the case where this test does not pass (i.e. REGRESSION) it is possible for the replicas to be
+                    # stuck in the intermediate or write-locked status. We set the status at the end here to ensure
+                    # that the object can be removed.
+                    with session.make_session_for_existing_admin() as admin_session:
+                        admin_session.assert_icommand(['ils', '-L', os.path.dirname(logical_path)], 'STDOUT') # debug
+                        for replica_number in range(2):
+                            admin_session.run_icommand([
+                                'iadmin', 'modrepl',
+                                'logical_path', logical_path,
+                                'replica_number', str(replica_number),
+                                'DATA_REPL_STATUS', str(0)
+                            ])
+                    self.user0.assert_icommand(['irm', '-f', logical_path])
