@@ -6,6 +6,7 @@
 
 #include "irods/irods_query.hpp"
 #include "irods/query_builder.hpp"
+#include "irods/version.hpp"
 
 namespace irods::experimental::administration::NAMESPACE_IMPL
 {
@@ -102,10 +103,14 @@ namespace irods::experimental::administration::NAMESPACE_IMPL
     auto remove_group(RxComm& _comm, const group& _group) -> void
     {
         const auto zone = get_local_zone(_comm);
-
         GeneralAdminInput input{};
         input.arg0 = "rm";
-        input.arg1 = "user";
+#ifdef IRODS_USER_ADMINISTRATION_ENABLE_SERVER_SIDE_API
+        input.arg1 = "group";
+#else
+        const auto version = irods::to_version(_comm.svrVersion->relVersion);
+        input.arg1 = (version && version.value() > irods::version{4, 3, 1}) ? "group" : "user";
+#endif
         input.arg2 = _group.name.data();
         input.arg3 = zone.data();
 
