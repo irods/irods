@@ -40,6 +40,7 @@
 #include "irods/specColl.hpp"
 #include "irods/unbunAndRegPhyBunfile.h"
 
+#include "irods/catalog_utilities.hpp"
 #include "irods/finalize_utilities.hpp"
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_log.hpp"
@@ -47,6 +48,7 @@
 #include "irods/irods_random.hpp"
 #include "irods/irods_resource_backport.hpp"
 #include "irods/irods_resource_redirect.hpp"
+#include "irods/irods_rs_comm_query.hpp"
 #include "irods/irods_server_api_call.hpp"
 #include "irods/irods_server_properties.hpp"
 #include "irods/irods_stacktrace.hpp"
@@ -56,6 +58,9 @@
 #include "irods/replica_access_table.hpp"
 #include "irods/replication_utilities.hpp"
 #include "irods/voting.hpp"
+
+#define IRODS_QUERY_ENABLE_SERVER_SIDE_API
+#include "irods/irods_query.hpp"
 
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
 #include "irods/data_object_proxy.hpp"
@@ -472,6 +477,64 @@ namespace
         return rsDataObjOpen(&_comm, &_inp);
     } // open_destination_replica
 
+    auto user_has_permission_to_replicate_object(RsComm& _comm, const irods::file_object_ptr _obj) -> bool
+    {
+        // Short-circuit the query by checking to see whether this is a rodsadmin using the ADMIN_KW, which allows
+        // them to do whatever they want.
+        if (irods::is_privileged_client(_comm) && getValByKey(&_obj->cond_input(), ADMIN_KW)) {
+            return true;
+        }
+
+        const auto path = irods::experimental::filesystem::path{_obj->logical_path()};
+        const auto permission_query_string =
+            fmt::format("select DATA_ACCESS_TYPE where USER_NAME = '{}' and USER_ZONE = '{}' and DATA_ID = '{}'",
+                        _comm.clientUser.userName,
+                        _comm.clientUser.rodsZone,
+                        _obj->data_id());
+
+        auto permission_query = irods::query{&_comm, permission_query_string};
+
+        // If the user has no permissions on the object, it may have returned an empty result set.
+        if (permission_query.empty()) {
+            return false;
+        }
+
+        const auto& query_result = permission_query.front();
+        const auto& access_type_string = query_result[0];
+
+        try {
+            using access_type = irods::experimental::catalog::access_type;
+
+            switch (std::stoi(access_type_string)) {
+                case static_cast<int>(access_type::modify_object): // NOLINT(bugprone-branch-clone)
+                    [[fallthrough]];
+                case static_cast<int>(access_type::delete_object): // NOLINT(bugprone-branch-clone)
+                    [[fallthrough]];
+                case static_cast<int>(access_type::own):
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+        catch (const std::invalid_argument& e) {
+            log_api::error("DATA_ACCESS_TYPE for user [{}#{}] on object [{}] has invalid value [{}]",
+                           _comm.clientUser.userName,
+                           _comm.clientUser.rodsZone,
+                           _obj->logical_path(),
+                           access_type_string);
+            return false;
+        }
+        catch (const std::out_of_range& e) {
+            log_api::error("DATA_ACCESS_TYPE for user [{}#{}] on object [{}] has out-of-range value [{}]",
+                           _comm.clientUser.userName,
+                           _comm.clientUser.rodsZone,
+                           _obj->logical_path(),
+                           access_type_string);
+            return false;
+        }
+    } // user_has_permission_to_replicate_object
+
     int replicate_data(RsComm& _comm, DataObjInp& _source_inp, DataObjInp& _destination_inp, transferStat_t** _stat)
     {
         // Open source replica
@@ -692,6 +755,24 @@ namespace
         auto source_cond_input = irods::experimental::make_key_value_proxy(source_inp.condInput);
         auto source_obj = resolve_hierarchy_and_get_data_object_info(_comm, source_inp, irods::OPEN_OPERATION);
 
+        // This check is required because certain operations used by this API in order to perform a replication have
+        // different permissions requirements which may not align. In order to complete the replication, the maximum
+        // required permission level across all of these operations is the minimum required permission to perform the
+        // full operation. As such, an additional check is required to make sure the replication can proceed.
+        if (!user_has_permission_to_replicate_object(_comm, source_obj)) {
+            const std::string msg =
+                fmt::format("User [{}#{}] does not have sufficient permission to replicate object [{}].",
+                            _comm.clientUser.userName,
+                            _comm.clientUser.rodsZone,
+                            source_obj->logical_path());
+            const auto ec = SYS_USER_NO_PERMISSION;
+
+            addRErrorMsg(&_comm.rError, ec, msg.data());
+            log_api::info(msg);
+
+            return ec;
+        }
+
         const auto* source_hierarchy = source_cond_input.at(RESC_HIER_STR_KW).value().data();
 
         // Copy the resolved hierarchy for the source back into the input struct to maintain legacy behavior.
@@ -862,6 +943,25 @@ namespace
         const irods::at_scope_exit free_source_cond_input{[&source_inp]() { clearKeyVal(&source_inp.condInput); }};
         auto source_cond_input = irods::experimental::make_key_value_proxy(source_inp.condInput);
         auto source_obj = resolve_hierarchy_and_get_data_object_info(_comm, source_inp, irods::OPEN_OPERATION);
+
+        // This check is required because certain operations used by this API in order to perform a replication have
+        // different permissions requirements which may not align. In order to complete the replication, the maximum
+        // required permission level across all of these operations is the minimum required permission to perform the
+        // full operation. As such, an additional check is required to make sure the replication can proceed.
+        if (!user_has_permission_to_replicate_object(_comm, source_obj)) {
+            const std::string msg =
+                fmt::format("User [{}#{}] does not have sufficient permission to replicate object [{}].",
+                            _comm.clientUser.userName,
+                            _comm.clientUser.rodsZone,
+                            source_obj->logical_path());
+            const auto ec = SYS_USER_NO_PERMISSION;
+
+            addRErrorMsg(&_comm.rError, ec, msg.data());
+            log_api::info(msg);
+
+            return ec;
+        }
+
         auto& source_replica = get_replica_with_hierarchy(
             _comm, source_obj, source_cond_input.at(RESC_HIER_STR_KW).value(),
             irods::replication::log_errors::yes);
