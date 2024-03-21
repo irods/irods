@@ -1,11 +1,7 @@
 #include "irods/rs_genquery2.hpp"
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Woverloaded-virtual"
-#include "irods/genquery2_driver.hpp"
-#pragma clang diagnostic pop
-
-#include "irods/genquery2_sql.hpp"
+#include "irods/private/genquery2_driver.hpp"
+#include "irods/private/genquery2_sql.hpp"
 
 #include "irods/apiHandler.hpp"
 #include "irods/catalog_utilities.hpp"

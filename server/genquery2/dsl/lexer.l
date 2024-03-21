@@ -1,5 +1,5 @@
 %{
-    #include "irods/genquery2_driver.hpp"
+    #include "irods/private/genquery2_driver.hpp"
 
     #include <fmt/format.h>
 
