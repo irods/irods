@@ -4,8 +4,13 @@ find_package(BISON 3.0.4 REQUIRED)
 set(IRODS_FLEX_LEXER_NAME irods_lexer)
 set(IRODS_BISON_PARSER_NAME irods_parser)
 
-FLEX_TARGET(${IRODS_FLEX_LEXER_NAME} dsl/lexer.l ${CMAKE_CURRENT_BINARY_DIR}/lexer.cpp)
-BISON_TARGET(${IRODS_BISON_PARSER_NAME} dsl/parser.y ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp)
+# Normally, we would do this at build-time, but FLEX_TARGET and BISON_TARGET don't actually define targets,
+# therefore there's no good mechanism to add a dependency to the flex and bison targets.
+# The source file property OBJECT_DEPENDS is *supposed* to work for this, but doesn't.
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/dsl")
+
+FLEX_TARGET(${IRODS_FLEX_LEXER_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/dsl/lexer.l" "${CMAKE_CURRENT_BINARY_DIR}/dsl/lexer.cpp")
+BISON_TARGET(${IRODS_BISON_PARSER_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/dsl/parser.y" "${CMAKE_CURRENT_BINARY_DIR}/dsl/parser.cpp")
 ADD_FLEX_BISON_DEPENDENCY(${IRODS_FLEX_LEXER_NAME} ${IRODS_BISON_PARSER_NAME})
 
 set(IRODS_PARSER_NAME irods_genquery2_parser)
@@ -32,39 +37,19 @@ target_compile_definitions(
   IRODS_ENABLE_SYSLOG
 )
 
-# Defined here since it's isolated to this specific target.
-target_compile_options(
-  ${IRODS_PARSER_NAME}
-  PRIVATE
-  "-Wno-overloaded-virtual"
-)
-
 target_include_directories(
   ${IRODS_PARSER_NAME}
+  PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/dsl>"
   PRIVATE
-  ${CMAKE_CURRENT_BINARY_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR}/include
-  ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
+  "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
 )
 
 target_link_libraries(
   ${IRODS_PARSER_NAME}
   PUBLIC
+  irods_common
   nlohmann_json::nlohmann_json
+  fmt::fmt
 )
-
-if (${IRODS_VERSION} VERSION_GREATER "4.3.1")
-  target_link_libraries(
-    ${IRODS_PARSER_NAME}
-    PRIVATE
-    irods_common
-    fmt::fmt
-  )
-else()
-  target_include_directories(
-    ${IRODS_PARSER_NAME}
-    PRIVATE
-    ${IRODS_EXTERNALS_FULLPATH_FMT}/include
-    ${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include
-  )
-endif()
