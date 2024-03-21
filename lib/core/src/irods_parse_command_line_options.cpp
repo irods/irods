@@ -40,7 +40,7 @@ static int parse_program_options(
         ("num_threads,N", po::value<int>(), "numThreads - the number of threads to use for the transfer. A value of 0 means no threading. By default (-N option not used) the server decides the number of threads to use.")
         ("physical_path,p", po::value<std::string>(), "physicalPath - the absolute physical path of the uploaded file on the server")
         ("progress,P", "output the progress of the upload.")
-        ("rbudp,Q", "use RBUDP (datagram) protocol for the data transfer")
+        ("rbudp,Q", "[Deprecated] use RBUDP (datagram) protocol for the data transfer")
         ("recursive,r", "recursive - store the whole subdirectory")
         ("dest_resc,R", po::value<std::string>(), "resource - specifies the resource to store to. This can also be specified in your environment or via a rule set up by the administrator")
         ("ticket,t", po::value<std::string>(), "ticket - ticket (string) to use for ticket-based access")

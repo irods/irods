@@ -439,7 +439,10 @@ svrPortalPutGet( rsComm_t *rsComm ) {
 
     if ( getUdpPortFromPortList( thisPortList ) != 0 ) {
         /* rbudp transfer */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         retVal = svrPortalPutGetRbudp( rsComm );
+#pragma clang diagnostic pop
         return retVal;
     }
 
@@ -1319,7 +1322,6 @@ rbudpRemLocCopy( dataCopyInp_t *dataCopyInp ) {
         status = getFileToPortalRbudp( portalOprOut, NULL,
                                        FileDesc[destL3descInx].fd,
                                        veryVerbose, packetSize );
-
     }
     else {
         int srcL3descInx = dataOprInp->srcL3descInx;
@@ -1361,7 +1363,10 @@ int remLocCopy(rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
 
     if ( getUdpPortFromPortList( &portalOprOut->portList ) != 0 ) {
         /* rbudp transfer */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         return rbudpRemLocCopy( dataCopyInp );
+#pragma clang diagnostic pop
     }
 
     if ( numThreads > MAX_NUM_CONFIG_TRAN_THR || numThreads <= 0 ) {

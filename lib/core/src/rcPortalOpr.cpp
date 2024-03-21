@@ -1282,7 +1282,6 @@ int getFileToPortalRbudp(
     int             veryVerbose,
     int             packetSize ) {
 
-
     portList_t *myPortList;
     int status;
     rbudpReceiver_t rbudpReceiver;

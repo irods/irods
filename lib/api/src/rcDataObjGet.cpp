@@ -58,11 +58,11 @@
  *    \n FORCE_FLAG_KW - overwrite existing local copy. This keyWd has no value.
  *    \n VERIFY_CHKSUM_KW - verify the checksum value of the local file after
  *           the download. This keyWd has no value.
- *    \n RBUDP_TRANSFER_KW - use RBUDP for data transfer. This keyWd has no
+ *    \n RBUDP_TRANSFER_KW - (Deprecated) use RBUDP for data transfer. This keyWd has no
  *             value
- *    \n RBUDP_SEND_RATE_KW - the number of RBUDP packet to send per second
+ *    \n RBUDP_SEND_RATE_KW - (Deprecated) the number of RBUDP packet to send per second
  *          The default is 600000.
- *    \n RBUDP_PACK_SIZE_KW - the size of RBUDP packet. The default is 8192.
+ *    \n RBUDP_PACK_SIZE_KW - (Deprecated) the size of RBUDP packet. The default is 8192.
  *    \n LOCK_TYPE_KW - set advisory lock type. valid value - WRITE_LOCK_TYPE.
  * \param[in] locFilePath - the path of the local file to download. This path
  *           can be a relative path.
