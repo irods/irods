@@ -1,8 +1,8 @@
-#include "irods/genquery2_sql.hpp"
+#include "irods/private/genquery2_sql.hpp"
 
-#include "irods/genquery2_ast_types.hpp"
-#include "irods/vertex_property.hpp"
-#include "irods/edge_property.hpp"
+#include "irods/private/genquery2_ast_types.hpp"
+#include "irods/private/vertex_property.hpp"
+#include "irods/private/edge_property.hpp"
 #include "irods/genquery2_table_column_mappings.hpp"
 
 #include "irods/irods_at_scope_exit.hpp"

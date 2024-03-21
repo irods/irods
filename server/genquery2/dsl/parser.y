@@ -40,7 +40,7 @@ This option causes make_* functions to be generated for each token kind.
 
 /* Code to be included in the parser's implementation file. */
 %code requires {
-    #include "irods/genquery2_ast_types.hpp"
+    #include "irods/private/genquery2_ast_types.hpp"
 
     #include <string>
     #include <vector>
@@ -58,7 +58,7 @@ This option causes make_* functions to be generated for each token kind.
 }
 
 %code {
-    #include "irods/genquery2_driver.hpp"
+    #include "irods/private/genquery2_driver.hpp"
 
     auto yylex(irods::experimental::genquery2::driver&) -> yy::parser::symbol_type;
 }
