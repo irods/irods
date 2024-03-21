@@ -72,9 +72,12 @@
 #define ALL_MS_PARAM_KW                             "allMsParam"
 #define UNREG_COLL_KW                               "unregColl"
 #define UPDATE_REPL_KW                              "updateRepl"
+// RBUDP_TRANSFER_KW has been deprecated
 #define RBUDP_TRANSFER_KW                           "rbudpTransfer"
 #define VERY_VERBOSE_KW                             "veryVerbose"
+// RBUDP_SEND_RATE_KW has been deprecated
 #define RBUDP_SEND_RATE_KW                          "rbudpSendRate"
+// RBUDP_PACK_SIZE_KW has been deprecated
 #define RBUDP_PACK_SIZE_KW                          "rbudpPackSize"
 #define ZONE_KW                                     "zone"
 #define REMOTE_ZONE_OPR_KW                          "remoteZoneOpr"
