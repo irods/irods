@@ -53,11 +53,11 @@
  *            This keyWd has no value.
  *    \n FILE_PATH_KW - The physical file path for this data object if the
  *             normal resource vault is not used.
- *    \n RBUDP_TRANSFER_KW - use RBUDP for data transfer. This keyWd has no
+ *    \n RBUDP_TRANSFER_KW - (Deprecated) use RBUDP for data transfer. This keyWd has no
  *             value.
- *    \n RBUDP_SEND_RATE_KW - the number of RBUDP packet to send per second
+ *    \n RBUDP_SEND_RATE_KW - (Deprecated) the number of RBUDP packet to send per second
  *          The default is 600000.
- *    \n RBUDP_PACK_SIZE_KW - the size of RBUDP packet. The default is 8192.
+ *    \n RBUDP_PACK_SIZE_KW - (Deprecated) the size of RBUDP packet. The default is 8192.
  *    \n LOCK_TYPE_KW - set advisory lock type. valid value - READ_LOCK_TYPE.
  *
  * \return integer
