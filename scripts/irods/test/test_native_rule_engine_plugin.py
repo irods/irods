@@ -831,6 +831,30 @@ OUTPUT ruleExecOut
         finally:
             os.unlink(rule_file)
 
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'rule language only')
+    def test_msiSetResource__issue_7319(self):
+        rule_map = {
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                test_msiSetResource {{
+                    msiSetResource("testResc");
+                }}
+                OUTPUT ruleExecOut
+                ''')
+        }
+
+        rule_file = 'test_msiSetResource.r'
+        with open(rule_file, 'w') as f:
+            f.write(rule_map[self.plugin_name])
+
+        try:
+            rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+
+            self.admin.assert_icommand(['irule', '-r', rep_name, '-F', rule_file], 'STDERR', 'SYS_INTERNAL_NULL_INPUT_ERR', desired_rc=4)
+            self.user0.assert_icommand(['irule', '-r', rep_name, '-F', rule_file], 'STDERR', 'SYS_INTERNAL_NULL_INPUT_ERR', desired_rc=4)
+
+        finally:
+            os.remove(rule_file)
+
     def test_re_serialization_for_RsComm_ptr__issue_5950(self):
         pep_map = {
             'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''

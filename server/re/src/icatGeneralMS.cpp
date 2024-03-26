@@ -6,8 +6,14 @@
 #include "irods/miscServerFunct.hpp"
 #include "irods/modAccessControl.h"
 #include "irods/irods_configuration_keywords.hpp"
+#include "irods/irods_logger.hpp"
 #include "irods/rsModAccessControl.hpp"
 #include "irods/irods_re_structs.hpp"
+
+namespace
+{
+    using log_msi = irods::experimental::log::microservice;
+} // anonymous namespace
 
 /**
  * \fn msiGetIcatTime (msParam_t *timeOutParam, msParam_t *typeInParam, ruleExecInfo_t *)
@@ -138,11 +144,14 @@ msiQuota( ruleExecInfo_t *rei ) {
  * \sa none
 **/
 int  msiSetResource( msParam_t* xrescName, ruleExecInfo_t *rei ) {
-    char *rescName;
+    char* rescName{static_cast<char*>(xrescName->inOutStruct)};
 
-    rescName = ( char * ) xrescName->inOutStruct;
+    if (nullptr == rei->doi) {
+        log_msi::error("{}: Cannot set resource, no DOI (DataObjInfo) attached to REI (RuleExecInfo).", __func__);
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
 
-    snprintf( rei->doi->rescName, sizeof( rei->doi->rescName ), "%s", rescName );
+    std::snprintf(rei->doi->rescName, sizeof(rei->doi->rescName), "%s", rescName);
     return 0;
 }
 
