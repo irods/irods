@@ -11,6 +11,7 @@
     "test_delay_queue.Test_Delay_Queue",
     "test_delay_queue.Test_Execution_Frequency",
     "test_dynamic_peps",
+    "test_genquery2_microservices",
     "test_iadmin.Test_Iadmin",
     "test_iadmin.Test_Iadmin_Queries",
     "test_iadmin.Test_Iadmin_Resources",
