@@ -38,6 +38,7 @@
   - #msiSplitPath - Splits a pathname into parent and child values
   - #msiGetSessionVarValue - Gets the value of a session variable in the rei
   - #msiExit - Add a user message to the error stack
+  - #writeLine - Writes a message to the iRODS log, stdout, stderr, or a data object
 
  \subsection mainmsilowlevel Data Object Low-level Microservices
   Can be called by client through irule.
