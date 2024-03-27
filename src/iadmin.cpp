@@ -2075,8 +2075,8 @@ void usageMain() {
         " spass Password Key (print a scrambled form of a password for DB)",
         " dspass Password Key (descramble a password and print it)",
         " ctime Time (convert an iRODS time (integer) to local time; & other forms)",
-        " suq User ResourceName-or-'total' Value (set user quota)",
-        " sgq Group ResourceName-or-'total' Value (set group quota)",
+        " suq User Target Value (set user quota)",
+        " sgq Group Target Value (set group quota)",
         " lq [Name] List Quotas",
         " cu (calculate usage (for quotas))",
         " rum (remove unused metadata (user-defined AVUs)",
@@ -2561,22 +2561,37 @@ usage( char *subOpt ) {
     };
 
     char *suqMsgs[] = {
-        " suq User ResourceName-or-'total' Value (set user quota)",
+        " suq User Target Value (set user quota)",
         " ",
         "Setting user quotas greater than zero is no longer supported in iRODS.",
         " ",
-        "This sub-command exists so that administrators have a way to remove",
-        "existing user quotas.  Pass 0 as the value to do this.",
+        "The User parameter is the name of the iRODS user.",
+        " ",
+        "The Target parameter can be either the name of a particular resource",
+        "or the string 'total' to represent a total quota for this user across",
+        "all resources.",
+        " ",
+        "The Value parameter is the quota amount in bytes.",
+        "Set this to 0 to remove a user quota.  This is the only valid value.",
         " ",
         "Also see sgq, lq, and cu.",
         ""
     };
 
     char *sgqMsgs[] = {
-        " sgq Group ResourceName-or-'total' Value (set group quota)",
-        "Set a quota for a user-group for either a resource or all iRODS",
-        "usage (total).  Use 0 for the value to remove quota limit.  Value is",
-        "in bytes.",
+        " sgq Group Target Value (set group quota)",
+        " ",
+        "Set a storage quota for a group.",
+        " ",
+        "The Group parameter is the name of the iRODS group.",
+        " ",
+        "The Target parameter can be either the name of a particular resource",
+        "or the string 'total' to represent a total quota for this group across",
+        "all resources.",
+        " ",
+        "The Value parameter is the quota amount in bytes.",
+        "Set this to 0 to remove a group quota.",
+        " ",
         "Also see suq, lq, and cu.",
         ""
     };
@@ -2591,7 +2606,7 @@ usage( char *subOpt ) {
 
     char *cuMsgs[] = {
         " cu (calculate usage (for quotas))",
-        "Calculate (via DBMS SQL) the usage on resources for each user and",
+        "Calculate the usage on resources for each user and group and",
         "determine if users are over quota.",
         "Also see suq, sgq, and lq.",
         ""
