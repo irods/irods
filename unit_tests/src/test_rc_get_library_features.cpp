@@ -33,6 +33,7 @@ TEST_CASE("rc_get_library_features")
         CHECK(202301 == features.at(IRODS_TO_STRING(IRODS_HAS_LIBRARY_SYSTEM_ERROR)).get<int>());
         CHECK(202306 == features.at(IRODS_TO_STRING(IRODS_HAS_FEATURE_PROXY_USER_SUPPORT_FOR_CLIENT_CONNECTION_LIBRARIES)).get<int>());
         CHECK(202307 == features.at(IRODS_TO_STRING(IRODS_HAS_API_ENDPOINT_CHECK_AUTH_CREDENTIALS)).get<int>());
+        CHECK(202403 == features.at(IRODS_TO_STRING(IRODS_HAS_API_ENDPOINT_REPLICA_TRUNCATE)).get<int>());
         CHECK(202403 == features.at(IRODS_TO_STRING(IRODS_HAS_API_ENDPOINT_GENQUERY2)).get<int>());
         // clang-format on
     }
