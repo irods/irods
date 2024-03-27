@@ -6,7 +6,7 @@
 
 auto rc_genquery2(RcComm* _comm, GenQuery2Input* _input, char** _output) -> int
 {
-    if (!_input || !_output) {
+    if (!_comm || !_input || !_output) {
         return SYS_INVALID_INPUT_PARAM;
     }
 

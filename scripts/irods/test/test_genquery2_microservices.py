@@ -28,23 +28,23 @@ class Test_GenQuery2_Microservices(session.make_sessions_mixin(rodsadmins, rodsu
         rule_file = f'{self.user.local_session_dir}/genquery2_issue_7570.nrep.r'
 
         with open(rule_file, 'w') as f:
-            f.write(textwrap.dedent('''
-                test_issue_7570_nrep {
+            f.write(textwrap.dedent(f'''
+                test_issue_7570_nrep {{
                     msi_genquery2_execute(*handle, "select COLL_NAME where COLL_NAME = '{self.user.session_collection}'");
 
-                    while (errorcode(msi_genquery2_next_row(*handle)) == 0) {
-                        msi_genquery2_column(*handle, '0', *coll_pname);
+                    while (errorcode(msi_genquery2_next_row(*handle)) == 0) {{
+                        msi_genquery2_column(*handle, '0', *coll_name);
                         writeLine('stdout', '*coll_name');
-                    }
+                    }}
 
                     msi_genquery2_free(*handle);
-                }
+                }}
 
-                INPUT *handle=%*coll_name=
-                OUTPUT *ruleExecOut
+                INPUT *handle="", *coll_name=""
+                OUTPUT ruleExecOut
             '''))
 
-        rep_name = plugin_name + '-instance'
+        rep_name = self.plugin_name + '-instance'
         self.user.assert_icommand(['irule', '-r', rep_name, '-F', rule_file], 'STDOUT', [self.user.session_collection])
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-python', 'Designed for the PREP')
@@ -52,8 +52,8 @@ class Test_GenQuery2_Microservices(session.make_sessions_mixin(rodsadmins, rodsu
         rule_file = f'{self.user.local_session_dir}/genquery2_issue_7570.prep.r'
 
         with open(rule_file, 'w') as f:
-            f.write(textwrap.dedent('''
-                test_issue_7570_prep(rule_args, callback, rei) {
+            f.write(textwrap.dedent(f'''
+                test_issue_7570_prep(rule_args, callback, rei) {{
                     result = callback.msi_genquery2_execute('', "select COLL_NAME where COLL_NAME = '{self.user.session_collection}'");
                     handle = result['arguments'][0]
 
@@ -69,11 +69,11 @@ class Test_GenQuery2_Microservices(session.make_sessions_mixin(rodsadmins, rodsu
                         callback.writeLine('stdout', coll_name);
 
                     callback.msi_genquery2_free(handle);
-                }
+                }}
 
                 INPUT *handle=%*coll_name=
                 OUTPUT *ruleExecOut
             '''))
 
-        rep_name = plugin_name + '-instance'
+        rep_name = self.plugin_name + '-instance'
         self.user.assert_icommand(['irule', '-r', rep_name, '-F', rule_file], 'STDOUT', [self.user.session_collection])

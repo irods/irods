@@ -16,7 +16,7 @@ TEST_CASE("rc_genquery2")
 {
     SECTION("execute a simple query")
     {
-        //load_client_api_plugins();
+        load_client_api_plugins();
 
         rodsEnv env;
         _getRodsEnv(env);
