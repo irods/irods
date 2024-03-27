@@ -1970,6 +1970,30 @@ Res *smsi_remoteExec( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int,
 #endif
 }
 
+#ifdef IRODS_FOR_DOXYGEN 
+/// \brief  Writes a message to either the iRODS log, stdout, stderr, or a data object.
+/// 
+/// \module core
+/// 
+/// \param[in] where a msParam of type STR_MS_T which is either "stdout", "stderr", "serverLog", or a full path to a data object.
+/// \param[in] inString a msParam of type STR_MS_T which is a string to be logged. 
+/// \param[in,out] rei The RuleExecInfo structure that is automatically
+///    handled by the rule engine. The user does not include rei as a
+///    parameter in the rule invocation.
+/// 
+/// \return integer
+/// \retval 0 upon success
+///
+/// \b Example
+/// \code{.py}
+/// writeLine("stdout", "This shows up on stdout");
+/// writeLine("stderr", "This shows up on stderr");
+/// writeLine("serverLog", "This shows up in the server log");
+/// writeLine("/tempZone/home/alice/foo", "This is written to the data object /tempZone/home/alice/foo");
+/// \endcode
+int writeLine(msParam_t *where, msParam_t *inString, ruleExecInfo_t *rei);
+#endif // IRODS_FOR_DOXYGEN
+
 Res *smsi_writeLine( Node** paramsr, int, Node*, ruleExecInfo_t* rei, int, Env* env, rError_t*, Region* r ) {
     char *inString = convertResToString( paramsr[1] );
     Res *where = ( Res * )paramsr[0];
