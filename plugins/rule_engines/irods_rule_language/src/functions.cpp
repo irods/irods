@@ -1971,9 +1971,6 @@ Res *smsi_remoteExec( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int,
 }
 
 #ifdef IRODS_FOR_DOXYGEN 
-///
-/// \fn writeLine(msParam_t *where, msParam_t *inString, ruleExecInfo_t *rei)
-/// 
 /// \brief  Writes a message to either the iRODS log, stdout, stderr, or a data object.
 /// 
 /// \module core
