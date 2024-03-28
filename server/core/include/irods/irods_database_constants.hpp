@@ -117,6 +117,7 @@ namespace irods
     const std::string DATABASE_OP_GET_DELAY_RULE_INFO{"database_get_delay_rule_info"};
     const std::string DATABASE_OP_DATA_OBJECT_FINALIZE{"database_data_object_finalize"};
     const std::string DATABASE_OP_CHECK_AUTH_CREDENTIALS{"database_check_auth_credentials"};
+    const std::string DATABASE_OP_EXECUTE_GENQUERY2_SQL{"database_execute_genquery2_sql"};
 }; // namespace irods
 
 #endif // IRODS_DATABASE_CONSTANTS_HPP

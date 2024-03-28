@@ -151,6 +151,7 @@
 #  include "irods/rsUserAdmin.hpp"
 #  include "irods/rsZoneReport.hpp"
 #  include "irods/rs_check_auth_credentials.hpp"
+#  include "irods/rs_genquery2.hpp"
 #  include "irods/rs_get_library_features.hpp"
 #  include "irods/rs_get_resource_info_for_operation.hpp"
 #  include "irods/rs_replica_truncate.hpp"
@@ -166,6 +167,7 @@
 #include <cstdlib>
 #include <functional>
 
+// clang-format off
 #define RS_AUTHENTICATE                    NULLPTR_FOR_CLIENT_TABLE(rsAuthenticate)
 #define RS_AUTH_CHECK                      NULLPTR_FOR_CLIENT_TABLE(rsAuthCheck)
 #define RS_AUTH_PLUG_REQ                   NULLPTR_FOR_CLIENT_TABLE(rsAuthPluginRequest)
@@ -234,6 +236,7 @@
 #define RS_GENERAL_ROW_INSERT              NULLPTR_FOR_CLIENT_TABLE(rsGeneralRowInsert)
 #define RS_GENERAL_ROW_PURGE               NULLPTR_FOR_CLIENT_TABLE(rsGeneralRowPurge)
 #define RS_GENERAL_UPDATE                  NULLPTR_FOR_CLIENT_TABLE(rsGeneralUpdate)
+#define RS_GENQUERY2                       NULLPTR_FOR_CLIENT_TABLE(rs_genquery2)
 #define RS_GEN_QUERY                       NULLPTR_FOR_CLIENT_TABLE(rsGenQuery)
 #define RS_GET_HIER_FOR_RESC               NULLPTR_FOR_CLIENT_TABLE(rsGetHierarchyForResc)
 #define RS_GET_HIER_FROM_LEAF_ID           NULLPTR_FOR_CLIENT_TABLE(rsGetHierFromLeafId)
@@ -304,6 +307,7 @@
 #define RS_UNREG_DATA_OBJ                  NULLPTR_FOR_CLIENT_TABLE(rsUnregDataObj)
 #define RS_USER_ADMIN                      NULLPTR_FOR_CLIENT_TABLE(rsUserAdmin)
 #define RS_ZONE_REPORT                     NULLPTR_FOR_CLIENT_TABLE(rsZoneReport)
+// clang-format on
 
 #if defined(CREATE_API_TABLE_FOR_SERVER) && !defined(CREATE_API_TABLE_FOR_CLIENT)
 static irods::apidef_t server_api_table_inp[] = {
@@ -1290,6 +1294,13 @@ static irods::apidef_t client_api_table_inp[] = {
         boost::any(std::function<int(rsComm_t*, dataObjInp_t*, char**)>(RS_REPLICA_TRUNCATE)),
         "api_replica_truncate", clearDataObjInp, irods::clearOutStruct_noop,
         (funcPtr)CALL_REPLICA_TRUNCATE
+    },
+    {
+        GENQUERY2_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
+        "GenQuery2Input_PI", 0, "STR_PI", 0,
+        boost::any(std::function<int(rsComm_t*, GenQuery2Input*, char**)>(RS_GENQUERY2)),
+        "api_genquery2", clearGenQuery2Input, irods::clearOutStruct_noop,
+        (funcPtr) CALL_GENQUERY2_INOUT
     }
     // clang-format on
 }; // _api_table_inp

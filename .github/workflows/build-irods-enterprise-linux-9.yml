@@ -17,7 +17,7 @@ jobs:
               dnf -y install bind-utils wget git epel-release
               dnf -y install dnf-plugin-config-manager dnf-plugins-core
               dnf config-manager --set-enabled crb
-              dnf -y install gcc gcc-c++ make rpm-build bzip2-devel curl-devel fakeroot openssl-devel pam-devel python3-devel unixODBC unixODBC-devel zlib-devel python3-distro krb5-devel
+              dnf -y install gcc gcc-c++ make rpm-build bzip2-devel curl-devel fakeroot openssl-devel pam-devel python3-devel unixODBC unixODBC-devel zlib-devel python3-distro krb5-devel flex bison
       - name: Install iRODS Externals
         run:  |
               update-crypto-policies --set LEGACY # TODO: irods/irods#7349 - remove this

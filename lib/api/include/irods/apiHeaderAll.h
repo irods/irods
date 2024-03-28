@@ -147,6 +147,7 @@
 #include "irods/exec_rule_expression.h"
 
 #include "irods/check_auth_credentials.h"
+#include "irods/genquery2.h"
 
 #include "irods/replica_truncate.h"
 

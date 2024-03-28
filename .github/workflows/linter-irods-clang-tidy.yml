@@ -34,7 +34,9 @@ jobs:
                     python-psutil \
                     odbc-postgresql \
                     libkrb5-dev \
-                    python3-distro
+                    python3-distro \
+                    flex \
+                    bison
             - name: Install libstdc++6
               run: |
                   sudo apt-get install -qq software-properties-common

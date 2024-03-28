@@ -2,6 +2,7 @@ add_library(
   irods_server_re
   OBJECT
   "${CMAKE_CURRENT_SOURCE_DIR}/src/extractAvuMS.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/msi_genquery2.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/genQueryMS.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/icatAdminMS.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/icatGeneralMS.cpp"

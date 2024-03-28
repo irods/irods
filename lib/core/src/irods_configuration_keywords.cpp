@@ -47,6 +47,7 @@ namespace irods
     const char* const KW_CFG_LOG_LEVEL_CATEGORY_AGENT_FACTORY{"agent_factory"};
     const char* const KW_CFG_LOG_LEVEL_CATEGORY_AGENT{"agent"};
     const char* const KW_CFG_LOG_LEVEL_CATEGORY_DELAY_SERVER{"delay_server"};
+    const char* const KW_CFG_LOG_LEVEL_CATEGORY_GENQUERY2{"genquery2"};
     const char* const KW_CFG_LOG_LEVEL_CATEGORY_RESOURCE{"resource"};
     const char* const KW_CFG_LOG_LEVEL_CATEGORY_DATABASE{"database"};
     const char* const KW_CFG_LOG_LEVEL_CATEGORY_AUTHENTICATION{"authentication"};
