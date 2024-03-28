@@ -110,7 +110,7 @@ auto msi_genquery2_next_row(MsParam* _handle, RuleExecInfo* _rei) -> int
         // We must return ERROR(stop_code, "") to trigger correct usage of msi_genquery2_next_row().
         // Otherwise, the NREP can loop forever. Ultimately, this means we aren't allowed to return
         // CODE(stop_code) to signal there is no new row available.
-        return 1;
+        return GENQUERY2_END_OF_RESULTSET;
     }
     catch (const irods::exception& e) {
         log_msi::error("{}: {}", __func__, e.client_display_what());
