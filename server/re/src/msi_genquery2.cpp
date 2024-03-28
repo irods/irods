@@ -101,14 +101,14 @@ auto msi_genquery2_execute(MsParam* _handle, MsParam* _query_string, RuleExecInf
 /// \code{.py}
 /// # Execute a query. The results are stored in the Rule Engine Plugin.
 /// msi_genquery2_execute(*handle, "select COLL_NAME, DATA_NAME order by DATA_NAME desc limit 1");
-/// 
+///
 /// # Iterate over the results.
 /// while (errorcode(genquery2_next_row(*handle)) == 0) {
 ///     genquery2_column(*handle, '0', *coll_name); # Copy the COLL_NAME into *coll_name.
 ///     genquery2_column(*handle, '1', *data_name); # Copy the DATA_NAME into *data_name.
 ///     writeLine("stdout", "logical path => [*coll_name/*data_name]");
 /// }
-/// 
+///
 /// # Free any resources used. This is handled for you when the agent is shut down as well.
 /// genquery2_free(*handle);
 /// \endcode
@@ -130,7 +130,8 @@ auto msi_genquery2_next_row(MsParam* _handle, RuleExecInfo* _rei) -> int
     try {
         const auto ctx_handle_index = std::stoll(static_cast<char*>(_handle->inOutStruct));
 
-        if (ctx_handle_index < 0 || static_cast<decltype(gq2_context)::size_type>(ctx_handle_index) >= gq2_context.size()) {
+        if (ctx_handle_index < 0 ||
+            static_cast<decltype(gq2_context)::size_type>(ctx_handle_index) >= gq2_context.size()) {
             log_msi::error("{}: Unknown context handle.", __func__);
             return SYS_INVALID_INPUT_PARAM;
         }
@@ -139,11 +140,18 @@ auto msi_genquery2_next_row(MsParam* _handle, RuleExecInfo* _rei) -> int
 
         if (ctx.current_row < static_cast<std::int32_t>(ctx.rows.size()) - 1) {
             ++ctx.current_row;
-            log_msi::trace("{}: Incremented row position [{} => {}]. Returning 0.", __func__, ctx.current_row - 1, ctx.current_row);
+            log_msi::trace("{}: Incremented row position [{} => {}]. Returning 0.",
+                           __func__,
+                           ctx.current_row - 1,
+                           ctx.current_row);
             return 0;
         }
 
-        log_msi::trace("{}: Skipping increment of row position [current_row=[{}]]. Returning 1.", __func__, ctx.current_row);
+        log_msi::trace(
+            "{}: Skipping increment of row position [current_row=[{}]]. Returning GENQUERY2_END_OF_RESULTSET ({}).",
+            __func__,
+            ctx.current_row,
+            GENQUERY2_END_OF_RESULTSET);
 
         return GENQUERY2_END_OF_RESULTSET;
     }
@@ -195,7 +203,7 @@ auto msi_genquery2_column(MsParam* _handle, MsParam* _column_index, MsParam* _co
         const auto ctx_handle_index = std::stoll(static_cast<char*>(_handle->inOutStruct));
 
         if (ctx_handle_index < 0 ||
-                static_cast<decltype(gq2_context)::size_type>(ctx_handle_index) >= gq2_context.size()) {
+            static_cast<decltype(gq2_context)::size_type>(ctx_handle_index) >= gq2_context.size()) {
             log_msi::error("{}: Unknown context handle.", __func__);
             return SYS_INVALID_INPUT_PARAM;
         }
@@ -253,7 +261,7 @@ auto msi_genquery2_free(MsParam* _handle, RuleExecInfo* _rei) -> int
         const auto ctx_handle_index = std::stoll(static_cast<char*>(_handle->inOutStruct));
 
         if (ctx_handle_index < 0 ||
-                static_cast<decltype(gq2_context)::size_type>(ctx_handle_index) >= gq2_context.size()) {
+            static_cast<decltype(gq2_context)::size_type>(ctx_handle_index) >= gq2_context.size()) {
             log_msi::error("{}: Unknown context handle.", __func__);
             return SYS_INVALID_INPUT_PARAM;
         }

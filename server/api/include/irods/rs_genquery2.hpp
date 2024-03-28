@@ -68,7 +68,7 @@ struct RsComm;
 /// }
 ///
 /// // At this point, "output" should represent a JSON string.
-/// // Parse the string as JSON and inspect the results. 
+/// // Parse the string as JSON and inspect the results.
 /// // If "input.sql_only" was set to 1, "output" would hold the SQL derived from the GenQuery2 syntax.
 /// \endcode
 ///

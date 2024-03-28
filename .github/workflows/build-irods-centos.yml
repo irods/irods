@@ -18,10 +18,7 @@ jobs:
               yum -y install gcc g++ libstdc++-static make rpm-build bzip2-devel curl-devel fakeroot openssl-devel pam-devel python-devel unixODBC unixODBC-devel zlib-devel python36-distro
       - name: Install Flex and Bison
         run:  |
-              #yum -y install centos-release-scl-rh
               rpm --import https://www.cert.org/forensics/repository/forensics-expires-2022-04-03.asc
-              #wget https://forensics.cert.org/cert-forensics-tools-release-el7.rpm
-              #rpm -i ./cert-forensics-tools-release-el7.rpm
               yum -y install https://forensics.cert.org/cert-forensics-tools-release-el7.rpm
               yum -y install flex bison
       - name: Install iRODS Externals
