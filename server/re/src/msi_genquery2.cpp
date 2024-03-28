@@ -5,8 +5,6 @@
 #include "irods/msParam.h"
 #include "irods/irods_re_structs.hpp"
 #include "irods/irods_logger.hpp"
-//#include "irods/irods_plugin_context.hpp"
-//#include "irods/irods_re_plugin.hpp"
 #include "irods/irods_state_table.h"
 #include "irods/rodsError.h"
 #include "irods/rodsErrorTable.h"
@@ -41,6 +39,19 @@ namespace
     std::vector<genquery_context> gq2_context;
 } // anonymous namespace
 
+/// Queries the catalog using the GenQuery2 parser.
+///
+/// \note This microservice is experimental and may change in the future.
+///
+/// \param[in,out] _handle       The output parameter that will hold the handle to the resultset.
+/// \param[in]     _query_string The GenQuery2 string to execute.
+/// \param[in]     _rei          This parameter is special and should be ignored.
+///
+/// \return An integer.
+/// \retval  0 On success.
+/// \retval <0 On failure.
+///
+/// \since 4.3.2
 auto msi_genquery2_execute(MsParam* _handle, MsParam* _query_string, RuleExecInfo* _rei) -> int
 {
     log_msi::trace(__func__);
@@ -75,6 +86,34 @@ auto msi_genquery2_execute(MsParam* _handle, MsParam* _query_string, RuleExecInf
     return 0;
 } // msi_genquery2_execute
 
+/// Moves the cursor forward by one row.
+///
+/// \note This microservice is experimental and may change in the future.
+///
+/// \param[in] _handle The GenQuery2 handle.
+/// \param[in] _rei    This parameter is special and should be ignored.
+///
+/// \return An integer.
+/// \retval  0 If data can be read from the new row.
+/// \retval <0 If the end of the resultset has been reached.
+///
+/// \b Example
+/// \code{.py}
+/// # Execute a query. The results are stored in the Rule Engine Plugin.
+/// msi_genquery2_execute(*handle, "select COLL_NAME, DATA_NAME order by DATA_NAME desc limit 1");
+/// 
+/// # Iterate over the results.
+/// while (errorcode(genquery2_next_row(*handle)) == 0) {
+///     genquery2_column(*handle, '0', *coll_name); # Copy the COLL_NAME into *coll_name.
+///     genquery2_column(*handle, '1', *data_name); # Copy the DATA_NAME into *data_name.
+///     writeLine("stdout", "logical path => [*coll_name/*data_name]");
+/// }
+/// 
+/// # Free any resources used. This is handled for you when the agent is shut down as well.
+/// genquery2_free(*handle);
+/// \endcode
+///
+/// \since 4.3.2
 auto msi_genquery2_next_row(MsParam* _handle, RuleExecInfo* _rei) -> int
 {
     log_msi::trace(__func__);
@@ -106,10 +145,6 @@ auto msi_genquery2_next_row(MsParam* _handle, RuleExecInfo* _rei) -> int
 
         log_msi::trace("{}: Skipping increment of row position [current_row=[{}]]. Returning 1.", __func__, ctx.current_row);
 
-        // TODO Update this.
-        // We must return ERROR(stop_code, "") to trigger correct usage of msi_genquery2_next_row().
-        // Otherwise, the NREP can loop forever. Ultimately, this means we aren't allowed to return
-        // CODE(stop_code) to signal there is no new row available.
         return GENQUERY2_END_OF_RESULTSET;
     }
     catch (const irods::exception& e) {
@@ -124,6 +159,20 @@ auto msi_genquery2_next_row(MsParam* _handle, RuleExecInfo* _rei) -> int
     return 0;
 } // msi_genquery2_next_row
 
+/// Reads the value of a column from a row within a GenQuery2 resultset.
+///
+/// \note This microservice is experimental and may change in the future.
+///
+/// \param[in]     _handle       The GenQuery2 handle.
+/// \param[in]     _column_index The index of the column to read. The index must be passed as a string.
+/// \param[in,out] _column_value The variable to write the value of the column to.
+/// \param[in]     _rei          This parameter is special and should be ignored.
+///
+/// \return An integer.
+/// \retval  0 On success.
+/// \retval <0 On failure.
+///
+/// \since 4.3.2
 auto msi_genquery2_column(MsParam* _handle, MsParam* _column_index, MsParam* _column_value, RuleExecInfo* _rei) -> int
 {
     log_msi::trace(__func__);
@@ -172,6 +221,21 @@ auto msi_genquery2_column(MsParam* _handle, MsParam* _column_index, MsParam* _co
     return 0;
 } // msi_genquery2_column
 
+/// Frees all resources associated with a GenQuery2 handle.
+///
+/// \note This microservice is experimental and may change in the future.
+///
+/// Users are expected to call this microservice when use of the GenQuery2 isn't needed any longer.
+/// Failing to follow this rule can result in memory leaks.
+///
+/// \param[in] _handle The GenQuery2 handle.
+/// \param[in] _rei    This parameter is special and should be ignored.
+///
+/// \return An integer.
+/// \retval  0 On success.
+/// \retval <0 On failure.
+///
+/// \since 4.3.2
 auto msi_genquery2_free(MsParam* _handle, RuleExecInfo* _rei) -> int
 {
     log_msi::trace(__func__);

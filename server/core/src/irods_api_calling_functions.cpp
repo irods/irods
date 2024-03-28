@@ -1,4 +1,3 @@
-#include "irods/genquery2.h"
 #include "irods/rcConnect.h"
 #include "irods/apiHeaderAll.h"
 #include "irods/apiHandler.hpp"

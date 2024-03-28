@@ -1,10 +1,7 @@
-import os
-import sys
 import textwrap
 import unittest
 
 from . import session
-from .. import lib
 from ..configuration import IrodsConfig
 
 rodsadmins = [('otherrods', 'rods')]

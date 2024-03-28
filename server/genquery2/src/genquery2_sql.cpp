@@ -7,7 +7,6 @@
 
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_logger.hpp"
-#include "irods/irods_version.h"
 
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/adjacency_list.hpp>
@@ -23,38 +22,6 @@
 #include <utility>
 #include <vector>
 
-#if IRODS_VERSION_INTEGER < 4003001
-namespace irods::experimental
-{
-    struct genquery2
-    {
-    };
-
-    template <>
-    class log::logger_config<genquery2>
-    {
-        static constexpr const char* name = "genquery2";
-        inline static log::level level = log::level::info;
-        friend class logger<genquery2>;
-    }; // class logger_config<genquery2>
-} // namespace irods::experimental
-#else
-namespace irods::experimental::log
-{
-    struct genquery2
-    {
-    };
-
-    template <>
-    class logger_config<genquery2>
-    {
-        static constexpr const char* name = "genquery2";
-        inline static level level = level::info;
-        friend class logger<genquery2>;
-    }; // class logger_config<genquery2>
-} // namespace irods::experimental::log
-#endif
-
 namespace
 {
     namespace gq = irods::experimental::api::genquery;
@@ -69,11 +36,7 @@ namespace
     using vertices_size_type = boost::graph_traits<graph_type>::vertices_size_type;
     using edge_type          = std::pair<vertex_type, vertex_type>;
 
-#if IRODS_VERSION_INTEGER < 4003001
-    using log_gq             = irods::experimental::log::logger<irods::experimental::genquery2>;
-#else
-    using log_gq             = irods::experimental::log::logger<irods::experimental::log::genquery2>;
-#endif
+    using log_gq             = irods::experimental::log::genquery2;
     // clang-format on
 
     struct gq_state
@@ -139,7 +102,6 @@ namespace
 
         throw std::invalid_argument{fmt::format("table [{}] not supported", _table_name)};
     } // to_index
-    // clang-format on
 
     // clang-format off
     constexpr auto table_edges = std::to_array<edge_type>({
@@ -1086,8 +1048,6 @@ namespace irods::experimental::api::genquery
     auto to_sql(const select& _select, const options& _opts) -> std::tuple<std::string, std::vector<std::string>>
     {
         try {
-            log_gq::set_level(irods::experimental::log::get_level_from_config("genquery2"));
-
             gq_state state;
 
             log_gq::trace("### PHASE 1: Gather");

@@ -8,22 +8,17 @@
 #include "irods/genquery2_sql.hpp"
 
 #include "irods/apiHandler.hpp"
-//#include "irods/catalog.hpp" // Requires linking against libnanodbc.so
 #include "irods/irods_logger.hpp"
 #include "irods/irods_rs_comm_query.hpp"
 #include "irods/irods_server_properties.hpp"
 #include "irods/irods_version.h"
-//#include "irods/procApiRequest.h"
 #include "irods/rodsConnect.h"
 #include "irods/rodsDef.h"
 #include "irods/rodsErrorTable.h"
 #include "irods/icatHighLevelRoutines.hpp"
 
-//#include <fmt/format.h>
-//#include <nanodbc/nanodbc.h>
 #include <nlohmann/json.hpp>
 
-//#include <cstdlib> // For std::malloc.
 #include <cstring> // For strdup.
 #include <string_view>
 #include <vector>
@@ -51,6 +46,8 @@ auto rs_genquery2(RsComm* _comm, GenQuery2Input* _input, char** _output) -> int
     else {
         log_api::trace("{}: Received: query_string=[{}], zone=[nullptr]", __func__, _input->query_string);
     }
+
+    *_output = nullptr;
 
     rodsServerHost* host_info{};
 

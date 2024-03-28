@@ -49,6 +49,7 @@ namespace irods
     extern const char* const KW_CFG_LOG_LEVEL_CATEGORY_AGENT_FACTORY;
     extern const char* const KW_CFG_LOG_LEVEL_CATEGORY_AGENT;
     extern const char* const KW_CFG_LOG_LEVEL_CATEGORY_DELAY_SERVER;
+    extern const char* const KW_CFG_LOG_LEVEL_CATEGORY_GENQUERY2;
     extern const char* const KW_CFG_LOG_LEVEL_CATEGORY_RESOURCE;
     extern const char* const KW_CFG_LOG_LEVEL_CATEGORY_DATABASE;
     extern const char* const KW_CFG_LOG_LEVEL_CATEGORY_AUTHENTICATION;
