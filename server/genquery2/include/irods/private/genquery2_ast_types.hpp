@@ -7,7 +7,7 @@
 #include <utility>
 #include <vector>
 
-namespace irods::experimental::api::genquery2
+namespace irods::experimental::genquery2
 {
     struct column
     {
@@ -206,6 +206,10 @@ namespace irods::experimental::api::genquery2
     struct logical_not;
     struct logical_grouping;
 
+    // The name condition_type is a little wonky given the fact that nothing else
+    // is following that pattern. The reason "_type" is included is because the name
+    // "condition" is already in use. This type is an implementation detail, so it
+    // can be changed if it proves to be challenging to maintain.
     using condition_type = boost::variant<logical_and, logical_or, logical_not, logical_grouping, condition>;
 
     // clang-format off
@@ -273,6 +277,6 @@ namespace irods::experimental::api::genquery2
         range range;
         bool distinct = true;
     }; // struct select
-} // namespace irods::experimental::api::genquery2
+} // namespace irods::experimental::genquery2
 
 #endif // IRODS_GENQUERY2_ABSTRACT_SYNTAX_TREE_DATA_TYPES_HPP

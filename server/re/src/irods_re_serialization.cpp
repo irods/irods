@@ -1,10 +1,18 @@
 #include "irods/irods_re_serialization.hpp"
 
+#include "irods/irods_logger.hpp"
 #include "irods/irods_plugin_context.hpp"
 #include "irods/rodsErrorTable.h"
 
 #include <boost/lexical_cast.hpp>
+#include <boost/range/adaptors.hpp>
+
 #include <fmt/format.h>
+
+namespace
+{
+    using log_re = irods::experimental::log::rule_engine;
+} // anonymous namespace
 
 namespace irods::re_serialization
 {
@@ -1112,6 +1120,85 @@ namespace irods::re_serialization
         return SUCCESS();
     } // serialize_bytesBuf_ptr
 
+    static irods::error serialize_Genquery2Input_ptr(boost::any _p, serialized_parameter_t& _out)
+    {
+        try {
+            const auto* v = boost::any_cast<Genquery2Input*>(_p);
+
+            _out["query_string"] = v->query_string ? v->query_string : "";
+            _out["zone"] = v->zone ? v->zone : "";
+            _out["sql_only"] = std::to_string(v->sql_only);
+            _out["column_mappings"] = std::to_string(v->column_mappings);
+
+            return SUCCESS();
+        }
+        catch (const boost::bad_any_cast& e) {
+            return ERROR(INVALID_ANY_CAST,
+                         fmt::format("{}: failed to cast pointer to [Genquery2Input*]: {}", __func__, e.what()));
+        }
+        catch (const std::exception& e) {
+            return ERROR(
+                SYS_LIBRARY_ERROR, fmt::format("{}: failed to serialize [Genquery2Input*]: {}", __func__, e.what()));
+        }
+    } // serialize_Genquery2Input_ptr
+
+    static void serialize_vector_of_strings_ptr_impl(const std::vector<std::string>& _v, serialized_parameter_t& _out)
+    {
+        _out["size"] = std::to_string(_v.size());
+
+        for (auto&& e : _v | boost::adaptors::indexed()) {
+            log_re::debug("{}: element = {{index: {}, value: {}}}", __func__, e.index(), e.value());
+            _out[std::to_string(e.index())] = e.value();
+        }
+    } // serialize_vector_of_strings_ptr_impl
+
+    // Serializes a const vector of strings.
+    //
+    // Let *v represent the vector of strings in the NREP.
+    // To get the number of elements in the vector, use: *v."size". The count will be of type string.
+    // To get an element via its index, use: *v."<index>". The value will be of type string.
+    static irods::error serialize_const_vector_of_strings_ptr(boost::any _p, serialized_parameter_t& _out)
+    {
+        try {
+            log_re::trace(__func__);
+            serialize_vector_of_strings_ptr_impl(*boost::any_cast<const std::vector<std::string>*>(_p), _out);
+            return SUCCESS();
+        }
+        catch (const boost::bad_any_cast& e) {
+            return ERROR(
+                INVALID_ANY_CAST,
+                fmt::format("{}: failed to cast pointer to [const std::vector<std::string>*]: {}", __func__, e.what()));
+        }
+        catch (const std::exception& e) {
+            return ERROR(
+                SYS_LIBRARY_ERROR,
+                fmt::format("{}: failed to serialize [const std::vector<std::string>*]: {}", __func__, e.what()));
+        }
+    } // serialize_const_vector_of_strings_ptr
+
+    // Serializes a (non-const) vector of strings.
+    //
+    // Let *v represent the vector of strings in the NREP.
+    // To get the number of elements in the vector, use: *v."size". The count will be of type string.
+    // To get an element via its index, use: *v."<index>". The value will be of type string.
+    static irods::error serialize_vector_of_strings_ptr(boost::any _p, serialized_parameter_t& _out)
+    {
+        try {
+            log_re::trace(__func__);
+            serialize_vector_of_strings_ptr_impl(*boost::any_cast<std::vector<std::string>*>(_p), _out);
+            return SUCCESS();
+        }
+        catch (const boost::bad_any_cast& e) {
+            return ERROR(
+                INVALID_ANY_CAST,
+                fmt::format("{}: failed to cast pointer to [std::vector<std::string>*]: {}", __func__, e.what()));
+        }
+        catch (const std::exception& e) {
+            return ERROR(SYS_LIBRARY_ERROR,
+                         fmt::format("{}: failed to serialize [std::vector<std::string>*]: {}", __func__, e.what()));
+        }
+    } // serialize_vector_of_strings_ptr
+
 #if 0
     static error serialize_XXXX_ptr(
             boost::any               _p,
@@ -1165,7 +1252,10 @@ namespace irods::re_serialization
             { std::type_index(typeid(char**)), serialize_char_ptr_ptr },
             { std::type_index(typeid(openedDataObjInp_t*)), serialize_openedDataObjInp_ptr },
             { std::type_index(typeid(openedDataObjInp_t**)), serialize_openedDataObjInp_ptr_ptr },
-            { std::type_index(typeid(bytesBuf_t*)), serialize_bytesBuf_ptr }
+            { std::type_index(typeid(bytesBuf_t*)), serialize_bytesBuf_ptr },
+            { std::type_index(typeid(Genquery2Input*)), serialize_Genquery2Input_ptr },
+            { std::type_index(typeid(const std::vector<std::string>*)), serialize_const_vector_of_strings_ptr },
+            { std::type_index(typeid(std::vector<std::string>*)), serialize_vector_of_strings_ptr }
         };
         return the_map;
 

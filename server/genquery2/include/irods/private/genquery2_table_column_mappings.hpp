@@ -4,7 +4,7 @@
 #include <map>
 #include <string_view>
 
-namespace irods::experimental::api::genquery2
+namespace irods::experimental::genquery2
 {
     struct column_info
     {
@@ -66,8 +66,8 @@ namespace irods::experimental::api::genquery2
         {"DATA_TYPE_NAME", {"R_DATA_MAIN", "data_type_name"}},
         {"DATA_SIZE", {"R_DATA_MAIN", "data_size"}},
         {"DATA_PATH", {"R_DATA_MAIN", "data_path"}},
-        //{"DATA_OWNER_NAME",     {"R_DATA_MAIN", "data_owner_name"}}, // Misleading. Prefer DATA_USER_NAME.
-        //{"DATA_OWNER_ZONE",     {"R_DATA_MAIN", "data_owner_zone"}}, // Misleading. Prefer DATA_USER_ZONE.
+        //{"DATA_OWNER_NAME",     {"R_DATA_MAIN", "data_owner_name"}}, // Misleading. Use DATA_ACCESS_USER_NAME.
+        //{"DATA_OWNER_ZONE",     {"R_DATA_MAIN", "data_owner_zone"}}, // Misleading. Use DATA_ACCESS_USER_ZONE.
         {"DATA_REPL_STATUS", {"R_DATA_MAIN", "data_is_dirty"}},
         {"DATA_STATUS", {"R_DATA_MAIN", "data_status"}},
         {"DATA_CHECKSUM", {"R_DATA_MAIN", "data_checksum"}},
@@ -90,8 +90,8 @@ namespace irods::experimental::api::genquery2
         {"COLL_ID", {"R_COLL_MAIN", "coll_id"}},
         {"COLL_NAME", {"R_COLL_MAIN", "coll_name"}},
         {"COLL_PARENT_NAME", {"R_COLL_MAIN", "parent_coll_name"}},
-        //{"COLL_OWNER_NAME",  {"R_COLL_MAIN", "coll_owner_name"}}, // Misleading. Prefer COLL_USER_NAME.
-        //{"COLL_OWNER_ZONE",  {"R_COLL_MAIN", "coll_owner_zone"}}, // Misleading. Prefer COLL_USER_ZONE.
+        //{"COLL_OWNER_NAME",  {"R_COLL_MAIN", "coll_owner_name"}}, // Misleading. Use COLL_ACCESS_USER_NAME.
+        //{"COLL_OWNER_ZONE",  {"R_COLL_MAIN", "coll_owner_zone"}}, // Misleading. Use COLL_ACCESS_USER_ZONE.
         {"COLL_MAP_ID", {"R_COLL_MAIN", "coll_map_id"}},
         {"COLL_INHERITANCE", {"R_COLL_MAIN", "coll_inheritance"}},
         {"COLL_COMMENTS", {"R_COLL_MAIN", "r_comment"}},
@@ -180,7 +180,8 @@ namespace irods::experimental::api::genquery2
         {"DATA_ACCESS_PERM_ID", {"R_OBJT_ACCESS", "access_type_id"}},
         {"DATA_ACCESS_PERM_NAME", {"R_TOKN_MAIN", "token_name"}},
         {"DATA_ACCESS_USER_ID", {"R_OBJT_ACCESS", "user_id"}},
-        {"DATA_ACCESS_USER_NAME", {"R_USER_MAIN", "user_name"}},
+        {"DATA_ACCESS_USER_NAME", {"R_USER_MAIN", "user_name"}}, // What about groups?
+        {"DATA_ACCESS_USER_ZONE", {"R_USER_MAIN", "user_zone"}},
         //{"DATA_ACCESS_DATA_ID",  {"R_OBJT_ACCESS", "object_id"}},
         //{"DATA_ACCESS_NAME",     {"R_TOKN_MAIN", "token_name"}}, // special?
         //{"DATA_TOKEN_NAMESPACE", {"R_TOKN_MAIN", "token_namespace"}}, // special?
@@ -189,6 +190,7 @@ namespace irods::experimental::api::genquery2
         {"COLL_ACCESS_PERM_NAME", {"R_TOKN_MAIN", "token_name"}},
         {"COLL_ACCESS_USER_ID", {"R_OBJT_ACCESS", "user_id"}},
         {"COLL_ACCESS_USER_NAME", {"R_USER_NAME", "user_name"}},
+        {"COLL_ACCESS_USER_ZONE", {"R_USER_NAME", "user_zone"}},
         //{"COLL_ACCESS_COLL_ID",  {"R_OBJT_ACCESS", "object_id"}},
         //{"COLL_ACCESS_NAME",     {"R_TOKN_MAIN", "token_name"}}, // special?
         //{"COLL_TOKEN_NAMESPACE", {"R_TOKN_MAIN", "token_namespace"}}, // special?
@@ -210,7 +212,10 @@ namespace irods::experimental::api::genquery2
         //{"TICKET_EXPIRY_TIME", {"R_TICKET_MAIN", "ticket_expiry_ts"}},
         //{"TICKET_CREATE_TIME", {"R_TICKET_MAIN", "create_time"}},
         //{"TICKET_MODIFY_TIME", {"R_TICKET_MAIN", "modify_time"}},
-        ////{"TICKET_LOGICAL_PATH", {"R_TICKET_MAIN", "modify_time"}},
+
+        // Is this possible? Does it make sense?
+        // This isn't a thing in GenQuery1.
+        //{"TICKET_LOGICAL_PATH", {"R_TICKET_MAIN", "modify_time"}},
 
         //{"TICKET_ALLOWED_HOST", {"R_TICKET_ALLOWED_HOSTS", "host"}},
         //{"TICKET_ALLOWED_HOST_TICKET_ID", {"R_TICKET_ALLOWED_HOSTS", "ticket_id"}},
@@ -228,6 +233,6 @@ namespace irods::experimental::api::genquery2
         //{"TICKET_DATA_COLL_NAME", {"R_COLL_MAIN", "coll_name"}} // Includes join between R_DATA_MAIN and
         //R_COLL_MAIN. What is this?
     }; // column_name_mappings
-} // namespace irods::experimental::api::genquery2
+} // namespace irods::experimental::genquery2
 
 #endif // IRODS_GENQUERY2_TABLE_COLUMN_MAPPINGS_HPP

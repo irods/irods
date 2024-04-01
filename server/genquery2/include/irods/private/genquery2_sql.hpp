@@ -5,7 +5,7 @@
 #include <string_view>
 #include <vector>
 
-namespace irods::experimental::api::genquery2
+namespace irods::experimental::genquery2
 {
     struct select;
 
@@ -19,6 +19,6 @@ namespace irods::experimental::api::genquery2
     }; // struct options
 
     auto to_sql(const select& _select, const options& _opts) -> std::tuple<std::string, std::vector<std::string>>;
-} // namespace irods::experimental::api::genquery2
+} // namespace irods::experimental::genquery2
 
 #endif // IRODS_GENQUERY2_SQL_HPP

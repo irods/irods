@@ -2,10 +2,10 @@
 
 #include "irods/private/genquery2_driver.hpp"
 #include "irods/private/genquery2_sql.hpp"
+#include "irods/private/genquery2_table_column_mappings.hpp"
 
 #include "irods/apiHandler.hpp"
 #include "irods/catalog_utilities.hpp"
-#include "irods/genquery2_table_column_mappings.hpp"
 #include "irods/irods_logger.hpp"
 #include "irods/irods_rs_comm_query.hpp"
 #include "irods/irods_server_properties.hpp"
@@ -34,7 +34,7 @@ auto rs_genquery2(RsComm* _comm, Genquery2Input* _input, char** _output) -> int
 {
     if (!_comm || !_input || !_output) {
         log_api::error("{}: Invalid input: received null pointer.", __func__);
-        return SYS_INVALID_INPUT_PARAM;
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     // Redirect to the catalog service provider based on the user-provided zone.
@@ -79,10 +79,10 @@ auto rs_genquery2(RsComm* _comm, Genquery2Input* _input, char** _output) -> int
     }
 
     //
-    // At this point, we assume we're connected to the catalog service provider.
+    // At this point, we assume we're connected to the catalog service provider in the correct zone.
     //
 
-    namespace gq = irods::experimental::api::genquery2;
+    namespace gq = irods::experimental::genquery2;
 
     // Generating the column mappings must happen after a redirect to guarantee the correct
     // mappings are returned. Remember, querying the catalog only happens on a server with direct
@@ -105,7 +105,7 @@ auto rs_genquery2(RsComm* _comm, Genquery2Input* _input, char** _output) -> int
 
     if (!_input->query_string) {
         log_api::error("{}: Invalid input: received null pointer.", __func__);
-        return SYS_INVALID_INPUT_PARAM;
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     try {
@@ -155,4 +155,4 @@ auto rs_genquery2(RsComm* _comm, Genquery2Input* _input, char** _output) -> int
         log_api::error("{}: GenQuery2 error: {}", __func__, e.what());
         return SYS_LIBRARY_ERROR;
     }
-} // rs_check_auth_credentials
+} // rs_genquery2

@@ -16,10 +16,10 @@ namespace irods::experimental::genquery2
     class scanner : public yyFlexLexer
     {
       public:
-        #pragma clang diagnostic push
-        #pragma clang diagnostic ignored "-Woverloaded-virtual"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Woverloaded-virtual"
         auto yylex(driver& _driver) -> yy::parser::symbol_type;
-        #pragma clang diagnostic pop
+#pragma clang diagnostic pop
     }; // class scanner
 } // namespace irods::experimental::genquery2
 

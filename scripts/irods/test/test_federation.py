@@ -19,6 +19,18 @@ from ..core_file import temporary_core_file
 SessionsMixin = session.make_sessions_mixin(
 	test.settings.FEDERATION.RODSADMIN_NAME_PASSWORD_LIST, test.settings.FEDERATION.RODSUSER_NAME_PASSWORD_LIST)
 
+# This test script expects tempZone to contain the following users:
+#
+#   - rods#tempZone
+#   - zonehopper#tempZone
+#   - zonehopper#otherZone
+#
+# otherZone must contain the following user:
+#
+#   - rods#otherZone
+#
+# The test script must be launched from a server in otherZone. That means tempZone
+# is identified as the remote federated zone.
 
 class Test_ICommands(SessionsMixin, unittest.TestCase):
 
@@ -2386,8 +2398,8 @@ class Test_GenQuery2_IQuery(SessionsMixin, unittest.TestCase):
 	# This test suite expects tempZone to contain the following users:
 	#
 	#   - rods#tempZone
-	#   - zonehopper#tempZone (created by the irods_testing_environment)
-	#   - zonehopper#otherZone (created by the irods_testing_environment)
+	#   - zonehopper#tempZone
+	#   - zonehopper#otherZone
 	#
 	# otherZone must contain the following users:
 	#
