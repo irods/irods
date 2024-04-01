@@ -54,7 +54,7 @@ This option causes make_* functions to be generated for each token kind.
 
     // According to the Bison docs, code in a %code requires/provides block will be
     // included in the parser header file if Bison is instructed to generate a header file.
-    namespace gq2_detail = irods::experimental::api::genquery2;
+    namespace gq2_detail = irods::experimental::genquery2;
 }
 
 %code {

@@ -20,12 +20,11 @@ class Test_GenQuery2_Microservices(session.make_sessions_mixin(rodsadmins, rodsu
     def tearDown(self):
         super(Test_GenQuery2_Microservices, self).tearDown()
 
-    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'Designed for the NREP')
-    def test_microservices_can_be_used_in_the_native_rule_engine_plugin__issue_7570(self):
-        rule_file = f'{self.user.local_session_dir}/test_microservices_can_be_used_in_the_native_rule_engine_plugin__issue_7570.nrep.r'
-
-        with open(rule_file, 'w') as f:
-            f.write(textwrap.dedent(f'''
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', '#7638: Need access to error code in PREP for msi_genquery2_next_row()')
+    def test_genquery2_microservices_can_be_used_within_policy__issue_7570(self):
+        rule_map = {
+            # NREP rule
+            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent(f'''
                 test_issue_7570_nrep {{
                     *END_OF_RESULTSET = -408000;
 
@@ -51,24 +50,16 @@ class Test_GenQuery2_Microservices(session.make_sessions_mixin(rodsadmins, rodsu
 
                 INPUT *handle="", *coll_name=""
                 OUTPUT ruleExecOut
-            '''))
-
-        rep_name = self.plugin_name + '-instance'
-        self.user.assert_icommand(['irule', '-r', rep_name, '-F', rule_file], 'STDOUT', [self.user.session_collection])
-
-    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-python', 'Designed for the PREP')
-    def test_microservices_can_be_used_in_the_python_rule_engine_plugin(self):
-        rule_file = f'{self.user.local_session_dir}/test_microservices_can_be_used_in_the_python_rule_engine_plugin.prep.r'
-
-        with open(rule_file, 'w') as f:
-            f.write(textwrap.dedent(f'''
+            '''),
+            # PREP rule
+            'irods_rule_engine_plugin-python': textwrap.dedent(f'''
                 test_issue_7570_prep(rule_args, callback, rei) {{
                     result = callback.msi_genquery2_execute('', "select COLL_NAME where COLL_NAME = '{self.user.session_collection}'");
                     handle = result['arguments'][0]
 
                     while True:
                         try:
-                            msi_genquery2_next_row(*handle)
+                            callback.msi_genquery2_next_row(*handle)
                         except:
                             break
 
@@ -82,13 +73,18 @@ class Test_GenQuery2_Microservices(session.make_sessions_mixin(rodsadmins, rodsu
 
                 INPUT *handle=%*coll_name=
                 OUTPUT *ruleExecOut
-            '''))
+            ''')
+        }
+
+        rule_file = f'{self.user.local_session_dir}/test_genquery2_microservices_can_be_used_within_policy__issue_7570.{self.plugin_name}.r'
+        with open(rule_file, 'w') as f:
+            f.write(rule_map[self.plugin_name])
 
         rep_name = self.plugin_name + '-instance'
         self.user.assert_icommand(['irule', '-r', rep_name, '-F', rule_file], 'STDOUT', [self.user.session_collection])
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'Designed for the NREP')
-    def test_microservices_support_interleaved_execution__issue_7570(self):
+    def test_genquery2_microservices_support_interleaved_execution__issue_7570(self):
         # This test is about proving GenQuery2 handles are tracked correctly.
         #
         # The original GenQuery2 implementation used a std::vector to track handles. This

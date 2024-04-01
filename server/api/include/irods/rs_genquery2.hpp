@@ -29,7 +29,7 @@ struct RsComm;
 ///
 /// Limitations:
 /// - Groups are not yet fully supported
-/// - Cannot resolve tickets to data objects and collections using a single query
+/// - Tickets are not yet supported.
 /// - Integer values must be treated as strings, except when used for OFFSET, LIMIT, FETCH FIRST \a N ROWS ONLY
 ///
 /// When the query does not include the FETCH FIRST \a N ROWS ONLY or LIMIT clause, the API will clamp the
@@ -41,9 +41,9 @@ struct RsComm;
 /// The column mappings between GenQuery2 and the catalog can be obtained via the API. See the Genquery2Input
 /// structure for details.
 ///
-/// \param[in]     _comm   A pointer to a RsComm.
-/// \param[in]     _input  A pointer to a Genquery2Input.
-/// \param[in,out] _output \parblock A pointer that will hold the results of the operation.
+/// \param[in]  _comm   A pointer to a RsComm.
+/// \param[in]  _input  A pointer to a Genquery2Input.
+/// \param[out] _output \parblock A pointer that will hold the results of the operation.
 /// On success, the pointer will either hold a JSON string or a string representing the SQL derived from
 /// the GenQuery2 query string. See Genquery2Input::sql_only for details.
 ///

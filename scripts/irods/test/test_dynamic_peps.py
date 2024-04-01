@@ -13,6 +13,7 @@ from .. import lib
 from .. import paths
 from .. import test
 from ..configuration import IrodsConfig
+from ..controller import IrodsController
 from ..core_file import temporary_core_file
 from textwrap import dedent
 
@@ -322,3 +323,172 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [('
 
             self.user.run_icommand(['irm', '-f', logical_path])
             lib.remove_resource(self.admin, other_resource)
+
+    @unittest.skipIf(plugin_name != 'irods_rule_engine_plugin-irods_rule_language' or test.settings.RUN_IN_TOPOLOGY, "Requires NREP and single node zone.")
+    def test_if_const_vector_of_strings_is_exposed__issue_7570(self):
+        with temporary_core_file() as core:
+            prefix = 'test_if_const_vector_of_strings_is_exposed__issue_7570'
+            attr_name_1 = f'{prefix}_iquery_input_value'
+            attr_value_1 = f'{prefix}_vector_of_strings'
+            attr_name_2 = f'{prefix}_vector_of_strings_size'
+
+            # Add a rule to core.re which when triggered will add the vector size and elements
+            # of "*values" to the session collection as AVUs.
+            core.add_rule(dedent('''
+            pep_database_execute_genquery2_sql_pre(*inst, *ctx, *out, *sql, *values, *output) {{
+                msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{attr_name_1}', *values."0", '');
+                msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{attr_name_2}', *values."size", '');
+            }}
+            '''.format(**locals())))
+
+            try:
+                # Trigger PEP, ignore output.
+                self.user.assert_icommand(['iquery', f"select COLL_NAME where COLL_NAME = '{attr_value_1}'"], 'STDOUT')
+
+                # Show the session collection has an AVU attached to it.
+                # This is only possible if vectors of strings are serializable.
+                self.user.assert_icommand(['imeta', 'ls', '-C', self.user.session_collection], 'STDOUT', [
+                    f'attribute: {attr_name_1}\nvalue: {attr_value_1}\n',
+                    # The value is 2 due to the parser adding additional bind variables.
+                    # For this specific case, a second bind variable for the username is included.
+                    f'attribute: {attr_name_2}\nvalue: 2\n'
+                ])
+
+            finally:
+                # This isn't required, but we do it here to keep the database metadata
+                # tables small, for performance reasons.
+                self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, attr_name_1, attr_value_1])
+                self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, attr_name_2, '2'])
+
+    @unittest.skipIf(plugin_name != 'irods_rule_engine_plugin-irods_rule_language' or test.settings.RUN_IN_TOPOLOGY, 'Requires NREP and single node zone.')
+    def test_if_vector_of_strings_is_exposed__issue_7570(self):
+        config = IrodsConfig()
+
+        with lib.file_backed_up(config.server_config_path):
+            try:
+                # Lower the delay server's sleep time so that rule are executed quicker.
+                config.server_config['advanced_settings']['delay_server_sleep_time_in_seconds'] = 1
+                lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+
+                # Restart so the new server configuration takes effect.
+                IrodsController().restart(test_mode=True)
+
+                with temporary_core_file() as core:
+                    prefix = 'test_if_vector_of_strings_is_exposed__issue_7570'
+                    attr_name_1 = f'{prefix}_delay_rule_info_element_value'
+                    attr_name_2 = f'{prefix}_vector_of_strings_size'
+
+                    # Add a rule to core.re which when triggered will add the vector size and elements
+                    # of "*delay_rule_info" to "self.admin's" session collection as AVUs.
+                    core.add_rule(dedent('''
+                    pep_database_get_delay_rule_info_post(*inst, *ctx, *out, *rule_id, *delay_rule_info) {{
+                        *trimmed_value = trimr(triml(*delay_rule_info."0", ' '), ' '); # Remove leading/trailing whitespace.
+                        msiModAVUMetadata('-C', '{self.admin.session_collection}', 'add', '{attr_name_1}', *trimmed_value, '');
+                        msiModAVUMetadata('-C', '{self.admin.session_collection}', 'add', '{attr_name_2}', *delay_rule_info."size", '');
+                    }}
+                    '''.format(**locals())))
+
+                    # Give the service account user permission to add metadata to "self.admin's" session collection.
+                    # Remember, "self.admin" represents a completely different rodsadmin AND the PEP that was added
+                    # to core.re is only triggered by the service account user.
+                    self.admin.assert_icommand(
+                        ['ichmod', 'modify_object', config.client_environment['irods_user_name'], self.admin.session_collection])
+
+                    # Placed here for clean-up purposes.
+                    rep_name = self.plugin_name + '-instance'
+                    delay_rule_body = 'writeLine("serverLog", "test_if_vector_of_strings_is_exposed__issue_7570");'
+                    rule = f'delay("<INST_NAME>{rep_name}</INST_NAME>") {{ {delay_rule_body} }}'
+
+                    try:
+                        # Schedule a delay rule to trigger the database PEP.
+                        self.admin.assert_icommand(['irule', '-r', rep_name, rule, 'null', 'null'])
+
+                        # Show the session collection has an AVU attached to it.
+                        # This is only possible if vectors of strings are serializable.
+
+                        def has_avu():
+                            out, _, _ = self.admin.run_icommand(['imeta', 'ls', '-C', self.admin.session_collection])
+                            print(out) # For debugging purposes.
+                            return all(avu in out for avu in [
+                                f'attribute: {attr_name_1}\nvalue: {delay_rule_body}\n',
+                                f'attribute: {attr_name_2}\nvalue: 12\n'
+                            ])
+
+                        lib.delayAssert(lambda: has_avu())
+
+                    finally:
+                        # This isn't required, but we do it here to keep the database metadata
+                        # tables small, for performance reasons.
+                        self.admin.run_icommand(['imeta', 'rm', '-C', self.admin.session_collection, attr_name_1, delay_rule_body])
+                        self.admin.run_icommand(['imeta', 'rm', '-C', self.admin.session_collection, attr_name_2, '12'])
+
+            finally:
+                # Restart so the server's original configuration takes effect.
+                IrodsController().restart(test_mode=True)
+
+    @unittest.skipIf(plugin_name != 'irods_rule_engine_plugin-irods_rule_language' or test.settings.RUN_IN_TOPOLOGY, "Requires NREP and single node zone.")
+    def test_if_Genquery2Input_is_exposed__issue_7570(self):
+        with temporary_core_file() as core:
+            avu_prefix = 'test_if_Genquery2Input_is_exposed__issue_7570'
+
+            # Add a rule to core.re which when triggered will add AVUs to the user's
+            # session collection.
+            core.add_rule(dedent('''
+            pep_api_genquery2_pre(*inst, *comm, *input, *output) {{
+                *v = *input.query_string;
+                msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_0', *v, '');
+
+                *v = *input.zone;
+                if (strlen(*v) > 0) {{
+                    msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_1', *v, '');
+                }}
+                else {{
+                    msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_1', 'unspecified', '');
+                }}
+
+                *v = *input.sql_only;
+                msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_2', *v, '');
+
+                *v = *input.column_mappings;
+                msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_3', *v, '');
+            }}
+            '''.format(**locals())))
+
+            try:
+                # Trigger PEP, ignore output.
+                query_string = f"select COLL_NAME where COLL_NAME = '{self.user.session_collection}'"
+                self.user.assert_icommand(['iquery', query_string], 'STDOUT')
+
+                # Show the session collection has the expected AVUs attached to it.
+                self.user.assert_icommand(['imeta', 'ls', '-C', self.user.session_collection], 'STDOUT', [
+                    f'attribute: {avu_prefix}_0\nvalue: {query_string}\n',
+                    f'attribute: {avu_prefix}_1\nvalue: unspecified\n',
+                    f'attribute: {avu_prefix}_2\nvalue: 0\n',
+                    f'attribute: {avu_prefix}_3\nvalue: 0\n',
+                ])
+
+                # Remove the AVUs to avoid duplicate AVU errors. These will cause the test to fail.
+                self.user.assert_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_0', query_string])
+                self.user.assert_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_1', 'unspecified'])
+                self.user.assert_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_2', '0'])
+                self.user.assert_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_3', '0'])
+
+                # Now, with the zone explicitly passed.
+                self.user.assert_icommand(['iquery', '-z', self.user.zone_name, query_string], 'STDOUT')
+
+                # Show the session collection has the expected AVUs attached to it.
+                self.user.assert_icommand(['imeta', 'ls', '-C', self.user.session_collection], 'STDOUT', [
+                    f'attribute: {avu_prefix}_0\nvalue: {query_string}\n',
+                    f'attribute: {avu_prefix}_1\nvalue: {self.user.zone_name}\n',
+                    f'attribute: {avu_prefix}_2\nvalue: 0\n',
+                    f'attribute: {avu_prefix}_3\nvalue: 0\n',
+                ])
+
+            finally:
+                # This isn't required, but we do it here to keep the database metadata
+                # tables small, for performance reasons.
+                self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_0', query_string])
+                self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_1', 'unspecified'])
+                self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_1', self.user.zone_name])
+                self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_2', '0'])
+                self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_3', '0'])
