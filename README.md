@@ -31,6 +31,10 @@ Funders have included DARPA, NSF, DOD, DOE, LC, NARA, NASA, NOAA, USPTO, and LLN
 
 iRODS is released under a 3-clause BSD License.
 
+## Reporting Security Vulnerabilities
+
+See [SECURITY.md](SECURITY.md) for details.
+
 ## Links to elsewhere...
 
  - [https://github.com/irods](https://github.com/irods)
