@@ -3,7 +3,7 @@
 #include "irods/private/genquery2_ast_types.hpp"
 #include "irods/private/vertex_property.hpp"
 #include "irods/private/edge_property.hpp"
-#include "irods/genquery2_table_column_mappings.hpp"
+#include "irods/private/genquery2_table_column_mappings.hpp"
 
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_logger.hpp"
@@ -24,7 +24,7 @@
 
 namespace
 {
-    namespace gq = irods::experimental::api::genquery2;
+    namespace gq = irods::experimental::genquery2;
 
     // clang-format off
     using graph_type         = boost::adjacency_list<boost::vecS,
@@ -88,8 +88,8 @@ namespace
 
     constexpr auto to_index(const std::string_view _table_name) -> std::size_t
     {
-        for (auto i = 0ull; i < table_names.size(); ++i) {
-            if (table_names[i] == _table_name) {
+        for (auto i = 0ULL; i < table_names.size(); ++i) {
+            if (table_names.at(i) == _table_name) {
                 return i;
             }
         }
@@ -255,7 +255,7 @@ namespace
 
         std::vector<std::string> processed;
         processed.reserve(_tables.size());
-        processed.push_back(std::string{_tables.front()});
+        processed.emplace_back(std::string{_tables.front()});
         log_gq::debug(fmt::format("processed = [{}]", fmt::join(processed, ", ")));
 
         for (decltype(_tables.size()) i = 0; i < _tables.size() - 1; ++i) {
@@ -428,21 +428,20 @@ namespace
                                        " and pdoa.access_type_id >= {perm} and pcoa.access_type_id >= {perm}",
                                        fmt::arg("perm", min_perm_level),
                                        fmt::arg("zone", _opts.user_zone));
-                    _state.values.push_back(std::string{_opts.user_name});
-                    _state.values.push_back(std::string{_opts.user_name});
+                    _state.values.emplace_back(std::string{_opts.user_name});
+                    _state.values.emplace_back(std::string{_opts.user_name});
                 }
                 else if (d_iter != end) {
                     sql += fmt::format(" and pdu.user_name = ? and pdu.zone_name = '{}' and pdoa.access_type_id >= {}",
                                        _opts.user_zone,
                                        min_perm_level);
-                    _state.values.push_back(std::string{_opts.user_name});
-                    _state.values.push_back(std::string{_opts.user_zone});
+                    _state.values.emplace_back(std::string{_opts.user_name});
                 }
                 else if (c_iter != end) {
                     sql += fmt::format(" and pcu.user_name = ? and pcu.zone_name = '{}' and pcoa.access_type_id >= {}",
                                        _opts.user_zone,
                                        min_perm_level);
-                    _state.values.push_back(std::string{_opts.user_name});
+                    _state.values.emplace_back(std::string{_opts.user_name});
                 }
             }
 
@@ -472,20 +471,20 @@ namespace
                                    " and pdoa.access_type_id >= {perm} and pcoa.access_type_id >= {perm}",
                                    fmt::arg("perm", min_perm_level),
                                    fmt::arg("zone", _opts.user_zone));
-                _state.values.push_back(std::string{_opts.user_name});
-                _state.values.push_back(std::string{_opts.user_name});
+                _state.values.emplace_back(std::string{_opts.user_name});
+                _state.values.emplace_back(std::string{_opts.user_name});
             }
             else if (d_iter != end) {
                 sql += fmt::format(" where pdu.user_name = ? and pdu.zone_name = '{}' and pdoa.access_type_id >= {}",
                                    _opts.user_zone,
                                    min_perm_level);
-                _state.values.push_back(std::string{_opts.user_name});
+                _state.values.emplace_back(std::string{_opts.user_name});
             }
             else if (c_iter != end) {
                 sql += fmt::format(" where pcu.user_name = ? and pcu.zone_name = '{}' and pcoa.access_type_id >= {}",
                                    _opts.user_zone,
                                    min_perm_level);
-                _state.values.push_back(std::string{_opts.user_name});
+                _state.values.emplace_back(std::string{_opts.user_name});
             }
         }
 
@@ -530,7 +529,7 @@ namespace
             const auto ast_iter =
                 std::find_if(std::begin(_state.ast_column_ptrs),
                              std::end(_state.ast_column_ptrs),
-                             [&c](const irods::experimental::api::genquery2::column* _p) { return _p->name == c; });
+                             [&c](const irods::experimental::genquery2::column* _p) { return _p->name == c; });
 
             if (std::end(_state.ast_column_ptrs) == ast_iter) {
                 throw std::invalid_argument{"cannot generate SQL from General Query."};
@@ -586,10 +585,10 @@ namespace
                 alias = _state.table_aliases.at(std::string{iter->second.table});
             }
 
-            const auto ast_iter = std::find_if(
-                std::begin(_state.ast_column_ptrs),
-                std::end(_state.ast_column_ptrs),
-                [&se](const irods::experimental::api::genquery2::column* _p) { return _p->name == se.column; });
+            const auto ast_iter =
+                std::find_if(std::begin(_state.ast_column_ptrs),
+                             std::end(_state.ast_column_ptrs),
+                             [&se](const irods::experimental::genquery2::column* _p) { return _p->name == se.column; });
 
             if (std::end(_state.ast_column_ptrs) == ast_iter) {
                 throw std::invalid_argument{"cannot generate SQL from General Query."};
@@ -710,7 +709,7 @@ namespace
                            fmt::arg("char_type", "varchar"));
     } // generate_with_clause_for_data_resc_hier
 
-    auto generate_limit_clause(const irods::experimental::api::genquery2::options& _opts,
+    auto generate_limit_clause(const irods::experimental::genquery2::options& _opts,
                                const std::string_view _number_of_rows) -> std::string
     {
         if (!_number_of_rows.empty()) {
@@ -729,7 +728,7 @@ namespace
     } // generate_limit_clause
 } // anonymous namespace
 
-namespace irods::experimental::api::genquery2
+namespace irods::experimental::genquery2
 {
     auto setup_column_for_post_processing(gq_state& _state, const column& _column, const column_info& _column_info)
         -> std::tuple<bool, std::string_view>
@@ -862,7 +861,7 @@ namespace irods::experimental::api::genquery2
         }
 
         return fmt::format("cast({}.{} as {})", alias, iter->second.name, _column.type_name);
-    }
+    } // to_sql
 
     auto to_sql(gq_state& _state, const select_function& _select_function) -> std::string
     {
@@ -895,7 +894,7 @@ namespace irods::experimental::api::genquery2
                            alias,
                            iter->second.name,
                            _select_function.column.type_name);
-    }
+    } // to_sql
 
     auto to_sql(gq_state& _state, const selections& _selections) -> std::string
     {
@@ -921,55 +920,55 @@ namespace irods::experimental::api::genquery2
         }
 
         return fmt::format("{}", fmt::join(cols, ", "));
-    }
+    } // to_sql
 
     auto to_sql(gq_state& _state, const condition_operator_not& _op_not) -> std::string
     {
         return fmt::format(" not{}", boost::apply_visitor(sql_visitor{_state}, _op_not.expression));
-    }
+    } // to_sql
 
     auto to_sql(gq_state& _state, const condition_not_equal& _not_equal) -> std::string
     {
         _state.values.push_back(_not_equal.string_literal);
         return " != ?";
-    }
+    } // to_sql
 
     auto to_sql(gq_state& _state, const condition_equal& _equal) -> std::string
     {
         _state.values.push_back(_equal.string_literal);
         return " = ?";
-    }
+    } // to_sql
 
     auto to_sql(gq_state& _state, const condition_less_than& _less_than) -> std::string
     {
         _state.values.push_back(_less_than.string_literal);
         return " < ?";
-    }
+    } // to_sql
 
     auto to_sql(gq_state& _state, const condition_less_than_or_equal_to& _less_than_or_equal_to) -> std::string
     {
         _state.values.push_back(_less_than_or_equal_to.string_literal);
         return " <= ?";
-    }
+    } // to_sql
 
     auto to_sql(gq_state& _state, const condition_greater_than& _greater_than) -> std::string
     {
         _state.values.push_back(_greater_than.string_literal);
         return " > ?";
-    }
+    } // to_sql
 
     auto to_sql(gq_state& _state, const condition_greater_than_or_equal_to& _greater_than_or_equal_to) -> std::string
     {
         _state.values.push_back(_greater_than_or_equal_to.string_literal);
         return " >= ?";
-    }
+    } // to_sql
 
     auto to_sql(gq_state& _state, const condition_between& _between) -> std::string
     {
         _state.values.push_back(_between.low);
         _state.values.push_back(_between.high);
         return " between ? and ?";
-    }
+    } // to_sql
 
     auto to_sql(gq_state& _state, const condition_in& _in) -> std::string
     {
@@ -991,30 +990,30 @@ namespace irods::experimental::api::genquery2
         auto last = boost::make_function_input_iterator(gen, _in.list_of_string_literals.size());
 
         return fmt::format(" in ({})", fmt::join(first, last, ", "));
-    }
+    } // to_sql
 
     auto to_sql(gq_state& _state, const condition_like& _like) -> std::string
     {
         _state.values.push_back(_like.string_literal);
         return " like ?";
-    }
+    } // to_sql
 
     auto to_sql([[maybe_unused]] gq_state& _state, const condition_is_null&) -> std::string
     {
         return " is null";
-    }
+    } // to_sql
 
     auto to_sql([[maybe_unused]] gq_state& _state, const condition_is_not_null&) -> std::string
     {
         return " is not null";
-    }
+    } // to_sql
 
     auto to_sql(gq_state& _state, const condition& _condition) -> std::string
     {
         return fmt::format("{}{}",
                            to_sql(_state, _condition.column),
                            boost::apply_visitor(sql_visitor{_state}, _condition.expression));
-    }
+    } // to_sql
 
     auto to_sql(gq_state& _state, const conditions& _conditions) -> std::string
     {
@@ -1025,27 +1024,27 @@ namespace irods::experimental::api::genquery2
         }
 
         return ret;
-    }
+    } // to_sql
 
     auto to_sql(gq_state& _state, const logical_and& _condition) -> std::string
     {
         return fmt::format(" and {}", to_sql(_state, _condition.condition));
-    }
+    } // to_sql
 
     auto to_sql(gq_state& _state, const logical_or& _condition) -> std::string
     {
         return fmt::format(" or {}", to_sql(_state, _condition.condition));
-    }
+    } // to_sql
 
     auto to_sql(gq_state& _state, const logical_not& _condition) -> std::string
     {
         return fmt::format("not {}", to_sql(_state, _condition.condition));
-    }
+    } // to_sql
 
     auto to_sql(gq_state& _state, const logical_grouping& _condition) -> std::string
     {
         return fmt::format("({})", to_sql(_state, _condition.conditions));
-    }
+    } // to_sql
 
     auto to_sql(const select& _select, const options& _opts) -> std::tuple<std::string, std::vector<std::string>>
     {
@@ -1169,4 +1168,4 @@ namespace irods::experimental::api::genquery2
 
         return {{}, {}};
     } // to_sql
-} // namespace irods::experimental::api::genquery2
+} // namespace irods::experimental::genquery2

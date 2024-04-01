@@ -15833,7 +15833,7 @@ auto db_execute_genquery2_sql(irods::plugin_context& _ctx,
 
     if (!_sql || !_values || !_output) {
         log_db::error("{}: Received one or more null pointers.", __func__);
-        return ERROR(SYS_INVALID_INPUT_PARAM, "Received one or more null pointers.");
+        return ERROR(SYS_INTERNAL_NULL_INPUT_ERR, "Received one or more null pointers.");
     }
 
     *_output = nullptr;
@@ -15871,7 +15871,7 @@ auto db_execute_genquery2_sql(irods::plugin_context& _ctx,
     }
     catch (const irods::exception& e) {
         log_db::error("{}: {}", __func__, e.client_display_what());
-        return ERROR(SYS_LIBRARY_ERROR, e.what());
+        return ERROR(e.code(), e.what());
     }
     catch (const std::exception& e) {
         log_db::error("{}: {}", __func__, e.what());
