@@ -138,7 +138,7 @@ rsCollRepl( rsComm_t *rsComm, collInp_t *collReplInp,
         collEnt = NULL;
     }
     rsCloseCollection( rsComm, &handleInx );
-    freeCollEnt( collEnt );
+    free(collEnt);
 
     return savedStatus;
 }
