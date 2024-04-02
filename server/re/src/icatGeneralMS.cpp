@@ -121,6 +121,8 @@ msiQuota( ruleExecInfo_t *rei ) {
  *
  * \since pre-2.1
  *
+ * \deprecated Deprecated in 4.3.2. Its use should be avoided.
+ *
  *
  * \note  This microservice sets the resource as part of a workflow execution.
  *

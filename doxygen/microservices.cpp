@@ -167,7 +167,7 @@
   - #msiSetDataObjAvoidResc - Specifies the copy to avoid
   - #msiSetGraftPathScheme - Sets the scheme for composing the physical path in the vault to GRAFT_PATH
   - #msiSetRandomScheme - Sets the the scheme for composing the physical path in the vault to RANDOM
-  - #msiSetResource  - sets the resource from default
+  - #msiSetResource  - (Deprecated) sets the resource from default
   - #msiSetNumThreads - specify the parameters for determining the number of threads to use for data transfer
   - #msiNoChkFilePathPerm - Does not check file path permission when registering a file
   - #msiSetChkFilePathPerm - Sets the check type for file path permission check when registering a file
