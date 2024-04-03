@@ -293,7 +293,7 @@ def capture_process_tree(server_proc, server_descendants, candidate_binaries=Non
 
     if server_proc.is_running():
         try:
-            cur_descendants = filter(should_return_proc, server_proc.children(recursive=True))
+            cur_descendants = set(filter(should_return_proc, server_proc.children(recursive=True)))
             orphaned_descendants = server_descendants.difference(cur_descendants)
             server_descendants.update(cur_descendants)
         except (psutil.NoSuchProcess):
