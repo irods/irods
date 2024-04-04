@@ -1,0 +1,7 @@
+---
+Checks:
+    -cppcoreguidelines-macro-usage,
+    -modernize-use-using
+InheritParentConfig: true
+...
+
