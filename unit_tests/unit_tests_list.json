@@ -40,6 +40,7 @@
     "irods_rc_data_obj",
     "irods_rc_data_obj_repl",
     "irods_rc_get_library_features",
+    "irods_rc_mod_data_obj_meta",
     "irods_rc_switch_user",
     "irods_re_serialization",
     "irods_replica",
