@@ -65,9 +65,11 @@ msiSetDefaultResc( msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecI
 
     optionStr = ( char * ) xoptionStr->inOutStruct;
 
+    auto* cond_input{nullptr == rei->doinp ? nullptr : &rei->doinp->condInput};
+
     RE_TEST_MACRO( "    Calling msiSetDefaultResc" )
 
-    irods::error err = irods::set_default_resource( rei->rsComm, defaultRescList, optionStr, &rei->doinp->condInput, default_resc );
+    irods::error err = irods::set_default_resource( rei->rsComm, defaultRescList, optionStr, cond_input, default_resc );
     rei->status = err.code();
 
     if ( rei->status >= 0 ) {
