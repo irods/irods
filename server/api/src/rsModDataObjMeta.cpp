@@ -131,6 +131,9 @@ _rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp ) {
 
             std::memset(&dataObjInp, 0, sizeof(dataObjInp));
             rstrcpy( dataObjInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN );
+            if (const char* admin_kw = getValByKey(regParam, ADMIN_KW); admin_kw) {
+                addKeyVal(&dataObjInp.condInput, ADMIN_KW, admin_kw);
+            }
             status = getDataObjInfoIncSpecColl( rsComm, &dataObjInp, &dataObjInfoHead );
 
             if ( status < 0 )  {
