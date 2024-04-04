@@ -71,6 +71,7 @@ set(
   rc_data_obj
   rc_data_obj_repl
   rc_get_library_features
+  rc_mod_data_obj_meta
   rc_switch_user
   re_serialization
   replica
