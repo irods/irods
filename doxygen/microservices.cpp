@@ -129,7 +129,7 @@
   - #msi_json_compare  - Compares two JSON structures
   - #msi_json_contains - Returns if an element exists inside of a JSON structure
   - #msi_json_dump     - Serializes a JSON structure to a string
-  - #msi_json_free     - Releases any resources assoicated with a JSON handle
+  - #msi_json_free     - Releases any resources associated with a JSON handle
   - #msi_json_handles  - Returns all JSON handles in the process
   - #msi_json_names    - Returns all property names inside a JSON structure
   - #msi_json_parse    - Parses a string or byte/integer sequence into a JSON structure
