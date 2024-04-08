@@ -86,3 +86,23 @@ class Test_IQuery(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.T
         query_string = f"select COLL_NAME where COLL_NAME = '{self.user.home_collection}' or COLL_NAME like '{self.admin.home_collection}' order by COLL_NAME"
         json_string = json.dumps([[self.user.home_collection], [self.admin.home_collection]], separators=(',', ':'))
         self.admin.assert_icommand(['iquery', query_string], 'STDOUT', json_string)
+
+    def test_iquery_supports_embedded_single_quotes__issue_5727(self):
+        # Create a collection containing an embedded single quote in the name.
+        collection = "issue'5727.c"
+        self.user.assert_icommand(['imkdir', collection])
+
+        # Create a data object containing an embedded single quote in the name.
+        data_object = "test_iquery_supports_embedded_single_quotes'__issue_5727"
+        self.user.assert_icommand(['istream', 'write', data_object], input='data')
+
+        # Show the GenQuery2 parser provides ways of dealing with embedded single quotes.
+        escaped_strings = [
+            data_object.replace("'", '\\x27'),  # Uses hex value to escape single quote.
+            data_object.replace("'", "''")      # Uses two single quotes to escape single quote like in SQL.
+        ]
+        json_string = json.dumps([[data_object, self.user.session_collection]], separators=(',', ':'))
+        for escaped in escaped_strings:
+            query_string = f"select DATA_NAME, COLL_NAME where COLL_NAME = '{self.user.session_collection}' or DATA_NAME = '{escaped}'"
+            with self.subTest(f'escaped_string={escaped}'):
+                self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
