@@ -125,7 +125,7 @@
   - #msiSetKeyValuePairsToObj - Ingests or overwrites object metadata into iCAT from a AVU structure
   - #msiAddKeyVal - Adds a new key and value to a keyValPair_t
 
-\subsection msijson JSON microservices
+ \subsection msijson JSON microservices
   - #msi_json_compare  - Compares two JSON structures
   - #msi_json_contains - Returns if an element exists inside of a JSON structure
   - #msi_json_dump     - Serializes a JSON structure to a string
@@ -136,6 +136,12 @@
   - #msi_json_size     - Returns the number of property names in a JSON structure
   - #msi_json_type     - Returns the type of an element inside a JSON structure
   - #msi_json_value    - Returns the value of a JSON structure
+
+ \subsection msigenquery2 GenQuery2 Microservices
+  - #msi_genquery2_execute  - Query the catalog using the GenQuery2 parser
+  - #msi_genquery2_next_row - Move the cursor forward by one row
+  - #msi_genquery2_column   - Read the value of a column from a row
+  - #msi_genquery2_free     - Free all resources associated with a GenQuery2 handle
 
  \subsection msiotheruser Other User Microservices
   - #msiModAVUMetadata - Modifies AVU metadata on a user, resource, data object, or collection
