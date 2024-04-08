@@ -3,13 +3,14 @@ import unittest
 
 from . import session
 
-rodsadmins = []
+rodsadmins = [('otherrods', 'rods')]
 rodsusers  = [('alice', 'apass')]
 
 class Test_IQuery(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.TestCase):
 
     def setUp(self):
         super(Test_IQuery, self).setUp()
+        self.admin = self.admin_sessions[0]
         self.user = self.user_sessions[0]
 
     def tearDown(self):
@@ -80,3 +81,8 @@ class Test_IQuery(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.T
         finally:
             # Remove the metadata.
             self.user.assert_icommand(['imeta', 'rm', '-C', self.user.session_collection, attr_name, attr_value])
+
+    def test_iquery_supports_OR_operator__issue_4069(self):
+        query_string = f"select COLL_NAME where COLL_NAME = '{self.user.home_collection}' or COLL_NAME like '{self.admin.home_collection}' order by COLL_NAME"
+        json_string = json.dumps([[self.user.home_collection], [self.admin.home_collection]], separators=(',', ':'))
+        self.admin.assert_icommand(['iquery', query_string], 'STDOUT', json_string)
