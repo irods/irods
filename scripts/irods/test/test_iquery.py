@@ -63,3 +63,20 @@ class Test_IQuery(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.T
         self.assertEqual(ec, 1)
         self.assertEqual(len(out), 0)
         self.assertEqual(err, 'error: -167000\n') # SYS_LIBRARY_ERROR
+
+    def test_iquery_distinguishes_embedded_IN_substring_from_IN_operator__issue_3064(self):
+        attr_name = 'originalVersionId'
+        attr_value = 'ignored'
+
+        try:
+            self.user.assert_icommand(['imeta', 'add', '-C', self.user.session_collection, attr_name, attr_value])
+
+            json_string = json.dumps([[attr_name, attr_value]], separators=(',', ':'))
+            for op in ['IN', 'in']:
+                with self.subTest(f'op={op}'):
+                    query_string = f"select META_COLL_ATTR_NAME, META_COLL_ATTR_VALUE where META_COLL_ATTR_NAME {op} ('{attr_name}')"
+                    self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+        finally:
+            # Remove the metadata.
+            self.user.assert_icommand(['imeta', 'rm', '-C', self.user.session_collection, attr_name, attr_value])
