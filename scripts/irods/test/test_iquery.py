@@ -56,3 +56,10 @@ class Test_IQuery(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.T
         self.assertEqual(ec, 1)
         self.assertEqual(len(out), 0)
         self.assertEqual(err, 'error: -130000\n') # SYS_INVALID_INPUT_PARAM
+
+    def test_iquery_returns_error_when_closing_single_quote_is_missing__issue_6393(self):
+        ec, out, err = self.user.assert_icommand_fail(
+            ['iquery', f"select COLL_NAME where COLL_NAME = '{self.user.session_collection}"], 'STDOUT')
+        self.assertEqual(ec, 1)
+        self.assertEqual(len(out), 0)
+        self.assertEqual(err, 'error: -167000\n') # SYS_LIBRARY_ERROR
