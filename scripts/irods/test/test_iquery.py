@@ -106,3 +106,15 @@ class Test_IQuery(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.T
             query_string = f"select DATA_NAME, COLL_NAME where COLL_NAME = '{self.user.session_collection}' or DATA_NAME = '{escaped}'"
             with self.subTest(f'escaped_string={escaped}'):
                 self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+    def test_iquery_returns_error_on_invalid_query_string__issue_5734(self):
+        # The following query is missing a closing single quote on the first condition
+        # in the WHERE clause.
+        query_string = "select DATA_ID, DATA_REPL_NUM, COLL_NAME, DATA_NAME, DATA_RESC_HIER, DATA_PATH, META_DATA_ATTR_VALUE " + \
+            "where META_DATA_ATTR_NAME = 'id_foo and META_DATA_ATTR_VALUE in ('260,'3261852','3261856','3261901','3080907','3083125'," + \
+            "'3083853','3084203','3085046','3091021','3092210','3092313','3093766','3094073','3094078','3095017','3095445','3095522','3097128'," + \
+            "'3097225','3097311','3097480','3097702','3097750')"
+        ec, out, err = self.user.assert_icommand_fail(['iquery', query_string], 'STDOUT')
+        self.assertEqual(ec, 1)
+        self.assertEqual(len(out), 0)
+        self.assertEqual(err, 'error: -167000\n') # SYS_LIBRARY_ERROR
