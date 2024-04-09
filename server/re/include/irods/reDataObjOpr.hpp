@@ -96,4 +96,6 @@ msiCollRsync( msParam_t *inpParam1, msParam_t *inpParam2,
 int
 _rsCollRsync( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
               char *srcColl, char *destColl );
+
+auto msi_replica_truncate(MsParam* _inp, MsParam* _out, RuleExecInfo* _rei) -> int;
 #endif	/* RE_DATA_OBJ_OPR_H */
