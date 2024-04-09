@@ -21,15 +21,15 @@ extern "C" {
 /// \param[in] _comm A pointer to a RsComm.
 /// \param[in] _inp \parblock
 /// DataObjInp structure which requires the following inputs:
-///     objPath - The full logical path to the target data object.
-///     dataSize - The desired size of the replica after truncating.
+///     - objPath: The full logical path to the target data object.
+///     - dataSize: The desired size of the replica after truncating.
 ///
 /// The condInput supports the following keywords:
-///     REPL_NUM_KW - The replica number of the replica to truncate.
-///     RESC_NAME_KW - The name of the resource with the replica to truncate. Must be a root resource.
-///     DEF_RESC_NAME_KW - The default resource to target in the absence of any other inputs or policy.
-///     RESC_HIER_STR_KW - Full resource hierarchy to the replica to truncate. Use with caution.
-///     ADMIN_KW - Flag indicating that the operation is to be performed with elevated privileges. No value required.
+///     - REPL_NUM_KW: The replica number of the replica to truncate.
+///     - RESC_NAME_KW: The name of the resource with the replica to truncate. Must be a root resource.
+///     - DEF_RESC_NAME_KW: The default resource to target in the absence of any other inputs or policy.
+///     - RESC_HIER_STR_KW: Full resource hierarchy to the replica to truncate. Use with caution.
+///     - ADMIN_KW: Flag indicating that the operation is to be performed with elevated privileges. No value required.
 /// \endparblock
 /// \param[out] _out \parblock
 /// Character string representing a JSON structure with the following form:
