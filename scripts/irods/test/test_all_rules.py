@@ -265,6 +265,10 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
                 # print("skipping " + rulefile + " ----- tested separately")
                 return False
 
+            # msiSendMail is deprecated and disabled by default as of 4.3.2.
+            if "rulemsiSendMail" in rulefile:
+                return False
+
             return True
 
         for rulefile in filter(filter_rulefiles, sorted(os.listdir(rulesdir))):
@@ -275,6 +279,26 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
                                                      ,'STDOUT_SINGLELINE', "completed successfully")
                 return test
 
+            # Returns a test with the following name:
+            #
+            #     test_<filename>_r
+            #
+            # Dots (.) are replaced with underscores (_).
+            #
+            # The rule files which are used to generate the tests normally follow
+            # the naming scheme below (following the scheme is not required):
+            #
+            #     rule<microservice_name>.r.
+            #
+            # So, given a file named rulemsiSendMail.r, the line below will
+            # generate the following test name:
+            #
+            #     test_rulemsiSendMail_r
+            #
+            # Individual tests can be run using the generated name like so:
+            #
+            #     test_all_rules.Test_AllRules.test_<filename>_r
+            #
             yield 'test_' + rulefile.replace('.', '_'), make_test(rulefile)
 
     def test_rulemsiDataObjRsync(self):
