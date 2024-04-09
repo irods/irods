@@ -67,6 +67,7 @@
   - #msiCheckPermission - Check if a data object permission is the same as the one given
   - #msiCheckOwner - Check if the user is the owner of the data object
   - #msiSetReplComment - Sets the data_comments attribute of a data object
+  - #msi_replica_truncate - Truncate a replica to the desired size
 
  \subsection msicollection Collection Microservices
   - #msiCollCreate - Create a collection

@@ -1,41 +1,43 @@
 /// \file
 
 #include "irods/reDataObjOpr.hpp"
+
 #include "irods/apiHeaderAll.h"
-#include "irods/rsApiHandler.hpp"
 #include "irods/collection.hpp"
-#include "irods/rsDataObjCreate.hpp"
-#include "irods/rsDataObjOpen.hpp"
-#include "irods/rsDataObjClose.hpp"
-#include "irods/rsDataObjRead.hpp"
-#include "irods/rsDataObjWrite.hpp"
-#include "irods/rsDataObjUnlink.hpp"
-#include "irods/rsDataObjRepl.hpp"
-#include "irods/rsDataObjCopy.hpp"
-#include "irods/rsDataObjChksum.hpp"
-#include "irods/rsDataObjLseek.hpp"
-#include "irods/rsDataObjPhymv.hpp"
-#include "irods/rsDataObjRename.hpp"
-#include "irods/rsDataObjTrim.hpp"
-#include "irods/rsCollCreate.hpp"
-#include "irods/rsRmColl.hpp"
-#include "irods/rsPhyPathReg.hpp"
-#include "irods/rsObjStat.hpp"
-#include "irods/rsDataObjRsync.hpp"
-#include "irods/rsOpenCollection.hpp"
-#include "irods/rsReadCollection.hpp"
-#include "irods/rsCloseCollection.hpp"
-#include "irods/rsExecCmd.hpp"
-#include "irods/rsCollRepl.hpp"
-#include "irods/rsModDataObjMeta.hpp"
-#include "irods/rsStructFileExtAndReg.hpp"
-#include "irods/rsModDataObjMeta.hpp"
-#include "irods/rsStructFileBundle.hpp"
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/key_value_proxy.hpp"
+#include "irods/rsApiHandler.hpp"
+#include "irods/rsCloseCollection.hpp"
+#include "irods/rsCollCreate.hpp"
+#include "irods/rsCollRepl.hpp"
+#include "irods/rsDataObjChksum.hpp"
+#include "irods/rsDataObjClose.hpp"
+#include "irods/rsDataObjCopy.hpp"
+#include "irods/rsDataObjCreate.hpp"
+#include "irods/rsDataObjLseek.hpp"
+#include "irods/rsDataObjOpen.hpp"
+#include "irods/rsDataObjPhymv.hpp"
+#include "irods/rsDataObjRead.hpp"
+#include "irods/rsDataObjRename.hpp"
+#include "irods/rsDataObjRepl.hpp"
+#include "irods/rsDataObjRsync.hpp"
+#include "irods/rsDataObjTrim.hpp"
+#include "irods/rsDataObjUnlink.hpp"
+#include "irods/rsDataObjWrite.hpp"
+#include "irods/rsExecCmd.hpp"
+#include "irods/rsModDataObjMeta.hpp"
+#include "irods/rsModDataObjMeta.hpp"
+#include "irods/rsObjStat.hpp"
+#include "irods/rsOpenCollection.hpp"
+#include "irods/rsPhyPathReg.hpp"
+#include "irods/rsReadCollection.hpp"
+#include "irods/rsRmColl.hpp"
+#include "irods/rsStructFileBundle.hpp"
+#include "irods/rsStructFileExtAndReg.hpp"
+#include "irods/rs_replica_truncate.hpp"
 
-#include <boost/regex.hpp>
 #include <boost/algorithm/string/regex.hpp>
+#include <boost/regex.hpp>
 
 #include <cstring>
 #include <string>
@@ -3266,3 +3268,117 @@ msiTarFileCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
     return rei->status;
 
 }
+
+/// Truncate a replica for the specified data object to the specified size.
+///
+/// This microservice uses the #rs_replica_truncate API.
+///
+/// \param[in] _inp \parblock
+/// MsParam of type DataObjInp or a string taken as a msKeyValStr. msKeyValStr has the following general form:
+/// keyword=[value][++++keyword=[value]]*
+///
+/// The following keywords are required:
+///     - "objPath": The full logical path to the target data object. Note: If a value is provided with no keyword, the
+///     provided value will be assumed to be the object path. In other words, the input "/tempZone/home/alice/foo" is
+///     equivalent to "objPath=/tempZone/home/alice/foo".
+///     - "dataSize": The desired size of the replica after truncating.
+///
+/// The following keywords are valid, but not required:
+///     - "replNum": The replica number of the replica to truncate.
+///     - "rescName": The name of the resource with the replica to truncate. Must be a root resource.
+///     - "defRescName": The default resource to target in the absence of any other inputs or policy.
+///     - "irodsAdmin": Flag indicating that the operation is to be performed with elevated privileges. No value
+///     required.
+/// \endparblock
+/// \param[out] _out \parblock
+/// MsParam of type string representing a JSON structure with the following form:
+/// \code{.js}
+/// {
+///     // Resource hierarchy of the selected replica for truncate. If an error occurs before hierarchy resolution is
+///     // completed, a null value will be here instead of a string.
+///     "resource_hierarchy": <string | null>,
+///     // Replica number of the selected replica for truncate. If an error occurs before hierarchy resolution is
+///     // completed, a null value will be here instead of an integer.
+///     "replica_number": <integer | null>,
+///     // A string containing any relevant message the server may wish to send to the user (including error messages).
+///     // This value will always be a string, even if it is empty.
+///     "message": <string>
+/// }
+/// \endcode
+/// The JSON microservices can be used to parse and examine the output. See #msi_json_parse.
+/// \endparblock
+/// \param[in,out] rei - The RuleExecInfo structure that is automatically handled by the rule engine. The user does not
+/// include rei as a parameter in the rule invocation.
+///
+/// \usage \parblock
+/// \code{.py}
+/// msi_replica_truncate("/tempZone/home/alice/science.txt++++dataSize=100++++replNum=0", *json_output_string);
+/// \endcode
+/// \endparblock
+///
+/// \return An integer representing an iRODS error code, or 0.
+/// \retval 0 on success.
+/// \retval <0 on failure; an iRODS error code.
+///
+/// \since 4.3.2
+auto msi_replica_truncate(MsParam* _inp, MsParam* _out, RuleExecInfo* _rei) -> int
+{
+    if (nullptr == _rei || nullptr == _rei->rsComm) {
+        msi_log::error("{}: Input rei or rei->rsComm is nullptr.", __func__);
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
+
+    RsComm* comm = _rei->rsComm;
+
+    DataObjInp data_obj_inp{};
+    DataObjInp* data_obj_inp_ptr = &data_obj_inp;
+    const auto clear_kvp = irods::at_scope_exit{[&data_obj_inp] { clearKeyVal(&data_obj_inp.condInput); }};
+
+    // Initialize the dataSize to -1 to ensure that the caller sets the dataSize to something valid.
+    data_obj_inp.dataSize = -1;
+
+    if (0 == std::strcmp(_inp->type, STR_MS_T)) {
+        char* bad_keyword_output_string = nullptr;
+        const auto free_bad_keyword_output_string =
+            // NOLINTNEXTLINE(cppcoreguidelines-no-malloc, cppcoreguidelines-owning-memory)
+            irods::at_scope_exit{[&bad_keyword_output_string] { std::free(bad_keyword_output_string); }};
+
+        // DATA_SIZE_FLAGS is not a typo.
+        const auto valid_keywords =
+            // NOLINTNEXTLINE(hicpp-signed-bitwise)
+            OBJ_PATH_FLAG | DATA_SIZE_FLAGS | REPL_NUM_FLAG | RESC_NAME_FLAG | DEF_RESC_NAME_FLAG | ADMIN_FLAG;
+        _rei->status =
+            parseMsKeyValStrForDataObjInp(_inp, &data_obj_inp, OBJ_PATH_KW, valid_keywords, &bad_keyword_output_string);
+        if (_rei->status < 0 && bad_keyword_output_string) {
+            const auto msg = fmt::format(
+                "{}: Input keyword [{}] error. error code: [{}]", __func__, bad_keyword_output_string, _rei->status);
+            msi_log::error(msg);
+            addRErrorMsg(&comm->rError, _rei->status, msg.c_str());
+            return _rei->status;
+        }
+    }
+    else {
+        _rei->status = parseMspForDataObjInp(_inp, &data_obj_inp, &data_obj_inp_ptr, 0);
+    }
+
+    if (_rei->status < 0) {
+        const auto msg = fmt::format(
+            "{}: Error occurred while parsing microservice parameters. error code: [{}]", __func__, _rei->status);
+        msi_log::error(msg);
+        addRErrorMsg(&comm->rError, _rei->status, msg.c_str());
+        return _rei->status;
+    }
+
+    char* output_string = nullptr;
+    // NOLINTNEXTLINE(cppcoreguidelines-no-malloc, cppcoreguidelines-owning-memory)
+    const auto free_output = irods::at_scope_exit{[&output_string] { std::free(output_string); }};
+    _rei->status = rs_replica_truncate(comm, &data_obj_inp, &output_string);
+    if (_rei->status < 0) {
+        const auto msg = fmt::format(
+            "{}: rs_replica_truncate failed for [{}]. error code: [{}]", __func__, data_obj_inp.objPath, _rei->status);
+        msi_log::error(msg);
+        addRErrorMsg(&comm->rError, _rei->status, msg.c_str());
+    }
+    fillStrInMsParam(_out, output_string);
+    return _rei->status;
+} // msi_replica_truncate
