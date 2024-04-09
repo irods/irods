@@ -2290,3 +2290,121 @@ class Test_JSON_microservices(session.make_sessions_mixin([], [('alice', 'apass'
         do_test(        '/other',   'null')
         do_test(        '/bool1',   'true')
         do_test(        '/bool2',  'false')
+
+
+@unittest.skipUnless(IrodsConfig().default_rule_engine_plugin == 'irods_rule_engine_plugin-irods_rule_language',
+                     'Only implemented for NREP.')
+class test_msi_replica_truncate(unittest.TestCase):
+    """These test msi_replica_truncate and are not meant to be thorough tests for the replica_truncate API."""
+
+    plugin_name = IrodsConfig().default_rule_engine_plugin
+    rep_instance = plugin_name + '-instance'
+    other_resource = 'msi_replica_truncate_resource'
+    original_contents = 'truncate this'
+    new_size = 100
+    data_name = 'test_msi_replica_truncate.txt'
+
+    @classmethod
+    def setUpClass(cls):
+        # Create a test user.
+        cls.user = session.mkuser_and_return_session('rodsuser', 'smeagol', 'spass', lib.get_hostname())
+
+        # Create a test resource.
+        with session.make_session_for_existing_admin() as admin_session:
+            lib.create_ufs_resource(admin_session, cls.other_resource, hostname=test.settings.HOSTNAME_2)
+
+    @classmethod
+    def tearDownClass(cls):
+        with session.make_session_for_existing_admin() as admin_session:
+            # End the test user session, and remove the test user and test resource.
+            cls.user.__exit__()
+            admin_session.assert_icommand(['iadmin', 'rmuser', cls.user.username])
+            lib.remove_resource(admin_session, cls.other_resource)
+
+    def setUp(self):
+        # Create a data object to truncate.
+        self.logical_path = '/'.join([self.user.session_collection, self.data_name])
+        self.user.assert_icommand(['istream', 'write', self.logical_path], input=self.original_contents)
+        self.assertTrue(lib.replica_exists_on_resource(self.user, self.logical_path, self.user.default_resource))
+        self.user.assert_icommand(['irepl', '-R', self.other_resource, self.logical_path])
+        self.assertTrue(lib.replica_exists_on_resource(self.user, self.logical_path, self.other_resource))
+
+    def tearDown(self):
+        # Remove the data object.
+        self.user.assert_icommand(['irm', '-f', self.logical_path])
+
+    def test_empty_string_input(self):
+        rule_text = "msi_replica_truncate('', *ignored)"
+        self.user.assert_icommand(
+            ['irule', '-r', self.rep_instance, rule_text, 'null', 'ruleExecOut'],
+            'STDERR', ['-358000', 'OBJ_PATH_DOES_NOT_EXIST'])
+        self.assertEqual(len(self.original_contents), int(lib.get_replica_size(self.user, self.data_name, 0)))
+        self.assertEqual(len(self.original_contents), int(lib.get_replica_size(self.user, self.data_name, 1)))
+
+    def test_string_input_that_just_says_null(self):
+        rule_text = "msi_replica_truncate('null', *ignored)"
+        self.user.assert_icommand(
+            ['irule', '-r', self.rep_instance, rule_text, 'null', 'ruleExecOut'],
+            'STDERR', ['-358000', 'OBJ_PATH_DOES_NOT_EXIST'])
+        self.assertEqual(len(self.original_contents), int(lib.get_replica_size(self.user, self.data_name, 0)))
+        self.assertEqual(len(self.original_contents), int(lib.get_replica_size(self.user, self.data_name, 1)))
+
+    def test_int_input(self):
+        rule_text = "msi_replica_truncate(1, *ignored)"
+        self.user.assert_icommand(
+            ['irule', '-r', self.rep_instance, rule_text, 'null', 'ruleExecOut'],
+             'STDERR', ['-323000', 'USER_PARAM_TYPE_ERR'])
+        self.assertEqual(len(self.original_contents), int(lib.get_replica_size(self.user, self.data_name, 0)))
+        self.assertEqual(len(self.original_contents), int(lib.get_replica_size(self.user, self.data_name, 1)))
+
+    def test_missing_data_size_keyword(self):
+        rule_text = "msi_replica_truncate('objPath={}', *ignored)".format(self.logical_path)
+        self.user.assert_icommand(
+            ['irule', '-r', self.rep_instance, rule_text, 'null', 'ruleExecOut'],
+            'STDERR', ['-529022', 'UNIX_FILE_TRUNCATE_ERR', 'Invalid argument'])
+        self.assertEqual(len(self.original_contents), int(lib.get_replica_size(self.user, self.data_name, 0)))
+        self.assertEqual(len(self.original_contents), int(lib.get_replica_size(self.user, self.data_name, 1)))
+
+    def test_invalid_keyword(self):
+        # "replica_number" is the invalid keyword.
+        rule_text = "msi_replica_truncate('objPath={}++++dataSize={}++++replica_number=1', *ignored)".format(
+            self.logical_path, self.new_size)
+        self.user.assert_icommand(
+            ['irule', '-r', self.rep_instance, rule_text, 'null', 'ruleExecOut'],
+            'STDERR', ['-315000', 'USER_BAD_KEYWORD_ERR'])
+        self.assertEqual(len(self.original_contents), int(lib.get_replica_size(self.user, self.data_name, 0)))
+        self.assertEqual(len(self.original_contents), int(lib.get_replica_size(self.user, self.data_name, 1)))
+
+    def test_minimum_valid_input(self):
+        rule_text = "msi_replica_truncate('{}++++dataSize={}', *ignored)".format(self.logical_path, self.new_size)
+        self.user.assert_icommand(['irule', '-r', self.rep_instance, rule_text, 'null', 'ruleExecOut'])
+        self.assertEqual(self.new_size, int(lib.get_replica_size(self.user, self.data_name, 0)))
+        self.assertEqual(len(self.original_contents), int(lib.get_replica_size(self.user, self.data_name, 1)))
+
+    def test_object_path_keyword(self):
+        rule_text = "msi_replica_truncate('objPath={}++++dataSize={}', *ignored)".format(self.logical_path, self.new_size)
+        self.user.assert_icommand(['irule', '-r', self.rep_instance, rule_text, 'null', 'ruleExecOut'])
+        self.assertEqual(self.new_size, int(lib.get_replica_size(self.user, self.data_name, 0)))
+        self.assertEqual(len(self.original_contents), int(lib.get_replica_size(self.user, self.data_name, 1)))
+
+    def test_replica_number_keyword(self):
+        rule_text = "msi_replica_truncate('objPath={}++++dataSize={}++++replNum=1', *ignored)".format(
+            self.logical_path, self.new_size)
+        self.user.assert_icommand(['irule', '-r', self.rep_instance, rule_text, 'null', 'ruleExecOut'])
+        self.assertEqual(len(self.original_contents), int(lib.get_replica_size(self.user, self.data_name, 0)))
+        self.assertEqual(self.new_size, int(lib.get_replica_size(self.user, self.data_name, 1)))
+
+    def test_resource_name_keyword(self):
+        rule_text = "msi_replica_truncate('objPath={}++++dataSize={}++++rescName={}', *ignored)".format(
+            self.logical_path, self.new_size, self.other_resource)
+        self.user.assert_icommand(['irule', '-r', self.rep_instance, rule_text, 'null', 'ruleExecOut'])
+        self.assertEqual(len(self.original_contents), int(lib.get_replica_size(self.user, self.data_name, 0)))
+        self.assertEqual(self.new_size, int(lib.get_replica_size(self.user, self.data_name, 1)))
+
+    def test_admin_keyword(self):
+        with session.make_session_for_existing_admin() as admin_session:
+            rule_text = "msi_replica_truncate('objPath={}++++dataSize={}++++irodsAdmin=', *ignored)".format(
+                self.logical_path, self.new_size)
+            admin_session.assert_icommand(['irule', '-r', self.rep_instance, rule_text, 'null', 'ruleExecOut'])
+        self.assertEqual(self.new_size, int(lib.get_replica_size(self.user, self.data_name, 0)))
+        self.assertEqual(len(self.original_contents), int(lib.get_replica_size(self.user, self.data_name, 1)))
