@@ -183,6 +183,8 @@ namespace irods
         table_[ "msiDataObjPhymv" ] = new irods::ms_table_entry( "msiDataObjPhymv", 6, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiDataObjPhymv ) );
         table_[ "msiDataObjRename" ] = new irods::ms_table_entry( "msiDataObjRename", 4, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiDataObjRename ) );
         table_[ "msiDataObjTrim" ] = new irods::ms_table_entry( "msiDataObjTrim", 6, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiDataObjTrim ) );
+        // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
+        table_[ "msi_replica_truncate" ] = new irods::ms_table_entry( "msi_replica_truncate", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msi_replica_truncate ) );
         table_[ "msiCollCreate" ] = new irods::ms_table_entry( "msiCollCreate", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiCollCreate ) );
         table_[ "msiRmColl" ] = new irods::ms_table_entry( "msiRmColl", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiRmColl ) );
         table_[ "msiCollRepl" ] = new irods::ms_table_entry( "msiCollRepl", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiCollRepl ) );

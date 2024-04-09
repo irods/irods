@@ -2,6 +2,7 @@
     "test_all_rules.Test_AllRules",
     "test_all_rules.Test_JSON_microservices",
     "test_all_rules.Test_msiDataObjRepl_checksum_keywords",
+    "test_all_rules.test_msi_replica_truncate",
     "test_auth.Test_Auth",
     "test_auth.test_iinit",
     "test_catalog",
