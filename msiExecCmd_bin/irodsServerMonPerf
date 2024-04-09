@@ -117,10 +117,14 @@ else
 $fsExists = 1;
 my @sysPathList = split(',', $sysFilePath);
 foreach my $pth(@sysPathList) {
-	if ($pth ne 'none') {
+	if ($pth ne 'none' && -d $pth) {
 		my $rc = system("LANG=C;export LANG;df -kP $pth > /dev/null 2>&1"); # JMC - backport 4830
 		if( $rc != 0 ) {
 			Log("The file $pth system doesn't exist. $!");
+			$fsExists = 0;
+		}
+		else {
+			Log("The path $pth is not a directory.");
 			$fsExists = 0;
 		}
 	}
