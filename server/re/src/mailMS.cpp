@@ -3,11 +3,19 @@
 #include "irods/icatHighLevelRoutines.hpp"
 
 #include "irods/irods_log.hpp"
+#include "irods/irods_logger.hpp"
 #include "irods/irods_re_structs.hpp"
+#include "irods/irods_server_properties.hpp"
+#include "irods/rodsErrorTable.h"
 
 #include <unistd.h>
 #include <sys/types.h>
 #include <pwd.h>
+
+namespace
+{
+    using log_msi = irods::experimental::log::microservice;
+} // anonymous namespace
 
 /**
  * \fn msiSendMail(msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, ruleExecInfo_t *)
@@ -20,9 +28,11 @@
  *
  * \since pre-2.1
  *
- *
  * \note This microservice sends e-mail using the mail command in the unix system. No attachments are supported. The
  *       sender of the e-mail is the unix user-id running the irodsServer.
+ *
+ * \warning This microservice will fail unless /advanced_settings/enable_deprecated_msiSendMail is set to true in
+ *          server_config.json.
  *
  * \usage See clients/icommands/test/rules/
  *
@@ -46,6 +56,25 @@
  * \sa none
  **/
 int msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, ruleExecInfo_t* ) {
+    const auto enabled = [] {
+        try {
+            return irods::get_advanced_setting<bool>("enable_deprecated_msiSendMail");
+        }
+        catch (...) {
+            log_msi::trace(
+                "msiSendMail: [/advanced_settings/enable_deprecated_msiSendMail] is not defined in server_config.json. "
+                "Defaulting to false.");
+            return false;
+        }
+    }();
+
+    // Do not allow this MSI to proceed unless the local administrator has approved it for use.
+    if (!enabled) {
+        log_msi::error(
+            "{}: Use of this microservice is not allowed. Blocked by the local administrator. See server_config.json.",
+            __func__);
+        return SYS_NOT_ALLOWED;
+    }
 
     const char * toAddr = ( char * ) xtoAddr->inOutStruct;
     const char * subjectLine = xsubjectLine->inOutStruct ? ( char * ) xsubjectLine->inOutStruct : "";
