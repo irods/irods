@@ -137,7 +137,10 @@ def setup_server(irods_config, json_configuration_file=None, test_mode=False):
     IrodsController(irods_config).start(test_mode=test_mode)
 
     # create local storage resource for consumer (provider was configured directly in database_interface.setup_catalog above)
-    if irods_config.is_consumer:
+    # If the user answered anything other than "yes" or "y" (case-insensitive) to the "Local storage on this server"
+    # prompt, the local storage resource should not be created. This is indicated by default_resource_directory being
+    # None, as returned by setup_storage().
+    if irods_config.is_consumer and default_resource_directory is not None:
         irods.lib.execute_command(['iadmin', 'mkresc', default_resource_name, 'unixfilesystem', ':'.join([irods.lib.get_hostname(), default_resource_directory]), ''])
 
     # update core.re with default resource
