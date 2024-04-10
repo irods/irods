@@ -3026,6 +3026,11 @@ msiCollRepl( msParam_t *collection, msParam_t *msKeyValStr, msParam_t *status,
  *        file (inpParam1) into a target collection (inpParam2).  The content of
  *        the target collection is stored on the physical resource (inpParam3).
  *
+ * \note  Structured files extracted by this microservice should not contain
+ *        symbolic links. Symbolic links are not supported by the extraction API.
+ *        The symlinks should be followed when creating the structured file. For
+ *        example: This can be done with the -h option with the tar utility.
+ *
  * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam1 - A StructFileExtAndRegInp_MS_T or
