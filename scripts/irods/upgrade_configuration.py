@@ -316,6 +316,13 @@ def run_schema_update(config_dict, schema_name, next_schema_version):
             merge_hosts_config_into_server_config(config_dict)
             merge_host_access_control_config_into_server_config(config_dict)
 
+    if next_schema_version == 5:
+        if schema_name == 'server_config':
+            # Build a new server_config.json file using server_config.json.template as a base.
+            # Overwrite all configuration properties in the template with the properties from
+            # "config_dict" (i.e. the local server's server_config.json).
+            config_dict = convert_to_v4_schema_and_add_missing_properties(config_dict)
+
     config_dict['schema_version'] = 'v%d' % (next_schema_version)
 
     return config_dict

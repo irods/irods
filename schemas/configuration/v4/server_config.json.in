@@ -114,6 +114,7 @@
                     "authentication": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
                     "database": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
                     "delay_server": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
+                    "genquery2": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
                     "legacy": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
                     "microservice": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},
                     "network": {"enum": ["trace", "debug", "info", "warn", "error", "critical"], "maxItems": 1},

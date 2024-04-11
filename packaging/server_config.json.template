@@ -1,6 +1,6 @@
 {
     "schema_name": "server_config",
-    "schema_version": "v4",
+    "schema_version": "v5",
     "advanced_settings": {
         "agent_factory_watcher_sleep_time_in_seconds": 5,
         "default_number_of_transfer_threads": 4,
@@ -49,6 +49,7 @@
         "authentication": "info",
         "database": "info",
         "delay_server": "info",
+        "genquery2": "info",
         "legacy": "info",
         "microservice": "info",
         "network": "info",
