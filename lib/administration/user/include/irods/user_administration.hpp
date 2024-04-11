@@ -6,15 +6,18 @@
 #undef NAMESPACE_IMPL
 #undef RxComm
 #undef rxGeneralAdmin
+#undef rxUserAdmin
 
 #ifdef IRODS_USER_ADMINISTRATION_ENABLE_SERVER_SIDE_API
 // NOLINTBEGIN(cppcoreguidelines-macro-usage)
 #  define NAMESPACE_IMPL server
 #  define RxComm         RsComm
 #  define rxGeneralAdmin rsGeneralAdmin
+#  define rxUserAdmin    rsUserAdmin
 // NOLINTEND(cppcoreguidelines-macro-usage)
 
 #  include "irods/rsGeneralAdmin.hpp"
+#  include "irods/rsUserAdmin.hpp"
 
 struct RsComm;
 #else
@@ -22,9 +25,11 @@ struct RsComm;
 #  define NAMESPACE_IMPL client
 #  define RxComm         RcComm
 #  define rxGeneralAdmin rcGeneralAdmin
+#  define rxUserAdmin    rcUserAdmin
 // NOLINTEND(cppcoreguidelines-macro-usage)
 
 #  include "irods/generalAdmin.h"
+#  include "irods/userAdmin.h"
 
 struct RcComm;
 #endif // IRODS_USER_ADMINISTRATION_ENABLE_SERVER_SIDE_API
