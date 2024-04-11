@@ -54,6 +54,22 @@ namespace irods::experimental::administration::NAMESPACE_IMPL
             zone = get_local_zone(_comm);
         }
 
+        const auto current_user{user{_comm.clientUser.userName, _comm.clientUser.rodsZone}};
+        const auto user_type{type(_comm, current_user)};
+
+        if (user_type == irods::experimental::administration::user_type::groupadmin) {
+            // clang-format off
+            userAdminInp_t input{.arg0 = "mkuser",
+                                 .arg1 = const_cast<char*>(name.data()),
+                                 .arg3 = const_cast<char*>(zone.data())};
+            // clang-format on
+            if (const auto ec{rxUserAdmin(&_comm, &input)}; ec != 0) {
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+                THROW(ec, fmt::format("Failed to add user [{}].", name));
+            }
+            return;
+        }
+
         GeneralAdminInput input{};
         input.arg0 = "add";
         input.arg1 = "user";
@@ -86,6 +102,22 @@ namespace irods::experimental::administration::NAMESPACE_IMPL
     auto add_group(RxComm& _comm, const group& _group) -> void
     {
         const auto zone = get_local_zone(_comm);
+
+        const auto current_user{user{_comm.clientUser.userName, _comm.clientUser.rodsZone}};
+        const auto user_type{type(_comm, current_user)};
+
+        if (user_type == irods::experimental::administration::user_type::groupadmin) {
+            userAdminInp_t input{.arg0 = "mkgroup",
+                                 .arg1 = const_cast<char*>(_group.name.data()),
+                                 .arg2 = "rodsgroup",
+                                 .arg3 = const_cast<char*>(zone.data())};
+
+            if (const auto ec{rxUserAdmin(&_comm, &input)}; ec != 0) {
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+                THROW(ec, fmt::format("Failed to add group [{}].", _group.name));
+            }
+            return;
+        }
 
         GeneralAdminInput input{};
         input.arg0 = "add";
@@ -122,6 +154,25 @@ namespace irods::experimental::administration::NAMESPACE_IMPL
 
     auto add_user_to_group(RxComm& _comm, const group& _group, const user& _user) -> void
     {
+        const auto name{local_unique_name(_comm, _user)};
+        const auto current_user{user{_comm.clientUser.userName, _comm.clientUser.rodsZone}};
+        const auto user_type{type(_comm, current_user)};
+
+        if (user_type == irods::experimental::administration::user_type::groupadmin) {
+            userAdminInp_t input{.arg0 = "modify",
+                                 .arg1 = "group",
+                                 .arg2 = const_cast<char*>(_group.name.data()),
+                                 .arg3 = "add",
+                                 .arg4 = const_cast<char*>(_user.name.data()),
+                                 .arg5 = const_cast<char*>(_user.zone.data())};
+
+            if (const auto ec{rxUserAdmin(&_comm, &input)}; ec != 0) {
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+                THROW(ec, fmt::format("Failed to add user [{}] to group [{}].", name, _group.name));
+            }
+            return;
+        }
+
         GeneralAdminInput input{};
         input.arg0 = "modify";
         input.arg1 = "group";
@@ -131,7 +182,6 @@ namespace irods::experimental::administration::NAMESPACE_IMPL
         input.arg5 = _user.zone.data();
 
         if (const auto ec = rxGeneralAdmin(&_comm, &input); ec != 0) {
-            const auto name = local_unique_name(_comm, _user);
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
             THROW(ec, fmt::format("Failed to add user [{}] to group [{}].", name, _group.name));
         }
@@ -139,6 +189,25 @@ namespace irods::experimental::administration::NAMESPACE_IMPL
 
     auto remove_user_from_group(RxComm& _comm, const group& _group, const user& _user) -> void
     {
+        const auto name{local_unique_name(_comm, _user)};
+        const auto current_user{user{_comm.clientUser.userName, _comm.clientUser.rodsZone}};
+        const auto user_type{type(_comm, current_user)};
+
+        if (user_type == irods::experimental::administration::user_type::groupadmin) {
+            userAdminInp_t input{.arg0 = "modify",
+                                 .arg1 = "group",
+                                 .arg2 = const_cast<char*>(_group.name.data()),
+                                 .arg3 = "remove",
+                                 .arg4 = const_cast<char*>(_user.name.data()),
+                                 .arg5 = const_cast<char*>(_user.zone.data())};
+
+            if (const auto ec{rxUserAdmin(&_comm, &input)}; ec != 0) {
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+                THROW(ec, fmt::format("Failed to remove user [{}] from group [{}].", name, _group.name));
+            }
+            return;
+        }
+
         GeneralAdminInput input{};
         input.arg0 = "modify";
         input.arg1 = "group";
@@ -148,7 +217,6 @@ namespace irods::experimental::administration::NAMESPACE_IMPL
         input.arg5 = _user.zone.data();
 
         if (const auto ec = rxGeneralAdmin(&_comm, &input); ec != 0) {
-            const auto name = local_unique_name(_comm, _user);
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
             THROW(ec, fmt::format("Failed to remove user [{}] from group [{}].", name, _group.name));
         }
