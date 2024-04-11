@@ -18,6 +18,12 @@ TEST_CASE("user group administration")
 
     irods::experimental::client_connection conn;
 
+    // Create a shared, generic test user
+    adm::user generic_user{"lagging-train"};
+    REQUIRE_NOTHROW(adm::client::add_user(conn, generic_user));
+    irods::at_scope_exit generic_user_cleanup{
+        [&conn, &generic_user] { CHECK_NOTHROW(adm::client::remove_user(conn, generic_user)); }};
+
     SECTION("local user operations")
     {
         adm::user test_user{"unit_test_test_user"};
@@ -222,5 +228,50 @@ TEST_CASE("user group administration")
         irods::experimental::client_connection user_conn{
             irods::experimental::defer_authentication, env.rodsHost, env.rodsPort, {test_user.name, env.rodsZone}};
         CHECK(clientLoginWithPassword(static_cast<RcComm*>(user_conn), test_user_prop.value.data()) == 0);
+    }
+
+    SECTION("#7576: ensure no limitations on proxied groupadmin")
+    {
+        rodsEnv env{};
+        _getRodsEnv(env);
+
+        REQUIRE_NOTHROW(
+            adm::client::modify_user(conn, generic_user, adm::user_type_property{adm::user_type::groupadmin}));
+        REQUIRE(adm::client::type(conn, generic_user) == adm::user_type::groupadmin);
+
+        // Connect to iRODS
+        irods::experimental::client_connection user_conn{env.rodsHost,
+                                                         env.rodsPort,
+                                                         {env.rodsUserName, env.rodsZone}, // (proxy) rodsadmin user
+                                                         {generic_user.name, env.rodsZone}}; // groupadmin user
+
+        // Try to add a group as the proxied groupadmin user.
+        adm::group test_group{"bad_bad_water_group"};
+        REQUIRE_NOTHROW(adm::client::add_group(user_conn, test_group));
+        REQUIRE(adm::client::exists(user_conn, test_group));
+        irods::at_scope_exit group_cleanup{
+            [&conn, &test_group] { CHECK_NOTHROW(adm::client::remove_group(conn, test_group)); }};
+
+        // Add self to group
+        REQUIRE_NOTHROW(adm::client::add_user_to_group(user_conn, test_group, generic_user));
+        REQUIRE(adm::client::user_is_member_of_group(user_conn, test_group, generic_user));
+        irods::at_scope_exit groupadmin_self_add_cleanup{[&user_conn, &test_group, &generic_user] {
+            CHECK_NOTHROW(adm::client::remove_user_from_group(user_conn, test_group, generic_user));
+        }};
+
+        // Create and remove user using groupadmin
+        adm::user groupadmin_created_user{"mr_flips"};
+        REQUIRE_NOTHROW(adm::client::add_user(user_conn, groupadmin_created_user));
+        REQUIRE(adm::client::exists(user_conn, groupadmin_created_user));
+        irods::at_scope_exit created_user_cleanup{[&conn, &groupadmin_created_user] {
+            CHECK_NOTHROW(adm::client::remove_user(conn, groupadmin_created_user));
+        }};
+
+        // Add and remove user from group using groupadmin
+        REQUIRE_NOTHROW(adm::client::add_user_to_group(user_conn, test_group, groupadmin_created_user));
+        REQUIRE(adm::client::user_is_member_of_group(user_conn, test_group, groupadmin_created_user));
+
+        // Begin cleanup. Previous 'irods::at_scope_exit's will run after the following line
+        CHECK_NOTHROW(adm::client::remove_user_from_group(user_conn, test_group, groupadmin_created_user));
     }
 }
