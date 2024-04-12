@@ -497,7 +497,6 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [('
     def test_if_ExecMyRuleInp_is_exposed__issue_7552(self):
         with temporary_core_file() as core:
             avu_prefix = 'test_if_ExecMyRuleInp_is_exposed__issue_7552'
-
             # Add a rule to core.re which when triggered will add AVUs to the user's
             # session collection.
             core.add_rule(dedent('''
@@ -548,3 +547,73 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [('
                 self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_4', "0"])
                 self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_5', "@external rule {{ *C=*A++*B }}"])
                 self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_6', "*C="])
+
+    @unittest.skipIf(plugin_name != 'irods_rule_engine_plugin-irods_rule_language' or test.settings.RUN_IN_TOPOLOGY, "Requires NREP and single node zone.")
+    def test_if_StructFileExtAndRegInp_is_exposed__issue_7413(self):
+        with temporary_core_file() as core:
+            avu_prefix = 'test_if_StructFileExtAndRegInp_is_exposed__issue_7413'
+
+            # Add a rule to core.re which when triggered will add AVUs to the user's
+            # session collection.
+            core.add_rule(dedent('''
+            pep_api_struct_file_ext_and_reg_post(*INSTANCE, *COMM, *STRUCTINP) {{
+                *v = *STRUCTINP.obj_path;
+                msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_0', *v, '');
+
+                *v = *STRUCTINP.collection_path;
+                msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_1', *v, '');
+
+                *v = *STRUCTINP.opr_type;
+                msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_2', *v, '');
+
+                *v = *STRUCTINP.flags;
+                msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_3', *v, '');
+
+                *v = *STRUCTINP.defRescName;
+                msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_4', *v, '');
+
+                if('' == *STRUCTINP.forceFlag) {{
+                    msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_5', 'forceFlagcheck', '');
+                }}
+            }}
+            '''.format(**locals())))
+
+            TEST_COLLECTION_NAME = "%s/%s" % (self.user.session_collection, 'testcoll')
+            TEST_TARFILE_NAME = "%s/%s" % (self.user.session_collection, 'test.tar')
+
+            try:
+                self.user.assert_icommand(['imkdir', TEST_COLLECTION_NAME], 'STDOUT')
+                # Make some test files...
+                for x in range(0, 5):
+                    self.user.assert_icommand(['itouch', "%s/file%s" % (TEST_COLLECTION_NAME, x)])
+
+                self.user.assert_icommand(['ibun', '-cDtar', "%s/%s" % (self.user.session_collection, 'test.tar'), TEST_COLLECTION_NAME])
+
+                self.user.assert_icommand(['imkdir', TEST_COLLECTION_NAME + "_backup"], 'STDOUT')
+
+                # Should trigger PEP
+                self.user.assert_icommand(['ibun', '-x', '-f', TEST_TARFILE_NAME, TEST_COLLECTION_NAME + "_backup"])
+
+                # Show the session collection has the expected AVUs attached to it.
+                self.user.assert_icommand(['imeta', 'ls', '-C', self.user.session_collection], 'STDOUT', [
+                    f'attribute: {avu_prefix}_0\nvalue: {TEST_TARFILE_NAME}\n',
+                    f'attribute: {avu_prefix}_1\nvalue: {TEST_COLLECTION_NAME + "_backup"}\n',
+                    f'attribute: {avu_prefix}_2\nvalue: 0\n',
+                    f'attribute: {avu_prefix}_3\nvalue: 0\n',
+                    f'attribute: {avu_prefix}_4\nvalue: {self.user.default_resource}\n',
+                    f'attribute: {avu_prefix}_5\nvalue: forceFlagcheck\n',
+                ])
+
+            finally:
+                # Remove the AVUs
+                self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_0', TEST_TARFILE_NAME])
+                self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_1', TEST_COLLECTION_NAME])
+                self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_2', '0'])
+                self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_3', '0'])
+                self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_4', self.user.default_resource])
+                self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_5', 'forceFlagcheck'])
+
+                # Cleanup
+                self.user.run_icommand(['irm', '-rf', TEST_COLLECTION_NAME])
+                self.user.run_icommand(['irm', '-rf', TEST_COLLECTION_NAME + "_backup"])
+                self.user.run_icommand(['irm', '-f', TEST_TARFILE_NAME])

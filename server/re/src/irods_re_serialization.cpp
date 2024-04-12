@@ -1296,6 +1296,29 @@ namespace irods::re_serialization
         }
     } // serialize_execMyRuleInp_ptr
 
+    static irods::error serialize_structFileExtAndRegInp_ptr(boost::any _p, serialized_parameter_t& _out)
+    {
+        try {
+            log_re::trace(__func__);
+            const auto* casted_ptr = boost::any_cast<structFileExtAndRegInp_t*>(_p);
+            _out["obj_path"] = casted_ptr->objPath;
+            _out["collection_path"] = casted_ptr->collection;
+            _out["opr_type"] = std::to_string(casted_ptr->oprType);
+            _out["flags"] = std::to_string(casted_ptr->flags);
+            serialize_keyValPair(casted_ptr->condInput, _out);
+            return SUCCESS();
+        }
+        catch (const boost::bad_any_cast& e) {
+            return ERROR(
+                INVALID_ANY_CAST,
+                fmt::format("{}: failed to cast pointer to [structFileExtAndRegInp_t*]: {}", __func__, e.what()));
+        }
+        catch (const std::exception& e) {
+            return ERROR(SYS_LIBRARY_ERROR,
+                         fmt::format("{}: failed to serialize [structFileExtAndRegInp_t*]: {}", __func__, e.what()));
+        }
+    }
+
 #if 0
     static error serialize_XXXX_ptr(
             boost::any               _p,
@@ -1353,7 +1376,8 @@ namespace irods::re_serialization
             {std::type_index(typeid(Genquery2Input*)), serialize_Genquery2Input_ptr},
             {std::type_index(typeid(const std::vector<std::string>*)), serialize_const_vector_of_strings_ptr},
             {std::type_index(typeid(std::vector<std::string>*)), serialize_vector_of_strings_ptr},
-            {std::type_index(typeid(execMyRuleInp_t*)), serialize_execMyRuleInp_ptr}};
+            {std::type_index(typeid(execMyRuleInp_t*)), serialize_execMyRuleInp_ptr},
+            {std::type_index(typeid(structFileExtAndRegInp_t*)), serialize_structFileExtAndRegInp_ptr}};
         return the_map;
 
     } // get_serialization_map
