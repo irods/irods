@@ -199,7 +199,7 @@ namespace irods::experimental::log
         }
         catch (...) {
             try {
-                server::warn("Cannot get log level for log category [{}]. Defaulting to [info].", _category);
+                server::trace("Cannot get log level for log category [{}]. Defaulting to [info].", _category);
             }
             catch (...) {
             }
