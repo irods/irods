@@ -10,6 +10,7 @@
 #include <irods/rodsPath.h>
 #include <irods/getUtil.h>
 #include <irods/rcGlobalExtern.h>
+#include <irods/rcMisc.h>
 #include <irods/irods_client_api_table.hpp>
 #include <irods/irods_pack_table.hpp>
 #include <irods/irods_parse_command_line_options.hpp>
@@ -20,6 +21,7 @@ void usage( FILE* );
 
 int
 main( int argc, char **argv ) {
+    set_ips_display_name("iget");
 
     signal( SIGPIPE, SIG_IGN );
 

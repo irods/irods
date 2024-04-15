@@ -80,6 +80,7 @@ parse_program_options(
 
 int
 main( int argc, char **argv ) {
+    set_ips_display_name("irmdir");
     signal( SIGPIPE, SIG_IGN );
 
     int status;

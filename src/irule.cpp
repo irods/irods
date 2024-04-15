@@ -10,6 +10,7 @@
 #include <irods/irods_client_api_table.hpp>
 #include <irods/irods_pack_table.hpp>
 #include <irods/irods_configuration_keywords.hpp>
+#include <irods/rcMisc.h>
 
 #include <boost/program_options.hpp>
 
@@ -134,6 +135,7 @@ irods::error parseProgramOptions(
 
 int
 main( int argc, char **argv ) {
+    set_ips_display_name("irule");
 
     signal( SIGPIPE, SIG_IGN );
 
