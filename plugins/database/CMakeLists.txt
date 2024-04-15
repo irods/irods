@@ -34,16 +34,6 @@ foreach(plugin IN LISTS IRODS_DATABASE_PLUGINS)
   set(plugin_target "irods_database_plugin-${plugin}")
   set(plugin_name "${plugin}")
 
-  # FIXME: running `cpp` like this feels icky.
-  add_custom_command(
-    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/icatSysTables_${plugin}.sql"
-    COMMAND cpp -E -P -D${plugin} "${CMAKE_CURRENT_BINARY_DIR}/src/icatSysTables.sql.pp" "${CMAKE_CURRENT_BINARY_DIR}/icatSysTables_${plugin}.sql"
-    MAIN_DEPENDENCY "${CMAKE_CURRENT_BINARY_DIR}/src/icatSysTables.sql.pp"
-  )
-  # TODO: perhaps we should make the custom command output part of the dependency chain
-  add_custom_target(IRODS_PHONY_TARGET_icatSysTables_${plugin}.sql ALL DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/icatSysTables_${plugin}.sql") # Forces execution of custom_command
-  add_dependencies(all-plugins-database IRODS_PHONY_TARGET_icatSysTables_${plugin}.sql)
-
   add_library(
     ${plugin_target}
     MODULE
@@ -84,6 +74,15 @@ foreach(plugin IN LISTS IRODS_DATABASE_PLUGINS)
     ENABLE_RE
     IRODS_ENABLE_SYSLOG
   )
+
+  # TODO(#6213): don't run `cpp` like this
+  add_custom_command(
+    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/icatSysTables_${plugin}.sql"
+    COMMAND cpp -E -P -D${plugin} "${CMAKE_CURRENT_BINARY_DIR}/src/icatSysTables.sql.pp" "${CMAKE_CURRENT_BINARY_DIR}/icatSysTables_${plugin}.sql"
+    MAIN_DEPENDENCY "${CMAKE_CURRENT_BINARY_DIR}/src/icatSysTables.sql.pp"
+  )
+  add_custom_target(IRODS_PHONY_TARGET_icatSysTables_${plugin}.sql ALL DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/icatSysTables_${plugin}.sql")
+  add_dependencies(${plugin_target} IRODS_PHONY_TARGET_icatSysTables_${plugin}.sql)
 
   add_dependencies(all-plugins-database ${plugin_target})
   install(
