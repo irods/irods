@@ -8,6 +8,7 @@ void usage( char *prog );
 
 int
 main( int argc, char **argv ) {
+    set_ips_display_name("ierror");
 
     signal( SIGPIPE, SIG_IGN );
 

@@ -51,6 +51,7 @@ static std::uintmax_t total_size = 0;
 
 
 int main(int argc, char** argv){
+    set_ips_display_name("itree");
     po::options_description desc{""};
     po::positional_options_description pod;
     pod.add("dir",1);
