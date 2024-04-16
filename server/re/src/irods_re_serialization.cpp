@@ -1319,6 +1319,95 @@ namespace irods::re_serialization
         }
     }
 
+    static irods::error serialize_msParamArray_ptr_ptr(boost::any _p, serialized_parameter_t& _out)
+    {
+        try {
+            log_re::trace(__func__);
+            const auto* const* casted_ptr = boost::any_cast<msParamArray_t**>(_p);
+            if (!casted_ptr) {
+                _out["msParamArray_ptr_ptr"] = "nullptr";
+                return SUCCESS();
+            }
+            if (!*casted_ptr) {
+                _out["msParamArray_ptr"] = "nullptr";
+                return SUCCESS();
+            }
+            const auto* derefed_ptr = *casted_ptr;
+            _out["len"] = boost::lexical_cast<std::string>(derefed_ptr->len);
+            _out["oprType"] = boost::lexical_cast<std::string>(derefed_ptr->oprType);
+            for (int i = 0; i < derefed_ptr->len; i++) {
+                std::string prefix = std::to_string(i) + "_";
+                const auto* lbl = derefed_ptr->msParam[i]->label;
+                const auto* typ = derefed_ptr->msParam[i]->type;
+                _out[prefix + "label"] = lbl ? lbl : "nullptr";
+                _out[prefix + "type"] = typ ? typ : "nullptr";
+                const auto* msparam_ptr = derefed_ptr->msParam[i];
+
+                if (msparam_ptr == nullptr || msparam_ptr->inOutStruct == nullptr || !typ) {
+                    _out[prefix + "inOutStruct"] = "nullptr";
+                }
+                else if (strcmp(msparam_ptr->type, STR_MS_T) == 0) {
+                    _out[prefix + "inOutStruct"] = static_cast<char*>(msparam_ptr->inOutStruct);
+                }
+                else if (strcmp(msparam_ptr->type, INT_MS_T) == 0) {
+                    _out[prefix + "inOutStruct"] = std::to_string(parseMspForPosInt(const_cast<MsParam*>(msparam_ptr)));
+                }
+                else if (strcmp(msparam_ptr->type, DOUBLE_MS_T) == 0) {
+                    double out = 0.0;
+                    if (parseMspForDouble(const_cast<MsParam*>(msparam_ptr), &out)) {
+                        THROW(SYS_INVALID_INPUT_PARAM, "Failed to convert microservice argument to float.");
+                    }
+                    _out[prefix + "inOutStruct"] = std::to_string(out);
+                }
+                else if (strcmp(msparam_ptr->type, FLOAT_MS_T) == 0) {
+                    float out = 0.0;
+                    if (parseMspForFloat(const_cast<MsParam*>(msparam_ptr), &out)) {
+                        THROW(SYS_INVALID_INPUT_PARAM, "Failed to convert microservice argument to float.");
+                    }
+                    _out[prefix + "inOutStruct"] = std::to_string(out);
+                }
+                else {
+                    _out[prefix + "inOutStruct"] = fmt::format("unrepresentable_type_{}", msparam_ptr->type);
+                }
+
+                const auto* ptr = derefed_ptr->msParam[i]->inpOutBuf;
+                if (ptr) {
+                    _out[prefix + "inpOutBuf_len"] = boost::lexical_cast<std::string>(ptr->len);
+                    std::string& str = _out[prefix + "inpOutBuf_buf"];
+
+                    for (int j = 0; j < ptr->len; j++) {
+                        unsigned char c = *(static_cast<unsigned char*>(ptr->buf) + j);
+
+                        if (isprint(c) || isspace(c)) {
+                            str += c;
+                        }
+                        else {
+                            str += fmt::format("\\x{0:02x}", c);
+                        }
+                    }
+                }
+                else {
+                    _out[prefix + "null_value"] = "null_value";
+                }
+            }
+            return SUCCESS();
+        }
+        catch (const boost::bad_any_cast& e) {
+            return ERROR(INVALID_ANY_CAST,
+                         fmt::format("{}: failed to cast pointer to [msParamArray_t**]: {}", __func__, e.what()));
+        }
+        catch (const irods::exception& e) {
+            return ERROR(
+                e.code(),
+                fmt::format(
+                    "{}: failed to cast pointer to [msParamArray_t**]: {}, ec: {}", __func__, e.what(), e.code()));
+        }
+        catch (const std::exception& e) {
+            return ERROR(
+                SYS_LIBRARY_ERROR, fmt::format("{}: failed to serialize [msParamArray_t**]: {}", __func__, e.what()));
+        }
+    } // serialize_msParamArray_ptr_ptr
+
 #if 0
     static error serialize_XXXX_ptr(
             boost::any               _p,
@@ -1377,7 +1466,8 @@ namespace irods::re_serialization
             {std::type_index(typeid(const std::vector<std::string>*)), serialize_const_vector_of_strings_ptr},
             {std::type_index(typeid(std::vector<std::string>*)), serialize_vector_of_strings_ptr},
             {std::type_index(typeid(execMyRuleInp_t*)), serialize_execMyRuleInp_ptr},
-            {std::type_index(typeid(structFileExtAndRegInp_t*)), serialize_structFileExtAndRegInp_ptr}};
+            {std::type_index(typeid(structFileExtAndRegInp_t*)), serialize_structFileExtAndRegInp_ptr},
+            {std::type_index(typeid(msParamArray_t**)), serialize_msParamArray_ptr_ptr}};
         return the_map;
 
     } // get_serialization_map
