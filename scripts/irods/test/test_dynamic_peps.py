@@ -617,3 +617,78 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [('
                 self.user.run_icommand(['irm', '-rf', TEST_COLLECTION_NAME])
                 self.user.run_icommand(['irm', '-rf', TEST_COLLECTION_NAME + "_backup"])
                 self.user.run_icommand(['irm', '-f', TEST_TARFILE_NAME])
+
+    @unittest.skipIf(plugin_name != 'irods_rule_engine_plugin-irods_rule_language' or test.settings.RUN_IN_TOPOLOGY, "Requires NREP and single node zone.")
+    def test_if_MsParamArray_is_exposed__issue_7553(self):
+        with temporary_core_file() as core:
+            avu_prefix = 'test_if_MsParamArray_is_exposed__issue_7553'
+            # Add a rule to core.re which when triggered will add AVUs to the user's
+            # session collection.
+            core.add_rule(dedent('''
+            pep_api_exec_my_rule_post(*INSTANCE, *COMM, *STRUCTINP, *OUT) {{
+                *v = *OUT."0_inOutStruct";
+                msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_0', *v, '');
+
+                *v = *OUT."0_label";
+                msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_1', *v, '');
+
+                *v = *OUT."0_type";
+                msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_2', *v, '');
+
+                *v = *OUT.len;
+                msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_3', *v, '');
+
+                *v = *OUT.oprType;
+                msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_4', *v, '');
+
+                *v = *OUT."1_inOutStruct";
+                msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_5', *v, '');
+
+                *v = *OUT."1_label";
+                msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_6', *v, '');
+
+                *v = *OUT."1_type";
+                msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_7', *v, '');
+
+                *v = *OUT."2_inOutStruct";
+                msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_8', *v, '');
+
+                *v = *OUT."2_label";
+                msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_9', *v, '');
+
+                *v = *OUT."2_type";
+                msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_10', *v, '');
+            }}
+            '''.format(**locals())))
+
+            try:
+                # Should trigger PEP
+                self.user.assert_icommand(['irule', '*A=4;*B=3.4;*C="potato"', 'null', '*A%*B%*C'], 'STDOUT')
+
+                self.user.assert_icommand(['imeta', 'ls', '-C', self.user.session_collection], 'STDOUT', [
+                    f'attribute: {avu_prefix}_0\nvalue: 4\n',
+                    f'attribute: {avu_prefix}_1\nvalue: *A\n',
+                    f'attribute: {avu_prefix}_2\nvalue: INT_PI\n',
+                    f'attribute: {avu_prefix}_3\nvalue: 3\n',
+                    f'attribute: {avu_prefix}_4\nvalue: 0\n',
+                    f'attribute: {avu_prefix}_5\nvalue: 3.400000\n',
+                    f'attribute: {avu_prefix}_6\nvalue: *B\n',
+                    f'attribute: {avu_prefix}_7\nvalue: DOUBLE_PI\n',
+                    f'attribute: {avu_prefix}_8\nvalue: potato\n',
+                    f'attribute: {avu_prefix}_9\nvalue: *C\n',
+                    f'attribute: {avu_prefix}_10\nvalue: STR_PI\n',
+                ])
+
+            finally:
+                # Remove the AVUs
+                self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_0', "4"])
+                self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_1', "*A"])
+                self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_2', "INT_PI"])
+                self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_3', "3"])
+                self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_4', "0"])
+                self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_5', "3.400000"])
+                self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_6', "*B"])
+                self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_7', "DOUBLE_PI"])
+                self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_8', "potato"])
+                self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_9', "*C"])
+                self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_10', "STR_PI"])
