@@ -505,12 +505,18 @@ msiSetKeyValuePairsToObj( msParam_t *metadataParam, msParam_t* objParam,
 
     RE_TEST_MACRO( "Loopback on msiSetKeyValuePairsToObj" );
 
+    if (!metadataParam || !objParam || !typeParam || !metadataParam->type || !objParam->type || !typeParam->type) {
+        return USER__NULL_INPUT_ERR;
+    }
+
     if ( strcmp( metadataParam->type, KeyValPair_MS_T ) != 0 ) {
         return USER_PARAM_TYPE_ERR;
     }
+
     if ( strcmp( objParam->type, STR_MS_T ) != 0 ) {
         return USER_PARAM_TYPE_ERR;
     }
+
     if ( strcmp( typeParam->type, STR_MS_T ) != 0 ) {
         return USER_PARAM_TYPE_ERR;
     }

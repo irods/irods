@@ -1778,6 +1778,27 @@ OUTPUT ruleExecOut
         finally:
             self.admin.run_icommand(['iadmin', 'rmgroup', group])
 
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', "Not implemented for other REPs.")
+    def test_msiSetKeyValuePairsToObj_does_not_crash__issue_7027(self):
+        TEST_FILE = "%s/test_msiSetKeyValuePairsToObj_does_not_crash__issue_7027" % self.admin.session_collection
+        # Create testfile
+        self.admin.assert_icommand(['itouch', TEST_FILE])
+
+        # Invalid argument sets: none of them should crash the agent
+        # First argument is invalid
+        self.admin.assert_icommand(['irule', '-r', 'irods_rule_engine_plugin-irods_rule_language-instance', f"msiSetKeyValuePairsToObj(*x,'{TEST_FILE}','-d')", 'null', 'null'], 'STDERR', ['-316000 USER__NULL_INPUT_ERR'])
+
+        # Second argument is invalid
+        self.admin.assert_icommand(['irule', '-r', 'irods_rule_engine_plugin-irods_rule_language-instance', "*x.key='val'; msiSetKeyValuePairsToObj(*x,*y,'-d')", 'null', 'null'], 'STDERR', ['-316000 USER__NULL_INPUT_ERR'])
+
+        # Third argument is invalid
+        self.admin.assert_icommand(['irule', '-r', 'irods_rule_engine_plugin-irods_rule_language-instance', f"*x.key='val'; msiSetKeyValuePairsToObj(*x,{TEST_FILE},*y)", 'null', 'null'], 'STDERR', ['-316000 USER__NULL_INPUT_ERR'])
+
+        # Valid
+        self.admin.assert_icommand(['irule', '-r', 'irods_rule_engine_plugin-irods_rule_language-instance', f"*x.key='val'; msiSetKeyValuePairsToObj(*x,{TEST_FILE},'-d')", 'null', 'null'])
+
+        self.admin.assert_icommand(['imeta', 'ls', '-d', TEST_FILE], 'STDOUT', [ 'attribute: key\nvalue: val\n' ])
+
 
 class Test_msiDataObjRepl_checksum_keywords(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
     global plugin_name
