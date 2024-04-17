@@ -492,3 +492,59 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [('
                 self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_1', self.user.zone_name])
                 self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_2', '0'])
                 self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_3', '0'])
+
+    @unittest.skipIf(plugin_name != 'irods_rule_engine_plugin-irods_rule_language' or test.settings.RUN_IN_TOPOLOGY, "Requires NREP and single node zone.")
+    def test_if_ExecMyRuleInp_is_exposed__issue_7552(self):
+        with temporary_core_file() as core:
+            avu_prefix = 'test_if_ExecMyRuleInp_is_exposed__issue_7552'
+
+            # Add a rule to core.re which when triggered will add AVUs to the user's
+            # session collection.
+            core.add_rule(dedent('''
+            pep_api_exec_my_rule_pre(*INSTANCE, *COMM, *STRUCTINP, *OUT) {{
+                *v = *STRUCTINP.inpParamArray_0_inOutStruct;
+                msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_0', *v, '');
+
+                *v = *STRUCTINP.inpParamArray_0_label;
+                msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_1', *v, '');
+
+                *v = *STRUCTINP.inpParamArray_0_type;
+                msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_2', *v, '');
+
+                *v = *STRUCTINP.inpParamArray_len;
+                msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_3', *v, '');
+
+                *v = *STRUCTINP.inpParamArray_oprType;
+                msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_4', *v, '');
+
+                *v = *STRUCTINP.myRule;
+                msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_5', *v, '');
+
+                *v = *STRUCTINP.outParamDesc;
+                msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_6', *v, '');
+            }}
+            '''.format(**locals())))
+
+            try:
+                # Should trigger PEP
+                self.user.assert_icommand(['irule', "*C=*A++*B", "*A=potato%*B=tomato", "*C="])
+
+                self.user.assert_icommand(['imeta', 'ls', '-C', self.user.session_collection], 'STDOUT', [
+                    f'attribute: {avu_prefix}_0\nvalue: potato\n',
+                    f'attribute: {avu_prefix}_1\nvalue: *A\n',
+                    f'attribute: {avu_prefix}_2\nvalue: STR_PI\n',
+                    f'attribute: {avu_prefix}_3\nvalue: 2\n',
+                    f'attribute: {avu_prefix}_4\nvalue: 0\n',
+                    f'attribute: {avu_prefix}_5\nvalue: @external rule {{ *C=*A++*B }}\n',
+                    f'attribute: {avu_prefix}_6\nvalue: *C=\n',
+                ])
+
+            finally:
+                # Remove the AVUs
+                self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_0', "potato"])
+                self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_1', "*A"])
+                self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_2', "STR_PI"])
+                self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_3', "2"])
+                self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_4', "0"])
+                self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_5', "@external rule {{ *C=*A++*B }}"])
+                self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_6', "*C="])
