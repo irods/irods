@@ -2656,16 +2656,21 @@ usage( char *subOpt ) {
     };
 
     char* modrepl_usage[] = {
-        "modrepl [logical_path <string>|data_id <int>] [replica_number <int>|resource_hierarchy <string>] ATTR_NAME VALUE",
+        "Usage: modrepl logical_path STRING replica_number INTEGER ATTR_NAME VALUE",
+        "Usage: modrepl logical_path STRING resource_hierarchy STRING ATTR_NAME VALUE",
+        "Usage: modrepl data_id INTEGER replica_number INTEGER ATTR_NAME VALUE",
+        "Usage: modrepl data_id INTEGER resource_hierarchy STRING ATTR_NAME VALUE",
         " "
         "Change some attribute of a replica, i.e. a row in R_DATA_MAIN."
         " ",
-        "The logical_path must be a full path which refers to a data object",
-        "registered in the catalog. Alternatively, data_id can be provided as an integer.",
+        "The data object to modify must be specified. There are 2 options for doing so:",
+        "    1. logical_path - A STRING holding the absolute path of the target data object",
+        "    2. data_id - An INTEGER matching the DATA_ID of the target data object",
         " ",
         "The replica to modify must be specified. There are 2 options for doing so:",
-        "    1. replica_number - An integer representing the replica number",
-        "    2. resource_hierarchy - Full resource hierarchy hosting the target replica",
+        "    1. replica_number - An INTEGER representing the replica number",
+        "    2. resource_hierarchy - A STRING matching the full resource hierarchy hosting",
+        "       the target replica",
         " ",
         "ATTR_NAME is the GenQuery attribute to be modified with VALUE.",
         "The following attributes are accepted for modification:",
