@@ -146,14 +146,34 @@ checkColl( rcComm_t *Conn, char *path ) {
 }
 
 void usage( char *prog ) {
-    printf( "Changes iRODS the current working directory (collection)\n" );
-    printf( "Usage: %s [-vh] [directory]\n", prog );
-    printf( "If no directory is entered, the cwd is set back to your home\n" );
-    printf( "directory as defined in your .rodsEnv file.\n" );
-    printf( "Like the unix 'cd', '..' will move up one level and \n" );
-    printf( "'/name' starts at the root.\n" );
-    printf( " -v  verbose\n" );
-    printf( " -V  very verbose\n" );
-    printf( " -h  this help\n" );
-    printReleaseInfo( "icd" );
+    printf( "Change the current working collection.\n\n" );
+
+    printf( "Usage: %s [-vVh] [COLLECTION]\n\n", prog );
+
+    printf( "If invoked without any arguments, the current working collection is set\n" );
+    printf( "back to your home collection as defined in your irods_environment.json\n" );
+    printf( "file.\n\n" );
+
+    printf( "If COLLECTION matches \"..\", the current working collection is set to the\n" );
+    printf( "parent collection.\n\n" );
+
+    printf( "If COLLECTION begins with a forward slash, the path is treated as an absolute\n" );
+    printf( "path.\n\n" );
+
+    printf( "Upon success, the current working collection is stored in\n" );
+    printf( "irods_environment.json.PID where PID matches the shell's PID number. This\n" );
+    printf( "allows multiple terminal sessions to exist within the same environment.\n\n" );
+
+    printf( "If the inclusion of the PID isn't sufficient, this behavior can be overridden\n" );
+    printf( "by setting the environment variable, IRODS_ENVIRONMENT_FILE, to the absolute\n" );
+    printf( "path of a file that will serve as the new session file. This may require\n" );
+    printf( "re-running iinit. Setting the environment variable causes %s to replace the\n", prog );
+    printf( "\".PID\" extension with \".cwd\".\n\n" );
+
+    printf( "Options:\n" );
+    printf( " -v  Verbose.\n" );
+    printf( " -V  Very verbose.\n" );
+    printf( " -h  Show this message.\n" );
+
+    printReleaseInfo(prog);
 }
