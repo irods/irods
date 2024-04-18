@@ -2660,8 +2660,8 @@ usage( char *subOpt ) {
         "Usage: modrepl logical_path STRING resource_hierarchy STRING ATTR_NAME VALUE",
         "Usage: modrepl data_id INTEGER replica_number INTEGER ATTR_NAME VALUE",
         "Usage: modrepl data_id INTEGER resource_hierarchy STRING ATTR_NAME VALUE",
-        " "
-        "Change some attribute of a replica, i.e. a row in R_DATA_MAIN."
+        " ",
+        "Change some attribute of a replica, i.e. a row in R_DATA_MAIN.",
         " ",
         "The data object to modify must be specified. There are 2 options for doing so:",
         "    1. logical_path - A STRING holding the absolute path of the target data object",
