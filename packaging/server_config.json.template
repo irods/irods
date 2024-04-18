@@ -49,6 +49,7 @@
         "authentication": "info",
         "database": "info",
         "delay_server": "info",
+        "genquery2": "info",
         "legacy": "info",
         "microservice": "info",
         "network": "info",
