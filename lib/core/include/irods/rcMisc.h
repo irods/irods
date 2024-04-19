@@ -360,9 +360,15 @@ int getAttriInAttriArray(const char* objPath,
                          int* outDataMode,
                          char** outChksum);
 
+// clang-format off
+__attribute__((deprecated))
 char* trimSpaces(char* str);
+// clang-format on
 
+// clang-format off
+__attribute__((deprecated))
 char* trimPrefix(char* str);
+// clang-format on
 
 int convertListToMultiString(char* strInput, int input);
 
