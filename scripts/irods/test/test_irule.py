@@ -1,4 +1,5 @@
 from __future__ import print_function
+import os
 import sys
 if sys.version_info >= (2, 7):
     import unittest
@@ -53,3 +54,18 @@ class Test_Irule(ResourceBase, unittest.TestCase):
         self.assertNotIn( "[1]", stdout )
         self.assertIn( "badInput format error", stderr )
         self.assertNotEqual( rc, 0 )
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
+    def test_irule_does_not_crash_on_bad_rule_file__issue_7740(self):
+        bad_rule = '''
+        test_irule_does_not_crash_on_bad_rule_file__issue_7740 {
+            writeLine("Did I do this right?");
+        }
+        OUTPUT
+        '''
+        path_to_file = os.path.join(self.admin.local_session_dir, 'issue_7740.r')
+
+        with open(path_to_file, 'w') as f:
+            f.write(bad_rule)
+
+        self.admin.assert_icommand_fail(['irule', '-F', path_to_file, '-r', 'irods_rule_engine_plugin-irods_rule_language-instance'], desired_rc=2)
