@@ -14,7 +14,7 @@
 
 #include <cstdio>
 
-void usage( char *prog );
+void usage();
 
 int
 main( int argc, char **argv ) {
@@ -36,7 +36,7 @@ main( int argc, char **argv ) {
         exit( 1 );
     }
     if ( myRodsArgs.help == True ) {
-        usage( argv[0] );
+        usage();
         exit( 0 );
     }
     ix = myRodsArgs.optind;
@@ -145,10 +145,10 @@ checkColl( rcComm_t *Conn, char *path ) {
     return status;
 }
 
-void usage( char *prog ) {
+void usage() {
     printf( "Change the current working collection.\n\n" );
 
-    printf( "Usage: %s [-vVh] [COLLECTION]\n\n", prog );
+    printf( "Usage: icd [-vVh] [COLLECTION]\n\n" );
 
     printf( "If invoked without any arguments, the current working collection is set\n" );
     printf( "back to your home collection as defined in your irods_environment.json\n" );
@@ -167,7 +167,7 @@ void usage( char *prog ) {
     printf( "If the inclusion of the PID isn't sufficient, this behavior can be overridden\n" );
     printf( "by setting the environment variable, IRODS_ENVIRONMENT_FILE, to the absolute\n" );
     printf( "path of a file that will serve as the new session file. This may require\n" );
-    printf( "re-running iinit. Setting the environment variable causes %s to replace the\n", prog );
+    printf( "re-running iinit. Setting the environment variable causes icd to replace the\n" );
     printf( "\".PID\" extension with \".cwd\".\n\n" );
 
     printf( "Options:\n" );
@@ -175,5 +175,6 @@ void usage( char *prog ) {
     printf( " -V  Very verbose.\n" );
     printf( " -h  Show this message.\n" );
 
-    printReleaseInfo(prog);
+    char name[] = "icd";
+    printReleaseInfo(name);
 }
