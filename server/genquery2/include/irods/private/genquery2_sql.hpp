@@ -1,6 +1,7 @@
 #ifndef IRODS_GENQUERY2_SQL_HPP
 #define IRODS_GENQUERY2_SQL_HPP
 
+#include <cstdint>
 #include <string>
 #include <string_view>
 #include <vector>
