@@ -25,6 +25,7 @@
 #include "irods/rodsLog.h"
 
 #include <cstdlib>
+#include <cstdint>
 #include <stdarg.h>
 #include <string>
 #include <limits>
