@@ -1,6 +1,7 @@
 #ifndef IRODS_RANDOM_HPP
 #define IRODS_RANDOM_HPP
 
+#include <cstdint>
 #include <string>
 
 namespace irods {
