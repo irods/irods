@@ -252,6 +252,11 @@ set(
   SPDLOG_NO_TLS
 )
 
+if (CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "15.0" AND NOT IRODS_BUILD_AGAINST_LIBCXX)
+  message(AUTHOR_WARNING "Adding `consteval=constexpr` to `IRODS_COMPILE_DEFINITIONS_PRIVATE` to work around Clang bug with libstdc++ 13.")
+  list(APPEND IRODS_COMPILE_DEFINITIONS_PRIVATE "consteval=constexpr")
+endif()
+
 # Define our component names here so they're defined everywhere
 set(IRODS_PACKAGE_COMPONENT_RUNTIME_NAME "irods-runtime")
 set(IRODS_PACKAGE_COMPONENT_SERVER_NAME "irods-server")

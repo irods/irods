@@ -14,6 +14,12 @@ target_include_directories(
   PRIVATE
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
 )
+target_compile_definitions(
+  irodsTestPutGet
+  PRIVATE
+  "${IRODS_COMPILE_DEFINITIONS_PUBLIC}"
+  "${IRODS_COMPILE_DEFINITIONS_PRIVATE}"
+)
 
 install(
   TARGETS
