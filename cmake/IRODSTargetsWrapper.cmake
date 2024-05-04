@@ -25,3 +25,8 @@ find_dependency(spdlog "1.9.2"
   HINTS "${IRODS_EXTERNALS_FULLPATH_SPDLOG}")
 
 include("${IRODS_TARGETS_PATH_UNWRAPPED}")
+
+if (CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "15.0" AND NOT IRODS_BUILD_AGAINST_LIBCXX)
+  message(AUTHOR_WARNING "Adding `consteval=constexpr` to irods_common's `INTERFACE_COMPILE_DEFINITIONS` to work around Clang bug with libstdc++ 13.")
+  target_compile_definitions(irods_common INTERFACE "consteval=constexpr")
+endif()
