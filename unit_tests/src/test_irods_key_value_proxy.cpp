@@ -564,7 +564,7 @@ TEST_CASE("test_key_value_proxy_iterator_throws_on_invalid_KeyValPair__issue_586
     REQUIRE_THROWS([] {
         KeyValPair kvp{};
         irods::experimental::key_value_proxy proxy{kvp};
-        std::begin(proxy);
+        static_cast<void>(std::begin(proxy));
     }(), "cannot construct key_value_proxy::iterator");
 } // test_key_value_proxy_iterator_throws_on_invalid_KeyValPair__issue_5865
 
