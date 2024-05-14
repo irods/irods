@@ -26,8 +26,6 @@ import tempfile
 import time
 import random
 
-from . import six
-
 from .exceptions import IrodsError, IrodsWarning
 from . import execute
 from . import paths
@@ -140,7 +138,7 @@ def re_shm_exists():
 def json_object_hook_list(l):
     rv = []
     for i in l:
-        if not isinstance(i, str) and isinstance(i, six.text_type):
+        if not isinstance(i, str) and isinstance(i, str):
             i = i.encode('ascii')
         elif isinstance(i, list):
             i = json_object_hook_list(i)
@@ -150,9 +148,9 @@ def json_object_hook_list(l):
 def json_object_hook_dict(d):
     rv = {}
     for k, v in d.items():
-        if not isinstance(k, str) and isinstance(k, six.text_type):
+        if not isinstance(k, str) and isinstance(k, str):
             k = k.encode('ascii')
-        if not isinstance(v, str) and isinstance(v, six.text_type):
+        if not isinstance(v, str) and isinstance(v, str):
             v = v.encode('ascii')
         elif isinstance(v, list):
             v = json_object_hook_list(v)
@@ -345,7 +343,7 @@ def get_os_distribution_version_major():
     return distro.major_version()
 
 def get_object_names_from_entries(ils_out):
-    if isinstance(ils_out, six.string_types):
+    if isinstance(ils_out, str):
         ils_out = ils_out.strip().split()
     for item in ils_out:
         # strip collections
@@ -490,7 +488,7 @@ def int_filter(field='Input'):
         try:
             return int(x)
         except ValueError as e:
-            six.reraise(InputFilterError, InputFilterError('%s must be an integer.' % (field)), sys.exc_info()[2])
+            raise InputFilterError('%s must be an integer.' % (field)) from e
     return f
 
 def set_filter(set_, field='Input'):

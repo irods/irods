@@ -3,7 +3,6 @@ import getpass
 import json
 import os
 import shutil
-import six
 import socket
 import sys
 import tempfile
@@ -24,8 +23,7 @@ from . import resource_suite
 from . import session
 
 
-@six.add_metaclass(metaclass_unittest_test_case_generator.MetaclassUnittestTestCaseGenerator)
-class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
+class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase, metaclass=metaclass_unittest_test_case_generator.MetaclassUnittestTestCaseGenerator):
 
     class_name = 'Test_AllRules'
 

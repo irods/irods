@@ -18,8 +18,6 @@ from . import settings
 from ..configuration import IrodsConfig
 from .command import assert_command, assert_command_fail
 
-from .. import six
-
 def make_session_for_existing_user(username, password, hostname, zone):
     env_dict = lib.make_environment_dict(username, hostname, zone, use_ssl=test.settings.USE_SSL)
     return IrodsSession(env_dict, password, False)
@@ -186,7 +184,7 @@ class IrodsSession(object):
             kwargs['env']['IRODS_AUTHENTICATION_FILE'] = self._authentication_file_path
 
     def _log_run_icommand(self, arg):
-        if isinstance(arg, six.string_types):
+        if isinstance(arg, str):
             icommand = lib.safe_shlex_split_for_2_6(arg)[0]
             log_string = arg
         else:
