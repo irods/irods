@@ -53,8 +53,6 @@ import stat
 import time
 import tempfile
 
-from irods import six
-
 import irods.lib
 from irods.configuration import IrodsConfig
 from irods.controller import IrodsController

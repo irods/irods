@@ -12,8 +12,6 @@ import tempfile
 import time
 import datetime
 
-from . import six
-
 from .exceptions import IrodsError, IrodsWarning, IrodsSchemaError
 from . import lib
 from . import json_validation
@@ -273,10 +271,9 @@ class IrodsConfig(object):
                         schema_uri_suffix)
             except IrodsError as e:
                 l.debug('Failed to construct schema URI')
-                six.reraise(IrodsWarning, IrodsWarning('%s\n%s' % (
+                raise IrodsWarning('%s\n%s' % (
                         'Preflight Check problem:',
-                        lib.indent('JSON Configuration Validation failed.'))),
-                    sys.exc_info()[2])
+                        lib.indent('JSON Configuration Validation failed.'))) from e
 
             l.debug('Attempting to validate %s against %s', config_file['path'], schema_uri)
             try:
@@ -441,9 +438,7 @@ def load_json_config(path, template_filepath=None):
     try :
         return lib.open_and_load_json(path)
     except ValueError as e:
-        six.reraise(IrodsError,
-                IrodsError('%s\n%s' % (
-                    'JSON load failed for [%s]:' % (path),
-                    lib.indent('Invalid JSON.',
-                        '%s: %s' % (e.__class__.__name__, e)))),
-                sys.exc_info()[2])
+        raise IrodsError('%s\n%s' % (
+                'JSON load failed for [%s]:' % (path),
+                lib.indent('Invalid JSON.',
+                    '%s: %s' % (e.__class__.__name__, e))))

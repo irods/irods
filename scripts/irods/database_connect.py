@@ -10,7 +10,6 @@ import sys
 import tempfile
 import time
 
-from . import six
 from . import lib
 from . import password_obfuscation
 from .exceptions import IrodsError, IrodsWarning
@@ -237,9 +236,7 @@ def get_database_connection(irods_config):
                 )
         else:
             message = 'pyodbc encountered an error connecting to the database:'
-        six.reraise(IrodsError,
-                IrodsError('%s\n%s' % (message, str(e))),
-            sys.exc_info()[2])
+        raise IrodsError('%s\n%s' % (message, str(e)))
 
 def execute_sql_statement(cursor, statement, *params, **kwargs):
     l = logging.getLogger(__name__)
@@ -250,9 +247,7 @@ def execute_sql_statement(cursor, statement, *params, **kwargs):
     try:
         return cursor.execute(statement, params)
     except pyodbc.Error as e:
-        six.reraise(IrodsError,
-                IrodsError('pyodbc encountered an error executing the statement:\n\t%s\n%s' % (statement, str(e))),
-            sys.exc_info()[2])
+        raise IrodsError('pyodbc encountered an error executing the statement:\n\t%s\n%s' % (statement, str(e)))
 
 def execute_sql_file(filepath, cursor, by_line=False):
     l = logging.getLogger(__name__)
@@ -266,18 +261,14 @@ def execute_sql_file(filepath, cursor, by_line=False):
                 try:
                     cursor.execute(line)
                 except IrodsError as e:
-                    six.reraise(IrodsError,
-                        IrodsError('Error encountered while executing '
-                            'the statement:\n\t%s\n%s' % (line, str(e))),
-                        sys.exc_info()[2])
+                    raise IrodsError('Error encountered while executing '
+                        'the statement:\n\t%s\n%s' % (line, str(e)))
         else:
             try:
                 cursor.execute(f.read())
             except IrodsError as e:
-                six.reraise(IrodsError,
-                    IrodsError('Error encountered while executing '
-                        'the sql in %s:\n%s' % (filepath, str(e))),
-                    sys.exc_info()[2])
+                raise IrodsError('Error encountered while executing '
+                    'the sql in %s:\n%s' % (filepath, str(e)))
 
 def list_database_tables(cursor):
     l = logging.getLogger(__name__)
@@ -298,10 +289,8 @@ def get_schema_version_in_database(cursor):
     try:
         rows = execute_sql_statement(cursor, query).fetchall()
     except IrodsError as e:
-        six.reraise(IrodsError,
-            IrodsError('Error encountered while executing '
-                'the query:\n\t%s\n%s' % (query, str(e))),
-            sys.exc_info()[2])
+        raise IrodsError('Error encountered while executing '
+            'the query:\n\t%s\n%s' % (query, str(e)))
     if len(rows) == 0:
         raise IrodsError('No schema version present, unable to upgrade. '
                 'If this is an upgrade from a pre-4.0 installation, '
@@ -368,9 +357,7 @@ def create_database_tables(irods_config, cursor, default_resource_directory=None
             try:
                 execute_sql_file(sql_file, cursor, by_line=True)
             except IrodsError as e:
-                six.reraise(IrodsError,
-                        IrodsError('Database setup failed while running %s:\n%s' % (sql_file, str(e))),
-                        sys.exc_info()[2])
+                raise IrodsError('Database setup failed while running %s:\n%s' % (sql_file, str(e)))
 
 def setup_database_values(irods_config, cursor=None, default_resource_directory=None, default_resource_name=None):
     l = logging.getLogger(__name__)

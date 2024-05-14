@@ -8,8 +8,6 @@ import shlex
 import sys
 import time
 
-from . import six
-
 from .exceptions import IrodsError, IrodsWarning
 
 def indent(*text, **kwargs):
@@ -20,7 +18,7 @@ def indent(*text, **kwargs):
     return '\n'.join([''.join([indentation, '\n{0}'.format(indentation).join(lines.splitlines())]) for lines in text])
 
 def safe_shlex_split_for_2_6(args):
-    if not isinstance(args, str) and isinstance(args, six.text_type):
+    if not isinstance(args, str) and isinstance(args, str):
         args = args.encode('ascii')
     return shlex.split(args)
 
@@ -39,7 +37,7 @@ def communicate_and_log(p, args, input=None):
 
 def execute_command_nonblocking(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, use_unsafe_shell=False, **kwargs):
     l = logging.getLogger(__name__)
-    if not use_unsafe_shell and isinstance(args, six.string_types):
+    if not use_unsafe_shell and isinstance(args, str):
         args = safe_shlex_split_for_2_6(args)
     kwargs['stdout'] = stdout
     kwargs['stderr'] = stderr
@@ -53,15 +51,13 @@ def execute_command_nonblocking(args, stdout=subprocess.PIPE, stderr=subprocess.
     try:
         return subprocess.Popen(args, **kwargs)
     except OSError as e:
-        six.reraise(IrodsError,
-            IrodsError('\n'.join([
-                'Call to open process with {0} failed:'.format(
-                    args),
-                indent(
-                    'Could not find the requested executable \'{0}\'; '
-                    'please ensure \'{0}\' is installed and in the path.'.format(
-                        args[0]))])),
-            sys.exc_info()[2])
+        raise IrodsError('\n'.join([
+            'Call to open process with {0} failed:'.format(
+                args),
+            indent(
+                'Could not find the requested executable \'{0}\'; '
+                'please ensure \'{0}\' is installed and in the path.'.format(
+                    args[0]))])) from e
 
 def execute_command_timeout(args, timeout=10, **kwargs):
     p = execute_command_nonblocking(args, **kwargs)

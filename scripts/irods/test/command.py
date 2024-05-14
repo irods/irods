@@ -3,13 +3,12 @@ from __future__ import print_function
 import re
 
 from .. import lib
-from .. import six
 
 def check_command_output(command_arg, stdout, stderr, check_type='EMPTY', expected_results='', use_regex=False):
     assert check_type in ['EMPTY', 'STDOUT', 'STDERR', 'STDOUT_SINGLELINE',
                           'STDERR_SINGLELINE', 'STDOUT_MULTILINE', 'STDERR_MULTILINE', 'EMPTY_STDOUT'], check_type
 
-    if isinstance(expected_results, six.string_types):
+    if isinstance(expected_results, str):
         expected_results = [expected_results]
 
     regex_msg = 'regex ' if use_regex else ''
@@ -84,7 +83,7 @@ def _assert_helper(command_arg, check_type='EMPTY', expected_results='', use_reg
     out, err, rc = lib.execute_command_permissive(command_arg, **kwargs)
 
     fail_string = ' FAIL' if should_fail else ''
-    if isinstance(command_arg, six.string_types):
+    if isinstance(command_arg, str):
         print('Assert{0} Command: {1}'.format(fail_string, command_arg))
     else:
         print('Assert{0} Command: {1}'.format(
