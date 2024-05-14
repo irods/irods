@@ -164,7 +164,7 @@ class Test_Imeta_Interactive(unittest.TestCase):
         self.imeta_p.stdin.flush()
         (out, err) = self.get_output()
         self.assertEqual(out, 'imeta>')
-        self.assertRegexpMatches(err, r'^Unrecognized subcommand ')
+        self.assertRegex(err, r'^Unrecognized subcommand ')
         # ensure imeta stays open
         timestamp = process_time()
         while process_time() - timestamp < self.default_timeout:
@@ -176,7 +176,7 @@ class Test_Imeta_Interactive(unittest.TestCase):
         self.imeta_p.stdin.flush()
         (out, err) = self.get_output()
         self.assertEqual(out, 'imeta>')
-        self.assertRegexpMatches(err, r'^Error: No object type descriptor ')
+        self.assertRegex(err, r'^Error: No object type descriptor ')
         # ensure imeta stays open
         timestamp = process_time()
         while process_time() - timestamp < self.default_timeout:
@@ -207,7 +207,7 @@ class Test_Imeta_Interactive(unittest.TestCase):
         self.imeta_p.stdin.write('ls -d {}1\n'.format(self.test_data_path_base).encode())
         self.imeta_p.stdin.flush()
         (out, err) = self.get_output()
-        self.assertRegexpMatches(out, r'.+\nimeta>$')
+        self.assertRegex(out, r'.+\nimeta>$')
         self.assertEqual(err, '')
         # ensure imeta stays open
         timestamp = process_time()

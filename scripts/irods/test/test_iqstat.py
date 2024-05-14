@@ -56,7 +56,7 @@ class Test_Iqstat(session.make_sessions_mixin([('otherrods', 'rods')], [('alice'
         # Assert brief format
         _, out, err = self.admin.assert_icommand('iqstat -a', 'STDOUT_SINGLELINE', r'id\s\s*name', use_regex = True)
         for rule_id in rule_ids:
-            self.assertRegexpMatches(out, re.compile('^' + rule_id + r'\s\s*', re.MULTILINE))
+            self.assertRegex(out, re.compile('^' + rule_id + r'\s\s*', re.MULTILINE))
 
         # Assert long format
         _, out, err = self.admin.assert_icommand('iqstat -al', 'STDOUT_SINGLELINE', r'^\s*---*\s*$', use_regex = True)
