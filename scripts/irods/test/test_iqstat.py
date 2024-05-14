@@ -59,9 +59,9 @@ class Test_Iqstat(session.make_sessions_mixin([('otherrods', 'rods')], [('alice'
             self.assertRegexpMatches(out, re.compile('^' + rule_id + r'\s\s*', re.MULTILINE))
 
         # Assert long format
-        _, out, err = self.admin.assert_icommand('iqstat -al', 'STDOUT_SINGLELINE', '^\s*---*\s*$', use_regex = True)
-        self.admin.assert_icommand('iqstat -al', 'STDOUT_SINGLELINE', '^\s*--*\s*$', use_regex = True)
-        output_sections = [x.strip() for x in re.compile('^\s*--*\s*$', re.MULTILINE).split(out)]
+        _, out, err = self.admin.assert_icommand('iqstat -al', 'STDOUT_SINGLELINE', r'^\s*---*\s*$', use_regex = True)
+        self.admin.assert_icommand('iqstat -al', 'STDOUT_SINGLELINE', r'^\s*--*\s*$', use_regex = True)
+        output_sections = [x.strip() for x in re.compile(r'^\s*--*\s*$', re.MULTILINE).split(out)]
         # In the long-format sections, search for /id: {id}/m as a match within each; exactly two such sections should match the existing rule id's
         self.assertEqual(2, len([y for y in output_sections for id in rule_ids
                                  if re.compile(r'^id:\s*{}\s*$'.format(id), re.MULTILINE).search(y)]))
