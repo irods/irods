@@ -8,13 +8,12 @@ import shutil
 import stat
 import collections.abc
 
-from . import six
 from . import lib
 from . import paths
 from .exceptions import IrodsError, IrodsWarning
 
 def schema_version_as_int(schema_version):
-    if isinstance(schema_version, six.string_types) and schema_version[0] == 'v':
+    if isinstance(schema_version, str) and schema_version[0] == 'v':
         schema_version = schema_version[1:]
     return int(schema_version)
 

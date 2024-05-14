@@ -16,7 +16,6 @@ import time
 from collections import OrderedDict
 
 import psutil
-from . import six
 
 from .configuration import IrodsConfig
 from . import lib
@@ -87,13 +86,12 @@ class IrodsController(object):
                 dir=self.config.log_directory)
             os.close(test_file_handle)
             os.unlink(test_file_name)
-        except (IOError, OSError):
-            six.reraise(IrodsError, IrodsError(
-                    'Configuration problem:\n'
-                    'The server log directory, \'%s\''
-                    'is not writeable.' % (
-                        self.config.log_directory)),
-                    sys.exc_info()[2])
+        except (IOError, OSError) as e:
+            raise IrodsError(
+                'Configuration problem:\n'
+                'The server log directory, \'%s\''
+                'is not writeable.' % (
+                    self.config.log_directory)) from e
 
         for f in ['core.re', 'core.dvm', 'core.fnm']:
             path = os.path.join(self.config.config_directory, f)
@@ -107,10 +105,8 @@ class IrodsController(object):
                 try:
                     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                     s.bind(('127.0.0.1', irods_port))
-                except socket.error:
-                    six.reraise(IrodsError,
-                            IrodsError('Could not bind port {0}.'.format(irods_port)),
-                            sys.exc_info()[2])
+                except socket.error as e:
+                    raise IrodsError('Could not bind port {0}.'.format(irods_port)) from e
             l.debug('Socket %s bound and released successfully.', irods_port)
 
             if self.config.is_catalog:
@@ -169,7 +165,7 @@ class IrodsController(object):
 
         except IrodsError as e:
             l.info('Failure')
-            six.reraise(IrodsError, e, sys.exc_info()[2])
+            raise e
 
     def irods_graceful_shutdown(self, server_proc, server_descendants, timeout=20):
         start_time = time.time()
@@ -223,7 +219,7 @@ class IrodsController(object):
 
         except IrodsError as e:
             l.info('Failure')
-            six.reraise(IrodsError, e, sys.exc_info()[2])
+            raise e
 
         l.info('Success')
 
