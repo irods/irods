@@ -574,8 +574,8 @@ OUTPUT ruleExecOut
                 rule_file.flush()
                 self.admin.assert_icommand(['irule', '-r', native_plugin_name, '-F', rule_file.name])
                 tm = int(time.time())
-                regex_time = '^\s*RULE_EXEC_TIME\s*=\s*([0-9]+)'
-                regex_id = '^\s*RULE_EXEC_ID\s*=\s*([0-9]+)'
+                regex_time = r'^\s*RULE_EXEC_TIME\s*=\s*([0-9]+)'
+                regex_id = r'^\s*RULE_EXEC_ID\s*=\s*([0-9]+)'
                 dummy_rc, out, dummy_err = self.admin.assert_icommand(
                     ['iquest', """SELECT RULE_EXEC_ID, RULE_EXEC_NAME, RULE_EXEC_TIME where RULE_EXEC_NAME like '%%4055_%s.%%'""" % delay],
                     'STDOUT_MULTILINE', regex_time, use_regex=True)
