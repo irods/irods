@@ -2556,7 +2556,7 @@ class test_mkzone_conn_str_validation(unittest.TestCase):
         try:
             self.admin.assert_icommand(['iadmin', 'mkzone', 'goodzone', 'remote', 'localhost:1247'], 'EMPTY')
             self.admin.assert_icommand(['iadmin', 'lz', 'goodzone'],
-                                       'STDOUT_MULTILINE', '^zone_conn_string:\s+localhost:1247$', use_regex=True)
+                                       'STDOUT_MULTILINE', r'^zone_conn_string:\s+localhost:1247$', use_regex=True)
         finally:
             self.admin.run_icommand(['iadmin', 'rmzone', 'goodzone'])
 
@@ -2564,7 +2564,7 @@ class test_mkzone_conn_str_validation(unittest.TestCase):
         try:
             self.admin.assert_icommand(['iadmin', 'mkzone', 'goodzone', 'remote', ''], 'EMPTY')
             self.admin.assert_icommand(['iadmin', 'lz', 'goodzone'],
-                                       'STDOUT_MULTILINE', '^zone_conn_string:\s*$', use_regex=True)
+                                       'STDOUT_MULTILINE', r'^zone_conn_string:\s*$', use_regex=True)
         finally:
             self.admin.run_icommand(['iadmin', 'rmzone', 'goodzone'])
 
@@ -2643,9 +2643,9 @@ class test_mkzone_conn_str_validation(unittest.TestCase):
 class test_modzone_conn_str_validation(unittest.TestCase):
     localhost_zone = 'goodzone_localhost'
     localhost_connstr = 'localhost:1247'
-    localhost_test_re = '^zone_conn_string:\s+' + localhost_connstr + '$'
+    localhost_test_re = r'^zone_conn_string:\s+' + localhost_connstr + r'$'
     blank_zone = 'goodzone_blank'
-    blank_test_re = '^zone_conn_string:\s*$'
+    blank_test_re = r'^zone_conn_string:\s*$'
 
     @classmethod
     def setUpClass(cls):
