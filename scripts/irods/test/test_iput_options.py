@@ -36,7 +36,7 @@ class Test_iPut_Options(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand('iput --metadata "a;v;u;a0;v0" --acl "read ' + self.user0.username + ';'
                                    + 'write ' + self.user1.username + ';" -- ' + zero_filepath)
         self.admin.assert_icommand('imeta ls -d zero', 'STDOUT',
-                                   '(attribute: *a0?\nvalue: *v0?\nunits: *u?(\n-+ *\n)?){2}', use_regex=True)
+                                   r'(attribute: *a0?\nvalue: *v0?\nunits: *u?(\n-+ *\n)?){2}', use_regex=True)
         self.admin.assert_icommand('iget -- ' + self.admin.session_collection + '/zero ' + self.admin.local_session_dir + '/newzero')
         self.user0.assert_icommand('iget -- ' + self.admin.session_collection + '/zero ' + self.user0.local_session_dir + '/newzero')
         filepath = os.path.join(self.admin.local_session_dir, 'file')
@@ -44,7 +44,7 @@ class Test_iPut_Options(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand('iput --metadata "a;v;u;a2;v2" --acl "read ' + self.user0.username + ';'
                                    + 'write ' + self.user1.username + ';" -- ' + filepath)
         self.admin.assert_icommand('imeta ls -d file', 'STDOUT',
-                                   '(attribute: *a2?\nvalue: *v2?\nunits: *u?(\n-+ *\n)?){2}', use_regex=True)
+                                   r'(attribute: *a2?\nvalue: *v2?\nunits: *u?(\n-+ *\n)?){2}', use_regex=True)
         self.admin.assert_icommand('ils -l', 'STDOUT')
         self.admin.assert_icommand('iget -- ' + self.admin.session_collection + '/file ' + self.admin.local_session_dir + '/newfile')
         self.user0.assert_icommand('iget -- ' + self.admin.session_collection + '/file ' + self.user0.local_session_dir + '/newfile')
