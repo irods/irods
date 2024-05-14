@@ -135,8 +135,8 @@ class Test_Iquest(ResourceBase, unittest.TestCase):
 
         out = out.strip()
         timestamps = out.split(',')
-        self.assertTrue(re.match('^\d{11,11}$', timestamps[0]))
-        self.assertTrue(re.match('^\d{11,11}$', timestamps[1]))
+        self.assertTrue(re.match(r'^\d{11,11}$', timestamps[0]))
+        self.assertTrue(re.match(r'^\d{11,11}$', timestamps[1]))
 
     def test_iquest_totaldatasize(self):
         self.admin.assert_icommand("iquest \"select sum(DATA_SIZE) where COLL_NAME like '/" +
