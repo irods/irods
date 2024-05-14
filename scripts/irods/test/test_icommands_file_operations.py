@@ -840,7 +840,7 @@ class Test_ICommands_File_Operations_4(resource_suite.ResourceBase, shared_funct
 
         localfile = 'thelocalfile.txt'
         localpath = lib.create_local_testfile(localfile)
-        badfiles = ['; touch oops', '\;\ touch\ oops']
+        badfiles = ['; touch oops', '\\;\\ touch\\ oops']
         counter = 0
         for badname in badfiles:
             counter = counter + 1
