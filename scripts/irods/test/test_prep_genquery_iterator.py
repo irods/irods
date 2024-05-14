@@ -364,7 +364,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
                 output ruleExecOut
                 '''), file=f, end='')
 
-            run_irule = ("irule -F {} \*testcollection=\"'{}'\""
+            run_irule = ("irule -F {} \\*testcollection=\"'{}'\""
                                               ).format(rule_file, self.test_admin_coll_path,)
 
             self.admin.assert_icommand(run_irule, 'STDOUT_SINGLELINE', r'\s{}$'.format(512), use_regex=True)
@@ -459,7 +459,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
                 output ruleExecOut
                 '''), file=f, end='')
 
-            run_irule = ("irule -F {} \*testcollection=\"'{}'\""
+            run_irule = ("irule -F {} \\*testcollection=\"'{}'\""
                                               ).format(rule_file, self.test_admin_coll_path,)
 
             self.admin.assert_icommand(run_irule, 'STDOUT_SINGLELINE', r'\s+{}$'.format(int_for_compare), use_regex=True)
@@ -525,7 +525,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
                 output ruleExecOut
                 '''), file=f, end='')
 
-            run_irule = ("irule -F {} \*testcollection=\"'{}'\"" # will loop 256 * 2 * 512 iters
+            run_irule = ("irule -F {} \\*testcollection=\"'{}'\"" # will loop 256 * 2 * 512 iters
                                               ).format(rule_file, self.test_admin_coll_path,)
 
             self.admin.assert_icommand(run_irule, 'STDOUT_SINGLELINE', r'\s{}$'.format(512*2*256), use_regex=True)
@@ -596,7 +596,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
             ''').format(**locals()), file=f, end='')
 
         command2run = ("irule -F " + rule_file + " " +
-                       "\*testcollection=\"'{}'\"").format(self.test_admin_coll_path)
+                       "\\*testcollection=\"'{}'\"").format(self.test_admin_coll_path)
 
         out, err, _ = self.admin.run_icommand( command2run )
         self.assertEqual( err.strip(), str( term1 * term2 * term3 ))
@@ -724,7 +724,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
             pattern=re.compile(r'^(\S+):\s*(\[.*\]$)',re.M)
 
             for rowsPerIter in ( "0", "7", "8", "9"): # if "0" then row_iterator; else paged_iterator
-                cmd2run = '''irule {} -F {} \*rpi='"{}"' \*nobj="'{}'" '''.format(
+                cmd2run = '''irule {} -F {} \\*rpi='"{}"' \\*nobj="'{}'" '''.format(
                              irods_rule_language_option, rule_file, rowsPerIter, N )
                 out, _, _  = self.admin.run_icommand( cmd2run )
                 out_tuple = pattern.findall(out)
@@ -780,7 +780,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
                              *predicted = ""
                              validate_output(*nobj,*rpi,*predicted)
                              #-- should assert that *a == *nobj
-                             if ("*b" == "0") { *b = "" } # bc irule chokes on '\*rpi=""'
+                             if ("*b" == "0") { *b = "" } # bc irule chokes on '\\*rpi=""'
                              test_python_RE_genquery_iterators(*a,*b,*c)
                              writeLine("stdout", "actual:    [*a]:[*b][*c]")
                              writeLine("stdout", "predicted: [*nobj]:*predicted")
@@ -804,7 +804,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
             pattern=re.compile(r'^(\S+):\s*(\[.*\]$)',re.M)
 
             for rowsPerIter in ( "0", "7", "8", "9"): # if "0" then row_iterator; else paged_iterator
-                cmd2run = 'irule {} -F {} \*rpi="{}" \*nobj="{}"'.format(irods_rule_language_option, rule_file, rowsPerIter, N)
+                cmd2run = 'irule {} -F {} \\*rpi="{}" \\*nobj="{}"'.format(irods_rule_language_option, rule_file, rowsPerIter, N)
                 out, _, _ = self.user0.run_icommand( cmd2run )
                 out_tuple = pattern.findall(out)
                 self.assertNotEqual( out_tuple[0][0], out_tuple[1][0]) # keys not a match ("actual" != "predicted")
