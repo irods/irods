@@ -113,7 +113,7 @@ def get_odbc_driver_paths(db_type, oracle_home=None):
         return sorted(unique_list(itertools.chain(
                 lib.find_shared_object('psqlodbcw.so'),
                 lib.find_shared_object('libodbcpsql.so'),
-                lib.find_shared_object('psqlodbc.*\.so', regex=True))),
+                lib.find_shared_object('psqlodbc.*\\.so', regex=True))),
             key = lambda p: 0 if is_64_bit_ELF(p) else 1)
     elif db_type == 'mysql':
         return sorted(unique_list(itertools.chain(
@@ -121,11 +121,11 @@ def get_odbc_driver_paths(db_type, oracle_home=None):
                     lib.find_shared_object('libmyodbc.so'),
                     lib.find_shared_object('libmyodbc5.so'),
                     lib.find_shared_object('libmyodbc3.so'),
-                    lib.find_shared_object('libmyodbc.*\.so', regex=True))),
+                    lib.find_shared_object('libmyodbc.*\\.so', regex=True))),
             key = lambda p: 0 if is_64_bit_ELF(p) else 1)
     elif db_type == 'oracle':
         return sorted(unique_list(itertools.chain(
-                    lib.find_shared_object('libsqora\.so.*', regex=True, additional_directories=[d for d in [oracle_home] if d]))),
+                    lib.find_shared_object('libsqora\\.so.*', regex=True, additional_directories=[d for d in [oracle_home] if d]))),
             key = lambda p: 0 if is_64_bit_ELF(p) else 1)
     else:
         raise IrodsError('No default ODBC driver paths for %s' % (db_type))
