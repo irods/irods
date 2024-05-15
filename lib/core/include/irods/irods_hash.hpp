@@ -4,9 +4,9 @@
 #include "irods/irods_stacktrace.hpp"
 #include "irods/rodsLog.h"
 
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
 
-#define HASH_TYPE boost::unordered_map
+#define HASH_TYPE std::unordered_map
 
 #include <string>
 #include <iostream>
