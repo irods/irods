@@ -8,10 +8,10 @@
 
 #include <boost/thread.hpp>
 #include <boost/atomic.hpp>
-#include <boost/unordered_map.hpp>
 #include <zmq.hpp>
 
 #include <atomic>
+#include <unordered_map>
 
 namespace irods
 {
@@ -122,7 +122,7 @@ namespace irods
             const host_list_t& ); // list of candidates
 
         const std::string port_prop_;
-        boost::unordered_map<std::string, ctrl_func_t> op_map_;
+        std::unordered_map<std::string, ctrl_func_t> op_map_;
         std::string local_server_hostname_;
         std::string provider_hostname_;
         std::atomic<bool>& is_accepting_requests_;

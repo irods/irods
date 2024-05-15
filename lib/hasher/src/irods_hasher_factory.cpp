@@ -6,8 +6,11 @@
 #include "irods/ADLER32Strategy.hpp"
 #include "irods/SHA1Strategy.hpp"
 #include "irods/rodsErrorTable.h"
+
+#include <boost/container_hash/hash.hpp>
+
 #include <sstream>
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
 
 namespace irods {
 
@@ -19,7 +22,7 @@ namespace irods {
         const SHA1Strategy _sha1;
 
         auto make_map() {
-            boost::unordered_map<const std::string, const HashStrategy*> map;
+            std::unordered_map<const std::string, const HashStrategy*, boost::hash<const std::string>> map;
             map[ SHA256_NAME ] = &_sha256;
             map[ SHA512_NAME ] = &_sha512;
             map[ MD5_NAME ] = &_md5;
