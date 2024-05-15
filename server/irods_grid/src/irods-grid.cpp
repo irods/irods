@@ -6,8 +6,8 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <unordered_map>
 
-#include <boost/unordered_map.hpp>
 #include <boost/program_options.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
@@ -108,7 +108,7 @@ irods::error parse_program_options(
     if ( vm.count( "action" ) ) {
         try {
             const std::string& action = vm["action"].as<std::string>();
-            boost::unordered_map< std::string, std::string > cmd_map;
+            std::unordered_map< std::string, std::string > cmd_map;
             // clang-format off
             cmd_map[ "status"   ] = irods::SERVER_CONTROL_STATUS;
             cmd_map[ "ping"     ] = irods::SERVER_CONTROL_PING;
