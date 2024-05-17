@@ -80,33 +80,16 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // ask the network manager for a tcp resource
         network_ptr net_ptr;
-        error ret = netwk_mgr.resolve( TCP_NETWORK_PLUGIN, net_ptr );
-        if ( !ret.ok() ) {
-            // =-=-=-=-=-=-=-
-            // attempt to load the plugin, in this case the type,
-            // instance name, key etc are all tcp as there is only
-            // the need for one instance of a tcp object, etc.
-            std::string empty_context( "" );
-            ret = netwk_mgr.init_from_type(
-                      ProcessType,
-                      TCP_NETWORK_PLUGIN,
-                      TCP_NETWORK_PLUGIN,
-                      TCP_NETWORK_PLUGIN,
-                      empty_context,
-                      net_ptr );
-            if ( !ret.ok() ) {
-                return PASS( ret );
-
-            }
-            else {
-                // =-=-=-=-=-=-=-
-                // upcast for out variable
-                _ptr = boost::dynamic_pointer_cast< plugin_base >( net_ptr );
-                return SUCCESS();
-
-            }
-
-        } // if !ok
+        std::string empty_context{};
+        error ret = netwk_mgr.get_plugin(
+            ProcessType,
+            TCP_NETWORK_PLUGIN,
+            TCP_NETWORK_PLUGIN,
+            empty_context,
+            net_ptr);
+        if (!ret.ok()) {
+            return PASS(ret);
+        }
 
         // =-=-=-=-=-=-=-
         // upcast for out variable
