@@ -79,6 +79,7 @@ namespace irods
     const char* const STACKTRACE_NOT_READY_FOR_LOGGING_SUFFIX = ".not_ready_for_logging";
 
     const std::string STACKTRACE_DIR(irods::get_irods_stacktrace_directory().string());
+    const std::string DISABLE_CRASH_SIGNAL_HANDLERS_ENV_VAR("IRODS_DISABLE_CRASH_SIGNAL_HANDLERS");
 
     void set_unrecoverable_signal_handlers()
     {
@@ -92,8 +93,18 @@ namespace irods
         sigemptyset(&action.sa_mask);
         action.sa_handler = stacktrace_signal_handler;
 
-        sigaction(SIGSEGV, &action, nullptr);
-        sigaction(SIGABRT, &action, nullptr);
+        const char *env_var_val = std::getenv(DISABLE_CRASH_SIGNAL_HANDLERS_ENV_VAR.c_str());
+        if (env_var_val == nullptr || (std::strncmp(env_var_val, "0", 2) == 0)) {
+            sigaction(SIGSEGV, &action, nullptr);
+            sigaction(SIGABRT, &action, nullptr);
+            sigaction(SIGILL, &action, nullptr);
+            sigaction(SIGFPE, &action, nullptr);
+            sigaction(SIGBUS, &action, nullptr);
+        }
+        else {
+            log_server::debug("{} is set; crash signal handlers disabled.", DISABLE_CRASH_SIGNAL_HANDLERS_ENV_VAR);
+        }
+
         sigaction(SIGINT, &action, nullptr);
     } // set_unrecoverable_signal_handlers
 } // namespace irods
