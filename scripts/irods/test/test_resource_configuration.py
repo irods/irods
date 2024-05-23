@@ -4,11 +4,7 @@ import shutil
 import os
 import socket
 import datetime
-import imp
-if sys.version_info >= (2, 7):
-    import unittest
-else:
-    import unittest2 as unittest
+import unittest
 
 from .. import test
 from . import settings
