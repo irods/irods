@@ -254,7 +254,7 @@ void *startMonScript( void *arg ) {
      * insert it into the database .                           *
      **********************************************************/
     char *output;
-    msParam_t msp1, msp2, msp3, msp4, msp5, msout;
+    msParam_t msp1{}, msp2{}, msp3{}, msp4{}, msp5{}, msout{};
     int thrid,  status;
     int retval;
 
