@@ -490,23 +490,6 @@ output ruleExecOut
 
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
-    def test_msiServerMonPerf_default_3736(self):
-        rule_file="test_msiServerMonPerf.r"
-        rule_string= '''
-msiTestServerMonPerf {{
-    msiServerMonPerf("default", "default");
-}}
-
-INPUT null
-OUTPUT ruleExecOut
-'''
-
-        with open(rule_file, 'w') as f:
-            f.write(rule_string)
-
-        self.rods_session.assert_icommand("irule -F " + rule_file);
-
-    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_msiAddKeyValToMspStr_works_with_empty_string__issue_6918(self):
         rule_file="test_msiAddKeyValToMspStr.r"
         rule_string= '''
