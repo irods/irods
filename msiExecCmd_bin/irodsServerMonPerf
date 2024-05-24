@@ -106,7 +106,7 @@ else
 
 if( $optTime )
 {
-	$paramTime = $optTime;	
+	$paramTime = sprintf("%.0f", $optTime);
 }
 else
 {
@@ -123,10 +123,10 @@ foreach my $pth(@sysPathList) {
 			Log("The file $pth system doesn't exist. $!");
 			$fsExists = 0;
 		}
-		else {
-			Log("The path $pth is not a directory.");
-			$fsExists = 0;
-		}
+	}
+	else {
+		Log("The path $pth is not a directory.");
+		$fsExists = 0;
 	}
 }
 
