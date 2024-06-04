@@ -47,6 +47,7 @@
 #include <iomanip>
 #include <sstream>
 #include <concepts>
+#include <tuple>
 
 /// Defines all things related to the logging API.
 ///
@@ -485,12 +486,47 @@ namespace irods::experimental::log
             /// \since 4.3.0
             template <typename... Args>
             auto operator()(fmt::format_string<Args...> _format, Args&&... _args) const -> void
+#if __clang__ == 0 || __clang_major__ > 15
+                // Clang 15 and later (and GCC 11 and later) consider this overload ambiguous
+                // with the std::invocable overload. This constraint sorts that out.
+                requires (sizeof...(Args) != 1 || !std::is_invocable_v<std::tuple_element_t<0, std::tuple<Args...>>>)
+#elif __clang_major__ == 15
+                // Clang 15 can't parse the above statement properly, so we have special overloads for 15.
+                // This overload handles the 1-argument case.
+                requires (sizeof...(Args) == 0)
+#endif
             {
                 if (should_log()) {
                     const auto msg = {key_value{tag::log::message, fmt::format(_format, std::forward<Args>(_args)...)}};
                     log_message(std::begin(msg), std::end(msg));
                 }
             } // operator()
+
+#if __clang_major__ == 15
+            // This overload covers the 2-argument cases
+            template <typename Arg>
+            auto operator()(fmt::format_string<Arg> _format, Arg&& _arg) const -> void
+                requires (!std::is_invocable_v<Arg>)
+            {
+                if (should_log()) {
+                    const auto msg = {key_value{tag::log::message, fmt::format(_format, std::forward<Args>(_arg))}};
+                    log_message(std::begin(msg), std::end(msg));
+                }
+            } // operator()
+
+            // This overload covers the 3+-argument cases
+            template <typename Arg1, typename... Args>
+            auto operator()(fmt::format_string<Arg1, Args...> _format, Arg1&& _arg1, Args&&... _args) const -> void
+                requires (sizeof...(Args) > 0) // to eliminate ambiguity with previous overload
+            {
+                if (should_log()) {
+                    const auto msg = {
+                        key_value{tag::log::message,
+                                  fmt::format(_format, std::forward<Args>(_arg1), std::forward<Args>(_args)...)}};
+                    log_message(std::begin(msg), std::end(msg));
+                }
+            } // operator()
+#endif
 
             /// Writes a string to the log file.
             ///
