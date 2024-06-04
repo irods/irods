@@ -745,7 +745,7 @@ obfiDecode( const char *in, char *out, int extra ) {
     int rval;
     int wheel_len;
     int wheel[26 + 26 + 10 + 15];
-    int j, addin, addin_i, kpos, found, nout = 0;
+    int j, addin, addin_i, kpos, found = 0;
     char headstring[10];
     int ii, too_short;
     char *my_out;
@@ -924,7 +924,6 @@ obfiDecode( const char *in, char *out, int extra ) {
                     }
 
                     *my_out++ = ( char )wheel[j];
-                    nout++;
                     found = 1;
                     break;
                 }
@@ -936,7 +935,6 @@ obfiDecode( const char *in, char *out, int extra ) {
                 }
                 else {
                     *my_out++ = *my_in;
-                    nout++;
                 }
             }
             my_in++;
