@@ -159,8 +159,6 @@ namespace irods
             irods::first_class_object_ptr _fco,
             types_t...                    _t)
         {
-            using namespace std;
-
             try {
                 plugin_context ctx( _comm, properties_, _fco, "" );
 
@@ -195,7 +193,7 @@ namespace irods
                                                                         &out_param,
                                                                         _operation_name,
                                                                         "finally",
-                                                                        forward<types_t>(_t)...);
+                                                                        std::forward<types_t>(_t)...);
 
                     if (!finally_err.ok()) {
                         irods::log(PASS(finally_err));
@@ -231,7 +229,7 @@ namespace irods
                         return pre_err;
                     }
 
-                    to_return_op_err = adapted_fcn(ctx, &out_param, forward<types_t>(_t)...);
+                    to_return_op_err = adapted_fcn(ctx, &out_param, std::forward<types_t>(_t)...);
 
                     if(!to_return_op_err.ok()) {
                         // if the operation fails, invoke the exception pep
@@ -243,7 +241,7 @@ namespace irods
                                                &out_param,
                                                _operation_name,
                                                "except",
-                                               forward<types_t>(_t)...);
+                                               std::forward<types_t>(_t)...);
 
                         if(!except_err.ok()) {
                             irods::log(PASS(except_err));
@@ -260,7 +258,7 @@ namespace irods
                                      &out_param,
                                      _operation_name,
                                      "post",
-                                     forward<types_t>(_t)...);
+                                     std::forward<types_t>(_t)...);
 
                 if(!post_err.ok()) {
                     out_param = "error="+std::to_string(post_err.code()) + ";message="+post_err.result();
@@ -272,7 +270,7 @@ namespace irods
                                            &out_param,
                                            _operation_name,
                                            "except",
-                                           forward<types_t>(_t)...);
+                                           std::forward<types_t>(_t)...);
 
                     if(!except_err.ok()) {
                         irods::log(PASS(except_err));
@@ -283,7 +281,7 @@ namespace irods
 
                 return to_return_op_err;
 #else // ENABLE_RE
-                return adapted_fcn( ctx, &out_param, forward<types_t>(_t)... );
+                return adapted_fcn( ctx, &out_param, std::forward<types_t>(_t)... );
 #endif // ENABLE_RE
             }
             catch (const boost::bad_any_cast&) {
