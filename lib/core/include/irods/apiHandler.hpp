@@ -159,8 +159,6 @@ namespace irods
         template<typename... types_t>
         int call_handler(rsComm_t* _comm, types_t... _t)
         {
-            using namespace std;
-
             if( !operations_.has_entry(operation_name) ) {
                 rodsLog(LOG_ERROR, "missing api operation [%s]", operation_name.c_str());
                 return SYS_INVALID_INPUT_PARAM;
@@ -188,7 +186,7 @@ namespace irods
                                                                         ctx,
                                                                         operation_name,
                                                                         "finally",
-                                                                        forward<types_t>(_t)...);
+                                                                        std::forward<types_t>(_t)...);
 
                     if (!finally_err.ok()) {
                         irods::log(PASS(finally_err));
@@ -224,7 +222,7 @@ namespace irods
 
                     using adapted_func_type = std::function<error(irods::plugin_context&, rsComm_t*, types_t...)>;
                     adapted_func_type adapted_fcn{api_call_adaptor<types_t...>(fcn)};
-                    op_err = adapted_fcn(ctx, _comm, forward<types_t>(_t)...);
+                    op_err = adapted_fcn(ctx, _comm, std::forward<types_t>(_t)...);
 
                     if (!op_err.ok() && !is_acceptable_error(op_err.code())) {
                         // if the operation fails, invoke the exception pep
@@ -233,7 +231,7 @@ namespace irods
                                                ctx,
                                                operation_name,
                                                "except",
-                                               forward<types_t>(_t)...);
+                                               std::forward<types_t>(_t)...);
 
                         if (!except_err.ok()) {
                             irods::log(PASS(except_err));
@@ -249,7 +247,7 @@ namespace irods
                                      ctx,
                                      operation_name,
                                      "post",
-                                     forward<types_t>(_t)...);
+                                     std::forward<types_t>(_t)...);
 
                 if (!post_err.ok()) {
                     // if the post-pep fails, invoke the exception pep
@@ -258,7 +256,7 @@ namespace irods
                                            ctx,
                                            operation_name,
                                            "except",
-                                           forward<types_t>(_t)...);
+                                           std::forward<types_t>(_t)...);
 
                     if (!except_err.ok()) {
                         irods::log(PASS(except_err));
