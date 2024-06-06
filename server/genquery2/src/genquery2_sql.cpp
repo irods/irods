@@ -863,32 +863,32 @@ namespace irods::experimental::genquery2
         return fmt::format("cast({}.{} as {})", alias, iter->second.name, _column.type_name);
     } // to_sql
 
-    auto to_sql(gq_state& _state, const select_function& _select_function) -> std::string
+    auto to_sql(gq_state& _state, const function& _function) -> std::string
     {
-        const auto iter = column_name_mappings.find(_select_function.column.name);
+        const auto iter = column_name_mappings.find(_function.column.name);
 
         if (iter == std::end(column_name_mappings)) {
-            throw std::invalid_argument{fmt::format("unknown column: {}", _select_function.column.name)};
+            throw std::invalid_argument{fmt::format("unknown column: {}", _function.column.name)};
         }
 
         // Capture all column objects as some parts of the implementation need to access them later in
         // order to generate the proper SQL.
-        _state.ast_column_ptrs.push_back(&_select_function.column);
+        _state.ast_column_ptrs.push_back(&_function.column);
 
         auto [is_special_column, table_alias] =
-            setup_column_for_post_processing(_state, _select_function.column, iter->second);
+            setup_column_for_post_processing(_state, _function.column, iter->second);
         const std::string_view alias =
             is_special_column ? table_alias : _state.table_aliases.at(std::string{iter->second.table});
 
-        if (_select_function.column.type_name.empty()) {
-            return fmt::format("{}({}.{})", _select_function.name, alias, iter->second.name);
+        if (_function.column.type_name.empty()) {
+            return fmt::format("{}({}.{})", _function.name, alias, iter->second.name);
         }
 
         return fmt::format("{}(cast({}.{} as {}))",
-                           _select_function.name,
+                           _function.name,
                            alias,
                            iter->second.name,
-                           _select_function.column.type_name);
+                           _function.column.type_name);
     } // to_sql
 
     auto to_sql(gq_state& _state, const selections& _selections) -> std::string
