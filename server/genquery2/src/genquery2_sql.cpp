@@ -875,11 +875,6 @@ namespace irods::experimental::genquery2
         // order to generate the proper SQL.
         _state.ast_column_ptrs.push_back(&_select_function.column);
 
-        // Aggregate functions are not allowed in the WHERE clause of an SQL statement!
-        if (!_state.in_select_clause) {
-            throw std::invalid_argument{"aggregate functions not allowed in where clause"};
-        }
-
         auto [is_special_column, table_alias] =
             setup_column_for_post_processing(_state, _select_function.column, iter->second);
         const std::string_view alias =
@@ -1010,8 +1005,13 @@ namespace irods::experimental::genquery2
 
     auto to_sql(gq_state& _state, const condition& _condition) -> std::string
     {
+        if (const auto* fn = std::get_if<function>(&_condition.lhs); fn) {
+            return fmt::format(
+                "{}{}", to_sql(_state, *fn), boost::apply_visitor(sql_visitor{_state}, _condition.expression));
+        }
+
         return fmt::format("{}{}",
-                           to_sql(_state, _condition.column),
+                           to_sql(_state, std::get<column>(_condition.lhs)),
                            boost::apply_visitor(sql_visitor{_state}, _condition.expression));
     } // to_sql
 
