@@ -211,6 +211,7 @@ conditions:
 
 condition:
     column condition_expression  { $$ = gq2_detail::condition(std::move($1), std::move($2)); }
+  | select_function condition_expression  { $$ = gq2_detail::condition(std::move($1), std::move($2)); }
 
 condition_expression:
     LIKE STRING_LITERAL  { $$ = gq2_detail::condition_like(std::move($2)); }

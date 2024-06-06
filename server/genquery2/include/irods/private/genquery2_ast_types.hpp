@@ -5,6 +5,7 @@
 
 #include <string>
 #include <utility>
+#include <variant>
 #include <vector>
 
 namespace irods::experimental::genquery2
@@ -192,12 +193,18 @@ namespace irods::experimental::genquery2
         condition() = default;
 
         condition(column column, condition_expression expression)
-            : column{std::move(column)}
+            : lhs{std::move(column)}
             , expression{std::move(expression)}
         {
         }
 
-        column column;
+        condition(function func, condition_expression expression)
+            : lhs{std::move(func)}
+            , expression{std::move(expression)}
+        {
+        }
+
+        std::variant<column, function> lhs;
         condition_expression expression;
     }; // struct condition
 
