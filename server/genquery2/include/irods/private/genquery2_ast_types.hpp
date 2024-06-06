@@ -29,11 +29,11 @@ namespace irods::experimental::genquery2
         std::string type_name;
     }; // struct column
 
-    struct select_function
+    struct function
     {
-        select_function() = default;
+        function() = default;
 
-        select_function(std::string name, column column)
+        function(std::string name, column column)
             : name{std::move(name)}
             , column{std::move(column)}
         {
@@ -41,7 +41,7 @@ namespace irods::experimental::genquery2
 
         std::string name;
         column column;
-    }; // struct select_function
+    }; // struct function
 
     struct condition_like
     {
@@ -220,7 +220,7 @@ namespace irods::experimental::genquery2
     using condition_type = boost::variant<logical_and, logical_or, logical_not, logical_grouping, condition>;
 
     // clang-format off
-    using selection  = boost::variant<select_function, column>;
+    using selection  = boost::variant<function, column>;
     using selections = std::vector<selection>;
     using conditions = std::vector<condition_type>;
     // clang-format on

@@ -138,7 +138,7 @@ rules only.
 %type <gq2_detail::range>                        range;
 %type <gq2_detail::selection>                    selection;
 %type <gq2_detail::column>                       column;
-%type <gq2_detail::select_function>              select_function;
+%type <gq2_detail::function>                     function;
 %type <gq2_detail::condition>                    condition;
 %type <gq2_detail::condition_expression>         condition_expression;
 %type <std::vector<std::string>>                 list_of_string_literals;
@@ -191,16 +191,16 @@ selections:
 
 selection:
     column  { $$ = std::move($1); }
-  | select_function  { $$ = std::move($1); }
+  | function  { $$ = std::move($1); }
 
 column:
     IDENTIFIER  { $$ = gq2_detail::column{std::move($1)}; }
   | CAST PAREN_OPEN IDENTIFIER AS IDENTIFIER PAREN_CLOSE  { $$ = gq2_detail::column{$3, $5}; }
   | CAST PAREN_OPEN IDENTIFIER AS IDENTIFIER PAREN_OPEN POSITIVE_INTEGER PAREN_CLOSE PAREN_CLOSE  { $$ = gq2_detail::column{$3, fmt::format("{}({})", $5, $7)}; }
 
-select_function:
-    IDENTIFIER PAREN_OPEN column PAREN_CLOSE  { $$ = gq2_detail::select_function{std::move($1), gq2_detail::column{std::move($3)}}; }
-    /*IDENTIFIER PAREN_OPEN IDENTIFIER PAREN_CLOSE  { $$ = gq2_detail::select_function{std::move($1), gq2_detail::column{std::move($3)}}; }*/
+function:
+    IDENTIFIER PAREN_OPEN column PAREN_CLOSE  { $$ = gq2_detail::function{std::move($1), gq2_detail::column{std::move($3)}}; }
+    /*IDENTIFIER PAREN_OPEN IDENTIFIER PAREN_CLOSE  { $$ = gq2_detail::function{std::move($1), gq2_detail::column{std::move($3)}}; }*/
 
 conditions:
     condition  { $$ = gq2_detail::conditions{std::move($1)}; }
@@ -211,7 +211,7 @@ conditions:
 
 condition:
     column condition_expression  { $$ = gq2_detail::condition(std::move($1), std::move($2)); }
-  | select_function condition_expression  { $$ = gq2_detail::condition(std::move($1), std::move($2)); }
+  | function condition_expression  { $$ = gq2_detail::condition(std::move($1), std::move($2)); }
 
 condition_expression:
     LIKE STRING_LITERAL  { $$ = gq2_detail::condition_like(std::move($2)); }
