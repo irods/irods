@@ -43,6 +43,7 @@ This option causes make_* functions to be generated for each token kind.
     #include "irods/private/genquery2_ast_types.hpp"
 
     #include <string>
+    #include <variant>
     #include <vector>
 
     #include <fmt/format.h>
@@ -109,7 +110,7 @@ This option causes make_* functions to be generated for each token kind.
     IDENTIFIER
     STRING_LITERAL
     POSITIVE_INTEGER
-    INTEGER
+    NEGATIVE_INTEGER
 ;
 %token END_OF_INPUT 0
 
@@ -138,11 +139,13 @@ rules only.
 %type <gq2_detail::range>                        range;
 %type <gq2_detail::selection>                    selection;
 %type <gq2_detail::column>                       column;
+%type <std::vector<std::variant<std::string, gq2_detail::column, gq2_detail::function>>> arg_list;
 %type <gq2_detail::function>                     function;
 %type <gq2_detail::condition>                    condition;
 %type <gq2_detail::condition_expression>         condition_expression;
 %type <std::vector<std::string>>                 list_of_string_literals;
 %type <std::vector<std::string>>                 list_of_identifiers;
+%type <std::string>                              integer;
 
 %start genquery /* Defines where grammar starts */
 
@@ -198,9 +201,20 @@ column:
   | CAST PAREN_OPEN IDENTIFIER AS IDENTIFIER PAREN_CLOSE  { $$ = gq2_detail::column{$3, $5}; }
   | CAST PAREN_OPEN IDENTIFIER AS IDENTIFIER PAREN_OPEN POSITIVE_INTEGER PAREN_CLOSE PAREN_CLOSE  { $$ = gq2_detail::column{$3, fmt::format("{}({})", $5, $7)}; }
 
+arg_list:
+    %empty  { /* Generate an empty argument list. */ }
+  | STRING_LITERAL  { $$.emplace_back($1); }
+  | integer  { $$.emplace_back($1); }
+  | column  { $$.emplace_back($1); }
+  | function  { $$.emplace_back($1); }
+  | arg_list COMMA STRING_LITERAL  { $1.emplace_back($3); std::swap($$, $1); }
+  | arg_list COMMA integer  { $1.emplace_back($3); std::swap($$, $1); }
+  | arg_list COMMA column  { $1.emplace_back($3); std::swap($$, $1); }
+  | arg_list COMMA function  { $1.emplace_back($3); std::swap($$, $1); }
+  ;
+
 function:
-    IDENTIFIER PAREN_OPEN column PAREN_CLOSE  { $$ = gq2_detail::function{std::move($1), gq2_detail::column{std::move($3)}}; }
-    /*IDENTIFIER PAREN_OPEN IDENTIFIER PAREN_CLOSE  { $$ = gq2_detail::function{std::move($1), gq2_detail::column{std::move($3)}}; }*/
+    IDENTIFIER PAREN_OPEN arg_list PAREN_CLOSE  { $$ = gq2_detail::function{std::move($1), std::move($3)}; }
 
 conditions:
     condition  { $$ = gq2_detail::conditions{std::move($1)}; }
@@ -236,6 +250,10 @@ list_of_string_literals:
 list_of_identifiers:
     IDENTIFIER  { $$ = std::vector<std::string>{std::move($1)}; }
   | list_of_identifiers COMMA IDENTIFIER  { $1.push_back(std::move($3)); std::swap($$, $1); }
+
+integer:
+    POSITIVE_INTEGER
+  | NEGATIVE_INTEGER { $$ = std::move($1); }
 
 %%
 

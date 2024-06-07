@@ -865,30 +865,45 @@ namespace irods::experimental::genquery2
 
     auto to_sql(gq_state& _state, const function& _function) -> std::string
     {
-        const auto iter = column_name_mappings.find(_function.column.name);
+        std::vector<std::string> args;
+        args.reserve(_function.arguments.size());
 
-        if (iter == std::end(column_name_mappings)) {
-            throw std::invalid_argument{fmt::format("unknown column: {}", _function.column.name)};
-        }
+        std::for_each(std::begin(_function.arguments), std::end(_function.arguments), [&](auto&& _arg) {
+            if (const auto* p = std::get_if<std::string>(&_arg); p) {
+                args.emplace_back(fmt::format("'{}'", *p));
+                return;
+            }
 
-        // Capture all column objects as some parts of the implementation need to access them later in
-        // order to generate the proper SQL.
-        _state.ast_column_ptrs.push_back(&_function.column);
+            if (const auto* p = std::get_if<function>(&_arg); p) {
+                args.emplace_back(to_sql(_state, *p));
+                return;
+            }
 
-        auto [is_special_column, table_alias] =
-            setup_column_for_post_processing(_state, _function.column, iter->second);
-        const std::string_view alias =
-            is_special_column ? table_alias : _state.table_aliases.at(std::string{iter->second.table});
+            if (const auto* p = std::get_if<column>(&_arg); p) {
+                const auto iter = column_name_mappings.find(p->name);
 
-        if (_function.column.type_name.empty()) {
-            return fmt::format("{}({}.{})", _function.name, alias, iter->second.name);
-        }
+                if (iter == std::end(column_name_mappings)) {
+                    throw std::invalid_argument{fmt::format("unknown column: {}", p->name)};
+                }
 
-        return fmt::format("{}(cast({}.{} as {}))",
-                           _function.name,
-                           alias,
-                           iter->second.name,
-                           _function.column.type_name);
+                // Capture all column objects as some parts of the implementation need to access them later in
+                // order to generate the proper SQL.
+                _state.ast_column_ptrs.push_back(&*p);
+
+                auto [is_special_column, table_alias] = setup_column_for_post_processing(_state, *p, iter->second);
+                const std::string_view alias =
+                    is_special_column ? table_alias : _state.table_aliases.at(std::string{iter->second.table});
+
+                if (p->type_name.empty()) {
+                    args.emplace_back(fmt::format("{}.{}", alias, iter->second.name));
+                    return;
+                }
+
+                args.emplace_back(fmt::format("cast({}.{} as {})", alias, iter->second.name, p->type_name));
+            }
+        });
+
+        return fmt::format("{}({})", _function.name, fmt::join(args, ", "));
     } // to_sql
 
     auto to_sql(gq_state& _state, const selections& _selections) -> std::string
