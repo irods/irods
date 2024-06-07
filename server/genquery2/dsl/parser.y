@@ -165,7 +165,7 @@ select:
   | SELECT NO DISTINCT selections WHERE conditions  { drv.select.distinct = false; std::swap(drv.select.selections, $4); std::swap(drv.select.conditions, $6); }
 
 group_by:
-    %empty
+    %empty  { /* Generates a default initialized group_by structure. */ }
   | GROUP BY list_of_identifiers { std::swap($$.columns, $3); }
 
 order_by:
