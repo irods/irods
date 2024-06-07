@@ -33,14 +33,14 @@ namespace irods::experimental::genquery2
     {
         function() = default;
 
-        function(std::string name, column column)
+        function(std::string name, std::vector<std::variant<std::string, column, function>> _arguments)
             : name{std::move(name)}
-            , column{std::move(column)}
+            , arguments{std::move(_arguments)}
         {
         }
 
         std::string name;
-        column column;
+        std::vector<std::variant<std::string, column, function>> arguments;
     }; // struct function
 
     struct condition_like
