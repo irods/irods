@@ -706,7 +706,6 @@ PARSER_FUNC_END( Actions )
 
 PARSER_FUNC_BEGIN( ActionsToStrings )
 int rulegen = 1;
-int n = 0;
 #define bufferSize 10000
 char actiBuffer[bufferSize], recoBuffer[bufferSize];
 int actiP = 0, recoP = 0;
@@ -745,7 +744,6 @@ if ( rulegen ) {
     BRANCH_END( reco )
     CHOICE_END( reco )
 }
-n++;
 if ( rulegen ) {
     OPTIONAL_BEGIN( actionSemiColon )
     TTEXT( ";" );
