@@ -175,13 +175,37 @@ order_by:
   ORDER BY sort_expr { std::swap($$.sort_expressions, $3); }
 ;
 
+/*
+The "selection" rule would simplify this, but attempting to use that results in a compiler
+error due to boost::variant not being compatible with std::variant. For now, we just add more rules
+to achieve the desired outcome.
+
+TODO(#7679): This will be simplified once the parser is converted to use std::variant.
+
+The following would be possible if everything used std::variant.
+
+    sort_expr:
+      selection { $$.push_back(gq2_detail::sort_expression{$1, true}); }
+    | selection ASC { $$.push_back(gq2_detail::sort_expression{$1, true}); }
+    | selection DESC { $$.push_back(gq2_detail::sort_expression{$1, false}); }
+    | sort_expr COMMA selection { $1.push_back(gq2_detail::sort_expression{$3, true}); std::swap($$, $1); }
+    | sort_expr COMMA selection ASC { $1.push_back(gq2_detail::sort_expression{$3, true}); std::swap($$, $1); }
+    | sort_expr COMMA selection DESC { $1.push_back(gq2_detail::sort_expression{$3, false}); std::swap($$, $1); }
+    ;
+*/
 sort_expr:
-  IDENTIFIER { $$.push_back(gq2_detail::sort_expression{$1, true}); }
-| IDENTIFIER ASC { $$.push_back(gq2_detail::sort_expression{$1, true}); }
-| IDENTIFIER DESC { $$.push_back(gq2_detail::sort_expression{$1, false}); }
-| sort_expr COMMA IDENTIFIER { $1.push_back(gq2_detail::sort_expression{$3, true}); std::swap($$, $1); }
-| sort_expr COMMA IDENTIFIER ASC { $1.push_back(gq2_detail::sort_expression{$3, true}); std::swap($$, $1); }
-| sort_expr COMMA IDENTIFIER DESC { $1.push_back(gq2_detail::sort_expression{$3, false}); std::swap($$, $1); }
+  column { $$.push_back(gq2_detail::sort_expression{$1, true}); }
+| column ASC { $$.push_back(gq2_detail::sort_expression{$1, true}); }
+| column DESC { $$.push_back(gq2_detail::sort_expression{$1, false}); }
+| sort_expr COMMA column { $1.push_back(gq2_detail::sort_expression{$3, true}); std::swap($$, $1); }
+| sort_expr COMMA column ASC { $1.push_back(gq2_detail::sort_expression{$3, true}); std::swap($$, $1); }
+| sort_expr COMMA column DESC { $1.push_back(gq2_detail::sort_expression{$3, false}); std::swap($$, $1); }
+| function { $$.push_back(gq2_detail::sort_expression{$1, true}); }
+| function ASC { $$.push_back(gq2_detail::sort_expression{$1, true}); }
+| function DESC { $$.push_back(gq2_detail::sort_expression{$1, false}); }
+| sort_expr COMMA function { $1.push_back(gq2_detail::sort_expression{$3, true}); std::swap($$, $1); }
+| sort_expr COMMA function ASC { $1.push_back(gq2_detail::sort_expression{$3, true}); std::swap($$, $1); }
+| sort_expr COMMA function DESC { $1.push_back(gq2_detail::sort_expression{$3, false}); std::swap($$, $1); }
 ;
 
 range:
