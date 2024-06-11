@@ -122,12 +122,10 @@ showQuotas( char *userName, int userOrGroup, int rescOrGlobal ) {
     char v3[BIG_STR];
     int i, j, status;
     int  localiTime = 0;
-    int printCount;
     static int printedTime = 0;
     char *colName[10];
 
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
-    printCount = 0;
     i = 0;
     if ( rescOrGlobal == 0 ) {
         colName[i] = "Resource: ";
@@ -237,7 +235,6 @@ showQuotas( char *userName, int userOrGroup, int rescOrGlobal ) {
             }
         }
     }
-    printCount = 0;
     for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
         for ( j = 0; j < genQueryOut->attriCnt; j++ ) {
             char *tResult;
@@ -279,7 +276,6 @@ showQuotas( char *userName, int userOrGroup, int rescOrGlobal ) {
                 else {
                     printf( "%s\n", tResult );
                 }
-                printCount++;
             }
         }
         printf( "\n" );
@@ -300,7 +296,6 @@ showUserUsage( char *userName, char *usersZone ) {
     char *condVal[10];
     char v1[BIG_STR];
     int i, j, k, status;
-    int printCount;
     char header[] =
         "Resource      User            Data-stored (bytes)";
     char *pad[14] = {"             ",
@@ -320,7 +315,6 @@ showUserUsage( char *userName, char *usersZone ) {
                     };
 
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
-    printCount = 0;
     i = 0;
     inputInx[i++] = COL_QUOTA_USAGE_MODIFY_TIME;
     inputInx[i++] = COL_QUOTA_RESC_NAME;
@@ -358,7 +352,6 @@ showUserUsage( char *userName, char *usersZone ) {
     }
 
     printf( "%s\n", header );
-    printCount = 0;
     k = 0;
     for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
         for ( j = 1; j < genQueryOut->attriCnt; j++ ) {
@@ -390,7 +383,6 @@ showUserUsage( char *userName, char *usersZone ) {
             if ( k < 14 ) {
                 printf( "%s", pad[k] );
             }
-            printCount++;
         }
         printf( "\n" );
     }
