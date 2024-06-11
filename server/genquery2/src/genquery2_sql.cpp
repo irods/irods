@@ -548,6 +548,124 @@ namespace
         return fmt::format(" group by {}", fmt::join(resolved_columns, ", "));
     } // generate_group_by_clause
 
+    auto to_sql_for_order_by_clause(const gq_state& _state, const irods::experimental::genquery2::column& _column)
+        -> std::string
+    {
+        using irods::experimental::genquery2::column_name_mappings;
+
+        const auto iter = column_name_mappings.find(_column.name);
+
+        if (iter == std::end(column_name_mappings)) {
+            throw std::invalid_argument{fmt::format("unknown column: {}", _column.name)};
+        }
+
+        auto is_special_column = true;
+        std::string_view table_alias;
+
+        // clang-format off
+        if      (iter->first.starts_with("META_D")) { table_alias = "mmd"; }
+        else if (iter->first.starts_with("META_C")) { table_alias = "mmc"; }
+        else if (iter->first.starts_with("META_R")) { table_alias = "mmr"; }
+        else if (iter->first.starts_with("META_U")) { table_alias = "mmu"; }
+        else if (iter->first == "DATA_RESC_HIER")   { table_alias = "cte_drh"; }
+        else if (iter->first.starts_with("DATA_ACCESS_")) {
+            // The alias for R_TOKN_MAIN as it relates to data objects.
+            if      (iter->first == "DATA_ACCESS_PERM_NAME") { table_alias = "pdt"; }
+            // The alias for R_USER_MAIN as it relates to data objects.
+            else if (iter->first == "DATA_ACCESS_USER_NAME") { table_alias = "pdu"; }
+            // The alias for R_OBJT_ACCESS as it relates to data objects.
+            else                                             { table_alias = "pdoa"; }
+        }
+        else if (iter->first.starts_with("COLL_ACCESS_")) {
+            // The alias for R_TOKN_MAIN as it relates to collections.
+            if      (iter->first == "COLL_ACCESS_PERM_NAME") { table_alias = "pct"; }
+            // The alias for R_USER_MAIN as it relates to collections.
+            else if (iter->first == "COLL_ACCESS_USER_NAME") { table_alias = "pcu"; }
+            // The alias for R_OBJT_ACCESS as it relates to collections.
+            else                                             { table_alias = "pcoa"; }
+        }
+        else                                        { is_special_column = false; }
+
+        // clang-format on
+        const std::string_view alias =
+            is_special_column ? table_alias : _state.table_aliases.at(std::string{iter->second.table});
+
+        if (_column.type_name.empty()) {
+            return fmt::format("{}.{}", alias, iter->second.name);
+        }
+
+        return fmt::format("cast({}.{} as {})", alias, iter->second.name, _column.type_name);
+    } // to_sql_for_order_by_clause
+
+    auto to_sql_for_order_by_clause(const gq_state& _state, const irods::experimental::genquery2::function& _function)
+        -> std::string
+    {
+        std::vector<std::string> args;
+        args.reserve(_function.arguments.size());
+
+        std::for_each(std::begin(_function.arguments), std::end(_function.arguments), [&](auto&& _arg) {
+            if (const auto* p = std::get_if<std::string>(&_arg); p) {
+                args.emplace_back(fmt::format("'{}'", *p));
+                return;
+            }
+
+            if (const auto* p = std::get_if<irods::experimental::genquery2::function>(&_arg); p) {
+                args.emplace_back(to_sql_for_order_by_clause(_state, *p));
+                return;
+            }
+
+            if (const auto* p = std::get_if<irods::experimental::genquery2::column>(&_arg); p) {
+                using irods::experimental::genquery2::column_name_mappings;
+
+                const auto iter = column_name_mappings.find(p->name);
+
+                if (iter == std::end(column_name_mappings)) {
+                    throw std::invalid_argument{fmt::format("unknown column: {}", p->name)};
+                }
+
+                auto is_special_column = true;
+                std::string_view table_alias;
+
+                // clang-format off
+                if      (p->name.starts_with("META_D")) { table_alias = "mmd"; }
+                else if (p->name.starts_with("META_C")) { table_alias = "mmc"; }
+                else if (p->name.starts_with("META_R")) { table_alias = "mmr"; }
+                else if (p->name.starts_with("META_U")) { table_alias = "mmu"; }
+                else if (p->name == "DATA_RESC_HIER")   { table_alias = "cte_drh"; }
+                else if (p->name.starts_with("DATA_ACCESS_")) {
+                    // The alias for R_TOKN_MAIN as it relates to data objects.
+                    if      (p->name == "DATA_ACCESS_PERM_NAME") { table_alias = "pdt"; }
+                    // The alias for R_USER_MAIN as it relates to data objects.
+                    else if (p->name == "DATA_ACCESS_USER_NAME") { table_alias = "pdu"; }
+                    // The alias for R_OBJT_ACCESS as it relates to data objects.
+                    else                                         { table_alias = "pdoa"; }
+                }
+                else if (p->name.starts_with("COLL_ACCESS_")) {
+                    // The alias for R_TOKN_MAIN as it relates to collections.
+                    if      (p->name == "COLL_ACCESS_PERM_NAME") { table_alias = "pct"; }
+                    // The alias for R_USER_MAIN as it relates to collections.
+                    else if (p->name == "COLL_ACCESS_USER_NAME") { table_alias = "pcu"; }
+                    // The alias for R_OBJT_ACCESS as it relates to collections.
+                    else                                         { table_alias = "pcoa"; }
+                }
+                else                                    { is_special_column = false; }
+                // clang-format on
+
+                const std::string_view alias =
+                    is_special_column ? table_alias : _state.table_aliases.at(std::string{iter->second.table});
+
+                if (p->type_name.empty()) {
+                    args.emplace_back(fmt::format("{}.{}", alias, iter->second.name));
+                    return;
+                }
+
+                args.emplace_back(fmt::format("cast({}.{} as {})", alias, iter->second.name, p->type_name));
+            }
+        });
+
+        return fmt::format("{}({})", _function.name, fmt::join(args, ", "));
+    } // to_sql_for_order_by_clause
+
     auto generate_order_by_clause(const gq_state& _state,
                                   const gq::order_by& _order_by,
                                   const std::map<std::string_view, gq::column_info>& _column_name_mappings)
@@ -563,51 +681,18 @@ namespace
         sort_expr.reserve(sort_expressions.size());
 
         for (const auto& se : sort_expressions) {
-            const auto iter = _column_name_mappings.find(se.column);
-
-            if (iter == std::end(_column_name_mappings)) {
-                throw std::invalid_argument{fmt::format("unknown column in order-by clause: {}", se.column)};
+            if (const auto* p = std::get_if<irods::experimental::genquery2::column>(&se.expr); p) {
+                sort_expr.emplace_back(
+                    fmt::format("{} {}", to_sql_for_order_by_clause(_state, *p), se.ascending_order ? "asc" : "desc"));
+                continue;
             }
 
-            auto is_special_column = true;
-            std::string_view alias;
-
-            // clang-format off
-            if      (se.column.starts_with("META_D")) { alias = "mmd"; }
-            else if (se.column.starts_with("META_C")) { alias = "mmc"; }
-            else if (se.column.starts_with("META_R")) { alias = "mmr"; }
-            else if (se.column.starts_with("META_U")) { alias = "mmu"; }
-            else if (se.column == "DATA_RESC_HIER")   { alias = "cte_drh"; }
-            else                                      { is_special_column = false; }
-            // clang-format on
-
-            if (!is_special_column) {
-                alias = _state.table_aliases.at(std::string{iter->second.table});
-            }
-
-            const auto ast_iter =
-                std::find_if(std::begin(_state.ast_column_ptrs),
-                             std::end(_state.ast_column_ptrs),
-                             [&se](const irods::experimental::genquery2::column* _p) { return _p->name == se.column; });
-
-            if (std::end(_state.ast_column_ptrs) == ast_iter) {
-                throw std::invalid_argument{"cannot generate SQL from General Query."};
-            }
-
-            if ((*ast_iter)->type_name.empty()) {
-                sort_expr.push_back(
-                    fmt::format("{}.{} {}", alias, iter->second.name, se.ascending_order ? "asc" : "desc"));
-            }
-            else {
-                sort_expr.push_back(fmt::format("cast({}.{} as {}) {}",
-                                                alias,
-                                                iter->second.name,
-                                                (*ast_iter)->type_name,
-                                                se.ascending_order ? "asc" : "desc"));
-            }
+            const auto& fn = std::get<irods::experimental::genquery2::function>(se.expr);
+            sort_expr.emplace_back(
+                fmt::format("{} {}", to_sql_for_order_by_clause(_state, fn), se.ascending_order ? "asc" : "desc"));
         }
 
-        // All columns in the order by clause must exist in the list of columns to project.
+        // All columns/expressions in the order by clause must exist in the list of columns to project.
         return fmt::format(" order by {}", fmt::join(sort_expr, ", "));
     } // generate_order_by_clause
 

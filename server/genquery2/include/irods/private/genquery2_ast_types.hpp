@@ -247,7 +247,7 @@ namespace irods::experimental::genquery2
 
     struct sort_expression
     {
-        std::string column;
+        std::variant<column, function> expr;
         bool ascending_order = true;
     }; // struct sort_expression
 
