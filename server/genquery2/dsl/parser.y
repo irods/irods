@@ -152,108 +152,124 @@ rules only.
 %%
 
 genquery:
-    select group_by  { std::swap(drv.select.group_by, $2); }
-  | select group_by order_by  { std::swap(drv.select.group_by, $2); std::swap(drv.select.order_by, $3); }
-  | select group_by range  { std::swap(drv.select.group_by, $2); std::swap(drv.select.range, $3); }
-  | select group_by order_by range  { std::swap(drv.select.group_by, $2); std::swap(drv.select.order_by, $3); std::swap(drv.select.range, $4); }
-  | select group_by range order_by  { std::swap(drv.select.group_by, $2); std::swap(drv.select.order_by, $4); std::swap(drv.select.range, $3); }
+  select group_by { std::swap(drv.select.group_by, $2); }
+| select group_by order_by { std::swap(drv.select.group_by, $2); std::swap(drv.select.order_by, $3); }
+| select group_by range { std::swap(drv.select.group_by, $2); std::swap(drv.select.range, $3); }
+| select group_by order_by range { std::swap(drv.select.group_by, $2); std::swap(drv.select.order_by, $3); std::swap(drv.select.range, $4); }
+| select group_by range order_by { std::swap(drv.select.group_by, $2); std::swap(drv.select.order_by, $4); std::swap(drv.select.range, $3); }
+;
 
 select:
-    SELECT selections  { std::swap(drv.select.selections, $2); }
-  | SELECT selections WHERE conditions  { std::swap(drv.select.selections, $2); std::swap(drv.select.conditions, $4); }
-  | SELECT NO DISTINCT selections  { drv.select.distinct = false; std::swap(drv.select.selections, $4); }
-  | SELECT NO DISTINCT selections WHERE conditions  { drv.select.distinct = false; std::swap(drv.select.selections, $4); std::swap(drv.select.conditions, $6); }
+  SELECT selections { std::swap(drv.select.selections, $2); }
+| SELECT selections WHERE conditions { std::swap(drv.select.selections, $2); std::swap(drv.select.conditions, $4); }
+| SELECT NO DISTINCT selections { drv.select.distinct = false; std::swap(drv.select.selections, $4); }
+| SELECT NO DISTINCT selections WHERE conditions { drv.select.distinct = false; std::swap(drv.select.selections, $4); std::swap(drv.select.conditions, $6); }
+;
 
 group_by:
-    %empty  { /* Generates a default initialized group_by structure. */ }
-  | GROUP BY list_of_identifiers { std::swap($$.columns, $3); }
+  %empty { /* Generates a default initialized group_by structure. */ }
+| GROUP BY list_of_identifiers { std::swap($$.columns, $3); }
+;
 
 order_by:
-    ORDER BY sort_expr  { std::swap($$.sort_expressions, $3); }
+  ORDER BY sort_expr { std::swap($$.sort_expressions, $3); }
+;
 
 sort_expr:
-    IDENTIFIER  { $$.push_back(gq2_detail::sort_expression{$1, true}); }
-  | IDENTIFIER ASC  { $$.push_back(gq2_detail::sort_expression{$1, true}); }
-  | IDENTIFIER DESC  { $$.push_back(gq2_detail::sort_expression{$1, false}); }
-  | sort_expr COMMA IDENTIFIER  { $1.push_back(gq2_detail::sort_expression{$3, true}); std::swap($$, $1); }
-  | sort_expr COMMA IDENTIFIER ASC  { $1.push_back(gq2_detail::sort_expression{$3, true}); std::swap($$, $1); }
-  | sort_expr COMMA IDENTIFIER DESC  { $1.push_back(gq2_detail::sort_expression{$3, false}); std::swap($$, $1); }
+  IDENTIFIER { $$.push_back(gq2_detail::sort_expression{$1, true}); }
+| IDENTIFIER ASC { $$.push_back(gq2_detail::sort_expression{$1, true}); }
+| IDENTIFIER DESC { $$.push_back(gq2_detail::sort_expression{$1, false}); }
+| sort_expr COMMA IDENTIFIER { $1.push_back(gq2_detail::sort_expression{$3, true}); std::swap($$, $1); }
+| sort_expr COMMA IDENTIFIER ASC { $1.push_back(gq2_detail::sort_expression{$3, true}); std::swap($$, $1); }
+| sort_expr COMMA IDENTIFIER DESC { $1.push_back(gq2_detail::sort_expression{$3, false}); std::swap($$, $1); }
+;
 
 range:
-    OFFSET POSITIVE_INTEGER  { std::swap($$.offset, $2); }
-  | OFFSET POSITIVE_INTEGER FETCH FIRST POSITIVE_INTEGER ROWS ONLY  { std::swap($$.offset, $2); std::swap($$.number_of_rows, $5); }
-  | OFFSET POSITIVE_INTEGER LIMIT POSITIVE_INTEGER  { std::swap($$.offset, $2); std::swap($$.number_of_rows, $4); }
-  | FETCH FIRST POSITIVE_INTEGER ROWS ONLY  { std::swap($$.number_of_rows, $3); }
-  | FETCH FIRST POSITIVE_INTEGER ROWS ONLY OFFSET POSITIVE_INTEGER  { std::swap($$.offset, $7); std::swap($$.number_of_rows, $3); }
-  | LIMIT POSITIVE_INTEGER  { std::swap($$.number_of_rows, $2); }
-  | LIMIT POSITIVE_INTEGER OFFSET POSITIVE_INTEGER  { std::swap($$.offset, $4); std::swap($$.number_of_rows, $2); }
+  OFFSET POSITIVE_INTEGER { std::swap($$.offset, $2); }
+| OFFSET POSITIVE_INTEGER FETCH FIRST POSITIVE_INTEGER ROWS ONLY { std::swap($$.offset, $2); std::swap($$.number_of_rows, $5); }
+| OFFSET POSITIVE_INTEGER LIMIT POSITIVE_INTEGER { std::swap($$.offset, $2); std::swap($$.number_of_rows, $4); }
+| FETCH FIRST POSITIVE_INTEGER ROWS ONLY { std::swap($$.number_of_rows, $3); }
+| FETCH FIRST POSITIVE_INTEGER ROWS ONLY OFFSET POSITIVE_INTEGER { std::swap($$.offset, $7); std::swap($$.number_of_rows, $3); }
+| LIMIT POSITIVE_INTEGER { std::swap($$.number_of_rows, $2); }
+| LIMIT POSITIVE_INTEGER OFFSET POSITIVE_INTEGER { std::swap($$.offset, $4); std::swap($$.number_of_rows, $2); }
+;
 
 selections:
-    selection  { $$ = gq2_detail::selections{std::move($1)}; }
-  | selections COMMA selection  { $1.push_back(std::move($3)); std::swap($$, $1); }
+  selection { $$ = gq2_detail::selections{std::move($1)}; }
+| selections COMMA selection { $1.push_back(std::move($3)); std::swap($$, $1); }
+;
 
 selection:
-    column  { $$ = std::move($1); }
-  | function  { $$ = std::move($1); }
+  column { $$ = std::move($1); }
+| function { $$ = std::move($1); }
+;
 
 column:
-    IDENTIFIER  { $$ = gq2_detail::column{std::move($1)}; }
-  | CAST PAREN_OPEN IDENTIFIER AS IDENTIFIER PAREN_CLOSE  { $$ = gq2_detail::column{$3, $5}; }
-  | CAST PAREN_OPEN IDENTIFIER AS IDENTIFIER PAREN_OPEN POSITIVE_INTEGER PAREN_CLOSE PAREN_CLOSE  { $$ = gq2_detail::column{$3, fmt::format("{}({})", $5, $7)}; }
+  IDENTIFIER { $$ = gq2_detail::column{std::move($1)}; }
+| CAST PAREN_OPEN IDENTIFIER AS IDENTIFIER PAREN_CLOSE { $$ = gq2_detail::column{$3, $5}; }
+| CAST PAREN_OPEN IDENTIFIER AS IDENTIFIER PAREN_OPEN POSITIVE_INTEGER PAREN_CLOSE PAREN_CLOSE { $$ = gq2_detail::column{$3, fmt::format("{}({})", $5, $7)}; }
+;
 
 arg_list:
-    %empty  { /* Generate an empty argument list. */ }
-  | STRING_LITERAL  { $$.emplace_back($1); }
-  | integer  { $$.emplace_back($1); }
-  | column  { $$.emplace_back($1); }
-  | function  { $$.emplace_back($1); }
-  | arg_list COMMA STRING_LITERAL  { $1.emplace_back($3); std::swap($$, $1); }
-  | arg_list COMMA integer  { $1.emplace_back($3); std::swap($$, $1); }
-  | arg_list COMMA column  { $1.emplace_back($3); std::swap($$, $1); }
-  | arg_list COMMA function  { $1.emplace_back($3); std::swap($$, $1); }
-  ;
+  %empty { /* Generate an empty argument list. */ }
+| STRING_LITERAL { $$.emplace_back($1); }
+| integer { $$.emplace_back($1); }
+| column { $$.emplace_back($1); }
+| function { $$.emplace_back($1); }
+| arg_list COMMA STRING_LITERAL { $1.emplace_back($3); std::swap($$, $1); }
+| arg_list COMMA integer { $1.emplace_back($3); std::swap($$, $1); }
+| arg_list COMMA column { $1.emplace_back($3); std::swap($$, $1); }
+| arg_list COMMA function { $1.emplace_back($3); std::swap($$, $1); }
+;
 
 function:
-    IDENTIFIER PAREN_OPEN arg_list PAREN_CLOSE  { $$ = gq2_detail::function{std::move($1), std::move($3)}; }
+  IDENTIFIER PAREN_OPEN arg_list PAREN_CLOSE { $$ = gq2_detail::function{std::move($1), std::move($3)}; }
+;
 
 conditions:
-    condition  { $$ = gq2_detail::conditions{std::move($1)}; }
-  | conditions AND conditions  { $1.push_back(gq2_detail::logical_and{std::move($3)}); std::swap($$, $1); }
-  | conditions OR conditions  { $1.push_back(gq2_detail::logical_or{std::move($3)}); std::swap($$, $1); }
-  | PAREN_OPEN conditions PAREN_CLOSE  { $$ = gq2_detail::conditions{gq2_detail::logical_grouping{std::move($2)}}; }
-  | NOT conditions  { $$ = gq2_detail::conditions{gq2_detail::logical_not{std::move($2)}}; }
+  condition { $$ = gq2_detail::conditions{std::move($1)}; }
+| conditions AND conditions { $1.push_back(gq2_detail::logical_and{std::move($3)}); std::swap($$, $1); }
+| conditions OR conditions { $1.push_back(gq2_detail::logical_or{std::move($3)}); std::swap($$, $1); }
+| PAREN_OPEN conditions PAREN_CLOSE { $$ = gq2_detail::conditions{gq2_detail::logical_grouping{std::move($2)}}; }
+| NOT conditions { $$ = gq2_detail::conditions{gq2_detail::logical_not{std::move($2)}}; }
+;
 
 condition:
-    column condition_expression  { $$ = gq2_detail::condition(std::move($1), std::move($2)); }
-  | function condition_expression  { $$ = gq2_detail::condition(std::move($1), std::move($2)); }
+  column condition_expression { $$ = gq2_detail::condition(std::move($1), std::move($2)); }
+| function condition_expression { $$ = gq2_detail::condition(std::move($1), std::move($2)); }
+;
 
 condition_expression:
-    LIKE STRING_LITERAL  { $$ = gq2_detail::condition_like(std::move($2)); }
-  | NOT LIKE STRING_LITERAL  { $$ = gq2_detail::condition_operator_not{gq2_detail::condition_like(std::move($3))}; }
-  | IN PAREN_OPEN list_of_string_literals PAREN_CLOSE  { $$ = gq2_detail::condition_in(std::move($3)); }
-  | NOT IN PAREN_OPEN list_of_string_literals PAREN_CLOSE  { $$ = gq2_detail::condition_operator_not{gq2_detail::condition_in(std::move($4))}; }
-  | BETWEEN STRING_LITERAL AND STRING_LITERAL  { $$ = gq2_detail::condition_between(std::move($2), std::move($4)); }
-  | NOT BETWEEN STRING_LITERAL AND STRING_LITERAL  { $$ = gq2_detail::condition_operator_not{gq2_detail::condition_between(std::move($3), std::move($5))}; }
-  | EQUAL STRING_LITERAL  { $$ = gq2_detail::condition_equal(std::move($2)); }
-  | NOT_EQUAL STRING_LITERAL  { $$ = gq2_detail::condition_not_equal(std::move($2)); }
-  | LESS_THAN STRING_LITERAL  { $$ = gq2_detail::condition_less_than(std::move($2)); }
-  | LESS_THAN_OR_EQUAL_TO STRING_LITERAL  { $$ = gq2_detail::condition_less_than_or_equal_to(std::move($2)); }
-  | GREATER_THAN STRING_LITERAL  { $$ = gq2_detail::condition_greater_than(std::move($2)); }
-  | GREATER_THAN_OR_EQUAL_TO STRING_LITERAL  { $$ = gq2_detail::condition_greater_than_or_equal_to(std::move($2)); }
-  | IS NULL  { $$ = gq2_detail::condition_is_null{}; }
-  | IS NOT NULL  { $$ = gq2_detail::condition_is_not_null{}; }
+  LIKE STRING_LITERAL { $$ = gq2_detail::condition_like(std::move($2)); }
+| NOT LIKE STRING_LITERAL { $$ = gq2_detail::condition_operator_not{gq2_detail::condition_like(std::move($3))}; }
+| IN PAREN_OPEN list_of_string_literals PAREN_CLOSE { $$ = gq2_detail::condition_in(std::move($3)); }
+| NOT IN PAREN_OPEN list_of_string_literals PAREN_CLOSE { $$ = gq2_detail::condition_operator_not{gq2_detail::condition_in(std::move($4))}; }
+| BETWEEN STRING_LITERAL AND STRING_LITERAL { $$ = gq2_detail::condition_between(std::move($2), std::move($4)); }
+| NOT BETWEEN STRING_LITERAL AND STRING_LITERAL { $$ = gq2_detail::condition_operator_not{gq2_detail::condition_between(std::move($3), std::move($5))}; }
+| EQUAL STRING_LITERAL { $$ = gq2_detail::condition_equal(std::move($2)); }
+| NOT_EQUAL STRING_LITERAL { $$ = gq2_detail::condition_not_equal(std::move($2)); }
+| LESS_THAN STRING_LITERAL { $$ = gq2_detail::condition_less_than(std::move($2)); }
+| LESS_THAN_OR_EQUAL_TO STRING_LITERAL { $$ = gq2_detail::condition_less_than_or_equal_to(std::move($2)); }
+| GREATER_THAN STRING_LITERAL { $$ = gq2_detail::condition_greater_than(std::move($2)); }
+| GREATER_THAN_OR_EQUAL_TO STRING_LITERAL { $$ = gq2_detail::condition_greater_than_or_equal_to(std::move($2)); }
+| IS NULL { $$ = gq2_detail::condition_is_null{}; }
+| IS NOT NULL { $$ = gq2_detail::condition_is_not_null{}; }
+;
 
 list_of_string_literals:
-    STRING_LITERAL  { $$ = std::vector<std::string>{std::move($1)}; }
-  | list_of_string_literals COMMA STRING_LITERAL  { $1.push_back(std::move($3)); std::swap($$, $1); }
+  STRING_LITERAL { $$ = std::vector<std::string>{std::move($1)}; }
+| list_of_string_literals COMMA STRING_LITERAL { $1.push_back(std::move($3)); std::swap($$, $1); }
+;
 
 list_of_identifiers:
-    IDENTIFIER  { $$ = std::vector<std::string>{std::move($1)}; }
-  | list_of_identifiers COMMA IDENTIFIER  { $1.push_back(std::move($3)); std::swap($$, $1); }
+  IDENTIFIER { $$ = std::vector<std::string>{std::move($1)}; }
+| list_of_identifiers COMMA IDENTIFIER { $1.push_back(std::move($3)); std::swap($$, $1); }
+;
 
 integer:
-    POSITIVE_INTEGER
-  | NEGATIVE_INTEGER { $$ = std::move($1); }
+  POSITIVE_INTEGER
+| NEGATIVE_INTEGER { $$ = std::move($1); }
+;
 
 %%
 
