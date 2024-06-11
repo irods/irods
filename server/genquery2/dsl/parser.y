@@ -131,21 +131,21 @@ rules only.
 %left AND
 %precedence NOT
 
-%type <gq2_detail::selections>                   selections;
-%type <gq2_detail::conditions>                   conditions;
-%type <gq2_detail::group_by>                     group_by;
-%type <gq2_detail::order_by>                     order_by;
-%type <std::vector<gq2_detail::sort_expression>> sort_expr;
-%type <gq2_detail::range>                        range;
-%type <gq2_detail::selection>                    selection;
-%type <gq2_detail::column>                       column;
-%type <std::vector<std::variant<std::string, gq2_detail::column, gq2_detail::function>>> arg_list;
-%type <gq2_detail::function>                     function;
-%type <gq2_detail::condition>                    condition;
-%type <gq2_detail::condition_expression>         condition_expression;
-%type <std::vector<std::string>>                 list_of_string_literals;
-%type <std::vector<std::string>>                 list_of_identifiers;
-%type <std::string>                              integer;
+%nterm <gq2_detail::selections>                   selections;
+%nterm <gq2_detail::conditions>                   conditions;
+%nterm <gq2_detail::group_by>                     group_by;
+%nterm <gq2_detail::order_by>                     order_by;
+%nterm <std::vector<gq2_detail::sort_expression>> sort_expr;
+%nterm <gq2_detail::range>                        range;
+%nterm <gq2_detail::selection>                    selection;
+%nterm <gq2_detail::column>                       column;
+%nterm <std::vector<std::variant<std::string, gq2_detail::column, gq2_detail::function>>> arg_list;
+%nterm <gq2_detail::function>                     function;
+%nterm <gq2_detail::condition>                    condition;
+%nterm <gq2_detail::condition_expression>         condition_expression;
+%nterm <std::vector<std::string>>                 list_of_string_literals;
+%nterm <std::vector<std::string>>                 list_of_identifiers;
+%nterm <std::string>                              integer;
 
 %start genquery /* Defines where grammar starts */
 
