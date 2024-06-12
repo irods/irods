@@ -1750,10 +1750,10 @@ void clearSimpleQueryOut(void* _p)
         return;
     }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     auto* q = static_cast<simpleQueryOut_t*>(_p);
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
 
     free_pointer(q->outBuf);
 

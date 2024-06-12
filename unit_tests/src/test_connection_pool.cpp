@@ -35,15 +35,15 @@ TEST_CASE("connection pool")
             REQUIRE(rcDisconnect(released_conn_ptr) == 0);
         }};
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
         irods::connection_pool conn_pool{cp_size,
                                          env.rodsHost,
                                          env.rodsPort,
                                          env.rodsUserName,
                                          env.rodsZone,
                                          cp_refresh_time};
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
 
         namespace fs = irods::experimental::filesystem;
 
