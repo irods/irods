@@ -141,6 +141,7 @@ int clearResources( int resources );
 int clearCoreRuleIndex( );
 int clearAppRuleIndex( );
 int readRuleStructAndRuleSetFromFile( const char *ruleBaseName, const char *rulesFileName );
+int readRuleStructAndRuleSetFromBuffer(const char* ruleBaseName, char* ruleBase);
 int loadRuleFromCacheOrFile( const char*, const char *irbSet );
 int createCoreRuleIndex( );
 int createAppRuleIndex( );
