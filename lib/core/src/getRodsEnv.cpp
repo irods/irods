@@ -142,13 +142,15 @@ extern "C" {
         createRodsEnvDefaults( &rodsEnvArg );
     }
 
-    static int capture_string_property(const std::string& _key, char* _val, std::size_t _val_size)
+    int capture_string_property(const char* _key, char* _val, size_t _val_size)
     {
-        if (_val == nullptr || _val_size == 0) {
+        if (_key == nullptr || _val == nullptr || _val_size == 0) {
             return SYS_GETENV_ERR;
         }
+        std::string key{_key};
+
         try {
-            auto property = irods::get_environment_property<const std::string>(_key);
+            auto property = irods::get_environment_property<const std::string>(key);
 
             // If truncation would occur because property.size() >= _val_size, return an error
             if (property.size() >= _val_size) {
@@ -158,7 +160,7 @@ extern "C" {
             return 0;
         } catch ( const irods::exception& e ) {
             if ( e.code() == KEY_NOT_FOUND ) {
-                rodsLog( LOG_DEBUG10, "%s is not defined", _key.c_str() );
+                rodsLog(LOG_DEBUG10, "%s is not defined", _key);
             } else {
                 irods::log(e);
             }
@@ -166,11 +168,6 @@ extern "C" {
         }
 
     } // capture_string_property
-
-    int capture_string_property(const char* _key, char* _val, size_t _val_size)
-    {
-        return capture_string_property(std::string{_key}, _val, _val_size);
-    }
 
     static
     int capture_integer_property(
