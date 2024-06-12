@@ -574,8 +574,8 @@ static irods::apidef_t client_api_table_inp[] = {
         "api_data_copy", irods::clearInStruct_noop, irods::clearOutStruct_noop,
         (funcPtr)CALL_DATACOPYINP
     },
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     {
         SIMPLE_QUERY_AN, RODS_API_VERSION, LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH,
         "simpleQueryInp_PI", 0,  "simpleQueryOut_PI", 0,
@@ -583,7 +583,7 @@ static irods::apidef_t client_api_table_inp[] = {
         "api_simple_query", irods::clearInStruct_noop, clearSimpleQueryOut,
         (funcPtr)CALL_SIMPLEQUERYINP_SIMPLEQUERYOUT
     },
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
     {
         GENERAL_ADMIN_AN, RODS_API_VERSION, LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH,
         "generalAdminInp_PI", 0, NULL, 0,
@@ -756,8 +756,8 @@ static irods::apidef_t client_api_table_inp[] = {
         "api_get_temp_password", irods::clearInStruct_noop, irods::clearOutStruct_noop,
         (funcPtr)CALL_GETTEMPPASSWORDOUT
     },
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     {
         GENERAL_UPDATE_AN, RODS_API_VERSION,
         LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH,
@@ -766,7 +766,7 @@ static irods::apidef_t client_api_table_inp[] = {
         "api_general_update", irods::clearInStruct_noop, irods::clearOutStruct_noop,
         (funcPtr)CALL_GENERALUPDATEINP
     },
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
     {
         MOD_DATA_OBJ_META_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "ModDataObjMeta_PI", 0, NULL, 0,
@@ -998,8 +998,8 @@ static irods::apidef_t client_api_table_inp[] = {
         "api_sub_struct_file_closedir", irods::clearInStruct_noop, irods::clearOutStruct_noop,
         (funcPtr)CALL_SUBSTRUCTFILEFDOPRINP
     },
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     {
         DATA_OBJ_TRUNCATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "DataObjInp_PI", 0, NULL, 0,
@@ -1007,7 +1007,7 @@ static irods::apidef_t client_api_table_inp[] = {
         "api_data_obj_truncate", clearDataObjInp, irods::clearOutStruct_noop,
         (funcPtr)CALL_DATAOBJINP
     },
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
     {
         SUB_STRUCT_FILE_TRUNCATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
         "SubFile_PI", 0, NULL, 0,

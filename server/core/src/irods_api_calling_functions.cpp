@@ -387,8 +387,8 @@ int call_dataCopyInp(
                    _inp);
 }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 int call_simpleQueryInp_simpleQueryOut(
     irods::api_entry*   _api,
     rsComm_t*           _comm,
@@ -401,7 +401,7 @@ int call_simpleQueryInp_simpleQueryOut(
                    _inp,
                    _out);
 }
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
 
 int call_generalAdminInp(
     irods::api_entry*  _api,
@@ -647,8 +647,8 @@ int call_ruleExecModInp(
                    _inp);
 }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 int call_generalUpdateInp(
     irods::api_entry*    _api,
     rsComm_t*            _comm,
@@ -658,7 +658,7 @@ int call_generalUpdateInp(
                    _comm,
                    _inp);
 }
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
 
 int call_modDataObjMetaInp(
     irods::api_entry*    _api,

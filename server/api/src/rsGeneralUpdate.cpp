@@ -54,10 +54,10 @@ rsGeneralUpdate( rsComm_t *rsComm, generalUpdateInp_t *generalUpdateInp ) {
     return status;
 }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 int
 _rsGeneralUpdate( generalUpdateInp_t *generalUpdateInp ) {
     return chlGeneralUpdate(*generalUpdateInp);
 }
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
