@@ -61,6 +61,41 @@ int readRuleSetFromLocalFile( const char *ruleBaseName, const char *rulesFileNam
 
     return 0;
 }
+int readRuleSetFromBuffer(const char* ruleBaseName,
+                          char* ruleBody,
+                          RuleSet* ruleSet,
+                          Env* funcDesc,
+                          int* errloc,
+                          rError_t* errmsg,
+                          Region* r)
+{
+    FILE* file = fmemopen(ruleBody, strlen(ruleBody), "r");
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
+    char errbuf[ERR_MSG_LEN];
+    if (file == nullptr) {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
+        snprintf(static_cast<char*>(errbuf), ERR_MSG_LEN, "readRuleSetFromBuffer() could not read rule from buffer");
+        addRErrorMsg(errmsg, RULES_FILE_READ_ERROR, static_cast<char*>(errbuf));
+        return RULES_FILE_READ_ERROR;
+    }
+    Pointer* e = newPointer(file, ruleBaseName);
+    int ret = parseRuleSet(e, ruleSet, funcDesc, errloc, errmsg, r);
+    deletePointer(e);
+    if (ret < 0) {
+        return ret;
+    }
+
+    Node* errnode{};
+    ExprType* restype = typeRuleSet(ruleSet, errmsg, &errnode, r);
+    if (getNodeType(restype) == T_ERROR) {
+        if (nullptr != errnode) {
+            *errloc = NODE_EXPR_POS(errnode);
+        }
+        return RE_TYPE_ERROR;
+    }
+
+    return 0;
+}
 
 int parseAndComputeMsParamArrayToEnv( msParamArray_t *var, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r ) {
     int i;
