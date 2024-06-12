@@ -15,6 +15,7 @@ The development infrastructure supports exhaustive testing on supported platform
 
 set(CPACK_PACKAGE_CONTACT "iRODS Consortium <packages@irods.org>")
 set(CPACK_PACKAGE_VENDOR "iRODS Consortium <packages@irods.org>")
+set(CMAKE_PROJECT_HOMEPAGE_URL "https://irods.org")
 if (NOT DEFINED CPACK_PACKAGE_DESCRIPTION_SUMMARY)
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${IRODS_CPACK_DEFAULT_DESCRIPTION_SUMMARY}")
 endif()
@@ -29,7 +30,6 @@ endif()
 
 set(CPACK_DEBIAN_PACKAGE_SECTION "contrib/science")
 set(CPACK_DEBIAN_PACKAGE_PRIORITY "extra")
-set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://irods.org")
 
 set(CPACK_DEBIAN_PACKAGE_RELEASE "${IRODS_PACKAGE_REVISION}")
 if (IRODS_LINUX_DISTRIBUTION_VERSION_CODENAME)
@@ -51,9 +51,5 @@ endif()
 if (NOT DEFINED CPACK_RPM_PACKAGE_SUMMARY)
   set(CPACK_RPM_PACKAGE_SUMMARY "${CPACK_PACKAGE_DESCRIPTION_SUMMARY}")
 endif()
-
-# TODO: set CMAKE_PROJECT_HOMEPAGE_URL instead
-set(CPACK_RPM_PACKAGE_URL "https://irods.org")
-set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://irods.org")
 
 set(CPACK_RPM_SPEC_MORE_DEFINE "%global __python %{__python3}")
