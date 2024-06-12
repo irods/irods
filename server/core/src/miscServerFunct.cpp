@@ -51,10 +51,10 @@
 #include <boost/thread/scoped_thread.hpp>
 #include <boost/lexical_cast.hpp>
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wc++11-narrowing"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++11-narrowing"
 #include <boost/process.hpp>
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
 
 #include <fmt/format.h>
 
@@ -439,10 +439,10 @@ svrPortalPutGet( rsComm_t *rsComm ) {
 
     if ( getUdpPortFromPortList( thisPortList ) != 0 ) {
         /* rbudp transfer */
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
         retVal = svrPortalPutGetRbudp( rsComm );
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
         return retVal;
     }
 
@@ -1363,10 +1363,10 @@ int remLocCopy(rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
 
     if ( getUdpPortFromPortList( &portalOprOut->portList ) != 0 ) {
         /* rbudp transfer */
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
         return rbudpRemLocCopy( dataCopyInp );
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
     }
 
     if ( numThreads > MAX_NUM_CONFIG_TRAN_THR || numThreads <= 0 ) {

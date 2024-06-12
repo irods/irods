@@ -34,14 +34,14 @@ struct l1desc
 {
     l1desc() = default;
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     l1desc(const l1desc&) = default;
     auto operator=(const l1desc&) -> l1desc& = default;
 
     l1desc(l1desc&&) = default;
     auto operator=(l1desc&&) -> l1desc& = default;
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
 
     ~l1desc() = default;
 

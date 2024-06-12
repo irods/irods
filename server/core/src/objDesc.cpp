@@ -67,12 +67,12 @@ auto init_l1desc(l1desc& _l1d) -> void
     std::memset(_l1d.in_pdmo, 0, sizeof(l1desc::in_pdmo));
     // NOLINTEND(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     _l1d.otherDataObjInfo = nullptr;
     _l1d.replDataObjInfo = nullptr;
     _l1d.pluginData.clear();
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
 } // init_l1desc
 
 auto copy_l1desc(l1desc& _dst, const l1desc& _src) -> void
@@ -234,8 +234,8 @@ int freeL1desc_struct(l1desc& _l1desc)
         //freeAllDataObjInfo(_l1desc.dataObjInfo);
     }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     if (_l1desc.otherDataObjInfo) {
         freeAllDataObjInfo(_l1desc.otherDataObjInfo);
     }
@@ -244,7 +244,7 @@ int freeL1desc_struct(l1desc& _l1desc)
         freeDataObjInfo(_l1desc.replDataObjInfo);
         //freeAllDataObjInfo(_l1desc.replDataObjInfo);
     }
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
 
     if (_l1desc.dataObjInpReplFlag == 1 && _l1desc.dataObjInp) {
         clearDataObjInp(_l1desc.dataObjInp);
