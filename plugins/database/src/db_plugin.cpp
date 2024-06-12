@@ -15412,17 +15412,17 @@ irods::error db_gen_query_ticket_setup_op(
 
 // =-=-=-=-=-=-=-
 // from general_query.cpp ::
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 int chl_general_update_impl( generalUpdateInp_t );
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 irods::error db_general_update_op(
     irods::plugin_context& _ctx,
     generalUpdateInp_t*    _update_inp ) {
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
     // =-=-=-=-=-=-=-
     // check the context
     irods::error ret = _ctx.valid();
@@ -16049,13 +16049,13 @@ irods::database* plugin_factory(
         DATABASE_OP_DEL_ZONE,
         function<error(plugin_context&,const char*)>(
             db_del_zone_op ) );
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     pg->add_operation(
         DATABASE_OP_SIMPLE_QUERY,
         function<error(plugin_context&,const char*,const char*,const char*,const char*,const char*,int,int*,char*,int)>(
             db_simple_query_op ) );
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
     pg->add_operation(
         DATABASE_OP_DEL_COLL_BY_ADMIN,
         function<error(plugin_context&,collInfo_t*)>(
@@ -16251,13 +16251,13 @@ irods::database* plugin_factory(
         DATABASE_OP_GEN_QUERY,
         function<error(plugin_context&,genQueryInp_t*,genQueryOut_t*)>(
             db_gen_query_op ) );
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     pg->add_operation(
         DATABASE_OP_GENERAL_UPDATE,
         function<error(plugin_context&,generalUpdateInp_t*)>(
             db_general_update_op ) );
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
     pg->add_operation(
         DATABASE_OP_GEN_QUERY_ACCESS_CONTROL_SETUP,
         function<error(plugin_context&,const char*,const char*,const char*,int,int)>(

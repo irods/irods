@@ -136,8 +136,8 @@ namespace
     }
 } // anonymous namespace
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
 int rsDataObjTruncate(rsComm_t* rsComm, dataObjInp_t* dataObjTruncateInp)
 {
@@ -177,4 +177,4 @@ int rsDataObjTruncate(rsComm_t* rsComm, dataObjInp_t* dataObjTruncateInp)
     return status;
 }
 
-#pragma clang diagnostic pop // ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic pop // ignored "-Wdeprecated-declarations"

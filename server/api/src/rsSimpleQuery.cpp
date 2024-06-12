@@ -6,8 +6,8 @@
 #include "irods/miscServerFunct.hpp"
 #include "irods/rodsConnect.h"
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
 namespace
 {
@@ -91,4 +91,4 @@ rsSimpleQuery( rsComm_t *rsComm, simpleQueryInp_t *simpleQueryInp,
     return status;
 }
 
-#pragma clang diagnostic pop // ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic pop // ignored "-Wdeprecated-declarations"
