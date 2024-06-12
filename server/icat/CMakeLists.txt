@@ -55,7 +55,6 @@ set_target_properties(irods_server_icat PROPERTIES POSITION_INDEPENDENT_CODE TRU
 install(
   FILES
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/icatDefines.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/icatGlobalsExtern.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/icatHighLevelRoutines.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/icatStructs.hpp"
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/irods"
