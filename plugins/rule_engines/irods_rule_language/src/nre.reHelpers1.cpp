@@ -243,7 +243,6 @@ reDebug( RuleEngineEvent label, int flag, RuleEngineEventParam *param, Node *nod
     static int curStat = 0;
     static int reDebugStackPtr = -1;
     static int reDebugStopAt = 1;
-    char condRead[MAX_NAME_LEN];
     char myActionStr[10][MAX_NAME_LEN + 10];
     int aNum = 0;
     char seActionStr[10 * MAX_NAME_LEN + 100];
@@ -262,7 +261,6 @@ reDebug( RuleEngineEvent label, int flag, RuleEngineEventParam *param, Node *nod
     generateLogTimestamp( timestamp, TIME_LEN );
     printRuleEngineEventLabel( buf, HEADER_TYPE_LEN - 1, label, param );
     snprintf( hdr, HEADER_TYPE_LEN - 1,   "iaudit:%s", timestamp );
-    condRead[0] = '\0';
     /* rodsLog (LOG_NOTICE,"PPP:%s\n",hdr); */
     snprintf( seActionStr, MAX_NAME_LEN + 10, "%s", buf );
     if ( GlobalREAuditFlag > 0 ) {
