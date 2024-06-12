@@ -12,10 +12,8 @@
 // boost includes
 #include <iostream>
 #include <string>
-#include <boost/foreach.hpp>
 #include <boost/tokenizer.hpp>
 #include <map>
-#include <boost/foreach.hpp>
 #include <boost/algorithm/string.hpp>
 
 namespace irods {
