@@ -22,6 +22,7 @@
 
 #include "irods/catalog.hpp"
 #include "irods/catalog_utilities.hpp"
+#include "irods/escape_utilities.hpp"
 #include "irods/irods_get_full_path_for_config_file.hpp"
 #include "irods/irods_get_l1desc.hpp"
 #include "irods/irods_logger.hpp"
@@ -155,15 +156,15 @@ namespace
         std::string gql;
         switch (_entity_type) {
             case ic::entity_type::collection:
-                gql = fmt::format("select COLL_ID where COLL_NAME = '{}'", _entity_name);
+                gql = fmt::format("select COLL_ID where COLL_NAME = '{}'", irods::single_quotes_to_hex(_entity_name));
                 break;
 
             case ic::entity_type::data_object:
             {
                 fs::path p = _entity_name;
                 gql = fmt::format("select DATA_ID where COLL_NAME = '{}' and DATA_NAME = '{}'",
-                                  p.parent_path().c_str(),
-                                  p.object_name().c_str());
+                                  irods::single_quotes_to_hex(p.parent_path()),
+                                  irods::single_quotes_to_hex(p.object_name()));
                 break;
             }
 

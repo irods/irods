@@ -9,6 +9,7 @@
 #include "irods/dataObjOpr.hpp"
 #include "irods/dataObjRepl.h"
 #include "irods/dataObjUnlink.h"
+#include "irods/escape_utilities.hpp"
 #include "irods/fileCreate.h"
 #include "irods/fileOpen.h"
 #include "irods/getRemoteZoneResc.h"
@@ -127,8 +128,8 @@ namespace
                                          " COLL_NAME = '{}' and"
                                          " DATA_NAME = '{}' and"
                                          " DATA_RESC_HIER = '{}'",
-                                         p.parent_path().c_str(),
-                                         p.object_name().c_str(),
+                                         irods::single_quotes_to_hex(p.parent_path()),
+                                         irods::single_quotes_to_hex(p.object_name()),
                                          kvp.at(RESC_HIER_STR_KW).value());
 
             for (auto&& row : irods::query{&_conn, gql}) {
