@@ -20,8 +20,6 @@
 #include <string>
 #include <vector>
 
-char *getCondFromString( char * t );
-
 namespace irods
 {
     template <typename connection_type>
@@ -167,9 +165,7 @@ namespace irods
                     addKeyVal(&gen_input_.condInput, ZONE_KW, _zone_hint.c_str());
                 }
 
-                const int fill_err = fillGenQueryInpFromStrCond(
-                                         const_cast<char*>(_query_string.c_str()),
-                                         &gen_input_);
+                const int fill_err = parse_genquery1_string(_query_string.c_str(), &gen_input_);
                 if(fill_err < 0) {
                     THROW(fill_err, fmt::format("query fill failed for [{}]", _query_string));
                 }

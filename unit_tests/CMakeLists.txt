@@ -61,6 +61,7 @@ set(
   fixed_buffer_resource
   fully_qualified_username
   generate_random_alphanumeric_string
+  genquery1_flex_bison_parser
   get_delay_rule_info
   get_file_descriptor_info
   get_resource_info_for_operation
@@ -143,6 +144,13 @@ endforeach()
 install(
   FILES
   "${CMAKE_CURRENT_SOURCE_DIR}/unit_tests_list.json"
+  DESTINATION "${IRODS_HOME_DIRECTORY}/unit_tests"
+  COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
+)
+
+install(
+  FILES
+  "${CMAKE_CURRENT_SOURCE_DIR}/genquery1_backwards_compatibility_queries.txt"
   DESTINATION "${IRODS_HOME_DIRECTORY}/unit_tests"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
 )

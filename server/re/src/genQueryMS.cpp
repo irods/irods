@@ -52,7 +52,7 @@ int msiExecStrCondQuery( msParam_t* queryParam, msParam_t* genQueryOutParam, rul
     strcpy( query, ( const char* )queryParam->inOutStruct );
 
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
-    i = fillGenQueryInpFromStrCond( query, &genQueryInp );
+    i = parse_genquery1_string(query, &genQueryInp);
     free( query );
     if ( i < 0 ) {
         return i;
@@ -533,9 +533,9 @@ msiMakeGenQuery( msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQue
     /* set up GenQueryInp */
     genQueryInp->maxRows = MAX_SQL_ROWS;
     genQueryInp->continueInx = 0;
-    rei->status = fillGenQueryInpFromStrCond( query, genQueryInp );
+    rei->status = parse_genquery1_string(query, genQueryInp);
     if ( rei->status < 0 ) {
-        rodsLog( LOG_ERROR, "msiMakeGenQuery: fillGenQueryInpFromStrCond failed." );
+        rodsLog(LOG_ERROR, "msiMakeGenQuery: parse_genquery1_string failed.");
         freeGenQueryInp( &genQueryInp );
         free( rawQuery ); // cppcheck - Memory leak: rawQuery
         free( query );

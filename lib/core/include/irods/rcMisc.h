@@ -279,7 +279,17 @@ int getNextRepeatTime(char* currTime, char* delayStr, char* nextTime);
 
 int printError(rcComm_t* Conn, int status, char* routineName);
 
-int fillGenQueryInpFromStrCond(char* str, genQueryInp_t* genQueryInp);
+/// Parse a GenQuery1 string and store the result into a genQueryInp_t structure.
+///
+/// \param[in]       _s The GenQuery1 string to parse.
+/// \param[in,out] _out A pointer to a genQueryInp_t to fill.
+///
+/// \return An integer.
+/// \retval  0 On success.
+/// \retval <0 On failure.
+///
+/// \since 5.0.0
+int parse_genquery1_string(const char* _s, genQueryInp_t* _out);
 
 int printGenQueryOut(FILE* fd, char* format, char* hint, genQueryOut_t* genQueryOut);
 
@@ -290,8 +300,6 @@ char* getAttrNameFromAttrId(int cid);
 int getAttrIdFromAttrName(char* cname);
 
 int showAttrNames();
-
-int separateSelFuncFromAttr(char* t, char** aggOp, char** colNm);
 
 int getSelVal(char* c);
 

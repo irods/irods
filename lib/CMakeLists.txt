@@ -8,6 +8,7 @@ add_library(
 add_custom_target(all-lib)
 
 add_subdirectory(core)
+add_subdirectory(genquery1)
 add_subdirectory(api)
 add_subdirectory(filesystem)
 add_subdirectory(administration)
@@ -20,6 +21,7 @@ target_link_objects(
   PUBLIC
   irods_filesystem_path
   irods_common_core
+  irods_genquery1_parser
   irods_rbudp
   irods_hasher
 )
