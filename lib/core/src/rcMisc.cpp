@@ -14,6 +14,7 @@
 #include "irods/objStat.h"
 #include "irods/pamAuthRequest.h"
 #include "irods/rcGlobalExtern.h"
+#include "irods/rodsDef.h"
 #include "irods/rodsGenQueryNames.h"
 #include "irods/rodsType.h"
 #include "irods/dataObjPut.h"
@@ -38,6 +39,7 @@
 #include "irods/specificQuery.h"
 #include "irods/ticketAdmin.h"
 #include "irods/plugins/api/switch_user_types.h"
+#include "irods/private/genquery1_driver.hpp"
 
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
@@ -3201,85 +3203,32 @@ char *getCondFromString( char * t ) {
     return NULL;
 }
 
-int
-fillGenQueryInpFromStrCond( char * str, genQueryInp_t * genQueryInp ) {
+int fillGenQueryInpFromStrCond( char * str, genQueryInp_t * genQueryInp )
+{
+    try {
+        namespace gq1 = irods::experimental::genquery1;
 
-    int  n, m;
-    char *p, *t, *f, *u, *a, *c;
-    char *s;
-    s = strdup( str );
-    if ( ( t = strstr( s, "select" ) ) != NULL ||
-            ( t = strstr( s, "SELECT" ) ) != NULL ) {
+        gq1::driver driver;
+        driver.gq_input = genQueryInp;
 
-        if ( ( f = strstr( t, "where" ) ) != NULL ||
-                ( f = strstr( t, "WHERE" ) ) != NULL ) {
-            /* Where Condition Found*/
-            *f = '\0';
-        }
-        t = t +  7;
-        while ( ( u = strchr( t, ',' ) ) != NULL ) {
-            *u = '\0';
-            trimWS( t );
-            separateSelFuncFromAttr( t, &a, &c );
-            m = getSelVal( a );
-            n = getAttrIdFromAttrName( c );
-            if ( n < 0 ) {
-                free( s );
-                return n;
+        if (const auto ec = driver.parse(str); ec != 0) {
+            if (CLIENT_PT == ::ProcessType) {
+                fmt::print(stderr, "GenQuery1 error: error_code=[{}], query_string=[{}]\n", ec, str);
             }
-            addInxIval( &genQueryInp->selectInp, n, m );
-            t  = u + 1;
-        }
-        trimWS( t );
-        separateSelFuncFromAttr( t, &a, &c );
-        m = getSelVal( a );
-        n = getAttrIdFromAttrName( c );
-        if ( n < 0 ) {
-            free( s );
-            return n;
-        }
-        addInxIval( &genQueryInp->selectInp, n, m );
-        if ( f == NULL ) {
-            free( s );
-            return 0;
-        }
-    }
-    else {
-        free( s );
-        return INPUT_ARG_NOT_WELL_FORMED_ERR;
-    }
-    t = f + 6;
-    while ( ( u = getCondFromString( t ) ) != NULL ) {
-        *u = '\0';
-        trimWS( t );
-        if ( ( p = strchr( t, ' ' ) ) == NULL ) {
-            free( s );
+
             return INPUT_ARG_NOT_WELL_FORMED_ERR;
         }
-        *p = '\0';
-        n = getAttrIdFromAttrName( t );
-        if ( n < 0 ) {
-            free( s );
-            return n;
-        }
-        addInxVal( &genQueryInp->sqlCondInp, n, p + 1 );
-        t = u + 5;
+
+        return 0;
     }
-    trimWS( t );
-    if ( ( p = strchr( t, ' ' ) ) == NULL ) {
-        free( s );
+    catch (const std::exception& e) {
+        if (CLIENT_PT == ::ProcessType) {
+            fmt::print(stderr, "GenQuery1 error: {} [query_string={}]\n", e.what(), str);
+        }
+
         return INPUT_ARG_NOT_WELL_FORMED_ERR;
     }
-    *p = '\0';
-    n = getAttrIdFromAttrName( t );
-    if ( n < 0 ) {
-        free( s );
-        return n;
-    }
-    addInxVal( &genQueryInp->sqlCondInp, n, p + 1 );
-    free( s );
-    return 0;
-}
+} // fillGenQueryInpFromStrCond
 
 int
 printGenQueryOut( FILE * fd, char * format, char * hint, genQueryOut_t * genQueryOut ) {

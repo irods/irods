@@ -14,6 +14,7 @@ add_subdirectory(administration)
 add_subdirectory(hasher)
 add_subdirectory(rbudp)
 add_subdirectory(metadata)
+#add_subdirectory(genquery1)
 
 target_link_objects(
   irods_common

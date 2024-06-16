@@ -86,6 +86,9 @@ target_include_directories(
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>"
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/api/include>"
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/filesystem/include>"
+  #"$<BUILD_INTERFACE:${CMAKE_IRODS_BINARY_DIR}/lib/genquery1/dsl>" # For parser.hpp.
+  "$<BUILD_INTERFACE:${CMAKE_IRODS_BINARY_DIR}/lib/core/dsl>" # For parser.hpp.
+  "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/genquery1/include>"
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/plugins/api/include>"
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/core/include>"
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/re/include>"
@@ -103,6 +106,36 @@ target_compile_definitions(
 )
 set_target_properties(irods_common_core PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE TRUE)
 set_target_properties(irods_common_core PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+
+
+
+find_package(FLEX 2.6.1 REQUIRED)
+find_package(BISON 3.0.4 REQUIRED)
+
+set(IRODS_FLEX_LEXER_NAME irods_genquery1_lexer)
+set(IRODS_BISON_PARSER_NAME irods_genquery1_parser)
+
+# Normally, we would do this at build-time, but FLEX_TARGET and BISON_TARGET don't actually define targets,
+# therefore there's no good mechanism to add a dependency to the flex and bison targets.
+# The source file property OBJECT_DEPENDS is *supposed* to work for this, but doesn't.
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/dsl")
+
+FLEX_TARGET(${IRODS_FLEX_LEXER_NAME} "${CMAKE_IRODS_SOURCE_DIR}/lib/genquery1/dsl/lexer.l" "${CMAKE_CURRENT_BINARY_DIR}/dsl/lexer.cpp")
+BISON_TARGET(${IRODS_BISON_PARSER_NAME} "${CMAKE_IRODS_SOURCE_DIR}/lib/genquery1/dsl/parser.y" "${CMAKE_CURRENT_BINARY_DIR}/dsl/parser.cpp")
+ADD_FLEX_BISON_DEPENDENCY(${IRODS_FLEX_LEXER_NAME} ${IRODS_BISON_PARSER_NAME})
+
+set(IRODS_PARSER_NAME irods_genquery1_parser)
+set(IRODS_FLEX_OUTPUTS "FLEX_${IRODS_FLEX_LEXER_NAME}_OUTPUTS")
+set(IRODS_BISON_OUTPUTS "BISON_${IRODS_BISON_PARSER_NAME}_OUTPUTS")
+
+target_sources(
+  irods_common_core
+  PRIVATE
+  "${CMAKE_IRODS_SOURCE_DIR}/lib/genquery1/src/genquery1_driver.cpp"
+  ${${IRODS_FLEX_OUTPUTS}}
+  ${${IRODS_BISON_OUTPUTS}}
+)
+
 
 add_library(
   irods_plugin_dependencies_obj
