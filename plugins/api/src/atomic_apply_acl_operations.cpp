@@ -22,6 +22,7 @@
 
 #include "irods/catalog.hpp"
 #include "irods/catalog_utilities.hpp"
+#include "irods/escape_utilities.hpp"
 #include "irods/irods_get_full_path_for_config_file.hpp"
 #include "irods/irods_logger.hpp"
 #include "irods/irods_re_serialization.hpp"
@@ -180,13 +181,13 @@ namespace
         }
 
         if (fs::server::is_collection(s)) {
-            gql = fmt::format("select COLL_ID where COLL_NAME = '{}'", _logical_path);
+            gql = fmt::format("select COLL_ID where COLL_NAME = '{}'", irods::single_quotes_to_hex(std::string{_logical_path}));
         }
         else if (fs::server::is_data_object(s)) {
             fs::path p = _logical_path.data();
             gql = fmt::format("select DATA_ID where COLL_NAME = '{}' and DATA_NAME = '{}'",
-                              p.parent_path().c_str(),
-                              p.object_name().c_str());
+                              irods::single_quotes_to_hex(p.parent_path()),
+                              irods::single_quotes_to_hex(p.object_name()));
         }
         else {
             log::api::error("Object is not a data object or collection [path={}]", _logical_path);
