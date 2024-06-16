@@ -14,6 +14,7 @@
 #include "irods/objStat.h"
 #include "irods/pamAuthRequest.h"
 #include "irods/rcGlobalExtern.h"
+#include "irods/rodsDef.h"
 #include "irods/rodsGenQueryNames.h"
 #include "irods/rodsType.h"
 #include "irods/dataObjPut.h"
@@ -3058,8 +3059,6 @@ setStateForRestart( rodsRestart_t * rodsRestart, rodsPath_t * targPath,
     return 0;
 }
 
-
-
 int
 getAttrIdFromAttrName( char * cname ) {
 
@@ -3078,26 +3077,6 @@ showAttrNames() {
     for ( i = 0; i < NumOfColumnNames ; i++ ) {
         printf( "%s\n", columnNames[i].columnName );
     }
-    return 0;
-}
-
-int
-separateSelFuncFromAttr( char * t, char **aggOp, char **colNm ) {
-    char *s;
-
-    if ( ( s = strchr( t, '(' ) ) == NULL ) {
-        *colNm = t;
-        *aggOp = NULL;
-        return 0;
-    }
-    *aggOp = t;
-    *s = '\0';
-    s++;
-    *colNm = s;
-    if ( ( s = strchr( *colNm, ')' ) ) == NULL ) {
-        return NO_COLUMN_NAME_FOUND;
-    }
-    *s = '\0';
     return 0;
 }
 
@@ -3134,7 +3113,6 @@ getSelVal( char * c ) {
     return 1;
 }
 
-
 char *
 getAttrNameFromAttrId( int cid ) {
 
@@ -3145,169 +3123,6 @@ getAttrNameFromAttrId( int cid ) {
         }
     }
     return NULL;
-}
-
-int
-goodStrExpr( char * expr ) {
-    int qcnt = 0;
-    int qqcnt = 0;
-    int bcnt = 0;
-    int i = 0;
-    int inq =  0;
-    int inqq =  0;
-    while ( expr[i] != '\0' ) {
-        if ( inq ) {
-            if ( expr[i] == '\'' ) {
-                inq--;
-                qcnt++;
-            }
-        }
-        else if ( inqq ) {
-            if ( expr[i] == '"' ) {
-                inqq--;
-                qqcnt++;
-            }
-        }
-        else if ( expr[i] == '\'' ) {
-            inq++;
-            qcnt++;
-        }
-        else if ( expr[i] == '"' ) {
-            inqq++;
-            qqcnt++;
-        }
-        else if ( expr[i] == '(' ) {
-            bcnt++;
-        }
-        else if ( expr[i] == ')' )
-            if ( bcnt > 0 ) {
-                bcnt--;
-            }
-        i++;
-    }
-    if ( bcnt != 0 || qcnt % 2 != 0 || qqcnt % 2 != 0 ) {
-        return -1;
-    }
-    return 0;
-
-}
-
-
-char *getCondFromString( char * t ) {
-    char *u;
-    char *u1, *u2;
-    char *s;
-
-    s = t;
-    for ( ;; ) {
-        /* Search for an 'and' string, either case, and use the one
-           that appears first. */
-        u1 = strstr( s, " and " );
-        u2 = strstr( s, " AND " );
-        u = u1;
-        if ( u1 == NULL ) {
-            u = u2;
-        }
-        if ( u1 != NULL && u2 != NULL ) {
-            if ( strlen( u2 ) > strlen( u1 ) ) {
-                u = u2;    /* both are present, use the first */
-            }
-        }
-
-        if ( u != NULL ) {
-            *u = '\0';
-            if ( goodStrExpr( t ) == 0 ) {
-                *u = ' ';
-                return u;
-            }
-            *u = ' ';
-            s = u + 1;
-        }
-        else {
-            break;
-        }
-    }
-    return NULL;
-}
-
-int
-fillGenQueryInpFromStrCond( char * str, genQueryInp_t * genQueryInp ) {
-
-    int  n, m;
-    char *p, *t, *f, *u, *a, *c;
-    char *s;
-    s = strdup( str );
-    if ( ( t = strstr( s, "select" ) ) != NULL ||
-            ( t = strstr( s, "SELECT" ) ) != NULL ) {
-
-        if ( ( f = strstr( t, "where" ) ) != NULL ||
-                ( f = strstr( t, "WHERE" ) ) != NULL ) {
-            /* Where Condition Found*/
-            *f = '\0';
-        }
-        t = t +  7;
-        while ( ( u = strchr( t, ',' ) ) != NULL ) {
-            *u = '\0';
-            trimWS( t );
-            separateSelFuncFromAttr( t, &a, &c );
-            m = getSelVal( a );
-            n = getAttrIdFromAttrName( c );
-            if ( n < 0 ) {
-                free( s );
-                return n;
-            }
-            addInxIval( &genQueryInp->selectInp, n, m );
-            t  = u + 1;
-        }
-        trimWS( t );
-        separateSelFuncFromAttr( t, &a, &c );
-        m = getSelVal( a );
-        n = getAttrIdFromAttrName( c );
-        if ( n < 0 ) {
-            free( s );
-            return n;
-        }
-        addInxIval( &genQueryInp->selectInp, n, m );
-        if ( f == NULL ) {
-            free( s );
-            return 0;
-        }
-    }
-    else {
-        free( s );
-        return INPUT_ARG_NOT_WELL_FORMED_ERR;
-    }
-    t = f + 6;
-    while ( ( u = getCondFromString( t ) ) != NULL ) {
-        *u = '\0';
-        trimWS( t );
-        if ( ( p = strchr( t, ' ' ) ) == NULL ) {
-            free( s );
-            return INPUT_ARG_NOT_WELL_FORMED_ERR;
-        }
-        *p = '\0';
-        n = getAttrIdFromAttrName( t );
-        if ( n < 0 ) {
-            free( s );
-            return n;
-        }
-        addInxVal( &genQueryInp->sqlCondInp, n, p + 1 );
-        t = u + 5;
-    }
-    trimWS( t );
-    if ( ( p = strchr( t, ' ' ) ) == NULL ) {
-        free( s );
-        return INPUT_ARG_NOT_WELL_FORMED_ERR;
-    }
-    *p = '\0';
-    n = getAttrIdFromAttrName( t );
-    if ( n < 0 ) {
-        free( s );
-        return n;
-    }
-    addInxVal( &genQueryInp->sqlCondInp, n, p + 1 );
-    free( s );
-    return 0;
 }
 
 int
