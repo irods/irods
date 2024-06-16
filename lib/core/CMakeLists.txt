@@ -21,6 +21,7 @@ add_library(
   OBJECT
   "${CMAKE_CURRENT_SOURCE_DIR}/src/base64.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/dns_cache.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/escape_utilities.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/getRodsEnv.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/hashtable.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/hostname_cache.cpp"
@@ -305,6 +306,7 @@ install(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/dispatch_processor.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/dns_cache.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/dstream.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/escape_utilities.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/experimental_plugin_framework.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/fixed_buffer_resource.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/fsckUtil.h"
