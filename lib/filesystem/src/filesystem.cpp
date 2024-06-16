@@ -47,6 +47,7 @@
 #include "irods/irods_query.hpp"
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/query_builder.hpp"
+#include "irods/escape_utilities.hpp"
 
 #include <fmt/format.h>
 
@@ -127,9 +128,9 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
             if (DATA_OBJ_T == _s.type) {
                 std::string sql = "select DATA_USER_NAME, DATA_ZONE_NAME, DATA_ACCESS_NAME, USER_TYPE "
                                    "where COLL_NAME = '";
-                sql += _p.parent_path();
+                sql += single_quotes_to_hex(_p.parent_path());
                 sql += "' and DATA_NAME = '";
-                sql += _p.object_name();
+                sql += single_quotes_to_hex(_p.object_name());
                 sql += "' and DATA_TOKEN_NAMESPACE = 'access_type'";
 
                 irods::experimental::query_builder qb;
@@ -171,7 +172,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
                     std::string sql = "select COLL_USER_NAME, COLL_ZONE_NAME, COLL_ACCESS_NAME, USER_TYPE "
                                       "where COLL_TOKEN_NAMESPACE = 'access_type' and COLL_NAME = '";
-                    sql += _p.c_str();
+                    sql += single_quotes_to_hex(_p);
                     sql += "'";
 
                     for (const auto& row : qb.build(_comm, sql)) {
@@ -195,7 +196,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
             qb.type(irods::experimental::query_type::general);
 
-            const auto gql = fmt::format("select COLL_INHERITANCE where COLL_NAME = '{}'", _p.c_str());
+            const auto gql = fmt::format("select COLL_INHERITANCE where COLL_NAME = '{}'", single_quotes_to_hex(_p));
 
             for (const auto& row : qb.build(_comm, gql)) {
                 return std::atoi(row[0].data());
@@ -681,7 +682,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
             qb.zone_hint(*zone);
         }
 
-        const auto gql = fmt::format("select COLL_ID where COLL_NAME = '{}'", _p.c_str());
+        const auto gql = fmt::format("select COLL_ID where COLL_NAME = '{}'", single_quotes_to_hex(_p));
 
         return qb.build(_comm, gql).size() > 0;
     }
@@ -698,8 +699,8 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         }
 
         const auto gql = fmt::format("select DATA_ID where COLL_NAME = '{}' and DATA_NAME = '{}'",
-                                     _p.parent_path().c_str(),
-                                     _p.object_name().c_str());
+                                     single_quotes_to_hex(_p.parent_path()),
+                                     single_quotes_to_hex(_p.object_name()));
 
         return qb.build(_comm, gql).size() > 0;
     }
@@ -747,8 +748,8 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
                                      " COLL_NAME = '{}' and"
                                      " DATA_NAME = '{}' and"
                                      " DATA_REPL_STATUS = '1'",
-                                     _p.parent_path().c_str(),
-                                     _p.object_name().c_str());
+                                     single_quotes_to_hex(_p.parent_path()),
+                                     single_quotes_to_hex(_p.object_name()));
 
         irods::experimental::query_builder qb;
 
@@ -797,7 +798,8 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         throw_if_path_length_exceeds_limit(_p);
 
         const auto gql = fmt::format("select COLL_TYPE, COLL_INFO_1, COLL_INFO_2 "
-                                     "where COLL_NAME = '{}'", _p.c_str());
+                                     "where COLL_NAME = '{}'",
+                                     single_quotes_to_hex(_p));
 
         irods::experimental::query_builder qb;
 
@@ -854,11 +856,11 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
                               " COLL_NAME = '{}' and"
                               " DATA_NAME = '{}' and"
                               " DATA_REPL_STATUS = '1'",
-                              _p.parent_path().c_str(),
-                              _p.object_name().c_str());
+                              single_quotes_to_hex(_p.parent_path()),
+                              single_quotes_to_hex(_p.object_name()));
         }
         else if (is_collection(s)) {
-            gql = fmt::format("select COLL_MODIFY_TIME where COLL_NAME = '{}'", _p.c_str());
+            gql = fmt::format("select COLL_MODIFY_TIME where COLL_NAME = '{}'", single_quotes_to_hex(_p));
         }
         else {
             throw filesystem_error{"cannot get mtime", _p, make_error_code(INVALID_OBJECT_TYPE)};
@@ -913,11 +915,11 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
     auto remove_all(rxComm& _comm, const path& _p, remove_options _opts) -> std::uintmax_t
     {
         std::string data_obj_sql = "select count(DATA_ID) where COLL_NAME like '";
-        data_obj_sql += _p;
+        data_obj_sql += single_quotes_to_hex(_p);
         data_obj_sql += "%'";
 
         std::string colls_sql = "select count(COLL_ID) where COLL_NAME like '";
-        colls_sql += _p;
+        colls_sql += single_quotes_to_hex(_p);
         colls_sql += "%'";
 
         irods::experimental::query_builder qb;
@@ -952,11 +954,11 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
     auto remove_all(rxComm& _comm, const path& _p, extended_remove_options _opts) -> std::uintmax_t
     {
         std::string data_obj_sql = "select count(DATA_ID) where COLL_NAME like '";
-        data_obj_sql += _p;
+        data_obj_sql += single_quotes_to_hex(_p);
         data_obj_sql += "%'";
 
         std::string colls_sql = "select count(COLL_ID) where COLL_NAME like '";
-        colls_sql += _p;
+        colls_sql += single_quotes_to_hex(_p);
         colls_sql += "%'";
 
         irods::experimental::query_builder qb;
@@ -1100,8 +1102,8 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
                                      " COLL_NAME = '{}' and"
                                      " DATA_NAME = '{}' and"
                                      " DATA_REPL_STATUS = '1'",
-                                     _p.parent_path().c_str(),
-                                     _p.object_name().c_str());
+                                     single_quotes_to_hex(_p.parent_path()),
+                                     single_quotes_to_hex(_p.object_name()));
 
         irods::experimental::query_builder qb;
 
@@ -1187,14 +1189,14 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
         if (const auto s = status(_comm, _p); is_data_object(s)) {
             sql = "select META_DATA_ATTR_NAME, META_DATA_ATTR_VALUE, META_DATA_ATTR_UNITS where DATA_NAME = '";
-            sql += _p.object_name();
+            sql += single_quotes_to_hex(_p.object_name());
             sql += "' and COLL_NAME = '";
-            sql += _p.parent_path();
+            sql += single_quotes_to_hex(_p.parent_path());
             sql += "'";
         }
         else if (is_collection(s)) {
             sql = "select META_COLL_ATTR_NAME, META_COLL_ATTR_VALUE, META_COLL_ATTR_UNITS where COLL_NAME = '";
-            sql += _p;
+            sql += single_quotes_to_hex(_p);
             sql += "'";
         }
         else {
