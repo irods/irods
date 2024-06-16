@@ -6,6 +6,7 @@
 #include "irods/dataObjCreate.h"
 #include "irods/dataObjOpen.h"
 #include "irods/dataObjRepl.h"
+#include "irods/escape_utilities.hpp"
 #include "irods/getRemoteZoneResc.h"
 #include "irods/irods_logger.hpp"
 #include "irods/key_value_proxy.hpp"
@@ -256,8 +257,8 @@ namespace
                     const auto path = fs::path{destDataObjInp->objPath};
                     const auto qstr = fmt::format("select DATA_ID where COLL_NAME = '{0}' and DATA_NAME = '{1}' and "
                                                   "DATA_RESC_HIER like '{2};%' || = '{2}'",
-                                                  path.parent_path().c_str(),
-                                                  path.object_name().c_str(),
+                                                  irods::single_quotes_to_hex(path.parent_path()),
+                                                  irods::single_quotes_to_hex(path.object_name()),
                                                   destination_resource);
 
                     // If no results come back from the query, that means no replica exists on the target resource.
