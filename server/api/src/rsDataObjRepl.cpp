@@ -55,6 +55,7 @@
 #include "irods/irods_string_tokenize.hpp"
 #include "irods/json_serialization.hpp"
 #include "irods/key_value_proxy.hpp"
+#include "irods/logical_locking.hpp"
 #include "irods/replica_access_table.hpp"
 #include "irods/replication_utilities.hpp"
 #include "irods/voting.hpp"
@@ -66,10 +67,13 @@
 #include "irods/data_object_proxy.hpp"
 #include "irods/replica_proxy.hpp"
 
-#include "irods/logical_locking.hpp"
+#define IRODS_USER_ADMINISTRATION_ENABLE_SERVER_SIDE_API
+#include "irods/user_administration.hpp"
 
-#include <cstring>
 #include <algorithm>
+#include <cstring>
+#include <functional>
+#include <string>
 #include <string_view>
 #include <vector>
 
@@ -479,60 +483,52 @@ namespace
 
     auto user_has_permission_to_replicate_object(RsComm& _comm, const irods::file_object_ptr _obj) -> bool
     {
+        namespace adm = irods::experimental::administration;
+        using access_type = irods::experimental::catalog::access_type;
+
         // Short-circuit the query by checking to see whether this is a rodsadmin using the ADMIN_KW, which allows
         // them to do whatever they want.
         if (irods::is_privileged_client(_comm) && getValByKey(&_obj->cond_input(), ADMIN_KW)) {
             return true;
         }
 
+        const auto user = adm::user{_comm.clientUser.userName, _comm.clientUser.rodsZone};
         const auto path = irods::experimental::filesystem::path{_obj->logical_path()};
-        const auto permission_query_string =
-            fmt::format("select DATA_ACCESS_TYPE where USER_NAME = '{}' and USER_ZONE = '{}' and DATA_ID = '{}'",
-                        _comm.clientUser.userName,
-                        _comm.clientUser.rodsZone,
-                        _obj->data_id());
 
-        auto permission_query = irods::query{&_comm, permission_query_string};
+        constexpr auto minimum_permission_required_for_replication = access_type::modify_object;
 
-        // If the user has no permissions on the object, it may have returned an empty result set.
-        if (permission_query.empty()) {
-            return false;
+        // Check access permission for the user first...
+        const auto user_permission_query_string =
+            fmt::format("select DATA_ACCESS_TYPE where USER_NAME = '{}' and USER_ZONE = '{}' and DATA_ID = '{}' and "
+                        "DATA_ACCESS_TYPE >= '{}'",
+                        user.name,
+                        user.zone,
+                        _obj->data_id(),
+                        static_cast<int>(minimum_permission_required_for_replication));
+        auto user_permission_query = irods::query{&_comm, user_permission_query_string};
+        if (!user_permission_query.empty()) {
+            return true;
         }
 
-        const auto& query_result = permission_query.front();
-        const auto& access_type_string = query_result[0];
-
-        try {
-            using access_type = irods::experimental::catalog::access_type;
-
-            switch (std::stoi(access_type_string)) {
-                case static_cast<int>(access_type::modify_object): // NOLINT(bugprone-branch-clone)
-                    [[fallthrough]];
-                case static_cast<int>(access_type::delete_object): // NOLINT(bugprone-branch-clone)
-                    [[fallthrough]];
-                case static_cast<int>(access_type::own):
-                    return true;
-
-                default:
-                    return false;
-            }
-        }
-        catch (const std::invalid_argument& e) {
-            log_api::error("DATA_ACCESS_TYPE for user [{}#{}] on object [{}] has invalid value [{}]",
-                           _comm.clientUser.userName,
-                           _comm.clientUser.rodsZone,
-                           _obj->logical_path(),
-                           access_type_string);
-            return false;
-        }
-        catch (const std::out_of_range& e) {
-            log_api::error("DATA_ACCESS_TYPE for user [{}#{}] on object [{}] has out-of-range value [{}]",
-                           _comm.clientUser.userName,
-                           _comm.clientUser.rodsZone,
-                           _obj->logical_path(),
-                           access_type_string);
-            return false;
-        }
+        // If the user does not have sufficient permissions on the data object for replication, perhaps one of their
+        // groups does...
+        const auto groups = adm::server::groups(_comm, user);
+        std::vector<std::string> groups_with_quotes;
+        groups_with_quotes.reserve(groups.size());
+        std::transform(std::cbegin(groups),
+                       std::cend(groups),
+                       std::back_inserter(groups_with_quotes),
+                       [](const auto& group) -> std::string { return fmt::format("'{}'", group.name); });
+        const auto group_permission_query_string =
+            fmt::format("select DATA_ACCESS_TYPE where USER_NAME in ({}) and USER_TYPE = 'rodsgroup' and DATA_ID = "
+                        "'{}' and DATA_ACCESS_TYPE >= '{}'",
+                        fmt::join(groups_with_quotes, ", "),
+                        _obj->data_id(),
+                        static_cast<int>(minimum_permission_required_for_replication));
+        auto group_permission_query = irods::query{&_comm, group_permission_query_string};
+        // If the query returns any results at all, that means at least one group has the minimum required
+        // permissions, so we return true if the result set is not empty.
+        return !group_permission_query.empty();
     } // user_has_permission_to_replicate_object
 
     int replicate_data(RsComm& _comm, DataObjInp& _source_inp, DataObjInp& _destination_inp, transferStat_t** _stat)
