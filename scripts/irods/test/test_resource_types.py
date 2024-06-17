@@ -88,13 +88,13 @@ class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unitte
         os.unlink(filepath)
 
         # ensure that number of replicas is correct, trim, and check again
-        self.user0.assert_icommand(['iquest', '%s', '''"select COUNT(DATA_REPL_NUM) where DATA_NAME = '{0}'"'''.format(filename)], 'STDOUT_SINGLELINE', str(self.child_replication_count))
+        self.user0.assert_icommand(['iquest', '%s', "select COUNT(DATA_REPL_NUM) where DATA_NAME = '{0}'".format(filename)], 'STDOUT_SINGLELINE', str(self.child_replication_count))
         self.user0.assert_icommand(['itrim', '-n1', '-N1', logical_path], 'STDOUT_SINGLELINE', 'Number of files trimmed = 1.')
-        self.user0.assert_icommand(['iquest', '%s', '''"select COUNT(DATA_REPL_NUM) where DATA_NAME = '{0}'"'''.format(filename)], 'STDOUT_SINGLELINE', str(self.child_replication_count - 1))
+        self.user0.assert_icommand(['iquest', '%s', "select COUNT(DATA_REPL_NUM) where DATA_NAME = '{0}'".format(filename)], 'STDOUT_SINGLELINE', str(self.child_replication_count - 1))
 
         # forcibly re-calculate corrupted checksum and ensure that no new replicas were generated
         self.user0.assert_icommand(['ichksum', '-f', '-n0', logical_path], 'STDOUT', 'sha2:')
-        self.user0.assert_icommand(['iquest', '%s', '''"select COUNT(DATA_REPL_NUM) where DATA_NAME = '{0}'"'''.format(filename)], 'STDOUT_SINGLELINE', str(self.child_replication_count - 1))
+        self.user0.assert_icommand(['iquest', '%s', "select COUNT(DATA_REPL_NUM) where DATA_NAME = '{0}'".format(filename)], 'STDOUT_SINGLELINE', str(self.child_replication_count - 1))
 
         #cleanup
         self.user0.assert_icommand(['irm', '-f', logical_path])
@@ -4696,13 +4696,13 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
         os.unlink(filepath)
 
         # ensure that number of replicas is correct, trim, and check again
-        self.user0.assert_icommand(['iquest', '%s', '''"select COUNT(DATA_REPL_NUM) where DATA_NAME = '{0}'"'''.format(filename)], 'STDOUT_SINGLELINE', str(self.child_replication_count))
+        self.user0.assert_icommand(['iquest', '%s', "select COUNT(DATA_REPL_NUM) where DATA_NAME = '{0}'".format(filename)], 'STDOUT_SINGLELINE', str(self.child_replication_count))
         self.user0.assert_icommand(['itrim', '-n1', '-N1', logical_path], 'STDOUT_SINGLELINE', 'Number of files trimmed = 1.')
-        self.user0.assert_icommand(['iquest', '%s', '''"select COUNT(DATA_REPL_NUM) where DATA_NAME = '{0}'"'''.format(filename)], 'STDOUT_SINGLELINE', str(self.child_replication_count - 1))
+        self.user0.assert_icommand(['iquest', '%s', "select COUNT(DATA_REPL_NUM) where DATA_NAME = '{0}'".format(filename)], 'STDOUT_SINGLELINE', str(self.child_replication_count - 1))
 
         # forcibly re-calculate corrupted checksum and ensure that no new replicas were generated
         self.user0.assert_icommand(['ichksum', '-f', '-n0', logical_path], 'STDOUT', 'sha2:')
-        self.user0.assert_icommand(['iquest', '%s', '''"select COUNT(DATA_REPL_NUM) where DATA_NAME = '{0}'"'''.format(filename)], 'STDOUT_SINGLELINE', str(self.child_replication_count - 1))
+        self.user0.assert_icommand(['iquest', '%s', "select COUNT(DATA_REPL_NUM) where DATA_NAME = '{0}'".format(filename)], 'STDOUT_SINGLELINE', str(self.child_replication_count - 1))
 
         #cleanup
         self.user0.assert_icommand(['irm', '-f', logical_path])

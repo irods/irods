@@ -108,14 +108,15 @@ class Test_Iquest(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("irm -f " + filename)
         remove_large_hierarchy(self, LEAF_COUNT, directory)
 
+    # TODO This test can be removed now that iquest relies on a real parser for GenQuery1.
     def test_iquest_matches_names_containing_apostrophes_via_the_equals_operator__issue_4887(self):
         data_object = "data' object"
         self.admin.assert_icommand(['istream', 'write', data_object], input='hello, world')
-        self.admin.assert_icommand(['iquest', "select DATA_NAME where DATA_NAME = '{0}'".format(data_object)], 'STDOUT', ['DATA_NAME = ' + data_object])
+        self.admin.assert_icommand(['iquest', "select DATA_NAME where DATA_NAME = '{0}'".format(data_object.replace("'", '\\x27'))], 'STDOUT', ['DATA_NAME = ' + data_object])
 
         collection = os.path.join(self.admin.session_collection, "coll ect'ion")
         self.admin.assert_icommand(['imkdir', collection])
-        self.admin.assert_icommand(['iquest', "select COLL_NAME where COLL_NAME = '{0}'".format(collection)], 'STDOUT', ['COLL_NAME = ' + collection])
+        self.admin.assert_icommand(['iquest', "select COLL_NAME where COLL_NAME = '{0}'".format(collection.replace("'", '\\x27'))], 'STDOUT', ['COLL_NAME = ' + collection])
 
     def test_iquest_does_not_fail_when_querying_for_ticket_create_time_and_modify_time__issue_5929(self):
         data_object = 'foo.issue_5929'
@@ -205,7 +206,7 @@ class test_iquest_with_data_resc_hier(unittest.TestCase):
         for op in invalid_operations:
             with self.subTest(op):
                 query = f'select DATA_RESC_HIER where DATA_NAME = \'{self.data_name}\' and DATA_RESC_HIER {op} \'{pattern}\''
-                self.user.assert_icommand(['iquest', '%s', query], 'STDERR', 'CAT_INVALID_ARGUMENT')
+                self.user.assert_icommand(['iquest', '%s', query], 'STDERR', 'INPUT_ARG_NOT_WELL_FORMED_ERR')
 
 
     def test_valid_operations_with_matching_glob(self):
@@ -824,8 +825,8 @@ class test_iquest_logical_or_operator_with_data_resc_hier(unittest.TestCase):
                 for vop in valid_operations:
                     # First, with the invalid operation as the first clause of the ||...
                     query = f'{self.base_query} {iop} \'{pattern}\' || {vop} \'{pattern}\''
-                    self.user.assert_icommand(['iquest', '%s', query], 'STDERR', 'CAT_INVALID_ARGUMENT')
+                    self.user.assert_icommand(['iquest', '%s', query], 'STDERR', 'INPUT_ARG_NOT_WELL_FORMED_ERR')
 
                     # Now, the valid operation as the first clause of the || and the invalid operation as the second.
                     query = f'{self.base_query} {vop} \'{pattern}\' || {iop} \'{pattern}\''
-                    self.user.assert_icommand(['iquest', '%s', query], 'STDERR', 'CAT_INVALID_ARGUMENT')
+                    self.user.assert_icommand(['iquest', '%s', query], 'STDERR', 'INPUT_ARG_NOT_WELL_FORMED_ERR')
