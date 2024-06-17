@@ -114,7 +114,7 @@ class Test_Icp(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
         dest_logical_path = os.path.join(self.admin.session_collection, 'goo')
 
         def get_question(logical_path):
-            return '''"select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'"'''.format(
+            return "select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'".format(
                 os.path.basename(logical_path), os.path.dirname(logical_path))
 
         try:

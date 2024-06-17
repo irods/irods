@@ -2038,7 +2038,7 @@ class Test_Iadmin_modrepl(resource_suite.ResourceBase, unittest.TestCase):
             object_path = os.path.join(self.admin.session_collection, filename)
             self.admin.assert_icommand(['iput', original_file_path, object_path])
             self.admin.assert_icommand(['irepl', '-R', 'TestResc', object_path])
-            query = ''' "select DATA_ID where DATA_NAME = '{}'" '''.format(filename)
+            query = "select DATA_ID where DATA_NAME = '{}'".format(filename)
             data_id,_,_ = self.admin.run_icommand(['iquest', '%s', query])
             data_object_option = {
                 'logical_path' : object_path,
@@ -2130,7 +2130,7 @@ class Test_Iadmin_modrepl(resource_suite.ResourceBase, unittest.TestCase):
             object_path = os.path.join(self.admin.session_collection, filename)
             self.admin.assert_icommand(['iput', original_file_path, object_path])
             for k in cols:
-                query = ''' "select {0} where COLL_NAME = '{1}' and DATA_NAME = '{2}' '''.format(
+                query = "select {0} where COLL_NAME = '{1}' and DATA_NAME = '{2}'".format(
                     k, os.path.dirname(object_path), os.path.basename(object_path))
                 self.admin.assert_icommand_fail(['iquest', query], 'STDOUT', str(cols[k]))
                 self.admin.assert_icommand(

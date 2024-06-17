@@ -574,7 +574,7 @@ def log_message_occurrences_is_one_of_list_of_counts(msg, expected_value_list=No
 def metadata_attr_with_value_exists(session, attr, value):
     print('looking for attr:[{0}] value:[{1}]'.format(attr, value))
     out, _, _ = session.run_icommand(['iquest', '%s',
-        '"select META_DATA_ATTR_VALUE where META_DATA_ATTR_NAME = \'{}\'"'.format(attr)])
+        'select META_DATA_ATTR_VALUE where META_DATA_ATTR_NAME = \'{}\''.format(attr)])
     print(out)
     return value in out
 
