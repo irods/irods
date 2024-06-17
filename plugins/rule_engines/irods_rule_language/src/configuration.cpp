@@ -426,20 +426,19 @@ public:
       : irbs_(_irbs)
   {
       for (auto const& irb : _irbs) {
-          std::string rulebase;
           std::ifstream ifs(get_rule_base_path(irb));
-          rule_bases.insert(
+          rule_bases_.insert(
               {irb, std::string({std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>()})});
       }
   }
 
   std::string& get_rulebase(const std::string& irb)
   {
-      return rule_bases.at(irb);
+      return rule_bases_.at(irb);
   }
 
 private:
-  std::unordered_map<std::string, std::string> rule_bases;
+  std::unordered_map<std::string, std::string> rule_bases_;
   const std::vector<std::string> irbs_;
 };
 
@@ -455,7 +454,7 @@ int hash_rules_with_copy(const std::vector<std::string>& irbs, std::string& dige
     }
 
     for (auto const& irb : irbs) {
-        std::stringstream in_file(copy.get_rulebase(irb), std::ios::in | std::ios::binary);
+        std::istringstream in_file(copy.get_rulebase(irb), std::ios::in | std::ios::binary);
 
         std::string buffer_read;
         buffer_read.resize(HASH_BUF_SZ);
@@ -636,11 +635,12 @@ int readRuleStructAndRuleSetFromFile( const char *ruleBaseName, const char *rule
     freeRErrorContent( &errmsgBuf );
     return res;
 }
+
 int readRuleStructAndRuleSetFromBuffer(const char* ruleBaseName, char* ruleBase)
 {
     int errloc;
     rError_t errmsgBuf;
-    errmsgBuf.errMsg = NULL;
+    errmsgBuf.errMsg = nullptr;
     errmsgBuf.len = 0;
 
     char* buf = (char*) malloc(ERR_MSG_LEN * 1024 * sizeof(char));

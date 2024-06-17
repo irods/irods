@@ -69,10 +69,9 @@ int readRuleSetFromBuffer(const char* ruleBaseName,
                           rError_t* errmsg,
                           Region* r)
 {
-    FILE* file;
+    FILE* file = fmemopen(ruleBody, strlen(ruleBody), "r");
     char errbuf[ERR_MSG_LEN];
-    file = fmemopen(ruleBody, strlen(ruleBody), "r");
-    if (file == NULL) {
+    if (file == nullptr) {
         snprintf(errbuf, ERR_MSG_LEN, "readRuleSetFromBuffer() could not read rule from buffer");
         addRErrorMsg(errmsg, RULES_FILE_READ_ERROR, errbuf);
         return RULES_FILE_READ_ERROR;
@@ -87,7 +86,7 @@ int readRuleSetFromBuffer(const char* ruleBaseName,
     Node* errnode{};
     ExprType* restype = typeRuleSet(ruleSet, errmsg, &errnode, r);
     if (getNodeType(restype) == T_ERROR) {
-        if (NULL != errnode) {
+        if (nullptr != errnode) {
             *errloc = NODE_EXPR_POS(errnode);
         }
         return RE_TYPE_ERROR;
