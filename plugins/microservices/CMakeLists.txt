@@ -1,4 +1,9 @@
-set(IRODS_MICROSERVICE_TEST_PLUGINS_BUILD OFF CACHE BOOL "Build microservice plugins designed for testing.")
+set(_IRODS_MICROSERVICE_TEST_PLUGINS_BUILD_DOCSTR "Build microservice plugins designed for testing.")
+set(IRODS_MICROSERVICE_TEST_PLUGINS_BUILD OFF CACHE BOOL "${_IRODS_MICROSERVICE_TEST_PLUGINS_BUILD_DOCSTR}")
+
+if (IRODS_ENABLE_ALL_TESTS)
+  set(IRODS_MICROSERVICE_TEST_PLUGINS_BUILD ON CACHE BOOL "${_IRODS_MICROSERVICE_TEST_PLUGINS_BUILD_DOCSTR}" FORCE)
+endif()
 
 # create phony target to build everything in plugins/microservices folder
 add_custom_target(all-plugins-microservices)
@@ -28,7 +33,7 @@ set(
   update_unixfilesystem_resource_free_space
 )
 
-if (IRODS_MICROSERVICE_TEST_PLUGINS_BUILD OR IRODS_ENABLE_ALL_TESTS)
+if (IRODS_MICROSERVICE_TEST_PLUGINS_BUILD)
   list(APPEND IRODS_MICROSERVICE_PLUGINS test_issue_6782)
   list(APPEND IRODS_MICROSERVICE_PLUGINS test_issue_6829)
   list(APPEND IRODS_MICROSERVICE_PLUGINS test_msp_functions)
