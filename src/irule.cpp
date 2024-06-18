@@ -12,9 +12,12 @@
 #include <irods/irods_configuration_keywords.hpp>
 #include <irods/rcMisc.h>
 
+#include <boost/algorithm/string/trim.hpp>
 #include <boost/program_options.hpp>
 
 #include <cstdio>
+#include <cstring>
+#include <string>
 
 void usage();
 
@@ -319,14 +322,29 @@ main( int argc, char **argv ) {
                     continue;
                 }
 
-                if ( rulegen ) {
-                    if ( startsWith( buf, "INPUT" ) || startsWith( buf, "input" ) ) {
+                if (rulegen) {
+                    const auto skip_and_trim{[&buf](auto _skip_len) -> void {
+                        constexpr auto null_term{1};
+                        const auto copy_length{std::strlen(buf) + null_term - _skip_len};
+
+                        // Trim prefix
+                        std::memmove(buf, buf + _skip_len, copy_length);
+
+                        // Trim spaces
+                        auto res{boost::algorithm::trim_copy_if(
+                            std::string{buf}, [](unsigned char c) { return std::isspace(c); })};
+                        std::strncpy(buf, res.c_str(), res.size() + null_term);
+                    }};
+
+                    if (startsWith(buf, "INPUT") || startsWith(buf, "input")) {
                         gotRule = 1;
-                        trimSpaces( trimPrefix( buf ) );
+                        constexpr auto skip_len{5};
+                        skip_and_trim(skip_len);
                     }
                     else if ( startsWith( buf, "OUTPUT" ) || startsWith( buf, "output" ) ) {
                         gotRule = 2;
-                        trimSpaces( trimPrefix( buf ) );
+                        constexpr auto skip_len{6};
+                        skip_and_trim(skip_len);
                     }
                 }
 
