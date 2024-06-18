@@ -25,6 +25,7 @@
 #include "irods/irods_get_full_path_for_config_file.hpp"
 #include "irods/irods_log.hpp"
 #include <boost/filesystem.hpp>
+#include <memory>
 #include <sstream>
 #include <unordered_map>
 
@@ -648,14 +649,13 @@ int readRuleStructAndRuleSetFromBuffer(const char* ruleBaseName, char* ruleBase)
 
     auto buf = std::make_unique<char[]>(err_buf_len * sizeof(char));
     int res = readRuleSetFromBuffer(ruleBaseName,
-                                     ruleBase,
-                                     ruleEngineConfig.coreRuleSet,
-                                     ruleEngineConfig.coreFuncDescIndex,
-                                     &errloc,
-                                     &errmsgBuf,
-                                     ruleEngineConfig.coreRegion);
-    if (res != 0)
-    {
+                                    ruleBase,
+                                    ruleEngineConfig.coreRuleSet,
+                                    ruleEngineConfig.coreFuncDescIndex,
+                                    &errloc,
+                                    &errmsgBuf,
+                                    ruleEngineConfig.coreRegion);
+    if (res != 0) {
         errMsgToString(&errmsgBuf, buf.get(), err_buf_len);
         logger::rule_engine::error(buf.get());
     }
