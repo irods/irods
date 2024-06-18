@@ -28,12 +28,11 @@
 
 #include <boost/range/iterator_range_core.hpp>
 #include <fmt/format.h>
+#include <fmt/compile.h>
 #include <nlohmann/json.hpp>
 
 #include <unistd.h>
-#include <sys/time.h>
 
-#include <ctime>
 #include <chrono>
 #include <memory>
 #include <string>
@@ -48,6 +47,14 @@
 #include <sstream>
 #include <concepts>
 #include <tuple>
+
+#if FMT_VERSION >= 100000
+#  include <fmt/chrono.h>
+#  define IRODS_CHRONO_FORMATTER_FMT 1
+#else
+#  include <ctime>
+#  define IRODS_CHRONO_FORMATTER_FMT 0
+#endif
 
 /// Defines all things related to the logging API.
 ///
@@ -656,29 +663,37 @@ namespace irods::experimental::log
 
             [[nodiscard]] auto utc_timestamp() const -> std::string
             {
-                // clang-format off
-                using clock_type      = std::chrono::system_clock;
-                using time_point_type = std::chrono::time_point<clock_type>;
-                // clang-format on
+                namespace chrono = std::chrono;
+                using clock_type = chrono::system_clock;
 
-                timespec ts; // NOLINT(cppcoreguidelines-pro-type-member-init)
+#if IRODS_CHRONO_FORMATTER_FMT
+                const auto tp = chrono::floor<chrono::milliseconds>(clock_type::now());
+                return fmt::format(FMT_COMPILE("{:%FT%H:%M:%S}Z"), tp);
+#else
+                // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays, cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+                char ts_buf[64]{}; // 64 here isn't particularly special, just a large-enough small power-of-two
+                std::timespec ts; // NOLINT(cppcoreguidelines-pro-type-member-init)
+                if (const int base = std::timespec_get(&ts, TIME_UTC); base != TIME_UTC) {
+                    if (const int ec = clock_gettime(CLOCK_REALTIME, &ts); ec != 0) {
+                        const auto tp = clock_type::now();
+                        const auto tp_s = chrono::floor<chrono::seconds>(tp);
+                        const auto tp_s_ms = chrono::floor<chrono::milliseconds>(tp_s);
+                        const auto tp_ms = chrono::floor<chrono::milliseconds>(tp) - tp_s_ms;
+                        const auto tt_s = clock_type::to_time_t(tp_s);
 
-                if (const auto ec = clock_gettime(CLOCK_REALTIME, &ts); ec != 0) {
-                    const auto now = clock_type::to_time_t(clock_type::now());
-                    std::stringstream utc_ss;
-                    utc_ss << std::put_time(std::gmtime(&now), "%FT%T.000Z"); // NOLINT(concurrency-mt-unsafe)
-                    return utc_ss.str();
+                        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay, concurrency-mt-unsafe)
+                        std::strftime(ts_buf, sizeof(ts_buf) - 1, "%FT%T", std::gmtime(&tt_s));
+                        return fmt::format(FMT_COMPILE("{}.{:0>3}Z"), ts_buf, tp_ms.count());
+                    }
                 }
 
-                const auto now = clock_type::to_time_t(time_point_type{std::chrono::seconds{ts.tv_sec}});
+                const std::time_t tt_s = static_cast<std::time_t>(ts.tv_sec);
+                const auto ts_ms = ts.tv_nsec / 1000000L;
 
-                std::stringstream utc_ss;
-                utc_ss << std::put_time(std::gmtime(&now), "%FT%T"); // NOLINT(concurrency-mt-unsafe)
-
-                const auto nsecs = std::chrono::nanoseconds{ts.tv_nsec};
-                const auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(nsecs);
-
-                return fmt::format("{}.{:0>3}Z", utc_ss.str(), msecs.count());
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay, concurrency-mt-unsafe)
+                std::strftime(ts_buf, sizeof(ts_buf) - 1, "%FT%T", std::gmtime(&tt_s));
+                return fmt::format(FMT_COMPILE("{}.{:0>3}Z"), ts_buf, ts_ms);
+#endif
             } // utc_timestamp
 
             static constexpr auto log_level_as_string() noexcept -> const char*
