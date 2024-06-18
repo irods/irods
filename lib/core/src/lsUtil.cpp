@@ -11,7 +11,7 @@
 #include "irods/irods_query.hpp"
 #include "irods/escape_utilities.hpp"
 
-#include <boost/format.hpp>
+#include <fmt/format.h>
 
 #include <cstring>
 
@@ -62,9 +62,10 @@ int lsUtil(rcComm_t *conn,
 
         const auto escaped_data_name = irods::single_quotes_to_hex(data_name);
         const auto escaped_coll_name = irods::single_quotes_to_hex(coll_name);
-        const std::string query_str{(boost::format(
-            "select DATA_ID where DATA_NAME = '%s' and COLL_NAME = '%s'") % escaped_data_name % escaped_coll_name).str()};
-        irods::query qobj{conn, query_str};
+        irods::query qobj{
+            conn,
+            fmt::format(
+                "select DATA_ID where DATA_NAME = '{}' and COLL_NAME = '{}'", escaped_data_name, escaped_coll_name)};
         if (qobj.size() > 0) {
             if (const auto id = qobj.front()[0]; !id.empty()) {
                 rstrcpy(rodsPathInp->srcPath[i].dataId, id.c_str(), sizeof(rodsPathInp->srcPath[i].dataId));
