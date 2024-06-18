@@ -11,7 +11,7 @@ objects_link_libraries(
   PUBLIC
   fmt::fmt
   PRIVATE
-  nlohmann_json::nlohmann_json
+  nlohmann_json::nlohmann_json # not referenced in headers
 )
 target_include_directories(
   irods_user_administration_common
