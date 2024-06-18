@@ -11,7 +11,7 @@ foreach(variant IN ITEMS client server)
     PUBLIC
     fmt::fmt
     PRIVATE
-    nlohmann_json::nlohmann_json
+    nlohmann_json::nlohmann_json # not referenced in headers
   )
   target_include_directories(
     ${target_name}
