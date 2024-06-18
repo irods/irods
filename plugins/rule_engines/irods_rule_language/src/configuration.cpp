@@ -28,6 +28,9 @@
 #include <sstream>
 #include <unordered_map>
 
+namespace logger = irods::experimental::log;
+constexpr auto err_buf_len = ERR_MSG_LEN * 1024;
+
 Cache::Cache() : address(NULL), /* unsigned char *address */
     pointers(NULL), /* unsigned char *pointers */
     dataSize(0), /* size_t dataSize */
@@ -643,22 +646,19 @@ int readRuleStructAndRuleSetFromBuffer(const char* ruleBaseName, char* ruleBase)
     errmsgBuf.errMsg = nullptr;
     errmsgBuf.len = 0;
 
-    char* buf = (char*) malloc(ERR_MSG_LEN * 1024 * sizeof(char));
-    int res = 0;
-    if ((res = readRuleSetFromBuffer(ruleBaseName,
+    auto buf = std::make_unique<char[]>(err_buf_len * sizeof(char));
+    int res = readRuleSetFromBuffer(ruleBaseName,
                                      ruleBase,
                                      ruleEngineConfig.coreRuleSet,
                                      ruleEngineConfig.coreFuncDescIndex,
                                      &errloc,
                                      &errmsgBuf,
-                                     ruleEngineConfig.coreRegion)) == 0)
+                                     ruleEngineConfig.coreRegion);
+    if (res != 0)
     {
+        errMsgToString(&errmsgBuf, buf.get(), err_buf_len);
+        logger::rule_engine::error(buf.get());
     }
-    else {
-        errMsgToString(&errmsgBuf, buf, ERR_MSG_LEN * 1024);
-        rodsLog(LOG_ERROR, "%s", buf);
-    }
-    free(buf);
     freeRErrorContent(&errmsgBuf);
     return res;
 }
