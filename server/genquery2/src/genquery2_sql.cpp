@@ -18,6 +18,7 @@
 #include <array>
 #include <map>
 #include <stdexcept>
+#include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
@@ -491,6 +492,67 @@ namespace
         return sql;
     } // generate_condition_clause
 
+    auto get_special_table_alias_for_column(const std::string_view _column) -> std::optional<std::string_view>
+    {
+        if (_column.starts_with("META_D")) {
+            return "mmd";
+        }
+
+        if (_column.starts_with("META_C")) {
+            return "mmc";
+        }
+
+        if (_column.starts_with("META_R")) {
+            return "mmr";
+        }
+
+        if (_column.starts_with("META_U")) {
+            return "mmu";
+        }
+
+        if (_column == "DATA_RESC_HIER") {
+            return "cte_drh";
+        }
+
+        if (_column.starts_with("DATA_ACCESS_")) {
+            constexpr auto prefix_length = std::char_traits<char>::length("DATA_ACCESS_");
+            const auto tail = _column.substr(prefix_length);
+
+            // The alias for R_TOKN_MAIN as it relates to data objects.
+            if (tail == "PERM_NAME") {
+                return "pdt";
+            }
+
+            // The alias for R_USER_MAIN as it relates to data objects.
+            if (tail == "USER_NAME") {
+                return "pdu";
+            }
+
+            // The alias for R_OBJT_ACCESS as it relates to data objects.
+            return "pdoa";
+        }
+
+        if (_column.starts_with("COLL_ACCESS_")) {
+            constexpr auto prefix_length = std::char_traits<char>::length("COLL_ACCESS_");
+            const auto tail = _column.substr(prefix_length);
+
+            // The alias for R_TOKN_MAIN as it relates to collections.
+            if (tail == "PERM_NAME") {
+                return "pct";
+            }
+
+            // The alias for R_USER_MAIN as it relates to collections.
+            if (tail == "USER_NAME") {
+                return "pcu";
+            }
+
+            // The alias for R_OBJT_ACCESS as it relates to collections.
+            return "pcoa";
+        }
+
+        return std::nullopt;
+    } // get_special_table_alias_for_column
+
     auto generate_group_by_clause(const gq_state& _state,
                                   const gq::group_by& _group_by,
                                   const std::map<std::string_view, gq::column_info>& _column_name_mappings)
@@ -510,19 +572,9 @@ namespace
                 throw std::invalid_argument{fmt::format("unknown column in group-by clause: {}", c)};
             }
 
-            auto is_special_column = true;
-            std::string_view alias;
+            auto alias = get_special_table_alias_for_column(c);
 
-            // clang-format off
-            if      (c.starts_with("META_D")) { alias = "mmd"; }
-            else if (c.starts_with("META_C")) { alias = "mmc"; }
-            else if (c.starts_with("META_R")) { alias = "mmr"; }
-            else if (c.starts_with("META_U")) { alias = "mmu"; }
-            else if (c == "DATA_RESC_HIER")   { alias = "cte_drh"; }
-            else                              { is_special_column = false; }
-            // clang-format on
-
-            if (!is_special_column) {
+            if (!alias) {
                 alias = _state.table_aliases.at(std::string{iter->second.table});
             }
 
@@ -536,11 +588,11 @@ namespace
             }
 
             if ((*ast_iter)->type_name.empty()) {
-                resolved_columns.push_back(fmt::format("{}.{}", alias, iter->second.name));
+                resolved_columns.push_back(fmt::format("{}.{}", *alias, iter->second.name));
             }
             else {
                 resolved_columns.push_back(
-                    fmt::format("cast({}.{} as {})", alias, iter->second.name, (*ast_iter)->type_name));
+                    fmt::format("cast({}.{} as {})", *alias, iter->second.name, (*ast_iter)->type_name));
             }
         }
 
@@ -559,36 +611,11 @@ namespace
             throw std::invalid_argument{fmt::format("unknown column: {}", _column.name)};
         }
 
-        auto is_special_column = true;
-        std::string_view table_alias;
-
-        // clang-format off
-        if      (iter->first.starts_with("META_D")) { table_alias = "mmd"; }
-        else if (iter->first.starts_with("META_C")) { table_alias = "mmc"; }
-        else if (iter->first.starts_with("META_R")) { table_alias = "mmr"; }
-        else if (iter->first.starts_with("META_U")) { table_alias = "mmu"; }
-        else if (iter->first == "DATA_RESC_HIER")   { table_alias = "cte_drh"; }
-        else if (iter->first.starts_with("DATA_ACCESS_")) {
-            // The alias for R_TOKN_MAIN as it relates to data objects.
-            if      (iter->first == "DATA_ACCESS_PERM_NAME") { table_alias = "pdt"; }
-            // The alias for R_USER_MAIN as it relates to data objects.
-            else if (iter->first == "DATA_ACCESS_USER_NAME") { table_alias = "pdu"; }
-            // The alias for R_OBJT_ACCESS as it relates to data objects.
-            else                                             { table_alias = "pdoa"; }
-        }
-        else if (iter->first.starts_with("COLL_ACCESS_")) {
-            // The alias for R_TOKN_MAIN as it relates to collections.
-            if      (iter->first == "COLL_ACCESS_PERM_NAME") { table_alias = "pct"; }
-            // The alias for R_USER_MAIN as it relates to collections.
-            else if (iter->first == "COLL_ACCESS_USER_NAME") { table_alias = "pcu"; }
-            // The alias for R_OBJT_ACCESS as it relates to collections.
-            else                                             { table_alias = "pcoa"; }
-        }
-        else                                        { is_special_column = false; }
+        auto table_alias = get_special_table_alias_for_column(iter->first);
 
         // clang-format on
         const std::string_view alias =
-            is_special_column ? table_alias : _state.table_aliases.at(std::string{iter->second.table});
+            table_alias ? *table_alias : _state.table_aliases.at(std::string{iter->second.table});
 
         if (_column.type_name.empty()) {
             return fmt::format("{}.{}", alias, iter->second.name);
@@ -623,36 +650,10 @@ namespace
                     throw std::invalid_argument{fmt::format("unknown column: {}", p->name)};
                 }
 
-                auto is_special_column = true;
-                std::string_view table_alias;
-
-                // clang-format off
-                if      (p->name.starts_with("META_D")) { table_alias = "mmd"; }
-                else if (p->name.starts_with("META_C")) { table_alias = "mmc"; }
-                else if (p->name.starts_with("META_R")) { table_alias = "mmr"; }
-                else if (p->name.starts_with("META_U")) { table_alias = "mmu"; }
-                else if (p->name == "DATA_RESC_HIER")   { table_alias = "cte_drh"; }
-                else if (p->name.starts_with("DATA_ACCESS_")) {
-                    // The alias for R_TOKN_MAIN as it relates to data objects.
-                    if      (p->name == "DATA_ACCESS_PERM_NAME") { table_alias = "pdt"; }
-                    // The alias for R_USER_MAIN as it relates to data objects.
-                    else if (p->name == "DATA_ACCESS_USER_NAME") { table_alias = "pdu"; }
-                    // The alias for R_OBJT_ACCESS as it relates to data objects.
-                    else                                         { table_alias = "pdoa"; }
-                }
-                else if (p->name.starts_with("COLL_ACCESS_")) {
-                    // The alias for R_TOKN_MAIN as it relates to collections.
-                    if      (p->name == "COLL_ACCESS_PERM_NAME") { table_alias = "pct"; }
-                    // The alias for R_USER_MAIN as it relates to collections.
-                    else if (p->name == "COLL_ACCESS_USER_NAME") { table_alias = "pcu"; }
-                    // The alias for R_OBJT_ACCESS as it relates to collections.
-                    else                                         { table_alias = "pcoa"; }
-                }
-                else                                    { is_special_column = false; }
-                // clang-format on
+                auto table_alias = get_special_table_alias_for_column(iter->first);
 
                 const std::string_view alias =
-                    is_special_column ? table_alias : _state.table_aliases.at(std::string{iter->second.table});
+                    table_alias ? *table_alias : _state.table_aliases.at(std::string{iter->second.table});
 
                 if (p->type_name.empty()) {
                     args.emplace_back(fmt::format("{}.{}", alias, iter->second.name));
