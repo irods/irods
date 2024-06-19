@@ -2303,7 +2303,7 @@ int chl_gen_query_access_control_setup_impl(
     if ( !rstrcpy( sessionClientAddr, clientAddr, sizeof( sessionClientAddr ) ) ) {
         return USER_STRLEN_TOOLONG;
     }
-    rodsLog( LOG_NOTICE, "session ticket setup, value: %s", ticket );
+    rodsLog(LOG_DEBUG, "session ticket setup, value: %s", ticket);
     return 0;
 }
 
