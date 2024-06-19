@@ -424,58 +424,46 @@ int hash_rules(const std::vector<std::string> &irbs, const int pid, std::string 
     return 0;
 }
 
-class make_copy {
+class in_memory_rulebases {
 public:
-  make_copy(const std::vector<std::string>& _irbs)
-      : irbs_(_irbs)
+  in_memory_rulebases(const std::vector<std::string>& _irods_rule_bases)
+      : irods_rule_bases_(_irods_rule_bases)
   {
-      for (auto const& irb : _irbs) {
+      for (auto const& irb : _irods_rule_bases) {
           std::ifstream ifs(get_rule_base_path(irb));
           rule_bases_.insert(
               {irb, std::string({std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>()})});
       }
   }
 
-  std::string& get_rulebase(const std::string& irb)
+  const std::string& get_rulebase(const std::string& irb)
   {
       return rule_bases_.at(irb);
   }
 
 private:
   std::unordered_map<std::string, std::string> rule_bases_;
-  const std::vector<std::string> irbs_;
+  const std::vector<std::string> irods_rule_bases_;
 };
 
-int hash_rules_with_copy(const std::vector<std::string>& irbs, std::string& digest, make_copy& copy)
+int hash_rules_with_copy(const std::vector<std::string>& irods_rule_bases, std::string& digest, in_memory_rulebases& copy)
 {
     int status;
     irods::Hasher hasher;
     irods::error ret = irods::getHasher("md5", hasher);
     if (!ret.ok()) {
         status = ret.code();
-        rodsLogError(LOG_ERROR, status, "hash_rules_with_copy: cannot get hasher, status = %d", status);
+        logger::rule_engine::error("hash_rules_with_copy: cannot get hasher, status = {}", status);
         return status;
     }
 
-    for (auto const& irb : irbs) {
-        std::istringstream in_file(copy.get_rulebase(irb), std::ios::in | std::ios::binary);
-
-        std::string buffer_read;
-        buffer_read.resize(HASH_BUF_SZ);
-
-        while (in_file.read(&buffer_read[0], HASH_BUF_SZ)) {
-            hasher.update(buffer_read);
-        }
-
-        if (in_file.eof()) {
-            if (in_file.gcount() > 0) {
-                buffer_read.resize(in_file.gcount());
-                hasher.update(buffer_read);
-            }
-        }
+    for (auto const& irb : irods_rule_bases) {
+        hasher.update(copy.get_rulebase(irb));
     }
-
+    
     hasher.digest(digest);
+
+    logger::rule_engine::debug("hash_rules_with_copy: rulebases = {}, digest = {}", fmt::join(irods_rule_bases, ","), digest);
 
     return 0;
 }
@@ -488,9 +476,10 @@ int load_rules(const char* irbSet, const std::vector<std::string> &irbs, const i
                     getSystemFunctions( ruleEngineConfig.sysFuncDescIndex->current, ruleEngineConfig.sysRegion );
                 }
 
-                make_copy copy_rule_base_files(irbs);
+                in_memory_rulebases copy_rule_base_files(irbs);
                 for(auto const & irb: irbs) {
-                    int i = readRuleStructAndRuleSetFromBuffer(irb.c_str(), &copy_rule_base_files.get_rulebase(irb)[0]);
+                    auto* rule_ptr = const_cast<char*>(&copy_rule_base_files.get_rulebase(irb)[0]);
+                    int i = readRuleStructAndRuleSetFromBuffer(irb.c_str(), rule_ptr);
 
                     if ( i != 0 ) {
                         ruleEngineConfig.ruleEngineStatus = INITIALIZED;
@@ -568,7 +557,7 @@ int loadRuleFromCacheOrFile( const char* inst_name, const char *irbSet ) {
                 } else {
                     int diffIrbSet = strcmp( cache->ruleBase, irbSet ) != 0;
 
-                    make_copy copy_rule_base_files(irbs);
+                    in_memory_rulebases copy_rule_base_files(irbs);
                     std::string hash;
                     int ret = hash_rules_with_copy(irbs, hash, copy_rule_base_files);
 
