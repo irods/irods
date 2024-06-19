@@ -361,7 +361,7 @@ Options:
       --indent=INTEGER
                   The number of spaces used for indenting nested collections.
                   (defaults to 2).
-  -j, --json      Print collection tree as JSON.
+  -J, --json      Print collection tree as JSON.
   -L, --depth=INTEGER
                   Limit the depth of the listing (defaults to 1000).
   -p, --pattern-regex=PATTERN
