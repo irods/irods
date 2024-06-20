@@ -424,27 +424,30 @@ int hash_rules(const std::vector<std::string> &irbs, const int pid, std::string 
     return 0;
 }
 
-class in_memory_rulebases {
-public:
-  in_memory_rulebases(const std::vector<std::string>& _irods_rule_bases)
-  {
-      for (auto const& irb : _irods_rule_bases) {
-          std::ifstream ifs(get_rule_base_path(irb));
-          rule_bases_.insert(
-              {irb, std::string({std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>()})});
-      }
-  }
+class in_memory_rulebases
+{
+  public:
+    in_memory_rulebases(const std::vector<std::string>& _irods_rule_bases)
+    {
+        for (auto const& irb : _irods_rule_bases) {
+            std::ifstream ifs(get_rule_base_path(irb));
+            rule_bases_.insert(
+                {irb, std::string({std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>()})});
+        }
+    }
 
-  const std::string& get_rulebase(const std::string& irb)
-  {
-      return rule_bases_.at(irb);
-  }
+    const std::string& get_rulebase(const std::string& irb)
+    {
+        return rule_bases_.at(irb);
+    }
 
-private:
-  std::unordered_map<std::string, std::string> rule_bases_;
+  private:
+    std::unordered_map<std::string, std::string> rule_bases_;
 };
 
-int hash_rules_with_copy(const std::vector<std::string>& irods_rule_bases, std::string& digest, in_memory_rulebases& copy)
+int hash_rules_with_copy(const std::vector<std::string>& irods_rule_bases,
+                         std::string& digest,
+                         in_memory_rulebases& copy)
 {
     irods::Hasher hasher;
     irods::error ret = irods::getHasher("md5", hasher);
@@ -457,11 +460,12 @@ int hash_rules_with_copy(const std::vector<std::string>& irods_rule_bases, std::
     for (auto const& irb : irods_rule_bases) {
         try {
             hasher.update(copy.get_rulebase(irb));
-        } catch(std::out_of_range& ex) {
+        }
+        catch (std::out_of_range& ex) {
             logger::rule_engine::warn("hash_rules_with_copy: attempted to access nonexistent rulebase [{}]", irb);
         }
     }
-    
+
     hasher.digest(digest);
 
     logger::rule_engine::debug(
@@ -484,11 +488,12 @@ int load_rules(const char* irbSet, const std::vector<std::string> &irbs, const i
                         auto* rule_ptr = const_cast<char*>(&stored_rulebases.get_rulebase(irb)[0]);
                         int i = readRuleStructAndRuleSetFromBuffer(irb.c_str(), rule_ptr);
 
-                        if ( i != 0 ) {
+                        if (i != 0) {
                             ruleEngineConfig.ruleEngineStatus = INITIALIZED;
                             return i;
                         }
-                    } catch(std::out_of_range& ex) {
+                    }
+                    catch (std::out_of_range& ex) {
                         logger::rule_engine::warn("load_rules: attempted to access nonexistent rulebase [{}]", irb);
                     }
                 }
