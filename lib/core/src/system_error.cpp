@@ -14,7 +14,7 @@ namespace
     // Used to compute the value of an errno value embedded in an iRODS error code.
     constexpr auto errno_divisor = 1000;
 
-    constexpr auto is_irods_error_category(const std::error_code& _errc) -> bool
+    auto is_irods_error_category(const std::error_code& _errc) -> bool
     {
         return _errc.category().name() == std::string_view{"iRODS"};
     } // is_irods_error_category
