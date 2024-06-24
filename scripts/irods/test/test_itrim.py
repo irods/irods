@@ -89,20 +89,22 @@ class Test_Itrim(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
                 self.admin.assert_icommand('iadmin rmresc resc_{0}'.format(i))
 
     def test_itrim_option_N_is_deprecated__issue_4860(self):
+        original_resource = 'issue_4860_0'
         resc1 = 'issue_4860_1'
         resc2 = 'issue_4860_2'
         filename = 'test_itrim_option_N_is_deprecated__issue_4860'
         logical_path = os.path.join(self.admin.session_collection, filename)
 
         try:
+            lib.create_ufs_resource(self.admin, original_resource, test.settings.HOSTNAME_1)
             lib.create_ufs_resource(self.admin, resc1, test.settings.HOSTNAME_2)
             lib.create_ufs_resource(self.admin, resc2, test.settings.HOSTNAME_3)
 
             # Create 3 replicas so that a trim will actually occur.
-            self.admin.assert_icommand(['itouch', logical_path])
+            self.admin.assert_icommand(['itouch', '-R', original_resource, logical_path])
             self.admin.assert_icommand(['irepl', '-R', resc1, logical_path])
             self.admin.assert_icommand(['irepl', '-R', resc2, logical_path])
-            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, self.admin.default_resource))
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, original_resource))
             self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc1))
             self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc2))
 
@@ -121,24 +123,27 @@ class Test_Itrim(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
         finally:
             self.admin.assert_icommand(['ils', '-l', logical_path], 'STDOUT', filename) # debugging
             self.admin.run_icommand(['irm', '-f', logical_path])
+            lib.remove_resource(self.admin, original_resource)
             lib.remove_resource(self.admin, resc1)
             lib.remove_resource(self.admin, resc2)
 
     def test_itrim_option_age_is_deprecated__issue_7498(self):
+        original_resource = 'issue_7498_0'
         resc1 = 'issue_7498_1'
         resc2 = 'issue_7498_2'
         filename = 'test_itrim_option_age_is_deprecated__issue_7498'
         logical_path = os.path.join(self.admin.session_collection, filename)
 
         try:
+            lib.create_ufs_resource(self.admin, original_resource, test.settings.HOSTNAME_1)
             lib.create_ufs_resource(self.admin, resc1, test.settings.HOSTNAME_2)
             lib.create_ufs_resource(self.admin, resc2, test.settings.HOSTNAME_3)
 
             # Create 3 replicas so that a trim will actually occur.
-            self.admin.assert_icommand(['itouch', logical_path])
+            self.admin.assert_icommand(['itouch', '-R', original_resource, logical_path])
             self.admin.assert_icommand(['irepl', '-R', resc1, logical_path])
             self.admin.assert_icommand(['irepl', '-R', resc2, logical_path])
-            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, self.admin.default_resource))
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, original_resource))
             self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc1))
             self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc2))
 
@@ -157,6 +162,7 @@ class Test_Itrim(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
         finally:
             self.admin.assert_icommand(['ils', '-l', logical_path], 'STDOUT', filename) # debugging
             self.admin.run_icommand(['irm', '-f', logical_path])
+            lib.remove_resource(self.admin, original_resource)
             lib.remove_resource(self.admin, resc1)
             lib.remove_resource(self.admin, resc2)
 
@@ -354,6 +360,7 @@ class Test_Itrim(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
             lib.remove_resource(self.admin, resc2)
 
     def test_itrim_minimum_replicas_to_keep_invalid_values__issue_7502(self):
+        original_resource = 'test_itrim_minimum_replicas_to_keep_invalid_values_resc_0'
         resc1 = 'test_itrim_minimum_replicas_to_keep_invalid_values_resc_1'
         resc2 = 'test_itrim_minimum_replicas_to_keep_invalid_values_resc_2'
 
@@ -361,53 +368,55 @@ class Test_Itrim(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
         logical_path = os.path.join(self.admin.session_collection, filename)
 
         try:
+            lib.create_ufs_resource(self.admin, original_resource, test.settings.HOSTNAME_1)
             lib.create_ufs_resource(self.admin, resc1, test.settings.HOSTNAME_2)
             lib.create_ufs_resource(self.admin, resc2, test.settings.HOSTNAME_3)
 
             # Create the data object.
-            self.admin.assert_icommand(['itouch', logical_path])
+            self.admin.assert_icommand(['itouch', '-R', original_resource, logical_path])
 
             # Replicate to two other resources so that we have something to trim, even with the default minimum.
             self.admin.assert_icommand(['irepl', '-R', resc1, logical_path])
             self.admin.assert_icommand(['irepl', '-R', resc2, logical_path])
-            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, self.admin.default_resource))
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, original_resource))
             self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc1))
             self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc2))
 
             # -N cannot be 0.
             self.admin.assert_icommand(['itrim', '-N0', logical_path], 'STDERR', 'SYS_INVALID_INPUT_PARAM')
-            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, self.admin.default_resource))
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, original_resource))
             self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc1))
             self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc2))
 
             # -N cannot be negative.
             self.admin.assert_icommand(['itrim', '-N"-1"', logical_path], 'STDERR', 'SYS_INVALID_INPUT_PARAM')
-            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, self.admin.default_resource))
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, original_resource))
             self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc1))
             self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc2))
 
             # -N cannot overflow. Maximum value is INT32_MAX (2^31 - 1 = 2147483647). Should be enough for anyone.
             self.admin.assert_icommand(
                 ['itrim', '-N2147483648', logical_path], 'STDERR', 'SYS_INVALID_INPUT_PARAM')
-            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, self.admin.default_resource))
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, original_resource))
             self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc1))
             self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc2))
 
             # -N must be a number.
             self.admin.assert_icommand(['itrim', '-Nnope', logical_path], 'STDERR', 'SYS_INVALID_INPUT_PARAM')
-            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, self.admin.default_resource))
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, original_resource))
             self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc1))
             self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc2))
 
             # -N must be an Integer.
             self.admin.assert_icommand(['itrim', '-N"3.14"', logical_path], 'STDERR', 'SYS_INVALID_INPUT_PARAM')
-            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, self.admin.default_resource))
+            self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, original_resource))
             self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc1))
             self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc2))
 
         finally:
             self.admin.assert_icommand(['ils', '-l', logical_path], 'STDOUT', filename) # debugging
             self.admin.run_icommand(['irm', '-f', logical_path])
+            lib.remove_resource(self.admin, original_resource)
             lib.remove_resource(self.admin, resc1)
             lib.remove_resource(self.admin, resc2)
 
