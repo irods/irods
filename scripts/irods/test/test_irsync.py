@@ -34,10 +34,11 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         self.assertTrue(set(local_files) == rods_files,
                         msg="Files missing:\n" + str(set(local_files) - rods_files) + "\n\n" +
                             "Extra files:\n" + str(rods_files - set(local_files)))
-        vault_files = set(os.listdir(os.path.join(user_session.get_vault_session_path(), base_name)))
-        self.assertTrue(set(local_files) == vault_files,
-                        msg="Files missing from vault:\n" + str(set(local_files) - vault_files) + "\n\n" +
-                            "Extra files in vault:\n" + str(vault_files - set(local_files)))
+        if not test.settings.RUN_IN_TOPOLOGY:
+            vault_files = set(os.listdir(os.path.join(user_session.get_vault_session_path(), base_name)))
+            self.assertTrue(set(local_files) == vault_files,
+                            msg="Files missing from vault:\n" + str(set(local_files) - vault_files) + "\n\n" +
+                                "Extra files in vault:\n" + str(vault_files - set(local_files)))
         return (local_dir, local_files)
 
     def test_irsync(self):
@@ -103,10 +104,10 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
                         msg="Files missing:\n" + str(file_names - rods_files) + "\n\n" +
                             "Extra files:\n" + str(rods_files - file_names))
 
-        vault_files_post_irsync = set(os.listdir(os.path.join(self.user0.get_vault_session_path(),
-                                                              base_name)))
-
         if not test.settings.RUN_IN_TOPOLOGY:
+            vault_files_post_irsync = set(os.listdir(os.path.join(self.user0.get_vault_session_path(),
+                                                                  base_name)))
+
             self.assertTrue(file_names == vault_files_post_irsync,
                             msg="Files missing from vault:\n" + str(file_names - vault_files_post_irsync) + "\n\n" +
                                 "Extra files in vault:\n" + str(vault_files_post_irsync - file_names))
