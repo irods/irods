@@ -64,14 +64,40 @@ class Test_Irodsctl(unittest.TestCase):
                 # an agent exists for the istream call.
                 lib.delayAssert(lambda: lib.replica_exists(user, logical_path, 0))
 
-                # Collect all the server processes. Should be 3-4 depending on whether the delay server is querying.
-                # capture_process_tree does not count the grandpa process.
+                # Collect all the server processes. capture_process_tree does not count the grandpa process.
+                # The expected number of descendant processes can vary due to timing, unfortunately. Here are the cases:
+                #
+                #  1. When there is no delay server and the main server is not running a query to see whether it should
+                #     spawn a delay server, there will be 2 processes: The agent factory and the agent servicing istream
+                #  2. When there is no delay server and the main server is running a query to see whether it should
+                #     spawn a delay server, there will be 3 processes: The agent factory, the agent servicing istream,
+                #     and the agent servicing the query from the main server
+                #  3. When there is a delay server and the main server is not running a query to see whether it should
+                #     tear down the delay server, and the delay server is not running a query for work to do, there
+                #     will be 3 processes: The agent factory, the delay server, and the agent servicing istream
+                #  4. When there is a delay server and the main server is running a query to see whether it should tear
+                #     down the delay server, OR the delay server is running a query for work to do, there will be 4
+                #     processes: The agent factory, the delay server, the agent servicing istream, and the agent
+                #     servicing the query from either the delay server or the main server
+                #  5. When there is a delay server and the main server is running a query to see whether it should tear
+                #     down the delay server, AND the delay server is running a query for work to do, there will be 5
+                #     processes: The agent factory, the delay server, the agent servicing istream, the agent servicing
+                #     the query from the delay server, and the agent servicing the query from the main server
+                #
+                # Because the queries could be running at any time, we check for a minimum number of server processes
+                # based on whether the "leader" for the delay server is the host running the test. There should be at
+                # least 2 processes for the case where the local server is not running the delay server (cases 1 - 2)
+                # and at least 3 processes in the case where the local server is running the delay server (cases 3 - 5).
+                delay_server_info = json.loads(
+                    admin_session.run_icommand(['iadmin', 'get_delay_server_info'])[0].strip())
+                minimum_expected_process_count = 2 if delay_server_info['leader'] != lib.get_hostname() else 3
+
                 server_descendants_before_shutdown = set()
                 self.assertTrue(
                     capture_process_tree(
                         server_proc, server_descendants_before_shutdown, IrodsController().server_binaries))
                 print(server_descendants_before_shutdown) # debugging
-                self.assertGreaterEqual(len(server_descendants_before_shutdown), 3)
+                self.assertGreaterEqual(len(server_descendants_before_shutdown), minimum_expected_process_count)
 
                 # Shut down the server - this will take a while as it will need to time out first.
                 assert_command(
