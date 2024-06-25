@@ -4,14 +4,11 @@ import json
 import os
 import shutil
 import socket
+import stat
 import sys
 import tempfile
 import textwrap
-
-if sys.version_info >= (2, 7):
-    import unittest
-else:
-    import unittest2 as unittest
+import unittest
 
 from .. import lib
 from .. import test
@@ -491,10 +488,15 @@ output ruleExecOut
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_msiServerMonPerf_default_3736(self):
+        path_to_irodsServerMonPerf = os.path.join(paths.home_directory(), 'msiExecCmd_bin', 'irodsServerMonPerf')
+        path_to_irodsServerMonPerf_template = path_to_irodsServerMonPerf + '.template'
+        irodsServerMonPerf_already_existed = os.path.exists(path_to_irodsServerMonPerf)
+
         rule_file="test_msiServerMonPerf.r"
         rule_string= '''
 msiTestServerMonPerf {{
     msiServerMonPerf("default", "default");
+    msiServerMonPerf("verbose", "default");
 }}
 
 INPUT null
@@ -504,7 +506,26 @@ OUTPUT ruleExecOut
         with open(rule_file, 'w') as f:
             f.write(rule_string)
 
-        self.rods_session.assert_icommand("irule -F " + rule_file);
+        try:
+            # The microservice used in this rule requires the irodsServerMonPerf script to exist. iRODS ships with a
+            # template file, so we need to copy that file to the expected location of the script. If the script file
+            # already exists, we do not need to copy the template file. The template file is read-only for owner,
+            # group, and others, so we need to make it executable for the owner, as well.
+            if not irodsServerMonPerf_already_existed:
+                shutil.copy(path_to_irodsServerMonPerf_template, path_to_irodsServerMonPerf)
+                os.chmod(
+                    path_to_irodsServerMonPerf,
+                    stat.S_ISUID | stat.S_IRUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IROTH)
+
+            self.rods_session.assert_icommand(['irule', '-F', rule_file]);
+
+        finally:
+            # Remove the irodsServerMonPerf script only if it did not exist before.
+            if not irodsServerMonPerf_already_existed and os.path.exists(path_to_irodsServerMonPerf):
+                os.unlink(path_to_irodsServerMonPerf)
+
+            if os.path.exists(rule_file):
+                os.unlink(rule_file)
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_msiAddKeyValToMspStr_works_with_empty_string__issue_6918(self):
