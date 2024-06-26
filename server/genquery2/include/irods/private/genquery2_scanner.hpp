@@ -7,8 +7,6 @@
 #  include <FlexLexer.h>
 #endif // yyFlexLexerOnce
 
-#include <iosfwd> // For std::istream and std::ostream.
-
 namespace irods::experimental::genquery2
 {
     class driver;
