@@ -131,27 +131,27 @@ rules only.
 %left AND
 %precedence NOT
 
-%nterm <gq2_detail::selections>                   selections;
-%nterm <gq2_detail::conditions>                   conditions;
+%nterm <gq2_detail::projections>                  projection_list;
+%nterm <gq2_detail::conditions>                   condition_list;
 %nterm <gq2_detail::group_by>                     group_by;
 %nterm <gq2_detail::order_by>                     order_by;
-%nterm <std::vector<gq2_detail::sort_expression>> sort_expr;
+%nterm <std::vector<gq2_detail::sort_expression>> sort_expression;
 %nterm <gq2_detail::range>                        range;
-%nterm <gq2_detail::selection>                    selection;
+%nterm <gq2_detail::projection>                   projection;
 %nterm <gq2_detail::column>                       column;
-%nterm <std::vector<std::variant<std::string, gq2_detail::column, gq2_detail::function>>> arg_list;
+%nterm <std::vector<std::variant<std::string, gq2_detail::column, gq2_detail::function>>> argument_list;
 %nterm <gq2_detail::function>                     function;
 %nterm <gq2_detail::condition>                    condition;
 %nterm <gq2_detail::condition_expression>         condition_expression;
-%nterm <std::vector<std::string>>                 list_of_string_literals;
-%nterm <std::vector<std::string>>                 list_of_identifiers;
+%nterm <std::vector<std::string>>                 string_literal_list;
+%nterm <std::vector<std::string>>                 identifier_list;
 %nterm <std::string>                              integer;
 
-%start genquery /* Defines where grammar starts */
+%start genquery2 /* Defines where grammar starts */
 
 %%
 
-genquery:
+genquery2:
   select group_by { std::swap(drv.select.group_by, $2); }
 | select group_by order_by { std::swap(drv.select.group_by, $2); std::swap(drv.select.order_by, $3); }
 | select group_by range { std::swap(drv.select.group_by, $2); std::swap(drv.select.range, $3); }
@@ -160,23 +160,23 @@ genquery:
 ;
 
 select:
-  SELECT selections { std::swap(drv.select.selections, $2); }
-| SELECT selections WHERE conditions { std::swap(drv.select.selections, $2); std::swap(drv.select.conditions, $4); }
-| SELECT NO DISTINCT selections { drv.select.distinct = false; std::swap(drv.select.selections, $4); }
-| SELECT NO DISTINCT selections WHERE conditions { drv.select.distinct = false; std::swap(drv.select.selections, $4); std::swap(drv.select.conditions, $6); }
+  SELECT projection_list { std::swap(drv.select.projections, $2); }
+| SELECT projection_list WHERE condition_list { std::swap(drv.select.projections, $2); std::swap(drv.select.conditions, $4); }
+| SELECT NO DISTINCT projection_list { drv.select.distinct = false; std::swap(drv.select.projections, $4); }
+| SELECT NO DISTINCT projection_list WHERE condition_list { drv.select.distinct = false; std::swap(drv.select.projections, $4); std::swap(drv.select.conditions, $6); }
 ;
 
 group_by:
   %empty { /* Generates a default initialized group_by structure. */ }
-| GROUP BY list_of_identifiers { std::swap($$.columns, $3); }
+| GROUP BY identifier_list { std::swap($$.columns, $3); }
 ;
 
 order_by:
-  ORDER BY sort_expr { std::swap($$.sort_expressions, $3); }
+  ORDER BY sort_expression { std::swap($$.sort_expressions, $3); }
 ;
 
 /*
-The "selection" rule would simplify this, but attempting to use that results in a compiler
+The "projection" rule would simplify this, but attempting to use that results in a compiler
 error due to boost::variant not being compatible with std::variant. For now, we just add more rules
 to achieve the desired outcome.
 
@@ -184,28 +184,28 @@ TODO(#7679): This will be simplified once the parser is converted to use std::va
 
 The following would be possible if everything used std::variant.
 
-    sort_expr:
-      selection { $$.push_back(gq2_detail::sort_expression{$1, true}); }
-    | selection ASC { $$.push_back(gq2_detail::sort_expression{$1, true}); }
-    | selection DESC { $$.push_back(gq2_detail::sort_expression{$1, false}); }
-    | sort_expr COMMA selection { $1.push_back(gq2_detail::sort_expression{$3, true}); std::swap($$, $1); }
-    | sort_expr COMMA selection ASC { $1.push_back(gq2_detail::sort_expression{$3, true}); std::swap($$, $1); }
-    | sort_expr COMMA selection DESC { $1.push_back(gq2_detail::sort_expression{$3, false}); std::swap($$, $1); }
+    sort_expression:
+      projection { $$.push_back(gq2_detail::sort_expression{$1, true}); }
+    | projection ASC { $$.push_back(gq2_detail::sort_expression{$1, true}); }
+    | projection DESC { $$.push_back(gq2_detail::sort_expression{$1, false}); }
+    | sort_expression COMMA projection { $1.push_back(gq2_detail::sort_expression{$3, true}); std::swap($$, $1); }
+    | sort_expression COMMA projection ASC { $1.push_back(gq2_detail::sort_expression{$3, true}); std::swap($$, $1); }
+    | sort_expression COMMA projection DESC { $1.push_back(gq2_detail::sort_expression{$3, false}); std::swap($$, $1); }
     ;
 */
-sort_expr:
+sort_expression:
   column { $$.push_back(gq2_detail::sort_expression{$1, true}); }
 | column ASC { $$.push_back(gq2_detail::sort_expression{$1, true}); }
 | column DESC { $$.push_back(gq2_detail::sort_expression{$1, false}); }
-| sort_expr COMMA column { $1.push_back(gq2_detail::sort_expression{$3, true}); std::swap($$, $1); }
-| sort_expr COMMA column ASC { $1.push_back(gq2_detail::sort_expression{$3, true}); std::swap($$, $1); }
-| sort_expr COMMA column DESC { $1.push_back(gq2_detail::sort_expression{$3, false}); std::swap($$, $1); }
+| sort_expression COMMA column { $1.push_back(gq2_detail::sort_expression{$3, true}); std::swap($$, $1); }
+| sort_expression COMMA column ASC { $1.push_back(gq2_detail::sort_expression{$3, true}); std::swap($$, $1); }
+| sort_expression COMMA column DESC { $1.push_back(gq2_detail::sort_expression{$3, false}); std::swap($$, $1); }
 | function { $$.push_back(gq2_detail::sort_expression{$1, true}); }
 | function ASC { $$.push_back(gq2_detail::sort_expression{$1, true}); }
 | function DESC { $$.push_back(gq2_detail::sort_expression{$1, false}); }
-| sort_expr COMMA function { $1.push_back(gq2_detail::sort_expression{$3, true}); std::swap($$, $1); }
-| sort_expr COMMA function ASC { $1.push_back(gq2_detail::sort_expression{$3, true}); std::swap($$, $1); }
-| sort_expr COMMA function DESC { $1.push_back(gq2_detail::sort_expression{$3, false}); std::swap($$, $1); }
+| sort_expression COMMA function { $1.push_back(gq2_detail::sort_expression{$3, true}); std::swap($$, $1); }
+| sort_expression COMMA function ASC { $1.push_back(gq2_detail::sort_expression{$3, true}); std::swap($$, $1); }
+| sort_expression COMMA function DESC { $1.push_back(gq2_detail::sort_expression{$3, false}); std::swap($$, $1); }
 ;
 
 range:
@@ -218,12 +218,12 @@ range:
 | LIMIT POSITIVE_INTEGER OFFSET POSITIVE_INTEGER { std::swap($$.offset, $4); std::swap($$.number_of_rows, $2); }
 ;
 
-selections:
-  selection { $$ = gq2_detail::selections{std::move($1)}; }
-| selections COMMA selection { $1.push_back(std::move($3)); std::swap($$, $1); }
+projection_list:
+  projection { $$ = gq2_detail::projections{std::move($1)}; }
+| projection_list COMMA projection { $1.push_back(std::move($3)); std::swap($$, $1); }
 ;
 
-selection:
+projection:
   column { $$ = std::move($1); }
 | function { $$ = std::move($1); }
 ;
@@ -234,28 +234,28 @@ column:
 | CAST PAREN_OPEN IDENTIFIER AS IDENTIFIER PAREN_OPEN POSITIVE_INTEGER PAREN_CLOSE PAREN_CLOSE { $$ = gq2_detail::column{$3, fmt::format("{}({})", $5, $7)}; }
 ;
 
-arg_list:
+argument_list:
   %empty { /* Generate an empty argument list. */ }
 | STRING_LITERAL { $$.emplace_back($1); }
 | integer { $$.emplace_back($1); }
 | column { $$.emplace_back($1); }
 | function { $$.emplace_back($1); }
-| arg_list COMMA STRING_LITERAL { $1.emplace_back($3); std::swap($$, $1); }
-| arg_list COMMA integer { $1.emplace_back($3); std::swap($$, $1); }
-| arg_list COMMA column { $1.emplace_back($3); std::swap($$, $1); }
-| arg_list COMMA function { $1.emplace_back($3); std::swap($$, $1); }
+| argument_list COMMA STRING_LITERAL { $1.emplace_back($3); std::swap($$, $1); }
+| argument_list COMMA integer { $1.emplace_back($3); std::swap($$, $1); }
+| argument_list COMMA column { $1.emplace_back($3); std::swap($$, $1); }
+| argument_list COMMA function { $1.emplace_back($3); std::swap($$, $1); }
 ;
 
 function:
-  IDENTIFIER PAREN_OPEN arg_list PAREN_CLOSE { $$ = gq2_detail::function{std::move($1), std::move($3)}; }
+  IDENTIFIER PAREN_OPEN argument_list PAREN_CLOSE { $$ = gq2_detail::function{std::move($1), std::move($3)}; }
 ;
 
-conditions:
+condition_list:
   condition { $$ = gq2_detail::conditions{std::move($1)}; }
-| conditions AND conditions { $1.push_back(gq2_detail::logical_and{std::move($3)}); std::swap($$, $1); }
-| conditions OR conditions { $1.push_back(gq2_detail::logical_or{std::move($3)}); std::swap($$, $1); }
-| PAREN_OPEN conditions PAREN_CLOSE { $$ = gq2_detail::conditions{gq2_detail::logical_grouping{std::move($2)}}; }
-| NOT conditions { $$ = gq2_detail::conditions{gq2_detail::logical_not{std::move($2)}}; }
+| condition_list AND condition_list { $1.push_back(gq2_detail::logical_and{std::move($3)}); std::swap($$, $1); }
+| condition_list OR condition_list { $1.push_back(gq2_detail::logical_or{std::move($3)}); std::swap($$, $1); }
+| PAREN_OPEN condition_list PAREN_CLOSE { $$ = gq2_detail::conditions{gq2_detail::logical_grouping{std::move($2)}}; }
+| NOT condition_list { $$ = gq2_detail::conditions{gq2_detail::logical_not{std::move($2)}}; }
 ;
 
 condition:
@@ -266,8 +266,8 @@ condition:
 condition_expression:
   LIKE STRING_LITERAL { $$ = gq2_detail::condition_like(std::move($2)); }
 | NOT LIKE STRING_LITERAL { $$ = gq2_detail::condition_operator_not{gq2_detail::condition_like(std::move($3))}; }
-| IN PAREN_OPEN list_of_string_literals PAREN_CLOSE { $$ = gq2_detail::condition_in(std::move($3)); }
-| NOT IN PAREN_OPEN list_of_string_literals PAREN_CLOSE { $$ = gq2_detail::condition_operator_not{gq2_detail::condition_in(std::move($4))}; }
+| IN PAREN_OPEN string_literal_list PAREN_CLOSE { $$ = gq2_detail::condition_in(std::move($3)); }
+| NOT IN PAREN_OPEN string_literal_list PAREN_CLOSE { $$ = gq2_detail::condition_operator_not{gq2_detail::condition_in(std::move($4))}; }
 | BETWEEN STRING_LITERAL AND STRING_LITERAL { $$ = gq2_detail::condition_between(std::move($2), std::move($4)); }
 | NOT BETWEEN STRING_LITERAL AND STRING_LITERAL { $$ = gq2_detail::condition_operator_not{gq2_detail::condition_between(std::move($3), std::move($5))}; }
 | EQUAL STRING_LITERAL { $$ = gq2_detail::condition_equal(std::move($2)); }
@@ -280,14 +280,14 @@ condition_expression:
 | IS NOT NULL { $$ = gq2_detail::condition_is_not_null{}; }
 ;
 
-list_of_string_literals:
+string_literal_list:
   STRING_LITERAL { $$ = std::vector<std::string>{std::move($1)}; }
-| list_of_string_literals COMMA STRING_LITERAL { $1.push_back(std::move($3)); std::swap($$, $1); }
+| string_literal_list COMMA STRING_LITERAL { $1.push_back(std::move($3)); std::swap($$, $1); }
 ;
 
-list_of_identifiers:
+identifier_list:
   IDENTIFIER { $$ = std::vector<std::string>{std::move($1)}; }
-| list_of_identifiers COMMA IDENTIFIER { $1.push_back(std::move($3)); std::swap($$, $1); }
+| identifier_list COMMA IDENTIFIER { $1.push_back(std::move($3)); std::swap($$, $1); }
 ;
 
 integer:

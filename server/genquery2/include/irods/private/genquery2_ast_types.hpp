@@ -213,16 +213,11 @@ namespace irods::experimental::genquery2
     struct logical_not;
     struct logical_grouping;
 
-    // The name condition_type is a little wonky given the fact that nothing else
-    // is following that pattern. The reason "_type" is included is because the name
-    // "condition" is already in use. This type is an implementation detail, so it
-    // can be changed if it proves to be challenging to maintain.
-    using condition_type = boost::variant<logical_and, logical_or, logical_not, logical_grouping, condition>;
-
     // clang-format off
-    using selection  = boost::variant<function, column>;
-    using selections = std::vector<selection>;
-    using conditions = std::vector<condition_type>;
+    using projection        = boost::variant<function, column>;
+    using projections       = std::vector<projection>;
+    using condition_wrapper = boost::variant<logical_and, logical_or, logical_not, logical_grouping, condition>;
+    using conditions        = std::vector<condition_wrapper>;
     // clang-format on
 
     struct logical_and
@@ -271,13 +266,13 @@ namespace irods::experimental::genquery2
     {
         select() = default;
 
-        select(selections selections, conditions conditions)
-            : selections(std::move(selections))
+        select(projections projections, conditions conditions)
+            : projections(std::move(projections))
             , conditions(std::move(conditions))
         {
         }
 
-        selections selections;
+        projections projections;
         conditions conditions;
         group_by group_by;
         order_by order_by;
