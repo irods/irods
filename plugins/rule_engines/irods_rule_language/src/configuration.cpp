@@ -29,7 +29,7 @@
 #include <sstream>
 #include <unordered_map>
 
-namespace logger = irods::experimental::log;
+using log_re = irods::experimental::log::rule_engine;
 constexpr auto err_buf_len = ERR_MSG_LEN * 1024;
 
 Cache::Cache() : address(NULL), /* unsigned char *address */
@@ -431,6 +431,10 @@ class in_memory_rulebases
     {
         for (auto const& irb : _irods_rule_bases) {
             std::ifstream ifs(get_rule_base_path(irb));
+            if (!ifs) {
+                log_re::warn(
+                    "in_memory_rulebases: input file stream [{}] failed, errno = {}", get_rule_base_path(irb), errno);
+            }
             rule_bases_.insert(
                 {irb, std::string({std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>()})});
         }
@@ -453,7 +457,7 @@ int hash_rules_with_copy(const std::vector<std::string>& irods_rule_bases,
     irods::error ret = irods::getHasher("md5", hasher);
     if (!ret.ok()) {
         int status = ret.code();
-        logger::rule_engine::error("hash_rules_with_copy: cannot get hasher, status = {}", status);
+        log_re::error("hash_rules_with_copy: cannot get hasher, status = {}", status);
         return status;
     }
 
@@ -462,7 +466,7 @@ int hash_rules_with_copy(const std::vector<std::string>& irods_rule_bases,
             hasher.update(copy.get_rulebase(irb));
         }
         catch (std::out_of_range& ex) {
-            logger::rule_engine::warn("hash_rules_with_copy: attempted to access nonexistent rulebase [{}]", irb);
+            log_re::warn("hash_rules_with_copy: attempted to access nonexistent rulebase [{}]", irb);
         }
     }
 
