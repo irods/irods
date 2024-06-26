@@ -992,7 +992,7 @@ namespace irods::experimental::genquery2
         return fmt::format("{}({})", _function.name, fmt::join(args, ", "));
     } // to_sql
 
-    auto to_sql(gq_state& _state, const selections& _selections) -> std::string
+    auto to_sql(gq_state& _state, const projections& _projections) -> std::string
     {
         irods::at_scope_exit restore_value{[&_state] { _state.in_select_clause = false; }};
 
@@ -1004,14 +1004,14 @@ namespace irods::experimental::genquery2
 
         _state.sql_tables.clear();
 
-        if (_selections.empty()) {
+        if (_projections.empty()) {
             throw std::runtime_error{"no columns selected"};
         }
 
         std::vector<std::string> cols;
         sql_visitor v{_state};
 
-        for (auto&& s : _selections) {
+        for (auto&& s : _projections) {
             cols.push_back(boost::apply_visitor(v, s));
         }
 
@@ -1154,7 +1154,7 @@ namespace irods::experimental::genquery2
 
             log_gq::trace("### PHASE 1: Gather");
 
-            const auto cols = to_sql(state, _select.selections);
+            const auto cols = to_sql(state, _select.projections);
             log_gq::debug("SELECT COLUMNS = {}", cols);
 
             // Convert the conditions of the general query statement into SQL with prepared
