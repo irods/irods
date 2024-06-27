@@ -3994,17 +3994,43 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
         with open(filepath, 'wt') as f:
             print("TESTFILE -- [" + filepath + "]", file=f, end='')
 
+        logical_path = '/'.join([self.admin.session_collection, filename])
+        first_cache_replica_number = 0
+        first_archive_replica_number = 1
+        second_cache_replica_number = 2
+        second_archive_replica_number = 3
+
         # assertions
-        self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
-        self.admin.assert_icommand("iput " + filename)  # put file
+        self.admin.assert_icommand(
+            "ils -L " + logical_path, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
+
+        self.admin.assert_icommand(['iput', filename, logical_path])  # put file
+        self.assertTrue(lib.replica_exists(self.admin, logical_path, first_cache_replica_number))
+        self.assertTrue(lib.replica_exists(self.admin, logical_path, first_archive_replica_number))
+        self.assertTrue(lib.replica_exists(self.admin, logical_path, second_cache_replica_number))
+        self.assertTrue(lib.replica_exists(self.admin, logical_path, second_archive_replica_number))
+
         # get file and purge 'cached' replica
         self.admin.assert_icommand(
-            "iget -f --purgec " + filename, 'STDOUT', 'Specifying a minimum number of replicas to keep is deprecated.')
-        # should not be listed (trimmed)
-        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 0 ", filename])
-        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 1 ", filename])  # should be listed 3x - replica 1
-        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 2 ", filename])  # should be listed 3x - replica 2
-        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 3 ", filename])  # should be listed 3x - replica 3
+            "iget -f --purgec " + logical_path,
+            'STDOUT', 'Specifying a minimum number of replicas to keep is deprecated.')
+
+        # The archive replicas should always exist after the iget call, so check those first.
+        self.assertTrue(lib.replica_exists(self.admin, logical_path, first_archive_replica_number))
+        self.assertTrue(lib.replica_exists(self.admin, logical_path, second_archive_replica_number))
+
+        if lib.replica_exists(self.admin, logical_path, first_cache_replica_number):
+            # If the first cache replica exists, it is possible that the other sub-tree was selected for reading the
+            # data. In that case, the first cache replica will continue to exist, but the second cache replica should
+            # have been purged after the get is completed.
+            self.assertFalse(lib.replica_exists(self.admin, logical_path, second_cache_replica_number))
+
+        else:
+            # If the first cache replica does not exist, that means it was selected for the get and was purged. We
+            # should now ensure that the second cache replica does exist because it was not selected for the get and
+            # so should not have been purged.
+            self.assertTrue(lib.replica_exists(self.admin, logical_path, second_cache_replica_number))
+
         # should not have any extra replicas
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 4 ", filename])
 
@@ -4019,26 +4045,52 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
         with open(filepath, 'wt') as f:
             print("TESTFILE -- [" + filepath + "]", file=f, end='')
 
+        logical_path = '/'.join([self.admin.session_collection, filename])
+        first_cache_replica_number = 0
+        first_archive_replica_number = 1
+        second_cache_replica_number = 2
+        second_archive_replica_number = 3
+        new_replica_number = 4
+
         # assertions
-        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', filename)  # should not be listed
-        self.admin.assert_icommand("iput " + filename)  # put file
+        self.admin.assert_icommand(
+            "ils -L " + logical_path, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
+
+        self.admin.assert_icommand(['iput', filename, logical_path])  # put file
+        self.assertTrue(lib.replica_exists(self.admin, logical_path, first_cache_replica_number))
+        self.assertTrue(lib.replica_exists(self.admin, logical_path, first_archive_replica_number))
+        self.assertTrue(lib.replica_exists(self.admin, logical_path, second_cache_replica_number))
+        self.assertTrue(lib.replica_exists(self.admin, logical_path, second_archive_replica_number))
+        self.assertFalse(lib.replica_exists(self.admin, logical_path, new_replica_number))
+
         # replicate to test resource
         self.admin.assert_icommand(
-            "irepl -R " + self.testresc + " --purgec " + filename,
+            "irepl -R " + self.testresc + " --purgec " + logical_path,
             'STDOUT', 'Specifying a minimum number of replicas to keep is deprecated.')
-        # should not be listed (trimmed)
-        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 0 ", filename])
-        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 1 ", filename])  # should be listed 4x - replica 1
-        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 2 ", filename])  # should be listed 4x - replica 2
-        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 3 ", filename])  # should be listed 4x - replica 3
-        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 4 ", filename])  # should be listed 4x - replica 4
+
+        # The archive replicas and the new replica should always exist after the irepl call, so check those first.
+        self.assertTrue(lib.replica_exists(self.admin, logical_path, first_archive_replica_number))
+        self.assertTrue(lib.replica_exists(self.admin, logical_path, second_archive_replica_number))
+        self.assertTrue(lib.replica_exists(self.admin, logical_path, new_replica_number))
+
+        if lib.replica_exists(self.admin, logical_path, first_cache_replica_number):
+            # If the first cache replica exists, it is possible that the other sub-tree was selected for the source
+            # replica. In that case, the first cache replica will continue to exist, but the second cache replica should
+            # have been purged after the replication is completed.
+            self.assertFalse(lib.replica_exists(self.admin, logical_path, second_cache_replica_number))
+
+        else:
+            # If the first cache replica does not exist, that means it was selected for the source replica and was
+            # purged. We should now ensure that the second cache replica does exist because it was not selected for the
+            # source replica and so should not have been purged.
+            self.assertTrue(lib.replica_exists(self.admin, logical_path, second_cache_replica_number))
+
         # should not have any extra replicas
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 5 ", filename])
 
         # local cleanup
         if os.path.exists(filepath):
             os.unlink(filepath)
-
 
     @unittest.skip('This test only works for a standalone compound hierarchy.')
     def test_iget_data_object_as_user_with_read_only_access_and_replica_only_in_archive__issue_6697(self):
@@ -4426,18 +4478,43 @@ class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDev
         with open(filepath, 'wt') as f:
             print("TESTFILE -- [" + filepath + "]", file=f, end='')
 
+        logical_path = '/'.join([self.admin.session_collection, filename])
+        first_cache_replica_number = 0
+        first_archive_replica_number = 1
+        second_cache_replica_number = 2
+        second_archive_replica_number = 3
+
         # assertions
-        self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
-        self.admin.assert_icommand("iput " + filename)  # put file
+        self.admin.assert_icommand(
+            "ils -L " + logical_path, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
+
+        self.admin.assert_icommand(['iput', filename, logical_path])  # put file
+        self.assertTrue(lib.replica_exists(self.admin, logical_path, first_cache_replica_number))
+        self.assertTrue(lib.replica_exists(self.admin, logical_path, first_archive_replica_number))
+        self.assertTrue(lib.replica_exists(self.admin, logical_path, second_cache_replica_number))
+        self.assertTrue(lib.replica_exists(self.admin, logical_path, second_archive_replica_number))
+
         # get file and purge 'cached' replica
         self.admin.assert_icommand(
-            "iget -f --purgec " + filename,
+            "iget -f --purgec " + logical_path,
             'STDOUT', 'Specifying a minimum number of replicas to keep is deprecated.')
-        # should not be listed (trimmed)
-        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 0 ", filename])
-        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 1 ", filename])  # should be listed 3x - replica 1
-        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 2 ", filename])  # should be listed 3x - replica 2
-        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 3 ", filename])  # should be listed 3x - replica 3
+
+        # The archive replicas should always exist after the iget call, so check those first.
+        self.assertTrue(lib.replica_exists(self.admin, logical_path, first_archive_replica_number))
+        self.assertTrue(lib.replica_exists(self.admin, logical_path, second_archive_replica_number))
+
+        if lib.replica_exists(self.admin, logical_path, first_cache_replica_number):
+            # If the first cache replica exists, it is possible that the other sub-tree was selected for reading the
+            # data. In that case, the first cache replica will continue to exist, but the second cache replica should
+            # have been purged after the get is completed.
+            self.assertFalse(lib.replica_exists(self.admin, logical_path, second_cache_replica_number))
+
+        else:
+            # If the first cache replica does not exist, that means it was selected for the get and was purged. We
+            # should now ensure that the second cache replica does exist because it was not selected for the get and
+            # so should not have been purged.
+            self.assertTrue(lib.replica_exists(self.admin, logical_path, second_cache_replica_number))
+
         # should not have any extra replicas
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 4 ", filename])
 
@@ -4452,26 +4529,52 @@ class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDev
         with open(filepath, 'wt') as f:
             print("TESTFILE -- [" + filepath + "]", file=f, end='')
 
+        logical_path = '/'.join([self.admin.session_collection, filename])
+        first_cache_replica_number = 0
+        first_archive_replica_number = 1
+        second_cache_replica_number = 2
+        second_archive_replica_number = 3
+        new_replica_number = 4
+
         # assertions
-        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', filename)  # should not be listed
-        self.admin.assert_icommand("iput " + filename)  # put file
+        self.admin.assert_icommand(
+            "ils -L " + logical_path, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
+
+        self.admin.assert_icommand(['iput', filename, logical_path])  # put file
+        self.assertTrue(lib.replica_exists(self.admin, logical_path, first_cache_replica_number))
+        self.assertTrue(lib.replica_exists(self.admin, logical_path, first_archive_replica_number))
+        self.assertTrue(lib.replica_exists(self.admin, logical_path, second_cache_replica_number))
+        self.assertTrue(lib.replica_exists(self.admin, logical_path, second_archive_replica_number))
+        self.assertFalse(lib.replica_exists(self.admin, logical_path, new_replica_number))
+
         # replicate to test resource
         self.admin.assert_icommand(
-            "irepl -R " + self.testresc + " --purgec " + filename,
+            "irepl -R " + self.testresc + " --purgec " + logical_path,
             'STDOUT', 'Specifying a minimum number of replicas to keep is deprecated.')
-        # should not be listed (trimmed)
-        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 0 ", filename])
-        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 1 ", filename])  # should be listed 4x - replica 1
-        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 2 ", filename])  # should be listed 4x - replica 2
-        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 3 ", filename])  # should be listed 4x - replica 3
-        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 4 ", filename])  # should be listed 4x - replica 4
+
+        # The archive replicas and the new replica should always exist after the irepl call, so check those first.
+        self.assertTrue(lib.replica_exists(self.admin, logical_path, first_archive_replica_number))
+        self.assertTrue(lib.replica_exists(self.admin, logical_path, second_archive_replica_number))
+        self.assertTrue(lib.replica_exists(self.admin, logical_path, new_replica_number))
+
+        if lib.replica_exists(self.admin, logical_path, first_cache_replica_number):
+            # If the first cache replica exists, it is possible that the other sub-tree was selected for the source
+            # replica. In that case, the first cache replica will continue to exist, but the second cache replica should
+            # have been purged after the replication is completed.
+            self.assertFalse(lib.replica_exists(self.admin, logical_path, second_cache_replica_number))
+
+        else:
+            # If the first cache replica does not exist, that means it was selected for the source replica and was
+            # purged. We should now ensure that the second cache replica does exist because it was not selected for the
+            # source replica and so should not have been purged.
+            self.assertTrue(lib.replica_exists(self.admin, logical_path, second_cache_replica_number))
+
         # should not have any extra replicas
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 5 ", filename])
 
         # local cleanup
         if os.path.exists(filepath):
             os.unlink(filepath)
-
 
     @unittest.skip('This test only works for a standalone compound hierarchy.')
     def test_iget_data_object_as_user_with_read_only_access_and_replica_only_in_archive__issue_6697(self):
