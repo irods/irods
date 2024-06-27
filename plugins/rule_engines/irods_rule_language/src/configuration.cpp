@@ -434,6 +434,7 @@ class in_memory_rulebases
             if (!ifs) {
                 log_re::warn(
                     "in_memory_rulebases: input file stream [{}] failed, errno = {}", get_rule_base_path(irb), errno);
+                continue;
             }
             rule_bases_.insert(
                 {irb, std::string({std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>()})});
