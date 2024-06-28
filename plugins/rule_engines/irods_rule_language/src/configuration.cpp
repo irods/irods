@@ -21,6 +21,7 @@
 #include "irods/private/re/reFuncDefs.hpp"
 #include "irods/Hasher.hpp"
 #include "irods/irods_hasher_factory.hpp"
+#include "irods/irods_exception.hpp"
 
 #include "irods/irods_get_full_path_for_config_file.hpp"
 #include "irods/irods_log.hpp"
@@ -432,9 +433,9 @@ class in_memory_rulebases
         for (auto const& irb : _irods_rule_bases) {
             std::ifstream ifs(get_rule_base_path(irb));
             if (!ifs) {
-                log_re::warn(
+                log_re::error(
                     "in_memory_rulebases: input file stream [{}] failed, errno = {}", get_rule_base_path(irb), errno);
-                continue;
+                THROW(RULES_FILE_READ_ERROR, fmt::format("Failed to load rulebase [{}] into memory", irb));
             }
             rule_bases_.insert(
                 {irb, std::string({std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>()})});
@@ -487,36 +488,44 @@ int load_rules(const char* irbSet, const std::vector<std::string> &irbs, const i
                     getSystemFunctions( ruleEngineConfig.sysFuncDescIndex->current, ruleEngineConfig.sysRegion );
                 }
 
-                in_memory_rulebases stored_rulebases(irbs);
-                for(auto const & irb: irbs) {
-                    try {
-                        auto* rule_ptr = const_cast<char*>(&stored_rulebases.get_rulebase(irb)[0]);
-                        int i = readRuleStructAndRuleSetFromBuffer(irb.c_str(), rule_ptr);
+                try {
+                    in_memory_rulebases stored_rulebases(irbs);
+                    for (auto const& irb : irbs) {
+                        try {
+                            auto* rule_ptr = const_cast<char*>(&stored_rulebases.get_rulebase(irb)[0]);
+                            int i = readRuleStructAndRuleSetFromBuffer(irb.c_str(), rule_ptr);
 
-                        if (i != 0) {
-                            ruleEngineConfig.ruleEngineStatus = INITIALIZED;
-                            return i;
+                            if (i != 0) {
+                                ruleEngineConfig.ruleEngineStatus = INITIALIZED;
+                                return i;
+                            }
+                        }
+                        catch (std::out_of_range& ex) {
+                            logger::rule_engine::warn("load_rules: attempted to access nonexistent rulebase [{}]", irb);
                         }
                     }
-                    catch (std::out_of_range& ex) {
-                        logger::rule_engine::warn("load_rules: attempted to access nonexistent rulebase [{}]", irb);
+
+                    createCoreRuleIndex();
+
+                    /* set max timestamp */
+                    time_type_set(ruleEngineConfig.timestamp, timestamp);
+                    std::string hash;
+                    int ret = hash_rules_with_copy(irbs, hash, stored_rulebases);
+                    if (ret >= 0) {
+                        rstrcpy(ruleEngineConfig.hash, hash.c_str(), CHKSUM_LEN);
                     }
-                }
-
-                createCoreRuleIndex( );
-
-                /* set max timestamp */
-                time_type_set( ruleEngineConfig.timestamp, timestamp );
-                std::string hash;
-                int ret = hash_rules_with_copy(irbs, hash, stored_rulebases);
-                if (ret >= 0) {
-                    rstrcpy(ruleEngineConfig.hash, hash.c_str(), CHKSUM_LEN);
-                } else {
+                    else {
+                        ruleEngineConfig.ruleEngineStatus = INITIALIZED;
+                        return ret;
+                    }
+                    snprintf(ruleEngineConfig.ruleBase, sizeof(ruleEngineConfig.ruleBase), "%s", irbSet);
                     ruleEngineConfig.ruleEngineStatus = INITIALIZED;
-                    return ret;
                 }
-                snprintf( ruleEngineConfig.ruleBase, sizeof( ruleEngineConfig.ruleBase ), "%s", irbSet );
-                ruleEngineConfig.ruleEngineStatus = INITIALIZED;
+                catch (const irods::exception& e) {
+                    logger::rule_engine::error(
+                        "{} encountered an exception in file {}:{}", __PRETTY_FUNCTION__, __FILE__, e.what());
+                    return e.code();
+                }
                 return 0;
 }
 
@@ -572,35 +581,43 @@ int loadRuleFromCacheOrFile( const char* inst_name, const char *irbSet ) {
                     rodsLog( LOG_ERROR, "Failed to restore cache." );
                 } else {
                     int diffIrbSet = strcmp( cache->ruleBase, irbSet ) != 0;
+                    try {
+                        in_memory_rulebases stored_rulebases(irbs);
+                        std::string hash;
+                        int ret = hash_rules_with_copy(irbs, hash, stored_rulebases);
 
-                    in_memory_rulebases copy_rule_base_files(irbs);
-                    std::string hash;
-                    int ret = hash_rules_with_copy(irbs, hash, copy_rule_base_files);
-
-                    int diffHash = ret < 0 || hash != cache->hash;
-                    if ( diffIrbSet ) {
-                        rodsLog( LOG_DEBUG, "Rule base set changed, old value is %s", cache->ruleBase );
-                    }
-
-                    if ( diffIrbSet || time_type_gt( timestamp, cache->timestamp ) || diffHash ) {
-                        update = 1;
-                        free( cache->address );
-                        rodsLog( LOG_DEBUG, "Rule base set or rule files modified, force refresh." );
-                    } else {
-                        cache->cacheStatus = INITIALIZED;
-                        ruleEngineConfig = *cache;
-
-                        /* generate extRuleSet */
-                        generateRegions();
-                        generateRuleSets();
-                        generateFunctionDescriptionTables();
-                        if ( ruleEngineConfig.ruleEngineStatus == UNINITIALIZED ) {
-                            getSystemFunctions( ruleEngineConfig.sysFuncDescIndex->current, ruleEngineConfig.sysRegion );
+                        int diffHash = ret < 0 || hash != cache->hash;
+                        if (diffIrbSet) {
+                            rodsLog(LOG_DEBUG, "Rule base set changed, old value is %s", cache->ruleBase);
                         }
 
-                        ruleEngineConfig.ruleEngineStatus = INITIALIZED;
+                        if (diffIrbSet || time_type_gt(timestamp, cache->timestamp) || diffHash) {
+                            update = 1;
+                            free(cache->address);
+                            rodsLog(LOG_DEBUG, "Rule base set or rule files modified, force refresh.");
+                        }
+                        else {
+                            cache->cacheStatus = INITIALIZED;
+                            ruleEngineConfig = *cache;
 
-                        return res;
+                            /* generate extRuleSet */
+                            generateRegions();
+                            generateRuleSets();
+                            generateFunctionDescriptionTables();
+                            if (ruleEngineConfig.ruleEngineStatus == UNINITIALIZED) {
+                                getSystemFunctions(
+                                    ruleEngineConfig.sysFuncDescIndex->current, ruleEngineConfig.sysRegion);
+                            }
+
+                            ruleEngineConfig.ruleEngineStatus = INITIALIZED;
+
+                            return res;
+                        }
+                    }
+                    catch (const irods::exception& e) {
+                        logger::rule_engine::error(
+                            "{} encountered an exception in file {}:{}", __PRETTY_FUNCTION__, __FILE__, e.what());
+                        return e.code();
                     }
                 }
         }
