@@ -474,7 +474,7 @@ int hash_rules_with_copy(const std::vector<std::string>& irods_rule_bases,
 
     hasher.digest(digest);
 
-    log_re::debug("hash_rules_with_copy: rulebases = {}; digest = {}", fmt::join(irods_rule_bases, ","), digest);
+    log_re::debug("hash_rules_with_copy: rulebases = [{}]; digest = [{}]", fmt::join(irods_rule_bases, ", "), digest);
 
     return 0;
 }
@@ -500,7 +500,7 @@ int load_rules(const char* irbSet, const std::vector<std::string> &irbs, const i
                             }
                         }
                         catch (std::out_of_range& ex) {
-                            log_re::warn("load_rules: attempted to access nonexistent rulebase [{}]", irb);
+                            log_re::warn("{}: attempted to access nonexistent rulebase [{}]", __func__, irb);
                         }
                     }
 
