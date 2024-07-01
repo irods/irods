@@ -474,8 +474,7 @@ int hash_rules_with_copy(const std::vector<std::string>& irods_rule_bases,
 
     hasher.digest(digest);
 
-    logger::rule_engine::debug(
-        "hash_rules_with_copy: rulebases = {}; digest = {}", fmt::join(irods_rule_bases, ","), digest);
+    log_re::debug("hash_rules_with_copy: rulebases = {}; digest = {}", fmt::join(irods_rule_bases, ","), digest);
 
     return 0;
 }
@@ -501,7 +500,7 @@ int load_rules(const char* irbSet, const std::vector<std::string> &irbs, const i
                             }
                         }
                         catch (std::out_of_range& ex) {
-                            logger::rule_engine::warn("load_rules: attempted to access nonexistent rulebase [{}]", irb);
+                            log_re::warn("load_rules: attempted to access nonexistent rulebase [{}]", irb);
                         }
                     }
 
@@ -522,8 +521,8 @@ int load_rules(const char* irbSet, const std::vector<std::string> &irbs, const i
                     ruleEngineConfig.ruleEngineStatus = INITIALIZED;
                 }
                 catch (const irods::exception& e) {
-                    logger::rule_engine::error(
-                        "{} encountered an exception in file {}:{}", __PRETTY_FUNCTION__, __FILE__, e.what());
+                    log_re::error(
+                        "{} encountered an exception in source file {}:{}", __PRETTY_FUNCTION__, __FILE__, e.what());
                     return e.code();
                 }
                 return 0;
@@ -615,8 +614,10 @@ int loadRuleFromCacheOrFile( const char* inst_name, const char *irbSet ) {
                         }
                     }
                     catch (const irods::exception& e) {
-                        logger::rule_engine::error(
-                            "{} encountered an exception in file {}:{}", __PRETTY_FUNCTION__, __FILE__, e.what());
+                        log_re::error("{} encountered an exception in file {}:{}",
+                                      __PRETTY_FUNCTION__,
+                                      __FILE__,
+                                      e.client_display_what());
                         return e.code();
                     }
                 }
@@ -679,7 +680,7 @@ int readRuleStructAndRuleSetFromBuffer(const char* ruleBaseName, char* ruleBase)
                                     ruleEngineConfig.coreRegion);
     if (res != 0) {
         errMsgToString(&errmsgBuf, buf.get(), err_buf_len);
-        logger::rule_engine::error(buf.get());
+        log_re::error(buf.get());
     }
     freeRErrorContent(&errmsgBuf);
     return res;
