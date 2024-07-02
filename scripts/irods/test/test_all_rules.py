@@ -15,6 +15,7 @@ from .. import test
 from .. import paths
 from ..configuration import IrodsConfig
 from ..controller import IrodsController
+from ..core_file import temporary_core_file
 from . import metaclass_unittest_test_case_generator
 from . import resource_suite
 from . import session
@@ -1818,6 +1819,41 @@ OUTPUT ruleExecOut
 
         self.admin.assert_icommand(['imeta', 'ls', '-d', TEST_FILE], 'STDOUT', [ 'attribute: key\nvalue: val\n' ])
 
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-python', "Requires the PREP.")
+    def test_msiDataObjChksum_does_not_lead_to_segfault_on_good_verification_result__issue_7859(self):
+        with temporary_core_file() as core:
+            attr_name = 'issue_7859'
+            attr_value = 'issue_7859 is working'
+
+            # Add a rule that attempts to verify the checksum using msiDataObjChksum.
+            # If verification finds no issues, the checksum output variable will hold an empty string.
+            # The check for the empty string and attachment of metadata give the test a way to determine
+            # the outcome of the rule.
+            core.add_rule(textwrap.dedent(f'''
+            def pep_api_data_obj_trim_pre(rule_args, callback, rei):
+                logical_path = str(rule_args[2].objPath)
+                result = callback.msiDataObjChksum(logical_path, 'verifyChksum=', '')
+                if result['arguments'][2] == '':
+                    callback.msiModAVUMetadata('-d', logical_path, 'set', '{attr_name}', '{attr_value}', '')
+            '''))
+
+            # Create a new data object.
+            data_object = 'issue_7859_data_object'
+            self.user0.assert_icommand(['itouch', data_object])
+
+            # Calculate a checksum so the rule has information it can use for verification.
+            # Without this, the rule will fail.
+            self.user0.assert_icommand(['ichksum', data_object], 'STDOUT', ['sha2:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU='])
+
+            # Trigger the PEP.
+            # Before the fix, this would result in an error.
+            self.user0.assert_icommand(['itrim', data_object], 'STDOUT', ['Number of files trimmed = 0.'])
+
+            # Show the checksum verification was successful.
+            self.user0.assert_icommand(
+                ['iquest', f"select DATA_NAME where META_DATA_ATTR_NAME = '{attr_name}' and META_DATA_ATTR_VALUE = '{attr_value}'"],
+                'STDOUT',
+                [f'DATA_NAME = {data_object}\n'])
 
 class Test_msiDataObjRepl_checksum_keywords(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
     global plugin_name
