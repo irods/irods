@@ -1621,7 +1621,7 @@ msiDataObjChksum( msParam_t *inpParam1, msParam_t *msKeyValStr,
     }
 
     if ( rei->status >= 0 ) {
-        fillStrInMsParam( outParam, chksum );
+        fillStrInMsParam(outParam, chksum ? chksum : "");
         free( chksum );
     }
     else {
