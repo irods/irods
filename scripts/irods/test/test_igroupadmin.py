@@ -142,6 +142,28 @@ class test_mkuser_group(unittest.TestCase):
             self.admin.assert_icommand(['iadmin', 'rmuser', rodsuser_name])
             self.admin.assert_icommand(['iadmin', 'rmuser', self.groupadmin2.username])
 
+    def test_groupadmin_can_lock_self_out_of_group__issue_7707(self):
+        """A groupadmin should be able to add a regular user to an empty group, thereby losing the ability to manage the group."""
+        test_username = 'bob'
+        try:
+            self.groupadmin.assert_icommand(['igroupadmin', 'mkgroup', self.group])
+            self.groupadmin.assert_icommand(['igroupadmin', 'mkuser', test_username])
+
+            # Populate empty group. groupadmin should no longer have any control of the group now
+            self.groupadmin.assert_icommand(['igroupadmin', 'atg', self.group, test_username])
+
+            # Assert groupadmin cannot control the group
+            self.groupadmin.assert_icommand(['igroupadmin', 'atg', self.group, self.groupadmin.username], 'STDERR', '-830000 CAT_INSUFFICIENT_PRIVILEGE_LEVEL', desired_rc=0)
+            self.groupadmin.assert_icommand(['igroupadmin', 'rfg', self.group, test_username], 'STDERR', '-830000 CAT_INSUFFICIENT_PRIVILEGE_LEVEL', desired_rc=0)
+
+            # Should still be able to list members of the group
+            self.groupadmin.assert_icommand(['igroupadmin', 'lg', self.group], 'STDOUT_MULTILINE', f'{test_username}#{self.groupadmin.zone_name}', desired_rc=0)
+
+        finally:
+            self.admin.run_icommand(['iadmin', 'rfg', self.group, test_username])
+            self.admin.run_icommand(['iadmin', 'rmuser', test_username])
+            self.admin.run_icommand(['iadmin', 'rmgroup', self.group])
+
     def test_mkgroup_with_no_zone(self):
         """Test mkgroup with no zone name provided."""
         try:
