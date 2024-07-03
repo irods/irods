@@ -13,8 +13,18 @@ jobs:
         uses: actions/checkout@v2
       - name: Install Prerequisites
         run:  |
+              sed -i \
+                -e 's/mirror.centos.org/vault.centos.org/g' \
+                -e 's/^#.*baseurl=http/baseurl=http/g' \
+                -e 's/^mirrorlist=http/#mirrorlist=http/g' \
+                /etc/yum.repos.d/*.repo
               yum -y update ca-certificates
               yum -y install bind-utils wget epel-release centos-release-scl
+              sed -i \
+                -e 's/mirror.centos.org/vault.centos.org/g' \
+                -e 's/^#.*baseurl=http/baseurl=http/g' \
+                -e 's/^mirrorlist=http/#mirrorlist=http/g' \
+                /etc/yum.repos.d/*.repo
               yum -y install gcc g++ libstdc++-static make rpm-build bzip2-devel curl-devel fakeroot openssl-devel pam-devel python-devel unixODBC unixODBC-devel zlib-devel python36-distro
       - name: Install Flex and Bison
         run:  |
