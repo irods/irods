@@ -832,3 +832,153 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
 
         super(Test_Genquery_Iterator, self).tearDown()
 
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-python', 'Requires PREP.')
+    def test_genquery_constructor_raises_exception_on_invalid_parser_argument__issue_7909(self):
+        with temporary_core_file() as core:
+            attr_name = 'test_genquery_constructor_raises_exception_on_invalid_parser_argument__issue_7909_error'
+
+            # The following rule triggers and attaches the exception message generated
+            # by the invalid parser argument to the Query constructor.
+            core.add_rule(dedent(f'''
+            def pep_api_touch_pre(rule_args, callback, rei):
+                try:
+                    import genquery
+                    _ = genquery.Query(callback, 'COLL_NAME', parser=None)
+                except ValueError as e:
+                    callback.msiModAVUMetadata('-C', '{self.admin.session_collection}', 'add', '{attr_name}', str(e), '')
+            '''))
+
+            # Trigger the PEP.
+            # This will cause the rule to add an AVU to the session collection.
+            self.admin.assert_icommand(['itouch', 'issue_7909'], 'STDERR')
+
+            # Show the AVU containing the error exists on the session collection.
+            self.admin.assert_icommand(['imeta', 'ls', '-C', self.admin.session_collection], 'STDOUT', [
+                f'attribute: {attr_name}\n',
+                'value: Invalid value for [parser]. Expected Parser.GENQUERY1 or Parser.GENQUERY2.\n'
+            ])
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-python', 'Requires PREP.')
+    def test_genquery_constructor_raises_exception_when_genquery2_syntax_is_passed_to_genquery1_parser__issue_7909(self):
+        with temporary_core_file() as core:
+            attr_name = 'test_genquery_constructor_raises_exception_when_genquery2_syntax_is_passed_to_genquery1_parser__issue_7909_error'
+
+            # The following rule triggers and attaches the exception message generated
+            # by the invalid GenQuery1 condition string passed to the Query constructor.
+            core.add_rule(dedent(f'''
+            def pep_api_touch_pre(rule_args, callback, rei):
+                try:
+                    from genquery import Query, Parser
+                    Query(callback, 'COLL_NAME', "upper(COLL_NAME) = 'nope'", parser=Parser.GENQUERY1).first()
+                except RuntimeError as e:
+                    callback.msiModAVUMetadata('-C', '{self.admin.session_collection}', 'add', '{attr_name}', str(e), '')
+            '''))
+
+            # Trigger the PEP.
+            # This will cause the rule to add an AVU to the session collection.
+            self.admin.assert_icommand(['itouch', 'issue_7909'], 'STDERR')
+
+            # Show the AVU containing the error exists on the session collection.
+            self.admin.assert_icommand(['imeta', 'ls', '-C', self.admin.session_collection], 'STDOUT', [
+                f'attribute: {attr_name}\n',
+                '[iRods__Error__Code:-1107000]',
+                '[NO_COLUMN_NAME_FOUND]'
+            ])
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-python', 'Requires PREP.')
+    def test_genquery_iterator_supports_genquery2__issue_7909(self):
+        rule_file = f'{self.admin.local_session_dir}/test_genquery_iterator_supports_genquery2__issue_7909.r'
+
+        with open(rule_file, 'w') as rf:
+            rf.write(dedent(f'''
+            def main(rule_args, callback, rei):
+                from genquery import Query, Parser
+                for r in Query(callback, 'COLL_NAME', "COLL_NAME = '{self.admin.session_collection}'", parser=Parser.GENQUERY2):
+                    callback.writeLine('stdout', f'row: {{r}}')
+            INPUT null
+            OUTPUT ruleExecOut
+            '''))
+
+        # Execute the rule.
+        rep_instance = IrodsConfig().default_rule_engine_plugin + '-instance'
+        expected_output = [f"row: ['{self.admin.session_collection}']"]
+        self.admin.assert_icommand(['irule', '-r', rep_instance, '-F', rule_file], 'STDOUT', expected_output)
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-python', 'Requires PREP.')
+    def test_genquery_iterator_supports_genquery2_offset__issue_7909(self):
+        # Create some data objects.
+        data_name_prefix = 'test_genquery_iterator_supports_genquery2_offset__issue_7909'
+        for i in range(10):
+            self.admin.assert_icommand(['itouch', f'{data_name_prefix}.{i}'])
+
+        # Create a rule file which, when executed, lists the data objects in the admin's
+        # session collection, but skips the first three entries of the resultset. The skipping
+        # of entries results in only seven entries being returned by the database.
+        rule_file = f'{self.admin.local_session_dir}/test_genquery_iterator_supports_genquery2_offset__issue_7909.r'
+        with open(rule_file, 'w') as rf:
+            rf.write(dedent(f'''
+            def main(rule_args, callback, rei):
+                from genquery import Query, Parser
+                rows = 0
+                for r in Query(callback, 'DATA_NAME', "COLL_NAME = '{self.admin.session_collection}' and DATA_NAME like '{data_name_prefix}.%'", offset=3, parser=Parser.GENQUERY2):
+                    rows += 1
+                callback.writeLine('stdout', f'count: {{rows}}')
+            INPUT null
+            OUTPUT ruleExecOut
+            '''))
+
+        # Execute the rule.
+        rep_instance = IrodsConfig().default_rule_engine_plugin + '-instance'
+        self.admin.assert_icommand(['irule', '-r', rep_instance, '-F', rule_file], 'STDOUT', ['count: 7'])
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-python', 'Requires PREP.')
+    def test_genquery_iterator_supports_genquery2_limit__issue_7909(self):
+        # Create some data objects.
+        data_name_prefix = 'test_genquery_iterator_supports_genquery2_limit__issue_7909'
+        for i in range(10):
+            self.admin.assert_icommand(['itouch', f'{data_name_prefix}.{i}'])
+
+        # Create a rule file which, when executed, lists the data objects in the admin's
+        # session collection, but limits the resultset to only two entries.
+        rule_file = f'{self.admin.local_session_dir}/test_genquery_iterator_supports_genquery2_limit__issue_7909.r'
+        with open(rule_file, 'w') as rf:
+            rf.write(dedent(f'''
+            def main(rule_args, callback, rei):
+                from genquery import Query, Parser
+                rows = 0
+                for r in Query(callback, 'DATA_NAME', "COLL_NAME = '{self.admin.session_collection}' and DATA_NAME like '{data_name_prefix}.%'", limit=2, parser=Parser.GENQUERY2):
+                    rows += 1
+                callback.writeLine('stdout', f'count: {{rows}}')
+            INPUT null
+            OUTPUT ruleExecOut
+            '''))
+
+        # Execute the rule.
+        rep_instance = IrodsConfig().default_rule_engine_plugin + '-instance'
+        self.admin.assert_icommand(['irule', '-r', rep_instance, '-F', rule_file], 'STDOUT', ['count: 2'])
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-python', 'Requires PREP.')
+    def test_genquery_iterator_supports_copying_genquery2_query_object__issue_7909(self):
+        rule_file = f'{self.admin.local_session_dir}/test_genquery_iterator_supports_reusing_genquery2_query_object__issue_7909.r'
+
+        with open(rule_file, 'w') as rf:
+            rf.write(dedent(f'''
+            def main(rule_args, callback, rei):
+                from genquery import Query, Parser
+                q1 = Query(callback, 'COLL_NAME', "COLL_NAME = '{self.admin.session_collection}'", parser=Parser.GENQUERY2)
+                q2 = q1.copy()
+                q3 = q2.copy()
+                for iterations, query in enumerate([q1, q2, q3]):
+                    for r in query:
+                        callback.writeLine('stdout', f'[iteration={{iterations}}] row: {{r}}')
+            INPUT null
+            OUTPUT ruleExecOut
+            '''))
+
+        # Execute the rule.
+        rep_instance = IrodsConfig().default_rule_engine_plugin + '-instance'
+        self.admin.assert_icommand(['irule', '-r', rep_instance, '-F', rule_file], 'STDOUT', [
+            f"[iteration=0] row: ['{self.admin.session_collection}']",
+            f"[iteration=1] row: ['{self.admin.session_collection}']",
+            f"[iteration=2] row: ['{self.admin.session_collection}']"
+        ])
