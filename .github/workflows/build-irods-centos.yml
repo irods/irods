@@ -1,5 +1,9 @@
 name: build-irods-centos
 on: [push, pull_request]
+env:
+  # We need GH actions to use an older version of node for EL7.
+  # See: https://github.blog/changelog/2024-03-07-github-actions-all-actions-will-run-on-node20-instead-of-node16-by-default/
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 jobs:
   build:
     name: ${{ matrix.container }}
