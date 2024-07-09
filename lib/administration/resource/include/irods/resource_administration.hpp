@@ -429,9 +429,9 @@ namespace irods::experimental::administration
             }
 
             if (const auto ec = rxGeneralAdmin(&_comm, &input); ec < 0) {
-                constexpr char* msg = "Could not change {} from [{}] to [{}] for resource [{}]";
+                constexpr char* msg = "Could not change {} to [{}] for resource [{}]";
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-                THROW(ec, fmt::format(msg, to_string<Property>(), input.arg3, input.arg4, _name));
+                THROW(ec, fmt::format(msg, to_string<Property>(), input.arg4, _name));
             }
         } // modify_resource
 
