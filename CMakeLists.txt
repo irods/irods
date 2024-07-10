@@ -6,6 +6,7 @@ find_package(IRODS 4.90.0 EXACT REQUIRED)
 set(IRODS_PACKAGE_PREFIX "${PACKAGE_PREFIX_DIR}")
 
 set(IRODS_PACKAGE_REVISION "0")
+set(IRODS_STAMP_PACKAGE_REVISION OFF)
 
 include(RequireOutOfSourceBuild)
 include(IrodsCXXCompiler)
