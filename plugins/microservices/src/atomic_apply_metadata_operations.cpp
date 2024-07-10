@@ -92,6 +92,7 @@ auto plugin_factory() -> irods::ms_table_entry*
 /// \p _json_input must have the following JSON structure:
 /// \code{.js}
 /// {
+///   "admin_mode": boolean,
 ///   "entity_name": string,
 ///   "entity_type": string,
 ///   "operations": [
@@ -143,6 +144,28 @@ auto plugin_factory() -> irods::ms_table_entry*
 /// \return An integer.
 /// \retval 0        On success.
 /// \retval non-zero On failure.
+///
+/// \b Example
+/// \code{.py}
+/// # The JSON string holding the single metadata operation to apply to the resource.
+/// # This will be used to construct the final form of the JSON input.
+/// *op = '{"operation": "add", "attribute": "age", "value": "36"}';
+///
+/// # This is the complete form of the JSON string that will be passed to the microservice.
+/// # Pay close attention to the construction of the "operations" property.
+/// *json_input = '{"entity_name": "alice", "entity_type": "user", "operations": [*op]}';
+///
+/// # If the microservice fails, a JSON string containing details about what happened will be
+/// # stored in this variable.
+/// *json_output = ''
+///
+/// *ec = errorcode(msi_atomic_apply_metadata_operations(*json_input, *json_output));
+/// if (*ec < 0) {
+///     # The operation failed.
+///     # Inspect JSON output (using JSON microservices) to determine what happened.
+///     writeLine('serverLog', 'JSON output = [*json_output]');
+/// }
+/// \endcode
 ///
 /// \since 4.2.8
 auto msi_atomic_apply_metadata_operations(msParam_t* _json_input, msParam_t* _json_output, ruleExecInfo_t* _rei) -> int;

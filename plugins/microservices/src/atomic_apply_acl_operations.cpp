@@ -86,6 +86,7 @@ auto plugin_factory() -> irods::ms_table_entry*
 /// \p _json_input must have the following JSON structure:
 /// \code{.js}
 /// {
+///   "admin_mode": boolean,
 ///   "logical_path": string,
 ///   "operations": [
 ///     {
@@ -125,6 +126,26 @@ auto plugin_factory() -> irods::ms_table_entry*
 /// \return An integer.
 /// \retval 0        On success.
 /// \retval non-zero On failure.
+///
+/// \b Example
+/// \code{.py}
+/// # The collection to apply the ACL operations to.
+/// *lpath = '/tempZone/home/alice';
+///
+/// # The JSON string holding ACL operations to apply.
+/// *json_input = '{"logical_path": "*lpath", "operations": [{"entity_name": "bob", "acl": "read"}]}';
+///
+/// # If the microservice fails, a JSON string containing details about what happened will be
+/// # stored in this variable.
+/// *json_output = ''
+///
+/// *ec = errorcode(msi_atomic_apply_acl_operations(*json_input, *json_output));
+/// if (*ec < 0) {
+///     # The operation failed.
+///     # Inspect JSON output (using JSON microservices) to determine what happened.
+///     writeLine('serverLog', 'JSON output = [*json_output]');
+/// }
+/// \endcode
 ///
 /// \since 4.2.9
 auto msi_atomic_apply_acl_operations(msParam_t* _json_input, msParam_t* _json_output, ruleExecInfo_t* _rei) -> int;
