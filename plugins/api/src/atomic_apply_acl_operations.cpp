@@ -83,7 +83,8 @@ namespace
 
     auto to_access_type_id(std::string_view _acl) -> int;
 
-    auto get_entity_id(nanodbc::connection& _db_conn, std::string_view _entity_name) -> id_type;
+    auto get_entity_id(nanodbc::connection& _db_conn, std::string_view _entity_name, std::string_view _entity_zone)
+        -> id_type;
 
     auto entity_has_acls_set_on_object(nanodbc::connection& _db_conn,
                                        const std::string_view _db_instance_name,
@@ -351,13 +352,15 @@ namespace
     }
 
     // TODO This function should probably deal with remote zones.
-    auto get_entity_id(nanodbc::connection& _db_conn, std::string_view _entity_name) -> id_type
+    auto get_entity_id(nanodbc::connection& _db_conn, std::string_view _entity_name, std::string_view _entity_zone)
+        -> id_type
     {
         nanodbc::statement stmt{_db_conn};
 
-        prepare(stmt, "select user_id from R_USER_MAIN where user_name = ?");
+        prepare(stmt, "select user_id from R_USER_MAIN where user_name = ? and zone_name = ?");
 
         stmt.bind(0, _entity_name.data());
+        stmt.bind(1, _entity_zone.data());
 
         if (auto row = execute(stmt); row.next()) {
             return row.get<id_type>(0);
@@ -378,7 +381,12 @@ namespace
             throw_if_invalid_acl(acl);
 
             log::api::trace("Retrieving entity ID ...");
-            const auto entity_id = get_entity_id(_db_conn, _op.at("entity_name").get<std::string>());
+
+            std::string_view zone = getLocalZoneName();
+            if (const auto iter = _op.find("zone_name"); iter != std::end(_op)) {
+                zone = iter->get_ref<const std::string&>();
+            }
+            const auto entity_id = get_entity_id(_db_conn, _op.at("entity_name").get<std::string>(), zone);
             throw_if_invalid_entity_id(entity_id);
 
             if (acl == "null") {
