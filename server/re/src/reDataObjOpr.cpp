@@ -1520,7 +1520,9 @@ msiDataObjGet( msParam_t *inpParam1, msParam_t *msKeyValStr,
 /**
  * \fn msiDataObjChksum (msParam_t *inpParam1, msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
  *
- * \brief This microservice calls rsDataObjChksum to chksum the iput data object as part of a workflow execution.
+ * \brief This microservice calls rsDataObjChksum to checksum a data object. Checksum values are
+ *        only calculated on the part of a replica indicated by the size stored in the catalog,
+ *        not necessarily the entirety of the file under management.
  *
  * \module core
  *
@@ -1540,11 +1542,11 @@ msiDataObjGet( msParam_t *inpParam1, msParam_t *msKeyValStr,
  *            This keyword does not need a value.
  *        \li "ChksumAll" - checksum all replicas. This keyWd has no value.
  *            But the '=' character is still needed.
- *        \li "verifyChksum" - verify the chksum value.
- *        \li "forceChksum" - checksum data-objects even if a
- *            checksum already exists in iCAT. This keyWd has no value.
+ *        \li "verifyChksum" - verify the checksum value.
+ *        \li "forceChksum" - checksum data objects even if a
+ *            checksum already exists in the catalog. This keyWd has no value.
  *        \li "replNum" - the replica number to checksum.
- * \param[out] outParam - a STR_MS_T containing the chksum value.
+ * \param[out] outParam - a STR_MS_T containing the checksum value.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
