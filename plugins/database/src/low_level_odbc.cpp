@@ -31,12 +31,21 @@
 #include "irods/private/low_level_odbc.hpp"
 
 #include "irods/irods_log.hpp"
+#include "irods/irods_logger.hpp"
 #include "irods/irods_error.hpp"
 #include "irods/irods_stacktrace.hpp"
 #include "irods/irods_server_properties.hpp"
 
 #include <cctype>
 #include <string>
+
+namespace
+{
+    using log_db = irods::experimental::log::database;
+
+    // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#define IRODS_DB_TRACE(msg, ...) log_db::trace("{}@{}: " msg, __func__, __LINE__ __VA_OPT__(,) __VA_ARGS__);
+} // anonymous namespace
 
 int _cllFreeStatementColumns( icatSessionStruct *icss, int statementNumber );
 
@@ -101,16 +110,19 @@ logPsgError( int level, HENV henv, HDBC hdbc, HSTMT hstmt, int dbType ) {
         if ( dbType == DB_TYPE_MYSQL ) {
             if ( strcmp( ( char * )sqlstate, "23000" ) == 0 &&
                     strstr( ( char * )psgErrorMsg, "Duplicate entry" ) ) {
+                IRODS_DB_TRACE("Setting errorVal to CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME.");
                 errorVal = CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME;
             }
         } else if (dbType == DB_TYPE_POSTGRES ) {
             if ( strcmp( ( char * )sqlstate, "23505" ) == 0 &&
                     strstr( ( char * )psgErrorMsg, "duplicate key" ) ) {
+                IRODS_DB_TRACE("Setting errorVal to CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME.");
                 errorVal = CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME;
             }
         } else if ( dbType == DB_TYPE_ORACLE ) { 
             if ( strcmp( ( char * )sqlstate, "23000" ) == 0 &&
                     strstr( ( char * )psgErrorMsg, "unique constraint" ) ) {
+                IRODS_DB_TRACE("Setting errorVal to CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME.");
                 errorVal = CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME;
             }
         }
@@ -464,7 +476,8 @@ _cllExecSqlNoResult(
 
     stat = SQLExecDirect( myHstmt, ( unsigned char * )sql, strlen( sql ) );
     SQL_INT_OR_LEN rowCount = 0;
-    SQLRowCount( myHstmt, ( SQL_INT_OR_LEN * )&rowCount );
+    auto ec = SQLRowCount(myHstmt, (SQL_INT_OR_LEN*) &rowCount); // NOLINT(google-readability-casting)
+    IRODS_DB_TRACE("SQLRowCount returned [{}] and set [rowCount] to [{}].", ec, rowCount);
     switch ( stat ) {
     case SQL_SUCCESS:
         rodsLogSqlResult( "SUCCESS" );
@@ -492,6 +505,7 @@ _cllExecSqlNoResult(
         cllCheckPending( sql, 0, icss->databaseType );
         result = 0;
         if ( stat == SQL_NO_DATA_FOUND ) {
+            IRODS_DB_TRACE("Setting result to CAT_SUCCESS_BUT_WITH_NO_INFO.");
             result = CAT_SUCCESS_BUT_WITH_NO_INFO;
         }
         /* ODBC says that if statement is not UPDATE, INSERT, or DELETE then
@@ -505,9 +519,11 @@ _cllExecSqlNoResult(
             rowCount = 0;
             if ( SQLRowCount( myHstmt, ( SQL_INT_OR_LEN * )&rowCount ) ) {
                 /* error getting rowCount???, just call it no_info */
+                IRODS_DB_TRACE("Setting result to CAT_SUCCESS_BUT_WITH_NO_INFO.");
                 result = CAT_SUCCESS_BUT_WITH_NO_INFO;
             }
             if ( rowCount == 0 ) {
+                IRODS_DB_TRACE("Setting result to CAT_SUCCESS_BUT_WITH_NO_INFO.");
                 result = CAT_SUCCESS_BUT_WITH_NO_INFO;
             }
         }
