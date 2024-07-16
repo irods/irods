@@ -11,6 +11,7 @@
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/transport/default_transport.hpp"
 #include "irods/dstream.hpp"
+#include "irods/zone_administration.hpp"
 
 #include <nlohmann/json.hpp>
 
@@ -430,6 +431,209 @@ TEST_CASE("#7338")
 
     CHECK(rc_atomic_apply_acl_operations(static_cast<RcComm*>(conn), "", &json_error_string) == SYS_NO_API_PRIV);
     CHECK(json_error_string == nullptr);
+}
+
+TEST_CASE("#7408: Atomic acls respect entity zone")
+{
+    using namespace std::string_literals;
+
+    rodsEnv env;
+    _getRodsEnv(env);
+    irods::experimental::client_connection conn;
+    const auto* const user_home = env.rodsHome;
+    const auto* const test_zone_name = "atomic_acl_test_zone";
+    const auto* const acl_user_name = "atomic_acl_user";
+    const auto* const remote_only_user_name = "atomic_acl_remote_zone_user";
+
+    const auto* const local_zone_name = static_cast<const char* const>(env.rodsZone);
+
+    // add zone for testing
+    REQUIRE_NOTHROW(ua::client::add_zone(conn, test_zone_name));
+
+    // clean up zone after end
+    irods::at_scope_exit remove_test_zone{[&conn, &test_zone_name] {
+        if (ua::client::zone_exists(conn, test_zone_name)) {
+            ua::client::remove_zone(conn, test_zone_name);
+        }
+    }};
+
+    // create 3 users:
+    // two users with identical names but differing zones
+    ua::user remote_zone_user{acl_user_name, test_zone_name};
+    ua::user local_zone_user{acl_user_name};
+    // one user with unique name in remote zone only
+    ua::user remote_only_user{remote_only_user_name, test_zone_name};
+
+    // clean up users after end
+    irods::at_scope_exit remove_users{[&] {
+        for (auto&& u : {remote_zone_user, local_zone_user, remote_only_user}) {
+            CHECK_NOTHROW(ua::client::remove_user(conn, u));
+        }
+    }};
+
+    REQUIRE_NOTHROW(ua::client::add_user(conn, remote_zone_user, ua::user_type::rodsuser, ua::zone_type::remote));
+    REQUIRE_NOTHROW(ua::client::add_user(conn, remote_only_user, ua::user_type::rodsuser, ua::zone_type::remote));
+    REQUIRE_NOTHROW(ua::client::add_user(conn, local_zone_user));
+
+    REQUIRE(ua::client::exists(conn, remote_zone_user));
+    REQUIRE(ua::client::exists(conn, remote_only_user));
+    REQUIRE(ua::client::exists(conn, local_zone_user));
+
+    // clean up acls after end
+    irods::at_scope_exit remove_acls{[&] {
+        // clang-format off
+        const auto json_input = json{
+            {"logical_path", user_home},
+            {"operations", json::array({
+                {
+                    {"entity_name", remote_zone_user.name},
+                    {"zone", test_zone_name},
+                    {"acl", "null"}
+                },
+                {
+                    {"entity_name", local_zone_user.name},
+                    {"acl", "null"}
+                },
+                {
+                    {"entity_name", remote_only_user.name},
+                    {"zone", test_zone_name},
+                    {"acl", "null"}
+                },
+            })}
+        }.dump();
+        // clang-format on
+
+        char* json_error_string{};
+
+        // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
+        irods::at_scope_exit free_memory{[&json_error_string] { std::free(json_error_string); }};
+
+        REQUIRE(rc_atomic_apply_acl_operations(static_cast<rcComm_t*>(conn), json_input.c_str(), &json_error_string) ==
+                0);
+        REQUIRE(json_error_string == "{}"s);
+
+        const auto perms = fs::client::status(conn, user_home).permissions();
+        auto b = std::begin(perms);
+        auto e = std::end(perms);
+
+        for (auto&& u : {remote_zone_user, local_zone_user, remote_only_user}) {
+            REQUIRE(std::find_if(b, e, [&u](const fs::entity_permission& p) { return p.name == u.name; }) == e);
+        }
+    }};
+
+    // clang-format off
+    const auto failing_json_input = json{
+        {"logical_path", user_home},
+        {"operations", json::array({
+            {
+                {"entity_name", remote_only_user_name},
+                {"acl", "own"}
+            }
+        })}
+    }.dump();
+
+    const auto success_json_input = json{
+        {"logical_path", user_home},
+        {"operations", json::array({
+            {
+                {"entity_name", acl_user_name},
+                {"zone", test_zone_name},
+                {"acl", "write"}
+            }
+        })}
+    }.dump();
+
+    const auto remote_only_success_json_input = json{
+        {"logical_path", user_home},
+        {"operations", json::array({
+            {
+                {"entity_name", remote_only_user_name},
+                {"zone", test_zone_name},
+                {"acl", "own"}
+            }
+        })}
+    }.dump();
+
+    const auto local_success_json_input = json{
+        {"logical_path", user_home},
+        {"operations", json::array({
+            {
+                {"entity_name", acl_user_name},
+                {"acl", "read"}
+            }
+        })}
+    }.dump();
+    // clang-format on
+
+    char* json_error_string{};
+    std::vector<char*> err_strs;
+    err_strs.reserve(4);
+    irods::at_scope_exit free_errstrings{[&err_strs] {
+        for (auto&& e : err_strs) {
+            // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
+            std::free(e);
+        }
+    }};
+    // should fail: remote zone only user, but no zone specified
+    REQUIRE(rc_atomic_apply_acl_operations(static_cast<rcComm_t*>(conn),
+                                           failing_json_input.c_str(),
+                                           &json_error_string) == SYS_INVALID_INPUT_PARAM);
+    err_strs.push_back(json_error_string);
+    json parsed_error_string = json::parse(json_error_string);
+    REQUIRE(contains_error_information(json_error_string));
+    REQUIRE_NOTHROW(parsed_error_string.at("error_message").get_ref<const std::string&>() ==
+                    "SYS_INVALID_INPUT_PARAM: Invalid entity\\n\\n");
+
+    // should succeed: remote zone only user with zone param
+    REQUIRE(rc_atomic_apply_acl_operations(
+                static_cast<rcComm_t*>(conn), remote_only_success_json_input.c_str(), &json_error_string) == 0);
+    err_strs.push_back(json_error_string);
+    REQUIRE(json_error_string == "{}"s);
+
+    auto perms = fs::client::status(conn, user_home).permissions();
+    auto b = std::begin(perms);
+    auto e = std::end(perms);
+
+    // success indicator: should find unique permission "own" with remote zone and remote-only username
+    REQUIRE(std::find_if(b, e, [&remote_only_user_name, &test_zone_name](const fs::entity_permission& p) {
+                return p.name == remote_only_user_name && p.zone == test_zone_name && p.prms == fs::perms::own;
+            }) != e);
+
+    // should succeed: remote zone user (with matching name as a local user) with zone param
+    REQUIRE(rc_atomic_apply_acl_operations(
+                static_cast<rcComm_t*>(conn), success_json_input.c_str(), &json_error_string) == 0);
+    err_strs.push_back(json_error_string);
+    REQUIRE(json_error_string == "{}"s);
+
+    perms = fs::client::status(conn, user_home).permissions();
+    b = std::begin(perms);
+    e = std::end(perms);
+
+    // success indicator: should find unique permission "write" with remote zone and shared username
+    REQUIRE(std::find_if(b, e, [&acl_user_name, &test_zone_name](const fs::entity_permission& p) {
+                return p.name == acl_user_name && p.zone == test_zone_name && p.prms == fs::perms::write;
+            }) != e);
+
+    // should NOT find any permission with shared username and local zone
+    REQUIRE(std::find_if(b, e, [&acl_user_name, &local_zone_name](const fs::entity_permission& p) {
+                return p.name == acl_user_name && p.zone == local_zone_name;
+            }) == e);
+
+    // should succeed: no zone param in json implies local zone
+    // add acl for local zone user
+    REQUIRE(rc_atomic_apply_acl_operations(
+                static_cast<rcComm_t*>(conn), local_success_json_input.c_str(), &json_error_string) == 0);
+    err_strs.push_back(json_error_string);
+    REQUIRE(json_error_string == "{}"s);
+
+    perms = fs::client::status(conn, user_home).permissions();
+    b = std::begin(perms);
+    e = std::end(perms);
+
+    // success indicator: should find unique permission "read" in local zone with shared username
+    REQUIRE(std::find_if(b, e, [&acl_user_name, &local_zone_name](const fs::entity_permission& p) {
+                return p.name == acl_user_name && p.zone == local_zone_name && p.prms == fs::perms::read;
+            }) != e);
 }
 
 auto contains_error_information(const char* _json_string) -> bool
