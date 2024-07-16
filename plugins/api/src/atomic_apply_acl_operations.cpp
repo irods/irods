@@ -351,7 +351,6 @@ namespace
         }
     }
 
-    // TODO This function should probably deal with remote zones.
     auto get_entity_id(nanodbc::connection& _db_conn, std::string_view _entity_name, std::string_view _entity_zone)
         -> id_type
     {
@@ -383,7 +382,7 @@ namespace
             log::api::trace("Retrieving entity ID ...");
 
             std::string_view zone = getLocalZoneName();
-            if (const auto iter = _op.find("zone_name"); iter != std::end(_op)) {
+            if (const auto iter = _op.find("zone"); iter != std::end(_op)) {
                 zone = iter->get_ref<const std::string&>();
             }
             const auto entity_id = get_entity_id(_db_conn, _op.at("entity_name").get<std::string>(), zone);
@@ -407,7 +406,8 @@ namespace
         }
         catch (const irods::exception& e) {
             log::api::error({{"log_message", e.what()}, {"acl_operation", _op.dump()}});
-            return {e.code(), irods::to_bytes_buffer(make_error_object(_op, _op_index, e.what()).dump())};
+            return {
+                e.code(), irods::to_bytes_buffer(make_error_object(_op, _op_index, e.client_display_what()).dump())};
         }
         catch (const fs::filesystem_error& e) {
             log::api::error({{"log_message", e.what()}, {"acl_operation", _op.dump()}});
