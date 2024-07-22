@@ -156,9 +156,9 @@ namespace irods::experimental
     {
         only_connect(_host, _port, _username);
 
-        if (clientLogin(conn_.get()) != 0) {
+        if (const auto ec = clientLogin(conn_.get()); ec < 0) {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-            THROW(AUTHENTICATION_ERROR, "Client login error");
+            THROW(ec, "Client login error");
         }
     } // connect_and_login
 
@@ -169,9 +169,9 @@ namespace irods::experimental
     {
         only_connect(_host, _port, _proxy_username, _username);
 
-        if (clientLogin(conn_.get()) != 0) {
+        if (const auto ec = clientLogin(conn_.get()); ec < 0) {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-            THROW(AUTHENTICATION_ERROR, "Client login error");
+            THROW(ec, "Client login error");
         }
     } // connect_and_login
 
@@ -182,6 +182,11 @@ namespace irods::experimental
         rErrMsg_t error{};
         conn_.reset(
             rcConnect(_host.c_str(), _port, _username.name().c_str(), _username.zone().c_str(), NO_RECONN, &error));
+
+        if (error.status < 0) {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+            THROW(error.status, error.msg);
+        }
 
         if (!conn_) {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
@@ -204,6 +209,11 @@ namespace irods::experimental
                                &error,
                                1,
                                NO_RECONN));
+
+        if (error.status < 0) {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+            THROW(error.status, error.msg);
+        }
 
         if (!conn_) {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
