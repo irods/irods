@@ -1,3 +1,7 @@
+//
+// IMPORTANT: Some tests in this file require rodsadmin level privileges!
+//
+
 #include <catch2/catch.hpp>
 
 #include "irods/client_connection.hpp"
@@ -7,7 +11,11 @@
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/rcConnect.h"
 #include "irods/rodsClient.h"
+#include "irods/rodsErrorTable.h"
 #include "irods/user_administration.hpp"
+#include "irods/system_error.hpp"
+
+#include <errno.h> // For ECONNREFUSED.
 
 #include <algorithm>
 #include <array>
@@ -299,4 +307,112 @@ TEST_CASE("#7192: all connections store unique session signatures", "client_conn
     };
 
     CHECK(std::all_of(std::begin(pairs), std::end(pairs), has_unique_session_signatures));
+}
+
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+TEST_CASE("#7155: report underlying error info from server on failed connection")
+{
+    load_client_api_plugins();
+
+    rodsEnv env;
+    _getRodsEnv(env);
+
+    SECTION("invalid host")
+    {
+        try {
+            ix::client_connection{"example.org", env.rodsPort, {env.rodsUserName, env.rodsZone}};
+        }
+        catch (const irods::exception& e) {
+            CHECK(e.code() == USER_SOCK_CONNECT_TIMEDOUT);
+            CHECK_THAT(e.client_display_what(), Catch::Matchers::Contains("_rcConnect: connectToRhost failed"));
+        }
+    }
+
+    SECTION("invalid port")
+    {
+        try {
+            ix::client_connection{env.rodsHost, 8080, {env.rodsUserName, env.rodsZone}};
+        }
+        catch (const irods::exception& e) {
+            const auto ec = ix::make_error_code(e.code());
+            CHECK(ix::get_irods_error_code(ec) == USER_SOCK_CONNECT_ERR);
+            CHECK(ix::get_errno(ec) == ECONNREFUSED);
+            CHECK_THAT(e.client_display_what(), Catch::Matchers::Contains("_rcConnect: connectToRhost failed"));
+        }
+    }
+
+    SECTION("invalid username, not proxied")
+    {
+        try {
+            ix::client_connection{env.rodsHost, env.rodsPort, {"invalid", env.rodsZone}};
+        }
+        catch (const irods::exception& e) {
+            CHECK(e.code() == CAT_INVALID_USER);
+            CHECK_THAT(e.client_display_what(), Catch::Matchers::Contains("Client login error"));
+        }
+    }
+
+    SECTION("invalid user zone, not proxied")
+    {
+        try {
+            ix::client_connection{env.rodsHost, env.rodsPort, {env.rodsUserName, "invalid"}};
+        }
+        catch (const irods::exception& e) {
+            CHECK(e.code() == CAT_INVALID_USER);
+            CHECK_THAT(e.client_display_what(), Catch::Matchers::Contains("Client login error"));
+        }
+    }
+
+    SECTION("deferred connection with empty zone")
+    {
+        try {
+            ix::client_connection conn{ix::defer_connection};
+            conn.connect(env.rodsHost, env.rodsPort, {env.rodsUserName, ""});
+        }
+        catch (const irods::exception& e) {
+            CHECK(e.code() == SYS_INVALID_INPUT_PARAM);
+            CHECK_THAT(e.client_display_what(), Catch::Matchers::Contains("Empty zone not allowed"));
+        }
+    }
+
+    SECTION("proxy tests")
+    {
+        ix::client_connection admin_conn;
+
+        namespace ia = irods::experimental::administration;
+
+        const ia::user other_user{"other_user"};
+        REQUIRE_NOTHROW(ia::client::add_user(admin_conn, other_user, ia::user_type::rodsadmin));
+
+        irods::at_scope_exit remove_proxy_admin{
+            [&admin_conn, other_user] { ia::client::remove_user(admin_conn, other_user); }};
+
+        const auto password = std::to_array("rods");
+        const ia::user_password_property pwd_property{password.data()};
+        REQUIRE_NOTHROW(ia::client::modify_user(admin_conn, other_user, pwd_property));
+
+        SECTION("proxied user has empty zone name")
+        {
+            try {
+                ix::client_connection{
+                    env.rodsHost, env.rodsPort, {env.rodsUserName, env.rodsZone}, {other_user.name, ""}};
+            }
+            catch (const irods::exception& e) {
+                CHECK(e.code() == SYS_INVALID_INPUT_PARAM);
+                CHECK_THAT(e.client_display_what(), Catch::Matchers::Contains("Empty zone not allowed"));
+            }
+        }
+
+        SECTION("proxy user has empty zone name")
+        {
+            try {
+                ix::client_connection{
+                    env.rodsHost, env.rodsPort, {env.rodsUserName, ""}, {other_user.name, env.rodsZone}};
+            }
+            catch (const irods::exception& e) {
+                CHECK(e.code() == SYS_INVALID_INPUT_PARAM);
+                CHECK_THAT(e.client_display_what(), Catch::Matchers::Contains("Empty zone not allowed"));
+            }
+        }
+    }
 }
