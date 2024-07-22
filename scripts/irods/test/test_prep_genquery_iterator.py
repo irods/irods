@@ -982,3 +982,90 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
             f"[iteration=1] row: ['{self.admin.session_collection}']",
             f"[iteration=2] row: ['{self.admin.session_collection}']"
         ])
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-python', 'Requires PREP.')
+    def test_genquery_iterator_supports_genquery2_order_by_clause__issue_7909(self):
+        iterations = 5
+
+        # Create some data objects and build a single string which captures the expected order
+        # of the rows returned by GenQuery2.
+        data_name_prefix = 'test_genquery_iterator_supports_genquery2_order_by_clause__issue_7909'
+        expected_output = ''
+        for i in reversed(range(iterations)):
+            self.admin.assert_icommand(['itouch', f'{data_name_prefix}.{i}'])
+            expected_output += f"['{data_name_prefix}.{i}']\n"
+
+        # Create a rule file which, when executed, lists the data objects in the admin's
+        # session collection in reverse order.
+        rule_file = f'{self.admin.local_session_dir}/test_genquery_iterator_supports_genquery2_order_by_clause__issue_7909.r'
+        with open(rule_file, 'w') as rf:
+            rf.write(dedent(f'''
+            def main(rule_args, callback, rei):
+                from genquery import Query, Parser
+                for r in Query(callback, 'DATA_NAME', "COLL_NAME = '{self.admin.session_collection}'", order_by='DATA_NAME desc', parser=Parser.GENQUERY2):
+                    callback.writeLine('stdout', f'{{r}}')
+            INPUT null
+            OUTPUT ruleExecOut
+            '''))
+
+        # Execute the rule.
+        rep_instance = IrodsConfig().default_rule_engine_plugin + '-instance'
+        self.admin.assert_icommand(['irule', '-r', rep_instance, '-F', rule_file], 'STDOUT', expected_output)
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-python', 'Requires PREP.')
+    def test_genquery_iterator_raises_exception_when_given_invalid_string_for_order_by_clause__issue_7909(self):
+        with temporary_core_file() as core:
+            attr_name = 'test_genquery_iterator_raises_exception_when_given_invalid_string_for_order_by_clause__issue_7909_error'
+
+            # The following rule triggers and attaches the exception message generated
+            # by the invalid GenQuery2 order-by string passed to the Query constructor.
+            core.add_rule(dedent(f'''
+            def pep_api_touch_pre(rule_args, callback, rei):
+                try:
+                    from genquery import Query, Parser
+                    Query(callback, 'COLL_NAME', "COLL_NAME = '{self.admin.session_collection}'", order_by='invalid', parser=Parser.GENQUERY2).first()
+                except RuntimeError as e:
+                    callback.msiModAVUMetadata('-C', '{self.admin.session_collection}', 'add', '{attr_name}', str(e), '')
+            '''))
+
+            # Trigger the PEP.
+            # This will cause the rule to add an AVU to the session collection.
+            self.admin.assert_icommand(['itouch', 'issue_7909'], 'STDERR')
+
+            # Show the AVU containing the error exists on the session collection.
+            self.admin.assert_icommand(['imeta', 'ls', '-C', self.admin.session_collection], 'STDOUT', [
+                f'attribute: {attr_name}\n',
+                '[iRods__Error__Code:-130000]',
+                '[SYS_INVALID_INPUT_PARAM]'
+            ])
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-python', 'Requires PREP.')
+    def test_genquery_iterator_allows_close_member_function_to_be_called_multiple_times__issue_7909(self):
+        with temporary_core_file() as core:
+            attr_name = 'test_genquery_iterator_allows_close_member_function_to_be_called_multiple_times__issue_7909'
+            attr_value = 'success'
+
+            for parser in ['GENQUERY1', 'GENQUERY2']:
+                with self.subTest(f'Using [{parser}]'):
+                    # The following rule calls the close() member function of the Query class multiple
+                    # times and then attaches an AVU to the session collection. The AVU is used to
+                    # indicate success.
+                    core.add_rule(dedent(f'''
+                    def pep_api_touch_pre(rule_args, callback, rei):
+                        from genquery import Query, Parser
+                        query = Query(callback, 'COLL_NAME', "COLL_NAME = '{self.admin.session_collection}'", parser=Parser.{parser})
+                        for _ in query:
+                            pass
+                        query.close()
+                        query.close()
+                        query.close()
+                        callback.msiModAVUMetadata('-C', '{self.admin.session_collection}', 'add', '{attr_name}', '{parser}={attr_value}', '')
+                    '''))
+
+                    # Trigger the PEP.
+                    self.admin.assert_icommand(['itouch', 'issue_7909'], 'STDERR')
+
+                    # Show the AVU is now attached to the session collection with the expected attribute value.
+                    self.admin.assert_icommand(['imeta', 'ls', '-C', self.admin.session_collection], 'STDOUT', [
+                        f'attribute: {attr_name}\nvalue: {parser}={attr_value}\n'
+                    ])
