@@ -275,7 +275,11 @@ auto rs_replica_truncate(RsComm* _comm, DataObjInp* _inp, char** _out) -> int
                 resource_name,
                 _inp->objPath);
             log_api::error(msg);
-            *_out = strdup(make_json_output(msg, replica).dump().c_str());
+            // Even though we have replica information, do not include it in the output structure. This error case is
+            // specifically about the selected replica not being in the hierarchy descending from the client-requested
+            // resource, so we do not care to include that information in the output. It could give the impression that
+            // the replica from the returned information was truncated when in fact it was not.
+            *_out = strdup(make_json_output(msg).dump().c_str());
             return SYS_REPLICA_INACCESSIBLE;
         }
 
@@ -313,6 +317,9 @@ auto rs_replica_truncate(RsComm* _comm, DataObjInp* _inp, char** _out) -> int
             *_out = strdup(make_json_output(msg, replica).dump().c_str());
             return ec;
         }
+
+        // The output structure is meant to communicate back to the client which replica was truncated.
+        *_out = strdup(make_json_output("", replica).dump().c_str());
     }
     catch (const irods::exception& e) {
         log_api::error("{}: Failed to truncate [{}]: {}", __func__, _inp->objPath, e.client_display_what());
