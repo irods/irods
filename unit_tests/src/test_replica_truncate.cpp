@@ -18,6 +18,7 @@
 #include "irods/rodsErrorTable.h"
 #include "irods/system_error.hpp"
 #include "irods/transport/default_transport.hpp"
+#include "irods/zone_administration.hpp"
 #include "unit_test_utils.hpp"
 
 #include <fmt/format.h>
@@ -40,6 +41,8 @@ namespace replica = irods::experimental::replica;
 
 namespace
 {
+    constexpr const char* same_size_message = "rs_replica_truncate: Replica of [{}] on [{}] already has size [{}].";
+
     auto create_replication_resource(RcComm& _comm, const std::string_view _resc_name) -> void
     {
         adm::resource_registration_info resc_info;
@@ -54,6 +57,7 @@ TEST_CASE("basic_two_standalone_resources")
 {
     load_client_api_plugins();
 
+    const std::string default_resc = "demoResc";
     const std::string test_resc = "test_resc";
     const std::string vault_name = "test_resc_vault";
 
@@ -122,6 +126,18 @@ TEST_CASE("basic_two_standalone_resources")
         // Attempt to truncate the object.
         REQUIRE(0 == rc_replica_truncate(&comm, &truncate_doi, &output_str));
 
+        // Ensure that the returned output structure has the expected contents.
+        REQUIRE(nullptr != output_str);
+        nlohmann::json json_out;
+        REQUIRE_NOTHROW([&] { json_out = nlohmann::json::parse(output_str); }());
+
+        const auto expected_json_output = nlohmann::json{
+            {"message", fmt::format(same_size_message, target_object.c_str(), default_resc, contents.size())},
+            {"replica_number", 0},
+            {"resource_hierarchy", default_resc.c_str()}};
+
+        CHECK(expected_json_output == json_out);
+
         // Ensure that none of the replicas were updated.
         CHECK(GOOD_REPLICA == replica::replica_status(comm, target_object, 0));
         CHECK(contents.size() == replica::replica_size(comm, target_object, 0));
@@ -138,6 +154,16 @@ TEST_CASE("basic_two_standalone_resources")
 
         // Attempt to truncate the object.
         REQUIRE(0 == rc_replica_truncate(&comm, &truncate_doi, &output_str));
+
+        // Ensure that the returned output string has the expected contents.
+        REQUIRE(nullptr != output_str);
+        nlohmann::json json_out;
+        REQUIRE_NOTHROW([&] { json_out = nlohmann::json::parse(output_str); }());
+
+        const auto expected_json_output =
+            nlohmann::json{{"message", ""}, {"replica_number", 0}, {"resource_hierarchy", default_resc.c_str()}};
+
+        CHECK(expected_json_output == json_out);
 
         // Ensure that the replica on the target resource was updated and the other replica was not updated,
         // but marked stale.
@@ -156,6 +182,16 @@ TEST_CASE("basic_two_standalone_resources")
 
         // Attempt to truncate the object.
         REQUIRE(0 == rc_replica_truncate(&comm, &truncate_doi, &output_str));
+
+        // Ensure that the returned output string has the expected contents.
+        REQUIRE(nullptr != output_str);
+        nlohmann::json json_out;
+        REQUIRE_NOTHROW([&] { json_out = nlohmann::json::parse(output_str); }());
+
+        const auto expected_json_output =
+            nlohmann::json{{"message", ""}, {"replica_number", 0}, {"resource_hierarchy", default_resc.c_str()}};
+
+        CHECK(expected_json_output == json_out);
 
         // Ensure that the replica on the target resource was updated and the other replica was not updated,
         // but marked stale.
@@ -239,6 +275,12 @@ TEST_CASE("two_replicas_in_replication_resource")
     REQUIRE(GOOD_REPLICA == replica::replica_status(comm, target_object, 2));
     REQUIRE(contents.size() == replica::replica_size(comm, target_object, 2));
 
+    // For this test, we cannot be 100% sure which replica was selected due to database result ordering. So we need to
+    // query the resource names of the replicas.
+    const auto replica_0_resource = *replica::to_leaf_resource(comm, target_object, 0);
+    const auto replica_1_resource = *replica::to_leaf_resource(comm, target_object, 1);
+    const auto replica_2_resource = *replica::to_leaf_resource(comm, target_object, 2);
+
     // Sleep here so that the mtime on the replica we truncate can be different.
     const auto original_mtime_replica_0 = replica::last_write_time(comm, target_object, 0);
     const auto original_mtime_replica_1 = replica::last_write_time(comm, target_object, 1);
@@ -262,6 +304,18 @@ TEST_CASE("two_replicas_in_replication_resource")
 
         // Attempt to truncate the object.
         REQUIRE(0 == rc_replica_truncate(&comm, &truncate_doi, &output_str));
+
+        {
+            // Ensure that the returned output string has the expected contents.
+            REQUIRE(nullptr != output_str);
+            nlohmann::json json_out;
+            REQUIRE_NOTHROW([&] { json_out = nlohmann::json::parse(output_str); }());
+
+            const auto expected_json_output =
+                nlohmann::json{{"message", ""}, {"replica_number", 0}, {"resource_hierarchy", replica_0_resource}};
+
+            CHECK(expected_json_output == json_out);
+        }
 
         // Ensure that the replica outside of the replication hierarchy is updated.
         CHECK(GOOD_REPLICA == replica::replica_status(comm, target_object, 0));
@@ -295,6 +349,20 @@ TEST_CASE("two_replicas_in_replication_resource")
         // the truncate should not occur and it should not propagate to sibling replicas.
         REQUIRE(0 == rc_replica_truncate(&comm, &truncate_doi, &output_str));
 
+        {
+            // Ensure that the returned output structure has the expected contents.
+            REQUIRE(nullptr != output_str);
+            nlohmann::json json_out;
+            REQUIRE_NOTHROW([&] { json_out = nlohmann::json::parse(output_str); }());
+
+            const auto expected_json_output = nlohmann::json{
+                {"message", fmt::format(same_size_message, target_object.c_str(), replica_0_resource, different_size)},
+                {"replica_number", 0},
+                {"resource_hierarchy", replica_0_resource}};
+
+            CHECK(expected_json_output == json_out);
+        }
+
         // Ensure that none of the replicas were updated.
         CHECK(GOOD_REPLICA == replica::replica_status(comm, target_object, 0));
         CHECK(different_size == replica::replica_size(comm, target_object, 0));
@@ -318,6 +386,39 @@ TEST_CASE("two_replicas_in_replication_resource")
 
         // Attempt to truncate the object.
         REQUIRE(0 == rc_replica_truncate(&comm, &truncate_doi, &output_str));
+
+        // Ensure that the returned output structure has the expected contents.
+        REQUIRE(nullptr != output_str);
+        nlohmann::json json_out;
+        REQUIRE_NOTHROW([&] { json_out = nlohmann::json::parse(output_str); }());
+
+        // Even though none of the replicas were updated, a replica was selected for truncate, which is how the system
+        // determined that it was the same size as the requested truncate size. Check to make sure the replica info
+        // matches what we expect.
+
+        // We cannot expect one replica to have been truncated any more than the other. We must figure out which replica
+        // was truncated here, by number, and then we can assert which resource hierarchy we expect to see.
+        const auto replica_number_itr = json_out.find("replica_number");
+        REQUIRE(json_out.end() != replica_number_itr);
+        const auto replica_number = replica_number_itr->get<int>();
+        // This is a separate variable because "chained comparisons are not supported inside assertions" in Catch2.
+        const auto replica_number_is_1_or_2 = (1 == replica_number || 2 == replica_number);
+        REQUIRE(replica_number_is_1_or_2);
+
+        // Ensure that the resource hierarchy returned matches that of the replica which was truncated.
+        const auto& expected_leaf_resource = (1 == replica_number) ? replica_1_resource : replica_2_resource;
+        const auto expected_resource_hierarchy = fmt::format("{};{}", replication_resc.c_str(), expected_leaf_resource);
+        const auto resource_hierarchy_itr = json_out.find("resource_hierarchy");
+        REQUIRE(json_out.end() != resource_hierarchy_itr);
+        CHECK(expected_resource_hierarchy == resource_hierarchy_itr->get_ref<const std::string&>());
+
+        // Ensure that the message holds the "same size" message. This comes at the end because we need to adjust the
+        // assertion based on which replica was truncated (which we cannot know ahead of time, as explained above).
+        const auto message = json_out.find("message");
+        CHECK(json_out.end() != message);
+        const auto expected_message =
+            fmt::format(same_size_message, target_object.c_str(), expected_resource_hierarchy, contents.size());
+        CHECK(expected_message == message->get_ref<const std::string&>());
 
         // Ensure that none of the replicas were updated.
         CHECK(GOOD_REPLICA == replica::replica_status(comm, target_object, 1));
@@ -345,6 +446,32 @@ TEST_CASE("two_replicas_in_replication_resource")
         // Attempt to truncate the object.
         REQUIRE(0 == rc_replica_truncate(&comm, &truncate_doi, &output_str));
 
+        // Ensure that the returned output structure has the expected contents.
+        REQUIRE(nullptr != output_str);
+        nlohmann::json json_out;
+        REQUIRE_NOTHROW([&] { json_out = nlohmann::json::parse(output_str); }());
+
+        // Ensure that the message field is empty.
+        const auto message = json_out.find("message");
+        CHECK(json_out.end() != message);
+        CHECK(message->get_ref<const std::string&>().empty());
+
+        // We cannot expect one replica to have been truncated any more than the other. We must figure out which replica
+        // was truncated here, by number, and then we can assert which resource hierarchy we expect to see.
+        const auto replica_number_itr = json_out.find("replica_number");
+        REQUIRE(json_out.end() != replica_number_itr);
+        const auto replica_number = replica_number_itr->get<int>();
+        // This is a separate variable because "chained comparisons are not supported inside assertions" in Catch2.
+        const auto replica_number_is_1_or_2 = (1 == replica_number || 2 == replica_number);
+        REQUIRE(replica_number_is_1_or_2);
+
+        // Ensure that the resource hierarchy returned matches that of the replica which was truncated.
+        const auto& expected_leaf_resource = (1 == replica_number) ? replica_1_resource : replica_2_resource;
+        const auto expected_resource_hierarchy = fmt::format("{};{}", replication_resc.c_str(), expected_leaf_resource);
+        const auto resource_hierarchy_itr = json_out.find("resource_hierarchy");
+        REQUIRE(json_out.end() != resource_hierarchy_itr);
+        CHECK(expected_resource_hierarchy == resource_hierarchy_itr->get_ref<const std::string&>());
+
         // Ensure that the replicas in the replication resource hierarchy were updated.
         CHECK(GOOD_REPLICA == replica::replica_status(comm, target_object, 1));
         CHECK(new_size == replica::replica_size(comm, target_object, 1));
@@ -370,6 +497,32 @@ TEST_CASE("two_replicas_in_replication_resource")
 
         // Attempt to truncate the object.
         REQUIRE(0 == rc_replica_truncate(&comm, &truncate_doi, &output_str));
+
+        // Ensure that the returned output structure has the expected contents.
+        REQUIRE(nullptr != output_str);
+        nlohmann::json json_out;
+        REQUIRE_NOTHROW([&] { json_out = nlohmann::json::parse(output_str); }());
+
+        // Ensure that the message field is empty.
+        const auto message = json_out.find("message");
+        CHECK(json_out.end() != message);
+        CHECK(message->get_ref<const std::string&>().empty());
+
+        // We cannot expect one replica to have been truncated any more than the other. We must figure out which replica
+        // was truncated here, by number, and then we can assert which resource hierarchy we expect to see.
+        const auto replica_number_itr = json_out.find("replica_number");
+        REQUIRE(json_out.end() != replica_number_itr);
+        const auto replica_number = replica_number_itr->get<int>();
+        // This is a separate variable because "chained comparisons are not supported inside assertions" in Catch2.
+        const auto replica_number_is_1_or_2 = (1 == replica_number || 2 == replica_number);
+        REQUIRE(replica_number_is_1_or_2);
+
+        // Ensure that the resource hierarchy returned matches that of the replica which was truncated.
+        const auto& expected_leaf_resource = (1 == replica_number) ? replica_1_resource : replica_2_resource;
+        const auto expected_resource_hierarchy = fmt::format("{};{}", replication_resc.c_str(), expected_leaf_resource);
+        const auto resource_hierarchy_itr = json_out.find("resource_hierarchy");
+        REQUIRE(json_out.end() != resource_hierarchy_itr);
+        CHECK(expected_resource_hierarchy == resource_hierarchy_itr->get_ref<const std::string&>());
 
         // Ensure that the replicas in the replication resource hierarchy were updated.
         CHECK(GOOD_REPLICA == replica::replica_status(comm, target_object, 1));
@@ -470,6 +623,9 @@ TEST_CASE("truncate_locked_data_object__issue_7104")
     char* output_str{};
     const auto free_output_str = irods::at_scope_exit{[&output_str] { std::free(output_str); }};
 
+    constexpr const char* error_message_template =
+        "rs_replica_truncate: Error occurred resolving hierarchy or getting information for [{}]: {}";
+
     SECTION("target_intermediate_replica")
     {
         irods::experimental::client_connection conn2;
@@ -479,50 +635,80 @@ TEST_CASE("truncate_locked_data_object__issue_7104")
 
         SECTION("by_replica_number")
         {
+            constexpr auto expected_error_code = HIERARCHY_ERROR;
+
             addKeyVal(&truncate_doi.condInput, REPL_NUM_KW, "0");
             // Attempt to truncate the object using the size specified for each section, and fail.
             // The assertion occurs inside the sections despite being identical for easier identification.
             SECTION("same_size")
             {
                 truncate_doi.dataSize = contents.size();
-                CHECK(HIERARCHY_ERROR == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
+                CHECK(expected_error_code == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
             }
             SECTION("larger_size")
             {
                 truncate_doi.dataSize = contents.size() + 1;
-                CHECK(HIERARCHY_ERROR == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
+                CHECK(expected_error_code == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
             }
             SECTION("smaller_size")
             {
                 truncate_doi.dataSize = contents.size() - 1;
-                CHECK(HIERARCHY_ERROR == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
+                CHECK(expected_error_code == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
             }
+
+            // Ensure that the returned output structure has the expected contents.
+            REQUIRE(nullptr != output_str);
+            nlohmann::json json_out;
+            REQUIRE_NOTHROW([&] { json_out = nlohmann::json::parse(output_str); }());
+
+            const auto expected_json_output = nlohmann::json{
+                {"message", fmt::format(error_message_template, target_object.c_str(), expected_error_code)},
+                {"replica_number", nlohmann::json::value_t::null},
+                {"resource_hierarchy", nlohmann::json::value_t::null}};
+
+            CHECK(expected_json_output == json_out);
         }
 
         SECTION("by_resource_name")
         {
+            constexpr auto expected_error_code = HIERARCHY_ERROR;
+
             addKeyVal(&truncate_doi.condInput, RESC_NAME_KW, default_resc.c_str());
             // Attempt to truncate the object using the size specified for each section, and fail.
             // The assertion occurs inside the sections despite being identical for easier identification.
             SECTION("same_size")
             {
                 truncate_doi.dataSize = contents.size();
-                CHECK(HIERARCHY_ERROR == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
+                CHECK(expected_error_code == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
             }
             SECTION("larger_size")
             {
                 truncate_doi.dataSize = contents.size() + 1;
-                CHECK(HIERARCHY_ERROR == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
+                CHECK(expected_error_code == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
             }
             SECTION("smaller_size")
             {
                 truncate_doi.dataSize = contents.size() - 1;
-                CHECK(HIERARCHY_ERROR == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
+                CHECK(expected_error_code == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
             }
+
+            // Ensure that the returned output structure has the expected contents.
+            REQUIRE(nullptr != output_str);
+            nlohmann::json json_out;
+            REQUIRE_NOTHROW([&] { json_out = nlohmann::json::parse(output_str); }());
+
+            const auto expected_json_output = nlohmann::json{
+                {"message", fmt::format(error_message_template, target_object.c_str(), expected_error_code)},
+                {"replica_number", nlohmann::json::value_t::null},
+                {"resource_hierarchy", nlohmann::json::value_t::null}};
+
+            CHECK(expected_json_output == json_out);
         }
 
         SECTION("by_resource_hierarchy")
         {
+            constexpr auto expected_error_code = INTERMEDIATE_REPLICA_ACCESS;
+
             // This will skip voting.
             addKeyVal(&truncate_doi.condInput, RESC_HIER_STR_KW, default_resc.c_str());
             // Attempt to truncate the object using the size specified for each section, and fail.
@@ -530,18 +716,30 @@ TEST_CASE("truncate_locked_data_object__issue_7104")
             SECTION("same_size")
             {
                 truncate_doi.dataSize = contents.size();
-                CHECK(INTERMEDIATE_REPLICA_ACCESS == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
+                CHECK(expected_error_code == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
             }
             SECTION("larger_size")
             {
                 truncate_doi.dataSize = contents.size() + 1;
-                CHECK(INTERMEDIATE_REPLICA_ACCESS == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
+                CHECK(expected_error_code == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
             }
             SECTION("smaller_size")
             {
                 truncate_doi.dataSize = contents.size() - 1;
-                CHECK(INTERMEDIATE_REPLICA_ACCESS == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
+                CHECK(expected_error_code == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
             }
+
+            // Ensure that the returned output structure has the expected contents.
+            REQUIRE(nullptr != output_str);
+            nlohmann::json json_out;
+            REQUIRE_NOTHROW([&] { json_out = nlohmann::json::parse(output_str); }());
+
+            const auto expected_json_output = nlohmann::json{
+                {"message", fmt::format(error_message_template, target_object.c_str(), expected_error_code)},
+                {"replica_number", nlohmann::json::value_t::null},
+                {"resource_hierarchy", nlohmann::json::value_t::null}};
+
+            CHECK(expected_json_output == json_out);
         }
     }
 
@@ -552,50 +750,80 @@ TEST_CASE("truncate_locked_data_object__issue_7104")
 
         SECTION("by_replica_number")
         {
+            constexpr auto expected_error_code = HIERARCHY_ERROR;
+
             addKeyVal(&truncate_doi.condInput, REPL_NUM_KW, "1");
             // Attempt to truncate the object using the size specified for each section, and fail.
             // The assertion occurs inside the sections despite being identical for easier identification.
             SECTION("same_size")
             {
                 truncate_doi.dataSize = contents.size();
-                CHECK(HIERARCHY_ERROR == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
+                CHECK(expected_error_code == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
             }
             SECTION("larger_size")
             {
                 truncate_doi.dataSize = contents.size() + 1;
-                CHECK(HIERARCHY_ERROR == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
+                CHECK(expected_error_code == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
             }
             SECTION("smaller_size")
             {
                 truncate_doi.dataSize = contents.size() - 1;
-                CHECK(HIERARCHY_ERROR == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
+                CHECK(expected_error_code == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
             }
+
+            // Ensure that the returned output structure has the expected contents.
+            REQUIRE(nullptr != output_str);
+            nlohmann::json json_out;
+            REQUIRE_NOTHROW([&] { json_out = nlohmann::json::parse(output_str); }());
+
+            const auto expected_json_output = nlohmann::json{
+                {"message", fmt::format(error_message_template, target_object.c_str(), expected_error_code)},
+                {"replica_number", nlohmann::json::value_t::null},
+                {"resource_hierarchy", nlohmann::json::value_t::null}};
+
+            CHECK(expected_json_output == json_out);
         }
 
         SECTION("by_resource_name")
         {
+            constexpr auto expected_error_code = HIERARCHY_ERROR;
+
             addKeyVal(&truncate_doi.condInput, RESC_NAME_KW, test_resc.c_str());
             // Attempt to truncate the object using the size specified for each section, and fail.
             // The assertion occurs inside the sections despite being identical for easier identification.
             SECTION("same_size")
             {
                 truncate_doi.dataSize = contents.size();
-                CHECK(HIERARCHY_ERROR == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
+                CHECK(expected_error_code == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
             }
             SECTION("larger_size")
             {
                 truncate_doi.dataSize = contents.size() + 1;
-                CHECK(HIERARCHY_ERROR == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
+                CHECK(expected_error_code == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
             }
             SECTION("smaller_size")
             {
                 truncate_doi.dataSize = contents.size() - 1;
-                CHECK(HIERARCHY_ERROR == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
+                CHECK(expected_error_code == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
             }
+
+            // Ensure that the returned output structure has the expected contents.
+            REQUIRE(nullptr != output_str);
+            nlohmann::json json_out;
+            REQUIRE_NOTHROW([&] { json_out = nlohmann::json::parse(output_str); }());
+
+            const auto expected_json_output = nlohmann::json{
+                {"message", fmt::format(error_message_template, target_object.c_str(), expected_error_code)},
+                {"replica_number", nlohmann::json::value_t::null},
+                {"resource_hierarchy", nlohmann::json::value_t::null}};
+
+            CHECK(expected_json_output == json_out);
         }
 
         SECTION("by_resource_hierarchy")
         {
+            constexpr auto expected_error_code = LOCKED_DATA_OBJECT_ACCESS;
+
             // This will skip voting.
             addKeyVal(&truncate_doi.condInput, RESC_HIER_STR_KW, test_resc.c_str());
             // Attempt to truncate the object using the size specified for each section, and fail.
@@ -603,23 +831,37 @@ TEST_CASE("truncate_locked_data_object__issue_7104")
             SECTION("same_size")
             {
                 truncate_doi.dataSize = contents.size();
-                CHECK(LOCKED_DATA_OBJECT_ACCESS == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
+                CHECK(expected_error_code == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
             }
             SECTION("larger_size")
             {
                 truncate_doi.dataSize = contents.size() + 1;
-                CHECK(LOCKED_DATA_OBJECT_ACCESS == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
+                CHECK(expected_error_code == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
             }
             SECTION("smaller_size")
             {
                 truncate_doi.dataSize = contents.size() - 1;
-                CHECK(LOCKED_DATA_OBJECT_ACCESS == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
+                CHECK(expected_error_code == rc_replica_truncate(&comm2, &truncate_doi, &output_str));
             }
+
+            // Ensure that the returned output structure has the expected contents.
+            REQUIRE(nullptr != output_str);
+            nlohmann::json json_out;
+            REQUIRE_NOTHROW([&] { json_out = nlohmann::json::parse(output_str); }());
+
+            const auto expected_json_output = nlohmann::json{
+                {"message", fmt::format(error_message_template, target_object.c_str(), expected_error_code)},
+                {"replica_number", nlohmann::json::value_t::null},
+                {"resource_hierarchy", nlohmann::json::value_t::null}};
+
+            CHECK(expected_json_output == json_out);
         }
     }
 
     SECTION("no_specific_target")
     {
+        constexpr auto expected_error_code = HIERARCHY_ERROR;
+
         // Attempt to truncate the object using the size specified for each section, and fail.
         // The assertion occurs inside the sections despite being identical for easier identification.
         SECTION("same_size")
@@ -637,6 +879,18 @@ TEST_CASE("truncate_locked_data_object__issue_7104")
             truncate_doi.dataSize = contents.size() - 1;
             CHECK(HIERARCHY_ERROR == rc_replica_truncate(&comm, &truncate_doi, &output_str));
         }
+
+        // Ensure that the returned output structure has the expected contents.
+        REQUIRE(nullptr != output_str);
+        nlohmann::json json_out;
+        REQUIRE_NOTHROW([&] { json_out = nlohmann::json::parse(output_str); }());
+
+        const auto expected_json_output =
+            nlohmann::json{{"message", fmt::format(error_message_template, target_object.c_str(), expected_error_code)},
+                           {"replica_number", nlohmann::json::value_t::null},
+                           {"resource_hierarchy", nlohmann::json::value_t::null}};
+
+        CHECK(expected_json_output == json_out);
     }
 
     // Close the open data object so that it is back at rest.
@@ -716,14 +970,40 @@ TEST_CASE("inputs_that_will_not_work")
 
     SECTION("DEST_RESC_NAME_KW_not_allowed")
     {
-        addKeyVal(&truncate_doi.condInput, DEST_RESC_NAME_KW, default_resc.c_str());
+        constexpr const char* keyword = DEST_RESC_NAME_KW;
+        addKeyVal(&truncate_doi.condInput, keyword, default_resc.c_str());
         CHECK(SYS_INVALID_INPUT_PARAM == rc_replica_truncate(&comm, &truncate_doi, &output_str));
+
+        // Ensure that the returned output structure has the expected contents.
+        REQUIRE(nullptr != output_str);
+        nlohmann::json json_out;
+        REQUIRE_NOTHROW([&] { json_out = nlohmann::json::parse(output_str); }());
+
+        const auto expected_json_output =
+            nlohmann::json{{"message", fmt::format("rs_replica_truncate: [{}] keyword not supported.", keyword)},
+                           {"replica_number", nlohmann::json::value_t::null},
+                           {"resource_hierarchy", nlohmann::json::value_t::null}};
+
+        CHECK(expected_json_output == json_out);
     }
 
     SECTION("DEST_RESC_HIER_STR_KW_not_allowed")
     {
-        addKeyVal(&truncate_doi.condInput, DEST_RESC_HIER_STR_KW, default_resc.c_str());
+        constexpr const char* keyword = DEST_RESC_HIER_STR_KW;
+        addKeyVal(&truncate_doi.condInput, keyword, default_resc.c_str());
         CHECK(SYS_INVALID_INPUT_PARAM == rc_replica_truncate(&comm, &truncate_doi, &output_str));
+
+        // Ensure that the returned output structure has the expected contents.
+        REQUIRE(nullptr != output_str);
+        nlohmann::json json_out;
+        REQUIRE_NOTHROW([&] { json_out = nlohmann::json::parse(output_str); }());
+
+        const auto expected_json_output =
+            nlohmann::json{{"message", fmt::format("rs_replica_truncate: [{}] keyword not supported.", keyword)},
+                           {"replica_number", nlohmann::json::value_t::null},
+                           {"resource_hierarchy", nlohmann::json::value_t::null}};
+
+        CHECK(expected_json_output == json_out);
     }
 
     SECTION("REPL_NUM_KW_and_RESC_NAME_KW_not_allowed_together")
@@ -731,32 +1011,117 @@ TEST_CASE("inputs_that_will_not_work")
         addKeyVal(&truncate_doi.condInput, RESC_NAME_KW, test_resc.c_str());
         addKeyVal(&truncate_doi.condInput, REPL_NUM_KW, "1");
         CHECK(SYS_INVALID_INPUT_PARAM == rc_replica_truncate(&comm, &truncate_doi, &output_str));
+
+        // Ensure that the returned output structure has the expected contents.
+        REQUIRE(nullptr != output_str);
+        nlohmann::json json_out;
+        REQUIRE_NOTHROW([&] { json_out = nlohmann::json::parse(output_str); }());
+
+        const auto error_message = fmt::format(
+            "rs_replica_truncate: [{}] and [{}] keywords cannot be used together.", RESC_NAME_KW, REPL_NUM_KW);
+
+        const auto expected_json_output = nlohmann::json{{"message", error_message},
+                                                         {"replica_number", nlohmann::json::value_t::null},
+                                                         {"resource_hierarchy", nlohmann::json::value_t::null}};
+
+        CHECK(expected_json_output == json_out);
     }
 
     SECTION("replica_number_that_does_not_exist")
     {
+        constexpr auto expected_error_code = SYS_REPLICA_DOES_NOT_EXIST;
         addKeyVal(&truncate_doi.condInput, REPL_NUM_KW, "1");
-        CHECK(SYS_REPLICA_DOES_NOT_EXIST == rc_replica_truncate(&comm, &truncate_doi, &output_str));
+        CHECK(expected_error_code == rc_replica_truncate(&comm, &truncate_doi, &output_str));
+
+        // Ensure that the returned output structure has the expected contents.
+        REQUIRE(nullptr != output_str);
+        nlohmann::json json_out;
+        REQUIRE_NOTHROW([&] { json_out = nlohmann::json::parse(output_str); }());
+
+        // There should be no replica information here because the expected failure occurs in such a way that no replica
+        // information is retrieved. After all, the replica being targeted does not exist.
+        const auto error_message =
+            fmt::format("rs_replica_truncate: Error occurred resolving hierarchy or getting information for [{}]: {}",
+                        target_object.c_str(),
+                        expected_error_code);
+        const auto expected_json_output = nlohmann::json{{"message", error_message},
+                                                         {"replica_number", nlohmann::json::value_t::null},
+                                                         {"resource_hierarchy", nlohmann::json::value_t::null}};
+
+        CHECK(expected_json_output == json_out);
     }
 
     SECTION("resource_name_with_no_replica")
     {
-        addKeyVal(&truncate_doi.condInput, RESC_HIER_STR_KW, test_resc.c_str());
-        CHECK(SYS_REPLICA_DOES_NOT_EXIST == rc_replica_truncate(&comm, &truncate_doi, &output_str));
+        constexpr auto expected_error_code = SYS_REPLICA_INACCESSIBLE;
+        addKeyVal(&truncate_doi.condInput, RESC_NAME_KW, test_resc.c_str());
+        CHECK(expected_error_code == rc_replica_truncate(&comm, &truncate_doi, &output_str));
+
+        // Ensure that the returned output structure has the expected contents.
+        REQUIRE(nullptr != output_str);
+        nlohmann::json json_out;
+        REQUIRE_NOTHROW([&] { json_out = nlohmann::json::parse(output_str); }());
+
+        // There should be no replica information here because the expected failure indicates that the replica we wish
+        // to truncate does not exist. Even though an existing replica may have won the vote, it was not the intended
+        // target of the truncation and has nothing to do with the failure. Therefore, we expect no replica information.
+        const auto error_message = fmt::format("rs_replica_truncate: Hierarchy descending from specified resource name "
+                                               "[{}] does not have a replica of [{}] "
+                                               "or the replica is inaccessible at this time.",
+                                               test_resc.c_str(),
+                                               target_object.c_str());
+        const auto expected_json_output = nlohmann::json{{"message", error_message},
+                                                         {"replica_number", nlohmann::json::value_t::null},
+                                                         {"resource_hierarchy", nlohmann::json::value_t::null}};
+
+        CHECK(expected_json_output == json_out);
     }
 
     SECTION("hierarchy_with_no_replica")
     {
         addKeyVal(&truncate_doi.condInput, RESC_HIER_STR_KW, test_resc.c_str());
         CHECK(SYS_REPLICA_DOES_NOT_EXIST == rc_replica_truncate(&comm, &truncate_doi, &output_str));
+
+        // Ensure that the returned output structure has the expected contents.
+        REQUIRE(nullptr != output_str);
+        nlohmann::json json_out;
+        REQUIRE_NOTHROW([&] { json_out = nlohmann::json::parse(output_str); }());
+
+        // There should be no replica information here because the RESC_HIER_STR_KW bypasses hierarchy resolution and
+        // the expected failure occurs in such a way that no replica information is retrieved. After all, the replica
+        // being targeted does not exist.
+        const auto error_message = fmt::format("rs_replica_truncate: [{}] has no replica on resolved hierarchy [{}].",
+                                               target_object.c_str(),
+                                               test_resc.c_str());
+        const auto expected_json_output = nlohmann::json{{"message", error_message},
+                                                         {"replica_number", nlohmann::json::value_t::null},
+                                                         {"resource_hierarchy", nlohmann::json::value_t::null}};
+
+        CHECK(expected_json_output == json_out);
     }
 
     SECTION("negative_dataSize")
     {
         truncate_doi.dataSize = -1;
-        const auto ec = irods::experimental::make_error_code(rc_replica_truncate(&comm, &truncate_doi, &output_str));
+        const auto returned_error_code = rc_replica_truncate(&comm, &truncate_doi, &output_str);
+        const auto ec = irods::experimental::make_error_code(returned_error_code);
         CHECK(UNIX_FILE_TRUNCATE_ERR == irods::experimental::get_irods_error_code(ec));
         CHECK(EINVAL == irods::experimental::get_errno(ec));
+
+        // Ensure that the returned output structure has the expected contents.
+        REQUIRE(nullptr != output_str);
+        nlohmann::json json_out;
+        REQUIRE_NOTHROW([&] { json_out = nlohmann::json::parse(output_str); }());
+
+        const auto error_message =
+            fmt::format("rs_replica_truncate: Error occurred while truncating replica of [{}] on [{}]: {}",
+                        target_object.c_str(),
+                        default_resc.c_str(),
+                        returned_error_code);
+        const auto expected_json_output =
+            nlohmann::json{{"message", error_message}, {"replica_number", 0}, {"resource_hierarchy", default_resc}};
+
+        CHECK(expected_json_output == json_out);
     }
 
     // Ensure that the object was not updated on either replica.
@@ -778,27 +1143,93 @@ TEST_CASE("really_bad_inputs")
     SECTION("nullptr_comm")
     {
         REQUIRE(SYS_INVALID_INPUT_PARAM == rc_replica_truncate(nullptr, nullptr, nullptr));
+
+        // This call does not even reach the server, so output_str is never assigned a value.
+        CHECK(nullptr == output_str);
     }
 
     SECTION("nullptr_input_struct")
     {
         REQUIRE(SYS_INVALID_INPUT_PARAM == rc_replica_truncate(&comm, nullptr, nullptr));
+
+        // This call does not even reach the server, so output_str is never assigned a value.
+        CHECK(nullptr == output_str);
     }
 
     SECTION("nullptr_output_pointer")
     {
         REQUIRE(SYS_INVALID_INPUT_PARAM == rc_replica_truncate(&comm, &truncate_doi, nullptr));
+
+        // This call does not even reach the server, so output_str is never assigned a value.
+        CHECK(nullptr == output_str);
     }
 
     SECTION("empty_input_struct")
     {
-        REQUIRE(OBJ_PATH_DOES_NOT_EXIST == rc_replica_truncate(&comm, &truncate_doi, &output_str));
+        constexpr auto expected_error_code = OBJ_PATH_DOES_NOT_EXIST;
+        REQUIRE(expected_error_code == rc_replica_truncate(&comm, &truncate_doi, &output_str));
+
+        // Ensure that the returned output structure has the expected contents.
+        REQUIRE(nullptr != output_str);
+        nlohmann::json json_out;
+        REQUIRE_NOTHROW([&] { json_out = nlohmann::json::parse(output_str); }());
+
+        const auto error_message =
+            fmt::format("rs_replica_truncate: Error occurred resolving hierarchy or getting information for []: {}",
+                        expected_error_code);
+        const auto expected_json_output = nlohmann::json{{"message", error_message},
+                                                         {"replica_number", nlohmann::json::value_t::null},
+                                                         {"resource_hierarchy", nlohmann::json::value_t::null}};
+
+        CHECK(expected_json_output == json_out);
     }
 
     SECTION("not_absolute_logical_path")
     {
+        constexpr auto expected_error_code = SYS_INVALID_FILE_PATH;
         std::strncpy(truncate_doi.objPath, "not_absolute_path", MAX_NAME_LEN);
-        REQUIRE(SYS_INVALID_FILE_PATH == rc_replica_truncate(&comm, &truncate_doi, &output_str));
+        REQUIRE(expected_error_code == rc_replica_truncate(&comm, &truncate_doi, &output_str));
+
+        // Ensure that the returned output structure has the expected contents.
+        REQUIRE(nullptr != output_str);
+        nlohmann::json json_out;
+        REQUIRE_NOTHROW([&] { json_out = nlohmann::json::parse(output_str); }());
+
+        const auto error_message =
+            fmt::format("rs_replica_truncate: Error occurred resolving hierarchy or getting information for [{}]: {}",
+                        truncate_doi.objPath,
+                        expected_error_code);
+        const auto expected_json_output = nlohmann::json{{"message", error_message},
+                                                         {"replica_number", nlohmann::json::value_t::null},
+                                                         {"resource_hierarchy", nlohmann::json::value_t::null}};
+
+        CHECK(expected_json_output == json_out);
+    }
+
+    SECTION("logical_path_with_nonexistent_zone")
+    {
+        constexpr const char* nonexistent_zone_name = "fakeZone";
+        REQUIRE(!adm::client::zone_exists(comm, std::string_view{nonexistent_zone_name}));
+
+        const auto target_object = fmt::format("/{}/home/rods/foo", nonexistent_zone_name);
+        constexpr auto expected_error_code = OBJ_PATH_DOES_NOT_EXIST;
+        std::strncpy(truncate_doi.objPath, target_object.c_str(), MAX_NAME_LEN);
+        REQUIRE(expected_error_code == rc_replica_truncate(&comm, &truncate_doi, &output_str));
+
+        // Ensure that the returned output structure has the expected contents.
+        REQUIRE(nullptr != output_str);
+        nlohmann::json json_out;
+        REQUIRE_NOTHROW([&] { json_out = nlohmann::json::parse(output_str); }());
+
+        const auto error_message =
+            fmt::format("rs_replica_truncate: Error occurred resolving hierarchy or getting information for [{}]: {}",
+                        target_object.c_str(),
+                        expected_error_code);
+        const auto expected_json_output = nlohmann::json{{"message", error_message},
+                                                         {"replica_number", nlohmann::json::value_t::null},
+                                                         {"resource_hierarchy", nlohmann::json::value_t::null}};
+
+        CHECK(expected_json_output == json_out);
     }
 } // really_bad_inputs
 
@@ -824,6 +1255,7 @@ TEST_CASE("checksum_tests")
         REQUIRE(fs::client::remove_all(comm, sandbox, fs::remove_options::no_trash));
     }};
 
+    const std::string default_resc = "demoResc";
     const auto target_object = sandbox / "target_object";
 
     static constexpr auto contents = std::string_view{"content!"};
@@ -861,6 +1293,15 @@ TEST_CASE("checksum_tests")
             const auto new_checksum =
                 replica::replica_checksum(comm, target_object, 0, replica::verification_calculation::always);
             CHECK(original_checksum == new_checksum);
+            // Ensure that the returned output structure has the expected contents.
+            REQUIRE(nullptr != output_str);
+            nlohmann::json json_out;
+            REQUIRE_NOTHROW([&] { json_out = nlohmann::json::parse(output_str); }());
+            const auto expected_json_output = nlohmann::json{
+                {"message", fmt::format(same_size_message, target_object.c_str(), default_resc, contents.size())},
+                {"replica_number", 0},
+                {"resource_hierarchy", default_resc.c_str()}};
+            CHECK(expected_json_output == json_out);
         }
         SECTION("larger_size")
         {
@@ -872,6 +1313,13 @@ TEST_CASE("checksum_tests")
             const auto new_checksum =
                 replica::replica_checksum(comm, target_object, 0, replica::verification_calculation::always);
             CHECK(original_checksum != new_checksum);
+            // Ensure that the returned output structure has the expected contents.
+            REQUIRE(nullptr != output_str);
+            nlohmann::json json_out;
+            REQUIRE_NOTHROW([&] { json_out = nlohmann::json::parse(output_str); }());
+            const auto expected_json_output =
+                nlohmann::json{{"message", ""}, {"replica_number", 0}, {"resource_hierarchy", default_resc.c_str()}};
+            CHECK(expected_json_output == json_out);
         }
         SECTION("smaller_size")
         {
@@ -883,6 +1331,13 @@ TEST_CASE("checksum_tests")
             const auto new_checksum =
                 replica::replica_checksum(comm, target_object, 0, replica::verification_calculation::always);
             CHECK(original_checksum != new_checksum);
+            // Ensure that the returned output structure has the expected contents.
+            REQUIRE(nullptr != output_str);
+            nlohmann::json json_out;
+            REQUIRE_NOTHROW([&] { json_out = nlohmann::json::parse(output_str); }());
+            const auto expected_json_output =
+                nlohmann::json{{"message", ""}, {"replica_number", 0}, {"resource_hierarchy", default_resc.c_str()}};
+            CHECK(expected_json_output == json_out);
         }
     }
 
