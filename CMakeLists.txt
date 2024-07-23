@@ -216,6 +216,21 @@ find_package(fmt "8.1.1" REQUIRED
   HINTS "${IRODS_EXTERNALS_FULLPATH_FMT}")
 find_package(spdlog "1.9.2" REQUIRED
   HINTS "${IRODS_EXTERNALS_FULLPATH_SPDLOG}")
+find_package(Boost "1.81" REQUIRED CONFIG
+  COMPONENTS
+  headers
+  system # private
+  filesytem
+  chrono # private
+  container
+  random # private
+  regex
+  thread
+  program_options # private
+  #date_time # private, not linked
+  #serialization # private, not linked, for <boost/archive/*>
+  #stacktrace_addr2line # private, not linked, TODO: allow swapping stacktrace impl
+  HINTS "${IRODS_EXTERNALS_FULLPATH_BOOST}")
 
 
 if (NOT DEFINED THREADS_PREFER_PTHREAD_FLAG)
