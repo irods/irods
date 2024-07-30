@@ -23,6 +23,7 @@
     #define rxFileStat rcFileStat
 #endif
 
+#include "irods/escape_utilities.hpp"
 #include "irods/filesystem.hpp"
 #include "irods/filesystem/path_utilities.hpp"
 #include "irods/irods_at_scope_exit.hpp"
@@ -211,7 +212,8 @@ namespace irods::experimental::replica
                 "DATA_RESC_ID, "
                 "COLL_NAME"
                 " WHERE DATA_NAME = '{}' AND COLL_NAME = '{}'",
-                _logical_path.object_name().c_str(), _logical_path.parent_path().c_str());
+                irods::single_quotes_to_hex(_logical_path.object_name()),
+                irods::single_quotes_to_hex(_logical_path.parent_path()));
 
             if (!_query_condition_string.empty()) {
                 qstr += fmt::format(" AND {}", _query_condition_string.data());
@@ -808,7 +810,9 @@ namespace irods::experimental::replica
 
         const std::string qstr = fmt::format(
             "SELECT DATA_ID WHERE DATA_NAME = '{}' AND COLL_NAME = '{}' AND DATA_RESC_NAME = '{}'",
-            _logical_path.object_name().c_str(), _logical_path.parent_path().c_str(), _leaf_resource_name.data());
+            irods::single_quotes_to_hex(_logical_path.object_name()),
+            irods::single_quotes_to_hex(_logical_path.parent_path()),
+            _leaf_resource_name.data());
 
         return 0 != qb.build<rxComm>(_comm, qstr).size();
     } // replica_exists
@@ -840,7 +844,9 @@ namespace irods::experimental::replica
 
         const std::string qstr = fmt::format(
             "SELECT DATA_ID WHERE DATA_NAME = '{}' AND COLL_NAME = '{}' AND DATA_REPL_NUM = '{}'",
-            _logical_path.object_name().c_str(), _logical_path.parent_path().c_str(), _replica_number);
+            irods::single_quotes_to_hex(_logical_path.object_name()),
+            irods::single_quotes_to_hex(_logical_path.parent_path()),
+            _replica_number);
 
         return 0 != qb.build<rxComm>(_comm, qstr).size();
     } // replica_exists
