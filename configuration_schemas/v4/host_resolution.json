@@ -16,7 +16,7 @@
                             "minLength": 1
                         },
                         "uniqueItems": true,
-                        "minItems": 2
+                        "minItems": 1
                     }
                 },
                 "required": ["address_type","addresses"]
