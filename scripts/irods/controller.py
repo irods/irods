@@ -7,6 +7,7 @@ import json
 import logging
 import os
 import shutil
+import signal
 import socket
 import subprocess
 import sys
@@ -37,191 +38,90 @@ class IrodsController(object):
     def server_binaries(self):
         return [
             self.config.server_executable,
+            self.config.agent_executable,
             self.config.rule_engine_executable
         ]
 
+    def get_server_pid(self):
+        try:
+            # Use of this python script assumes the PID file is located in <prefix>/var/run/irods.
+            pid_file = os.path.join(paths.runstate_directory(), 'irods', 'irods-server.pid')
+            if os.path.exists(pid_file):
+                with open(pid_file, 'r') as f:
+                    pid = int(f.readline().strip())
+                    # If the user executing this python script does not have permission to send
+                    # signals to the PID, an exception will be raised indicating why.
+                    os.kill(pid, 0)
+                    return pid
+
+        except (ProcessLookupError, PermissionError):
+            # This exception block will be triggered if the OS cannot find a PID matching
+            # the target PID or the user does not have permission to send the target PID signals.
+            return None
+
     def get_server_proc(self):
-        server_pid = lib.get_server_pid()
+        server_pid = self.get_server_pid()
+        if server_pid is None:
+            return None
 
-        # lib.get_server_pid() does not have access to self.config, so cannot
-        # check the pid from the pidfile against self.config.server_executable,
-        # only that a process with that pid exists. The possibility remains
-        # that the pid may have been recycled.
-        if server_pid >= 0:
-            try:
-                server_proc = psutil.Process(server_pid)
-                if server_proc.exe() and os.path.samefile(self.config.server_executable, server_proc.exe()):
-                    return server_proc
-            except (psutil.NoSuchProcess, psutil.AccessDenied):
-                return None
+        try:
+            server_proc = psutil.Process(server_pid)
+            if server_proc.exe() and os.path.samefile(self.config.server_executable, server_proc.exe()):
+                return server_proc
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            return None
 
-        return None
+    def upgrade(self):
+        l = logging.getLogger(__name__)
+        l.debug('Calling upgrade on IrodsController')
+
+        if upgrade_configuration.requires_upgrade(self.config):
+            upgrade_configuration.upgrade(self.config)
+
+        if self.config.is_provider:
+            from . import database_interface
+            database_interface.run_catalog_update(self.config)
 
     def start(self, write_to_stdout=False, test_mode=False):
         l = logging.getLogger(__name__)
         l.debug('Calling start on IrodsController')
 
-        if upgrade_configuration.requires_upgrade(self.config):
-            upgrade_configuration.upgrade(self.config)
+        cmd = [self.config.server_executable]
 
-        try:
-            self.config.validate_configuration()
-        except IrodsWarning:
-            l.warn('Warning encountered in validation:', exc_info=True)
+        env_var_name = 'IRODS_ENABLE_TEST_MODE'
+        if test_mode or (env_var_name in os.environ and os.environ[env_var_name] == '1'):
+            cmd.append('--test-mode')
 
-        if self.get_server_proc():
-            raise IrodsError('iRODS already running')
-
-        delete_s3_shmem()
-
-        self.config.clear_cache()
-        if not os.path.exists(self.config.server_executable):
-            raise IrodsError(
-                'Configuration problem:\n'
-                '\tThe \'%s\' application could not be found.' % (
-                    os.path.basename(self.config.server_executable)))
-
-        try:
-            (test_file_handle, test_file_name) = tempfile.mkstemp(
-                dir=self.config.log_directory)
-            os.close(test_file_handle)
-            os.unlink(test_file_name)
-        except (IOError, OSError) as e:
-            raise IrodsError(
-                'Configuration problem:\n'
-                'The server log directory, \'%s\''
-                'is not writeable.' % (
-                    self.config.log_directory)) from e
-
-        for f in ['core.re', 'core.dvm', 'core.fnm']:
-            path = os.path.join(self.config.config_directory, f)
-            if not os.path.exists(path):
-                shutil.copyfile(paths.get_template_filepath(path), path)
-
-        try:
-            irods_port = int(self.config.server_config['zone_port'])
-            l.debug('Attempting to bind socket %s', irods_port)
-            with contextlib.closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
-                try:
-                    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                    s.bind(('127.0.0.1', irods_port))
-                except socket.error as e:
-                    raise IrodsError('Could not bind port {0}.'.format(irods_port)) from e
-            l.debug('Socket %s bound and released successfully.', irods_port)
-
-            if self.config.is_catalog:
-                from . import database_interface
-                database_interface.server_launch_hook(self.config)
-
-            cmd = [self.config.server_executable]
-
-            if write_to_stdout:
-                l.info('Starting iRODS server in foreground ...')
-
-                cmd.append('-u')
-
-                env_var_name = 'IRODS_ENABLE_TEST_MODE'
-                if test_mode or (env_var_name in os.environ and os.environ[env_var_name] == '1'):
-                    cmd.append('-t')
-
-                lib.execute_command(cmd,
-                                    stdout=sys.stdout,
-                                    stderr=sys.stdout,
-                                    cwd=self.config.server_bin_directory,
-                                    env=self.config.execution_environment)
-            else:
-                l.info('Starting iRODS server ...')
-
-                env_var_name = 'IRODS_ENABLE_TEST_MODE'
-                if test_mode or (env_var_name in os.environ and os.environ[env_var_name] == '1'):
-                    cmd.append('-t')
-
-                lib.execute_command(cmd,
-                                    cwd=self.config.server_bin_directory,
-                                    env=self.config.execution_environment)
-
-                try_count = 1
-                max_retries = 100
-                while True:
-                    l.debug('Attempting to connect to iRODS server on port %s. Attempt #%s',
-                            irods_port, try_count)
-                    with contextlib.closing(socket.socket(
-                            socket.AF_INET, socket.SOCK_STREAM)) as s:
-                        if s.connect_ex(('127.0.0.1', irods_port)) == 0:
-                            l.debug('Successfully connected to port %s.', irods_port)
-                            if self.get_server_proc is None:
-                                raise IrodsError('iRODS port is bound, but server is not started.')
-                            s.send(b'\x00\x00\x00\x33<MsgHeader_PI><type>HEARTBEAT</type></MsgHeader_PI>')
-                            message = s.recv(256)
-                            if message != b'HEARTBEAT':
-                                raise IrodsError('iRODS port returned non-heartbeat message:\n{0}'.format(message))
-                            break
-                    if try_count >= max_retries:
-                        raise IrodsError('iRODS server failed to start.')
-                    try_count += 1
-                    time.sleep(1)
-
-                l.info('Success')
-
-        except IrodsError as e:
-            l.info('Failure')
-            raise e
-
-    def irods_graceful_shutdown(self, server_proc, server_descendants, timeout=20):
-        start_time = time.time()
-        server_proc.terminate()
-        while time.time() < start_time + timeout:
-            if capture_process_tree(server_proc, server_descendants, self.server_binaries):
-                time.sleep(0.3)
-            else:
-                break
+        if write_to_stdout:
+            l.info('Starting iRODS server ...')
+            cmd.append('--stdout')
+            lib.execute_command(cmd,
+                                stdout=sys.stdout,
+                                stderr=sys.stdout,
+                                cwd=self.config.server_bin_directory,
+                                env=self.config.execution_environment)
         else:
-            capture_process_tree(server_proc, server_descendants, self.server_binaries)
-            if server_proc.is_running():
-                raise IrodsError('The iRODS server did not stop within {0} seconds of '
-                                 'receiving SIGTERM.'.format(timeout))
-            elif server_descendants:
-                raise IrodsError('iRODS server shut down but left behind child processes')
+            l.info('Starting iRODS server as a daemon ...')
+            cmd.append('-d')
+            lib.execute_command(cmd,
+                                cwd=self.config.server_bin_directory,
+                                env=self.config.execution_environment)
 
-    def stop(self, timeout=20):
+        self.wait_for_server_to_start()
+
+    def stop(self, graceful=False):
         l = logging.getLogger(__name__)
         self.config.clear_cache()
         l.debug('Calling stop on IrodsController')
+
+        server_pid = self.get_server_pid()
+        if server_pid is None:
+            l.info('No iRODS server running')
+            return
+
         l.info('Stopping iRODS server...')
-        try:
-            server_proc = self.get_server_proc()
-            server_descendants = set()
-            if server_proc is None:
-                l.warning('Server pidfile missing or stale. No iRODS server running?')
-            else:
-                try:
-                    self.irods_graceful_shutdown(server_proc, server_descendants, timeout=timeout)
-                except Exception as e:
-                    l.error('Error encountered in graceful shutdown.')
-                    l.debug('Exception:', exc_info=True)
-
-            # deal with lingering processes
-            binary_to_procs_dict = self.get_binary_to_procs_dict(server_proc, server_descendants)
-            if binary_to_procs_dict:
-                l.warning('iRODS server processes remain after attempted graceful shutdown.')
-                l.warning(format_binary_to_procs_dict(binary_to_procs_dict))
-                l.warning('Killing forcefully...')
-                for binary, procs in binary_to_procs_dict.items():
-                    for proc in procs:
-                        l.warning('Killing %s, pid %s', binary, proc.pid)
-                        try:
-                            proc.kill()
-                        except psutil.NoSuchProcess:
-                            pass
-                        delete_cache_files_by_pid(proc.pid)
-
-            delete_s3_shmem()
-
-        except IrodsError as e:
-            l.info('Failure')
-            raise e
-
-        l.info('Success')
+        os.kill(server_pid, signal.SIGTERM if not graceful else signal.SIGQUIT)
+        self.wait_for_server_to_stop()
 
     def restart(self, write_to_stdout=False, test_mode=False):
         l = logging.getLogger(__name__)
@@ -231,9 +131,37 @@ class IrodsController(object):
 
     def reload_configuration(self):
         """Send the SIGHUP signal to the server, causing it to reload the configuration."""
-        import signal
-        server_process = self.get_server_proc()
-        os.kill(server_process.pid, signal.SIGHUP)
+        l = logging.getLogger(__name__)
+
+        server_pid = self.get_server_pid()
+        if server_pid is None:
+            l.info('No iRODS server running')
+            return
+
+        old_agent_factory_pid = self.find_agent_factory_pid()
+
+        l.debug('Sending SIGHUP to iRODS server')
+        os.kill(server_pid, signal.SIGHUP)
+
+        # Helps protect against infinite loops.
+        loop_counter = 0
+
+        # Wait for a new agent factory to appear before starting the wait loop.
+        # This guarantees the python script connects to the new agent factory. Remember,
+        # the iRODS server doesn't launch the new agent factory until the old agent factory
+        # closes its listening socket.
+        while True:
+            new_agent_factory_pid = self.find_agent_factory_pid()
+            if (new_agent_factory_pid is None) or (new_agent_factory_pid == old_agent_factory_pid):
+                time.sleep(1)
+                loop_counter += 1
+                if loop_counter == 60:
+                    raise IrodsError('Reload may have failed. Please check log file and configuration.')
+                continue
+            l.debug('New agent factory detected [pid=%s].', new_agent_factory_pid)
+            break
+
+        self.wait_for_server_to_start()
 
     def status(self):
         l = logging.getLogger(__name__)
@@ -264,6 +192,66 @@ class IrodsController(object):
             if procs:
                 d[b] = procs
         return d
+
+    def is_server_listening_for_client_requests(self):
+        l = logging.getLogger(__name__)
+        zone_port = int(self.config.server_config['zone_port'])
+
+        with contextlib.closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+            local_server_host = self.config.client_environment['irods_host']
+
+            if s.connect_ex((local_server_host, zone_port)) == 0:
+                l.debug('Successfully connected to [%s:%s].', local_server_host, zone_port)
+                s.send(b'\x00\x00\x00\x33<MsgHeader_PI><type>HEARTBEAT</type></MsgHeader_PI>')
+                message = s.recv(256)
+                if b'HEARTBEAT' == message:
+                    return True
+                l.debug(f'iRODS port returned non-heartbeat message')
+
+        return False
+
+    def wait_for_server_to_start(self, retry_count=100):
+        l = logging.getLogger(__name__)
+        zone_port = int(self.config.server_config['zone_port'])
+
+        for attempt in range(retry_count):
+            l.debug('Attempting to connect to iRODS server on port %s. Attempt #%s', zone_port, attempt)
+
+            if self.is_server_listening_for_client_requests():
+                return
+            else:
+                l.debug(f'iRODS port returned non-heartbeat message')
+
+            retry_count += 1
+            time.sleep(1)
+
+        raise IrodsError('iRODS server failed to start.')
+
+    def wait_for_server_to_stop(self, retry_count=100):
+        l = logging.getLogger(__name__)
+        for attempt in range(retry_count):
+            l.debug('Waiting for iRODS server to shut down. Attempt #%s', attempt)
+            if self.get_server_pid() is None:
+                return
+            time.sleep(1)
+        raise IrodsError('iRODS server failed to shut down.')
+
+    def find_agent_factory_pid(self):
+        l = logging.getLogger(__name__)
+
+        main_server = self.get_server_proc()
+        if main_server is None:
+            l.debug('No iRODS server is running')
+            return None
+
+        for child in main_server.children():
+            try:
+                if child.name() == 'irodsAgent' and child.ppid() == main_server.pid:
+                    return child.pid
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                pass
+
+        return None
 
 def binary_matches(binary_path, proc):
     if proc.is_running():
@@ -318,29 +306,3 @@ def format_binary_to_procs_dict(proc_dict):
             os.path.basename(binary),
             lib.indent(*['Process {0}'.format(proc.pid) for proc in procs])))
     return '\n'.join(text_list)
-
-def delete_cache_files_by_pid(pid):
-    l = logging.getLogger(__name__)
-    l.debug('Deleting cache files for pid %s...', pid)
-    for shm_dir in paths.possible_shm_locations():
-        cache_shms = glob.glob(os.path.join(
-            shm_dir,
-            '*irods_re_cache*pid{0}_*'.format(pid)))
-        delete_cache_files_by_name(*cache_shms)
-
-def delete_cache_files_by_name(*filepaths):
-    l = logging.getLogger(__name__)
-    for path in filepaths:
-        try:
-            l.debug('Deleting %s', path)
-            os.unlink(path)
-        except (IOError, OSError):
-            l.warning(lib.indent('Error deleting cache file: %s'), path)
-
-def delete_s3_shmem():
-    # delete s3 shared memory if any exist 
-    for shm_dir in paths.possible_shm_locations():
-        s3_plugin_shms = glob.glob(os.path.join(
-            shm_dir,
-            '*irods_s3-shm*'))
-        delete_cache_files_by_name(*s3_plugin_shms)

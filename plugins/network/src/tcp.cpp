@@ -1,6 +1,7 @@
 #include "irods/rodsDef.h"
 #include "irods/msParam.h"
 #include "irods/rcConnect.h"
+#include "irods/rodsErrorTable.h"
 #include "irods/sockComm.h"
 #include "irods/irods_network_plugin.hpp"
 #include "irods/irods_network_constants.hpp"
@@ -8,6 +9,8 @@
 #include "irods/irods_stacktrace.hpp"
 #include "irods/sockCommNetworkInterface.hpp"
 #include "irods/rcMisc.h"
+
+#include <fmt/format.h>
 
 #include <cstdio>
 #include <sstream>
@@ -21,57 +24,50 @@ irods::error tcp_socket_read(
     void*           _buffer,
     int             _length,
     int&            _bytes_read,
-    struct timeval* _time_value ) {
-    // =-=-=-=-=-=-=-
-    // Initialize the file descriptor set
+    struct timeval* _time_value )
+{
     fd_set set;
-    FD_ZERO( &set );
-    FD_SET( _socket, &set );
-
-    // =-=-=-=-=-=-=-
-    // local copy of time value?
-    struct timeval timeout;
-    if ( _time_value != NULL ) {
-        timeout = ( *_time_value );
-    }
-
-    // =-=-=-=-=-=-=-
-    // local working variables
-    int   len_to_read = _length;
-    char* read_ptr    = static_cast<char*>( _buffer );
-
-    // =-=-=-=-=-=-=-
-    // reset bytes read
+    struct timeval timeout{};
+    int len_to_read = _length;
+    char* read_ptr = static_cast<char*>( _buffer );
     _bytes_read = 0;
 
     while ( len_to_read > 0 ) {
         if ( nullptr != _time_value ) {
-            const int status = select( _socket + 1, &set, NULL, NULL, &timeout );
+            // Must always reset the fd_set and timeout before a call to select().
+            FD_ZERO(&set); // NOLINT
+            FD_SET(_socket, &set); // NOLINT
+            timeout = *_time_value;
+
+            const int status = select( _socket + 1, &set, nullptr, nullptr, &timeout );
+
             if ( status == 0 ) { // the select has timed out
-                return ERROR( SYS_SOCK_READ_TIMEDOUT, boost::format("socket timeout with [%d] bytes read") % _bytes_read);
-            } else if ( status < 0 ) {
+                return ERROR( SYS_SOCK_READ_TIMEDOUT, fmt::format("socket timeout with [{}] bytes read", _bytes_read));
+            }
+
+            if ( status < 0 ) {
                 if ( errno == EINTR ) {
-                    continue;
-                } else {
-                    return ERROR( SYS_SOCK_READ_ERR - errno, boost::format("error on select after [%d] bytes read") % _bytes_read);
+                    return ERROR(INTERRUPT_DETECTED, fmt::format("{} interrupted by signal", __func__));
                 }
+
+                return ERROR( SYS_SOCK_READ_ERR - errno, fmt::format("error on select after [{}] bytes read", _bytes_read));
             } // else
         } // if tv
 
-        int num_bytes = read( _socket, ( void * ) read_ptr, len_to_read );
+        int num_bytes = read(_socket, static_cast<void*>(read_ptr), len_to_read);
         if ( num_bytes < 0 ) {
             if ( EINTR == errno ) {
                 errno = 0;
                 num_bytes = 0;
             } else {
-                return ERROR(SYS_SOCK_READ_ERR - errno, boost::format("error reading from socket after [%d] bytes read") % _bytes_read);
+                return ERROR(SYS_SOCK_READ_ERR - errno, fmt::format("error reading from socket after [{}] bytes read", _bytes_read));
             }
         } else if ( num_bytes == 0 ) {
             break;
         }
 
         len_to_read -= num_bytes;
-        read_ptr    += num_bytes;
+        read_ptr    += num_bytes; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         _bytes_read += num_bytes;
     } // while
 

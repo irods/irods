@@ -375,56 +375,48 @@ irods::error ssl_socket_read(
         return ERROR(SYS_INVALID_INPUT_PARAM, "Null buffer or ssl pointer.");
     }
 
-    // Initialize the file descriptor set
     fd_set set;
-    FD_ZERO( &set );
-    FD_SET( _socket, &set );
-
-    // local copy of time value?
-    struct timeval timeout;
-    if ( _time_value != NULL ) {
-        timeout = ( *_time_value );
-    }
-
-    // local working variables
-    int   len_to_read = _length;
-    char* read_ptr    = static_cast<char*>( _buffer );
-
-    // reset bytes read
+    struct timeval timeout{};
+    int len_to_read = _length;
+    char* read_ptr = static_cast<char*>( _buffer );
     _bytes_read = 0;
+    irods::error result = SUCCESS();
 
     // loop while there is data to read
-    irods::error result = SUCCESS();
-    while ( result.ok() && len_to_read > 0 ) {
+    while (result.ok() && len_to_read > 0) {
         // do a time out managed select of the socket fd
-        if ( SSL_pending( _ssl ) == 0 && NULL != _time_value ) {
-            int status = select( _socket + 1, &set, NULL, NULL, &timeout );
+        if (SSL_pending(_ssl) == 0 && _time_value) {
+            FD_ZERO(&set); // NOLINT
+            FD_SET(_socket, &set); // NOLINT
+            timeout = *_time_value;
+
+            int status = select(_socket + 1, &set, nullptr, nullptr, &timeout);
+
             if ( status == 0 ) {
                 // the select has timed out
                 if ( ( _length - len_to_read ) > 0 ) {
-                    result = ERROR( _length - len_to_read, "failed to read requested number of bytes" );
+                    result = ERROR(_length - len_to_read, "failed to read requested number of bytes");
                 }
                 else {
-                    result =  ERROR( SYS_SOCK_READ_TIMEDOUT, "socket timeout error" );
+                    result =  ERROR(SYS_SOCK_READ_TIMEDOUT, "socket timeout error");
                 }
-
             }
             else if ( status < 0 ) {
                 // keep trying on interrupt or just error out
-                int err_status = SYS_SOCK_READ_ERR - errno;
-                if (errno != EINTR) {
-                    return ERROR(err_status, "Error on select.");
+                if (EINTR == errno) {
+                    return ERROR(INTERRUPT_DETECTED, fmt::format("{} interrupted by signal", __func__));
                 }
+
+                int err_status = SYS_SOCK_READ_ERR - errno;
+                return ERROR(err_status, "Error on select.");
             } // else
         } // if tv
 
         // select has been done, finally do the read
-        int num_bytes = SSL_read( _ssl, ( void * ) read_ptr, len_to_read );
+        int num_bytes = SSL_read(_ssl, (void*) read_ptr, len_to_read);
 
-        // =-=-=-=-=-=-=-
         // error trapping the read
         if ( SSL_get_error( _ssl, num_bytes ) != SSL_ERROR_NONE ) {
-            // =-=-=-=-=-=-=-
             // gracefully handle an interrupt
             if ( EINTR == errno ) {
                 errno     = 0;
@@ -437,7 +429,7 @@ irods::error ssl_socket_read(
 
         // all has gone well, do byte book keeping
         len_to_read -= num_bytes;
-        read_ptr    += num_bytes;
+        read_ptr    += num_bytes; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         _bytes_read += num_bytes;
     } // while
 

@@ -53,8 +53,23 @@ namespace irods
         /// @brief The singleton
         static server_properties& instance();
 
+        server_properties(const server_properties&) = delete;
+        server_properties& operator=(const server_properties&) = delete;
+
+        void init(const std::string& _path);
+
+        // Returns a copy of the underlying configuration.
+        static nlohmann::json copy_configuration()
+        {
+            auto& inst = instance();
+            auto lock = inst.acquire_read_lock();
+            return inst.config_props_;
+        } // copy_configuration
+
         /// @brief Read server configuration and fill server_properties::properties
         void capture();
+
+        void set_configuration(nlohmann::json _config);
 
         /// \brief Read server configuration, replacing existing keys instead of deleting them.
         /// \returns a json array containing a json patch
@@ -211,12 +226,10 @@ namespace irods
             return std::unique_lock(property_mutex_);
         }
 
-        server_properties();
-
-        server_properties(const server_properties&) = delete;
-        server_properties& operator=(const server_properties&) = delete;
+        server_properties() = default;
 
         nlohmann::json config_props_;
+        std::string file_path_;
         mutable std::shared_mutex property_mutex_;
     }; // class server_properties
 

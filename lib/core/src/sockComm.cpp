@@ -522,16 +522,16 @@ sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
 /* rsAcceptConn - Server accept connection */
 
 int
-rsAcceptConn( rsComm_t *svrComm ) {
-    socklen_t len = sizeof( svrComm->remoteAddr );
+rsAcceptConn( rsComm_t *_comm ) {
+    socklen_t len = sizeof( _comm->remoteAddr );
 
-    const int saved_socket_flags = fcntl( svrComm->sock, F_GETFL );
-    int status = fcntl( svrComm->sock, F_SETFL, saved_socket_flags | O_NONBLOCK );
+    const int saved_socket_flags = fcntl( _comm->sock, F_GETFL );
+    int status = fcntl( _comm->sock, F_SETFL, saved_socket_flags | O_NONBLOCK );
     if ( status < 0 ) {
         rodsLogError( LOG_NOTICE, status, "failed to set flags with nonblock on fnctl" );
     }
-    const int newSock = accept( svrComm->sock, ( struct sockaddr * ) &svrComm->remoteAddr, &len );
-    status = fcntl( svrComm->sock, F_SETFL, saved_socket_flags );
+    const int newSock = accept( _comm->sock, ( struct sockaddr * ) &_comm->remoteAddr, &len );
+    status = fcntl( _comm->sock, F_SETFL, saved_socket_flags );
     if ( status < 0 ) {
         rodsLogError( LOG_NOTICE, status, "failed to revert flags on fnctl" );
     }
@@ -540,10 +540,10 @@ rsAcceptConn( rsComm_t *svrComm ) {
         const int status = SYS_SOCK_ACCEPT_ERR - errno;
         rodsLogError( LOG_NOTICE, status,
                       "rsAcceptConn: accept error for socket %d",
-                      svrComm->sock );
+                      _comm->sock );
         return newSock;
     }
-    rodsSetSockOpt( newSock, svrComm->windowSize );
+    rodsSetSockOpt( newSock, _comm->windowSize );
 
     return newSock;
 }

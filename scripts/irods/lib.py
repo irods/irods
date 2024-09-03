@@ -44,20 +44,6 @@ execute_command_permissive = execute.execute_command_permissive
 execute_command = execute.execute_command
 check_command_return = execute.check_command_return
 
-def get_server_pid():
-    try:
-        pid_file = os.path.join(tempfile.gettempdir(), 'irods.pid')
-
-        if os.path.exists(pid_file):
-            with open(pid_file, 'r') as f:
-                pid = int(f.readline().strip())
-                if psutil.pid_exists(pid):
-                    return pid
-    except:
-        pass
-
-    return -1
-
 def kill_pid(pid):
     p = psutil.Process(pid)
     p.suspend()

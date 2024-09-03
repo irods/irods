@@ -9,6 +9,7 @@ target_link_libraries(
   irods_server
   irods_client
   irods_common
+  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_program_options.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so"

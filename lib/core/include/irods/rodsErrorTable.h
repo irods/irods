@@ -246,6 +246,8 @@ NEW_ERROR(TYPE_NOT_SUPPORTED,                          -177000)
 NEW_ERROR(AUTHENTICATION_ERROR,                        -178000)
 NEW_ERROR(SOCKET_ERROR,                                -179000)
 NEW_ERROR(CONFIGURATION_ERROR,                         -180000)
+NEW_ERROR(SHUTDOWN_SEQUENCE_INITIATED,                 -181000)
+NEW_ERROR(INTERRUPT_DETECTED,                          -182000)
 
 /** @} */
 
@@ -500,6 +502,7 @@ NEW_ERROR(CAT_INVALID_RESOURCE_NAME,                   -859000) // JMC
 NEW_ERROR(CAT_STATEMENT_TABLE_FULL,                    -860000) // JMC
 NEW_ERROR(CAT_RESOURCE_NAME_LENGTH_EXCEEDED,           -861000)
 NEW_ERROR(CAT_NO_CHECKSUM_FOR_REPLICA,                 -862000)
+NEW_ERROR(CAT_NO_ROWS_UPDATED,                         -863000)
 /** @} */
 
 /* 880,000 to 889,000  Deprecated  */

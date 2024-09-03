@@ -1,5 +1,5 @@
 {
-    "$id": "file:///@IRODS_CONFIGURATION_SCHEMA_PREFIX@@IRODS_HOME_DIRECTORY@/configuration_schemas/v4/server_config.json",
+    "$id": "https://irods.org/configuration_schemas/v@IRODS_CONFIGURATION_SCHEMA_VERSION@/server_config.json",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "type": "object",
     "properties": {
@@ -45,6 +45,7 @@
                 "default_temporary_password_lifetime_in_seconds",
                 "maximum_size_for_single_buffer_in_megabytes",
                 "maximum_temporary_password_lifetime_in_seconds",
+                "migrate_delay_server_sleep_time_in_seconds",
                 "transfer_buffer_size_for_parallel_transfer_in_megabytes",
                 "transfer_chunk_size_for_parallel_transfer_in_megabytes"
             ]
@@ -99,6 +100,10 @@
                 "required": ["catalog_provider_hosts","negotiation_key","zone_key","zone_name"]
             }
         },
+        "graceful_shutdown_timeout_in_seconds": {
+            "type": "integer",
+            "minimum": 0
+        },
         "host_access_control": {
             "$ref": "host_access_control.json"
         },
@@ -135,7 +140,14 @@
                 },
                 "database": {
                     "type": "object",
-                    "additionalProperties": {"$ref": "database_config.json"},
+                    "propertyNames": {
+                        "pattern": "^[^\\s]+$"
+                    },
+                    "patternProperties": {
+                        "^[^\\s]+$": {
+                            "$ref": "database_config.json"
+                        }
+                    },
                     "maxProperties" : 1,
                     "minProperties" : 1
                 },
@@ -179,6 +191,7 @@
         "default_hash_scheme",
         "environment_variables",
         "federation",
+        "graceful_shutdown_timeout_in_seconds",
         "host_access_control",
         "host_resolution",
         "log_level",

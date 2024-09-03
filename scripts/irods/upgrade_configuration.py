@@ -33,6 +33,7 @@ def requires_upgrade(irods_config):
     new_version_tuple = lib.version_string_to_tuple(new_version['irods_version'])
     old_version_tuple = lib.version_string_to_tuple(irods_config.version['irods_version'])
 
+    # TODO Thoughts on changing this from "!=" to "<". Using not-equals feels incorrect.
     return old_version_tuple != new_version_tuple
 
 def upgrade(irods_config):
@@ -214,6 +215,23 @@ def convert_to_v4_schema_and_add_missing_properties(server_config):
 
     return new_server_config
 
+def convert_to_v5_schema_and_add_missing_properties(server_config):
+    def update_base(base, updates):
+        for k, v in updates.items():
+            if isinstance(v, collections.abc.Mapping):
+                base[k] = update_base(base.get(k, {}), v)
+            else:
+                base[k] = v
+        return base
+
+    # Load server_config.json.template as our base.
+    with open(paths.get_template_filepath(paths.server_config_path())) as f:
+        base = json.load(f)
+
+    new_server_config = update_base(base, server_config)
+
+    return new_server_config
+
 def upgrade_config_file(irods_config, path, new_version, schema_name=None):
     l = logging.getLogger(__name__)
 
@@ -314,6 +332,10 @@ def run_schema_update(config_dict, schema_name, next_schema_version):
 
             merge_hosts_config_into_server_config(config_dict)
             merge_host_access_control_config_into_server_config(config_dict)
+
+    if 5 == next_schema_version:
+        if 'server_config' == schema_name:
+            config_dict = convert_to_v5_schema_and_add_missing_properties(config_dict)
 
     config_dict['schema_version'] = 'v%d' % (next_schema_version)
 

@@ -14,7 +14,6 @@ import datetime
 
 from .exceptions import IrodsError, IrodsWarning, IrodsSchemaError
 from . import lib
-from . import json_validation
 from .password_obfuscation import encode, decode
 from . import paths
 
@@ -191,25 +190,6 @@ class IrodsConfig(object):
         self.clear_cache()
 
     @property
-    def schema_uri_prefix(self):
-        if self._schema_uri_prefix is None:
-            l = logging.getLogger(__name__)
-            l.debug('Attempting to construct schema URI...')
-
-            key = 'schema_validation_base_uri'
-            self.throw_if_property_is_not_defined_in_server_config(key)
-            base_uri = self.server_config[key]
-
-            key = 'schema_version'
-            self.throw_if_property_is_not_defined_in_server_config(key)
-            schema_version = self.server_config[key]
-
-            self._schema_uri_prefix = '/'.join([base_uri, schema_version])
-            l.debug('Successfully constructed schema URI.')
-
-        return self._schema_uri_prefix
-
-    @property
     def admin_password(self):
         if not os.path.exists(os.path.dirname(paths.password_file_path())):
             return None
@@ -226,71 +206,6 @@ class IrodsConfig(object):
             l.debug('Writing password file %s', f.name)
             print(encode(value, mtime=mtime), end='', file=f)
         os.utime(paths.password_file_path(), (mtime, mtime))
-
-    def throw_if_property_is_not_defined_in_server_config(self, property_name):
-        if property_name not in self.server_config:
-            raise IrodsSchemaError('Cannot validate configuration files. [{}] is missing a required property: [{}].'
-                    .format(paths.server_config_path(), property_name))
-
-    def validate_configuration(self):
-        l = logging.getLogger(__name__)
-
-        key = 'schema_validation_base_uri'
-        self.throw_if_property_is_not_defined_in_server_config(key)
-
-        if self.server_config[key] == 'off':
-            l.warn(('Schema validation is disabled; json files will not be validated against schemas. '
-                    'To re-enable schema validation, supply a URI to a set of iRODS schemas in the field '
-                    '"schema_validation_base_uri" and a valid version in the field "schema_version" in the '
-                    'server configuration file (located in %s).'), paths.server_config_path())
-            return
-
-        configuration_schema_mapping = {
-            'server_config': {
-                'dict': self.server_config,
-                'path': paths.server_config_path()
-            },
-            'version': {
-                'dict': self.version,
-                'path': paths.version_path()
-            },
-            'service_account_environment': {
-                'dict': self.client_environment,
-                'path': self.client_environment_path
-            }
-        }
-
-        skipped = []
-
-        # schema_uri_suffix is the key of a single element within configuration_schema_mapping (e.g. 'server_config').
-        # config_file is the dict mapped to the key (e.g. configuration_schema_mapping['server_config']).
-        for schema_uri_suffix, config_file in configuration_schema_mapping.items():
-            try:
-                schema_uri = '%s/%s.json' % (
-                        self.schema_uri_prefix,
-                        schema_uri_suffix)
-            except IrodsError as e:
-                l.debug('Failed to construct schema URI')
-                raise IrodsWarning('%s\n%s' % (
-                        'Preflight Check problem:',
-                        lib.indent('JSON Configuration Validation failed.'))) from e
-
-            l.debug('Attempting to validate %s against %s', config_file['path'], schema_uri)
-            try:
-                json_validation.validate_dict(
-                        config_file['dict'],
-                        schema_uri,
-                        config_file['path'])
-            except IrodsWarning as e:
-                l.warning(e)
-                l.warning('Warning encountered in json_validation for %s, skipping validation...',
-                        config_file['path'])
-                l.debug('Exception:', exc_info=True)
-                skipped.append(config_file['path'])
-        if skipped:
-            raise IrodsWarning('%s\n%s' % (
-                'Skipped validation for the following files:',
-                lib.indent(*skipped)))
 
     def commit(self, config_dict, path, clear_cache=True, make_backup=False):
         l = logging.getLogger(__name__)
@@ -313,7 +228,6 @@ class IrodsConfig(object):
         self._hosts_config = None
         self._host_access_control_config = None
         self._client_environment = None
-        self._schema_uri_prefix = None
         self._execution_environment = None
 
     #provide accessors for all the paths
@@ -400,6 +314,10 @@ class IrodsConfig(object):
     @property
     def server_executable(self):
         return paths.server_executable()
+
+    @property
+    def agent_executable(self):
+        return paths.agent_executable()
 
     @property
     def rule_engine_executable(self):

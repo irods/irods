@@ -51,11 +51,6 @@
 #include <boost/thread/scoped_thread.hpp>
 #include <boost/lexical_cast.hpp>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wc++11-narrowing"
-#include <boost/process.hpp>
-#pragma GCC diagnostic pop
-
 #include <fmt/format.h>
 
 #include <sys/wait.h>
@@ -2667,7 +2662,8 @@ readStartupPack(
     }
 
     if ( strcmp(myHeader.type, RODS_HEARTBEAT_T) == 0 ) {
-        *startupPack = static_cast<startupPack_t*>(malloc(sizeof(**startupPack)));
+        *startupPack = static_cast<startupPack_t*>(malloc(sizeof(startupPack_t)));
+        std::memset(*startupPack, 0, sizeof(startupPack_t));
         snprintf((*startupPack)->option, sizeof((*startupPack)->option), "%s", RODS_HEARTBEAT_T);
         return SUCCESS();
     }
@@ -2988,70 +2984,6 @@ irods::error setRECacheSaltFromEnv()
 
     return SUCCESS();
 } // setRECacheSaltFromEnv
-
-irods::error get_script_output_single_line(
-    const std::string&              script_language,
-    const std::string&              script_name,
-    const std::vector<std::string>& args,
-    std::string&                    output ) {
-    namespace bp = boost::process;
-
-    try {
-        auto resolved_program = bp::search_path(script_language);
-        if (resolved_program.empty()) {
-            return ERROR(RESOLUTION_ERROR, fmt::format("Could not resolve {} to an executable", script_language));
-        }
-
-        auto script_path = fmt::format("{}/scripts/{}", irods::get_irods_home_directory().c_str(), script_name);
-        if (!std::filesystem::exists(script_path)) {
-            return ERROR(RESOLUTION_ERROR, fmt::format("Script file not found! {}", script_path));
-        }
-
-        auto script_path_and_args = args;
-        script_path_and_args.insert(script_path_and_args.begin(), script_path);
-
-        bp::ipstream program_output;
-        bp::ipstream program_stderr;
-        bp::child c(resolved_program, script_path_and_args, bp::std_out > program_output, bp::std_err > program_stderr);
-        output.clear();
-        c.wait();
-        const auto ec = c.exit_code();
-
-        std::string stderr_output;
-        if (ec != 0 || (program_stderr && std::getline(program_stderr, stderr_output) && !stderr_output.empty())) {
-            irods::experimental::log::server::error(
-                "Received stderr output [{}] from script process [{} {}] which exited with code {}",
-                stderr_output,
-                script_language,
-                fmt::join(script_path_and_args, " "),
-                ec);
-        }
-
-        if (!program_output) {
-            return ERROR(SYS_PIPE_ERROR,
-                         fmt::format("stdout was unable to be opened, process exited with code {}.", ec));
-        }
-
-        if (!std::getline(program_output, output)) {
-            return ERROR(SYS_PIPE_ERROR,
-                         fmt::format("Unable to read line from child process, exited with code {}.", ec));
-        }
-
-        return SUCCESS();
-    }
-    catch (const bp::process_error& e) {
-        // In this case, the server is most likely unable to find a suitable
-        // executable to run with a given name
-        irods::experimental::log::server::error("Error starting process, {}", e.what());
-        return ERROR(SYS_LIBRARY_ERROR, e.what());
-    }
-    catch (const irods::exception& e) {
-        return ERROR(e.code(), e.what());
-    }
-    catch (const std::exception& e) {
-        return ERROR(SYS_INTERNAL_ERR, e.what());
-    }
-}  // get_script_output_single_line
 
 irods::error add_global_re_params_to_kvp_for_dynpep(
     keyValPair_t& _kvp ) {

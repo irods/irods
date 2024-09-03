@@ -76,6 +76,8 @@ namespace irods
     extern const char* const KW_CFG_ADDRESSES;
     extern const char* const KW_CFG_ADDRESS;
 
+    extern const char* const KW_CFG_HOST;
+
     // advanced settings
     extern const char* const KW_CFG_DELAY_RULE_EXECUTORS;
     extern const char* const KW_CFG_MAX_SIZE_FOR_SINGLE_BUFFER;

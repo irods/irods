@@ -32,7 +32,7 @@ def setup_catalog(irods_config, default_resource_directory=None, default_resourc
                 cursor.rollback()
                 raise
 
-def server_launch_hook(irods_config):
+def run_catalog_update(irods_config):
     l = logging.getLogger(__name__)
     l.debug('Syncing .odbc.ini file...')
     def update_catalog_schema(irods_config, cursor):

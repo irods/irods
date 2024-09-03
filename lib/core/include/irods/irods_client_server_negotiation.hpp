@@ -57,7 +57,7 @@ namespace irods
     /// =-=-=-=-=-=-=-
     /// @brief function which determines if a client/server negotiation is needed
     ///        on the server side
-    bool do_client_server_negotiation_for_server();
+    bool do_client_server_negotiation_for_server(const char* _neg);
 
     /// =-=-=-=-=-=-=-
     /// @brief function which determines if a client/server negotiation is needed
@@ -68,7 +68,9 @@ namespace irods
     /// @brief function which manages the TLS and Auth negotiations with the client
     error client_server_negotiation_for_server(
         irods::network_object_ptr,  // server connection handle
-        std::string& );             // results of negotiation
+        std::string&,               // results of negotiation
+        bool,                       // boolean indicating whether client-server negotiation is needed
+        RsComm&);                   // RsComm initialized during agent startup
 
     /// =-=-=-=-=-=-=-
     /// @brief function which manages the TLS and Auth negotiations with the client

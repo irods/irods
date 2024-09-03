@@ -14,9 +14,8 @@ int initAgent(int processType, rsComm_t* rsComm);
 
 int initHostConfigByFile();
 int initRsComm(rsComm_t* rsComm);
-int initRsCommWithStartupPack(rsComm_t* rsComm, startupPack_t* startupPack);
+int initRsCommWithStartupPack(rsComm_t* rsComm, startupPack_t* startupPack, bool& require_cs_neg);
 int chkAllowedUser(const char* userName, const char* rodsZone);
-int setRsCommFromRodsEnv(rsComm_t* rsComm);
 void close_all_l1_descriptors(RsComm& _comm);
 
 #endif // IRODS_INIT_SERVER_HPP

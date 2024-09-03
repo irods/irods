@@ -1,7 +1,7 @@
 {
     "schema_name": "version",
-    "schema_version": "v4",
+    "schema_version": "v@IRODS_CONFIGURATION_SCHEMA_VERSION@",
     "irods_version": "@IRODS_VERSION@",
-    "catalog_schema_version": 11,
+    "catalog_schema_version": @IRODS_CATALOG_SCHEMA_VERSION@,
     "commit_id": "@IRODS_GIT_SHA1@"
 }

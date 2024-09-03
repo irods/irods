@@ -1,31 +1,32 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code (for the most part).  */
-/* See dataObjRead.h for a description of this API call.*/
+#include "irods/rsExecCmd.hpp"
+
+#include "irods/dataObjOpr.hpp"
+#include "irods/execCmd.h"
+#include "irods/fileClose.h"
+#include "irods/icatDefines.h"
+#include "irods/irods_default_paths.hpp"
+#include "irods/irods_re_structs.hpp"
+#include "irods/irods_resource_backport.hpp"
+#include "irods/irods_resource_redirect.hpp"
+#include "irods/irods_server_properties.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/objMetaOpr.hpp"
+#include "irods/rcGlobalExtern.h"
+#include "irods/rodsLog.h"
+#include "irods/rsGlobalExtern.hpp"
 
 #include <sys/types.h>
+
 #ifndef windows_platform
 #include <sys/wait.h>
 #else
 #include "irods/Unix2Nt.hpp"
 #endif
-#include "irods/execCmd.h"
-#include "irods/objMetaOpr.hpp"
-#include "irods/dataObjOpr.hpp"
-#include "irods/fileClose.h"
-#include "irods/miscServerFunct.hpp"
-#include "irods/rodsLog.h"
-#include "irods/icatDefines.h"
-#include "irods/rsGlobalExtern.hpp"
-#include "irods/rcGlobalExtern.h"
-#include "irods/rsExecCmd.hpp"
-
-#include "irods/irods_resource_backport.hpp"
-#include "irods/irods_resource_redirect.hpp"
-#include "irods/irods_re_structs.hpp"
-#include "irods/irods_default_paths.hpp"
 
 #include <boost/thread/mutex.hpp>
+
+#include <filesystem>
+
 boost::mutex ExecCmdMutex;
 int initExecCmdMutex() {
     return 0;
@@ -369,7 +370,7 @@ execCmd( execCmd_t *execCmdInp, int stdOutFd, int stdErrFd ) {
     char *av[LONG_NAME_LEN];
     int status;
 
-    const auto cmd_path = irods::get_irods_home_directory().append("msiExecCmd_bin").append(execCmdInp->cmd);
+    const auto cmd_path = irods::get_irods_msiExecCmd_bin_directory() / execCmdInp->cmd;
     std::strncpy(cmdPath, cmd_path.c_str(), LONG_NAME_LEN);
     rodsLog( LOG_NOTICE, "execCmd:%s argv:%s", cmdPath, execCmdInp->cmdArgv );
     initCmdArg( av, execCmdInp->cmdArgv, cmdPath );

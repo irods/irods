@@ -15,6 +15,7 @@
 #include "irods/rcMisc.h"
 #include "irods/rsGenQuery.hpp"
 #include "irods/rsGlobalExtern.hpp"
+#include "irods/irods_logger.hpp"
 
 #define IRODS_QUERY_ENABLE_SERVER_SIDE_API
 #include "irods/query_builder.hpp"
@@ -29,6 +30,11 @@
 // global singleton
 irods::resource_manager resc_mgr;
 
+namespace
+{
+    using log_resc = irods::experimental::log::resource;
+} // anonymous namespace
+
 namespace irods
 {
     const std::string EMPTY_RESC_HOST( "EMPTY_RESC_HOST" );
@@ -41,7 +47,7 @@ namespace irods
     // =-=-=-=-=-=-=-
     /// @brief special resource for local file system operations only
     const std::string LOCAL_USE_ONLY_RESOURCE( "LOCAL_USE_ONLY_RESOURCE" );
-    const std::string LOCAL_USE_ONLY_RESOURCE_VAULT(
+    const std::string LOCAL_USE_ONLY_RESOURCE_VAULT( // TODO This does not appear to be used.
         (get_irods_home_directory() / "LOCAL_USE_ONLY_RESOURCE_VAULT").string());
     const std::string LOCAL_USE_ONLY_RESOURCE_TYPE( "unixfilesystem" );
 
@@ -122,16 +128,14 @@ namespace irods
         }
         else {
             if ( ret.code() == PLUGIN_ERROR_MISSING_SHARED_OBJECT ) {
-                rodsLog(
-                    LOG_DEBUG,
-                    "loading impostor resource for [%s] of type [%s] with context [%s] and load_plugin message [%s]",
-                    _inst_name.c_str(),
-                    _plugin_name.c_str(),
-                    _context.c_str(),
-                    ret.result().c_str());
-                _plugin.reset(
-                    new impostor_resource(
-                        "impostor_resource", "" ) );
+                log_resc::debug(
+                    "loading impostor resource for [{}] of type [{}] with context [{}] and load_plugin message [{}]",
+                    _inst_name,
+                    _plugin_name,
+                    _context,
+                    ret.result());
+                // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
+                _plugin.reset(new impostor_resource("impostor_resource", "" ) );
             } else {
                 return PASS( ret );
             }

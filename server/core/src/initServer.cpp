@@ -3,12 +3,12 @@
 #include "irods/genQuery.h"
 #include "irods/getRemoteZoneResc.h"
 #include "irods/getRescQuota.h"
+#include "irods/irods_client_server_negotiation.hpp"
 #include "irods/irods_configuration_keywords.hpp"
 #include "irods/irods_stacktrace.hpp"
 #include "irods/miscServerFunct.hpp"
 #include "irods/objDesc.hpp"
 #include "irods/physPath.hpp"
-#include "irods/procLog.h"
 #include "irods/rcGlobalExtern.h"
 #include "irods/rcMisc.h"
 #include "irods/resource.hpp"
@@ -48,10 +48,12 @@
 #include <fmt/format.h>
 #include <nlohmann/json.hpp>
 
+#include <cstdlib>
 #include <cstring>
 #include <vector>
 #include <set>
 #include <string>
+#include <string_view>
 #include <fstream>
 
 namespace
@@ -504,8 +506,6 @@ initZone( rsComm_t *rsComm ) {
 int
 initAgent( int processType, rsComm_t *rsComm ) {
 
-    initProcLog();
-
     int status = initServerInfo( 1, rsComm );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
@@ -689,36 +689,40 @@ initRsComm( rsComm_t *rsComm ) {
 }
 
 int
-initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
+initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack, bool& require_cs_neg) {
     char *tmpStr;
     static char tmpStr2[LONG_NAME_LEN];
     /* always use NATIVE_PROT as a client. e.g., server to server comm */
     snprintf( tmpStr2, LONG_NAME_LEN, "%s=%d", IRODS_PROT, NATIVE_PROT );
     putenv( tmpStr2 );
 
-    if ( startupPack != NULL ) {
+    if (startupPack) {
         rsComm->connectCnt = startupPack->connectCnt;
         rsComm->irodsProt = startupPack->irodsProt;
         rsComm->reconnFlag = startupPack->reconnFlag;
-        rstrcpy( rsComm->proxyUser.userName, startupPack->proxyUser,
-                NAME_LEN );
+        rstrcpy( rsComm->proxyUser.userName, startupPack->proxyUser, NAME_LEN );
         if ( strcmp( startupPack->proxyUser, PUBLIC_USER_NAME ) == 0 ) {
             rsComm->proxyUser.authInfo.authFlag = PUBLIC_USER_AUTH;
         }
-        rstrcpy( rsComm->proxyUser.rodsZone, startupPack->proxyRodsZone,
-                NAME_LEN );
-        rstrcpy( rsComm->clientUser.userName, startupPack->clientUser,
-                NAME_LEN );
+        rstrcpy( rsComm->proxyUser.rodsZone, startupPack->proxyRodsZone, NAME_LEN );
+        rstrcpy( rsComm->clientUser.userName, startupPack->clientUser, NAME_LEN );
         if ( strcmp( startupPack->clientUser, PUBLIC_USER_NAME ) == 0 ) {
             rsComm->clientUser.authInfo.authFlag = PUBLIC_USER_AUTH;
         }
-        rstrcpy( rsComm->clientUser.rodsZone, startupPack->clientRodsZone,
-                NAME_LEN );
-        rstrcpy( rsComm->cliVersion.relVersion, startupPack->relVersion,
-                NAME_LEN );
-        rstrcpy( rsComm->cliVersion.apiVersion, startupPack->apiVersion,
-                NAME_LEN );
-        rstrcpy( rsComm->option, startupPack->option, LONG_NAME_LEN );
+        rstrcpy( rsComm->clientUser.rodsZone, startupPack->clientRodsZone, NAME_LEN );
+        rstrcpy( rsComm->cliVersion.relVersion, startupPack->relVersion, NAME_LEN );
+        rstrcpy( rsComm->cliVersion.apiVersion, startupPack->apiVersion, NAME_LEN );
+
+        std::string_view opt_str = startupPack->option;
+        const auto pos = opt_str.find(REQ_SVR_NEG);
+        require_cs_neg = (std::string_view::npos != pos);
+        if (require_cs_neg) {
+            const auto client_app_name = opt_str.substr(0, pos);
+            client_app_name.copy(rsComm->option, sizeof(RsComm::option) - 1);
+        }
+        else {
+            opt_str.copy(rsComm->option, sizeof(RsComm::option) - 1);
+        }
     }
     else {      /* have to depend on env variable */
         tmpStr = getenv( SP_NEW_SOCK );
@@ -831,6 +835,10 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
         else {
             rstrcpy( rsComm->option, tmpStr, LONG_NAME_LEN );
         }
+
+        if (std::getenv(irods::RODS_CS_NEG)) {
+            require_cs_neg = true;
+        }
     }
 
     if (const auto ec = setLocalAddr(rsComm->sock, &rsComm->localAddr); ec == USER_RODS_HOSTNAME_ERR) {
@@ -920,25 +928,6 @@ chkAllowedUser( const char *userName, const char *rodsZone ) {
     catch (const std::out_of_range& e) {
         rodsLog(LOG_ERROR, "%s", e.what());
         return KEY_NOT_FOUND;
-    }
-
-    return 0;
-}
-
-int
-setRsCommFromRodsEnv( rsComm_t *rsComm ) {
-    try {
-        const auto& zone_name = irods::get_server_property<const std::string>(irods::KW_CFG_ZONE_NAME);
-        const auto& zone_user = irods::get_server_property<const std::string>(irods::KW_CFG_ZONE_USER);
-
-        rstrcpy( rsComm->proxyUser.userName,  zone_user.c_str(), NAME_LEN );
-        rstrcpy( rsComm->clientUser.userName, zone_user.c_str(), NAME_LEN );
-
-        rstrcpy( rsComm->proxyUser.rodsZone,  zone_name.c_str(), NAME_LEN );
-        rstrcpy( rsComm->clientUser.rodsZone, zone_name.c_str(), NAME_LEN );
-    } catch ( const irods::exception& e ) {
-        irods::log( irods::error(e) );
-        return e.code();
     }
 
     return 0;

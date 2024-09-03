@@ -167,13 +167,14 @@ namespace irods::experimental::log
     /// This function must be called before invoking other logging API operations.
     /// This function is not thread-safe.
     ///
+    /// \param[in] _pid              The PID of the main iRODS server process.
     /// \param[in] _write_to_stdout  Configures the logging API to write all messages to stdout.
     /// \param[in] _enable_test_mode Configures the logging API to also write messages to a special
     ///                              file that flushes its output on every write. This is good for
     ///                              tests that need to search the log file for specific messages.
     ///
     /// \since 4.3.0
-    auto init(bool _write_to_stdout = false, bool _enable_test_mode = false) noexcept -> void;
+    auto init(pid_t _pid, bool _write_to_stdout = false, bool _enable_test_mode = false) noexcept -> void;
 
     /// Converts a string to a specific log level.
     ///
