@@ -71,6 +71,8 @@ namespace irods
     const char* const KW_CFG_ADDRESSES{"addresses"};
     const char* const KW_CFG_ADDRESS{"address"};
 
+    const char* const KW_CFG_HOST{"host"};
+
     // advanced settings
     const char* const KW_CFG_DELAY_RULE_EXECUTORS{"delay_rule_executors"};
     const char* const KW_CFG_MAX_SIZE_FOR_SINGLE_BUFFER{"maximum_size_for_single_buffer_in_megabytes"};

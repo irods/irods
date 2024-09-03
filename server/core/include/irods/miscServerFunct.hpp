@@ -142,12 +142,6 @@ irods::error readStartupPack(
 
 irods::error setRECacheSaltFromEnv();
 
-irods::error get_script_output_single_line(
-    const std::string&              script_language,
-    const std::string&              script_name,
-    const std::vector<std::string>& args,
-    std::string&                    output );
-
 irods::error add_global_re_params_to_kvp_for_dynpep(
     keyValPair_t& _kvp );
 
@@ -156,6 +150,5 @@ irods::error get_default_rule_plugin_instance(std::string&);
 irods::error list_rule_plugin_instances( std::vector< std::string >& );
 
 #endif // __cplusplus
-
 
 #endif	/* MISC_SERVER_FUNCT_H */

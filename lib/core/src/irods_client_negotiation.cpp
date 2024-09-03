@@ -8,6 +8,7 @@
 #include "irods/irods_hasher_factory.hpp"
 #include "irods/irods_configuration_parser.hpp"
 #include "irods/MD5Strategy.hpp"
+#include "irods/rcGlobalExtern.h"
 #include "irods/sockComm.h"
 #include "irods/sockCommNetworkInterface.hpp"
 
@@ -211,28 +212,10 @@ namespace irods
     /// =-=-=-=-=-=-=-
     /// @brief function which determines if a client/server negotiation is needed
     ///        on the server side
-    bool do_client_server_negotiation_for_server( ) {
-        // =-=-=-=-=-=-=-
-        // check the SP_OPTION for the string stating a negotiation is requested
-        char* opt_ptr = getenv( RODS_CS_NEG );
-
-        // =-=-=-=-=-=-=-
-        // if it is not set then move on
-        if ( !opt_ptr || strlen( opt_ptr ) == 0 ) {
-            return false;
-        }
-
-        // =-=-=-=-=-=-=-
+    bool do_client_server_negotiation_for_server(const char* _neg) {
         // if it is set then check for our magic token which requests
         // the negotiation, if it is not the magic token, move on
-        std::string opt_str( opt_ptr );
-        if ( std::string::npos == opt_str.find( REQ_SVR_NEG ) ) {
-            return false;
-        }
-
-        // =-=-=-=-=-=-=-
-        // otherwise, its a go.
-        return true;
+        return _neg && std::string_view{_neg} == REQ_SVR_NEG;
     } // do_client_server_negotiation_for_server
 
     /// =-=-=-=-=-=-=-

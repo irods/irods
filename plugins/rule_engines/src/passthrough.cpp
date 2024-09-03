@@ -33,49 +33,24 @@ namespace
         int code;
     };
 
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
     std::unordered_map<std::string, std::vector<pep_config>> pep_configs;
+
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
     int matched_code = 0;
 
     template <typename ...Args>
     using operation = std::function<irods::error(irods::default_re_ctx&, Args...)>;
 
-    irods::error start(irods::default_re_ctx&, const std::string& _instance_name)
+    irods::error setup(irods::default_re_ctx&, const std::string& _instance_name)
     {
-        std::string config_path;
-
-        if (auto error = irods::get_full_path_for_config_file("server_config.json", config_path);
-            !error.ok())
-        {
-            std::string msg = "Server configuration not found [path => ";
-            msg += config_path;
-            msg += ']';
-
-            // clang-format off
-            log::rule_engine::error({{"rule_engine_plugin", "passthrough"},
-                                     {"rule_engine_plugin_function", __func__},
-                                     {"log_message", msg}});
-            // clang-format on
-
-            return ERROR(SYS_CONFIG_FILE_ERR, msg.c_str());
-        }
-
-        // clang-format off
-        log::rule_engine::trace({{"rule_engine_plugin", "passthrough"},
-                                 {"rule_engine_plugin_function", __func__},
-                                 {"log_message", "Reading plugin configuration ..."}});
-        // clang-format on
-
-        nlohmann::json config;
-
-        {
-            std::ifstream config_file{config_path};
-            config_file >> config;
-        }
-
         try {
+            const auto config_handle = irods::server_properties::server_properties::instance().map();
+            const auto& config = config_handle.get_json();
+
             // Iterate over the list of rule engine plugins until the Passthrough REP is found.
             for (const auto& re : config.at(irods::KW_CFG_PLUGIN_CONFIGURATION).at(irods::KW_CFG_PLUGIN_TYPE_RULE_ENGINE)) {
-                if (_instance_name == re.at(irods::KW_CFG_INSTANCE_NAME).get<std::string>()) {
+                if (_instance_name == re.at(irods::KW_CFG_INSTANCE_NAME).get_ref<const std::string&>()) {
                     // Fill the "pep_configs" plugin variable with objects containing the values
                     // defined in the "return_codes_for_peps" configuration. Each object in the list
                     // will contain a regular expression and a code.
@@ -98,10 +73,10 @@ namespace
         }
 
         return ERROR(SYS_CONFIG_FILE_ERR, "[passthrough] Bad rule engine plugin configuration");
-    }
+    } // setup
 
     irods::error rule_exists(const std::string& _instance_name,
-                             irods::default_re_ctx&,
+                             [[maybe_unused]] irods::default_re_ctx& _ctx,
                              const std::string& _rule_name,
                              bool& _exists)
     {
@@ -123,17 +98,18 @@ namespace
         return SUCCESS();
     }
 
-    irods::error list_rules(irods::default_re_ctx&, std::vector<std::string>& _rules)
+    irods::error list_rules(irods::default_re_ctx&, [[maybe_unused]] std::vector<std::string>& _rules)
     {
         log::rule_engine::trace({{"rule_engine_plugin", "passthrough"}, {"rule_engine_plugin_function", __func__}});
         return SUCCESS();
     }
 
     irods::error exec_rule(const std::string& _instance_name,
-                           irods::default_re_ctx&,
+                           [[maybe_unused]] irods::default_re_ctx& _ctx,
                            const std::string& _rule_name,
-                           std::list<boost::any>& _rule_arguments,
-                           irods::callback _effect_handler)
+                           [[maybe_unused]] std::list<boost::any>& _rule_arguments,
+                           // NOLINTNEXTLINE(performance-unnecessary-value-param)
+                           [[maybe_unused]] irods::callback _effect_handler)
     {
         std::string msg = "Returned '";
         msg += std::to_string(matched_code);
@@ -185,12 +161,16 @@ pluggable_rule_engine* plugin_factory(const std::string& _instance_name,
                                                     std::list<boost::any>& _rule_arguments,
                                                     irods::callback _effect_handler)
     {
+        // NOLINTNEXTLINE(performance-unnecessary-value-param)
         return exec_rule(_instance_name, _ctx, _rule_name, _rule_arguments, _effect_handler);
     };
 
+    // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
     auto* re = new pluggable_rule_engine{_instance_name, _context};
 
-    re->add_operation("start", operation<const std::string&>{start});
+    re->add_operation("setup", operation<const std::string&>{setup});
+    re->add_operation("teardown", operation<const std::string&>{no_op});
+    re->add_operation("start", operation<const std::string&>{no_op});
     re->add_operation("stop", operation<const std::string&>{no_op});
     re->add_operation("rule_exists", operation<const std::string&, bool&>{rule_exists_wrapper});
     re->add_operation("list_rules", operation<std::vector<std::string>&>{list_rules});

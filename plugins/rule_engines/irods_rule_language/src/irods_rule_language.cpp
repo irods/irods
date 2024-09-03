@@ -119,7 +119,7 @@ void initialize_microservice_table()
 
 extern Cache ruleEngineConfig;
 
-irods::error start(irods::default_re_ctx&, const std::string& _instance_name)
+irods::error setup(irods::default_re_ctx&, const std::string& _instance_name)
 {
     local_instance_name = _instance_name;
 
@@ -178,11 +178,7 @@ irods::error start(irods::default_re_ctx&, const std::string& _instance_name)
     logger::rule_engine::error(msg);
 
     return ERROR(SYS_INVALID_INPUT_PARAM, msg);
-} // start
-
-irods::error stop(irods::default_re_ctx& _u, const std::string& _instance_name) {
-    return SUCCESS();
-}
+} // setup
 
 irods::error rule_exists(irods::default_re_ctx&, const std::string& _rn, bool& _ret) {
     if(ruleEngineConfig.ruleEngineStatus == UNINITIALIZED) {
@@ -419,13 +415,19 @@ irods::error exec_rule_expression(
 
 extern "C"
 irods::pluggable_rule_engine<irods::default_re_ctx>* plugin_factory( const std::string& _inst_name,
-                                 const std::string& _context ) {
-    irods::pluggable_rule_engine<irods::default_re_ctx>* re = new irods::pluggable_rule_engine<irods::default_re_ctx>( _inst_name , _context);
-    re->add_operation( "start",
-            std::function<irods::error(irods::default_re_ctx&,const std::string&)>( start ) );
+                                 const std::string& _context )
+{
+    const auto no_op = [](irods::default_re_ctx&, const std::string&) -> irods::error {
+        return SUCCESS();
+    };
 
-    re->add_operation( "stop",
-            std::function<irods::error(irods::default_re_ctx&,const std::string&)>( stop ) );
+    auto* re = new irods::pluggable_rule_engine<irods::default_re_ctx>( _inst_name , _context);
+
+    re->add_operation("setup", std::function{setup});
+    re->add_operation("teardown", std::function{no_op});
+
+    re->add_operation("start", std::function{no_op});
+    re->add_operation("stop", std::function{no_op});
 
     re->add_operation( "rule_exists",
             std::function<irods::error(irods::default_re_ctx&, const std::string&, bool&)>( rule_exists ) );

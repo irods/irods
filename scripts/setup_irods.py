@@ -1,7 +1,9 @@
 #!/usr/bin/python3
-from __future__ import print_function
 
-import os, sys, optparse
+import optparse
+import os
+import sys
+
 import irods.setup_options
 
 def parse_options():
@@ -53,12 +55,13 @@ import stat
 import time
 import tempfile
 
-import irods.lib
 from irods.configuration import IrodsConfig
 from irods.controller import IrodsController
 from irods.exceptions import IrodsError, IrodsWarning
-import irods.log
 from irods.password_obfuscation import maximum_password_length
+import irods.lib
+import irods.log
+import irods.paths
 
 try:
     import pyodbc
@@ -130,9 +133,18 @@ def setup_server(irods_config, json_configuration_file=None, test_mode=False):
         from irods import database_interface
         l.info(irods.lib.get_header('Setting up the database'))
         database_interface.setup_catalog(irods_config, default_resource_directory=default_resource_directory, default_resource_name=default_resource_name)
+        l.info(irods.lib.get_header('Applying updates to database'))
+        database_interface.run_catalog_update(irods_config)
+
+    # Copy iRODS Rule Language (NREP) files into correct directory if this is a new install.
+    for f in ['core.re', 'core.dvm', 'core.fnm']:
+        path = os.path.join(irods_config.config_directory, f)
+        if not os.path.exists(path):
+            shutil.copyfile(irods.paths.get_template_filepath(path), path)
 
     l.info(irods.lib.get_header('Starting iRODS...'))
-    IrodsController(irods_config).start(test_mode=test_mode)
+    controller = IrodsController(irods_config)
+    controller.start()
 
     # create local storage resource for consumer (provider was configured directly in database_interface.setup_catalog above)
     # If the user answered anything other than "yes" or "y" (case-insensitive) to the "Local storage on this server"
@@ -144,6 +156,11 @@ def setup_server(irods_config, json_configuration_file=None, test_mode=False):
     # update core.re with default resource
     core_re_path = os.path.join(irods_config.core_re_directory, 'core.re')
     replace_in_file(core_re_path, 'demoResc', default_resource_name)
+
+    # Restart the server in case core.re changed.
+    # We could use .reload_configuration(), but restarting the server reduces the
+    # possibility of errors occurring. 
+    controller.restart()
 
     # test put
     test_put(irods_config)
@@ -160,7 +177,7 @@ def setup_server(irods_config, json_configuration_file=None, test_mode=False):
             f'  https://docs.irods.org/{irods_version_string}/system_overview/troubleshooting/'))
 
     l.info(irods.lib.get_header('Stopping iRODS...'))
-    IrodsController(irods_config).stop()
+    controller.stop()
 
     l.info(irods.lib.get_header('iRODS is configured and ready to be started'))
 
@@ -320,6 +337,10 @@ def setup_service_account(irods_config, irods_user, irods_group):
                     pwd.getpwnam(irods_user).pw_uid,
                     grp.getgrnam(irods_group).gr_gid)
 
+    os.lchown(os.path.join(irods.paths.runstate_directory(), 'irods'),
+              pwd.getpwnam(irods_user).pw_uid,
+              grp.getgrnam(irods_group).gr_gid)
+
     l.debug('Setting uid bit on %s', irods.paths.genosauth_path())
     os.chmod(irods.paths.genosauth_path(),
             stat.S_ISUID
@@ -449,7 +470,7 @@ def setup_client_environment(irods_config):
 
     service_account_dict = {
             'schema_name': 'service_account_environment',
-            'schema_version': 'v4',
+            'schema_version': 'v5',
             'irods_host': irods.lib.get_hostname(),
             'irods_port': irods_config.server_config['zone_port'],
             'irods_default_resource': irods_config.server_config['default_resource_name'],

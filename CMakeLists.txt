@@ -46,6 +46,7 @@ IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST
 IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_DEVELOP_DEPENDENCIES_LIST(CATCH2 catch22.13.8-0)
 IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_DEVELOP_DEPENDENCIES_LIST(CPPZMQ cppzmq4.8.1-1)
 IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_DEVELOP_DEPENDENCIES_LIST(JSON json3.10.4-0)
+IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_DEVELOP_DEPENDENCIES_LIST(JSONCONS jsoncons0.178.0-0)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -98,6 +99,15 @@ set(IRODS_VERSION_MINOR "90")
 set(IRODS_VERSION_PATCH "0")
 set(IRODS_VERSION "${IRODS_VERSION_MAJOR}.${IRODS_VERSION_MINOR}.${IRODS_VERSION_PATCH}")
 set(IRODS_PACKAGE_REVISION "0")
+
+# Consider bumping this variable anytime the following requirements are satisfied:
+# - The catalog schema has been modified
+# - The next release involves a change in the major version number or backwards compatibility cannot be maintained
+set(IRODS_CATALOG_SCHEMA_VERSION "12")
+# Consider bumping this variable anytime the following requirements are satisfied:
+# - A JSON schema has been modified
+# - The next release involves a change in the major version number or backwards compatibility cannot be maintained
+set(IRODS_CONFIGURATION_SCHEMA_VERSION "5")
 
 project(irods
   VERSION ${IRODS_VERSION}

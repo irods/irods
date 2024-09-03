@@ -52,10 +52,11 @@ namespace irods::experimental::log
         : public spdlog::sinks::base_sink<spdlog::details::null_mutex>
     {
       public:
-        test_mode_ipc_sink()
-            : mutex_{ipc::open_or_create, shm_name}
-            , file_{(irods::get_irods_home_directory() / "log" / "test_mode_output.log").string(), std::ios_base::app}
-            , owner_pid_{getpid()}
+        explicit test_mode_ipc_sink(pid_t _pid)
+            : shm_name_{fmt::format("irods_test_mode_ipc_sink_{}", _pid)}
+            , mutex_{std::make_unique<ipc::named_mutex>(ipc::open_or_create, shm_name_.c_str())}
+            , file_{(irods::get_irods_home_directory() / "log/test_mode_output.log").c_str(), std::ios_base::app}
+            , owner_pid_{_pid}
         {
         }
 
@@ -66,7 +67,7 @@ namespace irods::experimental::log
         {
             try {
                 if (getpid() == owner_pid_) {
-                    ipc::named_mutex::remove(shm_name);
+                    ipc::named_mutex::remove(shm_name_.c_str());
                 }
             }
             catch (const ipc::interprocess_exception& e) {
@@ -78,7 +79,7 @@ namespace irods::experimental::log
         void sink_it_(const spdlog::details::log_msg& msg) override
         {
             try {
-                ipc::scoped_lock<ipc::named_mutex> lock{mutex_};
+                ipc::scoped_lock<ipc::named_mutex> lock{*mutex_};
                 file_ << msg.payload.data() << std::endl;
             }
             catch (const ipc::interprocess_exception& e) {
@@ -91,9 +92,8 @@ namespace irods::experimental::log
         }
 
       private:
-        inline static const char* const shm_name = "irods_test_mode_ipc_sink";
-
-        ipc::named_mutex mutex_;
+        std::string shm_name_;
+        std::unique_ptr<ipc::named_mutex> mutex_;
         std::ofstream file_;
         const pid_t owner_pid_;
     }; // class test_mode_ipc_sink
@@ -102,9 +102,10 @@ namespace irods::experimental::log
         : public spdlog::sinks::base_sink<spdlog::details::null_mutex>
     {
       public:
-        stdout_ipc_sink()
-            : mutex_{ipc::open_or_create, shm_name}
-            , owner_pid_{getpid()}
+        explicit stdout_ipc_sink(pid_t _pid)
+            : shm_name_{fmt::format("irods_stdout_ipc_sink_{}", _pid)}
+            , mutex_{std::make_unique<ipc::named_mutex>(ipc::open_or_create, shm_name_.c_str())}
+            , owner_pid_{_pid}
         {
         }
 
@@ -115,7 +116,7 @@ namespace irods::experimental::log
         {
             try {
                 if (getpid() == owner_pid_) {
-                    ipc::named_mutex::remove(shm_name);
+                    ipc::named_mutex::remove(shm_name_.c_str());
                 }
             }
             catch (const ipc::interprocess_exception& e) {
@@ -127,7 +128,7 @@ namespace irods::experimental::log
         void sink_it_(const spdlog::details::log_msg& msg) override
         {
             try {
-                ipc::scoped_lock<ipc::named_mutex> lock{mutex_};
+                ipc::scoped_lock<ipc::named_mutex> lock{*mutex_};
                 std::cout << msg.payload.data() << std::endl;
             }
             catch (const ipc::interprocess_exception& e) {
@@ -140,20 +141,19 @@ namespace irods::experimental::log
         }
 
       private:
-        inline static const char* const shm_name = "irods_stdout_ipc_sink";
-
-        ipc::named_mutex mutex_;
+        std::string shm_name_;
+        std::unique_ptr<ipc::named_mutex> mutex_;
         const pid_t owner_pid_;
     }; // class stdout_ipc_sink
 #endif // IRODS_ENABLE_SYSLOG
 
-    void init(bool _write_to_stdout, bool _enable_test_mode) noexcept
+    void init(pid_t _pid, bool _write_to_stdout, bool _enable_test_mode) noexcept
     {
 #ifdef IRODS_ENABLE_SYSLOG
         std::vector<spdlog::sink_ptr> sinks;
 
         if (_write_to_stdout) {
-            sinks.push_back(std::make_shared<stdout_ipc_sink>());
+            sinks.push_back(std::make_shared<stdout_ipc_sink>(_pid));
         }
         else {
             std::string id;
@@ -163,7 +163,7 @@ namespace irods::experimental::log
         }
 
         if (_enable_test_mode) {
-            sinks.push_back(std::make_shared<test_mode_ipc_sink>());
+            sinks.push_back(std::make_shared<test_mode_ipc_sink>(_pid));
         }
 
         g_log = std::make_shared<spdlog::logger>("composite_logger", std::begin(sinks), std::end(sinks));

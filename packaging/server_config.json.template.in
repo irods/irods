@@ -1,6 +1,6 @@
 {
     "schema_name": "server_config",
-    "schema_version": "v4",
+    "schema_version": "v@IRODS_CONFIGURATION_SCHEMA_VERSION@",
     "advanced_settings": {
         "agent_factory_watcher_sleep_time_in_seconds": 5,
         "checksum_read_buffer_size_in_bytes": 1048576,
@@ -37,6 +37,7 @@
     "default_hash_scheme": "SHA256",
     "environment_variables": {},
     "federation": [],
+    "graceful_shutdown_timeout_in_seconds": 30,
     "host_access_control": {
         "access_entries": []
     },
@@ -69,20 +70,20 @@
                 "instance_name": "irods_rule_engine_plugin-irods_rule_language-instance",
                 "plugin_name": "irods_rule_engine_plugin-irods_rule_language",
                 "plugin_specific_configuration": {
-                        "re_data_variable_mapping_set": [
-                            "core"
-                        ],
-                        "re_function_name_mapping_set": [
-                            "core"
-                        ],
-                        "re_rulebase_set": [
-                            "core"
-                        ],
-                        "regexes_for_supported_peps": [
-                            "ac[^ ]*",
-                            "msi[^ ]*",
-                            "[^ ]*pep_[^ ]*_(pre|post|except|finally)"
-                        ]
+                    "re_data_variable_mapping_set": [
+                        "core"
+                    ],
+                    "re_function_name_mapping_set": [
+                        "core"
+                    ],
+                    "re_rulebase_set": [
+                        "core"
+                    ],
+                    "regexes_for_supported_peps": [
+                        "ac[^ ]*",
+                        "msi[^ ]*",
+                        "[^ ]*pep_[^ ]*_(pre|post|except|finally)"
+                    ]
                 },
                 "shared_memory_instance" : "irods_rule_language_rule_engine"
             },

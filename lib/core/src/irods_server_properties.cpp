@@ -206,10 +206,18 @@ namespace irods
         return singleton;
     } // instance
 
-    server_properties::server_properties()
+    void server_properties::init(const std::string& _path)
     {
-        capture();
-    } // ctor
+        auto lock = acquire_write_lock();
+
+        file_path_ = _path;
+        std::ifstream in{file_path_};
+        if (!in) {
+            THROW(FILE_OPEN_ERR, fmt::format("[{}:{}] - Failed to open configuration file [{}]", __func__, __LINE__, file_path_));
+        }
+
+        config_props_ = json::parse(in);
+    } // init
 
     void server_properties::capture()
     {
@@ -219,21 +227,19 @@ namespace irods
             return;
         }
 
-        std::string svr_fn;
-        irods::error ret = irods::get_full_path_for_config_file(SERVER_CONFIG_FILE, svr_fn);
-        if (!ret.ok()) {
-            THROW(ret.code(),
-                  fmt::format("[{}:{}] - Failed to find server config file [{}]", __func__, __LINE__, ret.result()));
+        std::ifstream in{file_path_};
+        if (!in) {
+            THROW(FILE_OPEN_ERR, fmt::format("[{}:{}] - Failed to open configuration file [{}]", __func__, __LINE__, file_path_));
         }
 
-        std::ifstream svr{svr_fn};
-
-        if (!svr) {
-            THROW(FILE_OPEN_ERR, fmt::format("[{}:{}] - Failed to open server config file", __func__, __LINE__));
-        }
-
-        config_props_ = json::parse(svr);
+        config_props_ = json::parse(in);
     } // capture
+
+    void server_properties::set_configuration(nlohmann::json _config)
+    {
+        auto lock = acquire_write_lock();
+        config_props_ = std::move(_config);
+    } // set_configuration
 
     nlohmann::json server_properties::reload()
     {
@@ -245,20 +251,11 @@ namespace irods
             new_values = process_remote_configuration(capture_remote_configuration());
         }
         else {
-            std::string svr_fn;
-            irods::error ret = irods::get_full_path_for_config_file(SERVER_CONFIG_FILE, svr_fn);
-            if (!ret.ok()) {
-                THROW(
-                    ret.code(),
-                    fmt::format("[{}:{}] - Failed to find server config file [{}]", __func__, __LINE__, ret.result()));
+            std::ifstream in{file_path_};
+            if (!in) {
+                THROW(FILE_OPEN_ERR, fmt::format("[{}:{}] - Failed to open configuration file [{}]", __func__, __LINE__, file_path_));
             }
-
-            std::ifstream svr{svr_fn};
-
-            if (!svr) {
-                THROW(FILE_OPEN_ERR, fmt::format("[{}:{}] - Failed to open server config file", __func__, __LINE__));
-            }
-            new_values = json::parse(svr);
+            new_values = json::parse(in);
         }
 
         auto lock = acquire_write_lock();

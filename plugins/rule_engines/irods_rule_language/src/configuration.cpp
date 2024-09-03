@@ -361,8 +361,6 @@ std::vector<std::string> parse_irbSet(const std::string &irbSet) {
     return irbs;
 }
 
-#define HASH_BUF_SZ (1024*1024)
-
 int hash_rules(const std::vector<std::string> &irbs, const int pid, std::string &digest) {
     int status;
     irods::Hasher hasher;
@@ -397,6 +395,7 @@ int hash_rules(const std::vector<std::string> &irbs, const int pid, std::string 
         }
 
         std::string buffer_read;
+        constexpr auto HASH_BUF_SZ = 1024 * 1024;
         buffer_read.resize( HASH_BUF_SZ );
 
         while ( in_file.read( &buffer_read[0], HASH_BUF_SZ ) ) {

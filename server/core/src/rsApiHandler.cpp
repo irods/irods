@@ -1,4 +1,6 @@
 #include "irods/rsApiHandler.hpp"
+
+#include "irods/agent_globals.hpp"
 #include "irods/modDataObjMeta.h"
 #include "irods/rcMisc.h"
 #include "irods/miscServerFunct.hpp"
@@ -541,12 +543,32 @@ readAndProcClientMsg( rsComm_t * rsComm, int flags ) {
         while ( 1 ) {
             ret = readMsgHeader( net_obj, &myHeader, &tv );
             if ( !ret.ok() ) {
+                log_agent::debug("{}: readMsgHeader() returned [{}]", __func__, ret.code());
+
+                if (ret.code() == INTERRUPT_DETECTED) {
+                    // Check if the agent factory requested for the agent to stop.
+                    if (g_terminate) {
+                        log_agent::info("{}: Received instruction to shutdown. Agent is shutting down.", __func__, ret.code());
+                        return SHUTDOWN_SEQUENCE_INITIATED;
+                    }
+
+                    // If a read() from the socket was interrupted in iRODS 4, the read() operation would
+                    // ignore it and restart the operation by continuing the loop. This "continue" instruction
+                    // maintains that behavior in iRODS 5. The only difference between the implementations is
+                    // that tcp_socket_read() returns when an interrupt occurs, allowing this code block to
+                    // react.
+                    //
+                    // Compare the implementation of tcp_socket_read() in tcp.cpp from iRODS 5 to iRODS 4.
+                    continue;
+                }
+
                 if ( isL1descInuse() && retryCnt < MAX_READ_HEADER_RETRY ) {
                     rodsLogError( LOG_ERROR, status,
                                   "readAndProcClientMsg:readMsgHeader error. status = %d",  ret.code() );
                     retryCnt++;
                     continue;
                 }
+
                 if ( ret.code() == USER_SOCK_CONNECT_TIMEDOUT ) {
                     rodsLog( LOG_ERROR,
                              "readAndProcClientMsg: readMsgHeader by pid %d timedout",
@@ -559,6 +581,13 @@ readAndProcClientMsg( rsComm_t * rsComm, int flags ) {
     }
     else {
         ret = readMsgHeader( net_obj, &myHeader, NULL );
+        if (!ret.ok() && ret.code() == INTERRUPT_DETECTED) {
+            // Check if the agent factory requested for the agent to stop.
+            if (g_terminate) {
+                log_agent::info("{}: Received instruction to shutdown. Agent is shutting down.", __func__, ret.code());
+                return SHUTDOWN_SEQUENCE_INITIATED;
+            }
+        }
     }
 
     if ( !ret.ok() ) {

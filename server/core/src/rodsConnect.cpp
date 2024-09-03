@@ -298,9 +298,8 @@ int queueZone(const char* zoneName,
         rodsLog(LOG_DEBUG, "queueZone:  primaryServerHost for %s is NULL", zoneName);
         return SYS_INVALID_SERVER_HOST;
     }
-    else {
-        return 0;
-    }
+
+    return 0;
 }
 
 int

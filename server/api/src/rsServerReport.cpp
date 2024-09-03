@@ -1,21 +1,24 @@
-#include "irods/rsGlobalExtern.hpp"
-#include "irods/rodsErrorTable.h"
-#include "irods/miscServerFunct.hpp"
-#include "irods/reIn2p3SysRule.hpp"
+#include "irods/rsServerReport.hpp"
+
+#include "irods/irods_default_paths.hpp"
+#include "irods/irods_environment_properties.hpp"
+#include "irods/irods_get_full_path_for_config_file.hpp"
+#include "irods/irods_load_plugin.hpp"
 #include "irods/irods_log.hpp"
 #include "irods/irods_plugin_name_generator.hpp"
-#include "irods/irods_resource_manager.hpp"
-#include "irods/irods_get_full_path_for_config_file.hpp"
-#include "irods/server_report.h"
-#include "irods/irods_server_properties.hpp"
-#include "irods/irods_environment_properties.hpp"
-#include "irods/irods_load_plugin.hpp"
 #include "irods/irods_report_plugins_in_json.hpp"
-#include "irods/rsServerReport.hpp"
-#include <unistd.h>
-#include <grp.h>
+#include "irods/irods_resource_manager.hpp"
+#include "irods/irods_server_properties.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/reIn2p3SysRule.hpp"
+#include "irods/rodsErrorTable.h"
+#include "irods/rsGlobalExtern.hpp"
+#include "irods/server_report.h"
 
-#include <fstream>
+#include <grp.h>
+#include <sys/utsname.h>
+#include <unistd.h>
+
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
@@ -26,7 +29,11 @@
 
 #include <nlohmann/json.hpp>
 
-#include <sys/utsname.h>
+#include <algorithm>
+#include <cstring>
+#include <fstream>
+#include <string>
+#include <vector>
 
 namespace fs = boost::filesystem;
 
@@ -247,27 +254,11 @@ irods::error get_host_system_information(json& _host_system_information)
         _host_system_information["uname"] = nullptr;
     }
 
-    std::vector<std::string> args;
-    args.push_back( "os_distribution_name" );
-    std::string os_distribution_name;
-    ret = get_script_output_single_line( "python3", "system_identification.py", args, os_distribution_name );
-    if ( ret.ok() ) {
-        _host_system_information["os_distribution_name"] = os_distribution_name;
-    } else {
-        irods::log( PASS( ret ) );
-        _host_system_information["os_distribution_name"] = nullptr;
-    }
-
-    args.clear();
-    args.push_back( "os_distribution_version" );
-    std::string os_distribution_version;
-    ret = get_script_output_single_line( "python3", "system_identification.py", args, os_distribution_version );
-    if (ret.ok()) {
-        _host_system_information["os_distribution_version"] = os_distribution_version;
-    } else {
-        irods::log( PASS( ret ) );
-        _host_system_information["os_distribution_version"] = nullptr;
-    }
+    // These properties are included for backwards compatibility. They are set to
+    // empty strings to avoid issues with systems which expect a valid string. Systems
+    // which rely on this information should parse the content of the uname property.
+    _host_system_information["os_distribution_name"] = "";
+    _host_system_information["os_distribution_version"] = "";
 
     return SUCCESS();
 } // get_host_system_information
@@ -428,19 +419,11 @@ irods::error get_config_dir( json& _cfg_dir )
 
 irods::error load_version_file( json& _version )
 {
-    // =-=-=-=-=-=-=-
     // if json file exists, simply load that
-    fs::path version_file;
-    try {
-        version_file = irods::get_irods_home_directory();
-    } catch (const irods::exception& e) {
-        irods::log(e);
-        return ERROR(-1, "failed to get irods home directory");
-    }
-    version_file.append("version.json");
+    const auto version_file = irods::get_irods_home_directory() / "version.json";
 
-    if ( fs::exists( version_file ) ) {
-        return load_json_file(version_file.generic_string(), _version);
+    if (fs::exists(version_file)) {
+        return load_json_file(version_file.c_str(), _version);
     }
 
     return SUCCESS();

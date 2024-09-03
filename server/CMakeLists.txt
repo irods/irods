@@ -85,34 +85,6 @@ install(
   NAMELINK_COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
 )
 
-# Initialize IRODS_CONFIGURATION_SCHEMA_PREFIX for configuration schemas.
-# This variable helps to produce the correct URI for the "$id" JSON property.
-if (IS_ABSOLUTE "${IRODS_HOME_DIRECTORY}")
-  set(IRODS_CONFIGURATION_SCHEMA_PREFIX "")
-else()
-  if (CMAKE_INSTALL_PREFIX STREQUAL "/")
-    # This branch is primarily for packaged installations, but can work for non-package
-    # installs as well.
-    set(IRODS_CONFIGURATION_SCHEMA_PREFIX "")
-  elseif (NOT CMAKE_INSTALL_PREFIX STREQUAL "")
-    # This branch is for non-package installations.
-    if (NOT CMAKE_INSTALL_PREFIX MATCHES ".+/$")
-      set(IRODS_CONFIGURATION_SCHEMA_PREFIX "${CMAKE_INSTALL_PREFIX}/")
-    endif()
-  
-    # Remove the leading slash so that the protocol matches what we expect.
-    # i.e. file:///non-package-install-root instead of file:////non-package-install-root
-    if (IS_ABSOLUTE "${IRODS_CONFIGURATION_SCHEMA_PREFIX}")
-      string(SUBSTRING "${IRODS_CONFIGURATION_SCHEMA_PREFIX}" 1 -1 NEW_IRODS_CONFIGURATION_SCHEMA_PREFIX)
-      set(IRODS_CONFIGURATION_SCHEMA_PREFIX "${NEW_IRODS_CONFIGURATION_SCHEMA_PREFIX}")
-    endif()
-  else()
-    message(FATAL_ERROR "Cannot initialize IRODS_CONFIGURATION_SCHEMA_PREFIX. CMAKE_INSTALL_PREFIX is empty.")
-  endif()
-endif()
-
-# Install configuration schemas with updated id field
-set(IRODS_CONFIGURATION_SCHEMA_VERSION 4)
 set(
   IRODS_CONFIGURATION_SCHEMA_FILES
   version.json
@@ -185,6 +157,16 @@ install(
 )
 
 install(
+  DIRECTORY
+  DESTINATION "${CMAKE_INSTALL_RUNSTATEDIR}/irods"
+  DIRECTORY_PERMISSIONS
+    OWNER_EXECUTE OWNER_WRITE OWNER_READ
+    GROUP_EXECUTE GROUP_WRITE GROUP_READ
+    WORLD_READ
+  COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
+)
+
+install(
   FILES
   "${CMAKE_IRODS_SOURCE_DIR}/README.md"
   DESTINATION "${IRODS_DOC_DIR}"
@@ -199,6 +181,11 @@ install(
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
 )
 
+configure_file(
+  "${CMAKE_IRODS_SOURCE_DIR}/packaging/server_config.json.template.in"
+  "${CMAKE_IRODS_BINARY_DIR}/packaging/server_config.json.template"
+  @ONLY
+)
 install(
   FILES
   "${CMAKE_IRODS_SOURCE_DIR}/packaging/connectControl.config.template"
@@ -206,7 +193,7 @@ install(
   "${CMAKE_IRODS_SOURCE_DIR}/packaging/core.fnm.template"
   "${CMAKE_IRODS_SOURCE_DIR}/packaging/core.re.template"
   "${CMAKE_IRODS_SOURCE_DIR}/packaging/irodsMonPerf.config.in"
-  "${CMAKE_IRODS_SOURCE_DIR}/packaging/server_config.json.template"
+  "${CMAKE_IRODS_BINARY_DIR}/packaging/server_config.json.template"
   "${CMAKE_IRODS_SOURCE_DIR}/packaging/server_setup_instructions.txt"
   DESTINATION "${IRODS_HOME_DIRECTORY}/packaging"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}

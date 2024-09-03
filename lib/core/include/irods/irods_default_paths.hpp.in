@@ -3,24 +3,34 @@
 
 #include <boost/filesystem/path.hpp>
 
-#define IRODS_DEFAULT_PATH_LIBDIR     "@CMAKE_INSTALL_LIBDIR@"
-#define IRODS_DEFAULT_PATH_SYSCONFDIR "@CMAKE_INSTALL_SYSCONFDIR@"
-#define IRODS_DEFAULT_PATH_HOMEDIR    "@IRODS_HOME_DIRECTORY@"
-#define IRODS_DEFAULT_PATH_PLUGINDIR  "@IRODS_PLUGINS_DIRECTORY@"
+#define IRODS_DEFAULT_PATH_SBINDIR       "@CMAKE_INSTALL_SBINDIR@"
+#define IRODS_DEFAULT_PATH_LIBDIR        "@CMAKE_INSTALL_LIBDIR@"
+#define IRODS_DEFAULT_PATH_SYSCONFDIR    "@CMAKE_INSTALL_SYSCONFDIR@"
+#define IRODS_DEFAULT_PATH_RUNSTATEDIR   "@CMAKE_INSTALL_RUNSTATEDIR@"
+#define IRODS_DEFAULT_PATH_HOMEDIR       "@IRODS_HOME_DIRECTORY@"
+#define IRODS_DEFAULT_PATH_PLUGINDIR     "@IRODS_PLUGINS_DIRECTORY@"
 
 namespace irods
 {
     boost::filesystem::path get_irods_root_directory();
 
+    boost::filesystem::path get_irods_sbin_directory();
+
     boost::filesystem::path get_irods_lib_directory();
 
     boost::filesystem::path get_irods_config_directory();
+
+    boost::filesystem::path get_irods_runstate_directory();
 
     boost::filesystem::path get_irods_home_directory();
 
     boost::filesystem::path get_irods_default_plugin_directory();
 
     boost::filesystem::path get_irods_stacktrace_directory();
+
+    boost::filesystem::path get_irods_proc_directory();
+
+    boost::filesystem::path get_irods_msiExecCmd_bin_directory();
 } // namespace irods
 
 #endif // IRODS_DEFAULT_PATHS_HPP

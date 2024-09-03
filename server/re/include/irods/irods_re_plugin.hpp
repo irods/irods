@@ -7,25 +7,27 @@
 #include "irods/irods_re_structs.hpp"
 #include "irods/irods_state_table.h"
 
-#include <iostream>
-#include <list>
-#include <vector>
-#include <utility>
-#include <functional>
-#include <map>
-#include <memory>
-#include <initializer_list>
-#include <optional>
-
 #include <boost/any.hpp>
 #include <boost/algorithm/string.hpp>
 
+#include <fmt/format.h>
+
+#include <functional>
+#include <initializer_list>
+#include <iostream>
+#include <list>
+#include <map>
+#include <memory>
+#include <optional>
+#include <utility>
+#include <vector>
+
 #ifdef IRODS_ENABLE_SYSLOG
-    #define IRODS_SERVER_ONLY(x) x
-    #include "irods/irods_logger.hpp"
-namespace logger = irods::experimental::log;
+#  define IRODS_SERVER_ONLY(x) x
+#  include "irods/irods_logger.hpp"
+using log_re = irods::experimental::log::rule_engine;
 #else
-    #define IRODS_SERVER_ONLY(x)
+#  define IRODS_SERVER_ONLY(x)
 #endif // IRODS_ENABLE_SYSLOG
 
 namespace irods {
@@ -192,6 +194,34 @@ namespace irods {
             return SUCCESS();
 
         }
+
+        error setup_operation(T& _in)
+        {
+            try {
+                auto fcn = boost::any_cast<std::function<error(T&,const std::string&)>>(operations_["setup"]);
+                return fcn(_in, instance_name_);
+            }
+            catch (const boost::bad_any_cast& e) {
+                return ERROR(INVALID_ANY_CAST, fmt::format("failed to extract setup operation from instance [{}]: {}", instance_name_, e.what()));
+            }
+            catch (const std::exception& e) {
+                return ERROR(PLUGIN_ERROR, fmt::format("failed to extract setup operation from instance [{}]: {}", instance_name_, e.what()));
+            }
+        } // setup_operation
+
+        error teardown_operation(T& _in)
+        {
+            try {
+                auto fcn = boost::any_cast<std::function<error(T&,const std::string&)>>(operations_["teardown"]);
+                return fcn(_in, instance_name_);
+            }
+            catch (const boost::bad_any_cast& e) {
+                return ERROR(INVALID_ANY_CAST, fmt::format("failed to extract teardown operation from instance [{}]: {}", instance_name_, e.what()));
+            }
+            catch (const std::exception& e) {
+                return ERROR(PLUGIN_ERROR, fmt::format("failed to extract teardown operation from instance [{}]: {}", instance_name_, e.what()));
+            }
+        } // teardown_operation
 
         error start_operation(T& _in) {
             try {
@@ -368,7 +398,7 @@ namespace irods {
                 error err = load_plugin <pluggable_rule_engine<T> > (_re_ptr, _plugin_name, dir_, _inst_name, std::string("empty_context"));
 
                 if (!err.ok()) {
-                    irods::log( PASS( err ) );
+                    IRODS_SERVER_ONLY((log_re::error(PASS(err).user_result())));
                     return err;
                 }
 
@@ -395,7 +425,7 @@ namespace irods {
             std::for_each(begin(_re_packs), end(_re_packs), [this](re_pack_inp<T> &_inp) {
                 error err = this->init_rule_engine(_inp);
                 if( !err.ok() ) {
-                    irods::log( PASS( err ) );
+                    IRODS_SERVER_ONLY((log_re::error(PASS(err).user_result())));
                 }
             });
         }
@@ -416,6 +446,18 @@ namespace irods {
             re_packs_.push_back(_inp);
 
             return SUCCESS();
+        }
+
+        void call_setup_operations() {
+            std::for_each(begin(re_packs_), end(re_packs_), [](re_pack_inp<T> &_inp) {
+                _inp.re_->setup_operation(_inp.re_ctx_);
+            });
+        }
+
+        void call_teardown_operations() {
+            std::for_each(begin(re_packs_), end(re_packs_), [](re_pack_inp<T> &_inp) {
+                _inp.re_->teardown_operation(_inp.re_ctx_);
+            });
         }
 
         void call_start_operations() {
@@ -459,10 +501,10 @@ namespace irods {
                 e.code() == RE_PARSER_ERROR    ||
                 e.code() == RULE_ENGINE_ERROR)
             {
-                logger::rule_engine::debug("Rule Engine Plugin returned [{}].", e.code());
+                log_re::debug("Rule Engine Plugin returned [{}].", e.code());
             }
             else {
-                logger::rule_engine::error("Rule Engine Plugin returned [{}].", e.code());
+                log_re::error("Rule Engine Plugin returned [{}].", e.code());
             }
             // clang-format on
         )
