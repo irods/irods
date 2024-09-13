@@ -11,14 +11,32 @@
 #include "irods/irods_hierarchy_parser.hpp"
 #include "irods/MD5Strategy.hpp"
 #include "irods/irods_at_scope_exit.hpp"
+#include "irods/irods_logger.hpp"
 
 #include <fmt/format.h>
 
 #include <algorithm>
+#include <climits>
 #include <string>
 #include <string_view>
+#include <vector>
 
-#define SVR_MD5_BUF_SZ (1024*1024)
+using log_api = irods::experimental::log::api;
+
+namespace
+{
+    int get_read_buffer_size()
+    {
+        try {
+            return irods::get_advanced_setting<int>("checksum_read_buffer_size_in_bytes");
+        }
+        catch (...) {
+            log_api::debug("{} :: checksum_read_buffer_size_in_bytes not set. Using default of 1 MiB.", __func__);
+            constexpr int default_read_buffer_size = 1024 * 1024;
+            return default_read_buffer_size;
+        }
+    } // get_read_buffer_size
+} //namespace
 
 int rsFileChksum(rsComm_t* rsComm, fileChksumInp_t* fileChksumInp, char** chksumStr)
 {
@@ -190,14 +208,22 @@ int fileChksum(rsComm_t* rsComm,
         irods::getHasher( irods::MD5_NAME, hasher );
     }
 
+    // get the buffer size from server configuration - default to 1 MiB
+    int read_buffer_size = get_read_buffer_size();
+
+    if (read_buffer_size <= 0) {
+        log_api::error("{} :: checksum_read_buffer_size_in_bytes is [{}] but must be in the range of [1, {}].",
+                       __func__,
+                       read_buffer_size,
+                       INT_MAX);
+        return CONFIGURATION_ERROR;
+    }
+
     // =-=-=-=-=-=-=-
     // do an initial read of the file
-    char buffer[SVR_MD5_BUF_SZ];
-    irods::error read_err = fileRead(
-                                rsComm,
-                                file_obj,
-                                buffer,
-                                SVR_MD5_BUF_SZ );
+    std::vector<char> buffer(read_buffer_size);
+
+    irods::error read_err = fileRead(rsComm, file_obj, buffer.data(), static_cast<int>(buffer.size()));
     if (!read_err.ok()) {
         std::stringstream msg;
         msg << __FUNCTION__;
@@ -209,11 +235,11 @@ int fileChksum(rsComm_t* rsComm,
         return result.code();
     }
     int bytes_read = read_err.code();
-    
+
     // RTS - Issue #3275
     if ( bytes_read == 0 ) {
         std::string buffer_read;
-        buffer_read.resize( SVR_MD5_BUF_SZ );
+        buffer_read.resize(read_buffer_size);
     }
 
     // =-=-=-=-=-=-=-
@@ -221,11 +247,11 @@ int fileChksum(rsComm_t* rsComm,
     while ( read_err.ok() && bytes_read > 0 ) {
         // =-=-=-=-=-=-=-
         // update hasher
-        hasher.update( std::string( buffer, bytes_read ) );
+        hasher.update(std::string(buffer.data(), bytes_read));
 
         // =-=-=-=-=-=-=-
         // read some more
-        read_err = fileRead( rsComm, file_obj, buffer, SVR_MD5_BUF_SZ );
+        read_err = fileRead(rsComm, file_obj, buffer.data(), static_cast<int>(buffer.size()));
         if ( read_err.ok() ) {
             bytes_read = read_err.code();
         }
@@ -339,11 +365,25 @@ int file_checksum(RsComm* _comm,
         }
     }};
 
-    char buffer[SVR_MD5_BUF_SZ];
+    // get the buffer size from server configuration - default to 1 MiB
+    int read_buffer_size = get_read_buffer_size();
+
+    if (read_buffer_size <= 0) {
+        log_api::error("{} :: checksum_read_buffer_size_in_bytes is [{}] but must be in the range of [1, {}].",
+                       __func__,
+                       read_buffer_size,
+                       INT_MAX);
+        return CONFIGURATION_ERROR;
+    }
+
+    std::vector<char> buffer(read_buffer_size);
     irods::error error = SUCCESS();
 
     while (_data_size > 0) {
-        error = fileRead(_comm, file_ptr, buffer, std::min<std::int64_t>(_data_size, sizeof(buffer)));
+        error = fileRead(_comm,
+                         file_ptr,
+                         buffer.data(),
+                         static_cast<int>(std::min<std::int64_t>(_data_size, static_cast<int64_t>(buffer.size()))));
 
         if (error.code() <= 0) {
             const auto msg = fmt::format("{} - fileRead failed for [{}].", __func__, _filename);
@@ -359,7 +399,7 @@ int file_checksum(RsComm* _comm,
         }
 
         _data_size -= error.code();
-        hasher.update(std::string(buffer, error.code()));
+        hasher.update(std::string(buffer.data(), error.code()));
     }
 
     // extract the digest from the hasher object
