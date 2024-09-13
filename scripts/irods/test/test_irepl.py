@@ -2,6 +2,7 @@ from __future__ import print_function
 import os
 import sys
 import json
+import psutil
 
 if sys.version_info < (2, 7):
     import unittest2 as unittest
@@ -211,6 +212,126 @@ class Test_Irepl(session.make_sessions_mixin([('otherrods', 'rods')], [('alice',
             lib.remove_resource(self.admin, leaves[1])
             lib.remove_resource(self.admin, roots[0])
             lib.remove_resource(self.admin, roots[1])
+
+    def test_server_honors_server_config_option_checksum_read_buffer_size_in_bytes__issue_7947(self):
+
+        object_name = 'test_iput_with_updated_checksum_read_buffer_size_in_bytes__issue_7947'
+        server_config_filename = paths.server_config_path()
+
+        # load server_config.json to inject a new rule base
+        with open(server_config_filename) as f:
+            svr_cfg = json.load(f)
+
+        ufs_resources = ['issue_7947_ufs1', 'issue_7947_ufs2']
+
+        try:
+            # create two resources
+            for resc_name in ufs_resources:
+                lib.create_ufs_resource(self.admin, resc_name)
+
+            # create a 100 MiB file
+            file_size = 100*1024*1024
+            local_file = os.path.join(self.admin.local_session_dir, object_name)
+            lib.make_file(local_file, file_size)
+            file_checksum = lib.file_digest(local_file, 'sha256', encoding='base64')
+
+            with lib.file_backed_up(server_config_filename):
+
+                for buffer_size in [10*1024*1024, file_size - 1, file_size, file_size + 1,  2**31-1]:
+
+                    # make sure we have plenty of available virtual memory to run this iteration
+                    if psutil.virtual_memory().available < 2 * buffer_size:
+                        continue
+
+                    # update the checksum_read_buffer_size_in_bytes
+                    svr_cfg['advanced_settings']['checksum_read_buffer_size_in_bytes'] = buffer_size;
+                    new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
+
+                    # repave the existing server_config.json
+                    with open(server_config_filename, 'w') as f:
+                        f.write(new_server_config)
+
+                    # put the file with the new server configuration and compare checksum
+                    self.admin.assert_icommand(['iput', '-R', ufs_resources[0], '-k', local_file, object_name])
+                    self.assertEqual(lib.get_replica_checksum(self.admin, object_name, 0), f'sha2:{file_checksum}')
+
+                    # replicate the file and compare the checksum on the replica
+                    self.admin.assert_icommand(['irepl', '-R', ufs_resources[1], object_name])
+                    self.assertEqual(lib.get_replica_checksum(self.admin, object_name, 1), f'sha2:{file_checksum}')
+
+                    # cleanup for this loop
+                    self.admin.assert_icommand(['irm', '-f', object_name])
+
+                # test a buffer size of 1 with a much smaller file
+                file_size = 1024
+                local_file = os.path.join(self.admin.local_session_dir, object_name)
+                lib.make_file(local_file, file_size)
+                file_checksum = lib.file_digest(local_file, 'sha256', encoding='base64')
+
+                buffer_size = 1
+                svr_cfg['advanced_settings']['checksum_read_buffer_size_in_bytes'] = buffer_size;
+                new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
+
+                # repave the existing server_config.json
+                with open(server_config_filename, 'w') as f:
+                    f.write(new_server_config)
+
+                # put the file with the new server configuration and compare checksum
+                self.admin.assert_icommand(['iput', '-R', ufs_resources[0], '-k', local_file, object_name])
+                self.assertEqual(lib.get_replica_checksum(self.admin, object_name, 0), f'sha2:{file_checksum}')
+
+                # replicate the file and compare the checksum on the replica
+                self.admin.assert_icommand(['irepl', '-R', ufs_resources[1], object_name])
+                self.assertEqual(lib.get_replica_checksum(self.admin, object_name, 1), f'sha2:{file_checksum}')
+
+        finally:
+            os.unlink(local_file)
+            self.admin.assert_icommand(['irm', '-f', object_name])
+            for resc_name in ufs_resources:
+                self.admin.run_icommand(['iadmin', 'rmresc', resc_name])
+
+    def test_server_rejects_invalid_server_config_options_for_checksum_read_buffer_size_in_bytes__issue_7947(self):
+        object_name = 'test_server_rejects_invalid_server_config_options_for_checksum_read_buffer_size_in_bytes__issue_7947'
+        server_config_filename = paths.server_config_path()
+
+        ufs_resources = ['issue_7947_ufs1', 'issue_7947_ufs2']
+
+        # load server_config.json to inject a new rule base
+        with open(server_config_filename) as f:
+            svr_cfg = json.load(f)
+
+        try:
+            # create two resources
+            for resc_name in ufs_resources:
+                lib.create_ufs_resource(self.admin, resc_name)
+
+            # create a small file
+            file_size = 10
+            local_file = os.path.join(self.admin.local_session_dir, object_name)
+            lib.make_file(local_file, file_size)
+
+            # put the file to first the resource as a source for replication
+            self.admin.assert_icommand(['iput', '-R', ufs_resources[0], '-k', local_file, object_name])
+
+            with lib.file_backed_up(server_config_filename):
+
+                for buffer_size in [-2**63-1, -1, 0, 2**63]:  # first and last are outside range of 64 bit signed integers
+
+                    svr_cfg['advanced_settings']['checksum_read_buffer_size_in_bytes'] = buffer_size;
+                    new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
+
+                    # repave the existing server_config.json
+                    with open(server_config_filename, 'w') as f:
+                        f.write(new_server_config)
+
+                    # irepl the file and verify we get an error due to invalid configuration
+                    self.admin.assert_icommand_fail(['irepl', '-R', ufs_resources[1], object_name], 'STDOUT_SINGLELINE', 'CONFIGURATION_ERROR')
+
+        finally:
+            os.unlink(local_file)
+            self.admin.assert_icommand(['irm', '-f', object_name])
+            for resc_name in ufs_resources:
+                self.admin.run_icommand(['iadmin', 'rmresc', resc_name])
 
 class test_irepl_with_special_resource_configurations(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
     # In this suite:

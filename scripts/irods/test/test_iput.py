@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import tempfile
+import psutil
 
 if sys.version_info < (2, 7):
     import unittest2 as unittest
@@ -885,6 +886,100 @@ class test_iput_with_checksums(session.make_sessions_mixin(rodsadmins, rodsusers
     def test_large_put(self):
         self.object_name = 'test_large_put'
         self.run_tests(self.object_name, 5120000)
+
+    def test_server_honors_server_config_option_checksum_read_buffer_size_in_bytes__issue_7947(self):
+        self.object_name = 'test_iput_with_updated_checksum_read_buffer_size_in_bytes__issue_7947'
+        server_config_filename = paths.server_config_path()
+
+        # load server_config.json to inject a new rule base
+        with open(server_config_filename) as f:
+            svr_cfg = json.load(f)
+
+        try:
+            # create a 100 MiB file
+            file_size = 100*1024*1024
+            local_file = os.path.join(self.admin.local_session_dir, self.object_name)
+            lib.make_file(local_file, file_size)
+            file_checksum = lib.file_digest(local_file, 'sha256', encoding='base64')
+
+            with lib.file_backed_up(server_config_filename):
+
+                for buffer_size in [10*1024*1024, file_size - 1, file_size, file_size + 1,  2**31-1]:
+
+                    # make sure we have plenty of available virtual memory to run this iteration
+                    if psutil.virtual_memory().available < 2 * buffer_size:
+                        continue
+
+                    svr_cfg['advanced_settings']['checksum_read_buffer_size_in_bytes'] = buffer_size
+                    new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
+
+                    # repave the existing server_config.json
+                    with open(server_config_filename, 'w') as f:
+                        f.write(new_server_config)
+
+                    # put the file with new server configuration and compare checksum
+                    self.admin.assert_icommand(['iput', '-R', self.resource, '-k', local_file, self.object_name])
+                    self.assertEqual(self.get_checksum(self.object_name).rstrip(), f'sha2:{file_checksum}')
+
+                    # cleanup for this loop
+                    self.admin.assert_icommand(['irm', '-f', self.object_name])
+
+                # test a buffer size of 1 with a much smaller file
+                file_size = 1024
+                local_file = os.path.join(self.admin.local_session_dir, self.object_name)
+                lib.make_file(local_file, file_size)
+                file_checksum = lib.file_digest(local_file, 'sha256', encoding='base64')
+
+                buffer_size = 1
+                svr_cfg['advanced_settings']['checksum_read_buffer_size_in_bytes'] = buffer_size;
+                new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
+
+                # repave the existing server_config.json
+                with open(server_config_filename, 'w') as f:
+                    f.write(new_server_config)
+
+                # put the file with new server configuration and compare checksum
+                self.admin.assert_icommand(['iput', '-R', self.resource, '-k', local_file, self.object_name])
+                self.assertEqual(self.get_checksum(self.object_name).rstrip(), f'sha2:{file_checksum}')
+
+        finally:
+            # self.object_name deleted in teardown
+            os.unlink(local_file)
+
+    def test_server_rejects_invalid_server_config_options_for_checksum_read_buffer_size_in_bytes__issue_7947(self):
+        self.object_name = 'test_server_rejects_invalid_server_config_options_for_checksum_read_buffer_size_in_bytes__issue_7947'
+        server_config_filename = paths.server_config_path()
+
+        # load server_config.json to inject a new rule base
+        with open(server_config_filename) as f:
+            svr_cfg = json.load(f)
+
+        try:
+            # create a small file
+            file_size = 10
+            local_file = os.path.join(self.admin.local_session_dir, self.object_name)
+            lib.make_file(local_file, file_size)
+
+            with lib.file_backed_up(server_config_filename):
+
+                for buffer_size in [-2**63-1, -1, 0, 2**63]:  # first and last are outside range of 64 bit signed integers
+
+                    svr_cfg['advanced_settings']['checksum_read_buffer_size_in_bytes'] = buffer_size
+                    new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
+
+                    # repave the existing server_config.json
+                    with open(server_config_filename, 'w') as f:
+                        f.write(new_server_config)
+
+                    # put the file and verify we get an error due to invalid configuration
+                    self.admin.assert_icommand(['iput', '-R', self.resource, '-k', local_file, self.object_name], 'STDERR_SINGLELINE', 'CONFIGURATION_ERROR')
+
+                    # clean up for next iteration
+                    self.admin.assert_icommand(['irm', '-f', self.object_name])
+
+        finally:
+            # self.object_name deleted in teardown
+            os.unlink(local_file)
 
     def get_checksum(self, object_name):
         iquest_result,_,ec = self.admin.run_icommand(['iquest', '%s', '"select DATA_CHECKSUM where DATA_NAME = \'{}\'"'.format(object_name)])

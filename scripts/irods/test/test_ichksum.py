@@ -10,6 +10,8 @@ import shutil
 import re
 import hashlib
 import base64
+import json
+import psutil
 
 from . import session
 from . import settings
@@ -466,3 +468,100 @@ C- {5}:
         # Show that ichksum detects the size inconsistency between the catalog and the object in storage.
         self.admin.assert_icommand(['ichksum', '-f', data_object], 'STDERR', ['-512000 UNIX_FILE_READ_ERR'])
 
+    def test_ichksum_server_honors_server_config_option_checksum_read_buffer_size_in_bytes__issue_7947(self):
+
+        object_name = 'test_ichksum_server_honors_server_config_option_checksum_read_buffer_size_in_bytes__issue_7947'
+        server_config_filename = paths.server_config_path()
+
+        # load server_config.json to inject a new rule base
+        with open(server_config_filename) as f:
+            svr_cfg = json.load(f)
+
+        try:
+            # create a 100 MiB file
+            file_size = 100*1024*1024
+            local_file = os.path.join(self.admin.local_session_dir, object_name)
+            lib.make_file(local_file, file_size)
+            file_checksum = lib.file_digest(local_file, 'sha256', encoding='base64')
+
+            with lib.file_backed_up(server_config_filename):
+
+                for buffer_size in [10*1024*1024, file_size - 1, file_size, file_size + 1,  2**31-1]:
+
+                    # make sure we have plenty of available virtual memory to run this iteration
+                    if psutil.virtual_memory().available < 2 * buffer_size:
+                        continue
+
+                    # update the checksum_read_buffer_size_in_bytes
+                    svr_cfg['advanced_settings']['checksum_read_buffer_size_in_bytes'] = buffer_size
+                    new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
+
+                    # repave the existing server_config.json
+                    with open(server_config_filename, 'w') as f:
+                        f.write(new_server_config)
+
+                    # put the file with new server configuration, run ichksum, and compare checksums
+                    self.admin.assert_icommand(['iput', local_file, object_name])
+                    self.admin.assert_icommand(['ichksum', '-f', object_name], 'STDOUT_SINGLELINE', file_checksum)
+                    self.assertEqual(lib.get_replica_checksum(self.admin, object_name, 0), f'sha2:{file_checksum}')
+
+                    # cleanup for this loop
+                    self.admin.assert_icommand(['irm', '-f', object_name])
+
+                # test a buffer size of 1 with a much smaller file
+                file_size = 1024
+                local_file = os.path.join(self.admin.local_session_dir, object_name)
+                lib.make_file(local_file, file_size)
+                file_checksum = lib.file_digest(local_file, 'sha256', encoding='base64')
+
+                buffer_size = 1
+                svr_cfg['advanced_settings']['checksum_read_buffer_size_in_bytes'] = buffer_size;
+                new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
+
+                # repave the existing server_config.json
+                with open(server_config_filename, 'w') as f:
+                    f.write(new_server_config)
+
+                # put the file with new server configuration, run ichksum, and compare checksums
+                self.admin.assert_icommand(['iput', local_file, object_name])
+                self.admin.assert_icommand(['ichksum', '-f', object_name], 'STDOUT_SINGLELINE', file_checksum)
+                self.assertEqual(lib.get_replica_checksum(self.admin, object_name, 0), f'sha2:{file_checksum}')
+
+        finally:
+            os.unlink(local_file)
+            self.admin.assert_icommand(['irm', '-f', object_name])
+
+    def test_ichksum_server_rejects_invalid_server_config_options_for_checksum_read_buffer_size_in_bytes__issue_7947(self):
+        object_name = 'test_ichksum_server_rejects_invalid_server_config_options_for_checksum_read_buffer_size_in_bytes__issue_7947'
+        server_config_filename = paths.server_config_path()
+
+        # load server_config.json to inject a new rule base
+        with open(server_config_filename) as f:
+            svr_cfg = json.load(f)
+
+        try:
+            # create a small file
+            file_size = 10
+            local_file = os.path.join(self.admin.local_session_dir, object_name)
+            lib.make_file(local_file, file_size)
+
+            # put the file that we will be trying to calculate the checksum on
+            self.admin.assert_icommand(['iput', local_file, object_name])
+
+            with lib.file_backed_up(server_config_filename):
+
+                for buffer_size in [-2**63-1, -1, 0, 2**63]:  # first and last are outside range of 64 bit signed integers
+
+                    svr_cfg['advanced_settings']['checksum_read_buffer_size_in_bytes'] = buffer_size;
+                    new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
+
+                    # repave the existing server_config.json
+                    with open(server_config_filename, 'w') as f:
+                        f.write(new_server_config)
+
+                    # run icksum on the file
+                    self.admin.assert_icommand_fail(['ichksum', '-f', object_name], 'STDOUT_SINGLELINE', 'CONFIGURATION_ERROR')
+
+        finally:
+            os.unlink(local_file)
+            self.admin.assert_icommand(['irm', '-f', object_name])
