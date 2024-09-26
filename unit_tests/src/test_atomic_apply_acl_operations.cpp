@@ -636,6 +636,109 @@ TEST_CASE("#7408: Atomic acls respect entity zone")
             }) != e);
 }
 
+TEST_CASE("#7913: Atomic acls accept all acls")
+{
+    using namespace std::string_literals;
+
+    rodsEnv env;
+    _getRodsEnv(env);
+    irods::experimental::client_connection conn;
+    const auto* const user_home = env.rodsHome;
+    const auto* const acl_user_name = "atomic_acl_user";
+
+    ua::user acl_user{acl_user_name};
+
+    // clean up users after end
+    irods::at_scope_exit remove_users{[&] { CHECK_NOTHROW(ua::client::remove_user(conn, acl_user)); }};
+
+    REQUIRE_NOTHROW(ua::client::add_user(conn, acl_user));
+
+    REQUIRE(ua::client::exists(conn, acl_user));
+
+    // create test collection to modify ACLs on
+    const auto test_collection = fs::path{user_home} / "acl_test_collection_issue_7913";
+    REQUIRE_NOTHROW(fs::client::create_collection(conn, test_collection));
+    irods::at_scope_exit remove_test_collection{
+        [&] { REQUIRE(fs::client::remove_all(conn, test_collection, fs::remove_options::no_trash)); }};
+
+    const std::array new_acls_and_perms{std::make_pair("read_metadata", fs::perms::read_metadata),
+                                        std::make_pair("read", fs::perms::read),
+                                        std::make_pair("read_object", fs::perms::read),
+                                        std::make_pair("create_metadata", fs::perms::create_metadata),
+                                        std::make_pair("modify_metadata", fs::perms::modify_metadata),
+                                        std::make_pair("delete_metadata", fs::perms::delete_metadata),
+                                        std::make_pair("create_object", fs::perms::create_object),
+                                        std::make_pair("write", fs::perms::write),
+                                        std::make_pair("modify_object", fs::perms::write),
+                                        std::make_pair("delete_object", fs::perms::delete_object),
+                                        std::make_pair("own", fs::perms::own)};
+
+    for (const auto& acl_and_perm : new_acls_and_perms) {
+        // clang-format off
+        const auto json_input = json{
+            {"logical_path", test_collection.c_str()},
+            {"operations", json::array({
+                {
+                    {"entity_name", acl_user_name},
+                    {"acl", acl_and_perm.first}
+                }
+            })}
+        }.dump();
+        // clang-format on
+
+        // clean up acl after each iteration
+        irods::at_scope_exit remove_acls{[&] {
+            // clang-format off
+            const auto json_input = json{
+                {"logical_path", test_collection.c_str()},
+                {"operations", json::array({
+                    {
+                        {"entity_name", acl_user.name},
+                        {"acl", "null"}
+                    },
+                })}
+            }.dump();
+            // clang-format on
+
+            char* json_error_string{};
+
+            // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
+            irods::at_scope_exit free_memory{[&json_error_string] { std::free(json_error_string); }};
+
+            REQUIRE(rc_atomic_apply_acl_operations(
+                        static_cast<rcComm_t*>(conn), json_input.c_str(), &json_error_string) == 0);
+            REQUIRE(json_error_string == "{}"s);
+
+            const auto perms = fs::client::status(conn, test_collection.c_str()).permissions();
+            auto b = std::begin(perms);
+            auto e = std::end(perms);
+
+            REQUIRE(
+                std::none_of(b, e, [&acl_user](const fs::entity_permission& p) { return p.name == acl_user.name; }));
+        }};
+
+        char* json_error_string{nullptr};
+
+        irods::at_scope_exit free_errstring{[&json_error_string] {
+            // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
+            std::free(json_error_string);
+        }};
+
+        REQUIRE(rc_atomic_apply_acl_operations(static_cast<rcComm_t*>(conn), json_input.c_str(), &json_error_string) ==
+                0);
+        REQUIRE(json_error_string == "{}"s);
+
+        const auto perms = fs::client::status(conn, test_collection.c_str()).permissions();
+        auto b = std::begin(perms);
+        auto e = std::end(perms);
+
+        // success indicator: should find permission
+        REQUIRE(std::any_of(b, e, [&acl_user_name, &acl_and_perm](const fs::entity_permission& p) {
+            return p.name == acl_user_name && p.prms == acl_and_perm.second;
+        }));
+    }
+}
+
 auto contains_error_information(const char* _json_string) -> bool
 {
     try {
