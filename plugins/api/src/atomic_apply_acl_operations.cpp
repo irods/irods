@@ -63,6 +63,19 @@ namespace
     using id_type   = std::int64_t;
     // clang-format on
 
+    const std::unordered_map<std::string_view, int> acl_to_id{{"null", 1000},
+                                                              {"read_metadata", 1040},
+                                                              {"read", 1050},
+                                                              {"read_object", 1050},
+                                                              {"create_metadata", 1070},
+                                                              {"modify_metadata", 1080},
+                                                              {"delete_metadata", 1090},
+                                                              {"create_object", 1110},
+                                                              {"write", 1120},
+                                                              {"modify_object", 1120},
+                                                              {"delete_object", 1130},
+                                                              {"own", 1200}};
+
     //
     // Function Prototypes
     //
@@ -191,9 +204,7 @@ namespace
 
     auto throw_if_invalid_acl(std::string_view _acl) -> void
     {
-        const auto l = {"read", "write", "own", "null"};
-
-        if (std::none_of(std::begin(l), std::end(l), [_acl](std::string_view x) { return x == _acl; })) {
+        if (acl_to_id.find(_acl) == acl_to_id.cend()) {
             THROW(SYS_INVALID_INPUT_PARAM, fmt::format("Invalid ACL [acl={}]", _acl));
         }
     }
@@ -207,14 +218,7 @@ namespace
 
     auto to_access_type_id(std::string_view _acl) -> int
     {
-        // clang-format off
-        if (_acl == "read")  { return 1050; }
-        if (_acl == "write") { return 1120; }
-        if (_acl == "own")   { return 1200; }
-        if (_acl == "null")  { return 1000; }
-        // clang-format on
-
-        THROW(SYS_INVALID_INPUT_PARAM, fmt::format("Invalid ACL [acl={}]", _acl));
+        return acl_to_id.at(_acl);
     }
 
     auto entity_has_acls_set_on_object(nanodbc::connection& _db_conn,
