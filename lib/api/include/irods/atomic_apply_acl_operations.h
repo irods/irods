@@ -39,8 +39,16 @@ extern "C" {
 /// \p entity_name is the name of the user or group for which the ACL is being set.
 ///
 /// \p acl must be one of the following:
+/// - read_metadata
 /// - read
+/// - read_object
+/// - create_metadata
+/// - modify_metadata
+/// - delete_metadata
+/// - create_object
 /// - write
+/// - modify_object
+/// - delete_object
 /// - own
 /// - null (removes the ACL)
 ///
