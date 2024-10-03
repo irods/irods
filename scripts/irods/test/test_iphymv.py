@@ -20,7 +20,7 @@ from .resource_suite import ResourceBase
 from ..test.command import assert_command
 
 def assert_two_replicas_where_original_is_good_and_new_is_stale(cls, logical_path, original_resc, munge_resc):
-    question = '''"select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'"'''.format(
+    question = "select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'".format(
         os.path.basename(logical_path), os.path.dirname(logical_path))
 
     # check on the replicas after the phymv...
@@ -83,7 +83,7 @@ class Test_iPhymv(ResourceBase, unittest.TestCase):
 
     def get_source_resource(self, object_path):
         return self.admin.run_icommand(['iquest', '%s',
-            '''"select RESC_NAME where COLL_NAME = '{0}' and DATA_NAME = '{1}'"'''.format(
+            "select RESC_NAME where COLL_NAME = '{0}' and DATA_NAME = '{1}'".format(
                 os.path.dirname(object_path), os.path.basename(object_path))])[0].strip().strip()
 
     def get_destination_resource(self, source_resc):
@@ -100,7 +100,7 @@ class Test_iPhymv(ResourceBase, unittest.TestCase):
         lib.make_file(filepath, 1)
         dest_path = os.path.join(self.user0.session_collection, file_name)
 
-        question = '''"select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where COLL_NAME = '{0}' and DATA_NAME = '{1}'"'''.format(os.path.dirname(dest_path), os.path.basename(dest_path))
+        question = "select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where COLL_NAME = '{0}' and DATA_NAME = '{1}'".format(os.path.dirname(dest_path), os.path.basename(dest_path))
 
         try:
             # put a new data object
@@ -150,7 +150,7 @@ class Test_iPhymv(ResourceBase, unittest.TestCase):
         lib.make_file(filepath, 1)
         dest_path = os.path.join(self.user0.session_collection, file_name)
 
-        question = '''"select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where COLL_NAME = '{0}' and DATA_NAME = '{1}'"'''.format(os.path.dirname(dest_path), os.path.basename(dest_path))
+        question = "select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where COLL_NAME = '{0}' and DATA_NAME = '{1}'".format(os.path.dirname(dest_path), os.path.basename(dest_path))
 
         try:
             # put a new data object
@@ -271,7 +271,7 @@ class Test_iPhymv(ResourceBase, unittest.TestCase):
             'DATA_SIZE'
         ]
 
-        system_metadata_genquery = '''"select {0} where COLL_NAME = '{1}' and DATA_NAME = '{2}'"'''.format(
+        system_metadata_genquery = "select {0} where COLL_NAME = '{1}' and DATA_NAME = '{2}'".format(
             ','.join(attributes), os.path.dirname(dest_path), os.path.basename(dest_path))
 
         try:
@@ -342,7 +342,7 @@ class Test_iPhymv(ResourceBase, unittest.TestCase):
         munge_resc = 'munge_resc'
         local_file = os.path.join(self.admin.local_session_dir, 'local_file')
         logical_path = os.path.join(self.admin.session_collection, 'foo')
-        question = '''"select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'"'''.format(
+        question = "select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'".format(
             os.path.basename(logical_path), os.path.dirname(logical_path))
 
         try:

@@ -95,7 +95,7 @@ class Test_Iput(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.Tes
             munge_resc = 'munge_resc'
             local_file = os.path.join(self.admin.local_session_dir, 'local_file')
             logical_path = os.path.join(self.admin.session_collection, 'foo')
-            question = '''"select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'"'''.format(
+            question = "select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'".format(
                 os.path.basename(logical_path), os.path.dirname(logical_path))
 
             try:
@@ -200,7 +200,7 @@ class Test_Iput(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.Tes
             munge_resc = 'munge_resc'
             local_file = os.path.join(self.admin.local_session_dir, 'local_file')
             logical_path = os.path.join(self.admin.session_collection, 'foo')
-            question = '''"select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'"'''.format(
+            question = "select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'".format(
                 os.path.basename(logical_path), os.path.dirname(logical_path))
 
             try:
@@ -261,7 +261,7 @@ class Test_Iput(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.Tes
             munge_resc = 'munge_resc'
             local_file = os.path.join(self.admin.local_session_dir, 'local_file')
             logical_path = os.path.join(self.admin.session_collection, 'foo')
-            question = '''"select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'"'''.format(
+            question = "select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'".format(
                 os.path.basename(logical_path), os.path.dirname(logical_path))
 
             try:
@@ -366,7 +366,7 @@ class Test_Iput(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.Tes
             munge_resc = 'munge_resc'
             local_file = os.path.join(self.admin.local_session_dir, 'local_file')
             logical_path = os.path.join(self.admin.session_collection, 'foo')
-            question = '''"select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'"'''.format(
+            question = "select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'".format(
                 os.path.basename(logical_path), os.path.dirname(logical_path))
 
             try:
@@ -982,7 +982,7 @@ class test_iput_with_checksums(session.make_sessions_mixin(rodsadmins, rodsusers
             os.unlink(local_file)
 
     def get_checksum(self, object_name):
-        iquest_result,_,ec = self.admin.run_icommand(['iquest', '%s', '"select DATA_CHECKSUM where DATA_NAME = \'{}\'"'.format(object_name)])
+        iquest_result,_,ec = self.admin.run_icommand(['iquest', '%s', 'select DATA_CHECKSUM where DATA_NAME = \'{}\''.format(object_name)])
         self.assertEqual(0, ec)
 
         print(iquest_result)
