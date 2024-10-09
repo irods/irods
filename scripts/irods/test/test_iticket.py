@@ -1122,6 +1122,21 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
         self.assertGreater(modify_ts, create_ts)
         self.assertGreater(modify_ts, previous_ts)
 
+    def test_exceeding_ticket_uses_returns_correct_error_code__issue_7967(self):
+        ticket_string = "issue_7967_uses_count"
+        file_name = "issue_7967_uses_filename"
+        self.user.assert_icommand(['itouch', file_name])
+
+        self.user.assert_icommand(['iticket', 'create', 'read', file_name, ticket_string])
+
+        # Modify ticket usage amount
+        self.user.assert_icommand(['iticket', 'mod', ticket_string, 'uses', '3'])
+        self.user.assert_icommand(['iget', '-f', '-t', ticket_string, file_name])
+        self.user.assert_icommand(['iget', '-f', '-t', ticket_string, file_name])
+        self.user.assert_icommand(['iget', '-f', '-t', ticket_string, file_name])
+        self.user.assert_icommand(['iget', '-f', '-t', ticket_string, file_name],'STDERR', ['CAT_TICKET_USES_EXCEEDED'])
+
+
 def get_modification_and_creation_time(cls, ticket_string):
     out, err, ec = cls.admin.run_icommand(['iquest', '%s...%s', "select TICKET_MODIFY_TIME, TICKET_CREATE_TIME where TICKET_STRING = '{}'".format(ticket_string)])
     cls.assertEqual(ec, 0)
