@@ -15,6 +15,7 @@
 #include "irods/private/low_level.hpp"
 #include "irods/irods_stacktrace.hpp"
 #include "irods/irods_log.hpp"
+#include "irods/irods_logger.hpp"
 #include "irods/irods_virtual_path.hpp"
 #include "irods/rodsErrorTable.h"
 #include "irods/rcMisc.h"
@@ -27,6 +28,8 @@
 
 /* Size of the R_OBJT_AUDIT comment field;must match table column definition */
 #define AUDIT_COMMENT_MAX_SIZE       1000
+
+using log_db = irods::experimental::log::database;
 
 extern int logSQL_CML;
 
@@ -1600,10 +1603,6 @@ int checkObjIdByTicket(const char* dataId,
 
     iUsesLimit = atoi( usesLimit );
     if ( iUsesLimit > 0 ) {
-        iUsesCount = atoi( usesCount );
-        if ( iUsesCount > iUsesLimit ) {
-            return CAT_TICKET_USES_EXCEEDED;
-        }
 
         intDataId = atoll( dataId );
 
@@ -1611,6 +1610,20 @@ int checkObjIdByTicket(const char* dataId,
         // Given this function can be called multiple times within the same operation, checking to
         // see if the data id is different keeps the server from updating the ticket information multiple times.
         if ( previousDataId2 != intDataId ) {
+            errno = 0;
+            //NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+            iUsesCount = static_cast<int>(strtol(usesCount, nullptr, 10));
+            if (errno != 0) {
+                log_db::error("[{}]: Error converting usesCount to int. [usesCount: [{}], dataId: [{}], errno: [{}]]",
+                              __func__,
+                              usesCount,
+                              dataId,
+                              errno);
+                return SYS_INTERNAL_ERR;
+            }
+            if (iUsesCount >= iUsesLimit) {
+                return CAT_TICKET_USES_EXCEEDED;
+            }
             iUsesCount++;
             snprintf( myUsesCount, sizeof myUsesCount, "%d", iUsesCount );
             cllBindVars[cllBindVarCount++] = myUsesCount;
@@ -1625,7 +1638,6 @@ int checkObjIdByTicket(const char* dataId,
             if ( status != 0 ) {
                 return status;
             }
-
 #ifndef ORA_ICAT
             cllCheckPending( "", 2, icss->databaseType );
 #endif
