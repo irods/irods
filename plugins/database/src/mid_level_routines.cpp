@@ -1607,8 +1607,8 @@ int checkObjIdByTicket(const char* dataId,
         // Given this function can be called multiple times within the same operation, checking to
         // see if the data id is different keeps the server from updating the ticket information multiple times.
         if ( previousDataId2 != intDataId ) {
-            iUsesCount = atoi( usesCount );
-            if ( iUsesCount >= iUsesLimit ) {
+            iUsesCount = atoi(usesCount);
+            if (iUsesCount >= iUsesLimit) {
                 return CAT_TICKET_USES_EXCEEDED;
             }
             iUsesCount++;
