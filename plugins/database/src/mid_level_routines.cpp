@@ -1600,10 +1600,6 @@ int checkObjIdByTicket(const char* dataId,
 
     iUsesLimit = atoi( usesLimit );
     if ( iUsesLimit > 0 ) {
-        iUsesCount = atoi( usesCount );
-        if ( iUsesCount > iUsesLimit ) {
-            return CAT_TICKET_USES_EXCEEDED;
-        }
 
         intDataId = atoll( dataId );
 
@@ -1611,6 +1607,10 @@ int checkObjIdByTicket(const char* dataId,
         // Given this function can be called multiple times within the same operation, checking to
         // see if the data id is different keeps the server from updating the ticket information multiple times.
         if ( previousDataId2 != intDataId ) {
+            iUsesCount = atoi(usesCount);
+            if (iUsesCount >= iUsesLimit) {
+                return CAT_TICKET_USES_EXCEEDED;
+            }
             iUsesCount++;
             snprintf( myUsesCount, sizeof myUsesCount, "%d", iUsesCount );
             cllBindVars[cllBindVarCount++] = myUsesCount;
@@ -1625,7 +1625,6 @@ int checkObjIdByTicket(const char* dataId,
             if ( status != 0 ) {
                 return status;
             }
-
 #ifndef ORA_ICAT
             cllCheckPending( "", 2, icss->databaseType );
 #endif
