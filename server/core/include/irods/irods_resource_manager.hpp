@@ -1,7 +1,6 @@
-#ifndef __IRODS_RESOURCE_MANAGER_HPP__
-#define __IRODS_RESOURCE_MANAGER_HPP__
+#ifndef IRODS_RESOURCE_MANAGER_HPP
+#define IRODS_RESOURCE_MANAGER_HPP
 
-// =-=-=-=-=-=-=-
 #include "irods/rods.h"
 #include "irods/irods_resource_plugin.hpp"
 #include "irods/irods_first_class_object.hpp"
@@ -16,12 +15,6 @@ namespace irods
     // =-=-=-=-=-=-=-
     /// @brief definition of the resource interface
     extern const std::string RESOURCE_INTERFACE;
-
-    // =-=-=-=-=-=-=-
-    /// @brief special resource for local file system operations only
-    extern const std::string LOCAL_USE_ONLY_RESOURCE;
-    extern const std::string LOCAL_USE_ONLY_RESOURCE_VAULT;
-    extern const std::string LOCAL_USE_ONLY_RESOURCE_TYPE;
 
     class resource_manager {
         public:
@@ -289,8 +282,7 @@ namespace irods
             lookup_table< resource_ptr >                        resource_name_map_;
             lookup_table< resource_ptr, long, std::hash<long> > resource_id_map_;
             std::vector< std::vector< pdmo_type > > maintenance_operations_;
-
     }; // class resource_manager
 } // namespace irods
 
-#endif // __IRODS_RESOURCE_MANAGER_HPP__
+#endif // IRODS_RESOURCE_MANAGER_HPP
