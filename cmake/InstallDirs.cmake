@@ -14,13 +14,6 @@ if(CMAKE_HOST_UNIX)
   endif()
 endif()
 
-# We don't do multiarch triples on debian, nor do we use the lib64 dir on centos and
-# opensuse (though we probably should). We can revisit this later; for now let's just
-# set our own default for CMAKE_INSTALL_LIBDIR
-if(NOT DEFINED CMAKE_INSTALL_LIBDIR)
-  set(CMAKE_INSTALL_LIBDIR "lib" CACHE PATH "Object code libraries (lib)")
-endif()
-
 include(GNUInstallDirs)
 
 if(NOT DEFINED IRODS_INCLUDE_DIRS)
