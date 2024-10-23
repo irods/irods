@@ -1,3 +1,19 @@
+# We used to override CMAKE_INSTALL_LIBDIR to always default to "lib", but starting with 5.0, we now
+# use the distribution-defaults for library installation directories. Since CMAKE_INSTALL_LIBDIR is
+# a cache variable, let's try and detect if an old default is in the cache.
+function(warn_for_old_libdir_cache)
+  if(CMAKE_INSTALL_LIBDIR STREQUAL "lib"
+     AND EXISTS "${CMAKE_BINARY_DIR}/CMakeCache.txt"
+     AND NOT IRODS_INSTALL_LIBDIR_GOOD_DEFAULT)
+    load_cache("${CMAKE_BINARY_DIR}" READ_WITH_PREFIX loaded_ CMAKE_INSTALL_LIBDIR)
+    if(loaded_CMAKE_INSTALL_LIBDIR STREQUAL "lib")
+      message(WARNING "The default value of CMAKE_INSTALL_LIBDIR may have changed since the CMake Cache was generated. It is recommended to use a clean build directory.")
+      return()
+    endif()
+  endif()
+  set(IRODS_INSTALL_LIBDIR_GOOD_DEFAULT TRUE CACHE INTERNAL "Do not warn if cached CMAKE_INSTALL_LIBDIR value is \"lib\"")
+endfunction()
+
 if(CMAKE_HOST_UNIX)
   # Ideally, we would default to /usr, but cmake doesn't follow its own rules,
   # so we default to / instead.
@@ -13,6 +29,8 @@ if(CMAKE_HOST_UNIX)
     set(CPACK_PACKAGING_INSTALL_PREFIX "/" CACHE PATH "Install path prefix for packaging, prepended onto install directories.")
   endif()
 endif()
+
+warn_for_old_libdir_cache()
 
 include(GNUInstallDirs)
 
