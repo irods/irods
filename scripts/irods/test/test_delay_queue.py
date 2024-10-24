@@ -549,7 +549,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
                 irodsctl.reload_configuration()
 
                 # Fire off rule and wait for message to get written out to serverLog
-                self.admin.assert_icommand(['irule', '-F', rule_file], 'STDOUT_SINGLELINE', "rule queued")
+                self.admin.assert_icommand(['irule', '-r', 'irods_rule_engine_plugin-irods_rule_language-instance', '-F', rule_file], 'STDOUT_SINGLELINE', "rule queued")
 
                 lib.delayAssert(
                     lambda: lib.metadata_attr_with_value_exists(
@@ -663,88 +663,92 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
     def test_static_peps_can_schedule_delay_rules_without_session_variables(self):
         config = IrodsConfig()
 
-        with lib.file_backed_up(config.server_config_path):
-            # Lower the delay server's sleep time so that rules are executed quicker.
-            config.server_config['advanced_settings']['delay_server_sleep_time_in_seconds'] = 1
-            lib.update_json_file_from_dict(config.server_config_path, config.server_config)
-            IrodsController().reload_configuration()
+        try:
+            with lib.file_backed_up(config.server_config_path):
+                # Lower the delay server's sleep time so that rules are executed quicker.
+                config.server_config['advanced_settings']['delay_server_sleep_time_in_seconds'] = 1
+                lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+                IrodsController(config).reload_configuration()
 
-            core_re_path = os.path.join(config.core_re_directory, 'core.re')
+                core_re_path = os.path.join(config.core_re_directory, 'core.re')
 
-            with lib.file_backed_up(core_re_path):
-                # Add static PEP with delay rule to the core.re file.
-                with open(core_re_path, 'a') as core_re:
-                    core_re.write('''
-                        acPostProcForPut
-                        {
-                            *object_path = $objPath;
+                with lib.file_backed_up(core_re_path):
+                    # Add static PEP with delay rule to the core.re file.
+                    with open(core_re_path, 'a') as core_re:
+                        core_re.write('''
+                            acPostProcForPut
+                            {
+                                *object_path = $objPath;
 
-                            delay('<INST_NAME>irods_rule_engine_plugin-irods_rule_language-instance</INST_NAME>') {
-                                *kvp.'delay_rule_fired' = 'YES';
-                                msiSetKeyValuePairsToObj(*kvp, *object_path, "-d");
+                                delay('<INST_NAME>irods_rule_engine_plugin-irods_rule_language-instance</INST_NAME>') {
+                                    *kvp.'delay_rule_fired' = 'YES';
+                                    msiSetKeyValuePairsToObj(*kvp, *object_path, "-d");
+                                }
                             }
-                        }
-                    ''')
+                        ''')
+                    IrodsController(config).reload_configuration()
 
-                filename = os.path.join(self.admin.local_session_dir, 'delay_indirectly.txt')
-                lib.make_file(filename, 1, 'arbitrary')
+                    filename = os.path.join(self.admin.local_session_dir, 'delay_indirectly.txt')
+                    lib.make_file(filename, 1, 'arbitrary')
 
-                # Trigger the static PEP and verify that the metadata was added.
-                self.admin.assert_icommand(['iput', filename])
+                    # Trigger the static PEP and verify that the metadata was added.
+                    self.admin.assert_icommand(['iput', filename])
 
-                def assert_metadata_exists():
-                    out, _, ec = self.admin.run_icommand(['imeta', 'ls', '-d', os.path.basename(filename)])
-                    return ec == 0 and 'attribute: delay_rule_fired' in out and 'value: YES' in out
+                    def assert_metadata_exists():
+                        out, _, ec = self.admin.run_icommand(['imeta', 'ls', '-d', os.path.basename(filename)])
+                        return ec == 0 and 'attribute: delay_rule_fired' in out and 'value: YES' in out
 
-                lib.delayAssert(lambda: assert_metadata_exists)
+                    lib.delayAssert(lambda: assert_metadata_exists)
 
-        # Restore the server's configuration settings.
-        IrodsController().reload_configuration()
+        finally:
+            IrodsController(config).reload_configuration()
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for PREP and Topology Testing')
     def test_session_variables_can_be_used_in_delay_rules_indirectly(self):
         config = IrodsConfig()
 
-        with lib.file_backed_up(config.server_config_path):
-            # Lower the delay server's sleep time so that rules are executed quicker.
-            config.server_config['advanced_settings']['delay_server_sleep_time_in_seconds'] = 1
-            lib.update_json_file_from_dict(config.server_config_path, config.server_config)
-            IrodsController().reload_configuration()
+        try:
+            with lib.file_backed_up(config.server_config_path):
+                # Lower the delay server's sleep time so that rules are executed quicker.
+                config.server_config['advanced_settings']['delay_server_sleep_time_in_seconds'] = 1
+                lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+                IrodsController(config).reload_configuration()
 
-            core_re_path = os.path.join(config.core_re_directory, 'core.re')
+                core_re_path = os.path.join(config.core_re_directory, 'core.re')
 
-            with lib.file_backed_up(core_re_path):
-                # Add static PEP and indirect delay rule to the core.re file.
-                with open(core_re_path, 'a') as core_re:
-                    core_re.write('''
-                        schedule_delay_rule(*object_path)
-                        {
-                            delay('<INST_NAME>irods_rule_engine_plugin-irods_rule_language-instance</INST_NAME>') {
-                                *kvp.'delay_rule_fired' = 'YES';
-                                msiSetKeyValuePairsToObj(*kvp, *object_path, "-d");
+                with lib.file_backed_up(core_re_path):
+                    # Add static PEP and indirect delay rule to the core.re file.
+                    with open(core_re_path, 'a') as core_re:
+                        core_re.write('''
+                            schedule_delay_rule(*object_path)
+                            {
+                                delay('<INST_NAME>irods_rule_engine_plugin-irods_rule_language-instance</INST_NAME>') {
+                                    *kvp.'delay_rule_fired' = 'YES';
+                                    msiSetKeyValuePairsToObj(*kvp, *object_path, "-d");
+                                }
                             }
-                        }
 
-                        acPostProcForPut
-                        {
-                            schedule_delay_rule($objPath);
-                        }
-                    ''')
+                            acPostProcForPut
+                            {
+                                schedule_delay_rule($objPath);
+                            }
+                        ''')
+                    IrodsController(config).reload_configuration()
 
-                filename = os.path.join(self.admin.local_session_dir, 'delay_indirectly.txt')
-                lib.make_file(filename, 1, 'arbitrary')
+                    filename = os.path.join(self.admin.local_session_dir, 'delay_indirectly.txt')
+                    lib.make_file(filename, 1, 'arbitrary')
 
-                # Trigger the static PEP and verify that the metadata was added.
-                self.admin.assert_icommand(['iput', filename])
+                    # Trigger the static PEP and verify that the metadata was added.
+                    self.admin.assert_icommand(['iput', filename])
 
-                def assert_metadata_exists():
-                    out, _, ec = self.admin.run_icommand(['imeta', 'ls', '-d', os.path.basename(filename)])
-                    return ec == 0 and 'attribute: delay_rule_fired' in out and 'value: YES' in out
+                    def assert_metadata_exists():
+                        out, _, ec = self.admin.run_icommand(['imeta', 'ls', '-d', os.path.basename(filename)])
+                        return ec == 0 and 'attribute: delay_rule_fired' in out and 'value: YES' in out
 
-                lib.delayAssert(lambda: assert_metadata_exists)
+                    lib.delayAssert(lambda: assert_metadata_exists)
 
-        # Restore the server's configuration settings.
-        IrodsController().reload_configuration()
+        finally:
+            IrodsController(config).reload_configuration()
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for PREP and Topology Testing')
     def test_delay_rule_priority_level_defaults_to_5_when_no_priority_level_is_specified__issue_2759(self):

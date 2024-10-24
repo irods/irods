@@ -486,7 +486,7 @@ class test_iphymv_exit_codes(session.make_sessions_mixin([('otherrods', 'rods')]
             self.assertEqual(2, rc)
 
         finally:
-            IrodsController().start()
+            IrodsController().start(test_mode=True)
 
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Delete on resolution of #5690')
     def test_exit_code_for_authentication_failure(self):

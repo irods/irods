@@ -49,13 +49,13 @@ def append_native_re_to_server_config (with_backup=False):
                 "shared_memory_instance": "irods_rule_language_rule_engine"
             }]
         irods_config.commit(irods_config.server_config, irods_config.server_config_path, make_backup=with_backup)
-        IrodsController().start()
+        IrodsController().start(test_mode=True)
         yield
     finally:
         IrodsController().stop()
         irods_config.server_config['plugin_configuration']['rule_engines'] = orig
         irods_config.commit(irods_config.server_config, irods_config.server_config_path, make_backup=with_backup)
-        IrodsController().start()
+        IrodsController().start(test_mode=True)
 
 
 class Test_Python_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestCase):

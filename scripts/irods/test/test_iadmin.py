@@ -1174,41 +1174,45 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
     def test_hosts_config(self):
         config = IrodsConfig()
 
-        with lib.file_backed_up(config.server_config_path):
-            config.server_config['host_resolution'] = {
-                'host_entries': [
-                    {
-                        'address_type': 'local',
-                        'addresses': [
-                            socket.gethostname(),
-                            'jimbo',
-                            'larry'
-                        ]
-                    }
-                ]
-            }
-            lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+        try:
+            with lib.file_backed_up(config.server_config_path):
+                config.server_config['host_resolution'] = {
+                    'host_entries': [
+                        {
+                            'address_type': 'local',
+                            'addresses': [
+                                socket.gethostname(),
+                                'jimbo',
+                                'larry'
+                            ]
+                        }
+                    ]
+                }
+                lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+                IrodsController().reload_configuration()
 
-            try:
-                hostuser = getpass.getuser()
-                temp_file = 'file_to_test_hosts_config'
-                lib.make_file(temp_file, 10)
-                self.admin.assert_icommand("iadmin mkresc jimboResc unixfilesystem jimbo:/tmp/%s/jimboResc" %
-                                           hostuser, 'STDOUT_SINGLELINE', "jimbo")
-                self.admin.assert_icommand("iput -R jimboResc " + temp_file + " jimbofile")
-                self.admin.assert_icommand("irm -f jimbofile")
+                try:
+                    hostuser = getpass.getuser()
+                    temp_file = 'file_to_test_hosts_config'
+                    lib.make_file(temp_file, 10)
+                    self.admin.assert_icommand("iadmin mkresc jimboResc unixfilesystem jimbo:/tmp/%s/jimboResc" %
+                                               hostuser, 'STDOUT_SINGLELINE', "jimbo")
+                    self.admin.assert_icommand("iput -R jimboResc " + temp_file + " jimbofile")
+                    self.admin.assert_icommand("irm -f jimbofile")
 
-                big_file = 'big_file_to_test_hosts_config'
-                lib.make_file(big_file, 35000000)
-                self.admin.assert_icommand("iadmin mkresc larryResc unixfilesystem larry:/tmp/%s/larryResc" %
-                                           hostuser, 'STDOUT_SINGLELINE', "larry")
-                self.admin.assert_icommand("iput -R larryResc " + big_file + " biglarryfile")
-                self.admin.assert_icommand("ils -L biglarryfile", 'STDOUT_SINGLELINE', 'biglarryfile')
-                self.admin.assert_icommand("irm -f biglarryfile")
+                    big_file = 'big_file_to_test_hosts_config'
+                    lib.make_file(big_file, 35000000)
+                    self.admin.assert_icommand("iadmin mkresc larryResc unixfilesystem larry:/tmp/%s/larryResc" %
+                                               hostuser, 'STDOUT_SINGLELINE', "larry")
+                    self.admin.assert_icommand("iput -R larryResc " + big_file + " biglarryfile")
+                    self.admin.assert_icommand("ils -L biglarryfile", 'STDOUT_SINGLELINE', 'biglarryfile')
+                    self.admin.assert_icommand("irm -f biglarryfile")
 
-            finally:
-                self.admin.assert_icommand("iadmin rmresc jimboResc")
-                self.admin.assert_icommand("iadmin rmresc larryResc")
+                finally:
+                    self.admin.run_icommand("iadmin rmresc jimboResc")
+                    self.admin.run_icommand("iadmin rmresc larryResc")
+        finally:
+            IrodsController().reload_configuration()
 
     @unittest.skip('this test frequently fails to properly restart the server - delete this line on resolution of #6404')
     def test_host_access_control(self):
@@ -1226,33 +1230,38 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
         my_ip = socket.gethostbyname(socket.gethostname())
 
-        with temporary_core_file() as core:
-            core.add_rule(pep_map[self.plugin_name])
+        try:
+            with temporary_core_file() as core:
+                core.add_rule(pep_map[self.plugin_name])
+                IrodsController().reload_configuration()
 
-            # restart the server to reread the new core.re
-            IrodsController().restart(test_mode=True)
+                # restart the server to reread the new core.re
+                IrodsController().restart(test_mode=True)
 
-            config = IrodsConfig()
+                config = IrodsConfig()
 
-            def update_host_access_control_options(username, group, address, mask):
-                config.server_config['host_access_control'] = {
-                    'access_entries': [
-                        {
-                            'user': username,
-                            'group': group,
-                            'address': address,
-                            'mask': mask
-                        }
-                    ]
-                }
-                lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+                def update_host_access_control_options(username, group, address, mask):
+                    config.server_config['host_access_control'] = {
+                        'access_entries': [
+                            {
+                                'user': username,
+                                'group': group,
+                                'address': address,
+                                'mask': mask
+                            }
+                        ]
+                    }
+                    lib.update_json_file_from_dict(config.server_config_path, config.server_config)
 
-            with lib.file_backed_up(config.server_config_path):
-                update_host_access_control_options('nope', 'nope', '', '')
-                self.admin.assert_icommand("ils", 'STDERR_SINGLELINE', "SYS_AGENT_INIT_ERR")
+                with lib.file_backed_up(config.server_config_path):
+                    update_host_access_control_options('nope', 'nope', '', '')
+                    self.admin.assert_icommand("ils", 'STDERR_SINGLELINE', "SYS_AGENT_INIT_ERR")
 
-                update_host_access_control_options('all', 'all', my_ip, '255.255.255.255')
-                self.admin.assert_icommand("ils", 'STDOUT_SINGLELINE', self.admin.zone_name)
+                    update_host_access_control_options('all', 'all', my_ip, '255.255.255.255')
+                    self.admin.assert_icommand("ils", 'STDOUT_SINGLELINE', self.admin.zone_name)
+
+        finally:
+            IrodsController().reload_configuration()
 
     def test_issue_2420(self):
         pep_map = {
@@ -1269,20 +1278,22 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             ''')
         }
 
-        with temporary_core_file() as core:
-            core.add_rule(pep_map[self.plugin_name])
+        try:
+            with temporary_core_file() as core:
+                core.add_rule(pep_map[self.plugin_name])
+                IrodsController().reload_configuration()
 
-            # restart the server to reread the new core.re
-            IrodsController().restart()
+                self.admin.assert_icommand("ils", 'STDOUT_SINGLELINE', self.admin.zone_name)
 
-            self.admin.assert_icommand("ils", 'STDOUT_SINGLELINE', self.admin.zone_name)
+                # look for the error "unable to read session variable $userNameClient."
+                out, _, _ = lib.execute_command_permissive(
+                    ['grep', 'unable to read session variable $userNameClient.', IrodsConfig().server_log_path])
 
-            # look for the error "unable to read session variable $userNameClient."
-            out, _, _ = lib.execute_command_permissive(
-                ['grep', 'unable to read session variable $userNameClient.', IrodsConfig().server_log_path])
+            # check the results for the error
+            assert(-1 == out.find("userNameClient"))
 
-        # check the results for the error
-        assert(-1 == out.find("userNameClient"))
+        finally:
+            IrodsController().reload_configuration()
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'python does not yet support msiGetStdoutInExecCmdOut - RTS')
     def test_server_config_environment_variables(self):
@@ -1295,7 +1306,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             irods_config.commit(server_config, irods_config.server_config_path)
 
             # bounce the server to get the new env variable
-            IrodsController().restart()
+            IrodsController().restart(test_mode=True)
 
             # look for the error "unable to read session variable $userNameClient."
             cmd_directory = os.path.join(irods_config.irods_directory, 'msiExecCmd_bin')
@@ -1307,7 +1318,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
                     'writeLine("stdout", "*out")\' null ruleExecOut'.format(os.path.basename(env_script.name)),
                 'STDOUT_SINGLELINE', the_value)
             os.unlink(env_script.name)
-        IrodsController().restart()
+        IrodsController().restart(test_mode=True)
 
     def test_set_resource_comment_to_emptystring_ticket_2434(self):
         mycomment = "notemptystring"
@@ -1349,17 +1360,23 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
         hostname = lib.get_hostname()
         testresc1 = 'TestResc'
-        with temporary_core_file() as core:
-            core.add_rule(pep_map[self.plugin_name])
 
-            trigger_file = 'file_to_trigger_acSetRescSchemeForCreate'
-            lib.make_file(trigger_file, 10)
-            initial_size_of_server_log = lib.get_file_size_by_path(IrodsConfig().server_log_path)
-            self.user0.assert_icommand(['iput', trigger_file])
-            self.user0.assert_icommand(['ils', '-L', trigger_file], 'STDOUT_SINGLELINE', testresc1)
+        try:
+            with temporary_core_file() as core:
+                core.add_rule(pep_map[self.plugin_name])
+                IrodsController().reload_configuration()
 
-            os.unlink(trigger_file)
-            self.user0.assert_icommand('irm -f ' + trigger_file)
+                trigger_file = 'file_to_trigger_acSetRescSchemeForCreate'
+                lib.make_file(trigger_file, 10)
+                initial_size_of_server_log = lib.get_file_size_by_path(IrodsConfig().server_log_path)
+                self.user0.assert_icommand(['iput', trigger_file])
+                self.user0.assert_icommand(['ils', '-L', trigger_file], 'STDOUT_SINGLELINE', testresc1)
+
+                os.unlink(trigger_file)
+                self.user0.assert_icommand('irm -f ' + trigger_file)
+
+        finally:
+            IrodsController().reload_configuration()
 
     def test_storageadmin_role(self):
         self.admin.assert_icommand("iadmin mkuser nopes storageadmin", 'STDERR_SINGLELINE', "CAT_INVALID_USER_TYPE")
@@ -1373,45 +1390,46 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
     def test_impostor_resource_debug_logging(self):
         irods_config = IrodsConfig()
         server_config_filename = irods_config.server_config_path
-        with lib.file_backed_up(server_config_filename):
-            server_config_update = {
-                'environment_variables': {
-                    'spLogLevel': '11'
-                },
-                'log_level': {
-                    'agent': 'info',
-                    'agent_factory': 'info',
-                    'api': 'info',
-                    'authentication': 'info',
-                    'database': 'info',
-                    'delay_server': 'info',
-                    'legacy': 'trace',
-                    'microservice': 'info',
-                    'network': 'info',
-                    'resource': 'info',
-                    'rule_engine': 'info',
-                    'server': 'info'
+
+        try:
+            with lib.file_backed_up(server_config_filename):
+                server_config_update = {
+                    'log_level': {
+                        'agent': 'info',
+                        'agent_factory': 'info',
+                        'api': 'info',
+                        'authentication': 'info',
+                        'database': 'info',
+                        'delay_server': 'info',
+                        'legacy': 'info',
+                        'microservice': 'info',
+                        'network': 'info',
+                        'resource': 'debug',
+                        'rule_engine': 'info',
+                        'server': 'info'
+                    }
                 }
-            }
-            lib.update_json_file_from_dict(server_config_filename, server_config_update)
-            IrodsController().restart()
+                lib.update_json_file_from_dict(server_config_filename, server_config_update)
+                IrodsController().reload_configuration()
 
-            name_of_bogus_resource = 'name_of_bogus_resource'
-            name_of_missing_plugin = 'name_of_missing_plugin'
-            self.admin.assert_icommand(['iadmin', 'mkresc', name_of_bogus_resource, name_of_missing_plugin], 'STDOUT_SINGLELINE', name_of_missing_plugin)
+                name_of_bogus_resource = 'name_of_bogus_resource'
+                name_of_missing_plugin = 'name_of_missing_plugin'
+                self.admin.assert_icommand(['iadmin', 'mkresc', name_of_bogus_resource, name_of_missing_plugin], 'STDOUT_SINGLELINE', name_of_missing_plugin)
 
-            initial_size_of_server_log = lib.get_file_size_by_path(irods_config.server_log_path)
-            self.admin.assert_icommand(['ils'], 'STDOUT_SINGLELINE', self.admin.zone_name) # creates an agent, which instantiates the resource hierarchy
+                initial_size_of_server_log = lib.get_file_size_by_path(irods_config.server_log_path)
+                self.admin.assert_icommand(['ils'], 'STDOUT_SINGLELINE', self.admin.zone_name) # creates an agent, which instantiates the resource hierarchy
 
-            debug_message = 'loading impostor resource for [{0}] of type [{1}] with context [] and load_plugin message'.format(name_of_bogus_resource, name_of_missing_plugin)
-            lib.delayAssert(
-                lambda: lib.log_message_occurrences_equals_count(
-                    msg=debug_message,
-                    server_log_path=irods_config.server_log_path,
-                    start_index=initial_size_of_server_log))
+                debug_message = 'loading impostor resource for [{0}] of type [{1}] with context [] and load_plugin message'.format(name_of_bogus_resource, name_of_missing_plugin)
+                lib.delayAssert(
+                    lambda: lib.log_message_occurrences_greater_than_count(
+                        msg=debug_message,
+                        count=0,
+                        server_log_path=irods_config.server_log_path,
+                        start_index=initial_size_of_server_log))
 
-        self.admin.assert_icommand(['iadmin', 'rmresc', name_of_bogus_resource])
-        IrodsController().restart()
+        finally:
+            self.admin.run_icommand(['iadmin', 'rmresc', name_of_bogus_resource])
+            IrodsController().reload_configuration()
 
     @unittest.skipIf(True, "Activate once fixed issue#3387")
     def test_dlopen_failure_error_message(self):

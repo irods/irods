@@ -20,6 +20,7 @@ from .. import lib
 from .. import test
 from .. import paths
 from ..configuration import IrodsConfig
+from ..controller import IrodsController
 
 class Test_Ichksum(resource_suite.ResourceBase, unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
@@ -88,33 +89,38 @@ class Test_Ichksum(resource_suite.ResourceBase, unittest.TestCase):
         chksum = lib.file_digest(filename, 'sha256', encoding='base64')
         self.admin.assert_icommand(['iput', filename])
 
-        with lib.file_backed_up(config.server_config_path):
-            # Create a new rule file that contains a pep with the wrong signature.
-            # This particular pep is required in order to show that a more appropriate
-            # error code/status is returned instead of [SYS_INTERNAL_ERR].
-            rule_filename = 'issue_3485_rule.re'
-            rule_filename_path = os.path.join(paths.core_re_directory(), rule_filename)
-            with open(rule_filename_path, 'w') as f:
-                f.write("pep_database_mod_data_obj_meta_pre() {}\n")
+        try:
+            with lib.file_backed_up(config.server_config_path):
+                # Create a new rule file that contains a pep with the wrong signature.
+                # This particular pep is required in order to show that a more appropriate
+                # error code/status is returned instead of [SYS_INTERNAL_ERR].
+                rule_filename = 'issue_3485_rule.re'
+                rule_filename_path = os.path.join(paths.core_re_directory(), rule_filename)
+                with open(rule_filename_path, 'w') as f:
+                    f.write("pep_database_mod_data_obj_meta_pre() {}\n")
 
-            # Add the newly created rule file to the rule engine rulebase.
-            rule_engine = config.server_config['plugin_configuration']['rule_engines'][0]
-            rule_engine['plugin_specific_configuration']['re_rulebase_set'][0] = rule_filename[:-3]
-            lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+                # Add the newly created rule file to the rule engine rulebase.
+                rule_engine = config.server_config['plugin_configuration']['rule_engines'][0]
+                rule_engine['plugin_specific_configuration']['re_rulebase_set'][0] = rule_filename[:-3]
+                lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+                IrodsController(config).reload_configuration()
 
-            self.admin.assert_icommand(['ichksum', filename], 'STDERR', 'status = -1097000 NO_RULE_OR_MSI_FUNCTION_FOUND_ERR')
+                self.admin.assert_icommand(['ichksum', filename], 'STDERR', 'status = -1097000 NO_RULE_OR_MSI_FUNCTION_FOUND_ERR')
 
-            # Update the rule to the correct signature.
-            # Running ichksum after this change should work as expected and print
-            # the requested information.
-            with open(rule_filename_path, 'w') as f:
-                f.write("pep_database_mod_data_obj_meta_pre(*a, *b, *c, *d, *e) {}\n")
+                # Update the rule to the correct signature.
+                # Running ichksum after this change should work as expected and print
+                # the requested information.
+                with open(rule_filename_path, 'w') as f:
+                    f.write("pep_database_mod_data_obj_meta_pre(*a, *b, *c, *d, *e) {}\n")
+                IrodsController(config).reload_configuration()
 
-            self.admin.assert_icommand(['ichksum', filename], 'STDOUT', [filename, chksum])
+                self.admin.assert_icommand(['ichksum', filename], 'STDOUT', [filename, chksum])
 
-            os.remove(rule_filename_path)
+                os.remove(rule_filename_path)
 
-        self.admin.assert_icommand(['irm', '-f', filename])
+        finally:
+            IrodsController(config).reload_configuration()
+            self.admin.run_icommand(['irm', '-f', filename])
 
     def test_chksum_catalog_verify_not_exhausting_statements__issue_4732(self):
         Statement_Table_Size = 50

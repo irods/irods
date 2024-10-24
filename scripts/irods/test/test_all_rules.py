@@ -410,7 +410,7 @@ output ruleExecOut
             irods_config.server_config['plugin_configuration']['rule_engines'] = orig
             irods_config.commit(irods_config.server_config, irods_config.server_config_path, make_backup=True)
 
-            IrodsController().start()
+            IrodsController().start(test_mode=True)
 
     @unittest.skip('Delete this line upon resolving #3957')
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for python REP')
@@ -460,7 +460,7 @@ output ruleExecOut
             irods_config.server_config['plugin_configuration']['rule_engines'] = orig
             irods_config.commit(irods_config.server_config, irods_config.server_config_path, make_backup=True)
 
-            IrodsController().start()
+            IrodsController().start(test_mode=True)
 
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
@@ -982,22 +982,27 @@ OUTPUT ruleExecOut
         config = IrodsConfig()
         core_re_path = os.path.join(config.core_re_directory, 'core.re')
 
-        with lib.file_backed_up(core_re_path):
-            # Add PEPs to the core.re file.
-            with open(core_re_path, 'a') as core_re:
-                core_re.write('''
-                    pep_api_atomic_apply_metadata_operations_pre(*INSTANCE, *COMM, *JSON_INPUT, *JSON_OUTPUT) {{ 
-                        *kvp.'atomic_pre_fired' = 'YES';
-                        msiSetKeyValuePairsToObj(*kvp, '{0}', '-d');
-                    }}
+        try:
+            with lib.file_backed_up(core_re_path):
+                # Add PEPs to the core.re file.
+                with open(core_re_path, 'a') as core_re:
+                    core_re.write('''
+                        pep_api_atomic_apply_metadata_operations_pre(*INSTANCE, *COMM, *JSON_INPUT, *JSON_OUTPUT) {{ 
+                            *kvp.'atomic_pre_fired' = 'YES';
+                            msiSetKeyValuePairsToObj(*kvp, '{0}', '-d');
+                        }}
 
-                    pep_api_atomic_apply_metadata_operations_post(*INSTANCE, *COMM, *JSON_INPUT, *JSON_OUTPUT) {{ 
-                        *kvp.'atomic_post_fired' = 'YES';
-                        msiSetKeyValuePairsToObj(*kvp, '{0}', '-d');
-                    }}
-                '''.format(data_object))
+                        pep_api_atomic_apply_metadata_operations_post(*INSTANCE, *COMM, *JSON_INPUT, *JSON_OUTPUT) {{ 
+                            *kvp.'atomic_post_fired' = 'YES';
+                            msiSetKeyValuePairsToObj(*kvp, '{0}', '-d');
+                        }}
+                    '''.format(data_object))
+                IrodsController(config).reload_configuration()
 
-            do_test(data_object, 'data_object', 'add', ['atomic_pre_fired', 'atomic_post_fired'])
+                do_test(data_object, 'data_object', 'add', ['atomic_pre_fired', 'atomic_post_fired'])
+
+        finally:
+            IrodsController(config).reload_configuration()
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for PREP')
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "database_instance_name cannot be determined from catalog consumer")
@@ -1107,23 +1112,28 @@ OUTPUT ruleExecOut
         config = IrodsConfig()
         core_re_path = os.path.join(config.core_re_directory, 'core.re')
 
-        with lib.file_backed_up(core_re_path):
-            # Add PEPs to the core.re file.
-            with open(core_re_path, 'a') as core_re:
-                core_re.write('''
-                    pep_api_atomic_apply_acl_operations_pre(*INSTANCE, *COMM, *JSON_INPUT, *JSON_OUTPUT) {{ 
-                        *kvp.'atomic_pre_fired' = 'YES';
-                        msiSetKeyValuePairsToObj(*kvp, '{0}', '-d');
-                    }}
+        try:
+            with lib.file_backed_up(core_re_path):
+                # Add PEPs to the core.re file.
+                with open(core_re_path, 'a') as core_re:
+                    core_re.write('''
+                        pep_api_atomic_apply_acl_operations_pre(*INSTANCE, *COMM, *JSON_INPUT, *JSON_OUTPUT) {{ 
+                            *kvp.'atomic_pre_fired' = 'YES';
+                            msiSetKeyValuePairsToObj(*kvp, '{0}', '-d');
+                        }}
 
-                    pep_api_atomic_apply_acl_operations_post(*INSTANCE, *COMM, *JSON_INPUT, *JSON_OUTPUT) {{ 
-                        *kvp.'atomic_post_fired' = 'YES';
-                        msiSetKeyValuePairsToObj(*kvp, '{0}', '-d');
-                    }}
-                '''.format(data_object))
+                        pep_api_atomic_apply_acl_operations_post(*INSTANCE, *COMM, *JSON_INPUT, *JSON_OUTPUT) {{ 
+                            *kvp.'atomic_post_fired' = 'YES';
+                            msiSetKeyValuePairsToObj(*kvp, '{0}', '-d');
+                        }}
+                    '''.format(data_object))
+                IrodsController(config).reload_configuration()
 
-            do_test(data_object, 'own')
-            self.admin.assert_icommand(['imeta', 'ls', '-d', data_object], 'STDOUT', ['atomic_pre_fired', 'atomic_post_fired'])
+                do_test(data_object, 'own')
+                self.admin.assert_icommand(['imeta', 'ls', '-d', data_object], 'STDOUT', ['atomic_pre_fired', 'atomic_post_fired'])
+
+        finally:
+            IrodsController(config).reload_configuration()
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for PREP')
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "database_instance_name cannot be determined from catalog consumer")
@@ -1190,26 +1200,31 @@ OUTPUT ruleExecOut
         config = IrodsConfig()
         core_re_path = os.path.join(config.core_re_directory, 'core.re')
 
-        with lib.file_backed_up(core_re_path):
-            # Add PEPs to the core.re file.
-            with open(core_re_path, 'a') as core_re:
-                core_re.write('''
-                    pep_api_touch_pre(*INSTANCE, *COMM, *JSON_INPUT) {{ 
-                        *kvp.'touch_pre_fired' = 'YES';
-                        msiSetKeyValuePairsToObj(*kvp, '{0}', '-d');
-                    }}
+        try:
+            with lib.file_backed_up(core_re_path):
+                # Add PEPs to the core.re file.
+                with open(core_re_path, 'a') as core_re:
+                    core_re.write('''
+                        pep_api_touch_pre(*INSTANCE, *COMM, *JSON_INPUT) {{ 
+                            *kvp.'touch_pre_fired' = 'YES';
+                            msiSetKeyValuePairsToObj(*kvp, '{0}', '-d');
+                        }}
 
-                    pep_api_touch_post(*INSTANCE, *COMM, *JSON_INPUT) {{ 
-                        *kvp.'touch_post_fired' = 'YES';
-                        msiSetKeyValuePairsToObj(*kvp, '{0}', '-d');
-                    }}
-                '''.format(data_object))
+                        pep_api_touch_post(*INSTANCE, *COMM, *JSON_INPUT) {{ 
+                            *kvp.'touch_post_fired' = 'YES';
+                            msiSetKeyValuePairsToObj(*kvp, '{0}', '-d');
+                        }}
+                    '''.format(data_object))
+                IrodsController(config).reload_configuration()
 
-            # Trigger the PEPs.
-            self.admin.assert_icommand(['itouch', '-c', 'bar'])
+                # Trigger the PEPs.
+                self.admin.assert_icommand(['itouch', '-c', 'bar'])
 
-            # Show that even though no data object was created, the PEPs fired correctly.
-            self.admin.assert_icommand(['imeta', 'ls', '-d', data_object], 'STDOUT', ['touch_pre_fired', 'touch_post_fired'])
+                # Show that even though no data object was created, the PEPs fired correctly.
+                self.admin.assert_icommand(['imeta', 'ls', '-d', data_object], 'STDOUT', ['touch_pre_fired', 'touch_post_fired'])
+
+        finally:
+            IrodsController(config).reload_configuration()
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for PREP and Topology Testing')
@@ -1272,7 +1287,7 @@ OUTPUT ruleExecOut
 
                     # Restart the server. This is done so that the delay server does not fill
                     # the log with errors due having incorrect zone information.
-                    IrodsController().restart()
+                    IrodsController().restart(test_mode=True)
 
                     # Update the rods session with the new zone information so that icommands succeed.
                     with open(config.client_environment_path, 'r') as f:
@@ -1293,7 +1308,7 @@ OUTPUT ruleExecOut
         finally:
             # Restart the server. This is done so that the delay server does not fill
             # the log file with errors due having incorrect zone information.
-            IrodsController().restart()
+            IrodsController().restart(test_mode=True)
 
             # Update the rods session with the original zone information so that icommands succeed.
             with open(config.client_environment_path, 'r') as f:
@@ -1416,49 +1431,52 @@ OUTPUT ruleExecOut
         contents = 'please let this be a normal field trip'
 
         config = IrodsConfig()
-        with lib.file_backed_up(config.server_config_path):
-            core_re_path = os.path.join(config.core_re_directory, 'core.re')
+        try:
+            with lib.file_backed_up(config.server_config_path):
+                core_re_path = os.path.join(config.core_re_directory, 'core.re')
 
-            with lib.file_backed_up(core_re_path):
-                # Inject a PEP to perform a checksum on the data object after replication.
-                with open(core_re_path, 'a') as core_re:
-                    core_re.write(pep_map[plugin_name])
+                with lib.file_backed_up(core_re_path):
+                    # Inject a PEP to perform a checksum on the data object after replication.
+                    with open(core_re_path, 'a') as core_re:
+                        core_re.write(pep_map[plugin_name])
+                    IrodsController(config).reload_configuration()
 
-                try:
-                    # Create a resource to which we can replicate to trigger the policy.
-                    lib.create_ufs_resource(self.admin, resource, hostname=test.settings.HOSTNAME_2)
+                    try:
+                        # Create a resource to which we can replicate to trigger the policy.
+                        lib.create_ufs_resource(self.admin, resource, hostname=test.settings.HOSTNAME_2)
 
-                    # Create a data object which can be replicated.
-                    self.user0.assert_icommand(['istream', 'write', logical_path], input=contents)
+                        # Create a data object which can be replicated.
+                        self.user0.assert_icommand(['istream', 'write', logical_path], input=contents)
 
-                    # Replicate as the rodsuser and confirm that an error occurs due to the presence of the irodsAdmin
-                    # flag. The replication still created a new replica, so be sure to trim it before trying it again
-                    # as the rodsadmin.
-                    self.user0.assert_icommand(
-                        ['irepl', '-R', resource, logical_path], 'STDERR', 'CAT_INSUFFICIENT_PRIVILEGE_LEVEL')
-                    destination_checksum = lib.get_replica_checksum(self.user0, os.path.basename(logical_path), 1)
-                    source_checksum = lib.get_replica_checksum(self.user0, os.path.basename(logical_path), 0)
-                    self.assertEqual(0, len(destination_checksum))
-                    self.assertEqual(0, len(source_checksum))
-                    self.user0.assert_icommand(
-                        ['itrim', '-N1', '-S', resource, logical_path], 'STDOUT', 'Number of files trimmed = 1.')
+                        # Replicate as the rodsuser and confirm that an error occurs due to the presence of the irodsAdmin
+                        # flag. The replication still created a new replica, so be sure to trim it before trying it again
+                        # as the rodsadmin.
+                        self.user0.assert_icommand(
+                            ['irepl', '-R', resource, logical_path], 'STDERR', 'CAT_INSUFFICIENT_PRIVILEGE_LEVEL')
+                        destination_checksum = lib.get_replica_checksum(self.user0, os.path.basename(logical_path), 1)
+                        source_checksum = lib.get_replica_checksum(self.user0, os.path.basename(logical_path), 0)
+                        self.assertEqual(0, len(destination_checksum))
+                        self.assertEqual(0, len(source_checksum))
+                        self.user0.assert_icommand(
+                            ['itrim', '-N1', '-S', resource, logical_path], 'STDOUT', 'Number of files trimmed = 1.')
 
-                    # Replicate the data object and ensure that a checksum was calculated.
-                    self.admin.assert_icommand(['irepl', '-M', '-R', resource, logical_path])
-                    destination_checksum = lib.get_replica_checksum(self.user0, os.path.basename(logical_path), 1)
-                    source_checksum = lib.get_replica_checksum(self.user0, os.path.basename(logical_path), 0)
-                    self.assertNotEqual(0, len(destination_checksum))
-                    self.assertNotEqual(0, len(source_checksum))
+                        # Replicate the data object and ensure that a checksum was calculated.
+                        self.admin.assert_icommand(['irepl', '-M', '-R', resource, logical_path])
+                        destination_checksum = lib.get_replica_checksum(self.user0, os.path.basename(logical_path), 1)
+                        source_checksum = lib.get_replica_checksum(self.user0, os.path.basename(logical_path), 0)
+                        self.assertNotEqual(0, len(destination_checksum))
+                        self.assertNotEqual(0, len(source_checksum))
 
-                    # Ensure that the checksum for the source and the destination are equal.
-                    self.assertEqual(source_checksum, destination_checksum)
+                        # Ensure that the checksum for the source and the destination are equal.
+                        self.assertEqual(source_checksum, destination_checksum)
 
-                finally:
-                    self.user0.assert_icommand(['ils', '-AL', os.path.dirname(logical_path)], 'STDOUT') # debugging
+                    finally:
+                        self.user0.assert_icommand(['ils', '-AL', os.path.dirname(logical_path)], 'STDOUT') # debugging
+                        self.user0.run_icommand(['irm', '-f', logical_path])
+                        lib.remove_resource(self.admin, resource)
 
-                    self.user0.run_icommand(['irm', '-f', logical_path])
-
-                    lib.remove_resource(self.admin, resource)
+        finally:
+            IrodsController(config).reload_configuration()
 
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'Only implemented for NREP.')
@@ -1797,39 +1815,45 @@ OUTPUT ruleExecOut
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-python', "Requires the PREP.")
     def test_msiDataObjChksum_does_not_lead_to_segfault_on_good_verification_result__issue_7859(self):
-        with temporary_core_file() as core:
-            attr_name = 'issue_7859'
-            attr_value = 'issue_7859 is working'
+        try:
+            with temporary_core_file() as core:
+                attr_name = 'issue_7859'
+                attr_value = 'issue_7859 is working'
 
-            # Add a rule that attempts to verify the checksum using msiDataObjChksum.
-            # If verification finds no issues, the checksum output variable will hold an empty string.
-            # The check for the empty string and attachment of metadata give the test a way to determine
-            # the outcome of the rule.
-            core.add_rule(textwrap.dedent(f'''
-            def pep_api_data_obj_trim_pre(rule_args, callback, rei):
-                logical_path = str(rule_args[2].objPath)
-                result = callback.msiDataObjChksum(logical_path, 'verifyChksum=', '')
-                if result['arguments'][2] == '':
-                    callback.msiModAVUMetadata('-d', logical_path, 'set', '{attr_name}', '{attr_value}', '')
-            '''))
+                # Add a rule that attempts to verify the checksum using msiDataObjChksum.
+                # If verification finds no issues, the checksum output variable will hold an empty string.
+                # The check for the empty string and attachment of metadata give the test a way to determine
+                # the outcome of the rule.
+                core.add_rule(textwrap.dedent(f'''
+                def pep_api_data_obj_trim_pre(rule_args, callback, rei):
+                    logical_path = str(rule_args[2].objPath)
+                    result = callback.msiDataObjChksum(logical_path, 'verifyChksum=', '')
+                    if result['arguments'][2] == '':
+                        callback.msiModAVUMetadata('-d', logical_path, 'set', '{attr_name}', '{attr_value}', '')
+                '''))
 
-            # Create a new data object.
-            data_object = 'issue_7859_data_object'
-            self.user0.assert_icommand(['itouch', data_object])
+                IrodsController().reload_configuration()
 
-            # Calculate a checksum so the rule has information it can use for verification.
-            # Without this, the rule will fail.
-            self.user0.assert_icommand(['ichksum', data_object], 'STDOUT', ['sha2:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU='])
+                # Create a new data object.
+                data_object = 'issue_7859_data_object'
+                self.user0.assert_icommand(['itouch', data_object])
 
-            # Trigger the PEP.
-            # Before the fix, this would result in an error.
-            self.user0.assert_icommand(['itrim', data_object], 'STDOUT', ['Number of files trimmed = 0.'])
+                # Calculate a checksum so the rule has information it can use for verification.
+                # Without this, the rule will fail.
+                self.user0.assert_icommand(['ichksum', data_object], 'STDOUT', ['sha2:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU='])
 
-            # Show the checksum verification was successful.
-            self.user0.assert_icommand(
-                ['iquest', f"select DATA_NAME where META_DATA_ATTR_NAME = '{attr_name}' and META_DATA_ATTR_VALUE = '{attr_value}'"],
-                'STDOUT',
-                [f'DATA_NAME = {data_object}\n'])
+                # Trigger the PEP.
+                # Before the fix, this would result in an error.
+                self.user0.assert_icommand(['itrim', data_object], 'STDOUT', ['Number of files trimmed = 0.'])
+
+                # Show the checksum verification was successful.
+                self.user0.assert_icommand(
+                    ['iquest', f"select DATA_NAME where META_DATA_ATTR_NAME = '{attr_name}' and META_DATA_ATTR_VALUE = '{attr_value}'"],
+                    'STDOUT',
+                    [f'DATA_NAME = {data_object}\n'])
+
+        finally:
+            IrodsController().reload_configuration()
 
 class Test_msiDataObjRepl_checksum_keywords(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
     global plugin_name

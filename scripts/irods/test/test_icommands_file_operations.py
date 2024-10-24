@@ -73,7 +73,7 @@ class Test_ICommands_File_Operations_1(resource_suite.ResourceBase, shared_funct
             initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
             with temporary_core_file() as core:
                 core.add_rule(pep_map[self.plugin_name])
-                IrodsController().start()
+                IrodsController().start(test_mode=True)
                 with tempfile.NamedTemporaryFile(prefix='test_re_serialization__prep_13') as f:
                     lib.make_file(f.name, 80, contents='arbitrary')
                     self.admin.assert_icommand(['iput', f.name])
@@ -102,7 +102,7 @@ class Test_ICommands_File_Operations_1(resource_suite.ResourceBase, shared_funct
             initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
             with temporary_core_file() as core:
                 core.add_rule(pep_map[self.plugin_name])
-                IrodsController().start()
+                IrodsController().start(test_mode=True)
                 with tempfile.NamedTemporaryFile(prefix='test_re_serialization__prep_55') as f:
                     lib.make_file(f.name, 80, contents='arbitrary')
                     self.admin.assert_icommand(['iput', f.name])
@@ -253,7 +253,7 @@ class Test_ICommands_File_Operations_1(resource_suite.ResourceBase, shared_funct
                         start_index=initial_size_of_server_log))
 
         finally:
-            IrodsController().restart()
+            IrodsController().restart(test_mode=True)
 
 @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
 class Test_ICommands_File_Operations_2(resource_suite.ResourceBase, shared_functions, unittest.TestCase):
@@ -613,17 +613,23 @@ class Test_ICommands_File_Operations_3(resource_suite.ResourceBase, unittest.Tes
                     callback.delayExec('<PLUSET>1s</PLUSET>', 'callback.writeLine("serverLog", "dynamic pep in delay")', '')
             ''')
         }
-        with temporary_core_file() as core:
-            core.add_rule(pep_map[self.plugin_name])
 
-            initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
-            with tempfile.NamedTemporaryFile(prefix='test_delay_in_dynamic_pep__3342') as f:
-                lib.make_file(f.name, 80, contents='arbitrary')
-                self.admin.assert_icommand(['iput', '-f', f.name])
-            lib.delayAssert(
-                lambda: lib.log_message_occurrences_equals_count(
-                    msg='writeLine: inString = dynamic pep in delay',
-                    start_index=initial_size_of_server_log))
+        try:
+            with temporary_core_file() as core:
+                core.add_rule(pep_map[self.plugin_name])
+                IrodsController().reload_configuration()
+
+                initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
+                with tempfile.NamedTemporaryFile(prefix='test_delay_in_dynamic_pep__3342') as f:
+                    lib.make_file(f.name, 80, contents='arbitrary')
+                    self.admin.assert_icommand(['iput', '-f', f.name])
+                lib.delayAssert(
+                    lambda: lib.log_message_occurrences_equals_count(
+                        msg='writeLine: inString = dynamic pep in delay',
+                        start_index=initial_size_of_server_log))
+
+        finally:
+            IrodsController().reload_configuration()
 
     def test_iput_bulk_check_acpostprocforput__2841(self):
         pep_map = {
@@ -644,26 +650,33 @@ class Test_ICommands_File_Operations_3(resource_suite.ResourceBase, unittest.Tes
                     callback.writeLine('serverLog', 'acPostProcForPut called for ' + obj_path)
             ''')
         }
+
         # prepare test directory
         number_of_files = 5
         dirname = self.admin.local_session_dir + '/files'
         collection = os.path.join(self.admin.session_collection, 'files')
-        # files less than 4200000 were failing to trigger the writeLine
-        for filesize in range(5000, 6000000, 500000):
-            lib.make_large_local_tmp_dir(dirname, number_of_files, filesize)
-            # manipulate core.re and check the server log
-            with temporary_core_file() as core:
-                core.add_rule(pep_map[self.plugin_name])
 
-                initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
-                self.admin.assert_icommand(['iput', '-rb', dirname])
-                lib.delayAssert(
-                    lambda: lib.log_message_occurrences_equals_count(
-                        msg='writeLine: inString = acPostProcForPut called for',
-                        count=number_of_files,
-                        start_index=initial_size_of_server_log))
-                shutil.rmtree(dirname)
-            self.admin.assert_icommand(['irm', '-rf', collection])
+        try:
+            # files less than 4200000 were failing to trigger the writeLine
+            for filesize in range(5000, 6000000, 500000):
+                lib.make_large_local_tmp_dir(dirname, number_of_files, filesize)
+                # manipulate core.re and check the server log
+                with temporary_core_file() as core:
+                    core.add_rule(pep_map[self.plugin_name])
+                    IrodsController().reload_configuration()
+
+                    initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
+                    self.admin.assert_icommand(['iput', '-rb', dirname])
+                    lib.delayAssert(
+                        lambda: lib.log_message_occurrences_equals_count(
+                            msg='writeLine: inString = acPostProcForPut called for',
+                            count=number_of_files,
+                            start_index=initial_size_of_server_log))
+                    shutil.rmtree(dirname)
+                self.admin.assert_icommand(['irm', '-rf', collection])
+
+        finally:
+            IrodsController().reload_configuration()
 
     def test_large_irods_maximum_size_for_single_buffer_in_megabytes_2880(self):
         self.admin.environment_file_contents['irods_maximum_size_for_single_buffer_in_megabytes'] = 2000
@@ -679,7 +692,7 @@ class Test_ICommands_File_Operations_3(resource_suite.ResourceBase, unittest.Tes
             try:
                 yield
             finally:
-                control.start()
+                control.start(test_mode=True)
         with irods_server_stopped():
             self.admin.assert_icommand(['ils'], 'STDERR_SINGLELINE', 'Connection refused')
 
@@ -724,33 +737,38 @@ class Test_ICommands_File_Operations_4(resource_suite.ResourceBase, shared_funct
         filename = 'test_iput_resc_scheme_forced_test_file.txt'
         filepath = lib.create_local_testfile(filename)
 
-        # manipulate core.re and check the server log
-        with temporary_core_file() as core:
-            core.add_rule(pep_map[self.plugin_name])
+        try:
+            # manipulate core.re and check the server log
+            with temporary_core_file() as core:
+                core.add_rule(pep_map[self.plugin_name])
+                IrodsController().reload_configuration()
 
-            # test as rodsuser
-            self.user0.assert_icommand(['ils', '-l', filename], 'STDERR_SINGLELINE', 'does not exist')
+                # test as rodsuser
+                self.user0.assert_icommand(['ils', '-l', filename], 'STDERR_SINGLELINE', 'does not exist')
 
-            self.user0.assert_icommand(['iput', '-f', filepath])
-            self.user0.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
-            self.user0.assert_icommand(['irm', '-f', filename])
+                self.user0.assert_icommand(['iput', '-f', filepath])
+                self.user0.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
+                self.user0.assert_icommand(['irm', '-f', filename])
 
-            self.user0.assert_icommand(['iput', '-fR', self.testresc, filepath])
-            self.user0.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
-            self.user0.assert_icommand(['irm', '-f', filename])
+                self.user0.assert_icommand(['iput', '-fR', self.testresc, filepath])
+                self.user0.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
+                self.user0.assert_icommand(['irm', '-f', filename])
 
-            # test as rodsadmin
-            self.admin.assert_icommand(['ils', '-l', filename], 'STDERR_SINGLELINE', 'does not exist')
+                # test as rodsadmin
+                self.admin.assert_icommand(['ils', '-l', filename], 'STDERR_SINGLELINE', 'does not exist')
 
-            self.admin.assert_icommand(['iput', '-f', filepath])
-            self.admin.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
-            self.admin.assert_icommand(['irm', '-f', filename])
+                self.admin.assert_icommand(['iput', '-f', filepath])
+                self.admin.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
+                self.admin.assert_icommand(['irm', '-f', filename])
 
-            self.admin.assert_icommand(['iput', '-fR', self.testresc, filepath])
-            self.admin.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', self.testresc)
-            self.admin.assert_icommand(['irm', '-f', filename])
+                self.admin.assert_icommand(['iput', '-fR', self.testresc, filepath])
+                self.admin.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', self.testresc)
+                self.admin.assert_icommand(['irm', '-f', filename])
 
-            os.unlink(filepath)
+                os.unlink(filepath)
+
+        finally:
+            IrodsController().reload_configuration()
 
     def test_iput_resc_scheme_preferred(self):
         pep_map = {
@@ -767,32 +785,37 @@ class Test_ICommands_File_Operations_4(resource_suite.ResourceBase, shared_funct
         filename = 'test_iput_resc_scheme_preferred_test_file.txt'
         filepath = lib.create_local_testfile(filename)
 
-        with temporary_core_file() as core:
-            core.add_rule(pep_map[self.plugin_name])
+        try:
+            with temporary_core_file() as core:
+                core.add_rule(pep_map[self.plugin_name])
+                IrodsController().reload_configuration()
 
-            # test as rodsuser
-            self.user0.assert_icommand(['ils', '-l', filename], 'STDERR_SINGLELINE', 'does not exist')
+                # test as rodsuser
+                self.user0.assert_icommand(['ils', '-l', filename], 'STDERR_SINGLELINE', 'does not exist')
 
-            self.user0.assert_icommand(['iput', '-f', filepath])
-            self.user0.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
-            self.user0.assert_icommand(['irm', '-f', filename])
+                self.user0.assert_icommand(['iput', '-f', filepath])
+                self.user0.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
+                self.user0.assert_icommand(['irm', '-f', filename])
 
-            self.user0.assert_icommand(['iput', '-fR', self.testresc, filepath])
-            self.user0.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', self.testresc)
-            self.user0.assert_icommand(['irm', '-f', filename])
+                self.user0.assert_icommand(['iput', '-fR', self.testresc, filepath])
+                self.user0.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', self.testresc)
+                self.user0.assert_icommand(['irm', '-f', filename])
 
-            # test as rodsadmin
-            self.admin.assert_icommand(['ils', '-l', filename], 'STDERR_SINGLELINE', 'does not exist')
+                # test as rodsadmin
+                self.admin.assert_icommand(['ils', '-l', filename], 'STDERR_SINGLELINE', 'does not exist')
 
-            self.admin.assert_icommand(['iput', '-f', filepath])
-            self.admin.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
-            self.admin.assert_icommand(['irm', '-f', filename])
+                self.admin.assert_icommand(['iput', '-f', filepath])
+                self.admin.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
+                self.admin.assert_icommand(['irm', '-f', filename])
 
-            self.admin.assert_icommand(['iput', '-fR', self.testresc, filepath])
-            self.admin.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', self.testresc)
-            self.admin.assert_icommand(['irm', '-f', filename])
+                self.admin.assert_icommand(['iput', '-fR', self.testresc, filepath])
+                self.admin.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', self.testresc)
+                self.admin.assert_icommand(['irm', '-f', filename])
 
-            os.unlink(filepath)
+                os.unlink(filepath)
+
+        finally:
+            IrodsController().reload_configuration()
 
     def test_iput_resc_scheme_null(self):
         pep_map = {
@@ -809,32 +832,37 @@ class Test_ICommands_File_Operations_4(resource_suite.ResourceBase, shared_funct
         filename = 'test_iput_resc_scheme_null_test_file.txt'
         filepath = lib.create_local_testfile(filename)
 
-        with temporary_core_file() as core:
-            core.add_rule(pep_map[self.plugin_name])
+        try:
+            with temporary_core_file() as core:
+                core.add_rule(pep_map[self.plugin_name])
+                IrodsController().reload_configuration()
 
-            # test as rodsuser
-            self.user0.assert_icommand(['ils', '-l', filename], 'STDERR_SINGLELINE', 'does not exist')
+                # test as rodsuser
+                self.user0.assert_icommand(['ils', '-l', filename], 'STDERR_SINGLELINE', 'does not exist')
 
-            self.user0.assert_icommand(['iput', '-f', filepath])
-            self.user0.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
-            self.user0.assert_icommand(['irm', '-f', filename])
+                self.user0.assert_icommand(['iput', '-f', filepath])
+                self.user0.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
+                self.user0.assert_icommand(['irm', '-f', filename])
 
-            self.user0.assert_icommand(['iput', '-fR', self.testresc, filepath])
-            self.user0.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', self.testresc)
-            self.user0.assert_icommand(['irm', '-f', filename])
+                self.user0.assert_icommand(['iput', '-fR', self.testresc, filepath])
+                self.user0.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', self.testresc)
+                self.user0.assert_icommand(['irm', '-f', filename])
 
-            # test as rodsadmin
-            self.admin.assert_icommand(['ils', '-l', filename], 'STDERR_SINGLELINE', 'does not exist')
+                # test as rodsadmin
+                self.admin.assert_icommand(['ils', '-l', filename], 'STDERR_SINGLELINE', 'does not exist')
 
-            self.admin.assert_icommand(['iput', '-f', filepath])
-            self.admin.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
-            self.admin.assert_icommand(['irm', '-f', filename])
+                self.admin.assert_icommand(['iput', '-f', filepath])
+                self.admin.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
+                self.admin.assert_icommand(['irm', '-f', filename])
 
-            self.admin.assert_icommand(['iput', '-fR', self.testresc, filepath])
-            self.admin.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', self.testresc)
-            self.admin.assert_icommand(['irm', '-f', filename])
+                self.admin.assert_icommand(['iput', '-fR', self.testresc, filepath])
+                self.admin.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', self.testresc)
+                self.admin.assert_icommand(['irm', '-f', filename])
 
-            os.unlink(filepath)
+                os.unlink(filepath)
+
+        finally:
+            IrodsController().reload_configuration()
 
     def test_igetwild_with_semicolon_in_filename(self):
 

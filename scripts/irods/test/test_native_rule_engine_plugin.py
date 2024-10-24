@@ -18,8 +18,8 @@ from . import settings
 from .. import paths
 from .. import lib
 from ..configuration import IrodsConfig
-from ..core_file import temporary_core_file
 from ..controller import IrodsController
+from ..core_file import temporary_core_file
 
 def exec_icat_command(command):
     import paramiko
@@ -66,51 +66,64 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
         self.admin.assert_icommand(['iadmin', 'mkresc', self.resc_name, 'passthru'], 'STDOUT', self.resc_name)
 
     def helper_test_pep_with_metadata(self, rules_to_add, icommand, attr, values_to_check_for=None):
-        if not isinstance(values_to_check_for, dict):
-            raise TypeError('values_to_check_for must be a dict')
+        try:
+            if not isinstance(values_to_check_for, dict):
+                raise TypeError('values_to_check_for must be a dict')
 
-        with temporary_core_file() as core:
-            core.add_rule(rules_to_add)
-            self.admin.run_icommand(icommand)
+            with temporary_core_file() as core:
+                core.add_rule(rules_to_add)
+                IrodsController().reload_configuration()
+                self.admin.run_icommand(icommand)
 
-        def assert_presence_of_attr_value_avu(attr, value, assert_true=True):
-            try:
-                lib.delayAssert(
-                    lambda: lib.metadata_attr_with_value_exists(
-                        self.admin, attr, value),
-                    interval=1,
-                    maxrep=10
-                )
-                if not assert_true:
-                    raise AssertionError('attr {0} value {1} found when not expected'.format(attr, value))
-            except AssertionError:
-                print('failed to find attr {0} value {1}'.format(attr, value))
-                if assert_true:
-                    raise AssertionError('attr {0} value {1} not found when expected'.format(attr, value))
+            IrodsController().reload_configuration()
 
-        for value, assert_true in values_to_check_for.items():
-            assert_presence_of_attr_value_avu(attr, value, assert_true)
+            def assert_presence_of_attr_value_avu(attr, value, assert_true=True):
+                try:
+                    lib.delayAssert(
+                        lambda: lib.metadata_attr_with_value_exists(
+                            self.admin, attr, value),
+                        interval=1,
+                        maxrep=10
+                    )
+                    if not assert_true:
+                        raise AssertionError('attr {0} value {1} found when not expected'.format(attr, value))
+                except AssertionError:
+                    print('failed to find attr {0} value {1}'.format(attr, value))
+                    if assert_true:
+                        raise AssertionError('attr {0} value {1} not found when expected'.format(attr, value))
+
+            for value, assert_true in values_to_check_for.items():
+                assert_presence_of_attr_value_avu(attr, value, assert_true)
+
+        finally:
+            IrodsController().reload_configuration()
 
     def helper_test_pep(self, rules_to_add, icommand, strings_to_check_for=['THIS IS AN OUT VARIABLE'], number_of_strings_to_look_for=1):
-        with temporary_core_file() as core:
-            core.add_rule(rules_to_add)
-            initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
-            self.admin.run_icommand(icommand)
+        try:
+            with temporary_core_file() as core:
+                core.add_rule(rules_to_add)
+                IrodsController().reload_configuration()
+                initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
+                self.admin.run_icommand(icommand)
 
-        def check_string_count_in_log_section(string, n_occurrences):
-            lib.delayAssert(
-                lambda: lib.log_message_occurrences_equals_count(
-                    msg=string,
-                    count=n_occurrences,
-                    start_index=initial_size_of_server_log))
+            IrodsController().reload_configuration()
 
-        if  isinstance(strings_to_check_for, dict):
-            for s,n  in  strings_to_check_for.items():
-                check_string_count_in_log_section (s,n)
-        else:
-            for s in strings_to_check_for:
-                check_string_count_in_log_section (s,number_of_strings_to_look_for)
+            def check_string_count_in_log_section(string, n_occurrences):
+                lib.delayAssert(
+                    lambda: lib.log_message_occurrences_equals_count(
+                        msg=string,
+                        count=n_occurrences,
+                        start_index=initial_size_of_server_log))
 
+            if isinstance(strings_to_check_for, dict):
+                for s, n in strings_to_check_for.items():
+                    check_string_count_in_log_section (s,n)
+            else:
+                for s in strings_to_check_for:
+                    check_string_count_in_log_section (s,number_of_strings_to_look_for)
+
+        finally:
+            IrodsController().reload_configuration()
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Native only test when not in a topology')
     def test_failing_on_code_5043 (self):
@@ -132,13 +145,17 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
             ''')
         }
 
-        with temporary_core_file() as core:
-            core.add_rule(pep_map[self.plugin_name])
-            with tempfile.NamedTemporaryFile(mode='w+t', suffix='.r') as rule_file:
-                print(rule_map[self.plugin_name], file = rule_file)
-                rule_file.flush()
-                self.admin.assert_icommand(['irule','-r', self.plugin_name + '-instance','-F',rule_file.name],
-                                           'STDOUT_SINGLELINE', ["true"])
+        try:
+            with temporary_core_file() as core:
+                core.add_rule(pep_map[self.plugin_name])
+                IrodsController().reload_configuration()
+                with tempfile.NamedTemporaryFile(mode='w+t', suffix='.r') as rule_file:
+                    print(rule_map[self.plugin_name], file = rule_file)
+                    rule_file.flush()
+                    self.admin.assert_icommand(['irule','-r', self.plugin_name + '-instance','-F',rule_file.name],
+                                               'STDOUT_SINGLELINE', ["true"])
+        finally:
+            IrodsController().reload_configuration()
 
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Native only test when not in a topology')
@@ -185,13 +202,17 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
             ''')
         }
 
-        with temporary_core_file() as core:
-            core.add_rule(pep_map[self.plugin_name])
-            with tempfile.NamedTemporaryFile(mode='w+t', suffix='.r') as rule_file:
-                print(rule_map[self.plugin_name], file = rule_file)
-                rule_file.flush()
-                self.admin.assert_icommand(['irule','-F',rule_file.name], 'STDOUT_MULTILINE', ['SYS_INTERNAL_ERR = -154000',
-                                                                                               'RULE_ENGINE_CONTINUE = 5000000'])
+        try:
+            with temporary_core_file() as core:
+                core.add_rule(pep_map[self.plugin_name])
+                IrodsController().reload_configuration()
+                with tempfile.NamedTemporaryFile(mode='w+t', suffix='.r') as rule_file:
+                    print(rule_map[self.plugin_name], file = rule_file)
+                    rule_file.flush()
+                    self.admin.assert_icommand(['irule','-F',rule_file.name], 'STDOUT_MULTILINE', ['SYS_INTERNAL_ERR = -154000',
+                                                                                                   'RULE_ENGINE_CONTINUE = 5000000'])
+        finally:
+            IrodsController().reload_configuration()
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Native only test when not in a topology')
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Do not run in topology on resource server')
@@ -499,7 +520,6 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
             ''')
         }
 
-        irodsctl = IrodsController()
         server_config_filename = paths.server_config_path()
 
         # load server_config.json to inject a new rule base
@@ -513,19 +533,17 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
         # dump to a string to repave the existing server_config.json
         new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
 
-        with lib.file_backed_up(server_config_filename):
-            # repave the existing server_config.json
-            with open(server_config_filename, 'w') as f:
-                f.write(new_server_config)
+        try:
+            with lib.file_backed_up(server_config_filename):
+                # repave the existing server_config.json
+                with open(server_config_filename, 'w') as f:
+                    f.write(new_server_config)
 
-            # Bounce server to apply setting
-            irodsctl.restart()
+                # Actually run the test
+                self.helper_test_pep(pep_map[self.plugin_name], "iput -f --metadata ATTR;VALUE;UNIT "+self.testfile)
 
-            # Actually run the test
-            self.helper_test_pep(pep_map[self.plugin_name], "iput -f --metadata ATTR;VALUE;UNIT "+self.testfile)
-
-        # Bounce server to get back original settings
-        irodsctl.restart()
+        finally:
+            IrodsController().reload_configuration()
 
     def test_auth_pep(self):
         pep_map = {
@@ -694,43 +712,49 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
 
         rule_text = pep_map[self.plugin_name]
 
-        coredvm = paths.core_re_directory() + "/core.dvm"
-        with lib.file_backed_up(coredvm):
-            lib.prepend_string_to_file('oprType||rei->doinp->oprType\n', coredvm)
-            with temporary_core_file() as core:
-                core.add_rule(rule_text.format('put'))
+        try:
+            coredvm = paths.core_re_directory() + "/core.dvm"
+            with lib.file_backed_up(coredvm):
+                lib.prepend_string_to_file('oprType||rei->doinp->oprType\n', coredvm)
+                with temporary_core_file() as core:
+                    core.add_rule(rule_text.format('put'))
+                    IrodsController().reload_configuration()
 
-                trigger_file = 'file_to_trigger_acSetNumThreads'
-                lib.make_file(trigger_file, 4 * pow(10, 7))
+                    trigger_file = 'file_to_trigger_acSetNumThreads'
+                    lib.make_file(trigger_file, 4 * pow(10, 7))
 
-                initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
-                self.admin.assert_icommand('iput {0}'.format(trigger_file))
-                lib.delayAssert(
-                    lambda: lib.log_message_occurrences_equals_count(
-                        msg='writeLine: inString = test_rule_engine_2309: put: acSetNumThreads oprType [1]',
-                        start_index=initial_size_of_server_log))
-                lib.delayAssert(
-                    lambda: lib.log_message_occurrences_equals_count(
-                        msg='RE_UNABLE_TO_READ_SESSION_VAR',
-                        count=0,
-                        start_index=initial_size_of_server_log))
-                os.unlink(trigger_file)
+                    initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
+                    self.admin.assert_icommand('iput {0}'.format(trigger_file))
+                    lib.delayAssert(
+                        lambda: lib.log_message_occurrences_equals_count(
+                            msg='writeLine: inString = test_rule_engine_2309: put: acSetNumThreads oprType [1]',
+                            start_index=initial_size_of_server_log))
+                    lib.delayAssert(
+                        lambda: lib.log_message_occurrences_equals_count(
+                            msg='RE_UNABLE_TO_READ_SESSION_VAR',
+                            count=0,
+                            start_index=initial_size_of_server_log))
+                    os.unlink(trigger_file)
 
-            with temporary_core_file() as core:
-                core.add_rule(rule_text.format('get'))
+                with temporary_core_file() as core:
+                    core.add_rule(rule_text.format('get'))
+                    IrodsController().reload_configuration()
 
-                initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
-                self.admin.assert_icommand('iget {0}'.format(trigger_file), use_unsafe_shell=True)
-                lib.delayAssert(
-                    lambda: lib.log_message_occurrences_equals_count(
-                        msg='writeLine: inString = test_rule_engine_2309: get: acSetNumThreads oprType [2]',
-                        start_index=initial_size_of_server_log))
-                lib.delayAssert(
-                    lambda: lib.log_message_occurrences_equals_count(
-                        msg='RE_UNABLE_TO_READ_SESSION_VAR',
-                        count = 0,
-                        start_index=initial_size_of_server_log))
-                os.unlink(trigger_file)
+                    initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
+                    self.admin.assert_icommand('iget {0}'.format(trigger_file), use_unsafe_shell=True)
+                    lib.delayAssert(
+                        lambda: lib.log_message_occurrences_equals_count(
+                            msg='writeLine: inString = test_rule_engine_2309: get: acSetNumThreads oprType [2]',
+                            start_index=initial_size_of_server_log))
+                    lib.delayAssert(
+                        lambda: lib.log_message_occurrences_equals_count(
+                            msg='RE_UNABLE_TO_READ_SESSION_VAR',
+                            count = 0,
+                            start_index=initial_size_of_server_log))
+                    os.unlink(trigger_file)
+
+        finally:
+            IrodsController().reload_configuration()
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_SYS_NOT_SUPPORTED__4174(self):
@@ -904,6 +928,10 @@ OUTPUT ruleExecOut
         }
 
         with temporary_core_file() as core:
-            core.add_rule(pep_map[self.plugin_name])
-            self.user0.assert_icommand(['ils'], 'STDOUT', self.user0.session_collection)
+            try:
+                core.add_rule(pep_map[self.plugin_name])
+                IrodsController().reload_configuration()
+                self.user0.assert_icommand(['ils'], 'STDOUT', self.user0.session_collection)
 
+            finally:
+                IrodsController().reload_configuration()

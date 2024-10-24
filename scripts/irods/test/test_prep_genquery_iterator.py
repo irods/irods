@@ -349,7 +349,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
                     rule_args[0] = str(n)
                 '''))
 
-            IrodsController().start()
+            IrodsController().start(test_mode=True)
 
             rule_file = ""
             with generateRuleFile( names_list = self.to_unlink, **{'prefix':"test_mult256_"} ) as f:
@@ -371,7 +371,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
 
             IrodsController().stop()
 
-        IrodsController().start()
+        IrodsController().start(test_mode=True)
 
 
     #=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#
@@ -444,7 +444,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
                         rule_args[0] = str(L[0]) if len(L) == {Outer_Loop_Reps} and L == L[:1] * len(L) else "-1"
                 '''.format(**locals())))
 
-            IrodsController().start()
+            IrodsController().start(test_mode=True)
 
             rule_file = ""
             with generateRuleFile( names_list = self.to_unlink, **{'prefix':"test_mult256_nn_"} ) as f:
@@ -466,7 +466,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
 
             IrodsController().stop()
 
-        IrodsController().start()
+        IrodsController().start(test_mode=True)
     #=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#
 
     # Remove the next line when msiGetMoreRows always returns an accurate value for continueInx
@@ -507,7 +507,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
                     rule_args[0] = str(n)
                 '''))
 
-            IrodsController().start()
+            IrodsController().start(test_mode=True)
 
             rule_file = ""
             with generateRuleFile( names_list = self.to_unlink, **{'prefix':"test_mult256_n_"} ) as f:
@@ -532,7 +532,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
 
             IrodsController().stop()
 
-        IrodsController().start()
+        IrodsController().start(test_mode=True)
 
     #=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#
 
@@ -633,11 +633,11 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
                         valid_count.append(n == 1)
                     callback.writeLine("stdout", str( 1 if len( valid_count ) == {0} and all (valid_count) else 0) )
                 ''').format(outer_loop_reps , collection_to_query))
-            IrodsController().start()
+            IrodsController().start(test_mode=True)
             run_irule = "irule attempt_to_fill_statement_table null ruleExecOut"
             self.admin.assert_icommand(run_irule, 'STDOUT_SINGLELINE', r'^1$', use_regex=True)
             IrodsController().stop()
-        IrodsController().start()
+        IrodsController().start(test_mode=True)
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for python REP')
     def test_with_modified_rulebase_off_boundary(self):
@@ -646,7 +646,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
             IrodsController().stop()
             with lib.file_backed_up (self.server_config_path):
                 self.boundary_with_size(512 + 7 * 8 * 9, self.modify_rulebase_and_tst, pre_start = True)
-            IrodsController().start()
+            IrodsController().start(test_mode=True)
 
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for python REP')
@@ -655,16 +655,16 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
         if self.full_test:
             IrodsController().stop()
             with lib.file_backed_up (self.server_config_path):
-                #IrodsController().start()
+                #IrodsController().start(test_mode=True)
                 self.boundary_with_size(512 + 7 * 8 * 9, self.modify_rulebase_and_tst, pre_start = True)
                 #IrodsController().stop()  # -- done internally by above call
-            IrodsController().start()
+            IrodsController().start(test_mode=True)
 
 
     def boundary_with_size(self, N, func, pre_start = False):
 
         if pre_start:
-            IrodsController().start() # -- for cases where Native REP was inserted to svr config
+            IrodsController().start(test_mode=True) # -- for cases where Native REP was inserted to svr config
 
         lib.create_directory_of_small_files(self.dir_for_coll,N)
         lib.execute_command ('tar -cvf {} {}'.format(self.bundled_coll, self.dir_for_coll))
@@ -718,7 +718,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
                          ''' % (self.test_admin_coll_path,))
                 print(rule_string, file = f, end = '')
 
-            IrodsController().start()
+            IrodsController().start(test_mode=True)
 
             irods_rule_language_option = ""  #default to python
             pattern=re.compile(r'^(\S+):\s*(\[.*\]$)',re.M)
@@ -798,7 +798,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
                          ''' % (self.test_admin_coll_path,))
                 print(rule_string, file = f, end = '')
 
-            IrodsController().start()
+            IrodsController().start(test_mode=True)
 
             irods_rule_language_option = "-r irods_rule_engine_plugin-irods_rule_language-instance"
             pattern=re.compile(r'^(\S+):\s*(\[.*\]$)',re.M)
@@ -834,56 +834,66 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-python', 'Requires PREP.')
     def test_genquery_constructor_raises_exception_on_invalid_parser_argument__issue_7909(self):
-        with temporary_core_file() as core:
-            attr_name = 'test_genquery_constructor_raises_exception_on_invalid_parser_argument__issue_7909_error'
+        try:
+            with temporary_core_file() as core:
+                attr_name = 'test_genquery_constructor_raises_exception_on_invalid_parser_argument__issue_7909_error'
 
-            # The following rule triggers and attaches the exception message generated
-            # by the invalid parser argument to the Query constructor.
-            core.add_rule(dedent(f'''
-            def pep_api_touch_pre(rule_args, callback, rei):
-                try:
-                    import genquery
-                    _ = genquery.Query(callback, 'COLL_NAME', parser=None)
-                except ValueError as e:
-                    callback.msiModAVUMetadata('-C', '{self.admin.session_collection}', 'add', '{attr_name}', str(e), '')
-            '''))
+                # The following rule triggers and attaches the exception message generated
+                # by the invalid parser argument to the Query constructor.
+                core.add_rule(dedent(f'''
+                def pep_api_touch_pre(rule_args, callback, rei):
+                    try:
+                        import genquery
+                        _ = genquery.Query(callback, 'COLL_NAME', parser=None)
+                    except ValueError as e:
+                        callback.msiModAVUMetadata('-C', '{self.admin.session_collection}', 'add', '{attr_name}', str(e), '')
+                '''))
+                IrodsController().reload_configuration()
 
-            # Trigger the PEP.
-            # This will cause the rule to add an AVU to the session collection.
-            self.admin.assert_icommand(['itouch', 'issue_7909'], 'STDERR')
+                # Trigger the PEP.
+                # This will cause the rule to add an AVU to the session collection.
+                self.admin.assert_icommand(['itouch', 'issue_7909'], 'STDERR')
 
-            # Show the AVU containing the error exists on the session collection.
-            self.admin.assert_icommand(['imeta', 'ls', '-C', self.admin.session_collection], 'STDOUT', [
-                f'attribute: {attr_name}\n',
-                'value: Invalid value for [parser]. Expected Parser.GENQUERY1 or Parser.GENQUERY2.\n'
-            ])
+                # Show the AVU containing the error exists on the session collection.
+                self.admin.assert_icommand(['imeta', 'ls', '-C', self.admin.session_collection], 'STDOUT', [
+                    f'attribute: {attr_name}\n',
+                    'value: Invalid value for [parser]. Expected Parser.GENQUERY1 or Parser.GENQUERY2.\n'
+                ])
+
+        finally:
+            IrodsController().reload_configuration()
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-python', 'Requires PREP.')
     def test_genquery_constructor_raises_exception_when_genquery2_syntax_is_passed_to_genquery1_parser__issue_7909(self):
-        with temporary_core_file() as core:
-            attr_name = 'test_genquery_constructor_raises_exception_when_genquery2_syntax_is_passed_to_genquery1_parser__issue_7909_error'
+        try:
+            with temporary_core_file() as core:
+                attr_name = 'test_genquery_constructor_raises_exception_when_genquery2_syntax_is_passed_to_genquery1_parser__issue_7909_error'
 
-            # The following rule triggers and attaches the exception message generated
-            # by the invalid GenQuery1 condition string passed to the Query constructor.
-            core.add_rule(dedent(f'''
-            def pep_api_touch_pre(rule_args, callback, rei):
-                try:
-                    from genquery import Query, Parser
-                    Query(callback, 'COLL_NAME', "upper(COLL_NAME) = 'nope'", parser=Parser.GENQUERY1).first()
-                except RuntimeError as e:
-                    callback.msiModAVUMetadata('-C', '{self.admin.session_collection}', 'add', '{attr_name}', str(e), '')
-            '''))
+                # The following rule triggers and attaches the exception message generated
+                # by the invalid GenQuery1 condition string passed to the Query constructor.
+                core.add_rule(dedent(f'''
+                def pep_api_touch_pre(rule_args, callback, rei):
+                    try:
+                        from genquery import Query, Parser
+                        Query(callback, 'COLL_NAME', "upper(COLL_NAME) = 'nope'", parser=Parser.GENQUERY1).first()
+                    except RuntimeError as e:
+                        callback.msiModAVUMetadata('-C', '{self.admin.session_collection}', 'add', '{attr_name}', str(e), '')
+                '''))
+                IrodsController().reload_configuration()
 
-            # Trigger the PEP.
-            # This will cause the rule to add an AVU to the session collection.
-            self.admin.assert_icommand(['itouch', 'issue_7909'], 'STDERR')
+                # Trigger the PEP.
+                # This will cause the rule to add an AVU to the session collection.
+                self.admin.assert_icommand(['itouch', 'issue_7909'], 'STDERR')
 
-            # Show the AVU containing the error exists on the session collection.
-            self.admin.assert_icommand(['imeta', 'ls', '-C', self.admin.session_collection], 'STDOUT', [
-                f'attribute: {attr_name}\n',
-                '[iRods__Error__Code:-1107000]',
-                '[NO_COLUMN_NAME_FOUND]'
-            ])
+                # Show the AVU containing the error exists on the session collection.
+                self.admin.assert_icommand(['imeta', 'ls', '-C', self.admin.session_collection], 'STDOUT', [
+                    f'attribute: {attr_name}\n',
+                    '[iRods__Error__Code:-1107000]',
+                    '[NO_COLUMN_NAME_FOUND]'
+                ])
+
+        finally:
+            IrodsController().reload_configuration()
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-python', 'Requires PREP.')
     def test_genquery_iterator_supports_genquery2__issue_7909(self):
@@ -1014,58 +1024,68 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-python', 'Requires PREP.')
     def test_genquery_iterator_raises_exception_when_given_invalid_string_for_order_by_clause__issue_7909(self):
-        with temporary_core_file() as core:
-            attr_name = 'test_genquery_iterator_raises_exception_when_given_invalid_string_for_order_by_clause__issue_7909_error'
+        try:
+            with temporary_core_file() as core:
+                attr_name = 'test_genquery_iterator_raises_exception_when_given_invalid_string_for_order_by_clause__issue_7909_error'
 
-            # The following rule triggers and attaches the exception message generated
-            # by the invalid GenQuery2 order-by string passed to the Query constructor.
-            core.add_rule(dedent(f'''
-            def pep_api_touch_pre(rule_args, callback, rei):
-                try:
-                    from genquery import Query, Parser
-                    Query(callback, 'COLL_NAME', "COLL_NAME = '{self.admin.session_collection}'", order_by='invalid', parser=Parser.GENQUERY2).first()
-                except RuntimeError as e:
-                    callback.msiModAVUMetadata('-C', '{self.admin.session_collection}', 'add', '{attr_name}', str(e), '')
-            '''))
+                # The following rule triggers and attaches the exception message generated
+                # by the invalid GenQuery2 order-by string passed to the Query constructor.
+                core.add_rule(dedent(f'''
+                def pep_api_touch_pre(rule_args, callback, rei):
+                    try:
+                        from genquery import Query, Parser
+                        Query(callback, 'COLL_NAME', "COLL_NAME = '{self.admin.session_collection}'", order_by='invalid', parser=Parser.GENQUERY2).first()
+                    except RuntimeError as e:
+                        callback.msiModAVUMetadata('-C', '{self.admin.session_collection}', 'add', '{attr_name}', str(e), '')
+                '''))
+                IrodsController().reload_configuration()
 
-            # Trigger the PEP.
-            # This will cause the rule to add an AVU to the session collection.
-            self.admin.assert_icommand(['itouch', 'issue_7909'], 'STDERR')
+                # Trigger the PEP.
+                # This will cause the rule to add an AVU to the session collection.
+                self.admin.assert_icommand(['itouch', 'issue_7909'], 'STDERR')
 
-            # Show the AVU containing the error exists on the session collection.
-            self.admin.assert_icommand(['imeta', 'ls', '-C', self.admin.session_collection], 'STDOUT', [
-                f'attribute: {attr_name}\n',
-                '[iRods__Error__Code:-130000]',
-                '[SYS_INVALID_INPUT_PARAM]'
-            ])
+                # Show the AVU containing the error exists on the session collection.
+                self.admin.assert_icommand(['imeta', 'ls', '-C', self.admin.session_collection], 'STDOUT', [
+                    f'attribute: {attr_name}\n',
+                    '[iRods__Error__Code:-130000]',
+                    '[SYS_INVALID_INPUT_PARAM]'
+                ])
+
+        finally:
+            IrodsController().reload_configuration()
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-python', 'Requires PREP.')
     def test_genquery_iterator_allows_close_member_function_to_be_called_multiple_times__issue_7909(self):
-        with temporary_core_file() as core:
-            attr_name = 'test_genquery_iterator_allows_close_member_function_to_be_called_multiple_times__issue_7909'
-            attr_value = 'success'
+        try:
+            with temporary_core_file() as core:
+                attr_name = 'test_genquery_iterator_allows_close_member_function_to_be_called_multiple_times__issue_7909'
+                attr_value = 'success'
 
-            for parser in ['GENQUERY1', 'GENQUERY2']:
-                with self.subTest(f'Using [{parser}]'):
-                    # The following rule calls the close() member function of the Query class multiple
-                    # times and then attaches an AVU to the session collection. The AVU is used to
-                    # indicate success.
-                    core.add_rule(dedent(f'''
-                    def pep_api_touch_pre(rule_args, callback, rei):
-                        from genquery import Query, Parser
-                        query = Query(callback, 'COLL_NAME', "COLL_NAME = '{self.admin.session_collection}'", parser=Parser.{parser})
-                        for _ in query:
-                            pass
-                        query.close()
-                        query.close()
-                        query.close()
-                        callback.msiModAVUMetadata('-C', '{self.admin.session_collection}', 'add', '{attr_name}', '{parser}={attr_value}', '')
-                    '''))
+                for parser in ['GENQUERY1', 'GENQUERY2']:
+                    with self.subTest(f'Using [{parser}]'):
+                        # The following rule calls the close() member function of the Query class multiple
+                        # times and then attaches an AVU to the session collection. The AVU is used to
+                        # indicate success.
+                        core.add_rule(dedent(f'''
+                        def pep_api_touch_pre(rule_args, callback, rei):
+                            from genquery import Query, Parser
+                            query = Query(callback, 'COLL_NAME', "COLL_NAME = '{self.admin.session_collection}'", parser=Parser.{parser})
+                            for _ in query:
+                                pass
+                            query.close()
+                            query.close()
+                            query.close()
+                            callback.msiModAVUMetadata('-C', '{self.admin.session_collection}', 'add', '{attr_name}', '{parser}={attr_value}', '')
+                        '''))
+                        IrodsController().reload_configuration()
 
-                    # Trigger the PEP.
-                    self.admin.assert_icommand(['itouch', 'issue_7909'], 'STDERR')
+                        # Trigger the PEP.
+                        self.admin.assert_icommand(['itouch', 'issue_7909'], 'STDERR')
 
-                    # Show the AVU is now attached to the session collection with the expected attribute value.
-                    self.admin.assert_icommand(['imeta', 'ls', '-C', self.admin.session_collection], 'STDOUT', [
-                        f'attribute: {attr_name}\nvalue: {parser}={attr_value}\n'
-                    ])
+                        # Show the AVU is now attached to the session collection with the expected attribute value.
+                        self.admin.assert_icommand(['imeta', 'ls', '-C', self.admin.session_collection], 'STDOUT', [
+                            f'attribute: {attr_name}\nvalue: {parser}={attr_value}\n'
+                        ])
+
+        finally:
+            IrodsController().reload_configuration()

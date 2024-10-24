@@ -15,6 +15,7 @@ from .. import lib
 from .. import paths
 from .. import test
 from ..test.command import assert_command
+from ..controller import IrodsController
 
 rodsadmins = [('otherrods', 'rods')]
 rodsusers  = [('alice', 'apass')]
@@ -946,6 +947,7 @@ class test_iput_with_checksums(session.make_sessions_mixin(rodsadmins, rodsusers
             # self.object_name deleted in teardown
             os.unlink(local_file)
 
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Requires resolution of #6835")
     def test_server_rejects_invalid_server_config_options_for_checksum_read_buffer_size_in_bytes__issue_7947(self):
         self.object_name = 'test_server_rejects_invalid_server_config_options_for_checksum_read_buffer_size_in_bytes__issue_7947'
         server_config_filename = paths.server_config_path()
@@ -961,9 +963,7 @@ class test_iput_with_checksums(session.make_sessions_mixin(rodsadmins, rodsusers
             lib.make_file(local_file, file_size)
 
             with lib.file_backed_up(server_config_filename):
-
                 for buffer_size in [-2**63-1, -1, 0, 2**63]:  # first and last are outside range of 64 bit signed integers
-
                     svr_cfg['advanced_settings']['checksum_read_buffer_size_in_bytes'] = buffer_size
                     new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
 
@@ -971,14 +971,17 @@ class test_iput_with_checksums(session.make_sessions_mixin(rodsadmins, rodsusers
                     with open(server_config_filename, 'w') as f:
                         f.write(new_server_config)
 
+                    IrodsController().reload_configuration()
+
                     # put the file and verify we get an error due to invalid configuration
-                    self.admin.assert_icommand(['iput', '-R', self.resource, '-k', local_file, self.object_name], 'STDERR_SINGLELINE', 'CONFIGURATION_ERROR')
+                    self.admin.assert_icommand(['iput', '-R', self.resource, '-k', local_file, self.object_name],
+                            'STDERR_SINGLELINE', '-180000 CONFIGURATION_ERROR')
 
                     # clean up for next iteration
                     self.admin.assert_icommand(['irm', '-f', self.object_name])
 
         finally:
-            # self.object_name deleted in teardown
+            IrodsController().reload_configuration()
             os.unlink(local_file)
 
     def get_checksum(self, object_name):

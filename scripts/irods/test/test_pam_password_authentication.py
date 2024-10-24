@@ -129,7 +129,7 @@ class test_configurations(unittest.TestCase):
                 with temporary_core_file() as core:
                     core.add_rule(test_configurations.get_pep_for_ssl(self.plugin_name))
 
-                    IrodsController().start()
+                    IrodsController().start(test_mode=True)
 
                     # Make sure the settings applied correctly...
                     self.admin.assert_icommand(
@@ -154,7 +154,7 @@ class test_configurations(unittest.TestCase):
             self.auth_session.environment_file_contents = auth_session_env_backup
             self.admin.environment_file_contents = admin_session_env_backup
 
-            IrodsController().restart()
+            IrodsController().reload_configuration()
 
             self.admin.assert_icommand(
                 ['iadmin', 'set_grid_configuration', self.configuration_namespace, _option_name, original_config])
@@ -197,7 +197,7 @@ class test_configurations(unittest.TestCase):
                 with temporary_core_file() as core:
                     core.add_rule(test_configurations.get_pep_for_ssl(self.plugin_name))
 
-                    IrodsController().start()
+                    IrodsController().start(test_mode=True)
 
                     # Make sure the settings applied correctly...
                     self.admin.assert_icommand(
@@ -253,14 +253,14 @@ class test_configurations(unittest.TestCase):
             self.auth_session.environment_file_contents = auth_session_env_backup
             self.admin.environment_file_contents = admin_session_env_backup
 
-            IrodsController().restart()
+            IrodsController().restart(test_mode=True)
 
             self.admin.assert_icommand(
                 ['iadmin', 'set_grid_configuration', self.configuration_namespace, max_time_option_name, original_max_time])
             self.admin.assert_icommand(
                 ['iadmin', 'set_grid_configuration', self.configuration_namespace, min_time_option_name, original_min_time])
 
-            IrodsController().restart()
+            IrodsController().restart(test_mode=True)
 
     def test_password_expires_appropriately_based_on_grid_configuration_value(self):
         import time
@@ -296,7 +296,7 @@ class test_configurations(unittest.TestCase):
                 with temporary_core_file() as core:
                     core.add_rule(test_configurations.get_pep_for_ssl(self.plugin_name))
 
-                    IrodsController().start()
+                    IrodsController().start(test_mode=True)
 
                     # Make sure the settings applied correctly...
                     self.admin.assert_icommand(
@@ -341,7 +341,7 @@ class test_configurations(unittest.TestCase):
             self.auth_session.environment_file_contents = auth_session_env_backup
             self.admin.environment_file_contents = admin_session_env_backup
 
-            IrodsController().restart()
+            IrodsController().reload_configuration()
 
             self.admin.assert_icommand(
                 ['iadmin', 'set_grid_configuration', self.configuration_namespace, max_time_option_name, original_max_time])
@@ -400,7 +400,7 @@ class test_configurations(unittest.TestCase):
                 with temporary_core_file() as core:
                     core.add_rule(test_configurations.get_pep_for_ssl(self.plugin_name))
 
-                    IrodsController().start()
+                    IrodsController().start(test_mode=True)
 
                     # Make sure the settings applied correctly...
                     self.admin.assert_icommand(
@@ -460,7 +460,7 @@ class test_configurations(unittest.TestCase):
             self.auth_session.environment_file_contents = auth_session_env_backup
             self.admin.environment_file_contents = admin_session_env_backup
 
-            IrodsController().restart()
+            IrodsController().reload_configuration()
 
             self.admin.assert_icommand(
                 ['iadmin', 'set_grid_configuration', self.configuration_namespace, extend_lifetime_option_name, original_extend_lifetime])
@@ -519,7 +519,7 @@ class test_configurations(unittest.TestCase):
                 with temporary_core_file() as core:
                     core.add_rule(test_configurations.get_pep_for_ssl(self.plugin_name))
 
-                    IrodsController().start()
+                    IrodsController().start(test_mode=True)
 
                     # Make sure the settings applied correctly...
                     self.admin.assert_icommand(
@@ -582,7 +582,7 @@ class test_configurations(unittest.TestCase):
             self.auth_session.environment_file_contents = auth_session_env_backup
             self.admin.environment_file_contents = admin_session_env_backup
 
-            IrodsController().restart()
+            IrodsController().reload_configuration()
 
             self.admin.assert_icommand(
                 ['iadmin', 'set_grid_configuration', self.configuration_namespace, extend_lifetime_option_name, original_extend_lifetime])
@@ -624,7 +624,7 @@ class test_configurations(unittest.TestCase):
                 with temporary_core_file() as core:
                     core.add_rule(test_configurations.get_pep_for_ssl(self.plugin_name))
 
-                    IrodsController().start()
+                    IrodsController().start(test_mode=True)
 
                     # The test value is 2 hours more than the default in order to try a TTL value 1 greater and 1 less
                     # than the configured password_max_time while still remaining above 1209600 to show that there is
@@ -663,7 +663,7 @@ class test_configurations(unittest.TestCase):
             self.auth_session.environment_file_contents = auth_session_env_backup
             self.admin.environment_file_contents = admin_session_env_backup
 
-            IrodsController().restart()
+            IrodsController().reload_configuration()
 
             self.admin.assert_icommand(
                 ['iadmin', 'set_grid_configuration', self.configuration_namespace, max_time_option_name, original_max_time])

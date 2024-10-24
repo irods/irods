@@ -13,6 +13,7 @@ from .. import test
 from .. import paths
 from .. import lib
 from ..configuration import IrodsConfig
+from ..controller import IrodsController
 
 class Test_SSL(session.make_sessions_mixin([('otherrods', 'rods')], []), unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
@@ -26,26 +27,34 @@ class Test_SSL(session.make_sessions_mixin([('otherrods', 'rods')], []), unittes
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_icommands_segfault_when_ssl_cert_hostname_not_matching__issue_3609(self):
-        self.init_properties()
-        self.create_ssl_files()
+        try:
+            self.init_properties()
+            self.create_ssl_files()
 
-        with lib.file_backed_up(self.config.server_config_path):
-            with lib.file_backed_up(self.config.client_environment_path):
-                session_env_backup = copy.deepcopy(self.admin.environment_file_contents)
+            with lib.file_backed_up(self.config.server_config_path):
+                with lib.file_backed_up(self.config.client_environment_path):
+                    session_env_backup = copy.deepcopy(self.admin.environment_file_contents)
 
-                self.enable_server_ssl()
-                self.enable_client_ssl_verify_cert()
-                self.admin.assert_icommand(['ils'], 'STDOUT', use_regex=True, expected_results='.*tempZone.*')
+                    try:
+                        self.enable_server_ssl()
+                        self.enable_client_ssl_verify_cert()
+                        IrodsController(self.config).reload_configuration()
+                        self.admin.assert_icommand(['ils'], 'STDOUT', use_regex=True, expected_results='.*tempZone.*')
 
-                self.enable_client_ssl_verify_hostname()
-                self.admin.assert_icommand(['ils'], 'STDERR', use_regex=True, expected_results='.*-2105000 SSL_CERT_ERROR.*')
+                        self.enable_client_ssl_verify_hostname()
+                        IrodsController(self.config).reload_configuration()
+                        self.admin.assert_icommand(['ils'], 'STDERR', use_regex=True, expected_results='.*-2105000 SSL_CERT_ERROR.*')
 
-                self.enable_client_ssl_verify_cert()
-                self.admin.assert_icommand(['ils'], 'STDOUT', use_regex=True, expected_results='.*tempZone.*')
+                        self.enable_client_ssl_verify_cert()
+                        IrodsController(self.config).reload_configuration()
+                        self.admin.assert_icommand(['ils'], 'STDOUT', use_regex=True, expected_results='.*tempZone.*')
 
-                self.admin.environment_file_contents = session_env_backup
+                    finally:
+                        self.admin.environment_file_contents = session_env_backup
 
-                self.remove_files()
+        finally:
+            self.remove_files()
+            IrodsController().reload_configuration()
 
     # NOTE: The methods below assume use of the native rule language rule engine plugin
     # Please skip any additional tests using these methods unless the native rule language REP is in use by default
