@@ -88,7 +88,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
             self.auth_session.environment_file_contents.update(client_update)
 
             # server reboot to pick up new irodsEnv settings
-            IrodsController().start()
+            IrodsController().start(test_mode=True)
 
             # do the reauth
             self.auth_session.assert_icommand('iinit', 'STDOUT', 'Enter your current PAM password',
@@ -105,7 +105,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
                 os.unlink(filename)
 
         # server reboot to pick up new irodsEnv and server settings
-        IrodsController().restart()
+        IrodsController().restart(test_mode=True)
 
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER or test.settings.USE_SSL, 'Topo from resource or SSL')
     def test_authentication_PAM_with_server_params(self):
@@ -175,7 +175,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
                     with temporary_core_file() as core:
                         core.add_rule(pep_map[self.plugin_name])
 
-                        IrodsController().start()
+                        IrodsController().start(test_mode=True)
 
                         # the test
                         print(f'running iinit for PAM user [{self.auth_session.username}] [{self.auth_session.password}]')
@@ -190,7 +190,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
                 if os.path.exists(filename):
                     os.unlink(filename)
 
-            IrodsController().restart()
+            IrodsController().restart(test_mode=True)
 
     def test_iinit_repaving_2646(self):
         l = logging.getLogger(__name__)
@@ -224,10 +224,10 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
             }
             lib.update_json_file_from_dict(paths.server_config_path(), server_config_update)
 
-            IrodsController().start()
+            IrodsController().start(test_mode=True)
             self.user_sessions[0].assert_icommand( 'ils', 'STDERR_SINGLELINE', 'SYS_USER_NOT_ALLOWED_TO_CONN' )
             self.user_sessions[1].assert_icommand( 'ils', 'STDOUT_SINGLELINE', '/home' )
-        IrodsController().restart()
+        IrodsController().restart(test_mode=True)
 
     def test_allowlist(self):
         IrodsController().stop()
@@ -247,10 +247,10 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
             }
             lib.update_json_file_from_dict(paths.server_config_path(), server_config_update)
 
-            IrodsController().start()
+            IrodsController().start(test_mode=True)
             self.user_sessions[0].assert_icommand( 'ils', 'STDOUT_SINGLELINE', '/home' )
             self.user_sessions[1].assert_icommand( 'ils', 'STDERR_SINGLELINE', 'SYS_USER_NOT_ALLOWED_TO_CONN' )
-        IrodsController().restart()
+        IrodsController().restart(test_mode=True)
 
 
 class test_iinit(session.make_sessions_mixin([('otherrods', 'rods')], []), unittest.TestCase):

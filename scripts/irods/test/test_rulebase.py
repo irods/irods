@@ -46,19 +46,24 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
             ''')
         }
 
-        with temporary_core_file() as core:
-            core.add_rule(pep_map[self.plugin_name])
+        try:
+            with temporary_core_file() as core:
+                core.add_rule(pep_map[self.plugin_name])
+                IrodsController().reload_configuration()
 
-            client_update = {
-                'irods_client_server_policy': 'CS_NEG_REFUSE'
-            }
+                client_update = {
+                    'irods_client_server_policy': 'CS_NEG_REFUSE'
+                }
 
-            session_env_backup = copy.deepcopy(self.admin.environment_file_contents)
-            self.admin.environment_file_contents.update(client_update)
+                session_env_backup = copy.deepcopy(self.admin.environment_file_contents)
+                self.admin.environment_file_contents.update(client_update)
 
-            self.admin.assert_icommand( 'ils','STDERR_SINGLELINE','CLIENT_NEGOTIATION_ERROR')
+                self.admin.assert_icommand( 'ils','STDERR_SINGLELINE','CLIENT_NEGOTIATION_ERROR')
 
-            self.admin.environment_file_contents = session_env_backup
+                self.admin.environment_file_contents = session_env_backup
+
+        finally:
+            IrodsController().reload_configuration()
 
     def test_msiDataObjWrite__2795(self):
         filename = 'test_file.txt'
@@ -118,12 +123,17 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
             ''')
         }
 
-        with temporary_core_file() as core:
-            core.add_rule(pep_map[self.plugin_name])
+        try:
+            with temporary_core_file() as core:
+                core.add_rule(pep_map[self.plugin_name])
+                IrodsController().reload_configuration()
 
-            test_file = 'rulebasetestfile'
-            lib.touch(test_file)
-            self.admin.assert_icommand(['iput', test_file])
+                test_file = 'rulebasetestfile'
+                lib.touch(test_file)
+                self.admin.assert_icommand(['iput', test_file])
+
+        finally:
+            IrodsController().reload_configuration()
 
     def test_acPostProcForPut_replicate_to_multiple_resources(self):
         pep_map = {
@@ -179,6 +189,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         try:
             with temporary_core_file() as core:
                 core.add_rule(pep_map[self.plugin_name])
+                IrodsController().reload_configuration()
 
                 # put data
                 lib.touch(tfile)
@@ -205,12 +216,13 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
                 # check replicas
                 self.admin.assert_icommand(['ils', '-L', tfile], 'STDOUT_MULTILINE', [' demoResc ', ' r1 ', ' r2 '])
 
-
         finally:
             # clean up and remove new resources
             self.admin.run_icommand("irm -rf " + tfile)
             self.admin.assert_icommand("iadmin rmresc r1")
             self.admin.assert_icommand("iadmin rmresc r2")
+
+            IrodsController().reload_configuration()
 
     def test_dynamic_pep_with_rscomm_usage(self):
         pep_map = {
@@ -226,12 +238,16 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
             '''),
         }
 
-        with temporary_core_file() as core:
-            core.add_rule(pep_map[self.plugin_name])
+        try:
+            with temporary_core_file() as core:
+                core.add_rule(pep_map[self.plugin_name])
+                IrodsController().reload_configuration()
 
-            # check rei functioning
-            self.admin.assert_icommand("iget " + self.testfile + " - ", 'STDOUT_SINGLELINE', self.testfile)
+                # check rei functioning
+                self.admin.assert_icommand("iget " + self.testfile + " - ", 'STDOUT_SINGLELINE', self.testfile)
 
+        finally:
+            IrodsController().reload_configuration()
 
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads re server log')
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'tests cache update - only applicable for irods_rule_language REP')
@@ -273,84 +289,99 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         with open(server_config_filename) as f:
             svr_cfg = json.load(f)
 
-        # inject a new rule base into the native rule engine
-        svr_cfg['plugin_configuration']['rule_engines'][0]['plugin_specific_configuration']['re_rulebase_set'] = ["test", "core"]
+        try:
+            # inject a new rule base into the native rule engine
+            svr_cfg['plugin_configuration']['rule_engines'][0]['plugin_specific_configuration']['re_rulebase_set'] = ["test", "core"]
 
-        # dump to a string to repave the existing server_config.json
-        new_server_config=json.dumps(svr_cfg, sort_keys=True,indent=4, separators=(',', ': '))
+            # dump to a string to repave the existing server_config.json
+            new_server_config=json.dumps(svr_cfg, sort_keys=True,indent=4, separators=(',', ': '))
 
-        with lib.file_backed_up(paths.server_config_path()):
-            test_re = os.path.join(paths.core_re_directory(), 'test.re')
-            # write new rule file to config dir
-            with open(test_re, 'wt') as f:
-                print(rules[1], file=f, end='')
+            with lib.file_backed_up(paths.server_config_path()):
+                # write new rule file to config dir
+                test_re = os.path.join(paths.core_re_directory(), 'test.re')
+                with open(test_re, 'wt') as f:
+                    print(rules[1], file=f, end='')
 
-            # repave the existing server_config.json
-            with open(server_config_filename, 'w') as f:
-                f.write(new_server_config)
+                # repave the existing server_config.json
+                with open(server_config_filename, 'w') as f:
+                    f.write(new_server_config)
+                IrodsController().reload_configuration()
 
-            IrodsController().restart()
-            # checkpoint log to know where to look for the string
-            initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
-            self.admin.assert_icommand('irule -F ' + rule_file)
+                # checkpoint log to know where to look for the string
+                initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
+                self.admin.assert_icommand('irule -r irods_rule_engine_plugin-irods_rule_language-instance -F ' + rule_file)
 
-            lib.delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'TEST_STRING_TO_FIND_1_2585', start_index=initial_log_size))
+                lib.delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'TEST_STRING_TO_FIND_1_2585', start_index=initial_log_size))
 
-            # repave rule with new string
+                # repave rule with new string
+                os.unlink(test_re)
+                with open(test_re, 'wt') as f:
+                    print(rules[2], file=f, end='')
+                IrodsController().reload_configuration()
+
+                # checkpoint log to know where to look for the string
+                initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
+                self.admin.assert_icommand('irule -r irods_rule_engine_plugin-irods_rule_language-instance -F ' + rule_file)
+                lib.delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'TEST_STRING_TO_FIND_2_2585', start_index=initial_log_size))
+
+        finally:
+            IrodsController().reload_configuration()
             os.unlink(test_re)
-            with open(test_re, 'wt') as f:
-                print(rules[2], file=f, end='')
-
-            # checkpoint log to know where to look for the string
-            initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
-            self.admin.assert_icommand('irule -F ' + rule_file)
-            lib.delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'TEST_STRING_TO_FIND_2_2585', start_index=initial_log_size))
-
-        # cleanup
-        IrodsController().restart()
-        os.unlink(test_re)
-        os.unlink(rule_file)
+            os.unlink(rule_file)
 
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads re server log')
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'tests cache update - only applicable for irods_rule_language REP')
     def test_update_core_multiple_agents__3184(self):
-        with temporary_core_file() as core:
-            for l in range(100):
-                core.add_rule("multiple_agents {}")
+        try:
+            with temporary_core_file() as core:
+                for l in range(100):
+                    core.add_rule("multiple_agents {}")
+                    IrodsController().reload_configuration()
 
-                processes = []
-                initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
-                for i in range(100):
-                    processes.append(subprocess.Popen(["ils"]))
-                for p in processes:
-                    p.wait()
-                lib.delayAssert(
-                    lambda: lib.log_message_occurrences_equals_count(
-                        msg='stack trace',
-                        count=0,
-                        start_index=initial_log_size))
+                    processes = []
+                    initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
+                    for i in range(100):
+                        processes.append(subprocess.Popen(["ils"]))
+                    for p in processes:
+                        p.wait()
+                    lib.delayAssert(
+                        lambda: lib.log_message_occurrences_equals_count(
+                            msg='stack trace',
+                            count=0,
+                            start_index=initial_log_size))
+
+        finally:
+            IrodsController().reload_configuration()
 
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads re server log')
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'tests cache update - only applicable for irods_rule_language REP')
     def test_fast_updates__2279(self):
         listcore_rule = 'writeLine("stdout", listcorerules)'
         looptotal = 10
-        for _ in range(looptotal):
-            with temporary_core_file(self.plugin_name) as core:
-                _, no_updates_out, _ = self.admin.assert_icommand(
-                    ['irule', listcore_rule, 'null', 'ruleExecOut'], 'STDOUT', 'acPreConnect')
+        try:
+            for _ in range(looptotal):
+                with temporary_core_file(self.plugin_name) as core:
+                    _, no_updates_out, _ = self.admin.assert_icommand(
+                        ['irule', '-r', 'irods_rule_engine_plugin-irods_rule_language-instance', listcore_rule, 'null', 'ruleExecOut'], 'STDOUT', 'acPreConnect')
 
-                core.add_rule('firstupdate{}')
-                _, first_update_out, _ = self.admin.assert_icommand(
-                    ['irule', listcore_rule, 'null', 'ruleExecOut'], 'STDOUT', 'firstupdate')
+                    core.add_rule('firstupdate{}')
+                    IrodsController().reload_configuration()
+                    _, first_update_out, _ = self.admin.assert_icommand(
+                        ['irule', '-r', 'irods_rule_engine_plugin-irods_rule_language-instance', listcore_rule, 'null', 'ruleExecOut'], 'STDOUT', 'firstupdate')
 
-                core.add_rule('secondupdate{}')
-                _, second_update_out, _ = self.admin.assert_icommand(
-                    ['irule', listcore_rule, 'null', 'ruleExecOut'], 'STDOUT', 'secondupdate')
+                    core.add_rule('secondupdate{}')
+                    IrodsController().reload_configuration()
+                    _, second_update_out, _ = self.admin.assert_icommand(
+                        ['irule', '-r', 'irods_rule_engine_plugin-irods_rule_language-instance', listcore_rule, 'null', 'ruleExecOut'], 'STDOUT', 'secondupdate')
 
-                self.assertNotEqual(no_updates_out, first_update_out)
-                self.assertNotEqual(first_update_out, second_update_out)
-                self.assertNotEqual(no_updates_out, second_update_out)
+                    self.assertNotEqual(no_updates_out, first_update_out)
+                    self.assertNotEqual(first_update_out, second_update_out)
+                    self.assertNotEqual(no_updates_out, second_update_out)
+
+                IrodsController().reload_configuration()
+
+        finally:
+            IrodsController().reload_configuration()
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'tests cache update - only applicable for irods_rule_language REP')
     def test_rulebase_update_without_delay(self):
@@ -389,43 +420,48 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         with open(server_config_filename) as f:
             svr_cfg = json.load(f)
 
-        # inject a new rule base into the native rule engine
-        svr_cfg['plugin_configuration']['rule_engines'][0]['plugin_specific_configuration']['re_rulebase_set'] = ["test", "core"]
+        try:
+            # inject a new rule base into the native rule engine
+            svr_cfg['plugin_configuration']['rule_engines'][0]['plugin_specific_configuration']['re_rulebase_set'] = ["test", "core"]
 
-        # dump to a string to repave the existing server_config.json
-        new_server_config=json.dumps(svr_cfg, sort_keys=True,indent=4, separators=(',', ': '))
+            # dump to a string to repave the existing server_config.json
+            new_server_config=json.dumps(svr_cfg, sort_keys=True,indent=4, separators=(',', ': '))
 
-        with lib.file_backed_up(paths.server_config_path()):
-            test_re = os.path.join(paths.core_re_directory(), 'test.re')
-            # write new rule file to config dir
-            with open(test_re, 'wt') as f:
-                print(rules[1], file=f, end='')
+            with lib.file_backed_up(paths.server_config_path()):
+                # write new rule file to config dir
+                test_re = os.path.join(paths.core_re_directory(), 'test.re')
+                with open(test_re, 'wt') as f:
+                    print(rules[1], file=f, end='')
 
-            # repave the existing server_config.json
-            with open(server_config_filename, 'w') as f:
-                f.write(new_server_config)
+                # repave the existing server_config.json
+                with open(server_config_filename, 'w') as f:
+                    f.write(new_server_config)
 
-            # checkpoint log to know where to look for the string
-            initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
-            self.admin.assert_icommand('irule -F ' + rule_file)
-            lib.delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'TEST_STRING_TO_FIND_1_NODELAY', start_index=initial_log_size))
+                IrodsController().reload_configuration()
 
-            time.sleep(5) # ensure modify time is sufficiently different
+                # checkpoint log to know where to look for the string
+                initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
+                self.admin.assert_icommand('irule -r irods_rule_engine_plugin-irods_rule_language-instance -F ' + rule_file)
+                lib.delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'TEST_STRING_TO_FIND_1_NODELAY', start_index=initial_log_size))
 
-            # repave rule with new string
+                time.sleep(5) # ensure modify time is sufficiently different
+
+                # repave rule with new string
+                os.unlink(test_re)
+                with open(test_re, 'wt') as f:
+                    print(rules[2], file=f, end='')
+                IrodsController().reload_configuration()
+
+                # checkpoint log to know where to look for the string
+                initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
+                self.admin.assert_icommand('irule -r irods_rule_engine_plugin-irods_rule_language-instance -F ' + rule_file)
+                #time.sleep(35)  # wait for test to fire
+                lib.delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'TEST_STRING_TO_FIND_2_NODELAY', start_index=initial_log_size))
+
+        finally:
+            IrodsController().reload_configuration()
             os.unlink(test_re)
-            with open(test_re, 'wt') as f:
-                print(rules[2], file=f, end='')
-
-            # checkpoint log to know where to look for the string
-            initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
-            self.admin.assert_icommand('irule -F ' + rule_file)
-            #time.sleep(35)  # wait for test to fire
-            lib.delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'TEST_STRING_TO_FIND_2_NODELAY', start_index=initial_log_size))
-
-        # cleanup
-        os.unlink(test_re)
-        os.unlink(rule_file)
+            os.unlink(rule_file)
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Python REP does not guarantee argument preservation')
     def test_argument_preservation__3236(self):
@@ -503,7 +539,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
             with open(server_config_filename, 'w') as f:
                 f.write(new_server_config)
 
-            IrodsController().restart()
+            IrodsController().restart(test_mode=True)
             # checkpoint log to know where to look for the string
             initial_log_size = lib.get_file_size_by_path(irods_config.server_log_path)
 
@@ -516,7 +552,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
                                                           "TEST_STRING_TO_FIND_DEFECT_3560", start_index=initial_log_size))
 
         # cleanup
-        IrodsController().restart()
+        IrodsController().restart(test_mode=True)
         os.unlink(rulefile1)
         os.unlink(rulefile2)
         os.unlink(rulefile3)
@@ -560,6 +596,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
 
             with temporary_core_file() as core:
                 core.add_rule(pep_map[self.plugin_name].format(metadata_attr, metadata_value, temporary_resource))
+                IrodsController().reload_configuration()
 
                 with open(rule_file, 'w') as f:
                     f.write(rule_string)
@@ -571,6 +608,8 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         finally:
             lib.remove_resource(self.admin, temporary_resource)
             self.admin.run_icommand(['iadmin', 'rum'])
+
+            IrodsController().reload_configuration()
 
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only run for native rule language')
@@ -649,6 +688,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
 
                 # Add a PEP which fires after the "close" resource operation. The PEP adds an AVU to the object at logical_path.
                 core.add_rule(pep_map[self.plugin_name])
+                IrodsController().reload_configuration()
 
                 # Create an iRODS rule which opens a data object at logical_path, calls msiExecCmd, and then closes the data object.
                 rule_file = os.path.join(self.admin.local_session_dir, 'rule.r')
@@ -669,6 +709,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
             self.admin.run_icommand(['iadmin', 'rum'])
             lib.remove_resource(self.admin, local_resource)
 
+            IrodsController().reload_configuration()
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'Only implemented for NREP.')
     def test_rsDataObjRepl_populates_input_struct__issue_6100(self):
@@ -696,6 +737,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         try:
             with temporary_core_file() as core:
                 core.add_rule(pep_map[self.plugin_name])
+                IrodsController().reload_configuration()
 
                 lib.create_ufs_resource(self.admin, resc1, hostname=test.settings.HOSTNAME_2)
                 lib.create_ufs_resource(self.admin, resc2, hostname=test.settings.HOSTNAME_3)
@@ -711,6 +753,8 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
             lib.remove_resource(self.admin, resc2)
             lib.remove_resource(self.admin, resc1)
             self.admin.assert_icommand(['iadmin', 'rum'])
+
+            IrodsController().reload_configuration()
 
 
 @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
@@ -929,64 +973,69 @@ class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
         # query for resource properties
         resource_property_list = self.get_resource_property_list(user_session)
 
-        with temporary_core_file() as core:
+        try:
+            with temporary_core_file() as core:
 
-            # make pep rule
-            if self.plugin_name == 'irods_rule_engine_plugin-irods_rule_language':
-                test_rule = self.make_pep_rule(pep_name, rule_body)
-            elif self.plugin_name == 'irods_rule_engine_plugin-python':
-                test_rule = self.make_pep_rule_python(pep_name, rule_body)
+                # make pep rule
+                if self.plugin_name == 'irods_rule_engine_plugin-irods_rule_language':
+                    test_rule = self.make_pep_rule(pep_name, rule_body)
+                elif self.plugin_name == 'irods_rule_engine_plugin-python':
+                    test_rule = self.make_pep_rule_python(pep_name, rule_body)
 
-            # write pep rule into test_re
-#            with open(test_re, 'w') as f:
-#                f.write(test_rule)
-            core.add_rule(test_rule)
+                # write pep rule into test_re
+    #            with open(test_re, 'w') as f:
+    #                f.write(test_rule)
+                core.add_rule(test_rule)
+                IrodsController().reload_configuration()
 
-#            # repave the existing server_config.json to add test_re
-#            with open(server_config_filename, 'w') as f:
-#                f.write(new_server_config)
+    #            # repave the existing server_config.json to add test_re
+    #            with open(server_config_filename, 'w') as f:
+    #                f.write(new_server_config)
 
-            # make client-side rule file
-            if client_rule is not None:
-                client_rule_file = "test_rule_file.r"
-                with open(client_rule_file, 'w') as f:
-                    f.write(client_rule.format(**locals()))
+                # make client-side rule file
+                if client_rule is not None:
+                    client_rule_file = "test_rule_file.r"
+                    with open(client_rule_file, 'w') as f:
+                        f.write(client_rule.format(**locals()))
 
-            # perform precommands
-            for c in precommands:
-                if isinstance(c, tuple):
-                    user_session.assert_icommand(c[0].format(**locals()), c[1], c[2])
-                else:
-                    user_session.assert_icommand(c.format(**locals()))
+                # perform precommands
+                for c in precommands:
+                    if isinstance(c, tuple):
+                        user_session.assert_icommand(c[0].format(**locals()), c[1], c[2])
+                    else:
+                        user_session.assert_icommand(c.format(**locals()))
 
-            # checkpoint log to know where to look for the string
-            initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
+                # checkpoint log to know where to look for the string
+                initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
 
-            # perform commands to hit PEP
-            for c in commands:
-                if isinstance(c, tuple):
-                    user_session.assert_icommand(c[0].format(**locals()), c[1], c[2])
-                else:
-                    user_session.assert_icommand(c.format(**locals()))
+                # perform commands to hit PEP
+                for c in commands:
+                    if isinstance(c, tuple):
+                        user_session.assert_icommand(c[0].format(**locals()), c[1], c[2])
+                    else:
+                        user_session.assert_icommand(c.format(**locals()))
 
-            # delete client-side rule file
-            if client_rule is not None:
-                os.unlink(client_rule_file)
+                # delete client-side rule file
+                if client_rule is not None:
+                    os.unlink(client_rule_file)
 
-            # confirm that PEP was hit by looking for pep name in server log
-            lib.delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), pep_name, start_index=initial_log_size))
+                # confirm that PEP was hit by looking for pep name in server log
+                lib.delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), pep_name, start_index=initial_log_size))
 
-            # check that resource session vars were written to the server log
-            for line in resource_property_list:
-                column = line.rsplit('=', 1)[0].strip()
-                property = line.rsplit('=', 1)[1].strip()
-                if property:
-                    if column != 'RESC_MODIFY_TIME':
-                        lib.delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), property, start_index=initial_log_size))
+                # check that resource session vars were written to the server log
+                for line in resource_property_list:
+                    column = line.rsplit('=', 1)[0].strip()
+                    property = line.rsplit('=', 1)[1].strip()
+                    if property:
+                        if column != 'RESC_MODIFY_TIME':
+                            lib.delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), property, start_index=initial_log_size))
 
-        # cleanup
-        user_session.run_icommand('irm -f {target_obj}'.format(**locals()))
-#        os.unlink(test_re)
+            # cleanup
+            user_session.run_icommand('irm -f {target_obj}'.format(**locals()))
+    #        os.unlink(test_re)
+
+        finally:
+            IrodsController().reload_configuration()
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for Python REP')
     def test_genquery_foreach_MAX_SQL_ROWS_multiple__3489(self):

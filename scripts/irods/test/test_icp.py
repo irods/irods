@@ -17,6 +17,7 @@ from .. import core_file
 from .. import paths
 from .. import test
 from ..configuration import IrodsConfig
+from ..controller import IrodsController
 from ..test.command import assert_command
 
 class Test_Icp(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
@@ -49,6 +50,7 @@ class Test_Icp(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
                 del self.user.environment_file_contents['irods_default_resource']
                 with core_file.temporary_core_file(self.plugin_name) as core:
                     core.add_rule(pep_map[self.plugin_name])
+                    IrodsController().reload_configuration()
 
                     lib.make_large_local_tmp_dir(test_dir_path, 1024, 1024)
 
@@ -59,6 +61,8 @@ class Test_Icp(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
                     self.assertNotIn('SYS_OUT_OF_FILE_DESC', err, 'SYS_OUT_OF_FILE_DESC found in output.')
         finally:
             shutil.rmtree(test_dir_path, ignore_errors=True)
+
+            IrodsController().reload_configuration()
 
     def test_multithreaded_icp__issue_5478(self):
         def do_test(size, threads):

@@ -14,6 +14,7 @@ from .. import lib
 from .. import paths
 from .. import test
 from ..configuration import IrodsConfig
+from ..controller import IrodsController
 from ..core_file import temporary_core_file
 
 SessionsMixin = session.make_sessions_mixin(
@@ -124,34 +125,39 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
 		test_session = self.user_sessions[0]
 		remote_home_collection = test_session.remote_home_collection(test.settings.FEDERATION.REMOTE_ZONE)
 		test_session.assert_icommand(['ils', remote_home_collection], 'STDOUT_SINGLELINE', remote_home_collection)
-		with temporary_core_file() as core:
-			# Disable SSL communications in the local server. This should break communications with the remote zone,
-			# which is supposed to be configured for SSL communications.
-			core.add_rule('acPreConnect(*OUT) { *OUT = "CS_NEG_REFUSE"; }')
-
-			# Disable SSL communications in the service account client environment so that it can communicate with
-			# the local server, which has just disabled SSL communications.
-			env_update = {'irods_client_server_policy': 'CS_NEG_REFUSE'}
-			service_account_env_file = os.path.join(paths.irods_directory(), '.irods', "irods_environment.json")
-			with lib.file_backed_up(service_account_env_file):
-				lib.update_json_file_from_dict(service_account_env_file, env_update)
-
-				# Disable SSL communications in the test session client environment so that it can communicate with
+		try:
+			with temporary_core_file() as core:
+				# Disable SSL communications in the local server. This should break communications with the remote zone,
+				# which is supposed to be configured for SSL communications.
+				core.add_rule('acPreConnect(*OUT) { *OUT = "CS_NEG_REFUSE"; }')
+				IrodsController().reload_configuration()
+		
+				# Disable SSL communications in the service account client environment so that it can communicate with
 				# the local server, which has just disabled SSL communications.
-				client_env_file = os.path.join(test_session.local_session_dir, "irods_environment.json")
-				with lib.file_backed_up(client_env_file):
-					lib.update_json_file_from_dict(client_env_file, env_update)
-
-					# Make sure communications with the local zone are in working order...
-					_, pwd, _ = test_session.assert_icommand(['ipwd'], 'STDOUT', test_session.zone_name)
-					test_session.assert_icommand(['ils'], 'STDOUT_SINGLELINE', pwd.strip())
-
-					# ils in the remote zone should fail due to the misconfigured SSL settings, but not explode.
-					out, err, rc = test_session.run_icommand(['ils', remote_home_collection])
-					self.assertNotEqual(0, rc)
-					self.assertEqual(0, len(out))
-					self.assertIn('iRODS filesystem error occurred', err)
-					self.assertNotIn('terminating with uncaught exception', err)
+				env_update = {'irods_client_server_policy': 'CS_NEG_REFUSE'}
+				service_account_env_file = os.path.join(paths.irods_directory(), '.irods', "irods_environment.json")
+				with lib.file_backed_up(service_account_env_file):
+					lib.update_json_file_from_dict(service_account_env_file, env_update)
+		
+					# Disable SSL communications in the test session client environment so that it can communicate with
+					# the local server, which has just disabled SSL communications.
+					client_env_file = os.path.join(test_session.local_session_dir, "irods_environment.json")
+					with lib.file_backed_up(client_env_file):
+						lib.update_json_file_from_dict(client_env_file, env_update)
+		
+						# Make sure communications with the local zone are in working order...
+						_, pwd, _ = test_session.assert_icommand(['ipwd'], 'STDOUT', test_session.zone_name)
+						test_session.assert_icommand(['ils'], 'STDOUT_SINGLELINE', pwd.strip())
+		
+						# ils in the remote zone should fail due to the misconfigured SSL settings, but not explode.
+						out, err, rc = test_session.run_icommand(['ils', remote_home_collection])
+						self.assertNotEqual(0, rc)
+						self.assertEqual(0, len(out))
+						self.assertIn('iRODS filesystem error occurred', err)
+						self.assertNotIn('terminating with uncaught exception', err)
+		
+		finally:
+			IrodsController().reload_configuration()
 
 	def test_ils_subcolls(self):
 		# pick session(s) for the test
@@ -1051,7 +1057,8 @@ OUTPUT ruleExecOut
 			initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
 
 		# Execute rule and ensure that output is empty (success)
-		self.user_sessions[0].assert_icommand(['irule', '-F', rule_file], 'STDOUT_MULTILINE', [expected_before_remote, expected_from_remote, expected_after_remote])
+		self.user_sessions[0].assert_icommand(['irule', '-r', 'irods_rule_engine_plugin-irods_rule_language-instance', '-F', rule_file],
+			'STDOUT_MULTILINE', [expected_before_remote, expected_from_remote, expected_after_remote])
 
 		# TODO: Add support for remote with #4164
 		if zone_info == 'local':
@@ -1157,29 +1164,36 @@ OUTPUT ruleExecOut
 		svr_cfg['federation'][0]['catalog_provider_hosts'][0] = 'keeplookinbuddy'
 
 		new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
-		with lib.file_backed_up(server_config_filename):
-			# Repave the existing server_config.json. It will be restored when we leave this 'with' block.
-			with open(server_config_filename, 'w') as f:
-				f.write(new_server_config)
 
-			# If the hostname is not found in the catalog_provider_hosts list, the remote server will sign its local
-			# zone key with its local negotiation key and the signed zone key sent by the local server will not match
-			# that signed zone key. This should cause the ils to result in a SERVER_NEGOTIATION_ERROR.
-			user.assert_icommand(['ils', '-l', remote_home_collection], 'STDERR', 'SERVER_NEGOTIATION_ERROR')
+		try:
+			with lib.file_backed_up(server_config_filename):
+				# Repave the existing server_config.json. It will be restored when we leave this 'with' block.
+				with open(server_config_filename, 'w') as f:
+					f.write(new_server_config)
+				IrodsController().reload_configuration()
 
-		# Now add the valid hostname to the end of the list so that the zone key will be correctly signed.
-		svr_cfg['federation'][0]['catalog_provider_hosts'].append(remote_provider_host)
+				# If the hostname is not found in the catalog_provider_hosts list, the remote server will sign its local
+				# zone key with its local negotiation key and the signed zone key sent by the local server will not match
+				# that signed zone key. This should cause the ils to result in a SERVER_NEGOTIATION_ERROR.
+				user.assert_icommand(['ils', '-l', remote_home_collection], 'STDERR', 'SERVER_NEGOTIATION_ERROR')
 
-		# Dump to a string to repave the existing server_config.json.
-		new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
-		with lib.file_backed_up(server_config_filename):
-			# Repave the existing server_config.json. It will be restored when we leave this 'with' block.
-			with open(server_config_filename, 'w') as f:
-				f.write(new_server_config)
+			# Now add the valid hostname to the end of the list so that the zone key will be correctly signed.
+			svr_cfg['federation'][0]['catalog_provider_hosts'].append(remote_provider_host)
 
-			# Ensure that we can still list the contents in the remote zone because the server negotiation logic looked
-			# at all the entries in the catalog_provider_hosts (not just the first one).
-			user.assert_icommand(['ils', '-l', remote_home_collection], 'STDOUT')
+			# Dump to a string to repave the existing server_config.json.
+			new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
+			with lib.file_backed_up(server_config_filename):
+				# Repave the existing server_config.json. It will be restored when we leave this 'with' block.
+				with open(server_config_filename, 'w') as f:
+					f.write(new_server_config)
+				IrodsController().reload_configuration()
+
+				# Ensure that we can still list the contents in the remote zone because the server negotiation logic looked
+				# at all the entries in the catalog_provider_hosts (not just the first one).
+				user.assert_icommand(['ils', '-l', remote_home_collection], 'STDOUT')
+
+		finally:
+			IrodsController().reload_configuration()
 
 
 	def test_remove_data_object_in_collection_with_read_permissions__issue_6428(self):
@@ -1323,7 +1337,7 @@ class Test_Microservices(SessionsMixin, unittest.TestCase):
 
 		# prepare irule sequence
 		# the rule is simple enough not to need a rule file
-		irule_str = '''irule "msiRmColl(*coll, 'forceFlag=', *status); writeLine('stdout', *status)" "*coll={remote_home_collection}/{dir_name}" "ruleExecOut"'''.format(
+		irule_str = '''irule -r irods_rule_engine_plugin-irods_rule_language-instance "msiRmColl(*coll, 'forceFlag=', *status); writeLine('stdout', *status)" "*coll={remote_home_collection}/{dir_name}" "ruleExecOut"'''.format(
 			**parameters)
 
 		# invoke msiRmColl() and checks that it returns 0
@@ -1382,7 +1396,7 @@ OUTPUT ruleExecOut
 			print(rule_str, file=rule_file, end='')
 
 		# invoke rule
-		test_session.assert_icommand('irule -F ' + rule_file_path)
+		test_session.assert_icommand('irule -r irods_rule_engine_plugin-irods_rule_language-instance -F ' + rule_file_path)
 
 		# give it time to complete
 		time.sleep(60)
@@ -1442,7 +1456,7 @@ OUTPUT ruleExecOut
 			rule_file.write(rule_str)
 
 		# invoke rule
-		test_session.assert_icommand('irule -F ' + rule_file_path)
+		test_session.assert_icommand('irule -r irods_rule_engine_plugin-irods_rule_language-instance -F ' + rule_file_path)
 
 		# look for AVU set by msiAssociateKeyValuePairsToObj
 		test_session.assert_icommand(
@@ -1467,7 +1481,7 @@ OUTPUT ruleExecOut
 			rule_file.write(rule_str)
 
 		# invoke rule
-		test_session.assert_icommand('irule -F ' + rule_file_path)
+		test_session.assert_icommand('irule -r irods_rule_engine_plugin-irods_rule_language-instance -F ' + rule_file_path)
 
 		# confirm that AVU is gone
 		test_session.assert_icommand(
@@ -1642,6 +1656,7 @@ pep_api_data_obj_put_finally (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORT
 
 			with temporary_core_file() as core:
 				core.add_rule(put_peps)
+				IrodsController().reload_configuration()
 
 				# peps to check for the first, successful put
 				peps = ['data-obj-put-pre', 'data-obj-put-post', 'data-obj-put-finally']
@@ -1683,6 +1698,8 @@ pep_api_data_obj_put_finally (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORT
 			test_session.run_icommand(['irm', '-f', local_logical_path])
 			test_session.run_icommand(['irm', '-f', logical_path])
 			self.admin.assert_icommand(['iadmin', 'rum'])
+
+			IrodsController().reload_configuration()
 
 class Test_Delay_Rule_Removal(SessionsMixin, unittest.TestCase):
 
@@ -1757,6 +1774,7 @@ class Test_Delay_Rule_Removal(SessionsMixin, unittest.TestCase):
 						}
 					}
 				'''))
+				IrodsController().reload_configuration()
 
 				# Trigger the PEP so that a delay rule is created.
 				self.remote_user.assert_icommand(['itouch', self.remote_user_home_collection])
@@ -1777,6 +1795,7 @@ class Test_Delay_Rule_Removal(SessionsMixin, unittest.TestCase):
 
 		finally:
 			self.local_admin.run_icommand(['iqdel', '-a'])
+			IrodsController().reload_configuration()
 
 
 class test_compound_resource_operations(SessionsMixin, unittest.TestCase):

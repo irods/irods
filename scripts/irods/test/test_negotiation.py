@@ -11,6 +11,8 @@ from . import session
 from .. import lib
 from .. import paths
 from .. import test
+from ..controller import IrodsController
+from ..exceptions import IrodsError
 
 @unittest.skipUnless(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER,
                      'expected behavior manifests only in server-to-server communications')
@@ -40,10 +42,10 @@ class test_invalid_negotiation_keys(unittest.TestCase):
         with open(paths.server_config_path()) as f:
             svr_cfg = json.load(f)
 
-        if value is not None:
-            svr_cfg['negotiation_key'] = ''
-        else:
+        if value is None:
             del svr_cfg['negotiation_key']
+        else:
+            svr_cfg['negotiation_key'] = value
 
         new_server_config = json.dumps(svr_cfg,
                                        sort_keys=True,
@@ -54,9 +56,14 @@ class test_invalid_negotiation_keys(unittest.TestCase):
             with open(paths.server_config_path(), 'w') as f:
                 f.write(new_server_config)
 
-            # should result in a connection error, so look for "is probably down"
-            # specific error codes may differ depending on the nature of the test
-            self.admin.assert_icommand(['ils'], 'STDERR', 'is probably down')
+            # Attempting to reload the configuration will result in an exception being
+            # raised because the server report that the configuration failed validation.
+            # This will result in the server continuing to use the existing configuration.
+            with self.assertRaises(IrodsError):
+                IrodsController().reload_configuration()
+
+            # Show that the server is still responsive.
+            self.admin.assert_icommand(['ils'], 'STDOUT', [self.admin.session_collection])
 
 
     def test_negotiation_key_missing(self):

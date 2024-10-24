@@ -13,6 +13,7 @@ from .. import test
 from .. import lib
 from .. import paths
 from ..configuration import IrodsConfig
+from ..controller import IrodsController
 
 class Test_Rule_Engine_Plugin_Passthrough(session.make_sessions_mixin([('otherrods', 'rods')], []), unittest.TestCase):
 
@@ -54,23 +55,27 @@ class Test_Rule_Engine_Plugin_Passthrough(session.make_sessions_mixin([('otherro
 
             core_re_path = os.path.join(config.core_re_directory, 'core.re')
 
-            with lib.file_backed_up(core_re_path):
-                second_msg = 'This should appear after the first message!'
+            try:
+                with lib.file_backed_up(core_re_path):
+                    second_msg = 'This should appear after the first message!'
 
-                # Add a new PEP to core.re that will write to the log file.
-                # This will help to verify that the Passthrough REP is not blocking anything.
-                with open(core_re_path, 'a') as core_re:
-                    core_re.write(pep_name + "(*a, *b, *c) { writeLine('serverLog', '" + second_msg + "'); }\n")
+                    # Add a new PEP to core.re that will write to the log file.
+                    # This will help to verify that the Passthrough REP is not blocking anything.
+                    with open(core_re_path, 'a') as core_re:
+                        core_re.write(pep_name + "(*a, *b, *c) { writeLine('serverLog', '" + second_msg + "'); }\n")
+                    IrodsController(config).reload_configuration()
 
-                # Trigger the Passthrough REP and the PEP that was just added to core.re.
-                self.admin.run_icommand('ils')
+                    # Trigger the Passthrough REP and the PEP that was just added to core.re.
+                    self.admin.run_icommand('ils')
 
-                # Verify that the Passthrough REP message appears in the log file before
-                # the message produced by the PEP in core.re.
-                with open(paths.server_log_path(), 'r') as log_file:
-                    mm = mmap.mmap(log_file.fileno(), 0, access=mmap.ACCESS_READ)
-                    index = mm.find("Returned '{0}' to REPF.".format(str(RULE_ENGINE_CONTINUE)).encode())
-                    self.assertTrue(index != -1)
-                    self.assertTrue(mm.find(second_msg.encode(), index) != -1)
-                    mm.close()
+                    # Verify that the Passthrough REP message appears in the log file before
+                    # the message produced by the PEP in core.re.
+                    with open(paths.server_log_path(), 'r') as log_file:
+                        mm = mmap.mmap(log_file.fileno(), 0, access=mmap.ACCESS_READ)
+                        index = mm.find("Returned '{0}' to REPF.".format(str(RULE_ENGINE_CONTINUE)).encode())
+                        self.assertTrue(index != -1)
+                        self.assertTrue(mm.find(second_msg.encode(), index) != -1)
+                        mm.close()
 
+            finally:
+                IrodsController(config).reload_configuration()

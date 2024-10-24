@@ -530,6 +530,7 @@ OUTPUT ruleExecOut
 
             with temporary_core_file() as core:
                 core.add_rule(pep_map[self.plugin_name])
+                IrodsController().reload_configuration()
 
                 self.user0.assert_icommand(['iput', filename])
                 free_space = psutil.disk_usage(self.admin.get_vault_path('demoResc')).free
@@ -543,8 +544,12 @@ OUTPUT ruleExecOut
                 assert False, '"free space:" not found in ilsresc output:\n' + ilsresc_output
             assert abs(free_space - ilsresc_freespace) < 4096*10, 'free_space {0}, ilsresc free space {1}'.format(free_space, ilsresc_freespace)
             os.unlink(filename)
+
         except:
             print('Skipping for plugin name ['+self.plugin_name+']')
+
+        finally:
+            IrodsController().reload_configuration()
 
     def test_istream_works_with_minimum_free_space_for_create_in_bytes_configured__issue_7160(self):
         filename = 'test_istream_works_with_minimum_free_space_for_create_in_bytes_configured__issue_7160'
@@ -588,7 +593,7 @@ OUTPUT ruleExecOut
                 with open(server_config_filename, 'w') as f:
                     f.write(new_server_config)
 
-                IrodsController().restart()
+                IrodsController().restart(test_mode=True)
 
                 lib.make_file(file_name, 15)
                 initial_log_size = lib.get_file_size_by_path(IrodsConfig().server_log_path)
@@ -612,7 +617,7 @@ OUTPUT ruleExecOut
                         start_index=initial_log_size))
 
         finally:
-            IrodsController().restart()
+            IrodsController().restart(test_mode=True)
             if os.path.exists(file_name):
                 os.unlink(file_name)
             if os.path.exists(other_file_name):
@@ -792,6 +797,8 @@ OUTPUT ruleExecOut
             # Both are okay, since either case is possible when connecting to an invalid host.
             # It depends on if the host rejects the connection or ignores it (i.e. a "stealth" port).
             self.assertTrue('-347000 USER_SOCK_CONNECT_TIMEDOUT' in err or '-305000 USER_SOCK_CONNECT_ERR' in err)
+
+            self.admin.assert_icommand("ils -L %s" % file1, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
         finally:
             if os.path.exists(file1):
                 os.unlink(file1)
@@ -817,6 +824,8 @@ OUTPUT ruleExecOut
             # Both are okay, since either case is possible when connecting to an invalid host.
             # It depends on if the host rejects the connection or ignores it (i.e. a "stealth" port).
             self.assertTrue('-347000 USER_SOCK_CONNECT_TIMEDOUT' in err or '-305000 USER_SOCK_CONNECT_ERR' in err)
+
+            self.admin.assert_icommand("ils -L %s" % file1, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
         finally:
             if os.path.exists(file1):
                 os.unlink(file1)
@@ -845,6 +854,8 @@ OUTPUT ruleExecOut
             # Both are okay, since either case is possible when connecting to an invalid host.
             # It depends on if the host rejects the connection or ignores it (i.e. a "stealth" port).
             self.assertTrue('-347000 USER_SOCK_CONNECT_TIMEDOUT' in err or '-305000 USER_SOCK_CONNECT_ERR' in err)
+
+            self.admin.assert_icommand("ils -L %s" % file1, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
         finally:
             if os.path.exists(file1):
                 os.unlink(file1)
@@ -909,6 +920,7 @@ OUTPUT ruleExecOut
                 os.unlink(filepath)
             lib.remove_resource(self.admin, resource_name)
 
+    @unittest.skip("irods-grid no longer exists as an icommand")
     @unittest.skipUnless(test.settings.RUN_IN_TOPOLOGY, "Only run in topology")
     def test_detached_mode_in_topology__issue_4421(self):
         try:
@@ -1005,9 +1017,10 @@ OUTPUT ruleExecOut
             if os.path.exists(file2):
                 os.unlink(file2)
 
-            self.admin.assert_icommand("irm -f " + file1)
+            self.admin.run_icommand("irm -f " + file1)
             lib.remove_resource(self.admin, resource_name)
 
+    @unittest.skip("irods-grid no longer exists as an icommand")
     @unittest.skipUnless(test.settings.RUN_IN_TOPOLOGY, "Only run in topology")
     def test_detached_mode_in_topology_with_host_list__issue_4421(self):
         try:
@@ -1106,9 +1119,10 @@ OUTPUT ruleExecOut
             if os.path.exists(file2):
                 os.unlink(file2)
 
-            self.admin.assert_icommand("irm -f " + file1)
+            self.admin.run_icommand("irm -f " + file1)
             lib.remove_resource(self.admin, resource_name)
 
+    @unittest.skip("irods-grid no longer exists as an icommand")
     @unittest.skipUnless(test.settings.RUN_IN_TOPOLOGY, "Only run in topology")
     def test_detached_mode_in_topology_put_with_resource_host_down__issue_4421(self):
         try:
@@ -2652,6 +2666,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
             with temporary_core_file(self.plugin_name) as core:
 
                 core.add_rule(rule_map[self.plugin_name])
+                IrodsController().reload_configuration()
 
                 lib.make_file(filename, 10, 'arbitrary')
 
@@ -2688,6 +2703,8 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
             self.admin.assert_icommand("irm -f " + filename)
             lib.remove_file_if_exists(filename)
             lib.remove_file_if_exists(get_filename)
+
+            IrodsController().reload_configuration()
 
     def test_irm_specific_replica(self):
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed
@@ -2737,14 +2754,19 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         phypath = os.path.join(self.admin.get_vault_session_path('archiveResc'), filename)
         os.remove(phypath)
 
-        # manipulate the core.re to add the new policy
-        with temporary_core_file() as core:
-            core.add_rule(rule_map[self.plugin_name])
+        try:
+            # manipulate the core.re to add the new policy
+            with temporary_core_file() as core:
+                core.add_rule(rule_map[self.plugin_name])
+                IrodsController().reload_configuration()
 
-            self.admin.assert_icommand("irm -f " + filename)
+                self.admin.assert_icommand("irm -f " + filename)
 
-        # local cleanup
-        os.remove(filepath)
+            # local cleanup
+            os.remove(filepath)
+
+        finally:
+            IrodsController().reload_configuration()
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing: Checks local file")
     def test_iget_prefer_from_archive__ticket_1660(self):
@@ -2782,33 +2804,38 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         # confirm retrieved file is same as original
         self.assertEqual(0, os.system("diff %s %s" % (filepath, retrievedfile)))
 
-        # manipulate the core.re to add the new policy
-        with temporary_core_file() as core:
-            core.add_rule(pep_map[self.plugin_name])
+        try:
+            # manipulate the core.re to add the new policy
+            with temporary_core_file() as core:
+                core.add_rule(pep_map[self.plugin_name])
+                IrodsController().reload_configuration()
 
-            # restart the server to reread the new core.re
-            IrodsController().restart()
+                # restart the server to reread the new core.re
+                IrodsController().restart(test_mode=True)
 
-            # manually update the replica in archive vault
-            out, _, _ = self.admin.run_icommand('ils -L ' + filename)
-            archivereplicaphypath = [token for token in out.split() if "archiveResc_vault" in token][0]
-            with open(archivereplicaphypath, 'wt') as f:
-                print('UPDATED ARCHIVE AGAIN\n', file=f, end='')
+                # manually update the replica in archive vault
+                out, _, _ = self.admin.run_icommand('ils -L ' + filename)
+                archivereplicaphypath = [token for token in out.split() if "archiveResc_vault" in token][0]
+                with open(archivereplicaphypath, 'wt') as f:
+                    print('UPDATED ARCHIVE AGAIN\n', file=f, end='')
 
-            # get the file
-            self.admin.assert_icommand("iget -f %s %s" % (filename, retrievedfile))  # get file from archive
+                # get the file
+                self.admin.assert_icommand("iget -f %s %s" % (filename, retrievedfile))  # get file from archive
 
-            # confirm this is the new archive file
-            matchfound = False
-            with open(retrievedfile) as f:
-                for line in f:
-                    if "AGAIN" in line:
-                        matchfound = True
-            self.assertTrue(matchfound)
+                # confirm this is the new archive file
+                matchfound = False
+                with open(retrievedfile) as f:
+                    for line in f:
+                        if "AGAIN" in line:
+                            matchfound = True
+                self.assertTrue(matchfound)
 
-        # local cleanup
-        os.remove(filepath)
-        os.remove(retrievedfile)
+            # local cleanup
+            os.remove(filepath)
+            os.remove(retrievedfile)
+
+        finally:
+            IrodsController().reload_configuration()
 
     def test_local_iput_with_force_and_destination_resource__ticket_1706(self):
         # local setup
@@ -3690,44 +3717,46 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
         self.assertEqual(0, os.system("diff %s %s" % (filepath, retrievedfile))) 
         print("original file diff confirmed")
 
-        # manipulate the core.re to add the new policy
-        with temporary_core_file() as core:
-            core.add_rule(pep_map[self.plugin_name])
+        try:
+            # manipulate the core.re to add the new policy
+            with temporary_core_file() as core:
+                core.add_rule(pep_map[self.plugin_name])
+                IrodsController().reload_configuration()
 
-            # restart the server to reread the new core.re
-            IrodsController().restart()
+                # manually update the replicas in archive vaults
+                out, _, _ = self.admin.run_icommand('ils -L ' + filename)
+                archivereplica1phypath = [token for token in out.split() if "archiveResc1Vault" in token][0]
+                archivereplica2phypath = [token for token in out.split() if "archiveResc2Vault" in token][0]
+                print(archive1replicaphypath)
+                print(archive2replicaphypath)
+                with open(archivereplica1phypath, 'wt') as f:
+                    print('UPDATED ARCHIVE 1 AGAIN\n', file=f, end='')
+                with open(archivereplica2phypath, 'wt') as f:
+                    print('UPDATED ARCHIVE 2 AGAIN\n', file=f, end='')
 
-            # manually update the replicas in archive vaults
-            out, _, _ = self.admin.run_icommand('ils -L ' + filename)
-            archivereplica1phypath = [token for token in out.split() if "archiveResc1Vault" in token][0]
-            archivereplica2phypath = [token for token in out.split() if "archiveResc2Vault" in token][0]
-            print(archive1replicaphypath)
-            print(archive2replicaphypath)
-            with open(archivereplica1phypath, 'wt') as f:
-                print('UPDATED ARCHIVE 1 AGAIN\n', file=f, end='')
-            with open(archivereplica2phypath, 'wt') as f:
-                print('UPDATED ARCHIVE 2 AGAIN\n', file=f, end='')
+                # confirm the new content is on disk
+                with open(archivereplica1phypath) as f:
+                    for line in f:
+                        print(line)
+                with open(archivereplica2phypath) as f:
+                    for line in f:
+                        print(line)
 
-            # confirm the new content is on disk
-            with open(archivereplica1phypath) as f:
-                for line in f:
-                    print(line)
-            with open(archivereplica2phypath) as f:
-                for line in f:
-                    print(line)
+                self.admin.assert_icommand(['iget', '-f', filename, retrievedfile])
 
-            self.admin.assert_icommand(['iget', '-f', filename, retrievedfile])
+                # confirm this is the new archive file
+                with open(retrievedfile) as f:
+                    for line in f:
+                        if 'AGAIN' in line:
+                            break
+                    else:
+                        assert False
 
-            # confirm this is the new archive file
-            with open(retrievedfile) as f:
-                for line in f:
-                    if 'AGAIN' in line:
-                        break
-                else:
-                    assert False
+            # local cleanup
+            os.remove(filepath)
 
-        # local cleanup
-        os.remove(filepath)
+        finally:
+            IrodsController().reload_configuration()
 
     def test_local_iput_with_force_and_destination_resource__ticket_1706(self):
         # local setup
@@ -4139,6 +4168,7 @@ class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDev
         shutil.copy(core.filepath, backupcorefilepath)
 
         core.add_rule(pep_map[self.plugin_name])
+        IrodsController().reload_configuration()
 
         with session.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
@@ -4190,6 +4220,8 @@ class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDev
         backupcorefilepath = core.filepath + "--" + self._testMethodName
         shutil.copy(backupcorefilepath, core.filepath)
         os.remove(backupcorefilepath)
+
+        IrodsController().reload_configuration()
 
     def test_checksums_not_computed_for_archive__issue_6089(self):
         filename = 'test_checksums_not_computed_for_archive__issue_6089'

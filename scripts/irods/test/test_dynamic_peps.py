@@ -36,15 +36,20 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [('
         with lib.file_backed_up(config.server_config_path):
             core_re_path = os.path.join(config.core_re_directory, 'core.re')
 
-            with lib.file_backed_up(core_re_path):
-                prefix = "i4370_PATH => "
+            try:
+                with lib.file_backed_up(core_re_path):
+                    prefix = "i4370_PATH => "
 
-                with open(core_re_path, 'a') as core_re:
-                    core_re.write('pep_api_coll_create_pre(*a, *b, *coll_input) { writeLine("serverLog", "' + prefix + '" ++ *coll_input.coll_name); }\n')
+                    with open(core_re_path, 'a') as core_re:
+                        core_re.write('pep_api_coll_create_pre(*a, *b, *coll_input) { writeLine("serverLog", "' + prefix + '" ++ *coll_input.coll_name); }\n')
+                    IrodsController(config).reload_configuration()
 
-                coll_path = os.path.join(self.admin.session_collection, "i4370_test_collection")
-                self.admin.assert_icommand(['imkdir', coll_path])
-                lib.delayAssert(lambda: lib.log_message_occurrences_equals_count(msg=prefix + coll_path))
+                    coll_path = os.path.join(self.admin.session_collection, "i4370_test_collection")
+                    self.admin.assert_icommand(['imkdir', coll_path])
+                    lib.delayAssert(lambda: lib.log_message_occurrences_equals_count(msg=prefix + coll_path))
+
+            finally:
+                IrodsController(config).reload_configuration()
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_finally_peps_are_supported__issue_4773(self):
@@ -54,20 +59,25 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [('
         with lib.file_backed_up(core_re_path):
             msg = 'FINALLY PEPS SUPPORTED!!!'
 
-            with open(core_re_path, 'a') as core_re:
-                core_re.write('''
-                    pep_api_data_obj_put_finally(*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT) {{
-                        writeLine("serverLog", "{0}");
-                    }}
-                '''.format(msg))
+            try:
+                with open(core_re_path, 'a') as core_re:
+                    core_re.write('''
+                        pep_api_data_obj_put_finally(*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT) {{
+                            writeLine("serverLog", "{0}");
+                        }}
+                    '''.format(msg))
+                IrodsController(config).reload_configuration()
 
-            filename = os.path.join(self.admin.local_session_dir, 'finally_peps.txt')
-            lib.make_file(filename, 1, 'arbitrary')
+                filename = os.path.join(self.admin.local_session_dir, 'finally_peps.txt')
+                lib.make_file(filename, 1, 'arbitrary')
 
-            # Check log for message written by the finally PEP.
-            log_offset = lib.get_file_size_by_path(paths.server_log_path())
-            self.admin.assert_icommand(['iput', filename])
-            lib.delayAssert(lambda: lib.log_message_occurrences_greater_than_count(msg=msg, count=0, start_index=log_offset))
+                # Check log for message written by the finally PEP.
+                log_offset = lib.get_file_size_by_path(paths.server_log_path())
+                self.admin.assert_icommand(['iput', filename])
+                lib.delayAssert(lambda: lib.log_message_occurrences_greater_than_count(msg=msg, count=0, start_index=log_offset))
+
+            finally:
+                IrodsController(config).reload_configuration()
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_openedDataObjInp_t_serializer__issue_5408(self):
@@ -76,32 +86,37 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [('
         with lib.file_backed_up(config.server_config_path):
             core_re_path = os.path.join(config.core_re_directory, 'core.re')
 
-            with lib.file_backed_up(core_re_path):
-                with open(core_re_path, 'a') as core_re:
-                    attribute = ':'.join(['test_openedDataObjInp_t_serializer__issue_5408', 'pep_api_data_obj_write_post'])
-                    filename = 'test_openedDataObjInp_t_serializer__issue_5408.txt'
-                    logical_path = os.path.join(self.admin.session_collection, filename)
-                    core_re.write(dedent('''
-                        pep_api_data_obj_write_post(*INSTANCE_NAME, *COMM, *DATAOBJWRITEINP, *BUF)
-                        {{
-                            *my_l1descInx = *DATAOBJWRITEINP.l1descInx;
+            try:
+                with lib.file_backed_up(core_re_path):
+                    with open(core_re_path, 'a') as core_re:
+                        attribute = ':'.join(['test_openedDataObjInp_t_serializer__issue_5408', 'pep_api_data_obj_write_post'])
+                        filename = 'test_openedDataObjInp_t_serializer__issue_5408.txt'
+                        logical_path = os.path.join(self.admin.session_collection, filename)
+                        core_re.write(dedent('''
+                            pep_api_data_obj_write_post(*INSTANCE_NAME, *COMM, *DATAOBJWRITEINP, *BUF)
+                            {{
+                                *my_l1descInx = *DATAOBJWRITEINP.l1descInx;
 
-                            msiAddKeyVal(*key_val_pair,"{attribute}","the_l1descInx=[*my_l1descInx]");
-                            msiAssociateKeyValuePairsToObj(*key_val_pair,"{logical_path}","-d");
-                        }}'''.format(**locals())))
+                                msiAddKeyVal(*key_val_pair,"{attribute}","the_l1descInx=[*my_l1descInx]");
+                                msiAssociateKeyValuePairsToObj(*key_val_pair,"{logical_path}","-d");
+                            }}'''.format(**locals())))
+                    IrodsController(config).reload_configuration()
 
-                try:
-                    self.admin.assert_icommand(['istream', 'write', logical_path], input=filename)
+                    try:
+                        self.admin.assert_icommand(['istream', 'write', logical_path], input=filename)
 
-                    expected_value = 'the_l1descInx=[{}]'.format(3)
-                    lib.delayAssert(
-                        lambda: lib.metadata_attr_with_value_exists(self.admin, attribute, expected_value),
-                        maxrep=10
-                    )
+                        expected_value = 'the_l1descInx=[{}]'.format(3)
+                        lib.delayAssert(
+                            lambda: lib.metadata_attr_with_value_exists(self.admin, attribute, expected_value),
+                            maxrep=10
+                        )
 
-                finally:
-                    self.admin.assert_icommand(['irm', '-f', logical_path])
-                    self.admin.assert_icommand(['iadmin', 'rum'])
+                    finally:
+                        self.admin.assert_icommand(['irm', '-f', logical_path])
+                        self.admin.assert_icommand(['iadmin', 'rum'])
+
+            finally:
+                IrodsController(config).reload_configuration()
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_bytesBuf_t_serializer__issue_5408(self):
@@ -110,42 +125,47 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [('
         with lib.file_backed_up(config.server_config_path):
             core_re_path = os.path.join(config.core_re_directory, 'core.re')
 
-            with lib.file_backed_up(core_re_path):
-                with open(core_re_path, 'a') as core_re:
-                    attribute = ':'.join(['test_bytesBuf_t_serializer__issue_5408', 'pep_api_replica_close_post'])
-                    filename = 'test_bytesBuf_t_serializer__issue_5408.txt'
-                    logical_path = os.path.join(self.admin.session_collection, filename)
-                    core_re.write(dedent('''
-                        pep_api_replica_close_post(*INSTANCE_NAME, *COMM, *BUF)
-                        {{
-                            *my_len = *BUF.len
-                            *my_buf = *BUF.buf
+            try:
+                with lib.file_backed_up(core_re_path):
+                    with open(core_re_path, 'a') as core_re:
+                        attribute = ':'.join(['test_bytesBuf_t_serializer__issue_5408', 'pep_api_replica_close_post'])
+                        filename = 'test_bytesBuf_t_serializer__issue_5408.txt'
+                        logical_path = os.path.join(self.admin.session_collection, filename)
+                        core_re.write(dedent('''
+                            pep_api_replica_close_post(*INSTANCE_NAME, *COMM, *BUF)
+                            {{
+                                *my_len = *BUF.len
+                                *my_buf = *BUF.buf
 
-                            msiAddKeyVal(*key_val_pair,"{attribute}","the_len=[*my_len],the_buf=[*my_buf]");
-                            msiAssociateKeyValuePairsToObj(*key_val_pair,"{logical_path}","-d");
-                        }}'''.format(**locals())))
+                                msiAddKeyVal(*key_val_pair,"{attribute}","the_len=[*my_len],the_buf=[*my_buf]");
+                                msiAssociateKeyValuePairsToObj(*key_val_pair,"{logical_path}","-d");
+                            }}'''.format(**locals())))
+                    IrodsController(config).reload_configuration()
 
-                try:
-                    self.admin.assert_icommand(['istream', 'write', logical_path], input='test data')
+                    try:
+                        self.admin.assert_icommand(['istream', 'write', logical_path], input='test data')
 
-                    # We must hard-code the value of "expected_len" because null bytes are encoded as
-                    # hexidecimal in the bytes buffer. If we tried to use the len() function to capture
-                    # the length of "expected_buf", it would produce the wrong value. Because we are
-                    # using rc_replica_close for this test, we know that the JSON passed to the API will
-                    # have a length of 9 bytes. However, the metadata attribute value set on "logical_path"
-                    # will have a length of 13 due to serialization.
-                    expected_buf = r'{"fd":3}\x00'
-                    expected_len = 9
-                    expected_value = 'the_len=[{0}],the_buf=[{1}]'.format(expected_len, expected_buf)
+                        # We must hard-code the value of "expected_len" because null bytes are encoded as
+                        # hexidecimal in the bytes buffer. If we tried to use the len() function to capture
+                        # the length of "expected_buf", it would produce the wrong value. Because we are
+                        # using rc_replica_close for this test, we know that the JSON passed to the API will
+                        # have a length of 9 bytes. However, the metadata attribute value set on "logical_path"
+                        # will have a length of 13 due to serialization.
+                        expected_buf = r'{"fd":3}\x00'
+                        expected_len = 9
+                        expected_value = 'the_len=[{0}],the_buf=[{1}]'.format(expected_len, expected_buf)
 
-                    lib.delayAssert(
-                        lambda: lib.metadata_attr_with_value_exists(self.admin, attribute, expected_value),
-                        maxrep=10
-                    )
+                        lib.delayAssert(
+                            lambda: lib.metadata_attr_with_value_exists(self.admin, attribute, expected_value),
+                            maxrep=10
+                        )
 
-                finally:
-                    self.admin.assert_icommand(['irm', '-f', logical_path])
-                    self.admin.assert_icommand(['iadmin', 'rum'])
+                    finally:
+                        self.admin.assert_icommand(['irm', '-f', logical_path])
+                        self.admin.assert_icommand(['iadmin', 'rum'])
+
+            finally:
+                IrodsController(config).reload_configuration()
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_data_obj_info_parameters_in_pep_database_reg_data_obj_post__issue_5554(self):
@@ -174,51 +194,55 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [('
         with lib.file_backed_up(config.server_config_path):
             core_re_path = os.path.join(config.core_re_directory, 'core.re')
 
-            with lib.file_backed_up(core_re_path):
-                parameters = {}
-                parameters['attribute'] = name
-                parameters['path_attr'] = 'path_attr'
-                parameters['create_time_attr'] = 'create_time_attr'
-                parameters['owner_name_attr'] = 'owner_name_attr'
-                parameters['owner_zone_attr'] = 'owner_zone_attr'
-                parameters['resource'] = resource
+            try:
+                with lib.file_backed_up(core_re_path):
+                    parameters = {}
+                    parameters['attribute'] = name
+                    parameters['path_attr'] = 'path_attr'
+                    parameters['create_time_attr'] = 'create_time_attr'
+                    parameters['owner_name_attr'] = 'owner_name_attr'
+                    parameters['owner_zone_attr'] = 'owner_zone_attr'
+                    parameters['resource'] = resource
 
-                with open(core_re_path, 'a') as core_re:
-                    core_re.write(pep_map[self.plugin_name].format(**parameters))
+                    with open(core_re_path, 'a') as core_re:
+                        core_re.write(pep_map[self.plugin_name].format(**parameters))
+                    IrodsController(config).reload_configuration()
 
-                local_file = lib.create_local_testfile(os.path.join(self.admin.local_session_dir, name))
-                logical_path = os.path.join(self.admin.session_collection, name)
+                    local_file = lib.create_local_testfile(os.path.join(self.admin.local_session_dir, name))
+                    logical_path = os.path.join(self.admin.session_collection, name)
 
-                try:
-                    self.admin.assert_icommand(['iadmin', 'mkresc', resource, 'passthru'], 'STDOUT', resource)
+                    try:
+                        self.admin.assert_icommand(['iadmin', 'mkresc', resource, 'passthru'], 'STDOUT', resource)
 
-                    self.admin.assert_icommand(['ireg', local_file, logical_path])
+                        self.admin.assert_icommand(['ireg', local_file, logical_path])
 
-                    create_time = self.admin.run_icommand(['iquest', '%s',
-                        '''"select DATA_CREATE_TIME where COLL_NAME = '{0}' and DATA_NAME = '{1}'"'''.format(
-                        os.path.dirname(logical_path), os.path.basename(logical_path))])[0]
+                        create_time = self.admin.run_icommand(['iquest', '%s',
+                            '''"select DATA_CREATE_TIME where COLL_NAME = '{0}' and DATA_NAME = '{1}'"'''.format(
+                            os.path.dirname(logical_path), os.path.basename(logical_path))])[0]
 
-                    lib.metadata_attr_with_value_exists(self.admin,
-                                                        '::'.join([parameters['attribute'], parameters['path_attr']]),
-                                                        logical_path),
+                        lib.metadata_attr_with_value_exists(self.admin,
+                                                            '::'.join([parameters['attribute'], parameters['path_attr']]),
+                                                            logical_path),
 
-                    lib.metadata_attr_with_value_exists(self.admin,
-                                                        '::'.join([parameters['attribute'], parameters['create_time_attr']]),
-                                                        create_time),
+                        lib.metadata_attr_with_value_exists(self.admin,
+                                                            '::'.join([parameters['attribute'], parameters['create_time_attr']]),
+                                                            create_time),
 
-                    lib.metadata_attr_with_value_exists(self.admin,
-                                                        '::'.join([parameters['attribute'], parameters['owner_name_attr']]),
-                                                        self.admin.username),
+                        lib.metadata_attr_with_value_exists(self.admin,
+                                                            '::'.join([parameters['attribute'], parameters['owner_name_attr']]),
+                                                            self.admin.username),
 
-                    lib.metadata_attr_with_value_exists(self.admin,
-                                                        '::'.join([parameters['attribute'], parameters['owner_zone_attr']]),
-                                                        self.admin.zone_name),
+                        lib.metadata_attr_with_value_exists(self.admin,
+                                                            '::'.join([parameters['attribute'], parameters['owner_zone_attr']]),
+                                                            self.admin.zone_name),
 
-                finally:
-                    self.admin.assert_icommand(['iadmin', 'rmresc', resource])
-                    self.admin.assert_icommand(['irm', '-f', logical_path])
-                    self.admin.assert_icommand(['iadmin', 'rum'])
+                    finally:
+                        self.admin.assert_icommand(['iadmin', 'rmresc', resource])
+                        self.admin.assert_icommand(['irm', '-f', logical_path])
+                        self.admin.assert_icommand(['iadmin', 'rum'])
 
+            finally:
+                IrodsController(config).reload_configuration()
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'Only implemented for NREP.')
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER , 'Database PEPs only fire on the catalog provider.')
@@ -287,6 +311,7 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [('
 
             with temporary_core_file() as core:
                 core.add_rule(pep_map[self.plugin_name].format(expected_attribute))
+                IrodsController().reload_configuration()
 
                 # Create the first replica with iput. There should be only one replica, it should be good, and it
                 # should annotate metadata indicating that replica 0 as the latest replica.
@@ -323,6 +348,7 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [('
 
             self.user.run_icommand(['irm', '-f', logical_path])
             lib.remove_resource(self.admin, other_resource)
+            IrodsController().reload_configuration()
 
     @unittest.skipIf(plugin_name != 'irods_rule_engine_plugin-irods_rule_language' or test.settings.RUN_IN_TOPOLOGY, "Requires NREP and single node zone.")
     def test_if_const_vector_of_strings_is_exposed__issue_7570(self):
@@ -340,6 +366,7 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [('
                 msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{attr_name_2}', *values."size", '');
             }}
             '''.format(**locals())))
+            IrodsController().reload_configuration()
 
             try:
                 # Trigger PEP, ignore output.
@@ -359,6 +386,7 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [('
                 # tables small, for performance reasons.
                 self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, attr_name_1, attr_value_1])
                 self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, attr_name_2, '2'])
+                IrodsController().reload_configuration()
 
     @unittest.skipIf(plugin_name != 'irods_rule_engine_plugin-irods_rule_language' or test.settings.RUN_IN_TOPOLOGY, 'Requires NREP and single node zone.')
     def test_if_vector_of_strings_is_exposed__issue_7570(self):
@@ -369,9 +397,6 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [('
                 # Lower the delay server's sleep time so that rule are executed quicker.
                 config.server_config['advanced_settings']['delay_server_sleep_time_in_seconds'] = 1
                 lib.update_json_file_from_dict(config.server_config_path, config.server_config)
-
-                # Restart so the new server configuration takes effect.
-                IrodsController().restart(test_mode=True)
 
                 with temporary_core_file() as core:
                     prefix = 'test_if_vector_of_strings_is_exposed__issue_7570'
@@ -387,6 +412,7 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [('
                         msiModAVUMetadata('-C', '{self.admin.session_collection}', 'add', '{attr_name_2}', *delay_rule_info."size", '');
                     }}
                     '''.format(**locals())))
+                    IrodsController().reload_configuration()
 
                     # Give the service account user permission to add metadata to "self.admin's" session collection.
                     # Remember, "self.admin" represents a completely different rodsadmin AND the PEP that was added
@@ -424,7 +450,7 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [('
 
             finally:
                 # Restart so the server's original configuration takes effect.
-                IrodsController().restart(test_mode=True)
+                IrodsController().reload_configuration()
 
     @unittest.skipIf(plugin_name != 'irods_rule_engine_plugin-irods_rule_language' or test.settings.RUN_IN_TOPOLOGY, "Requires NREP and single node zone.")
     def test_if_Genquery2Input_is_exposed__issue_7570(self):
@@ -453,6 +479,7 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [('
                 msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_3', *v, '');
             }}
             '''.format(**locals())))
+            IrodsController().reload_configuration()
 
             try:
                 # Trigger PEP, ignore output.
@@ -493,6 +520,8 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [('
                 self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_2', '0'])
                 self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_3', '0'])
 
+                IrodsController().reload_configuration()
+
     @unittest.skipIf(plugin_name != 'irods_rule_engine_plugin-irods_rule_language' or test.settings.RUN_IN_TOPOLOGY, "Requires NREP and single node zone.")
     def test_if_ExecMyRuleInp_is_exposed__issue_7552(self):
         with temporary_core_file() as core:
@@ -523,6 +552,7 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [('
                 msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_6', *v, '');
             }}
             '''.format(**locals())))
+            IrodsController().reload_configuration()
 
             try:
                 # Should trigger PEP
@@ -547,6 +577,8 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [('
                 self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_4', "0"])
                 self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_5', "@external rule {{ *C=*A++*B }}"])
                 self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_6', "*C="])
+
+                IrodsController().reload_configuration()
 
     @unittest.skipIf(plugin_name != 'irods_rule_engine_plugin-irods_rule_language' or test.settings.RUN_IN_TOPOLOGY, "Requires NREP and single node zone.")
     def test_if_StructFileExtAndRegInp_is_exposed__issue_7413(self):
@@ -577,6 +609,7 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [('
                 }}
             }}
             '''.format(**locals())))
+            IrodsController().reload_configuration()
 
             TEST_COLLECTION_NAME = "%s/%s" % (self.user.session_collection, 'testcoll')
             TEST_TARFILE_NAME = "%s/%s" % (self.user.session_collection, 'test.tar')
@@ -617,6 +650,8 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [('
                 self.user.run_icommand(['irm', '-rf', TEST_COLLECTION_NAME])
                 self.user.run_icommand(['irm', '-rf', TEST_COLLECTION_NAME + "_backup"])
                 self.user.run_icommand(['irm', '-f', TEST_TARFILE_NAME])
+
+                IrodsController().reload_configuration()
 
     @unittest.skipIf(plugin_name != 'irods_rule_engine_plugin-irods_rule_language' or test.settings.RUN_IN_TOPOLOGY, "Requires NREP and single node zone.")
     def test_if_MsParamArray_is_exposed__issue_7553(self):
@@ -660,6 +695,7 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [('
                 msiModAVUMetadata('-C', '{self.user.session_collection}', 'add', '{avu_prefix}_10', *v, '');
             }}
             '''.format(**locals())))
+            IrodsController().reload_configuration()
 
             try:
                 # Should trigger PEP
@@ -692,3 +728,5 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [('
                 self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_8', "potato"])
                 self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_9', "*C"])
                 self.user.run_icommand(['imeta', 'rm', '-C', self.user.session_collection, f'{avu_prefix}_10', "STR_PI"])
+
+                IrodsController().reload_configuration()

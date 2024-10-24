@@ -36,118 +36,138 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', "only run for native rule language")
     def test_acpreconnect_has_client_addr__5985(self):
-        with temporary_core_file() as core:
-            data_object_path = os.path.join(
-                self.admin.session_collection, 'importantData')
-            get_client_addr_rule = """
-                acPreConnect(*OUT) {{
-                    *OUT = "CS_NEG_DONT_CARE";
-                    msi_touch('{{"logical_path": "{path}"}}');
-                    msiModAVUMetadata("-d", "{path}", "set", "clientAddr", $clientAddr, "ip address");
-                }}
-            """.format(path=data_object_path)
+        try:
+            with temporary_core_file() as core:
+                data_object_path = os.path.join(
+                    self.admin.session_collection, 'importantData')
+                get_client_addr_rule = """
+                    acPreConnect(*OUT) {{
+                        *OUT = "CS_NEG_DONT_CARE";
+                        msi_touch('{{"logical_path": "{path}"}}');
+                        msiModAVUMetadata("-d", "{path}", "set", "clientAddr", $clientAddr, "ip address");
+                    }}
+                """.format(path=data_object_path)
 
-            core.add_rule(get_client_addr_rule)
+                core.add_rule(get_client_addr_rule)
+                IrodsController().reload_configuration()
 
-            self.admin.assert_icommand(
-                'ils', 'STDOUT_SINGLELINE', os.path.basename(data_object_path))
-            out, err, ec = self.admin.run_icommand(
-                ['imeta', 'ls', '-d', data_object_path, 'clientAddr'])
+                self.admin.assert_icommand(
+                    'ils', 'STDOUT_SINGLELINE', os.path.basename(data_object_path))
+                out, err, ec = self.admin.run_icommand(
+                    ['imeta', 'ls', '-d', data_object_path, 'clientAddr'])
 
-            self.assertGreater(len(out), 0)
-            self.assertRegex(out, r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b")
-            self.assertEqual(len(err), 0)
-            self.assertEqual(ec, 0)
+                self.assertGreater(len(out), 0)
+                self.assertRegex(out, r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b")
+                self.assertEqual(len(err), 0)
+                self.assertEqual(ec, 0)
+
+        finally:
+            IrodsController().reload_configuration()
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_disallow_registration_of_path_with_missing_data_object_name__issue_4494(self):
         config = IrodsConfig()
         core_re_path = os.path.join(config.core_re_directory, 'core.re')
 
-        with lib.file_backed_up(core_re_path):
-            with open(core_re_path, 'a') as core_re:
-                core_re.write('''
-                    test_registration_issue_4494 {{ 
-                        *lpath = '{0}';
-                        *ppath = '';
-                        msiPhyPathReg(*lpath, 'null', *ppath, 'null', *status);
-                    }}
-                '''.format(self.admin.session_collection + '/'))
+        try:
+            with lib.file_backed_up(core_re_path):
+                with open(core_re_path, 'a') as core_re:
+                    core_re.write('''
+                        test_registration_issue_4494 {{ 
+                            *lpath = '{0}';
+                            *ppath = '';
+                            msiPhyPathReg(*lpath, 'null', *ppath, 'null', *status);
+                        }}
+                    '''.format(self.admin.session_collection + '/'))
+                IrodsController(config).reload_configuration()
 
-            rep = 'irods_rule_engine_plugin-irods_rule_language-instance'
-            self.admin.assert_icommand(['irule', '-r', rep, 'test_registration_issue_4494', 'null', 'ruleExecOut'],
-                                       'STDERR', ['-317000 USER_INPUT_PATH_ERR'])
+                rep = 'irods_rule_engine_plugin-irods_rule_language-instance'
+                self.admin.assert_icommand(['irule', '-r', rep, 'test_registration_issue_4494', 'null', 'ruleExecOut'],
+                                           'STDERR', ['-317000 USER_INPUT_PATH_ERR'])
+
+        finally:
+            IrodsController(config).reload_configuration()
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_disallow_creation_of_collections_with_path_navigation_elements_as_the_name__issue_4750(self):
         config = IrodsConfig()
         core_re_path = os.path.join(config.core_re_directory, 'core.re')
 
-        with lib.file_backed_up(core_re_path):
-            with open(core_re_path, 'a') as core_re:
-                core_re.write('''
-                    test_dot_issue_4750 {{ 
-                        *path = '{0}';
-                        *recursive = 0;
-                        msiCollCreate(*path, *recursive, *status);
-                    }}
+        try:
+            with lib.file_backed_up(core_re_path):
+                with open(core_re_path, 'a') as core_re:
+                    core_re.write('''
+                        test_dot_issue_4750 {{ 
+                            *path = '{0}';
+                            *recursive = 0;
+                            msiCollCreate(*path, *recursive, *status);
+                        }}
 
-                    test_dot_dot_issue_4750 {{ 
-                        *path = '{1}';
-                        *recursive = 0;
-                        msiCollCreate(*path, *recursive, *status);
-                    }}
+                        test_dot_dot_issue_4750 {{ 
+                            *path = '{1}';
+                            *recursive = 0;
+                            msiCollCreate(*path, *recursive, *status);
+                        }}
 
-                    test_slash_slash_issue_4750 {{ 
-                        *path = '{2}';
-                        *recursive = 0;
-                        msiCollCreate(*path, *recursive, *status);
-                    }}
-                '''.format(self.admin.session_collection + '/.',
-                           self.admin.session_collection + '/..',
-                           self.admin.session_collection + '//'))
+                        test_slash_slash_issue_4750 {{ 
+                            *path = '{2}';
+                            *recursive = 0;
+                            msiCollCreate(*path, *recursive, *status);
+                        }}
+                    '''.format(self.admin.session_collection + '/.',
+                               self.admin.session_collection + '/..',
+                               self.admin.session_collection + '//'))
+                IrodsController(config).reload_configuration()
 
-            rep = 'irods_rule_engine_plugin-irods_rule_language-instance'
+                rep = 'irods_rule_engine_plugin-irods_rule_language-instance'
 
-            for rule in ['test_dot_issue_4750', 'test_dot_dot_issue_4750']:
-                self.admin.assert_icommand(['irule', '-r', rep, rule, 'null', 'ruleExecOut'], 'STDERR', ['-317000 USER_INPUT_PATH_ERR'])
+                for rule in ['test_dot_issue_4750', 'test_dot_dot_issue_4750']:
+                    self.admin.assert_icommand(['irule', '-r', rep, rule, 'null', 'ruleExecOut'], 'STDERR', ['-317000 USER_INPUT_PATH_ERR'])
 
-            self.admin.assert_icommand(['irule', '-r', rep, 'test_slash_slash_issue_4750', 'null', 'ruleExecOut'],
-                                       'STDERR', ['-809000 CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME'])
+                self.admin.assert_icommand(['irule', '-r', rep, 'test_slash_slash_issue_4750', 'null', 'ruleExecOut'],
+                                           'STDERR', ['-809000 CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME'])
+
+        finally:
+            IrodsController(config).reload_configuration()
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_catalog_reflects_truncation_on_open__issues_4483_4628(self):
         config = IrodsConfig()
         core_re_path = os.path.join(config.core_re_directory, 'core.re')
 
-        with lib.file_backed_up(core_re_path):
-            filename = os.path.join(self.admin.local_session_dir, 'truncated_file')
-            lib.make_file(filename, 1024, 'arbitrary')
-            self.admin.assert_icommand(['iput', filename])
+        try:
+            with lib.file_backed_up(core_re_path):
+                filename = os.path.join(self.admin.local_session_dir, 'truncated_file')
+                lib.make_file(filename, 1024, 'arbitrary')
+                self.admin.assert_icommand(['iput', filename])
 
-            with open(core_re_path, 'a') as core_re:
-                core_re.write('''
-                    test_truncate_on_open_4483_4628 {{ 
-                        *path = '{0}';
-                        *ec = 0;
+                with open(core_re_path, 'a') as core_re:
+                    core_re.write('''
+                        test_truncate_on_open_4483_4628 {{ 
+                            *path = '{0}';
+                            *ec = 0;
 
-                        msiDataObjOpen('objPath=*path++++openFlags=O_WRONLYO_TRUNC', *fd);
+                            msiDataObjOpen('objPath=*path++++openFlags=O_WRONLYO_TRUNC', *fd);
 
-                        msiSplitPath(*path, *parent_path, *data_object);
-                        foreach (*row in select DATA_SIZE where COLL_NAME = *parent_path and DATA_NAME = *data_object) {{
-                            if (*row.DATA_SIZE != '0') {{
-                                *ec = -1;
+                            msiSplitPath(*path, *parent_path, *data_object);
+                            foreach (*row in select DATA_SIZE where COLL_NAME = *parent_path and DATA_NAME = *data_object) {{
+                                if (*row.DATA_SIZE != '0') {{
+                                    *ec = -1;
+                                }}
                             }}
+
+                            msiDataObjClose(*fd, *status);
+
+                            *ec;
                         }}
+                    '''.format(os.path.join(self.admin.session_collection, os.path.basename(filename))))
+                IrodsController(config).reload_configuration()
 
-                        msiDataObjClose(*fd, *status);
+                rep = 'irods_rule_engine_plugin-irods_rule_language-instance'
+                self.admin.assert_icommand(['irule', '-r', rep, 'test_truncate_on_open_4483_4628', 'null', 'ruleExecOut'])
 
-                        *ec;
-                    }}
-                '''.format(os.path.join(self.admin.session_collection, os.path.basename(filename))))
-
-            rep = 'irods_rule_engine_plugin-irods_rule_language-instance'
-            self.admin.assert_icommand(['irule', '-r', rep, 'test_truncate_on_open_4483_4628', 'null', 'ruleExecOut'])
+        finally:
+            IrodsController(config).reload_configuration()
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_return_error_on_incompatible_open_flags__issue_4782(self):
@@ -185,44 +205,6 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
             self.assertLess(datetime.now() - start, timedelta(seconds=5))
         finally:
             self.admin.assert_icommand(['iadmin', 'rmresc', resource])
-
-    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
-    def test_server_removes_leftover_temporary_rulebase_pid_files_on_startup__issue_5224(self):
-        # Create the rulebase file and three leftover rulebase PID files.
-        rulebase_filename = os.path.join(paths.config_directory(), 'leftover_rulebase.re')
-        pid_file_1 = rulebase_filename + '.101'
-        pid_file_2 = rulebase_filename + '.202'
-        pid_file_3 = rulebase_filename + '.303'
-        for fn in [rulebase_filename, pid_file_1, pid_file_2, pid_file_3]:
-            lib.make_file(fn, 1, 'arbitrary')
-
-        # Verify that the rulebase files exist.
-        for fn in [rulebase_filename, pid_file_1, pid_file_2, pid_file_3]:
-            self.assertTrue(os.path.isfile(fn))
-
-        # Add the rulebase to the rulebase list.
-        config = IrodsConfig()
-
-        with lib.file_backed_up(config.server_config_path):
-            found_nrep = False
-            for rep in config.server_config['plugin_configuration']['rule_engines']:
-                if rep['plugin_name'] == 'irods_rule_engine_plugin-irods_rule_language':
-                    found_nrep = True
-                    filename = os.path.basename(rulebase_filename)
-                    rep['plugin_specific_configuration']['re_rulebase_set'].append(os.path.splitext(filename)[0])
-                    lib.update_json_file_from_dict(config.server_config_path, config.server_config)
-                    break
-
-            # Make sure that the NREP was updated.
-            self.assertTrue(found_nrep)
-
-            # Restart the server. On startup, the PID files will be removed.
-            IrodsController().restart(test_mode=True)
-
-            # Verify that the original rulebase file exists and that the PID files were removed.
-            self.assertTrue(os.path.isfile(rulebase_filename))
-            for fn in [pid_file_1, pid_file_2, pid_file_3]:
-                self.assertFalse(os.path.exists(fn))
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "skip for topology testing")
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', "Requires the Native Rule Engine Plugin.")
@@ -264,7 +246,7 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
                 for c in children:
                     # debugging print
                     print(f'child name [{c.name()}]')
-                    if c.name() != 'irodsDelayServer' and c.name() != 'irodsServer':
+                    if c.name() != 'irodsDelayServer' and c.name() != 'irodsAgent':
                         return False
                 return len(children) >= 2
 
@@ -283,7 +265,7 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
                     seen_process_names[i.name()] += 1
                 # debugging print
                 print(seen_process_names)
-                return 1 == seen_process_names['irodsDelayServer'] and 1 == seen_process_names['irodsServer']
+                return 1 == seen_process_names['irodsDelayServer'] and 1 == seen_process_names['irodsAgent']
 
             lib.delayAssert(exactly_one_delay_server_and_agent_factory_exist)
 

@@ -27,7 +27,7 @@ class Test_LogLevels(unittest.TestCase):
         initial_log_size = lib.get_file_size_by_path(IrodsConfig().server_log_path)
 
         # Restart with spLogSql not set in the environment
-        IrodsController().restart()
+        IrodsController().restart(test_mode=True)
 
         # There should be no LOG_SQL lines in the log at this point.  None.
         lib.delayAssert(
@@ -46,10 +46,10 @@ class Test_LogLevels(unittest.TestCase):
         env['spLogSql'] = '1'
 
         # Restart with spLogSql set in the environment
-        IrodsController(IrodsConfig(injected_environment=env)).restart()
+        IrodsController(IrodsConfig(injected_environment=env)).restart(test_mode=True)
 
         # Restart with spLogSql not set in the environment
-        IrodsController().restart()
+        IrodsController().restart(test_mode=True)
 
         # There should be more than 20 LOG_SQL lines in the log at this point.
         lib.delayAssert(
