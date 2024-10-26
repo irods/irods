@@ -388,18 +388,16 @@ TEST_CASE("rc_switch_user can be called multiple times when KW_SWITCH_PROXY_USER
     // Create a rodsuser.
     const adm::user alice{"test_user_alice", env.rodsZone};
     REQUIRE_NOTHROW(adm::client::add_user(conn, alice));
-    REQUIRE_NOTHROW(adm::client::modify_user(conn, alice, adm::user_password_property{"rods"}));
-
     irods::at_scope_exit remove_test_user_alice{
         [&conn, &alice] { REQUIRE_NOTHROW(adm::client::remove_user(conn, alice)); }};
+    REQUIRE_NOTHROW(adm::client::modify_user(conn, alice, adm::user_password_property{"rods"}));
 
     // Create a groupadmin.
     const adm::user bob{"test_user_bob", env.rodsZone};
     REQUIRE_NOTHROW(adm::client::add_user(conn, bob));
     REQUIRE_NOTHROW(adm::client::modify_user(conn, bob, adm::user_password_property{"rods"}));
-    REQUIRE_NOTHROW(adm::client::modify_user(conn, bob, adm::user_type_property{adm::user_type::groupadmin}));
-
     irods::at_scope_exit remove_test_user_bob{[&conn, &bob] { REQUIRE_NOTHROW(adm::client::remove_user(conn, bob)); }};
+    REQUIRE_NOTHROW(adm::client::modify_user(conn, bob, adm::user_type_property{adm::user_type::groupadmin}));
 
     //
     // Call rc_switch_user multiple times and toggle between two rodsusers.
