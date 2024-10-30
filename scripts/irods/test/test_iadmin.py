@@ -1669,6 +1669,22 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
     def test_non_admins_are_not_allowed_to_invoke_iadmin_get_delay_server_info__issue_5249(self):
         self.user0.assert_icommand(['iadmin', 'get_delay_server_info'], 'STDERR', ['-830000 CAT_INSUFFICIENT_PRIVILEGE_LEVEL'])
 
+    def test_iadmin_mkuser_returns_correct_error_on_duplicate_user__issue_7599(self):
+        test_user_name = 'duplicate_user_issue_7599'
+        try:
+            self.admin.assert_icommand(['iadmin', 'mkuser', test_user_name, 'rodsuser'])
+            self.admin.assert_icommand(['iadmin', 'mkuser', test_user_name, 'rodsuser'], 'STDERR', ['-809000 CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME'])
+        finally:
+            self.admin.run_icommand(['iadmin', 'rmuser', test_user_name])
+
+    def test_iadmin_mkgroup_returns_correct_error_on_duplicate_group__issue_7599(self):
+        test_group_name = 'duplicate_group_issue_7599'
+        try:
+            self.admin.assert_icommand(['iadmin', 'mkgroup', test_group_name])
+            self.admin.assert_icommand(['iadmin', 'mkgroup', test_group_name], 'STDERR', ['-809000 CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME'])
+        finally:
+            self.admin.run_icommand(['iadmin', 'rmgroup', test_group_name])
+
 class Test_Iadmin_Resources(resource_suite.ResourceBase, unittest.TestCase):
 
     def setUp(self):
