@@ -86,6 +86,8 @@ SQLINTEGER columnLength[MAX_TOKEN];  /* change me ! */
 #ifndef ORA_ICAT
 static int didBegin = 0;
 #endif
+// Stores the affected row count of queries made through cllExecSqlNoResult
+// Read by cllGetRowCount
 static int noResultRowCount = 0;
 
 // =-=-=-=-=-=-=-
@@ -463,6 +465,7 @@ _cllExecSqlNoResult(
     HDBC myHdbc = icss->connectPtr;
     HSTMT myHstmt;
     SQLRETURN stat = SQLAllocHandle( SQL_HANDLE_STMT, myHdbc, &myHstmt );
+    SQL_INT_OR_LEN rowCount = 0;
     if ( stat != SQL_SUCCESS ) {
         rodsLog( LOG_ERROR, "_cllExecSqlNoResult: SQLAllocHandle failed for statement: %d", stat );
         return -1;
@@ -475,9 +478,6 @@ _cllExecSqlNoResult(
     rodsLogSql( sql );
 
     stat = SQLExecDirect( myHstmt, ( unsigned char * )sql, strlen( sql ) );
-    SQL_INT_OR_LEN rowCount = 0;
-    auto ec = SQLRowCount(myHstmt, (SQL_INT_OR_LEN*) &rowCount); // NOLINT(google-readability-casting)
-    IRODS_DB_TRACE("SQLRowCount returned [{}] and set [rowCount] to [{}].", ec, rowCount);
     switch ( stat ) {
     case SQL_SUCCESS:
         rodsLogSqlResult( "SUCCESS" );
@@ -502,6 +502,9 @@ _cllExecSqlNoResult(
     if ( stat == SQL_SUCCESS ||
             stat == SQL_SUCCESS_WITH_INFO ||
             stat == SQL_NO_DATA_FOUND ) {
+        const auto ec = SQLRowCount(myHstmt, (SQL_INT_OR_LEN*) &rowCount); // NOLINT(google-readability-casting)
+        IRODS_DB_TRACE("SQLRowCount returned [{}] and set [rowCount] to [{}].", ec, rowCount);
+
         cllCheckPending( sql, 0, icss->databaseType );
         result = 0;
         if ( stat == SQL_NO_DATA_FOUND ) {
@@ -534,8 +537,17 @@ _cllExecSqlNoResult(
         }
         rodsLog( LOG_NOTICE, "_cllExecSqlNoResult: SQLExecDirect error: %d sql:%s",
                  stat, sql );
+
+        // logPsgError returns an iRODS-specific error code for duplicate entries in the catalog
+        // Returns -2 otherwise.
         result = logPsgError( LOG_NOTICE, icss->environPtr, myHdbc, myHstmt,
                               icss->databaseType );
+        // On error cases, do not call SQLRowCount: it will cause a Function sequence error
+        // However, calling functions may read the return value of SQLRowCount via
+        // static variable noResultRowCount, which is set below.
+        // Thus, since SQLRowCount returns -1 on error cases, we emulate the result
+        // without calling SQLRowCount directly.
+        rowCount = -1;
     }
 
     stat = SQLFreeHandle( SQL_HANDLE_STMT, myHstmt );
@@ -543,6 +555,7 @@ _cllExecSqlNoResult(
         rodsLog( LOG_ERROR, "_cllExecSqlNoResult: SQLFreeHandle for statement error: %d", stat );
     }
 
+    // Saves the affected row count to a static variable
     noResultRowCount = rowCount;
 
     return result;
