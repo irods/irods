@@ -33,8 +33,68 @@ def requires_upgrade(irods_config):
     new_version_tuple = lib.version_string_to_tuple(new_version['irods_version'])
     old_version_tuple = lib.version_string_to_tuple(irods_config.version['irods_version'])
 
-    # TODO Thoughts on changing this from "!=" to "<". Using not-equals feels incorrect.
-    return old_version_tuple != new_version_tuple
+    return old_version_tuple < new_version_tuple
+
+def raise_exception_if_downgrade_is_detected(irods_config):
+    l = logging.getLogger(__name__)
+
+    # On a new installation, the only file that will exist is version.json.dist.
+    # version.json.previous only exists on upgrade.
+
+    # Look for a ".previous" file. Start with the latest form of the file and work
+    # backwards based on iRODS versions.
+    version_file_path_previous = None
+    version_file_paths = [
+        paths.version_path() + '.previous',                             # >= 4.3.x
+        os.path.join(paths.irods_directory(), 'VERSION.json.previous'), # >= 4.1.x
+        os.path.join(paths.irods_directory(), 'VERSION.previous')       # <  4.1.x
+    ]
+    for path in version_file_paths:
+        l.debug('Checking if [%s] exists.', path)
+        if os.path.exists(path):
+            version_file_path_previous = path
+            break
+
+    if version_file_path_previous is None:
+        # This is a brand new installation of iRODS. No version of iRODS existed on the
+        # computer before now. No risk of downgrading the server.
+        l.info('This is a new installation of iRODS. No downgrade issue present.')
+        return
+
+    l.debug('Found [%s].', version_file_path_previous)
+
+    # At this point, we know a previous version of iRODS existed on this computer.
+    # Look for the new ".dist" file.
+    version_file_path_dist = paths.version_path() + '.dist'
+    if not os.path.exists(path):
+        raise IrodsError(f'[{version_file_path_dist}] does not exist. Please check your installation.')
+
+    l.debug('Found [%s].', version_file_path_dist)
+
+    with open(version_file_path_previous, 'r') as f:
+        # For iRODS 4.1 and earlier, convert the contents of the version file
+        # to a dictionary.
+        if version_file_path_previous.endswith('VERSION.previous'):
+            for line in f:
+                k, _, v = line.strip().partition('=')
+                if 'IRODSVERSION' == k:
+                    old_version = {'irods_version': v}
+                    break
+        else:
+            old_version = json.load(f)
+
+    with open(version_file_path_dist, 'r') as f:
+        new_version = json.load(f)
+
+    l.debug('Extracting version information from files.')
+    new_version_tuple = lib.version_string_to_tuple(new_version['irods_version'])
+    old_version_tuple = lib.version_string_to_tuple(old_version['irods_version'])
+
+    l.debug('Comparing version information to determine if a downgrade would occur.')
+    if new_version_tuple < old_version_tuple:
+        raise IrodsError(f'Downgrade detected. Downgrading is unsupported, please reinstall iRODS version [{irods_config.version["irods_version"]}] or newer.')
+
+    l.info('No downgrade issue present.')
 
 def upgrade(irods_config):
     l = logging.getLogger(__name__)
