@@ -42,8 +42,6 @@ target_include_directories(
   PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/dsl>"
-  PRIVATE
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
 )
 
 target_link_libraries(
@@ -51,5 +49,6 @@ target_link_libraries(
   PUBLIC
   irods_common
   nlohmann_json::nlohmann_json
+  Boost::headers
   fmt::fmt
 )

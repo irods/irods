@@ -25,12 +25,13 @@ target_link_objects(
 )
 target_link_libraries(
   irods_common
+  PUBLIC
+  Boost::filesystem
+  Boost::program_options # private?
+  Boost::random # private?
+  Boost::regex
+  Boost::system # private?
   PRIVATE
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_program_options.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_random.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
   OpenSSL::SSL
   ${CMAKE_DL_LIBS}
   rt
@@ -79,12 +80,12 @@ target_link_libraries(
   PUBLIC
   irods_plugin_dependencies
   irods_common
+  Boost::chrono # private?
+  Boost::filesystem
+  Boost::regex
+  Boost::system # private?
+  Boost::thread
   PRIVATE
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_chrono.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so"
   OpenSSL::SSL
   OpenSSL::Crypto
   ${CMAKE_DL_LIBS}

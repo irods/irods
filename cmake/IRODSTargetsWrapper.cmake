@@ -25,6 +25,7 @@ find_dependency(spdlog "1.9.2"
   HINTS "${IRODS_EXTERNALS_FULLPATH_SPDLOG}")
 find_dependency(Boost "1.81" CONFIG
   COMPONENTS headers filesytem container regex thread program_options
+  system random chrono program_options # private?
   HINTS "${IRODS_EXTERNALS_FULLPATH_BOOST}")
 
 include("${IRODS_TARGETS_PATH_UNWRAPPED}")

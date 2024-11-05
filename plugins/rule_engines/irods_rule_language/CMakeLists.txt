@@ -28,9 +28,10 @@ target_link_libraries(
   PRIVATE
   irods_server
   irods_common
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so"
+  Boost::headers
+  Boost::filesystem
+  Boost::system
+  Boost::regex
   fmt::fmt
   ${CMAKE_DL_LIBS}
 )
@@ -40,7 +41,6 @@ target_include_directories(
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   #"$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/plugins/rule_engines/include>"
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/main_server/include>"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
 )
 target_compile_definitions(
   irods_rule_engine_plugin-irods_rule_language

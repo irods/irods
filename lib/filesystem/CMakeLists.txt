@@ -3,14 +3,17 @@ add_library(
   OBJECT
   "${CMAKE_CURRENT_SOURCE_DIR}/src/path.cpp"
 )
+objects_link_libraries(
+  irods_filesystem_path
+  PUBLIC
+  Boost::headers
+)
 target_include_directories(
   irods_filesystem_path
   PUBLIC
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/core/include>"
-  PRIVATE
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
 )
 target_compile_definitions(
   irods_filesystem_path
@@ -35,6 +38,7 @@ foreach(variant IN ITEMS client server)
     PUBLIC
     nlohmann_json::nlohmann_json
     fmt::fmt
+    Boost::headers
   )
   target_include_directories(
     irods_filesystem_${variant}
@@ -50,8 +54,6 @@ foreach(variant IN ITEMS client server)
     "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/icat/include>"
     "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/re/include>"
     "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/drivers/include>"
-    PRIVATE
-    "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
   )
   target_compile_definitions(
     irods_filesystem_${variant}

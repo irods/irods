@@ -6,13 +6,14 @@ target_link_libraries(
   irodsDelayServer
   PRIVATE
   fmt::fmt
+  Boost::headers
+  Boost::system
+  Boost::filesystem
+  Boost::thread
+  Boost::container
   irods_server
   irods_client
   irods_common
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_container.so"
   rt
   ${CMAKE_DL_LIBS}
   m
@@ -21,7 +22,6 @@ target_include_directories(
   irodsDelayServer
   PRIVATE
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
 )
 target_compile_definitions(
   irodsDelayServer

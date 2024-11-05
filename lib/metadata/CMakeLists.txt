@@ -8,6 +8,7 @@ foreach(variant IN ITEMS server client)
     irods_lib_metadata_${variant}
     PUBLIC
     fmt::fmt
+    Boost::headers
     irods_lib_api_${variant}
     irods_lib_core_${variant}
     irods_filesystem_${variant}
@@ -22,8 +23,6 @@ foreach(variant IN ITEMS server client)
     "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/api/include>"
     "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/hasher/include>"
     "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/rbudp/include>"
-    PRIVATE
-    "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
   )
   target_compile_definitions(
     irods_lib_metadata_${variant}

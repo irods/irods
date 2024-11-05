@@ -28,8 +28,9 @@ foreach(plugin IN LISTS IRODS_AUTH_PLUGINS)
       irods_common
       irods_plugin_dependencies
       irods_${variant}
-      "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
-      "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
+      Boost::headers
+      Boost::filesystem
+      Boost::system
       nlohmann_json::nlohmann_json
       fmt::fmt
       OpenSSL::Crypto
@@ -40,7 +41,6 @@ foreach(plugin IN LISTS IRODS_AUTH_PLUGINS)
       PRIVATE
       "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
       "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/api/include>"
-      "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
     )
     target_compile_definitions(
       ${plugin_target}

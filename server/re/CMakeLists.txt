@@ -32,15 +32,16 @@ objects_link_libraries(
   PUBLIC
   nlohmann_json::nlohmann_json
   fmt::fmt
+  Boost::headers
+  Boost::chrono # private?
+  Boost::filesystem
+  Boost::thread
+  Boost::regex
+  Boost::system # private?
   irods_common
   irods_plugin_dependencies
   PRIVATE
   "${IRODS_EXTERNALS_FULLPATH_AVRO}/lib/libavrocpp.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_chrono.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
   "${IRODS_EXTERNALS_FULLPATH_NANODBC}/lib/libnanodbc.so"
   "${IRODS_EXTERNALS_FULLPATH_ZMQ}/lib/libzmq.so"
   OpenSSL::SSL
@@ -61,7 +62,6 @@ target_include_directories(
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/delay_server/include>"
   PRIVATE
   "${IRODS_EXTERNALS_FULLPATH_AVRO}/include"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
   "${IRODS_EXTERNALS_FULLPATH_CPPZMQ}/include"
   "${IRODS_EXTERNALS_FULLPATH_NANODBC}/include"
   "${IRODS_EXTERNALS_FULLPATH_ZMQ}/include"

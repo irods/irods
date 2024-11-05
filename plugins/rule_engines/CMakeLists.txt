@@ -30,9 +30,10 @@ foreach(plugin IN LISTS IRODS_RULE_ENGINE_PLUGINS)
     PRIVATE
     irods_server
     irods_common
-    "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
-    "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
-    "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so"
+    Boost::headers
+    Boost::filesystem
+    Boost::system
+    Boost::regex
     fmt::fmt
     ${CMAKE_DL_LIBS}
   )
@@ -41,7 +42,6 @@ foreach(plugin IN LISTS IRODS_RULE_ENGINE_PLUGINS)
     PRIVATE
     #"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/irods_rule_language/include>"
-    "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
   )
   target_compile_definitions(
     ${plugin_target}

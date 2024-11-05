@@ -10,17 +10,13 @@ foreach(harness IN ITEMS api configuration)
     irods_client
     irods_plugin_dependencies
     irods_common
-    "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
-    "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
-    "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so"
+    Boost::headers
+    Boost::system
+    Boost::filesystem
+    Boost::thread
     rt
     ${CMAKE_DL_LIBS}
     m
-  )
-  target_include_directories(
-    irods_${harness}_test_harness
-    PRIVATE
-    "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
   )
   target_compile_definitions(
     irods_${harness}_test_harness
