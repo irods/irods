@@ -786,8 +786,12 @@ OUTPUT ruleExecOut
             lib.make_file(file1, 100)
 
             # put small file
-            self.admin.assert_icommand("iput -R %s %s" % (resource_name, file1), 'STDERR', 'USER_SOCK_CONNECT_ERR')  # iput
-            self.admin.assert_icommand("ils -L %s" % file1, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
+            _, err, ec = self.admin.run_icommand("iput -R %s %s" % (resource_name, file1))
+            self.assertNotEqual(ec, 0)
+
+            # Both are okay, since either case is possible when connecting to an invalid host.
+            # It depends on if the host rejects the connection or ignores it (i.e. a "stealth" port).
+            self.assertTrue('-347000 USER_SOCK_CONNECT_TIMEDOUT' in err or '-305000 USER_SOCK_CONNECT_ERR' in err)
         finally:
             if os.path.exists(file1):
                 os.unlink(file1)
@@ -807,8 +811,12 @@ OUTPUT ruleExecOut
             lib.make_file(file1, 100)
 
             # put small file
-            self.admin.assert_icommand("iput -R %s %s" % (resource_name, file1), 'STDERR', 'USER_SOCK_CONNECT_ERR')  # iput
-            self.admin.assert_icommand("ils -L %s" % file1, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
+            _, err, ec = self.admin.run_icommand("iput -R %s %s" % (resource_name, file1))
+            self.assertNotEqual(ec, 0)
+
+            # Both are okay, since either case is possible when connecting to an invalid host.
+            # It depends on if the host rejects the connection or ignores it (i.e. a "stealth" port).
+            self.assertTrue('-347000 USER_SOCK_CONNECT_TIMEDOUT' in err or '-305000 USER_SOCK_CONNECT_ERR' in err)
         finally:
             if os.path.exists(file1):
                 os.unlink(file1)
@@ -831,8 +839,12 @@ OUTPUT ruleExecOut
             lib.make_file(file1, 100)
 
             # put small file
-            self.admin.assert_icommand("iput -R %s %s" % (resource_name, file1), 'STDERR', 'USER_SOCK_CONNECT_ERR')  # iput
-            self.admin.assert_icommand("ils -L %s" % file1, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
+            _, err, ec = self.admin.run_icommand("iput -R %s %s" % (resource_name, file1))
+            self.assertNotEqual(ec, 0)
+
+            # Both are okay, since either case is possible when connecting to an invalid host.
+            # It depends on if the host rejects the connection or ignores it (i.e. a "stealth" port).
+            self.assertTrue('-347000 USER_SOCK_CONNECT_TIMEDOUT' in err or '-305000 USER_SOCK_CONNECT_ERR' in err)
         finally:
             if os.path.exists(file1):
                 os.unlink(file1)
