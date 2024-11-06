@@ -409,11 +409,6 @@ def setup_server_config(irods_config):
             default=[irods_config.server_config.get('server_port_range_end', 20199)],
             input_filter=irods.lib.int_filter(field='Port'))
 
-        irods_config.server_config['schema_validation_base_uri'] = irods.lib.default_prompt(
-            'Schema Validation Base URI (or off)',
-            default=[irods_config.server_config.get('schema_validation_base_uri', 'file://{0}/configuration_schemas'.format(irods.paths.irods_directory()))],
-            input_filter=irods.lib.character_count_filter(minimum=1, field='Schema validation base URI'))
-
         irods_config.server_config['zone_user'] = irods.lib.default_prompt(
             'iRODS server\'s administrator username',
             default=[irods_config.server_config.get('zone_user', 'rods')],
@@ -427,7 +422,6 @@ def setup_server_config(irods_config):
                 'iRODS server port:          %d\n',
                 'iRODS port range (begin):   %d\n',
                 'iRODS port range (end):     %d\n',
-                'Schema validation base URI: %s\n',
                 'iRODS server administrator: %s\n',
                 '-------------------------------------------\n\n',
                 'Please confirm']) % (
@@ -436,7 +430,6 @@ def setup_server_config(irods_config):
                     irods_config.server_config['zone_port'],
                     irods_config.server_config['server_port_range_start'],
                     irods_config.server_config['server_port_range_end'],
-                    irods_config.server_config['schema_validation_base_uri'],
                     irods_config.server_config['zone_user']
                     )
 
