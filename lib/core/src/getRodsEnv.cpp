@@ -332,7 +332,7 @@ extern "C" {
             _env->irodsConnectionPoolRefreshTime );
 
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-        capture_string_property(irods::KW_CFG_IRODS_PLUGINS_HOME, _env->irodsPluginHome, MAX_NAME_LEN);
+        capture_string_property(irods::KW_CFG_IRODS_PLUGIN_DIRECTORY, _env->irodsPluginDirectory, MAX_NAME_LEN);
 
         // If the configuration is not set for the TCP keepalive options, set the value to something invalid. This
         // indicates that we should not set the option on the socket, which will allow the socket to use the kernel
@@ -625,10 +625,10 @@ extern "C" {
             env_var,
             _env->irodsTransBufferSizeForParaTrans );
 
-        env_var = irods::KW_CFG_IRODS_PLUGINS_HOME;
+        env_var = irods::KW_CFG_IRODS_PLUGIN_DIRECTORY;
         capture_string_env_var(
             env_var,
-            _env->irodsPluginHome );
+            _env->irodsPluginDirectory );
 
         capture_integer_env_var(irods::KW_CFG_IRODS_TCP_KEEPALIVE_INTVL_IN_SECONDS, _env->tcp_keepalive_intvl);
         capture_integer_env_var(irods::KW_CFG_IRODS_TCP_KEEPALIVE_PROBES, _env->tcp_keepalive_probes);
