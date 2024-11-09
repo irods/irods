@@ -16,6 +16,7 @@
 #include <fmt/format.h>
 #include <nlohmann/json.hpp>
 
+#include <cctype>
 #include <functional>
 #include <memory>
 #include <string>
@@ -117,7 +118,7 @@ namespace irods::experimental::auth
         using plugin_type = authentication_base;
 
         std::string scheme = _scheme;
-        std::transform(scheme.begin(), scheme.end(), scheme.begin(), ::tolower);
+        std::transform(scheme.begin(), scheme.end(), scheme.begin(), [](unsigned char _ch) { return std::tolower(_ch); });
 
         const std::string name = fmt::format("irods_auth_plugin-{}_{}", scheme, _type);
 
