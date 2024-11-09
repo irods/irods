@@ -2023,11 +2023,7 @@ irods::error db_debug_op(
     // =-=-=-=-=-=-=-
     // run tolower on mode
     std::string mode( _mode );
-    std::transform(
-        mode.begin(),
-        mode.end(),
-        mode.begin(),
-        ::tolower );
+    std::transform(mode.begin(), mode.end(), mode.begin(), [](unsigned char _ch) { return std::tolower(_ch); });
 
     // =-=-=-=-=-=-=-
     // if mode contains 'sql' then turn SQL logging on

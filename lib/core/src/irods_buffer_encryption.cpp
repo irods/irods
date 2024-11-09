@@ -9,6 +9,7 @@
 #include <openssl/aes.h>
 #include <openssl/md5.h>
 
+#include <cctype>
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -62,12 +63,9 @@ namespace irods {
         salt_size_( _salt_sz ),
         num_hash_rounds_( _num_rnds ),
         algorithm_( _algo ) {
-
-        std::transform(
-            algorithm_.begin(),
-            algorithm_.end(),
-            algorithm_.begin(),
-            ::tolower );
+        std::transform(algorithm_.begin(), algorithm_.end(), algorithm_.begin(), [](unsigned char _ch) {
+            return std::tolower(_ch);
+        });
 
         // =-=-=-=-=-=-=-
         // select some sane defaults
