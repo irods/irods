@@ -9,6 +9,7 @@
 #include "irods/rodsKeyWdDef.h"
 #include "irods/rcMisc.h"
 
+#include <cctype>
 #include <cstdio>
 #include <ctime>
 #include <cstring>
@@ -55,11 +56,9 @@ int chksumLocFile(
         env_policy = env.rodsMatchHashPolicy;
         // =-=-=-=-=-=-=-
         // hash scheme keywords are all lowercase
-        std::transform(
-            env_scheme.begin(),
-            env_scheme.end(),
-            env_scheme.begin(),
-            ::tolower );
+        std::transform(env_scheme.begin(), env_scheme.end(), env_scheme.begin(), [](unsigned char _ch) {
+            return std::tolower(_ch);
+        });
     }
 
     // =-=-=-=-=-=-=-
@@ -71,11 +70,9 @@ int chksumLocFile(
         hash_scheme = _hash_scheme;
         // =-=-=-=-=-=-=-
         // hash scheme keywords are all lowercase
-        std::transform(
-            hash_scheme.begin(),
-            hash_scheme.end(),
-            hash_scheme.begin(),
-            ::tolower );
+        std::transform(hash_scheme.begin(), hash_scheme.end(), hash_scheme.begin(), [](unsigned char _ch) {
+            return std::tolower(_ch);
+        });
     }
     else {
         hash_scheme = env_scheme;
@@ -84,17 +81,11 @@ int chksumLocFile(
 
     // =-=-=-=-=-=-=-
     // hash scheme keywords are all lowercase
+    std::transform(hash_scheme.begin(), hash_scheme.end(), hash_scheme.begin(), [](unsigned char _ch) {
+        return std::tolower(_ch);
+    });
     std::transform(
-        hash_scheme.begin(),
-        hash_scheme.end(),
-        hash_scheme.begin(),
-        ::tolower );
-    std::transform(
-        env_scheme.begin(),
-        env_scheme.end(),
-        env_scheme.begin(),
-        ::tolower );
-
+        env_scheme.begin(), env_scheme.end(), env_scheme.begin(), [](unsigned char _ch) { return std::tolower(_ch); });
 
     // =-=-=-=-=-=-=-
     // verify checksum scheme against configuration
