@@ -15,6 +15,7 @@
 
 // =-=-=-=-=-=-=-
 // stl includes
+#include <cctype>
 #include <sstream>
 #include <string>
 #include <iostream>
@@ -148,7 +149,7 @@ namespace irods::experimental::api {
             std::transform(lower.begin(),
                            lower.end(),
                            lower.begin(),
-                           ::tolower );
+                           [](unsigned char _ch) { return std::tolower(_ch); });
 
             base* plugin{};
             auto err = irods::load_plugin<base>(

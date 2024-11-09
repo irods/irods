@@ -16,6 +16,7 @@
 #include <fmt/format.h>
 
 #include <algorithm>
+#include <cctype>
 #include <climits>
 #include <string>
 #include <string_view>
@@ -132,7 +133,7 @@ int fileChksum(rsComm_t* rsComm,
         hash_scheme.begin(),
         hash_scheme.end(),
         hash_scheme.begin(),
-        ::tolower );
+        [](unsigned char _ch) { return std::tolower(_ch); });
 
     std::string hash_policy;
     try {
@@ -302,7 +303,7 @@ int file_checksum(RsComm* _comm,
     catch (const irods::exception&) {}
 
     // Make sure the read parameter is lowercased.
-    std::transform(hash_scheme.begin(), hash_scheme.end(), hash_scheme.begin(), ::tolower);
+    std::transform(hash_scheme.begin(), hash_scheme.end(), hash_scheme.begin(), [](unsigned char _ch) { return std::tolower(_ch); });
 
     std::string_view hash_policy;
     try {

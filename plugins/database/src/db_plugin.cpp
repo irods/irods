@@ -2027,7 +2027,7 @@ irods::error db_debug_op(
         mode.begin(),
         mode.end(),
         mode.begin(),
-        ::tolower );
+        [](unsigned char _ch) { return std::tolower(_ch); });
 
     // =-=-=-=-=-=-=-
     // if mode contains 'sql' then turn SQL logging on

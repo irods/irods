@@ -16,6 +16,7 @@
 #include <fmt/format.h>
 
 #include <algorithm>
+#include <cctype>
 #include <string>
 #include <vector>
 
@@ -48,7 +49,7 @@ namespace irods
                 lowered.begin(),
                 lowered.end(),
                 lowered.begin(),
-                ::tolower);
+                [](unsigned char _ch) { return std::tolower(_ch); });
 
             if(GEN_STR == lowered) {
                 return GENERAL;
