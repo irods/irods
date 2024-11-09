@@ -152,7 +152,7 @@ namespace irods
     const char* const KW_CFG_SERVICE_ROLE_CONSUMER{"consumer"};
     const char* const KW_CFG_SERVICE_ROLE_PROXY{"proxy"};
 
-    const char* const KW_CFG_IRODS_PLUGINS_HOME{"irods_plugins_home"};
+    const char* const KW_CFG_IRODS_PLUGIN_DIRECTORY{"irods_plugin_directory"};
 
     const char* const KW_CFG_PLUGIN_CONFIGURATION{"plugin_configuration"};
 

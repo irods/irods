@@ -55,7 +55,7 @@ typedef struct RodsEnvironment {
 
     // =-=-=-=-=-=-=-
     // override of plugin installation directory
-    char irodsPluginHome[MAX_NAME_LEN];
+    char irodsPluginDirectory[MAX_NAME_LEN];
 
     // =-=-=-=-=-=-=-
     // TCP keepalive configurations
