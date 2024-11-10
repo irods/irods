@@ -467,7 +467,7 @@ TEST_CASE("rc_switch_user disassociates ticket from connection")
 
     // Connect to the iRODS server as test_user_1, with the rodsadmin acting as a proxy.
     irods::experimental::fully_qualified_username proxy_user{env.rodsUserName, env.rodsZone};
-    irods::experimental::fully_qualified_username user{env.rodsUserName, env.rodsZone};
+    irods::experimental::fully_qualified_username user{test_user_1.name, env.rodsZone};
     irods::experimental::client_connection test_user_conn{
         irods::experimental::defer_authentication, env.rodsHost, env.rodsPort, proxy_user, user};
     REQUIRE(clientLoginWithPassword(static_cast<RcComm*>(test_user_conn), password_prop.value.data()) == 0);
