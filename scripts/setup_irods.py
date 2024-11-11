@@ -471,7 +471,7 @@ def setup_client_environment(irods_config):
     service_account_dict = {
             'schema_name': 'service_account_environment',
             'schema_version': 'v5',
-            'irods_host': irods.lib.get_hostname(),
+            'irods_host': irods_config.server_config['host'],
             'irods_port': irods_config.server_config['zone_port'],
             'irods_default_resource': irods_config.server_config['default_resource_name'],
             'irods_home': '/'.join(['', irods_config.server_config['zone_name'], 'home', irods_config.server_config['zone_user']]),

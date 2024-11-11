@@ -200,7 +200,7 @@ class IrodsController(object):
         zone_port = int(self.config.server_config['zone_port'])
 
         with contextlib.closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
-            local_server_host = self.config.client_environment['irods_host']
+            local_server_host = self.config.server_config['host']
 
             if s.connect_ex((local_server_host, zone_port)) == 0:
                 l.debug('Successfully connected to [%s:%s].', local_server_host, zone_port)
