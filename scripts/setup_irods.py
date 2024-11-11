@@ -72,7 +72,8 @@ except:
 def setup_server(irods_config, json_configuration_file=None, test_mode=False):
     l = logging.getLogger(__name__)
 
-    check_hostname()
+    # Setup the hostname, FQDN, or IP to listen on for client requests.
+    setup_server_host(irods_config)
 
     if json_configuration_file is not None:
         with open(json_configuration_file) as f:
@@ -199,17 +200,23 @@ def test_put(irods_config):
 
     l.info('Success')
 
-def check_hostname():
+def setup_server_host(irods_config):
     l = logging.getLogger(__name__)
 
-    hostname = irods.lib.get_hostname()
-    try:
-        hostname.index('.')
-    except ValueError:
-        l.warning('Warning: Hostname `%s` should be a fully qualified domain name.' % (hostname))
+    irods_config.server_config['host'] = irods.lib.default_prompt(
+        'iRODS server FQDN, hostname, or IP (256 characters max)',
+        default=[irods.lib.get_hostname()],
+        input_filter=irods.lib.character_count_filter(minimum=1, maximum=256, field='iRODS server host'))
 
-    if not irods.lib.hostname_resolves_to_local_address(hostname):
-        raise IrodsError('The hostname (%s) must resolve to the local machine.' % (hostname))
+    irods_config.commit(irods_config.server_config, irods_config.server_config_path, clear_cache=False)
+
+    try:
+        irods_config.server_config['host'].index('.')
+    except ValueError:
+        l.warning('Warning: Hostname `%s` should be a fully qualified domain name.', irods_config.server_config['host'])
+
+    if not irods.lib.hostname_resolves_to_local_address(irods_config.server_config['host']):
+        raise IrodsError(f'The hostname [{irods_config.server_config["host"]}] must resolve to the local machine.')
 
 def determine_server_role(irods_config):
     # The list of catalog service roles supported by the server.
