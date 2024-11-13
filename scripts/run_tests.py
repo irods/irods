@@ -27,10 +27,6 @@ import irods.paths
 import irods.test
 import irods.test.settings
 
-def run_devtesty():
-    print('devtesty is currently disabled', file=sys.stderr)
-    # run_irodsctl_with_arg('devtesty')
-
 def optparse_callback_catch_keyboard_interrupt(*args, **kwargs):
     unittest.installHandler()
 
@@ -155,7 +151,6 @@ if __name__ == '__main__':
     parser.add_option('--run_plugin_tests', action='store_true')
     parser.add_option('--include_auth_tests', action='store_true')
     parser.add_option('--include_timing_tests', action='store_true')
-    parser.add_option('--run_devtesty', action='store_true')
     parser.add_option('--topology_test', type='choice', choices=['icat', 'resource'], metavar='<icat|resource>')
     parser.add_option('--catch_keyboard_interrupt', action='callback', callback=optparse_callback_catch_keyboard_interrupt)
     parser.add_option('--use_ssl', action='callback', callback=optparse_callback_use_ssl)
@@ -225,6 +220,3 @@ if __name__ == '__main__':
 
     if not results.wasSuccessful():
         sys.exit(1)
-
-    if options.run_devtesty:
-        run_devtesty()
