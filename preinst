@@ -24,7 +24,7 @@ if [ "$PACKAGEUPGRADE" = "true" ] ; then
     fi
 
     # Stop server to prevent db plugin / irods server mismatch
-    HIDE_OUTPUT=`su - ${IRODS_SERVICE_ACCOUNT_NAME:?} -c "/var/lib/irods/irodsctl stop"`
+    HIDE_OUTPUT=`su - ${IRODS_SERVICE_ACCOUNT_NAME:?} -c "python3 -c 'from scripts.irods.controller import IrodsController; IrodsController().stop()'"`
     # Upgrade
     echo "Upgrading Existing iRODS Installation"
     UPGRADE_TEMP_FILE="/var/lib/irods/upgrade.tmp"

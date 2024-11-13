@@ -28,7 +28,6 @@ else
 fi
 
 IRODS_HOME=/var/lib/irods
-IRODS_CTL=$IRODS_HOME/irodsctl
 
 DETECTEDOS=`$IRODS_HOME/packaging/find_os.sh`
 
@@ -40,28 +39,28 @@ fi
 
 case $1 in
 status)
-    su $SU_SHELL_OPTS $IRODS_SERVICE_ACCOUNT_NAME -c "$IRODS_CTL status"
+    su $SU_SHELL_OPTS $IRODS_SERVICE_ACCOUNT_NAME -c "python3 -c 'from scripts.irods.controller import IrodsController; IrodsController().status()'"
     ;;
 start)
-    su $SU_SHELL_OPTS $IRODS_SERVICE_ACCOUNT_NAME -c "$IRODS_CTL start"
+    su $SU_SHELL_OPTS $IRODS_SERVICE_ACCOUNT_NAME -c "python3 -c 'from scripts.irods.controller import IrodsController; IrodsController().start()'"
     if [ "$DETECTEDOS" = "RedHatCompatible" -o "$DETECTEDOS" = "SuSE" ] ; then
         touch /var/lock/subsys/irods
     fi
     ;;
 stop)
-    su $SU_SHELL_OPTS $IRODS_SERVICE_ACCOUNT_NAME -c "$IRODS_CTL stop"
+    su $SU_SHELL_OPTS $IRODS_SERVICE_ACCOUNT_NAME -c "python3 -c 'from scripts.irods.controller import IrodsController; IrodsController().stop()'"
     if [ "$DETECTEDOS" = "RedHatCompatible" -o "$DETECTEDOS" = "SuSE" ] ; then
         rm -f /var/lock/subsys/irods
     fi
     ;;
 restart)
-    su $SU_SHELL_OPTS $IRODS_SERVICE_ACCOUNT_NAME -c "$IRODS_CTL restart"
+    su $SU_SHELL_OPTS $IRODS_SERVICE_ACCOUNT_NAME -c "python3 -c 'from scripts.irods.controller import IrodsController; IrodsController().restart()'"
     if [ "$DETECTEDOS" = "RedHatCompatible" -o "$DETECTEDOS" = "SuSE" ] ; then
         touch /var/lock/subsys/irods
     fi
     ;;
 force-reload)
-    su $SU_SHELL_OPTS $IRODS_SERVICE_ACCOUNT_NAME -c "$IRODS_CTL restart"
+    su $SU_SHELL_OPTS $IRODS_SERVICE_ACCOUNT_NAME -c "python3 -c 'from scripts.irods.controller import IrodsController; IrodsController().restart()'"
     if [ "$DETECTEDOS" = "RedHatCompatible" -o "$DETECTEDOS" = "SuSE" ] ; then
         touch /var/lock/subsys/irods
     fi

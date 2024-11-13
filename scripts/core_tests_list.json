@@ -85,7 +85,6 @@
     "test_irm",
     "test_irmdir",
     "test_irmtrash",
-    "test_irodsctl",
     "test_irsync",
     "test_irule",
     "test_iscan",
