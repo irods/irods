@@ -68,9 +68,9 @@ if [ "$PACKAGEUPGRADE" == "false" ] ; then
 
     # =-=-=-=-=-=-=-
     # stop any running iRODS Processes
-    echo "Stopping iRODS :: $IRODS_HOME/irodsctl stop"
+    echo "Stopping iRODS ..."
     cd $IRODS_HOME
-    su --shell=/bin/bash -c "$IRODS_HOME/irodsctl stop" $IRODS_SERVICE_ACCOUNT_NAME
+    su --shell=/bin/bash -c "from scripts.irods.controller import IrodsController; IrodsController().stop()" $IRODS_SERVICE_ACCOUNT_NAME
     cd /tmp
 
     # =-=-=-=-=-=-=-

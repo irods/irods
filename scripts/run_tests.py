@@ -27,10 +27,6 @@ import irods.paths
 import irods.test
 import irods.test.settings
 
-def run_irodsctl_with_arg(arg):
-    irodsctl = os.path.join(IrodsConfig().irods_directory, 'irodsctl')
-    subprocess.check_call([irodsctl, arg])
-
 def run_devtesty():
     print('devtesty is currently disabled', file=sys.stderr)
     # run_irodsctl_with_arg('devtesty')
