@@ -1997,13 +1997,18 @@ main( int argc, char **argv ) {
     bool firstTime = true;
     do {
         int status = doCommand( cmdToken, &myRodsArgs );
+        // -1 is "quitting"-- will exit with zero 
         if ( status == -1 ) {
             keepGoing = false;
         }
         if ( firstTime ) {
-            if ( status == 0 ||
-                    status == -2 ) {
+            if (0 == status) {
                 keepGoing = false;
+            }
+            // -2 is "invalid command"-- will exit nonzero
+            if (-2 == status) {
+                keepGoing = false;
+                lastCommandStatus = -2;
             }
             firstTime = false;
         }
