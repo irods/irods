@@ -1685,6 +1685,12 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         finally:
             self.admin.run_icommand(['iadmin', 'rmgroup', test_group_name])
 
+    def test_iadmin_exits_nonzero_on_nonexistent_command__issue_7734(self):
+        # Nonexistent command
+        ec, _, _ = self.admin.assert_icommand(['iadmin', 'nonexistentcommand'], 'STDERR');
+        self.assertNotEqual(ec, 0)
+
+
 class Test_Iadmin_Resources(resource_suite.ResourceBase, unittest.TestCase):
 
     def setUp(self):
@@ -2132,6 +2138,34 @@ class Test_Iadmin_modrepl(resource_suite.ResourceBase, unittest.TestCase):
         finally:
             if os.path.exists(original_file_path):
                 os.unlink(original_file_path)
+
+    def test_iadmin_modrepl_exits_nonzero_on_failure__issue_7734(self):
+        # Bad parameters to modrepl
+        ec, _, _ = self.admin.assert_icommand(['iadmin', 'modrepl', 'foo', 'bar', 'baz'], 'STDERR');
+        self.assertNotEqual(ec, 0)
+
+        # Nonexistent data object
+        ec, _, _ = self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', '/tempZone/object/does/not/exist', 'replica_number', '0', 'DATA_COMMENTS', 'something'], 'STDERR');
+        self.assertNotEqual(ec, 0)
+
+        test_file_name = 'test_file_name_issue_7734'
+        self.admin.assert_icommand(['itouch', test_file_name])
+
+        # Nonexistent replica number
+        ec, _, _ = self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', self.admin.session_collection + '/' + test_file_name, 'replica_number', '123', 'DATA_COMMENTS', 'something'], 'STDERR');
+        self.assertNotEqual(ec, 0)
+
+        # Invalid replica number
+        ec, _, _ = self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', self.admin.session_collection + '/' + test_file_name, 'replica_number', 'abc', 'DATA_COMMENTS', 'something'], 'STDERR');
+        self.assertNotEqual(ec, 0)
+
+        # Invalid data object ID
+        ec, _, _ = self.admin.assert_icommand(['iadmin', 'modrepl', 'data_id', 'abc', 'replica_number', '123456789', 'DATA_COMMENTS', 'something'], 'STDERR');
+        self.assertNotEqual(ec, 0)
+
+        # Nonexistent data object ID
+        ec, _, _ = self.admin.assert_icommand(['iadmin', 'modrepl', 'data_id', '1234567', 'replica_number', '123456789', 'DATA_COMMENTS', 'something'], 'STDERR');
+        self.assertNotEqual(ec, 0)
 
 class test_moduser_user(unittest.TestCase):
     """Test modifying a user."""
