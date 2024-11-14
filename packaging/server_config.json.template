@@ -97,8 +97,5 @@
     "rule_engine_namespaces": [
         ""
     ],
-    "server_control_plane_encryption_algorithm": "AES-256-CBC",
-    "server_control_plane_encryption_num_hash_rounds": 16,
-    "server_control_plane_timeout_milliseconds": 10000,
     "zone_auth_scheme": "native"
 }

@@ -8,7 +8,6 @@
     "test_catalog",
     "test_collection_mtime",
     "test_configuration_reload",
-    "test_control_plane",
     "test_delay_queue.Test_Delay_Queue",
     "test_delay_queue.Test_Execution_Frequency",
     "test_dynamic_peps",

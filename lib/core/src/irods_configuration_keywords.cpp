@@ -119,11 +119,6 @@ namespace irods
 
     const char* const KW_CFG_IRODS_ENVIRONMENT_FILE{"irods_environment_file"};
     const char* const KW_CFG_IRODS_SESSION_ENVIRONMENT_FILE{"irods_session_environment_file"};
-    const char* const KW_CFG_IRODS_SERVER_CONTROL_PLANE_PORT{"irods_server_control_plane_port"};
-
-    const char* const KW_CFG_IRODS_SERVER_CONTROL_PLANE_KEY{"irods_server_control_plane_key"};
-    const char* const KW_CFG_IRODS_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS{"irods_server_control_plane_encryption_num_hash_rounds"};
-    const char* const KW_CFG_IRODS_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM{"irods_server_control_plane_encryption_algorithm"};
 
     // irods environment advanced settings
     const char* const KW_CFG_IRODS_MAX_SIZE_FOR_SINGLE_BUFFER{"irods_maximum_size_for_single_buffer_in_megabytes"};
@@ -148,15 +143,6 @@ namespace irods
     const char* const KW_CFG_ZONE_USER{"zone_user"};
     const char* const KW_CFG_ZONE_PORT{"zone_port"};
     const char* const KW_CFG_ZONE_AUTH_SCHEME{"zone_auth_scheme"};
-
-    // irods control plane values
-    const char* const KW_CFG_SERVER_CONTROL_PLANE_PORT{"server_control_plane_port"};
-    const char* const KW_CFG_RULE_ENGINE_CONTROL_PLANE_PORT{"rule_engine_control_plane_port"};
-    const char* const KW_CFG_SERVER_CONTROL_PLANE_TIMEOUT{"server_control_plane_timeout_milliseconds"};
-
-    const char* const KW_CFG_SERVER_CONTROL_PLANE_KEY{"server_control_plane_key"};
-    const char* const KW_CFG_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS{"server_control_plane_encryption_num_hash_rounds"};
-    const char* const KW_CFG_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM{"server_control_plane_encryption_algorithm"};
 
     const char* const KW_CFG_CATALOG_PROVIDER_HOSTS{"catalog_provider_hosts"};
     const char* const KW_CFG_CATALOG_SERVICE_ROLE{"catalog_service_role"};
