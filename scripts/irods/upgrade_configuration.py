@@ -11,6 +11,7 @@ import collections.abc
 from . import lib
 from . import paths
 from .exceptions import IrodsError, IrodsWarning
+from .configuration import IrodsConfig
 
 def schema_version_as_int(schema_version):
     if isinstance(schema_version, str) and schema_version[0] == 'v':
@@ -289,6 +290,12 @@ def convert_to_v5_schema_and_add_missing_properties(server_config):
         base = json.load(f)
 
     new_server_config = update_base(base, server_config)
+
+    # Use the "irods_host" value from irods_environment.json to initialize the
+    # "host" property in server_config.json. iRODS 5 requires the "host" property,
+    # so we use the environment file since that's likely to contain the correct
+    # hostname, FQDN, or IP of the server.
+    new_server_config['host'] = IrodsConfig().client_environment['irods_host']
 
     # Remove keys that are no longer needed by the server.
     # Keys listed here are ones that used to be recognized by the server.
