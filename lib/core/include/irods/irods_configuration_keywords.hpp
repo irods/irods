@@ -128,11 +128,6 @@ namespace irods
 
     extern const char* const KW_CFG_IRODS_ENVIRONMENT_FILE;
     extern const char* const KW_CFG_IRODS_SESSION_ENVIRONMENT_FILE;
-    extern const char* const KW_CFG_IRODS_SERVER_CONTROL_PLANE_PORT;
-
-    extern const char* const KW_CFG_IRODS_SERVER_CONTROL_PLANE_KEY;
-    extern const char* const KW_CFG_IRODS_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS;
-    extern const char* const KW_CFG_IRODS_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM;
 
     // irods environment advanced settings
     extern const char* const KW_CFG_IRODS_MAX_SIZE_FOR_SINGLE_BUFFER;
@@ -153,14 +148,6 @@ namespace irods
     extern const char* const KW_CFG_ZONE_USER;
     extern const char* const KW_CFG_ZONE_PORT;
     extern const char* const KW_CFG_ZONE_AUTH_SCHEME;
-
-    // irods control plane values
-    extern const char* const KW_CFG_SERVER_CONTROL_PLANE_PORT;
-    extern const char* const KW_CFG_RULE_ENGINE_CONTROL_PLANE_PORT;
-    extern const char* const KW_CFG_SERVER_CONTROL_PLANE_TIMEOUT;
-    extern const char* const KW_CFG_SERVER_CONTROL_PLANE_KEY;
-    extern const char* const KW_CFG_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS;
-    extern const char* const KW_CFG_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM;
 
     extern const char* const KW_CFG_CATALOG_PROVIDER_HOSTS;
     extern const char* const KW_CFG_CATALOG_SERVICE_ROLE;

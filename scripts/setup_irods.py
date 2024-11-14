@@ -388,11 +388,6 @@ def setup_server_config(irods_config):
             default=[irods_config.server_config.get('server_port_range_end', 20199)],
             input_filter=irods.lib.int_filter(field='Port'))
 
-        irods_config.server_config['server_control_plane_port'] = irods.lib.default_prompt(
-            'Control Plane port',
-            default=[irods_config.server_config.get('server_control_plane_port', 1248)],
-            input_filter=irods.lib.int_filter(field='Port'))
-
         irods_config.server_config['schema_validation_base_uri'] = irods.lib.default_prompt(
             'Schema Validation Base URI (or off)',
             default=[irods_config.server_config.get('schema_validation_base_uri', 'file://{0}/configuration_schemas'.format(irods.paths.irods_directory()))],
@@ -411,7 +406,6 @@ def setup_server_config(irods_config):
                 'iRODS server port:          %d\n',
                 'iRODS port range (begin):   %d\n',
                 'iRODS port range (end):     %d\n',
-                'Control plane port:         %d\n',
                 'Schema validation base URI: %s\n',
                 'iRODS server administrator: %s\n',
                 '-------------------------------------------\n\n',
@@ -421,7 +415,6 @@ def setup_server_config(irods_config):
                     irods_config.server_config['zone_port'],
                     irods_config.server_config['server_port_range_start'],
                     irods_config.server_config['server_port_range_end'],
-                    irods_config.server_config['server_control_plane_port'],
                     irods_config.server_config['schema_validation_base_uri'],
                     irods_config.server_config['zone_user']
                     )
@@ -437,11 +430,6 @@ def setup_server_config(irods_config):
     irods_config.server_config['negotiation_key'] = irods.lib.prompt(
         'iRODS server\'s negotiation key (32 characters)',
         input_filter=irods.lib.character_count_filter(minimum=32, maximum=32, field='Negotiation key'),
-        echo=False)
-
-    irods_config.server_config['server_control_plane_key'] = irods.lib.prompt(
-        'Control Plane key (32 characters)',
-        input_filter=irods.lib.character_count_filter(minimum=32, maximum=32, field='Control Plane key'),
         echo=False)
 
     irods_config.commit(irods_config.server_config, irods_config.server_config_path, clear_cache=False)
@@ -477,10 +465,6 @@ def setup_client_environment(irods_config):
             'irods_encryption_algorithm': 'AES-256-CBC',
             'irods_default_hash_scheme': irods_config.server_config['default_hash_scheme'],
             'irods_match_hash_policy': irods_config.server_config['match_hash_policy'],
-            'irods_server_control_plane_port': irods_config.server_config['server_control_plane_port'],
-            'irods_server_control_plane_key': irods_config.server_config['server_control_plane_key'],
-            'irods_server_control_plane_encryption_num_hash_rounds': irods_config.server_config['server_control_plane_encryption_num_hash_rounds'],
-            'irods_server_control_plane_encryption_algorithm': irods_config.server_config['server_control_plane_encryption_algorithm'],
             'irods_maximum_size_for_single_buffer_in_megabytes': irods_config.server_config['advanced_settings']['maximum_size_for_single_buffer_in_megabytes'],
             'irods_default_number_of_transfer_threads': irods_config.server_config['advanced_settings']['default_number_of_transfer_threads'],
             'irods_transfer_buffer_size_for_parallel_transfer_in_megabytes': irods_config.server_config['advanced_settings']['transfer_buffer_size_for_parallel_transfer_in_megabytes'],

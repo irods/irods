@@ -20,11 +20,9 @@ add_subdirectory(icat)
 add_subdirectory(re)
 add_subdirectory(drivers)
 add_subdirectory(auth)
-add_subdirectory(control_plane)
 add_subdirectory(main_server)
 add_subdirectory(hostname_resolves_to_local_address)
 add_subdirectory(delay_server)
-add_subdirectory(irods_grid)
 add_subdirectory(harness)
 
 target_link_objects(
@@ -122,7 +120,6 @@ set(
   client_hints.json
   configuration_directory.json
   database_config.json
-  grid_status.json
   host_access_control.json
   host_resolution.json
   plugin.json

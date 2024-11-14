@@ -81,7 +81,6 @@ irods::error sanitize_server_config_keys( json& _svr_cfg )
     // sanitize the top level keys
     _svr_cfg["zone_key"] = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
     _svr_cfg["negotiation_key"] = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
-    _svr_cfg["server_control_plane_key"] = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
 
     // return if federation is not available
     if (!_svr_cfg.count("federation")) {
@@ -154,9 +153,6 @@ irods::error convert_service_account( json& _svc_acct )
     if (const auto err = load_json_file(env_file_path, _svc_acct); !err.ok()) {
         return err;
     }
-
-    // sanitize the keys
-    _svc_acct["irods_server_control_plane_key"] = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
 
     return SUCCESS();
 } // convert_service_account

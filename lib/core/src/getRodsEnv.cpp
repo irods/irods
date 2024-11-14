@@ -315,23 +315,6 @@ extern "C" {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
         capture_string_property(irods::KW_CFG_IRODS_SSL_DH_PARAMS_FILE, _env->irodsSSLDHParamsFile, MAX_NAME_LEN);
 
-        // control plane variables
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-        capture_string_property(irods::KW_CFG_IRODS_SERVER_CONTROL_PLANE_KEY, _env->irodsCtrlPlaneKey, MAX_NAME_LEN);
-
-        capture_integer_property(
-            irods::KW_CFG_IRODS_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS,
-            _env->irodsCtrlPlaneEncryptionNumHashRounds );
-
-        capture_string_property(irods::KW_CFG_IRODS_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM,
-                                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-                                _env->irodsCtrlPlaneEncryptionAlgorithm,
-                                HEADER_TYPE_LEN);
-
-        capture_integer_property(
-            irods::KW_CFG_IRODS_SERVER_CONTROL_PLANE_PORT,
-            _env->irodsCtrlPlanePort );
-
         capture_integer_property(
             irods::KW_CFG_IRODS_MAX_SIZE_FOR_SINGLE_BUFFER,
             _env->irodsMaxSizeForSingleBuffer );
