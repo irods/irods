@@ -189,6 +189,20 @@ def run_update(irods_config, cursor):
             for option in password_config_dict:
                 database_connect.execute_sql_statement(cursor, statement_str.format(scheme, option, password_config_dict[option]))
 
+    elif new_schema_version == 12:
+        # Add three new columns to the R_RULE_EXEC table for storing delay server lock information:
+        # - lock_host: Holds the FQDN of the delay server which is executing the delay rule.
+        # - lock_host_pid: Holds the PID of the delay server which is executing the delay rule.
+        # - lock_ts: Holds the timestamp, in epoch seconds, which represents when the delay server locked the delay rule for execution.
+        if irods_config.catalog_database_type == 'oracle':
+            database_connect.execute_sql_statement(cursor, "alter table R_RULE_EXEC add (lock_host varchar2(300) default '');")
+            database_connect.execute_sql_statement(cursor, "alter table R_RULE_EXEC add (lock_host_pid varchar2(16) default '');")
+            database_connect.execute_sql_statement(cursor, "alter table R_RULE_EXEC add (lock_ts varchar2(32) default '');")
+        else:
+            database_connect.execute_sql_statement(cursor, "alter table R_RULE_EXEC add column lock_host varchar(300) default '';")
+            database_connect.execute_sql_statement(cursor, "alter table R_RULE_EXEC add column lock_host_pid varchar(16) default '';")
+            database_connect.execute_sql_statement(cursor, "alter table R_RULE_EXEC add column lock_ts varchar(32) default '';")
+
     else:
         raise IrodsError('Upgrade to schema version %d is unsupported.' % (new_schema_version))
 

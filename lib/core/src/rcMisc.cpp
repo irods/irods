@@ -38,6 +38,8 @@
 #include "irods/specificQuery.h"
 #include "irods/ticketAdmin.h"
 #include "irods/plugins/api/switch_user_types.h"
+#include "irods/delay_rule_lock.h"
+#include "irods/delay_rule_unlock.h"
 
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
@@ -1812,6 +1814,33 @@ void clearGenquery2Input(void* _p)
 
     std::memset(q, 0, sizeof(Genquery2Input));
 } // clearGenquery2Input
+
+void clearDelayRuleLockInput(void* _p)
+{
+    if (!_p) {
+        return;
+    }
+
+    auto* q = static_cast<DelayRuleLockInput*>(_p);
+
+    clearKeyVal(&q->cond_input);
+
+    std::memset(q, 0, sizeof(DelayRuleLockInput));
+} // clearDelayRuleClaimInput
+
+void clearDelayRuleUnlockInput(void* _p)
+{
+    if (!_p) {
+        return;
+    }
+
+    auto* q = static_cast<DelayRuleUnlockInput*>(_p);
+
+    free_pointer(q->rule_ids);
+    clearKeyVal(&q->cond_input);
+
+    std::memset(q, 0, sizeof(DelayRuleUnlockInput));
+} // clearDelayRuleClaimRemoveInput
 
 int
 parseMultiStr( char *strInput, strArray_t *strArray ) {

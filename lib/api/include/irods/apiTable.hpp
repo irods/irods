@@ -151,6 +151,8 @@
 #  include "irods/rsUserAdmin.hpp"
 #  include "irods/rsZoneReport.hpp"
 #  include "irods/rs_check_auth_credentials.hpp"
+#  include "irods/rs_delay_rule_lock.hpp"
+#  include "irods/rs_delay_rule_unlock.hpp"
 #  include "irods/rs_genquery2.hpp"
 #  include "irods/rs_get_library_features.hpp"
 #  include "irods/rs_get_resource_info_for_operation.hpp"
@@ -205,6 +207,8 @@
 #define RS_DATA_OBJ_UNLOCK                 NULLPTR_FOR_CLIENT_TABLE(rsDataObjUnlock)
 #define RS_DATA_OBJ_WRITE                  NULLPTR_FOR_CLIENT_TABLE(rsDataObjWrite)
 #define RS_DATA_PUT                        NULLPTR_FOR_CLIENT_TABLE(rsDataPut)
+#define RS_DELAY_RULE_LOCK                 NULLPTR_FOR_CLIENT_TABLE(rs_delay_rule_lock)
+#define RS_DELAY_RULE_UNLOCK               NULLPTR_FOR_CLIENT_TABLE(rs_delay_rule_unlock)
 #define RS_END_TRANSACTION                 NULLPTR_FOR_CLIENT_TABLE(rsEndTransaction)
 #define RS_EXEC_CMD                        NULLPTR_FOR_CLIENT_TABLE(rsExecCmd)
 #define RS_EXEC_MY_RULE                    NULLPTR_FOR_CLIENT_TABLE(rsExecMyRule)
@@ -1299,8 +1303,22 @@ static irods::apidef_t client_api_table_inp[] = {
         boost::any(std::function<int(rsComm_t*, Genquery2Input*, char**)>(RS_GENQUERY2)),
         "api_genquery2", clearGenquery2Input, irods::clearOutStruct_noop,
         (funcPtr) CALL_GENQUERY2_INOUT
+    },
+    {
+        DELAY_RULE_LOCK_AN, RODS_API_VERSION, LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH,
+        "DelayRuleLockInput_PI", 0, nullptr, 0,
+        boost::any(std::function<int(rsComm_t*, DelayRuleLockInput*)>(RS_DELAY_RULE_LOCK)),
+        "api_delay_rule_lock", clearDelayRuleLockInput, irods::clearOutStruct_noop,
+        (funcPtr) CALL_DELAY_RULE_LOCK
+    },
+    {
+        DELAY_RULE_UNLOCK_AN, RODS_API_VERSION, LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH,
+        "DelayRuleUnlockInput_PI", 0, nullptr, 0,
+        boost::any(std::function<int(rsComm_t*, DelayRuleUnlockInput*)>(RS_DELAY_RULE_UNLOCK)),
+        "api_delay_rule_unlock", clearDelayRuleUnlockInput, irods::clearOutStruct_noop,
+        (funcPtr) CALL_DELAY_RULE_UNLOCK
     }
     // clang-format on
-}; // _api_table_inp
+}; // (client|server)_api_table_inp
 
 #endif // IRODS_API_TABLE_HPP

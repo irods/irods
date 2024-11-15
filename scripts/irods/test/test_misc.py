@@ -471,3 +471,8 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
         # Check for SOCKET_ERROR (-179000) with an errno of 22 (Invalid argument).
         self.env['IRODS_TCP_KEEPALIVE_PROBES'] = str(2147483647)
         self.admin.assert_icommand('ils', 'STDERR', '-179022 SOCKET_ERROR, Invalid argument', env=self.env)
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', "Not implemented for other REPs.")
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "skip for topology testing")
+    def test_server_side_delay_rule_locking_API__issue_8023(self):
+        self.admin.assert_icommand(['irule', '-r', 'irods_rule_engine_plugin-irods_rule_language-instance', 'msi_test_delay_rule_locking_api', 'null', 'ruleExecOut'])

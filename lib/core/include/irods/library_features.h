@@ -102,4 +102,9 @@
 /// \since 4.3.2
 #define IRODS_LIBRARY_FEATURE_GENQUERY2               202404L
 
+/// Defined if the development library supports the delay rule locking API.
+///
+/// \since 5.0.0
+#define IRODS_LIBRARY_FEATURE_DELAY_RULE_LOCKING      202411L
+
 #endif // IRODS_LIBRARY_FEATURES_H

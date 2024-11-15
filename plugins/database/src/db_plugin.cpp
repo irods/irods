@@ -15883,6 +15883,104 @@ auto db_execute_genquery2_sql(irods::plugin_context& _ctx,
     }
 } // db_execute_genquery2_sql
 
+auto db_delay_rule_lock(irods::plugin_context& _ctx,
+                        const char* _rule_id,
+                        const char* _lock_host,
+                        int _lock_host_pid) -> irods::error
+{
+    if (const auto ret = _ctx.valid(); !ret.ok()) {
+        return PASS(ret);
+    }
+
+    if (!_rule_id || !_lock_host || !_lock_host_pid) {
+        log_db::error("{}: Received one or more null pointers.", __func__);
+        return ERROR(SYS_INTERNAL_NULL_INPUT_ERR, "Received one or more null pointers.");
+    }
+
+    try {
+        auto [db_instance, db_conn] = irods::experimental::catalog::new_database_connection();
+
+        nanodbc::statement stmt{db_conn};
+        nanodbc::prepare(stmt, "update R_RULE_EXEC set lock_host = ?, lock_host_pid = ?, lock_ts = ? "
+                               "where rule_exec_id = ? and lock_host = '' and lock_host_pid = '' and lock_ts = ''");
+
+        stmt.bind(0, _lock_host);
+        stmt.bind(1, &_lock_host_pid);
+
+        const auto [secs, millis] = get_current_time();
+        stmt.bind(2, secs.c_str());
+
+        stmt.bind(3, _rule_id);
+
+        if (const auto result = nanodbc::execute(stmt); result.affected_rows() != 1) {
+            auto msg = fmt::format("{}: Failed to lock delay rule [rule_id={}, lock_host={}, lock_host_pid={}].", __func__, _rule_id, _lock_host, _lock_host_pid);
+            log_db::error(msg);
+            return ERROR(CAT_NO_ROWS_UPDATED, std::move(msg));
+        }
+
+        return SUCCESS();
+    }
+    catch (const irods::exception& e) {
+        log_db::error("{}: {}", __func__, e.client_display_what());
+        return ERROR(e.code(), e.what());
+    }
+    catch (const std::exception& e) {
+        log_db::error("{}: {}", __func__, e.what());
+        return ERROR(SYS_LIBRARY_ERROR, e.what());
+    }
+} // db_delay_rule_lock
+
+auto db_delay_rule_unlock(irods::plugin_context& _ctx, const char* _rule_ids) -> irods::error
+{
+    if (const auto ret = _ctx.valid(); !ret.ok()) {
+        return PASS(ret);
+    }
+
+    if (!_rule_ids) {
+        log_db::error("{}: Rule ID list cannot be a null pointer.", __func__);
+        return ERROR(SYS_INTERNAL_NULL_INPUT_ERR, "Rule ID list cannot be a null pointer.");
+    }
+
+    try {
+        const auto rule_ids = nlohmann::json::parse(_rule_ids);
+
+        auto [db_instance, db_conn] = irods::experimental::catalog::new_database_connection();
+
+        nanodbc::transaction trans{db_conn};
+        nanodbc::statement stmt{db_conn};
+        nanodbc::prepare(stmt, "update R_RULE_EXEC set lock_host = '', lock_host_pid = '', lock_ts = '', modify_ts = ? where rule_exec_id = ?");
+
+        // Putting this in the loop would enable finer granularity in the update sequence, but
+        // there's likely no major benefit to it. At the very least, computing the time once
+        // allows admins to figure out which delay rules were updated within the same transaction.
+        const auto [secs, millis] = get_current_time();
+
+        // Nanodbc supports batch operations, but those require copying the data. We use a loop
+        // to perform the updates. While not the greatest option, it keeps us from potentially
+        // triggering OOM errors.
+        for (auto&& rule_id : rule_ids) {
+            stmt.bind(0, secs.c_str());
+            stmt.bind(1, rule_id.get_ref<const std::string&>().c_str());
+            nanodbc::execute(stmt);
+        }
+
+        trans.commit();
+
+        // It would be amazing to return CODE(result.affected_rows()), but we cannot because
+        // the ODBC drivers can produce different results. For this reason, the only thing we can
+        // do is return success or an error.
+        return SUCCESS();
+    }
+    catch (const irods::exception& e) {
+        log_db::error("{}: {}", __func__, e.client_display_what());
+        return ERROR(e.code(), e.what());
+    }
+    catch (const std::exception& e) {
+        log_db::error("{}: {}", __func__, e.what());
+        return ERROR(SYS_LIBRARY_ERROR, e.what());
+    }
+} // db_delay_rule_unlock
+
 // =-=-=-=-=-=-=-
 //
 irods::error db_start_operation( irods::plugin_property_map& _props ) {
@@ -16298,6 +16396,12 @@ irods::database* plugin_factory(
         DATABASE_OP_EXECUTE_GENQUERY2_SQL,
         function<error(plugin_context&, const char*, const std::vector<std::string>*, char**)>(
             db_execute_genquery2_sql));
+    pg->add_operation<const char*, const char*, int>(
+        DATABASE_OP_DELAY_RULE_LOCK,
+        function<error(plugin_context&, const char*, const char*, int)>(db_delay_rule_lock));
+    pg->add_operation<const char*>(
+        DATABASE_OP_DELAY_RULE_UNLOCK,
+        function<error(plugin_context&, const char*)>(db_delay_rule_unlock));
 
     return pg;
 } // plugin_factory

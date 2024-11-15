@@ -47,6 +47,8 @@ TEST_CASE("rc_get_library_features")
 
         CHECK(202403 == features.at(IRODS_TO_STRING(IRODS_LIBRARY_FEATURE_REPLICA_TRUNCATE)).get<int>());
         CHECK(202404 == features.at(IRODS_TO_STRING(IRODS_LIBRARY_FEATURE_GENQUERY2)).get<int>());
+
+        CHECK(202411 == features.at(IRODS_TO_STRING(IRODS_LIBRARY_FEATURE_DELAY_RULE_LOCKING)).get<int>());
         // clang-format on
     }
 
