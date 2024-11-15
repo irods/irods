@@ -239,6 +239,11 @@
 // to identify the rule execution info / context.
 #define RULE_EXECUTION_CONTEXT_KW                   "rule_execution_context"
 
+// Keywords used by the delay rule APIs to identify delay server lock columns.
+#define RULE_LOCK_HOST_KW                           "rule_lock_host"
+#define RULE_LOCK_HOST_PID_KW                       "rule_lock_host_pid"
+#define RULE_LOCK_TIME_KW                           "rule_lock_time"
+
 #define EXCLUDE_FILE_KW                             "excludeFile"
 #define AGE_KW                                      "age"  /* age of the file for itrim */
 
