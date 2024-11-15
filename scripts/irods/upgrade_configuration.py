@@ -290,6 +290,14 @@ def convert_to_v5_schema_and_add_missing_properties(server_config):
 
     new_server_config = update_base(base, server_config)
 
+    # Remove keys that are no longer needed by the server.
+    # Keys listed here are ones that used to be recognized by the server.
+    new_server_config.pop('server_control_plane_encryption_algorithm', None)
+    new_server_config.pop('server_control_plane_encryption_num_hash_rounds', None)
+    new_server_config.pop('server_control_plane_key', None)
+    new_server_config.pop('server_control_plane_port', None)
+    new_server_config.pop('server_control_plane_timeout_milliseconds', None)
+
     return new_server_config
 
 def upgrade_config_file(irods_config, path, new_version, schema_name=None):
