@@ -197,6 +197,9 @@ static const columnName_t columnNames[] = {
     { COL_RULE_EXEC_LAST_EXE_TIME,      "RULE_EXEC_LAST_EXE_TIME", },
     { COL_RULE_EXEC_STATUS,             "RULE_EXEC_STATUS", },
     { COL_RULE_EXEC_CONTEXT,            "RULE_EXEC_CONTEXT", },
+    { COL_RULE_EXEC_LOCK_HOST,          "RULE_EXEC_LOCK_HOST", },
+    { COL_RULE_EXEC_LOCK_HOST_PID,      "RULE_EXEC_LOCK_HOST_PID", },
+    { COL_RULE_EXEC_LOCK_TIME,          "RULE_EXEC_LOCK_TIME", },
 
     { COL_TOKEN_NAMESPACE, "TOKEN_NAMESPACE", },
     { COL_TOKEN_ID,        "TOKEN_ID", },
