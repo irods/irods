@@ -20,6 +20,7 @@
 #include "irods/irods_stacktrace.hpp"
 #include "irods/irods_kvp_string_parser.hpp"
 #include "irods/irods_client_server_negotiation.hpp"
+#include "irods/irods_logger.hpp"
 
 // =-=-=-=-=-=-=-
 // boost includes
@@ -245,9 +246,6 @@ irods::error pam_auth_client_request(
 /// =-=-=-=-=-=-=-
 /// @brief function to run the local exec which will
 ///        actually do the auth check for us
-#ifndef PAM_AUTH_CHECK_PROG
-#define PAM_AUTH_CHECK_PROG  "./irodsPamAuthCheck"
-#endif
 int run_pam_auth_check(
     const std::string& _username,
     const std::string& _password ) {
@@ -261,6 +259,7 @@ int run_pam_auth_check(
     }
     pid = fork();
     if ( pid == -1 ) {
+        irods::experimental::log::authentication::error("{}: fork() error: errno=[{}]", __func__, errno);
         return SYS_FORK_ERROR;
     }
 
@@ -284,11 +283,12 @@ int run_pam_auth_check(
             irods::log( ERROR( errsv, "Error duplicating the file descriptor." ) );
         }
         close( p2cp[1] );
-        i = execl( PAM_AUTH_CHECK_PROG, PAM_AUTH_CHECK_PROG, _username.c_str(),
-                   ( char * )NULL );
+        const auto binary = irods::get_irods_sbin_directory() / "irodsPamAuthCheck";
+        i = execl(binary.c_str(), binary.c_str(), _username.c_str(), static_cast<char*>(nullptr)); // NOLINT(cppcoreguidelines-pro-type-vararg)
         perror( "execl" );
         printf( "execl failed %d\n", i );
     }
+    irods::experimental::log::authentication::error("{}: Returning default value [SYS_FORK_ERROR]", __func__);
     return ( SYS_FORK_ERROR ); /* avoid compiler warning */
 
 } // run_pam_auth_check
