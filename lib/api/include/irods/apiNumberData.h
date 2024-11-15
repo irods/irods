@@ -166,5 +166,7 @@ API_NUMBER(CLIENT_HINTS_AN,                         10215)
 
 API_NUMBER(GET_RESOURCE_INFO_FOR_OPERATION_AN,      10220)
 API_NUMBER(GENQUERY2_AN,                            10221)
+API_NUMBER(DELAY_RULE_LOCK_AN,                      10222)
+API_NUMBER(DELAY_RULE_UNLOCK_AN,                    10223)
 
 // clang-format on

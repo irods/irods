@@ -9,6 +9,7 @@
     "irods_data_object_modify_info",
     "irods_data_object_proxy",
     "irods_delay_hints_parser",
+    "irods_delay_rule_locking_api",
     "irods_dns_cache",
     "irods_dstream",
     "irods_environment_variables",

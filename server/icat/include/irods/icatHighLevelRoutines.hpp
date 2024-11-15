@@ -411,4 +411,38 @@ auto chl_check_auth_credentials(RsComm& _comm,
 auto chl_execute_genquery2_sql(RsComm& _comm, const char* _sql, const std::vector<std::string>* _values, char** _output)
     -> int;
 
+/// \brief High-level wrapper for locking delay rules.
+///
+/// Triggers policy associated with database operations.
+///
+/// \param[in] _comm          The communication object.
+/// \param[in] _rule_id       The ID of the delay rule to lock.
+/// \param[in] _lock_host     The FQDN, hostname, or IP of the delay server.
+/// \param[in] _lock_host_pid The PID of the delay server process.
+///
+/// \return An integer.
+/// \retval  0 On success.
+/// \retval <0 On failure.
+///
+/// \see #rs_delay_rule_lock
+///
+/// \since 5.0.0
+auto chl_delay_rule_lock(RsComm& _comm, const char* _rule_id, const char* _delay_rule_host, int _delay_rule_pid) -> int;
+
+/// \brief High-level wrapper for unlocking delay rules.
+///
+/// Triggers policy associated with database operations.
+///
+/// \param[in] _comm     The communication object.
+/// \param[in] _rule_ids A JSON string containing a list of delay rule IDs.
+///
+/// \return An integer.
+/// \retval  0 On success.
+/// \retval <0 On failure.
+///
+/// \see #rs_delay_rule_unlock
+///
+/// \since 5.0.0
+auto chl_delay_rule_unlock(RsComm& _comm, const char* _rule_ids) -> int;
+
 #endif // IRODS_ICAT_HIGHLEVEL_ROUTINES_HPP

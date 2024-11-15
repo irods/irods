@@ -52,6 +52,7 @@ set(
   data_object_modify_info
   data_object_proxy
   delay_hints_parser
+  delay_rule_locking_api
   dns_cache
   dstream
   environment_variables
