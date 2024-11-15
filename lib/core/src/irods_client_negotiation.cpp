@@ -298,22 +298,19 @@ namespace irods
             return ret;
         }
 
-        // =-=-=-=-=-=-=-
-        // attempt to get the server config, if we can then we must be an
-        // Agent.  sign the SID and send it showing that we are a trusted
-        // Agent and not an actual Client ( icommand, jargon connection etc )
         std::string cli_msg;
 
-        try {
-            // If server_config cannot be read, this must be a "pure" client. An
-            // irods::exception will be thrown in that case.
-            server_properties::instance();
-
+        // Determine if we're operating within the server or as a pure client.
+        //
+        // If we originated from the server, as identified via ProcessType, sign the SID and send
+        // it showing that we are a trusted agent and not a pure client (e.g. icommands, jargon, etc).
+        if (AGENT_PT == ProcessType || SERVER_PT == ProcessType) {
             try {
                 boost::optional<std::string> zone_key;
                 try {
                     zone_key.reset(irods::get_server_property<std::string>(irods::KW_CFG_ZONE_KEY));
-                } catch (const irods::exception&) {
+                }
+                catch (const irods::exception&) {
                     zone_key.reset(irods::get_server_property<std::string>(LOCAL_ZONE_SID_KW));
                 }
 
@@ -345,13 +342,15 @@ namespace irods
                     irods::kvp_association() +
                     signed_zone_key +
                     irods::kvp_delimiter();
-            } catch (const irods::exception& e) {
+            }
+            catch (const irods::exception& e) {
                 irods::log(LOG_WARNING, fmt::format(
                     "[{}:{}] - failed to retrieve and sign local zone_key [{}]",
                     __func__, __LINE__, e.client_display_what()));
                 return irods::error(e);
             }
-        } catch (const irods::exception& e) {
+        }
+        else {
             // This is a pure client, just continue.
         }
 
