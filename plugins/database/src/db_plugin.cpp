@@ -3617,6 +3617,9 @@ irods::error db_mod_rule_exec_op(
         RULE_LAST_EXE_TIME_KW,
         RULE_EXE_STATUS_KW,
         RULE_EXECUTION_CONTEXT_KW,
+        RULE_LOCK_HOST_KW,
+        RULE_LOCK_HOST_PID_KW,
+        RULE_LOCK_TIME_KW,
         "END"
     };
 
@@ -3633,6 +3636,9 @@ irods::error db_mod_rule_exec_op(
         "last_exe_time",
         "exe_status",
         "exe_context",
+        "lock_host",
+        "lock_host_pid",
+        "lock_ts",
 
         // The following columns are handled automatically.
         // ** New columns MUST be added before these lines! **
