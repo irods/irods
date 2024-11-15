@@ -3,12 +3,14 @@
 #include "irods/authenticate.h"
 #include "irods/genQuery.h"
 #include "irods/icatHighLevelRoutines.hpp"
+#include "irods/irods_default_paths.hpp"
 #include "irods/irods_log.hpp"
 #include "irods/irods_server_properties.hpp"
 #include "irods/miscServerFunct.hpp"
 #include "irods/miscServerFunct.hpp"
 #include "irods/pamAuthRequest.h"
 #include "irods/sslSockComm.h"
+#include "irods/irods_logger.hpp"
 
 #include <sys/wait.h>
 
@@ -73,9 +75,6 @@ rsPamAuthRequest( rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
  do the PAM authentication.  The username is on the command line but
  the password is sent on a pipe to be more secure.
  */
-#ifndef PAM_AUTH_CHECK_PROG
-#define PAM_AUTH_CHECK_PROG  "./irodsPamAuthCheck"
-#endif
 int
 runPamAuthCheck( char *username, char *password ) {
     int p2cp[2]; /* parent to child pipe */
@@ -87,6 +86,7 @@ runPamAuthCheck( char *username, char *password ) {
     }
     pid = fork();
     if ( pid == -1 ) {
+        irods::experimental::log::authentication::error("{}: fork() error: errno=[{}], username=[{}].", __func__, errno, username ? username : "nullptr");
         return SYS_FORK_ERROR;
     }
 
@@ -111,12 +111,13 @@ runPamAuthCheck( char *username, char *password ) {
             irods::log( ERROR( errsv, "Error duplicating the file descriptor." ) );
         }
         close( p2cp[1] );
-        i = execl( PAM_AUTH_CHECK_PROG, PAM_AUTH_CHECK_PROG, username,
-                   ( char * )NULL );
+        const auto binary = irods::get_irods_sbin_directory() / "irodsPamAuthCheck";
+        i = execl(binary.c_str(), binary.c_str(), username, static_cast<char*>(nullptr)); // NOLINT(cppcoreguidelines-pro-type-vararg)
         perror( "execl" );
         printf( "execl failed %d\n", i );
     }
-    return ( SYS_FORK_ERROR ); /* avoid compiler warning */
+    irods::experimental::log::api::error("{}: Returning default value [SYS_FORK_ERROR]", __func__);
+    return SYS_FORK_ERROR; /* avoid compiler warning */
 }
 
 int

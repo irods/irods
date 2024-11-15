@@ -55,13 +55,6 @@ namespace
 #ifdef RODS_SERVER
     auto run_pam_auth_check(const std::string& _username, const std::string& _password) -> void
     {
-        // TODO why do we need a separate executable?
-        // clang-format off
-#ifndef PAM_AUTH_CHECK_PROG
-#define PAM_AUTH_CHECK_PROG "./irodsPamAuthCheck"
-#endif
-        // clang-format on
-
         // pipe between parent and child processes to which the password will be written
         // Do not attempt to close the pipe at any ol' scope exit. Rather, only close the pipe
         // when we are done with it or if an early exit occurs.
@@ -72,6 +65,7 @@ namespace
 
         int pid = fork();
         if (pid == -1) {
+            irods::experimental::log::authentication::error("{}: fork() error: [errno=[{}]]", __func__, errno);
             close(p2cp[1]);
             THROW(SYS_FORK_ERROR, "failed to fork process");
         }
@@ -114,8 +108,11 @@ namespace
         //
         // The list of arguments must be terminated by a NULL pointer, and, since these are
         // variadic functions, this pointer must be cast (char *) NULL.
-        execl(PAM_AUTH_CHECK_PROG, PAM_AUTH_CHECK_PROG, _username.c_str(), (char*) nullptr);
+        const auto binary = irods::get_irods_sbin_directory() / "irodsPamAuthCheck";
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
+        execl(binary.c_str(), binary.c_str(), _username.c_str(), static_cast<char*>(nullptr));
 
+        irods::experimental::log::authentication::error("{}: Returning default value [SYS_FORK_ERROR]", __func__);
         THROW(SYS_FORK_ERROR, fmt::format("execl failed [errno:{}]", errno));
     }  // run_pam_auth_check
 #endif // #ifdef RODS_SERVER
