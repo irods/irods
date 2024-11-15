@@ -131,6 +131,24 @@ namespace irods::experimental::net::hostname_cache
         catch (...) {}
     } // deinit
 
+    auto init_no_create(const std::string_view _shm_name) -> void
+    {
+        g_owner_pid = 0;
+
+        g_segment_name = std::string{_shm_name};
+        g_mutex_name = g_segment_name + "_mutex";
+
+        g_segment = std::make_unique<bi::managed_shared_memory>(bi::open_only, g_segment_name.data());
+        g_allocator = std::make_unique<void_allocator_type>(g_segment->get_segment_manager());
+        g_mutex = std::make_unique<bi::named_sharable_mutex>(bi::open_only, g_mutex_name.data());
+        g_map = g_segment->construct<map_type>(bi::anonymous_instance)(std::less<key_type>{}, *g_allocator);
+    } // init_no_create
+
+    auto shared_memory_name() -> std::string_view
+    {
+        return g_segment_name;
+    } // shared_memory_name
+
     auto insert_or_assign(const std::string_view _key,
                           const std::string_view _alias,
                           std::chrono::seconds _expires_after) -> bool
