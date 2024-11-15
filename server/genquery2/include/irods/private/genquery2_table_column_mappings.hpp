@@ -150,6 +150,9 @@ namespace irods::experimental::genquery2
         {"DELAY_RULE_NOTIFICATION_ADDR", {"R_RULE_EXEC", "notification_addr"}},
         {"DELAY_RULE_LAST_EXE_TIME", {"R_RULE_EXEC", "last_exe_time"}},
         {"DELAY_RULE_STATUS", {"R_RULE_EXEC", "exe_status"}},
+        {"DELAY_RULE_LOCK_HOST", {"R_RULE_EXEC", "lock_host"}},
+        {"DELAY_RULE_LOCK_HOST_PID", {"R_RULE_EXEC", "lock_host_pid"}},
+        {"DELAY_RULE_LOCK_TIME", {"R_RULE_EXEC", "lock_ts"}},
 
         //{"TOKEN_NAMESPACE", {"R_TOKN_MAIN", "token_namespace"}},
         //{"TOKEN_ID",        {"R_TOKN_MAIN", "token_id"}},
