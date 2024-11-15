@@ -7,6 +7,7 @@
 #include "irods/irods_exception.hpp"
 
 #include <map>
+#include <unordered_map>
 
 namespace irods {
 
@@ -24,10 +25,21 @@ namespace irods {
              */
             static environment_properties& instance();
 
+            // Returns a copy of the underlying configuration.
+            static std::unordered_map<std::string, boost::any> copy_configuration()
+            {
+                return instance().config_props_.map();
+            } // copy_configuration
+
+            void set_configuration(std::unordered_map<std::string, boost::any> _config)
+            {
+                config_props_.map() = std::move(_config);
+            } // set_configuration
+
             /**
              * @brief Read environment configuration and fill environment_properties::properties
              */
-            void capture( );
+            void capture();
 
             /**
              * @brief Get a property from the map if it exists.  catch the exception in the case where
