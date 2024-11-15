@@ -35,6 +35,22 @@ namespace irods::experimental::net::dns_cache
     /// \since 4.2.9
     auto deinit() noexcept -> void;
 
+    /// Initializes the dns cache from an existing shared memory object.
+    ///
+    /// This function should only be called on startup of the server.
+    ///
+    /// \param[in] _shm_name The name of the shared memory to create.
+    ///
+    /// \since 5.0.0
+    auto init_no_create(const std::string_view _shm_name) -> void;
+
+    /// Returns the name of the shared memory segment used by the cache.
+    ///
+    /// This function allows other components and processes to use an existing cache.
+    ///
+    /// \since 5.0.0
+    auto shared_memory_name() -> std::string_view;
+
     /// Inserts a new mapping or updates an existing mapping within the DNS cache.
     ///
     /// \param[in] _key           The key that will be mapped to \p _info.
