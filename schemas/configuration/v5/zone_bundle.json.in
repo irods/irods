@@ -4,7 +4,6 @@
     "type": "object",
     "description": "Schema for an iRODS zone bundle (possibly featuring Federation)",
     "properties": {
-        "schema_version": {"type": "string"},
         "zones": {
             "type": "array",
             "items": {
@@ -27,5 +26,5 @@
             }
         }
     },
-    "required": ["schema_version", "zones"]
+    "required": ["zones"]
 }
