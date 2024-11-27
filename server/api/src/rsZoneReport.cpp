@@ -223,9 +223,6 @@ int _rsZoneReport(rsComm_t* _comm, bytesBuf_t** _bbuf)
     zone_arr.push_back(zone_obj);
 
     auto zone = json::object();
-    zone["schema_version"] = (boost::format("https://irods.org/configuration_schemas/%s/zone_bundle.json")
-         % irods::get_server_property<const std::string>("schema_version")).str();
-
     zone["zones"] = zone_arr;
 
     const auto zr = zone.dump(4);
