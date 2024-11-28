@@ -15,6 +15,7 @@ objects_link_libraries(
   PUBLIC
   OpenSSL::Crypto
   nlohmann_json::nlohmann_json
+  Boost::headers
 )
 target_include_directories(
   irods_hasher
@@ -24,8 +25,6 @@ target_include_directories(
   "$<BUILD_INTERFACE:${CMAKE_IRODS_BINARY_DIR}/lib/core/include>"
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/core/include>"
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/api/include>"
-  PRIVATE
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
 )
 target_compile_definitions(
   irods_hasher

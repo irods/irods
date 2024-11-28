@@ -8,11 +8,7 @@ target_link_libraries(
   irods_common
   irods_client
   irods_plugin_dependencies
-)
-target_include_directories(
-  irodsTestPutGet
-  PRIVATE
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
+  Boost::headers
 )
 target_compile_definitions(
   irodsTestPutGet

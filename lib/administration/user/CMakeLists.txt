@@ -21,8 +21,6 @@ target_include_directories(
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/administration/zone/include>"
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/core/include>"
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/api/include>"
-  PRIVATE
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
 )
 target_compile_definitions(
   irods_user_administration_common
@@ -58,8 +56,6 @@ foreach(variant IN ITEMS client server)
     "$<BUILD_INTERFACE:${CMAKE_IRODS_BINARY_DIR}/lib/core/include>"
     "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/core/include>"
     "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/api/include>"
-    PRIVATE
-    "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
   )
   target_compile_definitions(
     ${target_name}

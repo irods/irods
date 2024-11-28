@@ -15,8 +15,9 @@ target_link_libraries(
   irods_common
   irods_server
   "${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/lib/libarchive.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
+  Boost::headers
+  Boost::filesystem
+  Boost::system
   fmt::fmt
   OpenSSL::Crypto
 )
@@ -25,7 +26,6 @@ target_include_directories(
   PRIVATE
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/include"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
 )
 target_compile_definitions(
   irods_resource_plugin-replication

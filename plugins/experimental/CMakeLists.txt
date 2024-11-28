@@ -26,8 +26,9 @@ foreach(plugin IN LISTS IRODS_EXPERIMENTAL_API_PLUGINS)
     irods_server
     irods_common
     "${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/lib/libarchive.so"
-    "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
-    "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
+    Boost::headers
+    Boost::filesystem
+    Boost::system
     fmt::fmt
     ${CMAKE_DL_LIBS}
   )
@@ -36,7 +37,6 @@ foreach(plugin IN LISTS IRODS_EXPERIMENTAL_API_PLUGINS)
     PRIVATE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/include"
-    "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
   )
   target_compile_definitions(
     ${plugin_target}

@@ -77,6 +77,7 @@ objects_link_libraries(
   fmt::fmt
   spdlog::spdlog
   Threads::Threads
+  Boost::headers
 )
 target_include_directories(
   irods_common_core
@@ -90,8 +91,6 @@ target_include_directories(
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/core/include>"
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/re/include>"
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/icat/include>"
-  PRIVATE
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
 )
 target_compile_definitions(
   irods_common_core
@@ -128,6 +127,7 @@ objects_link_libraries(
   PUBLIC
   nlohmann_json::nlohmann_json
   fmt::fmt
+  Boost::headers
   irods_common
   ${CMAKE_DL_LIBS}
 )
@@ -144,8 +144,6 @@ target_include_directories(
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/icat/include>"
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/re/include>"
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/drivers/include>"
-  PRIVATE
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
 )
 set_target_properties(irods_plugin_dependencies_obj PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE TRUE)
 set_target_properties(irods_plugin_dependencies_obj PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
@@ -168,15 +166,11 @@ target_link_objects(
 )
 target_link_libraries(
   irods_plugin_dependencies
-  PRIVATE
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_random.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
-)
-target_include_directories(
-irods_plugin_dependencies
-  PRIVATE
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
+  PUBLIC
+  Boost::system # private?
+  Boost::filesystem
+  Boost::random # private?
+  Boost::headers
 )
 set_property(TARGET irods_plugin_dependencies PROPERTY VERSION ${IRODS_VERSION})
 set_property(TARGET irods_plugin_dependencies PROPERTY SOVERSION ${IRODS_VERSION})
@@ -242,6 +236,7 @@ foreach(variant IN ITEMS client server)
     spdlog::spdlog
     OpenSSL::Crypto
     OpenSSL::SSL
+    Boost::headers
   )
   target_include_directories(
     irods_lib_core_${variant}
@@ -258,8 +253,6 @@ foreach(variant IN ITEMS client server)
     "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/icat/include>"
     "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/re/include>"
     "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/drivers/include>"
-    PRIVATE
-    "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
   )
   target_compile_definitions(
     irods_lib_core_${variant}

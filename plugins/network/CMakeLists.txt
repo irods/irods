@@ -26,16 +26,12 @@ foreach(plugin IN LISTS IRODS_NETWORK_PLUGINS)
       irods_common
       irods_plugin_dependencies
       irods_${variant}
-      "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
-      "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
+      Boost::headers
+      Boost::filesystem
+      Boost::system
       fmt::fmt
       OpenSSL::SSL
       OpenSSL::Crypto
-    )
-    target_include_directories(
-      ${plugin_target}
-      PRIVATE
-      "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
     )
     target_compile_definitions(
       ${plugin_target}

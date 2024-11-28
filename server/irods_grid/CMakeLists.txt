@@ -7,17 +7,18 @@ add_executable(
 target_link_libraries(
   irods-grid
   PRIVATE
+  Boost::headers
+  Boost::chrono
+  Boost::filesystem
+  Boost::regex
+  Boost::program_options
+  Boost::system
+  Boost::thread
   irods_common
   irods_plugin_dependencies
   irods_client
   irods_server_control_plane
   "${IRODS_EXTERNALS_FULLPATH_AVRO}/lib/libavrocpp.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_chrono.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_program_options.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so"
   "${IRODS_EXTERNALS_FULLPATH_ZMQ}/lib/libzmq.so"
   ${CMAKE_DL_LIBS}
   m
@@ -26,7 +27,6 @@ target_include_directories(
   irods-grid
   PRIVATE
   "${IRODS_EXTERNALS_FULLPATH_AVRO}/include"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
   "${IRODS_EXTERNALS_FULLPATH_CPPZMQ}/include"
   "${IRODS_EXTERNALS_FULLPATH_ZMQ}/include"
 )

@@ -23,8 +23,6 @@ foreach(variant IN ITEMS client server)
         "$<BUILD_INTERFACE:${CMAKE_IRODS_BINARY_DIR}/lib/core/include>"
         "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/core/include>"
         "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/api/include>"
-        PRIVATE
-        "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
     )
 
     target_compile_definitions(
