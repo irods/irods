@@ -286,10 +286,12 @@ add_subdirectory(unit_tests)
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/packaging.cmake")
 
 include(CMakePackageConfigHelpers)
+set(IRODS_INSTALL_CMAKECONFDIR "${IRODS_INSTALL_CMAKEDIR}/irods-${IRODS_VERSION_MAJOR}.${IRODS_VERSION_MINOR}")
+
 configure_package_config_file(
   "${CMAKE_IRODS_SOURCE_DIR}/cmake/IRODSConfig.cmake.not_yet_installed.in"
   "${CMAKE_IRODS_BINARY_DIR}/IRODSConfig.cmake.not_yet_installed" # suffix prevents cmake's find_package() from using this copy of the file
-  INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/irods/cmake"
+  INSTALL_DESTINATION "${IRODS_INSTALL_CMAKECONFDIR}"
   PATH_VARS IRODS_INCLUDE_DIRS
 )
 configure_file(
@@ -301,7 +303,7 @@ configure_file(
 install(
   FILES
   "${CMAKE_IRODS_BINARY_DIR}/IRODSConfig.cmake.not_yet_installed"
-  DESTINATION "${CMAKE_INSTALL_LIBDIR}/irods/cmake"
+  DESTINATION "${IRODS_INSTALL_CMAKECONFDIR}"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
   RENAME IRODSConfig.cmake
 )
@@ -310,7 +312,7 @@ install(
   FILES
   "${CMAKE_IRODS_BINARY_DIR}/IRODSConfigVersion.cmake"
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake/IRODSTargetsWrapper.cmake"
-  DESTINATION "${CMAKE_INSTALL_LIBDIR}/irods/cmake"
+  DESTINATION "${IRODS_INSTALL_CMAKECONFDIR}"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
 )
 
@@ -331,14 +333,14 @@ install(
   "${CMAKE_IRODS_SOURCE_DIR}/cmake/Modules/IrodsCPackPlatform.cmake"
   "${CMAKE_IRODS_SOURCE_DIR}/cmake/Modules/IrodsCPackCommon.cmake"
   "${CMAKE_IRODS_SOURCE_DIR}/cmake/Modules/IrodsRunpathDefaults.cmake"
-  DESTINATION "${CMAKE_INSTALL_LIBDIR}/irods/cmake/Modules"
+  DESTINATION "${IRODS_INSTALL_CMAKECONFDIR}/Modules"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
 )
 
 install(
   EXPORT
   IRODSTargets
-  DESTINATION "${CMAKE_INSTALL_LIBDIR}/irods/cmake"
+  DESTINATION "${IRODS_INSTALL_CMAKECONFDIR}"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
 )
 
