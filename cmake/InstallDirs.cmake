@@ -34,6 +34,17 @@ warn_for_old_libdir_cache()
 
 include(GNUInstallDirs)
 
+# Despite what the CMake documentation says, find_package has a hard time finding our
+# package configuration if it's in lib64.
+if(CMAKE_INSTALL_LIBDIR MATCHES "^lib[^/]+.*")
+  set(IRODS_INSTALL_CMAKEDIR_default "lib/cmake")
+elseif(CMAKE_INSTALL_LIBDIR MATCHES "^usr/lib[^/]+.*")
+  set(IRODS_INSTALL_CMAKEDIR_default "usr/lib/cmake")
+else()
+  set(IRODS_INSTALL_CMAKEDIR_default "${CMAKE_INSTALL_LIBDIR}/cmake")
+endif()
+set(IRODS_INSTALL_CMAKEDIR "${IRODS_INSTALL_CMAKEDIR_default}" CACHE PATH "CMake package configuration directory (lib/cmake)")
+
 if(NOT DEFINED IRODS_INCLUDE_DIRS)
 	set(IRODS_INCLUDE_DIRS "${CMAKE_INSTALL_INCLUDEDIR}")
 endif()
