@@ -63,12 +63,9 @@ namespace irods {
         salt_size_( _salt_sz ),
         num_hash_rounds_( _num_rnds ),
         algorithm_( _algo ) {
-
-        std::transform(
-            algorithm_.begin(),
-            algorithm_.end(),
-            algorithm_.begin(),
-            [](unsigned char _ch) { return std::tolower(_ch); });
+        std::transform(algorithm_.begin(), algorithm_.end(), algorithm_.begin(), [](unsigned char _ch) {
+            return std::tolower(_ch);
+        });
 
         // =-=-=-=-=-=-=-
         // select some sane defaults

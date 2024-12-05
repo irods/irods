@@ -548,7 +548,8 @@ readAndProcClientMsg( rsComm_t * rsComm, int flags ) {
                 if (ret.code() == INTERRUPT_DETECTED) {
                     // Check if the agent factory requested for the agent to stop.
                     if (g_terminate) {
-                        log_agent::info("{}: Received instruction to shutdown. Agent is shutting down.", __func__, ret.code());
+                        log_agent::info(
+                            "{}: Received instruction to shutdown. Agent is shutting down.", __func__, ret.code());
                         return SHUTDOWN_SEQUENCE_INITIATED;
                     }
 

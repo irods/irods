@@ -86,7 +86,8 @@ runPamAuthCheck( char *username, char *password ) {
     }
     pid = fork();
     if ( pid == -1 ) {
-        irods::experimental::log::authentication::error("{}: fork() error: errno=[{}], username=[{}].", __func__, errno, username ? username : "nullptr");
+        irods::experimental::log::authentication::error(
+            "{}: fork() error: errno=[{}], username=[{}].", __func__, errno, username ? username : "nullptr");
         return SYS_FORK_ERROR;
     }
 
@@ -112,7 +113,10 @@ runPamAuthCheck( char *username, char *password ) {
         }
         close( p2cp[1] );
         const auto binary = irods::get_irods_sbin_directory() / "irodsPamAuthCheck";
-        i = execl(binary.c_str(), binary.c_str(), username, static_cast<char*>(nullptr)); // NOLINT(cppcoreguidelines-pro-type-vararg)
+        i = execl(binary.c_str(),
+                  binary.c_str(),
+                  username,
+                  static_cast<char*>(nullptr)); // NOLINT(cppcoreguidelines-pro-type-vararg)
         perror( "execl" );
         printf( "execl failed %d\n", i );
     }

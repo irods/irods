@@ -209,7 +209,9 @@ namespace
                     _getRodsEnv(env);
 
                     log_ds::debug("Connecting to host [{}] as proxy user [{}] on behalf of user [{}] ...",
-                                                *executor, env.rodsUserName, *_client_user);
+                                  *executor,
+                                  env.rodsUserName,
+                                  *_client_user);
 
                     irods::experimental::fully_qualified_username local_admin{env.rodsUserName, env.rodsZone};
                     irods::experimental::fully_qualified_username user{*_client_user, env.rodsZone};
@@ -339,7 +341,10 @@ namespace
             const int status = rcRuleExecDel(&_comm, &rule_exec_del_inp);
             if (status < 0) {
                 log_ds::error("{}:{} - rcRuleExecDel failed {} for ID {}",
-                    __func__, __LINE__, status, rule_exec_del_inp.ruleExecId);
+                              __func__,
+                              __LINE__,
+                              status,
+                              rule_exec_del_inp.ruleExecId);
             }
             return status;
         }};
@@ -381,7 +386,10 @@ namespace
             const int status = rcRuleExecMod(&_comm, &rule_exec_mod_inp);
             if (status < 0) {
                 log_ds::error("{}:{} - rcRuleExecMod failed {} for rule ID {}",
-                                             __func__, __LINE__, status, rule_exec_mod_inp.ruleId);
+                              __func__,
+                              __LINE__,
+                              status,
+                              rule_exec_mod_inp.ruleId);
             }
 
             if (rule_exec_mod_inp.condInput.len > 0) {
@@ -391,8 +399,7 @@ namespace
             return status;
         };
 
-        log_ds::debug("[{}:{}] - time:[{}],ef:[{}],next:[{}]",
-                                    __func__, __LINE__, current_time, ef_string, next_time);
+        log_ds::debug("[{}:{}] - time:[{}],ef:[{}],next:[{}]", __func__, __LINE__, current_time, ef_string, next_time);
         const int repeat_status = getNextRepeatTime(current_time, ef_string, next_time);
         switch(repeat_status) {
             case 0:
@@ -412,7 +419,10 @@ namespace
                 return (0 == _exec_status) ? delete_rule_exec_info() : update_rule_exec_info(true);
             default:
                 log_ds::error("{}:{} - getNextRepeatTime returned unknown value {} for rule ID {}",
-                                            __func__, __LINE__, repeat_status, _inp.ruleExecId);
+                              __func__,
+                              __LINE__,
+                              repeat_status,
+                              _inp.ruleExecId);
                 return repeat_status; 
         }
     } // update_entry_for_repeat
@@ -551,8 +561,8 @@ namespace
         log_ds::trace("Executing rule [rule_id={}].", _inp.ruleExecId);
         auto status = rcExecRuleExpression(&_comm, &exec_rule);
         if (g_terminate) {
-            log_ds::info("Rule [{}] completed with status [{}] but delay server was terminated.",
-                                       _inp.ruleExecId, status);
+            log_ds::info(
+                "Rule [{}] completed with status [{}] but delay server was terminated.", _inp.ruleExecId, status);
         }
 
         if (migrate_rule) {
@@ -663,8 +673,8 @@ namespace
             }
         }
         catch (const std::exception& e) {
-            log_ds::error("Exception caught during execution of rule [{}]: [{}]",
-                                        rule_exec_submit_inp.ruleExecId, e.what());
+            log_ds::error(
+                "Exception caught during execution of rule [{}]: [{}]", rule_exec_submit_inp.ruleExecId, e.what());
         }
 
         log_ds::debug("rule [{}] complete", rule_exec_submit_inp.ruleExecId);
@@ -672,7 +682,9 @@ namespace
             log_ds::debug("dequeueing rule [{}]", rule_exec_submit_inp.ruleExecId);
             queue.dequeue_rule(std::string(rule_exec_submit_inp.ruleExecId));
         }
-        log_ds::debug("rule [{}] exists in queue: [{}]", rule_exec_submit_inp.ruleExecId, queue.contains_rule_id(rule_exec_submit_inp.ruleExecId));
+        log_ds::debug("rule [{}] exists in queue: [{}]",
+                      rule_exec_submit_inp.ruleExecId,
+                      queue.contains_rule_id(rule_exec_submit_inp.ruleExecId));
     } // execute_rule
 
     auto make_delay_queue_query_processor(
@@ -848,7 +860,7 @@ int main(int _argc, char** _argv)
                 log_ds::info("Delay server received shutdown signal.");
                 return;
             }
-            
+
             if (std::chrono::system_clock::now() - start_time >= allowed_sleep_time) {
                 log_ds::debug("Delay server is awake.");
                 return;

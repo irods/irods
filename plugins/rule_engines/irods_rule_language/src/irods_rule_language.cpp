@@ -412,16 +412,12 @@ irods::error exec_rule_expression(
     return SUCCESS();
 }
 
-
-extern "C"
-irods::pluggable_rule_engine<irods::default_re_ctx>* plugin_factory( const std::string& _inst_name,
-                                 const std::string& _context )
+extern "C" irods::pluggable_rule_engine<irods::default_re_ctx>* plugin_factory(const std::string& _inst_name,
+                                                                               const std::string& _context)
 {
-    const auto no_op = [](irods::default_re_ctx&, const std::string&) -> irods::error {
-        return SUCCESS();
-    };
+    const auto no_op = [](irods::default_re_ctx&, const std::string&) -> irods::error { return SUCCESS(); };
 
-    auto* re = new irods::pluggable_rule_engine<irods::default_re_ctx>( _inst_name , _context);
+    auto* re = new irods::pluggable_rule_engine<irods::default_re_ctx>(_inst_name, _context);
 
     re->add_operation("setup", std::function{setup});
     re->add_operation("teardown", std::function{no_op});
@@ -445,5 +441,4 @@ irods::pluggable_rule_engine<irods::default_re_ctx>* plugin_factory( const std::
             std::function<irods::error(irods::default_re_ctx&,const std::string&,msParamArray_t*,irods::callback)>( exec_rule_expression ) );
 
     return re;
-
 }

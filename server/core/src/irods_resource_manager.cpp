@@ -128,7 +128,7 @@ namespace irods
                     _context,
                     ret.result());
                 // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
-                _plugin.reset(new impostor_resource("impostor_resource", "" ) );
+                _plugin.reset(new impostor_resource("impostor_resource", ""));
             } else {
                 return PASS( ret );
             }

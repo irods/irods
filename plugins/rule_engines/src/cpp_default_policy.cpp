@@ -1172,9 +1172,7 @@ irods::pluggable_rule_engine<irods::default_re_ctx>* plugin_factory( const std::
                                  const std::string& _context ) {
     irods::pluggable_rule_engine<irods::default_re_ctx>* re = new irods::pluggable_rule_engine<irods::default_re_ctx>( _inst_name , _context);
 
-    const auto no_op = [](irods::default_re_ctx&, const std::string&) -> irods::error {
-        return SUCCESS();
-    };
+    const auto no_op = [](irods::default_re_ctx&, const std::string&) -> irods::error { return SUCCESS(); };
 
     re->add_operation("setup", std::function{no_op});
     re->add_operation("teardown", std::function{no_op});

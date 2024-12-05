@@ -44,9 +44,9 @@ namespace irods
         }
         else {
             rodsEnv env;
-            int status = getRodsEnv( &env );
-            if ( !status ) {
-                if ( strlen( env.irodsPluginDirectory ) > 0 ) {
+            int status = getRodsEnv(&env);
+            if (!status) {
+                if (strlen(env.irodsPluginDirectory) > 0) {
                     plugin_home = env.irodsPluginDirectory;
                 }
             }

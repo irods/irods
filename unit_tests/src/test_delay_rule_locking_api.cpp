@@ -78,7 +78,9 @@ TEST_CASE("lock and unlock delay rule")
 
     {
         // Show the delay rule is now locked using GenQuery1.
-        const auto query_string = fmt::format("select RULE_EXEC_LOCK_HOST, RULE_EXEC_LOCK_HOST_PID, RULE_EXEC_LOCK_TIME where RULE_EXEC_ID = '{}'", rule_id);
+        const auto query_string = fmt::format(
+            "select RULE_EXEC_LOCK_HOST, RULE_EXEC_LOCK_HOST_PID, RULE_EXEC_LOCK_TIME where RULE_EXEC_ID = '{}'",
+            rule_id);
         irods::query query{static_cast<RcComm*>(conn), query_string};
         REQUIRE_FALSE(query.empty());
         const auto row = query.front();
@@ -89,7 +91,10 @@ TEST_CASE("lock and unlock delay rule")
         // Show the delay rule is now locked using GenQuery2.
         Genquery2Input input{};
         irods::at_scope_exit_unsafe free_gq2_string{[&input] { clearGenquery2Input(&input); }};
-        input.query_string = strdup(fmt::format("select DELAY_RULE_LOCK_HOST, DELAY_RULE_LOCK_HOST_PID, DELAY_RULE_LOCK_TIME where DELAY_RULE_ID = '{}'", rule_id).c_str());
+        input.query_string = strdup(fmt::format("select DELAY_RULE_LOCK_HOST, DELAY_RULE_LOCK_HOST_PID, "
+                                                "DELAY_RULE_LOCK_TIME where DELAY_RULE_ID = '{}'",
+                                                rule_id)
+                                        .c_str());
 
         char* output{};
         // NOLINTNEXTLINE(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
@@ -111,7 +116,9 @@ TEST_CASE("lock and unlock delay rule")
 
     {
         // Show the delay rule is now unlocked using GenQuery1.
-        const auto query_string = fmt::format("select RULE_EXEC_LOCK_HOST, RULE_EXEC_LOCK_HOST_PID, RULE_EXEC_LOCK_TIME where RULE_EXEC_ID = '{}'", rule_id);
+        const auto query_string = fmt::format(
+            "select RULE_EXEC_LOCK_HOST, RULE_EXEC_LOCK_HOST_PID, RULE_EXEC_LOCK_TIME where RULE_EXEC_ID = '{}'",
+            rule_id);
         irods::query query{static_cast<RcComm*>(conn), query_string};
         REQUIRE_FALSE(query.empty());
         const auto row = query.front();
@@ -122,7 +129,10 @@ TEST_CASE("lock and unlock delay rule")
         // Show the delay rule is now unlocked using GenQuery2.
         Genquery2Input input{};
         irods::at_scope_exit_unsafe free_gq2_string{[&input] { clearGenquery2Input(&input); }};
-        input.query_string = strdup(fmt::format("select DELAY_RULE_LOCK_HOST, DELAY_RULE_LOCK_HOST_PID, DELAY_RULE_LOCK_TIME where DELAY_RULE_ID = '{}'", rule_id).c_str());
+        input.query_string = strdup(fmt::format("select DELAY_RULE_LOCK_HOST, DELAY_RULE_LOCK_HOST_PID, "
+                                                "DELAY_RULE_LOCK_TIME where DELAY_RULE_ID = '{}'",
+                                                rule_id)
+                                        .c_str());
 
         char* output{};
         // NOLINTNEXTLINE(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
@@ -165,7 +175,8 @@ TEST_CASE("unlock multiple delay rules")
         lock_input.lock_host_pid = getpid();
 
         // Capture the IDs of the delay rules and lock them.
-        for (auto&& row : irods::query{static_cast<RcComm*>(conn), "select RULE_EXEC_ID where RULE_EXEC_LOCK_HOST = ''"}) {
+        for (auto&& row :
+             irods::query{static_cast<RcComm*>(conn), "select RULE_EXEC_ID where RULE_EXEC_LOCK_HOST = ''"}) {
             rule_ids.push_back(row[0]);
 
             // Lock the delay rule.
@@ -177,7 +188,9 @@ TEST_CASE("unlock multiple delay rules")
 
     // Show the delay rules are now locked.
     for (auto&& rule_id : rule_ids) {
-        const auto query_string = fmt::format("select RULE_EXEC_ID, RULE_EXEC_LOCK_HOST, RULE_EXEC_LOCK_HOST_PID, RULE_EXEC_LOCK_TIME where RULE_EXEC_ID = '{}'", rule_id);
+        const auto query_string = fmt::format("select RULE_EXEC_ID, RULE_EXEC_LOCK_HOST, RULE_EXEC_LOCK_HOST_PID, "
+                                              "RULE_EXEC_LOCK_TIME where RULE_EXEC_ID = '{}'",
+                                              rule_id);
         irods::query query{static_cast<RcComm*>(conn), query_string};
         REQUIRE_FALSE(query.empty());
         const auto row = query.front();
@@ -195,7 +208,9 @@ TEST_CASE("unlock multiple delay rules")
 
     // Show the delay rules are now unlocked.
     for (auto&& rule_id : rule_ids) {
-        const auto query_string = fmt::format("select RULE_EXEC_ID, RULE_EXEC_LOCK_HOST, RULE_EXEC_LOCK_HOST_PID, RULE_EXEC_LOCK_TIME where RULE_EXEC_ID = '{}'", rule_id);
+        const auto query_string = fmt::format("select RULE_EXEC_ID, RULE_EXEC_LOCK_HOST, RULE_EXEC_LOCK_HOST_PID, "
+                                              "RULE_EXEC_LOCK_TIME where RULE_EXEC_ID = '{}'",
+                                              rule_id);
         irods::query query{static_cast<RcComm*>(conn), query_string};
         REQUIRE_FALSE(query.empty());
         const auto row = query.front();
@@ -240,5 +255,9 @@ auto delete_all_delay_rules() -> int
 auto create_delay_rule(const std::string& _rule) -> int
 {
     // NOLINTNEXTLINE(cert-env33-c)
-    return std::system(fmt::format(R"___(irule -r irods_rule_engine_plugin-irods_rule_language-instance 'delay("<PLUSET>100000</PLUSET>") {{ {} }}' null null)___", _rule).c_str());
+    return std::system(
+        fmt::format(
+            R"___(irule -r irods_rule_engine_plugin-irods_rule_language-instance 'delay("<PLUSET>100000</PLUSET>") {{ {} }}' null null)___",
+            _rule)
+            .c_str());
 } // create_delay_rule

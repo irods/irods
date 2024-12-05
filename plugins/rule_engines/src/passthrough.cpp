@@ -159,8 +159,7 @@ pluggable_rule_engine* plugin_factory(const std::string& _instance_name,
     const auto exec_rule_wrapper = [_instance_name](irods::default_re_ctx& _ctx,
                                                     const std::string& _rule_name,
                                                     std::list<boost::any>& _rule_arguments,
-                                                    irods::callback _effect_handler)
-    {
+                                                    irods::callback _effect_handler) {
         // NOLINTNEXTLINE(performance-unnecessary-value-param)
         return exec_rule(_instance_name, _ctx, _rule_name, _rule_arguments, _effect_handler);
     };

@@ -688,8 +688,8 @@ initRsComm( rsComm_t *rsComm ) {
     return 0;
 }
 
-int
-initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack, bool& require_cs_neg) {
+int initRsCommWithStartupPack(rsComm_t* rsComm, startupPack_t* startupPack, bool& require_cs_neg)
+{
     char *tmpStr;
     static char tmpStr2[LONG_NAME_LEN];
     /* always use NATIVE_PROT as a client. e.g., server to server comm */
@@ -700,18 +700,18 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack, bool& r
         rsComm->connectCnt = startupPack->connectCnt;
         rsComm->irodsProt = startupPack->irodsProt;
         rsComm->reconnFlag = startupPack->reconnFlag;
-        rstrcpy( rsComm->proxyUser.userName, startupPack->proxyUser, NAME_LEN );
+        rstrcpy(rsComm->proxyUser.userName, startupPack->proxyUser, NAME_LEN);
         if ( strcmp( startupPack->proxyUser, PUBLIC_USER_NAME ) == 0 ) {
             rsComm->proxyUser.authInfo.authFlag = PUBLIC_USER_AUTH;
         }
-        rstrcpy( rsComm->proxyUser.rodsZone, startupPack->proxyRodsZone, NAME_LEN );
-        rstrcpy( rsComm->clientUser.userName, startupPack->clientUser, NAME_LEN );
+        rstrcpy(rsComm->proxyUser.rodsZone, startupPack->proxyRodsZone, NAME_LEN);
+        rstrcpy(rsComm->clientUser.userName, startupPack->clientUser, NAME_LEN);
         if ( strcmp( startupPack->clientUser, PUBLIC_USER_NAME ) == 0 ) {
             rsComm->clientUser.authInfo.authFlag = PUBLIC_USER_AUTH;
         }
-        rstrcpy( rsComm->clientUser.rodsZone, startupPack->clientRodsZone, NAME_LEN );
-        rstrcpy( rsComm->cliVersion.relVersion, startupPack->relVersion, NAME_LEN );
-        rstrcpy( rsComm->cliVersion.apiVersion, startupPack->apiVersion, NAME_LEN );
+        rstrcpy(rsComm->clientUser.rodsZone, startupPack->clientRodsZone, NAME_LEN);
+        rstrcpy(rsComm->cliVersion.relVersion, startupPack->relVersion, NAME_LEN);
+        rstrcpy(rsComm->cliVersion.apiVersion, startupPack->apiVersion, NAME_LEN);
 
         std::string_view opt_str = startupPack->option;
         const auto pos = opt_str.find(REQ_SVR_NEG);

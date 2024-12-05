@@ -124,9 +124,7 @@ namespace
     auto handle_shutdown() -> void;
     auto handle_shutdown_graceful() -> void;
 
-    auto set_delay_server_migration_info(RcComm& _comm,
-                                         std::string_view _leader,
-                                         std::string_view _successor) -> void;
+    auto set_delay_server_migration_info(RcComm& _comm, std::string_view _leader, std::string_view _successor) -> void;
     auto get_delay_server_leader(RcComm& _comm) -> std::optional<std::string>;
     auto get_delay_server_successor(RcComm& _comm) -> std::optional<std::string>;
     auto launch_agent_factory(const char* _src_func, bool _write_to_stdout, bool _enable_test_mode) -> bool;
@@ -222,7 +220,7 @@ auto main(int _argc, char* _argv[]) -> int
         // Configure the legacy rodsLog API so messages are written to the legacy log category
         // provided by the new logging API.
         rodsLogLevel(LOG_NOTICE);
-    	rodsLogSqlReq(0);
+        rodsLogSqlReq(0);
 
         init_logger(getpid(), write_to_stdout, enable_test_mode);
 
@@ -242,7 +240,9 @@ auto main(int _argc, char* _argv[]) -> int
         }
 
         if (const auto [up_to_date, db_vers] = check_catalog_schema_version(); !up_to_date) {
-            const auto msg = fmt::format("Catalog schema version mismatch: expected [{}], found [{}] in catalog", IRODS_CATALOG_SCHEMA_VERSION, db_vers);
+            const auto msg = fmt::format("Catalog schema version mismatch: expected [{}], found [{}] in catalog",
+                                         IRODS_CATALOG_SCHEMA_VERSION,
+                                         db_vers);
             log_server::critical(msg);
             fmt::print(fmt::runtime(msg));
             return 1;
@@ -285,7 +285,7 @@ auto main(int _argc, char* _argv[]) -> int
         }
 
         // Enter parent process main loop.
-        // 
+        //
         // This process should never introduce threads. Everything it cares about must be handled
         // within the loop. This keeps things simple and straight forward.
         //
@@ -297,7 +297,7 @@ auto main(int _argc, char* _argv[]) -> int
         auto dsm_time_start = std::chrono::steady_clock::now();
 
         // stfp = Short for stacktrace file processor
-        // This is used to control the frequency of the stacktrace file processing logic. 
+        // This is used to control the frequency of the stacktrace file processing logic.
         auto stfp_time_start = dsm_time_start;
 
         while (true) {
@@ -347,7 +347,7 @@ namespace
     auto print_usage() -> void
     {
         fmt::print(stderr,
-R"__(irodsServer - Launch an iRODS server
+                   R"__(irodsServer - Launch an iRODS server
 
 Usage: irodsServer [OPTION]...
 
@@ -398,7 +398,8 @@ Signals:
     auto print_version_info() -> void
     {
         constexpr const auto commit = std::string_view{IRODS_GIT_COMMIT}.substr(0, 7);
-        fmt::print("irodsServer v{}.{}.{}-{}\n", IRODS_VERSION_MAJOR, IRODS_VERSION_MINOR, IRODS_VERSION_PATCHLEVEL, commit);
+        fmt::print(
+            "irodsServer v{}.{}.{}-{}\n", IRODS_VERSION_MAJOR, IRODS_VERSION_MINOR, IRODS_VERSION_PATCHLEVEL, commit);
     } // print_version_info
 
     auto validate_configuration() -> bool
@@ -453,7 +454,8 @@ Signals:
 
             // Validate the server configuration. If that succeeds, move on to validating the
             // irods_environment.json file.
-            const auto schema_dir = irods::get_irods_home_directory() / fmt::format("configuration_schemas/v{}", IRODS_CONFIGURATION_SCHEMA_VERSION);
+            const auto schema_dir = irods::get_irods_home_directory() /
+                                    fmt::format("configuration_schemas/v{}", IRODS_CONFIGURATION_SCHEMA_VERSION);
             const auto server_config_schema = schema_dir / "server_config.json";
             if (do_validate(config, server_config_schema.c_str())) {
                 std::string env_file;
@@ -494,11 +496,13 @@ Signals:
     auto daemonize() -> void
     {
         // Become a background process.
+        // clang-format off
         switch (fork()) {
             case -1: _exit(1);
             case  0: break;
             default: _exit(0);
         }
+        // clang-format on
 
         // Become session leader.
         if (setsid() == -1) {
@@ -506,11 +510,13 @@ Signals:
         }
 
         // Make sure we aren't the session leader.
+        // clang-format off
         switch (fork()) {
             case -1: _exit(1);
             case  0: break;
             default: _exit(0);
         }
+        // clang-format on
 
         umask(0);
 
@@ -602,7 +608,7 @@ Signals:
                 return 1;
             }
         }
-        
+
         if (ftruncate(fd, 0) == -1) {
             fmt::print("Could not truncate PID file's contents.\n");
             return 1;
@@ -637,7 +643,9 @@ Signals:
             if (role == irods::KW_CFG_SERVICE_ROLE_PROVIDER) {
                 auto [db_instance, db_conn] = irods::experimental::catalog::new_database_connection();
 
-                auto row = nanodbc::execute(db_conn, "select option_value from R_GRID_CONFIGURATION where namespace = 'database' and option_name = 'schema_version'");
+                auto row = nanodbc::execute(db_conn,
+                                            "select option_value from R_GRID_CONFIGURATION where namespace = "
+                                            "'database' and option_name = 'schema_version'");
                 if (!row.next()) {
                     return {false, -1};
                 }
@@ -654,7 +662,9 @@ Signals:
             log_server::error("{}: Could not verify catalog schema version: {}\n", __func__, e.client_display_what());
         }
         catch (const std::exception& e) {
-            log_server::error("{}: Could not verify catalog schema version. Is the catalog service role defined in server_config.json?\n", __func__);
+            log_server::error("{}: Could not verify catalog schema version. Is the catalog service role defined in "
+                              "server_config.json?\n",
+                              __func__);
         }
 
         return {false, -1};
@@ -726,7 +736,9 @@ Signals:
             log_server::error("{}: Could not get catalog service role: {}", __func__, e.client_display_what());
         }
         catch (const std::exception& e) {
-            log_server::error("{}: Could not get catalog service role. Is the catalog service role defined in server_config.json?", __func__);
+            log_server::error(
+                "{}: Could not get catalog service role. Is the catalog service role defined in server_config.json?",
+                __func__);
         }
 
         if (irods::KW_CFG_SERVICE_ROLE_PROVIDER == role) {
@@ -761,7 +773,9 @@ Signals:
         else if (irods::KW_CFG_SERVICE_ROLE_CONSUMER == role) {
             // Wait for the provider to accept connections.
             while (true) {
-                log_server::debug("{}: Checking if Agent Factory is ready to accept client requests before launching the Delay Server.", __func__);
+                log_server::debug("{}: Checking if Agent Factory is ready to accept client requests before launching "
+                                  "the Delay Server.",
+                                  __func__);
 
                 if (g_terminate) {
                     log_server::info("{}: Received shutdown instruction. Exiting server main loop.", __func__);
@@ -790,12 +804,14 @@ Signals:
                     log_server::debug("{}: Catalog Provider not ready to accept connections.", __func__);
                 }
 
-                log_server::info("{}: Waiting for Catalog Provider to complete startup and accept connections.", __func__);
+                log_server::info(
+                    "{}: Waiting for Catalog Provider to complete startup and accept connections.", __func__);
                 std::this_thread::sleep_for(std::chrono::seconds{1});
             }
         }
         else {
-            log_server::error("{}: Invalid catalog service role: expected [provider] or [consumer], found [{}]", __func__, role);
+            log_server::error(
+                "{}: Invalid catalog service role: expected [provider] or [consumer], found [{}]", __func__, role);
         }
 
         return -1;
@@ -846,13 +862,12 @@ Signals:
         irods::at_scope_exit free_output{[&output] { std::free(output); }};
 
         if (const auto ec = rc_get_grid_configuration_value(&_comm, &input, &output); ec < 0) {
-            log_server::error(
-                "Could not retrieve delay server migration information from catalog "
-                "[error_code={}, namespace=delay_server, option_name=leader].",
-                ec);
+            log_server::error("Could not retrieve delay server migration information from catalog "
+                              "[error_code={}, namespace=delay_server, option_name=leader].",
+                              ec);
             return std::nullopt;
         }
-        
+
         return output->option_value;
     } // get_delay_server_leader
 
@@ -867,31 +882,27 @@ Signals:
         irods::at_scope_exit free_output{[&output] { std::free(output); }};
 
         if (const auto ec = rc_get_grid_configuration_value(&_comm, &input, &output); ec < 0) {
-            log_server::error(
-                "Could not retrieve delay server migration information from catalog "
-                "[error_code={}, namespace=delay_server, option_name=successor].",
-                ec);
+            log_server::error("Could not retrieve delay server migration information from catalog "
+                              "[error_code={}, namespace=delay_server, option_name=successor].",
+                              ec);
             return std::nullopt;
         }
-        
+
         return output->option_value;
     } // get_delay_server_successor
 
-    auto set_delay_server_migration_info(RcComm& _comm,
-                                         std::string_view _leader,
-                                         std::string_view _successor) -> void
+    auto set_delay_server_migration_info(RcComm& _comm, std::string_view _leader, std::string_view _successor) -> void
     {
         DelayServerMigrationInput input{};
         _leader.copy(input.leader, sizeof(DelayServerMigrationInput::leader) - 1);
         _successor.copy(input.successor, sizeof(DelayServerMigrationInput::successor) - 1);
 
         if (const auto ec = rc_set_delay_server_migration_info(&_comm, &input); ec < 0) {
-            log_server::error(
-                "Failed to set delay server migration info in R_GRID_CONFIGURATION "
-                "[error_code={}, leader={}, successor={}].",
-                ec,
-                _leader,
-                _successor);
+            log_server::error("Failed to set delay server migration info in R_GRID_CONFIGURATION "
+                              "[error_code={}, leader={}, successor={}].",
+                              ec,
+                              _leader,
+                              _successor);
         }
     } // set_delay_server_migration_info
 
@@ -976,11 +987,14 @@ Signals:
             previous_server_config = irods::server_properties::copy_configuration();
         }
         catch (const irods::exception& e) {
-            log_server::error("{}: Reload error: {}. Server will continue with existing configuration.", __func__, e.client_display_what());
+            log_server::error("{}: Reload error: {}. Server will continue with existing configuration.",
+                              __func__,
+                              e.client_display_what());
             return;
         }
         catch (const std::exception& e) {
-            log_server::error("{}: Reload error: {}. Server will continue with existing configuration.", __func__, e.what());
+            log_server::error(
+                "{}: Reload error: {}. Server will continue with existing configuration.", __func__, e.what());
             return;
         }
 
@@ -989,12 +1003,15 @@ Signals:
             irods::server_properties::instance().reload();
         }
         catch (const irods::exception& e) {
-            log_server::error("{}: Reload error: {}. Server will continue with existing configuration.", __func__, e.client_display_what());
+            log_server::error("{}: Reload error: {}. Server will continue with existing configuration.",
+                              __func__,
+                              e.client_display_what());
             irods::server_properties::instance().set_configuration(std::move(previous_server_config));
             return;
         }
         catch (const std::exception& e) {
-            log_server::error("{}: Reload error: {}. Server will continue with existing configuration.", __func__, e.what());
+            log_server::error(
+                "{}: Reload error: {}. Server will continue with existing configuration.", __func__, e.what());
             irods::server_properties::instance().set_configuration(std::move(previous_server_config));
             return;
         }
@@ -1012,10 +1029,13 @@ Signals:
             log_ns::set_server_hostname(irods::get_server_property<std::string>(irods::KW_CFG_HOST));
         }
         catch (const irods::exception& e) {
-            log_server::warn("{}: Could not update the logger's state: {}. Continuing with reload.", __func__, e.client_display_what());
+            log_server::warn("{}: Could not update the logger's state: {}. Continuing with reload.",
+                             __func__,
+                             e.client_display_what());
         }
         catch (const std::exception& e) {
-            log_server::warn("{}: Could not update the logger's state: {}. Continuing with reload.", __func__, e.what());
+            log_server::warn(
+                "{}: Could not update the logger's state: {}. Continuing with reload.", __func__, e.what());
         }
 
         // Get the host and port information from the server configuration before stopping the agent factory
@@ -1075,10 +1095,16 @@ Signals:
                 break;
             }
             catch (const irods::exception& e) {
-                log_server::debug("{}: Unexpected error while waiting for previous agent factory to close its listening socket: {}", __func__, e.client_display_what());
+                log_server::debug(
+                    "{}: Unexpected error while waiting for previous agent factory to close its listening socket: {}",
+                    __func__,
+                    e.client_display_what());
             }
             catch (const std::exception& e) {
-                log_server::debug("{}: Unexpected error while waiting for previous agent factory to close its listening socket: {}", __func__, e.what());
+                log_server::debug(
+                    "{}: Unexpected error while waiting for previous agent factory to close its listening socket: {}",
+                    __func__,
+                    e.what());
             }
         }
 
@@ -1167,7 +1193,9 @@ Signals:
         const auto local_server_host = irods::get_server_property<std::string>(irods::KW_CFG_HOST);
 
         if (0 == g_pid_ds) {
-            log_server::debug("{}: Checking if Agent Factory is ready to accept client requests before launching the Delay Server.", __func__);
+            log_server::debug(
+                "{}: Checking if Agent Factory is ready to accept client requests before launching the Delay Server.",
+                __func__);
 
             // Defer the launch of the delay server if the agent factory isn't listening.
             try {
@@ -1186,7 +1214,8 @@ Signals:
             }
         }
 
-        const auto migration_sleep_time_in_seconds = irods::get_advanced_setting<int>(irods::KW_CFG_MIGRATE_DELAY_SERVER_SLEEP_TIME_IN_SECONDS);
+        const auto migration_sleep_time_in_seconds =
+            irods::get_advanced_setting<int>(irods::KW_CFG_MIGRATE_DELAY_SERVER_SLEEP_TIME_IN_SECONDS);
         const auto now = std::chrono::steady_clock::now();
 
         if (now - _time_start < std::chrono::seconds{migration_sleep_time_in_seconds}) {
@@ -1244,7 +1273,8 @@ Signals:
                             // could take minutes, hours, days to complete.
                             int status = 0;
                             waitpid(g_pid_ds, &status, 0);
-                            log_server::info("Delay server has completed shutdown [exit_code={}].", WEXITSTATUS(status));
+                            log_server::info(
+                                "Delay server has completed shutdown [exit_code={}].", WEXITSTATUS(status));
                             g_pid_ds = 0;
                         }
                     }
@@ -1277,7 +1307,8 @@ Signals:
 
     auto log_stacktrace_files(std::chrono::steady_clock::time_point& _time_start) -> void
     {
-        const auto timeout = irods::get_advanced_setting<int>(irods::KW_CFG_STACKTRACE_FILE_PROCESSOR_SLEEP_TIME_IN_SECONDS);
+        const auto timeout =
+            irods::get_advanced_setting<int>(irods::KW_CFG_STACKTRACE_FILE_PROCESSOR_SLEEP_TIME_IN_SECONDS);
         const auto now = std::chrono::steady_clock::now();
 
         if (now - _time_start < std::chrono::seconds{timeout}) {
@@ -1325,11 +1356,10 @@ Signals:
             const auto epoch_seconds = p.substr(slash_pos, first_dot_pos - slash_pos);
             const auto remaining_millis = p.substr(first_dot_pos + 1, last_dot_pos - (first_dot_pos + 1));
             const auto pid = p.substr(last_dot_pos + 1);
-            log_server::trace(
-                "epoch seconds = [{}], remaining millis = [{}], agent pid = [{}]",
-                epoch_seconds,
-                remaining_millis,
-                pid);
+            log_server::trace("epoch seconds = [{}], remaining millis = [{}], agent pid = [{}]",
+                              epoch_seconds,
+                              remaining_millis,
+                              pid);
 
             try {
                 // Convert the epoch value to ISO8601 format.
@@ -1346,6 +1376,7 @@ Signals:
                 file.close();
 
                 // 3. Write the contents of the stacktrace file to syslog.
+                // clang-format off
                 irods::experimental::log::server::critical({
                     {"log_message", boost::stacktrace::to_string(stacktrace)},
                     {"stacktrace_agent_pid", pid},
@@ -1353,6 +1384,7 @@ Signals:
                     {"stacktrace_timestamp_epoch_seconds", epoch_seconds},
                     {"stacktrace_timestamp_epoch_milliseconds", remaining_millis}
                 });
+                // clang-format on
 
                 // 4. Delete the stacktrace file.
                 //
