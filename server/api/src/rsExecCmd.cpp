@@ -18,9 +18,9 @@
 #include <sys/types.h>
 
 #ifndef windows_platform
-#include <sys/wait.h>
+#  include <sys/wait.h>
 #else
-#include "irods/Unix2Nt.hpp"
+#  include "irods/Unix2Nt.hpp"
 #endif
 
 #include <boost/thread/mutex.hpp>

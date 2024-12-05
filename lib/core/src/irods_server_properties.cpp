@@ -213,7 +213,8 @@ namespace irods
         file_path_ = _path;
         std::ifstream in{file_path_};
         if (!in) {
-            THROW(FILE_OPEN_ERR, fmt::format("[{}:{}] - Failed to open configuration file [{}]", __func__, __LINE__, file_path_));
+            THROW(FILE_OPEN_ERR,
+                  fmt::format("[{}:{}] - Failed to open configuration file [{}]", __func__, __LINE__, file_path_));
         }
 
         config_props_ = json::parse(in);
@@ -229,7 +230,8 @@ namespace irods
 
         std::ifstream in{file_path_};
         if (!in) {
-            THROW(FILE_OPEN_ERR, fmt::format("[{}:{}] - Failed to open configuration file [{}]", __func__, __LINE__, file_path_));
+            THROW(FILE_OPEN_ERR,
+                  fmt::format("[{}:{}] - Failed to open configuration file [{}]", __func__, __LINE__, file_path_));
         }
 
         config_props_ = json::parse(in);
@@ -253,7 +255,8 @@ namespace irods
         else {
             std::ifstream in{file_path_};
             if (!in) {
-                THROW(FILE_OPEN_ERR, fmt::format("[{}:{}] - Failed to open configuration file [{}]", __func__, __LINE__, file_path_));
+                THROW(FILE_OPEN_ERR,
+                      fmt::format("[{}:{}] - Failed to open configuration file [{}]", __func__, __LINE__, file_path_));
             }
             new_values = json::parse(in);
         }

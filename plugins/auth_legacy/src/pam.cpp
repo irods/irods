@@ -284,7 +284,10 @@ int run_pam_auth_check(
         }
         close( p2cp[1] );
         const auto binary = irods::get_irods_sbin_directory() / "irodsPamAuthCheck";
-        i = execl(binary.c_str(), binary.c_str(), _username.c_str(), static_cast<char*>(nullptr)); // NOLINT(cppcoreguidelines-pro-type-vararg)
+        i = execl(binary.c_str(),
+                  binary.c_str(),
+                  _username.c_str(),
+                  static_cast<char*>(nullptr)); // NOLINT(cppcoreguidelines-pro-type-vararg)
         perror( "execl" );
         printf( "execl failed %d\n", i );
     }

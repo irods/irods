@@ -626,9 +626,7 @@ extern "C" {
             _env->irodsTransBufferSizeForParaTrans );
 
         env_var = irods::KW_CFG_IRODS_PLUGIN_DIRECTORY;
-        capture_string_env_var(
-            env_var,
-            _env->irodsPluginDirectory );
+        capture_string_env_var(env_var, _env->irodsPluginDirectory);
 
         capture_integer_env_var(irods::KW_CFG_IRODS_TCP_KEEPALIVE_INTVL_IN_SECONDS, _env->tcp_keepalive_intvl);
         capture_integer_env_var(irods::KW_CFG_IRODS_TCP_KEEPALIVE_PROBES, _env->tcp_keepalive_probes);

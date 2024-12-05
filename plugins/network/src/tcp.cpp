@@ -19,17 +19,14 @@
 
 // =-=-=-=-=-=-=-
 // local function to read a buffer from a socket
-irods::error tcp_socket_read(
-    int             _socket,
-    void*           _buffer,
-    int             _length,
-    int&            _bytes_read,
-    struct timeval* _time_value )
+irods::error tcp_socket_read(int _socket, void* _buffer, int _length, int& _bytes_read, struct timeval* _time_value)
 {
     fd_set set;
+    // clang-format off
     struct timeval timeout{};
+    // clang-format on
     int len_to_read = _length;
-    char* read_ptr = static_cast<char*>( _buffer );
+    char* read_ptr = static_cast<char*>(_buffer);
     _bytes_read = 0;
 
     while ( len_to_read > 0 ) {
@@ -39,18 +36,19 @@ irods::error tcp_socket_read(
             FD_SET(_socket, &set); // NOLINT
             timeout = *_time_value;
 
-            const int status = select( _socket + 1, &set, nullptr, nullptr, &timeout );
+            const int status = select(_socket + 1, &set, nullptr, nullptr, &timeout);
 
             if ( status == 0 ) { // the select has timed out
-                return ERROR( SYS_SOCK_READ_TIMEDOUT, fmt::format("socket timeout with [{}] bytes read", _bytes_read));
+                return ERROR(SYS_SOCK_READ_TIMEDOUT, fmt::format("socket timeout with [{}] bytes read", _bytes_read));
             }
 
-            if ( status < 0 ) {
+            if (status < 0) {
                 if ( errno == EINTR ) {
                     return ERROR(INTERRUPT_DETECTED, fmt::format("{} interrupted by signal", __func__));
                 }
 
-                return ERROR( SYS_SOCK_READ_ERR - errno, fmt::format("error on select after [{}] bytes read", _bytes_read));
+                return ERROR(
+                    SYS_SOCK_READ_ERR - errno, fmt::format("error on select after [{}] bytes read", _bytes_read));
             } // else
         } // if tv
 
@@ -60,14 +58,15 @@ irods::error tcp_socket_read(
                 errno = 0;
                 num_bytes = 0;
             } else {
-                return ERROR(SYS_SOCK_READ_ERR - errno, fmt::format("error reading from socket after [{}] bytes read", _bytes_read));
+                return ERROR(SYS_SOCK_READ_ERR - errno,
+                             fmt::format("error reading from socket after [{}] bytes read", _bytes_read));
             }
         } else if ( num_bytes == 0 ) {
             break;
         }
 
         len_to_read -= num_bytes;
-        read_ptr    += num_bytes; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        read_ptr += num_bytes; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         _bytes_read += num_bytes;
     } // while
 

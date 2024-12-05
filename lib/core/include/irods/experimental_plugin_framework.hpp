@@ -146,10 +146,8 @@ namespace irods::experimental::api {
         static auto resolve_api_plugin(const std::string& operation, const std::string& type)
         {
             std::string lower{operation};
-            std::transform(lower.begin(),
-                           lower.end(),
-                           lower.begin(),
-                           [](unsigned char _ch) { return std::tolower(_ch); });
+            std::transform(
+                lower.begin(), lower.end(), lower.begin(), [](unsigned char _ch) { return std::tolower(_ch); });
 
             base* plugin{};
             auto err = irods::load_plugin<base>(

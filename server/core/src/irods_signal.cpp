@@ -122,7 +122,7 @@ namespace irods
         action.sa_handler = stacktrace_signal_handler;
 
         constexpr const char* env_var = "IRODS_DISABLE_CRASH_SIGNAL_HANDLERS";
-        const char *env_var_val = std::getenv(env_var); // NOLINT(concurrency-mt-unsafe)
+        const char* env_var_val = std::getenv(env_var); // NOLINT(concurrency-mt-unsafe)
         if (nullptr == env_var_val || (std::strncmp(env_var_val, "0", sizeof("0")) == 0)) {
             sigaction(SIGSEGV, &action, nullptr);
             sigaction(SIGABRT, &action, nullptr);

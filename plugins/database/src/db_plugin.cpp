@@ -2023,11 +2023,7 @@ irods::error db_debug_op(
     // =-=-=-=-=-=-=-
     // run tolower on mode
     std::string mode( _mode );
-    std::transform(
-        mode.begin(),
-        mode.end(),
-        mode.begin(),
-        [](unsigned char _ch) { return std::tolower(_ch); });
+    std::transform(mode.begin(), mode.end(), mode.begin(), [](unsigned char _ch) { return std::tolower(_ch); });
 
     // =-=-=-=-=-=-=-
     // if mode contains 'sql' then turn SQL logging on
@@ -3604,47 +3600,43 @@ irods::error db_mod_rule_exec_op(
     /* regParamNames has the argument names (in regParam) that this
        routine understands and colNames has the corresponding column
        names; one for one. */
-    char *regParamNames[] = {
-        RULE_NAME_KW,
-        RULE_REI_FILE_PATH_KW,
-        RULE_USER_NAME_KW,
-        RULE_EXE_ADDRESS_KW,
-        RULE_EXE_TIME_KW,
-        RULE_EXE_FREQUENCY_KW,
-        RULE_PRIORITY_KW,
-        RULE_ESTIMATE_EXE_TIME_KW,
-        RULE_NOTIFICATION_ADDR_KW,
-        RULE_LAST_EXE_TIME_KW,
-        RULE_EXE_STATUS_KW,
-        RULE_EXECUTION_CONTEXT_KW,
-        RULE_LOCK_HOST_KW,
-        RULE_LOCK_HOST_PID_KW,
-        RULE_LOCK_TIME_KW,
-        "END"
-    };
+    char* regParamNames[] = {RULE_NAME_KW,
+                             RULE_REI_FILE_PATH_KW,
+                             RULE_USER_NAME_KW,
+                             RULE_EXE_ADDRESS_KW,
+                             RULE_EXE_TIME_KW,
+                             RULE_EXE_FREQUENCY_KW,
+                             RULE_PRIORITY_KW,
+                             RULE_ESTIMATE_EXE_TIME_KW,
+                             RULE_NOTIFICATION_ADDR_KW,
+                             RULE_LAST_EXE_TIME_KW,
+                             RULE_EXE_STATUS_KW,
+                             RULE_EXECUTION_CONTEXT_KW,
+                             RULE_LOCK_HOST_KW,
+                             RULE_LOCK_HOST_PID_KW,
+                             RULE_LOCK_TIME_KW,
+                             "END"};
 
-    char *colNames[] = {
-        "rule_name",
-        "rei_file_path",
-        "user_name",
-        "exe_address",
-        "exe_time",
-        "exe_frequency",
-        "priority",
-        "estimated_exe_time",
-        "notification_addr",
-        "last_exe_time",
-        "exe_status",
-        "exe_context",
-        "lock_host",
-        "lock_host_pid",
-        "lock_ts",
+    char* colNames[] = {"rule_name",
+                        "rei_file_path",
+                        "user_name",
+                        "exe_address",
+                        "exe_time",
+                        "exe_frequency",
+                        "priority",
+                        "estimated_exe_time",
+                        "notification_addr",
+                        "last_exe_time",
+                        "exe_status",
+                        "exe_context",
+                        "lock_host",
+                        "lock_host_pid",
+                        "lock_ts",
 
-        // The following columns are handled automatically.
-        // ** New columns MUST be added before these lines! **
-        "create_ts",
-        "modify_ts"
-    };
+                        // The following columns are handled automatically.
+                        // ** New columns MUST be added before these lines! **
+                        "create_ts",
+                        "modify_ts"};
 
     if ( logSQL != 0 ) {
         log_sql::debug("chlModRuleExec");
@@ -15889,10 +15881,8 @@ auto db_execute_genquery2_sql(irods::plugin_context& _ctx,
     }
 } // db_execute_genquery2_sql
 
-auto db_delay_rule_lock(irods::plugin_context& _ctx,
-                        const char* _rule_id,
-                        const char* _lock_host,
-                        int _lock_host_pid) -> irods::error
+auto db_delay_rule_lock(irods::plugin_context& _ctx, const char* _rule_id, const char* _lock_host, int _lock_host_pid)
+    -> irods::error
 {
     if (const auto ret = _ctx.valid(); !ret.ok()) {
         return PASS(ret);
@@ -15907,8 +15897,9 @@ auto db_delay_rule_lock(irods::plugin_context& _ctx,
         auto [db_instance, db_conn] = irods::experimental::catalog::new_database_connection();
 
         nanodbc::statement stmt{db_conn};
-        nanodbc::prepare(stmt, "update R_RULE_EXEC set lock_host = ?, lock_host_pid = ?, lock_ts = ? "
-                               "where rule_exec_id = ? and lock_host = '' and lock_host_pid = '' and lock_ts = ''");
+        nanodbc::prepare(stmt,
+                         "update R_RULE_EXEC set lock_host = ?, lock_host_pid = ?, lock_ts = ? "
+                         "where rule_exec_id = ? and lock_host = '' and lock_host_pid = '' and lock_ts = ''");
 
         stmt.bind(0, _lock_host);
         stmt.bind(1, &_lock_host_pid);
@@ -15919,7 +15910,11 @@ auto db_delay_rule_lock(irods::plugin_context& _ctx,
         stmt.bind(3, _rule_id);
 
         if (const auto result = nanodbc::execute(stmt); result.affected_rows() != 1) {
-            auto msg = fmt::format("{}: Failed to lock delay rule [rule_id={}, lock_host={}, lock_host_pid={}].", __func__, _rule_id, _lock_host, _lock_host_pid);
+            auto msg = fmt::format("{}: Failed to lock delay rule [rule_id={}, lock_host={}, lock_host_pid={}].",
+                                   __func__,
+                                   _rule_id,
+                                   _lock_host,
+                                   _lock_host_pid);
             log_db::error(msg);
             return ERROR(CAT_NO_ROWS_UPDATED, std::move(msg));
         }
@@ -15954,7 +15949,9 @@ auto db_delay_rule_unlock(irods::plugin_context& _ctx, const char* _rule_ids) ->
 
         nanodbc::transaction trans{db_conn};
         nanodbc::statement stmt{db_conn};
-        nanodbc::prepare(stmt, "update R_RULE_EXEC set lock_host = '', lock_host_pid = '', lock_ts = '', modify_ts = ? where rule_exec_id = ?");
+        nanodbc::prepare(stmt,
+                         "update R_RULE_EXEC set lock_host = '', lock_host_pid = '', lock_ts = '', modify_ts = ? where "
+                         "rule_exec_id = ?");
 
         // Putting this in the loop would enable finer granularity in the update sequence, but
         // there's likely no major benefit to it. At the very least, computing the time once
@@ -16406,8 +16403,7 @@ irods::database* plugin_factory(
         DATABASE_OP_DELAY_RULE_LOCK,
         function<error(plugin_context&, const char*, const char*, int)>(db_delay_rule_lock));
     pg->add_operation<const char*>(
-        DATABASE_OP_DELAY_RULE_UNLOCK,
-        function<error(plugin_context&, const char*)>(db_delay_rule_unlock));
+        DATABASE_OP_DELAY_RULE_UNLOCK, function<error(plugin_context&, const char*)>(db_delay_rule_unlock));
 
     return pg;
 } // plugin_factory

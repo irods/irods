@@ -41,7 +41,10 @@ namespace
         }
 
         if (procTokens.size() != 7) {
-            log_api::error("{}: Agent process info: [{}], number of parameters: [{}]", __func__, agent_info_path.c_str(), procTokens.size());
+            log_api::error("{}: Agent process info: [{}], number of parameters: [{}]",
+                           __func__,
+                           agent_info_path.c_str(),
+                           procTokens.size());
             return UNIX_FILE_READ_ERR;
         }
 
@@ -72,7 +75,8 @@ namespace
     } // readProcLog
 } // anonymous namespace
 
-int rsProcStat( rsComm_t * rsComm, procStatInp_t * procStatInp, genQueryOut_t **procStatOut ) {
+int rsProcStat(rsComm_t* rsComm, procStatInp_t* procStatInp, genQueryOut_t** procStatOut)
+{
     if (*procStatInp->rodsZone != '\0') {
         rodsServerHost_t* rodsServerHost = nullptr;
         const auto remoteFlag = getRcatHost(PRIMARY_RCAT, procStatInp->rodsZone, &rodsServerHost);
@@ -82,13 +86,13 @@ int rsProcStat( rsComm_t * rsComm, procStatInp_t * procStatInp, genQueryOut_t **
         }
 
         if ( rodsServerHost->localFlag == REMOTE_HOST ) {
-            return remoteProcStat( rsComm, procStatInp, procStatOut, rodsServerHost );
+            return remoteProcStat(rsComm, procStatInp, procStatOut, rodsServerHost);
         }
 
-        return _rsProcStat( rsComm, procStatInp, procStatOut );
+        return _rsProcStat(rsComm, procStatInp, procStatOut);
     }
 
-    return _rsProcStat( rsComm, procStatInp, procStatOut );
+    return _rsProcStat(rsComm, procStatInp, procStatOut);
 }
 
 int
@@ -251,14 +255,13 @@ localProcStat( procStatInp_t *procStatInp,
     /* loop through the directory */
     namespace fs = boost::filesystem;
     fs::path srcDirPath(proc_dir);
-    if ( !fs::exists( srcDirPath ) || !fs::is_directory( srcDirPath ) ) {
+    if (!fs::exists(srcDirPath) || !fs::is_directory(srcDirPath)) {
         status = USER_INPUT_PATH_ERR - errno;
-        rodsLogError( LOG_ERROR, status,
-                      "localProcStat: opendir local dir error for %s", proc_dir.c_str());
+        rodsLogError(LOG_ERROR, status, "localProcStat: opendir local dir error for %s", proc_dir.c_str());
         return status;
     }
     fs::directory_iterator end_itr; // default construction yields past-the-end
-    for ( fs::directory_iterator itr( srcDirPath ); itr != end_itr; ++itr ) {
+    for (fs::directory_iterator itr(srcDirPath); itr != end_itr; ++itr) {
         fs::path p = itr->path();
         fs::path cp = p.filename();
         if ( !isdigit( *cp.c_str() ) ) {

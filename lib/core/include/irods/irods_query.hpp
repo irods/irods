@@ -46,10 +46,7 @@ namespace irods
 
             std::string lowered{_str};
             std::transform(
-                lowered.begin(),
-                lowered.end(),
-                lowered.begin(),
-                [](unsigned char _ch) { return std::tolower(_ch); });
+                lowered.begin(), lowered.end(), lowered.begin(), [](unsigned char _ch) { return std::tolower(_ch); });
 
             if(GEN_STR == lowered) {
                 return GENERAL;

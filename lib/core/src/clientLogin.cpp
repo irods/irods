@@ -345,7 +345,9 @@ int clientLogin(rcComm_t* _comm, const char* _context, const char* _scheme_overr
             // =-=-=-=-=-=-=-
             // ensure scheme is lower case for comparison
             std::string lower_scheme = auth_scheme;
-            std::transform( auth_scheme.begin(), auth_scheme.end(), auth_scheme.begin(), [](unsigned char _ch) { return std::tolower(_ch); });
+            std::transform(auth_scheme.begin(), auth_scheme.end(), auth_scheme.begin(), [](unsigned char _ch) {
+                return std::tolower(_ch);
+            });
 
             // =-=-=-=-=-=-=-
             // filter out the pam auth as it is an extra special

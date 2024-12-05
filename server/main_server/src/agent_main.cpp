@@ -203,7 +203,7 @@ auto main(int _argc, char* _argv[]) -> int
         // Configure the legacy rodsLog API so messages are written to the legacy log category
         // provided by the new logging API.
         rodsLogLevel(LOG_NOTICE);
-    	rodsLogSqlReq(0);
+        rodsLogSqlReq(0);
 
         init_logger(getppid(), write_to_stdout, enable_test_mode);
 
@@ -237,7 +237,8 @@ auto main(int _argc, char* _argv[]) -> int
             irods::get_dns_cache_eviction_age());
         // Set the default value for evicting hostname cache entries.
         irods::set_server_property(
-            key_path_t{irods::KW_CFG_ADVANCED_SETTINGS, irods::KW_CFG_HOSTNAME_CACHE, irods::KW_CFG_EVICTION_AGE_IN_SECONDS},
+            key_path_t{
+                irods::KW_CFG_ADVANCED_SETTINGS, irods::KW_CFG_HOSTNAME_CACHE, irods::KW_CFG_EVICTION_AGE_IN_SECONDS},
             irods::get_hostname_cache_eviction_age());
 
         if (const auto res = createAndSetRECacheSalt(); !res.ok()) {
@@ -271,7 +272,7 @@ auto main(int _argc, char* _argv[]) -> int
         }
 
         // Load server side pluggable api entries.
-        irods::api_entry_table&  RsApiTable   = irods::get_server_api_table();
+        irods::api_entry_table& RsApiTable = irods::get_server_api_table();
         irods::pack_entry_table& ApiPackTable = irods::get_pack_table();
         if (const auto ret = irods::init_api_table(RsApiTable, ApiPackTable, false); !ret.ok()) {
             log_af::error("{}: init_api_table error for server: {}", __func__, ret.user_result());
@@ -290,7 +291,7 @@ auto main(int _argc, char* _argv[]) -> int
         irods::re_plugin_globals->global_re_mgr.call_setup_operations();
 
         // Enter parent process main loop.
-        // 
+        //
         // This process should never introduce threads. Everything it cares about must be handled
         // within the loop. This keeps things simple and straight forward.
 
@@ -313,7 +314,7 @@ auto main(int _argc, char* _argv[]) -> int
 
             int numSock = 0;
             struct timeval time_out; // NOLINT(cppcoreguidelines-pro-type-member-init)
-            time_out.tv_sec  = 0;
+            time_out.tv_sec = 0;
             time_out.tv_usec = 500 * 1000;
             const auto original_time_out = time_out;
 
@@ -324,12 +325,13 @@ auto main(int _argc, char* _argv[]) -> int
                 }
 
                 if (g_terminate_graceful) {
-                    log_af::info("{}: Received graceful shutdown instruction. Exiting agent factory select() loop.", __func__);
+                    log_af::info(
+                        "{}: Received graceful shutdown instruction. Exiting agent factory select() loop.", __func__);
                     break;
                 }
 
                 // "select" modifies the timeval structure, so reset it.
-                time_out.tv_sec  = 0;
+                time_out.tv_sec = 0;
                 time_out.tv_usec = 500 * 1000;
 
                 if (EINTR == errno) {
@@ -374,7 +376,8 @@ auto main(int _argc, char* _argv[]) -> int
                     return handle_client_request(newSock, std::time(nullptr));
                 }
                 catch (const std::exception& e) {
-                    log_agent::critical("{}: Exception caught in outermost scope of request handler: {}", __func__, e.what());
+                    log_agent::critical(
+                        "{}: Exception caught in outermost scope of request handler: {}", __func__, e.what());
                     return 1;
                 }
             }
@@ -431,10 +434,11 @@ namespace
     {
         namespace logger = irods::experimental::log;
 
+        // clang-format off
         logger::agent::set_level(logger::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_AGENT));
         logger::agent_factory::set_level(logger::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_AGENT_FACTORY));
         logger::api::set_level(logger::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_API));
-        logger::authentication::set_level(logger::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_AUTHENTICATION));
+        logger::authentication::set_level( logger::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_AUTHENTICATION));
         logger::database::set_level(logger::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_DATABASE));
         logger::genquery2::set_level(logger::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_GENQUERY2));
         logger::legacy::set_level(logger::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_LEGACY));
@@ -443,6 +447,7 @@ namespace
         logger::resource::set_level(logger::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_RESOURCE));
         logger::rule_engine::set_level(logger::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_RULE_ENGINE));
         logger::sql::set_level(logger::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_SQL));
+        // clang-format on
     } // load_log_levels_for_loggers
 
     auto setup_signal_handlers() -> int
@@ -546,7 +551,8 @@ namespace
                 log_af::critical("createAndSetRECacheSalt: failed to set server_properties");
                 return ERROR(SYS_INVALID_INPUT_PARAM, e.what());
             }
-            catch (const std::exception&) {}
+            catch (const std::exception&) {
+            }
 
             if (setenv(SP_RE_CACHE_SALT, cache_salt.c_str(), 1) != 0) {
                 log_af::critical("createAndSetRECacheSalt: failed to set environment variable");
@@ -641,13 +647,15 @@ namespace
             const auto zone_name = irods::get_server_property<std::string>(irods::KW_CFG_ZONE_NAME);
             const auto zone_user = irods::get_server_property<std::string>(irods::KW_CFG_ZONE_USER);
 
-            rstrcpy( _comm.proxyUser.userName,  zone_user.c_str(), NAME_LEN );
-            rstrcpy( _comm.clientUser.userName, zone_user.c_str(), NAME_LEN );
-            rstrcpy( _comm.proxyUser.rodsZone,  zone_name.c_str(), NAME_LEN );
-            rstrcpy( _comm.clientUser.rodsZone, zone_name.c_str(), NAME_LEN );
+            rstrcpy(_comm.proxyUser.userName, zone_user.c_str(), NAME_LEN);
+            rstrcpy(_comm.clientUser.userName, zone_user.c_str(), NAME_LEN);
+            rstrcpy(_comm.proxyUser.rodsZone, zone_name.c_str(), NAME_LEN);
+            rstrcpy(_comm.clientUser.rodsZone, zone_name.c_str(), NAME_LEN);
         }
         catch (const irods::exception& e) {
-            log_af::error("{}: Error initializing client and proxy user in RsComm from server configuration: {}", __func__, e.client_display_what());
+            log_af::error("{}: Error initializing client and proxy user in RsComm from server configuration: {}",
+                          __func__,
+                          e.client_display_what());
             return e.code();
         }
 
@@ -656,7 +664,8 @@ namespace
             zone_port = irods::get_server_property<const int>(irods::KW_CFG_ZONE_PORT);
         }
         catch (const irods::exception& e) {
-            log_af::error("{}: Could not retrieve property from server configuration: [{}]", __func__, irods::KW_CFG_ZONE_PORT);
+            log_af::error(
+                "{}: Could not retrieve property from server configuration: [{}]", __func__, irods::KW_CFG_ZONE_PORT);
             return e.code();
         }
 
@@ -671,7 +680,8 @@ namespace
             return SYS_SOCK_LISTEN_ERR;
         }
 
-        log_af::info("{}: Server Release version {} - API Version {} is up", __func__, RODS_REL_VERSION, RODS_API_VERSION);
+        log_af::info(
+            "{}: Server Release version {} - API Version {} is up", __func__, RODS_REL_VERSION, RODS_API_VERSION);
 
         return 0;
     } // initServerMain
@@ -751,7 +761,10 @@ namespace
         }
 
         if (constexpr auto max_svr_to_svr_connect_count = 7; startupPack->connectCnt > max_svr_to_svr_connect_count) {
-            log_agent::error("{}: Exceeded server-to-server connect count [count={}, max={}].", __func__, startupPack->connectCnt, max_svr_to_svr_connect_count);
+            log_agent::error("{}: Exceeded server-to-server connect count [count={}, max={}].",
+                             __func__,
+                             startupPack->connectCnt,
+                             max_svr_to_svr_connect_count);
             sendVersion(net_obj, SYS_EXCEED_CONNECT_CNT, 0, nullptr, 0);
             mySockClose(net_obj->socket_handle());
             return 0;
@@ -763,7 +776,8 @@ namespace
             int bytes_to_send = heartbeat_length;
 
             while (bytes_to_send) {
-                const int bytes_sent = send(net_obj->socket_handle(), &(heartbeat[heartbeat_length - bytes_to_send]), bytes_to_send, 0);
+                const int bytes_sent =
+                    send(net_obj->socket_handle(), &(heartbeat[heartbeat_length - bytes_to_send]), bytes_to_send, 0);
 
                 // We do not check for 0 because it is not considered an error condition. It only means 0
                 // bytes were sent. As longs as we have more bytes to send and no error has occurred, we
@@ -772,7 +786,8 @@ namespace
                     const int errsav = errno;
                     if (errsav != EINTR) {
                         log_agent::error("{}: Socket error encountered during heartbeat; socket returned {}",
-                                          __func__, strerror(errsav));
+                                         __func__,
+                                         strerror(errsav));
                         break;
                     }
                 }
@@ -808,7 +823,7 @@ namespace
         rsComm.thread_ctx = static_cast<thread_context*>(std::malloc(sizeof(thread_context)));
 
         bool require_cs_neg = false;
-        int status = initRsCommWithStartupPack(&rsComm, startupPack, require_cs_neg); // This version just uses the startupPack.
+        int status = initRsCommWithStartupPack(&rsComm, startupPack, require_cs_neg);
 
         // manufacture a network object for comms
         ret = irods::network_factory(&rsComm, net_obj);
@@ -876,7 +891,8 @@ namespace
             }
             else {
                 // copy negotiation results to comm for action by network objects
-                std::snprintf(rsComm.negotiation_results, sizeof(rsComm.negotiation_results), "%s", neg_results.c_str());
+                std::snprintf(
+                    rsComm.negotiation_results, sizeof(rsComm.negotiation_results), "%s", neg_results.c_str());
             }
         }
 
@@ -920,7 +936,7 @@ namespace
         status = agentMain(rsComm);
 
         // call initialization for network plugin as negotiated
-        ret = sockAgentStop( new_net_obj );
+        ret = sockAgentStop(new_net_obj);
         if (!ret.ok()) {
             log_agent::error(PASS(ret).result());
             cleanup_and_free_rsComm_members();
@@ -1064,7 +1080,7 @@ namespace
 
         // Connect to the catalog provider host.
         status = svrToSvrConnect(&_comm, rodsServerHost);
-        if ( status < 0 ) {
+        if (status < 0) {
             log_agent::error(ERROR(status, "svrToSvrConnect failed.").result());
             return status;
         }
@@ -1100,13 +1116,13 @@ namespace
 
         if (std::ofstream out{pid_file}; out) {
             out << fmt::format("{} {} {} {} {} {} {}\n",
-                _comm.clientUser.userName,
-                client_zone,
-                _comm.proxyUser.userName,
-                proxy_zone,
-                client_program_name,
-                _comm.clientAddr,
-                static_cast<unsigned int>(_created_at));
+                               _comm.clientUser.userName,
+                               client_zone,
+                               _comm.proxyUser.userName,
+                               proxy_zone,
+                               client_program_name,
+                               _comm.clientAddr,
+                               static_cast<unsigned int>(_created_at));
         }
         else {
             log_agent::error("{}: Could not open file [{}] for agent/ips data.", __func__, pid_file);
@@ -1171,7 +1187,7 @@ namespace
             }
         }
 
-        const auto flags = _shutting_down ? 0: WNOHANG;
+        const auto flags = _shutting_down ? 0 : WNOHANG;
 
         while (true) {
             pid = waitpid(-1, &status, flags);

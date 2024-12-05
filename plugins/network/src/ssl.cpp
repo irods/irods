@@ -376,9 +376,11 @@ irods::error ssl_socket_read(
     }
 
     fd_set set;
+    // clang-format off
     struct timeval timeout{};
+    // clang-format on
     int len_to_read = _length;
-    char* read_ptr = static_cast<char*>( _buffer );
+    char* read_ptr = static_cast<char*>(_buffer);
     _bytes_read = 0;
     irods::error result = SUCCESS();
 
@@ -398,7 +400,7 @@ irods::error ssl_socket_read(
                     result = ERROR(_length - len_to_read, "failed to read requested number of bytes");
                 }
                 else {
-                    result =  ERROR(SYS_SOCK_READ_TIMEDOUT, "socket timeout error");
+                    result = ERROR(SYS_SOCK_READ_TIMEDOUT, "socket timeout error");
                 }
             }
             else if ( status < 0 ) {
@@ -429,7 +431,7 @@ irods::error ssl_socket_read(
 
         // all has gone well, do byte book keeping
         len_to_read -= num_bytes;
-        read_ptr    += num_bytes; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        read_ptr += num_bytes; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         _bytes_read += num_bytes;
     } // while
 
