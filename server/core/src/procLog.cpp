@@ -9,6 +9,8 @@
 
 #include <boost/lexical_cast.hpp>
 
+#include <cstdio>
+#include <ctime>
 #include <charconv>
 #include <fstream>
 
@@ -89,10 +91,16 @@ logAgentProc( rsComm_t *rsComm ) {
         return UNIX_FILE_OPEN_ERR - errno;
     }
 
-    fprintf( fptr, "%s %s %s %s %s %s %u\n",
-             rsComm->proxyUser.userName, clientZone,
-             rsComm->clientUser.userName, proxyZone,
-             progName, remoteAddr, ( unsigned int ) time( 0 ) );
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
+    std::fprintf(fptr,
+                 "%s %s %s %s %s %s %u\n",
+                 rsComm->clientUser.userName,
+                 clientZone,
+                 rsComm->proxyUser.userName,
+                 proxyZone,
+                 progName,
+                 remoteAddr,
+                 static_cast<unsigned int>(std::time(nullptr)));
 
     rsComm->procLogFlag = PROC_LOG_DONE;
     fclose( fptr );
