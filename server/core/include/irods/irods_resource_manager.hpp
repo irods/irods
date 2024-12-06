@@ -19,9 +19,9 @@ namespace irods
 
     // =-=-=-=-=-=-=-
     /// @brief special resource for local file system operations only
-    extern const std::string LOCAL_USE_ONLY_RESOURCE;
-    extern const std::string LOCAL_USE_ONLY_RESOURCE_VAULT;
-    extern const std::string LOCAL_USE_ONLY_RESOURCE_TYPE;
+    [[deprecated]] extern const std::string LOCAL_USE_ONLY_RESOURCE;
+    [[deprecated]] extern const std::string LOCAL_USE_ONLY_RESOURCE_VAULT;
+    [[deprecated]] extern const std::string LOCAL_USE_ONLY_RESOURCE_TYPE;
 
     class resource_manager {
         public:
