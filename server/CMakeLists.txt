@@ -99,7 +99,6 @@ set(
   rule_engine.json
   server.json
   server_config.json
-  server_status.json
   service_account_environment.json
   unattended_installation.json
   zone_bundle.json
