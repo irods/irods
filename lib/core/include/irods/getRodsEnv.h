@@ -55,13 +55,19 @@ typedef struct RodsEnvironment {
 
     // =-=-=-=-=-=-=-
     // override of plugin installation directory
-    char irodsPluginHome[MAX_NAME_LEN];
+    __attribute__((deprecated("Use irodsPluginDirectory"))) char irodsPluginHome[MAX_NAME_LEN];
+    // TODO Hmm, adding a new member will result in an ABI break. Users will have to
+    // recompile their C/C++ clients. If we don't add the new member, then users can't
+    // migrate their clients to the new variable.
 
     // =-=-=-=-=-=-=-
     // TCP keepalive configurations
     int tcp_keepalive_intvl;
     int tcp_keepalive_probes;
     int tcp_keepalive_time;
+
+    // TODO This will result in an ABI break.
+    char irodsPluginDirectory[MAX_NAME_LEN];
 } rodsEnv;
 
 #ifdef __cplusplus
