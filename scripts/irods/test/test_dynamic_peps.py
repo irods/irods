@@ -195,7 +195,7 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [('
                     self.admin.assert_icommand(['ireg', local_file, logical_path])
 
                     create_time = self.admin.run_icommand(['iquest', '%s',
-                        '''"select DATA_CREATE_TIME where COLL_NAME = '{0}' and DATA_NAME = '{1}'"'''.format(
+                        "select DATA_CREATE_TIME where COLL_NAME = '{0}' and DATA_NAME = '{1}'".format(
                         os.path.dirname(logical_path), os.path.basename(logical_path))])[0]
 
                     lib.metadata_attr_with_value_exists(self.admin,
