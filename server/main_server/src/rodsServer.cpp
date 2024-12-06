@@ -2457,14 +2457,20 @@ void readWorkerTask()
 
             while (bytes_to_send) {
                 const int bytes_sent = send(newSock, &(heartbeat[heartbeat_length - bytes_to_send]), bytes_to_send, 0);
-                const int errsav = errno;
-                if (bytes_sent > 0) {
-                    bytes_to_send -= bytes_sent;
+
+                // We do not check for 0 because it is not considered an error condition. It only means 0
+                // bytes were sent. As long as we have more bytes to send and no error has occurred, we
+                // keep attempting to send bytes.
+                if (bytes_sent == -1) {
+                    const int errsav = errno;
+                    if (errsav != EINTR) {
+                        log_server::error(
+                            "Socket error encountered during heartbeat; socket returned {}", strerror(errsav));
+                        break;
+                    }
                 }
-                else if (errsav != EINTR) {
-                    log_server::error("Socket error encountered during heartbeat; socket returned {}",
-                                      strerror(errsav));
-                    break;
+                else if (bytes_sent > 0) {
+                    bytes_to_send -= bytes_sent;
                 }
             }
 
