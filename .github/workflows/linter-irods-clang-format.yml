@@ -5,7 +5,7 @@ defaults:
         shell: bash
 jobs:
     clang-format:
-        runs-on: ubuntu-20.04
+        runs-on: ubuntu-24.04
         steps:
             - name: Checkout Repository
               uses: actions/checkout@v3
@@ -17,7 +17,7 @@ jobs:
               run: |
                   sudo apt-get update -qq
                   sudo apt-get install -qq apt-transport-https ca-certificates
-                  sudo apt-get install -qq wget
+                  sudo apt-get install -qq wget lsb-release
             - name: Install Clang Compiler
               run: |
                   wget -qO - https://unstable.irods.org/irods-unstable-signing-key.asc | sudo apt-key add -
@@ -32,7 +32,7 @@ jobs:
                   # Configure Git so that "git clang-format" can be run.
                   git config --global clangFormat.binary clang-format
                   git config --global clangFormat.style file
-                  git config --global clangFormat.extensions 'h,c,hpp,cpp,tpp'
+                  git config --global clangFormat.extensions 'h,h.in,c,c.in,hpp,hpp.in,cpp,cpp.in'
 
                   # Diff the target branch with all changes made within the pull request.
                   diff_output=$(git clang-format --diff origin/$GITHUB_BASE_REF)
