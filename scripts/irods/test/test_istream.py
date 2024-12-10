@@ -341,7 +341,7 @@ class Test_Istream(session.make_sessions_mixin([('otherrods', 'rods')], [('alice
             self.user.assert_icommand(['irepl', '-R', other_resc, data_object])
 
             # get information about the replicas from the catalog
-            question = '''"select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where COLL_NAME = '{0}' and DATA_NAME = '{1}'"'''.format(os.path.dirname(data_object), os.path.basename(data_object))
+            question = "select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where COLL_NAME = '{0}' and DATA_NAME = '{1}'".format(os.path.dirname(data_object), os.path.basename(data_object))
 
             out, err, ec = self.user.run_icommand(['iquest', '%s %s %s', question])
             self.assertEqual(ec, 0)
@@ -409,7 +409,7 @@ class Test_Istream(session.make_sessions_mixin([('otherrods', 'rods')], [('alice
             self.user.assert_icommand(['iput', '-R', default_resc, local_file, data_object])
 
             # get information about the replicas from the catalog
-            question = '''"select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where COLL_NAME = '{0}' and DATA_NAME = '{1}'"'''.format(os.path.dirname(data_object), os.path.basename(data_object))
+            question = "select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where COLL_NAME = '{0}' and DATA_NAME = '{1}'".format(os.path.dirname(data_object), os.path.basename(data_object))
 
             out, err, ec = self.user.run_icommand(['iquest', '%s %s %s', question])
             self.assertEqual(ec, 0)

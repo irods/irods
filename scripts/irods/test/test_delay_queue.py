@@ -33,7 +33,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
         if not os.path.exists(self.local_path):
             lib.make_file(self.local_path, 1024)
         self.admin.assert_icommand(['iput', self.local_path, self.logical_path])
-        out, err, rc = self.admin.run_icommand(['iquest', '%s', '"select DATA_ID where DATA_NAME = \'{}\'"'.format(self.filename)])
+        out, err, rc = self.admin.run_icommand(['iquest', '%s', 'select DATA_ID where DATA_NAME = \'{}\''.format(self.filename)])
         self.assertEqual(rc, 0, msg='error occurred getting data_id:[{}],stderr:[{}]'.format(rc, err))
         self.data_id = out.strip()
 
@@ -470,7 +470,7 @@ class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('a
                     # Fire off rule and ensure the delay queue is correctly populated
                     self.admin.assert_icommand(['irule', '-F', rule_file])
 
-                    iquest = '"select META_DATA_ATTR_VALUE where META_DATA_ATTR_NAME = \'{}\'"'
+                    iquest = 'select META_DATA_ATTR_VALUE where META_DATA_ATTR_NAME = \'{}\''
 
                     job_names = ['job_1', 'job_2']
                     pid_map = {}

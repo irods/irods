@@ -26,6 +26,7 @@
 #include "irods/irods_re_serialization.hpp"
 #include "irods/irods_resource_manager.hpp"
 #include "irods/irods_logger.hpp"
+#include "irods/escape_utilities.hpp"
 
 #define IRODS_IO_TRANSPORT_ENABLE_SERVER_SIDE_API
 #include "irods/transport/default_transport.hpp"
@@ -375,8 +376,8 @@ namespace
                                      " COLL_NAME = '{}' and"
                                      " DATA_NAME = '{}' and"
                                      " DATA_REPL_STATUS = '1'",
-                                     _path.parent_path().c_str(),
-                                     _path.object_name().c_str());
+                                     irods::single_quotes_to_hex(_path.parent_path()),
+                                     irods::single_quotes_to_hex(_path.object_name()));
 
         auto query = qb.build<rsComm_t>(_comm, gql);
 

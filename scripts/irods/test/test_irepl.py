@@ -492,7 +492,7 @@ class test_irepl_with_special_resource_configurations(session.make_sessions_mixi
             self.admin.assert_icommand('iadmin rmresc comp_resc')
 
     def assert_two_replicas_where_original_is_good_and_new_is_stale(self, logical_path, original_resc, munge_resc):
-        question = '''"select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'"'''.format(
+        question = "select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'".format(
             os.path.basename(logical_path), os.path.dirname(logical_path))
 
         # check on the replicas after the replication...
@@ -523,7 +523,7 @@ class test_irepl_with_special_resource_configurations(session.make_sessions_mixi
         munge_resc = 'munge_resc'
         local_file = os.path.join(self.admin.local_session_dir, 'local_file')
         logical_path = os.path.join(self.admin.session_collection, 'foo')
-        question = '''"select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'"'''.format(
+        question = "select DATA_REPL_NUM, DATA_RESC_NAME, DATA_REPL_STATUS where DATA_NAME = '{0}' and COLL_NAME = '{1}'".format(
             os.path.basename(logical_path), os.path.dirname(logical_path))
 
         try:
