@@ -3205,15 +3205,98 @@ char *getCondFromString( char * t ) {
 
 int fillGenQueryInpFromStrCond( char * str, genQueryInp_t * genQueryInp )
 {
+    if (const auto* v = std::getenv("IRODS_ENABLE_GENQUERY1_FLEX_BISON_PARSER"); v && std::strcmp(v, "1") == 0) {
+        return parse_genquery1_string(str, genQueryInp);
+    }
+
+    int  n, m;
+    char *p, *t, *f, *u, *a, *c;
+    char *s;
+    s = strdup( str );
+    if ( ( t = strstr( s, "select" ) ) != NULL ||
+            ( t = strstr( s, "SELECT" ) ) != NULL ) {
+
+        if ( ( f = strstr( t, "where" ) ) != NULL ||
+                ( f = strstr( t, "WHERE" ) ) != NULL ) {
+            /* Where Condition Found*/
+            *f = '\0';
+        }
+        t = t +  7;
+        while ( ( u = strchr( t, ',' ) ) != NULL ) {
+            *u = '\0';
+            trimWS( t );
+            separateSelFuncFromAttr( t, &a, &c );
+            m = getSelVal( a );
+            n = getAttrIdFromAttrName( c );
+            if ( n < 0 ) {
+                free( s );
+                return n;
+            }
+            addInxIval( &genQueryInp->selectInp, n, m );
+            t  = u + 1;
+        }
+        trimWS( t );
+        separateSelFuncFromAttr( t, &a, &c );
+        m = getSelVal( a );
+        n = getAttrIdFromAttrName( c );
+        if ( n < 0 ) {
+            free( s );
+            return n;
+        }
+        addInxIval( &genQueryInp->selectInp, n, m );
+        if ( f == NULL ) {
+            free( s );
+            return 0;
+        }
+    }
+    else {
+        free( s );
+        return INPUT_ARG_NOT_WELL_FORMED_ERR;
+    }
+    t = f + 6;
+    while ( ( u = getCondFromString( t ) ) != NULL ) {
+        *u = '\0';
+        trimWS( t );
+        if ( ( p = strchr( t, ' ' ) ) == NULL ) {
+            free( s );
+            return INPUT_ARG_NOT_WELL_FORMED_ERR;
+        }
+        *p = '\0';
+        n = getAttrIdFromAttrName( t );
+        if ( n < 0 ) {
+            free( s );
+            return n;
+        }
+        addInxVal( &genQueryInp->sqlCondInp, n, p + 1 );
+        t = u + 5;
+    }
+    trimWS( t );
+    if ( ( p = strchr( t, ' ' ) ) == NULL ) {
+        free( s );
+        return INPUT_ARG_NOT_WELL_FORMED_ERR;
+    }
+    *p = '\0';
+    n = getAttrIdFromAttrName( t );
+    if ( n < 0 ) {
+        free( s );
+        return n;
+    }
+    addInxVal( &genQueryInp->sqlCondInp, n, p + 1 );
+    free( s );
+    return 0;
+} // fillGenQueryInpFromStrCond
+
+int parse_genquery1_string(const char* _s, genQueryInp_t* _out)
+{
     try {
         namespace gq1 = irods::experimental::genquery1;
 
         gq1::driver driver;
-        driver.gq_input = genQueryInp;
+        driver.gq_input = _out;
 
-        if (const auto ec = driver.parse(str); ec != 0) {
+        if (const auto ec = driver.parse(_s); ec != 0) {
             if (CLIENT_PT == ::ProcessType) {
-                fmt::print(stderr, "GenQuery1 error: error_code=[{}], query_string=[{}]\n", ec, str);
+                fmt::print(stderr, "GenQuery1 error: error_code=[{}], query_string=[{}]\n", ec, _s);
             }
 
             return INPUT_ARG_NOT_WELL_FORMED_ERR;
@@ -3221,14 +3304,21 @@ int fillGenQueryInpFromStrCond( char * str, genQueryInp_t * genQueryInp )
 
         return 0;
     }
-    catch (const std::exception& e) {
+    catch (const irods::exception& e) {
         if (CLIENT_PT == ::ProcessType) {
-            fmt::print(stderr, "GenQuery1 error: {} [query_string={}]\n", e.what(), str);
+            fmt::print(stderr, "GenQuery1 error: {} [query_string={}]\n", e.client_display_what(), _s);
         }
 
-        return INPUT_ARG_NOT_WELL_FORMED_ERR;
+        return e.code();
     }
-} // fillGenQueryInpFromStrCond
+    catch (const std::exception& e) {
+        if (CLIENT_PT == ::ProcessType) {
+            fmt::print(stderr, "GenQuery1 error: {} [query_string={}]\n", e.what(), _s);
+        }
+
+        return SYS_LIBRARY_ERROR;
+    }
+} // parse_genquery1_string
 
 int
 printGenQueryOut( FILE * fd, char * format, char * hint, genQueryOut_t * genQueryOut ) {

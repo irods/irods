@@ -40,7 +40,9 @@ This option causes make_* functions to be generated for each token kind.
 
 /* Code to be included in the parser's implementation file. */
 %code requires {
+    #include "irods/irods_exception.hpp"
     #include "irods/rcMisc.h"
+    #include "irods/rodsErrorTable.h"
     #include "irods/rodsGenQueryNames.h"
 
     #include <fmt/format.h>
@@ -175,7 +177,7 @@ string_literal_list:
 
 auto gq1::parser::error(const gq1::location& _loc, const std::string& _msg) -> void
 {
-    throw std::invalid_argument{fmt::format("{} at position {}", _msg, _loc.begin.column)};
+    THROW(INPUT_ARG_NOT_WELL_FORMED_ERR, fmt::format("{} at position {}", _msg, _loc.begin.column));
 } // gq1::parser::error
 
 auto yylex(irods::experimental::genquery1::driver& drv) -> gq1::parser::symbol_type
@@ -191,7 +193,7 @@ auto find_column_id_by_name(std::string_view _column) -> int
         }
     }
 
-    throw std::invalid_argument{fmt::format("column [{}] not supported", _column)};
+    THROW(NO_COLUMN_NAME_FOUND, fmt::format("column [{}] not supported", _column));
 } // find_column_id_by_name
 
 auto add_column_to_projection_list(irods::experimental::genquery1::driver& _drv,
@@ -199,7 +201,6 @@ auto add_column_to_projection_list(irods::experimental::genquery1::driver& _drv,
                                    std::optional<std::string_view> _fn) -> void
 {
     const auto column_id = find_column_id_by_name(_column);
-    //fmt::print("column [{}] => id [{}]\n", _column, column_id);
 
     if (_fn) {
         // clang-format off
@@ -211,11 +212,22 @@ auto add_column_to_projection_list(irods::experimental::genquery1::driver& _drv,
         else if (boost::iequals(*_fn, "avg"))        { addInxIval(&_drv.gq_input->selectInp, column_id, SELECT_AVG); }
         else if (boost::iequals(*_fn, "count"))      { addInxIval(&_drv.gq_input->selectInp, column_id, SELECT_COUNT); }
         // clang-format on
+        else {
+            // When fillGenQueryInpFromStrCond() enters this case, it will ignore the unknown aggregate function
+            // and carry own as if the client never passed it. For example, the following iquest queries are
+            // equivalent when fillGenQueryInpFromStrCond() is used.
+            //
+            //     iquest "select ignored(COLL_NAME)"
+            //     iquest "select COLL_NAME"
+            //
+            // This flex / bison parser correctly treats this as an error and throws an exception.
+            THROW(INVALID_OPERATION, fmt::format("aggregate function [{}] not supported", *_fn));
+        }
 
         return;
     }
 
-    addInxIval(&_drv.gq_input->selectInp, column_id, 0);
+    addInxIval(&_drv.gq_input->selectInp, column_id, 1);
 } // add_column_to_projection_list
 
 auto add_condition(irods::experimental::genquery1::driver& _drv,
@@ -223,6 +235,5 @@ auto add_condition(irods::experimental::genquery1::driver& _drv,
                    std::string_view _condition) -> void
 {
     const auto column_id = find_column_id_by_name(_column);
-    //fmt::print("adding condition: column [{}] => id [{}], condition [{}]\n", _column, column_id, _condition);
     addInxVal(&_drv.gq_input->sqlCondInp, column_id, std::string{_condition}.c_str());
 } // add_condition

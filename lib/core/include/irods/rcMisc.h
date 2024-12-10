@@ -277,6 +277,8 @@ int printError(rcComm_t* Conn, int status, char* routineName);
 
 int fillGenQueryInpFromStrCond(char* str, genQueryInp_t* genQueryInp);
 
+int parse_genquery1_string(const char* _s, genQueryInp_t* _out);
+
 int printGenQueryOut(FILE* fd, char* format, char* hint, genQueryOut_t* genQueryOut);
 
 int appendToByteBuf(bytesBuf_t* bytesBuf, char* str);
