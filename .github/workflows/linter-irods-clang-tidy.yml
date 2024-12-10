@@ -5,7 +5,7 @@ defaults:
         shell: bash
 jobs:
     clang-tidy:
-        runs-on: ubuntu-20.04
+        runs-on: ubuntu-24.04
         steps:
             - name: Checkout Repository
               uses: actions/checkout@v3
@@ -22,7 +22,8 @@ jobs:
                     curl \
                     g++ \
                     make \
-                    python-dev \
+                    cmake \
+                    python3-dev \
                     unixodbc \
                     libcurl4-gnutls-dev \
                     libbz2-dev \
@@ -31,18 +32,13 @@ jobs:
                     libssl-dev \
                     libxml2-dev \
                     unixodbc-dev \
-                    python-psutil \
+                    python3-psutil \
                     odbc-postgresql \
                     libkrb5-dev \
                     python3-distro \
                     flex \
-                    bison
-            - name: Install libstdc++6
-              run: |
-                  sudo apt-get install -qq software-properties-common
-                  sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-                  sudo apt-get update -qq
-                  sudo apt-get install -qq libstdc++6
+                    bison \
+                    lsb-release
             - name: Install iRODS Externals
               run: |
                   wget -qO - https://unstable.irods.org/irods-unstable-signing-key.asc | sudo apt-key add -
@@ -53,17 +49,16 @@ jobs:
                     irods-externals-boost1.81.0-1 \
                     irods-externals-catch22.13.8-0 \
                     irods-externals-clang13.0.1-0 \
-                    irods-externals-cmake3.21.4-0 \
                     irods-externals-cppzmq4.8.1-1 \
                     irods-externals-fmt8.1.1-1 \
                     irods-externals-json3.10.4-0 \
+                    irods-externals-jsoncons0.178.0-0 \
                     irods-externals-libarchive3.5.2-0 \
                     irods-externals-nanodbc2.13.0-2 \
                     irods-externals-spdlog1.9.2-2 \
                     irods-externals-zeromq4-14.1.8-1
             - name: Configure CMake
               run: |
-                  export PATH=/opt/irods-externals/cmake3.21.4-0/bin:$PATH
                   mkdir build
                   cd build
                   cmake -DIRODS_DISABLE_COMPILER_OPTIMIZATIONS=YES -DIRODS_UNIT_TESTS_BUILD=YES ..
