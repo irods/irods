@@ -38,7 +38,8 @@ jobs:
                     python3-distro \
                     flex \
                     bison \
-                    lsb-release
+                    lsb-release \
+                    libsystemd-dev
             - name: Install iRODS Externals
               run: |
                   wget -qO - https://unstable.irods.org/irods-unstable-signing-key.asc | sudo apt-key add -

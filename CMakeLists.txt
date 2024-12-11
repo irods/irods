@@ -236,6 +236,18 @@ find_package(CURL REQUIRED)
 
 find_package(OpenSSL REQUIRED COMPONENTS Crypto SSL)
 
+set(IRODS_USE_LIBSYSTEMD_DOCSTRING "Use libsystemd for service manager status communication")
+if (NOT DEFINED IRODS_USE_LIBSYSTEMD)
+	# if IRODS_USE_LIBSYSTEMD isn't set, check for systemd and set default value based on its presence.
+	find_package(systemd)
+	set(IRODS_USE_LIBSYSTEMD "${SYSTEMD_FOUND}" CACHE BOOL "${IRODS_USE_LIBSYSTEMD_DOCSTRING}")
+else()
+	set(IRODS_USE_LIBSYSTEMD "${IRODS_USE_LIBSYSTEMD}" CACHE BOOL "${IRODS_USE_LIBSYSTEMD_DOCSTRING}")
+	if (IRODS_USE_LIBSYSTEMD)
+		find_package(systemd REQUIRED)
+	endif()
+endif()
+
 include(IrodsCPackPlatform)
 
 set(IRODS_PLATFORM_STRING linux_platform)
@@ -337,6 +349,7 @@ install(
   "${CMAKE_IRODS_SOURCE_DIR}/cmake/Modules/UseLibCXX.cmake"
   "${CMAKE_IRODS_SOURCE_DIR}/cmake/Modules/FindCatch2.cmake"
   "${CMAKE_IRODS_SOURCE_DIR}/cmake/Modules/Findnlohmann_json.cmake"
+  "${CMAKE_IRODS_SOURCE_DIR}/cmake/Modules/Findsystemd.cmake"
   "${CMAKE_IRODS_SOURCE_DIR}/cmake/Modules/IrodsExternals.cmake"
   "${CMAKE_IRODS_SOURCE_DIR}/cmake/Modules/IrodsCXXCompiler.cmake"
   "${CMAKE_IRODS_SOURCE_DIR}/cmake/Modules/ObjectTargetHelpers.cmake"
@@ -345,6 +358,14 @@ install(
   "${CMAKE_IRODS_SOURCE_DIR}/cmake/Modules/IrodsRunpathDefaults.cmake"
   DESTINATION "${IRODS_INSTALL_CMAKECONFDIR}/Modules"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
+)
+
+install(
+  FILES
+  "${CMAKE_IRODS_SOURCE_DIR}/scripts/irods/distro_distill.py"
+  DESTINATION "${IRODS_INSTALL_CMAKECONFDIR}/Modules"
+  COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
+  PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
 )
 
 install(
