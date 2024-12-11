@@ -22,6 +22,7 @@
 #endif // IRODS_ENABLE_SYSLOG
 
 #include "irods/apiNumberMap.h"
+#include "irods/chrono.hpp"
 #include "irods/rodsError.h"
 #include "irods/rcMisc.h"
 #include "irods/rcConnect.h"
@@ -661,41 +662,6 @@ namespace irods::experimental::log
             {
                 return Level >= logger_config<Category>::level;
             } // should_log
-
-            [[nodiscard]] auto utc_timestamp() const -> std::string
-            {
-                namespace chrono = std::chrono;
-                using clock_type = chrono::system_clock;
-
-#if IRODS_CHRONO_FORMATTER_FMT
-                const auto tp = chrono::floor<chrono::milliseconds>(clock_type::now());
-                return fmt::format(FMT_COMPILE("{:%FT%H:%M:%S}Z"), tp);
-#else
-                // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays, cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
-                char ts_buf[64]{}; // 64 here isn't particularly special, just a large-enough small power-of-two
-                std::timespec ts; // NOLINT(cppcoreguidelines-pro-type-member-init)
-                if (const int base = std::timespec_get(&ts, TIME_UTC); base != TIME_UTC) {
-                    if (const int ec = clock_gettime(CLOCK_REALTIME, &ts); ec != 0) {
-                        const auto tp = clock_type::now();
-                        const auto tp_s = chrono::floor<chrono::seconds>(tp);
-                        const auto tp_s_ms = chrono::floor<chrono::milliseconds>(tp_s);
-                        const auto tp_ms = chrono::floor<chrono::milliseconds>(tp) - tp_s_ms;
-                        const auto tt_s = clock_type::to_time_t(tp_s);
-
-                        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay, concurrency-mt-unsafe)
-                        std::strftime(ts_buf, sizeof(ts_buf) - 1, "%FT%T", std::gmtime(&tt_s));
-                        return fmt::format(FMT_COMPILE("{}.{:0>3}Z"), ts_buf, tp_ms.count());
-                    }
-                }
-
-                const std::time_t tt_s = static_cast<std::time_t>(ts.tv_sec);
-                const auto ts_ms = ts.tv_nsec / 1000000L;
-
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay, concurrency-mt-unsafe)
-                std::strftime(ts_buf, sizeof(ts_buf) - 1, "%FT%T", std::gmtime(&tt_s));
-                return fmt::format(FMT_COMPILE("{}.{:0>3}Z"), ts_buf, ts_ms);
-#endif
-            } // utc_timestamp
 
             static constexpr auto log_level_as_string() noexcept -> const char*
             {

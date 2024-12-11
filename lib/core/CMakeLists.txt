@@ -299,6 +299,7 @@ install(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/bunUtil.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/capped_memory_resource.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/chksumUtil.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/chrono.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/client_connection.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/connection_pool.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/cpUtil.h"

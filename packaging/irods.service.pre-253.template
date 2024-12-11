@@ -3,8 +3,9 @@ Description=iRODS
 After=network.target
 
 [Service]
-Type=notify-reload
+Type=notify
 ExecStart=/usr/sbin/irodsServer
+ExecReload=/bin/kill -HUP $MAINPID
 KillMode=mixed
 Restart=on-failure
 User=irods

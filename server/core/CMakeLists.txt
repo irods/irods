@@ -46,6 +46,7 @@ add_library(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/json_serialization.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/logical_locking.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/miscServerFunct.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/notify_service_manager.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/objDesc.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/objMetaOpr.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/physPath.cpp"
@@ -108,6 +109,11 @@ target_compile_definitions(
 set_target_properties(irods_server_core PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE TRUE)
 set_target_properties(irods_server_core PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
+if (IRODS_USE_LIBSYSTEMD)
+  objects_link_libraries(irods_server_core PRIVATE systemd::libsystemd)
+  target_compile_definitions(irods_server_core PRIVATE IRODS_USE_LIBSYSTEMD)
+endif()
+
 install(
   FILES
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/administration_utilities.hpp"
@@ -159,6 +165,7 @@ install(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/json_serialization.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/logical_locking.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/miscServerFunct.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/notify_service_manager.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/objDesc.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/objMetaOpr.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/physPath.hpp"
