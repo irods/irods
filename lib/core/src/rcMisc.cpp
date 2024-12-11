@@ -8,6 +8,7 @@
 #include "irods/execMyRule.h"
 #include "irods/exec_rule_expression.h"
 #include "irods/generalAdmin.h"
+#include "irods/irods_default_paths.hpp"
 #include "irods/modDataObjMeta.h"
 #include "irods/msParam.h"
 #include "irods/objInfo.h"
@@ -60,6 +61,7 @@
     #include "irods/Unix2Nt.hpp"
 #endif
 
+#include <fstream>
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
@@ -3207,6 +3209,13 @@ int fillGenQueryInpFromStrCond( char * str, genQueryInp_t * genQueryInp )
 {
     if (const auto* v = std::getenv("IRODS_ENABLE_GENQUERY1_FLEX_BISON_PARSER"); v && std::strcmp(v, "1") == 0) {
         return parse_genquery1_string(str, genQueryInp);
+    }
+
+    {
+        std::ofstream f{(irods::get_irods_home_directory() / "log/genquery1_strings.txt").generic_string(), std::ios::out | std::ios::app};
+        if (f) {
+            f << str << '\n';
+        }
     }
 
     int  n, m;
