@@ -142,6 +142,7 @@ install(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_oracle_object.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_physical_object.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_postgres_object.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_notify_service_manager.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_report_plugins_in_json.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_resource_backport.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_resource_constants.hpp"

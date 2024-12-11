@@ -3,11 +3,9 @@ Description=iRODS
 After=network.target
 
 [Service]
-Type=forking
-PIDFile=/var/run/irods/irods-server.pid
-ExecStart=/usr/sbin/irodsServer -d
-ExecReload=/bin/kill -HUP $MAINPID
-ExecStop=/bin/kill -TERM $MAINPID
+Type=notify-reload
+ExecStart=/usr/sbin/irodsServer
+KillMode=mixed
 Restart=on-failure
 User=irods
 Group=irods
