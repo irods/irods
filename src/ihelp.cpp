@@ -6,7 +6,7 @@
 const char * const icmds[] = {
     "iadmin", "ibun", "icd", "ichksum", "ichmod", "icp", "ienv",
     "ierror", "iexit", "ifsck", "iget", "igroupadmin",
-    "ihelp", "iinit", "ilocate", "ils", "ilsresc",
+    "ihelp", "iinit", "ils", "ilsresc",
     "imcoll", "imeta", "imiscsvrinfo", "imkdir", "imv", "ipasswd",
     "iphymv", "ips", "iput", "ipwd", "iqdel", "iqmod", "iqstat", "iquery",
     "iquest", "iquota", "ireg", "irepl", "irm", "irmdir", "irmtrash", "irsync", "irule",
@@ -35,7 +35,6 @@ printMainHelp() {
         "igroupadmin  - perform group-admin functions: mkuser, add/remove from group, etc.",
         "ihelp        - display a synopsis list of the iCommands.",
         "iinit        - initialize a session, so you don't need to retype your password.",
-        "ilocate      - searches the local zone for data objects.",
         "ils          - list Collections (directories) and Data Objects (files).",
         "ilsresc      - list iRODS resources.",
         "imcoll       - manage mounted collections and associated cache.",
