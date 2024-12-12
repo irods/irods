@@ -212,8 +212,8 @@ namespace irods::experimental::replica
                 "DATA_RESC_ID, "
                 "COLL_NAME"
                 " WHERE DATA_NAME = '{}' AND COLL_NAME = '{}'",
-                irods::single_quotes_to_hex(_logical_path.object_name()),
-                irods::single_quotes_to_hex(_logical_path.parent_path()));
+                IRODS_SINGLE_QUOTES_TO_HEX_COMPAT(_logical_path.object_name()),
+                IRODS_SINGLE_QUOTES_TO_HEX_COMPAT(_logical_path.parent_path()));
 
             if (!_query_condition_string.empty()) {
                 qstr += fmt::format(" AND {}", _query_condition_string.data());
@@ -810,8 +810,8 @@ namespace irods::experimental::replica
 
         const std::string qstr = fmt::format(
             "SELECT DATA_ID WHERE DATA_NAME = '{}' AND COLL_NAME = '{}' AND DATA_RESC_NAME = '{}'",
-            irods::single_quotes_to_hex(_logical_path.object_name()),
-            irods::single_quotes_to_hex(_logical_path.parent_path()),
+            IRODS_SINGLE_QUOTES_TO_HEX_COMPAT(_logical_path.object_name()),
+            IRODS_SINGLE_QUOTES_TO_HEX_COMPAT(_logical_path.parent_path()),
             _leaf_resource_name.data());
 
         return 0 != qb.build<rxComm>(_comm, qstr).size();
@@ -844,8 +844,8 @@ namespace irods::experimental::replica
 
         const std::string qstr = fmt::format(
             "SELECT DATA_ID WHERE DATA_NAME = '{}' AND COLL_NAME = '{}' AND DATA_REPL_NUM = '{}'",
-            irods::single_quotes_to_hex(_logical_path.object_name()),
-            irods::single_quotes_to_hex(_logical_path.parent_path()),
+            IRODS_SINGLE_QUOTES_TO_HEX_COMPAT(_logical_path.object_name()),
+            IRODS_SINGLE_QUOTES_TO_HEX_COMPAT(_logical_path.parent_path()),
             _replica_number);
 
         return 0 != qb.build<rxComm>(_comm, qstr).size();
