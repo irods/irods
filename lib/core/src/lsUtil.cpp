@@ -60,8 +60,8 @@ int lsUtil(rcComm_t *conn,
             return status;
         }
 
-        const auto escaped_data_name = irods::single_quotes_to_hex(data_name);
-        const auto escaped_coll_name = irods::single_quotes_to_hex(coll_name);
+        const auto escaped_data_name = IRODS_SINGLE_QUOTES_TO_HEX_COMPAT(data_name);
+        const auto escaped_coll_name = IRODS_SINGLE_QUOTES_TO_HEX_COMPAT(coll_name);
         irods::query qobj{conn, fmt::format("select DATA_ID where DATA_NAME = '{}' and COLL_NAME = '{}'", escaped_data_name, escaped_coll_name)};
         if (qobj.size() > 0) {
             if (const auto id = qobj.front()[0]; !id.empty()) {
