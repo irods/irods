@@ -90,7 +90,7 @@ namespace
         const rodsLong_t size_in_vault = fileStatOut->st_size;
         free(fileStatOut);
         std::optional<rodsLong_t> size_in_database {};
-        auto select_and_condition = fmt::format("select DATA_SIZE where DATA_PATH = '{}'", irods::single_quotes_to_hex(dataObjInfo.filePath));
+        auto select_and_condition = fmt::format("select DATA_SIZE where DATA_PATH = '{}'", IRODS_SINGLE_QUOTES_TO_HEX_COMPAT(dataObjInfo.filePath));
         for (auto&& row : irods::query{&rsComm, select_and_condition}) {
             try {
                 size_in_database = boost::lexical_cast<rodsLong_t>(row[0]);

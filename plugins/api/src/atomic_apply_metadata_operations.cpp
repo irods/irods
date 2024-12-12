@@ -156,15 +156,15 @@ namespace
         std::string gql;
         switch (_entity_type) {
             case ic::entity_type::collection:
-                gql = fmt::format("select COLL_ID where COLL_NAME = '{}'", irods::single_quotes_to_hex(_entity_name));
+                gql = fmt::format("select COLL_ID where COLL_NAME = '{}'", IRODS_SINGLE_QUOTES_TO_HEX_COMPAT(_entity_name));
                 break;
 
             case ic::entity_type::data_object:
             {
                 fs::path p = _entity_name;
                 gql = fmt::format("select DATA_ID where COLL_NAME = '{}' and DATA_NAME = '{}'",
-                                  irods::single_quotes_to_hex(p.parent_path()),
-                                  irods::single_quotes_to_hex(p.object_name()));
+                                  IRODS_SINGLE_QUOTES_TO_HEX_COMPAT(p.parent_path()),
+                                  IRODS_SINGLE_QUOTES_TO_HEX_COMPAT(p.object_name()));
                 break;
             }
 

@@ -128,8 +128,8 @@ namespace
                                          " COLL_NAME = '{}' and"
                                          " DATA_NAME = '{}' and"
                                          " DATA_RESC_HIER = '{}'",
-                                         irods::single_quotes_to_hex(p.parent_path()),
-                                         irods::single_quotes_to_hex(p.object_name()),
+                                         IRODS_SINGLE_QUOTES_TO_HEX_COMPAT(p.parent_path()),
+                                         IRODS_SINGLE_QUOTES_TO_HEX_COMPAT(p.object_name()),
                                          kvp.at(RESC_HIER_STR_KW).value());
 
             for (auto&& row : irods::query{&_conn, gql}) {

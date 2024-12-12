@@ -257,8 +257,8 @@ namespace
                     const auto path = fs::path{destDataObjInp->objPath};
                     const auto qstr = fmt::format("select DATA_ID where COLL_NAME = '{0}' and DATA_NAME = '{1}' and "
                                                   "DATA_RESC_HIER like '{2};%' || = '{2}'",
-                                                  irods::single_quotes_to_hex(path.parent_path()),
-                                                  irods::single_quotes_to_hex(path.object_name()),
+                                                  IRODS_SINGLE_QUOTES_TO_HEX_COMPAT(path.parent_path()),
+                                                  IRODS_SINGLE_QUOTES_TO_HEX_COMPAT(path.object_name()),
                                                   destination_resource);
 
                     // If no results come back from the query, that means no replica exists on the target resource.

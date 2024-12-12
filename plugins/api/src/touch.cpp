@@ -376,8 +376,8 @@ namespace
                                      " COLL_NAME = '{}' and"
                                      " DATA_NAME = '{}' and"
                                      " DATA_REPL_STATUS = '1'",
-                                     irods::single_quotes_to_hex(_path.parent_path()),
-                                     irods::single_quotes_to_hex(_path.object_name()));
+                                     IRODS_SINGLE_QUOTES_TO_HEX_COMPAT(_path.parent_path()),
+                                     IRODS_SINGLE_QUOTES_TO_HEX_COMPAT(_path.object_name()));
 
         auto query = qb.build<rsComm_t>(_comm, gql);
 

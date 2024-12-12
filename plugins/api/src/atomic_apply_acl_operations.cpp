@@ -181,13 +181,13 @@ namespace
         }
 
         if (fs::server::is_collection(s)) {
-            gql = fmt::format("select COLL_ID where COLL_NAME = '{}'", irods::single_quotes_to_hex(std::string{_logical_path}));
+            gql = fmt::format("select COLL_ID where COLL_NAME = '{}'", IRODS_SINGLE_QUOTES_TO_HEX_COMPAT(std::string{_logical_path}));
         }
         else if (fs::server::is_data_object(s)) {
             fs::path p = _logical_path.data();
             gql = fmt::format("select DATA_ID where COLL_NAME = '{}' and DATA_NAME = '{}'",
-                              irods::single_quotes_to_hex(p.parent_path()),
-                              irods::single_quotes_to_hex(p.object_name()));
+                              IRODS_SINGLE_QUOTES_TO_HEX_COMPAT(p.parent_path()),
+                              IRODS_SINGLE_QUOTES_TO_HEX_COMPAT(p.object_name()));
         }
         else {
             log::api::error("Object is not a data object or collection [path={}]", _logical_path);
