@@ -172,7 +172,7 @@ queryAndShowStrCond( rcComm_t *conn, char *hint, char *format,
     int i;
 
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
-    i = fillGenQueryInpFromStrCond( selectConditionString, &genQueryInp );
+    i = parse_genquery1_string(selectConditionString, &genQueryInp);
     if ( i < 0 ) {
         return i;
     }
