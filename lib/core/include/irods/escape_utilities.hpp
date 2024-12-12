@@ -13,6 +13,19 @@ namespace irods
     ///
     /// \since 4.3.3
     auto single_quotes_to_hex(const std::string& _s) -> std::string;
+
+
+    /// TODO
+    ///
+    /// \since 4.3.3
+    // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#define IRODS_SINGLE_QUOTES_TO_HEX_COMPAT(_s) \
+    [&(_s)] { \
+        if (const auto* v = std::getenv("IRODS_ENABLE_GENQUERY1_FLEX_BISON_PARSER"); v && std::strcmp(v, "1") == 0) { \
+            return irods::single_quotes_to_hex((_s)); \
+        } \
+        return (_s); \
+    }()
 } // namespace irods
 
 #endif // IRODS_ESCAPE_UTILITIES_HPP
