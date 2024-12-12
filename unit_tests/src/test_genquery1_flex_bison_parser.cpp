@@ -5,6 +5,7 @@
 #include "irods/irods_default_paths.hpp"
 #include "irods/rcMisc.h"
 #include "irods/rodsGenQuery.h"
+#include "irods/rodsErrorTable.h"
 
 #include <boost/algorithm/string.hpp>
 #include <fmt/format.h>
@@ -12,6 +13,7 @@
 #include <cstring>
 #include <fstream>
 #include <string> // For std::getline
+#include <utility>
 #include <vector>
 
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
@@ -101,38 +103,42 @@ TEST_CASE("genquery1 flex bison parser maintains backward compatibility")
 
 TEST_CASE("genquery1 flex bison parser returns error on invalid input")
 {
-    const std::vector<const char*> invalid_queries{
-        "bad formatting",
-        "select DATA_RESC_GROUP_NAME where COLL_NAME = '/tempZone/home/otherrods/2024-12-11Z00:41:48--irods-testing-zzdtv1n3' and DATA_NAME = 'test_modifying_restricted_columns'",
-        "select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER  'root;mid;leaf'",
-        "select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER  'root;mid;leaf1' || like 'root;mid;leaf1'",
-        "select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER == 'root;mid;leaf'",
-        "select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER == 'root;mid;leaf1' || like 'root;mid;leaf1'",
-        "select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER lik 'root;mid;leaf'",
-        "select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER lik 'root;mid;leaf1' || like 'root;mid;leaf1'",
-        "select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER like not like 'root;mid;leaf'",
-        "select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER like not like 'root;mid;leaf1' || like 'root;mid;leaf1'",
-        "select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER not 'root;mid;leaf'",
-        "select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER not 'root;mid;leaf1' || like 'root;mid;leaf1'",
-        "select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER not lik 'root;mid;leaf'",
-        "select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER not lik 'root;mid;leaf1' || like 'root;mid;leaf1'",
-        "select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER not like like 'root;mid;leaf'",
-        "select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER not like like 'root;mid;leaf1' || like 'root;mid;leaf1'",
-        "select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER not not like 'root;mid;leaf'",
-        "select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER not not like 'root;mid;leaf1' || like 'root;mid;leaf1'",
-        "select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER notlike 'root;mid;leaf'",
-        "select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER notlike 'root;mid;leaf1' || like 'root;mid;leaf1'",
-        "select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER ot like 'root;mid;leaf'",
-        "select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER ot like 'root;mid;leaf1' || like 'root;mid;leaf1'"
+    // clang-format off
+    const std::vector<std::pair<const char*, int>> invalid_queries{
+        {"bad formatting", INPUT_ARG_NOT_WELL_FORMED_ERR},
+        {"select DATA_RESC_GROUP_NAME where COLL_NAME = '/tempZone/home/otherrods/2024-12-11Z00:41:48--irods-testing-zzdtv1n3' and DATA_NAME = 'test_modifying_restricted_columns'", NO_COLUMN_NAME_FOUND},
+        {"select bad_aggregate_func(COLL_NAME)", INVALID_OPERATION},
+        {"select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER  'root;mid;leaf'", INPUT_ARG_NOT_WELL_FORMED_ERR},
+        {"select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER  'root;mid;leaf1' || like 'root;mid;leaf1'", INPUT_ARG_NOT_WELL_FORMED_ERR},
+        {"select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER == 'root;mid;leaf'", INPUT_ARG_NOT_WELL_FORMED_ERR},
+        {"select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER == 'root;mid;leaf1' || like 'root;mid;leaf1'", INPUT_ARG_NOT_WELL_FORMED_ERR},
+        {"select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER lik 'root;mid;leaf'", INPUT_ARG_NOT_WELL_FORMED_ERR},
+        {"select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER lik 'root;mid;leaf1' || like 'root;mid;leaf1'", INPUT_ARG_NOT_WELL_FORMED_ERR},
+        {"select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER like not like 'root;mid;leaf'", INPUT_ARG_NOT_WELL_FORMED_ERR},
+        {"select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER like not like 'root;mid;leaf1' || like 'root;mid;leaf1'", INPUT_ARG_NOT_WELL_FORMED_ERR},
+        {"select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER not 'root;mid;leaf'", INPUT_ARG_NOT_WELL_FORMED_ERR},
+        {"select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER not 'root;mid;leaf1' || like 'root;mid;leaf1'", INPUT_ARG_NOT_WELL_FORMED_ERR},
+        {"select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER not lik 'root;mid;leaf'", INPUT_ARG_NOT_WELL_FORMED_ERR},
+        {"select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER not lik 'root;mid;leaf1' || like 'root;mid;leaf1'", INPUT_ARG_NOT_WELL_FORMED_ERR},
+        {"select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER not like like 'root;mid;leaf'", INPUT_ARG_NOT_WELL_FORMED_ERR},
+        {"select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER not like like 'root;mid;leaf1' || like 'root;mid;leaf1'", INPUT_ARG_NOT_WELL_FORMED_ERR},
+        {"select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER not not like 'root;mid;leaf'", INPUT_ARG_NOT_WELL_FORMED_ERR},
+        {"select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER not not like 'root;mid;leaf1' || like 'root;mid;leaf1'", INPUT_ARG_NOT_WELL_FORMED_ERR},
+        {"select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER notlike 'root;mid;leaf'", INPUT_ARG_NOT_WELL_FORMED_ERR},
+        {"select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER notlike 'root;mid;leaf1' || like 'root;mid;leaf1'", INPUT_ARG_NOT_WELL_FORMED_ERR},
+        {"select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER ot like 'root;mid;leaf'", INPUT_ARG_NOT_WELL_FORMED_ERR},
+        {"select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER ot like 'root;mid;leaf1' || like 'root;mid;leaf1'", INPUT_ARG_NOT_WELL_FORMED_ERR}
     };
+    // clang-format on
 
     std::size_t iteration = 0;
     std::string query;
     genQueryInp_t input{};
 
-    for (auto&& query : invalid_queries) {
+    for (auto&& [query, ec] : invalid_queries) {
         INFO(fmt::format("Query {} = [{}]", iteration++, query))
-        irods::at_scope_exit_unsafe clear_input_structs{[&input] { clearGenQueryInp(&input); }};
-        CHECK(parse_genquery1_string(query, &input) < 0);
+        INFO(fmt::format("Expected error code = [{}]", ec))
+        irods::at_scope_exit_unsafe clear_input_struct{[&input] { clearGenQueryInp(&input); }};
+        CHECK(parse_genquery1_string(query, &input) == ec);
     }
 }
