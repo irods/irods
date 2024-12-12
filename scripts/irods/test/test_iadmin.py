@@ -1690,6 +1690,138 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         ec, _, _ = self.admin.assert_icommand(['iadmin', 'nonexistentcommand'], 'STDERR');
         self.assertNotEqual(ec, 0)
 
+    def test_iadmin_rmuser_removes_associated_acls__issue_7778(self):
+        test_user_name = "test_user_issue_7778"
+        test_group_name = "test_group_issue_7778"
+        test_collection_name = "test_collection_issue_7778"
+        test_dataobj_name = "test_data_object_issue_7778"
+        try:
+            self.admin.assert_icommand(["imkdir", test_collection_name])
+            self.admin.assert_icommand(["itouch", test_dataobj_name])
+            self.admin.assert_icommand(["iadmin", "mkgroup", test_group_name])
+            self.admin.assert_icommand(["iadmin", "mkuser", test_user_name, "rodsuser"])
+            self.admin.assert_icommand(
+                ["iadmin", "atg", test_group_name, test_user_name]
+            )
+            self.admin.assert_icommand(
+                ["ichmod", "read_object", test_group_name, test_collection_name]
+            )
+            self.admin.assert_icommand(
+                ["ichmod", "modify_object", test_user_name, test_collection_name]
+            )
+            self.admin.assert_icommand(
+                ["ichmod", "read_object", test_group_name, test_dataobj_name]
+            )
+            self.admin.assert_icommand(
+                ["ichmod", "modify_object", test_user_name, test_dataobj_name]
+            )
+
+            # Collect IDs of user and group
+            _, out, _ = self.admin.assert_icommand(
+                [
+                    "iquest",
+                    "%s",
+                    "SELECT USER_ID WHERE USER_NAME = '%s' || = '%s'"
+                    % (test_user_name, test_group_name),
+                ],
+                "STDOUT_MULTILINE",
+                r"^[0-9]+$",
+                use_regex=True,
+            )
+
+            # Create iquest query string for the IDs-- we don't care about order, we just want both
+            query_string = "= '%s' || = '%s'" % tuple(out.strip().split('\n'))
+
+            # Should see the permissions as expected
+            self.admin.assert_icommand(
+                [
+                    "iquest",
+                    "SELECT COLL_ACCESS_USER_ID, COLL_ACCESS_NAME WHERE COLL_NAME = '%s' AND COLL_ACCESS_USER_ID %s"
+                    % (
+                        os.path.join(
+                            self.admin.session_collection, test_collection_name
+                        ),
+                        query_string,
+                    ),
+                ],
+                "STDOUT",
+                ["COLL_ACCESS_NAME = read_object", "COLL_ACCESS_NAME = modify_object"],
+            )
+            # As above, but for data objects
+            self.admin.assert_icommand(
+                [
+                    "iquest",
+                    "SELECT DATA_ACCESS_USER_ID, DATA_ACCESS_NAME WHERE DATA_NAME = '%s' AND COLL_NAME = '%s' AND DATA_ACCESS_USER_ID %s"
+                    % (test_dataobj_name, self.admin.session_collection, query_string),
+                ],
+                "STDOUT",
+                ["DATA_ACCESS_NAME = read_object", "DATA_ACCESS_NAME = modify_object"],
+            )
+
+            self.admin.assert_icommand(["iadmin", "rmuser", test_user_name])
+
+            # Should only see read_object, since that was the perm given to the group
+            _, out, _ = self.admin.assert_icommand(
+                [
+                    "iquest",
+                    "SELECT COLL_ACCESS_USER_ID, COLL_ACCESS_NAME WHERE COLL_NAME = '%s' AND COLL_ACCESS_USER_ID %s"
+                    % (
+                        os.path.join(
+                            self.admin.session_collection, test_collection_name
+                        ),
+                        query_string,
+                    ),
+                ],
+                "STDOUT",
+                ["COLL_ACCESS_NAME = read_object"],
+            )
+            self.assertNotIn("COLL_ACCESS_NAME = modify_object", out)
+
+            # As above, but for data objects
+            _, out, _ = self.admin.assert_icommand(
+                [
+                    "iquest",
+                    "SELECT DATA_ACCESS_USER_ID, DATA_ACCESS_NAME WHERE DATA_NAME = '%s' AND COLL_NAME = '%s' AND DATA_ACCESS_USER_ID %s"
+                    % (test_dataobj_name, self.admin.session_collection, query_string),
+                ],
+                "STDOUT",
+                ["DATA_ACCESS_NAME = read_object"],
+            )
+            self.assertNotIn("DATA_ACCESS_NAME = modify_object", out)
+
+            self.admin.assert_icommand(["iadmin", "rmgroup", test_group_name])
+
+            # Perms should vanish after deletion of associated group
+            self.admin.assert_icommand(
+                [
+                    "iquest",
+                    "SELECT COLL_ACCESS_USER_ID, COLL_ACCESS_NAME WHERE COLL_NAME = '%s' AND COLL_ACCESS_USER_ID %s"
+                    % (
+                        os.path.join(
+                            self.admin.session_collection, test_collection_name
+                        ),
+                        query_string,
+                    ),
+                ],
+                "STDOUT_SINGLELINE",
+                "CAT_NO_ROWS_FOUND: Nothing was found matching your query",
+            )
+
+            # As above, but for data objects
+            self.admin.assert_icommand(
+                [
+                    "iquest",
+                    "SELECT DATA_ACCESS_USER_ID, DATA_ACCESS_NAME WHERE DATA_NAME = '%s' AND COLL_NAME = '%s' AND DATA_ACCESS_USER_ID %s"
+                    % (test_dataobj_name, self.admin.session_collection, query_string),
+                ],
+                "STDOUT_SINGLELINE",
+                "CAT_NO_ROWS_FOUND: Nothing was found matching your query",
+            )
+        finally:
+            self.admin.run_icommand(["iadmin", "rmuser", test_user_name])
+            self.admin.run_icommand(["iadmin", "rmgroup", test_group_name])
+            self.admin.run_icommand(["irmdir", test_collection_name])
+            self.admin.run_icommand(["irm", "-f", test_dataobj_name])
 
 class Test_Iadmin_Resources(resource_suite.ResourceBase, unittest.TestCase):
 
