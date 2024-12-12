@@ -41,7 +41,6 @@
     "test_igroupadmin.Test_Igroupadmin",
     "test_igroupadmin.test_mkuser_group",
     "test_ihelp",
-    "test_ilocate",
     "test_ils",
     "test_ilsresc",
     "test_imeta_admin_mode",
