@@ -150,6 +150,14 @@ class Test_Iquest(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iquest \"%s %s\" \"select COLL_NAME where COLL_NAME like '%home%'\"",
                                    'STDERR_SINGLELINE', 'boost::too_few_args: format-string referred to more arguments than were passed')
 
+    def test_iquest_does_not_fail_to_find_data_objects_with_SQL_keyword_names_select_and_where__issue_7174(self):
+        for data_object in ['selected_file', 'where_file', 'select.txt', 'where.txt']:
+            with self.subTest(f'Data object name: [{data_object}]'):
+                self.admin.assert_icommand(['itouch', data_object])
+                self.admin.assert_icommand(['ils', data_object], 'STDOUT', [data_object])
+                expected_output = ['DATA_NAME = ' + data_object]
+                self.admin.assert_icommand(['iquest', f"SELECT DATA_NAME, DATA_CREATE_TIME WHERE DATA_NAME = '{data_object}'"], 'STDOUT', expected_output)
+                self.admin.assert_icommand(['iquest', f"SELECT DATA_NAME, DATA_CREATE_TIME WHERE DATA_NAME like '%{data_object}%'"], 'STDOUT', expected_output)
 
 class test_iquest_with_data_resc_hier(unittest.TestCase):
     @classmethod

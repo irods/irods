@@ -13,11 +13,12 @@ else:
 from . import session
 from .. import test
 
-class Test_Itouch(session.make_sessions_mixin([('otherrods', 'rods')], []), unittest.TestCase):
+class Test_Itouch(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
 
     def setUp(self):
         super(Test_Itouch, self).setUp()
         self.admin = self.admin_sessions[0]
+        self.user = self.user_sessions[0]
 
     def tearDown(self):
         super(Test_Itouch, self).tearDown()
@@ -261,6 +262,12 @@ class Test_Itouch(session.make_sessions_mixin([('otherrods', 'rods')], []), unit
             self.admin.run_icommand(['iadmin', 'rmresc', resc])
             self.admin.run_icommand(['iadmin', 'rmresc', pt])
 
+    def test_itouch_does_not_return_SYS_NO_GOOD_REPLICA_when_new_data_object_name_contains_single_quote__issue_7169_7972(self):
+        for data_object in ["just testin'", "test'file"]:
+            with self.subTest(f'Data object name: [{data_object}]'):
+                self.user.assert_icommand(['itouch', data_object])
+                self.user.assert_icommand(['ils', data_object], 'STDOUT', [data_object])
+
     def get_replica_mtime(self, path, replica_number):
         collection = os.path.dirname(path)
         if len(collection) == 0:
@@ -284,4 +291,3 @@ class Test_Itouch(session.make_sessions_mixin([('otherrods', 'rods')], []), unit
 
     def create_resource_pt(self, resource_name):
         self.admin.assert_icommand(['iadmin', 'mkresc', resource_name, 'passthru'], 'STDOUT', [resource_name])
-
