@@ -99,6 +99,7 @@ API_NUMBER(OPEN_COLLECTION_AN,                      678)
 API_NUMBER(RM_COLL_AN,                              679)
 API_NUMBER(MOD_COLL_AN,                             680)
 API_NUMBER(COLL_CREATE_AN,                          681)
+// DEPRECATED: rcDataObjUnlock is deprecated. Logical locking now manages access to data objects.
 API_NUMBER(DATA_OBJ_UNLOCK_AN,                      682)
 API_NUMBER(REG_COLL_AN,                             683)
 API_NUMBER(PHY_BUNDLE_COLL_AN,                      684)
@@ -116,6 +117,7 @@ API_NUMBER(DATA_OBJ_REPL_AN,                        695)
 API_NUMBER(DATA_OBJ_COPY_AN,                        696)
 API_NUMBER(DATA_OBJ_PHYMV_AN,                       697)
 API_NUMBER(DATA_OBJ_FSYNC_AN,                       698)
+// DEPRECATED: rcDataObjLock is deprecated. Logical locking now manages access to data objects.
 API_NUMBER(DATA_OBJ_LOCK_AN,                        699) // JMC - backport 4599
 
 /* 700 - 799 - Metadata API calls */

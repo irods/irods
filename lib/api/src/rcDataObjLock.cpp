@@ -57,6 +57,8 @@
  * \pre none
  * \post none
  * \sa none
+ *
+ * \deprecated Deprecated in 4.3.4. Logical locking now manages access to data objects.
 **/
 
 int

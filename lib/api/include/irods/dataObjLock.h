@@ -29,10 +29,12 @@
 #ifdef __cplusplus
 extern "C"
 #endif
+__attribute__((deprecated("Logical locking now manages access to data objects.")))
 int rcDataObjLock( rcComm_t *conn, dataObjInp_t *dataObjInp );
 #ifdef __cplusplus
 extern "C"
 #endif
+__attribute__((deprecated("Logical locking now manages access to data objects.")))
 int rcDataObjUnlock( rcComm_t *conn, dataObjInp_t *dataObjInp );
 
 
