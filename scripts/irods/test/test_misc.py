@@ -458,3 +458,22 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "skip for topology testing")
     def test_server_side_delay_rule_locking_API__issue_8023(self):
         self.admin.assert_icommand(['irule', '-r', 'irods_rule_engine_plugin-irods_rule_language-instance', 'msi_test_delay_rule_locking_api', 'null', 'ruleExecOut'])
+
+    def test_logical_path_including_the_AND_keyword_SPACES_and_a_SINGLE_QUOTATION_MARK_does_not_result_in_an_error__issue_8033(self):
+        coll_name = 'colA and colB'
+        self.admin.assert_icommand(['imkdir', coll_name])
+        self.admin.assert_icommand(['ils', coll_name], 'STDOUT', [os.path.join(self.admin.session_collection, coll_name)])
+
+        data_object = f"{coll_name}/myfile'"
+        self.admin.assert_icommand(['itouch', data_object])
+        self.admin.assert_icommand(['ils', data_object], 'STDOUT', [os.path.join(self.admin.session_collection, data_object)])
+
+        filename = "myfile' name and id"
+        try:
+            lib.make_file(filename, 1)
+            self.admin.assert_icommand(['iput', filename])
+            self.admin.assert_icommand(['ils', filename], 'STDOUT', [os.path.join(self.admin.session_collection, filename)])
+
+        finally:
+            if os.path.exists(filename):
+                os.unlink(filename)

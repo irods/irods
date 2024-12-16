@@ -152,3 +152,9 @@ class Test_Ils(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['ichmod', 'read', 'public', 'foo'])
         self.admin.assert_icommand(['ils', '-A', 'foo'], 'STDOUT', [' g:public#{0}:read_object'.format(self.admin.zone_name)])
 
+    def test_ils_does_not_produce_a_cpp_exception_when_collection_name_contains_apostrophes__issue_5992(self):
+        coll_name = "a'b and d"
+        self.admin.assert_icommand(['imkdir', coll_name])
+        expected_output = [os.path.join(self.admin.session_collection, coll_name)]
+        self.admin.assert_icommand(['ils'], 'STDOUT', expected_output)
+        self.admin.assert_icommand(['ils', coll_name], 'STDOUT', expected_output)

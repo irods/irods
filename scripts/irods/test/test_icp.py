@@ -217,6 +217,13 @@ class Test_Icp(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
                 self.user.assert_icommand(['irm', '-rf', source_collection_path])
                 self.user.assert_icommand(['imkdir', '-p', source_collection_path])
 
+    def test_icp_does_not_break_when_data_object_name_contains_certain_character_sequence__issue_4983(self):
+        data_object = "' and '"
+        self.user.assert_icommand(['itouch', data_object])
+        self.user.assert_icommand(['ils', data_object], 'STDOUT', [data_object])
+        new_data_object = 'issue_4983'
+        self.user.assert_icommand(['icp', data_object, new_data_object])
+        self.user.assert_icommand(['ils', new_data_object], 'STDOUT', [new_data_object])
 
 class test_overwriting(unittest.TestCase):
     @classmethod
