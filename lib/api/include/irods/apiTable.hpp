@@ -872,6 +872,8 @@ static irods::apidef_t client_api_table_inp[] = {
         "api_get_host_for_get", clearDataObjInp, irods::clearOutStruct_noop,
         (funcPtr)CALL_DATAOBJINP_CHAROUT
     },
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     {
         DATA_OBJ_LOCK_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
         "DataObjInp_PI", 0, NULL, 0,
@@ -886,6 +888,7 @@ static irods::apidef_t client_api_table_inp[] = {
         "api_data_obj_unlock", clearDataObjInp, irods::clearOutStruct_noop,
         (funcPtr)CALL_DATAOBJINP
     },
+#pragma GCC diagnostic pop
     {
         SUB_STRUCT_FILE_CREATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
         "SubFile_PI", 0, NULL, 0,
