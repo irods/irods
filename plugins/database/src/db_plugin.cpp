@@ -11093,14 +11093,12 @@ irods::error db_move_object_op(
     char parentTargetCollName[MAX_NAME_LEN] = "";
     char newCollName[MAX_NAME_LEN] = "";
     int pLen, ocLen;
-    int i, OK, len;
+    int i, OK;
     char *cp;
     char objIdString[MAX_NAME_LEN];
     char collIdString[MAX_NAME_LEN];
     char nameTmp[MAX_NAME_LEN];
-    char ocLenStr[MAX_NAME_LEN];
     char collNameSlash[MAX_NAME_LEN];
-    char collNameSlashLen[20];
 
     if ( logSQL != 0 ) {
         log_sql::debug("chlMoveObject");
@@ -11370,10 +11368,7 @@ irods::error db_move_object_op(
            part, endCollName string, and then (if any for each row) the
            tailing part of the name.
            (In the sql substr function, the index for sql is 1 origin.) */
-        snprintf( ocLenStr, MAX_NAME_LEN, "%d", ocLen + 1 );
         snprintf( collNameSlash, MAX_NAME_LEN, "%s/", oldCollName );
-        len = strlen( collNameSlash );
-        snprintf( collNameSlashLen, 10, "%d", len );
         cllBindVars[cllBindVarCount++] = newCollName;
         cllBindVars[cllBindVarCount++] = oldCollName;
         cllBindVars[cllBindVarCount++] = newCollName;
