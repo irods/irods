@@ -102,7 +102,6 @@ namespace irods
         // We have to reimplement boost::asio::local::datagram_protocol to add SOCK_CLOEXEC
         class sm_socket_protocol
         {
-
           public:
             int type() const noexcept
             {
@@ -123,9 +122,9 @@ namespace irods
             typedef boost::asio::basic_datagram_socket<sm_socket_protocol> socket;
         };
 
-        static inline irods::error notify_service_manager_impl(const char *_msg,
+        static inline irods::error notify_service_manager_impl(const char* _msg,
                                                                const std::size_t _msg_length,
-                                                               const char *_sm_socket_path)
+                                                               const char* _sm_socket_path)
         {
             if (!_msg) {
                 return ERROR(SYS_INTERNAL_NULL_INPUT_ERR, "_msg is not a valid pointer");
