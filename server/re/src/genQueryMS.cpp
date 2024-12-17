@@ -52,7 +52,10 @@ int msiExecStrCondQuery( msParam_t* queryParam, msParam_t* genQueryOutParam, rul
     strcpy( query, ( const char* )queryParam->inOutStruct );
 
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     i = fillGenQueryInpFromStrCond( query, &genQueryInp );
+#pragma GCC diagnostic pop
     free( query );
     if ( i < 0 ) {
         return i;
@@ -533,7 +536,10 @@ msiMakeGenQuery( msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQue
     /* set up GenQueryInp */
     genQueryInp->maxRows = MAX_SQL_ROWS;
     genQueryInp->continueInx = 0;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     rei->status = fillGenQueryInpFromStrCond( query, genQueryInp );
+#pragma GCC diagnostic pop
     if ( rei->status < 0 ) {
         rodsLog( LOG_ERROR, "msiMakeGenQuery: fillGenQueryInpFromStrCond failed." );
         freeGenQueryInp( &genQueryInp );
