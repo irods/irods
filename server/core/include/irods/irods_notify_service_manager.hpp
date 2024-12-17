@@ -32,7 +32,7 @@ namespace irods
 
 #ifdef IRODS_USE_SD_NOTIFY
 
-#include <systemd/sd-daemon.h>
+#  include <systemd/sd-daemon.h>
 
 namespace irods
 {
@@ -59,7 +59,7 @@ namespace irods
     {
         // early check to avoid unneeded fmt evaluation
         const char* sm_socket_path = std::getenv("NOTIFY_SOCKET");
-        if (!sm_socket_path) {
+        if (sm_socket_path == nullptr) {
             // if NOTIFY_SOCKET is not set, we're done
             return SUCCESS();
         }
@@ -75,7 +75,7 @@ namespace irods
     {
         // early check to avoid unneeded fmt evaluation
         const char* sm_socket_path = std::getenv("NOTIFY_SOCKET");
-        if (!sm_socket_path) {
+        if (sm_socket_path == nullptr) {
             // if NOTIFY_SOCKET is not set, we're done
             return SUCCESS();
         }
@@ -103,36 +103,40 @@ namespace irods
         class sm_socket_protocol
         {
           public:
-            int type() const noexcept
+            // NOLINTNEXTLINE(modernize-use-nodiscard,readability-convert-member-functions-to-static)
+            inline int type() const noexcept
             {
                 return (SOCK_DGRAM | SOCK_CLOEXEC);
             }
 
-            int protocol() const noexcept
+            // NOLINTNEXTLINE(modernize-use-nodiscard,readability-convert-member-functions-to-static)
+            inline int protocol() const noexcept
             {
                 return 0;
             }
 
-            int family() const noexcept
+            // NOLINTNEXTLINE(modernize-use-nodiscard,readability-convert-member-functions-to-static)
+            inline int family() const noexcept
             {
                 return AF_UNIX;
             }
 
-            typedef boost::asio::local::basic_endpoint<sm_socket_protocol> endpoint;
-            typedef boost::asio::basic_datagram_socket<sm_socket_protocol> socket;
+            using endpoint = boost::asio::local::basic_endpoint<sm_socket_protocol>;
+            using socket = boost::asio::basic_datagram_socket<sm_socket_protocol>;
         };
 
         static inline irods::error notify_service_manager_impl(const char* _msg,
                                                                const std::size_t _msg_length,
                                                                const char* _sm_socket_path)
         {
-            if (!_msg) {
+            if (_msg == nullptr) {
                 return ERROR(SYS_INTERNAL_NULL_INPUT_ERR, "_msg is not a valid pointer");
             }
             if (_msg_length == 0) {
                 return ERROR(SYS_INTERNAL_NULL_INPUT_ERR, "_msg is empty");
             }
 
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             if (_sm_socket_path[0] != '/' && _sm_socket_path[0] != '@') {
                 // Only AF_UNIX is supported, with path or abstract sockets
                 return ERROR(SYS_NOT_SUPPORTED, "Socket in NOTIFY_SOCKET not supported");
@@ -155,7 +159,7 @@ namespace irods
     static inline irods::error notify_service_manager(const std::string& _msg)
     {
         const char* sm_socket_path = std::getenv("NOTIFY_SOCKET");
-        if (!sm_socket_path) {
+        if (sm_socket_path == nullptr) {
             // if NOTIFY_SOCKET is not set, we're done
             return SUCCESS();
         }
@@ -167,7 +171,7 @@ namespace irods
     static inline irods::error notify_service_manager(const fmt::format_string<Args...>& _format, Args&&... _args)
     {
         const char* sm_socket_path = std::getenv("NOTIFY_SOCKET");
-        if (!sm_socket_path) {
+        if (sm_socket_path == nullptr) {
             // if NOTIFY_SOCKET is not set, we're done
             return SUCCESS();
         }
@@ -183,7 +187,7 @@ namespace irods
     static inline irods::error notify_service_manager(const CompiledFormat& _format, Args&&... _args)
     {
         const char* sm_socket_path = std::getenv("NOTIFY_SOCKET");
-        if (!sm_socket_path) {
+        if (sm_socket_path == nullptr) {
             // if NOTIFY_SOCKET is not set, we're done
             return SUCCESS();
         }
