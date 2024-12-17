@@ -167,9 +167,12 @@ namespace irods
                     addKeyVal(&gen_input_.condInput, ZONE_KW, _zone_hint.c_str());
                 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
                 const int fill_err = fillGenQueryInpFromStrCond(
                                          const_cast<char*>(_query_string.c_str()),
                                          &gen_input_);
+#pragma GCC diagnostic pop
                 if(fill_err < 0) {
                     THROW(fill_err, fmt::format("query fill failed for [{}]", _query_string));
                 }

@@ -275,7 +275,7 @@ int getNextRepeatTime(char* currTime, char* delayStr, char* nextTime);
 
 int printError(rcComm_t* Conn, int status, char* routineName);
 
-int fillGenQueryInpFromStrCond(char* str, genQueryInp_t* genQueryInp);
+__attribute__((deprecated("Use GenQuery2 API."))) int fillGenQueryInpFromStrCond(char* str, genQueryInp_t* genQueryInp);
 
 int printGenQueryOut(FILE* fd, char* format, char* hint, genQueryOut_t* genQueryOut);
 
