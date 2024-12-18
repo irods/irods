@@ -8,7 +8,7 @@ Findsystemd
 
 cmake_policy(PUSH)
 
-# consistent behavior of cache varaibles for find_* functions
+# consistent behavior of cache variables for find_* functions
 if (POLICY CMP0125)
 	cmake_policy(SET CMP0125 NEW)
 endif()
