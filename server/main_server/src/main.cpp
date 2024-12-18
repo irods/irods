@@ -9,6 +9,7 @@
 #include "irods/irods_default_paths.hpp"
 #include "irods/irods_environment_properties.hpp"
 #include "irods/irods_logger.hpp"
+#include "irods/irods_notify_service_manager.hpp"
 #include "irods/irods_server_api_table.hpp"
 #include "irods/irods_server_properties.hpp"
 #include "irods/irods_signal.hpp"
@@ -30,6 +31,7 @@
 #include <boost/stacktrace.hpp>
 
 #include <fmt/format.h>
+#include <fmt/compile.h>
 #include <nlohmann/json.hpp>
 
 #include <jsoncons/json.hpp>
@@ -284,6 +286,8 @@ auto main(int _argc, char* _argv[]) -> int
             return 1;
         }
 
+        irods::notify_service_manager("READY=1");
+
         // Enter parent process main loop.
         //
         // This process should never introduce threads. Everything it cares about must be handled
@@ -493,16 +497,24 @@ Signals:
         return false;
     } // validate_configuration
 
+    inline auto daemonize_fork() -> void
+    {
+        pid_t child_pid = fork();
+
+        if (child_pid > 0) {
+            irods::notify_service_manager(FMT_COMPILE("MAINPID={}"), child_pid);
+            _exit(0);
+        }
+
+        if (child_pid < 0) {
+            _exit(1);
+        }
+    }
+
     auto daemonize() -> void
     {
         // Become a background process.
-        // clang-format off
-        switch (fork()) {
-            case -1: _exit(1);
-            case  0: break;
-            default: _exit(0);
-        }
-        // clang-format on
+        daemonize_fork();
 
         // Become session leader.
         if (setsid() == -1) {
@@ -510,13 +522,7 @@ Signals:
         }
 
         // Make sure we aren't the session leader.
-        // clang-format off
-        switch (fork()) {
-            case -1: _exit(1);
-            case  0: break;
-            default: _exit(0);
-        }
-        // clang-format on
+        daemonize_fork();
 
         umask(0);
 
@@ -819,6 +825,8 @@ Signals:
 
     auto handle_shutdown() -> void
     {
+        irods::notify_service_manager("STOPPING=1");
+
         kill(g_pid_af, SIGTERM);
 
         if (g_pid_ds > 0) {
@@ -836,6 +844,8 @@ Signals:
 
     auto handle_shutdown_graceful() -> void
     {
+        irods::notify_service_manager("STOPPING=1");
+
         kill(g_pid_af, SIGQUIT);
 
         if (g_pid_ds > 0) {
@@ -973,10 +983,13 @@ Signals:
     {
         irods::at_scope_exit reset_reload_flag{[] { g_reload_config = 0; }};
 
+        irods::notify_service_manager(FMT_COMPILE("RELOADING=1\nMONOTONIC_USEC={}"), irods::get_monotonic_usec());
+
         log_server::info("{}: Received configuration reload instruction. Reloading configuration.", __func__);
 
         if (!validate_configuration()) {
             log_server::error("{}: Invalid configuration. Server will continue with existing configuration.", __func__);
+            irods::notify_service_manager("READY=1\nSTATUS=Reload failed due to invalid configuration");
             return;
         }
 
@@ -990,11 +1003,13 @@ Signals:
             log_server::error("{}: Reload error: {}. Server will continue with existing configuration.",
                               __func__,
                               e.client_display_what());
+            irods::notify_service_manager("READY=1\nSTATUS=Reload failed");
             return;
         }
         catch (const std::exception& e) {
             log_server::error(
                 "{}: Reload error: {}. Server will continue with existing configuration.", __func__, e.what());
+            irods::notify_service_manager("READY=1\nSTATUS=Reload failed");
             return;
         }
 
@@ -1007,12 +1022,14 @@ Signals:
                               __func__,
                               e.client_display_what());
             irods::server_properties::instance().set_configuration(std::move(previous_server_config));
+            irods::notify_service_manager("READY=1\nSTATUS=Reload failed");
             return;
         }
         catch (const std::exception& e) {
             log_server::error(
                 "{}: Reload error: {}. Server will continue with existing configuration.", __func__, e.what());
             irods::server_properties::instance().set_configuration(std::move(previous_server_config));
+            irods::notify_service_manager("READY=1\nSTATUS=Reload failed");
             return;
         }
 
@@ -1056,10 +1073,12 @@ Signals:
         }
         catch (const irods::exception& e) {
             log_server::error("{}: Reload error: {}", __func__, e.client_display_what());
+            irods::notify_service_manager("READY=1\nSTATUS=Reload error");
             return;
         }
         catch (const std::exception& e) {
             log_server::error("{}: Reload error: {}", __func__, e.what());
+            irods::notify_service_manager("READY=1\nSTATUS=Reload error");
             return;
         }
 
@@ -1114,6 +1133,8 @@ Signals:
 
         // We do not need to manually launch the delay server because the delay server migration
         // logic will handle that for us.
+
+        irods::notify_service_manager("READY=1\nSTATUS=Configuration reloaded");
     } // handle_configuration_reload
 
     auto launch_delay_server(bool _write_to_stdout, bool _enable_test_mode) -> void
