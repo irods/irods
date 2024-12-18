@@ -23,6 +23,7 @@ add_library(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_database_plugin.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_file_object.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_get_l1desc.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_notify_service_manager.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_report_plugins_in_json.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_mysql_object.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_oracle_object.cpp"
@@ -107,6 +108,11 @@ target_compile_definitions(
 )
 set_target_properties(irods_server_core PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE TRUE)
 set_target_properties(irods_server_core PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+
+if (IRODS_USE_LIBSYSTEMD)
+	objects_link_libraries(irods_server_core PRIVATE systemd::libsystemd)
+  target_compile_definitions(irods_server_core PRIVATE IRODS_USE_LIBSYSTEMD)
+endif()
 
 install(
   FILES
