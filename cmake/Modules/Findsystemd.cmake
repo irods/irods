@@ -147,6 +147,8 @@ mark_as_advanced(FORCE SYSTEMD_LINK_OPTIONS)
 
 if (PC_LIBSYSTEMD_VERSION)
 	set(SYSTEMD_LIKELY_VERSION "${PC_LIBSYSTEMD_VERSION}")
+
+	# try to confirm that we're actually using the systemd pkgconf points us to
 	set(_systemd_pc_version_reasonably_certain FALSE)
 	if (SYSTEMD_INCLUDE_DIRS AND SYSTEMD_LIBRARIES)
 		_fsd_check_list_equivalence(SYSTEMD_INCLUDE_DIRS PC_LIBSYSTEMD_INCLUDE_DIRS _systemd_include_dirs_pc_equiv)
