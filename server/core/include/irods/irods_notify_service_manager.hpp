@@ -43,7 +43,6 @@ namespace irods
     template <typename... Args>
     static inline void notify_service_manager(const fmt::format_string<Args...>& _format, Args&&... _args)
     {
-        // early check to avoid unneeded fmt evaluation
         const char* sm_socket_path = std::getenv("NOTIFY_SOCKET");
         if (sm_socket_path == nullptr) {
             // if NOTIFY_SOCKET is not set, we're done
@@ -59,7 +58,6 @@ namespace irods
                  fmt::detail::is_compiled_format<CompiledFormat>::value
     static inline void notify_service_manager(const CompiledFormat& _format, Args&&... _args)
     {
-        // early check to avoid unneeded fmt evaluation
         const char* sm_socket_path = std::getenv("NOTIFY_SOCKET");
         if (sm_socket_path == nullptr) {
             // if NOTIFY_SOCKET is not set, we're done
