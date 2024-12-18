@@ -11380,7 +11380,7 @@ irods::error db_move_object_op(
             log_sql::debug("chlMoveObject SQL 13");
         }
         status =  cmlExecuteNoAnswerSql(
-                      "update R_COLL_MAIN set parent_coll_name = ? || substr(parent_coll_name, length(?)), coll_name = ? || substr(coll_name, length(?)) where substr(parent_coll_name, 1, length(?)) = ? or parent_coll_name = ?",
+                      "update R_COLL_MAIN set parent_coll_name = ? || substr(parent_coll_name, length(?) + 1), coll_name = ? || substr(coll_name, length(?) + 1) where substr(parent_coll_name, 1, length(?)) = ? or parent_coll_name = ?",
                       &icss );
         if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
             status = 0;
