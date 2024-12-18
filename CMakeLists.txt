@@ -238,6 +238,7 @@ find_package(OpenSSL REQUIRED COMPONENTS Crypto SSL)
 
 set(IRODS_USE_LIBSYSTEMD_DOCSTRING "Use libsystemd for service manager status communication")
 if (NOT DEFINED IRODS_USE_LIBSYSTEMD)
+	# if IRODS_USE_LIBSYSTEMD isn't set, check for systemd and set default value based on its presence.
 	find_package(systemd)
 	set(IRODS_USE_LIBSYSTEMD "${SYSTEMD_FOUND}" CACHE BOOL "${IRODS_USE_LIBSYSTEMD_DOCSTRING}")
 else()
