@@ -1,9 +1,7 @@
-#include "irods/irods_error.hpp"
-#include "irods/rodsErrorTable.h"
-
 #include <fmt/format.h>
 #include <fmt/compile.h>
 
+#include <cstddef>
 #include <cstdint>
 #include <ctime>
 #include <string>
@@ -28,175 +26,47 @@ namespace irods
         const std::uint64_t usec = (mt_s * 1000000) + (mt_ns / 1000);
         return usec;
     }
-} //namespace irods
 
-#ifdef IRODS_USE_SD_NOTIFY
+    void notify_service_manager(const std::size_t _msg_length, const char* _msg, const char* _socket_path);
 
-#  include <systemd/sd-daemon.h>
-
-namespace irods
-{
-
-    namespace
+    static inline void notify_service_manager(const std::string& _msg)
     {
-        static inline irods::error notify_service_manager_impl(const char* _msg)
-        {
-            int ret = sd_notify(0, _msg);
-            if (ret < 0) {
-                return ERROR(SYS_LIBRARY_ERROR + ret, "sd_notify error");
-            }
-            return SUCCESS();
+        const char* sm_socket_path = std::getenv("NOTIFY_SOCKET");
+        if (sm_socket_path == nullptr) {
+            // if NOTIFY_SOCKET is not set, we're done
+            return;
         }
-    } //namespace
 
-    static inline irods::error notify_service_manager(const std::string& _msg)
-    {
-        return notify_service_manager_impl(_msg.data());
+        notify_service_manager(_msg.size(), _msg.data(), sm_socket_path);
     }
 
     template <typename... Args>
-    static inline irods::error notify_service_manager(const fmt::format_string<Args...>& _format, Args&&... _args)
+    static inline void notify_service_manager(const fmt::format_string<Args...>& _format, Args&&... _args)
     {
         // early check to avoid unneeded fmt evaluation
         const char* sm_socket_path = std::getenv("NOTIFY_SOCKET");
         if (sm_socket_path == nullptr) {
             // if NOTIFY_SOCKET is not set, we're done
-            return SUCCESS();
+            return;
         }
 
         auto msg = fmt::format(_format, std::forward<Args>(_args)...);
-        return notify_service_manager_impl(msg.data());
+        notify_service_manager(msg.size(), msg.data(), sm_socket_path);
     }
 
     template <typename CompiledFormat, typename... Args>
         requires fmt::detail::is_compiled_string<CompiledFormat>::value ||
                  fmt::detail::is_compiled_format<CompiledFormat>::value
-    static inline irods::error notify_service_manager(const CompiledFormat& _format, Args&&... _args)
+    static inline void notify_service_manager(const CompiledFormat& _format, Args&&... _args)
     {
         // early check to avoid unneeded fmt evaluation
         const char* sm_socket_path = std::getenv("NOTIFY_SOCKET");
         if (sm_socket_path == nullptr) {
             // if NOTIFY_SOCKET is not set, we're done
-            return SUCCESS();
+            return;
         }
 
         auto msg = fmt::format(_format, std::forward<Args>(_args)...);
-        return notify_service_manager_impl(msg.data());
+        notify_service_manager(msg.size(), msg.data(), sm_socket_path);
     }
 } //namespace irods
-
-#else
-
-#include <cstdlib>
-#include <cstring>
-
-#include <sys/socket.h>
-#include <sys/un.h>
-
-#include <boost/asio.hpp>
-
-namespace irods
-{
-    namespace
-    {
-        // We have to reimplement boost::asio::local::datagram_protocol to add SOCK_CLOEXEC
-        class sm_socket_protocol
-        {
-          public:
-            // NOLINTNEXTLINE(modernize-use-nodiscard,readability-convert-member-functions-to-static)
-            inline int type() const noexcept
-            {
-                return (SOCK_DGRAM | SOCK_CLOEXEC);
-            }
-
-            // NOLINTNEXTLINE(modernize-use-nodiscard,readability-convert-member-functions-to-static)
-            inline int protocol() const noexcept
-            {
-                return 0;
-            }
-
-            // NOLINTNEXTLINE(modernize-use-nodiscard,readability-convert-member-functions-to-static)
-            inline int family() const noexcept
-            {
-                return AF_UNIX;
-            }
-
-            using endpoint = boost::asio::local::basic_endpoint<sm_socket_protocol>;
-            using socket = boost::asio::basic_datagram_socket<sm_socket_protocol>;
-        };
-
-        static inline irods::error notify_service_manager_impl(const char* _msg,
-                                                               const std::size_t _msg_length,
-                                                               const char* _sm_socket_path)
-        {
-            if (_msg == nullptr) {
-                return ERROR(SYS_INTERNAL_NULL_INPUT_ERR, "_msg is not a valid pointer");
-            }
-            if (_msg_length == 0) {
-                return ERROR(SYS_INTERNAL_NULL_INPUT_ERR, "_msg is empty");
-            }
-
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-            if (_sm_socket_path[0] != '/' && _sm_socket_path[0] != '@') {
-                // Only AF_UNIX is supported, with path or abstract sockets
-                return ERROR(SYS_NOT_SUPPORTED, "Socket in NOTIFY_SOCKET not supported");
-            }
-
-            boost::asio::io_context io_context;
-            const sm_socket_protocol::endpoint sm_socket_path(_sm_socket_path);
-            sm_socket_protocol::socket sm_socket(io_context);
-
-            sm_socket.open();
-            std::size_t written = sm_socket.send_to(boost::asio::buffer(_msg, _msg_length), sm_socket_path);
-            if (written < _msg_length) {
-                return ERROR(SYS_SOCK_WRITE_ERR, "could not write entire message to socket");
-            }
-
-            return SUCCESS();
-        }
-    } //namespace
-
-    static inline irods::error notify_service_manager(const std::string& _msg)
-    {
-        const char* sm_socket_path = std::getenv("NOTIFY_SOCKET");
-        if (sm_socket_path == nullptr) {
-            // if NOTIFY_SOCKET is not set, we're done
-            return SUCCESS();
-        }
-
-        return notify_service_manager_impl(_msg.data(), _msg.size(), sm_socket_path);
-    }
-
-    template <typename... Args>
-    static inline irods::error notify_service_manager(const fmt::format_string<Args...>& _format, Args&&... _args)
-    {
-        const char* sm_socket_path = std::getenv("NOTIFY_SOCKET");
-        if (sm_socket_path == nullptr) {
-            // if NOTIFY_SOCKET is not set, we're done
-            return SUCCESS();
-        }
-
-        auto msg = fmt::format(_format, std::forward<Args>(_args)...);
-
-        return notify_service_manager_impl(msg.data(), msg.size(), sm_socket_path);
-    }
-
-    template <typename CompiledFormat, typename... Args>
-        requires fmt::detail::is_compiled_string<CompiledFormat>::value ||
-                 fmt::detail::is_compiled_format<CompiledFormat>::value
-    static inline irods::error notify_service_manager(const CompiledFormat& _format, Args&&... _args)
-    {
-        const char* sm_socket_path = std::getenv("NOTIFY_SOCKET");
-        if (sm_socket_path == nullptr) {
-            // if NOTIFY_SOCKET is not set, we're done
-            return SUCCESS();
-        }
-
-        auto msg = fmt::format(_format, std::forward<Args>(_args)...);
-
-        return notify_service_manager_impl(msg.data(), msg.size(), sm_socket_path);
-    }
-
-} //namespace irods
-
-#endif
