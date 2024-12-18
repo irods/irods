@@ -1,8 +1,48 @@
 #[=======================================================================[.rst:
 Findsystemd
------------------
+-----------
 
+Find the systemd library (``libsystemd``)
 
+Imported targets
+^^^^^^^^^^^^^^^^
+
+This module defines the following :prop_tgt:`IMPORTED` targets:
+
+``systemd::libsystemd``
+  The systemd library, if found.
+
+Result and cache variables
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This module will set the following variables in your project:
+
+``SYSTEMD_FOUND``
+  True if libsystemd is found.
+``SYSTEMD_INCLUDE_DIRS``
+  Include directories for systemd headers. This is also a cache variable
+  that can be overridden.
+``SYSTEMD_LIBRARIES``
+  Libraries to link to libsystemd. This is also a cache variable that can
+  be overridden.
+``SYSTEMD_COMPILE_OPTIONS``
+  Compiler options for use when using libsystemd. This is also a cache
+  variable that can be overridden.
+``SYSTEMD_LINK_OPTIONS``
+  Linker options for use when using libsystemd. This is also a cache
+  variable that can be overridden.
+``SYSTEMD_LIKELY_VERSION``
+  The systemd version number supplied by pkg-config/pkgconf.
+
+This module *may* set the following variable in your project:
+
+``SYSTEMD_VERSION``
+  The systemd version number, confirmed to a reasonable degree of
+  certainty.
+
+While the CMake documentation recommends against caching the above
+variables, we do anyway to provide a clear means of manipulating the
+generated import target.
 
 #]=======================================================================]
 
@@ -122,22 +162,16 @@ if (PC_LIBSYSTEMD_VERSION)
 	endif()
 endif()
 
-if (NOT TARGET systemd::libsystemd)
+if (SYSTEMD_INCLUDE_DIRS AND SYSTEMD_LIBRARIES)
 	add_library(systemd::libsystemd INTERFACE IMPORTED)
-	if (SYSTEMD_INCLUDE_DIRS)
-		set_target_properties(
-			systemd::libsystemd
-			PROPERTIES
-			INTERFACE_INCLUDE_DIRECTORIES "${SYSTEMD_INCLUDE_DIRS}"
-		)
-	endif()
-	if (SYSTEMD_LIBRARIES)
-		set_target_properties(
-			systemd::libsystemd
-			PROPERTIES
-			INTERFACE_LINK_LIBRARIES "${SYSTEMD_LIBRARIES}"
-		)
-	endif()
+	set_target_properties(
+		systemd::libsystemd
+		PROPERTIES
+		INTERFACE_INCLUDE_DIRECTORIES "${SYSTEMD_INCLUDE_DIRS}"
+		INTERFACE_LINK_LIBRARIES "${SYSTEMD_LIBRARIES}"
+		INTERFACE_COMPILE_OPTIONS "${SYSTEMD_COMPILE_OPTIONS}"
+		INTERFACE_LINK_OPTIONS "${SYSTEMD_LINK_OPTIONS}"
+	)
 	if (SYSTEMD_VERSION)
 		set_target_properties(
 			systemd::libsystemd
@@ -145,12 +179,6 @@ if (NOT TARGET systemd::libsystemd)
 			VERSION "${SYSTEMD_VERSION}"
 		)
 	endif()
-	set_target_properties(
-		systemd::libsystemd
-		PROPERTIES
-		INTERFACE_COMPILE_OPTIONS "${SYSTEMD_COMPILE_OPTIONS}"
-		INTERFACE_LINK_OPTIONS "${SYSTEMD_LINK_OPTIONS}"
-	)
 endif()
 
 include(FindPackageHandleStandardArgs)
