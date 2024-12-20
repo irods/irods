@@ -1708,7 +1708,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         ec, _, _ = self.admin.assert_icommand(['iadmin', 'nonexistentcommand'], 'STDERR');
         self.assertNotEqual(ec, 0)
 
-    def test_iadmin_rmuser_removes_associated_data__issue_7778(self):
+    def test_iadmin_rmuser_removes_associated_acls__issue_7778(self):
         test_user_name = 'test_user_issue_7778'
         test_group_name = 'test_group_issue_7778'
         test_collection_name = 'test_collection_issue_7778'
@@ -1717,8 +1717,8 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             self.admin.assert_icommand(['iadmin', 'mkgroup', test_group_name])
             self.admin.assert_icommand(['iadmin', 'mkuser', test_user_name, 'rodsuser'])
             self.admin.assert_icommand(['iadmin', 'atg', test_group_name, test_user_name])
-            self.admin.assert_icommand(['ichmod', 'read', test_group_name, test_collection_name])
-            self.admin.assert_icommand(['ichmod', 'write', test_user_name, test_collection_name])
+            self.admin.assert_icommand(['ichmod', 'read_object', test_group_name, test_collection_name])
+            self.admin.assert_icommand(['ichmod', 'modify_object', test_user_name, test_collection_name])
 
             # Collect IDs of user and group
             _, out, _ = self.admin.assert_icommand(['iquest', '%s', "SELECT USER_ID WHERE USER_NAME = '%s' || = '%s'" % (test_user_name, test_group_name) ], 'STDOUT_MULTILINE', r'^[0-9]+$', use_regex=True)
