@@ -4518,10 +4518,8 @@ irods::error db_del_user_re_op(
     status = cmlExecuteNoAnswerSql("delete from R_OBJT_ACCESS where user_id=?", &icss);
 
     if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
-        char errMsg[MAX_NAME_LEN + 40];
         log_db::info("chlDelUserRE delete ACL failure {}", status);
-        snprintf(errMsg, sizeof errMsg, "Error removing ACLs");
-        addRErrorMsg(&_ctx.comm()->rError, 0, errMsg);
+        addRErrorMsg(&_ctx.comm()->rError, 0, "Error removing ACLs");
         _rollback("chlDelUserRE");
         return ERROR(status, "Error removing ACLs");
     }
