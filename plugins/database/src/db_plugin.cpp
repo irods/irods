@@ -4512,6 +4512,18 @@ irods::error db_del_user_re_op(
         return ERROR( status, "Error removing password entry" );
     }
 
+    // Remove any ACLs associated with the user
+    cllBindVars[cllBindVarCount++] = iValStr;
+
+    status = cmlExecuteNoAnswerSql("delete from R_OBJT_ACCESS where user_id=?", &icss);
+
+    if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
+        log_db::info("chlDelUserRE delete ACL failure {}", status);
+        addRErrorMsg(&_ctx.comm()->rError, 0, "Error removing ACLs");
+        _rollback("chlDelUserRE");
+        return ERROR(status, "Error removing ACLs");
+    }
+
     /* Remove both the special user_id = group_user_id entry and any
        other access entries for this user (or group) */
     cllBindVars[cllBindVarCount++] = iValStr;
