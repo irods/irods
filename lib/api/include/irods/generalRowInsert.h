@@ -22,6 +22,7 @@ typedef struct {
 #ifdef __cplusplus
 extern "C"
 #endif
-int rcGeneralRowInsert( rcComm_t *conn, generalRowInsertInp_t *generalRowInsertInp );
+    __attribute__((deprecated)) int
+    rcGeneralRowInsert(rcComm_t* conn, generalRowInsertInp_t* generalRowInsertInp);
 
 #endif

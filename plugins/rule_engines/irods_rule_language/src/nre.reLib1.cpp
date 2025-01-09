@@ -1047,7 +1047,10 @@ insertRulesIntoDBNew( char * baseName, RuleSet *ruleSet,
     generalRowInsertInp.arg1 = baseName;
     generalRowInsertInp.arg2 = myTime;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     rc1 = rsGeneralRowInsert( rei->rsComm, &generalRowInsertInp );
+#pragma GCC diagnostic pop
     if ( rc1 < 0 ) {
         endTransactionInp.arg0 = "rollback";
         rsEndTransaction( rei->rsComm, &endTransactionInp );
@@ -1144,7 +1147,10 @@ insertRulesIntoDBNew( char * baseName, RuleSet *ruleSet,
         generalRowInsertInp.arg8 = ruleIdStr;
         generalRowInsertInp.arg9 = myTime;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
         rc1 = rsGeneralRowInsert( rei->rsComm, &generalRowInsertInp );
+#pragma GCC diagnostic pop
         if ( rc1 < 0 ) {
             endTransactionInp.arg0 = "rollback";
             rsEndTransaction( rei->rsComm, &endTransactionInp );
@@ -1176,7 +1182,10 @@ insertRulesIntoDB( char * baseName, ruleStruct_t *coreRuleStruct,
     generalRowInsertInp.arg1 = baseName;
     generalRowInsertInp.arg2 = myTime;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     rc1 = rsGeneralRowInsert( rei->rsComm, &generalRowInsertInp );
+#pragma GCC diagnostic pop
     if ( rc1 < 0 ) {
         endTransactionInp.arg0 = "rollback";
         rsEndTransaction( rei->rsComm, &endTransactionInp );
@@ -1197,7 +1206,10 @@ insertRulesIntoDB( char * baseName, ruleStruct_t *coreRuleStruct,
         generalRowInsertInp.arg8 = ruleIdStr;
         generalRowInsertInp.arg9 = myTime;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
         rc1 = rsGeneralRowInsert( rei->rsComm, &generalRowInsertInp );
+#pragma GCC diagnostic pop
         if ( rc1 < 0 ) {
             endTransactionInp.arg0 = "rollback";
             rsEndTransaction( rei->rsComm, &endTransactionInp );
@@ -1226,7 +1238,10 @@ insertDVMapsIntoDB( char * baseName, dvmStruct_t *coreDVMStruct,
     generalRowInsertInp.arg1 = baseName;
     generalRowInsertInp.arg2 = myTime;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     rc1 = rsGeneralRowInsert( rei->rsComm, &generalRowInsertInp );
+#pragma GCC diagnostic pop
     if ( rc1 < 0 ) {
         endTransactionInp.arg0 = "rollback";
         rsEndTransaction( rei->rsComm, &endTransactionInp );
@@ -1241,7 +1256,10 @@ insertDVMapsIntoDB( char * baseName, dvmStruct_t *coreDVMStruct,
         generalRowInsertInp.arg4 = coreDVMStruct->var2CMap[i];
         generalRowInsertInp.arg5 = myTime;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
         rc1 = rsGeneralRowInsert( rei->rsComm, &generalRowInsertInp );
+#pragma GCC diagnostic pop
         if ( rc1 < 0 ) {
             endTransactionInp.arg0 = "rollback";
             rsEndTransaction( rei->rsComm, &endTransactionInp );
@@ -1270,7 +1288,10 @@ insertFNMapsIntoDB( char * baseName, fnmapStruct_t *coreFNMStruct,
     generalRowInsertInp.arg1 = baseName;
     generalRowInsertInp.arg2 = myTime;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     rc1 = rsGeneralRowInsert( rei->rsComm, &generalRowInsertInp );
+#pragma GCC diagnostic pop
     if ( rc1 < 0 ) {
         endTransactionInp.arg0 = "rollback";
         rsEndTransaction( rei->rsComm, &endTransactionInp );
@@ -1284,7 +1305,10 @@ insertFNMapsIntoDB( char * baseName, fnmapStruct_t *coreFNMStruct,
         generalRowInsertInp.arg3 = coreFNMStruct->func2CMap[i];
         generalRowInsertInp.arg4 = myTime;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
         rc1 = rsGeneralRowInsert( rei->rsComm, &generalRowInsertInp );
+#pragma GCC diagnostic pop
         if ( rc1 < 0 ) {
             endTransactionInp.arg0 = "rollback";
             rsEndTransaction( rei->rsComm, &endTransactionInp );
@@ -1325,8 +1349,10 @@ insertMSrvcsIntoDB( msrvcStruct_t *coreMsrvcStruct,
         generalRowInsertInp.arg9 = myStatus;
         generalRowInsertInp.arg10 = myTime;
 
-
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
         rc1 = rsGeneralRowInsert( rei->rsComm, &generalRowInsertInp );
+#pragma GCC diagnostic pop
         if ( rc1 < 0 ) {
             endTransactionInp.arg0 = "rollback";
             rsEndTransaction( rei->rsComm, &endTransactionInp );

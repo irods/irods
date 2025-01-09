@@ -4,7 +4,7 @@
 #include "irods/rcConnect.h"
 #include "irods/generalRowInsert.h"
 
-int rsGeneralRowInsert( rsComm_t *rsComm, generalRowInsertInp_t *generalRowInsertInp );
-int _rsGeneralRowInsert( rsComm_t *rsComm, generalRowInsertInp_t *generalRowInsertInp );
+[[deprecated]] int rsGeneralRowInsert(rsComm_t* rsComm, generalRowInsertInp_t* generalRowInsertInp);
+[[deprecated]] int _rsGeneralRowInsert(rsComm_t* rsComm, generalRowInsertInp_t* generalRowInsertInp);
 
 #endif

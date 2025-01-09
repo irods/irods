@@ -4,7 +4,7 @@
 #include "irods/rcConnect.h"
 #include "irods/generalRowPurge.h"
 
-int rsGeneralRowPurge( rsComm_t *rsComm, generalRowPurgeInp_t *generalRowPurgeInp );
-int _rsGeneralRowPurge( rsComm_t *rsComm, generalRowPurgeInp_t *generalRowPurgeInp );
+[[deprecated]] int rsGeneralRowPurge(rsComm_t* rsComm, generalRowPurgeInp_t* generalRowPurgeInp);
+[[deprecated]] int _rsGeneralRowPurge(rsComm_t* rsComm, generalRowPurgeInp_t* generalRowPurgeInp);
 
 #endif
