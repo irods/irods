@@ -691,6 +691,8 @@ static irods::apidef_t client_api_table_inp[] = {
         "api_user_admin", irods::clearInStruct_noop, irods::clearOutStruct_noop,
         (funcPtr)CALL_USERADMININP
     },
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     {
         GENERAL_ROW_INSERT_AN, RODS_API_VERSION,
         LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH,
@@ -707,6 +709,7 @@ static irods::apidef_t client_api_table_inp[] = {
         "api_general_row_purge", irods::clearInStruct_noop, irods::clearOutStruct_noop,
         (funcPtr)CALL_GENERALROWPURGEINP
     },
+#pragma GCC diagnostic pop
     {
         CLOSE_COLLECTION_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "INT_PI", 0, NULL, 0,

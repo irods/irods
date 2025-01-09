@@ -130,7 +130,10 @@ int rodsMonPerfLog( char *serverName, char *resc, char *output, ruleExecInfo_t *
             // fclose(foutput); // JMC cppcheck - nullptr // cannot close it here. it is used later - hcj
         }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
         rc1 = rsGeneralRowInsert( rei->rsComm, &generalRowInsertInp );
+#pragma GCC diagnostic pop
         rc2 = rsGeneralAdmin( rei->rsComm, &generalAdminInp1 );
         rc3 = rsGenQuery( rei->rsComm, &genQueryInp, &genQueryOut );
         if ( rc3 >= 0 ) {
@@ -805,8 +808,10 @@ int msiFlushMonStat( msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t 
     generalRowPurgeInp.tableName = tablename;
     snprintf( secAgo, MAXLEN, "%i", elapseTime );
     generalRowPurgeInp.secondsAgo = secAgo;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     rc = rsGeneralRowPurge( rsComm, &generalRowPurgeInp );
-
+#pragma GCC diagnostic pop
     if ( rc != 0 && rc != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
         rodsLog( LOG_ERROR, "msiFlushMonStat failed, error %i", rc );
     }
@@ -1029,7 +1034,10 @@ int msiDigestMonStat( msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_
             generalRowInsertInp.arg1 = rescList[i];
             snprintf( loadStr, MAX_NAME_LEN, "%i", loadFactor );
             generalRowInsertInp.arg2 = loadStr;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
             rc = rsGeneralRowInsert( rsComm, &generalRowInsertInp );
+#pragma GCC diagnostic pop
             if ( rc != 0 ) {
                 rodsLog( LOG_ERROR, "msiDigestMonStat: Unable to ingest\
         information into from R_SERVER_LOAD_DIGEST table" );

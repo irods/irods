@@ -12,6 +12,7 @@ typedef struct {
 #ifdef __cplusplus
 extern "C"
 #endif
-int rcGeneralRowPurge( rcComm_t *conn, generalRowPurgeInp_t *generalRowPurgeInp );
+    __attribute__((deprecated)) int
+    rcGeneralRowPurge(rcComm_t* conn, generalRowPurgeInp_t* generalRowPurgeInp);
 
 #endif

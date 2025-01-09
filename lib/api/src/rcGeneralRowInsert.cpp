@@ -31,6 +31,8 @@
  * \pre none
  * \post none
  * \sa none
+ *
+ * \deprecated Deprecated in 4.3.4.
  **/
 int
 rcGeneralRowInsert( rcComm_t *conn, generalRowInsertInp_t *generalRowInsertInp ) {
