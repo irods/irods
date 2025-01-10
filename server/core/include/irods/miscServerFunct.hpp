@@ -110,8 +110,7 @@ char *
 getSvrAddr( rodsServerHost_t *rodsServerHost );
 int
 setLocalSrvAddr( char *outLocalAddr );
-int
-forkAndExec( char *av[] );
+[[deprecated]] int forkAndExec(char* av[]);
 int
 setupSrvPortalForParaOpr( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
                           int oprType, portalOprOut_t **portalOprOut );
