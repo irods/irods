@@ -77,12 +77,14 @@ namespace irods
                     p->inOutStruct = v;
                 }
                 else if (std::string_view{DOUBLE_MS_T} == p->type) {
-                    auto* v = static_cast<int*>(std::malloc(sizeof(double)));
+                    // NOLINTNEXTLINE(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc)
+                    auto* v = static_cast<double*>(std::malloc(sizeof(double)));
                     *v = value.get<double>();
                     p->inOutStruct = v;
                 }
                 else if (std::string_view{FLOAT_MS_T} == p->type) {
-                    auto* v = static_cast<int*>(std::malloc(sizeof(float)));
+                    // NOLINTNEXTLINE(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc)
+                    auto* v = static_cast<float*>(std::malloc(sizeof(float)));
                     *v = value.get<float>();
                     p->inOutStruct = v;
                 }
