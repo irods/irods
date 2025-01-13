@@ -327,6 +327,7 @@ install(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_auth_types.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_buffer_encryption.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_children_parser.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_chrono.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_client_api_table.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_client_server_negotiation.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_configuration_keywords.hpp"
