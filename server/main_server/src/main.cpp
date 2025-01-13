@@ -4,6 +4,7 @@
 #include "irods/get_grid_configuration_value.h"
 #include "irods/hostname_cache.hpp"
 #include "irods/irods_at_scope_exit.hpp"
+#include "irods/irods_chrono.hpp"
 #include "irods/irods_client_api_table.hpp"
 #include "irods/irods_configuration_keywords.hpp"
 #include "irods/irods_default_paths.hpp"
