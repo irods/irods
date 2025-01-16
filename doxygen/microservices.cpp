@@ -182,9 +182,9 @@
   - #msiNoTrashCan - Sets the policy to no trash can
   - #msiSetPublicUserOpr - Sets a list of operations that can be performed by the user "public"
   - #msiCheckHostAccessControl - Sets the access control policy
-  - #msiServerMonPerf - Monitors the servers' activity and performance
-  - #msiFlushMonStat - Flushes the servers' monitoring statistics
-  - #msiDigestMonStat - Calculates and stores a digest performance value for each connected resource
+  - #msiServerMonPerf - (Deprecated) Monitors the servers' activity and performance
+  - #msiFlushMonStat - (Deprecated) Flushes the servers' monitoring statistics
+  - #msiDigestMonStat - (Deprecated) Calculates and stores a digest performance value for each connected resource
   - #msiDeleteDisallowed - Sets the policy for determining certain data cannot be deleted
   - #msiSetDataTypeFromExt - Gets the data type based on file name extension
   - #msiSetRescQuotaPolicy - Sets the resource quota to on or off

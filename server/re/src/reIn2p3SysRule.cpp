@@ -39,7 +39,8 @@ static pthread_mutex_t my_mutex;
 
 short threadIsAlive[MAX_NSERVERS];
 
-int rodsMonPerfLog( char *serverName, char *resc, char *output, ruleExecInfo_t *rei ) {
+[[deprecated]] int rodsMonPerfLog(char* serverName, char* resc, char* output, ruleExecInfo_t* rei)
+{
     char condstr[MAX_NAME_LEN], fname[MAX_NAME_LEN], msg[MAX_MESSAGE_SIZE],
          monStatus[MAX_NAME_LEN], suffix[MAX_VALUE];
     const char *delim1 = "#";
@@ -279,7 +280,10 @@ void *startMonScript( void *arg ) {
     if ( status < 0 ) {
         char noanswer[MAXSTR] = MON_OUTPUT_NO_ANSWER;
         rodsLogError( LOG_ERROR, status, "Call to msiExecCmd failed in msiServerMonPerf. " );
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
         rodsMonPerfLog( tinput->execAddr, tinput->rescName, noanswer, &( tinput->rei ) );
+#pragma GCC diagnostic pop
         threadIsAlive[thrid] = 1;
         retval = -1;
 #ifndef windows_platform
@@ -291,12 +295,18 @@ void *startMonScript( void *arg ) {
     /* write into the irodsMonPerf log file */
     if ( ( char * )( *( ( execCmdOut_t * ) msout.inOutStruct ) ).stdoutBuf.buf != NULL ) {
         output = ( char * )( *( ( execCmdOut_t * ) msout.inOutStruct ) ).stdoutBuf.buf;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
         rodsMonPerfLog( tinput->execAddr, tinput->rescName, output, &( tinput->rei ) );
+#pragma GCC diagnostic pop
     }
     else {
         char noanswer[MAXSTR] = MON_OUTPUT_NO_ANSWER;
         rodsLog( LOG_ERROR, "Server monitoring: no output for the server %s, status = %i \n", tinput->execAddr, status );
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
         rodsMonPerfLog( tinput->execAddr, tinput->rescName, noanswer, &( tinput->rei ) );
+#pragma GCC diagnostic pop
         threadIsAlive[thrid] = 1;
         retval = -1;
 #ifndef windows_platform
@@ -486,11 +496,12 @@ int msiCheckHostAccessControl( ruleExecInfo_t *rei ) {
 
 }
 
-
 /**
  * \fn msiServerMonPerf (msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei)
  *
  * \brief  This microservice monitors the servers' activity and performance.
+ *
+ * \deprecated Deprecated in 4.3.4.
  *
  * \module core
  *
@@ -676,10 +687,13 @@ int msiServerMonPerf( msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei ) {
                     if ( rc == 0 ) {
                         char noanswer[MAXSTR] = MON_OUTPUT_NO_ANSWER;
                         threadIsAlive[i] = 1;
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
                         rodsMonPerfLog( thrInput[i].execAddr,
                                         thrInput[i].rescName,
                                         noanswer,
                                         &( thrInput[i].rei ) );
+#  pragma GCC diagnostic pop
                     }
 #endif
                 }
@@ -705,11 +719,12 @@ int msiServerMonPerf( msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei ) {
 
 }
 
-
 /**
  * \fn msiFlushMonStat (msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t *rei)
  *
  * \brief  This microservice flushes the servers' monitoring statistics.
+ *
+ * \deprecated Deprecated in 4.3.4.
  *
  * \module core
  *
@@ -819,7 +834,6 @@ int msiFlushMonStat( msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t 
     return rei->status;
 }
 
-
 /**
  * \fn msiDigestMonStat(msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_wght,
  *       msParam_t *runq_wght, msParam_t *disk_wght, msParam_t *netin_wght,
@@ -827,6 +841,8 @@ int msiFlushMonStat( msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t 
  *
  * \brief  This microservice calculates and stores a load factor for each connected
  *    resource based on the weighting values passed in as parameters.
+ *
+ * \deprecated Deprecated in 4.3.4.
  *
  * \module core
  *
