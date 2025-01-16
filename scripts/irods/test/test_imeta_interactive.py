@@ -71,6 +71,7 @@ class Test_Imeta_Interactive(unittest.TestCase):
         cls.test_data_paths_wildcard = cls.test_data_path_base + '%'
         cls.test_univ_attr = 'some_attr'
         cls.test_data_qty = 5
+        cls.deprecation_message = 'NOTE: Interactive mode is deprecated and will be removed in an upcoming release.\n'
         for n in range(cls.test_data_qty):
             data_path = cls.test_data_path_base + str(n)
             cls.admin.assert_icommand(['itouch', data_path])
@@ -101,7 +102,7 @@ class Test_Imeta_Interactive(unittest.TestCase):
 
     def test_prompt(self):
         (out, err) = self.get_output()
-        self.assertEqual(out, 'imeta>')
+        self.assertEqual(out, f'{self.deprecation_message}imeta>')
         self.assertEqual(err, '')
 
     def test_empty_cmd(self):
