@@ -7,24 +7,27 @@
 #include <irods/rodsClient.h>
 #include <irods/parseCommandLine.h>
 
+#include <cstdlib>
+#include <iostream>
+
 void usage();
 
 int
 main( int argc, char **argv ) {
     signal( SIGPIPE, SIG_IGN );
 
-    char* optStr = "h";
     rodsArguments_t myRodsArgs;
-    int status = parseCmdLineOpt( argc, argv, optStr, 0, &myRodsArgs );
+
+    int status = parseCmdLineOpt(argc, argv, "h", 0, &myRodsArgs);
 
     if ( status < 0 ) {
-        printf( "Use -h for help\n" );
-        exit( 1 );
+        std::cout << "Use -h for help" << std::endl;
+        std::exit(1);
     }
 
     if ( myRodsArgs.help == True ) {
         usage();
-        exit( 0 );
+        std::exit(0);
     }
 
     rodsLog( LOG_NOTICE, "Release Version = %s, API Version = %s",
@@ -34,7 +37,7 @@ main( int argc, char **argv ) {
 
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status, "main: getRodsEnv error. " );
-        exit( 1 );
+        std::exit(1);
     }
 
     return 0;
@@ -42,20 +45,9 @@ main( int argc, char **argv ) {
 
 void
 usage() {
-    char *msgs[] = {
-        "Usage: ienv [-h]",
-        "Display current irods environment. Equivalent to iinit -l.",
-        "Options are:",
-        " -h  this help",
-        ""
-    };
-    int i;
-    for ( i = 0;; i++ ) {
-        if ( strlen( msgs[i] ) == 0 ) {
-            break;
-        }
-        printf( "%s\n", msgs[i] );
-    }
+    std::cout << "Displays current irods environment. Equivalent to iinit -l.\n"
+              << "Usage: ienv [-h]\n"
+              << " -h  this help" << std::endl;
     printReleaseInfo( "ienv" );
 }
 
