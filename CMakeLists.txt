@@ -251,12 +251,6 @@ foreach(EXECUTABLE ${IRODS_CLIENT_ICOMMANDS_EXECUTABLES})
     COMPONENT icommands
     )
 
-  if (IRODS_LINUX_DISTRIBUTION_NAME STREQUAL "centos")
-    if (IRODS_LINUX_DISTRIBUTION_VERSION_MAJOR STREQUAL "6")
-      continue()
-    endif()
-  endif()
-
   if (${EXECUTABLE} STREQUAL "iapitest")
     continue()
   endif()
@@ -285,25 +279,6 @@ foreach(EXECUTABLE ${IRODS_CLIENT_ICOMMANDS_EXECUTABLES})
       )
   endif()
 endforeach()
-
-# Fix build on EL7
-if (IRODS_LINUX_DISTRIBUTION_NAME STREQUAL "centos" AND IRODS_LINUX_DISTRIBUTION_VERSION_MAJOR STREQUAL "7")
-  set(
-    ICOMMANDS_NEEDING_OVERLINK
-    ierror
-    ienv
-    ipwd
-  )
-  if (CMAKE_VERSION VERSION_LESS "3.13.0")
-    foreach(overlink_target IN LISTS ICOMMANDS_NEEDING_OVERLINK)
-      set_property(TARGET ${overlink_target} APPEND PROPERTY LINK_FLAGS "-Wl,--no-as-needed")
-    endforeach()
-  else()
-    foreach(overlink_target IN LISTS ICOMMANDS_NEEDING_OVERLINK)
-      target_link_options(${overlink_target} PRIVATE "LINKER:--no-as-needed")
-    endforeach()
-  endif()
-endif()
 
 install(
   DIRECTORY ${CMAKE_SOURCE_DIR}/test
