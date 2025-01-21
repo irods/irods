@@ -6,6 +6,7 @@
 #include <irods/rodsPath.h>
 
 #include <cstdlib>
+#include <iostream>
 
 void usage( char *prog );
 
@@ -20,35 +21,35 @@ main( int argc, char **argv ) {
 
     status = parseCmdLineOpt( argc, argv, "vVh", 0, &myRodsArgs );
     if ( status ) {
-        printf( "Use -h for help\n" );
-        exit( 1 );
+        std::cout << "Use -h for help" << std::endl;
+        std::exit(1);
     }
 
     if ( myRodsArgs.help == True ) {
         usage( argv[0] );
-        exit( 0 );
+        std::exit(0);
     }
 
     status = getRodsEnv( &myEnv );
     if ( status != 0 ) {
-        printf( "Failed with error %d\n", status );
-        exit( 2 );
+        std::cout << "Failed with error " << status << std::endl;
+        std::exit(2);
     }
 
     auto* path = escape_path(myEnv.rodsCwd);
 
-    printf("%s\n", path);
+    std::cout << path << std::endl;
 
     std::free(path);
 
-    exit( 0 );
+    std::exit(0);
 }
 
 void usage( char *prog ) {
-    printf( "Shows your iRODS Current Working Directory.\n" );
-    printf( "Usage: %s [-vVh]\n", prog );
-    printf( " -v  verbose\n" );
-    printf( " -V  very verbose\n" );
-    printf( " -h  this help\n" );
+    std::cout << "Shows your iRODS Current Working Directory.\n"
+              << "Usage: " << prog << " [-vVh]\n"
+              << " -v  verbose\n"
+              << " -V  very verbose\n"
+              << " -h  this help" << std::endl;
     printReleaseInfo( "ipwd" );
 }
