@@ -53,12 +53,6 @@
 #include "irods/rodsPath.h"
 #include "irods/authenticate.h"
 
-#ifdef _WIN32
-#include "irods/Unix2Nt.hpp"  /* May need something like this for Windows */
-#include "irods/iRODSNtUtil.hpp"    /* May need something like this for Windows */
-#include "irods/rcGlobalExtern.h"
-#endif
-
 #include <boost/filesystem.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/filesystem/operations.hpp>

@@ -16,12 +16,7 @@
 #include "irods/rsGlobalExtern.hpp"
 
 #include <sys/types.h>
-
-#ifndef windows_platform
-#  include <sys/wait.h>
-#else
-#  include "irods/Unix2Nt.hpp"
-#endif
+#include <sys/wait.h>
 
 #include <boost/thread/mutex.hpp>
 
