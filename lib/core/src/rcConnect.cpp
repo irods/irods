@@ -2,10 +2,6 @@
 #include "irods/rcGlobalExtern.h"
 #include "irods/rcMisc.h"
 
-#ifdef windows_platform
-#include "irods/startsock.hpp"
-#endif
-
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
 #include <boost/chrono.hpp>

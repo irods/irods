@@ -4,11 +4,7 @@
 /* See dataObjRead.h for a description of this API call.*/
 
 #include <sys/types.h>
-#ifndef windows_platform
 #include <sys/wait.h>
-#else
-#include "irods/Unix2Nt.hpp"
-#endif
 #include "irods/execCmd.h"
 #include "irods/objMetaOpr.hpp"
 #include "irods/dataObjOpr.hpp"
