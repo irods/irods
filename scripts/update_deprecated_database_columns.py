@@ -131,4 +131,5 @@ row to be updated. This script must be run on the catalog provider.
         print('Failed getting database connection. Note: This script should be run on the iRODS catalog provider.')
 
 if __name__ == "__main__":
+    print(f'NOTE: {__file__.split("/")[-1]} is deprecated and will be removed in an upcoming version of iRODS.')
     scrub_main()
