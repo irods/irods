@@ -51,12 +51,8 @@
 
 #include <openssl/md5.h>
 
-#ifndef windows_platform
-    #include <sys/time.h>
-    #include <sys/wait.h>
-#else
-    #include "irods/Unix2Nt.hpp"
-#endif
+#include <sys/time.h>
+#include <sys/wait.h>
 
 #include <cstdlib>
 #include <cstdio>
