@@ -80,6 +80,14 @@ extern "C" const char* __asan_default_options()
 } // __asan_default_options
 #endif
 
+#if __has_feature(undefined_behavior_sanitizer)
+extern "C" const char* __ubsan_default_options()
+{
+    // See root CMakeLists.txt file for definition.
+    return IRODS_UNDEFINED_BEHAVIOR_SANITIZER_DEFAULT_OPTIONS;
+} // __ubsan_default_options
+#endif
+
 // clang-format off
 namespace ix = irods::experimental;
 
