@@ -316,7 +316,6 @@ install(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/getUtil.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/guiProgressCallback.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/hostname_cache.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_assert.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_at_scope_exit.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_auth_constants.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_auth_factory.hpp"
