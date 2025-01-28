@@ -112,7 +112,6 @@ main( int argc, char **argv ) {
                              argv[argOffset + 2] );
 
     printErrorStack( Conn->rError );
-    rcDisconnect( Conn );
 
     if ( status != 0 ) {
         return 4;
