@@ -286,7 +286,7 @@ int rcDisconnect(
 
 
     _conn->exit_flg = true; //
-    if ( _conn->thread_ctx->reconnThr ) {
+    if (_conn->thread_ctx && _conn->thread_ctx->reconnThr) {
         try {
             // force an interruption point
             _conn->exit_flg = true;
@@ -323,34 +323,42 @@ freeRcComm( rcComm_t *conn ) {
     }
 
     status = cleanRcComm( conn );
-    free( conn );
+    if (status != 0) {
+        free(conn);
+    }
 
-    return status;
+    return 0;
 }
 
 int
 cleanRcComm( rcComm_t *conn ) {
+    int ret = 0;
 
     if ( conn == NULL ) {
-        return 0;
+        return ret;
     }
 
-    freeRError( conn->rError );
-    conn->rError = NULL;
+    if (conn->rError != nullptr) {
+        freeRError(conn->rError);
+        conn->rError = nullptr;
+        ret = 1;
+    }
 
     if ( conn->svrVersion != NULL ) {
         free( conn->svrVersion );
         conn->svrVersion = NULL;
+        ret = 1;
     }
     if ( conn->thread_ctx != NULL ) {
         delete  conn->thread_ctx->reconnThr;
         delete  conn->thread_ctx->lock;
         delete  conn->thread_ctx->cond;
+        free(conn->thread_ctx);
+        conn->thread_ctx = nullptr;
+        ret = 1;
     }
-    free( conn->thread_ctx );
-    conn->thread_ctx = NULL;
 
-    return 0;
+    return ret;
 }
 
 void
