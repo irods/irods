@@ -1,6 +1,8 @@
 #ifndef IRODS_REPLICA_OPEN_H
 #define IRODS_REPLICA_OPEN_H
 
+/// \file
+
 struct RcComm;
 struct DataObjInp;
 
