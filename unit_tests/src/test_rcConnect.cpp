@@ -2,6 +2,7 @@
 
 #include "irods/rcConnect.h"
 #include "irods/rodsErrorTable.h"
+#include "irods/irods_threads.hpp"
 
 #include <algorithm>
 #include <array>
@@ -40,5 +41,19 @@ TEST_CASE("set_session_signature_client_side")
 
         CHECK(set_session_signature_client_side(&comm, nullptr, buf.size()) == SYS_INVALID_INPUT_PARAM);
         CHECK(std::strncmp(comm.session_signature, "", sig_size) == 0);
+    }
+}
+
+TEST_CASE("rcDisconnect")
+{
+    SECTION("rcDisconnect does not segfault when called twice")
+    {
+        rcComm_t* otherconn = static_cast<rcComm_t*>(malloc(sizeof(rcComm_t)));
+        memset(otherconn, 0, sizeof(rcComm_t));
+        otherconn->thread_ctx = static_cast<thread_context*>(malloc(sizeof(thread_context)));
+        memset(otherconn->thread_ctx, 0, sizeof(thread_context));
+
+        rcDisconnect(otherconn);
+        rcDisconnect(otherconn);
     }
 }
