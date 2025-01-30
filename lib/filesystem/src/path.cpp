@@ -368,7 +368,7 @@ namespace irods::experimental::filesystem
             return *this;
         }
 
-        if (is_separator(fp[pos_ - 1])) {
+        if (pos_ > 0 && is_separator(fp[pos_ - 1])) {
             // We've reached the root separator of the path.
             if (0 == pos_ - 1)
             {
