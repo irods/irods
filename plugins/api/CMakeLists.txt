@@ -53,7 +53,6 @@ foreach(plugin IN LISTS IRODS_API_PLUGINS)
       irods_plugin_dependencies
       irods_common
       irods_${variant}
-      "${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/lib/libarchive.so"
       "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
       "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
       "${IRODS_EXTERNALS_FULLPATH_NANODBC}/lib/libnanodbc.so"
@@ -65,7 +64,6 @@ foreach(plugin IN LISTS IRODS_API_PLUGINS)
       PRIVATE
       "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
       "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/api/include>"
-      "${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/include"
       "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
       "${IRODS_EXTERNALS_FULLPATH_NANODBC}/include"
     )
