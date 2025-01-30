@@ -39,7 +39,8 @@ jobs:
                     flex \
                     bison \
                     lsb-release \
-                    libsystemd-dev
+                    libsystemd-dev \
+                    libarchive-dev
             - name: Install iRODS Externals
               run: |
                   wget -qO - https://unstable.irods.org/irods-unstable-signing-key.asc | sudo apt-key add -
@@ -54,7 +55,6 @@ jobs:
                     irods-externals-fmt8.1.1-1 \
                     irods-externals-json3.10.4-0 \
                     irods-externals-jsoncons0.178.0-0 \
-                    irods-externals-libarchive3.5.2-0 \
                     irods-externals-nanodbc2.13.0-2 \
                     irods-externals-spdlog1.9.2-2 \
                     irods-externals-zeromq4-14.1.8-1

@@ -39,7 +39,6 @@ target_link_libraries(
   PRIVATE
   irods_common
   irods_server
-  "${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/lib/libarchive.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
   fmt::fmt
@@ -49,7 +48,6 @@ target_include_directories(
   irods_resource_plugin-unixfilesystem
   PRIVATE
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-  "${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/include"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
 )
 target_compile_definitions(
