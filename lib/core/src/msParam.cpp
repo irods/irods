@@ -1189,9 +1189,18 @@ namespace
 
         const auto& bbuf = _func(*execCmdOut);
 
-        *_out = static_cast<char*>(std::malloc(bbuf.len + 1));
-        std::memcpy(*_out, static_cast<char*>(bbuf.buf), bbuf.len);
-        (*_out)[bbuf.len] = '\0';
+        const auto out_len{bbuf.len + 1};
+        // NOLINTNEXTLINE(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc)
+        *_out = static_cast<char*>(std::malloc(out_len));
+
+        if (nullptr != bbuf.buf) {
+            std::memcpy(*_out, static_cast<char*>(bbuf.buf), bbuf.len);
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            (*_out)[bbuf.len] = '\0';
+        }
+        else {
+            std::memset(*_out, 0, out_len);
+        }
 
         return 0;
     }
