@@ -171,10 +171,18 @@ int writeBytesBuf( msParam_t* where, msParam_t* inBuf, ruleExecInfo_t *rei ) {
     }
 
     if ( inBuf->inpOutBuf ) {
+        const auto writeStr_len{inBuf->inpOutBuf->len + 1};
         /* Buffer might no be null-terminated */
-        writeStr = ( char* )malloc( inBuf->inpOutBuf->len + 1 );
-        strncpy( writeStr, ( char* )inBuf->inpOutBuf->buf, inBuf->inpOutBuf->len );
-        writeStr[inBuf->inpOutBuf->len] = '\0';
+        // NOLINTNEXTLINE(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc)
+        writeStr = static_cast<char*>(malloc(writeStr_len));
+        if (nullptr != inBuf->inpOutBuf->buf) {
+            strncpy(writeStr, static_cast<char*>(inBuf->inpOutBuf->buf), inBuf->inpOutBuf->len);
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            writeStr[inBuf->inpOutBuf->len] = '\0';
+        }
+        else {
+            std::memset(writeStr, 0, writeStr_len);
+        }
     }
     else {
         writeStr = strdup( inBuf->label );
