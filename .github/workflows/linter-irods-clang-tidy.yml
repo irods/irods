@@ -38,7 +38,8 @@ jobs:
                     python3-distro \
                     flex \
                     bison \
-                    lsb-release
+                    lsb-release \
+                    libarchive-dev
             - name: Install iRODS Externals
               run: |
                   wget -qO - https://unstable.irods.org/irods-unstable-signing-key.asc | sudo apt-key add -
@@ -53,7 +54,6 @@ jobs:
                     irods-externals-cppzmq4.8.1-1 \
                     irods-externals-fmt-libcxx8.1.1-1 \
                     irods-externals-json3.10.4-0 \
-                    irods-externals-libarchive3.5.2-0 \
                     irods-externals-nanodbc-libcxx2.13.0-2 \
                     irods-externals-spdlog-libcxx1.9.2-2 \
                     irods-externals-zeromq4-1-libcxx4.1.8-1
