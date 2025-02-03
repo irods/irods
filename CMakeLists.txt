@@ -327,42 +327,12 @@ file(
   "${CMAKE_CURRENT_SOURCE_DIR}/packaging/userspace/*"
   )
 
-if(DEFINED IRODS_EXTERNALS_FULLPATH_ARCHIVE AND IS_DIRECTORY "${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/bin")
-  # Make septenvigintuple sure IRODS_EXTERNALS_FULLPATH_ARCHIVE doesn't point to the system
-  get_filename_component(_irods_libarchive_prefix "${IRODS_EXTERNALS_FULLPATH_ARCHIVE}" ABSOLUTE)
-  if(NOT _irods_libarchive_prefix MATCHES "^/(usr(/|/local/?)?)?$")
-    # don't cache results
-    find_program(
-      TMP_IC_UP_BSDTAR
-      NAMES bsdtar
-      PATHS "${_irods_libarchive_prefix}/bin"
-      NO_DEFAULT_PATH
-      )
-    set(IC_UP_BSDTAR "${TMP_IC_UP_BSDTAR}")
-    unset(TMP_IC_UP_BSDTAR CACHE)
-
-    if(IS_DIRECTORY "${_irods_libarchive_prefix}/lib")
-      # Make sure we actually found bsdtar in the extern prefix
-      get_filename_component(_found_bsdtar_bindir "${IC_UP_BSDTAR}" DIRECTORY)
-      if(_found_bsdtar_bindir STREQUAL "${_irods_libarchive_prefix}/bin")
-        # LD_LIBRARY_PATH for bsdtar in libarchive prefix
-        set(IC_UP_BSDTAR_LD_PATH "${_irods_libarchive_prefix}/lib")
-      endif()
-      unset(_found_bsdtar_bindir)
-    endif()
-
-  endif()
-  unset(_irods_libarchive_prefix)
-endif()
-
 add_custom_command(
   COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/packaging/userspace/userspace-packager.py" -v
     "--cmake-path=${CMAKE_COMMAND}"
     "$<$<BOOL:${CMAKE_OBJDUMP}>:--objdump-path=${CMAKE_OBJDUMP}>"
     "$<$<BOOL:${CMAKE_READELF}>:--readelf-path=${CMAKE_READELF}>"
     "$<$<BOOL:${CMAKE_STRIP}>:--strip-path=${CMAKE_STRIP}>"
-    "$<$<BOOL:${IC_UP_BSDTAR}>:--tar-path=${IC_UP_BSDTAR}>"
-    "$<$<BOOL:${IC_UP_BSDTAR_LD_PATH}>:--ld_library_path=${IC_UP_BSDTAR_LD_PATH}>"
     "$<$<BOOL:${IRODS_LINUX_DISTRIBUTION_NAME}>:--target-platform=${IRODS_LINUX_DISTRIBUTION_NAME}>"
     "$<$<BOOL:${IRODS_LINUX_DISTRIBUTION_VERSION_MAJOR}>:--target-platform-variant=${IRODS_LINUX_DISTRIBUTION_VERSION_MAJOR}>"
     "--cmake-install-prefix=${CMAKE_INSTALL_PREFIX}"
