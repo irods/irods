@@ -11,7 +11,6 @@
 #include "irods/irods_configuration_keywords.hpp"
 #include "irods/irods_configuration_parser.hpp" // For key_path_t
 #include "irods/irods_default_paths.hpp"
-#include "irods/irods_dynamic_cast.hpp"
 #include "irods/irods_environment_properties.hpp"
 #include "irods/irods_exception.hpp"
 #include "irods/irods_logger.hpp"
@@ -1006,10 +1005,6 @@ namespace
     auto agentMain(RsComm& _comm) -> int
     {
         int status = 0;
-
-        // compiler backwards compatibility hack
-        // see header file for more details
-        irods::dynamic_cast_hack();
 
         while (status >= 0) {
             if (g_terminate) {
