@@ -135,7 +135,6 @@ install(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_database_plugin.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_database_types.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_delay_queue.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_dynamic_cast.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_file_object.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_generic_database_object.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_get_l1desc.hpp"

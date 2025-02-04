@@ -10,7 +10,6 @@
 #include "irods/irods_auth_plugin.hpp"
 #include "irods/irods_client_api_table.hpp"
 #include "irods/irods_client_server_negotiation.hpp"
-#include "irods/irods_dynamic_cast.hpp"
 #include "irods/irods_environment_properties.hpp"
 #include "irods/irods_logger.hpp"
 #include "irods/irods_network_factory.hpp"
@@ -780,10 +779,6 @@ int agentMain(RsComm* rsComm)
     }
 
     int status = 0;
-
-    // compiler backwards compatibility hack
-    // see header file for more details
-    irods::dynamic_cast_hack();
 
     while (status >= 0) {
         // set default to the native auth scheme here.
