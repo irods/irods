@@ -111,7 +111,6 @@ namespace
 
     auto print_usage() -> void;
     auto print_version_info() -> void;
-    auto print_configuration_template() -> void;
 
     auto validate_configuration() -> bool;
     auto daemonize() -> void;
