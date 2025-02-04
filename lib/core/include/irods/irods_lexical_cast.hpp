@@ -13,7 +13,8 @@ namespace irods {
     error lexical_cast( S _s, T& _t ) {
         try {
             _t = boost::lexical_cast<T>(_s);
-        } catch( boost::bad_lexical_cast ) {
+        }
+        catch (const boost::bad_lexical_cast&) {
             std::stringstream msg;
             msg << "failed to cast " << _s;
             return ERROR(
@@ -27,7 +28,8 @@ namespace irods {
     error lexical_cast( T& _t, uint64_t _s ) {
         try {
             _t = boost::lexical_cast<T>(_s);
-        } catch( boost::bad_lexical_cast ) {
+        }
+        catch (const boost::bad_lexical_cast&) {
             std::stringstream msg;
             msg << "failed to cast " << _s;
             return ERROR(
@@ -41,7 +43,8 @@ namespace irods {
     error lexical_cast( T& _t, const std::string& _s ) {
         try {
             _t = boost::lexical_cast<T>(_s);
-        } catch( boost::bad_lexical_cast ) {
+        }
+        catch (const boost::bad_lexical_cast&) {
             std::stringstream msg;
             msg << "failed to cast " << _s;
             return ERROR(
