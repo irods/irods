@@ -359,7 +359,6 @@ primary ordering column.
 #define COL_SL_DISK_SPACE     1406
 #define COL_SL_NET_INPUT      1407
 #define COL_SL_NET_OUTPUT     1408
-#define COL_SL_NET_OUTPUT     1408
 #define COL_SL_CREATE_TIME    1409
 
 /* R_SERVER_LOAD_DIGEST */
