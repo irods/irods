@@ -144,6 +144,10 @@ int main(int argc, char** argv){
             print_dir(path, vm, conn);
         }
     }
+    catch (const irods::exception& e) {
+        std::cerr << "Error: " << e.client_display_what() << "\n";
+        return 1;
+    }
     catch (const std::exception& e) {
         std::cerr << "Error:" << e.what() << "\n";
         return 1;
