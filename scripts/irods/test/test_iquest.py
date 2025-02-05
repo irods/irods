@@ -150,6 +150,9 @@ class Test_Iquest(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iquest \"%s %s\" \"select COLL_NAME where COLL_NAME like '%home%'\"",
                                    'STDERR_SINGLELINE', 'boost::too_few_args: format-string referred to more arguments than were passed')
 
+    def test_iquest_returns_error_on_invalid_aggregate_function__issue_8080(self):
+        self.admin.assert_icommand(['iquest', 'select nope(DATA_ID)'], 'STDERR', ['-183000 INVALID_GENQUERY_AGGREGATE_FUNCTION'])
+
 
 class test_iquest_with_data_resc_hier(unittest.TestCase):
     @classmethod

@@ -3098,7 +3098,7 @@ getSelVal( char * c ) {
     }
     // =-=-=-=-=-=-=-
 
-    return 1;
+    return INVALID_GENQUERY_AGGREGATE_FUNCTION;
 }
 
 
@@ -3218,6 +3218,11 @@ fillGenQueryInpFromStrCond( char * str, genQueryInp_t * genQueryInp ) {
             trimWS( t );
             separateSelFuncFromAttr( t, &a, &c );
             m = getSelVal( a );
+            if (m < 0) {
+                // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
+                std::free(s);
+                return m;
+            }
             n = getAttrIdFromAttrName( c );
             if ( n < 0 ) {
                 free( s );
@@ -3229,6 +3234,11 @@ fillGenQueryInpFromStrCond( char * str, genQueryInp_t * genQueryInp ) {
         trimWS( t );
         separateSelFuncFromAttr( t, &a, &c );
         m = getSelVal( a );
+        if (m < 0) {
+            // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
+            std::free(s);
+            return m;
+        }
         n = getAttrIdFromAttrName( c );
         if ( n < 0 ) {
             free( s );
