@@ -158,3 +158,8 @@ class Test_Ils(resource_suite.ResourceBase, unittest.TestCase):
         expected_output = [os.path.join(self.admin.session_collection, coll_name)]
         self.admin.assert_icommand(['ils'], 'STDOUT', expected_output)
         self.admin.assert_icommand(['ils', coll_name], 'STDOUT', expected_output)
+
+    def test_ils_prints_acls_when_data_object_contains_single_quotation_mark_in_name__issue_7164(self):
+        data_object = "just testin'"
+        self.admin.assert_icommand(['itouch', data_object])
+        self.admin.assert_icommand(['ils', '-A', data_object], 'STDOUT', [f'ACL - {self.admin.qualified_username}:own'])
