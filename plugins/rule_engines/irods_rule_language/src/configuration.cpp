@@ -33,42 +33,10 @@
 using log_re = irods::experimental::log::rule_engine;
 constexpr auto err_buf_len = ERR_MSG_LEN * 1024;
 
-Cache::Cache() : address(NULL), /* unsigned char *address */
-    pointers(NULL), /* unsigned char *pointers */
-    dataSize(0), /* size_t dataSize */
-    cacheSize(0), /* size_t cacheSize */
-    coreRuleSetStatus(UNINITIALIZED), /* RuleEngineStatus coreRuleSetStatus */
-    appRuleSetStatus(UNINITIALIZED), /* RuleEngineStatus appRuleSetStatus */
-    extRuleSetStatus(UNINITIALIZED), /* RuleEngineStatus extRuleSetStatus */
-    sysFuncDescIndexStatus(UNINITIALIZED), /* RuleEngineStatus sysFuncDescIndexStatus */
-    coreFuncDescIndexStatus(UNINITIALIZED), /* RuleEngineStatus coreFuncDescIndexStatus */
-    appFuncDescIndexStatus(UNINITIALIZED), /* RuleEngineStatus appFuncDescIndexStatus */
-    extFuncDescIndexStatus(UNINITIALIZED), /* RuleEngineStatus extFuncDescIndexStatus */
-    ruleEngineStatus(UNINITIALIZED), /* RuleEngineStatus ruleEngineStatus */
-    cacheStatus(UNINITIALIZED), /* RuleEngineStatus cacheStatus */
-    sysRegionStatus(UNINITIALIZED), /* RuleEngineStatus sysRegionStatus */
-    coreRegionStatus(UNINITIALIZED), /* RuleEngineStatus regionCoreStatus */
-    appRegionStatus(UNINITIALIZED), /* RuleEngineStatus regionAppStatus */
-    extRegionStatus(UNINITIALIZED), /* RuleEngineStatus regionExtStatus */
-    coreRuleSet(NULL), /* RuleSet *coreRuleSet */
-    appRuleSet(NULL), /* RuleSet *appRuleSet */
-    extRuleSet(NULL), /* RuleSet *extRuleSet */
-    sysFuncDescIndex(NULL), /* Env *sysFuncDescIndex */
-    coreFuncDescIndex(NULL), /* Env *coreFuncDescIndex */
-    appFuncDescIndex(NULL), /* Env *appFuncDescIndex */
-    extFuncDescIndex(NULL), /* Env *extFuncDescIndex */
-    sysRegion(NULL), /* Region *sysRegion */
-    coreRegion(NULL), /* Region *coreRegion */
-    appRegion(NULL), /* Region *appRegion */
-    extRegion(NULL), /* Region *extRegion */
-    tvarNumber(0), /* int tvarNumber */
-    clearDelayed(0), /* int clearDelayed */
-    timestamp(time_type_initializer), /* time_type timestamp */
-    logging(0), /* int logging */
-    ruleBase(""), /* char ruleBase[RULE_SET_DEF_LENGTH] */
-    hash("") /* char *hash */{}
-
-Cache ruleEngineConfig;
+// To clarify that ruleEngineConfig is modified throughout the execution of
+// the NREP, the variable will not be marked const.
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+Cache ruleEngineConfig{};
 
 void clearRuleEngineConfig() {
   int resources = 0xf00;
