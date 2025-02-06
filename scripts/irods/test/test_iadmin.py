@@ -2437,12 +2437,30 @@ class test_moduser_user(unittest.TestCase):
         self.admin.assert_icommand(['iadmin', 'moduser', self.username, 'type', 'rodsuser'])
         self.assertEqual('rodsuser', lib.get_user_type(self.admin, self.username))
 
-    def test_moduser_type_rodsgroup(self):
+    def moduser_to_rodsgroup_is_not_allowed_test_impl(self, target_username, user_type):
         """Test modifying the user's type to a group (not allowed)."""
-        self.assertEqual('rodsuser', lib.get_user_type(self.admin, self.username))
-        self.admin.assert_icommand(['iadmin', 'moduser', self.username, 'type', 'rodsgroup'],
-                                   'STDERR', 'SYS_NOT_ALLOWED')
-        self.assertEqual('rodsuser', lib.get_user_type(self.admin, self.username))
+        self.assertEqual(user_type, lib.get_user_type(self.admin, target_username))
+        self.admin.assert_icommand(
+            ["iadmin", "moduser", target_username, "type", "rodsgroup"], "STDERR", "-169000 SYS_NOT_ALLOWED")
+        self.assertEqual(user_type, lib.get_user_type(self.admin, target_username))
+
+    def test_moduser_type_rodsuser_rodsgroup__issue_2978(self):
+        """Test modifying the rodsuser's type to a group (not allowed)."""
+        self.moduser_to_rodsgroup_is_not_allowed_test_impl(self.username, "rodsuser")
+
+    def test_moduser_type_rodsadmin_rodsgroup__issue_2978(self):
+        """Test modifying the rodsadmin's type to a group (not allowed)."""
+        self.moduser_to_rodsgroup_is_not_allowed_test_impl(self.admin.username, "rodsadmin")
+
+    def test_moduser_type_groupadmin_rodsgroup__issue_2978(self):
+        """Test modifying the groupadmin's type to a group (not allowed)."""
+        groupadmin_username = "groupadmin_of_the_year"
+        try:
+            self.admin.run_icommand(["iadmin", "mkuser", groupadmin_username, "groupadmin"])
+            self.moduser_to_rodsgroup_is_not_allowed_test_impl(groupadmin_username, "groupadmin")
+
+        finally:
+            self.admin.run_icommand(["iadmin", "rmuser", groupadmin_username])
 
     def test_moduser_type_invalid_type(self):
         """Test modifying the user's type to something that is not supported."""
