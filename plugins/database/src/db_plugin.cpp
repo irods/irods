@@ -1,3 +1,4 @@
+#include "irods/administration_utilities.hpp"
 #include "irods/authenticate.h"
 #include "irods/catalog.hpp"
 #include "irods/catalog_utilities.hpp"
@@ -937,33 +938,6 @@ bool _userInRUserAuth( const char* userName, const char* zoneName, const char* a
         return true;
     }
 }
-
-// =-=-=-=-=-=-=-
-/// @brief function which determines if a char is allowed in a zone name
-static bool allowed_zone_char( const char _c ) {
-    return ( !std::isalnum( _c ) &&
-             !( '.' == _c )      &&
-             !( '_' == _c ) );
-} // allowed_zone_char
-
-// =-=-=-=-=-=-=-
-/// @brief function for validating the name of a zone
-irods::error validate_zone_name(
-    std::string _zone_name ) {
-    std::string::iterator itr = std::find_if( _zone_name.begin(),
-                                _zone_name.end(),
-                                allowed_zone_char );
-    if ( itr != _zone_name.end() || _zone_name.length() >= NAME_LEN ) {
-        std::stringstream msg;
-        msg << "validate_zone_name failed for zone [";
-        msg << _zone_name;
-        msg << "]";
-        return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
-    }
-
-    return SUCCESS();
-
-} // validate_zone_name
 
 /* delCollection (internally called),
    does not do the commit.
@@ -5214,12 +5188,9 @@ irods::error db_reg_zone_op(
         return ERROR( CAT_INVALID_ARGUMENT, "Currently, only zones of type 'remote' are allowed" );
     }
 
-    // =-=-=-=-=-=-=-
-    // validate the zone name does not include improper characters
-    ret = validate_zone_name( _zone_name );
-    if ( !ret.ok() ) {
-        irods::log( ret );
-        return PASS( ret );
+    if (!irods::is_zone_name_valid(_zone_name)) {
+        log_db::error("{}: Zone name [{}] does not satisfy requirements.", __func__, _zone_name);
+        return ERROR(SYS_INVALID_INPUT_PARAM, "Zone name contains invalid characters");
     }
 
     // =-=-=-=-=-=-=-
@@ -5393,17 +5364,10 @@ irods::error db_mod_zone_op(
             return ERROR( CAT_INVALID_ARGUMENT, "cannot rename localzone" );
         }
 
-        // =-=-=-=-=-=-=-
-        // validate the zone name does not include improper characters
-        ret = validate_zone_name( _option_value );
-        if ( !ret.ok() ) {
-            irods::log( ret );
-            std::string msg( "zone name is invalid [" );
-            msg += _option_value;
-            msg += "]";
-            addRErrorMsg( &_ctx.comm()->rError, 0,
-                          msg.c_str() );
-            return PASS( ret );
+        if (!irods::is_zone_name_valid(_option_value)) {
+            log_db::error("{}: Zone name [{}] does not satisfy requirements.", __func__, _option_value);
+            addRErrorMsg(&_ctx.comm()->rError, 0, fmt::format("zone name is invalid [{}]", _option_value).c_str());
+            return ERROR(SYS_INVALID_INPUT_PARAM, "Zone name contains invalid characters");
         }
 
         cllBindVars[cllBindVarCount++] = _option_value;

@@ -1,9 +1,13 @@
 #include "irods/administration_utilities.hpp"
+
 #include "irods/icatHighLevelRoutines.hpp"
 #include "irods/irods_re_structs.hpp"
 #include "irods/rodsConnect.h"
 #include "irods/rodsUser.h"
 #include "irods/user_validation_utilities.hpp"
+
+#include <iterator>
+#include <regex>
 
 namespace
 {
@@ -163,4 +167,11 @@ namespace irods
 
         return 0;
     } // remove_user
+
+    auto is_zone_name_valid(const std::string_view _zone_name) -> bool
+    {
+        // TODO(#8175): Use the regex/pattern from the JSON schema file to avoid drift.
+        static std::regex regex{R"(^[A-Za-z0-9_\.]+$)"};
+        return std::regex_match(std::begin(_zone_name), std::end(_zone_name), regex);
+    } // is_zone_name_valid
 } // namespace irods
