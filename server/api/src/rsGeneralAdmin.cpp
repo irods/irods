@@ -763,11 +763,27 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
 
     if ( strcmp( generalAdminInp->arg0, "add" ) == 0 ) {
         if ( strcmp( generalAdminInp->arg1, "user" ) == 0 ) {
+            // If the client requested to "add" a "user" of type "rodsgroup", return a warning message because one can
+            // now "add" a "group". In a future release, this will result in an error.
+            if (nullptr != generalAdminInp->arg3 && 0 == std::strcmp(generalAdminInp->arg3, "rodsgroup")) {
+                constexpr auto ec = DEPRECATED_PARAMETER;
+                constexpr const char* msg = "Warning: Using 'add' with 'user' and type 'rodsgroup' is deprecated. Use "
+                                            "'add' with 'group' instead.";
+                addRErrorMsg(&rsComm->rError, ec, msg);
+                log_api::warn("{}: {}", __func__, msg);
+            }
             return irods::create_user(*rsComm,
                                       generalAdminInp->arg2 ? generalAdminInp->arg2 : "",
                                       generalAdminInp->arg3 ? generalAdminInp->arg3 : "",
                                       generalAdminInp->arg5 ? generalAdminInp->arg5 : "",
                                       generalAdminInp->arg4 ? generalAdminInp->arg4 : "");
+        }
+        if (0 == strcmp(generalAdminInp->arg1, "group")) {
+            return irods::create_user(*rsComm,
+                                      nullptr != generalAdminInp->arg2 ? generalAdminInp->arg2 : "",
+                                      "rodsgroup",
+                                      nullptr != generalAdminInp->arg5 ? generalAdminInp->arg5 : "",
+                                      nullptr != generalAdminInp->arg4 ? generalAdminInp->arg4 : "");
         }
         if ( strcmp( generalAdminInp->arg1, "dir" ) == 0 ) {
             memset( ( char* )&collInfo, 0, sizeof( collInfo ) );
