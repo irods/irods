@@ -1620,8 +1620,15 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
     }
 
     if ( strcmp( cmdToken[0], "mkgroup" ) == 0 ) {
-        generalAdmin( 0, "add", "user", cmdToken[1], "rodsgroup",
-                      "", "", "", "", "", "" );
+        const auto version = irods::to_version(Conn->svrVersion->relVersion);
+        if (version && version.value() > irods::version{4, 3, 3}) {
+            // If we are adding a group, we don't need to specify a user type - it's a group.
+            generalAdmin(0, "add", "group", cmdToken[1], "", "", "", "", "", "", "");
+        }
+        else {
+            // Versions 4.3.3 and earlier only know how to "add" a "user" with a "rodsgroup" type.
+            generalAdmin(0, "add", "user", cmdToken[1], "rodsgroup", "", "", "", "", "", "");
+        }
         return 0;
     }
     if ( strcmp( cmdToken[0], "rmgroup" ) == 0 ) {
