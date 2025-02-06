@@ -118,3 +118,37 @@ class Test_IQuery(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.T
         self.assertEqual(ec, 1)
         self.assertEqual(len(out), 0)
         self.assertEqual(err, 'error: -167000\n') # SYS_LIBRARY_ERROR
+
+    def test_genquery2_maps_genquery_user_zone_columns_to_correct_database_columns__issue_8134_8135(self):
+        # Show that the column mapping listing contains the correct mappings.
+        _, out, _ = self.user.assert_icommand(['iquery', '-c'], 'STDOUT')
+        collection_mapping_is_correct = False
+        data_object_mapping_is_correct = False
+        for line in out.splitlines():
+            if '(R_USER_MAIN.zone_name)' in line:
+                if 'COLL_ACCESS_USER_ZONE' in line: collection_mapping_is_correct = True
+                elif 'DATA_ACCESS_USER_ZONE' in line: data_object_mapping_is_correct = True
+        self.assertTrue(collection_mapping_is_correct)
+        self.assertTrue(data_object_mapping_is_correct)
+
+        # Show that usage of the GenQuery2 COLL permissions columns results in non-empty resultsets.
+        query_string = f"select COLL_ACCESS_USER_NAME, COLL_ACCESS_USER_ZONE, COLL_ACCESS_PERM_NAME where COLL_NAME = '{self.user.home_collection}'"
+        json_string = json.dumps([[self.user.username, self.user.zone_name, 'own']], separators=(',', ':'))
+        self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+        # Show that usage of the GenQuery2 DATA permissions columns results in non-empty resultsets.
+        data_name = 'test_genquery2_maps_genquery_user_zone_columns_to_correct_database_columns__issue_8134_8135'
+        self.user.assert_icommand(['itouch', data_name])
+        query_string = f"select DATA_ACCESS_USER_NAME, DATA_ACCESS_USER_ZONE, DATA_ACCESS_PERM_NAME where DATA_NAME = '{data_name}'"
+        json_string = json.dumps([[self.user.username, self.user.zone_name, 'own']], separators=(',', ':'))
+        self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+        # Show that use of the GenQuery2 COLL permissions columns in a GROUP BY clause works as well.
+        query_string = f"select COLL_ACCESS_USER_NAME, COLL_ACCESS_USER_ZONE, count(COLL_ID) where COLL_NAME = '{self.user.home_collection}' group by COLL_ACCESS_USER_NAME, COLL_ACCESS_USER_ZONE"
+        json_string = json.dumps([[self.user.username, self.user.zone_name, '1']], separators=(',', ':'))
+        self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+        # Show that use of the GenQuery2 DATA permissions columns in a GROUP BY clause works as well.
+        query_string = f"select DATA_ACCESS_USER_NAME, DATA_ACCESS_USER_ZONE, count(DATA_ID) where DATA_NAME = '{data_name}' group by DATA_ACCESS_USER_NAME, DATA_ACCESS_USER_ZONE"
+        json_string = json.dumps([[self.user.username, self.user.zone_name, '1']], separators=(',', ':'))
+        self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
