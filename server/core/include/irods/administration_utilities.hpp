@@ -44,7 +44,17 @@ namespace irods
     auto remove_user(RsComm& _comm,
                      const std::string_view _user_name,
                      const std::string_view _zone_name) -> int;
+
+    /// Checks whether the given string is an acceptable zone name.
+    ///
+    /// \param[in] _zone_name The name to check.
+    ///
+    /// \returns A boolean indicating success or failure.
+    /// \retval true  If the string is acceptable as a zone name.
+    /// \retval false If the string is not acceptable as a zone name.
+    ///
+    /// \since 4.3.4
+    auto is_zone_name_valid(const std::string_view _zone_name) -> bool;
 } // namespace irods
 
 #endif // IRODS_ADMINISTRATION_UTILITIES_HPP
-
