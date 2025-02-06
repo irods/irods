@@ -763,9 +763,26 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
 
     if ( strcmp( generalAdminInp->arg0, "add" ) == 0 ) {
         if ( strcmp( generalAdminInp->arg1, "user" ) == 0 ) {
+            // If the client requested to "add" a "user" of type "rodsgroup", return an error because one can now "add"
+            // a "group".
+            if (generalAdminInp->arg3 && 0 == std::strcmp(generalAdminInp->arg3, "rodsgroup")) {
+                constexpr auto ec = SYS_NOT_ALLOWED;
+                constexpr const char* msg =
+                    "Using 'add' with 'user' and type 'rodsgroup' is not allowed. Use 'add' with 'group' instead.";
+                addRErrorMsg(&rsComm->rError, ec, msg);
+                log_api::info("{}: {}", __func__, msg);
+                return ec;
+            }
             return irods::create_user(*rsComm,
                                       generalAdminInp->arg2 ? generalAdminInp->arg2 : "",
                                       generalAdminInp->arg3 ? generalAdminInp->arg3 : "",
+                                      generalAdminInp->arg5 ? generalAdminInp->arg5 : "",
+                                      generalAdminInp->arg4 ? generalAdminInp->arg4 : "");
+        }
+        if (0 == strcmp(generalAdminInp->arg1, "group")) {
+            return irods::create_user(*rsComm,
+                                      generalAdminInp->arg2 ? generalAdminInp->arg2 : "",
+                                      "rodsgroup",
                                       generalAdminInp->arg5 ? generalAdminInp->arg5 : "",
                                       generalAdminInp->arg4 ? generalAdminInp->arg4 : "");
         }

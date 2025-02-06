@@ -2706,14 +2706,14 @@ class test_moduser_group(unittest.TestCase):
                 pass
 
 
-class test_mkuser_group(unittest.TestCase):
+class test_making_groups(unittest.TestCase):
     """Test making a group."""
+
     @classmethod
     def setUpClass(self):
         """Set up the test class."""
         self.admin = session.mkuser_and_return_session('rodsadmin', 'otherrods', 'rods', lib.get_hostname())
         self.group = 'test_making_groups_group'
-
 
     @classmethod
     def tearDownClass(self):
@@ -2722,54 +2722,10 @@ class test_mkuser_group(unittest.TestCase):
             self.admin.__exit__()
             admin_session.assert_icommand(['iadmin', 'rmuser', self.admin.username])
 
-
-    def test_mkuser_with_no_zone(self):
-        """Test mkuser (rodsgroup) with no zone name provided."""
-        try:
-            self.admin.assert_icommand(['iadmin', 'mkuser', self.group, 'rodsgroup'])
-            self.assertEqual('rodsgroup', lib.get_user_type(self.admin, self.group))
-            self.assertEqual(self.admin.zone_name, lib.get_user_zone(self.admin, self.group))
-
-        finally:
-            self.admin.run_icommand(['iadmin', 'rmgroup', self.group])
-
-
-    def test_mkuser_with_local_zone(self):
-        """Test mkuser (rodsgroup) with local zone name provided."""
-        try:
-            group_with_zone = '#'.join([self.group, self.admin.zone_name])
-
-            self.admin.assert_icommand(['iadmin', 'mkuser', group_with_zone, 'rodsgroup'])
-            self.assertEqual('rodsgroup', lib.get_user_type(self.admin, self.group))
-            self.assertEqual(self.admin.zone_name, lib.get_user_zone(self.admin, self.group))
-
-        finally:
-            self.admin.run_icommand(['iadmin', 'rmgroup', self.group])
-
-
-    def test_mkuser_with_remote_zone(self):
-        """Test mkuser (rodsgroup) with remote zone name provided."""
-        remote_zone = 'somezone'
-        try:
-            group_with_zone = '#'.join([self.group, remote_zone])
-
-            # remote zones for non-existent zones are not allowed
-            self.admin.assert_icommand(['iadmin', 'mkuser', group_with_zone, 'rodsgroup'],
-                                       'STDERR', 'SYS_NOT_ALLOWED')
-
-            self.assertIn('CAT_NO_ROWS_FOUND', lib.get_user_type(self.admin, self.group))
-
-            # remote zones for existing remote zones are not allowed
-            self.admin.assert_icommand(['iadmin', 'mkzone', remote_zone, 'remote', 'localhost:1247'])
-            self.admin.assert_icommand(['iadmin', 'mkgroup', group_with_zone, 'rodsgroup'],
-                                       'STDERR', 'SYS_NOT_ALLOWED')
-
-            self.assertIn('CAT_NO_ROWS_FOUND', lib.get_user_type(self.admin, self.group))
-
-        finally:
-            self.admin.run_icommand(['iadmin', 'rmgroup', self.group])
-            self.admin.run_icommand(['iadmin', 'rmzone', remote_zone])
-
+    def test_mkuser_is_not_allowed_with_groups__issue_2978(self):
+        """Test that mkuser with type rodsgroup is not allowed."""
+        self.admin.assert_icommand(["iadmin", "mkuser", self.group, "rodsgroup"], "STDERR", "SYS_NOT_ALLOWED")
+        self.assertIn('CAT_NO_ROWS_FOUND', lib.get_user_type(self.admin, self.group))
 
     def test_mkgroup_with_no_zone(self):
         """Test mkgroup with no zone name provided."""
@@ -2781,7 +2737,6 @@ class test_mkuser_group(unittest.TestCase):
         finally:
             self.admin.run_icommand(['iadmin', 'rmgroup', self.group])
 
-
     def test_mkgroup_with_local_zone(self):
         """Test mkgroup with local zone name provided."""
         try:
@@ -2791,7 +2746,6 @@ class test_mkuser_group(unittest.TestCase):
 
         finally:
             self.admin.run_icommand(['iadmin', 'rmgroup', self.group])
-
 
     def test_mkgroup_with_remote_zone(self):
         """Test mkgroup with remote zone name provided."""
