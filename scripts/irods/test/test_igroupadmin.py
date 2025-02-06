@@ -51,7 +51,7 @@ class Test_Igroupadmin(resource_suite.ResourceBase, unittest.TestCase):
             self.admin.assert_icommand(['iadmin', 'moduser', self.user_sessions[0].username, 'type', 'rodsuser'])
 
 
-class test_mkuser_group(unittest.TestCase):
+class test_making_groups(unittest.TestCase):
     """Test making a group."""
     @classmethod
     def setUpClass(self):

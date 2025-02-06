@@ -121,9 +121,24 @@ namespace irods::experimental::administration::NAMESPACE_IMPL
 
         GeneralAdminInput input{};
         input.arg0 = "add";
-        input.arg1 = "user";
+#ifdef IRODS_USER_ADMINISTRATION_ENABLE_SERVER_SIDE_API
+        // If this is the server side, the API should know about how to add a "group". arg3 - which represents the
+        // user "type" when adding a user - is not necessary because groups do not have types.
+        input.arg1 = "group";
+#else
+        // If this is not the server side, what we provide to the API depends on the version of the server with which
+        // the client is connected. For 4.3.4 and later, the API should add a "group" without providing a user "type".
+        // Any earlier version only knows how to add a "user" of type "rodsgroup" (which is a group).
+        const auto version = irods::to_version(static_cast<char*>(_comm.svrVersion->relVersion));
+        if (version && version.value() > irods::version{4, 3, 3}) {
+            input.arg1 = "group";
+        }
+        else {
+            input.arg1 = "user";
+            input.arg3 = "rodsgroup";
+        }
+#endif // IRODS_USER_ADMINISTRATION_ENABLE_SERVER_SIDE_API
         input.arg2 = _group.name.data();
-        input.arg3 = "rodsgroup";
         input.arg4 = zone.data();
 
         if (const auto ec = rxGeneralAdmin(&_comm, &input); ec != 0) {
