@@ -1026,6 +1026,12 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             rei.uoip = &rsComm->proxyUser;
             args[0] = generalAdminInp->arg2;
             args[1] = generalAdminInp->arg3;
+
+            if (!irods::is_zone_name_valid(generalAdminInp->arg3)) {
+                log_api::error("{}: Zone name [{}] does not satisfy requirements.", __func__, generalAdminInp->arg3);
+                return SYS_INVALID_INPUT_PARAM;
+            }
+
             status = applyRuleArg( "acRenameLocalZone", args, 2, &rei,
                                    NO_SAVE_REI );
             return status;
