@@ -24,8 +24,6 @@
 
 static double PLUGIN_INTERFACE_VERSION = 2.0;
 
-irods::error add_global_re_params_to_kvp_for_dynpep( keyValPair_t& );
-
 namespace irods
 {
     typedef std::function< irods::error( rcComm_t* ) > pdmo_type;
