@@ -2688,14 +2688,16 @@ class test_moduser_group(unittest.TestCase):
                 pass
 
 
-class test_mkuser_group(unittest.TestCase):
+class test_making_groups(unittest.TestCase):
     """Test making a group."""
+
     @classmethod
     def setUpClass(self):
         """Set up the test class."""
         self.admin = session.mkuser_and_return_session('rodsadmin', 'otherrods', 'rods', lib.get_hostname())
         self.group = 'test_making_groups_group'
-
+        self.mkuser_deprecation_message = "Warning: Using 'add' with 'user' and type 'rodsgroup' is deprecated. " \
+                                          "Use 'add' with 'group' instead."
 
     @classmethod
     def tearDownClass(self):
@@ -2708,7 +2710,8 @@ class test_mkuser_group(unittest.TestCase):
     def test_mkuser_with_no_zone(self):
         """Test mkuser (rodsgroup) with no zone name provided."""
         try:
-            self.admin.assert_icommand(['iadmin', 'mkuser', self.group, 'rodsgroup'])
+            self.admin.assert_icommand(
+                ['iadmin', 'mkuser', self.group, 'rodsgroup'], "STDOUT", self.mkuser_deprecation_message)
             self.assertEqual('rodsgroup', lib.get_user_type(self.admin, self.group))
             self.assertEqual(self.admin.zone_name, lib.get_user_zone(self.admin, self.group))
 
@@ -2721,7 +2724,8 @@ class test_mkuser_group(unittest.TestCase):
         try:
             group_with_zone = '#'.join([self.group, self.admin.zone_name])
 
-            self.admin.assert_icommand(['iadmin', 'mkuser', group_with_zone, 'rodsgroup'])
+            self.admin.assert_icommand(
+                ['iadmin', 'mkuser', group_with_zone, 'rodsgroup'], "STDOUT", self.mkuser_deprecation_message)
             self.assertEqual('rodsgroup', lib.get_user_type(self.admin, self.group))
             self.assertEqual(self.admin.zone_name, lib.get_user_zone(self.admin, self.group))
 
@@ -2752,7 +2756,6 @@ class test_mkuser_group(unittest.TestCase):
             self.admin.run_icommand(['iadmin', 'rmgroup', self.group])
             self.admin.run_icommand(['iadmin', 'rmzone', remote_zone])
 
-
     def test_mkgroup_with_no_zone(self):
         """Test mkgroup with no zone name provided."""
         try:
@@ -2760,9 +2763,12 @@ class test_mkuser_group(unittest.TestCase):
             self.assertEqual('rodsgroup', lib.get_user_type(self.admin, self.group))
             self.assertEqual(self.admin.zone_name, lib.get_user_zone(self.admin, self.group))
 
+            # From issue #2978: Ensure that the group does not add itself as a member on creation.
+            self.admin.assert_icommand(
+                ["iadmin", "lg", self.group], "STDOUT", f"Members of group {self.group}:\nNo rows found")
+
         finally:
             self.admin.run_icommand(['iadmin', 'rmgroup', self.group])
-
 
     def test_mkgroup_with_local_zone(self):
         """Test mkgroup with local zone name provided."""
@@ -2773,7 +2779,6 @@ class test_mkuser_group(unittest.TestCase):
 
         finally:
             self.admin.run_icommand(['iadmin', 'rmgroup', self.group])
-
 
     def test_mkgroup_with_remote_zone(self):
         """Test mkgroup with remote zone name provided."""
