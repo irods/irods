@@ -744,8 +744,9 @@ _listRescTypes( rsComm_t* _rsComm ) {
     return result;
 }
 
-int
-_rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
+{
     int status;
     collInfo_t collInfo;
     const char *args[MAX_NUM_OF_ARGS_IN_ACTION];
@@ -908,6 +909,15 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                 // Store the user type here because we need to fetch it from the catalog and
                 // it will be used multiple times. Note: subject to TOCTOU problem.
                 const auto current_user_type = irods::user::get_type(*rsComm, user_name);
+
+                if ("rodsgroup" == current_user_type) {
+                    constexpr auto ec = SYS_NOT_ALLOWED;
+                    constexpr const char* msg =
+                        "Error: Using 'modify' with 'user' and type 'rodsgroup' is not allowed.";
+                    addRErrorMsg(&rsComm->rError, ec, msg);
+                    log_api::error("{}: {}", __func__, msg);
+                    return ec;
+                }
 
                 throw_if_downgrading_irods_service_account_rodsadmin(*rsComm, option, user_name, new_value);
 
