@@ -744,20 +744,23 @@ _listRescTypes( rsComm_t* _rsComm ) {
     return result;
 }
 
-int
-_rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
+{
     int status;
     collInfo_t collInfo;
     const char *args[MAX_NUM_OF_ARGS_IN_ACTION];
     int i, argc;
-    ruleExecInfo_t rei2;
 
-    memset( ( char* )&rei2, 0, sizeof( ruleExecInfo_t ) );
-    rei2.rsComm = rsComm;
-    if ( rsComm != NULL ) {
-        rei2.uoic = &rsComm->clientUser;
-        rei2.uoip = &rsComm->proxyUser;
+    if (nullptr == rsComm) {
+        log_api::error("{}: rsComm is null.", __func__);
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
+
+    ruleExecInfo_t rei2{};
+    rei2.rsComm = rsComm;
+    rei2.uoic = &rsComm->clientUser;
+    rei2.uoip = &rsComm->proxyUser;
 
     log_api::debug("_rsGeneralAdmin arg0={}", generalAdminInp->arg0);
 
@@ -907,6 +910,17 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                 // Store the user type here because we need to fetch it from the catalog and
                 // it will be used multiple times. Note: subject to TOCTOU problem.
                 const auto current_user_type = irods::user::get_type(*rsComm, user_name);
+
+                // If the client requested to "modify" a "user" of type "rodsgroup", return a warning message because we
+                // are trying to separate users and groups. This will result in an error in a future release because
+                // there are no plans to support modifying groups in the future other than adding and removing members.
+                if ("rodsgroup" == current_user_type) {
+                    constexpr auto ec = DEPRECATED_PARAMETER;
+                    constexpr const char* msg =
+                        "Warning: Using 'modify' with 'user' and type 'rodsgroup' is deprecated.";
+                    addRErrorMsg(&rsComm->rError, ec, msg);
+                    log_api::warn("{}: {}", __func__, msg);
+                }
 
                 throw_if_downgrading_irods_service_account_rodsadmin(*rsComm, option, user_name, new_value);
 
