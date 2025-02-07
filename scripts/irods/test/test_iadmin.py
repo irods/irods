@@ -1823,6 +1823,67 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             self.admin.run_icommand(["irmdir", test_collection_name])
             self.admin.run_icommand(["irm", "-f", test_dataobj_name])
 
+    def test_modzone_does_not_accept_invalid_zone_names_for_the_local_zone__issue_7722(self):
+        # Show that "iadmin modzone name" no longer accepts invalid zone names.
+        invalid_zone_name = 'überZone'
+        ec, _, _ = self.admin.assert_icommand(
+            ['iadmin', 'modzone', self.admin.zone_name, 'name', invalid_zone_name],
+            'STDERR',
+            ['-130000 SYS_INVALID_INPUT_PARAM'],
+            input='yes')
+        self.assertNotEqual(ec, 0)
+
+        # Show the zone name was not updated.
+        _, out, err = self.admin.assert_icommand(['iadmin', 'lz'], 'STDOUT')
+        self.assertNotIn(invalid_zone_name, out)
+        self.assertIn(self.admin.zone_name, out)
+        self.assertEqual(len(err), 0)
+
+        # Show the zone is still functional.
+        self.admin.assert_icommand(['ils'], 'STDOUT', [self.admin.session_collection + ':'])
+
+    def test_mkzone_does_not_accept_invalid_zone_names__issue_7722(self):
+        # Show that "iadmin mkzone" no longer accepts invalid zone names.
+        invalid_zone_name = 'überZone'
+        ec, _, _ = self.admin.assert_icommand(
+            ['iadmin', 'mkzone', invalid_zone_name, 'remote', 'localhost:1247'], 'STDERR', ['-130000 SYS_INVALID_INPUT_PARAM'])
+        self.assertNotEqual(ec, 0)
+
+        # Show the zone was not added.
+        _, out, err = self.admin.assert_icommand(['iadmin', 'lz'], 'STDOUT')
+        self.assertNotIn(invalid_zone_name, out)
+        self.assertIn(self.admin.zone_name, out)
+        self.assertEqual(len(err), 0)
+
+    def test_modzone_does_not_accept_invalid_zone_names_for_remote_zones__issue_7722(self):
+        good_zone_name = 'goodZoneIssue7722'
+
+        try:
+            self.admin.assert_icommand(['iadmin', 'mkzone', good_zone_name, 'remote', 'localhost:1247'])
+
+            # Show that "iadmin modzone name" no longer accepts invalid zone names.
+            # Modification of a zone name takes different code paths depending on whether
+            # the zone name matches the local zone or a remote zone.
+            invalid_zone_name = 'überZone'
+            ec, _, _ = self.admin.assert_icommand(
+                ['iadmin', 'modzone', good_zone_name, 'name', invalid_zone_name],
+                'STDERR',
+                ['-130000 SYS_INVALID_INPUT_PARAM'],
+                input='yes')
+            self.assertNotEqual(ec, 0)
+
+            # Show the zone name was not updated.
+            _, out, err = self.admin.assert_icommand(['iadmin', 'lz'], 'STDOUT')
+            self.assertNotIn(invalid_zone_name, out)
+            self.assertIn(good_zone_name, out)
+            self.assertEqual(len(err), 0)
+
+            # Show the local zone is still functional.
+            self.admin.assert_icommand(['ils'], 'STDOUT', [self.admin.session_collection + ':'])
+
+        finally:
+            self.admin.run_icommand(['iadmin', 'rmzone', good_zone_name])
+
 class Test_Iadmin_Resources(resource_suite.ResourceBase, unittest.TestCase):
 
     def setUp(self):
