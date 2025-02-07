@@ -2606,7 +2606,7 @@ class test_moduser_group(unittest.TestCase):
         self.admin = session.mkuser_and_return_session('rodsadmin', 'otherrods', 'rods', lib.get_hostname())
         self.group = 'moduser_group'
         self.admin.assert_icommand(['iadmin', 'mkgroup', self.group])
-
+        self.moduser_deprecation_message = "Warning: Using 'modify' with 'user' and type 'rodsgroup' is deprecated."
 
     @classmethod
     def tearDownClass(self):
@@ -2616,75 +2616,80 @@ class test_moduser_group(unittest.TestCase):
             admin_session.assert_icommand(['iadmin', 'rmgroup', self.group])
             admin_session.assert_icommand(['iadmin', 'rmuser', self.admin.username])
 
+    def test_moduser_type_invalid_user_type_is_not_allowed__issue_2978(self):
+        """Test modifying the group's type (not allowed)."""
+        self.assertEqual("rodsgroup", lib.get_user_type(self.admin, self.group))
+        self.admin.assert_icommand(
+            ["iadmin", "moduser", self.group, "type", "invalid_user_type"], "STDERR", "-820000 CAT_INVALID_USER_TYPE")
+        self.assertEqual("rodsgroup", lib.get_user_type(self.admin, self.group))
 
-    def test_moduser_type(self):
+    def moduser_type_on_rodsgroup_is_not_allowed_test_impl(self, new_type):
         """Test modifying the group's type (not allowed)."""
         self.assertEqual('rodsgroup', lib.get_user_type(self.admin, self.group))
-        self.admin.assert_icommand(['iadmin', 'moduser', self.group, 'type', 'invalid_user_type'],
-                                   'STDERR', 'CAT_INVALID_USER_TYPE')
+        self.admin.assert_icommand(
+            ['iadmin', 'moduser', self.group, 'type', new_type], 'STDERR', '-169000 SYS_NOT_ALLOWED')
         self.assertEqual('rodsgroup', lib.get_user_type(self.admin, self.group))
 
-        self.admin.assert_icommand(['iadmin', 'moduser', self.group, 'type', 'rodsadmin'],
-                                   'STDERR', 'SYS_NOT_ALLOWED')
-        self.assertEqual('rodsgroup', lib.get_user_type(self.admin, self.group))
+    def test_moduser_type_rodsadmin_is_not_allowed__issue_2978(self):
+        self.moduser_type_on_rodsgroup_is_not_allowed_test_impl("rodsadmin")
 
-        self.admin.assert_icommand(['iadmin', 'moduser', self.group, 'type', 'rodsuser'],
-                                   'STDERR', 'SYS_NOT_ALLOWED')
-        self.assertEqual('rodsgroup', lib.get_user_type(self.admin, self.group))
+    def test_moduser_type_rodsuser_is_not_allowed__issue_2978(self):
+        self.moduser_type_on_rodsgroup_is_not_allowed_test_impl("rodsuser")
 
-        self.admin.assert_icommand(['iadmin', 'moduser', self.group, 'type', 'rodsgroup'],
-                                   'STDERR', 'SYS_NOT_ALLOWED')
-        self.assertEqual('rodsgroup', lib.get_user_type(self.admin, self.group))
+    def test_moduser_type_rodsgroup_is_not_allowed__issue_2978(self):
+        self.moduser_type_on_rodsgroup_is_not_allowed_test_impl("rodsgroup")
 
-        self.admin.assert_icommand(['iadmin', 'moduser', self.group, 'type', 'groupadmin'],
-                                   'STDERR', 'SYS_NOT_ALLOWED')
-        self.assertEqual('rodsgroup', lib.get_user_type(self.admin, self.group))
+    def test_moduser_type_rodsgroup_is_not_allowed__issue_2978(self):
+        self.moduser_type_on_rodsgroup_is_not_allowed_test_impl("groupadmin")
 
-
-    def test_moduser_zone(self):
+    def test_moduser_zone_for_rodsgroup_is_not_allowed__issue_2978(self):
         """Test modifying the user's zone (not supported)."""
         self.assertEqual(self.admin.zone_name, lib.get_user_zone(self.admin, self.group))
         self.admin.assert_icommand(['iadmin', 'moduser', self.group, 'zone', 'nopes'],
                                    'STDERR', 'CAT_INVALID_ARGUMENT')
         self.assertEqual(self.admin.zone_name, lib.get_user_zone(self.admin, self.group))
 
-
-    def test_moduser_comment(self):
-        """Test modifying the group's comment field."""
+    def test_moduser_comment_for_rodsgroup_is_not_allowed__issue_2978(self):
+        """Test modifying the group's comment field (deprecated)."""
         comment = 'this is a comment'
         self.assertEqual('', lib.get_user_comment(self.admin, self.group))
-        self.admin.assert_icommand(['iadmin', 'moduser', self.group, 'comment', comment])
+        self.admin.assert_icommand(
+            ["iadmin", "moduser", self.group, "comment", comment], "STDOUT", self.moduser_deprecation_message)
         self.assertEqual(comment, lib.get_user_comment(self.admin, self.group))
 
-        self.admin.assert_icommand(['iadmin', 'moduser', self.group, 'comment', ''])
+        self.admin.assert_icommand(
+            ["iadmin", "moduser", self.group, "comment", ""], "STDOUT", self.moduser_deprecation_message)
         self.assertEqual('', lib.get_user_comment(self.admin, self.group))
 
-    def test_moduser_info(self):
-        """Test modifying the group's info field."""
+    def test_moduser_info_for_rodsgroup_is_not_allowed__issue_2978(self):
+        """Test modifying the group's info field (deprecated)."""
         info = 'this is the info field'
         self.assertEqual('', lib.get_user_info(self.admin, self.group))
-        self.admin.assert_icommand(['iadmin', 'moduser', self.group, 'info', info])
+        self.admin.assert_icommand(
+            ["iadmin", "moduser", self.group, "info", info], "STDOUT", self.moduser_deprecation_message)
         self.assertEqual(info, lib.get_user_info(self.admin, self.group))
 
-        self.admin.assert_icommand(['iadmin', 'moduser', self.group, 'info', ''])
+        self.admin.assert_icommand(
+            ["iadmin", "moduser", self.group, "info", ""], "STDOUT", self.moduser_deprecation_message)
         self.assertEqual('', lib.get_user_info(self.admin, self.group))
 
-    def test_moduser_password(self):
-        """Test modifying the group's password."""
+    def test_moduser_password_for_rodsgroup_is_not_allowed__issue_2978(self):
+        """Test modifying the group's password (not allowed)."""
         host = socket.gethostname()
 
         # Make sure no password is set
         pw = 'abc'
         with self.assertRaises(Exception):
-            with session.make_session_for_existing_user(self.username, pw, host, self.admin.zone_name) as s:
+            with session.make_session_for_existing_user(self.group, pw, host, self.admin.zone_name) as s:
                 pass
 
         # Add password (and fail)
-        self.admin.assert_icommand(['iadmin', 'moduser', self.group, 'password', pw], 'STDERR')
+        self.admin.assert_icommand(
+            ['iadmin', 'moduser', self.group, 'password', pw], 'STDERR', '-169000 SYS_NOT_ALLOWED')
 
         # Make sure it didn't stick
         with self.assertRaises(Exception):
-            with session.make_session_for_existing_user(self.username, pw, host, self.admin.zone_name) as s:
+            with session.make_session_for_existing_user(self.group, pw, host, self.admin.zone_name) as s:
                 pass
 
 
