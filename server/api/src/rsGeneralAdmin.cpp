@@ -15,6 +15,7 @@
 #include "irods/irods_plugin_name_generator.hpp"
 #include "irods/irods_resource_manager.hpp"
 #include "irods/irods_file_object.hpp"
+#include "irods/irods_re_structs.hpp"
 #include "irods/irods_resource_constants.hpp"
 #include "irods/irods_load_plugin.hpp"
 #include "irods/irods_at_scope_exit.hpp"
@@ -178,6 +179,60 @@ namespace
             THROW(err, msg);
         }
     } // throw_if_password_is_being_set_on_a_group
+
+    auto modify_user(RsComm& _comm,
+                     std::string_view _user_name,
+                     std::string_view _user_type,
+                     std::string_view _option,
+                     std::string_view _value) -> int
+    {
+        try {
+            throw_if_downgrading_irods_service_account_rodsadmin(_comm, _option, _user_name, _value);
+            throw_if_group_is_changing_to_user_or_user_is_changing_to_group(_comm, _option, _user_type, _value);
+            throw_if_password_is_being_set_on_a_group(_comm, _option, _user_type);
+        }
+        catch (const irods::exception& e) {
+            log_api::error("{}: {}", __func__, e.client_display_what());
+            return e.code();
+        }
+
+        const char* args[MAX_NUM_OF_ARGS_IN_ACTION]{};
+
+        args[0] = _user_name.data();
+        args[1] = _option.data();
+
+        // The following comment / approach represents legacy behavior which we cannot modify at this time.
+        // Since the obfuscated password might contain commas, single or double quotes, etc, it's hard to escape for
+        // processing (often causing a seg fault), so for now just pass in a dummy string. It is also unlikely the
+        // microservice actually needs the obfuscated password.
+        constexpr const char* dummy_string = "obfuscatedPw";
+        args[2] = dummy_string;
+
+        constexpr int argc = 3;
+        RuleExecInfo rei{};
+        const auto free_rei =
+            irods::at_scope_exit{[&rei] { freeRuleExecInfoInternals(&rei, (FREE_MS_PARAM | FREE_DOINP)); }};
+        if (const auto ec = applyRuleArg("acPreProcForModifyUser", args, argc, &rei, NO_SAVE_REI); ec < 0) {
+            const auto rc = rei.status < 0 ? rei.status : ec;
+            log_api::error(
+                "rsGeneralAdmin: acPreProcForModifyUser error for {} and option {}, ec={}", _user_name, _option, rc);
+            return rc;
+        }
+
+        if (const auto ec = chlModUser(&_comm, _user_name.data(), _option.data(), _value.data()); 0 != ec) {
+            chlRollback(&_comm);
+            return ec;
+        }
+
+        if (const auto ec = applyRuleArg("acPostProcForModifyUser", args, argc, &rei, NO_SAVE_REI); ec < 0) {
+            const auto rc = rei.status < 0 ? rei.status : ec;
+            log_api::error(
+                "rsGeneralAdmin: acPostProcForModifyUser error for {} and option {}, ec={}", _user_name, _option, rc);
+            return rc;
+        }
+
+        return 0;
+    } // modify_user
 } // anonymous namespace
 
 int _check_rebalance_timestamp_avu_on_resource(
@@ -895,71 +950,28 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
 
     if ( strcmp( generalAdminInp->arg0, "modify" ) == 0 ) {
         if ( strcmp( generalAdminInp->arg1, "user" ) == 0 ) {
-            const auto user_name = std::string_view{generalAdminInp->arg2 ?
-                                                    generalAdminInp->arg2 : ""};
-
-            const auto option = std::string_view{generalAdminInp->arg3 ?
-                                                 generalAdminInp->arg3 : ""};
-
-            const auto new_value = std::string_view{generalAdminInp->arg4 ?
-                                                    generalAdminInp->arg4 : ""};
+            const auto user_name = std::string_view{generalAdminInp->arg2 ? generalAdminInp->arg2 : ""};
+            const auto option = std::string_view{generalAdminInp->arg3 ? generalAdminInp->arg3 : ""};
+            const auto new_value = std::string_view{generalAdminInp->arg4 ? generalAdminInp->arg4 : ""};
 
             try {
-                // Store the user type here because we need to fetch it from the catalog and
-                // it will be used multiple times. Note: subject to TOCTOU problem.
+                // Store the user type here because we need to fetch it from the catalog and it will be used multiple
+                // times. Subject to TOCTOU problem, but preventing illegal user type transitions protects against this.
                 const auto current_user_type = irods::user::get_type(*rsComm, user_name);
-
-                throw_if_downgrading_irods_service_account_rodsadmin(*rsComm, option, user_name, new_value);
-
-                throw_if_group_is_changing_to_user_or_user_is_changing_to_group(
-                    *rsComm, option, current_user_type, new_value);
-
-                throw_if_password_is_being_set_on_a_group(*rsComm, option, current_user_type);
+                if ("rodsgroup" == current_user_type) {
+                    constexpr auto ec = SYS_NOT_ALLOWED;
+                    constexpr const char* msg =
+                        "Error: Using 'modify' with 'user' and type 'rodsgroup' is not allowed.";
+                    addRErrorMsg(&rsComm->rError, ec, msg);
+                    log_api::info("{}: {}", __func__, msg);
+                    return ec;
+                }
+                return modify_user(*rsComm, user_name, current_user_type, option, new_value);
             }
             catch (const irods::exception& e) {
                 log_api::error("[{}:{}] - [{}]", __func__, __LINE__, e.client_display_what());
                 return e.code();
             }
-
-            args[0] = user_name.data();
-            args[1] = option.data();
-            /* Since the obfuscated password might contain commas, single or
-               double quotes, etc, it's hard to escape for processing (often
-               causing a seg fault), so for now just pass in a dummy string.
-               It is also unlikely the microservice actually needs the obfuscated
-               password. */
-            args[2] = "obfuscatedPw";
-            argc = 3;
-            i =  applyRuleArg( "acPreProcForModifyUser", args, argc, &rei2, NO_SAVE_REI );
-            if ( i < 0 ) {
-                if ( rei2.status < 0 ) {
-                    i = rei2.status;
-                }
-                log_api::error(
-                    "rsGeneralAdmin: acPreProcForModifyUser error for {} and option {}, stat={}", args[0], args[1], i);
-                return i;
-            }
-
-            status = chlModUser(rsComm, user_name.data(), option.data(), new_value.data());
-
-            if ( status == 0 ) {
-                i =  applyRuleArg( "acPostProcForModifyUser", args, argc, &rei2, NO_SAVE_REI );
-                if ( i < 0 ) {
-                    if ( rei2.status < 0 ) {
-                        i = rei2.status;
-                    }
-                    log_api::error(
-                        "rsGeneralAdmin: acPostProcForModifyUser error for {} and option {}, stat={}",
-                        args[0],
-                        args[1],
-                        i);
-                    return i;
-                }
-            }
-            if ( status != 0 ) {
-                chlRollback( rsComm );
-            }
-            return status;
         }
         if ( strcmp( generalAdminInp->arg1, "group" ) == 0 ) {
             userInfo_t ui;
