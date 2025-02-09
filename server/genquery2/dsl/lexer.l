@@ -57,7 +57,7 @@
     .|\n               { string_literal += YYText(); }
     <<EOF>>            { throw yy::parser::syntax_error{loc, fmt::format("missing closing single quote: [{}]", string_literal)}; }
 }
-[ \t\n]                ;
+[ \t\n]+               ;
 (?i:select)            return yy::parser::make_SELECT(loc);
 (?i:where)             return yy::parser::make_WHERE(loc);
 (?i:like)              return yy::parser::make_LIKE(loc);
