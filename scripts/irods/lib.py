@@ -772,6 +772,16 @@ def make_arbitrary_file(f_name, f_size, buffer_size=32*1024*1024):
 
             bytes_written += to_write
 
+def create_ascii_printable_file(filename, filesize, seed=None):
+    """Creates a file with pseudo-random ASCII printable characters."""
+    if seed is not None:
+        random.seed(seed)
+    import string
+    # This avoids control sequences.
+    safe_chars = string.digits + string.ascii_letters + string.punctuation + " "
+    with open(filename, "w") as f:
+        f.write("".join(random.choices(safe_chars, k=filesize)))
+
 def get_resource_parent_id(session, resource_name):
     return session.run_icommand(['iquest', '%s',
         "select RESC_PARENT where RESC_NAME = '{}'"
