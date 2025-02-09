@@ -234,7 +234,7 @@ auto stream_bytes(std::istream& in, std::ostream& out, int_type count) -> int
     int_type bytes_read = 0;
 
     for (int_type i = 0, n_reads = count / buffer_size; i < n_reads; ++i) {
-        while (in && out) {
+        if (in && out) {
             in.read(buf.data(), buf.size());
             out.write(buf.data(), in.gcount());
             bytes_read += in.gcount();
