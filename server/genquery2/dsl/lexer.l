@@ -54,7 +54,7 @@
                             string_literal.push_back(value);
                        }
     '                  { BEGIN(INITIAL); return yy::parser::make_STRING_LITERAL(string_literal, loc); }
-    .                  { string_literal += YYText(); }
+    .|\n               { string_literal += YYText(); }
     <<EOF>>            { throw yy::parser::syntax_error{loc, fmt::format("missing closing single quote: [{}]", string_literal)}; }
 }
 [ \t\n]                ;
