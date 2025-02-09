@@ -1,4 +1,3 @@
-from __future__ import print_function
 import os
 import sys
 import tempfile
@@ -486,3 +485,41 @@ class Test_Istream(session.make_sessions_mixin([('otherrods', 'rods')], [('alice
             self.user.run_icommand(['irm', '-f', data_object])
             self.admin.assert_icommand(['iadmin', 'rmresc', other_resc])
             self.admin.assert_icommand(['iadmin', 'rmresc', another_resc])
+
+    def test_istream_honors_argument_to_count_option_when_reading_part_of_a_replica__issue_8166(self):
+        local_filename = os.path.join(self.user.local_session_dir, "issue_8166_16MB.bin")
+        local_filesize = 16 * 1024 * 1024
+
+        try:
+            # Create a 16MB file containing random data and put it into iRODS.
+            lib.create_ascii_printable_file(local_filename, local_filesize)
+            self.user.assert_icommand(['iput', local_filename])
+
+            def do_test(offset, count):
+                # Show that istream now honors the argument to -c (i.e. count) correctly.
+                _, out, _ = self.user.assert_icommand(
+                    ['istream', 'read', '-o', str(offset), '-c', str(count), os.path.basename(local_filename)], 'STDOUT')
+                self.assertEqual(len(out), count)
+
+                # We must also verify the data that was read from the data object matches
+                # the content of the local file that was used to create the data object.
+                with open(local_filename) as f:
+                    f.seek(offset)
+                    data = f.read(count)
+                    self.assertEqual(data, out)
+
+            with self.subTest('Testing offset=0, count=4194304'):
+                # 4194304 is special because it is what causes istream to enter a code
+                # path which leads to reading all the replica's data.
+                do_test(offset=0, count=4194304)
+
+            # The following cases exist to help guard against future modifications.
+            with self.subTest('Testing offset=10000000, count=4194304'):
+                do_test(offset=10000000, count=4194304)
+
+            with self.subTest('Testing offset=(16MB - 100), count=100'):
+                do_test(offset=local_filesize - 100, count=100)
+
+        finally:
+            if os.path.exists(local_filename):
+                os.unlink(local_filename)
