@@ -257,6 +257,42 @@ TEST_CASE("GenQuery1 flex bison parser unescapes hex-escaped bytes")
     }
 }
 
+TEST_CASE("GenQuery1 flex bison parser suppors long sequence of whitespace characters between keywords")
+{
+    rodsEnv env;
+    _getRodsEnv(env);
+
+    // This query string intentionally contains spaces, tabs, and newlines.
+    // NOLINTNEXTLINE(modernize-avoid-c-arrays,cppcoreguidelines-avoid-c-arrays)
+    auto query_string = fmt::format(R"(select      		COLL_NAME
+
+
+        		where       	COLL_NAME
+=      				'{}')",
+                                    env.rodsHome);
+
+    genQueryInp_t input{};
+    irods::at_scope_exit_unsafe clear_input_structs{[&input] { clearGenQueryInp(&input); }};
+    const auto ec = parse_genquery1_string(query_string.c_str(), &input);
+    REQUIRE(ec == 0);
+
+    // Show the parser produces clear inputs for the GenQuery1 API.
+    // Check the SELECT clause.
+    INFO("input.selectInp.len = " << input.selectInp.len);
+    INFO("input.selectInp.inx[0] = " << input.selectInp.inx[0]);
+    INFO("input.selectInp.value[0] = " << input.selectInp.value[0]);
+    CHECK(1 == input.selectInp.len);
+    CHECK(COL_COLL_NAME == input.selectInp.inx[0]);
+    CHECK(1 == input.selectInp.value[0]);
+    // Check the WHERE clause.
+    INFO("input.sqlCondInp.len = " << input.sqlCondInp.len);
+    INFO("input.sqlCondInp.inx[0] = " << input.sqlCondInp.inx[0]);
+    INFO("input.sqlCondInp.value[0] = " << input.sqlCondInp.value[0]);
+    CHECK(1 == input.sqlCondInp.len);
+    CHECK(COL_COLL_NAME == input.sqlCondInp.inx[0]);
+    CHECK(fmt::format("= '{}'", env.rodsHome) == input.sqlCondInp.value[0]);
+}
+
 auto fillGenQueryInpFromStrCond(char* str, genQueryInp_t* genQueryInp) -> int
 {
     int n, m;
