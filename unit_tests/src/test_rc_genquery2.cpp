@@ -32,6 +32,10 @@ TEST_CASE("rc_genquery2")
         input.zone = nullptr;
 
         char* output{};
+        irods::at_scope_exit_unsafe free_output{[&output] {
+            // NOLINTNEXTLINE(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc)
+            std::free(output);
+        }};
         REQUIRE(rc_genquery2(static_cast<RcComm*>(conn), &input, &output) == 0);
         REQUIRE_FALSE(output == nullptr);
 
@@ -67,6 +71,10 @@ TEST_CASE("rc_genquery2")
         input.query_string = query_string.data();
 
         char* output{};
+        irods::at_scope_exit_unsafe free_output{[&output] {
+            // NOLINTNEXTLINE(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc)
+            std::free(output);
+        }};
         REQUIRE(rc_genquery2(static_cast<RcComm*>(conn), &input, &output) == 0);
         REQUIRE_FALSE(output == nullptr);
 
@@ -89,6 +97,10 @@ TEST_CASE("rc_genquery2")
         input.query_string = query_string.data();
 
         char* output{};
+        irods::at_scope_exit_unsafe free_output{[&output] {
+            // NOLINTNEXTLINE(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc)
+            std::free(output);
+        }};
         REQUIRE(rc_genquery2(static_cast<RcComm*>(conn), &input, &output) == 0);
         REQUIRE_FALSE(output == nullptr);
 
@@ -109,6 +121,10 @@ TEST_CASE("rc_genquery2")
         input.query_string = query_string.data();
 
         char* output{};
+        irods::at_scope_exit_unsafe free_output{[&output] {
+            // NOLINTNEXTLINE(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc)
+            std::free(output);
+        }};
         REQUIRE(rc_genquery2(static_cast<RcComm*>(conn), &input, &output) == 0);
         REQUIRE_FALSE(output == nullptr);
 
