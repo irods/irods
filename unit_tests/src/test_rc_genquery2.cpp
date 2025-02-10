@@ -3,6 +3,7 @@
 #include "irods/client_connection.hpp"
 #include "irods/genquery2.h"
 #include "irods/getRodsEnv.h"
+#include "irods/irods_at_scope_exit.hpp"
 #include "irods/rodsClient.h"
 #include "irods/rodsErrorTable.h"
 
@@ -116,6 +117,36 @@ TEST_CASE("rc_genquery2")
             CHECK_FALSE(result.empty());
             const auto expected = fmt::format("{}--{}", env.rodsHome, env.rodsUserName);
             CHECK(result.at(0).at(0).get_ref<const std::string&>() == expected);
+        }());
+    }
+
+    SECTION("#8182: supports long sequence of whitespace characters between keywords")
+    {
+        // This query string intentionally contains spaces, tabs, and newlines.
+        // The result of the query is the home collection of the user running the test.
+        // NOLINTNEXTLINE(modernize-avoid-c-arrays,cppcoreguidelines-avoid-c-arrays)
+        auto query_string = fmt::format(R"(select      		COLL_NAME
+
+
+        		where       	COLL_NAME
+=      				'{}')",
+                                        env.rodsHome);
+
+        Genquery2Input input{};
+        input.query_string = query_string.data();
+
+        char* output{};
+        irods::at_scope_exit_unsafe free_output{[&output] {
+            // NOLINTNEXTLINE(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc)
+            std::free(output);
+        }};
+        REQUIRE(rc_genquery2(static_cast<RcComm*>(conn), &input, &output) == 0);
+        REQUIRE_FALSE(output == nullptr);
+
+        REQUIRE_NOTHROW([&env, &output] {
+            const auto result = nlohmann::json::parse(output);
+            CHECK_FALSE(result.empty());
+            CHECK(result.at(0).at(0).get_ref<const std::string&>() == env.rodsHome);
         }());
     }
 }
