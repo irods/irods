@@ -2393,6 +2393,89 @@ class test_irepl_all_permission_levels__issue_7444_7465(unittest.TestCase):
 					self.user0.assert_icommand(['irm', '-f', logical_path])
 
 
+class test_iget_data_in_remote_zone(unittest.TestCase):
+	@classmethod
+	def setUpClass(self):
+		# Create a session as the administrator for the remote zone so we can do things in the remote zone.
+		self.remote_admin = session.make_session_for_existing_user(
+			test.settings.PREEXISTING_ADMIN_USERNAME,
+			test.settings.PREEXISTING_ADMIN_PASSWORD,
+			test.settings.FEDERATION.REMOTE_HOST,
+			test.settings.FEDERATION.REMOTE_ZONE)
+
+		# Create two users in the local zone and accompanying users in the remote zone.
+		local_user_name0 = 'smeagol'
+		local_user_name1 = 'bilbo'
+		self.user0 = session.mkuser_and_return_session(
+			'rodsuser', local_user_name0, 'spass', lib.get_hostname())
+		self.user1 = session.mkuser_and_return_session(
+			'rodsuser', local_user_name1, 'bpass', lib.get_hostname())
+
+		# Create a user in the remote zone for each local zone's test users. Don't give the user a password.
+		self.local_user0_remote_name = '#'.join([self.user0.username, self.user0.zone_name])
+		self.local_user1_remote_name = '#'.join([self.user1.username, self.user1.zone_name])
+		self.remote_admin.assert_icommand(['iadmin', 'mkuser', self.local_user0_remote_name, 'rodsuser'])
+		self.remote_admin.assert_icommand(['iadmin', 'mkuser', self.local_user1_remote_name, 'rodsuser'])
+
+	@classmethod
+	def tearDownClass(self):
+		# Clean up remote users and sessions.
+		self.remote_admin.run_icommand(['iadmin', 'rmuser', self.local_user0_remote_name])
+		self.remote_admin.run_icommand(['iadmin', 'rmuser', self.local_user1_remote_name])
+		self.remote_admin.__exit__()
+
+		# Clean up local users and sessions.
+		self.user0.__exit__()
+		self.user1.__exit__()
+		with session.make_session_for_existing_admin() as admin_session:
+			admin_session.run_icommand(['iadmin', 'rmuser', self.user0.username])
+			admin_session.run_icommand(['iadmin', 'rmuser', self.user1.username])
+
+	def test_iget_object_in_zoneB_as_user_in_zoneA_that_has_no_remote_user_in_zoneB_fails_correctly__issue_6421(self):
+		remote_zone = test.settings.FEDERATION.REMOTE_ZONE
+		logical_path = os.path.join(self.user0.remote_home_collection(remote_zone), "get_this_object")
+
+		try:
+			# Remove the user1 remote user so that it does not exist.
+			self.remote_admin.assert_icommand(['iadmin', 'rmuser', self.local_user1_remote_name])
+
+			# Create a data object in the remote zone in the remote user0's home collection.
+			content = "we hates it"
+			self.user0.assert_icommand(["istream", "write", logical_path], input=content)
+			self.user0.assert_icommand(["istream", "read", logical_path], "STDOUT", content)
+
+			# Try to get the data as user1 even though there is no remote user for user1. This should fail.
+			self.user1.assert_icommand(["iget", logical_path], "STDERR", "-317000 USER_INPUT_PATH_ERR")
+
+		finally:
+			self.remote_admin.run_icommand(['iadmin', 'mkuser', self.local_user1_remote_name, 'rodsuser'])
+			self.user0.run_icommand(["irm", "-f", logical_path])
+
+	def test_iget_object_in_zoneB_as_user_in_zoneA_that_has_no_permissions_fails_correctly__issue_6421(self):
+		remote_zone = test.settings.FEDERATION.REMOTE_ZONE
+		parent_collection = self.user0.remote_home_collection(remote_zone)
+		logical_path = os.path.join(parent_collection, "get_this_object")
+
+		try:
+			# Create a data object in the remote zone in the remote user0's home collection.
+			content = "we hates it"
+			self.user0.assert_icommand(["istream", "write", logical_path], input=content)
+			self.user0.assert_icommand(["istream", "read", logical_path], "STDOUT", content)
+
+			# Try to get the data as user1 even though the remote user1 has no permissions. This should fail.
+			self.user1.assert_icommand(["iget", logical_path], "STDERR", "-317000 USER_INPUT_PATH_ERR")
+
+			# Give the other user read permission on the parent collection.
+			self.user0.assert_icommand(["ichmod", "read_object", self.local_user1_remote_name, parent_collection])
+
+			# Try to get the data as user1 even though the remote user1 only has permissions on the parent collection.
+			# This should fail, too.
+			self.user1.assert_icommand(["iget", logical_path], "STDERR", "-317000 USER_INPUT_PATH_ERR")
+
+		finally:
+			self.user0.run_icommand(["irm", "-f", logical_path])
+
+
 class Test_GenQuery2_IQuery(SessionsMixin, unittest.TestCase):
 
 	# This test suite expects tempZone to contain the following users:
