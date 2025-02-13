@@ -152,3 +152,25 @@ class Test_IQuery(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.T
         query_string = f"select DATA_ACCESS_USER_NAME, DATA_ACCESS_USER_ZONE, count(DATA_ID) where DATA_NAME = '{data_name}' group by DATA_ACCESS_USER_NAME, DATA_ACCESS_USER_ZONE"
         json_string = json.dumps([[self.user.username, self.user.zone_name, '1']], separators=(',', ':'))
         self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+    def test_iquery_correctly_parses_queries_with_tabs_in_the_where_clause__issue_7795(self):
+        # Run a basic query to get the expected output.
+        query_string = f"select USER_ID where USER_NAME = '{self.user.username}'"
+        expected_output = self.user.assert_icommand(["iquery", query_string], "STDOUT")[1].strip()
+        expected_user_id = json.loads(expected_output)[0][0]
+
+        # Now construct a query that should return the same results, but with a tab in the where clause.
+        query_string_with_tab_in_where_clause = query_string + "\tand USER_TYPE = 'rodsuser'"
+
+        # iquest will succeed because it uses a real parser now.
+        user_id = self.user.assert_icommand(["iquest", "%s", query_string_with_tab_in_where_clause], "STDOUT")[1].strip()
+
+        # ...should match.
+        self.assertEqual(user_id, expected_user_id)
+
+        # iquery will succeed because it uses a real parser.
+        output = self.user.assert_icommand(["iquery", query_string_with_tab_in_where_clause], "STDOUT")[1].strip()
+        user_id = json.loads(output)[0][0]
+
+        # ...should match.
+        self.assertEqual(user_id, expected_user_id)
