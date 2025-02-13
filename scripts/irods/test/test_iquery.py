@@ -162,11 +162,12 @@ class Test_IQuery(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.T
         # Now construct a query that should return the same results, but with a tab in the where clause.
         query_string_with_tab_in_where_clause = query_string + "\tand USER_TYPE = 'rodsuser'"
 
-        # iquest will fail because there is a tab in the where clause.
-        self.user.assert_icommand(
-            ["iquest", "%s", query_string_with_tab_in_where_clause],
-            "STDOUT",
-            "CAT_NO_ROWS_FOUND: Nothing was found matching your query")
+        # iquest will succeed because it uses a real parser now.
+        output = self.user.assert_icommand(["iquest", "%s", query_string_with_tab_in_where_clause], "STDOUT")[1].strip()
+        user_id = json.loads(output)[0][0]
+
+        # ...should match.
+        self.assertEqual(user_id, expected_user_id)
 
         # iquery will succeed because it uses a real parser.
         output = self.user.assert_icommand(["iquery", query_string_with_tab_in_where_clause], "STDOUT")[1].strip()
