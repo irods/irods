@@ -2,6 +2,7 @@
 
 #include "irods/dataGet.h"
 #include "irods/dataObjInpOut.h"
+#include "irods/irods_client_server_negotiation.hpp"
 #include "irods/miscServerFunct.hpp"
 #include "irods/rcGlobalExtern.h"
 #include "irods/rcMisc.h"
@@ -58,6 +59,12 @@ remoteDataGet( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
     if ( ( status = svrToSvrConnect( rsComm, rodsServerHost ) ) < 0 ) {
         return status;
     }
+
+    // Store the negotiation results from the original client-to-server connection because it may differ from
+    // server-to-server communications. If the client is not using SSL/TLS in communications with this server and a
+    // legacy parallel transfer portal is opened to a different server, that other server may be expecting SSL/TLS
+    // communications if encryption is enabled in the server-to-server connection.
+    addKeyVal(&dataOprInp->condInput, irods::CS_NEG_RESULT_KW.c_str(), rsComm->negotiation_results);
 
     dataOprInp->srcL3descInx = convL3descInx( dataOprInp->srcL3descInx );
     status = rcDataGet( rodsServerHost->conn, dataOprInp, portalOprOut );
