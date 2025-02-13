@@ -1,11 +1,12 @@
 #ifndef RS_DATA_GET_HPP
 #define RS_DATA_GET_HPP
 
-#include "irods/rodsConnect.h"
-#include "irods/dataObjInpOut.h"
+struct DataOprInp;
+struct RsComm;
+struct portalOprOut;
+struct rodsServerHost;
 
-int rsDataGet( rsComm_t *rsComm, dataOprInp_t *dataGetInp, portalOprOut_t **portalOprOut );
-int remoteDataGet( rsComm_t *rsComm, dataOprInp_t *dataGetInp, portalOprOut_t **portalOprOut, rodsServerHost_t *rodsServerHost );
-int _rsDataGet( rsComm_t *rsComm, dataOprInp_t *dataGetInp, portalOprOut_t **portalOprOut );
+int rsDataGet(RsComm* rsComm, DataOprInp* dataGetInp, portalOprOut** portalOprOut);
+int remoteDataGet(RsComm* rsComm, DataOprInp* dataGetInp, portalOprOut** portalOprOut, rodsServerHost* rodsServerHost);
 
-#endif
+#endif // RS_DATA_GET_HPP

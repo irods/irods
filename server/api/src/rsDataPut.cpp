@@ -1,19 +1,13 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code (for the most part).  */
-/* See dataPut.h for a description of this API call.*/
-
-#include "irods/rcMisc.h"
-#include "irods/dataPut.h"
-#include "irods/rodsLog.h"
-#include "irods/miscServerFunct.hpp"
-#include "irods/rsGlobalExtern.hpp"
-#include "irods/rcGlobalExtern.h"
 #include "irods/rsDataPut.hpp"
 
-/* rsDataPut - this routine setup portalOprOut with the resource server
- * for parallel put operation.
- */
+#include "irods/dataObjInpOut.h"
+#include "irods/dataPut.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/rcConnect.h"
+#include "irods/rcGlobalExtern.h"
+#include "irods/rcMisc.h"
+#include "irods/rodsLog.h"
+#include "irods/rsGlobalExtern.hpp"
 
 int
 rsDataPut( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
@@ -38,7 +32,7 @@ rsDataPut( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
     }
 
     if ( remoteFlag == LOCAL_HOST ) {
-        status = _rsDataPut( rsComm, dataOprInp, portalOprOut );
+        status = setupSrvPortalForParaOpr(rsComm, dataOprInp, PUT_OPR, portalOprOut);
     }
     else {
         addKeyVal( &dataOprInp->condInput, EXEC_LOCALLY_KW, "" );
@@ -50,18 +44,6 @@ rsDataPut( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
 
     return status;
 }
-
-int
-_rsDataPut( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
-            portalOprOut_t **portalOprOut ) {
-    int status;
-
-    status = setupSrvPortalForParaOpr( rsComm, dataOprInp, PUT_OPR,
-                                       portalOprOut );
-
-    return status;
-}
-
 
 int
 remoteDataPut( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
