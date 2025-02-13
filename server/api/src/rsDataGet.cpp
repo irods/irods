@@ -1,18 +1,12 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code (for the most part).  */
-/* See dataGet.h for a description of this API call.*/
-
-#include "irods/rcMisc.h"
-#include "irods/dataGet.h"
-#include "irods/miscServerFunct.hpp"
-#include "irods/rsGlobalExtern.hpp"
-#include "irods/rcGlobalExtern.h"
 #include "irods/rsDataGet.hpp"
 
-/* rsDataGet - this routine setup portalOprOut with the resource server
- * for parallel get operation.
- */
+#include "irods/dataGet.h"
+#include "irods/dataObjInpOut.h"
+#include "irods/miscServerFunct.hpp"
+#include "irods/rcGlobalExtern.h"
+#include "irods/rcMisc.h"
+#include "irods/rodsConnect.h"
+#include "irods/rsGlobalExtern.hpp"
 
 int
 rsDataGet( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
@@ -37,7 +31,7 @@ rsDataGet( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
     }
 
     if ( remoteFlag == LOCAL_HOST ) {
-        status = _rsDataGet( rsComm, dataOprInp, portalOprOut );
+        status = setupSrvPortalForParaOpr(rsComm, dataOprInp, GET_OPR, portalOprOut);
     }
     else {
         addKeyVal( &dataOprInp->condInput, EXEC_LOCALLY_KW, "" );
@@ -48,17 +42,6 @@ rsDataGet( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
 
 
     return status;
-}
-
-int
-_rsDataGet( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
-            portalOprOut_t **portalOprOut ) {
-    return setupSrvPortalForParaOpr(
-               rsComm,
-               dataOprInp,
-               GET_OPR,
-               portalOprOut );
-
 }
 
 int
