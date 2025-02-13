@@ -317,6 +317,7 @@ int _writeString( char *writeId, char *writeStr, ruleExecInfo_t *rei )
         log::rule_engine::error({{"log_message", "Invalid output target"},
                                  {"output_target", writeId}});
         // clang-format on
+        return USER_FILE_DOES_NOT_EXIST;
     }
 
     return 0;

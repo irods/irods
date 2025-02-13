@@ -69,3 +69,31 @@ class Test_Irule(ResourceBase, unittest.TestCase):
             f.write(bad_rule)
 
         self.admin.assert_icommand_fail(['irule', '-F', path_to_file, '-r', 'irods_rule_engine_plugin-irods_rule_language-instance'], desired_rc=2)
+
+    # TODO (#4094): Write a similar test case for PREP
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
+    def test_irule_exits_nonzero_on_write_writeline_failure__issue_8095(self):
+        _, err, rc = self.admin.run_icommand(['irule', '-r', 'irods_rule_engine_plugin-irods_rule_language-instance', 'writeLine("/bad/path", "nopes")', 'null', 'null'])
+        self.assertIn('-310000 USER_FILE_DOES_NOT_EXIST', err)
+        self.assertNotEqual(rc, 0)
+
+    # TODO (#4094): Write a similar test case for PREP
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
+    def test_irule_exits_nonzero_on_write_writestring_failure__issue_8095(self):
+        _, err, rc = self.admin.run_icommand(['irule', '-r', 'irods_rule_engine_plugin-irods_rule_language-instance', 'writeString("/bad/path", "nopes")', 'null', 'null'])
+        self.assertIn('-310000 USER_FILE_DOES_NOT_EXIST', err)
+        self.assertNotEqual(rc, 0)
+
+    # TODO (#4094): Write a similar test case for PREP
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
+    def test_irule_exits_nonzero_on_write_writekeyvalpairs_failure__issue_8095(self):
+        _, err, rc = self.admin.run_icommand(['irule', '-r', 'irods_rule_engine_plugin-irods_rule_language-instance', 'msiString2KeyValPair("key=value",*Kvp); writeKeyValPairs("/bad/path", *Kvp, ":")', 'null', 'null'])
+        self.assertIn('-310000 USER_FILE_DOES_NOT_EXIST', err)
+        self.assertNotEqual(rc, 0)
+
+    # TODO (#4094): Write a similar test case for PREP
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
+    def test_irule_exits_nonzero_on_write_writebytesbuf_failure__issue_8095(self):
+        _, err, rc = self.admin.run_icommand(['irule', '-r', 'irods_rule_engine_plugin-irods_rule_language-instance', 'msiStrToBytesBuf("potato",*Buf); writeBytesBuf("/bad/path", *Buf);', 'null', 'null'])
+        self.assertIn('-310000 USER_FILE_DOES_NOT_EXIST', err)
+        self.assertNotEqual(rc, 0)
