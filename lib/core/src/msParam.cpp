@@ -570,6 +570,14 @@ int clearMsParam(msParam_t* msParam, int freeInOutStruct)
                 clearExecCmdOut(msParam->inOutStruct);
                 std::free(msParam->inOutStruct);
             }
+            // Do not free KeyValPair_MS_T unconditionally as this will lead
+            // to a use-after-free error. Additionally, this behavior matches the default
+            // of checking freeInOutStruct before freeing the data.
+            else if (std::strcmp(msParam->type, KeyValPair_MS_T) == 0 && freeInOutStruct > 0) {
+                clearKeyVal(static_cast<keyValPair_t*>(msParam->inOutStruct));
+                // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
+                std::free(msParam->inOutStruct);
+            }
             // This else-block must always be the final block in this if-ladder.
             // Changing the order of these if-blocks can result in memory leaks.
             else if (freeInOutStruct > 0) {
