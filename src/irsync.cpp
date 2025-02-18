@@ -27,7 +27,6 @@ main( int argc, char **argv ) {
     rcComm_t *conn;
     rodsArguments_t myRodsArgs;
     char *optStr, buffer[HUGE_NAME_LEN];
-    rodsPathInp_t rodsPathInp;
     objType_t srcType, destType;
     int nArgv;
     int i;
@@ -94,6 +93,8 @@ main( int argc, char **argv ) {
         exit( 1 );
     }
 
+    rodsPathInp_t rodsPathInp{};
+    irods::at_scope_exit freePath{[&rodsPathInp] { freeRodsPathInpMembers(&rodsPathInp); }};
     status = parse_command_line_path(argc, argv, optind, &myEnv, srcType,
                                      destType, 0, &rodsPathInp, &myRodsArgs);
 

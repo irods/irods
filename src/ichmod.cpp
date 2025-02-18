@@ -46,7 +46,8 @@ main( int argc, char **argv ) {
                         !strcmp( argv[myRodsArgs.optind], ACCESS_NO_INHERIT );
     int optind = doingInherit ? myRodsArgs.optind + 1 : myRodsArgs.optind + 2;
 
-    rodsPathInp_t rodsPathInp;
+    rodsPathInp_t rodsPathInp{};
+    irods::at_scope_exit freePath{[&rodsPathInp] { freeRodsPathInpMembers(&rodsPathInp); }};
     status = parseCmdLinePath( argc, argv, optind, &myEnv,
                                UNKNOWN_OBJ_T, NO_INPUT_T, 0, &rodsPathInp );
 

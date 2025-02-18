@@ -26,7 +26,6 @@ main( int argc, char **argv ) {
     rodsEnv myEnv;
     char *envFile;
     char buffer[MAX_NAME_LEN];
-    rodsPath_t rodsPath;
     rcComm_t *Conn;
     rErrMsg_t errMsg;
 
@@ -55,7 +54,8 @@ main( int argc, char **argv ) {
         exit( 0 );
     }
 
-    memset( ( char* )&rodsPath, 0, sizeof( rodsPath ) );
+    rodsPath_t rodsPath{};
+    irods::at_scope_exit freePath{[&rodsPath] { clearRodsPath(&rodsPath); }};
     rstrcpy( rodsPath.inPath, argv[ix], MAX_NAME_LEN );
     parseRodsPath( &rodsPath, &myEnv );
 
