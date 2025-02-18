@@ -3,6 +3,7 @@ add_library(
   irods_resource_plugin_obj-unixfilesystem
   OBJECT
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_is_in_host_list.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/private/irods_is_in_host_list.hpp"
 )
 objects_link_libraries(
   irods_resource_plugin_obj-unixfilesystem

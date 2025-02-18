@@ -1,10 +1,28 @@
-add_library(
-  irods_user_administration_common
-  OBJECT
+set(
+  IRODS_LIB_ADMINISTRATION_USER_SOURCES
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/user_administration.cpp"
+)
+
+set(
+  IRODS_LIB_ADMINISTRATION_USER_SOURCES_COMMON
   "${CMAKE_CURRENT_SOURCE_DIR}/src/common.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/group.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/user.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/utilities.cpp"
+)
+
+set(
+  IRODS_LIB_ADMINISTRATION_USER_HEADERS_PUBLIC
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/group.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/user.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/user_administration.hpp"
+)
+
+add_library(
+  irods_user_administration_common
+  OBJECT
+  "${IRODS_LIB_ADMINISTRATION_USER_SOURCES_COMMON}"
+  "${IRODS_LIB_ADMINISTRATION_USER_HEADERS_PUBLIC}"
 )
 objects_link_libraries(
   irods_user_administration_common
@@ -40,7 +58,8 @@ foreach(variant IN ITEMS client server)
   add_library(
     ${target_name}
     OBJECT
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/user_administration.cpp"
+    "${IRODS_LIB_ADMINISTRATION_USER_SOURCES}"
+    "${IRODS_LIB_ADMINISTRATION_USER_HEADERS_PUBLIC}"
   )
   objects_link_libraries(
     ${target_name}
@@ -84,10 +103,7 @@ target_compile_definitions(
 )
 
 install(
-  FILES
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/group.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/user.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/user_administration.hpp"
+  FILES ${IRODS_LIB_ADMINISTRATION_USER_HEADERS_PUBLIC}
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/irods"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
 )

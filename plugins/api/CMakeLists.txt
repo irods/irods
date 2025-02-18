@@ -3,6 +3,13 @@ add_custom_target(all-plugins-api)
 add_dependencies(all-plugins_no_database all-plugins-api)
 
 set(
+  IRODS_PLUGINS_API_HEADERS_COMMON_PUBLIC
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/plugins/api/api_plugin_number.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/plugins/api/api_plugin_number_map.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/plugins/api/api_plugin_number_data.h"
+)
+
+set(
   IRODS_API_PLUGINS
   experimental_api_plugin_adaptor
   helloworld
@@ -45,6 +52,7 @@ foreach(plugin IN LISTS IRODS_API_PLUGINS)
       ${plugin_target}
       MODULE
       "${CMAKE_CURRENT_SOURCE_DIR}/src/${plugin}.cpp"
+      "${IRODS_PLUGINS_API_HEADERS_COMMON_PUBLIC}"
     )
     set_property(TARGET ${plugin_target} PROPERTY LIBRARY_OUTPUT_NAME ${plugin_name})
     target_link_libraries(
@@ -92,6 +100,43 @@ foreach(plugin IN LISTS IRODS_API_PLUGINS)
   )
 endforeach()
 
+foreach(variant IN ITEMS client server)
+  target_link_libraries(
+    irods_api_plugin-authenticate_${variant}
+    PRIVATE
+    ${CMAKE_DL_LIBS}
+  )
+
+  target_link_libraries(
+    irods_api_plugin-experimental_api_plugin_adaptor_${variant}
+    PRIVATE
+    ${CMAKE_DL_LIBS}
+  )
+
+  target_sources(
+    irods_api_plugin-set_delay_server_migration_info_${variant}
+    PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/plugins/api/delay_server_migration_types.h"
+  )
+
+  target_sources(
+    irods_api_plugin-get_grid_configuration_value_${variant}
+    PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/plugins/api/grid_configuration_types.h"
+  )
+  target_sources(
+    irods_api_plugin-set_grid_configuration_value_${variant}
+    PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/plugins/api/grid_configuration_types.h"
+  )
+
+  target_sources(
+    irods_api_plugin-switch_user_${variant}
+    PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/plugins/api/switch_user_types.h"
+  )
+endforeach()
+
 target_link_libraries(
   irods_api_plugin-atomic_apply_acl_operations_server
   PRIVATE
@@ -101,17 +146,6 @@ target_include_directories(
   irods_api_plugin-atomic_apply_acl_operations_server
   PRIVATE
   "${IRODS_EXTERNALS_FULLPATH_NANODBC}/include"
-)
-
-target_link_libraries(
-  irods_api_plugin-authenticate_client
-  PRIVATE
-  ${CMAKE_DL_LIBS}
-)
-target_link_libraries(
-  irods_api_plugin-authenticate_server
-  PRIVATE
-  ${CMAKE_DL_LIBS}
 )
 
 target_link_libraries(
@@ -134,17 +168,6 @@ target_include_directories(
   irods_api_plugin-atomic_apply_metadata_operations_server
   PRIVATE
   "${IRODS_EXTERNALS_FULLPATH_NANODBC}/include"
-)
-
-target_link_libraries(
-  irods_api_plugin-experimental_api_plugin_adaptor_client
-  PRIVATE
-  ${CMAKE_DL_LIBS}
-)
-target_link_libraries(
-  irods_api_plugin-experimental_api_plugin_adaptor_server
-  PRIVATE
-  ${CMAKE_DL_LIBS}
 )
 
 target_link_libraries(
@@ -153,16 +176,14 @@ target_link_libraries(
   "${IRODS_EXTERNALS_FULLPATH_NANODBC}/lib/libnanodbc.so"
 )
 target_include_directories(
-  irods_api_plugin-set_delay_server_migration_info_client
+  irods_api_plugin-set_delay_server_migration_info_server
   PRIVATE
   "${IRODS_EXTERNALS_FULLPATH_NANODBC}/include"
 )
 
 install(
   FILES
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/plugins/api/api_plugin_number.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/plugins/api/api_plugin_number_map.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/plugins/api/api_plugin_number_data.h"
+  ${IRODS_PLUGINS_API_HEADERS_COMMON_PUBLIC}
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/plugins/api/delay_server_migration_types.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/plugins/api/grid_configuration_types.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/plugins/api/switch_user_types.h"

@@ -1,3 +1,30 @@
+set(
+  IRODS_SERVER_CONTROLPLANE_HEADERS_PUBLIC
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_server_control_plane.hpp"
+)
+
+set(
+  IRODS_SERVER_CONTROLPLANE_HEADERS_GENERATORS
+  "${CMAKE_IRODS_SOURCE_DIR}/schemas/messaging/v1/server_control_plane_command.json"
+)
+
+set(
+  IRODS_SERVER_CONTROLPLANE_HEADERS_GENERATED_PUBLIC
+  "${CMAKE_CURRENT_BINARY_DIR}/include/irods/server_control_plane_command.hpp"
+)
+
+set_source_files_properties(
+  "${IRODS_SERVER_CONTROLPLANE_HEADERS_GENERATORS}"
+  "${IRODS_SERVER_CONTROLPLANE_HEADERS_GENERATED_PUBLIC}"
+  PROPERTIES
+  HEADER_FILE_ONLY ON
+)
+set_source_files_properties(
+  "${IRODS_SERVER_CONTROLPLANE_HEADERS_GENERATED_PUBLIC}"
+  PROPERTIES
+  GENERATED ON
+)
+
 add_custom_command(
   OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/include/irods/"
   COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/include/irods/"
@@ -17,16 +44,13 @@ add_custom_target(
 )
 
 add_dependencies(all-server irods_server_control_plane_command_hpp)
-install(
-  FILES
-  "${CMAKE_CURRENT_BINARY_DIR}/include/irods/server_control_plane_command.hpp"
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/irods"
-  COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
-)
 
 add_library(
   irods_server_control_plane
   INTERFACE
+  "${IRODS_SERVER_CONTROLPLANE_HEADERS_PUBLIC}"
+  "${IRODS_SERVER_CONTROLPLANE_HEADERS_GENERATORS}"
+  "${IRODS_SERVER_CONTROLPLANE_HEADERS_GENERATED_PUBLIC}"
 )
 target_link_libraries(
   irods_server_control_plane
@@ -47,7 +71,8 @@ add_dependencies(
 
 install(
   FILES
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_server_control_plane.hpp"
+  ${IRODS_SERVER_CONTROLPLANE_HEADERS_PUBLIC}
+  ${IRODS_SERVER_CONTROLPLANE_HEADERS_GENERATED_PUBLIC}
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/irods"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
 )
