@@ -641,24 +641,6 @@ static void partialDataPut_impl(portalTransferInp_t* myInput)
         ( myInput->rsComm->negotiation_results ==
           irods::CS_NEG_USE_SSL );
 
-    // The rsComm negotiation_results represents the server-to-server connection negotiation and this may differ from
-    // that of the original client-to-server connection negotiation. This would result in communications between the
-    // client and the server via the portal to use encryption on the server side and not the client side, which leads
-    // to errors. As such, the client-to-server negotiation is stashed in a key-val pair in the input to the portal
-    // operation for legacy parallel transfers. We check to see whether the the original client-to-server connection
-    // negotiation is using SSL/TLS. If it is not, explicitly set the use_encryption_flg to false so that the client
-    // and this server are communicating with the same protocol via the direct portal.
-    if (use_encryption_flg) {
-        const char* negotiation_result =
-            getValByKey(&myInput->rsComm->portalOpr->dataOprInp.condInput, irods::CS_NEG_RESULT_KW.c_str());
-        if (nullptr == negotiation_result || irods::CS_NEG_USE_SSL != negotiation_result) {
-            log_server::info(
-                "{}: Client is not using SSL/TLS but server-to-server communication is. Not using encryption.",
-                __func__);
-            use_encryption_flg = false;
-        }
-    }
-
     myInput->status = 0;
     destL3descInx = myInput->destFd;
     srcFd = myInput->srcFd;
@@ -923,24 +905,6 @@ static void partialDataGet_impl(portalTransferInp_t* myInput)
     bool use_encryption_flg =
         ( myInput->rsComm->negotiation_results ==
           irods::CS_NEG_USE_SSL );
-
-    // The rsComm negotiation_results represents the server-to-server connection negotiation and this may differ from
-    // that of the original client-to-server connection negotiation. This would result in communications between the
-    // client and the server via the portal to use encryption on the server side and not the client side, which leads
-    // to errors. As such, the client-to-server negotiation is stashed in a key-val pair in the input to the portal
-    // operation for legacy parallel transfers. We check to see whether the the original client-to-server connection
-    // negotiation is using SSL/TLS. If it is not, explicitly set the use_encryption_flg to false so that the client
-    // and this server are communicating with the same protocol via the direct portal.
-    if (use_encryption_flg) {
-        const char* negotiation_result =
-            getValByKey(&myInput->rsComm->portalOpr->dataOprInp.condInput, irods::CS_NEG_RESULT_KW.c_str());
-        if (nullptr == negotiation_result || irods::CS_NEG_USE_SSL != negotiation_result) {
-            log_server::info(
-                "{}: Client is not using SSL/TLS but server-to-server communication is. Not using encryption.",
-                __func__);
-            use_encryption_flg = false;
-        }
-    }
 
     // =-=-=-=-=-=-=-
     // create an encryption context
