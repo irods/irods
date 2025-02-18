@@ -776,6 +776,16 @@ static void partialDataPut_impl(portalTransferInp_t* myInput)
                     this_iv.assign(
                         &buf[0],
                         &buf[ iv_size ] );
+                    if (iv_size > new_size) {
+                        log_server::error("{}: Unable to extract cipher to decrypt data: Start position ({}) comes "
+                                          "after end position ({}). This is likely due to mismatched client-server "
+                                          "negotiation settings resulting in one-sided encrypted communications.",
+                                          __func__,
+                                          iv_size,
+                                          new_size);
+                        myInput->status = SYS_SOCK_READ_ERR;
+                        break;
+                    }
                     cipher.assign(
                         &buf[ iv_size ],
                         &buf[ new_size ] );
@@ -849,7 +859,7 @@ static void partialDataPut_impl(portalTransferInp_t* myInput)
     mySockClose( srcFd );
 
     return;
-}
+} // partialDataPut_impl
 
 void partialDataPut(portalTransferInp_t* myInput)
 {
@@ -860,9 +870,11 @@ void partialDataPut(portalTransferInp_t* myInput)
     }
     catch (const irods::exception& e) {
         log_server::error("{}: Caught irods::exception: {}", __func__, e.client_display_what());
+        myInput->status = static_cast<int>(e.code());
     }
     catch (const std::exception& e) {
         log_server::error("{}: Caught std::exception: {}", __func__, e.what());
+        myInput->status = SYS_LIBRARY_ERROR;
     }
 } // partialDataPut
 
@@ -1104,7 +1116,7 @@ static void partialDataGet_impl(portalTransferInp_t* myInput)
     CLOSE_SOCK( destFd );
 
     return;
-}
+} // partialDataGet_impl
 
 void partialDataGet(portalTransferInp_t* myInput)
 {
@@ -1115,9 +1127,11 @@ void partialDataGet(portalTransferInp_t* myInput)
     }
     catch (const irods::exception& e) {
         log_server::error("{}: Caught irods::exception: {}", __func__, e.client_display_what());
+        myInput->status = static_cast<int>(e.code());
     }
     catch (const std::exception& e) {
         log_server::error("{}: Caught std::exception: {}", __func__, e.what());
+        myInput->status = SYS_LIBRARY_ERROR;
     }
 } // partialDataGet
 
@@ -1253,6 +1267,16 @@ remToLocPartialCopy( portalTransferInp_t *myInput ) {
                 this_iv.assign(
                     &buf[ 0 ],
                     &buf[ iv_size ] );
+                if (iv_size > new_size) {
+                    log_server::error("{}: Unable to extract cipher to decrypt data: Start position ({}) comes after "
+                                      "end position ({}). This is likely due to mismatched client-server negotiation "
+                                      "settings resulting in one-sided encrypted communications.",
+                                      __func__,
+                                      iv_size,
+                                      new_size);
+                    myInput->status = SYS_SOCK_READ_ERR;
+                    break;
+                }
                 cipher.assign(
                     &buf[ iv_size ],
                     &buf[ new_size ] );
