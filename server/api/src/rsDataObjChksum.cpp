@@ -223,6 +223,8 @@ namespace
                                                   json& _verification_results)
     {
         char* ignore_checksum{};
+        // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
+        irods::at_scope_exit free_c_str{[&ignore_checksum] { std::free(ignore_checksum); }};
 
         if (const auto ec = verifyDataObjChksum(&_comm, &_replica, &ignore_checksum); ec < 0) {
             std::string msg;
