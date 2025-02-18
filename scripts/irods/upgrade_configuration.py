@@ -465,7 +465,8 @@ def convert_legacy_configuration_to_json(irods_config):
             'irods_transfer_buffer_size_for_parallel_transfer_in_megabytes': server_config_v2['advanced_settings']['transfer_buffer_size_for_parallel_transfer_in_megabytes'],
             "irods_ssl_verify_server": os.getenv("irodsSSLVerifyServer", 'hostname'),
             "irods_ssl_ca_certificate_file": os.getenv("irodsSSLCACertificateFile", ''),
-            "irods_ssl_ca_certificate_path": os.getenv("irodsSSLCACertificatePath", '')
+            "irods_ssl_ca_certificate_path": os.getenv("irodsSSLCACertificatePath", ''),
+            "irods_connection_pool_refresh_time_in_seconds": int(legacy_irods_environment.get('irodsConnectionPoolRefreshTime', 300))
             }
 
     #optional irods environment keys
