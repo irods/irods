@@ -27,8 +27,7 @@ main( int argc, char **argv ) {
     rErrMsg_t errMsg;
     rcComm_t *conn;
     rodsArguments_t myRodsArgs;
-    char *optStr;
-    rodsPathInp_t rodsPathInp;
+    char* optStr;
     int reconnFlag;
 
 
@@ -57,6 +56,8 @@ main( int argc, char **argv ) {
         exit( 1 );
     }
 
+    rodsPathInp_t rodsPathInp{};
+    irods::at_scope_exit freePath{[&rodsPathInp] { freeRodsPathInpMembers(&rodsPathInp); }};
     status = parseCmdLinePath( argc, argv, optind, &myEnv,
                                UNKNOWN_OBJ_T, UNKNOWN_OBJ_T, 0, &rodsPathInp );
 

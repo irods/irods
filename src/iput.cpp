@@ -28,7 +28,6 @@ main( int argc, char **argv ) {
     rErrMsg_t errMsg;
     rcComm_t *conn;
     rodsArguments_t myRodsArgs;
-    rodsPathInp_t rodsPathInp;
     int reconnFlag;
 
     rodsEnv myEnv;
@@ -37,6 +36,7 @@ main( int argc, char **argv ) {
         return status;
     }
 
+    rodsPathInp_t rodsPathInp{};
     int p_err = parse_opts_and_paths(
                     argc,
                     argv,
