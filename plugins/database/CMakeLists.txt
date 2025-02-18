@@ -2,6 +2,28 @@
 add_custom_target(all-plugins-database)
 add_dependencies(all-plugins all-plugins-database)
 
+set(
+  IRODS_PLUGINS_DATABASE_SOURCES
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/db_plugin.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/general_query.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/general_query_setup.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/general_update.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_catalog_properties.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_sql_logger.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/low_level_odbc.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/mid_level_routines.cpp"
+)
+
+set(
+  IRODS_PLUGINS_DATABASE_HEADERS_PRIVATE
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/private/irods_catalog_properties.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/private/irods_sql_logger.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/private/irods_zone_info.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/private/low_level.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/private/low_level_odbc.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/private/mid_level.hpp"
+)
+
 if (NOT ODBC_LIBRARY)
   find_library(ODBC_LIBRARY odbc)
   if (ODBC_LIBRARY)
@@ -37,14 +59,8 @@ foreach(plugin IN LISTS IRODS_DATABASE_PLUGINS)
   add_library(
     ${plugin_target}
     MODULE
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/db_plugin.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/general_query.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/general_query_setup.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/general_update.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_catalog_properties.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_sql_logger.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/low_level_odbc.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/mid_level_routines.cpp"
+    "${IRODS_PLUGINS_DATABASE_SOURCES}"
+    "${IRODS_PLUGINS_DATABASE_HEADERS_PRIVATE}"
   )
   set_property(TARGET ${plugin_target} PROPERTY LIBRARY_OUTPUT_NAME ${plugin_name})
   target_link_libraries(

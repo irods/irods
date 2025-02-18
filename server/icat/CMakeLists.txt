@@ -1,7 +1,20 @@
+set(
+  IRODS_SERVER_ICAT_SOURCES
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/icatHighLevelRoutines.cpp"
+)
+
+set(
+  IRODS_SERVER_ICAT_HEADERS_PUBLIC
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/icatDefines.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/icatHighLevelRoutines.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/icatStructs.hpp"
+)
+
 add_library(
   irods_server_icat
   OBJECT
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/icatHighLevelRoutines.cpp"
+  "${IRODS_SERVER_ICAT_SOURCES}"
+  "${IRODS_SERVER_ICAT_HEADERS_PUBLIC}"
 )
 objects_link_libraries(
   irods_server_icat
@@ -53,10 +66,7 @@ set_target_properties(irods_server_icat PROPERTIES INTERFACE_POSITION_INDEPENDEN
 set_target_properties(irods_server_icat PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
 install(
-  FILES
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/icatDefines.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/icatHighLevelRoutines.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/icatStructs.hpp"
+  FILES ${IRODS_SERVER_ICAT_HEADERS_PUBLIC}
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/irods"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
 )

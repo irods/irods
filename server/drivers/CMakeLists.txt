@@ -1,7 +1,18 @@
+set(
+  IRODS_SERVER_DRIVERS_SOURCES
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/fileDriver.cpp"
+)
+
+set(
+  IRODS_SERVER_DRIVERS_HEADERS_PUBLIC
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/fileDriver.hpp"
+)
+
 add_library(
   irods_server_drivers
   OBJECT
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/fileDriver.cpp"
+  "${IRODS_SERVER_DRIVERS_SOURCES}"
+  "${IRODS_SERVER_DRIVERS_HEADERS_PUBLIC}"
 )
 objects_link_libraries(
   irods_server_drivers
@@ -53,8 +64,7 @@ set_target_properties(irods_server_drivers PROPERTIES INTERFACE_POSITION_INDEPEN
 set_target_properties(irods_server_drivers PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
 install(
-  FILES
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/fileDriver.hpp"
+  FILES ${IRODS_SERVER_DRIVERS_HEADERS_PUBLIC}
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/irods"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
 )
