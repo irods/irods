@@ -1,6 +1,5 @@
-add_library(
-  irods_hasher
-  OBJECT
+set(
+  IRODS_LIB_HASHER_SOURCES
   "${CMAKE_CURRENT_SOURCE_DIR}/src/Hasher.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/MD5Strategy.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/SHA256Strategy.cpp"
@@ -9,6 +8,26 @@ add_library(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/SHA1Strategy.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/checksum.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_hasher_factory.cpp"
+)
+
+set(
+  IRODS_LIB_HASHER_HEADERS_PUBLIC
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/HashStrategy.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/Hasher.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/checksum.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_hasher_factory.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/ADLER32Strategy.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/MD5Strategy.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/SHA1Strategy.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/SHA256Strategy.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/SHA512Strategy.hpp"
+)
+
+add_library(
+  irods_hasher
+  OBJECT
+  "${IRODS_LIB_HASHER_SOURCES}"
+  "${IRODS_LIB_HASHER_HEADERS_PUBLIC}"
 )
 objects_link_libraries(
   irods_hasher
@@ -39,16 +58,7 @@ set_target_properties(irods_hasher PROPERTIES INTERFACE_POSITION_INDEPENDENT_COD
 set_target_properties(irods_hasher PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
 install(
-  FILES
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/HashStrategy.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/Hasher.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/checksum.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_hasher_factory.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/ADLER32Strategy.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/MD5Strategy.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/SHA1Strategy.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/SHA256Strategy.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/SHA512Strategy.hpp"
+  FILES ${IRODS_LIB_HASHER_HEADERS_PUBLIC}
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/irods"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
 )

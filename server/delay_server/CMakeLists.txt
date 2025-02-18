@@ -1,6 +1,17 @@
+set(
+  IRODS_SERVER_DELAYSERVER_SOURCES
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/irodsDelayServer.cpp"
+)
+
+set(
+  IRODS_SERVER_DELAYSERVER_HEADERS_PUBLIC
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irodsDelayServer.hpp"
+)
+
 add_executable(
   irodsDelayServer
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/irodsDelayServer.cpp"
+  "${IRODS_SERVER_DELAYSERVER_SOURCES}"
+  "${IRODS_SERVER_DELAYSERVER_HEADERS_PUBLIC}"
 )
 target_link_libraries(
   irodsDelayServer
@@ -40,8 +51,7 @@ install(
 )
 
 install(
-  FILES
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irodsDelayServer.hpp"
+  FILES ${IRODS_SERVER_DELAYSERVER_HEADERS_PUBLIC}
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/irods"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
 )

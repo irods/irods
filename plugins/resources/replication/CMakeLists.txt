@@ -1,12 +1,29 @@
-add_library(
-  irods_resource_plugin-replication
-  MODULE
+set(
+  IRODS_PLUGINS_RESOURCES_REPLICATION_SOURCES
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_create_write_replicator.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_object_oper.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_repl_rebalance.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_repl_retry.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_replicator.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/librepl.cpp"
+)
+
+set(
+  IRODS_PLUGINS_RESOURCES_REPLICATION_HEADERS_PRIVATE
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/private/irods_create_write_replicator.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/private/irods_object_oper.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/private/irods_oper_replicator.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/private/irods_repl_rebalance.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/private/irods_repl_retry.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/private/irods_repl_types.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/private/irods_replicator.hpp"
+)
+
+add_library(
+  irods_resource_plugin-replication
+  MODULE
+  "${IRODS_PLUGINS_RESOURCES_REPLICATION_SOURCES}"
+  "${IRODS_PLUGINS_RESOURCES_REPLICATION_HEADERS_PRIVATE}"
 )
 set_property(TARGET irods_resource_plugin-replication PROPERTY LIBRARY_OUTPUT_NAME "replication")
 target_link_libraries(
