@@ -6,6 +6,7 @@
 #include "irods/miscUtil.h"
 #include "irods/checksum.h"
 #include "irods/rcGlobalExtern.h"
+#include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_log.hpp"
 #include "irods/irods_hasher_factory.hpp"
 #include "irods/irods_path_recursion.hpp"
@@ -49,8 +50,10 @@ rsyncUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         return savedStatus;
     }
 
-    dataObjInp_t dataObjOprInp;
-    dataObjCopyInp_t dataObjCopyInp;
+    dataObjInp_t dataObjOprInp{};
+    irods::at_scope_exit clearDataObj{[&dataObjOprInp] { clearDataObjInp(&dataObjOprInp); }};
+    dataObjCopyInp_t dataObjCopyInp{};
+    irods::at_scope_exit clearDataObjCopy{[&dataObjCopyInp] { clearDataObjCopyInp(&dataObjCopyInp); }};
 
     if ( rodsPathInp->srcPath[0].objType <= COLL_OBJ_T &&
             rodsPathInp->targPath[0].objType <= COLL_OBJ_T ) {

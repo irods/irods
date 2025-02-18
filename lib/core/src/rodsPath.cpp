@@ -555,6 +555,30 @@ clearRodsPath( rodsPath_t *rodsPath ) {
     return;
 }
 
+auto freeRodsPathInpMembers(rodsPathInp_t* path) -> void
+{
+    if (nullptr == path) {
+        return;
+    }
+
+    for (int i{}; i < path->numSrc; i++) {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        clearRodsPath(&path->srcPath[i]);
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        clearRodsPath(&path->targPath[i]);
+    }
+    clearRodsPath(path->destPath);
+
+    // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
+    std::free(path->srcPath);
+    // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
+    std::free(path->destPath);
+    // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
+    std::free(path->targPath);
+
+    std::memset(path, 0, sizeof(rodsPathInp_t));
+} // freeRodsPathInpMembers
+
 char* escape_path(const char* _path)
 {
     static const std::map<char, std::string> special_char_mappings{
