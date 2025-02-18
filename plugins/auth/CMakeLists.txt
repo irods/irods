@@ -20,6 +20,7 @@ foreach(plugin IN LISTS IRODS_AUTH_PLUGINS)
       ${plugin_target}
       MODULE
       "${CMAKE_CURRENT_SOURCE_DIR}/src/${plugin}.cpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/plugins/auth/${plugin}.hpp"
     )
     #set_property(TARGET ${plugin_target} PROPERTY LIBRARY_OUTPUT_NAME ${plugin_name})
     target_link_libraries(

@@ -1,10 +1,21 @@
+set(
+  IRODS_LIB_ADMINISTRATION_RESOURCE_SOURCES
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/resource_administration.cpp"
+)
+
+set(
+  IRODS_LIB_ADMINISTRATION_RESOURCE_HEADERS_PUBLIC
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/resource_administration.hpp"
+)
+
 foreach(variant IN ITEMS client server)
   set(target_name "irods_resource_administration_${variant}")
 
   add_library(
     ${target_name}
     OBJECT
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/resource_administration.cpp"
+    "${IRODS_LIB_ADMINISTRATION_RESOURCE_SOURCES}"
+    "${IRODS_LIB_ADMINISTRATION_RESOURCE_HEADERS_PUBLIC}"
   )
   objects_link_libraries(
     ${target_name}
@@ -47,8 +58,7 @@ target_compile_definitions(
 )
 
 install(
-  FILES
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/resource_administration.hpp"
+  FILES ${IRODS_LIB_ADMINISTRATION_RESOURCE_HEADERS_PUBLIC}
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/irods"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
 )

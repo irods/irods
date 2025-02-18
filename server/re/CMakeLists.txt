@@ -1,6 +1,5 @@
-add_library(
-  irods_server_re
-  OBJECT
+set(
+  IRODS_SERVER_RE_SOURCES
   "${CMAKE_CURRENT_SOURCE_DIR}/src/extractAvuMS.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/msi_genquery2.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/genQueryMS.cpp"
@@ -26,6 +25,33 @@ add_library(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/reSysDataObjOpr.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/sharedmemory.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/testMS.cpp"
+)
+
+set(
+  IRODS_SERVER_RE_HEADERS_PUBLIC
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_ms_plugin.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_re_plugin.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_re_namespaceshelper.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_re_structs.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_re_ruleexistshelper.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_re_serialization.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/locks.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/msiHelper.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/reAction.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/reDataObjOpr.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/reDefines.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/reIn2p3SysRule.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/reNaraMetaData.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/reSysDataObjOpr.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/reconstants.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/sharedmemory.hpp"
+)
+
+add_library(
+  irods_server_re
+  OBJECT
+  "${IRODS_SERVER_RE_SOURCES}"
+  "${IRODS_SERVER_RE_HEADERS_PUBLIC}"
 )
 objects_link_libraries(
   irods_server_re
@@ -80,23 +106,7 @@ set_target_properties(irods_server_re PROPERTIES INTERFACE_POSITION_INDEPENDENT_
 set_target_properties(irods_server_re PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
 install(
-  FILES
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_ms_plugin.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_re_plugin.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_re_namespaceshelper.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_re_structs.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_re_ruleexistshelper.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_re_serialization.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/locks.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/msiHelper.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/reAction.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/reDataObjOpr.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/reDefines.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/reIn2p3SysRule.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/reNaraMetaData.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/reSysDataObjOpr.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/reconstants.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/sharedmemory.hpp"
+  FILES ${IRODS_SERVER_RE_HEADERS_PUBLIC}
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/irods"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
 )

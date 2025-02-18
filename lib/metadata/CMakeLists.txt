@@ -1,8 +1,20 @@
+set(
+  IRODS_LIB_METADATA_SOURCES
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/metadata.cpp"
+)
+
+set(
+  IRODS_LIB_METADATA_HEADERS_PUBLIC
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/metadata.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/entity.hpp"
+)
+
 foreach(variant IN ITEMS server client)
   add_library(
     irods_lib_metadata_${variant}
     OBJECT
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/metadata.cpp"
+    "${IRODS_LIB_METADATA_SOURCES}"
+    "${IRODS_LIB_METADATA_HEADERS_PUBLIC}"
   )
   objects_link_libraries(
     irods_lib_metadata_${variant}
@@ -50,9 +62,7 @@ target_compile_definitions(
 )
 
 install(
-  FILES
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/metadata.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/entity.hpp"
+  FILES ${IRODS_LIB_METADATA_HEADERS_PUBLIC}
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/irods"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
 )

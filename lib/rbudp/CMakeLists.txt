@@ -1,9 +1,22 @@
-add_library(
-  irods_rbudp
-  OBJECT
+set(
+  IRODS_LIB_RBUDP_SOURCES
   "${CMAKE_CURRENT_SOURCE_DIR}/src/QUANTAnet_rbudpBase_c.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/QUANTAnet_rbudpReceiver_c.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/QUANTAnet_rbudpSender_c.cpp"
+)
+
+set(
+  IRODS_LIB_RBUDP_HEADERS_PUBLIC
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/QUANTAnet_rbudpBase_c.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/QUANTAnet_rbudpReceiver_c.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/QUANTAnet_rbudpSender_c.h"
+)
+
+add_library(
+  irods_rbudp
+  OBJECT
+  "${IRODS_LIB_RBUDP_SOURCES}"
+  "${IRODS_LIB_RBUDP_HEADERS_PUBLIC}"
 )
 objects_link_libraries(
   irods_rbudp
@@ -33,10 +46,7 @@ set_target_properties(irods_rbudp PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE
 set_target_properties(irods_rbudp PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
 install(
-  FILES
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/QUANTAnet_rbudpBase_c.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/QUANTAnet_rbudpReceiver_c.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/QUANTAnet_rbudpSender_c.h"
+  FILES ${IRODS_LIB_RBUDP_HEADERS_PUBLIC}
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/irods"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
 )

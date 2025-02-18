@@ -1,6 +1,5 @@
-add_library(
-  irods_server_core
-  OBJECT
+set(
+  IRODS_SERVER_CORE_SOURCES
   "${CMAKE_CURRENT_SOURCE_DIR}/src/administration_utilities.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/atomic_apply_database_operations.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/client_api_allowlist.cpp"
@@ -60,62 +59,9 @@ add_library(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/user_validation_utilities.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/voting.cpp"
 )
-objects_link_libraries(
-  irods_server_core
-  PUBLIC
-  nlohmann_json::nlohmann_json
-  fmt::fmt
-  irods_common
-  irods_plugin_dependencies
-  PRIVATE
-  "${IRODS_EXTERNALS_FULLPATH_AVRO}/lib/libavrocpp.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_chrono.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
-  "${IRODS_EXTERNALS_FULLPATH_NANODBC}/lib/libnanodbc.so"
-  "${IRODS_EXTERNALS_FULLPATH_ZMQ}/lib/libzmq.so"
-  OpenSSL::SSL
-  OpenSSL::Crypto
-  ${CMAKE_DL_LIBS}
-  rt
-)
-target_include_directories(
-  irods_server_core
-  PUBLIC
-  "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-  "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/plugins/api/include>"
-  "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/api/include>"
-  "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/main_server/include>"
-  PRIVATE
-  "${IRODS_EXTERNALS_FULLPATH_AVRO}/include"
-  "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
-  "${IRODS_EXTERNALS_FULLPATH_CPPZMQ}/include"
-  "${IRODS_EXTERNALS_FULLPATH_NANODBC}/include"
-  "${IRODS_EXTERNALS_FULLPATH_ZMQ}/include"
-)
-target_compile_definitions(
-  irods_server_core
-  PUBLIC
-  ${IRODS_COMPILE_DEFINITIONS_PUBLIC}
-  PRIVATE
-  ${IRODS_COMPILE_DEFINITIONS_PRIVATE}
-  ENABLE_RE
-  RODS_CLERVER
-  IRODS_ENABLE_SYSLOG
-)
-set_target_properties(irods_server_core PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE TRUE)
-set_target_properties(irods_server_core PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
-if (IRODS_USE_LIBSYSTEMD)
-  objects_link_libraries(irods_server_core PRIVATE systemd::libsystemd)
-  target_compile_definitions(irods_server_core PRIVATE IRODS_USE_LIBSYSTEMD)
-endif()
-
-install(
-  FILES
+set(
+  IRODS_SERVER_CORE_HEADERS_PUBLIC
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/administration_utilities.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/atomic_apply_database_operations.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/catalog.hpp"
@@ -184,6 +130,70 @@ install(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/specColl.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/user_validation_utilities.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/voting.hpp"
+)
+
+add_library(
+  irods_server_core
+  OBJECT
+  "${IRODS_SERVER_CORE_SOURCES}"
+  "${IRODS_SERVER_CORE_HEADERS_PUBLIC}"
+)
+objects_link_libraries(
+  irods_server_core
+  PUBLIC
+  nlohmann_json::nlohmann_json
+  fmt::fmt
+  irods_common
+  irods_plugin_dependencies
+  PRIVATE
+  "${IRODS_EXTERNALS_FULLPATH_AVRO}/lib/libavrocpp.so"
+  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_chrono.so"
+  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
+  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so"
+  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so"
+  "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
+  "${IRODS_EXTERNALS_FULLPATH_NANODBC}/lib/libnanodbc.so"
+  "${IRODS_EXTERNALS_FULLPATH_ZMQ}/lib/libzmq.so"
+  OpenSSL::SSL
+  OpenSSL::Crypto
+  ${CMAKE_DL_LIBS}
+  rt
+)
+target_include_directories(
+  irods_server_core
+  PUBLIC
+  "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/plugins/api/include>"
+  "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/api/include>"
+  "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/main_server/include>"
+  PRIVATE
+  "${IRODS_EXTERNALS_FULLPATH_AVRO}/include"
+  "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
+  "${IRODS_EXTERNALS_FULLPATH_CPPZMQ}/include"
+  "${IRODS_EXTERNALS_FULLPATH_NANODBC}/include"
+  "${IRODS_EXTERNALS_FULLPATH_ZMQ}/include"
+)
+target_compile_definitions(
+  irods_server_core
+  PUBLIC
+  ${IRODS_COMPILE_DEFINITIONS_PUBLIC}
+  PRIVATE
+  ${IRODS_COMPILE_DEFINITIONS_PRIVATE}
+  ENABLE_RE
+  RODS_CLERVER
+  IRODS_ENABLE_SYSLOG
+)
+set_target_properties(irods_server_core PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE TRUE)
+set_target_properties(irods_server_core PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+
+if (IRODS_USE_LIBSYSTEMD)
+  objects_link_libraries(irods_server_core PRIVATE systemd::libsystemd)
+  target_compile_definitions(irods_server_core PRIVATE IRODS_USE_LIBSYSTEMD)
+endif()
+
+install(
+  FILES ${IRODS_SERVER_CORE_HEADERS_PUBLIC}
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/irods"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
 )

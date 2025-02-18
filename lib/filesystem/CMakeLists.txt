@@ -1,7 +1,21 @@
+set(
+  IRODS_LIB_FILESYSTEM_PATH_SOURCES
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/path.cpp"
+)
+
+set(
+  IRODS_LIB_FILESYSTEM_PATH_HEADERS_PUBLIC
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/filesystem_error.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/path.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/path_traits.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/path_utilities.hpp"
+)
+
 add_library(
   irods_filesystem_path
   OBJECT
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/path.cpp"
+  "${IRODS_LIB_FILESYSTEM_PATH_SOURCES}"
+  "${IRODS_LIB_FILESYSTEM_PATH_HEADERS_PUBLIC}"
 )
 target_include_directories(
   irods_filesystem_path
@@ -22,13 +36,38 @@ target_compile_definitions(
 set_target_properties(irods_filesystem_path PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE TRUE)
 set_target_properties(irods_filesystem_path PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
+set(
+  IRODS_LIB_FILESYSTEM_SOURCES
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/filesystem.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/collection_iterator.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/recursive_collection_iterator.cpp"
+)
+
+set(
+  IRODS_LIB_FILESYSTEM_HEADERS_PUBLIC
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem.hpp"
+)
+
+set(
+  IRODS_LIB_FILESYSTEM_HEADERS_SUBDIR_PUBLIC
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/collection_entry.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/collection_iterator.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/config.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/copy_options.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/filesystem.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/filesystem_error.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/object_status.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/permissions.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/recursive_collection_iterator.hpp"
+)
+
 foreach(variant IN ITEMS client server)
   add_library(
     irods_filesystem_${variant}
     OBJECT
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/filesystem.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/collection_iterator.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/recursive_collection_iterator.cpp"
+    "${IRODS_LIB_FILESYSTEM_SOURCES}"
+    "${IRODS_LIB_FILESYSTEM_HEADERS_PUBLIC}"
+    "${IRODS_LIB_FILESYSTEM_HEADERS_SUBDIR_PUBLIC}"
   )
   objects_link_libraries(
     irods_filesystem_${variant}
@@ -76,26 +115,15 @@ target_compile_definitions(
 )
 
 install(
-  FILES
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem.hpp"
+  FILES ${IRODS_LIB_FILESYSTEM_HEADERS_PUBLIC}
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/irods"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
 )
 
 install(
   FILES
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/collection_entry.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/collection_iterator.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/config.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/copy_options.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/path_utilities.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/filesystem.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/filesystem_error.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/object_status.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/path.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/path_traits.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/permissions.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/filesystem/recursive_collection_iterator.hpp"
+  ${IRODS_LIB_FILESYSTEM_PATH_HEADERS_PUBLIC}
+  ${IRODS_LIB_FILESYSTEM_HEADERS_SUBDIR_PUBLIC}
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/irods/filesystem"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
 )

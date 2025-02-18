@@ -3,6 +3,11 @@ add_custom_target(all-plugins-experimental)
 add_dependencies(all-plugins_no_database all-plugins-experimental)
 
 set(
+  IRODS_PLUGINS_EXPERIMENTAL_HEADERS_COMMON_PRIVATE
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/private/parallel_filesystem_operation.hpp"
+)
+
+set(
   IRODS_EXPERIMENTAL_API_PLUGINS
   copy
   remove
@@ -18,6 +23,7 @@ foreach(plugin IN LISTS IRODS_EXPERIMENTAL_API_PLUGINS)
     ${plugin_target}
     MODULE
     "${CMAKE_CURRENT_SOURCE_DIR}/src/${plugin}.cpp"
+    "${IRODS_PLUGINS_EXPERIMENTAL_HEADERS_COMMON_PRIVATE}"
   )
   set_property(TARGET ${plugin_target} PROPERTY LIBRARY_OUTPUT_NAME ${plugin_name})
   target_link_libraries(

@@ -114,7 +114,13 @@ foreach(test IN LISTS IRODS_UNIT_TESTS)
   unset_irods_test_variables()
 
   include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/test_config/irods_${test}.cmake")
-  add_executable(${IRODS_TEST_TARGET} ${IRODS_TEST_SOURCE_FILES})
+  add_executable(
+    ${IRODS_TEST_TARGET}
+    ${IRODS_TEST_SOURCE_FILES}
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_error_enum_matcher.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/unit_test_utils.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/test_config/irods_${test}.cmake"
+  )
   target_compile_definitions(${IRODS_TEST_TARGET} PRIVATE ${IRODS_COMPILE_DEFINITIONS_PRIVATE})
   if (DEFINED IRODS_TEST_LINK_OBJLIBRARIES)
     target_link_objects(${IRODS_TEST_TARGET} PRIVATE ${IRODS_TEST_LINK_OBJLIBRARIES})
