@@ -59,9 +59,6 @@ int getNewVarName( char *v, msParamArray_t *msParamArray );
 
 int mapExternalFuncToInternalProc( char *funcName );
 
-int _admShowDVM( ruleExecInfo_t *rei, rulevardef_t *inRuleVarDef, int inx );
-int _admShowFNM( ruleExecInfo_t *rei, rulefmapdef_t *inRuleFuncMapDef, int inx );
-
 int carryOverMsParam( msParamArray_t *sourceMsParamArray, msParamArray_t *targetMsParamArray );
 int checkFilePerms( char *fileName );
 int removeTmpVarName( msParamArray_t *msParamArray );
