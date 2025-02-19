@@ -7,7 +7,6 @@
 #include "irods/server_control_plane_command.hpp"
 
 #include <boost/thread.hpp>
-#include <boost/atomic.hpp>
 #include <zmq.hpp>
 
 #include <atomic>
