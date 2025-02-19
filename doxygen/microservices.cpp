@@ -10,25 +10,6 @@
 
 \section msicore Core Microservices
 
- \subsection msiruleengine Rule Engine Microservices
-  - #msiAdmShowDVM                              - Displays the currently loaded data variable mappings
-  - #msiAdmShowFNM                              - Displays the currently loaded microservices and action (function) name mappings
-
-  - #msiAdmReadDVMapsFromFileIntoStruct         - Reads a DVM configuration file into a DVM structure
-  - #msiAdmInsertDVMapsFromStructIntoDB         - Writes a DVM structure into the current DVM base
-  - #msiGetDVMapsFromDBIntoStruct               - Populates a DVM structure with DVMs from the given base name
-  - #msiAdmWriteDVMapsFromStructIntoFile        - Writes to file the DVMs within a given DVM structure
-
-  - #msiAdmReadFNMapsFromFileIntoStruct         - Reads a FNM configuration file into a FNM structure
-  - #msiAdmInsertFNMapsFromStructIntoDB         - Writes an FNM structure into the current FNM base
-  - #msiGetFNMapsFromDBIntoStruct               - Populates an FNM structure with FNMs from the given base name
-  - #msiAdmWriteFNMapsFromStructIntoFile        - Writes to file the FNMs within a given FNM structure
-
-  - #msiAdmReadMSrvcsFromFileIntoStruct         - Reads a microservice configuration file into a microservice structure
-  - #msiAdmInsertMSrvcsFromStructIntoDB         - Writes a microservice structure into the current microservices base
-  - #msiGetMSrvcsFromDBIntoStruct               - Populates a microservice structure with microservices from the given base name
-  - #msiAdmWriteMSrvcsFromStructIntoFile        - Writes to file the microservices within a given microservice structure
-
  \subsection msihelper Helper Microservices
   Can be called by client through irule.
   - #msiGetStdoutInExecCmdOut - Gets stdout buffer from ExecCmdOut into buffer
