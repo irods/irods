@@ -17,14 +17,12 @@
 void usage() {
     const char *msgs[] = {
         "Usage: iclienthints",
-        "iclienthints introspects the entire iRODS Zone for information about installed plugins, configured rules, and the like.",
-        "This configuration information will be generated in the form of a JSON",
-        "document which will validate using schemas found at https://schemas.irods.org.",
-        " ",
-        "Configuration files that are included in the zone report are base64 encoded.",
-        "They can be decoded from the command line by piping into 'base64 --decode'.",
         "",
-        " -h  this help",
+        "Introspects the entire iRODS zone for information about installed plugins,",
+        "configured rules, and the like.",
+        "",
+        "Options:",
+        "  -h, --help   Prints this message",
         ""
     };
     int i;
