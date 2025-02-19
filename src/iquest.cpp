@@ -77,25 +77,6 @@ usage() {
         "                    BETWEEN, etc.)",
         "  value             either a constant or a wild-carded expression.",
         "                    Use % and _ as wild-cards, and use \\ to escape them.",
-        " ",
-        "Examples:",
-        "  iquest \"SELECT DATA_NAME, DATA_CHECKSUM WHERE DATA_RESC_NAME LIKE 'demo%'\"  recorded checksum for each object in a demo resource",
-        "  iquest \"For %-12.12s size is %s\" \"SELECT DATA_NAME, DATA_SIZE WHERE COLL_NAME = '/tempZone/home/rods'\"  format object names as a left-justified 12-character column",
-        "  iquest \"SELECT COLL_NAME WHERE COLL_NAME LIKE '/tempZone/home/%'\"  home- and sub-colections",
-        "  iquest \"User %-6.6s has %-5.5s access to file %s\" \"SELECT USER_NAME, DATA_ACCESS_NAME, DATA_NAME WHERE COLL_NAME = '/tempZone/home/rods'\"  user access for each object in the rods home collection",
-        "  iquest \" %-5.5s access has been given to user %-6.6s for the file %s\" \"SELECT DATA_ACCESS_NAME, USER_NAME, DATA_NAME WHERE COLL_NAME = '/tempZone/home/rods'\"  alternate formatting for user access",
-        "  iquest no-distinct \"SELECT META_DATA_ATTR_NAME\"  allow multiple instances of the same result",
-        "  iquest \"SELECT RESC_NAME, RESC_LOC, RESC_VAULT_PATH, DATA_PATH WHERE DATA_NAME = 't2' AND COLL_NAME = '/tempZone/home/rods'\"  vault storage for a single object",
-        "  iquest \"User %-9.9s uses %14.14s bytes in %8.8s files in '%s'\" \"SELECT USER_NAME, SUM(DATA_SIZE), COUNT(DATA_NAME), RESC_NAME\"  storage used for each user on each resource",
-        "  iquest \"SELECT SUM(DATA_SIZE) WHERE COLL_NAME = '/tempZone/home/rods'\"  aggregate size of objects in the immediate rods home collection",
-        "  iquest \"SELECT SUM(DATA_SIZE) WHERE COLL_NAME LIKE '/tempZone/home/rods%'\"  aggregate size of rods home- and sub-collections",
-        "  iquest \"SELECT SUM(DATA_SIZE), RESC_NAME WHERE COLL_NAME LIKE '/tempZone/home/rods%'\"  aggregate size of rods home- and sub-collections for each resource",
-        "  iquest \"SELECT ORDER_DESC(DATA_ID) WHERE COLL_NAME LIKE '/tempZone/home/rods%'\"  ordered list of object IDs in rods home- and sub-collections",
-        "  iquest \"SELECT COUNT(DATA_ID) WHERE COLL_NAME LIKE '/tempZone/home/rods%'\"  count objects in rods home- and sub-collections",
-        "  iquest \"SELECT RESC_NAME WHERE RESC_CLASS_NAME IN ('bundle','archive')\"  bundle and archive resources",
-        "  iquest \"SELECT DATA_NAME, DATA_SIZE WHERE DATA_SIZE BETWEEN '100000' '100200'\"  objects between 100kB and 100.2kB",
-        "  iquest \"%s/%s %s\" \"SELECT COLL_NAME, DATA_NAME, DATA_CREATE_TIME WHERE COLL_NAME LIKE '/tempZone/home/rods%' AND DATA_CREATE_TIME LIKE '01508165%'\"  objects in rods home- and sub-collections created 2017-10-16 between UTC 14:43 and 15:00",
-        "  iquest \"%s/%s\" \"SELECT COLL_NAME, DATA_NAME WHERE DATA_RESC_NAME = 'replResc' and DATA_REPL_STATUS = '0'\"  objects replicated successfully to replResc",
         ""
     };
     int i;
@@ -105,6 +86,10 @@ usage() {
         }
         printf( "%s\n", msgs[i] );
     }
+    std::printf("\nSee https://docs.irods.org/%d.%d.%d/system_overview/genquery/#example-queries for examples.\n",
+                IRODS_VERSION_MAJOR,
+                IRODS_VERSION_MINOR,
+                IRODS_VERSION_PATCHLEVEL);
     printReleaseInfo( "iquest" );
 }
 
