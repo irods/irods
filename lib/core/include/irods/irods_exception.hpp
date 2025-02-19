@@ -65,9 +65,9 @@ namespace irods {
 
 }; // namespace irods
 
-#define THROW( _code, _msg ) ( throw irods::exception( _code, _msg, __FILE__, __LINE__, __PRETTY_FUNCTION__ ) )
-#define RE_THROW( _msg, _excp ) _excp.add_message( _msg ); throw _excp;
-#define CATCH_EXC_AND_RETURN( throwing_expression ) try { throwing_expression; } catch (const irods::exception& e) { rodsLog( LOG_ERROR, e.code(), "%s encountered an exception on line %d in file %s:\n%s", __PRETTY_FUNCTION__, __LINE__, __FILE__, e.what()); return e.code() }
-#define CATCH_EXC_AND_LOG( throwing_expression ) try { throwing_expression; } catch (const irods::exception& e) { rodsLog( LOG_ERROR, e.code(), "%s encountered an exception on line %d in file %s:\n%s", __PRETTY_FUNCTION__, __LINE__, __FILE__, e.what()); }
+#define THROW( _code, _msg ) ( throw irods::exception( _code, _msg, __FILE__, __LINE__, __PRETTY_FUNCTION__ ) ) // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+#define RE_THROW( _msg, _excp ) _excp.add_message( _msg ); throw _excp; // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+#define CATCH_EXC_AND_RETURN( throwing_expression ) try { throwing_expression; } catch (const irods::exception& e) { rodsLog( LOG_ERROR, e.code(), "%s encountered an exception on line %d in file %s:\n%s", __PRETTY_FUNCTION__, __LINE__, __FILE__, e.what()); return e.code() } // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+#define CATCH_EXC_AND_LOG( throwing_expression ) try { throwing_expression; } catch (const irods::exception& e) { rodsLog( LOG_ERROR, e.code(), "%s encountered an exception on line %d in file %s:\n%s", __PRETTY_FUNCTION__, __LINE__, __FILE__, e.what()); } // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
 
 #endif // IRODS_EXCEPTION_HPP
