@@ -9,20 +9,8 @@
 #include "irods/rcConnect.h"
 #include "irods/rodsConnect.h"
 
-#ifdef windows_platform
-    #include "irodsntutil.hpp"
-#endif
-
-#ifdef _WIN32
-    #include <mmsystem.h>
-    int win_connect_timeout;
-    MMRESULT win_connect_timer_id;
-#endif
-
-#ifndef _WIN32
-    #include <csetjmp>
-    jmp_buf Jcenv;
-#endif  /* _WIN32 */
+#include <csetjmp>
+jmp_buf Jcenv;
 
 #include "irods/hostname_cache.hpp"
 #include "irods/irods_client_server_negotiation.hpp"
@@ -708,9 +696,6 @@ int set_tcp_buffer_size(const int sock, const int tcp_buffer_size, const int soc
 
 int
 rodsSetSockOpt( int sock, int tcp_buffer_size ) {
-#ifdef _WIN32
-#error socket settings not implemented for windows
-#endif
 
     if ( tcp_buffer_size < 0 ) {
         rodsLog(LOG_ERROR, "rodsSetSockOpt: requested tcp buffer size is negative, changing to zero: %d", tcp_buffer_size);
@@ -927,11 +912,7 @@ connectToRhostWithRaddr( struct sockaddr_in *remoteAddr, int windowSize,
         const int status = connect( sock, ( struct sockaddr * ) remoteAddr,
                                     sizeof( struct sockaddr ) );
         if ( status < 0 ) {
-#ifdef _WIN32
-            closesocket( sock );
-#else
             close( sock );
-#endif /* WIN32 */
             if ( status == -1 ) {
                 return USER_SOCK_CONNECT_ERR - errno;
             }
@@ -1114,8 +1095,6 @@ int
 setRemoteAddr( int sock, struct sockaddr_in *remoteAddr ) {
 #if defined(aix_platform)
     socklen_t       laddrlen = sizeof( struct sockaddr );
-#elif defined(windows_platform)
-    int laddrlen = sizeof( struct sockaddr );
 #else
     uint         laddrlen = sizeof( struct sockaddr );
 #endif
@@ -1137,8 +1116,6 @@ int
 setLocalAddr( int sock, struct sockaddr_in *localAddr ) {
 #if defined(aix_platform)
     socklen_t       laddrlen = sizeof( struct sockaddr );
-#elif defined(windows_platform)
-    int         laddrlen = sizeof( struct sockaddr );
 #else
     uint         laddrlen = sizeof( struct sockaddr );
 #endif
@@ -1658,9 +1635,5 @@ mySockClose( int sock ) {
     shutdown( sock, SHUT_WR );
 #endif
 
-#if defined(windows_platform)
-    return closesocket( sock );
-#else
     return close( sock );
-#endif
 }
