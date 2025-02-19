@@ -448,13 +448,16 @@ int updateResToMsParam( msParam_t *var, Res *res, rError_t *errmsg ) {
         /* do not free msParam_t if its inOutStruct and inOutBuf are shared */
         if ( var->inOutStruct != NULL ) {
             free( var->inOutStruct );
+            var->inOutStruct = nullptr;
         }
         if ( var->inpOutBuf != NULL ) {
             free( var->inpOutBuf );
+            var->inpOutBuf = nullptr;
         }
     }
     if ( var->label != NULL ) {
         free( var->label );
+        var->label = nullptr;
     }
     return convertResToMsParam( var, res, errmsg );
 }
