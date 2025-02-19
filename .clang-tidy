@@ -54,6 +54,7 @@ WarningsAsErrors:
     -cppcoreguidelines-avoid-magic-numbers,
     -cppcoreguidelines-macro-usage,
     -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+    -cppcoreguidelines-pro-type-vararg,
     concurrency-thread-canceltype-asynchronous,
     google-build-namespaces,
     google-build-using-namespace,
