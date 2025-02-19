@@ -50,6 +50,7 @@ WarningsAsErrors:
     cert-flp30-c,
     cert-oop*,
     cppcoreguidelines-*,
+    -cppcoreguidelines-avoid-c-arrays,
     -cppcoreguidelines-avoid-magic-numbers,
     -cppcoreguidelines-macro-usage,
     -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
