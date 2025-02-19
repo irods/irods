@@ -150,7 +150,7 @@ usage() {
         "-n REPLICA_NUMBER",
         "          The replica number of the replica to checksum or verify.",
         "-R RESOURCE_NAME",
-        "          The leaf resource that contains the replica to checksum or verify.",
+        "          The root resource that contains the replica to checksum or verify.",
         "-r        Checksum data objects recursively.",
         "--silent  Suppresses output of checksums and output related to -r.",
         "-v        Verbose.",
