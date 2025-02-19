@@ -51,6 +51,7 @@ WarningsAsErrors:
     cert-oop*,
     cppcoreguidelines-*,
     -cppcoreguidelines-avoid-magic-numbers,
+    -cppcoreguidelines-macro-usage,
     -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
     concurrency-thread-canceltype-asynchronous,
     google-build-namespaces,
