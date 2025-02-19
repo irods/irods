@@ -10,9 +10,7 @@ const static std::map<const int, const std::string> irods_error_map = irods_erro
 #include "irods/irods_socket_information.hpp"
 
 #ifdef SYSLOG
-    #ifndef windows_platform
-        #include <syslog.h>
-    #endif
+    #include <syslog.h>
 #endif
 
 #include "irods/rodsLog.h"
@@ -26,16 +24,9 @@ const static std::map<const int, const std::string> irods_error_map = irods_erro
 #include <functional>
 #include <unordered_map>
 #include <sys/time.h>
+#include <unistd.h>
 #include "irods/irods_exception.hpp"
 #include "irods/irods_logger.hpp"
-
-#ifndef windows_platform
-    #include <unistd.h>
-#endif
-
-#ifdef windows_platform
-    #include "irodsntutil.hpp"
-#endif
 
 #define BIG_STRING_LEN MAX_NAME_LEN+300
 #include <cstdarg>
@@ -45,10 +36,6 @@ const static std::map<const int, const std::string> irods_error_map = irods_erro
 static int verbosityLevel = LOG_ERROR;
 static int sqlVerbosityLevel = 0;
 pid_t myPid = 0;
-
-#ifdef windows_platform
-static void rodsNtElog( char *msg );
-#endif
 
 std::string create_log_error_prefix() {
     std::string ret("remote addresses: ");
@@ -193,9 +180,6 @@ rodsLogAndErrorMsg( int level, rError_t *myError, int status,
     char errMsg[ERR_MSG_LEN];
 
     char extraInfo[100];
-#ifdef windows_platform
-    char nt_log_msg[2048];
-#endif
 
     if ( level > verbosityLevel ) {
         return;
@@ -254,35 +238,23 @@ rodsLogAndErrorMsg( int level, rError_t *myError, int status,
     }
     const size_t message_len = strlen( message );
     if ( message_len > 0 && message[message_len - 1] == '\n' ) {
-#ifndef windows_platform
         fprintf( errOrOut, "%s%s: %s", extraInfo, prefix, message );
         if ( myError != NULL ) {
             snprintf( errMsg, ERR_MSG_LEN,
                       "%s: %s", prefix, message );
             addRErrorMsg( myError, status, errMsg );
         }
-#else
-        sprintf( nt_log_msg, "%s%s: %s", extraInfo, prefix, message );
-        rodsNtElog( nt_log_msg );
-#endif
     }
     else {
-#ifndef windows_platform
         fprintf( errOrOut, "%s%s: %s\n", extraInfo, prefix, message );
         if ( myError != NULL ) {
             snprintf( errMsg, ERR_MSG_LEN,
                       "%s: %s\n", prefix, message );
             addRErrorMsg( myError, status, errMsg );
         }
-#else
-        sprintf( nt_log_msg, "%s%s: %s\n", extraInfo, prefix, message );
-        rodsNtElog( nt_log_msg );
-#endif
     }
 
-#ifndef windows_platform
     fflush( errOrOut );
-#endif
 
     forward_to_syslog(level, message);
 
@@ -410,48 +382,6 @@ rodsLogError( int level, int rodsErrorCode, const char *formatStr, ... ) {
     free( message );
     free( errSubName );
 }
-
-#ifdef windows_platform
-static void rodsNtElog( char *msg ) {
-    char log_fname[1024];
-    int fd;
-    int t;
-
-    if ( ProcessType == CLIENT_PT ) {
-        fprintf( stderr, "%s", msg );
-        return;
-    }
-
-    t = strlen( msg );
-    if ( msg[t - 1] == '\n' ) {
-        msg[t - 1] = '\0';
-        t = t - 1;
-    }
-
-    if ( iRODSNtServerRunningConsoleMode() ) {
-        t = strlen( msg );
-        if ( msg[t - 1] == '\n' ) {
-            fprintf( stderr, "%s", msg );
-        }
-        else {
-            fprintf( stderr, "%s\n", msg );
-        }
-        return;
-    }
-
-    t = strlen( msg );
-    if ( msg[t - 1] != '\n' ) {
-        msg[t] = '\n';
-        msg[t + 1] = '\0';
-        t = t + 1;
-    }
-
-    iRODSNtGetLogFilenameWithPath( log_fname );
-    fd = iRODSNt_open( log_fname, O_APPEND | O_WRONLY, 1 );
-    _write( fd, msg, t );
-    _close( fd );
-}
-#endif
 
 /*
  * This function will generate an ISO 8601 formatted
