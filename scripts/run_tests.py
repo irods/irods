@@ -9,6 +9,7 @@ import itertools
 import logging
 import optparse
 import os
+import shutil
 import subprocess
 import sys
 import fnmatch
@@ -174,6 +175,12 @@ if __name__ == '__main__':
             f.write(univmss_contents)
         os.chmod(univmss_testing, 0o544)
 
+    hello_testing = os.path.join(IrodsConfig().irods_directory, 'msiExecCmd_bin', 'hello')
+    if not os.path.exists(hello_testing):
+        hello_template = os.path.join(IrodsConfig().irods_directory, 'msiExecCmd_bin', 'hello.template')
+        shutil.copyfile(hello_template, hello_testing)
+        os.chmod(hello_testing, 0o544)
+
     if options.topology_test:
         irods.test.settings.RUN_IN_TOPOLOGY = True
         irods.test.settings.TOPOLOGY_FROM_RESOURCE_SERVER = options.topology_test == 'resource'
@@ -217,6 +224,7 @@ if __name__ == '__main__':
     print(results)
 
     os.remove(univmss_testing)
+    os.remove(hello_testing)
 
     if not results.wasSuccessful():
         sys.exit(1)

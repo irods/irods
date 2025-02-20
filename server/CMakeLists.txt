@@ -239,7 +239,7 @@ install(
 install(
   FILES
   "${CMAKE_IRODS_SOURCE_DIR}/msiExecCmd_bin/test_execstream.py"
-  "${CMAKE_IRODS_SOURCE_DIR}/msiExecCmd_bin/hello"
+  "${CMAKE_IRODS_SOURCE_DIR}/msiExecCmd_bin/hello.template"
   DESTINATION "${IRODS_HOME_DIRECTORY}/msiExecCmd_bin"
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
   PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ WORLD_READ
