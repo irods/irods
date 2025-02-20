@@ -93,7 +93,7 @@ def load_json_schema_from_web(schema_uri):
     try:
         response = requests.get(schema_uri, timeout=5)
     except NameError as e:
-        raise IrodsError('WARNING: Validation failed for {0} -- requests not installed'.format(name)) from e
+        raise IrodsError('WARNING: Validation failed -- requests not installed') from e
 
     # check response values
     try:
