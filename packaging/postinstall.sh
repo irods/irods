@@ -72,7 +72,7 @@ chown $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME $IRODS_HOME/version*
 chown $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME $IRODS_HOME/msiExecCmd_bin/test_execstream.py
 chown $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME $IRODS_HOME/msiExecCmd_bin/univMSSInterface.sh.template
 chown $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME $IRODS_HOME/msiExecCmd_bin/irodsServerMonPerf.template
-chown $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME $IRODS_HOME/msiExecCmd_bin/hello
+chown $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME $IRODS_HOME/msiExecCmd_bin/hello.template
 
 # =-=-=-=-=-=-=-
 # set permission on single testfile to a probably unresolvable uid
