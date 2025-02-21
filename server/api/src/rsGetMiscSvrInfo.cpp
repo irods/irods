@@ -75,13 +75,13 @@ rsGetMiscSvrInfo( rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo ) {
             auto asn_time_tmp = X509_get0_notAfter(cert);
             ASN1_TIME_to_tm(asn_time_tmp, &tmp_tm);
             std::strftime(&timebuf[0], 40, "%F %T %Z", &tmp_tm);
-            certinfo_json["notAfter"] = std::string(timebuf);
+            certinfo_json["not_after"] = std::string(timebuf);
 
             // set notBefore
             asn_time_tmp = X509_get0_notBefore(cert);
             ASN1_TIME_to_tm(asn_time_tmp, &tmp_tm);
             std::strftime(&timebuf[0], 40, "%F %T %Z", &tmp_tm);
-            certinfo_json["notBefore"] = std::string(timebuf);
+            certinfo_json["not_before"] = std::string(timebuf);
 
             // set pubkey
             auto* bio = BIO_new(BIO_s_mem());
@@ -90,7 +90,7 @@ rsGetMiscSvrInfo( rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo ) {
             const auto* pubkey = X509_get0_pubkey(cert);
             EVP_PKEY_print_public(bio, pubkey, 0, NULL);
             const auto biolen = BIO_get_mem_data(bio, &biodata);
-            certinfo_json["pubkey"] = std::string(biodata, biolen);
+            certinfo_json["public_key"] = std::string(biodata, biolen);
         }
 
     } else {
