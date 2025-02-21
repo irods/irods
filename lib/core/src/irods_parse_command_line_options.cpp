@@ -277,7 +277,7 @@ static int build_irods_path_structure(const path_list_t& _path_list,
         return USER__NULL_INPUT_ERR;
     }
 
-    freeRodsPathInpMembers(_rods_paths);
+    memset(_rods_paths, 0, sizeof(rodsPathInp_t));
 
     if ( _path_list.size() <= 0 ) {
         if ( ( _flag & ALLOW_NO_SRC_FLAG ) == 0 ) {
