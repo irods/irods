@@ -13,6 +13,7 @@
 #include "irods/miscServerFunct.hpp"
 #include "irods/rsGetMiscSvrInfo.hpp"
 
+#include <array>
 #include <nlohmann/json.hpp>
 
 int
@@ -70,18 +71,18 @@ rsGetMiscSvrInfo( rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo ) {
         const auto* cert = SSL_CTX_get0_certificate(rsComm->ssl_ctx);
         if(cert) {
             std::tm tmp_tm;
-            char timebuf[40] = { 0 };
+            std::array<char, 40> timebuf{};
             // set notAfter
             auto asn_time_tmp = X509_get0_notAfter(cert);
             ASN1_TIME_to_tm(asn_time_tmp, &tmp_tm);
             std::strftime(&timebuf[0], 40, "%F %T %Z", &tmp_tm);
-            certinfo_json["not_after"] = std::string(timebuf);
+            certinfo_json["not_after"] = std::string(timebuf.data());
 
             // set notBefore
             asn_time_tmp = X509_get0_notBefore(cert);
             ASN1_TIME_to_tm(asn_time_tmp, &tmp_tm);
             std::strftime(&timebuf[0], 40, "%F %T %Z", &tmp_tm);
-            certinfo_json["not_before"] = std::string(timebuf);
+            certinfo_json["not_before"] = std::string(timebuf.data());
 
             // set pubkey
             auto* bio = BIO_new(BIO_s_mem());
