@@ -642,6 +642,10 @@ int msiRenameLocalZoneCollection(msParam_t* _new_zone_name, ruleExecInfo_t* _rei
  *
  * \module core
  *
+ * \deprecated This microservice is deprecated as of 4.3.4 and will be removed
+ * in a later version of iRODS. See the documentation for this microservice in
+ * core.re.template for more information.
+ *
  * \since pre-2.1
  *
  *

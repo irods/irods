@@ -59,14 +59,20 @@ acRenameLocalZone(*oldZone, *newZone) {
 #acGetUserByDN(*arg,*OUT) {msiExecCmd("t","*arg","null","null","null",*OUT); }
 #
 # --------------------------------------------------------------------------
+# IMPORTANT: Setting the ACL policy to anything other than "STRICT"
+# is deprecated and will be disallowed in later versions of iRODS. It
+# is highly recommended that deployments relying on an ACL policy other
+# than "STRICT" develop a migration plan before upgrading to later
+# versions of iRODS.
+#
 # The following rule is for setting Access Control List (ACL) policy.
 # The possible modifiers are "STRICT", "STANDARD", or any other string,
 # in which case the "STANDARD" behavior will apply.
 #
-# "STANDARD" ACL policy permits permits rodsusers to see other
-# rodsusers' collections by allowing access to metadata which may
-# be sensitive, including data-object and sub-collection names in
-# other users' collections.
+# "STANDARD" ACL policy permits rodsusers to see other rodsusers'
+# collections by allowing access to metadata which may be sensitive,
+# including data-object and sub-collection names in other users'
+# collections.
 #
 # "STRICT" ACL policy will apply the General Query Access Control to
 # collections and dataobject metadata. Thus, ils and other operations
