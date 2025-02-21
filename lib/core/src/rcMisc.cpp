@@ -1839,6 +1839,19 @@ void clearDelayRuleUnlockInput(void* _p)
     std::memset(q, 0, sizeof(DelayRuleUnlockInput));
 } // clearDelayRuleClaimRemoveInput
 
+void clearMiscSvrInfo(void* _p)
+{
+    if (!_p) {
+        return;
+    }
+
+    auto* q = static_cast<MiscSvrInfo*>(_p);
+
+    free_pointer(q->certinfo.buf);
+
+    std::memset(q, 0, sizeof(MiscSvrInfo));
+}
+
 int
 parseMultiStr( char *strInput, strArray_t *strArray ) {
     char *startPtr, *endPtr;

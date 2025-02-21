@@ -16,9 +16,12 @@ typedef struct MiscSvrInfo {
     char relVersion[NAME_LEN];    // the release version number
     char apiVersion[NAME_LEN];    // the API version number
     char rodsZone[NAME_LEN];      // the zone of this server
+    bytesBuf_t certinfo;
 } miscSvrInfo_t;
 
-#define MiscSvrInfo_PI "int serverType; int serverBootTime; str relVersion[NAME_LEN]; str apiVersion[NAME_LEN]; str rodsZone[NAME_LEN];"
+#define MiscSvrInfo_PI                                                                                               \
+  "int serverType; int serverBootTime; str relVersion[NAME_LEN]; str apiVersion[NAME_LEN]; str rodsZone[NAME_LEN]; " \
+  "struct BinBytesBuf_PI;"
 
 #ifdef __cplusplus
 extern "C" {
