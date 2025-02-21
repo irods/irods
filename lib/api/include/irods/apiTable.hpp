@@ -323,7 +323,7 @@ static irods::apidef_t client_api_table_inp[] = {
         GET_MISC_SVR_INFO_AN, RODS_API_VERSION, NO_USER_AUTH, NO_USER_AUTH,
         NULL, 0, "MiscSvrInfo_PI", 0,
         boost::any(std::function<int(rsComm_t*,miscSvrInfo_t**)>(RS_GET_MISC_SVR_INFO)),
-        "api_get_misc_svr_info", irods::clearInStruct_noop, irods::clearOutStruct_noop,
+        "api_get_misc_svr_info", irods::clearInStruct_noop, clearMiscSvrInfo,
         (funcPtr)CALL_MISCSVRINFOOUT
     },
     {
