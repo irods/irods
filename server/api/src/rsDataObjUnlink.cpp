@@ -540,7 +540,7 @@ int dataObjUnlinkS(rsComm_t* rsComm,
                 return err.code();
             }
 
-            if (!has_prefix(dataObjInfo->filePath, vault_path.data())) {
+            if (UNREG_OPR != dataObjUnlinkInp->oprType && !has_prefix(dataObjInfo->filePath, vault_path.data())) {
                 dataObjUnlinkInp->oprType = UNREG_OPR;
 
                 logger::api::info("Replica is not in a vault. Unregistering replica and leaving it on "
