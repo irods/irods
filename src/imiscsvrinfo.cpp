@@ -10,6 +10,10 @@
 #include <irods/irods_client_api_table.hpp>
 #include <irods/irods_pack_table.hpp>
 
+#include <nlohmann/json.hpp>
+
+#include <string>
+
 void usage();
 
 int
@@ -82,6 +86,31 @@ main( int argc, char **argv ) {
         day = hr / 24;
         hr = hr % 24;
         printf( "up %d days, %d:%d\n", day, hr, min );
+    }
+    if (miscSvrInfo->certinfo.len > 0) {
+        printf("SSL/TLS Info:\n");
+        const char* certinfobuf = static_cast<char*>(miscSvrInfo->certinfo.buf);
+        nlohmann::json certinfo = nlohmann::json::parse(certinfobuf, certinfobuf + miscSvrInfo->certinfo.len);
+        printf("    enabled: %s\n", certinfo.at("ssl_enabled").dump().c_str());
+        certinfo.erase("ssl_enabled");
+        for (auto it = certinfo.begin(); it != certinfo.end(); ++it) {
+            if (it.value().type() == nlohmann::json::value_t::string) {
+                std::string temp_str = it.value().get<std::string>();
+                size_t ind = 4;
+                // indent values out by 4 spaces
+                while (ind < temp_str.size()) {
+                    if (temp_str.at(ind) == '\n') {
+                        temp_str.insert(ind + 1, "    ");
+                        ind += 4;
+                    }
+                    ind++;
+                }
+                printf("    %s: %s\n", it.key().c_str(), temp_str.c_str());
+            }
+            else {
+                printf("    %s: %s\n", it.key().c_str(), it.value().dump().c_str());
+            }
+        }
     }
     rcDisconnect( Conn );
 
