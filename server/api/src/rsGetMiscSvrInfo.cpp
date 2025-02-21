@@ -6,11 +6,14 @@
 
 /* script generated code */
 #include "irods/getMiscSvrInfo.h"
+#include "irods/irods_client_server_negotiation.hpp"
 #include "irods/irods_server_properties.hpp"
 #include "irods/irods_log.hpp"
 #include "irods/rodsVersion.h"
 #include "irods/miscServerFunct.hpp"
 #include "irods/rsGetMiscSvrInfo.hpp"
+
+#include <nlohmann/json.hpp>
 
 int
 rsGetMiscSvrInfo( rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo ) {
@@ -31,6 +34,7 @@ rsGetMiscSvrInfo( rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo ) {
         irods::log(PASS(ret));
         return ret.code();
     }
+
 
     if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         myOutSvrInfo->serverType = RCAT_ENABLED;
@@ -58,6 +62,43 @@ rsGetMiscSvrInfo( rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo ) {
     if ( ( tmpStr = getenv( SERVER_BOOT_TIME ) ) != NULL ) {
         myOutSvrInfo->serverBootTime = atoi( tmpStr );
     }
+
+    nlohmann::json certinfo_json;
+    if(irods::CS_NEG_USE_SSL == rsComm->negotiation_results && rsComm->ssl_ctx) {
+        certinfo_json["ssl_enabled"] = true;
+
+        const auto* cert = SSL_CTX_get0_certificate(rsComm->ssl_ctx);
+        std::tm tmp_tm;
+        char timebuf[40] = { 0 };
+        // set notAfter
+        auto asn_time_tmp = X509_get0_notAfter(cert);
+        ASN1_TIME_to_tm(asn_time_tmp, &tmp_tm);
+        std::strftime(&timebuf[0], 40, "%F %T %Z", &tmp_tm);
+        certinfo_json["notAfter"] = std::string(timebuf);
+
+        // set notBefore
+        asn_time_tmp = X509_get0_notBefore(cert);
+        ASN1_TIME_to_tm(asn_time_tmp, &tmp_tm);
+        std::strftime(&timebuf[0], 40, "%F %T %Z", &tmp_tm);
+        certinfo_json["notBefore"] = std::string(timebuf);
+
+        // set pubkey
+        auto* bio = BIO_new(BIO_s_mem());
+        irods::at_scope_exit free_bio {[&bio] { BIO_free(bio); } };
+        char* biodata;
+        const auto* pubkey = X509_get0_pubkey(cert);
+        EVP_PKEY_print_public(bio, pubkey, 0, NULL);
+        const auto biolen = BIO_get_mem_data(bio, &biodata);
+        certinfo_json["pubkey"] = std::string(biodata, biolen);
+
+    } else {
+        certinfo_json["ssl_enabled"] = false;
+    }
+
+    const auto json_str = certinfo_json.dump();
+    myOutSvrInfo->certinfo.buf = malloc(json_str.size());
+    myOutSvrInfo->certinfo.len = json_str.size();
+    memcpy(myOutSvrInfo->certinfo.buf, json_str.c_str(), myOutSvrInfo->certinfo.len);
 
     return 0;
 }
