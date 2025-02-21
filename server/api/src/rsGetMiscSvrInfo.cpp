@@ -68,28 +68,30 @@ rsGetMiscSvrInfo( rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo ) {
         certinfo_json["ssl_enabled"] = true;
 
         const auto* cert = SSL_CTX_get0_certificate(rsComm->ssl_ctx);
-        std::tm tmp_tm;
-        char timebuf[40] = { 0 };
-        // set notAfter
-        auto asn_time_tmp = X509_get0_notAfter(cert);
-        ASN1_TIME_to_tm(asn_time_tmp, &tmp_tm);
-        std::strftime(&timebuf[0], 40, "%F %T %Z", &tmp_tm);
-        certinfo_json["notAfter"] = std::string(timebuf);
+        if(cert) {
+            std::tm tmp_tm;
+            char timebuf[40] = { 0 };
+            // set notAfter
+            auto asn_time_tmp = X509_get0_notAfter(cert);
+            ASN1_TIME_to_tm(asn_time_tmp, &tmp_tm);
+            std::strftime(&timebuf[0], 40, "%F %T %Z", &tmp_tm);
+            certinfo_json["notAfter"] = std::string(timebuf);
 
-        // set notBefore
-        asn_time_tmp = X509_get0_notBefore(cert);
-        ASN1_TIME_to_tm(asn_time_tmp, &tmp_tm);
-        std::strftime(&timebuf[0], 40, "%F %T %Z", &tmp_tm);
-        certinfo_json["notBefore"] = std::string(timebuf);
+            // set notBefore
+            asn_time_tmp = X509_get0_notBefore(cert);
+            ASN1_TIME_to_tm(asn_time_tmp, &tmp_tm);
+            std::strftime(&timebuf[0], 40, "%F %T %Z", &tmp_tm);
+            certinfo_json["notBefore"] = std::string(timebuf);
 
-        // set pubkey
-        auto* bio = BIO_new(BIO_s_mem());
-        irods::at_scope_exit free_bio {[&bio] { BIO_free(bio); } };
-        char* biodata;
-        const auto* pubkey = X509_get0_pubkey(cert);
-        EVP_PKEY_print_public(bio, pubkey, 0, NULL);
-        const auto biolen = BIO_get_mem_data(bio, &biodata);
-        certinfo_json["pubkey"] = std::string(biodata, biolen);
+            // set pubkey
+            auto* bio = BIO_new(BIO_s_mem());
+            irods::at_scope_exit free_bio {[&bio] { BIO_free(bio); } };
+            char* biodata;
+            const auto* pubkey = X509_get0_pubkey(cert);
+            EVP_PKEY_print_public(bio, pubkey, 0, NULL);
+            const auto biolen = BIO_get_mem_data(bio, &biodata);
+            certinfo_json["pubkey"] = std::string(biodata, biolen);
+        }
 
     } else {
         certinfo_json["ssl_enabled"] = false;
