@@ -90,8 +90,26 @@ rsGetMiscSvrInfo( rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo ) {
             char* biodata;
             const auto* pubkey = X509_get0_pubkey(cert);
             EVP_PKEY_print_public(bio, pubkey, 0, NULL);
-            const auto biolen = BIO_get_mem_data(bio, &biodata);
+            auto biolen = BIO_get_mem_data(bio, &biodata);
             certinfo_json["public_key"] = std::string(biodata, biolen);
+
+            // set issuer name
+            BIO_reset(bio);
+            const auto* issuer_name = X509_get_issuer_name(cert);
+            X509_NAME_print(bio, issuer_name, 0);
+            biolen = BIO_get_mem_data(bio, &biodata);
+            certinfo_json["issuer_name"] = std::string(biodata, biolen);
+
+            // set subject name
+            BIO_reset(bio);
+            const auto* subject_name = X509_get_subject_name(cert);
+            X509_NAME_print(bio, subject_name, 0);
+            biolen = BIO_get_mem_data(bio, &biodata);
+            certinfo_json["subject_name"] = std::string(biodata, biolen);
+
+            //set signature algorithm
+            certinfo_json["signature_algorithm"] = std::string(OBJ_nid2ln(X509_get_signature_nid(cert)));
+
         }
     } else {
         certinfo_json["ssl_enabled"] = false;
