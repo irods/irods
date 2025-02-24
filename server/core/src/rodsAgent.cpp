@@ -558,7 +558,7 @@ int runIrodsAgentFactory(sockaddr_un agent_addr)
         std::signal(SIGTERM, SIG_DFL);
         std::signal(SIGCHLD, SIG_DFL);
         std::signal(SIGUSR1, SIG_DFL);
-        std::signal(SIGPIPE, SIG_DFL);
+        std::signal(SIGPIPE, SIG_IGN); // Ignore SIGPIPE so agents can handle it at the call site.
 
         status = receiveDataFromServer(conn_tmp_socket);
         if (status < 0) {
