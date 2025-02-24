@@ -585,6 +585,8 @@ class ResourceSuite(ResourceBase):
         # function called will return CAT_NO_ROWS_FOUND or something of that sort, which is also fine.
         self.assertNotEqual(str(0), lib.get_replica_size(self.admin, os.path.dirname(logical_path), 0))
 
+        self.admin.assert_icommand(['ils', '-L', logical_path], 'STDOUT') # For debugging.
+
         # Confirm the restart occurs and that the replica is the correct size at the end.
         self.admin.assert_icommand(iputcmd, 'STDOUT', "was restarted successfully")
         self.assertEqual(
