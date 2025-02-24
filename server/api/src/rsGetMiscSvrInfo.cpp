@@ -13,8 +13,9 @@
 #include "irods/miscServerFunct.hpp"
 #include "irods/rsGetMiscSvrInfo.hpp"
 
-#include <array>
 #include <nlohmann/json.hpp>
+
+#include <array>
 
 int
 rsGetMiscSvrInfo( rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo ) {
@@ -35,7 +36,6 @@ rsGetMiscSvrInfo( rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo ) {
         irods::log(PASS(ret));
         return ret.code();
     }
-
 
     if( irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         myOutSvrInfo->serverType = RCAT_ENABLED;
@@ -93,7 +93,6 @@ rsGetMiscSvrInfo( rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo ) {
             const auto biolen = BIO_get_mem_data(bio, &biodata);
             certinfo_json["public_key"] = std::string(biodata, biolen);
         }
-
     } else {
         certinfo_json["ssl_enabled"] = false;
     }
