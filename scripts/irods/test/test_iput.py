@@ -946,6 +946,7 @@ class test_iput_with_checksums(session.make_sessions_mixin(rodsadmins, rodsusers
             # self.object_name deleted in teardown
             os.unlink(local_file)
 
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Requires resolution of #6835")
     def test_server_rejects_invalid_server_config_options_for_checksum_read_buffer_size_in_bytes__issue_7947(self):
         self.object_name = 'test_server_rejects_invalid_server_config_options_for_checksum_read_buffer_size_in_bytes__issue_7947'
         server_config_filename = paths.server_config_path()
