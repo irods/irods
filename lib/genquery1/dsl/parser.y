@@ -207,6 +207,7 @@ auto add_column_to_projection_list(irods::experimental::genquery1::driver& _drv,
 
         // clang-format off
         if      (boost::iequals(*_fn, "order"))      { aggregate_fn = ORDER_BY; }
+        else if (boost::iequals(*_fn, "order_asc"))  { aggregate_fn = ORDER_BY; }
         else if (boost::iequals(*_fn, "order_desc")) { aggregate_fn = ORDER_BY_DESC; }
         else if (boost::iequals(*_fn, "min"))        { aggregate_fn = SELECT_MIN; }
         else if (boost::iequals(*_fn, "max"))        { aggregate_fn = SELECT_MAX; }
