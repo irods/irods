@@ -281,6 +281,23 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
             "iter_chained_queries_",
             lambda : ast.literal_eval(output) is True
         ), ( #----------------
+            # The following rule text is derived from the rule text above. The only difference
+            # between the two is the keyword used for sorting (i.e. order vs order_asc). This helps
+            # protect against regressions.
+            frame_rule('''\
+                import itertools
+                q = Query(callback,
+                          columns=["order(DATA_NAME)"],
+                          conditions="DATA_NAME like '03%' and COLL_NAME = '{{c}}'".format(c=TestCollection)
+                )
+                q2 = q.copy(conditions="DATA_NAME like '05%' and COLL_NAME = '{{c}}'".format(c=TestCollection))
+                chained_queries = itertools.chain(q, q2)
+                compare_this = [x for x in ('%04o'%y for y in range({max_count}+1)) if x[:2] in ('03','05')]
+                callback.writeLine('stdout',repr([x for x in chained_queries] == compare_this and len(compare_this)==128))
+                '''),
+            "iter_chained_queries_with_order_",
+            lambda : ast.literal_eval(output) is True
+        ), ( #----------------
             frame_rule('''\
                 #import pprint # - for DEBUG only
                 import itertools
@@ -314,11 +331,13 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
             with generateRuleFile(names_list = self.to_unlink,
                                   prefix = file_prefix) as f:
                 rule_file = f.name
-                print(rule_text.format(**locals()), file=f, end='')
-            output, err, rc = self.admin.run_icommand("irule -F " + rule_file)
+                populated_rule_text = rule_text.format(**locals())
+                print(populated_rule_text) # For debugging.
+                print(populated_rule_text, file=f, end='')
+            output, err, rc = self.admin.run_icommand("irule -r irods_rule_engine_plugin-python-instance -F " + rule_file)
             self.assertTrue(rc == 0, "icommand status ret = {r} output = '{o}' err='{e}'".format(r=rc,o=output,e=err))
             assertResult=assertion()
-            if  not  assertResult: print( "failing output ====> " + output + "\n<====" )
+            if not assertResult: print( "failing output ====> " + output + "\n<====" )
             self.assertTrue(assertResult, "test failed for prefix: {}".format(file_prefix))
 
 # remove the next line when msiGetMoreRows always returns an accurate value for continueInx
