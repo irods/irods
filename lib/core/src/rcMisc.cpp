@@ -3103,7 +3103,7 @@ getSelVal( char * c ) {
     }
     // =-=-=-=-=-=-=-
     // JMC - backport 4795
-    if ( !strcmp( c, "order" ) || !strcmp( c, "ORDER" ) ) {
+    if (!strcmp(c, "order") || !strcmp(c, "order_asc") || !strcmp(c, "ORDER") || !strcmp(c, "ORDER_ASC")) {
         return ORDER_BY;
     }
     if ( !strcmp( c, "order_desc" ) || !strcmp( c, "ORDER_DESC" ) ) {
