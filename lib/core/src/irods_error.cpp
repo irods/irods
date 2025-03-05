@@ -264,49 +264,4 @@ const char *error::status_token_     = " status [";
     bool error::ok() const {
         return status_;
     } // ok
-
-
-    error assert_error(
-        bool expr_,
-        long long code_,
-        const std::string& file_,
-        const std::string& function_,
-        const std::string& format_,
-        int line_,
-        ... ) {
-        error result = SUCCESS();
-        if ( !expr_ ) {
-            va_list ap;
-            va_start( ap, line_ );
-            const int buffer_size = 4096;
-            char buffer[buffer_size];
-            vsnprintf( buffer, buffer_size, format_.c_str(), ap );
-            va_end( ap );
-            std::stringstream msg;
-            msg << buffer;
-            result = error( false, code_, msg.str(), file_, line_, function_ );
-        }
-        return result;
-    }
-
-    error assert_pass(
-        const error& _prev_error,
-        const std::string& _file,
-        const std::string& _function,
-        const std::string& _format,
-        int _line,
-        ... ) {
-        std::stringstream msg;
-        if ( !_prev_error.ok() ) {
-            va_list ap;
-            va_start( ap, _line );
-            const int buffer_size = 4096;
-            char buffer[buffer_size];
-            vsnprintf( buffer, buffer_size, _format.c_str(), ap );
-            va_end( ap );
-            msg << buffer;
-        }
-        return error( msg.str(), _file, _line, _function, _prev_error );
-    }
-
 }; // namespace irods
