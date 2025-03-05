@@ -117,7 +117,6 @@
 #  include "irods/rsRuleExecMod.hpp"
 #  include "irods/rsRuleExecSubmit.hpp"
 #  include "irods/rsServerReport.hpp"
-#  include "irods/rsSimpleQuery.hpp"
 #  include "irods/rsSpecificQuery.hpp"
 #  include "irods/rsSslEnd.hpp"
 #  include "irods/rsSslStart.hpp"
@@ -277,7 +276,6 @@
 #define RS_RULE_EXEC_MOD                   NULLPTR_FOR_CLIENT_TABLE(rsRuleExecMod)
 #define RS_RULE_EXEC_SUBMIT                NULLPTR_FOR_CLIENT_TABLE(rsRuleExecSubmit)
 #define RS_SERVER_REPORT                   NULLPTR_FOR_CLIENT_TABLE(rsServerReport)
-#define RS_SIMPLE_QUERY                    NULLPTR_FOR_CLIENT_TABLE(rsSimpleQuery)
 #define RS_SPECIFIC_QUERY                  NULLPTR_FOR_CLIENT_TABLE(rsSpecificQuery)
 #define RS_SSL_END                         NULLPTR_FOR_CLIENT_TABLE(rsSslEnd)
 #define RS_SSL_START                       NULLPTR_FOR_CLIENT_TABLE(rsSslStart)
@@ -578,16 +576,6 @@ static irods::apidef_t client_api_table_inp[] = {
         "api_data_copy", irods::clearInStruct_noop, irods::clearOutStruct_noop,
         (funcPtr)CALL_DATACOPYINP
     },
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-    {
-        SIMPLE_QUERY_AN, RODS_API_VERSION, LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH,
-        "simpleQueryInp_PI", 0,  "simpleQueryOut_PI", 0,
-        boost::any(std::function<int(rsComm_t*,simpleQueryInp_t*,simpleQueryOut_t**)>(RS_SIMPLE_QUERY)),
-        "api_simple_query", irods::clearInStruct_noop, clearSimpleQueryOut,
-        (funcPtr)CALL_SIMPLEQUERYINP_SIMPLEQUERYOUT
-    },
-#pragma GCC diagnostic pop
     {
         GENERAL_ADMIN_AN, RODS_API_VERSION, LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH,
         "generalAdminInp_PI", 0, NULL, 0,

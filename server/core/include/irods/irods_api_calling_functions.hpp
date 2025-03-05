@@ -361,18 +361,6 @@ int call_dataCopyInp(
 #endif
 
 #ifdef CREATE_API_TABLE_FOR_SERVER
-[[deprecated("SimpleQuery is deprecated. Use GenQuery or SpecificQuery instead.")]]
-int call_simpleQueryInp_simpleQueryOut(
-    irods::api_entry*,
-    rsComm_t*,
-    simpleQueryInp_t*,
-    simpleQueryOut_t**);
-#define CALL_SIMPLEQUERYINP_SIMPLEQUERYOUT call_simpleQueryInp_simpleQueryOut
-#else
-#define CALL_SIMPLEQUERYINP_SIMPLEQUERYOUT nullptr
-#endif
-
-#ifdef CREATE_API_TABLE_FOR_SERVER
 int call_generalAdminInp(
     irods::api_entry*,
     rsComm_t*,

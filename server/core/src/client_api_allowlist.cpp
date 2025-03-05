@@ -63,7 +63,6 @@ namespace irods::client_api_allowlist
             DATA_OBJ_GET_AN,
             DATA_GET_AN,
             //DATA_COPY_AN,
-            SIMPLE_QUERY_AN,
             DATA_OBJ_UNLINK_AN,
             REG_DATA_OBJ_AN,
             UNREG_DATA_OBJ_AN,

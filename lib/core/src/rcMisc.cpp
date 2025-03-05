@@ -23,7 +23,6 @@
 #include "irods/putUtil.h"
 #include "irods/ruleExecMod.h"
 #include "irods/ruleExecSubmit.h"
-#include "irods/simpleQuery.h"
 #include "irods/sockComm.h"
 #include "irods/irods_virtual_path.hpp"
 #include "irods/irods_hierarchy_parser.hpp"
@@ -1741,22 +1740,6 @@ void clearSwitchUserInput(void* _p)
     }
 
     clearKeyVal(&static_cast<SwitchUserInput*>(_p)->options);
-}
-
-void clearSimpleQueryOut(void* _p)
-{
-    if (!_p) {
-        return;
-    }
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-    auto* q = static_cast<simpleQueryOut_t*>(_p);
-#pragma GCC diagnostic pop
-
-    free_pointer(q->outBuf);
-
-    std::memset(q, 0, sizeof(simpleQueryOut_t));
 }
 
 int
