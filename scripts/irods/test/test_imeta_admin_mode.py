@@ -26,7 +26,7 @@ class Test_Imeta_Admin_Mode(session.make_sessions_mixin(rodsadmins, rodsusers), 
     def tearDown(self):
         super(Test_Imeta_Admin_Mode, self).tearDown()
 
-    def test_subcommands_add_adda_set_mod_and_rm__issue_6124(self):
+    def test_subcommands_add_set_mod_and_rm__issue_6124(self):
         attr_name  = 'issue_6124_attr'
         attr_value = 'issue_6124_value'
 
@@ -45,29 +45,19 @@ class Test_Imeta_Admin_Mode(session.make_sessions_mixin(rodsadmins, rodsusers), 
             object_name = tc['name']
             object_type_option = tc['type']
 
-            for op in ['add', 'adda', 'set']:
-                # rError messages do not return to the client after redirect to provider
-                if test.settings.TOPOLOGY_FROM_RESOURCE_SERVER and op == 'adda':
-                    continue
-
+            for op in ['add', 'set']:
                 try:
                     # Create a data object or collection based on the object type.
                     self.user.assert_icommand(['itouch' if object_type_option == '-d' else 'imkdir', object_name])
 
-                    if op == 'adda':
-                        # "adda" automatically enables admin mode, so the administrator is always allowed
-                        # to add metadata.
-                        self.admin.assert_icommand(['imeta', op, object_type_option, object_name, attr_name, attr_value],
-                                                   'STDERR', ['"adda" is deprecated. Please use "add" with admin mode enabled instead.'])
-                    else:
-                        # Show that without the admin option, the administrator cannot add/set metadata on
-                        # another user's collection or data object.
-                        self.admin.assert_icommand(['imeta', op, object_type_option, object_name, attr_name, attr_value],
-                                                   'STDERR', ['CAT_NO_ACCESS_PERMISSION'])
+                    # Show that without the admin option, the administrator cannot add/set metadata on
+                    # another user's collection or data object.
+                    self.admin.assert_icommand(['imeta', op, object_type_option, object_name, attr_name, attr_value],
+                                               'STDERR', ['CAT_NO_ACCESS_PERMISSION'])
 
-                        # Show that using the admin option allows the administrator to add metadata to
-                        # collections and data objects they do not have permissions on.
-                        self.admin.assert_icommand(['imeta', '-M', op, object_type_option, object_name, attr_name, attr_value])
+                    # Show that using the admin option allows the administrator to add metadata to
+                    # collections and data objects they do not have permissions on.
+                    self.admin.assert_icommand(['imeta', '-M', op, object_type_option, object_name, attr_name, attr_value])
 
                     # As the owner of the collection or data object, verify that the metadata is attached
                     # to the target object.

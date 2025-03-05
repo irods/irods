@@ -188,7 +188,7 @@ class Test_Imeta_Interactive(unittest.TestCase):
         A = 'test 5518 quoted arguments with spaces'
         V = 'c\td'
         U = 'e \tf'
-        self.imeta_p.stdin.write('adda -d {data_name} "{A}" "{V}" "{U}"\n'.format(**locals()).encode())
+        self.imeta_p.stdin.write('add -d {data_name} "{A}" "{V}" "{U}"\n'.format(**locals()).encode())
         self.imeta_p.stdin.flush()
         (out, _) = self.get_output()
         self.assertEqual(out, 'imeta>')
