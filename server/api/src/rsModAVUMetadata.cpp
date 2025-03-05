@@ -21,9 +21,6 @@ rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp ) {
     if ( strcmp( modAVUMetadataInp->arg0, "add" ) == 0 ) {
         myHint = modAVUMetadataInp->arg2;
     }
-    else if ( strcmp( modAVUMetadataInp->arg0, "adda" ) == 0 ) {
-        myHint = modAVUMetadataInp->arg2;
-    }
     else if ( strcmp( modAVUMetadataInp->arg0, "addw" ) == 0 ) {
         myHint = modAVUMetadataInp->arg2;
     }
@@ -103,7 +100,7 @@ _rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp ) {
         rei2.uoip = &rsComm->proxyUser;
     }
 
-    args[0] = modAVUMetadataInp->arg0; // option add, adda, rm, rmw, rmi, cp, mod, or set
+    args[0] = modAVUMetadataInp->arg0; // option add, rm, rmw, rmi, cp, mod, or set
     args[1] = modAVUMetadataInp->arg1; // item type -d,-D,-c,-C,-r,-R,-u,-U
     args[2] = modAVUMetadataInp->arg2; // item name
     args[3] = modAVUMetadataInp->arg3; // attr name
@@ -156,35 +153,6 @@ _rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp ) {
                                    modAVUMetadataInp->arg4,
                                    modAVUMetadataInp->arg5,
                                    &modAVUMetadataInp->condInput);
-    }
-    else if ( strcmp( modAVUMetadataInp->arg0, "adda" ) == 0 ) {
-        const char* const msg = R"_("adda" is deprecated. Please use "add" with admin mode enabled instead.)_";
-        logger::api::debug("{} - {}", __func__, msg);
-        addRErrorMsg(&rsComm->rError, DEPRECATED_PARAMETER, msg);
-
-        // Determine if the client set the ADMIN_KW.
-        // If they haven't, set it and remember to remove it once the function returns.
-        // This keeps the key value pair's state clean.
-        //
-        // Setting the ADMIN_KW is required for proper operation of the "adda" subcommand.
-        const bool remove_admin_keyword = !getValByKey(&modAVUMetadataInp->condInput, ADMIN_KW);
-
-        if (remove_admin_keyword) {
-            addKeyVal(&modAVUMetadataInp->condInput, ADMIN_KW, "");
-        }
-
-        status = chlAddAVUMetadata(rsComm,
-                                   modAVUMetadataInp->arg1,
-                                   modAVUMetadataInp->arg2,
-                                   modAVUMetadataInp->arg3,
-                                   modAVUMetadataInp->arg4,
-                                   modAVUMetadataInp->arg5,
-                                   &modAVUMetadataInp->condInput);
-
-        if (remove_admin_keyword) {
-            // Restore the key value pair to its original state.
-            rmKeyVal(&modAVUMetadataInp->condInput, ADMIN_KW);
-        }
     }
     else if ( strcmp( modAVUMetadataInp->arg0, "addw" ) == 0 ) {
         status = chlAddAVUMetadataWild(rsComm,

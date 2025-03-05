@@ -47,7 +47,6 @@
     "test_imeta_error_handling",
     "test_imeta_help",
     "test_imeta_interactive",
-    "test_imeta_set.Test_ImetaAdda",
     "test_imeta_set.Test_ImetaCp",
     "test_imeta_set.Test_ImetaLsLongmode",
     "test_imeta_set.Test_ImetaQu",

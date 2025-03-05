@@ -23,7 +23,6 @@ class Test_ImetaHelp(ResourceBase, unittest.TestCase):
         env_without_valid_environment_file['IRODS_AUTHENTICATION_FILE'] = '/invalid'
         assert_command('imeta help', 'STDOUT_SINGLELINE', env=env_without_valid_environment_file)
         assert_command('imeta help add', 'STDOUT_SINGLELINE', env=env_without_valid_environment_file)
-        assert_command('imeta help adda', 'STDOUT_SINGLELINE', env=env_without_valid_environment_file)
         assert_command('imeta help addw', 'STDOUT_SINGLELINE', env=env_without_valid_environment_file)
         assert_command('imeta help rm', 'STDOUT_SINGLELINE', env=env_without_valid_environment_file)
         assert_command('imeta help rmw', 'STDOUT_SINGLELINE', env=env_without_valid_environment_file)
