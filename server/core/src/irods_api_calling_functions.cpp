@@ -387,22 +387,6 @@ int call_dataCopyInp(
                    _inp);
 }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-int call_simpleQueryInp_simpleQueryOut(
-    irods::api_entry*   _api,
-    rsComm_t*           _comm,
-    simpleQueryInp_t*   _inp,
-    simpleQueryOut_t**  _out ) {
-    return _api->call_handler<
-               simpleQueryInp_t*,
-               simpleQueryOut_t**>(
-                   _comm,
-                   _inp,
-                   _out);
-}
-#pragma GCC diagnostic pop
-
 int call_generalAdminInp(
     irods::api_entry*  _api,
     rsComm_t*          _comm,

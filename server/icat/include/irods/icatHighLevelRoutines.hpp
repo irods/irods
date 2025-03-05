@@ -49,11 +49,6 @@ int chlRegCollByAdmin( rsComm_t *rsComm, collInfo_t *collInfo );
 int chlRegColl( rsComm_t *rsComm, collInfo_t *collInfo );
 int chlModColl( rsComm_t *rsComm, collInfo_t *collInfo );
 
-[[deprecated("SimpleQuery is deprecated. Use GenQuery or SpecificQuery instead.")]]
-int chlSimpleQuery( rsComm_t *rsComm, const char *sql,
-                    const char *arg1, const char *arg2, const char *arg3, const char *arg4,
-                    int format,
-                    int *control, char *outBuf, int maxOutBuf );
 int chlGenQuery( genQueryInp_t genQueryInp, genQueryOut_t *result );
 int chlGenQueryAccessControlSetup( const char *user, const char *zone, const char *host,
                                    int priv, int controlFlag );

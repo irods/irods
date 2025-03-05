@@ -38,7 +38,6 @@
 #include "irods/dataCopy.h"
 #include "irods/dataObjLseek.h"
 #include "irods/dataObjCopy.h"
-#include "irods/simpleQuery.h"
 #include "irods/dataObjUnlink.h"
 #include "irods/collCreate.h"
 #include "irods/generalAdmin.h"
