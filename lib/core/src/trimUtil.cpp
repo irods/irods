@@ -166,11 +166,6 @@ initCondForTrim( rodsArguments_t *rodsArgs,
                    rodsArgs->srcRescString );
     }
 
-    if ( rodsArgs->age == True ) {
-        snprintf( tmpStr, NAME_LEN, "%d", rodsArgs->agevalue );
-        addKeyVal( &dataObjInp->condInput, AGE_KW, tmpStr );
-    }
-
     if ( rodsArgs->dryrun == True ) {
         addKeyVal( &dataObjInp->condInput, DRYRUN_KW, "" );
     }

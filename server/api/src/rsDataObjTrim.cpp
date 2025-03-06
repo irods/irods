@@ -56,56 +56,6 @@ namespace
         return info;
     }
 
-    auto get_time_of_expiration(const char* _age_in_minutes) -> std::uint64_t
-    {
-        if (!_age_in_minutes) {
-            return 0;
-        }
-
-        const auto now = std::time(nullptr);
-        if (-1 == now) {
-            THROW(SYS_INTERNAL_ERR, fmt::format("{}: Error occurred getting current time.", __func__));
-        }
-
-        try {
-            const auto age_in_minutes = std::stoll(_age_in_minutes);
-            if (age_in_minutes < 0) {
-                THROW(
-                    SYS_INVALID_INPUT_PARAM,
-                    fmt::format("{}: {} value [{}] must be a non-negative value.", __func__, AGE_KW, _age_in_minutes));
-            }
-
-            constexpr decltype(age_in_minutes) seconds_in_one_minute = 60;
-            const auto age_in_seconds = age_in_minutes * seconds_in_one_minute;
-            if (0 != age_in_minutes && age_in_seconds / age_in_minutes != seconds_in_one_minute) {
-                // If the provided time was so large that representing it in seconds caused the value to wrap, just
-                // return 0 because the replicas would have to be older than epoch time 0 in order to be old enough to
-                // be trimmed. iRODS itself has not existed that long, so none of the replicas are old enough to be
-                // trimmed based on the input.
-                return 0;
-            }
-
-            // If the provided time is larger than the current epoch time, just return 0 because iRODS itself has not
-            // existed that long, so none of the replicas are old enough to be trimmed based on the input.
-            if (std::cmp_less(now, age_in_seconds)) {
-                return 0;
-            }
-
-            // The expiration time is the desired minimum age of the replicas to trim subtracted from the current time.
-            // Replicas which have a last-modified time less than this expiration time will be trimmed. Based on the
-            // preceding checks above, this value is guaranteed to be non-negative.
-            return now - age_in_seconds;
-        }
-        catch (const std::invalid_argument& e) {
-            THROW(SYS_INVALID_INPUT_PARAM,
-                  fmt::format("{}: {} value [{}] is invalid: [{}]", __func__, AGE_KW, _age_in_minutes, e.what()));
-        }
-        catch (const std::out_of_range&) {
-            THROW(SYS_INVALID_INPUT_PARAM,
-                  fmt::format("{}: {} value [{}] is out of range.", __func__, AGE_KW, _age_in_minutes));
-        }
-    } // get_time_of_expiration
-
     auto get_minimum_replica_count(const char* copies_kw) -> std::int32_t
     {
         if (!copies_kw) {
@@ -172,14 +122,6 @@ namespace
         });
         constexpr decltype(good_replica_count) minimum_good_replica_count = 1;
 
-        const auto* age_kw = getValByKey(&_inp.condInput, AGE_KW);
-        const auto expiration_time = get_time_of_expiration(age_kw);
-        const auto expired = [expiration_time](const irods::physical_object& _replica) {
-            // Any replica with a last-modified time that is EARLIER than the expiration time (that is, less than) is
-            // considered expired.
-            return std::cmp_less(std::stoul(_replica.modify_ts()), expiration_time);
-        };
-
         // If a specific replica number is specified, only trim that one!
         if (const char* repl_num = getValByKey(&_inp.condInput, REPL_NUM_KW); repl_num) {
             try {
@@ -200,10 +142,6 @@ namespace
                         _obj->logical_path(), repl->resc_hier());
 
                     THROW(ret, msg);
-                }
-
-                if (age_kw && !expired(*repl)) {
-                    THROW(USER_INCOMPATIBLE_PARAMS, "target replica is not old enough for removal");
                 }
 
                 if (good_replica_count <= minimum_good_replica_count && GOOD_REPLICA == repl->replica_status()) {
@@ -251,10 +189,6 @@ namespace
                 // Only considering stale replicas at this stage.
                 continue;
             }
-            if (age_kw && !expired(obj)) {
-                // Skip replicas that are not expired if the AGE_KW was provided.
-                continue;
-            }
             if (resc_name && !matches_target_resource(obj)) {
                 // Skip replicas which are not on the specified target resource.
                 continue;
@@ -277,10 +211,6 @@ namespace
             }
             if (GOOD_REPLICA != obj.replica_status()) {
                 // Only considering good replicas at this stage.
-                continue;
-            }
-            if (age_kw && !expired(obj)) {
-                // Skip replicas that are not expired if the AGE_KW was provided.
                 continue;
             }
             if (resc_name && !matches_target_resource(obj)) {
@@ -312,10 +242,6 @@ int rsDataObjTrim(
             addRErrorMsg(&rsComm->rError,
                          DEPRECATED_PARAMETER,
                          "Specifying a minimum number of replicas to keep is deprecated.");
-        }
-        if (getValByKey(&dataObjInp->condInput, AGE_KW)) {
-            addRErrorMsg(
-                &rsComm->rError, DEPRECATED_PARAMETER, "Specifying a minimum age of replicas to trim is deprecated.");
         }
     }};
 

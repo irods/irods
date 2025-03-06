@@ -106,7 +106,7 @@
 #define STREAM_STDOUT_KW                            "streamStdout"   /* the stream stdout for
 * execCmd */
 #define REG_REPL_KW                                 "regRepl"  /* register replica */
-#define AGE_KW                                      "age"  /* age of the file for itrim */
+#define AGE_KW                                      "age"  /* age of the data object or collection */
 #define DRYRUN_KW                                   "dryrun"  /* do a dry run */
 #define NO_COMPUTE_KW                               "no_compute"  /* do not compute anything (similar to dryrun) */
 #define ACL_COLLECTION_KW                           "aclCollection"  /* the collection from which
@@ -245,7 +245,6 @@
 #define RULE_LOCK_TIME_KW                           "rule_lock_time"
 
 #define EXCLUDE_FILE_KW                             "excludeFile"
-#define AGE_KW                                      "age"  /* age of the file for itrim */
 
 // =-=-=-=-=-=-=-
 // irods general keywords definitions

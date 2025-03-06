@@ -643,7 +643,7 @@ class ChunkyDevTest(ResourceBase):
             os.unlink(rsfile)
         self.admin.assert_icommand("irepl -BvrPT -R " + self.testresc + " --rlock " +
                                    irodshome + "/icmdtest/testy", 'STDOUT_SINGLELINE', "icmdtest/testy")
-        self.admin.assert_icommand("itrim -vrS " + irodsdefresource + " --dryrun --age 1 -N 1 " +
+        self.admin.assert_icommand("itrim -vrS " + irodsdefresource + " --dryrun -N 1 " +
                                    irodshome + "/icmdtest/testy", 'STDOUT_SINGLELINE', "This is a DRYRUN")
         self.admin.assert_icommand("itrim -vrS " + irodsdefresource + " -N 1 " +
                                    irodshome + "/icmdtest/testy", 'STDOUT_SINGLELINE', "a copy trimmed")
