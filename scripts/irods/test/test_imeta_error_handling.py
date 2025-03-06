@@ -60,19 +60,6 @@ class Test_Imeta_Error_Handling(unittest.TestCase):
     def test_imeta_badcmd(self):
         self.admin.assert_icommand(['imeta', 'badcmd'], 'STDERR_SINGLELINE', 'Unrecognized subcommand', desired_rc=4)
 
-    def test_imeta_addw_insuff_args(self):
-        self.admin.assert_icommand(['imeta', 'addw', '-d'], 'STDERR_SINGLELINE', 'Not enough arguments provided', desired_rc=4)
-    def test_imeta_addw_no_args(self):
-        self.admin.assert_icommand(['imeta', 'addw'], 'STDERR_SINGLELINE', 'No object type descriptor', desired_rc=4)
-
-    def test_imeta_addw_return_code(self):
-        attr = 'test_imeta_addw_return_code_attr'
-        val = 'test_imeta_addw_return_code_val'
-        self.admin.assert_icommand(['imeta', 'addw', '-d', self.test_data_paths_wildcard, attr, val], 'STDOUT', desired_rc=0)
-        _, err, ec = self.admin.run_icommand(['imeta', 'addw', '-d', self.test_data_paths_wildcard, attr, val])
-        self.assertEqual(4, ec)
-        self.assertIn('CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME', err)
-
     def test_imeta_add_return_code(self):
         data_path = f'{self.test_data_path_base}0'
         attr = 'test_imeta_add_return_code_attr'
@@ -81,10 +68,6 @@ class Test_Imeta_Error_Handling(unittest.TestCase):
         _, err, ec = self.admin.run_icommand(['imeta', 'add', '-d', data_path, attr, val])
         self.assertEqual(4, ec)
         self.assertIn('CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME', err)
-
-    def test_imeta_addw_stderr_5184(self):
-        self.admin.assert_icommand(['imeta', 'addw', '-d', self.test_data_paths_wildcard, '5184_attr', '5184_attr'], 'STDOUT')
-        self.admin.assert_icommand(['imeta', 'addw', '-d', self.test_data_paths_wildcard, '5184_attr', '5184_attr'], 'EMPTY_STDOUT')
 
     def test_imeta_rmw_insuff_args(self):
         self.admin.assert_icommand(['imeta', 'rmw', '-d'], 'STDERR_SINGLELINE', 'Not enough arguments provided', desired_rc=4)

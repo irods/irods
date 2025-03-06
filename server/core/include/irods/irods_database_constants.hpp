@@ -49,7 +49,6 @@ namespace irods
     const std::string DATABASE_OP_MOD_RESC_FREESPACE( "database_mod_resc_freespace" );
     const std::string DATABASE_OP_REG_USER_RE( "database_reg_user_re" );
     const std::string DATABASE_OP_ADD_AVU_METADATA( "database_add_avu_metadata" );
-    const std::string DATABASE_OP_ADD_AVU_METADATA_WILD( "database_add_avu_metadata_wild" );
     const std::string DATABASE_OP_DEL_AVU_METADATA( "database_del_avu_metadata" );
     const std::string DATABASE_OP_SET_AVU_METADATA( "database_set_avu_metadata" );
     const std::string DATABASE_OP_COPY_AVU_METADATA( "database_copy_avu_metadata" );

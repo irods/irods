@@ -80,9 +80,6 @@ int chlRegUserRE( rsComm_t *rsComm, userInfo_t *userInfo );
 int chlAddAVUMetadata( rsComm_t *rsComm, const char *type,
                        const char *name, const char *attribute, const char *value, const char *units,
                        const KeyValPair* condInput);
-int chlAddAVUMetadataWild( rsComm_t *rsComm, const char *type,
-                           const char *name, const char *attribute, const char *value, const char *units,
-                           const KeyValPair* condInput);
 int chlDeleteAVUMetadata( rsComm_t *rsComm, int option, const char *type,
                           const char *name, const char *attribute, const char *value, const char *units, int noCommit,
                           const KeyValPair* condInput);
