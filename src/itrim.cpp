@@ -101,8 +101,8 @@ main( int argc, char **argv ) {
 
 void
 usage() {
-    char *msgs[] = {
-        "Usage: itrim [-hMrvV] [--age age_in_minutes] [--dryrun] [-n replNum]|[-S srcResource] [-N numCopies] dataObj|collection ... ",
+    char* msgs[] = {
+        "Usage: itrim [-hMrvV] [--dryrun] [-n replNum]|[-S srcResource] [-N numCopies] dataObj|collection ... ",
         " ",
         "Reduce the number of replicas of a dataObject in iRODS by deleting some replicas.",
         "Nothing will be done if this is less than or equal to numCopies. The -n and",
@@ -129,12 +129,9 @@ usage() {
         "     for the deletion.",
         " -v  verbose",
         " -V  Very verbose",
-        "--age age_in_minutes - [Deprecated] The minimum age of the replica in minutes",
-        "      for trimming. i.e., a replica will not be trimmed if its age is less.",
         "--dryrun - Do a dry run. No replicas will be trimmed.",
         " -h  this help",
-        ""
-    };
+        ""};
     int i;
     for ( i = 0;; i++ ) {
         if ( strlen( msgs[i] ) == 0 ) {
