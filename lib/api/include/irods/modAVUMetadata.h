@@ -8,7 +8,7 @@
 struct RcComm;
 
 typedef struct ModifyAVUMetadataInput {
-    char *arg0; // option add, rm, rmw, rmi, cp, mod, or set
+    char *arg0; // option add, rm, rmi, cp, mod, or set
     char *arg1; // item type -d,-D,-c,-C,-r,-R,-u,-U
     char *arg2; // item name
     char *arg3; // attr name

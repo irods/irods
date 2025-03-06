@@ -69,11 +69,6 @@ class Test_Imeta_Error_Handling(unittest.TestCase):
         self.assertEqual(4, ec)
         self.assertIn('CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME', err)
 
-    def test_imeta_rmw_insuff_args(self):
-        self.admin.assert_icommand(['imeta', 'rmw', '-d'], 'STDERR_SINGLELINE', 'Not enough arguments provided', desired_rc=4)
-    def test_imeta_rmw_no_args(self):
-        self.admin.assert_icommand(['imeta', 'rmw'], 'STDERR_SINGLELINE', 'No object type descriptor', desired_rc=4)
-
     def test_imeta_rmi_insuff_args(self):
         self.admin.assert_icommand(['imeta', 'rmi', '-d'], 'STDERR_SINGLELINE', 'Not enough arguments provided', desired_rc=4)
     def test_imeta_rmi_no_args(self):

@@ -21,9 +21,6 @@ rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp ) {
     if ( strcmp( modAVUMetadataInp->arg0, "add" ) == 0 ) {
         myHint = modAVUMetadataInp->arg2;
     }
-    else if ( strcmp( modAVUMetadataInp->arg0, "rmw" ) == 0 ) {
-        myHint = modAVUMetadataInp->arg2;
-    }
     else if ( strcmp( modAVUMetadataInp->arg0, "rmi" ) == 0 ) {
         myHint = modAVUMetadataInp->arg2;
     }
@@ -97,7 +94,7 @@ _rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp ) {
         rei2.uoip = &rsComm->proxyUser;
     }
 
-    args[0] = modAVUMetadataInp->arg0; // option add, rm, rmw, rmi, cp, mod, or set
+    args[0] = modAVUMetadataInp->arg0; // option add, rm, rmi, cp, mod, or set
     args[1] = modAVUMetadataInp->arg1; // item type -d,-D,-c,-C,-r,-R,-u,-U
     args[2] = modAVUMetadataInp->arg2; // item name
     args[3] = modAVUMetadataInp->arg3; // attr name
@@ -150,16 +147,6 @@ _rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp ) {
                                    modAVUMetadataInp->arg4,
                                    modAVUMetadataInp->arg5,
                                    &modAVUMetadataInp->condInput);
-    }
-    else if ( strcmp( modAVUMetadataInp->arg0, "rmw" ) == 0 ) {
-        status = chlDeleteAVUMetadata(rsComm, 1,
-                                      modAVUMetadataInp->arg1,
-                                      modAVUMetadataInp->arg2,
-                                      modAVUMetadataInp->arg3,
-                                      modAVUMetadataInp->arg4,
-                                      modAVUMetadataInp->arg5,
-                                      0,
-                                      &modAVUMetadataInp->condInput);
     }
     else if ( strcmp( modAVUMetadataInp->arg0, "rmi" ) == 0 ) {
         status = chlDeleteAVUMetadata(rsComm, 2,

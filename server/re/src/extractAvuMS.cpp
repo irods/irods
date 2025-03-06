@@ -684,7 +684,6 @@ msiRemoveKeyValuePairsFromObj( msParam_t *metadataParam, msParam_t* objParam,
  *  \li "add"
  *  \li "set"
  *  \li "rm"
- *  \li "rmw"
  *
  * \usage See clients/icommands/test/rules/
  *
@@ -701,7 +700,7 @@ msiRemoveKeyValuePairsFromObj( msParam_t *metadataParam, msParam_t* objParam,
  * \DolVarDependence none
  * \DolVarModified none
  * \iCatAttrDependence none
- * \iCatAttrModified AVU triples add / set / rm / rmw (rm-with-wildcard)
+ * \iCatAttrModified AVU triples add / set / rm
  * \sideeffect none
  *
  * \return integer
@@ -711,7 +710,7 @@ msiRemoveKeyValuePairsFromObj( msParam_t *metadataParam, msParam_t* objParam,
  * \pre none
  * \post none
  * \sa rsModAVUMetadata
-**/
+ **/
 int
 msiModAVUMetadata(
     msParam_t* _item_type,
@@ -732,7 +731,7 @@ msiModAVUMetadata(
         return SYS_INVALID_INPUT_PARAM;
     }
 
-    static const std::vector<std::string> v { "add", "set", "rm", "rmw" };
+    static const std::vector<std::string> v{"add", "set", "rm"};
     char *op_str = parseMspForStr( _avu_op );
     if( !op_str || std::find(v.begin(), v.end(), op_str) == v.end()) {
         return SYS_INVALID_INPUT_PARAM;

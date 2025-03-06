@@ -364,7 +364,7 @@ acSetVaultPathPolicy {msiSetGraftPathScheme("no","1"); }
 # mod
 # new values have the prefix n:, v:, u:, and "" means that that value remain unchanged
 # acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit, *NAName, *NAValue, *NAUnit) { }
-# add, set, rm, rmw, rmi
+# add, set, rm, rmi
 # acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit) { }
 # cp
 # acPreProcForModifyAVUMetadata(*Option,*SourceItemType,*TargetItemType,*SourceItemName,*TargetItemName) { }

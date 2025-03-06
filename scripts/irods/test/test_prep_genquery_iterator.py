@@ -259,7 +259,8 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
                 )
                 d0 = [ i for i in q ]
                 d1 = [ i for i in q.copy(options=Option.NO_DISTINCT) ]
-                callback.msiModAVUMetadata("-C",TestCollection,"rmw", "aa", "bb", "%")
+                callback.msiModAVUMetadata("-C",TestCollection,"rm", "aa", "bb", "cc")
+                callback.msiModAVUMetadata("-C",TestCollection,"rm", "aa", "bb", "dd")
                 b = repr([len(d0),len(d1)])
                 callback.writeLine('stdout',b)
                 callback.msiDeleteUnusedAVUs()
