@@ -2390,67 +2390,6 @@ int chlSetAVUMetadata(
 } // chlSetAVUMetadata
 
 // =-=-=-=-=-=-=-
-// Add an Attribute-Value [Units] pair/triple metadata item to one or
-// more data objects.  This is the Wildcard version, where the
-// collection/data-object name can match multiple objects).
-
-// The return value is error code (negative) or the number of objects
-// to which the AVU was associated.
-int chlAddAVUMetadataWild(
-    rsComm_t*         _comm,
-    const char*       _type,
-    const char*       _name,
-    const char*       _attribute,
-    const char*       _value,
-    const char*       _units,
-    const KeyValPair* _cond_input)
-{
-    // =-=-=-=-=-=-=-
-    // call factory for database object
-    irods::database_object_ptr db_obj_ptr;
-    irods::error ret = irods::database_factory( database_plugin_type, db_obj_ptr );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
-    }
-
-    // =-=-=-=-=-=-=-
-    // resolve a plugin for that object
-    irods::plugin_ptr db_plug_ptr;
-    ret = db_obj_ptr->resolve( irods::DATABASE_INTERFACE, db_plug_ptr );
-    if ( !ret.ok() ) {
-        irods::log( PASSMSG( "failed to resolve database interface", ret ) );
-        return ret.code();
-    }
-
-    // =-=-=-=-=-=-=-
-    // cast plugin and object to db and fco for call
-    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast < irods::first_class_object > ( db_obj_ptr );
-    irods::database_ptr db = boost::dynamic_pointer_cast < irods::database > ( db_plug_ptr );
-
-    // =-=-=-=-=-=-=-
-    // call the operation on the plugin
-    ret = db->call<
-          const char*,
-          const char*,
-          const char*,
-          const char*,
-          const char*,
-          const KeyValPair*> (
-              _comm,
-              irods::DATABASE_OP_ADD_AVU_METADATA_WILD,
-              ptr,
-              _type,
-              _name,
-              _attribute,
-              _value,
-              _units,
-              _cond_input);
-
-    return ret.code();
-} // chlAddAVUMetadataWild
-
-// =-=-=-=-=-=-=-
 // Add an Attribute-Value [Units] pair/triple metadata item to an object
 int chlAddAVUMetadata(
     rsComm_t*         _comm,

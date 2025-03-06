@@ -84,41 +84,6 @@ class Test_Imeta_Admin_Mode(session.make_sessions_mixin(rodsadmins, rodsusers), 
                 finally:
                     self.user.run_icommand(['irm', '-rf', object_name])
 
-    def test_subcommands_addw_and_rmw__issue_6124(self):
-        # Create data objects at the root of the current collection and
-        # inside of the child collection.
-        data_objects = [
-            os.path.join(self.user.session_collection, 'foo1'),
-            os.path.join(self.user.session_collection, 'foo2')
-        ]
-        for data_object in data_objects:
-            self.user.assert_icommand(['itouch', data_object])
-
-        attr_name  = 'issue_6124_attr'
-        attr_value = 'issue_6124_value'
-
-        # Show that without the admin option, the administrator cannot attach metadata to
-        # another user's data objects they do not have permissions on.
-        self.admin.assert_icommand(['imeta', 'addw', '-d', self.user.session_collection + '/%', attr_name, attr_value],
-                                   'STDERR', ['CAT_NO_ACCESS_PERMISSION'])
-
-        # Show that using the admin option allows the administrator to attach metadata to
-        # data objects they do not have permissions on.
-        self.admin.assert_icommand(['imeta', '-M', 'addw', '-d', self.user.session_collection + '/%', attr_name, attr_value],
-                                   'STDOUT', ['AVU added to 2 data-objects'])
-
-        for data_object in data_objects:
-            # Show that without the admin option, the administrator cannot detach metadata from
-            # another user's data objects they do not have permissions on.
-            self.admin.assert_icommand(['imeta', 'rmw', '-d', data_object, '%', '%'], 'STDERR', ['CAT_NO_ACCESS_PERMISSION'])
-
-            # Show that using the admin option allows the administrator to detach metadata from
-            # another user's data objects they do not have permissions on.
-            self.admin.assert_icommand(['imeta', '-M', 'rmw', '-d', data_object, '%', '%'])
-
-            # As the owner of the data object, verify that the metadata is no longer attached to it.
-            self.user.assert_icommand(['imeta', 'ls', '-d', data_object], 'STDOUT', ['None\n'])
-
     def test_subcommand_rmi__issue_6124(self):
         attr_name  = 'issue_6124_attr'
         attr_value = 'issue_6124_value'
