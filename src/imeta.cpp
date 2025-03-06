@@ -1370,7 +1370,6 @@ int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_arg
     }
 
     if ( _cmd == "add" ||
-         _cmd == "adda" ||
          _cmd == "addw" ) {
         // Add new AVU triple
         std::string units = "";
