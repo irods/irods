@@ -22,15 +22,13 @@
  * \note none
  *
  * \usage
- * Trim the data object /myZone/home/john/myfile by deleting replica in
- * myResource and with age greater than 600 minutes (10 hours).
+ * Trim the data object /myZone/home/john/myfile by deleting replica in myResource.
  * Also keep a minimum of 1 copy of the data after the trim :
  * \n dataObjInp_t dataObjInp;
  * \n memset(&dataObjInp, 0, sizeof(dataObjInp));
  * \n rstrcpy (dataObjInp.objPath, "/myZone/home/john/myfile", MAX_NAME_LEN);
  * \n addKeyVal (&dataObjInp->condInput, COPIES_KW, "1");
- * \n addKeyVal (&dataObjInp->condInput, AGE_KW, "600");
- * \n addKeyVal (&dataObjInp.condInput, RESC_NAME_KW, "myRescource");
+ * \n addKeyVal (&dataObjInp.condInput, RESC_NAME_KW, "myResource");
  * \n status = rcDataObjTrim (conn, &dataObjInp);
  * \n if (status < 0) {
  * \n .... handle the error
@@ -48,9 +46,7 @@
  *            This keyWd has no value.
  *    \n REPL_NUM_KW - The replica number of the replica to delete.
  *    \n RESC_NAME_KW - delete replica stored in this resource.
- *    \n AGE_KW - specifiies the age in minutes. Only delete replicas with age
- *           greater than this value.
- *    \n DRYRUN_KW - Do a dry run. No copy will actually be trimmed.
+ *    \n DRYRUN_KW - Do a dry run. No replica will actually be trimmed.
  *            This keyWd has no value.
  *
  * \return integer
@@ -59,7 +55,7 @@
  * \pre none
  * \post none
  * \sa none
-**/
+ **/
 
 int
 rcDataObjTrim( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
