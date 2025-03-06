@@ -178,6 +178,25 @@ namespace
             THROW(err, msg);
         }
     } // throw_if_password_is_being_set_on_a_group
+
+    auto get_value_for_rebalance_avu() -> std::string
+    {
+        char hostname[MAX_NAME_LEN];
+        gethostname(hostname, MAX_NAME_LEN);
+        return fmt::format("{}:{}", hostname, getpid());
+    } // get_value_for_rebalance_avu
+
+    auto get_unit_for_rebalance_avu() -> std::string
+    {
+        // get timestamp in defined format
+        const boost::posix_time::ptime timeUTC = boost::posix_time::second_clock::universal_time();
+        std::stringstream stream;
+        boost::posix_time::time_facet* facet = new boost::posix_time::time_facet();
+        facet->format("%Y%m%dT%H%M%SZ");
+        stream.imbue(std::locale(std::locale::classic(), facet));
+        stream << timeUTC;
+        return stream.str();
+    } // get_unit_for_rebalance_avu
 } // anonymous namespace
 
 int _check_rebalance_timestamp_avu_on_resource(
@@ -226,10 +245,11 @@ int _check_rebalance_timestamp_avu_on_resource(
     return 0;
 }
 
-int _set_rebalance_timestamp_avu_on_resource(
-    rsComm_t* _rsComm,
-    const std::string& _resource_name) {
-
+int _set_rebalance_timestamp_avu_on_resource(rsComm_t* _rsComm,
+                                             const std::string& _resource_name,
+                                             const std::string& _value,
+                                             const std::string& _unit)
+{
     modAVUMetadataInp_t modAVUMetadataInp{};
     irods::at_scope_exit<std::function<void()>> at_scope_exit{[&] {
         free( modAVUMetadataInp.arg0 );
@@ -239,49 +259,38 @@ int _set_rebalance_timestamp_avu_on_resource(
         free( modAVUMetadataInp.arg4 );
         free( modAVUMetadataInp.arg5 );
     }};
-    // get hostname
-    char hostname[MAX_NAME_LEN];
-    gethostname(hostname, MAX_NAME_LEN);
-    // get PID
-    int pid = getpid();
-    // get timestamp in defined format
-    const boost::posix_time::ptime timeUTC = boost::posix_time::second_clock::universal_time();
-    std::stringstream stream;
-    boost::posix_time::time_facet* facet = new boost::posix_time::time_facet();
-    facet->format("%Y%m%dT%H%M%SZ");
-    stream.imbue(std::locale(std::locale::classic(), facet));
-    stream << timeUTC;
     // add AVU to resource
     modAVUMetadataInp.arg0 = strdup( "set" );
     modAVUMetadataInp.arg1 = strdup( "-R" );
     modAVUMetadataInp.arg2 = strdup( _resource_name.c_str() );
     modAVUMetadataInp.arg3 = strdup( "rebalance_operation" );
-    std::string value = std::string(hostname) + std::string(":") + std::to_string(pid);
-    modAVUMetadataInp.arg4 = strdup( value.c_str() );
-    std::string unit = stream.str();
-    modAVUMetadataInp.arg5 = strdup( unit.c_str() );
+    modAVUMetadataInp.arg4 = strdup(_value.c_str());
+    modAVUMetadataInp.arg5 = strdup(_unit.c_str());
     // do it
     return rsModAVUMetadata( _rsComm, &modAVUMetadataInp );
 }
 
-int _check_and_set_rebalance_timestamp_avu_on_resource(
-    rsComm_t* _rsComm,
-    const std::string& _resource_name) {
-
+int _check_and_set_rebalance_timestamp_avu_on_resource(rsComm_t* _rsComm,
+                                                       const std::string& _resource_name,
+                                                       const std::string& _value,
+                                                       const std::string& _unit)
+{
     int status = _check_rebalance_timestamp_avu_on_resource(_rsComm, _resource_name);
     if (status < 0 ){
         return status;
     }
-    status = _set_rebalance_timestamp_avu_on_resource(_rsComm, _resource_name);
+    status = _set_rebalance_timestamp_avu_on_resource(_rsComm, _resource_name, _value, _unit);
     if (status < 0 ){
         return status;
     }
     return 0;
 }
 
-int _remove_rebalance_timestamp_avu_from_resource(
-    rsComm_t* _rsComm,
-    const std::string& _resource_name) {
+int _remove_rebalance_timestamp_avu_from_resource(rsComm_t* _rsComm,
+                                                  const std::string& _resource_name,
+                                                  const std::string& _value,
+                                                  const std::string& _unit)
+{
     // build genquery to find active or stale "rebalance operation" entries for this resource
 
     genQueryInp_t gen_inp{};
@@ -316,12 +325,12 @@ int _remove_rebalance_timestamp_avu_from_resource(
             free( modAVUMetadataInp.arg5 );
         }};
         // remove AVU from resource
-        modAVUMetadataInp.arg0 = strdup( "rmw" );
+        modAVUMetadataInp.arg0 = strdup("rm");
         modAVUMetadataInp.arg1 = strdup( "-R" );
         modAVUMetadataInp.arg2 = strdup( _resource_name.c_str() );
         modAVUMetadataInp.arg3 = strdup( "rebalance_operation" );
-        modAVUMetadataInp.arg4 = strdup( "%" );
-        modAVUMetadataInp.arg5 = strdup( "%" );
+        modAVUMetadataInp.arg4 = strdup(_value.c_str());
+        modAVUMetadataInp.arg5 = strdup(_unit.c_str());
         // do it
         return rsModAVUMetadata( _rsComm, &modAVUMetadataInp );
     }
@@ -329,7 +338,6 @@ int _remove_rebalance_timestamp_avu_from_resource(
         return 0;
     }
 }
-
 
 int
 rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
@@ -1125,7 +1133,10 @@ int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
                     status = ret.code();
                 }
                 else {
-                    int visibility_status = _check_and_set_rebalance_timestamp_avu_on_resource(rsComm, args[0]);
+                    const auto value = get_value_for_rebalance_avu();
+                    const auto unit = get_unit_for_rebalance_avu();
+                    int visibility_status =
+                        _check_and_set_rebalance_timestamp_avu_on_resource(rsComm, args[0], value, unit);
                     if (visibility_status < 0){
                         return visibility_status;
                     }
@@ -1138,7 +1149,7 @@ int _rsGeneralAdmin(rsComm_t* rsComm, generalAdminInp_t* generalAdminInp)
                         status = ret.code();
 
                     }
-                    visibility_status = _remove_rebalance_timestamp_avu_from_resource(rsComm, args[0]);
+                    visibility_status = _remove_rebalance_timestamp_avu_from_resource(rsComm, args[0], value, unit);
                     if (visibility_status < 0){
                         return visibility_status;
                     }

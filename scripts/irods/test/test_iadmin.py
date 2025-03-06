@@ -966,16 +966,18 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
     def test_rebalance_visibility_in_resource_avu__3683(self):
         hostname = lib.get_hostname()
         # populate demoResc with an AVU, to confirm we're matching the right resource below
-        self.admin.assert_icommand(["imeta","add","-R","demoResc","rebalance_operation",hostname+":1234","20181004T123456Z"])
+        value = f"{hostname}:1234"
+        unit = "20181004T123456Z"
+        self.admin.assert_icommand(["imeta","add","-R","demoResc","rebalance_operation", value, unit])
         # rebalance, and check for avu removal
         self.admin.assert_icommand(["iadmin","modresc",self.testresc,"rebalance"])
         self.admin.assert_icommand(["imeta","ls","-R",self.testresc], 'STDOUT_SINGLELINE', "None")
         # rebalance already running
-        self.admin.assert_icommand(["imeta","add","-R",self.testresc,"rebalance_operation",hostname+":1234","20181004T123456Z"])
+        self.admin.assert_icommand(["imeta","add","-R",self.testresc,"rebalance_operation", value, unit])
         self.admin.assert_icommand(["iadmin","modresc",self.testresc,"rebalance"], 'STDERR_SINGLELINE', "REBALANCE_ALREADY_ACTIVE_ON_RESOURCE")
         # clean up
-        self.admin.assert_icommand(["imeta","rmw","-R",self.testresc,"rebalance_operation","%","%"])
-        self.admin.assert_icommand(["imeta","rmw","-R","demoResc","rebalance_operation","%","%"])
+        self.admin.assert_icommand(["imeta","rm","-R",self.testresc,"rebalance_operation", value, unit])
+        self.admin.assert_icommand(["imeta","rm","-R","demoResc","rebalance_operation", value, unit])
 
     @unittest.skip( "configuration requires sudo to create the environment")
     def test_rebalance_for_repl_node_with_different_users_with_write_failure__issue_3674(self):
@@ -2138,15 +2140,20 @@ class Test_Issue3862(resource_suite.ResourceBase, unittest.TestCase):
 
     # Issue 3862:  test that CAT_STATEMENT_TABLE_FULL is not encountered during parallel rebalance
     def test_rebalance__ticket_3862(self):
-
+        resource_name = "repl"
         def check_and_remove_rebalance_visibility_metadata(attempts):
             print("checking rebalance visibility metadata [{0} attempts remaining]".format(attempts))
-            self.assertTrue(attempts != 0, msg="rebalance visibility metadata not in catalog")
-            out,_,_ = self.admin.run_icommand(['imeta','ls','-R','repl'])
-            if "rebalance_operation" not in out:
-                check_and_remove_rebalance_visibility_metadata(attempts - 1)
-            else:
-                self.admin.assert_icommand("imeta rmw -R repl rebalance_operation % %") # b/c #3683
+            self.assertGreater(attempts, 0, msg="rebalance visibility metadata not in catalog")
+            resource_metadata_query = "select META_RESC_ATTR_NAME, META_RESC_ATTR_VALUE, META_RESC_ATTR_UNITS " \
+                                      f"where RESC_NAME = '{resource_name}'"
+            resource_avus = json.loads(self.admin.run_icommand(["iquery", resource_metadata_query])[0].strip())
+            # There should only ever be, at most, one AVU on this resource for this test.
+            self.assertLess(len(resource_avus), 2)
+            for a, v, u in resource_avus:
+                if "rebalance_operation" == a:
+                    self.admin.assert_icommand(["imeta", "rm", "-R", resource_name, a, v, u])
+                    return
+            check_and_remove_rebalance_visibility_metadata(attempts - 1)
 
         with session.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand(['ils', '-l', '-r', self.test_dir], 'STDOUT_SINGLELINE', self.test_dir)
@@ -2154,11 +2161,11 @@ class Test_Issue3862(resource_suite.ResourceBase, unittest.TestCase):
         # =-=-=-=-=-=-=-
         # call two separate rebalances, the first in background
         # prior to the fix, the second would generate a CAT_STATEMENT_TABLE_FULL error
-        subprocess.Popen(["iadmin", "modresc",  "repl", "rebalance"])
+        subprocess.Popen(["iadmin", "modresc",  resource_name, "rebalance"])
         # make sure rebalance visibility metadata has been populated before removing it
         check_and_remove_rebalance_visibility_metadata(10); # try 10 times
         # fire parallel rebalance - this will encounter some errors due to self-inflicted race condition
-        out,err,_ = self.admin.run_icommand(['iadmin', 'modresc', 'repl', 'rebalance'])
+        out,err,_ = self.admin.run_icommand(['iadmin', 'modresc', resource_name, 'rebalance'])
         self.assertNotIn('CAT_STATEMENT_TABLE_FULL', out)
         self.assertNotIn('CAT_STATEMENT_TABLE_FULL', err)
 

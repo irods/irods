@@ -24,7 +24,6 @@ class Test_ImetaHelp(ResourceBase, unittest.TestCase):
         assert_command('imeta help', 'STDOUT_SINGLELINE', env=env_without_valid_environment_file)
         assert_command('imeta help add', 'STDOUT_SINGLELINE', env=env_without_valid_environment_file)
         assert_command('imeta help rm', 'STDOUT_SINGLELINE', env=env_without_valid_environment_file)
-        assert_command('imeta help rmw', 'STDOUT_SINGLELINE', env=env_without_valid_environment_file)
         assert_command('imeta help rmi', 'STDOUT_SINGLELINE', env=env_without_valid_environment_file)
         assert_command('imeta help mod', 'STDOUT_SINGLELINE', env=env_without_valid_environment_file)
         assert_command('imeta help set', 'STDOUT_SINGLELINE', env=env_without_valid_environment_file)

@@ -29,12 +29,11 @@ class Test_ImetaSet(ResourceBase, unittest.TestCase):
             self.admin.assert_icommand('imeta ls -u ' + u, 'STDOUT_SINGLELINE', 'None')
 
     def tearDown(self):
-        usernames = [s.username for s in itertools.chain(self.admin_sessions, self.user_sessions)]
-
-        for u in usernames:
-            self.admin.run_icommand(['imeta', 'rmw', '-u', u, '%', '%', '%'])
-
+        # Parent class tearDown method will remove the users which had metadata annotated to them.
         super(Test_ImetaSet, self).tearDown()
+        # Clean up the now-unused metadata annotated to the users which have just been removed.
+        with session.make_session_for_existing_admin() as admin_session:
+            admin_session.run_icommand(["iadmin", "rum"])
 
     def mod_avu_value(self, user_name, a, v, u, newv):
         self.admin.assert_icommand('imeta mod -u %s %s %s %s v:%s' % (user_name, a, v, u, newv))
@@ -259,8 +258,12 @@ class Test_ImetaSet(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(["iquest", "%s %s",
                                     "select META_DATA_ATTR_UNITS,count(DATA_ID) where DATA_NAME = '{0}'".format(self.testfile)],
                                     'STDOUT_MULTILINE', ['^u1 1$','^u2 1$'],use_regex=True)
-        self.admin.assert_icommand(['irule', '-v', '''msiModAVUMetadata("-d","{0}","rmw","a1","v1","%")'''.format(sescoln + '/' + self.testfile),'null','null'],
-          'STDOUT_SINGLELINE', "completed successfully")
+        self.admin.assert_icommand(
+            ['irule', '-v', '''msiModAVUMetadata("-d","{0}","rm","a1","v1","u1")'''.format(sescoln + '/' + self.testfile),'null','null'],
+            'STDOUT', "completed successfully")
+        self.admin.assert_icommand(
+            ['irule', '-v', '''msiModAVUMetadata("-d","{0}","rm","a1","v1","u2")'''.format(sescoln + '/' + self.testfile),'null','null'],
+            'STDOUT', "completed successfully")
         self.admin.assert_icommand(['iquest', "%s", "select count(META_DATA_ATTR_ID) where DATA_NAME = '{0}'".format(self.testfile)],
           'STDOUT_SINGLELINE',"^0$",use_regex=True)
 
@@ -277,9 +280,10 @@ class Test_ImetaSet(ResourceBase, unittest.TestCase):
                     printmeta("1",*b)
                     msiModAVUMetadata("-C", "*homeColln","set","a2","v2","u")
                     printmeta("2",*b)
-                    msiModAVUMetadata("-C", "*homeColln","rmw","%","%","")
+                    msiModAVUMetadata("-C", "*homeColln","rm","a1","v1","")
                     printmeta("3",*b)
-                    msiModAVUMetadata("-C", "*homeColln","rmw","%","%","%")
+                    msiModAVUMetadata("-C", "*homeColln","rm","a1","v1","x")
+                    msiModAVUMetadata("-C", "*homeColln","rm","a2","v2","u")
                     printmeta("4",*b)
                 }
                 printmeta(*id,*z) {
