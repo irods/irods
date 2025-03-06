@@ -1413,7 +1413,7 @@ int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_arg
 
         return 0;
     }
-    else if (_cmd == "rm" || _cmd == "rmw") {
+    else if (_cmd == "rm") {
         // Remove AVU triple
         std::string units = "";
 
@@ -2202,8 +2202,6 @@ void usageMain() {
         "Commands are:",
         " add  -d|C|R|u Name AttName AttValue [AttUnits] (Add new AVU triple)",
         " rm   -d|C|R|u Name AttName AttValue [AttUnits] (Remove AVU)",
-        " rmw  -d|C|R|u Name AttName AttValue [AttUnits] ([Deprecated] Remove AVU, use",
-        "                                                 Wildcards)",
         " rmi  -d|C|R|u Name MetadataID (Remove AVU by MetadataID)",
         " mod  -d|C|R|u Name AttName AttValue [AttUnits] [n:Name] [v:Value] [u:Units]",
         "      (modify AVU; new name (n:), value(v:), and/or units(u:)",
@@ -2227,10 +2225,6 @@ void usageMain() {
         "Fields represented with upper case, such as Name, are entered values.  For",
         "example, 'Name' is the name of a dataobject, collection, resource,",
         "or user.",
-        " ",
-        "Note: rmw is deprecated.",
-        "For rmw, the % and _ wildcard characters (as defined for SQL) can",
-        "be used for matching attribute values.",
         " ",
         "A blank execute line invokes the interactive mode, where imeta",
         "prompts and executes commands until 'quit' or 'q' is entered.",
@@ -2296,35 +2290,6 @@ usage( const char *subOpt ) {
                 "or user(-u)",
                 "Example: rm -d file1 distance 12 miles",
                 "An AttUnits value must be included if it was when the AVU was added.",
-                "Also see rmw for use of wildcard characters.",
-                ""
-            };
-            for ( i = 0;; i++ ) {
-                if ( strlen( msgs[i] ) == 0 ) {
-                    return 0;
-                }
-                printf( "%s\n", msgs[i] );
-            }
-        }
-        if ( strcmp( subOpt, "rmw" ) == 0 ) {
-            char *msgs[] = {
-                " rmw  -d|C|R|u Name AttName AttValue [AttUnits] (Remove AVU, use Wildcard)",
-                " ",
-                "This command is deprecated.",
-                " ",
-                "Remove an AVU from a dataobj (-d), collection(-C), resource(-R), ",
-                "or user(-u)",
-                "An AttUnits value must be included if it was when the AVU was added.",
-                "rmw is very similar to rm but using SQL wildcard characters, _ and %.",
-                "The _ matches any single character and % matches any number of any",
-                "characters.  Examples:",
-                "  rmw -d file1 distance % %",
-                " or ",
-                "  rmw -d file1 distance % m% ",
-                " ",
-                "Note that if the attributes contain the characters '%' or '_', ",
-                "the rmw command still do matching using them as wildcards, so you may",
-                "need to use rm instead.",
                 ""
             };
             for ( i = 0;; i++ ) {
