@@ -1341,8 +1341,7 @@ int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_arg
         exit( 4 );
     }
 
-    if ( _cmd == "add" ||
-         _cmd == "addw" ) {
+    if (_cmd == "add") {
         // Add new AVU triple
         std::string units = "";
 
@@ -1410,13 +1409,11 @@ int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_arg
 
         if ( status < 0 ) {
             return status;
-        } else if ( _cmd == "addw" ) {
-            std::cout << "AVU added to " << status << " data-objects\n";
         }
 
         return 0;
-    } else if ( _cmd == "rm" ||
-                _cmd == "rmw" ) {
+    }
+    else if (_cmd == "rm" || _cmd == "rmw") {
         // Remove AVU triple
         std::string units = "";
 
@@ -1483,7 +1480,8 @@ int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_arg
                                 "" );
 
         return status < 0 ? status : 0;
-    } else if ( _cmd == "rmi" ) {
+    }
+    else if (_cmd == "rmi") {
         // Remove AVU triple by metadata ID
         po::options_description rmi_desc( "rm options" );
         rmi_desc.add_options()
@@ -1540,7 +1538,8 @@ int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_arg
                                 "" );
 
         return status < 0 ? status : 0;
-    } else if ( _cmd == "mod" ) {
+    }
+    else if (_cmd == "mod") {
         // Modify existing AVU triple
         std::string units = "";
         std::string new_attribute = "";
@@ -1719,7 +1718,8 @@ int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_arg
                                 (char*) new_args[2].c_str() );
 
         return status < 0 ? status : 0;
-    } else if ( _cmd == "set" ) {
+    }
+    else if (_cmd == "set") {
         // Assign a new value to an existing AVU triple
         std::string new_units = "";
 
@@ -2201,8 +2201,6 @@ void usageMain() {
         " ",
         "Commands are:",
         " add  -d|C|R|u Name AttName AttValue [AttUnits] (Add new AVU triple)",
-        " addw -d Name AttName AttValue [AttUnits] ([Deprecated] Add new AVU triple",
-        "                                           using Wildcards in Name)",
         " rm   -d|C|R|u Name AttName AttValue [AttUnits] (Remove AVU)",
         " rmw  -d|C|R|u Name AttName AttValue [AttUnits] ([Deprecated] Remove AVU, use",
         "                                                 Wildcards)",
@@ -2233,11 +2231,6 @@ void usageMain() {
         "Note: rmw is deprecated.",
         "For rmw, the % and _ wildcard characters (as defined for SQL) can",
         "be used for matching attribute values.",
-        " ",
-        "Note: addw is deprecated.",
-        "For addw, the % and _ wildcard characters (as defined for SQL) can",
-        "be used for matching object names.  This is currently implemented only",
-        "for data-objects (-d).",
         " ",
         "A blank execute line invokes the interactive mode, where imeta",
         "prompts and executes commands until 'quit' or 'q' is entered.",
@@ -2287,34 +2280,6 @@ usage( const char *subOpt ) {
                 "Add an AVU to a dataobj (-d), collection(-C), resource(-R), ",
                 "or user(-u)",
                 "Example: add -d file1 distance 12 miles",
-                ""
-            };
-            for ( i = 0;; i++ ) {
-                if ( strlen( msgs[i] ) == 0 ) {
-                    return 0;
-                }
-                printf( "%s\n", msgs[i] );
-            }
-        }
-        if ( strcmp( subOpt, "addw" ) == 0 ) {
-            char *msgs[] = {
-                " addw -d Name AttName AttValue [AttUnits]  (Add new AVU triple)",
-                " ",
-                "This command is deprecated.",
-                " ",
-                "Add an AVU to a set of data-objects using wildcards to match",
-                "the data-object names.",
-                " ",
-                "The character _ matches any single character and % matches any",
-                "number of any characters.",
-                " ",
-                "Example: addw -d file% distance 12 miles",
-                "would add the AVU to dataobjects in the current directory with names",
-                "that start with 'file'.",
-                " ",
-                "Example2: addw -d /tempZone/home/rods/test/%/% distance 12 miles",
-                "would add the AVU to all dataobjects in the 'test' collection or any",
-                "subcollections under 'test'.",
                 ""
             };
             for ( i = 0;; i++ ) {
