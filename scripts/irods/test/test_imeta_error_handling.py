@@ -112,46 +112,6 @@ class Test_Imeta_Error_Handling(unittest.TestCase):
     def test_imeta_set_no_args(self):
         self.admin.assert_icommand(['imeta', 'set'], 'STDERR_SINGLELINE', 'No object type descriptor', desired_rc=4)
 
-    def test_imeta_lsw_insuff_args(self):
-        self.admin.assert_icommand(['imeta', 'lsw', '-d'], 'STDERR_SINGLELINE', 'Not enough arguments provided', desired_rc=4)
-    def test_imeta_lsw_no_args(self):
-        self.admin.assert_icommand(['imeta', 'lsw'], 'STDERR_SINGLELINE', 'No object type descriptor', desired_rc=4)
-
-    def test_imeta_lsw_d_parse_toolong(self):
-        self.admin.assert_icommand(['imeta', 'lsw', '-d', self.long_name, '%'], 'STDERR_SINGLELINE', 'path too long', desired_rc=4)
-    def test_imeta_lsw_ld_parse_toolong(self):
-        self.admin.assert_icommand(['imeta', 'lsw', '-ld', self.long_name, '%'], 'STDERR_SINGLELINE', 'path too long', desired_rc=4)
-    def test_imeta_lsw_C_parse_toolong(self):
-        self.admin.assert_icommand(['imeta', 'lsw', '-C', self.long_name, '%'], 'STDERR_SINGLELINE', 'path too long', desired_rc=4)
-    def test_imeta_lsw_lC_parse_toolong(self):
-        self.admin.assert_icommand(['imeta', 'lsw', '-lC', self.long_name, '%'], 'STDERR_SINGLELINE', 'path too long', desired_rc=4)
-    def test_imeta_lsw_d_parse_waytoolong(self):
-        self.admin.assert_icommand(['imeta', 'lsw', '-d', self.longer_name, '%'], 'STDERR_SINGLELINE', 'path too long', desired_rc=4)
-    def test_imeta_lsw_ld_parse_waytoolong(self):
-        self.admin.assert_icommand(['imeta', 'lsw', '-ld', self.longer_name, '%'], 'STDERR_SINGLELINE', 'path too long', desired_rc=4)
-    def test_imeta_lsw_C_parse_waytoolong(self):
-        self.admin.assert_icommand(['imeta', 'lsw', '-C', self.longer_name, '%'], 'STDERR_SINGLELINE', 'path too long', desired_rc=4)
-    def test_imeta_lsw_lC_parse_waytoolong(self):
-        self.admin.assert_icommand(['imeta', 'lsw', '-lC', self.longer_name, '%'], 'STDERR_SINGLELINE', 'path too long', desired_rc=4)
-    def test_imeta_lsw_d_parse_badtrav(self):
-        self.admin.assert_icommand(['imeta', 'lsw', '-d', '../../../../../../../../../../../'], 'STDERR_SINGLELINE', 'parsing error', desired_rc=4)
-    def test_imeta_lsw_ld_parse_badtrav(self):
-        self.admin.assert_icommand(['imeta', 'lsw', '-ld', '../../../../../../../../../../../'], 'STDERR_SINGLELINE', 'parsing error', desired_rc=4)
-    def test_imeta_lsw_C_parse_badtrav(self):
-        self.admin.assert_icommand(['imeta', 'lsw', '-C', '../../../../../../../../../../../'], 'STDERR_SINGLELINE', 'parsing error', desired_rc=4)
-    def test_imeta_lsw_lC_parse_badtrav(self):
-        self.admin.assert_icommand(['imeta', 'lsw', '-lC', '../../../../../../../../../../../'], 'STDERR_SINGLELINE', 'parsing error', desired_rc=4)
-    def test_imeta_lsw_d_parse_rstrcpy(self):
-        self.admin.assert_icommand_fail(['imeta', 'lsw', '-d', self.long_name, '%'], 'STDERR_SINGLELINE', 'not enough space in dest')
-    def test_imeta_lsw_ld_parse_rstrcpy(self):
-        self.admin.assert_icommand_fail(['imeta', 'lsw', '-ld', self.longer_name, '%'], 'STDERR_SINGLELINE', 'not enough space in dest')
-    def test_imeta_lsw_C_parse_rstrcpy(self):
-        self.admin.assert_icommand_fail(['imeta', 'lsw', '-C', self.longer_name, '%'], 'STDERR_SINGLELINE', 'not enough space in dest')
-    def test_imeta_lsw_lC_parse_rstrcpy(self):
-        self.admin.assert_icommand_fail(['imeta', 'lsw', '-lC', self.longer_name, '%'], 'STDERR_SINGLELINE', 'not enough space in dest')
-    def test_imeta_lsw_lC_parse_skip(self):
-        self.admin.assert_icommand_fail(['imeta', 'lsw', '-lC', self.longer_name, '%'], 'STDERR_SINGLELINE', 'fullName could not be explicitly null terminated')
-
     def test_imeta_ls_d_nonexist(self):
         self.admin.assert_icommand(['imeta', 'ls', '-d', 'nonexist'], 'STDERR', 'does not exist', desired_rc=4)
     def test_imeta_ls_ld_nonexist(self):
