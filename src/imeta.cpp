@@ -138,8 +138,8 @@ void printGenQueryResults(rcComm_t *Conn,
 /*
  Via a general query and show the AVUs for a dataobject.
  */
-int
-showDataObj( char *name, char *attrName, int wild ) {
+int showDataObj(char* name, char* attrName)
+{
     genQueryOut_t *genQueryOut;
     int i1a[10];
     int i1b[10];
@@ -225,16 +225,9 @@ showDataObj( char *name, char *attrName, int wild ) {
     std::string v3;
     if ( attrName != NULL && *attrName != '\0' ) {
         i2a[2] = COL_META_DATA_ATTR_NAME;
-        if ( wild ) {
-            v3  = "like '";
-            v3 += attrName;
-            v3 += "'";
-        }
-        else {
-            v3  = "='";
-            v3 += attrName;
-            v3 += "'";
-        }
+        v3 = "='";
+        v3 += attrName;
+        v3 += "'";
         condVal[2] = const_cast<char*>( v3.c_str() );
         genQueryInp.sqlCondInp.len++;
     }
@@ -293,8 +286,8 @@ showDataObj( char *name, char *attrName, int wild ) {
 /*
 Via a general query, show the AVUs for a collection
 */
-int
-showColl( char *name, char *attrName, int wild ) {
+int showColl(char* name, char* attrName)
+{
     genQueryOut_t *genQueryOut{};
     int i1a[10];
     int i1b[10];
@@ -372,16 +365,9 @@ showColl( char *name, char *attrName, int wild ) {
     std::string v2;
     if ( attrName != NULL && *attrName != '\0' ) {
         i2a[1] = COL_META_COLL_ATTR_NAME;
-        if ( wild ) {
-            v2 =  "like '";
-            v2 += attrName;
-            v2 += "'";
-        }
-        else {
-            v2 =  "= '";
-            v2 += attrName;
-            v2 += "'";
-        }
+        v2 = "= '";
+        v2 += attrName;
+        v2 += "'";
         condVal[1] = const_cast<char*>( v2.c_str() );
         genQueryInp.sqlCondInp.len++;
     }
@@ -433,8 +419,8 @@ showColl( char *name, char *attrName, int wild ) {
 /*
 Via a general query, show the AVUs for a resource
 */
-int
-showResc( char *name, char *attrName, int wild ) {
+int showResc(char* name, char* attrName)
+{
     genQueryOut_t *genQueryOut;
     int i1a[10];
     int i1b[10];
@@ -489,16 +475,9 @@ showResc( char *name, char *attrName, int wild ) {
     std::string v2;
     if ( attrName != NULL && *attrName != '\0' ) {
         i2a[1] = COL_META_RESC_ATTR_NAME;
-        if ( wild ) {
-            v2 =  "like '";
-            v2 += attrName;
-            v2 += "'";
-        }
-        else {
-            v2 =  "= '";
-            v2 += attrName;
-            v2 += "'";
-        }
+        v2 = "= '";
+        v2 += attrName;
+        v2 += "'";
         condVal[1] = const_cast<char*>( v2.c_str() );
         genQueryInp.sqlCondInp.len++;
     }
@@ -550,8 +529,8 @@ showResc( char *name, char *attrName, int wild ) {
 /*
 Via a general query, show the AVUs for a user
 */
-int
-showUser( char *name, char *attrName, int wild ) {
+int showUser(char* name, char* attrName)
+{
     genQueryOut_t *genQueryOut;
     int i1a[10];
     int i1b[10];
@@ -623,16 +602,9 @@ showUser( char *name, char *attrName, int wild ) {
     std::string v3;
     if ( attrName != NULL && *attrName != '\0' ) {
         i2a[2] = COL_META_USER_ATTR_NAME;
-        if ( wild ) {
-            v3 =  "like '";
-            v3 += attrName;
-            v3 += "'";
-        }
-        else {
-            v3 =  "= '";
-            v3 += attrName;
-            v3 += "'";
-        }
+        v3 = "= '";
+        v3 += attrName;
+        v3 += "'";
         condVal[2] = const_cast<char*>( v3.c_str() );
         genQueryInp.sqlCondInp.len++;
     }
@@ -1814,11 +1786,10 @@ int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_arg
                                 "" );
 
         return status < 0 ? status : 0;
-    } else if ( _cmd == "ls" ||
-                _cmd == "lsw" ) {
+    }
+    else if (_cmd == "ls") {
         // List existing AVUs on an iRODS object
         std::string attribute = "";
-        int wild = ( _cmd == "lsw" ) ? 1 : 0;
 
         po::options_description ls_desc( "ls options" );
         ls_desc.add_options()
@@ -1876,31 +1847,31 @@ int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_arg
 
         if ( obj_type == "-ld") {
             longMode = 1;
-            return showDataObj(name.data(), (char*) attribute.c_str(), wild);
+            return showDataObj(name.data(), (char*) attribute.c_str());
         }
         else if ( obj_type == "-d" ) {
-            return showDataObj(name.data(), (char*) attribute.c_str(), wild);
+            return showDataObj(name.data(), (char*) attribute.c_str());
         }
         else if ( obj_type == "-lC" ) {
             longMode = 1;
-            return showColl(name.data(), (char*) attribute.c_str(), wild);
+            return showColl(name.data(), (char*) attribute.c_str());
         }
         else if ( obj_type == "-C" ) {
-            return showColl(name.data(), (char*) attribute.c_str(), wild);
+            return showColl(name.data(), (char*) attribute.c_str());
         }
         else if ( obj_type == "-lR" ) {
             longMode = 1;
-            return showResc(name.data(), (char*) attribute.c_str(), wild);
+            return showResc(name.data(), (char*) attribute.c_str());
         }
         else if ( obj_type == "-R" ) {
-            return showResc(name.data(), (char*) attribute.c_str(), wild);
+            return showResc(name.data(), (char*) attribute.c_str());
         }
         else if ( obj_type == "-lu" ) {
             longMode = 1;
-            return showUser(name.data(), (char*) attribute.c_str(), wild);
+            return showUser(name.data(), (char*) attribute.c_str());
         }
         else {
-            return showUser(name.data(), (char*) attribute.c_str(), wild);
+            return showUser(name.data(), (char*) attribute.c_str());
         }
 
         return 0;
@@ -2240,8 +2211,6 @@ void usageMain() {
         "      (modify AVU; new name (n:), value(v:), and/or units(u:)",
         " set  -d|C|R|u Name AttName newValue [newUnits] (Assign a single value)",
         " ls   -[l]d|C|R|u Name [AttName] (List existing AVUs for item Name)",
-        " lsw  -[l]d|C|R|u Name [AttName] ([Deprecated] List existing AVUs, use",
-        "                                  Wildcards)",
         " qu   -d|C|R|u AttName Operator AttVal [...] (Query objects with matching AVUs)",
         " cp   -d|C|R|u -d|C|R|u Name1 Name2 (Copy AVUs from item Name1 to Name2)",
         " upper (Toggle between upper case mode for queries (qu))",
@@ -2261,8 +2230,8 @@ void usageMain() {
         "example, 'Name' is the name of a dataobject, collection, resource,",
         "or user.",
         " ",
-        "Note: rmw and lsw are deprecated.",
-        "For rmw and lsw, the % and _ wildcard characters (as defined for SQL) can",
+        "Note: rmw is deprecated.",
+        "For rmw, the % and _ wildcard characters (as defined for SQL) can",
         "be used for matching attribute values.",
         " ",
         "Note: addw is deprecated.",
@@ -2391,7 +2360,6 @@ usage( const char *subOpt ) {
                 "Note that if the attributes contain the characters '%' or '_', ",
                 "the rmw command still do matching using them as wildcards, so you may",
                 "need to use rm instead.",
-                "Also see lsw.",
                 ""
             };
             for ( i = 0;; i++ ) {
@@ -2446,31 +2414,6 @@ usage( const char *subOpt ) {
                 "you wish to list and only those will be listed.",
                 "If the optional -l is used on dataObjects (-ld), the long format will",
                 "be displayed which includes the time the AVU was set.",
-                "Also see lsw.",
-                ""
-            };
-            for ( i = 0;; i++ ) {
-                if ( strlen( msgs[i] ) == 0 ) {
-                    return 0;
-                }
-                printf( "%s\n", msgs[i] );
-            }
-        }
-
-        if ( strcmp( subOpt, "lsw" ) == 0 ) {
-            char *msgs[] = {
-                " lsw -d|C|R|u Name [AttName] (List existing AVUs, use Wildcards)",
-                " ",
-                "This command is deprecated.",
-                " ",
-                "List defined AVUs for the specified item",
-                "Example: lsw -d file1",
-                "If the optional AttName is included, it is the attribute name",
-                "you wish to list, doing so using wildcard matching.",
-                "For example: ls -d file1 attr%",
-                "If the optional -l is used on dataObjects (-ld), the long format will",
-                "be displayed which includes the time the AVU was set.",
-                "Also see rmw and ls.",
                 ""
             };
             for ( i = 0;; i++ ) {
