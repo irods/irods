@@ -408,9 +408,8 @@ irods::error acGetUserByDN( irods::callback, std::list<boost::any>& ) {
     return SUCCESS();
 }
 
-irods::error acAclPolicy( irods::callback _cb, std::list<boost::any>& ) {
-    //msiAclPolicy("STRICT");
-    return _cb(std::string("msiAclPolicy"), std::string("STRICT"));
+irods::error acAclPolicy( irods::callback, std::list<boost::any>& ) {
+    return SUCCESS();
 }
 
 irods::error acTicketPolicy( irods::callback, std::list<boost::any>& ) {
