@@ -570,6 +570,12 @@ int clearMsParam(msParam_t* msParam, int freeInOutStruct)
                 clearExecCmdOut(msParam->inOutStruct);
                 std::free(msParam->inOutStruct);
             }
+            // The following code block is disabled because it breaks support for KeyValPair's
+            // in the Python REP (even though it addresses a memory leak). If you're here
+            // because of memory leaks reported by C++ tools and decide to enable this code block
+            // or modify this function in any way, make sure to test the data types using the
+            // Python REP.
+#if 0
             // Do not free KeyValPair_MS_T unconditionally as this will lead
             // to a use-after-free error. Additionally, this behavior matches the default
             // of checking freeInOutStruct before freeing the data.
@@ -578,6 +584,7 @@ int clearMsParam(msParam_t* msParam, int freeInOutStruct)
                 // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
                 std::free(msParam->inOutStruct);
             }
+#endif
             // This else-block must always be the final block in this if-ladder.
             // Changing the order of these if-blocks can result in memory leaks.
             else if (freeInOutStruct > 0) {
