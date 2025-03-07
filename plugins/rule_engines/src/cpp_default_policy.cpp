@@ -408,7 +408,8 @@ irods::error acGetUserByDN( irods::callback, std::list<boost::any>& ) {
     return SUCCESS();
 }
 
-irods::error acAclPolicy( irods::callback, std::list<boost::any>& ) {
+irods::error acAclPolicy(irods::callback, std::list<boost::any>&)
+{
     return SUCCESS();
 }
 
