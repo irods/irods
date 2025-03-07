@@ -2515,39 +2515,6 @@ setLocalSrvAddr( char *outLocalAddr ) {
 }
 
 int
-forkAndExec( char *av[] ) {
-    int childPid = 0;
-    int status = -1;
-    int childStatus = 0;
-
-    childPid = RODS_FORK();
-
-    if ( childPid == 0 ) {
-        /* child */
-        execv( av[0], av );
-        /* gets here. must be bad */
-        exit( 1 );
-    }
-    else if ( childPid < 0 ) {
-        rodsLog( LOG_ERROR,
-                 "exectar: RODS_FORK failed. errno = %d", errno );
-        return SYS_FORK_ERROR;
-    }
-
-    /* parent */
-
-    status = waitpid( childPid, &childStatus, 0 );
-    if ( status >= 0 && childStatus != 0 ) {
-        rodsLog( LOG_ERROR,
-                 "forkAndExec: waitpid status = %d, childStatus = %d",
-                 status, childStatus );
-        status = EXEC_CMD_ERROR;
-    }
-
-    return status;
-}
-
-int
 singleRemLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     dataOprInp_t *dataOprInp;
     int status = 0;
