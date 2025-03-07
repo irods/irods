@@ -803,6 +803,13 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
     *genQueryOut = ( genQueryOut_t* )malloc( sizeof( genQueryOut_t ) );
     memset( ( char * )*genQueryOut, 0, sizeof( genQueryOut_t ) );
 
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+
+    if (irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role) {
+        chlGenQueryAccessControlSetup(NULL, NULL, NULL, 0, 2);
+    }
+
     // =-=-=-=-=-=-=-
     // verify that we are running a query for another agent connection
     const bool agent_conn_flag = irods::server_property_exists(irods::AGENT_CONN_KW);
