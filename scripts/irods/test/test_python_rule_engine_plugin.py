@@ -1,14 +1,11 @@
-from __future__ import print_function
+import os
 import sys
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
-
-import time
 import tempfile
+import time
+import unittest
 from textwrap import dedent
 
+from . import session
 from . import resource_suite
 from .. import paths
 from .. import lib
@@ -18,7 +15,6 @@ from ..core_file import ( temporary_core_file,
                           PYTHON_RULE_ENGINE_PLUGIN_NAME )
 from ..controller import IrodsController
 import contextlib
-
 
 @contextlib.contextmanager
 def append_native_re_to_server_config (with_backup=False):
@@ -56,7 +52,6 @@ def append_native_re_to_server_config (with_backup=False):
         irods_config.server_config['plugin_configuration']['rule_engines'] = orig
         irods_config.commit(irods_config.server_config, irods_config.server_config_path, make_backup=with_backup)
         IrodsController().start()
-
 
 class Test_Python_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
@@ -108,3 +103,55 @@ class Test_Python_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
                       '''writeLine("stdout", error("SYS_INVALID_FILE_PATH") == errorcode(myrule()))''',
                       'null', 'ruleExecOut' ],
                     'STDOUT_SINGLELINE',['true'] )
+
+class Test_Python_Rule_Engine_Plugin_No_ResourceBase(session.make_sessions_mixin([('otherrods', 'rods')], []), unittest.TestCase):
+
+    plugin_name = IrodsConfig().default_rule_engine_plugin
+
+    def setUp(self):
+        super(Test_Python_Rule_Engine_Plugin_No_ResourceBase, self).setUp()
+        self.admin = self.admin_sessions[0]
+
+    def tearDown(self):
+        super(Test_Python_Rule_Engine_Plugin_No_ResourceBase, self).tearDown()
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-python', 'Requires the PREP and NREP')
+    def test_PREP_receives_KeyValPair_with_expected_metadata_from_NREP__issue_8265(self):
+        config = IrodsConfig()
+
+        with lib.file_backed_up(config.server_config_path):
+            # Add the NREP to the list of configured rule engines. It provides the
+            # MSIs needed by our PREP rule.
+            found_nrep = False
+            for rep in config.server_config['plugin_configuration']['rule_engines']:
+                if rep['plugin_name'] == 'irods_rule_engine_plugin-irods_rule_language':
+                    found_nrep = True
+                    break
+            if not found_nrep:
+                config.server_config['plugin_configuration']['rule_engines'].append('irods_rule_engine_plugin-irods_rule_language-instance')
+                lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+
+            # Create a rule file which attempts to add an AVU to the session collection.
+            avu_name = 'issue_8265_attr_name'
+            avu_value = 'issue_8265_attr_value'
+            rule_file = os.path.join(self.admin.local_session_dir, 'issue_8265.r')
+            with open(rule_file, 'w') as f:
+                f.write(dedent(
+                    f"""
+                    import irods_types
+                    def main(rule_args, callback, rei):
+                        collection = '{self.admin.session_collection}'
+                        avu = '{avu_name}={avu_value}'
+                        res = callback.msiString2KeyValPair(avu, irods_types.BytesBuf())
+                        callback.msiSetKeyValuePairsToObj(res['arguments'][1], collection, '-C')
+
+                    INPUT null
+                    OUTPUT ruleExecOut
+                    """))
+
+            # Run the rule and show that it added the expected AVU.
+            self.admin.assert_icommand(['irule', '-r', 'irods_rule_engine_plugin-python-instance', '-F', rule_file])
+            self.admin.assert_icommand(['imeta', 'ls', '-C', self.admin.session_collection], 'STDOUT', [
+                f'attribute: {avu_name}\n',
+                f'value: {avu_value}\n'
+            ])
