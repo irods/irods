@@ -1,14 +1,11 @@
-from __future__ import print_function
+import os
 import sys
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
-
-import time
 import tempfile
+import time
+import unittest
 from textwrap import dedent
 
+from . import session
 from . import resource_suite
 from .. import paths
 from .. import lib
@@ -58,12 +55,14 @@ def append_native_re_to_server_config (with_backup=False):
         IrodsController().start(test_mode=True)
 
 
-class Test_Python_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestCase):
+class Test_Python_Rule_Engine_Plugin(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
     class_name = 'Test_Python_Rule_Engine_Plugin'
 
     def setUp(self):
         super(Test_Python_Rule_Engine_Plugin, self).setUp()
+        self.admin = self.admin_sessions[0]
+        self.user = self.user_sessions[0]
 
     def tearDown(self):
         super(Test_Python_Rule_Engine_Plugin, self).tearDown()
@@ -103,8 +102,35 @@ class Test_Python_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
                 def myrule(*x):
                     return irods_errors.SYS_INVALID_FILE_PATH
                 '''))
-                self.user0.assert_icommand(
+                self.user.assert_icommand(
                     [ 'irule','-r', 'irods_rule_engine_plugin-irods_rule_language-instance',
                       '''writeLine("stdout", error("SYS_INVALID_FILE_PATH") == errorcode(myrule()))''',
                       'null', 'ruleExecOut' ],
                     'STDOUT_SINGLELINE',['true'] )
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-python', 'only applicable for python REP')
+    def test_REPF_does_not_deallocate_KeyValPair__issue_8265(self):
+        # Create a rule file which attempts to add an AVU to the session collection.
+        avu_name = 'issue_8265_attr_name'
+        avu_value = 'issue_8265_attr_value'
+        rule_file = os.path.join(self.admin.local_session_dir, 'issue_8265.r')
+        with open(rule_file, 'w') as f:
+            f.write(dedent(
+                f"""
+                import irods_types
+                def main(rule_args, callback, rei):
+                    collection = '{self.admin.session_collection}'
+                    avu = '{avu_name}={avu_value}'
+                    res = callback.msiString2KeyValPair(avu, irods_types.BytesBuf())
+                    callback.msiSetKeyValuePairsToObj(res['arguments'][1], collection, '-C')
+
+                INPUT null
+                OUTPUT ruleExecOut
+                """))
+
+        # Run the rule and show that it added the expected AVU.
+        self.admin.assert_icommand(['irule', '-r', 'irods_rule_engine_plugin-python-instance', '-F', rule_file])
+        self.admin.assert_icommand(['imeta', 'ls', '-C', self.admin.session_collection], 'STDOUT', [
+            f'attribute: {avu_name}\n',
+            f'value: {avu_value}\n'
+        ])
