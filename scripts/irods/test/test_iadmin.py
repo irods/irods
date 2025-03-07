@@ -1255,38 +1255,6 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         finally:
             IrodsController().reload_configuration()
 
-    def test_issue_2420(self):
-        pep_map = {
-            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
-                acAclPolicy {
-                    ON($userNameClient == "quickshare") { }
-                }
-            '''),
-            'irods_rule_engine_plugin-python': textwrap.dedent('''
-                def acAclPolicy(rule_args, callback, rei):
-                    userNameClient = str(rei.uoic.userName if rei.uoic else rei.rsComm.clientUser.userName)
-                    if (userNameClient == 'quickshare'):
-                        pass
-            ''')
-        }
-
-        try:
-            with temporary_core_file() as core:
-                core.add_rule(pep_map[self.plugin_name])
-                IrodsController().reload_configuration()
-
-                self.admin.assert_icommand("ils", 'STDOUT_SINGLELINE', self.admin.zone_name)
-
-                # look for the error "unable to read session variable $userNameClient."
-                out, _, _ = lib.execute_command_permissive(
-                    ['grep', 'unable to read session variable $userNameClient.', IrodsConfig().server_log_path])
-
-            # check the results for the error
-            assert(-1 == out.find("userNameClient"))
-
-        finally:
-            IrodsController().reload_configuration()
-
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'python does not yet support msiGetStdoutInExecCmdOut - RTS')
     def test_server_config_environment_variables(self):
         irods_config = IrodsConfig()

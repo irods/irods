@@ -59,34 +59,6 @@ acRenameLocalZone(*oldZone, *newZone) {
 #acGetUserByDN(*arg,*OUT) {msiExecCmd("t","*arg","null","null","null",*OUT); }
 #
 # --------------------------------------------------------------------------
-# The following rule is for setting Access Control List (ACL) policy.
-# The possible modifiers are "STRICT", "STANDARD", or any other string,
-# in which case the "STANDARD" behavior will apply.
-#
-# "STANDARD" ACL policy permits permits rodsusers to see other
-# rodsusers' collections by allowing access to metadata which may
-# be sensitive, including data-object and sub-collection names in
-# other users' collections.
-#
-# "STRICT" ACL policy will apply the General Query Access Control to
-# collections and dataobject metadata. Thus, ils and other operations
-# will need 'read' access or higher to a collection to access the
-# collection contents (name of data-objects, sub-collections, etc).
-# With STRICT access control, a rodsadmin can still execute
-# microservices and queries to access system-wide information.
-#
-# This policy enforcement point (PEP) obviates the buildtime flag
-# GEN_QUERY_AC in config.mk
-#
-# In federated scenarios with "STRICT" ACLs enabled, you may wish to
-# permit rodsusers to access the root collection ("/") to list
-# available remote zones. The 'iadmin modzonecollacl' command was
-# written for this purpose. See 'iadmin h modzonecollacl' for
-# additional details.
-#
-acAclPolicy {msiAclPolicy("STRICT"); }
-#
-# --------------------------------------------------------------------------
 # This is a policy point for ticket-based access (added in iRODS 3.1),
 # where the administrator can allow ticket use by all users, no users,
 # only certain users, or not certain users.  To disallow for all
