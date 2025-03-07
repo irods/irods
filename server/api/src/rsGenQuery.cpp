@@ -760,8 +760,6 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
     int resc_hier_attr_pos = -1;
 
     static int ruleExecuted = 0;
-    ruleExecInfo_t rei;
-
 
     static int PrePostProcForGenQueryFlag = -2;
     int i, argc;
@@ -805,31 +803,39 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
     *genQueryOut = ( genQueryOut_t* )malloc( sizeof( genQueryOut_t ) );
     memset( ( char * )*genQueryOut, 0, sizeof( genQueryOut_t ) );
 
-    if ( ruleExecuted == 0 ) {
-        memset( ( char* )&rei, 0, sizeof( rei ) );
-        /* Include the user info for possible use by the rule.  Note
-        that when this is called (as the agent is initializing),
-        this user info is not confirmed yet.  For password
-        authentication though, the agent will soon exit if this
-        is not valid.  But for GSI, the user information may not
-        be present and/or may be changed when the authentication
-        completes, so it may not be safe to use this in a GSI
-        enabled environment.  This addition of user information
-        was requested by ARCS/IVEC (Sean Fleming) to avoid a
-        local patch.
-        */
-        rei.uoic = &rsComm->clientUser;
-        rei.uoip = &rsComm->proxyUser;
+    if (ruleExecuted == 0) {
+        std::string svc_role;
+        irods::error ret = get_catalog_service_role(svc_role);
+        int status{};
+        if (!ret.ok()) {
+            irods::log(PASS(ret));
+            // NOLINTNEXTLINE(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+            status = ret.code();
+        }
 
-        status = applyRule( "acAclPolicy", NULL, &rei, NO_SAVE_REI );
-        if ( status == 0 ) {
+        if (irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role) {
+            constexpr auto priv{0};
+            constexpr auto control_flag{2};
 
+            chlGenQueryAccessControlSetup(nullptr, nullptr, nullptr, priv, control_flag);
+        }
+
+        // set a strict acl prop
+        try {
+            irods::set_server_property<std::string>(irods::STRICT_ACL_KW, "on");
+        }
+        catch (irods::exception& e) {
+            irods::log(e);
+            // NOLINTNEXTLINE(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+            status = e.code();
+        }
+        if (status == 0) {
             ruleExecuted = 1; /* No need to retry next time since it
-                             succeeded.  Since this is called at
-                             startup, the Rule Engine may not be
-                             initialized yet, in which case the
-                             default setting is fine and we should
-                             retry next time. */
+                                   succeeded.  Since this is called at
+                                   startup, the Rule Engine may not be
+                                   initialized yet, in which case the
+                                   default setting is fine and we should
+                                   retry next time. */
         }
     }
 

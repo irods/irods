@@ -1589,8 +1589,7 @@ insertWhere( char *condition, int option ) {
 }
 
 /*
- Only used if requested by msiAclPolicy (acAclPolicy rule) (which
- normally isn't) or if the user is anonymous.  This restricts
+ Only used if the user is anonymous.  This restricts
  R_DATA_MAIN anc R_COLL_MAIN info to only users with access.
  If client user is the local admin, do not restrict.
  */
@@ -2235,8 +2234,7 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
     return status;
 }
 
-/* Save some pre-provided parameters if msiAclPolicy is STRICT.
-   Called with user == NULL to set the controlFlag, else with the
+/* Called with user == NULL to set the controlFlag, else with the
    user info.
  */
 
@@ -2263,11 +2261,8 @@ int chl_gen_query_access_control_setup_impl(
     int old_flag = accessControlControlFlag;
     if ( controlFlag >= 0 ) {
         /*
-        If the caller is making this STRICT, then allow the change as
-               this will be an initial acAclPolicy call which is setup in
-               core.re.  But don't let users override this admin setting
-               via their own calls to the msiAclPolicy; once it is STRICT,
-               it stays strict.
+        Don't let users override this admin setting; once it is STRICT,
+              it stays strict.
              */
         accessControlControlFlag = controlFlag;
     }

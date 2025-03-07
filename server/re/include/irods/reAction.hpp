@@ -93,7 +93,6 @@ int msiRenameLocalZone( msParam_t *oldName, msParam_t *newName,
 int msiRenameCollection( msParam_t *oldName, msParam_t *newName,
                          ruleExecInfo_t *rei );
 int msiRenameLocalZoneCollection(msParam_t* _new_zone_name, ruleExecInfo_t* _rei);
-int msiAclPolicy( msParam_t *msParam, ruleExecInfo_t *rei );
 int msiSetQuota( msParam_t *type, msParam_t *name, msParam_t *resource,
                  msParam_t *value, ruleExecInfo_t *rei );
 int msiRemoveKeyValuePairsFromObj( msParam_t *metadataParam,
@@ -232,7 +231,6 @@ namespace irods
         table_[ "msiRenameLocalZone" ] = new irods::ms_table_entry( "msiRenameLocalZone", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiRenameLocalZone ) );
         table_[ "msiRenameCollection" ] = new irods::ms_table_entry( "msiRenameCollection", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiRenameCollection ) );
         table_[ "msiRenameLocalZoneCollection" ] = new irods::ms_table_entry( "msiRenameLocalZoneCollection", 1, std::function<int(msParam_t*, ruleExecInfo_t*)>( msiRenameLocalZoneCollection ) );
-        table_[ "msiAclPolicy" ] = new irods::ms_table_entry( "msiAclPolicy", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>(msiAclPolicy ) );
         table_[ "msiSetQuota" ] = new irods::ms_table_entry( "msiSetQuota", 4, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>(msiSetQuota ) );
         table_[ "msiRemoveKeyValuePairsFromObj" ] = new irods::ms_table_entry( "msiRemoveKeyValuePairsFromObj", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiRemoveKeyValuePairsFromObj ) );
         table_[ "msiModAVUMetadata" ] = new irods::ms_table_entry( "msiModAVUMetadata", 6, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiModAVUMetadata ) );
