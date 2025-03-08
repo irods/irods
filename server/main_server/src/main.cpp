@@ -1,3 +1,4 @@
+#include "irods/access_time_manager.hpp"
 #include "irods/catalog.hpp"
 #include "irods/chrono.hpp"
 #include "irods/client_connection.hpp"
@@ -117,7 +118,7 @@ namespace
     // Indicates whether the logging system has been initialized. This is meant to give
     // systems, which run before and after the logging system is ready, a way to determine
     // when use of the logging system is safe.
-    bool g_logger_initialized = false;
+    bool g_logger_initialized = false; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
     auto print_usage() -> void;
     auto print_version_info() -> void;
@@ -145,6 +146,8 @@ namespace
                                          std::chrono::steady_clock::time_point& _time_start) -> void;
     auto log_stacktrace_files(std::chrono::steady_clock::time_point& _time_start) -> void;
     auto remove_leftover_agent_info_files_for_ips() -> void;
+
+    auto apply_access_time_updates() -> void;
 
     auto is_server_listening_for_connections(const std::string& _host, const std::string& _port) -> int;
 } // anonymous namespace
@@ -267,6 +270,11 @@ auto main(int _argc, char* _argv[]) -> int
         dnsc::init("irods_dns_cache", irods::get_dns_cache_shared_memory_size());
         irods::at_scope_exit deinit_dns_cache{[] { dnsc::deinit(); }};
 
+        log_server::info("{}: Initializing access time manager for main server process.", __func__);
+
+        // TODO: Load name and size from server_config.json.
+        irods::access_time_manager::init("irods_access_time_manager", 10000);
+
         // TODO(#8014): These directories should be created by the packaging.
         fs::create_directories(irods::get_irods_stacktrace_directory().c_str());
         fs::create_directories(irods::get_irods_proc_directory().c_str());
@@ -339,6 +347,7 @@ auto main(int _argc, char* _argv[]) -> int
             remove_leftover_agent_info_files_for_ips();
             launch_agent_factory(__func__, write_to_stdout, enable_test_mode);
             migrate_and_launch_delay_server(write_to_stdout, enable_test_mode, dsm_time_start);
+            apply_access_time_updates();
 
             std::this_thread::sleep_for(std::chrono::seconds{1});
         }
@@ -1448,6 +1457,27 @@ Signals:
             }
         };
     } // remove_leftover_agent_info_files_for_ips
+
+    auto apply_access_time_updates() -> void
+    {
+        try {
+            log_server::trace("{}: Applying access time updates.", __func__);
+            
+            irods::access_time_manager::access_time_data data;
+
+            for (int i = 0; i < 250; ++i) {
+                if (!irods::access_time_manager::try_dequeue(data)) {
+                    break;
+                }
+
+                log_server::debug("{}: Applying access time update: (data_id={}, replica_number={}, last_accessed={})",
+                    __func__, data.data_id, data.replica_number, data.last_accessed);
+            }
+        }
+        catch (const std::exception& e) {
+            log_server::error("{}: Caught exception while processing access time updates: {}", __func__, e.what());
+        }
+    } // apply_access_time_updates
 
     // TODO(#8015): This can be used to check if the server running the old delay server leader is running.
     // The idea is that this gives us a strong guarantee around delay server migration and leader promotion.
