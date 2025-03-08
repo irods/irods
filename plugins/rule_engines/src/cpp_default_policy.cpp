@@ -408,11 +408,6 @@ irods::error acGetUserByDN( irods::callback, std::list<boost::any>& ) {
     return SUCCESS();
 }
 
-irods::error acAclPolicy( irods::callback _cb, std::list<boost::any>& ) {
-    //msiAclPolicy("STRICT");
-    return _cb(std::string("msiAclPolicy"), std::string("STRICT"));
-}
-
 irods::error acTicketPolicy( irods::callback, std::list<boost::any>& ) {
     return SUCCESS();
 }
@@ -761,7 +756,6 @@ irods::error start(irods::default_re_ctx& _u, const std::string& _instance_name)
     STATIC_PEP(acDeleteCollByAdmin);
     STATIC_PEP(acRenameLocalZone);
     STATIC_PEP(acGetUserByDN);
-    STATIC_PEP(acAclPolicy);
     STATIC_PEP(acTicketPolicy);
     STATIC_PEP(acCheckPasswordStrength);
     STATIC_PEP(acSetRescSchemeForCreate);

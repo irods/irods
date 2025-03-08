@@ -1605,8 +1605,7 @@ insertWhere( char *condition, int option ) {
 }
 
 /*
- Only used if requested by msiAclPolicy (acAclPolicy rule) (which
- normally isn't) or if the user is anonymous.  This restricts
+ Only used if the user is anonymous.  This restricts
  R_DATA_MAIN anc R_COLL_MAIN info to only users with access.
  If client user is the local admin, do not restrict.
  */
