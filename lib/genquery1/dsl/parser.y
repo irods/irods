@@ -224,7 +224,9 @@ auto add_column_to_projection_list(irods::experimental::genquery1::driver& _drv,
             //     iquest "select COLL_NAME"
             //
             // This flex / bison parser correctly treats this as an error and throws an exception.
-            THROW(INVALID_OPERATION, fmt::format("aggregate function [{}] not supported", *_fn));
+            //
+            // NOTE: As of iRODS 4.3.4, GenQuery1 returns the same error as iRODS 5.
+            THROW(INVALID_GENQUERY_AGGREGATE_FUNCTION, fmt::format("aggregate function [{}] not supported", *_fn));
         }
 
         addInxIval(&_drv.gq_input->selectInp, column_id, aggregate_fn);
