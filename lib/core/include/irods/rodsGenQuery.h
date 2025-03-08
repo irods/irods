@@ -171,6 +171,7 @@ primary ordering column.
 #define COL_DATA_MODE 421
 #define COL_D_RESC_HIER 422
 #define COL_D_RESC_ID 423
+#define COL_D_ACCESS_TIME 424
 
 /* R_COLL_MAIN */
 #define COL_COLL_ID 500
