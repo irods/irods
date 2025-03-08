@@ -159,6 +159,10 @@ class Test_Iquest(ResourceBase, unittest.TestCase):
                 self.admin.assert_icommand(['iquest', f"SELECT DATA_NAME, DATA_CREATE_TIME WHERE DATA_NAME = '{data_object}'"], 'STDOUT', expected_output)
                 self.admin.assert_icommand(['iquest', f"SELECT DATA_NAME, DATA_CREATE_TIME WHERE DATA_NAME like '%{data_object}%'"], 'STDOUT', expected_output)
 
+    def test_iquest_returns_error_on_invalid_aggregate_function__issue_8080(self):
+        self.admin.assert_icommand(['iquest', 'select nope(DATA_ID)'], 'STDERR', ['-183000 INVALID_GENQUERY_AGGREGATE_FUNCTION'])
+
+
 class test_iquest_with_data_resc_hier(unittest.TestCase):
     @classmethod
     def setUpClass(self):

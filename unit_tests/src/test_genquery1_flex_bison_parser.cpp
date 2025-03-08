@@ -109,7 +109,7 @@ TEST_CASE("GenQuery1 flex bison parser returns error on invalid input")
     const std::vector<std::pair<const char*, int>> invalid_queries{
         {"bad formatting", INPUT_ARG_NOT_WELL_FORMED_ERR},
         {"select DATA_RESC_GROUP_NAME where COLL_NAME = '/tempZone/home/otherrods/2024-12-11Z00:41:48--irods-testing-zzdtv1n3' and DATA_NAME = 'test_modifying_restricted_columns'", NO_COLUMN_NAME_FOUND},
-        {"select bad_aggregate_func(COLL_NAME)", INVALID_OPERATION},
+        {"select bad_aggregate_func(COLL_NAME)", INVALID_GENQUERY_AGGREGATE_FUNCTION},
         {"select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER  'root;mid;leaf'", INPUT_ARG_NOT_WELL_FORMED_ERR},
         {"select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER  'root;mid;leaf1' || like 'root;mid;leaf1'", INPUT_ARG_NOT_WELL_FORMED_ERR},
         {"select DATA_RESC_HIER where DATA_NAME = 'foo' and DATA_RESC_HIER == 'root;mid;leaf'", INPUT_ARG_NOT_WELL_FORMED_ERR},
