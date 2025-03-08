@@ -1,3 +1,4 @@
+#include "irods/access_time_manager.hpp"
 #include "irods/apiNumber.h"
 #include "irods/dataObjClose.h"
 #include "irods/dataObjCreate.h"
@@ -1225,6 +1226,35 @@ namespace
                     replica.hierarchy(),
                     replica.replica_status()));
             }
+        }
+
+        // Enqueue an access time update if the last time the replica was accessed is earlier than
+        // the modification time or the configured amount of time has elapsed since the last update.
+        // TODO: Update GenQuery1 to support atime.
+        // TODO: Update GenQuery2 to support atime.
+        // TODO: Update DataObjInfo struct to hold atime.
+        // TODO: Update replica proxy to hold atime.
+        try {
+            const auto max_elapsed_time = irods::get_server_property<std::uint32_t>("access_time_ignore_window_in_seconds");
+            const auto atime = std::stoull(std::string{replica.atime()});
+            const auto mtime = std::stoull(std::string{replica.mtime()});
+            const auto now = std::time(nullptr);
+
+            log_api::info("{}: atime=[{}], mtime=[{}], now=[{}]", __func__, atime, mtime, now);
+
+            // TODO: Expose options for controlling the behavior of this.
+            if (atime < mtime || now - atime >= max_elapsed_time /* 86400s - 24 hours */) {
+                log_api::info("{}: Enqueuing access time update for replica [data_id={}, replica_number={}].",
+                    __func__, replica.data_id(), replica.replica_number());
+                irods::access_time_manager::try_enqueue({
+                    .data_id = static_cast<std::size_t>(replica.data_id()),
+                    .replica_number = static_cast<std::size_t>(replica.replica_number()),
+                    .last_accessed = now
+                });
+            }
+        }
+        catch (const std::exception& e) {
+            log_api::warn("{}: Failed to enqueue access time data: {}", __func__, e.what());
         }
 
         return l1descInx;

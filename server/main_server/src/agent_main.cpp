@@ -1,3 +1,4 @@
+#include "irods/access_time_manager.hpp"
 #include "irods/agent_globals.hpp"
 #include "irods/client_api_allowlist.hpp"
 #include "irods/dns_cache.hpp"
@@ -234,6 +235,11 @@ auto main(int _argc, char* _argv[]) -> int
 
         irods::experimental::replica_access_table::init();
         irods::at_scope_exit deinit_replica_access_table{[] { irods::experimental::replica_access_table::deinit(); }};
+
+        log_af::info("{}: Initializing access time manager for agent factory.", __func__);
+
+        // TODO: Load name and size from server_config.json.
+        irods::access_time_manager::init_no_create("irods_access_time_manager");
 
         log_af::info("{}: Initializing zone information for agent factory.", __func__);
 

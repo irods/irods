@@ -50,6 +50,10 @@
                 "transfer_chunk_size_for_parallel_transfer_in_megabytes"
             ]
         },
+        "access_time_ignore_window_in_seconds": {
+            "type": "integer",
+            "minimum": 0
+        },
         "catalog_provider_hosts": {
             "type": "array",
             "items": {"type": "string"},
@@ -181,6 +185,7 @@
         "zone_user": {"type": "string"}
     },
     "required": [
+        "access_time_ignore_window_in_seconds",
         "advanced_settings",
         "catalog_provider_hosts",
         "catalog_service_role",

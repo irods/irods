@@ -147,6 +147,7 @@ typedef struct DataObjInfo {
     char dataExpiry[TIME_LEN];
     char dataCreate[TIME_LEN];
     char dataModify[TIME_LEN];
+    char dataAccessTime[TIME_LEN];
     char dataAccess[NAME_LEN];
     int  dataAccessInx;
     int  writeFlag;
