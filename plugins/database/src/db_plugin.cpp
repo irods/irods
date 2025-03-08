@@ -2129,7 +2129,8 @@ irods::error db_mod_data_obj_meta_op(
         // DATA_RESC_GROUP_NAME_KW,
         RESC_HIER_STR_KW,
         RESC_ID_KW,
-        RESC_NAME_KW
+        RESC_NAME_KW,
+        DATA_ACCESS_TIME_KW
     };
 
     const std::vector<std::string_view> colNames = {
@@ -2155,7 +2156,8 @@ irods::error db_mod_data_obj_meta_op(
         //"resc_group_name",
         "resc_hier",
         "resc_id",
-        "resc_name"
+        "resc_name",
+        "access_ts"
     };
 
     int doingDataSize = 0;
@@ -2220,6 +2222,18 @@ irods::error db_mod_data_obj_meta_op(
             if(regParamNames[i] == DATA_MODIFY_KW) {
                 /* if modify_ts, also make sure it's in the standard time-stamp format: "%011d" */
                 if (colNames[i] == "modify_ts") { /* double check*/
+                    if ( strlen( theVal ) < 11 ) {
+                        static char theVal3[20];
+                        time_t myTimeValue;
+                        myTimeValue = atoll( theVal );
+                        snprintf( theVal3, sizeof theVal3, "%011d", ( int )myTimeValue );
+                        updateVals[j] = theVal3;
+                    }
+                }
+            }
+            if(regParamNames[i] == DATA_ACCESS_TIME_KW) {
+                /* if access_ts, also make sure it's in the standard time-stamp format: "%011d" */
+                if (colNames[i] == "access_ts") { /* double check*/
                     if ( strlen( theVal ) < 11 ) {
                         static char theVal3[20];
                         time_t myTimeValue;
