@@ -15,6 +15,7 @@
 #include "irods/irods_server_properties.hpp"
 #include "irods/irods_signal.hpp"
 #include "irods/irods_version.h"
+#include "irods/modDataObjMeta.h"
 #include "irods/notify_service_manager.hpp"
 #include "irods/plugins/api/delay_server_migration_types.h"
 #include "irods/plugins/api/grid_configuration_types.h"
@@ -1463,17 +1464,37 @@ Signals:
     {
         try {
             log_server::trace("{}: Applying access time updates.", __func__);
-            
+
+            irods::experimental::client_connection conn;
             irods::access_time_manager::access_time_data data;
+            DataObjInfo info{};
+            KeyValPair kvp{};
+            modDataObjMeta_t input{};
+            input.dataObjInfo = &info;
+            input.regParam = &kvp;
 
             for (int i = 0; i < 250; ++i) {
                 if (!irods::access_time_manager::try_dequeue(data)) {
                     break;
                 }
 
-                log_server::debug("{}: Applying access time update: (data_id={}, replica_number={}, last_accessed={})",
+                log_server::debug("{}: Applying access time update: data_id=[{}], replica_number=[{}], last_accessed=[{}]",
                     __func__, data.data_id, data.replica_number, data.last_accessed);
+
+                info.dataId = data.data_id;
+                info.replNum = data.replica_number;
+
+                irods::at_scope_exit free_kvp{[&kvp] { clearKeyVal(&kvp); }};
+                const auto new_atime = fmt::format("{:011}", data.last_accessed);
+                addKeyVal(&kvp, DATA_ACCESS_TIME_KW, new_atime.c_str());
+                addKeyVal(&kvp, ADMIN_KW, "");
+
+                const auto ec = rcModDataObjMeta(static_cast<RcComm*>(conn), &input);
+                log_server::debug("{}: rcModDataObjMeta returned [{}]", __func__, ec);
             }
+        }
+        catch (const irods::exception& e) {
+            log_server::error("{}: Caught exception while processing access time updates: {}", __func__, e.client_display_what());
         }
         catch (const std::exception& e) {
             log_server::error("{}: Caught exception while processing access time updates: {}", __func__, e.what());

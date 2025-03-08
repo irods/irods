@@ -1235,14 +1235,15 @@ namespace
         // TODO: Update DataObjInfo struct to hold atime.
         // TODO: Update replica proxy to hold atime.
         try {
+            const auto max_elapsed_time = irods::get_server_property<std::uint32_t>("access_time_ignore_window_in_seconds");
             const auto atime = std::stoull(std::string{replica.atime()});
             const auto mtime = std::stoull(std::string{replica.mtime()});
             const auto now = std::time(nullptr);
 
             log_api::info("{}: atime=[{}], mtime=[{}], now=[{}]", __func__, atime, mtime, now);
 
-            // TODO: Expose these as options.
-            if (atime < mtime || now - atime >= 86400) {
+            // TODO: Expose options for controlling the behavior of this.
+            if (atime < mtime || now - atime >= max_elapsed_time /* 86400s - 24 hours */) {
                 log_api::info("{}: Enqueuing access time update for replica [data_id={}, replica_number={}].",
                     __func__, replica.data_id(), replica.replica_number());
                 irods::access_time_manager::try_enqueue({
