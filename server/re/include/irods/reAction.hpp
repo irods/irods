@@ -37,7 +37,6 @@ int msiBytesBufToStr( msParam_t* buf_msp, msParam_t* str_msp, ruleExecInfo_t *re
 int msiApplyDCMetadataTemplate( msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *rei );
 int msiListEnabledMS( msParam_t *outKVPairs, ruleExecInfo_t *rei );
 
-int msiSetResource( msParam_t* xrescName, ruleExecInfo_t *rei );
 int msiPrintKeyValPair( msParam_t* where, msParam_t* inKVPair,  ruleExecInfo_t *rei );
 int msiGetValByKey( msParam_t* inKVPair,  msParam_t* inKey, msParam_t* outVal,  ruleExecInfo_t *rei );
 int msiAddKeyVal( msParam_t *inKeyValPair, msParam_t *key, msParam_t *value, ruleExecInfo_t *rei );
@@ -139,7 +138,6 @@ namespace irods
         table_[ "msiQuota" ] = new irods::ms_table_entry( "msiQuota", 0, std::function<int(ruleExecInfo_t*)>( msiQuota ) );
         table_[ "msiDeleteUnusedAVUs" ] = new irods::ms_table_entry( "msiDeleteUnusedAVUs", 0, std::function<int(ruleExecInfo_t*)>( msiDeleteUnusedAVUs ) );
         table_[ "msiGoodFailure" ] = new irods::ms_table_entry( "msiGoodFailure", 0, std::function<int(ruleExecInfo_t*)>( msiGoodFailure ) );
-        table_[ "msiSetResource" ] = new irods::ms_table_entry( "msiSetResource", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>(  msiSetResource ) );
         table_[ "msiCheckPermission" ] = new irods::ms_table_entry( "msiCheckPermission", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>(  msiCheckPermission ) );
         table_[ "msiCheckAccess" ] = new irods::ms_table_entry( "msiCheckAccess", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>(  msiCheckAccess ) );
         table_[ "msiCheckOwner" ] = new irods::ms_table_entry( "msiCheckOwner", 0, std::function<int(ruleExecInfo_t*)>( msiCheckOwner ) );
