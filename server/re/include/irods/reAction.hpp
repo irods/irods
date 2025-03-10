@@ -66,7 +66,6 @@ int msiDeleteCollByAdmin( msParam_t *parColl, msParam_t *childName, ruleExecInfo
 int msiDeleteUser( ruleExecInfo_t *rei );
 int msiAddUserToGroup( msParam_t *msParam, ruleExecInfo_t *rei );
 int msiRemoveUserFromGroup(MsParam* _group, MsParam* _user, MsParam* _user_zone, RuleExecInfo* _rei);
-int msiSendMail( msParam_t *toAddr, msParam_t *subjectLine, msParam_t *body, ruleExecInfo_t *rei );
 int msiGetObjType( msParam_t *objNameP, msParam_t *objTypeP,
                    ruleExecInfo_t *rei );
 int msiAssociateKeyValuePairsToObj( msParam_t *mDP, msParam_t* objP,  msParam_t* typP,
@@ -146,7 +145,6 @@ namespace irods
         table_[ "msiCheckOwner" ] = new irods::ms_table_entry( "msiCheckOwner", 0, std::function<int(ruleExecInfo_t*)>( msiCheckOwner ) );
         table_[ "msiCreateUser" ] = new irods::ms_table_entry( "msiCreateUser", 0, std::function<int(ruleExecInfo_t*)>( msiCreateUser ) );
         table_[ "msiCreateCollByAdmin" ] = new irods::ms_table_entry( "msiCreateCollByAdmin", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiCreateCollByAdmin ) );
-        table_[ "msiSendMail" ] = new irods::ms_table_entry( "msiSendMail", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiSendMail ) );
         table_[ "recover_print_hello" ] = new irods::ms_table_entry( "recover_print_hello", 0, std::function<int(ruleExecInfo_t*)>( recover_print_hello ) );
         table_[ "msiCommit" ] = new irods::ms_table_entry( "msiCommit", 0, std::function<int(ruleExecInfo_t*)>( msiCommit ) );
         table_[ "msiRollback" ] = new irods::ms_table_entry( "msiRollback", 0, std::function<int(ruleExecInfo_t*)>( msiRollback ) );

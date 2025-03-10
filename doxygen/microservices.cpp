@@ -94,9 +94,6 @@
   - #msiStrchop  - Removes the last character of a given string
   - #msiSubstr   - Returns a substring of the given string
 
- \subsection msiemail Email Microservices
-  - #msiSendMail   - (Deprecated) Sends email
-
  \subsection msikv Key-Value (Attr-Value) Microservices
   - #writeKeyValPairs - Writes key-value pairs to stdout or stderr and with given separator
   - #msiPrintKeyValPair - Prints key-value pairs to rei's stdout separated by =

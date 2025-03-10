@@ -15,7 +15,6 @@ set(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_re_serialization.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/keyValPairMS.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/locks.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/mailMS.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/miscMS.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/printMS.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/reDataObjOpr.cpp"
