@@ -2734,12 +2734,13 @@ irods::error db_reg_data_obj_op(
     cllBindVars[17] = "EMPTY_RESC_NAME";
     cllBindVars[18] = "EMPTY_RESC_HIER";
     cllBindVars[19] = "EMPTY_RESC_GROUP_NAME";
-    cllBindVarCount = 20;
+    cllBindVars[20] = _data_obj_info->dataModify;
+    cllBindVarCount = 21;
     if ( logSQL != 0 ) {
         log_sql::debug("chlRegDataObj SQL 6");
     }
     status =  cmlExecuteNoAnswerSql(
-                  "insert into R_DATA_MAIN (data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_id, data_path, data_owner_name, data_owner_zone, data_is_dirty, data_checksum, data_mode, create_ts, modify_ts, data_expiry_ts, resc_name, resc_hier, resc_group_name) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                  "insert into R_DATA_MAIN (data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_id, data_path, data_owner_name, data_owner_zone, data_is_dirty, data_checksum, data_mode, create_ts, modify_ts, data_expiry_ts, resc_name, resc_hier, resc_group_name, access_ts) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                   &icss );
     if ( status != 0 ) {
         log_db::info("chlRegDataObj cmlExecuteNoAnswerSql failure {}", status);
@@ -2895,7 +2896,8 @@ irods::error db_reg_replica_op(
                        data_mode, \
                        r_comment, \
                        create_ts, \
-                       modify_ts";
+                       modify_ts, \
+                       access_ts";
     const int IX_DATA_REPL_NUM = 3; /* index of data_repl_num in theColls */
 //        int IX_RESC_GROUP_NAME = 7; /* index into theColls */
     const int IX_RESC_ID = 10;
@@ -2906,10 +2908,11 @@ irods::error db_reg_replica_op(
     const int IX_DATA_MODE = 19;
     const int IX_CREATE_TS = 21;
     const int IX_MODIFY_TS = 22;
-    const int IX_RESC_NAME2 = 23;
-    const int IX_DATA_PATH2 = 24;
-    const int IX_DATA_ID2 = 25;
-    int nColumns = 26;
+    const int IX_ACCESS_TS = 23;
+    const int IX_RESC_NAME2 = 24;
+    const int IX_DATA_PATH2 = 25;
+    const int IX_DATA_ID2 = 26;
+    int nColumns = 27;
 
     char objIdString[MAX_NAME_LEN];
     char replNumString[MAX_NAME_LEN];
@@ -3022,6 +3025,7 @@ irods::error db_reg_replica_op(
     getNowStr( myTime );
     cVal[IX_MODIFY_TS] = myTime;
     cVal[IX_CREATE_TS] = myTime;
+    cVal[IX_ACCESS_TS] = myTime;
 
     cVal[IX_RESC_NAME2] = (char*)resc_id_str.c_str();//_dst_data_obj_info->rescName; // JMC - backport 4669
     cVal[IX_DATA_PATH2] = _dst_data_obj_info->filePath; // JMC - backport 4669
@@ -3033,11 +3037,11 @@ irods::error db_reg_replica_op(
     cllBindVarCount = nColumns;
 #if (defined ORA_ICAT || defined MY_ICAT) // JMC - backport 4685
     /* MySQL and Oracle */
-    snprintf( tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? from DUAL where not exists (select data_id from R_DATA_MAIN where resc_id=? and data_path=? and data_id=?)",
+    snprintf( tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? from DUAL where not exists (select data_id from R_DATA_MAIN where resc_id=? and data_path=? and data_id=?)",
               theColls );
 #else
     /* Postgres */
-    snprintf( tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? where not exists (select data_id from R_DATA_MAIN where resc_id=? and data_path=? and data_id=?)",
+    snprintf( tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? where not exists (select data_id from R_DATA_MAIN where resc_id=? and data_path=? and data_id=?)",
               theColls );
 
 #endif
