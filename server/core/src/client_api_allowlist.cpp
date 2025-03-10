@@ -123,7 +123,6 @@ namespace irods::client_api_allowlist
             RM_COLL_AN,
             MOD_COLL_AN,
             COLL_CREATE_AN,
-            DATA_OBJ_UNLOCK_AN,
             REG_COLL_AN,
             PHY_BUNDLE_COLL_AN,
             UNBUN_AND_REG_PHY_BUNFILE_AN,
@@ -140,7 +139,6 @@ namespace irods::client_api_allowlist
             DATA_OBJ_COPY_AN,
             DATA_OBJ_PHYMV_AN,
             DATA_OBJ_FSYNC_AN,
-            DATA_OBJ_LOCK_AN,
 
             GET_MISC_SVR_INFO_AN,
             GENERAL_ADMIN_AN,

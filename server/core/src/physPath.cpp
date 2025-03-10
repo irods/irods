@@ -1347,59 +1347,6 @@ executeFilesystemLockCommand( int cmd, int type, int fd, struct flock* lock ) {
     return 0;
 }
 
-/* fsDataObjLock - lock the data object using the local file system  :(
- * Input:
- *    char *objPath - The full Object path
- *    int cmd - the fcntl cmd - valid values are F_SETLK, F_SETLKW and F_GETLK
- *    int type - the fcntl type - valid values are F_UNLCK, F_WRLCK, F_RDLCK
- */
-int
-fsDataObjLock( char *objPath, int cmd, int type ) {
-    int fd;
-    char *path = NULL;
-    int status = getDataObjLockPath( objPath, &path ); 
-    if ( status < 0 || NULL == path ) {
-        rodsLogError( LOG_ERROR, status,
-                      "fsDataObjLock: getDataObjLockPath error for %s", objPath );
-        free( path );
-        return status;
-    }
-    fd = open( path, O_RDWR | O_CREAT, 0644 );
-    free( path );
-    if ( fd < 0 ) {
-        status = FILE_OPEN_ERR - errno;
-        rodsLogError( LOG_ERROR, status,
-                      "fsDataObjLock: open error for %s", objPath );
-        return status;
-    }
-    struct flock lock;
-    status = executeFilesystemLockCommand( cmd, type, fd, &lock );
-    if ( status < 0 ) {
-        rodsLogError( LOG_DEBUG, status, "fsDataObjLock: fcntl error for %s, cmd = %d, type = %d",
-                      objPath, cmd, type ); // JMC - backport 4604
-        return status;
-    }
-    if ( cmd == F_GETLK ) {
-        /* get the status of locking the file. return F_UNLCK if no conflict */
-        close( fd );
-        return lock.l_type;
-    }
-    return fd;
-}
-
-int
-fsDataObjUnlock( int cmd, int type, int fd ) {
-    struct flock lock;
-    int status = executeFilesystemLockCommand( cmd, type, fd, &lock );
-    if ( status < 0 ) {
-        rodsLogError( LOG_DEBUG, status, "fsDataObjLock: fcntl error on unlock, status = %d",
-                      status ); // JMC - backport 4604
-        return status;
-    }
-    close( fd );
-    return 0;
-}
-
 rodsLong_t
 getFileMetadataFromVault( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo )
 

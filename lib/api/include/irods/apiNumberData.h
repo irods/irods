@@ -99,7 +99,8 @@ API_NUMBER(OPEN_COLLECTION_AN,                      678)
 API_NUMBER(RM_COLL_AN,                              679)
 API_NUMBER(MOD_COLL_AN,                             680)
 API_NUMBER(COLL_CREATE_AN,                          681)
-API_NUMBER(DATA_OBJ_UNLOCK_AN,                      682)
+// Removed since 5.0.0
+//API_NUMBER(DATA_OBJ_UNLOCK_AN,                    682)
 API_NUMBER(REG_COLL_AN,                             683)
 API_NUMBER(PHY_BUNDLE_COLL_AN,                      684)
 API_NUMBER(UNBUN_AND_REG_PHY_BUNFILE_AN,            685)
@@ -116,7 +117,8 @@ API_NUMBER(DATA_OBJ_REPL_AN,                        695)
 API_NUMBER(DATA_OBJ_COPY_AN,                        696)
 API_NUMBER(DATA_OBJ_PHYMV_AN,                       697)
 API_NUMBER(DATA_OBJ_FSYNC_AN,                       698)
-API_NUMBER(DATA_OBJ_LOCK_AN,                        699) // JMC - backport 4599
+// Removed since 5.0.0
+//API_NUMBER(DATA_OBJ_LOCK_AN,                      699)
 
 /* 700 - 799 - Metadata API calls */
 API_NUMBER(GET_MISC_SVR_INFO_AN,                    700)
