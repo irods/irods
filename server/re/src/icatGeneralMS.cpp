@@ -113,52 +113,6 @@ msiQuota( ruleExecInfo_t *rei ) {
 }
 
 /**
- *\fn msiSetResource (msParam_t *xrescName, ruleExecInfo_t *rei)
- *
- * \brief   This microservice sets the resource as part of a workflow execution.
- *
- * \module core
- *
- * \since pre-2.1
- *
- * \deprecated Deprecated in 4.3.2. Its use should be avoided.
- *
- *
- * \note  This microservice sets the resource as part of a workflow execution.
- *
- * \usage See clients/icommands/test/rules/
- *
- * \param[in] xrescName - is a msParam of type STR_MS_T
- * \param[in,out] rei - The RuleExecInfo structure that is automatically
- *    handled by the rule engine. The user does not include rei as a
- *    parameter in the rule invocation.
- *
- * \DolVarDependence none
- * \DolVarModified none
- * \iCatAttrDependence none
- * \iCatAttrModified none
- * \sideeffect none
- *
- * \return integer
- * \retval 0 on success
- * \pre none
- * \post none
- * \sa none
-**/
-int  msiSetResource( msParam_t* xrescName, ruleExecInfo_t *rei ) {
-    char* rescName{static_cast<char*>(xrescName->inOutStruct)};
-
-    if (nullptr == rei->doi) {
-        log_msi::error("{}: Cannot set resource, no DOI (DataObjInfo) attached to REI (RuleExecInfo).", __func__);
-        return SYS_INTERNAL_NULL_INPUT_ERR;
-    }
-
-    std::snprintf(rei->doi->rescName, sizeof(rei->doi->rescName), "%s", rescName);
-    return 0;
-}
-
-
-/**
  * \fn msiCheckOwner (ruleExecInfo_t *rei)
  *
  * \brief   This microservice checks whether the user is the owner
