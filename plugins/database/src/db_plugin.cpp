@@ -15403,7 +15403,7 @@ auto db_delay_rule_unlock(irods::plugin_context& _ctx, const char* _rule_ids) ->
     }
 } // db_delay_rule_unlock
 
-auto db_update_replica_access_time(irods::plugin_context& _ctx, const char* _input, char** _output) -> irods::error
+auto db_update_replica_access_time(irods::plugin_context& _ctx, const char* _input, [[maybe_unused]] char** _output) -> irods::error
 {
     if (const auto ret = _ctx.valid(); !ret.ok()) {
         return PASS(ret);
@@ -15422,6 +15422,11 @@ auto db_update_replica_access_time(irods::plugin_context& _ctx, const char* _inp
         return ERROR(SYS_INTERNAL_NULL_INPUT_ERR, "Rule ID list cannot be a null pointer.");
     }
 #endif
+
+    // TODO Remove
+    //if (!irods::is_privileged_client(*_ctx.comm())) {
+    //    return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
+    //}
 
     try {
         log_db::info("{}: parsing JSON input", __func__);
