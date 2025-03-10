@@ -48,6 +48,11 @@ namespace irods::access_time_manager
     ///
     /// \since 5.0.0
     auto try_dequeue(access_time_data& _data) -> bool;
+
+    /// TODO
+    ///
+    /// \since 5.0.0
+    auto number_of_queued_updates() -> std::size_t;
 } // namespace irods::access_time_manager
 
 #endif // IRODS_ACCESS_TIME_MANAGER_HPP

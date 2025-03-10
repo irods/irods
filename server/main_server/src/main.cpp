@@ -24,6 +24,7 @@
 #include "irods/rcMisc.h"
 #include "irods/rodsClient.h"
 #include "irods/rodsErrorTable.h"
+#include "irods/update_replica_access_time.h"
 #include "irods/set_delay_server_migration_info.h"
 
 #include <boost/any.hpp>
@@ -44,6 +45,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include <algorithm>
 #include <array>
 #include <chrono>
 #include <csignal>
@@ -51,6 +53,7 @@
 #include <cstring>
 #include <fstream>
 #include <ios> // For std::streamsize
+#include <iterator>
 #include <optional>
 #include <sstream>
 #include <string>
@@ -1463,8 +1466,32 @@ Signals:
     auto apply_access_time_updates() -> void
     {
         try {
-            log_server::trace("{}: Applying access time updates.", __func__);
+            log_server::debug(
+                "{}: Checking if Agent Factory is ready to accept client requests before applying access time updates.",
+                __func__);
 
+            // Defer the launch of the delay server if the agent factory isn't listening.
+            try {
+                // The host property in server_config.json defines the true identity of the local server.
+                // We cannot use localhost or the loopback address because the computer may have multiple
+                // network interfaces and/or hostnames which map to different IPs.
+                const auto local_server_host = irods::get_server_property<std::string>(irods::KW_CFG_HOST);
+
+                // Use the zone port property from server_config.json. This property defines the port for
+                // server-to-server connections within the zone.
+                const auto local_server_port = irods::get_server_property<int>(irods::KW_CFG_ZONE_PORT);
+                const auto local_server_port_string = std::to_string(local_server_port);
+
+                if (is_server_listening_for_connections(local_server_host, local_server_port_string) != 0) {
+                    return;
+                }
+            }
+            catch (const std::exception& e) {
+                log_server::debug("{}: Connect Error: {}. Deferring access time updates.", __func__, e.what());
+                return;
+            }
+
+#if 0
             irods::experimental::client_connection conn;
             irods::access_time_manager::access_time_data data;
             DataObjInfo info{};
@@ -1492,6 +1519,62 @@ Signals:
                 const auto ec = rcModDataObjMeta(static_cast<RcComm*>(conn), &input);
                 log_server::debug("{}: rcModDataObjMeta returned [{}]", __func__, ec);
             }
+#else
+            irods::experimental::client_connection conn;
+            irods::access_time_manager::access_time_data data;
+            nlohmann::json::array_t updates;
+
+            const auto update_count = irods::access_time_manager::number_of_queued_updates();
+            for (std::size_t i = 0; i < update_count; ++i) {
+                if (!irods::access_time_manager::try_dequeue(data)) {
+                    break;
+                }
+
+                updates.push_back(nlohmann::json{
+                    {"data_id", data.data_id},
+                    {"replica_number", data.replica_number},
+                    {"atime", data.last_accessed}
+                });
+            }
+
+            if (updates.empty()) {
+                return;
+            }
+
+            // Group elements by data id and replica number in descending order.
+            std::sort(std::begin(updates), std::end(updates), [](const auto& _lhs, const auto& _rhs) {
+                const auto& lhs_data_id = _lhs.at("data_id");
+                const auto& rhs_data_id = _rhs.at("data_id");
+                if (lhs_data_id > rhs_data_id) {
+                    return true;
+                }
+
+                if (lhs_data_id == rhs_data_id) {
+                    const auto& lhs_replica_number = _lhs.at("replica_number");
+                    const auto& rhs_replica_number = _rhs.at("replica_number");
+                    if (lhs_replica_number > rhs_replica_number) {
+                        return true;
+                    }
+
+                    if (lhs_replica_number == rhs_replica_number) {
+                        return _lhs.at("atime") > _rhs.at("atime");
+                    }
+                }
+
+                return false;
+            });
+
+            // Reduce updates such that each replica is updated once. On completion, the JSON
+            // is guaranteed to contain the most recent update for each replica.
+            updates.erase(std::unique(std::begin(updates), std::end(updates)), std::end(updates));
+
+            // Apply updates.
+            const auto json_input = nlohmann::json{{"access_time_updates", updates}}.dump();
+            log_server::info("{}: JSON input for atime updates = {}", __func__, json_input);
+            char* ignored{};
+            const auto ec = rc_update_replica_access_time(static_cast<RcComm*>(conn), json_input.c_str(), &ignored);
+            log_server::info("{}: rc_update_replica_access_time returned [{}].", __func__, ec);
+#endif
         }
         catch (const irods::exception& e) {
             log_server::error("{}: Caught exception while processing access time updates: {}", __func__, e.client_display_what());

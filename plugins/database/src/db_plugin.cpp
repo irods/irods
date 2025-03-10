@@ -15403,6 +15403,72 @@ auto db_delay_rule_unlock(irods::plugin_context& _ctx, const char* _rule_ids) ->
     }
 } // db_delay_rule_unlock
 
+auto db_update_replica_access_time(irods::plugin_context& _ctx, const char* _input, char** _output) -> irods::error
+{
+    if (const auto ret = _ctx.valid(); !ret.ok()) {
+        return PASS(ret);
+    }
+
+    if (!_input) {
+        log_db::error("{}: JSON input cannot be a null pointer.", __func__);
+        return ERROR(SYS_INTERNAL_NULL_INPUT_ERR, "JSON input cannot be a null pointer.");
+    }
+
+    // The output pointer is not used because the ODBC API isn't guaranteed to tell us
+    // which SQL statement failed.
+#if 0
+    if (!_output) {
+        log_db::error("{}: Rule ID list cannot be a null pointer.", __func__);
+        return ERROR(SYS_INTERNAL_NULL_INPUT_ERR, "Rule ID list cannot be a null pointer.");
+    }
+#endif
+
+    try {
+        log_db::info("{}: parsing JSON input", __func__);
+        log_db::info("{}: JSON input = {}", __func__, _input);
+        const auto json_input = nlohmann::json::parse(_input);
+        log_db::info("{}: Getting reference to [access_time_updates]", __func__);
+        const auto& updates = json_input.at("access_time_updates");
+
+        // Generate the list of SQL statements to execute as a batch.
+        constexpr const char* query = "update R_DATA_MAIN set access_ts = ? where data_id = ? and data_repl_num = ?;";
+        std::string sql;
+        // TODO This function DOES NOT check that the caller provided a non-empty list of updates.
+        sql.reserve(std::char_traits<char>::length(query) * updates.size()); // Allocate space up front to speed things up.
+        std::for_each(std::begin(updates), std::end(updates), [&sql](auto&&) {
+            sql.append(query);
+        });
+        // Remove the last semicolon. This step is mentioned in the ODBC documentation from Microsoft.
+        sql.erase(std::prev(std::end(sql)));
+        log_db::info("{}: SQL = [{}]", __func__, sql);
+
+        auto [db_instance, db_conn] = irods::experimental::catalog::new_database_connection();
+
+        nanodbc::statement stmt{db_conn};
+        nanodbc::prepare(stmt, sql);
+
+        std::size_t pos = 0;
+        for (auto&& update : updates) {
+            stmt.bind(pos++, &update.at("atime").get_ref<const std::size_t&>());//.c_str());
+            stmt.bind(pos++, &update.at("data_id").get_ref<const std::size_t&>());//.c_str());
+            stmt.bind(pos++, &update.at("replica_number").get_ref<const std::size_t&>());//.c_str());
+        }
+
+        // Execute the batch of SQL statements.
+        nanodbc::execute(stmt);
+
+        return SUCCESS();
+    }
+    catch (const irods::exception& e) {
+        log_db::error("{}: {}", __func__, e.client_display_what());
+        return ERROR(e.code(), e.what());
+    }
+    catch (const std::exception& e) {
+        log_db::error("{}: {}", __func__, e.what());
+        return ERROR(SYS_LIBRARY_ERROR, e.what());
+    }
+} // db_update_replica_access_time
+
 // =-=-=-=-=-=-=-
 //
 irods::error db_start_operation( irods::plugin_property_map& _props ) {
@@ -15812,6 +15878,8 @@ irods::database* plugin_factory(
         function<error(plugin_context&, const char*, const char*, int)>(db_delay_rule_lock));
     pg->add_operation<const char*>(
         DATABASE_OP_DELAY_RULE_UNLOCK, function<error(plugin_context&, const char*)>(db_delay_rule_unlock));
+    pg->add_operation<const char*, char**>(
+        DATABASE_OP_UPDATE_REPLICA_ACCESS_TIME, function<error(plugin_context&, const char*, char**)>(db_update_replica_access_time));
 
     return pg;
 } // plugin_factory
