@@ -20,7 +20,6 @@ set(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rcDataObjCreate.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rcDataObjCreateAndStat.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rcDataObjGet.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/rcDataObjLock.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rcDataObjLseek.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rcDataObjOpen.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rcDataObjOpenAndStat.cpp"

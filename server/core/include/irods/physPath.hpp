@@ -104,10 +104,6 @@ int getDataObjLockPath(char *objPath, char **outLockPath);
 
 int executeFilesystemLockCommand(int cmd, int type, int fd, struct flock * lock);
 
-int fsDataObjLock(char *objPath, int cmd, int type);
-
-int fsDataObjUnlock(int cmd, int type, int fd);
-
 rodsLong_t getFileMetadataFromVault(RsComm *rsComm, DataObjInfo *dataObjInfo);
 
 namespace irods

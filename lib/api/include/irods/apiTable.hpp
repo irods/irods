@@ -38,7 +38,6 @@
 #  include "irods/rsDataObjCreate.hpp"
 #  include "irods/rsDataObjCreateAndStat.hpp"
 #  include "irods/rsDataObjGet.hpp"
-#  include "irods/rsDataObjLock.hpp"
 #  include "irods/rsDataObjLseek.hpp"
 #  include "irods/rsDataObjOpen.hpp"
 #  include "irods/rsDataObjOpenAndStat.hpp"
@@ -190,7 +189,6 @@
 #define RS_DATA_OBJ_CREATE                 NULLPTR_FOR_CLIENT_TABLE(rsDataObjCreate)
 #define RS_DATA_OBJ_CREATE_AND_STAT        NULLPTR_FOR_CLIENT_TABLE(rsDataObjCreateAndStat)
 #define RS_DATA_OBJ_GET                    NULLPTR_FOR_CLIENT_TABLE(rsDataObjGet)
-#define RS_DATA_OBJ_LOCK                   NULLPTR_FOR_CLIENT_TABLE(rsDataObjLock)
 #define RS_DATA_OBJ_LSEEK                  NULLPTR_FOR_CLIENT_TABLE(rsDataObjLseek)
 #define RS_DATA_OBJ_OPEN                   NULLPTR_FOR_CLIENT_TABLE(rsDataObjOpen)
 #define RS_DATA_OBJ_OPEN_AND_STAT          NULLPTR_FOR_CLIENT_TABLE(rsDataObjOpenAndStat)
@@ -203,7 +201,6 @@
 #define RS_DATA_OBJ_TRIM                   NULLPTR_FOR_CLIENT_TABLE(rsDataObjTrim)
 #define RS_DATA_OBJ_TRUNCATE               NULLPTR_FOR_CLIENT_TABLE(rsDataObjTruncate)
 #define RS_DATA_OBJ_UNLINK                 NULLPTR_FOR_CLIENT_TABLE(rsDataObjUnlink)
-#define RS_DATA_OBJ_UNLOCK                 NULLPTR_FOR_CLIENT_TABLE(rsDataObjUnlock)
 #define RS_DATA_OBJ_WRITE                  NULLPTR_FOR_CLIENT_TABLE(rsDataObjWrite)
 #define RS_DATA_PUT                        NULLPTR_FOR_CLIENT_TABLE(rsDataPut)
 #define RS_DELAY_RULE_LOCK                 NULLPTR_FOR_CLIENT_TABLE(rs_delay_rule_lock)
@@ -863,20 +860,6 @@ static irods::apidef_t client_api_table_inp[] = {
         boost::any(std::function<int(rsComm_t*,dataObjInp_t*,char**)>(RS_GET_HOST_FOR_GET)),
         "api_get_host_for_get", clearDataObjInp, irods::clearOutStruct_noop,
         (funcPtr)CALL_DATAOBJINP_CHAROUT
-    },
-    {
-        DATA_OBJ_LOCK_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "DataObjInp_PI", 0, NULL, 0,
-        boost::any(std::function<int(rsComm_t*,dataObjInp_t*)>(RS_DATA_OBJ_LOCK)),
-        "api_data_obj_lock", clearDataObjInp, irods::clearOutStruct_noop,
-        (funcPtr)CALL_DATAOBJINP
-    },
-    {
-        DATA_OBJ_UNLOCK_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "DataObjInp_PI", 0, NULL, 0,
-        boost::any(std::function<int(rsComm_t*,dataObjInp_t*)>(RS_DATA_OBJ_UNLOCK)),
-        "api_data_obj_unlock", clearDataObjInp, irods::clearOutStruct_noop,
-        (funcPtr)CALL_DATAOBJINP
     },
     {
         SUB_STRUCT_FILE_CREATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
