@@ -12,14 +12,14 @@
                 "type": "integer",
                 "minimum": 0
             },
-            "time_elapsed_before_update_in_seconds": {
+            "resolution_in_seconds": {
                 "type": "integer",
                 "minimum": 0
             },
             "required": [
                 "queue_name",
                 "queue_size",
-                "time_elapsed_before_update_in_seconds"
+                "resolution_in_seconds"
             ]
         },
         "advanced_settings": {

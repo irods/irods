@@ -2231,18 +2231,20 @@ irods::error db_mod_data_obj_meta_op(
                     }
                 }
             }
+
             if(regParamNames[i] == DATA_ACCESS_TIME_KW) {
                 /* if access_ts, also make sure it's in the standard time-stamp format: "%011d" */
                 if (colNames[i] == "access_ts") { /* double check*/
                     if ( strlen( theVal ) < 11 ) {
-                        static char theVal3[20];
+                        static char theVal4[20];
                         time_t myTimeValue;
                         myTimeValue = atoll( theVal );
-                        snprintf( theVal3, sizeof theVal3, "%011d", ( int )myTimeValue );
-                        updateVals[j] = theVal3;
+                        snprintf( theVal4, sizeof theVal4, "%011d", ( int )myTimeValue );
+                        updateVals[j] = theVal4;
                     }
                 }
             }
+
             if(regParamNames[i] == DATA_SIZE_KW) {
                 doingDataSize = 1; /* flag to check size */
                 snprintf( dataSizeString, sizeof( dataSizeString ), "%s", theVal );
@@ -15409,20 +15411,14 @@ auto db_update_replica_access_time(irods::plugin_context& _ctx, const char* _jso
         return PASS(ret);
     }
 
+    // The output pointer is not used because the ODBC API isn't guaranteed to tell us
+    // which SQL statement failed. However, it is made available to future-proof the APIs
+    // supporting access time. Even though the output pointer isn't used, we still check it
+    // as a way to enforce correctness.
     if (!_json_input || !_output) {
         log_db::error("{}: Received one or more null pointers.", __func__);
         return ERROR(SYS_INTERNAL_NULL_INPUT_ERR, "Received one or more null pointers.");
     }
-
-    // The output pointer is not used because the ODBC API isn't guaranteed to tell us
-    // which SQL statement failed. However, it is made available to future proof the APIs
-    // supporting access time.
-#if 0
-    if (!_output) {
-        log_db::error("{}:  list cannot be a null pointer.", __func__);
-        return ERROR(SYS_INTERNAL_NULL_INPUT_ERR, "Rule ID list cannot be a null pointer.");
-    }
-#endif
 
     try {
         const auto json_input = nlohmann::json::parse(_json_input);
@@ -15483,9 +15479,10 @@ auto db_update_replica_access_time(irods::plugin_context& _ctx, const char* _jso
         stmt.bind(2, replica_numbers.data(), replica_numbers.size());
 
         // Execute the batch operation within a transaction and throw away the results.
-        // TODO Consider whether we should use execute() instead since the current code will
-        // rollback the updates on failure. The downside of using execute() is that it will
-        // have worst performance due to each update triggering an auto-commit instruction.
+        // From a behavior perspective, it would be better to use execute() instead of
+        // just_transact() because that allows partial success. However, we've chosen to
+        // update all rows atomically. This decision is strictly for performance reasons
+        // and ultimately means we feel it's acceptable to rollback all updates on failure.
         just_transact(stmt, updates.size());
 #endif
 

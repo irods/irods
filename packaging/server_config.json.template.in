@@ -2,9 +2,9 @@
     "schema_name": "server_config",
     "schema_version": "v@IRODS_CONFIGURATION_SCHEMA_VERSION@",
     "access_time": {
-        "queue_name": "irods_access_time_manager",
+        "queue_name": "irods_access_time_queue",
         "queue_size": 10000,
-        "time_elapsed_before_update_in_seconds": 86400
+        "resolution_in_seconds": 86400
     },
     "advanced_settings": {
         "agent_factory_watcher_sleep_time_in_seconds": 5,

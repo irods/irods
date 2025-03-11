@@ -7,12 +7,12 @@
 #include <ctime>
 #include <string_view>
 
-/// TODO
+/// A namespace containing facilities for managing access time updates for replicas.
 ///
 /// \since 5.0.0
 namespace irods::access_time_manager
 {
-    /// TODO
+    /// A data type which holds information for updating the access time of a replica.
     ///
     /// \since 5.0.0
     struct access_time_data
@@ -20,13 +20,13 @@ namespace irods::access_time_manager
         std::size_t data_id;
         std::size_t replica_number;
         char last_accessed[12]; // 11 digits + null terminating byte
-    }; // struct access_time_update
+    }; // struct access_time_data
 
     /// Initializes the access time manager.
     ///
     /// This function should only be called on startup of the server.
     ///
-    /// \param[in] _id         The name of the manager.
+    /// \param[in] _id         The name of the queue.
     /// \param[in] _queue_size The max number of entries the queue can hold.
     ///
     /// \since 5.0.0
@@ -36,20 +36,28 @@ namespace irods::access_time_manager
     ///
     /// This function should only be called on startup of the server.
     ///
+    /// \param[in] _id The name of the queue.
+    ///
     /// \since 5.0.0
     auto init_no_create(const std::string_view _id) -> void;
 
-    /// TODO
+    /// Returns true if new access time data was added to the queue, otherwise false.
+    ///
+    /// \p false is always returned when the queue is full. This function call returns
+    /// immediately and does not block.
     ///
     /// \since 5.0.0
     auto try_enqueue(const access_time_data& _data) -> bool;
 
-    /// TODO
+    /// Returns true if access time data was removed from the queue, otherwise false.
+    ///
+    /// \p false is always returned when the queue is empty. This function call returns
+    /// immediately and does not block.
     ///
     /// \since 5.0.0
     auto try_dequeue(access_time_data& _data) -> bool;
 
-    /// TODO
+    /// Returns the number of elements in the queue.
     ///
     /// \since 5.0.0
     auto number_of_queued_updates() -> std::size_t;

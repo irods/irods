@@ -19,7 +19,7 @@ namespace irods::access_time_manager
         g_mq_name = std::string{_id};
 
         // Allow an existing message queue to be opened. This allows access time
-        // data to be processed acrossed server restarts.
+        // data to be processed across server restarts.
         g_mq = std::make_unique<boost::interprocess::message_queue>(
             boost::interprocess::open_or_create, g_mq_name.data(), _queue_size, sizeof(access_time_data));
     } // init

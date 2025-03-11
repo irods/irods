@@ -325,7 +325,7 @@ getDataObjInfo(
 
     if ( ( dataAccessTime =
                 getSqlResultByInx( genQueryOut, COL_D_ACCESS_TIME ) ) == nullptr ) {
-        log_api::info("{}: getSqlResultByInx for COL_D_ACCESS_TIME failed", __func__);
+        log_api::error("{}: getSqlResultByInx for COL_D_ACCESS_TIME failed.", __func__);
         return UNMATCHED_KEY_OR_INDEX;
     }
 
