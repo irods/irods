@@ -19,7 +19,7 @@ namespace irods::access_time_manager
     {
         std::size_t data_id;
         std::size_t replica_number;
-        std::time_t last_accessed;
+        char last_accessed[12]; // 11 digits + null terminating byte
     }; // struct access_time_update
 
     /// Initializes the access time manager.

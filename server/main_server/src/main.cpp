@@ -276,9 +276,11 @@ auto main(int _argc, char* _argv[]) -> int
         irods::at_scope_exit deinit_dns_cache{[] { dnsc::deinit(); }};
 
         log_server::info("{}: Initializing access time manager for main server process.", __func__);
-
-        // TODO: Load name and size from server_config.json.
-        irods::access_time_manager::init("irods_access_time_manager", 10000);
+        {
+            const auto queue_name = irods::get_server_property_copy<std::string>(fmt::format("/{}/{}", irods::KW_CFG_ACCESS_TIME, irods::KW_CFG_QUEUE_NAME));
+            const auto queue_size = irods::get_server_property_copy<std::size_t>(fmt::format("/{}/{}", irods::KW_CFG_ACCESS_TIME, irods::KW_CFG_QUEUE_SIZE));
+            irods::access_time_manager::init(queue_name, queue_size);
+        }
 
         // TODO(#8014): These directories should be created by the packaging.
         fs::create_directories(irods::get_irods_stacktrace_directory().c_str());
@@ -1250,6 +1252,10 @@ Signals:
                     return;
                 }
             }
+            catch (const irods::exception& e) {
+                log_server::debug("{}: Connect Error: {}. Deferring launch of Delay Server.", __func__, e.client_display_what());
+                return;
+            }
             catch (const std::exception& e) {
                 log_server::debug("{}: Connect Error: {}. Deferring launch of Delay Server.", __func__, e.what());
                 return;
@@ -1467,10 +1473,10 @@ Signals:
     {
         try {
             log_server::debug(
-                "{}: Checking if Agent Factory is ready to accept client requests before applying access time updates.",
+                "{}: Checking if Agent Factory is ready to accept client requests before processing access time updates.",
                 __func__);
 
-            // Defer the launch of the delay server if the agent factory isn't listening.
+            // Defer processing of the access time queue if the agent factory isn't listening.
             try {
                 // The host property in server_config.json defines the true identity of the local server.
                 // We cannot use localhost or the loopback address because the computer may have multiple
@@ -1486,8 +1492,12 @@ Signals:
                     return;
                 }
             }
+            catch (const irods::exception& e) {
+                log_server::debug("{}: Connect Error: {}. Deferring processing of access time updates.", __func__, e.client_display_what());
+                return;
+            }
             catch (const std::exception& e) {
-                log_server::debug("{}: Connect Error: {}. Deferring access time updates.", __func__, e.what());
+                log_server::debug("{}: Connect Error: {}. Deferring processing of access time updates.", __func__, e.what());
                 return;
             }
 
@@ -1565,15 +1575,17 @@ Signals:
             });
 
             // Reduce updates such that each replica is updated once. On completion, the JSON
-            // is guaranteed to contain the most recent update for each replica.
-            updates.erase(std::unique(std::begin(updates), std::end(updates)), std::end(updates));
+            // is guaranteed to contain only the most recent update for each replica.
+            auto last = std::unique(std::begin(updates), std::end(updates), [](const auto& _lhs, const auto& _rhs) {
+                return _lhs.at("data_id") == _rhs.at("data_id") && _lhs.at("replica_number") == _rhs.at("replica_number");
+            });
+            updates.erase(last, std::end(updates));
 
             // Apply updates.
             const auto json_input = nlohmann::json{{"access_time_updates", updates}}.dump();
-            log_server::info("{}: JSON input for atime updates = {}", __func__, json_input);
             char* ignored{};
             const auto ec = rc_update_replica_access_time(static_cast<RcComm*>(conn), json_input.c_str(), &ignored);
-            log_server::info("{}: rc_update_replica_access_time returned [{}].", __func__, ec);
+            log_server::debug("{}: rc_update_replica_access_time returned [{}].", __func__, ec);
 #endif
         }
         catch (const irods::exception& e) {

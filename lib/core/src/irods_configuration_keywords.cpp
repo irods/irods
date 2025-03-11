@@ -174,5 +174,11 @@ namespace irods
 
     const char* const KW_CFG_DEFAULT_RULE_ENGINE_PLUGIN_NAME{"re-irods"};
     const char* const KW_CFG_DEFAULT_RULE_ENGINE_INSTANCE_NAME{"default_rule_engine_instance"};
+
+    // access time
+    const char* const KW_CFG_ACCESS_TIME{"access_time"};
+    const char* const KW_CFG_QUEUE_NAME{"queue_name"};
+    const char* const KW_CFG_QUEUE_SIZE{"queue_size"};
+    const char* const KW_CFG_TIME_ELAPSED_BEFORE_UPDATE_IN_SECONDS{"time_elapsed_before_update_in_seconds"};
 } // namespace irods
 

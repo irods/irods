@@ -16,6 +16,7 @@
 #include "irods/getRemoteZoneResc.h"
 #include "irods/getRescQuota.h"
 #include "irods/icatHighLevelRoutines.hpp"
+#include "irods/irods_configuration_keywords.hpp"
 #include "irods/irods_exception.hpp"
 #include "irods/irods_get_l1desc.hpp"
 #include "irods/irods_linked_list_iterator.hpp"
@@ -894,6 +895,43 @@ namespace
         return allocAndSetL1descForZoneOpr(remoteL1descInx, &_inp, &_server_host, stat);
     } // remote_open
 
+    auto enqueue_update_of_replica_access_time(const replica_proxy& _replica) -> void
+    {
+        try {
+            // TODO Document type constraint.
+            const auto json_path = fmt::format("/{}/{}", irods::KW_CFG_ACCESS_TIME, irods::KW_CFG_TIME_ELAPSED_BEFORE_UPDATE_IN_SECONDS);
+            const auto max_elapsed_time = irods::get_server_property_copy<std::uint32_t>(json_path);
+
+            const auto atime = std::stoull(std::string{_replica.atime()});
+            const auto mtime = std::stoull(std::string{_replica.mtime()});
+
+            using clock_type = std::chrono::system_clock;
+            const auto now = clock_type::to_time_t(clock_type::now());
+
+            log_api::debug("{}: Replica's atime=[{}] and mtime=[{}], now=[{}]", __func__, atime, mtime, now);
+
+            // Enqueue an access time update if the last time the replica was accessed is earlier than
+            // the modification time or the configured amount of time has elapsed since the last update.
+            if (atime < mtime || now - atime >= max_elapsed_time) {
+                log_api::debug("{}: Enqueuing access time update for replica: data_id=[{}], replica_number=[{}]",
+                        __func__, _replica.data_id(), _replica.replica_number());
+
+                irods::access_time_manager::access_time_data data{};
+                data.data_id = static_cast<std::size_t>(_replica.data_id());
+                data.replica_number = static_cast<std::size_t>(_replica.replica_number());
+                fmt::format("{:011}", now).copy(data.last_accessed, sizeof(data.last_accessed) - 1);
+
+                irods::access_time_manager::try_enqueue(data);
+            }
+        }
+        catch (const irods::exception& e) {
+            log_api::warn("{}: Failed to enqueue access time data: {}", __func__, e.client_display_what());
+        }
+        catch (const std::exception& e) {
+            log_api::warn("{}: Failed to enqueue access time data: {}", __func__, e.what());
+        }
+    } // enqueue_update_of_replica_access_time
+
     int rsDataObjOpen_impl(rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     {
         rodsServerHost_t* rodsServerHost{};
@@ -1228,37 +1266,12 @@ namespace
             }
         }
 
-        // Updates to the atime only consider read operations.
-        // TODO reword this statement.
-        if ((dataObjInp->openFlags & O_ACCMODE) == O_RDONLY) {
-            // Enqueue an access time update if the last time the replica was accessed is earlier than
-            // the modification time or the configured amount of time has elapsed since the last update.
-            // TODO: Update GenQuery1 to support atime.
-            // TODO: Update GenQuery2 to support atime.
-            // TODO: Update DataObjInfo struct to hold atime.
-            // TODO: Update replica proxy to hold atime.
-            try {
-                const auto max_elapsed_time = irods::get_server_property<std::uint32_t>("access_time_ignore_window_in_seconds");
-                const auto atime = std::stoull(std::string{replica.atime()});
-                const auto mtime = std::stoull(std::string{replica.mtime()});
-                const auto now = std::time(nullptr);
-
-                log_api::info("{}: atime=[{}], mtime=[{}], now=[{}]", __func__, atime, mtime, now);
-
-                // TODO: Expose options for controlling the behavior of this.
-                if (atime < mtime || now - atime >= max_elapsed_time /* 86400s - 24 hours */) {
-                    log_api::info("{}: Enqueuing access time update for replica [data_id={}, replica_number={}].",
-                        __func__, replica.data_id(), replica.replica_number());
-                    irods::access_time_manager::try_enqueue({
-                        .data_id = static_cast<std::size_t>(replica.data_id()),
-                        .replica_number = static_cast<std::size_t>(replica.replica_number()),
-                        .last_accessed = now
-                    });
-                }
-            }
-            catch (const std::exception& e) {
-                log_api::warn("{}: Failed to enqueue access time data: {}", __func__, e.what());
-            }
+        // Consider updating the replica's access time if and only if the replica is opened for reading.
+        // Checking the negative space is acceptable because any attempts to pass an invalid openmode to
+        // rsDataObjOpen will be detected before this point.
+        if ((dataObjInp->openFlags & O_ACCMODE) != O_WRONLY) {
+            // This call IS NOT guaranteed to result in an update.
+            enqueue_update_of_replica_access_time(replica);
         }
 
         return l1descInx;

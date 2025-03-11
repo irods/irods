@@ -3,6 +3,25 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "type": "object",
     "properties": {
+        "access_time": {
+            "queue_name": {
+                "type": "string",
+                "minLength": 8
+            },
+            "queue_size": {
+                "type": "integer",
+                "minimum": 0
+            },
+            "time_elapsed_before_update_in_seconds": {
+                "type": "integer",
+                "minimum": 0
+            },
+            "required": [
+                "queue_name",
+                "queue_size",
+                "time_elapsed_before_update_in_seconds"
+            ]
+        },
         "advanced_settings": {
             "type": "object",
             "properties": {
@@ -49,10 +68,6 @@
                 "transfer_buffer_size_for_parallel_transfer_in_megabytes",
                 "transfer_chunk_size_for_parallel_transfer_in_megabytes"
             ]
-        },
-        "access_time_ignore_window_in_seconds": {
-            "type": "integer",
-            "minimum": 0
         },
         "catalog_provider_hosts": {
             "type": "array",
@@ -185,7 +200,7 @@
         "zone_user": {"type": "string"}
     },
     "required": [
-        "access_time_ignore_window_in_seconds",
+        "access_time",
         "advanced_settings",
         "catalog_provider_hosts",
         "catalog_service_role",

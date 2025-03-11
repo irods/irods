@@ -15403,38 +15403,32 @@ auto db_delay_rule_unlock(irods::plugin_context& _ctx, const char* _rule_ids) ->
     }
 } // db_delay_rule_unlock
 
-auto db_update_replica_access_time(irods::plugin_context& _ctx, const char* _input, [[maybe_unused]] char** _output) -> irods::error
+auto db_update_replica_access_time(irods::plugin_context& _ctx, const char* _json_input, [[maybe_unused]] char** _output) -> irods::error
 {
     if (const auto ret = _ctx.valid(); !ret.ok()) {
         return PASS(ret);
     }
 
-    if (!_input) {
-        log_db::error("{}: JSON input cannot be a null pointer.", __func__);
-        return ERROR(SYS_INTERNAL_NULL_INPUT_ERR, "JSON input cannot be a null pointer.");
+    if (!_json_input || !_output) {
+        log_db::error("{}: Received one or more null pointers.", __func__);
+        return ERROR(SYS_INTERNAL_NULL_INPUT_ERR, "Received one or more null pointers.");
     }
 
     // The output pointer is not used because the ODBC API isn't guaranteed to tell us
-    // which SQL statement failed.
+    // which SQL statement failed. However, it is made available to future proof the APIs
+    // supporting access time.
 #if 0
     if (!_output) {
-        log_db::error("{}: Rule ID list cannot be a null pointer.", __func__);
+        log_db::error("{}:  list cannot be a null pointer.", __func__);
         return ERROR(SYS_INTERNAL_NULL_INPUT_ERR, "Rule ID list cannot be a null pointer.");
     }
 #endif
 
-    // TODO Remove
-    //if (!irods::is_privileged_client(*_ctx.comm())) {
-    //    return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
-    //}
-
     try {
-        log_db::info("{}: parsing JSON input", __func__);
-        log_db::info("{}: JSON input = {}", __func__, _input);
-        const auto json_input = nlohmann::json::parse(_input);
-        log_db::info("{}: Getting reference to [access_time_updates]", __func__);
+        const auto json_input = nlohmann::json::parse(_json_input);
         const auto& updates = json_input.at("access_time_updates");
 
+#if 0
         // Generate the list of SQL statements to execute as a batch.
         constexpr const char* query = "update R_DATA_MAIN set access_ts = ? where data_id = ? and data_repl_num = ?;";
         std::string sql;
@@ -15445,7 +15439,7 @@ auto db_update_replica_access_time(irods::plugin_context& _ctx, const char* _inp
         });
         // Remove the last semicolon. This step is mentioned in the ODBC documentation from Microsoft.
         sql.erase(std::prev(std::end(sql)));
-        log_db::info("{}: SQL = [{}]", __func__, sql);
+        log_db::debug("{}: SQL = [{}]", __func__, sql);
 
         auto [db_instance, db_conn] = irods::experimental::catalog::new_database_connection();
 
@@ -15454,13 +15448,46 @@ auto db_update_replica_access_time(irods::plugin_context& _ctx, const char* _inp
 
         std::size_t pos = 0;
         for (auto&& update : updates) {
-            stmt.bind(pos++, &update.at("atime").get_ref<const std::size_t&>());//.c_str());
-            stmt.bind(pos++, &update.at("data_id").get_ref<const std::size_t&>());//.c_str());
-            stmt.bind(pos++, &update.at("replica_number").get_ref<const std::size_t&>());//.c_str());
+            stmt.bind(pos++, update.at("atime").get_ref<const std::string&>().c_str());
+            stmt.bind(pos++, &update.at("data_id").get_ref<const std::size_t&>());
+            stmt.bind(pos++, &update.at("replica_number").get_ref<const std::size_t&>());
         }
 
         // Execute the batch of SQL statements.
         nanodbc::execute(stmt);
+#else
+        std::vector<std::size_t> data_ids;
+        std::vector<std::size_t> replica_numbers;
+        std::vector<std::string> access_times;
+
+        data_ids.reserve(updates.size());
+        replica_numbers.reserve(updates.size());
+        access_times.reserve(updates.size());
+
+        std::for_each(std::begin(updates), std::end(updates), [&data_ids, &replica_numbers, &access_times](const nlohmann::json& _j) {
+            data_ids.emplace_back(_j.at("data_id").get<std::size_t>());
+            replica_numbers.emplace_back(_j.at("replica_number").get<std::size_t>());
+            access_times.emplace_back(_j.at("atime").get<std::string>());
+        });
+
+        auto [db_instance, db_conn] = irods::experimental::catalog::new_database_connection();
+
+        constexpr const char* sql = "update R_DATA_MAIN set access_ts = ? where data_id = ? and data_repl_num = ?";
+        log_sql::debug("{}: SQL = [{}]", __func__, sql);
+
+        nanodbc::statement stmt{db_conn};
+        nanodbc::prepare(stmt, sql);
+
+        stmt.bind_strings(0, access_times);
+        stmt.bind(1, data_ids.data(), data_ids.size());
+        stmt.bind(2, replica_numbers.data(), replica_numbers.size());
+
+        // Execute the batch operation within a transaction and throw away the results.
+        // TODO Consider whether we should use execute() instead since the current code will
+        // rollback the updates on failure. The downside of using execute() is that it will
+        // have worst performance due to each update triggering an auto-commit instruction.
+        just_transact(stmt, updates.size());
+#endif
 
         return SUCCESS();
     }

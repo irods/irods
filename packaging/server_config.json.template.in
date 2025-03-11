@@ -1,7 +1,11 @@
 {
     "schema_name": "server_config",
     "schema_version": "v@IRODS_CONFIGURATION_SCHEMA_VERSION@",
-    "access_time_ignore_window_in_seconds": 86400,
+    "access_time": {
+        "queue_name": "irods_access_time_manager",
+        "queue_size": 10000,
+        "time_elapsed_before_update_in_seconds": 86400
+    },
     "advanced_settings": {
         "agent_factory_watcher_sleep_time_in_seconds": 5,
         "checksum_read_buffer_size_in_bytes": 1048576,

@@ -237,9 +237,10 @@ auto main(int _argc, char* _argv[]) -> int
         irods::at_scope_exit deinit_replica_access_table{[] { irods::experimental::replica_access_table::deinit(); }};
 
         log_af::info("{}: Initializing access time manager for agent factory.", __func__);
-
-        // TODO: Load name and size from server_config.json.
-        irods::access_time_manager::init_no_create("irods_access_time_manager");
+        {
+            const auto queue_name = irods::get_server_property_copy<std::string>(fmt::format("/{}/{}", irods::KW_CFG_ACCESS_TIME, irods::KW_CFG_QUEUE_NAME));
+            irods::access_time_manager::init_no_create(queue_name);
+        }
 
         log_af::info("{}: Initializing zone information for agent factory.", __func__);
 
