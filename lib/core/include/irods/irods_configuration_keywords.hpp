@@ -184,7 +184,7 @@ namespace irods
     extern const char* const KW_CFG_ACCESS_TIME;
     extern const char* const KW_CFG_QUEUE_NAME;
     extern const char* const KW_CFG_QUEUE_SIZE;
-    extern const char* const KW_CFG_TIME_ELAPSED_BEFORE_UPDATE_IN_SECONDS;
+    extern const char* const KW_CFG_RESOLUTION_IN_SECONDS;
 } // namespace irods
 
 #endif // IRODS_CONFIGURATION_KEYWORDS_HPP

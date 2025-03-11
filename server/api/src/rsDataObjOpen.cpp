@@ -909,7 +909,7 @@ namespace
 
         try {
             // TODO Document type constraint.
-            const auto json_path = fmt::format("/{}/{}", irods::KW_CFG_ACCESS_TIME, irods::KW_CFG_TIME_ELAPSED_BEFORE_UPDATE_IN_SECONDS);
+            const auto json_path = fmt::format("/{}/{}", irods::KW_CFG_ACCESS_TIME, irods::KW_CFG_RESOLUTION_IN_SECONDS);
             const auto max_elapsed_time = irods::get_server_property_copy<std::uint32_t>(json_path);
 
             const auto atime = std::stoull(std::string{_atime});
