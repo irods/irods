@@ -238,7 +238,7 @@ auto main(int _argc, char* _argv[]) -> int
 
         log_af::info("{}: Initializing access time manager for agent factory.", __func__);
         {
-            const auto queue_name = irods::get_server_property_copy<std::string>(fmt::format("/{}/{}", irods::KW_CFG_ACCESS_TIME, irods::KW_CFG_QUEUE_NAME));
+            const auto queue_name = irods::get_server_property_copy<std::string>(fmt::format("/{}/{}", irods::KW_CFG_ACCESS_TIME, irods::KW_CFG_ACCESS_TIME_QUEUE_NAME));
             irods::access_time_manager::init_no_create(queue_name);
         }
 

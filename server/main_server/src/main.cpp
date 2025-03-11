@@ -277,8 +277,8 @@ auto main(int _argc, char* _argv[]) -> int
 
         log_server::info("{}: Initializing access time manager for main server process.", __func__);
         {
-            const auto queue_name = irods::get_server_property_copy<std::string>(fmt::format("/{}/{}", irods::KW_CFG_ACCESS_TIME, irods::KW_CFG_QUEUE_NAME));
-            const auto queue_size = irods::get_server_property_copy<std::size_t>(fmt::format("/{}/{}", irods::KW_CFG_ACCESS_TIME, irods::KW_CFG_QUEUE_SIZE));
+            const auto queue_name = irods::get_server_property_copy<std::string>(fmt::format("/{}/{}", irods::KW_CFG_ACCESS_TIME, irods::KW_CFG_ACCESS_TIME_QUEUE_NAME));
+            const auto queue_size = irods::get_server_property_copy<std::size_t>(fmt::format("/{}/{}", irods::KW_CFG_ACCESS_TIME, irods::KW_CFG_ACCESS_TIME_QUEUE_SIZE));
             irods::access_time_manager::init(queue_name, queue_size);
         }
 
