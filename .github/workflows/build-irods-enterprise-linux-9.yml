@@ -26,7 +26,6 @@ jobs:
               dnf config-manager -y --set-enabled renci-irods-unstable
               dnf -y update
               dnf -y install \
-                irods-externals-avro1.11.0-3 \
                 irods-externals-boost1.81.0-1 \
                 irods-externals-catch22.13.8-0 \
                 irods-externals-clang13.0.1-0 \

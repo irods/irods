@@ -22,7 +22,6 @@ objects_link_libraries(
   irods_common
   irods_plugin_dependencies
   PRIVATE
-  "${IRODS_EXTERNALS_FULLPATH_AVRO}/lib/libavrocpp.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_chrono.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so"
@@ -43,7 +42,6 @@ target_include_directories(
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/api/include>"
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/core/include>"
   PRIVATE
-  "${IRODS_EXTERNALS_FULLPATH_AVRO}/include"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
   "${IRODS_EXTERNALS_FULLPATH_NANODBC}/include"
 )
