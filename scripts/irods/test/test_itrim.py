@@ -61,24 +61,24 @@ class Test_Itrim(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
             # No error cases.
             # In this case, no replicas are trimmed because the specified minimum number of replicas to keep is higher
             # than the number of replicas that exist.
-            self.admin.assert_icommand('itrim -N9 -n0 {0}'.format(filename), 'STDOUT', 'files trimmed = 0')
+            self.admin.assert_icommand('itrim -N9 -n0 {0}'.format(filename), 'STDOUT', 'data objects trimmed = 0')
             # In this case, replica 0 is trimmed because the replica on resc_5 is still good so at least one good
             # replica would remain after trimming, and the minimum number of replicas to keep is lower than the number
             # of replicas that exist.
-            self.admin.assert_icommand('itrim -N2 -n0 {0}'.format(filename), 'STDOUT', 'files trimmed = 1')
-            self.admin.assert_icommand('itrim -N2 -S resc_1 {0}'.format(filename), 'STDOUT', 'files trimmed = 1')
+            self.admin.assert_icommand('itrim -N2 -n0 {0}'.format(filename), 'STDOUT', 'data objects trimmed = 1')
+            self.admin.assert_icommand('itrim -N2 -S resc_1 {0}'.format(filename), 'STDOUT', 'data objects trimmed = 1')
             self.admin.assert_icommand('ils -l {0}'.format(filename), 'STDOUT', filename)
-            self.admin.assert_icommand('itrim -S resc_2 {0}'.format(filename), 'STDOUT', 'files trimmed = 1')
-            self.admin.assert_icommand('ils -l {0}'.format(filename), 'STDOUT', filename)
-
-            self.admin.assert_icommand('itrim -N2 {0}'.format(filename), 'STDOUT', 'files trimmed = 1')
-            self.admin.assert_icommand('ils -l {0}'.format(filename), 'STDOUT', filename)
-            self.admin.assert_icommand('itrim -N2 {0}'.format(filename), 'STDOUT', 'files trimmed = 0')
-            self.admin.assert_icommand('ils -l {0}'.format(filename), 'STDOUT', filename)
-            self.admin.assert_icommand('itrim -N1 {0}'.format(filename), 'STDOUT', 'files trimmed = 1')
+            self.admin.assert_icommand('itrim -S resc_2 {0}'.format(filename), 'STDOUT', 'data objects trimmed = 1')
             self.admin.assert_icommand('ils -l {0}'.format(filename), 'STDOUT', filename)
 
-            self.admin.assert_icommand('itrim {0}'.format(filename), 'STDOUT', 'files trimmed = 0')
+            self.admin.assert_icommand('itrim -N2 {0}'.format(filename), 'STDOUT', 'data objects trimmed = 1')
+            self.admin.assert_icommand('ils -l {0}'.format(filename), 'STDOUT', filename)
+            self.admin.assert_icommand('itrim -N2 {0}'.format(filename), 'STDOUT', 'data objects trimmed = 0')
+            self.admin.assert_icommand('ils -l {0}'.format(filename), 'STDOUT', filename)
+            self.admin.assert_icommand('itrim -N1 {0}'.format(filename), 'STDOUT', 'data objects trimmed = 1')
+            self.admin.assert_icommand('ils -l {0}'.format(filename), 'STDOUT', filename)
+
+            self.admin.assert_icommand('itrim {0}'.format(filename), 'STDOUT', 'data objects trimmed = 0')
             self.admin.assert_icommand('ils -l {0}'.format(filename), 'STDOUT', filename)
 
         finally:
@@ -112,13 +112,13 @@ class Test_Itrim(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
             self.admin.assert_icommand(
                 ['itrim', '-N4', logical_path],
                 'STDOUT_MULTILINE',
-                ['Specifying a minimum number of replicas to keep is deprecated.', 'files trimmed = 0'])
+                ['Specifying a minimum number of replicas to keep is deprecated.', 'data objects trimmed = 0'])
 
             # Ensure the deprecation message appears when a replica is trimmed.
             self.admin.assert_icommand(
                 ['itrim', '-N2', logical_path],
                 'STDOUT_MULTILINE',
-                ['Specifying a minimum number of replicas to keep is deprecated.', 'files trimmed = 1'])
+                ['Specifying a minimum number of replicas to keep is deprecated.', 'data objects trimmed = 1'])
 
         finally:
             self.admin.assert_icommand(['ils', '-l', logical_path], 'STDOUT', filename) # debugging
@@ -175,7 +175,7 @@ class Test_Itrim(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
             self.admin.assert_icommand(['ils', '-l', data_object], 'STDOUT', ['0 ' + resc_name, '1 demoResc'])
 
             # Trim the original replica.
-            self.admin.assert_icommand(['itrim', '-N', '1', '-n', '0', data_object], 'STDOUT', ['files trimmed = 1'])
+            self.admin.assert_icommand(['itrim', '-N', '1', '-n', '0', data_object], 'STDOUT', ['data objects trimmed = 1'])
 
             # Show that replica 0 has been unregistered from the catalog.
             gql = "select DATA_REPL_NUM where COLL_NAME = '{0}' and DATA_NAME = 'file_1' and DATA_REPL_NUM = '0'".format(dir_1_logical_path)
@@ -252,7 +252,7 @@ class Test_Itrim(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
             # Trim down to 1 replica, targeting the replica on resc1 and ensure the correct
             # size is displayed in the resulting output.
             self.admin.assert_icommand(['itrim', '-N1', '-S', resc1, logical_path], 'STDOUT',
-                                       'Total size trimmed = {} MB. Number of files trimmed = 1.'.format(str(filesizeMB)))
+                                       'Total size trimmed = {} MB. Number of data objects trimmed = 1.'.format(str(filesizeMB)))
 
             # Ensure that the replica on resc1 was trimmed and the replica on resc2 remains.
             self.assertFalse(lib.replica_exists_on_resource(self.admin, logical_path, resc1))
@@ -299,18 +299,18 @@ class Test_Itrim(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
             # default minimum number of replicas to keep is 2 and there are only 2 replicas. An error is not expected
             # here because the client does not direct the API to do anything that it cannot carry out. The minimum
             # number of replicas required (2) is still being met.
-            self.admin.assert_icommand(['itrim', '-n0', logical_path], 'STDOUT', 'Number of files trimmed = 0.')
+            self.admin.assert_icommand(['itrim', '-n0', logical_path], 'STDOUT', 'Number of data objects trimmed = 0.')
             self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc1))
             self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc2))
 
             # Trim replica 0 and specify a minimum number of replicas to keep of 1. This should succeed because there is
             # still another replica and the replica being trimmed is stale.
-            self.admin.assert_icommand(['itrim', '-N1', '-n0', logical_path], 'STDOUT', 'Number of files trimmed = 1.')
+            self.admin.assert_icommand(['itrim', '-N1', '-n0', logical_path], 'STDOUT', 'Number of data objects trimmed = 1.')
             self.assertFalse(lib.replica_exists_on_resource(self.admin, logical_path, resc1))
             self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc2))
 
             # Try trimming replica 0, which is now "stale". Ensure that it fails because it is the last replica.
-            self.admin.assert_icommand(['itrim', '-N1', '-n1', logical_path], 'STDOUT', 'Number of files trimmed = 0.')
+            self.admin.assert_icommand(['itrim', '-N1', '-n1', logical_path], 'STDOUT', 'Number of data objects trimmed = 0.')
             self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc2))
 
         finally:
@@ -453,7 +453,7 @@ class test_itrim_target_replica_selection_decision_making__issue_7515(unittest.T
 
 			self.user.assert_icommand(['ils', '-l', self.logical_path], 'STDOUT', self.data_name) # debugging
 
-			self.user.assert_icommand(['itrim', self.logical_path], 'STDOUT', 'Number of files trimmed = 1.')
+			self.user.assert_icommand(['itrim', self.logical_path], 'STDOUT', 'Number of data objects trimmed = 1.')
 
 			self.check_replica_statuses(replica_status_list_at_end)
 

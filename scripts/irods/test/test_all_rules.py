@@ -1457,7 +1457,7 @@ OUTPUT ruleExecOut
                         self.assertEqual(0, len(destination_checksum))
                         self.assertEqual(0, len(source_checksum))
                         self.user0.assert_icommand(
-                            ['itrim', '-N1', '-S', resource, logical_path], 'STDOUT', 'Number of files trimmed = 1.')
+                            ['itrim', '-N1', '-S', resource, logical_path], 'STDOUT', 'Number of data objects trimmed = 1.')
 
                         # Replicate the data object and ensure that a checksum was calculated.
                         self.admin.assert_icommand(['irepl', '-M', '-R', resource, logical_path])
@@ -1843,7 +1843,7 @@ OUTPUT ruleExecOut
 
                 # Trigger the PEP.
                 # Before the fix, this would result in an error.
-                self.user0.assert_icommand(['itrim', data_object], 'STDOUT', ['Number of files trimmed = 0.'])
+                self.user0.assert_icommand(['itrim', data_object], 'STDOUT', ['Number of data objects trimmed = 0.'])
 
                 # Show the checksum verification was successful.
                 self.user0.assert_icommand(

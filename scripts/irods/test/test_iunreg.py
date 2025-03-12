@@ -128,8 +128,8 @@ class Test_Iunreg(session.make_sessions_mixin([('otherrods', 'rods')], [('alice'
         self.admin.assert_icommand(['irepl', '-R', self.resc1, logical_path_to_obj])
         # Unregister 1 of the replicas by number
         # The implied minimum number of replicas to keep is 2, so no unreg occurs here as it is using the trim API.
-        self.admin.assert_icommand(['iunreg', '-n0', logical_path_to_obj], 'STDOUT', 'Number of files trimmed = 0.')
-        self.admin.assert_icommand(['iunreg', '-n1', '-N1', logical_path_to_obj], 'STDOUT', 'Number of files trimmed = 1.')
+        self.admin.assert_icommand(['iunreg', '-n0', logical_path_to_obj], 'STDOUT', 'Number of data objects trimmed = 0.')
+        self.admin.assert_icommand(['iunreg', '-n1', '-N1', logical_path_to_obj], 'STDOUT', 'Number of data objects trimmed = 1.')
         out,_,_ = self.admin.run_icommand(['ils', '-L', logical_path_to_obj])
         self.assertTrue(
             self.local_data_path in out,
@@ -149,7 +149,7 @@ class Test_Iunreg(session.make_sessions_mixin([('otherrods', 'rods')], [('alice'
         logical_path_to_obj = str(os.path.join(self.admin.session_collection, self.registered_filename))
         self.admin.assert_icommand(['ireg', self.local_data_path, logical_path_to_obj])
         self.admin.assert_icommand(['irepl', '-R', self.resc1, logical_path_to_obj])
-        self.admin.assert_icommand(['iunreg', '-S', self.resc1, '-N1', logical_path_to_obj], 'STDOUT', 'Number of files trimmed = 1.')
+        self.admin.assert_icommand(['iunreg', '-S', self.resc1, '-N1', logical_path_to_obj], 'STDOUT', 'Number of data objects trimmed = 1.')
         out,_,_ = self.admin.run_icommand(['ils', '-L', logical_path_to_obj])
         self.assertTrue(
             self.local_data_path in out,

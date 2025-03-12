@@ -260,7 +260,7 @@ class Test_ibun(resource_suite.ResourceBase, unittest.TestCase):
             # Trim the replica in the cache to ensure that a stage-to-cache will occur when extracting the file via
             # ibun. Replica 0 should be the replica in the cache, so trim that one.
             self.user0.assert_icommand(
-                ['itrim', '-n0', '-N1', tar_logical_path], 'STDOUT', 'Number of files trimmed = 1.')
+                ['itrim', '-n0', '-N1', tar_logical_path], 'STDOUT', 'Number of data objects trimmed = 1.')
             self.assertFalse(lib.replica_exists_on_resource(self.user0, tar_logical_path, cache_resource))
             self.assertTrue(lib.replica_exists_on_resource(self.user0, tar_logical_path, archive_resource))
 
