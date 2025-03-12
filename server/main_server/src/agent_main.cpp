@@ -297,6 +297,13 @@ auto main(int _argc, char* _argv[]) -> int
         // This allows rule engine plugins to setup state which doesn't change frequently.
         irods::re_plugin_globals->global_re_mgr.call_setup_operations();
 
+        std::string svc_role;
+        irods::error ret = get_catalog_service_role(svc_role);
+
+        if (irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role) {
+            chlGenQueryAccessControlSetup(NULL, NULL, NULL, 0, 2);
+        }
+
         // Enter parent process main loop.
         //
         // This process should never introduce threads. Everything it cares about must be handled
