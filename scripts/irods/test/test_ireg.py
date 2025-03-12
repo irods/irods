@@ -266,7 +266,7 @@ class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
                         self.admin.assert_icommand(['ireg', '-R', 'another', '--repl', repl_path, logical_path])
 
                         self.admin.assert_icommand(['ils', '-l', logical_path], 'STDOUT_MULTILINE', ['demoResc', 'another'])
-                        self.admin.assert_icommand(['itrim', '-N1', '-S', 'another', logical_path], 'STDOUT', 'files trimmed = 1')
+                        self.admin.assert_icommand(['itrim', '-N1', '-S', 'another', logical_path], 'STDOUT', 'data objects trimmed = 1')
 
                     self.admin.assert_icommand(['irm', '-f', logical_path])
 

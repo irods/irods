@@ -110,7 +110,7 @@ class Test_Resource_Replication_Timing(ResourceBase, unittest.TestCase):
         file_size = 400
         lib.make_file(filename, file_size)
         self.admin.assert_icommand(['iput', filename])
-        self.admin.assert_icommand(['itrim', '-S', 'demoResc', '-N1', filename], 'STDOUT_SINGLELINE', 'Number of files trimmed = 1.')
+        self.admin.assert_icommand(['itrim', '-S', 'demoResc', '-N1', filename], 'STDOUT', 'Number of data objects trimmed = 1.')
         initial_log_size = lib.get_file_size_by_path(IrodsConfig().server_log_path)
         self.admin.assert_icommand(['iadmin', 'modresc', 'demoResc', 'rebalance'])
         data_id = session.get_data_id(self.admin, self.admin.session_collection, filename)

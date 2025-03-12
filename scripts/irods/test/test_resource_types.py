@@ -89,7 +89,7 @@ class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unitte
 
         # ensure that number of replicas is correct, trim, and check again
         self.user0.assert_icommand(['iquest', '%s', "select COUNT(DATA_REPL_NUM) where DATA_NAME = '{0}'".format(filename)], 'STDOUT_SINGLELINE', str(self.child_replication_count))
-        self.user0.assert_icommand(['itrim', '-n1', '-N1', logical_path], 'STDOUT_SINGLELINE', 'Number of files trimmed = 1.')
+        self.user0.assert_icommand(['itrim', '-n1', '-N1', logical_path], 'STDOUT', 'Number of data objects trimmed = 1.')
         self.user0.assert_icommand(['iquest', '%s', "select COUNT(DATA_REPL_NUM) where DATA_NAME = '{0}'".format(filename)], 'STDOUT_SINGLELINE', str(self.child_replication_count - 1))
 
         # forcibly re-calculate corrupted checksum and ensure that no new replicas were generated
@@ -1857,7 +1857,7 @@ class Test_Resource_CompoundWithUnivmss(ChunkyDevTest, ResourceSuite, unittest.T
 
     def test_irm_with_no_stage__2930(self):
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed
-        self.admin.assert_icommand("itrim -n0 -N1 " + self.testfile, 'STDOUT_SINGLELINE', "files trimmed") # trim cache copy
+        self.admin.assert_icommand("itrim -n0 -N1 " + self.testfile, 'STDOUT', "data objects trimmed") # trim cache copy
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed
 
         irods_config = IrodsConfig()
@@ -2233,7 +2233,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         original_archive_mtime = str(os.stat(phypath_for_data_obj).st_mtime)
 
         # trim cache replica
-        self.admin.assert_icommand(['itrim', '-n0', '-N1', filename], 'STDOUT_SINGLELINE', "files trimmed")
+        self.admin.assert_icommand(['itrim', '-n0', '-N1', filename], 'STDOUT', "data objects trimmed")
 
         # run ichksum on data object, which will replicate to cache
         self.admin.assert_icommand(['ichksum', '-f', filename], 'STDOUT_SINGLELINE', filename + '    sha2:')
@@ -2546,7 +2546,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         filepath = lib.create_local_testfile(filename)
         self.admin.assert_icommand("iput " + filename)
 
-        self.admin.assert_icommand("itrim -N 1 -n 0 " + filename, 'STDOUT_SINGLELINE', "files trimmed")
+        self.admin.assert_icommand("itrim -N 1 -n 0 " + filename, 'STDOUT', "data objects trimmed")
 
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', 'archiveResc' )
 
@@ -3146,7 +3146,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
             # Create a new data object on the compound resource and trim the replica on the cache resource.
             # We expect replica zero to be on the cache resource.
             self.admin.assert_icommand(['istream', 'write', '-R', comp_resc, data_object], input='testing issue 5847')
-            self.admin.assert_icommand(['itrim', '-N1', '-n0', data_object], 'STDOUT', ['files trimmed = 1'])
+            self.admin.assert_icommand(['itrim', '-N1', '-n0', data_object], 'STDOUT', ['data objects trimmed = 1'])
 
             # Show that copying the data object does not result in an error.
             self.admin.assert_icommand(['icp', data_object, new_data_object])
@@ -4729,7 +4729,7 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
 
         # ensure that number of replicas is correct, trim, and check again
         self.user0.assert_icommand(['iquest', '%s', "select COUNT(DATA_REPL_NUM) where DATA_NAME = '{0}'".format(filename)], 'STDOUT_SINGLELINE', str(self.child_replication_count))
-        self.user0.assert_icommand(['itrim', '-n1', '-N1', logical_path], 'STDOUT_SINGLELINE', 'Number of files trimmed = 1.')
+        self.user0.assert_icommand(['itrim', '-n1', '-N1', logical_path], 'STDOUT', 'Number of data objects trimmed = 1.')
         self.user0.assert_icommand(['iquest', '%s', "select COUNT(DATA_REPL_NUM) where DATA_NAME = '{0}'".format(filename)], 'STDOUT_SINGLELINE', str(self.child_replication_count - 1))
 
         # forcibly re-calculate corrupted checksum and ensure that no new replicas were generated
@@ -5324,7 +5324,7 @@ OUTPUT ruleExecOut
         lib.make_file(filename, file_size)
         for i in range(num_data_objects_to_use):
             self.admin.assert_icommand(['iput', filename, filename + '_' + str(i)])
-            self.admin.assert_icommand(['itrim', '-S', 'demoResc', '-N1', filename + '_' + str(i)], 'STDOUT_SINGLELINE', 'Number of files trimmed = 1.')
+            self.admin.assert_icommand(['itrim', '-S', 'demoResc', '-N1', filename + '_' + str(i)], 'STDOUT', 'Number of data objects trimmed = 1.')
 
         _, out, _ = self.admin.assert_icommand(['ils', '-l'], 'STDOUT_SINGLELINE', filename)
         self.assertEqual(len(out.split('\n')), num_data_objects_to_use + 6)
