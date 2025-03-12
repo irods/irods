@@ -397,7 +397,7 @@ Environment Variables:
 
 Signals:
   SIGTERM        Shutdown the server. Agents will complete the active request
-                 terminate.
+                 and terminate.
   SIGQUIT        Shutdown the server gracefully. Agents will continue to
                  service requests for a limited amount of time. Once the time
                  limit is reached, agents will perform the normal shutdown
