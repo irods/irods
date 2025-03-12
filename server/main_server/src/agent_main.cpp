@@ -308,6 +308,15 @@ auto main(int _argc, char* _argv[]) -> int
             chlGenQueryAccessControlSetup(NULL, NULL, NULL, 0, 2);
         }
 
+        // set a strict acl prop
+        try {
+            irods::set_server_property<std::string>(irods::STRICT_ACL_KW, "on");
+        }
+        catch (irods::exception& e) {
+            irods::log(e);
+            return e.code();
+        }
+
         // Enter parent process main loop.
         //
         // This process should never introduce threads. Everything it cares about must be handled
