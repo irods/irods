@@ -33,7 +33,6 @@ namespace po = boost::program_options;
 char cwd[BIG_STR];
 
 int longMode = 0; /* more detailed listing */
-int upperCaseFlag = 0;
 
 char zoneArgument[MAX_NAME_LEN + 2] = "";
 
@@ -160,9 +159,6 @@ int showDataObj(char* name, char* attrName)
     }};
 
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
-    if ( upperCaseFlag ) {
-        genQueryInp.options = UPPER_CASE_WHERE;
-    }
 
     printf( "AVUs defined for dataObj %s:\n", name );
     printCount = 0;
@@ -306,9 +302,6 @@ int showColl(char* name, char* attrName)
     }};
 
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
-    if ( upperCaseFlag ) {
-        genQueryInp.options = UPPER_CASE_WHERE;
-    }
 
     printf( "AVUs defined for collection %s:\n", name );
     printCount = 0;
@@ -438,9 +431,6 @@ int showResc(char* name, char* attrName)
     }};
 
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
-    if ( upperCaseFlag ) {
-        genQueryInp.options = UPPER_CASE_WHERE;
-    }
 
     printf( "AVUs defined for resource %s:\n", name );
     printCount = 0;
@@ -560,9 +550,6 @@ int showUser(char* name, char* attrName)
     }};
 
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
-    if ( upperCaseFlag ) {
-        genQueryInp.options = UPPER_CASE_WHERE;
-    }
 
     printf( "AVUs defined for user %s#%s:\n", userName, userZone );
     printCount = 0;
@@ -665,10 +652,6 @@ enum class object_type
 int find_objects_by_metadata(const char* _cmd_tokens[], object_type _object_type)
 {
     genQueryInp_t genQueryInp{};
-
-    if (upperCaseFlag) {
-        genQueryInp.options = UPPER_CASE_WHERE;
-    }
 
     printCount = 0;
 
@@ -822,9 +805,6 @@ int queryResc( char *attribute, char *op, char *value ) {
 
     genQueryInp_t genQueryInp;
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
-    if ( upperCaseFlag ) {
-        genQueryInp.options = UPPER_CASE_WHERE;
-    }
 
     printCount = 0;
     i1a[0] = COL_R_RESC_NAME;
@@ -892,9 +872,6 @@ int queryUser( char *attribute, char *op, char *value ) {
     printCount = 0;
     genQueryInp_t genQueryInp;
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
-    if ( upperCaseFlag ) {
-        genQueryInp.options = UPPER_CASE_WHERE;
-    }
 
     i1a[0] = COL_USER_NAME;
     i1b[0] = 0; /* (unused) */
@@ -1876,108 +1853,7 @@ int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_arg
 
         return 0;
     }
-    else if ( _cmd == "qu" ) {
-        // Query objects with matching AVUs
-        po::options_description qu_desc( "qu options" );
-        qu_desc.add_options()
-            ("object_type", po::value<std::string>(), "Object type (-d/-C/-R/-u)")
-            ("attribute", po::value<std::string>(),              "Attribute name")
-            ("operator", po::value<std::string>(),               "Operator")
-            ("value", po::value<std::string>(),                  "Value to compare against")
-            ("more_args", po::value<std::vector<std::string>>(), "Additional arguments");
-
-        po::positional_options_description qu_pos;
-        qu_pos.add("object_type", 1).
-            add("attribute", 1).
-            add("operator", 1).
-            add("value", 1).
-            add("more_args", -1);
-
-        po::variables_map sub_vm;
-        try {
-            sub_vm = parse_sub_args(_sub_args, qu_desc, qu_pos);
-        } catch ( const irods::exception& e ) {
-            return e.code();
-        }
-
-        if ( !sub_vm.count( "object_type" ) ||
-            ( sub_vm["object_type"].as<std::string>() != "-d" &&
-             sub_vm["object_type"].as<std::string>() != "-C" &&
-             sub_vm["object_type"].as<std::string>() != "-R" &&
-             sub_vm["object_type"].as<std::string>() != "-u" ) ) {
-            std::cerr << "Error: "
-                      << "No object type descriptor (-d/C/R/u) specified"
-                      << std::endl;
-            return SYS_INVALID_INPUT_PARAM;
-        }
-
-        if ( !sub_vm.count( "value" ) ) {
-            std::cerr << "Error: "
-                      << "Not enough arguments provided to "
-                      << _cmd
-                      << std::endl;
-            return SYS_INVALID_INPUT_PARAM;
-        }
-
-        std::string obj_type = sub_vm["object_type"].as<std::string>();
-
-        if ( obj_type == "-d" ) {
-            const char *tempCmdToken[MAX_CMD_TOKENS];
-            int i = 0;
-            for ( int j = 0; j < MAX_CMD_TOKENS; ++j ) {
-                tempCmdToken[j] = "";
-            }
-
-            /* Need to put first element (command) back on to satisfy queryDataObj */
-            tempCmdToken[i++] = "qu";
-
-            for ( const auto& s : _sub_args ) {
-                tempCmdToken[i++] = s.c_str();
-            }
-
-            return queryDataObj( tempCmdToken );
-        } else if ( obj_type == "-C" ) {
-            const char *tempCmdToken[MAX_CMD_TOKENS];
-            int i = 0;
-            for ( int j = 0; j < MAX_CMD_TOKENS; ++j ) {
-                tempCmdToken[j] = "";
-            }
-
-            /* Need to put first element (command) back on to satisfy queryCollection */
-            tempCmdToken[i++] = "qu";
-
-            for ( const auto& s : _sub_args ) {
-                tempCmdToken[i++] = s.c_str();
-            }
-
-            return queryCollection( tempCmdToken );
-        } else if ( obj_type == "-R" ) {
-
-            if (_sub_args.size() > 4) {
-                std::cerr << "Error: "
-                          << "Too many arguments provided to imeta qu for the -R option. Only one KVP allowed in search."
-                          << std::endl;
-                return SYS_INVALID_INPUT_PARAM;
-            }
- 
-            return queryResc( (char*) sub_vm["attribute"].as<std::string>().c_str(),
-                                (char*) sub_vm["operator"].as<std::string>().c_str(),
-                                (char*) sub_vm["value"].as<std::string>().c_str() );
-        } else {
-
-            if (_sub_args.size() > 4) {
-                std::cerr << "Error: "
-                          << "Too many arguments provided to imeta qu for the -u option. Only one KVP allowed in search."
-                          << std::endl;
-                return SYS_INVALID_INPUT_PARAM;
-            }
- 
-            return queryUser( (char*) sub_vm["attribute"].as<std::string>().c_str(),
-                                (char*) sub_vm["operator"].as<std::string>().c_str(),
-                                (char*) sub_vm["value"].as<std::string>().c_str() );
-        }
-
-    } else if ( _cmd == "cp" ) {
+    else if ( _cmd == "cp" ) {
         // Copy AVUs from one iRODS object to another
         po::options_description cp_desc( "cp options" );
         cp_desc.add_options()
@@ -2053,18 +1929,6 @@ int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_arg
                         "" );
 
         return status < 0 ? status : 0;
-    }
-    else if ( _cmd == "upper" ) {
-        // Toggle between upper case mode for queries
-        if ( upperCaseFlag ) {
-            upperCaseFlag = 0;
-            std::cout << "upper case mode disabled\n";
-        } else {
-            upperCaseFlag = 1;
-            std::cout << "upper case mode for 'qu' command enabled\n";
-        }
-
-        return 0;
     } else if ( _cmd == "help" ||
                 _cmd == "h" ) {
         return display_help(_sub_args);
@@ -2207,9 +2071,7 @@ void usageMain() {
         "      (modify AVU; new name (n:), value(v:), and/or units(u:)",
         " set  -d|C|R|u Name AttName newValue [newUnits] (Assign a single value)",
         " ls   -[l]d|C|R|u Name [AttName] (List existing AVUs for item Name)",
-        " qu   -d|C|R|u AttName Operator AttVal [...] (Query objects with matching AVUs)",
         " cp   -d|C|R|u -d|C|R|u Name1 Name2 (Copy AVUs from item Name1 to Name2)",
-        " upper (Toggle between upper case mode for queries (qu))",
         " ",
         "Metadata attribute-value-units triples (AVUs) consist of an Attribute-Name,",
         "Attribute-Value, and an optional Attribute-Units.  They can be added",
@@ -2237,14 +2099,13 @@ void usageMain() {
         "provided, the zone from your irods_environment.json is assumed.",
         " ",
         "The appropriate zone (local or remote) is determined from the path names",
-        "or via -z Zonename (for 'qu' and when working with resources).",
+        "or via -z Zonename (when working with resources).",
         " ",
         "If you are an iRODS administrator, you can include the -M option to run",
         "in administrator mode and add, remove, or set metadata on any collection,",
         "data object, user, or resource.",
         " ",
         "Try 'help command' for more help on a specific command.",
-        "'help qu' will explain additional options on the query.",
         ""
     };
     int i;
@@ -2374,66 +2235,10 @@ usage( const char *subOpt ) {
                 printf( "%s\n", msgs[i] );
             }
         }
-        if ( strcmp( subOpt, "qu" ) == 0 ) {
-            char *msgs[] = {
-                " qu -d|C|R|u AttName Operator AttVal [...] (Query objects with matching AVUs)",
-                "Query across AVUs for the specified type of item",
-                "Example: qu -d distance '<=' 12",
-                " ",
-                "The Operator can be any of the following:",
-                " <, >, <=, >=, <>, =, !=, like, not like",
-                " ",
-                "When querying dataObjects (-d) or collections (-C) additional conditions",
-                "(AttName Operator AttVal) may be given separated by 'and', for example:",
-                " qu -d a = b and c '<' 10",
-                "Or a single 'or' can be given for the same AttName, for example",
-                " qu -d r '<' 5 or '>' 7",
-                " ",
-                "You can also query in numeric mode (instead of as strings) by adding 'n'",
-                "in front of the test condition, for example:",
-                " qu -d r 'n<' 123",
-                "which causes it to cast the AVU column to numeric (decimal) in the SQL.",
-                "In numeric mode, if any of the named AVU values are non-numeric, a SQL",
-                "error will occur but this avoids problems when comparing numeric strings",
-                "of different lengths.",
-                " ",
-                "Other examples:",
-                " qu -d a like b%",
-                "returns data-objects with attribute 'a' with a value that starts with 'b'.",
-                " qu -d a like %",
-                "returns data-objects with attribute 'a' defined (with any value).",
-                ""
-            };
-            for ( i = 0;; i++ ) {
-                if ( strlen( msgs[i] ) == 0 ) {
-                    return 0;
-                }
-                printf( "%s\n", msgs[i] );
-            }
-        }
         if ( strcmp( subOpt, "cp" ) == 0 ) {
             char *msgs[] = {
                 " cp -d|C|R|u -d|C|R|u Name1 Name2 (Copy AVUs from item Name1 to Name2)",
                 "Example: cp -d -C file1 dir1",
-                ""
-            };
-            for ( i = 0;; i++ ) {
-                if ( strlen( msgs[i] ) == 0 ) {
-                    return 0;
-                }
-                printf( "%s\n", msgs[i] );
-            }
-        }
-        if ( strcmp( subOpt, "upper" ) == 0 ) {
-            char *msgs[] = {
-                " upper (Toggle between upper case mode for queries (qu)",
-                "When enabled, the 'qu' queries will use the upper-case mode for the 'where'",
-                "clause, so you can do a case-insensitive query (using an upper case literal)",
-                "to compare against.  For example:",
-                "  upper",
-                "  qu -d A like B%",
-                "will return all dataobjects with an AVU named 'A' or 'a' with a value that",
-                "begins with 'b' or 'B'.",
                 ""
             };
             for ( i = 0;; i++ ) {
