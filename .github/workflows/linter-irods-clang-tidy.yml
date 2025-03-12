@@ -47,14 +47,14 @@ jobs:
                   echo "deb [arch=amd64] https://unstable.irods.org/apt/ $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/renci-irods-unstable.list
                   sudo apt-get update -qq
                   sudo apt-get install -qq \
-                    irods-externals-boost1.81.0-1 \
+                    irods-externals-boost1.81.0-2 \
                     irods-externals-catch22.13.8-0 \
-                    irods-externals-clang13.0.1-0 \
-                    irods-externals-fmt8.1.1-1 \
+                    irods-externals-clang16.0.6-0 \
+                    irods-externals-fmt8.1.1-2 \
                     irods-externals-json3.10.4-0 \
                     irods-externals-jsoncons0.178.0-0 \
-                    irods-externals-nanodbc2.13.0-2 \
-                    irods-externals-spdlog1.9.2-2
+                    irods-externals-nanodbc2.13.0-3 \
+                    irods-externals-spdlog1.9.2-3
             - name: Configure CMake
               run: |
                   mkdir build
@@ -63,8 +63,8 @@ jobs:
             - name: Run Clang-Tidy
               run: |
                   # Make clang and clang-tidy available.
-                  export PATH=/opt/irods-externals/clang13.0.1-0/bin:$PATH
-                  export PATH=/opt/irods-externals/clang13.0.1-0/share/clang:$PATH
+                  export PATH=/opt/irods-externals/clang16.0.6-0/bin:$PATH
+                  export PATH=/opt/irods-externals/clang16.0.6-0/share/clang:$PATH
 
                   # Run clang-tidy on the changes.
                   git diff -U0 origin/$GITHUB_BASE_REF | \
