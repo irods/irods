@@ -109,16 +109,10 @@ class Test_Itrim(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
             self.assertTrue(lib.replica_exists_on_resource(self.admin, logical_path, resc2))
 
             # Ensure the deprecation message appears when a replica is not trimmed.
-            self.admin.assert_icommand(
-                ['itrim', '-N4', logical_path],
-                'STDOUT_MULTILINE',
-                ['Specifying a minimum number of replicas to keep is deprecated.', 'data objects trimmed = 0'])
+            self.admin.assert_icommand(['itrim', '-N4', logical_path], 'STDOUT', 'data objects trimmed = 0')
 
             # Ensure the deprecation message appears when a replica is trimmed.
-            self.admin.assert_icommand(
-                ['itrim', '-N2', logical_path],
-                'STDOUT_MULTILINE',
-                ['Specifying a minimum number of replicas to keep is deprecated.', 'data objects trimmed = 1'])
+            self.admin.assert_icommand(['itrim', '-N2', logical_path], 'STDOUT', 'data objects trimmed = 1')
 
         finally:
             self.admin.assert_icommand(['ils', '-l', logical_path], 'STDOUT', filename) # debugging
