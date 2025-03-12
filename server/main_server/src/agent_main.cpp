@@ -299,6 +299,10 @@ auto main(int _argc, char* _argv[]) -> int
 
         std::string svc_role;
         irods::error ret = get_catalog_service_role(svc_role);
+        if (!ret.ok()) {
+            irods::log(PASS(ret));
+            return ret.code();
+        }
 
         if (irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role) {
             chlGenQueryAccessControlSetup(NULL, NULL, NULL, 0, 2);
