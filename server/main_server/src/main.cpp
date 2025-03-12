@@ -249,11 +249,12 @@ auto main(int _argc, char* _argv[]) -> int
         }
 
         if (const auto [up_to_date, db_vers] = check_catalog_schema_version(); !up_to_date) {
-            const auto msg = fmt::format("Catalog schema version mismatch: expected [{}], found [{}] in catalog",
+            const auto msg = fmt::format("Catalog schema version mismatch: expected [{}], found [{}] in catalog; Did "
+                                         "you run 'python3 scripts/upgrade_irods.py'?",
                                          IRODS_CATALOG_SCHEMA_VERSION,
                                          db_vers);
             log_server::critical(msg);
-            fmt::print(fmt::runtime(msg));
+            fmt::print(fmt::runtime(msg + '\n'));
             return 1;
         }
 

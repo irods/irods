@@ -79,7 +79,9 @@ chown $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME /var/run/irods
 touch /tmp/irods_unresolvable_uid_testfile__issue_4040
 chown 29999:29999 /tmp/irods_unresolvable_uid_testfile__issue_4040
 
-if [ ! $UPGRADE_FLAG ] ; then
+if [ "$UPGRADE_FLAG" = true ] ; then
+    cat $IRODS_HOME/packaging/server_upgrade_instructions.txt
+else
     cat $IRODS_HOME/packaging/server_setup_instructions.txt
 fi
 

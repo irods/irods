@@ -1,0 +1,22 @@
+
+=======================================================================
+
+Welcome to iRODS.
+
+This upgrade of an iRODS server is currently incomplete.
+
+To complete the upgrade, run the following command using the service
+account.
+
+  python3 scripts/upgrade_irods.py
+
+Once the script completes, you may launch the server by running the
+following command using the service account.
+
+  irodsServer -d
+
+For additional information, see the help text (irodsServer -h) or
+documentation at https://docs.irods.org.
+
+=======================================================================
+
