@@ -24,7 +24,6 @@ def build(icommands_git_repository, icommands_git_commitish, debug_build, output
 def install_building_dependencies(externals_directory):
     externals_list = [
         'irods-externals-cmake3.21.4-0',
-        'irods-externals-avro1.11.0-0',
         'irods-externals-boost1.77.0-1',
         'irods-externals-catch22.13.7-1',
         'irods-externals-clang-runtime13.0.0-0',
