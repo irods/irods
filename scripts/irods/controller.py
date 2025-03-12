@@ -165,16 +165,6 @@ class IrodsController(object):
 
         self.wait_for_server_to_start()
 
-    def status(self):
-        l = logging.getLogger(__name__)
-        l.debug('Calling status on IrodsController')
-        self.config.clear_cache()
-        server_proc = self.get_server_proc()
-        if server_proc is None:
-            l.info('No iRODS servers running.')
-        else:
-            l.info(format_binary_to_procs_dict(self.get_binary_to_procs_dict(server_proc)))
-
     def get_binary_to_procs_dict(self, server_proc, server_descendants=None, binaries=None):
         if server_descendants is None and server_proc is not None and server_proc.is_running():
             try:
