@@ -137,6 +137,8 @@ auto main(int _argc, char* _argv[]) -> int
 
     std::string hostname_cache_shm_name;
     std::string dns_cache_shm_name;
+    std::string access_time_queue_shm_name;
+    std::uint32_t access_time_resolution;
     bool write_to_stdout = false;
     bool enable_test_mode = false;
 
@@ -146,8 +148,10 @@ auto main(int _argc, char* _argv[]) -> int
 
     // clang-format off
     opts_desc.add_options()
-        ("hostname-cache-shm-name,x", po::value<std::string>(), "")
-        ("dns-cache-shm-name,y", po::value<std::string>(), "")
+        ("hostname-cache-shm-name", po::value<std::string>(), "")
+        ("dns-cache-shm-name", po::value<std::string>(), "")
+        ("atime-queue-shm-name", po::value<std::string>(), "")
+        ("atime-resolution-in-seconds", po::value<std::uint32_t>(), "")
         ("stdout", po::bool_switch(&write_to_stdout), "")
         ("test-mode,t", po::bool_switch(&enable_test_mode), "");
     // clang-format on
@@ -155,6 +159,8 @@ auto main(int _argc, char* _argv[]) -> int
     po::positional_options_description pod;
     pod.add("hostname-cache-shm-name", 1);
     pod.add("dns-cache-shm-name", 1);
+    pod.add("atime-queue-shm-name", 1);
+    pod.add("atime-resolution-in-seconds", 1);
 
     try {
         po::variables_map vm;
@@ -176,6 +182,22 @@ auto main(int _argc, char* _argv[]) -> int
             fmt::print(stderr, "Error: Missing [DNS_CACHE_SHM_NAME] parameter.");
             return 1;
         }
+
+        if (auto iter = vm.find("atime-queue-shm-name"); std::end(vm) != iter) {
+            access_time_queue_shm_name = std::move(iter->second.as<std::string>());
+        }
+        else {
+            fmt::print(stderr, "Error: Missing [ACCESS_TIME_MESSAGE_QUEUE_SHM_NAME] parameter.");
+            return 1;
+        }
+
+        if (auto iter = vm.find("atime-resolution-in-seconds"); std::end(vm) != iter) {
+            access_time_resolution = iter->second.as<std::uint32_t>();
+        }
+        else {
+            fmt::print(stderr, "Error: Missing [ACCESS_TIME_RESOLUTION_IN_SECONDS] parameter.");
+            return 1;
+        }
     }
     catch (const std::exception& e) {
         fmt::print(stderr, "Error: {}\n", e.what());
@@ -187,6 +209,9 @@ auto main(int _argc, char* _argv[]) -> int
         const auto config_file_path = irods::get_irods_config_directory() / "server_config.json";
         irods::server_properties::instance().init(config_file_path.c_str());
         irods::environment_properties::instance(); // Load the local environment file.
+
+        // Store the access time resolution configuration value in the server configuration.
+        irods::set_server_property(irods::KW_CFG_ACCESS_TIME_RESOLUTION_IN_SECONDS, access_time_resolution);
 
         // Initialize global pointer to ips data directory for agent cleanup.
         // This is required so that the signal handler for reaping agents remains async-signal-safe.
@@ -236,11 +261,9 @@ auto main(int _argc, char* _argv[]) -> int
         irods::experimental::replica_access_table::init();
         irods::at_scope_exit deinit_replica_access_table{[] { irods::experimental::replica_access_table::deinit(); }};
 
-        log_af::info("{}: Initializing access time manager for agent factory.", __func__);
-        {
-            const auto queue_name = irods::get_server_property_copy<std::string>(fmt::format("/{}/{}", irods::KW_CFG_ACCESS_TIME, irods::KW_CFG_ACCESS_TIME_QUEUE_NAME));
-            irods::access_time_manager::init_no_create(queue_name);
-        }
+        log_af::info("{}: Initializing access time queue for agent factory.", __func__);
+        irods::access_time_manager::init_no_create(access_time_queue_shm_name);
+        irods::at_scope_exit deinit_access_time_manager{[] { irods::access_time_manager::deinit(); }};
 
         log_af::info("{}: Initializing zone information for agent factory.", __func__);
 

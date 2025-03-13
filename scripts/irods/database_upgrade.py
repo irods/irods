@@ -209,7 +209,10 @@ def run_update(irods_config, cursor):
         else:
             database_connect.execute_sql_statement(cursor, "alter table R_DATA_MAIN add column access_ts varchar(32) default '0';")
 
-        # TODO: Insert config options into R_GRID_CONFIGURATION for controlling the access time updates.
+        # Insert default access time configuration options into R_GRID_CONFIGURATION.
+        database_connect.execute_sql_statement(cursor, "insert into R_GRID_CONFIGURATION values ('access_time', 'queue_name_prefix', 'irods_access_time_queue_');")
+        database_connect.execute_sql_statement(cursor, "insert into R_GRID_CONFIGURATION values ('access_time', 'queue_size', '20000');")
+        database_connect.execute_sql_statement(cursor, "insert into R_GRID_CONFIGURATION values ('access_time', 'resolution_in_seconds', '86400');")
 
     else:
         raise IrodsError('Upgrade to schema version %d is unsupported.' % (new_schema_version))

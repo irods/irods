@@ -3,6 +3,7 @@
 #include "irods/chrono.hpp"
 #include "irods/client_connection.hpp"
 #include "irods/dns_cache.hpp"
+#include "irods/getRodsEnv.h"
 #include "irods/get_grid_configuration_value.h"
 #include "irods/hostname_cache.hpp"
 #include "irods/irods_at_scope_exit.hpp"
@@ -124,6 +125,11 @@ namespace
     // when use of the logging system is safe.
     bool g_logger_initialized = false; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
+    // Stores the acess time configuration value of access_time.resolution_in_seconds.
+    // This is global variables only purpose is to allow passing the access time option
+    // to the agent factory.
+    std::string g_atime_resolution_in_seconds; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+
     auto print_usage() -> void;
     auto print_version_info() -> void;
 
@@ -139,10 +145,11 @@ namespace
     auto handle_shutdown_graceful() -> void;
 
     auto set_delay_server_migration_info(RcComm& _comm, std::string_view _leader, std::string_view _successor) -> void;
+    auto get_access_time_option_value(const char* _option_name) -> std::optional<std::string>;
     auto get_delay_server_leader(RcComm& _comm) -> std::optional<std::string>;
     auto get_delay_server_successor(RcComm& _comm) -> std::optional<std::string>;
-    auto launch_agent_factory(const char* _src_func, bool _write_to_stdout, bool _enable_test_mode) -> bool;
-    auto handle_configuration_reload(bool _write_to_stdout, bool _enable_test_mode) -> void;
+    auto launch_agent_factory(const char* _src_func, bool _write_to_stdout, bool _enable_test_mode, char* _atime_resolution) -> bool;
+    auto handle_configuration_reload(bool _write_to_stdout, bool _enable_test_mode, char* _atime_resolution) -> void;
     auto launch_delay_server(bool _write_to_stdout, bool _enable_test_mode) -> void;
     auto get_preferred_host(const std::string_view _host) -> std::string;
     auto migrate_and_launch_delay_server(bool _write_to_stdout,
@@ -275,13 +282,6 @@ auto main(int _argc, char* _argv[]) -> int
         dnsc::init("irods_dns_cache", irods::get_dns_cache_shared_memory_size());
         irods::at_scope_exit deinit_dns_cache{[] { dnsc::deinit(); }};
 
-        log_server::info("{}: Initializing access time manager for main server process.", __func__);
-        {
-            const auto queue_name = irods::get_server_property_copy<std::string>(fmt::format("/{}/{}", irods::KW_CFG_ACCESS_TIME, irods::KW_CFG_ACCESS_TIME_QUEUE_NAME));
-            const auto queue_size = irods::get_server_property_copy<std::size_t>(fmt::format("/{}/{}", irods::KW_CFG_ACCESS_TIME, irods::KW_CFG_ACCESS_TIME_QUEUE_SIZE));
-            irods::access_time_manager::init(queue_name, queue_size);
-        }
-
         // TODO(#8014): These directories should be created by the packaging.
         fs::create_directories(irods::get_irods_stacktrace_directory().c_str());
         fs::create_directories(irods::get_irods_proc_directory().c_str());
@@ -304,7 +304,33 @@ auto main(int _argc, char* _argv[]) -> int
             return 1;
         }
 
-        if (!launch_agent_factory(__func__, write_to_stdout, enable_test_mode)) {
+        // The access time manager/queue must be initialized after the API tables are loaded.
+        // This is required because the server must fetch the access time configuration from the
+        // R_GRID_CONFIGURATION table.
+        log_server::info("{}: Initializing access time queue for main server process.", __func__);
+        std::string access_time_resolution;
+        {
+            const auto queue_name = get_access_time_option_value("queue_name_prefix");
+            if (!queue_name) {
+                return 1;
+            }
+
+            const auto queue_size = get_access_time_option_value("queue_size");
+            if (!queue_size) {
+                return 1;
+            }
+
+            auto resolution_in_seconds = get_access_time_option_value("resolution_in_seconds");
+            if (!resolution_in_seconds ) {
+                return 1;
+            }
+            access_time_resolution = *std::move(resolution_in_seconds);
+
+            irods::access_time_manager::init(*queue_name, std::stoull(*queue_size));
+        }
+        irods::at_scope_exit deinit_atime_queue{[] { irods::access_time_manager::deinit(); }};
+
+        if (!launch_agent_factory(__func__, write_to_stdout, enable_test_mode, access_time_resolution.data())) {
             return 1;
         }
 
@@ -340,7 +366,7 @@ auto main(int _argc, char* _argv[]) -> int
             }
 
             if (g_reload_config) {
-                handle_configuration_reload(write_to_stdout, enable_test_mode);
+                handle_configuration_reload(write_to_stdout, enable_test_mode, access_time_resolution.data());
             }
 
             // Clean up any zombie child processes if they exist. These appear following a configuration
@@ -352,7 +378,7 @@ auto main(int _argc, char* _argv[]) -> int
 
             log_stacktrace_files(stfp_time_start);
             remove_leftover_agent_info_files_for_ips();
-            launch_agent_factory(__func__, write_to_stdout, enable_test_mode);
+            launch_agent_factory(__func__, write_to_stdout, enable_test_mode, access_time_resolution.data());
             migrate_and_launch_delay_server(write_to_stdout, enable_test_mode, dsm_time_start);
             apply_access_time_updates();
 
@@ -688,11 +714,11 @@ Signals:
             }
         }
         catch (const irods::exception& e) {
-            log_server::error("{}: Could not verify catalog schema version: {}\n", __func__, e.client_display_what());
+            log_server::error("{}: Could not verify catalog schema version: {}", __func__, e.client_display_what());
         }
         catch (const std::exception& e) {
             log_server::error("{}: Could not verify catalog schema version. Is the catalog service role defined in "
-                              "server_config.json?\n",
+                              "server_config.json?",
                               __func__);
         }
 
@@ -884,6 +910,77 @@ Signals:
         }
     } // handle_shutdown_graceful
 
+    auto get_access_time_option_value(const char* _option_name) -> std::optional<std::string>
+    {
+
+        try {
+            const auto role = irods::get_server_property<std::string>(irods::KW_CFG_CATALOG_SERVICE_ROLE);
+
+            if (role == irods::KW_CFG_SERVICE_ROLE_PROVIDER) {
+                auto [db_instance, db_conn] = irods::experimental::catalog::new_database_connection();
+
+                nanodbc::statement stmt{db_conn};
+                prepare(stmt, "select option_value from R_GRID_CONFIGURATION where namespace = 'access_time' and option_name = ?");
+
+                stmt.bind(0, _option_name);
+
+                auto row = execute(stmt);
+
+                if (!row.next()) {
+                    log_server::error("{}: Could not retrieve grid configuration value from catalog [namespace=access_time, option_name={}].",
+                            __func__, _option_name);
+                    return std::nullopt;
+                }
+
+                return row.get<std::string>(0);
+            }
+
+            if (role == irods::KW_CFG_SERVICE_ROLE_CONSUMER) {
+                GridConfigurationInput input{};
+                std::strcpy(input.name_space, "access_time");
+                std::strcpy(input.option_name, _option_name);
+
+                GridConfigurationOutput* output{};
+                // NOLINTNEXTLINE(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc)
+                irods::at_scope_exit free_output{[&output] { std::free(output); }};
+
+                // TODO Find a way to retrieve all atime options in one network call. Getting each option
+                // one by one increases the risk of failure.
+                //
+                // The local agent factory is not available by the time this function is invoked. To get
+                // around that, we connect directly to the provider.
+                rodsEnv env;
+                _getRodsEnv(env);
+
+                const auto config_handle = irods::server_properties::instance().map();
+                const auto& config = config_handle.get_json();
+
+                const nlohmann::json::json_pointer json_path{"/catalog_provider_hosts/0"};
+                const auto provider_host = get_preferred_host(config.at(json_path).get_ref<const std::string&>());
+                const auto zone_port = config.at(irods::KW_CFG_ZONE_PORT).get<int>();
+
+                irods::experimental::client_connection conn{provider_host, zone_port, {env.rodsUserName, env.rodsZone}};
+
+                if (const auto ec = rc_get_grid_configuration_value(static_cast<RcComm*>(conn), &input, &output); ec < 0) {
+                    log_server::error("{}: Could not retrieve grid configuration value from catalog [error_code={}, namespace=access_time, option_name={}].",
+                            __func__, ec, _option_name);
+                    return std::nullopt;
+                }
+
+                return output->option_value;
+            }
+        }
+        catch (const irods::exception& e) {
+            log_server::error("{}: Could not retrieve grid configuration value from catalog [namespace=access_time, option_name={}]: {}",
+                __func__, _option_name, e.client_display_what());
+        }
+        catch (const std::exception& e) {
+            log_server::error("{}: Could not retrieve grid configuration value from catalog [namespace=access_time, option_name={}]. Is the catalog service role defined in server_config.json?", __func__, _option_name);
+        }
+
+        return std::nullopt;
+    } // get_access_time_option_value
+
     auto get_delay_server_leader(RcComm& _comm) -> std::optional<std::string>
     {
         GridConfigurationInput input{};
@@ -939,7 +1036,7 @@ Signals:
         }
     } // set_delay_server_migration_info
 
-    auto launch_agent_factory(const char* _src_func, bool _write_to_stdout, bool _enable_test_mode) -> bool
+    auto launch_agent_factory(const char* _src_func, bool _write_to_stdout, bool _enable_test_mode, char* _atime_resolution) -> bool
     {
         auto launch = (0 == g_pid_af);
 
@@ -966,8 +1063,9 @@ Signals:
         auto binary = (irods::get_irods_sbin_directory() / "irodsAgent").string();
         std::string hn_shm_name{irods::experimental::net::hostname_cache::shared_memory_name()};
         std::string dns_shm_name{irods::experimental::net::dns_cache::shared_memory_name()};
+        std::string atime_mq_shm_name{irods::access_time_manager::shared_memory_name()};
 
-        std::vector<char*> args{binary.data(), hn_shm_name.data(), dns_shm_name.data()};
+        std::vector<char*> args{binary.data(), hn_shm_name.data(), dns_shm_name.data(), atime_mq_shm_name.data(), _atime_resolution};
 
         if (_write_to_stdout) {
             args.push_back("--stdout");
@@ -1002,7 +1100,7 @@ Signals:
         return true;
     } // launch_agent_factory
 
-    auto handle_configuration_reload(bool _write_to_stdout, bool _enable_test_mode) -> void
+    auto handle_configuration_reload(bool _write_to_stdout, bool _enable_test_mode, char* _atime_resolution) -> void
     {
         irods::at_scope_exit reset_reload_flag{[] { g_reload_config = 0; }};
 
@@ -1152,7 +1250,7 @@ Signals:
 
         // Launch a new agent factory to serve client requests.
         // The previous agent factory is allowed to linger around until its children terminate.
-        launch_agent_factory(__func__, _write_to_stdout, _enable_test_mode);
+        launch_agent_factory(__func__, _write_to_stdout, _enable_test_mode, _atime_resolution);
 
         // We do not need to manually launch the delay server because the delay server migration
         // logic will handle that for us.

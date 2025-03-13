@@ -12,6 +12,7 @@
 
 #include <fmt/format.h>
 
+#include <chrono>
 #include <cstring>
 #include <utility>
 #include <algorithm>
