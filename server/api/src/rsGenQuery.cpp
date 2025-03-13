@@ -21,6 +21,13 @@
 #include <string>
 #include <string_view>
 
+// Forward declare to use and avoid additional policy
+int chl_gen_query_access_control_setup_impl(const char* user,
+                                            const char* zone,
+                                            const char* host,
+                                            int priv,
+                                            int controlFlag);
+
 namespace {
     using log_api = irods::experimental::log::api;
 
@@ -803,24 +810,41 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
     *genQueryOut = ( genQueryOut_t* )malloc( sizeof( genQueryOut_t ) );
     memset( ( char * )*genQueryOut, 0, sizeof( genQueryOut_t ) );
 
-    std::string svc_role;
-    irods::error ret = get_catalog_service_role(svc_role);
-    if (!ret.ok()) {
-        irods::log(PASS(ret));
-        return ret.code();
-    }
+    if (ruleExecuted == 0) {
+        std::string svc_role;
+        irods::error ret = get_catalog_service_role(svc_role);
+        int status{};
+        if (!ret.ok()) {
+            irods::log(PASS(ret));
+            // NOLINTNEXTLINE(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+            status = ret.code();
+        }
 
-    if (irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role) {
-        chlGenQueryAccessControlSetup(NULL, NULL, NULL, 0, 2);
-    }
+        if (irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role) {
+            constexpr auto priv{0};
+            constexpr auto control_flag{2};
 
-    // set a strict acl prop
-    try {
-        irods::set_server_property<std::string>(irods::STRICT_ACL_KW, "on");
-    }
-    catch (irods::exception& e) {
-        irods::log(e);
-        return e.code();
+            // Call directly to avoid additional policy
+            chl_gen_query_access_control_setup_impl(nullptr, nullptr, nullptr, priv, control_flag);
+        }
+
+        // set a strict acl prop
+        try {
+            irods::set_server_property<std::string>(irods::STRICT_ACL_KW, "on");
+        }
+        catch (irods::exception& e) {
+            irods::log(e);
+            // NOLINTNEXTLINE(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+            status = e.code();
+        }
+        if (status == 0) {
+            ruleExecuted = 1; /* No need to retry next time since it
+                                   succeeded.  Since this is called at
+                                   startup, the Rule Engine may not be
+                                   initialized yet, in which case the
+                                   default setting is fine and we should
+                                   retry next time. */
+        }
     }
 
     // =-=-=-=-=-=-=-
