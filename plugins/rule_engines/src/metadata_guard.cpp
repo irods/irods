@@ -351,6 +351,8 @@ extern "C" auto plugin_factory(const std::string& _instance_name, const std::str
 
     auto* re = new pluggable_rule_engine{_instance_name, _context};
 
+    re->add_operation("setup", operation<const std::string&>{no_op});
+    re->add_operation("teardown", operation<const std::string&>{no_op});
     re->add_operation("start", operation<const std::string&>{no_op});
     re->add_operation("stop", operation<const std::string&>{no_op});
     re->add_operation("rule_exists", operation<const std::string&, bool&>{rule_exists});
