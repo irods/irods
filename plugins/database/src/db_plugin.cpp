@@ -15424,34 +15424,6 @@ auto db_update_replica_access_time(irods::plugin_context& _ctx, const char* _jso
         const auto json_input = nlohmann::json::parse(_json_input);
         const auto& updates = json_input.at("access_time_updates");
 
-#if 0
-        // Generate the list of SQL statements to execute as a batch.
-        constexpr const char* query = "update R_DATA_MAIN set access_ts = ? where data_id = ? and data_repl_num = ?;";
-        std::string sql;
-        // TODO This function DOES NOT check that the caller provided a non-empty list of updates.
-        sql.reserve(std::char_traits<char>::length(query) * updates.size()); // Allocate space up front to speed things up.
-        std::for_each(std::begin(updates), std::end(updates), [&sql](auto&&) {
-            sql.append(query);
-        });
-        // Remove the last semicolon. This step is mentioned in the ODBC documentation from Microsoft.
-        sql.erase(std::prev(std::end(sql)));
-        log_db::debug("{}: SQL = [{}]", __func__, sql);
-
-        auto [db_instance, db_conn] = irods::experimental::catalog::new_database_connection();
-
-        nanodbc::statement stmt{db_conn};
-        nanodbc::prepare(stmt, sql);
-
-        std::size_t pos = 0;
-        for (auto&& update : updates) {
-            stmt.bind(pos++, update.at("atime").get_ref<const std::string&>().c_str());
-            stmt.bind(pos++, &update.at("data_id").get_ref<const std::size_t&>());
-            stmt.bind(pos++, &update.at("replica_number").get_ref<const std::size_t&>());
-        }
-
-        // Execute the batch of SQL statements.
-        nanodbc::execute(stmt);
-#else
         std::vector<std::size_t> data_ids;
         std::vector<std::size_t> replica_numbers;
         std::vector<std::string> access_times;
@@ -15484,7 +15456,6 @@ auto db_update_replica_access_time(irods::plugin_context& _ctx, const char* _jso
         // update all rows atomically. This decision is strictly for performance reasons
         // and ultimately means we feel it's acceptable to rollback all updates on failure.
         just_transact(stmt, updates.size());
-#endif
 
         return SUCCESS();
     }

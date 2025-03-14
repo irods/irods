@@ -1,4 +1,4 @@
-#include "irods/access_time_manager.hpp"
+#include "irods/access_time_queue.hpp"
 #include "irods/apiNumber.h"
 #include "irods/dataObjClose.h"
 #include "irods/dataObjCreate.h"
@@ -901,8 +901,6 @@ namespace
             return false;
         }
 
-        // Enqueue an access time update if the last time the replica was accessed is earlier than
-        // the modification time or the configured amount of time has elapsed since the last update.
         if (_atime < _mtime) {
             return true;
         }
@@ -914,8 +912,6 @@ namespace
 
             using clock_type = std::chrono::system_clock;
             const auto now = clock_type::to_time_t(clock_type::now());
-
-            log_api::debug("{}: Replica's atime=[{}] and mtime=[{}], now=[{}]", __func__, _atime, _mtime, now);
 
             return (now - atime) >= max_elapsed_time;
         }
@@ -938,12 +934,12 @@ namespace
             log_api::debug("{}: Enqueuing access time update for replica: data_id=[{}], replica_number=[{}]",
                     __func__, _replica.data_id(), _replica.replica_number());
 
-            irods::access_time_manager::access_time_data data{};
+            irods::access_time_queue::access_time_data data{};
             data.data_id = static_cast<std::size_t>(_replica.data_id());
             data.replica_number = static_cast<std::size_t>(_replica.replica_number());
             fmt::format("{:011}", now).copy(data.last_accessed, sizeof(data.last_accessed) - 1);
 
-            irods::access_time_manager::try_enqueue(data);
+            irods::access_time_queue::try_enqueue(data);
         }
         catch (const irods::exception& e) {
             log_api::warn("{}: Failed to enqueue access time data: {}", __func__, e.client_display_what());

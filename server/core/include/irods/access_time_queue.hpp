@@ -1,5 +1,5 @@
-#ifndef IRODS_ACCESS_TIME_MANAGER_HPP
-#define IRODS_ACCESS_TIME_MANAGER_HPP
+#ifndef IRODS_ACCESS_TIME_QUEUE_HPP
+#define IRODS_ACCESS_TIME_QUEUE_HPP
 
 /// \file
 
@@ -10,7 +10,7 @@
 /// A namespace containing facilities for managing access time updates for replicas.
 ///
 /// \since 5.0.0
-namespace irods::access_time_manager
+namespace irods::access_time_queue
 {
     /// A data type which holds information for updating the access time of a replica.
     ///
@@ -22,24 +22,24 @@ namespace irods::access_time_manager
         char last_accessed[12]; // 11 digits + null terminating byte
     }; // struct access_time_data
 
-    /// Initializes the access time manager.
+    /// Initializes the access time queue.
     ///
     /// This function should only be called on startup of the server.
     ///
-    /// \param[in] _id         The name of the queue.
-    /// \param[in] _queue_size The max number of entries the queue can hold.
+    /// \param[in] _queue_name_prefix The prefix of the queue name.
+    /// \param[in] _queue_size        The max number of entries the queue can hold.
     ///
     /// \since 5.0.0
-    auto init(const std::string_view _id, std::size_t _queue_size) -> void;
+    auto init(const std::string_view _queue_name_prefix, std::size_t _queue_size) -> void;
 
-    /// Initializes an existing access time manager.
+    /// Initializes an existing access time queue.
     ///
     /// This function should only be called on startup of the server.
     ///
-    /// \param[in] _id The name of the queue.
+    /// \param[in] _queue_name The name of an existing queue.
     ///
     /// \since 5.0.0
-    auto init_no_create(const std::string_view _id) -> void;
+    auto init_no_create(const std::string_view _queue_name) -> void;
 
     /// Cleans up any resources created via init().
     ///
@@ -48,7 +48,7 @@ namespace irods::access_time_manager
     /// \since 5.0.0
     auto deinit() noexcept -> void;
 
-    /// Returns the name of the shared memory segment used by the access time manager.
+    /// Returns the name of the shared memory segment used by the access time queue.
     ///
     /// This function allows other components and processes to use an existing access time queue.
     ///
@@ -75,6 +75,6 @@ namespace irods::access_time_manager
     ///
     /// \since 5.0.0
     auto number_of_queued_updates() -> std::size_t;
-} // namespace irods::access_time_manager
+} // namespace irods::access_time_queue
 
-#endif // IRODS_ACCESS_TIME_MANAGER_HPP
+#endif // IRODS_ACCESS_TIME_QUEUE_HPP

@@ -3,25 +3,6 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "type": "object",
     "properties": {
-        "access_time": {
-            "queue_name": {
-                "type": "string",
-                "minLength": 8
-            },
-            "queue_size": {
-                "type": "integer",
-                "minimum": 0
-            },
-            "resolution_in_seconds": {
-                "type": "integer",
-                "minimum": 0
-            },
-            "required": [
-                "queue_name",
-                "queue_size",
-                "resolution_in_seconds"
-            ]
-        },
         "advanced_settings": {
             "type": "object",
             "properties": {
@@ -200,7 +181,6 @@
         "zone_user": {"type": "string"}
     },
     "required": [
-        "access_time",
         "advanced_settings",
         "catalog_provider_hosts",
         "catalog_service_role",

@@ -182,7 +182,7 @@ namespace irods
 
     // access time
     extern const char* const KW_CFG_ACCESS_TIME;
-    extern const char* const KW_CFG_ACCESS_TIME_QUEUE_NAME;
+    extern const char* const KW_CFG_ACCESS_TIME_QUEUE_NAME_PREFIX;
     extern const char* const KW_CFG_ACCESS_TIME_QUEUE_SIZE;
     extern const char* const KW_CFG_ACCESS_TIME_RESOLUTION_IN_SECONDS;
 } // namespace irods

@@ -1,4 +1,4 @@
-#include "irods/access_time_manager.hpp"
+#include "irods/access_time_queue.hpp"
 
 #include <boost/interprocess/ipc/message_queue.hpp>
 #include <fmt/format.h>
@@ -14,7 +14,7 @@ namespace
     // Global Variables
     //
 
-    // On initialization, holds the PID of the process that initialized the access time manager.
+    // On initialization, holds the PID of the process that initialized the access time queue.
     // This ensures that only the process that initialized the system can deinitialize it.
     pid_t g_owner_pid; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
@@ -26,9 +26,9 @@ namespace
     std::unique_ptr<boost::interprocess::message_queue> g_mq; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 } // anonymous namespace
 
-namespace irods::access_time_manager
+namespace irods::access_time_queue
 {
-    auto init(const std::string_view _id, std::size_t _queue_size) -> void
+    auto init(const std::string_view _queue_name_prefix, std::size_t _queue_size) -> void
     {
         if (getpid() == g_owner_pid) {
             return;
@@ -38,7 +38,7 @@ namespace irods::access_time_manager
         using seconds = std::chrono::seconds;
 
         const auto epoch = duration_cast<seconds>(clock_type::now().time_since_epoch()).count();
-        g_mq_name = fmt::format("{}{}_{}", _id, getpid(), epoch);
+        g_mq_name = fmt::format("{}{}_{}", _queue_name_prefix, getpid(), epoch);
 
         boost::interprocess::message_queue::remove(g_mq_name.c_str());
 
@@ -47,10 +47,10 @@ namespace irods::access_time_manager
             boost::interprocess::create_only, g_mq_name.data(), _queue_size, sizeof(access_time_data));
     } // init
 
-    auto init_no_create(const std::string_view _id) -> void
+    auto init_no_create(const std::string_view _queue_name) -> void
     {
         g_owner_pid = 0;
-        g_mq_name = std::string{_id};
+        g_mq_name = std::string{_queue_name};
         g_mq = std::make_unique<boost::interprocess::message_queue>(boost::interprocess::open_only, g_mq_name.data());
     } // init_no_create
 
@@ -93,4 +93,4 @@ namespace irods::access_time_manager
     {
         return g_mq->get_num_msg();
     } // number_of_queued_updates
-} // namespace irods::access_time_manager
+} // namespace irods::access_time_queue

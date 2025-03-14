@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include <cstring>
 
-auto rc_update_replica_access_time(RcComm* _comm, const char* _json_input, char** _json_output) -> int
+auto rc_update_replica_access_time(RcComm* _comm, const char* _json_input, char** _output) -> int
 {
     if (!_json_input) {
         return SYS_INVALID_INPUT_PARAM;
@@ -17,5 +17,5 @@ auto rc_update_replica_access_time(RcComm* _comm, const char* _json_input, char*
     input_buf.buf = const_cast<char*>(_json_input);
     input_buf.len = static_cast<int>(std::strlen(_json_input));
 
-    return procApiRequest(_comm, UPDATE_REPLICA_ACCESS_TIME_AN, &input_buf, nullptr, reinterpret_cast<void**>(_json_output), nullptr);
+    return procApiRequest(_comm, UPDATE_REPLICA_ACCESS_TIME_AN, &input_buf, nullptr, reinterpret_cast<void**>(_output), nullptr);
 }

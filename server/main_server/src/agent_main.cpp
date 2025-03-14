@@ -1,4 +1,4 @@
-#include "irods/access_time_manager.hpp"
+#include "irods/access_time_queue.hpp"
 #include "irods/agent_globals.hpp"
 #include "irods/client_api_allowlist.hpp"
 #include "irods/dns_cache.hpp"
@@ -187,7 +187,7 @@ auto main(int _argc, char* _argv[]) -> int
             access_time_queue_shm_name = std::move(iter->second.as<std::string>());
         }
         else {
-            fmt::print(stderr, "Error: Missing [ACCESS_TIME_MESSAGE_QUEUE_SHM_NAME] parameter.");
+            fmt::print(stderr, "Error: Missing [ACCESS_TIME_QUEUE_SHM_NAME] parameter.");
             return 1;
         }
 
@@ -262,8 +262,8 @@ auto main(int _argc, char* _argv[]) -> int
         irods::at_scope_exit deinit_replica_access_table{[] { irods::experimental::replica_access_table::deinit(); }};
 
         log_af::info("{}: Initializing access time queue for agent factory.", __func__);
-        irods::access_time_manager::init_no_create(access_time_queue_shm_name);
-        irods::at_scope_exit deinit_access_time_manager{[] { irods::access_time_manager::deinit(); }};
+        irods::access_time_queue::init_no_create(access_time_queue_shm_name);
+        irods::at_scope_exit deinit_access_time_queue{[] { irods::access_time_queue::deinit(); }};
 
         log_af::info("{}: Initializing zone information for agent factory.", __func__);
 

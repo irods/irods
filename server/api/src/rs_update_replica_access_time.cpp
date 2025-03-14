@@ -7,11 +7,11 @@
 #include "irods/rodsErrorTable.h"
 #include "irods/update_replica_access_time.h"
 
-auto rs_update_replica_access_time(RsComm* _comm, BytesBuf* _json_input, char** _json_output) -> int
+auto rs_update_replica_access_time(RsComm* _comm, BytesBuf* _json_input, char** _output) -> int
 {
     using log_api = irods::experimental::log::api;
 
-    if (!_comm || !_json_input || !_json_output) {
+    if (!_comm || !_json_input || !_output) {
         log_api::error("{}: Invalid input: received null pointer.", __func__);
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
@@ -30,15 +30,15 @@ auto rs_update_replica_access_time(RsComm* _comm, BytesBuf* _json_input, char** 
 
     if (host_info->localFlag != LOCAL_HOST) {
         log_api::trace("{}: Redirecting request to catalog service provider.", __func__);
-        return rc_update_replica_access_time(host_info->conn, json_input.c_str(), _json_output);
+        return rc_update_replica_access_time(host_info->conn, json_input.c_str(), _output);
     }
 
     //
-    // At this point, we assume we're connected to the catalog service provider in the correct zone.
+    // At this point, we assume we're connected to a catalog service provider in the correct zone.
     //
 
     try {
-        const auto ec = chl_update_replica_access_time(*_comm, json_input.c_str(), _json_output);
+        const auto ec = chl_update_replica_access_time(*_comm, json_input.c_str(), _output);
 
         if (ec < 0) {
             log_api::error("{}: chl_update_replica_access_time failed with error code [{}].", __func__, ec);

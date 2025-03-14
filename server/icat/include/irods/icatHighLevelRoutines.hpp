@@ -441,9 +441,9 @@ auto chl_delay_rule_unlock(RsComm& _comm, const char* _rule_ids) -> int;
 ///
 /// Triggers policy associated with database operations.
 ///
-/// \param[in] _comm   The communication object.
-/// \param[in] _input  TODO
-/// \param[in] _output TODO
+/// \param[in]  _comm       The communication object.
+/// \param[in]  _json_input A JSON string containing access time update information.
+/// \param[out] _output     A pointer which will hold error details about the operation, if available.
 ///
 /// \return An integer.
 /// \retval  0 On success.
@@ -452,6 +452,6 @@ auto chl_delay_rule_unlock(RsComm& _comm, const char* _rule_ids) -> int;
 /// \see #rs_update_replica_access_time
 ///
 /// \since 5.0.0
-auto chl_update_replica_access_time(RsComm& _comm, const char* _input, char** _output) -> int;
+auto chl_update_replica_access_time(RsComm& _comm, const char* _json_input, char** _output) -> int;
 
 #endif // IRODS_ICAT_HIGHLEVEL_ROUTINES_HPP
