@@ -1701,11 +1701,15 @@ Signals:
                 return;
             }
 
+            const auto start_time = std::chrono::steady_clock::now();
+
             irods::experimental::client_connection conn;
             irods::access_time_queue::access_time_data data;
             nlohmann::json::array_t updates;
 
             const auto update_count = irods::access_time_queue::number_of_queued_updates();
+            log_server::debug("{}: Number of access time updates before deduplication is [{}].", __func__, update_count);
+
             for (std::size_t i = 0; i < update_count; ++i) {
                 if (!irods::access_time_queue::try_dequeue(data)) {
                     break;
@@ -1751,12 +1755,16 @@ Signals:
                 return _lhs.at("data_id") == _rhs.at("data_id") && _lhs.at("replica_number") == _rhs.at("replica_number");
             });
             updates.erase(last, std::end(updates));
+            log_server::debug("{}: Deduplication complete. Access time updates reduced to [{}].", __func__, updates.size());
 
             // Apply updates.
             const auto json_input = nlohmann::json{{"access_time_updates", updates}}.dump();
             char* ignored{};
             const auto ec = rc_update_replica_access_time(static_cast<RcComm*>(conn), json_input.c_str(), &ignored);
             log_server::debug("{}: rc_update_replica_access_time returned [{}].", __func__, ec);
+
+            const auto elapsed = std::chrono::steady_clock::now() - start_time;
+            log_server::debug("{}: Access time updates took [{}] seconds to apply.", __func__, std::chrono::duration<double>(elapsed).count());
         }
         catch (const irods::exception& e) {
             log_server::error("{}: Caught exception while processing access time updates: {}", __func__, e.client_display_what());
