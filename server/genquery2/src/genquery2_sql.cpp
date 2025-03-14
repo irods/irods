@@ -514,7 +514,7 @@ namespace
             return "cte_drh";
         }
 
-        if (_column.starts_with("DATA_ACCESS_")) {
+        if (_column.starts_with("DATA_ACCESS_") && _column != "DATA_ACCESS_TIME") {
             constexpr auto prefix_length = std::char_traits<char>::length("DATA_ACCESS_");
             const auto tail = _column.substr(prefix_length);
 
