@@ -732,15 +732,6 @@ rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
         }
     }
     else {
-        // =-=-=-=-=-=-=-
-        // strip disable strict acl flag if the agent conn flag is missing
-        char* dis_kw = getValByKey( &genQueryInp->condInput, DISABLE_STRICT_ACL_KW );
-        if ( dis_kw ) {
-            if (!irods::server_property_exists(irods::AGENT_CONN_KW)) {
-                rmKeyVal( &genQueryInp->condInput, DISABLE_STRICT_ACL_KW );
-            }
-        } // if dis_kw
-
         status = rcGenQuery( rodsServerHost->conn,
                              genQueryInp, genQueryOut );
     }
@@ -760,8 +751,6 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
     int resc_hier_attr_pos = -1;
 
     static int ruleExecuted = 0;
-    ruleExecInfo_t rei;
-
 
     static int PrePostProcForGenQueryFlag = -2;
     int i, argc;
@@ -805,54 +794,50 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
     *genQueryOut = ( genQueryOut_t* )malloc( sizeof( genQueryOut_t ) );
     memset( ( char * )*genQueryOut, 0, sizeof( genQueryOut_t ) );
 
-    if ( ruleExecuted == 0 ) {
-        memset( ( char* )&rei, 0, sizeof( rei ) );
-        /* Include the user info for possible use by the rule.  Note
-        that when this is called (as the agent is initializing),
-        this user info is not confirmed yet.  For password
-        authentication though, the agent will soon exit if this
-        is not valid.  But for GSI, the user information may not
-        be present and/or may be changed when the authentication
-        completes, so it may not be safe to use this in a GSI
-        enabled environment.  This addition of user information
-        was requested by ARCS/IVEC (Sean Fleming) to avoid a
-        local patch.
-        */
-        rei.uoic = &rsComm->clientUser;
-        rei.uoip = &rsComm->proxyUser;
+    if (ruleExecuted == 0) {
+        std::string svc_role;
+        irods::error ret = get_catalog_service_role(svc_role);
+        int status{};
+        if (!ret.ok()) {
+            irods::log(PASS(ret));
+            // NOLINTNEXTLINE(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+            status = ret.code();
+        }
 
-        status = applyRule( "acAclPolicy", NULL, &rei, NO_SAVE_REI );
-        if ( status == 0 ) {
+        if (irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role) {
+            constexpr auto priv{0};
+            constexpr auto control_flag{2};
 
+            // Call directly to avoid additional policy
+            chlGenQueryAccessControlSetup(nullptr, nullptr, nullptr, priv, control_flag);
+        }
+
+        // set a strict acl prop
+        try {
+            irods::set_server_property<std::string>(irods::STRICT_ACL_KW, "on");
+        }
+        catch (irods::exception& e) {
+            irods::log(e);
+            // NOLINTNEXTLINE(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+            status = e.code();
+        }
+        if (status == 0) {
             ruleExecuted = 1; /* No need to retry next time since it
-                             succeeded.  Since this is called at
-                             startup, the Rule Engine may not be
-                             initialized yet, in which case the
-                             default setting is fine and we should
-                             retry next time. */
+                                   succeeded.  Since this is called at
+                                   startup, the Rule Engine may not be
+                                   initialized yet, in which case the
+                                   default setting is fine and we should
+                                   retry next time. */
         }
     }
 
     // =-=-=-=-=-=-=-
-    // verify that we are running a query for another agent connection
-    const bool agent_conn_flag = irods::server_property_exists(irods::AGENT_CONN_KW);
-
-    // =-=-=-=-=-=-=-
-    // detect if a request for disable of strict acls is made
-    int acl_val = -1;
-    char* dis_kw = getValByKey( &genQueryInp->condInput, DISABLE_STRICT_ACL_KW );
-    if ( agent_conn_flag && dis_kw ) {
-        acl_val = 0;
-    }
-
-    // =-=-=-=-=-=-=-
     // cache the old acl value for reuse later if necessary
-    int old_acl_val =  chlGenQueryAccessControlSetup(
-                           rsComm->clientUser.userName,
-                           rsComm->clientUser.rodsZone,
-                           rsComm->clientAddr,
-                           rsComm->clientUser.authInfo.authFlag,
-                           acl_val );
+    int old_acl_val = chlGenQueryAccessControlSetup(rsComm->clientUser.userName,
+                                                    rsComm->clientUser.rodsZone,
+                                                    rsComm->clientAddr,
+                                                    rsComm->clientUser.authInfo.authFlag,
+                                                    -1);
 
     if ( PrePostProcForGenQueryFlag == 1 ) {
         std::string arg = str( boost::format( "%ld" ) % ( ( long )genQueryInp ) );
@@ -870,17 +855,6 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
     /**  June 1 2009 for pre-post processing rule hooks **/
 
     status = chlGenQuery( *genQueryInp, *genQueryOut );
-
-    // =-=-=-=-=-=-=-
-    // if a disable was requested, repave with old value immediately
-    if ( agent_conn_flag && dis_kw ) {
-        chlGenQueryAccessControlSetup(
-            rsComm->clientUser.userName,
-            rsComm->clientUser.rodsZone,
-            rsComm->clientAddr,
-            rsComm->clientUser.authInfo.authFlag,
-            old_acl_val );
-    }
 
     /**  June 1 2009 for pre-post processing rule hooks **/
     if ( PrePostProcForGenQueryFlag == 1 ) {
