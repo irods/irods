@@ -21,13 +21,6 @@
 #include <string>
 #include <string_view>
 
-// Forward declare to use and avoid additional policy
-int chl_gen_query_access_control_setup_impl(const char* user,
-                                            const char* zone,
-                                            const char* host,
-                                            int priv,
-                                            int controlFlag);
-
 namespace {
     using log_api = irods::experimental::log::api;
 
@@ -825,7 +818,7 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
             constexpr auto control_flag{2};
 
             // Call directly to avoid additional policy
-            chl_gen_query_access_control_setup_impl(nullptr, nullptr, nullptr, priv, control_flag);
+            chlGenQueryAccessControlSetup(nullptr, nullptr, nullptr, priv, control_flag);
         }
 
         // set a strict acl prop
