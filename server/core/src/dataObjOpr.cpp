@@ -809,13 +809,6 @@ chkOrphanFile(
 
     genQueryInp.maxRows = MAX_SQL_ROWS;
 
-    // =-=-=-=-=-=-=-
-    // when strict acls are enabled, this query would have returned that no file exists.
-    // this would have resulted in an incorrect orphaning of a file which may actually be
-    // owned by another user.  we potentially disable the use of strict acls for this single
-    // query in order to avoid orphaning another users physical data.
-    addKeyVal( &genQueryInp.condInput, DISABLE_STRICT_ACL_KW, "disable" );
-
     std::string svr_sid;
     if (irods::server_property_exists(irods::AGENT_CONN_KW)) {
         status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);

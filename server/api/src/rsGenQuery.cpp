@@ -732,15 +732,6 @@ rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
         }
     }
     else {
-        // =-=-=-=-=-=-=-
-        // strip disable strict acl flag if the agent conn flag is missing
-        char* dis_kw = getValByKey( &genQueryInp->condInput, DISABLE_STRICT_ACL_KW );
-        if ( dis_kw ) {
-            if (!irods::server_property_exists(irods::AGENT_CONN_KW)) {
-                rmKeyVal( &genQueryInp->condInput, DISABLE_STRICT_ACL_KW );
-            }
-        } // if dis_kw
-
         status = rcGenQuery( rodsServerHost->conn,
                              genQueryInp, genQueryOut );
     }
@@ -847,8 +838,7 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
     // =-=-=-=-=-=-=-
     // detect if a request for disable of strict acls is made
     int acl_val = -1;
-    char* dis_kw = getValByKey( &genQueryInp->condInput, DISABLE_STRICT_ACL_KW );
-    if ( agent_conn_flag && dis_kw ) {
+    if (agent_conn_flag) {
         acl_val = 0;
     }
 
