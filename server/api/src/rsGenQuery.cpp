@@ -870,7 +870,7 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
 
     // =-=-=-=-=-=-=-
     // if a disable was requested, repave with old value immediately
-    if ( agent_conn_flag && dis_kw ) {
+    if (agent_conn_flag) {
         chlGenQueryAccessControlSetup(
             rsComm->clientUser.userName,
             rsComm->clientUser.rodsZone,
