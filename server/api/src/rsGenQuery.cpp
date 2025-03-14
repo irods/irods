@@ -832,17 +832,6 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
     }
 
     // =-=-=-=-=-=-=-
-    // verify that we are running a query for another agent connection
-    const bool agent_conn_flag = irods::server_property_exists(irods::AGENT_CONN_KW);
-
-    // =-=-=-=-=-=-=-
-    // detect if a request for disable of strict acls is made
-    int acl_val = -1;
-    if (agent_conn_flag) {
-        acl_val = 0;
-    }
-
-    // =-=-=-=-=-=-=-
     // cache the old acl value for reuse later if necessary
     int old_acl_val =  chlGenQueryAccessControlSetup(
                            rsComm->clientUser.userName,
@@ -867,17 +856,6 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
     /**  June 1 2009 for pre-post processing rule hooks **/
 
     status = chlGenQuery( *genQueryInp, *genQueryOut );
-
-    // =-=-=-=-=-=-=-
-    // if a disable was requested, repave with old value immediately
-    if (agent_conn_flag) {
-        chlGenQueryAccessControlSetup(
-            rsComm->clientUser.userName,
-            rsComm->clientUser.rodsZone,
-            rsComm->clientAddr,
-            rsComm->clientUser.authInfo.authFlag,
-            old_acl_val );
-    }
 
     /**  June 1 2009 for pre-post processing rule hooks **/
     if ( PrePostProcForGenQueryFlag == 1 ) {
