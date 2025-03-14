@@ -809,21 +809,7 @@ chkOrphanFile(
 
     genQueryInp.maxRows = MAX_SQL_ROWS;
 
-    std::string svr_sid;
-    if (irods::server_property_exists(irods::AGENT_CONN_KW)) {
-        status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
-    }
-    else {
-        try {
-            irods::set_server_property<std::string>(irods::AGENT_CONN_KW, "StrictACLOverride");
-            status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
-            irods::delete_server_property(irods::AGENT_CONN_KW);
-        }
-        catch (const irods::exception& e) {
-            irods::log(e);
-            return e.code();
-        }
-    }
+    status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
 
     clearGenQueryInp( &genQueryInp );
     if ( status < 0 ) {
