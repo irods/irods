@@ -89,6 +89,7 @@ set(
   rc_get_library_features
   rc_mod_data_obj_meta
   rc_switch_user
+  rc_update_replica_access_time
   re_serialization
   replica
   replica_access_table
