@@ -1588,7 +1588,7 @@ Signals:
             }
             else if (role == irods::KW_CFG_SERVICE_ROLE_CONSUMER) {
                 // Catalog Service Consumers aren't guaranteed to have database credentials. We work around
-                // the lack of an agent factory and database credentials by connecting to the Catalog Service
+                // the lack of an agent factory and database credentials by connecting to a Catalog Service
                 // Provider directly and invoking the grid configuration API. This works because consumer
                 // servers are designed to wait for the provider to become available before continuing with
                 // server initialization.
