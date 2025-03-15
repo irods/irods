@@ -7,6 +7,7 @@
 #include "irods/irods_configuration_parser.hpp"
 #include "irods/irods_error.hpp"
 #include "irods/irods_exception.hpp"
+#include "irods/rodsErrorTable.h"
 
 #include <mutex>
 #include <shared_mutex>
@@ -281,6 +282,19 @@ namespace irods
     {
         return irods::get_server_property<T>(configuration_parser::key_path_t{KW_CFG_ADVANCED_SETTINGS, _prop});
     } // get_advanced_setting
+
+    template <typename T>
+    T get_server_property_copy(const std::string& _path)
+    {
+        try {
+            const auto config_handle = irods::server_properties::instance().map();
+            const auto& config = config_handle.get_json();
+            return config.at(nlohmann::json::json_pointer{_path}).get<T>();
+        }
+        catch (const std::exception&) {
+            THROW(KEY_LOOKUP_ERROR, fmt::format("{}: Error looking up configuration value for path: [{}]", __func__, _path));
+        }
+    } // get_server_property_copy
 
     /// Returns the amount of shared memory that should be allocated for the DNS cache.
     ///

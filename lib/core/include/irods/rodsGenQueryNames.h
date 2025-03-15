@@ -82,6 +82,7 @@ static const columnName_t columnNames[] = {
     { COL_D_RESC_ID,        "DATA_RESC_ID", },
     { COL_DATA_USER_NAME,   "DATA_USER_NAME", },
     { COL_DATA_USER_ZONE,   "DATA_ZONE_NAME", },
+    { COL_D_ACCESS_TIME,    "DATA_ACCESS_TIME", },
 
     { COL_DATA_ACCESS_TYPE,     "DATA_ACCESS_TYPE", },
     { COL_DATA_ACCESS_NAME,     "DATA_ACCESS_NAME", },

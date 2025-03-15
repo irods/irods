@@ -1,3 +1,4 @@
+#include "irods/access_time_queue.hpp"
 #include "irods/apiNumber.h"
 #include "irods/dataObjClose.h"
 #include "irods/dataObjCreate.h"
@@ -15,6 +16,7 @@
 #include "irods/getRemoteZoneResc.h"
 #include "irods/getRescQuota.h"
 #include "irods/icatHighLevelRoutines.hpp"
+#include "irods/irods_configuration_keywords.hpp"
 #include "irods/irods_exception.hpp"
 #include "irods/irods_get_l1desc.hpp"
 #include "irods/irods_linked_list_iterator.hpp"
@@ -893,6 +895,60 @@ namespace
         return allocAndSetL1descForZoneOpr(remoteL1descInx, &_inp, &_server_host, stat);
     } // remote_open
 
+    auto replica_access_time_needs_update(int _openmode, const std::string_view _atime, const std::string_view _mtime) -> bool
+    {
+        if ((_openmode & O_ACCMODE) == O_WRONLY) {
+            return false;
+        }
+
+        if (_atime < _mtime) {
+            return true;
+        }
+
+        try {
+            // TODO Document type constraint.
+            const auto max_elapsed_time = irods::get_server_property<std::uint32_t>(irods::KW_CFG_ACCESS_TIME_RESOLUTION_IN_SECONDS);
+            const auto atime = std::stoull(std::string{_atime});
+
+            using clock_type = std::chrono::system_clock;
+            const auto now = clock_type::to_time_t(clock_type::now());
+
+            return (now - atime) >= max_elapsed_time;
+        }
+        catch (const irods::exception& e) {
+            log_api::warn("{}: Failed to determine if access time needs an update: {}", __func__, e.client_display_what());
+        }
+        catch (const std::exception& e) {
+            log_api::warn("{}: Failed to determine if access time needs an update: {}", __func__, e.what());
+        }
+
+        return false;
+    } // replica_access_time_needs_update
+
+    auto try_enqueue_update_of_replica_access_time(const replica_proxy& _replica) -> void
+    {
+        try {
+            using clock_type = std::chrono::system_clock;
+            const auto now = clock_type::to_time_t(clock_type::now());
+
+            log_api::debug("{}: Enqueuing access time update for replica: data_id=[{}], replica_number=[{}]",
+                    __func__, _replica.data_id(), _replica.replica_number());
+
+            irods::access_time_queue::access_time_data data{};
+            data.data_id = static_cast<std::size_t>(_replica.data_id());
+            data.replica_number = static_cast<std::size_t>(_replica.replica_number());
+            fmt::format("{:011}", now).copy(data.last_accessed, sizeof(data.last_accessed) - 1);
+
+            irods::access_time_queue::try_enqueue(data);
+        }
+        catch (const irods::exception& e) {
+            log_api::warn("{}: Failed to enqueue access time data: {}", __func__, e.client_display_what());
+        }
+        catch (const std::exception& e) {
+            log_api::warn("{}: Failed to enqueue access time data: {}", __func__, e.what());
+        }
+    } // try_enqueue_update_of_replica_access_time
+
     int rsDataObjOpen_impl(rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     {
         rodsServerHost_t* rodsServerHost{};
@@ -1225,6 +1281,10 @@ namespace
                     replica.hierarchy(),
                     replica.replica_status()));
             }
+        }
+
+        if (replica_access_time_needs_update(dataObjInp->openFlags, replica.atime(), replica.mtime())) {
+            try_enqueue_update_of_replica_access_time(replica);
         }
 
         return l1descInx;
