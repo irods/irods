@@ -151,6 +151,7 @@ set(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rc_set_grid_configuration_value.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rc_switch_user.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/rc_touch.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/rc_update_replica_access_time.cpp"
 )
 
 set(
@@ -314,6 +315,7 @@ set(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/touch.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/unbunAndRegPhyBunfile.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/unregDataObj.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/update_replica_access_time.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/userAdmin.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/zone_report.h"
 )

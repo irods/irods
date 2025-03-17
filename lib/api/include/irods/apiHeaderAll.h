@@ -153,4 +153,6 @@
 #include "irods/delay_rule_lock.h"
 #include "irods/delay_rule_unlock.h"
 
+#include "irods/update_replica_access_time.h"
+
 #endif	// API_HEADER_ALL_H__

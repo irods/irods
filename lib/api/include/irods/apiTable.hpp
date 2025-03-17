@@ -155,6 +155,7 @@
 #  include "irods/rs_get_library_features.hpp"
 #  include "irods/rs_get_resource_info_for_operation.hpp"
 #  include "irods/rs_replica_truncate.hpp"
+#  include "irods/rs_update_replica_access_time.hpp"
 #  define NULLPTR_FOR_CLIENT_TABLE(x) x
 #elif !defined(CREATE_API_TABLE_FOR_SERVER) && defined(CREATE_API_TABLE_FOR_CLIENT)
 #  define NULLPTR_FOR_CLIENT_TABLE(x) nullptr
@@ -302,6 +303,7 @@
 #define RS_SYNC_MOUNTED_COLL               NULLPTR_FOR_CLIENT_TABLE(rsSyncMountedColl)
 #define RS_TICKET_ADMIN                    NULLPTR_FOR_CLIENT_TABLE(rsTicketAdmin)
 #define RS_UNBUN_AND_REG_PHY_BUNFILE       NULLPTR_FOR_CLIENT_TABLE(rsUnbunAndRegPhyBunfile)
+#define RS_UPDATE_REPLICA_ACCESS_TIME      NULLPTR_FOR_CLIENT_TABLE(rs_update_replica_access_time)
 #define RS_UNREG_DATA_OBJ                  NULLPTR_FOR_CLIENT_TABLE(rsUnregDataObj)
 #define RS_USER_ADMIN                      NULLPTR_FOR_CLIENT_TABLE(rsUserAdmin)
 #define RS_ZONE_REPORT                     NULLPTR_FOR_CLIENT_TABLE(rsZoneReport)
@@ -1288,6 +1290,13 @@ static irods::apidef_t client_api_table_inp[] = {
         boost::any(std::function<int(rsComm_t*, DelayRuleUnlockInput*)>(RS_DELAY_RULE_UNLOCK)),
         "api_delay_rule_unlock", clearDelayRuleUnlockInput, irods::clearOutStruct_noop,
         (funcPtr) CALL_DELAY_RULE_UNLOCK
+    },
+    {
+        UPDATE_REPLICA_ACCESS_TIME_AN, RODS_API_VERSION, LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH,
+        "BinBytesBuf_PI", 0, "STR_PI", 0,
+        boost::any(std::function<int(rsComm_t*, BytesBuf*, char**)>(RS_UPDATE_REPLICA_ACCESS_TIME)),
+        "api_update_replica_access_time", clearBytesBuffer, irods::clearOutStruct_noop,
+        (funcPtr) CALL_UPDATE_REPLICA_ACCESS_TIME
     }
     // clang-format on
 }; // (client|server)_api_table_inp
