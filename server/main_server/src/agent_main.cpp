@@ -1,3 +1,4 @@
+#include "irods/access_time_queue.hpp"
 #include "irods/agent_globals.hpp"
 #include "irods/client_api_allowlist.hpp"
 #include "irods/dns_cache.hpp"
@@ -56,8 +57,10 @@
 #include <charconv>
 #include <chrono>
 #include <csignal>
+#include <cstdint>
 #include <cstring>
 #include <fstream>
+#include <limits>
 #include <string>
 #include <string_view>
 #include <thread>
@@ -136,6 +139,7 @@ auto main(int _argc, char* _argv[]) -> int
 
     std::string hostname_cache_shm_name;
     std::string dns_cache_shm_name;
+    std::string access_time_queue_shm_name;
     bool write_to_stdout = false;
     bool enable_test_mode = false;
 
@@ -145,8 +149,10 @@ auto main(int _argc, char* _argv[]) -> int
 
     // clang-format off
     opts_desc.add_options()
-        ("hostname-cache-shm-name,x", po::value<std::string>(), "")
-        ("dns-cache-shm-name,y", po::value<std::string>(), "")
+        ("hostname-cache-shm-name", po::value<std::string>(&hostname_cache_shm_name), "")
+        ("dns-cache-shm-name", po::value<std::string>(&dns_cache_shm_name), "")
+        ("atime-queue-shm-name", po::value<std::string>(&access_time_queue_shm_name), "")
+        ("atime-resolution", po::value<std::string>(), "")
         ("stdout", po::bool_switch(&write_to_stdout), "")
         ("test-mode,t", po::bool_switch(&enable_test_mode), "");
     // clang-format on
@@ -154,25 +160,51 @@ auto main(int _argc, char* _argv[]) -> int
     po::positional_options_description pod;
     pod.add("hostname-cache-shm-name", 1);
     pod.add("dns-cache-shm-name", 1);
+    pod.add("atime-queue-shm-name", 1);
 
     try {
         po::variables_map vm;
         po::store(po::command_line_parser(_argc, _argv).options(opts_desc).positional(pod).run(), vm);
         po::notify(vm);
 
-        if (auto iter = vm.find("hostname-cache-shm-name"); std::end(vm) != iter) {
-            hostname_cache_shm_name = std::move(iter->second.as<std::string>());
-        }
-        else {
+        if (hostname_cache_shm_name.empty()) {
             fmt::print(stderr, "Error: Missing [HOSTNAME_CACHE_SHM_NAME] parameter.");
             return 1;
         }
 
-        if (auto iter = vm.find("dns-cache-shm-name"); std::end(vm) != iter) {
-            dns_cache_shm_name = std::move(iter->second.as<std::string>());
+        if (dns_cache_shm_name.empty()) {
+            fmt::print(stderr, "Error: Missing [DNS_CACHE_SHM_NAME] parameter.");
+            return 1;
+        }
+
+        if (access_time_queue_shm_name.empty()) {
+            fmt::print(stderr, "Error: Missing [ACCESS_TIME_QUEUE_SHM_NAME] parameter.");
+            return 1;
+        }
+
+        if (auto iter = vm.find("atime-resolution"); std::end(vm) != iter) {
+            const auto resolution_in_seconds = iter->second.as<std::string>();
+
+            // Verify the resolution value is acceptable.
+            try {
+                if (resolution_in_seconds.empty()) {
+                    throw std::exception{};
+                }
+
+                const auto value = std::stoll(resolution_in_seconds);
+                // Limited to 32-bit values.
+                if (value < 0 || value > std::numeric_limits<std::int32_t>::max()) {
+                    throw std::exception{};
+                }
+
+                g_atime_resolution_in_seconds = value;
+            }
+            catch (const std::exception&) {
+                g_atime_invalid_resolution_in_seconds_detected = true;
+            }
         }
         else {
-            fmt::print(stderr, "Error: Missing [DNS_CACHE_SHM_NAME] parameter.");
+            fmt::print(stderr, "Error: Missing [ACCESS_TIME_RESOLUTION_IN_SECONDS] parameter.");
             return 1;
         }
     }
@@ -234,6 +266,10 @@ auto main(int _argc, char* _argv[]) -> int
 
         irods::experimental::replica_access_table::init();
         irods::at_scope_exit deinit_replica_access_table{[] { irods::experimental::replica_access_table::deinit(); }};
+
+        log_af::info("{}: Initializing access time queue for agent factory.", __func__);
+        irods::access_time_queue::init_no_create(access_time_queue_shm_name);
+        irods::at_scope_exit deinit_access_time_queue{[] { irods::access_time_queue::deinit(); }};
 
         log_af::info("{}: Initializing zone information for agent factory.", __func__);
 
