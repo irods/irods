@@ -83,6 +83,7 @@ namespace irods::experimental::replica
         DATA_EXPIRY,
         DATA_MAP_ID,
         DATA_COMMENTS,
+        DATA_ACCESS_TIME,
         DATA_CREATE_TIME,
         DATA_MODIFY_TIME,
         DATA_MODE,
@@ -204,6 +205,7 @@ namespace irods::experimental::replica
                                            "DATA_EXPIRY, "
                                            "DATA_MAP_ID, "
                                            "DATA_COMMENTS, "
+                                           "DATA_ACCESS_TIME, "
                                            "DATA_CREATE_TIME, "
                                            "DATA_MODIFY_TIME, "
                                            "DATA_MODE, "
