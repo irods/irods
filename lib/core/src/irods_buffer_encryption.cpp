@@ -28,23 +28,6 @@ namespace irods {
     };
     static const evp_lifetime_mgr global_evp_lifetime_mgr_;
 
-    std::string buffer_crypt::gen_hash(
-        unsigned char* _buf,
-        int            _sz ) {
-        MD5_CTX ctx;
-        MD5_Init( &ctx );
-        MD5_Update( &ctx, _buf, _sz );
-        unsigned char hash[16];
-        MD5_Final( hash, &ctx );
-
-        std::stringstream ss;
-        for ( int i = 0; i < 16; ++i ) {
-            ss << std::setfill( '0' ) << std::setw( 2 ) << std::hex << ( int )hash[i];
-        }
-
-        return ss.str();
-    }
-
 // =-=-=-=-=-=-=-
 // public - constructor
     buffer_crypt::buffer_crypt() :
