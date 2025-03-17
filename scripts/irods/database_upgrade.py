@@ -203,6 +203,18 @@ def run_update(irods_config, cursor):
             database_connect.execute_sql_statement(cursor, "alter table R_RULE_EXEC add column lock_host_pid varchar(16) default '';")
             database_connect.execute_sql_statement(cursor, "alter table R_RULE_EXEC add column lock_ts varchar(32) default '';")
 
+        # Add new column to R_DATA_MAIN for storing the time of access for a replica.
+        if irods_config.catalog_database_type == 'oracle':
+            database_connect.execute_sql_statement(cursor, "alter table R_DATA_MAIN add (access_ts varchar2(32) default '0');")
+        else:
+            database_connect.execute_sql_statement(cursor, "alter table R_DATA_MAIN add column access_ts varchar(32) default '0';")
+
+        # Insert default access time configuration options into R_GRID_CONFIGURATION.
+        database_connect.execute_sql_statement(cursor, "insert into R_GRID_CONFIGURATION values ('access_time', 'queue_name_prefix', 'irods_access_time_queue_');")
+        database_connect.execute_sql_statement(cursor, "insert into R_GRID_CONFIGURATION values ('access_time', 'queue_size', '20000');")
+        database_connect.execute_sql_statement(cursor, "insert into R_GRID_CONFIGURATION values ('access_time', 'batch_size', '20000');")
+        database_connect.execute_sql_statement(cursor, "insert into R_GRID_CONFIGURATION values ('access_time', 'resolution_in_seconds', '86400');")
+
     else:
         raise IrodsError('Upgrade to schema version %d is unsupported.' % (new_schema_version))
 
