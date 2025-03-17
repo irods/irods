@@ -1,4 +1,5 @@
 [
+    "test_access_time_updates",
     "test_all_rules.Test_AllRules",
     "test_all_rules.Test_JSON_microservices",
     "test_all_rules.Test_msiDataObjRepl_checksum_keywords",
