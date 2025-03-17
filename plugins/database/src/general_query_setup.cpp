@@ -251,6 +251,7 @@ icatGeneralQuerySetup() {
     sColumn( COL_D_CREATE_TIME, "R_DATA_MAIN", "create_ts" );
     sColumn( COL_D_MODIFY_TIME, "R_DATA_MAIN", "modify_ts" );
     sColumn( COL_DATA_MODE, "R_DATA_MAIN", "data_mode" );
+    sColumn(COL_D_ACCESS_TIME, "R_DATA_MAIN", "access_ts");
 
     sColumn( COL_D_RESC_ID, "R_DATA_MAIN", "resc_id" );
 
