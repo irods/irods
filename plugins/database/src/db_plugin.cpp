@@ -2106,6 +2106,7 @@ irods::error db_mod_data_obj_meta_op(
     std::vector<const char *> updateCols;
     std::vector<const char *> updateVals;
 
+    // clang-format off
     const std::vector<std::string_view> regParamNames = {
         COLL_ID_KW,
         DATA_CREATE_KW,
@@ -2129,7 +2130,8 @@ irods::error db_mod_data_obj_meta_op(
         // DATA_RESC_GROUP_NAME_KW,
         RESC_HIER_STR_KW,
         RESC_ID_KW,
-        RESC_NAME_KW
+        RESC_NAME_KW,
+        DATA_ACCESS_TIME_KW
     };
 
     const std::vector<std::string_view> colNames = {
@@ -2155,8 +2157,10 @@ irods::error db_mod_data_obj_meta_op(
         //"resc_group_name",
         "resc_hier",
         "resc_id",
-        "resc_name"
+        "resc_name",
+        "access_ts"
     };
+    // clang-format on
 
     int doingDataSize = 0;
     char dataSizeString[NAME_LEN] = "";
@@ -2229,6 +2233,20 @@ irods::error db_mod_data_obj_meta_op(
                     }
                 }
             }
+
+            if (regParamNames[i] == DATA_ACCESS_TIME_KW) {
+                /* if access_ts, also make sure it's in the standard time-stamp format: "%011d" */
+                if (colNames[i] == "access_ts") { /* double check*/
+                    if (strlen(theVal) < 11) {
+                        static char theVal4[20];
+                        time_t myTimeValue;
+                        myTimeValue = atoll(theVal);
+                        snprintf(theVal4, sizeof theVal4, "%011d", (int) myTimeValue);
+                        updateVals[j] = theVal4;
+                    }
+                }
+            }
+
             if(regParamNames[i] == DATA_SIZE_KW) {
                 doingDataSize = 1; /* flag to check size */
                 snprintf( dataSizeString, sizeof( dataSizeString ), "%s", theVal );
