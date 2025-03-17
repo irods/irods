@@ -35,8 +35,6 @@
 
 
 #include <stdio.h>
-#include <openssl/md5.h>
-#include <openssl/sha.h>
 #ifndef windows_platform
 #include <sys/types.h>
 #include <sys/time.h>
@@ -49,15 +47,20 @@
 #endif
 #include <cstdlib>
 
+#include "irods/authenticate.h"
+#include "irods/irods_at_scope_exit.hpp"
 #include "irods/rods.h"
 #include "irods/rodsPath.h"
-#include "irods/authenticate.h"
 
 #include <boost/filesystem.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
 #define TMP_FLAG "%TEMPORARY_PW%"
+
+#include <openssl/evp.h>
+
+#include <tuple> // for std::ignore
 
 #define AUTH_FILENAME_DEFAULT ".irods/.irodsA" /* under the HOME dir */
 
@@ -956,39 +959,39 @@ obfGetDefaultHashType() {
 }
 
 /* Generate a hash string using MD5 or Sha1 */
-void
-obfMakeOneWayHash( int hashType,
-                   unsigned const char *inBuf, int inBufSize, unsigned char *outHash ) {
-
-    MD5_CTX md5Context;
-    SHA_CTX shaContext;
-
-    static char outBuf[50];
-
-    if ( hashType == HASH_TYPE_SHA1 ||
-            ( hashType == HASH_TYPE_DEFAULT && defaultHashType == HASH_TYPE_SHA1 ) ) {
-        if ( obfDebug ) {
-            printf( "obfMakeOneWayHash sha1\n" );
-        }
-        SHA1_Init( &shaContext );
-        SHA1_Update( &shaContext, inBuf, inBufSize );
-        SHA1_Final( outHash, &shaContext );
+auto obfMakeOneWayHash(int hashType, unsigned const char* inBuf, int inBufSize, unsigned char* outHash) -> void
+{
+    // First, we need to fetch a digest implementation for the configured algorithm given by hashType. This is done
+    // this way because passing, for example, EVP_md5() directly to EVP_DigestInit has a performance penalty which is
+    // avoided by fetching the digest implementation from the default provider. Anything fetched using EVP_MD_fetch
+    // should be freed by EVP_MD_free.
+    EVP_MD* message_digest = nullptr;
+    const auto free_md = irods::at_scope_exit{[&message_digest] { EVP_MD_free(message_digest); }};
+    if (hashType == HASH_TYPE_SHA1 || (hashType == HASH_TYPE_DEFAULT && defaultHashType == HASH_TYPE_SHA1)) {
+        message_digest = EVP_MD_fetch(nullptr, "SHA1", nullptr);
     }
     else {
-        if ( obfDebug ) {
-            printf( "obfMakeOneWayHash md5\n" );
-        }
-        MD5_Init( &md5Context );
-        MD5_Update( &md5Context, inBuf, inBufSize );
-        MD5_Final( outHash, &md5Context );
+        message_digest = EVP_MD_fetch(nullptr, "MD5", nullptr);
     }
-    sprintf( outBuf, "%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x",
-             outHash[0], outHash[1], outHash[2], outHash[3],
-             outHash[4], outHash[5], outHash[6], outHash[7],
-             outHash[8], outHash[9], outHash[10], outHash[11],
-             outHash[12], outHash[13], outHash[14], outHash[15] );
-}
 
+    // Establish a context for the digest, ensuring that it is freed when we exit the function.
+    auto* context = EVP_MD_CTX_new();
+    const auto free_context = irods::at_scope_exit{[&context] { EVP_MD_CTX_free(context); }};
+
+    // Initialize the digest context for the derived digest implementation. Must use _ex or _ex2 to avoid automatically
+    // resetting the context with EVP_MD_CTX_reset.
+    if (0 == EVP_DigestInit_ex2(context, message_digest, nullptr)) {
+        return;
+    }
+    // Hash the specified buffer of bytes and store the results in the context.
+    if (0 == EVP_DigestUpdate(context, inBuf, inBufSize)) {
+        return;
+    }
+    // Finally, retrieve the digest value from the context and place it into outHash. And yes, a return value of 0 means
+    // an error occurred. Use the _ex function here so that the digest context is not automatically cleaned up with
+    // EVP_MD_CTX_reset. This function does not return anything, so we just toss out the values here at the end.
+    std::ignore = EVP_DigestFinal_ex(context, outHash, nullptr);
+} // obfMakeOneWayHash
 
 /*
   Obfuscate a string using an input key
