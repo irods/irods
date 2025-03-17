@@ -87,8 +87,6 @@ namespace irods {
                 return algorithm_;
             };
 
-            static std::string gen_hash( unsigned char*, int );
-
         private:
             // =-=-=-=-=-=-=-
             // attributes
