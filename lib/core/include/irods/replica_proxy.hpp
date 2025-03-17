@@ -62,6 +62,7 @@ namespace irods::experimental::replica
         auto collection_id()    const noexcept -> rodsLong_t       { return doi_->collId; }
         auto resource_id()      const noexcept -> rodsLong_t       { return doi_->rescId; }
         auto comments()         const noexcept -> std::string_view { return doi_->dataComments; }
+        auto atime()            const noexcept -> std::string_view { return doi_->dataAccessTime; }
         auto ctime()            const noexcept -> std::string_view { return doi_->dataCreate; }
         auto mtime()            const noexcept -> std::string_view { return doi_->dataModify; }
         auto in_pdmo()          const noexcept -> std::string_view { return doi_->in_pdmo; }
@@ -231,6 +232,14 @@ namespace irods::experimental::replica
         template<
             typename P = doi_type,
             typename = std::enable_if_t<!std::is_const_v<P>>>
+        auto atime(std::string_view _at) -> void
+        {
+            set_string_property(doi_->dataAccessTime, _at, sizeof(doi_->dataAccessTime));
+        }
+
+        template<
+            typename P = doi_type,
+            typename = std::enable_if_t<!std::is_const_v<P>>>
         auto ctime(std::string_view _ct) -> void
         {
             set_string_property(doi_->dataCreate, _ct, sizeof(doi_->dataCreate));
@@ -369,6 +378,7 @@ namespace irods::experimental::replica
                 proxy.checksum(_info[index::DATA_CHECKSUM]);
                 proxy.mode(_info[index::DATA_MODE]);
                 proxy.comments(_info[index::DATA_COMMENTS]);
+                proxy.atime(_info[index::DATA_ACCESS_TIME]);
                 proxy.ctime(_info[index::DATA_CREATE_TIME]);
                 proxy.mtime(_info[index::DATA_MODIFY_TIME]);
                 proxy.resource_id(std::stoul(_info[index::DATA_RESC_ID]));
@@ -572,6 +582,7 @@ namespace irods::experimental::replica
         proxy.map_id(std::stoi(_input.at("data_map_id").get<std::string>()));
         proxy.mode(_input.at("data_mode").get<std::string>());
         proxy.comments(_input.at("r_comment").get<std::string>());
+        proxy.atime(_input.at("access_ts").get<std::string>());
         proxy.ctime(_input.at("create_ts").get<std::string>());
         proxy.mtime(_input.at("modify_ts").get<std::string>());
         proxy.resource_id(std::stoul(_input.at("resc_id").get<std::string>()));
@@ -607,6 +618,7 @@ namespace irods::experimental::replica
     ///         "data_map_id": <string>,
     ///         "data_mode": <string>,
     ///         "r_comment": <string>,
+    ///         "access_ts": <string>,
     ///         "create_ts": <string>,
     ///         "modify_ts": <string>,
     ///         "resc_id": <string>
@@ -620,6 +632,7 @@ namespace irods::experimental::replica
     {
         namespace fs = irods::experimental::filesystem;
 
+        // clang-format off
         return nlohmann::json{
             {"data_id",         std::to_string(_proxy.data_id())},
             {"coll_id",         std::to_string(_proxy.collection_id())},
@@ -638,10 +651,12 @@ namespace irods::experimental::replica
             {"data_map_id",     std::to_string(_proxy.get()->dataMapId)},
             {"data_mode",       _proxy.mode()},
             {"r_comment",       _proxy.comments()},
+            {"access_ts",       _proxy.atime()},
             {"create_ts",       _proxy.ctime()},
             {"modify_ts",       _proxy.mtime()},
             {"resc_id",         std::to_string(_proxy.resource_id())}
         };
+        // clang-format on
     } // to_json
 } // namespace irods::experimental::replica
 
