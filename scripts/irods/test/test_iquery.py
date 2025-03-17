@@ -174,3 +174,53 @@ class Test_IQuery(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.T
 
         # ...should match.
         self.assertEqual(user_id, expected_user_id)
+
+    def test_genquery2_honors_group_permissions__issue_8259(self):
+        # As the rodsuser, create a new data object.
+        data_object = 'issue_8259'
+        self.user.assert_icommand(['itouch', data_object])
+
+        for user_type in ['rodsuser', 'groupadmin']:
+            with self.subTest(f'user type is [{user_type}]'):
+                try:
+                    self.admin.assert_icommand(['iadmin', 'moduser', self.user.username, 'type', user_type])
+                    self.admin.assert_icommand(['iuserinfo', self.user.username], 'STDOUT', ['type: ' + user_type])
+
+                    # As the rodsadmin, create a new group and add the rodsuser to it.
+                    group = 'issue_8259_group'
+                    self.admin.assert_icommand(['iadmin', 'mkgroup', group])
+                    self.admin.assert_icommand(['iadmin', 'atg', group, self.user.username])
+
+                    # Remove the rodsuser's permissions from the session collection and data object.
+                    self.user.assert_icommand(['ichmod', '-r', 'null', self.user.username, self.user.session_collection])
+
+                    # As the rodsuser, show that GenQuery2 cannot locate the collection or data object.
+                    self.user.assert_icommand(['iquery', f"select COLL_NAME where COLL_NAME = '{self.user.session_collection}'"], 'STDOUT', ['[]'])
+                    self.user.assert_icommand(['iquery', f"select DATA_NAME where DATA_NAME = '{data_object}'"], 'STDOUT', ['[]'])
+
+                    # Grant the group permission to read the rodsuser's session collection and show that
+                    # the rodsuser can now locate the collection because GenQuery2 honors group permissions.
+                    self.admin.assert_icommand(['ichmod', '-M', 'read', group, self.user.session_collection])
+                    json_string = json.dumps([[self.user.session_collection]])
+                    self.user.assert_icommand(['iquery', f"select COLL_NAME where COLL_NAME = '{self.user.session_collection}'"], 'STDOUT', [json_string])
+
+                    # Show the rodsuser still cannot see the data object even though they were granted
+                    # read permission on the session collection.
+                    self.user.assert_icommand(['iquery', f"select DATA_NAME where DATA_NAME = '{data_object}'"], 'STDOUT', ['[]'])
+
+                    # Grant the group permission to read the rodsuser's data object and show that the
+                    # rodsuser can now locate the data object because GenQuery2 honors group permissions.
+                    self.admin.assert_icommand(['ichmod', '-M', 'read', group, f'{self.user.session_collection}/{data_object}'])
+                    json_string = json.dumps([[data_object]])
+                    self.user.assert_icommand(['iquery', f"select DATA_NAME where DATA_NAME = '{data_object}'"], 'STDOUT', [json_string])
+
+                    # Show the rodsuser can locate the session collection and data object because of
+                    # the group permissions.
+                    query_string = f"select COLL_NAME, DATA_NAME where COLL_NAME = '{self.user.session_collection}' and DATA_NAME = '{data_object}'"
+                    json_string = json.dumps([[self.user.session_collection, data_object]], separators=(',', ':'))
+                    self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
+
+                finally:
+                    self.admin.run_icommand(['ichmod', '-M', '-r', 'own', self.user.username, self.user.session_collection])
+                    self.admin.run_icommand(['iadmin', 'rmgroup', group])
+                    self.admin.run_icommand(['iadmin', 'moduser', self.user.username, 'type', 'rodsuser'])
