@@ -1215,7 +1215,6 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         finally:
             IrodsController().reload_configuration()
 
-    @unittest.skip('this test frequently fails to properly restart the server - delete this line on resolution of #6404')
     def test_host_access_control(self):
         pep_map = {
             'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
@@ -1234,10 +1233,6 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         try:
             with temporary_core_file() as core:
                 core.add_rule(pep_map[self.plugin_name])
-                IrodsController().reload_configuration()
-
-                # restart the server to reread the new core.re
-                IrodsController().restart(test_mode=True)
 
                 config = IrodsConfig()
 
@@ -1253,6 +1248,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
                         ]
                     }
                     lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+                    IrodsController().reload_configuration()
 
                 with lib.file_backed_up(config.server_config_path):
                     update_host_access_control_options('nope', 'nope', '', '')
