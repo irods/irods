@@ -26,6 +26,7 @@
 #include "irods/irods_random.hpp"
 #include "irods/irods_file_object.hpp"
 #include "irods/rodsPath.h"
+#include "irods/irods_logger.hpp"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
@@ -40,6 +41,11 @@
 #include <algorithm>
 
 using namespace boost::filesystem;
+
+namespace
+{
+    using log_svr = irods::experimental::log::server;
+} // anonymous namespace
 
 /// @brief Function which determines if a logical path is created at the root level.
 irods::error validate_logical_path(const std::string& _path)
@@ -81,16 +87,13 @@ getDataObjInfo(
     int i, status;
     dataObjInfo_t *dataObjInfo;
     char *tmpStr;
-    sqlResult_t *dataId, *collId, *replNum, *version, *dataType, *dataSize,
-                *hierString, *filePath, *dataOwnerName, *dataOwnerZone,
-                *replStatus, *statusString, *chksum, *dataExpiry, *dataMapId,
-                *dataComments, *dataCreate, *dataModify, *dataMode, *dataName, *collName;
-    char *tmpDataId, *tmpCollId, *tmpReplNum, *tmpVersion, *tmpDataType,
-         *tmpDataSize, *tmpFilePath,
-         *tmpDataOwnerName, *tmpDataOwnerZone, *tmpReplStatus, *tmpStatusString,
-         *tmpChksum, *tmpDataExpiry, *tmpDataMapId, *tmpDataComments,
-         *tmpDataCreate, *tmpDataModify, *tmpDataMode, *tmpDataName, *tmpCollName,
-         *tmpHierString;
+    sqlResult_t *dataId, *collId, *replNum, *version, *dataType, *dataSize, *hierString, *filePath, *dataOwnerName,
+        *dataOwnerZone, *replStatus, *statusString, *chksum, *dataExpiry, *dataMapId, *dataComments, *dataCreate,
+        *dataModify, *dataMode, *dataName, *collName, *dataAccessTime;
+    char *tmpDataId, *tmpCollId, *tmpReplNum, *tmpVersion, *tmpDataType, *tmpDataSize, *tmpFilePath, *tmpDataOwnerName,
+        *tmpDataOwnerZone, *tmpReplStatus, *tmpStatusString, *tmpChksum, *tmpDataExpiry, *tmpDataMapId,
+        *tmpDataComments, *tmpDataCreate, *tmpDataModify, *tmpDataMode, *tmpDataName, *tmpCollName, *tmpHierString,
+        *tmpDataAccessTime;
 
     char accStr[LONG_NAME_LEN];
     int qcondCnt;
@@ -122,6 +125,7 @@ getDataObjInfo(
     addInxIval( &genQueryInp.selectInp, COL_D_EXPIRY, 1 );
     addInxIval( &genQueryInp.selectInp, COL_D_MAP_ID, 1 );
     addInxIval( &genQueryInp.selectInp, COL_D_COMMENTS, 1 );
+    addInxIval(&genQueryInp.selectInp, COL_D_ACCESS_TIME, 1);
     addInxIval( &genQueryInp.selectInp, COL_D_CREATE_TIME, 1 );
     addInxIval( &genQueryInp.selectInp, COL_D_MODIFY_TIME, 1 );
     addInxIval( &genQueryInp.selectInp, COL_DATA_MODE, 1 );
@@ -315,6 +319,11 @@ getDataObjInfo(
         return UNMATCHED_KEY_OR_INDEX;
     }
 
+    if ((dataAccessTime = getSqlResultByInx(genQueryOut, COL_D_ACCESS_TIME)) == nullptr) {
+        log_svr::error("{}: getSqlResultByInx for COL_D_ACCESS_TIME failed.", __func__);
+        return UNMATCHED_KEY_OR_INDEX;
+    }
+
     writeFlag = getWriteFlag( dataObjInp->openFlags );
 
     for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
@@ -343,6 +352,7 @@ getDataObjInfo(
         tmpDataMode = &dataMode->value[dataMode->len * i];
         tmpDataName = &dataName->value[dataName->len * i];
         tmpCollName = &collName->value[collName->len * i];
+        tmpDataAccessTime = &dataAccessTime->value[dataAccessTime->len * i];
 
         snprintf( dataObjInfo->objPath, MAX_NAME_LEN, "%s/%s", tmpCollName, tmpDataName );
         rstrcpy( dataObjInfo->rescHier, tmpHierString, MAX_NAME_LEN );
@@ -377,6 +387,7 @@ getDataObjInfo(
         rstrcpy( dataObjInfo->dataExpiry, tmpDataExpiry, TIME_LEN );
         rstrcpy( dataObjInfo->dataCreate, tmpDataCreate, TIME_LEN );
         rstrcpy( dataObjInfo->dataModify, tmpDataModify, TIME_LEN );
+        rstrcpy(dataObjInfo->dataAccessTime, tmpDataAccessTime, TIME_LEN);
         rstrcpy( dataObjInfo->dataMode, tmpDataMode, SHORT_STR_LEN );
         dataObjInfo->writeFlag = writeFlag;
 
