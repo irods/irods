@@ -15385,6 +15385,74 @@ auto db_delay_rule_unlock(irods::plugin_context& _ctx, const char* _rule_ids) ->
     }
 } // db_delay_rule_unlock
 
+auto db_update_replica_access_time(irods::plugin_context& _ctx,
+                                   const char* _json_input,
+                                   [[maybe_unused]] char** _output) -> irods::error
+{
+    if (const auto ret = _ctx.valid(); !ret.ok()) {
+        return PASS(ret);
+    }
+
+    // The output pointer is not used because the ODBC API isn't guaranteed to tell us
+    // which SQL statement failed. However, it is made available to future-proof the APIs
+    // supporting access time. Even though the output pointer isn't used, we still check it
+    // as a way to enforce correctness.
+    if (!_json_input || !_output) {
+        log_db::error("{}: Received one or more null pointers.", __func__);
+        return ERROR(SYS_INTERNAL_NULL_INPUT_ERR, "Received one or more null pointers.");
+    }
+
+    try {
+        const auto json_input = nlohmann::json::parse(_json_input);
+        const auto& updates = json_input.at("access_time_updates");
+
+        std::vector<std::size_t> data_ids;
+        std::vector<std::size_t> replica_numbers;
+        std::vector<std::string> access_times;
+
+        data_ids.reserve(updates.size());
+        replica_numbers.reserve(updates.size());
+        access_times.reserve(updates.size());
+
+        std::for_each(std::begin(updates),
+                      std::end(updates),
+                      [&data_ids, &replica_numbers, &access_times](const nlohmann::json& _j) {
+                          data_ids.emplace_back(_j.at("data_id").get<std::size_t>());
+                          replica_numbers.emplace_back(_j.at("replica_number").get<std::size_t>());
+                          access_times.emplace_back(_j.at("atime").get<std::string>());
+                      });
+
+        auto [db_instance, db_conn] = irods::experimental::catalog::new_database_connection();
+
+        constexpr const char* sql = "update R_DATA_MAIN set access_ts = ? where data_id = ? and data_repl_num = ?";
+        log_sql::debug("{}: SQL = [{}]", __func__, sql);
+
+        nanodbc::statement stmt{db_conn};
+        nanodbc::prepare(stmt, sql);
+
+        stmt.bind_strings(0, access_times);
+        stmt.bind(1, data_ids.data(), data_ids.size());
+        stmt.bind(2, replica_numbers.data(), replica_numbers.size());
+
+        // Execute the batch operation within a transaction. From a behavior perspective, it
+        // would be better to use execute() instead of just_transact() because each update
+        // would be committed independently. However, we've chosen to update all rows atomically.
+        // This decision is strictly for performance reasons and ultimately means we feel it's
+        // acceptable to rollback all updates on failure.
+        just_transact(stmt, updates.size());
+
+        return SUCCESS();
+    }
+    catch (const irods::exception& e) {
+        log_db::error("{}: {}", __func__, e.client_display_what());
+        return ERROR(e.code(), e.what());
+    }
+    catch (const std::exception& e) {
+        log_db::error("{}: {}", __func__, e.what());
+        return ERROR(SYS_LIBRARY_ERROR, e.what());
+    }
+} // db_update_replica_access_time
+
 // =-=-=-=-=-=-=-
 //
 irods::error db_start_operation( irods::plugin_property_map& _props ) {
@@ -15794,6 +15862,9 @@ irods::database* plugin_factory(
         function<error(plugin_context&, const char*, const char*, int)>(db_delay_rule_lock));
     pg->add_operation<const char*>(
         DATABASE_OP_DELAY_RULE_UNLOCK, function<error(plugin_context&, const char*)>(db_delay_rule_unlock));
+    pg->add_operation<const char*, char**>(
+        DATABASE_OP_UPDATE_REPLICA_ACCESS_TIME,
+        function<error(plugin_context&, const char*, char**)>(db_update_replica_access_time));
 
     return pg;
 } // plugin_factory
