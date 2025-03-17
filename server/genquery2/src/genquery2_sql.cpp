@@ -553,7 +553,7 @@ namespace
             return "cte_drh";
         }
 
-        if (_column.starts_with("DATA_ACCESS_")) {
+        if (_column.starts_with("DATA_ACCESS_") && _column != "DATA_ACCESS_TIME") {
             constexpr auto prefix_length = std::char_traits<char>::length("DATA_ACCESS_");
             const auto tail = _column.substr(prefix_length);
 
@@ -884,7 +884,8 @@ namespace irods::experimental::genquery2
             add_r_user_main = _state.add_joins_for_meta_user = true;
             table_alias = "mmu";
         }
-        else if (_column.name.starts_with("DATA_ACCESS_")) {
+        // DATA_ACCESS_TIME is not a permission column so make sure it is skipped.
+        else if (_column.name.starts_with("DATA_ACCESS_") && _column.name != "DATA_ACCESS_TIME") {
             // There are three tables which are secretly joined to satisfy columns that trigger this branch.
             // The columns require special hard-coded table aliases to work properly. This is because the joins
             // cannot be worked out using only the graph.

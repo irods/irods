@@ -74,6 +74,7 @@ namespace irods::experimental::genquery2
         {"DATA_EXPIRY", {"R_DATA_MAIN", "data_expiry_ts"}},
         {"DATA_MAP_ID", {"R_DATA_MAIN", "data_map_id"}},
         {"DATA_COMMENTS", {"R_DATA_MAIN", "r_comment"}},
+        {"DATA_ACCESS_TIME", {"R_DATA_MAIN", "access_ts"}},
         {"DATA_CREATE_TIME", {"R_DATA_MAIN", "create_ts"}},
         {"DATA_MODIFY_TIME", {"R_DATA_MAIN", "modify_ts"}},
         {"DATA_MODE", {"R_DATA_MAIN", "data_mode"}},
