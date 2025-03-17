@@ -38,6 +38,7 @@
 #define DATA_OWNER_ZONE_KW                          "dataOwnerZone"
 #define DATA_EXPIRY_KW                              "dataExpiry"
 #define DATA_COMMENTS_KW                            "dataComments"
+#define DATA_ACCESS_TIME_KW                         "dataAccessTime"
 #define DATA_CREATE_KW                              "dataCreate"
 #define DATA_MODIFY_KW                              "dataModify"
 #define DATA_ACCESS_KW                              "dataAccess"
