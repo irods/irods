@@ -66,7 +66,6 @@ set(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_network_object.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_network_plugin.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_network_types.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_osauth_auth_object.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_pack_table.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_pam_auth_object.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/irods_parse_command_line_options.hpp"
@@ -100,7 +99,6 @@ set(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/mvUtil.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/obf.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/objInfo.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/osauth.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/packStruct.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/parallel_transfer_engine.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/parseCommandLine.h"
@@ -200,7 +198,6 @@ set(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/list.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/msParam.cpp" # #includes headers from other places
   "${CMAKE_CURRENT_SOURCE_DIR}/src/obf.cpp" # #includes headers from other places
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/osauth.cpp" # #includes headers from other places
   "${CMAKE_CURRENT_SOURCE_DIR}/src/packStruct.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/parseCommandLine.cpp" # #includes irods/rods.h
   "${CMAKE_CURRENT_SOURCE_DIR}/src/process_stash.cpp"
@@ -314,7 +311,6 @@ set(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_network_factory.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_network_manager.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_network_object.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_osauth_auth_object.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_pam_auth_object.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_ssl_object.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/irods_tcp_object.cpp"

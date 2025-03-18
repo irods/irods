@@ -2,7 +2,6 @@
 #include "irods/irods_auth_factory.hpp"
 #include "irods/irods_native_auth_object.hpp"
 #include "irods/irods_pam_auth_object.hpp"
-#include "irods/irods_osauth_auth_object.hpp"
 #include "irods/irods_gsi_object.hpp"
 #include "irods/irods_krb_object.hpp"
 #include "irods/irods_generic_auth_object.hpp"
@@ -25,9 +24,6 @@ namespace irods {
         }
         else if ( AUTH_PAM_SCHEME == scheme ) {
             _ptr.reset( new pam_auth_object( _r_error ) );
-        }
-        else if ( AUTH_OSAUTH_SCHEME == scheme ) {
-            _ptr.reset( new osauth_auth_object( _r_error ) );
         }
         else if ( AUTH_GSI_SCHEME == scheme ) {
             _ptr.reset( new gsi_auth_object( _r_error ) );
