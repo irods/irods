@@ -1,4 +1,5 @@
 #include "irods/access_time_queue.hpp"
+#include "irods/agent_globals.hpp"
 #include "irods/apiNumber.h"
 #include "irods/dataObjClose.h"
 #include "irods/dataObjCreate.h"
@@ -898,6 +899,10 @@ namespace
     auto replica_access_time_needs_update(int _openmode, const std::string_view _atime, const std::string_view _mtime)
         -> bool
     {
+        if (g_atime_invalid_resolution_in_seconds_detected) {
+            log_api::warn("{}: Invalid resolution for access time updates detected in grid configuration. Using default resolution of 86400.", __func__);
+        }
+
         if ((_openmode & O_ACCMODE) == O_WRONLY) {
             return false;
         }
@@ -907,14 +912,12 @@ namespace
         }
 
         try {
-            const auto max_elapsed_time =
-                irods::get_server_property<std::uint32_t>(irods::KW_CFG_ACCESS_TIME_RESOLUTION_IN_SECONDS);
             const auto atime = std::stoull(std::string{_atime});
 
             using clock_type = std::chrono::system_clock;
             const auto now = clock_type::to_time_t(clock_type::now());
 
-            return (now - atime) >= max_elapsed_time;
+            return std::cmp_greater_equal(now - atime, g_atime_resolution_in_seconds);
         }
         catch (const irods::exception& e) {
             log_api::warn(

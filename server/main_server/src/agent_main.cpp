@@ -57,8 +57,10 @@
 #include <charconv>
 #include <chrono>
 #include <csignal>
+#include <cstdint>
 #include <cstring>
 #include <fstream>
+#include <limits>
 #include <string>
 #include <string_view>
 #include <thread>
@@ -138,7 +140,6 @@ auto main(int _argc, char* _argv[]) -> int
     std::string hostname_cache_shm_name;
     std::string dns_cache_shm_name;
     std::string access_time_queue_shm_name;
-    std::uint32_t access_time_resolution;
     bool write_to_stdout = false;
     bool enable_test_mode = false;
 
@@ -151,7 +152,7 @@ auto main(int _argc, char* _argv[]) -> int
         ("hostname-cache-shm-name", po::value<std::string>(), "")
         ("dns-cache-shm-name", po::value<std::string>(), "")
         ("atime-queue-shm-name", po::value<std::string>(), "")
-        ("atime-resolution-in-seconds", po::value<std::uint32_t>(), "")
+        ("atime-resolution-in-seconds", po::value<std::string>(), "")
         ("stdout", po::bool_switch(&write_to_stdout), "")
         ("test-mode,t", po::bool_switch(&enable_test_mode), "");
     // clang-format on
@@ -192,7 +193,25 @@ auto main(int _argc, char* _argv[]) -> int
         }
 
         if (auto iter = vm.find("atime-resolution-in-seconds"); std::end(vm) != iter) {
-            access_time_resolution = iter->second.as<std::uint32_t>();
+            const auto resolution_in_seconds = iter->second.as<std::string>();
+
+            // Verify the resolution value is acceptable.
+            try {
+                if (resolution_in_seconds.empty()) {
+                    throw std::exception{};
+                }
+
+                const auto value = std::stoll(resolution_in_seconds);
+                // Limited to 32-bit values.
+                if (value < 0 || value > std::numeric_limits<std::int32_t>::max()) {
+                    throw std::exception{};
+                }
+
+                g_atime_resolution_in_seconds = value;
+            }
+            catch (const std::exception&) {
+                g_atime_invalid_resolution_in_seconds_detected = true;
+            }
         }
         else {
             fmt::print(stderr, "Error: Missing [ACCESS_TIME_RESOLUTION_IN_SECONDS] parameter.");
@@ -209,9 +228,6 @@ auto main(int _argc, char* _argv[]) -> int
         const auto config_file_path = irods::get_irods_config_directory() / "server_config.json";
         irods::server_properties::instance().init(config_file_path.c_str());
         irods::environment_properties::instance(); // Load the local environment file.
-
-        // Store the access time resolution configuration value in the server configuration.
-        irods::set_server_property(irods::KW_CFG_ACCESS_TIME_RESOLUTION_IN_SECONDS, access_time_resolution);
 
         // Initialize global pointer to ips data directory for agent cleanup.
         // This is required so that the signal handler for reaping agents remains async-signal-safe.

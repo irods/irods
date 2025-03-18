@@ -49,6 +49,7 @@
 #include <array>
 #include <chrono>
 #include <csignal>
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
@@ -133,6 +134,7 @@ namespace
     // is used by the main server process to limit the number of atime updates that can be
     // applied in one SQL batch update.
     std::size_t g_atime_batch_size = 0; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+    bool g_atime_invalid_batch_size_detected = false; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
     auto print_usage() -> void;
     auto print_version_info() -> void;
@@ -1619,10 +1621,28 @@ Signals:
                 return false;
             }
 
-            irods::access_time_queue::init(*queue_name_prefix, std::stoull(*queue_size));
+            irods::access_time_queue::init(*queue_name_prefix, std::stoi(*queue_size));
+
+            // Verify the batch size value is acceptable.
+            try {
+                if (batch_size->empty()) {
+                    throw std::exception{};
+                }
+
+                const auto value = std::stoll(*batch_size);
+                // Limited to 32-bit values.
+                if (value <= 0 || value > std::numeric_limits<std::int32_t>::max()) {
+                    throw std::exception{};
+                }
+
+                g_atime_batch_size = value;
+            }
+            catch (const std::exception&) {
+                g_atime_invalid_batch_size_detected = true;
+                g_atime_batch_size = 20000; // Use default.
+            }
 
             // Store configuration values in global variables for later use.
-            g_atime_batch_size = std::stoull(*batch_size);
             g_atime_resolution_in_seconds = *std::move(resolution_in_seconds);
 
             return true;
@@ -1677,6 +1697,10 @@ Signals:
             irods::experimental::client_connection conn;
             irods::access_time_queue::access_time_data data;
             nlohmann::json::array_t updates;
+
+            if (g_atime_invalid_batch_size_detected) {
+                log_server::warn("{}: Invalid batch size for access time updates detected in grid configuration. Using default batch size of 20000.", __func__);
+            }
 
             // Allow the admin to limit the number of atime updates in case the queue size is very large.
             const auto update_count =
