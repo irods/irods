@@ -1,5 +1,6 @@
 #include <catch2/catch.hpp>
 
+#include "irods/getRodsEnv.h"
 #include "unit_test_utils.hpp"
 
 #include "irods/client_connection.hpp"
@@ -38,6 +39,53 @@ using json = nlohmann::json;
 // Returns a tuple holding the data id, atime, and mtime of a replica.
 auto get_replica_info(RcComm& _comm, const fs::path& _logical_path, int _replica_number)
     -> std::tuple<std::string, std::string, std::string>;
+
+TEST_CASE("#8260: rc_update_replica_access_time returns error on invalid inputs")
+{
+    load_client_api_plugins();
+
+    SECTION("null inputs")
+    {
+        RcComm comm{};
+        const char* input = "";
+        char* output{};
+
+        CHECK(rc_update_replica_access_time(nullptr, input, &output) == SYS_INVALID_INPUT_PARAM);
+        CHECK(rc_update_replica_access_time(&comm, nullptr, &output) == SYS_INVALID_INPUT_PARAM);
+        CHECK(rc_update_replica_access_time(&comm, input, nullptr) == SYS_INVALID_INPUT_PARAM);
+    }
+
+    SECTION("invalid json")
+    {
+        irods::experimental::client_connection conn;
+        const char* input = "not json";
+        char* output{};
+        CHECK(rc_update_replica_access_time(static_cast<RcComm*>(conn), input, &output) == SYS_LIBRARY_ERROR);
+    }
+}
+
+TEST_CASE("#8260: rc_update_replica_access_time requires rodsadmin privileges")
+{
+    load_client_api_plugins();
+
+    irods::experimental::client_connection conn;
+
+    rodsEnv env;
+    _getRodsEnv(env);
+
+    // Create a rodsuser.
+    const adm::user test_user{"issue_8260_user_alice", env.rodsZone};
+    REQUIRE_NOTHROW(adm::client::add_user(conn, test_user));
+    irods::at_scope_exit remove_test_user{[&conn, &test_user] { REQUIRE_NOTHROW(adm::client::remove_user(conn, test_user)); }};
+    REQUIRE_NOTHROW(adm::client::modify_user(conn, test_user, adm::user_password_property{"rods"}));
+
+    // Connect to the server as the rodsuser.
+    irods::experimental::client_connection test_user_conn{env.rodsHost, env.rodsPort, {test_user.name, env.rodsZone}};
+
+    const char* input = "";
+    char* output{};
+    REQUIRE(rc_update_replica_access_time(static_cast<RcComm*>(test_user_conn), input, &output) == SYS_NO_API_PRIV);
+}
 
 TEST_CASE("#8260: rc_update_replica_access_time can update access time of one replica")
 {
@@ -191,6 +239,114 @@ TEST_CASE("#8260: rc_update_replica_access_time can update access time of multip
     CHECK(std::get<0>(updated_replica_info) == std::get<0>(replica_info_1));
     CHECK(std::get<1>(updated_replica_info) == expected_atime_1); // atime should be different.
     CHECK(std::get<2>(updated_replica_info) == std::get<1>(replica_info_1)); // mtime should not have changed.
+}
+
+TEST_CASE("#8260: targeting mix of existent and non-existent replicas is not an error")
+{
+    load_client_api_plugins();
+
+    rodsEnv env;
+    _getRodsEnv(env);
+    const auto sandbox = fs::path{env.rodsHome} / "unit_testing_sandbox_issue_8260";
+
+    irods::experimental::client_connection conn;
+
+    if (!fs::client::exists(conn, sandbox)) {
+        REQUIRE(fs::client::create_collection(conn, sandbox));
+    }
+
+    irods::at_scope_exit remove_sandbox{
+        [&conn, &sandbox] { REQUIRE(fs::client::remove_all(conn, sandbox, fs::remove_options::no_trash)); }};
+
+    // Show that no data object exists in the catalog with the target data id.
+    // Checking the replica number isn't necessary because its existence requires the
+    // existence of the data id.
+    constexpr auto non_existent_data_id = 9999;
+    constexpr auto non_existent_replica_number = 8888;
+    auto* conn_ptr = static_cast<RcComm*>(conn);
+    {
+        auto query = irods::query{conn_ptr, fmt::format("select DATA_ID where DATA_ID = '{}'", non_existent_data_id)};
+        REQUIRE(query.empty());
+    }
+
+    SECTION("targeting non-existent replica")
+    {
+        // clang-format off
+        const auto updates = json{
+            {"access_time_updates", json::array_t{
+                {
+                    {"data_id", non_existent_data_id},
+                    {"replica_number", non_existent_replica_number},
+                    {"atime", "01600000000"}
+                }
+            }}
+        }.dump();
+        // clang-format on
+
+        // Show that invoking the API does not result in an error.
+        char* ignored{};
+        CHECK(rc_update_replica_access_time(conn_ptr, updates.c_str(), &ignored) == 0);
+
+        // Show that no data object exists matching the non-existent data id. This helps
+        // prove the post-condition state is what we expect. That is, no new replica is
+        // accidentally created.
+        {
+            auto query = irods::query{conn_ptr, fmt::format("select DATA_ID where DATA_ID = '{}'", non_existent_data_id)};
+            CHECK(query.empty());
+        }
+    }
+
+    SECTION("targeting existent and non-existent replica")
+    {
+        // Create a data object.
+        const auto logical_path = sandbox / "data_object.txt";
+        io::client::native_transport tp{conn};
+        io::odstream{tp, logical_path};
+
+        // Show that the replica's atime and mtime are identical.
+        const auto [data_id, atime, mtime] = get_replica_info(conn, logical_path, 0);
+        REQUIRE(atime == mtime);
+
+        // This JSON string contains the new atime for the replicas. Only the update
+        // involving the existent replica should succeed. The other update is effectively
+        // a no-op.
+        const auto* expected_atime = "01700000000";
+        // clang-format off
+        const auto updates = json{
+            {"access_time_updates", json::array_t{
+                {
+                    {"data_id", std::stoull(data_id)},
+                    {"replica_number", 0},
+                    {"atime", expected_atime}
+                },
+                // The non-existent replica.
+                {
+                    {"data_id", non_existent_data_id},
+                    {"replica_number", non_existent_replica_number},
+                    {"atime", "01600000000"}
+                }
+            }}
+        }.dump();
+        // clang-format on
+
+        // Show that invoking the API does not result in an error.
+        char* ignored{};
+        CHECK(rc_update_replica_access_time(conn_ptr, updates.c_str(), &ignored) == 0);
+
+        // Show that no data object exists matching the non-existent data id. This helps
+        // prove the post-condition state is what we expect. That is, no new replica is
+        // accidentally created.
+        {
+            auto query = irods::query{conn_ptr, fmt::format("select DATA_ID where DATA_ID = '{}'", non_existent_data_id)};
+            CHECK(query.empty());
+        }
+
+        // Show that the replica's atime has been updated to the expected value.
+        const auto updated_replica_info = get_replica_info(conn, logical_path, 0);
+        CHECK(std::get<0>(updated_replica_info) == data_id);
+        CHECK(std::get<1>(updated_replica_info) == expected_atime); // atime should be different.
+        CHECK(std::get<2>(updated_replica_info) == mtime); // mtime should not have changed.
+    }
 }
 
 TEST_CASE("#8260: opening a replica for reading updates its access time")
