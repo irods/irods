@@ -1,5 +1,4 @@
 import json
-import textwrap
 import time
 import unittest
 
@@ -27,7 +26,7 @@ class Test_Access_Time_Updates(session.make_sessions_mixin(rodsadmins, rodsusers
         super(Test_Access_Time_Updates, self).tearDown()
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY,
-        "Topology testing for a GenQuery column isn't necessary because GenQuery always redirects to the Provider")
+        "Topology testing for a GenQuery column isn't necessary because GenQuery always redirects to the Catalog Service Provider")
     def test_GenQuery_supports_access_time_issue_8260(self):
         data_object = 'test_GenQuery_supports_access_time_issue_8260.txt'
         self.user.assert_icommand(['itouch', data_object])
@@ -84,7 +83,6 @@ class Test_Access_Time_Updates(session.make_sessions_mixin(rodsadmins, rodsusers
             self.user.run_icommand(['irm', '-f', data_object])
             self.admin.run_icommand(['iadmin', 'rmresc', resc_name])
 
-    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Only affects the local server")
     def test_grid_configuration_value_for_queue_name_prefix_is_honored__issue_8260(self):
         # Capture the original value so it can be restored.
         option_name = 'queue_name_prefix'
@@ -116,7 +114,6 @@ class Test_Access_Time_Updates(session.make_sessions_mixin(rodsadmins, rodsusers
             self.admin.run_icommand(['iadmin', 'set_grid_configuration', 'access_time', option_name, original_option_value])
             IrodsController().restart(test_mode=True)
 
-    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Only affects the local server")
     def test_grid_configuration_value_for_queue_size_is_honored__issue_8260(self):
         def get_atime_queue_file_size():
             shm_directory = Path('/dev/shm')
