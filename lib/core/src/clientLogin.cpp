@@ -1,6 +1,7 @@
 #include "irods/authPluginRequest.h"
 #include "irods/authentication_plugin_framework.hpp"
 #include "irods/checksum.h"
+#include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_auth_constants.hpp"
 #include "irods/irods_auth_factory.hpp"
 #include "irods/irods_auth_manager.hpp"
@@ -18,7 +19,7 @@
 #include "irods/sslSockComm.h"
 #include "irods/termiosUtil.hpp"
 
-#include <openssl/md5.h>
+#include <openssl/evp.h>
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
@@ -468,7 +469,6 @@ clientLoginWithPassword( rcComm_t *Conn, char* password ) {
     char md5Buf[CHALLENGE_LEN + MAX_PASSWORD_LEN + 2];
     char digest[RESPONSE_LEN + 2];
     char userNameAndZone[NAME_LEN * 2 + 1];
-    MD5_CTX context;
     if ( !password ) {
         allocate_if_necessary_and_add_rError_msg(&Conn->rError, -1, "null password pointer");
         return -1;
@@ -502,9 +502,33 @@ clientLoginWithPassword( rcComm_t *Conn, char* password ) {
     sprintf( md5Buf + CHALLENGE_LEN, "%s", password );
     md5Buf[CHALLENGE_LEN + len] = '\0'; /* remove trailing \n */
 
-    MD5_Init( &context );
-    MD5_Update( &context, ( unsigned char* )md5Buf, CHALLENGE_LEN + MAX_PASSWORD_LEN );
-    MD5_Final( ( unsigned char* )digest, &context );
+    // First, we need to fetch a digest implementation for the desired algorithm, MD5. This is done this way because
+    // passing, for example, EVP_md5() directly to EVP_DigestInit has a performance penalty which is avoided by
+    // fetching the digest implementation from the default provider. Anything fetched using EVP_MD_fetch should be
+    // freed by EVP_MD_free.
+    EVP_MD* message_digest = EVP_MD_fetch(nullptr, "MD5", nullptr);
+    const auto free_md = irods::at_scope_exit{[&message_digest] { EVP_MD_free(message_digest); }};
+
+    // Establish a context for the digest, ensuring that it is freed when we exit the function.
+    auto* context = EVP_MD_CTX_new();
+    const auto free_context = irods::at_scope_exit{[&context] { EVP_MD_CTX_free(context); }};
+
+    // Initialize the digest context for the derived digest implementation. Must use _ex or _ex2 to avoid automatically
+    // resetting the context with EVP_MD_CTX_reset.
+    if (0 == EVP_DigestInit_ex2(context, message_digest, nullptr)) {
+        return DIGEST_INIT_FAILED;
+    }
+    // Hash the specified buffer of bytes and store the results in the context.
+    if (0 == EVP_DigestUpdate(context, reinterpret_cast<unsigned char*>(md5Buf), CHALLENGE_LEN + MAX_PASSWORD_LEN)) {
+        return DIGEST_UPDATE_FAILED;
+    }
+    // Finally, retrieve the digest value from the context and place it into digest. And yes, a return value of 0 means
+    // an error occurred. Use the _ex function here so that the digest context is not automatically cleaned up with
+    // EVP_MD_CTX_reset.
+    if (0 == EVP_DigestFinal_ex(context, reinterpret_cast<unsigned char*>(digest), nullptr)) {
+        return DIGEST_FINAL_FAILED;
+    }
+
     for ( i = 0; i < RESPONSE_LEN; i++ ) {
         if ( digest[i] == '\0' ) {
             digest[i]++;
