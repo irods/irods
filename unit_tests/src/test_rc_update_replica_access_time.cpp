@@ -90,7 +90,7 @@ TEST_CASE("#8260: rc_update_replica_access_time can update access time of one re
     CHECK(std::get<2>(updated_replica_info) == mtime); // mtime should not have changed.
 }
 
-TEST_CASE("#8260: rc_update_replica_access_time can update access time of multiple replicas")
+TEST_CASE("#8260: rc_update_replica_access_time can update access time of multiple unrelated replicas")
 {
     load_client_api_plugins();
 
@@ -146,10 +146,12 @@ TEST_CASE("#8260: rc_update_replica_access_time can update access time of multip
     // replicas created through replication.
     REQUIRE(std::get<1>(replica_info_0) == std::get<2>(replica_info_0));
 
-    // This JSON string contains the new atime for the replicas.
+    // These are the new atimes for the replicas. To guard against false-positives,
+    // these two variables must always have unique atime values.
     const auto expected_atime_0 = "01700000000";
     const auto expected_atime_1 = "01711111111";
     // clang-format off
+    // This JSON string contains the new atimes for the replicas.
     const auto updates = json{
         {"access_time_updates", json::array_t{
             // Replica 1 of the first data object.
