@@ -43,7 +43,7 @@ namespace irods::access_time_queue
         }
 
         if (constexpr std::size_t max = 500'000; _queue_size > max) {
-            THROW(CONFIGURATION_ERROR, fmt::format("{}: Access time queue size is greater than {}.", __func__, max));
+            THROW(CONFIGURATION_ERROR, fmt::format("{}: Access time queue size [{}] is greater than {}.", __func__, _queue_size, max));
         }
 
         using clock_type = std::chrono::system_clock;
