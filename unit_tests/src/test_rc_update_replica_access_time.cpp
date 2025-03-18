@@ -23,6 +23,7 @@
 #include <chrono>
 #include <cstdlib>
 #include <iostream>
+#include <filesystem>
 #include <string>
 #include <thread>
 #include <tuple>
@@ -98,13 +99,17 @@ TEST_CASE("#8260: rc_update_replica_access_time can update access time of multip
     _getRodsEnv(env);
     const auto sandbox = fs::path{env.rodsHome} / "unit_testing_sandbox_issue_8260";
 
+    // Create an empty directory to serve as the vault for a new unixfilesystem resource.
+    const auto vault_path = unit_test_utils::create_resource_vault("issue_8260_atime_unrelated_replicas_vault");
+    irods::at_scope_exit remove_vault{[&vault_path] { std::filesystem::remove_all(vault_path); }};
+
     // Create a new resource so that we can prove the atime update API supports targeting
     // targeting individual replicas.
     adm::resource_registration_info ufs_info;
     ufs_info.resource_name = "ufs_issue_8260";
     ufs_info.resource_type = adm::resource_type::unixfilesystem;
     ufs_info.host_name = boost::asio::ip::host_name();
-    ufs_info.vault_path = "/tmp";
+    ufs_info.vault_path = vault_path;
 
     irods::experimental::client_connection conn;
 
