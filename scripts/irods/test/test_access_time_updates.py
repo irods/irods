@@ -175,7 +175,7 @@ class Test_Access_Time_Updates(session.make_sessions_mixin(rodsadmins, rodsusers
             # This is because the atime matches the mtime and the time since the last
             # atime updated hasn't exceeded the resolution in seconds.
             self.user.assert_icommand(['istream', 'read', data_object], 'STDOUT')
-            self.assertEqual(lib.get_replica_atime(data_object), old_atime, 0)
+            self.assertEqual(lib.get_replica_atime(self.user, data_object, 0), old_atime)
 
             # Now, adjust the resolution in seconds to a significantly smaller value
             # so that the atime is updated on the next access.
@@ -189,7 +189,7 @@ class Test_Access_Time_Updates(session.make_sessions_mixin(rodsadmins, rodsusers
             self.user.assert_icommand(['istream', 'read', data_object], 'STDOUT')
             # Updating the atime isn't instantaneous, so give the main server process
             # a moment to process the atime update queue.
-            lib.delayAssert(lambda: lib.get_replica_atime(data_object, 0) > old_atime, maxrep=20)
+            lib.delayAssert(lambda: lib.get_replica_atime(self.user, data_object, 0) > old_atime, maxrep=20)
 
         finally:
             # Restore the original grid configuration value.

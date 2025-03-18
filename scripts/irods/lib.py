@@ -700,10 +700,10 @@ def get_replica_mtime(session, logical_path, replica_number):
                 str(replica_number))])[0].strip()
 
 def get_replica_atime(session, logical_path, replica_number):
-    coll_name = os.path.dirname(local_path)
-    data_name = os.path.basename(local_path)
+    coll_name = os.path.dirname(logical_path)
+    data_name = os.path.basename(logical_path)
     query = f"select DATA_ACCESS_TIME where COLL_NAME = '{coll_name}' and DATA_NAME = '{data_name}'"
-    _, out, _ = session.run_icommand(['iquery', query], 'STDOUT')
+    out, _, _ = session.run_icommand(['iquery', query])
     return json.loads(out.strip())[0][0]
 
 def collection_exists(session, logical_path):
