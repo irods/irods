@@ -2198,6 +2198,7 @@ class Test_Iadmin_modrepl(resource_suite.ResourceBase, unittest.TestCase):
             "DATA_TYPE_NAME" : 'image',
             "DATA_VERSION" : dumb_string,
             "DATA_MODIFY_TIME" : '00000000016',
+            "DATA_ACCESS_TIME" : '00000000027',
             "DATA_COMMENTS" : dumb_string,
             #"DATA_RESC_GROUP_NAME" : dumb_string,
             #"DATA_RESC_HIER" : dumb_string,
