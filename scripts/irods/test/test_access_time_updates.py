@@ -198,19 +198,23 @@ class Test_Access_Time_Updates(session.make_sessions_mixin(rodsadmins, rodsusers
             IrodsController().restart(test_mode=True)
 
     def test_invalid_grid_configuration_values_for_access_time_do_not_cause_server_startup_to_fail__issue_8620(self):
+        # Create a data object so we can trigger the atime logic.
+        data_object = f'{self.user.session_collection}/test_invalid_grid_configuration_values_for_access_time_do_not_cause_server_startup_to_fail__issue_8620.txt'
+        self.user.assert_icommand(['itouch', data_object])
+
         # queue_name_prefix and queue_size are not included because they affect the filename
         # and size of the shared memory. Invalid values for these two properties will result
         # in the server failing to start. This is intentional.
         #
         # This test only applies to the batch_size and resolution_in_seconds options.
         option_value_pairs = [
-            ('batch_size', ''),
+            ('batch_size', ' '),
             ('batch_size', '-1'),
             ('batch_size', str(2**32 + 1)),
             ('batch_size', str(2**129)),
             ('batch_size', 'not a number'),
-            ('resolution_in_seconds', ''),
-            ('resolution_in_seconds', '-1'),
+            ('resolution_in_seconds', ' '),
+            ('resolution_in_seconds', '-1'), # TODO This breaks the server because of Boost.ProgramOptions. Need to accept args as a vector.
             ('resolution_in_seconds', str(2**32 + 1)),
             ('resolution_in_seconds', str(2**129)),
             ('resolution_in_seconds', 'not a number'),
@@ -224,12 +228,16 @@ class Test_Access_Time_Updates(session.make_sessions_mixin(rodsadmins, rodsusers
 
                 try:
                     # Set an invalid value for the option.
-                    self.admin.assert_icommand(['iadmin', 'set_grid_configuration', 'access_time', opt_name, opt_value])
+                    self.admin.assert_icommand(['iadmin', 'set_grid_configuration', '--', 'access_time', opt_name, opt_value])
+                    self.admin.assert_icommand(['iadmin', 'get_grid_configuration', 'access_time', opt_name], 'STDOUT', [opt_value])
                     IrodsController().restart(test_mode=True)
 
                     # Capture the current log file size. This will serve as an offset for when we inspect
                     # the log file for messages.
                     log_offset = lib.get_file_size_by_path(paths.server_log_path())
+
+                    # Read the data object so the log message is triggered.
+                    self.user.assert_icommand(['istream', 'read', data_object], 'STDOUT')
 
                     # Check the log file to see if the server is using the default value.
                     expected_msg = 'Using default batch size of 20000.' if 'batch_size' == opt_name else 'Using default resolution of 86400.'
@@ -237,5 +245,5 @@ class Test_Access_Time_Updates(session.make_sessions_mixin(rodsadmins, rodsusers
 
                 finally:
                     # Restore the server
-                    self.admin.assert_icommand(['iadmin', 'set_grid_configuration', 'access_time', opt_name, original_option_value])
+                    self.admin.run_icommand(['iadmin', 'set_grid_configuration', 'access_time', opt_name, original_option_value])
                     IrodsController().restart(test_mode=True)
