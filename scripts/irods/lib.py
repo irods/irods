@@ -699,6 +699,13 @@ def get_replica_mtime(session, logical_path, replica_number):
                 os.path.basename(logical_path),
                 str(replica_number))])[0].strip()
 
+def get_replica_atime(session, logical_path, replica_number):
+    coll_name = os.path.dirname(local_path)
+    data_name = os.path.basename(local_path)
+    query = f"select DATA_ACCESS_TIME where COLL_NAME = '{coll_name}' and DATA_NAME = '{data_name}'"
+    _, out, _ = session.run_icommand(['iquery', query], 'STDOUT')
+    return json.loads(out.strip())[0][0]
+
 def collection_exists(session, logical_path):
     out = session.run_icommand(['iquest', f"select COLL_ID where COLL_NAME = '{logical_path}'"])[0]
 

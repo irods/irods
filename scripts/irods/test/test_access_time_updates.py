@@ -8,8 +8,8 @@ from pathlib import Path
 from . import session
 from .. import lib
 from .. import test
-from ..configuration import IrodsConfig
 from ..controller import IrodsController
+from ..exceptions import IrodsError
 
 rodsadmins = [('otherrods', 'rods')]
 rodsusers  = [('alice', 'apass')]
@@ -26,7 +26,8 @@ class Test_Access_Time_Updates(session.make_sessions_mixin(rodsadmins, rodsusers
     def tearDown(self):
         super(Test_Access_Time_Updates, self).tearDown()
 
-    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY,
+        "Topology testing for a GenQuery column isn't necessary because GenQuery always redirects to the Provider")
     def test_GenQuery_supports_access_time_issue_8260(self):
         data_object = 'test_GenQuery_supports_access_time_issue_8260.txt'
         self.user.assert_icommand(['itouch', data_object])
@@ -39,7 +40,6 @@ class Test_Access_Time_Updates(session.make_sessions_mixin(rodsadmins, rodsusers
         with self.subTest('using GenQuery2'):
             self.user.assert_icommand(['iquery', query], 'STDOUT', r'"0\d{10}"', use_regex=True)
 
-    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_access_time_matches_modification_time_for_new_replicas__issue_8260(self):
         def assert_atime_matches_mtime_for_replica(data_object, replica_number):
             query = f"select DATA_ACCESS_TIME, DATA_MODIFY_TIME where DATA_NAME = '{data_object}' and DATA_REPL_NUM = '{replica_number}'"
@@ -50,14 +50,14 @@ class Test_Access_Time_Updates(session.make_sessions_mixin(rodsadmins, rodsusers
         data_object = 'test_access_time_matches_modification_time_for_new_replicas__issue_8260.txt'
         self.user.assert_icommand(['itouch', data_object])
 
-        # Create a new data object must result in the replica's atime matching its mtime.
+        # Creating a new data object must result in the replica's atime matching its mtime.
         assert_atime_matches_mtime_for_replica(data_object, 0)
 
         try:
             resc_name = 'issue_8260_resc'
             lib.create_ufs_resource(self.admin, resc_name)
 
-            # Create a new replica for the data object must result in the new replica's
+            # Creating a new replica for the data object must result in the new replica's
             # atime matching its mtime. We sleep a few seconds so that the timestamps are
             # guaranteed to be different.
             time.sleep(2)
@@ -70,7 +70,7 @@ class Test_Access_Time_Updates(session.make_sessions_mixin(rodsadmins, rodsusers
             self.user.assert_icommand(['ichmod', 'own', self.admin.username, data_object])
 
             # Create a new file. This file will be registered as a new replica for the
-            # data object. 
+            # data object.
             local_file = f'{self.user.local_session_dir}/{data_object}.ireg'
             Path(local_file).touch()
 
@@ -84,7 +84,7 @@ class Test_Access_Time_Updates(session.make_sessions_mixin(rodsadmins, rodsusers
             self.user.run_icommand(['irm', '-f', data_object])
             self.admin.run_icommand(['iadmin', 'rmresc', resc_name])
 
-    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Only affects the local server")
     def test_grid_configuration_value_for_queue_name_prefix_is_honored__issue_8260(self):
         # Capture the original value so it can be restored.
         option_name = 'queue_name_prefix'
@@ -116,7 +116,7 @@ class Test_Access_Time_Updates(session.make_sessions_mixin(rodsadmins, rodsusers
             self.admin.run_icommand(['iadmin', 'set_grid_configuration', 'access_time', option_name, original_option_value])
             IrodsController().restart(test_mode=True)
 
-    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Only affects the local server")
     def test_grid_configuration_value_for_queue_size_is_honored__issue_8260(self):
         def get_atime_queue_file_size():
             shm_directory = Path('/dev/shm')
@@ -155,13 +155,7 @@ class Test_Access_Time_Updates(session.make_sessions_mixin(rodsadmins, rodsusers
             self.admin.run_icommand(['iadmin', 'set_grid_configuration', 'access_time', option_name, original_option_value])
             IrodsController().restart(test_mode=True)
 
-    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_grid_configuration_value_for_resolution_in_seconds_is_honored__issue_8260(self):
-        def get_atime(data_object):
-            query = f"select DATA_ACCESS_TIME where DATA_NAME = '{data_object}'"
-            _, out, _ = self.user.assert_icommand(['iquery', query], 'STDOUT')
-            return json.loads(out.strip())[0][0]
-
         # Capture the original value so it can be restored.
         option_name = 'resolution_in_seconds'
         _, out, _ = self.admin.assert_icommand(['iadmin', 'get_grid_configuration', 'access_time', option_name], 'STDOUT')
@@ -176,15 +170,15 @@ class Test_Access_Time_Updates(session.make_sessions_mixin(rodsadmins, rodsusers
             IrodsController().restart(test_mode=True)
 
             # Create a new data object and capture its atime.
-            data_object = 'test_grid_configuration_value_for_resolution_in_seconds_is_honored__issue_8260.txt'
+            data_object = f'{self.user.session_collection}/test_grid_configuration_value_for_resolution_in_seconds_is_honored__issue_8260.txt'
             self.user.assert_icommand(['itouch', data_object])
-            old_atime = get_atime(data_object)
+            old_atime = lib.get_replica_atime(self.user, data_object, 0)
 
             # Show that reading from the data object does not update the atime.
             # This is because the atime matches the mtime and the time since the last
             # atime updated hasn't exceeded the resolution in seconds.
             self.user.assert_icommand(['istream', 'read', data_object], 'STDOUT')
-            self.assertEqual(get_atime(data_object), old_atime)
+            self.assertEqual(lib.get_replica_atime(data_object), old_atime, 0)
 
             # Now, adjust the resolution in seconds to a significantly smaller value
             # so that the atime is updated on the next access.
@@ -198,7 +192,7 @@ class Test_Access_Time_Updates(session.make_sessions_mixin(rodsadmins, rodsusers
             self.user.assert_icommand(['istream', 'read', data_object], 'STDOUT')
             # Updating the atime isn't instantaneous, so give the main server process
             # a moment to process the atime update queue.
-            lib.delayAssert(lambda: get_atime(data_object) > old_atime, maxrep=20)
+            lib.delayAssert(lambda: lib.get_replica_atime(data_object, 0) > old_atime, maxrep=20)
 
         finally:
             # Restore the original grid configuration value.
