@@ -6,6 +6,7 @@ from pathlib import Path
 
 from . import session
 from .. import lib
+from .. import paths
 from .. import test
 from ..controller import IrodsController
 from ..exceptions import IrodsError
@@ -195,3 +196,46 @@ class Test_Access_Time_Updates(session.make_sessions_mixin(rodsadmins, rodsusers
             # Restore the original grid configuration value.
             self.admin.run_icommand(['iadmin', 'set_grid_configuration', 'access_time', option_name, original_option_value])
             IrodsController().restart(test_mode=True)
+
+    def test_invalid_grid_configuration_values_for_access_time_do_not_cause_server_startup_to_fail__issue_8620(self):
+        # queue_name_prefix and queue_size are not included because they affect the filename
+        # and size of the shared memory. Invalid values for these two properties will result
+        # in the server failing to start. This is intentional.
+        #
+        # This test only applies to the batch_size and resolution_in_seconds options.
+        option_value_pairs = [
+            ('batch_size', ''),
+            ('batch_size', '-1'),
+            ('batch_size', str(2**32 + 1)),
+            ('batch_size', str(2**129)),
+            ('batch_size', 'not a number'),
+            ('resolution_in_seconds', ''),
+            ('resolution_in_seconds', '-1'),
+            ('resolution_in_seconds', str(2**32 + 1)),
+            ('resolution_in_seconds', str(2**129)),
+            ('resolution_in_seconds', 'not a number'),
+        ]
+
+        for opt_name, opt_value in option_value_pairs:
+            with self.subTest(f'option_name=[{opt_name}], option_value=[{opt_value}]'):
+                # Capture the original value so it can be restored.
+                _, out, _ = self.admin.assert_icommand(['iadmin', 'get_grid_configuration', 'access_time', opt_name], 'STDOUT')
+                original_option_value = out.strip()
+
+                try:
+                    # Set an invalid value for the option.
+                    self.admin.assert_icommand(['iadmin', 'set_grid_configuration', 'access_time', opt_name, opt_value])
+                    IrodsController().restart(test_mode=True)
+
+                    # Capture the current log file size. This will serve as an offset for when we inspect
+                    # the log file for messages.
+                    log_offset = lib.get_file_size_by_path(paths.server_log_path())
+
+                    # Check the log file to see if the server is using the default value.
+                    expected_msg = 'Using default batch size of 20000.' if 'batch_size' == opt_name else 'Using default resolution of 86400.'
+                    lib.delayAssert(lambda: lib.log_message_occurrences_greater_than_count(msg=expected_msg, count=0, start_index=log_offset))
+
+                finally:
+                    # Restore the server
+                    self.admin.assert_icommand(['iadmin', 'set_grid_configuration', 'access_time', opt_name, original_option_value])
+                    IrodsController().restart(test_mode=True)
