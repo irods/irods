@@ -947,10 +947,10 @@ namespace
             irods::access_time_queue::try_enqueue(data);
         }
         catch (const irods::exception& e) {
-            log_api::warn("{}: Failed to enqueue access time data: {}", __func__, e.client_display_what());
+            log_api::warn("{}: Failed to enqueue access time update for replica: data_id=[{}], replica_number=[{}]; {}", __func__, _replica.data_id(), _replica.replica_number(), e.client_display_what());
         }
         catch (const std::exception& e) {
-            log_api::warn("{}: Failed to enqueue access time data: {}", __func__, e.what());
+            log_api::warn("{}: Failed to enqueue access time update for replica: data_id=[{}], replica_number=[{}]; {}", __func__, _replica.data_id(), _replica.replica_number(), e.what());
         }
     } // try_enqueue_update_of_replica_access_time
 
