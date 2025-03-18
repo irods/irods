@@ -32,7 +32,7 @@ namespace
 
 namespace irods::access_time_queue
 {
-    auto init(const std::string_view _queue_name_prefix, std::size_t _queue_size) -> void
+    auto init(const std::string_view _queue_name_prefix, std::int32_t _queue_size) -> void
     {
         if (getpid() == g_owner_pid) {
             return;
@@ -42,7 +42,11 @@ namespace irods::access_time_queue
             THROW(CONFIGURATION_ERROR, fmt::format("{}: Access time queue name prefix is empty.", __func__));
         }
 
-        if (constexpr std::size_t max = 500'000; _queue_size > max) {
+        if (_queue_size < 0) {
+            THROW(CONFIGURATION_ERROR, fmt::format("{}: Access time queue size [{}] is less than 0.", __func__, _queue_size));
+        }
+
+        if (constexpr std::int32_t max = 500'000; _queue_size > max) {
             THROW(CONFIGURATION_ERROR, fmt::format("{}: Access time queue size [{}] is greater than {}.", __func__, _queue_size, max));
         }
 

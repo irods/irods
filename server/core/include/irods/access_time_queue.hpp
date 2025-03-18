@@ -29,10 +29,10 @@ namespace irods::access_time_queue
     /// \param[in] _queue_name_prefix The prefix of the queue name.
     /// \param[in] _queue_size        The max number of entries the queue can hold.
     ///
-    /// \throws irods::exception If the queue name is empty or the queue size exceeds 500000.
+    /// \throws irods::exception If the queue name is empty or the queue size violates the range [0, 500000).
     ///
     /// \since 5.0.0
-    auto init(const std::string_view _queue_name_prefix, std::size_t _queue_size) -> void;
+    auto init(const std::string_view _queue_name_prefix, std::int32_t _queue_size) -> void;
 
     /// Initializes an existing access time queue.
     ///
