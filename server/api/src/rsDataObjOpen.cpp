@@ -907,7 +907,6 @@ namespace
         }
 
         try {
-            // TODO Document type constraint.
             const auto max_elapsed_time =
                 irods::get_server_property<std::uint32_t>(irods::KW_CFG_ACCESS_TIME_RESOLUTION_IN_SECONDS);
             const auto atime = std::stoull(std::string{_atime});
