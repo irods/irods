@@ -465,16 +465,6 @@ def _service_account_file_path():
 def service_account_file_path():
     return str(_service_account_file_path())
 
-_genosauth_path_cache = None
-def _genosauth_path():
-    global _genosauth_path_cache
-    if _genosauth_path_cache is None:
-        _genosauth_path_cache = _irods_directory() / 'clients' / 'bin' / 'genOSAuth'
-    return _genosauth_path_cache
-
-def genosauth_path():
-    return str(_genosauth_path())
-
 def irods_user_and_group_entries():
     try:
         with open(service_account_file_path()) as f:

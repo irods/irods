@@ -7,7 +7,6 @@ add_dependencies(all-plugins_no_database all-plugins-auth_legacy)
 set(
   IRODS_AUTH_LEGACY_PLUGINS
   native
-  osauth
   pam
 )
 
