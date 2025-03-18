@@ -1,11 +1,11 @@
 #include <catch2/catch.hpp>
 
-#include "irods/getRodsEnv.h"
 #include "unit_test_utils.hpp"
 
 #include "irods/client_connection.hpp"
 #include "irods/dstream.hpp"
 #include "irods/filesystem.hpp"
+#include "irods/getRodsEnv.h"
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_query.hpp"
 #include "irods/modDataObjMeta.h"
@@ -23,8 +23,8 @@
 
 #include <chrono>
 #include <cstdlib>
-#include <iostream>
 #include <filesystem>
+#include <iostream>
 #include <string>
 #include <thread>
 #include <tuple>
@@ -296,7 +296,7 @@ TEST_CASE("#8260: targeting mix of existent and non-existent replicas is not an 
         }
     }
 
-    SECTION("targeting existent and non-existent replica")
+    SECTION("targeting existent and non-existent replicas")
     {
         // Create a data object.
         const auto logical_path = sandbox / "data_object.txt";
