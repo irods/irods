@@ -44,7 +44,7 @@ using namespace boost::filesystem;
 
 namespace
 {
-    using log_api = irods::experimental::log::api;
+    using log_svr = irods::experimental::log::server;
 } // anonymous namespace
 
 /// @brief Function which determines if a logical path is created at the root level.
@@ -320,7 +320,7 @@ getDataObjInfo(
     }
 
     if ((dataAccessTime = getSqlResultByInx(genQueryOut, COL_D_ACCESS_TIME)) == nullptr) {
-        log_api::error("{}: getSqlResultByInx for COL_D_ACCESS_TIME failed.", __func__);
+        log_svr::error("{}: getSqlResultByInx for COL_D_ACCESS_TIME failed.", __func__);
         return UNMATCHED_KEY_OR_INDEX;
     }
 
