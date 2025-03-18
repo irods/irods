@@ -1060,10 +1060,10 @@ int call_delay_rule_unlock(irods::api_entry*, rsComm_t*, delayRuleUnlockInp_t*);
 #endif
 
 #ifdef CREATE_API_TABLE_FOR_SERVER
-int call_update_replica_access_time_inout(irods::api_entry*, rsComm_t*, BytesBuf*, char**);
-#  define CALL_UPDATE_REPLICA_ACCESS_TIME_INOUT call_update_replica_access_time_inout
+int call_update_replica_access_time(irods::api_entry*, rsComm_t*, BytesBuf*, char**);
+#  define CALL_UPDATE_REPLICA_ACCESS_TIME call_update_replica_access_time
 #else
-#  define CALL_UPDATE_REPLICA_ACCESS_TIME_INOUT nullptr // NOLINT(cppcoreguidelines-macro-usage)
+#  define CALL_UPDATE_REPLICA_ACCESS_TIME nullptr // NOLINT(cppcoreguidelines-macro-usage)
 #endif
 
 #endif // IRODS_API_CALLING_FUNCTIONS_HPP

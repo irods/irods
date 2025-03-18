@@ -1296,7 +1296,7 @@ static irods::apidef_t client_api_table_inp[] = {
         "BinBytesBuf_PI", 0, "STR_PI", 0,
         boost::any(std::function<int(rsComm_t*, BytesBuf*, char**)>(RS_UPDATE_REPLICA_ACCESS_TIME)),
         "api_update_replica_access_time", clearBytesBuffer, irods::clearOutStruct_noop,
-        (funcPtr) CALL_UPDATE_REPLICA_ACCESS_TIME_INOUT
+        (funcPtr) CALL_UPDATE_REPLICA_ACCESS_TIME
     }
     // clang-format on
 }; // (client|server)_api_table_inp
