@@ -831,13 +831,11 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
         }
     }
 
-    // =-=-=-=-=-=-=-
-    // cache the old acl value for reuse later if necessary
-    int old_acl_val = chlGenQueryAccessControlSetup(rsComm->clientUser.userName,
-                                                    rsComm->clientUser.rodsZone,
-                                                    rsComm->clientAddr,
-                                                    rsComm->clientUser.authInfo.authFlag,
-                                                    -1);
+    chlGenQueryAccessControlSetup(rsComm->clientUser.userName,
+                                  rsComm->clientUser.rodsZone,
+                                  rsComm->clientAddr,
+                                  rsComm->clientUser.authInfo.authFlag,
+                                  -1);
 
     if ( PrePostProcForGenQueryFlag == 1 ) {
         std::string arg = str( boost::format( "%ld" ) % ( ( long )genQueryInp ) );
