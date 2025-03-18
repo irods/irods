@@ -69,6 +69,7 @@ const attrs_t genquery_attrs = {
     {"DATA_STATUS", STATUS_STRING_KW},
     {"DATA_TYPE_NAME", DATA_TYPE_KW},
     {"DATA_VERSION", VERSION_KW},
+    {"DATA_ACCESS_TIME", DATA_ACCESS_TIME_KW},
     {"DATA_MODIFY_TIME", DATA_MODIFY_KW},
     {"DATA_COMMENTS", DATA_COMMENTS_KW},
     //{"DATA_RESC_GROUP_NAME", DATA_RESC_GROUP_NAME_KW}, // missing from genquery since 4.2
@@ -2697,6 +2698,7 @@ usage( char *subOpt ) {
         "   DATA_STATUS",
         "   DATA_TYPE_NAME",
         "   DATA_VERSION",
+        "   DATA_ACCESS_TIME",
         "   DATA_MODIFY_TIME",
         "   DATA_COMMENTS",
         "   DATA_RESC_ID",
