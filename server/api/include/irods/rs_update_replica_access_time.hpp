@@ -20,8 +20,8 @@ struct RsComm;
 /// \param[out] _output     A pointer which will hold error details about the operation, if available.
 ///
 /// \return An integer.
-/// \return 0  On success.
-/// \return <0 On failure.
+/// \retval >=0 The number of replicas that were affected.
+/// \retval  <0 On failure.
 ///
 /// \b Example
 /// \code{.cpp}
@@ -51,11 +51,13 @@ struct RsComm;
 /// const int ec = rs_update_replica_access_time(comm, json_input, &output);
 /// if (ec < 0) {
 ///     // Handle error.
+/// }
 ///
-///     // Check the output variable for details about the failure.
-///     if (output) {
-///         // Print the contents.
-///     }
+/// // Check the output variable for details about the failure.
+/// if (output) {
+///     // Do something with the string.
+///     // Deallocate memory.
+///     free(output);
 /// }
 /// \endcode
 ///

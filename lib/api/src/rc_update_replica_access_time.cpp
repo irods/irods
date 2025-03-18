@@ -17,8 +17,6 @@ auto rc_update_replica_access_time(RcComm* _comm, const char* _json_input, char*
     input_buf.buf = const_cast<char*>(_json_input);
     input_buf.len = static_cast<int>(std::strlen(_json_input));
 
-    // TODO This MUST handle the output to future-proof the API.
-
     return procApiRequest(
         _comm, UPDATE_REPLICA_ACCESS_TIME_AN, &input_buf, nullptr, reinterpret_cast<void**>(_output), nullptr);
 }

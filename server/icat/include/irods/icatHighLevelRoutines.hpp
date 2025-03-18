@@ -446,8 +446,8 @@ auto chl_delay_rule_unlock(RsComm& _comm, const char* _rule_ids) -> int;
 /// \param[out] _output     A pointer which will hold error details about the operation, if available.
 ///
 /// \return An integer.
-/// \retval  0 On success.
-/// \retval <0 On failure.
+/// \retval >=0 The number of replicas that were affected.
+/// \retval  <0 On failure.
 ///
 /// \see #rs_update_replica_access_time
 ///

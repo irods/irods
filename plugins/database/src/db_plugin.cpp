@@ -15465,14 +15465,14 @@ auto db_update_replica_access_time(irods::plugin_context& _ctx,
         stmt.bind(1, data_ids.data(), data_ids.size());
         stmt.bind(2, replica_numbers.data(), replica_numbers.size());
 
-        // Execute the batch operation within a transaction and throw away the results.
-        // From a behavior perspective, it would be better to use execute() instead of
-        // just_transact() because that allows partial success. However, we've chosen to
-        // update all rows atomically. This decision is strictly for performance reasons
-        // and ultimately means we feel it's acceptable to rollback all updates on failure.
-        just_transact(stmt, updates.size());
+        // Execute the batch operation within a transaction. From a behavior perspective,
+        // it would be better to use execute() instead of transact() because that allows
+        // partial success. However, we've chosen to update all rows atomically. This decision
+        // is strictly for performance reasons and ultimately means we feel it's acceptable to
+        // rollback all updates on failure.
+        const auto result = transact(stmt, updates.size());
 
-        return SUCCESS();
+        return CODE(result.affected_rows());
     }
     catch (const irods::exception& e) {
         log_db::error("{}: {}", __func__, e.client_display_what());
