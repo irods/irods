@@ -75,8 +75,7 @@ typedef struct RodsArguments {
     int bundle; // JMC - backport 4536
     int prompt;
     int query;
-    char *queryStr;
-    int rbudp;
+    char* queryStr;
     int reg;
     int recursive;
     int resource;

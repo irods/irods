@@ -118,9 +118,6 @@ typedef struct ValidKeyWd {
 #define RMTRASH_FLAG            0x400000
 #define ADMIN_RMTRASH_FLAG      0x800000
 #define DEF_RESC_NAME_FLAG      0x1000000
-#define RBUDP_TRANSFER_FLAG     0x2000000
-#define RBUDP_SEND_RATE_FLAG    0x4000000
-#define RBUDP_PACK_SIZE_FLAG    0x8000000
 #define BULK_OPR_FLAG           0x10000000
 #define UNREG_FLAG              0x20000000
 

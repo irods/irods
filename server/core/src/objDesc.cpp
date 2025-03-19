@@ -547,22 +547,12 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
     if ( numDestThr > 0 ) {
         clearKeyVal(rei.condInputData);
         free(rei.condInputData);
-        if ( getValByKey( condInput, RBUDP_TRANSFER_KW ) != NULL ) {
-            return 1;
-        }
-        else {
-            return numDestThr;
-        }
+        return numDestThr;
     }
     if ( numSrcThr > 0 ) {
         clearKeyVal(rei.condInputData);
         free(rei.condInputData);
-        if ( getValByKey( condInput, RBUDP_TRANSFER_KW ) != NULL ) {
-            return 1;
-        }
-        else {
-            return numSrcThr;
-        }
+        return numSrcThr;
     }
     /* should not be here. do one with no resource */
     status = applyRule( "acSetNumThreads", NULL, &rei, NO_SAVE_REI );
@@ -640,36 +630,8 @@ initDataOprInp( dataOprInp_t *dataOprInp, int l1descInx, int oprType ) {
         addKeyVal( &dataOprInp->condInput, NO_PARA_OP_KW, "" );
     }
 
-    if ( getValByKey( &dataObjInp->condInput, RBUDP_TRANSFER_KW ) != NULL ) {
-
-        /* only do unix fs */
-        // JMC - legacy resource - int rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-        // JMC - legacy resource - if (RescTypeDef[rescTypeInx].driverType == UNIX_FILE_TYPE)
-        std::string type;
-        irods::error err = irods::get_resc_type_for_hier_string( dataObjInfo->rescHier, type );
-
-        if ( !err.ok() ) {
-            irods::log( PASS( err ) );
-        }
-        else {
-            if ( irods::RESOURCE_TYPE_NATIVE == type ) { // JMC ::
-                addKeyVal( &dataOprInp->condInput, RBUDP_TRANSFER_KW, "" );
-            }
-        }
-    }
-
     if ( getValByKey( &dataObjInp->condInput, VERY_VERBOSE_KW ) != NULL ) {
         addKeyVal( &dataOprInp->condInput, VERY_VERBOSE_KW, "" );
-    }
-
-    if ( ( tmpStr = getValByKey( &dataObjInp->condInput, RBUDP_SEND_RATE_KW ) ) !=
-            NULL ) {
-        addKeyVal( &dataOprInp->condInput, RBUDP_SEND_RATE_KW, tmpStr );
-    }
-
-    if ( ( tmpStr = getValByKey( &dataObjInp->condInput, RBUDP_PACK_SIZE_KW ) ) !=
-            NULL ) {
-        addKeyVal( &dataOprInp->condInput, RBUDP_PACK_SIZE_KW, tmpStr );
     }
 
     return 0;

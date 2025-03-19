@@ -212,21 +212,8 @@ initCondForRepl( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         addKeyVal( &dataObjInp->condInput, UPDATE_REPL_KW, "" );
     }
 
-    if ( rodsArgs->rbudp == True ) {
-        /* use -Q for rbudp transfer */
-        addKeyVal( &dataObjInp->condInput, RBUDP_TRANSFER_KW, "" );
-    }
-
     if ( rodsArgs->veryVerbose == True ) {
         addKeyVal( &dataObjInp->condInput, VERY_VERBOSE_KW, "" );
-    }
-
-    if ( ( tmpStr = getenv( RBUDP_SEND_RATE_KW ) ) != NULL ) {
-        addKeyVal( &dataObjInp->condInput, RBUDP_SEND_RATE_KW, tmpStr );
-    }
-
-    if ( ( tmpStr = getenv( RBUDP_PACK_SIZE_KW ) ) != NULL ) {
-        addKeyVal( &dataObjInp->condInput, RBUDP_PACK_SIZE_KW, tmpStr );
     }
 
     memset( rodsRestart, 0, sizeof( rodsRestart_t ) );

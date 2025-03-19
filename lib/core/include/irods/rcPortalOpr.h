@@ -12,9 +12,6 @@
 #include "irods/rods.h"
 #include "irods/objInfo.h"
 #include "irods/dataObjInpOut.h"
-#include "irods/QUANTAnet_rbudpBase_c.h"
-#include "irods/QUANTAnet_rbudpSender_c.h"
-#include "irods/QUANTAnet_rbudpReceiver_c.h"
 
 #define MAX_PROGRESS_CNT	8
 
@@ -27,11 +24,6 @@ typedef struct RcPortalTransferInp {
     rodsLong_t	bytesWritten;
     unsigned char shared_secret[ NAME_LEN ];
 } rcPortalTransferInp_t;
-
-typedef enum {
-    RBUDP_CLIENT,
-    RBUDP_SERVER
-} rbudpProcType_t;
 
 #ifdef __cplusplus
 extern "C" {
@@ -67,19 +59,7 @@ getIncludeFile( rcComm_t *conn, bytesBuf_t *dataObjOutBBuf, char *locFilePath );
 int
 getFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
          rodsLong_t dataSize );
-int
-putFileToPortalRbudp( portalOprOut_t *portalOprOut,
-                      char *locFilePath, int locFd,
-                      int veryVerbose, int sendRate, int packetSize );
-int
-getFileToPortalRbudp( portalOprOut_t *portalOprOut,
-                      char *locFilePath, int locFd,
-                      int veryVerbose, int packetSize );
-int
-initRbudpClient( rbudpBase_t *rbudpBase, portList_t *myPortList );
-int
-initFileRestart( rcComm_t *conn, char *fileName, char *objPath,
-                 rodsLong_t fileSize, int numThr );
+int initFileRestart(rcComm_t* conn, char* fileName, char* objPath, rodsLong_t fileSize, int numThr);
 int
 writeLfRestartFile( char *infoFile, fileRestartInfo_t *info );
 int

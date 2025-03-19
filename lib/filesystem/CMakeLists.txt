@@ -84,7 +84,6 @@ foreach(variant IN ITEMS client server)
     "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/core/include>"
     "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/api/include>"
     "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/hasher/include>"
-    "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/lib/rbudp/include>"
     "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/core/include>"
     "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/icat/include>"
     "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/re/include>"

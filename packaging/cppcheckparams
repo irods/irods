@@ -1,1 +1,1 @@
-CPPCHECK_PARAMETERS="-q -j 4 --language=c++ -f -I/usr/include -Ilib/hasher/include -Ilib/rbudp/include -Ilib/api/include -Ilib/core/include -Ilib/isio/include -Iserver/re/include -Iserver/drivers/include -Iserver/core/include -Iserver/icat/include -i clients/icommands/rulegen/"
+CPPCHECK_PARAMETERS="-q -j 4 --language=c++ -f -I/usr/include -Ilib/hasher/include -Ilib/api/include -Ilib/core/include -Ilib/isio/include -Iserver/re/include -Iserver/drivers/include -Iserver/core/include -Iserver/icat/include -i clients/icommands/rulegen/"

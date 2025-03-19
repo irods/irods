@@ -39,19 +39,6 @@ namespace irods {
 
     }; // class socket_wrapper_tcp
 
-// =-=-=-=-=-=-=-
-// derived class for handling udp style sockets
-    class socket_wrapper_udp : public socket_wrapper {
-            boost::asio::ip::udp::socket* sock_;
-        public:
-            // =-=-=-=-=-=-=-
-            // members
-            socket_wrapper_udp();
-            ~socket_wrapper_udp();
-            virtual bool open( int, const char* );
-
-    }; // class socket_wrapper_udp
-
 } // namespace irods
 
 #endif //  SOCKET_WRAPPER_HPP__

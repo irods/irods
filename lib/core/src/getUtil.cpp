@@ -340,22 +340,8 @@ initCondForGet( rcComm_t *conn, rodsArguments_t *rodsArgs,
         }
     }
 
-
-    if ( rodsArgs->rbudp == True ) {
-        /* use -Q for rbudp transfer */
-        addKeyVal( &dataObjOprInp->condInput, RBUDP_TRANSFER_KW, "" );
-    }
-
     if ( rodsArgs->veryVerbose == True ) {
         addKeyVal( &dataObjOprInp->condInput, VERY_VERBOSE_KW, "" );
-    }
-
-    if ( ( tmpStr = getenv( RBUDP_SEND_RATE_KW ) ) != NULL ) {
-        addKeyVal( &dataObjOprInp->condInput, RBUDP_SEND_RATE_KW, tmpStr );
-    }
-
-    if ( ( tmpStr = getenv( RBUDP_PACK_SIZE_KW ) ) != NULL ) {
-        addKeyVal( &dataObjOprInp->condInput, RBUDP_PACK_SIZE_KW, tmpStr );
     }
 
     if ( rodsArgs->purgeCache == True ) { // JMC - backport 4537
@@ -381,16 +367,9 @@ initCondForGet( rcComm_t *conn, rodsArguments_t *rodsArgs,
         return USER_INPUT_OPTION_ERR;
     }
 
-    if ( rodsArgs->lfrestart == True ) {
-        if ( rodsArgs->rbudp == True ) {
-            rodsLog( LOG_NOTICE,
-                     "initCondForPut: --lfrestart cannot be used with -Q option" );
-        }
-        else {
-            conn->fileRestart.flags = FILE_RESTART_ON;
-            rstrcpy( conn->fileRestart.infoFile, rodsArgs->lfrestartFileString,
-                     MAX_NAME_LEN );
-        }
+    if (rodsArgs->lfrestart == True) {
+        conn->fileRestart.flags = FILE_RESTART_ON;
+        rstrcpy(conn->fileRestart.infoFile, rodsArgs->lfrestartFileString, MAX_NAME_LEN);
     }
     // =-=-=-=-=-=-=-
     // JMC - backport 4604
