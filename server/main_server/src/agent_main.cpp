@@ -149,10 +149,10 @@ auto main(int _argc, char* _argv[]) -> int
 
     // clang-format off
     opts_desc.add_options()
-        ("hostname-cache-shm-name", po::value<std::string>(), "")
-        ("dns-cache-shm-name", po::value<std::string>(), "")
-        ("atime-queue-shm-name", po::value<std::string>(), "")
-        ("atime-resolution-in-seconds", po::value<std::string>(), "")
+        ("hostname-cache-shm-name", po::value<std::string>(&hostname_cache_shm_name), "")
+        ("dns-cache-shm-name", po::value<std::string>(&dns_cache_shm_name), "")
+        ("atime-queue-shm-name", po::value<std::string>(&access_time_queue_shm_name), "")
+        ("atime-resolution", po::value<std::string>(), "")
         ("stdout", po::bool_switch(&write_to_stdout), "")
         ("test-mode,t", po::bool_switch(&enable_test_mode), "");
     // clang-format on
@@ -161,38 +161,28 @@ auto main(int _argc, char* _argv[]) -> int
     pod.add("hostname-cache-shm-name", 1);
     pod.add("dns-cache-shm-name", 1);
     pod.add("atime-queue-shm-name", 1);
-    pod.add("atime-resolution-in-seconds", 1);
 
     try {
         po::variables_map vm;
         po::store(po::command_line_parser(_argc, _argv).options(opts_desc).positional(pod).run(), vm);
         po::notify(vm);
 
-        if (auto iter = vm.find("hostname-cache-shm-name"); std::end(vm) != iter) {
-            hostname_cache_shm_name = std::move(iter->second.as<std::string>());
-        }
-        else {
+        if (hostname_cache_shm_name.empty()) {
             fmt::print(stderr, "Error: Missing [HOSTNAME_CACHE_SHM_NAME] parameter.");
             return 1;
         }
 
-        if (auto iter = vm.find("dns-cache-shm-name"); std::end(vm) != iter) {
-            dns_cache_shm_name = std::move(iter->second.as<std::string>());
-        }
-        else {
+        if (dns_cache_shm_name.empty()) {
             fmt::print(stderr, "Error: Missing [DNS_CACHE_SHM_NAME] parameter.");
             return 1;
         }
 
-        if (auto iter = vm.find("atime-queue-shm-name"); std::end(vm) != iter) {
-            access_time_queue_shm_name = std::move(iter->second.as<std::string>());
-        }
-        else {
+        if (access_time_queue_shm_name.empty()) {
             fmt::print(stderr, "Error: Missing [ACCESS_TIME_QUEUE_SHM_NAME] parameter.");
             return 1;
         }
 
-        if (auto iter = vm.find("atime-resolution-in-seconds"); std::end(vm) != iter) {
+        if (auto iter = vm.find("atime-resolution"); std::end(vm) != iter) {
             const auto resolution_in_seconds = iter->second.as<std::string>();
 
             // Verify the resolution value is acceptable.

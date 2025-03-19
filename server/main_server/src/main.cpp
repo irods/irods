@@ -983,18 +983,27 @@ Signals:
         std::string dns_shm_name{irods::experimental::net::dns_cache::shared_memory_name()};
         std::string atime_queue_shm_name{irods::access_time_queue::shared_memory_name()};
 
+        // The access time resolution requires special care because it must accept negative integer
+        // values. However, Boost.Program_options will not accept negative integer values as positional
+        // arguments because it treats anything with a leading hyphen as an option name. To get around
+        // this, we have to pass the access time resolution via a non-positional option.
+        std::string atime_res_opt = "--atime-resolution";
+
         std::vector<char*> args{binary.data(),
                                 hn_shm_name.data(),
                                 dns_shm_name.data(),
                                 atime_queue_shm_name.data(),
+                                atime_res_opt.data(),
                                 g_atime_resolution_in_seconds.data()};
 
+        std::string stdout_opt = "--stdout";
         if (_write_to_stdout) {
-            args.push_back("--stdout");
+            args.push_back(stdout_opt.data());
         }
 
+        std::string test_mode_opt = "--test-mode";
         if (_enable_test_mode) {
-            args.push_back("-t");
+            args.push_back(test_mode_opt.data());
         }
 
         args.push_back(nullptr);
