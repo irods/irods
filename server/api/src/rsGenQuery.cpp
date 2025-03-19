@@ -808,7 +808,6 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
             constexpr auto priv{0};
             constexpr auto control_flag{2};
 
-            // Call directly to avoid additional policy
             chlGenQueryAccessControlSetup(nullptr, nullptr, nullptr, priv, control_flag);
         }
 
