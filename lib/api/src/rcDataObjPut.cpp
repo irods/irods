@@ -65,11 +65,6 @@
  *    \n VERIFY_CHKSUM_KW - verify and register the target checksum value
  *            after the copy. The value is the md5 checksum value of the
  *            local file.
- *    \n RBUDP_TRANSFER_KW - (Deprecated) use RBUDP for data transfer. This keyWd has no
- *             value.
- *    \n RBUDP_SEND_RATE_KW - (Deprecated) the number of RBUDP packet to send per second
- *          The default is 600000.
- *    \n RBUDP_PACK_SIZE_KW - (Deprecated) the size of RBUDP packet. The default is 8192.
  *    \n LOCK_TYPE_KW - set advisory lock type. valid value - WRITE_LOCK_TYPE.
  * \param[in] locFilePath - the path of the local file to upload. This path
  *           can be a relative path.
@@ -150,46 +145,6 @@ rcDataObjPut( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
     if ( portalOprOut->numThreads <= 0 ) {
         status = putFile( conn, portalOprOut->l1descInx,
                           locFilePath, dataObjInp->objPath, dataObjInp->dataSize );
-    }
-    else if ( getUdpPortFromPortList( &portalOprOut->portList ) != 0 ) {
-        int veryVerbose;
-        /* rbudp transfer */
-        /* some sanity check */
-        if ( portalOprOut->numThreads != 1 ) {
-            rcOprComplete( conn, SYS_INVALID_PORTAL_OPR );
-            free( portalOprOut );
-            return SYS_INVALID_PORTAL_OPR;
-        }
-        conn->transStat.numThreads = portalOprOut->numThreads;
-        if ( getValByKey( &dataObjInp->condInput, VERY_VERBOSE_KW ) != NULL ) {
-            printf( "From server: NumThreads=%d, addr:%s, port:%d, cookie=%d\n",
-                    portalOprOut->numThreads, portalOprOut->portList.hostAddr,
-                    portalOprOut->portList.portNum, portalOprOut->portList.cookie );
-            veryVerbose = 2;
-        }
-        else {
-            veryVerbose = 0;
-        }
-
-        if ( irods::CS_NEG_USE_SSL == conn->negotiation_results ) {
-            // =-=-=-=-=-=-=-
-            // if a secret has been negotiated then we must be using
-            // encryption.  given that RBUDP is not supported in an
-            // encrypted capacity this is considered an error
-            rodsLog(
-                LOG_ERROR,
-                "putFileToPortal: Encryption is not supported with RBUDP" );
-            return SYS_INVALID_PORTAL_OPR;
-
-        }
-        else {
-            status = putFileToPortalRbudp(
-                         portalOprOut,
-                         locFilePath,
-                         -1,
-                         veryVerbose,
-                         0, 0 );
-        }
     }
     else {
         if ( getValByKey( &dataObjInp->condInput, VERY_VERBOSE_KW ) != NULL ) {

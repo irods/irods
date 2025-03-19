@@ -13,7 +13,6 @@ add_subdirectory(api)
 add_subdirectory(filesystem)
 add_subdirectory(administration)
 add_subdirectory(hasher)
-add_subdirectory(rbudp)
 add_subdirectory(metadata)
 
 target_link_objects(
@@ -22,7 +21,6 @@ target_link_objects(
   irods_filesystem_path
   irods_common_core
   irods_genquery1_parser
-  irods_rbudp
   irods_hasher
 )
 target_link_libraries(
@@ -121,7 +119,6 @@ target_link_objects(
   PUBLIC
   irods_common_core
   irods_hasher
-  irods_rbudp
   irods_lib_api_client
   irods_lib_core_client
   irods_filesystem_path

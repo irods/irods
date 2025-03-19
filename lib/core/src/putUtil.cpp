@@ -611,22 +611,8 @@ initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         }
     }
 
-
-    if ( rodsArgs->rbudp == True ) {
-        /* use -Q for rbudp transfer */
-        addKeyVal( &dataObjOprInp->condInput, RBUDP_TRANSFER_KW, "" );
-    }
-
     if ( rodsArgs->veryVerbose == True ) {
         addKeyVal( &dataObjOprInp->condInput, VERY_VERBOSE_KW, "" );
-    }
-
-    if ( ( tmpStr = getenv( RBUDP_SEND_RATE_KW ) ) != NULL ) {
-        addKeyVal( &dataObjOprInp->condInput, RBUDP_SEND_RATE_KW, tmpStr );
-    }
-
-    if ( ( tmpStr = getenv( RBUDP_PACK_SIZE_KW ) ) != NULL ) {
-        addKeyVal( &dataObjOprInp->condInput, RBUDP_PACK_SIZE_KW, tmpStr );
     }
 
     memset( rodsRestart, 0, sizeof( rodsRestart_t ) );
@@ -674,18 +660,10 @@ initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         return USER_INPUT_OPTION_ERR;
     }
 
-    /* Not needed - dataObjOprInp->createMode = 0700; */
-    /* mmap in rbudp needs O_RDWR */
-    dataObjOprInp->openFlags = O_RDWR;
-
     if ( rodsArgs->lfrestart == True ) {
         if ( rodsArgs->bulk == True ) {
             rodsLog( LOG_NOTICE,
                      "initCondForPut: --lfrestart cannot be used with -b option" );
-        }
-        else if ( rodsArgs->rbudp == True ) {
-            rodsLog( LOG_NOTICE,
-                     "initCondForPut: --lfrestart cannot be used with -Q option" );
         }
         else {
             conn->fileRestart.flags = FILE_RESTART_ON;

@@ -161,9 +161,9 @@ NEW_ERROR(SYS_DIR_IN_VAULT_NOT_EMPTY,                  -82000)
 NEW_ERROR(SYS_OPR_FLAG_NOT_SUPPORT,                    -83000)
 NEW_ERROR(SYS_TAR_APPEND_ERR,                          -84000)
 NEW_ERROR(SYS_INVALID_PROTOCOL_TYPE,                   -85000)
-NEW_ERROR(SYS_UDP_CONNECT_ERR,                         -86000)
-NEW_ERROR(SYS_UDP_TRANSFER_ERR,                        -89000)
-NEW_ERROR(SYS_UDP_NO_SUPPORT_ERR,                      -90000)
+NEW_ERROR(SYS_UDP_CONNECT_ERR,                         -86000) // EOL since iRODS v5.0.0
+NEW_ERROR(SYS_UDP_TRANSFER_ERR,                        -89000) // EOL since iRODS v5.0.0
+NEW_ERROR(SYS_UDP_NO_SUPPORT_ERR,                      -90000) // EOL since iRODS v5.0.0
 NEW_ERROR(SYS_READ_MSG_BODY_LEN_ERR,                   -91000)
 NEW_ERROR(CROSS_ZONE_SOCK_CONNECT_ERR,                 -92000)
 NEW_ERROR(SYS_NO_FREE_RE_THREAD,                       -93000)

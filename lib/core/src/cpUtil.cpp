@@ -232,31 +232,9 @@ initCondForCp( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                    myRodsEnv->rodsDefResource );
     }
 
-    if ( rodsArgs->rbudp == True ) {
-        /* use -Q for rbudp transfer */
-        addKeyVal( &dataObjCopyInp->destDataObjInp.condInput,
-                   RBUDP_TRANSFER_KW, "" );
-        addKeyVal( &dataObjCopyInp->srcDataObjInp.condInput,
-                   RBUDP_TRANSFER_KW, "" );
-    }
-
     if ( rodsArgs->veryVerbose == True ) {
         addKeyVal( &dataObjCopyInp->destDataObjInp.condInput, VERY_VERBOSE_KW, "" );
         addKeyVal( &dataObjCopyInp->srcDataObjInp.condInput, VERY_VERBOSE_KW, "" );
-    }
-
-    if ( ( tmpStr = getenv( RBUDP_SEND_RATE_KW ) ) != NULL ) {
-        addKeyVal( &dataObjCopyInp->destDataObjInp.condInput,
-                   RBUDP_SEND_RATE_KW, tmpStr );
-        addKeyVal( &dataObjCopyInp->srcDataObjInp.condInput,
-                   RBUDP_SEND_RATE_KW, tmpStr );
-    }
-
-    if ( ( tmpStr = getenv( RBUDP_PACK_SIZE_KW ) ) != NULL ) {
-        addKeyVal( &dataObjCopyInp->destDataObjInp.condInput,
-                   RBUDP_PACK_SIZE_KW, tmpStr );
-        addKeyVal( &dataObjCopyInp->srcDataObjInp.condInput,
-                   RBUDP_PACK_SIZE_KW, tmpStr );
     }
 
     memset( rodsRestart, 0, sizeof( rodsRestart_t ) );

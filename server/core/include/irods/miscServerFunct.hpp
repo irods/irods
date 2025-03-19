@@ -69,9 +69,7 @@ fillPortalTransferInp( portalTransferInp_t *myInput, rsComm_t *rsComm,
                        int threadNum, rodsLong_t size, rodsLong_t offset, int flags );
 int
 sameHostCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp );
-void
-sameHostPartialCopy( portalTransferInp_t *myInput );
-[[deprecated("RBUDP is deprecated. Its use should be avoided.")]] int rbudpRemLocCopy(dataCopyInp_t* dataCopyInp);
+void sameHostPartialCopy(portalTransferInp_t* myInput);
 int
 remLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp );
 void
@@ -88,8 +86,7 @@ int
 isUserPrivileged( rsComm_t *rsComm );
 int intNoSupport( ... );
 rodsLong_t longNoSupport( ... );
-void getZoneServerId( char *zoneName, char *zoneSID );
-[[deprecated("RBUDP is deprecated. Its use should be avoided.")]] int svrPortalPutGetRbudp(rsComm_t* rsComm);
+void getZoneServerId(char* zoneName, char* zoneSID);
 void
 reconnManager( rsComm_t *rsComm );
 int

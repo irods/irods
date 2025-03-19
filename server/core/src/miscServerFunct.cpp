@@ -1,8 +1,5 @@
 #include "irods/miscServerFunct.hpp"
 
-#include "irods/QUANTAnet_rbudpBase_c.h"
-#include "irods/QUANTAnet_rbudpSender_c.h"
-#include "irods/QUANTAnet_rbudpReceiver_c.h"
 #include "irods/dataObjOpen.h"
 #include "irods/dataObjLseek.h"
 #include "irods/irods_configuration_keywords.hpp"
@@ -144,13 +141,11 @@ svrToSvrConnect( rsComm_t *rsComm, rodsServerHost_t *rodsServerHost ) {
 }
 
 /* setupSrvPortalForParaOpr - Setup the portal on this server for
- * parallel or RBUDP transfer. It call createSrvPortal to create
+ * parallel transfer. It call createSrvPortal to create
  * the portal socket, malloc the portalOprOut struct, put the
  * server address, portNumber, etc in this struct. Also malloc
  * the rsComm->portalOpr struct and fill in the struct. This struct
  * will be used later by the server after sending reply to the client.
- * If RBUDP_TRANSFER_KW is set in dataOprInp->condInput, RBUDP transfer
- * is assumed.
  */
 
 int
@@ -158,23 +153,15 @@ setupSrvPortalForParaOpr( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
                           int oprType, portalOprOut_t **portalOprOut ) {
     portalOprOut_t *myDataObjPutOut = NULL;
     int portalSock = 0;
-    int proto = 0;
-
-    if ( getValByKey( &dataOprInp->condInput, RBUDP_TRANSFER_KW ) != NULL ) {
-        proto = SOCK_DGRAM;
-    }
-    else {
-        proto = SOCK_STREAM;
-    }
+    int proto = SOCK_STREAM;
 
     myDataObjPutOut = ( portalOprOut_t * ) malloc( sizeof( portalOprOut_t ) );
     memset( myDataObjPutOut, 0, sizeof( portalOprOut_t ) );
 
     *portalOprOut = myDataObjPutOut;
 
-    if ( getValByKey( &dataOprInp->condInput, STREAMING_KW ) != NULL ||
-            proto == SOCK_DGRAM ) {
-        /* streaming or udp - use only one thread */
+    if (getValByKey(&dataOprInp->condInput, STREAMING_KW) != nullptr) {
+        /* streaming - use only one thread */
         myDataObjPutOut->numThreads = 1;
     }
     else {
@@ -225,23 +212,17 @@ setupSrvPortalForParaOpr( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
 }
 
 /* createSrvPortal - create a server socket portal.
- * proto can be SOCK_STREAM or SOCK_DGRAM.
- * if proto == SOCK_DGRAM, create a tcp (control) and a udp socket
+ * proto is a SOCK_STREAM
  */
 
 int
 createSrvPortal( rsComm_t *rsComm, portList_t *thisPortList, int proto ) {
     int lsock = -1;
     int lport = 0;
-    char *laddr = NULL;
-    int udpsock = -1;
-    int udpport = 0;
-    char *udpaddr = NULL;
+    char* laddr = nullptr;
 
-
-    if ( proto != SOCK_DGRAM && proto != SOCK_STREAM ) {
-        rodsLog( LOG_ERROR,
-                 "createSrvPortal: invalid input protocol %d", proto );
+    if (proto != SOCK_STREAM) {
+        rodsLog(LOG_ERROR, "createSrvPortal: invalid input protocol %d", proto);
         return SYS_INVALID_PROTOCOL_TYPE;
     }
 
@@ -278,22 +259,6 @@ createSrvPortal( rsComm_t *rsComm, portList_t *thisPortList, int proto ) {
                  errno );
         return SYS_SOCK_LISTEN_ERR;
     }
-
-    if ( proto == SOCK_DGRAM ) {
-        if ( ( udpsock = svrSockOpenForInConn( rsComm, &udpport, &udpaddr,
-                                               SOCK_DGRAM ) ) < 0 ) {
-            rodsLog( LOG_ERROR,
-                     "setupSrvPortal- sockOpenForInConn of SOCK_DGRAM failed: stat=%d",
-                     udpsock );
-            CLOSE_SOCK( lsock );
-            return udpsock;
-        }
-        else {
-            addUdpPortToPortList( thisPortList, udpport );
-            addUdpSockToPortList( thisPortList, udpsock );
-        }
-    }
-    free( udpaddr );
 
     return lsock;
 }
@@ -430,15 +395,6 @@ svrPortalPutGet( rsComm_t *rsComm ) {
     if ( thisPortList == NULL ) {
         rodsLog( LOG_NOTICE, "svrPortalPut: NULL portList" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
-    }
-
-    if ( getUdpPortFromPortList( thisPortList ) != 0 ) {
-        /* rbudp transfer */
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-        retVal = svrPortalPutGetRbudp( rsComm );
-#pragma GCC diagnostic pop
-        return retVal;
     }
 
     oprType = myPortalOpr->oprType;
@@ -1328,66 +1284,6 @@ remToLocPartialCopy( portalTransferInp_t *myInput ) {
     CLOSE_SOCK( srcFd );
 }
 
-/* rbudpRemLocCopy - The rbudp version of remLocCopy.
- */
-
-int
-rbudpRemLocCopy( dataCopyInp_t *dataCopyInp ) {
-    portalOprOut_t *portalOprOut;
-    dataOprInp_t *dataOprInp;
-    int oprType;
-    int veryVerbose, sendRate, packetSize;
-    char *tmpStr;
-    int status;
-
-    if ( dataCopyInp == NULL ) {
-        rodsLog( LOG_NOTICE,
-                 "rbudpRemLocCopy: NULL dataCopyInp input" );
-        return SYS_INTERNAL_NULL_INPUT_ERR;
-    }
-    portalOprOut = &dataCopyInp->portalOprOut;
-    dataOprInp = &dataCopyInp->dataOprInp;
-    oprType = dataOprInp->oprType;
-
-    if ( getValByKey( &dataOprInp->condInput, VERY_VERBOSE_KW ) != NULL ) {
-        veryVerbose = 2;
-    }
-    else {
-        veryVerbose = 0;
-    }
-
-    if ( ( tmpStr = getValByKey( &dataOprInp->condInput,
-                                 RBUDP_PACK_SIZE_KW ) ) != NULL ) {
-        packetSize = atoi( tmpStr );
-    }
-    else {
-        packetSize = DEF_UDP_PACKET_SIZE;
-    }
-
-    if ( oprType == COPY_TO_LOCAL_OPR ) {
-        int destL3descInx = dataOprInp->destL3descInx;
-
-        status = getFileToPortalRbudp( portalOprOut, NULL,
-                                       FileDesc[destL3descInx].fd,
-                                       veryVerbose, packetSize );
-    }
-    else {
-        int srcL3descInx = dataOprInp->srcL3descInx;
-
-        if ( ( tmpStr = getValByKey( &dataOprInp->condInput,
-                                     RBUDP_SEND_RATE_KW ) ) != NULL ) {
-            sendRate = atoi( tmpStr );
-        }
-        else {
-            sendRate = DEF_UDP_SEND_RATE;
-        }
-        status = putFileToPortalRbudp( portalOprOut, NULL,
-                                       FileDesc[srcL3descInx].fd,
-                                       veryVerbose, sendRate, packetSize );
-    }
-    return status;
-}
-
 /* remLocCopy - This routine is very similar to rcPartialDataGet.
  */
 
@@ -1408,14 +1304,6 @@ int remLocCopy(rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
     dataOprInp_t *dataOprInp = &dataCopyInp->dataOprInp;
     int oprType = dataOprInp->oprType;
     rodsLong_t dataSize = dataOprInp->dataSize;
-
-    if ( getUdpPortFromPortList( &portalOprOut->portList ) != 0 ) {
-        /* rbudp transfer */
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-        return rbudpRemLocCopy( dataCopyInp );
-#pragma GCC diagnostic pop
-    }
 
     if ( numThreads > MAX_NUM_CONFIG_TRAN_THR || numThreads <= 0 ) {
         rodsLog(LOG_NOTICE,
@@ -2076,159 +1964,6 @@ longNoSupport( ... ) {
     return ( rodsLong_t ) SYS_NOT_SUPPORTED;
 }
 
-int
-svrPortalPutGetRbudp( rsComm_t *rsComm ) {
-    portalOpr_t *myPortalOpr;
-    portList_t *thisPortList;
-    int lsock;
-    int  tcpSock, udpSockfd;
-    int udpPortBuf;
-    int status;
-#if defined(aix_platform)
-    socklen_t      laddrlen = sizeof( struct sockaddr );
-#else
-    uint         laddrlen = sizeof( struct sockaddr );
-#endif
-    int packetSize;
-    char *tmpStr;
-    int verbose;
-
-    myPortalOpr = rsComm->portalOpr;
-
-    if ( myPortalOpr == NULL ) {
-        rodsLog( LOG_NOTICE, "svrPortalPutGetRbudp: NULL myPortalOpr" );
-        return SYS_INTERNAL_NULL_INPUT_ERR;
-    }
-
-    thisPortList = &myPortalOpr->portList;
-    if ( thisPortList == NULL ) {
-        rodsLog( LOG_NOTICE, "svrPortalPutGetRbudp: NULL portList" );
-        return SYS_INTERNAL_NULL_INPUT_ERR;
-    }
-
-    lsock = getTcpSockFromPortList( thisPortList );
-
-    tcpSock =  acceptSrvPortal( rsComm, thisPortList );
-    if ( tcpSock < 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "svrPortalPutGetRbudp: acceptSrvPortal error. errno = %d",
-                 errno );
-        CLOSE_SOCK( lsock );
-        return tcpSock;
-    }
-    else {
-        CLOSE_SOCK( lsock );
-    }
-    status = readn( tcpSock, ( char * ) &udpPortBuf, sizeof( udpPortBuf ) );
-    if ( status != sizeof( udpPortBuf ) ) {
-        rodsLog( LOG_ERROR,
-                 "svrPortalPutGetRbudp: readn error. toread %d, bytes read %d ",
-                 sizeof( udpPortBuf ), status );
-        return SYS_UDP_CONNECT_ERR;
-    }
-
-    if ( ( tmpStr = getValByKey( &myPortalOpr->dataOprInp.condInput, RBUDP_PACK_SIZE_KW ) ) == NULL ||
-            ( packetSize = atoi( tmpStr ) ) < 1 ) {
-        packetSize = DEF_UDP_PACKET_SIZE;
-    }
-
-    if ( getValByKey( &myPortalOpr->dataOprInp.condInput, VERY_VERBOSE_KW ) !=
-            NULL ) {
-        verbose = 2;
-    }
-    else {
-        verbose = 0;
-    }
-
-    udpSockfd = getUdpSockFromPortList( thisPortList );
-
-    checkbuf( udpSockfd, UDPSOCKBUF, verbose );
-    if ( myPortalOpr->oprType == PUT_OPR ) {
-        rbudpReceiver_t rbudpReceiver;
-        std::memset(&rbudpReceiver, 0, sizeof(rbudpReceiver));
-        int destL3descInx = myPortalOpr->dataOprInp.destL3descInx;
-
-        rbudpReceiver.rbudpBase.verbose = verbose;
-        rbudpReceiver.rbudpBase.udpSockBufSize = UDPSOCKBUF;
-        rbudpReceiver.rbudpBase.tcpPort = getTcpPortFromPortList( thisPortList );
-        rbudpReceiver.rbudpBase.tcpSockfd = tcpSock;
-        rbudpReceiver.rbudpBase.udpSockfd = udpSockfd;
-        rbudpReceiver.rbudpBase.hasTcpSock = 0;
-        rbudpReceiver.rbudpBase.udpRemotePort = ntohl( udpPortBuf );
-        /* use the addr of tcp sock */
-        if ( getpeername( tcpSock,
-                          ( struct sockaddr * ) &rbudpReceiver.rbudpBase.udpServerAddr,
-                          &laddrlen ) < 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "svrPortalPutGetRbudp() - getpeername() failed: errno=%d",
-                     errno );
-            recvClose( &rbudpReceiver );
-            return USER_RODS_HOSTNAME_ERR;
-        }
-
-        rbudpReceiver.rbudpBase.udpServerAddr.sin_port = htons( rbudpReceiver.rbudpBase.udpRemotePort );
-
-        status = getfileByFd(
-                     &rbudpReceiver,
-                     FileDesc[destL3descInx].fd,
-                     packetSize );
-
-        if ( status < 0 ) {
-            rodsLog( LOG_ERROR,
-                     "svrPortalPutGetRbudp: getfileByFd error for %s",
-                     FileDesc[destL3descInx].fileName );
-            status += SYS_UDP_TRANSFER_ERR;
-        }
-        recvClose( &rbudpReceiver );
-    }
-    else if ( myPortalOpr->oprType == GET_OPR ) {
-
-        int sendRate;
-        rbudpSender_t rbudpSender;
-        int srcL3descInx = myPortalOpr->dataOprInp.srcL3descInx;
-
-        std::memset(&rbudpSender, 0, sizeof(rbudpSender));
-        rbudpSender.rbudpBase.verbose = verbose;
-        rbudpSender.rbudpBase.udpSockBufSize = UDPSOCKBUF;
-        rbudpSender.rbudpBase.tcpPort = getTcpPortFromPortList( thisPortList );
-        rbudpSender.rbudpBase.tcpSockfd = tcpSock;
-        rbudpSender.rbudpBase.udpSockfd = udpSockfd;
-        rbudpSender.rbudpBase.hasTcpSock = 0;
-        rbudpSender.rbudpBase.udpRemotePort = ntohl( udpPortBuf );
-        /* use the addr of tcp sock */
-        if ( getpeername( tcpSock,
-                          ( struct sockaddr * ) &rbudpSender.rbudpBase.udpServerAddr,
-                          &laddrlen ) < 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "svrPortalPutGetRbudp() - getpeername() failed: errno=%d",
-                     errno );
-            sendClose( &rbudpSender );
-            return USER_RODS_HOSTNAME_ERR;
-        }
-        rbudpSender.rbudpBase.udpServerAddr.sin_port =
-            htons( rbudpSender.rbudpBase.udpRemotePort );
-        if ( ( tmpStr = getValByKey( &myPortalOpr->dataOprInp.condInput, RBUDP_SEND_RATE_KW ) ) == NULL ||
-                ( sendRate = atoi( tmpStr ) ) < 1 ) {
-            sendRate = DEF_UDP_SEND_RATE;
-        }
-
-        status = sendfileByFd(
-                     &rbudpSender,
-                     sendRate,
-                     packetSize,
-                     FileDesc[srcL3descInx].fd );
-
-        if ( status < 0 ) {
-            rodsLog( LOG_ERROR,
-                     "svrPortalPutGetRbudp: sendfile error for %s",
-                     FileDesc[srcL3descInx].fileName );
-            status += SYS_UDP_TRANSFER_ERR;
-        }
-        sendClose( &rbudpSender );
-    }
-
-    return status;
-}
 void
 reconnManager( rsComm_t *rsComm ) {
     struct sockaddr_in  remoteAddr;

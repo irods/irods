@@ -414,9 +414,6 @@ parseCmdLineOpt( int argc, char **argv, const char *optString, int includeLong,
             rodsArgs->query = True;
             rodsArgs->queryStr = optarg;
             break;
-        case 'Q':
-            rodsArgs->rbudp = True;
-            break;
         case 'r':
             rodsArgs->recursive = True;
             break;

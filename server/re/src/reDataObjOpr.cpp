@@ -937,12 +937,6 @@ msiDataObjUnlink( msParam_t *inpParam, msParam_t *outParam,
  *                This keyword has no value. If provided, the destination replica will have its
  *                checksum computed and stored in the catalog, but the result will not be
  *                compared to the source replica's checksum. Not compatible with verifyChksum.
- *          \li "rbudpTransfer" - use RBUDP (datagram) protocol for the
- *                data transfer. This keyWd has no value.
- *          \li "rbudpSendRate" - Valid only if "rbudpTransfer" is on. This
- *                is the send rate in kbits/sec. The default is 600,000.
- *          \li "rbudpPackSize" - Valid only if "rbudpTransfer" is on. This
- *                is the packet size in bytes. The default is 8192.
  * \param[out] outParam - a msParam of type INT_MS_T which is a status of the operation.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -996,8 +990,7 @@ msiDataObjRepl( msParam_t *inpParam1, msParam_t *msKeyValStr,
     }
 
     validKwFlags = OBJ_PATH_FLAG | DEST_RESC_NAME_FLAG | NUM_THREADS_FLAG | RESC_NAME_FLAG | UPDATE_REPL_FLAG |
-                   REPL_NUM_FLAG | ALL_FLAG | ADMIN_FLAG | VERIFY_CHKSUM_FLAG | RBUDP_TRANSFER_FLAG |
-                   RBUDP_SEND_RATE_FLAG | RBUDP_PACK_SIZE_FLAG | FORCE_CHKSUM_FLAG;
+                   REPL_NUM_FLAG | ALL_FLAG | ADMIN_FLAG | VERIFY_CHKSUM_FLAG | FORCE_CHKSUM_FLAG;
     // The BACKUP_RESC_NAME feature has been deprecated and will be removed in a future version.
     validKwFlags |= BACKUP_RESC_NAME_FLAG;
     rei->status = parseMsKeyValStrForDataObjInp( msKeyValStr, myDataObjInp,

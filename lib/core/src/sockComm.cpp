@@ -5,7 +5,6 @@
 #include "irods/miscServerFunct.hpp"
 #include "irods/getHostForPut.h"
 #include "irods/getHostForGet.h"
-#include "irods/QUANTAnet_rbudpBase_c.h"
 #include "irods/rcConnect.h"
 #include "irods/rodsConnect.h"
 
@@ -359,7 +358,7 @@ int
 sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
     int status = 0;
 
-    if ( proto != SOCK_DGRAM && proto != SOCK_STREAM ) {
+    if (proto != SOCK_STREAM) {
         rodsLog( LOG_ERROR,
                  "sockOpenForInConn() -- invalid input protocol %d", proto );
         return SYS_INVALID_PROTOCOL_TYPE;
@@ -377,14 +376,11 @@ sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
         return status;
     }
 
-    /* For SOCK_DGRAM, done in checkbuf */
-    if ( proto == SOCK_STREAM ) {
-        rodsSetSockOpt( sock, rsComm->windowSize );
+    rodsSetSockOpt(sock, rsComm->windowSize);
 
-        if (status = set_socket_tcp_keepalive_options(sock); status < 0) {
-            close(sock);
-            return status;
-        }
+    if (status = set_socket_tcp_keepalive_options(sock); status < 0) {
+        close(sock);
+        return status;
     }
 
     mySockAddr.sin_family = AF_INET;
@@ -1520,36 +1516,8 @@ int cliSwitchConnect( rcComm_t *conn ) {
 }
 
 int
-addUdpPortToPortList( portList_t *thisPortList, int udpport ) {
-    /* put udpport in the upper 16 bits of portNum */
-    thisPortList->portNum |= udpport << 16;
-    return 0;
-}
-
-int
-getUdpPortFromPortList( portList_t *thisPortList ) {
-    int udpport = 0;
-    udpport = ( thisPortList->portNum & 0xffff0000 ) >> 16;
-    return udpport;
-}
-
-int
 getTcpPortFromPortList( portList_t *thisPortList ) {
     return thisPortList->portNum & 0xffff;
-}
-
-int
-addUdpSockToPortList( portList_t *thisPortList, int udpsock ) {
-    /* put udpport in the upper 16 bits of portNum */
-    thisPortList->sock |= udpsock << 16;
-    return 0;
-}
-
-int
-getUdpSockFromPortList( portList_t *thisPortList ) {
-    int udpsock = 0;
-    udpsock = ( thisPortList->sock & 0xffff0000 ) >> 16;
-    return udpsock;
 }
 
 int

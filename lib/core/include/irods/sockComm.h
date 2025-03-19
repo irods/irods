@@ -70,15 +70,7 @@ int rsAcceptConn(struct RsComm *comm);
 
 int irodsCloseSock(int sock);
 
-int addUdpPortToPortList(struct PortList *thisPortList, int udpport);
-
-int getUdpPortFromPortList(struct PortList *thisPortList);
-
 int getTcpPortFromPortList(struct PortList *thisPortList);
-
-int addUdpSockToPortList(struct PortList *thisPortList, int udpsock);
-
-int getUdpSockFromPortList(struct PortList *thisPortList);
 
 int getTcpSockFromPortList(struct PortList *thisPortList);
 
