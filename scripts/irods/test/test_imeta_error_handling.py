@@ -112,21 +112,6 @@ class Test_Imeta_Error_Handling(unittest.TestCase):
     def test_imeta_ls_u_name_toolong(self):
         self.admin.assert_icommand(['imeta', 'ls', '-u', self.long_name], 'STDERR_SINGLELINE', 'Invalid username format', desired_rc=4)
 
-    def test_imeta_qu_insuff_args(self):
-        self.admin.assert_icommand(['imeta', 'qu', '-d'], 'STDERR_SINGLELINE', 'Not enough arguments provided', desired_rc=4)
-    def test_imeta_qu_no_args(self):
-        self.admin.assert_icommand(['imeta', 'qu'], 'STDERR_SINGLELINE', 'No object type descriptor', desired_rc=4)
-    def test_imeta_qu_badop_arg(self):
-        self.admin.assert_icommand(['imeta', 'qu', '-d', self.test_univ_attr, 'gt', '17'], 'STDERR_SINGLELINE', 'CAT_INVALID_ARGUMENT', desired_rc=4)
-    def test_imeta_qu_d_badquery(self):
-        self.admin.assert_icommand(['imeta', 'qu', '-d', self.test_univ_attr, 'n>', '6', '26'], 'STDERR_SINGLELINE', 'Unrecognized input', desired_rc=4)
-    def test_imeta_qu_C_badquery(self):
-        self.admin.assert_icommand(['imeta', 'qu', '-C', self.test_univ_attr, 'n>', '6', '26'], 'STDERR_SINGLELINE', 'Unrecognized input', desired_rc=4)
-    def test_imeta_qu_R_extra_arg(self):
-        self.admin.assert_icommand(['imeta', 'qu', '-R', self.test_univ_attr, 'n>', '6', 'and', self.test_univ_attr, 'n<', '17'], 'STDERR_SINGLELINE', 'Too many arguments provided to imeta qu for the -R option', desired_rc=4)
-    def test_imeta_qu_u_extra_arg(self):
-        self.admin.assert_icommand(['imeta', 'qu', '-u', self.test_univ_attr, 'n>', '6', 'and', self.test_univ_attr, 'n<', '17'], 'STDERR_SINGLELINE', 'Too many arguments provided to imeta qu for the -u option', desired_rc=4)
-
     def test_imeta_cp_one_arg(self):
         self.admin.assert_icommand(['imeta', 'cp', '-d'], 'STDERR_SINGLELINE', 'No second object type descriptor', desired_rc=4)
     def test_imeta_cp_insuff_args(self):

@@ -226,18 +226,6 @@ class Test_ImetaSet(ResourceBase, unittest.TestCase):
             self.admin.assert_icommand_fail('imeta ls -u %s %s' % (user, a), 'STDOUT_SINGLELINE', ['value: ' + v + '$'])
             self.admin.assert_icommand_fail('imeta ls -u %s %s' % (user, a), 'STDOUT_SINGLELINE', ['units:' + u + '$'])
 
-    def test_imeta_with_too_long_string(self):
-        self.admin.assert_icommand(['imeta', 'add', '-d', self.testfile, 'a', 'v', 'u'])
-        num_extra_bind_vars = 10000
-        command_str = '''imeta qu -d a in "1'{0}'v"'''.format("'1'" * num_extra_bind_vars)
-        self.admin.assert_icommand(command_str, 'STDERR_SINGLELINE', 'USER_STRLEN_TOOLONG')
-
-    def test_imeta_with_many_bind_vars(self):
-        self.admin.assert_icommand(['imeta', 'add', '-d', self.testfile, 'a', 'v', 'u'])
-        num_extra_bind_vars = 607  # 3848 for postgres and mysql, any more and the argument string is too long
-        command_str = '''imeta qu -d a in "1'{0}'v"'''.format("'1'" * num_extra_bind_vars)
-        self.admin.assert_icommand(command_str, 'STDOUT_SINGLELINE', self.testfile)
-
     def test_imeta_duplicate_attr_3787(self):
         self.admin.assert_icommand(['imeta', 'add', '-d', self.testfile, 'a1', 'v1', 'u1'])
         self.admin.assert_icommand(['imeta', 'mod', '-d', self.testfile, 'a1', 'v1', 'u1', 'n:a2', 'v:v2', 'u:'])
@@ -370,96 +358,6 @@ class Test_ImetaSet(ResourceBase, unittest.TestCase):
         for collection in collections:
             expected_value = 'value: yes'
             self.admin.assert_icommand(['imeta', 'ls', '-C', collection], 'STDOUT', expected_value)
-
-class Test_ImetaQu(ResourceBase, unittest.TestCase):
-
-    def helper_imeta_qu_comparison_2748(self, irods_object_option_flag):
-        attribute = 'helper_imeta_qu_comparison_2748_attribute'
-        object_name_base = 'helper_imeta_qu_comparison_2748_base_name'
-        for i in range(10):
-            object_name = object_name_base + str(i)
-            value = str(i)
-            if irods_object_option_flag == '-C':
-                self.admin.assert_icommand(['imkdir', object_name])
-            elif irods_object_option_flag == '-d':
-                self.admin.assert_icommand(['iput', self.testfile, object_name])
-            else:
-                assert False, irods_object_option_flag
-
-            self.admin.assert_icommand(['imeta', 'add', irods_object_option_flag, object_name, attribute, value])
-
-        stdout, stderr, rc = self.admin.run_icommand(['imeta', 'qu', irods_object_option_flag, attribute, '<=', '8', 'and', attribute, '>=', '2'])
-        assert rc == 0, rc
-        assert stderr == '', stderr
-        all_objects = set([object_name_base + str(i) for i in range(0, 10)])
-        should_find = set([object_name_base + str(i) for i in range(2, 9)])
-        should_not_find = all_objects - should_find
-        for c in should_find:
-            assert c in stdout, c + ' not found in ' + stdout
-        for c in should_not_find:
-            assert c not in stdout, c + ' found in ' + stdout
-
-    def test_imeta_qu_C_comparison_2748(self):
-        self.helper_imeta_qu_comparison_2748('-C')
-
-    def test_imeta_qu_d_comparison_2748(self):
-        self.helper_imeta_qu_comparison_2748('-d')
-
-    def test_imeta_qu_d_no_extra_output(self):
-        self.admin.assert_icommand(['imeta', 'add', '-d', self.testfile, 'a', 'v', 'u'])
-        _, out, _ = self.admin.assert_icommand(['imeta', 'qu', '-d', 'a', 'like', 'v'], 'STDOUT_SINGLELINE', self.testfile)
-        split_output = out.split()
-        self.assertEqual(split_output[0], 'collection:', out)
-        self.assertEqual(split_output[1], self.admin.session_collection, out)
-        self.assertEqual(split_output[2], 'dataObj:', out)
-        self.assertEqual(split_output[3], 'testfile.txt', out)
-
-    def test_imeta_qu_dataobj_more_than_3_comparisons_3594(self):
-        object_name = 'data_obj_3594'
-        self.admin.assert_icommand(['iput', self.testfile, object_name])
-        self.admin.assert_icommand(['imeta', 'add', '-d', object_name, 'target', '1'])
-        self.admin.assert_icommand(['imeta', 'add', '-d', object_name, 'study_id', '4616'])
-        self.admin.assert_icommand(['imeta', 'add', '-d', object_name, 'type', 'fastq'])
-        self.admin.assert_icommand(['imeta', 'qu', '-d', 'target', '=', '1', 'and', 'study_id', '=', '4616', 'and', 'type', '=', 'fastq'],
-                'STDOUT_MULTILINE', ['collection: .*$', 'dataObj: %s$' % object_name],
-                use_regex=True)
-
-    def test_imeta_qu_collection_more_than_3_comparisons_3594(self):
-        object_name = 'collection_3594'
-        self.admin.assert_icommand(['imkdir', object_name])
-        self.admin.assert_icommand(['imeta', 'add', '-C', object_name, 'target', '1'])
-        self.admin.assert_icommand(['imeta', 'add', '-C', object_name, 'study_id', '4616'])
-        self.admin.assert_icommand(['imeta', 'add', '-C', object_name, 'type', 'fastq'])
-        self.admin.assert_icommand(['imeta', 'qu', '-C', 'target', '=', '1', 'and', 'study_id', '=', '4616', 'and', 'type', '=', 'fastq'],
-                'STDOUT_MULTILINE', ['collection: .*%s$' % object_name],
-                use_regex=True)
-    
-    def test_imeta_qu_supports_OR_keyword__issue_4458(self):
-        try:
-            # Test 1: Data Objects
-            data_object = 'issue_4458'
-            self.admin.assert_icommand(['itouch', data_object])
-            self.admin.assert_icommand(['imeta', 'add', '-d', data_object, 'r', '5'])
-            self.admin.assert_icommand(['imeta', 'add', '-d', data_object, 'r', '6'])
-            self.admin.assert_icommand(['imeta', 'add', '-d', data_object, 'r', '7'])
-            expected_output = ['collection: ' + self.admin.session_collection, 'dataObj: ' + data_object]
-            self.admin.assert_icommand(['imeta', 'qu', '-d', 'r', '=', '5', 'or', '=', '6', 'or', '=', '7'], 'STDOUT', expected_output)
-
-            # Test 2: Collections
-            collection = self.admin.session_collection
-            self.admin.assert_icommand(['imeta', 'add', '-C', collection, 'r', '5'])
-            self.admin.assert_icommand(['imeta', 'add', '-C', collection, 'r', '6'])
-            self.admin.assert_icommand(['imeta', 'add', '-C', collection, 'r', '7'])
-            self.admin.assert_icommand(['imeta', 'qu', '-C', 'r', '=', '5', 'or', '=', '6', 'or', '=', '7'], 'STDOUT', ['collection: ' + collection])
-
-        finally:
-            self.admin.assert_icommand(['imeta', 'rm', '-d', data_object, 'r', '5'])
-            self.admin.assert_icommand(['imeta', 'rm', '-d', data_object, 'r', '6'])
-            self.admin.assert_icommand(['imeta', 'rm', '-d', data_object, 'r', '7'])
-
-            self.admin.assert_icommand(['imeta', 'rm', '-C', collection, 'r', '5'])
-            self.admin.assert_icommand(['imeta', 'rm', '-C', collection, 'r', '6'])
-            self.admin.assert_icommand(['imeta', 'rm', '-C', collection, 'r', '7'])
 
 # See issue #5111
 class Test_ImetaLsLongmode(session.make_sessions_mixin([('otherrods', 'rods')], []), unittest.TestCase):
