@@ -2,6 +2,7 @@
 #include "irods/msParam.h"
 #include "irods/rcConnect.h"
 #include "irods/sockComm.h"
+#include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_network_plugin.hpp"
 #include "irods/irods_network_constants.hpp"
 #include "irods/irods_ssl_object.hpp"
@@ -16,21 +17,13 @@
 #include <string>
 #include <iostream>
 
+#include <openssl/decoder.h>
+#include <openssl/err.h>
+#include <openssl/evp.h>
 #include <openssl/ssl.h>
 #include <openssl/x509v3.h>
-#include <openssl/err.h>
 
 #include <fmt/format.h>
-
-// =-=-=-=-=-=-=-
-// work around for SSL Macro version issues
-#if OPENSSL_VERSION_NUMBER < 0x10100000
-#define ASN1_STRING_get0_data ASN1_STRING_data
-#define DH_set0_pqg(dh_, p_, q_, g_) \
-    dh_->p = p_; \
-    dh_->q = q_; \
-    dh_->g = g_;
-#endif
 
 #define SSL_CIPHER_LIST "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH"
 
@@ -63,91 +56,46 @@ static void ssl_build_error_string(
 
 } //ssl_build_error_string
 
-/* This function returns a set of built-in Diffie-Hellman
-   parameters. We could read the parameters from a file instead,
-   but this is a reasonably strong prime. The parameters come from
-   the openssl distribution's 'apps' sub-directory. Comment from
-   the source file is:
-
-   These are the 2048 bit DH parameters from "Assigned Number for SKIP Protocols"
-   (http://www.skip-vpn.org/spec/numbers.html).
-   See there for how they were generated. */
-
-static DH* ssl_get_dh2048() {
-    static unsigned char dh2048_p[] = {
-        0xF6, 0x42, 0x57, 0xB7, 0x08, 0x7F, 0x08, 0x17, 0x72, 0xA2, 0xBA, 0xD6,
-        0xA9, 0x42, 0xF3, 0x05, 0xE8, 0xF9, 0x53, 0x11, 0x39, 0x4F, 0xB6, 0xF1,
-        0x6E, 0xB9, 0x4B, 0x38, 0x20, 0xDA, 0x01, 0xA7, 0x56, 0xA3, 0x14, 0xE9,
-        0x8F, 0x40, 0x55, 0xF3, 0xD0, 0x07, 0xC6, 0xCB, 0x43, 0xA9, 0x94, 0xAD,
-        0xF7, 0x4C, 0x64, 0x86, 0x49, 0xF8, 0x0C, 0x83, 0xBD, 0x65, 0xE9, 0x17,
-        0xD4, 0xA1, 0xD3, 0x50, 0xF8, 0xF5, 0x59, 0x5F, 0xDC, 0x76, 0x52, 0x4F,
-        0x3D, 0x3D, 0x8D, 0xDB, 0xCE, 0x99, 0xE1, 0x57, 0x92, 0x59, 0xCD, 0xFD,
-        0xB8, 0xAE, 0x74, 0x4F, 0xC5, 0xFC, 0x76, 0xBC, 0x83, 0xC5, 0x47, 0x30,
-        0x61, 0xCE, 0x7C, 0xC9, 0x66, 0xFF, 0x15, 0xF9, 0xBB, 0xFD, 0x91, 0x5E,
-        0xC7, 0x01, 0xAA, 0xD3, 0x5B, 0x9E, 0x8D, 0xA0, 0xA5, 0x72, 0x3A, 0xD4,
-        0x1A, 0xF0, 0xBF, 0x46, 0x00, 0x58, 0x2B, 0xE5, 0xF4, 0x88, 0xFD, 0x58,
-        0x4E, 0x49, 0xDB, 0xCD, 0x20, 0xB4, 0x9D, 0xE4, 0x91, 0x07, 0x36, 0x6B,
-        0x33, 0x6C, 0x38, 0x0D, 0x45, 0x1D, 0x0F, 0x7C, 0x88, 0xB3, 0x1C, 0x7C,
-        0x5B, 0x2D, 0x8E, 0xF6, 0xF3, 0xC9, 0x23, 0xC0, 0x43, 0xF0, 0xA5, 0x5B,
-        0x18, 0x8D, 0x8E, 0xBB, 0x55, 0x8C, 0xB8, 0x5D, 0x38, 0xD3, 0x34, 0xFD,
-        0x7C, 0x17, 0x57, 0x43, 0xA3, 0x1D, 0x18, 0x6C, 0xDE, 0x33, 0x21, 0x2C,
-        0xB5, 0x2A, 0xFF, 0x3C, 0xE1, 0xB1, 0x29, 0x40, 0x18, 0x11, 0x8D, 0x7C,
-        0x84, 0xA7, 0x0A, 0x72, 0xD6, 0x86, 0xC4, 0x03, 0x19, 0xC8, 0x07, 0x29,
-        0x7A, 0xCA, 0x95, 0x0C, 0xD9, 0x96, 0x9F, 0xAB, 0xD0, 0x0A, 0x50, 0x9B,
-        0x02, 0x46, 0xD3, 0x08, 0x3D, 0x66, 0xA4, 0x5D, 0x41, 0x9F, 0x9C, 0x7C,
-        0xBD, 0x89, 0x4B, 0x22, 0x19, 0x26, 0xBA, 0xAB, 0xA2, 0x5E, 0xC3, 0x55,
-        0xE9, 0x32, 0x0B, 0x3B,
-    };
-    static unsigned char dh2048_g[] = {
-        0x02,
-    };
-    auto *dh = DH_new();
-
-    if ( !dh ) {
-        return NULL;
-    }
-    auto* p = BN_bin2bn( dh2048_p, sizeof( dh2048_p ), NULL );
-    auto* g = BN_bin2bn( dh2048_g, sizeof( dh2048_g ), NULL );
-    if ( !p || !g ) {
-        DH_free( dh );
-        return NULL;
-    }
-    DH_set0_pqg(dh, p, nullptr, g);
-    return dh;
-
-} // ssl_get_dh2048
-
-// =-=-=-=-=-=-=-
-//
-static int ssl_load_hd_params(
-    SSL_CTX* ctx,
-    char*    file ) {
-    DH*  dhparams = 0;
-    BIO* bio      = 0;
-
-    if ( file ) {
-        bio = BIO_new_file( file, "r" );
-        if ( bio ) {
-            dhparams = PEM_read_bio_DHparams( bio, NULL, NULL, NULL );
-            BIO_free( bio );
-        }
-    }
-
-    if ( dhparams == NULL ) {
-        ssl_log_error( "ssl_load_hd_params: can't load DH parameter file. Falling back to built-ins." );
-        dhparams = ssl_get_dh2048();
-        if ( dhparams == NULL ) {
-            rodsLog( LOG_ERROR, "ssl_load_hd_params: can't load built-in DH params" );
-            return -1;
-        }
-    }
-
-    if ( SSL_CTX_set_tmp_dh( ctx, dhparams ) < 0 ) {
-        ssl_log_error( "ssl_load_hd_params: couldn't set DH parameters" );
+static auto ssl_load_dh_params(SSL_CTX* ctx, char* file) -> int
+{
+    // dhparams file is required for secure communications in iRODS. Bail out.
+    if (!file) {
         return -1;
     }
+
+    BIO* bio = BIO_new_file(file, "r");
+    if (!bio) {
+        return -1;
+    }
+
+    const auto free_bio = irods::at_scope_exit{[&bio] { BIO_free(bio); }};
+    constexpr const char* format = "PEM";
+    constexpr const char* structure = nullptr;
+    constexpr const char* keytype = "DH";
+    constexpr int selection = 0;
+
+    EVP_PKEY* pkey = nullptr;
+    OSSL_DECODER_CTX* dctx =
+        OSSL_DECODER_CTX_new_for_pkey(&pkey, format, structure, keytype, selection, nullptr, nullptr);
+    if (!dctx) {
+        return -1;
+    }
+    const auto free_decoder_context = irods::at_scope_exit{[&dctx] { OSSL_DECODER_CTX_free(dctx); }};
+    // pkey is created with the decoded data from the bio
+    if (0 == OSSL_DECODER_from_bio(dctx, bio)) {
+        return -1;
+    }
+
+    if (!pkey) {
+        return -1;
+    }
+
+    if (SSL_CTX_set0_tmp_dh_pkey(ctx, pkey) < 0) {
+        return -1;
+    }
+
     return 0;
-}
+} // ssl_load_dh_params
 
 // =-=-=-=-=-=-=-
 //
@@ -737,7 +685,7 @@ irods::error ssl_agent_start(irods::plugin_context& _ctx)
         return ERROR(SSL_INIT_ERROR, err_str.c_str());
     }
 
-    if (const auto ec = ssl_load_hd_params(ctx, env.irodsSSLDHParamsFile); ec < 0) {
+    if (const auto ec = ssl_load_dh_params(ctx, env.irodsSSLDHParamsFile); ec < 0) {
         std::string err_str = "error setting Diffie-Hellman parameters";
         ssl_build_error_string( err_str );
         SSL_CTX_free( ctx );
