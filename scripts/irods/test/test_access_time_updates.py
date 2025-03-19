@@ -214,7 +214,7 @@ class Test_Access_Time_Updates(session.make_sessions_mixin(rodsadmins, rodsusers
             ('batch_size', str(2**129)),
             ('batch_size', 'not a number'),
             ('resolution_in_seconds', ' '),
-            ('resolution_in_seconds', '-1'), # TODO This breaks the server because of Boost.ProgramOptions. Need to accept args as a vector.
+            ('resolution_in_seconds', '-1'),
             ('resolution_in_seconds', str(2**32 + 1)),
             ('resolution_in_seconds', str(2**129)),
             ('resolution_in_seconds', 'not a number'),
