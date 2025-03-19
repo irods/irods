@@ -165,7 +165,6 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase, metaclass=me
 
             # skip if an action (run in the core.re), not enough input/output for irule
             names_to_skip = [
-                "rulemsiAclPolicy",
                 "rulemsiAddUserToGroup",
                 "rulemsiCheckHostAccessControl",
                 "rulemsiCheckOwner",
