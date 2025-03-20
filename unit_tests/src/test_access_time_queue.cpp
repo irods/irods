@@ -97,6 +97,17 @@ TEST_CASE("invalid initialization")
         REQUIRE_THROWS_AS([] { atq::init("", 1); }(), irods::exception);
     }
 
+    SECTION("queue name prefix starts with character other than alphabet or underscore")
+    {
+        auto matcher = Catch::Matchers::Contains("init: Access time queue name prefix violates name requirement: [_a-zA-Z][_a-zA-Z0-9]*");
+
+        CHECK_THROWS_WITH([] { atq::init("1_number", 1); }(), matcher);
+        CHECK_THROWS_WITH([] { atq::init("-_hyphen", 1); }(), matcher);
+        CHECK_THROWS_WITH([] { atq::init("<_less_than_sign", 1); }(), matcher);
+        CHECK_THROWS_WITH([] { atq::init(" _space", 1); }(), matcher);
+        CHECK_THROWS_WITH([] { atq::init("£_utf-8", 1); }(), matcher);
+    }
+
     SECTION("queue size greater than 500000")
     {
         REQUIRE_THROWS_AS([] { atq::init("good_name", 500001); }(), irods::exception);
