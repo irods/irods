@@ -15466,7 +15466,7 @@ auto db_update_replica_access_time(irods::plugin_context& _ctx,
         stmt.bind(2, replica_numbers.data(), replica_numbers.size());
 
         // Execute the batch operation within a transaction. From a behavior perspective, it
-        // would be better to use execute() instead of just_transact() because each update is
+        // would be better to use execute() instead of just_transact() because each update
         // would be committed independently. However, we've chosen to update all rows atomically.
         // This decision is strictly for performance reasons and ultimately means we feel it's
         // acceptable to rollback all updates on failure.
