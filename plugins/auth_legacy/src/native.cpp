@@ -3,6 +3,7 @@
 #include "irods/authRequest.h"
 #include "irods/authResponse.h"
 #include "irods/authenticate.h"
+#include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_auth_constants.hpp"
 #include "irods/irods_auth_plugin.hpp"
 #include "irods/irods_kvp_string_parser.hpp"
@@ -26,6 +27,8 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include <openssl/err.h>
+#include <openssl/evp.h>
 #include <openssl/md5.h>
 
 #include <fmt/format.h>
@@ -158,12 +161,35 @@ irods::error native_auth_establish_context(irods::plugin_context& _ctx)
     } // if need_password
 
     // create a md5 hash of the challenge
-    MD5_CTX context;
-    MD5_Init( &context );
-    MD5_Update( &context, ( unsigned char* )md5_buf, CHALLENGE_LEN + MAX_PASSWORD_LEN );
 
-    char digest[ RESPONSE_LEN + 2 ];
-    MD5_Final( ( unsigned char* )digest, &context );
+    // Initialize the digest context for the derived digest implementation. Must use _ex or _ex2 to avoid
+    // automatically resetting the context with EVP_MD_CTX_reset.
+    EVP_MD* message_digest = EVP_MD_fetch(nullptr, "MD5", nullptr);
+    EVP_MD_CTX* context = EVP_MD_CTX_new();
+    const auto free_context = irods::at_scope_exit{[&context] { EVP_MD_CTX_free(context); }};
+    if (0 == EVP_DigestInit_ex2(context, message_digest, nullptr)) {
+        EVP_MD_free(message_digest);
+        const auto ssl_error_code = ERR_get_error();
+        const auto msg = fmt::format("{}: Failed to initialize digest. error code: [{}]", __func__, ssl_error_code);
+        THROW(DIGEST_INIT_FAILED, msg);
+    }
+    EVP_MD_free(message_digest);
+
+    // Hash the specified buffer of bytes and store the results in the context.
+    if (0 == EVP_DigestUpdate(context, md5_buf, CHALLENGE_LEN + MAX_PASSWORD_LEN)) {
+        const auto ssl_error_code = ERR_get_error();
+        const auto msg = fmt::format("{}: Failed to calculate digest. error code: [{}]", __func__, ssl_error_code);
+        THROW(DIGEST_UPDATE_FAILED, msg);
+    }
+
+    // Finally, retrieve the digest value from the context and place it into a buffer. Use the _ex function here
+    // so that the digest context is not automatically cleaned up with EVP_MD_CTX_reset.
+    char digest[RESPONSE_LEN + 2]{};
+    if (0 == EVP_DigestFinal_ex(context, reinterpret_cast<unsigned char*>(digest), nullptr)) {
+        const auto ssl_error_code = ERR_get_error();
+        const auto msg = fmt::format("{}: Failed to finalize digest. error code: [{}]", __func__, ssl_error_code);
+        THROW(DIGEST_FINAL_FAILED, msg);
+    }
 
     // make sure 'string' doesn't end early -
     // scrub out any errant terminating chars
