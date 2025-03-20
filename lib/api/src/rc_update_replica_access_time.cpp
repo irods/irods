@@ -10,7 +10,7 @@
 auto rc_update_replica_access_time(RcComm* _comm, const char* _json_input, char** _output) -> int
 {
     if (!_comm || !_json_input || !_output) {
-        return SYS_INVALID_INPUT_PARAM;
+        return INVALID_INPUT_ARGUMENT_NULL_POINTER;
     }
 
     bytesBuf_t input_buf{};
