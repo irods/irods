@@ -35,12 +35,12 @@ namespace
     // is considered undefined behavior.
     auto is_queue_name_prefix_valid(const std::string_view _s) -> bool
     {
-        if (const auto first_ch = _s[0]; std::isalpha(static_cast<unsigned char>(first_ch)) == 0 || first_ch != '_') {
+        if (const auto first_ch = _s[0]; std::isalpha(static_cast<unsigned char>(first_ch)) == 0 && first_ch != '_') {
             return false;
         }
 
-        return std::all_of(std::next(std::begin(_s)), std::end(_s), [](unsigned char _ch) {
-            return std::isalnum(_ch);
+        return std::all_of(std::next(std::begin(_s)), std::end(_s), [](const unsigned char _ch) {
+            return _ch == '_' || std::isalnum(_ch);
         });
     } // is_queue_name_prefix_valid
 } // anonymous namespace
