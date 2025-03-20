@@ -7,6 +7,7 @@
 #include <fmt/format.h>
 #include <unistd.h>
 
+#include <cctype>
 #include <chrono>
 #include <memory>
 #include <string>
@@ -28,6 +29,20 @@ namespace
     // Allocating on the heap allows us to know when the message queue is constructed/destructed.
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
     std::unique_ptr<boost::interprocess::message_queue> g_mq;
+
+    // Returns true if the string starts with an alphabet or underscore followed by alphanumeric
+    // characters. The string is expected to contain only ASCII character sequences. Anything else
+    // is considered undefined behavior.
+    auto is_queue_name_prefix_valid(const std::string_view _s) -> bool
+    {
+        if (const auto first_ch = _s[0]; std::isalpha(static_cast<unsigned char>(first_ch)) == 0 || first_ch != '_') {
+            return false;
+        }
+
+        return std::all_of(std::next(std::begin(_s)), std::end(_s), [](unsigned char _ch) {
+            return std::isalnum(_ch);
+        });
+    } // is_queue_name_prefix_valid
 } // anonymous namespace
 
 namespace irods::access_time_queue
@@ -40,6 +55,10 @@ namespace irods::access_time_queue
 
         if (_queue_name_prefix.empty()) {
             THROW(CONFIGURATION_ERROR, fmt::format("{}: Access time queue name prefix is empty.", __func__));
+        }
+
+        if (!is_queue_name_prefix_valid(_queue_name_prefix)) {
+            THROW(CONFIGURATION_ERROR, fmt::format("{}: Access time queue name prefix violates name requirement: [_a-zA-Z][_a-zA-Z0-9]*", __func__));
         }
 
         if (_queue_size < 0) {
