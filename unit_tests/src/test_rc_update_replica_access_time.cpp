@@ -50,18 +50,222 @@ TEST_CASE("#8260: rc_update_replica_access_time returns error on invalid inputs"
         const char* input = "";
         char* output{};
 
-        CHECK(rc_update_replica_access_time(nullptr, input, &output) == SYS_INVALID_INPUT_PARAM);
-        CHECK(rc_update_replica_access_time(&comm, nullptr, &output) == SYS_INVALID_INPUT_PARAM);
-        CHECK(rc_update_replica_access_time(&comm, input, nullptr) == SYS_INVALID_INPUT_PARAM);
+        CHECK(rc_update_replica_access_time(nullptr, input, &output) == INVALID_INPUT_ARGUMENT_NULL_POINTER);
+        CHECK(rc_update_replica_access_time(&comm, nullptr, &output) == INVALID_INPUT_ARGUMENT_NULL_POINTER);
+        CHECK(rc_update_replica_access_time(&comm, input, nullptr) == INVALID_INPUT_ARGUMENT_NULL_POINTER);
     }
 
-    SECTION("invalid json")
+    SECTION("not what the api wants")
     {
         irods::experimental::client_connection conn;
         const char* input = "not json";
         char* output{};
         CHECK(rc_update_replica_access_time(static_cast<RcComm*>(conn), input, &output) == SYS_LIBRARY_ERROR);
     }
+
+    SECTION("empty object")
+    {
+        irods::experimental::client_connection conn;
+        const char* input = "{}";
+        char* output{};
+        CHECK(rc_update_replica_access_time(static_cast<RcComm*>(conn), input, &output) == SYS_LIBRARY_ERROR);
+    }
+
+    SECTION("non-integer value for data_id")
+    {
+        // clang-format off
+        const auto input = json{
+            {"access_time_updates", json::array_t{
+                {
+                    {"data_id", "not a number"},
+                    {"replica_number", 0},
+                    {"atime", "00000000000"}
+                }
+            }}
+        }.dump();
+        // clang-format on
+
+        irods::experimental::client_connection conn;
+        char* output{};
+        CHECK(rc_update_replica_access_time(static_cast<RcComm*>(conn), input.c_str(), &output) == SYS_LIBRARY_ERROR);
+    }
+
+    SECTION("non-integer value for replica_number")
+    {
+        // clang-format off
+        const auto input = json{
+            {"access_time_updates", json::array_t{
+                {
+                    {"data_id", 0},
+                    {"replica_number", "not a number"},
+                    {"atime", "00000000000"}
+                }
+            }}
+        }.dump();
+        // clang-format on
+
+        irods::experimental::client_connection conn;
+        char* output{};
+        CHECK(rc_update_replica_access_time(static_cast<RcComm*>(conn), input.c_str(), &output) == SYS_LIBRARY_ERROR);
+    }
+
+    SECTION("missing data_id property")
+    {
+        // clang-format off
+        const auto input = json{
+            {"access_time_updates", json::array_t{
+                {
+                    {"replica_number", 0},
+                    {"atime", "00000000000"}
+                }
+            }}
+        }.dump();
+        // clang-format on
+
+        irods::experimental::client_connection conn;
+        char* output{};
+        CHECK(rc_update_replica_access_time(static_cast<RcComm*>(conn), input.c_str(), &output) == SYS_LIBRARY_ERROR);
+    }
+
+    SECTION("missing replica_number property")
+    {
+        // clang-format off
+        const auto input = json{
+            {"access_time_updates", json::array_t{
+                {
+                    {"data_id", 0},
+                    {"atime", "00000000000"}
+                }
+            }}
+        }.dump();
+        // clang-format on
+
+        irods::experimental::client_connection conn;
+        char* output{};
+        CHECK(rc_update_replica_access_time(static_cast<RcComm*>(conn), input.c_str(), &output) == SYS_LIBRARY_ERROR);
+    }
+
+    SECTION("missing atime property")
+    {
+        // clang-format off
+        const auto input = json{
+            {"access_time_updates", json::array_t{
+                {
+                    {"data_id", 0},
+                    {"replica_number", 0}
+                }
+            }}
+        }.dump();
+        // clang-format on
+
+        irods::experimental::client_connection conn;
+        char* output{};
+        CHECK(rc_update_replica_access_time(static_cast<RcComm*>(conn), input.c_str(), &output) == SYS_LIBRARY_ERROR);
+    }
+
+    SECTION("null value for data_id")
+    {
+        // clang-format off
+        const auto input = json{
+            {"access_time_updates", json::array_t{
+                {
+                    {"data_id", nullptr},
+                    {"replica_number", 0},
+                    {"atime", "00000000000"}
+                }
+            }}
+        }.dump();
+        // clang-format on
+
+        irods::experimental::client_connection conn;
+        char* output{};
+        CHECK(rc_update_replica_access_time(static_cast<RcComm*>(conn), input.c_str(), &output) == SYS_LIBRARY_ERROR);
+    }
+
+    SECTION("null value for replica_number")
+    {
+        // clang-format off
+        const auto input = json{
+            {"access_time_updates", json::array_t{
+                {
+                    {"data_id", 0},
+                    {"replica_number", nullptr},
+                    {"atime", "00000000000"}
+                }
+            }}
+        }.dump();
+        // clang-format on
+
+        irods::experimental::client_connection conn;
+        char* output{};
+        CHECK(rc_update_replica_access_time(static_cast<RcComm*>(conn), input.c_str(), &output) == SYS_LIBRARY_ERROR);
+    }
+
+    SECTION("null value for atime")
+    {
+        // clang-format off
+        const auto input = json{
+            {"access_time_updates", json::array_t{
+                {
+                    {"data_id", 0},
+                    {"replica_number", 0},
+                    {"atime", nullptr}
+                }
+            }}
+        }.dump();
+        // clang-format on
+
+        irods::experimental::client_connection conn;
+        char* output{};
+        CHECK(rc_update_replica_access_time(static_cast<RcComm*>(conn), input.c_str(), &output) == SYS_LIBRARY_ERROR);
+    }
+}
+
+TEST_CASE("#8260: rc_update_replica_access_time does not return an error on bad atime values")
+{
+    load_client_api_plugins();
+
+    rodsEnv env;
+    _getRodsEnv(env);
+    const auto sandbox = fs::path{env.rodsHome} / "unit_testing_sandbox_issue_8260";
+
+    irods::experimental::client_connection conn;
+
+    if (!fs::client::exists(conn, sandbox)) {
+        REQUIRE(fs::client::create_collection(conn, sandbox));
+    }
+
+    irods::at_scope_exit remove_sandbox{
+        [&conn, &sandbox] { REQUIRE(fs::client::remove_all(conn, sandbox, fs::remove_options::no_trash)); }};
+
+    // Create a data object.
+    const auto logical_path = sandbox / "data_object.txt";
+    io::client::native_transport tp{conn};
+    io::odstream{tp, logical_path};
+
+    const auto [data_id, atime, mtime] = get_replica_info(conn, logical_path, 0);
+
+    // This JSON string contains the new atime for the replica.
+    const auto* bad_atime = "bogus";
+    // clang-format off
+    const auto updates = json{
+        {"access_time_updates", json::array_t{
+            {
+                {"data_id", std::stoull(data_id)},
+                {"replica_number", 0},
+                {"atime", bad_atime}
+            }
+        }}
+    }.dump();
+    // clang-format on
+
+    char* output{};
+    CHECK(rc_update_replica_access_time(static_cast<RcComm*>(conn), updates.c_str(), &output) == 0);
+
+    // Show that the replica's atime has been updated to the bad value.
+    const auto updated_replica_info = get_replica_info(conn, logical_path, 0);
+    CHECK(std::get<0>(updated_replica_info) == data_id);
+    CHECK(std::get<1>(updated_replica_info) == bad_atime); // atime should be different.
 }
 
 TEST_CASE("#8260: rc_update_replica_access_time requires rodsadmin privileges")
