@@ -5,6 +5,7 @@
 #include "irods/miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-
+#include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_resource_plugin.hpp"
 #include "irods/irods_file_object.hpp"
 #include "irods/irods_physical_object.hpp"
@@ -38,6 +39,8 @@
 #include <string.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <openssl/err.h>
+#include <openssl/evp.h>
 #include <openssl/md5.h>
 #if defined(osx_platform)
 #include <sys/malloc.h>
@@ -158,15 +161,47 @@ irods::error make_hashed_path(
     const std::string&          _path,
     std::string&                _hashed)
 {
-    // hash the physical path to reflect object store behavior
-    MD5_CTX context;
-    char md5Buf[ MAX_NAME_LEN ];
-    unsigned char hash  [ MAX_NAME_LEN ];
+    // The buffer into which the path is copied is MAX_NAME_LEN, but we need to leave room for the null terminator.
+    if (_path.size() >= MAX_NAME_LEN) {
+        return ERROR(
+            USER_PATH_EXCEEDS_MAX,
+            fmt::format(
+                "mockarchive: Cannot hash physical path because length of input path [{}] exceeds maximum length [{}].",
+                _path,
+                MAX_NAME_LEN - 1));
+    }
 
-    strncpy( md5Buf, _path.c_str(), _path.size() );
-    MD5_Init( &context );
-    MD5_Update( &context, ( unsigned char* )md5Buf, _path.size() );
-    MD5_Final( ( unsigned char* )hash, &context );
+    // Initialize the digest context for the derived digest implementation. Must use _ex or _ex2 to avoid
+    // automatically resetting the context with EVP_MD_CTX_reset.
+    EVP_MD* message_digest = EVP_MD_fetch(nullptr, "MD5", nullptr);
+    EVP_MD_CTX* context = EVP_MD_CTX_new();
+    const auto free_context = irods::at_scope_exit{[&context] { EVP_MD_CTX_free(context); }};
+    if (0 == EVP_DigestInit_ex2(context, message_digest, nullptr)) {
+        EVP_MD_free(message_digest);
+        const auto ssl_error_code = ERR_get_error();
+        const auto msg = fmt::format("{}: Failed to initialize digest. error code: [{}]", __func__, ssl_error_code);
+        THROW(DIGEST_INIT_FAILED, msg);
+    }
+    EVP_MD_free(message_digest);
+
+    char md5Buf[MAX_NAME_LEN]{};
+    std::strncpy(md5Buf, _path.c_str(), _path.size());
+
+    // Hash the specified buffer of bytes and store the results in the context.
+    if (0 == EVP_DigestUpdate(context, reinterpret_cast<unsigned char*>(md5Buf), _path.size())) {
+        const auto ssl_error_code = ERR_get_error();
+        const auto msg = fmt::format("{}: Failed to calculate digest. error code: [{}]", __func__, ssl_error_code);
+        THROW(DIGEST_UPDATE_FAILED, msg);
+    }
+
+    // Finally, retrieve the digest value from the context and place it into a buffer. Use the _ex function here
+    // so that the digest context is not automatically cleaned up with EVP_MD_CTX_reset.
+    unsigned char hash[MAX_NAME_LEN];
+    if (0 == EVP_DigestFinal_ex(context, reinterpret_cast<unsigned char*>(hash), nullptr)) {
+        const auto ssl_error_code = ERR_get_error();
+        const auto msg = fmt::format("{}: Failed to finalize digest. error code: [{}]", __func__, ssl_error_code);
+        THROW(DIGEST_FINAL_FAILED, msg);
+    }
 
     std::stringstream ins;
     for ( int i = 0; i < 16; ++i ) {
