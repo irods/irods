@@ -32,6 +32,7 @@ add_library(
 objects_link_libraries(
   irods_hasher
   PUBLIC
+  fmt::fmt
   OpenSSL::Crypto
   nlohmann_json::nlohmann_json
 )
