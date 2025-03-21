@@ -37,7 +37,7 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
     def test_iput_r_symlink_issue_4009_4013_with_no_symlinks(self):
 
         # Construct the file system version of a directory with a file and symbolic links,
-        # and then move them to a collection in irods - with the --link flag.
+        # and then move them to a collection in irods - with the --ignore-symlinks flag.
 
         base_name = 'test_iput_r_no_symlinks_4009_4013'
         target_collection = 'target_' + base_name
@@ -74,7 +74,7 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
         anotherdirsym1 = os.path.join(local_dir, 'anotherdirsym1')
         lib.execute_command(['ln', '-s', local_anotherdir, anotherdirsym1])
 
-        self.user0.assert_icommand('iput -r --link {local_dir} {target_collection_path}'.format(**locals()))
+        self.user0.assert_icommand('iput -r --ignore-symlinks {local_dir} {target_collection_path}'.format(**locals()))
 
         cmd = 'ils -lr {target_collection_path}'.format(**locals())
         stdout,_,_ = self.user0.run_icommand(cmd)
@@ -85,7 +85,7 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
         # /tempZone/home/alice/2018-07-10Z05:35:12--irods-testing-ZIqHQ6/target_test_iput_r_symlink_4009_4013/test_iput_r_symlink_4009_4013:
         #   alice             0 demoResc           10 2018-07-10.01:35 & the_file
         #
-        # and that's it.  What we should not see, is this (because of the --link flag):
+        # and that's it.  What we should not see, is this (because of the --ignore-symlinks flag):
         #
         #   alice             0 demoResc           10 2018-07-10.01:35 & link1
         #   alice             0 demoResc           10 2018-07-10.01:35 & link2
@@ -122,7 +122,7 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
     def test_iput_r_symlink_issue_4009_4013_with_symlinks(self):
 
         # Construct the file system version of a directory with a file and symbolic links,
-        # and then move them to a collection in irods - with no --link flag.
+        # and then move them to a collection in irods - with no --ignore-symlinks flag.
 
         base_name = 'test_iput_r_symlink_4009_4013'
         target_collection = 'target_' + base_name
@@ -160,7 +160,7 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
         lib.execute_command(['ln', '-s', local_anotherdir, anotherdirsym1])
 
         ##################################
-        # --link flag OFF:  Move the data into irods, with all valid symbolic links
+        # --ignore-symlinks flag OFF:  Move the data into irods, with all valid symbolic links
         ########
         self.user0.assert_icommand('iput -r {local_dir} {target_collection_path}'.format(**locals()))
 
@@ -213,11 +213,11 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
         ########
         test_list = [
                         'irsync -r {dirname1} i:{target_collection_path}',
-                        'irsync --link -r {dirname1} i:{target_collection_path}',
+                        'irsync --ignore-symlinks -r {dirname1} i:{target_collection_path}',
                         'iput -r {dirname1} {target_collection_path}',
-                        'iput --link -r {dirname1} {target_collection_path}',
+                        'iput --ignore-symlinks -r {dirname1} {target_collection_path}',
                         'iput -r {dirname1}',
-                        'iput --link -r {dirname1}'
+                        'iput --ignore-symlinks -r {dirname1}'
                     ]
 
         base_name = 'iputrsync_recursive_dangling_symlink'
@@ -249,7 +249,7 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
                     # Create the test collection every time because it has to be cleaned up every time.
                     self.user0.run_icommand(['imkdir', target_collection_path])
 
-                    ignore_symlinks = '--link' in teststring
+                    ignore_symlinks = '--ignore-symlinks' in teststring
 
                     cmd = teststring.format(**locals())
                     stdout,stderr,_ = self.user0.run_icommand(cmd)
@@ -303,9 +303,9 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
         ########
         test_list = [
                         'iput {dangling_symlink}',
-                        'iput --link {dangling_symlink}',
+                        'iput --ignore-symlinks {dangling_symlink}',
                         'irsync {dangling_symlink} i:{target_collection_path}',
-                        'irsync --link {dangling_symlink} i:{target_collection_path}',
+                        'irsync --ignore-symlinks {dangling_symlink} i:{target_collection_path}',
                     ]
 
         base_name = 'iputrsync_file_dangling_symlink'
@@ -335,7 +335,7 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
             ########
             for teststring in test_list:
                 with self.subTest(teststring):
-                    ignore_symlinks = '--link' in teststring
+                    ignore_symlinks = '--ignore-symlinks' in teststring
 
                     cmd = teststring.format(**locals())
                     stdout,stderr,_ = self.user0.run_icommand(cmd)
@@ -384,7 +384,7 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
                     ]
 
         # Construct the file system version of a directory with a file and symbolic links,
-        # and then move them to a collection in irods - with no --link flag.
+        # and then move them to a collection in irods - with no --ignore-symlinks flag.
 
         base_name = 'iput_irsync_sanity_with_symlinks'
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
@@ -574,7 +574,7 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
     ##################################
     # Tests the normal operation of both iput and irsync with directories
     # and files, which inlucde valid symbolic links to files and directories
-    # as well, with the --link flag specified.
+    # as well, with the --ignore-symlinks flag specified.
     #
     # The scenarios being tested here are enumerated in the list of strings
     # "test_list" below.
@@ -585,13 +585,13 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
         # Both of these tests (should) produce the same behavior and results:
         ########
         test_list = [
-                        'iput --link -r {dirname1} {dirname2} {target_collection_path}',
-                        'irsync --link -r {dirname1} {dirname2} i:{target_collection_path}'
+                        'iput --ignore-symlinks -r {dirname1} {dirname2} {target_collection_path}',
+                        'irsync --ignore-symlinks -r {dirname1} {dirname2} i:{target_collection_path}'
                     ]
 
         ##################################
         # Construct the file system version of a directory with a file and symbolic links,
-        # and then move them to a collection in irods - with no --link flag.
+        # and then move them to a collection in irods - with no --ignore-symlinks flag.
         ########
         base_name = 'iput_irsync_sanity_no_symlinks'
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
@@ -750,24 +750,24 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
         ########
         test_list = [
                         'iput -r {dirname1} {target_collection_path}',
-                        'iput --link -r {dirname1} {target_collection_path}',
+                        'iput --ignore-symlinks -r {dirname1} {target_collection_path}',
                         'iput -r {dirname1}',
-                        'iput --link -r {dirname1}',
+                        'iput --ignore-symlinks -r {dirname1}',
                         'irsync -r {dirname1} i:{target_collection_path}',
-                        'irsync --link -r {dirname1} i:{target_collection_path}'
+                        'irsync --ignore-symlinks -r {dirname1} i:{target_collection_path}'
                     ]
 
         second_test_list = [
                         'iput {dirname1}/symself {target_collection_path}',
-                        'iput --link -r {dirname1}/symself {target_collection_path}',
+                        'iput --ignore-symlinks -r {dirname1}/symself {target_collection_path}',
                         'iput -r {dirname1}/symself',
-                        'iput --link -r {dirname1}/symself',
+                        'iput --ignore-symlinks -r {dirname1}/symself',
                         'irsync -r {dirname1}/symself i:{target_collection_path}',
-                        'irsync --link -r {dirname1}/symself i:{target_collection_path}'
+                        'irsync --ignore-symlinks -r {dirname1}/symself i:{target_collection_path}'
                     ]
 
         # Construct the file system version of a directory with a file and symbolic links,
-        # and then move them to a collection in irods - with no --link flag.
+        # and then move them to a collection in irods - with no --ignore-symlinks flag.
 
         base_name = 'iput_irsync_recursive_symlink_loop_to_self'
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
@@ -796,7 +796,7 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
             ########
             for teststring in test_list:
                 with self.subTest(teststring):
-                    ignore_symlinks = '--link' in teststring
+                    ignore_symlinks = '--ignore-symlinks' in teststring
 
                     # Run the command:
                     cmd = teststring.format(**locals())
@@ -843,7 +843,7 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
             ########
             for teststring in second_test_list:
                 with self.subTest(teststring):
-                    ignore_symlinks = '--link' in teststring
+                    ignore_symlinks = '--ignore-symlinks' in teststring
 
                     # Run the command:
                     cmd = teststring.format(**locals())
@@ -882,7 +882,7 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
 
         ##################################
         # Construct the file system version of a directory with a file and symbolic links,
-        # and then move them to a collection in irods - with no --link flag.
+        # and then move them to a collection in irods - with no --ignore-symlinks flag.
         ########
         base_name = 'iput_irsync_symlink_loop_general'
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
@@ -981,14 +981,14 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
         # All of these tests (should) produce the same behavior and results: SUCCEED
         ########
         ok_test_list = [
-                        'iput --link -r {dirname1}',
-                        'iput --link -r {dirname1} {target_collection_path}',
-                        'irsync --link -r {dirname1} i:{target_collection_path}',
+                        'iput --ignore-symlinks -r {dirname1}',
+                        'iput --ignore-symlinks -r {dirname1} {target_collection_path}',
+                        'irsync --ignore-symlinks -r {dirname1} i:{target_collection_path}',
                     ]
 
 
         # Construct the file system version of a directory with a file and symbolic links,
-        # and then move them to a collection in irods - with no --link flag.
+        # and then move them to a collection in irods - with no --ignore-symlinks flag.
         base_name = 'test_iput_irsync_no_permissions'
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
         target_collection = 'target_' + base_name
@@ -1067,7 +1067,7 @@ class Test_Symlink_Operations(resource_suite.ResourceBase, unittest.TestCase):
                 self.assertIn('Permission denied', stderr,
                                 '{0}: Expected stderr: "...{1}...", got: "{2}"'.format(cmd, errstr, stderr))
 
-                # Given --link, make sure the loop link is nowhere in this collection tree:
+                # Given --ignore-symlinks, make sure the loop link is nowhere in this collection tree:
                 cmd = 'ils -lr {target_collection_path}'.format(**locals())
                 self.user0.assert_icommand_fail( cmd, 'STDOUT_SINGLELINE', 'validsymlinktodir2' );
 

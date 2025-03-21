@@ -36,10 +36,10 @@ auto parse_local_path(const RodsArguments* _args, RodsPath* _path) -> int
         std::strncpy(_path->outPath, _path->inPath, MAX_NAME_LEN);
     }
 
-    // getFileType calls boost::filesystem::exists, which follows symlinks. --link is supposed to ignore symlinks.
-    // We do not know whether this symlink exists, and we do not care whether it exists. The path could be removed
-    // from the list at this point, but this could create a hole which has not happened in the past. Therefore, we
-    // must now lie in order to keep up the historical interfaces and trust that the symlink will continue to be
+    // getFileType calls boost::filesystem::exists, which follows symlinks. --ignore-symlinks is supposed to ignore
+    // symlinks. We do not know whether this symlink exists, and we do not care whether it exists. The path could be
+    // removed from the list at this point, but this could create a hole which has not happened in the past. Therefore,
+    // we must now lie in order to keep up the historical interfaces and trust that the symlink will continue to be
     // ignored down the line. The lie is that the symlink is a local file and that it exists.
     if (_args->link == True && fs::is_symlink(fs::path{_path->inPath})) {
         _path->objType = LOCAL_FILE_T;

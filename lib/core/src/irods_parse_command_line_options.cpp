@@ -49,7 +49,6 @@ static int parse_program_options(
         ("very_verbose,V", "very verbose")
         ("data_type,D", po::value<std::string>(), "dataType - the data type string")
         ("restart_file,X", po::value<std::string>(), "restartFile - specifies that the restart option is on and the restartFile input specifies a local file that contains the restart information.")
-        ("link", "[Deprecated] ignore symlinks. Use --ignore-symlinks.")
         ("ignore-symlinks", "ignore symlinks.")
         ("lfrestart", po::value<std::string>(), "lfRestartFile - specifies that the large file restart option is on and the lfRestartFile input specifies a local file that contains the restart information.")
         ("retries", po::value<int>(), "count - Retry the iput in case of error. The 'count' input specifies the number of times to retry. It must be used with the -X option")
@@ -203,7 +202,7 @@ static int parse_program_options(
             return INVALID_ANY_CAST;
         }
     }
-    if (global_prog_ops_var_map.count("ignore-symlinks") || global_prog_ops_var_map.count("link")) {
+    if (global_prog_ops_var_map.count("ignore-symlinks")) {
         _rods_args.link = 1;
     }
     if ( global_prog_ops_var_map.count( "lfrestart" ) ) {

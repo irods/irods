@@ -442,7 +442,7 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()))
 
     def test_irsync_link_option_ignores_symlinks__issue_5359(self):
-        """Creates a directory to target for irsync -r --link with good and bad symlinks which should all be ignored."""
+        """Creates a directory to target for irsync -r --ignore-symlinks with good and bad symlinks which should all be ignored."""
 
         dirname = 'test_irsync_link_option_ignores_broken_symlinks__issue_5359'
         collection_path = os.path.join(self.user0.session_collection, dirname)
@@ -527,9 +527,9 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
             self.assertFalse(os.path.exists(deleted_file_path))
             self.assertTrue(os.path.lexists(broken_symlink_file_path))
 
-            # Run irsync between the local directory and the collection (which is basically an iput). Use the --link
+            # Run irsync between the local directory and the collection (which is basically an iput). Use the --ignore-symlinks
             # option to instruct that symlinks are to be ignored, broken or not.
-            self.user0.assert_icommand(['irsync', '--link', '-r', sync_dir, f'i:{collection_path}'])
+            self.user0.assert_icommand(['irsync', '--ignore-symlinks', '-r', sync_dir, f'i:{collection_path}'])
 
             # Confirm that the main collection was created - no funny business there.
             self.assertTrue(lib.collection_exists(self.user0, collection_path))

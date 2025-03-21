@@ -616,7 +616,7 @@ class Test_Iput(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.Tes
             self.admin.run_icommand(['iadmin', 'rmresc', ufs_resource_2])
 
     def test_iput_link_option_ignores_symlinks__issue_5359(self):
-        """Creates a directory to target for iput -r --link with good and bad symlinks which should all be ignored."""
+        """Creates a directory to target for iput -r --ignore-symlinks with good and bad symlinks which should all be ignored."""
 
         import shutil
 
@@ -703,9 +703,9 @@ class Test_Iput(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.Tes
             self.assertFalse(os.path.exists(deleted_file_path))
             self.assertTrue(os.path.lexists(broken_symlink_file_path))
 
-            # Run iput to upload the directory. Use the --link option to instruct that symlinks are to be ignored,
+            # Run iput to upload the directory. Use the --ignore-symlinks option to instruct that symlinks are to be ignored,
             # broken or not.
-            self.user.assert_icommand(['iput', '--link', '-r', put_dir, collection_path])
+            self.user.assert_icommand(['iput', '--ignore-symlinks', '-r', put_dir, collection_path])
 
             # Confirm that the main collection was created - no funny business there.
             self.assertTrue(lib.collection_exists(self.user, collection_path))

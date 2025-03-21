@@ -49,7 +49,7 @@ parseCmdLineOpt( int argc, char **argv, const char *optString, int includeLong,
     /* handle the long options first */
     if ( includeLong ) {
         for ( int i = 0; i < argc; i++ ) {
-            if (std::strcmp("--ignore-symlinks", argv[i]) == 0 || std::strcmp("--link", argv[i]) == 0) {
+            if (std::strcmp("--ignore-symlinks", argv[i]) == 0) {
                 rodsArgs->link = True;
                 argv[i] = "-Z"; /* ignore symlink */
             }
