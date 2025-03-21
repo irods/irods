@@ -613,8 +613,6 @@ sslWrite( void *buf, int len,
 
 static SSL_CTX*
 sslInit( char *certfile, char *keyfile ) {
-    static int init_done = 0;
-
     rodsEnv env;
     int status = getRodsEnv( &env );
     if ( status < 0 ) {
@@ -624,12 +622,6 @@ sslInit( char *certfile, char *keyfile ) {
             status );
         return NULL;
 
-    }
-
-    if ( !init_done ) {
-        SSL_library_init();
-        SSL_load_error_strings();
-        init_done = 1;
     }
 
     /* in our test programs we set up a null signal
@@ -810,7 +802,7 @@ sslPostConnectionCheck( SSL *ssl, char *peer ) {
         return 1;
     }
 
-    auto* cert = SSL_get_peer_certificate( ssl );
+    auto* cert = SSL_get1_peer_certificate(ssl);
     if ( cert == NULL ) {
         /* no certificate presented */
         return 0;
