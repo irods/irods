@@ -16,18 +16,6 @@
 #include <memory>
 
 namespace irods {
-    class evp_lifetime_mgr {
-    public:
-        evp_lifetime_mgr() {
-            OpenSSL_add_all_algorithms();
-        }
-
-        ~evp_lifetime_mgr() {
-            EVP_cleanup();
-        }
-    };
-    static const evp_lifetime_mgr global_evp_lifetime_mgr_;
-
 // =-=-=-=-=-=-=-
 // public - constructor
     buffer_crypt::buffer_crypt() :
