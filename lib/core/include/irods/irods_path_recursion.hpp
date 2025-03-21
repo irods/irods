@@ -23,14 +23,15 @@ namespace irods
     // Returns true if the user path is a directory which has not
     // yet been examined, or, throws an irods::exception if the path has
     // already been examined (it's in the set<> already).
-    // The bool parameter is true if the "--link" flag was specified
+    // When the bool parameter is true, symbolic links will not be followed.
+    // See the implementation for more details.
     bool is_path_valid_for_recursion(boost::filesystem::path const &, recursion_map_t &, bool);
 
     // Called in from places where file system loop detection is not desired/needed,
     // regardless of whether or not the recursion_map_t has been initialized by
     // check_directories_for_loops().
     //
-    // The rodsArguments_t object is for checking for the "--link" flag, and the
+    // The rodsArguments_t object is for checking for the "--ignore-symlinks" flag, and the
     // character buffer is for the user filename.
     // Checks for existence of path as a symlink or a directory.
     // Will throw irods::exception if boost fs errors occur in the process.
@@ -44,12 +45,13 @@ namespace irods
     // This is what the icommand xxxxUtil() function uses to scan recursively
     // for directories/symlinks. The path is the user's non-canonical path, and
     // the recursion_map_t is statically defined by the caller as needed.
-    // The bool parameter is true if the "--link" flag was specified
+    // When the bool parameter is true, symbolic links will not be followed.
+    // See the implementation for more details.
     int check_directories_for_loops( boost::filesystem::path const &, irods::recursion_map_t &, bool);
 
     // Issue 3988: For irsync and iput mostly, scan all source physical directories
     // for loops before doing any actual file transfers. Returns a 0 for success or
-    // rodsError error (< 0).  The bool specifies whether the "--link" flag was specified.
+    // rodsError error (< 0).  The bool specifies whether the "--ignore-symlinks" flag was specified.
     int scan_all_source_directories_for_loops(irods::recursion_map_t &, const std::vector<std::string>&, bool);
 
     // This function does the filesystem loop and sanity check

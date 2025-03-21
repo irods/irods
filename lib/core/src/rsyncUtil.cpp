@@ -855,7 +855,7 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
                   targColl, childPath.c_str() );
         if ( is_symlink( p ) ) {
             if (rodsArgs->link) {
-                // --link option means ignore symlinks.
+                // --ignore-symlinks option means ignore symlinks.
                 continue;
             }
             fs::path cp = read_symlink( p );

@@ -818,7 +818,7 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
 
             if ( is_symlink( p ) ) {
                 if (rodsArgs->link) {
-                    // --link option means ignore symlinks.
+                    // --ignore-symlinks option means ignore symlinks.
                     continue;
                 }
                 fs::path cp = read_symlink( p );

@@ -73,7 +73,7 @@ irods::check_for_filesystem_loop(boost::filesystem::path const & cpath,
 }
 
 // Called in places where file system loop detection is not desired/needed.
-// The rodsArguments_t object is for checking for the "--link" flag, and the
+// The rodsArguments_t object is for checking for the "--ignore-symlinks" flag, and the
 // character buffer is for the user filename.
 // Checks for existence of path as a symlink or a directory.
 // Will throw irods::exception if boost file system errors occur in the process.
@@ -93,8 +93,8 @@ irods::is_path_valid_for_recursion( boost::filesystem::path const & userpath,
         }
     }(userpath);
 
-    // Return early if the provided path is a symlink and --link is being used. --link means that symlinks should be
-    // ignored, so the path is going to be ignored - that is, it should not be examined.
+    // Return early if the provided path is a symlink and --ignore-symlinks is being used. --ignore-symlinks means that
+    // symlinks should be ignored, so the path is going to be ignored - that is, it should not be examined.
     if (dashdashlink && fs::is_symlink(normal_path)) {
         return false;
     }
@@ -157,7 +157,7 @@ irods::is_path_valid_for_recursion( boost::filesystem::path const & userpath,
 // regardless of whether or not the recursion_map_t has been initialized by
 // check_directories_for_loops().
 //
-// The rodsArguments_t object is for checking for the "--link" flag, and the
+// The rodsArguments_t object is for checking for the "--ignore-symlinks" flag, and the
 // character buffer is for the user filename.
 //
 // Checks for existence of path as a symlink or a directory.
