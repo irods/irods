@@ -33,7 +33,7 @@ main( int argc, char **argv ) {
     int reconnFlag;
 
 
-    optStr = "aBG:QMN:hrvVn:PR:S:TX:UZ"; // JMC - backport 4549
+    optStr = "aBG:MN:hrvVn:PR:S:TX:UZ"; // JMC - backport 4549
 
     status = parseCmdLineOpt( argc, argv, optStr, 1, &myRodsArgs ); // JMC - backport 4549
 
@@ -118,19 +118,10 @@ void
 usage() {
 
     char *msgs[] = {
-        "Usage: irepl [-aBMPQrTvV] [-n replNum] [-R destResource] [-S srcResource]",
+        "Usage: irepl [-aBMPrTvV] [-n replNum] [-R destResource] [-S srcResource]",
         "[-N numThreads] [-X restartFile] [--purgec]  [--rlock]dataObj|collection ... ",
         " ",
         "Replicate a file in iRODS to another storage resource.",
-        " ",
-        "Note: The -Q option has been deprecated.",
-        "The -Q option specifies the use of the RBUDP transfer mechanism which uses",
-        "the UDP protocol for data transfer. The UDP protocol is very efficient",
-        "if the network is very robust with few packet losses. Two environment",
-        "variables - rbudpSendRate and rbudpPackSize are used to tune the RBUDP",
-        "data transfer. rbudpSendRate is used to throttle the send rate in ",
-        "kbits/sec. The default rbudpSendRate is 600,000. rbudpPackSize is used",
-        "to set the packet size. The default rbudpPackSize is 8192.",
         " ",
         "The -X option specifies that the restart option is on and the restartFile",
         "input specifies a local file that contains the restart info. If the ",
@@ -164,7 +155,6 @@ usage() {
         " -B  Backup mode - [Deprecated] if a good copy already exists in this",
         "     resource, don't make another copy.",
         " -P  output the progress of the replication.",
-        " -Q  [Deprecated] use RBUDP (datagram) protocol for the data transfer",
         " -U  Update (Synchronize) an old replica with the latest copy. (see -a)",
         " -M  admin - admin user uses this option to backup/replicate other users files",
         " -N  number  specifies the number of I/O threads to use, by default a rule",
