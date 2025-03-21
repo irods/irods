@@ -221,7 +221,7 @@ TEST_CASE("#8260: rc_update_replica_access_time returns error on invalid inputs"
     }
 }
 
-TEST_CASE("#8260: rc_update_replica_access_time does not return an error on bad atime values")
+TEST_CASE("#8260: rc_update_replica_access_time updates access time with bad access time values")
 {
     load_client_api_plugins();
 
