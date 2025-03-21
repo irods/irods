@@ -128,7 +128,6 @@ static int ssl_verify_callback(
 static SSL_CTX* ssl_init_context(
     char *certfile,
     char *keyfile ) {
-    static int init_done = 0;
     SSL_CTX *ctx = 0;
     char *verify_server = 0;
 
@@ -141,12 +140,6 @@ static SSL_CTX* ssl_init_context(
             status );
         return NULL;
 
-    }
-
-    if ( !init_done ) {
-        SSL_library_init();
-        SSL_load_error_strings();
-        init_done = 1;
     }
 
     ctx = SSL_CTX_new( SSLv23_method() );
@@ -254,7 +247,7 @@ static int ssl_post_connection_check(
         return 1;
     }
 
-    X509 *cert = SSL_get_peer_certificate( ssl );
+    X509* cert = SSL_get1_peer_certificate(ssl);
     if ( cert == NULL ) {
         /* no certificate presented */
         return 0;
