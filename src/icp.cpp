@@ -31,7 +31,7 @@ main( int argc, char **argv ) {
     int reconnFlag;
 
 
-    optStr = "QhfkKN:p:PrR:TvVX:";
+    optStr = "hfkKN:p:PrR:TvVX:";
 
     status = parseCmdLineOpt( argc, argv, optStr, 0, &myRodsArgs );
     if ( status ) {
@@ -117,19 +117,10 @@ usage() {
     int i;
 
     char *msgs[] = {
-        "Usage: icp [-fkKPQrTvV] [-N numThreads] [-p physicalPath] [-R resource]",
+        "Usage: icp [-fkKPrTvV] [-N numThreads] [-p physicalPath] [-R resource]",
         "-X restartFile] srcDataObj|srcColl ...  destDataObj|destColl",
         "icp copies an irods data-object (file) or collection (directory) to another",
         "data-object or collection.",
-        " ",
-        "Note: The -Q option has been deprecated.",
-        "The -Q option specifies the use of the RBUDP transfer mechanism which uses",
-        "the UDP protocol for data transfer. The UDP protocol is very efficient",
-        "if the network is very robust with few packet losses. Two environment",
-        "variables - rbudpSendRate and rbudpPackSize are used to tune the RBUDP",
-        "data transfer. rbudpSendRate is used to throttle the send rate in ",
-        "kbits/sec. The default rbudpSendRate is 600,000. rbudpPackSize is used",
-        "to set the packet size. The default rbudpPackSize is 8192.",
         " ",
         "The -X option specifies that the restart option is on and the restartFile",
         "input specifies a local file that contains the restart info. If the ",
@@ -144,7 +135,6 @@ usage() {
         "sockets getting timed out by the firewall as reported by some users.",
         " ",
         "Options are:",
-        " -Q [Deprecated] use RBUDP (datagram) protocol for the data transfer",
         " -f force - write data-object even it exists already; overwrite it",
         " -k checksum - calculate a checksum on the data",
         " -K verify checksum - calculate and verify the checksum on the data",

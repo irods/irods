@@ -11,9 +11,6 @@ myTestRule {
 #    all - specifies to replicate to all resources in a resource group
 #    irodsAdmin - enables administrator to replicate other users' files
 #    verifyChksum - verify the transfer using checksums
-#    rbudpTransfer - use Reliable Blast UDP for transport
-#    rbudpSendRate - the transmission rate in kbits/sec, default is 600 kbits/sec
-#    rbudpPackSize - the packet size in bytes, default is 8192
 #Output parameter is:
 #  Status
 #Output from running the example is:
