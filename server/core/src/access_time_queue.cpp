@@ -30,9 +30,9 @@ namespace
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
     std::unique_ptr<boost::interprocess::message_queue> g_mq;
 
-    // Returns true if the string starts with an alphabet or underscore followed by alphanumeric
-    // characters. The string is expected to contain only ASCII character sequences. Anything else
-    // is considered undefined behavior.
+    // Returns true if the string starts with an alphabetic character or underscore, optionally followed
+    // by one or more alphanumeric characters and/or underscore. The string is expected to contain ASCII
+    // characters only. Anything else is considered undefined behavior.
     auto is_queue_name_prefix_valid(const std::string_view _s) -> bool
     {
         if (const auto first_ch = _s[0]; std::isalpha(static_cast<unsigned char>(first_ch)) == 0 && first_ch != '_') {
