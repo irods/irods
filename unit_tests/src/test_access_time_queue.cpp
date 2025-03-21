@@ -97,7 +97,7 @@ TEST_CASE("invalid initialization")
         REQUIRE_THROWS_AS([] { atq::init("", 1); }(), irods::exception);
     }
 
-    SECTION("queue name prefix starts with character other than alphabet or underscore")
+    SECTION("queue name prefix starts with character other than alphabetic or underscore")
     {
         auto matcher = Catch::Matchers::Contains("init: Access time queue name prefix violates name requirement: [_a-zA-Z][_a-zA-Z0-9]*");
 
