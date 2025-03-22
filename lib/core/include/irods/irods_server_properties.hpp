@@ -7,6 +7,7 @@
 #include "irods/irods_configuration_parser.hpp"
 #include "irods/irods_error.hpp"
 #include "irods/irods_exception.hpp"
+#include "irods/rodsErrorTable.h"
 
 #include <mutex>
 #include <shared_mutex>

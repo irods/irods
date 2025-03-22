@@ -1143,3 +1143,8 @@ int call_delay_rule_unlock(irods::api_entry* _api, rsComm_t* _comm, delayRuleUnl
 {
     return _api->call_handler<delayRuleUnlockInp_t*>(_comm, _inp);
 } // call_delay_rule_unlock
+
+int call_update_replica_access_time(irods::api_entry* _api, rsComm_t* _comm, BytesBuf* _inp, char** _out)
+{
+    return _api->call_handler<BytesBuf*, char**>(_comm, _inp, _out);
+} // call_update_replica_access_time

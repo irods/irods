@@ -528,6 +528,7 @@ namespace irods::re_serialization
                 _out["other_flags"] = boost::lexical_cast<std::string>(l->otherFlags);
                 _out["in_pdmo"] = l->in_pdmo;
                 _out["resc_id"] = boost::lexical_cast<std::string>(l->rescId);
+                _out["data_access_time"] = boost::lexical_cast<std::string>(l->dataAccessTime);
 
                 // TODO Serialize DataObjInfo objects referenced by the "DataObjInfo::next".
                 // To do that requires namespacing due to the flat structure of the serialized

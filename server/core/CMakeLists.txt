@@ -1,5 +1,6 @@
 set(
   IRODS_SERVER_CORE_SOURCES
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/access_time_queue.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/administration_utilities.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/atomic_apply_database_operations.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/client_api_allowlist.cpp"
@@ -62,6 +63,7 @@ set(
 
 set(
   IRODS_SERVER_CORE_HEADERS_PUBLIC
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/access_time_queue.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/administration_utilities.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/atomic_apply_database_operations.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/catalog.hpp"

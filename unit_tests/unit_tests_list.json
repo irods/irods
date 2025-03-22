@@ -1,4 +1,5 @@
 [
+    "access_time_queue",
     "irods_atomic_apply_acl_operations",
     "irods_atomic_apply_metadata_operations",
     "irods_capped_memory_resource",
@@ -45,6 +46,7 @@
     "irods_rc_get_library_features",
     "irods_rc_mod_data_obj_meta",
     "irods_rc_switch_user",
+    "irods_rc_update_replica_access_time",
     "irods_re_serialization",
     "irods_replica",
     "irods_replica_access_table",

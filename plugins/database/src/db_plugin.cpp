@@ -2106,6 +2106,7 @@ irods::error db_mod_data_obj_meta_op(
     std::vector<const char *> updateCols;
     std::vector<const char *> updateVals;
 
+    // clang-format off
     const std::vector<std::string_view> regParamNames = {
         COLL_ID_KW,
         DATA_CREATE_KW,
@@ -2129,7 +2130,8 @@ irods::error db_mod_data_obj_meta_op(
         // DATA_RESC_GROUP_NAME_KW,
         RESC_HIER_STR_KW,
         RESC_ID_KW,
-        RESC_NAME_KW
+        RESC_NAME_KW,
+        DATA_ACCESS_TIME_KW
     };
 
     const std::vector<std::string_view> colNames = {
@@ -2155,8 +2157,10 @@ irods::error db_mod_data_obj_meta_op(
         //"resc_group_name",
         "resc_hier",
         "resc_id",
-        "resc_name"
+        "resc_name",
+        "access_ts"
     };
+    // clang-format on
 
     int doingDataSize = 0;
     char dataSizeString[NAME_LEN] = "";
@@ -2229,6 +2233,20 @@ irods::error db_mod_data_obj_meta_op(
                     }
                 }
             }
+
+            if (regParamNames[i] == DATA_ACCESS_TIME_KW) {
+                /* if access_ts, also make sure it's in the standard time-stamp format: "%011d" */
+                if (colNames[i] == "access_ts") { /* double check*/
+                    if (strlen(theVal) < 11) {
+                        static char theVal4[20];
+                        time_t myTimeValue;
+                        myTimeValue = atoll(theVal);
+                        snprintf(theVal4, sizeof theVal4, "%011d", (int) myTimeValue);
+                        updateVals[j] = theVal4;
+                    }
+                }
+            }
+
             if(regParamNames[i] == DATA_SIZE_KW) {
                 doingDataSize = 1; /* flag to check size */
                 snprintf( dataSizeString, sizeof( dataSizeString ), "%s", theVal );
@@ -2693,6 +2711,9 @@ irods::error db_reg_data_obj_op(
     if (0 == strcmp(_data_obj_info->dataCreate, "")) {
         strcpy(_data_obj_info->dataCreate, myTime);
     }
+    if (0 == strcmp(_data_obj_info->dataAccessTime, "")) {
+        strcpy(_data_obj_info->dataAccessTime, myTime);
+    }
     strcpy(_data_obj_info->dataExpiry, "00000000000");
 
     std::snprintf(_data_obj_info->dataOwnerName, sizeof(_data_obj_info->dataOwnerName), "%s", _ctx.comm()->clientUser.userName);
@@ -2720,13 +2741,17 @@ irods::error db_reg_data_obj_op(
     cllBindVars[17] = "EMPTY_RESC_NAME";
     cllBindVars[18] = "EMPTY_RESC_HIER";
     cllBindVars[19] = "EMPTY_RESC_GROUP_NAME";
-    cllBindVarCount = 20;
+    cllBindVars[20] = _data_obj_info->dataAccessTime;
+    cllBindVarCount = 21;
     if ( logSQL != 0 ) {
         log_sql::debug("chlRegDataObj SQL 6");
     }
-    status =  cmlExecuteNoAnswerSql(
-                  "insert into R_DATA_MAIN (data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_id, data_path, data_owner_name, data_owner_zone, data_is_dirty, data_checksum, data_mode, create_ts, modify_ts, data_expiry_ts, resc_name, resc_hier, resc_group_name) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                  &icss );
+    status = cmlExecuteNoAnswerSql(
+        "insert into R_DATA_MAIN (data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, "
+        "resc_id, data_path, data_owner_name, data_owner_zone, data_is_dirty, data_checksum, data_mode, create_ts, "
+        "modify_ts, data_expiry_ts, resc_name, resc_hier, resc_group_name, access_ts) values (?, ?, ?, ?, ?, ?, ?, ?, "
+        "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        &icss);
     if ( status != 0 ) {
         log_db::info("chlRegDataObj cmlExecuteNoAnswerSql failure {}", status);
         _rollback( "chlRegDataObj" );
@@ -2881,7 +2906,8 @@ irods::error db_reg_replica_op(
                        data_mode, \
                        r_comment, \
                        create_ts, \
-                       modify_ts";
+                       modify_ts, \
+                       access_ts";
     const int IX_DATA_REPL_NUM = 3; /* index of data_repl_num in theColls */
 //        int IX_RESC_GROUP_NAME = 7; /* index into theColls */
     const int IX_RESC_ID = 10;
@@ -2892,10 +2918,11 @@ irods::error db_reg_replica_op(
     const int IX_DATA_MODE = 19;
     const int IX_CREATE_TS = 21;
     const int IX_MODIFY_TS = 22;
-    const int IX_RESC_NAME2 = 23;
-    const int IX_DATA_PATH2 = 24;
-    const int IX_DATA_ID2 = 25;
-    int nColumns = 26;
+    const int IX_ACCESS_TS = 23;
+    const int IX_RESC_NAME2 = 24;
+    const int IX_DATA_PATH2 = 25;
+    const int IX_DATA_ID2 = 26;
+    int nColumns = 27;
 
     char objIdString[MAX_NAME_LEN];
     char replNumString[MAX_NAME_LEN];
@@ -3008,6 +3035,7 @@ irods::error db_reg_replica_op(
     getNowStr( myTime );
     cVal[IX_MODIFY_TS] = myTime;
     cVal[IX_CREATE_TS] = myTime;
+    cVal[IX_ACCESS_TS] = myTime;
 
     cVal[IX_RESC_NAME2] = (char*)resc_id_str.c_str();//_dst_data_obj_info->rescName; // JMC - backport 4669
     cVal[IX_DATA_PATH2] = _dst_data_obj_info->filePath; // JMC - backport 4669
@@ -3019,12 +3047,18 @@ irods::error db_reg_replica_op(
     cllBindVarCount = nColumns;
 #if (defined ORA_ICAT || defined MY_ICAT) // JMC - backport 4685
     /* MySQL and Oracle */
-    snprintf( tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? from DUAL where not exists (select data_id from R_DATA_MAIN where resc_id=? and data_path=? and data_id=?)",
-              theColls );
+    snprintf(tSQL,
+             MAX_SQL_SIZE,
+             "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? from DUAL where "
+             "not exists (select data_id from R_DATA_MAIN where resc_id=? and data_path=? and data_id=?)",
+             theColls);
 #else
     /* Postgres */
-    snprintf( tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? where not exists (select data_id from R_DATA_MAIN where resc_id=? and data_path=? and data_id=?)",
-              theColls );
+    snprintf(tSQL,
+             MAX_SQL_SIZE,
+             "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? where not exists "
+             "(select data_id from R_DATA_MAIN where resc_id=? and data_path=? and data_id=?)",
+             theColls);
 
 #endif
     if ( logSQL != 0 ) {
@@ -15385,6 +15419,74 @@ auto db_delay_rule_unlock(irods::plugin_context& _ctx, const char* _rule_ids) ->
     }
 } // db_delay_rule_unlock
 
+auto db_update_replica_access_time(irods::plugin_context& _ctx,
+                                   const char* _json_input,
+                                   [[maybe_unused]] char** _output) -> irods::error
+{
+    if (const auto ret = _ctx.valid(); !ret.ok()) {
+        return PASS(ret);
+    }
+
+    // The output pointer is not used because the ODBC API isn't guaranteed to tell us
+    // which SQL statement failed. However, it is made available to future-proof the APIs
+    // supporting access time. Even though the output pointer isn't used, we still check it
+    // as a way to enforce correctness.
+    if (!_json_input || !_output) {
+        log_db::error("{}: Received one or more null pointers.", __func__);
+        return ERROR(SYS_INTERNAL_NULL_INPUT_ERR, "Received one or more null pointers.");
+    }
+
+    try {
+        const auto json_input = nlohmann::json::parse(_json_input);
+        const auto& updates = json_input.at("access_time_updates");
+
+        std::vector<std::size_t> data_ids;
+        std::vector<std::size_t> replica_numbers;
+        std::vector<std::string> access_times;
+
+        data_ids.reserve(updates.size());
+        replica_numbers.reserve(updates.size());
+        access_times.reserve(updates.size());
+
+        std::for_each(std::begin(updates),
+                      std::end(updates),
+                      [&data_ids, &replica_numbers, &access_times](const nlohmann::json& _j) {
+                          data_ids.emplace_back(_j.at("data_id").get<std::size_t>());
+                          replica_numbers.emplace_back(_j.at("replica_number").get<std::size_t>());
+                          access_times.emplace_back(_j.at("atime").get<std::string>());
+                      });
+
+        auto [db_instance, db_conn] = irods::experimental::catalog::new_database_connection();
+
+        constexpr const char* sql = "update R_DATA_MAIN set access_ts = ? where data_id = ? and data_repl_num = ?";
+        log_sql::debug("{}: SQL = [{}]", __func__, sql);
+
+        nanodbc::statement stmt{db_conn};
+        nanodbc::prepare(stmt, sql);
+
+        stmt.bind_strings(0, access_times);
+        stmt.bind(1, data_ids.data(), data_ids.size());
+        stmt.bind(2, replica_numbers.data(), replica_numbers.size());
+
+        // Execute the batch operation within a transaction. From a behavior perspective, it
+        // would be better to use execute() instead of just_transact() because each update
+        // would be committed independently. However, we've chosen to update all rows atomically.
+        // This decision is strictly for performance reasons and ultimately means we feel it's
+        // acceptable to rollback all updates on failure.
+        just_transact(stmt, updates.size());
+
+        return SUCCESS();
+    }
+    catch (const irods::exception& e) {
+        log_db::error("{}: {}", __func__, e.client_display_what());
+        return ERROR(e.code(), e.what());
+    }
+    catch (const std::exception& e) {
+        log_db::error("{}: {}", __func__, e.what());
+        return ERROR(SYS_LIBRARY_ERROR, e.what());
+    }
+} // db_update_replica_access_time
+
 // =-=-=-=-=-=-=-
 //
 irods::error db_start_operation( irods::plugin_property_map& _props ) {
@@ -15794,6 +15896,9 @@ irods::database* plugin_factory(
         function<error(plugin_context&, const char*, const char*, int)>(db_delay_rule_lock));
     pg->add_operation<const char*>(
         DATABASE_OP_DELAY_RULE_UNLOCK, function<error(plugin_context&, const char*)>(db_delay_rule_unlock));
+    pg->add_operation<const char*, char**>(
+        DATABASE_OP_UPDATE_REPLICA_ACCESS_TIME,
+        function<error(plugin_context&, const char*, char**)>(db_update_replica_access_time));
 
     return pg;
 } // plugin_factory

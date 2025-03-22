@@ -437,4 +437,21 @@ auto chl_delay_rule_lock(RsComm& _comm, const char* _rule_id, const char* _delay
 /// \since 5.0.0
 auto chl_delay_rule_unlock(RsComm& _comm, const char* _rule_ids) -> int;
 
+/// \brief High-level wrapper for updating the access time of one or more replicas.
+///
+/// Triggers policy associated with database operations.
+///
+/// \param[in]  _comm       The communication object.
+/// \param[in]  _json_input A JSON string containing access time update information.
+/// \param[out] _output     A pointer which will hold error details about the operation, if available.
+///
+/// \return An integer.
+/// \retval >=0 The number of replicas that were affected.
+/// \retval  <0 On failure.
+///
+/// \see #rs_update_replica_access_time
+///
+/// \since 5.0.0
+auto chl_update_replica_access_time(RsComm& _comm, const char* _json_input, char** _output) -> int;
+
 #endif // IRODS_ICAT_HIGHLEVEL_ROUTINES_HPP

@@ -162,6 +162,7 @@ typedef struct DataObjInfo {
     char in_pdmo[MAX_NAME_LEN]; // If this is set then we are currently in a pdmo call at that level of hierarchy
     struct DataObjInfo *next;
     rodsLong_t rescId;
+    char dataAccessTime[TIME_LEN];
 } dataObjInfo_t ;
 
 /* collInfo_t definitions:
