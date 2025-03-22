@@ -236,7 +236,7 @@ TEST_CASE("#8260: rc_update_replica_access_time updates access time with bad acc
     }
 
     irods::at_scope_exit remove_sandbox{
-        [&conn, &sandbox] { REQUIRE(fs::client::remove_all(conn, sandbox, fs::remove_options::no_trash)); }};
+        [&conn, &sandbox] { fs::client::remove_all(conn, sandbox, fs::remove_options::no_trash); }};
 
     // Create a data object.
     const auto logical_path = sandbox / "data_object.txt";
@@ -306,16 +306,25 @@ TEST_CASE("#8260: rc_update_replica_access_time can update access time of one re
     }
 
     irods::at_scope_exit remove_sandbox{
-        [&conn, &sandbox] { REQUIRE(fs::client::remove_all(conn, sandbox, fs::remove_options::no_trash)); }};
+        [&conn, &sandbox] { fs::client::remove_all(conn, sandbox, fs::remove_options::no_trash); }};
 
     // Create a data object.
     const auto logical_path = sandbox / "data_object.txt";
     io::client::native_transport tp{conn};
-    io::odstream{tp, logical_path};
+    io::odstream out{tp, logical_path};
 
-    // Show that the replica's atime and mtime are identical.
+    {
+        // Show that the replica's atime and mtime are identical. It's important that
+        // this assertion be made while the replica is in the intermediate state because
+        // closing a new replica will result in the server updating the mtime.
+        const auto [data_id, atime, mtime] = get_replica_info(conn, logical_path, 0);
+        REQUIRE(atime == mtime);
+    }
+
+    // Closing the replica will result in the mtime being updated, so fetch the latest
+    // mtime of the replica in case it changed.
+    out.close();
     const auto [data_id, atime, mtime] = get_replica_info(conn, logical_path, 0);
-    REQUIRE(atime == mtime);
 
     // This JSON string contains the new atime for the replica.
     const auto* expected_atime = "01700000000";
@@ -379,7 +388,7 @@ TEST_CASE("#8260: rc_update_replica_access_time can update access time of multip
     }
 
     irods::at_scope_exit remove_sandbox{
-        [&conn, &sandbox] { REQUIRE(fs::client::remove_all(conn, sandbox, fs::remove_options::no_trash)); }};
+        [&conn, &sandbox] { fs::client::remove_all(conn, sandbox, fs::remove_options::no_trash); }};
 
     // Create two data objects.
     const auto logical_path_0 = sandbox / "data_object_0.txt";
@@ -437,12 +446,12 @@ TEST_CASE("#8260: rc_update_replica_access_time can update access time of multip
     auto updated_replica_info = get_replica_info(conn, logical_path_0, 1);
     CHECK(std::get<0>(updated_replica_info) == std::get<0>(replica_info_0));
     CHECK(std::get<1>(updated_replica_info) == expected_atime_0); // atime should be different.
-    CHECK(std::get<2>(updated_replica_info) == std::get<1>(replica_info_0)); // mtime should not have changed.
+    CHECK(std::get<2>(updated_replica_info) == std::get<2>(replica_info_0)); // mtime should not have changed.
     // And now we check replica 0 of the second data object.
     updated_replica_info = get_replica_info(conn, logical_path_1, 0);
     CHECK(std::get<0>(updated_replica_info) == std::get<0>(replica_info_1));
     CHECK(std::get<1>(updated_replica_info) == expected_atime_1); // atime should be different.
-    CHECK(std::get<2>(updated_replica_info) == std::get<1>(replica_info_1)); // mtime should not have changed.
+    CHECK(std::get<2>(updated_replica_info) == std::get<2>(replica_info_1)); // mtime should not have changed.
 }
 
 TEST_CASE("#8260: targeting mix of existent and non-existent replicas is not an error")
@@ -460,7 +469,7 @@ TEST_CASE("#8260: targeting mix of existent and non-existent replicas is not an 
     }
 
     irods::at_scope_exit remove_sandbox{
-        [&conn, &sandbox] { REQUIRE(fs::client::remove_all(conn, sandbox, fs::remove_options::no_trash)); }};
+        [&conn, &sandbox] { fs::client::remove_all(conn, sandbox, fs::remove_options::no_trash); }};
 
     // Show that no data object exists in the catalog with the target data id.
     // Checking the replica number isn't necessary because its existence requires the
@@ -505,11 +514,20 @@ TEST_CASE("#8260: targeting mix of existent and non-existent replicas is not an 
         // Create a data object.
         const auto logical_path = sandbox / "data_object.txt";
         io::client::native_transport tp{conn};
-        io::odstream{tp, logical_path};
+        io::odstream out{tp, logical_path};
 
-        // Show that the replica's atime and mtime are identical.
+        {
+            // Show that the replica's atime and mtime are identical. It's important that
+            // this assertion be made while the replica is in the intermediate state because
+            // closing a new replica will result in the server updating the mtime.
+            const auto [data_id, atime, mtime] = get_replica_info(conn, logical_path, 0);
+            REQUIRE(atime == mtime);
+        }
+
+        // Closing the replica will result in the mtime being updated, so fetch the
+        // latest mtime of the replica in case it changed.
+        out.close();
         const auto [data_id, atime, mtime] = get_replica_info(conn, logical_path, 0);
-        REQUIRE(atime == mtime);
 
         // This JSON string contains the new atime for the replicas. Only the update
         // involving the existent replica should succeed. The other update is effectively
@@ -568,7 +586,7 @@ TEST_CASE("#8260: opening a replica for reading updates its access time")
     }
 
     irods::at_scope_exit remove_sandbox{
-        [&conn, &sandbox] { REQUIRE(fs::client::remove_all(conn, sandbox, fs::remove_options::no_trash)); }};
+        [&conn, &sandbox] { fs::client::remove_all(conn, sandbox, fs::remove_options::no_trash); }};
 
     // Create a data object.
     const auto logical_path = sandbox / "data_object.txt";
@@ -630,7 +648,7 @@ TEST_CASE("#8260: opening a replica for writing does not update its access time"
     }
 
     irods::at_scope_exit remove_sandbox{
-        [&conn, &sandbox] { REQUIRE(fs::client::remove_all(conn, sandbox, fs::remove_options::no_trash)); }};
+        [&conn, &sandbox] { fs::client::remove_all(conn, sandbox, fs::remove_options::no_trash); }};
 
     // Create a data object.
     const auto logical_path = sandbox / "data_object.txt";
