@@ -2711,6 +2711,9 @@ irods::error db_reg_data_obj_op(
     if (0 == strcmp(_data_obj_info->dataCreate, "")) {
         strcpy(_data_obj_info->dataCreate, myTime);
     }
+    if (0 == strcmp(_data_obj_info->dataAccessTime, "")) {
+        strcpy(_data_obj_info->dataAccessTime, myTime);
+    }
     strcpy(_data_obj_info->dataExpiry, "00000000000");
 
     std::snprintf(_data_obj_info->dataOwnerName, sizeof(_data_obj_info->dataOwnerName), "%s", _ctx.comm()->clientUser.userName);
@@ -2738,7 +2741,7 @@ irods::error db_reg_data_obj_op(
     cllBindVars[17] = "EMPTY_RESC_NAME";
     cllBindVars[18] = "EMPTY_RESC_HIER";
     cllBindVars[19] = "EMPTY_RESC_GROUP_NAME";
-    cllBindVars[20] = _data_obj_info->dataModify;
+    cllBindVars[20] = _data_obj_info->dataAccessTime;
     cllBindVarCount = 21;
     if ( logSQL != 0 ) {
         log_sql::debug("chlRegDataObj SQL 6");
