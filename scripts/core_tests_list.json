@@ -50,7 +50,6 @@
     "test_imeta_interactive",
     "test_imeta_set.Test_ImetaCp",
     "test_imeta_set.Test_ImetaLsLongmode",
-    "test_imeta_set.Test_ImetaQu",
     "test_imeta_set.Test_ImetaSet",
     "test_imkdir",
     "test_imv",
