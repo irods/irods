@@ -286,7 +286,8 @@ def convert_to_v5_schema_and_add_missing_properties(server_config):
     # "host" property in server_config.json. iRODS 5 requires the "host" property,
     # so we use the environment file since that's likely to contain the correct
     # hostname, FQDN, or IP of the server.
-    new_server_config['host'] = IrodsConfig().client_environment['irods_host']
+    service_account_environment = IrodsConfig().client_environment
+    new_server_config['host'] = service_account_environment['irods_host']
 
     # Remove keys that are no longer needed by the server.
     # Keys listed here are ones that used to be recognized by the server.
@@ -298,7 +299,24 @@ def convert_to_v5_schema_and_add_missing_properties(server_config):
     new_server_config.pop('server_control_plane_port', None)
     new_server_config.pop('server_control_plane_timeout_milliseconds', None)
 
+    # Add TLS properties based on presence of keys in the service account client environment.
+    ssl_configurations_to_migrate = [
+        "irods_ssl_certificate_chain_file",
+        "irods_ssl_certificate_key_file",
+        "irods_ssl_dh_params_file"
+    ]
+    if any([config in service_account_environment for config in ssl_configurations_to_migrate]):
+        # If any of the configuration values are missing, we put an invalid value in the server configuration so that
+        # the situation is brought to the attention of the administrator. All of these properties are required if TLS
+        # is being used. The administrator should either provide all of the values, or stop using TLS.
+        new_server_config["tls"] = {
+            "certificate_chain_file": service_account_environment.get("irods_ssl_certificate_chain_file", None),
+            "certificate_key_file": service_account_environment.get("irods_ssl_certificate_key_file", None),
+            "dh_params_file": service_account_environment.get("irods_ssl_dh_params_file", None)
+        }
+
     return new_server_config
+
 
 def upgrade_config_file(irods_config, path, new_version, schema_name=None):
     l = logging.getLogger(__name__)

@@ -302,19 +302,6 @@ extern "C" {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
         capture_string_property(irods::KW_CFG_IRODS_SSL_VERIFY_SERVER, _env->irodsSSLVerifyServer, MAX_NAME_LEN);
 
-        capture_string_property(irods::KW_CFG_IRODS_SSL_CERTIFICATE_CHAIN_FILE,
-                                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-                                _env->irodsSSLCertificateChainFile,
-                                MAX_NAME_LEN);
-
-        capture_string_property(irods::KW_CFG_IRODS_SSL_CERTIFICATE_KEY_FILE,
-                                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-                                _env->irodsSSLCertificateKeyFile,
-                                MAX_NAME_LEN);
-
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-        capture_string_property(irods::KW_CFG_IRODS_SSL_DH_PARAMS_FILE, _env->irodsSSLDHParamsFile, MAX_NAME_LEN);
-
         capture_integer_property(
             irods::KW_CFG_IRODS_MAX_SIZE_FOR_SINGLE_BUFFER,
             _env->irodsMaxSizeForSingleBuffer );

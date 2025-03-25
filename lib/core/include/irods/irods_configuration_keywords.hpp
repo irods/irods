@@ -185,6 +185,12 @@ namespace irods
     extern const char* const KW_CFG_ACCESS_TIME_QUEUE_SIZE;
     extern const char* const KW_CFG_ACCESS_TIME_BATCH_SIZE;
     extern const char* const KW_CFG_ACCESS_TIME_RESOLUTION_IN_SECONDS;
+
+    // TLS server configurations
+    extern const char* const KW_CFG_TLS_CONFIGURATION;
+    extern const char* const KW_CFG_TLS_CERTIFICATE_CHAIN_FILE;
+    extern const char* const KW_CFG_TLS_CERTIFICATE_KEY_FILE;
+    extern const char* const KW_CFG_TLS_DH_PARAMS_FILE;
 } // namespace irods
 
 #endif // IRODS_CONFIGURATION_KEYWORDS_HPP
