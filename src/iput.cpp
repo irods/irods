@@ -196,7 +196,6 @@ usage( FILE* _fout ) {
         "       it in the catalog.",
         " -K  verify checksum - calculate and verify the checksum on the data, both",
         "       client-side and server-side, and store it in the catalog.",
-        " --link - [Deprecated] ignore symlinks. Use --ignore-symlinks.",
         " --ignore-symlinks - ignore symlinks.",
         " -n  replNum  - the replica to be replaced, typically not needed",
         " -N  numThreads - the number of threads to use for the transfer. A value of",
