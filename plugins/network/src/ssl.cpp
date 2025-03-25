@@ -1,15 +1,17 @@
-#include "irods/rodsDef.h"
-#include "irods/msParam.h"
-#include "irods/rcConnect.h"
-#include "irods/sockComm.h"
 #include "irods/irods_at_scope_exit.hpp"
-#include "irods/irods_network_plugin.hpp"
+#include "irods/irods_buffer_encryption.hpp"
+#include "irods/irods_configuration_keywords.hpp"
 #include "irods/irods_network_constants.hpp"
+#include "irods/irods_network_plugin.hpp"
+#include "irods/irods_server_properties.hpp"
 #include "irods/irods_ssl_object.hpp"
 #include "irods/irods_stacktrace.hpp"
-#include "irods/irods_buffer_encryption.hpp"
-#include "irods/sockCommNetworkInterface.hpp"
+#include "irods/msParam.h"
+#include "irods/rcConnect.h"
 #include "irods/rcMisc.h"
+#include "irods/rodsDef.h"
+#include "irods/sockComm.h"
+#include "irods/sockCommNetworkInterface.hpp"
 
 #include <cstdio>
 #include <cstring>
@@ -56,7 +58,7 @@ static void ssl_build_error_string(
 
 } //ssl_build_error_string
 
-static auto ssl_load_dh_params(SSL_CTX* ctx, char* file) -> int
+static auto ssl_load_dh_params(SSL_CTX* ctx, const char* file) -> int
 {
     // dhparams file is required for secure communications in iRODS. Bail out.
     if (!file) {
@@ -125,9 +127,8 @@ static int ssl_verify_callback(
 
 // =-=-=-=-=-=-=-
 //
-static SSL_CTX* ssl_init_context(
-    char *certfile,
-    char *keyfile ) {
+static SSL_CTX* ssl_init_context(const char* certfile, const char* keyfile)
+{
     SSL_CTX *ctx = 0;
     char *verify_server = 0;
 
@@ -654,12 +655,6 @@ irods::error ssl_client_start(irods::plugin_context& _ctx,
 
 irods::error ssl_agent_start(irods::plugin_context& _ctx)
 {
-    rodsEnv env;
-    if (const auto ec = getRodsEnv(&env); ec < 0) {
-        rodsLog(LOG_ERROR, "ssl_init_context - failed in getRodsEnv : %d", ec);
-        return ERROR(ec, "failed in getRodsEnv");
-    }
-
     // check the context
     if (const auto err = _ctx.valid<irods::ssl_object>(); !err.ok()) {
         return PASSMSG("Invalid SSL plugin context.", err);
@@ -668,21 +663,35 @@ irods::error ssl_agent_start(irods::plugin_context& _ctx)
     // extract the useful bits from the context
     irods::ssl_object_ptr ssl_obj = boost::dynamic_pointer_cast< irods::ssl_object >( _ctx.fco() );
 
-    // set up the context using a certificate file and separate
-    // keyfile passed through environment variables
-    SSL_CTX* ctx = ssl_init_context(env.irodsSSLCertificateChainFile,
-            env.irodsSSLCertificateKeyFile);
-    if (!ctx) {
-        std::string err_str = "couldn't initialize SSL context";
-        ssl_build_error_string( err_str );
-        return ERROR(SSL_INIT_ERROR, err_str.c_str());
-    }
+    SSL_CTX* ctx{};
+    try {
+        const auto tls_config = irods::get_server_property<nlohmann::json>(irods::KW_CFG_TLS_CONFIGURATION);
 
-    if (const auto ec = ssl_load_dh_params(ctx, env.irodsSSLDHParamsFile); ec < 0) {
-        std::string err_str = "error setting Diffie-Hellman parameters";
-        ssl_build_error_string( err_str );
-        SSL_CTX_free( ctx );
-        return ERROR(SSL_INIT_ERROR, err_str.c_str());
+        const auto& certificate_chain_file =
+            tls_config.at(irods::KW_CFG_TLS_CERTIFICATE_CHAIN_FILE).get_ref<const std::string&>();
+        const auto& certificate_key_file =
+            tls_config.at(irods::KW_CFG_TLS_CERTIFICATE_KEY_FILE).get_ref<const std::string&>();
+        ctx = ssl_init_context(certificate_chain_file.c_str(), certificate_key_file.c_str());
+        if (!ctx) {
+            std::string err_str = "couldn't initialize SSL context";
+            ssl_build_error_string(err_str);
+            return ERROR(SSL_INIT_ERROR, err_str);
+        }
+
+        const auto& dh_params_file = tls_config.at(irods::KW_CFG_TLS_DH_PARAMS_FILE).get_ref<const std::string&>();
+        if (const auto ec = ssl_load_dh_params(ctx, dh_params_file.c_str()); ec < 0) {
+            std::string err_str = "error setting Diffie-Hellman parameters";
+            ssl_build_error_string(err_str);
+            SSL_CTX_free(ctx);
+            return ERROR(SSL_INIT_ERROR, err_str);
+        }
+    }
+    catch (const irods::exception& e) {
+        return ERROR(CONFIGURATION_ERROR, fmt::format("Error getting TLS configuration: {}", e.client_display_what()));
+    }
+    catch (const std::exception& e) {
+        SSL_CTX_free(ctx);
+        return ERROR(CONFIGURATION_ERROR, fmt::format("Error occurred getting TLS configuration: {}", e.what()));
     }
 
     SSL* ssl = ssl_init_socket( ctx, ssl_obj->socket_handle() );

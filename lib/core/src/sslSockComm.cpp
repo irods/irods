@@ -7,18 +7,24 @@
 #include "irods/rcMisc.h"
 #include "irods/rodsClient.h"
 
+#include "irods/irods_logger.hpp"
+
 #include <cstdio>
 
 #include <openssl/decoder.h>
 #include <openssl/evp.h>
 
-/* module internal functions */
-static SSL_CTX *sslInit( char *certfile, char *keyfile );
-static SSL *sslInitSocket( SSL_CTX *ctx, int sock );
-static void sslLogError( char *msg );
-static int sslLoadDHParams( SSL_CTX *ctx, char *file );
-static int sslVerifyCallback( int ok, X509_STORE_CTX *store );
-static int sslPostConnectionCheck( SSL *ssl, char *peer );
+static SSL_CTX* sslInit(const char* certfile, const char* keyfile);
+static SSL* sslInitSocket(SSL_CTX* ctx, int sock);
+static void sslLogError(char* msg);
+static int sslLoadDHParams(SSL_CTX* ctx, const char* file);
+static int sslVerifyCallback(int ok, X509_STORE_CTX* store);
+static int sslPostConnectionCheck(SSL* ssl, char* peer);
+
+namespace
+{
+    using log_network = irods::experimental::log::network;
+} // anonymous namespace
 
 int
 sslStart( rcComm_t *rcComm ) {
@@ -137,33 +143,38 @@ sslEnd( rcComm_t *rcComm ) {
     return 0;
 }
 
-int
-sslAccept( rsComm_t *rsComm ) {
-    rodsEnv env;
-    int status = getRodsEnv( &env );
-    if ( status < 0 ) {
-        rodsLog(
-            LOG_ERROR,
-            "sslAccept - failed in getRodsEnv : %d",
-            status );
-        return status;
-    }
+int sslAccept(rsComm_t* rsComm)
+{
+    try {
+        const auto tls_config = irods::get_server_property<nlohmann::json>(irods::KW_CFG_TLS_CONFIGURATION);
 
-    /* set up the context using a certificate file and separate
-       keyfile passed through environment variables */
-    rsComm->ssl_ctx = sslInit( env.irodsSSLCertificateChainFile,
-                               env.irodsSSLCertificateKeyFile );
-    if ( rsComm->ssl_ctx == NULL ) {
-        rodsLog( LOG_ERROR, "sslAccept: couldn't initialize SSL context" );
-        return SSL_INIT_ERROR;
-    }
+        const auto& certificate_chain_file =
+            tls_config.at(irods::KW_CFG_TLS_CERTIFICATE_CHAIN_FILE).get_ref<const std::string&>();
+        const auto& certificate_key_file =
+            tls_config.at(irods::KW_CFG_TLS_CERTIFICATE_KEY_FILE).get_ref<const std::string&>();
+        rsComm->ssl_ctx = sslInit(certificate_chain_file.c_str(), certificate_key_file.c_str());
+        if (!rsComm->ssl_ctx) {
+            log_network::error("couldn't initialize SSL context");
+            return SSL_INIT_ERROR;
+        }
 
-    status = sslLoadDHParams( rsComm->ssl_ctx, env.irodsSSLDHParamsFile );
-    if ( status < 0 ) {
-        rodsLog( LOG_ERROR, "sslAccept: error setting Diffie-Hellman parameters" );
-        SSL_CTX_free( rsComm->ssl_ctx );
-        rsComm->ssl_ctx = NULL;
-        return SSL_INIT_ERROR;
+        const auto& dh_params_file = tls_config.at(irods::KW_CFG_TLS_DH_PARAMS_FILE).get_ref<const std::string&>();
+        if (const auto ec = sslLoadDHParams(rsComm->ssl_ctx, dh_params_file.c_str()); ec < 0) {
+            SSL_CTX_free(rsComm->ssl_ctx);
+            rsComm->ssl_ctx = nullptr;
+            log_network::error("error setting Diffie-Hellman parameters");
+            return SSL_INIT_ERROR;
+        }
+    }
+    catch (const irods::exception& e) {
+        SSL_CTX_free(rsComm->ssl_ctx);
+        log_network::error("Error getting TLS configuration: {}", e.client_display_what());
+        return CONFIGURATION_ERROR;
+    }
+    catch (const std::exception& e) {
+        SSL_CTX_free(rsComm->ssl_ctx);
+        log_network::error("Error getting TLS configuration: {}", e.what());
+        return CONFIGURATION_ERROR;
     }
 
     rsComm->ssl = sslInitSocket( rsComm->ssl_ctx, rsComm->sock );
@@ -174,7 +185,7 @@ sslAccept( rsComm_t *rsComm ) {
         return SSL_INIT_ERROR;
     }
 
-    status = SSL_accept( rsComm->ssl );
+    const auto status = SSL_accept(rsComm->ssl);
     if ( status < 1 ) {
         sslLogError( "sslAccept: error calling SSL_accept" );
         return SSL_HANDSHAKE_ERROR;
@@ -611,8 +622,8 @@ sslWrite( void *buf, int len,
 
 /* Module internal support functions */
 
-static SSL_CTX*
-sslInit( char *certfile, char *keyfile ) {
+static SSL_CTX* sslInit(const char* certfile, const char* keyfile)
+{
     rodsEnv env;
     int status = getRodsEnv( &env );
     if ( status < 0 ) {
@@ -716,7 +727,7 @@ sslLogError( char *msg ) {
     }
 }
 
-static auto sslLoadDHParams(SSL_CTX* ctx, char* file) -> int
+static auto sslLoadDHParams(SSL_CTX* ctx, const char* file) -> int
 {
     // dhparams file is required for secure communications in iRODS. Bail out.
     if (!file) {

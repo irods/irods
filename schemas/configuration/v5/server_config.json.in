@@ -177,6 +177,19 @@
         "schema_version": {"type": "string"},
         "server_port_range_end": {"type": "integer"},
         "server_port_range_start": {"type": "integer"},
+        "tls": {
+            "type": "object",
+            "properties": {
+                "certificate_chain_file": {"type": "string"},
+                "certificate_key_file": {"type": "string"},
+                "dh_params_file": {"type": "string"}
+            },
+            "required": [
+                "certificate_chain_file",
+                "certificate_key_file",
+                "dh_params_file"
+            ]
+        },
         "zone_auth_scheme" : {"type": "string"},
         "zone_key": {"type": "string", "pattern": "^[A-Za-z0-9_]+$", "maxLength": 49},
         "zone_name": {"type": "string", "pattern": "^[A-Za-z0-9_\\.]+$", "maxLength": 63},
