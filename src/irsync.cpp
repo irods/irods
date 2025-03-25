@@ -214,7 +214,6 @@ usage() {
         " -l  lists all the source files that needs to be synchronized",
         "       (including their filesize in bytes) with respect to the target",
         "       without actually doing the synchronization.",
-        " --link - [Deprecated] ignore symlinks. Use --ignore-symlinks.",
         " --ignore-symlinks - ignore symlinks. Valid only for syncing from local host to",
         "        iRODS.",
         " -a   synchronize to all replicas if the target is an iRODS data object/collection.",
