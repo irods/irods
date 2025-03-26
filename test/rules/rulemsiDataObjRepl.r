@@ -3,7 +3,6 @@ myTestRule {
 #  Data Object path
 #  Optional flags in form keyword=value
 #    destRescName - the target resource for the replica
-#    backupRescName - specifies use of the resource for the backup mode
 #    rescName - the resource holding the source data
 #    updateRepl= - specifies all replicas will be updated
 #    replNum - specifies the replica number to use as the source

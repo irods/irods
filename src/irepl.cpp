@@ -33,7 +33,7 @@ main( int argc, char **argv ) {
     int reconnFlag;
 
 
-    optStr = "aBG:MN:hrvVn:PR:S:TX:UZ"; // JMC - backport 4549
+    optStr = "aG:MN:hrvVn:PR:S:TX:UZ"; // JMC - backport 4549
 
     status = parseCmdLineOpt( argc, argv, optStr, 1, &myRodsArgs ); // JMC - backport 4549
 
@@ -118,7 +118,7 @@ void
 usage() {
 
     char *msgs[] = {
-        "Usage: irepl [-aBMPrTvV] [-n replNum] [-R destResource] [-S srcResource]",
+        "Usage: irepl [-aMPrTvV] [-n replNum] [-R destResource] [-S srcResource]",
         "[-N numThreads] [-X restartFile] [--purgec]  [--rlock]dataObj|collection ... ",
         " ",
         "Replicate a file in iRODS to another storage resource.",
@@ -152,8 +152,6 @@ usage() {
         " ",
         "Options are:",
         " -a  all - if used with -U, update all stale copies",
-        " -B  Backup mode - [Deprecated] if a good copy already exists in this",
-        "     resource, don't make another copy.",
         " -P  output the progress of the replication.",
         " -U  Update (Synchronize) an old replica with the latest copy. (see -a)",
         " -M  admin - admin user uses this option to backup/replicate other users files",
