@@ -38,7 +38,7 @@ namespace irods
             "\\$\\b(?:pluginInstanceName|status|objPath|objPath|dataType|dataSize|dataSize|chksum|"
             "version|filePath|replNum|replStatus|writeFlag|dataOwner|dataOwnerZone|"
             "dataExpiry|dataComments|dataCreate|dataModify|dataAccess|dataAccessInx|"
-            "dataId|collId|statusString|destRescName|backupRescName|rescName|userClient|"
+            "dataId|collId|statusString|destRescName|rescName|userClient|"
             "userClient|userNameClient|userNameClient|rodsZoneClient|rodsZoneClient|sysUidClient|sysUidClient|"
             "privClient|privClient|clientAddr|authStrClient|authStrClient|userAuthSchemeClient|userAuthSchemeClient|userInfoClient|"
             "userInfoClient|userCommentClient|userCommentClient|userCreateClient|userCreateClient|userModifyClient|userModifyClient|userProxy|"

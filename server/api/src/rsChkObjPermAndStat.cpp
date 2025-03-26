@@ -202,8 +202,6 @@ chkCollForBundleOpr( rsComm_t *rsComm,
                             auto cond_input = irods::experimental::make_key_value_proxy(data_obj_inp.condInput);
                             irods::at_scope_exit free_kvp{ [&data_obj_inp] { clearKeyVal(&data_obj_inp.condInput); } };
 
-                            // The BACKUP_RESC_NAME feature has been deprecated and will be removed in a future release.
-                            cond_input[BACKUP_RESC_NAME_KW] = resource;
                             cond_input[RESC_HIER_STR_KW] = curCollEnt->resc_hier;
                             cond_input[DEST_RESC_HIER_STR_KW] = resc_hier;
 
@@ -262,8 +260,6 @@ chkCollForBundleOpr( rsComm_t *rsComm,
                 auto cond_input = irods::experimental::make_key_value_proxy(data_obj_inp.condInput);
                 irods::at_scope_exit free_kvp{ [&data_obj_inp] { clearKeyVal(&data_obj_inp.condInput); } };
 
-                // The BACKUP_RESC_NAME feature has been deprecated and will be removed in a future release.
-                cond_input[BACKUP_RESC_NAME_KW] = resource;
                 cond_input[RESC_HIER_STR_KW] = curCollEnt->resc_hier;
                 cond_input[DEST_RESC_HIER_STR_KW] = resc_hier;
 

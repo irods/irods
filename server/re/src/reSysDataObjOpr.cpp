@@ -144,8 +144,7 @@ msiSetNoDirectRescInp( msParam_t *xrescList, ruleExecInfo_t *rei ) {
 
     condInput = &rei->doinp->condInput;
 
-    if ( ( rescName = getValByKey( condInput, BACKUP_RESC_NAME_KW ) ) == NULL &&
-            ( rescName = getValByKey( condInput, DEST_RESC_NAME_KW ) ) == NULL &&
+    if ( ( rescName = getValByKey( condInput, DEST_RESC_NAME_KW ) ) == NULL &&
             ( rescName = getValByKey( condInput, DEF_RESC_NAME_KW ) ) == NULL &&
             ( rescName = getValByKey( condInput, RESC_NAME_KW ) ) == NULL ) {
         return 0;

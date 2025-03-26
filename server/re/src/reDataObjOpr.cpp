@@ -914,9 +914,6 @@ msiDataObjUnlink( msParam_t *inpParam, msParam_t *outParam,
  *      compatibility.
  *    Valid keyWds are:
  *          \li "destRescName" - the target resource to replicate to.
- *          \li "backupRescName" - (Deprecated) the target resource to backup
- *                the data. If this keyWd is used, the backup mode
- *                will be switched on.
  *          \li "rescName" - the resource of the source copy.
  *          \li "updateRepl" - update other replicas with the
  *                latest copy. This keyWd has no value. But
@@ -991,8 +988,6 @@ msiDataObjRepl( msParam_t *inpParam1, msParam_t *msKeyValStr,
 
     validKwFlags = OBJ_PATH_FLAG | DEST_RESC_NAME_FLAG | NUM_THREADS_FLAG | RESC_NAME_FLAG | UPDATE_REPL_FLAG |
                    REPL_NUM_FLAG | ALL_FLAG | ADMIN_FLAG | VERIFY_CHKSUM_FLAG | FORCE_CHKSUM_FLAG;
-    // The BACKUP_RESC_NAME feature has been deprecated and will be removed in a future version.
-    validKwFlags |= BACKUP_RESC_NAME_FLAG;
     rei->status = parseMsKeyValStrForDataObjInp( msKeyValStr, myDataObjInp,
                   DEST_RESC_NAME_KW, validKwFlags, &outBadKeyWd );
 
@@ -2856,9 +2851,6 @@ msiExecCmd( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,
  *      compatibility.
  *      Valid keyWds are:
  *        \li "destRescName" - the target resource to replicate to.
- *        \li "backupRescName" - (Deprecated) the target resource to backup
- *              the data. If this keyWd is used, the backup mode
- *              will be switched on.
  *        \li "rescName" - the resource of the source copy.
  *        \li "updateRepl" - update other replicas with the
  *              latest copy. This keyWd has no value. But
@@ -2937,8 +2929,6 @@ msiCollRepl( msParam_t *collection, msParam_t *msKeyValStr, msParam_t *status,
     /* Parse resource name and directly write to collReplInp */
     validKwFlags = COLL_NAME_FLAG | DEST_RESC_NAME_FLAG | RESC_NAME_FLAG | UPDATE_REPL_FLAG | REPL_NUM_FLAG | ALL_FLAG |
                    ADMIN_FLAG | VERIFY_CHKSUM_FLAG | FORCE_CHKSUM_FLAG;
-    // The BACKUP_RESC_NAME feature has been deprecated and will be removed in a future version.
-    validKwFlags |= BACKUP_RESC_NAME_FLAG;
     rei->status = parseMsKeyValStrForCollInp( msKeyValStr, collInp,
                   DEST_RESC_NAME_KW, validKwFlags, &outBadKeyWd );
 
