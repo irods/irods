@@ -25,7 +25,6 @@ rulevardef_t RuleVarTable[] = {
   {OBJ_PATH_KW, "", (char *) "rei->doi->objPath"},
   {RESC_NAME_KW, "", (char *) "rei->doi->rescName"},
   {DEST_RESC_NAME_KW,  "", (char *) "rei->doi->destRescName"},
-  {BACKUP_RESC_NAME_KW, "", (char *) "rei->doi->backupRescName"},
   {DATA_TYPE_KW, "", (char *) "rei->doi->dataType"},
   {DATA_SIZE_KW, "", (char *) "rei->doi->dataSize"},
   {CHKSUM_KW, "", (char *) "rei->doi->chksum"},

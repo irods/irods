@@ -308,6 +308,7 @@ TEST_CASE("serialize_dataObjInfo_ptr", "[pointer][serialization]")
 
     SECTION("empty and basic_struct")
     {
+        // clang-format off
         std::map<std::string_view, DataObjInfo> test_data{
             {"empty", {}},
             {"non_empty", {
@@ -337,7 +338,6 @@ TEST_CASE("serialize_dataObjInfo_ptr", "[pointer][serialization]")
                 .dataAccessInx      = 800,
                 .writeFlag          = 900,
                 .destRescName       = "destRescName",
-                .backupRescName     = "backupRescName",
                 .subPath            = "subPath",
                 .specColl           = nullptr,
                 .regUid             = 1000,
@@ -348,6 +348,7 @@ TEST_CASE("serialize_dataObjInfo_ptr", "[pointer][serialization]")
                 .rescId             = 1200
             }}
         };
+        // clang-format on
 
         for (auto&& [section_name, doi] : test_data) {
             DYNAMIC_SECTION(section_name)
@@ -381,8 +382,7 @@ TEST_CASE("serialize_dataObjInfo_ptr", "[pointer][serialization]")
                 CHECK(out.at("data_access")       == doi.dataAccess);
                 CHECK(out.at("data_access_index") == std::to_string(doi.dataAccessInx));
                 CHECK(out.at("write_flag")        == std::to_string(doi.writeFlag));
-                CHECK(out.at("dest_resc_name")    == doi.destRescName);
-                CHECK(out.at("backup_resc_name")  == doi.backupRescName);
+                CHECK(out.at("dest_resc_name") == doi.destRescName);
                 CHECK(out.at("sub_path")          == doi.subPath);
                 CHECK(nullptr                     == doi.specColl);
                 CHECK(out.at("reg_uid")           == std::to_string(doi.regUid));

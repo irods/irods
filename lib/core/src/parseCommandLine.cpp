@@ -320,9 +320,6 @@ parseCmdLineOpt( int argc, char **argv, const char *optString, int includeLong,
         case 'b':
             rodsArgs->bulk = True;
             break;
-        case 'B':
-            rodsArgs->backupMode = True;
-            break;
         case 'c':
             rodsArgs->condition = True;
             rodsArgs->conditionString = optarg;

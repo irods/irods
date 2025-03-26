@@ -114,6 +114,7 @@ namespace
             return nullptr;
         }
 
+        // clang-format off
         return {
             {"object_path", _p->objPath},
             {"resource_name", _p->rescName},
@@ -142,7 +143,6 @@ namespace
             {"data_access_index", _p->dataAccessInx},
             {"write_flag", _p->writeFlag},
             {"destination_resource_name", _p->destRescName},
-            {"backup_resource_name", _p->backupRescName},
             {"sub_path", _p->subPath},
             {"special_collection", to_json(_p->specColl)},
             {"registering_user_id", _p->regUid},
@@ -152,6 +152,7 @@ namespace
             {"next", to_json(_p->next)},
             {"resource_id", _p->rescId}
         };
+        // clang-format on
     }
 
     auto to_json(const zoneInfo_t* _p) -> json

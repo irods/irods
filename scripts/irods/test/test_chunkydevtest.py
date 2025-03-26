@@ -72,7 +72,7 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("ils -A " + irodshome + "/icmdtest/foo1",
                                    'STDOUT_SINGLELINE', testuser1 + "#" + irodszone + ":read")
         # basic replica
-        self.admin.assert_icommand("irepl -B -R " + self.testresc + " --rlock " + irodshome + "/icmdtest/foo1")
+        self.admin.assert_icommand("irepl -R " + self.testresc + " --rlock " + irodshome + "/icmdtest/foo1")
         self.admin.assert_icommand("ils -l " + irodshome + "/icmdtest/foo1", 'STDOUT_SINGLELINE', self.testresc)
 
         # overwrite a copy
@@ -159,7 +159,7 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("icp -K -R " + self.testresc + " " +
                                    irodshome + "/icmdtest/foo1 " + irodshome + "/icmdtest/foo2")
 
-        self.admin.assert_icommand("irepl -B -R " + self.testresc + " " + irodshome + "/icmdtest/foo1")
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + irodshome + "/icmdtest/foo1")
         phypath = dir_w + "/" + "foo1." + str(random.randrange(10000000))
         self.admin.assert_icommand("iput -kfR " + irodsdefresource + " " + sfile2 + " " + irodshome + "/icmdtest/foo1")
         # show have 2 different copies
@@ -566,7 +566,7 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("ichmod read " + self.user0.username + " " + irodshome + "/icmdtest1/foo1")
         self.admin.assert_icommand("ils -A " + irodshome + "/icmdtest1/foo1",
                                    'STDOUT_SINGLELINE', self.user0.username + "#" + irodszone + ":read")
-        self.admin.assert_icommand("irepl -B -R " + self.testresc + " " + irodshome + "/icmdtest1/foo1")
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + irodshome + "/icmdtest1/foo1")
         # overwrite a copy
         self.admin.assert_icommand("itrim -S  " + irodsdefresource + " -N1 " + irodshome + "/icmdtest1/foo1", 'STDOUT', "data objects trimmed")
         # TODO: this must be skipped because iphymv requires a leaf resource for source and destination
@@ -641,7 +641,7 @@ class ChunkyDevTest(ResourceBase):
             os.unlink(lrsfile)
         if os.path.isfile(rsfile):
             os.unlink(rsfile)
-        self.admin.assert_icommand("irepl -BvrPT -R " + self.testresc + " --rlock " +
+        self.admin.assert_icommand("irepl -vrPT -R " + self.testresc + " --rlock " +
                                    irodshome + "/icmdtest/testy", 'STDOUT_SINGLELINE', "icmdtest/testy")
         self.admin.assert_icommand("itrim -vrS " + irodsdefresource + " --dryrun -N 1 " +
                                    irodshome + "/icmdtest/testy", 'STDOUT_SINGLELINE', "This is a DRYRUN")

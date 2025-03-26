@@ -15,6 +15,7 @@
 
 int ProcessType = CLIENT_PT;
 
+// clang-format off
 char *dataObjCond[] = {
     ALL_KW, 		/* operation done on all replica */
     COPIES_KW, 		/* the number of copies */
@@ -26,7 +27,6 @@ char *dataObjCond[] = {
     OBJ_PATH_KW,		/* logical path of the object */
     RESC_NAME_KW,		/* resource name */
     DEST_RESC_NAME_KW,	/* destination resource name */
-    BACKUP_RESC_NAME_KW,	/* destination resource name */
     DATA_TYPE_KW,		/* data type */
     DATA_SIZE_KW,
     CHKSUM_KW,
@@ -51,6 +51,7 @@ char *dataObjCond[] = {
     DATA_MAP_ID_KW,
     "ENDOFLIST"
 };
+// clang-format on
 
 char *compareOperator[]  = {
     ">", "<", "=",
@@ -136,7 +137,6 @@ int NumStructFileType = sizeof( StructFileTypeDef ) / sizeof( structFileTypeDef_
 validKeyWd_t DataObjInpKeyWd[] = {
     {RESC_NAME_FLAG, RESC_NAME_KW},
     {DEST_RESC_NAME_FLAG, DEST_RESC_NAME_KW},
-    {BACKUP_RESC_NAME_FLAG, BACKUP_RESC_NAME_KW},
     {DEF_RESC_NAME_FLAG, DEF_RESC_NAME_KW},
     {FORCE_FLAG_FLAG, FORCE_FLAG_KW},
     {ALL_FLAG, ALL_KW},
@@ -164,21 +164,20 @@ int NumDataObjInpKeyWd = sizeof( DataObjInpKeyWd ) / sizeof( validKeyWd_t );
 
 /* valid keyWds for collInp_t */
 validKeyWd_t CollInpKeyWd[] = {
-    {RESC_NAME_FLAG,        RESC_NAME_KW},
-    {DEST_RESC_NAME_FLAG,   DEST_RESC_NAME_KW},
-    {DEF_RESC_NAME_FLAG,    DEF_RESC_NAME_KW},
-    {BACKUP_RESC_NAME_FLAG, BACKUP_RESC_NAME_KW},
-    {FORCE_FLAG_FLAG,       FORCE_FLAG_KW},
-    {ALL_FLAG,		ALL_KW},
-    {VERIFY_CHKSUM_FLAG,    VERIFY_CHKSUM_KW},
-    {ADMIN_FLAG,      ADMIN_KW},
-    {UPDATE_REPL_FLAG,      UPDATE_REPL_KW},
-    {REPL_NUM_FLAG,         REPL_NUM_KW},
-    {COLL_FLAGS_FLAG,       COLL_FLAGS_KW},
-    {OPR_TYPE_FLAG,         OPR_TYPE_KW},
-    {COLL_NAME_FLAG,         COLL_NAME_KW},
-    {RMTRASH_FLAG,    RMTRASH_KW},
-    {ADMIN_RMTRASH_FLAG,      ADMIN_RMTRASH_KW},
+    {RESC_NAME_FLAG, RESC_NAME_KW},
+    {DEST_RESC_NAME_FLAG, DEST_RESC_NAME_KW},
+    {DEF_RESC_NAME_FLAG, DEF_RESC_NAME_KW},
+    {FORCE_FLAG_FLAG, FORCE_FLAG_KW},
+    {ALL_FLAG, ALL_KW},
+    {VERIFY_CHKSUM_FLAG, VERIFY_CHKSUM_KW},
+    {ADMIN_FLAG, ADMIN_KW},
+    {UPDATE_REPL_FLAG, UPDATE_REPL_KW},
+    {REPL_NUM_FLAG, REPL_NUM_KW},
+    {COLL_FLAGS_FLAG, COLL_FLAGS_KW},
+    {OPR_TYPE_FLAG, OPR_TYPE_KW},
+    {COLL_NAME_FLAG, COLL_NAME_KW},
+    {RMTRASH_FLAG, RMTRASH_KW},
+    {ADMIN_RMTRASH_FLAG, ADMIN_RMTRASH_KW},
 };
 
 int NumCollInpKeyWd = sizeof( CollInpKeyWd ) / sizeof( validKeyWd_t );

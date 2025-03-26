@@ -200,12 +200,6 @@ initCondForRepl( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                    myRodsEnv->rodsDefResource );
     }
 
-    // The BACKUP_RESC_NAME feature has been deprecated and will be removed in a future release.
-    if ( myResc != NULL && rodsArgs->backupMode == True ) {
-        addKeyVal( &dataObjInp->condInput, BACKUP_RESC_NAME_KW,
-                   myResc );
-    }
-
     if ( rodsArgs->unmount == True ) {
         /* use unmount for update */
         addKeyVal( &dataObjInp->condInput, UPDATE_REPL_KW, "" );

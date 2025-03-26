@@ -38,17 +38,19 @@ namespace irods
             "\\$\\b(?:pluginInstanceName|status|objPath|objPath|dataType|dataSize|dataSize|chksum|"
             "version|filePath|replNum|replStatus|writeFlag|dataOwner|dataOwnerZone|"
             "dataExpiry|dataComments|dataCreate|dataModify|dataAccess|dataAccessInx|"
-            "dataId|collId|statusString|destRescName|backupRescName|rescName|userClient|"
+            "dataId|collId|statusString|destRescName|rescName|userClient|"
             "userClient|userNameClient|userNameClient|rodsZoneClient|rodsZoneClient|sysUidClient|sysUidClient|"
-            "privClient|privClient|clientAddr|authStrClient|authStrClient|userAuthSchemeClient|userAuthSchemeClient|userInfoClient|"
-            "userInfoClient|userCommentClient|userCommentClient|userCreateClient|userCreateClient|userModifyClient|userModifyClient|userProxy|"
+            "privClient|privClient|clientAddr|authStrClient|authStrClient|userAuthSchemeClient|userAuthSchemeClient|"
+            "userInfoClient|"
+            "userInfoClient|userCommentClient|userCommentClient|userCreateClient|userCreateClient|userModifyClient|"
+            "userModifyClient|userProxy|"
             "userProxy|userNameProxy|userNameProxy|rodsZoneProxy|rodsZoneProxy|privProxy|privProxy|authStrProxy|"
-            "authStrProxy|userAuthSchemeProxy|userAuthSchemeProxy|userInfoProxy|userInfoProxy|userCommentProxy|userCommentProxy|"
+            "authStrProxy|userAuthSchemeProxy|userAuthSchemeProxy|userInfoProxy|userInfoProxy|userCommentProxy|"
+            "userCommentProxy|"
             "userCreateProxy|userCreateProxy|userModifyProxy|userModifyProxy|collName|collParentName|"
             "collOwnername|collExpiry|collComments|collCreate|collModify|collAccess|"
             "collAccessInx|collInheritance|otherUser|otherUserName|otherUserZone|otherUserType|"
-            "connectCnt|connectSock|connectOption|connectStatus|connectApiInx|KVPairs)\\b"
-        };
+            "connectCnt|connectSock|connectOption|connectStatus|connectApiInx|KVPairs)\\b"};
 
         return std::regex_search(_rule_text.data(), session_vars_pattern);
     }
