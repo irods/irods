@@ -37,6 +37,9 @@ extern "C" {
 /// be derived from the inputs given to R_DATA_MAIN.
 /// \endparblock
 ///
+/// \note This API does not support modification of a replica's access time. Any attempt to modify the
+///       access time of a replica will be ignored. Access time is managed out-of-band.
+///
 /// \p json_input must have the following JSON structure:
 /// \code{.js}
 /// {
