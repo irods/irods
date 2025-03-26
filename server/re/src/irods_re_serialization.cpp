@@ -522,7 +522,6 @@ namespace irods::re_serialization
                 _out["data_access_index"] = boost::lexical_cast<std::string>(l->dataAccessInx);
                 _out["write_flag"] = boost::lexical_cast<std::string>(l->writeFlag);
                 _out["dest_resc_name"] = l->destRescName;
-                _out["backup_resc_name"] = l->backupRescName;
                 _out["sub_path"] = l->subPath;
                 _out["reg_uid"] = boost::lexical_cast<std::string>(l->regUid);
                 _out["other_flags"] = boost::lexical_cast<std::string>(l->otherFlags);
