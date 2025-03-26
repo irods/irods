@@ -22,14 +22,12 @@ objects_link_libraries(
   irods_common
   irods_plugin_dependencies
   PRIVATE
-  "${IRODS_EXTERNALS_FULLPATH_AVRO}/lib/libavrocpp.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_chrono.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so"
   "${IRODS_EXTERNALS_FULLPATH_NANODBC}/lib/libnanodbc.so"
-  "${IRODS_EXTERNALS_FULLPATH_ZMQ}/lib/libzmq.so"
   OpenSSL::SSL
   OpenSSL::Crypto
   ${CMAKE_DL_LIBS}
@@ -44,11 +42,8 @@ target_include_directories(
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/api/include>"
   "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/core/include>"
   PRIVATE
-  "${IRODS_EXTERNALS_FULLPATH_AVRO}/include"
   "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
-  "${IRODS_EXTERNALS_FULLPATH_CPPZMQ}/include"
   "${IRODS_EXTERNALS_FULLPATH_NANODBC}/include"
-  "${IRODS_EXTERNALS_FULLPATH_ZMQ}/include"
 )
 target_compile_definitions(
   irods_server_drivers
