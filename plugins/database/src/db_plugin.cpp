@@ -2711,6 +2711,9 @@ irods::error db_reg_data_obj_op(
     if (0 == strcmp(_data_obj_info->dataCreate, "")) {
         strcpy(_data_obj_info->dataCreate, myTime);
     }
+    if (0 == strcmp(_data_obj_info->dataAccessTime, "")) {
+        strcpy(_data_obj_info->dataAccessTime, myTime);
+    }
     strcpy(_data_obj_info->dataExpiry, "00000000000");
 
     std::snprintf(_data_obj_info->dataOwnerName, sizeof(_data_obj_info->dataOwnerName), "%s", _ctx.comm()->clientUser.userName);
@@ -2738,13 +2741,17 @@ irods::error db_reg_data_obj_op(
     cllBindVars[17] = "EMPTY_RESC_NAME";
     cllBindVars[18] = "EMPTY_RESC_HIER";
     cllBindVars[19] = "EMPTY_RESC_GROUP_NAME";
-    cllBindVarCount = 20;
+    cllBindVars[20] = _data_obj_info->dataAccessTime;
+    cllBindVarCount = 21;
     if ( logSQL != 0 ) {
         log_sql::debug("chlRegDataObj SQL 6");
     }
-    status =  cmlExecuteNoAnswerSql(
-                  "insert into R_DATA_MAIN (data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_id, data_path, data_owner_name, data_owner_zone, data_is_dirty, data_checksum, data_mode, create_ts, modify_ts, data_expiry_ts, resc_name, resc_hier, resc_group_name) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                  &icss );
+    status = cmlExecuteNoAnswerSql(
+        "insert into R_DATA_MAIN (data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, "
+        "resc_id, data_path, data_owner_name, data_owner_zone, data_is_dirty, data_checksum, data_mode, create_ts, "
+        "modify_ts, data_expiry_ts, resc_name, resc_hier, resc_group_name, access_ts) values (?, ?, ?, ?, ?, ?, ?, ?, "
+        "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        &icss);
     if ( status != 0 ) {
         log_db::info("chlRegDataObj cmlExecuteNoAnswerSql failure {}", status);
         _rollback( "chlRegDataObj" );
