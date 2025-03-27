@@ -1,12 +1,7 @@
-from __future__ import print_function
 import copy
 import os
 import sys
-
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
+import unittest
 
 from . import session
 from .. import test
@@ -14,6 +9,7 @@ from .. import paths
 from .. import lib
 from ..configuration import IrodsConfig
 from ..controller import IrodsController
+
 
 class Test_SSL(session.make_sessions_mixin([('otherrods', 'rods')], []), unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
@@ -37,16 +33,15 @@ class Test_SSL(session.make_sessions_mixin([('otherrods', 'rods')], []), unittes
 
                     try:
                         self.enable_server_ssl()
+                        IrodsController().reload_configuration()
+
                         self.enable_client_ssl_verify_cert()
-                        IrodsController(self.config).reload_configuration()
                         self.admin.assert_icommand(['ils'], 'STDOUT', use_regex=True, expected_results='.*tempZone.*')
 
                         self.enable_client_ssl_verify_hostname()
-                        IrodsController(self.config).reload_configuration()
                         self.admin.assert_icommand(['ils'], 'STDERR', use_regex=True, expected_results='.*-2105000 SSL_CERT_ERROR.*')
 
                         self.enable_client_ssl_verify_cert()
-                        IrodsController(self.config).reload_configuration()
                         self.admin.assert_icommand(['ils'], 'STDOUT', use_regex=True, expected_results='.*tempZone.*')
 
                     finally:
@@ -94,28 +89,23 @@ class Test_SSL(session.make_sessions_mixin([('otherrods', 'rods')], []), unittes
     def enable_server_ssl(self):
         self.add_ssl_plugin_rule()
 
-        env_path = self.config.client_environment_path
-
-        lib.update_json_file_from_dict(env_path, {'irods_client_server_policy': 'CS_NEG_REQUIRE',
-                                                  'irods_ssl_certificate_chain_file': self.ssl_crt_path,
-                                                  'irods_ssl_certificate_key_file': self.ssl_key_path,
-                                                  'irods_ssl_dh_params_file': self.dhparams_pem_path,
-                                                  'irods_ssl_ca_certificate_file': self.ssl_crt_path,
-                                                  'irods_ssl_verify_server': 'cert'})
+        lib.update_json_file_from_dict(
+            self.config.server_config_path,
+            {
+                "tls": {
+                    "certificate_chain_file": self.ssl_crt_path,
+                    "certificate_key_file": self.ssl_key_path,
+                    "dh_params_file": self.dhparams_pem_path
+                }
+            }
+        )
 
     def enable_client_ssl_verify_cert(self):
         self.admin.environment_file_contents.update({'irods_client_server_policy': 'CS_NEG_REQUIRE',
-                                                     'irods_ssl_certificate_chain_file': self.ssl_crt_path,
-                                                     'irods_ssl_certificate_key_file': self.ssl_key_path,
-                                                     'irods_ssl_dh_params_file': self.dhparams_pem_path,
                                                      'irods_ssl_ca_certificate_file': self.ssl_crt_path,
                                                      'irods_ssl_verify_server': 'cert'})
 
     def enable_client_ssl_verify_hostname(self):
         self.admin.environment_file_contents.update({'irods_client_server_policy': 'CS_NEG_REQUIRE',
-                                                     'irods_ssl_certificate_chain_file': self.ssl_crt_path,
-                                                     'irods_ssl_certificate_key_file': self.ssl_key_path,
-                                                     'irods_ssl_dh_params_file': self.dhparams_pem_path,
                                                      'irods_ssl_ca_certificate_file': self.ssl_crt_path,
                                                      'irods_ssl_verify_server': 'hostname'})
-

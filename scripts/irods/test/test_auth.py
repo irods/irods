@@ -64,20 +64,17 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
         IrodsController().stop()
 
         service_account_environment_file_path = os.path.join(os.path.expanduser('~'), '.irods', 'irods_environment.json')
-        with lib.file_backed_up(service_account_environment_file_path):
+        with lib.file_backed_up(irods_config.server_config_path):
             server_update = {
-                'irods_ssl_certificate_chain_file': chain_pem_path,
-                'irods_ssl_certificate_key_file': server_key_path,
-                'irods_ssl_dh_params_file': dhparams_pem_path,
-                'irods_ssl_ca_certificate_file': chain_pem_path,
-                'irods_ssl_verify_server': 'none',
+                "tls": {
+                    "certificate_chain_file": chain_pem_path,
+                    "certificate_key_file": server_key_path,
+                    "dh_params_file": dhparams_pem_path,
+                }
             }
-            lib.update_json_file_from_dict(service_account_environment_file_path, server_update)
+            lib.update_json_file_from_dict(irods_config.server_config_path, server_update)
 
             client_update = {
-                'irods_ssl_certificate_chain_file': chain_pem_path,
-                'irods_ssl_certificate_key_file': server_key_path,
-                'irods_ssl_dh_params_file': dhparams_pem_path,
                 'irods_ssl_ca_certificate_file': chain_pem_path,
                 'irods_ssl_verify_server': 'none',
                 'irods_authentication_scheme': 'pam_password',
@@ -87,7 +84,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
             auth_session_env_backup = copy.deepcopy(self.auth_session.environment_file_contents)
             self.auth_session.environment_file_contents.update(client_update)
 
-            # server reboot to pick up new irodsEnv settings
+            # Server was stopped above as re-configuration occurs. Start the server here to run the test.
             IrodsController().start(test_mode=True)
 
             # do the reauth
@@ -104,8 +101,8 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
             for filename in [chain_pem_path, server_key_path, dhparams_pem_path]:
                 os.unlink(filename)
 
-        # server reboot to pick up new irodsEnv and server settings
-        IrodsController().restart(test_mode=True)
+        # Reload configuration to put back the server configuration.
+        IrodsController().reload_configuration()
 
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER or test.settings.USE_SSL, 'Topo from resource or SSL')
     def test_authentication_PAM_with_server_params(self):
@@ -123,22 +120,18 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
         service_account_environment_file_path = os.path.join(os.path.expanduser('~'), '.irods', 'irods_environment.json')
         auth_session_env_backup = copy.deepcopy(self.auth_session.environment_file_contents)
         try:
-            with lib.file_backed_up(service_account_environment_file_path):
-                irods_config = IrodsConfig()
+            irods_config = IrodsConfig()
+            with lib.file_backed_up(irods_config.server_config_path):
                 server_update = {
-                    'irods_client_server_policy': 'CS_NEG_REQUIRE',
-                    'irods_ssl_certificate_chain_file': chain_pem_path,
-                    'irods_ssl_certificate_key_file': server_key_path,
-                    'irods_ssl_dh_params_file': dhparams_pem_path,
-                    'irods_ssl_ca_certificate_file': chain_pem_path,
-                    'irods_ssl_verify_server': 'none',
+                    "tls": {
+                        "certificate_chain_file": chain_pem_path,
+                        "certificate_key_file": server_key_path,
+                        "dh_params_file": dhparams_pem_path,
+                    }
                 }
-                lib.update_json_file_from_dict(service_account_environment_file_path, server_update)
+                lib.update_json_file_from_dict(irods_config.server_config_path, server_update)
 
                 client_update = {
-                    'irods_ssl_certificate_chain_file': chain_pem_path,
-                    'irods_ssl_certificate_key_file': server_key_path,
-                    'irods_ssl_dh_params_file': dhparams_pem_path,
                     'irods_ssl_ca_certificate_file': chain_pem_path,
                     'irods_ssl_verify_server': 'none',
                     'irods_authentication_scheme': 'pam_password',
@@ -147,42 +140,30 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
 
                 self.auth_session.environment_file_contents.update(client_update)
 
-                with lib.file_backed_up(irods_config.server_config_path):
-                    server_config_update = {
-                        'authentication' : {
-                            'pam_password' : {
-                                'password_length': 20,
-                                'no_extend': False,
-                                'password_min_time': 121,
-                                'password_max_time': 1209600
-                            }
+                pep_map = {
+                    'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
+                        acPreConnect(*OUT) {
+                            *OUT = 'CS_NEG_REQUIRE';
                         }
-                    }
-                    lib.update_json_file_from_dict(irods_config.server_config_path, server_config_update)
+                    '''),
+                    'irods_rule_engine_plugin-python': textwrap.dedent('''
+                        def acPreConnect(rule_args, callback, rei):
+                            rule_args[0] = 'CS_NEG_REQUIRE'
+                    ''')
+                }
 
-                    pep_map = {
-                        'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
-                            acPreConnect(*OUT) {
-                                *OUT = 'CS_NEG_REQUIRE';
-                            }
-                        '''),
-                        'irods_rule_engine_plugin-python': textwrap.dedent('''
-                            def acPreConnect(rule_args, callback, rei):
-                                rule_args[0] = 'CS_NEG_REQUIRE'
-                        ''')
-                    }
+                with temporary_core_file() as core:
+                    core.add_rule(pep_map[self.plugin_name])
 
-                    with temporary_core_file() as core:
-                        core.add_rule(pep_map[self.plugin_name])
+                    # Server was stopped above as re-configuration occurs. Start the server here to run the test.
+                    IrodsController().start(test_mode=True)
 
-                        IrodsController().start(test_mode=True)
-
-                        # the test
-                        print(f'running iinit for PAM user [{self.auth_session.username}] [{self.auth_session.password}]')
-                        self.auth_session.assert_icommand('iinit', 'STDOUT', 'Enter your current PAM password',
-                                                          input=f'{self.auth_session.password}\n')
-                        self.auth_session.assert_icommand("icd")
-                        self.auth_session.assert_icommand("ils -L", 'STDOUT_SINGLELINE', "home")
+                    # the test
+                    print(f'running iinit for PAM user [{self.auth_session.username}] [{self.auth_session.password}]')
+                    self.auth_session.assert_icommand('iinit', 'STDOUT', 'Enter your current PAM password',
+                                                      input=f'{self.auth_session.password}\n')
+                    self.auth_session.assert_icommand("icd")
+                    self.auth_session.assert_icommand("ils -L", 'STDOUT_SINGLELINE', "home")
         finally:
             self.auth_session.environment_file_contents = auth_session_env_backup
             irods_config = IrodsConfig()
@@ -190,7 +171,8 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
                 if os.path.exists(filename):
                     os.unlink(filename)
 
-            IrodsController().restart(test_mode=True)
+            # Reload configuration to put back the server configuration.
+            IrodsController().reload_configuration()
 
     def test_iinit_repaving_2646(self):
         l = logging.getLogger(__name__)
@@ -276,20 +258,12 @@ class test_iinit(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
         }
 
         # Set up the client SSL environment.
-        # TODO: Can this be derived somehow?
-        directory_for_ssl_files = '/etc/irods'
-        self.server_key_path = os.path.join(directory_for_ssl_files, 'server.key')
-        self.server_crt_path = os.path.join(directory_for_ssl_files, 'server.crt')
-        self.chain_pem_path = os.path.join(directory_for_ssl_files, 'chain.pem')
-        self.dhparams_pem_path = os.path.join(directory_for_ssl_files, 'dhparams.pem')
+        directory_for_ssl_files = paths.config_directory()
 
         self.client_server_negotiation = 'request_server_negotiation'
         self.ssl_verify_server = 'cert'
         self.client_server_policy = 'CS_NEG_REQUIRE'
-        self.ssl_ca_certificate_file = self.server_crt_path
-        self.ssl_certificate_chain_file = self.chain_pem_path
-        self.ssl_certificate_key_file = self.server_key_path
-        self.ssl_dh_params_file = self.dhparams_pem_path
+        self.ssl_ca_certificate_file = os.path.join(directory_for_ssl_files, 'server.crt')
         self.encryption_algorithm = 'AES-256-CBC'
         self.encryption_key_size = '32'
         self.encryption_salt_size = '8'
@@ -300,9 +274,6 @@ class test_iinit(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
             "irods_ssl_verify_server": self.ssl_verify_server,
             'irods_client_server_policy': self.client_server_policy,
             'irods_ssl_ca_certificate_file': self.ssl_ca_certificate_file,
-            'irods_ssl_certificate_chain_file': self.ssl_certificate_chain_file,
-            'irods_ssl_certificate_key_file': self.ssl_certificate_key_file,
-            'irods_ssl_dh_params_file': self.ssl_dh_params_file,
             'irods_encryption_algorithm': self.encryption_algorithm,
             'irods_encryption_key_size': int(self.encryption_key_size),
             'irods_encryption_salt_size': int(self.encryption_salt_size),
@@ -335,7 +306,6 @@ class test_iinit(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
 
         super(test_iinit, self).tearDown()
 
-
     # 'd | other' was not added until python 3.9 -- need to manually merge dictionaries for all platforms
     @staticmethod
     def merge_dicts(d, other, sort=False):
@@ -346,29 +316,22 @@ class test_iinit(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
 
         return {k: to_return[k] for k in sorted(to_return)} if sort else to_return
 
-
     def assert_basic_iinit_prompts_are_in_stdout(self, stdout):
         self.assertIn('Enter the host name (DNS) of the server to connect to', stdout)
         self.assertIn('Enter the port number', stdout)
         self.assertIn('Enter your iRODS user name', stdout)
         self.assertIn('Enter your iRODS zone', stdout)
 
-
     def assert_ssl_iinit_prompts_are_in_stdout(self, stdout):
         self.assertIn('Enter the server verification level', stdout)
         self.assertIn('Enter the full path to the CA certificate file', stdout)
-        self.assertIn('Enter the full path to the certificate key file', stdout)
-        self.assertIn('Enter the full path to the certificate chain file', stdout)
-        self.assertIn('Enter the full path to the DH parameters file', stdout)
         self.assertIn('Enter the encryption algorithm', stdout)
         self.assertIn('Enter the encryption key size', stdout)
         self.assertIn('Enter the encryption salt size', stdout)
         self.assertIn('Enter the number of hash rounds', stdout)
 
-
     def assert_auth_scheme_iinit_prompts_are_in_stdout(self, stdout):
         self.assertIn('Enter your iRODS authentication scheme', stdout)
-
 
     def assert_environment_file_contents(self, expected_json_contents=None, environment_file_path=None):
         if expected_json_contents is None:
@@ -382,7 +345,6 @@ class test_iinit(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
             environment_file_contents = json.load(f)
 
         self.assertEqual(environment_file_contents, expected_json_contents)
-
 
     @unittest.skipIf(test.settings.USE_SSL, "Basic iinit usage does not configure SSL.")
     def test_iinit_basic_success(self):
@@ -404,7 +366,6 @@ class test_iinit(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
 
         # Make sure that the authentication succeeded.
         assert_command('ils', 'STDOUT', f'/{self.zone}/home/{self.user}', env=self.env)
-
 
     @unittest.skipIf(test.settings.USE_SSL, "Basic iinit usage does not configure SSL.")
     def test_iinit_basic_authentication_failure(self):
@@ -430,7 +391,6 @@ class test_iinit(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
 
         # Make sure that the authentication failed.
         assert_command('ils', 'STDERR', error_string, env=self.env)
-
 
     @unittest.skipIf(test.settings.USE_SSL, "This test does not configure SSL for the authenticated user.")
     def test_iinit_authscheme_success_with_default_answers(self):
@@ -460,7 +420,6 @@ class test_iinit(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
 
         # Make sure that the authentication succeeded.
         assert_command('ils', 'STDOUT', f'/{self.zone}/home/{self.user}', env=self.env)
-
 
     @unittest.skipIf(test.settings.USE_SSL, "This test does not configure SSL for the authenticated user.")
     def test_iinit_authscheme_failure_with_invalid_scheme(self):
@@ -496,7 +455,6 @@ class test_iinit(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
         # Make sure that the authentication failed.
         assert_command('ils', 'STDERR', error_string, env=self.env)
 
-
     @unittest.skipUnless(test.settings.USE_SSL, "This tests configuring an SSL environment, so server must use SSL.")
     def test_iinit_ssl_success_with_no_default_answers(self):
         # Execute iinit with the basic and SSL prompts, with only correct answers.
@@ -508,9 +466,6 @@ class test_iinit(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
             self.zone,
             self.ssl_verify_server,
             self.ssl_ca_certificate_file,
-            self.ssl_certificate_key_file,
-            self.ssl_certificate_chain_file,
-            self.ssl_dh_params_file,
             self.encryption_algorithm,
             self.encryption_key_size,
             self.encryption_salt_size,
@@ -533,7 +488,6 @@ class test_iinit(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
         # Make sure that the authentication succeeded.
         assert_command('ils', 'STDOUT', f'/{self.zone}/home/{self.user}', env=self.env)
 
-
     @unittest.skipUnless(test.settings.USE_SSL, "This tests configuring an SSL environment, so server must use SSL.")
     def test_iinit_ssl_success_with_all_default_answers(self):
         # Execute iinit with the basic and SSL prompts, with default answers where possible.
@@ -545,9 +499,6 @@ class test_iinit(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
             self.zone,
             self.ssl_verify_server, # We cannot use the default ("hostname") here because the server uses "cert".
             self.ssl_ca_certificate_file,
-            self.ssl_certificate_key_file,
-            self.ssl_certificate_chain_file,
-            self.ssl_dh_params_file,
             '', # encryption algorithm
             '', # key size
             '', # salt size
@@ -570,7 +521,6 @@ class test_iinit(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
         # Make sure that the authentication succeeded.
         assert_command('ils', 'STDOUT', f'/{self.zone}/home/{self.user}', env=self.env)
 
-
     @unittest.skipIf(test.settings.USE_SSL, "This tests configuring an SSL environment with no SSL in the server.")
     def test_iinit_ssl_failure_with_no_default_answers(self):
         # Execute iinit with the basic and SSL prompts, with only correct answers. Authentication should fail anyway
@@ -583,9 +533,6 @@ class test_iinit(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
             self.zone,
             self.ssl_verify_server,
             self.ssl_ca_certificate_file,
-            self.ssl_certificate_key_file,
-            self.ssl_certificate_chain_file,
-            self.ssl_dh_params_file,
             self.encryption_algorithm,
             self.encryption_key_size,
             self.encryption_salt_size,
@@ -612,7 +559,6 @@ class test_iinit(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
         # Make sure that the authentication failed.
         assert_command('ils', 'STDERR', error_string, env=self.env)
 
-
     @unittest.skipIf(test.settings.USE_SSL, "This tests configuring an SSL environment with no SSL in the server.")
     def test_iinit_ssl_failure_with_all_default_answers(self):
         # Execute iinit with the basic and SSL prompts, with default answers where possible. Authentication should fail
@@ -625,9 +571,6 @@ class test_iinit(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
             self.zone,
             self.ssl_verify_server, # We cannot use the default ("hostname") here because the server uses "cert".
             self.ssl_ca_certificate_file,
-            self.ssl_certificate_key_file,
-            self.ssl_certificate_chain_file,
-            self.ssl_dh_params_file,
             '', # encryption algorithm
             '', # key size
             '', # salt size
@@ -659,9 +602,6 @@ class test_iinit(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
         user_input = os.linesep.join([
             '', # We can use the default here because previously entered value should be saved
             '', # CA certificate file
-            '', # certificate key file
-            '', # certificate chain file
-            '', # DH params file
             '', # encryption algorithm
             '', # key size
             '', # salt size
@@ -689,7 +629,6 @@ class test_iinit(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
         # Make sure that the authentication failed.
         assert_command('ils', 'STDERR', error_string, env=self.env)
 
-
     @unittest.skipUnless(test.settings.USE_SSL, "This tests using pam_password which requires server-side SSL.")
     def test_iinit_with_pam_password_and_ssl(self):
         # Requires existence of OS account 'irodsauthuser' with password ';=iamnotasecret'
@@ -713,9 +652,6 @@ class test_iinit(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
             auth_scheme,
             self.ssl_verify_server,
             self.ssl_ca_certificate_file,
-            self.ssl_certificate_key_file,
-            self.ssl_certificate_chain_file,
-            self.ssl_dh_params_file,
             self.encryption_algorithm,
             self.encryption_key_size,
             self.encryption_salt_size,
@@ -744,4 +680,3 @@ class test_iinit(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
 
         # Make sure that the authentication succeeded.
         assert_command('ils', 'STDOUT', f'/{self.zone}/home/{self.pam_user}', env=self.env)
-
