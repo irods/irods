@@ -316,16 +316,14 @@ class ResourceSuite(ResourceBase):
                 # prepend the new rulebase to the NREP's rulebase list.
                 nrep = config.server_config['plugin_configuration']['rule_engines'][0]
                 nrep['plugin_specific_configuration']['re_rulebase_set'].insert(0, connection_rulebase)
+                config.server_config["tls"] = {
+                    "certificate_chain_file": chain_pem_path,
+                    "certificate_key_file": server_key_path,
+                    "dh_params_file": dhparams_pem_path
+                }
                 lib.update_json_file_from_dict(config.server_config_path, config.server_config)
 
                 with lib.file_backed_up(config.client_environment_path):
-                    server_update = {
-                        'irods_ssl_certificate_chain_file': chain_pem_path,
-                        'irods_ssl_certificate_key_file': server_key_path,
-                        'irods_ssl_dh_params_file': dhparams_pem_path
-                    }
-                    lib.update_json_file_from_dict(config.client_environment_path, server_update)
-
                     client_update = {
                         'irods_client_server_policy': 'CS_NEG_REQUIRE',
                         'irods_ssl_verify_server': 'none'
@@ -335,7 +333,7 @@ class ResourceSuite(ResourceBase):
 
                     filename = 'encryptedfile.txt'
                     filepath = lib.create_local_testfile(filename)
-                    IrodsController().restart(test_mode=True)
+                    IrodsController().reload_configuration()
 
                     self.admin.assert_icommand('iinit', 'STDOUT_SINGLELINE',
                                                'Enter your current iRODS password:',
@@ -350,7 +348,7 @@ class ResourceSuite(ResourceBase):
             except:
                 pass
 
-            IrodsController().restart(test_mode=True)
+            IrodsController().reload_configuration()
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only run for native rule language')
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
@@ -391,15 +389,15 @@ class ResourceSuite(ResourceBase):
                     # prepend the new rulebase to the NREP's rulebase list.
                     nrep = config.server_config['plugin_configuration']['rule_engines'][0]
                     nrep['plugin_specific_configuration']['re_rulebase_set'].insert(0, connection_rulebase)
+                    config.server_config["tls"] = {
+                        "certificate_chain_file": chain_pem_path,
+                        "certificate_key_file": server_key_path,
+                        "dh_params_file": dhparams_pem_path
+                    }
                     lib.update_json_file_from_dict(config.server_config_path, config.server_config)
 
-                    # server reboot with new server side environment variables
-                    IrodsController(IrodsConfig(
-                            injected_environment={
-                                'irodsSSLCertificateChainFile': chain_pem_path,
-                                'irodsSSLCertificateKeyFile': server_key_path,
-                                'irodsSSLDHParamsFile': dhparams_pem_path})
-                            ).restart(test_mode=True)
+                    # Reload server configuration for TLS configuration to take effect.
+                    IrodsController().reload_configuration()
 
                     # reinitialize
                     self.admin.assert_icommand('iinit', 'STDOUT_SINGLELINE',
@@ -433,8 +431,8 @@ class ResourceSuite(ResourceBase):
             except:
                 pass
 
-            # restart iRODS server without altered environment
-            IrodsController().restart(test_mode=True)
+            # Reload server configuration to put things back how they were.
+            IrodsController().reload_configuration()
 
     @unittest.skipIf(psutil.disk_usage('/').free < 20000000000, "not enough free space for 5 x 2.2GB file ( local + iput + 3 repl children )")
     def test_local_iput_with_really_big_file__ticket_1623(self):
