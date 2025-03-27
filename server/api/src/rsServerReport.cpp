@@ -1,5 +1,6 @@
 #include "irods/rsServerReport.hpp"
 
+#include "irods/irods_configuration_keywords.hpp"
 #include "irods/irods_default_paths.hpp"
 #include "irods/irods_environment_properties.hpp"
 #include "irods/irods_get_full_path_for_config_file.hpp"
@@ -236,14 +237,7 @@ irods::error get_host_system_information(json& _host_system_information)
         _host_system_information["service_account_group_name"] = nullptr;
     }
 
-    char hostname_buf[512];
-    const int gethostname_ret = gethostname(hostname_buf, sizeof(hostname_buf));
-    if (gethostname_ret != 0) {
-        rodsLog(LOG_ERROR, "get_host_system_information: gethostname() failed [%d]", errno);
-        _host_system_information["hostname"] = nullptr;
-    } else {
-        _host_system_information["hostname"] = hostname_buf;
-    }
+    _host_system_information["hostname"] = irods::get_server_property<std::string>(irods::KW_CFG_HOST);
 
     std::string uname_string;
     ret = get_uname_string( uname_string );

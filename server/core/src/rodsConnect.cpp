@@ -146,8 +146,8 @@ mkServerHost(char *myHostAddr, char *zoneName) {
     return tmpRodsServerHost;
 }
 
-int
-queueAddr( rodsServerHost_t *rodsServerHost, char *myHostName ) {
+int queueAddr(rodsServerHost_t* rodsServerHost, const char* myHostName)
+{
     if ( rodsServerHost == NULL || myHostName == NULL ) {
         return 0;
     }

@@ -1,5 +1,6 @@
 // =-=-=-=-=-=-=-
 // irods includes
+#include "irods/irods_configuration_keywords.hpp"
 #include "irods/msParam.h"
 #include "irods/rcConnect.h"
 #include "irods/miscServerFunct.hpp"
@@ -117,13 +118,11 @@ auto unix_file_start_operation(irods::plugin_property_map& prop_map) -> irods::e
     }
 
     // check if we are in the host list
-    char local_hostname[MAX_NAME_LEN];
-    gethostname(local_hostname, MAX_NAME_LEN);
-
+    const auto local_hostname = irods::get_server_property<std::string>(irods::KW_CFG_HOST);
     auto resource_hostname_optional = resolve_hostname(local_hostname, hostname_resolution_scheme::match_preferred);
 
     std::string resource_hostname =
-        resource_hostname_optional ? std::move(*resource_hostname_optional) : local_hostname;
+        resource_hostname_optional ? *std::move(resource_hostname_optional) : local_hostname;
 
     if (!is_host_in_host_list(prop_map, resource_hostname)) {
         // Host is not in host list.  Return early as detached mode is disabled on this resource.
@@ -153,7 +152,7 @@ auto unix_file_start_operation(irods::plugin_property_map& prop_map) -> irods::e
     // Note that the rodsHostAddr_t entry is shared throughout the code (not just used for this
     // resource) so you can't adjust the existing entry attached to the resource.
     rodsHostAddr_t addr{};
-    std::strncpy(addr.hostAddr, local_hostname, LONG_NAME_LEN);
+    std::strncpy(addr.hostAddr, local_hostname.c_str(), LONG_NAME_LEN);
     const auto& zone_name = irods::get_server_property<const std::string>(irods::KW_CFG_ZONE_NAME);
     std::strncpy(addr.zoneName, zone_name.c_str(), NAME_LEN);
 

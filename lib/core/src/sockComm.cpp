@@ -479,7 +479,8 @@ sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
             constexpr auto size_in_bytes = sizeof(char) * LONG_NAME_LEN;
             *addr = static_cast<char*>(std::malloc(size_in_bytes));
             std::memset(*addr, 0, size_in_bytes);
-            gethostname(*addr, LONG_NAME_LEN);
+            const auto hostname = irods::get_server_property<std::string>(irods::KW_CFG_HOST);
+            hostname.copy(*addr, size_in_bytes - 1);
 
             try {
                 const auto alias = resolve_hostname(*addr, hostname_resolution_scheme::match_longest);
