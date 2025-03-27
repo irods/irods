@@ -2906,7 +2906,8 @@ irods::error db_reg_replica_op(
                        data_mode, \
                        r_comment, \
                        create_ts, \
-                       modify_ts";
+                       modify_ts, \
+                       access_ts";
     const int IX_DATA_REPL_NUM = 3; /* index of data_repl_num in theColls */
 //        int IX_RESC_GROUP_NAME = 7; /* index into theColls */
     const int IX_RESC_ID = 10;
@@ -2917,10 +2918,11 @@ irods::error db_reg_replica_op(
     const int IX_DATA_MODE = 19;
     const int IX_CREATE_TS = 21;
     const int IX_MODIFY_TS = 22;
-    const int IX_RESC_NAME2 = 23;
-    const int IX_DATA_PATH2 = 24;
-    const int IX_DATA_ID2 = 25;
-    int nColumns = 26;
+    const int IX_ACCESS_TS = 23;
+    const int IX_RESC_NAME2 = 24;
+    const int IX_DATA_PATH2 = 25;
+    const int IX_DATA_ID2 = 26;
+    int nColumns = 27;
 
     char objIdString[MAX_NAME_LEN];
     char replNumString[MAX_NAME_LEN];
@@ -3033,6 +3035,7 @@ irods::error db_reg_replica_op(
     getNowStr( myTime );
     cVal[IX_MODIFY_TS] = myTime;
     cVal[IX_CREATE_TS] = myTime;
+    cVal[IX_ACCESS_TS] = myTime;
 
     cVal[IX_RESC_NAME2] = (char*)resc_id_str.c_str();//_dst_data_obj_info->rescName; // JMC - backport 4669
     cVal[IX_DATA_PATH2] = _dst_data_obj_info->filePath; // JMC - backport 4669
@@ -3044,12 +3047,18 @@ irods::error db_reg_replica_op(
     cllBindVarCount = nColumns;
 #if (defined ORA_ICAT || defined MY_ICAT) // JMC - backport 4685
     /* MySQL and Oracle */
-    snprintf( tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? from DUAL where not exists (select data_id from R_DATA_MAIN where resc_id=? and data_path=? and data_id=?)",
-              theColls );
+    snprintf(tSQL,
+             MAX_SQL_SIZE,
+             "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? from DUAL where "
+             "not exists (select data_id from R_DATA_MAIN where resc_id=? and data_path=? and data_id=?)",
+             theColls);
 #else
     /* Postgres */
-    snprintf( tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? where not exists (select data_id from R_DATA_MAIN where resc_id=? and data_path=? and data_id=?)",
-              theColls );
+    snprintf(tSQL,
+             MAX_SQL_SIZE,
+             "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? where not exists "
+             "(select data_id from R_DATA_MAIN where resc_id=? and data_path=? and data_id=?)",
+             theColls);
 
 #endif
     if ( logSQL != 0 ) {
