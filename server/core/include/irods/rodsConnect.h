@@ -70,7 +70,7 @@ typedef struct zoneInfo {
 extern "C" {
 #endif
 
-int queueAddr(rodsServerHost_t *rodsServerHost, char *myHostName);
+int queueAddr(rodsServerHost_t* rodsServerHost, const char* myHostName);
 
 int queueHostName(rodsServerHost_t *rodsServerHost,
                   const char *myHostName,

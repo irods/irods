@@ -1,6 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
 #include "irods/private/re/reHelpers1.hpp"
 
 #include "irods/private/re/reFuncDefs.hpp"
@@ -9,9 +6,10 @@
 #include "irods/private/re/filesystem.hpp"
 #include "irods/private/re/configuration.hpp"
 
-#include "irods/rcMisc.h"
+#include "irods/irods_configuration_keywords.hpp"
 #include "irods/irods_log.hpp"
-
+#include "irods/irods_server_properties.hpp"
+#include "irods/rcMisc.h"
 
 struct Breakpoint {
     char *actionName;
@@ -50,16 +48,17 @@ int myPID;
 int initializeReDebug( rsComm_t *svrComm ) {
     char condRead[NAME_LEN];
 
-    if ( svrComm == NULL ) {
+    if (svrComm == nullptr) {
         return 0;
     }
     if ( GlobalREDebugFlag != 4 ) {
         return 0;
     }
 
-    myPID = ( int ) getpid();
-    myHostName[0] = '\0';
-    gethostname( myHostName, MAX_NAME_LEN );
+    myPID = getpid();
+    std::memset(myHostName, 0, sizeof(myHostName));
+    const auto hostname = irods::get_server_property<std::string>(irods::KW_CFG_HOST);
+    hostname.copy(myHostName, sizeof(myHostName) - 1);
     sprintf( condRead, "(*XUSER  == \"%s@%s\") && (*XHDR == \"STARTDEBUG\")",
              svrComm->clientUser.userName, svrComm->clientUser.rodsZone );
     return 0;

@@ -762,19 +762,13 @@ namespace
     auto is_local_server_defined_as_delay_server_leader() -> bool
     {
         std::string hostname;
-        //NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
-        char hn[HOST_NAME_MAX + 1]{};
-
-        if (const auto err = gethostname(hn, sizeof(hn)); err != 0) {
-            log_ds::error("{}: Failed to retrieve local server's hostname. Error {}", __func__, err);
-            return false;
-        }
+        auto hn = irods::get_server_property<std::string>(irods::KW_CFG_HOST);
 
         if (const auto hn_resolved = resolve_hostname(hn, hostname_resolution_scheme::match_preferred); hn_resolved) {
             hostname = *hn_resolved;
         }
         else {
-            hostname = hn;
+            hostname = std::move(hn);
         }
         irods::experimental::client_connection conn;
         GridConfigurationInput input{};
@@ -782,7 +776,7 @@ namespace
         std::strcpy(input.option_name, "leader");
 
         GridConfigurationOutput* output{};
-        //NOLINTNEXTLINE(cppcoreguidelines-no-malloc, cppcoreguidelines-owning-memory)
+        // NOLINTNEXTLINE(cppcoreguidelines-no-malloc, cppcoreguidelines-owning-memory)
         irods::at_scope_exit free_output{[&output] { std::free(output); }};
 
         if (const auto ec = rc_get_grid_configuration_value(static_cast<RcComm*>(conn), &input, &output); ec != 0) {
@@ -797,7 +791,7 @@ namespace
             return hostname == *hn_resolved;
         }
         return hostname == output->option_value;
-    } //is_local_server_defined_as_delay_server_leader
+    } // is_local_server_defined_as_delay_server_leader
 
 } // anonymous namespace
 
