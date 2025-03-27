@@ -125,6 +125,7 @@
     "test_rule_engine_plugin_framework.Test_Plugin_Instance_CppDefault",
     "test_rule_engine_plugin_framework.Test_Plugin_Instance_Delay",
     "test_rule_engine_plugin_framework.Test_Rule_Engine_Plugin_Framework",
+    "test_rule_engine_plugin_metadata_guard",
     "test_rule_engine_plugin_passthrough",
     "test_rulebase.Test_Remote_Exec",
     "test_rulebase.Test_Resource_Session_Vars__3024",
