@@ -316,16 +316,14 @@ class ResourceSuite(ResourceBase):
                 # prepend the new rulebase to the NREP's rulebase list.
                 nrep = config.server_config['plugin_configuration']['rule_engines'][0]
                 nrep['plugin_specific_configuration']['re_rulebase_set'].insert(0, connection_rulebase)
+                config.server_config["tls"] = {
+                    "certificate_chain_file": chain_pem_path,
+                    "certificate_key_file": server_key_path,
+                    "dh_params_file": dhparams_pem_path
+                }
                 lib.update_json_file_from_dict(config.server_config_path, config.server_config)
 
                 with lib.file_backed_up(config.client_environment_path):
-                    server_update = {
-                        'irods_ssl_certificate_chain_file': chain_pem_path,
-                        'irods_ssl_certificate_key_file': server_key_path,
-                        'irods_ssl_dh_params_file': dhparams_pem_path
-                    }
-                    lib.update_json_file_from_dict(config.client_environment_path, server_update)
-
                     client_update = {
                         'irods_client_server_policy': 'CS_NEG_REQUIRE',
                         'irods_ssl_verify_server': 'none'
@@ -335,7 +333,7 @@ class ResourceSuite(ResourceBase):
 
                     filename = 'encryptedfile.txt'
                     filepath = lib.create_local_testfile(filename)
-                    IrodsController().restart(test_mode=True)
+                    IrodsController().reload_configuration()
 
                     self.admin.assert_icommand('iinit', 'STDOUT_SINGLELINE',
                                                'Enter your current iRODS password:',
@@ -350,7 +348,7 @@ class ResourceSuite(ResourceBase):
             except:
                 pass
 
-            IrodsController().restart(test_mode=True)
+            IrodsController().reload_configuration()
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only run for native rule language')
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
