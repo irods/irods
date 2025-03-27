@@ -7,6 +7,7 @@ import os
 import re
 import shutil
 import tempfile
+import textwrap
 import time
 
 def run_update(irods_config, cursor):
@@ -214,6 +215,26 @@ def run_update(irods_config, cursor):
         database_connect.execute_sql_statement(cursor, "insert into R_GRID_CONFIGURATION values ('access_time', 'queue_size', '20000');")
         database_connect.execute_sql_statement(cursor, "insert into R_GRID_CONFIGURATION values ('access_time', 'batch_size', '20000');")
         database_connect.execute_sql_statement(cursor, "insert into R_GRID_CONFIGURATION values ('access_time', 'resolution_in_seconds', '86400');")
+
+        print(textwrap.dedent("""
+            =======================================================================
+
+            iRODS 5.0.0 tracks the access time for all replicas. Replicas which
+            existed before the upgrade will have an initial value of 0. This is
+            intentional, and the server will update access times as replicas
+            are opened.
+
+            If a starting value of 0 is unsuitable for your needs, consider setting
+            the access time to match the modification time using the following SQL:
+
+                UPDATE R_DATA_MAIN
+                SET access_ts = modify_ts
+                WHERE access_ts = '0';
+
+            Please consult your local DBA before making any SQL adjustments.
+
+            =======================================================================
+        """))
 
     else:
         raise IrodsError('Upgrade to schema version %d is unsupported.' % (new_schema_version))
