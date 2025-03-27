@@ -1,7 +1,9 @@
 import os
+import subprocess
 import sys
-from datetime import datetime, timedelta
 import tempfile
+
+from datetime import datetime, timedelta
 
 if sys.version_info < (2, 7):
     import unittest2 as unittest
@@ -477,3 +479,36 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
         finally:
             if os.path.exists(filename):
                 os.unlink(filename)
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, 'Only requires a single server')
+    def test_configuration_validation_reports_fqdn_size_violations__issue_8287(self):
+        # See https://web.archive.org/web/20190518124533/https://devblogs.microsoft.com/oldnewthing/?p=7873
+        # to understand why the "host" property limits the length to 253 characters.
+
+        config = IrodsConfig()
+
+        with lib.file_backed_up(config.server_config_path):
+            with self.subTest('"host" property is an empty string'):
+                config.server_config['host'] = ''
+                lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+                res = subprocess.run(['irodsServer', '-c'], capture_output=True, text=True)
+                self.assertNotEqual(res.returncode, 0)
+                self.assertIn('"valid": false', res.stderr)
+                self.assertIn('"instanceLocation": "/host"', res.stderr)
+                self.assertIn('"error": "Number of characters must be at least 1"', res.stderr)
+
+            with self.subTest('"host" property has size matching limit (253 characters)'):
+                config.server_config['host'] = 'a' * 253
+                lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+                res = subprocess.run(['irodsServer', '-c'], capture_output=True, text=True)
+                self.assertEqual(res.returncode, 0)
+                self.assertEqual(len(res.stderr), 0)
+
+            with self.subTest('"host" property has size exceeding limit (253 characters)'):
+                config.server_config['host'] = 'a' * 254
+                lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+                res = subprocess.run(['irodsServer', '-c'], capture_output=True, text=True)
+                self.assertNotEqual(res.returncode, 0)
+                self.assertIn('"valid": false', res.stderr)
+                self.assertIn('"instanceLocation": "/host"', res.stderr)
+                self.assertIn('"error": "Number of characters must be at most 253"', res.stderr)

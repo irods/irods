@@ -204,9 +204,9 @@ def setup_server_host(irods_config):
     l = logging.getLogger(__name__)
 
     irods_config.server_config['host'] = irods.lib.default_prompt(
-        'iRODS server FQDN, hostname, or IP (256 characters max)',
+        'iRODS server FQDN, hostname, or IP (253 characters max)',
         default=[irods.lib.get_hostname()],
-        input_filter=irods.lib.character_count_filter(minimum=1, maximum=256, field='iRODS server host'))
+        input_filter=irods.lib.character_count_filter(minimum=1, maximum=253, field='iRODS server host'))
 
     irods_config.commit(irods_config.server_config, irods_config.server_config_path, clear_cache=False)
 

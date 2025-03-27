@@ -103,7 +103,11 @@
             "type": "integer",
             "minimum": 0
         },
-        "host": {"type": "string"},
+        "host": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 253
+        },
         "host_access_control": {
             "$ref": "host_access_control.json"
         },
