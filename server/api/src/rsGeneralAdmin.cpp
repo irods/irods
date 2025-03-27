@@ -2,6 +2,8 @@
 
 #include "irods/administration_utilities.hpp"
 #include "irods/generalAdmin.h"
+#include "irods/irods_configuration_keywords.hpp"
+#include "irods/irods_server_properties.hpp"
 #include "irods/rcMisc.h"
 #include "irods/rsZoneReport.hpp"
 #include "irods/rodsConnect.h"
@@ -181,8 +183,7 @@ namespace
 
     auto get_value_for_rebalance_avu() -> std::string
     {
-        char hostname[MAX_NAME_LEN];
-        gethostname(hostname, MAX_NAME_LEN);
+        const auto hostname = irods::get_server_property<std::string>(irods::KW_CFG_HOST);
         return fmt::format("{}:{}", hostname, getpid());
     } // get_value_for_rebalance_avu
 
