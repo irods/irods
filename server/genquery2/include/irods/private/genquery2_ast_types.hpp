@@ -277,7 +277,7 @@ namespace irods::experimental::genquery2
         group_by group_by;
         order_by order_by;
         range range;
-        bool distinct = true;
+        bool distinct = false;
     }; // struct select
 } // namespace irods::experimental::genquery2
 
