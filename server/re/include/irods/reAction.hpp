@@ -239,9 +239,6 @@ namespace irods
         table_[ "msiPrintGenQueryInp" ] = new irods::ms_table_entry( "msiPrintGenQueryInp", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiPrintGenQueryInp ) );
         table_[ "msiTarFileExtract" ] = new irods::ms_table_entry( "msiTarFileExtract", 4, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiTarFileExtract ) );
         table_[ "msiTarFileCreate" ] = new irods::ms_table_entry( "msiTarFileCreate", 4, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiTarFileCreate ) );
-        table_[ "msiServerMonPerf" ] = new irods::ms_table_entry( "msiServerMonPerf", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiServerMonPerf ) );
-        table_[ "msiFlushMonStat" ] = new irods::ms_table_entry( "msiFlushMonStat", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiFlushMonStat ) );
-        table_[ "msiDigestMonStat" ] = new irods::ms_table_entry( "msiDigestMonStat", 7, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiDigestMonStat ) );
         table_[ "msiGetContInxFromGenQueryOut" ] = new irods::ms_table_entry( "msiGetContInxFromGenQueryOut", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiGetContInxFromGenQueryOut ) );
         table_[ "msiSetACL" ] = new irods::ms_table_entry( "msiSetACL", 4, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiSetACL ) );
         table_[ "msiSetRescQuotaPolicy" ] = new irods::ms_table_entry( "msiSetRescQuotaPolicy", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiSetRescQuotaPolicy ) );
