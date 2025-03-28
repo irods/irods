@@ -243,14 +243,14 @@ namespace
         }
     } // configure_required_settings_in_env
 
-    auto configure_ssl_in_env(RodsEnvironment& _env, nlohmann::json& _json_env) -> void
+    auto configure_tls_in_env(RodsEnvironment& _env, nlohmann::json& _json_env) -> void
     {
-        // If the user indicated that SSL is going to be used, this setting is required, so no prompt is shown.
+        // If the user indicated that TLS is going to be used, this setting is required, so no prompt is shown.
         constexpr const char* default_client_server_policy = "CS_NEG_REQUIRE";
         std::strncpy(_env.rodsClientServerPolicy, default_client_server_policy, sizeof(_env.rodsClientServerPolicy));
         _json_env[irods::KW_CFG_IRODS_CLIENT_SERVER_POLICY] = _env.rodsClientServerPolicy;
 
-        // If the user indicated that SSL is going to be used, this setting is required, so no prompt is shown.
+        // If the user indicated that TLS is going to be used, this setting is required, so no prompt is shown.
         constexpr const char* default_server_negotiation = "request_server_negotiation";
         std::strncpy(
             _env.rodsClientServerNegotiation, default_server_negotiation, sizeof(_env.rodsClientServerNegotiation));
@@ -269,7 +269,7 @@ namespace
         set_env_from_prompt(
             _env.irodsSSLCACertificateFile, certificate_file_prompt, sizeof(_env.irodsSSLCACertificateFile));
         _json_env[irods::KW_CFG_IRODS_SSL_CA_CERTIFICATE_FILE] = _env.irodsSSLCACertificateFile;
-    } // configure_ssl_in_env
+    } // configure_tls_in_env
 
     auto configure_encryption_in_env(RodsEnvironment& _env, nlohmann::json& _json_env) -> void
     {
@@ -312,7 +312,7 @@ int main( int argc, char **argv )
 
     // THESE MUST BE DONE HERE! parseCmdLineOpt is EVIL and considers any unknown options invalid.
     // TODO: use boost::program_options
-    const auto configure_ssl = option_specified("--with-ssl", argc, argv);
+    const auto configure_tls = option_specified("--with-ssl", argc, argv);
     const auto prompt_auth_scheme = option_specified("--prompt-auth-scheme", argc, argv);
 
     status = parseCmdLineOpt( argc, argv, "hvVlZ", 1, &myRodsArgs );
@@ -370,8 +370,8 @@ int main( int argc, char **argv )
         json_env[irods::KW_CFG_IRODS_AUTHENTICATION_SCHEME] = my_env.rodsAuthScheme;
     }
 
-    if (configure_ssl) {
-        configure_ssl_in_env(my_env, json_env);
+    if (configure_tls) {
+        configure_tls_in_env(my_env, json_env);
 
         configure_encryption_in_env(my_env, json_env);
     }
@@ -605,7 +605,7 @@ void usage( char *prog ) {
     printf( " --ttl TTL\n" );
     printf( "     set the password Time To Live (specified in hours)\n" );
     printf(" --with-ssl\n");
-    printf("      Include prompts which will set up SSL communications in the\n");
+    printf("      Include prompts which will set up TLS communications in the\n");
     printf("      client environment.\n");
     printf(" --prompt-auth-scheme\n");
     printf("      Include a prompt to select the authentication scheme. If not specified\n");
