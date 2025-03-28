@@ -91,7 +91,7 @@ This option causes make_* functions to be generated for each token kind.
     LESS_THAN_OR_EQUAL_TO
     LIKE
     LIMIT
-    NO DISTINCT
+    DISTINCT
     NOT
     NOT_EQUAL
     NULL
@@ -162,8 +162,8 @@ genquery2:
 select:
   SELECT projection_list { std::swap(drv.select.projections, $2); }
 | SELECT projection_list WHERE condition_list { std::swap(drv.select.projections, $2); std::swap(drv.select.conditions, $4); }
-| SELECT NO DISTINCT projection_list { drv.select.distinct = false; std::swap(drv.select.projections, $4); }
-| SELECT NO DISTINCT projection_list WHERE condition_list { drv.select.distinct = false; std::swap(drv.select.projections, $4); std::swap(drv.select.conditions, $6); }
+| SELECT DISTINCT projection_list { drv.select.distinct = true; std::swap(drv.select.projections, $3); }
+| SELECT DISTINCT projection_list WHERE condition_list { drv.select.distinct = true; std::swap(drv.select.projections, $3); std::swap(drv.select.conditions, $5); }
 ;
 
 group_by:
