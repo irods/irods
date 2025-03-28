@@ -269,20 +269,6 @@ namespace
         set_env_from_prompt(
             _env.irodsSSLCACertificateFile, certificate_file_prompt, sizeof(_env.irodsSSLCACertificateFile));
         _json_env[irods::KW_CFG_IRODS_SSL_CA_CERTIFICATE_FILE] = _env.irodsSSLCACertificateFile;
-
-        constexpr const char* certificate_key_prompt = "Enter the full path to the certificate key file";
-        set_env_from_prompt(
-            _env.irodsSSLCertificateKeyFile, certificate_key_prompt, sizeof(_env.irodsSSLCertificateKeyFile));
-        _json_env[irods::KW_CFG_IRODS_SSL_CERTIFICATE_KEY_FILE] = _env.irodsSSLCertificateKeyFile;
-
-        constexpr const char* certificate_chain_prompt = "Enter the full path to the certificate chain file";
-        set_env_from_prompt(
-            _env.irodsSSLCertificateChainFile, certificate_chain_prompt, sizeof(_env.irodsSSLCertificateChainFile));
-        _json_env[irods::KW_CFG_IRODS_SSL_CERTIFICATE_CHAIN_FILE] = _env.irodsSSLCertificateChainFile;
-
-        constexpr const char* dh_param_prompt = "Enter the full path to the DH parameters file";
-        set_env_from_prompt(_env.irodsSSLDHParamsFile, dh_param_prompt, sizeof(_env.irodsSSLDHParamsFile));
-        _json_env[irods::KW_CFG_IRODS_SSL_DH_PARAMS_FILE] = _env.irodsSSLDHParamsFile;
     } // configure_ssl_in_env
 
     auto configure_encryption_in_env(RodsEnvironment& _env, nlohmann::json& _json_env) -> void
