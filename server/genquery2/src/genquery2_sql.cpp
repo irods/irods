@@ -706,10 +706,10 @@ namespace
         return fmt::format("{}({})", _function.name, fmt::join(args, ", "));
     } // to_sql_for_order_by_clause
 
-    auto generate_order_by_clause(const gq_state& _state,
-                                  const gq::order_by& _order_by,
-                                  const std::map<std::string_view, gq::column_info>& _column_name_mappings)
-        -> std::string
+    auto generate_order_by_clause(
+        const gq_state& _state,
+        const gq::order_by& _order_by,
+        [[maybe_unused]] const std::map<std::string_view, gq::column_info>& _column_name_mappings) -> std::string
     {
         if (_order_by.sort_expressions.empty()) {
             return {};
