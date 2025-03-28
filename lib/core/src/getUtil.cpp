@@ -266,8 +266,6 @@ getDataObjUtil( rcComm_t *conn, char *srcPath, char *targPath,
 int
 initCondForGet( rcComm_t *conn, rodsArguments_t *rodsArgs,
                 dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart ) {
-    char *tmpStr;
-
     if ( dataObjOprInp == NULL ) {
         rodsLog( LOG_ERROR,
                  "initCondForGet: NULL dataObjOprInp input" );

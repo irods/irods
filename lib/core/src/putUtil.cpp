@@ -464,8 +464,6 @@ initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
 {
     namespace fs = boost::filesystem;
 
-    char *tmpStr;
-
     if ( rodsArgs == NULL ) { // JMC cppcheck - nullptr
         rodsLog( LOG_ERROR, "initCondForPut :: NULL rodsArgs" );
         return -1;
