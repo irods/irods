@@ -248,6 +248,7 @@ argument_list:
 
 function:
   IDENTIFIER PAREN_OPEN argument_list PAREN_CLOSE { $$ = gq2_detail::function{std::move($1), std::move($3)}; }
+| IDENTIFIER PAREN_OPEN DISTINCT argument_list PAREN_CLOSE { $$ = gq2_detail::function{std::move($1), std::move($4), true}; }
 ;
 
 condition_list:
