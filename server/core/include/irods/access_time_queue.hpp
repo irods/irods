@@ -4,6 +4,7 @@
 /// \file
 
 #include <cstddef>
+#include <cstdint>
 #include <ctime>
 #include <string_view>
 
