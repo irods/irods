@@ -63,7 +63,6 @@
 (?i:like)              return yy::parser::make_LIKE(loc);
 (?i:in)                return yy::parser::make_IN(loc);
 (?i:between)           return yy::parser::make_BETWEEN(loc);
-(?i:no)                return yy::parser::make_NO(loc);
 (?i:distinct)          return yy::parser::make_DISTINCT(loc);
 (?i:order)             return yy::parser::make_ORDER(loc);
 (?i:by)                return yy::parser::make_BY(loc);
