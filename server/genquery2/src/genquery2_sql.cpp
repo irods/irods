@@ -703,11 +703,15 @@ namespace
             }
         });
 
+        if (_function.distinct) {
+            return fmt::format("{}(distinct {})", _function.name, fmt::join(args, ", "));
+        }
+
         return fmt::format("{}({})", _function.name, fmt::join(args, ", "));
     } // to_sql_for_order_by_clause
 
     auto generate_order_by_clause(
-        const gq_state& _state,
+        gq_state& _state,
         const gq::order_by& _order_by,
         [[maybe_unused]] const std::map<std::string_view, gq::column_info>& _column_name_mappings) -> std::string
     {
@@ -1028,6 +1032,16 @@ namespace irods::experimental::genquery2
                 args.emplace_back(fmt::format("cast({}.{} as {})", alias, iter->second.name, p->type_name));
             }
         });
+
+        // Limits use of COUNT(DISTINCT) to the SELECT clause. We allow a comma-separated list of arguments
+        // because some databases (e.g. MySQL) support COUNT(DISTINCT ARG0, ..., ARGN).
+        if (_function.distinct) {
+            if (!_state.in_select_clause) {
+                throw std::runtime_error{"use of DISTINCT keyword in function outside of SELECT clause is not allowed"};
+            }
+
+            return fmt::format("{}(distinct {})", _function.name, fmt::join(args, ", "));
+        }
 
         return fmt::format("{}({})", _function.name, fmt::join(args, ", "));
     } // to_sql
