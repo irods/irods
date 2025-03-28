@@ -26,7 +26,6 @@ char *dataObjCond[] = {
     OBJ_PATH_KW,		/* logical path of the object */
     RESC_NAME_KW,		/* resource name */
     DEST_RESC_NAME_KW,	/* destination resource name */
-    BACKUP_RESC_NAME_KW,	/* destination resource name */
     DATA_TYPE_KW,		/* data type */
     DATA_SIZE_KW,
     CHKSUM_KW,
@@ -136,7 +135,6 @@ int NumStructFileType = sizeof( StructFileTypeDef ) / sizeof( structFileTypeDef_
 validKeyWd_t DataObjInpKeyWd[] = {
     {RESC_NAME_FLAG, RESC_NAME_KW},
     {DEST_RESC_NAME_FLAG, DEST_RESC_NAME_KW},
-    {BACKUP_RESC_NAME_FLAG, BACKUP_RESC_NAME_KW},
     {DEF_RESC_NAME_FLAG, DEF_RESC_NAME_KW},
     {FORCE_FLAG_FLAG, FORCE_FLAG_KW},
     {ALL_FLAG, ALL_KW},
@@ -167,7 +165,6 @@ validKeyWd_t CollInpKeyWd[] = {
     {RESC_NAME_FLAG,        RESC_NAME_KW},
     {DEST_RESC_NAME_FLAG,   DEST_RESC_NAME_KW},
     {DEF_RESC_NAME_FLAG,    DEF_RESC_NAME_KW},
-    {BACKUP_RESC_NAME_FLAG, BACKUP_RESC_NAME_KW},
     {FORCE_FLAG_FLAG,       FORCE_FLAG_KW},
     {ALL_FLAG,		ALL_KW},
     {VERIFY_CHKSUM_FLAG,    VERIFY_CHKSUM_KW},

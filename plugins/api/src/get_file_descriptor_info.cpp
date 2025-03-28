@@ -142,7 +142,6 @@ namespace
             {"data_access_index", _p->dataAccessInx},
             {"write_flag", _p->writeFlag},
             {"destination_resource_name", _p->destRescName},
-            {"backup_resource_name", _p->backupRescName},
             {"sub_path", _p->subPath},
             {"special_collection", to_json(_p->specColl)},
             {"registering_user_id", _p->regUid},

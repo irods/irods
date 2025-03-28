@@ -320,9 +320,7 @@ namespace irods {
         }
         else if ( _cond_input ) {
             char* name = NULL;
-            // The BACKUP_RESC_NAME feature has been deprecated and will be removed in a future release.
-            if ( ( name = getValByKey( _cond_input, BACKUP_RESC_NAME_KW ) ) == NULL &&
-                    ( name = getValByKey( _cond_input, DEST_RESC_NAME_KW ) ) == NULL &&
+            if (    ( name = getValByKey( _cond_input, DEST_RESC_NAME_KW ) ) == NULL &&
                     ( name = getValByKey( _cond_input, DEF_RESC_NAME_KW ) ) == NULL &&
                     ( name = getValByKey( _cond_input, RESC_NAME_KW ) ) == NULL ) {
                 // =-=-=-=-=-=-=-
@@ -436,12 +434,6 @@ namespace irods {
         std::string& _out ) {
         if ( _resc_name.empty() ) {
             char* name = 0;
-            // The BACKUP_RESC_NAME feature has been deprecated and will be removed in a future release.
-            name = getValByKey( _cond_input, BACKUP_RESC_NAME_KW );
-            if ( name ) {
-                _out = std::string( name );
-                return SUCCESS();
-            }
 
             name = getValByKey( _cond_input, DEST_RESC_NAME_KW );
             if ( name ) {
