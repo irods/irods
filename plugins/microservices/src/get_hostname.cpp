@@ -14,24 +14,24 @@
 
 namespace
 {
-    int msi_impl(msParam_t *_out, ruleExecInfo_t* _rei){
+    int msi_impl(msParam_t* _out, ruleExecInfo_t* _rei)
+    {
         if (!_out || !_rei){
             return SYS_INTERNAL_NULL_INPUT_ERR;
         }
-        char hostname[HOST_NAME_MAX + 1]{};
-        gethostname(hostname, sizeof(hostname));
         fillStrInMsParam(_out, _rei->rsComm->myEnv.rodsHost);
         return 0;
-    }// msi_impl
+    } // msi_impl
 
     template <typename... Args, typename Function>
     auto make_msi(const std::string& name, Function func) -> irods::ms_table_entry*
     {
+        // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
         auto* msi = new irods::ms_table_entry{sizeof...(Args)};
         msi->add_operation(name, std::function<int(Args..., ruleExecInfo_t*)>(func));
         return msi;
     } // make_msi
-}// anonymous namespace
+} // anonymous namespace
 
 extern "C"
 auto plugin_factory() -> irods::ms_table_entry* {

@@ -2,26 +2,28 @@
 
 #include "irods/administration_utilities.hpp"
 #include "irods/generalAdmin.h"
-#include "irods/rcMisc.h"
-#include "irods/rsZoneReport.hpp"
-#include "irods/rodsConnect.h"
 #include "irods/icatHighLevelRoutines.hpp"
-#include "irods/miscServerFunct.hpp"
-#include "irods/rodsErrorTable.h"
-#include "irods/rsModAVUMetadata.hpp"
-#include "irods/rsGenQuery.hpp"
-#include "irods/irods_children_parser.hpp"
-#include "irods/irods_string_tokenize.hpp"
-#include "irods/irods_plugin_name_generator.hpp"
-#include "irods/irods_resource_manager.hpp"
-#include "irods/irods_file_object.hpp"
-#include "irods/irods_resource_constants.hpp"
-#include "irods/irods_load_plugin.hpp"
 #include "irods/irods_at_scope_exit.hpp"
+#include "irods/irods_children_parser.hpp"
+#include "irods/irods_configuration_keywords.hpp"
+#include "irods/irods_file_object.hpp"
 #include "irods/irods_hierarchy_parser.hpp"
+#include "irods/irods_load_plugin.hpp"
 #include "irods/irods_logger.hpp"
-#include "irods/user_validation_utilities.hpp"
+#include "irods/irods_plugin_name_generator.hpp"
+#include "irods/irods_resource_constants.hpp"
+#include "irods/irods_resource_manager.hpp"
+#include "irods/irods_server_properties.hpp"
+#include "irods/irods_string_tokenize.hpp"
+#include "irods/miscServerFunct.hpp"
+#include "irods/rcMisc.h"
+#include "irods/rodsConnect.h"
+#include "irods/rodsErrorTable.h"
+#include "irods/rsGenQuery.hpp"
+#include "irods/rsModAVUMetadata.hpp"
+#include "irods/rsZoneReport.hpp"
 #include "irods/rs_set_delay_server_migration_info.hpp"
+#include "irods/user_validation_utilities.hpp"
 #include "irods/version.hpp"
 
 #define IRODS_USER_ADMINISTRATION_ENABLE_SERVER_SIDE_API
@@ -181,8 +183,7 @@ namespace
 
     auto get_value_for_rebalance_avu() -> std::string
     {
-        char hostname[MAX_NAME_LEN];
-        gethostname(hostname, MAX_NAME_LEN);
+        const auto hostname = irods::get_server_property<std::string>(irods::KW_CFG_HOST);
         return fmt::format("{}:{}", hostname, getpid());
     } // get_value_for_rebalance_avu
 

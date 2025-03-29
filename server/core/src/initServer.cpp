@@ -222,21 +222,13 @@ initLocalServerHost() {
     }
 
     queueHostName( ServerHostHead, "localhost", 0 );
-    char myHostName[MAX_NAME_LEN];
-    status = gethostname( myHostName, MAX_NAME_LEN );
-    if ( status < 0 ) {
-        status = SYS_GET_HOSTNAME_ERR - errno;
-        rodsLog( LOG_NOTICE,
-                 "initLocalServerHost: gethostname error, status = %d",
-                 status );
-        return status;
-    }
-    status = queueHostName( ServerHostHead, myHostName, 0 );
+    const auto myHostName = irods::get_server_property<std::string>(irods::KW_CFG_HOST);
+    status = queueHostName(ServerHostHead, myHostName.c_str(), 0);
     if ( status < 0 ) {
         return status;
     }
 
-    status = queueAddr( ServerHostHead, myHostName );
+    status = queueAddr(ServerHostHead, myHostName.c_str());
     if ( status < 0 ) {
         /* some configuration may not be able to resolve myHostName. So don't
          * exit. Just print out warning */

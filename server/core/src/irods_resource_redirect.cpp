@@ -1,3 +1,5 @@
+#include "irods/irods_configuration_keywords.hpp"
+#include "irods/irods_server_properties.hpp"
 #include "irods/miscServerFunct.hpp"
 #include "irods/objInfo.h"
 #include "irods/dataObjCreate.h"
@@ -131,17 +133,11 @@ namespace
                        "attempt to directly address a child resource" );
         }
 
-        // get current hostname, which is also done by init local server host
-        char host_name_str[MAX_NAME_LEN]{};
-        if ( gethostname( host_name_str, MAX_NAME_LEN ) < 0 ) {
-            return ERROR( SYS_GET_HOSTNAME_ERR, "failed in gethostname" );
-        }
-
         // query the resc given the operation for a hier string which
         // will determine the host
         irods::hierarchy_parser parser;
         float vote{};
-        std::string host_name{host_name_str};
+        std::string host_name = irods::get_server_property<std::string>(irods::KW_CFG_HOST);
         irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast<irods::first_class_object>(_file_obj);
         err = resc->call< const std::string*, const std::string*, irods::hierarchy_parser*, float* >(
                   _comm, irods::RESOURCE_OP_RESOLVE_RESC_HIER, ptr, &_oper, &host_name, &parser, &vote );
@@ -490,14 +486,7 @@ namespace irods
             return PASSMSG( msg.str(), err );
         }
 
-        // =-=-=-=-=-=-=-
-        // get current hostname, which is also done by init local server host
-        char host_name_char[ MAX_NAME_LEN ];
-        if ( gethostname( host_name_char, MAX_NAME_LEN ) < 0 ) {
-            return ERROR( SYS_GET_HOSTNAME_ERR, "failed in gethostname" );
-        }
-
-        std::string host_name( host_name_char );
+        const auto host_name = irods::get_server_property<std::string>(irods::KW_CFG_HOST);
 
         // =-=-=-=-=-=-=
         // iterate over the list of hostName_t* and see if any match our

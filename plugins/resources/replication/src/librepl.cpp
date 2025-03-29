@@ -6,6 +6,8 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "irods/icatHighLevelRoutines.hpp"
+#include "irods/irods_configuration_keywords.hpp"
+#include "irods/irods_server_properties.hpp"
 #include "irods/msParam.h"
 #include "irods/rodsLog.h"
 
@@ -432,11 +434,7 @@ irods::error create_replication_list(
     }
 
     // Get current hostname for vote
-    char host_name_str[MAX_NAME_LEN];
-    if (gethostname(host_name_str, MAX_NAME_LEN) < 0) {
-        return ERROR(SYS_GET_HOSTNAME_ERR, "failed in gethostname");
-    }
-    const std::string host_name(host_name_str);
+    const auto host_name = irods::get_server_property<std::string>(irods::KW_CFG_HOST);
 
     // Loop over children and create a list of hierarchies to which objects will be replicated
     float out_vote{};
