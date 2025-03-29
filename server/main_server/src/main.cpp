@@ -1684,10 +1684,6 @@ Signals:
 
             const auto start_time = std::chrono::steady_clock::now();
 
-            irods::experimental::client_connection conn;
-            irods::access_time_queue::access_time_data data;
-            nlohmann::json::array_t updates;
-
             if (g_atime_invalid_batch_size_detected) {
                 log_server::warn("{}: Invalid batch size for access time updates detected in grid configuration. Using "
                                  "default batch size of 20000.",
@@ -1699,6 +1695,14 @@ Signals:
                 std::min(irods::access_time_queue::number_of_queued_updates(), g_atime_batch_size);
             log_server::debug(
                 "{}: Number of access time updates before deduplication is [{}].", __func__, update_count);
+
+            if (update_count == 0) {
+                return;
+            }
+
+            irods::experimental::client_connection conn;
+            irods::access_time_queue::access_time_data data;
+            nlohmann::json::array_t updates;
 
             for (std::size_t i = 0; i < update_count; ++i) {
                 if (!irods::access_time_queue::try_dequeue(data)) {
