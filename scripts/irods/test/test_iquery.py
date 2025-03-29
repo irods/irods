@@ -234,15 +234,19 @@ class Test_IQuery(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.T
             self.assertNotIn('select distinct', sql)
 
         with self.subTest('GenQuery2 supports SELECT DISTINCT syntax'):
-            _, out, _ = self.user.assert_icommand(['iquery', '--sql-only', f"select distinct DATA_NAME"], 'STDOUT')
+            _, out, _ = self.user.assert_icommand(['iquery', '--sql-only', 'select distinct DATA_NAME'], 'STDOUT')
             self.assertTrue(out.strip().startswith('select distinct '))
 
         with self.subTest('GenQuery2 supports DISTINCT keyword in aggregate functions'):
-            _, out, _ = self.user.assert_icommand(['iquery', '--sql-only', f"select count(DATA_NAME)"], 'STDOUT')
+            _, out, _ = self.user.assert_icommand(['iquery', '--sql-only', 'select count(DATA_NAME)'], 'STDOUT')
             self.assertTrue(out.strip().startswith('select count(t0.data_name)'))
 
-            _, out, _ = self.user.assert_icommand(['iquery', '--sql-only', f"select count(distinct DATA_NAME)"], 'STDOUT')
+            _, out, _ = self.user.assert_icommand(['iquery', '--sql-only', 'select count(distinct DATA_NAME)'], 'STDOUT')
             self.assertTrue(out.strip().startswith('select count(distinct t0.data_name)'))
+
+            _, out, _ = self.user.assert_icommand(
+                ['iquery', '--sql-only', 'select count(distinct DATA_NAME) order by count(distinct DATA_NAME)'], 'STDOUT')
+            self.assertIn(' order by count(distinct t0.data_name) ', out.strip())
 
     def test_genquery2_handling_of_distinct_keyword__issue_8261(self):
         resc0 = 'issue_8261_genquery2_ufs0'
@@ -262,17 +266,17 @@ class Test_IQuery(session.make_sessions_mixin(rodsadmins, rodsusers), unittest.T
 
             with self.subTest('Counting number of replicas'):
                 query_string = f"select count(DATA_NAME) where COLL_NAME = '{self.user.session_collection}'"
-                json_string = json.dumps([[3]], separators=(',', ':'))
+                json_string = json.dumps([['3']], separators=(',', ':'))
                 self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
 
             with self.subTest('Counting number of data objects'):
                 query_string = f"select count(distinct DATA_NAME) where COLL_NAME = '{self.user.session_collection}'"
-                json_string = json.dumps([[1]], separators=(',', ':'))
+                json_string = json.dumps([['1']], separators=(',', ':'))
                 self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
 
             with self.subTest('List logical name of replicas'):
                 query_string = f"select DATA_NAME where COLL_NAME = '{self.user.session_collection}'"
-                json_string = json.dumps([[data_object, data_object, data_object]], separators=(',', ':'))
+                json_string = json.dumps([[data_object], [data_object], [data_object]], separators=(',', ':'))
                 self.user.assert_icommand(['iquery', query_string], 'STDOUT', [json_string])
 
             with self.subTest('List logical name of data objects'):
