@@ -520,30 +520,20 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
             ''')
         }
 
-        server_config_filename = paths.server_config_path()
-
-        # load server_config.json to inject a new rule base
-        with open(server_config_filename) as f:
-            svr_cfg = json.load(f)
-
-        # Occasionally, the expected message is printed twice due to the rule engine waking up, causing the test to fail
-        # Make irodsDelayServer sleep for a long time so it won't wake up while the test is running
-        svr_cfg['advanced_settings']['delay_server_sleep_time_in_seconds'] = 1000
-
-        # dump to a string to repave the existing server_config.json
-        new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
+        initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
 
         try:
-            with lib.file_backed_up(server_config_filename):
-                # repave the existing server_config.json
-                with open(server_config_filename, 'w') as f:
-                    f.write(new_server_config)
-
-                # Actually run the test
-                self.helper_test_pep(pep_map[self.plugin_name], "iput -f --metadata ATTR;VALUE;UNIT "+self.testfile)
+            with temporary_core_file() as core:
+                core.add_rule(pep_map[self.plugin_name])
+                IrodsController().reload_configuration()
+                self.admin.assert_icommand(['ils'], 'STDOUT')
 
         finally:
             IrodsController().reload_configuration()
+
+        lib.delayAssert(
+            lambda: lib.log_message_occurrences_greater_than_count(
+                msg='THIS IS AN OUT VARIABLE', count=0, start_index=initial_size_of_server_log))
 
     def test_auth_pep(self):
         pep_map = {
