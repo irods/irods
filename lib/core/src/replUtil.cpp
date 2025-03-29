@@ -146,7 +146,6 @@ int
 initCondForRepl( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                  dataObjInp_t *dataObjInp, rodsRestart_t *rodsRestart ) {
     char *myResc = NULL;
-    char *tmpStr;
 
     if ( dataObjInp == NULL ) {
         rodsLog( LOG_ERROR,

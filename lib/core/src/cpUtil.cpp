@@ -161,8 +161,6 @@ cpFileUtil( rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
 int
 initCondForCp( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart ) {
-    char *tmpStr;
-
     if ( dataObjCopyInp == NULL ) {
         rodsLog( LOG_ERROR,
                  "initCondForCp: NULL dataObjCopyInp in cp" );

@@ -578,8 +578,6 @@ int
 initDataOprInp( dataOprInp_t *dataOprInp, int l1descInx, int oprType ) {
     dataObjInfo_t *dataObjInfo;
     dataObjInp_t  *dataObjInp;
-    char *tmpStr;
-
 
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
     dataObjInp = L1desc[l1descInx].dataObjInp;
