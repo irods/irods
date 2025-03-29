@@ -1037,8 +1037,7 @@ namespace irods::experimental::genquery2
         // because some databases (e.g. MySQL) support COUNT(DISTINCT ARG0, ..., ARGN).
         if (_function.distinct) {
             if (!_state.in_select_clause) {
-                throw std::runtime_error{
-                    "use of DISTINCT keyword in function outside of SELECT clause is not allowed"};
+                throw std::runtime_error{"use of DISTINCT keyword in function outside of SELECT clause is not allowed"};
             }
 
             return fmt::format("{}(distinct {})", _function.name, fmt::join(args, ", "));
