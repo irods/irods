@@ -715,6 +715,16 @@ int initRsCommWithStartupPack(rsComm_t* rsComm, startupPack_t* startupPack, bool
         else {
             opt_str.copy(rsComm->option, sizeof(RsComm::option) - 1);
         }
+
+        // Set the SP_OPTION environment variable so that server-to-server connections
+        // forward the name of the connected client to remote servers. This information
+        // is used by the rcConnect library when establishing a connection to a server.
+        if (setenv(SP_OPTION, rsComm->option, /* overwrite */ 1) != 0) {
+            log_agent::warn("{}: Could not set environment variable [{}] to [{}] for agent tracking APIs.",
+                            __func__,
+                            SP_OPTION,
+                            rsComm->option);
+        }
     }
     else {      /* have to depend on env variable */
         tmpStr = getenv( SP_NEW_SOCK );
