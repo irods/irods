@@ -14,7 +14,7 @@ int initAgent(int processType, rsComm_t* rsComm);
 
 int initHostConfigByFile();
 int initRsComm(rsComm_t* rsComm);
-int initRsCommWithStartupPack(rsComm_t* rsComm, startupPack_t* startupPack, bool& require_cs_neg);
+int initRsCommWithStartupPack(rsComm_t& rsComm, const startupPack_t& startupPack, bool& require_cs_neg);
 int chkAllowedUser(const char* userName, const char* rodsZone);
 void close_all_l1_descriptors(RsComm& _comm);
 
