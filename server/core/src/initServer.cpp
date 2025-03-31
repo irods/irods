@@ -680,7 +680,7 @@ initRsComm( rsComm_t *rsComm ) {
     return 0;
 }
 
-int initRsCommWithStartupPack(rsComm_t* rsComm, startupPack_t* startupPack, bool& require_cs_neg)
+int initRsCommWithStartupPack(rsComm_t& rsComm, const startupPack_t& startupPack, bool& require_cs_neg)
 {
     char *tmpStr;
     static char tmpStr2[LONG_NAME_LEN];
@@ -688,59 +688,57 @@ int initRsCommWithStartupPack(rsComm_t* rsComm, startupPack_t* startupPack, bool
     snprintf( tmpStr2, LONG_NAME_LEN, "%s=%d", IRODS_PROT, NATIVE_PROT );
     putenv( tmpStr2 );
 
-    if (startupPack) {
-        rsComm->connectCnt = startupPack->connectCnt;
-        rsComm->irodsProt = startupPack->irodsProt;
-        rsComm->reconnFlag = startupPack->reconnFlag;
-        rstrcpy(rsComm->proxyUser.userName, startupPack->proxyUser, NAME_LEN);
-        if ( strcmp( startupPack->proxyUser, PUBLIC_USER_NAME ) == 0 ) {
-            rsComm->proxyUser.authInfo.authFlag = PUBLIC_USER_AUTH;
-        }
-        rstrcpy(rsComm->proxyUser.rodsZone, startupPack->proxyRodsZone, NAME_LEN);
-        rstrcpy(rsComm->clientUser.userName, startupPack->clientUser, NAME_LEN);
-        if ( strcmp( startupPack->clientUser, PUBLIC_USER_NAME ) == 0 ) {
-            rsComm->clientUser.authInfo.authFlag = PUBLIC_USER_AUTH;
-        }
-        rstrcpy(rsComm->clientUser.rodsZone, startupPack->clientRodsZone, NAME_LEN);
-        rstrcpy(rsComm->cliVersion.relVersion, startupPack->relVersion, NAME_LEN);
-        rstrcpy(rsComm->cliVersion.apiVersion, startupPack->apiVersion, NAME_LEN);
+    rsComm.connectCnt = startupPack.connectCnt;
+    rsComm.irodsProt = startupPack.irodsProt;
+    rsComm.reconnFlag = startupPack.reconnFlag;
+    rstrcpy(rsComm.proxyUser.userName, startupPack.proxyUser, NAME_LEN);
+    if (strcmp(startupPack.proxyUser, PUBLIC_USER_NAME) == 0) {
+        rsComm.proxyUser.authInfo.authFlag = PUBLIC_USER_AUTH;
+    }
+    rstrcpy(rsComm.proxyUser.rodsZone, startupPack.proxyRodsZone, NAME_LEN);
+    rstrcpy(rsComm.clientUser.userName, startupPack.clientUser, NAME_LEN);
+    if (strcmp(startupPack.clientUser, PUBLIC_USER_NAME) == 0) {
+        rsComm.clientUser.authInfo.authFlag = PUBLIC_USER_AUTH;
+    }
+    rstrcpy(rsComm.clientUser.rodsZone, startupPack.clientRodsZone, NAME_LEN);
+    rstrcpy(rsComm.cliVersion.relVersion, startupPack.relVersion, NAME_LEN);
+    rstrcpy(rsComm.cliVersion.apiVersion, startupPack.apiVersion, NAME_LEN);
 
-        std::string_view opt_str = startupPack->option;
-        const auto pos = opt_str.find(REQ_SVR_NEG);
-        require_cs_neg = (std::string_view::npos != pos);
-        if (require_cs_neg) {
-            const auto client_app_name = opt_str.substr(0, pos);
-            client_app_name.copy(rsComm->option, sizeof(RsComm::option) - 1);
-        }
-        else {
-            opt_str.copy(rsComm->option, sizeof(RsComm::option) - 1);
-        }
-
-        // Set the SP_OPTION environment variable so that server-to-server connections
-        // forward the name of the connected client to remote servers. This information
-        // is used by the rcConnect library when establishing a connection to a server.
-        if (setenv(SP_OPTION, rsComm->option, /* overwrite */ 1) != 0) {
-            log_agent::warn("{}: Could not set environment variable [{}] to [{}] for agent tracking APIs.",
-                            __func__,
-                            SP_OPTION,
-                            rsComm->option);
-        }
+    std::string_view opt_str = startupPack.option;
+    const auto pos = opt_str.find(REQ_SVR_NEG);
+    require_cs_neg = (std::string_view::npos != pos);
+    if (require_cs_neg) {
+        const auto client_app_name = opt_str.substr(0, pos);
+        client_app_name.copy(rsComm.option, sizeof(RsComm::option) - 1);
+    }
+    else {
+        opt_str.copy(rsComm.option, sizeof(RsComm::option) - 1);
     }
 
-    if (const auto ec = setLocalAddr(rsComm->sock, &rsComm->localAddr); ec == USER_RODS_HOSTNAME_ERR) {
+    // Set the SP_OPTION environment variable so that server-to-server connections
+    // forward the name of the connected client to remote servers. This information
+    // is used by the rcConnect library when establishing a connection to a server.
+    if (setenv(SP_OPTION, rsComm.option, /* overwrite */ 1) != 0) {
+        log_agent::warn("{}: Could not set environment variable [{}] to [{}] for agent tracking APIs.",
+                        __func__,
+                        SP_OPTION,
+                        rsComm.option);
+    }
+
+    if (const auto ec = setLocalAddr(rsComm.sock, &rsComm.localAddr); ec == USER_RODS_HOSTNAME_ERR) {
         return ec;
     }
 
-    if (const auto ec = setRemoteAddr(rsComm->sock, &rsComm->remoteAddr); ec != 0) {
+    if (const auto ec = setRemoteAddr(rsComm.sock, &rsComm.remoteAddr); ec != 0) {
         return ec;
     }
 
-    tmpStr = inet_ntoa( rsComm->remoteAddr.sin_addr );
+    tmpStr = inet_ntoa(rsComm.remoteAddr.sin_addr);
 
-    if ( tmpStr == NULL || *tmpStr == '\0' ) {
+    if (tmpStr == nullptr || *tmpStr == '\0') {
         tmpStr = "UNKNOWN";
     }
-    rstrcpy( rsComm->clientAddr, tmpStr, NAME_LEN );
+    rstrcpy(rsComm.clientAddr, tmpStr, NAME_LEN);
 
     return 0;
 }

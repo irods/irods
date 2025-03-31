@@ -866,7 +866,7 @@ namespace
         rsComm.thread_ctx = static_cast<thread_context*>(std::malloc(sizeof(thread_context)));
 
         bool require_cs_neg = false;
-        int status = initRsCommWithStartupPack(&rsComm, startupPack, require_cs_neg);
+        int status = initRsCommWithStartupPack(rsComm, *startupPack, require_cs_neg);
 
         // manufacture a network object for comms
         ret = irods::network_factory(&rsComm, net_obj);
