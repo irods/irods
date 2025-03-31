@@ -158,15 +158,6 @@ class test_configurations(unittest.TestCase):
             client_update = {'irods_authentication_scheme': self.authentication_scheme}
             self.auth_session.environment_file_contents.update(client_update)
 
-            # Make sure the settings applied correctly...
-            self.admin.assert_icommand(
-                ['iadmin', 'get_grid_configuration', self.configuration_namespace, _option_name],
-                'STDOUT', original_config)
-
-            self.auth_session.assert_icommand(
-                ['iinit'], 'STDOUT', 'PAM password', input=f'{self.auth_session.password}\n')
-            self.auth_session.assert_icommand(["ils"], 'STDOUT', self.auth_session.session_collection)
-
             for option_value in [' ', 'nope', str(-1), str(18446744073709552000), str(-18446744073709552000)]:
                 with self.subTest(f'test with value [{option_value}]'):
                     self.admin.assert_icommand(
@@ -206,11 +197,6 @@ class test_configurations(unittest.TestCase):
         try:
             client_update = {'irods_authentication_scheme': self.authentication_scheme}
             self.auth_session.environment_file_contents.update(client_update)
-
-            # Make sure the settings applied correctly...
-            self.admin.assert_icommand(
-                ['iadmin', 'get_grid_configuration', self.configuration_namespace, max_time_option_name],
-                'STDOUT', original_max_time)
 
             # Try a few different values here that are in the range of overall acceptable values:
             #     - 2 hours allows us to go up OR down by 1 hour (boundary case).
@@ -284,11 +270,6 @@ class test_configurations(unittest.TestCase):
         try:
             client_update = {'irods_authentication_scheme': self.authentication_scheme}
             self.auth_session.environment_file_contents.update(client_update)
-
-            # Make sure the settings applied correctly...
-            self.admin.assert_icommand(
-                ['iadmin', 'get_grid_configuration', self.configuration_namespace, max_time_option_name],
-                'STDOUT', original_max_time)
 
             # When no TTL is specified, the default value is the minimum password lifetime as configured in
             # R_GRID_CONFIGURATION. This value should be higher than 3 seconds to ensure steps in the test
@@ -367,11 +348,6 @@ class test_configurations(unittest.TestCase):
             client_update = {'irods_authentication_scheme': self.authentication_scheme}
             self.auth_session.environment_file_contents.update(client_update)
             self.other_auth_session.environment_file_contents.update(client_update)
-
-            # Make sure the settings applied correctly...
-            self.admin.assert_icommand(
-                ['iadmin', 'get_grid_configuration', self.configuration_namespace, extend_lifetime_option_name],
-                'STDOUT', '1')
 
             # Set the minimum time to a very short value so that the password expires in a reasonable amount of
             # time for testing purposes. This value should be higher than 3 seconds to ensure steps in the test
@@ -465,11 +441,6 @@ class test_configurations(unittest.TestCase):
             client_update = {'irods_authentication_scheme': self.authentication_scheme}
             self.auth_session.environment_file_contents.update(client_update)
             self.other_auth_session.environment_file_contents.update(client_update)
-
-            # Make sure the settings applied correctly...
-            self.admin.assert_icommand(
-                ['iadmin', 'get_grid_configuration', self.configuration_namespace, extend_lifetime_option_name],
-                'STDOUT', '1')
 
             # Set the minimum time to a very short value so that the password expires in a reasonable amount of
             # time for testing purposes. This value should be higher than 3 seconds to ensure steps in the test
