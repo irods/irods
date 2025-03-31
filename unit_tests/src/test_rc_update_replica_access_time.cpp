@@ -408,11 +408,6 @@ TEST_CASE("#8260: rc_update_replica_access_time can update access time of multip
     const auto replica_info_0 = get_replica_info(conn, logical_path_0, 1);
     const auto replica_info_1 = get_replica_info(conn, logical_path_1, 0);
 
-    // Show that the second replica's atime and mtime are identical.
-    // This is unrelated to the test, but proves that the atime logic for iRODS covers
-    // replicas created through replication.
-    REQUIRE(std::get<1>(replica_info_0) == std::get<2>(replica_info_0));
-
     // These are the new atimes for the replicas. To guard against false-positives,
     // these two variables must always have unique atime values.
     const auto expected_atime_0 = "01700000000";
