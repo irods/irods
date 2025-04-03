@@ -53,7 +53,7 @@ foreach(plugin IN LISTS IRODS_AUTH_LEGACY_PLUGINS)
       TARGETS
       ${plugin_target}
       LIBRARY
-      DESTINATION "${IRODS_PLUGINS_DIRECTORY}/auth"
+      DESTINATION "${IRODS_PLUGINS_DIRECTORY}/authentication"
       COMPONENT ${IRODS_PACKAGE_COMPONENT_RUNTIME_NAME}
     )
   endforeach()

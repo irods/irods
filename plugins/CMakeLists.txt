@@ -5,7 +5,7 @@ add_custom_target(all-plugins_no_database)
 add_dependencies(all-plugins all-plugins_no_database)
 
 add_subdirectory(api)
-add_subdirectory(auth)
+add_subdirectory(authentication)
 add_subdirectory(auth_legacy)
 add_subdirectory(database)
 add_subdirectory(microservices)

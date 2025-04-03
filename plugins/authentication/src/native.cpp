@@ -1,4 +1,4 @@
-#include "irods/plugins/auth/native.hpp"
+#include "irods/plugins/authentication/native.hpp"
 #include "irods/authentication_plugin_framework.hpp"
 
 #include "irods/authCheck.h"

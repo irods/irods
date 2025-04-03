@@ -158,7 +158,7 @@ namespace irods
     // plugin types
     const char* const KW_CFG_PLUGIN_TYPE_API{"api"};
     const char* const KW_CFG_PLUGIN_TYPE_RULE_ENGINE{"rule_engines"};
-    const char* const KW_CFG_PLUGIN_TYPE_AUTHENTICATION{"auth"};
+    const char* const KW_CFG_PLUGIN_TYPE_AUTHENTICATION{"authentication"};
     const char* const KW_CFG_PLUGIN_TYPE_NETWORK{"network"};
     const char* const KW_CFG_PLUGIN_TYPE_DATABASE{"database"};
     const char* const KW_CFG_PLUGIN_TYPE_RESOURCE{"resources"};
