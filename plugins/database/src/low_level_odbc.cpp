@@ -150,7 +150,7 @@ cllOpenEnv( icatSessionStruct *icss ) {
 
     HENV myHenv;
     if ( SQLAllocEnv( &myHenv ) != SQL_SUCCESS ) {
-        rodsLog( LOG_ERROR, "cllOpenEnv: SQLAllocHandle failed for env" );
+        log_db::error("{}: SQLAllocHandle failed for env", __func__);
         return -1;
     }
 
@@ -171,7 +171,7 @@ cllCloseEnv( icatSessionStruct *icss ) {
         icss->environPtr = NULL;
     }
     else {
-        rodsLog( LOG_ERROR, "cllCloseEnv: SQLFreeEnv failed" );
+        log_db::error("{}: SQLFreeEnv failed", __func__);
     }
     return stat;
 }
@@ -185,7 +185,7 @@ cllConnect( icatSessionStruct *icss ) {
     HDBC myHdbc;
     SQLRETURN stat = SQLAllocHandle( SQL_HANDLE_DBC, icss->environPtr, &myHdbc );
     if ( stat != SQL_SUCCESS ) {
-        rodsLog( LOG_ERROR, "cllConnect: SQLAllocHandle failed for connect: %s", stat );
+        log_db::error("{}: SQLAllocHandle failed for connect: {}", __func__, stat);
         return -1;
     }
 
@@ -194,7 +194,7 @@ cllConnect( icatSessionStruct *icss ) {
     char odbcEntryName[ DB_TYPENAME_LEN ];
     char* odbc_env = getenv( "irodsOdbcDSN" );
     if ( odbc_env ) {
-        rodsLog( LOG_DEBUG, "Setting ODBC entry to ENV [%s]", odbc_env );
+        log_db::debug("{}: Setting ODBC entry to ENV [{}]", __func__, odbc_env);
         snprintf( odbcEntryName, sizeof( odbcEntryName ), "%s", odbc_env );
     }
     else {
@@ -209,20 +209,18 @@ cllConnect( icatSessionStruct *icss ) {
                ( unsigned char * )icss->databaseUsername, strlen( icss->databaseUsername ),
                ( unsigned char * )icss->databasePassword, strlen( icss->databasePassword ) );
     if ( stat != SQL_SUCCESS ) {
-        rodsLog( LOG_ERROR, "cllConnect: SQLConnect failed: %d", stat );
-        rodsLog( LOG_ERROR,
-                 "cllConnect: SQLConnect failed:odbcEntry=%s,user=%s,pass=XXXXX\n",
-                 odbcEntryName,
-                 icss->databaseUsername );
+        log_db::error("{}: SQLConnect failed: {}", __func__, stat);
+        log_db::error(
+            "{}: SQLConnect failed:odbcEntry={},user={},pass=XXXXX\n", __func__, odbcEntryName, icss->databaseUsername);
         SQLCHAR sqlstate[SQL_SQLSTATE_SIZE + 1];
         SQLINTEGER sqlcode;
         SQLCHAR buffer[SQL_MAX_MESSAGE_LENGTH + 1];
         SQLSMALLINT length;
         while ( SQLError( icss->environPtr, myHdbc , 0, sqlstate, &sqlcode, buffer,
                           SQL_MAX_MESSAGE_LENGTH + 1, &length ) == SQL_SUCCESS ) {
-            rodsLog( LOG_ERROR, "cllConnect:          SQLSTATE: %s\n", sqlstate );
-            rodsLog( LOG_ERROR, "cllConnect:  Native Error Code: %ld\n", sqlcode );
-            rodsLog( LOG_ERROR, "cllConnect: %s \n", buffer );
+            log_db::error("{}:          SQLSTATE: {}\n", __func__, sqlstate);
+            log_db::error("{}:  Native Error Code: {}\n", __func__, sqlcode);
+            log_db::error("{}: {} \n", __func__, buffer);
         }
 
         SQLDisconnect( myHdbc );
@@ -315,15 +313,14 @@ cllCheckPending( const char *sql, int option, int dbType ) {
             }
         }
 
-        rodsLog( LOG_NOTICE, "Warning, pending SQL at cllDisconnect, count: %d",
-                 pendingCount );
+        log_db::warn("{}: Pending SQL at cllDisconnect, count: {}", __func__, pendingCount);
         int max = maxPendingToRecord;
         if ( pendingIx < max ) {
             max = pendingIx;
         }
         for ( int i = 0; i < max; i++ ) {
-            rodsLog( LOG_NOTICE, "Warning, pending SQL: %s ...",
-                     ( char * )&pBuffer[i * pendingRecordSize] );
+            // NOLINTNEXTLINE(bugprone-implicit-widening-of-multiplication-result,cppcoreguidelines-pro-bounds-constant-array-index)
+            log_db::warn("{}: Pending SQL: {} ...", __func__, &pBuffer[i * pendingRecordSize]);
         }
     }
 
@@ -344,7 +341,7 @@ cllDisconnect( icatSessionStruct *icss ) {
 
     SQLRETURN stat = SQLDisconnect( icss->connectPtr );
     if ( stat != SQL_SUCCESS ) {
-        rodsLog( LOG_ERROR, "cllDisconnect: SQLDisconnect failed: %d", stat );
+        log_db::error("{}: SQLDisconnect failed: {}", __func__, stat);
         return -1;
     }
 
@@ -353,7 +350,7 @@ cllDisconnect( icatSessionStruct *icss ) {
         icss->connectPtr = NULL;
     }
     else {
-        rodsLog( LOG_ERROR, "cllDisconnect: SQLFreeHandle failed for connect: %d", stat );
+        log_db::error("{}: SQLFreeHandle failed for connect: {}", __func__, stat);
         return -2;
     }
 
@@ -414,8 +411,7 @@ bindTheVariables( HSTMT myHstmt, const char *sql ) {
         snprintf( tmpStr, sizeof( tmpStr ), "bindVar[%d]=%s", i + 1, cllBindVars[i] );
         rodsLogSql( tmpStr );
         if ( stat != SQL_SUCCESS ) {
-            rodsLog( LOG_ERROR,
-                     "bindTheVariables: SQLBindParameter failed: %d", stat );
+            log_db::error("{}: SQLBindParameter failed: {}", __func__, stat);
             return -1;
         }
     }
@@ -467,7 +463,7 @@ _cllExecSqlNoResult(
     SQLRETURN stat = SQLAllocHandle( SQL_HANDLE_STMT, myHdbc, &myHstmt );
     SQL_INT_OR_LEN rowCount = 0;
     if ( stat != SQL_SUCCESS ) {
-        rodsLog( LOG_ERROR, "_cllExecSqlNoResult: SQLAllocHandle failed for statement: %d", stat );
+        log_db::error("{}: SQLAllocHandle failed for statement: {}", __func__, stat);
         return -1;
     }
 
@@ -552,7 +548,7 @@ _cllExecSqlNoResult(
 
     stat = SQLFreeHandle( SQL_HANDLE_STMT, myHstmt );
     if ( stat != SQL_SUCCESS ) {
-        rodsLog( LOG_ERROR, "_cllExecSqlNoResult: SQLFreeHandle for statement error: %d", stat );
+        log_db::error("{}: SQLFreeHandle for statement error: {}", __func__, stat);
     }
 
     // Saves the affected row count to a static variable
@@ -582,8 +578,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql ) {
     HSTMT hstmt;
     SQLRETURN stat = SQLAllocHandle( SQL_HANDLE_STMT, myHdbc, &hstmt );
     if ( stat != SQL_SUCCESS ) {
-        rodsLog( LOG_ERROR, "cllExecSqlWithResult: SQLAllocHandle failed for statement: %d",
-                 stat );
+        log_db::error("{}: SQLAllocHandle failed for statement: {}", __func__, stat);
         return -1;
     }
 
@@ -597,8 +592,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql ) {
         }
     }
     if ( statementNumber < 0 ) {
-        rodsLog( LOG_ERROR,
-                 "cllExecSqlWithResult: too many concurrent statements" );
+        log_db::error("{}: too many concurrent statements", __func__);
         return CAT_STATEMENT_TABLE_FULL;
     }
 
@@ -652,8 +646,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql ) {
     SQLSMALLINT numColumns;
     stat = SQLNumResultCols( hstmt, &numColumns );
     if ( stat != SQL_SUCCESS ) {
-        rodsLog( LOG_ERROR, "cllExecSqlWithResult: SQLNumResultCols failed: %d",
-                 stat );
+        log_db::error("{}: SQLNumResultCols failed: {}", __func__, stat);
         return -2;
     }
     myStatement->numOfCols = numColumns;
@@ -666,8 +659,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql ) {
         stat = SQLDescribeCol( hstmt, i + 1, colName, sizeof( colName ),
                                &colNameLen, &colType, &precision, &scale, NULL );
         if ( stat != SQL_SUCCESS ) {
-            rodsLog( LOG_ERROR, "cllExecSqlWithResult: SQLDescribeCol failed: %d",
-                     stat );
+            log_db::error("{}: SQLDescribeCol failed: {}", __func__, stat);
             return -3;
         }
         /*  printf("colName='%s' precision=%d\n",colName, precision); */
@@ -676,9 +668,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql ) {
         stat = SQLColAttribute( hstmt, i + 1, SQL_COLUMN_DISPLAY_SIZE,
                                 NULL, 0, NULL, &displaysize ); // JMC :: fixed for odbc
         if ( stat != SQL_SUCCESS ) {
-            rodsLog( LOG_ERROR,
-                     "cllExecSqlWithResult: SQLColAttributes failed: %d",
-                     stat );
+            log_db::error("{}: SQLColAttributes failed: {}", __func__, stat);
             return -3;
         }
 
@@ -699,9 +689,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql ) {
         // JMC :: added static array to catch the result set size.  this was necessary to
         stat = SQLBindCol( hstmt, i + 1, SQL_C_CHAR, myStatement->resultValue[i], columnLength[i], &resultDataSizeArray[ i ] );
         if ( stat != SQL_SUCCESS ) {
-            rodsLog( LOG_ERROR,
-                     "cllExecSqlWithResult: SQLColAttributes failed: %d",
-                     stat );
+            log_db::error("{}: SQLColAttributes failed: {}", __func__, stat);
             return -4;
         }
 
@@ -756,8 +744,7 @@ cllExecSqlWithResultBV(
     HSTMT hstmt;
     SQLRETURN stat = SQLAllocHandle( SQL_HANDLE_STMT, myHdbc, &hstmt );
     if ( stat != SQL_SUCCESS ) {
-        rodsLog( LOG_ERROR, "cllExecSqlWithResultBV: SQLAllocHandle failed for statement: %d",
-                 stat );
+        log_db::error("{}: SQLAllocHandle failed for statement: {}", __func__, stat);
         return -1;
     }
 
@@ -771,8 +758,7 @@ cllExecSqlWithResultBV(
         }
     }
     if ( statementNumber < 0 ) {
-        rodsLog( LOG_ERROR,
-                 "cllExecSqlWithResultBV: too many concurrent statements" );
+        log_db::error("{}: too many concurrent statements", __func__);
         return CAT_STATEMENT_TABLE_FULL;
     }
 
@@ -793,8 +779,7 @@ cllExecSqlWithResultBV(
             snprintf( tmpStr, sizeof( tmpStr ), "bindVar%ju=%s", static_cast<uintmax_t>(i + 1), bindVars[i].c_str() );
             rodsLogSql( tmpStr );
             if ( stat != SQL_SUCCESS ) {
-                rodsLog( LOG_ERROR,
-                         "cllExecSqlWithResultBV: SQLBindParameter failed: %d", stat );
+                log_db::error("{}: SQLBindParameter failed: {}", __func__, stat);
                 return -1;
             }
         }
@@ -837,8 +822,7 @@ cllExecSqlWithResultBV(
     SQLSMALLINT numColumns;
     stat = SQLNumResultCols( hstmt, &numColumns );
     if ( stat != SQL_SUCCESS ) {
-        rodsLog( LOG_ERROR, "cllExecSqlWithResultBV: SQLNumResultCols failed: %d",
-                 stat );
+        log_db::error("{}: SQLNumResultCols failed: {}", __func__, stat);
         return -2;
     }
     myStatement->numOfCols = numColumns;
@@ -852,8 +836,7 @@ cllExecSqlWithResultBV(
         stat = SQLDescribeCol( hstmt, i + 1, colName, sizeof( colName ),
                                &colNameLen, &colType, &precision, &scale, NULL );
         if ( stat != SQL_SUCCESS ) {
-            rodsLog( LOG_ERROR, "cllExecSqlWithResultBV: SQLDescribeCol failed: %d",
-                     stat );
+            log_db::error("{}: SQLDescribeCol failed: {}", __func__, stat);
             return -3;
         }
         /*  printf("colName='%s' precision=%d\n",colName, precision); */
@@ -862,9 +845,7 @@ cllExecSqlWithResultBV(
         stat = SQLColAttribute( hstmt, i + 1, SQL_COLUMN_DISPLAY_SIZE,
                                 NULL, 0, NULL, &displaysize ); // JMC :: changed to SQLColAttribute for odbc update
         if ( stat != SQL_SUCCESS ) {
-            rodsLog( LOG_ERROR,
-                     "cllExecSqlWithResultBV: SQLColAttributes failed: %d",
-                     stat );
+            log_db::error("{}: SQLColAttributes failed: {}", __func__, stat);
             return -3;
         }
 
@@ -885,9 +866,7 @@ cllExecSqlWithResultBV(
         stat = SQLBindCol( hstmt, i + 1, SQL_C_CHAR, myStatement->resultValue[i], columnLength[i], &resultDataSizeArray[i] );
 
         if ( stat != SQL_SUCCESS ) {
-            rodsLog( LOG_ERROR,
-                     "cllExecSqlWithResultBV: SQLColAttributes failed: %d",
-                     stat );
+            log_db::error("{}: SQLColAttributes failed: {}", __func__, stat);
             return -4;
         }
 
@@ -920,7 +899,7 @@ cllGetRow( icatSessionStruct *icss, int statementNumber ) {
     }
     SQLRETURN stat =  SQLFetch( myStatement->stmtPtr );
     if ( stat != SQL_SUCCESS && stat != SQL_NO_DATA_FOUND ) {
-        rodsLog( LOG_ERROR, "cllGetRow: SQLFetch failed: %d", stat );
+        log_db::error("{}: SQLFetch failed: {}", __func__, stat);
         return -1;
     }
     if ( stat == SQL_NO_DATA_FOUND ) {
@@ -1003,7 +982,7 @@ cllFreeStatement( icatSessionStruct *icss, int& statementNumber ) {
     SQLRETURN stat = SQLFreeHandle( SQL_HANDLE_STMT, myStatement->stmtPtr );
     if ( stat != SQL_SUCCESS ) {
         statementNumber = UNINITIALIZED_STATEMENT_NUMBER;
-        rodsLog( LOG_ERROR, "cllFreeStatement SQLFreeHandle for statement error: %d", stat );
+        log_db::error("{}: SQLFreeHandle for statement error: {}", __func__, stat);
     }
 
     free( myStatement );

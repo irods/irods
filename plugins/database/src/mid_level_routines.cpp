@@ -675,8 +675,7 @@ cmlGetNextSeqVal( icatSessionStruct *icss ) {
     std::vector<std::string> emptyBindVars;
     status = cmlGetIntegerValueFromSql( sql, &iVal, emptyBindVars, icss );
     if ( status < 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "cmlGetNextSeqVal cmlGetIntegerValueFromSql failure %d", status );
+        log_db::error("{}: cmlGetIntegerValueFromSql failure {}", __func__, status);
         return status;
     }
     return iVal;
@@ -710,9 +709,7 @@ cmlGetCurrentSeqVal( icatSessionStruct *icss ) {
     std::vector<std::string> emptyBindVars;
     status = cmlGetIntegerValueFromSql( sql, &iVal, emptyBindVars, icss );
     if ( status < 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "cmlGetCurrentSeqVal cmlGetIntegerValueFromSql failure %d",
-                 status );
+        log_db::error("{}: cmlGetIntegerValueFromSql failure {}", __func__, status);
         return status;
     }
     return iVal;
@@ -742,8 +739,7 @@ cmlGetNextSeqStr( char *seqStr, int maxSeqStrLen, icatSessionStruct *icss ) {
     std::vector<std::string> emptyBindVars;
     status = cmlGetStringValueFromSql( sql, seqStr, maxSeqStrLen, emptyBindVars, icss );
     if ( status < 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "cmlGetNextSeqStr cmlGetStringValueFromSql failure %d", status );
+        log_db::error("{}: cmlGetStringValueFromSql failure {}", __func__, status);
     }
     return status;
 }

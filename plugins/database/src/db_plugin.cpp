@@ -410,14 +410,14 @@ int get_object_count_of_resource_by_name(
             _count = 0;
             return 0;
         }
-        irods::log(PASS(ret));
+        log_db::error(PASS(ret).result());
         return ret.code();
     }
 
     std::string resc_id_str;
     ret = irods::lexical_cast<std::string>(resc_id, resc_id_str);
     if(!ret.ok()) {
-        irods::log(PASS(ret));
+        log_db::error(PASS(ret).result());
         return ret.code();
     }
 
@@ -578,9 +578,7 @@ irods::error _childIsValid(
     }
     if ( status != 0 ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
-            std::stringstream ss;
-            ss << "Child resource \"" << resc_name << "\" not found";
-            irods::log( LOG_NOTICE, ss.str() );
+            log_db::info("{}: Child resource [{}] not found", __func__, resc_name);
             return ERROR( CHILD_NOT_FOUND, "child resource not found" );
         }
         else {
@@ -590,9 +588,7 @@ irods::error _childIsValid(
     }
     else if ( strlen( parent ) != 0 ) {
         // If the resource already has a parent it cannot be added as a child of another one
-        std::stringstream ss;
-        ss << "Child resource \"" << resc_name << "\" already has a parent \"" << parent << "\"";
-        irods::log( LOG_NOTICE, ss.str() );
+        log_db::info("{}: Child resource [{}] already has a parent [{}]", __func__, resc_name, parent);
         return ERROR( CHILD_HAS_PARENT, "child resource already has a parent" );
     }
     return SUCCESS();
@@ -731,9 +727,7 @@ _rescHasParentOrChild( char* rescId ) {
     }
     if ( status != 0 ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
-            std::stringstream ss;
-            ss << "Resource \"" << rescId << "\" not found";
-            irods::log( LOG_NOTICE, ss.str() );
+            log_db::info("{}: Resource [{}] not found", __func__, rescId);
         }
         else {
             _rollback( "_rescHasParentOrChild" );
@@ -808,9 +802,8 @@ static int _delColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
     }
 
     if (const auto ec = splitPathByKey(collInfo->collName, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/'); ec < 0) {
-        irods::log(LOG_ERROR, fmt::format(
-                   "[{}:{}] - failed in splitPathByKey [path=[{}], ec=[{}]]",
-                   __func__, __LINE__, collInfo->collName, ec));
+        log_db::error(
+            "[{}:{}] - failed in splitPathByKey [path=[{}], ec=[{}]]", __func__, __LINE__, collInfo->collName, ec);
         return ec;
     }
 
@@ -906,9 +899,7 @@ static int _delColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
 
     /* Remove associated AVUs, if any */
     if (const auto ec = removeMetaMapAndAVU(collIdNum); ec < 0) {
-        irods::log(LOG_WARNING, fmt::format(
-                   "[{}:{}] - failed to remove associated AVUs [ec=[{}]]",
-                   __func__, __LINE__, ec));
+        log_db::warn("[{}:{}] - failed to remove associated AVUs [ec=[{}]]", __func__, __LINE__, ec);
     }
 
     return status;
@@ -967,7 +958,7 @@ irods::error verify_auth_response(
     // call auth verify on plugin
     ret = auth_plugin->call <const char*, const char*, const char* > ( 0, irods::AUTH_AGENT_AUTH_VERIFY, auth_obj, _challenge, _user_name, _response );
     if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
+        log_db::error(PASS(ret).result());
         return ret;
     }
 
@@ -1176,9 +1167,7 @@ rodsLong_t checkAndGetObjectId(
 
     if ( itype == 1 ) {
         if (const auto ec = splitPathByKey(name, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/'); ec < 0) {
-            irods::log(LOG_ERROR, fmt::format(
-                       "[{}:{}] - failed in splitPathByKey [path=[{}], ec=[{}]]",
-                       __func__, __LINE__, name, ec));
+            log_db::error("[{}:{}] - failed in splitPathByKey [path=[{}], ec=[{}]]", __func__, __LINE__, name, ec);
             return ec;
         }
         if ( strlen( logicalParentDirName ) == 0 ) {
@@ -3294,9 +3283,7 @@ irods::error db_unreg_replica_op(
 
         if (status == 0) {
             if (const auto ec = removeMetaMapAndAVU(dataObjNumber); ec < 0) {
-                irods::log(LOG_WARNING, fmt::format(
-                           "[{}:{}] - failed to remove associated AVUs [ec=[{}]]",
-                           __func__, __LINE__, ec));
+                log_db::warn("[{}:{}] - failed to remove associated AVUs [ec=[{}]]", __func__, __LINE__, ec);
             }
         }
     }
@@ -3823,7 +3810,7 @@ irods::error db_reg_resc_op(
     // Validate resource name format
     ret = validate_resource_name( resc_input[irods::RESOURCE_NAME] );
     if ( !ret.ok() ) {
-        irods::log( ret );
+        log_db::error(ret.result());
         return PASS( ret );
     }
     // =-=-=-=-=-=-=-
@@ -4145,9 +4132,7 @@ irods::error db_del_resc_op(
 
     /* Remove associated AVUs, if any */
     if (const auto ec = removeMetaMapAndAVU(rescId); ec < 0) {
-        irods::log(LOG_WARNING, fmt::format(
-                   "[{}:{}] - failed to remove associated AVUs [ec=[{}]]",
-                   __func__, __LINE__, ec));
+        log_db::warn("[{}:{}] - failed to remove associated AVUs [ec=[{}]]", __func__, __LINE__, ec);
     }
 
     if ( _dry_run ) { // JMC
@@ -4419,9 +4404,7 @@ irods::error db_del_user_re_op(
 
     /* Remove associated AVUs, if any */
     if (const auto ec = removeMetaMapAndAVU(iValStr); ec < 0) {
-        irods::log(LOG_WARNING, fmt::format(
-                   "[{}:{}] - failed to remove associated AVUs [ec=[{}]]",
-                   __func__, __LINE__, ec));
+        log_db::warn("[{}:{}] - failed to remove associated AVUs [ec=[{}]]", __func__, __LINE__, ec);
     }
 
     return SUCCESS();
@@ -5817,9 +5800,7 @@ irods::error db_del_coll_by_admin_op(
 
     snprintf( collIdNum, MAX_NAME_LEN, "%lld", iVal );
     if (const auto ec = removeMetaMapAndAVU(collIdNum); ec < 0) {
-        irods::log(LOG_WARNING, fmt::format(
-                   "[{}:{}] - failed to remove associated AVUs [ec=[{}]]",
-                   __func__, __LINE__, ec));
+        log_db::warn("[{}:{}] - failed to remove associated AVUs [ec=[{}]]", __func__, __LINE__, ec);
     }
 
     /* delete the row if it exists */
@@ -14920,7 +14901,7 @@ auto db_check_permission_to_modify_data_object_op(
 
         const auto msg = fmt::format("user does not have permission to modify object with data id [{}]", _data_id);
 
-        irods::log(LOG_NOTICE, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
+        log_db::info("[{}:{}] - [{}]", __func__, __LINE__, msg);
 
         return ERROR(ec, msg);
     }
@@ -14934,10 +14915,12 @@ auto db_check_permission_to_modify_data_object_op(
     }
 
     if (const auto commit_ec = cmlExecuteNoAnswerSql("commit", &icss); 0 != commit_ec) {
-        irods::log(LOG_NOTICE, fmt::format(
-            "[{}:{}] - failure to commit changes "
-            "[error code=[{}], data_id=[{}]]",
-            __FUNCTION__, __LINE__, commit_ec, _data_id));
+        log_db::info("[{}:{}] - failure to commit changes "
+                     "[error code=[{}], data_id=[{}]]",
+                     __func__,
+                     __LINE__,
+                     commit_ec,
+                     _data_id);
 
         return ERROR(commit_ec, "commit failure");
     }
@@ -14969,16 +14952,19 @@ auto db_update_ticket_write_byte_count_op(
             "[data_id=[{}], ticket=[{}], bytes_written=[{}]]",
             _data_id, mySessionTicket, _bytes_written);
 
-        irods::log(LOG_NOTICE, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
+        log_db::info("[{}:{}] - [{}]", __func__, __LINE__, msg);
 
         return ERROR(ec, msg);
     }
 
     if (const auto commit_ec = cmlExecuteNoAnswerSql("commit", &icss); 0 != commit_ec) {
-        irods::log(LOG_NOTICE, fmt::format(
-            "[{}:{}] - failure to commit changes "
-            "[error code=[{}], data_id=[{}], bytes written=[{}]]",
-            __FUNCTION__, __LINE__, commit_ec, _data_id, _bytes_written));
+        log_db::info("[{}:{}] - failure to commit changes "
+                     "[error code=[{}], data_id=[{}], bytes written=[{}]]",
+                     __func__,
+                     __LINE__,
+                     commit_ec,
+                     _data_id,
+                     _bytes_written);
 
         return ERROR(commit_ec, "commit failure");
     }
@@ -15152,7 +15138,7 @@ auto db_data_object_finalize_op(irods::plugin_context& _ctx, const char* _json_i
 
                 std::string msg = fmt::format("cmlExecuteNoAnswerSql failed [ec=[{}]]", ec);
 
-                irods::log(LOG_NOTICE, fmt::format("[{}:{}] - [{}]", __FUNCTION__, __LINE__, msg));
+                log_db::info("[{}:{}] - [{}]", __func__, __LINE__, msg);
 
                 return ERROR(ec, std::move(msg));
             }
@@ -15162,29 +15148,28 @@ auto db_data_object_finalize_op(irods::plugin_context& _ctx, const char* _json_i
         // data_object_finalize.
         if (const auto commit_ec = cmlExecuteNoAnswerSql("commit", &icss); 0 != commit_ec) {
             const auto& data_id = replicas.front().at("before").at("data_id").get_ref<std::string&>();
-            irods::log(LOG_NOTICE,
-                       fmt::format("[{}:{}] - failure to commit changes [error code=[{}], data_id=[{}]]",
-                                   __func__,
-                                   __LINE__,
-                                   commit_ec,
-                                   data_id));
+            log_db::info("[{}:{}] - failure to commit changes [error code=[{}], data_id=[{}]]",
+                         __func__,
+                         __LINE__,
+                         commit_ec,
+                         data_id);
 
             return ERROR(commit_ec, "commit failure");
         }
     }
     catch (const json::exception& e) {
         std::string msg = fmt::format("[{}:{}] - JSON error occurred [{}]", __func__, __LINE__, e.what());
-        irods::log(LOG_ERROR, msg);
+        log_db::error(msg);
         return ERROR(SYS_LIBRARY_ERROR, std::move(msg));
     }
     catch (const std::exception& e) {
         std::string msg = fmt::format("[{}:{}] - Exception occurred [{}]", __func__, __LINE__, e.what());
-        irods::log(LOG_ERROR, msg);
+        log_db::error(msg);
         return ERROR(SYS_INTERNAL_ERR, std::move(msg));
     }
     catch (...) {
         std::string msg = fmt::format("[{}:{}] - Unknown error occurred", __func__, __LINE__);
-        irods::log(LOG_ERROR, msg);
+        log_db::error(msg);
         return ERROR(SYS_UNKNOWN_ERROR, std::move(msg));
     }
 
