@@ -20,7 +20,7 @@ foreach(plugin IN LISTS IRODS_AUTH_PLUGINS)
       ${plugin_target}
       MODULE
       "${CMAKE_CURRENT_SOURCE_DIR}/src/${plugin}.cpp"
-      "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/plugins/auth/${plugin}.hpp"
+      "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/plugins/authentication/${plugin}.hpp"
     )
     #set_property(TARGET ${plugin_target} PROPERTY LIBRARY_OUTPUT_NAME ${plugin_name})
     target_link_libraries(
@@ -54,7 +54,7 @@ foreach(plugin IN LISTS IRODS_AUTH_PLUGINS)
       TARGETS
       ${plugin_target}
       LIBRARY
-      DESTINATION "${IRODS_PLUGINS_DIRECTORY}/auth"
+      DESTINATION "${IRODS_PLUGINS_DIRECTORY}/authentication"
       COMPONENT ${IRODS_PACKAGE_COMPONENT_RUNTIME_NAME}
     )
   endforeach()
@@ -67,8 +67,8 @@ foreach(plugin IN LISTS IRODS_AUTH_PLUGINS)
   )
   install(
     FILES
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/plugins/auth/${plugin}.hpp"
-    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/irods/plugins/auth"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/plugins/authentication/${plugin}.hpp"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/irods/plugins/authentication"
     COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
   )
 endforeach()

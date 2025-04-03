@@ -1,4 +1,4 @@
-#include "irods/plugins/auth/pam_password.hpp"
+#include "irods/plugins/authentication/pam_password.hpp"
 #include "irods/authentication_plugin_framework.hpp"
 
 #define USE_SSL 1
