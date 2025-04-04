@@ -2,8 +2,6 @@
 #include "irods/irods_auth_factory.hpp"
 #include "irods/irods_native_auth_object.hpp"
 #include "irods/irods_pam_auth_object.hpp"
-#include "irods/irods_gsi_object.hpp"
-#include "irods/irods_krb_object.hpp"
 #include "irods/irods_generic_auth_object.hpp"
 #include "irods/rodsErrorTable.h"
 #include <boost/algorithm/string.hpp>
@@ -24,12 +22,6 @@ namespace irods {
         }
         else if ( AUTH_PAM_SCHEME == scheme ) {
             _ptr.reset( new pam_auth_object( _r_error ) );
-        }
-        else if ( AUTH_GSI_SCHEME == scheme ) {
-            _ptr.reset( new gsi_auth_object( _r_error ) );
-        }
-        else if ( AUTH_KRB_SCHEME == scheme ) {
-            _ptr.reset( new krb_auth_object( _r_error ) );
         }
         else {
             _ptr.reset( new irods::generic_auth_object( scheme, _r_error ) );

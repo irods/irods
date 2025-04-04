@@ -6,10 +6,8 @@
 /* definition for authScheme of authInfo_t */
 
 #define PASSWORD        0
-#define GSI             1
 
 #define PASSWORD_AUTH_KEYWD     "PASSWORD"
-#define GSI_AUTH_KEYWD          "GSI"
 
 /* env variable for overwriting clientUser */
 #define CLIENT_USER_NAME_KEYWD  "clientUserName"

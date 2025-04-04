@@ -4,8 +4,6 @@
 namespace irods
 {
     // server_config.json keywords
-    extern const char* const KW_CFG_KERBEROS_NAME;
-    extern const char* const KW_CFG_KERBEROS_KEYTAB;
     extern const char* const KW_CFG_PAM_PASSWORD_LENGTH;
     extern const char* const KW_CFG_PAM_NO_EXTEND;
     extern const char* const KW_CFG_PAM_PASSWORD_MIN_TIME;
@@ -114,7 +112,6 @@ namespace irods
     extern const char* const KW_CFG_IRODS_AUTHENTICATION_SCHEME;
     extern const char* const KW_CFG_IRODS_DEFAULT_RESOURCE;
     extern const char* const KW_CFG_IRODS_ZONE;
-    extern const char* const KW_CFG_IRODS_GSI_SERVER_DN;
     extern const char* const KW_CFG_IRODS_LOG_LEVEL;
     extern const char* const KW_CFG_IRODS_AUTHENTICATION_FILE;
     extern const char* const KW_CFG_IRODS_DEBUG;

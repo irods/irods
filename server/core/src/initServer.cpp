@@ -249,11 +249,6 @@ int initRcatServerHostByFile()
 {
     std::string prop_str;
     try {
-        snprintf( KerberosName, sizeof( KerberosName ), "%s", irods::get_server_property<const std::string>(irods::KW_CFG_KERBEROS_NAME).c_str());
-    }
-    catch (const irods::exception& e) {}
-
-    try {
         rodsHostAddr_t addr{};
         const auto& catalog_provider_hosts = irods::get_server_property<const nlohmann::json&>(irods::KW_CFG_CATALOG_PROVIDER_HOSTS);
         snprintf(addr.hostAddr, sizeof(addr.hostAddr), "%s", catalog_provider_hosts[0].get_ref<const std::string&>().c_str());

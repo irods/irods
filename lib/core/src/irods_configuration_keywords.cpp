@@ -3,8 +3,6 @@
 namespace irods
 {
     // server_config.json keywords
-    const char* const KW_CFG_KERBEROS_NAME{"kerberos_name"};
-    const char* const KW_CFG_KERBEROS_KEYTAB{"kerberos_keytab"};
     const char* const KW_CFG_PAM_PASSWORD_LENGTH{"password_length"};
     const char* const KW_CFG_PAM_NO_EXTEND{"no_extend"};
     const char* const KW_CFG_PAM_PASSWORD_MIN_TIME{"password_min_time"};
@@ -105,7 +103,6 @@ namespace irods
     const char* const KW_CFG_IRODS_AUTHENTICATION_SCHEME{"irods_authentication_scheme"};
     const char* const KW_CFG_IRODS_DEFAULT_RESOURCE{"irods_default_resource"};
     const char* const KW_CFG_IRODS_ZONE{"irods_zone_name"};
-    const char* const KW_CFG_IRODS_GSI_SERVER_DN{"irods_gsi_server_dn"};
     const char* const KW_CFG_IRODS_LOG_LEVEL{"irods_log_level"};
     const char* const KW_CFG_IRODS_AUTHENTICATION_FILE{"irods_authentication_file"};
     const char* const KW_CFG_IRODS_DEBUG{"irods_debug"};
