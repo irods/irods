@@ -145,8 +145,6 @@ replDataObjUtil( rcComm_t *conn, char *srcPath, rodsLong_t srcSize,
 int
 initCondForRepl( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                  dataObjInp_t *dataObjInp, rodsRestart_t *rodsRestart ) {
-    char *myResc = NULL;
-
     if ( dataObjInp == NULL ) {
         rodsLog( LOG_ERROR,
                  "initCondForRepl: NULL dataObjInp input" );
@@ -189,13 +187,11 @@ initCondForRepl( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
             return USER__NULL_INPUT_ERR;
         }
         else {
-            myResc = rodsArgs->resourceString;
             addKeyVal( &dataObjInp->condInput, DEST_RESC_NAME_KW,
                        rodsArgs->resourceString );
         }
     }
     else if ( myRodsEnv != NULL && strlen( myRodsEnv->rodsDefResource ) > 0 ) {
-        myResc = myRodsEnv->rodsDefResource;
         addKeyVal( &dataObjInp->condInput, DEF_RESC_NAME_KW,
                    myRodsEnv->rodsDefResource );
     }
