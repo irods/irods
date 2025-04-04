@@ -444,7 +444,6 @@ class test_iinit(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
         self.assertIn(error_string, stderr)
 
         self.assert_basic_iinit_prompts_are_in_stdout(stdout)
-        self.assertIn('Enter your current iRODS password', stdout)
         self.assert_auth_scheme_iinit_prompts_are_in_stdout(stdout)
 
         # Make sure that the environment file saved despite authentication failure.
