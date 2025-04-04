@@ -162,6 +162,10 @@ namespace irods::experimental::auth
     /// \since 4.3.0
     inline void authenticate_client(RcComm& _comm, const RodsEnvironment& _env, const json& _ctx)
     {
+        if (_comm.loggedIn) {
+            return;
+        }
+
         std::string scheme = _env.rodsAuthScheme;
 
         std::unique_ptr<authentication_base> auth{resolve_authentication_plugin(scheme, "client")};
