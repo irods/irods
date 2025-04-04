@@ -3,7 +3,6 @@
 #include <irods/irods_client_api_table.hpp>
 #include <irods/irods_configuration_keywords.hpp>
 #include <irods/irods_environment_properties.hpp>
-#include <irods/irods_gsi_object.hpp>
 #include <irods/irods_kvp_string_parser.hpp>
 #include <irods/irods_native_auth_object.hpp>
 #include <irods/irods_pack_table.hpp>
@@ -84,23 +83,11 @@ namespace
 {
     namespace irods_auth = irods::experimental::auth;
 
-    constexpr const char* const AUTH_OPENID_SCHEME = "openid";
-    constexpr const char* const PAM_INTERACTIVE_SCHEME = "pam_interactive";
-    constexpr const char* const PAM_PASSWORD_SCHEME = "pam_password";
+    constexpr const char* const NATIVE_SCHEME = "native";
 
     auto scheme_uses_iinit_password_prompt(const std::string_view _scheme) -> bool
     {
-        const std::initializer_list<const std::string_view> no_password_prompt = {
-            AUTH_OPENID_SCHEME,
-            irods::AUTH_GSI_SCHEME,
-            irods::AUTH_PAM_SCHEME,
-            PAM_PASSWORD_SCHEME,
-            PAM_INTERACTIVE_SCHEME
-        };
-
-        return std::none_of(std::cbegin(no_password_prompt),
-                            std::cend(no_password_prompt),
-                            [&_scheme](const auto& _s) { return _scheme == _s; });
+        return _scheme == NATIVE_SCHEME;
     } // scheme_uses_iinit_password_prompt
 
     auto save_updates_to_irods_environment(const nlohmann::json& _update) -> void
@@ -243,6 +230,15 @@ namespace
         }
     } // configure_required_settings_in_env
 
+    auto configure_auth_scheme_in_env(RodsEnvironment& _env, nlohmann::json& _json_env) -> void
+    {
+        constexpr const char* default_auth_scheme = NATIVE_SCHEME;
+        constexpr const char* auth_scheme_prompt = "Enter your iRODS authentication scheme";
+        set_env_from_prompt(
+            _env.rodsAuthScheme, default_auth_scheme, auth_scheme_prompt, sizeof(_env.rodsAuthScheme));
+        _json_env[irods::KW_CFG_IRODS_AUTHENTICATION_SCHEME] = _env.rodsAuthScheme;
+    } // configure_auth_scheme_in_env
+
     auto configure_tls_in_env(RodsEnvironment& _env, nlohmann::json& _json_env) -> void
     {
         // If the user indicated that TLS is going to be used, this setting is required, so no prompt is shown.
@@ -299,6 +295,15 @@ namespace
         _json_env[irods::KW_CFG_IRODS_ENCRYPTION_NUM_HASH_ROUNDS] = _env.rodsEncryptionNumHashRounds;
     } // configure_encryption_in_env
 } // anonymous namespace
+
+// iinit has a number of return codes indicating where in the process a failure may have occurred. Here is a guide:
+// 0: Success.
+// 1: Invalid command line option or value, failed to fetch client environment, failed to save credentials because
+//    either it failed to create the directory used for storing the authentication file (.irodsA) or some other error
+//    occurred while saving the file.
+// 2: Failed to connect to iRODS server.
+// 7: Authentication failed.
+// 8: Failed to get limited password for TTL-based native authentication.
 
 int main( int argc, char **argv )
 {
@@ -363,11 +368,10 @@ int main( int argc, char **argv )
     configure_required_settings_in_env(my_env, json_env);
 
     if (prompt_auth_scheme) {
-        constexpr const char* default_auth_scheme = "native";
-        constexpr const char* auth_scheme_prompt = "Enter your iRODS authentication scheme";
-        set_env_from_prompt(
-            my_env.rodsAuthScheme, default_auth_scheme, auth_scheme_prompt, sizeof(my_env.rodsAuthScheme));
-        json_env[irods::KW_CFG_IRODS_AUTHENTICATION_SCHEME] = my_env.rodsAuthScheme;
+        configure_auth_scheme_in_env(my_env, json_env);
+    }
+    else if (0 == std::strlen(my_env.rodsAuthScheme)) {
+        std::strncpy(my_env.rodsAuthScheme, NATIVE_SCHEME, std::strlen(NATIVE_SCHEME));
     }
 
     if (configure_tls) {
@@ -387,10 +391,6 @@ int main( int argc, char **argv )
         lower_scheme.end(),
         lower_scheme.begin(),
         ::tolower );
-
-    if (irods::AUTH_GSI_SCHEME == lower_scheme) {
-        printf( "Using GSI, attempting connection/authentication\n" );
-    }
 
     if (std::string_view{ANONYMOUS_USER} != my_env.rodsUserName &&
         scheme_uses_iinit_password_prompt(lower_scheme)) {
@@ -423,129 +423,36 @@ int main( int argc, char **argv )
         return 2;
     }
 
-    // =-=-=-=-=-=-=-
-    // PAM auth gets special consideration, and also includes an
-    // auth by the usual convention
-    bool pam_flg = false;
-    const auto use_legacy_authentication = irods_auth::use_legacy_authentication(*Conn);
-    if (use_legacy_authentication && irods::AUTH_PAM_SCHEME == lower_scheme) {
-        // =-=-=-=-=-=-=-
-        // set a flag stating that we have done pam and the auth
-        // scheme needs overridden
-        pam_flg = true;
+    auto ctx = nlohmann::json{
+        {irods::AUTH_TTL_KEY, std::to_string(ttl)},
+        {irods_auth::force_password_prompt, true}
+    };
 
-        // =-=-=-=-=-=-=-
-        // build a context string which includes the ttl and password
-        std::stringstream ttl_str;  ttl_str << ttl;
-        irods::kvp_map_t ctx_map;
-        ctx_map[irods::AUTH_TTL_KEY] = ttl_str.str();
-        ctx_map[irods::AUTH_PASSWORD_KEY] = "";
-        std::string ctx_str = irods::escaped_kvp_string(ctx_map);
-        // =-=-=-=-=-=-=-
-        // pass the context with the ttl as well as an override which
-        // demands the pam authentication plugin
-        status = clientLogin( Conn, ctx_str.c_str(), irods::AUTH_PAM_SCHEME.c_str() );
-        if ( status != 0 ) {
+    // Use the scheme override here to ensure that the authentication scheme in the environment is the same as
+    // the authentication scheme configured here. If the scheme in the environment and the scheme configured in
+    // iinit match, then nothing will need to change in clientLogin. If they do not match, the override wins.
+    if (const int ec = clientLogin(Conn, ctx.dump().c_str(), my_env.rodsAuthScheme); ec != 0) {
+        print_error_stack_to_file(Conn->rError, stderr);
+        rcDisconnect(Conn);
+        return 7;
+    }
+
+    printErrorStack(Conn->rError);
+
+    // Native auth with TTL has to do a special final step to get its token for some reason.
+    if (ttl > 0 && NATIVE_SCHEME == lower_scheme) {
+        status = clientLoginTTL(Conn, ttl);
+        if (status) {
             print_error_stack_to_file(Conn->rError, stderr);
+            rcDisconnect(Conn);
             return 8;
         }
-
-        // =-=-=-=-=-=-=-
-        // if this succeeded, do the regular login below to check
-        // that the generated password works properly.
-    } // if pam
-
-    if ( strcmp( my_env.rodsAuthScheme, AUTH_OPENID_SCHEME ) == 0 ) {
-        irods::kvp_map_t ctx_map;
-        try {
-            std::string client_provider_cfg = irods::get_environment_property<std::string&>( "openid_provider" );
-            ctx_map["provider"] = client_provider_cfg;
-        }
-        catch ( const irods::exception& e ) {
-            if ( e.code() == KEY_NOT_FOUND ) {
-                rodsLog( LOG_NOTICE, "KEY_NOT_FOUND: openid_provider not defined" );
-            }
-            else {
-                rodsLog( LOG_DEBUG, "unknown error" );
-                irods::log( e );
-            }
-        }
-        ctx_map["nobuildctx"] = "1";
-        ctx_map["reprompt"] = "1";
-
-        std::string ctx_str = irods::escaped_kvp_string( ctx_map );
-        status = clientLogin( Conn, ctx_str.c_str(), AUTH_OPENID_SCHEME );
-        if ( status != 0 ) {
+        /* And check that it works */
+        status = clientLogin(Conn);
+        if (status) {
             print_error_stack_to_file(Conn->rError, stderr);
-            rcDisconnect( Conn );
+            rcDisconnect(Conn);
             return 7;
-        }
-    }
-    else {
-        if (use_legacy_authentication) {
-            // =-=-=-=-=-=-=-
-            // since we might be using PAM
-            // and check that the user/password is OK
-            const char* auth_scheme = ( pam_flg ) ?
-                                  irods::AUTH_NATIVE_SCHEME.c_str() :
-                                  my_env.rodsAuthScheme;
-            status = clientLogin( Conn, 0, auth_scheme );
-            if ( status != 0 ) {
-                print_error_stack_to_file(Conn->rError, stderr);
-                rcDisconnect( Conn );
-                return 7;
-            }
-
-            printErrorStack( Conn->rError );
-            if ( ttl > 0 && !pam_flg ) {
-                /* if doing non-PAM TTL, now get the
-                short-term password (after initial login) */
-                status = clientLoginTTL( Conn, ttl );
-                if ( status != 0 ) {
-                    print_error_stack_to_file(Conn->rError, stderr);
-                    rcDisconnect( Conn );
-                    return 8;
-                }
-                /* And check that it works */
-                status = clientLogin( Conn );
-                if ( status != 0 ) {
-                    print_error_stack_to_file(Conn->rError, stderr);
-                    rcDisconnect( Conn );
-                    return 7;
-                }
-            }
-        }
-        else {
-            auto ctx = nlohmann::json{
-                {irods::AUTH_TTL_KEY, std::to_string(ttl)},
-                {irods_auth::force_password_prompt, true}
-            };
-
-            // Use the scheme override here to ensure that the authentication scheme in the environment is the same as
-            // the authentication scheme configured here. If the scheme in the environment and the scheme configured in
-            // iinit match, then nothing will need to change in clientLogin. If they do not match, the override wins.
-            if (const int ec = clientLogin(Conn, ctx.dump().c_str(), my_env.rodsAuthScheme); ec != 0) {
-                print_error_stack_to_file(Conn->rError, stderr);
-                rcDisconnect(Conn);
-                return 7;
-            }
-
-            printErrorStack(Conn->rError);
-            if (ttl > 0 && lower_scheme != PAM_INTERACTIVE_SCHEME && lower_scheme != PAM_PASSWORD_SCHEME) {
-                status = clientLoginTTL(Conn, ttl);
-                if (status) {
-                    print_error_stack_to_file(Conn->rError, stderr);
-                    rcDisconnect(Conn);
-                    return 8;
-                }
-                /* And check that it works */
-                status = clientLogin(Conn);
-                if (status) {
-                    print_error_stack_to_file(Conn->rError, stderr);
-                    rcDisconnect(Conn);
-                    return 7;
-                }
-            }
         }
     }
 
