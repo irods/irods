@@ -101,7 +101,7 @@ class Test_Ichksum(resource_suite.ResourceBase, unittest.TestCase):
 
                 # Add the newly created rule file to the rule engine rulebase.
                 rule_engine = config.server_config['plugin_configuration']['rule_engines'][0]
-                rule_engine['plugin_specific_configuration']['re_rulebase_set'][0] = rule_filename[:-3]
+                rule_engine['plugin_specific_configuration']['re_rulebase_set'].append(rule_filename[:-3])
                 lib.update_json_file_from_dict(config.server_config_path, config.server_config)
                 IrodsController(config).reload_configuration()
 
