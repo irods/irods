@@ -36,9 +36,6 @@ typedef struct RodsEnvironment {
     char irodsSSLCACertificatePath[MAX_NAME_LEN];
     char irodsSSLCACertificateFile[MAX_NAME_LEN];
     char irodsSSLVerifyServer[MAX_NAME_LEN];
-    char irodsSSLCertificateChainFile[MAX_NAME_LEN];
-    char irodsSSLCertificateKeyFile[MAX_NAME_LEN];
-    char irodsSSLDHParamsFile[MAX_NAME_LEN];
 
     // =-=-=-=-=-=-=-
     // control plane parameters
