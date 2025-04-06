@@ -12,7 +12,10 @@
                 "service_account_user_name": {"type": "string"},
                 "service_account_group_name": {"type": "string"}
             },
-            "required": ["service_account_user_name", "service_account_group_name"]
+            "required": [
+                "service_account_user_name",
+                "service_account_group_name"
+            ]
         },
         "server_config": {
             "$ref": "server_config.json"
