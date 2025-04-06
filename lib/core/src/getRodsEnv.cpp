@@ -348,10 +348,11 @@ extern "C" {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
         capture_string_property(irods::KW_CFG_IRODS_CLIENT_SERVER_POLICY, _env->rodsClientServerPolicy, LONG_NAME_LEN);
 
-        capture_string_property(irods::KW_CFG_IRODS_CLIENT_SERVER_NEGOTIATION,
-                                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-                                _env->rodsClientServerNegotiation,
-                                LONG_NAME_LEN);
+        // Requesting negotiation is the standard now. There's no point in allowing
+        // users to change the value of the option, therefore, it is now hard-coded
+        // into the library.
+        std::strncpy(
+            _env->rodsClientServerNegotiation, REQ_SVR_NEG, sizeof(RodsEnvironment::rodsClientServerNegotiation) - 1);
 
         capture_integer_property(
             irods::KW_CFG_IRODS_ENCRYPTION_KEY_SIZE,
@@ -616,10 +617,11 @@ extern "C" {
             env_var,
             _env->rodsClientServerPolicy );
 
-        env_var = irods::KW_CFG_IRODS_CLIENT_SERVER_NEGOTIATION;
-        capture_string_env_var(
-            env_var,
-            _env->rodsClientServerNegotiation );
+        // Requesting negotiation is the standard now. There's no point in allowing
+        // users to change the value of the option, therefore, it is now hard-coded
+        // into the library.
+        std::strncpy(
+            _env->rodsClientServerNegotiation, REQ_SVR_NEG, sizeof(RodsEnvironment::rodsClientServerNegotiation) - 1);
 
         env_var = irods::KW_CFG_IRODS_ENCRYPTION_KEY_SIZE;
         capture_integer_env_var(
