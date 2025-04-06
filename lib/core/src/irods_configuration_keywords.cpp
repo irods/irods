@@ -105,7 +105,6 @@ namespace irods
     const char* const KW_CFG_IRODS_ZONE{"irods_zone_name"};
     const char* const KW_CFG_IRODS_LOG_LEVEL{"irods_log_level"};
     const char* const KW_CFG_IRODS_AUTHENTICATION_FILE{"irods_authentication_file"};
-    const char* const KW_CFG_IRODS_DEBUG{"irods_debug"};
     const char* const KW_CFG_IRODS_CLIENT_SERVER_POLICY{"irods_client_server_policy"};
     const char* const KW_CFG_IRODS_CLIENT_SERVER_NEGOTIATION{"irods_client_server_negotiation"};
     const char* const KW_CFG_IRODS_ENCRYPTION_KEY_SIZE{"irods_encryption_key_size"};

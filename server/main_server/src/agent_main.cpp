@@ -895,12 +895,6 @@ namespace
             return 1;
         }
 
-        if (irods::KW_CFG_SERVICE_ROLE_PROVIDER == svc_role) {
-            if (std::strstr(rsComm.myEnv.rodsDebug, "CAT") != nullptr) {
-                chlDebug(rsComm.myEnv.rodsDebug);
-            }
-        }
-
         status = initAgent(RULE_ENGINE_TRY_CACHE, &rsComm);
 
         if (status < 0) {
