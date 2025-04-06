@@ -267,7 +267,6 @@ auto main(int _argc, char* _argv[]) -> int
 
         log_af::info("{}: Initializing access time queue for agent factory.", __func__);
         irods::access_time_queue::init_no_create(access_time_queue_shm_name);
-        irods::at_scope_exit deinit_access_time_queue{[] { irods::access_time_queue::deinit(); }};
 
         log_af::info("{}: Initializing zone information for agent factory.", __func__);
 
