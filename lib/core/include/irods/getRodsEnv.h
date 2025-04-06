@@ -1,5 +1,5 @@
-#ifndef GET_RODS_ENV_H__
-#define GET_RODS_ENV_H__
+#ifndef IRODS_GET_RODS_ENV_H
+#define IRODS_GET_RODS_ENV_H
 
 #include "irods/rodsDef.h"
 
@@ -18,36 +18,30 @@ typedef struct RodsEnvironment {
     char rodsClientServerPolicy[ LONG_NAME_LEN ];
     char rodsClientServerNegotiation[ LONG_NAME_LEN ];
 
-    // =-=-=-=-=-=-=-
     // client side options for encryption
     int  rodsEncryptionKeySize;
     int  rodsEncryptionSaltSize;
     int  rodsEncryptionNumHashRounds;
     char rodsEncryptionAlgorithm[ HEADER_TYPE_LEN ];
 
-    // =-=-=-=-=-=-=-
     // client side options for hashing
     char rodsDefaultHashScheme[ NAME_LEN ];
     char rodsMatchHashPolicy[ NAME_LEN ];
 
-    // =-=-=-=-=-=-=-
     // legacy ssl environment variables
     char irodsSSLCACertificatePath[MAX_NAME_LEN];
     char irodsSSLCACertificateFile[MAX_NAME_LEN];
     char irodsSSLVerifyServer[MAX_NAME_LEN];
 
-    // =-=-=-=-=-=-=-
     // advanced settings
     int irodsMaxSizeForSingleBuffer;
     int irodsDefaultNumberTransferThreads;
     int irodsTransBufferSizeForParaTrans;
     int irodsConnectionPoolRefreshTime;
 
-    // =-=-=-=-=-=-=-
     // override of plugin installation directory
     char irodsPluginDirectory[MAX_NAME_LEN];
 
-    // =-=-=-=-=-=-=-
     // TCP keepalive configurations
     int tcp_keepalive_intvl;
     int tcp_keepalive_probes;
@@ -74,4 +68,5 @@ void _reloadRodsEnv( rodsEnv &myRodsEnv );
 
 }
 #endif
-#endif // GET_RODS_ENV_H__
+
+#endif // IRODS_GET_RODS_ENV_H
