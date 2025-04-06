@@ -3,9 +3,10 @@
 
 #include "irods/rodsDef.h"
 
+// NOLINTNEXTLINE(modernize-use-using)
 typedef struct RodsEnvironment {
     char rodsUserName[NAME_LEN];
-    char rodsHost[NAME_LEN];
+    char rodsHost[LONG_NAME_LEN];
     int  rodsPort;
     char rodsHome[MAX_NAME_LEN];
     char rodsCwd[MAX_NAME_LEN];
