@@ -92,7 +92,7 @@ class Test_SSL(session.make_sessions_mixin([('otherrods', 'rods')], []), unittes
         lib.update_json_file_from_dict(
             self.config.server_config_path,
             {
-                "tls": {
+                "tls_server": {
                     "certificate_chain_file": self.ssl_crt_path,
                     "certificate_key_file": self.ssl_key_path,
                     "dh_params_file": self.dhparams_pem_path
