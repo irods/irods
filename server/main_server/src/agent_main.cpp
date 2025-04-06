@@ -12,7 +12,6 @@
 #include "irods/irods_configuration_keywords.hpp"
 #include "irods/irods_configuration_parser.hpp" // For key_path_t
 #include "irods/irods_default_paths.hpp"
-#include "irods/irods_environment_properties.hpp"
 #include "irods/irods_exception.hpp"
 #include "irods/irods_logger.hpp"
 #include "irods/irods_network_factory.hpp"
@@ -217,7 +216,6 @@ auto main(int _argc, char* _argv[]) -> int
         // Load configuration.
         const auto config_file_path = irods::get_irods_config_directory() / "server_config.json";
         irods::server_properties::instance().init(config_file_path.c_str());
-        irods::environment_properties::instance(); // Load the local environment file.
 
         // Initialize global pointer to ips data directory for agent cleanup.
         // This is required so that the signal handler for reaping agents remains async-signal-safe.
