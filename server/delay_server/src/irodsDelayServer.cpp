@@ -1,12 +1,13 @@
 #include "irods/irodsDelayServer.hpp"
 
-#include "boost/asio/ip/host_name.hpp"
 #include "irods/client_connection.hpp"
 #include "irods/connection_pool.hpp"
 #include "irods/delay_rule_lock.h"
+#include "irods/dns_cache.hpp"
 #include "irods/fully_qualified_username.hpp"
 #include "irods/get_delay_rule_info.h"
 #include "irods/get_grid_configuration_value.h"
+#include "irods/hostname_cache.hpp"
 #include "irods/initServer.hpp"
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_client_api_table.hpp"
@@ -108,34 +109,9 @@ namespace
         logger::server::set_level(logger::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_SERVER));
         logger::legacy::set_level(logger::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_LEGACY));
         log_ds::set_level(logger::get_level_from_config(irods::KW_CFG_LOG_LEVEL_CATEGORY_DELAY_SERVER));
-
         logger::set_server_type("delay_server");
-
-        // Attach the zone name to the logger.
-        // We can't use the server properties interface because it depends on the logger.
-        try {
-            // Find the server configuration file.
-            std::string config_path;
-
-            if (const auto err = irods::get_full_path_for_config_file("server_config.json", config_path); !err.ok()) {
-                return;
-            }
-
-            // Load the server configuration file in as JSON.
-            nlohmann::json config;
-
-            if (std::ifstream in{config_path}; in) {
-                in >> config;
-            }
-            else {
-                return;
-            }
-
-            logger::set_server_zone(config.at(irods::KW_CFG_ZONE_NAME).get<std::string>());
-            logger::set_server_hostname(config.at(irods::KW_CFG_HOST).get<std::string>());
-        }
-        catch (...) {
-        }
+        logger::set_server_zone(irods::get_server_property<std::string>(irods::KW_CFG_ZONE_NAME));
+        logger::set_server_hostname(irods::get_server_property<std::string>(irods::KW_CFG_HOST));
     } // init_logger
 
     int setup_signal_handlers()
@@ -792,11 +768,14 @@ namespace
         }
         return hostname == output->option_value;
     } // is_local_server_defined_as_delay_server_leader
-
 } // anonymous namespace
 
 int main(int _argc, char** _argv)
 {
+    ProcessType = DELAY_SERVER_PT;
+
+    std::string hostname_cache_shm_name;
+    std::string dns_cache_shm_name;
     bool enable_test_mode = false;
     bool write_to_stdout = false;
 
@@ -806,14 +785,30 @@ int main(int _argc, char** _argv)
 
     // clang-format off
     opts_desc.add_options()
+        ("hostname-cache-shm-name", po::value<std::string>(&hostname_cache_shm_name), "")
+        ("dns-cache-shm-name", po::value<std::string>(&dns_cache_shm_name), "")
         ("stdout", po::bool_switch(&write_to_stdout), "")
         ("test-mode,t", po::bool_switch(&enable_test_mode), "");
     // clang-format on
 
+    po::positional_options_description pod;
+    pod.add("hostname-cache-shm-name", 1);
+    pod.add("dns-cache-shm-name", 1);
+
     try {
         po::variables_map vm;
-        po::store(po::command_line_parser(_argc, _argv).options(opts_desc).run(), vm);
+        po::store(po::command_line_parser(_argc, _argv).options(opts_desc).positional(pod).run(), vm);
         po::notify(vm);
+
+        if (hostname_cache_shm_name.empty()) {
+            fmt::print(stderr, "Error: Missing [HOSTNAME_CACHE_SHM_NAME] parameter.");
+            return 1;
+        }
+
+        if (dns_cache_shm_name.empty()) {
+            fmt::print(stderr, "Error: Missing [DNS_CACHE_SHM_NAME] parameter.");
+            return 1;
+        }
     }
     catch (const std::exception& e) {
         fmt::print(stderr, "Error: {}\n", e.what());
@@ -825,21 +820,32 @@ int main(int _argc, char** _argv)
         irods::server_properties::instance().init(config_file_path.c_str());
     }
 
+    // Configure the legacy rodsLog API so messages are written to the legacy log category
+    // provided by the new logging API.
+    rodsLogLevel(LOG_NOTICE);
+    rodsLogSqlReq(0);
+
     init_logger(getppid(), write_to_stdout, enable_test_mode);
 
-    log_ds::info("Initializing delay server ...");
+    log_ds::info("Initializing delay server.");
 
     set_ips_display_name(boost::filesystem::path{_argv[0]}.filename().c_str());
 
     load_client_api_plugins();
 
+    log_ds::debug("Initializing signal handlers for delay server.");
     if (setup_signal_handlers() == -1) {
         log_ds::error("{}: Error setting up signal handlers for delay server.", __func__);
     }
 
+    // Initialize shared memory systems.
+    log_ds::debug("{}: Initializing shared memory for delay server.", __func__);
+    irods::experimental::net::hostname_cache::init_no_create(hostname_cache_shm_name);
+    irods::experimental::net::dns_cache::init_no_create(dns_cache_shm_name);
+
     const auto sleep_time = [] {
         try {
-            return irods::get_advanced_setting<const int>(irods::KW_CFG_DELAY_SERVER_SLEEP_TIME_IN_SECONDS);
+            return irods::get_advanced_setting<int>(irods::KW_CFG_DELAY_SERVER_SLEEP_TIME_IN_SECONDS);
         }
         catch (...) {
             log_ds::warn("Could not retrieve [{}] from advanced settings configuration. "
@@ -849,11 +855,11 @@ int main(int _argc, char** _argv)
         }
 
         return irods::default_delay_server_sleep_time_in_seconds;
-    };
+    }();
 
-    const auto go_to_sleep = [&sleep_time] {
+    const auto go_to_sleep = [sleep_time] {
         const auto start_time = std::chrono::system_clock::now();
-        const auto allowed_sleep_time = std::chrono::seconds{sleep_time()};
+        const auto allowed_sleep_time = std::chrono::seconds{sleep_time};
 
         // Loop until the server is signaled to shutdown or the max amount of time
         // to sleep has been reached.
@@ -872,9 +878,10 @@ int main(int _argc, char** _argv)
         }
     };
 
-    const auto number_of_concurrent_executors = [] {
+    log_ds::debug("Initializing thread pool for delay server.");
+    irods::thread_pool thread_pool{[] {
         try {
-            return irods::get_advanced_setting<const int>(irods::KW_CFG_NUMBER_OF_CONCURRENT_DELAY_RULE_EXECUTORS);
+            return irods::get_advanced_setting<int>(irods::KW_CFG_NUMBER_OF_CONCURRENT_DELAY_RULE_EXECUTORS);
         }
         catch (...) {
             log_ds::warn("Could not retrieve [{}] from advanced settings configuration. "
@@ -884,11 +891,10 @@ int main(int _argc, char** _argv)
         }
 
         return irods::default_number_of_concurrent_delay_executors;
-    }();
+    }()};
 
-    irods::thread_pool thread_pool{number_of_concurrent_executors};
-
-    const auto queue_size_in_bytes = []() -> int {
+    log_ds::debug("Initializing delay queue for delay server.");
+    irods::delay_queue queue{[]() -> int {
         try {
             const auto bytes = irods::get_advanced_setting<int>(irods::KW_CFG_MAX_SIZE_OF_DELAY_QUEUE_IN_BYTES);
 
@@ -903,9 +909,7 @@ int main(int _argc, char** _argv)
         }
 
         return 0;
-    }();
-
-    irods::delay_queue queue{queue_size_in_bytes};
+    }()};
 
     try {
         while (!g_terminate) {
@@ -941,16 +945,21 @@ int main(int _argc, char** _argv)
             log_ds::trace("Delay server is going to sleep.");
             go_to_sleep();
         }
-    }
-    catch (const irods::exception& e) {
-        log_ds::error(e.what());
-    }
-
-    log_ds::info("Delay server exited normally.");
 
 #if __has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
-    __lsan_do_leak_check();
+        __lsan_do_leak_check();
 #endif
 
-    return 0;
+        log_ds::info("Delay server exited normally.");
+
+        return 0;
+    }
+    catch (const irods::exception& e) {
+        log_ds::error("Delay server exited with failure: {}", e.client_display_what());
+        return 1;
+    }
+    catch (const std::exception& e) {
+        log_ds::error("Delay server exited with failure: {}", e.what());
+        return 1;
+    }
 }

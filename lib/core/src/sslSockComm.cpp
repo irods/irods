@@ -146,7 +146,7 @@ sslEnd( rcComm_t *rcComm ) {
 int sslAccept(rsComm_t* rsComm)
 {
     try {
-        const auto tls_config = irods::get_server_property<nlohmann::json>(irods::KW_CFG_TLS_CONFIGURATION);
+        const auto tls_config = irods::get_server_property<nlohmann::json>(irods::KW_CFG_TLS_SERVER);
 
         const auto& certificate_chain_file =
             tls_config.at(irods::KW_CFG_TLS_CERTIFICATE_CHAIN_FILE).get_ref<const std::string&>();
