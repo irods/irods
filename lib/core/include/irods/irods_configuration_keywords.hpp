@@ -103,6 +103,10 @@ namespace irods
     extern const char* const KW_CFG_IRODS_TCP_KEEPALIVE_TIME_IN_SECONDS;
     extern const char* const KW_CFG_IRODS_TCP_KEEPALIVE_INTVL_IN_SECONDS;
 
+    extern const char* const KW_CFG_TCP_KEEPALIVE_PROBES;
+    extern const char* const KW_CFG_TCP_KEEPALIVE_TIME_IN_SECONDS;
+    extern const char* const KW_CFG_TCP_KEEPALIVE_INTVL_IN_SECONDS;
+
     // service_account_environment.json keywords
     extern const char* const KW_CFG_IRODS_USER_NAME;
     extern const char* const KW_CFG_IRODS_HOST;
@@ -143,9 +147,16 @@ namespace irods
     extern const char* const KW_CFG_IRODS_SSL_DH_PARAMS_FILE;
 
     // irods environment values now included in server_config
-    extern const char* const KW_CFG_ZONE_USER;
-    extern const char* const KW_CFG_ZONE_PORT;
+    extern const char* const KW_CFG_CLIENT_SERVER_POLICY;
+    extern const char* const KW_CFG_DEFAULT_RESOURCE_NAME;
+    extern const char* const KW_CFG_ENCRYPTION;
+    extern const char* const KW_CFG_ENCRYPTION_ALGORITHM;
+    extern const char* const KW_CFG_ENCRYPTION_KEY_SIZE;
+    extern const char* const KW_CFG_ENCRYPTION_NUM_HASH_ROUNDS;
+    extern const char* const KW_CFG_ENCRYPTION_SALT_SIZE;
     extern const char* const KW_CFG_ZONE_AUTH_SCHEME;
+    extern const char* const KW_CFG_ZONE_PORT;
+    extern const char* const KW_CFG_ZONE_USER;
 
     extern const char* const KW_CFG_CATALOG_PROVIDER_HOSTS;
     extern const char* const KW_CFG_CATALOG_SERVICE_ROLE;
@@ -183,11 +194,20 @@ namespace irods
     extern const char* const KW_CFG_ACCESS_TIME_BATCH_SIZE;
     extern const char* const KW_CFG_ACCESS_TIME_RESOLUTION_IN_SECONDS;
 
-    // TLS server configurations
-    extern const char* const KW_CFG_TLS_CONFIGURATION;
+    // server-side TLS configuration keywords for inbound traffic.
+    // used for clients attempting to establish a connection to the server.
+    extern const char* const KW_CFG_TLS_SERVER;
     extern const char* const KW_CFG_TLS_CERTIFICATE_CHAIN_FILE;
     extern const char* const KW_CFG_TLS_CERTIFICATE_KEY_FILE;
     extern const char* const KW_CFG_TLS_DH_PARAMS_FILE;
+    // server-side TLS configuration keywords for outbound traffic.
+    // used for server-to-server connections (i.e. redirects).
+    extern const char* const KW_CFG_TLS_CLIENT;
+    extern const char* const KW_CFG_TLS_CA_CERTIFICATE_FILE;
+    extern const char* const KW_CFG_TLS_CA_CERTIFICATE_PATH;
+    extern const char* const KW_CFG_TLS_VERIFY_SERVER;
+
+    extern const char* const KW_CFG_CONNECTION_POOL_REFRESH_TIME;
 } // namespace irods
 
 #endif // IRODS_CONFIGURATION_KEYWORDS_HPP
