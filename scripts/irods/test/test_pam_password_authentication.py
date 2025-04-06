@@ -36,7 +36,7 @@ class test_configurations(unittest.TestCase):
     @staticmethod
     def make_dict_for_server_config_tls_configuration(server_key_path, chain_pem_path, dhparams_pem_path):
         return {
-            "tls": {
+            "tls_server": {
                 "certificate_chain_file": chain_pem_path,
                 "certificate_key_file": server_key_path,
                 "dh_params_file": dhparams_pem_path
