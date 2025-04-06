@@ -106,7 +106,7 @@
             "minItems": 1,
             "uniqueItems": true
         },
-        "catalog_service_role": {"enum": ["consumer","provider"]},
+        "catalog_service_role": {"enum": ["consumer", "provider"]},
         "client_api_allowlist_policy": {"enum": ["disabled", "enforce"]},
         "client_server_policy": {
             "enum": [
@@ -129,7 +129,10 @@
                     "uniqueItems": true
                 }
             },
-            "required": ["control_type", "users"]
+            "required": [
+                "control_type",
+                "users"
+            ]
         },
         "default_dir_mode": {
             "type": "string",
@@ -191,15 +194,33 @@
                         "minItems": 1,
                         "uniqueItems": true
                     },
-                    "negotiation_key": {"type": "string", "pattern": "^[A-Za-z0-9_]+$", "minLength": 32, "maxLength": 32},
-                    "zone_key": {"type": "string", "pattern": "^[A-Za-z0-9_]+$", "maxLength": 49},
-                    "zone_name": {"type": "string", "pattern": "^[A-Za-z0-9_\\.]+$", "maxLength": 63},
+                    "negotiation_key": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_]+$",
+                        "minLength": 32,
+                        "maxLength": 32
+                    },
+                    "zone_key": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_]+$",
+                        "maxLength": 49
+                    },
+                    "zone_name": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_\\.]+$",
+                        "maxLength": 63
+                    },
                     "zone_port": {
                         "type": "integer",
                         "minimum": 0
                     }
                 },
-                "required": ["catalog_provider_hosts","negotiation_key","zone_key","zone_name"]
+                "required": [
+                    "catalog_provider_hosts",
+                    "negotiation_key",
+                    "zone_key",
+                    "zone_name"
+                ]
             }
         },
         "graceful_shutdown_timeout_in_seconds": {
@@ -241,7 +262,12 @@
             "type": "integer",
             "minimum": 1
         },
-        "negotiation_key": {"type": "string", "pattern": "^[A-Za-z0-9_]+$", "minLength": 32, "maxLength": 32},
+        "negotiation_key": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_]+$",
+            "minLength": 32,
+            "maxLength": 32
+        },
         "plugin_configuration": {
             "type": "object",
             "properties": {
@@ -278,7 +304,12 @@
                     "minItems": 1
                 }
             },
-            "required": ["authentication","network","resource","rule_engines"]
+            "required": [
+                "authentication",
+                "network",
+                "resource",
+                "rule_engines"
+            ]
         },
         "plugin_directory": {
             "type": "string",
@@ -334,8 +365,16 @@
             "type": "string",
             "maxLength": 63
         },
-        "zone_key": {"type": "string", "pattern": "^[A-Za-z0-9_]+$", "maxLength": 49},
-        "zone_name": {"type": "string", "pattern": "^[A-Za-z0-9_\\.]+$", "maxLength": 63},
+        "zone_key": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_]+$",
+            "maxLength": 49
+        },
+        "zone_name": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_\\.]+$",
+            "maxLength": 63
+        },
         "zone_port": {
             "type": "integer",
             "minimum": 0

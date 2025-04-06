@@ -16,7 +16,12 @@
                 "service_account_group_name": {"type": "string"},
                 "uname": {"type": "string"}
             },
-            "required": ["os_distribution_name", "os_distribution_version", "uname", "hostname"]
+            "required": [
+                "os_distribution_name",
+                "os_distribution_version",
+                "uname",
+                "hostname"
+            ]
         },
         "plugins": {
             "type": "array",

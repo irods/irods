@@ -8,7 +8,12 @@
             "items": {
                 "type": "object",
                 "properties": {
-                    "address_type": {"enum": ["local","remote"]},
+                    "address_type": {
+                        "enum": [
+                            "local",
+                            "remote"
+                        ]
+                    },
                     "addresses": {
                         "type": "array",
                         "items": {
@@ -19,7 +24,10 @@
                         "minItems": 2
                     }
                 },
-                "required": ["address_type","addresses"]
+                "required": [
+                    "address_type",
+                    "addresses"
+                ]
             }
         }
     },
