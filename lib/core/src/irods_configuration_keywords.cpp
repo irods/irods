@@ -129,6 +129,10 @@ namespace irods
     const char* const KW_CFG_IRODS_TCP_KEEPALIVE_TIME_IN_SECONDS{"irods_tcp_keepalive_time_in_seconds"};
     const char* const KW_CFG_IRODS_TCP_KEEPALIVE_INTVL_IN_SECONDS{"irods_tcp_keepalive_intvl_in_seconds"};
 
+    const char* const KW_CFG_TCP_KEEPALIVE_PROBES{"tcp_keepalive_probes"};
+    const char* const KW_CFG_TCP_KEEPALIVE_TIME_IN_SECONDS{"tcp_keepalive_time_in_seconds"};
+    const char* const KW_CFG_TCP_KEEPALIVE_INTVL_IN_SECONDS{"tcp_keepalive_intvl_in_seconds"};
+
     // legacy ssl environment variables
     const char* const KW_CFG_IRODS_SSL_CA_CERTIFICATE_PATH{"irods_ssl_ca_certificate_path"};
     const char* const KW_CFG_IRODS_SSL_CA_CERTIFICATE_FILE{"irods_ssl_ca_certificate_file"};
@@ -138,9 +142,16 @@ namespace irods
     const char* const KW_CFG_IRODS_SSL_DH_PARAMS_FILE{"irods_ssl_dh_params_file"};
 
     // irods environment values now included in server_config
-    const char* const KW_CFG_ZONE_USER{"zone_user"};
-    const char* const KW_CFG_ZONE_PORT{"zone_port"};
+    const char* const KW_CFG_CLIENT_SERVER_POLICY{"client_server_policy"};
+    const char* const KW_CFG_DEFAULT_RESOURCE_NAME{"default_resource_name"};
+    const char* const KW_CFG_ENCRYPTION{"encryption"};
+    const char* const KW_CFG_ENCRYPTION_ALGORITHM{"algorithm"};
+    const char* const KW_CFG_ENCRYPTION_KEY_SIZE{"key_size"};
+    const char* const KW_CFG_ENCRYPTION_NUM_HASH_ROUNDS{"num_hash_rounds"};
+    const char* const KW_CFG_ENCRYPTION_SALT_SIZE{"salt_size"};
     const char* const KW_CFG_ZONE_AUTH_SCHEME{"zone_auth_scheme"};
+    const char* const KW_CFG_ZONE_PORT{"zone_port"};
+    const char* const KW_CFG_ZONE_USER{"zone_user"};
 
     const char* const KW_CFG_CATALOG_PROVIDER_HOSTS{"catalog_provider_hosts"};
     const char* const KW_CFG_CATALOG_SERVICE_ROLE{"catalog_service_role"};
@@ -178,10 +189,17 @@ namespace irods
     const char* const KW_CFG_ACCESS_TIME_BATCH_SIZE{"batch_size"};
     const char* const KW_CFG_ACCESS_TIME_RESOLUTION_IN_SECONDS{"resolution_in_seconds"};
 
-    // TLS server configurations
-    const char* const KW_CFG_TLS_CONFIGURATION{"tls"};
+    // TLS server configurations (inbound traffic)
+    const char* const KW_CFG_TLS_SERVER{"tls_server"};
     const char* const KW_CFG_TLS_CERTIFICATE_CHAIN_FILE{"certificate_chain_file"};
     const char* const KW_CFG_TLS_CERTIFICATE_KEY_FILE{"certificate_key_file"};
     const char* const KW_CFG_TLS_DH_PARAMS_FILE{"dh_params_file"};
+    // TLS server configurations (outbound traffic)
+    const char* const KW_CFG_TLS_CLIENT{"tls_client"};
+    const char* const KW_CFG_TLS_CA_CERTIFICATE_FILE{"ca_certificate_file"};
+    const char* const KW_CFG_TLS_CA_CERTIFICATE_PATH{"ca_certificate_path"};
+    const char* const KW_CFG_TLS_VERIFY_SERVER{"verify_server"};
+
+    const char* const KW_CFG_CONNECTION_POOL_REFRESH_TIME{"connection_pool_refresh_time_in_seconds"};
 } // namespace irods
 
