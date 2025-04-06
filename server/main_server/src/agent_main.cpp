@@ -884,7 +884,7 @@ namespace
 
         if (status < 0) {
             log_agent::error("{}: getRodsEnv failed.", __func__);
-            sendVersion(net_obj, SYS_AGENT_INIT_ERR, 0, nullptr, 0);
+            sendVersion(net_obj, status, 0, nullptr, 0);
             cleanupAndExit(status);
         }
 
@@ -905,7 +905,7 @@ namespace
 
         if (status < 0) {
             log_agent::error("{}: initAgent failed: {}", __func__, status);
-            sendVersion(net_obj, SYS_AGENT_INIT_ERR, 0, nullptr, 0);
+            sendVersion(net_obj, status, 0, nullptr, 0);
             cleanupAndExit(status);
         }
 
@@ -927,7 +927,7 @@ namespace
                 // send a 'we failed to negotiate' message here??
                 // or use the error stack rule engine thingie
                 log_agent::error(PASS(ret).result());
-                sendVersion(net_obj, SERVER_NEGOTIATION_ERROR, 0, nullptr, 0);
+                sendVersion(net_obj, ret.code(), 0, nullptr, 0);
                 cleanupAndExit(ret.code());
             }
             else {
@@ -943,7 +943,7 @@ namespace
 
         if (!ret.ok()) {
             log_agent::error(PASS(ret).result());
-            sendVersion(net_obj, SYS_AGENT_INIT_ERR, 0, nullptr, 0);
+            sendVersion(net_obj, ret.code(), 0, nullptr, 0);
             cleanupAndExit(status);
         }
 
