@@ -377,9 +377,6 @@ extern "C" {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
         capture_string_property(irods::KW_CFG_IRODS_MATCH_HASH_POLICY, _env->rodsMatchHashPolicy, NAME_LEN);
 
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-        capture_string_property(irods::KW_CFG_IRODS_DEBUG, _env->rodsDebug, NAME_LEN);
-
         _env->rodsLogLevel = 0;
         int status = capture_integer_property(
                          irods::KW_CFG_IRODS_LOG_LEVEL,
@@ -651,11 +648,6 @@ extern "C" {
             rstrcpy( authFileName, _env->rodsAuthFile, LONG_NAME_LEN );
 
         }
-
-        env_var = irods::KW_CFG_IRODS_DEBUG;
-        capture_string_env_var(
-            env_var,
-            _env->rodsDebug );
 
         // legacy ssl environment variables
         env_var = irods::KW_CFG_IRODS_SSL_CA_CERTIFICATE_PATH;

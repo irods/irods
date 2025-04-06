@@ -15,7 +15,6 @@ typedef struct RodsEnvironment {
     char rodsZone[NAME_LEN];
     int rodsLogLevel;
     char rodsAuthFile[LONG_NAME_LEN];
-    char rodsDebug[NAME_LEN];
     char rodsClientServerPolicy[ LONG_NAME_LEN ];
     char rodsClientServerNegotiation[ LONG_NAME_LEN ];
 
