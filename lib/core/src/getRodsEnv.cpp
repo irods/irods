@@ -531,30 +531,6 @@ extern "C" {
                 "%s", val );
         }
 
-        val = getenv( "irodsSSLCertificateChainFile" );
-        if ( val ) {
-            snprintf(
-                _env->irodsSSLCertificateChainFile,
-                sizeof( _env->irodsSSLCertificateChainFile ),
-                "%s", val );
-        }
-
-        val = getenv( "irodsSSLCertificateKeyFile" );
-        if ( val ) {
-            snprintf(
-                _env->irodsSSLCertificateKeyFile,
-                sizeof( _env->irodsSSLCertificateKeyFile ),
-                "%s", val );
-        }
-
-        val = getenv( "irodsSSLDHParamsFile" );
-        if ( val ) {
-            snprintf(
-                _env->irodsSSLDHParamsFile,
-                sizeof( _env->irodsSSLDHParamsFile ),
-                "%s", val );
-        }
-
         return 0;
 
     } // get_legacy_ssl_variables
@@ -699,17 +675,6 @@ extern "C" {
             env_var,
             _env->irodsSSLVerifyServer );
         env_var = irods::KW_CFG_IRODS_SSL_CERTIFICATE_CHAIN_FILE;
-        capture_string_env_var(
-            env_var,
-            _env->irodsSSLCertificateChainFile );
-        env_var = irods::KW_CFG_IRODS_SSL_CERTIFICATE_KEY_FILE;
-        capture_string_env_var(
-            env_var,
-            _env->irodsSSLCertificateKeyFile );
-        env_var = irods::KW_CFG_IRODS_SSL_DH_PARAMS_FILE;
-        capture_string_env_var(
-            env_var,
-            _env->irodsSSLDHParamsFile );
 
         env_var = irods::KW_CFG_IRODS_MAX_SIZE_FOR_SINGLE_BUFFER;
         capture_integer_env_var(
