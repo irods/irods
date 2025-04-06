@@ -57,6 +57,17 @@
         },
         "catalog_service_role": {"enum": ["consumer","provider"]},
         "client_api_allowlist_policy": {"enum": ["disabled", "enforce"]},
+        "client_server_policy": {
+            "enum": [
+                "CS_NEG_REFUSE",
+                "CS_NEG_DONT_CARE",
+                "CS_NEG_REQUIRE"
+            ]
+        },
+        "connection_pool_refresh_time_in_seconds": {
+            "type": "integer",
+            "minimum": 0
+        },
         "controlled_user_connection_list": {
             "type": "object",
             "properties": {
@@ -76,6 +87,37 @@
         "default_dir_mode": {"type": "string"},
         "default_file_mode": {"type": "string"},
         "default_hash_scheme": {"type": "string"},
+        "default_resource_name": {
+            "type": "string",
+            "maxLength": 63
+        },
+        "encryption": {
+            "type": "object",
+            "properties": {
+                "algorithm": {
+                    "type": "string",
+                    "maxLength": 127
+                },
+                "key_size": {
+                    "type": "integer",
+                    "minimum": 32
+                },
+                "num_hash_rounds": {
+                    "type": "integer",
+                    "minimum": 16
+                },
+                "salt_size": {
+                    "type": "integer",
+                    "minimum": 8
+                }
+            },
+            "required": [
+                "algorithm",
+                "key_size",
+                "num_hash_rounds",
+                "salt_size"
+            ]
+        },
         "environment_variables": {
             "type": "object",
             "additionalProperties": {"type": "string"}
@@ -177,7 +219,19 @@
         "schema_version": {"type": "string"},
         "server_port_range_end": {"type": "integer"},
         "server_port_range_start": {"type": "integer"},
-        "tls": {
+        "tcp_keepalive_intvl_in_seconds": {
+            "type": "integer",
+            "minimum": -1
+        },
+        "tcp_keepalive_probes": {
+            "type": "integer",
+            "minimum": -1
+        },
+        "tcp_keepalive_time_in_seconds": {
+            "type": "integer",
+            "minimum": -1
+        },
+        "tls_server": {
             "type": "object",
             "properties": {
                 "certificate_chain_file": {"type": "string"},
@@ -191,6 +245,23 @@
             ]
         },
         "zone_auth_scheme" : {"type": "string"},
+        "tls_client": {
+            "type": "object",
+            "properties": {
+                "ca_certificate_file": {"type": "string"},
+                "ca_certificate_path": {"type": "string"},
+                "verify_server": {
+                    "enum": [
+                        "none",
+                        "hostname",
+                        "cert"
+                    ]
+                }
+            },
+            "required": [
+                "verify_server"
+            ]
+        },
         "zone_key": {"type": "string", "pattern": "^[A-Za-z0-9_]+$", "maxLength": 49},
         "zone_name": {"type": "string", "pattern": "^[A-Za-z0-9_\\.]+$", "maxLength": 63},
         "zone_port": {"type": "integer"},
@@ -201,10 +272,13 @@
         "catalog_provider_hosts",
         "catalog_service_role",
         "client_api_allowlist_policy",
+        "client_server_policy",
+        "connection_pool_refresh_time_in_seconds",
         "controlled_user_connection_list",
         "default_dir_mode",
         "default_file_mode",
         "default_hash_scheme",
+        "encryption",
         "environment_variables",
         "federation",
         "graceful_shutdown_timeout_in_seconds",

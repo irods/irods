@@ -27,6 +27,8 @@
         "transfer_chunk_size_for_parallel_transfer_in_megabytes": 40
     },
     "client_api_allowlist_policy": "enforce",
+    "client_server_policy": "CS_NEG_REFUSE",
+    "connection_pool_refresh_time_in_seconds": 300,
     "controlled_user_connection_list": {
         "control_type": "denylist",
         "users": []
@@ -34,6 +36,12 @@
     "default_dir_mode": "0750",
     "default_file_mode": "0600",
     "default_hash_scheme": "SHA256",
+    "encryption": {
+        "algorithm": "AES-256-CBC",
+        "key_size": 32,
+        "num_hash_rounds": 16,
+        "salt_size": 8
+    },
     "environment_variables": {},
     "federation": [],
     "graceful_shutdown_timeout_in_seconds": 30,
