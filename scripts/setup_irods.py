@@ -458,28 +458,28 @@ def setup_client_environment(irods_config):
     print('\n', end='')
 
     service_account_dict = {
-            'schema_name': 'service_account_environment',
-            'schema_version': 'v5',
-            'irods_host': irods_config.server_config['host'],
-            'irods_port': irods_config.server_config['zone_port'],
-            'irods_default_resource': irods_config.server_config['default_resource_name'],
-            'irods_home': '/'.join(['', irods_config.server_config['zone_name'], 'home', irods_config.server_config['zone_user']]),
-            'irods_cwd': '/'.join(['', irods_config.server_config['zone_name'], 'home', irods_config.server_config['zone_user']]),
-            'irods_user_name': irods_config.server_config['zone_user'],
-            'irods_zone_name': irods_config.server_config['zone_name'],
-            'irods_client_server_negotiation': 'request_server_negotiation',
-            'irods_client_server_policy': irods_config.server_config['client_server_policy'],
-            'irods_encryption_algorithm': irods_config.server_config['encryption']['algorithm'],
-            'irods_encryption_key_size': irods_config.server_config['encryption']['key_size'],
-            'irods_encryption_num_hash_rounds': irods_config.server_config['encryption']['num_hash_rounds'],
-            'irods_encryption_salt_size': irods_config.server_config['encryption']['salt_size'],
-            'irods_default_hash_scheme': irods_config.server_config['default_hash_scheme'],
-            'irods_match_hash_policy': irods_config.server_config['match_hash_policy'],
-            'irods_maximum_size_for_single_buffer_in_megabytes': irods_config.server_config['advanced_settings']['maximum_size_for_single_buffer_in_megabytes'],
-            'irods_default_number_of_transfer_threads': irods_config.server_config['advanced_settings']['default_number_of_transfer_threads'],
-            'irods_transfer_buffer_size_for_parallel_transfer_in_megabytes': irods_config.server_config['advanced_settings']['transfer_buffer_size_for_parallel_transfer_in_megabytes'],
-            'irods_connection_pool_refresh_time_in_seconds': irods_config.server_config['connection_pool_refresh_time_in_seconds']
-        }
+        'schema_name': 'service_account_environment',
+        'schema_version': 'v5',
+        'irods_host': irods_config.server_config['host'],
+        'irods_port': irods_config.server_config['zone_port'],
+        'irods_default_resource': irods_config.server_config['default_resource_name'],
+        'irods_home': '/'.join(['', irods_config.server_config['zone_name'], 'home', irods_config.server_config['zone_user']]),
+        'irods_cwd': '/'.join(['', irods_config.server_config['zone_name'], 'home', irods_config.server_config['zone_user']]),
+        'irods_user_name': irods_config.server_config['zone_user'],
+        'irods_zone_name': irods_config.server_config['zone_name'],
+        'irods_client_server_negotiation': 'request_server_negotiation',
+        'irods_client_server_policy': irods_config.server_config['client_server_policy'],
+        'irods_encryption_algorithm': irods_config.server_config['encryption']['algorithm'],
+        'irods_encryption_key_size': irods_config.server_config['encryption']['key_size'],
+        'irods_encryption_num_hash_rounds': irods_config.server_config['encryption']['num_hash_rounds'],
+        'irods_encryption_salt_size': irods_config.server_config['encryption']['salt_size'],
+        'irods_default_hash_scheme': irods_config.server_config['default_hash_scheme'],
+        'irods_match_hash_policy': irods_config.server_config['match_hash_policy'],
+        'irods_maximum_size_for_single_buffer_in_megabytes': irods_config.server_config['advanced_settings']['maximum_size_for_single_buffer_in_megabytes'],
+        'irods_default_number_of_transfer_threads': irods_config.server_config['advanced_settings']['default_number_of_transfer_threads'],
+        'irods_transfer_buffer_size_for_parallel_transfer_in_megabytes': irods_config.server_config['advanced_settings']['transfer_buffer_size_for_parallel_transfer_in_megabytes'],
+        'irods_connection_pool_refresh_time_in_seconds': irods_config.server_config['connection_pool_refresh_time_in_seconds']
+    }
     if not os.path.exists(os.path.dirname(irods_config.client_environment_path)):
         os.makedirs(os.path.dirname(irods_config.client_environment_path), mode=0o700)
     irods_config.commit(service_account_dict, irods_config.client_environment_path, clear_cache=False)
