@@ -1252,7 +1252,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
                 with lib.file_backed_up(config.server_config_path):
                     update_host_access_control_options('nope', 'nope', '', '')
-                    self.admin.assert_icommand("ils", 'STDERR_SINGLELINE', "SYS_AGENT_INIT_ERR")
+                    self.admin.assert_icommand("ils", 'STDERR_SINGLELINE', "CONNECTION_REFUSED")
 
                     update_host_access_control_options('all', 'all', my_ip, '255.255.255.255')
                     self.admin.assert_icommand("ils", 'STDOUT_SINGLELINE', self.admin.zone_name)
