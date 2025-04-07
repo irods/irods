@@ -1,30 +1,43 @@
-/**
- * @file  reIn2p3SysRule.cpp
- *
- */
-#include "irods/irods_configuration_keywords.hpp"
 #include "irods/reIn2p3SysRule.hpp"
+
+#include "irods/irods_configuration_keywords.hpp"
+#include "irods/irods_logger.hpp"
+#include "irods/rodsErrorTable.h"
 #include "irods/rsGenQuery.hpp"
 
-#include <boost/system/error_code.hpp>
-#include <boost/asio.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/asio.hpp>
+#include <boost/system/error_code.hpp>
 
-#include <vector>
+#include <algorithm>
+#include <cstdint>
 #include <string>
+#include <vector>
 
-short threadIsAlive[MAX_NSERVERS];
+namespace
+{
+    using log_svr = irods::experimental::log::server;
+} // anonymous namespace
+
+std::int16_t threadIsAlive[MAX_NSERVERS]; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
 int checkHostAccessControl(const std::string& _user_name,
-                           const std::string& _host_client,
+                           const std::string& _client_host,
                            const std::string& _groups_name)
 {
+    log_svr::debug(
+        "{}: Checking if user is allowed to access server: _user_name=[{}], _client_host=[{}], _groups_name=[{}]",
+        __func__,
+        _user_name,
+        _client_host,
+        _groups_name);
+
     namespace ip = boost::asio::ip;
 
     std::vector<std::string> group_list;
     boost::split(group_list, _groups_name, boost::is_any_of("\t "), boost::token_compress_on);
 
-    const auto& host_access_control = irods::get_server_property<const nlohmann::json&>(irods::KW_CFG_HOST_ACCESS_CONTROL);
+    const auto host_access_control = irods::get_server_property<nlohmann::json>(irods::KW_CFG_HOST_ACCESS_CONTROL);
     const auto& access_entries = host_access_control.at(irods::KW_CFG_ACCESS_ENTRIES);
 
     try {
@@ -35,19 +48,33 @@ int checkHostAccessControl(const std::string& _user_name,
                 const auto& addy = access_entry.at(irods::KW_CFG_ADDRESS).get_ref<const std::string&>();
                 const auto& mask = access_entry.at(irods::KW_CFG_MASK).get_ref<const std::string&>();
 
+                log_svr::debug("{}: Checking user against host access control entry: user=[{}], group=[{}], "
+                               "address=[{}], mask=[{}]",
+                               __func__,
+                               user,
+                               group,
+                               addy,
+                               mask);
+
                 boost::system::error_code error_code;
                 const auto address_entry = ip::make_address_v4(addy, error_code);
                 if ( error_code.value() ) {
+                    log_svr::debug(
+                        "{}: Could not create IPv4 address from address [{}]. Skipping entry.", __func__, addy);
                     continue;
                 }
 
                 const auto mask_entry = ip::make_address_v4(mask, error_code);
                 if ( error_code.value() ) {
+                    log_svr::debug("{}: Could not create IPv4 address from mask [{}]. Skipping entry.", __func__, mask);
                     continue;
                 }
 
-                const auto host_client = ip::make_address_v4(_host_client, error_code);
+                const auto host_client = ip::make_address_v4(_client_host, error_code);
                 if ( error_code.value() ) {
+                    log_svr::debug("{}: Could not create IPv4 address from _client_host [{}]. Skipping entry.",
+                                   __func__,
+                                   _client_host);
                     continue;
                 }
 
@@ -56,40 +83,33 @@ int checkHostAccessControl(const std::string& _user_name,
                     user_match = true;
                 }
 
-                bool group_match = false;
-                if ( "all" == group ) {
-                    group_match = true;
-                }
-                else {
-                    for ( size_t i = 0; i < group_list.size(); ++i ) {
-                        if ( group == group_list[ i ] ) {
-                            group_match = true;
-                        }
-                    }
-                }
+                const auto matcher = [&group](const std::string& _g) { return group == _g; };
+                const auto group_match =
+                    ("all" == group || std::any_of(std::begin(group_list), std::end(group_list), matcher));
 
                 if ( group_match || user_match ) {
                     // check if <client, group, clientIP>
                     // match this entry of the control access file.
                     if (((host_client.to_uint() ^ address_entry.to_uint()) & ~mask_entry.to_uint()) == 0) {
+                        log_svr::debug("{}: User is allowed to access server.", __func__);
                         return 0;
                     }
                 }
             }
             catch ( const boost::bad_any_cast& e ) {
-                irods::log( ERROR( INVALID_ANY_CAST, e.what() ) );
-                continue;
+                log_svr::error(ERROR(INVALID_ANY_CAST, e.what()).user_result());
             }
             catch ( const std::out_of_range& e ) {
-                irods::log( ERROR( KEY_NOT_FOUND, e.what() ) );
+                log_svr::error(ERROR(KEY_NOT_FOUND, e.what()).user_result());
             }
         }
     }
-    catch ( const irods::exception& e ) {
-        irods::log( irods::error(e) );
-        return e.code();
+    catch (const irods::exception& e) {
+        log_svr::error(irods::error(e).user_result());
+        return e.code(); // NOLINT(bugprone-narrowing-conversions, cppcoreguidelines-narrowing-conversions)
     }
 
+    log_svr::debug("{}: User [{}] does not meet host access control requirements.", __func__, _user_name);
     return CONNECTION_REFUSED;
 } // checkHostAccessControl
 
