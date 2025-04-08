@@ -11,8 +11,12 @@
 
 #include <boost/container/pmr/unsynchronized_pool_resource.hpp>
 #include <boost/container/pmr/global_resource.hpp>
-#include <boost/container/pmr/string.hpp>
 #include <boost/container/pmr/vector.hpp>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#include <boost/container/pmr/string.hpp>
+#pragma GCC diagnostic pop
 
 #include <cstddef>
 #include <algorithm>
