@@ -558,26 +558,6 @@ int call_userAdminInp(
                    _inp);
 }
 
-int call_generalRowInserInp(
-    irods::api_entry*     _api,
-    rsComm_t*             _comm,
-    generalRowInsertInp_t* _inp ) {
-    return _api->call_handler<
-               generalRowInsertInp_t*>(
-                   _comm,
-                   _inp);
-}
-
-int call_generalRowPurgeInp(
-    irods::api_entry*     _api,
-    rsComm_t*             _comm,
-    generalRowPurgeInp_t* _inp ) {
-    return _api->call_handler<
-               generalRowPurgeInp_t*>(
-                   _comm,
-                   _inp);
-}
-
 int call_intp(
     irods::api_entry* _api,
     rsComm_t*         _comm,

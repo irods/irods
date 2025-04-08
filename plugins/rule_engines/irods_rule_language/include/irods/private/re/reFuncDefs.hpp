@@ -67,27 +67,18 @@ getAllSessionVarValue( ruleExecInfo_t *rei, keyValPair_t *varValues );
 int
 getSessionVarValue( char *action, char *varName, ruleExecInfo_t *rei,
                     char **varValue );
-int insertRulesIntoDB( char * baseName, ruleStruct_t *coreRuleStruct,
-                       ruleExecInfo_t *rei );
 int writeRulesIntoFile( char * fileName, ruleStruct_t *myRuleStruct,
                         ruleExecInfo_t *rei );
 int readRuleStructFromDB( char *ruleBaseName, char *versionStr, ruleStruct_t *inRuleStrct,
                           ruleExecInfo_t *rei );
-int insertDVMapsIntoDB( char * baseName, dvmStruct_t *coreDVMStruct,
-                        ruleExecInfo_t *rei );
 int writeDVMapsIntoFile( char * inFileName, dvmStruct_t *myDVMapStruct,
                          ruleExecInfo_t *rei );
 int readDVMapStructFromDB( char *dvmBaseName, char *versionStr, rulevardef_t *inDvmStrct,
                            ruleExecInfo_t *rei );
-int insertFNMapsIntoDB( char * baseName, fnmapStruct_t *coreFNMStruct,
-                        ruleExecInfo_t *rei );
 int writeFNMapsIntoFile( char * inFileName, fnmapStruct_t *myFNMapStruct,
                          ruleExecInfo_t *rei );
 int readFNMapStructFromDB( char *fnmBaseName, char *versionStr, fnmapStruct_t *inFnmStrct,
                            ruleExecInfo_t *rei );
-int insertMSrvcsIntoDB( msrvcStruct_t *inMsrvcStruct,
-                        ruleExecInfo_t *rei );
-int readMsrvcStructFromDB( int inStatus, msrvcStruct_t *outMsrvcStrct, ruleExecInfo_t *rei );
 int readMsrvcStructFromFile( char *msrvcFileName, msrvcStruct_t* inMsrvcStruct );
 int writeMSrvcsIntoFile( char * inFileName, msrvcStruct_t *myMsrvcStruct,
                          ruleExecInfo_t *rei );

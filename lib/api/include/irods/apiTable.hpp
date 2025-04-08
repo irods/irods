@@ -80,8 +80,6 @@
 #  include "irods/rsFileWrite.hpp"
 #  include "irods/rsGenQuery.hpp"
 #  include "irods/rsGeneralAdmin.hpp"
-#  include "irods/rsGeneralRowInsert.hpp"
-#  include "irods/rsGeneralRowPurge.hpp"
 #  include "irods/rsGeneralUpdate.hpp"
 #  include "irods/rsGetHierFromLeafId.hpp"
 #  include "irods/rsGetHierarchyForResc.hpp"
@@ -233,8 +231,6 @@
 #define RS_FILE_UNLINK                     NULLPTR_FOR_CLIENT_TABLE(rsFileUnlink)
 #define RS_FILE_WRITE                      NULLPTR_FOR_CLIENT_TABLE(rsFileWrite)
 #define RS_GENERAL_ADMIN                   NULLPTR_FOR_CLIENT_TABLE(rsGeneralAdmin)
-#define RS_GENERAL_ROW_INSERT              NULLPTR_FOR_CLIENT_TABLE(rsGeneralRowInsert)
-#define RS_GENERAL_ROW_PURGE               NULLPTR_FOR_CLIENT_TABLE(rsGeneralRowPurge)
 #define RS_GENERAL_UPDATE                  NULLPTR_FOR_CLIENT_TABLE(rsGeneralUpdate)
 #define RS_GENQUERY2                       NULLPTR_FOR_CLIENT_TABLE(rs_genquery2)
 #define RS_GEN_QUERY                       NULLPTR_FOR_CLIENT_TABLE(rsGenQuery)
@@ -681,22 +677,6 @@ static irods::apidef_t client_api_table_inp[] = {
         boost::any(std::function<int(rsComm_t*,userAdminInp_t*)>(RS_USER_ADMIN)),
         "api_user_admin", irods::clearInStruct_noop, irods::clearOutStruct_noop,
         (funcPtr)CALL_USERADMININP
-    },
-    {
-        GENERAL_ROW_INSERT_AN, RODS_API_VERSION,
-        LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH,
-        "generalRowInsertInp_PI", 0, NULL, 0,
-        boost::any(std::function<int(rsComm_t*,generalRowInsertInp_t*)>(RS_GENERAL_ROW_INSERT)),
-        "api_general_row_insert", irods::clearInStruct_noop, irods::clearOutStruct_noop,
-        (funcPtr)CALL_GENERALROWINSERTINP
-    },
-    {
-        GENERAL_ROW_PURGE_AN, RODS_API_VERSION,
-        LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH,
-        "generalRowPurgeInp_PI", 0, NULL, 0,
-        boost::any(std::function<int(rsComm_t*,generalRowPurgeInp_t*)>(RS_GENERAL_ROW_PURGE)),
-        "api_general_row_purge", irods::clearInStruct_noop, irods::clearOutStruct_noop,
-        (funcPtr)CALL_GENERALROWPURGEINP
     },
     {
         CLOSE_COLLECTION_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
