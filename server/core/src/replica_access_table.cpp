@@ -1,10 +1,14 @@
 #include "irods/replica_access_table.hpp"
 
-#include <boost/interprocess/managed_shared_memory.hpp>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 #include <boost/interprocess/allocators/allocator.hpp>
 #include <boost/interprocess/containers/map.hpp>
-#include <boost/interprocess/containers/vector.hpp>
 #include <boost/interprocess/containers/string.hpp>
+#include <boost/interprocess/managed_shared_memory.hpp>
+#pragma GCC diagnostic pop
+
+#include <boost/interprocess/containers/vector.hpp>
 #include <boost/interprocess/sync/named_upgradable_mutex.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
 #include <boost/interprocess/sync/sharable_lock.hpp>
