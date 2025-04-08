@@ -110,8 +110,6 @@
 #include "irods/dataObjCreateAndStat.h"
 #include "irods/fileStageToCache.h"
 #include "irods/fileSyncToArch.h"
-#include "irods/generalRowInsert.h"
-#include "irods/generalRowPurge.h"
 #include "irods/unbunAndRegPhyBunfile.h"
 #include "irods/getHostForPut.h"
 #include "irods/getRescQuota.h"

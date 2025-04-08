@@ -9,8 +9,6 @@
 #include "irods/sockComm.h"
 #include "irods/getRodsEnv.h"
 #include "irods/rcConnect.h"
-#include "irods/generalRowInsert.h"
-#include "irods/generalRowPurge.h"
 #include "irods/generalAdmin.h"
 
 #include <string>

@@ -62,8 +62,6 @@ inline const packInstruct_t api_pack_table_init[] = {
     {"userAdminInp_PI", userAdminInp_PI, irods::clearInStruct_noop},
     {"OpenStat_PI", OpenStat_PI, irods::clearInStruct_noop},
     {"fileStageSyncInp_PI", fileStageSyncInp_PI, irods::clearInStruct_noop},
-    {"generalRowInsertInp_PI", generalRowInsertInp_PI, irods::clearInStruct_noop},
-    {"generalRowPurgeInp_PI", generalRowPurgeInp_PI, irods::clearInStruct_noop},
     {"getRescQuotaInp_PI", getRescQuotaInp_PI, irods::clearInStruct_noop},
     {"rescQuota_PI", rescQuota_PI, irods::clearInStruct_noop},
     {"BulkOprInp_PI", BulkOprInp_PI, irods::clearInStruct_noop},

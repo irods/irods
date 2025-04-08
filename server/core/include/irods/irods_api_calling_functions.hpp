@@ -508,26 +508,6 @@ int call_userAdminInp(
 #endif
 
 #ifdef CREATE_API_TABLE_FOR_SERVER
-int call_generalRowInserInp(
-    irods::api_entry*,
-    rsComm_t*,
-    generalRowInsertInp_t*);
-#define CALL_GENERALROWINSERTINP call_generalRowInserInp
-#else
-#define CALL_GENERALROWINSERTINP nullptr
-#endif
-
-#ifdef CREATE_API_TABLE_FOR_SERVER
-int call_generalRowPurgeInp(
-    irods::api_entry*,
-    rsComm_t*,
-    generalRowPurgeInp_t*);
-#define CALL_GENERALROWPURGEINP call_generalRowPurgeInp
-#else
-#define CALL_GENERALROWPURGEINP nullptr
-#endif
-
-#ifdef CREATE_API_TABLE_FOR_SERVER
 int call_intp(
     irods::api_entry*,
     rsComm_t*,
