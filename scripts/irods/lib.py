@@ -635,17 +635,20 @@ def get_user_info(session, user_name, zone_name=None):
 
 
 def get_replica_checksum(session, data_name, replica_number):
+    data_name = data_name.replace("'", "\\x27")
     return session.run_icommand(['iquest', '%s',
         "select DATA_CHECKSUM where DATA_NAME = '{}' and DATA_REPL_NUM = '{}'"
         .format(data_name, str(replica_number))])[0].strip()
 
 
 def get_replica_status(session, data_name, replica_number):
+    data_name = data_name.replace("'", "\\x27")
     return session.run_icommand(['iquest', '%s',
         "select DATA_REPL_STATUS where DATA_NAME = '{}' and DATA_REPL_NUM = '{}'"
         .format(data_name, str(replica_number))])[0].strip()
 
 def get_replica_status_for_resource(session, logical_path, resource_name, zone_name=None):
+    logical_path = logical_path.replace("'", "\\x27")
     query = "select DATA_REPL_STATUS where COLL_NAME = '{}' and DATA_NAME = '{}' and DATA_RESC_NAME = '{}'".format(
         os.path.dirname(logical_path),
         os.path.basename(logical_path),
@@ -660,12 +663,14 @@ def get_replica_status_for_resource(session, logical_path, resource_name, zone_n
     return session.run_icommand(command)[0].splitlines()[output_line_number].strip()
 
 def get_replica_size(session, data_name, replica_number):
+    data_name = data_name.replace("'", "\\x27")
     return session.run_icommand(['iquest', '%s',
         "select DATA_SIZE where DATA_NAME = '{}' and DATA_REPL_NUM = '{}'"
         .format(data_name, str(replica_number))])[0].strip()
 
 
 def replica_exists(session, logical_path, replica_number):
+    logical_path = logical_path.replace("'", "\\x27")
     out = session.run_icommand(['iquest',
         "select DATA_ID where COLL_NAME = '{}' and DATA_NAME = '{}' and DATA_REPL_NUM = '{}'"
         .format(os.path.dirname(logical_path),
@@ -676,6 +681,7 @@ def replica_exists(session, logical_path, replica_number):
 
 
 def replica_exists_on_resource(session, logical_path, resource_name, zone_name=None):
+    logical_path = logical_path.replace("'", "\\x27")
     query = "select DATA_ID where COLL_NAME = '{}' and DATA_NAME = '{}' and DATA_RESC_NAME = '{}'".format(
         os.path.dirname(logical_path),
         os.path.basename(logical_path),
@@ -693,6 +699,7 @@ def replica_exists_on_resource(session, logical_path, resource_name, zone_name=N
 
 
 def get_replica_mtime(session, logical_path, replica_number):
+    logical_path = logical_path.replace("'", "\\x27")
     return session.run_icommand(['iquest', '%s',
         "select DATA_MODIFY_TIME where COLL_NAME = '{}' and DATA_NAME = '{}' and DATA_REPL_NUM = '{}'"
         .format(os.path.dirname(logical_path),
@@ -700,6 +707,7 @@ def get_replica_mtime(session, logical_path, replica_number):
                 str(replica_number))])[0].strip()
 
 def get_replica_atime(session, logical_path, replica_number):
+    logical_path = logical_path.replace("'", "\\x27")
     coll_name = os.path.dirname(logical_path)
     data_name = os.path.basename(logical_path)
     query = f"select DATA_ACCESS_TIME where COLL_NAME = '{coll_name}' and DATA_NAME = '{data_name}' and DATA_REPL_NUM = '{replica_number}'"
@@ -707,6 +715,7 @@ def get_replica_atime(session, logical_path, replica_number):
     return json.loads(out.strip())[0][0]
 
 def collection_exists(session, logical_path):
+    logical_path = logical_path.replace("'", "\\x27")
     out = session.run_icommand(['iquest', f"select COLL_ID where COLL_NAME = '{logical_path}'"])[0]
 
     return 'CAT_NO_ROWS_FOUND' not in out
