@@ -1,10 +1,3 @@
-from __future__ import print_function
-import sys
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
-
 import contextlib
 import copy
 import getpass
@@ -14,9 +7,11 @@ import shutil
 import socket
 import stat
 import subprocess
-import time
+import sys
 import tempfile
 import textwrap
+import time
+import unittest
 
 from ..configuration import IrodsConfig
 from ..controller import IrodsController
@@ -2472,29 +2467,42 @@ class test_moduser_user(unittest.TestCase):
                                    'STDERR_SINGLELINE', 'CAT_INVALID_USER_TYPE')
         self.assertEqual('rodsuser', lib.get_user_type(self.admin, self.username))
 
-    def test_downgrade_of_service_account_user_is_not_allowed__issue_6127(self):
+    def test_downgrade_of_rodsadmin_user_managing_server_is_not_allowed__issue_6127_8012(self):
         """Test downgrading of service account user's type from rodsadmin to other supported types is not allowed."""
         def get_first_hostname_from_zone_report():
             """Get the hostname of the first "servers" entry of the zone report."""
             zr = json.loads(self.admin.assert_icommand(['izonereport'], 'STDOUT')[1].strip())
-            return zr['zones'][0]['servers'][0]['service_account_environment']['irods_host']
+            return zr['zones'][0]['servers'][0]['server_config']['host']
 
-        # rodsadmin -> rodsuser
-        self.assertEqual('rodsadmin', lib.get_user_type(self.admin, 'rods'))
-        hostname = get_first_hostname_from_zone_report()
-        error_msg = f'Cannot downgrade another rodsadmin [rods] running another server [{hostname}] in this zone.'
-        out, err, ec = self.admin.run_icommand(['iadmin', 'moduser', 'rods', 'type', 'rodsuser'])
-        self.assertNotEqual(ec, 0)
-        self.assertIn(error_msg, out)
-        self.assertIn('SYS_NOT_ALLOWED', err)
-        self.assertEqual('rodsadmin', lib.get_user_type(self.admin, 'rods'))
+        try:
+            # Hide the service account user's irods_environment.json file. This helps to prove the
+            # server no longer depends a irods_environment.json file.
+            new_environment_file_path = paths.default_client_environment_path() + '.issue_8012'
+            os.rename(paths.default_client_environment_path(), new_environment_file_path)
+            self.assertFalse(os.path.exists(paths.default_client_environment_path()))
+            self.assertTrue(os.path.exists(new_environment_file_path))
 
-        # rodsadmin -> groupadmin
-        out, err, ec = self.admin.run_icommand(['iadmin', 'moduser', 'rods', 'type', 'groupadmin'])
-        self.assertNotEqual(ec, 0)
-        self.assertIn(error_msg, out)
-        self.assertIn('SYS_NOT_ALLOWED', err)
-        self.assertEqual('rodsadmin', lib.get_user_type(self.admin, 'rods'))
+            # rodsadmin -> rodsuser
+            self.assertEqual('rodsadmin', lib.get_user_type(self.admin, 'rods'))
+            hostname = get_first_hostname_from_zone_report()
+            error_msg = f'Cannot downgrade another rodsadmin [rods] running another server [{hostname}] in this zone.'
+            out, err, ec = self.admin.run_icommand(['iadmin', 'moduser', 'rods', 'type', 'rodsuser'])
+            self.assertNotEqual(ec, 0)
+            self.assertIn(error_msg, out)
+            self.assertIn('SYS_NOT_ALLOWED', err)
+            self.assertEqual('rodsadmin', lib.get_user_type(self.admin, 'rods'))
+
+            # rodsadmin -> groupadmin
+            out, err, ec = self.admin.run_icommand(['iadmin', 'moduser', 'rods', 'type', 'groupadmin'])
+            self.assertNotEqual(ec, 0)
+            self.assertIn(error_msg, out)
+            self.assertIn('SYS_NOT_ALLOWED', err)
+            self.assertEqual('rodsadmin', lib.get_user_type(self.admin, 'rods'))
+
+        finally:
+            os.rename(new_environment_file_path, paths.default_client_environment_path())
+            self.assertTrue(os.path.exists(paths.default_client_environment_path()))
+            self.assertFalse(os.path.exists(new_environment_file_path))
 
     def test_moduser_zone(self):
         """Test modifying the user's zone (not supported)."""
