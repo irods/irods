@@ -1,4 +1,28 @@
-cmake_minimum_required(VERSION 3.7.0 FATAL_ERROR) #CPACK_DEBIAN_<COMPONENT>_PACKAGE_NAME
+cmake_minimum_required(VERSION 3.12...3.18 FATAL_ERROR)
+if (POLICY CMP0109)
+  # find_program requires permission to execute but not to read
+  cmake_policy(SET CMP0109 NEW)
+endif()
+if (POLICY CMP0121)
+  # Detect invalid indices in list()
+  cmake_policy(SET CMP0121 NEW)
+endif()
+if (POLICY CMP0125)
+  # Consistent behavior for cache variables managed by find_*()
+  cmake_policy(SET CMP0125 NEW)
+endif()
+if (POLICY CMP0130)
+  # Diagnose condition evaluation errors in while()
+  cmake_policy(SET CMP0130 NEW)
+endif()
+if (POLICY CMP0132)
+  # Consistent handling of compiler environment variables
+  cmake_policy(SET CMP0132 NEW)
+endif()
+if (POLICY CMP0140)
+  # Check validity of return() params
+  cmake_policy(SET CMP0140 NEW)
+endif()
 
 option(IRODS_ENABLE_ADDRESS_SANITIZER "Enables detection of memory leaks and other features provided by Address Sanitizer." OFF)
 option(IRODS_ENABLE_UNDEFINED_BEHAVIOR_SANITIZER "Enables detection of undefined behavior provided by Undefined Behavior Sanitizer." OFF)
