@@ -246,12 +246,6 @@ namespace
         std::strncpy(_env.rodsClientServerPolicy, default_client_server_policy, sizeof(_env.rodsClientServerPolicy));
         _json_env[irods::KW_CFG_IRODS_CLIENT_SERVER_POLICY] = _env.rodsClientServerPolicy;
 
-        // If the user indicated that TLS is going to be used, this setting is required, so no prompt is shown.
-        constexpr const char* default_server_negotiation = "request_server_negotiation";
-        std::strncpy(
-            _env.rodsClientServerNegotiation, default_server_negotiation, sizeof(_env.rodsClientServerNegotiation));
-        _json_env[irods::KW_CFG_IRODS_CLIENT_SERVER_NEGOTIATION] = _env.rodsClientServerNegotiation;
-
         constexpr const char* default_server_verification = "hostname";
         constexpr const char* server_verification_prompt = "Enter the server verification level";
         set_env_from_prompt(
