@@ -20,6 +20,7 @@
     "irods_fully_qualified_username",
     "irods_generate_random_alphanumeric_string",
     "irods_genquery1_flex_bison_parser",
+    "irods_getRodsEnv",
     "irods_get_delay_rule_info",
     "irods_get_file_descriptor_info",
     "irods_get_resource_info_for_operation",
