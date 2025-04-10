@@ -119,7 +119,6 @@ namespace irods
     extern const char* const KW_CFG_IRODS_LOG_LEVEL;
     extern const char* const KW_CFG_IRODS_AUTHENTICATION_FILE;
     extern const char* const KW_CFG_IRODS_CLIENT_SERVER_POLICY;
-    extern const char* const KW_CFG_IRODS_CLIENT_SERVER_NEGOTIATION;
     extern const char* const KW_CFG_IRODS_ENCRYPTION_KEY_SIZE;
     extern const char* const KW_CFG_IRODS_ENCRYPTION_SALT_SIZE;
     extern const char* const KW_CFG_IRODS_ENCRYPTION_NUM_HASH_ROUNDS;

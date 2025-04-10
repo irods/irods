@@ -467,7 +467,6 @@ def setup_client_environment(irods_config):
         'irods_cwd': '/'.join(['', irods_config.server_config['zone_name'], 'home', irods_config.server_config['zone_user']]),
         'irods_user_name': irods_config.server_config['zone_user'],
         'irods_zone_name': irods_config.server_config['zone_name'],
-        'irods_client_server_negotiation': 'request_server_negotiation',
         'irods_client_server_policy': irods_config.server_config['client_server_policy'],
         'irods_encryption_algorithm': irods_config.server_config['encryption']['algorithm'],
         'irods_encryption_key_size': irods_config.server_config['encryption']['key_size'],
