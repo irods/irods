@@ -46,7 +46,6 @@ class test_configurations(unittest.TestCase):
     @staticmethod
     def make_dict_for_ssl_client_environment(ca_certificate_path):
         return {
-            'irods_client_server_negotiation': 'request_server_negotiation',
             'irods_client_server_policy': 'CS_NEG_REQUIRE',
             'irods_ssl_ca_certificate_file': ca_certificate_path,
             'irods_ssl_verify_server': 'none'
