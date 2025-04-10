@@ -270,7 +270,6 @@ class test_iinit(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
         self.encryption_num_hash_rounds = '16'
 
         self.ssl_client_environment = {
-            'irods_client_server_negotiation': self.client_server_negotiation,
             "irods_ssl_verify_server": self.ssl_verify_server,
             'irods_client_server_policy': self.client_server_policy,
             'irods_ssl_ca_certificate_file': self.ssl_ca_certificate_file,

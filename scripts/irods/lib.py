@@ -300,7 +300,6 @@ def make_environment_dict(username, hostname, zone_name, use_ssl=True):
         'irods_cwd': irods_home,
         'irods_user_name': username,
         'irods_zone_name': zone_name,
-        'irods_client_server_negotiation': 'request_server_negotiation',
         'irods_client_server_policy': 'CS_NEG_REFUSE',
         'irods_encryption_key_size': 32,
         'irods_encryption_salt_size': 8,
