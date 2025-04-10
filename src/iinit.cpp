@@ -158,7 +158,7 @@ namespace
         std::getline(std::cin, response);
 
         if (!response.empty()) {
-            std::strncpy(_setting, response.c_str(), _len);
+            std::strncpy(_setting, response.c_str(), _len - 1);
         }
     } // set_env_from_prompt
 
@@ -172,10 +172,10 @@ namespace
         std::getline(std::cin, response);
 
         if (!response.empty()) {
-            std::strncpy(_setting, response.c_str(), _len);
+            std::strncpy(_setting, response.c_str(), _len - 1);
         }
         else if (!env_has_value) {
-            std::strncpy(_setting, default_value, _len);
+            std::strncpy(_setting, default_value, _len - 1);
         }
     } // set_env_from_prompt
 
@@ -365,7 +365,7 @@ int main( int argc, char **argv )
         configure_auth_scheme_in_env(my_env, json_env);
     }
     else if (0 == std::strlen(my_env.rodsAuthScheme)) {
-        std::strncpy(my_env.rodsAuthScheme, NATIVE_SCHEME, std::strlen(NATIVE_SCHEME));
+        std::strncpy(my_env.rodsAuthScheme, NATIVE_SCHEME, sizeof(rodsEnv::rodsAuthScheme) - 1);
     }
 
     if (configure_tls) {
