@@ -46,8 +46,6 @@ bool admin_mode = false;
 
 int usage( const char *subOpt );
 
-int do_interactive();
-
 int display_help(const std::vector<std::string>& _sub_args);
 
 int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_args);
@@ -1105,104 +1103,6 @@ modAVUMetadata(char *arg0, char *arg1, char *arg2, char *arg3,
     return status;
 }
 
-/*
- Prompt for input and parse into tokens.
- This is a state machine based on the value of tokenFlag:
-    0: not currently processing a token
-    1: processing a whitespace delimited token
-    2: processing a double-quote delimited token
-    3: processing a single-quote delimited token
- A carriage return ends the line unconditionally.
-*/
-int
-getInput( char *cmdToken[], int maxTokens ) {
-    int lenstr, i;
-    static char ttybuf[BIG_STR];
-    int nTokens;
-    int tokenFlag; /* 1: start reg, 2: start ", 3: start ' */
-    char *cpTokenStart;
-    char *stat;
-    unsigned long nPrompts {};
-
-    std::cerr << std::flush;
-    memset( ttybuf, 0, BIG_STR );
-    if (isatty(0) || !nPrompts++) {
-        fputs( "imeta>", stdout );
-        std::cout << std::flush;
-    }
-    stat = fgets( ttybuf, BIG_STR, stdin );
-    if ( stat == 0 ) {
-        printf( "\n" );
-        rcDisconnect( Conn );
-        if ( lastCommandStatus != 0 ) {
-            exit( 4 );
-        }
-        exit( 0 );
-    }
-    lenstr = strlen( ttybuf );
-    for ( i = 0; i < maxTokens; i++ ) {
-        cmdToken[i] = "";
-    }
-    cpTokenStart = ttybuf;
-    nTokens = 0;
-    tokenFlag = 0;
-    for ( i = 0; i < lenstr; i++ ) {
-        if ( ttybuf[i] == '\n' ) {
-            ttybuf[i] = '\0';
-            // finish a token if already started
-            if (tokenFlag != 0) { cmdToken[nTokens++] = cpTokenStart; }
-            return nTokens;
-        }
-        if ( tokenFlag == 0 ) {
-            if ( ttybuf[i] == '\'' ) {
-                tokenFlag = 3;
-                cpTokenStart++;
-            }
-            else if ( ttybuf[i] == '"' ) {
-                tokenFlag = 2;
-                cpTokenStart++;
-            }
-            else if ( ttybuf[i] == ' ' ) {
-                cpTokenStart++;
-            }
-            else {
-                tokenFlag = 1;
-            }
-        }
-        else if ( tokenFlag == 1 ) {
-            if ( ttybuf[i] == ' ' ) {
-                ttybuf[i] = '\0';
-                cmdToken[nTokens++] = cpTokenStart;
-                cpTokenStart = &ttybuf[i + 1];
-                tokenFlag = 0;
-            }
-        }
-        else if ( tokenFlag == 2 ) {
-            if ( ttybuf[i] == '"' ) {
-                ttybuf[i] = '\0';
-                cmdToken[nTokens++] = cpTokenStart;
-                cpTokenStart = &ttybuf[i + 1];
-                tokenFlag = 0;
-            }
-        }
-        else if ( tokenFlag == 3 ) {
-            if ( ttybuf[i] == '\'' ) {
-                ttybuf[i] = '\0';
-                cmdToken[nTokens++] = cpTokenStart;
-                cpTokenStart = &ttybuf[i + 1];
-                tokenFlag = 0;
-            }
-        }
-        if ( nTokens >= maxTokens ) {
-            std::cerr << "Error: "
-                      << "Limit reached (too many tokens, unrecognized input)"
-                      << std::endl;
-            return -1;
-        }
-    }
-    return nTokens;
-}
-
 std::tuple<po::parsed_options, po::variables_map>
 parse_program_options(int _argc,
                       const char** _argv,
@@ -1266,23 +1166,6 @@ parse_program_options(int _argc,
                   << _e.what()
                   << std::endl;
         THROW( SYS_INVALID_INPUT_PARAM, _e.what() );
-    }
-}
-
-int do_interactive() {
-    while ( true ) {
-        char *cmdToken[MAX_CMD_TOKENS];
-        int num_tokens = getInput( cmdToken, MAX_CMD_TOKENS );
-        if ( num_tokens == 0 ) {
-            continue;
-        } else if ( num_tokens < 0 ) {
-            return num_tokens;
-        }
-
-        int status = do_command( cmdToken[0], {cmdToken + 1, cmdToken + num_tokens} );
-        if (status == -1 ) {
-            return 0;
-        }
     }
 }
 
@@ -1989,10 +1872,15 @@ int main( int argc, const char **argv )
     po::parsed_options parsed = std::get<po::parsed_options>(*options_and_map);
     po::variables_map vm = std::get<po::variables_map>(*options_and_map);
 
-    const bool command_mode = !vm.count( "command" );
+    const bool missing_command = !vm.count( "command" );
 
     std::vector< std::string > command_to_be_parsed;
-    if (!command_mode) {
+    if (missing_command) {
+        std::cout << "Error: No command specified.\n";
+        usage("");
+        return 1;
+    }
+    else {
         command_to_be_parsed = po::collect_unrecognized( parsed.options, po::include_positional );
     }
 
@@ -2037,12 +1925,7 @@ int main( int argc, const char **argv )
         return 3;
     }
 
-    if ( command_mode ) {
-        // No command entered; run in interactive mode
-        do_interactive();
-    } else {
-        lastCommandStatus = do_command( command_to_be_parsed[0], { ++command_to_be_parsed.begin(), command_to_be_parsed.end() });
-    }
+    lastCommandStatus = do_command( command_to_be_parsed[0], { ++command_to_be_parsed.begin(), command_to_be_parsed.end() });
 
     if ( lastCommandStatus != 0 ) {
         return 4;
@@ -2087,11 +1970,6 @@ void usageMain() {
         "Fields represented with upper case, such as Name, are entered values.  For",
         "example, 'Name' is the name of a dataobject, collection, resource,",
         "or user.",
-        " ",
-        "A blank execute line invokes the interactive mode, where imeta",
-        "prompts and executes commands until 'quit' or 'q' is entered.",
-        "Like other unix utilities, a series of commands can be piped into it:",
-        "'cat file1 | imeta' (maintaining one connection for all commands).",
         " ",
         "Single or double quotes can be used to enter items with blanks.",
         " ",
