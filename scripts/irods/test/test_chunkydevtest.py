@@ -89,9 +89,7 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("icp -K -R " + self.testresc + " " +
                                    irodshome + "/icmdtest/foo1 " + irodshome + "/icmdtest/foo2")
 
-        # test imeta -v
-        imeta_popen = subprocess.Popen(
-            'echo "ls -d ' + irodshome + '/icmdtest/foo1" | imeta -v', shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        imeta_popen = subprocess.Popen('imeta ls -d ' + irodshome + '/icmdtest/foo1', shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         imeta_output = imeta_popen.communicate()[0].decode()
         assert imeta_output.find('testmeta1') > -1
         assert imeta_output.find('180') > -1
