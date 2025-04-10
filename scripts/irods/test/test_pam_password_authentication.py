@@ -13,59 +13,59 @@ from ..configuration import IrodsConfig
 from ..controller import IrodsController
 
 
+def generate_default_tls_files(tls_directory=None, numbits_for_genrsa=2048):
+    tls_directory = tls_directory or os.path.join(IrodsConfig().irods_directory, 'test')
+
+    server_key_path = os.path.join(tls_directory, 'server.key')
+    chain_pem_path = os.path.join(tls_directory, 'chain.pem')
+    dhparams_pem_path = os.path.join(tls_directory, 'dhparams.pem')
+
+    lib.execute_command(['openssl', 'genrsa', '-out', server_key_path, str(numbits_for_genrsa)])
+    lib.execute_command(
+        ['openssl', 'req', '-batch', '-new', '-x509', '-key', server_key_path, '-out', chain_pem_path, '-days', '365'])
+    lib.execute_command(['openssl', 'dhparam', '-2', '-out', dhparams_pem_path, str(numbits_for_genrsa)])
+
+    return (server_key_path, chain_pem_path, dhparams_pem_path)
+
+
+def make_dict_for_server_config_tls_configuration(server_key_path, chain_pem_path, dhparams_pem_path):
+    return {
+        "tls_server": {
+            "certificate_chain_file": chain_pem_path,
+            "certificate_key_file": server_key_path,
+            "dh_params_file": dhparams_pem_path
+        }
+    }
+
+
+def make_dict_for_tls_client_environment(ca_certificate_path):
+    return {
+        'irods_client_server_policy': 'CS_NEG_REQUIRE',
+        'irods_ssl_ca_certificate_file': ca_certificate_path,
+        'irods_ssl_verify_server': 'none'
+    }
+
+
+def get_pep_for_tls(plugin_name, negotiation_value="CS_NEG_REQUIRE"):
+    import textwrap
+
+    return {
+        'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent(f'''
+            acPreConnect(*OUT) {{
+                *OUT = '{negotiation_value}';
+            }}
+        '''),
+        'irods_rule_engine_plugin-python': textwrap.dedent(f'''
+            def acPreConnect(rule_args, callback, rei):
+                rule_args[0] = '{negotiation_value}'
+        ''')
+    }[plugin_name]
+
+
 @unittest.skipIf(test.settings.USE_SSL, 'SSL is set up in these tests, so just skip if SSL is enabled already.')
 @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, 'SSL configuration cannot be applied to all servers from the tests.')
 class test_configurations(unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
-
-    @staticmethod
-    def generate_default_ssl_files(ssl_directory=None, numbits_for_genrsa=2048):
-        ssl_directory = ssl_directory or os.path.join(IrodsConfig().irods_directory, 'test')
-
-        server_key_path = os.path.join(ssl_directory, 'server.key')
-        chain_pem_path = os.path.join(ssl_directory, 'chain.pem')
-        dhparams_pem_path = os.path.join(ssl_directory, 'dhparams.pem')
-
-        lib.execute_command(['openssl', 'genrsa', '-out', server_key_path, str(numbits_for_genrsa)])
-        lib.execute_command(
-            ['openssl', 'req', '-batch', '-new', '-x509', '-key', server_key_path, '-out', chain_pem_path, '-days', '365'])
-        lib.execute_command(['openssl', 'dhparam', '-2', '-out', dhparams_pem_path, str(numbits_for_genrsa)])
-
-        return (server_key_path, chain_pem_path, dhparams_pem_path)
-
-    @staticmethod
-    def make_dict_for_server_config_tls_configuration(server_key_path, chain_pem_path, dhparams_pem_path):
-        return {
-            "tls_server": {
-                "certificate_chain_file": chain_pem_path,
-                "certificate_key_file": server_key_path,
-                "dh_params_file": dhparams_pem_path
-            }
-        }
-
-    @staticmethod
-    def make_dict_for_ssl_client_environment(ca_certificate_path):
-        return {
-            'irods_client_server_policy': 'CS_NEG_REQUIRE',
-            'irods_ssl_ca_certificate_file': ca_certificate_path,
-            'irods_ssl_verify_server': 'none'
-        }
-
-    @staticmethod
-    def get_pep_for_ssl(plugin_name):
-        import textwrap
-
-        return {
-            'irods_rule_engine_plugin-irods_rule_language': textwrap.dedent('''
-                acPreConnect(*OUT) {
-                    *OUT = 'CS_NEG_REQUIRE';
-                }
-            '''),
-            'irods_rule_engine_plugin-python': textwrap.dedent('''
-                def acPreConnect(rule_args, callback, rei):
-                    rule_args[0] = 'CS_NEG_REQUIRE'
-            ''')
-        }[plugin_name]
 
     @classmethod
     def setUpClass(self):
@@ -96,14 +96,14 @@ class test_configurations(unittest.TestCase):
         self.service_account_environment_file_path = os.path.join(
             os.path.expanduser('~'), '.irods', 'irods_environment.json')
 
-        self.server_key_path, self.chain_pem_path, self.dhparams_pem_path = test_configurations.generate_default_ssl_files()
+        self.server_key_path, self.chain_pem_path, self.dhparams_pem_path = generate_default_tls_files()
         self.authentication_scheme = 'pam_password'
         self.configuration_namespace = 'authentication'
 
         # Make a backup of the server_config and configure TLS.
         self.server_config_backup = tempfile.NamedTemporaryFile(prefix=os.path.basename(paths.server_config_path())).name
         shutil.copyfile(paths.server_config_path(), self.server_config_backup)
-        server_config_update = test_configurations.make_dict_for_server_config_tls_configuration(
+        server_config_update = make_dict_for_server_config_tls_configuration(
             self.server_key_path, self.chain_pem_path, self.dhparams_pem_path)
         lib.update_json_file_from_dict(paths.server_config_path(), server_config_update)
 
@@ -112,7 +112,7 @@ class test_configurations(unittest.TestCase):
         self.core_re_path = os.path.join(paths.core_re_directory(), 'core.re')
         self.core_re_file_backup = tempfile.NamedTemporaryFile(prefix=os.path.basename(self.core_re_path)).name
         shutil.copyfile(self.core_re_path, self.core_re_file_backup)
-        self.core_re.add_rule(test_configurations.get_pep_for_ssl(self.plugin_name))
+        self.core_re.add_rule(get_pep_for_tls(self.plugin_name))
 
         IrodsController().reload_configuration()
 
@@ -120,7 +120,7 @@ class test_configurations(unittest.TestCase):
         self.service_account_environment_file_backup = tempfile.NamedTemporaryFile(
             prefix=os.path.basename(self.service_account_environment_file_path)).name
         shutil.copyfile(self.service_account_environment_file_path, self.service_account_environment_file_backup)
-        client_update = test_configurations.make_dict_for_ssl_client_environment(self.chain_pem_path)
+        client_update = make_dict_for_tls_client_environment(self.chain_pem_path)
         lib.update_json_file_from_dict(self.service_account_environment_file_path, client_update)
         self.admin.environment_file_contents.update(client_update)
         self.auth_session.environment_file_contents.update(client_update)
@@ -558,3 +558,35 @@ class test_configurations(unittest.TestCase):
 
             self.admin.assert_icommand(
                 ['iadmin', 'set_grid_configuration', self.configuration_namespace, max_time_option_name, original_max_time])
+
+    def test_user_cannot_authenticate_with_CS_NEG_REFUSE_even_if_tls_is_configured__issue_8360(self):
+        # Back up auth session environment contents. This test disables TLS in the server while keeping it configured to
+        # demonstrate that pam_password no longer enables TLS itself and returns an error in this case.
+        auth_session_env_backup = copy.deepcopy(self.auth_session.environment_file_contents)
+        try:
+            # Disable TLS in the test auth session.
+            self.auth_session.environment_file_contents.update(
+                {
+                    "irods_authentication_scheme": self.authentication_scheme,
+                    "irods_client_server_policy": "CS_NEG_REFUSE"
+                }
+            )
+
+            with core_file.temporary_core_file() as core:
+                # Disable TLS in the server's acPreConnect policy and reload configuration for it to take effect.
+                core.add_rule(get_pep_for_tls(self.plugin_name, negotiation_value="CS_NEG_REFUSE"))
+
+                IrodsController().reload_configuration()
+
+                # Ensure that an error message stating that TLS is not enabled causes authentication to fail.
+                self.auth_session.assert_icommand(
+                    ["iinit"], "STDERR", "SYS_NOT_ALLOWED", input=f"{self.auth_session.password}\n")
+
+        finally:
+            self.auth_session.environment_file_contents = auth_session_env_backup
+
+            IrodsController().reload_configuration()
+
+            # Re-authenticate as the session user to make sure things can be cleaned up.
+            self.auth_session.assert_icommand(
+                ["iinit"], "STDOUT", "iRODS password", input=f"{self.auth_session.password}\n")
