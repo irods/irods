@@ -165,6 +165,10 @@ namespace irods
 
     extern const char* const KW_CFG_IRODS_PLUGIN_DIRECTORY;
 
+    // server config property which enables admins to override where
+    // an iRODS server loads plugins from.
+    extern const char* const KW_CFG_PLUGIN_DIRECTORY;
+
     extern const char* const KW_CFG_PLUGIN_CONFIGURATION;
 
     // plugin types

@@ -280,6 +280,10 @@
             },
             "required": ["authentication","network","resource","rule_engines"]
         },
+        "plugin_directory": {
+            "type": "string",
+            "maxLength": 1087
+        },
         "schema_name": {"type": "string"},
         "schema_version": {"type": "string"},
         "server_port_range_end": {"type": "integer"},
