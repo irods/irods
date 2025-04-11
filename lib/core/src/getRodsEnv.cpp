@@ -135,6 +135,11 @@ namespace
         copy_int(advanced_settings, irods::KW_CFG_MAX_SIZE_FOR_SINGLE_BUFFER, _env.irodsMaxSizeForSingleBuffer);
         copy_int(
             advanced_settings, irods::KW_CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS, _env.irodsTransBufferSizeForParaTrans);
+
+        if (auto iter = config.find(irods::KW_CFG_PLUGIN_DIRECTORY); iter != std::end(config)) {
+            iter->get_ref<const std::string&>().copy(
+                _env.irodsPluginDirectory, sizeof(rodsEnv::irodsPluginDirectory) - 1);
+        }
     } // init_from_server_properties
 } // anonymous namespace
 
