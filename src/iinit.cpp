@@ -81,14 +81,9 @@ mkrodsdir() {
 
 namespace
 {
-    namespace irods_auth = irods::experimental::auth;
+    namespace irods_auth = irods::authentication;
 
     constexpr const char* const NATIVE_SCHEME = "native";
-
-    auto scheme_uses_iinit_password_prompt(const std::string_view _scheme) -> bool
-    {
-        return _scheme == NATIVE_SCHEME;
-    } // scheme_uses_iinit_password_prompt
 
     auto save_updates_to_irods_environment(const nlohmann::json& _update) -> void
     {
@@ -303,7 +298,6 @@ int main( int argc, char **argv )
 {
     signal( SIGPIPE, SIG_IGN );
 
-    int i = 0, status = 0;
     rodsEnv my_env;
     rcComm_t *Conn = 0;
     rErrMsg_t errMsg;
@@ -314,7 +308,7 @@ int main( int argc, char **argv )
     const auto configure_tls = option_specified("--with-ssl", argc, argv);
     const auto prompt_auth_scheme = option_specified("--prompt-auth-scheme", argc, argv);
 
-    status = parseCmdLineOpt( argc, argv, "hvVlZ", 1, &myRodsArgs );
+    auto status = parseCmdLineOpt(argc, argv, "hvVlZ", 1, &myRodsArgs);
     if ( status != 0 ) {
         printf( "Use -h for help.\n" );
         return 1;
@@ -331,8 +325,7 @@ int main( int argc, char **argv )
 
     status = getRodsEnv( &my_env );
     if ( status < 0 ) {
-        rodsLog( LOG_ERROR, "main: getRodsEnv error. status = %d",
-                 status );
+        fmt::print("Failed to get client environment. error: {}\n", status);
         return 1;
     }
 
@@ -386,21 +379,6 @@ int main( int argc, char **argv )
         lower_scheme.begin(),
         ::tolower );
 
-    if (std::string_view{ANONYMOUS_USER} != my_env.rodsUserName &&
-        scheme_uses_iinit_password_prompt(lower_scheme)) {
-        if ( myRodsArgs.verbose == True ) {
-            i = obfSavePw( 0, 1, 1, nullptr );
-        }
-        else {
-            i = obfSavePw( 0, 0, 0, nullptr );
-        }
-
-        if ( i != 0 ) {
-            rodsLogError( LOG_ERROR, i, "Failed to save password." );
-            return 1;
-        }
-    }
-
     // =-=-=-=-=-=-=-
     // initialize pluggable api table
     irods::api_entry_table&  api_tbl = irods::get_client_api_table();
@@ -410,17 +388,13 @@ int main( int argc, char **argv )
     /* Connect... */
     Conn = rcConnect( my_env.rodsHost, my_env.rodsPort, my_env.rodsUserName,
                       my_env.rodsZone, 0, &errMsg );
-    if ( Conn == NULL ) {
-        rodsLog( LOG_ERROR,
-                 "Saved password, but failed to connect to server %s",
-                 my_env.rodsHost );
+    if (nullptr == Conn) {
         return 2;
     }
 
-    auto ctx = nlohmann::json{
-        {irods::AUTH_TTL_KEY, std::to_string(ttl)},
-        {irods_auth::force_password_prompt, true}
-    };
+    auto ctx = nlohmann::json{{irods::AUTH_TTL_KEY, std::to_string(ttl)},
+                              {irods_auth::record_auth_file, true},
+                              {irods_auth::force_password_prompt, true}};
 
     // Use the scheme override here to ensure that the authentication scheme in the environment is the same as
     // the authentication scheme configured here. If the scheme in the environment and the scheme configured in
@@ -432,23 +406,6 @@ int main( int argc, char **argv )
     }
 
     printErrorStack(Conn->rError);
-
-    // Native auth with TTL has to do a special final step to get its token for some reason.
-    if (ttl > 0 && NATIVE_SCHEME == lower_scheme) {
-        status = clientLoginTTL(Conn, ttl);
-        if (status) {
-            print_error_stack_to_file(Conn->rError, stderr);
-            rcDisconnect(Conn);
-            return 8;
-        }
-        /* And check that it works */
-        status = clientLogin(Conn);
-        if (status) {
-            print_error_stack_to_file(Conn->rError, stderr);
-            rcDisconnect(Conn);
-            return 7;
-        }
-    }
 
     rcDisconnect( Conn );
 
