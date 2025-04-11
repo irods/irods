@@ -103,6 +103,10 @@ namespace irods
     extern const char* const KW_CFG_IRODS_TCP_KEEPALIVE_TIME_IN_SECONDS;
     extern const char* const KW_CFG_IRODS_TCP_KEEPALIVE_INTVL_IN_SECONDS;
 
+    extern const char* const KW_CFG_TCP_KEEPALIVE_PROBES;
+    extern const char* const KW_CFG_TCP_KEEPALIVE_TIME_IN_SECONDS;
+    extern const char* const KW_CFG_TCP_KEEPALIVE_INTVL_IN_SECONDS;
+
     // service_account_environment.json keywords
     extern const char* const KW_CFG_IRODS_USER_NAME;
     extern const char* const KW_CFG_IRODS_HOST;
@@ -114,9 +118,7 @@ namespace irods
     extern const char* const KW_CFG_IRODS_ZONE;
     extern const char* const KW_CFG_IRODS_LOG_LEVEL;
     extern const char* const KW_CFG_IRODS_AUTHENTICATION_FILE;
-    extern const char* const KW_CFG_IRODS_DEBUG;
     extern const char* const KW_CFG_IRODS_CLIENT_SERVER_POLICY;
-    extern const char* const KW_CFG_IRODS_CLIENT_SERVER_NEGOTIATION;
     extern const char* const KW_CFG_IRODS_ENCRYPTION_KEY_SIZE;
     extern const char* const KW_CFG_IRODS_ENCRYPTION_SALT_SIZE;
     extern const char* const KW_CFG_IRODS_ENCRYPTION_NUM_HASH_ROUNDS;
@@ -143,9 +145,16 @@ namespace irods
     extern const char* const KW_CFG_IRODS_SSL_DH_PARAMS_FILE;
 
     // irods environment values now included in server_config
-    extern const char* const KW_CFG_ZONE_USER;
-    extern const char* const KW_CFG_ZONE_PORT;
+    extern const char* const KW_CFG_CLIENT_SERVER_POLICY;
+    extern const char* const KW_CFG_DEFAULT_RESOURCE_NAME;
+    extern const char* const KW_CFG_ENCRYPTION;
+    extern const char* const KW_CFG_ENCRYPTION_ALGORITHM;
+    extern const char* const KW_CFG_ENCRYPTION_KEY_SIZE;
+    extern const char* const KW_CFG_ENCRYPTION_NUM_HASH_ROUNDS;
+    extern const char* const KW_CFG_ENCRYPTION_SALT_SIZE;
     extern const char* const KW_CFG_ZONE_AUTH_SCHEME;
+    extern const char* const KW_CFG_ZONE_PORT;
+    extern const char* const KW_CFG_ZONE_USER;
 
     extern const char* const KW_CFG_CATALOG_PROVIDER_HOSTS;
     extern const char* const KW_CFG_CATALOG_SERVICE_ROLE;
@@ -154,6 +163,10 @@ namespace irods
     extern const char* const KW_CFG_SERVICE_ROLE_PROXY;
 
     extern const char* const KW_CFG_IRODS_PLUGIN_DIRECTORY;
+
+    // server config property which enables admins to override where
+    // an iRODS server loads plugins from.
+    extern const char* const KW_CFG_PLUGIN_DIRECTORY;
 
     extern const char* const KW_CFG_PLUGIN_CONFIGURATION;
 
@@ -183,11 +196,18 @@ namespace irods
     extern const char* const KW_CFG_ACCESS_TIME_BATCH_SIZE;
     extern const char* const KW_CFG_ACCESS_TIME_RESOLUTION_IN_SECONDS;
 
-    // TLS server configurations
-    extern const char* const KW_CFG_TLS_CONFIGURATION;
+    // TLS server configurations (inbound traffic)
+    extern const char* const KW_CFG_TLS_SERVER;
     extern const char* const KW_CFG_TLS_CERTIFICATE_CHAIN_FILE;
     extern const char* const KW_CFG_TLS_CERTIFICATE_KEY_FILE;
     extern const char* const KW_CFG_TLS_DH_PARAMS_FILE;
+    // TLS server configurations (outbound traffic)
+    extern const char* const KW_CFG_TLS_CLIENT;
+    extern const char* const KW_CFG_TLS_CA_CERTIFICATE_FILE;
+    extern const char* const KW_CFG_TLS_CA_CERTIFICATE_PATH;
+    extern const char* const KW_CFG_TLS_VERIFY_SERVER;
+
+    extern const char* const KW_CFG_CONNECTION_POOL_REFRESH_TIME;
 } // namespace irods
 
 #endif // IRODS_CONFIGURATION_KEYWORDS_HPP

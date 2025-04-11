@@ -22,7 +22,10 @@
                         }
                     }
                 },
-                "required": ["coordinating_resources", "servers"]
+                "required": [
+                    "coordinating_resources",
+                    "servers"
+                ]
             }
         }
     },

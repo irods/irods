@@ -316,7 +316,7 @@ class ResourceSuite(ResourceBase):
                 # prepend the new rulebase to the NREP's rulebase list.
                 nrep = config.server_config['plugin_configuration']['rule_engines'][0]
                 nrep['plugin_specific_configuration']['re_rulebase_set'].insert(0, connection_rulebase)
-                config.server_config["tls"] = {
+                config.server_config["tls_server"] = {
                     "certificate_chain_file": chain_pem_path,
                     "certificate_key_file": server_key_path,
                     "dh_params_file": dhparams_pem_path
@@ -389,7 +389,7 @@ class ResourceSuite(ResourceBase):
                     # prepend the new rulebase to the NREP's rulebase list.
                     nrep = config.server_config['plugin_configuration']['rule_engines'][0]
                     nrep['plugin_specific_configuration']['re_rulebase_set'].insert(0, connection_rulebase)
-                    config.server_config["tls"] = {
+                    config.server_config["tls_server"] = {
                         "certificate_chain_file": chain_pem_path,
                         "certificate_key_file": server_key_path,
                         "dh_params_file": dhparams_pem_path

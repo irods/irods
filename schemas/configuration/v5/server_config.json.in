@@ -6,38 +6,89 @@
         "advanced_settings": {
             "type": "object",
             "properties": {
-                "default_number_of_transfer_threads": {"type": "integer"},
-                "default_temporary_password_lifetime_in_seconds": {"type": "integer"},
+                "default_number_of_transfer_threads": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "default_temporary_password_lifetime_in_seconds": {
+                    "type": "integer",
+                    "minimum": 0
+                },
                 "delay_rule_executors": {
                     "type": "array",
                     "items": {"type": "string"},
                     "uniqueItems": true
                 },
-                "delay_server_sleep_time_in_seconds": {"type": "integer"},
+                "delay_server_sleep_time_in_seconds": {
+                    "type": "integer",
+                    "minimum": 0
+                },
                 "dns_cache": {
                     "type": "object",
                     "properties": {
-                        "shared_memory_size_in_bytes": {"type": "integer"},
-                        "eviction_age_in_seconds": {"type": "integer"},
-                        "cache_clearer_sleep_time_in_seconds": {"type": "integer"}
+                        "shared_memory_size_in_bytes": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "eviction_age_in_seconds": {
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        "cache_clearer_sleep_time_in_seconds": {
+                            "type": "integer",
+                            "minimum": 0
+                        }
                     }
                 },
                 "hostname_cache": {
                     "type": "object",
                     "properties": {
-                        "shared_memory_size_in_bytes": {"type": "integer"},
-                        "eviction_age_in_seconds": {"type": "integer"},
-                        "cache_clearer_sleep_time_in_seconds": {"type": "integer"}
+                        "shared_memory_size_in_bytes": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "eviction_age_in_seconds": {
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        "cache_clearer_sleep_time_in_seconds": {
+                            "type": "integer",
+                            "minimum": 0
+                        }
                     }
                 },
-                "maximum_size_for_single_buffer_in_megabytes": {"type": "integer"},
-                "maximum_size_of_delay_queue_in_bytes": {"type": "integer"},
-                "maximum_temporary_password_lifetime_in_seconds": {"type": "integer"},
-                "migrate_delay_server_sleep_time_in_seconds":  {"type": "integer"},
-                "number_of_concurrent_delay_rule_executors": {"type": "integer"},
-                "stacktrace_file_processor_sleep_time_in_seconds": {"type": "integer"},
-                "transfer_buffer_size_for_parallel_transfer_in_megabytes": {"type": "integer"},
-                "transfer_chunk_size_for_parallel_transfer_in_megabytes": {"type": "integer"}
+                "maximum_size_for_single_buffer_in_megabytes": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "maximum_size_of_delay_queue_in_bytes": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "maximum_temporary_password_lifetime_in_seconds": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "migrate_delay_server_sleep_time_in_seconds": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "number_of_concurrent_delay_rule_executors": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "stacktrace_file_processor_sleep_time_in_seconds": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "transfer_buffer_size_for_parallel_transfer_in_megabytes": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "transfer_chunk_size_for_parallel_transfer_in_megabytes": {
+                    "type": "integer",
+                    "minimum": 1
+                }
             },
             "required": [
                 "default_number_of_transfer_threads",
@@ -55,8 +106,19 @@
             "minItems": 1,
             "uniqueItems": true
         },
-        "catalog_service_role": {"enum": ["consumer","provider"]},
+        "catalog_service_role": {"enum": ["consumer", "provider"]},
         "client_api_allowlist_policy": {"enum": ["disabled", "enforce"]},
+        "client_server_policy": {
+            "enum": [
+                "CS_NEG_REFUSE",
+                "CS_NEG_DONT_CARE",
+                "CS_NEG_REQUIRE"
+            ]
+        },
+        "connection_pool_refresh_time_in_seconds": {
+            "type": "integer",
+            "minimum": 0
+        },
         "controlled_user_connection_list": {
             "type": "object",
             "properties": {
@@ -67,15 +129,56 @@
                     "uniqueItems": true
                 }
             },
-            "required": ["control_type", "users"]
+            "required": [
+                "control_type",
+                "users"
+            ]
         },
-        "maximum_connections": {
-            "type": "integer",
-            "minimum": 1
+        "default_dir_mode": {
+            "type": "string",
+            "minLength": 4,
+            "maxLength": 4
         },
-        "default_dir_mode": {"type": "string"},
-        "default_file_mode": {"type": "string"},
-        "default_hash_scheme": {"type": "string"},
+        "default_file_mode": {
+            "type": "string",
+            "minLength": 4,
+            "maxLength": 4
+        },
+        "default_hash_scheme": {
+            "type": "string",
+            "maxLength": 63
+        },
+        "default_resource_name": {
+            "type": "string",
+            "maxLength": 63
+        },
+        "encryption": {
+            "type": "object",
+            "properties": {
+                "algorithm": {
+                    "type": "string",
+                    "maxLength": 127
+                },
+                "key_size": {
+                    "type": "integer",
+                    "minimum": 32
+                },
+                "num_hash_rounds": {
+                    "type": "integer",
+                    "minimum": 16
+                },
+                "salt_size": {
+                    "type": "integer",
+                    "minimum": 8
+                }
+            },
+            "required": [
+                "algorithm",
+                "key_size",
+                "num_hash_rounds",
+                "salt_size"
+            ]
+        },
         "environment_variables": {
             "type": "object",
             "additionalProperties": {"type": "string"}
@@ -91,12 +194,33 @@
                         "minItems": 1,
                         "uniqueItems": true
                     },
-                    "negotiation_key": {"type": "string", "pattern": "^[A-Za-z0-9_]+$", "minLength": 32, "maxLength": 32},
-                    "zone_key": {"type": "string", "pattern": "^[A-Za-z0-9_]+$", "maxLength": 49},
-                    "zone_name": {"type": "string", "pattern": "^[A-Za-z0-9_\\.]+$", "maxLength": 63},
-                    "zone_port": {"type": "integer"}
+                    "negotiation_key": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_]+$",
+                        "minLength": 32,
+                        "maxLength": 32
+                    },
+                    "zone_key": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_]+$",
+                        "maxLength": 49
+                    },
+                    "zone_name": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_\\.]+$",
+                        "maxLength": 63
+                    },
+                    "zone_port": {
+                        "type": "integer",
+                        "minimum": 0
+                    }
                 },
-                "required": ["catalog_provider_hosts","negotiation_key","zone_key","zone_name"]
+                "required": [
+                    "catalog_provider_hosts",
+                    "negotiation_key",
+                    "zone_key",
+                    "zone_name"
+                ]
             }
         },
         "graceful_shutdown_timeout_in_seconds": {
@@ -134,7 +258,16 @@
             }
         },
         "match_hash_policy": {"type": "string"},
-        "negotiation_key": {"type": "string", "pattern": "^[A-Za-z0-9_]+$", "minLength": 32, "maxLength": 32},
+        "maximum_connections": {
+            "type": "integer",
+            "minimum": 1
+        },
+        "negotiation_key": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_]+$",
+            "minLength": 32,
+            "maxLength": 32
+        },
         "plugin_configuration": {
             "type": "object",
             "properties": {
@@ -171,13 +304,34 @@
                     "minItems": 1
                 }
             },
-            "required": ["authentication","network","resource","rule_engines"]
+            "required": [
+                "authentication",
+                "network",
+                "resource",
+                "rule_engines"
+            ]
+        },
+        "plugin_directory": {
+            "type": "string",
+            "maxLength": 1087
         },
         "schema_name": {"type": "string"},
         "schema_version": {"type": "string"},
         "server_port_range_end": {"type": "integer"},
         "server_port_range_start": {"type": "integer"},
-        "tls": {
+        "tcp_keepalive_intvl_in_seconds": {
+            "type": "integer",
+            "minimum": -1
+        },
+        "tcp_keepalive_probes": {
+            "type": "integer",
+            "minimum": -1
+        },
+        "tcp_keepalive_time_in_seconds": {
+            "type": "integer",
+            "minimum": -1
+        },
+        "tls_server": {
             "type": "object",
             "properties": {
                 "certificate_chain_file": {"type": "string"},
@@ -190,21 +344,58 @@
                 "dh_params_file"
             ]
         },
-        "zone_auth_scheme" : {"type": "string"},
-        "zone_key": {"type": "string", "pattern": "^[A-Za-z0-9_]+$", "maxLength": 49},
-        "zone_name": {"type": "string", "pattern": "^[A-Za-z0-9_\\.]+$", "maxLength": 63},
-        "zone_port": {"type": "integer"},
-        "zone_user": {"type": "string"}
+        "tls_client": {
+            "type": "object",
+            "properties": {
+                "ca_certificate_file": {"type": "string"},
+                "ca_certificate_path": {"type": "string"},
+                "verify_server": {
+                    "enum": [
+                        "none",
+                        "hostname",
+                        "cert"
+                    ]
+                }
+            },
+            "required": [
+                "verify_server"
+            ]
+        },
+        "zone_auth_scheme" : {
+            "type": "string",
+            "maxLength": 63
+        },
+        "zone_key": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_]+$",
+            "maxLength": 49
+        },
+        "zone_name": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_\\.]+$",
+            "maxLength": 63
+        },
+        "zone_port": {
+            "type": "integer",
+            "minimum": 0
+        },
+        "zone_user": {
+            "type": "string",
+            "maxLength": 63
+        }
     },
     "required": [
         "advanced_settings",
         "catalog_provider_hosts",
         "catalog_service_role",
         "client_api_allowlist_policy",
+        "client_server_policy",
+        "connection_pool_refresh_time_in_seconds",
         "controlled_user_connection_list",
         "default_dir_mode",
         "default_file_mode",
         "default_hash_scheme",
+        "encryption",
         "environment_variables",
         "federation",
         "graceful_shutdown_timeout_in_seconds",

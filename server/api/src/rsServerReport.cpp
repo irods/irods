@@ -154,12 +154,13 @@ irods::error convert_service_account( json& _svc_acct )
         return PASS(ret);
     }
 
-    if (!fs::exists(env_file_path)) {
-        return ERROR(SYS_CONFIG_FILE_ERR, boost::format("Could not find environment file at [%s]") % env_file_path);
+    if (fs::exists(env_file_path)) {
+        if (const auto err = load_json_file(env_file_path, _svc_acct); !err.ok()) {
+            return err;
+        }
     }
-
-    if (const auto err = load_json_file(env_file_path, _svc_acct); !err.ok()) {
-        return err;
+    else {
+        _svc_acct = nullptr;
     }
 
     return SUCCESS();

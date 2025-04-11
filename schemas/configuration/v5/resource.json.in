@@ -12,7 +12,12 @@
         "name": {"type": "string"},
         "parent_context": {"type": "string"},
         "parent_resource": {"type": "string"},
-        "status": {"type": "string", "enum": ["up","down"]},
+        "status": {
+            "enum": [
+                "up",
+                "down"
+            ]
+        },
         "type": {"type": "string"},
         "vault_path": {"type": "string"}
     },

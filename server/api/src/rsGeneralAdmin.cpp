@@ -86,15 +86,13 @@ namespace
             const auto* local_zone_name = getLocalZoneName();
 
             const auto throw_if_user_is_found = [&rsComm, _user_name](const nlohmann::json& _server) {
-                const auto& server_admin =
-                    _server.at("service_account_environment").at("irods_user_name").get_ref<const std::string&>();
+                const auto& server_config = _server.at("server_config");
+                const auto& server_admin = server_config.at("zone_user").get_ref<const std::string&>();
                 if (server_admin == _user_name) {
-                    const auto& host_of_target_user =
-                        _server.at("host_system_information").at("hostname").get_ref<const std::string&>();
-                    const auto msg = fmt::format(
-                        "Cannot downgrade another rodsadmin [{}] running another server [{}] in this zone.",
-                        _user_name,
-                        host_of_target_user);
+                    const auto msg =
+                        fmt::format("Cannot downgrade another rodsadmin [{}] running another server [{}] in this zone.",
+                                    _user_name,
+                                    server_config.at("host").get_ref<const std::string&>());
                     addRErrorMsg(&rsComm.rError, SYS_NOT_ALLOWED, msg.c_str());
                     THROW(SYS_NOT_ALLOWED, msg); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
                 }
@@ -103,7 +101,8 @@ namespace
             for (const auto& zone : zones) {
                 const nlohmann::json* catalog_server = nullptr;
                 for (const nlohmann::json& server : zone.at("servers")) {
-                    if (server.at("server_config").at("catalog_service_role") == "provider") {
+                    if (server.at("server_config").at("catalog_service_role").get_ref<const std::string&>() ==
+                        "provider") {
                         catalog_server = &server;
                         break;
                     }
@@ -112,9 +111,9 @@ namespace
                 // Administrators are not allowed to invoke administrative operations in a remote zone.
                 // Therefore, skip all servers that do not belong to the local zone.
                 // NOLINTNEXTLINE(readability-implicit-bool-conversion)
-                if (catalog_server && catalog_server->at("service_account_environment")
-                                              .at("irods_zone_name")
-                                              .get_ref<const std::string&>() != local_zone_name)
+                if (catalog_server &&
+                    catalog_server->at("server_config").at("zone_name").get_ref<const std::string&>() !=
+                        local_zone_name)
                 {
                     continue;
                 }

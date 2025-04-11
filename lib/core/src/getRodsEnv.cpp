@@ -33,6 +33,9 @@
 #include "irods/irods_version.h"
 #include "irods/irods_environment_properties.hpp"
 #include "irods/irods_configuration_keywords.hpp"
+#include "irods/irods_server_properties.hpp"
+
+#include <nlohmann/json.hpp>
 
 #include <cstring>
 
@@ -40,6 +43,106 @@
 #define LARGE_BUF_LEN MAX_NAME_LEN+20
 
 #define RODS_ENV_FILE "/.irods/irods_environment.json"  /* under the HOME directory */
+
+namespace
+{
+    void init_from_server_properties(rodsEnv& _env)
+    {
+        // The following members are not used by the server:
+        //
+        //    - rodsAuthFile
+
+        // iRODS 5 servers always request client-server negotiation on redirects.
+        std::strncpy(
+            _env.rodsClientServerNegotiation, REQ_SVR_NEG, sizeof(RodsEnvironment::rodsClientServerNegotiation) - 1);
+
+        const auto config_handle = irods::server_properties::instance().map();
+        const auto& config = config_handle.get_json();
+
+        using json = nlohmann::json;
+
+        // clang-format off
+        const auto copy_string = []<std::size_t N>(const json& _config, const char* const _k, char (&_v)[N]) {
+            _config.at(_k).get_ref<const std::string&>().copy(_v, N - 1);
+        };
+
+        const auto copy_int = [](const json& _config, const char* const _k, int& _v) {
+            _v = _config.at(_k).get<int>();
+        };
+        // clang-format on
+
+        copy_string(config, irods::KW_CFG_HOST, _env.rodsHost);
+        copy_int(config, irods::KW_CFG_ZONE_PORT, _env.rodsPort);
+
+        copy_string(config, irods::KW_CFG_ZONE_NAME, _env.rodsZone);
+        copy_string(config, irods::KW_CFG_ZONE_USER, _env.rodsUserName);
+        copy_string(config, irods::KW_CFG_ZONE_AUTH_SCHEME, _env.rodsAuthScheme);
+
+        copy_string(config, irods::KW_CFG_CLIENT_SERVER_POLICY, _env.rodsClientServerPolicy);
+
+        const auto& encryption = config.at(irods::KW_CFG_ENCRYPTION);
+        copy_string(encryption, irods::KW_CFG_ENCRYPTION_ALGORITHM, _env.rodsEncryptionAlgorithm);
+        copy_int(encryption, irods::KW_CFG_ENCRYPTION_KEY_SIZE, _env.rodsEncryptionKeySize);
+        copy_int(encryption, irods::KW_CFG_ENCRYPTION_NUM_HASH_ROUNDS, _env.rodsEncryptionNumHashRounds);
+        copy_int(encryption, irods::KW_CFG_ENCRYPTION_SALT_SIZE, _env.rodsEncryptionSaltSize);
+
+        copy_string(config, irods::KW_CFG_DEFAULT_HASH_SCHEME, _env.rodsDefaultHashScheme);
+        copy_string(config, irods::KW_CFG_MATCH_HASH_POLICY, _env.rodsMatchHashPolicy);
+
+        copy_string(config, irods::KW_CFG_DEFAULT_RESOURCE_NAME, _env.rodsDefResource);
+        copy_int(config, irods::KW_CFG_CONNECTION_POOL_REFRESH_TIME, _env.irodsConnectionPoolRefreshTime);
+
+        if (const auto tls_iter = config.find(irods::KW_CFG_TLS_CLIENT); tls_iter != std::end(config)) {
+            // clang-format off
+            const auto copy_tls_string = []<std::size_t N>(char (&_dst)[N], const nlohmann::json& _src) {
+                _src.get_ref<const std::string&>().copy(_dst, N - 1);
+            };
+            // clang-format on
+
+            for (auto&& [k, v] : tls_iter->items()) {
+                if (irods::KW_CFG_TLS_CA_CERTIFICATE_FILE == k) {
+                    copy_tls_string(_env.irodsSSLCACertificateFile, v);
+                }
+                else if (irods::KW_CFG_TLS_CA_CERTIFICATE_PATH == k) {
+                    copy_tls_string(_env.irodsSSLCACertificatePath, v);
+                }
+                else if (irods::KW_CFG_TLS_VERIFY_SERVER == k) {
+                    copy_tls_string(_env.irodsSSLVerifyServer, v);
+                }
+            }
+        }
+
+        // If the configuration is not set for the TCP keepalive options, set the value to something invalid. This
+        // indicates that we should not set the option on the socket, which will allow the socket to use the kernel
+        // configuration.
+        _env.tcp_keepalive_intvl = config.value(irods::KW_CFG_TCP_KEEPALIVE_INTVL_IN_SECONDS, -1);
+        if (_env.tcp_keepalive_intvl < 0) {
+            _env.tcp_keepalive_intvl = -1;
+        }
+
+        _env.tcp_keepalive_probes = config.value(irods::KW_CFG_TCP_KEEPALIVE_PROBES, -1);
+        if (_env.tcp_keepalive_probes < 0) {
+            _env.tcp_keepalive_probes = -1;
+        }
+
+        _env.tcp_keepalive_time = config.value(irods::KW_CFG_TCP_KEEPALIVE_TIME_IN_SECONDS, -1);
+        if (_env.tcp_keepalive_time < 0) {
+            _env.tcp_keepalive_time = -1;
+        }
+
+        const auto& advanced_settings = config.at(irods::KW_CFG_ADVANCED_SETTINGS);
+        copy_int(advanced_settings, irods::KW_CFG_DEF_NUMBER_TRANSFER_THREADS, _env.irodsDefaultNumberTransferThreads);
+        copy_int(advanced_settings, irods::KW_CFG_MAX_SIZE_FOR_SINGLE_BUFFER, _env.irodsMaxSizeForSingleBuffer);
+        copy_int(
+            advanced_settings, irods::KW_CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS, _env.irodsTransBufferSizeForParaTrans);
+
+        if (auto iter = config.find(irods::KW_CFG_PLUGIN_DIRECTORY); iter != std::end(config)) {
+            iter->get_ref<const std::string&>().copy(
+                _env.irodsPluginDirectory, sizeof(rodsEnv::irodsPluginDirectory) - 1);
+        }
+    } // init_from_server_properties
+} // anonymous namespace
+
 extern "C" {
 
     extern int ProcessType;
@@ -121,14 +224,29 @@ extern "C" {
         return 0;
     }
 
-    void _getRodsEnv( rodsEnv &rodsEnvArg ) {
-        memset( &rodsEnvArg, 0, sizeof( rodsEnv ) );
+    void _getRodsEnv(rodsEnv& rodsEnvArg)
+    {
+        std::memset(&rodsEnvArg, 0, sizeof(rodsEnv));
+
+        if (CLIENT_PT != ::ProcessType) {
+            init_from_server_properties(rodsEnvArg);
+            return;
+        }
+
         getRodsEnvFromFile( &rodsEnvArg );
         getRodsEnvFromEnv( &rodsEnvArg );
         createRodsEnvDefaults( &rodsEnvArg );
     }
 
-    void _reloadRodsEnv( rodsEnv &rodsEnvArg ) {
+    void _reloadRodsEnv(rodsEnv& rodsEnvArg)
+    {
+        memset(&rodsEnvArg, 0, sizeof(rodsEnv));
+
+        if (CLIENT_PT != ::ProcessType) {
+            init_from_server_properties(rodsEnvArg);
+            return;
+        }
+
         try {
             irods::environment_properties::instance().capture();
         } catch ( const irods::exception& e ) {
@@ -136,7 +254,6 @@ extern "C" {
             return;
         }
 
-        memset( &rodsEnvArg, 0, sizeof( rodsEnv ) );
         getRodsEnvFromFile( &rodsEnvArg );
         getRodsEnvFromEnv( &rodsEnvArg );
         createRodsEnvDefaults( &rodsEnvArg );
@@ -236,10 +353,11 @@ extern "C" {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
         capture_string_property(irods::KW_CFG_IRODS_CLIENT_SERVER_POLICY, _env->rodsClientServerPolicy, LONG_NAME_LEN);
 
-        capture_string_property(irods::KW_CFG_IRODS_CLIENT_SERVER_NEGOTIATION,
-                                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-                                _env->rodsClientServerNegotiation,
-                                LONG_NAME_LEN);
+        // Requesting negotiation is the standard now. There's no point in allowing
+        // users to change the value of the option, therefore, it is now hard-coded
+        // into the library.
+        std::strncpy(
+            _env->rodsClientServerNegotiation, REQ_SVR_NEG, sizeof(RodsEnvironment::rodsClientServerNegotiation) - 1);
 
         capture_integer_property(
             irods::KW_CFG_IRODS_ENCRYPTION_KEY_SIZE,
@@ -263,9 +381,6 @@ extern "C" {
 
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
         capture_string_property(irods::KW_CFG_IRODS_MATCH_HASH_POLICY, _env->rodsMatchHashPolicy, NAME_LEN);
-
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-        capture_string_property(irods::KW_CFG_IRODS_DEBUG, _env->rodsDebug, NAME_LEN);
 
         _env->rodsLogLevel = 0;
         int status = capture_integer_property(
@@ -418,30 +533,6 @@ extern "C" {
                 "%s", val );
         }
 
-        val = getenv( "irodsSSLCertificateChainFile" );
-        if ( val ) {
-            snprintf(
-                _env->irodsSSLCertificateChainFile,
-                sizeof( _env->irodsSSLCertificateChainFile ),
-                "%s", val );
-        }
-
-        val = getenv( "irodsSSLCertificateKeyFile" );
-        if ( val ) {
-            snprintf(
-                _env->irodsSSLCertificateKeyFile,
-                sizeof( _env->irodsSSLCertificateKeyFile ),
-                "%s", val );
-        }
-
-        val = getenv( "irodsSSLDHParamsFile" );
-        if ( val ) {
-            snprintf(
-                _env->irodsSSLDHParamsFile,
-                sizeof( _env->irodsSSLDHParamsFile ),
-                "%s", val );
-        }
-
         return 0;
 
     } // get_legacy_ssl_variables
@@ -504,10 +595,11 @@ extern "C" {
             env_var,
             _env->rodsClientServerPolicy );
 
-        env_var = irods::KW_CFG_IRODS_CLIENT_SERVER_NEGOTIATION;
-        capture_string_env_var(
-            env_var,
-            _env->rodsClientServerNegotiation );
+        // Requesting negotiation is the standard now. There's no point in allowing
+        // users to change the value of the option, therefore, it is now hard-coded
+        // into the library.
+        std::strncpy(
+            _env->rodsClientServerNegotiation, REQ_SVR_NEG, sizeof(RodsEnvironment::rodsClientServerNegotiation) - 1);
 
         env_var = irods::KW_CFG_IRODS_ENCRYPTION_KEY_SIZE;
         capture_integer_env_var(
@@ -562,11 +654,6 @@ extern "C" {
 
         }
 
-        env_var = irods::KW_CFG_IRODS_DEBUG;
-        capture_string_env_var(
-            env_var,
-            _env->rodsDebug );
-
         // legacy ssl environment variables
         env_var = irods::KW_CFG_IRODS_SSL_CA_CERTIFICATE_PATH;
         capture_string_env_var(
@@ -585,17 +672,6 @@ extern "C" {
             env_var,
             _env->irodsSSLVerifyServer );
         env_var = irods::KW_CFG_IRODS_SSL_CERTIFICATE_CHAIN_FILE;
-        capture_string_env_var(
-            env_var,
-            _env->irodsSSLCertificateChainFile );
-        env_var = irods::KW_CFG_IRODS_SSL_CERTIFICATE_KEY_FILE;
-        capture_string_env_var(
-            env_var,
-            _env->irodsSSLCertificateKeyFile );
-        env_var = irods::KW_CFG_IRODS_SSL_DH_PARAMS_FILE;
-        capture_string_env_var(
-            env_var,
-            _env->irodsSSLDHParamsFile );
 
         env_var = irods::KW_CFG_IRODS_MAX_SIZE_FOR_SINGLE_BUFFER;
         capture_integer_env_var(

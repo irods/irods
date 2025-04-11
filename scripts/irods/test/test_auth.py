@@ -66,7 +66,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
         service_account_environment_file_path = os.path.join(os.path.expanduser('~'), '.irods', 'irods_environment.json')
         with lib.file_backed_up(irods_config.server_config_path):
             server_update = {
-                "tls": {
+                "tls_server": {
                     "certificate_chain_file": chain_pem_path,
                     "certificate_key_file": server_key_path,
                     "dh_params_file": dhparams_pem_path,
@@ -123,7 +123,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
             irods_config = IrodsConfig()
             with lib.file_backed_up(irods_config.server_config_path):
                 server_update = {
-                    "tls": {
+                    "tls_server": {
                         "certificate_chain_file": chain_pem_path,
                         "certificate_key_file": server_key_path,
                         "dh_params_file": dhparams_pem_path,
@@ -270,7 +270,6 @@ class test_iinit(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
         self.encryption_num_hash_rounds = '16'
 
         self.ssl_client_environment = {
-            'irods_client_server_negotiation': self.client_server_negotiation,
             "irods_ssl_verify_server": self.ssl_verify_server,
             'irods_client_server_policy': self.client_server_policy,
             'irods_ssl_ca_certificate_file': self.ssl_ca_certificate_file,

@@ -63,6 +63,7 @@ set(
   fully_qualified_username
   generate_random_alphanumeric_string
   genquery1_flex_bison_parser
+  getRodsEnv
   get_delay_rule_info
   get_file_descriptor_info
   get_resource_info_for_operation

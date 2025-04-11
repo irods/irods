@@ -299,7 +299,18 @@ def convert_to_v5_schema_and_add_missing_properties(server_config):
     new_server_config.pop('server_control_plane_port', None)
     new_server_config.pop('server_control_plane_timeout_milliseconds', None)
 
-    # Add TLS properties based on presence of keys in the service account client environment.
+    # Add encryption properties based on the service account client environment. If any of the
+    # configuration values are missing, we put an invalid value in the server configuration so that
+    # the situation is brought to the attention of the administrator. All of these properties are
+    # required.
+    new_server_config['encryption'] = {
+        'algorithm': service_account_environment.get('irods_encryption_algorithm', None),
+        'key_size': service_account_environment.get('irods_encryption_key_size', None),
+        'num_hash_rounds': service_account_environment.get('irods_encryption_num_hash_rounds', None),
+        'salt_size': service_account_environment.get('irods_encryption_salt_size', None)
+    }
+
+    # Add TLS properties for inbound traffic based on presence of keys in the service account client environment.
     ssl_configurations_to_migrate = [
         "irods_ssl_certificate_chain_file",
         "irods_ssl_certificate_key_file",
@@ -309,11 +320,30 @@ def convert_to_v5_schema_and_add_missing_properties(server_config):
         # If any of the configuration values are missing, we put an invalid value in the server configuration so that
         # the situation is brought to the attention of the administrator. All of these properties are required if TLS
         # is being used. The administrator should either provide all of the values, or stop using TLS.
-        new_server_config["tls"] = {
+        new_server_config["tls_server"] = {
             "certificate_chain_file": service_account_environment.get("irods_ssl_certificate_chain_file", None),
             "certificate_key_file": service_account_environment.get("irods_ssl_certificate_key_file", None),
             "dh_params_file": service_account_environment.get("irods_ssl_dh_params_file", None)
         }
+
+    # Add TLS properties for outbound traffic based on the service account client environment.
+    add_verify_server_property = False
+    if "irods_ssl_ca_certificate_file" in service_account_environment:
+        new_server_config["tls_client"]["ca_certificate_file"] = service_account_environment.get("irods_ssl_ca_certificate_file", None)
+        add_verify_server_property = True
+    if "irods_ssl_ca_certificate_path" in service_account_environment:
+        new_server_config["tls_client"]["ca_certificate_path"] = service_account_environment.get("irods_ssl_ca_certificate_path", None)
+        add_verify_server_property = True
+    if add_verify_server_property:
+        new_server_config["tls_client"]["verify_server"] = service_account_environment.get("irods_ssl_verify_server", None)
+
+    # Add TCP keepalive properties based on the service account client environment.
+    if "irods_tcp_keepalive_intvl_in_seconds" in service_account_environment:
+        new_server_config["tcp_keepalive_intvl_in_seconds"] = service_account_environment.get("irods_tcp_keepalive_intvl_in_seconds", None)
+    if "irods_tcp_keepalive_probes" in service_account_environment:
+        new_server_config["tcp_keepalive_probes"] = service_account_environment.get("irods_tcp_keepalive_probes", None)
+    if "irods_tcp_keepalive_time_in_seconds" in service_account_environment:
+        new_server_config["tcp_keepalive_time_in_seconds"] = service_account_environment.get("irods_tcp_keepalive_time_in_seconds", None)
 
     return new_server_config
 

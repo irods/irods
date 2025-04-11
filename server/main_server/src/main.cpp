@@ -10,7 +10,6 @@
 #include "irods/irods_client_api_table.hpp"
 #include "irods/irods_configuration_keywords.hpp"
 #include "irods/irods_default_paths.hpp"
-#include "irods/irods_environment_properties.hpp" // For get_json_environment_file
 #include "irods/irods_logger.hpp"
 #include "irods/irods_server_api_table.hpp"
 #include "irods/irods_server_properties.hpp"
@@ -494,34 +493,11 @@ Signals:
                 return true;
             }; // do_validate
 
-            // Validate the server configuration. If that succeeds, move on to validating the
-            // irods_environment.json file.
-            const auto schema_dir = irods::get_irods_home_directory() /
-                                    fmt::format("configuration_schemas/v{}", IRODS_CONFIGURATION_SCHEMA_VERSION);
+            // Validate the server configuration.
+            const auto path_suffix = fmt::format("configuration_schemas/v{}", IRODS_CONFIGURATION_SCHEMA_VERSION);
+            const auto schema_dir = irods::get_irods_home_directory() / path_suffix;
             const auto server_config_schema = schema_dir / "server_config.json";
-            if (do_validate(config, server_config_schema.c_str())) {
-                std::string env_file;
-                std::string session_file;
-                if (const auto err = irods::get_json_environment_file(env_file, session_file); !err.ok()) {
-                    if (g_logger_initialized) {
-                        log_server::error("{}: {}", __func__, err.status());
-                    }
-                    else {
-                        fmt::print(stderr, "{}: {}\n", __func__, err.status());
-                    }
-
-                    return false;
-                }
-
-                // Validate the irods_environment.json file referenced by the server configuration.
-                std::ifstream in{env_file};
-                if (!in) {
-                    return false;
-                }
-                const auto env_file_config = jsoncons::json::parse(in);
-                const auto svc_acct_schema = schema_dir / "service_account_environment.json";
-                return do_validate(env_file_config, svc_acct_schema.c_str());
-            }
+            return do_validate(config, server_config_schema.c_str());
         }
         catch (const std::exception& e) {
             if (g_logger_initialized) {
@@ -1211,14 +1187,19 @@ Signals:
             // doing the fork-exec.
 
             auto binary = (irods::get_irods_sbin_directory() / "irodsDelayServer").string();
-            std::vector<char*> args{binary.data()};
+            std::string hn_shm_name{irods::experimental::net::hostname_cache::shared_memory_name()};
+            std::string dns_shm_name{irods::experimental::net::dns_cache::shared_memory_name()};
 
+            std::vector<char*> args{binary.data(), hn_shm_name.data(), dns_shm_name.data()};
+
+            std::string stdout_opt = "--stdout";
             if (_write_to_stdout) {
-                args.push_back("--stdout");
+                args.push_back(stdout_opt.data());
             }
 
+            std::string test_mode_opt = "--test-mode";
             if (_enable_test_mode) {
-                args.push_back("-t");
+                args.push_back(test_mode_opt.data());
             }
 
             args.push_back(nullptr);

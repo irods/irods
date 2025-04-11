@@ -3,8 +3,14 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "type": "object",
     "properties": {
-        "instance_name": {"type": "string", "minLength": 1},
-        "plugin_name": {"type": "string", "minLength": 1},
+        "instance_name": {
+            "type": "string",
+            "minLength": 1
+        },
+        "plugin_name": {
+            "type": "string",
+            "minLength": 1
+        },
         "plugin_specific_configuration": {
             "type": "object",
             "properties": {}
