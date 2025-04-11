@@ -37,9 +37,9 @@ namespace irods
         fs::path plugin_home;
 
         // If we're the server, use the "plugin_directory" property from server_config.json when defined.
-        if (SERVER_PT == ::ProcessType || AGENT_PT == ::ProcessType) {
-            if (irods::server_property_exists(KW_CFG_IRODS_PLUGIN_DIRECTORY)) {
-                plugin_home = irods::get_server_property<std::string>(KW_CFG_IRODS_PLUGIN_DIRECTORY);
+        if (CLIENT_PT != ::ProcessType) {
+            if (irods::server_property_exists(KW_CFG_PLUGIN_DIRECTORY)) {
+                plugin_home = irods::get_server_property<std::string>(KW_CFG_PLUGIN_DIRECTORY);
             }
         }
         else {
