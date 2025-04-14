@@ -119,7 +119,7 @@ usage() {
 
     char *msgs[] = {
         "Usage: irepl [-aMPrTvV] [-n replNum] [-R destResource] [-S srcResource]",
-        "[-N numThreads] [-X restartFile] [--purgec]  [--rlock]dataObj|collection ... ",
+        "[-N numThreads] [-X restartFile] [--purgec] dataObj|collection ... ",
         " ",
         "Replicate a file in iRODS to another storage resource.",
         " ",
@@ -172,7 +172,6 @@ usage() {
         "     restartFile input specifies a local file that contains the restart info.",
         " --purgec  Purge the staged cache copy after replicating an object to a",
         "     COMPOUND resource",
-        " --rlock - use advisory read lock for the replication",
         " -h  this help",
         " ",
         "Also see 'irsync' for other types of iRODS/local synchronization.",
