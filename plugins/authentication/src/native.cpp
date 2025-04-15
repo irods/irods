@@ -6,6 +6,7 @@
 #include "irods/authResponse.h"
 #include "irods/authenticate.h"
 #include "irods/base64.hpp"
+#include "irods/checksum.h" // for hashToStr
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_auth_constants.hpp"
 #include "irods/irods_auth_plugin.hpp"
@@ -45,6 +46,36 @@ namespace
     using json = nlohmann::json;
     using log_auth = irods::experimental::log::authentication;
     namespace irods_auth = irods::authentication;
+
+    auto get_password_from_client_stdin() -> std::string
+    {
+        termios tty{};
+        tcgetattr(STDIN_FILENO, &tty);
+        const tcflag_t oldflag = tty.c_lflag;
+        // NOLINTNEXTLINE(hicpp-signed-bitwise)
+        tty.c_lflag &= ~ECHO;
+        if (const int error = tcsetattr(STDIN_FILENO, TCSANOW, &tty); 0 != error) {
+            fmt::print("WARNING: Error {} disabling echo mode. "
+                       "Password will be displayed in plaintext.\n",
+                       errno);
+        }
+        fmt::print("Enter your current iRODS password:");
+        std::string password{};
+        getline(std::cin, password);
+        fmt::print("\n");
+        tty.c_lflag = oldflag;
+        if (0 != tcsetattr(STDIN_FILENO, TCSANOW, &tty)) {
+            fmt::print("Error reinstating echo mode.");
+        }
+
+        return password;
+    } // get_password_from_client_stdin
+
+    auto force_password_prompt(const nlohmann::json& _req) -> bool
+    {
+        const auto force_prompt = _req.find(irods_auth::force_password_prompt);
+        return _req.end() != force_prompt && force_prompt->get<bool>();
+    } // force_password_prompt
 } // anonymous namespace
 
 namespace irods
@@ -109,38 +140,62 @@ namespace irods
             // backwards compatibility.
             set_session_signature_client_side(&_comm, md5_buf, sizeof(md5_buf));
 
-            // determine if a password challenge is needed, are we anonymous or not?
-            bool need_password = false;
+            // Store the user's password in here so that it can be restored later. It needs to be removed from the
+            // request payload sent to the server in case secure communications (TLS) have not been enabled.
+            [[maybe_unused]] std::string client_provided_password;
+
+            // Determine if a password is needed.
+            const auto password_key_iter = resp.find(irods::AUTH_PASSWORD_KEY);
+
+            // This if-ladder could no doubt be made better. However, it correctly implements the means of obtaining a
+            // password to use for authentication in priority order. The case for forcing a password prompt and the
+            // fallback behavior of prompting the user for a password when no password was otherwise provided are
+            // identical, and this makes clang-tidy upset. The forced password prompt takes priority over the other
+            // cases, and the other cases take priority over the default case. We will ignore "bugprone-branch-clone"
+            // here because while the branches are clones, they should not be collapsed.
+
+            // NOLINTBEGIN(bugprone-branch-clone)
+
+            // Anonymous user does not need (or have) a password.
             if (req.at("user_name").get_ref<const std::string&>() == ANONYMOUS_USER) {
                 md5_buf[CHALLENGE_LEN + 1] = '\0';
             }
+            // If the client wants to forcibly prompt for a password, get the password from stdin.
+            else if (force_password_prompt(req)) {
+                client_provided_password = get_password_from_client_stdin();
+            }
+            // If the client has provided a password in the request, use that. Historically, we have given preference to
+            // the .irodsA file, but we want to honor explicit provision of the password in the request now.
+            else if (password_key_iter != resp.end()) {
+                const auto& password = password_key_iter->get_ref<const std::string&>();
+                if (password.length() > MAX_PASSWORD_LEN) {
+                    THROW(PASSWORD_EXCEEDS_MAX_SIZE,
+                          fmt::format("Provided password exceeds maximum length [{}].", MAX_PASSWORD_LEN));
+                }
+                // We do not need to remove the password from the request payload because no server communication
+                // occurs in this operation.
+                client_provided_password = password;
+            }
+            // If an .irodsA file exists, use the password from there. The array size matches the buffer in obfGetPw.
+            // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+            else if (std::array<char, MAX_PASSWORD_LEN + 10> password{}; 0 == obfGetPw(password.data())) {
+                client_provided_password = password.data();
+                // Clear out the buffer since it exists on the stack and contains a password.
+                password.fill('\0');
+            }
+            // If the password cannot be derived any other way, prompt from stdin.
             else {
-                need_password = obfGetPw(md5_buf + CHALLENGE_LEN);
+                client_provided_password = get_password_from_client_stdin();
             }
 
-            // prompt for a password if necessary
-            if (need_password) {
-                struct termios tty;
-                memset( &tty, 0, sizeof( tty ) );
-                tcgetattr( STDIN_FILENO, &tty );
-                tcflag_t oldflag = tty.c_lflag;
-                tty.c_lflag &= ~ECHO;
-                int error = tcsetattr( STDIN_FILENO, TCSANOW, &tty );
-                int errsv = errno;
+            // NOLINTEND(bugprone-branch-clone)
 
-                if (error) {
-                    fmt::print("WARNING: Error {} disabling echo mode. "
-                               "Password will be displayed in plaintext.\n", errsv);
-                }
-                fmt::print("Enter your current iRODS password:");
-                std::string password{};
-                getline(std::cin, password);
-                strncpy(md5_buf + CHALLENGE_LEN, password.c_str(), MAX_PASSWORD_LEN);
-                fmt::print("\n");
-                tty.c_lflag = oldflag;
-                if (tcsetattr(STDIN_FILENO, TCSANOW, &tty)) {
-                    fmt::print("Error reinstating echo mode.");
-                }
+            if (!client_provided_password.empty()) {
+                std::strncpy(
+                    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                    static_cast<char*>(md5_buf) + CHALLENGE_LEN,
+                    client_provided_password.c_str(),
+                    MAX_PASSWORD_LEN);
             }
 
             // create a md5 hash of the challenge
@@ -192,6 +247,11 @@ namespace irods
                 THROW(err, "base64 encoding of digest failed.");
             }
 
+            // If a password was saved and not provided in the request, put it in the payload here.
+            if (resp.end() == password_key_iter && !client_provided_password.empty()) {
+                resp[irods::AUTH_PASSWORD_KEY] = client_provided_password;
+            }
+
             resp["digest"] = std::string{reinterpret_cast<char*>(out), out_len};
             resp[irods_auth::next_operation] = AUTH_CLIENT_AUTH_RESPONSE;
 
@@ -201,10 +261,25 @@ namespace irods
         json native_auth_client_request(rcComm_t& comm, const json& req)
         {
             json svr_req{req};
+
+            // Do not transmit the password in the request to the server if it was supplied by the client application.
+            // This plugin does not require secure communications, so we cannot transmit the password in the clear.
+            // Copy the password contents and remove the key from the request payload. It will be restored.
+            std::string client_provided_password_copy;
+            if (const auto password_iter = svr_req.find(irods::AUTH_PASSWORD_KEY); password_iter != svr_req.end()) {
+                client_provided_password_copy = password_iter->get<std::string>();
+                svr_req.erase(password_iter);
+            }
+
             svr_req[irods_auth::next_operation] = AUTH_AGENT_AUTH_REQUEST;
             auto resp = irods_auth::request(comm, svr_req);
 
             resp[irods_auth::next_operation] = AUTH_ESTABLISH_CONTEXT;
+
+            // If a password was provided in the request payload, restore it here.
+            if (!client_provided_password_copy.empty()) {
+                resp[irods::AUTH_PASSWORD_KEY] = client_provided_password_copy;
+            }
 
             return resp;
         } // native_auth_client_request
@@ -216,6 +291,16 @@ namespace irods
             );
 
             json svr_req{req};
+
+            // Do not transmit the password in the request to the server if it was supplied by the client application.
+            // This plugin does not require secure communications, so we cannot transmit the password in the clear.
+            // Copy the password contents and remove the key from the request payload. It will be restored if needed.
+            std::string client_provided_password_copy;
+            if (const auto password_iter = svr_req.find(irods::AUTH_PASSWORD_KEY); password_iter != svr_req.end()) {
+                client_provided_password_copy = password_iter->get<std::string>();
+                svr_req.erase(password_iter);
+            }
+
             svr_req[irods_auth::next_operation] = AUTH_AGENT_AUTH_RESPONSE;
             auto resp = irods_auth::request(comm, svr_req);
 
