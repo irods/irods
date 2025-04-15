@@ -3,23 +3,25 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "type": "object",
     "properties": {
-        "db_host": {"type": "string"},
-        "db_name": {"type": "string"},
-        "db_odbc_driver": {"type": "string"},
-        "db_password": {"type": "string"},
-        "db_port": {"type": "integer"},
-        "db_username": {"type": "string"},
-        "db_sslmode": {"type": "string"},
-        "db_sslrootcert": {"type": "string"},
-        "db_sslcert": {"type": "string"},
-        "db_sslkey": {"type": "string"}
+        "technology": {"type": "string"},
+        "host": {"type": "string"},
+        "name": {"type": "string"},
+        "odbc_driver": {"type": "string"},
+        "password": {"type": "string"},
+        "port": {"type": "integer"},
+        "username": {"type": "string"},
+        "tlsmode": {"type": "string"},
+        "tlsrootcert": {"type": "string"},
+        "tlscert": {"type": "string"},
+        "tlskey": {"type": "string"}
     },
     "required": [
-        "db_host",
-        "db_name",
-        "db_odbc_driver",
-        "db_password",
-        "db_port",
-        "db_username"
+        "technology",
+        "host",
+        "name",
+        "odbc_driver",
+        "password",
+        "port",
+        "username"
     ]
 }

@@ -63,14 +63,14 @@ def get_odbc_entry(db_config, catalog_database_type):
     if catalog_database_type == 'postgres' or catalog_database_type == 'cockroachdb':
         return {
             'Description': 'iRODS Catalog',
-            'Driver': db_config['db_odbc_driver'],
+            'Driver': db_config['odbc_driver'],
             'Trace': 'No',
             'Debug': '0',
             'CommLog': '0',
             'TraceFile': '',
-            'Database': db_config['db_name'],
-            'Servername': db_config['db_host'],
-            'Port': str(db_config['db_port']),
+            'Database': db_config['name'],
+            'Servername': db_config['host'],
+            'Port': str(db_config['port']),
             'ReadOnly': 'No',
             'Ksqo': '0',
             'RowVersioning': 'No',
@@ -82,10 +82,10 @@ def get_odbc_entry(db_config, catalog_database_type):
     elif catalog_database_type == 'mysql':
         return {
             'Description': 'iRODS catalog',
-            'Driver': db_config['db_odbc_driver'],
-            'Server': db_config['db_host'],
-            'Port': str(db_config['db_port']),
-            'Database': db_config['db_name'],
+            'Driver': db_config['odbc_driver'],
+            'Server': db_config['host'],
+            'Port': str(db_config['port']),
+            'Database': db_config['name'],
             'FOUND_ROWS': '1',
             'BIG_PACKETS': '1',
             'Charset': 'UTF8'
@@ -93,7 +93,7 @@ def get_odbc_entry(db_config, catalog_database_type):
     elif catalog_database_type == 'oracle':
         return {
             'Description': 'iRODS catalog',
-            'Driver': db_config['db_odbc_driver']
+            'Driver': db_config['odbc_driver']
         }
     else:
         raise IrodsError('No odbc template exists for %s' % (catalog_database_type))
@@ -166,19 +166,19 @@ def get_default_port_for_database_type(catalog_database_type):
 #the unixODBC driver will pick up Driver and Password), so we have
 #to set TWO_TASK to '//<host>:<port>/<service_name>' as well.
 def get_two_task_for_oracle(db_config):
-    return '//%s:%d/%s' % (db_config['db_host'],
-            db_config['db_port'],
-            db_config['db_name'])
+    return '//%s:%d/%s' % (db_config['host'],
+            db_config['port'],
+            db_config['name'])
 
 def get_connection_string(db_config, irods_config):
     odbc_dict = {}
-    odbc_dict['Password'] = db_config['db_password']
-    odbc_dict['PWD'] = db_config['db_password']
-    odbc_dict['Username'] = db_config['db_username']
-    odbc_dict['User'] = db_config['db_username']
-    odbc_dict['UID'] = db_config['db_username']
+    odbc_dict['Password'] = db_config['password']
+    odbc_dict['PWD'] = db_config['password']
+    odbc_dict['Username'] = db_config['username']
+    odbc_dict['User'] = db_config['username']
+    odbc_dict['UID'] = db_config['username']
     if irods_config.catalog_database_type == 'cockroachdb':
-        odbc_dict['sslrootcert'] = irods_config.database_config['sslrootcert']
+        odbc_dict['sslrootcert'] = irods_config.database_config['tlsrootcert']
         odbc_dict['sslmode'] = 'require'
         odbc_dict['ssl'] = 'true'
 
@@ -336,15 +336,15 @@ def create_database_tables(irods_config, cursor, default_resource_directory=None
             with tempfile.NamedTemporaryFile() as f:
                 f.write('\n'.join([
                         '[client]',
-                        '='.join(['user', irods_config.database_config['db_username']]),
-                        '='.join(['password', irods_config.database_config['db_password']]),
-                        '='.join(['port', str(irods_config.database_config['db_port'])]),
-                        '='.join(['host', irods_config.database_config['db_host']])
+                        '='.join(['user', irods_config.database_config['username']]),
+                        '='.join(['password', irods_config.database_config['password']]),
+                        '='.join(['port', str(irods_config.database_config['port'])]),
+                        '='.join(['host', irods_config.database_config['host']])
                     ]).encode())
                 f.flush()
                 with open(os.path.join(irods_config.irods_directory, 'packaging', 'sql', 'mysql_functions.sql'), 'r') as sql_file:
                     lib.execute_command(
-                        [mysql_exec, '='.join(['--defaults-file', f.name]), irods_config.database_config['db_name']],
+                        [mysql_exec, '='.join(['--defaults-file', f.name]), irods_config.database_config['name']],
                         stdin=sql_file)
         l.info('Creating database tables...')
         sql_files = [

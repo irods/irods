@@ -83,10 +83,10 @@ class IrodsConfig(object):
     @property
     def database_config(self):
         try:
-            database_config = [e for e in self.server_config['plugin_configuration']['database'].values()][0]
-        except (KeyError, IndexError):
+            database_config = self.server_config['plugin_configuration']['database']
+        except KeyError:
             return None
-        if not 'db_odbc_driver' in database_config.keys():
+        if not 'odbc_driver' in database_config.keys():
             l = logging.getLogger(__name__)
             l.debug('No driver found in the database config, attempting to retrieve the one in the odbc ini file at "%s"...', self.odbc_ini_path)
             if os.path.exists(self.odbc_ini_path):
@@ -97,8 +97,8 @@ class IrodsConfig(object):
                 l.debug('No odbc.ini file present')
                 odbc_ini_contents = {}
             if self.catalog_database_type in odbc_ini_contents.keys() and 'Driver' in odbc_ini_contents[self.catalog_database_type].keys():
-                database_config['db_odbc_driver'] = odbc_ini_contents[self.catalog_database_type]['Driver']
-                l.debug('Adding driver "%s" to database_config', database_config['db_odbc_driver'])
+                database_config['odbc_driver'] = odbc_ini_contents[self.catalog_database_type]['Driver']
+                l.debug('Adding driver "%s" to database_config', database_config['odbc_driver'])
                 self.commit(self._server_config, paths.server_config_path(), clear_cache=False)
             else:
                 l.debug('Unable to retrieve "Driver" field from odbc ini file')
@@ -108,8 +108,8 @@ class IrodsConfig(object):
     @property
     def catalog_database_type(self):
         try:
-            return [e for e in self.server_config['plugin_configuration']['database'].keys()][0]
-        except (KeyError, IndexError):
+            return self.server_config['plugin_configuration']['database']['technology']
+        except KeyError:
             return None
 
     @property

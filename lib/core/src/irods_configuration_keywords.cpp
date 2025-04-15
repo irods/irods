@@ -9,16 +9,17 @@ namespace irods
     const char* const KW_CFG_PAM_PASSWORD_MAX_TIME{"password_max_time"};
     const char* const KW_CFG_PAM_PASSWORD_EXTEND_LIFETIME{"password_extend_lifetime"};
 
-    const char* const KW_CFG_DB_HOST{"db_host"};
-    const char* const KW_CFG_DB_PORT{"db_port"};
-    const char* const KW_CFG_DB_NAME{"db_name"};
-    const char* const KW_CFG_DB_ODBC_DRIVER{"db_odbc_driver"};
-    const char* const KW_CFG_DB_USERNAME{"db_username"};
-    const char* const KW_CFG_DB_PASSWORD{"db_password"};
-    const char* const KW_CFG_DB_SSLMODE{"db_sslmode"};
-    const char* const KW_CFG_DB_SSLROOTCERT{"db_sslrootcert"};
-    const char* const KW_CFG_DB_SSLCERT{"db_sslcert"};
-    const char* const KW_CFG_DB_SSLKEY{"db_sslkey"};
+    const char* const KW_CFG_DB_TECHNOLOGY{"technology"};
+    const char* const KW_CFG_DB_HOST{"host"};
+    const char* const KW_CFG_DB_PORT{"port"};
+    const char* const KW_CFG_DB_NAME{"name"};
+    const char* const KW_CFG_DB_ODBC_DRIVER{"odbc_driver"};
+    const char* const KW_CFG_DB_USERNAME{"username"};
+    const char* const KW_CFG_DB_PASSWORD{"password"};
+    const char* const KW_CFG_DB_TLSMODE{"tlsmode"};
+    const char* const KW_CFG_DB_TLSROOTCERT{"tlsrootcert"};
+    const char* const KW_CFG_DB_TLSCERT{"tlscert"};
+    const char* const KW_CFG_DB_TLSKEY{"tlskey"};
     const char* const KW_CFG_ZONE_NAME{"zone_name"};
     const char* const KW_CFG_ZONE_KEY{"zone_key"};
     const char* const KW_CFG_NEGOTIATION_KEY{"negotiation_key"};

@@ -1815,11 +1815,18 @@ irods::error db_open_op(
     // cache db creds
     try {
         const auto db_plugin_map = irods::get_server_property<nlohmann::json>(std::vector<std::string>{irods::KW_CFG_PLUGIN_CONFIGURATION, irods::KW_CFG_PLUGIN_TYPE_DATABASE});
-        const auto db_type   = db_plugin_map.items().begin().key();
-        const auto db_plugin = db_plugin_map.items().begin().value();
-        snprintf(icss.databaseUsername, DB_USERNAME_LEN, "%s", db_plugin.at(irods::KW_CFG_DB_USERNAME).get<std::string>().c_str());
-        snprintf(icss.databasePassword, DB_PASSWORD_LEN, "%s", db_plugin.at(irods::KW_CFG_DB_PASSWORD).get<std::string>().c_str());
-        snprintf(icss.database_plugin_type, DB_TYPENAME_LEN, "%s", db_type.c_str());
+        snprintf(icss.databaseUsername,
+                 DB_USERNAME_LEN,
+                 "%s",
+                 db_plugin_map.at(irods::KW_CFG_DB_USERNAME).get_ref<const std::string&>().c_str());
+        snprintf(icss.databasePassword,
+                 DB_PASSWORD_LEN,
+                 "%s",
+                 db_plugin_map.at(irods::KW_CFG_DB_PASSWORD).get_ref<const std::string&>().c_str());
+        snprintf(icss.database_plugin_type,
+                 DB_TYPENAME_LEN,
+                 "%s",
+                 db_plugin_map.at(irods::KW_CFG_DB_TECHNOLOGY).get_ref<const std::string&>().c_str());
     } catch ( const irods::exception& e ) {
         return irods::error(e);
     } catch ( const boost::exception& e ) {

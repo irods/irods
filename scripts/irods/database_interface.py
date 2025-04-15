@@ -101,49 +101,53 @@ def setup_database_config(irods_config):
         'has been properly configured.\n'
         )
 
-    for k in list(irods_config.server_config.setdefault('plugin_configuration', {}).setdefault('database', {})):
-        if k != db_type:
-            del irods_config.server_config['plugin_configuration']['database'][k]
-    irods_config.server_config['plugin_configuration']['database'].setdefault(db_type, {})
+    # Get existing configuration or create one if it doesn't exist
+    # Then, check to see if the configuration matches 'db_type'
+    if irods_config.server_config.setdefault('plugin_configuration', {}).setdefault('database', {}).setdefault('technology', db_type) != db_type:
+        # Remove the existing configuration if it does not match 'db_type'
+        del irods_config.server_config['plugin_configuration']['database']
+
+        # Create a new database configuration that matches 'db_type'
+        irods_config.server_config['plugin_configuration'].setdefault('database', {}).setdefault('technology', db_type)
     while True:
         odbc_drivers = database_connect.get_odbc_drivers_for_db_type(irods_config.catalog_database_type)
         if odbc_drivers:
-            irods_config.database_config['db_odbc_driver'] = lib.default_prompt(
+            irods_config.database_config['odbc_driver'] = lib.default_prompt(
                 'ODBC driver for %s', irods_config.catalog_database_type,
                 default=odbc_drivers)
         else:
-            irods_config.database_config['db_odbc_driver'] = lib.default_prompt(
+            irods_config.database_config['odbc_driver'] = lib.default_prompt(
                 'No default ODBC drivers configured for %s; falling back to bare library paths', irods_config.catalog_database_type,
                 default=database_connect.get_odbc_driver_paths(irods_config.catalog_database_type,
                     oracle_home=os.getenv('ORACLE_HOME', None)))
 
-        irods_config.database_config['db_host'] = lib.default_prompt(
+        irods_config.database_config['host'] = lib.default_prompt(
             'Database FQDN, hostname, or IP address (253 characters max)',
-            default=[irods_config.database_config.get('db_host', 'localhost')],
+            default=[irods_config.database_config.get('host', 'localhost')],
             input_filter=lib.character_count_filter(minimum=1, maximum=253, field='Database server host'))
 
-        irods_config.database_config['db_port'] = lib.default_prompt(
+        irods_config.database_config['port'] = lib.default_prompt(
             'Database port',
-            default=[irods_config.database_config.get('db_port', database_connect.get_default_port_for_database_type(irods_config.catalog_database_type))],
+            default=[irods_config.database_config.get('port', database_connect.get_default_port_for_database_type(irods_config.catalog_database_type))],
             input_filter=lib.int_filter(field='Database server port'))
 
         if irods_config.catalog_database_type == 'oracle':
-            irods_config.database_config['db_name'] = lib.default_prompt(
+            irods_config.database_config['name'] = lib.default_prompt(
                 'Database name',
-                default=[irods_config.database_config.get('db_name', 'ICAT.example.org')])
+                default=[irods_config.database_config.get('name', 'ICAT.example.org')])
         else:
-            irods_config.database_config['db_name'] = lib.default_prompt(
+            irods_config.database_config['name'] = lib.default_prompt(
                 'Database name',
-                default=[irods_config.database_config.get('db_name', 'ICAT')])
+                default=[irods_config.database_config.get('name', 'ICAT')])
 
-        irods_config.database_config['db_username'] = lib.default_prompt(
+        irods_config.database_config['username'] = lib.default_prompt(
                 'Database username',
-                default=[irods_config.database_config.get('db_username', 'irods')])
+                default=[irods_config.database_config.get('username', 'irods')])
 
         if db_type == 'cockroachdb':
-            irods_config.database_config['sslrootcert'] = lib.default_prompt(
+            irods_config.database_config['tlsrootcert'] = lib.default_prompt(
                 'Database Root SSL (CA) Cert file',
-                 default=[irods_config.database_config.get('sslrootcert', '')])
+                 default=[irods_config.database_config.get('tlsrootcert', '')])
 
         confirmation_message = ''.join([
                 '\n',
@@ -158,17 +162,17 @@ def setup_database_config(irods_config):
                 '-------------------------------------------------------------\n\n',
                 'Please confirm']) % (
                     irods_config.catalog_database_type,
-                    irods_config.database_config['db_odbc_driver'],
-                    irods_config.database_config['db_host'],
-                    irods_config.database_config['db_port'],
-                    irods_config.database_config['db_name'],
-                    irods_config.database_config['db_username'],
-                    irods_config.database_config['sslrootcert'] if db_type == 'cockroachdb' else '')
+                    irods_config.database_config['odbc_driver'],
+                    irods_config.database_config['host'],
+                    irods_config.database_config['port'],
+                    irods_config.database_config['name'],
+                    irods_config.database_config['username'],
+                    irods_config.database_config['tlsrootcert'] if db_type == 'cockroachdb' else '')
 
         if lib.default_prompt(confirmation_message, default=['yes']) in ['', 'y', 'Y', 'yes', 'YES']:
             break
 
-    irods_config.database_config['db_password'] = lib.prompt(
+    irods_config.database_config['password'] = lib.prompt(
             'Database password',
             echo=False)
 
