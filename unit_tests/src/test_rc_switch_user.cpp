@@ -6,6 +6,7 @@
 #include "irods/fully_qualified_username.hpp"
 #include "irods/getRodsEnv.h"
 #include "irods/irods_at_scope_exit.hpp"
+#include "irods/irods_auth_constants.hpp"
 #include "irods/plugins/api/switch_user_types.h"
 #include "irods/rcConnect.h"
 #include "irods/rcMisc.h"
@@ -22,6 +23,8 @@
 #include <vector>
 #include <string>
 #include <tuple>
+
+#include <nlohmann/json.hpp>
 
 // clang-format off
 namespace adm = irods::experimental::administration;
@@ -307,7 +310,8 @@ TEST_CASE("rc_switch_user cannot be invoked by non-admins")
     auto* conn_ptr = rcConnect(env.rodsHost, env.rodsPort, alice.name.c_str(), env.rodsZone, 0, &error);
     REQUIRE(conn_ptr);
     irods::at_scope_exit close_alice_connection{[conn_ptr] { REQUIRE(rcDisconnect(conn_ptr) == 0); }};
-    REQUIRE(clientLoginWithPassword(conn_ptr, "rods") == 0);
+    const auto ctx = nlohmann::json{{irods::AUTH_PASSWORD_KEY, "rods"}};
+    REQUIRE(clientLogin(conn_ptr, ctx.dump().c_str()) == 0);
 
     // Show that the test user is not allowed to invoke rc_switch_user due to them being a rodsuser.
     SwitchUserInput input{};
@@ -470,7 +474,8 @@ TEST_CASE("rc_switch_user disassociates ticket from connection")
     irods::experimental::fully_qualified_username user{test_user_1.name, env.rodsZone};
     irods::experimental::client_connection test_user_conn{
         irods::experimental::defer_authentication, env.rodsHost, env.rodsPort, proxy_user, user};
-    REQUIRE(clientLoginWithPassword(static_cast<RcComm*>(test_user_conn), password_prop.value.data()) == 0);
+    const auto ctx = nlohmann::json{{irods::AUTH_PASSWORD_KEY, password_prop.value.data()}};
+    REQUIRE(clientLogin(static_cast<RcComm*>(test_user_conn), ctx.dump().c_str()) == 0);
 
     // Enable the ticket and show that test_user_1 can read the rodsadmin's home collection.
     {
