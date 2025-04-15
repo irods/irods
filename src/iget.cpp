@@ -169,7 +169,7 @@ usage( FILE* _fout ) {
 
         " -f  force - write local files even it they exist already (overwrite them)",
         " -I  redirect connection - redirect the connection to connect directly",
-        "       to the best (determiined by the first 10 data objects in the input",
+        "       to the best (determined by the first 10 data objects in the input",
         "       collection) resource server.",
         " -K  verify the checksum",
         " -n  replNumber - retrieve the copy with the specified replica number ",
