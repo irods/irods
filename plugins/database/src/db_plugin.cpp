@@ -906,67 +906,6 @@ static int _delColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
 
 } // _delColl
 
-// The following is an artifact of the legacy authentication plugins. This operation is
-// only useful for certain plugins which are not supported in 4.3.0, so it is being
-// left out of compilation for now. Once we have determined that this is safe to do in
-// general, this section can be removed.
-#if 0
-// =-=-=-=-=-=-=-
-// local function to delegate the response
-// verification to an authentication plugin
-static
-irods::error verify_auth_response(
-    const char* _scheme,
-    const char* _challenge,
-    const char* _user_name,
-    const char* _response ) {
-    // =-=-=-=-=-=-=-
-    // validate incoming parameters
-    if ( !_scheme ) {
-        return ERROR( SYS_INVALID_INPUT_PARAM, "null _scheme ptr" );
-    }
-    else if ( !_challenge ) {
-        return ERROR( SYS_INVALID_INPUT_PARAM, "null _challenge ptr" );
-    }
-    else if ( !_user_name ) {
-        return ERROR( SYS_INVALID_INPUT_PARAM, "null _user_name ptr" );
-    }
-    else if ( !_response ) {
-        return ERROR( SYS_INVALID_INPUT_PARAM, "null _response ptr" );
-    }
-
-    // TODO: Is this an implicit dependence on the old auth plugins?
-
-    // =-=-=-=-=-=-=-
-    // construct an auth object given the scheme
-    irods::auth_object_ptr auth_obj;
-    irods::error ret = irods::auth_factory( _scheme, 0, auth_obj );
-    if ( !ret.ok() ) {
-        return ret;
-    }
-
-    // =-=-=-=-=-=-=-
-    // resolve an auth plugin given the auth object
-    irods::plugin_ptr ptr;
-    ret = auth_obj->resolve( irods::AUTH_INTERFACE, ptr );
-    if ( !ret.ok() ) {
-        return ret;
-    }
-    irods::auth_ptr auth_plugin = boost::dynamic_pointer_cast< irods::auth >( ptr );
-
-    // =-=-=-=-=-=-=-
-    // call auth verify on plugin
-    ret = auth_plugin->call <const char*, const char*, const char* > ( 0, irods::AUTH_AGENT_AUTH_VERIFY, auth_obj, _challenge, _user_name, _response );
-    if ( !ret.ok() ) {
-        log_db::error(PASS(ret).result());
-        return ret;
-    }
-
-    return SUCCESS();
-
-} // verify_auth_response
-#endif
-
 /*
    Possibly descramble a password (for user passwords stored in the ICAT).
    Called internally, from various chl functions.
@@ -6004,20 +5943,6 @@ irods::error db_check_auth_op(
     else {
         snprintf( myUserZone, sizeof( myUserZone ), "%s", userZone );
     }
-
-    // The following is an artifact of the legacy authentication plugins. This operation is
-    // only useful for certain plugins which are not supported in 4.3.0, so it is being
-    // left out of compilation for now. Once we have determined that this is safe to do in
-    // general, this section can be removed.
-#if 0
-    if ( _scheme && strlen( _scheme ) > 0 ) {
-        irods::error ret = verify_auth_response( _scheme, _challenge, userName2, _response );
-        if ( !ret.ok() ) {
-            return PASS( ret );
-        }
-        goto checkLevel;
-    }
-#endif
 
     if ( logSQL != 0 ) {
         log_sql::debug("chlCheckAuth SQL 1 ");
