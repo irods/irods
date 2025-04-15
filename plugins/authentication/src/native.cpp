@@ -1,4 +1,3 @@
-#include "irods/plugins/authentication/native.hpp"
 #include "irods/authentication_plugin_framework.hpp"
 
 #include "irods/authCheck.h"
@@ -45,7 +44,10 @@ namespace irods_auth = irods::experimental::auth;
 namespace irods
 {
     class native_authentication : public irods_auth::authentication_base {
-    public:
+      private:
+        static constexpr const char* scheme_name = "native";
+
+      public:
         native_authentication()
         {
             add_operation(AUTH_ESTABLISH_CONTEXT,    OPERATION(rcComm_t, native_auth_establish_context));
@@ -234,7 +236,7 @@ namespace irods
                 free(comm.auth_scheme);
             }
 
-            comm.auth_scheme = strdup(irods_auth::scheme::native);
+            comm.auth_scheme = strdup(scheme_name);
 
             return resp;
         } // native_auth_agent_request
