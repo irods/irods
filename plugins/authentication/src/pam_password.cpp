@@ -1,4 +1,3 @@
-#include "irods/plugins/authentication/pam_password.hpp"
 #include "irods/authentication_plugin_framework.hpp"
 
 #define USE_SSL 1
@@ -123,7 +122,8 @@ namespace irods
     class pam_password_authentication : public irods_auth::authentication_base
     {
     private:
-        static constexpr char* perform_native_auth = "perform_native_auth";
+      static constexpr const char* scheme_name = "pam_password";
+      static constexpr const char* perform_native_auth = "perform_native_auth";
 
     public:
         pam_password_authentication()
@@ -331,7 +331,7 @@ namespace irods
                 free(comm.auth_scheme);
             }
 
-            comm.auth_scheme = strdup(irods_auth::scheme::pam_password);
+            comm.auth_scheme = strdup(scheme_name);
 
             return resp;
         } // pam_password_auth_agent_request

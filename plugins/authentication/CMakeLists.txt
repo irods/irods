@@ -20,7 +20,6 @@ foreach(plugin IN LISTS IRODS_AUTH_PLUGINS)
       ${plugin_target}
       MODULE
       "${CMAKE_CURRENT_SOURCE_DIR}/src/${plugin}.cpp"
-      "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/plugins/authentication/${plugin}.hpp"
     )
     #set_property(TARGET ${plugin_target} PROPERTY LIBRARY_OUTPUT_NAME ${plugin_name})
     target_link_libraries(
@@ -39,7 +38,6 @@ foreach(plugin IN LISTS IRODS_AUTH_PLUGINS)
     target_include_directories(
       ${plugin_target}
       PRIVATE
-      "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
       "$<BUILD_INTERFACE:${CMAKE_IRODS_SOURCE_DIR}/server/api/include>"
       "${IRODS_EXTERNALS_FULLPATH_BOOST}/include"
     )
@@ -64,11 +62,5 @@ foreach(plugin IN LISTS IRODS_AUTH_PLUGINS)
     RODS_SERVER
     ENABLE_RE
     IRODS_ENABLE_SYSLOG
-  )
-  install(
-    FILES
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/irods/plugins/authentication/${plugin}.hpp"
-    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/irods/plugins/authentication"
-    COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
   )
 endforeach()
