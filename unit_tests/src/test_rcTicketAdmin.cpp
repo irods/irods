@@ -3,10 +3,13 @@
 #include "irods/client_connection.hpp"
 #include "irods/filesystem.hpp"
 #include "irods/irods_at_scope_exit.hpp"
+#include "irods/irods_auth_constants.hpp"
 #include "irods/rcConnect.h"
 #include "irods/rodsClient.h"
 #include "irods/ticket_administration.hpp"
 #include "irods/user_administration.hpp"
+
+#include <nlohmann/json.hpp>
 
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 TEST_CASE("rcTicketAdmin")
@@ -47,7 +50,8 @@ TEST_CASE("rcTicketAdmin")
         // Enable the ticket and show the test_user can read the rodsadmin's home collection.
         irods::experimental::client_connection test_user_conn{
             irods::experimental::defer_authentication, env.rodsHost, env.rodsPort, {test_user.name, env.rodsZone}};
-        REQUIRE(clientLoginWithPassword(static_cast<RcComm*>(test_user_conn), password_prop.value.data()) == 0);
+        const auto ctx = nlohmann::json{{irods::AUTH_PASSWORD_KEY, password_prop.value.data()}};
+        REQUIRE(clientLogin(static_cast<RcComm*>(test_user_conn), ctx.dump().c_str()) == 0);
 
         TicketAdminInput input{};
         input.arg1 = "session";

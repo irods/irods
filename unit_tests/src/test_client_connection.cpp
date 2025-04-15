@@ -9,6 +9,7 @@
 #include "irods/fully_qualified_username.hpp"
 #include "irods/getRodsEnv.h"
 #include "irods/irods_at_scope_exit.hpp"
+#include "irods/irods_auth_constants.hpp"
 #include "irods/rcConnect.h"
 #include "irods/rodsClient.h"
 #include "irods/rodsErrorTable.h"
@@ -21,6 +22,8 @@
 #include <array>
 #include <string_view>
 #include <utility>
+
+#include <nlohmann/json.hpp>
 
 namespace ix = irods::experimental;
 
@@ -238,9 +241,7 @@ TEST_CASE("defer authentication", "client_connection")
         irods::at_scope_exit remove_proxy_admin{
             [&admin_conn, proxy_admin] { ia::client::remove_user(admin_conn, proxy_admin); }};
 
-        // The property is mutable so that we can use it for clientLoginWithPassword()
-        // later in the test.
-        auto password = std::to_array("ppass");
+        const auto password = std::to_array("ppass");
         const ia::user_password_property pwd_property{password.data()};
         REQUIRE_NOTHROW(ia::client::modify_user(admin_conn, proxy_admin, pwd_property));
 
@@ -259,7 +260,8 @@ TEST_CASE("defer authentication", "client_connection")
         REQUIRE_THROWS(ix::filesystem::client::exists(conn, path));
 
         // Show that the previous operation is allowed once the user is authenticated.
-        REQUIRE(clientLoginWithPassword(static_cast<RcComm*>(conn), password.data()) == 0);
+        const auto ctx = nlohmann::json{{irods::AUTH_PASSWORD_KEY, password.data()}};
+        REQUIRE(clientLogin(static_cast<RcComm*>(conn), ctx.dump().c_str()) == 0);
         REQUIRE(ix::filesystem::client::exists(conn, path));
     }
 }
