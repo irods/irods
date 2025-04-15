@@ -10,16 +10,17 @@ namespace irods
     extern const char* const KW_CFG_PAM_PASSWORD_MAX_TIME;
     extern const char* const KW_CFG_PAM_PASSWORD_EXTEND_LIFETIME;
 
+    extern const char* const KW_CFG_DB_TECHNOLOGY;
     extern const char* const KW_CFG_DB_HOST;
     extern const char* const KW_CFG_DB_PORT;
     extern const char* const KW_CFG_DB_NAME;
     extern const char* const KW_CFG_DB_ODBC_DRIVER;
     extern const char* const KW_CFG_DB_USERNAME;
     extern const char* const KW_CFG_DB_PASSWORD;
-    extern const char* const KW_CFG_DB_SSLMODE;
-    extern const char* const KW_CFG_DB_SSLROOTCERT;
-    extern const char* const KW_CFG_DB_SSLCERT;
-    extern const char* const KW_CFG_DB_SSLKEY;
+    extern const char* const KW_CFG_DB_TLSMODE;
+    extern const char* const KW_CFG_DB_TLSROOTCERT;
+    extern const char* const KW_CFG_DB_TLSCERT;
+    extern const char* const KW_CFG_DB_TLSKEY;
     extern const char* const KW_CFG_ZONE_NAME;
     extern const char* const KW_CFG_ZONE_KEY;
     extern const char* const KW_CFG_NEGOTIATION_KEY;

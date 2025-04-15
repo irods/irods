@@ -302,17 +302,7 @@
                     "properties": {}
                 },
                 "database": {
-                    "type": "object",
-                    "propertyNames": {
-                        "pattern": "^[^\\s]+$"
-                    },
-                    "patternProperties": {
-                        "^[^\\s]+$": {
-                            "$ref": "database_config.json"
-                        }
-                    },
-                    "maxProperties" : 1,
-                    "minProperties" : 1
+                    "$ref": "database_config.json"
                 },
                 "network": {
                     "type": "object",

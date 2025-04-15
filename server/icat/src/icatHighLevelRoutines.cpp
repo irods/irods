@@ -16,6 +16,7 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "irods/icatStructs.hpp"
+#include "irods/irods_configuration_keywords.hpp"
 #include "irods/irods_error.hpp"
 #include "irods/irods_database_object.hpp"
 #include "irods/irods_database_factory.hpp"
@@ -26,6 +27,7 @@
 // =-=-=-=-=-=-=-
 // stl includes
 #include <cctype> // For std::tolower
+#include <exception>
 #include <string>
 #include <iostream>
 #include <sstream>
@@ -88,15 +90,25 @@ int chlOpen() {
     // =-=-=-=-=-=-=-
     // cache the database type for subsequent calls
     try {
-        const auto& database_plugin_map = irods::get_server_property<const nlohmann::json&>(std::vector<std::string>{irods::KW_CFG_PLUGIN_CONFIGURATION, irods::KW_CFG_PLUGIN_TYPE_DATABASE});
-        if ( database_plugin_map.size() != 1 ) {
-            rodsLog( LOG_ERROR, "Database plugin map must contain exactly one plugin object" );
+        const auto database_plugin_map = irods::get_server_property<const nlohmann::json>(
+            std::vector<std::string>{irods::KW_CFG_PLUGIN_CONFIGURATION, irods::KW_CFG_PLUGIN_TYPE_DATABASE});
+        if (database_plugin_map.empty()) {
+            rodsLog(LOG_ERROR, "%s: [database] configuration stanza needs attention.", __func__);
             return SYS_INVALID_INPUT_PARAM;
         }
-        database_plugin_type = database_plugin_map.items().begin().key();
-    } catch ( const irods::exception& e ) {
+        database_plugin_type = database_plugin_map.at(irods::KW_CFG_DB_TECHNOLOGY).get_ref<const std::string&>();
+    }
+    catch (const nlohmann::json::exception& e) {
+        rodsLog(LOG_ERROR, "%s: nlohmann json exception [%s]", __func__, e.what());
+        return SYS_INVALID_INPUT_PARAM;
+    }
+    catch (const irods::exception& e) {
         irods::log(e);
         return e.code();
+    }
+    catch (const std::exception& e) {
+        rodsLog(LOG_ERROR, "%s: std::exception [%s]", __func__, e.what());
+        return SYS_LIBRARY_ERROR;
     }
 
     // =-=-=-=-=-=-=-

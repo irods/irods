@@ -268,6 +268,8 @@ def convert_to_v4_schema_and_add_missing_properties(server_config):
     return new_server_config
 
 def convert_to_v5_schema_and_add_missing_properties(server_config):
+    l = logging.getLogger(__name__)
+
     def update_base(base, updates):
         for k, v in updates.items():
             if isinstance(v, collections.abc.Mapping):
@@ -344,6 +346,41 @@ def convert_to_v5_schema_and_add_missing_properties(server_config):
         new_server_config["tcp_keepalive_probes"] = service_account_environment.get("irods_tcp_keepalive_probes", None)
     if "irods_tcp_keepalive_time_in_seconds" in service_account_environment:
         new_server_config["tcp_keepalive_time_in_seconds"] = service_account_environment.get("irods_tcp_keepalive_time_in_seconds", None)
+
+    # Update database plugin config (if present) to new format
+    if 'plugin_configuration' in new_server_config and 'database' in new_server_config['plugin_configuration']:
+        # Only focus on part we care about
+        database_config_options = new_server_config['plugin_configuration']['database']
+
+        if len(database_config_options) != 0:
+            # Assume we have a previously valid config
+            db_configurations = list(database_config_options.keys())
+            db_name = db_configurations.pop(0)
+
+            # Check if there are multiple database plugin configurations
+            if len(db_configurations) != 0:
+                l.warning('Database plugin configuration contains unexpected properties. Check server configuration.')
+
+            # Set db_name to new location
+            database_config_options['technology'] = db_name
+
+            # Transfer over the previous items (assuming property starts with 'db_')
+            # All other items, if any are left over, are untouched
+            for key in list(database_config_options[db_name].keys()):
+                # First check that the prefix exists
+                if key.startswith('db_'):
+                    new_key_name = key.removeprefix('db_')
+
+                # Update 'ssl' configuration names to use 'tls' instead
+                if new_key_name.startswith('ssl'):
+                    new_key_name = 'tls' + new_key_name.removeprefix('ssl')
+
+                # Create new configuration item and remove old config option
+                database_config_options[new_key_name] = database_config_options[db_name].pop(key)
+
+            # Remove old database config if empty
+            if len(database_config_options[db_name]) == 0:
+                del database_config_options[db_name]
 
     return new_server_config
 

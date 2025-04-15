@@ -24,10 +24,10 @@ namespace
                                std::string& _db_username,
                                std::string& _db_password) -> void
     {
-        const auto& db_plugin_config = _server_config.at(irods::KW_CFG_PLUGIN_CONFIGURATION).at(irods::KW_CFG_PLUGIN_TYPE_DATABASE);
-        const auto& db_instance = db_plugin_config.front();
+        const auto& db_instance =
+            _server_config.at(irods::KW_CFG_PLUGIN_CONFIGURATION).at(irods::KW_CFG_PLUGIN_TYPE_DATABASE);
 
-        _db_instance_name = std::begin(db_plugin_config).key();
+        _db_instance_name = db_instance.at(irods::KW_CFG_DB_TECHNOLOGY).get<std::string>();
         _db_username = db_instance.at(irods::KW_CFG_DB_USERNAME).get<std::string>();
         _db_password = db_instance.at(irods::KW_CFG_DB_PASSWORD).get<std::string>();
     }
