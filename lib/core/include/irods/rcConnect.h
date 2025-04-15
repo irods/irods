@@ -234,6 +234,7 @@ int clientLoginPam(rcComm_t* conn, char* password, int ttl);
 // This function does not actually authenticate. It requests a limited password for the connected client user and
 // then records it as an obfuscated password in the .irodsA file. This is used by iinit exclusively for native
 // authentication with TTL.
+__attribute__((deprecated("Native authentication plugin now handles limited passwords (i.e. TTL).")))
 int clientLoginTTL(rcComm_t* conn, int ttl);
 
 // This function only uses legacy native authentication.

@@ -535,7 +535,7 @@ class test_iinit(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
             self.encryption_key_size,
             self.encryption_salt_size,
             self.encryption_num_hash_rounds,
-            self.password]) + os.linesep
+            ])
         stdout, stderr, rc = lib.execute_command_permissive(cmd, input=user_input, env=self.env)
         lib.log_command_result(cmd, stdout, stderr, rc)
 
@@ -547,7 +547,6 @@ class test_iinit(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
         self.assertIn(error_string, stderr)
 
         self.assert_basic_iinit_prompts_are_in_stdout(stdout)
-        self.assertIn('Enter your current iRODS password', stdout)
         self.assert_ssl_iinit_prompts_are_in_stdout(stdout)
 
         # Make sure that the environment file saved with the correct contents.
@@ -573,7 +572,7 @@ class test_iinit(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
             '', # key size
             '', # salt size
             '', # num hash rounds
-            self.password]) + os.linesep
+            ]) + os.linesep
         stdout, stderr, rc = lib.execute_command_permissive(cmd, input=user_input, env=self.env)
         lib.log_command_result(cmd, stdout, stderr, rc)
 
@@ -585,7 +584,6 @@ class test_iinit(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
         self.assertIn(error_string, stderr)
 
         self.assert_basic_iinit_prompts_are_in_stdout(stdout)
-        self.assertIn('Enter your current iRODS password', stdout)
         self.assert_ssl_iinit_prompts_are_in_stdout(stdout)
 
         # Make sure that the environment file saved with the correct contents.
@@ -604,7 +602,7 @@ class test_iinit(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
             '', # key size
             '', # salt size
             '', # num hash rounds
-            self.password]) + os.linesep
+            ]) + os.linesep
         stdout, stderr, rc = lib.execute_command_permissive(cmd, input=user_input, env=self.env)
         lib.log_command_result(cmd, stdout, stderr, rc)
 
@@ -617,7 +615,6 @@ class test_iinit(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
 
         # The basic iinit prompts should not be shown again here. Just check the first one.
         self.assertNotIn('Enter the host name (DNS) of the server to connect to', stdout)
-        self.assertIn('Enter your current iRODS password', stdout)
         self.assert_ssl_iinit_prompts_are_in_stdout(stdout)
 
         # Make sure that the environment file saved with the correct contents.

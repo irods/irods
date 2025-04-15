@@ -7,6 +7,7 @@
 #include "irods/authenticate.h"
 #include "irods/base64.hpp"
 #include "irods/checksum.h" // for hashToStr
+#include "irods/getLimitedPassword.h"
 #include "irods/irods_at_scope_exit.hpp"
 #include "irods/irods_auth_constants.hpp"
 #include "irods/irods_auth_plugin.hpp"
@@ -14,6 +15,7 @@
 #include "irods/irods_stacktrace.hpp"
 #include "irods/miscServerFunct.hpp"
 #include "irods/msParam.h"
+#include "irods/obf.h"
 #include "irods/rcConnect.h"
 #include "irods/rodsDef.h"
 
@@ -33,6 +35,7 @@
 #include <cstring>
 #include <iostream>
 #include <sstream>
+#include <string>
 
 void setSessionSignatureClientside(char* _sig);
 #ifdef RODS_SERVER
@@ -46,6 +49,44 @@ namespace
     using json = nlohmann::json;
     using log_auth = irods::experimental::log::authentication;
     namespace irods_auth = irods::authentication;
+
+    // Implementation based on clientLoginTTL, which is now deprecated.
+    auto record_limited_password(RcComm& _comm, int ttl, const char* _password) -> void
+    {
+        getLimitedPasswordInp_t inp{};
+        inp.ttl = ttl;
+
+        getLimitedPasswordOut_t* out{};
+        if (const int err = rcGetLimitedPassword(&_comm, &inp, &out); 0 != err) {
+            THROW(err, fmt::format("{}: rcGetLimitedPassword failed with error [{}]", __func__, err));
+        }
+
+        // Calculate the limited password, which is a hash of the user's password and the returned stringToHashWith.
+        constexpr auto hash_length = 100;
+        std::array<char, hash_length + 1> hash_buf{};
+
+        std::strncpy(hash_buf.data(), static_cast<char*>(out->stringToHashWith), hash_length);
+        // NOLINTNEXTLINE(cppcoreguidelines-no-malloc, cppcoreguidelines-owning-memory)
+        std::free(out); // Free the output as it is no longer needed.
+        std::strncat(hash_buf.data(), _password, hash_length);
+
+        std::array<unsigned char, hash_length> digest{};
+        obfMakeOneWayHash(HASH_TYPE_DEFAULT,
+                          // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+                          reinterpret_cast<unsigned char*>(hash_buf.data()),
+                          hash_length,
+                          digest.data());
+
+        // Clear out the buffer since it exists on the stack and contains a password.
+        std::memset(hash_buf.data(), 0, hash_buf.size());
+
+        std::array<char, hash_length> limited_password{};
+        hashToStr(digest.data(), limited_password.data());
+
+        if (const auto err = obfSavePw(0, 0, 0, limited_password.data()); err < 0) {
+            THROW(err, fmt::format("{}: Failed to save limited password to irodsA file. error: [{}]", __func__, err));
+        }
+    } // record_limited_password
 
     auto get_password_from_client_stdin() -> std::string
     {
@@ -83,19 +124,25 @@ namespace irods
     class native_authentication : public irods_auth::authentication_base {
       private:
         static constexpr const char* scheme_name = "native";
+        static constexpr const char* record_authentication_file = "record_authentication_file";
+        static constexpr const char* complete_authentication = "complete_authentication";
 
       public:
         native_authentication()
         {
+            // NOLINTBEGIN(readability-identifier-length)
             add_operation(AUTH_ESTABLISH_CONTEXT,    OPERATION(rcComm_t, native_auth_establish_context));
             add_operation(AUTH_CLIENT_AUTH_REQUEST,  OPERATION(rcComm_t, native_auth_client_request));
             add_operation(AUTH_CLIENT_AUTH_RESPONSE, OPERATION(rcComm_t, native_auth_client_response));
+            add_operation(record_authentication_file, OPERATION(rcComm_t, record_authentication_file_op));
+            add_operation(complete_authentication, OPERATION(rcComm_t, complete_authentication_op));
 #ifdef RODS_SERVER
             add_operation(AUTH_AGENT_START,          OPERATION(rsComm_t, native_auth_agent_start));
             add_operation(AUTH_AGENT_AUTH_REQUEST,   OPERATION(rsComm_t, native_auth_agent_request));
             add_operation(AUTH_AGENT_AUTH_RESPONSE,  OPERATION(rsComm_t, native_auth_agent_response));
             add_operation(AUTH_AGENT_AUTH_VERIFY,    OPERATION(rsComm_t, native_auth_agent_verify));
 #endif
+            // NOLINTEND(readability-identifier-length)
         } // ctor
 
     private:
@@ -304,12 +351,74 @@ namespace irods
             svr_req[irods_auth::next_operation] = AUTH_AGENT_AUTH_RESPONSE;
             auto resp = irods_auth::request(comm, svr_req);
 
-            comm.loggedIn = 1;
-
-            resp[irods_auth::next_operation] = irods_auth::flow_complete;
+            // If the client requested recording the auth file, that will be done here. Otherwise, authentication is
+            // complete.
+            if (const auto record_auth_file_iter = req.find(irods_auth::record_auth_file);
+                req.end() != record_auth_file_iter && record_auth_file_iter->get<bool>())
+            {
+                resp[irods::AUTH_PASSWORD_KEY] = client_provided_password_copy;
+                resp[irods_auth::next_operation] = record_authentication_file;
+            }
+            else {
+                resp[irods_auth::next_operation] = complete_authentication;
+            }
 
             return resp;
         } // native_auth_client_response
+
+        static auto record_authentication_file_op(RcComm& _comm, const nlohmann::json& _req) -> nlohmann::json
+        {
+            // Get the password from the request payload, if available. If it is not there, this is not necessarily an
+            // error. In that case, just complete the authentication flow without recording an authentication file.
+            const std::string* password{};
+            const auto password_iter = _req.find(irods::AUTH_PASSWORD_KEY);
+            if (password_iter != _req.end()) {
+                password = password_iter->get_ptr<const std::string*>();
+            }
+            if (nullptr == password || password->empty()) {
+                return nlohmann::json{{irods_auth::next_operation, complete_authentication}};
+            }
+
+            // If TTL was provided, get and record the limited password.
+            if (const auto ttl_iter = _req.find(irods::AUTH_TTL_KEY); ttl_iter != _req.end()) {
+                if (const auto& ttl_str = ttl_iter->get_ref<const std::string&>(); !ttl_str.empty()) {
+                    try {
+                        // Specifically check for TTL of 0 here because 0 means "no TTL" for native authentication and
+                        // is a valid value as far as this authentication plugin is concerned. However, the mechanism
+                        // for getting the limited password considers non-positive values invalid. Therefore, we drop
+                        // through to the "else" case for 0 and pass non-zero values to the limited password machinery
+                        // to allow it to perform the value checking.
+                        if (const auto ttl = std::stoi(ttl_str); 0 != ttl) {
+                            record_limited_password(_comm, ttl, password->c_str());
+                            // Now that the limited password is recorded in the auth file, we need to authenticate with
+                            // the limited password to ensure that things are working. Call the start operation - the
+                            // limited password recorded in the irodsA file will be used.
+                            return nlohmann::json{
+                                {"scheme", scheme_name}, {irods_auth::next_operation, AUTH_CLIENT_START}};
+                        }
+                    }
+                    catch (const std::invalid_argument& e) {
+                        THROW(SYS_INVALID_INPUT_PARAM, fmt::format("Invalid TTL [{}]: {}", ttl_str, e.what()));
+                    }
+                    catch (const std::out_of_range& e) {
+                        THROW(SYS_INVALID_INPUT_PARAM, fmt::format("Invalid TTL [{}]: {}", ttl_str, e.what()));
+                    }
+                }
+            }
+
+            // If TTL was not provided or has a value of 0, we are not using TTL. Save the irodsA file traditionally.
+            if (const auto err = obfSavePw(0, 0, 0, password->c_str()); err < 0) {
+                THROW(err, "Failed to record authentication file for native authentication.");
+            }
+            return nlohmann::json{{irods_auth::next_operation, complete_authentication}};
+        } // record_authentication_file_op
+
+        static auto complete_authentication_op(RcComm& _comm, [[maybe_unused]] const nlohmann::json& _req)
+            -> nlohmann::json
+        {
+            _comm.loggedIn = 1;
+            return nlohmann::json{{irods_auth::next_operation, irods_auth::flow_complete}};
+        } // complete_authentication_op
 
 #ifdef RODS_SERVER
         json native_auth_agent_request(rsComm_t& comm, const json& req)
