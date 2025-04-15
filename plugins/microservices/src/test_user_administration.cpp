@@ -1,6 +1,7 @@
 /// \file
 
 #include "irods/irods_at_scope_exit.hpp"
+#include "irods/irods_auth_constants.hpp"
 #include "irods/client_connection.hpp"
 #include "irods/irods_exception.hpp"
 #include "irods/irods_logger.hpp"
@@ -18,6 +19,8 @@
 #include <functional>
 #include <string>
 
+#include <nlohmann/json.hpp>
+
 namespace
 {
     auto msi_impl(RuleExecInfo* _rei) -> int
@@ -32,14 +35,15 @@ namespace
         irods::at_scope_exit remove_user{[&] { adm::server::remove_user(*_rei->rsComm, test_user); }};
 
         // Show the password of the test user can be changed from within the server.
-        adm::user_password_property prop{test_user.name};
+        const adm::user_password_property prop{test_user.name};
         IRODS_MSI_NOTHROW(adm::server::modify_user(*_rei->rsComm, test_user, prop));
 
         // Show we can connect to the server as the test user.
         const auto& env = _rei->rsComm->myEnv;
         irods::experimental::client_connection conn{
             irods::experimental::defer_authentication, env.rodsHost, env.rodsPort, {test_user.name, env.rodsZone}};
-        IRODS_MSI_ASSERT(clientLoginWithPassword(static_cast<RcComm*>(conn), prop.value.data()) == 0);
+        const auto ctx = nlohmann::json{{irods::AUTH_PASSWORD_KEY, prop.value.data()}};
+        IRODS_MSI_ASSERT(clientLogin(static_cast<RcComm*>(conn), ctx.dump().c_str()) == 0);
 
         IRODS_MSI_TEST_END
     } // msi_impl
