@@ -152,13 +152,14 @@ namespace irods
             if (req.end() != force_prompt && force_prompt->get<bool>()) {
                 resp[irods::AUTH_PASSWORD_KEY] = get_password_from_client_stdin();
             }
-            else {
+            // If the client has provided a password in the request, use that.
+            else if (!resp.contains(irods::AUTH_PASSWORD_KEY)) {
                 // obfGetPw returns 0 if the password is retrieved successfully. Therefore,
                 // we do NOT need a password in this case. This being the case, we conclude
                 // that the user has already been authenticated via PAM with the server. We
                 // proceed with steps for native authentication which will use the stored
                 // password. This is the legacy behavior for the PAM authentication plugin.
-                if (const bool need_password = obfGetPw(nullptr); !need_password) {
+                if (0 == obfGetPw(nullptr)) {
                     resp[irods_auth::next_operation] = perform_native_auth;
                     return resp;
                 }
