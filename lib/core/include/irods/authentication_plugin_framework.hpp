@@ -27,7 +27,7 @@
 
 using json = nlohmann::json;
 
-namespace irods::experimental::auth
+namespace irods::authentication
 {
     static const char* const flow_complete{"authentication_flow_complete"};
     static const char* const next_operation{"next_operation"};
@@ -136,68 +136,116 @@ namespace irods::experimental::auth
         return plugin;
     } // resolve_authentication_plugin
 
-    /// \brief Authenticate the client indicated by \p _comm with scheme \p _env.
+    /// \brief Authenticate the clientUser indicated by \p _comm.
     ///
     /// \parblock
     /// Starting with the operation indicated by \p irods::AUTH_CLIENT_START in the operation
     /// map of the authentication plugin, this function loops until the response from an
-    /// invoked operation in the plugin returns a "next_operation" of \p auth::flow_complete.
+    /// invoked operation in the plugin returns a "next_operation" of \p flow_complete.
     /// At that time, \p _comm.loggedIn should be set to 1 (or anything other than 0) and the
     /// client is considered authenticated.
     ///
-    /// This function acts as the interface to the authentication plugins much like
-    /// \p clientLogin was the interface for the legacy authentication plugins.
+    /// This function acts as the interface to the authentication plugins.
     /// \endparblock
     ///
     /// \param[in/out] _comm iRODS communication object.
     /// \param[in] _env Environment object from which the authentication scheme is retrieved.
     /// \param[in] _ctx JSON object which includes information for the authentication plugin.
     ///
-    /// \throws irods::exception \parblock
+    /// \return An integer.
+    /// \retval 0 On success.
+    /// \retval <0 On failure, which includes one of the following situations: \parblock
     /// - If the authentication plugin cannot be resolved
     /// - If an operation fails to set "next_operation" to a non-empty string in its response
     /// - If the flow is completed with \p !_comm.loggedIn
     /// \endparblock
     ///
     /// \since 4.3.0
-    inline void authenticate_client(RcComm& _comm, const RodsEnvironment& _env, const json& _ctx)
+    inline auto authenticate_client(RcComm& _comm, const RodsEnvironment& _env, const json& _ctx) -> int
     {
         if (_comm.loggedIn) {
-            return;
+            return 0;
         }
 
-        std::string scheme = _env.rodsAuthScheme;
+        try {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+            const std::string scheme = _env.rodsAuthScheme;
 
-        std::unique_ptr<authentication_base> auth{resolve_authentication_plugin(scheme, "client")};
+            std::unique_ptr<authentication_base> auth{resolve_authentication_plugin(scheme, "client")};
 
-        const std::string* next_operation = &irods::AUTH_CLIENT_START;
+            const std::string* next_operation = &irods::AUTH_CLIENT_START;
 
-        json req{_ctx};
-        json resp;
+            json req{_ctx};
+            json resp;
 
-        req["scheme"] = scheme;
-        req[auth::next_operation] = *next_operation;
+            req["scheme"] = scheme;
+            req[irods::authentication::next_operation] = *next_operation;
 
-        while (true) {
-            resp = auth->call(_comm, *next_operation, req);
+            while (true) {
+                resp = auth->call(_comm, *next_operation, req);
 
-            if (_comm.loggedIn) {
-                break;
+                if (0 != _comm.loggedIn) {
+                    break;
+                }
+
+                if (!resp.contains(irods::authentication::next_operation)) {
+                    THROW(SYS_INVALID_INPUT_PARAM,
+                          fmt::format(
+                              "authentication request missing [{}] parameter", irods::authentication::next_operation));
+                }
+
+                next_operation = resp.at(irods::authentication::next_operation).get_ptr<std::string*>();
+                if (next_operation->empty() || flow_complete == *next_operation) {
+                    THROW(CAT_INVALID_AUTHENTICATION, "authentication flow completed without success");
+                }
+
+                req = resp;
             }
 
-            if (!resp.contains(auth::next_operation)) {
-                THROW(SYS_INVALID_INPUT_PARAM, fmt::format(
-                      "authentication request missing [{}] parameter",
-                      auth::next_operation));
-            }
+            return 0;
+        }
+        catch (const irods::exception& e) {
+            const auto err = e.code();
 
-            next_operation = resp.at(auth::next_operation).get_ptr<std::string*>();
-            if (next_operation->empty() || auth::flow_complete == *next_operation) {
-                THROW(CAT_INVALID_AUTHENTICATION,
-                      "authentication flow completed without success");
-            }
+            const std::string msg = fmt::format("Error occurred while authenticating user [{}] [{}] [ec={}]",
+                                                _comm.clientUser.userName,
+                                                e.client_display_what(),
+                                                err);
 
-            req = resp;
+            // NOLINTNEXTLINE(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+            allocate_if_necessary_and_add_rError_msg(&_comm.rError, err, msg.c_str());
+
+            return static_cast<int>(err);
+        }
+        catch (const nlohmann::json::exception& e) {
+            constexpr auto err = SYS_LIBRARY_ERROR;
+
+            const std::string msg = fmt::format(
+                "JSON error occurred while authenticating user [{}] [{}]", _comm.clientUser.userName, e.what());
+
+            allocate_if_necessary_and_add_rError_msg(&_comm.rError, err, msg.c_str());
+
+            return static_cast<int>(err);
+        }
+        catch (const std::exception& e) {
+            constexpr auto err = SYS_INTERNAL_ERR;
+
+            const std::string msg =
+                fmt::format("Error occurred while authenticating user [{}] [{}]", _comm.clientUser.userName, e.what());
+
+            allocate_if_necessary_and_add_rError_msg(&_comm.rError, err, msg.c_str());
+
+            return static_cast<int>(err);
+        }
+        catch (...) {
+            constexpr auto err = SYS_UNKNOWN_ERROR;
+
+            const std::string msg =
+                fmt::format("Unknown error occurred while authenticating user [{}]", _comm.clientUser.userName);
+
+            allocate_if_necessary_and_add_rError_msg(&_comm.rError, err, msg.c_str());
+
+            return static_cast<int>(err);
         }
     } // authenticate_client
 
@@ -284,6 +332,6 @@ namespace irods::experimental::auth
             }
         }
     } // throw_if_request_message_is_missing_key
-} // namespace irods::experimental::auth
+} // namespace irods::authentication
 
 #endif // IRODS_AUTHENTICATION_PLUGIN_FRAMEWORK_HPP

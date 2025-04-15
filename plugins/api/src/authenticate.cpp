@@ -45,7 +45,7 @@ namespace
 
     int authenticate(rsComm_t* comm, bytesBuf_t* bb_req, bytesBuf_t** bb_resp)
     {
-        namespace auth = irods::experimental::auth;
+        namespace auth = irods::authentication;
         using api_log = irods::experimental::log::api;
 
         if (!comm || !bb_req || bb_req->len == 0) {

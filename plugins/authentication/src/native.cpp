@@ -33,13 +33,19 @@
 #include <iostream>
 #include <sstream>
 
-int get64RandomBytes( char *buf );
-void setSessionSignatureClientside( char* _sig );
-void _rsSetAuthRequestGetChallenge( const char* _c );
+void setSessionSignatureClientside(char* _sig);
+#ifdef RODS_SERVER
+int get64RandomBytes(char* buf);
+// NOLINTNEXTLINE(bugprone-reserved-identifier,cert-dcl37-c, cert-dcl51-cpp)
+void _rsSetAuthRequestGetChallenge(const char* _buf);
+#endif
 
-using json = nlohmann::json;
-using log_auth = irods::experimental::log::authentication;
-namespace irods_auth = irods::experimental::auth;
+namespace
+{
+    using json = nlohmann::json;
+    using log_auth = irods::experimental::log::authentication;
+    namespace irods_auth = irods::authentication;
+} // anonymous namespace
 
 namespace irods
 {
