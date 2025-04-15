@@ -24,7 +24,7 @@
 
 namespace
 {
-    namespace irods_auth = irods::experimental::auth;
+    namespace irods_auth = irods::authentication;
     using json = nlohmann::json;
 
     auto get_password_from_client_stdin() -> std::string
@@ -221,25 +221,18 @@ namespace irods
             // because this is how the PAM authentication plugin has worked historically. This
             // is done in order to minimize communications with the PAM server as iRODS does
             // not use proper "sessions".
-            json resp{req};
-
-            // The authentication password needs to be removed from the request message as it
-            // will send the password over the network without SSL being necessarily enabled.
-            resp.erase(irods::AUTH_PASSWORD_KEY);
-
-            static constexpr char* auth_scheme_native = "native";
+            static constexpr const char* auth_scheme_native = "native";
             rodsEnv env{};
             std::strncpy(env.rodsAuthScheme, auth_scheme_native, NAME_LEN);
-            irods_auth::authenticate_client(comm, env, json{});
+            if (const auto err = irods_auth::authenticate_client(comm, env, json{}); err < 0) {
+                THROW(err, "pam_password: Failed to authenticate with generated native password.");
+            }
 
             // If everything completes successfully, the flow is completed and we can
             // consider the user "logged in". Again, the entire native authentication flow
             // was run and so we trust the result.
-            resp[irods_auth::next_operation] = irods_auth::flow_complete;
-
             comm.loggedIn = 1;
-
-            return resp;
+            return nlohmann::json{{irods_auth::next_operation, irods_auth::flow_complete}};
         } // pam_password_auth_client_perform_native_auth
 
 #ifdef RODS_SERVER
@@ -296,8 +289,8 @@ namespace irods
             log_auth::trace("getting TTL param");
 
             int ttl = 0;
-            if (req.contains(irods::AUTH_TTL_KEY)) {
-                if (const auto& ttl_str = req.at(irods::AUTH_TTL_KEY).get_ref<const std::string&>(); !ttl_str.empty()) {
+            if (const auto ttl_iter = req.find(irods::AUTH_TTL_KEY); ttl_iter != req.end()) {
+                if (const auto& ttl_str = ttl_iter->get_ref<const std::string&>(); !ttl_str.empty()) {
                     try {
                         ttl = boost::lexical_cast<int>(ttl_str);
                     }
